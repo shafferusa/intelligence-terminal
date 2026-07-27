@@ -7,6 +7,12 @@ WebFetch tools for news research. Never print secret values.
 
 ## Step 0 — Time, slot, idempotency, inputs
 
+> **Degraded-mode rule (SR §0):** missing env vars or blocked egress NEVER cancels the run.
+> News sections run at full quality via WebSearch/WebFetch; blocked market data degrades to
+> WebFetch-proxy numbers or labeled `Source unavailable`; a published degraded report counts
+> as success. Halt ONLY for SR §1 idempotency or a repo that cannot be pushed to at all.
+
+
 1. Compute Eastern time:
 
    ```bash

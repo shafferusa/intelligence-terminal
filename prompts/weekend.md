@@ -6,6 +6,12 @@ Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never p
 
 ## Step 0 — Time, slot, idempotency, inputs
 
+> **Degraded-mode rule (SR §0):** missing env vars or blocked egress NEVER cancels the run.
+> News sections run at full quality via WebSearch/WebFetch; blocked market data degrades to
+> WebFetch-proxy numbers or labeled `Source unavailable`; a published degraded report counts
+> as success. Halt ONLY for SR §1 idempotency or a repo that cannot be pushed to at all.
+
+
 1. ```bash
    TODAY=$(TZ="America/New_York" date +%F)
    DOW=$(TZ="America/New_York" date +%u)    # 6=Saturday, 7=Sunday

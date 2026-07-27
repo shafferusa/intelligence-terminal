@@ -3,6 +3,36 @@
 Operational distillation of `docs/SPEC.md` §3–§9, §15, §22–§27. Follow these exactly.
 `prompts/weekday.md` and `prompts/weekend.md` reference this file as "shared-rules."
 
+## 0. Degraded-mode doctrine (read before deciding to halt ANYTHING)
+
+A missing data source — even ALL market-data sources — is **never** a reason to skip the
+report. SPEC §45: partial reports over no reports. The ONLY conditions that justify ending a
+run without publishing are: (a) the §1 idempotency check says this slot already succeeded, or
+(b) the repository itself cannot be cloned or pushed to in any form (direct AND §15.2b PR
+fallback both fail).
+
+When environment variables are missing or egress is blocked (403 `host_not_allowed`):
+
+1. **News coverage is never degraded** — WebSearch and WebFetch work in every cloud session
+   regardless of the egress allowlist. Top Stories, politics, geopolitics, tech, science,
+   space, and the learning tracks proceed at FULL quality.
+2. **Core market numbers via WebFetch fallback** — WebFetch routes through Anthropic's fetch
+   proxy, not the egress allowlist. When curl is blocked, fetch at minimum: the Treasury
+   daily par-yield XML (home.treasury.gov), Cboe `_VIX.json`, Frankfurter latest rates, and a
+   major-index quote page — extract the handful of headline numbers, label each
+   `via proxy fetch — delayed, unverified`, and skip anything WebFetch cannot retrieve.
+3. **Everything else** in the Market Intelligence Appendix: `Source unavailable — environment
+   not fully configured` (or `cached <date>` where repo history exists). Never invent values.
+4. **Telegram without credentials:** if `TELEGRAM_BOT_TOKEN` is unset or api.telegram.org is
+   blocked, skip §14 entirely — publishing a report that changes `site/reports/index.json`
+   on `main` (directly, or via the §15.2b PR fallback) triggers the repository's GitHub
+   Actions notification, which holds its own Telegram credentials. Record
+   `telegram_ok:"delegated"` in the run log.
+5. **A published degraded report IS a success**: mark the §1 idempotency key as success, and
+   state plainly in the report header and health footer which sections ran degraded and why.
+6. In the health footer, include the one-line remediation pointer (`docs/RUNBOOK.md §A2–A3`)
+   so the operator always knows how to restore full data.
+
 ## 1. Idempotency check (do this FIRST, before any fetch)
 
 1. Compute current Eastern date and slot (see your run procedure for slot logic). Build the run key
