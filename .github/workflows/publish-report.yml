@@ -1,9 +1,10 @@
 name: Publish report (auto-merge claude/ PRs)
 
 # Routine runs that cannot push directly to main (branch-push restriction) push a
-# claude/report-* branch and open a PR. This workflow merges it, rebuilds the site,
-# deploys Pages, and sends the Telegram notification — all in one run, because a
-# merge made with GITHUB_TOKEN does not trigger the push-based workflows.
+# claude/report-* branch and open a PR. This workflow merges it; the "Build & deploy
+# site" workflow then runs via its workflow_run trigger (on the main ref, which the
+# github-pages environment protection allows), deploys, and sends the Telegram
+# notification after the page is live.
 
 on:
   pull_request:
@@ -13,23 +14,18 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: publish-report
   cancel-in-progress: false
 
 jobs:
-  publish:
+  merge:
     # Same-repo claude/ branches only — never fork PRs.
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
       startsWith(github.event.pull_request.head.ref, 'claude/')
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Merge the PR
         env:
@@ -37,58 +33,3 @@ jobs:
         run: |
           gh pr merge ${{ github.event.pull_request.number }} \
             --repo "${{ github.repository }}" --squash --delete-branch
-
-      - name: Checkout merged main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Build Pagefind search index
-        run: npx -y pagefind --site site
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Send Telegram notification
-        env:
-          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python3 - <<'EOF'
-          import json, html, os, urllib.request, sys
-          idx = json.load(open('site/reports/index.json', encoding='utf-8'))
-          if not idx:
-              print('index.json empty — nothing to announce'); sys.exit(0)
-          r = idx[0]
-          base = 'https://shafferusa.github.io/intelligence-terminal/'
-          url = base + r['path']
-          title = html.escape(r.get('title', 'New report'))
-          summary = html.escape(r.get('summary', ''))
-          mins = r.get('reading_minutes')
-          tail = f'\n\n<a href="{url}">Open the full report</a>'
-          if mins: tail += f' · {mins} min read'
-          text = f'<b>{title}</b>\n\n{summary}{tail}'
-          body = json.dumps({'chat_id': os.environ['TG_CHAT'], 'text': text[:4096],
-                             'parse_mode': 'HTML',
-                             'link_preview_options': {'is_disabled': True}}).encode()
-          req = urllib.request.Request(
-              f"https://api.telegram.org/bot{os.environ['TG_TOKEN']}/sendMessage",
-              data=body, headers={'Content-Type': 'application/json'})
-          resp = json.load(urllib.request.urlopen(req))
-          print('telegram ok:', resp.get('ok'))
-          sys.exit(0 if resp.get('ok') else 1)
-          EOF
