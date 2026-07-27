@@ -1,0 +1,68 @@
+# Smoke Test — Phase 1 delivery-proof run
+
+Purpose: verify the cloud environment end-to-end BEFORE the scheduled reports rely on it.
+This run generates NO report. It checks connectivity, permissions, secrets, and delivery,
+then messages the results to Telegram. Follow the steps in order; never print secret values.
+
+## 1. Runtime checks
+
+- `TZ="America/New_York" date` — record current ET time and UTC time.
+- Confirm the repo cloned: `git log --oneline -1` and `git status`.
+
+## 2. Environment variables
+
+For each of: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, FRED_API_KEY, TWELVE_DATA_KEY,
+FINNHUB_KEY, ALPHA_VANTAGE_KEY, COINGECKO_KEY, MASSIVE_KEY — record only SET or MISSING
+(test with `[ -n "$VAR" ]`). NEVER echo values.
+
+## 3. Network egress (allowlist verification)
+
+`curl -sS -o /dev/null -w "%{http_code}" --max-time 20` each of the following. Record the
+HTTP code per endpoint. A `403` accompanied by response header `x-deny-reason: host_not_allowed`
+means the domain is missing from the environment allowlist — record it as BLOCKED.
+
+1. `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml?data=daily_treasury_yield_curve&field_tdr_date_value=2026`
+2. `https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10`
+3. `https://cdn.cboe.com/api/global/delayed_quotes/quotes/_VIX.json`
+4. `https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR`
+5. `https://ll.thespacedevs.com/2.3.0/api-throttle/`
+6. `https://data.sec.gov/submissions/CIK0001181412.json` — with header `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)`
+7. `https://query1.finance.yahoo.com/v8/finance/chart/ES=F?interval=1d&range=1d` — with a browser User-Agent (Yahoo only)
+8. `https://api.coingecko.com/api/v3/ping`
+9. `https://api.telegram.org` (bare GET; any HTTP response ≠ blocked is a pass for egress)
+
+## 4. Git push permission (direct-to-main)
+
+Append one line to `state/run-log.jsonl`:
+`{"ts":"<UTC ISO>","slot":"smoke-test","ok":null,"note":"connectivity check"}`
+Commit as `Smoke test: connectivity check` and `git push origin main`.
+- Success → PUSH OK (the "Allow unrestricted branch pushes" toggle works).
+- Rejection mentioning `claude/` branches or 403 from the git proxy → PUSH BLOCKED (the
+  toggle is off for this repo — flag it loudly in the results).
+
+## 5. Site reachability
+
+`curl -s -o /dev/null -w "%{http_code}" https://shafferusa.github.io/intelligence-terminal/` — expect 200.
+
+## 6. Telegram delivery
+
+POST the results to `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage` with
+`parse_mode: HTML`, chat_id `${TELEGRAM_CHAT_ID}`:
+
+```
+<b>Smoke test — Personal Intelligence Terminal</b>
+Run at: <ET time> ET
+Env vars: N/8 set (missing: …)
+Egress: N/9 reachable (blocked: …)
+Git push to main: OK | BLOCKED
+Site: 200 | error
+Verdict: READY FOR SCHEDULED RUNS | NOT READY — <reason>
+```
+
+Check the response contains `"ok":true`. Retry once on failure.
+
+## 7. Wrap up
+
+Update the run-log line: set `"ok": true|false` per the overall verdict, amend nothing else,
+commit `Smoke test: results` and push. End the session with the same results summary as your
+final message.
