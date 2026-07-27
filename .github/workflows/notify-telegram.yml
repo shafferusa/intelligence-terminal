@@ -1,0 +1,69 @@
+name: Notify Telegram on direct publish
+
+# Covers the direct-push publish mode (routine pushes straight to main once
+# "Allow unrestricted branch pushes" is enabled, or a maintainer publishes locally).
+# PR-based publishes never reach this workflow: their merge commits are made with
+# GITHUB_TOKEN, which does not trigger push events — publish-report.yml notifies instead.
+# The routine itself skips its own Telegram send only when it uses the PR path, so
+# direct-push runs where the routine already sent a message are the one overlap risk:
+# the routine's shared-rules only send when its OWN send succeeds, and this workflow
+# only fires on index.json changes — a duplicate therefore requires a direct push AND
+# a successful in-run send; the guard file below suppresses that case.
+
+on:
+  push:
+    branches: [main]
+    paths: [site/reports/index.json]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notify-telegram
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Send Telegram notification unless the run already did
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 - <<'EOF'
+          import json, html, os, urllib.request, sys
+          idx = json.load(open('site/reports/index.json', encoding='utf-8'))
+          if not idx:
+              print('index.json empty — nothing to announce'); sys.exit(0)
+          r = idx[0]
+          # Guard: if the run-log's newest line says telegram_ok true for this slot,
+          # the routine already delivered the notification in-session.
+          try:
+              last = json.loads(open('state/run-log.jsonl', encoding='utf-8')
+                                .read().strip().splitlines()[-1])
+              key = f"{r.get('date')}-{r.get('slot')}"
+              if last.get('telegram_ok') is True and f"{last.get('ts','')[:10]}" == r.get('date'):
+                  print('routine already sent for', key, '— skipping duplicate'); sys.exit(0)
+          except Exception as e:
+              print('guard check skipped:', e)
+          base = 'https://shafferusa.github.io/intelligence-terminal/'
+          url = base + r['path']
+          title = html.escape(r.get('title', 'New report'))
+          summary = html.escape(r.get('summary', ''))
+          mins = r.get('reading_minutes')
+          tail = f'\n\n<a href="{url}">Open the full report</a>'
+          if mins: tail += f' · {mins} min read'
+          text = f'<b>{title}</b>\n\n{summary}{tail}'
+          body = json.dumps({'chat_id': os.environ['TG_CHAT'], 'text': text[:4096],
+                             'parse_mode': 'HTML',
+                             'link_preview_options': {'is_disabled': True}}).encode()
+          req = urllib.request.Request(
+              f"https://api.telegram.org/bot{os.environ['TG_TOKEN']}/sendMessage",
+              data=body, headers={'Content-Type': 'application/json'})
+          resp = json.load(urllib.request.urlopen(req))
+          print('telegram ok:', resp.get('ok'))
+          sys.exit(0 if resp.get('ok') else 1)
+          EOF

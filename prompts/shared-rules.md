@@ -173,6 +173,11 @@ Re-serialize and verify the result parses as valid JSON before committing. Never
 
 ## 14. Telegram delivery procedure
 
+**Skip this entire section if the run publishes via the §15.2b PR fallback** — the repo's
+`publish-report` workflow sends the notification after it merges and deploys; sending here too
+would deliver a duplicate. Also skip (and log `telegram_ok:false, "egress blocked"`) if
+`api.telegram.org` is unreachable with a 403 `x-deny-reason: host_not_allowed`.
+
 The push carries: title, one-sentence summary, 2–3 top developments, a critical-risk flag when
 warranted, and the report link `https://shafferusa.github.io/intelligence-terminal/reports/YYYY/MM/<file>.html`.
 
@@ -217,6 +222,28 @@ warranted, and the report link `https://shafferusa.github.io/intelligence-termin
    `git pull --rebase origin main` before each push; if rebase conflicts on `index.json` or
    `run-log.jsonl`, take the remote version and re-apply your addition. Commit with a message like
    `report: 2026-07-27 am`, then `git push origin main`. **Never force-push.**
+
+   **2b. PR fallback — REQUIRED when the direct push to `main` is rejected** (git proxy 403, or an
+   error about `claude/`-prefixed branches — this happens when "Allow unrestricted branch pushes"
+   is not enabled for this repo). Do NOT retry main. Instead:
+
+   ```bash
+   git checkout -b "claude/report-$(date -u +%Y%m%d)-<slot>"
+   # make ALL remaining commits of this run on this branch (report + index + state + ledgers
+   # + run-log together — the separate commit cadence collapses into this one branch)
+   git push origin HEAD
+   curl -sS -X POST "https://api.github.com/repos/shafferusa/intelligence-terminal/pulls" \
+     -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" \
+     -d "{\"title\":\"report: <date> <slot>\",\"head\":\"$(git branch --show-current)\",\"base\":\"main\",\"body\":\"Automated report publish.\"}"
+   ```
+
+   (`$GITHUB_TOKEN` is the literal placeholder `proxy-injected`; the sandbox's GitHub proxy
+   substitutes real credentials — this works only for THIS attached repository.) The repo's
+   `publish-report` GitHub Actions workflow then auto-merges the PR, builds and deploys the
+   site, **and sends the Telegram notification itself**. When the PR path is used: **SKIP §14's
+   direct Telegram send entirely** (the workflow delivers it — sending both would duplicate),
+   record `telegram_ok` as `"delegated"` in the run log, and verify publication by polling the
+   report URL (step 3) for up to 5 minutes instead of 3.
 3. After the report commit is pushed, poll the live URL (the Pages build takes ~1 min):
 
    ```bash
