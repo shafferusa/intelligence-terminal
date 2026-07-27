@@ -63,6 +63,15 @@ Check the response contains `"ok":true`. Retry once on failure.
 
 ## 7. Wrap up
 
-Update the run-log line: set `"ok": true|false` per the overall verdict, amend nothing else,
-commit `Smoke test: results` and push. End the session with the same results summary as your
+Update the run-log line: set `"ok": true|false` per the overall verdict, and REPLACE the
+`"note"` field with a compact JSON diagnosis (so the operator can triage from the repo even
+when Telegram delivery itself is broken) — NEVER including secret values:
+
+```json
+{"env_set":["NAME",...],"env_missing":["NAME",...],
+ "egress_ok":["host",...],"egress_blocked":["host",...],
+ "push":"ok|blocked","site":200,"telegram":"ok|failed|skipped"}
+```
+
+Commit `Smoke test: results` and push. End the session with the same results summary as your
 final message.
