@@ -1,0 +1,41 @@
+# ============================================================
+# Watchlists — EDITABLE.
+# Add or remove tickers freely; the routine picks up changes on
+# the next run. Lists mirror docs/SPEC.md §22 (Market Intelligence
+# Appendix). Keep tickers uppercase. SPCX = SpaceX (public since
+# 2026-06-12; never backfill pre-2026-04-07 "SPCX" data — that
+# ticker previously belonged to the unrelated Tuttle ETF).
+# ============================================================
+
+# --- Company watchlists (SPEC §22 "Watchlists") ---
+mega_cap_tech: [AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, SPCX]
+
+ai_infra: [NVDA, AMD, AVGO, TSM, ASML, MU, MRVL, ANET, VRT, ETN, PWR, CEG, VST, EQIX, DLR]
+
+defense_aero: [LMT, RTX, NOC, GD, BA, LHX, HII, BWXT, AVAV, KTOS, PLTR, RKLB, SPCX]
+
+space: [SPCX, RKLB, ASTS, LUNR, RDW, PL, BKSY, IRDM, SPIR, VSAT, GSAT, KRMN, VOYG, FLY, YSS]
+
+financials: [JPM, BAC, C, WFC, GS, MS, SCHW, IBKR, HOOD, COIN, CME, ICE, CBOE, BLK, BX, KKR, APO, ARES]
+
+health: [LLY, NVO, UNH, JNJ, ABBV, MRK, PFE, VRTX, REGN, TMO, DHR, ISRG]
+
+consumer: [WMT, COST, AMZN, TGT, HD, LOW, MCD, SBUX, CMG, BKNG, ABNB, DAL, UAL, RCL]
+
+# --- Sector ETFs: all 11 SPDR sector funds ---
+sector_etfs: [XLK, XLC, XLY, XLP, XLF, XLV, XLI, XLE, XLB, XLU, XLRE]
+
+# --- Broad US equity ETFs ---
+broad_us_etfs: [SPY, VOO, QQQ, DIA, IWM, VTI, RSP, MDY, IJH, AVUV, IWN]
+
+# --- International equity ETFs ---
+international_etfs: [VXUS, VEA, EFA, VWO, EEM, VT, VGK, FEZ, EWJ, MCHI, FXI, KWEB, INDA, EWT, EWY, EWZ, EWW, EWC, EWU, EWG, EWQ, EWA, KSA, VNM, FM]
+
+# --- Rates / Treasury & bond funds ---
+rates_funds: [SGOV, BIL, SHY, IEI, IEF, TLT, GOVT, TIP, SCHP, BND, AGG, MUB]
+
+# --- Credit funds ---
+credit_funds: [LQD, VCIT, HYG, JNK, BKLN, SRLN]
+
+# --- Factor / style funds ---
+factor_funds: [VUG, IWF, VTV, IWD, MTUM, QUAL, USMV, SPLV, VYM, SCHD, AVUV, IWN, RSP, PKW, SPHQ]

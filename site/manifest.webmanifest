@@ -1,0 +1,14 @@
+{
+  "name": "Logan's Daily Newspaper",
+  "short_name": "Daily Brief",
+  "description": "Personal Intelligence Terminal — automated news, markets, and learning briefings.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7F8F6",
+  "theme_color": "#F7F8F6",
+  "icons": [
+    { "src": "./assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

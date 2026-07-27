@@ -1,0 +1,58 @@
+{
+  "_readme": "NYSE full-closure holidays and 13:00 ET early closes, published 3 years ahead (SPEC.md §24). Refresh annually against nyse.com/markets/hours-calendars. Dates below are the actual market-closure (observed) dates. NYSE observation rules: holiday on Sunday -> observed Monday; holiday on Saturday -> observed preceding Friday, EXCEPT when that Friday is the last business day of the year (so New Year's Day falling on Saturday is not observed at all — e.g. 2028).",
+  "early_close_time_et": "13:00",
+  "years": {
+    "2026": {
+      "holidays": [
+        {"date": "2026-01-01", "name": "New Year's Day", "weekday": "Thursday"},
+        {"date": "2026-01-19", "name": "Martin Luther King, Jr. Day", "weekday": "Monday"},
+        {"date": "2026-02-16", "name": "Washington's Birthday", "weekday": "Monday"},
+        {"date": "2026-04-03", "name": "Good Friday", "weekday": "Friday"},
+        {"date": "2026-05-25", "name": "Memorial Day", "weekday": "Monday"},
+        {"date": "2026-06-19", "name": "Juneteenth National Independence Day", "weekday": "Friday"},
+        {"date": "2026-07-03", "name": "Independence Day (observed)", "weekday": "Friday", "note": "July 4, 2026 falls on Saturday; observed Friday 2026-07-03"},
+        {"date": "2026-09-07", "name": "Labor Day", "weekday": "Monday"},
+        {"date": "2026-11-26", "name": "Thanksgiving Day", "weekday": "Thursday"},
+        {"date": "2026-12-25", "name": "Christmas Day", "weekday": "Friday"}
+      ],
+      "early_closes": [
+        {"date": "2026-11-27", "name": "Day after Thanksgiving", "weekday": "Friday", "close_et": "13:00"},
+        {"date": "2026-12-24", "name": "Christmas Eve", "weekday": "Thursday", "close_et": "13:00"}
+      ]
+    },
+    "2027": {
+      "holidays": [
+        {"date": "2027-01-01", "name": "New Year's Day", "weekday": "Friday"},
+        {"date": "2027-01-18", "name": "Martin Luther King, Jr. Day", "weekday": "Monday"},
+        {"date": "2027-02-15", "name": "Washington's Birthday", "weekday": "Monday"},
+        {"date": "2027-03-26", "name": "Good Friday", "weekday": "Friday"},
+        {"date": "2027-05-31", "name": "Memorial Day", "weekday": "Monday"},
+        {"date": "2027-06-18", "name": "Juneteenth National Independence Day (observed)", "weekday": "Friday", "note": "June 19, 2027 falls on Saturday; observed Friday 2027-06-18"},
+        {"date": "2027-07-05", "name": "Independence Day (observed)", "weekday": "Monday", "note": "July 4, 2027 falls on Sunday; observed Monday 2027-07-05"},
+        {"date": "2027-09-06", "name": "Labor Day", "weekday": "Monday"},
+        {"date": "2027-11-25", "name": "Thanksgiving Day", "weekday": "Thursday"},
+        {"date": "2027-12-24", "name": "Christmas Day (observed)", "weekday": "Friday", "note": "December 25, 2027 falls on Saturday; observed Friday 2027-12-24 — therefore 2027-12-23 is a FULL trading day, not an early close"}
+      ],
+      "early_closes": [
+        {"date": "2027-11-26", "name": "Day after Thanksgiving", "weekday": "Friday", "close_et": "13:00"}
+      ]
+    },
+    "2028": {
+      "holidays": [
+        {"date": "2028-01-17", "name": "Martin Luther King, Jr. Day", "weekday": "Monday", "note": "New Year's Day 2028 falls on Saturday 2028-01-01 and is NOT observed: the preceding Friday (2027-12-31) is the last business day of 2027, so per NYSE rules the market stays open and no New Year's closure occurs in 2028 (same as 2022)"},
+        {"date": "2028-02-21", "name": "Washington's Birthday", "weekday": "Monday"},
+        {"date": "2028-04-14", "name": "Good Friday", "weekday": "Friday"},
+        {"date": "2028-05-29", "name": "Memorial Day", "weekday": "Monday"},
+        {"date": "2028-06-19", "name": "Juneteenth National Independence Day", "weekday": "Monday"},
+        {"date": "2028-07-04", "name": "Independence Day", "weekday": "Tuesday"},
+        {"date": "2028-09-04", "name": "Labor Day", "weekday": "Monday"},
+        {"date": "2028-11-23", "name": "Thanksgiving Day", "weekday": "Thursday"},
+        {"date": "2028-12-25", "name": "Christmas Day", "weekday": "Monday", "note": "December 24, 2028 is a Sunday, so there is no Christmas Eve early close in 2028"}
+      ],
+      "early_closes": [
+        {"date": "2028-07-03", "name": "Day before Independence Day", "weekday": "Monday", "close_et": "13:00"},
+        {"date": "2028-11-24", "name": "Day after Thanksgiving", "weekday": "Friday", "close_et": "13:00"}
+      ]
+    }
+  }
+}

@@ -1,0 +1,44 @@
+# ============================================================
+# Personal Intelligence Terminal — settings
+# Editable. The cloud routine reads this file at the start of
+# every run. See docs/SPEC.md for the authoritative product spec.
+# ============================================================
+
+schedule:
+  # Times are local to `timezone` (24-hour HH:MM).
+  # NOTE: changing these values does NOT reschedule anything by itself —
+  # the cron expressions on the cloud routine must be updated to match
+  # (see docs/RUNBOOK.md, "DST bump" / schedule-change procedure).
+  weekday_am: "07:30"   # Mon-Fri Morning Brief
+  weekday_pm: "16:30"   # Mon-Fri Closing Brief
+  saturday: "09:00"     # Weekly Intelligence Review
+  sunday: "09:00"       # Week-Ahead Outlook
+  timezone: America/New_York
+
+report:
+  # Target story count for the Top Stories section — flexible by news
+  # environment (don't pad, don't suppress).
+  top_stories_target: "8-12"
+  # Include the labeled ~2-minute executive brief near the top of every report.
+  two_minute_mode: true
+
+site:
+  base_url: https://shafferusa.github.io/intelligence-terminal/
+
+# ------------------------------------------------------------
+# Alerts (Phase 7 — NOT YET IMPLEMENTED; see SPEC.md §28).
+# Kept here so thresholds can be tuned before the Cloudflare
+# Worker exists. Until Phase 7 ships, breaking coverage comes
+# from the next scheduled report and this block is ignored.
+# ------------------------------------------------------------
+alerts:
+  enabled: false
+  quiet_hours:
+    start: "22:00"        # no non-critical alerts after this (local time)
+    end: "07:00"          # ...until this
+    critical_only: true   # during quiet hours, only severity >= critical_severity
+  thresholds:
+    watchlist_move_pct: 5.0     # single-name intraday % move to alert on
+    index_move_pct: 2.0         # SPY/QQQ intraday % move
+    vix_spike_pct: 20.0         # VIX % jump vs prior close
+    critical_severity: 4        # Haiku judgment gate: severity >= this may trigger a run

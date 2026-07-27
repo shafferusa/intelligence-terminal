@@ -1,0 +1,166 @@
+{
+  "_readme": "Entity registry per docs/SPEC.md §15. Never hardcode public/private status elsewhere — read it from here. Verify public entities against SEC EDGAR (data.sec.gov/submissions/CIK##########.json, UA header required). Weekly registry sweep runs in the Saturday routine; entities with recheck_trigger 'EDGAR weekly sweep' get an EDGAR full-text/submissions re-check every Saturday. NEVER invent a price or valuation for a private company.",
+  "public": [
+    {
+      "official_name": "Space Exploration Technologies Corp.",
+      "common_name": "SpaceX",
+      "status": "public",
+      "ticker": "SPCX",
+      "exchange": "Nasdaq (Global Select + Nasdaq Texas)",
+      "cik": "0001181412",
+      "ipo_date": "2026-06-12",
+      "share_classes": "dual (Class A traded, Class B 10x votes)",
+      "index_membership": "Nasdaq-100 since 2026-07-07",
+      "industry": "Aerospace / launch / satellite communications",
+      "note": "CRITICAL: the ticker 'SPCX' belonged to the unrelated Tuttle ETF until 2026-04-07 (that fund is now SPCK). SpaceX price history begins 2026-06-12 — NEVER backfill earlier SPCX data.",
+      "last_verified": "2026-07-26",
+      "source": "SEC EDGAR data.sec.gov/submissions/CIK0001181412.json"
+    },
+    {
+      "official_name": "Karman Holdings Inc.",
+      "common_name": "Karman",
+      "status": "public",
+      "ticker": "KRMN",
+      "exchange": "NYSE",
+      "ipo_date": "2025-02",
+      "industry": "Defense & space systems",
+      "last_verified": "2026-07-26",
+      "source": "SEC EDGAR submissions"
+    },
+    {
+      "official_name": "Voyager Technologies, Inc.",
+      "common_name": "Voyager Technologies",
+      "status": "public",
+      "ticker": "VOYG",
+      "exchange": "NYSE",
+      "ipo_date": "2025-06",
+      "industry": "Space & defense technology",
+      "last_verified": "2026-07-26",
+      "source": "SEC EDGAR submissions"
+    },
+    {
+      "official_name": "Firefly Aerospace Inc.",
+      "common_name": "Firefly Aerospace",
+      "status": "public",
+      "ticker": "FLY",
+      "exchange": "Nasdaq",
+      "ipo_date": "2025-08-07",
+      "industry": "Launch vehicles & lunar landers",
+      "last_verified": "2026-07-26",
+      "source": "SEC EDGAR submissions"
+    },
+    {
+      "official_name": "York Space Systems",
+      "common_name": "York Space Systems",
+      "status": "public",
+      "ticker": "YSS",
+      "exchange": "NYSE",
+      "cik": "0002086587",
+      "ipo_date": "2026-01-29",
+      "industry": "Satellite manufacturing & mission operations",
+      "last_verified": "2026-07-26",
+      "source": "SEC EDGAR data.sec.gov/submissions/CIK0002086587.json"
+    }
+  ],
+  "private": [
+    {
+      "official_name": "OpenAI",
+      "common_name": "OpenAI",
+      "status": "private",
+      "industry": "Artificial intelligence",
+      "valuation": null,
+      "valuation_date": null,
+      "ipo_preparation": "Confidential S-1 filing reported 2026-06-08 — press-reported only, NOT confirmed on public EDGAR",
+      "recheck_trigger": "EDGAR weekly sweep",
+      "last_verified": "2026-07-26",
+      "source": "Press reports (confidential filing; no public EDGAR record as of last_verified)"
+    },
+    {
+      "official_name": "Anthropic, PBC",
+      "common_name": "Anthropic",
+      "status": "private",
+      "industry": "Artificial intelligence",
+      "valuation": "$965B post-money (Series H)",
+      "valuation_date": "2026-05-28",
+      "ipo_preparation": "Confidential S-1 filing reported ~2026-06-01 — press-reported only, NOT confirmed on public EDGAR",
+      "recheck_trigger": "EDGAR weekly sweep",
+      "last_verified": "2026-07-26",
+      "source": "Series H round per company/press reports; filing per press reports"
+    },
+    {
+      "official_name": "Stripe, Inc.",
+      "common_name": "Stripe",
+      "status": "private",
+      "industry": "Payments / fintech",
+      "valuation": "$159B (employee tender offer)",
+      "valuation_date": "2026-02",
+      "last_verified": "2026-07-26",
+      "source": "Press reports on February 2026 tender offer"
+    },
+    {
+      "official_name": "Databricks, Inc.",
+      "common_name": "Databricks",
+      "status": "private",
+      "industry": "Data & AI platform",
+      "valuation": null,
+      "valuation_date": null,
+      "ipo_preparation": "CEO publicly ruled out a 2026 listing",
+      "last_verified": "2026-07-26",
+      "source": "Press reports of CEO statements"
+    },
+    {
+      "official_name": "Anduril Industries, Inc.",
+      "common_name": "Anduril",
+      "status": "private",
+      "industry": "Defense technology",
+      "valuation": "~$61B (Series H)",
+      "valuation_date": "2026-05",
+      "last_verified": "2026-07-26",
+      "source": "Press reports on May 2026 Series H"
+    },
+    {
+      "official_name": "Canva Pty Ltd",
+      "common_name": "Canva",
+      "status": "private",
+      "industry": "Design software",
+      "valuation": "~$66B (secondary-market marks)",
+      "valuation_date": "2026",
+      "ipo_preparation": "2027 listing target per press reports",
+      "last_verified": "2026-07-26",
+      "source": "Press reports / secondary-market marks"
+    },
+    {
+      "official_name": "Discord Inc.",
+      "common_name": "Discord",
+      "status": "private",
+      "industry": "Communications software",
+      "valuation": null,
+      "valuation_date": null,
+      "ipo_preparation": "Confidential filing reported; process delayed — press-reported only, NOT confirmed on public EDGAR",
+      "recheck_trigger": "EDGAR weekly sweep",
+      "last_verified": "2026-07-26",
+      "source": "Press reports (confidential filing; no public EDGAR record as of last_verified)"
+    },
+    {
+      "official_name": "Epic Games, Inc.",
+      "common_name": "Epic Games",
+      "status": "private",
+      "industry": "Gaming & interactive software",
+      "valuation": "~$15.7B-$22.5B (range of reported marks)",
+      "valuation_date": "2026",
+      "last_verified": "2026-07-26",
+      "source": "Press reports / investor marks (range; no single authoritative figure)"
+    },
+    {
+      "official_name": "Neuralink Corp.",
+      "common_name": "Neuralink",
+      "status": "private",
+      "industry": "Neurotechnology",
+      "valuation": null,
+      "valuation_date": null,
+      "ipo_preparation": "No IPO plans",
+      "last_verified": "2026-07-26",
+      "source": "Press reports"
+    }
+  ]
+}
