@@ -1,3 +1,64 @@
 {
-  "forecasts": []
+  "forecasts": [
+    {
+      "id": "2026-07-26-sun-1",
+      "date": "2026-07-26",
+      "slot": "sun",
+      "forecast": "FOMC holds the federal funds target range at 3.50-3.75% on Jul 29, with no cut.",
+      "horizon": "2026-07-29",
+      "probability": "80-90%",
+      "basis": "Prediction-market pricing (Polymarket) and futures-implied odds reported at 83-85% for a hold, cited across multiple financial press sources ahead of a non-SEP meeting.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-26-sun-2",
+      "date": "2026-07-26",
+      "slot": "sun",
+      "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
+      "horizon": "2026-07-30",
+      "probability": "55-65%",
+      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-26-sun-3",
+      "date": "2026-07-26",
+      "slot": "sun",
+      "forecast": "At least one of the five mega-cap reporters (MSFT, META, AAPL, AMZN, ARM) moves more than 5% the session after its print, driven by AI-capex commentary rather than the headline EPS beat/miss.",
+      "horizon": "2026-07-31",
+      "probability": "50-65%",
+      "basis": "Recent-quarter pattern reported in press coverage: AI spenders have been 'punished' even on in-line results while capex guidance drove the reaction (cited re: Alphabet's prior print). Pattern-based, not a hard data model.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-26-sun-4",
+      "date": "2026-07-26",
+      "slot": "sun",
+      "forecast": "US 10Y Treasury yield stays within 4.55-4.85% through Friday's close, i.e. does not break more than ~15bp outside Friday's 4.69% par level in either direction on a closing basis.",
+      "horizon": "2026-07-31",
+      "probability": "55-65%",
+      "basis": "Friday's par curve (Treasury.gov) plus the week's binary catalysts (FOMC decision, GDP, ECI, 2Y/5Y/7Y auctions) that could move the long end; range width reflects the number of scheduled catalysts, not a statistical model.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-26-sun-5",
+      "date": "2026-07-26",
+      "slot": "sun",
+      "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
+      "horizon": "2026-07-31",
+      "probability": "60-70%",
+      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-26-sun-6",
+      "date": "2026-07-26",
+      "slot": "sun",
+      "forecast": "The US-Iran ceasefire (in place since Apr 8, extended indefinitely Apr 21) holds through the week without a return to direct strikes, though talks on the Strait of Hormuz toll regime and reparations remain unresolved.",
+      "horizon": "2026-07-31",
+      "probability": "60-70%",
+      "basis": "Press reports (AP/Times of Israel/Britannica '2026 Iran war' explainer) describe a two-day mutual pause as of Jul 26 with negotiations continuing; sourcing is Confirmed-multiple on the pause, but the underlying dispute (Hormuz tolls, reparations, ballistic-missile program) is unresolved, so probability is not higher.",
+      "status": "open"
+    }
+  ]
 }

@@ -1,0 +1,57 @@
+{
+  "fetched_at": "2026-07-26T21:44:17-04:00",
+  "treasury_par_curve": {
+    "date": "2026-07-24",
+    "label": "EOD official (2026-07-24)",
+    "1M": 3.80, "1.5M": 3.88, "2M": 3.95, "3M": 3.96, "4M": 4.04, "6M": 4.08,
+    "1Y": 4.14, "2Y": 4.33, "3Y": 4.36, "5Y": 4.43, "7Y": 4.55, "10Y": 4.69, "20Y": 5.18, "30Y": 5.16,
+    "spreads_bp": {"2s10s": 36, "3m10y": 73, "5s30s": 73}
+  },
+  "vix_complex": {
+    "as_of": "2026-07-24T16:15:01-04:00",
+    "label": "EOD official (Friday 2026-07-24 close)",
+    "VIX": 18.58, "VIX9D": 17.62, "VIX3M": 20.51,
+    "term_structure": "contango (VIX9D < VIX < VIX3M) — no inversion"
+  },
+  "fx": {
+    "date": "2026-07-24",
+    "label": "EOD official (ECB reference, 2026-07-24)",
+    "base": "USD",
+    "rates": {"EUR": 0.87897, "JPY": 163.82, "GBP": 0.75053, "CNY": 6.7722, "CHF": 0.81761, "CAD": 1.4086, "AUD": 1.431, "MXN": 17.4803, "BRL": 5.0827, "INR": 96.56}
+  },
+  "crypto": {
+    "label": "Live (CoinGecko aggregate)",
+    "as_of": "2026-07-26T21:40:00-04:00",
+    "bitcoin": {"usd": 65000, "chg24h_pct": 0.92},
+    "ethereum": {"usd": 1940.61, "chg24h_pct": 3.36},
+    "solana": {"usd": 76.15, "chg24h_pct": 2.01},
+    "cardano": {"usd": 0.164785, "chg24h_pct": -0.24},
+    "total_market_cap_usd": 2309967770334.6,
+    "btc_dominance_pct": 56.42,
+    "eth_dominance_pct": 10.13,
+    "mcap_chg24h_pct": 1.04
+  },
+  "indices_cash_previous_close": {
+    "date": "2026-07-24",
+    "label": "Previous close (Friday 2026-07-24)",
+    "SPX": {"close": 7457.69},
+    "NDX_COMP": {"close": 25520.24},
+    "DJI": {"close": 52146.42},
+    "RUT": {"close": 2962.22},
+    "US10Y_yield_pct": 4.598
+  },
+  "futures_and_commodities_sunday_evening": {
+    "as_of": "2026-07-26T21:30:00-04:00",
+    "label": "Delayed (+10 min), Sunday-evening reopen — futures are not a guaranteed open",
+    "ES=F": {"price": 7490.75, "prev": 7545.75, "chg_pct": -0.73},
+    "NQ=F": {"price": 28545.25, "prev": 29316.0, "chg_pct": -2.63},
+    "YM=F": {"price": 52364.0, "prev": 52443.0, "chg_pct": -0.15},
+    "RTY=F": {"price": 2963.9, "prev": 2997.0, "chg_pct": -1.10},
+    "CL=F_WTI": {"price": 85.10, "prev": 84.91, "chg_pct": 0.22},
+    "GC=F_gold": {"price": 4102.70, "prev": 4071.10, "chg_pct": 0.78},
+    "NG=F_nat_gas": {"price": 2.834, "prev": 2.865, "chg_pct": -1.08},
+    "HG=F_copper": {"price": 6.3565, "prev": 6.511, "chg_pct": -2.37},
+    "EURUSD=X": {"price": 1.1409, "prev": 1.1418, "chg_pct": -0.08}
+  },
+  "sources_failed_this_run": ["api.stlouisfed.org (FRED — no API key configured)", "api.twelvedata.com (no API key configured)", "finnhub.io (no API key configured)", "www.alphavantage.co (no API key configured — returned error CSV)", "api.telegram.org (no bot token configured)"]
+}
