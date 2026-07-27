@@ -7,6 +7,13 @@ WebFetch tools for news research. Never print secret values.
 
 ## Step 0 — Time, slot, idempotency, inputs
 
+**0a. Day-of-week guard:** if `TZ="America/New_York" date +%u` returns `6` or `7` (Saturday/
+Sunday), this weekday procedure does not apply — the weekend routine owns those days. Append
+one line to `state/run-log.jsonl`:
+`{"ts":"<UTC ISO>","slot":"offschedule","ok":true,"note":"weekday routine invoked on a weekend day; exited by design"}`
+commit it as `log: off-schedule weekday invocation`, push, and end the session. Generate no
+report, send no Telegram message.
+
 > **Degraded-mode rule (SR §0):** missing env vars or blocked egress NEVER cancels the run.
 > News sections run at full quality via WebSearch/WebFetch; blocked market data degrades to
 > WebFetch-proxy numbers or labeled `Source unavailable`; a published degraded report counts
