@@ -1,64 +1,65 @@
 {
-  "fetched_at": "2026-07-27T08:30:00-04:00",
+  "fetched_at": "2026-07-27T16:55:00-04:00",
   "treasury_par_curve": {
-    "date": "2026-07-24",
-    "label": "EOD official (2026-07-24)",
-    "1M": 3.80, "1.5M": 3.88, "2M": 3.95, "3M": 3.96, "4M": 4.04, "6M": 4.08,
-    "1Y": 4.14, "2Y": 4.33, "3Y": 4.36, "5Y": 4.43, "7Y": 4.55, "10Y": 4.69, "20Y": 5.18, "30Y": 5.16,
-    "spreads_bp": {"2s10s": 36, "3m10y": 73, "5s30s": 73}
+    "date": "2026-07-27",
+    "label": "EOD official (2026-07-27)",
+    "1M": 3.80, "1.5M": 3.89, "2M": 3.95, "3M": 3.96, "4M": 4.05, "6M": 4.10,
+    "1Y": 4.14, "2Y": 4.31, "3Y": 4.35, "5Y": 4.40, "7Y": 4.52, "10Y": 4.65, "20Y": 5.15, "30Y": 5.12,
+    "spreads_bp": {"2s10s": 34, "3m10y": 69, "5s30s": 72}
   },
   "vix_complex": {
-    "as_of": "2026-07-24T16:15:01-04:00",
-    "label": "EOD official (Friday 2026-07-24 close)",
-    "VIX": 18.58, "VIX9D": 17.62, "VIX3M": 20.51,
-    "term_structure": "contango (VIX9D < VIX < VIX3M) — no inversion"
+    "as_of": "2026-07-27T16:39:00-04:00",
+    "label": "Delayed (+15 min)",
+    "VIX": 18.67, "VIX9D": 18.13, "VIX3M": 20.20,
+    "term_structure": "contango (VIX9D < VIX < VIX3M) — no inversion, curve flattened slightly vs Friday"
   },
   "fx": {
-    "date": "2026-07-24",
-    "label": "EOD official (ECB reference, 2026-07-24)",
+    "date": "2026-07-27",
+    "label": "EOD official (ECB reference, 2026-07-27)",
     "base": "USD",
-    "rates": {"EUR": 0.87897, "JPY": 163.82, "GBP": 0.75053, "CNY": 6.7722, "CHF": 0.81761, "CAD": 1.4086, "AUD": 1.431, "MXN": 17.4803, "BRL": 5.0827, "INR": 96.56}
+    "rates": {"EUR": 0.87804, "JPY": 163.64, "GBP": 0.75094, "CNY": 6.7661, "CHF": 0.81517, "CAD": 1.4105, "AUD": 1.4287, "MXN": 17.4569, "BRL": 5.0825, "INR": 95.92}
   },
   "crypto": {
     "label": "Live (CoinGecko aggregate)",
-    "as_of": "2026-07-26T21:40:00-04:00",
-    "bitcoin": {"usd": 65000, "chg24h_pct": 0.92},
-    "ethereum": {"usd": 1940.61, "chg24h_pct": 3.36},
-    "solana": {"usd": 76.15, "chg24h_pct": 2.01},
-    "cardano": {"usd": 0.164785, "chg24h_pct": -0.24},
-    "total_market_cap_usd": 2309967770334.6,
-    "btc_dominance_pct": 56.42,
-    "eth_dominance_pct": 10.13,
-    "mcap_chg24h_pct": 1.04
+    "as_of": "2026-07-27T16:45:00-04:00",
+    "bitcoin": {"usd": 64914, "chg24h_pct": 0.47},
+    "ethereum": {"usd": 1943.99, "chg24h_pct": 1.72},
+    "solana": {"usd": 75.91, "chg24h_pct": 0.81},
+    "cardano": {"usd": 0.15875, "chg24h_pct": -3.39},
+    "total_market_cap_usd": 2304676569592.47,
+    "btc_dominance_pct": 56.53,
+    "eth_dominance_pct": 10.18,
+    "mcap_chg24h_pct": 0.34
   },
-  "indices_cash_previous_close": {
-    "date": "2026-07-24",
-    "label": "Previous close (Friday 2026-07-24)",
-    "SPX": {"close": 7457.69},
-    "NDX_COMP": {"close": 25520.24},
-    "DJI": {"close": 52146.42},
-    "RUT": {"close": 2962.22},
-    "US10Y_yield_pct": 4.598
+  "indices_cash_close": {
+    "date": "2026-07-27",
+    "label": "EOD official (Monday 2026-07-27 close) — this run's own timestamped Yahoo Finance series",
+    "note": "Supersedes the prior Friday cache (SPX 7457.69 / DJI 52146.42 / RUT 2962.22 / NDX_COMP 25520.24), which was news-synthesis-sourced on 2026-07-26 while Yahoo Finance was blocked and did not match Yahoo's own timestamped bars. Verified Friday 2026-07-24 closes were SPX 7411.98 / DJI 51947.25 / IXIC 24975.82 / RUT 2930.00.",
+    "SPX": {"close": 7413.18, "prev_close_2026-07-24": 7411.98, "chg_pct": 0.02},
+    "NDX_COMP": {"close": 24932.08, "prev_close_2026-07-24": 24975.82, "chg_pct": -0.18},
+    "DJI": {"close": 52210.08, "prev_close_2026-07-24": 51947.25, "chg_pct": 0.51},
+    "RUT": {"close": 2948.04, "prev_close_2026-07-24": 2930.00, "chg_pct": 0.62},
+    "US10Y_yield_pct": 4.65
   },
-  "futures_and_commodities_sunday_evening": {
-    "as_of": "2026-07-26T21:30:00-04:00",
-    "label": "Cached (as of 2026-07-26T21:30 ET) — Yahoo Finance rate-limited (HTTP 429) again on 2026-07-27 AM run, could not refresh; Mon AM premarket direction reported secondary-sourced only (ES/NQ/YM +0.7% to +1.4%, WTI -5.4% to $84.51 per Bloomberg/CNBC/Yahoo Finance market-wrap coverage) — see 2026-07-27-am report Section 14",
-    "ES=F": {"price": 7490.75, "prev": 7545.75, "chg_pct": -0.73},
-    "NQ=F": {"price": 28545.25, "prev": 29316.0, "chg_pct": -2.63},
-    "YM=F": {"price": 52364.0, "prev": 52443.0, "chg_pct": -0.15},
-    "RTY=F": {"price": 2963.9, "prev": 2997.0, "chg_pct": -1.10},
-    "CL=F_WTI": {"price": 85.10, "prev": 84.91, "chg_pct": 0.22},
-    "GC=F_gold": {"price": 4102.70, "prev": 4071.10, "chg_pct": 0.78},
-    "NG=F_nat_gas": {"price": 2.834, "prev": 2.865, "chg_pct": -1.08},
-    "HG=F_copper": {"price": 6.3565, "prev": 6.511, "chg_pct": -2.37},
-    "EURUSD=X": {"price": 1.1409, "prev": 1.1418, "chg_pct": -0.08}
+  "futures_and_commodities": {
+    "as_of": "2026-07-27T16:41:00-04:00",
+    "label": "EOD official (Yahoo Finance, this run)",
+    "ES=F": {"price": 7448.25, "prev": 7447.50, "chg_pct": 0.01},
+    "NQ=F": {"price": 28195.00, "prev": 28282.25, "chg_pct": -0.31},
+    "YM=F": {"price": 52380.00, "prev": 52124.00, "chg_pct": 0.49},
+    "RTY=F": {"price": 2961.00, "prev": 2941.30, "chg_pct": 0.67},
+    "CL=F_WTI": {"price": 81.89, "prev_news_corroborated": 84.51, "chg_pct": -3.10, "note": "Yahoo's own prior-session futures bar showed an implausible ~8% move, likely a front-month contract-roll artifact; change reconciled against Friday's news-corroborated $84.51 close instead."},
+    "GC=F_gold": {"price": 4081.10, "prev": 4067.60, "chg_pct": 0.33},
+    "NG=F_nat_gas": {"price": 2.769, "prev": 2.871, "chg_pct": -3.55},
+    "HG=F_copper": {"price": 6.40, "prev": 6.32, "chg_pct": 1.27},
+    "EURUSD=X": {"price": 1.1371, "prev": 1.1395, "chg_pct": -0.21}
   },
-  "equity_quotes_previous_close_2026-07-24": {
-    "label": "Previous close (Friday 2026-07-24) — Twelve Data, 104 of 167 watchlist symbols; remainder rate-limited",
-    "source_note": "See 2026-07-27-am report Section 19 appendix for the full breakdown by category.",
-    "SPY": 738.93, "QQQ": 684.23, "IWM": 291.17, "DIA": 518.76, "RSP": 213.57,
-    "NVDA": 206.84, "TSLA": 313.03, "META": 595.19, "AMZN": 232.11, "GOOGL": 319.74,
-    "SPCX": 115.07, "RKLB": 63.91
+  "equity_quotes_close_2026-07-27": {
+    "label": "EOD official (Monday 2026-07-27 close) — this run's own Yahoo Finance fetch, 56-symbol subset (Twelve Data unavailable, daily credit quota exhausted)",
+    "source_note": "See 2026-07-27-pm report Section 19 appendix for the full breakdown by category.",
+    "SPY": 739.09, "QQQ": 682.12, "IWM": 292.91, "DIA": 521.26, "VTI": 365.18, "RSP": 215.18, "TLT": 83.75,
+    "NVDA": 196.51, "TSLA": 309.22, "META": 594.03, "AMZN": 231.39, "GOOGL": 326.53, "AAPL": 336.91, "MSFT": 389.10,
+    "SPCX": 113.50, "RKLB": 66.94, "PLTR": 131.53, "GS": 1048.23
   },
-  "sources_failed_this_run": ["query1.finance.yahoo.com / query2.finance.yahoo.com (HTTP 429 rate-limited, all symbols, 2026-07-27 AM run)", "cdn.cboe.com options market-statistics (HTTP 403, path shift)", "api.twelvedata.com (rate-limited for ~63 of 167 watchlist symbols; AAPL and MSFT specifically affected)"]
+  "sources_failed_this_run": ["api.twelvedata.com (daily API credit quota exhausted — 1022/800 used, driven by this morning's run)", "cdn.cboe.com options market-statistics (HTTP 403, path shift, same as this morning)", "cdn.finra.org (today's short-volume file not yet published — posts next business day)"]
 }

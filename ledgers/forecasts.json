@@ -79,6 +79,26 @@
       "probability": "55-65%",
       "basis": "Atlanta Fed GDPNow tracking estimate of +1.7% annualized as of Jul 17 (fred.stlouisfed.org/series/GDPNOW context via press reporting), widened both directions for typical tracking-estimate-to-actual error and the ten-day gap to the release. Supersedes the wider 1.5-3.0% band in forecast 2026-07-26-sun-2, which was made without GDPNow data.",
       "status": "open"
+    },
+    {
+      "id": "2026-07-27-pm-1",
+      "date": "2026-07-27",
+      "slot": "pm",
+      "forecast": "Anubis posts leaked Fairlife (Coca-Cola) data to its leak site within 72 hours (by 2026-07-30), given today's extortion deadline passed without a confirmed payment or public resolution.",
+      "horizon": "2026-07-30",
+      "probability": "45-60%",
+      "basis": "General pattern of ransomware groups following through on leak-site deadlines when no payment/settlement is publicly confirmed, weighed against the possibility of a quiet, unannounced settlement (common in corporate ransomware cases) or a further unannounced deadline extension. No group-specific follow-through-rate data was available this run.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-27-pm-2",
+      "date": "2026-07-27",
+      "slot": "pm",
+      "forecast": "NVDA does not close lower than today's -4.99% single-session move on any one day through Wednesday's (Jul 29) FOMC decision, absent on-the-record confirmation of the WSJ-reported $250B+ OpenAI financing figures.",
+      "horizon": "2026-07-29",
+      "probability": "55-65%",
+      "basis": "Today's decline already re-priced the single-sourced report; absent a confirming or denying statement from Nvidia/OpenAI/SoftBank, no fresh catalyst is scheduled before Wednesday, and single-name moves of this size rarely repeat on consecutive sessions without new information. Range reflects genuine two-way uncertainty given Wednesday's Microsoft/Meta AI-capex earnings could pull sentiment either way intraday.",
+      "status": "open"
     }
   ]
 }
