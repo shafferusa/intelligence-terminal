@@ -195,6 +195,27 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
    (no content injected by script). Follow the design tokens already in the template — calm,
    newspaper-briefing character; no red/green flood (semantic up/down colors in data cells only).
 
+## 12b. Formatting & style rules (learned from Edition No. 1 — apply to every report)
+
+1. **Executive-brief eyebrow matches the edition**: weekday reports → `the two-minute version`;
+   Sunday Week-Ahead → `the five-minute version`; Saturday Review → `the week in one page`.
+   Never reuse the template sample's weekday eyebrow on a weekend edition.
+2. **Data-freshness block renders as a compact table** (columns: Source · Freshness label · Data
+   age), never as a run-on paragraph of ·-separated clauses. One row per source actually used;
+   failed sources live in the health footer, not here — a single line "N sources unavailable —
+   see System health" suffices at the top.
+3. **No duplicated metadata**: generation time appears once in the byline; the meta grid carries
+   only cutoff, market-data as-of, version, confidence, market status, reading time.
+4. **Section eyebrows are consistent**: sentence case, `Section N · Short label` — keep labels
+   under ~5 words; no mixed casing between sections.
+5. **Chips over prose for statuses**: verification levels, data-delay classes, and mission
+   states use the template's chip styles inline rather than parenthetical prose where a chip
+   class exists.
+6. **Tables must fit phones**: any table wider than 4 columns must be inside the template's
+   `.data-table` scroll wrapper; prefer splitting to stacking when a table has only 2-3 rows.
+7. **Forecast IDs** (`YYYY-MM-DD-slot-N`) are printed with each logged forecast, exactly as
+   Edition No. 1 did — keep that pattern.
+
 ## 13. Archive index update (`site/reports/index.json`)
 
 Read the file (JSON array, newest first), **prepend**:

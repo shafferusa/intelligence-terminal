@@ -46,6 +46,21 @@ means the domain is missing from the environment allowlist — record it as BLOC
 8. `https://api.coingecko.com/api/v3/ping`
 9. `https://api.telegram.org` (bare GET; any HTTP response ≠ blocked is a pass for egress)
 
+## 3b. Authenticated API checks (only for keys found SET in §2)
+
+One real call per configured key — record `ok` (HTTP 200 + parseable payload) or the failure
+status per API. Never print key values or full responses; a one-line summary field is fine.
+
+```bash
+curl -s "https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=1"
+curl -s "https://api.twelvedata.com/quote?symbol=SPY&apikey=${TWELVE_DATA_KEY}"
+curl -s "https://finnhub.io/api/v1/quote?symbol=AAPL&token=${FINNHUB_KEY}"
+curl -s "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=${ALPHA_VANTAGE_KEY}"   # uses 1 of the 25/day budget
+curl -s "https://api.polygon.io/v2/aggs/ticker/SPY/prev?apiKey=${MASSIVE_KEY}"
+```
+
+Add to the §7 diagnosis JSON: `"api_checks":{"fred":"ok|<err>","twelvedata":"ok|<err>","finnhub":"ok|<err>","alphavantage":"ok|<err>","massive":"ok|<err>"}`.
+
 ## 4. Git push permission (direct-to-main)
 
 Append one line to `state/run-log.jsonl`:
