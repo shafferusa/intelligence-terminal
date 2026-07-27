@@ -15,6 +15,21 @@ For each of: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, FRED_API_KEY, TWELVE_DATA_KEY
 FINNHUB_KEY, ALPHA_VANTAGE_KEY, COINGECKO_KEY, MASSIVE_KEY — record only SET or MISSING
 (test with `[ -n "$VAR" ]`). NEVER echo values.
 
+**2b. If any are MISSING from the process environment, DISCOVER where the platform put them**
+— claude.ai environment variables may be delivered as a `.env`-style file instead of process
+exports. Search (printing FILE PATHS ONLY, never contents):
+
+```bash
+ls -la ~ ; ls -la ~/.claude 2>/dev/null ; ls -la /run /etc/profile.d 2>/dev/null | head -40
+grep -rls "TELEGRAM_BOT_TOKEN" ~ /run /etc /opt /workspace 2>/dev/null | grep -v intelligence-terminal | head -10
+env | cut -d= -f1 | sort   # names only — see what IS exported
+```
+
+If a file is found, source it (`set -a; . <file>; set +a`), re-run the §2 checks, and record
+in the diagnosis: `"env_delivery":"process|file:<path>|not_found"`. This discovery is the
+single most important output of the smoke test — the scheduled report runs will use the same
+mechanism.
+
 ## 3. Network egress (allowlist verification)
 
 `curl -sS -o /dev/null -w "%{http_code}" --max-time 20` each of the following. Record the
