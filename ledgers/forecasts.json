@@ -59,6 +59,26 @@
       "probability": "60-70%",
       "basis": "Press reports (AP/Times of Israel/Britannica '2026 Iran war' explainer) describe a two-day mutual pause as of Jul 26 with negotiations continuing; sourcing is Confirmed-multiple on the pause, but the underlying dispute (Hormuz tolls, reparations, ballistic-missile program) is unresolved, so probability is not higher.",
       "status": "open"
+    },
+    {
+      "id": "2026-07-27-am-1",
+      "date": "2026-07-27",
+      "slot": "am",
+      "forecast": "FOMC surprises with a 25bp rate hike on Jul 29 instead of a hold.",
+      "horizon": "2026-07-29",
+      "probability": "20-30%",
+      "basis": "Press-reported CME FedWatch readings of a 35-39% hike probability as of Jul 23-25 (up from ~12% two weeks earlier, attributed to the Iran-driven oil spike), discounted downward for the weekend's oil-price reversal following the Jul 23-26 ceasefire pause, which is not yet reflected in the last-published FedWatch reads. Judgment adjustment, not a live model pull -- CME's FedWatch tool is outside this system's egress allowlist.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-27-am-2",
+      "date": "2026-07-27",
+      "slot": "am",
+      "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.0-2.5% annualized range.",
+      "horizon": "2026-07-30",
+      "probability": "55-65%",
+      "basis": "Atlanta Fed GDPNow tracking estimate of +1.7% annualized as of Jul 17 (fred.stlouisfed.org/series/GDPNOW context via press reporting), widened both directions for typical tracking-estimate-to-actual error and the ten-day gap to the release. Supersedes the wider 1.5-3.0% band in forecast 2026-07-26-sun-2, which was made without GDPNow data.",
+      "status": "open"
     }
   ]
 }

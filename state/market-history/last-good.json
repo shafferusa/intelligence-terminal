@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-07-26T21:44:17-04:00",
+  "fetched_at": "2026-07-27T08:30:00-04:00",
   "treasury_par_curve": {
     "date": "2026-07-24",
     "label": "EOD official (2026-07-24)",
@@ -42,7 +42,7 @@
   },
   "futures_and_commodities_sunday_evening": {
     "as_of": "2026-07-26T21:30:00-04:00",
-    "label": "Delayed (+10 min), Sunday-evening reopen — futures are not a guaranteed open",
+    "label": "Cached (as of 2026-07-26T21:30 ET) — Yahoo Finance rate-limited (HTTP 429) again on 2026-07-27 AM run, could not refresh; Mon AM premarket direction reported secondary-sourced only (ES/NQ/YM +0.7% to +1.4%, WTI -5.4% to $84.51 per Bloomberg/CNBC/Yahoo Finance market-wrap coverage) — see 2026-07-27-am report Section 14",
     "ES=F": {"price": 7490.75, "prev": 7545.75, "chg_pct": -0.73},
     "NQ=F": {"price": 28545.25, "prev": 29316.0, "chg_pct": -2.63},
     "YM=F": {"price": 52364.0, "prev": 52443.0, "chg_pct": -0.15},
@@ -53,5 +53,12 @@
     "HG=F_copper": {"price": 6.3565, "prev": 6.511, "chg_pct": -2.37},
     "EURUSD=X": {"price": 1.1409, "prev": 1.1418, "chg_pct": -0.08}
   },
-  "sources_failed_this_run": ["api.stlouisfed.org (FRED — no API key configured)", "api.twelvedata.com (no API key configured)", "finnhub.io (no API key configured)", "www.alphavantage.co (no API key configured — returned error CSV)", "api.telegram.org (no bot token configured)"]
+  "equity_quotes_previous_close_2026-07-24": {
+    "label": "Previous close (Friday 2026-07-24) — Twelve Data, 104 of 167 watchlist symbols; remainder rate-limited",
+    "source_note": "See 2026-07-27-am report Section 19 appendix for the full breakdown by category.",
+    "SPY": 738.93, "QQQ": 684.23, "IWM": 291.17, "DIA": 518.76, "RSP": 213.57,
+    "NVDA": 206.84, "TSLA": 313.03, "META": 595.19, "AMZN": 232.11, "GOOGL": 319.74,
+    "SPCX": 115.07, "RKLB": 63.91
+  },
+  "sources_failed_this_run": ["query1.finance.yahoo.com / query2.finance.yahoo.com (HTTP 429 rate-limited, all symbols, 2026-07-27 AM run)", "cdn.cboe.com options market-statistics (HTTP 403, path shift)", "api.twelvedata.com (rate-limited for ~63 of 167 watchlist symbols; AAPL and MSFT specifically affected)"]
 }

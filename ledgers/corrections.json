@@ -1,3 +1,13 @@
 {
-  "corrections": []
+  "corrections": [
+    {
+      "found": "2026-07-27",
+      "report": "reports/2026/07/2026-07-26-sun.html",
+      "original": "Report referred to the FOMC press conference and rate-path commentary as \"Powell's\" throughout (nine references), implying Jerome Powell remained Federal Reserve Chair.",
+      "corrected": "Kevin Warsh has served as Federal Reserve Chair since May 22, 2026 (nominated by President Trump Mar 4, 2026; confirmed by the Senate 54-45 on May 12-13, 2026; sworn in May 22, 2026), succeeding Jerome Powell. Wednesday Jul 29's FOMC press conference will be led by Warsh, not Powell.",
+      "error_source": "Prior edition carried forward a stale assumption about Fed leadership without verifying against a primary source; not independently checked before Sunday's publication.",
+      "conclusions_changed": false,
+      "note": "Verified directly against federalreserve.gov press release other20260522a.htm this run. Does not change the FOMC meeting date/time, non-SEP status, or hold/hike odds framing from Sunday's edition -- only the identity of who delivers the press conference and statement. Corrected in today's report (2026-07-27-am) Top Stories and Section 20."
+    }
+  ]
 }
