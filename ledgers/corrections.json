@@ -8,6 +8,15 @@
       "error_source": "Prior edition carried forward a stale assumption about Fed leadership without verifying against a primary source; not independently checked before Sunday's publication.",
       "conclusions_changed": false,
       "note": "Verified directly against federalreserve.gov press release other20260522a.htm this run. Does not change the FOMC meeting date/time, non-SEP status, or hold/hike odds framing from Sunday's edition -- only the identity of who delivers the press conference and statement. Corrected in today's report (2026-07-27-am) Top Stories and Section 20."
+    },
+    {
+      "found": "2026-07-28",
+      "report": "reports/2026/07/2026-07-28-am.html",
+      "original": "Described the US-Iran strike pause as \"holding a fifth day\" as of Tuesday, July 28, 2026.",
+      "corrected": "Contemporaneous, dated reporting (Al Jazeera, NPR, CS Monitor, Washington Times, all dated Jul 26) describes Saturday Jul 25 as the pause's first day and Sunday Jul 26 as its \"second day\" on their own datelines, making Tuesday Jul 28 the pause's fourth day, not fifth.",
+      "error_source": "An off-by-one day-count drift that began in the 2026-07-27-pm edition, which incremented the count on the same calendar day as that morning's edition without re-verifying the pause's actual start date against dated source reporting; today's AM edition continued the drift by one more day.",
+      "conclusions_changed": false,
+      "note": "Verified via WebSearch against multiple outlets' own datelines this run. Does not change any prior story's substance -- only the day-count label. Corrected in today's report (2026-07-28-pm) Top Stories and Section 20."
     }
   ]
 }
