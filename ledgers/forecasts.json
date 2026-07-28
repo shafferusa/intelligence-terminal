@@ -99,6 +99,36 @@
       "probability": "55-65%",
       "basis": "Today's decline already re-priced the single-sourced report; absent a confirming or denying statement from Nvidia/OpenAI/SoftBank, no fresh catalyst is scheduled before Wednesday, and single-name moves of this size rarely repeat on consecutive sessions without new information. Range reflects genuine two-way uncertainty given Wednesday's Microsoft/Meta AI-capex earnings could pull sentiment either way intraday.",
       "status": "open"
+    },
+    {
+      "id": "2026-07-28-am-1",
+      "date": "2026-07-28",
+      "slot": "am",
+      "forecast": "Today's Nasdaq-focused chip-sector weakness (Nasdaq-100 futures -2.6% premarket) broadens into the US cash session, with XLK underperforming the broader S&P 500 by more than 1 percentage point at today's close.",
+      "horizon": "2026-07-28",
+      "probability": "30-40%",
+      "basis": "Monday's cash session already showed contained, not broad, weakness from the original NVDA move (Dow and Russell held gains); today's move has a clearer cross-border catalyst chain via Samsung and SK Hynix's worst sessions in roughly two decades, but premarket futures moves regularly narrow by the cash open.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-28-am-2",
+      "date": "2026-07-28",
+      "slot": "am",
+      "forecast": "Today's 7-Year Treasury Note auction ($44B, 1:00 PM ET) tails (weak demand) on FOMC-eve positioning.",
+      "horizon": "2026-07-28",
+      "probability": "15-25%",
+      "basis": "Monday's 2-Year auction showed solid demand (2.66x cover, -0.5bp tail); the 7-Year is historically the most tail-prone tenor and this is the last coupon auction before Wednesday's FOMC decision, which can pull demand in either direction.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-28-am-3",
+      "date": "2026-07-28",
+      "slot": "am",
+      "forecast": "A Kyushu-based semiconductor or electronics manufacturer discloses facility damage or a production halt tied to the magnitude-7.1 Kumamoto earthquake within 48 hours.",
+      "horizon": "2026-07-30",
+      "probability": "15-25%",
+      "basis": "No such disclosure as of this run; the region hosts meaningful chip/electronics manufacturing capacity, but M7-class quakes in this zone have historically caused more infrastructure than heavy-industry disruption.",
+      "status": "open"
     }
   ]
 }
