@@ -1,65 +1,385 @@
 {
-  "fetched_at": "2026-07-27T16:55:00-04:00",
+  "fetched_at": "2026-07-28T07:55:00-04:00",
   "treasury_par_curve": {
     "date": "2026-07-27",
     "label": "EOD official (2026-07-27)",
-    "1M": 3.80, "1.5M": 3.89, "2M": 3.95, "3M": 3.96, "4M": 4.05, "6M": 4.10,
-    "1Y": 4.14, "2Y": 4.31, "3Y": 4.35, "5Y": 4.40, "7Y": 4.52, "10Y": 4.65, "20Y": 5.15, "30Y": 5.12,
-    "spreads_bp": {"2s10s": 34, "3m10y": 69, "5s30s": 72}
+    "1M": 3.8,
+    "1.5M": 3.89,
+    "2M": 3.95,
+    "3M": 3.96,
+    "4M": 4.05,
+    "6M": 4.1,
+    "1Y": 4.14,
+    "2Y": 4.31,
+    "3Y": 4.35,
+    "5Y": 4.4,
+    "7Y": 4.52,
+    "10Y": 4.65,
+    "20Y": 5.15,
+    "30Y": 5.12,
+    "spreads_bp": {
+      "2s10s": 34,
+      "3m10y": 69,
+      "5s30s": 72
+    }
   },
   "vix_complex": {
-    "as_of": "2026-07-27T16:39:00-04:00",
+    "as_of": "2026-07-28T07:50:00-04:00",
     "label": "Delayed (+15 min)",
-    "VIX": 18.67, "VIX9D": 18.13, "VIX3M": 20.20,
-    "term_structure": "contango (VIX9D < VIX < VIX3M) — no inversion, curve flattened slightly vs Friday"
+    "VIX": 18.98,
+    "VIX9D": 18.13,
+    "VIX3M": 20.2,
+    "term_structure": "contango (VIX9D < VIX < VIX3M) \u2014 no inversion"
   },
   "fx": {
     "date": "2026-07-27",
     "label": "EOD official (ECB reference, 2026-07-27)",
     "base": "USD",
-    "rates": {"EUR": 0.87804, "JPY": 163.64, "GBP": 0.75094, "CNY": 6.7661, "CHF": 0.81517, "CAD": 1.4105, "AUD": 1.4287, "MXN": 17.4569, "BRL": 5.0825, "INR": 95.92}
+    "rates": {
+      "EUR": 0.87804,
+      "JPY": 163.64,
+      "GBP": 0.75094,
+      "CNY": 6.7661,
+      "CHF": 0.81517,
+      "CAD": 1.4105,
+      "AUD": 1.4287,
+      "MXN": 17.4569,
+      "BRL": 5.0825,
+      "INR": 95.92
+    }
   },
   "crypto": {
     "label": "Live (CoinGecko aggregate)",
-    "as_of": "2026-07-27T16:45:00-04:00",
-    "bitcoin": {"usd": 64914, "chg24h_pct": 0.47},
-    "ethereum": {"usd": 1943.99, "chg24h_pct": 1.72},
-    "solana": {"usd": 75.91, "chg24h_pct": 0.81},
-    "cardano": {"usd": 0.15875, "chg24h_pct": -3.39},
-    "total_market_cap_usd": 2304676569592.47,
-    "btc_dominance_pct": 56.53,
-    "eth_dominance_pct": 10.18,
-    "mcap_chg24h_pct": 0.34
+    "as_of": "2026-07-28T07:50:00-04:00",
+    "bitcoin": {
+      "usd": 63457,
+      "chg24h_pct": -2.6
+    },
+    "ethereum": {
+      "usd": 1874.95,
+      "chg24h_pct": -4.32
+    },
+    "solana": {
+      "usd": 73.18,
+      "chg24h_pct": -4.49
+    },
+    "cardano": {
+      "usd": 0.157169,
+      "chg24h_pct": -4.54
+    },
+    "total_market_cap_usd": 2254765848277.56,
+    "btc_dominance_pct": 56.45
   },
   "indices_cash_close": {
     "date": "2026-07-27",
-    "label": "EOD official (Monday 2026-07-27 close) — this run's own timestamped Yahoo Finance series",
-    "note": "Supersedes the prior Friday cache (SPX 7457.69 / DJI 52146.42 / RUT 2962.22 / NDX_COMP 25520.24), which was news-synthesis-sourced on 2026-07-26 while Yahoo Finance was blocked and did not match Yahoo's own timestamped bars. Verified Friday 2026-07-24 closes were SPX 7411.98 / DJI 51947.25 / IXIC 24975.82 / RUT 2930.00.",
-    "SPX": {"close": 7413.18, "prev_close_2026-07-24": 7411.98, "chg_pct": 0.02},
-    "NDX_COMP": {"close": 24932.08, "prev_close_2026-07-24": 24975.82, "chg_pct": -0.18},
-    "DJI": {"close": 52210.08, "prev_close_2026-07-24": 51947.25, "chg_pct": 0.51},
-    "RUT": {"close": 2948.04, "prev_close_2026-07-24": 2930.00, "chg_pct": 0.62},
+    "label": "EOD official (Monday 2026-07-27 close) \u2014 Yahoo Finance",
+    "SPX": {
+      "close": 7413.18,
+      "prev_close_2026-07-24": 7411.98,
+      "chg_pct": 0.02
+    },
+    "NDX_COMP": {
+      "close": 24932.08,
+      "prev_close_2026-07-24": 24975.82,
+      "chg_pct": -0.18
+    },
+    "DJI": {
+      "close": 52210.08,
+      "prev_close_2026-07-24": 51947.25,
+      "chg_pct": 0.51
+    },
+    "RUT": {
+      "close": 2948.04,
+      "prev_close_2026-07-24": 2930.0,
+      "chg_pct": 0.62
+    },
     "US10Y_yield_pct": 4.65
   },
   "futures_and_commodities": {
-    "as_of": "2026-07-27T16:41:00-04:00",
-    "label": "EOD official (Yahoo Finance, this run)",
-    "ES=F": {"price": 7448.25, "prev": 7447.50, "chg_pct": 0.01},
-    "NQ=F": {"price": 28195.00, "prev": 28282.25, "chg_pct": -0.31},
-    "YM=F": {"price": 52380.00, "prev": 52124.00, "chg_pct": 0.49},
-    "RTY=F": {"price": 2961.00, "prev": 2941.30, "chg_pct": 0.67},
-    "CL=F_WTI": {"price": 81.89, "prev_news_corroborated": 84.51, "chg_pct": -3.10, "note": "Yahoo's own prior-session futures bar showed an implausible ~8% move, likely a front-month contract-roll artifact; change reconciled against Friday's news-corroborated $84.51 close instead."},
-    "GC=F_gold": {"price": 4081.10, "prev": 4067.60, "chg_pct": 0.33},
-    "NG=F_nat_gas": {"price": 2.769, "prev": 2.871, "chg_pct": -3.55},
-    "HG=F_copper": {"price": 6.40, "prev": 6.32, "chg_pct": 1.27},
-    "EURUSD=X": {"price": 1.1371, "prev": 1.1395, "chg_pct": -0.21}
+    "as_of": "2026-07-28T07:50:00-04:00",
+    "label": "Delayed +10m (Yahoo Finance, this run)",
+    "ES=F": {
+      "price": 7436.25,
+      "prev": 7445.0,
+      "chg_pct": -0.12
+    },
+    "NQ=F": {
+      "price": 27875.25,
+      "prev": 28620.75,
+      "chg_pct": -2.6
+    },
+    "YM=F": {
+      "price": 52710.0,
+      "prev": 51894.0,
+      "chg_pct": 1.57
+    },
+    "RTY=F": {
+      "price": 2955.4,
+      "prev": 2951.7,
+      "chg_pct": 0.13
+    },
+    "CL=F_WTI": {
+      "price": 81.46,
+      "prev_news_corroborated": 81.89,
+      "chg_pct": -0.53,
+      "note": "Yahoo's own chartPreviousClose field showed an implausible $92.19, inconsistent with the $79.80-$82.43 day range \u2014 almost certainly a front-month contract-roll artifact (contract rolled to 'Crude Oil Sep 26'). Change reconciled against the prior run's reported $81.89 close instead."
+    },
+    "GC=F_gold": {
+      "price": 4027.2,
+      "prev": 4046.6,
+      "chg_pct": -0.48
+    },
+    "NG=F_nat_gas": {
+      "price": 2.731,
+      "prev": 2.916,
+      "chg_pct": -6.35
+    },
+    "HG=F_copper": {
+      "price": 6.308,
+      "prev": 6.305,
+      "chg_pct": 0.05
+    },
+    "EURUSD=X": {
+      "price": 1.1369,
+      "prev": 1.1404,
+      "chg_pct": -0.31
+    },
+    "TNX_10y_index": {
+      "price": 4.641,
+      "prev": 4.628,
+      "note": "Value already represents the yield directly (4.641%); does not match the x10 convention (level 42.5 -> 4.25%) documented in this system's own procedure \u2014 flagged as a documentation/data discrepancy this run."
+    }
+  },
+  "technical_levels_2026-07-27": {
+    "label": "EOD official (Twelve Data time_series, 60-day history \u2014 200-DMA not computable on this API tier)",
+    "SPY": {
+      "close": 739.09,
+      "dist_20dma_pct": -1.01,
+      "dist_50dma_pct": -0.79,
+      "range_60d": [
+        718.01,
+        759.57
+      ]
+    },
+    "QQQ": {
+      "close": 682.12,
+      "dist_20dma_pct": -3.99,
+      "dist_50dma_pct": -4.95,
+      "range_60d": [
+        667.74,
+        746.16
+      ]
+    },
+    "IWM": {
+      "close": 292.91,
+      "dist_20dma_pct": -0.88,
+      "dist_50dma_pct": 0.52,
+      "range_60d": [
+        273.0,
+        300.45
+      ]
+    },
+    "DIA": {
+      "close": 521.26,
+      "dist_20dma_pct": -0.37,
+      "dist_50dma_pct": 1.21,
+      "range_60d": [
+        489.56,
+        530.09
+      ]
+    },
+    "TLT": {
+      "close": 83.75,
+      "dist_20dma_pct": -0.91,
+      "dist_50dma_pct": -1.54,
+      "range_60d": [
+        83.02,
+        87.45
+      ]
+    },
+    "SPCX": {
+      "close": 113.5,
+      "dist_20dma_pct": -18.38,
+      "dist_50dma_pct": null,
+      "range_since_ipo": [
+        113.5,
+        211.39
+      ],
+      "note": "only 31 sessions of history since 2026-06-12 IPO"
+    }
   },
   "equity_quotes_close_2026-07-27": {
-    "label": "EOD official (Monday 2026-07-27 close) — this run's own Yahoo Finance fetch, 56-symbol subset (Twelve Data unavailable, daily credit quota exhausted)",
-    "source_note": "See 2026-07-27-pm report Section 19 appendix for the full breakdown by category.",
-    "SPY": 739.09, "QQQ": 682.12, "IWM": 292.91, "DIA": 521.26, "VTI": 365.18, "RSP": 215.18, "TLT": 83.75,
-    "NVDA": 196.51, "TSLA": 309.22, "META": 594.03, "AMZN": 231.39, "GOOGL": 326.53, "AAPL": 336.91, "MSFT": 389.10,
-    "SPCX": 113.50, "RKLB": 66.94, "PLTR": 131.53, "GS": 1048.23
+    "label": "EOD official (Monday 2026-07-27 close) \u2014 this run's own Twelve Data fetch, 166 of 167 watchlist symbols (rate-limited to 8 credits/min, ~21 min full sweep)",
+    "source_note": "See 2026-07-28-am report Section 19 appendix for the full breakdown by category.",
+    "SPY": "739.090027",
+    "VOO": "679.31000",
+    "QQQ": "682.12000",
+    "DIA": "521.26001",
+    "IWM": "292.91000",
+    "VTI": "365.17999",
+    "RSP": "215.17999",
+    "MDY": "692.84998",
+    "IJH": "76",
+    "AVUV": "125.43000",
+    "IWN": "222.16000",
+    "XLK": "174.30000",
+    "XLC": "107.66000",
+    "XLY": "110.84000",
+    "XLP": "85.36000",
+    "XLF": "56.88000",
+    "XLV": "163.39999",
+    "XLI": "183.20000",
+    "XLE": "58.36000",
+    "XLB": "51.39000",
+    "XLU": "45.68000",
+    "XLRE": "45.76000",
+    "AAPL": "336.91000",
+    "MSFT": "389.10001",
+    "NVDA": "196.50999",
+    "AMZN": "231.39000",
+    "GOOGL": "326.56000",
+    "META": "593.87000",
+    "TSLA": "309.22000",
+    "SPCX": "113.5",
+    "RKLB": "66.94000",
+    "ASTS": "58.29000",
+    "LUNR": "13.31000",
+    "RDW": "8.83000",
+    "PL": "21",
+    "BKSY": "22.070000",
+    "IRDM": "45.96000",
+    "SPIR": "11.17000",
+    "VSAT": "74.87000",
+    "GSAT": "79.029999",
+    "KRMN": "50.57000",
+    "VOYG": "26.25",
+    "FLY": "19.88000",
+    "YSS": "18.87000",
+    "AMD": "494.95001",
+    "AVGO": "383.22000",
+    "TSM": "399.089996",
+    "ASML": "1655.26001",
+    "MU": "900.20001",
+    "MRVL": "189.17000",
+    "ANET": "170.75999",
+    "VRT": "287.60001",
+    "ETN": "398.64001",
+    "PWR": "620.28003",
+    "CEG": "270",
+    "VST": "157.080002",
+    "EQIX": "1046.79004",
+    "DLR": "195.75999",
+    "LMT": "580",
+    "RTX": "218.42000",
+    "NOC": "547.58002",
+    "GD": "389.14001",
+    "BA": "211.5",
+    "LHX": "303.48001",
+    "HII": "288.25",
+    "BWXT": "176.53000",
+    "AVAV": "154.24001",
+    "KTOS": "49.45000",
+    "PLTR": "131.53000",
+    "JPM": "356.20001",
+    "BAC": "62.13000",
+    "C": "133.10001",
+    "WFC": "87.27000",
+    "GS": "1048.22998",
+    "MS": "214.56000",
+    "SCHW": "104.18000",
+    "IBKR": "92.27000",
+    "HOOD": "95.65000",
+    "COIN": "167.49001",
+    "CME": "255.36000",
+    "ICE": "148.73000",
+    "CBOE": "288.87000",
+    "BLK": "1062.14001",
+    "BX": "132.60001",
+    "KKR": "101.63000",
+    "APO": "124.24000",
+    "ARES": "127.76000",
+    "LLY": "1197.53003",
+    "NVO": "49.67000",
+    "UNH": "417.64001",
+    "JNJ": "265.95001",
+    "ABBV": "256.91000",
+    "MRK": "130.75999",
+    "PFE": "24.67000",
+    "VRTX": "479",
+    "REGN": "667.16998",
+    "TMO": "559.53003",
+    "DHR": "196.5",
+    "ISRG": "356.82999",
+    "WMT": "111.74000",
+    "COST": "951.58002",
+    "TGT": "140.34000",
+    "HD": "336.089996",
+    "LOW": "211.55000",
+    "MCD": "270.67001",
+    "SBUX": "103.65000",
+    "CMG": "33.20000",
+    "BKNG": "186.78999",
+    "ABNB": "146.86000",
+    "DAL": "86.67000",
+    "UAL": "120.57000",
+    "RCL": "305.040009",
+    "SGOV": "100.65000",
+    "BIL": "91.62000",
+    "SHY": "81.87000",
+    "IEI": "116.46000",
+    "IEF": "93.28000",
+    "TLT": "83.75",
+    "GOVT": "22.52000",
+    "TIP": "107.39000",
+    "SCHP": "26.049999",
+    "BND": "72.46000",
+    "AGG": "97.69000",
+    "MUB": "105.80000",
+    "LQD": "106.51000",
+    "VCIT": "81.32000",
+    "HYG": "79.27000",
+    "JNK": "95.46000",
+    "BKLN": "20.39000",
+    "SRLN": "40.38000",
+    "VUG": "83.38000",
+    "IWF": "117.13000",
+    "VTV": "221.72000",
+    "IWD": "249.74001",
+    "MTUM": "302.32999",
+    "QUAL": "217.25999",
+    "USMV": "97.55000",
+    "SPLV": "77.22000",
+    "VYM": "162.73000",
+    "SCHD": "33.43000",
+    "PKW": "146.25850",
+    "SPHQ": "85.040001",
+    "VXUS": "83.79000",
+    "VEA": "70",
+    "EFA": "103.91000",
+    "VWO": "58.23000",
+    "EEM": "63.62000",
+    "VT": "154.45000",
+    "VGK": "88.84000",
+    "FEZ": "68.17000",
+    "EWJ": "91.51000",
+    "MCHI": "54.26000",
+    "FXI": "35.28000",
+    "KWEB": "27",
+    "INDA": "48.89000",
+    "EWT": "97.81000",
+    "EWY": "161.20000",
+    "EWZ": "35.87000",
+    "EWW": "76.54000",
+    "EWC": "59.39000",
+    "EWU": "47.37000",
+    "EWG": "41.78000",
+    "EWQ": "45.30000",
+    "EWA": "28.88000",
+    "KSA": "36.98000",
+    "VNM": "16.34000"
   },
-  "sources_failed_this_run": ["api.twelvedata.com (daily API credit quota exhausted — 1022/800 used, driven by this morning's run)", "cdn.cboe.com options market-statistics (HTTP 403, path shift, same as this morning)", "cdn.finra.org (today's short-volume file not yet published — posts next business day)"]
+  "sources_failed_this_run": [
+    "cdn.cboe.com options market-statistics (HTTP 403, path shift, recurring known issue)",
+    "Twelve Data symbol FM (iShares MSCI Frontier & Select EM ETF) \u2014 returned no data this batch, cause unclear"
+  ]
 }
