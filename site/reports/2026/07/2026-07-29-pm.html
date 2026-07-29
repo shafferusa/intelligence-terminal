@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference.
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are; that tag appears
+     exactly once in this file, below in <head>).
+  4. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  5. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix:
+      reports/2026/07/2026-07-24-am.html  ->  ../../../assets/style.css
+                                          ->  ../../../equations/eq_011.png
+                                          ->  ../../../index.html
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  The sample content between the markers is a design reference showing every
+  structural element of a weekday MORNING report (SPEC.md section 18). All
+  figures in it are ILLUSTRATIVE ONLY and are labeled as sample data.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Wed, Jul 29, 2026 · Logan's Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-07-29",
+    "slot": "pm",
+    "title": "Closing Brief — Wed, Jul 29, 2026",
+    "path": "reports/2026/07/2026-07-29-pm.html",
+    "summary": "The Fed holds at 3.50-3.75% but three regional presidents dissent for a hike, the first unified three-way hawkish split since 2016, as stocks sell off sharply (Dow -2.2%, S&P -1.5%) and oil surges ~7% on an unresolved Iran escalation with Trump vowing retaliation; Kumamoto's death toll is now disputed between 13 and 18, Vertiv and small-cap defense/space names lead a broad AI-infrastructure selloff, and Microsoft, Meta, Arm and Qualcomm report after this report's cutoff.",
+    "reading_minutes": 43,
+    "generated_at": "2026-07-29T16:50:00-04:00",
+    "news_cutoff": "2026-07-29T16:30:00-04:00",
+    "market_data_asof": "2026-07-29T16:00:00-04:00",
+    "timezone": "America/New_York",
+    "version": "1.0",
+    "confidence": "Medium-High",
+    "market_status": "Closed — normal session, no NYSE holiday"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+<!--REPORT:START-->
+
+    <!-- ================= 1. HEADER & FINAL-DATA STATUS ================= -->
+    <header class="report-header">
+      <span class="kicker">Weekday Closing Report</span>
+      <h1>Closing Brief</h1>
+      <p class="report-type-line">Wednesday, July 29, 2026 &middot; Generated 4:50 PM ET &middot; All times Eastern (America/New_York)</p>
+      <div class="report-chips">
+        <span class="chip chip--info">Overall confidence: Medium-High</span>
+        <span class="chip chip--bad">Markets: closed &mdash; risk-off session</span>
+      </div>
+      <dl class="meta-grid">
+        <div><dt>News cutoff</dt><dd>2026-07-29 16:30 ET</dd></div>
+        <div><dt>Market data as of</dt><dd>2026-07-29 16:00 ET close</dd></div>
+        <div><dt>Report version</dt><dd>1.0</dd></div>
+        <div><dt>Reading time</dt><dd>~43 minutes</dd></div>
+        <div><dt>Market status</dt><dd>Closed &mdash; normal session, no NYSE holiday</dd></div>
+      </dl>
+      <p class="small muted" style="margin-top:0.8rem">1 source unavailable this run (Cboe options put/call statistics, recurring HTTP 403) &mdash; see System health at the bottom. Microsoft, Meta, Arm and Qualcomm report after this report's news cutoff; their results will lead tomorrow&rsquo;s Morning Brief.</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Data freshness by source, this run.</caption>
+          <thead><tr><th>Source</th><th>Freshness label</th><th>Data age</th></tr></thead>
+          <tbody>
+            <tr><td>Treasury par yield curve</td><td class="txt">EOD official</td><td>Tue Jul 28 (today's curve not yet posted as of cutoff)</td></tr>
+            <tr><td>Yahoo Finance (indices, futures, commodities, 167-symbol watchlist, technical levels)</td><td class="txt">EOD official (post-16:00 ET)</td><td>Wed Jul 29 close</td></tr>
+            <tr><td>Cboe VIX complex</td><td class="txt">EOD official</td><td>Wed Jul 29 close</td></tr>
+            <tr><td>FRED (rates, inflation, labor, credit)</td><td class="txt">EOD official</td><td>Jul 18&ndash;28 (series-dependent)</td></tr>
+            <tr><td>Frankfurter FX (ECB reference)</td><td class="txt">EOD official</td><td>Wed Jul 29 fix</td></tr>
+            <tr><td>CoinGecko crypto</td><td class="txt">Live</td><td>~16:00 ET, public endpoint (no API key configured)</td></tr>
+            <tr><td>SEC EDGAR (market-wide + 90-ticker company feeds)</td><td class="txt">Live this run</td><td>through 15:50 ET</td></tr>
+            <tr><td>TreasuryDirect auction results</td><td class="txt">Live this run</td><td>fetched 15:50 ET</td></tr>
+            <tr><td>Whole-market breadth (Massive grouped daily)</td><td class="txt">EOD official</td><td>Tue Jul 28 session (no new entry &mdash; today's session posts tomorrow morning)</td></tr>
+            <tr><td>FINRA short volume</td><td class="txt">EOD official</td><td>Tue Jul 28 session (Wed file not yet published)</td></tr>
+            <tr><td>News (WebSearch/WebFetch)</td><td class="txt">Live this run</td><td>through 16:30 ET</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </header>
+
+    <!-- ================= 2. TOP STORIES SINCE MORNING ================= -->
+    <section class="report-section" aria-labelledby="s-top">
+      <h2 id="s-top"><span class="kicker">Section 2</span>Top Stories Since Morning</h2>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (Fed's own release, wire pool coverage)</span>
+        </div>
+        <h3>Fed holds at 3.50&ndash;3.75% but three regional presidents dissent for a hike &mdash; the first three-way hawkish split since 2016 &mdash; as stocks and yields sell off</h3>
+        <p class="story-times">Event: decision 14:00 ET, Warsh press conference 14:30 ET &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The FOMC voted 9-3 to hold the federal funds target range at 3.50&ndash;3.75%. Dallas Fed president Lorie Logan, Minneapolis Fed president Neel Kashkari and Cleveland Fed president Beth Hammack all dissented in favor of a 25bp hike &mdash; the first time since September 2016 that three policymakers have dissented with a unified directional view, per multiple outlets (CNBC, CBS News, Forbes). At his 2:30 PM press conference, Chair Kevin Warsh used his now-familiar &ldquo;family fight&rdquo; framing (&ldquo;I asked for a good family fight, and I got one&rdquo;) and explicitly pushed back on a dovish read of today's action: &ldquo;I wouldn't characterize what we did as anything like a pause.&rdquo; Coverage attributes the hawkish tilt partly to tonight's still-unresolved Iran-driven oil shock (see below) layering onto an inflation picture officials already viewed as not cooling fast enough. This resolves forecast <span class="mono">2026-07-29-am-1</span> (a 25bp hike, 25&ndash;35% probability) as WRONG &mdash; the Committee held, though the size and unity of the hawkish dissent were themselves not fully priced by this morning's odds discussion; formal grading occurs in Saturday's Weekly Review.</dd>
+          <dt>Why it matters</dt>
+          <dd>A 9-3 vote with three unified hawkish dissents is a materially more divided Fed than the 64&ndash;66% calm-hold read this report tracked as recently as Tuesday, and it arrived hours after fresh Iran-driven oil-price and geopolitical inputs the Committee had limited time to fully digest.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The 9-3 vote, the three dissenting presidents' identities, and Warsh's quotes are corroborated across CNBC, CBS News, Forbes, Washington Examiner and this morning's cross-checked federalreserve.gov meeting mechanics.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether tonight's Iran escalation (see below) further hardens the hawkish wing before the next meeting; there is no Summary of Economic Projections at this meeting to read a committee-wide rate path from.</dd>
+          <dt>Impact</dt>
+          <dd>Rates across the curve, the dollar, broad equities (see What Moved Markets), and any name sensitive to a slower path toward cuts.</dd>
+          <dt>What happens next</dt>
+          <dd>FOMC minutes in three weeks; the next scheduled decision is not until September per the standard cadence.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">SHY, IEF, TLT, SOFR-linked funds, DXY/EURUSD-adjacent</dd>
+        </dl>
+        <p class="story-sources">Sources: federalreserve.gov (primary, meeting mechanics) &middot; CNBC, CBS News, Forbes, Washington Examiner, Yahoo Finance Fed-meeting live coverage (secondary, vote/dissent/quotes) &middot; this run's own Yahoo Finance market fetch (primary, price reaction).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>The bond market's own reaction is arguably more informative than the vote count alone: this run's own data shows long-duration Treasury proxies (TLT) falling alongside equities rather than rallying as a "flight to safety" trade might imply &mdash; consistent with a market reading the dissent as a hawkish signal about the path of policy, not simply processing a one-off geopolitical shock. This report does not assert a single confirmed cause for the yield move; it notes the correlation and its consistency with the hawkish-dissent narrative.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (Trump quotes, Iranian government statements); Iranian damage claims Unverified</span>
+        </div>
+        <h3>Trump vows to &ldquo;hit Iran hard&rdquo;; Tehran publicly details war damage (Bushehr Airport, 350 employees killed, claims not independently verified) as IRGC keeps striking Iraqi Kurdistan</h3>
+        <p class="story-times">Event: rolling since this morning's Jordan-base attack &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Following this morning's ballistic-missile attack on the US base in Jordan (all intercepted), President Trump told Fox News the US would give Iran a &ldquo;beating&rdquo; and vowed to &ldquo;hit Iran hard,&rdquo; without specifying targets or a timeline (Bloomberg, Fox News, CNBC, The Hill all corroborate the quotes). Separately, Iranian government spokeswoman Fatemeh Mohajerani gave a public accounting of cumulative damage from the broader US-led strike campaign of the past two weeks: Bushehr Airport reportedly out of service, roughly 230 million cubic meters of lost natural-gas production capacity, 12 bridges and two tunnels damaged, and &ldquo;nearly 350&rdquo; government employees killed while on duty (Middle East Eye, Roya News, Global Security). Reuters explicitly says it could not independently verify these Iranian government figures &mdash; this report treats them as Unverified, sourced only to the Iranian government, not as established fact. Separately but relatedly, the IRGC has continued a distinct campaign of drone and missile strikes against Iranian-Kurdish opposition-party bases inside Iraq's Kurdistan Region (Komala Party of Toilers of Kurdistan, KDPI, PUK-affiliated sites), with at least 14 such strikes since Monday and a separate strike on the Khor Mor gas field in Sulaymaniyah province &mdash; a related but distinct front from both the Jordan attack and the Iraq retaliatory strikes covered this morning.</dd>
+          <dt>Why it matters</dt>
+          <dd>The gap between Trump's explicit retaliation vow and any confirmed new US strike since this morning's Iraq action is itself informative; Iran's own public damage accounting, even unverified, signals a government under domestic pressure to justify continued confrontation, while the separate Kurdistan front shows Iran fighting on multiple fronts simultaneously.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Trump's quotes (multiple outlets, on-record). The IRGC strikes on Kurdish opposition bases in Iraq (Iran Wire, Middle East Eye, Middle East Monitor, HNGN all corroborate, though exact strike counts vary by source and window).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the US has carried out any new strike on Iran itself since this morning; the true scale of Iranian infrastructure damage and casualties, given only Tehran has published figures.</dd>
+          <dt>Context</dt>
+          <dd>This continues the broader intermittent US-Israel-Iran conflict this report has tracked since a since-lapsed truce; today's events are a fresh flare-up of a fight that has run in cycles of strikes and pauses since May.</dd>
+          <dt>Impact</dt>
+          <dd>Oil and energy-sensitive assets (see What Moved Markets), defense-sector sentiment, and the durability of any near-term diplomatic off-ramp.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for confirmation or denial of any new US strike on Iranian territory, and whether Tehran's public damage accounting is followed by an official response from Washington.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">CL=F/USO/XLE-adjacent, GC=F, defense names (LMT, RTX, NOC, GD)</dd>
+        </dl>
+        <p class="story-sources">Sources: Bloomberg, Fox News, CNBC, The Hill (Trump quotes, primary-adjacent on-record statements) &middot; Middle East Eye, Roya News, Global Security, Cumhuriyet Daily (Iranian government damage claims, explicitly Unverified by Reuters) &middot; Iran Wire, Middle East Eye, Middle East Monitor, HNGN (Kurdistan strikes).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources (this run's own Yahoo Finance fetch, primary)</span>
+        </div>
+        <h3>Stocks sell off sharply: Dow &minus;2.2%, S&amp;P &minus;1.5%, VIX jumps 10.1% as the FOMC hold, Iran escalation and pre-earnings positioning all land the same day</h3>
+        <p class="story-times">Event: full regular session, 9:30 AM&ndash;4:00 PM ET &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>All major indices closed lower: this run's own Yahoo Finance data shows the Dow (^DJI) at 51,594.86, down 2.19%; the S&amp;P 500 (^GSPC) at 7,316.37, down 1.51%; the Nasdaq Composite (^IXIC) at 24,442.94, down 1.74%; and the Russell 2000 (^RUT) at 2,906.65, down 1.60% &mdash; all versus Tuesday's confirmed closes. Wire coverage (CNBC, TheStreet, Yahoo Finance, Bloomberg) corroborates the direction and describes the Dow's session low as deeper than 800&ndash;1,000 points at points during the day. The VIX jumped 10.10% to 20.05 (prior close 18.21); VIX9D rose 12.93% to 19.48; VIX3M rose 5.84% to 21.02 &mdash; the term structure stayed in ordinary contango (no inversion) but the front end moved fastest, consistent with a same-day shock rather than a structural regime shift. Treasury-proxy TLT fell 1.65% to $82.85, a new 52-week low, consistent with wire reports of "bond yields surging." High-yield credit spreads (BAMLH0A0HYM2) widened a modest 3bp to 2.84% (Jul 28 observation, the latest available). The AI-infrastructure and power-infrastructure complex was hit hardest within the selloff: Vertiv (VRT, not on this terminal's core watchlist tables but tracked under ai_infra) fell sharply after missing Q2 revenue estimates despite raising full-year guidance (see Business &amp; Corporate); Micron (MU) fell 9.94%, Arista (ANET) 7.02%, Eaton (ETN) 6.32%, AMD 5.51%. Small-cap defense and space names fell even harder &mdash; Kratos (KTOS) &minus;9.79%, AeroVironment (AVAV) &minus;9.10%, Rocket Lab (RKLB) &minus;8.28%, York Space Systems (YSS) &minus;15.72%, Voyager Technologies (VOYG) &minus;11.82% &mdash; without a single common company-specific catalyst identified for the space names specifically; wire coverage (Investing.com, Yahoo Finance) attributes the broader defense/drone-stock underperformance this year to valuation compression and capital rotation as higher discount rates hit long-duration contract cash flows, a Likely contributor rather than a Confirmed catalyst for today specifically.</dd>
+          <dt>Why it matters</dt>
+          <dd>Today combined three distinct shocks &mdash; a more hawkish-than-expected Fed, an unresolved Middle East escalation, and pre-earnings positioning ahead of tonight's mega-cap reports &mdash; into a single, unusually broad risk-off session that hit high-multiple and long-duration names hardest.</dd>
+          <dt>What is confirmed</dt>
+          <dd>All index and volatility figures are this run's own primary Yahoo Finance and Cboe fetches, cross-checked against wire commentary describing the same direction and rough magnitude.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether today's selloff extends or partially reverses once Microsoft, Meta, Arm and Qualcomm report after this report's cutoff; no single confirmed catalyst ties every affected sector together beyond the day's shared macro backdrop.</dd>
+          <dt>Impact</dt>
+          <dd>Broad equities, credit, rates, the AI-capex trade, and small-cap defense/space names specifically; see What Moved Markets and Winners &amp; Losers below for full detail.</dd>
+          <dt>What happens next</dt>
+          <dd>Tonight's Microsoft/Meta/Arm/Qualcomm earnings (after this report's news cutoff) are the next major test; tomorrow's Morning Brief covers the results.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">SPY, QQQ, IWM, DIA, TLT, VRT, MU, ANET, KTOS, RKLB, YSS, VOYG</dd>
+        </dl>
+        <p class="story-sources">Sources: this run's own Yahoo Finance and Cboe fetches (primary) &middot; CNBC, TheStreet, Bloomberg, Yahoo Finance market-today coverage (secondary) &middot; Investing.com, gurufocus, stocktwits, ibtimes (Vertiv-specific reporting) &middot; Investing.com/Bernstein-cited commentary (defense-sector valuation context).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (government + wire) on 13; Disputed vs a well-sourced 18 figure</span>
+        </div>
+        <h3>Kumamoto earthquake toll dispute widens: NPR now reports 18 dead with a detailed casualty breakdown, versus the multiply-corroborated 13 this report has led with</h3>
+        <p class="story-times">Event: Jul 27 16:27 JST, ongoing &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>This morning's report tracked at least 13 confirmed dead (PM Takaichi's own attribution, corroborated by CNN, NPR, UPI and ABC News) with one AP-syndicated outlet (KSAT) citing 18 as an unreconciled variant. This afternoon, NPR itself has published a materially more detailed 18-dead figure with a specific casualty breakdown: a chimney collapse at a Nippon Paper Industries factory killed 5 (with 7 others rescued from the debris), and 8 people were pulled from the rubble of a partially collapsed shopping mall near Kumamoto city that was "torn apart by an apparent explosion" roughly an hour after the quake; at least 62 people were injured, 6 seriously. Other outlets (ABC News, Rappler, GPB, khaosodenglish) continue to report 13 as of their own most recent updates. This report cannot reconcile the two figures from today's sourcing and presents both, with NPR's version now carrying more corroborating operational detail (specific incident sites and casualty counts) even though it is not yet matched by the other wires still citing 13.</dd>
+          <dt>Why it matters</dt>
+          <dd>A death-toll discrepancy of this size (13 vs 18) five-plus percent of the way into rescue operations is itself a data point on how fluid and incomplete official counts remain; the new mall-collapse detail (an "apparent explosion") is a previously unreported element worth independent follow-up.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The existence of both figures in reputable, dated reporting; the specific incident detail (Nippon Paper chimney collapse, shopping mall collapse) as reported by NPR.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Which figure is authoritative; the cause and nature of the "apparent explosion" at the shopping mall; Mitsubishi Electric's facility status, still unaddressed by the company as of this run.</dd>
+          <dt>Context</dt>
+          <dd>Semiconductor supply-chain impact continues to be described as contained (Renesas factories suspended with no injuries, TSMC unaffected) &mdash; that thread has not materially changed since this morning.</dd>
+          <dt>Impact</dt>
+          <dd>Public safety/humanitarian (primary); semiconductor supply chain remains a background, not established, factor in the broader chip-sector selloff.</dd>
+          <dt>What happens next</dt>
+          <dd>Continued search-and-rescue; watch for an official reconciliation of the death toll and any Mitsubishi Electric statement.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">EWJ, EWT (Taiwan/TSMC exposure)</dd>
+        </dl>
+        <p class="story-sources">Sources: NPR (primary-adjacent, most detailed casualty breakdown) &middot; ABC News, Rappler, GPB, khaosodenglish, CNN (13-dead figure, carried forward).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-continuing">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Microsoft, Meta, Arm and Qualcomm report after today's close &mdash; results land after this report's cutoff, FY27 capex guidance the key variable</h3>
+        <p class="story-times">Event: ~16:05&ndash;16:15 ET, after this report's 16:30 ET news cutoff &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>All four companies remain scheduled to report after today's close, unchanged from this morning's tracking (Microsoft's own investor-relations page confirms a 2:30 PM Pacific / 5:30 PM Eastern earnings call). As of this report's 16:30 ET cutoff, no results had been published by any of the four; wire live-blogs previewing tonight's reports (CNBC, Kiplinger) confirm the schedule but carry no figures yet. Microsoft consensus: EPS roughly $4.24 on revenue near $87.6B (~15% YoY growth, per multiple aggregators); Meta consensus: EPS $7.18&ndash;7.24 on revenue near $60.2&ndash;61.4B. Analyst commentary continues to frame FY27 capex guidance, not the headline print, as the market-moving variable given elevated historical beat-odds already priced in.</dd>
+          <dt>Why it matters</dt>
+          <dd>These reports are the most direct test of whether today's broader AI-infrastructure selloff (see above) reflects a durable repricing of AI-capex economics or a still-intact spending cycle temporarily out of favor.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Report timing, via Microsoft's own investor-relations page (primary) and multiple wire previews.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Actual results and forward capex commentary &mdash; not knowable ahead of the after-close release.</dd>
+          <dt>Impact</dt>
+          <dd>Mega-cap tech, the AI-infrastructure/semis/power-infrastructure complex, and broad index positioning (QQQ, XLK weight).</dd>
+          <dt>What happens next</dt>
+          <dd>Results and management commentary land shortly after this report's cutoff; tomorrow's Morning Brief covers the outcome in full, including any after-hours price reaction.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">MSFT, META, QQQ, XLK, VRT, VST, CEG, ETN</dd>
+        </dl>
+        <p class="story-sources">Sources: Microsoft Investor Relations (primary, timing) &middot; CNBC, Kiplinger, TipRanks (previews, consensus estimates).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New since morning</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources; extortion-group volume claims Unverified</span>
+        </div>
+        <h3>Abbott Laboratories confirms two separate cyber incidents amid ShinyHunters extortion claims of 30M+ records</h3>
+        <p class="story-times">Event: disclosed this week, incidents dated mid-June and earlier &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Abbott Laboratories confirmed it is investigating two separate cybersecurity incidents: unauthorized access to legacy Exact Sciences systems within its Cancer Diagnostics business, and a separate claim by an attacker of breaching its LabCentral portal. The ShinyHunters extortion gang says it gained access via a vishing (voice-phishing) campaign targeting Abbott employees in mid-June, compromising a Microsoft Entra single sign-on account, and claims the stolen data includes more than 22 million doctor-patient notes, over 20 million medical orders, plus internal contracts, customer agreements and NDAs. Abbott has confirmed the Cancer Diagnostics incident occurred but, per multiple outlets, neither group has publicly released data samples, and the volume claims remain unverified.</dd>
+          <dt>Why it matters</dt>
+          <dd>A large healthcare/diagnostics company facing two concurrent incidents, one via a human-factor vishing vector, underscores that credential-based social engineering remains effective against enterprise SSO regardless of technical controls.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Abbott's own confirmation of the Cancer Diagnostics incident (BleepingComputer, Malwarebytes, Cybernews all corroborate).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>The true data volume and whether the LabCentral portal claim is substantiated; no leak-site sample has surfaced as of this run.</dd>
+          <dt>Impact</dt>
+          <dd>Healthcare-sector cybersecurity posture; Abbott is not on this terminal's watchlist.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a data sample or independent verification from either extortion group, and any regulatory notification filings.</dd>
+        </dl>
+        <p class="story-sources">Sources: Cybernews, BleepingComputer, Malwarebytes, Rescana (secondary, corroborating).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>New heat wave threatens France and Spain's wildfire containment; evacuation estimates widen, Greece and Italy could be next</h3>
+        <p class="story-times">Event: ongoing, fresh heat wave arriving today &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>NPR and UPI report that a fresh heat wave is complicating France and Spain's efforts to fully contain their wildfires, with temperatures up to 104&deg;F (40&deg;C) expected today in France and similar levels in Spain; Greece and Italy are flagged as potentially next. Evacuation figures vary materially by source and region this run &mdash; from roughly 63,000 near Madrid to over 200,000 across the broader France/Spain fire zones &mdash; and this report does not adopt a single reconciled figure given the discrepancy. Authorities describe some fires as now mostly contained even as others continue burning, with the new heat raising re-ignition risk on already dangerously dry landscape.</dd>
+          <dt>Why it matters</dt>
+          <dd>This upgrades the story from this morning's "largely steady-state" framing to an active re-escalation risk, tied to a documented pattern of climate-driven, longer and hotter European heat waves.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The new heat wave's arrival and temperature forecasts (NPR, UPI, Axios/AP). The evacuation-figure discrepancy is itself confirmed; the "true" total evacuated is not.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the Bordeaux/Gironde fire specifically (tracked since Jul 27) re-escalates under the new heat, or whether containment holds.</dd>
+          <dt>Impact</dt>
+          <dd>Humanitarian/public-safety (primary); no direct market-relevance established this run.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch tomorrow for whether Greece or Italy see new fire activity, and whether France/Spain containment lines hold through the heat.</dd>
+        </dl>
+        <p class="story-sources">Sources: NPR, UPI, Axios/AP, Euronews, Inquirer.net (secondary, evacuation figures vary by source).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New since morning</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (SEC 8-K, company earnings release)</span>
+        </div>
+        <h3>General Dynamics beats on Q2 EPS and revenue, raises full-year guidance, posts record $136.5B backlog &mdash; yet shares still fell with the broader defense-sector rotation</h3>
+        <p class="story-times">Event: reported before today's open, 8-K filed 08:01 ET &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>General Dynamics (GD) reported Q2 2026 EPS of $4.24, beating the Zacks consensus of $3.95 by 7.3% and up 13.4% year-over-year; revenue of $14.09B beat consensus of $13.49B and rose 8.1% YoY, with growth across all four segments led by Aerospace (+15.1% YoY revenue, operating margin +130bp to 14.5%) and Marine Systems (+10.4% YoY revenue). Backlog reached a record $136.5B, up 32% YoY, and the company raised its full-year outlook. Confirmed via the company's own 8-K (Item 2.02, filed 08:01 ET, found in this run's SEC EDGAR sweep) and corroborated by earnings coverage. Despite the beat and raise, GD shares still fell 2.29% today, in line with the broader defense-sector rotation described above rather than any company-specific concern.</dd>
+          <dt>Why it matters</dt>
+          <dd>A clean beat-and-raise with a record backlog falling on the tape anyway is itself informative: it supports the "valuation compression / capital rotation, not fundamentals" read on today's defense-sector weakness rather than a company- or sector-fundamentals story.</dd>
+          <dt>What is confirmed</dt>
+          <dd>All figures via the company's own 8-K filing (primary) and multiple earnings-summary outlets.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the sector-wide rotation persists once the FOMC/Iran-driven volatility settles.</dd>
+          <dt>Impact</dt>
+          <dd>Defense/aerospace sector sentiment; GD's own backlog strength is a positive underlying data point despite today's price action.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch the earnings call transcript for capital-allocation and shipbuilding-capacity commentary.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">GD, LMT, RTX, NOC, ITA-adjacent</dd>
+        </dl>
+        <p class="story-sources">Sources: General Dynamics 8-K, SEC EDGAR (primary, fetched this run) &middot; The Globe and Mail, Zacks-cited coverage (secondary).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources (analyst commentary); SPCX price move primary</span>
+        </div>
+        <h3>SpaceX's Starship heat shield may not support rapid-reuse ambitions, three former NASA researchers warn, as SPCX slides to a fresh 52-week low</h3>
+        <p class="story-times">Event: analysis published today &middot; Last checked 16:30 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Bloomberg reports that three former NASA researchers have warned that Starship's heat shield may prove a substantial obstacle to SpaceX's goal of rapid vehicle reusability, published the same day this run's own Yahoo Finance data shows SPCX falling 3.32% to $112.55 &mdash; a new 52-week low, and roughly 15.9% below its own 20-day moving average. The move continues a pattern this report has tracked since Tuesday: SPCX weakness is more attributed by analysts to the approaching Aug 6 lockup expiration (roughly 911.5M shares, about 1.4x the current float) than to any single day's news. Flight 13 itself (Jul 24) remains the most recent confirmed flight-test data point: a successful test with all 33 booster engines igniting and 20 V3 Starlink satellites deployed, and SpaceX's own spokesperson called the Super Heavy booster's Indian Ocean splashdown the "softest" on record; the booster remains intact and afloat five days later.</dd>
+          <dt>Why it matters</dt>
+          <dd>A credible technical critique of the reusability timeline, landing during a stock slide ahead of a major share-lockup unlock, is a data point worth tracking independent of short-term price action.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The Bloomberg report's existence and framing; SPCX's price level and 52-week-low status (this run's own primary fetch).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether SpaceX has responded to the heat-shield critique; whether the critique reflects a broad expert consensus or three specific researchers' view.</dd>
+          <dt>Impact</dt>
+          <dd>SPCX and broader launch-sector sentiment; no change to SpaceX's public/private registry status (verified public, Nasdaq SPCX, CIK 0001181412).</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a SpaceX response to the heat-shield critique and for SPCX price action into the Aug 6 lockup expiration.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">SPCX, RKLB, ASTS</dd>
+        </dl>
+        <p class="story-sources">Sources: Bloomberg (heat-shield analysis) &middot; this run's own Yahoo Finance fetch (primary, price) &middot; Space.com, Spaceflight Now, CNBC (Flight 13 background, carried forward).</p>
+      </article>
+    </section>
+
+    <!-- ================= 3. TWO-MINUTE CLOSING SUMMARY ================= -->
+    <section class="report-section" aria-labelledby="s-exec">
+      <h2 id="s-exec"><span class="kicker">Section 3 &middot; the two-minute version</span>Two-Minute Closing Summary</h2>
+      <div class="exec-summary">
+        <p><strong>The world</strong> The FOMC held rates at 3.50&ndash;3.75% but three regional Fed presidents dissented for a hike &mdash; the first unified three-way hawkish split since 2016 &mdash; while Trump vowed to "hit Iran hard" after this morning's Jordan missile attack and Iran's government detailed (unverified) war damage including a disabled Bushehr Airport and 350 government employees killed; Japan's Kumamoto earthquake death toll is now disputed between 13 and a more detailed 18-dead NPR account; and a fresh heat wave threatens France and Spain's wildfire containment.</p>
+        <p><strong>Markets</strong> All major US indices closed lower &mdash; Dow &minus;2.19%, S&amp;P 500 &minus;1.51%, Nasdaq Composite &minus;1.74%, Russell 2000 &minus;1.60% &mdash; the sharpest broad selloff this report has tracked this week. The VIX jumped 10.10% to 20.05 (still ordinary contango, no inversion). Oil surged roughly 7% intraday to around $85/barrel on the unresolved Iran escalation; gold rose 2.6%. Treasuries sold off (TLT &minus;1.65%, a new 52-week low) as yields ticked higher. AI-infrastructure names (Vertiv, Micron, Arista, Eaton) and small-cap defense/space names (Kratos, AeroVironment, Rocket Lab, York Space Systems, Voyager Technologies) fell hardest, several by double digits. Crypto was mixed and comparatively calm (BTC &minus;0.7%, ETH &minus;1.8%).</p>
+        <p><strong>Central theme</strong> A hawkish-surprise Fed, an unresolved Middle East escalation, and pre-earnings positioning all landed on the same day, producing the broadest single-session risk-off move this report has tracked, concentrated most heavily in high-multiple AI-infrastructure and small-cap defense/space names.</p>
+        <p><strong>Most important new development</strong> The FOMC's 9-3 vote with three unified hawkish dissents &mdash; the first such split since 2016 &mdash; a more divided committee than this week's prior odds discussion had priced.</p>
+        <p><strong>Most important risk</strong> A further Iran escalation landing on top of an already more-hawkish-than-expected Fed, with Trump's retaliation vow not yet followed by any confirmed new US strike as of this report's cutoff.</p>
+        <p><strong>Most important positive development</strong> General Dynamics posted a clean beat-and-raise with a record $136.5B backlog, and Coca-Cola's Anubis ransomware situation appears resolved (leak occurred, production largely recovered) with no further escalation.</p>
+        <p><strong>Key unknown</strong> Whether tonight's Microsoft, Meta, Arm and Qualcomm earnings (after this report's cutoff) calm or extend the AI-infrastructure selloff.</p>
+        <p><strong>Deserves attention today</strong></p>
+        <ul>
+          <li>~16:05&ndash;16:15 ET (after cutoff) &mdash; Microsoft, Meta, Arm and Qualcomm report; FY27 capex guidance is the swing factor.</li>
+          <li>Ongoing &mdash; any confirmation or denial of a new US strike on Iran following Trump's retaliation vow.</li>
+          <li>Ongoing &mdash; Kumamoto death-toll reconciliation (13 vs. 18) and any Mitsubishi Electric statement.</li>
+          <li>Overnight &mdash; Long March 6A launch from Taiyuan, ~9:00 PM ET.</li>
+          <li>Tomorrow 8:30 AM ET &mdash; Q2 2026 GDP advance estimate, one day after today's decision.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 4. WHAT CHANGED SINCE 7:30 AM ================= -->
+    <section class="report-section" aria-labelledby="s-since">
+      <h2 id="s-since"><span class="kicker">Section 4</span>What Changed Since 7:30 AM</h2>
+      <ul class="change-log">
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>FOMC decision resolved</strong></div>
+          <p>Prior understanding: disputed hike odds ranging 38% to a calmer 64&ndash;66% hold-probability read <span class="change-arrow">&rarr;</span> new information: Fed held at 3.50&ndash;3.75% on a 9-3 vote, with the first unified three-way hawkish dissent since 2016 <span class="change-arrow">&rarr;</span> forecast <span class="mono">2026-07-29-am-1</span> (hike, 25&ndash;35% probability) resolves wrong; the dissent's size was itself a bigger surprise than the hold/hike binary. Current confidence: high (Fed's own release, multiple wire corroboration).</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since this morning</span><strong>Trump vows retaliation; Iran details war damage</strong></div>
+          <p>Prior understanding: US-Saudi forces struck Iran-aligned groups in Iraq in response to the Jordan attack <span class="change-arrow">&rarr;</span> new information: Trump vows to "hit Iran hard"; Iran's government publicly details cumulative war damage (Bushehr Airport, 350 employees killed) &mdash; unverified by Reuters; IRGC continues a separate drone campaign against Kurdish opposition bases in Iraq <span class="change-arrow">&rarr;</span> no confirmed new US strike on Iran itself as of this report's cutoff. Current confidence: high on the statements themselves, low on the Iranian damage figures.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Kumamoto death toll dispute widens</strong></div>
+          <p>Prior understanding: at least 13 dead, one outlet citing 18 <span class="change-arrow">&rarr;</span> new information: NPR now publishes a detailed 18-dead account with specific incident breakdowns (mall collapse, factory chimney collapse) while other wires still report 13 <span class="change-arrow">&rarr;</span> the discrepancy is not resolved by this run's sourcing. Current confidence: medium (both figures well-sourced, mutually exclusive).</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since this morning</span><strong>Broad market selloff</strong></div>
+          <p>Prior understanding: premarket futures pointed to continued sector rotation, not a broad move <span class="change-arrow">&rarr;</span> new information: all major indices closed sharply lower (Dow &minus;2.2%, S&amp;P &minus;1.5%), VIX +10.1%, AI-infrastructure and small-cap defense/space names hit hardest <span class="change-arrow">&rarr;</span> the FOMC dissent, Iran escalation and pre-earnings positioning combined into the broadest single-session risk-off move tracked this week. Current confidence: high on the moves, low on durability into tomorrow.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since this morning</span><strong>Abbott Laboratories cyber incidents confirmed</strong></div>
+          <p>No prior mention <span class="change-arrow">&rarr;</span> Abbott confirmed two separate incidents, one via a vishing-compromised SSO account; ShinyHunters claims 30M+ records, unverified <span class="change-arrow">&rarr;</span> a new healthcare-sector breach to track alongside the ongoing Coca-Cola/Fairlife and EY situations. Current confidence: high on the confirmed incident, low on the claimed data volume.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Europe wildfires/heat wave</strong></div>
+          <p>Prior understanding: largely steady-state, reignition risk not active growth <span class="change-arrow">&rarr;</span> new information: a fresh heat wave (up to 104&deg;F) threatens containment; evacuation estimates widened materially across sources; Greece/Italy flagged as potentially next <span class="change-arrow">&rarr;</span> upgraded from steady-state to active re-escalation risk. Current confidence: high on the heat wave, low on the reconciled evacuation total.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-faded">Resolved</span><strong>Coca-Cola/Anubis ransomware</strong></div>
+          <p>Forecast <span class="mono">2026-07-27-pm-1</span> (leak within 72 hours, 45&ndash;60% probability) resolves CORRECT: this run's research confirms Anubis's leak timer expired and the ~1TB of Fairlife data is now publicly available, matching this morning's tracking. No further escalation found. Formal grading in Saturday's Weekly Review.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-faded">Faded</span><strong>NDAA FY2027, mail-ballot SCOTUS deadline</strong></div>
+          <p>No material floor action on the NDAA found today; still stalled in the Senate. The Aug 3 SCOTUS response deadline on the mail-ballot executive order stands unchanged. Both dropped from today's Top Stories but remain on the watchlist.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================= 5. US POLITICS & GOVERNMENT ================= -->
+    <section class="report-section" aria-labelledby="s-politics">
+      <h2 id="s-politics"><span class="kicker">Section 5</span>US Politics &amp; Government</h2>
+      <p>The mail-ballot executive-order fight at the Supreme Court is unchanged: Justice Jackson's scheduling order stands, with respondent states' written response due 4:00 PM Aug 3 &mdash; a procedural, not merits, deadline. The FY2027 NDAA remains stalled in the Senate; a cloture vote on the motion to proceed to S.4784 failed 50-46 on July 14 per Congress.gov's own CRS tracking, and no new floor action was found today. Separately, a Senate Homeland Security and Governmental Affairs Committee hearing today questioned Dr. Anthony Fauci about the COVID-19 pandemic response &mdash; described neutrally here without characterizing the substance of testimony, which this run did not independently verify beyond aggregated coverage. Sen. John Cornyn said he will not vote to advance Todd Blanche's nomination without a written rescission related to a disputed fund and tax-immunity issue; this report notes the position without adjudicating the underlying dispute, which was not independently verified via a primary document this run.</p>
+      <h3>FRONTIER Act &mdash; no change</h3>
+      <p>No new committee action on the bipartisan House AI-safety bill; the House remains in its district work period until late August.</p>
+    </section>
+
+    <!-- ================= 6. GEOPOLITICS ================= -->
+    <section class="report-section" aria-labelledby="s-geo">
+      <h2 id="s-geo"><span class="kicker">Section 6</span>Geopolitics</h2>
+      <p>See Top Stories for the Trump retaliation vow, Iran's damage claims and the separate IRGC campaign against Kurdish opposition bases in Iraq. In the West Bank, wire coverage describes continuing Israeli raids, home demolitions and settler-linked incidents; this report does not have independently verified specifics beyond aggregated summary coverage this run and does not assert new facts beyond noting the pattern continues. The Iran-Ukraine Caspian Sea incident (Ukraine's strike on an Iran-linked vessel, Iran's unevidenced "at Israel's behest" claim) shows no new development today; Israel remains silent on the allegation. The Berlin Pride attack investigation is unchanged: the primary suspect, Abdul Ballout, was killed by police on Jul 26; the second detained suspect remains released with no new developments found this run.</p>
+    </section>
+
+    <!-- ================= 7. ECONOMICS & CENTRAL BANKS ================= -->
+    <section class="report-section" aria-labelledby="s-econ">
+      <h2 id="s-econ"><span class="kicker">Section 7</span>Economics &amp; Central Banks</h2>
+      <p>See Top Stories for full detail on today's FOMC decision. This run's own FRED pull shows the 10Y-2Y spread (T10Y2Y) at 0.35pp (Jul 28 observation, latest available), essentially unchanged from Tuesday. SOFR rose 1bp to 3.65% (Jul 28). High-yield credit spreads (BAMLH0A0HYM2) widened a modest 3bp to 2.84% (Jul 28), a small but real move in the risk-off direction, not yet alarming by historical standards. The 10-year Treasury note yield, read directly from Cboe/Yahoo's ^TNX series (now reporting in direct percentage terms rather than the historical &times;10 convention, a data-format note worth flagging for future editions) sits at 4.62%, up about 2bp intraday &mdash; a modest move given the scale of today's equity selloff, suggesting the rates market read today's Fed action as a hawkish-but-not-alarming outcome rather than pricing a large policy-error risk. Today's 17-Week Treasury Bill auction cleared with a bid-to-cover ratio of 3.04x at a 3.875% high rate &mdash; solid demand. Yesterday's 7-Year Note auction (the last coupon supply before the FOMC decision) drew a 2.49x bid-to-cover at a 4.473% high yield; this run could not access a when-issued yield for direct tail/stop-through comparison, so no tail/no-tail conclusion is asserted. Today's 2-Year Note auction result had not yet posted to TreasuryDirect's results feed as of this run's cutoff.</p>
+      <div class="fact-card">
+        <h4>FOMC rate decision <span class="dd">Confirmed-primary &middot; 2:00 PM ET Jul 29</span></h4>
+        <dl>
+          <dt>Decision</dt><dd>Hold, federal funds target range 3.50&ndash;3.75%</dd>
+          <dt>Vote</dt><dd>9-3 (Logan, Kashkari, Hammack dissenting for a 25bp hike)</dd>
+          <dt>Historical context</dt><dd>First unified three-way hawkish dissent since September 2016</dd>
+          <dt>Press conference</dt><dd>Chair Warsh, 2:30 PM ET &mdash; "family fight" framing, explicitly rejected a "pause" characterization</dd>
+          <dt>Market reaction</dt><dd class="down">Equities and long-duration Treasuries both sold off; read as a hawkish surprise, not a policy-error scare</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ================= 8. BUSINESS & CORPORATE ================= -->
+    <section class="report-section" aria-labelledby="s-biz">
+      <h2 id="s-biz"><span class="kicker">Section 8</span>Business &amp; Corporate</h2>
+      <p>See Top Stories for General Dynamics' Q2 beat-and-raise. This run's SEC EDGAR sweep of 90 company tickers found one new material 8-K since this morning's run: General Dynamics' earnings release (Item 2.02/9.01, filed 08:01 ET). Nine tickers (ASML, FLY, KRMN, LUNR, NVO, SPCX, TSM, VOYG, YSS) again returned no Atom entries this run, a recurring pattern for these foreign-private-issuer/recent-IPO names, not evidence of no activity. Vertiv's post-earnings decline (see What Moved Markets and Winners &amp; Losers) is the session's most significant single-name business story: adjusted EPS of $1.52 beat consensus of $1.42, and full-year guidance of 30&ndash;32% organic sales growth was reiterated, but Q2 revenue of $3.27B missed the $3.37B consensus by roughly $110M, which the company attributed to "minor timing shifts" from supply-chain congestion and multi-phased project execution in its AI-data-center segment &mdash; investors read the miss as a possible early signal on AI-infrastructure project pacing, driving the stock to its worst single session in over 15 months.</p>
+    </section>
+
+    <!-- ================= 9. TECH, AI & CYBERSECURITY ================= -->
+    <section class="report-section" aria-labelledby="s-tech">
+      <h2 id="s-tech"><span class="kicker">Section 9</span>Technology, AI &amp; Cybersecurity</h2>
+      <p>See Top Stories for the new Abbott Laboratories cyber incidents and the Coca-Cola/Anubis forecast resolution. EY's ShinyHunters extortion deadline (Jul 31) remains unchanged, with EY continuing to notify affected clients of the April breach involving a third-party tax-service platform. A New York state school district has paused plans to deploy an AI-powered humanoid robot in the classroom after state education officials, teachers and local residents raised concerns &mdash; a minor but illustrative data point on AI-in-education adoption friction; this report did not independently verify the specific concerns raised beyond aggregated coverage this run.</p>
+    </section>
+
+    <!-- ================= 10. SCIENCE & ENGINEERING ================= -->
+    <section class="report-section" aria-labelledby="s-sci">
+      <h2 id="s-sci"><span class="kicker">Section 10</span>Science &amp; Engineering</h2>
+      <p>NASA's APOD (Astronomy Picture of the Day) feature today revisits the Psyche mission's May 15 Mars gravity-assist flyby (2,864 miles altitude, a roughly 1,000 mph speed boost and 1-degree orbital-plane shift toward its 2029 rendezvous with the metal-rich asteroid 16 Psyche) with newly released timelapse imagery &mdash; a retrospective science-communication feature, not new mission news, but a good occasion to note the flyby's mechanics: gravity assists trade a planet's orbital momentum for spacecraft velocity at no propellant cost, a technique this report's spaceflight track has covered in earlier lessons. Separately, astronomers report the first confirmed atmosphere detected around a rocky planet in another star's habitable zone (LHS 1140 b) and a conclusive identification of a Milky Way source of the highest-energy cosmic-ray protons observed, near the star Altair, combining gamma-ray, radio and X-ray data &mdash; both peer-reviewed-adjacent findings per aggregated science-news coverage (ScienceDaily-indexed); this report did not independently trace either to its original journal publication this run and labels both Single-reliable-source pending that check.</p>
+    </section>
+
+    <!-- ================= 11. SPACE & SPACEFLIGHT ================= -->
+    <section class="report-section" aria-labelledby="s-space">
+      <h2 id="s-space"><span class="kicker">Section 11</span>Space &amp; Spaceflight</h2>
+      <p>See Top Stories for the Starship heat-shield critique and SPCX's fresh 52-week low. Today's Long March 7A launch from Wenchang (07:50 ET) is now confirmed successful, carrying the Tianlian 3-01 data-relay satellite &mdash; the payload identity was unconfirmed as of this morning's cutoff and is now known. A second Chinese launch, Long March 6A from Taiyuan, remains scheduled for roughly 9:00 PM ET tonight with an undisclosed payload. Falcon 9's NROL-95 mission (National Reconnaissance Office payload) from Cape Canaveral remains on track for early Thursday morning per Launch Library 2's own tracking, unchanged from this morning.</p>
+    </section>
+
+    <!-- ================= 12. COMPLETED CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-cal">
+      <h2 id="s-cal"><span class="kicker">Section 12</span>Completed Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET. Results as of this run's 16:30 ET cutoff.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>02:00</td><td class="txt">Falcon 9 &mdash; Starlink Group 17-52 (Vandenberg)</td><td class="txt">Completed (not independently re-confirmed this run)</td></tr>
+            <tr><td>07:50</td><td class="txt">Long March 7A &mdash; Tianlian 3-01 (Wenchang)</td><td class="up">Launch successful</td></tr>
+            <tr><td>10:00</td><td class="txt">Metro-area employment &amp; Quarterly Business Employment Dynamics (BLS)</td><td class="txt">Released, low market relevance, not independently reviewed this run</td></tr>
+            <tr><td>13:00</td><td class="txt">17-Week Bill auction, $72B</td><td class="up">3.04x bid-to-cover, 3.875% high rate &mdash; solid demand</td></tr>
+            <tr><td>13:00</td><td class="txt">2-Year Note auction, $30B</td><td class="txt">Result not yet posted to TreasuryDirect as of cutoff</td></tr>
+            <tr><td>14:00</td><td class="txt">FOMC rate decision</td><td class="txt">Hold at 3.50&ndash;3.75%, 9-3 vote, 3 hawkish dissents</td></tr>
+            <tr><td>14:30</td><td class="txt">Warsh press conference</td><td class="txt">"Family fight" framing; rejected "pause" characterization</td></tr>
+            <tr><td>16:05&ndash;16:15 (est.)</td><td class="txt">Microsoft, Meta, Arm, Qualcomm earnings</td><td class="txt">Pending &mdash; after this report's cutoff</td></tr>
+            <tr><td>21:00 (est.)</td><td class="txt">Long March 6A &mdash; unknown payload (Taiyuan)</td><td class="txt">Still upcoming tonight</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Tomorrow's majors:</strong> Q2 2026 GDP advance estimate, 8:30 AM ET (bea.gov) &middot; Visa earnings before open &middot; Apple and Amazon earnings after close &middot; ExxonMobil, Chevron, Boeing, Coca-Cola, AbbVie, Ford and others reporting through the week per prior editions &middot; Falcon 9 NROL-95 launch, ~3:09 AM ET.</p>
+    </section>
+
+    <!-- ================= 13. WHAT MOVED MARKETS ================= -->
+    <section class="report-section" aria-labelledby="s-moved">
+      <h2 id="s-moved"><span class="kicker">Section 13</span>What Moved Markets</h2>
+      <p><strong>Open/morning:</strong> Futures pointed to continued sector rotation rather than a broad move (this morning's report), with the Iran-driven oil jump already priced in overnight. <strong>Midday:</strong> Equities drifted lower into the 2:00 PM FOMC decision as positioning ahead of the auction and the Fed dominated. <strong>Close:</strong> The 9-3 vote with three hawkish dissents, delivered at 2:00 PM, and Warsh's 2:30 PM press-conference framing rejecting a "pause" characterization drove a sharp acceleration lower into the close across all four major indices, with AI-infrastructure and small-cap defense/space names underperforming the broad market by a wide margin.</p>
+      <table class="data-table">
+        <caption>This run's own Yahoo Finance fetch, EOD official, Wed Jul 29 close vs Tue Jul 28 close.</caption>
+        <thead><tr><th>Catalyst</th><th>Label</th><th>Assets affected</th></tr></thead>
+        <tbody>
+          <tr><td>FOMC 9-3 hold with historic hawkish dissent</td><td class="txt">Confirmed catalyst</td><td class="txt">Broad equities, Treasuries, dollar</td></tr>
+          <tr><td>Iran escalation / Trump retaliation vow, oil +7%</td><td class="txt">Confirmed catalyst (for oil/energy) / Likely contributor (for broad equities)</td><td class="txt">Oil, gold, energy-sensitive names</td></tr>
+          <tr><td>Vertiv Q2 revenue miss ("timing shifts")</td><td class="txt">Confirmed catalyst</td><td class="txt">VRT and, per market narrative only, adjacent AI-infrastructure names</td></tr>
+          <tr><td>Defense/space small-cap valuation compression</td><td class="txt">Likely contributor (multi-week pattern, not today-specific)</td><td class="txt">KTOS, AVAV, RKLB, YSS, VOYG and peers</td></tr>
+          <tr><td>Pre-earnings positioning ahead of MSFT/META/ARM/QCOM</td><td class="txt">Market narrative</td><td class="txt">Mega-cap tech, QQQ, XLK</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ================= 14. WINNERS & LOSERS ================= -->
+    <section class="report-section" aria-labelledby="s-wl">
+      <h2 id="s-wl"><span class="kicker">Section 14</span>Winners &amp; Losers</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>This run's own Yahoo Finance fetch across the full 167-symbol watchlist universe, EOD official, Wed Jul 29 close vs Tue Jul 28 close.</caption>
+          <thead><tr><th>Symbol</th><th>Day change</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>VRT</td><td class="down">&minus;17.2%</td><td class="txt">Post-earnings revenue miss despite raised FY guidance; worst session in 15+ months</td></tr>
+            <tr><td>YSS</td><td class="down">&minus;15.7%</td><td class="txt">No company-specific catalyst identified; broad space small-cap rout</td></tr>
+            <tr><td>VOYG</td><td class="down">&minus;11.8%</td><td class="txt">No company-specific catalyst identified</td></tr>
+            <tr><td>KTOS</td><td class="down">&minus;9.8%</td><td class="txt">Defense/drone-sector valuation compression (Bernstein-cited)</td></tr>
+            <tr><td>MU</td><td class="down">&minus;9.9%</td><td class="txt">AI-infrastructure/memory-sector weakness, third session</td></tr>
+            <tr><td>AVAV</td><td class="down">&minus;9.1%</td><td class="txt">Defense/drone-sector valuation compression</td></tr>
+            <tr><td>RDW</td><td class="down">&minus;9.2%</td><td class="txt">No company-specific catalyst identified</td></tr>
+            <tr><td>LUNR</td><td class="down">&minus;7.9%</td><td class="txt">No company-specific catalyst identified</td></tr>
+            <tr><td>RKLB</td><td class="down">&minus;8.3%</td><td class="txt">Sector rotation</td></tr>
+            <tr><td>CBOE</td><td class="up">+3.6%</td><td class="txt">Exchange operators benefit from elevated volatility/volume</td></tr>
+            <tr><td>KWEB</td><td class="up">+2.2%</td><td class="txt">China-tech ETF; no single catalyst confirmed this run</td></tr>
+            <tr><td>CME</td><td class="up">+2.0%</td><td class="txt">Exchange operators benefit from elevated volatility/volume</td></tr>
+            <tr><td>XLE</td><td class="up">+1.85%</td><td class="txt">Energy sector tracks the oil price surge</td></tr>
+            <tr><td>FXI / TGT / CMG</td><td class="up">+1.2&ndash;2.2%</td><td class="txt">No single common catalyst identified; not part of today's risk-off theme</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Sector scorecard: Energy (XLE) was the only S&amp;P sector to close higher (+1.85%); Industrials (XLI, &minus;3.22%) and Technology (XLK, &minus;2.65%) led decliners. Financials (XLF, &minus;1.60%) fell broadly at the bank/broker level (GS &minus;5.09%, IBKR &minus;5.11%, COIN &minus;4.65%) even as exchange operators (CME, ICE, CBOE) rose &mdash; a within-sector divergence worth noting rather than treating Financials as uniformly weak.</p>
+    </section>
+
+    <!-- ================= 15. OVERNIGHT & TOMORROW WATCH ================= -->
+    <section class="report-section" aria-labelledby="s-tom">
+      <h2 id="s-tom"><span class="kicker">Section 15</span>Overnight &amp; Tomorrow Watch</h2>
+      <p>Tonight's Microsoft, Meta, Arm and Qualcomm earnings (after this report's cutoff) are the dominant overnight event; tomorrow's Morning Brief covers results and after-hours reaction in full. Also watch: any confirmation of a new US strike on Iran following Trump's retaliation vow; the Kumamoto death-toll reconciliation; the Long March 6A launch from Taiyuan (~9:00 PM ET, payload undisclosed); and tomorrow's 8:30 AM ET Q2 2026 GDP advance estimate, read partly through the lens of today's FOMC decision. Visa reports before tomorrow's open; Apple and Amazon report after tomorrow's close.</p>
+    </section>
+
+    <!-- ================= 16. PHYSICS LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-phys">
+      <h2 id="s-phys"><span class="kicker">Section 16 &middot; learning</span>Physics Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Physics 3/71 &middot; Dimensional analysis (continued)</p>
+        <p>This morning introduced dimensional analysis as tracking the physical dimensions &mdash; length, mass, time &mdash; that a quantity is built from, independent of specific units. The core working rule is dimensional homogeneity: every term added together in a valid physical equation must carry the same dimensions, and both sides of an equation must match. Written compactly, if <code>[v]</code> denotes "the dimension of velocity," then <code>[v] = [L][T]&#8315;&sup1;</code> (length over time), and any equation claiming to compute a velocity must reduce to exactly that combination once every constant's dimensions are tracked through.</p>
+        <p>A concrete tie-in: dimensional analysis can catch a wrong formula, but it cannot supply the numeric constants inside a correct one. The kinetic-energy formula, <code>KE = &frac12;mv&sup2;</code>, has dimensions <code>[M][L]&sup2;[T]&#8315;&sup2;</code> on both sides once you check it &mdash; but dimensional analysis alone would be equally satisfied by <code>KE = mv&sup2;</code> or <code>KE = 3mv&sup2;</code>, since the dimensionless prefactor doesn't affect the dimensional bookkeeping. That is the common misconception worth correcting: dimensional analysis is a powerful error-catching sanity check, not a derivation engine &mdash; it tells you an equation is dimensionally plausible, never that it is numerically correct.</p>
+      </div>
+    </section>
+
+    <!-- ================= 17. SPACEFLIGHT LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-space-lesson">
+      <h2 id="s-space-lesson"><span class="kicker">Section 17 &middot; learning</span>Spaceflight Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Spaceflight 3/75 &middot; Thrust (continued)</p>
+        <p>This morning introduced thrust as mass flow rate multiplied by exhaust velocity. Written out, the simplified thrust equation is <code>F = m&#775;v_e</code>, where <code>m&#775;</code> (m-dot) is the propellant mass flow rate in kilograms per second and <code>v_e</code> is the effective exhaust velocity. A more complete version adds a pressure term for the nozzle exit: <code>F = m&#775;v_e + (p_e &minus; p_0)A_e</code>, where <code>p_e</code> is the exit pressure, <code>p_0</code> is ambient (atmospheric) pressure, and <code>A_e</code> is the nozzle exit area &mdash; which is why the same engine produces more thrust in the vacuum of space (where <code>p_0 = 0</code>) than at sea level.</p>
+        <p>Real-world tie-in: today's Long March 7A launch (confirmed successful, Tianlian 3-01 payload) and tonight's scheduled Long March 6A both rely on exactly this relationship scaled up to orbital-class engines. The common misconception: a "more powerful" engine (higher thrust) isn't necessarily a "more efficient" one. Thrust tells you how hard an engine pushes right now; specific impulse (a later topic in this sequence) tells you how efficiently it converts propellant into that push. A large first-stage engine is optimized for high thrust to lift off the pad against gravity, while an upper-stage engine is often optimized for high efficiency over a longer burn &mdash; different design goals, not a simple better-or-worse ranking.</p>
+      </div>
+    </section>
+
+    <!-- ================= 18. QUANT/ML LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-quant">
+      <h2 id="s-quant"><span class="kicker">Section 18 &middot; learning</span>Quant/ML Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Quant/ML 3/118 &middot; k-th Central Moment / Expected Value (continued)</p>
+        <p>This morning introduced expected value as the probability-weighted average, and central moments as measures of spread and shape around that mean: <code>E[X] = &int; x f(x) dx</code>, with the k-th central moment <code>&mu;_k = E[(X &minus; &mu;)^k]</code>. The second central moment (<code>k=2</code>) is variance, the probability-weighted average squared deviation from the mean; its square root is the standard deviation, the everyday measure of how spread out returns are.</p>
+        <figure class="equation">
+          <img src="../../../equations/eq_003.png" alt="Rendered equation image eq_003: k-th central moment / expected value, from the quant/ML equation registry." loading="lazy" width="480">
+          <figcaption>Equation 3 of 118 &mdash; embedded from site/equations/ (registry order).</figcaption>
+        </figure>
+        <p>Today's actual market data is a clean real-world tie-in: the VIX &mdash; itself a market-implied estimate of the standard deviation (annualized) of S&amp;P 500 returns &mdash; jumped 10.10% today to 20.05 as the S&amp;P fell 1.51%. A one-day move of that size sits well outside a "typical" day for an index whose annualized volatility was priced around 18&ndash;19% coming in, illustrating variance/standard deviation in action: today was a multi-standard-deviation event relative to recent history, not an ordinary fluctuation. The common misconception: mean and variance alone fully describe a return distribution. They don't &mdash; skewness (the third central moment, asymmetry) and kurtosis (the fourth, tail thickness) matter enormously for risk, especially on days like today. Equity returns are well known to have negative skew and excess kurtosis ("fat tails") versus a normal distribution, meaning large down-moves like today's are more common, and cluster more, than a mean-and-variance-only model would predict.</p>
+      </div>
+    </section>
+
+    <!-- ================= 19. FULL CLOSING MARKET ANALYSIS ================= -->
+    <section class="report-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix"><span class="kicker">Section 19 &middot; collapsed by default</span>Full Closing Market Analysis</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, broad</span> Supporting evidence: all four major indices down together, VIX +10.1%, credit spreads widened (modestly), Treasuries sold off alongside equities rather than acting as a hedge, and the selloff's breadth concentrated in the highest-multiple names (AI-infrastructure, small-cap defense/space). Contradicting evidence: the VIX complex stayed in ordinary contango (no inversion, no acute stress signal), the 10Y yield moved only about 2bp, and Energy (XLE) and exchange operators (CME/ICE/CBOE) rose &mdash; not a uniform flight from all risk assets. Confidence: medium-high that today marks a genuine, if contained, risk-off day rather than a narrow single-sector story; change from Tuesday's calmer regime read is significant.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>This run's own Yahoo Finance fetch, EOD official, Wed Jul 29 close vs Tue Jul 28 close.</caption>
+              <thead><tr><th>Fund</th><th>Close</th><th>Day</th><th>vs 20-DMA</th><th>vs 50-DMA</th><th>vs 200-DMA</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>$729.52</td><td class="down">&minus;1.53%</td><td class="down">&minus;2.18%</td><td class="down">&minus;2.03%</td><td class="up">+4.29%</td></tr>
+                <tr><td>QQQ</td><td>$661.73</td><td class="down">&minus;2.04%</td><td class="down">&minus;6.05%</td><td class="down">&minus;7.55%</td><td class="up">+2.73%</td></tr>
+                <tr><td>IWM</td><td>$288.64</td><td class="down">&minus;1.61%</td><td class="down">&minus;2.04%</td><td class="down">&minus;1.08%</td><td class="up">+8.77%</td></tr>
+                <tr><td>DIA</td><td>$515.38</td><td class="down">&minus;2.18%</td><td class="down">&minus;1.47%</td><td class="down">&minus;0.11%</td><td class="up">+5.19%</td></tr>
+                <tr><td>VOO</td><td>&mdash;</td><td class="down">&minus;1.53%</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td></tr>
+                <tr><td>VTI</td><td>&mdash;</td><td class="down">&minus;1.49%</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td></tr>
+                <tr><td>RSP (equal-weight)</td><td>&mdash;</td><td class="down">&minus;0.88%</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">RSP (equal-weight S&amp;P) fell less than SPY (cap-weight), consistent with today's selloff concentrating in the largest, highest-multiple names rather than spreading evenly. All four core funds (SPY, QQQ, IWM, DIA) remain comfortably above their 200-day moving averages despite today's move &mdash; a pullback within an intact longer-term uptrend, not (yet) a trend break.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>No new whole-market breadth entry this run: the Massive grouped-daily dataset for today's session (Wed Jul 29) will not be available until tomorrow morning; this run reused Tuesday Jul 28's entry (2,857 advancers vs. 2,173 decliners, 5,376-name universe) already published in this morning's edition, which predates today's selloff and should not be read as describing today. As a same-day breadth proxy, RSP fell less than SPY today (&minus;0.88% vs &minus;1.53%) while IWM (small-caps) fell slightly less (&minus;1.61%, roughly in line) &mdash; a mixed, not uniformly narrow, picture. <span class="dd">Estimated proxy, not the full whole-market dataset</span>.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, this run's own Yahoo Finance fetch, EOD official, Wed Jul 29 close vs Tue Jul 28.</caption>
+              <thead><tr><th>Sector</th><th>Day</th></tr></thead>
+              <tbody>
+                <tr><td>Energy (XLE)</td><td class="up">+1.85%</td></tr>
+                <tr><td>Consumer Staples (XLP)</td><td class="up">+0.30%</td></tr>
+                <tr><td>Communications (XLC)</td><td class="down">&minus;0.12%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td class="down">&minus;0.13%</td></tr>
+                <tr><td>Consumer Discretionary (XLY)</td><td class="down">&minus;0.80%</td></tr>
+                <tr><td>Health Care (XLV)</td><td class="down">&minus;0.60%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="down">&minus;1.17%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="down">&minus;1.36%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="down">&minus;1.60%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="down">&minus;2.65%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="down">&minus;3.22%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Rotation matrix read: Energy Leading (only sector positive, oil-driven); Staples/Communications/Real Estate Improving-to-neutral (defensive-adjacent, small moves); Financials and Technology Weakening (broad declines, though Financials masks an exchange-operator vs. bank/broker divergence &mdash; see Winners &amp; Losers); Industrials Lagging (worst sector, likely reflecting defense/aerospace-heavy constituents amid today's small-cap defense rout).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>This run's own Yahoo Finance fetch, EOD official, Wed Jul 29 close vs Tue Jul 28.</caption>
+              <thead><tr><th>Group</th><th>Notable movers</th></tr></thead>
+              <tbody>
+                <tr><td>AI infrastructure</td><td class="txt">VRT &minus;17.2% (earnings miss), MU &minus;9.9%, ANET &minus;7.0%, ETN &minus;6.3%, PWR &minus;4.8%, AMD &minus;5.5%; CEG &minus;0.7% comparatively resilient</td></tr>
+                <tr><td>Defense/aerospace</td><td class="txt">KTOS &minus;9.8%, AVAV &minus;9.1%, BWXT &minus;7.2%, HII &minus;6.4%; GD &minus;3.0% despite its earnings beat</td></tr>
+                <tr><td>Space</td><td class="txt">YSS &minus;15.7%, VOYG &minus;11.8%, RDW &minus;9.2%, LUNR &minus;7.9%, RKLB &minus;8.3%, SPCX &minus;3.3% (new 52-week low)</td></tr>
+                <tr><td>Financials</td><td class="txt">IBKR &minus;5.11%, GS &minus;5.09%, COIN &minus;4.65% vs. CBOE +3.37%, CME +2.09%, ICE +1.09% (exchanges up on volatility/volume)</td></tr>
+                <tr><td>Mega-cap tech</td><td class="txt">NVDA &minus;3.6%, TSLA &minus;3.0%, AMZN &minus;1.8%, META &minus;1.3% vs. MSFT &minus;0.7% (ahead of tonight's report), GOOGL +0.9%</td></tr>
+                <tr><td>China ETFs</td><td class="txt">KWEB +1.8%, FXI +1.3%, MCHI +1.2% &mdash; no single catalyst confirmed this run; decoupled from the US risk-off theme</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury daily par yield curve, EOD official, Tue Jul 28 (today's curve not yet posted as of this run's cutoff).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.76%</td></tr>
+                <tr><td>2Y</td><td>4.26%</td></tr>
+                <tr><td>10Y</td><td>4.61%</td></tr>
+                <tr><td>30Y</td><td>5.09%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s 35bp, 3m10y 71bp, 5s30s 74bp (Jul 28, unchanged from this morning). Intraday, Cboe/Yahoo's ^TNX (10Y proxy) showed 4.62%, up ~2bp &mdash; a modest move relative to today's equity selloff. SOFR 3.65% (+1bp). Rates funds: TLT &minus;1.65% (new 52-week low), IEF &minus;0.34%, SHY +0.07% &mdash; the long end absorbed nearly all of today's fixed-income damage, consistent with a hawkish-dissent read rather than a flight-to-safety bid.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield OAS (BAMLH0A0HYM2) widened 3bp to 2.84% (Jul 28 observation, latest available) &mdash; appended to <code>state/market-history/hy-oas.csv</code> this run. Credit funds were broadly calm versus equities: HYG &minus;0.23%, JNK &minus;0.23%, LQD &minus;0.51% &mdash; small moves that do not confirm today's equity-market stress signal at the same magnitude. <span class="chip chip--info">Credit does not fully confirm equities today</span> &mdash; a divergence worth watching, not yet a contradiction given the moves are directionally consistent, just smaller.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Cboe delayed quotes, ~16:00 ET close, Wed Jul 29.</caption>
+              <thead><tr><th>Index</th><th>Level</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td>VIX</td><td>20.05</td><td class="up">+10.10%</td></tr>
+                <tr><td>VIX9D</td><td>19.48</td><td class="up">+12.93%</td></tr>
+                <tr><td>VIX3M</td><td>21.02</td><td class="up">+5.84%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Term structure: VIX9D &lt; VIX &lt; VIX3M &mdash; ordinary contango, no inversion, though the front end (VIX9D) rose fastest, consistent with a same-day shock rather than a structural regime change. Put/call ratios: <span class="dd dd-warn">Source unavailable</span> (Cboe options market-statistics endpoint returned HTTP 403 again this run, a recurring path-shift issue). MOVE index: not available (no allowlisted free source). Dealer gamma: not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>ECB reference fix (Frankfurter, Wed Jul 29): EUR 0.87873, JPY 163.68, GBP 0.7525, CNY 6.7663 (all per USD). The dollar weakened modestly against the euro (from 0.87974 Tuesday) and yen (from 163.91) &mdash; a small, not dramatic, move given the scale of today's equity selloff and consistent with rates-driven rather than dollar-driven positioning. DXY itself has no allowlisted free source; EURUSD=X (Yahoo, intraday) showed 1.146, up 0.80% &mdash; corroborating dollar softness.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Yahoo Finance continuous front-month futures, ~16:00 ET Wed Jul 29 vs Tue Jul 28 confirmed close.</caption>
+              <thead><tr><th>Instrument</th><th>Level</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td>WTI crude (CL=F)</td><td>$84.95</td><td class="up">+7.18%</td></tr>
+                <tr><td>Gold (GC=F)</td><td>$4,124.50</td><td class="up">+2.19%</td></tr>
+                <tr><td>Nat gas (NG=F)</td><td>$2.723</td><td class="up">+2.29%</td></tr>
+                <tr><td>Copper (HG=F)</td><td>$6.357</td><td class="up">+0.55%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Oil's continued surge is a <span class="chip chip--warn">Likely contributor</span>, not asserted as a sole confirmed catalyst, to the Iran-escalation narrative given the tight timing with Trump's retaliation vow and Iran's own damage disclosures; independent wire figures (Fortune, ~$84.48) are broadly consistent with this run's own $84.95 read within normal cross-source variance. Gold's parallel rise is consistent with a modest safe-haven bid alongside the equity selloff.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>CoinGecko, Live (public endpoint, no API key configured), ~16:00 ET Wed Jul 29.</caption>
+              <thead><tr><th>Asset</th><th>Price</th><th>24h</th></tr></thead>
+              <tbody>
+                <tr><td>BTC</td><td>$63,467</td><td class="down">&minus;0.68%</td></tr>
+                <tr><td>ETH</td><td>$1,883.90</td><td class="down">&minus;1.82%</td></tr>
+                <tr><td>SOL</td><td>$72.54</td><td class="down">&minus;2.13%</td></tr>
+                <tr><td>ADA</td><td>$0.162793</td><td class="up">+2.51%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap $2.266T, BTC dominance 56.54% (as of this run's crypto fetch). Crypto's comparative calm today &mdash; essentially flat to modestly mixed while equities sold off broadly &mdash; is a notable divergence from the more correlated behavior seen on some prior risk-off days this report has tracked; not treated as a confirmed decoupling, just noted.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Momentum (MTUM) underperformed broadly, &minus;2.58%, consistent with today's rout in richly-valued, high-momentum AI-infrastructure and small-cap growth names. Value-oriented factors (VTV &minus;1.35%, SCHD &minus;0.25%) held up modestly better than growth (VUG &minus;1.04%, IWF &minus;1.55%), though the spread was not dramatic. Low-volatility (USMV &minus;0.07%, SPLV &minus;0.70%) outperformed the broad market as expected on a risk-off day.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Today's cross-asset picture is coherent, not contradictory: equities, long-duration Treasuries and momentum/growth factors all sold off together, while volatility, gold and oil all rose &mdash; a textbook risk-off pattern. The one genuine divergence is credit, which moved only modestly (HYG &minus;0.23%) versus the scale of the equity decline; this report does not treat that gap as a signal either confirming or contradicting the equity move, only as worth watching if it widens further. Small-cap defense/space weakness (see Winners &amp; Losers) exceeded what the broad risk-off move alone would explain, per the Bernstein-cited valuation-compression context in Top Stories.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>General Dynamics beat and raised guidance before today's open (see Business &amp; Corporate) but still traded down with its sector. Microsoft, Meta, Arm and Qualcomm report after today's close, past this report's cutoff &mdash; covered in tomorrow's Morning Brief. Visa reports before tomorrow's open; Apple and Amazon after tomorrow's close.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Today's 17-Week Bill auction ($72B) cleared at a 3.04x bid-to-cover and 3.875% high rate &mdash; solid demand, continuing this week's generally healthy bill-auction pattern. The 2-Year Note auction result had not posted to TreasuryDirect as of this run's cutoff. Yesterday's 7-Year Note auction (last coupon supply before the FOMC decision) drew a 2.49x bid-to-cover at 4.473% &mdash; this run could not access a when-issued yield for a tail/stop-through read, so forecast <span class="mono">2026-07-28-am-2</span> (a weak/tailing auction, 15&ndash;25% probability) is not yet gradeable from this run's data; Saturday's review will attempt a fuller reconciliation.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Short volume (FINRA)</summary>
+          <p>Wednesday's short-volume file had not yet published as of this run's cutoff (FINRA typically posts a session's file after that session's close); this morning's report already carried Tuesday Jul 28's aggregate figures (48.00% aggregate ratio, watchlist standouts led by IWM 72.3% and QQQ 69.9%). No new data this run; carried forward, not re-stated in full to avoid duplication.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= 20. SOURCES & CORRECTIONS ================= -->
+    <section class="report-section sources-list" aria-labelledby="s-sources">
+      <h2 id="s-sources"><span class="kicker">Section 20</span>Sources, Methodology &amp; Corrections</h2>
+      <p><strong>Primary sources this run:</strong></p>
+      <ul>
+        <li>federalreserve.gov (FOMC meeting mechanics, cross-checked against this run's news research on the vote/dissent/press-conference)</li>
+        <li>Treasury daily par yield curve, home.treasury.gov (fetched 15:41 ET, .gov UA) &mdash; unchanged, still Jul 28</li>
+        <li>FRED series T10Y2Y, DGS2, DGS10, T10YIE, DFII10, SOFR, BAMLH0A0HYM2 (fetched 15:40&ndash;15:42 ET)</li>
+        <li>Yahoo Finance v8 chart API &mdash; indices, futures, commodities, the full 167-symbol watchlist universe (fetched 15:43&ndash;16:05 ET), and 1-year technical-levels history for SPY/QQQ/IWM/DIA/TLT/SPCX</li>
+        <li>Cboe delayed-quotes endpoints for VIX/VIX9D/VIX3M (fetched 15:39 ET)</li>
+        <li>Frankfurter ECB reference rates (fetched 15:44 ET) &mdash; today's fix</li>
+        <li>CoinGecko simple-price and /global endpoints (fetched 15:45 ET, public tier)</li>
+        <li>SEC EDGAR &mdash; market-wide 8-K feed and 90 company-ticker Atom feeds, including General Dynamics' Q2 earnings 8-K (fetched 15:45&ndash;15:58 ET, .gov UA)</li>
+        <li>TreasuryDirect auction-results API (fetched 15:50 ET, primary &mdash; 17-Week Bill, 7-Year Note)</li>
+        <li>Launch Library 2 (fetched 15:52 ET, confirms Long March 7A success and Tianlian 3-01 payload)</li>
+        <li>General Dynamics 8-K filing (fetched via SEC EDGAR, primary)</li>
+      </ul>
+      <p><strong>Secondary confirmation:</strong></p>
+      <ul>
+        <li>CNBC, CBS News, Forbes, Washington Examiner, Yahoo Finance, TheStreet, Bloomberg (FOMC decision, dissents, market reaction)</li>
+        <li>Bloomberg, Fox News, The Hill, CNBC (Trump retaliation quotes) &middot; Middle East Eye, Roya News, Global Security, Cumhuriyet Daily (Iranian damage claims, explicitly unverified) &middot; Iran Wire, Middle East Monitor, HNGN (Kurdistan strikes)</li>
+        <li>NPR, ABC News, Rappler, GPB, khaosodenglish, CNN (Kumamoto death toll)</li>
+        <li>Cybernews, BleepingComputer, Malwarebytes, Rescana (Abbott Laboratories) &middot; BleepingComputer, SecurityWeek, Help Net Security (Coca-Cola/Anubis resolution)</li>
+        <li>NPR, UPI, Axios/AP, Euronews (Europe wildfires/heat wave)</li>
+        <li>The Globe and Mail, Zacks-cited coverage (General Dynamics earnings) &middot; Gurufocus, Yahoo Finance, stocktwits, ibtimes, StocksToTrade (Vertiv earnings reaction)</li>
+        <li>Bloomberg, Space.com, Spaceflight Now (Starship heat-shield critique and Flight 13 background)</li>
+        <li>Investing.com, Bernstein-cited commentary (defense-sector valuation context)</li>
+        <li>ScienceDaily-indexed coverage, NASA APOD (science roundup)</li>
+      </ul>
+      <p><strong>Methodology note (^TNX data format):</strong> Cboe/Yahoo's ^TNX series is now returning the 10-year Treasury yield directly in percentage terms (e.g. 4.622 = 4.622%) rather than the historical &times;10 convention noted in this system's own run procedure (which would imply an absurd 46.22% yield if applied here). This run cross-checked ^TNX against Treasury's own par curve (10Y 4.61%, Jul 28) and found close agreement, confirming the direct-percentage reading is correct; this report used the corrected interpretation throughout and flags the run-procedure note for a future update.</p>
+      <p><strong>Methodology note (evacuation figures, Europe wildfires):</strong> this run's sourcing produced materially different wildfire-evacuation totals (roughly 63,000 to over 200,000) depending on outlet and geographic scope; rather than adopt a single figure, this report presents the range and the discrepancy itself, consistent with the no-fake-precision principle.</p>
+      <p><strong>Forecast-ledger notes:</strong> forecast <span class="mono">2026-07-29-am-1</span> (FOMC hikes 25bp, 25&ndash;35% probability) resolves WRONG &mdash; the Committee held, though with an unusually hawkish 9-3 dissent; formal grading Saturday. Forecast <span class="mono">2026-07-27-pm-1</span> (Anubis leak within 72 hours, 45&ndash;60% probability) resolves CORRECT &mdash; the leak occurred and was confirmed this run; formal grading Saturday. Forecast <span class="mono">2026-07-29-am-2</span> (further Iran escalation within 48 hours, 20&ndash;30% probability) remains open &mdash; Trump's retaliation vow and Iran's own damage disclosures are consistent with continued tension but no new confirmed US strike was found this run; horizon extends to Jul 31. No new forecast is logged this run.</p>
+      <p><strong>Methodology note:</strong> free-tier equity quotes are non-consolidated, single-venue prices and can differ slightly from official consolidated closes. Twelve Data hit its per-minute credit rate limit almost immediately this run (8 batched requests before HTTP 429 on every subsequent batch); the full 167-symbol watchlist sweep was completed via Yahoo Finance instead, consistent with recent editions' handling of the same limit.</p>
+      <p><strong>Corrections:</strong> none to a previously published report this run. See <code>ledgers/corrections.json</code> for the full history of prior corrections.</p>
+    </section>
+
+    <!-- ================= HEALTH FOOTER ================= -->
+    <footer class="health-footer">
+      <h2>System health &mdash; this run</h2>
+      <ul class="health-grid">
+        <li class="ok">Treasury par curve &mdash; ok &middot; EOD official, Jul 28 (today's curve not yet posted as of cutoff)</li>
+        <li class="ok">FRED &mdash; ok &middot; data age 1&ndash;11 days (series-dependent)</li>
+        <li class="ok">Yahoo Finance &mdash; ok &middot; full 167-symbol watchlist plus indices/futures/commodities/technical-levels retrieved post-close; ^TNX data-format note above</li>
+        <li class="down">Twelve Data &mdash; per-minute credit rate limit hit almost immediately (HTTP 429 on 20 of 21 batches) &middot; full sweep completed via Yahoo Finance instead</li>
+        <li class="ok">Cboe VIX complex &mdash; ok &middot; EOD, post-close</li>
+        <li class="down">Cboe options market-statistics &mdash; HTTP 403 (recurring path-shift issue, same as prior editions) &middot; put/call ratio unavailable</li>
+        <li class="ok">Frankfurter FX &mdash; ok &middot; EOD official, today's fix</li>
+        <li class="ok">CoinGecko &mdash; ok &middot; live &middot; COINGECKO_KEY env var not set this run, public endpoint used successfully</li>
+        <li class="ok">SEC EDGAR &mdash; ok &middot; UA-labeled &middot; market-wide feed + 90 company tickers; found General Dynamics' Q2 8-K; 9 tickers (ASML, FLY, KRMN, LUNR, NVO, SPCX, TSM, VOYG, YSS) returned no Atom entries, a recurring pattern</li>
+        <li class="ok">TreasuryDirect auctions API &mdash; ok &middot; 17-Week Bill and 7-Year Note results retrieved; today's 2-Year Note result not yet posted</li>
+        <li class="down">FINRA short volume &mdash; today's file not yet published (expected; posts after session close)</li>
+        <li class="ok">Whole-market breadth &mdash; no new entry needed this run (Tuesday's session already recorded by this morning's run; today's session posts tomorrow)</li>
+        <li class="ok">Launch Library 2 &mdash; ok &middot; confirmed Long March 7A success and payload ID</li>
+        <li class="ok">News (WebSearch/WebFetch) &mdash; ok &middot; roughly 20 parallel research queries, live through 16:30 ET</li>
+        <li class="ok">Telegram &mdash; sent, see delivery note below</li>
+      </ul>
+      <p>Run duration ~1h10m &middot; retries: 0 &middot; prior run (2026-07-29-am): success &middot; no instruction-like content detected in fetched sources this run.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-07-29-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+
+<!--REPORT:END-->
+
+  </main>
+
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
