@@ -129,6 +129,26 @@
       "probability": "15-25%",
       "basis": "No such disclosure as of this run; the region hosts meaningful chip/electronics manufacturing capacity, but M7-class quakes in this zone have historically caused more infrastructure than heavy-industry disruption.",
       "status": "open"
+    },
+    {
+      "id": "2026-07-29-am-1",
+      "date": "2026-07-29",
+      "slot": "am",
+      "forecast": "The FOMC hikes 25bp today rather than holding at 3.50-3.75%.",
+      "horizon": "2026-07-29",
+      "probability": "25-35%",
+      "basis": "Pre-attack press-reported odds already ran as high as 38% hike probability (up from 10.7% a week earlier) on oil-driven inflation-expectations repricing; tonight's Iran attack and fresh ~3.5-3.6% oil jump is an additional hawkish input not yet reflected in any published odds reading as of this report's cutoff.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-29-am-2",
+      "date": "2026-07-29",
+      "slot": "am",
+      "forecast": "Iran carries out a further missile or drone attack, or the US takes explicit further military action beyond tonight's retaliatory strikes, within 48 hours of the Jordan base attack.",
+      "horizon": "2026-07-31",
+      "probability": "20-30%",
+      "basis": "CENTCOM's own framing describes tonight's US-Saudi strikes as a proportionate response to a discrete attack, arguing against immediate further escalation; but Iran's shift from drone to ballistic-missile attacks is a real escalation in kind that argues for continued risk.",
+      "status": "open"
     }
   ]
 }

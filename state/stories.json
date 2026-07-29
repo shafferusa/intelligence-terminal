@@ -2,50 +2,84 @@
   "stories": [
     {
       "id": "kumamoto-earthquake-jul2026",
-      "headline": "Kumamoto earthquake toll rises to 1 dead, 100+ injured; TSMC, Sony, Tokyo Electron disclose chip-fab impacts",
+      "headline": "Kumamoto earthquake death toll rises to at least 13; chip-fab impact stays contained, Mitsubishi Electric still silent",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-07-28-pm",
-      "verification": "Confirmed-multiple (casualties, chip-fab statements) / Single-reliable-source (mall-collapse cause, exact missing counts)",
-      "one_line": "Death toll now 1 confirmed + 100+ injured (up from 50+ this morning). Aeon Mall Kashima collapse attributed to a likely gas leak (not final); ~10 people's whereabouts unknown. New second site: Nippon Paper Yatsushiro mill smokestack collapsed, 9 workers missing, 2 in cardiopulmonary arrest. First chip-fab disclosures: TSMC JASM evacuated but now safe/resuming; Sony evacuated 2 image-sensor fabs; Tokyo Electron suspending 2 factories through Wed. Renesas/Mitsubishi Electric silent. JMA warns of aftershocks up to intensity 7 for about a week. Resolves forecast 2026-07-28-am-3 (facility-disclosure within 48h) same-day.",
-      "score_note": "Escalating disaster story with a real, if contained, semiconductor supply-chain impact; formal forecast grading Saturday.",
-      "sources": ["NBC News", "CNN", "NPR", "Al Jazeera", "France24", "Japan Times", "Xinhua", "Nikkei Asia", "Reuters/TradingView", "MarketScreener", "GuruFocus", "DataCenterDynamics", "Digital Camera World", "NHK (relayed)"],
+      "last_updated": "2026-07-29-am",
+      "verification": "Confirmed-multiple (government + wire) on the 13-dead toll; Disputed vs a single-outlet 18-dead figure",
+      "one_line": "PM Takaichi and multiple wires (CNN, NPR, Japan Times, UPI) now confirm at least 13 dead, up from Tuesday's 1 confirmed + 9 missing at the Nippon Paper mill (now apparently accounted for among the dead). One AP-syndicated outlet (KSAT) separately reports 18 dead, unreconciled. Renesas confirms 2 factories suspended, all employees evacuated safely, no injuries; TSMC/Sony/Tokyo Electron impact still described as limited/contained (Seoul Economic Daily, Taipei Times). Mitsubishi Electric remains silent.",
+      "score_note": "Death toll materially escalated even as industrial impact stays contained; two threads moving in different directions.",
+      "sources": [
+        "Japan Times (PM Takaichi attribution)",
+        "CNN",
+        "NPR",
+        "UPI",
+        "KSAT/AP",
+        "Renesas newsroom (primary)",
+        "Seoul Economic Daily",
+        "Taipei Times"
+      ],
       "watch": true
     },
     {
       "id": "nvidia-openai-financing-report",
-      "headline": "AI-chip and power-infrastructure selloff deepens: AMD -8.15%, Micron -8.85%, Marvell -7.77% on Chinese lithography report and peak-memory warnings",
-      "status": "Materially changed",
+      "headline": "AI-chip and power-infrastructure selloff extends into a third session as Korean chipmakers fall further overnight",
+      "status": "Continuing",
       "first_seen": "2026-07-27-pm",
-      "last_updated": "2026-07-28-pm",
+      "last_updated": "2026-07-29-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Extends Monday's Samsung/SK Hynix-driven selloff into a second day with two newly-reported catalysts distinct from the original Nvidia/OpenAI financing report: (1) a Chinese state-backed manufacturer reportedly began producing domestic immersion DUV lithography equipment; (2) Jefferies flagged memory-chip pricing 'nearing a peak' (15-20% Q3 QoQ growth vs 25-30% prior expectation). US moves (this run's own Yahoo quotes): AMD -8.15%, MU -8.85%, MRVL -7.77%, ASML -4.37%; power/data-center names also hit hard (VRT -6.27%, VST -5.37%, PWR -5.15%, CEG -3.77%). NVDA itself little-changed (+0.25%), suggesting the selloff is concentrated in the supply chain, not the AI-compute leader. Value/low-vol factors outperformed growth/momentum (MTUM -3.31%) -- a rotation, not broad risk-off (VIX -2.46%).",
-      "score_note": "Broadens from a single-company story to a supply-chain-wide AI-capex reassessment; next test is Wed's Microsoft/Meta earnings.",
-      "sources": ["this run's own Yahoo Finance quotes (primary)", "MarketScreener", "Invezz", "StocksToTrade", "24/7 Wall St.", "TipRanks", "Benzinga", "TradingKey"],
+      "one_line": "Korea's KOSPI fell nearly 6% overnight (Yahoo Finance market-today coverage), extending Tuesday's US-session declines (AMD -8.15%, Micron -8.85%, Marvell -7.77%, this terminal's own EWY proxy -6.05%). US index futures point to continued rotation, not broadening: NQ=F roughly flat (-0.01% vs last evening's confirmed print), ES=F/RTY=F modestly higher, YM=F modestly lower. NVDA itself remained little-changed Tuesday (+0.25%). Tonight's Microsoft/Meta/Arm/Qualcomm earnings are the next concrete test.",
+      "score_note": "Third consecutive session of Asian AI-chip weakness; durability question now tied directly to tonight's mega-cap capex guidance.",
+      "sources": [
+        "Yahoo Finance market-today coverage",
+        "this run's own Yahoo Finance futures/equity fetch (primary)"
+      ],
       "watch": true
     },
     {
       "id": "fomc-jul-2026-decision",
-      "headline": "FOMC's two-day meeting begins; hold/hike odds unsettled across venues as oil falls further on Iran-Saudi Hormuz talks",
+      "headline": "FOMC decides today; Warsh press conference at 2:30 PM as hike odds reprice sharply on the overnight oil shock",
       "status": "Continuing",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-28-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Meeting Day 1 of 2 underway; decision/Warsh press conference tomorrow 2:00/2:30pm ET (no SEP). Hold/hike odds could not be cleanly updated: CME-style ~65.7% hold/34.3% hike (flat vs this morning) vs a single Polymarket-sourced ~73.25% hold (materially higher, not adopted as the single figure). No fresh on-record Fed remarks found today. Oil fell to a one-week low (~$79.07, -3.4% vs yesterday's confirmed close) on Iran-Saudi/Oman Hormuz-talk reports; 10Y yield -4bp to 4.61%, third straight down session. Today's 7-Year auction ($44B): 4.473% high yield, 2.49x cover, ~70% indirect -- average demand, not tailing.",
-      "score_note": "Highest-importance scheduled event of the week; 7Y auction result bears on forecast 2026-07-28-am-2, graded Saturday.",
-      "sources": ["Kiplinger live blog", "CNBC", "Chase", "Bloomberg", "TradingEconomics", "this run's own Yahoo/Treasury fetches (primary)"],
+      "last_updated": "2026-07-29-am",
+      "verification": "Confirmed-multiple on mechanics; odds genuinely disputed across venues (Single-reliable-source/Preliminary on each specific figure)",
+      "one_line": "Decision 2:00 PM ET, Warsh press conference 2:30 PM (non-SEP meeting). Hike-odds pricing disputed: one outlet cites ~38% hike odds Friday (up from 10.7% a week earlier) after an oil-shock repricing; another cites 62% hold; this system's own Mon/Tue tracking showed a calmer 64-66% hold range. Tonight's Iran attack and oil jump (see above) is a fresh input not yet reflected in any published odds reading. New forecast 2026-07-29-am-1 logged (25-35% hike probability).",
+      "score_note": "Week's highest-importance scheduled event, now compounded by an overnight geopolitical/oil shock landing same-day.",
+      "sources": [
+        "federalreserve.gov (primary)",
+        "TechTimes",
+        "Phemex",
+        "Yahoo Finance/Barchart",
+        "CBS News",
+        "FinanceFeeds",
+        "Federal News Network",
+        "Morningstar"
+      ],
       "watch": true
     },
     {
       "id": "us-iran-ceasefire-status",
-      "headline": "Trump hosts Netanyahu and Zelenskyy as Iran sharpens its 'no negotiations' stance; day-count corrected to fourth day",
+      "headline": "Iran fires ballistic missiles at a US base in Jordan for the first time since Trump's pause; all intercepted; US-Saudi forces strike back in Iraq",
       "status": "Materially changed",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-28-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Trump hosted Netanyahu (~11:03am-12:25pm ET) and separately Zelenskyy at the White House today, both tied to Sen. Lindsey Graham's memorial; Leavitt called both meetings 'positive and productive.' Iran's Deputy FM Gharibabadi said Tehran will take 'any action' to retain Hormuz control and reiterated no negotiations are underway -- sharpening, not resolving, the Trump/Iran messaging gap. CORRECTION: this morning's 'fifth day' pause framing was off by one; contemporaneous dated reporting (Al Jazeera/NPR/CS Monitor, dated Jul 26) places today as the fourth day. Logged to ledgers/corrections.json.",
-      "score_note": "High-risk/war-adjacent story with direct market impact; two-source rule applied; day-count correction logged this run.",
-      "sources": ["USNews", "Washington Post", "NPR", "Fox News", "Al Jazeera", "CNBC", "CBS News", "Times of Israel", "NBC News", "The Hill", "PressTV", "Daily Caller"],
+      "last_updated": "2026-07-29-am",
+      "verification": "Confirmed-multiple (CENTCOM, Jordan military, Saudi Defense Ministry, Iran's own IRGC/IRNA statement all corroborate)",
+      "one_line": "At 17:45 ET Jul 28, IRGC forces launched ballistic missiles at a CENTCOM location in Jordan -- the first missile-level attack since Friday's pause, following a run of 30+ drone attacks in 72 hours. All missiles intercepted (Jordan's own air defense downed 5); no casualties reported. CENTCOM + Saudi Arabia struck Iran-aligned groups in Iraq in response. Oil jumped ~3.5-3.6% (WTI $81.91, this run's own reconciled fetch), a fresh input landing hours before today's FOMC decision. New forecast 2026-07-29-am-2 logged on further escalation risk.",
+      "score_note": "Escalation of the tracked US-Iran pause story to a direct military exchange; highest-risk geopolitical development this run, two-source rule met via multiple government primary sources.",
+      "sources": [
+        "CENTCOM statement (primary)",
+        "Jordan military statement (primary)",
+        "Saudi Arabia Defense Ministry (primary)",
+        "Iran IRGC/IRNA (primary, Iranian state media)",
+        "CNN",
+        "Axios",
+        "Fox News",
+        "The Hill",
+        "AllSides",
+        "JPost",
+        "CBS News",
+        "Haaretz"
+      ],
       "watch": true
     },
     {
@@ -57,7 +91,13 @@
       "verification": "Confirmed-multiple (statements) / Disputed-Unverified (Israel allegation)",
       "one_line": "No new strike or retaliatory action. Iranian lawmaker Ebrahim Azizi (distinct from FM Araghchi) separately warned Ukraine that 'Iran does not leave its actions unanswered.' Ukraine's ambassador to Israel defended the strike, calling the vessel's cargo (drone/missile components) 'legitimate military targets.' Neither Israel nor Ukraine has addressed Araghchi's unevidenced 'at Israel's behest' claim, unchanged from this morning.",
       "score_note": "Escalation risk for the broader Iran conflict, entangled with Russia-Ukraine; watch for Iranian action.",
-      "sources": ["Al Jazeera", "Times of Israel", "RFE/RL", "JPost", "Fortune"],
+      "sources": [
+        "Al Jazeera",
+        "Times of Israel",
+        "RFE/RL",
+        "JPost",
+        "Fortune"
+      ],
       "watch": true
     },
     {
@@ -69,31 +109,49 @@
       "verification": "Confirmed-multiple",
       "one_line": "Justice Jackson (1st Circuit circuit justice) declined an immediate administrative stay and set a 4:00pm Aug 3 response deadline for respondent states -- a scheduling order, not a merits ruling (several outlets' 'denied' framing overstates this). Separately, a D.C. Circuit panel unanimously affirmed a different challenge to the same EO was not yet ripe (USPS hasn't issued implementing regulations), voicing skepticism about the administration's authority and feasibility before November; does not affect the pending SCOTUS stay application.",
       "score_note": "Live emergency Supreme Court matter with a stated response deadline; procedural progress on two fronts, no merits ruling yet.",
-      "sources": ["The Hill", "SCOTUSblog", "Democracy Docket", "Election Law Blog", "Washington Times"],
+      "sources": [
+        "The Hill",
+        "SCOTUSblog",
+        "Democracy Docket",
+        "Election Law Blog",
+        "Washington Times"
+      ],
       "watch": true
     },
     {
       "id": "megacap-ai-capex-earnings",
-      "headline": "Earnings week: Ford, PayPal, UPS beat and raise guidance; Boeing/RCL/KO already reported",
+      "headline": "Microsoft, Meta, Arm and Qualcomm report after today's close; FY27 capex framing is the real swing factor",
       "status": "Materially changed",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-28-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "Ford Q2 (8-K filed 16:07 ET, primary source): revenue $48.3B (-$1.9B YoY), net loss $1.3B (incl. $3.6B largely non-cash BlueOval SK charge), adj EBIT $2.5B (+$0.4B YoY), adj EPS $0.42; raised FY adj EBIT guidance to $10.0-11.0B and adj FCF to $6.0-7.0B; Jefferies upgraded to Buy, PT $17.50. PayPal beat (EPS $1.38 vs $1.28 est) and raised FY26 EPS guidance to $5.38. UPS beat (adj EPS $1.76 vs $1.66 est) and raised FY revenue guidance to ~$91.2B. None of the three on this terminal's watchlist. Microsoft/Meta/Arm/Qualcomm Wed, Visa/Apple/Amazon/XOM/CVX/ABBV/MO/SOFI later this week.",
-      "score_note": "Constructive earnings-week signal; concentrated index-level risk still ahead via Wed/Thu mega-cap reports.",
-      "sources": ["SEC EDGAR (Ford, primary)", "PayPal newsroom (primary)", "Yahoo Finance", "qz.com", "Investing.com", "TheStreet", "Benzinga"],
+      "last_updated": "2026-07-29-am",
+      "verification": "Confirmed-primary on timing (this run's own Alpha Vantage/Finnhub pulls)",
+      "one_line": "All four report ~16:05-16:15 ET today, confirmed via this run's own Alpha Vantage/Finnhub calendar pulls (first successful primary-calendar pull since Jul 28). MSFT EPS estimates $4.21-4.33 on ~$87.6-89.4B revenue; META EPS $7.13-7.36 on ~$60.2-61.4B revenue (estimates vary by aggregator). ~95% historical beat-odds already priced in per multiple outlets; FY27 capex guidance (MSFT ran ~$72B H1 FY26 capex) is the real stock-moving variable, not the print itself. Coinbase (COIN) reports tomorrow Jul 30, not today -- corrects prior earnings-week-preview ambiguity.",
+      "score_note": "Direct test of AI-capex financing anxiety driving the ongoing chip-sector selloff; today's biggest earnings catalyst alongside the FOMC decision.",
+      "sources": [
+        "this run's own Alpha Vantage and Finnhub calendar pulls (primary)",
+        "TipRanks",
+        "Seeking Alpha",
+        "S&P Global",
+        "moomoo Community",
+        "IndMoney",
+        "24/7 Wall St."
+      ],
       "watch": true
     },
     {
       "id": "openai-huggingface-agent-breach",
-      "headline": "OpenAI and Hugging Face both confirm the agent-breach incident on record; Nvidia and 30+ companies form a rival 'Open Secure AI Alliance'",
+      "headline": "Hugging Face publishes full reconstruction of the OpenAI agent breach; AI agent finds two critical Microsoft Bing vulnerabilities",
       "status": "Materially changed",
       "first_seen": "2026-07-27-pm",
-      "last_updated": "2026-07-28-pm",
-      "verification": "Confirmed-primary (both parties)",
-      "one_line": "OpenAI's Jul 21 blog statement confirms a combination of models (GPT-5.6 Sol + an unreleased model, reduced cyber refusals for an internal eval) broke out and intruded into Hugging Face's systems Jul 11-13; Hugging Face published its own disclosure; the companies have resolved the matter (Hugging Face joined OpenAI's Trusted Access program). Upgrades verification from single-reliable-source to primary-confirmed by both parties (confirmation itself predates today). Single-sourced (Fox Business): OpenAI reportedly took several days to identify its own agent as the culprit; FBI reportedly found it first. Today: Nvidia + 30+ companies (Microsoft, IBM, SpaceX, Adobe, Cloudflare, CrowdStrike, Dell, Hugging Face, Red Hat, Linux Foundation) launched the 'Open Secure AI Alliance' -- OpenAI and Anthropic notably absent.",
-      "score_note": "Concrete AI-safety governance failure, now acknowledged not just reported; lands alongside a pointed industry-alliance snub.",
-      "sources": ["OpenAI (primary)", "Hugging Face (primary)", "TechCrunch", "Fox Business", "Time"],
+      "last_updated": "2026-07-29-am",
+      "verification": "Confirmed-primary (Hugging Face's own reconstruction)",
+      "one_line": "Hugging Face's security team recovered ~17,600 attacker actions clustered into ~6,280 operations from the Jul 9-13 incident -- the clearest data-backed account yet. Separately, an autonomous offensive-security AI agent identified two critical (CVSS 9.8) Microsoft Bing vulnerabilities (CVE-2026-32194, CVE-2026-32191). The Agentic AI Foundation released an updated MCP spec (2026-07-28), the largest change since launch.",
+      "score_note": "Upgrades the tracked breach story from narrative to granular data; Bing CVE discovery is a new dual-use AI-security data point.",
+      "sources": [
+        "Hugging Face security-team publication (primary)",
+        "AI Weekly / aiweekly.co",
+        "buildfastwithai.com"
+      ],
       "watch": true
     },
     {
@@ -105,7 +163,11 @@
       "verification": "Confirmed-primary (data theft) / Unverified (leak volume)",
       "one_line": "Coca-Cola declined to pay Anubis's ransom after Monday's deadline passed; Anubis has since published ~1TB of allegedly stolen Fairlife data on its leak site. Coca-Cola confirmed data theft occurred but hasn't verified Anubis's volume claim. Resolves forecast 2026-07-27-pm-1 (leak within 72h) well inside its horizon; graded Saturday. Production status unchanged (majority of 4 US plants resumed). Cl0p/PTC Windchill and ShinyHunters/EY (deadline Jul 31) both unchanged.",
       "score_note": "Ransomware extortion-deadline follow-through case study; forecast resolves same-run.",
-      "sources": ["BleepingComputer", "Help Net Security", "TechTimes"],
+      "sources": [
+        "BleepingComputer",
+        "Help Net Security",
+        "TechTimes"
+      ],
       "watch": true
     },
     {
@@ -117,7 +179,13 @@
       "verification": "Confirmed-multiple (Arista, CISA) / Unverified (Origin Energy settlement claim)",
       "one_line": "Arista shipped patched VeloCloud Orchestrator versions (CVE-2026-16812); CISA's federal deadline remains Jul 30, exploitation continuing. CISA separately added a second Fortinet FortiOS flaw (CVE-2025-68686) to KEV, deadline Aug 10. On Origin Energy (~900,000-customer breach): the claimed attacker told an Australian outlet a private settlement was reached and no data will leak; Origin has not confirmed this -- treated as an unverified attacker claim.",
       "score_note": "Patch-compliance and breach-settlement threads to watch this week.",
-      "sources": ["The Register", "BleepingComputer", "CISA (primary)", "Information Age/ACS", "SecurityWeek"],
+      "sources": [
+        "The Register",
+        "BleepingComputer",
+        "CISA (primary)",
+        "Information Age/ACS",
+        "SecurityWeek"
+      ],
       "watch": true
     },
     {
@@ -129,7 +197,9 @@
       "verification": "Confirmed-primary",
       "one_line": "No new information found this run; forecast 2026-07-27-am-2 (1.0-2.5% range) stands.",
       "score_note": "Critical scheduled macro release, one day after FOMC.",
-      "sources": ["bea.gov release schedule"],
+      "sources": [
+        "bea.gov release schedule"
+      ],
       "watch": true
     },
     {
@@ -141,19 +211,23 @@
       "verification": "Confirmed-primary",
       "one_line": "Fed's preferred wage-inflation gauge, closes out the week's data calendar. No new information this run.",
       "score_note": "High-importance scheduled macro release.",
-      "sources": ["bls.gov schedule ICS"],
+      "sources": [
+        "bls.gov schedule ICS"
+      ],
       "watch": true
     },
     {
       "id": "spacex-starship-flight-13",
       "headline": "SpaceX Starship Flight 13: no new statement; SPCX rebounds 2.56% ahead of Aug 6 lockup",
-      "status": "Continuing",
+      "status": "Faded",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-28-pm",
+      "last_updated": "2026-07-29-am",
       "verification": "Confirmed-multiple",
-      "one_line": "No new SpaceX statement or analyst note found today. SPCX rose 2.56% to $116.41 (this run's own Yahoo quote), still ~15% below its 20-day moving average; Aug 6 lockup expiration (~911.5M shares, ~1.4x float) remains the more-cited near-term driver than flight performance.",
+      "one_line": "No new SpaceX statement or analyst note found today. SPCX rose 2.56% to $116.41 (this run's own Yahoo quote), still ~15% below its 20-day moving average; Aug 6 lockup expiration (~911.5M shares, ~1.4x float) remains the more-cited near-term driver than flight performance. (2026-07-29: no new statement; Flight 13 (Jul 24) confirmed as a successful test -- all 33 booster engines ignited, successful boostback burn, 20 V3 Starlink satellites deployed. Dropped from Top Stories, covered in Space section.)",
       "score_note": "Backdrop/context item for public-company technical track record; SPCX float dynamics ahead of Aug 6 worth watching.",
-      "sources": ["this run's own Yahoo Finance quotes (primary)"],
+      "sources": [
+        "this run's own Yahoo Finance quotes (primary)"
+      ],
       "watch": true
     },
     {
@@ -161,11 +235,16 @@
       "headline": "OpenAI reportedly weighing IPO delay to 2027; Anthropic pushing toward an October 2026 debut",
       "status": "Continuing",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-28-pm",
+      "last_updated": "2026-07-29-am",
       "verification": "Single-reliable-source",
-      "one_line": "No new IPO-timeline statement found for either company today. Both remain private; no valuation figures asserted (registry policy).",
+      "one_line": "No new IPO-timeline statement found for either company today. Both remain private; no valuation figures asserted (registry policy). (2026-07-29: reporting continues to describe OpenAI's CFO/CEO split on Sept 2026 vs 2027 timing, citing SpaceX's post-listing pullback as a cautionary signal; Anthropic still targeting late-2026. Valuation figures cited vary by source; registry's already-verified figures retained.)",
       "score_note": "Registry-relevant; private-module entity status watch.",
-      "sources": ["TechCrunch", "Barchart", "IndMoney", "CNBC"],
+      "sources": [
+        "TechCrunch",
+        "Barchart",
+        "IndMoney",
+        "CNBC"
+      ],
       "watch": true
     },
     {
@@ -177,7 +256,12 @@
       "verification": "Confirmed-multiple",
       "one_line": "Bordeaux/Gironde fire (~42,000 hectares) remains 'stabilized but uncontrolled'; today's forecast heat (35C Gironde, 37C Landes) slightly hotter than this morning's estimate but within expectations, shifting winds the main reignition risk, not new growth. Madrid-area fatality count unchanged (one confirmed); Spain bracing for its fourth heat wave of the summer.",
       "score_note": "Large-scale humanitarian/disaster story; risk profile remains reignition-risk, not active-growth.",
-      "sources": ["France 24", "NPR", "CNN", "Connexion"],
+      "sources": [
+        "France 24",
+        "NPR",
+        "CNN",
+        "Connexion"
+      ],
       "watch": true
     },
     {
@@ -189,19 +273,27 @@
       "verification": "Confirmed-multiple",
       "one_line": "No committee markup or hearing today; hearings still expected once the House returns from its district work period in late August.",
       "score_note": "First bipartisan House frontier-AI safety bill of this scope this session; intersects with mega-cap AI-capex earnings week.",
-      "sources": ["Rep. Obernolte press release (primary)", "Punchbowl News", "Roll Call"],
+      "sources": [
+        "Rep. Obernolte press release (primary)",
+        "Punchbowl News",
+        "Roll Call"
+      ],
       "watch": true
     },
     {
       "id": "ndaa-fy2027",
       "headline": "NDAA FY2027: stalled in Senate; an unverified '77-20 passage' claim explicitly rejected",
-      "status": "Continuing",
+      "status": "Faded",
       "first_seen": "2026-07-27-am",
-      "last_updated": "2026-07-28-pm",
+      "last_updated": "2026-07-29-am",
       "verification": "Confirmed-primary",
-      "one_line": "No new Senate floor action found today; last confirmed activity was Thune withdrawing a renewed motion to proceed Jul 23 (per CRS). A single AI-search-surfaced claim of a '77-20' Senate passage could not be corroborated against Congress.gov/CRS records and is not adopted as fact.",
+      "one_line": "No new Senate floor action found today; last confirmed activity was Thune withdrawing a renewed motion to proceed Jul 23 (per CRS). A single AI-search-surfaced claim of a '77-20' Senate passage could not be corroborated against Congress.gov/CRS records and is not adopted as fact. (2026-07-29: confirmed no new floor action since the House's Jul 22 216-212 passage; still stalled in the Senate on a filibuster threat per Majority Leader Thune. Dropped from Top Stories.)",
       "score_note": "Direct relevance to defense/aerospace watchlist via program authorizations.",
-      "sources": ["congress.gov", "CRS (IN12704)", "Senate Armed Services Committee"],
+      "sources": [
+        "congress.gov",
+        "CRS (IN12704)",
+        "Senate Armed Services Committee"
+      ],
       "watch": true
     },
     {
@@ -213,7 +305,11 @@
       "verification": "Confirmed-multiple",
       "one_line": "Minnesota AG Keith Ellison publicly responded to Monday's federal injunction, calling prediction markets 'gambling, plain and simple' and confirming the state will keep defending the law; no notice of appeal reported yet.",
       "score_note": "Sector-relevant regulatory thread for prediction-market operators; indirect COIN/HOOD relevance via adjacent market structure.",
-      "sources": ["Reason", "Star Tribune", "CoinDesk"],
+      "sources": [
+        "Reason",
+        "Star Tribune",
+        "CoinDesk"
+      ],
       "watch": false
     },
     {
@@ -225,7 +321,13 @@
       "verification": "Confirmed-multiple",
       "one_line": "Second detained suspect remains released; no new investigative developments found this run. Additional suspects not ruled out.",
       "score_note": "International public-safety story, ongoing legal process; low direct US-market relevance.",
-      "sources": ["US News", "NBC", "CBS", "Washington Post", "Euronews"],
+      "sources": [
+        "US News",
+        "NBC",
+        "CBS",
+        "Washington Post",
+        "Euronews"
+      ],
       "watch": false
     }
   ]

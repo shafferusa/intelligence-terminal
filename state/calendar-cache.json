@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-07-28T07:55:00-04:00",
+  "fetched": "2026-07-29T05:50:00-04:00",
   "earnings_fetched": "2026-07-28",
   "earnings_fetched_note": "Alpha Vantage EARNINGS_CALENDAR and Finnhub calendar/earnings both succeeded this run (first successful primary-calendar pull) -- confirmed BA/RCL/KO/F reporting this week with specific dates/times; used to verify today's Boeing and Royal Caribbean 8-K filings directly against SEC EDGAR.",
   "events": [
@@ -54,9 +54,9 @@
     {
       "ts_et": "2026-07-29T00:00:00-04:00",
       "type": "auction",
-      "name": "2-Year Note auction (reopening), $30B; 17-Week Bill",
+      "name": "2-Year Note auction, $30B; 17-Week Bill, $72B",
       "importance": "Low",
-      "reason": "Routine supply",
+      "reason": "Routine supply; TreasuryDirect's upcoming feed lists this 2-Year as a new auction, not a reopening (corrects this cache's prior 'reopening' label)",
       "source": "treasurydirect.gov TA_WS upcoming"
     },
     {
@@ -70,10 +70,10 @@
     {
       "ts_et": "2026-07-29T14:30:00-04:00",
       "type": "fed",
-      "name": "Powell press conference",
+      "name": "Warsh press conference",
       "importance": "Critical",
-      "reason": "Only forward-guidance signal this meeting since no SEP/dot plot is published",
-      "source": "WebSearch synthesis \u2014 Confirmed-multiple"
+      "reason": "Only forward-guidance signal this meeting since no SEP/dot plot is published; Kevin Warsh has chaired the Fed since 2026-05-22 (see ledgers/corrections.json), not Powell -- this cache entry carried the pre-correction name and is fixed this run",
+      "source": "federalreserve.gov other20260522a.htm (Confirmed-primary, Fed Chair identity); WebSearch synthesis (meeting mechanics) \u2014 Confirmed-multiple"
     },
     {
       "ts_et": "2026-07-29T16:05:00-04:00",
