@@ -1,119 +1,23 @@
 {
-  "fetched": "2026-07-29T05:50:00-04:00",
-  "earnings_fetched": "2026-07-28",
-  "earnings_fetched_note": "Alpha Vantage EARNINGS_CALENDAR and Finnhub calendar/earnings both succeeded this run (first successful primary-calendar pull) -- confirmed BA/RCL/KO/F reporting this week with specific dates/times; used to verify today's Boeing and Royal Caribbean 8-K filings directly against SEC EDGAR.",
+  "fetched": "2026-07-30T05:50:00-04:00",
+  "earnings_fetched": "2026-07-30",
+  "earnings_fetched_note": "Alpha Vantage EARNINGS_CALENDAR and Finnhub calendar/earnings both succeeded this run (first successful pull in several editions) -- confirmed Altria (MO) reports today Jul 30 before open, and ExxonMobil (XOM)/Chevron (CVX)/AbbVie (ABBV) all report tomorrow Jul 31 before open. Corrects a prior single-source placeholder that had Visa reporting today (Visa actually reported Jul 28 after close, confirmed via this run's SEC EDGAR sweep) and a prior unconfirmed 'this week' bucket entry for XOM/CVX/ABBV/MO.",
   "events": [
-    {
-      "ts_et": "2026-07-27T13:00:00-04:00",
-      "type": "auction",
-      "name": "2-Year Note auction, $69B",
-      "importance": "Medium",
-      "reason": "Routine refunding; watch bid-to-cover and indirect take-down for demand signal ahead of Wed FOMC",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-27T13:00:00-04:00",
-      "type": "auction",
-      "name": "5-Year Note auction, $70B",
-      "importance": "Medium",
-      "reason": "Belly-of-curve supply into FOMC week",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-27T00:00:00-04:00",
-      "type": "auction",
-      "name": "13-Week Bill, $92B / 26-Week Bill, $79B",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-28T00:00:00-04:00",
-      "type": "auction",
-      "name": "6-Week Bill, $95B",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-28T13:00:00-04:00",
-      "type": "auction",
-      "name": "7-Year Note auction, $44B",
-      "importance": "Medium",
-      "reason": "Final coupon auction before FOMC decision; historically most tail-prone tenor",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-28T00:00:00-04:00",
-      "type": "fed",
-      "name": "FOMC meeting begins (Day 1 of 2)",
-      "importance": "Critical",
-      "reason": "Two-day policy meeting; no Summary of Economic Projections at this meeting (non-SEP), so the statement, vote count, and Powell press conference are the only new signals",
-      "source": "WebSearch synthesis (KuCoin, Forbes, CME Group, Yahoo Finance, financecalendar.com) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-29T00:00:00-04:00",
-      "type": "auction",
-      "name": "2-Year Note auction, $30B; 17-Week Bill, $72B",
-      "importance": "Low",
-      "reason": "Routine supply; TreasuryDirect's upcoming feed lists this 2-Year as a new auction, not a reopening (corrects this cache's prior 'reopening' label)",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-29T14:00:00-04:00",
-      "type": "fed",
-      "name": "FOMC rate decision",
-      "importance": "Critical",
-      "reason": "Consensus (per prediction markets/futures cited in press) is ~83-85% probability of a hold at 3.50-3.75%; a surprise either direction is the week's largest single market-moving risk",
-      "source": "WebSearch synthesis (Polymarket, Forbes, CME FedWatch coverage) \u2014 Confirmed-multiple, probability is market-implied not certain"
-    },
-    {
-      "ts_et": "2026-07-29T14:30:00-04:00",
-      "type": "fed",
-      "name": "Warsh press conference",
-      "importance": "Critical",
-      "reason": "Only forward-guidance signal this meeting since no SEP/dot plot is published; Kevin Warsh has chaired the Fed since 2026-05-22 (see ledgers/corrections.json), not Powell -- this cache entry carried the pre-correction name and is fixed this run",
-      "source": "federalreserve.gov other20260522a.htm (Confirmed-primary, Fed Chair identity); WebSearch synthesis (meeting mechanics) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-29T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Microsoft (MSFT) \u2014 after close",
-      "importance": "Critical",
-      "reason": "Mega-cap; AI capex trajectory in focus given the sector's recent capex-vs-cash-flow scrutiny",
-      "source": "WebSearch synthesis (CNBC, Kiplinger) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-29T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Meta Platforms (META) \u2014 after close",
-      "importance": "Critical",
-      "reason": "Mega-cap; AI spend guidance",
-      "source": "WebSearch synthesis (CNBC, Kiplinger) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-29T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Arm Holdings (ARM) \u2014 after close",
-      "importance": "High",
-      "reason": "AI/semis bellwether",
-      "source": "WebSearch synthesis \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-29T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Qualcomm (QCOM) \u2014 after close",
-      "importance": "High",
-      "reason": "Semis/handset read-through",
-      "source": "WebSearch synthesis (TipRanks) \u2014 Single-reliable-source on exact day"
-    },
     {
       "ts_et": "2026-07-30T08:30:00-04:00",
       "type": "econ_release",
       "name": "GDP (Advance Estimate), Q2 2026",
       "importance": "Critical",
       "reason": "First read on Q2 growth; comes one day after the FOMC decision so it is read partly through a post-decision lens",
-      "source": "bea.gov official release schedule \u2014 Confirmed-primary"
+      "source": "bea.gov official release schedule — Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-07-30T08:30:00-04:00",
+      "type": "hearing",
+      "name": "Fauci testimony, Senate Homeland Security Committee",
+      "importance": "Medium",
+      "reason": "Scheduled Senate testimony; watch for notable public-health commentary",
+      "source": "WebSearch synthesis (committee schedule) — Confirmed-primary on timing"
     },
     {
       "ts_et": "2026-07-30T00:00:00-04:00",
@@ -126,34 +30,42 @@
     {
       "ts_et": "2026-07-30T08:00:00-04:00",
       "type": "earnings",
-      "name": "Visa (V) \u2014 before open",
-      "importance": "High",
-      "reason": "Consumer-spending bellwether",
-      "source": "WebSearch synthesis \u2014 Single-reliable-source on exact day"
-    },
-    {
-      "ts_et": "2026-07-30T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Apple (AAPL) \u2014 after close",
-      "importance": "Critical",
-      "reason": "Mega-cap; iPhone cycle and services growth in focus",
-      "source": "WebSearch synthesis (CNBC, Kiplinger) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-30T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Amazon (AMZN) \u2014 after close",
-      "importance": "Critical",
-      "reason": "Mega-cap; AWS growth and capex",
-      "source": "WebSearch synthesis (CNBC, Kiplinger) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-30T00:00:00-04:00",
-      "type": "earnings",
-      "name": "ExxonMobil (XOM), Chevron (CVX), Boeing (BA), Coca-Cola (KO), AbbVie (ABBV), Ford (F), Altria (MO), SoFi (SOFI) \u2014 reporting this week",
+      "name": "Altria (MO) — before open",
       "importance": "Medium",
-      "reason": "Widely previewed as reporting during the week of Jul 27-31, but no primary calendar API was reachable this run (Alpha Vantage/Finnhub both key-gated) \u2014 exact day/time not independently confirmed",
-      "source": "WebSearch synthesis (Seeking Alpha earnings-week preview) \u2014 Single-reliable-source, day unconfirmed"
+      "reason": "Consumer-staples earnings; EPS est. $1.50",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-07-30T16:05:00-04:00",
+      "type": "earnings",
+      "name": "Apple (AAPL) — after close",
+      "importance": "Critical",
+      "reason": "Mega-cap; iPhone cycle and services growth in focus; EPS est. $1.93",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-07-30T16:05:00-04:00",
+      "type": "earnings",
+      "name": "Amazon (AMZN) — after close",
+      "importance": "Critical",
+      "reason": "Mega-cap; AWS growth and capex; EPS est. $1.81",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-07-30T20:00:00-04:00",
+      "type": "launch",
+      "name": "Rocket Lab Electron — LOXSAT 1, StriX Launch 11, iQPS Launch 7 (Mahia, NZ, 3 missions TBD)",
+      "importance": "Low",
+      "reason": "Small-sat rideshare missions, times To Be Determined",
+      "source": "Launch Library 2 — Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-07-30T20:00:00-04:00",
+      "type": "launch",
+      "name": "Mir — Demo Flight (Sea Launch)",
+      "importance": "Low",
+      "reason": "New entrant demo flight, time To Be Determined",
+      "source": "Launch Library 2 — Confirmed-primary"
     },
     {
       "ts_et": "2026-07-31T08:30:00-04:00",
@@ -161,71 +73,55 @@
       "name": "Employment Cost Index, Q2 2026",
       "importance": "High",
       "reason": "Key wage-inflation gauge the Fed watches; released two days after the rate decision",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
+      "source": "bls.gov schedule ICS — Confirmed-primary"
     },
     {
-      "ts_et": "2026-07-29T10:00:00-04:00",
-      "type": "econ_release",
-      "name": "Metropolitan Area Employment and Unemployment (Monthly)",
-      "importance": "Low",
-      "reason": "Regional detail, not a market mover",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
+      "ts_et": "2026-07-31T08:00:00-04:00",
+      "type": "earnings",
+      "name": "ExxonMobil (XOM) — before open",
+      "importance": "High",
+      "reason": "Windfall-profit quarter expected given the oil-price surge; EPS est. $3.79",
+      "source": "ExxonMobil investor-relations page (primary); Alpha Vantage EARNINGS_CALENDAR — Confirmed-multiple"
     },
     {
-      "ts_et": "2026-07-29T10:00:00-04:00",
-      "type": "econ_release",
-      "name": "Quarterly Business Employment Dynamics",
-      "importance": "Low",
-      "reason": "Backward-looking establishment churn data",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
+      "ts_et": "2026-07-31T08:00:00-04:00",
+      "type": "earnings",
+      "name": "Chevron (CVX) — before open",
+      "importance": "High",
+      "reason": "Energy-sector earnings; EPS est. $5.79",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
     },
     {
-      "ts_et": "2026-07-29T02:00:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 Block 5 \u2014 Starlink Group 17-52 (Vandenberg SFB)",
-      "importance": "Low",
-      "reason": "Routine Starlink deployment",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-07-29T07:50:00-04:00",
-      "type": "launch",
-      "name": "Long March 7A \u2014 unknown payload (Wenchang)",
-      "importance": "Low",
-      "reason": "Chinese orbital launch, payload undisclosed",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-07-29T21:00:00-04:00",
-      "type": "launch",
-      "name": "Long March 6A \u2014 unknown payload (Taiyuan)",
-      "importance": "Low",
-      "reason": "Chinese orbital launch, payload undisclosed",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-07-30T03:09:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 Block 5 \u2014 NROL-95 (Cape Canaveral)",
+      "ts_et": "2026-07-31T08:00:00-04:00",
+      "type": "earnings",
+      "name": "AbbVie (ABBV) — before open",
       "importance": "Medium",
-      "reason": "National Reconnaissance Office payload",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
+      "reason": "Pharma earnings; EPS est. $3.66",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
     },
     {
-      "ts_et": "2026-07-30T20:00:00-04:00",
-      "type": "launch",
-      "name": "Rocket Lab Electron \u2014 LOXSAT 1, StriX Launch 11, iQPS Launch 7 (Mahia, NZ, 3 missions TBD)",
-      "importance": "Low",
-      "reason": "Small-sat rideshare missions, times To Be Determined",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
+      "ts_et": "2026-08-03T16:00:00-04:00",
+      "type": "legal",
+      "name": "SCOTUS mail-ballot EO stay: respondent states' written response due",
+      "importance": "Critical",
+      "reason": "Justice Jackson's scheduling order deadline on the emergency stay application; procedural, not a merits ruling",
+      "source": "SCOTUSblog, The Hill — Confirmed-multiple"
     },
     {
-      "ts_et": "2026-07-30T20:00:00-04:00",
-      "type": "launch",
-      "name": "Mir \u2014 Demo Flight (Sea Launch)",
-      "importance": "Low",
-      "reason": "New entrant demo flight, time To Be Determined",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
+      "ts_et": "2026-08-04T00:00:00-04:00",
+      "type": "earnings",
+      "name": "SpaceX (SPCX) — date TBD",
+      "importance": "Medium",
+      "reason": "First public earnings report ahead of the Aug 6 share-lockup expiration",
+      "source": "Motley Fool, Reuters/Investing.com — Confirmed-multiple on timing"
+    },
+    {
+      "ts_et": "2026-08-06T00:00:00-04:00",
+      "type": "other",
+      "name": "SpaceX (SPCX) share-lockup expiration",
+      "importance": "Medium",
+      "reason": "Up to ~911.5M shares unlock, expanding tradeable float from ~4.9% to ~12% of shares outstanding",
+      "source": "Motley Fool, Reuters/Investing.com — Confirmed-multiple"
     }
   ]
 }
