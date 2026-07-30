@@ -169,6 +169,36 @@
       "probability": "15-25%",
       "basis": "Atlanta Fed GDPNow at 1.54% (Jul 28) and prediction-market pricing (~88% probability of a print at or above 1.0%) both cluster around modest-but-positive growth within the existing forecast range; a below-range print would be a genuine surprise against that backdrop.",
       "status": "open"
+    },
+    {
+      "id": "2026-07-30-pm-1",
+      "date": "2026-07-30",
+      "slot": "pm",
+      "forecast": "Apple or Amazon (or both) move more than 5% in the session following tonight's after-close earnings.",
+      "horizon": "2026-07-31",
+      "probability": "45-55%",
+      "basis": "Three of the four mega-cap reporters this week (Microsoft, Meta, and to a lesser extent Arm/Qualcomm) have already moved more than 5% on results; Apple and Amazon face similar AI-capex-scrutiny dynamics, though Apple historically reacts more mutedly to earnings than these AI-infrastructure-exposed names.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-30-pm-2",
+      "date": "2026-07-30",
+      "slot": "pm",
+      "forecast": "Microsoft retains at least half of today's 15.56% gain through Friday's close (i.e., does not close Friday more than ~8% below today's close).",
+      "horizon": "2026-07-31",
+      "probability": "55-65%",
+      "basis": "Today's move reflects a confirmed Azure/capex beat plus a one-time $3.2B Anthropic-stake gain, not short covering alone, arguing for durability, though moves of this historic size have occasionally partially unwound on index-rebalancing or profit-taking flows in other names.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-30-pm-3",
+      "date": "2026-07-30",
+      "slot": "pm",
+      "forecast": "No formal NATO Article 4 consultation is invoked over today's Poland missile-crash incident within 72 hours.",
+      "horizon": "2026-08-02",
+      "probability": "55-70%",
+      "basis": "Poland's response so far (scrambling jets, government attribution statements without a confirmed Article 4 request as of this report's cutoff) has been measured; genuine uncertainty remains given this is described as a missile rather than debris, a more serious category of incursion.",
+      "status": "open"
     }
   ]
 }
