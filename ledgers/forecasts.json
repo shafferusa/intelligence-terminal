@@ -229,6 +229,36 @@
       "probability": "55-65%",
       "basis": "Premarket futures point higher (ES +0.5%) after both Amazon and Apple beat estimates after Thursday's close, but today's Employment Cost Index release and the unconfirmed Iran-Kuwait strike claim are each independent sources of intraday reversal risk not yet reflected in the premarket tape.",
       "status": "open"
+    },
+    {
+      "id": "2026-07-31-pm-1",
+      "date": "2026-07-31",
+      "slot": "pm",
+      "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
+      "horizon": "2026-08-07",
+      "probability": "55-65%",
+      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-31-pm-2",
+      "date": "2026-07-31",
+      "slot": "pm",
+      "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
+      "horizon": "2026-08-13",
+      "probability": "45-55%",
+      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+      "status": "open"
+    },
+    {
+      "id": "2026-07-31-pm-3",
+      "date": "2026-07-31",
+      "slot": "pm",
+      "forecast": "Coinbase (COIN) draws at least one sell-side price-target cut within 5 trading days of today's Q2 report (third consecutive quarterly loss, revenue -14% YoY).",
+      "horizon": "2026-08-07",
+      "probability": "55-65%",
+      "basis": "Pattern of analyst reaction to consecutive-quarter deterioration in a widely covered name, weighed against a broader crypto-sector narrative that could offset company-specific concern.",
+      "status": "open"
     }
   ]
 }

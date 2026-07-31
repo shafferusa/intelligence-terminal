@@ -17,6 +17,15 @@
       "error_source": "An off-by-one day-count drift that began in the 2026-07-27-pm edition, which incremented the count on the same calendar day as that morning's edition without re-verifying the pause's actual start date against dated source reporting; today's AM edition continued the drift by one more day.",
       "conclusions_changed": false,
       "note": "Verified via WebSearch against multiple outlets' own datelines this run. Does not change any prior story's substance -- only the day-count label. Corrected in today's report (2026-07-28-pm) Top Stories and Section 20."
+    },
+    {
+      "found": "2026-07-31",
+      "report": "reports/2026/07/2026-07-31-am.html",
+      "original": "This morning's edition (2026-07-31-am) did not cover President Trump's Board of Peace announcement of a Hamas disarmament agreement for Gaza, a major story that broke Thursday afternoon/evening (2026-07-30), before that edition's news cutoff.",
+      "corrected": "Added to today's Closing Brief (2026-07-31-pm) Top Stories and Section 4, one news cycle late, with the coverage gap disclosed explicitly rather than the story being folded in as if newly broken.",
+      "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-07-31-am edition did not surface the story despite its prominence in wire coverage dated Jul 30.",
+      "conclusions_changed": false,
+      "note": "This is a completeness gap, not an inaccurate statement previously published. Logged per SR SS9 for transparency; no prior published sentence needed correcting, so no diff against prior report text is shown."
     }
   ]
 }
