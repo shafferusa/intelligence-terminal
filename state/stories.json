@@ -2,13 +2,13 @@
   "stories": [
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "US-Iran conflict widens further: Iran claims destroying F-35s in a Kuwait base strike (unconfirmed by CENTCOM)",
+      "headline": "US-Iran conflict: CENTCOM explicitly denies Iran's claimed Kuwait F-35 strike",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-31-am",
-      "verification": "Confirmed-primary (Iran made the claim, via its own state media); Disputed/Unverified (the claim's substance, no US confirmation)",
-      "one_line": "Iran's army claims a drone strike destroyed 3 F-35s and damaged 3 more, killing personnel, at Ahmad al-Jaber Air Base, Kuwait, in retaliation for Wednesday's Qeshm Island strike. CENTCOM has not confirmed; a CNN headline explicitly frames it as \"Iran claims attack...but US reports no fresh strikes.\" Forecast 2026-07-31-am-1 logged on non-confirmation within 48h. Saudi Arabia says 14 countries back its new Maritime Defense Alliance proposal.",
-      "score_note": "Conflict footprint keeps broadening on claims alone; highest-priority active thread, now hinging on independent confirmation.",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-primary (CENTCOM's own denial statement)",
+      "one_line": "CENTCOM stated no US aircraft, including F-35s, were destroyed or damaged in the recent attempted Iranian strikes on Jordan or Kuwait, and that incoming missiles/drones were intercepted or failed to reach their targets. Resolves forecast 2026-07-31-am-1 as correct ahead of its full 48h horizon. Iranian state media had not responded to the denial as of this run's cutoff. Saudi Arabia's Maritime Defense Alliance firmed up with 14 named countries and 43-nation planning talks in Riyadh (see saudi-maritime-defense-alliance-jul30).",
+      "score_note": "Clearest US on-the-record rebuttal of this conflict's damage claims to date; modestly de-escalatory on this specific claim, though the underlying campaign continues.",
       "sources": [
         "IRIB/Iranian Army Public Relations (state media, flagged)",
         "CNN",
@@ -20,13 +20,13 @@
     },
     {
       "id": "megacap-earnings-split-jul30",
-      "headline": "Mega-cap earnings week closes out: Amazon posts first $200B+ quarter (AWS +37%), Apple beats too; Thursday's MSFT/META split still the week's defining split",
-      "status": "Materially changed",
+      "headline": "Mega-cap earnings week closes with a split cash-session verdict: Amazon +15.5%, Apple -7.2% on weak guidance",
+      "status": "Resolved",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-31-am",
+      "last_updated": "2026-07-31-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Amazon Q2: $200.6B net sales (+20% YoY, first time over $200B), AWS $42.2B (+37% YoY, 18-quarter high), operating income +43% to $27.5B; premarket +12%. Apple fiscal Q3: $109.4B revenue (+16% YoY, \"strongest June quarter ever\"), EPS $2.02 vs $1.88 est. Both beat after Thursday's close, following MSFT's historic +15.56% Wednesday-earnings rally and META's continuing -8.00% decline. Forecast 2026-07-30-pm-1 (either moves >5%) trending toward realized on Amazon's premarket move alone; formal resolution awaits today's close.",
-      "score_note": "Completes the week's five-mega-cap earnings arc; today's cash session is the real test of durability.",
+      "one_line": "Amazon closed +15.46% (this run's data) on its first $200B+ quarter and 37% AWS growth. Apple closed -7.19% despite beating on revenue/EPS, dragged by weak guidance (9-11% next-quarter revenue growth vs ~12% Street), rising memory costs, a Services miss and softer Greater China revenue. Resolves forecast 2026-07-30-pm-1 (either moves >5%) as CORRECT. Closes the week's five-mega-cap earnings arc.",
+      "score_note": "Full cash-session resolution; no further tracking needed unless new developments emerge.",
       "sources": [
         "Amazon and Apple investor-relations releases (primary)",
         "SEC EDGAR 8-K feed, this run (primary)",
@@ -132,13 +132,13 @@
     },
     {
       "id": "drc-ebola-outbreak-2026",
-      "headline": "DRC Ebola: UN coordinator says 50 died in a single 24-hour period as case count passes 3,300",
+      "headline": "DRC Ebola outbreak becomes the second-largest on record",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-31-am",
-      "verification": "Confirmed-multiple (UN briefing); Single-reliable-source chain (DRC case-count figures)",
-      "one_line": "Case/death figures now approximately 3,442 cases and 1,521 deaths (up from 3,360/1,487 ~Jul 29). Uganda's linked outbreak (20 cases, 2 deaths) was declared over Jul 28 by its Ministry of Health. UN coordinator Harneis's 'doubling every 20 days' characterization and the WFP funding gap remain the key severity signals; no update on the preventive-treatment trial.",
-      "score_note": "Case growth continues; Uganda side of the outbreak now formally closed, DRC side still accelerating.",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-multiple (CNN, citing WHO/UN data); Single-reliable-source chain (precise day-over-day DRC case-count figures)",
+      "one_line": "Case/death figures now roughly 3,553 cases and 1,558 deaths (up from 3,442/1,521 this morning). CNN reports the outbreak has surpassed the 2018-2020 DRC outbreak's total case count in just over two months versus that outbreak's nearly two years, making it the second-largest Ebola outbreak on record. No sign of deceleration in today's data.",
+      "score_note": "Historically anomalous growth rate now explicitly framed as such by outlets covering WHO/UN data, not just a large outbreak.",
       "sources": [
         "WHO Ebola outbreak DRC 2026 situation page (primary)",
         "ECDC",
@@ -350,13 +350,13 @@
     },
     {
       "id": "employment-cost-index-q2",
-      "headline": "Employment Cost Index Q2 2026, Fri Jul 31 8:30 ET",
-      "status": "Continuing",
+      "headline": "Employment Cost Index Q2 2026 -- see employment-cost-index-q2-2026-result",
+      "status": "Resolved",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-31-am",
+      "last_updated": "2026-07-31-pm",
       "verification": "Confirmed-primary",
-      "one_line": "Due today 8:30 ET, after this report's cutoff. Q1 2026 baseline: private-industry compensation costs +3.4% YoY. Forecast 2026-07-31-am-2 logged (45-55% at-or-below ~0.5% Q/Q).",
-      "score_note": "Fed's preferred wage-inflation gauge; releases today.",
+      "one_line": "Released 8:30 ET today; result and forecast grading tracked under employment-cost-index-q2-2026-result. Not separately tracked further.",
+      "score_note": "Resolved into employment-cost-index-q2-2026-result.",
       "sources": [
         "bls.gov schedule ICS"
       ],
@@ -373,20 +373,6 @@
       "score_note": "Dropped from Top Stories pending new developments.",
       "sources": [
         "Rep. Obernolte press release"
-      ],
-      "watch": true
-    },
-    {
-      "id": "ndaa-fy2027",
-      "headline": "NDAA FY2027: still stalled in Senate on filibuster threat",
-      "status": "Faded",
-      "first_seen": "2026-07-27-am",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "No new floor action found; House was in pro forma session only today. Still stalled in the Senate since the House's Jul 22 216-212 passage.",
-      "score_note": "Direct relevance to defense/aerospace watchlist via program authorizations.",
-      "sources": [
-        "congress.gov"
       ],
       "watch": true
     },
@@ -439,16 +425,121 @@
     },
     {
       "id": "saudi-maritime-defense-alliance-jul30",
-      "headline": "Saudi Arabia proposes a 14-country 'Maritime Defense Alliance' amid Gulf shipping-lane risk from the widening Iran conflict",
-      "status": "New",
+      "headline": "Saudi-led Maritime Defense Alliance firms up: 14 named countries, Riyadh HQ, 43-nation talks",
+      "status": "Materially changed",
       "first_seen": "2026-07-31-am",
-      "last_updated": "2026-07-31-am",
-      "verification": "Confirmed-primary (Saudi defense ministry statement), secondary wire confirmation on the 14-country count",
-      "one_line": "Saudi Arabia's defense ministry said 14 countries have backed its proposal to establish a Maritime Defense Alliance protecting international shipping routes, a direct policy response to the widening US-Iran conflict's threat to Gulf shipping.",
-      "score_note": "New multilateral security proposal directly tied to the conflict's economic/shipping risk; watch for formal signatories.",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-primary (Saudi defense ministry statement), secondary wire confirmation on named countries and talks",
+      "one_line": "The 14 backing countries are now named specifically (Saudi Arabia, Kuwait, Bahrain, Qatar, Pakistan, Turkey, Egypt, Jordan, Yemen, Bangladesh, Nigeria, Sudan, Djibouti, Somalia); military representatives from 43 countries discussed structure/command in Riyadh, expected to host the alliance's HQ. A direct policy response to the widening US-Iran conflict's Gulf/Red Sea shipping-lane risk.",
+      "score_note": "Moved from stated intent to a concrete membership list and active planning process; watch for a founding charter.",
       "sources": [
         "Saudi defense ministry statement (primary)",
-        "wire reporting"
+        "UPI",
+        "Al Jazeera",
+        "Ratopati",
+        "Saudi Gazette",
+        "The Defense Post"
+      ],
+      "watch": true
+    },
+    {
+      "id": "gaza-hamas-disarmament-deal-jul30",
+      "headline": "Trump's Board of Peace announces a Hamas disarmament deal for Gaza; Israel and Hamas each voice sequencing skepticism",
+      "status": "New",
+      "first_seen": "2026-07-31-pm",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-multiple (Washington Times, Al Jazeera, Axios, Jerusalem Post, CNN, NPR)",
+      "one_line": "Announced Thursday Jul 30 (mediated by Egypt, Qatar, Turkey via the Board of Peace): phased Hamas/armed-group disarmament in Gaza, followed by Israeli withdrawal; an International Stabilization Force to work with a new Palestinian police force; disarmament roadmap due within 14 days (~Aug 13). Israeli officials reported 'deeply skeptical' Hamas will disarm; a senior Hamas official's comments suggest the disarmament-before-withdrawal sequencing is contested. This system did not surface the story in the 2026-07-31-am edition despite it breaking Thursday -- a coverage gap disclosed in that edition's Sources & Corrections rather than silently backfilled. Forecast 2026-07-31-pm-2 logged (roadmap not finalized on schedule, 45-55%).",
+      "score_note": "Major diplomatic development, implementation odds genuinely uncertain; watch the 14-day roadmap deadline.",
+      "sources": [
+        "Washington Times",
+        "Al Jazeera",
+        "Axios",
+        "Jerusalem Post",
+        "CNN Politics",
+        "NPR"
+      ],
+      "watch": true
+    },
+    {
+      "id": "employment-cost-index-q2-2026-result",
+      "headline": "Employment Cost Index Q2 2026 prints hot at +0.9% Q/Q, well above the ~0.4% model estimate",
+      "status": "Resolved",
+      "first_seen": "2026-07-31-pm",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-primary (BLS)",
+      "one_line": "BLS: compensation costs +0.9% Q/Q seasonally adjusted (wages +0.9%, benefits +1.0%), +3.4% Y/Y. Resolves forecast 2026-07-31-am-2 (at-or-below ~0.5% Q/Q, 45-55%) as WRONG. Complicates rather than resolves the 'weak growth, sticky inflation' tension two days after the FOMC's hawkish hold and one day after the GDP miss.",
+      "score_note": "Resolves prior forecast; supersedes employment-cost-index-q2 (pre-release tracking entry).",
+      "sources": [
+        "bls.gov/news.release/eci.nr0.htm (primary)",
+        "FRED ECIWAG"
+      ],
+      "watch": false
+    },
+    {
+      "id": "novo-nordisk-zeus-trial-failure-jul31",
+      "headline": "Novo Nordisk erases ~$30B in market value as its ziltivekimab cardiovascular trial fails",
+      "status": "New",
+      "first_seen": "2026-07-31-pm",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-primary (company disclosure), Confirmed-multiple (press)",
+      "one_line": "Phase 3 ZEUS trial of ziltivekimab (IL-6 pathway) showed no reduction in major adverse cardiovascular events versus placebo, despite hitting biological targets. Shares closed -8.63% (this run's data). Removes a major pipeline asset beyond Novo's core GLP-1 franchise. Forecast 2026-07-31-pm-1 logged (does not recover half the decline within 5 sessions, 55-65%).",
+      "score_note": "Largest single-name health-care decliner this run; no broad pharma-sector contagion evident.",
+      "sources": [
+        "Novo Nordisk trial disclosure (primary, via wire)",
+        "CNBC",
+        "Forbes",
+        "Yahoo Finance",
+        "Schaeffer's Investment Research"
+      ],
+      "watch": true
+    },
+    {
+      "id": "exxon-chevron-windfall-earnings-jul31",
+      "headline": "ExxonMobil and Chevron post windfall Q2 profits on Iran-war-driven oil prices",
+      "status": "New",
+      "first_seen": "2026-07-31-pm",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-primary (company reports, EDGAR)",
+      "one_line": "Exxon: $14.5B GAAP earnings ($3.52 adjusted EPS, an 8-cent miss). Chevron: net income $12.1B, up ~400% Y/Y, adjusted EPS $6.06 (beat by $0.50). Both explicitly attributed the surge to Iran-conflict-elevated oil prices. XLE +1.11%, WTI +1.41% today.",
+      "score_note": "Direct primary-sourced example of the Iran conflict's economic spillover into US corporate earnings.",
+      "sources": [
+        "ExxonMobil and Chevron investor-relations releases (primary)",
+        "SEC EDGAR 8-K feed, this run (primary)",
+        "CNBC",
+        "CNN Business"
+      ],
+      "watch": false
+    },
+    {
+      "id": "coinbase-q2-2026-loss-jul31",
+      "headline": "Coinbase posts a third straight quarterly loss as revenue falls 14%",
+      "status": "New",
+      "first_seen": "2026-07-31-pm",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-primary (company report)",
+      "one_line": "Q2 revenue $1.22B (-14% Y/Y), net loss $359.5M, third consecutive quarterly loss. Shares closed -9.27% (this run's data), this run's sharpest financials-watchlist decliner. Forecast 2026-07-31-pm-3 logged (at least one sell-side price-target cut within 5 sessions, 55-65%).",
+      "score_note": "Sharpest single-name financials decline this run; no clear read-through to broader crypto-asset prices identified.",
+      "sources": [
+        "Coinbase Q2 2026 report (primary, via wire coverage)"
+      ],
+      "watch": true
+    },
+    {
+      "id": "ndaa-fy2027",
+      "headline": "NDAA FY2027 remains blocked in the Senate as Sen. Duckworth presses her Iran-war-funding amendment",
+      "status": "Materially changed",
+      "first_seen": "2026-07-27-am",
+      "last_updated": "2026-07-31-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Senate Democrats continue blocking a motion to proceed on the $1.15T NDAA (House passed Jul 22, 216-212). Sen. Tammy Duckworth says she will vote no unless her amendment -- barring funds for offensive Iran operations without new congressional authorization, and withholding the Defense Secretary's travel funding pending a readiness report -- is included. Layered on a separate topline dispute (up to $1.5T if paired with a reported $350B reconciliation request).",
+      "score_note": "Materially more specific than 'still stalled' -- the Duckworth amendment is now the identified blocking issue.",
+      "sources": [
+        "Sen. Duckworth's official press releases (primary)",
+        "Breaking Defense",
+        "The Hill",
+        "PBS NewsHour",
+        "Democracy Now"
       ],
       "watch": true
     }
