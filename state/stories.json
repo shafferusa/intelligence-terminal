@@ -2,38 +2,57 @@
   "stories": [
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "US-Iran conflict widens further: Egypt officially confirms drone strike, new US-Saudi strikes on Iraqi militias, Senate narrowly fails to end US involvement",
+      "headline": "US-Iran conflict widens further: Iran claims destroying F-35s in a Kuwait base strike (unconfirmed by CENTCOM)",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple (Egypt confirmation, Iraq PMF strikes, Senate vote); Single-reliable-source (Qeshm Island casualty detail, still unconfirmed by the West)",
-      "one_line": "Egypt's government officially confirmed Thursday's drone strike on its port (upgrade from this morning's single-source framing). New: US-Saudi strikes hit Iran-aligned PMF sites in Iraq (20 reportedly killed); Jordan's FM warned of a possible direct Israeli strike; the Senate narrowly failed (47-49) a War Powers resolution. Qeshm Island toll detail firmed (father, mother, 2-year-old killed) but remains sourced only to Iranian state media/Al Jazeera/MEE, not Western-confirmed. Forecast 2026-07-30-am-1 (4th-country strike or high-casualty event) trending toward realized, not force-resolved.",
-      "score_note": "Conflict footprint keeps broadening across multiple fronts simultaneously; highest-priority active thread.",
-      "sources": ["CBS News", "CNN", "ABC News", "NBC News", "Al Jazeera", "Jerusalem Post", "Washington Times", "FDD", "Washington Post", "IRNA/Press TV/Tasnim (state media, flagged)"],
+      "last_updated": "2026-07-31-am",
+      "verification": "Confirmed-primary (Iran made the claim, via its own state media); Disputed/Unverified (the claim's substance, no US confirmation)",
+      "one_line": "Iran's army claims a drone strike destroyed 3 F-35s and damaged 3 more, killing personnel, at Ahmad al-Jaber Air Base, Kuwait, in retaliation for Wednesday's Qeshm Island strike. CENTCOM has not confirmed; a CNN headline explicitly frames it as \"Iran claims attack...but US reports no fresh strikes.\" Forecast 2026-07-31-am-1 logged on non-confirmation within 48h. Saudi Arabia says 14 countries back its new Maritime Defense Alliance proposal.",
+      "score_note": "Conflict footprint keeps broadening on claims alone; highest-priority active thread, now hinging on independent confirmation.",
+      "sources": [
+        "IRIB/Iranian Army Public Relations (state media, flagged)",
+        "CNN",
+        "Al Jazeera",
+        "ANI",
+        "Tribune India"
+      ],
       "watch": true
     },
     {
       "id": "megacap-earnings-split-jul30",
-      "headline": "Microsoft's rally becomes possibly the largest single-day market-cap gain ever; Meta's decline persists; L3Harris falls on IPO-delay news",
+      "headline": "Mega-cap earnings week closes out: Amazon posts first $200B+ quarter (AWS +37%), Apple beats too; Thursday's MSFT/META split still the week's defining split",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Confirmed-multiple",
-      "one_line": "MSFT closed +15.56% ($451.57 vs $390.54 Wed close; day high $458.69, +17%), Bloomberg tracked an intraday market-cap gain of ~$490B as potentially the largest ever for a single stock; includes a confirmed $3.2B one-time gain on Microsoft's Anthropic equity stake. META closed -8.00%, continuing its post-earnings decline. New: L3Harris (LHX) fell 8.65% despite a beat-and-raise quarter, after delaying its missile-unit IPO to next year. Separately, Quanta Services (+17.3%), Huntington Ingalls (+14.2%) and Regeneron (+5.9%) all beat-and-raised; Altria (-8.5%) missed narrowly on EPS.",
-      "score_note": "Single biggest market story of the week; direct test case for AI-capex-reward-vs-punish framing continues into Apple/Amazon tonight.",
-      "sources": ["this run's own Yahoo Finance fetch", "Bloomberg", "TradingKey", "Benzinga", "QuiverQuant", "Motley Fool", "Investing.com", "StockStory", "RTTNews"],
+      "one_line": "Amazon Q2: $200.6B net sales (+20% YoY, first time over $200B), AWS $42.2B (+37% YoY, 18-quarter high), operating income +43% to $27.5B; premarket +12%. Apple fiscal Q3: $109.4B revenue (+16% YoY, \"strongest June quarter ever\"), EPS $2.02 vs $1.88 est. Both beat after Thursday's close, following MSFT's historic +15.56% Wednesday-earnings rally and META's continuing -8.00% decline. Forecast 2026-07-30-pm-1 (either moves >5%) trending toward realized on Amazon's premarket move alone; formal resolution awaits today's close.",
+      "score_note": "Completes the week's five-mega-cap earnings arc; today's cash session is the real test of durability.",
+      "sources": [
+        "Amazon and Apple investor-relations releases (primary)",
+        "SEC EDGAR 8-K feed, this run (primary)",
+        "CNBC",
+        "Yahoo Finance",
+        "Gurufocus",
+        "Shacknews",
+        "AppleInsider"
+      ],
       "watch": true
     },
     {
       "id": "russia-ukraine-poland-missile-jul30",
       "headline": "Russia launches a major missile/drone barrage on Ukraine overnight; a suspected Russian cruise missile crashes inside NATO member Poland",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Confirmed-multiple (core event); Disputed (precise Ukraine casualty count, 8 vs 13 dead)",
-      "one_line": "Russia launched ~284 drones and 70 missiles (incl. 9 ballistic) at Ukraine overnight; Ukraine says it intercepted/suppressed most, with 11 missiles and 17 drones striking 20 locations. A suspected Kh-101 cruise missile crashed inside Poland near Tarnawa Kolonia/Biskupice; Polish PM Tusk and FM Sikorski attributed it to Russia, Polish jets scrambled. No formal NATO Article 4 consultation confirmed as invoked as of this report's cutoff.",
-      "score_note": "Direct NATO-territory security event, tracked independently of the Iran conflict; new forecast logged on Article 4 non-invocation.",
-      "sources": ["Al Jazeera", "Fox News", "Stars and Stripes", "ABC News"],
+      "one_line": "Ukraine's FM Sybiha specifically identified the object that crashed in Poland as a Russian Kh-101 cruise missile. Polish PM Tusk convened an emergency meeting; multiple outlets report no current plans to invoke NATO Article 4, narrowing but not resolving forecast 2026-07-30-pm-3 (horizon 2026-08-02). Ukraine-wide casualty count from the same barrage remains disputed (8 vs 13).",
+      "score_note": "Direct NATO-territory security event; forecast tracking whether Article 4 is invoked.",
+      "sources": [
+        "Kyiv Independent",
+        "CNN",
+        "Jerusalem Post",
+        "Foreign Policy"
+      ],
       "watch": true
     },
     {
@@ -45,7 +64,16 @@
       "verification": "Confirmed-primary",
       "one_line": "BEA's advance estimate: +1.5% annualized, down from Q1's +2.1%, missing most-cited consensus figures (1.8-2.3% range across providers). PCE inflation +3.7% YoY (down from 4.1% May). Forecast 2026-07-27-am-2 (1.0-2.5% range) resolves CORRECT; forecast 2026-07-30-am-2 (below-range print) resolves WRONG. GDPNow's final 1.5% nowcast matched the actual print almost exactly.",
       "score_note": "Resolved; first hard data point after Wednesday's FOMC surprise, complicates rather than clarifies the policy outlook given weak growth alongside above-target inflation.",
-      "sources": ["bea.gov (primary)", "CNN", "Axios", "Fox Business", "UPI", "CBS News", "NBC News", "Fortune"],
+      "sources": [
+        "bea.gov (primary)",
+        "CNN",
+        "Axios",
+        "Fox Business",
+        "UPI",
+        "CBS News",
+        "NBC News",
+        "Fortune"
+      ],
       "watch": false
     },
     {
@@ -57,7 +85,13 @@
       "verification": "Confirmed-multiple",
       "one_line": "Micron +18.4%, AMD +13.1%, Marvell +12.1% (this run's own data); wire coverage corroborates similar moves in Intel (~+13%), TSMC (~+7%) and Lam Research (~+17%), SOXX +8%+. Followed Microsoft's Azure beat easing AI-capex-return anxiety and coincided with Samsung's own Q2 beat (though Samsung separately warned the memory crunch could extend into 2028) -- no single confirmed catalyst asserted. Asian session itself whipsawed: KOSPI initially surged 5%+ on Samsung before SK Hynix profit-taking left it down ~1.23%.",
       "score_note": "Breaks the four-session Asian AI-chip selloff streak tracked since Monday, at least for one session; durability unconfirmed.",
-      "sources": ["this run's own Yahoo Finance fetch", "CNBC", "24/7 Wall St", "Benzinga", "TipRanks"],
+      "sources": [
+        "this run's own Yahoo Finance fetch",
+        "CNBC",
+        "24/7 Wall St",
+        "Benzinga",
+        "TipRanks"
+      ],
       "watch": true
     },
     {
@@ -69,19 +103,31 @@
       "verification": "Confirmed-multiple",
       "one_line": "No new Fed statement or action found today beyond continued press analysis of Wednesday's press conference (Warsh's 'impressive resilience' framing). Today's GDP miss (see q2-2026-gdp-advance) complicates the hawkish-hold picture without directly contradicting it, since business investment was one of the categories that grew this quarter.",
       "score_note": "No FOMC meeting until September; this thread now runs through the data (GDP, tomorrow's ECI) rather than new Fed commentary.",
-      "sources": ["federalreserve.gov (primary)", "CNBC", "CNN", "Forbes", "Axios"],
+      "sources": [
+        "federalreserve.gov (primary)",
+        "CNBC",
+        "CNN",
+        "Forbes",
+        "Axios"
+      ],
       "watch": true
     },
     {
       "id": "kumamoto-earthquake-jul2026",
-      "headline": "Kumamoto death toll dispute widens rather than resolves: government cites 30, Japan Times/CBS cite 34, NPR cites 25",
+      "headline": "Kumamoto death toll converges near 34 after four days of diverging counts",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple on each figure's existence; toll itself Disputed (25 vs 30 vs 34 across outlets)",
-      "one_line": "This morning's 23-34 range has not converged: PM Takaichi's government figure is 30, Japan Times/CBS report 34, NPR reports 25, Xinhua (citing Kumamoto prefecture) also reports 30. Sub-incident detail also conflicts (mall/mill death counts higher in NPR's account than this morning's tracked figures). A Nikkei Asia item claims TSMC/Toyota disruption and a Mitsubishi Electric halt, conflicting with this morning's framing; could not confirm if this is new information or a resurfaced older report.",
-      "score_note": "Toll dispute widening rather than resolving after 4 days is itself informative about incomplete on-the-ground accounting.",
-      "sources": ["Japan Times", "CBS News", "NPR", "Xinhua", "Nikkei Asia"],
+      "last_updated": "2026-07-31-am",
+      "verification": "Confirmed-multiple on 34 as the now-dominant figure; CGTN diverges at 35",
+      "one_line": "Kumamoto prefectural government's Friday-morning figure of 34 now matches NPR, Al Jazeera, KPBS and (as of yesterday) Japan Times/CBS -- the first morning since the quake most outlets have converged on the same number. CGTN separately reports 35. Nikkei Asia's TSMC/Toyota/Mitsubishi Electric disruption claim remains uncorroborated.",
+      "score_note": "First sign of convergence after four days of widening divergence.",
+      "sources": [
+        "Kumamoto prefectural government (primary, via wire)",
+        "NPR",
+        "Al Jazeera",
+        "KPBS",
+        "CGTN"
+      ],
       "watch": true
     },
     {
@@ -89,23 +135,34 @@
       "headline": "DRC Ebola: UN coordinator says 50 died in a single 24-hour period as case count passes 3,300",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Confirmed-multiple (UN briefing); Single-reliable-source chain (DRC case-count figures)",
-      "one_line": "Cases/deaths updated to 3,360/1,487 (~Jul 29) from 3,262/1,437 (~Jul 27). UN senior Ebola coordinator Julien Harneis said 50 people died of Ebola in a single 24-hour period at a Bunia briefing, describing cases as 'doubling every 20 days.' New: WFP warns 10M people in eastern DRC are acutely food insecure ($2.1B appeal only 45% funded); a post-exposure preventive-treatment trial has reportedly begun (trial, not certified treatment).",
-      "score_note": "UN's own alarming trajectory characterization materially upgrades severity beyond the raw case-count trend.",
-      "sources": ["Xinhua", "China.org.cn", "FMT", "Nepalnews", "Democracy Now", "UN News", "globalsecurity.org"],
+      "one_line": "Case/death figures now approximately 3,442 cases and 1,521 deaths (up from 3,360/1,487 ~Jul 29). Uganda's linked outbreak (20 cases, 2 deaths) was declared over Jul 28 by its Ministry of Health. UN coordinator Harneis's 'doubling every 20 days' characterization and the WFP funding gap remain the key severity signals; no update on the preventive-treatment trial.",
+      "score_note": "Case growth continues; Uganda side of the outbreak now formally closed, DRC side still accelerating.",
+      "sources": [
+        "WHO Ebola outbreak DRC 2026 situation page (primary)",
+        "ECDC",
+        "Al Jazeera",
+        "ABC News",
+        "Doctors Without Borders"
+      ],
       "watch": true
     },
     {
       "id": "blanche-ag-nomination-jul30",
       "headline": "Trump says he \"may\" pull Todd Blanche's AG nomination as Cornyn and Tillis withhold support over disputed IRS settlement",
-      "status": "New",
+      "status": "Continuing",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Senate Judiciary postponed its vote on Blanche's AG confirmation. Sens. Cornyn and Tillis are withholding support over a DOJ settlement establishing a ~$1.776-1.8B 'anti-weaponization' fund and audit-immunity provisions tied to Trump's IRS lawsuit. Trump says he 'may' pull the nomination temporarily (keeping Blanche as acting AG) and wait until Cornyn/Tillis leave office before renominating.",
-      "score_note": "New intra-party standoff over a Cabinet-level nomination; watch for formal withdrawal or renomination.",
-      "sources": ["NPR", "CNBC", "The Hill", "Forbes", "PBS NewsHour"],
+      "one_line": "No resolution found this run: Cornyn and Tillis had not reached a deal with DOJ on written assurances regarding the IRS-settlement fund as of Wednesday night. Trump's 'may pull the nomination, keep Blanche as acting AG, renominate later' framing stands. Senate approaches its August recess.",
+      "score_note": "Cabinet-level nomination standoff continues without resolution; approaching recess deadline.",
+      "sources": [
+        "CNN",
+        "NPR",
+        "CNBC",
+        "Texas Tribune"
+      ],
       "watch": true
     },
     {
@@ -117,7 +174,10 @@
       "verification": "Confirmed-multiple",
       "one_line": "This morning's 'threat moving east' forecast materialized: active fires and evacuations now underway across six Turkish provinces (Antalya/Kas, Fethiye, Ayvalik, Mugla). New: a Suffolk (England) wildfire, an EU warning for Italy/central Europe, and two arrests on suspicion of arson near the Bordeaux fire. Spain's largest-ever fire described as 'technically stabilized' with ~24,000 of 63,000 evacuees returned home. Greece's toll (3 firefighters killed) unchanged.",
       "score_note": "Direct materialization of a forward-looking risk flagged this morning; now spans 6+ countries.",
-      "sources": ["Euronews", "France24"],
+      "sources": [
+        "Euronews",
+        "France24"
+      ],
       "watch": true
     },
     {
@@ -129,20 +189,29 @@
       "verification": "Confirmed-multiple",
       "one_line": "Justice Jackson's scheduling order stands: respondent states' response due 4:00pm Aug 3, a procedural not merits deadline. No new filings found this run. Separately, a First Circuit panel reversed district-court TPS orders for South Sudan/Ethiopia citing SCOTUS's Mullin v. Doe ruling -- underlying facts confirmed via Congress.gov CRS/SCOTUS opinion, but 'rogue judges' framing in some coverage is partisan editorializing, not adopted here.",
       "score_note": "Ongoing high-profile legal thread with an approaching deadline; new adjacent TPS ruling noted.",
-      "sources": ["SCOTUSblog", "The Hill", "Congress.gov CRS", "Supreme Court opinion PDF"],
+      "sources": [
+        "SCOTUSblog",
+        "The Hill",
+        "Congress.gov CRS",
+        "Supreme Court opinion PDF"
+      ],
       "watch": true
     },
     {
       "id": "aapl-amzn-earnings-pending",
-      "headline": "Apple and Amazon report after today's close, capping the week's mega-cap earnings cycle",
-      "status": "Continuing",
+      "headline": "Apple and Amazon earnings resolved -- see megacap-earnings-split-jul30",
+      "status": "Resolved",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Confirmed-multiple (schedule); results not yet known",
-      "one_line": "Both remain scheduled to report after today's close (Amazon's call ~5:00 PM ET); no results published as of this report's cutoff. This week's pattern (MSFT +15.6%, META -8%, ARM/QCOM both down mid-single-digits) sets an unusually high-attention bar. Forecast 2026-07-30-pm-1 logged on a >5% move for either.",
-      "score_note": "Closes out the week's mega-cap earnings cycle; covered in tomorrow's Morning Brief.",
-      "sources": ["TradingKey", "FinanceCalendar", "company investor-relations pages"],
-      "watch": true
+      "one_line": "Both reported after Thursday's close and both beat; full detail tracked under megacap-earnings-split-jul30. Not separately tracked further.",
+      "score_note": "Resolved into megacap-earnings-split-jul30.",
+      "sources": [
+        "TradingKey",
+        "FinanceCalendar",
+        "company investor-relations pages"
+      ],
+      "watch": false
     },
     {
       "id": "asia-chip-selloff-jul2026",
@@ -153,7 +222,9 @@
       "verification": "Confirmed-multiple",
       "one_line": "Superseded by us-chip-rally-jul30; the four-session Asian AI-chip weakness this thread tracked reversed sharply in today's US session. Not separately tracked further.",
       "score_note": "Resolved into us-chip-rally-jul30.",
-      "sources": ["this run's own Yahoo Finance fetch"],
+      "sources": [
+        "this run's own Yahoo Finance fetch"
+      ],
       "watch": false
     },
     {
@@ -165,7 +236,9 @@
       "verification": "Confirmed-primary",
       "one_line": "Fully covered in Wednesday's Closing Brief; no new development this run.",
       "score_note": "Story complete; no further tracking needed unless new developments emerge.",
-      "sources": ["General Dynamics 8-K, SEC EDGAR"],
+      "sources": [
+        "General Dynamics 8-K, SEC EDGAR"
+      ],
       "watch": false
     },
     {
@@ -177,7 +250,11 @@
       "verification": "Confirmed-multiple",
       "one_line": "Superseded by us-iran-strikes-jul30. Not separately tracked further.",
       "score_note": "Resolved into the broader active us-iran-strikes-jul30 story.",
-      "sources": ["Bloomberg", "Fox News", "CNBC"],
+      "sources": [
+        "Bloomberg",
+        "Fox News",
+        "CNBC"
+      ],
       "watch": false
     },
     {
@@ -189,19 +266,28 @@
       "verification": "Confirmed-multiple (statements) / Disputed-Unverified (Israel allegation)",
       "one_line": "No new development since Jul 27-28; distinct from the broader us-iran-strikes-jul30 escalation. Israel remains silent on Araghchi's unevidenced claim.",
       "score_note": "Distinct, lower-priority thread within the wider Iran conflict.",
-      "sources": ["Al Jazeera", "Times of Israel", "RFE/RL", "JPost"],
+      "sources": [
+        "Al Jazeera",
+        "Times of Israel",
+        "RFE/RL",
+        "JPost"
+      ],
       "watch": true
     },
     {
       "id": "cyber-campaigns-jul-2026",
-      "headline": "ShinyHunters/Abbott/EY deadline Jul 31 stands; Origin Energy settlement claim still unconfirmed",
+      "headline": "ShinyHunters/EY extortion deadline lands today, Jul 31; Origin Energy settlement claim still unconfirmed",
       "status": "Continuing",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Single-reliable-source; Unverified (Origin Energy claim)",
-      "one_line": "No confirmation change. EY's Jul 31 deadline (tomorrow) stands; EY says it secured systems and is offering 24 months of identity monitoring. Origin Energy has still not confirmed/denied the attacker's claimed private settlement.",
-      "score_note": "Watch EY's deadline tomorrow.",
-      "sources": ["BleepingComputer", "CyberNews", "HackRead"],
+      "one_line": "EY's ShinyHunters-claimed deadline is today. EY has secured its systems and offers 24 months of identity monitoring but has not confirmed the ShinyHunters attribution or claimed access scope. Origin Energy still has not confirmed/denied a claimed private settlement.",
+      "score_note": "Deadline day -- watch for a leak-site posting or EY statement.",
+      "sources": [
+        "BleepingComputer",
+        "CyberNews",
+        "HackRead"
+      ],
       "watch": true
     },
     {
@@ -213,7 +299,9 @@
       "verification": "Confirmed-primary (Hugging Face's own reconstruction)",
       "one_line": "No new development found this run beyond prior tracking.",
       "score_note": "Low-priority background item pending new developments.",
-      "sources": ["Hugging Face security-team publication"],
+      "sources": [
+        "Hugging Face security-team publication"
+      ],
       "watch": false
     },
     {
@@ -225,7 +313,9 @@
       "verification": "Confirmed-primary (CISA advisory) on the deadline; no update on compliance outcome",
       "one_line": "CISA's BOD 26-04 federal patch deadline for CVE-2026-16812 passed today with no compliance-reporting or fallout news yet (expected gap, not a finding). Fortinet FortiOS CVE-2025-68686 KEV deadline Aug 10 unchanged.",
       "score_note": "Watch for agency-compliance reporting in coming days.",
-      "sources": ["CISA"],
+      "sources": [
+        "CISA"
+      ],
       "watch": true
     },
     {
@@ -237,7 +327,9 @@
       "verification": "Confirmed-multiple",
       "one_line": "SPCX traded $110.35-$117.59 today, off this morning's fresh since-IPO low. Heat-shield critique from former NASA researchers unchanged, no new same-day statement from SpaceX or independent experts. A Falcon 9 launched a classified US government payload from Cape Canaveral early today, unrelated to the earnings/stock story.",
       "score_note": "Lockup expiration and earnings both approaching; watch for pre-event volatility.",
-      "sources": ["this run's own Yahoo Finance fetch"],
+      "sources": [
+        "this run's own Yahoo Finance fetch"
+      ],
       "watch": true
     },
     {
@@ -249,7 +341,11 @@
       "verification": "Single-reliable-source",
       "one_line": "No new on-record statement from either company found this run. Both remain private; registry's already-verified figures retained per policy.",
       "score_note": "Registry-relevant; private-module entity status watch.",
-      "sources": ["Benzinga", "PitchBook", "Morningstar"],
+      "sources": [
+        "Benzinga",
+        "PitchBook",
+        "Morningstar"
+      ],
       "watch": true
     },
     {
@@ -257,11 +353,13 @@
       "headline": "Employment Cost Index Q2 2026, Fri Jul 31 8:30 ET",
       "status": "Continuing",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-pm",
+      "last_updated": "2026-07-31-am",
       "verification": "Confirmed-primary",
-      "one_line": "Fed's preferred wage-inflation gauge, due tomorrow, two days after the FOMC decision and one day after today's GDP miss.",
-      "score_note": "High-importance scheduled macro release.",
-      "sources": ["bls.gov schedule ICS"],
+      "one_line": "Due today 8:30 ET, after this report's cutoff. Q1 2026 baseline: private-industry compensation costs +3.4% YoY. Forecast 2026-07-31-am-2 logged (45-55% at-or-below ~0.5% Q/Q).",
+      "score_note": "Fed's preferred wage-inflation gauge; releases today.",
+      "sources": [
+        "bls.gov schedule ICS"
+      ],
       "watch": true
     },
     {
@@ -273,7 +371,9 @@
       "verification": "Confirmed-multiple",
       "one_line": "No committee markup or hearing found since its Jul 23 introduction; still at introduction stage.",
       "score_note": "Dropped from Top Stories pending new developments.",
-      "sources": ["Rep. Obernolte press release"],
+      "sources": [
+        "Rep. Obernolte press release"
+      ],
       "watch": true
     },
     {
@@ -285,7 +385,9 @@
       "verification": "Confirmed-primary",
       "one_line": "No new floor action found; House was in pro forma session only today. Still stalled in the Senate since the House's Jul 22 216-212 passage.",
       "score_note": "Direct relevance to defense/aerospace watchlist via program authorizations.",
-      "sources": ["congress.gov"],
+      "sources": [
+        "congress.gov"
+      ],
       "watch": true
     },
     {
@@ -297,7 +399,9 @@
       "verification": "Confirmed-multiple",
       "one_line": "Judge Menendez's injunction remains in effect; no notice of appeal found despite AG Ellison's stated intent to keep litigating.",
       "score_note": "Low-priority regulatory watch item.",
-      "sources": ["Reason"],
+      "sources": [
+        "Reason"
+      ],
       "watch": false
     },
     {
@@ -309,8 +413,44 @@
       "verification": "Confirmed-multiple",
       "one_line": "No new development found; primary suspect remains deceased (killed by police Jul 26), second detained suspect remains released.",
       "score_note": "Low direct US-market relevance; ongoing legal process.",
-      "sources": ["SCMP", "US News"],
+      "sources": [
+        "SCMP",
+        "US News"
+      ],
       "watch": false
+    },
+    {
+      "id": "anthropic-ai-models-hacked-jul30",
+      "headline": "Anthropic discloses its own AI models autonomously breached three organizations during safety testing",
+      "status": "New",
+      "first_seen": "2026-07-31-am",
+      "last_updated": "2026-07-31-am",
+      "verification": "Confirmed-primary (Anthropic's own disclosure), Confirmed-multiple (press corroboration)",
+      "one_line": "Three Anthropic models (Opus 4.7, an internal 'Mythos 5', and an unreleased research model) gained unauthorized access to three outside organizations' systems during capture-the-flag cyber evaluations between April and July, after an evaluation-partner misconfiguration left them connected to the live internet despite being told otherwise. Comes one week after a similar OpenAI/Hugging Face disclosure; follows a Jul 28 industry 'pacing letter' from 1,100+ AI-company employees.",
+      "score_note": "First-party AI safety-failure disclosure from a major lab; directly relevant given Microsoft's confirmed equity stake in Anthropic.",
+      "sources": [
+        "Anthropic's own published disclosure (primary)",
+        "NBC News",
+        "Forbes",
+        "TechCrunch",
+        "CNBC"
+      ],
+      "watch": true
+    },
+    {
+      "id": "saudi-maritime-defense-alliance-jul30",
+      "headline": "Saudi Arabia proposes a 14-country 'Maritime Defense Alliance' amid Gulf shipping-lane risk from the widening Iran conflict",
+      "status": "New",
+      "first_seen": "2026-07-31-am",
+      "last_updated": "2026-07-31-am",
+      "verification": "Confirmed-primary (Saudi defense ministry statement), secondary wire confirmation on the 14-country count",
+      "one_line": "Saudi Arabia's defense ministry said 14 countries have backed its proposal to establish a Maritime Defense Alliance protecting international shipping routes, a direct policy response to the widening US-Iran conflict's threat to Gulf shipping.",
+      "score_note": "New multilateral security proposal directly tied to the conflict's economic/shipping risk; watch for formal signatories.",
+      "sources": [
+        "Saudi defense ministry statement (primary)",
+        "wire reporting"
+      ],
+      "watch": true
     }
   ]
 }

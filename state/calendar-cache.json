@@ -1,87 +1,15 @@
 {
-  "fetched": "2026-07-30T05:50:00-04:00",
-  "earnings_fetched": "2026-07-30",
-  "earnings_fetched_note": "Alpha Vantage EARNINGS_CALENDAR and Finnhub calendar/earnings both succeeded this run (first successful pull in several editions) -- confirmed Altria (MO) reports today Jul 30 before open, and ExxonMobil (XOM)/Chevron (CVX)/AbbVie (ABBV) all report tomorrow Jul 31 before open. Corrects a prior single-source placeholder that had Visa reporting today (Visa actually reported Jul 28 after close, confirmed via this run's SEC EDGAR sweep) and a prior unconfirmed 'this week' bucket entry for XOM/CVX/ABBV/MO.",
+  "fetched": "2026-07-31T06:45:00-04:00",
+  "earnings_fetched": "2026-07-31",
+  "earnings_fetched_note": "Finnhub calendar/earnings pulled again this run; confirms ABBV and CVX report today before open (bmo). XOM did not appear in this run's Finnhub pull (list may be non-exhaustive on the free tier) but is retained from the prior run's Alpha Vantage/Finnhub confirmation pending contradicting evidence.",
   "events": [
-    {
-      "ts_et": "2026-07-30T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "GDP (Advance Estimate), Q2 2026",
-      "importance": "Critical",
-      "reason": "First read on Q2 growth; comes one day after the FOMC decision so it is read partly through a post-decision lens",
-      "source": "bea.gov official release schedule — Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-07-30T08:30:00-04:00",
-      "type": "hearing",
-      "name": "Fauci testimony, Senate Homeland Security Committee",
-      "importance": "Medium",
-      "reason": "Scheduled Senate testimony; watch for notable public-health commentary",
-      "source": "WebSearch synthesis (committee schedule) — Confirmed-primary on timing"
-    },
-    {
-      "ts_et": "2026-07-30T00:00:00-04:00",
-      "type": "auction",
-      "name": "4-Week Bill / 8-Week Bill",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming"
-    },
-    {
-      "ts_et": "2026-07-30T08:00:00-04:00",
-      "type": "earnings",
-      "name": "Altria (MO) — before open",
-      "importance": "Medium",
-      "reason": "Consumer-staples earnings; EPS est. $1.50",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-30T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Apple (AAPL) — after close",
-      "importance": "Critical",
-      "reason": "Mega-cap; iPhone cycle and services growth in focus; EPS est. $1.93",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-30T16:05:00-04:00",
-      "type": "earnings",
-      "name": "Amazon (AMZN) — after close",
-      "importance": "Critical",
-      "reason": "Mega-cap; AWS growth and capex; EPS est. $1.81",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-07-30T20:00:00-04:00",
-      "type": "launch",
-      "name": "Rocket Lab Electron — LOXSAT 1, StriX Launch 11, iQPS Launch 7 (Mahia, NZ, 3 missions TBD)",
-      "importance": "Low",
-      "reason": "Small-sat rideshare missions, times To Be Determined",
-      "source": "Launch Library 2 — Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-07-30T20:00:00-04:00",
-      "type": "launch",
-      "name": "Mir — Demo Flight (Sea Launch)",
-      "importance": "Low",
-      "reason": "New entrant demo flight, time To Be Determined",
-      "source": "Launch Library 2 — Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-07-31T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Employment Cost Index, Q2 2026",
-      "importance": "High",
-      "reason": "Key wage-inflation gauge the Fed watches; released two days after the rate decision",
-      "source": "bls.gov schedule ICS — Confirmed-primary"
-    },
     {
       "ts_et": "2026-07-31T08:00:00-04:00",
       "type": "earnings",
       "name": "ExxonMobil (XOM) — before open",
       "importance": "High",
       "reason": "Windfall-profit quarter expected given the oil-price surge; EPS est. $3.79",
-      "source": "ExxonMobil investor-relations page (primary); Alpha Vantage EARNINGS_CALENDAR — Confirmed-multiple"
+      "source": "ExxonMobil investor-relations page (primary); Alpha Vantage EARNINGS_CALENDAR, prior run — Confirmed-multiple"
     },
     {
       "ts_et": "2026-07-31T08:00:00-04:00",
@@ -100,12 +28,52 @@
       "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings — Confirmed-multiple"
     },
     {
+      "ts_et": "2026-07-31T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "Employment Cost Index, Q2 2026",
+      "importance": "Critical",
+      "reason": "Fed's preferred wage-inflation gauge the Fed watches; released two days after the rate decision and one day after the Q2 GDP miss",
+      "source": "bls.gov schedule ICS — Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-07-31T00:00:00-04:00",
+      "type": "cyber",
+      "name": "ShinyHunters extortion deadline vs. Ernst & Young",
+      "importance": "High",
+      "reason": "Attacker-stated 'final warning' data-leak deadline; EY has not confirmed the claim",
+      "source": "BleepingComputer, Cybernews — Single-reliable-source (attacker claim)"
+    },
+    {
+      "ts_et": "2026-08-01T00:00:00-04:00",
+      "type": "launch",
+      "name": "SpaceX Falcon 9 — Starlink Group 17-52 (Vandenberg SFB)",
+      "importance": "Low",
+      "reason": "Routine Starlink deployment",
+      "source": "Launch Library 2 — Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-03T00:00:00-04:00",
+      "type": "auction",
+      "name": "13-Week / 26-Week Treasury Bill auction",
+      "importance": "Low",
+      "reason": "Routine bill supply; issue date Aug 6",
+      "source": "treasurydirect.gov TA_WS upcoming"
+    },
+    {
       "ts_et": "2026-08-03T16:00:00-04:00",
       "type": "legal",
       "name": "SCOTUS mail-ballot EO stay: respondent states' written response due",
       "importance": "Critical",
       "reason": "Justice Jackson's scheduling order deadline on the emergency stay application; procedural, not a merits ruling",
       "source": "SCOTUSblog, The Hill — Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-04T00:00:00-04:00",
+      "type": "auction",
+      "name": "52-Week / 6-Week Treasury Bill auction",
+      "importance": "Low",
+      "reason": "Routine bill supply; issue date Aug 6",
+      "source": "treasurydirect.gov TA_WS upcoming"
     },
     {
       "ts_et": "2026-08-04T00:00:00-04:00",
@@ -122,6 +90,14 @@
       "importance": "Medium",
       "reason": "Up to ~911.5M shares unlock, expanding tradeable float from ~4.9% to ~12% of shares outstanding",
       "source": "Motley Fool, Reuters/Investing.com — Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-12T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "Consumer Price Index, July 2026",
+      "importance": "High",
+      "reason": "Next CPI release",
+      "source": "bls.gov schedule ICS — Confirmed-primary"
     }
   ]
 }
