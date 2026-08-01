@@ -72,8 +72,8 @@
       "valuation_date": null,
       "ipo_preparation": "Confidential S-1 filing reported 2026-06-08 (targeted Q3/Q4 2026 at a valuation near $1T) — now reportedly weighing a delay into 2027 following SpaceX's public debut, per press reports 2026-07-24/26. Press-reported only, NOT confirmed on public EDGAR.",
       "recheck_trigger": "EDGAR weekly sweep",
-      "last_verified": "2026-07-27",
-      "source": "Press reports (TechCrunch, Barchart, IndMoney; confidential filing; no public EDGAR record as of last_verified)"
+      "last_verified": "2026-08-01",
+      "source": "Press reports (TechCrunch, Barchart, IndMoney; confidential filing; no public EDGAR record as of last_verified). Weekly sweep 2026-08-01: EDGAR full-text search for \"OpenAI\" (efts.sec.gov, forms S-1/S-1A/8-A12B/425) returns 87 hits, top matches are third-party filings mentioning OpenAI (Cerebras Systems, CoreWeave, AltC Acquisition/OKLO) — no filing by OpenAI itself found."
     },
     {
       "official_name": "Anthropic, PBC",
@@ -84,8 +84,8 @@
       "valuation_date": "2026-05-28",
       "ipo_preparation": "Confidential S-1 filing reported ~2026-06-01 — reportedly lining up investor meetings for a listing as soon as Oct 2026, ahead of OpenAI, per press reports 2026-07-15/26. Press-reported only, NOT confirmed on public EDGAR.",
       "recheck_trigger": "EDGAR weekly sweep",
-      "last_verified": "2026-07-27",
-      "source": "Series H round and IPO-timing per company/press reports (CNBC 2026-07-15); filing per press reports"
+      "last_verified": "2026-08-01",
+      "source": "Series H round and IPO-timing per company/press reports (CNBC 2026-07-15); filing per press reports. Weekly sweep 2026-08-01: EDGAR full-text search for \"Anthropic\" returns 30 hits, top matches are third-party filings mentioning Anthropic (SpaceX S-1, Cerebras Systems) — no filing by Anthropic itself found."
     },
     {
       "official_name": "Stripe, Inc.",
@@ -94,8 +94,8 @@
       "industry": "Payments / fintech",
       "valuation": "$159B (employee tender offer)",
       "valuation_date": "2026-02",
-      "last_verified": "2026-07-26",
-      "source": "Press reports on February 2026 tender offer"
+      "last_verified": "2026-08-01",
+      "source": "Press reports on February 2026 tender offer. Weekly sweep 2026-08-01: EDGAR full-text search for \"Stripe\" returns 510 hits (mostly incidental mentions of the payments product in other filers' S-1s, e.g. FullPAC) — no filing by Stripe itself found."
     },
     {
       "official_name": "Databricks, Inc.",
@@ -105,8 +105,8 @@
       "valuation": null,
       "valuation_date": null,
       "ipo_preparation": "CEO publicly ruled out a 2026 listing",
-      "last_verified": "2026-07-26",
-      "source": "Press reports of CEO statements"
+      "last_verified": "2026-08-01",
+      "source": "Press reports of CEO statements. Weekly sweep 2026-08-01: EDGAR full-text search for \"Databricks\" returns 21 hits, all third-party mentions (Plum Acquisition Corp I, Informatica) — no filing by Databricks itself found, consistent with the CEO's stated no-2026-listing plan."
     },
     {
       "official_name": "Anduril Industries, Inc.",
@@ -115,8 +115,8 @@
       "industry": "Defense technology",
       "valuation": "~$61B (Series H)",
       "valuation_date": "2026-05",
-      "last_verified": "2026-07-26",
-      "source": "Press reports on May 2026 Series H"
+      "last_verified": "2026-08-01",
+      "source": "Press reports on May 2026 Series H. Weekly sweep 2026-08-01: EDGAR full-text search for \"Anduril\" returns 33 hits, all third-party mentions (Health Assurance Acquisition Corp, Revolution Healthcare Acquisition Corp) — no filing by Anduril itself found."
     },
     {
       "official_name": "Canva Pty Ltd",
@@ -126,8 +126,8 @@
       "valuation": "~$66B (secondary-market marks)",
       "valuation_date": "2026",
       "ipo_preparation": "2027 listing target per press reports",
-      "last_verified": "2026-07-26",
-      "source": "Press reports / secondary-market marks"
+      "last_verified": "2026-08-01",
+      "source": "Press reports / secondary-market marks. Weekly sweep 2026-08-01: EDGAR full-text search for \"Canva\" returns 14 hits, all third-party mentions (UserTesting, Braze) — no filing by Canva itself found."
     },
     {
       "official_name": "Discord Inc.",
@@ -138,8 +138,8 @@
       "valuation_date": null,
       "ipo_preparation": "Confidential filing reported; process delayed — press-reported only, NOT confirmed on public EDGAR",
       "recheck_trigger": "EDGAR weekly sweep",
-      "last_verified": "2026-07-26",
-      "source": "Press reports (confidential filing; no public EDGAR record as of last_verified)"
+      "last_verified": "2026-08-01",
+      "source": "Press reports (confidential filing; no public EDGAR record as of last_verified). Weekly sweep 2026-08-01: EDGAR full-text search for \"Discord\" returns 163 hits, top matches are third-party mentions (Asset Entities Inc.) — no filing by Discord itself found."
     },
     {
       "official_name": "Epic Games, Inc.",
@@ -148,8 +148,8 @@
       "industry": "Gaming & interactive software",
       "valuation": "~$15.7B-$22.5B (range of reported marks)",
       "valuation_date": "2026",
-      "last_verified": "2026-07-26",
-      "source": "Press reports / investor marks (range; no single authoritative figure)"
+      "last_verified": "2026-08-01",
+      "source": "Press reports / investor marks (range; no single authoritative figure). Weekly sweep 2026-08-01: EDGAR full-text search for \"Epic Games\" returns 81 hits, top matches are third-party mentions (Snail, Inc.) — no filing by Epic Games itself found."
     },
     {
       "official_name": "Neuralink Corp.",
@@ -159,8 +159,8 @@
       "valuation": null,
       "valuation_date": null,
       "ipo_preparation": "No IPO plans",
-      "last_verified": "2026-07-26",
-      "source": "Press reports"
+      "last_verified": "2026-08-01",
+      "source": "Press reports. Weekly sweep 2026-08-01: EDGAR full-text search for \"Neuralink\" returns 23 hits, top matches are third-party mentions (Cortigent, Inc.) — no filing by Neuralink itself found, consistent with no stated IPO plans."
     }
   ]
 }

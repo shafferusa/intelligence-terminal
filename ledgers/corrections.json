@@ -26,6 +26,15 @@
       "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-07-31-am edition did not surface the story despite its prominence in wire coverage dated Jul 30.",
       "conclusions_changed": false,
       "note": "This is a completeness gap, not an inaccurate statement previously published. Logged per SR SS9 for transparency; no prior published sentence needed correcting, so no diff against prior report text is shown."
+    },
+    {
+      "found": "2026-08-01",
+      "report": "reports/2026/07/2026-07-30-pm.html",
+      "original": "Named the Saudi-led Multinational Maritime Defense Alliance's 14 founding countries as Saudi Arabia, Kuwait, Bahrain, Qatar, Pakistan, Turkey, Egypt, Jordan, Yemen, Bangladesh, Nigeria, Sudan, Djibouti, and Somalia.",
+      "corrected": "Multiple wire sources describing the actual July 30 charter-signing joint declaration (Saudi Gazette, Anadolu Agency, Arabian Business, Middle East Monitor) instead list Saudi Arabia, Kuwait, Bahrain, Qatar, Jordan, Egypt, Pakistan, Turkiye, Djibouti, Somalia, Bangladesh, Yemen, and the Comoros as the 14 founding/signatory states -- Nigeria and Sudan do not appear among the charter signatories; the Comoros does.",
+      "error_source": "The Thursday edition's list appears to have reflected an earlier or broader roster (possibly drawn from the wider 43-nation planning talks) rather than the smaller charter-signing roster confirmed once the alliance's founding declaration was actually issued Jul 30.",
+      "conclusions_changed": false,
+      "note": "Verified via WebSearch against multiple wire sources this run (2026-08-01-sat). Does not change the story's substance -- the alliance's formation, headquarters, and purpose are unaffected -- only the named country roster. Corrected in today's report (2026-08-01-sat) Top Story 9 and Section 29."
     }
   ]
 }

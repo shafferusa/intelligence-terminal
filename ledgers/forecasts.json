@@ -8,7 +8,10 @@
       "horizon": "2026-07-29",
       "probability": "80-90%",
       "basis": "Prediction-market pricing (Polymarket) and futures-implied odds reported at 83-85% for a hold, cited across multiple financial press sources ahead of a non-SEP meeting.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "FOMC held 3.50-3.75% on Jul 29 (9-3 vote, historic 3-way hawkish dissent).",
+      "graded": "2026-08-01",
+      "lesson": "Prediction-market/futures-implied odds (83-85% hold) were well-calibrated for this meeting."
     },
     {
       "id": "2026-07-26-sun-2",
@@ -17,8 +20,11 @@
       "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
       "horizon": "2026-07-30",
       "probability": "55-65%",
-      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
-      "status": "open"
+      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate \u2014 treat as low-confidence.",
+      "status": "partial",
+      "outcome": "Q2 GDP advance printed +1.5% annualized -- inside the stated 1.5-3.0% range, but exactly at the bottom edge.",
+      "graded": "2026-08-01",
+      "lesson": "The range was wide enough to technically capture the outcome, but a 55-65%-probability band centered well above the eventual print understated downside growth risk; the GDPNow-informed 1.0-2.5% band issued the next morning (2026-07-27-am-2) was better centered."
     },
     {
       "id": "2026-07-26-sun-3",
@@ -28,7 +34,10 @@
       "horizon": "2026-07-31",
       "probability": "50-65%",
       "basis": "Recent-quarter pattern reported in press coverage: AI spenders have been 'punished' even on in-line results while capex guidance drove the reaction (cited re: Alphabet's prior print). Pattern-based, not a hard data model.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Multiple mega-cap reporters moved >5% on AI-capex commentary: MSFT +15.56%, META -8.0%, AMZN +15.46%, AAPL -7.19%, ARM -6.18%, QCOM -5.38%.",
+      "graded": "2026-08-01",
+      "lesson": "The 'AI-capex commentary drives the reaction, not the EPS beat/miss' pattern held across nearly every reporter this week, not just one."
     },
     {
       "id": "2026-07-26-sun-4",
@@ -38,7 +47,10 @@
       "horizon": "2026-07-31",
       "probability": "55-65%",
       "basis": "Friday's par curve (Treasury.gov) plus the week's binary catalysts (FOMC decision, GDP, ECI, 2Y/5Y/7Y auctions) that could move the long end; range width reflects the number of scheduled catalysts, not a statistical model.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "10Y Treasury closed the week at 4.75% (Jul 31, Treasury.gov par curve) -- inside the 4.55-4.85% band despite a volatile week (FOMC, GDP, ECI, Iran escalation).",
+      "graded": "2026-08-01",
+      "lesson": "Even a week stacked with binary catalysts kept the 10Y inside a ~30bp band; duration moved less than the equity-vol backdrop implied."
     },
     {
       "id": "2026-07-26-sun-5",
@@ -47,8 +59,11 @@
       "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
       "horizon": "2026-07-31",
       "probability": "60-70%",
-      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
-      "status": "open"
+      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly \u00b110% around spot given no crypto-specific catalyst identified this week.",
+      "status": "correct",
+      "outcome": "Bitcoin traded within the $60,000-$72,000 band all week (high ~$64,914 Mon, low ~$62,944 Fri; $63,046 as of this run).",
+      "graded": "2026-08-01",
+      "lesson": "Crypto stayed rangebound through a week of major equity and rates volatility -- no spillover catalyst materialized."
     },
     {
       "id": "2026-07-26-sun-6",
@@ -58,7 +73,10 @@
       "horizon": "2026-07-31",
       "probability": "60-70%",
       "basis": "Press reports (AP/Times of Israel/Britannica '2026 Iran war' explainer) describe a two-day mutual pause as of Jul 26 with negotiations continuing; sourcing is Confirmed-multiple on the pause, but the underlying dispute (Hormuz tolls, reparations, ballistic-missile program) is unresolved, so probability is not higher.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The US-Iran ceasefire did not hold: the US struck dozens of IRGC targets across Iran overnight Jul 29-30, and Iran retaliated against Jordan, Kuwait, and (reportedly) Egypt -- a direct return to strikes, not a continuation of the pause.",
+      "graded": "2026-08-01",
+      "lesson": "This was the week's largest forecasting miss. A 'two-day mutual pause' with an unresolved underlying dispute (Hormuz tolls, reparations, missile program) should have been framed as fragile/reversible from the start, not assigned 60-70% odds of holding a full week. Track ceasefire-status forecasts with materially wider uncertainty bands and shorter horizons going forward."
     },
     {
       "id": "2026-07-27-am-1",
@@ -68,7 +86,10 @@
       "horizon": "2026-07-29",
       "probability": "20-30%",
       "basis": "Press-reported CME FedWatch readings of a 35-39% hike probability as of Jul 23-25 (up from ~12% two weeks earlier, attributed to the Iran-driven oil spike), discounted downward for the weekend's oil-price reversal following the Jul 23-26 ceasefire pause, which is not yet reflected in the last-published FedWatch reads. Judgment adjustment, not a live model pull -- CME's FedWatch tool is outside this system's egress allowlist.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "FOMC held rather than hiking; the 20-30% hike probability did not materialize.",
+      "graded": "2026-08-01",
+      "lesson": "The post-ceasefire-pause oil reversal (discounted into this forecast) correctly pointed toward a hold; the residual 20-30% was reasonable given the CME-reported hike odds at the time, but the ceasefire itself proved fragile days later, which this forecast could not have anticipated."
     },
     {
       "id": "2026-07-27-am-2",
@@ -78,7 +99,10 @@
       "horizon": "2026-07-30",
       "probability": "55-65%",
       "basis": "Atlanta Fed GDPNow tracking estimate of +1.7% annualized as of Jul 17 (fred.stlouisfed.org/series/GDPNOW context via press reporting), widened both directions for typical tracking-estimate-to-actual error and the ten-day gap to the release. Supersedes the wider 1.5-3.0% band in forecast 2026-07-26-sun-2, which was made without GDPNow data.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Q2 GDP printed +1.5%, squarely inside the GDPNow-informed 1.0-2.5% range.",
+      "graded": "2026-08-01",
+      "lesson": "Anchoring to the actual GDPNow tracking estimate (rather than a generic default band) produced a better-centered forecast than the wider sun-2 range issued three days earlier without that data."
     },
     {
       "id": "2026-07-27-pm-1",
@@ -88,7 +112,10 @@
       "horizon": "2026-07-30",
       "probability": "45-60%",
       "basis": "General pattern of ransomware groups following through on leak-site deadlines when no payment/settlement is publicly confirmed, weighed against the possibility of a quiet, unannounced settlement (common in corporate ransomware cases) or a further unannounced deadline extension. No group-specific follow-through-rate data was available this run.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Anubis posted the leaked Fairlife (Coca-Cola) data to its leak site after the extortion deadline lapsed (surfaced 2026-07-28-pm).",
+      "graded": "2026-08-01",
+      "lesson": "The base-rate pattern (ransomware groups following through absent a confirmed settlement) held in this case."
     },
     {
       "id": "2026-07-27-pm-2",
@@ -98,7 +125,10 @@
       "horizon": "2026-07-29",
       "probability": "55-65%",
       "basis": "Today's decline already re-priced the single-sourced report; absent a confirming or denying statement from Nvidia/OpenAI/SoftBank, no fresh catalyst is scheduled before Wednesday, and single-name moves of this size rarely repeat on consecutive sessions without new information. Range reflects genuine two-way uncertainty given Wednesday's Microsoft/Meta AI-capex earnings could pull sentiment either way intraday.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "NVDA closed +0.25% Jul 28 and -3.55%/-3.6% Jul 29 -- neither day closed lower (more negative) than Jul 27's -4.99% move, holding through Wednesday's FOMC.",
+      "graded": "2026-08-01",
+      "lesson": "Single-name shock moves of this size did not repeat on consecutive sessions absent a fresh catalyst, consistent with the forecast's reasoning."
     },
     {
       "id": "2026-07-28-am-1",
@@ -108,7 +138,10 @@
       "horizon": "2026-07-28",
       "probability": "30-40%",
       "basis": "Monday's cash session already showed contained, not broad, weakness from the original NVDA move (Dow and Russell held gains); today's move has a clearer cross-border catalyst chain via Samsung and SK Hynix's worst sessions in roughly two decades, but premarket futures moves regularly narrow by the cash open.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "XLK closed -1.84% on Jul 28 versus the S&P 500's +0.21-0.24%, a ~2.1 percentage-point underperformance -- exceeding the 1pp threshold.",
+      "graded": "2026-08-01",
+      "lesson": "The cross-border Samsung/SK Hynix catalyst chain did broaden into the US cash session as flagged, not stay contained the way Monday's move had."
     },
     {
       "id": "2026-07-28-am-2",
@@ -118,7 +151,10 @@
       "horizon": "2026-07-28",
       "probability": "15-25%",
       "basis": "Monday's 2-Year auction showed solid demand (2.66x cover, -0.5bp tail); the 7-Year is historically the most tail-prone tenor and this is the last coupon auction before Wednesday's FOMC decision, which can pull demand in either direction.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The Jul 28 7-Year Note auction drew a 2.49x bid-to-cover -- described as average demand, not a tail.",
+      "graded": "2026-08-01",
+      "lesson": "The most tail-prone tenor did not tail even immediately ahead of the FOMC decision; auction demand proved more resilient to event-risk positioning than the base rate implied."
     },
     {
       "id": "2026-07-28-am-3",
@@ -128,7 +164,10 @@
       "horizon": "2026-07-30",
       "probability": "15-25%",
       "basis": "No such disclosure as of this run; the region hosts meaningful chip/electronics manufacturing capacity, but M7-class quakes in this zone have historically caused more infrastructure than heavy-industry disruption.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "TSMC, Sony, and Tokyo Electron all disclosed Kumamoto-quake-related facility impacts (evacuations, a suspended fab) the same day, well inside the 48-hour window.",
+      "graded": "2026-08-01",
+      "lesson": "The region's chip/electronics manufacturing footprint was large enough that a magnitude-7.1 quake did produce same-day disclosures, faster than the base rate for this quake class suggested."
     },
     {
       "id": "2026-07-29-am-1",
@@ -138,7 +177,10 @@
       "horizon": "2026-07-29",
       "probability": "25-35%",
       "basis": "Pre-attack press-reported odds already ran as high as 38% hike probability (up from 10.7% a week earlier) on oil-driven inflation-expectations repricing; tonight's Iran attack and fresh ~3.5-3.6% oil jump is an additional hawkish input not yet reflected in any published odds reading as of this report's cutoff.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The FOMC held rather than hiking, despite the fresh overnight Iran attack and oil jump cited as additional hawkish input.",
+      "graded": "2026-08-01",
+      "lesson": "Even a same-day escalation (Iran's Jordan ballistic-missile attack) was not enough to tip a already-signaled hold into a hike -- the Fed's pre-meeting positioning proved more durable than the geopolitical shock."
     },
     {
       "id": "2026-07-29-am-2",
@@ -148,7 +190,10 @@
       "horizon": "2026-07-31",
       "probability": "20-30%",
       "basis": "CENTCOM's own framing describes tonight's US-Saudi strikes as a proportionate response to a discrete attack, arguing against immediate further escalation; but Iran's shift from drone to ballistic-missile attacks is a real escalation in kind that argues for continued risk.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The US struck dozens of IRGC targets across Iran overnight Jul 29-30 -- a major further US military action within 48 hours of the Jordan base attack, followed immediately by Iranian retaliation against Jordan, Kuwait, and Egypt.",
+      "graded": "2026-08-01",
+      "lesson": "The shift from drone to ballistic-missile attacks correctly signaled continued escalation risk rather than a return to restraint."
     },
     {
       "id": "2026-07-30-am-1",
@@ -158,7 +203,10 @@
       "horizon": "2026-08-01",
       "probability": "25-35%",
       "basis": "Tonight's pattern already spans US strikes inside Iran plus Iranian retaliation against Jordan, Kuwait and reportedly Egypt in a single morning -- a broader footprint than any prior single exchange this report has tracked -- though CENTCOM's framing so far remains retaliatory/proportionate rather than an open-ended campaign.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Iran struck Egypt (a fourth country beyond the existing Jordan/Kuwait/US-Iran pattern) the same night as the US strike campaign, confirmed by Egypt's own drone-strike acknowledgment -- resolving well inside the 48-hour window.",
+      "graded": "2026-08-01",
+      "lesson": "This conflict's footprint kept broadening faster than a 'proportionate, contained response' framing implied; multi-country spillover within hours, not days, has now been the pattern twice."
     },
     {
       "id": "2026-07-30-am-2",
@@ -168,7 +216,10 @@
       "horizon": "2026-07-30",
       "probability": "15-25%",
       "basis": "Atlanta Fed GDPNow at 1.54% (Jul 28) and prediction-market pricing (~88% probability of a print at or above 1.0%) both cluster around modest-but-positive growth within the existing forecast range; a below-range print would be a genuine surprise against that backdrop.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Q2 GDP printed +1.5%, inside (not below) the existing 1.0-2.5% range.",
+      "graded": "2026-08-01",
+      "lesson": "GDPNow's 1.54% tracking estimate and prediction-market pricing clustering near 'modest-but-positive' both correctly pointed away from a below-range surprise; the low 15-25% probability assigned here was well-calibrated."
     },
     {
       "id": "2026-07-30-pm-1",
@@ -178,7 +229,10 @@
       "horizon": "2026-07-31",
       "probability": "45-55%",
       "basis": "Three of the four mega-cap reporters this week (Microsoft, Meta, and to a lesser extent Arm/Qualcomm) have already moved more than 5% on results; Apple and Amazon face similar AI-capex-scrutiny dynamics, though Apple historically reacts more mutedly to earnings than these AI-infrastructure-exposed names.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Both Apple (-7.19%) and Amazon (+15.46%) moved more than 5% in the session following their after-close earnings.",
+      "graded": "2026-08-01",
+      "lesson": "As with the week's other mega-cap reporters, AI-capex/guidance scrutiny (Apple's weak guide, Amazon's AWS beat) drove outsized reactions on both sides."
     },
     {
       "id": "2026-07-30-pm-2",
@@ -188,7 +242,10 @@
       "horizon": "2026-07-31",
       "probability": "55-65%",
       "basis": "Today's move reflects a confirmed Azure/capex beat plus a one-time $3.2B Anthropic-stake gain, not short covering alone, arguing for durability, though moves of this historic size have occasionally partially unwound on index-rebalancing or profit-taking flows in other names.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Microsoft closed Jul 31 at $464.72, up a further +3.02% from Thursday's +15.51-15.56% close -- retaining the full gain and then some, not just half of it.",
+      "graded": "2026-08-01",
+      "lesson": "A move backed by a confirmed Azure/capex beat plus a one-time equity-stake gain proved durable rather than mean-reverting, as the forecast's reasoning anticipated."
     },
     {
       "id": "2026-07-30-pm-3",
@@ -218,7 +275,10 @@
       "horizon": "2026-07-31",
       "probability": "45-55%",
       "basis": "Trading Economics' model-based estimate of ~0.40% Q/Q is the only forward figure available this run (not a polled Street consensus); genuine two-way uncertainty given no live consensus data was reachable.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Employment Cost Index printed +0.9% Q/Q, well above the ~0.5% ceiling and roughly double the ~0.40% Trading Economics model estimate.",
+      "graded": "2026-08-01",
+      "lesson": "The only available forward figure (a model-based estimate, not a polled Street consensus) undershot badly; this is the second consecutive week a wage/cost print ran hotter than the available estimate, worth flagging as a pattern to watch."
     },
     {
       "id": "2026-07-31-am-3",
@@ -228,7 +288,10 @@
       "horizon": "2026-07-31",
       "probability": "55-65%",
       "basis": "Premarket futures point higher (ES +0.5%) after both Amazon and Apple beat estimates after Thursday's close, but today's Employment Cost Index release and the unconfirmed Iran-Kuwait strike claim are each independent sources of intraday reversal risk not yet reflected in the premarket tape.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The S&P 500 closed Jul 31 at 7,504.53, up +0.90%, extending Thursday's rally as forecast.",
+      "graded": "2026-08-01",
+      "lesson": "Premarket futures direction (ES +0.5% on the Amazon/Apple beats) held through the full session despite the hot ECI print and unconfirmed Iran-Kuwait strike claim, both flagged as reversal risks that did not materialize."
     },
     {
       "id": "2026-07-31-pm-1",
@@ -237,7 +300,7 @@
       "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
       "horizon": "2026-08-07",
       "probability": "55-65%",
-      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
       "status": "open"
     },
     {
@@ -247,7 +310,7 @@
       "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
       "horizon": "2026-08-13",
       "probability": "45-55%",
-      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
       "status": "open"
     },
     {

@@ -1,173 +1,143 @@
 {
-  "fetched_at": "2026-07-31T16:00:00-04:00",
+  "fetched_at": "2026-08-01T09:20:00-04:00",
   "treasury_par_curve": {
-    "date": "2026-07-30",
-    "label": "EOD official (2026-07-30)",
-    "1M": 3.79,
+    "date": "2026-07-31",
+    "label": "EOD official (2026-07-31)",
+    "1M": 3.78,
     "1.5M": 3.8,
-    "2M": 3.84,
-    "3M": 3.82,
+    "2M": 3.85,
+    "3M": 3.83,
     "4M": 3.92,
     "6M": 3.98,
-    "1Y": 4.04,
-    "2Y": 4.23,
-    "3Y": 4.3,
-    "5Y": 4.38,
-    "7Y": 4.52,
-    "10Y": 4.68,
-    "20Y": 5.22,
-    "30Y": 5.21,
+    "1Y": 4.08,
+    "2Y": 4.28,
+    "3Y": 4.34,
+    "5Y": 4.45,
+    "7Y": 4.59,
+    "10Y": 4.75,
+    "20Y": 5.28,
+    "30Y": 5.27,
     "spreads_bp": {
-      "2s10s": 45,
-      "3m10y": 86,
-      "5s30s": 83
+      "2s10s": 47,
+      "3m10y": 92,
+      "5s30s": 82
     }
   },
   "vix_complex": {
-    "as_of": "2026-07-31T15:39:31-04:00",
-    "label": "Delayed +15m (Fri Jul 31 intraday)",
-    "VIX": 16.07,
-    "VIX9D": 13.33,
-    "VIX3M": 18.99,
+    "as_of": "2026-07-31T16:15:01-04:00",
+    "label": "EOD official (Fri Jul 31 close)",
+    "VIX": 15.99,
+    "VIX9D": 13.05,
+    "VIX3M": 19.02,
     "term_structure": "ordinary contango (VIX9D < VIX < VIX3M)",
-    "note": "prior close (Jul 30): VIX 17.09, VIX9D 14.85, VIX3M 19.50"
+    "note": "week path: Mon 18.67, Tue 18.21, Wed 20.66, Thu 17.09, Fri 15.99"
   },
   "fx": {
-    "date": "2026-07-30",
-    "label": "Cached (as of 2026-07-30) -- Frankfurter origin returned HTTP 522 this run",
+    "date": "2026-07-31",
+    "label": "EOD official (ECB reference, 2026-07-31)",
     "base": "USD",
     "rates": {
-      "EUR": 0.87138,
-      "JPY": 162.94,
-      "GBP": 0.74691,
-      "CNY": 6.7551,
-      "CHF": 0.81248,
-      "CAD": 1.4046,
-      "AUD": 1.4325,
-      "MXN": 17.4001,
-      "BRL": 5.1006,
-      "INR": 95.69
+      "EUR": 0.8707,
+      "JPY": 160.24,
+      "GBP": 0.74508,
+      "CNY": 6.7513,
+      "CHF": 0.8101,
+      "CAD": 1.4041,
+      "AUD": 1.4249,
+      "MXN": 17.3715,
+      "BRL": 5.0583,
+      "INR": 95.39
     }
   },
   "crypto": {
-    "as_of": "2026-07-31T15:55:00-04:00",
+    "as_of": "2026-08-01T09:15:00-04:00",
     "label": "Live (CoinGecko aggregate, public endpoint)",
     "BTC": {
-      "usd": 62944,
-      "usd_24h_change": -2.83
+      "usd": 63046,
+      "usd_24h_change": -0.97
     },
     "ETH": {
-      "usd": 1866.24,
-      "usd_24h_change": -2.93
+      "usd": 1867.59,
+      "usd_24h_change": -0.81
     },
     "SOL": {
-      "usd": 73.09,
-      "usd_24h_change": -1.97
+      "usd": 72.9,
+      "usd_24h_change": -0.94
     },
     "ADA": {
-      "usd": 0.1705,
-      "usd_24h_change": -1.33
+      "usd": 0.17504,
+      "usd_24h_change": 3.27
     },
-    "total_market_cap_usd": 2246022541159.78,
+    "total_market_cap_usd": 2247233246154.639,
     "btc_dominance_pct": 56.23
   },
   "indices_cash_close": {
     "date": "2026-07-31",
     "label": "EOD official (post-16:00 ET, this run's own Yahoo sweep)",
     "GSPC": {
-      "close": 7504.52978515625,
+      "close": 7489.72021484375,
       "prevclose": 7437.6298828125,
-      "pct": 0.8994787774845845,
-      "vol": 2381095000
+      "pct": 0.7,
+      "vol": null
     },
     "IXIC": {
-      "close": 25428.365234375,
+      "close": 25373.849609375,
       "prevclose": 25122.1796875,
-      "pct": 1.218785753002747,
-      "vol": 9391572000
+      "pct": 1.0,
+      "vol": null
     },
     "DJI": {
-      "close": 52572.33984375,
+      "close": 52485.03125,
       "prevclose": 52208.05859375,
-      "pct": 0.6977490828276256,
-      "vol": 524401237
+      "pct": 0.53,
+      "vol": null
     },
     "RUT": {
-      "close": 2932.55859375,
+      "close": 2931.340087890625,
       "prevclose": 2946.10009765625,
-      "pct": -0.45964167738302075,
-      "vol": 0
+      "pct": -0.5,
+      "vol": null
     },
     "TNX": {
       "close": 4.744999885559082,
       "prevclose": 4.663000106811523,
-      "pct": 1.7585197698746908,
-      "vol": 0
+      "pct": 1.76,
+      "vol": null
     }
   },
   "futures_and_commodities": {
-    "as_of": "2026-07-31T15:55:00-04:00",
-    "label": "EOD official / Delayed (Yahoo Finance)",
-    "ES": {
-      "close": 7535.25,
-      "prevclose": 7472.5,
-      "pct": 0.8397457343593175,
-      "vol": 1463900
-    },
-    "NQ": {
-      "close": 28493.75,
-      "prevclose": 28237.75,
-      "pct": 0.9065878124142328,
-      "vol": 603969
-    },
-    "YM": {
-      "close": 52762.0,
-      "prevclose": 52380.0,
-      "pct": 0.7292859870179458,
-      "vol": 78477
-    },
-    "RTY": {
-      "close": 2944.300048828125,
-      "prevclose": 2954.300048828125,
-      "pct": -0.33848965354641875,
-      "vol": 181278
-    },
+    "as_of": "2026-07-31T16:00:00-04:00",
+    "label": "EOD official (Yahoo Finance)",
     "CL": {
-      "close": 84.7699966430664,
-      "prevclose": 83.58999633789062,
-      "pct": 1.411652538428091,
-      "vol": 225736
+      "close": 84.67,
+      "prevclose": 83.59,
+      "pct": 1.29
     },
     "GC": {
-      "close": 4111.2998046875,
-      "prevclose": 4100.10009765625,
-      "pct": 0.27315691725799857,
-      "vol": 102436
+      "close": 4049.1,
+      "prevclose": 4100.1,
+      "pct": -1.24
     },
     "NG": {
-      "close": 2.75600004196167,
-      "prevclose": 2.757999897003174,
-      "pct": -0.07251106295097896,
-      "vol": 105502
+      "close": 2.747,
+      "prevclose": 2.758,
+      "pct": -0.4
     },
     "HG": {
-      "close": 6.53849983215332,
-      "prevclose": 6.444499969482422,
-      "pct": 1.4586059914039826,
-      "vol": 37303
+      "close": 6.436,
+      "prevclose": 6.4445,
+      "pct": -0.13
     },
     "EURUSD": {
-      "close": 1.1539349555969238,
-      "prevclose": 1.1467232704162598,
-      "pct": 0.6288949885918182,
-      "vol": 0
+      "close": 1.1527,
+      "prevclose": 1.1524,
+      "pct": 0.03
     }
   },
   "sources_failed_this_run": [
     "cdn.cboe.com options market-statistics (HTTP 403, recurring known path-shift issue)",
-    "api.twelvedata.com quote batch (HTTP 429 after first batch, per-minute credit limit; substituted full Yahoo Finance sweep)",
-    "Yahoo Finance FM ETF (no data returned, recurring known gap)",
-    "api.frankfurter.dev FX (HTTP 522, origin down after 3 retries; used cached 2026-07-30 ECB reference rates)"
+    "api.twelvedata.com quote batch (HTTP 429 after batch 1, per-minute credit limit; substituted full Yahoo Finance sweep)",
+    "Yahoo Finance FM ETF (no data returned, recurring known gap)"
   ],
   "technical_levels_2026-07-31": {
     "label": "This run's own 1-year Yahoo time-series pull",
