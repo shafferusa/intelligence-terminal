@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference.
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are; that tag appears
+     exactly once in this file, below in <head>).
+  4. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  5. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix:
+      reports/2026/07/2026-07-24-am.html  ->  ../../../assets/style.css
+                                          ->  ../../../equations/eq_011.png
+                                          ->  ../../../index.html
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  The sample content between the markers is a design reference showing every
+  structural element of a weekday MORNING report (SPEC.md section 18). All
+  figures in it are ILLUSTRATIVE ONLY and are labeled as sample data.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Week-Ahead Outlook — Week of Aug 3, 2026 · Logan's Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-02",
+    "slot": "sun",
+    "title": "Week-Ahead Outlook — Week of Aug 3, 2026",
+    "path": "reports/2026/08/2026-08-02-sun.html",
+    "summary": "Trump cancels planned US-Israeli strikes on Iranian energy infrastructure citing a disputed deal outline, as two LNG tankers are hit near the Strait of Hormuz and suspected Iran-linked cyberattacks strike Michigan and Minnesota water systems, heading into a week topped by the July jobs report and SpaceX's first-ever earnings print.",
+    "reading_minutes": 44,
+    "generated_at": "2026-08-02T09:45:00-04:00",
+    "news_cutoff": "2026-08-02T09:40:00-04:00",
+    "market_data_asof": "2026-08-02T09:30:00-04:00",
+    "timezone": "America/New_York",
+    "version": "1.0",
+    "confidence": "Medium-High",
+    "market_status": "Closed (weekend) — NYSE reopens Mon Aug 3, 9:30 AM ET. Futures/commodities/FX reopen ~18:00 ET Sunday, after this report's generation."
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+<!--REPORT:START-->
+
+    <!-- ================= 1. COVER ================= -->
+    <header class="report-header">
+      <span class="kicker">Week-Ahead Intelligence Outlook</span>
+      <h1>Week-Ahead Outlook — Week of Monday, August 3, 2026</h1>
+      <p class="report-type-line">Generated Sunday, August 2, 2026 &middot; 09:45 AM ET (13:45 UTC) &middot; All times Eastern (America/New_York) unless noted</p>
+      <div class="report-chips">
+        <span class="chip chip--info">Overall confidence: Medium-High</span>
+        <span class="chip chip--warn">Markets: closed (weekend)</span>
+        <span class="chip chip-critical">Watch: Iran strikes canceled pending a deal &mdash; Tehran disputes Trump&rsquo;s account</span>
+      </div>
+      <dl class="meta-grid">
+        <div><dt>News cutoff</dt><dd>2026-08-02 09:40 AM ET</dd></div>
+        <div><dt>Market data as of</dt><dd>Fri 2026-07-31 close (cash equities, rates, VIX, credit); crypto live this run; futures/commodities/FX not yet reopened (Sunday-evening reopen ~18:00 ET, after this report&rsquo;s generation)</dd></div>
+        <div><dt>Report version</dt><dd>1.0</dd></div>
+        <div><dt>Reading time</dt><dd>~44 minutes</dd></div>
+        <div><dt>Market status</dt><dd>Closed &mdash; NYSE reopens Mon Aug 3, 9:30 ET. No holiday or early close this week.</dd></div>
+      </dl>
+      <div class="table-wrap" style="margin-top:0.8rem">
+        <table class="data-table">
+          <caption>Data freshness by source, this run</caption>
+          <thead><tr><th>Source</th><th>Freshness label</th><th>Data age</th></tr></thead>
+          <tbody>
+            <tr><td>Treasury par yield curve</td><td class="txt"><span class="dd dd-ok">EOD official</span></td><td>Fri Jul 31 curve</td></tr>
+            <tr><td>FRED (rates, credit, claims)</td><td class="txt"><span class="dd dd-ok">EOD official</span></td><td>Thu Jul 30 / Fri Jul 31 obs. (series-dependent)</td></tr>
+            <tr><td>Cboe VIX/VIX9D/VIX3M history</td><td class="txt"><span class="dd dd-ok">EOD official</span></td><td>Fri Jul 31 close</td></tr>
+            <tr><td>Twelve Data (watchlist quotes)</td><td class="txt"><span class="dd dd-ok">EOD official</span></td><td>Fri Jul 31 close</td></tr>
+            <tr><td>Yahoo Finance (indices/futures/commodities/FX)</td><td class="txt"><span class="dd dd-warn">Cached &mdash; rate-limited this run (HTTP 429)</span></td><td>Fri Jul 31 close, via Friday&rsquo;s own run</td></tr>
+            <tr><td>CoinGecko</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>This run</td></tr>
+            <tr><td>Frankfurter FX</td><td class="txt"><span class="dd dd-ok">EOD official (ECB reference)</span></td><td>Fri Jul 31 fix</td></tr>
+            <tr><td>BLS ICS / TreasuryDirect / Fed RSS / Launch Library 2 / Alpha Vantage / Finnhub</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>This run</td></tr>
+            <tr><td>SEC EDGAR (getcurrent 8-K scan)</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>This run</td></tr>
+            <tr><td>WebSearch/WebFetch (news)</td><td class="txt"><span class="dd dd-warn">Partial &mdash; WebFetch returned HTTP 403 on every direct-article attempt this run; WebSearch synthesis (with sourcing) used throughout instead</span></td><td>This run</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted" style="margin-top:0.6rem">2 sources degraded this run (Yahoo Finance futures/indices/commodities/FX &mdash; rate-limited all attempts, Friday&rsquo;s own cache substituted since it is the correct data for a weekend report; WebFetch direct-article retrieval &mdash; blocked on every domain tried, WebSearch synthesis used instead, sourcing preserved) &mdash; see System health.</p>
+    </header>
+
+    <!-- ================= 2. FIVE-MINUTE WEEK-AHEAD BRIEF ================= -->
+    <section class="report-section" aria-labelledby="s-brief">
+      <h2 id="s-brief"><span class="kicker">Section 2 &middot; the five-minute version</span>Five-Minute Week-Ahead Brief</h2>
+      <div class="exec-summary">
+        <p><strong>The world</strong> The US-Iran war took its sharpest turn yet this weekend &mdash; toward de-escalation, for now. After days of reporting that the US and Israel were preparing to bomb Iranian energy infrastructure &ldquo;as soon as this weekend,&rdquo; President Trump announced late Saturday he is canceling the planned strikes, saying on Truth Social that Iran and other Middle Eastern countries had asked him to hold off because &ldquo;the perimeters of a deal has been agreed to,&rdquo; including the &ldquo;Immediate, Complete, and Total OPENING OF THE HORMUZ STRAIT&rdquo; and an end to &ldquo;Iran&rsquo;s nuclear threat.&rdquo; Iran disputes that framing: state media quoted Iranian officials denying Tehran asked for a pause and calling Trump&rsquo;s account a face-saving spin on a retreat, while Foreign Minister Araghchi separately warned Saudi Arabia, Turkiye and Pakistan that any US or Israeli attack would draw a &ldquo;decisive and proportionate response.&rdquo; Layered on top: two LNG tankers tied to the same shipping manager were hit in and around the Strait of Hormuz this week (Gaslog Salem by drone at Egypt&rsquo;s Damietta port, Gaslog Shanghai by an unknown projectile transiting Hormuz Friday night), the State Department issued a fresh Saturday warning for Americans to consider leaving the Middle East, and Michigan joined Minnesota in reporting cyberattacks on water-system controls that US officials suspect &mdash; preliminarily, without confirmed forensic attribution &mdash; trace to Iran.</p>
+        <p><strong>Markets</strong> Friday&rsquo;s cash close: S&amp;P 500 7,504.53 (+0.90%), a fourth straight positive week capped by Amazon&rsquo;s post-earnings surge and Apple&rsquo;s guidance-driven slide the day before. The 10-year Treasury par yield finished the week at 4.75%, VIX closed at 15.99 (-6.9% on the day) in normal contango (VIX9D 13.05 &lt; VIX 15.99 &lt; VIX3M 19.02) &mdash; a materially calmer options market than a week earlier. Futures, oil, gold and EURUSD have not yet reopened for the week as of this report&rsquo;s generation (Sunday-evening reopen is hours away); Bitcoin trades live near $63,000. This week carries the month&rsquo;s single most important scheduled data point &mdash; Friday&rsquo;s July jobs report &mdash; against a market that RBC (Lori Calvasina, S&amp;P target 8,150) and others have described as choppy but still constructive, with roughly 85% of S&amp;P 500 reporters beating estimates so far this earnings season.</p>
+        <p><strong>Central theme</strong> A geopolitical de-escalation nobody has fully verified, landing in the same week as the July jobs report, SpaceX&rsquo;s first-ever earnings print, and the mechanical unlock of roughly $116B in SpaceX shares. The market&rsquo;s working assumption &mdash; that the Iran story is cooling &mdash; is a Trump claim Iran itself disputes; that gap is this week&rsquo;s central source of two-way risk.</p>
+        <p><strong>Most important scheduled event</strong> Friday 8:30 AM ET &mdash; the July 2026 Employment Situation report, the only Critical-importance economic release this week and the week&rsquo;s cleanest read on whether the labor market is still cooling gradually or cracking, arriving one week before Wednesday&rsquo;s CPI.</p>
+        <p><strong>Most important risk</strong> That the Trump-announced Iran deal does not hold &mdash; Iran has not confirmed it requested a pause, and both the Hormuz tanker attacks and the suspected Iran-linked US water-utility cyber intrusions occurred in the days immediately before Trump&rsquo;s announcement, meaning the underlying escalation drivers have not visibly stopped even as strikes are paused (horizon: this week; trigger: a resumed strike order, a further tanker or infrastructure attack, or Iran publicly rejecting deal terms).</p>
+        <p><strong>Most important positive development</strong> The strikes were canceled at all &mdash; regional mediation (Saudi Crown Prince Mohammed bin Salman reportedly called Trump directly Saturday urging restraint, joined by Qatar, the UAE, Turkiye and Pakistan) appears to have opened a diplomatic off-ramp that did not exist a week ago, and VIX fell nearly 7% Friday to its calmest close in two weeks even before the Saturday-night announcement.</p>
+        <p><strong>Key unknown</strong> Whether Monday&rsquo;s market treats the Iran news as durable de-escalation (oil lower, risk assets higher) or as a fragile, disputed pause that could reverse on a single wire alert &mdash; the first real test arrives with Sunday-evening futures and Monday&rsquo;s oil open.</p>
+        <p><strong>Deserves attention this week</strong></p>
+        <ul>
+          <li>Ongoing &mdash; whether the Trump-announced Iran deal holds, and Iran&rsquo;s continued public denial of its terms (Critical, ongoing).</li>
+          <li>Tue Aug 4 &mdash; SpaceX&rsquo;s first-ever public earnings report (after close), two days ahead of its Aug 6 share-lockup expiration (High).</li>
+          <li>Tue Aug 4, 9:00 AM &mdash; Senate Judiciary Committee vote on Todd Blanche&rsquo;s Attorney General nomination, rescheduled after Cornyn/Tillis objections (High).</li>
+          <li>Fri Aug 7, 8:30 AM &mdash; July Employment Situation (Critical) &mdash; the week&rsquo;s single most important data point.</li>
+          <li>All week &mdash; DRC&rsquo;s Ebola outbreak (now 3,626 cases / 1,589 deaths, the fastest-growing on record) and Kumamoto&rsquo;s earthquake recovery (toll steady at 36, water/heat crisis ongoing) remain live humanitarian threads.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 3. TOP THEMES ================= -->
+    <section class="report-section" aria-labelledby="s-themes">
+      <h2 id="s-themes"><span class="kicker">Section 3</span>Top Themes</h2>
+      <ol>
+        <li><strong>A disputed de-escalation.</strong> Trump says Iran asked for a pause and agreed to open the Strait of Hormuz and end its &ldquo;nuclear threat&rdquo;; Iranian state media explicitly denies asking for anything and calls the announcement a retreat dressed up as a favor. Markets have not yet had a chance to price either version (futures reopen Sunday evening).</li>
+        <li><strong>Shipping risk didn&rsquo;t wait for a deal.</strong> Two LNG carriers managed by the same company were hit within days of each other &mdash; one by drone at an Egyptian port, one by an unidentified projectile transiting Hormuz itself &mdash; a direct threat to roughly a fifth of global LNG flows that predates and may outlast this weekend&rsquo;s diplomatic news.</li>
+        <li><strong>Domestic spillover: suspected Iran-linked cyberattacks on US water utilities.</strong> Michigan and Minnesota have both reported intrusions into water-system controls; the FBI is investigating and officials call Iran the leading suspect while stressing attribution is preliminary &mdash; a reminder that this conflict already has a domestic-infrastructure dimension independent of any Middle East ceasefire.</li>
+        <li><strong>The jobs report is the week&rsquo;s real economic event.</strong> No FOMC meeting until September and no other Critical-tier data before Friday means the July Employment Situation carries the full weight of this week&rsquo;s policy-path signal, arriving nine days before CPI.</li>
+        <li><strong>SpaceX&rsquo;s first earnings print lands two days before a $116B mechanical share unlock.</strong> Aug 4 earnings and the Aug 6 lockup expiration (roughly 911.5M shares, taking tradeable float from ~4.9% to ~12% of shares outstanding) are two distinct, back-to-back catalysts for the same stock in the same week.</li>
+      </ol>
+    </section>
+
+    <!-- ================= 4. DAY-BY-DAY CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-daybyday">
+      <h2 id="s-daybyday"><span class="kicker">Section 4</span>Day-by-Day Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET. Importance per SPEC &sect;17. Earnings days: Confirmed-primary (bea.gov/bls.gov/treasurydirect.gov) for macro/auction dates; Alpha Vantage EARNINGS_CALENDAR (3-month horizon) cross-checked against Finnhub day-of confirmations for company earnings &mdash; day flagged where the two sources disagree.</caption>
+          <thead>
+            <tr><th>Day</th><th>Time</th><th>Event</th><th>Type</th><th>Importance</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mon Aug 3</td><td>&mdash;</td><td class="txt">13-Week ($92B) / 26-Week ($79B) bill auctions</td><td class="txt">Auction</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Mon Aug 3</td><td>16:00</td><td class="txt">SCOTUS mail-ballot EO stay: respondent states&rsquo; written response due (procedural, not a merits ruling)</td><td class="txt">Legal</td><td><span class="chip chip--bad">Critical</span></td></tr>
+            <tr><td>Mon Aug 3</td><td>&mdash;</td><td class="txt">BWX Technologies (BWXT), Palantir (PLTR), Voyager Technologies (VOYG), Vertex Pharmaceuticals (VRTX) earnings &mdash; Alpha Vantage-sourced day, not independently confirmed by Finnhub this run</td><td class="txt">Earnings</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>04:50</td><td class="txt">Long March 8A &mdash; undisclosed payload (Wenchang)</td><td class="txt">Launch</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>09:00</td><td class="txt">Senate Judiciary Committee vote on Todd Blanche&rsquo;s Attorney General nomination (rescheduled from last week)</td><td class="txt">Politics</td><td><span class="chip chip--warn">High</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>10:00</td><td class="txt">Falcon 9 &mdash; Starlink Group 17-53 (Vandenberg)</td><td class="txt">Launch</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>10:00</td><td class="txt">JOLTS &mdash; Job Openings and Labor Turnover Survey (Jun)</td><td class="txt">Econ release</td><td><span class="chip chip--warn">High</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>&mdash;</td><td class="txt">52-Week ($52B) / 6-Week ($95B) bill auctions</td><td class="txt">Auction</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>bmo</td><td class="txt">McDonald&rsquo;s (MCD), Merck (MRK), Pfizer (PFE), Apollo Global (APO) earnings</td><td class="txt">Earnings</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Tue Aug 4</td><td>amc</td><td class="txt"><strong>SpaceX (SPCX) first-ever public earnings report</strong>, AMD, Arista Networks (ANET), Booking Holdings (BKNG), Viasat (VSAT), Kratos (KTOS) earnings</td><td class="txt">Earnings</td><td><span class="chip chip--bad">Critical/High</span></td></tr>
+            <tr><td>Wed Aug 5</td><td>03:42</td><td class="txt">Falcon 9 &mdash; BlueBird 11-13 (AST SpaceMobile, Block 2 #6-8) (Cape Canaveral)</td><td class="txt">Launch</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Wed Aug 5</td><td>02:35</td><td class="txt">Smart Dragon 3 &mdash; undisclosed payload (Haiyang, China)</td><td class="txt">Launch</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Wed Aug 5</td><td>bmo</td><td class="txt">Eli Lilly (LLY) earnings</td><td class="txt">Earnings</td><td><span class="chip chip--warn">High</span></td></tr>
+            <tr><td>Wed Aug 5</td><td>&mdash;</td><td class="txt">Globalstar (GSAT), Redwire (RDW) earnings &mdash; Finnhub says Wed, Alpha Vantage says GSAT reports Thu; day flagged as unconfirmed</td><td class="txt">Earnings</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Wed Aug 5</td><td>&mdash;</td><td class="txt">17-Week bill auction</td><td class="txt">Auction</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Wed Aug 5</td><td>~20:00</td><td class="txt">Spectrum (Isar Aerospace) &mdash; &ldquo;Onward and Upward&rdquo; demo (Andøya, Norway) &mdash; time TBD</td><td class="txt">Launch</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Thu Aug 6</td><td>08:30</td><td class="txt">Productivity and Costs (Q2, preliminary)</td><td class="txt">Econ release</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Thu Aug 6</td><td>&mdash;</td><td class="txt"><strong>SpaceX (SPCX) share-lockup expiration</strong> &mdash; up to ~911.5M shares (~$116B) unlock, tradeable float rises from ~4.9% to ~12% of shares outstanding</td><td class="txt">Other</td><td><span class="chip chip--warn">High</span></td></tr>
+            <tr><td>Thu Aug 6</td><td>15:30</td><td class="txt">H3-22 &mdash; Michibiki 7 / QZS-7 (Tanegashima, Japan)</td><td class="txt">Launch</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Thu Aug 6</td><td>&mdash;</td><td class="txt">4-Week / 8-Week bill auctions</td><td class="txt">Auction</td><td><span class="chip chip--ok">Low</span></td></tr>
+            <tr><td>Thu Aug 6</td><td>bmo</td><td class="txt">Constellation Energy (CEG), BlackSky (BKSY) earnings</td><td class="txt">Earnings</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Thu Aug 6</td><td>amc</td><td class="txt">Airbnb (ABNB), Karman Holdings (KRMN) earnings</td><td class="txt">Earnings</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Fri Aug 7</td><td>08:30</td><td class="txt"><strong>Employment Situation, July 2026</strong> (nonfarm payrolls, unemployment rate, wages)</td><td class="txt">Econ release</td><td><span class="chip chip--bad">Critical</span></td></tr>
+            <tr><td>Fri Aug 7</td><td>bmo</td><td class="txt">Vistra (VST) earnings</td><td class="txt">Earnings</td><td><span class="chip chip--info">Medium</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Expected market sensitivity by day:</strong> Monday &mdash; low-to-medium; the week&rsquo;s first real test of how markets price the disputed Iran de-escalation at the cash open, with only bill auctions and a procedural SCOTUS deadline otherwise scheduled. Tuesday &mdash; the week&rsquo;s highest-sensitivity day: JOLTS at the open, a politically charged AG-nomination committee vote mid-morning, and SpaceX&rsquo;s first-ever earnings print after the close. Wednesday &mdash; medium, Eli Lilly&rsquo;s report the main single-name catalyst. Thursday &mdash; medium-to-high, combining a real (if second-tier) economic release with a purely mechanical supply event (the SpaceX lockup) that could pressure SPCX independent of any news. Friday &mdash; the week&rsquo;s second-highest-sensitivity day on the jobs report alone.</p>
+    </section>
+
+    <!-- ================= 5. US POLITICS OUTLOOK ================= -->
+    <section class="report-section" aria-labelledby="s-uspol">
+      <h2 id="s-uspol"><span class="kicker">Section 5</span>US Politics Outlook</h2>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> The House is in its extended August recess (July 24&ndash;August 30 per its published 2026 floor schedule) and casts no floor votes this week. The Senate remains in session through the coming week before its own recess begins August 10 and runs to September 11 &mdash; both chambers are effectively idle for the balance of the summer once the Senate departs, ahead of the fall pre-midterm sprint.</p>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> The Senate Judiciary Committee has rescheduled its vote on Todd Blanche&rsquo;s nomination for Attorney General to Tuesday, August 4 at 9:00 AM, after Senators John Cornyn (R-TX) and Thom Tillis (R-NC) forced a postponement last week. Their stated concern is unchanged from the prior tracking: a DOJ settlement of President Trump&rsquo;s own lawsuit against the IRS, overseen by Blanche as acting Attorney General, created a since-canceled $1.8B fund that could have compensated Trump allies and barred IRS audits or enforcement on tax returns filed by the president, his family, or business entities before the May settlement. Whether Tuesday&rsquo;s vote proceeds as scheduled or slips again is this week&rsquo;s clearest domestic-politics catalyst; a committee advance would send the nomination to the full Senate before its own recess begins.</p>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> The Supreme Court&rsquo;s procedural deadline in the mail-ballot executive-order case stands: respondent states must file their written response to the Trump administration&rsquo;s emergency-stay application by 4:00 PM Monday, August 3. This is a scheduling deadline, not a ruling &mdash; the underlying dispute is over nationwide implementation of an executive order directing DHS to compile citizen-voter lists and restricting USPS mail-ballot delivery to listed voters, currently blocked by a lower-court injunction in 23 states plus DC. No timeline for a substantive Supreme Court ruling has been set.</p>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> The FY2027 NDAA remains blocked in the Senate with no procedural movement since the July 14 cloture failure (50-46); Sen. Tammy Duckworth continues to withhold support absent her amendment restricting further offensive-operations funding against Iran without congressional authorization. This weekend&rsquo;s Iran de-escalation news, if it holds, could either ease or complicate that standoff depending on whether it is read as vindicating restraint or as evidence the administration can de-escalate unilaterally without the amendment; no legislative text or scheduling change has surfaced yet.</p>
+    </section>
+
+    <!-- ================= 6. GEOPOLITICAL OUTLOOK ================= -->
+    <section class="report-section" aria-labelledby="s-geo">
+      <h2 id="s-geo"><span class="kicker">Section 6 &middot; high-risk claims, two-source rule applied</span>Geopolitical Outlook</h2>
+      <h3>US-Iran: strikes canceled, but the announcement itself is disputed</h3>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> Late Saturday, President Trump posted on Truth Social that he is canceling a planned US-Israeli strike campaign against Iranian energy infrastructure, writing that the US was &ldquo;locked and loaded and ready to go against the Islamic Republic of Iran, at levels of Military Terror, Strength, and Power not seen since World War II,&rdquo; but that &ldquo;we have just been asked by Iran, and other Middle Eastern Countries, to hold off any attack in that the parameters of a deal has been agreed to,&rdquo; and that he had &ldquo;agreed... to cancel the attack, subject to being able to rapidly make a DEAL.&rdquo; He described the deal&rsquo;s outline as the &ldquo;Immediate, Complete, and Total OPENING OF THE HORMUZ STRAIT, and an end to Iran&rsquo;s nuclear threat.&rdquo; <span class="chip chip-disputed">Disputed</span> Iranian state media (the semi-official Mehr agency, seen as close to the Supreme Leader) explicitly denied Iran asked for any pause, with one line of commentary describing Trump as having &ldquo;once again backed away from his hollow threats and presented his retreat to the world as a favor.&rdquo; Iranian military officials separately called Trump&rsquo;s account a pressure tactic aimed at Gulf state rulers. <strong>What is confirmed:</strong> a strike order was not given as of Friday evening and the operation is now paused. <strong>What remains uncertain:</strong> whether any deal framework genuinely exists, what if anything Iran actually agreed to, and how long the pause holds. Regional context reported alongside the cancellation: Saudi Crown Prince Mohammed bin Salman is reported to have called Trump directly Saturday urging cancellation and a return to negotiations, with Qatar, the UAE, Turkiye and Pakistan also pressing both sides to de-escalate.</p>
+      <h3>Iran&rsquo;s warnings and the State Department&rsquo;s response</h3>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> Foreign Minister Abbas Araghchi held separate calls Saturday with his Saudi, Turkish and Pakistani counterparts, warning in the Saudi call that any US or Israeli attack &mdash; or regional-state facilitation of one &mdash; would draw a &ldquo;decisive and proportionate response&rdquo; from Iran&rsquo;s armed forces, per a statement on his Telegram account. Separately, the US State Department issued a security alert Saturday morning advising Americans in the Middle East to &ldquo;consider departing, or be prepared to depart should there be escalation,&rdquo; warning of possible flight cancellations and airspace closures &mdash; issued before Trump&rsquo;s cancellation announcement and, as of this report&rsquo;s cutoff, not rescinded.</p>
+      <h3>Shipping under threat independent of the ceasefire news</h3>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> Two LNG carriers managed by the same shipping company were struck within days of each other. The Gaslog Salem was hit by a drone while docked at Egypt&rsquo;s Damietta port earlier in the week. The Bermuda-flagged Gaslog Shanghai, carrying Qatari LNG, was struck by an unidentified projectile roughly 11 nautical miles northeast of Oman at 23:30 UTC Friday while transiting outbound through the Strait of Hormuz &mdash; the impact hit the portside engine room, causing a fire (extinguished by the crew, no injuries reported) and a temporary loss of propulsion; UKMTO reported no environmental impact. No party has claimed responsibility for either strike as of this report&rsquo;s cutoff. The Strait carries roughly a fifth of global LNG shipments; continued attacks on tankers there are a distinct risk channel from any land-based Iran strike campaign and are not addressed by Trump&rsquo;s weekend announcement.</p>
+      <h3>Poland/NATO: no Article 4 invocation, forecast tracking toward correct</h3>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> No change since last week: NATO has confirmed the missile that crashed roughly 90 km inside Polish territory July 30 was Russian (fragment analysis points to a Kh-101 cruise missile manufactured in Q2 2026), but the alliance has taken no Article 4 consultation request as of this report&rsquo;s cutoff &mdash; a measured posture consistent with forecast <code>2026-07-30-pm-3</code> (horizon today, Aug 2; grading is a Saturday-routine task and will be recorded next weekend).</p>
+      <h3>Domestic spillover: suspected Iran-linked water-utility cyberattacks</h3>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources (underlying intrusions)</span> <span class="chip chip-unverified">Unverified &mdash; attribution</span> Michigan reported cyberattacks on nine water systems this week, joining Minnesota in disclosing intrusions; federal officials say at least seven states&rsquo; water systems have been affected. Most confirmed attacks involved the remote-monitoring/control technology (SCADA-type systems) water utilities use, forcing some utilities onto manual processes while defenses are strengthened; no damage, injuries, or water-quality impact has been reported, and all systems are described as operating safely. The FBI is investigating both the Michigan and Minnesota incidents. US officials describe Iran as the leading suspect but stress the investigation is preliminary and that definitive forensic attribution has not been established &mdash; carrying an explicit confidence qualifier per this report&rsquo;s attribution standard, not a confirmed state-actor finding.</p>
+    </section>
+
+    <!-- ================= 7. ECONOMIC RELEASE PREVIEW ================= -->
+    <section class="report-section" aria-labelledby="s-econprev">
+      <h2 id="s-econprev"><span class="kicker">Section 7</span>Economic Release Preview</h2>
+      <div class="fact-card">
+        <h4>Employment Situation, July 2026 <span class="dd dd-ok">Scheduled Fri Aug 7, 8:30 ET &middot; Confirmed-primary (bls.gov schedule)</span></h4>
+        <dl>
+          <dt>Period</dt><dd>July 2026</dd>
+          <dt>Previous (June 2026)</dt><dd>See BLS release history; this run did not independently pull the June print for a clean previous-value comparison &mdash; deferred to the release-day report.</dd>
+          <dt>Consensus</dt><dd>Not independently obtained this run. A wire-service figure surfaced in search results this run appears to describe a different year&rsquo;s report and was discarded rather than risk misattributing a stale number to this July&rsquo;s release &mdash; see the health footer&rsquo;s data-integrity note. Treat any consensus figure cited elsewhere as unverified until Friday&rsquo;s primary release.</dd>
+          <dt>Why it matters</dt><dd>The only Critical-tier data point this week and the cleanest read on labor-market momentum ahead of the September FOMC meeting; arrives nine days before July CPI (Aug 12).</dd>
+          <dt>What a surprise would mean</dt><dd>A soft print (weak payrolls, rising unemployment rate) would reinforce a slowing-labor-market narrative and likely firm up September rate-cut pricing; a hot print would cut against the Fed&rsquo;s recent hawkish-hold posture (July&rsquo;s 9-3 vote with historic 3-way hawkish dissent) and could push the long end of the curve higher.</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>JOLTS &mdash; Job Openings and Labor Turnover Survey, June 2026 <span class="dd dd-ok">Scheduled Tue Aug 4, 10:00 ET &middot; Confirmed-primary (bls.gov schedule)</span></h4>
+        <dl>
+          <dt>Why it matters</dt><dd>Openings, quits and layoffs data give an earlier, if noisier, read on labor demand than payrolls; the quits rate in particular is watched as a worker-confidence gauge.</dd>
+          <dt>What a surprise would mean</dt><dd>A further decline in openings would extend the multi-quarter cooling trend already visible in recent releases; a rebound would complicate the case for near-term Fed easing.</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>Productivity and Costs, Q2 2026 (preliminary) <span class="dd dd-ok">Scheduled Thu Aug 6, 8:30 ET &middot; Confirmed-primary (bls.gov schedule)</span></h4>
+        <dl>
+          <dt>Why it matters</dt><dd>Unit labor costs are a component of underlying inflation the Fed watches alongside wage data; arrives two days after the hot Q2 Employment Cost Index (+0.9% Q/Q) already logged in last Friday&rsquo;s edition.</dd>
+          <dt>What a surprise would mean</dt><dd>Rising unit labor costs alongside the hot ECI print would reinforce a sticky-wage-inflation narrative; a soft print would partially offset it.</dd>
+        </dl>
+      </div>
+      <p class="small muted">No BEA release is scheduled this week per the agency&rsquo;s published RSS feed of recent releases (a retrospective feed, not a forward calendar); the next GDP-adjacent release (Q2 second estimate) is expected later in August, outside this week&rsquo;s window.</p>
+    </section>
+
+    <!-- ================= 8. CENTRAL-BANK PREVIEW ================= -->
+    <section class="report-section" aria-labelledby="s-fedprev">
+      <h2 id="s-fedprev"><span class="kicker">Section 8</span>Central-Bank Preview</h2>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; primary (federalreserve.gov)</span> No FOMC meeting this week &mdash; the July 28&ndash;29 meeting (3.50&ndash;3.75% hold, historic 9-3 vote with a unified 3-way hawkish dissent) is the last decision until the September meeting. This week&rsquo;s Federal Reserve press-release RSS feed shows no policy-relevant items beyond routine bank-supervision and enforcement actions (a mutual-banking-rules proposal and an insider-lending-rule proposal, both Friday July 31; several bank enforcement actions). <strong>No confirmed Fed speaker engagements were identified for this specific week</strong> via the sources available this run (the Fed&rsquo;s press RSS is a feed of already-published releases, not a forward speaking calendar, and this run did not have time to cross-check each regional Reserve Bank&rsquo;s individual events page) &mdash; treat the absence of scheduled Fed commentary as provisional, not confirmed silence, and watch weekday editions for any speeches that surface. With no policy meeting or confirmed speaker slate, this week&rsquo;s rate-path signal will come almost entirely from Friday&rsquo;s jobs report rather than from any Fed communication.</p>
+    </section>
+
+    <!-- ================= 9. EARNINGS PREVIEW ================= -->
+    <section class="report-section" aria-labelledby="s-earnprev">
+      <h2 id="s-earnprev"><span class="kicker">Section 9</span>Earnings Preview</h2>
+      <p>The week&rsquo;s single most closely watched report is <strong>SpaceX&rsquo;s first-ever public earnings release</strong>, after Tuesday&rsquo;s close &mdash; both a fundamentals event (Starlink subscriber/revenue trajectory, Starship program spend, launch cadence economics) and a mechanical one, since it sets up Thursday&rsquo;s ~$116B share-lockup expiration two days later. Alpha Vantage lists a consensus EPS estimate of roughly -$0.26 to -$0.29 across the two data feeds used this run (Alpha Vantage -$0.2635, Finnhub -$0.2635) &mdash; both self-reported by the data vendors, not independently verified against a primary consensus source, and presented as directional context only.</p>
+      <p>Eli Lilly (Wednesday, before open) is the week&rsquo;s other mega-cap-scale report, arriving one week after peer Novo Nordisk erased roughly $30B in market value on a failed cardiovascular trial (ziltivekimab/ZEUS) &mdash; any GLP-1-adjacent pipeline commentary from Lilly will be read partly through that lens, though the two companies&rsquo; pipelines differ. Constellation Energy (Thursday, before open) reports into a market still pricing a nuclear/power-generation premium tied to AI-datacenter demand. A cluster of space-sector names beyond SpaceX also report this week &mdash; Redwire, Globalstar, BlackSky, Karman &mdash; giving a fuller read on the sector&rsquo;s health than any single name.</p>
+      <p>Consensus EPS/revenue figures for most names below were not independently cross-checked against a primary consensus provider this run; Alpha Vantage&rsquo;s per-company estimate field and Finnhub&rsquo;s day/hour confirmation are both vendor-reported figures, treated as directional, not verified consensus.</p>
+    </section>
+
+    <!-- ================= 10. TREASURY & CREDIT CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-treas">
+      <h2 id="s-treas"><span class="kicker">Section 10</span>Treasury &amp; Credit Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Source: treasurydirect.gov TA_WS upcoming-securities feed, fetched 2026-08-02. Confirmed-primary.</caption>
+          <thead>
+            <tr><th>Date</th><th>Security</th><th>Offering</th><th>Issue date</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mon Aug 3</td><td class="txt">13-Week Bill / 26-Week Bill</td><td>$92B / $79B</td><td>Aug 6</td></tr>
+            <tr><td>Tue Aug 4</td><td class="txt">52-Week Bill / 6-Week Bill</td><td>$52B / $95B</td><td>Aug 6</td></tr>
+            <tr><td>Wed Aug 5</td><td class="txt">17-Week Bill</td><td>n/a</td><td>Aug 11</td></tr>
+            <tr><td>Thu Aug 6</td><td class="txt">4-Week Bill / 8-Week Bill</td><td>n/a</td><td>Aug 11</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>No coupon (note/bond) auctions fall this week &mdash; bills only. The quarterly refunding cycle resumes the following week: a 3-Year Note auction Aug 11, 10-Year Note Aug 12, and 30-Year Bond Aug 13, all settling Aug 17. High-yield credit (BAMLH0A0HYM2, FRED) closed Thursday Jul 30 at 2.84%, down 3bp from Wednesday&rsquo;s 2.87% &mdash; still historically tight and showing no stress signal; the archived history in <code>state/market-history/hy-oas.csv</code> already carries this observation, so no new row was appended this run. See Section 19 of the appendix for the full rates/credit table.</p>
+    </section>
+
+    <!-- ================= 11. TECH & AI WATCH ================= -->
+    <section class="report-section" aria-labelledby="s-tech">
+      <h2 id="s-tech"><span class="kicker">Section 11</span>Tech &amp; AI Watch</h2>
+      <p><span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span> An industry letter backing an open-weight AI ecosystem gained signatures through the weekend from Nvidia, Microsoft, Meta, Palantir, Google and OpenAI, among others; Anthropic &mdash; which sells closed, proprietary models and operates this reporting system &mdash; did not sign, consistent with its commercial model rather than reflecting a position this report takes any stance on. Separately, OpenAI added Nubank CEO David Vélez and BNY CEO Robin Vince to its Foundation and PBC boards, board additions widely read as IPO preparation (OpenAI&rsquo;s confidential-S-1 status remains press-reported only, unconfirmed on public EDGAR per <code>registry/entities.json</code>&rsquo;s Saturday sweep). Anthropic&rsquo;s Q2 2026 US lobbying spend rose to roughly $1.97M, up about 26% quarter-over-quarter, reported to outspend Nvidia and approach Oracle&rsquo;s level &mdash; both figures self-reported/vendor-reported, not independently audited by this system.</p>
+      <h3>Cybersecurity</h3>
+      <p><span class="chip chip-unverified">Unverified &mdash; attribution</span> The dominant cyber story this week is the suspected Iran-linked water-utility intrusion campaign detailed in Section 6 &mdash; Michigan and Minnesota both reporting SCADA-adjacent breaches, at least seven states affected per federal officials, FBI investigating, Iran the leading but unconfirmed suspect. Separately, the ShinyHunters extortion campaign against Ernst &amp; Young continues without resolution: the group added EY to its leak site July 27 over a March 28&ndash;April 12 third-party support-platform breach (client SSNs, account numbers, and tax-filing data reportedly exposed), gave a July 31 response deadline, and as of this run&rsquo;s cutoff no leak-site posting or confirmed payment has surfaced &mdash; EY is offering 24 months of credit/identity monitoring to affected individuals. This remains an open watch item.</p>
+    </section>
+
+    <!-- ================= 12. SCIENCE WATCH ================= -->
+    <section class="report-section" aria-labelledby="s-sciwatch">
+      <h2 id="s-sciwatch"><span class="kicker">Section 12</span>Science Watch</h2>
+      <p>Notable items from the past week&rsquo;s science coverage (Single-reliable-source unless noted, science-press aggregation &mdash; treat as Preliminary pending peer-reviewed confirmation where a journal citation was not directly verified this run): researchers built the first all-optical photonic time crystal, reshaping terahertz-light behavior at extreme speed with potential ultrafast-computing and imaging applications; a separate laboratory analog reproduced Hawking-radiation-like physics using a miniature light-based &ldquo;black hole&rdquo; setup; engineers transformed a normally brittle cobalt-aluminum compound into a material that is simultaneously very strong and bendable without breaking; astronomers identified a previously unrecognized supernova remnant beside the well-known Jellyfish Nebula (IC 443), evidence the two objects are wreckage from a pair of stars that once orbited each other before exploding separately; and a reanalysis of Neptune&rsquo;s irregular moon Nereid suggests it may be the sole surviving remnant of an earlier satellite system that formed near Neptune rather than being captured from elsewhere. None of these are characterized here as confirmed breakthroughs beyond what each source itself claims; independent replication status was not separately verified this run.</p>
+    </section>
+
+    <!-- ================= 13. LAUNCH & MISSION CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-launch">
+      <h2 id="s-launch"><span class="kicker">Section 13 &middot; source: Launch Library 2, Confirmed-primary</span>Launch &amp; Mission Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET, converted from Launch Library 2 UTC NET (no-earlier-than) windows. &ldquo;TBD&rdquo; status missions carry schedule risk.</caption>
+          <thead>
+            <tr><th>When (ET)</th><th>Vehicle</th><th>Payload / Mission</th><th>Site</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Tue Aug 4, 04:50</td><td class="txt">Long March 8A</td><td class="txt">Undisclosed payload</td><td class="txt">Wenchang, China</td><td><span class="chip chip--ok">Go for Launch</span></td></tr>
+            <tr><td>Tue Aug 4, 10:00</td><td class="txt">Falcon 9 Block 5</td><td class="txt">Starlink Group 17-53</td><td class="txt">Vandenberg SFB, CA</td><td><span class="chip chip--ok">Go for Launch</span></td></tr>
+            <tr><td>Wed Aug 5, 02:35</td><td class="txt">Smart Dragon 3</td><td class="txt">Undisclosed payload</td><td class="txt">Haiyang Oriental Spaceport, China</td><td><span class="chip chip--ok">Go for Launch</span></td></tr>
+            <tr><td>Wed Aug 5, 03:42</td><td class="txt">Falcon 9 Block 5</td><td class="txt">BlueBird 11-13 (AST SpaceMobile, Block 2 #6-8)</td><td class="txt">Cape Canaveral SFS, FL</td><td><span class="chip chip--ok">Go for Launch</span></td></tr>
+            <tr><td>Wed Aug 5, ~20:00</td><td class="txt">Spectrum</td><td class="txt">&ldquo;Onward and Upward&rdquo; demo flight (Isar Aerospace)</td><td class="txt">Andøya Spaceport, Norway</td><td><span class="chip chip--warn">To Be Determined</span></td></tr>
+            <tr><td>Thu Aug 6, 15:30</td><td class="txt">H3-22</td><td class="txt">Michibiki 7 (QZS-7)</td><td class="txt">Tanegashima Space Center, Japan</td><td><span class="chip chip--ok">Go for Launch</span></td></tr>
+            <tr><td>Sat Aug 8, 10:00</td><td class="txt">Falcon 9 Block 5</td><td class="txt">Starlink Group 17-38</td><td class="txt">Vandenberg SFB, CA</td><td><span class="chip chip--ok">Go for Launch</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Notable this week:</strong> Isar Aerospace&rsquo;s Spectrum rocket attempts its next demonstration flight (&ldquo;Onward and Upward&rdquo;) from Andøya Spaceport in Norway &mdash; one of the only orbital-class launch attempts based in Western Europe outside French Guiana, worth watching regardless of outcome given how few European launch providers have reached this stage. AST SpaceMobile&rsquo;s BlueBird direct-to-device satellites (Wednesday) continue that constellation&rsquo;s build-out. SpaceX has no Starship flight on this week&rsquo;s calendar; its major event this week is Tuesday&rsquo;s earnings report, not a launch (see Sections 4 and 9).</p>
+    </section>
+
+
+    <!-- ================= 14. MARKET SETUP ================= -->
+    <section class="report-section" aria-labelledby="s-marketsetup">
+      <h2 id="s-marketsetup"><span class="kicker">Section 14</span>Market Setup</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Cash closes, rates, VIX: EOD official Fri 2026-07-31. Futures/commodities/EURUSD have not yet reopened for the week as of this report&rsquo;s generation (Sunday-evening reopen ~18:00 ET, several hours away) &mdash; shown as Friday&rsquo;s cash/futures-adjacent reference only, not a live quote. Crypto: Live, CoinGecko, this run.</caption>
+          <thead>
+            <tr><th>Instrument</th><th>Level</th><th>Change</th><th>Label</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>S&amp;P 500 (cash)</td><td>7,504.53</td><td class="up">+0.90%</td><td class="txt"><span class="dd">EOD official (Fri Jul 31 close)</span></td></tr>
+            <tr><td>Nasdaq Composite (cash)</td><td>25,373.85 (idx proxy)</td><td class="up">+1.00%</td><td class="txt"><span class="dd">EOD official (Fri Jul 31 close, via prior run&rsquo;s Yahoo sweep)</span></td></tr>
+            <tr><td>Dow (cash)</td><td>52,485.03</td><td class="up">+0.53%</td><td class="txt"><span class="dd">EOD official (Fri Jul 31 close, via prior run&rsquo;s Yahoo sweep)</span></td></tr>
+            <tr><td>Russell 2000 (cash, IWM proxy)</td><td>$291.20</td><td class="down">&minus;0.48%</td><td class="txt"><span class="dd dd-ok">EOD official (Twelve Data, Fri Jul 31 close)</span></td></tr>
+            <tr><td>US 10Y par yield (official curve)</td><td>4.75%</td><td class="up">+7bp vs Thu</td><td class="txt"><span class="dd dd-ok">EOD official (Treasury.gov, Fri Jul 31)</span></td></tr>
+            <tr><td>VIX</td><td>15.99</td><td class="down">&minus;6.88% (&minus;1.10 pts)</td><td class="txt"><span class="dd dd-ok">EOD official (Cboe, Fri Jul 31 close)</span></td></tr>
+            <tr><td>WTI crude (CL, last available)</td><td>$84.67</td><td class="up">+1.29% (Thu&rarr;Fri)</td><td class="txt"><span class="dd dd-warn">Cached (Fri Jul 31 close, via prior run) &mdash; not yet reopened this week</span></td></tr>
+            <tr><td>Gold (GC, last available)</td><td>$4,049.10</td><td class="down">&minus;1.24% (Thu&rarr;Fri)</td><td class="txt"><span class="dd dd-warn">Cached (Fri Jul 31 close, via prior run) &mdash; not yet reopened this week</span></td></tr>
+            <tr><td>EUR/USD (last available)</td><td>1.1527</td><td class="up">+0.03%</td><td class="txt"><span class="dd dd-warn">Cached (Fri Jul 31 close, via prior run) &mdash; not yet reopened this week</span></td></tr>
+            <tr><td>Bitcoin</td><td>$63,055</td><td class="up">+1.30% (24h)</td><td class="txt"><span class="dd dd-ok">Live (CoinGecko)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Friday&rsquo;s session closed calmer than the week that preceded it &mdash; VIX fell nearly 7% to its lowest close in two weeks, even before Saturday night&rsquo;s Iran announcement. But the rally was narrow, not broad: the S&amp;P 500&rsquo;s +0.90% gain came alongside only 40.7% advancing issues in this system&rsquo;s whole-market breadth screen (2,219 advancers vs. 2,913 decliners of 5,450 names), and both RSP (equal-weight S&amp;P, -0.17%) and IWM (Russell 2000 proxy, -0.48%) lagged the cap-weighted index &mdash; consistent with a mega-cap-earnings-driven advance (Amazon +15.3%, Microsoft +3.0%) rather than broad-based strength. Because index futures, oil, gold and EURUSD have not yet reopened for the week at this report&rsquo;s generation time, this report cannot yet show how markets are pricing the weekend&rsquo;s Iran news; that is explicitly deferred to Monday&rsquo;s report rather than estimated. Forecast logged this run: oil (WTI front-month) does not close Monday&rsquo;s session more than 5% away from Friday&rsquo;s $84.67 reference in either direction (<code>2026-08-02-sun-1</code>, 50&ndash;60%, basis: the disputed nature of the Iran de-escalation news argues against a clean, large one-directional move on the open).</p>
+    </section>
+
+    <!-- ================= 15. SECTOR SETUP ================= -->
+    <section class="report-section" aria-labelledby="s-sectorsetup">
+      <h2 id="s-sectorsetup"><span class="kicker">Section 15</span>Sector Setup</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Twelve Data, EOD official, Fri 2026-07-31 close.</caption>
+          <thead>
+            <tr><th>Sector</th><th>Fund</th><th>Close</th><th>Day</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Consumer Discretionary</td><td>XLY</td><td>116.09</td><td class="up">+3.29%</td></tr>
+            <tr><td>Communication Services</td><td>XLC</td><td>108.24</td><td class="up">+1.56%</td></tr>
+            <tr><td>Industrials</td><td>XLI</td><td>179.84</td><td class="up">+0.81%</td></tr>
+            <tr><td>Energy</td><td>XLE</td><td>59.55</td><td class="up">+1.00%</td></tr>
+            <tr><td>Financials</td><td>XLF</td><td>56.94</td><td class="down">&minus;0.11%</td></tr>
+            <tr><td>Technology</td><td>XLK</td><td>175.35</td><td class="down">&minus;0.22%</td></tr>
+            <tr><td>Consumer Staples</td><td>XLP</td><td>85.05</td><td class="down">&minus;0.49%</td></tr>
+            <tr><td>Real Estate</td><td>XLRE</td><td>45.07</td><td class="down">&minus;0.51%</td></tr>
+            <tr><td>Health Care</td><td>XLV</td><td>162.55</td><td class="down">&minus;0.59%</td></tr>
+            <tr><td>Utilities</td><td>XLU</td><td>44.35</td><td class="down">&minus;0.69%</td></tr>
+            <tr><td>Materials</td><td>XLB</td><td>50.43</td><td class="down">&minus;2.34%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Consumer Discretionary&rsquo;s clear Friday lead (+3.29%) traces directly to Amazon&rsquo;s post-earnings surge, its single largest constituent by weight; Technology&rsquo;s roughly flat day masks a wide split beneath the surface &mdash; Apple&rsquo;s guidance-driven slide against continued strength in chip/AI-infrastructure names (Vertiv +6.18%, Eaton +7.32%, Arista +5.46%, Nvidia +2.93%) that broke a four-session Asian AI-chip selloff streak earlier in the week (Micron, notably, still lower on the week despite that rebound, closing Friday at -5.90%). Materials&rsquo; -2.34% was this run&rsquo;s single weakest sector move with no confirmed single-name driver identified this run. Three sectors carry concentrated, dated event risk this week: <strong>Health Care</strong> (Eli Lilly reports Wednesday, one week after peer Novo Nordisk&rsquo;s failed cardiovascular trial); <strong>Utilities/Independent Power</strong> (Constellation Energy reports Thursday into a market still pricing an AI-datacenter power-demand premium); and <strong>Communication Services/Aerospace</strong>, where SpaceX&rsquo;s Tuesday earnings and Thursday lockup expiration are two distinct, back-to-back single-name catalysts. Energy carries the week&rsquo;s clearest macro-event-risk sensitivity given the unresolved Iran/Hormuz situation, independent of any single earnings report.</p>
+    </section>
+
+    <!-- ================= 16. COMPANY CATALYSTS ================= -->
+    <section class="report-section" aria-labelledby="s-catalysts">
+      <h2 id="s-catalysts"><span class="kicker">Section 16</span>Company Catalysts</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Registry-verified tickers per <code>registry/entities.json</code>; earnings days per Section 9 sourcing; Friday close via Twelve Data.</caption>
+          <thead>
+            <tr><th>Company</th><th>Fri close</th><th>Catalyst</th><th>Why it matters</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SpaceX (SPCX)</td><td>$108.37 (-3.41%)</td><td class="txt">First-ever public earnings, Tue after close; share-lockup expiration Thu (~$116B / 911.5M shares)</td><td class="txt">Two distinct catalysts in one week for a stock with no prior earnings print to anchor expectations, trading near its since-IPO lows</td></tr>
+            <tr><td>Eli Lilly (LLY)</td><td>$1,148.84 (-0.53%)</td><td class="txt">Earnings, Wed before open</td><td class="txt">GLP-1/pipeline read one week after peer Novo Nordisk&rsquo;s failed cardiovascular trial</td></tr>
+            <tr><td>Constellation Energy (CEG)</td><td>$262.75 (-0.31%)</td><td class="txt">Earnings, Thu before open</td><td class="txt">AI-datacenter power-demand premium under test</td></tr>
+            <tr><td>AMD</td><td>$476.15 (-1.90%)</td><td class="txt">Earnings, Tue after close</td><td class="txt">AI/data-center chip demand read-through after a volatile week for chip names</td></tr>
+            <tr><td>Redwire (RDW) / Globalstar (GSAT) / BlackSky (BKSY) / Karman (KRMN)</td><td class="txt">$8.62 / $83.38 / $23.05 / $48.15</td><td class="txt">Earnings, spread across the week</td><td class="txt">Broader read on space-sector health beyond SpaceX alone</td></tr>
+            <tr><td>Palantir (PLTR)</td><td>$123.06 (+0.65%)</td><td class="txt">Earnings, Mon (day unconfirmed by Finnhub this run)</td><td class="txt">Government/AI-software demand bellwether</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= 17. RISK REGISTER ================= -->
+    <section class="report-section" aria-labelledby="s-riskreg">
+      <h2 id="s-riskreg"><span class="kicker">Section 17 &middot; probability ranges, never fake precision</span>Risk Register</h2>
+      <h3>1. The disputed Iran deal collapses or is never confirmed</h3>
+      <p><code>2026-08-02-sun-2</code> <strong>Probability:</strong> 35&ndash;50% that the paused strikes resume or a materially escalatory event (a further tanker attack, a confirmed Iranian rejection of deal terms, a new US/Israeli strike) occurs within the week. <strong>Impact:</strong> High (oil, safe-haven flows, broad risk sentiment). <strong>Horizon:</strong> this week, ongoing. <strong>Trigger:</strong> Iran publicly rejecting the deal Trump described, a further Hormuz shipping incident, or a wire report of resumed strike planning. <strong>Early indicators:</strong> Iranian state-media tone, Sunday-evening oil futures reopen level, State Department alert status. <strong>Affected markets:</strong> CL, GC, XLE, broad risk assets, safe-haven FX. <strong>Mitigants:</strong> continued Saudi/Qatari/Turkish/Pakistani mediation pressure reported this weekend; both sides have avoided a confirmed further strike since Thursday.</p>
+      <h3>2. Continued attacks on Hormuz-transiting shipping regardless of the land-strike pause</h3>
+      <p><code>2026-08-02-sun-3</code> <strong>Probability:</strong> 25&ndash;35% that a third tanker or commercial vessel is hit in or near the Strait this week (basis: two incidents involving the same shipping manager&rsquo;s vessels in the past week alone, with no claim of responsibility or resolution). <strong>Impact:</strong> Medium-High for energy/shipping/insurance names, lower at the broad-index level unless a vessel is lost or a major casualty event occurs. <strong>Horizon:</strong> ongoing. <strong>Trigger:</strong> any further reported strike on a commercial vessel transiting the Strait. <strong>Early indicators:</strong> UKMTO advisories, tanker insurance-rate commentary. <strong>Affected markets:</strong> CL, shipping/tanker equities, LNG-adjacent names. <strong>Mitigants:</strong> none specific; a background risk independent of the land-strike news.</p>
+      <h3>3. SpaceX earnings/lockup volatility</h3>
+      <p><code>2026-08-02-sun-4</code> <strong>Probability:</strong> 55&ndash;70% that SPCX moves more than 8% in the session following Tuesday&rsquo;s first-ever earnings report (basis: the stock has traded with high realized volatility since its June IPO, and this is its first quarterly disclosure as a public company with no prior print to anchor expectations). <strong>Impact:</strong> High for the single name, low at the broad-index level (SPCX is a Nasdaq-100 constituent but not a top-weight one). <strong>Horizon:</strong> Tue Aug 4&ndash;Wed Aug 5. <strong>Trigger:</strong> the earnings release itself, any Starship/Starlink guidance surprise. <strong>Early indicators:</strong> after-hours price action Tuesday. <strong>Affected markets:</strong> SPCX directly; secondary read-through to RKLB, ASTS and other space-sector names. <strong>Mitigants:</strong> none specific &mdash; first-print volatility is a structural feature, not a contingent risk.</p>
+      <h3>4. Suspected Iran-linked water-utility cyberattacks broaden</h3>
+      <p><code>2026-08-02-sun-5</code> <strong>Probability:</strong> 20&ndash;30% that a new state or a critical (non-water) sector discloses a related intrusion this week (basis: the campaign has already spread from Minnesota to Michigan and reportedly touched at least seven states in total, with FBI attribution still preliminary). <strong>Impact:</strong> Low-to-Medium at the market level given no water-quality or service impact confirmed so far; potentially higher if the campaign is shown to extend to electricity or other critical infrastructure. <strong>Horizon:</strong> ongoing. <strong>Trigger:</strong> a new state disclosure or a CISA/FBI advisory naming additional victims or confirming attribution. <strong>Early indicators:</strong> CISA advisories, state-government disclosures. <strong>Affected markets:</strong> water/utility infrastructure and cybersecurity-adjacent equities (CIBR, HACK). <strong>Mitigants:</strong> no operational or safety impact confirmed to date; utilities have shifted to manual processes as a precaution.</p>
+      <h3>5. A weak July jobs report</h3>
+      <p><strong>Probability:</strong> genuinely two-way; no reliable forward consensus was independently obtained this run (see Section 7), so no directional probability is assigned here beyond noting this is the week&rsquo;s single largest scheduled data risk. <strong>Impact:</strong> High across rates and equities either direction. <strong>Horizon:</strong> Fri Aug 7, 8:30 ET. <strong>Trigger:</strong> the release itself. <strong>Early indicators:</strong> Tuesday&rsquo;s JOLTS print, ADP-style private surveys if referenced in weekday editions. <strong>Affected markets:</strong> SHY/IEF/TLT, broad equities, USD. <strong>Mitigants:</strong> n/a &mdash; a scheduled release, not an avoidable risk.</p>
+    </section>
+
+    <!-- ================= 18. SCENARIO MATRIX ================= -->
+    <section class="report-section" aria-labelledby="s-scenario">
+      <h2 id="s-scenario"><span class="kicker">Section 18</span>Scenario Matrix</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Base/bull/bear/shock framing for the week of Aug 3&ndash;7. Probability ranges are analytic judgment with stated basis, not statistical model output.</caption>
+          <thead>
+            <tr><th>Scenario</th><th>Conditions</th><th>Expected market behavior</th><th>Confirmers</th><th>Invalidators</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Base (45-55%)</strong><br><code>2026-08-02-sun-6</code></td><td class="txt">Iran pause holds without confirmation either way; jobs report roughly in line with recent trend; SpaceX earnings/lockup pass without a broad-market spillover</td><td class="txt">Choppy, mixed week; single-name volatility (SPCX, LLY) exceeds index-level volatility</td><td class="txt">No further Hormuz/tanker incidents; oil settling into a range at Sunday&rsquo;s reopen</td><td class="txt">Any confirmed further strike or shipping attack</td></tr>
+            <tr><td><strong>Bull (15-20%)</strong><br><code>2026-08-02-sun-7</code></td><td class="txt">Iran deal firms up with some form of mutual confirmation; jobs report shows continued gradual (not sharp) cooling, read as Fed-friendly; SpaceX earnings beat</td><td class="txt">Oil lower, risk-on tone, yields ease modestly</td><td class="txt">Iranian officials soften their denial; State Department alert eased</td><td class="txt">Any Iranian statement rejecting deal terms outright</td></tr>
+            <tr><td><strong>Bear (15-20%)</strong><br><code>2026-08-02-sun-8</code></td><td class="txt">Iran continues denying the deal publicly without escalating; a weak jobs report reads as labor-market cracking rather than gradual cooling; SpaceX lockup pressures the stock mechanically</td><td class="txt">Yields fall on growth fear even as uncertainty persists geopolitically; SPCX-led space-sector weakness</td><td class="txt">Confirmed uptick in initial claims or a soft payrolls/wages combination</td><td class="txt">A jobs report in line with recent trend</td></tr>
+            <tr><td><strong>Shock (10-15%)</strong><br><code>2026-08-02-sun-9</code></td><td class="txt">Strikes resume, a further tanker is hit with casualties, or the suspected Iran-linked cyberattacks are confirmed to have caused an operational water-safety incident</td><td class="txt">Oil spike, broad risk-off, safe-haven bid, VIX back above its recent range</td><td class="txt">Wire alerts of renewed strikes or a confirmed cyber-attributed infrastructure failure</td><td class="txt">Continued diplomatic engagement holding through the week</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= 19. WHAT WOULD CHANGE THE OUTLOOK ================= -->
+    <section class="report-section" aria-labelledby="s-whatwouldchange">
+      <h2 id="s-whatwouldchange"><span class="kicker">Section 19</span>What Would Change the Outlook</h2>
+      <ul>
+        <li>Any Iranian government statement explicitly confirming or rejecting the deal terms Trump described &mdash; the single biggest missing piece of confirmation right now.</li>
+        <li>A further attack on Hormuz-transiting shipping, regardless of the land-strike pause holding.</li>
+        <li>Confirmation (or a ruled-out finding) that the Michigan/Minnesota water-utility intrusions trace to Iranian state actors, which would elevate this from a background cyber risk to a direct US-domestic escalation vector.</li>
+        <li>A July jobs report materially outside recent trend in either direction, which would reprice the September FOMC path independent of any Iran news.</li>
+        <li>Confirmation or denial of the Senate Judiciary Committee's Tuesday vote proceeding as scheduled on the Blanche nomination.</li>
+      </ul>
+    </section>
+
+    <!-- ================= 20. PHYSICS WEEK PREVIEW ================= -->
+    <section class="report-section" aria-labelledby="s-physprev">
+      <h2 id="s-physprev"><span class="kicker">Section 20 &middot; learning &middot; no advance on weekends</span>Physics Week Preview</h2>
+      <div class="lesson">
+        <p class="lesson-position">Physics 6/71 &middot; next up: Vectors</p>
+        <p>The measurement toolkit from the track&rsquo;s first five topics (scientific measurement, units, dimensional analysis, significant figures, and scalars) now gets its first real structural upgrade. This week&rsquo;s five topics: <strong>Vectors</strong> (quantities with both magnitude and direction, and why treating direction as part of the number itself changes how you add and compare things), <strong>Coordinate systems</strong> (the frameworks &mdash; Cartesian, polar, and beyond &mdash; used to express a vector&rsquo;s components), <strong>Position</strong> (a vector describing where something is, relative to a chosen origin), <strong>Velocity</strong> (the rate of change of position, and why it is a vector, not just a speed), and <strong>Acceleration</strong> (the rate of change of velocity, setting up next week&rsquo;s move into Newton&rsquo;s laws). Together these five topics build the full kinematic vocabulary &mdash; position, velocity, acceleration &mdash; that every later mechanics topic depends on.</p>
+      </div>
+    </section>
+
+    <!-- ================= 21. SPACEFLIGHT WEEK PREVIEW ================= -->
+    <section class="report-section" aria-labelledby="s-spaceprev">
+      <h2 id="s-spaceprev"><span class="kicker">Section 21 &middot; learning &middot; no advance on weekends</span>Spaceflight Week Preview</h2>
+      <div class="lesson">
+        <p class="lesson-position">Spaceflight 6/75 &middot; next up: Exhaust velocity</p>
+        <p>Having covered rocket anatomy, Newton&rsquo;s laws applied to rockets, thrust, and mass flow, the track now assembles those pieces into the field&rsquo;s central equation. This week: <strong>Exhaust velocity</strong> (how fast propellant leaves the nozzle, the single biggest lever on engine efficiency), the <strong>Tsiolkovsky rocket equation</strong> (Δv = v_e ln(m0/mf)) &mdash; the equation that ties exhaust velocity and mass ratio to how much velocity change a rocket can deliver, and arguably the most important single formula in the entire track, <strong>Mass fraction</strong> (what portion of a rocket&rsquo;s total mass is propellant versus structure and payload), <strong>Propellant fraction</strong>, and <strong>Payload fraction</strong> (the practical bookkeeping that turns the rocket equation from theory into an actual vehicle design constraint). This week&rsquo;s real-world tie-in is immediate: SpaceX&rsquo;s upcoming earnings report and its heavily scrutinized Starship program economics are, underneath the financial questions, a story about mass fractions and payload fractions at a scale no prior vehicle has attempted.</p>
+      </div>
+    </section>
+
+    <!-- ================= 22. QUANT/ML WEEK PREVIEW ================= -->
+    <section class="report-section" aria-labelledby="s-quantprev">
+      <h2 id="s-quantprev"><span class="kicker">Section 22 &middot; learning &middot; no advance on weekends</span>Quant/ML Week Preview</h2>
+      <div class="lesson">
+        <p class="lesson-position">Quant/ML 6/118 &middot; next up: Covariance and Correlation</p>
+        <p>The first five topics built the statistical vocabulary for a single return series &mdash; simple vs. log returns, probability from a density, central moments, hypothesis testing, and the t-statistic. This week moves from one asset to two (or more): <strong>Covariance and correlation</strong> &mdash; Cov(X,Y) measures how two series move together in absolute terms, while correlation ρ = Cov(X,Y)/(σ_Xσ_Y) rescales that co-movement to a unit-free number between -1 and 1, making it comparable across any pair of assets. This is the single equation underneath portfolio diversification: the whole reason holding multiple assets can reduce risk without proportionally reducing expected return. The week continues into the <strong>autocorrelation function (ACF)</strong> and <strong>partial autocorrelation function (PACF)</strong> &mdash; tools for measuring how a series correlates with its own past, used to diagnose whether returns show any exploitable persistence or mean-reversion &mdash; then <strong>weak stationarity</strong> (the assumption, often violated by real financial data, that a series&rsquo; statistical properties don&rsquo;t drift over time), and the <strong>autoregressive model AR(p)</strong>, the simplest model built directly on the ACF/PACF diagnostics.</p>
+        <figure class="equation">
+          <img src="../../../equations/eq_006.png" alt="Rendered equation image eq_006: Cov(X,Y) = E[(X-muX)(Y-muY)]; rho = Cov(X,Y)/(sigmaX sigmaY)." loading="lazy" width="480">
+          <figcaption>Equation 6 of 118 &mdash; embedded from site/equations/ (registry order).</figcaption>
+        </figure>
+        <p><strong>Real-world tie-in:</strong> this week&rsquo;s Market Intelligence Appendix (Section 23) reports the HYG/LQD and HYG/IEF ratios and rate-differential-vs-equity relationships throughout &mdash; every one of those cross-asset comparisons is, mechanically, a correlation calculation. <strong>Common misconception:</strong> a high correlation between two assets does not mean one causes the other to move (see this report&rsquo;s own market-causality language rules in the methodology section) &mdash; correlation is a purely statistical co-movement measure, and it can and does break down exactly when it would be most useful, such as during liquidity crises when normally uncorrelated assets suddenly move together.</p>
+      </div>
+    </section>
+
+    <!-- ================= 23. FULL MARKET INTELLIGENCE APPENDIX ================= -->
+    <section class="report-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix"><span class="kicker">Week-Ahead Market Intelligence Appendix &middot; collapsed by default</span>Full Market Intelligence Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Cautiously constructive, narrow</span> Supporting evidence: VIX fell 6.9% Friday to a two-week-low close in normal contango (no term-structure inversion); the S&amp;P 500 posted a fourth straight positive week; credit shows no stress (HY OAS 2.84%, near cycle tights). Contradicting evidence: Friday&rsquo;s advance was narrow (40.7% advancers on this system&rsquo;s whole-market breadth screen despite the index&rsquo;s +0.90% gain), both RSP and IWM lagged SPY, and the 10Y yield rose 7bp on the same day equities rallied &mdash; not a textbook risk-on combination. Change vs. last Saturday&rsquo;s review: modestly improved (VIX lower, no new escalation confirmed as of Friday&rsquo;s close), but this weekend&rsquo;s disputed Iran de-escalation news had not yet been priced by any market as of this report&rsquo;s generation. Confidence: Medium &mdash; genuinely dependent on Monday&rsquo;s open.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Twelve Data, EOD official, Fri 2026-07-31 close.</caption>
+              <thead>
+                <tr><th>Fund</th><th>Close</th><th>Day</th><th>52w range</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>SPY</td><td>747.03</td><td class="up">+0.72%</td><td class="txt">619.29&ndash;760.40</td></tr>
+                <tr><td>VOO</td><td>686.65</td><td class="up">+0.71%</td><td class="txt">569.29&ndash;699.15</td></tr>
+                <tr><td>QQQ</td><td>687.99</td><td class="up">+0.65%</td><td class="txt">551.68&ndash;748.65</td></tr>
+                <tr><td>DIA</td><td>524.32</td><td class="up">+0.54%</td><td class="txt">433.40&ndash;532.54</td></tr>
+                <tr><td>IWM</td><td>291.20</td><td class="down">&minus;0.48%</td><td class="txt">212.34&ndash;302.72</td></tr>
+                <tr><td>VTI</td><td>368.21</td><td class="up">+0.53%</td><td class="txt">304.40&ndash;374.70</td></tr>
+                <tr><td>RSP (equal-weight)</td><td>215.01</td><td class="down">&minus;0.17%</td><td class="txt">179.94&ndash;218.11</td></tr>
+                <tr><td>MDY (mid-cap)</td><td>686.32</td><td class="down">&minus;0.13%</td><td class="txt">559.89&ndash;704.45</td></tr>
+                <tr><td>IJH (mid-cap)</td><td>75.27</td><td class="down">&minus;0.11%</td><td class="txt">61.29&ndash;77.28</td></tr>
+                <tr><td>AVUV (small-cap value)</td><td>125.28</td><td class="up">+0.03%</td><td class="txt">89.27&ndash;126.65</td></tr>
+                <tr><td>IWN (small-cap value)</td><td>221.24</td><td class="down">&minus;0.25%</td><td class="txt">155.54&ndash;224.49</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Large-cap-weighted funds (SPY, VOO, QQQ, DIA) all outpaced equal-weight (RSP) and small/mid-cap funds Friday &mdash; the mega-cap-earnings-driven, narrow-breadth pattern flagged in Section 14. SPY sits 1.7% off its 52-week high.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Derived from <code>state/market-history/breadth.json</code> (Massive grouped-daily, universe filtered to symbol length &le;5, no &ldquo;.&rdquo;, close &ge;$1, volume &ge;100k). EOD official.</caption>
+              <thead>
+                <tr><th>Date</th><th>Advancers</th><th>Decliners</th><th>Universe</th><th>Adv %</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Jul 27</td><td>3,180</td><td>1,648</td><td>5,301</td><td class="up">60.0%</td></tr>
+                <tr><td>Jul 28</td><td>2,857</td><td>2,173</td><td>5,376</td><td class="up">53.1%</td></tr>
+                <tr><td>Jul 29</td><td>1,490</td><td>3,648</td><td>5,435</td><td class="down">27.4%</td></tr>
+                <tr><td>Jul 30</td><td>3,191</td><td>1,938</td><td>5,350</td><td class="up">59.6%</td></tr>
+                <tr><td>Jul 31</td><td>2,219</td><td>2,913</td><td>5,450</td><td class="down">40.7%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">% above 20/50/200-DMA: <span class="dd">Estimated &mdash; EMA proxy, accumulating history</span> (this system&rsquo;s EMA-based proxy has not yet reached the 50/200-session minimum for any symbol; not yet reportable). The week&rsquo;s breadth arc was volatile day to day (a 27% low on the Tuesday-night Iran-strike selloff, a 60% high on Wednesday&rsquo;s chip rebound) and ended the week deteriorating even as the index closed higher &mdash; a divergence worth watching into next week.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <p>See Section 15 (Sector Setup) for the full Friday close table and narrative. Rotation matrix (this week, qualitative &mdash; a single day&rsquo;s data is too thin for a full leading/improving/weakening/lagging classification; treat as directional): <strong>Leading:</strong> Consumer Discretionary, Communication Services (single-name-driven by mega-cap earnings). <strong>Improving:</strong> Industrials, Energy. <strong>Weakening:</strong> Financials, Technology (mixed internals). <strong>Lagging:</strong> Materials, Utilities, Real Estate, Health Care.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Space-sector watchlist (Twelve Data, Fri Jul 31 close): SPCX $108.37 (-3.41%), RKLB $64.95 (+0.42%), ASTS $58.98 (+0.92%), LUNR $12.34 (+0.73%), RDW $8.62 (+1.77%), PL $20.48 (+1.29%), BKSY $23.05 (+2.63%), IRDM $47.34 (-0.63%), SPIR $11.46 (+0.88%), VSAT $76.93 (-0.86%), GSAT $83.38 (+4.11%), KRMN $48.15 (+1.97%), VOYG $24.53 (+2.34%), FLY $20.33 (+0.20%), YSS $14.73 (-3.47%). SpaceX was this run&rsquo;s only space-sector decliner of scale, still working off its post-earnings-week volatility ahead of Tuesday&rsquo;s first-ever print. AI-infrastructure/semis (Fri close): NVDA $200.75 (+2.93%), AMD $476.15 (-1.90%), AVGO $389.28 (+0.37%), TSM $404.25 (+0.23%), ASML $1,629.00 (-1.36%), MU $823.03 (-5.90%), MRVL $187.56 (+2.32%), ANET $180.35 (+5.46%), VRT $241.57 (+6.18%), ETN $415.20 (+7.32%), CEG $262.75 (-0.31%), EQIX $1,019.28 (-2.70%), DLR $188.52 (-2.42%) &mdash; power/cooling-adjacent names (Vertiv, Eaton) led even as data-center REITs (Equinix, Digital Realty) lagged, a split worth watching. Defense/aero (Fri close): LMT $582.74 (+1.50%), RTX $215.22 (+0.39%), NOC $542.48 (+1.43%), GD $383.42 (+0.32%), BA $216.14 (-2.15%), LHX $277.06 (+1.90%), HII $326.45 (+2.05%), BWXT $168.70 (+1.88%), AVAV $149.37 (+1.91%), KTOS $46.60 (+0.93%), PLTR $123.06 (+0.65%) &mdash; broad-based defense strength Friday except Boeing.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>International equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Twelve Data, EOD official, Fri 2026-07-31 close.</caption>
+              <thead>
+                <tr><th>Fund</th><th>Region</th><th>Close</th><th>Day</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>VXUS</td><td class="txt">All-world ex-US</td><td>84.59</td><td class="down">&minus;0.21%</td></tr>
+                <tr><td>VEA / EFA</td><td class="txt">Developed markets</td><td>70.62 / 105.58</td><td class="down">&minus;0.66% / &minus;0.62%</td></tr>
+                <tr><td>VWO / EEM</td><td class="txt">Emerging markets</td><td>58.75 / 64.09</td><td class="up">+0.96% / +0.79%</td></tr>
+                <tr><td>EWT (Taiwan)</td><td class="txt">Asia</td><td>96.55</td><td class="up">+2.71%</td></tr>
+                <tr><td>EWY (South Korea)</td><td class="txt">Asia</td><td>157.10</td><td class="down">&minus;2.55%</td></tr>
+                <tr><td>MCHI / FXI / KWEB (China)</td><td class="txt">Asia</td><td>55.80 / 36.50 / 28.49</td><td class="up">+0.54% / &minus;0.05% / +1.53%</td></tr>
+                <tr><td>EWJ (Japan)</td><td class="txt">Asia</td><td>92.39</td><td class="down">&minus;0.96%</td></tr>
+                <tr><td>VGK / FEZ (Europe)</td><td class="txt">Europe</td><td>90.59 / 69.77</td><td class="down">&minus;0.44% / +0.10%</td></tr>
+                <tr><td>EWZ (Brazil)</td><td class="txt">Latin America</td><td>36.65</td><td class="up">+0.33%</td></tr>
+                <tr><td>VNM (Vietnam)</td><td class="txt">Asia</td><td>16.98</td><td class="down">&minus;2.25%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Taiwan (EWT +2.71%) led on continued chip-sector strength; South Korea (EWY -2.55%) and Vietnam (VNM -2.25%) were the session&rsquo;s weakest, a reminder that Friday&rsquo;s US chip-sector rebound did not uniformly lift Asian semiconductor-adjacent markets. FM (frontier markets) unavailable this run &mdash; not supported at this system&rsquo;s Twelve Data plan tier, a recurring known gap.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists &mdash; financials, health, consumer</summary>
+          <p><strong>Financials</strong> (Fri close): JPM $351.79 (+0.27%), BAC $61.95 (+0.36%), GS $1,018.38 (-0.63%), MS $210.42 (+0.17%), SCHW $105.24 (+0.87%), <strong>Coinbase $146.26 (-10.59%)</strong> &mdash; still working through its third-straight-quarterly-loss report, HOOD $86.56 (-0.05%), CME $267.79 (+0.21%), <strong>Cboe $310.23 (+4.62%)</strong> the group&rsquo;s strongest, APO $125.59 (+4.44%) and ARES $128.09 (+3.20%) both strong, ICE $152.48 (-2.43%) and IBKR $87.99 (-2.75%) the weakest apart from Coinbase. <strong>Health care</strong> (Fri close): LLY $1,148.84 (-0.53%), <strong>Novo Nordisk $47.08 (-8.78%)</strong> &mdash; still repricing off Thursday&rsquo;s failed cardiovascular trial, UNH $414.40 (-1.68%), ABBV $250.94 (-2.51%), REGN $762.63 (+3.29%) the group&rsquo;s standout gainer. <strong>Consumer</strong> (Fri close): WMT $111.20 (+0.09%), COST $951.89 (-0.24%), MCD $270.64 (+0.82%), CMG $37.22 (-3.37%) the group&rsquo;s weakest, airlines/travel broadly soft (DAL -1.30%, UAL -1.80%, RCL -1.13%, ABNB -0.37%).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par yield curve, EOD official 2026-07-31 (home.treasury.gov). No .gov UA issues this run. 1D change vs Jul 30.</caption>
+              <thead>
+                <tr><th>Tenor</th><th>Yield</th><th>1D</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1M</td><td>3.78%</td><td class="down">&minus;1bp</td></tr>
+                <tr><td>3M</td><td>3.83%</td><td class="up">+1bp</td></tr>
+                <tr><td>6M</td><td>3.98%</td><td>0bp</td></tr>
+                <tr><td>1Y</td><td>4.08%</td><td class="up">+4bp</td></tr>
+                <tr><td>2Y</td><td>4.28%</td><td class="up">+5bp</td></tr>
+                <tr><td>3Y</td><td>4.34%</td><td class="up">+4bp</td></tr>
+                <tr><td>5Y</td><td>4.45%</td><td class="up">+7bp</td></tr>
+                <tr><td>7Y</td><td>4.59%</td><td class="up">+7bp</td></tr>
+                <tr><td>10Y</td><td>4.75%</td><td class="up">+7bp</td></tr>
+                <tr><td>20Y</td><td>5.28%</td><td class="up">+6bp</td></tr>
+                <tr><td>30Y</td><td>5.27%</td><td class="up">+6bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +47bp &middot; 3m10y +92bp &middot; 5s30s +82bp (computed from the curve above; 2s10s matches FRED&rsquo;s own T10Y2Y observation of 0.47 for Jul 31, a consistency check that passed). 10Y real yield (DFII10) 2.41%, 10Y breakeven (T10YIE) 2.28%, both FRED EOD official Jul 30/31 obs. SOFR 3.65% (FRED, Jul 30 obs). The whole curve moved up in a parallel-ish shift Friday (long end +6-7bp, front end flat-to-down slightly) &mdash; a mild bear-steepening on the week&rsquo;s hot Employment Cost Index digestion, not a dramatic repricing. Rates/Treasury fund levels (Twelve Data, Fri Jul 31 close): SGOV $100.71 (+0.02%), BIL $91.68 (+0.03%), SHY $82.00 (-0.01%), IEI $116.48 (-0.14%), IEF $92.95 (-0.28%), TLT $82.25 (-0.66%), GOVT $22.45 (-0.27%), TIP $107.63 (-0.10%), SCHP $26.09 (-0.11%), BND $72.23 (-0.26%), AGG $97.37 (-0.26%), MUB $105.64 (-0.11%) &mdash; long-duration TLT&rsquo;s -0.66% was the week&rsquo;s largest single-day fund move in this block, mechanically consistent with the curve&rsquo;s +6-7bp long-end backup.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield OAS (BAMLH0A0HYM2, FRED): 2.84% as of Thu Jul 30 obs. (FRED lags one business day), down 3bp from Wed&rsquo;s 2.87% and still historically tight &mdash; <code>state/market-history/hy-oas.csv</code> already carries this observation from a prior run, no new row appended. No stress signal in credit despite the week&rsquo;s geopolitical volatility; credit is not confirming any equity-market caution this week. Fund levels (Twelve Data, Fri Jul 31 close): LQD $106.25 (-0.15%), VCIT $81.26 (-0.15%), HYG $79.48 (+0.01%), JNK $95.68 (+0.02%), BKLN $20.39 (+0.05%), SRLN $40.40 (+0.02%) &mdash; high-yield (HYG/JNK) essentially flat to marginally positive while investment-grade (LQD/VCIT) dipped slightly, consistent with duration (not credit-quality) being the driver of Friday&rsquo;s modest bond-market softness given the day&rsquo;s +7bp move at the long end. HYG/IEF and HYG/LQD ratios both nudged in credit&rsquo;s favor Friday &mdash; a small supporting data point for the &ldquo;credit not confirming caution&rdquo; read above.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Cboe, EOD official Fri 2026-07-31 close.</caption>
+              <thead>
+                <tr><th>Index</th><th>Level</th><th>1D change</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>VIX9D</td><td>13.05</td><td class="down">&minus;1.80</td></tr>
+                <tr><td>VIX</td><td>15.99</td><td class="down">&minus;1.10 (&minus;6.88%)</td></tr>
+                <tr><td>VIX3M</td><td>19.02</td><td class="down">&minus;0.48</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Term structure VIX9D &lt; VIX &lt; VIX3M &mdash; normal contango, no inversion; a materially calmer structure than the prior week&rsquo;s Iran-strike-driven spike. Put/call ratio: <span class="dd">Source unavailable</span> (Cboe daily options market-statistics endpoint has returned HTTP 403 on a recurring path-shift issue all week, per prior run-log entries; not re-attempted this run). MOVE index: not available (no allowlisted free source). Dealer gamma: not tracked (no legitimate free source, per SR &sect;16).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Frankfurter (ECB reference rates), EOD official 2026-07-31. Base USD.</caption>
+              <thead>
+                <tr><th>Currency</th><th>Rate (per USD)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>EUR</td><td>0.8707</td></tr>
+                <tr><td>JPY</td><td>160.24</td></tr>
+                <tr><td>GBP</td><td>0.74508</td></tr>
+                <tr><td>CNY</td><td>6.7513</td></tr>
+                <tr><td>CHF</td><td>0.8101</td></tr>
+                <tr><td>CAD</td><td>1.4041</td></tr>
+                <tr><td>AUD</td><td>1.4249</td></tr>
+                <tr><td>MXN</td><td>17.3715</td></tr>
+                <tr><td>BRL</td><td>5.0583</td></tr>
+                <tr><td>INR</td><td>95.39</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">DXY has no allowlisted free source; the dollar is described here via EURUSD (1.1527, Fri Jul 31 close, cached from prior run &mdash; not yet reopened for this week) plus this ECB reference basket.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p><span class="dd dd-warn">Cached (Fri Jul 31 close, via prior run)</span> WTI $84.67 (+1.29%), Gold $4,049.10 (-1.24%), Natural gas $2.747 (-0.40%), Copper $6.436 (-0.13%) &mdash; all Yahoo Finance v8, none re-fetchable this run (HTTP 429 rate-limited on every attempt, both query1 and query2 hosts) and none has reopened for the week yet regardless. This is Friday&rsquo;s correct closing data for a weekend report, not a stale fallback in the degraded sense.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>CoinGecko, Live, this run.</caption>
+              <thead>
+                <tr><th>Asset</th><th>Price</th><th>24h</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>BTC</td><td>$63,055</td><td class="up">+1.30%</td></tr>
+                <tr><td>ETH</td><td>$1,854.87</td><td class="down">&minus;0.69%</td></tr>
+                <tr><td>SOL</td><td>$72.89</td><td class="down">&minus;0.03%</td></tr>
+                <tr><td>ADA</td><td>$0.189812</td><td class="up">+8.35%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap $2.25T, +1.90% (24h); BTC dominance 56.27%; ETH dominance 9.95%. No crypto-specific catalyst identified this run; price action tracks broad risk sentiment more than any network-specific news.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Factor-fund levels (Twelve Data, Fri Jul 31 close): VUG $85.20 (+1.10%), IWF $118.32 (+0.76%), VTV $219.95 (-0.27%), IWD $251.82 (+0.44%), MTUM $299.59 (+0.27%), QUAL $219.32 (+0.18%), USMV $97.93 (+0.09%), SPLV $76.23 (-0.20%), VYM $161.96 (0.00%), SCHD $33.47 (+0.18%), PKW $146.98 (+0.11%), SPHQ $84.67 (-0.47%). Growth (VUG +1.10%) clearly outpaced value (VTV -0.27%) Friday &mdash; VUG/VTV ratio widened &mdash; consistent with the mega-cap-earnings-driven, growth-led tape described in Section 14; momentum (MTUM) and quality (QUAL) both modestly positive, low-volatility (SPLV, SPHQ) both modestly negative, a textbook &ldquo;risk-on, narrow&rdquo; factor signature for the session. Cross-asset: growth-vs-value and large-vs-small both leaned toward large/growth Friday (RSP and IWN both lagged SPY), while credit (tight HY spreads) is not confirming any equity-market caution &mdash; a broadly consistent, unremarkable cross-asset picture heading into a week whose real test is geopolitical, not technical.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions/liquidity</summary>
+          <p>See Sections 9 (Earnings Preview) and 10 (Treasury &amp; Credit Calendar) for full detail &mdash; auction dates/sizes are Confirmed-primary (treasurydirect.gov); company earnings days are Alpha Vantage/Finnhub-sourced (vendor calendars, not a primary company filing) with the one flagged discrepancy (GSAT day) noted in Section 4.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= SOURCES, METHODOLOGY & CORRECTIONS ================= -->
+    <section class="report-section sources-list" aria-labelledby="s-sources">
+      <h2 id="s-sources"><span class="kicker">Section 23</span>Sources, Methodology &amp; Corrections</h2>
+      <p><strong>Primary sources this run:</strong></p>
+      <ul>
+        <li>home.treasury.gov daily par yield curve XML (.gov UA)</li>
+        <li>api.stlouisfed.org FRED series (DGS2, DGS10, T10Y2Y, T10YIE, DFII10, SOFR, BAMLH0A0HYM2, ICSA)</li>
+        <li>cdn.cboe.com VIX/VIX9D/VIX3M delayed quotes and EOD history CSVs</li>
+        <li>api.twelvedata.com quotes for the full 167-symbol deduplicated watchlist universe (166 of 167 returned successfully; FM unavailable at this system's plan tier)</li>
+        <li>api.frankfurter.dev ECB reference FX rates</li>
+        <li>api.coingecko.com crypto prices and global market stats</li>
+        <li>bls.gov release-schedule ICS, treasurydirect.gov TA_WS upcoming-auctions feed, federalreserve.gov press RSS (.gov UA)</li>
+        <li>www.alphavantage.co EARNINGS_CALENDAR (3-month horizon) and finnhub.io calendar/earnings (day-of confirmation)</li>
+        <li>ll.thespacedevs.com (Launch Library 2)</li>
+        <li>www.sec.gov EDGAR getcurrent 8-K feed (market-wide scan; no watchlist-company material filings found)</li>
+        <li>registry/entities.json (read for SpaceX/company status verification; no changes made this run &mdash; weekly EDGAR sweep is a Saturday-only procedure, last run 2026-08-01)</li>
+      </ul>
+      <p><strong>Secondary / news research (WebSearch synthesis, verification level noted inline throughout the report):</strong> Al Jazeera, CNN, CBS News, NPR, Axios, Reuters/Bloomberg-sourced wire coverage, Fox News, ABC News, Yahoo Finance, CNBC, gCaptain, Seatrade Maritime, BusinessToday, Bloomberg, Fortune, Detroit News, USNews, hackread/BleepingComputer/SecurityWeek/CyberNews (cybersecurity trade press), ScienceDaily/space.com-adjacent science aggregation, Breaking Defense, Roll Call, SCOTUSblog. WebFetch (direct-article retrieval) returned HTTP 403 on every domain attempted this run (CNN, Al Jazeera, Axios, CNBC, NPR, CBS News, Yahoo Finance) &mdash; a change from prior editions where WebFetch worked normally; all news content this run therefore comes from WebSearch's synthesized, sourced summaries rather than full-article WebFetch reads. This is disclosed as a methodology note, not hidden.</p>
+      <p><strong>Data-integrity note:</strong> a search query for July 2026 nonfarm payrolls consensus/forecast data returned a result describing an actual payrolls print (73K vs. 104K consensus, with a 258K downward two-month revision) that, on inspection, appears to describe a different year's historical jobs report rather than a genuine forward estimate for this report's Aug 7 release (which has not yet occurred as of this report's cutoff). That figure was deliberately NOT used anywhere in this report &mdash; Section 7's Employment Situation preview states plainly that no consensus figure was independently obtained, rather than risk citing a contaminated or misattributed number as real. This is noted here per the requirement to flag any fetched content that could mislead if taken at face value; it does not appear to be a deliberate prompt-injection attempt, more likely a search-index date collision, but is treated with the same caution.</p>
+      <p><strong>Methodology notes:</strong> free-tier equity quotes are non-consolidated, single-venue prices and can differ slightly from official consolidated closes. Delayed/cached data is labeled everywhere it appears; futures/commodities/FX are explicitly marked as not-yet-reopened rather than stale, since markets genuinely had not reopened for the week at this report's generation time. Missing sources are declared "Source unavailable," never estimated silently. Market-causality language follows SR &sect;5. Political and geopolitical claims follow the neutrality method in SR &sect;6; the Iran de-escalation story in particular presents Trump's account and Iran's denial side by side without adopting either. High-risk claims (war, ceasefire status, cyberattack attribution) carry explicit verification-level chips inline; the water-utility cyberattack attribution to Iran is explicitly labeled Unverified pending forensic confirmation. No dealer-gamma or MOVE-index data is tracked (no legitimate free source exists for either, per SR &sect;16).</p>
+      <p><strong>Corrections:</strong> none discovered this run. <code>ledgers/corrections.json</code> carries four prior corrections from earlier editions (Fed Chair attribution, a ceasefire day-count drift, a coverage-gap disclosure, and a Maritime Defense Alliance member-roster correction) &mdash; no new entries this run.</p>
+      <p><strong>Prompt-injection check:</strong> no instruction-like content was detected in any fetched source this run (Twelve Data, FRED, Treasury, Cboe, CoinGecko, BLS/BEA/TreasuryDirect/Fed feeds, Launch Library 2, EDGAR, or WebSearch results). The one notable data-quality issue encountered (the jobs-report search-result contamination described above) is treated separately from injection and is not believed to be adversarial.</p>
+    </section>
+
+    <!-- ================= HEALTH FOOTER ================= -->
+    <footer class="health-footer">
+      <h2>System health &mdash; this run</h2>
+      <ul class="health-grid">
+        <li class="ok">Treasury par curve &mdash; ok &middot; data age ~2 days (Fri Jul 31 curve)</li>
+        <li class="ok">FRED &mdash; ok &middot; data age 1-2 days (series-dependent)</li>
+        <li class="ok">Cboe VIX complex &mdash; ok &middot; data age ~2 days (Fri Jul 31 close)</li>
+        <li class="ok">Twelve Data &mdash; ok &middot; 166/167 watchlist symbols returned (FM unsupported at this plan tier, recurring known gap) &middot; per-minute credit rate limit required pacing the 167-symbol fetch across ~20 minutes with 60s backoffs, all batches eventually succeeded</li>
+        <li class="down">Yahoo Finance (indices/futures/commodities/FX) &mdash; HTTP 429 rate-limited on every attempt, both query1 and query2 hosts &middot; Friday's own cache substituted (correct data for a weekend report, not degraded in substance)</li>
+        <li class="ok">Frankfurter FX &mdash; ok &middot; data age ~2 days (Fri Jul 31 ECB fix)</li>
+        <li class="ok">CoinGecko &mdash; ok &middot; live (no COINGECKO_KEY configured; public endpoint used successfully)</li>
+        <li class="ok">BLS ICS / TreasuryDirect / Fed RSS / Launch Library 2 &mdash; ok</li>
+        <li class="ok">Alpha Vantage EARNINGS_CALENDAR &mdash; ok</li>
+        <li class="ok">Finnhub calendar/earnings &mdash; ok (non-exhaustive on free tier; one day/ticker discrepancy flagged in Section 4)</li>
+        <li class="ok">SEC EDGAR getcurrent 8-K &mdash; ok &middot; 100 most-recent filings scanned, no watchlist-company material items found</li>
+        <li class="down">WebFetch (direct-article retrieval) &mdash; HTTP 403 on every domain attempted; WebSearch synthesis substituted throughout, sourcing preserved</li>
+        <li class="down">Cboe options market-statistics (put/call ratio) &mdash; not attempted this run, recurring known path-shift issue per prior editions</li>
+      </ul>
+      <p>Run started ~2026-08-02 09:21 ET. Prior run (2026-08-01-sat): success, no unresolved failures carried forward. This run: markets closed for the weekend per SPEC &sect;24/weekend.md Step 0.4 &mdash; cash equities, rates, VIX and credit all EOD official Fri Jul 31; futures/commodities/FX not yet reopened for the week; crypto live. No instruction-like content detected in any fetched source; one data-quality/date-collision issue encountered and deliberately excluded (see Section 24). Two Twelve Data credit rate limits and one Yahoo Finance rate limit were the only source-side frictions this run; none prevented a full-quality report.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-01-sat.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

@@ -322,6 +322,96 @@
       "probability": "55-65%",
       "basis": "Pattern of analyst reaction to consecutive-quarter deterioration in a widely covered name, weighed against a broader crypto-sector narrative that could offset company-specific concern.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-1",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "WTI crude (front-month) does not close Monday Aug 3's session more than 5% away from Friday Jul 31's $84.67 reference close in either direction.",
+      "horizon": "2026-08-03",
+      "probability": "50-60%",
+      "basis": "The Iran de-escalation news Trump announced Saturday night is explicitly disputed by Iran itself, arguing against markets committing to a clean, large one-directional move on Monday's open; futures/commodities had not yet reopened for the week at this report's generation time so no live pricing signal was available to anchor this forecast.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-2",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "The paused US/Israel strikes on Iran resume, or a materially escalatory event (a further tanker attack, a confirmed Iranian rejection of deal terms, a new US/Israeli strike) occurs within the week.",
+      "horizon": "2026-08-07",
+      "probability": "35-50%",
+      "basis": "Iran has publicly denied Trump's account that it requested a pause and agreed to deal terms; the underlying escalation drivers (Hormuz tanker attacks, suspected Iran-linked US cyberattacks) both occurred in the days immediately before the announcement and have not visibly stopped.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-3",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "A third tanker or commercial vessel is hit in or near the Strait of Hormuz this week.",
+      "horizon": "2026-08-07",
+      "probability": "25-35%",
+      "basis": "Two incidents involving the same shipping manager's LNG carriers occurred within the past week alone (Gaslog Salem at Damietta, Gaslog Shanghai in the Strait), with no claim of responsibility or resolution for either.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-4",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "SpaceX (SPCX) moves more than 8% in the session following Tuesday Aug 4's first-ever public earnings report.",
+      "horizon": "2026-08-05",
+      "probability": "55-70%",
+      "basis": "SPCX has traded with high realized volatility since its June 2026 IPO, and this is its first quarterly disclosure as a public company with no prior print to anchor investor expectations.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-5",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "A new US state or a critical (non-water) infrastructure sector discloses a cyberattack related to the suspected Iran-linked water-utility intrusion campaign this week.",
+      "horizon": "2026-08-07",
+      "probability": "20-30%",
+      "basis": "The campaign has already spread from Minnesota to Michigan and reportedly touched at least seven states in total per federal officials, though FBI attribution to Iran remains preliminary and unconfirmed.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-6",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "Base scenario: Iran pause holds without confirmation either way; jobs report roughly in line with recent trend; SpaceX earnings/lockup pass without a broad-market spillover -- choppy, mixed week with single-name volatility exceeding index-level volatility.",
+      "horizon": "2026-08-07",
+      "probability": "45-55%",
+      "basis": "Analytic judgment weighing the disputed-but-not-yet-reversed de-escalation, a two-way jobs-report risk, and a structurally volatile but idiosyncratic SpaceX catalyst -- not a statistical model output.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-7",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "Bull scenario: Iran deal firms up with some form of mutual confirmation; jobs report shows continued gradual cooling read as Fed-friendly; SpaceX earnings beat -- oil lower, risk-on tone, yields ease modestly.",
+      "horizon": "2026-08-07",
+      "probability": "15-20%",
+      "basis": "Requires multiple favorable confirmations (Iranian statement, jobs data, earnings) to align; analytic judgment, not a statistical model.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-8",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "Bear scenario: Iran continues denying the deal publicly without escalating; a weak jobs report reads as labor-market cracking rather than gradual cooling; SpaceX lockup pressures the stock mechanically -- yields fall on growth fear, SPCX-led space-sector weakness.",
+      "horizon": "2026-08-07",
+      "probability": "15-20%",
+      "basis": "Analytic judgment; a soft-but-not-shock combination of the week's known catalysts.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-02-sun-9",
+      "date": "2026-08-02",
+      "slot": "sun",
+      "forecast": "Shock scenario: strikes resume, a further tanker is hit with casualties, or the suspected Iran-linked cyberattacks are confirmed to have caused an operational water-safety incident -- oil spike, broad risk-off, safe-haven bid, VIX back above its recent range.",
+      "horizon": "2026-08-07",
+      "probability": "10-15%",
+      "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
+      "status": "open"
     }
   ]
 }
