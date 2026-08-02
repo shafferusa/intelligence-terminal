@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-08-01T09:20:00-04:00",
+  "fetched_at": "2026-08-02T09:40:00-04:00",
   "treasury_par_curve": {
     "date": "2026-07-31",
     "label": "EOD official (2026-07-31)",
@@ -50,26 +50,26 @@
     }
   },
   "crypto": {
-    "as_of": "2026-08-01T09:15:00-04:00",
-    "label": "Live (CoinGecko aggregate, public endpoint)",
+    "as_of": "2026-08-02T09:40:00-04:00",
+    "label": "Live (CoinGecko aggregate, public endpoint, no COINGECKO_KEY configured)",
     "BTC": {
-      "usd": 63046,
-      "usd_24h_change": -0.97
+      "usd": 63055,
+      "usd_24h_change": 1.3
     },
     "ETH": {
-      "usd": 1867.59,
-      "usd_24h_change": -0.81
+      "usd": 1854.87,
+      "usd_24h_change": -0.69
     },
     "SOL": {
-      "usd": 72.9,
-      "usd_24h_change": -0.94
+      "usd": 72.89,
+      "usd_24h_change": -0.03
     },
     "ADA": {
-      "usd": 0.17504,
-      "usd_24h_change": 3.27
+      "usd": 0.189812,
+      "usd_24h_change": 8.35
     },
-    "total_market_cap_usd": 2247233246154.639,
-    "btc_dominance_pct": 56.23
+    "total_market_cap_usd": 2247282843458.31,
+    "btc_dominance_pct": 56.27
   },
   "indices_cash_close": {
     "date": "2026-07-31",
@@ -135,9 +135,9 @@
     }
   },
   "sources_failed_this_run": [
-    "cdn.cboe.com options market-statistics (HTTP 403, recurring known path-shift issue)",
-    "api.twelvedata.com quote batch (HTTP 429 after batch 1, per-minute credit limit; substituted full Yahoo Finance sweep)",
-    "Yahoo Finance FM ETF (no data returned, recurring known gap)"
+    "query1.finance.yahoo.com / query2.finance.yahoo.com (HTTP 429 rate-limited on every attempt; Friday's own cash/futures/commodities/FX data retained as-is since it is still the correct data for a weekend report)",
+    "Twelve Data FM symbol (HTTP 403, not supported at this plan tier, recurring known gap)",
+    "Cboe options market-statistics put/call ratio (not attempted, recurring known path-shift issue)"
   ],
   "technical_levels_2026-07-31": {
     "label": "This run's own 1-year Yahoo time-series pull",
@@ -199,52 +199,60 @@
   },
   "equity_quotes_close_2026-07-31": {
     "PKW": {
-      "close": 147.1699981689453,
-      "prevclose": 146.82000732421875,
-      "pct": 0.2383808931119905,
-      "vol": 29333
+      "close": 146.98,
+      "prevclose": 146.82001,
+      "pct": 0.10896907,
+      "vol": 30000,
+      "source": "Twelve Data"
     },
     "FLY": {
-      "close": 20.31999969482422,
-      "prevclose": 20.290000915527344,
-      "pct": 0.14785006379136145,
-      "vol": 2298764
+      "close": 20.33,
+      "prevclose": 20.29,
+      "pct": 0.19713655,
+      "vol": 2720600,
+      "source": "Twelve Data"
     },
     "XLY": {
-      "close": 116.23999786376953,
-      "prevclose": 112.38999938964844,
-      "pct": 3.4255703310162073,
-      "vol": 11561893
+      "close": 116.089996,
+      "prevclose": 112.39,
+      "pct": 3.29211,
+      "vol": 13158000,
+      "source": "Twelve Data"
     },
     "QQQ": {
-      "close": 689.489990234375,
-      "prevclose": 683.5499877929688,
-      "pct": 0.8689931310781236,
-      "vol": 43413501
+      "close": 687.98999,
+      "prevclose": 683.54999,
+      "pct": 0.64955051,
+      "vol": 50443900,
+      "source": "Twelve Data"
     },
     "REGN": {
-      "close": 761.3765869140625,
-      "prevclose": 738.3400268554688,
-      "pct": 3.1200475689642104,
-      "vol": 867455
+      "close": 762.63,
+      "prevclose": 738.34003,
+      "pct": 3.28981,
+      "vol": 1158300,
+      "source": "Twelve Data"
     },
     "EEM": {
-      "close": 64.13500213623047,
-      "prevclose": 63.59000015258789,
-      "pct": 0.8570561131228406,
-      "vol": 26025659
+      "close": 64.089996,
+      "prevclose": 63.59,
+      "pct": 0.78628115,
+      "vol": 31085200,
+      "source": "Twelve Data"
     },
     "VCIT": {
-      "close": 81.2249984741211,
-      "prevclose": 81.37999725341797,
-      "pct": -0.19046299401339073,
-      "vol": 8610206
+      "close": 81.26,
+      "prevclose": 81.38,
+      "pct": -0.14745038,
+      "vol": 9778800,
+      "source": "Twelve Data"
     },
     "SPLV": {
-      "close": 76.30000305175781,
-      "prevclose": 76.37999725341797,
-      "pct": -0.10473187292053293,
-      "vol": 1812795
+      "close": 76.23,
+      "prevclose": 76.38,
+      "pct": -0.1963785,
+      "vol": 2053700,
+      "source": "Twelve Data"
     },
     "AIQ": {
       "close": 59.0099983215332,
@@ -265,16 +273,18 @@
       "vol": 7347279
     },
     "XLK": {
-      "close": 175.80999755859375,
-      "prevclose": 175.72999572753906,
-      "pct": 0.04552542707548147,
-      "vol": 7708011
+      "close": 175.35001,
+      "prevclose": 175.73,
+      "pct": -0.21623492,
+      "vol": 9143000,
+      "source": "Twelve Data"
     },
     "BX": {
-      "close": 128.05999755859375,
-      "prevclose": 128.07000732421875,
-      "pct": -0.007815854651791762,
-      "vol": 2941608
+      "close": 127.75,
+      "prevclose": 128.070007,
+      "pct": -0.24986906,
+      "vol": 4894700,
+      "source": "Twelve Data"
     },
     "ICLN": {
       "close": 17.59000015258789,
@@ -283,40 +293,46 @@
       "vol": 7387086
     },
     "IEI": {
-      "close": 116.41500091552734,
-      "prevclose": 116.63999938964844,
-      "pct": -0.1928999273820829,
-      "vol": 910938
+      "close": 116.48,
+      "prevclose": 116.64,
+      "pct": -0.13717081,
+      "vol": 1303700,
+      "source": "Twelve Data"
     },
     "XLU": {
-      "close": 44.41999816894531,
-      "prevclose": 44.65999984741211,
-      "pct": -0.5373974010004483,
-      "vol": 18417207
+      "close": 44.35,
+      "prevclose": 44.66,
+      "pct": -0.69413653,
+      "vol": 20773600,
+      "source": "Twelve Data"
     },
     "FEZ": {
-      "close": 69.93499755859375,
-      "prevclose": 69.69999694824219,
-      "pct": 0.3371601443914972,
-      "vol": 467876
+      "close": 69.77,
+      "prevclose": 69.7,
+      "pct": 0.10042998,
+      "vol": 605300,
+      "source": "Twelve Data"
     },
     "ASTS": {
-      "close": 59.15999984741211,
-      "prevclose": 58.439998626708984,
-      "pct": 1.2320349719756172,
-      "vol": 8399212
+      "close": 58.98,
+      "prevclose": 58.44,
+      "pct": 0.92402623,
+      "vol": 9711800,
+      "source": "Twelve Data"
     },
     "DLR": {
-      "close": 188.5850067138672,
-      "prevclose": 193.19000244140625,
-      "pct": -2.3836615090554387,
-      "vol": 1149377
+      "close": 188.52,
+      "prevclose": 193.19,
+      "pct": -2.41731,
+      "vol": 2168000,
+      "source": "Twelve Data"
     },
     "ETN": {
-      "close": 417.3800048828125,
-      "prevclose": 386.8900146484375,
-      "pct": 7.880790167738215,
-      "vol": 3465474
+      "close": 415.20001,
+      "prevclose": 386.89001,
+      "pct": 7.31732,
+      "vol": 4548500,
+      "source": "Twelve Data"
     },
     "ITB": {
       "close": 94.4000015258789,
@@ -325,34 +341,39 @@
       "vol": 1258033
     },
     "AAPL": {
-      "close": 309.45001220703125,
-      "prevclose": 333.42999267578125,
-      "pct": -7.191908645143245,
-      "vol": 104862253
+      "close": 308.91,
+      "prevclose": 333.42999,
+      "pct": -7.35386,
+      "vol": 132275300,
+      "source": "Twelve Data"
     },
     "DAL": {
-      "close": 87.66000366210938,
-      "prevclose": 88.58999633789062,
-      "pct": -1.049771660712311,
-      "vol": 3430934
+      "close": 87.44,
+      "prevclose": 88.59,
+      "pct": -1.29811,
+      "vol": 4768500,
+      "source": "Twelve Data"
     },
     "EWG": {
-      "close": 42.92499923706055,
-      "prevclose": 42.880001068115234,
-      "pct": 0.10493975705325319,
-      "vol": 578062
+      "close": 42.85,
+      "prevclose": 42.88,
+      "pct": -0.069968734,
+      "vol": 676900,
+      "source": "Twelve Data"
     },
     "NVO": {
-      "close": 47.154998779296875,
-      "prevclose": 51.61000061035156,
-      "pct": -8.63205149848639,
-      "vol": 23726113
+      "close": 47.080002,
+      "prevclose": 51.61,
+      "pct": -8.77737,
+      "vol": 26747200,
+      "source": "Twelve Data"
     },
     "AVGO": {
-      "close": 390.0899963378906,
-      "prevclose": 387.8399963378906,
-      "pct": 0.5801361440916925,
-      "vol": 12491240
+      "close": 389.28,
+      "prevclose": 387.84,
+      "pct": 0.37128776,
+      "vol": 20362700,
+      "source": "Twelve Data"
     },
     "AMLP": {
       "close": 55.33000183105469,
@@ -361,64 +382,74 @@
       "vol": 1841779
     },
     "LHX": {
-      "close": 278.9750061035156,
-      "prevclose": 271.8999938964844,
-      "pct": 2.6020641286681285,
-      "vol": 1419938
+      "close": 277.059998,
+      "prevclose": 271.89999,
+      "pct": 1.89776,
+      "vol": 2281800,
+      "source": "Twelve Data"
     },
     "EWQ": {
-      "close": 46.625,
-      "prevclose": 46.470001220703125,
-      "pct": 0.3335458903061543,
-      "vol": 249529
+      "close": 46.55,
+      "prevclose": 46.47,
+      "pct": 0.1721498,
+      "vol": 266100,
+      "source": "Twelve Data"
     },
     "XLB": {
-      "close": 50.42499923706055,
-      "prevclose": 51.63999938964844,
-      "pct": -2.352827588978332,
-      "vol": 15578176
+      "close": 50.43,
+      "prevclose": 51.64,
+      "pct": -2.34314,
+      "vol": 18328900,
+      "source": "Twelve Data"
     },
     "IWD": {
-      "close": 252.24000549316406,
-      "prevclose": 250.7100067138672,
-      "pct": 0.610266338927208,
-      "vol": 1497381
+      "close": 251.82001,
+      "prevclose": 250.71001,
+      "pct": 0.44274284,
+      "vol": 1758600,
+      "source": "Twelve Data"
     },
     "VOO": {
-      "close": 687.52001953125,
-      "prevclose": 681.7899780273438,
-      "pct": 0.8404408525460082,
-      "vol": 5241604
+      "close": 686.65002,
+      "prevclose": 681.78998,
+      "pct": 0.71283629,
+      "vol": 7699300,
+      "source": "Twelve Data"
     },
     "VWO": {
-      "close": 58.779998779296875,
-      "prevclose": 58.189998626708984,
-      "pct": 1.0139202036638009,
-      "vol": 6560686
+      "close": 58.75,
+      "prevclose": 58.19,
+      "pct": 0.96236705,
+      "vol": 7397600,
+      "source": "Twelve Data"
     },
     "ISRG": {
-      "close": 353.8800048828125,
-      "prevclose": 352.9700012207031,
-      "pct": 0.25781331528521967,
-      "vol": 1793292
+      "close": 353.32999,
+      "prevclose": 352.97,
+      "pct": 0.10198752,
+      "vol": 2460600,
+      "source": "Twelve Data"
     },
     "MCHI": {
-      "close": 55.810001373291016,
+      "close": 55.8,
       "prevclose": 55.5,
-      "pct": 0.5585610329567849,
-      "vol": 5412312
+      "pct": 0.54053917,
+      "vol": 5767700,
+      "source": "Twelve Data"
     },
     "MRK": {
-      "close": 130.50999450683594,
-      "prevclose": 129.7899932861328,
-      "pct": 0.554743245202134,
-      "vol": 4138455
+      "close": 130.2,
+      "prevclose": 129.78999,
+      "pct": 0.31589775,
+      "vol": 7731900,
+      "source": "Twelve Data"
     },
     "PL": {
-      "close": 20.459999084472656,
-      "prevclose": 20.219999313354492,
-      "pct": 1.186942528527456,
-      "vol": 4412478
+      "close": 20.48,
+      "prevclose": 20.22,
+      "pct": 1.28586,
+      "vol": 5769200,
+      "source": "Twelve Data"
     },
     "ESPO": {
       "close": 94.20500183105469,
@@ -427,58 +458,67 @@
       "vol": 23719
     },
     "GSAT": {
-      "close": 83.37999725341797,
-      "prevclose": 80.08999633789062,
-      "pct": 4.107879967489576,
-      "vol": 2039442
+      "close": 83.38,
+      "prevclose": 80.089996,
+      "pct": 4.10788,
+      "vol": 2283300,
+      "source": "Twelve Data"
     },
     "XLC": {
-      "close": 108.20500183105469,
-      "prevclose": 106.58000183105469,
-      "pct": 1.524676273299253,
-      "vol": 4311466
+      "close": 108.24,
+      "prevclose": 106.58,
+      "pct": 1.55751,
+      "vol": 5024600,
+      "source": "Twelve Data"
     },
     "IWM": {
-      "close": 291.32000732421875,
-      "prevclose": 292.5899963378906,
-      "pct": -0.4340507295421195,
-      "vol": 24674509
+      "close": 291.20001,
+      "prevclose": 292.59,
+      "pct": -0.47506208,
+      "vol": 28322300,
+      "source": "Twelve Data"
     },
     "BLK": {
-      "close": 1092.56005859375,
-      "prevclose": 1098.3699951171875,
-      "pct": -0.5289598722894487,
-      "vol": 230208
+      "close": 1090.39001,
+      "prevclose": 1098.37,
+      "pct": -0.72652936,
+      "vol": 378200,
+      "source": "Twelve Data"
     },
     "KWEB": {
-      "close": 28.454999923706055,
-      "prevclose": 28.059999465942383,
-      "pct": 1.407699448615816,
-      "vol": 20648061
+      "close": 28.49,
+      "prevclose": 28.059999,
+      "pct": 1.53243,
+      "vol": 23303600,
+      "source": "Twelve Data"
     },
     "RCL": {
-      "close": 318.2699890136719,
-      "prevclose": 321.94000244140625,
-      "pct": -1.1399681306774931,
-      "vol": 1459048
+      "close": 318.29999,
+      "prevclose": 321.94,
+      "pct": -1.13065,
+      "vol": 1948300,
+      "source": "Twelve Data"
     },
     "EWT": {
-      "close": 96.55999755859375,
+      "close": 96.55,
       "prevclose": 94.0,
-      "pct": 2.7234016580784575,
-      "vol": 7718578
+      "pct": 2.71277,
+      "vol": 8744000,
+      "source": "Twelve Data"
     },
     "BKSY": {
-      "close": 22.950000762939453,
-      "prevclose": 22.459999084472656,
-      "pct": 2.1816638398954846,
-      "vol": 634556
+      "close": 23.049999,
+      "prevclose": 22.46,
+      "pct": 2.62689,
+      "vol": 860600,
+      "source": "Twelve Data"
     },
     "HOOD": {
-      "close": 86.86000061035156,
-      "prevclose": 86.5999984741211,
-      "pct": 0.3002334189511168,
-      "vol": 19462286
+      "close": 86.56,
+      "prevclose": 86.6,
+      "pct": -0.046190434,
+      "vol": 22867000,
+      "source": "Twelve Data"
     },
     "SOXX": {
       "close": 507.19000244140625,
@@ -487,22 +527,25 @@
       "vol": 11649643
     },
     "DIA": {
-      "close": 525.1699829101562,
-      "prevclose": 521.510009765625,
-      "pct": 0.7018030480711388,
-      "vol": 3579495
+      "close": 524.32001,
+      "prevclose": 521.51001,
+      "pct": 0.53881949,
+      "vol": 3975900,
+      "source": "Twelve Data"
     },
     "VGK": {
-      "close": 90.70500183105469,
-      "prevclose": 90.98999786376953,
-      "pct": -0.31321688032297856,
-      "vol": 2367017
+      "close": 90.59,
+      "prevclose": 90.99,
+      "pct": -0.43961044,
+      "vol": 2676100,
+      "source": "Twelve Data"
     },
     "C": {
-      "close": 133.0500030517578,
-      "prevclose": 132.32000732421875,
-      "pct": 0.5516896063573978,
-      "vol": 5817512
+      "close": 132.45,
+      "prevclose": 132.32001,
+      "pct": 0.098238828,
+      "vol": 9604000,
+      "source": "Twelve Data"
     },
     "IHI": {
       "close": 52.56999969482422,
@@ -511,22 +554,25 @@
       "vol": 2754521
     },
     "COIN": {
-      "close": 148.4145965576172,
-      "prevclose": 163.5800018310547,
-      "pct": -9.27094088744437,
-      "vol": 18073082
+      "close": 146.25999,
+      "prevclose": 163.58,
+      "pct": -10.5881,
+      "vol": 20828000,
+      "source": "Twelve Data"
     },
     "SPHQ": {
-      "close": 84.80999755859375,
-      "prevclose": 85.06999969482422,
-      "pct": -0.3056331693466406,
-      "vol": 1493409
+      "close": 84.67,
+      "prevclose": 85.07,
+      "pct": -0.47020281,
+      "vol": 1552500,
+      "source": "Twelve Data"
     },
     "VRTX": {
-      "close": 476.80999755859375,
-      "prevclose": 481.70001220703125,
-      "pct": -1.0151576758390877,
-      "vol": 602711
+      "close": 477.10001,
+      "prevclose": 481.70001,
+      "pct": -0.95495246,
+      "vol": 957200,
+      "source": "Twelve Data"
     },
     "XSD": {
       "close": 489.6549987792969,
@@ -535,16 +581,18 @@
       "vol": 43682
     },
     "LLY": {
-      "close": 1147.989990234375,
-      "prevclose": 1154.969970703125,
-      "pct": -0.6043430258624571,
-      "vol": 2137151
+      "close": 1148.83997,
+      "prevclose": 1154.96997,
+      "pct": -0.53075015,
+      "vol": 2881200,
+      "source": "Twelve Data"
     },
     "XLF": {
-      "close": 57.029998779296875,
+      "close": 56.94,
       "prevclose": 57.0,
-      "pct": 0.0526294373629386,
-      "vol": 23708568
+      "pct": -0.10526557,
+      "vol": 32522700,
+      "source": "Twelve Data"
     },
     "FINX": {
       "close": 25.639999389648438,
@@ -559,34 +607,39 @@
       "vol": 143459
     },
     "SCHW": {
-      "close": 105.47000122070312,
-      "prevclose": 104.33000183105469,
-      "pct": 1.0926860631081743,
-      "vol": 4926063
+      "close": 105.24,
+      "prevclose": 104.33,
+      "pct": 0.87222852,
+      "vol": 8544200,
+      "source": "Twelve Data"
     },
     "ABNB": {
-      "close": 151.60000610351562,
-      "prevclose": 152.0800018310547,
-      "pct": -0.3156205429772999,
-      "vol": 1328651
+      "close": 151.52,
+      "prevclose": 152.080002,
+      "pct": -0.36822564,
+      "vol": 2460700,
+      "source": "Twelve Data"
     },
     "EWA": {
-      "close": 29.3700008392334,
-      "prevclose": 29.81999969482422,
-      "pct": -1.5090505036756436,
-      "vol": 1881011
+      "close": 29.34,
+      "prevclose": 29.82,
+      "pct": -1.60966,
+      "vol": 2100500,
+      "source": "Twelve Data"
     },
     "VTI": {
-      "close": 368.9100036621094,
-      "prevclose": 366.2699890136719,
-      "pct": 0.7207837736165044,
-      "vol": 3025492
+      "close": 368.20999,
+      "prevclose": 366.26999,
+      "pct": 0.52966459,
+      "vol": 3195300,
+      "source": "Twelve Data"
     },
     "XLRE": {
-      "close": 45.11000061035156,
-      "prevclose": 45.29999923706055,
-      "pct": -0.419423024081519,
-      "vol": 5912607
+      "close": 45.07,
+      "prevclose": 45.3,
+      "pct": -0.50772527,
+      "vol": 6544600,
+      "source": "Twelve Data"
     },
     "DBA": {
       "close": 27.50860023498535,
@@ -595,34 +648,39 @@
       "vol": 395373
     },
     "NVDA": {
-      "close": 201.33999633789062,
-      "prevclose": 195.0399932861328,
-      "pct": 3.230108320663964,
-      "vol": 100557094
+      "close": 200.75,
+      "prevclose": 195.039993,
+      "pct": 2.92761,
+      "vol": 139659700,
+      "source": "Twelve Data"
     },
     "VYM": {
-      "close": 162.17999267578125,
-      "prevclose": 161.9600067138672,
-      "pct": 0.13582733563521585,
-      "vol": 1460045
+      "close": 161.96001,
+      "prevclose": 161.96001,
+      "pct": 0.0,
+      "vol": 1526900,
+      "source": "Twelve Data"
     },
     "PFE": {
-      "close": 25.084999084472656,
-      "prevclose": 24.90999984741211,
-      "pct": 0.7025260462967344,
-      "vol": 30718853
+      "close": 25.01,
+      "prevclose": 24.91,
+      "pct": 0.40144674,
+      "vol": 45053400,
+      "source": "Twelve Data"
     },
     "KRMN": {
-      "close": 48.2599983215332,
-      "prevclose": 47.220001220703125,
-      "pct": 2.2024503895482788,
-      "vol": 1318186
+      "close": 48.15,
+      "prevclose": 47.22,
+      "pct": 1.96951,
+      "vol": 1949700,
+      "source": "Twelve Data"
     },
     "META": {
-      "close": 556.030029296875,
-      "prevclose": 539.030029296875,
-      "pct": 3.153813159941247,
-      "vol": 20718518
+      "close": 556.71002,
+      "prevclose": 539.030029,
+      "pct": 3.27996,
+      "vol": 24202500,
+      "source": "Twelve Data"
     },
     "GDXJ": {
       "close": 95.47000122070312,
@@ -631,58 +689,67 @@
       "vol": 3336717
     },
     "MCD": {
-      "close": 270.3599853515625,
-      "prevclose": 268.44000244140625,
-      "pct": 0.7152372570013421,
-      "vol": 2886793
+      "close": 270.64001,
+      "prevclose": 268.44,
+      "pct": 0.81955453,
+      "vol": 4962900,
+      "source": "Twelve Data"
     },
     "EFA": {
-      "close": 105.77999877929688,
-      "prevclose": 106.23999786376953,
-      "pct": -0.43298107466314933,
-      "vol": 10651387
+      "close": 105.58,
+      "prevclose": 106.24,
+      "pct": -0.62123122,
+      "vol": 14257100,
+      "source": "Twelve Data"
     },
     "GOOGL": {
-      "close": 356.7099914550781,
-      "prevclose": 333.6600036621094,
-      "pct": 6.908226200318274,
-      "vol": 35362983
+      "close": 356.13,
+      "prevclose": 333.66,
+      "pct": 6.7344,
+      "vol": 46425700,
+      "source": "Twelve Data"
     },
     "CEG": {
-      "close": 263.3599853515625,
-      "prevclose": 263.55999755859375,
-      "pct": -0.07588868147063325,
-      "vol": 1167027
+      "close": 262.75,
+      "prevclose": 263.56,
+      "pct": -0.30732948,
+      "vol": 1850300,
+      "source": "Twelve Data"
     },
     "LUNR": {
-      "close": 12.385000228881836,
+      "close": 12.34,
       "prevclose": 12.25,
-      "pct": 1.1020426847496811,
-      "vol": 6357838
+      "pct": 0.73469512,
+      "vol": 7962500,
+      "source": "Twelve Data"
     },
     "XLE": {
-      "close": 59.6150016784668,
-      "prevclose": 58.959999084472656,
-      "pct": 1.1109270762635375,
-      "vol": 20284922
+      "close": 59.55,
+      "prevclose": 58.96,
+      "pct": 1.0006787,
+      "vol": 23475000,
+      "source": "Twelve Data"
     },
     "RKLB": {
-      "close": 64.98999786376953,
-      "prevclose": 64.68000030517578,
-      "pct": 0.47927884528618897,
-      "vol": 11919902
+      "close": 64.95,
+      "prevclose": 64.68,
+      "pct": 0.41743451,
+      "vol": 13486300,
+      "source": "Twelve Data"
     },
     "SCHD": {
-      "close": 33.48500061035156,
-      "prevclose": 33.40999984741211,
-      "pct": 0.2244859721101213,
-      "vol": 24162021
+      "close": 33.47,
+      "prevclose": 33.41,
+      "pct": 0.17959106,
+      "vol": 25659900,
+      "source": "Twelve Data"
     },
     "KKR": {
-      "close": 101.49500274658203,
-      "prevclose": 100.9800033569336,
-      "pct": 0.5100013592077942,
-      "vol": 4788552
+      "close": 101.43,
+      "prevclose": 100.98,
+      "pct": 0.44562976,
+      "vol": 6281600,
+      "source": "Twelve Data"
     },
     "REMX": {
       "close": 66.07499694824219,
@@ -691,40 +758,46 @@
       "vol": 700561
     },
     "WFC": {
-      "close": 86.625,
-      "prevclose": 85.43000030517578,
-      "pct": 1.3988056778127151,
-      "vol": 6010606
+      "close": 86.45,
+      "prevclose": 85.43,
+      "pct": 1.19396,
+      "vol": 14769100,
+      "source": "Twelve Data"
     },
     "APO": {
-      "close": 125.41000366210938,
+      "close": 125.59,
       "prevclose": 120.25,
-      "pct": 4.291063336473493,
-      "vol": 2501703
+      "pct": 4.44075,
+      "vol": 4656000,
+      "source": "Twelve Data"
     },
     "HYG": {
-      "close": 79.46499633789062,
-      "prevclose": 79.47000122070312,
-      "pct": -0.00629782652022428,
-      "vol": 34240270
+      "close": 79.48,
+      "prevclose": 79.47,
+      "pct": 0.012586053,
+      "vol": 38581900,
+      "source": "Twelve Data"
     },
     "YSS": {
-      "close": 14.829999923706055,
-      "prevclose": 15.260000228881836,
-      "pct": -2.8178263350346566,
-      "vol": 1169325
+      "close": 14.73,
+      "prevclose": 15.26,
+      "pct": -3.47314,
+      "vol": 1371900,
+      "source": "Twelve Data"
     },
     "AVAV": {
-      "close": 150.22999572753906,
-      "prevclose": 146.57000732421875,
-      "pct": 2.4970923247784733,
-      "vol": 793667
+      "close": 149.37,
+      "prevclose": 146.57001,
+      "pct": 1.91034,
+      "vol": 942400,
+      "source": "Twelve Data"
     },
     "VTV": {
-      "close": 220.33999633789062,
-      "prevclose": 220.5399932861328,
-      "pct": -0.09068511577521798,
-      "vol": 2118250
+      "close": 219.95,
+      "prevclose": 220.53999,
+      "pct": -0.26752351,
+      "vol": 2280200,
+      "source": "Twelve Data"
     },
     "KBE": {
       "close": 69.75499725341797,
@@ -733,28 +806,32 @@
       "vol": 1487604
     },
     "JPM": {
-      "close": 352.5899963378906,
-      "prevclose": 350.8500061035156,
-      "pct": 0.49593564318241146,
-      "vol": 4292316
+      "close": 351.79001,
+      "prevclose": 350.85001,
+      "pct": 0.26792146,
+      "vol": 6594100,
+      "source": "Twelve Data"
     },
     "BA": {
-      "close": 216.54010009765625,
-      "prevclose": 220.89999389648438,
-      "pct": -1.9736957534146462,
-      "vol": 6077972
+      "close": 216.14,
+      "prevclose": 220.89999,
+      "pct": -2.15482,
+      "vol": 7317500,
+      "source": "Twelve Data"
     },
     "WMT": {
-      "close": 111.12999725341797,
-      "prevclose": 111.0999984741211,
-      "pct": 0.027001601898187892,
-      "vol": 15641401
+      "close": 111.2,
+      "prevclose": 111.099998,
+      "pct": 0.090007629,
+      "vol": 22780100,
+      "source": "Twelve Data"
     },
     "XLI": {
-      "close": 180.22999572753906,
-      "prevclose": 178.38999938964844,
-      "pct": 1.0314459017804087,
-      "vol": 4736619
+      "close": 179.84,
+      "prevclose": 178.39,
+      "pct": 0.81282412,
+      "vol": 7206200,
+      "source": "Twelve Data"
     },
     "NLR": {
       "close": 107.19499969482422,
@@ -763,16 +840,18 @@
       "vol": 319660
     },
     "AVUV": {
-      "close": 125.43000030517578,
-      "prevclose": 125.23999786376953,
-      "pct": 0.15171067122895207,
-      "vol": 1262648
+      "close": 125.28,
+      "prevclose": 125.24,
+      "pct": 0.031939409,
+      "vol": 1338100,
+      "source": "Twelve Data"
     },
     "LOW": {
-      "close": 208.3350067138672,
-      "prevclose": 210.0800018310547,
-      "pct": -0.8306336167070374,
-      "vol": 2256984
+      "close": 207.81,
+      "prevclose": 210.080002,
+      "pct": -1.080543,
+      "vol": 3975700,
+      "source": "Twelve Data"
     },
     "XTN": {
       "close": 109.38999938964844,
@@ -787,22 +866,25 @@
       "vol": 654350
     },
     "BND": {
-      "close": 72.21499633789062,
-      "prevclose": 72.41999816894531,
-      "pct": -0.28307351040861406,
-      "vol": 6126067
+      "close": 72.23,
+      "prevclose": 72.42,
+      "pct": -0.26235131,
+      "vol": 6363100,
+      "source": "Twelve Data"
     },
     "FXI": {
-      "close": 36.525001525878906,
-      "prevclose": 36.52000045776367,
-      "pct": 0.013694052717820308,
-      "vol": 16224091
+      "close": 36.5,
+      "prevclose": 36.52,
+      "pct": -0.054765765,
+      "vol": 23460700,
+      "source": "Twelve Data"
     },
     "IJH": {
-      "close": 75.40499877929688,
-      "prevclose": 75.3499984741211,
-      "pct": 0.07299310721906792,
-      "vol": 5395604
+      "close": 75.27,
+      "prevclose": 75.35,
+      "pct": -0.10617363,
+      "vol": 6368700,
+      "source": "Twelve Data"
     },
     "MOO": {
       "close": 81.8499984741211,
@@ -811,10 +893,11 @@
       "vol": 284549
     },
     "TIP": {
-      "close": 107.54499816894531,
-      "prevclose": 107.73999786376953,
-      "pct": -0.18099099562892476,
-      "vol": 1744215
+      "close": 107.63,
+      "prevclose": 107.74,
+      "pct": -0.10209821,
+      "vol": 3868300,
+      "source": "Twelve Data"
     },
     "GDX": {
       "close": 74.20999908447266,
@@ -823,22 +906,25 @@
       "vol": 12596821
     },
     "RSP": {
-      "close": 215.2949981689453,
-      "prevclose": 215.3800048828125,
-      "pct": -0.039468247720320815,
-      "vol": 8848235
+      "close": 215.0099945,
+      "prevclose": 215.38,
+      "pct": -0.17179421,
+      "vol": 9729500,
+      "source": "Twelve Data"
     },
     "IBKR": {
-      "close": 88.2699966430664,
-      "prevclose": 90.4800033569336,
-      "pct": -2.442536065288322,
-      "vol": 3271473
+      "close": 87.99,
+      "prevclose": 90.48,
+      "pct": -2.752,
+      "vol": 4369800,
+      "source": "Twelve Data"
     },
     "EWJ": {
-      "close": 92.66999816894531,
-      "prevclose": 93.29000091552734,
-      "pct": -0.6645972135249888,
-      "vol": 4784141
+      "close": 92.39,
+      "prevclose": 93.29,
+      "pct": -0.96473525,
+      "vol": 5290100,
+      "source": "Twelve Data"
     },
     "HACK": {
       "close": 107.07499694824219,
@@ -847,22 +933,25 @@
       "vol": 109673
     },
     "UAL": {
-      "close": 121.87000274658203,
-      "prevclose": 123.55999755859375,
-      "pct": -1.367752383784486,
-      "vol": 1827246
+      "close": 121.33,
+      "prevclose": 123.56,
+      "pct": -1.80479,
+      "vol": 2655600,
+      "source": "Twelve Data"
     },
     "IRDM": {
-      "close": 47.35499954223633,
-      "prevclose": 47.63999938964844,
-      "pct": -0.5982364631894521,
-      "vol": 960921
+      "close": 47.34,
+      "prevclose": 47.64,
+      "pct": -0.62972133,
+      "vol": 1307000,
+      "source": "Twelve Data"
     },
     "UNH": {
-      "close": 415.239990234375,
-      "prevclose": 421.4700012207031,
-      "pct": -1.4781623765117686,
-      "vol": 2384905
+      "close": 414.39999,
+      "prevclose": 421.47,
+      "pct": -1.67746,
+      "vol": 3915800,
+      "source": "Twelve Data"
     },
     "UFO": {
       "close": 43.849998474121094,
@@ -871,10 +960,11 @@
       "vol": 304322
     },
     "AGG": {
-      "close": 97.3499984741211,
-      "prevclose": 97.62000274658203,
-      "pct": -0.2765870363288749,
-      "vol": 9421180
+      "close": 97.37,
+      "prevclose": 97.62,
+      "pct": -0.25609506,
+      "vol": 11043400,
+      "source": "Twelve Data"
     },
     "IYT": {
       "close": 85.1500015258789,
@@ -895,64 +985,74 @@
       "vol": 1807848
     },
     "USMV": {
-      "close": 98.0250015258789,
-      "prevclose": 97.83999633789062,
-      "pct": 0.1890895287335922,
-      "vol": 2925812
+      "close": 97.93,
+      "prevclose": 97.84,
+      "pct": 0.091990976,
+      "vol": 3949100,
+      "source": "Twelve Data"
     },
     "MSFT": {
-      "close": 466.48748779296875,
-      "prevclose": 451.1000061035156,
-      "pct": 3.4111020796399862,
-      "vol": 44776020
+      "close": 464.72,
+      "prevclose": 451.10001,
+      "pct": 3.019285,
+      "vol": 60748000,
+      "source": "Twelve Data"
     },
     "EWU": {
-      "close": 48.47999954223633,
-      "prevclose": 48.68000030517578,
-      "pct": -0.41084790814635336,
-      "vol": 608787
+      "close": 48.41,
+      "prevclose": 48.68,
+      "pct": -0.5546435,
+      "vol": 792600,
+      "source": "Twelve Data"
     },
     "PLTR": {
-      "close": 123.01499938964844,
-      "prevclose": 122.26000213623047,
-      "pct": 0.6175341405414824,
-      "vol": 21565648
+      "close": 123.059998,
+      "prevclose": 122.26,
+      "pct": 0.65433945,
+      "vol": 29004900,
+      "source": "Twelve Data"
     },
     "VRT": {
-      "close": 242.7100067138672,
+      "close": 241.57001,
       "prevclose": 227.5,
-      "pct": 6.685717236864698,
-      "vol": 9273682
+      "pct": 6.18462,
+      "vol": 10837600,
+      "source": "Twelve Data"
     },
     "SPY": {
-      "close": 748.12548828125,
-      "prevclose": 741.6900024414062,
-      "pct": 0.8676786553223299,
-      "vol": 47436703
+      "close": 747.030029,
+      "prevclose": 741.69,
+      "pct": 0.71998097,
+      "vol": 62339900,
+      "source": "Twelve Data"
     },
     "MTUM": {
-      "close": 301.0799865722656,
-      "prevclose": 298.7699890136719,
-      "pct": 0.7731692082661098,
-      "vol": 2139915
+      "close": 299.59,
+      "prevclose": 298.76999,
+      "pct": 0.27446108,
+      "vol": 2347900,
+      "source": "Twelve Data"
     },
     "XLV": {
-      "close": 162.82000732421875,
-      "prevclose": 163.52000427246094,
-      "pct": -0.42808031430566496,
-      "vol": 8639177
+      "close": 162.55,
+      "prevclose": 163.52,
+      "pct": -0.59320034,
+      "vol": 9589500,
+      "source": "Twelve Data"
     },
     "COST": {
-      "close": 951.030029296875,
-      "prevclose": 954.1699829101562,
-      "pct": -0.32907696422230726,
-      "vol": 1143415
+      "close": 951.89001,
+      "prevclose": 954.16998,
+      "pct": -0.23894781,
+      "vol": 1758800,
+      "source": "Twelve Data"
     },
     "ASML": {
-      "close": 1640.4949951171875,
-      "prevclose": 1651.43994140625,
-      "pct": -0.6627517001764263,
-      "vol": 1363042
+      "close": 1629.0,
+      "prevclose": 1651.43994,
+      "pct": -1.35881,
+      "vol": 1599400,
+      "source": "Twelve Data"
     },
     "ARKX": {
       "close": 30.727399826049805,
@@ -961,22 +1061,25 @@
       "vol": 447768
     },
     "BKLN": {
-      "close": 20.395000457763672,
-      "prevclose": 20.3799991607666,
-      "pct": 0.07360793726600935,
-      "vol": 4954251
+      "close": 20.39,
+      "prevclose": 20.38,
+      "pct": 0.049068839,
+      "vol": 5703000,
+      "source": "Twelve Data"
     },
     "IEF": {
-      "close": 92.875,
-      "prevclose": 93.20999908447266,
-      "pct": -0.3594025187888473,
-      "vol": 7333439
+      "close": 92.95,
+      "prevclose": 93.21,
+      "pct": -0.27894232,
+      "vol": 8488900,
+      "source": "Twelve Data"
     },
     "TSM": {
-      "close": 404.9700012207031,
-      "prevclose": 403.30999755859375,
-      "pct": 0.4115949696655377,
-      "vol": 10230442
+      "close": 404.25,
+      "prevclose": 403.31,
+      "pct": 0.23307194,
+      "vol": 11926500,
+      "source": "Twelve Data"
     },
     "XHB": {
       "close": 103.7249984741211,
@@ -985,10 +1088,11 @@
       "vol": 2595820
     },
     "DHR": {
-      "close": 195.1750030517578,
-      "prevclose": 196.1699981689453,
-      "pct": -0.5072106471299406,
-      "vol": 2813421
+      "close": 194.98,
+      "prevclose": 196.17,
+      "pct": -0.60661796,
+      "vol": 4386600,
+      "source": "Twelve Data"
     },
     "JETS": {
       "close": 31.329999923706055,
@@ -997,28 +1101,32 @@
       "vol": 5048274
     },
     "EWC": {
-      "close": 59.41999816894531,
-      "prevclose": 59.790000915527344,
-      "pct": -0.6188371649379626,
-      "vol": 1106434
+      "close": 59.39,
+      "prevclose": 59.79,
+      "pct": -0.66901074,
+      "vol": 1343700,
+      "source": "Twelve Data"
     },
     "HD": {
-      "close": 332.92999267578125,
-      "prevclose": 333.3500061035156,
-      "pct": -0.12599772612691887,
-      "vol": 2980139
+      "close": 331.95999,
+      "prevclose": 333.35001,
+      "pct": -0.41698354,
+      "vol": 4958900,
+      "source": "Twelve Data"
     },
     "VOYG": {
-      "close": 24.320999145507812,
-      "prevclose": 23.969999313354492,
-      "pct": 1.4643297547270537,
-      "vol": 654123
+      "close": 24.53,
+      "prevclose": 23.97,
+      "pct": 2.33626,
+      "vol": 895900,
+      "source": "Twelve Data"
     },
     "CMG": {
-      "close": 37.2400016784668,
-      "prevclose": 38.52000045776367,
-      "pct": -3.322945908841214,
-      "vol": 10309389
+      "close": 37.22,
+      "prevclose": 38.52,
+      "pct": -3.37487,
+      "vol": 14346000,
+      "source": "Twelve Data"
     },
     "IFRA": {
       "close": 60.70500183105469,
@@ -1027,16 +1135,18 @@
       "vol": 186097
     },
     "BIL": {
-      "close": 91.69000244140625,
-      "prevclose": 91.6500015258789,
-      "pct": 0.04364529717552577,
-      "vol": 13533760
+      "close": 91.68,
+      "prevclose": 91.65,
+      "pct": 0.032731892,
+      "vol": 14672600,
+      "source": "Twelve Data"
     },
     "VSAT": {
-      "close": 77.02999877929688,
-      "prevclose": 77.5999984741211,
-      "pct": -0.7345357036499279,
-      "vol": 968592
+      "close": 76.93,
+      "prevclose": 77.6,
+      "pct": -0.86339972,
+      "vol": 1366200,
+      "source": "Twelve Data"
     },
     "TAN": {
       "close": 49.5,
@@ -1045,22 +1155,25 @@
       "vol": 1890151
     },
     "BKNG": {
-      "close": 192.80999755859375,
-      "prevclose": 193.24000549316406,
-      "pct": -0.2225253168839949,
-      "vol": 3024898
+      "close": 192.89999,
+      "prevclose": 193.24001,
+      "pct": -0.17595301,
+      "vol": 4598400,
+      "source": "Twelve Data"
     },
     "EQIX": {
-      "close": 1017.2100219726562,
-      "prevclose": 1047.530029296875,
-      "pct": -2.894428462787859,
-      "vol": 379670
+      "close": 1019.28003,
+      "prevclose": 1047.53003,
+      "pct": -2.69682,
+      "vol": 728000,
+      "source": "Twelve Data"
     },
     "GS": {
-      "close": 1020.47998046875,
-      "prevclose": 1024.8599853515625,
-      "pct": -0.4273759289479925,
-      "vol": 1085677
+      "close": 1018.38,
+      "prevclose": 1024.85999,
+      "pct": -0.63227959,
+      "vol": 1552600,
+      "source": "Twelve Data"
     },
     "XRT": {
       "close": 89.875,
@@ -1069,16 +1182,18 @@
       "vol": 3890682
     },
     "QUAL": {
-      "close": 219.61000061035156,
-      "prevclose": 218.9199981689453,
-      "pct": 0.31518474656379275,
-      "vol": 1229482
+      "close": 219.32001,
+      "prevclose": 218.92,
+      "pct": 0.18271933,
+      "vol": 1349200,
+      "source": "Twelve Data"
     },
     "BWXT": {
-      "close": 169.4199981689453,
-      "prevclose": 165.58999633789062,
-      "pct": 2.3129427596818535,
-      "vol": 636150
+      "close": 168.7,
+      "prevclose": 165.59,
+      "pct": 1.87813,
+      "vol": 887100,
+      "source": "Twelve Data"
     },
     "PEJ": {
       "close": 66.94000244140625,
@@ -1087,16 +1202,18 @@
       "vol": 8451
     },
     "GD": {
-      "close": 383.45001220703125,
-      "prevclose": 382.20001220703125,
-      "pct": 0.32705388803674246,
-      "vol": 702703
+      "close": 383.42001,
+      "prevclose": 382.20001,
+      "pct": 0.31920491,
+      "vol": 1523900,
+      "source": "Twelve Data"
     },
     "VUG": {
-      "close": 85.34500122070312,
-      "prevclose": 84.2699966430664,
-      "pct": 1.2756670469443625,
-      "vol": 5756533
+      "close": 85.2,
+      "prevclose": 84.27,
+      "pct": 1.1036,
+      "vol": 6330500,
+      "source": "Twelve Data"
     },
     "BETZ": {
       "close": 19.1200008392334,
@@ -1111,22 +1228,25 @@
       "vol": 1371455
     },
     "SPCX": {
-      "close": 108.05999755859375,
-      "prevclose": 112.19999694824219,
-      "pct": -3.689839128568085,
-      "vol": 47805626
+      "close": 108.37,
+      "prevclose": 112.2,
+      "pct": -3.41354,
+      "vol": 58433600,
+      "source": "Twelve Data"
     },
     "EWZ": {
-      "close": 36.67499923706055,
-      "prevclose": 36.529998779296875,
-      "pct": 0.3969352932085229,
-      "vol": 21769911
+      "close": 36.65,
+      "prevclose": 36.53,
+      "pct": 0.32850466,
+      "vol": 23462000,
+      "source": "Twelve Data"
     },
     "MU": {
-      "close": 828.2100219726562,
-      "prevclose": 874.6599731445312,
-      "pct": -5.310629570126617,
-      "vol": 48148981
+      "close": 823.030029,
+      "prevclose": 874.65997,
+      "pct": -5.90286,
+      "vol": 54257900,
+      "source": "Twelve Data"
     },
     "KRE": {
       "close": 76.2249984741211,
@@ -1135,64 +1255,74 @@
       "vol": 10616006
     },
     "VNM": {
-      "close": 17.0,
-      "prevclose": 17.3700008392334,
-      "pct": -2.1301141125893457,
-      "vol": 773267
+      "close": 16.98,
+      "prevclose": 17.37,
+      "pct": -2.24526,
+      "vol": 800300,
+      "source": "Twelve Data"
     },
     "ABBV": {
-      "close": 251.8300018310547,
-      "prevclose": 257.4100036621094,
-      "pct": -2.1677486312378544,
-      "vol": 4421541
+      "close": 250.94,
+      "prevclose": 257.41,
+      "pct": -2.5135,
+      "vol": 7251900,
+      "source": "Twelve Data"
     },
     "KTOS": {
-      "close": 46.709999084472656,
-      "prevclose": 46.16999816894531,
-      "pct": 1.1695926726082417,
-      "vol": 1774962
+      "close": 46.6,
+      "prevclose": 46.17,
+      "pct": 0.9313414,
+      "vol": 2330600,
+      "source": "Twelve Data"
     },
     "VT": {
-      "close": 156.08999633789062,
-      "prevclose": 155.4499969482422,
-      "pct": 0.4117075601239982,
-      "vol": 2886119
+      "close": 155.86,
+      "prevclose": 155.45,
+      "pct": 0.26375276,
+      "vol": 3216200,
+      "source": "Twelve Data"
     },
     "MUB": {
-      "close": 105.61499786376953,
-      "prevclose": 105.76000213623047,
-      "pct": -0.1371069114334511,
-      "vol": 3874274
+      "close": 105.64,
+      "prevclose": 105.76,
+      "pct": -0.11346704,
+      "vol": 4004500,
+      "source": "Twelve Data"
     },
     "RTX": {
-      "close": 215.3350067138672,
-      "prevclose": 214.3800048828125,
-      "pct": 0.44547150354657583,
-      "vol": 2048239
+      "close": 215.22,
+      "prevclose": 214.38,
+      "pct": 0.39182588,
+      "vol": 3415800,
+      "source": "Twelve Data"
     },
     "JNK": {
-      "close": 95.68499755859375,
-      "prevclose": 95.66000366210938,
-      "pct": 0.026127843955200476,
-      "vol": 4519907
+      "close": 95.68,
+      "prevclose": 95.66,
+      "pct": 0.02090387,
+      "vol": 4787100,
+      "source": "Twelve Data"
     },
     "LMT": {
-      "close": 583.094970703125,
-      "prevclose": 574.1099853515625,
-      "pct": 1.5650285800307837,
-      "vol": 823516
+      "close": 582.73999,
+      "prevclose": 574.10999,
+      "pct": 1.5032,
+      "vol": 1422900,
+      "source": "Twelve Data"
     },
     "ARES": {
-      "close": 128.38999938964844,
-      "prevclose": 124.12000274658203,
-      "pct": 3.4402163620512747,
-      "vol": 2506145
+      "close": 128.089996,
+      "prevclose": 124.12,
+      "pct": 3.19851,
+      "vol": 4177600,
+      "source": "Twelve Data"
     },
     "XLP": {
-      "close": 85.07499694824219,
-      "prevclose": 85.47000122070312,
-      "pct": -0.4621554543341423,
-      "vol": 9723655
+      "close": 85.050003,
+      "prevclose": 85.47,
+      "pct": -0.49139834,
+      "vol": 11374300,
+      "source": "Twelve Data"
     },
     "URA": {
       "close": 39.005001068115234,
@@ -1201,16 +1331,18 @@
       "vol": 3009585
     },
     "HII": {
-      "close": 327.8800048828125,
-      "prevclose": 319.8999938964844,
-      "pct": 2.4945330223764732,
-      "vol": 704712
+      "close": 326.45001,
+      "prevclose": 319.89999,
+      "pct": 2.047521,
+      "vol": 930400,
+      "source": "Twelve Data"
     },
     "TLT": {
-      "close": 82.12999725341797,
-      "prevclose": 82.80000305175781,
-      "pct": -0.8091857169631104,
-      "vol": 39850073
+      "close": 82.25,
+      "prevclose": 82.8,
+      "pct": -0.66425487,
+      "vol": 50280200,
+      "source": "Twelve Data"
     },
     "SMH": {
       "close": 543.1300048828125,
@@ -1219,22 +1351,25 @@
       "vol": 13247018
     },
     "KSA": {
-      "close": 36.95500183105469,
-      "prevclose": 36.91999816894531,
-      "pct": 0.09480949037212519,
-      "vol": 669608
+      "close": 36.96,
+      "prevclose": 36.92,
+      "pct": 0.10834485,
+      "vol": 721400,
+      "source": "Twelve Data"
     },
     "CME": {
-      "close": 267.8900146484375,
-      "prevclose": 267.2200012207031,
-      "pct": 0.25073475962639324,
-      "vol": 2010825
+      "close": 267.79001,
+      "prevclose": 267.22,
+      "pct": 0.21331013,
+      "vol": 3268800,
+      "source": "Twelve Data"
     },
     "NOC": {
-      "close": 543.8499755859375,
-      "prevclose": 534.8499755859375,
-      "pct": 1.6827148566549606,
-      "vol": 460517
+      "close": 542.47998,
+      "prevclose": 534.84998,
+      "pct": 1.42657,
+      "vol": 852400,
+      "source": "Twelve Data"
     },
     "CLOU": {
       "close": 25.200000762939453,
@@ -1249,88 +1384,102 @@
       "vol": 350991
     },
     "TGT": {
-      "close": 144.4949951171875,
-      "prevclose": 144.50999450683594,
-      "pct": -0.010379482540031489,
-      "vol": 1999798
+      "close": 144.49001,
+      "prevclose": 144.50999,
+      "pct": -0.013832271,
+      "vol": 3311000,
+      "source": "Twelve Data"
     },
     "TSLA": {
-      "close": 312.57000732421875,
-      "prevclose": 308.8500061035156,
-      "pct": 1.2044685598796174,
-      "vol": 31619342
+      "close": 311.20999,
+      "prevclose": 308.85001,
+      "pct": 0.76412022,
+      "vol": 36527800,
+      "source": "Twelve Data"
     },
     "GOVT": {
-      "close": 22.440000534057617,
-      "prevclose": 22.510000228881836,
-      "pct": -0.3109715420367009,
-      "vol": 7572555
+      "close": 22.45,
+      "prevclose": 22.51,
+      "pct": -0.26654583,
+      "vol": 8339700,
+      "source": "Twelve Data"
     },
     "SPIR": {
-      "close": 11.420000076293945,
-      "prevclose": 11.359999656677246,
-      "pct": 0.5281727238559538,
-      "vol": 420515
+      "close": 11.46,
+      "prevclose": 11.36,
+      "pct": 0.88028507,
+      "vol": 546900,
+      "source": "Twelve Data"
     },
     "SCHP": {
-      "close": 26.079999923706055,
-      "prevclose": 26.1200008392334,
-      "pct": -0.15314285697594848,
-      "vol": 4983018
+      "close": 26.09,
+      "prevclose": 26.12,
+      "pct": -0.11485714,
+      "vol": 5189900,
+      "source": "Twelve Data"
     },
     "VXUS": {
-      "close": 84.69000244140625,
-      "prevclose": 84.7699966430664,
-      "pct": -0.09436617297153004,
-      "vol": 3883950
+      "close": 84.59,
+      "prevclose": 84.77,
+      "pct": -0.21233964,
+      "vol": 4103300,
+      "source": "Twelve Data"
     },
     "ICE": {
-      "close": 152.7050018310547,
-      "prevclose": 156.27000427246094,
-      "pct": -2.281309492505403,
-      "vol": 3767843
+      "close": 152.48,
+      "prevclose": 156.27,
+      "pct": -2.42529,
+      "vol": 5665700,
+      "source": "Twelve Data"
     },
     "LQD": {
-      "close": 106.18000030517578,
-      "prevclose": 106.41000366210938,
-      "pct": -0.2161482464223368,
-      "vol": 35625036
+      "close": 106.25,
+      "prevclose": 106.41,
+      "pct": -0.15036524,
+      "vol": 40904000,
+      "source": "Twelve Data"
     },
     "AMZN": {
-      "close": 271.8999938964844,
+      "close": 271.57999,
       "prevclose": 235.5,
-      "pct": 15.456472992137737,
-      "vol": 111413580
+      "pct": 15.32059,
+      "vol": 128881300,
+      "source": "Twelve Data"
     },
     "EWY": {
-      "close": 157.17999267578125,
-      "prevclose": 161.2100067138672,
-      "pct": -2.499853526610689,
-      "vol": 31087727
+      "close": 157.10001,
+      "prevclose": 161.21001,
+      "pct": -2.54947,
+      "vol": 37027800,
+      "source": "Twelve Data"
     },
     "MDY": {
-      "close": 687.5599975585938,
-      "prevclose": 687.1900024414062,
-      "pct": 0.0538417491338646,
-      "vol": 422966
+      "close": 686.32001,
+      "prevclose": 687.19,
+      "pct": -0.12660183,
+      "vol": 573100,
+      "source": "Twelve Data"
     },
     "VST": {
-      "close": 148.19000244140625,
-      "prevclose": 148.6199951171875,
-      "pct": -0.28932357011733106,
-      "vol": 3509776
+      "close": 148.19,
+      "prevclose": 148.62,
+      "pct": -0.28932357,
+      "vol": 4386500,
+      "source": "Twelve Data"
     },
     "MRVL": {
-      "close": 189.1199951171875,
-      "prevclose": 183.3000030517578,
-      "pct": 3.1751183679938704,
-      "vol": 22220528
+      "close": 187.56,
+      "prevclose": 183.3,
+      "pct": 2.32406,
+      "vol": 26746700,
+      "source": "Twelve Data"
     },
     "SHY": {
-      "close": 81.98500061035156,
-      "prevclose": 82.01000213623047,
-      "pct": -0.030485947113347348,
-      "vol": 1562520
+      "close": 82.0,
+      "prevclose": 82.010002,
+      "pct": -0.012196239,
+      "vol": 3142000,
+      "source": "Twelve Data"
     },
     "XOP": {
       "close": 177.44000244140625,
@@ -1339,40 +1488,46 @@
       "vol": 1760385
     },
     "BAC": {
-      "close": 62.11000061035156,
-      "prevclose": 61.72999954223633,
-      "pct": 0.615585729682751,
-      "vol": 14573658
+      "close": 61.95,
+      "prevclose": 61.73,
+      "pct": 0.35639271,
+      "vol": 27282600,
+      "source": "Twelve Data"
     },
     "AMD": {
-      "close": 480.3999938964844,
-      "prevclose": 485.3900146484375,
-      "pct": -1.0280435528875354,
-      "vol": 21369604
+      "close": 476.14999,
+      "prevclose": 485.39001,
+      "pct": -1.90363,
+      "vol": 26515500,
+      "source": "Twelve Data"
     },
     "SBUX": {
-      "close": 105.37999725341797,
-      "prevclose": 105.8499984741211,
-      "pct": -0.44402572270044394,
-      "vol": 9758883
+      "close": 105.25,
+      "prevclose": 105.85,
+      "pct": -0.56683843,
+      "vol": 12390900,
+      "source": "Twelve Data"
     },
     "JNJ": {
-      "close": 256.79998779296875,
-      "prevclose": 255.82000732421875,
-      "pct": 0.3830742086986189,
-      "vol": 4023795
+      "close": 256.35001,
+      "prevclose": 255.82001,
+      "pct": 0.20717644,
+      "vol": 6775600,
+      "source": "Twelve Data"
     },
     "VEA": {
-      "close": 70.76000213623047,
-      "prevclose": 71.08999633789062,
-      "pct": -0.46419217704231464,
-      "vol": 9027119
+      "close": 70.62,
+      "prevclose": 71.089996,
+      "pct": -0.66112479,
+      "vol": 10262300,
+      "source": "Twelve Data"
     },
     "PWR": {
-      "close": 670.7050170898438,
-      "prevclose": 657.97998046875,
-      "pct": 1.9339549832547087,
-      "vol": 1386022
+      "close": 667.35999,
+      "prevclose": 657.97998,
+      "pct": 1.42558,
+      "vol": 1958700,
+      "source": "Twelve Data"
     },
     "LIT": {
       "close": 69.40499877929688,
@@ -1381,16 +1536,18 @@
       "vol": 191287
     },
     "RDW": {
-      "close": 8.635000228881836,
-      "prevclose": 8.470000267028809,
-      "pct": 1.948051436259372,
-      "vol": 17291826
+      "close": 8.62,
+      "prevclose": 8.47,
+      "pct": 1.77095,
+      "vol": 18972900,
+      "source": "Twelve Data"
     },
     "MS": {
-      "close": 211.1300048828125,
-      "prevclose": 210.05999755859375,
-      "pct": 0.5093817655216739,
-      "vol": 3147154
+      "close": 210.42,
+      "prevclose": 210.059998,
+      "pct": 0.1713799,
+      "vol": 4719800,
+      "source": "Twelve Data"
     },
     "COPX": {
       "close": 78.86000061035156,
@@ -1399,52 +1556,60 @@
       "vol": 1340739
     },
     "INDA": {
-      "close": 49.834999084472656,
-      "prevclose": 49.70000076293945,
-      "pct": 0.27162639730554966,
-      "vol": 4666201
+      "close": 49.8,
+      "prevclose": 49.7,
+      "pct": 0.20120417,
+      "vol": 5261000,
+      "source": "Twelve Data"
     },
     "ANET": {
-      "close": 180.86000061035156,
-      "prevclose": 171.02000427246094,
-      "pct": 5.753710730947013,
-      "vol": 6300330
+      "close": 180.35001,
+      "prevclose": 171.020004,
+      "pct": 5.4555,
+      "vol": 8467900,
+      "source": "Twelve Data"
     },
     "SGOV": {
-      "close": 100.70999908447266,
-      "prevclose": 100.69000244140625,
-      "pct": 0.019859611263832018,
-      "vol": 26037985
+      "close": 100.71,
+      "prevclose": 100.69,
+      "pct": 0.019859611,
+      "vol": 28142200,
+      "source": "Twelve Data"
     },
     "IWF": {
-      "close": 118.59500122070312,
-      "prevclose": 117.43000030517578,
-      "pct": 0.9920811653749062,
-      "vol": 3450799
+      "close": 118.32,
+      "prevclose": 117.43,
+      "pct": 0.7578978,
+      "vol": 4422600,
+      "source": "Twelve Data"
     },
     "EWW": {
-      "close": 76.87000274658203,
-      "prevclose": 77.11000061035156,
-      "pct": -0.311240905031601,
-      "vol": 877000
+      "close": 76.81,
+      "prevclose": 77.11,
+      "pct": -0.38905855,
+      "vol": 996600,
+      "source": "Twelve Data"
     },
     "SRLN": {
-      "close": 40.404998779296875,
-      "prevclose": 40.38999938964844,
-      "pct": 0.0371363948380789,
-      "vol": 705185
+      "close": 40.4,
+      "prevclose": 40.39,
+      "pct": 0.024763893,
+      "vol": 742900,
+      "source": "Twelve Data"
     },
     "TMO": {
-      "close": 576.6099853515625,
-      "prevclose": 576.77001953125,
-      "pct": -0.027746618976062988,
-      "vol": 1467649
+      "close": 574.29999,
+      "prevclose": 576.77002,
+      "pct": -0.42825245,
+      "vol": 2112300,
+      "source": "Twelve Data"
     },
     "CBOE": {
-      "close": 309.9949951171875,
-      "prevclose": 296.5199890136719,
-      "pct": 4.5443837187294385,
-      "vol": 1296436
+      "close": 310.23001,
+      "prevclose": 296.51999,
+      "pct": 4.62364,
+      "vol": 1696900,
+      "source": "Twelve Data"
     },
     "SLX": {
       "close": 105.5199966430664,
@@ -1453,10 +1618,11 @@
       "vol": 11013
     },
     "IWN": {
-      "close": 221.22999572753906,
-      "prevclose": 221.7899932861328,
-      "pct": -0.25249000204950334,
-      "vol": 406910
+      "close": 221.24001,
+      "prevclose": 221.78999,
+      "pct": -0.24797683,
+      "vol": 446400,
+      "source": "Twelve Data"
     },
     "BOTZ": {
       "close": 35.29999923706055,
