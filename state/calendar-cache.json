@@ -1,7 +1,7 @@
 {
-  "fetched": "2026-08-02T09:30:00-04:00",
-  "earnings_fetched": "2026-08-02",
-  "earnings_fetched_note": "Sunday U1 force-refresh: Alpha Vantage EARNINGS_CALENDAR (3-month horizon) cross-checked against Finnhub calendar/earnings for the week of Aug 3-7. One discrepancy found: Alpha Vantage lists GSAT (Globalstar) reporting Aug 6, Finnhub lists it Aug 5 -- flagged, not resolved, in the report's Section 4. BWXT, PLTR, VOYG, VRTX (Mon Aug 3) appear in Alpha Vantage but not in Finnhub's Aug 3 pull (16 tickers returned, none on the watchlist) -- Finnhub free tier is known non-exhaustive; Alpha Vantage day retained pending contradicting evidence, consistent with policy used in prior weeks for similar gaps.",
+  "fetched": "2026-08-03T05:53:00-04:00",
+  "earnings_fetched": "2026-08-03",
+  "earnings_fetched_note": "Monday AM refresh: Alpha Vantage EARNINGS_CALENDAR (3-month horizon) re-cross-checked against a fresh Finnhub calendar/earnings pull for 2026-08-03. Resolved: BWXT, PLTR, VOYG, VRTX now confirmed by BOTH sources for today (amc) -- the single-source flag from Sunday's edition is lifted. GSAT (Globalstar) Aug 5 vs Aug 6 discrepancy between Alpha Vantage and Finnhub was not re-checked this run (not a today-dated item); still open.",
   "events": [
     {
       "ts_et": "2026-08-03T00:00:00-04:00",
