@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-08-02T09:40:00-04:00",
+  "fetched_at": "2026-08-03T05:52:00-04:00",
   "treasury_par_curve": {
     "date": "2026-07-31",
     "label": "EOD official (2026-07-31)",
@@ -50,30 +50,30 @@
     }
   },
   "crypto": {
-    "as_of": "2026-08-02T09:40:00-04:00",
+    "as_of": "2026-08-03T05:40:00-04:00",
     "label": "Live (CoinGecko aggregate, public endpoint, no COINGECKO_KEY configured)",
     "BTC": {
-      "usd": 63055,
-      "usd_24h_change": 1.3
+      "usd": 62583,
+      "usd_24h_change": -1.006377226536195
     },
     "ETH": {
-      "usd": 1854.87,
-      "usd_24h_change": -0.69
+      "usd": 1841.44,
+      "usd_24h_change": -1.4867855675612494
     },
     "SOL": {
-      "usd": 72.89,
-      "usd_24h_change": -0.03
+      "usd": 72.43,
+      "usd_24h_change": -1.1106892352262283
     },
     "ADA": {
-      "usd": 0.189812,
-      "usd_24h_change": 8.35
+      "usd": 0.185839,
+      "usd_24h_change": -0.7078604462128764
     },
-    "total_market_cap_usd": 2247282843458.31,
-    "btc_dominance_pct": 56.27
+    "total_market_cap_usd": 2233822638601.959,
+    "btc_dominance_pct": 56.20002722039804
   },
   "indices_cash_close": {
     "date": "2026-07-31",
-    "label": "EOD official (post-16:00 ET, this run's own Yahoo sweep)",
+    "label": "EOD official (post-16:00 ET, this run's own Yahoo sweep, recomputed from close series not chartPreviousClose)",
     "GSPC": {
       "close": 7489.72021484375,
       "prevclose": 7437.6298828125,
@@ -99,1536 +99,1287 @@
       "vol": null
     },
     "TNX": {
-      "close": 4.744999885559082,
-      "prevclose": 4.663000106811523,
+      "close": 4.745,
+      "prevclose": 4.641,
       "pct": 1.76,
       "vol": null
     }
   },
   "futures_and_commodities": {
-    "as_of": "2026-07-31T16:00:00-04:00",
-    "label": "EOD official (Yahoo Finance)",
+    "as_of": "2026-08-03T05:31:00-04:00",
+    "label": "Delayed +10m (Yahoo Finance), Monday premarket",
     "CL": {
-      "close": 84.67,
-      "prevclose": 83.59,
-      "pct": 1.29
+      "close": 79.77,
+      "prevclose": 84.46,
+      "pct": -5.55
     },
     "GC": {
-      "close": 4049.1,
-      "prevclose": 4100.1,
-      "pct": -1.24
+      "close": 4104.5,
+      "prevclose": 4034.7,
+      "pct": 1.73
     },
     "NG": {
-      "close": 2.747,
-      "prevclose": 2.758,
-      "pct": -0.4
+      "close": 2.769,
+      "prevclose": 2.725,
+      "pct": 1.62
     },
     "HG": {
-      "close": 6.436,
-      "prevclose": 6.4445,
-      "pct": -0.13
+      "close": 6.5285,
+      "prevclose": 6.2735,
+      "pct": 4.07
     },
     "EURUSD": {
-      "close": 1.1527,
-      "prevclose": 1.1524,
-      "pct": 0.03
+      "close": 1.153,
+      "prevclose": 1.1369,
+      "pct": 1.42
+    },
+    "ES": {
+      "close": 7556.75,
+      "prevclose": 7351.25,
+      "pct": 2.8
+    },
+    "NQ": {
+      "close": 28558.75,
+      "prevclose": 27342.0,
+      "pct": 4.45
+    },
+    "YM": {
+      "close": 52979.0,
+      "prevclose": 51765.0,
+      "pct": 2.35
+    },
+    "RTY": {
+      "close": 2956.5,
+      "prevclose": 2915.4,
+      "pct": 1.41
     }
   },
   "sources_failed_this_run": [
-    "query1.finance.yahoo.com / query2.finance.yahoo.com (HTTP 429 rate-limited on every attempt; Friday's own cash/futures/commodities/FX data retained as-is since it is still the correct data for a weekend report)",
-    "Twelve Data FM symbol (HTTP 403, not supported at this plan tier, recurring known gap)",
-    "Cboe options market-statistics put/call ratio (not attempted, recurring known path-shift issue)"
+    "cdn.cboe.com options market-statistics put/call ratio (HTTP 403, recurring known path-shift issue)",
+    "api.twelvedata.com quote batch (HTTP 429 after first batch, 8-credit/minute limit; substituted full Yahoo Finance v8 sweep, 166/167 recovered)",
+    "Yahoo Finance FM ETF (no data returned, recurring known gap)"
   ],
   "technical_levels_2026-07-31": {
-    "label": "This run's own 1-year Yahoo time-series pull",
+    "label": "Twelve Data 60d time_series (SMA) + Yahoo 1y range (52w high/low), this run's own pull",
     "SPY": {
-      "close": 747.6400146484375,
-      "sma20": 745.7250061035156,
-      "dist_sma20_pct": 0.25679822042283085,
-      "sma50": 745.0022033691406,
-      "dist_sma50_pct": 0.35406758092363527,
-      "52w_high": 759.5700073242188,
-      "52w_low": 621.719970703125
-    },
-    "QQQ": {
-      "close": 689.3350219726562,
-      "sma20": 701.0857482910156,
-      "dist_sma20_pct": -1.6760754796404387,
-      "sma50": 715.1149011230468,
-      "dist_sma50_pct": -3.6049981772026776,
-      "52w_high": 746.1599731445312,
-      "52w_low": 553.8800048828125
-    },
-    "IWM": {
-      "close": 291.30999755859375,
-      "sma20": 293.99200134277345,
-      "dist_sma20_pct": -0.9122710046293661,
-      "sma50": 292.4922003173828,
-      "dist_sma50_pct": -0.4041826611124173,
-      "52w_high": 300.45001220703125,
-      "52w_low": 214.9199981689453
-    },
-    "DIA": {
-      "close": 525.239990234375,
-      "sma20": 522.9140045166016,
-      "dist_sma20_pct": 0.4448122822649601,
-      "sma50": 517.082603149414,
-      "dist_sma50_pct": 1.577579101535517,
-      "52w_high": 530.0900268554688,
-      "52w_low": 435.7200012207031
-    },
-    "TLT": {
-      "close": 82.12999725341797,
-      "sma20": 83.87599983215333,
-      "dist_sma20_pct": -2.0816474107364837,
-      "sma50": 84.99719985961914,
-      "dist_sma50_pct": -3.373290662441386,
-      "52w_high": 92.05999755859375,
-      "52w_low": 82.12999725341797
-    },
-    "SPCX": {
-      "close": 108.38500213623047,
-      "sma20": 128.81225090026857,
-      "dist_sma20_pct": -15.858156830015854,
-      "sma50": null,
-      "dist_sma50_pct": null,
-      "52w_high": 211.38999938964844,
-      "52w_low": 108.38500213623047,
-      "note": "only 34 sessions of history since 2026-06-12 IPO; no 50-DMA yet"
-    }
-  },
-  "equity_quotes_close_2026-07-31": {
-    "PKW": {
-      "close": 146.98,
-      "prevclose": 146.82001,
-      "pct": 0.10896907,
-      "vol": 30000,
-      "source": "Twelve Data"
-    },
-    "FLY": {
-      "close": 20.33,
-      "prevclose": 20.29,
-      "pct": 0.19713655,
-      "vol": 2720600,
-      "source": "Twelve Data"
-    },
-    "XLY": {
-      "close": 116.089996,
-      "prevclose": 112.39,
-      "pct": 3.29211,
-      "vol": 13158000,
-      "source": "Twelve Data"
+      "close": 747.030029,
+      "sma20": 745.69,
+      "dist_sma20_pct": 0.18,
+      "sma50": 744.99,
+      "dist_sma50_pct": 0.27,
+      "52w_high": 759.57,
+      "52w_low": 621.72
     },
     "QQQ": {
       "close": 687.98999,
-      "prevclose": 683.54999,
-      "pct": 0.64955051,
-      "vol": 50443900,
-      "source": "Twelve Data"
-    },
-    "REGN": {
-      "close": 762.63,
-      "prevclose": 738.34003,
-      "pct": 3.28981,
-      "vol": 1158300,
-      "source": "Twelve Data"
-    },
-    "EEM": {
-      "close": 64.089996,
-      "prevclose": 63.59,
-      "pct": 0.78628115,
-      "vol": 31085200,
-      "source": "Twelve Data"
-    },
-    "VCIT": {
-      "close": 81.26,
-      "prevclose": 81.38,
-      "pct": -0.14745038,
-      "vol": 9778800,
-      "source": "Twelve Data"
-    },
-    "SPLV": {
-      "close": 76.23,
-      "prevclose": 76.38,
-      "pct": -0.1963785,
-      "vol": 2053700,
-      "source": "Twelve Data"
-    },
-    "AIQ": {
-      "close": 59.0099983215332,
-      "prevclose": 58.689998626708984,
-      "pct": 0.5452371823341489,
-      "vol": 2387853
-    },
-    "IGV": {
-      "close": 94.62000274658203,
-      "prevclose": 93.30999755859375,
-      "pct": 1.4039280058556074,
-      "vol": 9441311
-    },
-    "XBI": {
-      "close": 147.11000061035156,
-      "prevclose": 151.4600067138672,
-      "pct": -2.8720493270104632,
-      "vol": 7347279
-    },
-    "XLK": {
-      "close": 175.35001,
-      "prevclose": 175.73,
-      "pct": -0.21623492,
-      "vol": 9143000,
-      "source": "Twelve Data"
-    },
-    "BX": {
-      "close": 127.75,
-      "prevclose": 128.070007,
-      "pct": -0.24986906,
-      "vol": 4894700,
-      "source": "Twelve Data"
-    },
-    "ICLN": {
-      "close": 17.59000015258789,
-      "prevclose": 17.670000076293945,
-      "pct": -0.45274433141277975,
-      "vol": 7387086
-    },
-    "IEI": {
-      "close": 116.48,
-      "prevclose": 116.64,
-      "pct": -0.13717081,
-      "vol": 1303700,
-      "source": "Twelve Data"
-    },
-    "XLU": {
-      "close": 44.35,
-      "prevclose": 44.66,
-      "pct": -0.69413653,
-      "vol": 20773600,
-      "source": "Twelve Data"
-    },
-    "FEZ": {
-      "close": 69.77,
-      "prevclose": 69.7,
-      "pct": 0.10042998,
-      "vol": 605300,
-      "source": "Twelve Data"
-    },
-    "ASTS": {
-      "close": 58.98,
-      "prevclose": 58.44,
-      "pct": 0.92402623,
-      "vol": 9711800,
-      "source": "Twelve Data"
-    },
-    "DLR": {
-      "close": 188.52,
-      "prevclose": 193.19,
-      "pct": -2.41731,
-      "vol": 2168000,
-      "source": "Twelve Data"
-    },
-    "ETN": {
-      "close": 415.20001,
-      "prevclose": 386.89001,
-      "pct": 7.31732,
-      "vol": 4548500,
-      "source": "Twelve Data"
-    },
-    "ITB": {
-      "close": 94.4000015258789,
-      "prevclose": 95.47000122070312,
-      "pct": -1.1207705888163162,
-      "vol": 1258033
-    },
-    "AAPL": {
-      "close": 308.91,
-      "prevclose": 333.42999,
-      "pct": -7.35386,
-      "vol": 132275300,
-      "source": "Twelve Data"
-    },
-    "DAL": {
-      "close": 87.44,
-      "prevclose": 88.59,
-      "pct": -1.29811,
-      "vol": 4768500,
-      "source": "Twelve Data"
-    },
-    "EWG": {
-      "close": 42.85,
-      "prevclose": 42.88,
-      "pct": -0.069968734,
-      "vol": 676900,
-      "source": "Twelve Data"
-    },
-    "NVO": {
-      "close": 47.080002,
-      "prevclose": 51.61,
-      "pct": -8.77737,
-      "vol": 26747200,
-      "source": "Twelve Data"
-    },
-    "AVGO": {
-      "close": 389.28,
-      "prevclose": 387.84,
-      "pct": 0.37128776,
-      "vol": 20362700,
-      "source": "Twelve Data"
-    },
-    "AMLP": {
-      "close": 55.33000183105469,
-      "prevclose": 54.83000183105469,
-      "pct": 0.9119095081204417,
-      "vol": 1841779
-    },
-    "LHX": {
-      "close": 277.059998,
-      "prevclose": 271.89999,
-      "pct": 1.89776,
-      "vol": 2281800,
-      "source": "Twelve Data"
-    },
-    "EWQ": {
-      "close": 46.55,
-      "prevclose": 46.47,
-      "pct": 0.1721498,
-      "vol": 266100,
-      "source": "Twelve Data"
-    },
-    "XLB": {
-      "close": 50.43,
-      "prevclose": 51.64,
-      "pct": -2.34314,
-      "vol": 18328900,
-      "source": "Twelve Data"
-    },
-    "IWD": {
-      "close": 251.82001,
-      "prevclose": 250.71001,
-      "pct": 0.44274284,
-      "vol": 1758600,
-      "source": "Twelve Data"
-    },
-    "VOO": {
-      "close": 686.65002,
-      "prevclose": 681.78998,
-      "pct": 0.71283629,
-      "vol": 7699300,
-      "source": "Twelve Data"
-    },
-    "VWO": {
-      "close": 58.75,
-      "prevclose": 58.19,
-      "pct": 0.96236705,
-      "vol": 7397600,
-      "source": "Twelve Data"
-    },
-    "ISRG": {
-      "close": 353.32999,
-      "prevclose": 352.97,
-      "pct": 0.10198752,
-      "vol": 2460600,
-      "source": "Twelve Data"
-    },
-    "MCHI": {
-      "close": 55.8,
-      "prevclose": 55.5,
-      "pct": 0.54053917,
-      "vol": 5767700,
-      "source": "Twelve Data"
-    },
-    "MRK": {
-      "close": 130.2,
-      "prevclose": 129.78999,
-      "pct": 0.31589775,
-      "vol": 7731900,
-      "source": "Twelve Data"
-    },
-    "PL": {
-      "close": 20.48,
-      "prevclose": 20.22,
-      "pct": 1.28586,
-      "vol": 5769200,
-      "source": "Twelve Data"
-    },
-    "ESPO": {
-      "close": 94.20500183105469,
-      "prevclose": 97.26000213623047,
-      "pct": -3.1410654308815387,
-      "vol": 23719
-    },
-    "GSAT": {
-      "close": 83.38,
-      "prevclose": 80.089996,
-      "pct": 4.10788,
-      "vol": 2283300,
-      "source": "Twelve Data"
-    },
-    "XLC": {
-      "close": 108.24,
-      "prevclose": 106.58,
-      "pct": 1.55751,
-      "vol": 5024600,
-      "source": "Twelve Data"
+      "sma20": 701.02,
+      "dist_sma20_pct": -1.86,
+      "sma50": 715.09,
+      "dist_sma50_pct": -3.79,
+      "52w_high": 746.16,
+      "52w_low": 553.88
     },
     "IWM": {
       "close": 291.20001,
-      "prevclose": 292.59,
-      "pct": -0.47506208,
-      "vol": 28322300,
-      "source": "Twelve Data"
-    },
-    "BLK": {
-      "close": 1090.39001,
-      "prevclose": 1098.37,
-      "pct": -0.72652936,
-      "vol": 378200,
-      "source": "Twelve Data"
-    },
-    "KWEB": {
-      "close": 28.49,
-      "prevclose": 28.059999,
-      "pct": 1.53243,
-      "vol": 23303600,
-      "source": "Twelve Data"
-    },
-    "RCL": {
-      "close": 318.29999,
-      "prevclose": 321.94,
-      "pct": -1.13065,
-      "vol": 1948300,
-      "source": "Twelve Data"
-    },
-    "EWT": {
-      "close": 96.55,
-      "prevclose": 94.0,
-      "pct": 2.71277,
-      "vol": 8744000,
-      "source": "Twelve Data"
-    },
-    "BKSY": {
-      "close": 23.049999,
-      "prevclose": 22.46,
-      "pct": 2.62689,
-      "vol": 860600,
-      "source": "Twelve Data"
-    },
-    "HOOD": {
-      "close": 86.56,
-      "prevclose": 86.6,
-      "pct": -0.046190434,
-      "vol": 22867000,
-      "source": "Twelve Data"
-    },
-    "SOXX": {
-      "close": 507.19000244140625,
-      "prevclose": 504.5299987792969,
-      "pct": 0.5272240835124206,
-      "vol": 11649643
+      "sma20": 293.99,
+      "dist_sma20_pct": -0.95,
+      "sma50": 292.49,
+      "dist_sma50_pct": -0.44,
+      "52w_high": 300.45,
+      "52w_low": 214.92
     },
     "DIA": {
       "close": 524.32001,
-      "prevclose": 521.51001,
-      "pct": 0.53881949,
-      "vol": 3975900,
-      "source": "Twelve Data"
-    },
-    "VGK": {
-      "close": 90.59,
-      "prevclose": 90.99,
-      "pct": -0.43961044,
-      "vol": 2676100,
-      "source": "Twelve Data"
-    },
-    "C": {
-      "close": 132.45,
-      "prevclose": 132.32001,
-      "pct": 0.098238828,
-      "vol": 9604000,
-      "source": "Twelve Data"
-    },
-    "IHI": {
-      "close": 52.56999969482422,
-      "prevclose": 52.7400016784668,
-      "pct": -0.32233973877931865,
-      "vol": 2754521
-    },
-    "COIN": {
-      "close": 146.25999,
-      "prevclose": 163.58,
-      "pct": -10.5881,
-      "vol": 20828000,
-      "source": "Twelve Data"
-    },
-    "SPHQ": {
-      "close": 84.67,
-      "prevclose": 85.07,
-      "pct": -0.47020281,
-      "vol": 1552500,
-      "source": "Twelve Data"
-    },
-    "VRTX": {
-      "close": 477.10001,
-      "prevclose": 481.70001,
-      "pct": -0.95495246,
-      "vol": 957200,
-      "source": "Twelve Data"
-    },
-    "XSD": {
-      "close": 489.6549987792969,
-      "prevclose": 483.0400085449219,
-      "pct": 1.3694497593070114,
-      "vol": 43682
-    },
-    "LLY": {
-      "close": 1148.83997,
-      "prevclose": 1154.96997,
-      "pct": -0.53075015,
-      "vol": 2881200,
-      "source": "Twelve Data"
-    },
-    "XLF": {
-      "close": 56.94,
-      "prevclose": 57.0,
-      "pct": -0.10526557,
-      "vol": 32522700,
-      "source": "Twelve Data"
-    },
-    "FINX": {
-      "close": 25.639999389648438,
-      "prevclose": 25.979999542236328,
-      "pct": -1.3086996096175596,
-      "vol": 34697
-    },
-    "OIH": {
-      "close": 386.1549987792969,
-      "prevclose": 375.8299865722656,
-      "pct": 2.7472560934266825,
-      "vol": 143459
-    },
-    "SCHW": {
-      "close": 105.24,
-      "prevclose": 104.33,
-      "pct": 0.87222852,
-      "vol": 8544200,
-      "source": "Twelve Data"
-    },
-    "ABNB": {
-      "close": 151.52,
-      "prevclose": 152.080002,
-      "pct": -0.36822564,
-      "vol": 2460700,
-      "source": "Twelve Data"
-    },
-    "EWA": {
-      "close": 29.34,
-      "prevclose": 29.82,
-      "pct": -1.60966,
-      "vol": 2100500,
-      "source": "Twelve Data"
-    },
-    "VTI": {
-      "close": 368.20999,
-      "prevclose": 366.26999,
-      "pct": 0.52966459,
-      "vol": 3195300,
-      "source": "Twelve Data"
-    },
-    "XLRE": {
-      "close": 45.07,
-      "prevclose": 45.3,
-      "pct": -0.50772527,
-      "vol": 6544600,
-      "source": "Twelve Data"
-    },
-    "DBA": {
-      "close": 27.50860023498535,
-      "prevclose": 27.479999542236328,
-      "pct": 0.10407821406643264,
-      "vol": 395373
-    },
-    "NVDA": {
-      "close": 200.75,
-      "prevclose": 195.039993,
-      "pct": 2.92761,
-      "vol": 139659700,
-      "source": "Twelve Data"
-    },
-    "VYM": {
-      "close": 161.96001,
-      "prevclose": 161.96001,
-      "pct": 0.0,
-      "vol": 1526900,
-      "source": "Twelve Data"
-    },
-    "PFE": {
-      "close": 25.01,
-      "prevclose": 24.91,
-      "pct": 0.40144674,
-      "vol": 45053400,
-      "source": "Twelve Data"
-    },
-    "KRMN": {
-      "close": 48.15,
-      "prevclose": 47.22,
-      "pct": 1.96951,
-      "vol": 1949700,
-      "source": "Twelve Data"
-    },
-    "META": {
-      "close": 556.71002,
-      "prevclose": 539.030029,
-      "pct": 3.27996,
-      "vol": 24202500,
-      "source": "Twelve Data"
-    },
-    "GDXJ": {
-      "close": 95.47000122070312,
-      "prevclose": 99.04000091552734,
-      "pct": -3.6046038588682197,
-      "vol": 3336717
-    },
-    "MCD": {
-      "close": 270.64001,
-      "prevclose": 268.44,
-      "pct": 0.81955453,
-      "vol": 4962900,
-      "source": "Twelve Data"
-    },
-    "EFA": {
-      "close": 105.58,
-      "prevclose": 106.24,
-      "pct": -0.62123122,
-      "vol": 14257100,
-      "source": "Twelve Data"
-    },
-    "GOOGL": {
-      "close": 356.13,
-      "prevclose": 333.66,
-      "pct": 6.7344,
-      "vol": 46425700,
-      "source": "Twelve Data"
-    },
-    "CEG": {
-      "close": 262.75,
-      "prevclose": 263.56,
-      "pct": -0.30732948,
-      "vol": 1850300,
-      "source": "Twelve Data"
-    },
-    "LUNR": {
-      "close": 12.34,
-      "prevclose": 12.25,
-      "pct": 0.73469512,
-      "vol": 7962500,
-      "source": "Twelve Data"
-    },
-    "XLE": {
-      "close": 59.55,
-      "prevclose": 58.96,
-      "pct": 1.0006787,
-      "vol": 23475000,
-      "source": "Twelve Data"
-    },
-    "RKLB": {
-      "close": 64.95,
-      "prevclose": 64.68,
-      "pct": 0.41743451,
-      "vol": 13486300,
-      "source": "Twelve Data"
-    },
-    "SCHD": {
-      "close": 33.47,
-      "prevclose": 33.41,
-      "pct": 0.17959106,
-      "vol": 25659900,
-      "source": "Twelve Data"
-    },
-    "KKR": {
-      "close": 101.43,
-      "prevclose": 100.98,
-      "pct": 0.44562976,
-      "vol": 6281600,
-      "source": "Twelve Data"
-    },
-    "REMX": {
-      "close": 66.07499694824219,
-      "prevclose": 66.44999694824219,
-      "pct": -0.5643341116961781,
-      "vol": 700561
-    },
-    "WFC": {
-      "close": 86.45,
-      "prevclose": 85.43,
-      "pct": 1.19396,
-      "vol": 14769100,
-      "source": "Twelve Data"
-    },
-    "APO": {
-      "close": 125.59,
-      "prevclose": 120.25,
-      "pct": 4.44075,
-      "vol": 4656000,
-      "source": "Twelve Data"
-    },
-    "HYG": {
-      "close": 79.48,
-      "prevclose": 79.47,
-      "pct": 0.012586053,
-      "vol": 38581900,
-      "source": "Twelve Data"
-    },
-    "YSS": {
-      "close": 14.73,
-      "prevclose": 15.26,
-      "pct": -3.47314,
-      "vol": 1371900,
-      "source": "Twelve Data"
-    },
-    "AVAV": {
-      "close": 149.37,
-      "prevclose": 146.57001,
-      "pct": 1.91034,
-      "vol": 942400,
-      "source": "Twelve Data"
-    },
-    "VTV": {
-      "close": 219.95,
-      "prevclose": 220.53999,
-      "pct": -0.26752351,
-      "vol": 2280200,
-      "source": "Twelve Data"
-    },
-    "KBE": {
-      "close": 69.75499725341797,
-      "prevclose": 69.4800033569336,
-      "pct": 0.39578854806853236,
-      "vol": 1487604
-    },
-    "JPM": {
-      "close": 351.79001,
-      "prevclose": 350.85001,
-      "pct": 0.26792146,
-      "vol": 6594100,
-      "source": "Twelve Data"
-    },
-    "BA": {
-      "close": 216.14,
-      "prevclose": 220.89999,
-      "pct": -2.15482,
-      "vol": 7317500,
-      "source": "Twelve Data"
-    },
-    "WMT": {
-      "close": 111.2,
-      "prevclose": 111.099998,
-      "pct": 0.090007629,
-      "vol": 22780100,
-      "source": "Twelve Data"
-    },
-    "XLI": {
-      "close": 179.84,
-      "prevclose": 178.39,
-      "pct": 0.81282412,
-      "vol": 7206200,
-      "source": "Twelve Data"
-    },
-    "NLR": {
-      "close": 107.19499969482422,
-      "prevclose": 108.36000061035156,
-      "pct": -1.0751208093072415,
-      "vol": 319660
-    },
-    "AVUV": {
-      "close": 125.28,
-      "prevclose": 125.24,
-      "pct": 0.031939409,
-      "vol": 1338100,
-      "source": "Twelve Data"
-    },
-    "LOW": {
-      "close": 207.81,
-      "prevclose": 210.080002,
-      "pct": -1.080543,
-      "vol": 3975700,
-      "source": "Twelve Data"
-    },
-    "XTN": {
-      "close": 109.38999938964844,
-      "prevclose": 109.36000061035156,
-      "pct": 0.027431217199568526,
-      "vol": 42302
-    },
-    "KIE": {
-      "close": 64.31500244140625,
-      "prevclose": 64.41999816894531,
-      "pct": -0.16298623179669286,
-      "vol": 654350
-    },
-    "BND": {
-      "close": 72.23,
-      "prevclose": 72.42,
-      "pct": -0.26235131,
-      "vol": 6363100,
-      "source": "Twelve Data"
-    },
-    "FXI": {
-      "close": 36.5,
-      "prevclose": 36.52,
-      "pct": -0.054765765,
-      "vol": 23460700,
-      "source": "Twelve Data"
-    },
-    "IJH": {
-      "close": 75.27,
-      "prevclose": 75.35,
-      "pct": -0.10617363,
-      "vol": 6368700,
-      "source": "Twelve Data"
-    },
-    "MOO": {
-      "close": 81.8499984741211,
-      "prevclose": 83.5199966430664,
-      "pct": -1.999518960809191,
-      "vol": 284549
-    },
-    "TIP": {
-      "close": 107.63,
-      "prevclose": 107.74,
-      "pct": -0.10209821,
-      "vol": 3868300,
-      "source": "Twelve Data"
-    },
-    "GDX": {
-      "close": 74.20999908447266,
-      "prevclose": 76.77999877929688,
-      "pct": -3.3472254958112853,
-      "vol": 12596821
-    },
-    "RSP": {
-      "close": 215.0099945,
-      "prevclose": 215.38,
-      "pct": -0.17179421,
-      "vol": 9729500,
-      "source": "Twelve Data"
-    },
-    "IBKR": {
-      "close": 87.99,
-      "prevclose": 90.48,
-      "pct": -2.752,
-      "vol": 4369800,
-      "source": "Twelve Data"
-    },
-    "EWJ": {
-      "close": 92.39,
-      "prevclose": 93.29,
-      "pct": -0.96473525,
-      "vol": 5290100,
-      "source": "Twelve Data"
-    },
-    "HACK": {
-      "close": 107.07499694824219,
-      "prevclose": 105.5199966430664,
-      "pct": 1.4736546196411944,
-      "vol": 109673
-    },
-    "UAL": {
-      "close": 121.33,
-      "prevclose": 123.56,
-      "pct": -1.80479,
-      "vol": 2655600,
-      "source": "Twelve Data"
-    },
-    "IRDM": {
-      "close": 47.34,
-      "prevclose": 47.64,
-      "pct": -0.62972133,
-      "vol": 1307000,
-      "source": "Twelve Data"
-    },
-    "UNH": {
-      "close": 414.39999,
-      "prevclose": 421.47,
-      "pct": -1.67746,
-      "vol": 3915800,
-      "source": "Twelve Data"
-    },
-    "UFO": {
-      "close": 43.849998474121094,
-      "prevclose": 43.81999969482422,
-      "pct": 0.06845910430350435,
-      "vol": 304322
-    },
-    "AGG": {
-      "close": 97.37,
-      "prevclose": 97.62,
-      "pct": -0.25609506,
-      "vol": 11043400,
-      "source": "Twelve Data"
-    },
-    "IYT": {
-      "close": 85.1500015258789,
-      "prevclose": 84.87999725341797,
-      "pct": 0.31810117954506045,
-      "vol": 520817
-    },
-    "CIBR": {
-      "close": 91.87999725341797,
-      "prevclose": 90.0199966430664,
-      "pct": 2.0662082645109994,
-      "vol": 1266970
-    },
-    "PAVE": {
-      "close": 56.459999084472656,
-      "prevclose": 56.099998474121094,
-      "pct": 0.6417123353713292,
-      "vol": 1807848
-    },
-    "USMV": {
-      "close": 97.93,
-      "prevclose": 97.84,
-      "pct": 0.091990976,
-      "vol": 3949100,
-      "source": "Twelve Data"
-    },
-    "MSFT": {
-      "close": 464.72,
-      "prevclose": 451.10001,
-      "pct": 3.019285,
-      "vol": 60748000,
-      "source": "Twelve Data"
-    },
-    "EWU": {
-      "close": 48.41,
-      "prevclose": 48.68,
-      "pct": -0.5546435,
-      "vol": 792600,
-      "source": "Twelve Data"
-    },
-    "PLTR": {
-      "close": 123.059998,
-      "prevclose": 122.26,
-      "pct": 0.65433945,
-      "vol": 29004900,
-      "source": "Twelve Data"
-    },
-    "VRT": {
-      "close": 241.57001,
-      "prevclose": 227.5,
-      "pct": 6.18462,
-      "vol": 10837600,
-      "source": "Twelve Data"
-    },
-    "SPY": {
-      "close": 747.030029,
-      "prevclose": 741.69,
-      "pct": 0.71998097,
-      "vol": 62339900,
-      "source": "Twelve Data"
-    },
-    "MTUM": {
-      "close": 299.59,
-      "prevclose": 298.76999,
-      "pct": 0.27446108,
-      "vol": 2347900,
-      "source": "Twelve Data"
-    },
-    "XLV": {
-      "close": 162.55,
-      "prevclose": 163.52,
-      "pct": -0.59320034,
-      "vol": 9589500,
-      "source": "Twelve Data"
-    },
-    "COST": {
-      "close": 951.89001,
-      "prevclose": 954.16998,
-      "pct": -0.23894781,
-      "vol": 1758800,
-      "source": "Twelve Data"
-    },
-    "ASML": {
-      "close": 1629.0,
-      "prevclose": 1651.43994,
-      "pct": -1.35881,
-      "vol": 1599400,
-      "source": "Twelve Data"
-    },
-    "ARKX": {
-      "close": 30.727399826049805,
-      "prevclose": 30.350000381469727,
-      "pct": 1.2434907408123144,
-      "vol": 447768
-    },
-    "BKLN": {
-      "close": 20.39,
-      "prevclose": 20.38,
-      "pct": 0.049068839,
-      "vol": 5703000,
-      "source": "Twelve Data"
-    },
-    "IEF": {
-      "close": 92.95,
-      "prevclose": 93.21,
-      "pct": -0.27894232,
-      "vol": 8488900,
-      "source": "Twelve Data"
-    },
-    "TSM": {
-      "close": 404.25,
-      "prevclose": 403.31,
-      "pct": 0.23307194,
-      "vol": 11926500,
-      "source": "Twelve Data"
-    },
-    "XHB": {
-      "close": 103.7249984741211,
-      "prevclose": 104.5199966430664,
-      "pct": -0.7606182495969787,
-      "vol": 2595820
-    },
-    "DHR": {
-      "close": 194.98,
-      "prevclose": 196.17,
-      "pct": -0.60661796,
-      "vol": 4386600,
-      "source": "Twelve Data"
-    },
-    "JETS": {
-      "close": 31.329999923706055,
-      "prevclose": 31.68000030517578,
-      "pct": -1.1047991732896056,
-      "vol": 5048274
-    },
-    "EWC": {
-      "close": 59.39,
-      "prevclose": 59.79,
-      "pct": -0.66901074,
-      "vol": 1343700,
-      "source": "Twelve Data"
-    },
-    "HD": {
-      "close": 331.95999,
-      "prevclose": 333.35001,
-      "pct": -0.41698354,
-      "vol": 4958900,
-      "source": "Twelve Data"
-    },
-    "VOYG": {
-      "close": 24.53,
-      "prevclose": 23.97,
-      "pct": 2.33626,
-      "vol": 895900,
-      "source": "Twelve Data"
-    },
-    "CMG": {
-      "close": 37.22,
-      "prevclose": 38.52,
-      "pct": -3.37487,
-      "vol": 14346000,
-      "source": "Twelve Data"
-    },
-    "IFRA": {
-      "close": 60.70500183105469,
-      "prevclose": 60.56999969482422,
-      "pct": 0.22288614315777328,
-      "vol": 186097
-    },
-    "BIL": {
-      "close": 91.68,
-      "prevclose": 91.65,
-      "pct": 0.032731892,
-      "vol": 14672600,
-      "source": "Twelve Data"
-    },
-    "VSAT": {
-      "close": 76.93,
-      "prevclose": 77.6,
-      "pct": -0.86339972,
-      "vol": 1366200,
-      "source": "Twelve Data"
-    },
-    "TAN": {
-      "close": 49.5,
-      "prevclose": 49.84000015258789,
-      "pct": -0.6821832896207094,
-      "vol": 1890151
-    },
-    "BKNG": {
-      "close": 192.89999,
-      "prevclose": 193.24001,
-      "pct": -0.17595301,
-      "vol": 4598400,
-      "source": "Twelve Data"
-    },
-    "EQIX": {
-      "close": 1019.28003,
-      "prevclose": 1047.53003,
-      "pct": -2.69682,
-      "vol": 728000,
-      "source": "Twelve Data"
-    },
-    "GS": {
-      "close": 1018.38,
-      "prevclose": 1024.85999,
-      "pct": -0.63227959,
-      "vol": 1552600,
-      "source": "Twelve Data"
-    },
-    "XRT": {
-      "close": 89.875,
-      "prevclose": 90.58000183105469,
-      "pct": -0.7783195151283192,
-      "vol": 3890682
-    },
-    "QUAL": {
-      "close": 219.32001,
-      "prevclose": 218.92,
-      "pct": 0.18271933,
-      "vol": 1349200,
-      "source": "Twelve Data"
-    },
-    "BWXT": {
-      "close": 168.7,
-      "prevclose": 165.59,
-      "pct": 1.87813,
-      "vol": 887100,
-      "source": "Twelve Data"
-    },
-    "PEJ": {
-      "close": 66.94000244140625,
-      "prevclose": 67.05000305175781,
-      "pct": -0.16405757694992182,
-      "vol": 8451
-    },
-    "GD": {
-      "close": 383.42001,
-      "prevclose": 382.20001,
-      "pct": 0.31920491,
-      "vol": 1523900,
-      "source": "Twelve Data"
-    },
-    "VUG": {
-      "close": 85.2,
-      "prevclose": 84.27,
-      "pct": 1.1036,
-      "vol": 6330500,
-      "source": "Twelve Data"
-    },
-    "BETZ": {
-      "close": 19.1200008392334,
-      "prevclose": 19.229999542236328,
-      "pct": -0.5720161498773365,
-      "vol": 4272
-    },
-    "IBB": {
-      "close": 186.60000610351562,
-      "prevclose": 189.9600067138672,
-      "pct": -1.7687936889856304,
-      "vol": 1371455
+      "sma20": 522.87,
+      "dist_sma20_pct": 0.28,
+      "sma50": 517.06,
+      "dist_sma50_pct": 1.4,
+      "52w_high": 530.09,
+      "52w_low": 435.72
+    },
+    "TLT": {
+      "close": 82.25,
+      "sma20": 83.88,
+      "dist_sma20_pct": -1.95,
+      "sma50": 85.0,
+      "dist_sma50_pct": -3.23,
+      "52w_high": 92.06,
+      "52w_low": 82.25,
+      "note": "at 52-week low"
     },
     "SPCX": {
       "close": 108.37,
-      "prevclose": 112.2,
-      "pct": -3.41354,
-      "vol": 58433600,
-      "source": "Twelve Data"
-    },
-    "EWZ": {
-      "close": 36.65,
-      "prevclose": 36.53,
-      "pct": 0.32850466,
-      "vol": 23462000,
-      "source": "Twelve Data"
-    },
-    "MU": {
-      "close": 823.030029,
-      "prevclose": 874.65997,
-      "pct": -5.90286,
-      "vol": 54257900,
-      "source": "Twelve Data"
-    },
-    "KRE": {
-      "close": 76.2249984741211,
-      "prevclose": 75.9000015258789,
-      "pct": 0.42819096404283513,
-      "vol": 10616006
-    },
-    "VNM": {
-      "close": 16.98,
-      "prevclose": 17.37,
-      "pct": -2.24526,
-      "vol": 800300,
-      "source": "Twelve Data"
+      "sma20": 128.81,
+      "dist_sma20_pct": -15.87,
+      "sma50": null,
+      "dist_sma50_pct": null,
+      "52w_high": 211.39,
+      "52w_low": 108.37,
+      "note": "35 sessions since 2026-06-12 IPO; no 50-DMA yet; at all-time low"
+    }
+  },
+  "equity_quotes_close_2026-07-31": {
+    "AAPL": {
+      "close": 308.91,
+      "prevclose": 333.43,
+      "pct": -7.3539,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
     "ABBV": {
       "close": 250.94,
       "prevclose": 257.41,
       "pct": -2.5135,
-      "vol": 7251900,
-      "source": "Twelve Data"
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "KTOS": {
-      "close": 46.6,
-      "prevclose": 46.17,
-      "pct": 0.9313414,
-      "vol": 2330600,
-      "source": "Twelve Data"
+    "ABNB": {
+      "close": 151.52,
+      "prevclose": 152.08,
+      "pct": -0.3682,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "VT": {
-      "close": 155.86,
-      "prevclose": 155.45,
-      "pct": 0.26375276,
-      "vol": 3216200,
-      "source": "Twelve Data"
+    "AGG": {
+      "close": 97.37,
+      "prevclose": 97.62,
+      "pct": -0.2561,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "MUB": {
-      "close": 105.64,
-      "prevclose": 105.76,
-      "pct": -0.11346704,
-      "vol": 4004500,
-      "source": "Twelve Data"
-    },
-    "RTX": {
-      "close": 215.22,
-      "prevclose": 214.38,
-      "pct": 0.39182588,
-      "vol": 3415800,
-      "source": "Twelve Data"
-    },
-    "JNK": {
-      "close": 95.68,
-      "prevclose": 95.66,
-      "pct": 0.02090387,
-      "vol": 4787100,
-      "source": "Twelve Data"
-    },
-    "LMT": {
-      "close": 582.73999,
-      "prevclose": 574.10999,
-      "pct": 1.5032,
-      "vol": 1422900,
-      "source": "Twelve Data"
-    },
-    "ARES": {
-      "close": 128.089996,
-      "prevclose": 124.12,
-      "pct": 3.19851,
-      "vol": 4177600,
-      "source": "Twelve Data"
-    },
-    "XLP": {
-      "close": 85.050003,
-      "prevclose": 85.47,
-      "pct": -0.49139834,
-      "vol": 11374300,
-      "source": "Twelve Data"
-    },
-    "URA": {
-      "close": 39.005001068115234,
-      "prevclose": 39.720001220703125,
-      "pct": -1.8001010337714025,
-      "vol": 3009585
-    },
-    "HII": {
-      "close": 326.45001,
-      "prevclose": 319.89999,
-      "pct": 2.047521,
-      "vol": 930400,
-      "source": "Twelve Data"
-    },
-    "TLT": {
-      "close": 82.25,
-      "prevclose": 82.8,
-      "pct": -0.66425487,
-      "vol": 50280200,
-      "source": "Twelve Data"
-    },
-    "SMH": {
-      "close": 543.1300048828125,
-      "prevclose": 538.9000244140625,
-      "pct": 0.7849286095967785,
-      "vol": 13247018
-    },
-    "KSA": {
-      "close": 36.96,
-      "prevclose": 36.92,
-      "pct": 0.10834485,
-      "vol": 721400,
-      "source": "Twelve Data"
-    },
-    "CME": {
-      "close": 267.79001,
-      "prevclose": 267.22,
-      "pct": 0.21331013,
-      "vol": 3268800,
-      "source": "Twelve Data"
-    },
-    "NOC": {
-      "close": 542.47998,
-      "prevclose": 534.84998,
-      "pct": 1.42657,
-      "vol": 852400,
-      "source": "Twelve Data"
-    },
-    "CLOU": {
-      "close": 25.200000762939453,
-      "prevclose": 24.850000381469727,
-      "pct": 1.4084522176937937,
-      "vol": 290193
-    },
-    "URNM": {
-      "close": 48.650001525878906,
-      "prevclose": 49.45000076293945,
-      "pct": -1.6177941854757467,
-      "vol": 350991
-    },
-    "TGT": {
-      "close": 144.49001,
-      "prevclose": 144.50999,
-      "pct": -0.013832271,
-      "vol": 3311000,
-      "source": "Twelve Data"
-    },
-    "TSLA": {
-      "close": 311.20999,
-      "prevclose": 308.85001,
-      "pct": 0.76412022,
-      "vol": 36527800,
-      "source": "Twelve Data"
-    },
-    "GOVT": {
-      "close": 22.45,
-      "prevclose": 22.51,
-      "pct": -0.26654583,
-      "vol": 8339700,
-      "source": "Twelve Data"
-    },
-    "SPIR": {
-      "close": 11.46,
-      "prevclose": 11.36,
-      "pct": 0.88028507,
-      "vol": 546900,
-      "source": "Twelve Data"
-    },
-    "SCHP": {
-      "close": 26.09,
-      "prevclose": 26.12,
-      "pct": -0.11485714,
-      "vol": 5189900,
-      "source": "Twelve Data"
-    },
-    "VXUS": {
-      "close": 84.59,
-      "prevclose": 84.77,
-      "pct": -0.21233964,
-      "vol": 4103300,
-      "source": "Twelve Data"
-    },
-    "ICE": {
-      "close": 152.48,
-      "prevclose": 156.27,
-      "pct": -2.42529,
-      "vol": 5665700,
-      "source": "Twelve Data"
-    },
-    "LQD": {
-      "close": 106.25,
-      "prevclose": 106.41,
-      "pct": -0.15036524,
-      "vol": 40904000,
-      "source": "Twelve Data"
+    "AMD": {
+      "close": 476.15,
+      "prevclose": 485.39,
+      "pct": -1.9036,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
     "AMZN": {
-      "close": 271.57999,
+      "close": 271.58,
       "prevclose": 235.5,
-      "pct": 15.32059,
-      "vol": 128881300,
-      "source": "Twelve Data"
+      "pct": 15.3206,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "EWY": {
-      "close": 157.10001,
-      "prevclose": 161.21001,
-      "pct": -2.54947,
-      "vol": 37027800,
-      "source": "Twelve Data"
+    "ANET": {
+      "close": 180.35,
+      "prevclose": 171.02,
+      "pct": 5.4555,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "MDY": {
-      "close": 686.32001,
-      "prevclose": 687.19,
-      "pct": -0.12660183,
-      "vol": 573100,
-      "source": "Twelve Data"
+    "APO": {
+      "close": 125.59,
+      "prevclose": 120.25,
+      "pct": 4.4407,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "VST": {
-      "close": 148.19,
-      "prevclose": 148.62,
-      "pct": -0.28932357,
-      "vol": 4386500,
-      "source": "Twelve Data"
+    "ARES": {
+      "close": 128.09,
+      "prevclose": 124.12,
+      "pct": 3.1985,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "MRVL": {
-      "close": 187.56,
-      "prevclose": 183.3,
-      "pct": 2.32406,
-      "vol": 26746700,
-      "source": "Twelve Data"
+    "ASML": {
+      "close": 1629.0,
+      "prevclose": 1651.4399,
+      "pct": -1.3588,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "SHY": {
-      "close": 82.0,
-      "prevclose": 82.010002,
-      "pct": -0.012196239,
-      "vol": 3142000,
-      "source": "Twelve Data"
+    "ASTS": {
+      "close": 58.98,
+      "prevclose": 58.44,
+      "pct": 0.924,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "XOP": {
-      "close": 177.44000244140625,
-      "prevclose": 174.8699951171875,
-      "pct": 1.4696674077771223,
-      "vol": 1760385
+    "AVAV": {
+      "close": 149.37,
+      "prevclose": 146.57,
+      "pct": 1.9103,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "AVGO": {
+      "close": 389.28,
+      "prevclose": 387.84,
+      "pct": 0.3713,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "AVUV": {
+      "close": 125.28,
+      "prevclose": 125.24,
+      "pct": 0.0319,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "BA": {
+      "close": 216.14,
+      "prevclose": 220.9,
+      "pct": -2.1548,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
     "BAC": {
       "close": 61.95,
       "prevclose": 61.73,
-      "pct": 0.35639271,
-      "vol": 27282600,
-      "source": "Twelve Data"
+      "pct": 0.3564,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "AMD": {
-      "close": 476.14999,
-      "prevclose": 485.39001,
-      "pct": -1.90363,
-      "vol": 26515500,
-      "source": "Twelve Data"
+    "BIL": {
+      "close": 91.68,
+      "prevclose": 91.65,
+      "pct": 0.0327,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "SBUX": {
-      "close": 105.25,
-      "prevclose": 105.85,
-      "pct": -0.56683843,
-      "vol": 12390900,
-      "source": "Twelve Data"
+    "BKLN": {
+      "close": 20.39,
+      "prevclose": 20.38,
+      "pct": 0.0491,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "JNJ": {
-      "close": 256.35001,
-      "prevclose": 255.82001,
-      "pct": 0.20717644,
-      "vol": 6775600,
-      "source": "Twelve Data"
+    "BKNG": {
+      "close": 192.9,
+      "prevclose": 193.24,
+      "pct": -0.176,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "VEA": {
-      "close": 70.62,
-      "prevclose": 71.089996,
-      "pct": -0.66112479,
-      "vol": 10262300,
-      "source": "Twelve Data"
+    "BKSY": {
+      "close": 23.05,
+      "prevclose": 22.46,
+      "pct": 2.6269,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "PWR": {
-      "close": 667.35999,
-      "prevclose": 657.97998,
-      "pct": 1.42558,
-      "vol": 1958700,
-      "source": "Twelve Data"
+    "BLK": {
+      "close": 1090.39,
+      "prevclose": 1098.37,
+      "pct": -0.7265,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "LIT": {
-      "close": 69.40499877929688,
-      "prevclose": 69.80999755859375,
-      "pct": -0.5801443825534397,
-      "vol": 191287
+    "BND": {
+      "close": 72.23,
+      "prevclose": 72.42,
+      "pct": -0.2624,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "RDW": {
-      "close": 8.62,
-      "prevclose": 8.47,
-      "pct": 1.77095,
-      "vol": 18972900,
-      "source": "Twelve Data"
+    "BWXT": {
+      "close": 168.7,
+      "prevclose": 165.59,
+      "pct": 1.8781,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "MS": {
-      "close": 210.42,
-      "prevclose": 210.059998,
-      "pct": 0.1713799,
-      "vol": 4719800,
-      "source": "Twelve Data"
+    "BX": {
+      "close": 127.75,
+      "prevclose": 128.07,
+      "pct": -0.2499,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "COPX": {
-      "close": 78.86000061035156,
-      "prevclose": 79.5,
-      "pct": -0.805030678803066,
-      "vol": 1340739
+    "C": {
+      "close": 132.45,
+      "prevclose": 132.32,
+      "pct": 0.0982,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "INDA": {
-      "close": 49.8,
-      "prevclose": 49.7,
-      "pct": 0.20120417,
-      "vol": 5261000,
-      "source": "Twelve Data"
+    "CBOE": {
+      "close": 310.23,
+      "prevclose": 296.52,
+      "pct": 4.6236,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "ANET": {
-      "close": 180.35001,
-      "prevclose": 171.020004,
-      "pct": 5.4555,
-      "vol": 8467900,
-      "source": "Twelve Data"
+    "CEG": {
+      "close": 262.75,
+      "prevclose": 263.56,
+      "pct": -0.3073,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "SGOV": {
-      "close": 100.71,
-      "prevclose": 100.69,
-      "pct": 0.019859611,
-      "vol": 28142200,
-      "source": "Twelve Data"
+    "CME": {
+      "close": 267.79,
+      "prevclose": 267.22,
+      "pct": 0.2133,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "IWF": {
-      "close": 118.32,
-      "prevclose": 117.43,
-      "pct": 0.7578978,
-      "vol": 4422600,
-      "source": "Twelve Data"
+    "CMG": {
+      "close": 37.22,
+      "prevclose": 38.52,
+      "pct": -3.3749,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "COIN": {
+      "close": 146.26,
+      "prevclose": 163.58,
+      "pct": -10.5881,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "COST": {
+      "close": 951.89,
+      "prevclose": 954.17,
+      "pct": -0.2389,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "DAL": {
+      "close": 87.44,
+      "prevclose": 88.59,
+      "pct": -1.2981,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "DHR": {
+      "close": 194.98,
+      "prevclose": 196.17,
+      "pct": -0.6066,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "DIA": {
+      "close": 524.32,
+      "prevclose": 521.51,
+      "pct": 0.5388,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "DLR": {
+      "close": 188.52,
+      "prevclose": 193.19,
+      "pct": -2.4173,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EEM": {
+      "close": 64.09,
+      "prevclose": 63.59,
+      "pct": 0.7863,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EFA": {
+      "close": 105.58,
+      "prevclose": 106.24,
+      "pct": -0.6212,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EQIX": {
+      "close": 1019.28,
+      "prevclose": 1047.53,
+      "pct": -2.6968,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "ETN": {
+      "close": 415.2,
+      "prevclose": 386.89,
+      "pct": 7.3173,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWA": {
+      "close": 29.34,
+      "prevclose": 29.82,
+      "pct": -1.6097,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWC": {
+      "close": 59.39,
+      "prevclose": 59.79,
+      "pct": -0.669,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWG": {
+      "close": 42.85,
+      "prevclose": 42.88,
+      "pct": -0.07,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWJ": {
+      "close": 92.39,
+      "prevclose": 93.29,
+      "pct": -0.9647,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWQ": {
+      "close": 46.55,
+      "prevclose": 46.47,
+      "pct": 0.1721,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWT": {
+      "close": 96.55,
+      "prevclose": 94.0,
+      "pct": 2.7128,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWU": {
+      "close": 48.41,
+      "prevclose": 48.68,
+      "pct": -0.5546,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
     "EWW": {
       "close": 76.81,
       "prevclose": 77.11,
-      "pct": -0.38905855,
-      "vol": 996600,
-      "source": "Twelve Data"
+      "pct": -0.3891,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWY": {
+      "close": 157.1,
+      "prevclose": 161.21,
+      "pct": -2.5495,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "EWZ": {
+      "close": 36.65,
+      "prevclose": 36.53,
+      "pct": 0.3285,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "FEZ": {
+      "close": 69.77,
+      "prevclose": 69.7,
+      "pct": 0.1004,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "FLY": {
+      "close": 20.33,
+      "prevclose": 20.29,
+      "pct": 0.1971,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "FXI": {
+      "close": 36.5,
+      "prevclose": 36.52,
+      "pct": -0.0548,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "GD": {
+      "close": 383.42,
+      "prevclose": 382.2,
+      "pct": 0.3192,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "GOOGL": {
+      "close": 356.13,
+      "prevclose": 333.66,
+      "pct": 6.7344,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "GOVT": {
+      "close": 22.45,
+      "prevclose": 22.51,
+      "pct": -0.2665,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "GS": {
+      "close": 1018.38,
+      "prevclose": 1024.86,
+      "pct": -0.6323,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "GSAT": {
+      "close": 83.38,
+      "prevclose": 80.09,
+      "pct": 4.1079,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "HD": {
+      "close": 331.96,
+      "prevclose": 333.35,
+      "pct": -0.417,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "HII": {
+      "close": 326.45,
+      "prevclose": 319.9,
+      "pct": 2.0475,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "HOOD": {
+      "close": 86.56,
+      "prevclose": 86.6,
+      "pct": -0.0462,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "HYG": {
+      "close": 79.48,
+      "prevclose": 79.47,
+      "pct": 0.0126,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IBKR": {
+      "close": 87.99,
+      "prevclose": 90.48,
+      "pct": -2.752,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "ICE": {
+      "close": 152.48,
+      "prevclose": 156.27,
+      "pct": -2.4253,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IEF": {
+      "close": 92.95,
+      "prevclose": 93.21,
+      "pct": -0.2789,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IEI": {
+      "close": 116.48,
+      "prevclose": 116.64,
+      "pct": -0.1372,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IJH": {
+      "close": 75.27,
+      "prevclose": 75.35,
+      "pct": -0.1062,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "INDA": {
+      "close": 49.8,
+      "prevclose": 49.7,
+      "pct": 0.2012,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IRDM": {
+      "close": 47.34,
+      "prevclose": 47.64,
+      "pct": -0.6297,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "ISRG": {
+      "close": 353.33,
+      "prevclose": 352.97,
+      "pct": 0.102,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IWD": {
+      "close": 251.82,
+      "prevclose": 250.71,
+      "pct": 0.4427,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IWF": {
+      "close": 118.32,
+      "prevclose": 117.43,
+      "pct": 0.7579,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IWM": {
+      "close": 291.2,
+      "prevclose": 292.59,
+      "pct": -0.4751,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "IWN": {
+      "close": 221.24,
+      "prevclose": 221.79,
+      "pct": -0.248,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "JNJ": {
+      "close": 256.35,
+      "prevclose": 255.82,
+      "pct": 0.2072,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "JNK": {
+      "close": 95.68,
+      "prevclose": 95.66,
+      "pct": 0.0209,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "JPM": {
+      "close": 351.79,
+      "prevclose": 350.85,
+      "pct": 0.2679,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "KKR": {
+      "close": 101.43,
+      "prevclose": 100.98,
+      "pct": 0.4456,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "KRMN": {
+      "close": 48.15,
+      "prevclose": 47.22,
+      "pct": 1.9695,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "KSA": {
+      "close": 36.96,
+      "prevclose": 36.92,
+      "pct": 0.1083,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "KTOS": {
+      "close": 46.6,
+      "prevclose": 46.17,
+      "pct": 0.9313,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "KWEB": {
+      "close": 28.49,
+      "prevclose": 28.06,
+      "pct": 1.5324,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "LHX": {
+      "close": 277.06,
+      "prevclose": 271.9,
+      "pct": 1.8978,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "LLY": {
+      "close": 1148.84,
+      "prevclose": 1154.97,
+      "pct": -0.5308,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "LMT": {
+      "close": 582.74,
+      "prevclose": 574.11,
+      "pct": 1.5032,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "LOW": {
+      "close": 207.81,
+      "prevclose": 210.08,
+      "pct": -1.0805,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "LQD": {
+      "close": 106.25,
+      "prevclose": 106.41,
+      "pct": -0.1504,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "LUNR": {
+      "close": 12.34,
+      "prevclose": 12.25,
+      "pct": 0.7347,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MCD": {
+      "close": 270.64,
+      "prevclose": 268.44,
+      "pct": 0.8196,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MCHI": {
+      "close": 55.8,
+      "prevclose": 55.5,
+      "pct": 0.5405,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MDY": {
+      "close": 686.32,
+      "prevclose": 687.19,
+      "pct": -0.1266,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "META": {
+      "close": 556.71,
+      "prevclose": 539.03,
+      "pct": 3.28,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MRK": {
+      "close": 130.2,
+      "prevclose": 129.79,
+      "pct": 0.3159,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MRVL": {
+      "close": 187.56,
+      "prevclose": 183.3,
+      "pct": 2.3241,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MS": {
+      "close": 210.42,
+      "prevclose": 210.06,
+      "pct": 0.1714,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MSFT": {
+      "close": 464.72,
+      "prevclose": 451.1,
+      "pct": 3.0193,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MTUM": {
+      "close": 299.59,
+      "prevclose": 298.77,
+      "pct": 0.2745,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MU": {
+      "close": 823.03,
+      "prevclose": 874.66,
+      "pct": -5.9029,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "MUB": {
+      "close": 105.64,
+      "prevclose": 105.76,
+      "pct": -0.1135,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "NOC": {
+      "close": 542.48,
+      "prevclose": 534.85,
+      "pct": 1.4266,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "NVDA": {
+      "close": 200.75,
+      "prevclose": 195.04,
+      "pct": 2.9276,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "NVO": {
+      "close": 47.08,
+      "prevclose": 51.61,
+      "pct": -8.7774,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "PFE": {
+      "close": 25.01,
+      "prevclose": 24.91,
+      "pct": 0.4014,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "PKW": {
+      "close": 146.98,
+      "prevclose": 146.82,
+      "pct": 0.109,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "PL": {
+      "close": 20.48,
+      "prevclose": 20.22,
+      "pct": 1.2859,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "PLTR": {
+      "close": 123.06,
+      "prevclose": 122.26,
+      "pct": 0.6543,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "PWR": {
+      "close": 667.36,
+      "prevclose": 657.98,
+      "pct": 1.4256,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "QQQ": {
+      "close": 687.99,
+      "prevclose": 683.55,
+      "pct": 0.6496,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "QUAL": {
+      "close": 219.32,
+      "prevclose": 218.92,
+      "pct": 0.1827,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "RCL": {
+      "close": 318.3,
+      "prevclose": 321.94,
+      "pct": -1.1307,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "RDW": {
+      "close": 8.62,
+      "prevclose": 8.47,
+      "pct": 1.771,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "REGN": {
+      "close": 762.63,
+      "prevclose": 738.34,
+      "pct": 3.2898,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "RKLB": {
+      "close": 64.95,
+      "prevclose": 64.68,
+      "pct": 0.4174,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "RSP": {
+      "close": 215.01,
+      "prevclose": 215.38,
+      "pct": -0.1718,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "RTX": {
+      "close": 215.22,
+      "prevclose": 214.38,
+      "pct": 0.3918,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SBUX": {
+      "close": 105.25,
+      "prevclose": 105.85,
+      "pct": -0.5668,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SCHD": {
+      "close": 33.47,
+      "prevclose": 33.41,
+      "pct": 0.1796,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SCHP": {
+      "close": 26.09,
+      "prevclose": 26.12,
+      "pct": -0.1149,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SCHW": {
+      "close": 105.24,
+      "prevclose": 104.33,
+      "pct": 0.8722,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SGOV": {
+      "close": 100.71,
+      "prevclose": 100.69,
+      "pct": 0.0199,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SHY": {
+      "close": 82.0,
+      "prevclose": 82.01,
+      "pct": -0.0122,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SPCX": {
+      "close": 108.37,
+      "prevclose": 112.2,
+      "pct": -3.4135,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SPHQ": {
+      "close": 84.67,
+      "prevclose": 85.07,
+      "pct": -0.4702,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SPIR": {
+      "close": 11.46,
+      "prevclose": 11.36,
+      "pct": 0.8803,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SPLV": {
+      "close": 76.23,
+      "prevclose": 76.38,
+      "pct": -0.1964,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "SPY": {
+      "close": 747.03,
+      "prevclose": 741.69,
+      "pct": 0.72,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
     "SRLN": {
       "close": 40.4,
       "prevclose": 40.39,
-      "pct": 0.024763893,
-      "vol": 742900,
-      "source": "Twelve Data"
+      "pct": 0.0248,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "TGT": {
+      "close": 144.49,
+      "prevclose": 144.51,
+      "pct": -0.0138,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "TIP": {
+      "close": 107.63,
+      "prevclose": 107.74,
+      "pct": -0.1021,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "TLT": {
+      "close": 82.25,
+      "prevclose": 82.8,
+      "pct": -0.6643,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
     "TMO": {
-      "close": 574.29999,
-      "prevclose": 576.77002,
-      "pct": -0.42825245,
-      "vol": 2112300,
-      "source": "Twelve Data"
+      "close": 574.3,
+      "prevclose": 576.77,
+      "pct": -0.4283,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "CBOE": {
-      "close": 310.23001,
-      "prevclose": 296.51999,
-      "pct": 4.62364,
-      "vol": 1696900,
-      "source": "Twelve Data"
+    "TSLA": {
+      "close": 311.21,
+      "prevclose": 308.85,
+      "pct": 0.7641,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "SLX": {
-      "close": 105.5199966430664,
-      "prevclose": 106.43000030517578,
-      "pct": -0.8550255186507979,
-      "vol": 11013
+    "TSM": {
+      "close": 404.25,
+      "prevclose": 403.31,
+      "pct": 0.2331,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "IWN": {
-      "close": 221.24001,
-      "prevclose": 221.78999,
-      "pct": -0.24797683,
-      "vol": 446400,
-      "source": "Twelve Data"
+    "UAL": {
+      "close": 121.33,
+      "prevclose": 123.56,
+      "pct": -1.8048,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     },
-    "BOTZ": {
-      "close": 35.29999923706055,
-      "prevclose": 34.900001525878906,
-      "pct": 1.1461251968285329,
-      "vol": 777991
+    "UNH": {
+      "close": 414.4,
+      "prevclose": 421.47,
+      "pct": -1.6775,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "USMV": {
+      "close": 97.93,
+      "prevclose": 97.84,
+      "pct": 0.092,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VCIT": {
+      "close": 81.26,
+      "prevclose": 81.38,
+      "pct": -0.1475,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VEA": {
+      "close": 70.62,
+      "prevclose": 71.09,
+      "pct": -0.6611,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VGK": {
+      "close": 90.59,
+      "prevclose": 90.99,
+      "pct": -0.4396,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VNM": {
+      "close": 16.98,
+      "prevclose": 17.37,
+      "pct": -2.2453,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VOO": {
+      "close": 686.65,
+      "prevclose": 681.79,
+      "pct": 0.7128,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VOYG": {
+      "close": 24.53,
+      "prevclose": 23.97,
+      "pct": 2.3363,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VRT": {
+      "close": 241.57,
+      "prevclose": 227.5,
+      "pct": 6.1846,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VRTX": {
+      "close": 477.1,
+      "prevclose": 481.7,
+      "pct": -0.955,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VSAT": {
+      "close": 76.93,
+      "prevclose": 77.6,
+      "pct": -0.8634,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VST": {
+      "close": 148.19,
+      "prevclose": 148.62,
+      "pct": -0.2893,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VT": {
+      "close": 155.86,
+      "prevclose": 155.45,
+      "pct": 0.2638,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VTI": {
+      "close": 368.21,
+      "prevclose": 366.27,
+      "pct": 0.5297,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VTV": {
+      "close": 219.95,
+      "prevclose": 220.54,
+      "pct": -0.2675,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VUG": {
+      "close": 85.2,
+      "prevclose": 84.27,
+      "pct": 1.1036,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VWO": {
+      "close": 58.75,
+      "prevclose": 58.19,
+      "pct": 0.9624,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VXUS": {
+      "close": 84.59,
+      "prevclose": 84.77,
+      "pct": -0.2123,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "VYM": {
+      "close": 161.96,
+      "prevclose": 161.96,
+      "pct": 0.0,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "WFC": {
+      "close": 86.45,
+      "prevclose": 85.43,
+      "pct": 1.194,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "WMT": {
+      "close": 111.2,
+      "prevclose": 111.1,
+      "pct": 0.09,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLB": {
+      "close": 50.43,
+      "prevclose": 51.64,
+      "pct": -2.3431,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLC": {
+      "close": 108.24,
+      "prevclose": 106.58,
+      "pct": 1.5575,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLE": {
+      "close": 59.55,
+      "prevclose": 58.96,
+      "pct": 1.0007,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLF": {
+      "close": 56.94,
+      "prevclose": 57.0,
+      "pct": -0.1053,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLI": {
+      "close": 179.84,
+      "prevclose": 178.39,
+      "pct": 0.8128,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLK": {
+      "close": 175.35,
+      "prevclose": 175.73,
+      "pct": -0.2162,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLP": {
+      "close": 85.05,
+      "prevclose": 85.47,
+      "pct": -0.4914,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLRE": {
+      "close": 45.07,
+      "prevclose": 45.3,
+      "pct": -0.5077,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLU": {
+      "close": 44.35,
+      "prevclose": 44.66,
+      "pct": -0.6941,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLV": {
+      "close": 162.55,
+      "prevclose": 163.52,
+      "pct": -0.5932,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "XLY": {
+      "close": 116.09,
+      "prevclose": 112.39,
+      "pct": 3.2921,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+    },
+    "YSS": {
+      "close": 14.73,
+      "prevclose": 15.26,
+      "pct": -3.4731,
+      "vol": null,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
     }
   }
 }
