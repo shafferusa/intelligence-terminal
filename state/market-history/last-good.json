@@ -1,1385 +1,1409 @@
 {
-  "fetched_at": "2026-08-03T05:52:00-04:00",
+  "fetched_at": "2026-08-03T16:20:00-04:00",
   "treasury_par_curve": {
-    "date": "2026-07-31",
-    "label": "EOD official (2026-07-31)",
-    "1M": 3.78,
-    "1.5M": 3.8,
-    "2M": 3.85,
-    "3M": 3.83,
-    "4M": 3.92,
-    "6M": 3.98,
-    "1Y": 4.08,
-    "2Y": 4.28,
-    "3Y": 4.34,
-    "5Y": 4.45,
-    "7Y": 4.59,
-    "10Y": 4.75,
-    "20Y": 5.28,
-    "30Y": 5.27,
+    "date": "2026-08-03",
+    "label": "EOD official (2026-08-03)",
+    "1M": 3.79,
+    "1.5M": 3.82,
+    "2M": 3.87,
+    "3M": 3.91,
+    "4M": 3.94,
+    "6M": 4.02,
+    "1Y": 4.07,
+    "2Y": 4.25,
+    "3Y": 4.32,
+    "5Y": 4.4,
+    "7Y": 4.54,
+    "10Y": 4.7,
+    "20Y": 5.23,
+    "30Y": 5.23,
     "spreads_bp": {
-      "2s10s": 47,
-      "3m10y": 92,
-      "5s30s": 82
+      "2s10s": 45,
+      "3m10y": 79,
+      "5s30s": 83
     }
   },
   "vix_complex": {
-    "as_of": "2026-07-31T16:15:01-04:00",
-    "label": "EOD official (Fri Jul 31 close)",
-    "VIX": 15.99,
-    "VIX9D": 13.05,
-    "VIX3M": 19.02,
-    "term_structure": "ordinary contango (VIX9D < VIX < VIX3M)",
-    "note": "week path: Mon 18.67, Tue 18.21, Wed 20.66, Thu 17.09, Fri 15.99"
+    "as_of": "2026-08-03T16:00:42-04:00",
+    "label": "EOD official (Mon Aug 3 close)",
+    "VIX": 15.71,
+    "VIX9D": null,
+    "VIX3M": null,
+    "term_structure": "not re-fetched this run (VIX close only); VIX9D/VIX3M carried from Friday (13.05/19.02) not refreshed",
+    "note": "week path: Tue 18.21, Wed 20.66, Thu 17.09, Fri 15.99, Mon 15.71"
   },
   "fx": {
-    "date": "2026-07-31",
-    "label": "EOD official (ECB reference, 2026-07-31)",
+    "date": "2026-08-03",
+    "label": "EOD official (ECB reference, 2026-08-03)",
     "base": "USD",
     "rates": {
-      "EUR": 0.8707,
-      "JPY": 160.24,
-      "GBP": 0.74508,
-      "CNY": 6.7513,
-      "CHF": 0.8101,
-      "CAD": 1.4041,
-      "AUD": 1.4249,
-      "MXN": 17.3715,
-      "BRL": 5.0583,
-      "INR": 95.39
+      "EUR": 0.86693,
+      "JPY": 156.68,
+      "GBP": 0.74238,
+      "CNY": 6.7526,
+      "CHF": 0.80798,
+      "CAD": 1.4028,
+      "AUD": 1.4272,
+      "MXN": 17.3207,
+      "BRL": 5.0675,
+      "INR": 95.34
     }
   },
   "crypto": {
-    "as_of": "2026-08-03T05:40:00-04:00",
+    "as_of": "2026-08-03T16:05:00-04:00",
     "label": "Live (CoinGecko aggregate, public endpoint, no COINGECKO_KEY configured)",
     "BTC": {
-      "usd": 62583,
-      "usd_24h_change": -1.006377226536195
+      "usd": 63848,
+      "usd_24h_change": 0.712089817500821
     },
     "ETH": {
-      "usd": 1841.44,
-      "usd_24h_change": -1.4867855675612494
+      "usd": 1869.46,
+      "usd_24h_change": -0.5805930612245018
     },
     "SOL": {
-      "usd": 72.43,
-      "usd_24h_change": -1.1106892352262283
+      "usd": 73.96,
+      "usd_24h_change": 0.42092112231413065
     },
     "ADA": {
-      "usd": 0.185839,
-      "usd_24h_change": -0.7078604462128764
+      "usd": 0.193826,
+      "usd_24h_change": 2.888534166184618
     },
-    "total_market_cap_usd": 2233822638601.959,
-    "btc_dominance_pct": 56.20002722039804
+    "total_market_cap_usd": 2268850934780.1226,
+    "btc_dominance_pct": 56.45701014091371
   },
   "indices_cash_close": {
-    "date": "2026-07-31",
-    "label": "EOD official (post-16:00 ET, this run's own Yahoo sweep, recomputed from close series not chartPreviousClose)",
+    "date": "2026-08-03",
+    "label": "EOD official (16:00 ET close, this run's own Yahoo sweep, close-series method)",
     "GSPC": {
-      "close": 7489.72021484375,
-      "prevclose": 7437.6298828125,
-      "pct": 0.7,
+      "close": 7600.49,
+      "prevclose": 7489.72,
+      "pct": 1.48,
       "vol": null
     },
     "IXIC": {
-      "close": 25373.849609375,
-      "prevclose": 25122.1796875,
-      "pct": 1.0,
+      "close": 25913.9,
+      "prevclose": 25373.85,
+      "pct": 2.13,
       "vol": null
     },
     "DJI": {
-      "close": 52485.03125,
-      "prevclose": 52208.05859375,
-      "pct": 0.53,
+      "close": 53178.41,
+      "prevclose": 52485.03,
+      "pct": 1.32,
       "vol": null
     },
     "RUT": {
-      "close": 2931.340087890625,
-      "prevclose": 2946.10009765625,
-      "pct": -0.5,
+      "close": 2983.61,
+      "prevclose": 2931.34,
+      "pct": 1.78,
       "vol": null
     },
     "TNX": {
-      "close": 4.745,
-      "prevclose": 4.641,
-      "pct": 1.76,
+      "close": 4.686,
+      "prevclose": 4.745,
+      "pct": -1.24,
       "vol": null
     }
   },
   "futures_and_commodities": {
-    "as_of": "2026-08-03T05:31:00-04:00",
-    "label": "Delayed +10m (Yahoo Finance), Monday premarket",
+    "as_of": "2026-08-03T16:00:00-04:00",
+    "label": "Close-series method (Yahoo Finance), Monday close",
     "CL": {
-      "close": 79.77,
-      "prevclose": 84.46,
-      "pct": -5.55
+      "close": 80.32,
+      "prevclose": 84.67,
+      "pct": -5.14
     },
     "GC": {
-      "close": 4104.5,
-      "prevclose": 4034.7,
-      "pct": 1.73
+      "close": 4111.2998,
+      "prevclose": 4049.1001,
+      "pct": 1.54
     },
     "NG": {
-      "close": 2.769,
-      "prevclose": 2.725,
-      "pct": 1.62
+      "close": 2.775,
+      "prevclose": 2.747,
+      "pct": 1.02
     },
     "HG": {
-      "close": 6.5285,
-      "prevclose": 6.2735,
-      "pct": 4.07
+      "close": 6.544,
+      "prevclose": 6.436,
+      "pct": 1.68
     },
     "EURUSD": {
-      "close": 1.153,
-      "prevclose": 1.1369,
-      "pct": 1.42
+      "close": 1.1514,
+      "prevclose": 1.1524,
+      "pct": -0.08
     },
     "ES": {
-      "close": 7556.75,
-      "prevclose": 7351.25,
-      "pct": 2.8
+      "close": 7634.75,
+      "prevclose": 7519.25,
+      "pct": 1.54
     },
     "NQ": {
-      "close": 28558.75,
-      "prevclose": 27342.0,
-      "pct": 4.45
+      "close": 28931.25,
+      "prevclose": 28404.25,
+      "pct": 1.86
     },
     "YM": {
-      "close": 52979.0,
-      "prevclose": 51765.0,
-      "pct": 2.35
+      "close": 53351.0,
+      "prevclose": 52635.0,
+      "pct": 1.36
     },
     "RTY": {
-      "close": 2956.5,
-      "prevclose": 2915.4,
-      "pct": 1.41
+      "close": 2993.1001,
+      "prevclose": 2938.0,
+      "pct": 1.88
     }
   },
   "sources_failed_this_run": [
-    "cdn.cboe.com options market-statistics put/call ratio (HTTP 403, recurring known path-shift issue)",
-    "api.twelvedata.com quote batch (HTTP 429 after first batch, 8-credit/minute limit; substituted full Yahoo Finance v8 sweep, 166/167 recovered)",
-    "Yahoo Finance FM ETF (no data returned, recurring known gap)"
+    "cdn.cboe.com options market-statistics put/call ratio (unreachable, recurring known path-shift issue)",
+    "api.twelvedata.com quote batch (HTTP 429 after first batch, 8-credit/minute limit; substituted full Yahoo Finance v8 sweep, 167/167 recovered)",
+    "cdn.finra.org Monday short-volume file (HTTP 403, not yet published as of cutoff; Friday Jul 31 file used as most recent available)",
+    "cisa.gov direct advisory/KEV fetch (HTTP 403)"
   ],
-  "technical_levels_2026-07-31": {
-    "label": "Twelve Data 60d time_series (SMA) + Yahoo 1y range (52w high/low), this run's own pull",
+  "methodology_note": "This run identified that Yahoo's chartPreviousClose meta field lags TWO trading sessions for index/futures/commodity/FX chart fetches (not just the equity watchlist, where this was already known). All pct changes in this file are computed from each instrument's own close-to-close series. See ledgers/corrections.json (found 2026-08-03) for the resulting correction to the 2026-08-03-am edition.",
+  "technical_levels_2026-08-03": {
     "SPY": {
-      "close": 747.030029,
-      "sma20": 745.69,
-      "dist_sma20_pct": 0.18,
-      "sma50": 744.99,
-      "dist_sma50_pct": 0.27,
+      "close": 757.64,
+      "dma20": 746.01,
+      "dist_dma20_pct": 1.56,
+      "dma50": 745.32,
+      "dist_dma50_pct": 1.65,
+      "dma200": 700.86,
+      "dist_dma200_pct": 8.1,
       "52w_high": 759.57,
-      "52w_low": 621.72
+      "52w_low": 627.97,
+      "n_days": 251
     },
     "QQQ": {
-      "close": 687.98999,
-      "sma20": 701.02,
-      "dist_sma20_pct": -1.86,
-      "sma50": 715.09,
-      "dist_sma50_pct": -3.79,
+      "close": 700.07,
+      "dma20": 699.88,
+      "dist_dma20_pct": 0.03,
+      "dma50": 714.83,
+      "dist_dma50_pct": -2.06,
+      "dma200": 645.55,
+      "dist_dma200_pct": 8.45,
       "52w_high": 746.16,
-      "52w_low": 553.88
+      "52w_low": 558.28,
+      "n_days": 251
     },
     "IWM": {
-      "close": 291.20001,
-      "sma20": 293.99,
-      "dist_sma20_pct": -0.95,
-      "sma50": 292.49,
-      "dist_sma50_pct": -0.44,
+      "close": 296.22,
+      "dma20": 293.85,
+      "dist_dma20_pct": 0.81,
+      "dma50": 292.82,
+      "dist_dma50_pct": 1.16,
+      "dma200": 266.1,
+      "dist_dma200_pct": 11.32,
       "52w_high": 300.45,
-      "52w_low": 214.92
+      "52w_low": 219.73,
+      "n_days": 251
     },
     "DIA": {
-      "close": 524.32001,
-      "sma20": 522.87,
-      "dist_sma20_pct": 0.28,
-      "sma50": 517.06,
-      "dist_sma50_pct": 1.4,
-      "52w_high": 530.09,
-      "52w_low": 435.72
+      "close": 531.29,
+      "dma20": 522.93,
+      "dist_dma20_pct": 1.6,
+      "dma50": 517.69,
+      "dist_dma50_pct": 2.63,
+      "dma200": 490.95,
+      "dist_dma200_pct": 8.22,
+      "52w_high": 531.29,
+      "52w_low": 439.72,
+      "n_days": 251
     },
     "TLT": {
-      "close": 82.25,
-      "sma20": 83.88,
-      "dist_sma20_pct": -1.95,
-      "sma50": 85.0,
-      "dist_sma50_pct": -3.23,
+      "close": 82.19,
+      "dma20": 83.72,
+      "dist_dma20_pct": -1.83,
+      "dma50": 84.97,
+      "dist_dma50_pct": -3.27,
+      "dma200": 87.22,
+      "dist_dma200_pct": -5.76,
       "52w_high": 92.06,
-      "52w_low": 82.25,
-      "note": "at 52-week low"
+      "52w_low": 82.19,
+      "n_days": 251
     },
     "SPCX": {
-      "close": 108.37,
-      "sma20": 128.81,
-      "dist_sma20_pct": -15.87,
-      "sma50": null,
-      "dist_sma50_pct": null,
+      "close": 114.53,
+      "dma20": 126.52,
+      "dist_dma20_pct": -9.47,
+      "dma50": null,
+      "dist_dma50_pct": null,
+      "dma200": null,
+      "dist_dma200_pct": null,
       "52w_high": 211.39,
       "52w_low": 108.37,
-      "note": "35 sessions since 2026-06-12 IPO; no 50-DMA yet; at all-time low"
+      "n_days": 35
     }
   },
-  "equity_quotes_close_2026-07-31": {
+  "equity_quotes_close_2026-08-03": {
     "AAPL": {
-      "close": 308.91,
-      "prevclose": 333.43,
-      "pct": -7.3539,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 303.23,
+      "prevclose": 308.91,
+      "pct": -1.84,
+      "vol": 60180729,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ABBV": {
-      "close": 250.94,
-      "prevclose": 257.41,
-      "pct": -2.5135,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 245.08,
+      "prevclose": 250.94,
+      "pct": -2.34,
+      "vol": 5777474,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ABNB": {
-      "close": 151.52,
-      "prevclose": 152.08,
-      "pct": -0.3682,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 150.63,
+      "prevclose": 151.52,
+      "pct": -0.59,
+      "vol": 2471758,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "AGG": {
-      "close": 97.37,
-      "prevclose": 97.62,
-      "pct": -0.2561,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 97.25,
+      "prevclose": 97.37,
+      "pct": -0.12,
+      "vol": 9813961,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "AMD": {
-      "close": 476.15,
-      "prevclose": 485.39,
-      "pct": -1.9036,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 484.46,
+      "prevclose": 476.15,
+      "pct": 1.75,
+      "vol": 21492076,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "AMZN": {
-      "close": 271.58,
-      "prevclose": 235.5,
-      "pct": 15.3206,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 284.041,
+      "prevclose": 271.58,
+      "pct": 4.59,
+      "vol": 79478714,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ANET": {
-      "close": 180.35,
-      "prevclose": 171.02,
-      "pct": 5.4555,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 184.84,
+      "prevclose": 180.35,
+      "pct": 2.49,
+      "vol": 7378292,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "APO": {
-      "close": 125.59,
-      "prevclose": 120.25,
-      "pct": 4.4407,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 129.52,
+      "prevclose": 125.59,
+      "pct": 3.13,
+      "vol": 3112234,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ARES": {
-      "close": 128.09,
-      "prevclose": 124.12,
-      "pct": 3.1985,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 138.5,
+      "prevclose": 128.09,
+      "pct": 8.13,
+      "vol": 3119245,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ASML": {
-      "close": 1629.0,
-      "prevclose": 1651.4399,
-      "pct": -1.3588,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 1642.17,
+      "prevclose": 1629.0,
+      "pct": 0.81,
+      "vol": 1330073,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ASTS": {
-      "close": 58.98,
-      "prevclose": 58.44,
-      "pct": 0.924,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 63.52,
+      "prevclose": 58.98,
+      "pct": 7.7,
+      "vol": 10198766,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "AVAV": {
-      "close": 149.37,
-      "prevclose": 146.57,
-      "pct": 1.9103,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 159.18,
+      "prevclose": 149.37,
+      "pct": 6.57,
+      "vol": 835959,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "AVGO": {
-      "close": 389.28,
-      "prevclose": 387.84,
-      "pct": 0.3713,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 392.23,
+      "prevclose": 389.28,
+      "pct": 0.76,
+      "vol": 16344441,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "AVUV": {
-      "close": 125.28,
-      "prevclose": 125.24,
-      "pct": 0.0319,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 127.09,
+      "prevclose": 125.28,
+      "pct": 1.44,
+      "vol": 1291408,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BA": {
-      "close": 216.14,
-      "prevclose": 220.9,
-      "pct": -2.1548,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 233.445,
+      "prevclose": 216.14,
+      "pct": 8.01,
+      "vol": 10015708,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BAC": {
-      "close": 61.95,
-      "prevclose": 61.73,
-      "pct": 0.3564,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 62.4908,
+      "prevclose": 61.95,
+      "pct": 0.87,
+      "vol": 18813868,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BIL": {
-      "close": 91.68,
-      "prevclose": 91.65,
-      "pct": 0.0327,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 91.41,
+      "prevclose": 91.68,
+      "pct": -0.29,
+      "vol": 21691049,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BKLN": {
-      "close": 20.39,
-      "prevclose": 20.38,
-      "pct": 0.0491,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 20.42,
+      "prevclose": 20.39,
+      "pct": 0.15,
+      "vol": 5583205,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BKNG": {
-      "close": 192.9,
-      "prevclose": 193.24,
-      "pct": -0.176,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 192.71,
+      "prevclose": 192.9,
+      "pct": -0.1,
+      "vol": 6900354,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BKSY": {
-      "close": 23.05,
-      "prevclose": 22.46,
-      "pct": 2.6269,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 23.92,
+      "prevclose": 23.05,
+      "pct": 3.77,
+      "vol": 798660,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BLK": {
-      "close": 1090.39,
-      "prevclose": 1098.37,
-      "pct": -0.7265,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 1126.61,
+      "prevclose": 1090.39,
+      "pct": 3.32,
+      "vol": 587756,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BND": {
-      "close": 72.23,
-      "prevclose": 72.42,
-      "pct": -0.2624,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 72.15,
+      "prevclose": 72.23,
+      "pct": -0.11,
+      "vol": 6692888,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BWXT": {
-      "close": 168.7,
-      "prevclose": 165.59,
-      "pct": 1.8781,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 173.83,
+      "prevclose": 168.7,
+      "pct": 3.04,
+      "vol": 972823,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "BX": {
-      "close": 127.75,
-      "prevclose": 128.07,
-      "pct": -0.2499,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 134.68,
+      "prevclose": 127.75,
+      "pct": 5.42,
+      "vol": 4674074,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "C": {
-      "close": 132.45,
-      "prevclose": 132.32,
-      "pct": 0.0982,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 133.565,
+      "prevclose": 132.45,
+      "pct": 0.84,
+      "vol": 6199411,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "CBOE": {
-      "close": 310.23,
-      "prevclose": 296.52,
-      "pct": 4.6236,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 298.8,
+      "prevclose": 310.23,
+      "pct": -3.68,
+      "vol": 851979,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "CEG": {
-      "close": 262.75,
-      "prevclose": 263.56,
-      "pct": -0.3073,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 273.69,
+      "prevclose": 262.75,
+      "pct": 4.16,
+      "vol": 1751655,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "CME": {
-      "close": 267.79,
-      "prevclose": 267.22,
-      "pct": 0.2133,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 266.17,
+      "prevclose": 267.79,
+      "pct": -0.6,
+      "vol": 1247108,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "CMG": {
-      "close": 37.22,
-      "prevclose": 38.52,
-      "pct": -3.3749,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 37.465,
+      "prevclose": 37.22,
+      "pct": 0.66,
+      "vol": 11530872,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "COIN": {
-      "close": 146.26,
-      "prevclose": 163.58,
-      "pct": -10.5881,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 146.5,
+      "prevclose": 146.26,
+      "pct": 0.16,
+      "vol": 9000773,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "COST": {
-      "close": 951.89,
-      "prevclose": 954.17,
-      "pct": -0.2389,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 954.08,
+      "prevclose": 951.89,
+      "pct": 0.23,
+      "vol": 1875918,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "DAL": {
-      "close": 87.44,
-      "prevclose": 88.59,
-      "pct": -1.2981,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 91.605,
+      "prevclose": 87.44,
+      "pct": 4.76,
+      "vol": 4572224,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "DHR": {
-      "close": 194.98,
-      "prevclose": 196.17,
-      "pct": -0.6066,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 197.57,
+      "prevclose": 194.98,
+      "pct": 1.33,
+      "vol": 2368366,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "DIA": {
-      "close": 524.32,
-      "prevclose": 521.51,
-      "pct": 0.5388,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 531.29,
+      "prevclose": 524.32,
+      "pct": 1.33,
+      "vol": 4099899,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "DLR": {
-      "close": 188.52,
-      "prevclose": 193.19,
-      "pct": -2.4173,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 191.19,
+      "prevclose": 188.52,
+      "pct": 1.42,
+      "vol": 1478210,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EEM": {
-      "close": 64.09,
-      "prevclose": 63.59,
-      "pct": 0.7863,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 64.33,
+      "prevclose": 64.09,
+      "pct": 0.37,
+      "vol": 21728195,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EFA": {
-      "close": 105.58,
-      "prevclose": 106.24,
-      "pct": -0.6212,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 106.02,
+      "prevclose": 105.58,
+      "pct": 0.42,
+      "vol": 8898463,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EQIX": {
-      "close": 1019.28,
-      "prevclose": 1047.53,
-      "pct": -2.6968,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 1031.4399,
+      "prevclose": 1019.28,
+      "pct": 1.19,
+      "vol": 513554,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ETN": {
-      "close": 415.2,
-      "prevclose": 386.89,
-      "pct": 7.3173,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 438.28,
+      "prevclose": 415.2,
+      "pct": 5.56,
+      "vol": 3160026,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWA": {
-      "close": 29.34,
-      "prevclose": 29.82,
-      "pct": -1.6097,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 29.395,
+      "prevclose": 29.34,
+      "pct": 0.19,
+      "vol": 1646079,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWC": {
-      "close": 59.39,
-      "prevclose": 59.79,
-      "pct": -0.669,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 59.64,
+      "prevclose": 59.39,
+      "pct": 0.42,
+      "vol": 2933490,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWG": {
-      "close": 42.85,
-      "prevclose": 42.88,
-      "pct": -0.07,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 43.385,
+      "prevclose": 42.85,
+      "pct": 1.25,
+      "vol": 997354,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWJ": {
-      "close": 92.39,
-      "prevclose": 93.29,
-      "pct": -0.9647,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 92.915,
+      "prevclose": 92.39,
+      "pct": 0.57,
+      "vol": 3853585,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWQ": {
-      "close": 46.55,
-      "prevclose": 46.47,
-      "pct": 0.1721,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 47.05,
+      "prevclose": 46.55,
+      "pct": 1.07,
+      "vol": 362689,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWT": {
-      "close": 96.55,
-      "prevclose": 94.0,
-      "pct": 2.7128,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 97.97,
+      "prevclose": 96.55,
+      "pct": 1.47,
+      "vol": 5185309,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWU": {
-      "close": 48.41,
-      "prevclose": 48.68,
-      "pct": -0.5546,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 48.25,
+      "prevclose": 48.41,
+      "pct": -0.33,
+      "vol": 1830634,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWW": {
-      "close": 76.81,
-      "prevclose": 77.11,
-      "pct": -0.3891,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 76.55,
+      "prevclose": 76.81,
+      "pct": -0.34,
+      "vol": 1276047,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWY": {
-      "close": 157.1,
-      "prevclose": 161.21,
-      "pct": -2.5495,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 160.18,
+      "prevclose": 157.1,
+      "pct": 1.96,
+      "vol": 19883613,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "EWZ": {
-      "close": 36.65,
-      "prevclose": 36.53,
-      "pct": 0.3285,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 36.42,
+      "prevclose": 36.65,
+      "pct": -0.63,
+      "vol": 13503967,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "FEZ": {
-      "close": 69.77,
-      "prevclose": 69.7,
-      "pct": 0.1004,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 70.485,
+      "prevclose": 69.77,
+      "pct": 1.02,
+      "vol": 719866,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "FLY": {
-      "close": 20.33,
-      "prevclose": 20.29,
-      "pct": 0.1971,
+      "close": 21.89,
+      "prevclose": 20.33,
+      "pct": 7.67,
+      "vol": 2741756,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
+    },
+    "FM": {
+      "close": 27.19,
+      "prevclose": null,
+      "pct": null,
       "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "FXI": {
-      "close": 36.5,
-      "prevclose": 36.52,
-      "pct": -0.0548,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 36.45,
+      "prevclose": 36.5,
+      "pct": -0.14,
+      "vol": 13082663,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "GD": {
-      "close": 383.42,
-      "prevclose": 382.2,
-      "pct": 0.3192,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 382.44,
+      "prevclose": 383.42,
+      "pct": -0.26,
+      "vol": 680963,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "GOOGL": {
-      "close": 356.13,
-      "prevclose": 333.66,
-      "pct": 6.7344,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 373.51,
+      "prevclose": 356.13,
+      "pct": 4.88,
+      "vol": 32761733,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "GOVT": {
-      "close": 22.45,
-      "prevclose": 22.51,
-      "pct": -0.2665,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 22.415,
+      "prevclose": 22.45,
+      "pct": -0.16,
+      "vol": 7557011,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "GS": {
-      "close": 1018.38,
-      "prevclose": 1024.86,
-      "pct": -0.6323,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 1027.29,
+      "prevclose": 1018.38,
+      "pct": 0.87,
+      "vol": 1344988,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "GSAT": {
-      "close": 83.38,
-      "prevclose": 80.09,
-      "pct": 4.1079,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 84.19,
+      "prevclose": 83.38,
+      "pct": 0.97,
+      "vol": 1771840,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "HD": {
-      "close": 331.96,
-      "prevclose": 333.35,
-      "pct": -0.417,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 339.97,
+      "prevclose": 331.96,
+      "pct": 2.41,
+      "vol": 2173948,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "HII": {
-      "close": 326.45,
-      "prevclose": 319.9,
-      "pct": 2.0475,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 325.64,
+      "prevclose": 326.45,
+      "pct": -0.25,
+      "vol": 447668,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "HOOD": {
-      "close": 86.56,
-      "prevclose": 86.6,
-      "pct": -0.0462,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 90.34,
+      "prevclose": 86.56,
+      "pct": 4.37,
+      "vol": 19327655,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "HYG": {
-      "close": 79.48,
-      "prevclose": 79.47,
-      "pct": 0.0126,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 79.31,
+      "prevclose": 79.48,
+      "pct": -0.21,
+      "vol": 29764320,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IBKR": {
-      "close": 87.99,
-      "prevclose": 90.48,
-      "pct": -2.752,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 87.75,
+      "prevclose": 87.99,
+      "pct": -0.27,
+      "vol": 4541657,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ICE": {
-      "close": 152.48,
-      "prevclose": 156.27,
-      "pct": -2.4253,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 151.77,
+      "prevclose": 152.48,
+      "pct": -0.47,
+      "vol": 4011342,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IEF": {
-      "close": 92.95,
-      "prevclose": 93.21,
-      "pct": -0.2789,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 92.82,
+      "prevclose": 92.95,
+      "pct": -0.14,
+      "vol": 5243745,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IEI": {
-      "close": 116.48,
-      "prevclose": 116.64,
-      "pct": -0.1372,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 116.22,
+      "prevclose": 116.48,
+      "pct": -0.22,
+      "vol": 1303660,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IJH": {
-      "close": 75.27,
-      "prevclose": 75.35,
-      "pct": -0.1062,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 76.09,
+      "prevclose": 75.27,
+      "pct": 1.09,
+      "vol": 5791966,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "INDA": {
-      "close": 49.8,
-      "prevclose": 49.7,
-      "pct": 0.2012,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 50.16,
+      "prevclose": 49.8,
+      "pct": 0.72,
+      "vol": 5070148,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IRDM": {
-      "close": 47.34,
-      "prevclose": 47.64,
-      "pct": -0.6297,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 48.32,
+      "prevclose": 47.34,
+      "pct": 2.07,
+      "vol": 1280676,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "ISRG": {
-      "close": 353.33,
-      "prevclose": 352.97,
-      "pct": 0.102,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 375.41,
+      "prevclose": 353.33,
+      "pct": 6.25,
+      "vol": 3421555,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IWD": {
-      "close": 251.82,
-      "prevclose": 250.71,
-      "pct": 0.4427,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 254.195,
+      "prevclose": 251.82,
+      "pct": 0.94,
+      "vol": 1883550,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IWF": {
-      "close": 118.32,
-      "prevclose": 117.43,
-      "pct": 0.7579,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 120.88,
+      "prevclose": 118.32,
+      "pct": 2.16,
+      "vol": 3868470,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IWM": {
-      "close": 291.2,
-      "prevclose": 292.59,
-      "pct": -0.4751,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 296.22,
+      "prevclose": 291.2,
+      "pct": 1.72,
+      "vol": 21669773,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "IWN": {
-      "close": 221.24,
-      "prevclose": 221.79,
-      "pct": -0.248,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 224.29,
+      "prevclose": 221.24,
+      "pct": 1.38,
+      "vol": 1269704,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "JNJ": {
-      "close": 256.35,
-      "prevclose": 255.82,
-      "pct": 0.2072,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 254.4472,
+      "prevclose": 256.35,
+      "pct": -0.74,
+      "vol": 5199335,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "JNK": {
-      "close": 95.68,
-      "prevclose": 95.66,
-      "pct": 0.0209,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 95.46,
+      "prevclose": 95.68,
+      "pct": -0.23,
+      "vol": 3373135,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "JPM": {
-      "close": 351.79,
-      "prevclose": 350.85,
-      "pct": 0.2679,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 352.63,
+      "prevclose": 351.79,
+      "pct": 0.24,
+      "vol": 4184777,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "KKR": {
-      "close": 101.43,
-      "prevclose": 100.98,
-      "pct": 0.4456,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 106.57,
+      "prevclose": 101.43,
+      "pct": 5.07,
+      "vol": 4182795,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "KRMN": {
-      "close": 48.15,
-      "prevclose": 47.22,
-      "pct": 1.9695,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 50.42,
+      "prevclose": 48.15,
+      "pct": 4.71,
+      "vol": 2318790,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "KSA": {
-      "close": 36.96,
-      "prevclose": 36.92,
-      "pct": 0.1083,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 37.665,
+      "prevclose": 36.96,
+      "pct": 1.91,
+      "vol": 486297,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "KTOS": {
-      "close": 46.6,
-      "prevclose": 46.17,
-      "pct": 0.9313,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 49.21,
+      "prevclose": 46.6,
+      "pct": 5.6,
+      "vol": 3086651,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "KWEB": {
-      "close": 28.49,
-      "prevclose": 28.06,
-      "pct": 1.5324,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 28.74,
+      "prevclose": 28.49,
+      "pct": 0.88,
+      "vol": 26724374,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "LHX": {
-      "close": 277.06,
-      "prevclose": 271.9,
-      "pct": 1.8978,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 277.86,
+      "prevclose": 277.06,
+      "pct": 0.29,
+      "vol": 3000541,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "LLY": {
-      "close": 1148.84,
-      "prevclose": 1154.97,
-      "pct": -0.5308,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 1121.255,
+      "prevclose": 1148.84,
+      "pct": -2.4,
+      "vol": 2493796,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "LMT": {
-      "close": 582.74,
-      "prevclose": 574.11,
-      "pct": 1.5032,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 586.22,
+      "prevclose": 582.74,
+      "pct": 0.6,
+      "vol": 975059,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "LOW": {
-      "close": 207.81,
-      "prevclose": 210.08,
-      "pct": -1.0805,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 212.105,
+      "prevclose": 207.81,
+      "pct": 2.07,
+      "vol": 1648330,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "LQD": {
-      "close": 106.25,
-      "prevclose": 106.41,
-      "pct": -0.1504,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 106.135,
+      "prevclose": 106.25,
+      "pct": -0.11,
+      "vol": 29026222,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "LUNR": {
-      "close": 12.34,
-      "prevclose": 12.25,
-      "pct": 0.7347,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 13.1,
+      "prevclose": 12.34,
+      "pct": 6.16,
+      "vol": 8597958,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MCD": {
-      "close": 270.64,
-      "prevclose": 268.44,
-      "pct": 0.8196,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 265.26,
+      "prevclose": 270.64,
+      "pct": -1.99,
+      "vol": 5993376,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MCHI": {
-      "close": 55.8,
-      "prevclose": 55.5,
-      "pct": 0.5405,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 55.9,
+      "prevclose": 55.8,
+      "pct": 0.18,
+      "vol": 2034714,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MDY": {
-      "close": 686.32,
-      "prevclose": 687.19,
-      "pct": -0.1266,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 693.9475,
+      "prevclose": 686.32,
+      "pct": 1.11,
+      "vol": 531305,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "META": {
-      "close": 556.71,
-      "prevclose": 539.03,
-      "pct": 3.28,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 590.24,
+      "prevclose": 556.71,
+      "pct": 6.02,
+      "vol": 24169883,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MRK": {
-      "close": 130.2,
-      "prevclose": 129.79,
-      "pct": 0.3159,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 127.81,
+      "prevclose": 130.2,
+      "pct": -1.84,
+      "vol": 8497537,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MRVL": {
-      "close": 187.56,
-      "prevclose": 183.3,
-      "pct": 2.3241,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 193.775,
+      "prevclose": 187.56,
+      "pct": 3.31,
+      "vol": 19390539,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MS": {
-      "close": 210.42,
-      "prevclose": 210.06,
-      "pct": 0.1714,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 211.22,
+      "prevclose": 210.42,
+      "pct": 0.38,
+      "vol": 3833058,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MSFT": {
-      "close": 464.72,
-      "prevclose": 451.1,
-      "pct": 3.0193,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 487.65,
+      "prevclose": 464.72,
+      "pct": 4.93,
+      "vol": 61678582,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MTUM": {
-      "close": 299.59,
-      "prevclose": 298.77,
-      "pct": 0.2745,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 301.68,
+      "prevclose": 299.59,
+      "pct": 0.7,
+      "vol": 1868129,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MU": {
-      "close": 823.03,
-      "prevclose": 874.66,
-      "pct": -5.9029,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 829.5,
+      "prevclose": 823.03,
+      "pct": 0.79,
+      "vol": 41515699,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "MUB": {
-      "close": 105.64,
-      "prevclose": 105.76,
-      "pct": -0.1135,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 105.45,
+      "prevclose": 105.64,
+      "pct": -0.18,
+      "vol": 2977287,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "NOC": {
-      "close": 542.48,
-      "prevclose": 534.85,
-      "pct": 1.4266,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 548.465,
+      "prevclose": 542.48,
+      "pct": 1.1,
+      "vol": 504525,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "NVDA": {
-      "close": 200.75,
-      "prevclose": 195.04,
-      "pct": 2.9276,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 206.64,
+      "prevclose": 200.75,
+      "pct": 2.93,
+      "vol": 122023844,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "NVO": {
-      "close": 47.08,
-      "prevclose": 51.61,
-      "pct": -8.7774,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 47.085,
+      "prevclose": 47.08,
+      "pct": 0.01,
+      "vol": 11014186,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "PFE": {
-      "close": 25.01,
-      "prevclose": 24.91,
-      "pct": 0.4014,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 25.045,
+      "prevclose": 25.01,
+      "pct": 0.14,
+      "vol": 34834084,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "PKW": {
-      "close": 146.98,
-      "prevclose": 146.82,
-      "pct": 0.109,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 147.87,
+      "prevclose": 146.98,
+      "pct": 0.61,
+      "vol": 24472,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "PL": {
-      "close": 20.48,
-      "prevclose": 20.22,
-      "pct": 1.2859,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 21.53,
+      "prevclose": 20.48,
+      "pct": 5.13,
+      "vol": 4823163,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "PLTR": {
-      "close": 123.06,
-      "prevclose": 122.26,
-      "pct": 0.6543,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 125.65,
+      "prevclose": 123.06,
+      "pct": 2.1,
+      "vol": 50311886,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "PWR": {
-      "close": 667.36,
-      "prevclose": 657.98,
-      "pct": 1.4256,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 680.23,
+      "prevclose": 667.36,
+      "pct": 1.93,
+      "vol": 880849,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "QQQ": {
-      "close": 687.99,
-      "prevclose": 683.55,
-      "pct": 0.6496,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 700.07,
+      "prevclose": 687.99,
+      "pct": 1.76,
+      "vol": 42678061,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "QUAL": {
-      "close": 219.32,
-      "prevclose": 218.92,
-      "pct": 0.1827,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 221.71,
+      "prevclose": 219.32,
+      "pct": 1.09,
+      "vol": 746958,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "RCL": {
-      "close": 318.3,
-      "prevclose": 321.94,
-      "pct": -1.1307,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 323.95,
+      "prevclose": 318.3,
+      "pct": 1.78,
+      "vol": 1626617,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "RDW": {
-      "close": 8.62,
-      "prevclose": 8.47,
-      "pct": 1.771,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 9.635,
+      "prevclose": 8.62,
+      "pct": 11.77,
+      "vol": 17085675,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "REGN": {
-      "close": 762.63,
-      "prevclose": 738.34,
-      "pct": 3.2898,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 759.24,
+      "prevclose": 762.63,
+      "pct": -0.44,
+      "vol": 818806,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "RKLB": {
-      "close": 64.95,
-      "prevclose": 64.68,
-      "pct": 0.4174,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 70.43,
+      "prevclose": 64.95,
+      "pct": 8.44,
+      "vol": 15993323,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "RSP": {
-      "close": 215.01,
-      "prevclose": 215.38,
-      "pct": -0.1718,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 217.135,
+      "prevclose": 215.01,
+      "pct": 0.99,
+      "vol": 8217736,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "RTX": {
-      "close": 215.22,
-      "prevclose": 214.38,
-      "pct": 0.3918,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 216.63,
+      "prevclose": 215.22,
+      "pct": 0.66,
+      "vol": 2281519,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SBUX": {
-      "close": 105.25,
-      "prevclose": 105.85,
-      "pct": -0.5668,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 103.37,
+      "prevclose": 105.25,
+      "pct": -1.79,
+      "vol": 8623124,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SCHD": {
-      "close": 33.47,
-      "prevclose": 33.41,
-      "pct": 0.1796,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 33.55,
+      "prevclose": 33.47,
+      "pct": 0.24,
+      "vol": 24028860,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SCHP": {
-      "close": 26.09,
-      "prevclose": 26.12,
-      "pct": -0.1149,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 25.885,
+      "prevclose": 26.09,
+      "pct": -0.79,
+      "vol": 7124975,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SCHW": {
-      "close": 105.24,
-      "prevclose": 104.33,
-      "pct": 0.8722,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 105.86,
+      "prevclose": 105.24,
+      "pct": 0.59,
+      "vol": 4401782,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SGOV": {
-      "close": 100.71,
-      "prevclose": 100.69,
-      "pct": 0.0199,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 100.4277,
+      "prevclose": 100.71,
+      "pct": -0.28,
+      "vol": 34021927,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SHY": {
-      "close": 82.0,
-      "prevclose": 82.01,
-      "pct": -0.0122,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 81.77,
+      "prevclose": 82.0,
+      "pct": -0.28,
+      "vol": 4513052,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SPCX": {
-      "close": 108.37,
-      "prevclose": 112.2,
-      "pct": -3.4135,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 114.53,
+      "prevclose": 108.37,
+      "pct": 5.68,
+      "vol": 67113708,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SPHQ": {
-      "close": 84.67,
-      "prevclose": 85.07,
-      "pct": -0.4702,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 85.11,
+      "prevclose": 84.67,
+      "pct": 0.52,
+      "vol": 1329900,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SPIR": {
-      "close": 11.46,
-      "prevclose": 11.36,
-      "pct": 0.8803,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 12.285,
+      "prevclose": 11.46,
+      "pct": 7.2,
+      "vol": 518450,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SPLV": {
-      "close": 76.23,
-      "prevclose": 76.38,
-      "pct": -0.1964,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 76.22,
+      "prevclose": 76.23,
+      "pct": -0.01,
+      "vol": 2868789,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SPY": {
-      "close": 747.03,
-      "prevclose": 741.69,
-      "pct": 0.72,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 757.64,
+      "prevclose": 747.03,
+      "pct": 1.42,
+      "vol": 51941340,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "SRLN": {
-      "close": 40.4,
-      "prevclose": 40.39,
-      "pct": 0.0248,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 40.24,
+      "prevclose": 40.4,
+      "pct": -0.4,
+      "vol": 1609026,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "TGT": {
-      "close": 144.49,
-      "prevclose": 144.51,
-      "pct": -0.0138,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 149.34,
+      "prevclose": 144.49,
+      "pct": 3.36,
+      "vol": 3457457,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "TIP": {
-      "close": 107.63,
-      "prevclose": 107.74,
-      "pct": -0.1021,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 106.855,
+      "prevclose": 107.63,
+      "pct": -0.72,
+      "vol": 2421477,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "TLT": {
-      "close": 82.25,
-      "prevclose": 82.8,
-      "pct": -0.6643,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 82.19,
+      "prevclose": 82.25,
+      "pct": -0.07,
+      "vol": 31336888,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "TMO": {
-      "close": 574.3,
-      "prevclose": 576.77,
-      "pct": -0.4283,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 574.0,
+      "prevclose": 574.3,
+      "pct": -0.05,
+      "vol": 1294863,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "TSLA": {
-      "close": 311.21,
-      "prevclose": 308.85,
-      "pct": 0.7641,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 322.08,
+      "prevclose": 311.21,
+      "pct": 3.49,
+      "vol": 37162483,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "TSM": {
-      "close": 404.25,
-      "prevclose": 403.31,
-      "pct": 0.2331,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 406.19,
+      "prevclose": 404.25,
+      "pct": 0.48,
+      "vol": 11345582,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "UAL": {
-      "close": 121.33,
-      "prevclose": 123.56,
-      "pct": -1.8048,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 128.39,
+      "prevclose": 121.33,
+      "pct": 5.82,
+      "vol": 4187657,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "UNH": {
-      "close": 414.4,
-      "prevclose": 421.47,
-      "pct": -1.6775,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 415.415,
+      "prevclose": 414.4,
+      "pct": 0.24,
+      "vol": 2450932,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "USMV": {
-      "close": 97.93,
-      "prevclose": 97.84,
-      "pct": 0.092,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 98.21,
+      "prevclose": 97.93,
+      "pct": 0.29,
+      "vol": 3346822,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VCIT": {
-      "close": 81.26,
-      "prevclose": 81.38,
-      "pct": -0.1475,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 81.11,
+      "prevclose": 81.26,
+      "pct": -0.18,
+      "vol": 8462385,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VEA": {
-      "close": 70.62,
-      "prevclose": 71.09,
-      "pct": -0.6611,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 71.04,
+      "prevclose": 70.62,
+      "pct": 0.59,
+      "vol": 7341755,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VGK": {
-      "close": 90.59,
-      "prevclose": 90.99,
-      "pct": -0.4396,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 90.94,
+      "prevclose": 90.59,
+      "pct": 0.39,
+      "vol": 2575750,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VNM": {
-      "close": 16.98,
-      "prevclose": 17.37,
-      "pct": -2.2453,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 17.508,
+      "prevclose": 16.98,
+      "pct": 3.11,
+      "vol": 716042,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VOO": {
-      "close": 686.65,
-      "prevclose": 681.79,
-      "pct": 0.7128,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 696.43,
+      "prevclose": 686.65,
+      "pct": 1.42,
+      "vol": 6732336,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VOYG": {
-      "close": 24.53,
-      "prevclose": 23.97,
-      "pct": 2.3363,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 28.11,
+      "prevclose": 24.53,
+      "pct": 14.59,
+      "vol": 1508188,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VRT": {
-      "close": 241.57,
-      "prevclose": 227.5,
-      "pct": 6.1846,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 263.08,
+      "prevclose": 241.57,
+      "pct": 8.9,
+      "vol": 8404632,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VRTX": {
-      "close": 477.1,
-      "prevclose": 481.7,
-      "pct": -0.955,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 470.72,
+      "prevclose": 477.1,
+      "pct": -1.34,
+      "vol": 1450928,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VSAT": {
-      "close": 76.93,
-      "prevclose": 77.6,
-      "pct": -0.8634,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 81.29,
+      "prevclose": 76.93,
+      "pct": 5.67,
+      "vol": 3473797,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VST": {
-      "close": 148.19,
-      "prevclose": 148.62,
-      "pct": -0.2893,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 155.92,
+      "prevclose": 148.19,
+      "pct": 5.22,
+      "vol": 3503988,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VT": {
-      "close": 155.86,
-      "prevclose": 155.45,
-      "pct": 0.2638,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 157.595,
+      "prevclose": 155.86,
+      "pct": 1.11,
+      "vol": 2381631,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VTI": {
-      "close": 368.21,
-      "prevclose": 366.27,
-      "pct": 0.5297,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 373.85,
+      "prevclose": 368.21,
+      "pct": 1.53,
+      "vol": 3245172,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VTV": {
-      "close": 219.95,
-      "prevclose": 220.54,
-      "pct": -0.2675,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 221.02,
+      "prevclose": 219.95,
+      "pct": 0.49,
+      "vol": 3023837,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VUG": {
-      "close": 85.2,
-      "prevclose": 84.27,
-      "pct": 1.1036,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 87.08,
+      "prevclose": 85.2,
+      "pct": 2.21,
+      "vol": 7457647,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VWO": {
-      "close": 58.75,
-      "prevclose": 58.19,
-      "pct": 0.9624,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 59.07,
+      "prevclose": 58.75,
+      "pct": 0.54,
+      "vol": 9131985,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VXUS": {
-      "close": 84.59,
-      "prevclose": 84.77,
-      "pct": -0.2123,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 85.02,
+      "prevclose": 84.59,
+      "pct": 0.51,
+      "vol": 4852924,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "VYM": {
-      "close": 161.96,
+      "close": 162.765,
       "prevclose": 161.96,
-      "pct": 0.0,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "pct": 0.5,
+      "vol": 1702236,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "WFC": {
-      "close": 86.45,
-      "prevclose": 85.43,
-      "pct": 1.194,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 87.885,
+      "prevclose": 86.45,
+      "pct": 1.66,
+      "vol": 8098437,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "WMT": {
-      "close": 111.2,
-      "prevclose": 111.1,
-      "pct": 0.09,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 110.71,
+      "prevclose": 111.2,
+      "pct": -0.44,
+      "vol": 22846671,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLB": {
-      "close": 50.43,
-      "prevclose": 51.64,
-      "pct": -2.3431,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 51.02,
+      "prevclose": 50.43,
+      "pct": 1.17,
+      "vol": 11684218,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLC": {
-      "close": 108.24,
-      "prevclose": 106.58,
-      "pct": 1.5575,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 111.305,
+      "prevclose": 108.24,
+      "pct": 2.83,
+      "vol": 7141485,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLE": {
-      "close": 59.55,
-      "prevclose": 58.96,
-      "pct": 1.0007,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 58.77,
+      "prevclose": 59.55,
+      "pct": -1.31,
+      "vol": 25487808,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLF": {
-      "close": 56.94,
-      "prevclose": 57.0,
-      "pct": -0.1053,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 57.37,
+      "prevclose": 56.94,
+      "pct": 0.76,
+      "vol": 30468580,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLI": {
-      "close": 179.84,
-      "prevclose": 178.39,
-      "pct": 0.8128,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 183.13,
+      "prevclose": 179.84,
+      "pct": 1.83,
+      "vol": 8650959,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLK": {
-      "close": 175.35,
-      "prevclose": 175.73,
-      "pct": -0.2162,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 178.15,
+      "prevclose": 175.35,
+      "pct": 1.6,
+      "vol": 9115877,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLP": {
-      "close": 85.05,
-      "prevclose": 85.47,
-      "pct": -0.4914,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 84.85,
+      "prevclose": 85.05,
+      "pct": -0.24,
+      "vol": 11676080,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLRE": {
-      "close": 45.07,
-      "prevclose": 45.3,
-      "pct": -0.5077,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 45.175,
+      "prevclose": 45.07,
+      "pct": 0.23,
+      "vol": 7353843,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLU": {
-      "close": 44.35,
-      "prevclose": 44.66,
-      "pct": -0.6941,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 44.375,
+      "prevclose": 44.35,
+      "pct": 0.06,
+      "vol": 24575769,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLV": {
-      "close": 162.55,
-      "prevclose": 163.52,
-      "pct": -0.5932,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 162.26,
+      "prevclose": 162.55,
+      "pct": -0.18,
+      "vol": 10784250,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "XLY": {
-      "close": 116.09,
-      "prevclose": 112.39,
-      "pct": 3.2921,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 118.22,
+      "prevclose": 116.09,
+      "pct": 1.83,
+      "vol": 9710889,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     },
     "YSS": {
-      "close": 14.73,
-      "prevclose": 15.26,
-      "pct": -3.4731,
-      "vol": null,
-      "source": "Yahoo Finance (fallback, Twelve Data rate-limited)"
+      "close": 14.24,
+      "prevclose": 14.73,
+      "pct": -3.33,
+      "vol": 1767146,
+      "source": "Yahoo Finance (fallback, Twelve Data rate-limited; close-series method)"
     }
   }
 }
