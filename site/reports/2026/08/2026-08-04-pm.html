@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference.
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are; that tag appears
+     exactly once in this file, below in <head>).
+  4. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  5. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix:
+      reports/2026/07/2026-07-24-am.html  ->  ../../../assets/style.css
+                                          ->  ../../../equations/eq_011.png
+                                          ->  ../../../index.html
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  The sample content between the markers is a design reference showing every
+  structural element of a weekday MORNING report (SPEC.md section 18). All
+  figures in it are ILLUSTRATIVE ONLY and are labeled as sample data.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Tue, Aug 4, 2026 · Logan's Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-04",
+    "slot": "pm",
+    "title": "Closing Brief — Tue, Aug 4, 2026",
+    "path": "reports/2026/08/2026-08-04-pm.html",
+    "summary": "Palantir's blowout Q2 (+29.5%) leads a broad, mega-cap-tilted rally as JOLTS softens and oil extends its slide on Iran-Hormuz de-escalation framing even as a fourth Hormuz vessel is struck; Blanche's AG nomination clears committee 12-10, Iran-linked water cyberattacks expand to 12 states amid a Trump-vs-officials attribution dispute, and SpaceX's first public earnings land after this report's cutoff.",
+    "reading_minutes": 46,
+    "generated_at": "2026-08-04T16:30:00-04:00",
+    "news_cutoff": "2026-08-04T16:15:00-04:00",
+    "market_data_asof": "2026-08-04T16:00:00-04:00",
+    "timezone": "America/New_York",
+    "version": "1.0",
+    "confidence": "High",
+    "market_status": "Closed (NYSE closed 4:00 PM ET; regular full session)"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+<!--REPORT:START-->
+
+    <!-- ================= 1. HEADER & FINAL-DATA STATUS ================= -->
+    <header class="report-header">
+      <span class="kicker">Weekday Closing Report</span>
+      <h1>Closing Brief</h1>
+      <p class="report-type-line">Tuesday, August 4, 2026 &middot; Generated 4:30 PM ET &middot; All times Eastern (America/New_York)</p>
+      <div class="report-chips">
+        <span class="chip chip--info">Overall confidence: High</span>
+        <span class="chip chip--warn">Markets: closing / after-hours</span>
+      </div>
+      <dl class="meta-grid">
+        <div><dt>News cutoff</dt><dd>2026-08-04 16:15 ET</dd></div>
+        <div><dt>Market data as of</dt><dd>2026-08-04 16:00 ET (equities EOD official; some series sampled ~15:45 ET, see freshness table)</dd></div>
+        <div><dt>Report version</dt><dd>1.0</dd></div>
+        <div><dt>Reading time</dt><dd>~46 minutes</dd></div>
+        <div><dt>Market status</dt><dd>Closed (NYSE closed 4:00 PM ET; regular full session, no holiday/early close)</dd></div>
+      </dl>
+      <p class="small muted" style="margin-top:0.8rem">2 sources unavailable this run &mdash; see System health.</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Data freshness by source &middot; Tuesday, Aug 4, 2026</caption>
+          <thead><tr><th>Source</th><th>Freshness label</th><th>Data age</th></tr></thead>
+          <tbody>
+            <tr><td>Equities (Yahoo Finance, close-series method)</td><td class="txt"><span class="dd dd-ok">EOD official</span></td><td>~15 min</td></tr>
+            <tr><td>Twelve Data (technical levels only)</td><td class="txt"><span class="dd dd-ok">Delayed</span></td><td>~10 min</td></tr>
+            <tr><td>Treasury par yield curve</td><td class="txt"><span class="dd">EOD official (2026-08-03)</span></td><td>1 session</td></tr>
+            <tr><td>FRED (CPI, PAYEMS, rates series)</td><td class="txt"><span class="dd">EOD official</span></td><td>varies by series</td></tr>
+            <tr><td>Cboe VIX complex</td><td class="txt"><span class="dd dd-ok">Delayed (+15 min)</span></td><td>~15 min</td></tr>
+            <tr><td>Frankfurter FX (ECB reference)</td><td class="txt"><span class="dd">EOD official (2026-08-04 fix)</span></td><td>same-day</td></tr>
+            <tr><td>CoinGecko crypto</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>&lt;1 min</td></tr>
+            <tr><td>FINRA daily short volume</td><td class="txt"><span class="dd">EOD official (2026-08-03 session)</span></td><td>1 session (T+1 publication lag)</td></tr>
+            <tr><td>SEC EDGAR 8-K feeds</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>&lt;1 hr</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </header>
+
+    <!-- ================= 2. TOP STORIES SINCE MORNING ================= -->
+    <section class="report-section" aria-labelledby="s-top">
+      <h2 id="s-top"><span class="kicker">Section 2</span>Top Stories Since Morning</h2>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Palantir's &ldquo;otherworldly&rdquo; Q2 sparks a market-wide AI-software rally &mdash; stock closes near +30%</h3>
+        <p class="story-times">Event ~07:00 ET (pre-market release) &middot; Published 07:00&ndash;09:00 ET &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Palantir (PLTR) reported Q2 2026 adjusted EPS of $0.41 (vs. $0.35 consensus) on revenue of $1.935B, up 93% year-over-year and above the $1.8B estimate. US revenue rose 115% to $1.573B, including US commercial revenue up 149% to $764M; US government revenue rose 90% to $809M. The company raised full-year 2026 revenue guidance to $8.150&ndash;8.158B and adjusted free-cash-flow guidance to $4.5&ndash;4.7B. CEO Alex Karp called the quarter &ldquo;otherworldly.&rdquo;</dd>
+          <dt>Why it matters</dt>
+          <dd>PLTR closed the session +29.5% (this run&rsquo;s data), the single largest mover in the entire watchlist today, and is widely cited by market commentary as a lead driver of Tuesday&rsquo;s broad risk-on tape alongside falling oil prices and JOLTS.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The EPS/revenue beat and guidance raise, from the company&rsquo;s own release; the closing stock move, from this run&rsquo;s own Yahoo Finance data.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the magnitude of the move (rivaling some of the largest single-day gains this watchlist has recorded) proves durable once the initial reaction settles; Citi raised its price target from $200 to $245 same-day, an early data point on sell-side reaction.</dd>
+          <dt>Context</dt>
+          <dd>Palantir has been one of the most-watched names in the AI-infrastructure trade; this print lands two days into a week already carrying SpaceX&rsquo;s first-ever public earnings (tonight) and AMD&rsquo;s after today&rsquo;s close.</dd>
+          <dt>Impact</dt>
+          <dd>Markets: broad-based lift to AI/software-adjacent names and the Nasdaq. Companies: reinforces the &ldquo;AI demand is real&rdquo; narrative distinct from yesterday&rsquo;s chip-rebound story.</dd>
+          <dt>What happens next</dt>
+          <dd>AMD reports after today&rsquo;s close; markets will parse whether AI-capex enthusiasm holds through the rest of this earnings week.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">PLTR, QQQ, XLK, NVDA, AMD</dd>
+        </dl>
+        <p class="story-sources">Sources: Palantir Q2 2026 earnings release (primary) &middot; Proactive Investors &middot; Yahoo Finance &middot; TheStreet &middot; TradingKey &middot; MarketScreener &middot; this run&rsquo;s own Yahoo Finance fetch (primary, closing price).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>The scale of Palantir&rsquo;s beat &mdash; a 93% revenue growth rate at a company already valued for high growth &mdash; is unusual enough that some of today&rsquo;s move likely reflects a re-rating of the multiple rather than pure EPS mechanics. US commercial revenue growth (+149%) is the standout line: it suggests enterprise AI deployment revenue is scaling beyond the government-contract base Palantir was long known for. The report coincided with, but was not necessarily driven by, the morning&rsquo;s softer JOLTS print and falling oil prices &mdash; several factors were in play, and this report does not assert a single confirmed catalyst for the market-wide portion of today&rsquo;s rally.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-developing">Developing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>SpaceX reports its first-ever public earnings after tonight&rsquo;s close; stock closes +9.4% into the print</h3>
+        <p class="story-times">Report due ~16:30 ET webcast &middot; Last checked 16:15 ET (before release)</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>SpaceX (SPCX) closes its first public quarterly reporting cycle today, with results due via a 4:30 PM ET audio-only webcast &mdash; after this report&rsquo;s cutoff. Sell-side consensus (Finnhub): revenue ~$7.07B, EPS &minus;$0.26 (wide range &minus;$1.26 to +$0.33). Analysts are watching Starlink/Connectivity subscriber growth (Morgan Stanley estimate ~12M) and ARPU (~$65.50/mo), and whether the AI segment (xAI/Grok/X, ~$2.18B consensus revenue against a Q1 operating loss near $2.5B) can offset its capital intensity. Polymarket contracts assign roughly 69&ndash;70% probability to a miss.</dd>
+          <dt>Why it matters</dt>
+          <dd>This is SpaceX&rsquo;s first disclosure of financials as a public company, two trading days before the ~Aug 6 lockup expiration that unlocks up to ~911.5M shares (~$116B), expanding tradeable float from ~4.9% to ~12% of shares outstanding.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The report timing and consensus estimates (Finnhub, multiple previews). Some aggregator pages displayed purported actual results (revenue $6.93B, EPS &minus;$0.26) during this run&rsquo;s research pass, hours before the scheduled release &mdash; those figures could not be corroborated against SpaceX&rsquo;s own investor-relations page as of this report&rsquo;s cutoff and are explicitly <strong>not</strong> treated as confirmed results here.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>The actual results, which post-date this report&rsquo;s news cutoff; they will be covered in tomorrow&rsquo;s Morning Brief.</dd>
+          <dt>Context</dt>
+          <dd>The entire space-sector watchlist rallied again today (SPCX +9.43%, ASTS +11.1%, RDW +10.3%, SPIR +10.0%, LUNR +8.4%, RKLB +6.4%) &mdash; this run&rsquo;s research found an explicit, documented catalyst for today&rsquo;s move (positioning ahead of SpaceX&rsquo;s print) rather than the unexplained rally flagged in yesterday&rsquo;s edition. Voyager Technologies (VOYG) was the standout at +19.5% on its own Q2 double-beat and raised guidance (see Business &amp; Corporate).</dd>
+          <dt>Impact</dt>
+          <dd>Markets: single most-anticipated earnings event this watchlist tracks all week. Companies: read-through for the broader space-sector complex and for how public markets price SpaceX&rsquo;s AI-infrastructure bet via xAI.</dd>
+          <dt>What happens next</dt>
+          <dd>Results and the earnings call expected ~4:30&ndash;5:30 PM ET tonight; full coverage in tomorrow&rsquo;s 7:30 AM Morning Brief. Lockup expiration follows Thursday, Aug 6.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">SPCX, RKLB, ASTS, LUNR, RDW, VOYG</dd>
+        </dl>
+        <p class="story-sources">Sources: Finnhub earnings calendar (primary, consensus) &middot; Forbes &middot; CBS News &middot; Motley Fool &middot; Investing.com &middot; Morgan Stanley research note (via Yahoo Finance) &middot; EBC Financial Group &middot; Benzinga &middot; 24/7 Wall St. &middot; this run&rsquo;s own Yahoo Finance fetch (primary, closing prices).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>Macquarie reiterated an Outperform rating with a $250 price target in late July, framing the recent pullback (SPCX touched an all-time low of $108.37 last week) as a buying opportunity on a sum-of-the-parts view blending launch economics with AI-compute revenue. Whichever way tonight&rsquo;s print lands, the more consequential event for the stock&rsquo;s supply-demand balance may be Thursday&rsquo;s lockup expiration, which will roughly double-plus the public float from a very small starting base &mdash; a mechanical overhang independent of the fundamentals in tonight&rsquo;s report.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Iran hardens its deal denial for a fourth day as a fourth Hormuz-area vessel is struck; Iran-Oman reopening talks reportedly advance</h3>
+        <p class="story-times">Baghaei press conference ~mid-day ET &middot; Minoan Pioneer incident 22:10 UTC Aug 3 (~18:10 ET) &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Iranian Foreign Ministry spokesperson Esmail Baghaei repeated, on the record, that Iran is not holding negotiations with the US, saying Iran&rsquo;s only active channel is with Oman and is focused solely on safe Strait of Hormuz passage, with no plans to send negotiators abroad. Separately, UKMTO relayed a mayday call after an unidentified projectile struck the Liberia-flagged dry bulk carrier <em>Minoan Pioneer</em> in Omani territorial waters Monday evening, sparking a fire and leaving one seafarer reported missing &mdash; a fourth distinct vessel incident, after Gaslog Salem, Gaslog Shanghai, and Velos Amber. Separately, multiple outlets report Iran and Oman are close to a deal on split-control Hormuz shipping corridors with a security fee; Treasury Secretary Bessent said a deal &ldquo;by Wednesday&rdquo; could help stabilize energy prices, while Trump said Monday he opposes any tolling scheme.</dd>
+          <dt>Why it matters</dt>
+          <dd>Confirms forecast 2026-08-04-am-3 (a fourth Hormuz-area incident by Aug 11) far earlier than the horizon implied; the attribution of this specific projectile strike, unlike the LNG tanker pattern, has not been publicly assigned to any party in the sourcing found this run.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Baghaei&rsquo;s quote (Confirmed-multiple, consistent wording across outlets); the Minoan Pioneer mayday and UKMTO account (Confirmed-multiple via maritime trade press). The Iran-Oman deal&rsquo;s existence as a negotiation (Confirmed-multiple); its specific terms remain Preliminary.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether any US-Iran channel exists at all &mdash; Iran affirms only Oman-mediated shipping talks, while Trump continues to claim broader negotiations are underway, a claim this report could not independently verify. Projectile source/attribution for the Minoan Pioneer strike is unattributed in available sourcing.</dd>
+          <dt>Context</dt>
+          <dd>Bloomberg reports Hormuz shipping traffic is now &ldquo;at a trickle&rdquo; as owners route around the strait given the ongoing attack campaign, now at least four distinct vessel incidents in roughly a week.</dd>
+          <dt>Impact</dt>
+          <dd>Energy: WTI fell a further 5.7% today (see What Moved Markets), extending yesterday&rsquo;s decline, on the de-escalation/deal framing even as the attack campaign itself continues &mdash; a genuine cross-current this report flags rather than resolves. Markets: equities have not reversed the broader rally despite the hardened denial and new attack.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for confirmation or denial of an Iran-Oman corridor deal around Bessent&rsquo;s cited Wednesday timeframe; watch for any US or Iranian government statement addressing the Minoan Pioneer strike specifically.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">CL=F, XLE, USO-adjacent, gold</dd>
+        </dl>
+        <p class="story-sources">Sources: Yahoo/Reuters wire (Baghaei quote, primary attribution) &middot; Times of Israel &middot; NPR &middot; Foreign Policy &middot; JPost &middot; The Hill &middot; Jerusalem Post, gCaptain, Seatrade Maritime, Gulf News (Minoan Pioneer/UKMTO) &middot; Bloomberg (Hormuz traffic, Iran-Oman deal) &middot; NBC News, CNBC (Bessent).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>This story now has three semi-independent threads that don&rsquo;t fully reconcile: (1) Iran&rsquo;s public position has hardened toward flat denial for four consecutive days; (2) the attack campaign against Hormuz-area shipping continues and, if anything, is accelerating (four incidents in roughly a week); and (3) a parallel, quieter Iran-Oman commercial negotiation over the strait&rsquo;s reopening is reportedly progressing. These are not necessarily contradictory &mdash; a state can simultaneously deny bilateral US talks, tolerate or fail to prevent attacks attributed to proxies or unclear actors, and pursue a separate deal through a third-party mediator &mdash; but readers should not assume they will resolve in the same direction or on the same timeline.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Senate Judiciary Committee advances Todd Blanche&rsquo;s AG nomination 12-10 on a party-line vote</h3>
+        <p class="story-times">Committee vote ~9:00&ndash;10:00 AM ET &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The Senate Judiciary Committee voted 12-10, along party lines, to advance Todd Blanche&rsquo;s Attorney General nomination to the full Senate. Both previously undecided Republicans, Cornyn and Tillis, voted yes; in a joint statement they cited DOJ&rsquo;s formal rescission of the disputed $1.8B anti-weaponization fund. Sen. Tillis: &ldquo;It&rsquo;s been rescinded, and I am satisfied.&rdquo;</dd>
+          <dt>Why it matters</dt>
+          <dd>Clears the last committee-level obstacle; the nomination now needs a full Senate floor vote before the chamber&rsquo;s planned recess.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The 12-10 vote and both holdouts&rsquo; yes votes (Confirmed-multiple: Washington Post, ABC News, NPR, CNBC, NBC News, Congress.gov nomination tracker PN12-5).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>CNN and other outlets flag that the rescission language does not explicitly foreclose DOJ reviving the fund later &mdash; a wording gap critics call a &ldquo;loophole&rdquo;; this is a characterization dispute over adequacy, not a disputed fact about the rescission&rsquo;s text. Separately, three GOP senators (Murkowski, Cassidy, Collins) have not yet committed to a yes vote on the floor; with a 53-47 majority and Sen. McConnell on extended medical absence, Blanche can afford to lose only two more GOP votes.</dd>
+          <dt>Context</dt>
+          <dd>This nomination has been pending since before this report&rsquo;s story tracking began in late July, delayed specifically over the anti-weaponization fund dispute now resolved at committee level.</dd>
+          <dt>Impact</dt>
+          <dd>Policy/people: DOJ leadership succession. No direct market impact identified.</dd>
+          <dt>What happens next</dt>
+          <dd>Full Senate floor vote, timing not yet scheduled as of this report&rsquo;s cutoff; GOP leadership is trying to hold it before recess (pro forma sessions begin Aug 8).</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">&mdash;</dd>
+        </dl>
+        <p class="story-sources">Sources: CNBC &middot; NBC News live blog &middot; Washington Post &middot; ABC News &middot; NPR &middot; Congress.gov (PN12-5, primary) &middot; CNN, The New Republic (rescission-wording analysis).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-single-source">Attribution: Unverified / Preliminary</span>
+        </div>
+        <h3>Suspected Iran-linked water-system cyberattacks expand to at least 12 states; Trump publicly disputes the Iran attribution</h3>
+        <p class="story-times">Scope confirmed through Aug 3&ndash;4 reporting &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The number of US states reporting cyberattacks on water-system industrial controls has grown from 7 (Georgia and Michigan newly confirmed alongside Minnesota) to at least 12, per multiple outlets citing US officials. Michigan&rsquo;s state environment department says 9 water systems reported hostile activity; systems continued operating safely and no public-health impact has been confirmed anywhere. Activity has been observed exclusively against Rockwell Automation/Allen-Bradley programmable logic controllers.</dd>
+          <dt>Why it matters</dt>
+          <dd>This is now a live political dispute, not just a security story: President Trump publicly rejected the Iran attribution on Friday, saying &ldquo;I don&rsquo;t think there was an Iranian cyberattack,&rdquo; and blamed Minnesota&rsquo;s government (Gov. Tim Walz) for state water-system vulnerabilities &mdash; a claim that conflicts with state officials and with federal investigators who, per NYT and other reporting, consider Iran the likely actor.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The 12-state scope (Confirmed-multiple: ABC News, Axios, The Register, Star Tribune, NBC News) and that no water-safety notices have been issued to consumers in any affected state.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Formal attribution &mdash; the FBI has not publicly attributed the campaign to Iran and is reportedly also examining whether the actor deliberately spoofed Iranian tradecraft to inflame US-Iran tensions, a live alternate hypothesis. Trump&rsquo;s competing explanation (state negligence, not Iran) is Confirmed-primary as a quote but contested by the ongoing federal investigation.</dd>
+          <dt>Context</dt>
+          <dd>This story is unfolding against the backdrop of active US-Iran tension covered above; a confirmed Iranian state role would be a significant escalation, which is precisely why this report holds the attribution at Unverified rather than adopting either side&rsquo;s framing.</dd>
+          <dt>Impact</dt>
+          <dd>Infrastructure/security: utilities nationwide being urged by FBI to disconnect internet-facing industrial controls. Politics: an emerging administration-vs-state-officials dispute over the cause.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for any formal USG attribution statement or a resolution of the spoofing hypothesis.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">&mdash;</dd>
+        </dl>
+        <p class="story-sources">Sources: ABC News &middot; Axios &middot; The Register &middot; Star Tribune &middot; NBC News &middot; CBS News. Cyberattack attribution carries an explicit confidence qualifier per this report&rsquo;s methodology &mdash; treated here as Unverified/Preliminary, not fact.</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources (casualties); Disputed (death toll totals)</span>
+        </div>
+        <h3>Russia-Ukraine war: deadlier overnight cross-border strikes on both sides</h3>
+        <p class="story-times">Overnight Aug 3&ndash;4 &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Ukraine launched a wide drone campaign against Russian logistics and energy targets, hitting Wildberries warehouses near Moscow and St. Petersburg and reportedly the Syzran oil refinery; a drone strike on a Moscow-region warehouse killed 5 and injured 10, per regional Governor Andrei Vorobyov &mdash; a larger, distinct incident from the Chekhov strike reported this morning. Russian strikes on Ukraine killed 3 in Dnipropetrovsk Oblast (Shyroke), including a rescue worker and his 8-year-old son, and an 89-year-old woman in Mykolaiv. Al Jazeera&rsquo;s combined tally: at least 9 killed across both sides in what it describes as escalating long-range strikes.</dd>
+          <dt>Why it matters</dt>
+          <dd>Both sides are striking deeper and with greater lethality than the incidents cited in this morning&rsquo;s edition, with no diplomatic counter-movement reported.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Casualty figures are each Confirmed-multiple, sourced to official regional/local statements from each side and cross-reported by several outlets &mdash; standard sourcing pattern for this conflict, not independently verified beyond official statements.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>No independent (non-governmental) verification of either side&rsquo;s casualty counts; no new NATO or Article 4 development today.</dd>
+          <dt>Context</dt>
+          <dd>Comes two days after NATO&rsquo;s informal Article 4 window on the earlier Poland missile incursion passed without invocation.</dd>
+          <dt>Impact</dt>
+          <dd>Humanitarian/security; no direct market linkage identified today.</dd>
+          <dt>What happens next</dt>
+          <dd>Continuing watch; no scheduled diplomatic events identified.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">&mdash;</dd>
+        </dl>
+        <p class="story-sources">Sources: Al Jazeera &middot; US News &middot; Forbes (regional/local official statements, both sides).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Gaza: Board of Peace hardens no-withdrawal-before-disarmament line; Netanyahu&rsquo;s office says public deal text misrepresents Israel&rsquo;s position</h3>
+        <p class="story-times">Netanyahu-Mladenov meeting Aug 3 &middot; Board of Peace statement Aug 4 &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Board of Peace envoy Nikolay Mladenov met Netanyahu and urged a halt to Israeli strikes; before the meeting, Netanyahu&rsquo;s office said the publicly released version of the disarmament agreement &ldquo;does not reflect Israel&rsquo;s positions.&rdquo; The Board followed today with an on-record statement explicitly reaffirming no Israeli withdrawal before full Hamas disarmament: &ldquo;The goal is clear and is not in question: the complete decommissioning of weapons in the Strip and the transition away from rule by the gun to civilian governance.&rdquo; Hamas&rsquo;s opposite-sequencing position (no disarmament before full withdrawal) is unchanged and unaddressed on-record by Hamas today.</dd>
+          <dt>Why it matters</dt>
+          <dd>This hardens rather than resolves the sequencing standoff flagged in this morning&rsquo;s edition; strikes continued over the same period with roughly 17&ndash;19 Gazans reported killed across Aug 2&ndash;4.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Both the Mladenov meeting and the Board&rsquo;s statement (Confirmed-multiple: Al Jazeera, AP-wire via ADN/ABC News/Manila Times, Yahoo/CBS).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether Netanyahu&rsquo;s specific security objections will be incorporated into a revised text, and whether Hamas will respond on-record to today&rsquo;s Board statement.</dd>
+          <dt>Context</dt>
+          <dd>Extends the sequencing dispute this report has tracked since the roadmap&rsquo;s Jul 30 announcement.</dd>
+          <dt>Impact</dt>
+          <dd>Geopolitics/humanitarian; no direct US market linkage identified.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a Hamas on-record response and any revised text addressing Israel&rsquo;s stated reservations.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">&mdash;</dd>
+        </dl>
+        <p class="story-sources">Sources: Al Jazeera &middot; AP wire (via Anchorage Daily News, ABC News, Manila Times) &middot; Yahoo/CBS.</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources (each component figure); Single-reliable-source (reconciliation)</span>
+        </div>
+        <h3>Ceuta migrant crisis: death-toll discrepancy partly explained; EU ministers meet but reach no binding agreement</h3>
+        <p class="story-times">EU videoconference Aug 4 &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The previously reported 67/72/88 death-toll spread has a documented explanation: Spain&rsquo;s government delegate counts 72 deaths tied to last week&rsquo;s mass crossing; Morocco&rsquo;s interior ministry counts only 11 on its side (bodies recovered separately); Ceuta&rsquo;s regional leader says the city morgue received 88 bodies total, but that figure spans a wider two-week window, not just last week&rsquo;s surge &mdash; so it is not simply a higher count of the same event. Separately, EU interior ministers held an emergency videoconference today; the outcome was described as consensus on general principles (border strengthening, return mechanisms, third-country partnerships) but no binding agreement or joint action plan. France explicitly distanced itself from a 22-country hardline letter led by Italy, Denmark, Germany, and Hungary, calling that push an exploitation of the situation &ldquo;for political ends.&rdquo;</dd>
+          <dt>Why it matters</dt>
+          <dd>Reveals both a measurement/reconciliation issue behind the disputed toll and a genuine EU split between a hardline bloc and a Spain-aligned camp.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Each individual toll figure and its source (Confirmed-multiple per figure); the reconciliation explanation itself is Single-reliable-source (Taipei Times/AP-wire framing), though it is consistent with each underlying number.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>No single reconciled toll has been adopted by any authority; forecast 2026-08-03-pm-3 (single reconciled toll within a week) remains open.</dd>
+          <dt>Context</dt>
+          <dd>Italy has maintained its air/sea border suspension with Spain; France separately tightened France-Italy land-border checks.</dd>
+          <dt>Impact</dt>
+          <dd>EU policy/politics; migration and border-control debate.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for any follow-up EU action and whether a single reconciled death toll emerges.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">&mdash;</dd>
+        </dl>
+        <p class="story-sources">Sources: Taipei Times &middot; RTE &middot; Euronews &middot; Arab News &middot; The National &middot; Portugal News &middot; EUalive.</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Chipotle falls 9.7% as a potential salmonella link to a Minnesota outbreak surfaces</h3>
+        <p class="story-times">Bloomberg report ~midday ET &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Chipotle shares fell sharply in afternoon trading (this run&rsquo;s data: &minus;9.72%, close $33.82 vs. $37.46 prior close) after Bloomberg reported a potential link between the chain and a salmonella outbreak in Minnesota. The company said it proactively identified jalapeños from a common supplier lot as a potential source, removed them from affected restaurants, and replaced them with product from different growers.</dd>
+          <dt>Why it matters</dt>
+          <dd>Analysts describe Chipotle as carrying a persistent &ldquo;food-safety premium&rdquo; risk given prior high-profile E. coli and norovirus incidents, meaning contamination headlines tend to produce outsized market reactions.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The stock decline (this run&rsquo;s own data) and the company&rsquo;s proactive jalapeño removal (CNBC, citing company statement).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the outbreak is ultimately confirmed to be linked to Chipotle&rsquo;s supply chain; that determination rests with public-health investigators, not yet reported as concluded.</dd>
+          <dt>Context</dt>
+          <dd>Comes just days after Chipotle&rsquo;s Q2 earnings beat sent shares up 12.7%; today&rsquo;s move reverses a meaningful portion of that recovery.</dd>
+          <dt>Impact</dt>
+          <dd>Companies: single-name, restaurant/consumer sector. Public health: an active outbreak investigation in Minnesota.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a formal public-health determination on the outbreak&rsquo;s source and any regulatory response.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">CMG</dd>
+        </dl>
+        <p class="story-sources">Sources: Bloomberg (original report) &middot; CNBC &middot; StockStory &middot; this run&rsquo;s own Yahoo Finance fetch (primary, closing price).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Novo Nordisk falls a further 6% despite raising full-year guidance</h3>
+        <p class="story-times">Guidance release ~Aug 4 (day ahead of Aug 5 call) &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Novo Nordisk raised its 2026 outlook &mdash; adjusted sales now guided to down 6% to flat at constant exchange rates, improved from a prior down-4%-to-down-12% range, with adjusted operating profit guidance similarly improved &mdash; yet US-listed shares fell more than 6% (this run&rsquo;s data: &minus;6.08%, extending yesterday&rsquo;s &minus;8.63% drop on the failed ziltivekimab cardiovascular trial). Mizuho&rsquo;s Jared Holz attributed the decline to &ldquo;the lack of upside for Wegovy pill vs. models,&rdquo; while noting the guidance trajectory is nonetheless an improvement from earlier in the year.</dd>
+          <dt>Why it matters</dt>
+          <dd>A guidance raise that still produces a stock decline signals the market had priced in more than management delivered, specifically on oral Wegovy uptake.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The guidance figures and stock move (Confirmed-multiple: CNBC, Seeking Alpha).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>How much of today&rsquo;s decline is residual selling from yesterday&rsquo;s trial-failure news versus a fresh reaction to the guidance/Wegovy commentary; this report does not assert a single cause.</dd>
+          <dt>Context</dt>
+          <dd>Novo also cited intensifying GLP-1 competition, reduced Medicaid obesity-drug coverage, and lower realized US prices tied to its &ldquo;most favored nation&rdquo; pricing agreement with the Trump administration as headwinds.</dd>
+          <dt>Impact</dt>
+          <dd>Companies/health-care sector; pharma-pricing-policy read-through.</dd>
+          <dt>What happens next</dt>
+          <dd>Novo&rsquo;s full earnings call is scheduled Wednesday, Aug 5.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">NVO, LLY</dd>
+        </dl>
+        <p class="story-sources">Sources: CNBC &middot; Seeking Alpha &middot; this run&rsquo;s own Yahoo Finance fetch (primary, closing price).</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (BLS)</span>
+        </div>
+        <h3>JOLTS shows further, modest labor-market cooling</h3>
+        <p class="story-times">Released 10:00 AM ET &middot; Last checked 16:00 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>June job openings fell to 7.359M (7.4M rounded), down 178,000 from a downwardly revised May figure of 7.537M (revised down 57,000 from the initial 7.594M print) &mdash; marginally below the roughly 7.40M consensus. The openings rate slipped to 4.4% (&minus;0.1pt); hires (5.3M, 3.4% rate) and quits (3.2M, 2.0% rate) were both little-changed. Steepest declines: health care/social assistance (&minus;147k), leisure/hospitality (&minus;86k). Gains: transportation/warehousing/utilities (+97k), federal government (+39k).</dd>
+          <dt>Why it matters</dt>
+          <dd>Indeed Hiring Lab characterized the report as a labor market &ldquo;stuck in a low-hire, low-fire environment.&rdquo; The 10-year Treasury yield eased modestly (&minus;1.26% today per this run&rsquo;s data) consistent with a soft-but-not-dramatic read.</dd>
+          <dt>What is confirmed</dt>
+          <dd>All figures are Confirmed-primary (BLS official release), cross-confirmed by Indeed Hiring Lab, TradingEconomics, and others.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>This report does not attribute today&rsquo;s equity rally to JOLTS specifically &mdash; coverage more consistently ties the rally to Palantir&rsquo;s earnings beat and falling oil prices; JOLTS is one input among several, not asserted as the driver.</dd>
+          <dt>Context</dt>
+          <dd>No Fed speakers or FOMC meeting scheduled in August; Friday&rsquo;s nonfarm payrolls report is the week&rsquo;s Critical-tier data point.</dd>
+          <dt>Impact</dt>
+          <dd>Rates: modest downward yield pressure. Fed policy: adds a marginal data point to the September FOMC debate without resolving the growth/inflation tension flagged in recent GDP and ECI prints.</dd>
+          <dt>What happens next</dt>
+          <dd>July nonfarm payrolls, unemployment rate, and wages release Friday, Aug 7, 8:30 AM ET.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">TLT, IEF, DXY-adjacent</dd>
+        </dl>
+        <p class="story-sources">Sources: bls.gov/news.release/jolts.nr0.htm (primary) &middot; Indeed Hiring Lab &middot; TradingEconomics &middot; investinglive.com.</p>
+      </article>
+    </section>
+
+    <!-- ================= 3. TWO-MINUTE CLOSING SUMMARY ================= -->
+    <section class="report-section" aria-labelledby="s-exec">
+      <h2 id="s-exec"><span class="kicker">Section 3 &middot; the two-minute version</span>Two-Minute Closing Summary</h2>
+      <div class="exec-summary">
+        <p><strong>The world</strong> Iran's government held its denial for a fourth straight day even as a fourth Strait of Hormuz vessel was struck and the US-Iran conflict's cyber front widened to at least 12 states with water-system intrusions &mdash; now a live political dispute over attribution. Russia and Ukraine traded deadlier overnight strikes. Gaza's disarmament sequencing dispute hardened rather than resolved. The EU met on the Ceuta migrant crisis without a binding agreement, and split publicly over how hard a line to take.</p>
+        <p><strong>Markets</strong> A broad, mega-cap-tilted rally: S&amp;P +1.8%, Nasdaq +3.4%, Dow +1.7%, Russell 2000 (IWM) +1.9% (this run's data, final close). Palantir's blowout earnings (+29.5%) and falling oil (WTI &minus;5.7%) did the heavy lifting; a softer JOLTS print added a modest tailwind via lower yields. VIX rose despite the rally (+3.7% to 16.45), an anomaly worth watching into tonight's SpaceX print. Gold also rose (+2.6%) alongside the equity rally, a cross-asset inconsistency this report flags rather than explains.</p>
+        <p><strong>Central theme</strong> Company-specific catalysts (Palantir, Voyager Technologies, Chipotle, Novo Nordisk) drove today's biggest individual moves more than the macro/geopolitical backdrop, even as the geopolitical backdrop itself continued escalating on multiple fronts.</p>
+        <p><strong>Most important new development</strong> Palantir's 93%-revenue-growth quarter and guidance raise, the single largest market mover of the day and a lead driver of the broader rally.</p>
+        <p><strong>Most important risk</strong> SpaceX's first public earnings print tonight (~4:30 PM ET), two days before a ~$116B share-lockup expiration &mdash; the highest-stakes single-name event this report is tracking, with Polymarket pricing roughly 69&ndash;70% odds of a miss.</p>
+        <p><strong>Most important positive development</strong> Todd Blanche's AG nomination cleared committee 12-10; both prior GOP holdouts came on board after the disputed anti-weaponization fund's rescission.</p>
+        <p><strong>Key unknown</strong> Whether the water-system cyberattacks are genuinely Iran-linked, a false-flag operation, or something else entirely &mdash; the FBI has not attributed them and is reportedly examining a spoofing hypothesis, while the White House and state officials are giving conflicting public accounts.</p>
+        <p><strong>Deserves attention today</strong></p>
+        <ul>
+          <li>SpaceX earnings webcast, ~4:30 PM ET &mdash; results land after this report's cutoff, full coverage tomorrow morning.</li>
+          <li>AMD earnings after today's close (~4:15&ndash;5:00 PM ET) &mdash; stock already +7.0% into the print.</li>
+          <li>Five state primaries (MI, VA, KS, MO, WA) &mdash; polls close 7&ndash;8 PM ET, results after this report's cutoff.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 4. WHAT CHANGED SINCE 7:30 AM ================= -->
+    <section class="report-section" aria-labelledby="s-since">
+      <h2 id="s-since"><span class="kicker">Section 4</span>What Changed Since 7:30 AM</h2>
+      <ul class="change-log">
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since morning</span><strong>Palantir's blowout Q2</strong></div>
+          <p>Not on this morning's radar <span class="change-arrow">&rarr;</span> the single largest market mover of the day (+29.5%), cited as a lead driver of the broad rally <span class="change-arrow">&rarr;</span> reinforces the AI-infrastructure demand narrative ahead of AMD and SpaceX tonight. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Blanche AG nomination</strong></div>
+          <p>Committee vote scheduled for 9 AM <span class="change-arrow">&rarr;</span> passed 12-10 on a party-line vote, both holdouts on board <span class="change-arrow">&rarr;</span> moves to a full Senate floor vote with three GOP senators still uncommitted. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Strait of Hormuz attacks</strong></div>
+          <p>Three vessel incidents this week as of this morning <span class="change-arrow">&rarr;</span> a fourth, the Minoan Pioneer, struck Monday evening with one crew member missing <span class="change-arrow">&rarr;</span> confirms this morning's forecast of a fourth incident well ahead of its stated horizon. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Iran-linked water cyberattacks</strong></div>
+          <p>7 states affected as of this morning <span class="change-arrow">&rarr;</span> at least 12 states, plus a public Trump-vs-state-officials dispute over Iran attribution <span class="change-arrow">&rarr;</span> this is now as much a political story as a security one. Current confidence: medium (scope is confirmed; attribution is not).</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since morning</span><strong>JOLTS release</strong></div>
+          <p>Due at 10 AM, not yet known this morning <span class="change-arrow">&rarr;</span> job openings fell to 7.359M, a soft-but-not-dramatic miss <span class="change-arrow">&rarr;</span> modest downward yield pressure, one data point ahead of Friday's payrolls. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Gaza disarmament roadmap</strong></div>
+          <p>Sequencing dispute flagged this morning <span class="change-arrow">&rarr;</span> Board of Peace hardened its no-withdrawal-before-disarmament line; Netanyahu's office separately said the public text misstates Israel's position <span class="change-arrow">&rarr;</span> standoff deepens, no resolution in sight. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Ceuta migrant crisis</strong></div>
+          <p>Disputed 67&ndash;88 death toll this morning <span class="change-arrow">&rarr;</span> component figures reconciled (72 Spain / 11 Morocco / 88 wider-window Ceuta-morgue total, not a single higher count); EU ministers met without a binding agreement and split publicly (France distanced itself from a 22-country hardline letter) <span class="change-arrow">&rarr;</span> forecast 2026-08-03-pm-3 (single reconciled toll) remains open. Current confidence: medium.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since morning</span><strong>Chipotle salmonella scare</strong></div>
+          <p>Not previously tracked <span class="change-arrow">&rarr;</span> Bloomberg reported a potential Minnesota salmonella-outbreak link; shares fell 9.7% <span class="change-arrow">&rarr;</span> reverses part of last week's post-earnings recovery pending a public-health determination. Current confidence: high on the stock move, medium on the eventual outbreak link.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-faded">Faded</span><strong>DRC Ebola, Kumamoto earthquake, Spokane wildfires, Indonesia ferry</strong></div>
+          <p>No material new development found since this morning beyond incremental detail (Kumamoto toll steady at 38 with a granular shelter/damage count now available; Spokane containment improving on some fire fronts; Indonesia's missing-persons count is fluid, moving between 41 and "unknown" across wire updates as more survivors are located). All remain on watch; none rise to a fresh Top Story this cycle.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================= 5. US POLITICS & GOVERNMENT ================= -->
+    <section class="report-section" aria-labelledby="s-politics">
+      <h2 id="s-politics"><span class="kicker">Section 5</span>US Politics &amp; Government</h2>
+      <p>The Senate Judiciary Committee's 12-10 party-line advance of Todd Blanche's Attorney General nomination (Top Stories) was the day's headline domestic-politics event. Sen. Wicker (R-MS), chair of Senate Armed Services, told Punchbowl News he does not expect further NDAA FY2027 floor votes before the chamber's August recess absent a change of heart from Democrats blocking over Iran-war/defense-topline disputes &mdash; a firmer, more pessimistic signal than the "no movement since Jul 14" status this report has carried since late July (Single-reliable-source, Punchbowl, not yet independently cross-confirmed).</p>
+      <p>Justice Jackson's Aug 3 deadline for states to respond to the Trump administration's mail-ballot executive-order emergency application has passed; as of this report's cutoff, no Supreme Court order has issued. SCOTUSblog and legal reporters describe the case as pending, with lower appellate courts split on whether to let the order proceed. Election-law scholar Derek Muller (Notre Dame) is quoted saying "everyone agrees it's not going to be implemented for 2026" &mdash; an attributed opinion, not a ruling.</p>
+      <p>Five states &mdash; Michigan, Virginia, Kansas, Missouri, and Washington &mdash; held primary elections today, including a competitive Michigan Senate Democratic primary (Abdul El-Sayed vs. Rep. Haley Stevens) and a Virginia House rematch (Elaine Luria vs. Rep. Jen Kiggans). Polls close 7&ndash;8 PM ET; results fall after this report's cutoff and will appear in tomorrow's Morning Brief.</p>
+      <p>No SEC, FTC, or DOJ enforcement action specifically dated today was found in this run's research &mdash; stated as an absence, not implied silence.</p>
+    </section>
+
+    <!-- ================= 6. GEOPOLITICS ================= -->
+    <section class="report-section" aria-labelledby="s-geo">
+      <h2 id="s-geo"><span class="kicker">Section 6</span>Geopolitics</h2>
+      <p>Iran/Hormuz, Russia-Ukraine, and Gaza developments are covered in Top Stories above. In Sudan, a Sudanese Armed Forces drone strike hit a makeshift court under a tree in RSF-held Garra al-Zawaya, North Darfur, during a hearing Sunday. The Emergency Lawyers rights group puts the toll at 35 killed, including four tribal leaders and two RSF commanders; RSF's self-declared government claims 37 killed and 50 wounded, calling it a "horrific crime." <span class="chip chip-confirmed" style="display:inline">Confirmed-multiple</span> on the incident itself (AFP-sourced, carried by Al Jazeera, France24, Middle East Eye); the exact casualty count is <span class="chip chip-unverified" style="display:inline">Disputed</span> between the rights group and RSF's own figures.</p>
+      <p>In the West Bank, a settler-violence surge that UN and rights groups have called an "all-time high" continues, tied to an active Israeli operation following a contested late-July incident near Nablus; no new same-day escalation was identified today beyond the operation's continuation &mdash; background context, not a new event.</p>
+    </section>
+
+    <!-- ================= 7. ECONOMICS & CENTRAL BANKS ================= -->
+    <section class="report-section" aria-labelledby="s-econ">
+      <h2 id="s-econ"><span class="kicker">Section 7</span>Economics &amp; Central Banks</h2>
+      <div class="fact-card">
+        <h4>JOLTS &mdash; Job Openings and Labor Turnover Survey (June 2026) <span class="dd">EOD official &middot; released 10:00 ET Aug 4</span></h4>
+        <dl>
+          <dt>Period</dt><dd>June 2026</dd>
+          <dt>Previous</dt><dd>7.537M (revised down from 7.594M)</dd>
+          <dt>Consensus</dt><dd>~7.40M</dd>
+          <dt>Actual</dt><dd>7.359M</dd>
+          <dt>Surprise</dt><dd class="down">&minus;41k vs. consensus; &minus;178k vs. revised prior</dd>
+          <dt>Trend</dt><dd>Openings rate 4.4% (&minus;0.1pt); hires and quits little-changed &mdash; Indeed Hiring Lab's "low-hire, low-fire" characterization</dd>
+          <dt>Read</dt><dd class="txt">A soft, not alarming, print. Sector detail: sharpest declines in health care/social assistance and leisure/hospitality; gains in transportation/warehousing/utilities and federal government. This report does not attribute today's equity rally to this release &mdash; coverage more consistently cites Palantir's earnings and falling oil prices as the larger drivers.</dd>
+        </dl>
+      </div>
+      <p>No Fed speakers or policy action today; the next FOMC meeting is not until September, with the Jackson Hole symposium the next major Fed-adjacent event on the calendar. Treasury's par curve (as of Aug 3, EOD official) shows 2s10s at +45bp, little-changed from recent sessions; 10-year real yield (DFII10, Jul 31) at 2.47%, 10-year breakeven (T10YIE, Aug 3) at 2.27%. High-yield credit spreads (BAMLH0A0HYM2) tightened to 2.78% as of Aug 3, down from 2.85% Jul 31 and a recent local high of 2.87% Jul 29 &mdash; consistent with today's broad risk-on tape.</p>
+    </section>
+
+    <!-- ================= 8. BUSINESS & CORPORATE ================= -->
+    <section class="report-section" aria-labelledby="s-biz">
+      <h2 id="s-biz"><span class="kicker">Section 8</span>Business &amp; Corporate</h2>
+      <p>Palantir, SpaceX, Chipotle, and Novo Nordisk are covered in Top Stories. Several other names in today's earnings-heavy calendar reported or are due to report:</p>
+      <div class="fact-card">
+        <h4>McDonald's (MCD) <span class="dd">Confirmed-primary &middot; 8-K, reported before open</span></h4>
+        <dl>
+          <dt>Actual</dt><dd>EPS $3.38 (beat $3.35 est. by $0.03); revenue $7.099B (missed $7.199B est. by ~$100M)</dd>
+          <dt>Read</dt><dd class="txt">Global comps +1.3% (in line); US comps +0.8% on falling traffic. CEO Chris Kempczinski: "We don't have a strategy problem. We simply didn't execute at the level we needed to in the second quarter." Stock closed +1.2% (this run's data) &mdash; a mixed beat-and-miss absorbed calmly.</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>Merck (MRK) <span class="dd">Confirmed-primary &middot; 8-K items 2.02/9.01, filed Aug 4</span></h4>
+        <dl>
+          <dt>Actual</dt><dd>Revenue $16.61B (beat $16.27&ndash;16.36B est., +5.1% Y/Y); adjusted EPS loss of $0.13 (beat &minus;$0.27 est.)</dd>
+          <dt>Read</dt><dd class="txt">Full-year revenue guidance raised to $66.3&ndash;67.3B, but full-year adjusted EPS guidance cut sharply to $2.66&ndash;2.76 (from $5.04&ndash;5.16) on acquisition-related charges; net loss of $1.34B ($0.54/share) vs. a year-ago profit. Keytruda remains the top revenue driver at $8.37B (+5% Y/Y). Stock closed roughly flat (+0.2%, this run's data).</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>Pfizer (PFE) <span class="dd">Confirmed-primary &middot; 8-K items 2.02/9.01, filed Aug 4</span></h4>
+        <dl>
+          <dt>Actual</dt><dd>EPS $0.77 (beat $0.68 est. by $0.09); revenue $15.03B (beat $14.42B est.)</dd>
+          <dt>Read</dt><dd class="txt">Eliquis sales $2.43B (+19%); FY2026 revenue guidance raised to $60.5&ndash;62.5B (low end raised), FY EPS guidance $2.80&ndash;3.00 vs. $2.95 consensus. Covid-product (Comirnaty/Paxlovid) revenue expectation cut to $4B from ~$5B. Stock closed +1.2% (this run's data).</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>Apollo Global Management (APO) <span class="dd">Confirmed-primary &middot; 8-K items 2.02/9.01, filed Aug 4</span></h4>
+        <dl>
+          <dt>Actual</dt><dd>Fee-related earnings $785M (+25% Y/Y, record); spread-related earnings $877M; adjusted net income $1.3B; EPS $2.11 missed $2.16 consensus by $0.05</dd>
+          <dt>Read</dt><dd class="txt">Record metrics despite the EPS miss; management maintained guidance (20%+ FRE growth, 10% SRE growth). Bloomberg's framing: a "dealmaking spree" drove fee-related revenue to a record. Stock closed +3.1% (this run's data).</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>Voyager Technologies (VOYG) <span class="dd">Confirmed-multiple &middot; reported Aug 3 after close</span></h4>
+        <dl>
+          <dt>Actual</dt><dd>Q2 revenue $52.75M (beat $48.23M est.); adjusted loss $0.70/share (beat &minus;$0.91 est.)</dd>
+          <dt>Read</dt><dd class="txt">Record quarterly bookings of $113M and record backlog of $335.5M; FY2026 revenue guidance raised to $275&ndash;305M (from $230&ndash;255M), aided by July's completed Astrobotic Technology acquisition, which followed a $298M NASA award for Astrobotic's Peregrine-2 lunar mission. Stock closed +19.5% (this run's data), the second-largest single-name mover in the watchlist today after Palantir.</dd>
+        </dl>
+      </div>
+      <p>Still to report after today's close: AMD (~4:15&ndash;5:00 PM ET, consensus revenue $11.2B &plusmn;$300M, +46% Y/Y, EPS ~$1.61&ndash;1.62, Data Center segment guided to more than double to ~$6.5B; stock closed +7.0% into the print), Arista Networks (ANET, options market pricing an unusually large &plusmn;14% post-earnings move; stock closed +3.7%), Booking Holdings (BKNG, consensus EPS ~$2.44&ndash;2.45, four straight quarters of beats; stock closed +0.8%), Viasat (VSAT, consensus EPS &minus;$0.317 after a badly missed prior quarter; stock closed +5.6%), and Kratos Defense (KTOS, consensus EPS $0.13, average beat +22.6% over the trailing four quarters; stock closed +5.1%). None of these five had results out as of this report's news cutoff.</p>
+      <p>No confirmed material M&amp;A, bankruptcy, or CEO-change news specific to today was found. Yesterday's earnings context (Coinbase's third straight quarterly loss, Exxon/Chevron's windfall Iran-war-elevated oil profits) is unchanged from prior coverage.</p>
+    </section>
+
+    <!-- ================= 9. TECH/AI/CYBER ================= -->
+    <section class="report-section" aria-labelledby="s-tech">
+      <h2 id="s-tech"><span class="kicker">Section 9</span>Tech/AI/Cyber</h2>
+      <p>The water-system cyberattack escalation is covered in Top Stories. Other cyber developments: ShinyHunters' extortion campaign against EY shows no new leak-site posting or company statement since the Jul 31 deadline passed &mdash; EY has notified law enforcement and is offering affected clients 24 months of credit/identity monitoring, without confirming ShinyHunters' specific access claims (Single-reliable-source on the group's own claims). CISA added CVE-2026-18577 (N-able N-central authentication bypass) to its Known Exploited Vulnerabilities catalog Aug 3 based on confirmed active exploitation &mdash; a separate item from the previously reported Cisco Secure FMC and VMware/Broadcom flaws, on which no new exploitation was confirmed today. Separately, the UK's Police National Legal Database confirmed a data-security incident (detected Jul 26, disclosed Aug 3) exposing roughly 100,000 officers'/staff members' names, organizations, and work emails across all 43 England/Wales police forces; extortion group ExfilSquad claims responsibility for roughly 135,000 records (Confirmed-primary on the breach itself; Single-reliable-source on ExfilSquad's specific claims).</p>
+      <p>This report found claims of new large AI-model releases (an Alibaba "Qwen3.8-Max" model, OpenAI pricing changes) sourced only to low-authority aggregator sites, not primary vendor announcements or established tech press &mdash; excluded here as Unverified pending better sourcing.</p>
+    </section>
+
+    <!-- ================= 10. SCIENCE & ENGINEERING ================= -->
+    <section class="report-section" aria-labelledby="s-sci">
+      <h2 id="s-sci"><span class="kicker">Section 10</span>Science &amp; Engineering</h2>
+      <p><strong>DRC Ebola outbreak.</strong> No newer case/death count than Jul 30's figures (3,605 cases / 1,587 deaths) surfaced this run. WHO said Aug 1 the outbreak is "intensifying at an exceptional pace" and called for a scaled-up response; International Medical Corps is opening DRC's largest Ebola treatment center this week, a capacity-building development rather than a new case count. The Aug 18 IHR Emergency Committee meeting remains the next formal action point.</p>
+      <p><strong>Kumamoto, Japan earthquake.</strong> Death toll holds at 38 for a third consecutive day (Confirmed-multiple). New detail: over 8,200 people remain in evacuation shelters and 12,276 homes are damaged. Cause-of-death breakdown available for the first time: 7 deaths from a shopping-mall collapse/explosion in Kashima, 8 at a Nippon Paper Industries mill in Yatsushiro. One low-quality aggregator showed an uncorroborated "48" figure with no dated primary source &mdash; disregarded as likely erroneous.</p>
+      <p><strong>Spokane-area, WA wildfire complex.</strong> Fire activity has moderated; some evacuation zones have been downgraded, and containment is improving on several fronts (Modrite Fire 17% contained, Sinlahekin 5%, Fairview forward progress reportedly stopped). Others remain at 0% containment (Ptarmigan at 15,952 acres, Little Giant at ~59,346 acres, Autumn Lane, Old Trails). Scale: 60,000+ evacuated, 600+ structures destroyed &mdash; directionally consistent with this morning's "700+" figure, not a walk-back, just a different source's count.</p>
+      <p><strong>Indonesia ferry fire (Mutiara Sentosa 2).</strong> Five dead remains the confirmed figure; the missing-persons count is unsettled across wire updates, moving between 41 and "unknown" as more of the 271 aboard are located (225 rescued so far). Cause still under investigation; a survivor account points to a vehicle-deck truck as the possible origin, unconfirmed.</p>
+      <p><strong>Europe wildfires.</strong> This morning's "2 firefighting helicopter crew killed" (Psatha, near Athens &mdash; one Greek, one Danish national) is now understood to be part of a larger toll: 3 additional firefighters have died in Greece (two trapped by fast-moving flames near Rethymno, Crete; one found unconscious near Gythio in the southern Peloponnese) &mdash; new information, not previously in this report's count. New fire fronts reported on Paros and Lesbos and in mainland Trifylia; Turkey's Mugla wildfires forced closure of the main Fethiye&ndash;Antalya road. Spain has burned 186,544 hectares year-to-date as of Aug 2, per official Ministry figures.</p>
+    </section>
+
+    <!-- ================= 11. SPACE & SPACEFLIGHT ================= -->
+    <section class="report-section" aria-labelledby="s-space">
+      <h2 id="s-space"><span class="kicker">Section 11</span>Space &amp; Spaceflight</h2>
+      <p>SpaceX's first public earnings report (due ~4:30 PM ET tonight) is covered in Top Stories, alongside Voyager Technologies' Q2 double-beat (Business &amp; Corporate). Both of today's scheduled launches completed successfully: a Falcon 9 carried 24 Starlink satellites (Group 17-53) from Vandenberg SFB &mdash; the 90th Falcon 9 flight of 2026, with booster B1063 (34th flight) landing on the droneship <em>Of Course I Still Love You</em> in the Pacific; and a Long March 8A launched from Wenchang's Commercial LC-1 at 4:52 PM Beijing time (~4:52 AM ET) carrying 9 satellites for China's GuoWang broadband megaconstellation (its 23rd deployment group), reported in their preset orbits. Both Confirmed-primary (Spaceflight Now/SpaceX; Xinhua).</p>
+    </section>
+
+    <!-- ================= 12. COMPLETED CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-cal">
+      <h2 id="s-cal"><span class="kicker">Section 12</span>Completed Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET. Results/status as of this report's cutoff.</caption>
+          <thead><tr><th>Time ET</th><th>Event</th><th>Importance</th><th>Result / Status</th></tr></thead>
+          <tbody>
+            <tr><td>04:50</td><td class="txt">Long March 8A launch (Wenchang)</td><td><span class="chip chip--info">Low</span></td><td class="txt">Launched successfully</td></tr>
+            <tr><td>09:00</td><td class="txt">Senate Judiciary Committee vote, Blanche AG nomination</td><td><span class="chip chip--warn">High</span></td><td class="txt">Advanced 12-10, party-line</td></tr>
+            <tr><td>10:00</td><td class="txt">Falcon 9 &mdash; Starlink Group 17-53 (Vandenberg)</td><td><span class="chip chip--info">Low</span></td><td class="txt">Launched successfully</td></tr>
+            <tr><td>10:00</td><td class="txt">JOLTS (June 2026)</td><td><span class="chip chip--warn">High</span></td><td class="txt">7.359M openings, below consensus</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Auctions: 52-Week ($52B) / 6-Week ($95B) T-bills</td><td><span class="chip chip--info">Low</span></td><td class="txt">Routine bill supply, issue date Aug 6</td></tr>
+            <tr><td>&mdash;</td><td class="txt">McDonald's, Merck, Pfizer, Apollo Global earnings</td><td><span class="chip chip--info">Medium</span></td><td class="txt">All reported &mdash; see Business &amp; Corporate</td></tr>
+            <tr><td>16:30</td><td class="txt">SpaceX (SPCX) first-ever public earnings</td><td><span class="chip chip--bad">Critical</span></td><td class="txt">Not yet released as of cutoff &mdash; still upcoming</td></tr>
+            <tr><td>~16:15&ndash;17:30</td><td class="txt">AMD, Arista, Booking, Viasat, Kratos earnings</td><td><span class="chip chip--info">Medium</span></td><td class="txt">Not yet released as of cutoff &mdash; still upcoming</td></tr>
+            <tr><td>19:00&ndash;20:00</td><td class="txt">Five state primaries close (MI, VA, KS, MO, WA)</td><td><span class="chip chip--warn">High</span></td><td class="txt">Still upcoming &mdash; results after cutoff</td></tr>
+            <tr><td>02:35 (Aug 5)</td><td class="txt">Smart Dragon 3 launch (Haiyang, China)</td><td><span class="chip chip--info">Low</span></td><td class="txt">Overnight, still upcoming</td></tr>
+            <tr><td>03:42 (Aug 5)</td><td class="txt">Falcon 9 &mdash; BlueBird 11-13 (AST SpaceMobile)</td><td><span class="chip chip--info">Medium</span></td><td class="txt">Overnight, still upcoming</td></tr>
+            <tr><td>08:30 (Aug 5)</td><td class="txt">Tomorrow: Eli Lilly earnings (before open)</td><td><span class="chip chip--warn">High</span></td><td class="txt">Tomorrow's major</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= 13. WHAT MOVED MARKETS ================= -->
+    <section class="report-section" aria-labelledby="s-moved">
+      <h2 id="s-moved"><span class="kicker">Section 13</span>What Moved Markets</h2>
+      <p><strong>Open.</strong> Futures pointed to a firmly higher open (ES +1.9%, NQ +3.5%, YM +1.9%, RTY +2.0% vs. Monday's settle, this run's data) on the combination of Palantir's premarket earnings beat and falling oil (Confirmed catalyst for the Palantir-specific portion of tech strength; Likely contributor for the broader risk-on tone, alongside continued de-escalation framing around Iran/Hormuz).</p>
+      <p><strong>Morning.</strong> JOLTS printed soft at 10:00 ET; the 10-year yield eased modestly. Chipotle fell sharply on the Minnesota salmonella report (Confirmed catalyst for CMG specifically). Novo Nordisk extended its slide despite raised guidance (Confirmed catalyst: Wegovy-pill underwhelm per Mizuho commentary).</p>
+      <p><strong>Midday.</strong> The space-sector complex extended gains through the session, coinciding with positioning ahead of tonight's SpaceX earnings (Likely contributor, not asserted as sole cause); Voyager Technologies was the standout on its own Tuesday-morning earnings beat (Confirmed catalyst, company-specific).</p>
+      <p><strong>Close.</strong> S&amp;P 500 +1.8%, Nasdaq +3.4%, Dow +1.7%, Russell 2000 (IWM) +1.9% (this run's own data, final close, close-series method). Breadth was somewhat narrower than the headline indices suggest: the equal-weight S&amp;P proxy (RSP) gained 1.4%, trailing SPY by roughly a third of a point &mdash; today's rally leaned mega-cap and large-cap, not broad-based, even as small caps (IWM) slightly outpaced the S&amp;P. VIX rose 3.7% to 16.45 despite the rally &mdash; an <strong>Unexplained</strong> anomaly worth flagging: near-term implied vol (VIX9D) jumped 13.5% intraday to 15.07, plausibly reflecting event-risk positioning ahead of tonight's SpaceX print, though this report does not assert that as a confirmed cause. Gold also rose 2.6% alongside the equity rally, a cross-asset combination (risk-on equities + rising gold) this report notes without a confirmed explanation.</p>
+      <p>WTI crude fell 5.7% (extending yesterday's 5.1% decline) on Iran-Hormuz de-escalation framing, including Treasury Secretary Bessent's comment that a deal to reopen the strait could arrive "by Wednesday" &mdash; a <strong>Likely contributor</strong> given the timing, not confirmed as the sole driver, especially set against today's fourth Hormuz-area vessel attack (see Top Stories).</p>
+    </section>
+
+    <!-- ================= 14. WINNERS & LOSERS ================= -->
+    <section class="report-section" aria-labelledby="s-wl">
+      <h2 id="s-wl"><span class="kicker">Section 14</span>Winners &amp; Losers</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>This run's own data (close-series method) &middot; EOD official &middot; Tuesday, Aug 4, 2026.</caption>
+          <thead><tr><th>Symbol</th><th>Close</th><th>Change</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>PLTR</td><td>162.66</td><td class="up">+29.5%</td><td class="txt">Q2 beat-and-raise (Top Stories)</td></tr>
+            <tr><td>VOYG</td><td>33.47</td><td class="up">+19.5%</td><td class="txt">Q2 double-beat, raised guidance (Business)</td></tr>
+            <tr><td>MRVL</td><td>218.59</td><td class="up">+12.8%</td><td class="txt">Continued AI-memory strength</td></tr>
+            <tr><td>ASTS</td><td>70.59</td><td class="up">+11.1%</td><td class="txt">Space-sector rally into SpaceX earnings</td></tr>
+            <tr><td>RDW</td><td>10.63</td><td class="up">+10.3%</td><td class="txt">Space-sector rally</td></tr>
+            <tr><td>AMD</td><td>518.58</td><td class="up">+7.0%</td><td class="txt">Rallied into after-close earnings</td></tr>
+            <tr><td>SPCX</td><td>125.33</td><td class="up">+9.4%</td><td class="txt">Rallied into first public earnings (Top Stories)</td></tr>
+            <tr><td>CMG</td><td>33.82</td><td class="down">&minus;9.7%</td><td class="txt">Minnesota salmonella-outbreak report (Top Stories)</td></tr>
+            <tr><td>VST</td><td>143.23</td><td class="down">&minus;8.2%</td><td class="txt">Broad AI-power-sector weakness (CEG, TLN, NRG also lower); no company-specific catalyst identified</td></tr>
+            <tr><td>NVO</td><td>44.26</td><td class="down">&minus;6.0%</td><td class="txt">Raised guidance, but Wegovy-pill underwhelm (Top Stories)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Universe: the full 167-symbol deduplicated watchlist. Vistra's decline is part of a broader AI-power-demand-linked group move (Constellation Energy also &minus;2.2%), not an isolated event, per this run's research.</p>
+    </section>
+
+    <!-- ================= 15. OVERNIGHT & TOMORROW WATCH ================= -->
+    <section class="report-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow"><span class="kicker">Section 15</span>Overnight &amp; Tomorrow Watch</h2>
+      <ul>
+        <li><strong>SpaceX earnings</strong> (~4:30 PM ET tonight) &mdash; the single highest-stakes item this report is tracking; full results in tomorrow's Morning Brief.</li>
+        <li><strong>AMD, Arista, Booking, Viasat, Kratos</strong> earnings after today's close &mdash; results expected before tomorrow's cutoff.</li>
+        <li><strong>Five state primaries</strong> (MI, VA, KS, MO, WA) close 7&ndash;8 PM ET tonight; results expected overnight/tomorrow morning.</li>
+        <li><strong>Overnight launches:</strong> Smart Dragon 3 (China, ~02:35 ET) and a Falcon 9 BlueBird 11-13 mission for AST SpaceMobile (~03:42 ET).</li>
+        <li><strong>Tomorrow's calendar:</strong> Eli Lilly reports before the open &mdash; the week's other mega-cap-scale pharma report, one week after Novo Nordisk's failed cardiovascular trial; also Globalstar (GSAT) and Redwire (RDW).</li>
+        <li><strong>Watch for:</strong> any confirmation or denial of the reported Iran-Oman Hormuz-reopening deal around Bessent's cited Wednesday timeframe; any formal attribution statement on the water-system cyberattacks; a Hamas on-record response to the Board of Peace's Aug 4 sequencing statement.</li>
+      </ul>
+    </section>
+
+    <!-- ================= 16. PHYSICS LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-phys">
+      <h2 id="s-phys"><span class="kicker">Section 16 &middot; learning</span>Physics Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Physics 7/71 &middot; Coordinate systems</p>
+        <p>This morning introduced coordinate systems as the bookkeeping layer underneath every physics problem &mdash; a choice of origin and axes that lets a position, velocity, or force be written as numbers instead of a vague description. The most common choice, Cartesian coordinates (x, y, z), works well for straight-line motion and rectangular symmetry, but it is not the only option and often not the best one. Polar coordinates (r, &theta;) describe a point by its distance from an origin and an angle from a reference direction &mdash; the natural choice whenever a problem has rotational or circular symmetry, since a circle centered at the origin is simply "r = constant" instead of the awkward x&sup2; + y&sup2; = r&sup2;.</p>
+        <p>The choice of coordinate system never changes the physics &mdash; a ball falls the same way regardless of what grid you draw on the page &mdash; but it changes how much algebra you do to describe it. A common misconception is treating this as a cosmetic choice with no real consequence; in practice, picking coordinates aligned with a problem's natural symmetry (radial coordinates for orbits, coordinates along an incline for a ramp problem) can turn a page of trigonometry into a few lines. This is exactly why the rocket equation below is written in terms of velocity change along the rocket's direction of travel, not broken into separate x/y components: the natural coordinate for a rocket accelerating in a straight line is the one axis pointed along its own thrust.</p>
+      </div>
+    </section>
+
+    <!-- ================= 17. SPACEFLIGHT LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-space-lesson">
+      <h2 id="s-space-lesson"><span class="kicker">Section 17 &middot; learning</span>Spaceflight Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Spaceflight 7/75 &middot; Tsiolkovsky rocket equation</p>
+        <p>This morning's introduction to the rocket equation, &Delta;v = v<sub>e</sub>&middot;ln(m<sub>0</sub>/m<sub>f</sub>), established the core trade-off: a rocket's total velocity change (&Delta;v) depends on its exhaust velocity (v<sub>e</sub>, essentially engine efficiency) and the natural logarithm of its mass ratio &mdash; starting mass over final, propellant-depleted mass. The logarithm is the equation's least intuitive and most consequential feature: because ln grows so slowly, each additional unit of &Delta;v costs proportionally more propellant than the last. Doubling your mass ratio does not double your &Delta;v; it only adds a fixed increment (ln 2 &asymp; 0.69, times v<sub>e</sub>).</p>
+        <p>Tonight's real-world tie-in: SpaceX's Falcon 9, which flew twice today (the Starlink Group 17-53 launch, with booster B1063 landing for the 34th time), is a working demonstration of managing this equation's tyranny through reuse rather than raw propellant mass &mdash; the booster doesn't need a better mass ratio on every flight if the hardware itself survives to fly again, spreading its effective cost across dozens of missions instead of one. A common misconception is treating &Delta;v as a simple physical speed, like a car's speedometer reading; it's better understood as a rocket's fuel-cost currency, a budget spent in stages (launch, orbit-raising, landing burns) that must each be paid for before the rocket can do anything further.</p>
+      </div>
+    </section>
+
+    <!-- ================= 18. QUANT/ML LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-quant">
+      <h2 id="s-quant"><span class="kicker">Section 18 &middot; learning</span>Quant/ML Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Quant/ML 7/118 &middot; Autocorrelation Function (ACF)</p>
+        <p>This morning introduced the autocorrelation function as a way to ask a time series a simple question: does knowing today's value tell you anything about tomorrow's? Formally, &rho;<sub>k</sub> = &gamma;<sub>k</sub> / &gamma;<sub>0</sub> &mdash; the covariance between a series and its own past self at lag k, normalized by the series' own variance so the result always falls between &minus;1 and +1, just like an ordinary correlation coefficient.</p>
+        <figure class="equation">
+          <img src="../../../equations/eq_007.png" alt="Rendered equation image eq_007: autocorrelation function, rho_k equals the covariance of X_t and X_t-k divided by the variance of X_t." loading="lazy" width="480">
+          <figcaption>Equation 7 of 118 &mdash; Autocorrelation Function, embedded from site/equations/ (registry order).</figcaption>
+        </figure>
+        <p>Today's actual market data offers a clean illustration of what a high, positive short-lag autocorrelation looks like: today's broad rally (S&amp;P +1.8%) followed Monday's own rally (S&amp;P +1.48%) and Friday's gain before that &mdash; a short run of same-direction daily returns, which is exactly the pattern a positive &rho;<sub>1</sub> would flag if this were a genuine, statistically significant effect rather than three data points. That caveat is the lesson's common misconception: eyeballing a short streak of same-direction days and calling it "momentum" is not the same as measuring a statistically significant ACF value over a long sample. Daily equity returns are famously close to uncorrelated once you control for volatility clustering &mdash; a few days moving the same direction is exactly what you'd expect from a fair coin now and then, not proof the market has memory.</p>
+      </div>
+    </section>
+
+    <!-- ================= 19. FULL CLOSING MARKET ANALYSIS ================= -->
+    <section class="report-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix"><span class="kicker">Section 19 &middot; collapsed by default</span>Full Closing Market Analysis</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, broad but mega-cap-tilted</span> Supporting: all four major indices up 1.9&ndash;2.9%, high-yield credit spreads tightened to 2.78% (Aug 3), VIX3M/VIX/VIX9D still in normal contango (no inversion). Contradicting: breadth was narrower than the headline move (RSP trailed SPY by ~0.5pp), VIX and VIX9D both rose despite the rally (VIX9D +13.5% intraday), and the dollar firmed modestly against every major currency in the FX basket even as risk assets rallied &mdash; a combination this report flags as an anomaly cluster worth watching, not a confirmed reversal signal. Confidence: medium-high. Change vs prior report: extends Monday's regime assessment; today adds the VIX/gold/dollar anomaly cluster as a new watch item.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>This run's own data (close-series method) &middot; EOD official &middot; Tuesday, Aug 4, 2026.</caption>
+              <thead><tr><th>Fund</th><th>Close</th><th>Day</th><th>Trend</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>771.23</td><td class="up">+1.8%</td><td class="txt">Near 52-week high territory (intraday tech-level read put the high at 773.25)</td></tr>
+                <tr><td>QQQ</td><td>723.85</td><td class="up">+3.4%</td><td class="txt">Above 20/50-DMA, a few percent below its 52w high</td></tr>
+                <tr><td>DIA</td><td>540.47</td><td class="up">+1.7%</td><td class="txt">Fresh record close</td></tr>
+                <tr><td>IWM</td><td>301.69</td><td class="up">+1.9%</td><td class="txt">Near 52-week high</td></tr>
+                <tr><td>RSP (equal-weight)</td><td>220.21</td><td class="up">+1.4%</td><td class="txt">Trailed SPY by ~0.4pp &mdash; mega-cap-led session</td></tr>
+                <tr><td>VTI</td><td>381.57</td><td class="up">+2.1%</td><td class="txt">In line with SPY</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">SPY/QQQ/IWM/DIA all closed at or above their prior 52-week high per this run's Twelve Data technical-level pull (sampled ~15:4X ET). Narrative covers leadership changes, not a row-by-row readout.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Whole-market grouped-daily breadth (Massive/Polygon) was not re-fetched this run &mdash; the prior NYSE session (Aug 3) breadth snapshot was already captured in this morning's edition and both runs correctly avoid duplicating it (SR &sect;2.8). Proxy breadth read from today's own session: RSP (equal-weight S&amp;P) gained 1.4% vs. SPY's 1.8%, a ~0.4pp gap indicating narrower, mega-cap-concentrated leadership; IWM (+1.9%) slightly outpaced SPY, so small caps were not left behind the way equal-weight large caps were. Aug 3 session breadth (last known): 3,191 advancers vs. 1,938 decliners of 5,350 screened (per the Jul 31 edition's most recent full breadth capture) &mdash; not restated here as current, only as the most recent hard breadth read on file.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, this run's own data &middot; EOD official.</caption>
+              <thead><tr><th>Sector ETF</th><th>Day</th></tr></thead>
+              <tbody>
+                <tr><td>XLK (Technology)</td><td class="up">+4.99%</td></tr>
+                <tr><td>XLI (Industrials)</td><td class="up">+1.90%</td></tr>
+                <tr><td>XLB (Materials)</td><td class="up">+1.88%</td></tr>
+                <tr><td>XLC (Communication)</td><td class="up">+0.78%</td></tr>
+                <tr><td>XLF (Financials)</td><td class="up">+0.98%</td></tr>
+                <tr><td>XLP (Staples)</td><td class="up">+0.54%</td></tr>
+                <tr><td>XLY (Discretionary)</td><td class="up">+0.19%</td></tr>
+                <tr><td>XLRE (Real Estate)</td><td class="down">&minus;0.12%</td></tr>
+                <tr><td>XLV (Health Care)</td><td class="down">&minus;0.21%</td></tr>
+                <tr><td>XLU (Utilities)</td><td class="down">&minus;0.59%</td></tr>
+                <tr><td>XLE (Energy)</td><td class="down">&minus;0.46%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Technology led decisively (Palantir, AI-adjacent strength); Energy and Utilities lagged &mdash; Energy on falling oil, Utilities on the broader AI-power-demand-linked selloff in names like Vistra and Constellation.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p><strong>Space</strong> (avg well above the broad market): SPCX +9.4%, RKLB +6.4%, ASTS +11.1%, LUNR +8.4%, RDW +10.3%, PL +6.3%, BKSY +7.5%, SPIR +10.0%, VOYG +19.5%, FLY +8.4%, YSS +9.5%; GSAT roughly flat (&minus;0.4%). <strong>AI infrastructure:</strong> MRVL +12.8%, AVGO +7.2%, MU +7.9%, VRT/ETN/CEG mixed. <strong>Defense/aero:</strong> PLTR +29.5% (also AI/software), AVAV +6.2%, RKLB +6.4%, LHX +2.7%; more traditional primes (LMT, RTX, NOC, GD) little-changed. <strong>Financials:</strong> broadly firm (GS +2.8%, MS +3.1%, C +2.6%) except the exchanges (CBOE &minus;3.2%, ICE &minus;1.8%, CME &minus;1.1%). <strong>International:</strong> EWY (South Korea) +7.2% and EWT (Taiwan) +4.5% stood out, consistent with continued Asian chip-sector strength; EWZ (Brazil) was the lone notable decliner (&minus;1.0%).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par yield curve, 2026-08-03 &middot; EOD official (prior business day, standard for the AM/PM cycle).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.79%</td></tr>
+                <tr><td>3M</td><td>3.91%</td></tr>
+                <tr><td>6M</td><td>4.02%</td></tr>
+                <tr><td>1Y</td><td>4.07%</td></tr>
+                <tr><td>2Y</td><td>4.25%</td></tr>
+                <tr><td>5Y</td><td>4.40%</td></tr>
+                <tr><td>10Y</td><td>4.70%</td></tr>
+                <tr><td>30Y</td><td>5.23%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +45bp &middot; 3m10y +79bp &middot; 5s30s +83bp (all as of Aug 3 curve). 10-year real yield (DFII10, Jul 31) 2.47%; 10-year breakeven (T10YIE, Aug 3) 2.27%. Today's ^TNX (10Y yield proxy) ticked down 1.26% intraday per this run's Yahoo Finance data, consistent with the softer JOLTS print. No auction results posted for today's bill sales as of cutoff.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS (BAMLH0A0HYM2): 2.78% as of 2026-08-03, down from 2.85% (Jul 31) and a recent local high of 2.87% (Jul 29) &mdash; spreads have tightened for two straight sessions, consistent with today's risk-on tape. Credit-fund ETFs were broadly firm but modest: LQD +0.58%, VCIT +0.50%, HYG +0.33%, JNK +0.36% (this run's data).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 16.47 (+3.8% vs. Monday's 15.86 close), VIX9D 15.07 (+13.5% intraday vs. 13.28 prior close), VIX3M 19.23 (+1.6%). Term structure: VIX9D &lt; VIX &lt; VIX3M &mdash; still normal contango, no inversion, but the front end (VIX9D) moved far more than the rest of the curve, a pattern consistent with near-dated event-risk pricing (tonight's SpaceX print is the most obvious near-dated catalyst, though this report does not assert that link as confirmed). Cboe's options market-statistics (put/call ratio) endpoint returned HTTP 403 again this run &mdash; a recurring, known path-shift issue; put/call data is <span class="dd dd-warn">Source unavailable</span>. MOVE index: not available (no allowlisted free source). Dealer gamma: not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, base USD &middot; EOD official (2026-08-04 fix) vs. prior fix.</caption>
+              <thead><tr><th>Currency</th><th>Rate</th><th>1D</th></tr></thead>
+              <tbody>
+                <tr><td>EUR</td><td>0.8684</td><td class="up">+0.17%</td></tr>
+                <tr><td>JPY</td><td>157.41</td><td class="up">+0.47%</td></tr>
+                <tr><td>GBP</td><td>0.7437</td><td class="up">+0.18%</td></tr>
+                <tr><td>CHF</td><td>0.8093</td><td class="up">+0.16%</td></tr>
+                <tr><td>CAD</td><td>1.4061</td><td class="up">+0.24%</td></tr>
+                <tr><td>AUD</td><td>1.4222</td><td class="down">&minus;0.35%</td></tr>
+                <tr><td>CNY</td><td>6.7535</td><td>~flat</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Rates shown as foreign-currency-per-USD; a higher number means the dollar strengthened. The dollar firmed modestly against every major currency in this basket today despite the equity risk-on tape &mdash; part of the anomaly cluster noted under Market regime. DXY itself has no allowlisted free source; EURUSD (intraday, Yahoo) plus this ECB basket stand in for it. EURUSD intraday: 1.1535, &minus;0.07% vs. prior close (this run's Yahoo Finance data, close-series method).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>This run's own Yahoo Finance data (close-series method) &middot; Delayed (+10 min).</caption>
+              <thead><tr><th>Instrument</th><th>Change</th></tr></thead>
+              <tbody>
+                <tr><td>WTI crude (CL)</td><td class="down">&minus;5.70%</td></tr>
+                <tr><td>Natural gas (NG)</td><td class="down">&minus;3.78%</td></tr>
+                <tr><td>Gold (GC)</td><td class="up">+2.56%</td></tr>
+                <tr><td>Copper (HG)</td><td class="up">+1.79%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Oil's decline (Iran-Hormuz de-escalation framing) and gold's gain (safe-haven demand, plausibly tied to the same Iran/Hormuz risk even as equities rallied) moved in opposite directions from what a clean single-narrative read would predict &mdash; another entry in today's cross-asset anomaly cluster.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>CoinGecko &middot; Live.</caption>
+              <thead><tr><th>Asset</th><th>Price</th><th>24h</th></tr></thead>
+              <tbody>
+                <tr><td>BTC</td><td>$64,284</td><td class="up">+0.70%</td></tr>
+                <tr><td>ETH</td><td>$1,877.15</td><td class="up">+0.44%</td></tr>
+                <tr><td>SOL</td><td>$74.23</td><td class="up">+0.38%</td></tr>
+                <tr><td>ADA</td><td>$0.1926</td><td class="down">&minus;0.52%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap ~$2.28T; BTC dominance ~56.6%. Crypto lagged today's equity rally by a wide margin &mdash; not a coincident risk-on move across asset classes.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Growth outperformed value decisively (VUG +2.65% vs. VTV +1.35%; IWF +3.19% vs. IWD +1.04%), consistent with a mega-cap/AI-led tape. Momentum (MTUM) led all factor funds at +4.21%. Low-volatility (SPLV +0.26%, USMV +1.50%) lagged, as expected on a high-beta risk-on day.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Today's cross-asset picture does not resolve into one clean narrative: equities rallied broadly (if unevenly by market-cap), credit spreads tightened, and small caps kept pace with large caps &mdash; all textbook risk-on signals. But VIX and near-dated VIX9D both rose, gold rose alongside equities, and the dollar firmed against every major FX-basket currency &mdash; none of which is what a clean risk-on regime typically produces. This report presents both sets of evidence rather than forcing them into a single storyline; the most parsimonious read is that today's rally was driven by idiosyncratic, positive company-specific news (Palantir, Voyager) layered on top of a market still carrying real geopolitical tail risk (Iran/Hormuz, the water-cyberattack dispute) that individual investors are still hedging via gold, near-dated vol, and the dollar.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>Reported today: McDonald's, Merck, Pfizer, Apollo Global (all before open or pre-market), Voyager Technologies (Aug 3 after close). Still due after today's close: SpaceX (first-ever public earnings), AMD, Arista Networks, Booking Holdings, Viasat, Kratos Defense. Tomorrow before open: Eli Lilly, plus Globalstar and Redwire. See Business &amp; Corporate and Top Stories for full detail on each report.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Today: 52-Week ($52B) and 6-Week ($95B) Treasury bill auctions, issue date Aug 6 &mdash; results not posted as of this report's cutoff. Upcoming: 17-Week bill auction Aug 5 (issue date Aug 11); 3-Year Note auction Aug 11 (settles Aug 17); 10-Year Note auction Aug 12 (settles Aug 17); 30-Year Bond auction Aug 13 (settles Aug 17) &mdash; the quarterly refunding cycle resumes next week. SOFR (Aug 3, EOD official): 3.65%, little-changed from recent sessions.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= 20. SOURCES, METHODOLOGY & CORRECTIONS ================= -->
+    <section class="report-section sources-list" aria-labelledby="s-sources">
+      <h2 id="s-sources"><span class="kicker">Section 20</span>Sources, Methodology &amp; Corrections</h2>
+      <p><strong>Primary sources this run:</strong></p>
+      <ul>
+        <li>Palantir, McDonald's, Merck, Pfizer, Apollo Global, Voyager Technologies earnings releases and SEC EDGAR 8-K filings (fetched throughout the day, UA-labeled, throttled ~4.5 req/s)</li>
+        <li>bls.gov/news.release/jolts.nr0.htm (JOLTS, primary)</li>
+        <li>Congress.gov nomination tracker PN12-5 (Blanche committee vote)</li>
+        <li>home.treasury.gov daily par yield curve XML; FRED series (CPIAUCSL, CPILFESL, PAYEMS, ICSA, UNRATE, T10Y2Y, DGS2, DGS10, T10YIE, DFII10, SOFR, BAMLH0A0HYM2)</li>
+        <li>Cboe VIX/VIX9D/VIX3M delayed quotes and EOD history; Frankfurter (ECB reference rates); CoinGecko; FINRA daily short-volume file (Aug 3 session)</li>
+      </ul>
+      <p><strong>Secondary confirmation:</strong> Al Jazeera, Reuters/Yahoo wire, NPR, CNN, CNBC, Washington Post, ABC News, NBC News, Bloomberg, The Register, ABC7, Times of Israel, JPost, Foreign Policy, The Hill, gCaptain, Seatrade Maritime, Gulf News, RTE, Euronews, Taipei Times, Al Jazeera, Forbes, US News, and others cited inline with each story.</p>
+      <p><strong>Methodology note:</strong> equity/index/futures/commodity/FX percent changes use the close-series method (each instrument compared against its own last valid prior close, never a raw "previousClose" field) per the correction logged 2026-08-03. Free-tier equity quotes are non-consolidated, single-venue prices and can differ slightly from official consolidated closes. Delayed data is labeled with its delay everywhere it appears; missing sources are declared unavailable, never estimated silently. Cyberattack attribution claims in this report carry explicit confidence qualifiers and are never presented as established fact absent a formal attribution.</p>
+      <p><strong>Prompt-injection note:</strong> no instruction-like content was detected in any fetched source this run.</p>
+      <p><strong>Corrections:</strong> none discovered this run. All prior entries in <code>ledgers/corrections.json</code> (five total, most recently the 2026-08-03 Yahoo Finance chartPreviousClose methodology fix) have already been surfaced in earlier editions and are not restated here.</p>
+    </section>
+
+    <!-- ================= HEALTH FOOTER ================= -->
+    <footer class="health-footer">
+      <h2>System health &mdash; this run</h2>
+      <ul class="health-grid">
+        <li class="ok">Treasury par yield curve &mdash; ok &middot; data age 1 session</li>
+        <li class="ok">FRED &mdash; ok &middot; data age varies by series (1&ndash;4 days)</li>
+        <li class="ok">Cboe VIX/VIX9D/VIX3M quotes &amp; EOD history &mdash; ok &middot; delayed +15m</li>
+        <li class="down">Cboe options market-statistics (put/call ratio) &mdash; HTTP 403, recurring known path-shift issue &middot; labeled Source unavailable</li>
+        <li class="ok">Frankfurter FX &mdash; ok &middot; same-day ECB fix</li>
+        <li class="ok">CoinGecko crypto &mdash; ok &middot; live</li>
+        <li class="down">Twelve Data quote batch (167-symbol universe) &mdash; HTTP 429 after first 8-symbol batch, per-minute credit limit; substituted full Yahoo Finance v8 sweep (166/167 recovered, FM ETF a recurring known gap)</li>
+        <li class="ok">Twelve Data time_series (SPY/QQQ/IWM/DIA/TLT/SPCX technical levels) &mdash; ok on retry after a one-minute credit-limit wait</li>
+        <li class="ok">Yahoo Finance v8 (equities, indices, futures, commodities, FX) &mdash; ok &middot; close-series method</li>
+        <li class="ok">FINRA daily short volume &mdash; ok &middot; Aug 3 session (T+1 publication lag, expected)</li>
+        <li class="ok">SEC EDGAR market-wide + per-company 8-K feeds &mdash; ok &middot; UA-labeled, throttled; 12 of 90 company requests timed out on first pass (ANET, ASTS, BLK, CEG, DLR, GS, KKR, LUNR, RDW, SCHW, UAL and one more) and were not retried given run-time budget &mdash; none of the retried names (SPCX, CEG, ASTS, JNJ) surfaced a material filing beyond what's reported above</li>
+        <li class="ok">Massive/Polygon whole-market breadth &mdash; not attempted this run by design (Aug 3 session already captured this morning, SR &sect;2.8 dedup rule)</li>
+      </ul>
+      <p>Prior run (2026-08-04-am): ok, telegram_ok true, pages_ok true, sources_failed: Cboe options stats, Twelve Data quote batch, Yahoo FM ETF, cisa.gov direct fetch. No instruction-like content detected in any fetched source this run.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-04-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
