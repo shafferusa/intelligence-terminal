@@ -1,39 +1,39 @@
 {
-  "fetched_at": "2026-08-04T16:15:00-04:00",
+  "fetched_at": "2026-08-05T06:00:00-04:00",
   "treasury_par_curve": {
-    "date": "2026-08-03",
-    "label": "EOD official (2026-08-03)",
-    "1M": 3.79,
-    "1.5M": 3.82,
-    "2M": 3.87,
-    "3M": 3.91,
-    "4M": 3.94,
-    "6M": 4.02,
-    "1Y": 4.07,
-    "2Y": 4.25,
-    "3Y": 4.32,
-    "5Y": 4.4,
-    "7Y": 4.54,
-    "10Y": 4.7,
-    "20Y": 5.23,
-    "30Y": 5.23,
+    "date": "2026-08-04",
+    "label": "EOD official (2026-08-04)",
+    "1M": 3.78,
+    "1.5M": 3.8,
+    "2M": 3.85,
+    "3M": 3.89,
+    "4M": 3.91,
+    "6M": 4.0,
+    "1Y": 4.04,
+    "2Y": 4.2,
+    "3Y": 4.25,
+    "5Y": 4.33,
+    "7Y": 4.47,
+    "10Y": 4.63,
+    "20Y": 5.18,
+    "30Y": 5.18,
     "spreads_bp": {
-      "2s10s": 45,
-      "3m10y": 79,
-      "5s30s": 83
+      "2s10s": 43,
+      "3m10y": 74,
+      "5s30s": 85
     }
   },
   "vix_complex": {
-    "as_of": "2026-08-04T16:00:00-04:00",
-    "label": "EOD official (Tue Aug 4 close)",
-    "VIX": 16.45,
-    "VIX9D": 15.07,
-    "VIX3M": 19.23,
-    "term_structure": "VIX9D < VIX < VIX3M -- normal contango, but VIX9D moved far more than the rest of the curve today (+13.5% intraday), consistent with near-dated event-risk pricing"
+    "as_of": "2026-08-05T05:40:00-04:00",
+    "label": "Delayed (+15 min), premarket snapshot vs Tue Aug 4 close",
+    "VIX": 16.14,
+    "VIX9D": 15.04,
+    "VIX3M": 19.34,
+    "term_structure": "VIX9D < VIX < VIX3M -- normal contango, no inversion"
   },
   "fx": {
     "date": "2026-08-04",
-    "label": "EOD official (ECB reference, 2026-08-04)",
+    "label": "EOD official (ECB reference, 2026-08-04 fix; Aug 5 fix not yet published)",
     "base": "USD",
     "rates": {
       "AUD": 1.4222,
@@ -49,26 +49,26 @@
     }
   },
   "crypto": {
-    "as_of": "2026-08-04T16:15:00-04:00",
+    "as_of": "2026-08-05T05:45:00-04:00",
     "label": "Live (CoinGecko public endpoint, no COINGECKO_KEY presented)",
     "BTC": {
-      "usd": 64284,
-      "usd_24h_change": 0.6992816800414151
+      "usd": 64148,
+      "usd_24h_change": 1.0497472818381142
     },
     "ETH": {
-      "usd": 1877.15,
-      "usd_24h_change": 0.44100103419655495
+      "usd": 1872.53,
+      "usd_24h_change": 1.050144625887982
     },
     "SOL": {
-      "usd": 74.23,
-      "usd_24h_change": 0.37766695538085376
+      "usd": 74.13,
+      "usd_24h_change": 1.3185313292668908
     },
     "ADA": {
-      "usd": 0.19257,
-      "usd_24h_change": -0.515765567343473
+      "usd": 0.195421,
+      "usd_24h_change": -0.3438848896420197
     },
-    "total_market_cap_usd": 2278615818533.721,
-    "btc_dominance_pct": 56.57948234561626
+    "total_market_cap_usd": 2275572614949.6753,
+    "btc_dominance_pct": 56.535147502820706
   },
   "indices_cash_close": {
     "date": "2026-08-04",
@@ -105,60 +105,59 @@
     }
   },
   "futures_and_commodities": {
-    "as_of": "2026-08-04T16:15:00-04:00",
-    "label": "Delayed +10m (Yahoo Finance), vs Tuesday's prior settle/close",
+    "as_of": "2026-08-05T05:40:00-04:00",
+    "label": "Delayed +10m (Yahoo Finance, close-series method), vs Tuesday's prior settle/close",
     "CL": {
-      "close": 75.76,
-      "prevclose": 80.34,
-      "pct": -5.7
+      "close": 76.23,
+      "prevclose": 75.77,
+      "pct": 0.61
     },
     "GC": {
-      "close": 4136.9,
-      "prevclose": 4033.7,
-      "pct": 2.56
+      "close": 4214.8,
+      "prevclose": 4095.4,
+      "pct": 2.92
     },
     "NG": {
-      "close": 2.676,
-      "prevclose": 2.781,
-      "pct": -3.78
+      "close": 2.694,
+      "prevclose": 2.682,
+      "pct": 0.45
     },
     "HG": {
-      "close": 6.63,
-      "prevclose": 6.514,
-      "pct": 1.79
+      "close": 6.6415,
+      "prevclose": 6.6185,
+      "pct": 0.35
     },
     "EURUSD": {
-      "close": 1.1535,
-      "prevclose": 1.1544,
-      "pct": -0.07
+      "close": 1.1546,
+      "prevclose": 1.1507,
+      "pct": 0.34
     },
     "ES": {
-      "close": 7774.25,
-      "prevclose": 7628.25,
-      "pct": 1.91
+      "close": 7789.25,
+      "prevclose": 7765.5,
+      "pct": 0.31
     },
     "NQ": {
-      "close": 29896.25,
-      "prevclose": 28891.75,
-      "pct": 3.48
+      "close": 29868.0,
+      "prevclose": 29863.5,
+      "pct": 0.02
     },
     "YM": {
-      "close": 54330.0,
-      "prevclose": 53334.0,
-      "pct": 1.87
+      "close": 54407.0,
+      "prevclose": 54268.0,
+      "pct": 0.26
     },
     "RTY": {
-      "close": 3048.9,
-      "prevclose": 2989.3,
-      "pct": 1.99
+      "close": 3050.8,
+      "prevclose": 3044.7,
+      "pct": 0.2
     }
   },
   "sources_failed_this_run": [
-    "cdn.cboe.com options market-statistics (HTTP 403, recurring known path-shift issue)",
-    "Twelve Data quote batch (HTTP 429 after first 8-symbol batch, per-minute credit limit; substituted full Yahoo Finance sweep, 166/167 recovered, FM ETF a recurring known gap)",
-    "12 of 90 SEC EDGAR per-company 8-K requests timed out on first pass; 4 retried, none material"
+    "cdn.cboe.com options market-statistics (AccessDenied, recurring known path-shift issue)",
+    "Twelve Data quote batches (HTTP 429 after first batch, 8-credit/minute limit; 167-symbol watchlist carried forward from Tuesday Aug 4 close, appropriate baseline for an AM run's Previous-close labeling)"
   ],
-  "methodology_note": "Equity/index/futures/commodity/FX moves computed via the close-series method (Aug 3 correction): each instrument's current reading compared against its own last valid prior close, never Yahoo's chartPreviousClose field. Headline indices (SPY/QQQ/DIA/IWM/RSP) and the day's most-cited single-name movers were refreshed after the 4:00 PM close for final EOD accuracy; the remainder of the 167-symbol watchlist reflects a snapshot sampled approximately 15:40-15:50 ET (10-20 minutes before close).",
+  "methodology_note": "AM run: equity_quotes_close_2026-08-04 and technical_levels_2026-08-04 blocks below are retained unchanged from Tuesday's close (correct 'Previous close' baseline for this run; market has not yet opened). Futures/commodities/FX/VIX/crypto/Treasury/FX blocks above are this run's own fresh premarket data, computed via the close-series method (Aug 3 correction: never use Yahoo's raw chartPreviousClose field).",
   "technical_levels_2026-08-04": {
     "SPY": {
       "close": 773.25,
@@ -1372,6 +1371,35 @@
       "pct": 9.52,
       "vol": 4051653,
       "last_ts": 1785850200
+    }
+  },
+  "indices_premarket_2026-08-05": {
+    "as_of": "2026-08-05T05:40:00-04:00",
+    "label": "Delayed +10m (Yahoo Finance) -- pre-open snapshot, not a new cash close",
+    "GSPC": {
+      "live": 7736.52,
+      "prev_close_series": 7600.5,
+      "pct": 1.79
+    },
+    "IXIC": {
+      "live": 26584.99,
+      "prev_close_series": 25913.9,
+      "pct": 2.59
+    },
+    "DJI": {
+      "live": 54085.88,
+      "prev_close_series": 53178.41,
+      "pct": 1.71
+    },
+    "RUT": {
+      "live": 3036.98,
+      "prev_close_series": 2981.91,
+      "pct": 1.85
+    },
+    "TNX": {
+      "live": 4.627,
+      "prev_close_series": 4.686,
+      "pct": -1.26
     }
   }
 }

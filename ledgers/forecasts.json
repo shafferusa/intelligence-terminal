@@ -482,6 +482,36 @@
       "probability": "40-55%",
       "basis": "Three incidents in roughly five days is an accelerating pace within the broader campaign that has damaged at least 17 merchant ships since it began Feb 28, 2026; no de-escalation signal has been confirmed on this specific risk channel.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-05-am-1",
+      "date": "2026-08-05",
+      "slot": "am",
+      "forecast": "Today's cash session sees a broad AI-infrastructure-linked pullback (VRT, ETN, CEG, VST, NVDA, AVGO trading down as a group, not just SPCX/AMD) as investors generalize last night's capex-skepticism reaction.",
+      "horizon": "2026-08-05",
+      "probability": "25-35%",
+      "basis": "Premarket futures (NQ flat, ES/RTY only slightly higher) show no broad AI-sector stress as of this report's snapshot, arguing against a broad spillover; but two large, distinct capex-driven overnight selloffs (SPCX ~-11% premarket, AMD >-8% after-hours) on the same night is an unusual coincidence worth tracking.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-05-am-2",
+      "date": "2026-08-05",
+      "slot": "am",
+      "forecast": "Todd Blanche's Attorney General nomination fails on the Senate floor (either Murkowski or Cassidy votes no, or an additional GOP senator defects).",
+      "horizon": "2026-08-10",
+      "probability": "20-30%",
+      "basis": "Sen. Collins's Aug 4 no-vote announcement leaves exactly two GOP senators (Murkowski, Cassidy) uncommitted with distinct, unresolved concerns and only one allowable additional defection given the 53-47 majority; no public whip count was found confirming either senator's final position.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-05-am-3",
+      "date": "2026-08-05",
+      "slot": "am",
+      "forecast": "A fifth Strait of Hormuz-area vessel incident is reported before today's Closing Brief (16:30 ET cutoff).",
+      "horizon": "2026-08-05",
+      "probability": "30-45%",
+      "basis": "Four incidents in roughly a week (Gaslog Salem, Gaslog Shanghai, Velos Amber, Minoan Pioneer) is an accelerating pace; UKMTO/Bloomberg describe Hormuz shipping traffic as 'at a trickle.' No de-escalation signal (confirmed deal, quiet 24h) has materialized as of this report's cutoff.",
+      "status": "open"
     }
   ]
 }

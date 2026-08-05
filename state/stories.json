@@ -2,53 +2,53 @@
   "stories": [
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "Trump cancels planned US-Israeli strikes on Iranian energy infrastructure, citing a disputed deal outline; Iran denies requesting the pause",
+      "headline": "Iran holds its US-deal denial into a new day; Bessent's 'deal by Wednesday' claim remains unconfirmed",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple (statements on both sides); Disputed (whether any deal exists)",
-      "one_line": "Baghaei repeated Iran's denial for a fourth consecutive day, saying Iran's only channel is Oman-mediated Hormuz-passage talks with no plans to send negotiators abroad. Separately, Bessent said a US-brokered Iran-Oman Hormuz-reopening deal could land 'by Wednesday'; Trump said he opposes any tolling scheme. Equities extended their rally regardless (S&P +1.8% today).",
-      "score_note": "Denial persists into a fifth day; a parallel Iran-Oman commercial track is now the more concrete near-term development.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Disputed (deal status); Confirmed-multiple (both governments' statements)",
+      "one_line": "Baghaei's latest on-record remarks: Iran has 'no negotiations with the United States; the negotiations are with Oman,' and any Iran-Oman shipping-route understanding 'has nothing to do with whether the Strait of Hormuz is reopened.' Bessent's Aug 4 CNBC comment that a deal could land 'today or tomorrow' remains unconfirmed as of this run.",
+      "score_note": "Denial persists into a new day; no deal confirmed on either side's terms.",
       "sources": [
-        "RFE/RL",
-        "Rappler",
         "CNN",
-        "Washington Post",
-        "The National"
+        "CNBC",
+        "NBC News",
+        "IranWire",
+        "Al Jazeera"
       ],
       "watch": true
     },
     {
       "id": "hormuz-tanker-attacks-aug1",
-      "headline": "Two LNG tankers hit in and around the Strait of Hormuz within days of each other",
-      "status": "Materially changed",
+      "headline": "Fourth Hormuz vessel incident's missing crewman remains unconfirmed; no fifth incident reported",
+      "status": "Continuing",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "A fourth distinct vessel, the Liberia-flagged dry bulk carrier Minoan Pioneer, was struck by an unidentified projectile in Omani waters Monday evening (mayday ~18:10 ET); one crew member reported missing, fire broke out, UKMTO later lost contact. Confirms forecast 2026-08-04-am-3 (fourth incident by Aug 11) well ahead of its horizon. Bloomberg reports Hormuz shipping traffic now 'at a trickle.' Projectile source unattributed.",
-      "score_note": "Fourth incident in roughly a week; pace continues accelerating.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-multiple (incident); Unverified (crew status, attribution)",
+      "one_line": "Maritime trade press (Splash247, JPost, Seatrade Maritime, Riviera Maritime) still describes the Minoan Pioneer's missing engineer as unconfirmed by any authority as of Aug 4 reporting. No group has claimed responsibility; no fifth vessel incident found this run.",
+      "score_note": "Pace holds at four incidents in roughly a week; forecast 2026-08-05-am-3 tracks a fifth before today's Closing Brief.",
       "sources": [
-        "Bloomberg",
-        "CNN",
-        "Wikipedia (tertiary synthesis, damaged-vessel count only)"
+        "Splash247",
+        "Jerusalem Post",
+        "Seatrade Maritime",
+        "Riviera Maritime"
       ],
       "watch": true
     },
     {
       "id": "iran-linked-water-cyberattacks-aug1",
-      "headline": "Suspected Iran-linked cyberattacks hit water-system controls in Michigan and Minnesota; FBI investigating",
+      "headline": "Iran-linked water-utility cyberattacks now span at least 12 US states",
       "status": "Materially changed",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple (scope); Unverified/Preliminary (attribution, now actively disputed)",
-      "one_line": "Scope grew from 7 to at least 12 states (Georgia, Michigan newly confirmed). This is now also a political dispute: Trump publicly rejected the Iran attribution Friday, blaming Minnesota Gov. Walz for state water-system vulnerabilities, contradicting federal investigators who reportedly consider Iran the likely actor. FBI is also examining whether the actor spoofed Iranian tradecraft. No public-health impact confirmed anywhere.",
-      "score_note": "Scope keeps widening while attribution grows more contested, not less.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-multiple (scope); Unverified/Preliminary (Iran attribution)",
+      "one_line": "ABC News and Axios (Aug 4) put the confirmed footprint at 12+ states, up from 7. CISA advisory AA26-097A (last updated Jul 22) expanded scope to Schneider Electric and Siemens PLCs. Trump-vs-federal-investigators attribution dispute remains unresolved; FBI has not issued its own public attribution.",
+      "score_note": "Scope continues widening; no new escalation overnight beyond the scope update itself.",
       "sources": [
-        "CBS News",
-        "The Register",
-        "Fortune",
-        "ABC News/ABC7",
-        "Fox News"
+        "ABC News",
+        "Axios",
+        "Newsweek",
+        "CISA.gov"
       ],
       "watch": true
     },
@@ -74,17 +74,18 @@
     },
     {
       "id": "russia-ukraine-poland-missile-jul30",
-      "headline": "Poland missile incursion confirmed Russian-caused; NATO says no current plans to invoke Article 4",
-      "status": "Continuing",
+      "headline": "Major Russian missile/drone barrage kills at least 15 in and around Kyiv, a marked overnight escalation",
+      "status": "Materially changed",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple (core event and NATO posture); Disputed (Ukraine-wide casualty count, 8 vs 13)",
-      "one_line": "Deadlier overnight cross-border strikes: a Ukrainian drone strike on a Moscow-region warehouse killed 5 (distinct, larger incident than this morning's Chekhov strike); Russian strikes killed 3 in Dnipropetrovsk Oblast (including a child) and an 89-year-old woman in Mykolaiv. Al Jazeera's combined tally: at least 9 killed. No new NATO/Article 4 development.",
-      "score_note": "Both sides striking deeper and more lethally; no diplomatic counter-movement.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Roughly 24 ballistic/hypersonic missiles and 115 Shahed-type drones struck Kyiv and the surrounding region overnight; independent outlets (Euronews, Bloomberg, CNN, CNBC) converge on at least 15 killed (some cite up to 17, still settling). Ukraine reportedly struck a Wildberries logistics center and other sites in Russia's Tula Oblast in return. NATO Article 4 window over the earlier Poland incursion remains passed without invocation.",
+      "score_note": "Largest single overnight barrage this report has tracked in the current cycle; casualty figure not yet final.",
       "sources": [
-        "Ukraine General Staff (primary, via wire)",
-        "GlobalSecurity.org",
-        "Moscow-region governor statements"
+        "Euronews",
+        "Bloomberg",
+        "CNN",
+        "CNBC"
       ],
       "watch": true
     },
@@ -147,52 +148,53 @@
     },
     {
       "id": "kumamoto-earthquake-jul2026",
-      "headline": "Kumamoto earthquake death toll holds at 36 as water and heat crisis continues",
+      "headline": "Kumamoto earthquake toll holds at 38; crisis now centered on heat and water access",
       "status": "Continuing",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-04-am",
+      "last_updated": "2026-08-05-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Toll held at 38 for a second consecutive day, no new deaths reported. Heat and water-supply crisis for survivors remains the live risk. Dropped from Top Stories this cycle (re-reported, not new).",
-      "score_note": "Plateaued; watching the recovery-phase heat/water risk rather than the death count.",
+      "one_line": "Toll unchanged at 38. ~46,700 households citywide remain without water; temperatures forecast to reach 39C today; SDF installing AC units at evacuation centers housing 8,200+ people. Power restored citywide for the first time in a week as of Aug 4.",
+      "score_note": "Plateaued on toll; the recovery-phase heat/water risk this report has flagged is now acute (39C forecast).",
       "sources": [
         "Nippon.com",
-        "NewsOnJapan",
-        "Japan Times"
+        "Japan Times",
+        "News On Japan"
       ],
       "watch": true
     },
     {
       "id": "drc-ebola-outbreak-2026",
-      "headline": "DRC Ebola outbreak remains the fastest-growing on record, now spread across five provinces",
+      "headline": "DRC Ebola outbreak's toll climbs to 1,707 deaths as community-spread share rises",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-04-am",
-      "verification": "Confirmed-primary (WHO Disease Outbreak News)",
-      "one_line": "WHO confirms the outbreak has surpassed the 2018-2020 Kivu outbreak (3,317 cases) as the largest ever recorded in DRC. Epi week 30 recorded the highest weekly case (567) and death (296) counts of the entire outbreak. Confirmed: 3,605 cases / 1,587 deaths as of Jul 30 (44% CFR). IHR Emergency Committee meets Aug 18. Uganda formally closed its linked outbreak chapter Jul 28.",
-      "score_note": "Elevated back into Top Stories -- a genuine escalation, not a re-report.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-primary (WHO)",
+      "one_line": "WHO/government-sourced figures (Aug 4): 3,802 cases / 1,707 deaths, up from 3,605/1,587 (Jul 30). Nearly 80% of new cases are now community-spread rather than contact-traced. Ituri province remains ~88-90% of the burden. IHR Emergency Committee still meets Aug 18.",
+      "score_note": "Continues accelerating; community-spread share is the concerning new detail.",
       "sources": [
-        "WHO Disease Outbreak News DON613/DON614 (primary)",
-        "UN News",
-        "ECDC",
-        "Medical Xpress",
-        "Wikipedia (secondary synthesis)"
+        "WHO Disease Outbreak News (via press)",
+        "Al Jazeera",
+        "The Hill",
+        "UN News"
       ],
       "watch": true
     },
     {
       "id": "blanche-ag-nomination-jul30",
-      "headline": "Todd Blanche's AG nomination advances 12-10 in Senate Judiciary Committee",
+      "headline": "Sen. Collins announces she will vote no on Blanche's AG nomination, leaving him one GOP defection from failure",
       "status": "Materially changed",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-04-pm",
+      "last_updated": "2026-08-05-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Committee voted 12-10 along party lines to advance the nomination; both holdouts (Cornyn, Tillis) voted yes citing the fund's formal rescission. CNN/others flag the rescission text doesn't explicitly foreclose reviving the fund later. Full floor vote not yet scheduled; three GOP senators (Murkowski, Cassidy, Collins) remain uncommitted, and Blanche can afford to lose only two more GOP votes given the 53-47 majority and McConnell's absence.",
-      "score_note": "Committee hurdle cleared; floor vote is the next and final test.",
+      "one_line": "A day after the 12-10 committee vote, Collins announced opposition citing the rescinded anti-weaponization fund, the underlying Trump-IRS settlement, and a reported promise on abortion-medication mailing restrictions. Murkowski and Cassidy remain uncommitted; Blanche can now afford only one more GOP defection (53-47 majority). No floor vote date yet scheduled; GOP leadership reportedly aims for before Aug 10 recess.",
+      "score_note": "Floor math has tightened materially; forecast 2026-08-05-am-2 tracks nomination failure risk.",
       "sources": [
-        "NBC News",
         "CNBC",
-        "C-SPAN",
-        "judiciary.senate.gov"
+        "Axios",
+        "NOTUS",
+        "CBS News",
+        "Fox News",
+        "Alaska's News Source"
       ],
       "watch": true
     },
@@ -339,38 +341,38 @@
     },
     {
       "id": "cyber-breaches-jul28",
-      "headline": "Arista VeloCloud CISA deadline passed today; no post-deadline compliance data yet",
+      "headline": "Cisco Secure FMC and VMware/Broadcom flaws remain confirmed exploited; two newer VMware CVEs unverified",
       "status": "Continuing",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-03-pm",
-      "verification": "Confirmed-primary (CISA advisory) on the deadline; no update on compliance outcome",
-      "one_line": "No new exploitation confirmed today for the Cisco Secure FMC or VMware/Broadcom flaws; Broadcom's standing position remains no observed in-the-wild exploitation. ShinyHunters/EY extortion matter remains unresolved, no leak-site posting or EY statement today. Could not confirm or rule out new CISA KEV catalog additions today (cisa.gov returned HTTP 403 to direct fetch).",
-      "score_note": "No material change this run; direct CISA access degraded, flagged in health footer.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-multiple (Cisco FMC, Aria Operations); Unverified (two newer VMware CVEs)",
+      "one_line": "Cisco Secure FMC (CVE-2026-20316) and a related critical Cisco flaw (CVE-2026-20131, CVSS 10.0) remain confirmed under active exploitation. VMware Aria Operations (CVE-2026-22719) remains KEV-confirmed. Two newer VMware CVEs (CVE-2026-59310, CVE-2026-47876) appear in vendor trackers but this report could not confirm their KEV/exploitation status against a primary CISA source (cisa.gov direct fetch still 403'ing).",
+      "score_note": "No new advisory overnight; flags two unverified newer CVEs pending direct confirmation.",
       "sources": [
-        "Cisco PSIRT",
-        "CISA.gov",
-        "Broadcom advisory",
-        "The Hacker News",
-        "BleepingComputer",
-        "cybersecuritynews.com"
+        "SecurityWeek",
+        "TheHackerNews",
+        "Help Net Security",
+        "Senserva KEV tracker"
       ],
       "watch": true
     },
     {
       "id": "spacex-starship-flight-13",
-      "headline": "SpaceX earnings due after today's close; stock +9.4% into the print, space sector rallies on a documented catalyst",
+      "headline": "SpaceX's first public-company earnings beat on growth, but AI capex and a $60B Cursor deal send shares down ~11% premarket",
       "status": "Materially changed",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Results due ~4:30 PM ET webcast, after this run's cutoff. SPCX closed +9.4% at $125.33. Unlike Monday's unexplained space-sector rally, today's move (SPCX, ASTS +11.1%, RDW +10.3%, SPIR +10.0%) has an explicit documented catalyst per this run's research: positioning ahead of the print. Voyager Technologies (+19.5%) rallied separately on its own Q2 double-beat and raised guidance. Polymarket prices ~69-70% odds of an EPS miss. Some aggregator pages showed unconfirmed purported results hours early; not treated as confirmed.",
-      "score_note": "Results land after this report's cutoff; full coverage due tomorrow morning.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-primary (SEC EDGAR 8-K/10-Q)",
+      "one_line": "Q2 2026: revenue $7.814B (+92% YoY), net loss narrowed to $541M, Adjusted EBITDA $3.538B (+191% YoY). Disclosed a $60B Cursor acquisition (AI segment) and $18.369B total capex. Stock closed Tuesday's regular session +9.4% at $125.33 pre-earnings, then fell to $111.73 by this report's 05:47 ET premarket check (~-10.9%) on capex/margin concerns, two days ahead of the ~$116B lockup expiration (~Aug 6). Resolves forecast 2026-08-04-am-1 (>10% move either direction) as CORRECT, pending final grading.",
+      "score_note": "First public earnings as a newly listed company; the AI-capex market reaction is the story, not the headline beat.",
       "sources": [
-        "SpaceX investor communications (primary)",
-        "Finnhub earnings calendar (primary)",
-        "Seeking Alpha",
-        "S&P Global",
-        "this run's own Yahoo Finance/FINRA fetch"
+        "SpaceX Q2 2026 earnings release, SEC EDGAR 8-K Exhibit 99.1 (primary)",
+        "SpaceX 10-Q (primary)",
+        "this run's own Yahoo Finance intraday fetch (primary)",
+        "CNBC",
+        "Fortune",
+        "CNN Business",
+        "TradingKey"
       ],
       "watch": true
     },
@@ -485,18 +487,17 @@
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
-      "headline": "Gaza Board of Peace's 15-point Hamas disarmament roadmap detailed; neither side has fully accepted it",
-      "status": "Materially changed",
+      "headline": "Gaza Board of Peace and Hamas remain deadlocked on disarmament sequencing",
+      "status": "Continuing",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-04-pm",
+      "last_updated": "2026-08-05-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Board of Peace envoy Mladenov met Netanyahu (urged halting strikes); Netanyahu's office said the public deal text 'does not reflect Israel's positions.' The Board then hardened its sequencing statement today: no Israeli withdrawal before full Hamas disarmament. Hamas's opposite position is unchanged and unaddressed on-record today. ~17-19 Gazans reported killed Aug 2-4.",
-      "score_note": "Sequencing dispute hardens further; no resolution mechanism visible.",
+      "one_line": "No new on-record statement from either side beyond standing positions: the Board requires full Hamas disarmament before any Israeli withdrawal past the Yellow Line; Hamas (Ghazi Hamad) says the reverse. No new Gaza casualty data found for the last 12-16 hours.",
+      "score_note": "No material change; sequencing deadlock persists.",
       "sources": [
         "Al Jazeera",
-        "Times of Israel",
-        "The Hill",
-        "NBC News"
+        "The Media Line",
+        "Washington Post"
       ],
       "watch": true
     },
@@ -517,19 +518,16 @@
     },
     {
       "id": "novo-nordisk-zeus-trial-failure-jul31",
-      "headline": "Novo Nordisk erases ~$30B in market value as its ziltivekimab cardiovascular trial fails",
-      "status": "New",
+      "headline": "Novo Nordisk hit with a third analyst downgrade (UBS, Buy to Neutral) following last week's failed cardiovascular trial",
+      "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-07-31-pm",
-      "verification": "Confirmed-primary (company disclosure), Confirmed-multiple (press)",
-      "one_line": "Phase 3 ZEUS trial of ziltivekimab (IL-6 pathway) showed no reduction in major adverse cardiovascular events versus placebo, despite hitting biological targets. Shares closed -8.63% (this run's data). Removes a major pipeline asset beyond Novo's core GLP-1 franchise. Forecast 2026-07-31-pm-1 logged (does not recover half the decline within 5 sessions, 55-65%).",
-      "score_note": "Largest single-name health-care decliner this run; no broad pharma-sector contagion evident.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "UBS cut NVO from Buy to Neutral today (Aug 5), following Wall Street Zen (Aug 2, Buy to Hold) and HSBC (Jul 31, Strong Buy to Hold). Some analysts (Jefferies, Citi) view the stock's reaction to the ZEUS trial failure as oversized relative to ziltivekimab's actual revenue contribution. Related HERMES/ARTEMIS ziltivekimab trials continue, readouts expected H1 2027.",
+      "score_note": "Third consecutive downgrade; no confirmation yet of whether the market reaction was overdone.",
       "sources": [
-        "Novo Nordisk trial disclosure (primary, via wire)",
-        "CNBC",
-        "Forbes",
-        "Yahoo Finance",
-        "Schaeffer's Investment Research"
+        "TipRanks",
+        "MarketBeat"
       ],
       "watch": true
     },
@@ -603,52 +601,49 @@
     },
     {
       "id": "ceuta-migrant-crisis-aug3",
-      "headline": "Dozens dead as migrant-crossing surge overwhelms Spain's Ceuta enclave; Italy suspends Schengen-free travel with Spain",
+      "headline": "EU ministers close Ceuta meeting with no binding deal; migrant death toll gets a third, higher estimate",
       "status": "Materially changed",
       "first_seen": "2026-08-03-pm",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple (scale of crossing, Italy's Schengen suspension); Disputed (death toll)",
-      "one_line": "The 67-88 toll discrepancy is now partly explained rather than resolved: Spain counts 72 (last week's surge), Morocco counts 11 (separate body recovery), Ceuta's morgue received 88 total across a wider two-week window (not a higher count of the same event). EU interior ministers met today: consensus on general principles, no binding agreement; France broke from a 22-country hardline letter (Italy/Denmark/Germany/Hungary), calling it exploitation 'for political ends.' Forecast 2026-08-03-pm-3 remains open.",
-      "score_note": "EU visibly split between a hardline bloc and a Spain-aligned camp.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Confirmed-multiple (meeting outcome); Disputed (death toll, now three figures)",
+      "one_line": "EU interior ministers' Aug 4 emergency meeting produced 'full solidarity' with Spain and a five-point work list but no binding agreement and no 'hybrid threat' finding against Morocco. Death toll dispute widened: Spain 72, Morocco 11, and a Moroccan NGO (AMDH, single-sourced, uncorroborated) now claims 'nearly 130.'",
+      "score_note": "No resolution mechanism visible; toll dispute widening rather than narrowing.",
       "sources": [
         "Euronews",
-        "Al Jazeera",
-        "Fox News",
-        "NPR"
+        "HNGN",
+        "Irish Times",
+        "CNN"
       ],
       "watch": true
     },
     {
       "id": "spokane-wildfire-complex-aug1",
-      "headline": "Spokane Complex wildfires destroy 700+ structures, force 65,000 evacuations; arson arrest made",
-      "status": "New",
+      "headline": "Spokane-area wildfire complex holds at 0% containment as some evacuation zones ease",
+      "status": "Continuing",
       "first_seen": "2026-08-04-am",
-      "last_updated": "2026-08-04-am",
+      "last_updated": "2026-08-05-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Three fast-moving fires broke out Aug 1 in Spokane County, WA, driven by 35-45mph winds pushing flame fronts across the Spokane River and into the city. ~700 structures burned, ~65,000 evacuated, 8,026 acres burned and 0% contained as of the most recent report. A man charged with arson in connection with one fire. No deaths reported as of Monday midday.",
-      "score_note": "One of the more destructive single US wildfire events of the 2026 season by structure count.",
+      "one_line": "8,026 acres, 0% containment per the federal incident team; ~65,000 evacuated, 700+ structures destroyed (640 within the Old Trails Fire). One zone downgraded from Level 2 to Level 1. A CAL FIRE team is assisting -- its first-ever activation to Washington state.",
+      "score_note": "No containment progress yet; first easing signal is the partial evacuation downgrade.",
       "sources": [
-        "Washington State Standard",
-        "CNN",
         "NBC News",
-        "Washington State DSHS (primary, state agency)"
+        "Fox13 Seattle",
+        "CNN"
       ],
       "watch": true
     },
     {
       "id": "indonesia-ferry-fire-aug2",
-      "headline": "Indonesian ferry Mutiara Sentosa 2 catches fire; 5 dead, 41 missing",
-      "status": "New",
+      "headline": "Indonesian ferry fire: missing-passenger count now explicitly uncertain, not settled at 41",
+      "status": "Materially changed",
       "first_seen": "2026-08-04-am",
-      "last_updated": "2026-08-04-am",
+      "last_updated": "2026-08-05-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Ferry traveling Surabaya to Makassar with 271 aboard caught fire near Madura Island Aug 2. 225 rescued, 5 bodies recovered, 41 unaccounted for. A survivor account attributes the apparent origin to a truck on the vehicle deck; cause under investigation.",
-      "score_note": "Large unresolved missing count; search ongoing.",
+      "one_line": "Officials say the Mutiara Sentosa 2's manifest (271 listed) undercounted actual passengers aboard, making the previously reported '41 missing' figure explicitly uncertain rather than settled. 229 rescued, 5 bodies recovered as of the most recent reporting; search area extends 10nm east/west, expected to run at least seven days total.",
+      "score_note": "Uncertainty about the true missing count is itself the new development.",
       "sources": [
-        "Washington Post",
-        "Al Jazeera",
-        "NPR",
-        "The National"
+        "CBC News",
+        "Al Jazeera"
       ],
       "watch": true
     },
@@ -673,18 +668,17 @@
     },
     {
       "id": "chipotle-salmonella-aug4",
-      "headline": "Chipotle falls 9.7% on a potential Minnesota salmonella-outbreak link",
-      "status": "New",
+      "headline": "Chipotle/Minnesota salmonella investigation remains open; no confirmed causal link",
+      "status": "Continuing",
       "first_seen": "2026-08-04-pm",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Bloomberg reported a potential link between Chipotle and a Minnesota salmonella outbreak; company proactively pulled jalape\u00f1os from a common supplier lot. Stock closed -9.72% ($33.82), reversing part of last week's post-earnings recovery. Whether the outbreak is ultimately confirmed as linked rests with public-health investigators, not yet concluded.",
-      "score_note": "New single-name story; watch for a formal public-health source determination.",
+      "last_updated": "2026-08-05-am",
+      "verification": "Single-reliable-source (link); Unverified (causation)",
+      "one_line": "MDH investigating 110+ cases; 75 of 84 interviewed reported eating at Chipotle Jun 14-Jul 14. FDA opened a multi-ingredient traceback Jul 22. MDH says it is 'not concerned about Chipotle' given the supplier swap, but the outbreak 'may be ongoing' if the same lot reached other chains. No CDC/FDA/MDH determination yet.",
+      "score_note": "Stock (-9.7% Monday) reaction may hold, reverse, or extend depending on the eventual determination.",
       "sources": [
+        "CNN",
         "Bloomberg",
-        "CNBC",
-        "StockStory",
-        "this run's own Yahoo Finance fetch"
+        "CBS News"
       ],
       "watch": true
     },
