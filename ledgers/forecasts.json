@@ -512,6 +512,36 @@
       "probability": "30-45%",
       "basis": "Four incidents in roughly a week (Gaslog Salem, Gaslog Shanghai, Velos Amber, Minoan Pioneer) is an accelerating pace; UKMTO/Bloomberg describe Hormuz shipping traffic as 'at a trickle.' No de-escalation signal (confirmed deal, quiet 24h) has materialized as of this report's cutoff.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-05-pm-1",
+      "date": "2026-08-05",
+      "slot": "pm",
+      "forecast": "SpaceX (SPCX) moves more than +/-5% on Aug 6, the day of its ~$116B share-lockup expiration, extending or reversing today's -13.6% close.",
+      "horizon": "2026-08-06",
+      "probability": "45-55%",
+      "basis": "SPCX enters the lockup already at a fresh post-IPO low following two consecutive down sessions; historical lockup-expiration reactions vary widely between further mechanical selling pressure and a 'sell the news' stabilization once the anticipated float increase is priced in. Genuine two-way uncertainty given both dynamics are plausible.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-05-pm-2",
+      "date": "2026-08-05",
+      "slot": "pm",
+      "forecast": "Google's AI leadership reshuffle (Hassabis stepping down as DeepMind CEO, Jeff Dean's departure) is not followed by another senior AI-leadership departure or C-suite change at Alphabet within two weeks.",
+      "horizon": "2026-08-19",
+      "probability": "55-65%",
+      "basis": "The company's own framing describes a planned, contained transition (Hassabis remains Chairman plus a new Alphabet Chief Scientist role; Kavukcuoglu already elevated to run DeepMind day-to-day), arguing against a broader exodus; but the same-week negative-FCF disclosure and competitive AI pressure from OpenAI/Anthropic are a plausible source of further change this report cannot rule out.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-05-pm-3",
+      "date": "2026-08-05",
+      "slot": "pm",
+      "forecast": "Iran and Oman issue their finalized Hormuz shipping-corridor joint statement within the week (by Aug 12).",
+      "horizon": "2026-08-12",
+      "probability": "30-45%",
+      "basis": "Coordinates are reported finalized and the statement is in 'final drafting,' a more concrete stage than prior weeks' talk-of-talks, but Iran's own spokesperson conditioned issuance on 'no obstacles from third parties' -- an explicit, unresolved contingency -- and this report's tracked pattern this cycle is repeated near-term optimism followed by delay.",
+      "status": "open"
     }
   ]
 }
