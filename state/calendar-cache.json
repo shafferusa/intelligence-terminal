@@ -1,7 +1,7 @@
 {
-  "fetched": "2026-08-04T05:53:00-04:00",
-  "earnings_fetched": "2026-08-04",
-  "earnings_fetched_note": "Tuesday AM refresh: Finnhub calendar/earnings re-pulled for 2026-08-04, cross-checked against existing events. Confirmed-multiple for SPCX/AMD/ANET/APO/BKNG/MCD/MRK/PFE/VSAT/KTOS (all already Finnhub-confirmed from Monday's refresh, re-verified). BLS ICS, BEA RSS, Fed press RSS, TreasuryDirect upcoming, and Launch Library 2 all re-fetched and unchanged from the prior cache.",
+  "fetched": "2026-08-05T05:55:00-04:00",
+  "earnings_fetched": "2026-08-05",
+  "earnings_fetched_note": "Wednesday AM refresh: Alpha Vantage 3-month CSV and Finnhub day-of calendar re-pulled for 2026-08-05. LLY and RDW now Confirmed-multiple (both AV and Finnhub agree on today). GSAT day remains Disputed (Finnhub lists today; AV does not list GSAT for today). Eli Lilly's actual results not yet released as of 05:55 ET (no new 8-K on EDGAR CIK0000059478 beyond a Aug 3 Form 4). BLS ICS, BEA RSS, TreasuryDirect upcoming, Fed press RSS, and Launch Library 2 all re-fetched; unchanged in substance from the prior cache except two of today's already-listed launches (Smart Dragon 3, Falcon 9/BlueBird 11-13) now confirmed successful per Launch Library 2 status.",
   "events": [
     {
       "ts_et": "2026-08-03T00:00:00-04:00",
@@ -88,7 +88,7 @@
       "type": "launch",
       "name": "Smart Dragon 3 \u2014 undisclosed payload (Haiyang, China)",
       "importance": "Low",
-      "reason": "Routine Chinese launch",
+      "reason": "Routine Chinese launch \u2014 confirmed successful (Launch Library 2 status: Launch Successful)",
       "source": "Launch Library 2 \u2014 Confirmed-primary"
     },
     {
@@ -96,7 +96,7 @@
       "type": "launch",
       "name": "Falcon 9 \u2014 BlueBird 11-13 (AST SpaceMobile, Cape Canaveral)",
       "importance": "Medium",
-      "reason": "Direct-to-device satellite constellation build-out",
+      "reason": "Direct-to-device satellite constellation build-out \u2014 payload deployed per Launch Library 2",
       "source": "Launch Library 2 \u2014 Confirmed-primary"
     },
     {
