@@ -2,72 +2,68 @@
   "stories": [
     {
       "id": "google-ai-leadership-reshuffle-aug5",
-      "headline": "Google's AI leadership reshuffle: Hassabis steps down as DeepMind CEO, Jeff Dean departs after 27 years; GOOGL falls ~4%",
-      "status": "New",
+      "headline": "Google names Koray Kavukcuoglu SVP of DeepMind as Hassabis moves to Chair; Discovery Loop startup confirmed",
+      "status": "Continuing",
       "first_seen": "2026-08-05-pm",
-      "last_updated": "2026-08-05-pm",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Demis Hassabis stepped down from day-to-day DeepMind CEO duties (moving to Chairman + a new Alphabet Chief Scientist role; Koray Kavukcuoglu takes over day-to-day as SVP); chief scientist Jeff Dean is leaving after 27 years to co-found Discovery Loop (with Sanjay Ghemawat, Oriol Vinyals, Quoc Le), Google-backed. GOOGL closed -4.03% (this run's own data), the session's clear mega-cap laggard, landing the same week Alphabet disclosed its first-ever negative free-cash-flow quarter on raised $195-205B capex guidance.",
+      "one_line": "Kavukcuoglu (13-year DeepMind veteran) named SVP of DeepMind reporting to Pichai; Hassabis moves to Chair of DeepMind + new Alphabet Chief Scientist role, continuing to lead Isomorphic Labs. Jeff Dean/Sanjay Ghemawat confirmed co-founding 'Discovery Loop' with Oriol Vinyals and Quoc Le, Google-backed. GOOGL closed -4.03% Wed; no further departures or rating actions found overnight.",
       "score_note": "Most consequential single development of the Aug 5 pm cycle; direct read-through to the AI-capex/competitive-positioning narrative this report has tracked all week.",
       "sources": [
         "CNBC",
         "Axios",
-        "Bloomberg",
-        "The Information",
         "9to5Google",
-        "the-decoder",
-        "TradingKey"
+        "the-decoder.com",
+        "businesstoday.in",
+        "freepressjournal.in",
+        "ciol.com"
       ],
       "watch": true
     },
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "Iran and Oman finalize Hormuz-corridor coordinates but a joint statement stays conditional; Iran again denies direct US talks",
+      "headline": "Iran and Oman edge toward a Hormuz corridor deal (50-50 odds by Friday); Iran holds 5th-day US-talks denial",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-05-pm",
-      "verification": "Disputed (deal status); Confirmed-multiple (coordinate-finalization claim, both governments' statements)",
-      "one_line": "Iran and Oman finalized geographic coordinates for a Hormuz shipping corridor; a joint statement is in final drafting but conditional on 'no obstacles from third parties' per Baghaei, who again denied direct US talks. Bessent/Rubio describe active US involvement via Oman; an unnamed Gulf official told CNN odds of a deal by Friday are 50-50 (single-reliable-source). Most concrete step toward de-escalation tracked so far, still unconfirmed as a comprehensive deal.",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed-multiple (talks progress); Disputed (deal status)",
+      "one_line": "A senior Gulf official told CNN odds of a Hormuz corridor deal by Friday are 50-50; Trump cites 'a lot of progress.' Iran's deputy FM cautions a deal would not automatically reopen the strait; Iran denies direct US talks for a 5th consecutive day. No 5th Hormuz vessel incident found this run.",
       "score_note": "Technical progress (coordinates) confirmed-multiple; deal timing and scope remain disputed.",
       "sources": [
         "CNN",
-        "CNBC",
-        "NBC News",
-        "IranWire",
-        "Al Jazeera"
+        "Al Jazeera",
+        "CBS News",
+        "ABC News"
       ],
       "watch": true
     },
     {
       "id": "hormuz-tanker-attacks-aug1",
-      "headline": "No fifth Hormuz vessel incident confirmed; likely duplicate reporting of the Minoan Pioneer case",
+      "headline": "No fifth Hormuz vessel incident confirmed; Houthis claim separate Gulf of Aden tanker strike",
       "status": "Continuing",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-05-pm",
-      "verification": "Confirmed-multiple (incident); Unverified (crew status, attribution); System inference (no-5th-incident conclusion)",
-      "one_line": "This run's research found candidate 'new' incident reports that, on timezone cross-checking, appear to be re-reports of Monday's Minoan Pioneer incident under different local-time references rather than a distinct fifth strike -- a System inference, not a primary UKMTO confirmation of non-duplication. Forecast 2026-08-05-am-3 (fifth incident before this cutoff) trends WRONG pending Saturday's formal grading. Missing engineer's status remains unconfirmed.",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed (no 5th Hormuz incident, negative result); Single-reliable-source (Houthi Gulf of Aden claim)",
+      "one_line": "No new Strait of Hormuz vessel incident found beyond the Minoan Pioneer (treated as the 4th). Houthi forces separately claimed a missile strike on a Saudi tanker in the Gulf of Aden (~Aug 5) forcing it to turn back -- a distinct waterway, self-sourced claim, no independent damage confirmation.",
       "score_note": "Pace did not extend to a fifth confirmed incident today, breaking the accelerating cadence flagged this morning.",
       "sources": [
-        "Splash247",
-        "Jerusalem Post",
-        "Seatrade Maritime",
-        "Riviera Maritime"
+        "CNN",
+        "Al Jazeera"
       ],
       "watch": true
     },
     {
       "id": "iran-linked-water-cyberattacks-aug1",
       "headline": "Water-utility cyberattacks: one outlet reports operational impact (pressure loss, flooding) at some Minnesota sites",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-05-pm",
-      "verification": "Confirmed-multiple (scope dispute, advisory); Single-reliable-source (operational-impact claim); Unverified/Preliminary (Iran attribution)",
-      "one_line": "Scope reporting still split 7 vs 12+ states. New, single-sourced (TechTimes only): 30+ Minnesota water systems targeted with some operational impact (pressure loss, flooding, precautionary boil-water notices); not corroborated elsewhere this run. No confirmed water contamination anywhere. TechRadar reports more direct US-government Iran attribution than prior coverage.",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed-multiple (scope); Preliminary/Unverified (attribution, operational-impact claim)",
+      "one_line": "No material change: scope remains 12+ states, no new state named, no formal federal attribution statement found. Prior single-sourced Minnesota operational-impact claim (pressure loss, flooding) remains uncorroborated.",
       "score_note": "If the operational-impact claim holds up, this escalates from a scope/attribution story to one with confirmed physical consequences -- flagged single-source pending corroboration.",
       "sources": [
         "ABC News",
         "Axios",
-        "Newsweek",
         "CISA.gov"
       ],
       "watch": true
@@ -94,18 +90,21 @@
     },
     {
       "id": "russia-ukraine-poland-missile-jul30",
-      "headline": "Kyiv barrage toll rises to at least 17 killed as reports describe zero missile interceptions",
+      "headline": "Kyiv barrage toll settles at 17 killed; no new overnight strike found",
       "status": "Materially changed",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-05-pm",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Toll updated to at least 17 killed, 44 wounded (Zelensky, WaPo, NPR, CNN), up from this morning's 'at least 15.' Roughly 24 ballistic/hypersonic missiles and 115 Shahed-type drones struck Kyiv overnight; CNN reports zero Ukrainian interceptions of the ballistic component (press-reported, tied to Patriot shortages, not independently verified against a primary Ukrainian Air Force statement). NATO Article 4 window over the earlier Poland incursion remains passed without invocation (forecast 2026-07-30-pm-3 resolved correct per Saturday's grading).",
+      "one_line": "Multiple independent outlets (WaPo, Kyiv Independent, CNN, NPR, Al Jazeera, ABC, Meduza) converge on 17 killed from the Aug 4-5 barrage, up from 'at least 15.' Wounded count varies (44-48). ~24 ballistic missiles + 115+ Shahed drones; reportedly zero ballistic interceptions. No new large-scale strike found overnight Aug 5-6.",
       "score_note": "Toll has largely settled higher than this morning's figure.",
       "sources": [
-        "Euronews",
-        "Bloomberg",
+        "Washington Post",
+        "Kyiv Independent",
         "CNN",
-        "CNBC"
+        "NPR",
+        "Al Jazeera",
+        "ABC",
+        "Meduza"
       ],
       "watch": true
     },
@@ -171,28 +170,27 @@
       "headline": "Kumamoto earthquake toll holds at 38; crisis now centered on heat and water access",
       "status": "Continuing",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-05-am",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Toll unchanged at 38. ~46,700 households citywide remain without water; temperatures forecast to reach 39C today; SDF installing AC units at evacuation centers housing 8,200+ people. Power restored citywide for the first time in a week as of Aug 4.",
+      "one_line": "Toll holds at 38, unchanged. New: extreme heat combined with damaged water/power infrastructure raises risk of further deaths among 8,200+ still-evacuated residents (single-reliable-source on the specific heat-risk warning).",
       "score_note": "Plateaued on toll; the recovery-phase heat/water risk this report has flagged is now acute (39C forecast).",
       "sources": [
-        "Nippon.com",
-        "Japan Times",
-        "News On Japan"
+        "NewsOnJapan",
+        "Japan Times"
       ],
       "watch": true
     },
     {
       "id": "drc-ebola-outbreak-2026",
-      "headline": "DRC Ebola outbreak's toll climbs to 1,707 deaths as community-spread share rises",
+      "headline": "DRC Ebola outbreak's confirmed toll holds at 1,707 deaths as a newer, unverified figure points higher",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-05-am",
-      "verification": "Confirmed-primary (WHO)",
-      "one_line": "WHO/government-sourced figures (Aug 4): 3,802 cases / 1,707 deaths, up from 3,605/1,587 (Jul 30). Nearly 80% of new cases are now community-spread rather than contact-traced. Ituri province remains ~88-90% of the burden. IHR Emergency Committee still meets Aug 18.",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed-primary (WHO, Aug 4 figures); Preliminary/Unverified (newer figure)",
+      "one_line": "Confirmed baseline remains 3,802 cases/1,707 deaths (Aug 4, WHO). A higher, inconsistently-sourced figure (~3,874/1,751) surfaced via an AI-summarized search result with a garbled date and a WHO fetch error; treated as Preliminary pending a clean primary-source re-check planned for the Closing Brief.",
       "score_note": "Continues accelerating; community-spread share is the concerning new detail.",
       "sources": [
-        "WHO Disease Outbreak News (via press)",
+        "WHO Disease Outbreak News",
         "Al Jazeera",
         "The Hill",
         "UN News"
@@ -201,20 +199,18 @@
     },
     {
       "id": "blanche-ag-nomination-jul30",
-      "headline": "Blanche's AG nomination clears committee 12-10; floor math tight but two competing tie-break framings in press coverage",
+      "headline": "Blanche's AG nomination heads to a Friday floor vote and Saturday confirmation vote",
       "status": "Materially changed",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-05-pm",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Committee vote confirmed 12-10 party-line (Cornyn/Tillis on board after the fund rescission); Collins' no vote stands; Murkowski and Cassidy remain uncommitted. This report found two competing framings of the failure threshold -- 'one more defection fails it' vs. 'up to two, given a VP tiebreak' -- not fully reconciled against a primary source. No floor vote date yet scheduled; GOP leadership reportedly aims for before Aug 10 recess.",
+      "one_line": "Thune plans cloture Wed, setting up a Friday (Aug 7) floor vote and Saturday (Aug 8) confirmation vote, both before the Aug 10 recess target. Murkowski and Cassidy remain uncommitted; Collins's no vote stands. One more GOP defection fails it absent a Democratic crossover or VP tiebreak.",
       "score_note": "Floor math tight; forecast 2026-08-05-am-2 tracks nomination failure risk, horizon Aug 10.",
       "sources": [
-        "CNBC",
-        "Axios",
-        "NOTUS",
-        "CBS News",
-        "Fox News",
-        "Alaska's News Source"
+        "CNN",
+        "Alaska's News Source",
+        "The Hill",
+        "Forbes"
       ],
       "watch": true
     },
@@ -235,18 +231,17 @@
     },
     {
       "id": "mail-ballot-eo-scotus",
-      "headline": "Supreme Court's Aug 3 mail-ballot response deadline stands; no material change",
+      "headline": "Federal circuit split emerges on mail-ballot EO as SCOTUS stay application remains pending",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-03-pm",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Justice Jackson's 4:00 PM ET deadline arrived today; same-day reporting (CNN) indicates the 23-state-plus-D.C. coalition filed its response opposing a stay, arguing the executive order intrudes on state election authority and citing the Purcell principle. This report could not independently verify the filing's contents against the primary docket. Still procedural -- reporting suggests the Court could act \"later this month,\" not independently confirmed.",
+      "one_line": "States' response opposing a stay was filed by the Aug 3 deadline; no ruling yet. A D.C. Circuit panel declined Tue (Aug 4) to block the EO while another panel reportedly reached the opposite conclusion -- a genuine circuit split now feeding the emergency application.",
       "score_note": "Scheduled deadline met on time; underlying merits dispute remains unresolved.",
       "sources": [
         "SCOTUSblog",
-        "The Hill",
-        "Congress.gov CRS",
-        "Supreme Court opinion PDF"
+        "Democracy Docket",
+        "WHYY"
       ],
       "watch": true
     },
@@ -378,21 +373,19 @@
     },
     {
       "id": "spacex-starship-flight-13",
-      "headline": "SpaceX closes at a fresh post-IPO low, -13.6%, two days before its ~$116B lockup expiration",
+      "headline": "SpaceX's ~$116B share-lockup expires today as the stock opens near a fresh post-IPO low",
       "status": "Materially changed",
       "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-08-05-pm",
-      "verification": "Confirmed-primary (SEC EDGAR 8-K/10-Q); Confirmed (this run's own closing-price data)",
-      "one_line": "SPCX closed -13.61% at $108.27 (this run's own data), below its prior post-IPO low of $108.37, extending Tuesday night's post-earnings selloff into a full second session -- now down ~24% from Tuesday's $125.33 pre-earnings close. Confirms forecasts 2026-08-02-sun-4 (>8% move) and 2026-08-04-am-1 (>10% move) as CORRECT. BofA/Morgan Stanley both reiterated bullish ratings despite the drop. Heads into tomorrow's (Aug 6) lockup expiration already at a fresh low; new forecast 2026-08-05-pm-1 tracks the reaction.",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Lockup on ~911.5M insider shares (~$101.6B notional, first ~20% tranche of a staggered release through December) expires today; Musk's 6.4B shares stay locked until Jun 2027. SPCX closed Wed at $108.27 (-13.61%), a second straight fresh post-IPO low. Space-sector watchlist diverged sharply Wednesday (VOYG +3.70%, RDW +0.85% vs. YSS -14.11%, VSAT -5.95%), arguing against a uniform sector read-through.",
       "score_note": "Two consecutive sharp down-sessions confirm the capex-skepticism reaction was not a one-day overreaction; the lockup expiration is now the key near-term catalyst.",
       "sources": [
-        "SpaceX Q2 2026 earnings release, SEC EDGAR 8-K Exhibit 99.1 (primary)",
-        "SpaceX 10-Q (primary)",
-        "this run's own Yahoo Finance intraday fetch (primary)",
-        "CNBC",
-        "Fortune",
-        "CNN Business",
-        "TradingKey"
+        "Forbes",
+        "Motley Fool",
+        "Yahoo Finance/Morgan Stanley note",
+        "DayTradingToolkit",
+        "this run's own Yahoo Finance data"
       ],
       "watch": true
     },
@@ -510,14 +503,13 @@
       "headline": "Board of Peace holds 'constructive' implementation talks with Netanyahu; disarmament sequencing deadlock persists",
       "status": "Continuing",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-05-pm",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Board envoy Mladenov held 'constructive and detailed' implementation talks with Netanyahu Monday (WaPo, Haaretz). Sequencing deadlock unchanged: Board requires full Hamas disarmament before any Israeli withdrawal past the Yellow Line; Hamas (Ghazi Hamad) says the reverse. Roadmap due within 14 days of the Jul 30 agreement (~Aug 13).",
+      "one_line": "Board of Peace envoy Mladenov held 'constructive and detailed' implementation talks with Netanyahu (Aug 5); the no-withdrawal-before-disarmament sequencing deadlock is unchanged. No new casualty data found this run.",
       "score_note": "Process continuing (talks ongoing) without a substantive breakthrough on the core dispute.",
       "sources": [
-        "Al Jazeera",
-        "The Media Line",
-        "Washington Post"
+        "Religion News Service",
+        "Al Jazeera"
       ],
       "watch": true
     },
@@ -622,33 +614,33 @@
     {
       "id": "ceuta-migrant-crisis-aug3",
       "headline": "EU ministers close Ceuta meeting with no binding deal; migrant death toll dispute widens to a fourth figure",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-08-03-pm",
-      "last_updated": "2026-08-05-pm",
-      "verification": "Confirmed-multiple (meeting outcome); Disputed (death toll, now four-plus figures)",
-      "one_line": "EU interior ministers' meeting produced 'full solidarity' with Spain and a five-point work list but no binding agreement and no 'hybrid threat' finding. Toll dispute widened further: Spain's standing 72 now sits alongside a newer 75 (after 3 more bodies), Euronews's headline 88, an earlier Al Jazeera 67, Morocco's 11, and the NGO AMDH's uncorroborated ~130. Forecast 2026-08-03-pm-3 (toll reconciles within a week) trending WRONG.",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed-multiple (meeting outcome); Disputed (death toll)",
+      "one_line": "EU ministers' meeting produced 'full solidarity' with Spain but no binding deal. Toll dispute widened further: Spain ~72-88, Morocco 11, NGO AMDH ~130 (uncorroborated) -- no single figure has emerged. Forecast 2026-08-03-pm-3 (toll reconciles within a week) trending wrong.",
       "score_note": "No resolution mechanism visible; toll dispute widening rather than narrowing, now spanning four-plus figures.",
       "sources": [
+        "AOL/Reuters wire",
         "Euronews",
-        "HNGN",
-        "Irish Times",
-        "CNN"
+        "RTE",
+        "eurotopics.net"
       ],
       "watch": true
     },
     {
       "id": "spokane-wildfire-complex-aug1",
-      "headline": "Spokane-area wildfire complex holds at 0% containment as some evacuation zones ease",
+      "headline": "Spokane-area wildfire complex reaches first containment as some evacuations ease",
       "status": "Continuing",
       "first_seen": "2026-08-04-am",
-      "last_updated": "2026-08-05-am",
+      "last_updated": "2026-08-06-am",
       "verification": "Confirmed-multiple",
-      "one_line": "8,026 acres, 0% containment per the federal incident team; ~65,000 evacuated, 700+ structures destroyed (640 within the Old Trails Fire). One zone downgraded from Level 2 to Level 1. A CAL FIRE team is assisting -- its first-ever activation to Washington state.",
+      "one_line": "Old Trails and Autumn Lane Fires both reached 13% containment, Fairview 5% (~10,546 combined acres, a figure not yet reconciled against Wednesday's 8,026-acre total). Evacuations partially lifted. Arson suspect Aaron Farinacci's arraignment scheduled today, outcome not yet known.",
       "score_note": "No containment progress yet; first easing signal is the partial evacuation downgrade.",
       "sources": [
-        "NBC News",
-        "Fox13 Seattle",
-        "CNN"
+        "MyNorthwest",
+        "Washington Times",
+        "KHQ"
       ],
       "watch": true
     },
@@ -715,6 +707,23 @@
         "bls.gov/news.release/jolts.nr0.htm (primary)",
         "Indeed Hiring Lab",
         "TradingEconomics"
+      ],
+      "watch": false
+    },
+    {
+      "id": "michigan-senate-primary-aug5",
+      "headline": "Abdul El-Sayed narrowly wins Michigan's Democratic Senate primary over Rep. Haley Stevens",
+      "status": "New",
+      "first_seen": "2026-08-06-am",
+      "last_updated": "2026-08-06-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "AP called the race Wed morning at 48.5%-47.5% with 99% counted. El-Sayed advances to face former Rep. Mike Rogers (R) in November.",
+      "score_note": "First statewide primary result this report has covered this cycle; close progressive-vs-establishment margin.",
+      "sources": [
+        "Washington Post",
+        "CNBC",
+        "NBC News",
+        "Ballotpedia"
       ],
       "watch": false
     }

@@ -20,7 +20,7 @@
       "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
       "horizon": "2026-07-30",
       "probability": "55-65%",
-      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate \u2014 treat as low-confidence.",
+      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
       "status": "partial",
       "outcome": "Q2 GDP advance printed +1.5% annualized -- inside the stated 1.5-3.0% range, but exactly at the bottom edge.",
       "graded": "2026-08-01",
@@ -59,7 +59,7 @@
       "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
       "horizon": "2026-07-31",
       "probability": "60-70%",
-      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly \u00b110% around spot given no crypto-specific catalyst identified this week.",
+      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
       "status": "correct",
       "outcome": "Bitcoin traded within the $60,000-$72,000 band all week (high ~$64,914 Mon, low ~$62,944 Fri; $63,046 as of this run).",
       "graded": "2026-08-01",
@@ -300,7 +300,7 @@
       "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
       "horizon": "2026-08-07",
       "probability": "55-65%",
-      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
       "status": "open"
     },
     {
@@ -310,7 +310,7 @@
       "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
       "horizon": "2026-08-13",
       "probability": "45-55%",
-      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
       "status": "open"
     },
     {
@@ -541,6 +541,36 @@
       "horizon": "2026-08-12",
       "probability": "30-45%",
       "basis": "Coordinates are reported finalized and the statement is in 'final drafting,' a more concrete stage than prior weeks' talk-of-talks, but Iran's own spokesperson conditioned issuance on 'no obstacles from third parties' -- an explicit, unresolved contingency -- and this report's tracked pattern this cycle is repeated near-term optimism followed by delay.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-06-am-1",
+      "date": "2026-08-06",
+      "slot": "am",
+      "forecast": "Todd Blanche is confirmed as Attorney General in Saturday's (Aug 8) scheduled final Senate vote (i.e. neither Murkowski nor Cassidy votes no, or only one does and no other GOP senator defects).",
+      "horizon": "2026-08-08",
+      "probability": "65-75%",
+      "basis": "Two senators uncommitted with distinct concerns (Murkowski on the rescinded fund, Cassidy on White House independence); no public no-commitment from either as of this report; historical base rate favors confirmation once a floor vote is scheduled by leadership.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-06-am-2",
+      "date": "2026-08-06",
+      "slot": "am",
+      "forecast": "Iran and Oman announce a Hormuz shipping-corridor joint statement or deal by end-of-day Friday, Aug 7.",
+      "horizon": "2026-08-07",
+      "probability": "40-55%",
+      "basis": "An unnamed Gulf official cited 50-50 odds to CNN; Trump's 'a lot of progress' framing and the absence of any new Hormuz incident this run weigh slightly positive, offset by Iran's continued formal denial of direct US talks and the deputy FM's caution that any deal would not automatically reopen the strait.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-06-am-3",
+      "date": "2026-08-06",
+      "slot": "am",
+      "forecast": "WHO publishes an updated DRC Ebola situation report this week showing a confirmed death toll above 1,707 (i.e. the outbreak's toll has risen from the last confirmed Aug 4 figure).",
+      "horizon": "2026-08-13",
+      "probability": "70-80%",
+      "basis": "The outbreak has shown a consistent multi-week rising trend with an increasing community-spread share; an unverified newer figure (~1,751 deaths) surfaced this run consistent with continued acceleration, though not independently confirmed against a primary WHO source yet.",
       "status": "open"
     }
   ]
