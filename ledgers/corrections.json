@@ -44,6 +44,15 @@
       "error_source": "The chartPreviousClose-field bug identified and fixed for the equity watchlist in an earlier edition was not recognized as also affecting the Premarket Setup futures/commodities/FX table, which independently used the same buggy field.",
       "conclusions_changed": true,
       "note": "The equity-futures 'sharp rally' framing in Monday morning's Top Stories, Executive Brief, and Premarket Setup was overstated by roughly 4-5x; the FX appendix's specific claim that dollar weakness coincided with the risk-on tape is not supported by the corrected, essentially-flat EUR/USD move. This does not change the qualitative direction (futures were higher, oil was lower) or the report's core caveat that the moves rested on a disputed Iran de-escalation premise -- only the reported magnitude. Discovered while recomputing intraday figures for this run (2026-08-03-pm) using the close-series method; this same class of bug likely affected prior editions' futures/commodity/FX premarket tables too, flagged here for awareness though a full historical re-audit is out of scope for this run. All Yahoo Finance chart fetches from this edition forward use the close-series method for every instrument class, not just the equity watchlist. Corrected in today's report (2026-08-03-pm) Section 20."
+    },
+    {
+      "found": "2026-08-07",
+      "report": "reports/2026/08/2026-08-06-am.html",
+      "original": "Described the federal appeals-court panel that declined to block the mail-ballot executive order (Aug 4) as a 'D.C. Circuit three-judge panel' / 'D.C. Circuit panel', in both the Top Stories card and the Since Yesterday's Close change log.",
+      "corrected": "Per SCOTUSblog and multiple wire sources, the panel that declined to block the order -- and the panel Justice Jackson is assigned to for the pending emergency stay application -- is the 1st Circuit Court of Appeals, not the D.C. Circuit. The 'D.C.' in the 23-states-plus-D.C. coalition challenging the order refers to the District of Columbia as a party to the suit, not to the D.C. Circuit court.",
+      "error_source": "Apparent conflation of 'D.C.' (the jurisdiction party to the suit) with 'D.C. Circuit' (a specific appeals court) during composition; not caught before publication.",
+      "conclusions_changed": false,
+      "note": "Does not change the substance of the circuit split or the pending SCOTUS stay application -- only which circuit court is involved. Corrected in today's report (2026-08-07-am) Section 20."
     }
   ]
 }
