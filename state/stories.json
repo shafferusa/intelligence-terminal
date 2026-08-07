@@ -1,6 +1,108 @@
 {
   "stories": [
     {
+      "id": "financials-partial-rebound-aug7",
+      "headline": "Financials/crypto-adjacent names post an uneven rebound (COIN +5.6%, HOOD +2.8%, BX +2.75%) while KKR/APO/WFC/SCHW stay mildly negative",
+      "status": "New",
+      "first_seen": "2026-08-07-pm",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed-primary (this run's own data); Likely contributor (jobs-report read-through)",
+      "one_line": "Partial, not complete, reversal of Thursday's unexplained financials weakness. COIN/IBKR/BX/HOOD/MS rebounded; KKR/APO/WFC/SCHW remained mildly negative -- a persistent sub-group divergence this report does not resolve.",
+      "score_note": "Watching whether the KKR/APO/WFC/SCHW laggard sub-group continues underperforming next week.",
+      "sources": [
+        "this run's own Yahoo Finance fetch"
+      ],
+      "watch": true
+    },
+    {
+      "id": "uganda-gaza-troops-aug6",
+      "headline": "Uganda becomes one of the first African nations to formally commit troops to Gaza's International Stabilization Force",
+      "status": "New",
+      "first_seen": "2026-08-07-pm",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Uganda's Parliament approved UPDF deployment to the Board of Peace's International Stabilization Force, joining Morocco, Kazakhstan, Kosovo, Indonesia, and Albania. First concrete troop-staffing step toward the force central to the (currently deadlocked) disarmament roadmap.",
+      "score_note": "Distinct implementation-level thread from the Netanyahu sequencing dispute.",
+      "sources": [
+        "Bloomberg",
+        "NBC News",
+        "Africanews",
+        "Free Malaysia Today"
+      ],
+      "watch": true
+    },
+    {
+      "id": "gao-doge-savings-report-aug6",
+      "headline": "GAO finds DOGE's claimed $110B in federal savings unreliable -- incorrect contract counts, unverifiable grants, pre-existing lease terminations",
+      "status": "New",
+      "first_seen": "2026-08-07-pm",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "GAO review (Jan 2025-Jul 2026): 2,503 of 13,476 'terminated' contracts not actually cancelled ($27.4B claimed savings affected); could not verify method for 96% of grant savings; 108/264 'terminated' leases were already being eliminated pre-DOGE. DOGE did not respond to GAO's requests.",
+      "score_note": "Nonpartisan audit finding on a signature initiative's headline figure; reported neutrally per SR SS6.",
+      "sources": [
+        "GAO report (primary, via secondary coverage)",
+        "CBS News",
+        "CNN",
+        "CNBC",
+        "The Hill"
+      ],
+      "watch": false
+    },
+    {
+      "id": "avav-defense-rally-aug7",
+      "headline": "AeroVironment-led defense/drone-tech rally (AVAV +9.1%, RKLB +9.5%, PLTR +10.3%) on contracts and upgrades, not new earnings",
+      "status": "New",
+      "first_seen": "2026-08-07-pm",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "AVAV +9.12% on a Raymond James upgrade ($210 PT) + $500M Domestic Shield counter-UAS IDIQ contract (8-K confirmed 09:10 ET). RKLB +9.46% on its own $397M Space Force contract + KGI upgrade. PLTR +10.32% extending Aug 4 earnings momentum.",
+      "score_note": "Initial search wrongly framed AVAV's move as a new earnings report; corrected before publication via a date-specific follow-up search.",
+      "sources": [
+        "Benzinga",
+        "TradingKey",
+        "Investing.com",
+        "SEC EDGAR (AVAV 8-K)",
+        "this run's own Yahoo Finance fetch"
+      ],
+      "watch": false
+    },
+    {
+      "id": "spacex-terafab-rally-aug7",
+      "headline": "SpaceX extends its post-lockup rebound to +15.8% on a $16.8B Tesla-SpaceX Terafab AI-chip-factory announcement and fresh Wall Street upgrades",
+      "status": "New",
+      "first_seen": "2026-08-07-pm",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "SPCX closed $133.11 (+15.83%), a second straight double-digit gain day, on the Aug 6 Tesla/SpaceX $16.8B Terafab chip-factory announcement (Grimes County, TX) plus Citi/Bernstein upgrades and a bullish Morgan Stanley note.",
+      "score_note": "Erased essentially all of the lockup-week decline in two sessions; forecast 2026-08-07-pm-3 logged on further volatility.",
+      "sources": [
+        "this run's own Yahoo Finance fetch",
+        "TechCrunch",
+        "GuruFocus",
+        "NTD",
+        "TradingKey"
+      ],
+      "watch": true
+    },
+    {
+      "id": "jobs-report-result-aug7",
+      "headline": "July nonfarm payrolls fall 23,000, a shock miss vs +83K/+97.5K estimates, sending the S&P 500 to a record close and gold up nearly 4%",
+      "status": "New",
+      "first_seen": "2026-08-07-pm",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "BLS: NFP -23,000 (govt -53K, private +30K); unemployment 4.1% (participation-driven); wages +3.2% Y/Y, weakest since May 2021. Resolves forecast 2026-08-07-am-1 correct. S&P closed 7,757.46 (+0.62%, fresh record), gold $4,408.20 (+3.92%).",
+      "score_note": "Week's only Critical-tier release; reshaped the entire session's market narrative.",
+      "sources": [
+        "bls.gov/news.release/empsit.nr0.htm (primary)",
+        "CNBC",
+        "Kiplinger",
+        "Quartz"
+      ],
+      "watch": true
+    },
+    {
       "id": "q2-productivity-costs-2026",
       "headline": "Q2 2026 preliminary productivity report: unit labor costs +1.3%, well below the 2.1% estimate",
       "status": "Resolved",
@@ -244,10 +346,10 @@
       "headline": "DRC Ebola outbreak's confirmed toll rises to 3,874 cases / 1,751 deaths, resolving this morning's preliminary flag",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-06-pm",
+      "last_updated": "2026-08-07-pm",
       "verification": "Confirmed-multiple (search-synthesized; WHO primary site unreachable this run)",
-      "one_line": "WHO's Aug 4 update (data through Aug 3): 3,874 cases, 1,751 deaths (+72 cases/+44 deaths since prior update). Two independent search-synthesized sources now converge on identical figures, resolving this morning's 'preliminary/garbled-date' flag to Confirmed-multiple. Ituri remains epicenter (3,375 cases/1,417 deaths).",
-      "score_note": "Forecast 2026-08-06-am-3 (toll rises above 1,707) trending correct; formal grading Saturday.",
+      "one_line": "Multiple outlets (USNews, UN News) describe the outbreak as having crossed 4,000 confirmed cases as of Aug 7, with slightly inconsistent exact figures across search-synthesized sources ('nearly 4,000' vs 'above 4,000'); this report confirms the directional threshold crossing but not a single precise count pending a cleaner primary read.",
+      "score_note": "Forecast 2026-08-06-am-3 trending correct; formal grading was due Saturday Aug 8.",
       "sources": [
         "WHO Disease Outbreak News",
         "Al Jazeera",
@@ -261,10 +363,10 @@
       "headline": "Blanche's AG nomination reaches cloture vote today with two more GOP votes secured, McConnell absent",
       "status": "Materially changed",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-07-am",
+      "last_updated": "2026-08-07-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Curtis and Husted announced support this week; Collins remains a confirmed no; Murkowski/Cassidy still uncommitted; McConnell absent (hospitalization) tightens the effective margin. Forecast 2026-08-07-am-2 logged on today's cloture vote.",
-      "score_note": "Knife-edge margin; standing forecasts 2026-08-06-am-1 and 2026-08-05-am-2 due for Saturday grading.",
+      "one_line": "Sen. Cassidy publicly commits to a yes vote, giving Blanche exactly 50 R votes (Collins, Murkowski no; McConnell absent) vs 49 no. Forecast 2026-08-07-pm-1 logged on confirmation by Saturday Aug 8. Floor-vote completion today not independently confirmed.",
+      "score_note": "Vote count firmed; procedural completion still to verify.",
       "sources": [
         "The Hill",
         "CNBC",
@@ -675,12 +777,12 @@
     {
       "id": "ceuta-migrant-crisis-aug3",
       "headline": "Ceuta's own local government leader now testifies the death toll reached 100, a fifth distinct figure",
-      "status": "Continuing",
+      "status": "Materially changed",
       "first_seen": "2026-08-03-pm",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-multiple (testimony occurred); Disputed (which figure is authoritative)",
-      "one_line": "Ceuta local-government head Juan Jesus Vivas testified before the European Parliament's LIBE Committee that 100 people died, the highest official-source figure yet, above the 67-88 range this report tracked across Spanish/Moroccan government sources, still below an uncorroborated ~130 NGO (AMDH) figure.",
-      "score_note": "Forecast 2026-08-03-pm-3 (toll reconciles to a single figure by Aug 10) continues trending wrong -- range widened further, not narrowed.",
+      "last_updated": "2026-08-07-pm",
+      "verification": "Confirmed (testimony/report occurred); Disputed (which figure is authoritative)",
+      "one_line": "NGO Caminando Fronteras now reports 141 dead (78 Spanish waters, 63 Moroccan territory) via morgue-monitoring methodology -- a sixth distinct figure, above Wednesday's 100 (local-official EU Parliament testimony) and the 67-88 government range. Forecast 2026-08-03-pm-3 continues trending wrong.",
+      "score_note": "Range now spans 67-141 across all tracked sources.",
       "sources": [
         "AOL/Reuters wire",
         "Euronews",
@@ -790,20 +892,20 @@
     },
     {
       "headline": "July jobs report due 8:30 ET; Wednesday's ADP miss (+44K vs ~75K est.) sets a cautious tone",
-      "status": "New",
+      "status": "Resolved",
       "verification": "Confirmed-multiple",
-      "one_line": "Street consensus split (Dow Jones +83K vs FactSet median +97.5K NFP; UR 4.2%; wages +0.3% m/m); ADP's Wednesday miss (+44K, smallest since Jan) is the freshest signal ahead of the release. Forecast 2026-08-07-am-1 logged on a sub-70K print.",
-      "score_note": "Week's only Critical-tier data point; central theme of today's edition.",
+      "one_line": "Resolved: July NFP printed -23K (vs +83K/+97.5K est.), a shock miss. See jobs-report-result-aug7.",
+      "score_note": "Resolved into jobs-report-result-aug7.",
       "sources": [
         "CNBC",
         "FactSet",
         "ADP/CNBC",
         "bls.gov schedule (primary)"
       ],
-      "watch": true,
+      "watch": false,
       "id": "jobs-report-setup-aug7",
       "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-07-am"
+      "last_updated": "2026-08-07-pm"
     },
     {
       "headline": "Senate committee votes 8-5 to hold Fauci in contempt, refers directly to DOJ bypassing a floor vote",
@@ -840,10 +942,10 @@
     },
     {
       "headline": "Typhoon Dolphin forces JAXA to postpone H3/Michibiki-7 launch as Category 4 storm nears Okinawa",
-      "status": "New",
+      "status": "Materially changed",
       "verification": "Confirmed-multiple",
-      "one_line": "JAXA postponed the H3 Flight 9 launch citing Typhoon Dolphin's forecast track; storm re-intensified to Category 4, landfall/close pass near Okinawa expected Aug 7 afternoon/evening. No new launch date yet.",
-      "score_note": "Second Japan space/disaster overlap this week (after Kumamoto).",
+      "one_line": "Typhoon Dolphin re-intensified passing Okinawa: 5 injured, 16,920 households without power, Naha airport closed, ~260,000 under evacuation orders across Kagoshima/Okinawa, Toyota suspended 9 factories. H3/Michibiki-7 postponement remains in effect. China landfall forecast ~Aug 9-10 (Zhejiang/Fujian).",
+      "score_note": "This morning's forward-looking risk materialized into confirmed on-the-ground impact.",
       "sources": [
         "Nippon.com",
         "Watchers.news",
@@ -853,7 +955,7 @@
       "watch": true,
       "id": "typhoon-dolphin-h3-launch-aug7",
       "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-07-am"
+      "last_updated": "2026-08-07-pm"
     }
   ]
 }
