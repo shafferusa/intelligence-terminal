@@ -20,7 +20,7 @@
       "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
       "horizon": "2026-07-30",
       "probability": "55-65%",
-      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
+      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate \u2014 treat as low-confidence.",
       "status": "partial",
       "outcome": "Q2 GDP advance printed +1.5% annualized -- inside the stated 1.5-3.0% range, but exactly at the bottom edge.",
       "graded": "2026-08-01",
@@ -59,7 +59,7 @@
       "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
       "horizon": "2026-07-31",
       "probability": "60-70%",
-      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
+      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly \u00b110% around spot given no crypto-specific catalyst identified this week.",
       "status": "correct",
       "outcome": "Bitcoin traded within the $60,000-$72,000 band all week (high ~$64,914 Mon, low ~$62,944 Fri; $63,046 as of this run).",
       "graded": "2026-08-01",
@@ -300,7 +300,7 @@
       "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
       "horizon": "2026-08-07",
       "probability": "55-65%",
-      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
       "status": "open"
     },
     {
@@ -310,7 +310,7 @@
       "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
       "horizon": "2026-08-13",
       "probability": "45-55%",
-      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
       "status": "open"
     },
     {
@@ -601,6 +601,36 @@
       "horizon": "2026-08-11",
       "probability": "40-55%",
       "basis": "This is the third large, unexplained single-day YSS move this report has tracked in the past week (a prior 13.91% unexplained decline on Tuesday); moves of this repeated magnitude in a thinly-floated, ~$2B-market-cap stock often eventually surface a specific driver (index-related flows, an analyst note, insider-sale disclosure) even when none is identifiable same-day, though it is equally possible no single catalyst ever surfaces for a thin-float mechanical move.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-07-am-1",
+      "date": "2026-08-07",
+      "slot": "am",
+      "forecast": "July nonfarm payrolls (released 8:30 ET today) prints below 70,000, materially undershooting the ~83K-97.5K Street consensus range, more consistent with Wednesday's soft ADP miss (+44K) than the firmer FactSet median.",
+      "horizon": "2026-08-07",
+      "probability": "30-40%",
+      "basis": "ADP and BLS nonfarm payrolls have a historically loose month-to-month correlation; this is not a base-rate-driven estimate, but the unusually wide consensus spread itself signals genuine forecaster disagreement.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-07-am-2",
+      "date": "2026-08-07",
+      "slot": "am",
+      "forecast": "Todd Blanche's AG nomination clears today's Senate cloture/floor vote with both Murkowski and Cassidy voting yes.",
+      "horizon": "2026-08-07",
+      "probability": "55-65%",
+      "basis": "Two additional GOP senators (Curtis, Husted) secured support this week after the anti-weaponization-fund concession; Murkowski and Cassidy met with Blanche without publicly opposing, though McConnell's absence tightens the margin.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-07-am-3",
+      "date": "2026-08-07",
+      "slot": "am",
+      "forecast": "Fighting in Ethiopia's western Tigray region does not expand into additional fronts or draw a formal African Union/UN mediation statement within the next 14 days.",
+      "horizon": "2026-08-21",
+      "probability": "50-60%",
+      "basis": "The 2022 Pretoria agreement held for roughly four years before this week's escalation; base rate favors contained flare-ups over full conflict resumption absent a specific trigger, though this report has limited visibility into current intent on either side.",
       "status": "open"
     }
   ]
