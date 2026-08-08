@@ -1,16 +1,16 @@
 {
   "stories": [
     {
-      "id": "financials-partial-rebound-aug7",
-      "headline": "Financials/crypto-adjacent names post an uneven rebound (COIN +5.6%, HOOD +2.8%, BX +2.75%) while KKR/APO/WFC/SCHW stay mildly negative",
-      "status": "New",
+      "id": "financials-unexplained-swoon-aug6-7",
+      "headline": "A dozen-name financials swoon proved to be a one-day event, not a durable trend",
+      "status": "Continuing",
       "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-07-pm",
-      "verification": "Confirmed-primary (this run's own data); Likely contributor (jobs-report read-through)",
-      "one_line": "Partial, not complete, reversal of Thursday's unexplained financials weakness. COIN/IBKR/BX/HOOD/MS rebounded; KKR/APO/WFC/SCHW remained mildly negative -- a persistent sub-group divergence this report does not resolve.",
-      "score_note": "Watching whether the KKR/APO/WFC/SCHW laggard sub-group continues underperforming next week.",
+      "last_updated": "2026-08-08-sat",
+      "verification": "Confirmed-primary (this system's own data); Unexplained (catalyst, either direction)",
+      "one_line": "Thu: JPM/BAC/C/WFC/GS/MS/IBKR/HOOD/COIN/KKR/BX/APO/ARES all declined together, no confirmed catalyst. Fri: only 4 of 13 (WFC, KKR, APO, ARES) stayed lower -- an uneven, partial rebound. Resolves forecast 2026-08-06-pm-2 (at least half stay weak) wrong.",
+      "score_note": "KKR/APO/WFC/SCHW sub-group's continued underperformance into next week is a live open question (Section 24 risk).",
       "sources": [
-        "this run's own Yahoo Finance fetch"
+        "this system's own Yahoo Finance data, both sessions"
       ],
       "watch": true
     },
@@ -19,7 +19,7 @@
       "headline": "Uganda becomes one of the first African nations to formally commit troops to Gaza's International Stabilization Force",
       "status": "New",
       "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-07-pm",
+      "last_updated": "2026-08-08-sat",
       "verification": "Confirmed-multiple",
       "one_line": "Uganda's Parliament approved UPDF deployment to the Board of Peace's International Stabilization Force, joining Morocco, Kazakhstan, Kosovo, Indonesia, and Albania. First concrete troop-staffing step toward the force central to the (currently deadlocked) disarmament roadmap.",
       "score_note": "Distinct implementation-level thread from the Netanyahu sequencing dispute.",
@@ -50,38 +50,19 @@
       "watch": false
     },
     {
-      "id": "avav-defense-rally-aug7",
-      "headline": "AeroVironment-led defense/drone-tech rally (AVAV +9.1%, RKLB +9.5%, PLTR +10.3%) on contracts and upgrades, not new earnings",
-      "status": "New",
+      "id": "spacex-earnings-lockup-week-aug",
+      "headline": "SpaceX's first earnings-to-lockup week produced four separate double-digit single-session moves",
+      "status": "Resolved",
       "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-07-pm",
+      "last_updated": "2026-08-08-sat",
       "verification": "Confirmed-multiple",
-      "one_line": "AVAV +9.12% on a Raymond James upgrade ($210 PT) + $500M Domestic Shield counter-UAS IDIQ contract (8-K confirmed 09:10 ET). RKLB +9.46% on its own $397M Space Force contract + KGI upgrade. PLTR +10.32% extending Aug 4 earnings momentum.",
-      "score_note": "Initial search wrongly framed AVAV's move as a new earnings report; corrected before publication via a date-specific follow-up search.",
+      "one_line": "First public earnings (Tue) -> -13.6% (Wed, capex/acquisition disclosure) -> +6.1% (Thu, lockup passed without a selloff) -> +15.8% (Fri, Tesla Terafab deal). Closed the week +16.2% Mon-Fri. Resolves forecasts 2026-08-02-sun-4, 2026-08-04-am-1, 2026-08-05-pm-1 all correct.",
+      "score_note": "Four-session arc fully captured in this weekend's review (Top Story 2); open forecast 2026-08-07-pm-3 (a space-sector name pulls back >5% within 3 sessions, 40-55%) still tracks mean-reversion risk.",
       "sources": [
-        "Benzinga",
-        "TradingKey",
-        "Investing.com",
-        "SEC EDGAR (AVAV 8-K)",
-        "this run's own Yahoo Finance fetch"
-      ],
-      "watch": false
-    },
-    {
-      "id": "spacex-terafab-rally-aug7",
-      "headline": "SpaceX extends its post-lockup rebound to +15.8% on a $16.8B Tesla-SpaceX Terafab AI-chip-factory announcement and fresh Wall Street upgrades",
-      "status": "New",
-      "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-07-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "SPCX closed $133.11 (+15.83%), a second straight double-digit gain day, on the Aug 6 Tesla/SpaceX $16.8B Terafab chip-factory announcement (Grimes County, TX) plus Citi/Bernstein upgrades and a bullish Morgan Stanley note.",
-      "score_note": "Erased essentially all of the lockup-week decline in two sessions; forecast 2026-08-07-pm-3 logged on further volatility.",
-      "sources": [
-        "this run's own Yahoo Finance fetch",
+        "SEC EDGAR (SpaceX 8-K/10-Q)",
+        "this system's own Yahoo Finance data",
         "TechCrunch",
-        "GuruFocus",
-        "NTD",
-        "TradingKey"
+        "GuruFocus"
       ],
       "watch": true
     },
@@ -90,10 +71,10 @@
       "headline": "July nonfarm payrolls fall 23,000, a shock miss vs +83K/+97.5K estimates, sending the S&P 500 to a record close and gold up nearly 4%",
       "status": "New",
       "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-07-pm",
+      "last_updated": "2026-08-08-sat",
       "verification": "Confirmed-primary",
-      "one_line": "BLS: NFP -23,000 (govt -53K, private +30K); unemployment 4.1% (participation-driven); wages +3.2% Y/Y, weakest since May 2021. Resolves forecast 2026-08-07-am-1 correct. S&P closed 7,757.46 (+0.62%, fresh record), gold $4,408.20 (+3.92%).",
-      "score_note": "Week's only Critical-tier release; reshaped the entire session's market narrative.",
+      "one_line": "BLS: NFP -23,000, unemployment 4.1%, wages +3.2% Y/Y. The week's dominant catalyst -- S&P closed at a fresh record (7,757.46) and gold +3.92%. Carries directly into Aug 12 CPI / Aug 13 PPI as the first corroborating or contradicting data.",
+      "score_note": "Central macro storyline heading into next week; open forecast 2026-08-07-pm-2 (Sept FOMC cut, 40-55%) depends on it.",
       "sources": [
         "bls.gov/news.release/empsit.nr0.htm (primary)",
         "CNBC",
@@ -117,23 +98,6 @@
       "watch": false
     },
     {
-      "id": "space-earnings-crop-aug6",
-      "headline": "BlackSky and Voyager both beat and raise guidance; Constellation Energy beats on EPS but misses on revenue",
-      "status": "New",
-      "first_seen": "2026-08-06-pm",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-primary (company reports, EDGAR)",
-      "one_line": "BKSY: Q2 revenue $33.3M (+50% Y/Y) beat $30.68M est on NRO contract win; +10.48%. VOYG: revenue $52.75M beat $48.23M est, guidance raised to $275-305M from $230-255M on record bookings/backlog; +10.25%. CEG: EPS $2.55 beat $2.4459 est but revenue $7.50B missed $8.03B est; guidance raised to $11.50-12.50 EPS; -1.52%.",
-      "score_note": "Third straight day of space/defense-adjacent earnings strength (Redwire Wed, BlackSky/Voyager today).",
-      "sources": [
-        "SEC EDGAR 8-K feed",
-        "StockTitan",
-        "Benzinga",
-        "TipRanks"
-      ],
-      "watch": false
-    },
-    {
       "id": "yss-unexplained-declines-aug",
       "headline": "York Space Systems (YSS) posts a third large, unexplained single-day decline in a week -- down 17.22% today",
       "status": "Continuing",
@@ -144,21 +108,6 @@
       "score_note": "Forecast 2026-08-06-pm-3 logged on whether a catalyst surfaces within 3 trading days.",
       "sources": [
         "this run's own Yahoo Finance fetch"
-      ],
-      "watch": true
-    },
-    {
-      "id": "financials-broad-weakness-aug6",
-      "headline": "Broad, unexplained weakness across banks and alternative asset managers (GS, C, IBKR, COIN, KKR, BX all -1% to -3%+)",
-      "status": "New",
-      "first_seen": "2026-08-06-pm",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-primary (this run's own data); Unexplained (catalyst)",
-      "one_line": "JPM -0.80%, BAC -0.36%, C -2.77%, WFC -1.77%, GS -2.63%, MS -2.06%, IBKR -3.07%, HOOD -2.25%, COIN -2.99%, KKR -2.17%, BX -1.93%, APO -1.39%, ARES -1.14% all declined together; CBOE (+1.44%, exchange operator) the lone exception. No single confirmed catalyst identified this run; GS's own decline is a Likely-contributor read as profit-taking after a strong post-earnings run (GuruFocus), not extended to the sector.",
-      "score_note": "Sector-wide, same-direction move across a dozen names with no confirmed cause -- worth tracking for follow-through. Forecast 2026-08-06-pm-2 logged.",
-      "sources": [
-        "this run's own Yahoo Finance fetch",
-        "GuruFocus"
       ],
       "watch": true
     },
@@ -270,27 +219,6 @@
       "watch": true
     },
     {
-      "id": "q2-2026-gdp-advance",
-      "headline": "Q2 2026 GDP prints 1.5%, a miss, as PCE inflation holds near 3.7%",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "BEA's advance estimate: +1.5% annualized, down from Q1's +2.1%, missing most-cited consensus figures (1.8-2.3% range across providers). PCE inflation +3.7% YoY (down from 4.1% May). Forecast 2026-07-27-am-2 (1.0-2.5% range) resolves CORRECT; forecast 2026-07-30-am-2 (below-range print) resolves WRONG. GDPNow's final 1.5% nowcast matched the actual print almost exactly.",
-      "score_note": "Resolved; first hard data point after Wednesday's FOMC surprise, complicates rather than clarifies the policy outlook given weak growth alongside above-target inflation.",
-      "sources": [
-        "bea.gov (primary)",
-        "CNN",
-        "Axios",
-        "Fox Business",
-        "UPI",
-        "CBS News",
-        "NBC News",
-        "Fortune"
-      ],
-      "watch": false
-    },
-    {
       "id": "us-chip-rally-jul30",
       "headline": "US chip stocks stage a sharp rebound, breaking a four-session losing streak",
       "status": "New",
@@ -360,20 +288,21 @@
     },
     {
       "id": "blanche-ag-nomination-jul30",
-      "headline": "Blanche's AG nomination reaches cloture vote today with two more GOP votes secured, McConnell absent",
-      "status": "Materially changed",
+      "headline": "Todd Blanche confirmed Attorney General 50-49 after an overnight Saturday vote",
+      "status": "Resolved",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-07-pm",
+      "last_updated": "2026-08-08-sat",
       "verification": "Confirmed-multiple",
-      "one_line": "Sen. Cassidy publicly commits to a yes vote, giving Blanche exactly 50 R votes (Collins, Murkowski no; McConnell absent) vs 49 no. Forecast 2026-08-07-pm-1 logged on confirmation by Saturday Aug 8. Floor-vote completion today not independently confirmed.",
-      "score_note": "Vote count firmed; procedural completion still to verify.",
+      "one_line": "Confirmed 50-49 after 4am Saturday vote; Collins and Murkowski both voted no, Cassidy's yes vote was decisive. Resolves forecasts 2026-08-06-am-1 and 2026-08-07-pm-1 correct; 2026-08-07-am-2 (both Murkowski and Cassidy voting yes) and 2026-08-05-am-2 (nomination fails) both wrong.",
+      "score_note": "Fully resolved this weekend; no further tracking needed.",
       "sources": [
-        "The Hill",
         "CNBC",
-        "Deseret News",
-        "Alaska's News Source"
+        "Washington Post",
+        "NPR",
+        "NBC News",
+        "Roll Call"
       ],
-      "watch": true
+      "watch": false
     },
     {
       "id": "europe-wildfires-jul-2026",
@@ -405,66 +334,6 @@
         "Democracy Docket"
       ],
       "watch": true
-    },
-    {
-      "id": "aapl-amzn-earnings-pending",
-      "headline": "Apple and Amazon earnings resolved -- see megacap-earnings-split-jul30",
-      "status": "Resolved",
-      "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-07-31-am",
-      "verification": "Confirmed-multiple (schedule); results not yet known",
-      "one_line": "Both reported after Thursday's close and both beat; full detail tracked under megacap-earnings-split-jul30. Not separately tracked further.",
-      "score_note": "Resolved into megacap-earnings-split-jul30.",
-      "sources": [
-        "TradingKey",
-        "FinanceCalendar",
-        "company investor-relations pages"
-      ],
-      "watch": false
-    },
-    {
-      "id": "asia-chip-selloff-jul2026",
-      "headline": "Asia's AI-chip selloff streak broken by today's US rebound (see us-chip-rally-jul30)",
-      "status": "Resolved",
-      "first_seen": "2026-07-27-pm",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Superseded by us-chip-rally-jul30; the four-session Asian AI-chip weakness this thread tracked reversed sharply in today's US session. Not separately tracked further.",
-      "score_note": "Resolved into us-chip-rally-jul30.",
-      "sources": [
-        "this run's own Yahoo Finance fetch"
-      ],
-      "watch": false
-    },
-    {
-      "id": "general-dynamics-q2-2026-earnings",
-      "headline": "General Dynamics Q2 beat-and-raise; shares fell anyway amid defense-sector rotation",
-      "status": "Resolved",
-      "first_seen": "2026-07-29-pm",
-      "last_updated": "2026-07-30-am",
-      "verification": "Confirmed-primary",
-      "one_line": "Fully covered in Wednesday's Closing Brief; no new development this run.",
-      "score_note": "Story complete; no further tracking needed unless new developments emerge.",
-      "sources": [
-        "General Dynamics 8-K, SEC EDGAR"
-      ],
-      "watch": false
-    },
-    {
-      "id": "us-iran-ceasefire-status",
-      "headline": "Trump vows to hit Iran hard; superseded by overnight US strike campaign",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Superseded by us-iran-strikes-jul30. Not separately tracked further.",
-      "score_note": "Resolved into the broader active us-iran-strikes-jul30 story.",
-      "sources": [
-        "Bloomberg",
-        "Fox News",
-        "CNBC"
-      ],
-      "watch": false
     },
     {
       "id": "iran-ukraine-caspian-incident",
@@ -500,20 +369,6 @@
         "Infosec.ge"
       ],
       "watch": true
-    },
-    {
-      "id": "openai-huggingface-agent-breach",
-      "headline": "Hugging Face agent-breach reconstruction and Bing AI-discovered CVEs: no update found",
-      "status": "Continuing",
-      "first_seen": "2026-07-27-pm",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-primary (Hugging Face's own reconstruction)",
-      "one_line": "No new development found this run beyond prior tracking.",
-      "score_note": "Low-priority background item pending new developments.",
-      "sources": [
-        "Hugging Face security-team publication"
-      ],
-      "watch": false
     },
     {
       "id": "cyber-breaches-jul28",
@@ -567,20 +422,6 @@
       "watch": true
     },
     {
-      "id": "employment-cost-index-q2",
-      "headline": "Employment Cost Index Q2 2026 -- see employment-cost-index-q2-2026-result",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-31-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "Released 8:30 ET today; result and forecast grading tracked under employment-cost-index-q2-2026-result. Not separately tracked further.",
-      "score_note": "Resolved into employment-cost-index-q2-2026-result.",
-      "sources": [
-        "bls.gov schedule ICS"
-      ],
-      "watch": true
-    },
-    {
       "id": "frontier-act-ai-bill",
       "headline": "Bipartisan FRONTIER Act: no new hearing or markup activity",
       "status": "Faded",
@@ -593,35 +434,6 @@
         "Rep. Obernolte press release"
       ],
       "watch": true
-    },
-    {
-      "id": "minnesota-prediction-market-ban",
-      "headline": "Minnesota prediction-market ban: no appeal filed",
-      "status": "Continuing",
-      "first_seen": "2026-07-28-am",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Judge Menendez's injunction remains in effect; no notice of appeal found despite AG Ellison's stated intent to keep litigating.",
-      "score_note": "Low-priority regulatory watch item.",
-      "sources": [
-        "Reason"
-      ],
-      "watch": false
-    },
-    {
-      "id": "berlin-pride-attack",
-      "headline": "Berlin Pride attack: no material change",
-      "status": "Continuing",
-      "first_seen": "2026-07-27-pm",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "No new development found; primary suspect remains deceased (killed by police Jul 26), second detained suspect remains released.",
-      "score_note": "Low direct US-market relevance; ongoing legal process.",
-      "sources": [
-        "SCMP",
-        "US News"
-      ],
-      "watch": false
     },
     {
       "id": "anthropic-ai-models-hacked-jul30",
@@ -639,24 +451,6 @@
         "Bloomberg"
       ],
       "watch": true
-    },
-    {
-      "id": "saudi-maritime-defense-alliance-jul30",
-      "headline": "Saudi-led Multinational Maritime Defense Alliance's founding charter formally approved -- member-list correction issued",
-      "status": "Resolved",
-      "first_seen": "2026-07-31-am",
-      "last_updated": "2026-08-01-sat",
-      "verification": "Confirmed-multiple",
-      "one_line": "Founding member states formally approved the alliance's charter in Riyadh Jul 30, with Saudi Arabia as founding nation, permanent host, and site of its Joint Command, Joint Maritime Operations Center, and General Secretariat. Correction: the 14 founding/signatory states are Saudi Arabia, Kuwait, Bahrain, Qatar, Jordan, Egypt, Pakistan, Turkiye, Djibouti, Somalia, Bangladesh, Yemen, and the Comoros -- not Nigeria/Sudan as this week's earlier reporting stated (logged in ledgers/corrections.json).",
-      "score_note": "Charter signed; lower priority now absent a new development.",
-      "sources": [
-        "Saudi Ministry of Defense joint declaration (primary, via wire)",
-        "Saudi Gazette",
-        "Anadolu Agency",
-        "Arabian Business",
-        "Middle East Monitor"
-      ],
-      "watch": false
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
@@ -677,21 +471,6 @@
       "watch": true
     },
     {
-      "id": "employment-cost-index-q2-2026-result",
-      "headline": "Employment Cost Index Q2 2026 prints hot at +0.9% Q/Q, well above the ~0.4% model estimate",
-      "status": "Resolved",
-      "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-07-31-pm",
-      "verification": "Confirmed-primary (BLS)",
-      "one_line": "BLS: compensation costs +0.9% Q/Q seasonally adjusted (wages +0.9%, benefits +1.0%), +3.4% Y/Y. Resolves forecast 2026-07-31-am-2 (at-or-below ~0.5% Q/Q, 45-55%) as WRONG. Complicates rather than resolves the 'weak growth, sticky inflation' tension two days after the FOMC's hawkish hold and one day after the GDP miss.",
-      "score_note": "Resolves prior forecast; supersedes employment-cost-index-q2 (pre-release tracking entry).",
-      "sources": [
-        "bls.gov/news.release/eci.nr0.htm (primary)",
-        "FRED ECIWAG"
-      ],
-      "watch": false
-    },
-    {
       "id": "novo-nordisk-zeus-trial-failure-jul31",
       "headline": "Novo Nordisk hit with a third analyst downgrade (UBS, Buy to Neutral) following last week's failed cardiovascular trial",
       "status": "Materially changed",
@@ -705,23 +484,6 @@
         "MarketBeat"
       ],
       "watch": true
-    },
-    {
-      "id": "exxon-chevron-windfall-earnings-jul31",
-      "headline": "ExxonMobil and Chevron post windfall Q2 profits on Iran-war-driven oil prices",
-      "status": "New",
-      "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-07-31-pm",
-      "verification": "Confirmed-primary (company reports, EDGAR)",
-      "one_line": "Exxon: $14.5B GAAP earnings ($3.52 adjusted EPS, an 8-cent miss). Chevron: net income $12.1B, up ~400% Y/Y, adjusted EPS $6.06 (beat by $0.50). Both explicitly attributed the surge to Iran-conflict-elevated oil prices. XLE +1.11%, WTI +1.41% today.",
-      "score_note": "Direct primary-sourced example of the Iran conflict's economic spillover into US corporate earnings.",
-      "sources": [
-        "ExxonMobil and Chevron investor-relations releases (primary)",
-        "SEC EDGAR 8-K feed, this run (primary)",
-        "CNBC",
-        "CNN Business"
-      ],
-      "watch": false
     },
     {
       "id": "coinbase-q2-2026-loss-jul31",
@@ -856,56 +618,6 @@
         "CBS News"
       ],
       "watch": true
-    },
-    {
-      "id": "jolts-june-2026",
-      "headline": "JOLTS (June 2026) shows further, modest labor-market cooling",
-      "status": "Resolved",
-      "first_seen": "2026-08-04-pm",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "Job openings fell to 7.359M (from a downwardly revised 7.537M), slightly below ~7.40M consensus. Openings rate 4.4%. Indeed Hiring Lab: labor market 'stuck in a low-hire, low-fire environment.' Report does not attribute today's equity rally to JOLTS specifically -- Palantir's earnings and falling oil are more consistently cited as drivers.",
-      "score_note": "One data point ahead of Friday's Critical-tier nonfarm payrolls report.",
-      "sources": [
-        "bls.gov/news.release/jolts.nr0.htm (primary)",
-        "Indeed Hiring Lab",
-        "TradingEconomics"
-      ],
-      "watch": false
-    },
-    {
-      "id": "michigan-senate-primary-aug5",
-      "headline": "Abdul El-Sayed narrowly wins Michigan's Democratic Senate primary over Rep. Haley Stevens",
-      "status": "Resolved",
-      "first_seen": "2026-08-06-am",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Fully resolved: El-Sayed (D) will face Mike Rogers (R, unopposed) in November. No new development this run.",
-      "score_note": "No further tracking pending general-election developments.",
-      "sources": [
-        "Washington Post",
-        "CNBC",
-        "NBC News",
-        "Ballotpedia"
-      ],
-      "watch": false
-    },
-    {
-      "headline": "July jobs report due 8:30 ET; Wednesday's ADP miss (+44K vs ~75K est.) sets a cautious tone",
-      "status": "Resolved",
-      "verification": "Confirmed-multiple",
-      "one_line": "Resolved: July NFP printed -23K (vs +83K/+97.5K est.), a shock miss. See jobs-report-result-aug7.",
-      "score_note": "Resolved into jobs-report-result-aug7.",
-      "sources": [
-        "CNBC",
-        "FactSet",
-        "ADP/CNBC",
-        "bls.gov schedule (primary)"
-      ],
-      "watch": false,
-      "id": "jobs-report-setup-aug7",
-      "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-07-pm"
     },
     {
       "headline": "Senate committee votes 8-5 to hold Fauci in contempt, refers directly to DOJ bypassing a floor vote",

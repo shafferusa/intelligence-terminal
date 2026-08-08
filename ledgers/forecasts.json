@@ -255,7 +255,10 @@
       "horizon": "2026-08-02",
       "probability": "55-70%",
       "basis": "Poland's response so far (scrambling jets, government attribution statements without a confirmed Article 4 request as of this report's cutoff) has been measured; genuine uncertainty remains given this is described as a missile rather than debris, a more serious category of incursion.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No NATO Article 4 consultation was invoked over the Poland missile-crash incident; NATO's Stoltenberg said no Article 4 until the investigation completed, and no formal consultation request followed in the days after.",
+      "graded": "2026-08-08",
+      "lesson": "A 'no formal escalation' forecast held even though the incident (a Russian missile crashing on NATO territory) was serious; alliance-level formal mechanisms have a higher activation bar than the underlying event severity alone would suggest."
     },
     {
       "id": "2026-07-31-am-1",
@@ -265,7 +268,10 @@
       "horizon": "2026-08-02",
       "probability": "60-75%",
       "basis": "This conflict's prior pattern of Iranian/IRGC-sourced damage and casualty claims going unconfirmed by Western governments for days or being quietly revised; weighed against the unusually large and specific scale of this particular claim, which would ordinarily draw a faster US response either way.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Iran's claim of destroying/damaging six F-35s at Ahmad al-Jaber Air Base, Kuwait was never confirmed by CENTCOM or the Kuwaiti government; CENTCOM's public position ('No US aircraft were destroyed or damaged') stands unchanged a week later.",
+      "graded": "2026-08-08",
+      "lesson": "IRGC-sourced damage/casualty claims in this conflict continued their established pattern of going unconfirmed by Western governments, even for claims specific and large enough (six F-35s) to ordinarily invite a rebuttal."
     },
     {
       "id": "2026-07-31-am-2",
@@ -301,7 +307,10 @@
       "horizon": "2026-08-07",
       "probability": "55-65%",
       "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Novo Nordisk closed the Aug 7 session at $47.24, well below the ~$49.90 half-recovery threshold, after three consecutive sell-side downgrades (HSBC, Wall Street Zen, UBS) through the week.",
+      "graded": "2026-08-08",
+      "lesson": "A failed pivotal trial repriced NVO more durably than a sentiment-driven earnings selloff would have; the stock never mounted a meaningful recovery attempt all week."
     },
     {
       "id": "2026-07-31-pm-2",
@@ -321,7 +330,10 @@
       "horizon": "2026-08-07",
       "probability": "55-65%",
       "basis": "Pattern of analyst reaction to consecutive-quarter deterioration in a widely covered name, weighed against a broader crypto-sector narrative that could offset company-specific concern.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Coinbase drew multiple sell-side price-target cuts within the window: Mizuho (Jul 31, to $155), Cantor Fitzgerald (Aug 3, to $184), and Citigroup (to $210), following the third consecutive quarterly loss.",
+      "graded": "2026-08-08",
+      "lesson": "The base-rate pattern (analyst cuts following consecutive-quarter deterioration in a widely covered name) held cleanly, with cuts arriving from multiple firms rather than just one."
     },
     {
       "id": "2026-08-02-sun-1",
@@ -331,7 +343,10 @@
       "horizon": "2026-08-03",
       "probability": "50-60%",
       "basis": "The Iran de-escalation news Trump announced Saturday night is explicitly disputed by Iran itself, arguing against markets committing to a clean, large one-directional move on Monday's open; futures/commodities had not yet reopened for the week at this report's generation time so no live pricing signal was available to anchor this forecast.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "WTI closed Monday Aug 3 at $80.34, a -5.11% move from Friday Jul 31's $84.67 reference close -- just outside the +/-5% band (the 5%-down threshold was $80.44).",
+      "graded": "2026-08-08",
+      "lesson": "A razor-thin miss (about $0.10, roughly 0.1 percentage point outside the band): the disputed Iran de-escalation narrative drove oil's Monday reaction slightly harder than the forecast's two-way-uncertainty framing anticipated."
     },
     {
       "id": "2026-08-02-sun-2",
@@ -341,7 +356,10 @@
       "horizon": "2026-08-07",
       "probability": "35-50%",
       "basis": "Iran has publicly denied Trump's account that it requested a pause and agreed to deal terms; the underlying escalation drivers (Hormuz tanker attacks, suspected Iran-linked US cyberattacks) both occurred in the days immediately before the announcement and have not visibly stopped.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The underlying escalation drivers did not stop: a further Strait of Hormuz tanker attack (Velos Amber) was confirmed within the week, satisfying the forecast's 'further tanker attack' trigger, even though US/Israel strikes did not resume.",
+      "graded": "2026-08-08",
+      "lesson": "Framing the forecast around multiple alternative triggers (strikes OR a tanker attack OR a rejection of terms) correctly captured that this conflict de-escalated on the diplomatic/military track while continuing on the maritime-harassment track."
     },
     {
       "id": "2026-08-02-sun-3",
@@ -351,7 +369,10 @@
       "horizon": "2026-08-07",
       "probability": "25-35%",
       "basis": "Two incidents involving the same shipping manager's LNG carriers occurred within the past week alone (Gaslog Salem at Damietta, Gaslog Shanghai in the Strait), with no claim of responsibility or resolution for either.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "A third Hormuz-area vessel (Velos Amber) was struck within the week, confirmed by Aug 4 reporting -- the third incident in the tracked pattern (Gaslog Salem, Gaslog Shanghai, Velos Amber).",
+      "graded": "2026-08-08",
+      "lesson": "The accelerating-incident-pace base rate (roughly one every 2-3 days) correctly anticipated continuation before any de-escalation signal on this specific risk channel had materialized."
     },
     {
       "id": "2026-08-02-sun-4",
@@ -361,7 +382,10 @@
       "horizon": "2026-08-05",
       "probability": "55-70%",
       "basis": "SPCX has traded with high realized volatility since its June 2026 IPO, and this is its first quarterly disclosure as a public company with no prior print to anchor investor expectations.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "SpaceX closed the Aug 5 session (the day after its first-ever public earnings) at $108.27, down 13.62% from the Aug 4 close of $125.33 -- well past the 8% threshold.",
+      "graded": "2026-08-08",
+      "lesson": "A binary first-print catalyst with no prior quarter to anchor expectations produced an outsized move, as elevated short interest and a wide sell-side estimate range both signaled going in."
     },
     {
       "id": "2026-08-02-sun-5",
@@ -371,7 +395,10 @@
       "horizon": "2026-08-07",
       "probability": "20-30%",
       "basis": "The campaign has already spread from Minnesota to Michigan and reportedly touched at least seven states in total per federal officials, though FBI attribution to Iran remains preliminary and unconfirmed.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The water-utility cyberattack campaign expanded to include Georgia, South Dakota, and New Jersey as newly disclosed states within the week, beyond the seven states known as of Aug 2.",
+      "graded": "2026-08-08",
+      "lesson": "A campaign already showing a consistent weekly-expansion pattern continued that pattern; the FBI/press-sourced attribution to Iran remained preliminary throughout, as flagged."
     },
     {
       "id": "2026-08-02-sun-6",
@@ -381,7 +408,10 @@
       "horizon": "2026-08-07",
       "probability": "45-55%",
       "basis": "Analytic judgment weighing the disputed-but-not-yet-reversed de-escalation, a two-way jobs-report risk, and a structurally volatile but idiosyncratic SpaceX catalyst -- not a statistical model output.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Choppy, single-name-volatility-dominated week and no broad-market SpaceX-lockup spillover both held as forecast, but the jobs report was not 'roughly in line with recent trend' -- it was a shock miss (-23,000 vs +83K-97.5K estimates), the week's most consequential single surprise.",
+      "graded": "2026-08-08",
+      "lesson": "The 'choppy, mixed week' framing was directionally right, but naming the jobs report as an in-line, low-drama input understated its actual role as the week's dominant catalyst -- a reminder that a Critical-tier release deserves wider two-way framing even when no forward consensus signal is available."
     },
     {
       "id": "2026-08-02-sun-7",
@@ -391,7 +421,10 @@
       "horizon": "2026-08-07",
       "probability": "15-20%",
       "basis": "Requires multiple favorable confirmations (Iranian statement, jobs data, earnings) to align; analytic judgment, not a statistical model.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Several bull-case elements matched (oil closed the week lower, WTI -2.69%; equities were risk-on with the S&P at a fresh record; the 10Y yield eased from 4.75% to 4.65%; the Iran-Oman corridor deal did firm up with mutual confirmation), but the jobs report showed a shock deterioration rather than 'continued gradual cooling,' and SpaceX's earnings were mixed (revenue beat, but a $60B acquisition disclosure and heavy capex triggered an initial selloff) rather than a clean beat.",
+      "graded": "2026-08-08",
+      "lesson": "This scenario's market-outcome predictions (oil lower, risk-on, yields easing) proved more durable than its causal story (a benign, gradual jobs cooling) -- the market ended up in a bull-scenario place via a bear-scenario datapoint (a weak jobs report read as rate-cut-friendly), a distinction worth separating in future scenario writing."
     },
     {
       "id": "2026-08-02-sun-8",
@@ -401,7 +434,10 @@
       "horizon": "2026-08-07",
       "probability": "15-20%",
       "basis": "Analytic judgment; a soft-but-not-shock combination of the week's known catalysts.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The jobs report did read as labor-market cracking rather than gradual cooling, as this scenario anticipated, but Iran did not continue denying the deal (it progressed to a mutually confirmed Hormuz corridor agreement), the SpaceX lockup did not pressure the stock mechanically (SPCX rose 6.14% through the lockup session), and space-sector weakness did not materialize -- the sector posted its strongest week of the cycle (VOYG +49%, RDW +41%, PLTR +37% weekly).",
+      "graded": "2026-08-08",
+      "lesson": "The single correctly-anticipated element (a weak jobs report) was outweighed by three inverted calls; bear scenarios built around multiple simultaneous negative catalysts are vulnerable when even one pillar (here, the SpaceX lockup) breaks the other way, since markets don't average scenario legs -- they follow whichever catalyst dominates."
     },
     {
       "id": "2026-08-02-sun-9",
@@ -411,7 +447,10 @@
       "horizon": "2026-08-07",
       "probability": "10-15%",
       "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "None of the shock triggers occurred: no strikes resumed, no tanker attack caused casualties, and no water-utility cyberattack was confirmed to have caused an operational safety incident. Oil fell rather than spiked, equities closed at records rather than risk-off, and VIX ended the week at 14.90 -- below its recent range, not above it.",
+      "graded": "2026-08-08",
+      "lesson": "Assigning only 10-15% to the shock scenario was well-calibrated; the week's actual tail risk (a jobs-report shock) came from a completely different vector than the scenario matrix's geopolitical/cyber shock triggers, a reminder that scenario matrices built around the week's most visible risk (Iran) can miss the actual surprise."
     },
     {
       "id": "2026-08-03-am-1",
@@ -421,7 +460,10 @@
       "horizon": "2026-08-03",
       "probability": "35-50%",
       "basis": "Iran's government has denied the deal at multiple levels (Foreign Ministry spokesperson, Fars, Mehr, and the acting Defense Minister) this weekend, a broader denial than last week's state-media-only pushback; genuine two-way uncertainty given FM Araghchi's narrower Iran-Oman Hormuz-management claim is not itself disputed and could still anchor some form of de-escalation.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Monday's premarket rally and oil selloff extended into the cash session rather than reversing: the S&P 500 closed +1.48% and the Nasdaq +2.13%, both holding (and building on) the premarket gains despite Iran's continued denial of any deal.",
+      "graded": "2026-08-08",
+      "lesson": "A harder, multi-source Iranian denial was not sufficient on its own to reverse a move once the cash session got underway -- price action, once established, proved more durable than the fragility of its underlying geopolitical premise."
     },
     {
       "id": "2026-08-03-pm-1",
@@ -431,7 +473,10 @@
       "horizon": "2026-08-04",
       "probability": "80-90%",
       "basis": "Both previously-holdout Republicans (Cornyn and Tillis) issued a joint statement Monday backing the vote, after the disputed anti-weaponization fund was rescinded; probability is not higher only because no vote has actually occurred yet and last-minute reversals have happened elsewhere in this same nomination fight.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Senate Judiciary Committee voted 12-10 to advance Todd Blanche's nomination at Tuesday's session, as both previously-holdout Republicans (Cornyn and Tillis) followed through on their stated support.",
+      "graded": "2026-08-08",
+      "lesson": "Public, on-record commitments from the deciding votes ahead of a scheduled committee session were a reliable signal here, consistent with this forecast's high (80-90%) confidence."
     },
     {
       "id": "2026-08-03-pm-2",
@@ -441,7 +486,10 @@
       "horizon": "2026-08-05",
       "probability": "60-70%",
       "basis": "Today's session showed the market absorbing a harder Iranian denial without reversing, and tomorrow's earnings (SpaceX) and JOLTS data are the more likely near-term swing factors; genuine two-way uncertainty remains given the underlying Iran dispute is unresolved and could still produce a fresh shock.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The S&P 500 closed above Friday Jul 31's 7,489.72 level every session through Wednesday Aug 5 (Aug 3: 7,600.50; Aug 4: 7,736.52; Aug 5: 7,723.55), holding the rally without a single close-below breach.",
+      "graded": "2026-08-08",
+      "lesson": "Absent a fresh shock, a rally built on a hardening (not softening) risk backdrop -- Iran's continued denial did not reverse the market's read -- proved durable through the mid-week SpaceX/JOLTS catalysts."
     },
     {
       "id": "2026-08-03-pm-3",
@@ -461,7 +509,10 @@
       "horizon": "2026-08-05",
       "probability": "55-65%",
       "basis": "Elevated short interest (75.4% of Monday's volume, highest in the 167-symbol watchlist), a binary first-print catalyst with a wide sell-side EPS estimate range (-$1.26 to +$0.33), and an imminent share-lockup expiration two trading days later.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "SpaceX closed Wednesday Aug 5 at $108.27, down 13.62% from Tuesday's $125.33 close -- exceeding the +/-10% threshold following its first-ever public quarterly report.",
+      "graded": "2026-08-08",
+      "lesson": "The combination of elevated short interest, a binary first-print catalyst, and an imminent lockup expiration two sessions later produced the outsized move this forecast's basis anticipated."
     },
     {
       "id": "2026-08-04-am-2",
@@ -471,7 +522,10 @@
       "horizon": "2026-08-04",
       "probability": "85-95%",
       "basis": "Both prior Republican holdouts (Cornyn, Tillis) are on record supporting advancement after the disputed $1.8B anti-weaponization fund was formally rescinded Sunday night.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Senate Judiciary Committee did vote to advance Todd Blanche's nomination at the 9:00 AM ET session (12-10), as both prior GOP holdouts supported it after the anti-weaponization fund's rescission.",
+      "graded": "2026-08-08",
+      "lesson": "Same result and same basis as the overlapping 2026-08-03-pm-1 forecast -- both correctly anticipated the committee vote from public pre-vote commitments."
     },
     {
       "id": "2026-08-04-am-3",
@@ -491,7 +545,10 @@
       "horizon": "2026-08-05",
       "probability": "25-35%",
       "basis": "Premarket futures (NQ flat, ES/RTY only slightly higher) show no broad AI-sector stress as of this report's snapshot, arguing against a broad spillover; but two large, distinct capex-driven overnight selloffs (SPCX ~-11% premarket, AMD >-8% after-hours) on the same night is an unusual coincidence worth tracking.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "AI-infrastructure names did not pull back as a group on Aug 5: VRT +2.97%, NVDA +3.44%, ETN +0.56%, and AVGO +0.03% all rose, while only CEG (-0.80%) and VST (-1.85%) declined -- 4 of 6 tracked names closed higher.",
+      "graded": "2026-08-08",
+      "lesson": "The overnight capex-skepticism reaction in SPCX and AMD (both idiosyncratic, earnings-specific selloffs) did not generalize into a sector-wide move, consistent with the forecast's own stated low-probability (25-35%) framing; premarket futures showing no broad stress correctly signaled containment."
     },
     {
       "id": "2026-08-05-am-2",
@@ -501,7 +558,10 @@
       "horizon": "2026-08-10",
       "probability": "20-30%",
       "basis": "Sen. Collins's Aug 4 no-vote announcement leaves exactly two GOP senators (Murkowski, Cassidy) uncommitted with distinct, unresolved concerns and only one allowable additional defection given the 53-47 majority; no public whip count was found confirming either senator's final position.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Todd Blanche's nomination did not fail: Sen. Murkowski did vote no (alongside Collins, already committed), but Sen. Cassidy's yes vote alone was sufficient to reach exactly 50 Republican votes, and the nomination was confirmed 50-49 in the early hours of Saturday, Aug 8.",
+      "graded": "2026-08-08",
+      "lesson": "A single additional defection (Murkowski) was not enough to sink the nomination once Cassidy's support held -- the forecast correctly identified Murkowski and Cassidy as the pivotal votes but underweighted how little margin for error a 53-47 majority actually needs when only one senator (Collins) was a certain no."
     },
     {
       "id": "2026-08-05-am-3",
@@ -511,7 +571,10 @@
       "horizon": "2026-08-05",
       "probability": "30-45%",
       "basis": "Four incidents in roughly a week (Gaslog Salem, Gaslog Shanghai, Velos Amber, Minoan Pioneer) is an accelerating pace; UKMTO/Bloomberg describe Hormuz shipping traffic as 'at a trickle.' No de-escalation signal (confirmed deal, quiet 24h) has materialized as of this report's cutoff.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No fifth Strait of Hormuz-area vessel incident was reported before Wednesday's 16:30 ET cutoff, or at any point for the remainder of the week -- the pattern of accelerating incidents (four in roughly a week) did not continue into a fifth.",
+      "graded": "2026-08-08",
+      "lesson": "An accelerating short-term pattern (four incidents in about a week) did not extrapolate cleanly to a fifth within the same week; the maritime-harassment campaign's pace was uneven rather than steadily escalating, consistent with how the underlying diplomatic track (the emerging Iran-Oman deal) was also improving over the same days."
     },
     {
       "id": "2026-08-05-pm-1",
@@ -521,7 +584,10 @@
       "horizon": "2026-08-06",
       "probability": "45-55%",
       "basis": "SPCX enters the lockup already at a fresh post-IPO low following two consecutive down sessions; historical lockup-expiration reactions vary widely between further mechanical selling pressure and a 'sell the news' stabilization once the anticipated float increase is priced in. Genuine two-way uncertainty given both dynamics are plausible.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "SpaceX closed the Aug 6 lockup-expiration session at $114.92, up 6.14% from Aug 5's $108.27 close -- exceeding the +/-5% threshold in the 'extends/reverses' direction of stabilization rather than further mechanical selling.",
+      "graded": "2026-08-08",
+      "lesson": "The 'sell the news' stabilization dynamic (float increase already priced in ahead of the lockup) dominated over mechanical selling pressure -- a useful data point for framing future lockup-expiration forecasts in this name."
     },
     {
       "id": "2026-08-05-pm-2",
@@ -551,7 +617,10 @@
       "horizon": "2026-08-08",
       "probability": "65-75%",
       "basis": "Two senators uncommitted with distinct concerns (Murkowski on the rescinded fund, Cassidy on White House independence); no public no-commitment from either as of this report; historical base rate favors confirmation once a floor vote is scheduled by leadership.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Todd Blanche was confirmed 50-49 in Saturday's early-morning vote; exactly one of the two tracked uncommitted senators (Murkowski) voted no, with Cassidy voting yes and no additional GOP senator defecting beyond the already-known Collins no vote.",
+      "graded": "2026-08-08",
+      "lesson": "The historical base rate favoring confirmation once a floor vote is scheduled by leadership held, even with two senators publicly uncommitted through the final days -- the margin (50-49) shows this was a genuinely close call the base rate happened to resolve correctly."
     },
     {
       "id": "2026-08-06-am-2",
@@ -561,7 +630,10 @@
       "horizon": "2026-08-07",
       "probability": "40-55%",
       "basis": "An unnamed Gulf official cited 50-50 odds to CNN; Trump's 'a lot of progress' framing and the absence of any new Hormuz incident this run weigh slightly positive, offset by Iran's continued formal denial of direct US talks and the deputy FM's caution that any deal would not automatically reopen the strait.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Iran and Oman publicly confirmed their Hormuz shipping-corridor agreement by Aug 5, two days ahead of the Friday Aug 7 deadline, with Bloomberg and Al Jazeera both reporting a reached agreement on the proposed route's coordinates.",
+      "graded": "2026-08-08",
+      "lesson": "The 50-50-odds framing from an unnamed Gulf official proved too pessimistic; once coordinates were reported 'finalized' (per Wednesday's am edition), the remaining step to a public joint announcement moved faster than the repeated near-miss pattern this report had tracked through the week."
     },
     {
       "id": "2026-08-06-am-3",
@@ -581,7 +653,10 @@
       "horizon": "2026-08-07",
       "probability": "35-50%",
       "basis": "Iran's own government now describes the deal as 'agreed in principle,' a firmer characterization than Wednesday's 'final drafting' framing and this morning's 50-50-odds report from an unnamed Gulf official; but this remains Iran-sourced only, with no US or Omani government confirmation found this run, and Iran's own deputy FM cautioned the strait does not reopen automatically -- an unresolved contingency this report's tracked pattern this cycle has repeatedly seen slip past informal deadlines.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Same underlying event as 2026-08-06-am-2: Iran and Oman's Hormuz corridor agreement was publicly confirmed by Aug 5, ahead of the Friday Aug 7 deadline.",
+      "graded": "2026-08-08",
+      "lesson": "Both this forecast and its morning counterpart (2026-08-06-am-2) correctly anticipated the announcement, though the 'agreed in principle' language this report used at issuance was closer to the mark than treating the prior pattern of slipped deadlines as the base case."
     },
     {
       "id": "2026-08-06-pm-2",
@@ -591,7 +666,10 @@
       "horizon": "2026-08-07",
       "probability": "35-45%",
       "basis": "This run found no single confirmed catalyst for today's broad, sector-wide decline, which argues against a durable trend continuing mechanically; but if an as-yet-unidentified catalyst (private-credit jitters, a rates-driven rotation) is in fact driving it, some follow-through would be the more likely outcome. Genuine two-way uncertainty given the catalyst itself remains unconfirmed.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Only 4 of the 13 tracked financials names (WFC, KKR, APO, ARES) closed lower again on Aug 7 -- short of the 'at least half' (7 of 13) threshold; the other 9 (JPM, BAC, C, GS, MS, IBKR, HOOD, COIN, BX) rebounded, consistent with the jobs-report-driven risk-on tape.",
+      "graded": "2026-08-08",
+      "lesson": "The prior session's broad, unexplained financials weakness proved to be closer to a one-day event than a durable trend, resolving into an uneven, partial rebound rather than continued broad weakness -- worth remembering that unexplained sector-wide moves without a confirmed catalyst often mean-revert faster than catalyzed moves."
     },
     {
       "id": "2026-08-06-pm-3",
@@ -611,7 +689,10 @@
       "horizon": "2026-08-07",
       "probability": "30-40%",
       "basis": "ADP and BLS nonfarm payrolls have a historically loose month-to-month correlation; this is not a base-rate-driven estimate, but the unusually wide consensus spread itself signals genuine forecaster disagreement.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "July nonfarm payrolls printed -23,000, a decline far below the 70,000 threshold and the week's most consequential single surprise, sending the S&P 500 to a fresh record close.",
+      "graded": "2026-08-08",
+      "lesson": "The wide Street consensus spread (a genuine disagreement signal, not a base rate) correctly flagged elevated miss risk; the actual print landed even further from consensus than the forecast's below-70K band implied, an outright contraction rather than just a soft beat."
     },
     {
       "id": "2026-08-07-am-2",
@@ -621,7 +702,10 @@
       "horizon": "2026-08-07",
       "probability": "55-65%",
       "basis": "Two additional GOP senators (Curtis, Husted) secured support this week after the anti-weaponization-fund concession; Murkowski and Cassidy met with Blanche without publicly opposing, though McConnell's absence tightens the margin.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Todd Blanche's cloture/floor vote did not clear with both Murkowski and Cassidy voting yes -- Murkowski voted no (alongside Collins), while Cassidy's yes vote alone provided the 50th vote needed for eventual confirmation.",
+      "graded": "2026-08-08",
+      "lesson": "Two additional secured GOP votes (Curtis, Husted) were not enough to offset Murkowski's defection in this specific framing; the nomination's ultimate success depended on a narrower path (Cassidy alone) than this forecast's 'both vote yes' framing anticipated -- worth distinguishing 'the nomination succeeds' from 'every named senator votes as expected' in future vote forecasts."
     },
     {
       "id": "2026-08-07-am-3",
@@ -641,7 +725,10 @@
       "horizon": "2026-08-08",
       "probability": "80-90%",
       "basis": "Sen. Cassidy's public commitment gives Blanche exactly 50 Republican yes votes against 49 no votes (47 Democrats + Collins + Murkowski), a majority among those voting if the count holds; only a further GOP defection would flip the outcome.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Todd Blanche was confirmed as Attorney General by the full Senate in the early hours of Saturday, Aug 8, by a 50-49 vote after an overnight session running past 4:00 AM.",
+      "graded": "2026-08-08",
+      "lesson": "The vote-count logic (Cassidy's public commitment giving exactly 50 yes votes against 49 no) held through to the actual floor vote, confirming the forecast's high (80-90%) probability."
     },
     {
       "id": "2026-08-07-pm-2",
