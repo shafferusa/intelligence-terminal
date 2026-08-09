@@ -134,17 +134,22 @@
     {
       "id": "us-iran-strikes-jul30",
       "headline": "Iran-Oman Hormuz corridor deal remains in 'final stage' of drafting; no US/Oman confirmation; Houthi Gulf of Aden claim uncorroborated",
-      "status": "Continuing",
+      "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-07-am",
-      "verification": "Single-reliable-source (Iran characterization); Unverified (Houthi claim)",
-      "one_line": "Coordinates agreed, still Iran-sourced only; UKMTO confirmed only an incident report, not the Houthi attack claim itself. Standing forecasts 2026-08-06-am-2 and 2026-08-06-pm-1 due today.",
+      "last_updated": "2026-08-09-sun",
+      "verification": "Confirmed-multiple (Iran public statements); Disputed (deal terms, US compliance)",
+      "one_line": "Sat Aug 8: Iranian FM Araghchi said an Oman-brokered Hormuz-reopening deal is \"close\" but not sufficient alone -- also requires the US \"making amends\" for alleged MOU violations. Iran's proposed transit terms would ban US/Israeli vessels and let Iran control navigation/security. Bloomberg (Sun Aug 9): Iran has rejected resuming direct US talks \"for now.\" A fourth Gulf maritime incident surfaced this run: Liberia-flagged bulk carrier Minoan Pioneer struck near Al Khasab, Oman on Aug 3, one crew member still missing.",
       "score_note": "No resolution either way this run.",
       "sources": [
         "Bloomberg",
         "Al Jazeera",
         "IRNA",
-        "CNN"
+        "CNN",
+        "Japan Times",
+        "CNN live blog",
+        "NPR",
+        "PBS NewsHour",
+        "Seatrade Maritime"
       ],
       "watch": true
     },
@@ -168,9 +173,9 @@
       "headline": "Water-utility cyberattacks: New Jersey confirms two municipal systems targeted; attribution still unofficial",
       "status": "Materially changed",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-07-am",
+      "last_updated": "2026-08-09-sun",
       "verification": "Confirmed-multiple (scope, NJ incident); Single-reliable-source (attribution)",
-      "one_line": "NJ officials confirmed two municipal systems briefly went to manual operation, no service disruption; scope holds at 12+ states; Iran attribution remains unofficial ('sources familiar', not a formal US government statement).",
+      "one_line": "NJ officials confirmed two municipal systems briefly went to manual operation, no service disruption; scope holds at 12+ states; Iran attribution remains unofficial ('sources familiar', not a formal US government statement). President Trump said Friday Aug 7 he does not \"think there was an Iranian cyberattack\" -- a direct, on-record contradiction of the security-researcher/CyberAv3ngers-TTP-based attribution.",
       "score_note": "Scope confirmed to include NJ with official detail.",
       "sources": [
         "CBS News",
@@ -457,9 +462,9 @@
       "headline": "Netanyahu says Israel 'didn't agree' to Board of Peace's Gaza disarmament sequencing, hardening the deadlock",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-07-am",
+      "last_updated": "2026-08-09-sun",
       "verification": "Confirmed-multiple",
-      "one_line": "Explicit on-record rejection of the no-withdrawal-before-disarmament sequencing, a harder line than the prior 'deadlock persists' framing; a Single-reliable-source report of 17 killed in Gaza overnight is uncorroborated.",
+      "one_line": "Explicit on-record rejection of the no-withdrawal-before-disarmament sequencing, a harder line than the prior 'deadlock persists' framing; a Single-reliable-source report of 17 killed in Gaza overnight is uncorroborated. Weekend update: Uganda's Parliament approved UPDF deployment to the Board of Peace's International Stabilization Force (joining Morocco, Kazakhstan, Kosovo, Indonesia, Albania) -- the first concrete troop-staffing step, even as the disarm-before-withdraw sequencing standoff continues heading into the ~Aug 13 14-day checkpoint.",
       "score_note": "Reduces near-term implementation odds.",
       "sources": [
         "Washington Post",
@@ -668,6 +673,23 @@
       "id": "typhoon-dolphin-h3-launch-aug7",
       "first_seen": "2026-08-07-am",
       "last_updated": "2026-08-07-pm"
+    },
+    {
+      "id": "saudi-turkiye-pakistan-defense-pact-aug7",
+      "headline": "Saudi Arabia, Turkiye and Pakistan sign a NATO-style mutual defense pact",
+      "status": "New",
+      "first_seen": "2026-08-09-sun",
+      "last_updated": "2026-08-09-sun",
+      "verification": "Confirmed-multiple",
+      "one_line": "Signed Fri Aug 7 as the \"Mecca Joint Defence Agreement\": an attack on one is treated as an attack on all three, explicitly invoking a UN Article 51-style collective self-defense framing. Signed amid Houthi attacks on Saudi forces in eastern Yemen; Yemeni government forces separately launched an operation against Houthi targets in Marib/Hadhramaut in response. Distinct from the earlier Saudi-led 14-nation Multinational Maritime Defense Alliance. Read as a hedge against sole reliance on US security guarantees.",
+      "score_note": "New this weekend; structurally significant regional realignment during an active US-Iran conflict.",
+      "sources": [
+        "Al Jazeera",
+        "Atlantic Council",
+        "Courthouse News",
+        "The New Arab"
+      ],
+      "watch": true
     }
   ]
 }
