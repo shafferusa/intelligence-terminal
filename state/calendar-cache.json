@@ -1,146 +1,26 @@
 {
-  "fetched": "2026-08-07T05:55:00-04:00",
-  "earnings_fetched": "2026-08-07",
-  "earnings_fetched_note": "Friday AM refresh: Alpha Vantage EARNINGS_CALENDAR returned cleanly this run (full 3-month CSV); Finnhub day-of calendar confirms VST (Vistra) as the only watchlist company reporting today, bmo, Confirmed-multiple across both sources. BLS ICS, BEA RSS, TreasuryDirect upcoming, and Fed press RSS re-fetched, unchanged in substance (Aug 11/12/13 refunding auctions and Aug 12 CPI/Aug 13 PPI still the next major releases). Launch Library 2 re-fetched: H3-22/Michibiki-7 postponed (Typhoon Dolphin, JAXA) -- no new date yet; Isar Aerospace Spectrum demo flight did not fly Aug 5, now retargeted Aug 31; Falcon 9 Starlink 17-38 (Vandenberg) still scheduled ~Aug 8.",
+  "fetched": "2026-08-09T09:20:00-04:00",
+  "earnings_fetched": "2026-08-09",
+  "earnings_fetched_note": "Sunday U1 force-refresh: Alpha Vantage EARNINGS_CALENDAR (3-month horizon) cross-checked against Finnhub calendar/earnings for the week of Aug 10-14. Both sources agree exactly: only 6 watchlist-relevant earnings this week, all in the space sector (ASTS, RKLB Mon; FLY Tue; SPIR Wed; LUNR, YSS Thu) -- no discrepancies found, unlike the prior two weeks. No mega-cap or financials/health/consumer watchlist earnings fall in this window; the mega-cap earnings arc (including SpaceX's first-ever print) concluded the prior two weeks.",
   "events": [
     {
-      "ts_et": "2026-08-03T00:00:00-04:00",
-      "type": "auction",
-      "name": "13-Week ($92B) / 26-Week ($79B) Treasury Bill auction",
-      "importance": "Low",
-      "reason": "Routine bill supply; issue date Aug 6",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-03T16:00:00-04:00",
-      "type": "legal",
-      "name": "SCOTUS mail-ballot EO stay: respondent states' written response due",
-      "importance": "Critical",
-      "reason": "Justice Jackson's scheduling order deadline on the emergency stay application; procedural, not a merits ruling",
-      "source": "SCOTUSblog, The Hill \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-03T00:00:00-04:00",
-      "type": "earnings",
-      "name": "BWX Technologies (BWXT), Palantir (PLTR), Voyager Technologies (VOYG), Vertex Pharmaceuticals (VRTX)",
-      "importance": "Medium",
-      "reason": "Alpha Vantage-sourced day, not independently confirmed by Finnhub this run",
-      "source": "Alpha Vantage EARNINGS_CALENDAR \u2014 Single-reliable-source (day only)"
-    },
-    {
-      "ts_et": "2026-08-04T04:50:00-04:00",
+      "ts_et": "2026-08-10T00:00:00-04:00",
       "type": "launch",
-      "name": "Long March 8A \u2014 undisclosed payload (Wenchang)",
+      "name": "Long March 7A \u2014 undisclosed payload (China)",
       "importance": "Low",
       "reason": "Routine Chinese launch",
       "source": "Launch Library 2 \u2014 Confirmed-primary"
     },
     {
-      "ts_et": "2026-08-04T09:00:00-04:00",
-      "type": "politics",
-      "name": "Senate Judiciary Committee vote on Todd Blanche's Attorney General nomination",
-      "importance": "High",
-      "reason": "Rescheduled after Cornyn/Tillis objections over the DOJ IRS-settlement fund; a committee advance would send the nomination to the full Senate",
-      "source": "yournews.com, judiciary.senate.gov \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-04T10:00:00-04:00",
+      "ts_et": "2026-08-10T10:49:00-04:00",
       "type": "launch",
-      "name": "Falcon 9 \u2014 Starlink Group 17-53 (Vandenberg)",
+      "name": "Falcon 9 \u2014 Starlink Group 10-19",
       "importance": "Low",
       "reason": "Routine Starlink deployment",
       "source": "Launch Library 2 \u2014 Confirmed-primary"
     },
     {
-      "ts_et": "2026-08-04T10:00:00-04:00",
-      "type": "econ_release",
-      "name": "JOLTS \u2014 Job Openings and Labor Turnover Survey (June 2026)",
-      "importance": "High",
-      "reason": "Earlier, noisier read on labor demand ahead of Friday's jobs report",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-04T00:00:00-04:00",
-      "type": "auction",
-      "name": "52-Week ($52B) / 6-Week ($95B) Treasury Bill auction",
-      "importance": "Low",
-      "reason": "Routine bill supply; issue date Aug 6",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-04T00:00:00-04:00",
-      "type": "earnings",
-      "name": "SpaceX (SPCX) \u2014 first-ever public earnings report, after close",
-      "importance": "Critical",
-      "reason": "First quarterly disclosure since June IPO, two days ahead of the Aug 6 share-lockup expiration",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings (amc) \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-04T00:00:00-04:00",
-      "type": "earnings",
-      "name": "AMD, Arista Networks (ANET), Apollo Global (APO), Booking Holdings (BKNG), McDonald's (MCD), Merck (MRK), Pfizer (PFE), Viasat (VSAT), Kratos (KTOS)",
-      "importance": "Medium",
-      "reason": "Mixed bmo/amc; broad earnings day",
-      "source": "Finnhub calendar/earnings \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-05T02:35:00-04:00",
-      "type": "launch",
-      "name": "Smart Dragon 3 \u2014 undisclosed payload (Haiyang, China)",
-      "importance": "Low",
-      "reason": "Routine Chinese launch \u2014 confirmed successful (Launch Library 2 status: Launch Successful)",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-05T03:42:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 \u2014 BlueBird 11-13 (AST SpaceMobile, Cape Canaveral)",
-      "importance": "Medium",
-      "reason": "Direct-to-device satellite constellation build-out \u2014 payload deployed per Launch Library 2",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-05T00:00:00-04:00",
-      "type": "earnings",
-      "name": "Eli Lilly (LLY) before open; Globalstar (GSAT), Redwire (RDW)",
-      "importance": "High",
-      "reason": "Lilly is the week's other mega-cap-scale report, one week after Novo Nordisk's failed cardiovascular trial; GSAT day disputed between sources (see note)",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple (Lilly, RDW); Disputed (GSAT day)"
-    },
-    {
-      "ts_et": "2026-08-05T00:00:00-04:00",
-      "type": "auction",
-      "name": "17-Week Treasury Bill auction",
-      "importance": "Low",
-      "reason": "Routine bill supply; issue date Aug 11",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-05T20:00:00-04:00",
-      "type": "launch",
-      "name": "Spectrum \u2014 \"Onward and Upward\" demo flight (Isar Aerospace, And\u00f8ya, Norway)",
-      "importance": "Medium",
-      "reason": "One of few orbital-class launch attempts based in Western Europe outside French Guiana; time TBD",
-      "source": "Launch Library 2 \u2014 status To Be Determined"
-    },
-    {
-      "ts_et": "2026-08-06T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Productivity and Costs, Q2 2026 (preliminary)",
-      "importance": "Medium",
-      "reason": "Unit labor costs, watched alongside the hot Q2 Employment Cost Index print",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-06T00:00:00-04:00",
-      "type": "other",
-      "name": "SpaceX (SPCX) share-lockup expiration",
-      "importance": "High",
-      "reason": "Up to ~911.5M shares (~$116B) unlock, expanding tradeable float from ~4.9% to ~12% of shares outstanding, two days after first earnings",
-      "source": "MLQ News, CNBC, Yahoo Finance \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-06T15:30:00-04:00",
+      "ts_et": "2026-08-10T15:23:31-04:00",
       "type": "launch",
       "name": "H3-22 \u2014 Michibiki 7 / QZS-7 (Tanegashima, Japan)",
       "importance": "Low",
@@ -148,44 +28,20 @@
       "source": "Launch Library 2 \u2014 Confirmed-primary"
     },
     {
-      "ts_et": "2026-08-06T00:00:00-04:00",
-      "type": "auction",
-      "name": "4-Week / 8-Week Treasury Bill auction",
-      "importance": "Low",
-      "reason": "Routine bill supply; issue date Aug 11",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-06T00:00:00-04:00",
-      "type": "earnings",
-      "name": "Constellation Energy (CEG) bmo, BlackSky (BKSY) bmo, Airbnb (ABNB) amc, Karman (KRMN) amc",
-      "importance": "Medium",
-      "reason": "AI-datacenter power-demand and space-sector reads",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-07T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Employment Situation, July 2026 (nonfarm payrolls, unemployment rate, wages)",
-      "importance": "Critical",
-      "reason": "The week's only Critical-tier data point and cleanest labor-market read ahead of the September FOMC meeting; no reliable forward consensus was independently obtained this run",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-07T00:00:00-04:00",
-      "type": "earnings",
-      "name": "Vistra (VST) \u2014 before open",
-      "importance": "Medium",
-      "reason": "Power-generation sector read",
-      "source": "Finnhub calendar/earnings \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-08T10:00:00-04:00",
+      "ts_et": "2026-08-10T19:45:00-04:00",
       "type": "launch",
-      "name": "Falcon 9 \u2014 Starlink Group 17-38 (Vandenberg)",
-      "importance": "Low",
-      "reason": "Routine Starlink deployment",
-      "source": "Launch Library 2 \u2014 Confirmed-primary"
+      "name": "Zhuque-3 \u2014 Flight 2 (China, LandSpace)",
+      "importance": "Medium",
+      "reason": "Second flight of China's first methalox reusable-attempt orbital rocket -- DISPUTED date: four independent trackers (NextSpaceflight, SpaceLaunchSchedule, Go4Liftoff, SpaceLaunchLive) instead show Aug 31, 2026",
+      "source": "Launch Library 2 \u2014 Confirmed-primary (LL2 date); Disputed vs other trackers"
+    },
+    {
+      "ts_et": "2026-08-10T00:00:00-04:00",
+      "type": "earnings",
+      "name": "AST SpaceMobile (ASTS), Rocket Lab (RKLB) \u2014 after close",
+      "importance": "Medium",
+      "reason": "Space-sector Q2 reports, cross-confirmed Alpha Vantage + Finnhub",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-10T00:00:00-04:00",
@@ -198,15 +54,23 @@
     {
       "ts_et": "2026-08-11T00:00:00-04:00",
       "type": "auction",
-      "name": "3-Year Note auction",
+      "name": "3-Year Note auction ($58B)",
       "importance": "Medium",
-      "reason": "Quarterly refunding cycle resumes; settles Aug 17",
+      "reason": "Quarterly refunding cycle; settles Aug 17",
       "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-11T00:00:00-04:00",
+      "type": "earnings",
+      "name": "Firefly Aerospace (FLY) \u2014 after close",
+      "importance": "Low",
+      "reason": "Space-sector Q2 report",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-12T00:00:00-04:00",
       "type": "auction",
-      "name": "10-Year Note auction",
+      "name": "10-Year Note auction ($42B)",
       "importance": "Medium",
       "reason": "Quarterly refunding cycle; settles Aug 17",
       "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
@@ -215,8 +79,8 @@
       "ts_et": "2026-08-12T08:30:00-04:00",
       "type": "econ_release",
       "name": "Consumer Price Index, July 2026",
-      "importance": "High",
-      "reason": "Next CPI release, nine days after the jobs report",
+      "importance": "Critical",
+      "reason": "The week's only Critical-tier econ release; first CPI since the hot Q2 Employment Cost Index print and five days after the July jobs report",
       "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
     },
     {
@@ -228,9 +92,17 @@
       "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
     },
     {
+      "ts_et": "2026-08-12T00:00:00-04:00",
+      "type": "earnings",
+      "name": "Spire Global (SPIR) \u2014 after close",
+      "importance": "Low",
+      "reason": "Space-sector Q2 report",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple"
+    },
+    {
       "ts_et": "2026-08-13T00:00:00-04:00",
       "type": "auction",
-      "name": "30-Year Bond auction",
+      "name": "30-Year Bond auction ($25B)",
       "importance": "Medium",
       "reason": "Quarterly refunding cycle; settles Aug 17",
       "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
@@ -240,8 +112,56 @@
       "type": "econ_release",
       "name": "Producer Price Index, July 2026",
       "importance": "High",
-      "reason": "Next PPI release",
+      "reason": "Next PPI release, one day after CPI",
       "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-13T00:00:00-04:00",
+      "type": "earnings",
+      "name": "Intuitive Machines (LUNR) before open; York Space Systems (YSS) after close",
+      "importance": "Low",
+      "reason": "Space-sector Q2 reports",
+      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-13T00:00:00-04:00",
+      "type": "auction",
+      "name": "17-Week / 4-Week / 8-Week Treasury Bill auctions",
+      "importance": "Low",
+      "reason": "Routine bill supply",
+      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-13T00:00:00-04:00",
+      "type": "auction",
+      "name": "20-Year Bond announced, 29-Year 6-Month TIPS announced",
+      "importance": "Low",
+      "reason": "Auction announcements for late-August settlement",
+      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-14T00:00:00-04:00",
+      "type": "auction",
+      "name": "13-Week / 26-Week / 6-Week Treasury Bill auctions",
+      "importance": "Low",
+      "reason": "Routine bill supply",
+      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-18T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "U.S. Import and Export Price Indexes, July 2026",
+      "importance": "Low",
+      "reason": "Next week's release, noted for the following-week bridge",
+      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-13T00:00:00-04:00",
+      "type": "other",
+      "name": "Gaza Board of Peace 14-day disarmament-roadmap checkpoint",
+      "importance": "Critical",
+      "reason": "Netanyahu has publicly said Israel did not agree to the roadmap's disarm-before-withdraw sequencing; checkpoint contested by both parties",
+      "source": "Times of Israel, Washington Post, PBS NewsHour \u2014 Confirmed-multiple"
     }
   ]
 }

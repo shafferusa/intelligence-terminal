@@ -20,7 +20,7 @@
       "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
       "horizon": "2026-07-30",
       "probability": "55-65%",
-      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate \u2014 treat as low-confidence.",
+      "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
       "status": "partial",
       "outcome": "Q2 GDP advance printed +1.5% annualized -- inside the stated 1.5-3.0% range, but exactly at the bottom edge.",
       "graded": "2026-08-01",
@@ -59,7 +59,7 @@
       "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
       "horizon": "2026-07-31",
       "probability": "60-70%",
-      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly \u00b110% around spot given no crypto-specific catalyst identified this week.",
+      "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
       "status": "correct",
       "outcome": "Bitcoin traded within the $60,000-$72,000 band all week (high ~$64,914 Mon, low ~$62,944 Fri; $63,046 as of this run).",
       "graded": "2026-08-01",
@@ -306,7 +306,7 @@
       "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
       "horizon": "2026-08-07",
       "probability": "55-65%",
-      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+      "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
       "status": "correct",
       "outcome": "Novo Nordisk closed the Aug 7 session at $47.24, well below the ~$49.90 half-recovery threshold, after three consecutive sell-side downgrades (HSBC, Wall Street Zen, UBS) through the week.",
       "graded": "2026-08-08",
@@ -319,7 +319,7 @@
       "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
       "horizon": "2026-08-13",
       "probability": "45-55%",
-      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+      "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
       "status": "open"
     },
     {
@@ -748,6 +748,96 @@
       "horizon": "2026-08-12",
       "probability": "40-55%",
       "basis": "This report has repeatedly flagged sharp, sometimes unexplained single-session reversals in this small-cap space complex (YSS three times this week alone); base rate of volatility in this group is elevated.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-1",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "July CPI (Wed Aug 12) headline YoY prints in a 3.3-3.8% range.",
+      "horizon": "2026-08-12",
+      "probability": "60-70%",
+      "basis": "Multiple street-aggregator/prediction-market estimates (Robinhood, Polymarket, Seeking Alpha, Finance Calendar) cluster near 3.5-3.6% YoY; band widened for the inherent uncertainty of non-polled consensus sourcing.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-2",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "No fifth Gulf maritime incident (tanker/vessel strike) occurs in or near the Strait of Hormuz this week.",
+      "horizon": "2026-08-14",
+      "probability": "55-65%",
+      "basis": "Four incidents occurred within roughly a five-day span in early August with no claim of responsibility or resolution for any of them, but no new incident has been reported since Aug 3.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-3",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "The Gaza disarmament roadmap's ~14-day implementation checkpoint is not met on schedule (no confirmed joint declaration of completed initial-phase implementation by Aug 13).",
+      "horizon": "2026-08-13",
+      "probability": "60-70%",
+      "basis": "Netanyahu's public \"didn't agree\" statement and the mutual-precondition standoff between Israel and Hamas reported this week.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-4",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "No new state or non-water critical-infrastructure sector discloses a related cyberattack this week (water-utility campaign).",
+      "horizon": "2026-08-14",
+      "probability": "55-65%",
+      "basis": "Growth from 7 to 12 states occurred around Aug 3-4 and has not visibly continued through this weekend, though attribution and full scope remain unsettled.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-5",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "At least one of the six space-sector earnings reporters this week (ASTS, RKLB, FLY, SPIR, LUNR, YSS) moves more than 15% in the session following its report.",
+      "horizon": "2026-08-14",
+      "probability": "55-65%",
+      "basis": "RKLB's own options market already prices a ~17% swing, above its 10.4% historical average, and this cohort has shown a documented pattern of outsized reactions this cycle (ASTS, LUNR, RDW, FLY, VOYG all posted double-digit single-session moves within the past two weeks).",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-6",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "Base scenario: CPI prints roughly in line with the ~3.5-3.6% street-aggregated expectation; Hormuz talks continue without resolution or a new incident; the Gaza checkpoint passes with a soft extension; space-sector earnings are mixed. Equities hold most of Friday's record-high gains with two-way, single-name-driven volatility.",
+      "horizon": "2026-08-14",
+      "probability": "40-50%",
+      "basis": "Analytic judgment weighing the week's binary catalysts against the absence of a confirmed near-term escalation trigger.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-7",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "Bull scenario: CPI surprises to the downside (both headline and core); Iran and the US reach at least a framework Hormuz agreement; space-sector earnings beat broadly. Yields fall further, equities extend to new records, oil eases further.",
+      "horizon": "2026-08-14",
+      "probability": "15-20%",
+      "basis": "Requires multiple favorable confirmations (CPI, Hormuz, earnings) to align simultaneously.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-8",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "Bear scenario: CPI runs hot on shelter/core stickiness, reviving September hike pricing against the weak jobs backdrop; Iran formally rejects the Oman framework without a new strike; at least one major space-sector earnings miss drags the broader watchlist. Yields back up, equities give back a meaningful share of Friday's gains.",
+      "horizon": "2026-08-14",
+      "probability": "20-25%",
+      "basis": "Analytic judgment; a soft-but-not-shock combination of the week's known catalysts.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-09-sun-9",
+      "date": "2026-08-09",
+      "slot": "sun",
+      "forecast": "Shock scenario: a fifth Gulf maritime incident causes casualties or triggers a US/Israeli response; or the water-utility cyberattack campaign is confirmed to have caused an actual water-safety incident; or a hot CPI print combines with a Gaza-roadmap collapse into open renewed fighting. Oil spikes, broad risk-off, VIX moves back above its recent range.",
+      "horizon": "2026-08-14",
+      "probability": "8-12%",
+      "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
       "status": "open"
     }
   ]
