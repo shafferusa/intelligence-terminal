@@ -839,6 +839,36 @@
       "probability": "8-12%",
       "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-10-am-1",
+      "date": "2026-08-10",
+      "slot": "am",
+      "forecast": "Wednesday's July CPI prints hot enough (core >=~0.3% m/m) to revive September rate-hike odds.",
+      "horizon": "2026-08-12",
+      "probability": "20-35%",
+      "basis": "Inflation swaps still imply 2.4% average inflation and 30Y yields sit near 20-year highs, a market hedge against this outcome, even as post-jobs-report futures pricing leans toward a September hold/cut; oil has firmed for two sessions on Hormuz/Houthi headlines, a potential energy-CPI pass-through.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-10-am-2",
+      "date": "2026-08-10",
+      "slot": "am",
+      "forecast": "Gaza's ~Aug 13 14-day roadmap checkpoint passes without a resolution of the disarm-before-withdraw sequencing dispute, given Netanyahu's Aug 9 rejection of the 15-point document.",
+      "horizon": "2026-08-13",
+      "probability": "35-50%",
+      "basis": "The rejection is explicit and on-record, though five days remains time for a negotiating reset, a pattern this thread has shown before (soften-then-harden cycles).",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-10-am-3",
+      "date": "2026-08-10",
+      "slot": "am",
+      "forecast": "Neither Turkiye nor Pakistan issues a statement invoking the three-day-old Mecca Joint Defence Agreement in response to the Aug 9 Houthi strikes on Saudi Arabia.",
+      "horizon": "2026-08-17",
+      "probability": "60-75%",
+      "basis": "Saudi Arabia has historically absorbed prior Houthi strikes without invoking multinational defense mechanisms; the pact is untested and its signing-ceremony framing has not yet been matched by any practical-application precedent.",
+      "status": "open"
     }
   ]
 }

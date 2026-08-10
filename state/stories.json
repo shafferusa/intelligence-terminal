@@ -1,6 +1,54 @@
 {
   "stories": [
     {
+      "id": "pentagon-defense-production-memo-aug9",
+      "headline": "Pentagon gives defense contractors 21 days to submit faster-production plans amid Iran-war stock depletion",
+      "status": "New",
+      "first_seen": "2026-08-10-am",
+      "last_updated": "2026-08-10-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Deputy Defense Secretary Steve Feinberg's memo (Sun Aug 9) gives industry up to 21 days to submit plans for faster delivery/production of air defense, surface-to-air missile systems, satcom, and space-based missile tracking. Pentagon spokesman Sean Parnell says it will inform the FY2028 budget request. Confirms Patriot/THAAD stock depletion from months of the Iran conflict.",
+      "score_note": "Demand-side signal, not a new contract; medium-term positive read for defense_aero watchlist names, unconfirmed which primes benefit most.",
+      "sources": [
+        "CNBC",
+        "Washington Post (secondary pickup)",
+        "Pentagon spokesman statement"
+      ],
+      "watch": true
+    },
+    {
+      "id": "fed-warsh-hike-vs-jobs-cut-tension-aug",
+      "headline": "Fed policy fork: Chair Warsh's private hawkish signal vs. post-jobs-report dovish market pricing, with Aug 12 CPI as tie-breaker",
+      "status": "Continuing",
+      "first_seen": "2026-08-10-am",
+      "last_updated": "2026-08-10-am",
+      "verification": "Confirmed-multiple (both halves independently); Disputed (as a combined narrative)",
+      "one_line": "FT reported (pre-jobs-report) that Chair Warsh privately signaled September hike readiness if inflation runs hot, with Gov. Cook publicly echoing it. Friday's -23,000 payrolls miss then pulled September-hike futures pricing down to ~43.9% from 57% pre-report (hold ~60.4%). Warsh has not commented publicly since the jobs report. Neither signal has been withdrawn.",
+      "score_note": "Genuinely unresolved; Tue Aug 12 CPI (this week's only Critical release) is the next major data point either side can point to.",
+      "sources": [
+        "Financial Times (secondary pickup)",
+        "CNBC",
+        "Yahoo Finance (futures pricing)"
+      ],
+      "watch": true
+    },
+    {
+      "id": "chipotle-salmonella-case-update-aug",
+      "headline": "Chipotle/Qdoba salmonella outbreak grows to 345 cases/27 states but FDA says no longer an ongoing risk",
+      "status": "Materially changed",
+      "first_seen": "2026-08-04-pm",
+      "last_updated": "2026-08-10-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Case count: 345 confirmed (Salmonella Javiana), 27 states, 36 hospitalized, 0 deaths -- traced to jalapenos imported via Coast Citrus Distributors from Sinaloa, Mexico. Both Chipotle (from Jul 20) and Qdoba (from Jul 28) switched suppliers; FDA states it does not consider a current ongoing risk from either chain. Two lawsuits remain filed against Chipotle.",
+      "score_note": "Outbreak scope larger than last tracked but remediation appears complete per FDA's own assessment.",
+      "sources": [
+        "FDA outbreak investigation page",
+        "CBS News",
+        "NBC News"
+      ],
+      "watch": false
+    },
+    {
       "id": "financials-unexplained-swoon-aug6-7",
       "headline": "A dozen-name financials swoon proved to be a one-day event, not a durable trend",
       "status": "Continuing",
@@ -136,10 +184,10 @@
       "headline": "Iran-Oman Hormuz corridor deal remains in 'final stage' of drafting; no US/Oman confirmation; Houthi Gulf of Aden claim uncorroborated",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-09-sun",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple (Iran public statements); Disputed (deal terms, US compliance)",
-      "one_line": "Sat Aug 8: Iranian FM Araghchi said an Oman-brokered Hormuz-reopening deal is \"close\" but not sufficient alone -- also requires the US \"making amends\" for alleged MOU violations. Iran's proposed transit terms would ban US/Israeli vessels and let Iran control navigation/security. Bloomberg (Sun Aug 9): Iran has rejected resuming direct US talks \"for now.\" A fourth Gulf maritime incident surfaced this run: Liberia-flagged bulk carrier Minoan Pioneer struck near Al Khasab, Oman on Aug 3, one crew member still missing.",
-      "score_note": "No resolution either way this run.",
+      "one_line": "Weekend of Aug 8-9: Iran added new preconditions for fully reopening Hormuz (US lift port blockade, withdraw forces, drop sanctions, pay war damages), a harder line than the prior 'close'/'agreed in principle' framing. Trump said the US is 'only semi-negotiating,' emphasizing economic pressure over Iran's inflation. Oil firmed a second session (WTI +0.84%) on fading near-term deal hopes.",
+      "score_note": "Reverses direction from last week's optimism; watch for a US/Omani statement disputing or confirming Iran's new terms.",
       "sources": [
         "Bloomberg",
         "Al Jazeera",
@@ -173,10 +221,10 @@
       "headline": "Water-utility cyberattacks: New Jersey confirms two municipal systems targeted; attribution still unofficial",
       "status": "Materially changed",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-09-sun",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple (scope, NJ incident); Single-reliable-source (attribution)",
-      "one_line": "NJ officials confirmed two municipal systems briefly went to manual operation, no service disruption; scope holds at 12+ states; Iran attribution remains unofficial ('sources familiar', not a formal US government statement). President Trump said Friday Aug 7 he does not \"think there was an Iranian cyberattack\" -- a direct, on-record contradiction of the security-researcher/CyberAv3ngers-TTP-based attribution.",
-      "score_note": "Scope confirmed to include NJ with official detail.",
+      "one_line": "Scope holds at roughly seven-to-twelve states depending on source (30+ Minnesota systems, Michigan, New Jersey, Georgia, South Dakota named). New this weekend: investigators are also examining whether the actor is deliberately impersonating Iran to 'stir the pot' amid the active conflict, a second independent reason (beyond Trump's public doubt Friday) that attribution remains unresolved in either direction.",
+      "score_note": "Attribution now contested on two independent axes; no FBI/CISA statement in either direction.",
       "sources": [
         "CBS News",
         "ABC News",
@@ -208,12 +256,12 @@
     {
       "id": "russia-ukraine-poland-missile-jul30",
       "headline": "UN calls Aug 4-5 Kyiv barrage the deadliest attack on the city this year; new Kharkiv/Sumy strikes and a deep refinery strike",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-07-am",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Guterres called the 17-killed Kyiv barrage the year's deadliest on the city; new overnight strikes killed 6+ more in Kharkiv/Sumy; Ukraine struck the Slavneft-Yanos refinery ~700km inside Russia.",
-      "score_note": "Continued mutual deep-strike escalation without a diplomatic opening.",
+      "one_line": "Overnight Sat-Sun Aug 8-9: Russia struck Ukraine with 174 strike drones plus Oniks/Iskander/Kh-31/Kh-59 missiles across 12+ regions; a Kharkiv apartment-block strike killed 2, injured 13. Ukrainian drones killed 5 and injured about two dozen in Russia's Belgorod region. Wire coverage describes large-scale Russian strikes as 'almost routine,' exploiting Ukraine's Patriot-interceptor shortage.",
+      "score_note": "Continued mutual deep-strike pattern without a diplomatic opening; watch for any Patriot-resupply announcement.",
       "sources": [
         "NBC News",
         "UN News",
@@ -279,10 +327,10 @@
       "headline": "DRC Ebola outbreak's confirmed toll rises to 3,874 cases / 1,751 deaths, resolving this morning's preliminary flag",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-07-pm",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple (search-synthesized; WHO primary site unreachable this run)",
-      "one_line": "Multiple outlets (USNews, UN News) describe the outbreak as having crossed 4,000 confirmed cases as of Aug 7, with slightly inconsistent exact figures across search-synthesized sources ('nearly 4,000' vs 'above 4,000'); this report confirms the directional threshold crossing but not a single precise count pending a cleaner primary read.",
-      "score_note": "Forecast 2026-08-06-am-3 trending correct; formal grading was due Saturday Aug 8.",
+      "one_line": "Search-synthesized secondary sources now put confirmed deaths at roughly 1,801-1,850 (Congolese authorities citing the higher figure), plus two deaths in Uganda -- now described as the second-largest Ebola outbreak on record, confirmed across 53 of 140 health zones in five DRC provinces. Resolves forecast 2026-08-06-am-3 (WHO confirms a toll above 1,707) correct. WHO's own primary situation-report page was not independently re-fetched this run (recurring known access issue).",
+      "score_note": "Continues the multi-week rising trend; toll has roughly doubled since this report's late-July preliminary flag.",
       "sources": [
         "WHO Disease Outbreak News",
         "Al Jazeera",
@@ -327,12 +375,12 @@
     {
       "id": "mail-ballot-eo-scotus",
       "headline": "Mail-ballot EO: SCOTUS stay still pending; this report corrects its own '1st Circuit' vs 'D.C. Circuit' error",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-07-am",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple",
-      "one_line": "The panel that declined to block the order -- and Justice Jackson's assigned circuit for this application -- is the 1st Circuit, not the D.C. Circuit as this report's Aug 6 am edition stated. Correction logged in ledgers/corrections.json; underlying dispute unaffected.",
-      "score_note": "Self-correction; no ruling from SCOTUS yet.",
+      "one_line": "Both sides have now filed their SCOTUS briefs: challenging states ask the Court to leave the current implementation limits in place; the administration asks for full nationwide implementation. No ruling or argument date set. An election-law specialist says the order is likely not implementable for the 2026 midterms regardless of the eventual ruling, given logistics timelines.",
+      "score_note": "Briefing complete on both sides; awaiting a Court order.",
       "sources": [
         "SCOTUSblog",
         "Votebeat",
@@ -462,10 +510,10 @@
       "headline": "Netanyahu says Israel 'didn't agree' to Board of Peace's Gaza disarmament sequencing, hardening the deadlock",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-09-sun",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Explicit on-record rejection of the no-withdrawal-before-disarmament sequencing, a harder line than the prior 'deadlock persists' framing; a Single-reliable-source report of 17 killed in Gaza overnight is uncorroborated. Weekend update: Uganda's Parliament approved UPDF deployment to the Board of Peace's International Stabilization Force (joining Morocco, Kazakhstan, Kosovo, Indonesia, Albania) -- the first concrete troop-staffing step, even as the disarm-before-withdraw sequencing standoff continues heading into the ~Aug 13 14-day checkpoint.",
-      "score_note": "Reduces near-term implementation odds.",
+      "one_line": "Sun Aug 9: Netanyahu told his cabinet 'Israel rejects the 15-point document' outright -- a harder, more formal rejection than the prior 'didn't agree to sequencing' framing -- and said the IDF 'will not carry out any withdrawal until Hamas is disarmed,' distinguishing 'genuine' from 'fictitious' disarmament. Comes five days before the roadmap's ~Aug 13 14-day checkpoint; no Board of Peace or Hamas response found yet.",
+      "score_note": "Hardest Israeli position yet on the roadmap; Aug 13 checkpoint is now the key near-term test.",
       "sources": [
         "Washington Post",
         "Times of Israel",
@@ -643,10 +691,10 @@
     },
     {
       "headline": "Fighting resumes in western Tigray, most serious escalation since the 2022 Pretoria peace deal",
-      "status": "New",
+      "status": "Materially changed",
       "verification": "Confirmed-multiple (fact of fighting); casualty figures unavailable",
-      "one_line": "ENDF vs TPLF-linked forces clashed near Shererina (Sudan border) Aug 1-2 with artillery and drones; no official casualty count; hundreds of civilians reportedly crossed into Sudan. Forecast 2026-08-07-am-3 logged on containment within 14 days.",
-      "score_note": "New conflict-escalation risk; limited visibility into intent.",
+      "one_line": "A TPLF-affiliated source describes a de-escalation this week following the Aug 1-2 Shererina clashes, though this is single-sourced and not independently confirmed by the Ethiopian federal government. Both sides continue to blame the other for initiating the fighting; Amnesty International separately warns of renewed human-rights-violation risk to Tigray residents regardless of the immediate military trajectory.",
+      "score_note": "Tentative de-escalation; forecast 2026-08-07-am-3 (containment within 14 days, window to ~Aug 15) trending correct but not yet resolved.",
       "sources": [
         "Al Jazeera",
         "Amnesty International",
@@ -655,7 +703,7 @@
       "watch": true,
       "id": "ethiopia-tigray-fighting-aug1",
       "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-07-am"
+      "last_updated": "2026-08-10-am"
     },
     {
       "headline": "Typhoon Dolphin forces JAXA to postpone H3/Michibiki-7 launch as Category 4 storm nears Okinawa",
@@ -677,12 +725,12 @@
     {
       "id": "saudi-turkiye-pakistan-defense-pact-aug7",
       "headline": "Saudi Arabia, Turkiye and Pakistan sign a NATO-style mutual defense pact",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-09-sun",
-      "last_updated": "2026-08-09-sun",
+      "last_updated": "2026-08-10-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Signed Fri Aug 7 as the \"Mecca Joint Defence Agreement\": an attack on one is treated as an attack on all three, explicitly invoking a UN Article 51-style collective self-defense framing. Signed amid Houthi attacks on Saudi forces in eastern Yemen; Yemeni government forces separately launched an operation against Houthi targets in Marib/Hadhramaut in response. Distinct from the earlier Saudi-led 14-nation Multinational Maritime Defense Alliance. Read as a hedge against sole reliance on US security guarantees.",
-      "score_note": "New this weekend; structurally significant regional realignment during an active US-Iran conflict.",
+      "one_line": "First live test of the three-day-old Mecca Joint Defence Agreement: Houthis struck Saudi Aramco's Jazan refinery (dawn Sun Aug 9, fire extinguished, no injuries) and separately claimed a 'large-scale' operation against Saudi-aligned forces at Yemen's Mokha port that a medical source says killed at least 11. No statement from Turkiye or Pakistan referencing the pact has surfaced yet.",
+      "score_note": "Watch for any Ankara/Islamabad statement invoking the mutual-defense pact -- would mark its first practical application.",
       "sources": [
         "Al Jazeera",
         "Atlantic Council",
