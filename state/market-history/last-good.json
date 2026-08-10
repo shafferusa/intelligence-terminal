@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-08-09T09:20:00-04:00",
+  "fetched_at": "2026-08-10T05:50:00-04:00",
   "treasury_par_curve": {
     "date": "2026-08-07",
     "label": "EOD official (2026-08-07)",
@@ -74,143 +74,126 @@
     }
   },
   "vix_complex": {
-    "as_of": "2026-08-07T16:15:01-04:00",
-    "label": "EOD official (Fri Aug 7 close)",
+    "date": "2026-08-07",
+    "label": "EOD official (2026-08-07)",
     "VIX": 14.9,
     "VIX9D": 11.96,
     "VIX3M": 18.72,
-    "term_structure": "ordinary contango (VIX9D < VIX < VIX3M)",
-    "week_path_vix": [
-      "07/31/2026,16.820000,18.700000,15.820000,15.990000",
-      "08/03/2026,16.030000,16.300000,15.540000,15.860000",
-      "08/04/2026,15.760000,16.650000,15.510000,16.500000",
-      "08/05/2026,16.150000,18.430000,15.480000,15.810000",
-      "08/06/2026,15.830000,16.030000,15.110000,15.150000",
-      "08/07/2026,15.300000,15.360000,14.770000,14.900000"
-    ]
+    "term_structure": "normal contango, no inversion",
+    "delayed_quote_snapshot": {
+      "value": 15.43,
+      "note": "Cboe delayed-quote feed snapshot timestamped 2026-08-10 morning against a Fri 16:15 ET last-trade time; treated as a weekend model artifact, not a live print"
+    }
   },
   "fx": {
     "date": "2026-08-07",
     "label": "EOD official (ECB reference, 2026-08-07)",
     "base": "USD",
     "rates": {
-      "AUD": 1.4204,
-      "BRL": 5.0998,
-      "CAD": 1.401,
-      "CHF": 0.81032,
-      "CNY": 6.7476,
       "EUR": 0.86693,
-      "GBP": 0.74352,
-      "INR": 95.21,
       "JPY": 158.34,
-      "MXN": 17.1551
+      "GBP": 0.74352,
+      "CNY": 6.7476,
+      "CHF": 0.81032,
+      "CAD": 1.401,
+      "AUD": 1.4204,
+      "MXN": 17.1551,
+      "BRL": 5.0998,
+      "INR": 95.21
+    },
+    "EURUSD_live_snapshot": {
+      "value": 1.156,
+      "change_pct": 0.31,
+      "ts_et": "2026-08-10T05:41:00-04:00"
     }
   },
   "crypto": {
-    "as_of": "2026-08-09T09:20:00-04:00",
-    "label": "Live (CoinGecko aggregate, public endpoint, no COINGECKO_KEY configured)",
-    "BTC": {
-      "usd": 64976,
-      "usd_24h_change": 0.00867863409963079
+    "label": "Live (CoinGecko public endpoint)",
+    "ts": "2026-08-10T05:45:00-04:00",
+    "bitcoin": {
+      "usd": 65036,
+      "change_24h_pct": 0.41
     },
-    "ETH": {
-      "usd": 1918.65,
-      "usd_24h_change": 0.008933091146463358
+    "ethereum": {
+      "usd": 1917.1,
+      "change_24h_pct": 0.13
     },
-    "SOL": {
-      "usd": 76.55,
-      "usd_24h_change": 1.5273493406308876
+    "solana": {
+      "usd": 76.7,
+      "change_24h_pct": 0.4
     },
-    "ADA": {
-      "usd": 0.19664,
-      "usd_24h_change": -1.3382377789561413
+    "cardano": {
+      "usd": 0.195615,
+      "change_24h_pct": -0.45
     },
-    "total_market_cap_usd": 2301040174075.014,
-    "btc_dominance_pct": 56.655178302608256
+    "total_market_cap_usd": 2303776520901.53,
+    "btc_dominance_pct": 56.7
   },
   "indices_cash_close": {
     "date": "2026-08-07",
-    "label": "EOD official (Fri Aug 7 close, this run's own Yahoo sweep)",
-    "GSPC": {
-      "close": 7757.64013671875,
-      "prevclose": 7709.9599609375,
-      "pct": 0.6184231308959001
+    "label": "Previous close (2026-08-07)",
+    "SPX": {
+      "close": 7757.64,
+      "chg_pct": 0.62
     },
-    "IXIC": {
-      "close": 26690.619140625,
-      "prevclose": 26348.349609375,
-      "pct": 1.2990169643423022
+    "NDX_COMP": {
+      "close": 26690.62,
+      "chg_pct": 1.3
     },
     "DJI": {
-      "close": 54036.9296875,
-      "prevclose": 53885.1015625,
-      "pct": 0.2817627147346068
+      "close": 54036.93,
+      "chg_pct": 0.28
     },
     "RUT": {
-      "close": 3034.489990234375,
-      "prevclose": 3001.550048828125,
-      "pct": 1.097431022984625
+      "close": 3034.49,
+      "chg_pct": 1.1
     },
-    "TNX": {
-      "close": 4.659999847412109,
-      "prevclose": 4.670000076293945,
-      "pct": -0.214137659924237
-    }
+    "TNX_10Y_yield_pct": 4.66
   },
   "futures_and_commodities": {
-    "as_of": "2026-08-07T16:00:00-04:00 (pre-Sunday-reopen)",
-    "label": "EOD official (Yahoo Finance, Friday settle)",
+    "date": "2026-08-10",
+    "label": "Delayed, ~04:00 ET snapshot (close-series method)",
     "ES": {
-      "close": 7779.75,
-      "prevclose": 7734.75,
-      "pct": 0.5817899738194512
+      "last": 7792.75,
+      "chg_pct": 0.17
     },
     "NQ": {
-      "close": 29834.75,
-      "prevclose": 29488.25,
-      "pct": 1.1750442973048587
+      "last": 29967.75,
+      "chg_pct": 0.45
     },
     "YM": {
-      "close": 54152.0,
-      "prevclose": 54013.0,
-      "pct": 0.25734545387221597
+      "last": 54136.0,
+      "chg_pct": -0.03
     },
     "RTY": {
-      "close": 3041.60009765625,
-      "prevclose": 3009.10009765625,
-      "pct": 1.0800571248963715
-    },
-    "CL": {
-      "close": 78.18000030517578,
-      "prevclose": 77.29000091552734,
-      "pct": 1.1515065068004666
+      "last": 3036.8,
+      "chg_pct": -0.16
     },
     "GC": {
-      "close": 4399.7001953125,
-      "prevclose": 4242.0,
-      "pct": 3.717590648573786
+      "last": 4401.0,
+      "chg_pct": 1.39
+    },
+    "CL": {
+      "last": 78.84,
+      "chg_pct": 0.84
     },
     "NG": {
-      "close": 2.6619999408721924,
-      "prevclose": 2.640000104904175,
-      "pct": 0.8333270868872225
+      "last": 2.763,
+      "chg_pct": 3.79
     },
     "HG": {
-      "close": 6.591000080108643,
-      "prevclose": 6.686999797821045,
-      "pct": -1.4356171768344272
+      "last": 6.624,
+      "chg_pct": 0.82
     },
     "EURUSD": {
-      "close": 1.156203031539917,
-      "prevclose": 1.1524720191955566,
-      "pct": 0.3237399504904819
+      "last": 1.156,
+      "chg_pct": 0.31
     }
   },
   "sources_failed_this_run": [
-    "api.twelvedata.com quote batch (8-credit/minute rate limit hit after batch 1; substituted full Yahoo Finance sweep for the 167-symbol watchlist, own-close-series computation used in place of chartPreviousClose per the known 2026-07-29 data-quality finding)",
-    "Twelve Data/Yahoo Finance symbol FM (no data returned, recurring known gap)",
-    "cdn.cboe.com options market-statistics put/call ratio (not attempted, recurring known path-shift issue)",
-    "COINGECKO_KEY env var not set -- public endpoint used successfully instead"
+    "cdn.cboe.com options market-statistics (HTTP 403 AccessDenied, recurring known path-shift issue)",
+    "Twelve Data quote batches (HTTP 429 after 1 test batch, 8-credit/minute limit; substituted full Yahoo Finance close-series sweep, 166/167 recovered)",
+    "Yahoo Finance FM ETF (no data returned, recurring known gap)"
   ],
   "technical_levels_2026-08-07": {
     "SPY": {
@@ -1602,6 +1585,57 @@
       "vol": 3928200,
       "date": "2026-08-07",
       "source": "Yahoo Finance (own close-series computation)"
+    }
+  },
+  "technical_levels_2026-08-10": {
+    "SPY": {
+      "last": 773.26,
+      "dist20_pct": 3.08,
+      "dist50_pct": 3.49,
+      "dist200_pct": 10.0,
+      "hi52": 773.26,
+      "lo52": 631.97
+    },
+    "QQQ": {
+      "last": 723.03,
+      "dist20_pct": 3.24,
+      "dist50_pct": 1.18,
+      "dist200_pct": 11.6,
+      "hi52": 746.16,
+      "lo52": 558.28
+    },
+    "IWM": {
+      "last": 301.56,
+      "dist20_pct": 2.3,
+      "dist50_pct": 2.62,
+      "dist200_pct": 12.87,
+      "hi52": 301.71,
+      "lo52": 220.27
+    },
+    "DIA": {
+      "last": 539.62,
+      "dist20_pct": 2.61,
+      "dist50_pct": 3.68,
+      "dist200_pct": 9.57,
+      "hi52": 542.81,
+      "lo52": 440.01
+    },
+    "TLT": {
+      "last": 82.76,
+      "dist20_pct": -0.74,
+      "dist50_pct": -2.41,
+      "dist200_pct": -4.93,
+      "hi52": 92.06,
+      "lo52": 82.19
+    },
+    "SPCX": {
+      "last": 133.11,
+      "dist20_pct": 10.16,
+      "dist50_pct": null,
+      "dist200_pct": null,
+      "hi52": 211.39,
+      "lo52": 108.27,
+      "note": "39 sessions since IPO, insufficient history for 50/200-DMA"
     }
   }
 }

@@ -11,10 +11,10 @@
       "ipo_date": "2026-06-12",
       "share_classes": "dual (Class A traded, Class B 10x votes)",
       "index_membership": "Nasdaq-100 since 2026-07-07",
-      "industry": "Aerospace / launch / satellite communications",
-      "note": "CRITICAL: the ticker 'SPCX' belonged to the unrelated Tuttle ETF until 2026-04-07 (that fund is now SPCK). SpaceX price history begins 2026-06-12 — NEVER backfill earlier SPCX data. First quarterly report as a public company (Q2 2026, 8-K + 10-Q) filed 2026-08-04.",
-      "last_verified": "2026-08-05",
-      "source": "SEC EDGAR data.sec.gov/submissions/CIK0001181412.json"
+      "industry": "Aerospace / launch / satellite communications / AI (absorbed xAI, incl. Grok and the X platform, in a $1.25T all-stock merger closed 2026-02-02, ahead of the June IPO)",
+      "note": "CRITICAL: the ticker 'SPCX' belonged to the unrelated Tuttle ETF until 2026-04-07 (that fund is now SPCK). SpaceX price history begins 2026-06-12 — NEVER backfill earlier SPCX data. First quarterly report as a public company (Q2 2026, 8-K + 10-Q) filed 2026-08-04. SEC EDGAR classifies SPCX under a computer-programming/data-processing SIC code, not a pure aerospace code, consistent with the xAI merger.",
+      "last_verified": "2026-08-10",
+      "source": "SEC EDGAR data.sec.gov/submissions/CIK0001181412.json (SIC classification); CNBC, Motley Fool, Yahoo Finance (xAI merger, secondary-multiple, not independently confirmed on EDGAR this run)"
     },
     {
       "official_name": "Karman Holdings Inc.",
