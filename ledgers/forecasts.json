@@ -929,6 +929,36 @@
       "probability": "50-65%",
       "basis": "Typical pattern for major earthquakes in rural, hard-to-access terrain, where official counts are revised upward for 24-72 hours as isolated communities are reached; the toll already climbed from ~20 to 132 within one day.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-11-pm-1",
+      "date": "2026-08-11",
+      "slot": "pm",
+      "forecast": "July CPI (Wed Aug 12 08:30 ET) prints core CPI m/m at or below the ~0.2% consensus, despite today's oil-driven inflation-risk pressure on the headline/energy subcomponent.",
+      "horizon": "2026-08-12",
+      "probability": "55-65%",
+      "basis": "Kalshi prediction-market odds cited this morning (~85-89% core <=2.5% y/y) offset modestly by today's oil/Hormuz-driven yield spike, which raises headline (not core) inflation risk specifically.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-11-pm-2",
+      "date": "2026-08-11",
+      "slot": "pm",
+      "forecast": "Today's alternative-asset-manager rally (KKR +6.84%, APO +6.46%, ARES +4.70%, BX +3.56%) partially mean-reverts -- any of the four gives back at least 2 percentage points of today's gain within the next 3 trading sessions.",
+      "horizon": "2026-08-14",
+      "probability": "35-50%",
+      "basis": "Single-session moves of this size in mega-cap-adjacent financials often see some profit-taking, though a genuine structural re-rating around AI-infrastructure financing (Nvidia's $500B platform) could also hold without reverting.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-11-pm-3",
+      "date": "2026-08-11",
+      "slot": "pm",
+      "forecast": "SpaceX (SPCX) posts another single-session decline of 3% or more within the 5 trading sessions leading up to the Aug 20 employee share-unlock.",
+      "horizon": "2026-08-19",
+      "probability": "40-55%",
+      "basis": "Today's -4.47% move is attributed by trade press to pre-positioning for the Aug 20 unlock, a dynamic that could continue building into the date; the pattern from the first (~20%) unlock tranche, which passed without a selloff, argues against assuming continued weakness.",
+      "status": "open"
     }
   ]
 }
