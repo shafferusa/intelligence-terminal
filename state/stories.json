@@ -184,20 +184,12 @@
       "headline": "Iran-Oman Hormuz corridor deal remains in 'final stage' of drafting; no US/Oman confirmation; Houthi Gulf of Aden claim uncorroborated",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-10-pm",
+      "last_updated": "2026-08-11-am",
       "verification": "Confirmed-multiple (Iran public statements); Disputed (deal terms, US compliance)",
-      "one_line": "Iran's hardened weekend Hormuz-reopening terms held through Monday; Trump reiterated the US is \"only semi-negotiating,\" citing the naval blockade (zero Kharg Island tanker departures in 11 consecutive days) as sufficient leverage. Oil (WTI) rose ~5% today, coinciding with this thread and with Ukraine's deep strike on a Russian refinery -- no single confirmed catalyst asserted.",
-      "score_note": "Oil's ~5% Monday move is the most concrete market read-through of this thread so far.",
+      "one_line": "Iranian FM Araghchi told German FM Wadephul (Aug 11 call) that Hormuz security 'depends on halting US military operations,' including the naval blockade, and repeated that an Oman-brokered traffic-management deal is 'very close' while full reopening stays conditioned on US war-damage compensation. No new US/Trump statement found overnight beyond the standing 'semi-negotiating' framing; no new Hormuz vessel incident confirmed.",
+      "score_note": "Incremental restatement, not a breakthrough; oil's continued rally this week is a likely contributor from this thread plus the Ukraine refinery strike, no single confirmed catalyst.",
       "sources": [
-        "Bloomberg",
-        "Al Jazeera",
-        "IRNA",
-        "CNN",
-        "Japan Times",
-        "CNN live blog",
-        "NPR",
-        "PBS NewsHour",
-        "Seatrade Maritime"
+        "Tribune India (single-reliable-source, official Iranian statement)"
       ],
       "watch": true
     },
@@ -258,16 +250,14 @@
       "headline": "Ukraine's deepest strike of the war hits a refinery 750 miles inside Russia, killing 12+",
       "status": "Continuing",
       "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-10-pm",
+      "last_updated": "2026-08-11-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Ukrainian drones struck the Taneco refinery in Nizhnekamsk, Tatarstan (~750mi inside Russia) today, killing at least 12-13 (including workers at an adjacent hostel), wounded estimates 39-78 and still moving. Described by multiple outlets as the war's deepest confirmed strike to date. Same day, Russia hit Ukraine with ~126 drones/missiles (Kharkiv, Sumy, Odesa, Kherson, Dnipropetrovsk and more); a Chuguiv artillery strike killed 5.",
-      "score_note": "Marks a notable expansion of Ukraine's deep-strike envelope; no diplomatic movement accompanying it.",
+      "one_line": "Overnight into Tue Aug 11, Russia struck Zaporizhzhia (5-6 killed, 19-21 wounded per varying outlets), Kyiv (explosions/fires, reported damage near a hospital) and reportedly Dnipropetrovsk. Zelensky said the barrage used North Korean ballistic missiles, Zircon hypersonic cruise missiles and Iskander missiles plus ~120 long-range drones nationwide, and warned Russia is 'preparing for escalation, not peace.' Reuters could not independently verify the weapon-type claims. Monday's Taneco refinery toll settled at 12-13 killed, 39-75 wounded depending on source.",
+      "score_note": "North Korean-missile claim is the new escalatory element this cycle; unverified independently.",
       "sources": [
-        "NBC News",
-        "UN News",
-        "France24",
-        "CNBC",
-        "Kyiv Independent"
+        "Zelensky/Ukrainian officials via Reuters, AP (Euronews, Al Jazeera, Kyiv Independent, CNBC)",
+        "TASS (Russian MoD claims, labeled unverified)",
+        "NBC News, Al Jazeera (Taneco follow-up)"
       ],
       "watch": true
     },
@@ -327,15 +317,14 @@
       "headline": "DRC Ebola outbreak's confirmed toll rises to 3,874 cases / 1,751 deaths, resolving this morning's preliminary flag",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-10-am",
+      "last_updated": "2026-08-11-am",
       "verification": "Confirmed-multiple (search-synthesized; WHO primary site unreachable this run)",
-      "one_line": "Search-synthesized secondary sources now put confirmed deaths at roughly 1,801-1,850 (Congolese authorities citing the higher figure), plus two deaths in Uganda -- now described as the second-largest Ebola outbreak on record, confirmed across 53 of 140 health zones in five DRC provinces. Resolves forecast 2026-08-06-am-3 (WHO confirms a toll above 1,707) correct. WHO's own primary situation-report page was not independently re-fetched this run (recurring known access issue).",
-      "score_note": "Continues the multi-week rising trend; toll has roughly doubled since this report's late-July preliminary flag.",
+      "one_line": "Most recent available figures (dated Aug 7, reported Aug 8): 4,209 confirmed cases and 1,916 deaths, up from the 3,874/~1,800 this report tracked over the weekend -- continued acceleration, not a plateau. Ituri remains ~86% of cases (3,636/1,551); North Kivu 470/315. WHO's director-general called the spread 'unprecedented.' WHO's primary Disease Outbreak News page remained unreachable this run (egress-blocked); figures are secondary-sourced.",
+      "score_note": "Toll has more than doubled since this report's initial late-July flag; now confirmed second-largest Ebola outbreak on record.",
       "sources": [
-        "WHO Disease Outbreak News",
         "Al Jazeera",
-        "The Hill",
-        "UN News"
+        "UN News",
+        "WHO Disease Outbreak News (primary, not independently reachable this run)"
       ],
       "watch": true
     },
@@ -708,20 +697,21 @@
     },
     {
       "headline": "Typhoon Dolphin forces JAXA to postpone H3/Michibiki-7 launch as Category 4 storm nears Okinawa",
-      "status": "Materially changed",
+      "status": "Resolved",
       "verification": "Confirmed-multiple",
-      "one_line": "Typhoon Dolphin re-intensified passing Okinawa: 5 injured, 16,920 households without power, Naha airport closed, ~260,000 under evacuation orders across Kagoshima/Okinawa, Toyota suspended 9 factories. H3/Michibiki-7 postponement remains in effect. China landfall forecast ~Aug 9-10 (Zhejiang/Fujian).",
-      "score_note": "This morning's forward-looking risk materialized into confirmed on-the-ground impact.",
+      "one_line": "H3/Michibiki-7 (QZS-7) launched successfully Monday after the typhoon delay, carrying SACHI, a US Space Force space-domain-awareness instrument built by MIT Lincoln Laboratory -- a notable US-Japan cooperation angle. Typhoon Dolphin weakened after Zhejiang landfall; over 1 million evacuated across Wenzhou/Fujian/Shanghai, 943 flight cancellations, but no deaths or injuries reported in China, unlike Okinawa's earlier impact.",
+      "score_note": "Forward-looking risk this report flagged Aug 7 materialized into a successful, resolved outcome.",
       "sources": [
-        "Nippon.com",
-        "Watchers.news",
+        "JAXA (primary)",
+        "Space.com",
+        "Hong Kong Free Press",
         "Al Jazeera",
-        "FOX Weather"
+        "NBC News"
       ],
-      "watch": true,
+      "watch": false,
       "id": "typhoon-dolphin-h3-launch-aug7",
       "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-07-pm"
+      "last_updated": "2026-08-11-am"
     },
     {
       "id": "saudi-turkiye-pakistan-defense-pact-aug7",
@@ -743,35 +733,36 @@
     {
       "id": "trump-vaccine-schedule-eo-aug10",
       "headline": "Trump signs executive order directing 90-day review of childhood vaccine schedule, recommending MMR split into three doses",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-10-pm",
-      "last_updated": "2026-08-10-pm",
+      "last_updated": "2026-08-11-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Trump signed an EO directing HHS to complete a 90-day review of the childhood immunization schedule, including a recommendation to split the combined MMR shot into three separately administered doses, and calling for expanded federal vaccine-autism research. Comes as US measles cases sit at a 35-year high; existing epidemiological consensus finds no causal vaccine-autism link. Primary order text not independently read this run.",
-      "score_note": "Most consequential new domestic-policy story of the Aug 10 pm cycle; sustained political and public-health contestation expected.",
+      "one_line": "AAP President Dr. Andrew Racine called the Aug 10 EO \"disheartening and dangerous\"; AMA also criticized it. Sen. Bill Cassidy (R-LA, a physician) publicly broke with the administration: \"This executive order is wrong... Vaccines DO NOT cause autism.\" NY Gov. Hochul signed a counter-EO expanding COVID-vaccine access. No new lawsuit specifically targeting the Aug 10 order found yet; existing AAP v. HHS litigation (Jan 2026 schedule change) remains a separate, stayed matter.",
+      "score_note": "Sustained multi-day story confirmed by the speed and breadth of medical/political reaction, including a same-party physician-senator's public break.",
       "sources": [
-        "Washington Post",
+        "AAP statement via The Hill",
+        "AMA via The Hill",
         "CNN",
-        "CNBC",
-        "Axios"
+        "NBC News",
+        "JURIST",
+        "AOL (Hochul)"
       ],
       "watch": true
     },
     {
       "id": "nvda-ai-financing-venture-aug10",
       "headline": "NVDA falls ~2.3% on FT report of $500B Wall Street-backed AI-infrastructure financing venture",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-10-pm",
-      "last_updated": "2026-08-10-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Financial Times reported Nvidia partnering with Apollo Global, Blackstone, BlackRock's Global Infrastructure Partners, Brookfield, Goldman Sachs and KKR on a $500B AI-infrastructure financing venture (chips, power, data centers). NVDA closed -2.3% (this run's data), the session's largest mega-cap move; named private-capital partners (APO, BX, KKR) traded higher rather than in sympathy. Deal terms/timeline unconfirmed beyond the FT report.",
-      "score_note": "Reignites AI-financing-structure/circularity concerns; watch for confirming statements from named partners.",
+      "last_updated": "2026-08-11-am",
+      "verification": "Confirmed-primary (Nvidia's own press release)",
+      "one_line": "Upgraded from Monday's FT 'in talks' report to company-confirmed fact: Nvidia's own press release confirms partnerships with Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR to mobilize over $500B in third-party capital for AI infrastructure. KKR co-CEOs confirmed on record; Jensen Huang says he approached only these six firms and none declined. Deal terms/allocation/timeline still undetailed.",
+      "score_note": "Verification upgrade is the key development; NVDA's Monday -2.3% move already tracked.",
       "sources": [
-        "Financial Times",
-        "Reuters/TradingView",
-        "CNBC",
-        "Yahoo Finance",
-        "this run's own Yahoo Finance data"
+        "Nvidia investor relations press release (primary)",
+        "Bloomberg",
+        "Axios",
+        "CNBC"
       ],
       "watch": true
     },
@@ -791,6 +782,73 @@
         "Space.com",
         "Aviation Week",
         "NASASpaceFlight"
+      ],
+      "watch": true
+    },
+    {
+      "id": "colombia-earthquake-aug10",
+      "headline": "Magnitude-7.4 earthquake kills 130+ in western Colombia, toll still rising",
+      "status": "New",
+      "first_seen": "2026-08-11-am",
+      "last_updated": "2026-08-11-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "USGS-confirmed M7.4 struck Choco department (epicenter San Jose del Palmar) at 12:34 UTC Monday, depth 107km, followed by a M5.0 aftershock. Colombian Association of Capital Cities' toll of at least 132 dead and 570 injured (climbing from an initial ~20 through the day) cited by CNN, NBC News, Al Jazeera. 61 buildings collapsed, 1,575 homes damaged. National disaster declared, troops deployed.",
+      "score_note": "Toll expected to keep rising through today per typical pattern for rural/mountainous-terrain quakes; forecast 2026-08-11-am-3 logged on this.",
+      "sources": [
+        "USGS (primary)",
+        "CNN",
+        "NBC News",
+        "Al Jazeera",
+        "The Watchers"
+      ],
+      "watch": true
+    },
+    {
+      "id": "space-earnings-rklb-asts-aug11",
+      "headline": "Rocket Lab posts a record quarter and reiterates its $8B Iridium deal; AST SpaceMobile misses on revenue/EPS but shares rise anyway",
+      "status": "New",
+      "first_seen": "2026-08-11-am",
+      "last_updated": "2026-08-11-am",
+      "verification": "Confirmed-primary (company releases)",
+      "one_line": "RKLB: record revenue $234M (+62% Y/Y, beat), net loss narrowed to $49.3M, record backlog $2.36B (+137% Y/Y), Q3 guidance $250-265M (another record); reiterated ~$8B Iridium acquisition. ASTS: revenue $31.5M missed ~$35M consensus, EPS -$0.77 vs -$0.37 consensus (wider loss), Q2 capex jumped to ~$610M; reaffirmed FY2026 guidance $150-200M. ASTS reported ~+5.4% premarket per Benzinga despite the miss.",
+      "score_note": "Tests forecast 2026-08-10-pm-2 (>8% move for ASTS/RKLB); confirmed close-to-close reaction pending tonight's data.",
+      "sources": [
+        "Rocket Lab investor relations (primary)",
+        "AST SpaceMobile earnings call transcript via Investing.com",
+        "StockTitan",
+        "Benzinga"
+      ],
+      "watch": true
+    },
+    {
+      "id": "anthropic-macquarie-gic-theseus-aug10",
+      "headline": "Anthropic, Macquarie and GIC form Theseus Infrastructure to build dedicated US AI data centers",
+      "status": "New",
+      "first_seen": "2026-08-11-am",
+      "last_updated": "2026-08-11-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "New joint venture to develop/lease purpose-built US data centers to Anthropic under long-term contracts; Macquarie and GIC provide majority equity, Anthropic covers consumer electricity-rate increases from construction/operation. Size, sites, and timeline not detailed in sources reviewed.",
+      "score_note": "Same-week second major AI-infrastructure financing disclosure alongside Nvidia's $500B platform; reported with the same neutral standard applied to any company despite Anthropic building this system.",
+      "sources": [
+        "Macquarie Group press release (primary)",
+        "Bloomberg"
+      ],
+      "watch": true
+    },
+    {
+      "id": "cpi-preview-aug12",
+      "headline": "Wednesday's CPI is the week's pivot: prediction markets lean tame, setting up tension with Fed Chair Warsh's hawkish signal",
+      "status": "New",
+      "first_seen": "2026-08-11-am",
+      "last_updated": "2026-08-11-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Consensus: headline +0.2% m/m (3.4% y/y), core +0.2% m/m (2.5% y/y). Kalshi prediction markets price only ~11% odds core prints above 2.5% y/y, ~15% odds headline above 3.4% -- leaning tame, which would tend to support Sept rate-cut pricing already favored by July's jobs shock. No new Warsh or Cook remarks found overnight; apparent pre-CPI quiet period.",
+      "score_note": "Direct tie-breaker for the fed-warsh-hike-vs-jobs-cut-tension-aug thread; forecast 2026-08-11-am-1 logged.",
+      "sources": [
+        "CNBC (prediction markets)",
+        "Morningstar",
+        "Cleveland Fed nowcast",
+        "JPMorgan"
       ],
       "watch": true
     }
