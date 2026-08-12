@@ -3,12 +3,12 @@
     {
       "id": "pentagon-defense-production-memo-aug9",
       "headline": "Pentagon gives defense contractors 21 days to submit faster-production plans amid Iran-war stock depletion",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-10-am",
-      "last_updated": "2026-08-10-am",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Deputy Defense Secretary Steve Feinberg's memo (Sun Aug 9) gives industry up to 21 days to submit plans for faster delivery/production of air defense, surface-to-air missile systems, satcom, and space-based missile tracking. Pentagon spokesman Sean Parnell says it will inform the FY2028 budget request. Confirms Patriot/THAAD stock depletion from months of the Iran conflict.",
-      "score_note": "Demand-side signal, not a new contract; medium-term positive read for defense_aero watchlist names, unconfirmed which primes benefit most.",
+      "one_line": "First dollar-figure follow-through on Feinberg's Aug 9 memo: a Pentagon framework agreement with Northrop Grumman and Lockheed Martin to increase PAC-3/THAAD production, including a Lockheed Martin contract reported up to $58.6B to triple PAC-3 production by 2030; contractors reportedly spending ahead of formal congressional appropriation. Notably, LMT closed Aug 11 down 0.89% despite the news -- a disconnect this report flags without a confirmed explanation.",
+      "score_note": "Concrete contract figure now attached to the demand-side signal; congressional appropriation status still the open question.",
       "sources": [
         "CNBC",
         "Washington Post (secondary pickup)",
@@ -162,12 +162,12 @@
     {
       "id": "google-ai-leadership-reshuffle-aug5",
       "headline": "Google names Koray Kavukcuoglu SVP of DeepMind as Hassabis moves to Chair; Discovery Loop startup confirmed",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-08-05-pm",
-      "last_updated": "2026-08-11-pm",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple",
-      "one_line": "GOOGL closed -3.79% today, the watchlist's largest mega-cap decliner, on a confluence of factors: continued digestion of the DeepMind leadership shakeup (Hassabis to chairman, Dean departing, Kavukcuoglu absorbing duties), a 2026 capex guidance raise to $195-205B (quarterly capex +100% Y/Y to $44.9B) that pushed free cash flow negative, and a $25B senior-notes offering. No single confirmed catalyst asserted.",
-      "score_note": "First large single-session move directly tied to this ongoing thread since the initial reshuffle news.",
+      "one_line": "GOOGL fell a second straight session, -3.84% Tuesday (cumulative ~7.5% two-day decline), the watchlist's largest mega-cap laggard both days. New detail: Jeff Dean and Sanjay Ghemawat's departure destination is now specifically confirmed as an independent PBC called 'Discovery Loop'; Hassabis remains Alphabet Chief Scientist/DeepMind Chair, Kavukcuoglu now SVP of DeepMind reporting to Pichai. No single confirmed catalyst for either day's magnitude.",
+      "score_note": "Two-session cumulative decline now large enough to track as its own pattern, still no confirmed single cause.",
       "sources": [
         "CNBC",
         "Axios",
@@ -184,10 +184,10 @@
       "headline": "Iran-Oman Hormuz corridor deal remains in 'final stage' of drafting; no US/Oman confirmation; Houthi Gulf of Aden claim uncorroborated",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-11-am",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple (Iran public statements); Disputed (deal terms, US compliance)",
-      "one_line": "Iranian FM Araghchi told German FM Wadephul (Aug 11 call) that Hormuz security 'depends on halting US military operations,' including the naval blockade, and repeated that an Oman-brokered traffic-management deal is 'very close' while full reopening stays conditioned on US war-damage compensation. No new US/Trump statement found overnight beyond the standing 'semi-negotiating' framing; no new Hormuz vessel incident confirmed.",
-      "score_note": "Incremental restatement, not a breakthrough; oil's continued rally this week is a likely contributor from this thread plus the Ukraine refinery strike, no single confirmed catalyst.",
+      "one_line": "Trump declared the Strait of Hormuz 'open,' saying the US Navy swept it for mines and controls the waterway; CNN reporting says shipping-tracking data 'doesn't yet back that up' (MarineTraffic showed only seven large vessels transiting in as of Tuesday). CENTCOM disclosed that since reimposing a port blockade July 13, US forces have redirected 55 commercial vessels, disabled two, and boarded two for compliance checks. Iran-Oman have reportedly agreed specific routing coordinates for a still-unfinalized ~60-day interim framework; an ADNOC tanker was reportedly targeted by a missile Aug 8, UAE blames Iran, unconfirmed by Iran.",
+      "score_note": "Rhetoric ('open') and on-the-water reality (thin traffic) now visibly diverge; a genuinely new tension to track.",
       "sources": [
         "Tribune India (single-reliable-source, official Iranian statement)"
       ],
@@ -317,10 +317,10 @@
       "headline": "DRC Ebola outbreak's confirmed toll rises to 3,874 cases / 1,751 deaths, resolving this morning's preliminary flag",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-11-pm",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple (search-synthesized; WHO primary site unreachable this run)",
-      "one_line": "Death toll crossed 2,000 for the first time: 4,381 cases / 2,011 deaths (CFR ~45.9%), up from this morning's 4,209/1,916. WHO primary site still unreachable this run; figures secondary-sourced (WaPo, Euronews, US News, Yahoo).",
-      "score_note": "Toll has more than doubled since this report's initial late-July flag; now confirmed second-largest Ebola outbreak on record.",
+      "one_line": "New WHO-sourced figures (via UN News, citing WHO Africa Regional Director Dr. Mohamed Janabi): more than 1,900 deaths / 4,290 confirmed cases as of Aug 8, somewhat LOWER than last night's tracked figure (2,011 deaths / 4,381 cases) -- flagged as an unreconciled reporting-cutoff discrepancy, not a confirmed decline. WHO calls it the fastest-growing Ebola outbreak on record; 60-70% of deaths occurring away from formal care.",
+      "score_note": "Two-hop sourcing (UN News citing WHO officials, not the primary WHO bulletin directly) is the likely source of this discrepancy; recommend pulling the single latest WHO DON bulletin directly next run.",
       "sources": [
         "Al Jazeera",
         "UN News",
@@ -364,12 +364,12 @@
     {
       "id": "mail-ballot-eo-scotus",
       "headline": "Mail-ballot EO: SCOTUS stay still pending; this report corrects its own '1st Circuit' vs 'D.C. Circuit' error",
-      "status": "Continuing",
+      "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-10-am",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Both sides have now filed their SCOTUS briefs: challenging states ask the Court to leave the current implementation limits in place; the administration asks for full nationwide implementation. No ruling or argument date set. An election-law specialist says the order is likely not implementable for the 2026 midterms regardless of the eventual ruling, given logistics timelines.",
-      "score_note": "Briefing complete on both sides; awaiting a Court order.",
+      "one_line": "First concrete court order in this thread: US District Judge Indira Talwani (D. Mass.) granted a preliminary injunction Aug 11 blocking USPS from implementing/enforcing EO 14399 Section 3 for the Nov 3, 2026 midterms, citing that election administration belongs to the states. Distinct from, and running alongside, the still-pending SCOTUS emergency-stay track. Sourced via 5+ secondary outlets (Axios, The Hill, Fox News, U.S. News, OPB); npr.org/votebeat.org direct fetch blocked by network egress this run.",
+      "score_note": "Escalates from briefing-stage to a concrete judicial order; watch for the expected 1st Circuit appeal.",
       "sources": [
         "SCOTUSblog",
         "Votebeat",
@@ -497,12 +497,12 @@
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
       "headline": "Netanyahu's Gaza rejection draws first Hamas response calling for mediator pressure",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-10-pm",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Hamas official Bassem Naim (Aug 10) reaffirmed Hamas's commitment to the Board of Peace roadmap and called on mediators/guarantors to pressure Israel to comply, the first Hamas response to Sunday's Netanyahu rejection. No institutional Board of Peace statement found. Aug 13 14-day checkpoint remains the next test.",
-      "score_note": "Both named parties have now stated positions; institutional Board of Peace response still the open question ahead of Aug 13.",
+      "one_line": "No bridging development found Aug 11-12 ahead of tomorrow's (Aug 13) 14-day roadmap checkpoint. Netanyahu maintains Israel 'didn't agree' to the sequencing; Hamas's Ghazi Hamad says Hamas won't implement absent an Israeli halt/withdrawal first; mediators Egypt/Qatar/Turkiye jointly condemned Israeli strikes on civilians/healthcare facilities. Both parties' conditions remain unreconciled heading into the checkpoint date.",
+      "score_note": "Checkpoint arrives tomorrow with neither side having withdrawn its conditions; likely to produce further statements rather than clean resolution.",
       "sources": [
         "Al Bawaba",
         "Al Jazeera",
@@ -790,10 +790,10 @@
       "headline": "Magnitude-7.4 earthquake kills 130+ in western Colombia, toll still rising",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-11-pm",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple (fact of rising toll); Disputed (specific figure)",
-      "one_line": "Toll climbed through the day from this morning's 132 toward figures ranging 169 (Asocapitales)-181 (CBS)-224 (CNBC), still unsettled and not a single authoritative number; ~188 missing, 3 hospitals collapsed, rescuers still working to reach the San Jose del Palmar epicenter as of midday.",
-      "score_note": "Forecast 2026-08-11-am-3 (toll +20 within 48h) is tracking correct given the scale of today's rise.",
+      "one_line": "Toll climbed further overnight to a range spanning 181 (official Colombian government count) to 250 (per various media tallies, e.g. CBS/CNBC); still not reconciled to one figure. Missing count also disputed: 195 official vs. ~4,000 unverified/crowd-sourced. Forecast 2026-08-11-am-3 (toll +20 within 48h) tracked correct; forecast 2026-08-12-am-3 (toll passes 250 within 48h) newly logged.",
+      "score_note": "Fourth consecutive report cycle tracking a still-unreconciled toll; genuinely wide official-vs-media spread persists.",
       "sources": [
         "USGS (primary)",
         "CNN",
@@ -808,10 +808,10 @@
       "headline": "Rocket Lab posts a record quarter and reiterates its $8B Iridium deal; AST SpaceMobile misses on revenue/EPS but shares rise anyway",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-11-pm",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-primary (company releases)",
-      "one_line": "Confirmed close-to-close reaction: RKLB +1.07% (a genuine beat-and-raise drew a muted response), ASTS +3.96% (rose despite the Q2 miss). Neither exceeded the 8% threshold in forecast 2026-08-10-pm-2, which is tracking wrong pending Saturday's grading. Firefly Aerospace (FLY, +3.32% into earnings) reports after tonight's close.",
-      "score_note": "Tests forecast 2026-08-10-pm-2 (>8% move for ASTS/RKLB); confirmed close-to-close reaction pending tonight's data.",
+      "one_line": "Firefly Aerospace (FLY) reported Q2 2026 after Tuesday's close: revenue $117.7M beat vs. ~$89.6M consensus, EPS -$0.42 vs. -$0.53 estimate (narrower loss than expected), cash $459.8M. FLY closed Tuesday +2.33% ahead of the print. Spire Global (SPIR, Tuesday's space-watchlist leader at +5.63%) reports after tonight's (Aug 12) close. Broader space-sector session was strong Tuesday: BKSY +4.47%, LUNR +4.44%, ASTS +4.17%, RDW +2.97%, AVAV +3.63%.",
+      "score_note": "Two more space-earnings data points; sector entered the window with real session-level momentum, not yet confirmed by all reporters.",
       "sources": [
         "Rocket Lab investor relations (primary)",
         "AST SpaceMobile earnings call transcript via Investing.com",
@@ -855,12 +855,12 @@
     {
       "id": "alt-asset-manager-rally-nvda-financing-aug11",
       "headline": "KKR, Apollo, Ares and Blackstone post their strongest session this cycle on continued Nvidia $500B financing fallout",
-      "status": "New",
+      "status": "Continuing",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-11-pm",
+      "last_updated": "2026-08-12-am",
       "verification": "Confirmed-multiple",
-      "one_line": "KKR +6.84%, Apollo +6.46%, Ares +4.70%, Blackstone +3.56% -- CNBC's Tuesday 'biggest movers' coverage attributes the named-partner moves directly to continued digestion of Nvidia's $500B AI-infrastructure financing platform (this report's Aug 10 pm/Aug 11 am Top Story). This run's own SEC EDGAR check found no company-specific catalyst for Apollo beyond a routine Reg FD filing, reinforcing the Nvidia-platform attribution.",
-      "score_note": "Today's largest confirmed-catalyst market move; forecast 2026-08-11-pm-2 logged on partial mean-reversion.",
+      "one_line": "Second straight session of outsized gains Tuesday: KKR +6.88%, Apollo +6.26%, Ares +3.96%, Blackstone +3.89% (this run's own data). New context: YTD, these names remain down sharply for 2026 overall (Apollo/Blackstone ~-12%, Ares ~-15%, KKR ~-16%), so the two-day rally is a bounce within a much larger drawdown tied to an earlier private-credit selloff, not a return to prior highs. This run's own EDGAR sweep again found no company-specific catalyst.",
+      "score_note": "Not yet resolved whether this is a durable re-rating or a bounce; forecast 2026-08-12-am-2 (partial reversion today) logged.",
       "sources": [
         "CNBC",
         "Nvidia/KKR/Apollo/Blackstone investor relations (primary)",
@@ -903,6 +903,21 @@
         "TradingKey",
         "24/7 Wall St.",
         "this run's own Yahoo Finance data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "spcx-third-down-session-aug11",
+      "headline": "SpaceX falls a third straight session pre-Aug 20 unlock; one source flags a retail-sentiment shift",
+      "status": "Continuing",
+      "first_seen": "2026-08-11-pm",
+      "last_updated": "2026-08-12-am",
+      "verification": "Confirmed-primary (price data); Single-reliable-source (retail-seller claim)",
+      "one_line": "SPCX fell -3.93% Tuesday (this run's close-series data), a third consecutive down session ahead of the Aug 20 ~320M-share employee unlock. One aggregator source describes retail investors as 'sellers for the first time since the IPO' -- not independently corroborated. FINRA short-volume ratio for the session: 60.0%, elevated but not extreme relative to the watchlist.",
+      "score_note": "Extends the spacex-aug20-unlock-jitters-aug11 thread into a third session; forecast 2026-08-11-pm-3 remains open.",
+      "sources": [
+        "StockTitan",
+        "this run's own Yahoo Finance and FINRA data"
       ],
       "watch": true
     }

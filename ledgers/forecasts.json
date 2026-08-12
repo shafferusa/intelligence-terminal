@@ -959,6 +959,36 @@
       "probability": "40-55%",
       "basis": "Today's -4.47% move is attributed by trade press to pre-positioning for the Aug 20 unlock, a dynamic that could continue building into the date; the pattern from the first (~20%) unlock tranche, which passed without a selloff, argues against assuming continued weakness.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-12-am-1",
+      "date": "2026-08-12",
+      "slot": "am",
+      "forecast": "July CPI (8:30 ET today) prints at or below 3.4% y/y headline.",
+      "horizon": "2026-08-12",
+      "probability": "75-88%",
+      "basis": "Kalshi prediction-market pricing cited by CNBC leans tame, with roughly 11-15% odds cited of an above-consensus print; widened slightly for genuine uncertainty given July's reported >20% oil-price rise as a flagged headwind to further disinflation, and given this run found two mutually inconsistent September rate-odds framings that could not be reconciled.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-12-am-2",
+      "date": "2026-08-12",
+      "slot": "am",
+      "forecast": "At least two of KKR, Apollo, Ares and Blackstone close lower today, a partial give-back of Monday-Tuesday's two-session Nvidia-financing-linked rally.",
+      "horizon": "2026-08-12",
+      "probability": "35-45%",
+      "basis": "Two consecutive sessions of outsized, single-direction gains (KKR +6.88%, Apollo +6.26% Tuesday alone) without a fresh same-day catalyst often see at least partial mean-reversion, but the underlying MOU news is real and multi-week-old sentiment (per YTD-drawdown context found this run) could keep buyers engaged; two-way uncertainty, no house view.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-12-am-3",
+      "date": "2026-08-12",
+      "slot": "am",
+      "forecast": "Colombia's officially confirmed earthquake death toll surpasses 250 within 48 hours (by 2026-08-14).",
+      "horizon": "2026-08-14",
+      "probability": "45-60%",
+      "basis": "Media tallies already cite figures as high as 250 while the official government count (181) trails behind and has risen each successive check this report has made; the established pattern this week has been upward revision, though official confirmation processes can lag media tallies by days rather than hours.",
+      "status": "open"
     }
   ]
 }

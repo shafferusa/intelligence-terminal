@@ -1,7 +1,7 @@
 {
-  "fetched": "2026-08-11T05:55:00-04:00",
-  "earnings_fetched": "2026-08-09",
-  "earnings_fetched_note": "AV EARNINGS_CALENDAR returned a malformed/rate-limited response this run; Finnhub day-of feed used alone for Aug 11 (confirms FLY after close, matching cache -- no discrepancy).",
+  "fetched": "2026-08-12T05:55:00-04:00",
+  "earnings_fetched": "2026-08-12",
+  "earnings_fetched_note": "AV EARNINGS_CALENDAR returned a complete, well-formed response this run; cross-confirmed against Finnhub day-of feed for Aug 12 (SPIR after close) and Aug 13 (LUNR pre-market, YSS after close) -- no discrepancy.",
   "events": [
     {
       "ts_et": "2026-08-10T00:00:00-04:00",
