@@ -1,26 +1,26 @@
 {
-  "fetched_at": "2026-08-11T16:00:00-04:00",
+  "fetched_at": "2026-08-12T05:53:00-04:00",
   "treasury_par_curve": {
-    "date": "2026-08-10",
-    "label": "EOD official (2026-08-10)",
+    "date": "2026-08-11",
+    "label": "EOD official (2026-08-11)",
     "1M": 3.79,
-    "1.5M": 3.8,
-    "2M": 3.84,
+    "1.5M": 3.82,
+    "2M": 3.83,
     "3M": 3.89,
-    "4M": 3.91,
-    "6M": 4.0,
-    "1Y": 4.04,
-    "2Y": 4.25,
-    "3Y": 4.31,
-    "5Y": 4.41,
-    "7Y": 4.56,
-    "10Y": 4.72,
+    "4M": 3.9,
+    "6M": 3.99,
+    "1Y": 4.03,
+    "2Y": 4.22,
+    "3Y": 4.27,
+    "5Y": 4.39,
+    "7Y": 4.54,
+    "10Y": 4.7,
     "20Y": 5.25,
-    "30Y": 5.25,
+    "30Y": 5.24,
     "spreads_bp": {
-      "2s10s": 47,
-      "3m10y": 83,
-      "5s30s": 84
+      "2s10s": 48,
+      "3m10y": 81,
+      "5s30s": 85
     }
   },
   "fred": {
@@ -37,15 +37,15 @@
       "prior_date": "2026-05-01"
     },
     "PAYEMS": {
-      "value": 158858,
+      "value": 158858.0,
       "date": "2026-07-01",
-      "prior_value": 158881,
+      "prior_value": 158881.0,
       "prior_date": "2026-06-01"
     },
     "ICSA": {
-      "value": 199000,
+      "value": 199000.0,
       "date": "2026-08-01",
-      "prior_value": 198000,
+      "prior_value": 198000.0,
       "prior_date": "2026-07-25"
     },
     "UNRATE": {
@@ -55,34 +55,34 @@
       "prior_date": "2026-06-01"
     },
     "T10Y2Y": {
-      "value": 0.47,
-      "date": "2026-08-10",
-      "prior_value": 0.46,
-      "prior_date": "2026-08-07"
+      "value": 0.48,
+      "date": "2026-08-11",
+      "prior_value": 0.47,
+      "prior_date": "2026-08-10"
     },
     "DGS2": {
-      "value": 4.19,
-      "date": "2026-08-07",
-      "prior_value": 4.25,
-      "prior_date": "2026-08-06"
-    },
-    "DGS10": {
-      "value": 4.65,
-      "date": "2026-08-07",
-      "prior_value": 4.69,
-      "prior_date": "2026-08-06"
-    },
-    "T10YIE": {
-      "value": 2.29,
+      "value": 4.25,
       "date": "2026-08-10",
-      "prior_value": 2.25,
+      "prior_value": 4.19,
       "prior_date": "2026-08-07"
     },
+    "DGS10": {
+      "value": 4.72,
+      "date": "2026-08-10",
+      "prior_value": 4.65,
+      "prior_date": "2026-08-07"
+    },
+    "T10YIE": {
+      "value": 2.27,
+      "date": "2026-08-11",
+      "prior_value": 2.29,
+      "prior_date": "2026-08-10"
+    },
     "DFII10": {
-      "value": 2.4,
-      "date": "2026-08-07",
-      "prior_value": 2.43,
-      "prior_date": "2026-08-06"
+      "value": 2.43,
+      "date": "2026-08-10",
+      "prior_value": 2.4,
+      "prior_date": "2026-08-07"
     },
     "SOFR": {
       "value": 3.63,
@@ -100,10 +100,10 @@
   "vix_complex": {
     "date": "2026-08-11",
     "label": "Delayed (+15 min)",
-    "VIX": 15.26,
-    "VIX9D": 12.42,
+    "VIX": 15.35,
+    "VIX9D": 12.52,
     "VIX3M": 18.91,
-    "VIX_prev_close": 15.46,
+    "VIX_prev_close": 15.28,
     "term_structure": "normal contango, no inversion"
   },
   "fx": {
@@ -111,312 +111,311 @@
     "label": "EOD official (ECB reference, 2026-08-11)",
     "base": "USD",
     "rates": {
-      "EUR": 0.86655,
-      "JPY": 159.2,
-      "GBP": 0.74075,
-      "CNY": 6.7453,
-      "CHF": 0.81031,
-      "CAD": 1.3938,
       "AUD": 1.4156,
-      "MXN": 17.1223,
       "BRL": 5.1049,
-      "INR": 95.44
+      "CAD": 1.3938,
+      "CHF": 0.81031,
+      "CNY": 6.7453,
+      "EUR": 0.86655,
+      "GBP": 0.74075,
+      "INR": 95.44,
+      "JPY": 159.2,
+      "MXN": 17.1223
     },
     "EURUSD_live_snapshot": {
-      "value": 1.1547,
-      "change_pct": -0.08,
-      "ts_et": "2026-08-11T15:44:00-04:00"
+      "value": 1.1543,
+      "change_pct": -0.03,
+      "ts_et": "2026-08-12T05:53:00-04:00"
     }
   },
   "crypto": {
     "label": "Live (CoinGecko public endpoint)",
-    "ts": "2026-08-11T15:50:00-04:00",
+    "ts": "2026-08-12T05:53:00-04:00",
     "bitcoin": {
-      "usd": 63337,
-      "change_24h_pct": -0.91
+      "usd": 64001,
+      "change_24h_pct": -0.21
     },
     "ethereum": {
-      "usd": 1868.24,
-      "change_24h_pct": -0.42
+      "usd": 1904.07,
+      "change_24h_pct": 1.44
     },
     "solana": {
-      "usd": 75.34,
-      "change_24h_pct": -1.01
+      "usd": 76.7,
+      "change_24h_pct": 1.38
     },
     "cardano": {
-      "usd": 0.184547,
-      "change_24h_pct": -5.12
+      "usd": 0.186482,
+      "change_24h_pct": -1.02
     },
-    "total_market_cap_usd": 2257823749881.29,
-    "btc_dominance_pct": 56.28
+    "total_market_cap_usd": 2279167416000.129,
+    "btc_dominance_pct": 56.32
   },
   "indices_cash_close": {
     "date": "2026-08-11",
     "label": "EOD official (2026-08-11)",
     "SPX": {
-      "close": 7732.15,
-      "chg_pct": -0.27
+      "close": 7728.2,
+      "chg_pct": -0.32
     },
     "NDX_COMP": {
-      "close": 26457.99,
-      "chg_pct": -0.55
+      "close": 26445.45,
+      "chg_pct": -0.6
     },
     "DJI": {
-      "close": 53830.0,
-      "chg_pct": -0.27
+      "close": 53791.85,
+      "chg_pct": -0.34
     },
     "RUT": {
-      "close": 3031.27,
-      "chg_pct": 0.46
+      "close": 3027.12,
+      "chg_pct": 0.32
     }
   },
   "futures_and_commodities": {
     "date": "2026-08-11",
     "label": "EOD official, close-series method",
     "ES": {
-      "last": 7753.5,
-      "chg_pct": -0.3
+      "last": 7769.0,
+      "chg_pct": 0.28
     },
     "NQ": {
-      "last": 29633.5,
-      "chg_pct": -0.35
+      "last": 29826.25,
+      "chg_pct": 0.68
     },
     "YM": {
-      "last": 53910.0,
-      "chg_pct": -0.28
+      "last": 53948.0,
+      "chg_pct": 0.13
     },
     "RTY": {
-      "last": 3038.8,
-      "chg_pct": 0.46
+      "last": 3042.7,
+      "chg_pct": 0.24
     },
     "GC": {
-      "last": 4430.3,
-      "chg_pct": 1.57
+      "last": 4472.4,
+      "chg_pct": 2.04
     },
     "CL": {
-      "last": 83.48,
-      "chg_pct": 1.64
+      "last": 82.73,
+      "chg_pct": -0.56
     },
     "NG": {
-      "last": 2.768,
-      "chg_pct": -0.93
+      "last": 2.791,
+      "chg_pct": 0.87
     },
     "HG": {
-      "last": 6.6345,
-      "chg_pct": 0.61
+      "last": 6.676,
+      "chg_pct": 0.97
     },
     "EURUSD": {
-      "last": 1.1547,
-      "chg_pct": -0.08
+      "last": 1.1543,
+      "chg_pct": -0.03
     },
     "TNX_yield_pct": 4.684
   },
   "sources_failed_this_run": [
     "cdn.cboe.com options market-statistics (HTTP 403 AccessDenied, recurring known path-shift issue)",
-    "Twelve Data quote batches (HTTP 429 after 1 test batch, 8-credit/minute limit; substituted full Yahoo Finance close-series sweep, 166/167 recovered)",
-    "cisa.gov direct KEV fetch (blocked by egress filtering)",
-    "FINRA short volume same-day (not yet published; used Aug 10 session)"
+    "Twelve Data quote batches (HTTP 429 after 1 test batch, 8-credit/minute limit; substituted full Yahoo Finance close-series sweep, 167/167 recovered)",
+    "npr.org, votebeat.org (WebFetch, news research; EGRESS_BLOCKED, corroborated via secondary outlets instead)"
   ],
   "technical_levels_2026-08-11": {
     "SPY": {
-      "close": 770.91,
-      "sma20": 752.3195,
-      "dist_sma20_pct": 2.47,
-      "sma50": 747.8462,
-      "dist_sma50_pct": 3.08,
-      "sma200": 703.9948,
-      "dist_sma200_pct": 9.51,
-      "52w_high": 773.26,
-      "52w_low": 631.97,
-      "n_sessions": 252
+      "close": 770.56,
+      "sma20": 752.302,
+      "dist_sma20_pct": 2.43,
+      "sma50": 747.8392,
+      "dist_sma50_pct": 3.04,
+      "sma200": null,
+      "dist_sma200_pct": null,
+      "52w_high": 776.85,
+      "52w_low": 629.28,
+      "n_sessions": 60
     },
     "QQQ": {
-      "close": 718.6401,
-      "sma20": 700.7435,
-      "dist_sma20_pct": 2.55,
-      "sma50": 713.8794,
-      "dist_sma50_pct": 0.67,
-      "sma200": 648.9658,
-      "dist_sma200_pct": 10.74,
-      "52w_high": 746.16,
-      "52w_low": 558.28,
-      "n_sessions": 252
+      "close": 718.45,
+      "sma20": 700.734,
+      "dist_sma20_pct": 2.53,
+      "sma50": 713.8756,
+      "dist_sma50_pct": 0.64,
+      "sma200": null,
+      "dist_sma200_pct": null,
+      "52w_high": 748.65,
+      "52w_low": 555.6,
+      "n_sessions": 60
     },
     "IWM": {
-      "close": 301.125,
-      "sma20": 295.4278,
-      "dist_sma20_pct": 1.93,
-      "sma50": 294.2459,
-      "dist_sma50_pct": 2.34,
-      "sma200": 267.726,
-      "dist_sma200_pct": 12.48,
-      "52w_high": 301.71,
-      "52w_low": 220.27,
-      "n_sessions": 252
+      "close": 300.99,
+      "sma20": 295.421,
+      "dist_sma20_pct": 1.89,
+      "sma50": 294.2432,
+      "dist_sma50_pct": 2.29,
+      "sma200": null,
+      "dist_sma200_pct": null,
+      "52w_high": 303.06,
+      "52w_low": 223.69,
+      "n_sessions": 60
     },
     "DIA": {
-      "close": 537.76,
-      "sma20": 527.297,
-      "dist_sma20_pct": 1.98,
-      "sma50": 521.656,
-      "dist_sma50_pct": 3.09,
-      "sma200": 493.2077,
-      "dist_sma200_pct": 9.03,
-      "52w_high": 542.81,
-      "52w_low": 440.01,
-      "n_sessions": 252
+      "close": 537.28,
+      "sma20": 527.273,
+      "dist_sma20_pct": 1.9,
+      "sma50": 521.6464,
+      "dist_sma50_pct": 3.0,
+      "sma200": null,
+      "dist_sma200_pct": null,
+      "52w_high": 546.75,
+      "52w_low": 441.14,
+      "n_sessions": 60
     },
     "TLT": {
-      "close": 82.135,
-      "sma20": 83.1877,
-      "dist_sma20_pct": -1.27,
-      "sma50": 84.6551,
-      "dist_sma50_pct": -2.98,
-      "sma200": 86.9491,
-      "dist_sma200_pct": -5.54,
-      "52w_high": 92.06,
-      "52w_low": 82.06,
-      "n_sessions": 252
+      "close": 82.19,
+      "sma20": 83.1905,
+      "dist_sma20_pct": -1.2,
+      "sma50": 84.6562,
+      "dist_sma50_pct": -2.91,
+      "sma200": null,
+      "dist_sma200_pct": null,
+      "52w_high": 92.19,
+      "52w_low": 81.89,
+      "n_sessions": 60
     },
     "SPCX": {
-      "close": 132.54,
-      "sma20": 120.64,
-      "dist_sma20_pct": 9.86,
+      "close": 133.29,
+      "sma20": 120.68,
+      "dist_sma20_pct": 10.45,
       "sma50": null,
       "dist_sma50_pct": null,
       "sma200": null,
       "dist_sma200_pct": null,
-      "52w_high": 211.39,
-      "52w_low": 108.27,
+      "52w_high": 225.64,
+      "52w_low": 104.83,
       "n_sessions": 41
     }
   },
   "equity_quotes_close_2026-08-11": {
     "AAPL": {
-      "close": 304.7199,
+      "close": 304.91,
       "prevclose": 308.26,
-      "pct": -1.148,
-      "vol": 24652805,
+      "pct": -1.087,
+      "vol": 37401700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ABBV": {
-      "close": 249.98,
+      "close": 250.09,
       "prevclose": 247.97,
-      "pct": 0.811,
-      "vol": 2412917,
+      "pct": 0.855,
+      "vol": 4485200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ABNB": {
-      "close": 186.41,
+      "close": 184.98,
       "prevclose": 184.7,
-      "pct": 0.926,
-      "vol": 6323957,
+      "pct": 0.152,
+      "vol": 8023500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "AGG": {
-      "close": 97.335,
+      "close": 97.32,
       "prevclose": 97.24,
-      "pct": 0.098,
-      "vol": 10034488,
+      "pct": 0.082,
+      "vol": 11239800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "AMD": {
-      "close": 475.425,
+      "close": 474.32,
       "prevclose": 469.56,
-      "pct": 1.249,
-      "vol": 14562492,
+      "pct": 1.014,
+      "vol": 18008700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "AMZN": {
-      "close": 273.25,
+      "close": 272.27,
       "prevclose": 278.09,
-      "pct": -1.74,
-      "vol": 19783248,
+      "pct": -2.093,
+      "vol": 31843800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ANET": {
-      "close": 196.985,
+      "close": 197.85,
       "prevclose": 191.52,
-      "pct": 2.853,
-      "vol": 4253862,
+      "pct": 3.305,
+      "vol": 6268900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "APO": {
-      "close": 140.555,
+      "close": 140.28,
       "prevclose": 132.02,
-      "pct": 6.465,
-      "vol": 3976396,
+      "pct": 6.257,
+      "vol": 5783300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ARES": {
-      "close": 144.13,
+      "close": 143.11,
       "prevclose": 137.66,
-      "pct": 4.7,
-      "vol": 1644429,
+      "pct": 3.959,
+      "vol": 3383000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ASML": {
-      "close": 1787.5699,
+      "close": 1799.38,
       "prevclose": 1733.48,
-      "pct": 3.12,
-      "vol": 1148878,
+      "pct": 3.802,
+      "vol": 1476800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ASTS": {
-      "close": 71.48,
+      "close": 71.63,
       "prevclose": 68.76,
-      "pct": 3.956,
-      "vol": 11537961,
+      "pct": 4.174,
+      "vol": 13405100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "AVAV": {
-      "close": 194.5863,
+      "close": 196.02,
       "prevclose": 189.15,
-      "pct": 2.874,
-      "vol": 729433,
+      "pct": 3.632,
+      "vol": 983400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "AVGO": {
-      "close": 414.495,
+      "close": 416.08,
       "prevclose": 422.4,
-      "pct": -1.871,
-      "vol": 7769354,
+      "pct": -1.496,
+      "vol": 12869500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "AVUV": {
-      "close": 127.39,
+      "close": 127.22,
       "prevclose": 127.0,
-      "pct": 0.307,
-      "vol": 980614,
+      "pct": 0.173,
+      "vol": 1078900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BA": {
-      "close": 233.49,
+      "close": 233.24,
       "prevclose": 232.79,
-      "pct": 0.301,
-      "vol": 1974705,
+      "pct": 0.193,
+      "vol": 2769300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BAC": {
-      "close": 63.985,
+      "close": 64.0,
       "prevclose": 63.86,
-      "pct": 0.196,
-      "vol": 12807848,
+      "pct": 0.219,
+      "vol": 20719900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
@@ -424,959 +423,959 @@
       "close": 91.49,
       "prevclose": 91.48,
       "pct": 0.011,
-      "vol": 6033291,
+      "vol": 7378000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BKLN": {
-      "close": 20.51,
+      "close": 20.52,
       "prevclose": 20.5,
-      "pct": 0.049,
-      "vol": 1804529,
+      "pct": 0.098,
+      "vol": 1992800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BKNG": {
-      "close": 214.12,
+      "close": 212.87,
       "prevclose": 212.88,
-      "pct": 0.582,
-      "vol": 2076917,
+      "pct": -0.005,
+      "vol": 3496000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BKSY": {
-      "close": 29.87,
+      "close": 29.89,
       "prevclose": 28.61,
-      "pct": 4.404,
-      "vol": 575893,
+      "pct": 4.474,
+      "vol": 910900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BLK": {
-      "close": 1145.36,
+      "close": 1148.84,
       "prevclose": 1131.4,
-      "pct": 1.234,
-      "vol": 236987,
+      "pct": 1.541,
+      "vol": 438100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BND": {
-      "close": 72.215,
+      "close": 72.21,
       "prevclose": 72.15,
-      "pct": 0.09,
-      "vol": 6834652,
+      "pct": 0.083,
+      "vol": 9482200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BWXT": {
-      "close": 169.245,
+      "close": 169.71,
       "prevclose": 168.88,
-      "pct": 0.216,
-      "vol": 415333,
+      "pct": 0.491,
+      "vol": 619400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "BX": {
-      "close": 146.7,
+      "close": 147.17,
       "prevclose": 141.66,
-      "pct": 3.558,
-      "vol": 5739576,
+      "pct": 3.89,
+      "vol": 7371500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "C": {
-      "close": 136.04,
+      "close": 135.77,
       "prevclose": 135.22,
-      "pct": 0.606,
-      "vol": 2999284,
+      "pct": 0.407,
+      "vol": 5066300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "CBOE": {
-      "close": 280.28,
+      "close": 282.73,
       "prevclose": 285.02,
-      "pct": -1.663,
-      "vol": 525591,
+      "pct": -0.803,
+      "vol": 776000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "CEG": {
-      "close": 279.67,
+      "close": 278.36,
       "prevclose": 270.43,
-      "pct": 3.417,
-      "vol": 2023872,
+      "pct": 2.932,
+      "vol": 2715800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "CME": {
-      "close": 259.35,
+      "close": 259.32,
       "prevclose": 263.65,
-      "pct": -1.631,
-      "vol": 958428,
+      "pct": -1.642,
+      "vol": 1593500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "CMG": {
-      "close": 32.09,
+      "close": 32.0,
       "prevclose": 32.14,
-      "pct": -0.156,
-      "vol": 11339564,
+      "pct": -0.436,
+      "vol": 15858900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "COIN": {
-      "close": 147.8946,
+      "close": 148.58,
       "prevclose": 148.68,
-      "pct": -0.528,
-      "vol": 5060001,
+      "pct": -0.067,
+      "vol": 6453200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "COST": {
-      "close": 943.84,
+      "close": 944.32,
       "prevclose": 952.75,
-      "pct": -0.935,
-      "vol": 1021876,
+      "pct": -0.885,
+      "vol": 1800800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "DAL": {
-      "close": 90.775,
+      "close": 90.41,
       "prevclose": 89.21,
-      "pct": 1.754,
-      "vol": 1725915,
+      "pct": 1.345,
+      "vol": 2890700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "DHR": {
-      "close": 207.95,
+      "close": 207.44,
       "prevclose": 209.37,
-      "pct": -0.678,
-      "vol": 1606148,
+      "pct": -0.922,
+      "vol": 2469400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "DIA": {
-      "close": 537.76,
+      "close": 537.28,
       "prevclose": 538.99,
-      "pct": -0.228,
-      "vol": 2385298,
+      "pct": -0.317,
+      "vol": 2824200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "DLR": {
-      "close": 191.45,
+      "close": 190.81,
       "prevclose": 191.3,
-      "pct": 0.078,
-      "vol": 1014823,
+      "pct": -0.256,
+      "vol": 1784000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EEM": {
-      "close": 65.375,
+      "close": 65.43,
       "prevclose": 65.17,
-      "pct": 0.315,
-      "vol": 7595699,
+      "pct": 0.399,
+      "vol": 9762400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EFA": {
-      "close": 108.08,
+      "close": 108.09,
       "prevclose": 108.01,
-      "pct": 0.065,
-      "vol": 5015582,
+      "pct": 0.074,
+      "vol": 6368300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EQIX": {
-      "close": 1038.05,
+      "close": 1032.4,
       "prevclose": 1043.38,
-      "pct": -0.511,
-      "vol": 122488,
+      "pct": -1.052,
+      "vol": 588200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ETN": {
-      "close": 459.56,
+      "close": 459.29,
       "prevclose": 444.96,
-      "pct": 3.281,
-      "vol": 1277988,
+      "pct": 3.221,
+      "vol": 1840300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWA": {
-      "close": 29.955,
+      "close": 29.95,
       "prevclose": 30.05,
-      "pct": -0.316,
-      "vol": 946964,
+      "pct": -0.333,
+      "vol": 1155600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWC": {
-      "close": 61.56,
+      "close": 61.51,
       "prevclose": 61.5,
-      "pct": 0.098,
-      "vol": 1231545,
+      "pct": 0.016,
+      "vol": 2294800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWG": {
-      "close": 43.985,
+      "close": 43.99,
       "prevclose": 43.87,
-      "pct": 0.262,
-      "vol": 268482,
+      "pct": 0.274,
+      "vol": 336200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWJ": {
-      "close": 96.285,
+      "close": 96.28,
       "prevclose": 96.05,
-      "pct": 0.245,
-      "vol": 1298973,
+      "pct": 0.239,
+      "vol": 1683500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWQ": {
-      "close": 47.705,
+      "close": 47.69,
       "prevclose": 47.75,
-      "pct": -0.094,
-      "vol": 358715,
+      "pct": -0.126,
+      "vol": 375800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWT": {
-      "close": 103.84,
+      "close": 103.94,
       "prevclose": 102.18,
-      "pct": 1.625,
-      "vol": 3723004,
+      "pct": 1.722,
+      "vol": 4224800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWU": {
-      "close": 48.32,
+      "close": 48.3,
       "prevclose": 48.49,
-      "pct": -0.351,
-      "vol": 1303931,
+      "pct": -0.392,
+      "vol": 1413100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWW": {
-      "close": 76.155,
+      "close": 76.24,
       "prevclose": 76.93,
-      "pct": -1.007,
-      "vol": 761639,
+      "pct": -0.897,
+      "vol": 1062400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWY": {
-      "close": 166.89,
+      "close": 167.24,
       "prevclose": 163.12,
-      "pct": 2.311,
-      "vol": 9682499,
+      "pct": 2.526,
+      "vol": 13149300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "EWZ": {
-      "close": 33.955,
+      "close": 33.98,
       "prevclose": 35.19,
-      "pct": -3.51,
-      "vol": 29365096,
+      "pct": -3.438,
+      "vol": 34917900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "FEZ": {
-      "close": 71.86,
+      "close": 71.83,
       "prevclose": 71.7,
-      "pct": 0.223,
-      "vol": 366196,
+      "pct": 0.181,
+      "vol": 466100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "FLY": {
-      "close": 26.615,
+      "close": 26.36,
       "prevclose": 25.76,
-      "pct": 3.319,
-      "vol": 1988030,
+      "pct": 2.329,
+      "vol": 3287100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "FXI": {
-      "close": 35.645,
+      "close": 35.66,
       "prevclose": 36.49,
-      "pct": -2.316,
-      "vol": 13075343,
+      "pct": -2.275,
+      "vol": 23100900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "GD": {
-      "close": 391.61,
+      "close": 391.89,
       "prevclose": 395.97,
-      "pct": -1.101,
-      "vol": 316462,
+      "pct": -1.03,
+      "vol": 567900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "GOOGL": {
-      "close": 343.975,
+      "close": 343.8,
       "prevclose": 357.52,
-      "pct": -3.789,
-      "vol": 20260792,
+      "pct": -3.838,
+      "vol": 28963000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "GOVT": {
-      "close": 22.435,
+      "close": 22.44,
       "prevclose": 22.42,
-      "pct": 0.067,
-      "vol": 4938695,
+      "pct": 0.089,
+      "vol": 5220800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "GS": {
-      "close": 1033.77,
+      "close": 1034.41,
       "prevclose": 1034.51,
-      "pct": -0.072,
-      "vol": 1133795,
+      "pct": -0.01,
+      "vol": 1828800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "GSAT": {
-      "close": 83.635,
+      "close": 83.56,
       "prevclose": 83.82,
-      "pct": -0.221,
-      "vol": 463108,
+      "pct": -0.31,
+      "vol": 724400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "HD": {
-      "close": 355.1,
+      "close": 354.48,
       "prevclose": 350.78,
-      "pct": 1.232,
-      "vol": 1495144,
+      "pct": 1.055,
+      "vol": 2549700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "HII": {
-      "close": 326.47,
+      "close": 327.85,
       "prevclose": 330.81,
-      "pct": -1.312,
-      "vol": 211622,
+      "pct": -0.895,
+      "vol": 400300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "HOOD": {
-      "close": 94.088,
+      "close": 94.38,
       "prevclose": 94.52,
-      "pct": -0.457,
-      "vol": 9344438,
+      "pct": -0.148,
+      "vol": 11686200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "HYG": {
-      "close": 79.525,
+      "close": 79.51,
       "prevclose": 79.48,
-      "pct": 0.057,
-      "vol": 13895976,
+      "pct": 0.038,
+      "vol": 17987700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IBKR": {
-      "close": 89.91,
+      "close": 89.78,
       "prevclose": 90.66,
-      "pct": -0.827,
-      "vol": 2570032,
+      "pct": -0.971,
+      "vol": 3472100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ICE": {
-      "close": 150.53,
+      "close": 151.25,
       "prevclose": 150.54,
-      "pct": -0.007,
-      "vol": 2226215,
+      "pct": 0.472,
+      "vol": 5117000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IEF": {
-      "close": 92.885,
+      "close": 92.87,
       "prevclose": 92.76,
-      "pct": 0.135,
-      "vol": 3925525,
+      "pct": 0.119,
+      "vol": 5052200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IEI": {
-      "close": 116.355,
+      "close": 116.35,
       "prevclose": 116.25,
-      "pct": 0.09,
-      "vol": 1069476,
+      "pct": 0.086,
+      "vol": 1246700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IJH": {
-      "close": 77.8223,
+      "close": 77.77,
       "prevclose": 77.54,
-      "pct": 0.364,
-      "vol": 3526080,
+      "pct": 0.297,
+      "vol": 4299900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "INDA": {
-      "close": 50.095,
+      "close": 50.09,
       "prevclose": 50.14,
-      "pct": -0.09,
-      "vol": 1503419,
+      "pct": -0.1,
+      "vol": 1968800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IRDM": {
-      "close": 49.52,
+      "close": 49.38,
       "prevclose": 49.32,
-      "pct": 0.406,
-      "vol": 812684,
+      "pct": 0.122,
+      "vol": 1100900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "ISRG": {
-      "close": 400.44,
+      "close": 401.23,
       "prevclose": 393.38,
-      "pct": 1.795,
-      "vol": 2888642,
+      "pct": 1.996,
+      "vol": 4122700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IWD": {
-      "close": 258.17,
+      "close": 257.92,
       "prevclose": 258.31,
-      "pct": -0.054,
-      "vol": 862547,
+      "pct": -0.151,
+      "vol": 1134700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IWF": {
-      "close": 123.645,
+      "close": 123.6,
       "prevclose": 124.17,
-      "pct": -0.423,
-      "vol": 2409959,
+      "pct": -0.459,
+      "vol": 3318900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IWM": {
-      "close": 301.125,
+      "close": 300.99,
       "prevclose": 299.98,
-      "pct": 0.382,
-      "vol": 12163174,
+      "pct": 0.337,
+      "vol": 14935400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "IWN": {
-      "close": 225.31,
+      "close": 224.97,
       "prevclose": 224.29,
-      "pct": 0.455,
-      "vol": 202530,
+      "pct": 0.303,
+      "vol": 266600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "JNJ": {
-      "close": 259.9401,
+      "close": 259.8,
       "prevclose": 261.81,
-      "pct": -0.714,
-      "vol": 3109060,
+      "pct": -0.768,
+      "vol": 5944200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "JNK": {
-      "close": 95.73,
+      "close": 95.69,
       "prevclose": 95.65,
-      "pct": 0.084,
-      "vol": 1026575,
+      "pct": 0.042,
+      "vol": 1330600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "JPM": {
-      "close": 362.5,
+      "close": 362.04,
       "prevclose": 359.79,
-      "pct": 0.753,
-      "vol": 2534103,
+      "pct": 0.625,
+      "vol": 4569100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "KKR": {
-      "close": 110.935,
+      "close": 110.97,
       "prevclose": 103.83,
-      "pct": 6.843,
-      "vol": 4832488,
+      "pct": 6.877,
+      "vol": 8317900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "KRMN": {
-      "close": 61.53,
+      "close": 61.94,
       "prevclose": 62.16,
-      "pct": -1.014,
-      "vol": 1810263,
+      "pct": -0.354,
+      "vol": 2811900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "KSA": {
-      "close": 37.745,
+      "close": 37.78,
       "prevclose": 37.85,
-      "pct": -0.277,
-      "vol": 209210,
+      "pct": -0.185,
+      "vol": 282100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "KTOS": {
-      "close": 63.54,
+      "close": 63.73,
       "prevclose": 62.42,
-      "pct": 1.794,
-      "vol": 2339677,
+      "pct": 2.099,
+      "vol": 3021300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "KWEB": {
-      "close": 28.1101,
+      "close": 28.09,
       "prevclose": 29.12,
-      "pct": -3.468,
-      "vol": 12867773,
+      "pct": -3.537,
+      "vol": 17941300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "LHX": {
-      "close": 286.065,
+      "close": 286.02,
       "prevclose": 289.72,
-      "pct": -1.262,
-      "vol": 776488,
+      "pct": -1.277,
+      "vol": 1072000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "LLY": {
-      "close": 1216.59,
+      "close": 1215.02,
       "prevclose": 1231.9399,
-      "pct": -1.246,
-      "vol": 1272573,
+      "pct": -1.373,
+      "vol": 2112000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "LMT": {
-      "close": 596.485,
+      "close": 597.77,
       "prevclose": 603.16,
-      "pct": -1.107,
-      "vol": 620089,
+      "pct": -0.894,
+      "vol": 924800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "LOW": {
-      "close": 221.29,
+      "close": 221.25,
       "prevclose": 218.88,
-      "pct": 1.101,
-      "vol": 1355528,
+      "pct": 1.083,
+      "vol": 2138600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "LQD": {
-      "close": 105.985,
+      "close": 105.99,
       "prevclose": 105.96,
-      "pct": 0.024,
-      "vol": 21468845,
+      "pct": 0.028,
+      "vol": 24716700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "LUNR": {
-      "close": 16.515,
+      "close": 16.48,
       "prevclose": 15.78,
-      "pct": 4.658,
-      "vol": 6237347,
+      "pct": 4.436,
+      "vol": 8167700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MCD": {
-      "close": 273.14,
+      "close": 274.15,
       "prevclose": 273.72,
-      "pct": -0.212,
-      "vol": 1876125,
+      "pct": 0.157,
+      "vol": 3029200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MCHI": {
-      "close": 55.615,
+      "close": 55.62,
       "prevclose": 56.93,
-      "pct": -2.31,
-      "vol": 3385907,
+      "pct": -2.301,
+      "vol": 4227800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MDY": {
-      "close": 709.37,
+      "close": 709.05,
       "prevclose": 706.98,
-      "pct": 0.338,
-      "vol": 269527,
+      "pct": 0.293,
+      "vol": 385300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "META": {
-      "close": 600.92,
+      "close": 599.12,
       "prevclose": 594.92,
-      "pct": 1.009,
-      "vol": 9542741,
+      "pct": 0.706,
+      "vol": 13125900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MRK": {
-      "close": 130.69,
+      "close": 130.42,
       "prevclose": 130.92,
-      "pct": -0.176,
-      "vol": 3928445,
+      "pct": -0.382,
+      "vol": 6341600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MRVL": {
-      "close": 211.19,
+      "close": 212.31,
       "prevclose": 208.56,
-      "pct": 1.261,
-      "vol": 9782772,
+      "pct": 1.798,
+      "vol": 15313200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MS": {
-      "close": 215.24,
+      "close": 215.07,
       "prevclose": 215.33,
-      "pct": -0.042,
-      "vol": 1860859,
+      "pct": -0.121,
+      "vol": 3785000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MSFT": {
-      "close": 503.62,
+      "close": 503.81,
       "prevclose": 506.06,
-      "pct": -0.482,
-      "vol": 14495023,
+      "pct": -0.445,
+      "vol": 23019100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MTUM": {
-      "close": 308.19,
+      "close": 308.34,
       "prevclose": 307.32,
-      "pct": 0.283,
-      "vol": 635358,
+      "pct": 0.332,
+      "vol": 824800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MU": {
-      "close": 861.82,
+      "close": 868.52,
       "prevclose": 861.0,
-      "pct": 0.095,
-      "vol": 24905590,
+      "pct": 0.873,
+      "vol": 29340500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "MUB": {
-      "close": 105.905,
+      "close": 105.93,
       "prevclose": 105.85,
-      "pct": 0.052,
-      "vol": 2833541,
+      "pct": 0.076,
+      "vol": 3210400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "NOC": {
-      "close": 574.82,
+      "close": 575.69,
       "prevclose": 577.89,
-      "pct": -0.531,
-      "vol": 226536,
+      "pct": -0.381,
+      "vol": 429900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "NVDA": {
-      "close": 218.045,
+      "close": 217.5,
       "prevclose": 217.55,
-      "pct": 0.228,
-      "vol": 72887860,
+      "pct": -0.023,
+      "vol": 100991600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "NVO": {
-      "close": 47.28,
+      "close": 47.17,
       "prevclose": 47.73,
-      "pct": -0.943,
-      "vol": 6375953,
+      "pct": -1.173,
+      "vol": 7831700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "PFE": {
-      "close": 26.64,
+      "close": 26.62,
       "prevclose": 27.05,
-      "pct": -1.516,
-      "vol": 27012008,
+      "pct": -1.59,
+      "vol": 37922300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "PKW": {
-      "close": 150.25,
+      "close": 150.11,
       "prevclose": 149.82,
-      "pct": 0.287,
-      "vol": 13680,
+      "pct": 0.194,
+      "vol": 14400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "PL": {
-      "close": 23.765,
+      "close": 23.7,
       "prevclose": 23.1,
-      "pct": 2.879,
-      "vol": 3119486,
+      "pct": 2.597,
+      "vol": 4242800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "PLTR": {
-      "close": 175.41,
+      "close": 174.94,
       "prevclose": 175.23,
-      "pct": 0.103,
-      "vol": 36182657,
+      "pct": -0.165,
+      "vol": 43033900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "PWR": {
-      "close": 668.19,
+      "close": 670.58,
       "prevclose": 660.86,
-      "pct": 1.109,
-      "vol": 613359,
+      "pct": 1.471,
+      "vol": 939000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "QQQ": {
-      "close": 718.6401,
+      "close": 718.45,
       "prevclose": 720.87,
-      "pct": -0.309,
-      "vol": 24219069,
+      "pct": -0.336,
+      "vol": 29189400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "QUAL": {
-      "close": 225.31,
+      "close": 225.15,
       "prevclose": 225.74,
-      "pct": -0.19,
-      "vol": 1112912,
+      "pct": -0.261,
+      "vol": 1174600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "RCL": {
-      "close": 305.7,
+      "close": 307.15,
       "prevclose": 308.0,
-      "pct": -0.747,
-      "vol": 1031106,
+      "pct": -0.276,
+      "vol": 1815100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "RDW": {
-      "close": 13.54,
+      "close": 13.51,
       "prevclose": 13.12,
-      "pct": 3.201,
-      "vol": 14272728,
+      "pct": 2.973,
+      "vol": 16993100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "REGN": {
-      "close": 805.82,
+      "close": 797.0,
       "prevclose": 808.05,
-      "pct": -0.276,
-      "vol": 368354,
+      "pct": -1.367,
+      "vol": 939100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "RKLB": {
-      "close": 80.9,
+      "close": 80.01,
       "prevclose": 80.04,
-      "pct": 1.074,
-      "vol": 26508123,
+      "pct": -0.037,
+      "vol": 29990600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "RSP": {
-      "close": 220.895,
+      "close": 220.69,
       "prevclose": 220.22,
-      "pct": 0.307,
-      "vol": 5129203,
+      "pct": 0.213,
+      "vol": 7213000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "RTX": {
-      "close": 223.5553,
+      "close": 223.86,
       "prevclose": 224.12,
-      "pct": -0.252,
-      "vol": 1805325,
+      "pct": -0.116,
+      "vol": 2929900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SBUX": {
-      "close": 106.745,
+      "close": 106.66,
       "prevclose": 104.65,
-      "pct": 2.002,
-      "vol": 2563985,
+      "pct": 1.921,
+      "vol": 5012300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SCHD": {
-      "close": 34.265,
+      "close": 34.27,
       "prevclose": 34.19,
-      "pct": 0.219,
-      "vol": 18870856,
+      "pct": 0.234,
+      "vol": 21984600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SCHP": {
-      "close": 25.9068,
+      "close": 25.9,
       "prevclose": 25.91,
-      "pct": -0.012,
-      "vol": 5626131,
+      "pct": -0.039,
+      "vol": 5831200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SCHW": {
-      "close": 107.515,
+      "close": 107.7,
       "prevclose": 107.99,
-      "pct": -0.44,
-      "vol": 2254646,
+      "pct": -0.269,
+      "vol": 4063500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SGOV": {
-      "close": 100.505,
+      "close": 100.51,
       "prevclose": 100.5,
-      "pct": 0.005,
-      "vol": 13230738,
+      "pct": 0.01,
+      "vol": 14501300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SHY": {
-      "close": 81.8805,
+      "close": 81.87,
       "prevclose": 81.86,
-      "pct": 0.025,
-      "vol": 1517378,
+      "pct": 0.012,
+      "vol": 2541600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SPCX": {
-      "close": 132.54,
+      "close": 133.29,
       "prevclose": 138.74,
-      "pct": -4.469,
-      "vol": 94374638,
+      "pct": -3.928,
+      "vol": 108541900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SPHQ": {
-      "close": 86.04,
+      "close": 85.98,
       "prevclose": 85.99,
-      "pct": 0.058,
-      "vol": 676003,
+      "pct": -0.012,
+      "vol": 751700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SPIR": {
-      "close": 14.63,
+      "close": 14.82,
       "prevclose": 14.03,
-      "pct": 4.277,
-      "vol": 320917,
+      "pct": 5.631,
+      "vol": 492300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SPLV": {
-      "close": 75.725,
+      "close": 75.65,
       "prevclose": 75.7,
-      "pct": 0.033,
-      "vol": 2651581,
+      "pct": -0.066,
+      "vol": 3283200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SPY": {
-      "close": 770.91,
+      "close": 770.56,
       "prevclose": 773.03,
-      "pct": -0.274,
-      "vol": 25091454,
+      "pct": -0.32,
+      "vol": 36673800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "SRLN": {
-      "close": 40.43,
+      "close": 40.44,
       "prevclose": 40.41,
-      "pct": 0.049,
-      "vol": 974429,
+      "pct": 0.074,
+      "vol": 1246900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "TGT": {
-      "close": 151.955,
+      "close": 152.29,
       "prevclose": 152.02,
-      "pct": -0.043,
-      "vol": 3003920,
+      "pct": 0.178,
+      "vol": 4170500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "TIP": {
-      "close": 106.855,
+      "close": 106.89,
       "prevclose": 106.86,
-      "pct": -0.005,
-      "vol": 1368442,
+      "pct": 0.028,
+      "vol": 1978600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "TLT": {
-      "close": 82.135,
+      "close": 82.19,
       "prevclose": 82.06,
-      "pct": 0.091,
-      "vol": 17505134,
+      "pct": 0.158,
+      "vol": 23258200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "TMO": {
-      "close": 606.1625,
+      "close": 605.0,
       "prevclose": 599.69,
-      "pct": 1.079,
-      "vol": 1147678,
+      "pct": 0.885,
+      "vol": 1656100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "TSLA": {
-      "close": 332.645,
+      "close": 332.81,
       "prevclose": 330.88,
-      "pct": 0.533,
-      "vol": 19655163,
+      "pct": 0.583,
+      "vol": 23300200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "TSM": {
-      "close": 421.41,
+      "close": 422.06,
       "prevclose": 418.47,
-      "pct": 0.703,
-      "vol": 7389571,
+      "pct": 0.858,
+      "vol": 9684100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "UAL": {
-      "close": 126.875,
+      "close": 126.31,
       "prevclose": 123.76,
-      "pct": 2.517,
-      "vol": 1652331,
+      "pct": 2.06,
+      "vol": 2778200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "UNH": {
-      "close": 403.275,
+      "close": 402.19,
       "prevclose": 408.74,
-      "pct": -1.337,
-      "vol": 2152129,
+      "pct": -1.602,
+      "vol": 3394900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "USMV": {
-      "close": 100.79,
+      "close": 100.73,
       "prevclose": 100.83,
-      "pct": -0.04,
-      "vol": 1990557,
+      "pct": -0.099,
+      "vol": 2388100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VCIT": {
-      "close": 81.1098,
+      "close": 81.11,
       "prevclose": 81.07,
       "pct": 0.049,
-      "vol": 7659755,
+      "vol": 9012700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
@@ -1384,239 +1383,239 @@
       "close": 72.69,
       "prevclose": 72.5,
       "pct": 0.262,
-      "vol": 9924313,
+      "vol": 14878300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VGK": {
-      "close": 92.28,
+      "close": 92.3,
       "prevclose": 92.26,
-      "pct": 0.022,
-      "vol": 928154,
+      "pct": 0.043,
+      "vol": 1028800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VNM": {
-      "close": 17.615,
+      "close": 17.55,
       "prevclose": 17.64,
-      "pct": -0.142,
-      "vol": 233841,
+      "pct": -0.51,
+      "vol": 285000,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VOO": {
-      "close": 708.64,
+      "close": 708.42,
       "prevclose": 710.65,
-      "pct": -0.283,
-      "vol": 3783135,
+      "pct": -0.314,
+      "vol": 5157700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VOYG": {
-      "close": 43.19,
+      "close": 42.9,
       "prevclose": 43.0,
-      "pct": 0.442,
-      "vol": 1143643,
+      "pct": -0.233,
+      "vol": 1696200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VRT": {
-      "close": 280.27,
+      "close": 281.81,
       "prevclose": 270.1,
-      "pct": 3.765,
-      "vol": 2857314,
+      "pct": 4.335,
+      "vol": 3682900,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VRTX": {
-      "close": 531.93,
+      "close": 529.65,
       "prevclose": 523.91,
-      "pct": 1.531,
-      "vol": 626877,
+      "pct": 1.096,
+      "vol": 1065400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VSAT": {
-      "close": 84.64,
+      "close": 84.52,
       "prevclose": 84.83,
-      "pct": -0.224,
-      "vol": 836598,
+      "pct": -0.365,
+      "vol": 1258500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VST": {
-      "close": 145.52,
+      "close": 144.92,
       "prevclose": 142.87,
-      "pct": 1.855,
-      "vol": 2583099,
+      "pct": 1.435,
+      "vol": 3353400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VT": {
-      "close": 160.835,
+      "close": 160.82,
       "prevclose": 160.97,
-      "pct": -0.084,
-      "vol": 1444702,
+      "pct": -0.093,
+      "vol": 1644500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VTI": {
-      "close": 380.9,
+      "close": 380.65,
       "prevclose": 381.63,
-      "pct": -0.191,
-      "vol": 3261106,
+      "pct": -0.257,
+      "vol": 3740200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VTV": {
-      "close": 225.45,
+      "close": 225.35,
       "prevclose": 225.02,
-      "pct": 0.191,
-      "vol": 2198410,
+      "pct": 0.147,
+      "vol": 2388200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VUG": {
-      "close": 88.675,
+      "close": 88.59,
       "prevclose": 89.18,
-      "pct": -0.566,
-      "vol": 6279977,
+      "pct": -0.662,
+      "vol": 6843200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VWO": {
-      "close": 60.115,
+      "close": 60.12,
       "prevclose": 60.33,
-      "pct": -0.356,
-      "vol": 4863898,
+      "pct": -0.348,
+      "vol": 8457300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VXUS": {
-      "close": 86.88,
+      "close": 86.92,
       "prevclose": 86.83,
-      "pct": 0.058,
-      "vol": 4398911,
+      "pct": 0.104,
+      "vol": 4725200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "VYM": {
-      "close": 166.17,
+      "close": 166.14,
       "prevclose": 166.06,
-      "pct": 0.066,
-      "vol": 810620,
+      "pct": 0.048,
+      "vol": 876800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "WFC": {
-      "close": 87.62,
+      "close": 87.45,
       "prevclose": 87.52,
-      "pct": 0.114,
-      "vol": 5133285,
+      "pct": -0.08,
+      "vol": 11059400,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "WMT": {
-      "close": 113.025,
+      "close": 113.26,
       "prevclose": 112.66,
-      "pct": 0.324,
-      "vol": 10331995,
+      "pct": 0.533,
+      "vol": 16997600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLB": {
-      "close": 53.195,
+      "close": 53.24,
       "prevclose": 53.18,
-      "pct": 0.028,
-      "vol": 10007217,
+      "pct": 0.113,
+      "vol": 11449700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLC": {
-      "close": 111.355,
+      "close": 111.27,
       "prevclose": 111.83,
-      "pct": -0.425,
-      "vol": 2743505,
+      "pct": -0.501,
+      "vol": 3383300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLE": {
-      "close": 60.8,
+      "close": 60.93,
       "prevclose": 60.18,
-      "pct": 1.03,
-      "vol": 18291266,
+      "pct": 1.246,
+      "vol": 22396800,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLF": {
-      "close": 57.88,
+      "close": 57.8,
       "prevclose": 57.81,
-      "pct": 0.121,
-      "vol": 14522688,
+      "pct": -0.017,
+      "vol": 19755300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLI": {
-      "close": 185.825,
+      "close": 185.7,
       "prevclose": 184.6,
-      "pct": 0.664,
-      "vol": 4332872,
+      "pct": 0.596,
+      "vol": 4893700,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLK": {
-      "close": 186.14,
+      "close": 186.09,
       "prevclose": 186.32,
-      "pct": -0.097,
-      "vol": 4121622,
+      "pct": -0.123,
+      "vol": 5755300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLP": {
-      "close": 84.66,
+      "close": 84.69,
       "prevclose": 84.95,
-      "pct": -0.341,
-      "vol": 5741258,
+      "pct": -0.306,
+      "vol": 7358300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLRE": {
-      "close": 44.135,
+      "close": 44.08,
       "prevclose": 44.4,
-      "pct": -0.597,
-      "vol": 4210107,
+      "pct": -0.721,
+      "vol": 5552300,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLU": {
-      "close": 43.665,
+      "close": 43.63,
       "prevclose": 43.13,
-      "pct": 1.24,
-      "vol": 15442102,
+      "pct": 1.159,
+      "vol": 19675200,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLV": {
-      "close": 168.225,
+      "close": 168.01,
       "prevclose": 168.44,
-      "pct": -0.128,
-      "vol": 5481831,
+      "pct": -0.255,
+      "vol": 6680100,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "XLY": {
-      "close": 119.47,
+      "close": 119.24,
       "prevclose": 119.67,
-      "pct": -0.167,
-      "vol": 2914974,
+      "pct": -0.359,
+      "vol": 3788600,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     },
     "YSS": {
-      "close": 10.53,
+      "close": 10.6,
       "prevclose": 10.48,
-      "pct": 0.477,
-      "vol": 2936056,
+      "pct": 1.145,
+      "vol": 3728500,
       "date": "2026-08-11",
       "source": "Yahoo Finance (own close-series computation)"
     }
