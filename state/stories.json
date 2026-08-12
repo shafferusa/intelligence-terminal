@@ -314,16 +314,17 @@
     },
     {
       "id": "drc-ebola-outbreak-2026",
-      "headline": "DRC Ebola outbreak's confirmed toll rises to 3,874 cases / 1,751 deaths, resolving this morning's preliminary flag",
+      "headline": "DRC Ebola death toll crosses 2,000 for the first time -- second-largest, fastest-growing outbreak on record",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-12-am",
-      "verification": "Confirmed-multiple (search-synthesized; WHO primary site unreachable this run)",
-      "one_line": "New WHO-sourced figures (via UN News, citing WHO Africa Regional Director Dr. Mohamed Janabi): more than 1,900 deaths / 4,290 confirmed cases as of Aug 8, somewhat LOWER than last night's tracked figure (2,011 deaths / 4,381 cases) -- flagged as an unreconciled reporting-cutoff discrepancy, not a confirmed decline. WHO calls it the fastest-growing Ebola outbreak on record; 60-70% of deaths occurring away from formal care.",
-      "score_note": "Two-hop sourcing (UN News citing WHO officials, not the primary WHO bulletin directly) is the likely source of this discrepancy; recommend pulling the single latest WHO DON bulletin directly next run.",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Converges today at 4,381 confirmed cases / 2,011 deaths as of Aug 11 (UN News, Al Jazeera, Euronews, all citing WHO Africa Regional Director Dr. Mohamed Janabi), resolving this morning's flagged discrepancy in the higher-figure direction. Case-fatality rate ~45.9%; WHO calls it the fastest-growing Ebola outbreak on record, 60-70% of deaths outside formal care.",
+      "score_note": "Confirms escalation rather than a data error; WHO's own Disease Outbreak News page remains unreachable to this report's direct fetch.",
       "sources": [
-        "Al Jazeera",
         "UN News",
+        "Al Jazeera",
+        "Euronews",
         "WHO Disease Outbreak News (primary, not independently reachable this run)"
       ],
       "watch": true
@@ -363,14 +364,15 @@
     },
     {
       "id": "mail-ballot-eo-scotus",
-      "headline": "Mail-ballot EO: SCOTUS stay still pending; this report corrects its own '1st Circuit' vs 'D.C. Circuit' error",
+      "headline": "DOJ formally appeals the mail-ballot EO injunction to the 1st Circuit, seeks a stay, signals possible Supreme Court emergency relief",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-12-am",
+      "last_updated": "2026-08-12-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "First concrete court order in this thread: US District Judge Indira Talwani (D. Mass.) granted a preliminary injunction Aug 11 blocking USPS from implementing/enforcing EO 14399 Section 3 for the Nov 3, 2026 midterms, citing that election administration belongs to the states. Distinct from, and running alongside, the still-pending SCOTUS emergency-stay track. Sourced via 5+ secondary outlets (Axios, The Hill, Fox News, U.S. News, OPB); npr.org/votebeat.org direct fetch blocked by network egress this run.",
-      "score_note": "Escalates from briefing-stage to a concrete judicial order; watch for the expected 1st Circuit appeal.",
+      "one_line": "Following Judge Talwani's (D. Mass.) Aug 11 preliminary injunction, DOJ has formally appealed to the 1st Circuit (Boston) and asked the district court to stay the injunction pending appeal, arguing the state plaintiffs lacked standing. Talwani separately ordered plaintiffs to post a nominal $100 bond by Aug 18. DOJ has signaled it may seek emergency Supreme Court relief if it loses at the 1st Circuit.",
+      "score_note": "Escalates from a single district-court order into active appellate litigation with a credible path to SCOTUS's emergency docket.",
       "sources": [
+        "reporting on the DOJ filing and bond order (secondary, multiple outlets)",
         "SCOTUSblog",
         "Votebeat",
         "Democracy Docket"
@@ -787,19 +789,18 @@
     },
     {
       "id": "colombia-earthquake-aug10",
-      "headline": "Magnitude-7.4 earthquake kills 130+ in western Colombia, toll still rising",
+      "headline": "Colombia earthquake toll narrows toward the low-200s but remains unreconciled across outlets",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-12-am",
-      "verification": "Confirmed-multiple (fact of rising toll); Disputed (specific figure)",
-      "one_line": "Toll climbed further overnight to a range spanning 181 (official Colombian government count) to 250 (per various media tallies, e.g. CBS/CNBC); still not reconciled to one figure. Missing count also disputed: 195 official vs. ~4,000 unverified/crowd-sourced. Forecast 2026-08-11-am-3 (toll +20 within 48h) tracked correct; forecast 2026-08-12-am-3 (toll passes 250 within 48h) newly logged.",
-      "score_note": "Fourth consecutive report cycle tracking a still-unreconciled toll; genuinely wide official-vs-media spread persists.",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Disputed",
+      "one_line": "Colombia's forensic institute (Bloomberg) says it has received 202 bodies from four departments, describing the toll as 'above 200'; BBC cites 'above 220'; NPR still cites the lower official figure of 'at least 181 dead, at least 195 missing,' noting civilian-run databases put the missing count near 4,000 versus the official ~195 -- an even larger unresolved gap than the death toll itself.",
+      "score_note": "Range narrowed from this morning's 181-250 to roughly 181-224; still no single reconciled government figure three days after the quake.",
       "sources": [
         "USGS (primary)",
-        "CNN",
-        "NBC News",
-        "Al Jazeera",
-        "The Watchers"
+        "Bloomberg",
+        "BBC",
+        "NPR"
       ],
       "watch": true
     },
@@ -837,35 +838,32 @@
     },
     {
       "id": "cpi-preview-aug12",
-      "headline": "Wednesday's CPI is the week's pivot: prediction markets lean tame, setting up tension with Fed Chair Warsh's hawkish signal",
-      "status": "New",
+      "headline": "July CPI prints cooler than expected on the headline, in line on core -- a mild dovish surprise that narrows but doesn't resolve the Warsh-vs-jobs Fed tension",
+      "status": "Resolved",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-11-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Consensus: headline +0.2% m/m (3.4% y/y), core +0.2% m/m (2.5% y/y). Kalshi prediction markets price only ~11% odds core prints above 2.5% y/y, ~15% odds headline above 3.4% -- leaning tame, which would tend to support Sept rate-cut pricing already favored by July's jobs shock. No new Warsh or Cook remarks found overnight; apparent pre-CPI quiet period.",
-      "score_note": "Direct tie-breaker for the fed-warsh-hike-vs-jobs-cut-tension-aug thread; forecast 2026-08-11-am-1 logged.",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "BLS: headline CPI +0.1% m/m/+3.4% y/y (below the +0.2% consensus), core +0.2% m/m/+2.5% y/y (in line). This report's own FRED cross-check reproduces the same math. Indices closed modestly higher (S&P +0.28%, Nasdaq +0.51%) and VIX fell 5.43% to 14.45, this report's sharpest single-session vol decline tracked recently. No Fed official commented on the print by this report's pm cutoff. Resolves forecast 2026-08-11-pm-1 (core at/below ~0.2% consensus) as correct.",
+      "score_note": "Direct tie-breaker resolved; the broader Warsh-vs-Cook institutional dispute remains separate and unresolved.",
       "sources": [
-        "CNBC (prediction markets)",
-        "Morningstar",
-        "Cleveland Fed nowcast",
-        "JPMorgan"
+        "bls.gov/news.release/cpi.nr0.htm (primary)",
+        "FRED CPIAUCSL/CPILFESL (primary, own cross-check)",
+        "this report's own Yahoo Finance and Cboe data"
       ],
-      "watch": true
+      "watch": false
     },
     {
       "id": "alt-asset-manager-rally-nvda-financing-aug11",
-      "headline": "KKR, Apollo, Ares and Blackstone post their strongest session this cycle on continued Nvidia $500B financing fallout",
-      "status": "Continuing",
+      "headline": "KKR, Apollo, Ares and Blackstone give back part of their two-day Nvidia-financing rally -- the group's first down session since the story broke",
+      "status": "Materially changed",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-12-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Second straight session of outsized gains Tuesday: KKR +6.88%, Apollo +6.26%, Ares +3.96%, Blackstone +3.89% (this run's own data). New context: YTD, these names remain down sharply for 2026 overall (Apollo/Blackstone ~-12%, Ares ~-15%, KKR ~-16%), so the two-day rally is a bounce within a much larger drawdown tied to an earlier private-credit selloff, not a return to prior highs. This run's own EDGAR sweep again found no company-specific catalyst.",
-      "score_note": "Not yet resolved whether this is a durable re-rating or a bounce; forecast 2026-08-12-am-2 (partial reversion today) logged.",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "After two sessions of outsized gains (Mon/Tue), all four closed lower today: KKR -0.29%, Apollo -0.94%, Ares -1.12%, Blackstone -0.45% (this run's own data), resolving forecast 2026-08-12-am-2 (at least two close lower) correct. No company-specific catalyst found; this run's own EDGAR sweep again came up empty. All four remain down sharply for 2026 YTD even after the two-day rally.",
+      "score_note": "Forecast 2026-08-12-pm-1 logged on whether the pullback extends over the next two sessions.",
       "sources": [
-        "CNBC",
-        "Nvidia/KKR/Apollo/Blackstone investor relations (primary)",
-        "SEC EDGAR (primary, this run's own check)",
-        "this run's own Yahoo Finance data"
+        "this run's own Twelve Data and Yahoo Finance close-series data",
+        "SEC EDGAR (primary, this run's own check)"
       ],
       "watch": true
     },
@@ -908,16 +906,65 @@
     },
     {
       "id": "spcx-third-down-session-aug11",
-      "headline": "SpaceX falls a third straight session pre-Aug 20 unlock; one source flags a retail-sentiment shift",
-      "status": "Continuing",
+      "headline": "SpaceX reverses sharply, +9.3%, on CEO Musk's AI-revenue remarks -- snapping three straight down sessions tied to the Aug 20 unlock",
+      "status": "Materially changed",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-12-am",
-      "verification": "Confirmed-primary (price data); Single-reliable-source (retail-seller claim)",
-      "one_line": "SPCX fell -3.93% Tuesday (this run's close-series data), a third consecutive down session ahead of the Aug 20 ~320M-share employee unlock. One aggregator source describes retail investors as 'sellers for the first time since the IPO' -- not independently corroborated. FINRA short-volume ratio for the session: 60.0%, elevated but not extreme relative to the watchlist.",
-      "score_note": "Extends the spacex-aug20-unlock-jitters-aug11 thread into a third session; forecast 2026-08-11-pm-3 remains open.",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "SPCX closed +9.30% at $145.69 today (this run's own data), its best session in weeks, reversing the three-session unlock-related slide (Aug 10-11). Multiple outlets (Invezz, Benzinga, TradingKey) attribute the move to CEO Elon Musk's internal all-hands remarks that AI-related revenue would 'definitely' exceed all other revenue streams within a month. No SpaceX press release or filing corroborates the specific timeline -- treated as management commentary, not disclosed guidance.",
+      "score_note": "Forecast 2026-08-11-pm-3 (continued weakness into Aug 20) now tracking wrong pending Saturday's grading; forecast 2026-08-12-pm-2 logged on whether today's gain holds through the unlock.",
       "sources": [
-        "StockTitan",
-        "this run's own Yahoo Finance and FINRA data"
+        "Invezz",
+        "Benzinga",
+        "TradingKey",
+        "this run's own Twelve Data/Yahoo Finance data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "home-depot-ceo-medical-leave-aug12",
+      "headline": "Home Depot falls 2.9% after CEO Ted Decker takes temporary medical leave; two executives named to oversee operations",
+      "status": "New",
+      "first_seen": "2026-08-12-pm",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "Chair/President/CEO Edward P. Decker is taking a medical leave expected to last a few months; condition undisclosed. Ann-Marie Campbell (SEVP) named to oversee day-to-day operations, Richard V. McPhail (EVP/CFO) named interim principal executive officer. Confirmed via HD's own 8-K (Items 5.02/7.01/9.01, filed 09:06 ET, this run's own EDGAR sweep) and IR press release; independently corroborated by Bloomberg. HD closed -2.89%, the clearest single-name driver of Consumer Discretionary's sector-wide underperformance today.",
+      "score_note": "Forecast 2026-08-12-pm-3 logged on whether HD falls a further 3%+ over the next 5 sessions.",
+      "sources": [
+        "Home Depot 8-K (SEC EDGAR, primary)",
+        "ir.homedepot.com press release (primary)",
+        "Bloomberg",
+        "this run's own Twelve Data close-series data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "total-solar-eclipse-aug12",
+      "headline": "Total solar eclipse crosses the Arctic, Greenland, Iceland and northern Spain/Portugal, coinciding with the Perseids peak and a six-planet alignment",
+      "status": "Resolved",
+      "first_seen": "2026-08-12-pm",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Totality up to 2m18s along a path including A Coruna, Valencia, Zaragoza, Palma and Bilbao; ~980 million people worldwide saw at least a partial eclipse. Event is complete, predictable celestial mechanics -- not a developing story.",
+      "score_note": "New science item, not previously tracked; no further tracking needed.",
+      "sources": [
+        "NASA Science",
+        "timeanddate.com"
+      ],
+      "watch": false
+    },
+    {
+      "id": "megacap-tech-divergence-aug12",
+      "headline": "Mega-cap tech splits sharply: AI-infrastructure/semiconductor names rally while Microsoft, Meta, Apple and Tesla fall",
+      "status": "New",
+      "first_seen": "2026-08-12-pm",
+      "last_updated": "2026-08-12-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "Micron +5.92%, Arista +5.90%, Marvell +3.62%, Digital Realty +3.14%, Nvidia +2.32% rallied while Microsoft -2.07%, Meta -2.94%, Apple -1.26%, Tesla -1.67% fell (this run's own data). XLK +1.28% (best sector), XLC -0.75%/XLY -0.86% (weak sectors). Secondary sources report AI-cloud providers Nebius (+16-18%) and CoreWeave (+18%, not on this report's watchlist) also rallied on Q2 beats, treated as corroborating evidence for an AI-infrastructure-specific rally rather than a broad tech move. No single confirmed catalyst.",
+      "score_note": "New thread distinct from the Alphabet/DeepMind story; watch whether the AI-infra/software split persists.",
+      "sources": [
+        "this run's own Twelve Data and Yahoo Finance close-series data",
+        "secondary reporting on Nebius/CoreWeave earnings"
       ],
       "watch": true
     }
