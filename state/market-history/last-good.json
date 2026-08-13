@@ -1,1625 +1,1307 @@
 {
-  "fetched_at": "2026-08-12T16:16:00-04:00",
-  "treasury_par_curve": {
-    "date": "2026-08-11",
-    "label": "EOD official (2026-08-11)",
-    "1M": 3.79,
-    "1.5M": 3.82,
-    "2M": 3.83,
-    "3M": 3.89,
-    "4M": 3.9,
-    "6M": 3.99,
-    "1Y": 4.03,
-    "2Y": 4.22,
-    "3Y": 4.27,
-    "5Y": 4.39,
-    "7Y": 4.54,
-    "10Y": 4.7,
-    "20Y": 5.25,
-    "30Y": 5.24,
-    "spreads_bp": {
-      "2s10s": 48,
-      "3m10y": 81,
-      "5s30s": 85
-    }
-  },
-  "fred": {
-    "CPIAUCSL": {
-      "value": 332.813,
-      "date": "2026-07-01",
-      "prior_value": 332.568,
-      "prior_date": "2026-06-01"
-    },
-    "CPILFESL": {
-      "value": 336.789,
-      "date": "2026-07-01",
-      "prior_value": 336.065,
-      "prior_date": "2026-06-01"
-    },
-    "PAYEMS": {
-      "value": 158858.0,
-      "date": "2026-07-01",
-      "prior_value": 158881.0,
-      "prior_date": "2026-06-01"
-    },
-    "ICSA": {
-      "value": 199000.0,
-      "date": "2026-08-01",
-      "prior_value": 198000.0,
-      "prior_date": "2026-07-25"
-    },
-    "UNRATE": {
-      "value": 4.1,
-      "date": "2026-07-01",
-      "prior_value": 4.2,
-      "prior_date": "2026-06-01"
-    },
-    "T10Y2Y": {
-      "value": 0.48,
-      "date": "2026-08-11",
-      "prior_value": 0.47,
-      "prior_date": "2026-08-10"
-    },
-    "DGS2": {
-      "value": 4.25,
-      "date": "2026-08-10",
-      "prior_value": 4.19,
-      "prior_date": "2026-08-07"
-    },
-    "DGS10": {
-      "value": 4.72,
-      "date": "2026-08-10",
-      "prior_value": 4.65,
-      "prior_date": "2026-08-07"
-    },
-    "T10YIE": {
-      "value": 2.27,
-      "date": "2026-08-11",
-      "prior_value": 2.29,
-      "prior_date": "2026-08-10"
-    },
-    "DFII10": {
-      "value": 2.43,
-      "date": "2026-08-10",
-      "prior_value": 2.4,
-      "prior_date": "2026-08-07"
-    },
-    "SOFR": {
-      "value": 3.64,
-      "date": "2026-08-11",
-      "prior_value": 3.63,
-      "prior_date": "2026-08-10"
-    },
-    "BAMLH0A0HYM2": {
-      "value": 2.72,
-      "date": "2026-08-11",
-      "prior_value": 2.7,
-      "prior_date": "2026-08-10"
-    }
-  },
-  "vix_complex": {
-    "date": "2026-08-12",
-    "label": "Delayed (+15 min)",
-    "VIX": 14.45,
-    "VIX9D": 11.02,
-    "VIX3M": 18.45,
-    "VIX_prev_close": 15.28,
-    "term_structure": "normal contango, no inversion"
-  },
-  "fx": {
-    "date": "2026-08-12",
-    "label": "EOD official (ECB reference, 2026-08-12)",
-    "base": "USD",
-    "rates": {
-      "AUD": 1.4142,
-      "BRL": 5.1557,
-      "CAD": 1.3926,
-      "CHF": 0.81126,
-      "CNY": 6.7432,
-      "EUR": 0.86618,
-      "GBP": 0.73935,
-      "INR": 95.34,
-      "JPY": 159.09,
-      "MXN": 17.0614
-    },
-    "EURUSD_live_snapshot": {
-      "value": 1.1526,
-      "change_pct": -0.18,
-      "ts_et": "2026-08-12T16:16:00-04:00"
-    }
-  },
-  "crypto": {
-    "label": "Live (CoinGecko)",
-    "ts": "2026-08-12T16:16:00-04:00",
-    "bitcoin": {
-      "usd": 63321,
-      "change_24h_pct": -0.04
-    },
-    "ethereum": {
-      "usd": 1882.08,
-      "change_24h_pct": 0.74
-    },
-    "solana": {
-      "usd": 75.71,
-      "change_24h_pct": 0.44
-    },
-    "cardano": {
-      "usd": 0.183296,
-      "change_24h_pct": -0.72
-    },
-    "total_market_cap_usd": 2261000000000.0,
-    "btc_dominance_pct": 56.19
-  },
-  "indices_cash_close": {
-    "date": "2026-08-12",
-    "label": "EOD official (2026-08-12)",
-    "SPX": {
-      "close": 7749.99,
-      "chg_pct": 0.28
-    },
-    "NDX_COMP": {
-      "close": 26580.57,
-      "chg_pct": 0.51
-    },
-    "DJI": {
-      "close": 53823.08,
-      "chg_pct": 0.06
-    },
-    "RUT": {
-      "close": 3048.79,
-      "chg_pct": 0.72
-    }
-  },
-  "futures_and_commodities": {
-    "date": "2026-08-12",
-    "label": "EOD official, close-series method",
-    "ES": {
-      "last": 7774.5,
-      "chg_pct": 0.35
-    },
-    "NQ": {
-      "last": 29862.0,
-      "chg_pct": 0.8
-    },
-    "YM": {
-      "last": 53915.0,
-      "chg_pct": 0.06
-    },
-    "RTY": {
-      "last": 3056.4,
-      "chg_pct": 0.69
-    },
-    "GC": {
-      "last": 4475.6,
-      "chg_pct": 2.11
-    },
-    "CL": {
-      "last": 83.0,
-      "chg_pct": -0.24
-    },
-    "NG": {
-      "last": 2.793,
-      "chg_pct": 0.94
-    },
-    "HG": {
-      "last": 6.613,
-      "chg_pct": 0.02
-    },
-    "EURUSD": {
-      "last": 1.1526,
-      "chg_pct": -0.18
-    },
-    "TNX_yield_pct": 4.682
-  },
-  "sources_failed_this_run": [
-    "cdn.cboe.com options market-statistics (HTTP 403 AccessDenied, recurring known path-shift issue)",
-    "Treasury par yield curve for 2026-08-12 not yet posted at fetch time; used most recent available (2026-08-11)",
-    "Twelve Data quote batches (HTTP 429 after 19 of 21 batches, 8-credit/minute limit; 15 international ETFs fell back to 2026-08-11 cache, FM unavailable in either source)",
-    "FINRA short volume for 2026-08-12 (HTTP 403, not yet published; used 2026-08-11 file instead)"
-  ],
-  "technical_levels_2026-08-12": {
-    "SPY": {
-      "close": 772.54,
-      "sma20": null,
-      "dist_sma20_pct": 2.57,
-      "sma50": null,
-      "dist_sma50_pct": 3.26,
-      "sma200": null,
-      "dist_sma200_pct": null,
-      "range_60d_high": 773.26,
-      "range_60d_low": 725.43,
-      "n_sessions": 60
-    },
-    "QQQ": {
-      "close": 723.61,
-      "sma20": null,
-      "dist_sma20_pct": 3.22,
-      "sma50": null,
-      "dist_sma50_pct": 1.42,
-      "sma200": null,
-      "dist_sma200_pct": null,
-      "range_60d_high": 746.16,
-      "range_60d_low": 661.73,
-      "n_sessions": 60
-    },
-    "IWM": {
-      "close": 302.73,
-      "sma20": null,
-      "dist_sma20_pct": 2.35,
-      "sma50": null,
-      "dist_sma50_pct": 2.79,
-      "sma200": null,
-      "dist_sma200_pct": null,
-      "range_60d_high": 302.73,
-      "range_60d_low": 273.0,
-      "n_sessions": 60
-    },
-    "DIA": {
-      "close": 537.12,
-      "sma20": null,
-      "dist_sma20_pct": 1.76,
-      "sma50": null,
-      "dist_sma50_pct": 2.87,
-      "sma200": null,
-      "dist_sma200_pct": null,
-      "range_60d_high": 542.81,
-      "range_60d_low": 493.98,
-      "n_sessions": 60
-    },
-    "TLT": {
-      "close": 82.1,
-      "sma20": null,
-      "dist_sma20_pct": -1.18,
-      "sma50": null,
-      "dist_sma50_pct": -2.94,
-      "sma200": null,
-      "dist_sma200_pct": null,
-      "range_60d_high": 87.45,
-      "range_60d_low": 82.06,
-      "n_sessions": 60
-    },
-    "SPCX": {
-      "close": 146.195,
-      "sma20": null,
-      "dist_sma20_pct": 20.6,
-      "sma50": null,
-      "dist_sma50_pct": null,
-      "sma200": null,
-      "dist_sma200_pct": null,
-      "range_60d_high": 211.39,
-      "range_60d_low": 108.27,
-      "n_sessions": 43
-    }
-  },
-  "technical_levels_note": "outputsize=60 yields ~60 trading days, not a true 52-week window; 200-DMA/52w range unavailable this run, range fields above are 60-day ranges only.",
-  "equity_quotes_close_2026-08-12": {
-    "SPY": {
-      "close": 772.765,
-      "prevclose": 770.5305,
-      "pct": 0.29,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VOO": {
-      "close": 710.29,
-      "prevclose": 708.448,
-      "pct": 0.26,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "QQQ": {
-      "close": 723.57,
-      "prevclose": 718.4689,
-      "pct": 0.71,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "DIA": {
-      "close": 537.7,
-      "prevclose": 537.2702,
-      "pct": 0.08,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IWM": {
-      "close": 302.95,
-      "prevclose": 300.9935,
-      "pct": 0.65,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VTI": {
-      "close": 381.96,
-      "prevclose": 380.6657,
-      "pct": 0.34,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "RSP": {
-      "close": 221.315,
-      "prevclose": 220.697,
-      "pct": 0.28,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MDY": {
-      "close": 712.62,
-      "prevclose": 709.0746,
-      "pct": 0.5,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IJH": {
-      "close": 78.13,
-      "prevclose": 77.7722,
-      "pct": 0.46,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AVUV": {
-      "close": 127.58,
-      "prevclose": 127.2238,
-      "pct": 0.28,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IWN": {
-      "close": 226.02,
-      "prevclose": 224.9627,
-      "pct": 0.47,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLK": {
-      "close": 188.47,
-      "prevclose": 186.0881,
-      "pct": 1.28,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLC": {
-      "close": 110.435,
-      "prevclose": 111.2695,
-      "pct": -0.75,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLY": {
-      "close": 118.22,
-      "prevclose": 119.2455,
-      "pct": -0.86,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLP": {
-      "close": 85.09,
-      "prevclose": 84.6919,
-      "pct": 0.47,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLF": {
-      "close": 57.975,
-      "prevclose": 57.8016,
-      "pct": 0.3,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLV": {
-      "close": 168.85,
-      "prevclose": 168.01,
-      "pct": 0.5,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLI": {
-      "close": 186.2,
-      "prevclose": 185.6986,
-      "pct": 0.27,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLE": {
-      "close": 60.975,
-      "prevclose": 60.9323,
-      "pct": 0.07,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLB": {
-      "close": 52.725,
-      "prevclose": 53.2414,
-      "pct": -0.97,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLU": {
-      "close": 43.82,
-      "prevclose": 43.628,
-      "pct": 0.44,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "XLRE": {
-      "close": 44.47,
-      "prevclose": 44.0821,
-      "pct": 0.88,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AAPL": {
-      "close": 301.08,
-      "prevclose": 304.922,
-      "pct": -1.26,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MSFT": {
-      "close": 493.385,
-      "prevclose": 503.8139,
-      "pct": -2.07,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "NVDA": {
-      "close": 222.54,
-      "prevclose": 217.4941,
-      "pct": 2.32,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AMZN": {
-      "close": 268.74,
-      "prevclose": 272.2796,
-      "pct": -1.3,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "GOOGL": {
-      "close": 344.35,
-      "prevclose": 343.7999,
-      "pct": 0.16,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "META": {
-      "close": 581.5,
-      "prevclose": 599.114,
-      "pct": -2.94,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "TSLA": {
-      "close": 327.24,
-      "prevclose": 332.7977,
-      "pct": -1.67,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SPCX": {
-      "close": 145.69,
-      "prevclose": 133.2937,
-      "pct": 9.3,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "RKLB": {
-      "close": 81.055,
-      "prevclose": 80.0069,
-      "pct": 1.31,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ASTS": {
-      "close": 74.14,
-      "prevclose": 71.6329,
-      "pct": 3.5,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "LUNR": {
-      "close": 16.805,
-      "prevclose": 16.4803,
-      "pct": 1.97,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "RDW": {
-      "close": 13.535,
-      "prevclose": 13.5093,
-      "pct": 0.19,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "PL": {
-      "close": 24.53,
-      "prevclose": 23.7005,
-      "pct": 3.5,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BKSY": {
-      "close": 32.15,
-      "prevclose": 29.8903,
-      "pct": 7.56,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IRDM": {
-      "close": 49.78,
-      "prevclose": 49.38,
-      "pct": 0.81,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SPIR": {
-      "close": 14.81,
-      "prevclose": 14.8204,
-      "pct": -0.07,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VSAT": {
-      "close": 87.01,
-      "prevclose": 84.5168,
-      "pct": 2.95,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "GSAT": {
-      "close": 83.23,
-      "prevclose": 83.5559,
-      "pct": -0.39,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "KRMN": {
-      "close": 62.48,
-      "prevclose": 61.9411,
-      "pct": 0.87,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VOYG": {
-      "close": 43.2693,
-      "prevclose": 42.9004,
-      "pct": 0.86,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "FLY": {
-      "close": 26.12,
-      "prevclose": 26.3599,
-      "pct": -0.91,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "YSS": {
-      "close": 10.96,
-      "prevclose": 10.5996,
-      "pct": 3.4,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AMD": {
-      "close": 482.11,
-      "prevclose": 474.331,
-      "pct": 1.64,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AVGO": {
-      "close": 414.99,
-      "prevclose": 416.0718,
-      "pct": -0.26,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "TSM": {
-      "close": 429.49,
-      "prevclose": 422.0617,
-      "pct": 1.76,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ASML": {
-      "close": 1814.56,
-      "prevclose": 1799.4447,
-      "pct": 0.84,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MU": {
-      "close": 919.925,
-      "prevclose": 868.5093,
-      "pct": 5.92,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MRVL": {
-      "close": 219.985,
-      "prevclose": 212.2997,
-      "pct": 3.62,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ANET": {
-      "close": 209.53,
-      "prevclose": 197.8565,
-      "pct": 5.9,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VRT": {
-      "close": 287.55,
-      "prevclose": 281.8013,
-      "pct": 2.04,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ETN": {
-      "close": 460.51,
-      "prevclose": 459.27,
-      "pct": 0.27,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "PWR": {
-      "close": 681.795,
-      "prevclose": 670.596,
-      "pct": 1.67,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "CEG": {
-      "close": 278.61,
-      "prevclose": 278.3595,
-      "pct": 0.09,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VST": {
-      "close": 146.475,
-      "prevclose": 144.9243,
-      "pct": 1.07,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "EQIX": {
-      "close": 1062.52,
-      "prevclose": 1032.3747,
-      "pct": 2.92,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "DLR": {
-      "close": 196.795,
-      "prevclose": 190.8038,
-      "pct": 3.14,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "LMT": {
-      "close": 607.75,
-      "prevclose": 597.7673,
-      "pct": 1.67,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "RTX": {
-      "close": 223.02,
-      "prevclose": 223.8707,
-      "pct": -0.38,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "NOC": {
-      "close": 576.76,
-      "prevclose": 575.6662,
-      "pct": 0.19,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "GD": {
-      "close": 395.17,
-      "prevclose": 391.8782,
-      "pct": 0.84,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BA": {
-      "close": 231.6,
-      "prevclose": 233.2326,
-      "pct": -0.7,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "LHX": {
-      "close": 290.0,
-      "prevclose": 286.0243,
-      "pct": 1.39,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "HII": {
-      "close": 326.49,
-      "prevclose": 327.8341,
-      "pct": -0.41,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BWXT": {
-      "close": 172.365,
-      "prevclose": 169.7174,
-      "pct": 1.56,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AVAV": {
-      "close": 193.25,
-      "prevclose": 196.0138,
-      "pct": -1.41,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "KTOS": {
-      "close": 63.56,
-      "prevclose": 63.7321,
-      "pct": -0.27,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "PLTR": {
-      "close": 170.95,
-      "prevclose": 174.9386,
-      "pct": -2.28,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "JPM": {
-      "close": 365.58,
-      "prevclose": 362.0321,
-      "pct": 0.98,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BAC": {
-      "close": 64.83,
-      "prevclose": 63.998,
-      "pct": 1.3,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "C": {
-      "close": 137.71,
-      "prevclose": 135.7685,
-      "pct": 1.43,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "WFC": {
-      "close": 88.955,
-      "prevclose": 87.4508,
-      "pct": 1.72,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "GS": {
-      "close": 1034.17,
-      "prevclose": 1034.3769,
-      "pct": -0.02,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MS": {
-      "close": 217.96,
-      "prevclose": 215.078,
-      "pct": 1.34,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SCHW": {
-      "close": 109.395,
-      "prevclose": 107.704,
-      "pct": 1.57,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IBKR": {
-      "close": 91.72,
-      "prevclose": 89.7807,
-      "pct": 2.16,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "HOOD": {
-      "close": 94.54,
-      "prevclose": 94.3796,
-      "pct": 0.17,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "COIN": {
-      "close": 148.12,
-      "prevclose": 148.5806,
-      "pct": -0.31,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "CME": {
-      "close": 262.22,
-      "prevclose": 259.3157,
-      "pct": 1.12,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ICE": {
-      "close": 151.88,
-      "prevclose": 151.2448,
-      "pct": 0.42,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "CBOE": {
-      "close": 288.98,
-      "prevclose": 282.7316,
-      "pct": 2.21,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BLK": {
-      "close": 1161.06,
-      "prevclose": 1148.8819,
-      "pct": 1.06,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BX": {
-      "close": 146.51,
-      "prevclose": 147.1723,
-      "pct": -0.45,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "KKR": {
-      "close": 110.65,
-      "prevclose": 110.9718,
-      "pct": -0.29,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "APO": {
-      "close": 138.96,
-      "prevclose": 140.2786,
-      "pct": -0.94,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ARES": {
-      "close": 141.51,
-      "prevclose": 143.1129,
-      "pct": -1.12,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "LLY": {
-      "close": 1223.845,
-      "prevclose": 1214.9757,
-      "pct": 0.73,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "NVO": {
-      "close": 46.485,
-      "prevclose": 47.1689,
-      "pct": -1.45,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "UNH": {
-      "close": 405.675,
-      "prevclose": 402.1761,
-      "pct": 0.87,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "JNJ": {
-      "close": 260.325,
-      "prevclose": 259.8054,
-      "pct": 0.2,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ABBV": {
-      "close": 248.985,
-      "prevclose": 250.0854,
-      "pct": -0.44,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MRK": {
-      "close": 132.94,
-      "prevclose": 130.4228,
-      "pct": 1.93,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "PFE": {
-      "close": 26.295,
-      "prevclose": 26.6198,
-      "pct": -1.22,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VRTX": {
-      "close": 524.825,
-      "prevclose": 529.6448,
-      "pct": -0.91,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "REGN": {
-      "close": 795.49,
-      "prevclose": 797.0043,
-      "pct": -0.19,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "TMO": {
-      "close": 602.79,
-      "prevclose": 605.0286,
-      "pct": -0.37,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "DHR": {
-      "close": 206.36,
-      "prevclose": 207.4387,
-      "pct": -0.52,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ISRG": {
-      "close": 401.22,
-      "prevclose": 401.228,
-      "pct": -0.002,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "WMT": {
-      "close": 115.865,
-      "prevclose": 113.26,
-      "pct": 2.3,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "COST": {
-      "close": 948.425,
-      "prevclose": 944.3642,
-      "pct": 0.43,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "TGT": {
-      "close": 153.93,
-      "prevclose": 152.2853,
-      "pct": 1.08,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "HD": {
-      "close": 344.245,
-      "prevclose": 354.4898,
-      "pct": -2.89,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "LOW": {
-      "close": 216.08,
-      "prevclose": 221.2574,
-      "pct": -2.34,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MCD": {
-      "close": 275.0,
-      "prevclose": 274.1501,
-      "pct": 0.31,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SBUX": {
-      "close": 108.51,
-      "prevclose": 106.6647,
-      "pct": 1.73,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "CMG": {
-      "close": 32.695,
-      "prevclose": 32.0006,
-      "pct": 2.17,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BKNG": {
-      "close": 212.17,
-      "prevclose": 212.8725,
-      "pct": -0.33,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "ABNB": {
-      "close": 180.295,
-      "prevclose": 184.9749,
-      "pct": -2.53,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "DAL": {
-      "close": 89.965,
-      "prevclose": 90.408,
-      "pct": -0.49,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "UAL": {
-      "close": 125.2,
-      "prevclose": 126.3115,
-      "pct": -0.88,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "RCL": {
-      "close": 307.765,
-      "prevclose": 307.1507,
-      "pct": 0.2,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SGOV": {
-      "close": 100.515,
-      "prevclose": 100.51,
-      "pct": 0.005,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BIL": {
-      "close": 91.505,
-      "prevclose": 91.4867,
-      "pct": 0.02,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SHY": {
-      "close": 81.935,
-      "prevclose": 81.8695,
-      "pct": 0.08,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IEI": {
-      "close": 116.465,
-      "prevclose": 116.3487,
-      "pct": 0.1,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IEF": {
-      "close": 92.955,
-      "prevclose": 92.8714,
-      "pct": 0.09,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "TLT": {
-      "close": 82.135,
-      "prevclose": 82.1925,
-      "pct": -0.07,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "GOVT": {
-      "close": 22.45,
-      "prevclose": 22.441,
-      "pct": 0.04,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "TIP": {
-      "close": 106.92,
-      "prevclose": 106.8879,
-      "pct": 0.03,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SCHP": {
-      "close": 25.915,
-      "prevclose": 25.8995,
-      "pct": 0.06,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BND": {
-      "close": 72.275,
-      "prevclose": 72.21,
-      "pct": 0.09,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "AGG": {
-      "close": 97.425,
-      "prevclose": 97.318,
-      "pct": 0.11,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MUB": {
-      "close": 105.975,
-      "prevclose": 105.9326,
-      "pct": 0.04,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "LQD": {
-      "close": 106.12,
-      "prevclose": 105.9928,
-      "pct": 0.12,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VCIT": {
-      "close": 81.195,
-      "prevclose": 81.1139,
-      "pct": 0.1,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "HYG": {
-      "close": 79.61,
-      "prevclose": 79.5066,
-      "pct": 0.13,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "JNK": {
-      "close": 95.855,
-      "prevclose": 95.6923,
-      "pct": 0.17,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "BKLN": {
-      "close": 20.55,
-      "prevclose": 20.5192,
-      "pct": 0.15,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SRLN": {
-      "close": 40.53,
-      "prevclose": 40.441,
-      "pct": 0.22,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VUG": {
-      "close": 88.88,
-      "prevclose": 88.5877,
-      "pct": 0.33,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IWF": {
-      "close": 124.45,
-      "prevclose": 123.5972,
-      "pct": 0.69,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VTV": {
-      "close": 226.29,
-      "prevclose": 225.3436,
-      "pct": 0.42,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "IWD": {
-      "close": 257.75,
-      "prevclose": 257.9306,
-      "pct": -0.07,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MTUM": {
-      "close": 314.99,
-      "prevclose": 308.3301,
-      "pct": 2.16,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "QUAL": {
-      "close": 225.475,
-      "prevclose": 225.1598,
-      "pct": 0.14,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "USMV": {
-      "close": 100.79,
-      "prevclose": 100.7296,
-      "pct": 0.06,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SPLV": {
-      "close": 75.83,
-      "prevclose": 75.6484,
-      "pct": 0.24,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VYM": {
-      "close": 166.66,
-      "prevclose": 166.145,
-      "pct": 0.31,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SCHD": {
-      "close": 34.26,
-      "prevclose": 34.2703,
-      "pct": -0.03,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "PKW": {
-      "close": 150.28,
-      "prevclose": 150.0999,
-      "pct": 0.12,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "SPHQ": {
-      "close": 86.49,
-      "prevclose": 85.9827,
-      "pct": 0.59,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VXUS": {
-      "close": 87.53,
-      "prevclose": 86.9215,
-      "pct": 0.7,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VEA": {
-      "close": 73.305,
-      "prevclose": 72.6872,
-      "pct": 0.85,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "EFA": {
-      "close": 108.505,
-      "prevclose": 108.0942,
-      "pct": 0.38,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VWO": {
-      "close": 60.4,
-      "prevclose": 60.1174,
-      "pct": 0.47,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "EEM": {
-      "close": 66.45,
-      "prevclose": 65.4293,
-      "pct": 1.56,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VT": {
-      "close": 161.555,
-      "prevclose": 160.8152,
-      "pct": 0.46,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "VGK": {
-      "close": 92.245,
-      "prevclose": 92.3004,
-      "pct": -0.06,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "FEZ": {
-      "close": 71.875,
-      "prevclose": 71.8319,
-      "pct": 0.06,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "EWJ": {
-      "close": 97.78,
-      "prevclose": 96.2781,
-      "pct": 1.56,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "MCHI": {
-      "close": 55.08,
-      "prevclose": 55.6195,
-      "pct": -0.97,
-      "vol": null,
-      "date": "2026-08-12",
-      "source": "Twelve Data / Yahoo Finance close-series (own computation)"
-    },
-    "FXI": {
-      "close": 35.66,
-      "prevclose": 36.492,
-      "pct": -2.28,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "KWEB": {
-      "close": 28.09,
-      "prevclose": 29.1209,
-      "pct": -3.54,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "INDA": {
-      "close": 50.09,
-      "prevclose": 50.1401,
-      "pct": -0.1,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWT": {
-      "close": 103.94,
-      "prevclose": 102.1825,
-      "pct": 1.72,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWY": {
-      "close": 167.24,
-      "prevclose": 163.1132,
-      "pct": 2.53,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWZ": {
-      "close": 33.98,
-      "prevclose": 35.1906,
-      "pct": -3.44,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWW": {
-      "close": 76.24,
-      "prevclose": 76.9324,
-      "pct": -0.9,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWC": {
-      "close": 61.51,
-      "prevclose": 61.4977,
-      "pct": 0.02,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWU": {
-      "close": 48.3,
-      "prevclose": 48.4891,
-      "pct": -0.39,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWG": {
-      "close": 43.99,
-      "prevclose": 43.8715,
-      "pct": 0.27,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWQ": {
-      "close": 47.69,
-      "prevclose": 47.7521,
-      "pct": -0.13,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "EWA": {
-      "close": 29.95,
-      "prevclose": 30.0492,
-      "pct": -0.33,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "KSA": {
-      "close": 37.78,
-      "prevclose": 37.8519,
-      "pct": -0.19,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    },
-    "VNM": {
-      "close": 17.55,
-      "prevclose": 17.64,
-      "pct": -0.51,
-      "vol": null,
-      "date": "2026-08-11",
-      "source": "Cached (as of 2026-08-11) \u2014 Twelve Data rate-limited"
-    }
+ "fetched_at": "2026-08-13T05:50:00-04:00",
+ "treasury_par_curve": {
+  "date": "2026-08-12",
+  "label": "EOD official (2026-08-12)",
+  "1M": 3.78,
+  "1.5M": 3.79,
+  "2M": 3.8,
+  "3M": 3.87,
+  "4M": 3.89,
+  "6M": 3.97,
+  "1Y": 4.0,
+  "2Y": 4.2,
+  "3Y": 4.25,
+  "5Y": 4.38,
+  "7Y": 4.52,
+  "10Y": 4.68,
+  "20Y": 5.24,
+  "30Y": 5.24,
+  "spreads_bp": {
+   "2s10s": 48,
+   "3m10y": 81,
+   "5s30s": 86
   }
+ },
+ "fred": {
+  "CPIAUCSL": {
+   "value": 332.813,
+   "date": "2026-07-01",
+   "prior_value": 332.568,
+   "prior_date": "2026-06-01"
+  },
+  "CPILFESL": {
+   "value": 336.789,
+   "date": "2026-07-01",
+   "prior_value": 336.065,
+   "prior_date": "2026-06-01"
+  },
+  "PAYEMS": {
+   "value": 158858.0,
+   "date": "2026-07-01",
+   "prior_value": 158881.0,
+   "prior_date": "2026-06-01"
+  },
+  "ICSA": {
+   "value": 199000.0,
+   "date": "2026-08-01",
+   "prior_value": 198000.0,
+   "prior_date": "2026-07-25"
+  },
+  "UNRATE": {
+   "value": 4.1,
+   "date": "2026-07-01",
+   "prior_value": 4.2,
+   "prior_date": "2026-06-01"
+  },
+  "T10Y2Y": {
+   "value": 0.48,
+   "date": "2026-08-12",
+   "prior_value": 0.48,
+   "prior_date": "2026-08-11"
+  },
+  "DGS2": {
+   "value": 4.22,
+   "date": "2026-08-11",
+   "prior_value": 4.25,
+   "prior_date": "2026-08-10"
+  },
+  "DGS10": {
+   "value": 4.7,
+   "date": "2026-08-11",
+   "prior_value": 4.72,
+   "prior_date": "2026-08-10"
+  },
+  "T10YIE": {
+   "value": 2.26,
+   "date": "2026-08-12",
+   "prior_value": 2.27,
+   "prior_date": "2026-08-11"
+  },
+  "DFII10": {
+   "value": 2.43,
+   "date": "2026-08-11",
+   "prior_value": 2.43,
+   "prior_date": "2026-08-10"
+  },
+  "SOFR": {
+   "value": 3.64,
+   "date": "2026-08-11",
+   "prior_value": 3.63,
+   "prior_date": "2026-08-10"
+  },
+  "BAMLH0A0HYM2": {
+   "value": 2.72,
+   "date": "2026-08-11",
+   "prior_value": 2.7,
+   "prior_date": "2026-08-10"
+  }
+ },
+ "vix_complex": {
+  "date": "2026-08-13",
+  "label": "Delayed (+15 min)",
+  "VIX": 14.65,
+  "VIX9D": 11.09,
+  "VIX3M": 18.53,
+  "VIX_prev_close": 14.55,
+  "term_structure": "normal contango, no inversion"
+ },
+ "fx": {
+  "date": "2026-08-12",
+  "label": "EOD official (ECB reference, 2026-08-12)",
+  "base": "USD",
+  "rates": {
+   "AUD": 1.4142,
+   "BRL": 5.1557,
+   "CAD": 1.3926,
+   "CHF": 0.81126,
+   "CNY": 6.7432,
+   "EUR": 0.86618,
+   "GBP": 0.73935,
+   "INR": 95.34,
+   "JPY": 159.09,
+   "MXN": 17.0614
+  },
+  "EURUSD_live_snapshot": {
+   "value": 1.1535,
+   "change_pct": -0.073,
+   "ts_et": "2026-08-13T05:50:00-04:00"
+  }
+ },
+ "crypto": {
+  "label": "Live (CoinGecko)",
+  "ts": "2026-08-13T05:50:00-04:00",
+  "bitcoin": {
+   "usd": 63619,
+   "change_24h_pct": -0.5728259582834728
+  },
+  "ethereum": {
+   "usd": 1885.42,
+   "change_24h_pct": -0.9029100885926141
+  },
+  "solana": {
+   "usd": 75.93,
+   "change_24h_pct": -0.9974022508896702
+  },
+  "cardano": {
+   "usd": 0.18525,
+   "change_24h_pct": -0.6157216100360421
+  },
+  "total_market_cap_usd": 2268914020123.0054,
+  "btc_dominance_pct": 56.27938658124505
+ },
+ "futures_commodities_fx": {
+  "ES=F": {
+   "last_close": 7781.0,
+   "prev_close": 7770.5,
+   "pct_change_close_to_close": 0.135,
+   "regularMarketPrice": 7781.0,
+   "regularMarketTime": "2026-08-13T09:31:18"
+  },
+  "NQ=F": {
+   "last_close": 29842.75,
+   "prev_close": 29853.25,
+   "pct_change_close_to_close": -0.035,
+   "regularMarketPrice": 29842.75,
+   "regularMarketTime": "2026-08-13T09:31:22"
+  },
+  "YM=F": {
+   "last_close": 54005.0,
+   "prev_close": 53871.0,
+   "pct_change_close_to_close": 0.249,
+   "regularMarketPrice": 54005.0,
+   "regularMarketTime": "2026-08-13T09:31:25"
+  },
+  "RTY=F": {
+   "last_close": 3058.7,
+   "prev_close": 3052.8,
+   "pct_change_close_to_close": 0.193,
+   "regularMarketPrice": 3058.7,
+   "regularMarketTime": "2026-08-13T09:31:11"
+  },
+  "^GSPC": {
+   "last_close": 7748.5,
+   "prev_close": 7728.2002,
+   "pct_change_close_to_close": 0.263,
+   "regularMarketPrice": 7748.5,
+   "regularMarketTime": "2026-08-12T20:36:53"
+  },
+  "^IXIC": {
+   "last_close": 26588.4902,
+   "prev_close": 26445.4492,
+   "pct_change_close_to_close": 0.541,
+   "regularMarketPrice": 26588.488,
+   "regularMarketTime": "2026-08-12T21:15:59"
+  },
+  "^DJI": {
+   "last_close": 53770.2695,
+   "prev_close": 53791.8516,
+   "pct_change_close_to_close": -0.04,
+   "regularMarketPrice": 53770.27,
+   "regularMarketTime": "2026-08-12T20:43:59"
+  },
+  "^RUT": {
+   "last_close": 3045.48,
+   "prev_close": 3027.1201,
+   "pct_change_close_to_close": 0.607,
+   "regularMarketPrice": 3045.483,
+   "regularMarketTime": "2026-08-12T20:30:12"
+  },
+  "^TNX": {
+   "last_close": 4.682,
+   "prev_close": 4.684,
+   "pct_change_close_to_close": -0.043,
+   "regularMarketPrice": 4.682,
+   "regularMarketTime": "2026-08-12T18:59:54"
+  },
+  "CL=F": {
+   "last_close": 81.6,
+   "prev_close": 83.27,
+   "pct_change_close_to_close": -2.006,
+   "regularMarketPrice": 81.6,
+   "regularMarketTime": "2026-08-13T09:31:29"
+  },
+  "GC=F": {
+   "last_close": 4436.3999,
+   "prev_close": 4408.8999,
+   "pct_change_close_to_close": 0.624,
+   "regularMarketPrice": 4436.4,
+   "regularMarketTime": "2026-08-13T09:31:26"
+  },
+  "NG=F": {
+   "last_close": 2.78,
+   "prev_close": 2.804,
+   "pct_change_close_to_close": -0.856,
+   "regularMarketPrice": 2.78,
+   "regularMarketTime": "2026-08-13T09:31:12"
+  },
+  "HG=F": {
+   "last_close": 6.554,
+   "prev_close": 6.597,
+   "pct_change_close_to_close": -0.652,
+   "regularMarketPrice": 6.554,
+   "regularMarketTime": "2026-08-13T09:31:08"
+  },
+  "EURUSD=X": {
+   "last_close": 1.1535,
+   "prev_close": 1.1544,
+   "pct_change_close_to_close": -0.073,
+   "regularMarketPrice": 1.1535,
+   "regularMarketTime": "2026-08-13T09:41:20"
+  }
+ },
+ "watchlist_quotes": {
+  "AAPL": {
+   "date": "2026-08-12",
+   "close": 302.25,
+   "prev_close": 304.91,
+   "pct_change": -0.872
+  },
+  "ABBV": {
+   "date": "2026-08-12",
+   "close": 248.76,
+   "prev_close": 250.09,
+   "pct_change": -0.532
+  },
+  "ABNB": {
+   "date": "2026-08-12",
+   "close": 180.095,
+   "prev_close": 184.98,
+   "pct_change": -2.641
+  },
+  "AGG": {
+   "date": "2026-08-12",
+   "close": 97.43,
+   "prev_close": 97.32,
+   "pct_change": 0.113
+  },
+  "AMD": {
+   "date": "2026-08-12",
+   "close": 482.93,
+   "prev_close": 474.32,
+   "pct_change": 1.815
+  },
+  "AMZN": {
+   "date": "2026-08-12",
+   "close": 267.28,
+   "prev_close": 272.27,
+   "pct_change": -1.833
+  },
+  "ANET": {
+   "date": "2026-08-12",
+   "close": 210.5,
+   "prev_close": 197.85,
+   "pct_change": 6.394
+  },
+  "APO": {
+   "date": "2026-08-12",
+   "close": 138.61,
+   "prev_close": 140.28,
+   "pct_change": -1.19
+  },
+  "ARES": {
+   "date": "2026-08-12",
+   "close": 142.35,
+   "prev_close": 143.11,
+   "pct_change": -0.531
+  },
+  "ASML": {
+   "date": "2026-08-12",
+   "close": 1810.0699,
+   "prev_close": 1799.38,
+   "pct_change": 0.594
+  },
+  "ASTS": {
+   "date": "2026-08-12",
+   "close": 74.31,
+   "prev_close": 71.63,
+   "pct_change": 3.741
+  },
+  "AVAV": {
+   "date": "2026-08-12",
+   "close": 193.81,
+   "prev_close": 196.02,
+   "pct_change": -1.127
+  },
+  "AVGO": {
+   "date": "2026-08-12",
+   "close": 416.05,
+   "prev_close": 416.08,
+   "pct_change": -0.007
+  },
+  "AVUV": {
+   "date": "2026-08-12",
+   "close": 127.51,
+   "prev_close": 127.22,
+   "pct_change": 0.228
+  },
+  "BA": {
+   "date": "2026-08-12",
+   "close": 231.2,
+   "prev_close": 233.24,
+   "pct_change": -0.875
+  },
+  "BAC": {
+   "date": "2026-08-12",
+   "close": 64.81,
+   "prev_close": 64.0,
+   "pct_change": 1.266
+  },
+  "BIL": {
+   "date": "2026-08-12",
+   "close": 91.51,
+   "prev_close": 91.49,
+   "pct_change": 0.022
+  },
+  "BKLN": {
+   "date": "2026-08-12",
+   "close": 20.54,
+   "prev_close": 20.52,
+   "pct_change": 0.097
+  },
+  "BKNG": {
+   "date": "2026-08-12",
+   "close": 212.26,
+   "prev_close": 212.87,
+   "pct_change": -0.287
+  },
+  "BKSY": {
+   "date": "2026-08-12",
+   "close": 31.87,
+   "prev_close": 29.89,
+   "pct_change": 6.624
+  },
+  "BLK": {
+   "date": "2026-08-12",
+   "close": 1160.91,
+   "prev_close": 1148.84,
+   "pct_change": 1.051
+  },
+  "BND": {
+   "date": "2026-08-12",
+   "close": 72.28,
+   "prev_close": 72.21,
+   "pct_change": 0.097
+  },
+  "BWXT": {
+   "date": "2026-08-12",
+   "close": 172.56,
+   "prev_close": 169.71,
+   "pct_change": 1.679
+  },
+  "BX": {
+   "date": "2026-08-12",
+   "close": 146.41,
+   "prev_close": 147.17,
+   "pct_change": -0.516
+  },
+  "C": {
+   "date": "2026-08-12",
+   "close": 137.58,
+   "prev_close": 135.77,
+   "pct_change": 1.333
+  },
+  "CBOE": {
+   "date": "2026-08-12",
+   "close": 290.98,
+   "prev_close": 282.73,
+   "pct_change": 2.918
+  },
+  "CEG": {
+   "date": "2026-08-12",
+   "close": 278.68,
+   "prev_close": 278.36,
+   "pct_change": 0.115
+  },
+  "CME": {
+   "date": "2026-08-12",
+   "close": 262.17,
+   "prev_close": 259.32,
+   "pct_change": 1.099
+  },
+  "CMG": {
+   "date": "2026-08-12",
+   "close": 32.64,
+   "prev_close": 32.0,
+   "pct_change": 2.0
+  },
+  "COIN": {
+   "date": "2026-08-12",
+   "close": 149.04,
+   "prev_close": 148.58,
+   "pct_change": 0.31
+  },
+  "COST": {
+   "date": "2026-08-12",
+   "close": 949.58,
+   "prev_close": 944.32,
+   "pct_change": 0.557
+  },
+  "DAL": {
+   "date": "2026-08-12",
+   "close": 89.93,
+   "prev_close": 90.41,
+   "pct_change": -0.531
+  },
+  "DHR": {
+   "date": "2026-08-12",
+   "close": 205.79,
+   "prev_close": 207.44,
+   "pct_change": -0.795
+  },
+  "DIA": {
+   "date": "2026-08-12",
+   "close": 537.15,
+   "prev_close": 537.28,
+   "pct_change": -0.024
+  },
+  "DLR": {
+   "date": "2026-08-12",
+   "close": 197.06,
+   "prev_close": 190.81,
+   "pct_change": 3.276
+  },
+  "EEM": {
+   "date": "2026-08-12",
+   "close": 66.46,
+   "prev_close": 65.43,
+   "pct_change": 1.574
+  },
+  "EFA": {
+   "date": "2026-08-12",
+   "close": 108.5,
+   "prev_close": 108.09,
+   "pct_change": 0.379
+  },
+  "EQIX": {
+   "date": "2026-08-12",
+   "close": 1069.17,
+   "prev_close": 1032.4,
+   "pct_change": 3.562
+  },
+  "ETN": {
+   "date": "2026-08-12",
+   "close": 459.96,
+   "prev_close": 459.29,
+   "pct_change": 0.146
+  },
+  "EWA": {
+   "date": "2026-08-12",
+   "close": 29.89,
+   "prev_close": 29.95,
+   "pct_change": -0.2
+  },
+  "EWC": {
+   "date": "2026-08-12",
+   "close": 61.77,
+   "prev_close": 61.51,
+   "pct_change": 0.423
+  },
+  "EWG": {
+   "date": "2026-08-12",
+   "close": 43.87,
+   "prev_close": 43.99,
+   "pct_change": -0.273
+  },
+  "EWJ": {
+   "date": "2026-08-12",
+   "close": 97.79,
+   "prev_close": 96.28,
+   "pct_change": 1.568
+  },
+  "EWQ": {
+   "date": "2026-08-12",
+   "close": 47.51,
+   "prev_close": 47.69,
+   "pct_change": -0.377
+  },
+  "EWT": {
+   "date": "2026-08-12",
+   "close": 106.18,
+   "prev_close": 103.94,
+   "pct_change": 2.155
+  },
+  "EWU": {
+   "date": "2026-08-12",
+   "close": 48.37,
+   "prev_close": 48.3,
+   "pct_change": 0.145
+  },
+  "EWW": {
+   "date": "2026-08-12",
+   "close": 76.46,
+   "prev_close": 76.24,
+   "pct_change": 0.289
+  },
+  "EWY": {
+   "date": "2026-08-12",
+   "close": 175.87,
+   "prev_close": 167.24,
+   "pct_change": 5.16
+  },
+  "EWZ": {
+   "date": "2026-08-12",
+   "close": 33.86,
+   "prev_close": 33.98,
+   "pct_change": -0.353
+  },
+  "FEZ": {
+   "date": "2026-08-12",
+   "close": 71.88,
+   "prev_close": 71.83,
+   "pct_change": 0.07
+  },
+  "FLY": {
+   "date": "2026-08-12",
+   "close": 26.54,
+   "prev_close": 26.36,
+   "pct_change": 0.683
+  },
+  "FXI": {
+   "date": "2026-08-12",
+   "close": 35.23,
+   "prev_close": 35.66,
+   "pct_change": -1.206
+  },
+  "GD": {
+   "date": "2026-08-12",
+   "close": 394.21,
+   "prev_close": 391.89,
+   "pct_change": 0.592
+  },
+  "GOOGL": {
+   "date": "2026-08-12",
+   "close": 343.54,
+   "prev_close": 343.8,
+   "pct_change": -0.076
+  },
+  "GOVT": {
+   "date": "2026-08-12",
+   "close": 22.45,
+   "prev_close": 22.44,
+   "pct_change": 0.045
+  },
+  "GS": {
+   "date": "2026-08-12",
+   "close": 1037.21,
+   "prev_close": 1034.41,
+   "pct_change": 0.271
+  },
+  "GSAT": {
+   "date": "2026-08-12",
+   "close": 83.22,
+   "prev_close": 83.56,
+   "pct_change": -0.407
+  },
+  "HD": {
+   "date": "2026-08-12",
+   "close": 343.43,
+   "prev_close": 354.48,
+   "pct_change": -3.117
+  },
+  "HII": {
+   "date": "2026-08-12",
+   "close": 326.8,
+   "prev_close": 327.85,
+   "pct_change": -0.32
+  },
+  "HOOD": {
+   "date": "2026-08-12",
+   "close": 94.91,
+   "prev_close": 94.38,
+   "pct_change": 0.562
+  },
+  "HYG": {
+   "date": "2026-08-12",
+   "close": 79.61,
+   "prev_close": 79.51,
+   "pct_change": 0.126
+  },
+  "IBKR": {
+   "date": "2026-08-12",
+   "close": 91.66,
+   "prev_close": 89.78,
+   "pct_change": 2.094
+  },
+  "ICE": {
+   "date": "2026-08-12",
+   "close": 151.33,
+   "prev_close": 151.25,
+   "pct_change": 0.053
+  },
+  "IEF": {
+   "date": "2026-08-12",
+   "close": 92.96,
+   "prev_close": 92.87,
+   "pct_change": 0.097
+  },
+  "IEI": {
+   "date": "2026-08-12",
+   "close": 116.46,
+   "prev_close": 116.35,
+   "pct_change": 0.095
+  },
+  "IJH": {
+   "date": "2026-08-12",
+   "close": 78.06,
+   "prev_close": 77.77,
+   "pct_change": 0.373
+  },
+  "INDA": {
+   "date": "2026-08-12",
+   "close": 49.95,
+   "prev_close": 50.09,
+   "pct_change": -0.279
+  },
+  "IRDM": {
+   "date": "2026-08-12",
+   "close": 49.65,
+   "prev_close": 49.38,
+   "pct_change": 0.547
+  },
+  "ISRG": {
+   "date": "2026-08-12",
+   "close": 401.27,
+   "prev_close": 401.23,
+   "pct_change": 0.01
+  },
+  "IWD": {
+   "date": "2026-08-12",
+   "close": 257.77,
+   "prev_close": 257.92,
+   "pct_change": -0.058
+  },
+  "IWF": {
+   "date": "2026-08-12",
+   "close": 124.42,
+   "prev_close": 123.6,
+   "pct_change": 0.663
+  },
+  "IWM": {
+   "date": "2026-08-12",
+   "close": 302.71,
+   "prev_close": 300.99,
+   "pct_change": 0.571
+  },
+  "IWN": {
+   "date": "2026-08-12",
+   "close": 225.93,
+   "prev_close": 224.97,
+   "pct_change": 0.427
+  },
+  "JNJ": {
+   "date": "2026-08-12",
+   "close": 260.86,
+   "prev_close": 259.8,
+   "pct_change": 0.408
+  },
+  "JNK": {
+   "date": "2026-08-12",
+   "close": 95.85,
+   "prev_close": 95.69,
+   "pct_change": 0.167
+  },
+  "JPM": {
+   "date": "2026-08-12",
+   "close": 365.18,
+   "prev_close": 362.04,
+   "pct_change": 0.867
+  },
+  "KKR": {
+   "date": "2026-08-12",
+   "close": 110.9,
+   "prev_close": 110.97,
+   "pct_change": -0.063
+  },
+  "KRMN": {
+   "date": "2026-08-12",
+   "close": 61.91,
+   "prev_close": 61.94,
+   "pct_change": -0.048
+  },
+  "KSA": {
+   "date": "2026-08-12",
+   "close": 37.81,
+   "prev_close": 37.78,
+   "pct_change": 0.079
+  },
+  "KTOS": {
+   "date": "2026-08-12",
+   "close": 63.82,
+   "prev_close": 63.73,
+   "pct_change": 0.141
+  },
+  "KWEB": {
+   "date": "2026-08-12",
+   "close": 27.54,
+   "prev_close": 28.09,
+   "pct_change": -1.958
+  },
+  "LHX": {
+   "date": "2026-08-12",
+   "close": 290.74,
+   "prev_close": 286.02,
+   "pct_change": 1.65
+  },
+  "LLY": {
+   "date": "2026-08-12",
+   "close": 1220.28,
+   "prev_close": 1215.02,
+   "pct_change": 0.433
+  },
+  "LMT": {
+   "date": "2026-08-12",
+   "close": 606.72,
+   "prev_close": 597.77,
+   "pct_change": 1.497
+  },
+  "LOW": {
+   "date": "2026-08-12",
+   "close": 215.97,
+   "prev_close": 221.25,
+   "pct_change": -2.386
+  },
+  "LQD": {
+   "date": "2026-08-12",
+   "close": 106.12,
+   "prev_close": 105.99,
+   "pct_change": 0.123
+  },
+  "LUNR": {
+   "date": "2026-08-12",
+   "close": 16.95,
+   "prev_close": 16.48,
+   "pct_change": 2.852
+  },
+  "MCD": {
+   "date": "2026-08-12",
+   "close": 275.7,
+   "prev_close": 274.15,
+   "pct_change": 0.565
+  },
+  "MCHI": {
+   "date": "2026-08-12",
+   "close": 55.08,
+   "prev_close": 55.62,
+   "pct_change": -0.971
+  },
+  "MDY": {
+   "date": "2026-08-12",
+   "close": 711.72,
+   "prev_close": 709.05,
+   "pct_change": 0.377
+  },
+  "META": {
+   "date": "2026-08-12",
+   "close": 578.85,
+   "prev_close": 599.12,
+   "pct_change": -3.383
+  },
+  "MRK": {
+   "date": "2026-08-12",
+   "close": 132.92,
+   "prev_close": 130.42,
+   "pct_change": 1.917
+  },
+  "MRVL": {
+   "date": "2026-08-12",
+   "close": 217.08,
+   "prev_close": 212.31,
+   "pct_change": 2.247
+  },
+  "MS": {
+   "date": "2026-08-12",
+   "close": 217.64,
+   "prev_close": 215.07,
+   "pct_change": 1.195
+  },
+  "MSFT": {
+   "date": "2026-08-12",
+   "close": 492.43,
+   "prev_close": 503.81,
+   "pct_change": -2.259
+  },
+  "MTUM": {
+   "date": "2026-08-12",
+   "close": 314.73,
+   "prev_close": 308.34,
+   "pct_change": 2.072
+  },
+  "MU": {
+   "date": "2026-08-12",
+   "close": 911.29,
+   "prev_close": 868.52,
+   "pct_change": 4.924
+  },
+  "MUB": {
+   "date": "2026-08-12",
+   "close": 105.98,
+   "prev_close": 105.93,
+   "pct_change": 0.047
+  },
+  "NOC": {
+   "date": "2026-08-12",
+   "close": 577.32,
+   "prev_close": 575.69,
+   "pct_change": 0.283
+  },
+  "NVDA": {
+   "date": "2026-08-12",
+   "close": 224.09,
+   "prev_close": 217.5,
+   "pct_change": 3.03
+  },
+  "NVO": {
+   "date": "2026-08-12",
+   "close": 46.39,
+   "prev_close": 47.17,
+   "pct_change": -1.654
+  },
+  "PFE": {
+   "date": "2026-08-12",
+   "close": 26.31,
+   "prev_close": 26.62,
+   "pct_change": -1.165
+  },
+  "PKW": {
+   "date": "2026-08-12",
+   "close": 150.29,
+   "prev_close": 150.11,
+   "pct_change": 0.12
+  },
+  "PL": {
+   "date": "2026-08-12",
+   "close": 24.5,
+   "prev_close": 23.7,
+   "pct_change": 3.376
+  },
+  "PLTR": {
+   "date": "2026-08-12",
+   "close": 171.04,
+   "prev_close": 174.94,
+   "pct_change": -2.229
+  },
+  "PWR": {
+   "date": "2026-08-12",
+   "close": 678.02,
+   "prev_close": 670.58,
+   "pct_change": 1.109
+  },
+  "QQQ": {
+   "date": "2026-08-12",
+   "close": 723.7,
+   "prev_close": 718.45,
+   "pct_change": 0.731
+  },
+  "QUAL": {
+   "date": "2026-08-12",
+   "close": 225.45,
+   "prev_close": 225.15,
+   "pct_change": 0.133
+  },
+  "RCL": {
+   "date": "2026-08-12",
+   "close": 308.0,
+   "prev_close": 307.15,
+   "pct_change": 0.277
+  },
+  "RDW": {
+   "date": "2026-08-12",
+   "close": 13.49,
+   "prev_close": 13.51,
+   "pct_change": -0.148
+  },
+  "REGN": {
+   "date": "2026-08-12",
+   "close": 797.99,
+   "prev_close": 797.0,
+   "pct_change": 0.124
+  },
+  "RKLB": {
+   "date": "2026-08-12",
+   "close": 81.17,
+   "prev_close": 80.01,
+   "pct_change": 1.45
+  },
+  "RSP": {
+   "date": "2026-08-12",
+   "close": 221.08,
+   "prev_close": 220.69,
+   "pct_change": 0.177
+  },
+  "RTX": {
+   "date": "2026-08-12",
+   "close": 222.76,
+   "prev_close": 223.86,
+   "pct_change": -0.491
+  },
+  "SBUX": {
+   "date": "2026-08-12",
+   "close": 108.49,
+   "prev_close": 106.66,
+   "pct_change": 1.716
+  },
+  "SCHD": {
+   "date": "2026-08-12",
+   "close": 34.26,
+   "prev_close": 34.27,
+   "pct_change": -0.029
+  },
+  "SCHP": {
+   "date": "2026-08-12",
+   "close": 25.91,
+   "prev_close": 25.9,
+   "pct_change": 0.039
+  },
+  "SCHW": {
+   "date": "2026-08-12",
+   "close": 109.34,
+   "prev_close": 107.7,
+   "pct_change": 1.523
+  },
+  "SGOV": {
+   "date": "2026-08-12",
+   "close": 100.52,
+   "prev_close": 100.51,
+   "pct_change": 0.01
+  },
+  "SHY": {
+   "date": "2026-08-12",
+   "close": 81.92,
+   "prev_close": 81.87,
+   "pct_change": 0.061
+  },
+  "SPCX": {
+   "date": "2026-08-12",
+   "close": 146.15,
+   "prev_close": 133.29,
+   "pct_change": 9.648
+  },
+  "SPHQ": {
+   "date": "2026-08-12",
+   "close": 86.5,
+   "prev_close": 85.98,
+   "pct_change": 0.605
+  },
+  "SPIR": {
+   "date": "2026-08-12",
+   "close": 14.74,
+   "prev_close": 14.82,
+   "pct_change": -0.54
+  },
+  "SPLV": {
+   "date": "2026-08-12",
+   "close": 75.82,
+   "prev_close": 75.65,
+   "pct_change": 0.225
+  },
+  "SPY": {
+   "date": "2026-08-12",
+   "close": 772.49,
+   "prev_close": 770.56,
+   "pct_change": 0.25
+  },
+  "SRLN": {
+   "date": "2026-08-12",
+   "close": 40.52,
+   "prev_close": 40.44,
+   "pct_change": 0.198
+  },
+  "TGT": {
+   "date": "2026-08-12",
+   "close": 154.0,
+   "prev_close": 152.29,
+   "pct_change": 1.123
+  },
+  "TIP": {
+   "date": "2026-08-12",
+   "close": 106.92,
+   "prev_close": 106.89,
+   "pct_change": 0.028
+  },
+  "TLT": {
+   "date": "2026-08-12",
+   "close": 82.11,
+   "prev_close": 82.19,
+   "pct_change": -0.097
+  },
+  "TMO": {
+   "date": "2026-08-12",
+   "close": 603.01,
+   "prev_close": 605.0,
+   "pct_change": -0.329
+  },
+  "TSLA": {
+   "date": "2026-08-12",
+   "close": 327.51,
+   "prev_close": 332.81,
+   "pct_change": -1.592
+  },
+  "TSM": {
+   "date": "2026-08-12",
+   "close": 429.15,
+   "prev_close": 422.06,
+   "pct_change": 1.68
+  },
+  "UAL": {
+   "date": "2026-08-12",
+   "close": 125.12,
+   "prev_close": 126.31,
+   "pct_change": -0.942
+  },
+  "UNH": {
+   "date": "2026-08-12",
+   "close": 405.59,
+   "prev_close": 402.19,
+   "pct_change": 0.845
+  },
+  "USMV": {
+   "date": "2026-08-12",
+   "close": 100.77,
+   "prev_close": 100.73,
+   "pct_change": 0.04
+  },
+  "VCIT": {
+   "date": "2026-08-12",
+   "close": 81.2,
+   "prev_close": 81.11,
+   "pct_change": 0.111
+  },
+  "VEA": {
+   "date": "2026-08-12",
+   "close": 73.3,
+   "prev_close": 72.69,
+   "pct_change": 0.839
+  },
+  "VGK": {
+   "date": "2026-08-12",
+   "close": 92.25,
+   "prev_close": 92.3,
+   "pct_change": -0.054
+  },
+  "VNM": {
+   "date": "2026-08-12",
+   "close": 17.8,
+   "prev_close": 17.55,
+   "pct_change": 1.425
+  },
+  "VOO": {
+   "date": "2026-08-12",
+   "close": 710.17,
+   "prev_close": 708.42,
+   "pct_change": 0.247
+  },
+  "VOYG": {
+   "date": "2026-08-12",
+   "close": 43.0,
+   "prev_close": 42.9,
+   "pct_change": 0.233
+  },
+  "VRT": {
+   "date": "2026-08-12",
+   "close": 288.36,
+   "prev_close": 281.81,
+   "pct_change": 2.324
+  },
+  "VRTX": {
+   "date": "2026-08-12",
+   "close": 525.73,
+   "prev_close": 529.65,
+   "pct_change": -0.74
+  },
+  "VSAT": {
+   "date": "2026-08-12",
+   "close": 87.23,
+   "prev_close": 84.52,
+   "pct_change": 3.206
+  },
+  "VST": {
+   "date": "2026-08-12",
+   "close": 146.68,
+   "prev_close": 144.92,
+   "pct_change": 1.214
+  },
+  "VT": {
+   "date": "2026-08-12",
+   "close": 161.53,
+   "prev_close": 160.82,
+   "pct_change": 0.441
+  },
+  "VTI": {
+   "date": "2026-08-12",
+   "close": 381.83,
+   "prev_close": 380.65,
+   "pct_change": 0.31
+  },
+  "VTV": {
+   "date": "2026-08-12",
+   "close": 226.29,
+   "prev_close": 225.35,
+   "pct_change": 0.417
+  },
+  "VUG": {
+   "date": "2026-08-12",
+   "close": 88.87,
+   "prev_close": 88.59,
+   "pct_change": 0.316
+  },
+  "VWO": {
+   "date": "2026-08-12",
+   "close": 60.41,
+   "prev_close": 60.12,
+   "pct_change": 0.482
+  },
+  "VXUS": {
+   "date": "2026-08-12",
+   "close": 87.54,
+   "prev_close": 86.92,
+   "pct_change": 0.713
+  },
+  "VYM": {
+   "date": "2026-08-12",
+   "close": 166.67,
+   "prev_close": 166.14,
+   "pct_change": 0.319
+  },
+  "WFC": {
+   "date": "2026-08-12",
+   "close": 88.93,
+   "prev_close": 87.45,
+   "pct_change": 1.692
+  },
+  "WMT": {
+   "date": "2026-08-12",
+   "close": 116.01,
+   "prev_close": 113.26,
+   "pct_change": 2.428
+  },
+  "XLB": {
+   "date": "2026-08-12",
+   "close": 52.58,
+   "prev_close": 53.24,
+   "pct_change": -1.24
+  },
+  "XLC": {
+   "date": "2026-08-12",
+   "close": 110.27,
+   "prev_close": 111.27,
+   "pct_change": -0.899
+  },
+  "XLE": {
+   "date": "2026-08-12",
+   "close": 61.03,
+   "prev_close": 60.93,
+   "pct_change": 0.164
+  },
+  "XLF": {
+   "date": "2026-08-12",
+   "close": 57.92,
+   "prev_close": 57.8,
+   "pct_change": 0.208
+  },
+  "XLI": {
+   "date": "2026-08-12",
+   "close": 185.88,
+   "prev_close": 185.7,
+   "pct_change": 0.097
+  },
+  "XLK": {
+   "date": "2026-08-12",
+   "close": 188.86,
+   "prev_close": 186.09,
+   "pct_change": 1.489
+  },
+  "XLP": {
+   "date": "2026-08-12",
+   "close": 85.08,
+   "prev_close": 84.69,
+   "pct_change": 0.461
+  },
+  "XLRE": {
+   "date": "2026-08-12",
+   "close": 44.49,
+   "prev_close": 44.08,
+   "pct_change": 0.93
+  },
+  "XLU": {
+   "date": "2026-08-12",
+   "close": 43.84,
+   "prev_close": 43.63,
+   "pct_change": 0.481
+  },
+  "XLV": {
+   "date": "2026-08-12",
+   "close": 168.44,
+   "prev_close": 168.01,
+   "pct_change": 0.256
+  },
+  "XLY": {
+   "date": "2026-08-12",
+   "close": 117.89,
+   "prev_close": 119.24,
+   "pct_change": -1.132
+  },
+  "YSS": {
+   "date": "2026-08-12",
+   "close": 11.04,
+   "prev_close": 10.6,
+   "pct_change": 4.151
+  }
+ },
+ "technical_levels": {
+  "SPY": {
+   "last": 772.49,
+   "dist_20dma_pct": 2.56,
+   "dist_50dma_pct": 3.26,
+   "dist_200dma_pct": 9.65,
+   "52w_high": 773.26,
+   "52w_low": 631.97,
+   "n_sessions": 251
+  },
+  "QQQ": {
+   "last": 723.7,
+   "dist_20dma_pct": 3.23,
+   "dist_50dma_pct": 1.43,
+   "dist_200dma_pct": 11.42,
+   "52w_high": 746.16,
+   "52w_low": 558.28,
+   "n_sessions": 251
+  },
+  "IWM": {
+   "last": 302.71,
+   "dist_20dma_pct": 2.35,
+   "dist_50dma_pct": 2.78,
+   "dist_200dma_pct": 12.95,
+   "52w_high": 302.71,
+   "52w_low": 225.41,
+   "n_sessions": 251
+  },
+  "DIA": {
+   "last": 537.15,
+   "dist_20dma_pct": 1.77,
+   "dist_50dma_pct": 2.87,
+   "dist_200dma_pct": 8.83,
+   "52w_high": 542.81,
+   "52w_low": 447.95,
+   "n_sessions": 251
+  },
+  "TLT": {
+   "last": 82.11,
+   "dist_20dma_pct": -1.17,
+   "dist_50dma_pct": -2.93,
+   "dist_200dma_pct": -5.52,
+   "52w_high": 92.06,
+   "52w_low": 82.06,
+   "n_sessions": 251
+  },
+  "SPCX": {
+   "last": 146.15,
+   "dist_20dma_pct": 20.56,
+   "dist_50dma_pct": null,
+   "dist_200dma_pct": "insufficient history",
+   "52w_high": 211.39,
+   "52w_low": 108.27,
+   "n_sessions": 42
+  }
+ }
 }

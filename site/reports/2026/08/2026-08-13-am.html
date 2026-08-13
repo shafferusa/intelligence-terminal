@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference.
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are; that tag appears
+     exactly once in this file, below in <head>).
+  4. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  5. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix:
+      reports/2026/07/2026-07-24-am.html  ->  ../../../assets/style.css
+                                          ->  ../../../equations/eq_011.png
+                                          ->  ../../../index.html
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Intelligence Brief — Thu, Aug 13, 2026 · Logan's Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-13",
+    "slot": "am",
+    "title": "Morning Intelligence Brief",
+    "path": "reports/2026/08/2026-08-13-am.html",
+    "summary": "Colombia's earthquake toll jumps to 265 as government figures diverge again, Gaza's 14-day disarmament checkpoint arrives today with no resolution in sight, and alt-asset managers give back part of their Nvidia-financing rally as AI-infrastructure names extend gains against a weaker mega-cap-tech complex.",
+    "reading_minutes": 42,
+    "generated_at": "2026-08-13T06:10:00-04:00",
+    "news_cutoff": "2026-08-13T05:55:00-04:00",
+    "market_data_asof": "2026-08-13T05:50:00-04:00",
+    "timezone": "America/New_York",
+    "version": "1.0",
+    "confidence": "High",
+    "market_status": "Pre-market (NYSE opens 9:30 AM ET)"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+<!--REPORT:START-->
+
+    <!-- ================= 1. HEADER & FRESHNESS ================= -->
+    <header class="report-header">
+      <span class="kicker">Weekday Morning Report</span>
+      <h1>Morning Intelligence Brief</h1>
+      <p class="report-type-line">Thursday, August 13, 2026 &middot; Generated 6:10 AM ET &middot; All times Eastern (America/New_York)</p>
+      <div class="report-chips">
+        <span class="chip chip--info">Overall confidence: High &mdash; broad primary/secondary coverage; one recurring blocked path (Cboe options stats) with a known workaround, Alpha Vantage earnings calendar malformed this run but Finnhub day-of confirmations found no discrepancy</span>
+        <span class="chip chip--warn">Markets: pre-market</span>
+      </div>
+      <dl class="meta-grid">
+        <div><dt>Generated</dt><dd>2026-08-13 06:10 ET</dd></div>
+        <div><dt>News cutoff</dt><dd>2026-08-13 05:55 ET</dd></div>
+        <div><dt>Market data as of</dt><dd>2026-08-13 05:50 ET</dd></div>
+        <div><dt>Report version</dt><dd>1.0</dd></div>
+        <div><dt>Reading time</dt><dd>~42 minutes</dd></div>
+        <div><dt>Market status</dt><dd>Closed &mdash; opens 9:30 ET (no NYSE holiday, full session)</dd></div>
+      </dl>
+      <p class="small muted" style="margin-top:0.8rem">1 source blocked this run (Cboe options market-statistics, recurring known path-shift issue) &mdash; see System health.</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Data freshness by source</caption>
+          <thead><tr><th>Source</th><th>Freshness label</th><th>Data age</th></tr></thead>
+          <tbody>
+            <tr><td>Index futures (Yahoo)</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td><td>~20 min</td></tr>
+            <tr><td>Treasury par curve</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 12 curve date</td></tr>
+            <tr><td>FRED (CPI, PAYEMS, rates)</td><td class="txt"><span class="dd">EOD official</span></td><td>1&ndash;12 days per series</td></tr>
+            <tr><td>Cboe VIX complex</td><td class="txt"><span class="dd dd-ok">Delayed +15m</span></td><td>~10 min</td></tr>
+            <tr><td>Equities (167-symbol watchlist)</td><td class="txt"><span class="dd">Previous close</span></td><td>Aug 12 close</td></tr>
+            <tr><td>FX (Frankfurter/ECB)</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 12 fix</td></tr>
+            <tr><td>Crypto (CoinGecko)</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>~5 min</td></tr>
+            <tr><td>Whole-market breadth (Massive)</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 12 session</td></tr>
+            <tr><td>FINRA short volume</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 12 session (not short interest)</td></tr>
+            <tr><td>SEC EDGAR (market-wide + ~90-ticker sweep)</td><td class="txt"><span class="dd dd-ok">Live feed</span></td><td>current</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </header>
+
+    <!-- ================= 2. TOP STORIES ================= -->
+    <section class="report-section" aria-labelledby="s-top">
+      <h2 id="s-top"><span class="kicker">Section 2</span>Top Stories</h2>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (rising toll); Disputed (which government figure is authoritative)</span>
+        </div>
+        <h3>Colombia earthquake death toll jumps to 265, but the government&rsquo;s own agencies still disagree on the number</h3>
+        <p class="story-times">Event Aug 10 (quake) &middot; Published Aug 12 evening &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>President Abelardo de la Espriella said Wednesday evening the death toll from Monday&rsquo;s magnitude-7.4 Choc&oacute; earthquake has reached 265, and moved to declare an economic emergency to fund the disaster response &mdash; a large jump from the 181-to-250 range this report tracked as of yesterday morning. The figure sits well above the National Unit for Disaster Risk Management&rsquo;s (UNGRD) own most recently cited official count of 181 dead, 2,754 injured and 189 missing &mdash; meaning two arms of the same government have not reconciled to one number. Separately, crowd-sourced missing-persons trackers put the missing count far higher than either official figure (reports range from roughly 500 to more than 2,700&ndash;4,100 depending on the tracker and methodology), a gap this report flags without endorsing any single figure.</dd>
+          <dt>Why it matters</dt>
+          <dd>This resolves forecast 2026-08-12-am-3 (toll surpasses 250 within 48 hours) in the correct direction, pending Saturday&rsquo;s formal grading, but the escalation to a presidential economic-emergency declaration marks a new phase &mdash; from search-and-rescue to formal fiscal crisis response.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The magnitude/epicenter (USGS, primary); that the president made the 265 statement and moved toward an economic-emergency declaration.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Which figure &mdash; 181 (UNGRD) or 265 (presidential statement) &mdash; reflects the government&rsquo;s actual current count, and why the two diverge this widely three days after the quake; the true missing-persons count.</dd>
+          <dt>Context</dt>
+          <dd>Builds directly on this report&rsquo;s tracking since Aug 10; the toll has now more than doubled from Monday&rsquo;s initial count without ever converging on one authoritative figure.</dd>
+          <dt>Impact</dt>
+          <dd>Humanitarian and fiscal (economic emergency implies budget authority shifts). No confirmed market linkage identified.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for the formal emergency-decree text and whether UNGRD updates its own count to match the presidential figure.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: USGS (primary, magnitude/location) &middot; Bloomberg &middot; CNN &middot; NPR/PBS &middot; GMA News.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>A presidential statement citing a higher toll than the disaster-management agency&rsquo;s own published count is not unheard of in the days after a major quake &mdash; officials sometimes speak from field reports that haven&rsquo;t yet been formally tabulated &mdash; but a 84-person gap (181 vs. 265) between two government sources is large enough that this report treats both as provisional. The economic-emergency declaration is the more structurally significant development: it typically unlocks expedited budget authority and suggests the government itself now regards this as a larger crisis than Monday&rsquo;s initial response implied.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-developing">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (positions stated); outcome Unconfirmed</span>
+        </div>
+        <h3>Gaza&rsquo;s 14-day disarmament checkpoint arrives today with neither side having moved</h3>
+        <p class="story-times">Event checkpoint due Aug 13 &middot; Published ongoing &middot; Last checked 05:50 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Today is the Board of Peace roadmap&rsquo;s 14-day deadline for preparing a detailed implementation timetable and weapons-inventory schedule for Hamas&rsquo;s disarmament &mdash; not full disarmament itself, which the roadmap treats as a later phase. The deadline can be extended only by agreement of the International Verification Committee (IVC) and all parties. As of this report&rsquo;s cutoff, no outlet has confirmed whether the timetable was finalized, extended, or missed outright. Positions remain unmoved: Netanyahu continues to say Israel &ldquo;didn&rsquo;t agree&rdquo; to the roadmap&rsquo;s disarm-before-withdraw sequencing (Israeli forces reportedly now control roughly 70% of Gaza territory, up from about 53% in October 2025, despite the nominal ceasefire); Hamas negotiator Ghazi Hamad says Hamas will not implement its side unless Israel halts strikes and withdraws first.</dd>
+          <dt>Why it matters</dt>
+          <dd>This is the first formal structural test of whether the roadmap survives contact with an actual deadline, or lapses into an ambiguous, unenforced state.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Both parties&rsquo; stated, unmoved positions and the roadmap&rsquo;s own 14-day/IVC-extension terms.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>What actually happens at today&rsquo;s checkpoint &mdash; a finalized timetable, a formal IVC extension, or a deadline that passes without any clear resolution.</dd>
+          <dt>Context</dt>
+          <dd>Builds on the gaza-hamas-disarmament-deal-jul30 thread; yesterday morning&rsquo;s edition flagged this checkpoint as arriving with no bridging development, which remained true through last night.</dd>
+          <dt>Impact</dt>
+          <dd>Geopolitics; no confirmed direct market linkage.</dd>
+          <dt>What happens next</dt>
+          <dd>The checkpoint outcome itself, expected to surface over the course of today; this report&rsquo;s Closing Brief will cover whatever is confirmed by then.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: Israel Policy Forum &middot; Board of Peace (boardofpeace.org, primary roadmap text) &middot; JNS &middot; The Hill &middot; Al Jazeera &middot; Chatham House.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>The roadmap&rsquo;s own text distinguishes &ldquo;prepare a timetable&rdquo; from &ldquo;complete disarmament&rdquo; &mdash; a distinction easy to lose in shorthand references to a &ldquo;14-day disarmament deadline.&rdquo; Even a successful outcome today (a finalized timetable) would not mean Hamas has actually disarmed; it would mean the parties agree on a schedule for it, which itself requires cooperation neither side has shown much sign of extending. This report will describe precisely what is confirmed once it surfaces rather than assuming either a clean pass or a collapse.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple</span>
+        </div>
+        <h3>DOJ escalates the mail-ballot executive order fight to the Supreme Court after a second, nationwide injunction</h3>
+        <p class="story-times">Event Aug 11 (injunction) / Aug 12 (DOJ filing) &middot; Published Aug 11&ndash;12 &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>On Aug 11, Judge Indira Talwani (D. Mass.) issued a second preliminary injunction &mdash; this one nationwide, in <em>League of Women Voters of Massachusetts v. Trump</em> &mdash; expanding beyond her earlier ruling, which covered only the 23 states plus D.C. that had sued over the mail-ballot executive order. She ordered plaintiffs to post a nominal $100 bond by Aug 18 (a standard procedural requirement, not a penalty on the government). On Aug 12, DOJ filed with the Supreme Court asking it to act promptly and stay the ruling, arguing the lower-court orders are erroneous and citing midterm ballot-preparation deadlines. The 1st Circuit had already declined to stay the original injunction, so the fight is now concentrated at the Supreme Court.</dd>
+          <dt>Why it matters</dt>
+          <dd>A second, broader injunction plus an emergency Supreme Court filing raises the stakes and the pace of this fight materially ahead of the November midterms.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The Aug 11 nationwide injunction and its bond order; DOJ&rsquo;s Aug 12 Supreme Court filing seeking a stay, reported concordantly across multiple outlets.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether and when the Supreme Court rules; how a nationwide injunction interacts procedurally with the narrower original order it now sits alongside.</dd>
+          <dt>Context</dt>
+          <dd>Builds directly on yesterday morning&rsquo;s Top Story (the first, narrower injunction) and the mail-ballot-eo-scotus thread.</dd>
+          <dt>Impact</dt>
+          <dd>Legal/policy; election administration for the midterms. No confirmed direct market linkage.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a Supreme Court order or scheduling notice.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: Detroit News &middot; Democracy Docket &middot; Votebeat &middot; SCOTUSblog &middot; Law &amp; Crime.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>A nationwide injunction stacked on top of a narrower, already-appealed one is procedurally unusual and gives the Supreme Court a cleaner, higher-stakes vehicle to resolve the underlying question than the original, more geographically limited order did. This report treats DOJ&rsquo;s emergency filing as the higher-order event to watch going forward, since a Supreme Court stay would moot much of both district-court injunctions&rsquo; practical effect.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (severity/trajectory); Disputed (exact current count)</span>
+        </div>
+        <h3>DRC Ebola: newest figures put the toll at 2,061 deaths, again diverging from the count this report carried last night</h3>
+        <p class="story-times">Event ongoing &middot; Published Aug 12 &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Multiple outlets dated Aug 11&ndash;12 (Al Jazeera, Euronews, Washington Post) confirm the widely-cited WHO-sourced figure of 2,011 deaths and 4,381 confirmed cases as of Aug 11 &mdash; the same figure this report carried as of last night, so no discrepancy on that reading. Separately, one Aug 12-dated outlet (The National) cites a newer figure of 2,061 deaths and 4,449 cases, not yet corroborated elsewhere in this run&rsquo;s research; this report flags it as a possible more-current reading rather than adopting it outright, consistent with how WHO situation-report cutoffs have produced reconciliation gaps on this story before. At least 1,000 of the outbreak&rsquo;s deaths have occurred in the last three weeks alone.</dd>
+          <dt>Why it matters</dt>
+          <dd>Confirms the outbreak&rsquo;s continued acceleration &mdash; it remains the fastest-growing Ebola outbreak on record and the second-largest ever, behind only West Africa 2014&ndash;16&rsquo;s 11,310 deaths.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The 2,011/4,381 figure (as of Aug 11) via multiple independent outlets; the outbreak&rsquo;s fastest-growing characterization, per WHO.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether 2,061/4,449 represents a genuinely more current, single-sourced update or a reporting variance; this report will not adopt it as the headline figure until independently corroborated.</dd>
+          <dt>Context</dt>
+          <dd>Builds on the drc-ebola-outbreak-2026 thread, which has repeatedly flagged this same class of cross-outlet reconciliation gap.</dd>
+          <dt>Impact</dt>
+          <dd>Public health.</dd>
+          <dt>What happens next</dt>
+          <dd>Recommend pulling WHO&rsquo;s own Disease Outbreak News bulletin directly once reachable, to resolve the recurring discrepancy at its source.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: Al Jazeera &middot; Euronews &middot; Washington Post &middot; The National &middot; WHO (Disease Outbreak News, not directly reachable this run).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>This report has now flagged a version of this same cross-outlet count discrepancy on at least two prior editions. The pattern &mdash; WHO&rsquo;s own primary bulletin unreachable, forcing reliance on secondary outlets citing WHO officials at different press-briefing cutoffs &mdash; is the likely structural cause, not an actual decline-then-rise in the death count. This report will keep reporting the range rather than silently picking the higher or more recent number.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-developing">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple</span>
+        </div>
+        <h3>Ukraine strikes Russia&rsquo;s Black Sea Fleet base at Novorossiysk as Russia intensifies its own overnight bombardment</h3>
+        <p class="story-times">Event overnight Aug 12&ndash;13 &middot; Published Aug 13 (early) &middot; Last checked 05:50 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Ukrainian drone/missile strikes damaged four Russian warships at the Black Sea Fleet&rsquo;s Novorossiysk naval base overnight, with additional explosions reported near Sevastopol and the Crimean Bridge in occupied Crimea; separate Ukrainian strikes on Krasnodar Krai killed two people and injured 12. On the other side, Russia attacked Ukraine overnight with an Iskander-M ballistic missile, a Kh-31P anti-radiation missile, Kh-35 guided air-launched missiles, and 138 Shahed-type drones; Russian strikes killed 8 and injured 57 across Ukraine over the past day, including a deadly hit on an oil tanker truck in Odesa Oblast.</dd>
+          <dt>Why it matters</dt>
+          <dd>A notably heavy exchange on both sides in a single overnight cycle, with Ukraine&rsquo;s Novorossiysk strike specifically targeting naval assets rather than the refinery/energy infrastructure this report tracked in prior weeks&rsquo; deep-strike pattern.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Both sides&rsquo; strikes and the casualty figures cited, via multiple independent outlets (Kyiv Independent, Washington Post-sourced wire coverage, Euronews).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>The extent of damage to the four Russian warships (described only as &ldquo;damaged,&rdquo; not further detailed); any independent confirmation of North Korean weapons use in this specific barrage (not asserted in this run&rsquo;s research).</dd>
+          <dt>Context</dt>
+          <dd>Builds on the russia-ukraine-poland-missile-jul30 thread; continues a pattern of near-daily overnight exchanges this report has tracked for weeks.</dd>
+          <dt>Impact</dt>
+          <dd>Geopolitics; energy/shipping infrastructure in the Black Sea region. No confirmed direct market linkage this run.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for Russian confirmation or denial of the Novorossiysk damage, and whether either side escalates strike targeting further.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: Kyiv Independent &middot; Washington Post (wire) &middot; Euronews &middot; South Front (military-situation tracker, secondary).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>A naval-base strike is a different target class than the refinery and energy-infrastructure strikes this report has tracked recently, and could reflect a shift in Ukrainian targeting priorities toward degrading the Black Sea Fleet directly rather than economic pressure. This report treats that as an observation, not a confirmed strategic shift, pending further pattern confirmation over subsequent nights.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (this run&rsquo;s own data)</span>
+        </div>
+        <h3>Alt-asset managers give back part of their Nvidia-financing rally &mdash; the group&rsquo;s first down session since the story broke</h3>
+        <p class="story-times">Event Aug 12 (cash session) &middot; Published Aug 12 evening &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>After two sessions of outsized gains Monday and Tuesday, KKR (&minus;0.06%), Apollo (&minus;1.19%), Ares (&minus;0.53%) and Blackstone (&minus;0.52%) &mdash; this run&rsquo;s own Yahoo Finance close-series data &mdash; all closed lower Wednesday, resolving forecast 2026-08-12-am-2 (at least two of the four close lower) correct. This run&rsquo;s SEC EDGAR sweep again found no company-specific catalyst for any of the four beyond routine filings (see Business &amp; Corporate).</dd>
+          <dt>Why it matters</dt>
+          <dd>The first give-back since Nvidia&rsquo;s $500B AI-infrastructure financing platform was confirmed Aug 11, testing whether Monday-Tuesday&rsquo;s rally was a durable re-rating or a bounce that has now begun mean-reverting.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The price moves, via this run&rsquo;s own data.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the pullback extends &mdash; forecast 2026-08-12-pm-1, still open, tracks exactly this over the next two sessions; whether this is genuine mean-reversion or ordinary daily noise within a much larger 2026 year-to-date drawdown these names remain in even after the two-day rally.</dd>
+          <dt>Context</dt>
+          <dd>Builds on the alt-asset-manager-rally-nvda-financing-aug11 thread.</dd>
+          <dt>Impact</dt>
+          <dd>Financials/alt-asset managers.</dd>
+          <dt>What happens next</dt>
+          <dd>Today&rsquo;s session is the first test of forecast 2026-08-12-pm-1&rsquo;s two-session extension window.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">KKR, APO, ARES, BX</dd>
+        </dl>
+        <p class="story-sources">Sources: this run&rsquo;s own Yahoo Finance close-series data &middot; SEC EDGAR (primary, this run&rsquo;s own check).</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>A single down day after two large up days is not on its own evidence of a durable reversal &mdash; ordinary profit-taking produces the same pattern. This report will keep tracking day-to-day direction against the open forecast rather than declaring the rally over or intact prematurely.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-developing">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (this run&rsquo;s own data); no confirmed single catalyst</span>
+        </div>
+        <h3>Mega-cap tech&rsquo;s AI-infrastructure/software split extends into a second session</h3>
+        <p class="story-times">Event Aug 12 (cash session) &middot; Published Aug 12 evening &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The same divergence this report flagged Tuesday continued Wednesday: semiconductor and AI-infrastructure names extended gains &mdash; Arista (+6.39%), Micron (+4.92%), Equinix (+3.56%), Digital Realty (+3.28%), Nvidia (+3.03%), this run&rsquo;s own data &mdash; while consumer-facing mega-caps fell: Meta (&minus;3.38%), Microsoft (&minus;2.26%), Amazon (&minus;1.83%), Tesla (&minus;1.59%), Apple (&minus;0.87%). Technology (XLK, +1.49%) led all eleven sector ETFs; Communication Services (XLC, &minus;0.90%) and Consumer Discretionary (XLY, &minus;1.13%) lagged.</dd>
+          <dt>Why it matters</dt>
+          <dd>A second consecutive session of this specific split argues it is a genuine rotation within mega-cap tech rather than one day&rsquo;s noise, though this report still declines to assert a single cause.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The price moves, via this run&rsquo;s own data.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>No single confirmed catalyst for the split; secondary reporting continues to point to broader AI-infrastructure-capex enthusiasm (reinforced by Nvidia&rsquo;s financing-platform news and cloud-provider earnings beats elsewhere) as a plausible but unconfirmed contributor.</dd>
+          <dt>Context</dt>
+          <dd>Builds on the megacap-tech-divergence-aug12 thread, first flagged yesterday.</dd>
+          <dt>Impact</dt>
+          <dd>Mega-cap tech, AI-infrastructure sentiment, sector rotation.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch whether the split persists into a third session or the two groups converge.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">NVDA, MU, ANET, MSFT, META, AMZN, TSLA, XLK, XLY, XLC</dd>
+        </dl>
+        <p class="story-sources">Sources: this run&rsquo;s own Yahoo Finance close-series data.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>Two straight sessions of the same rotation pattern is more informative than one, but this report still resists a single-cause narrative: Meta, Microsoft and Amazon are each also digesting distinct company-specific news (DeepMind competitive pressure, capex-guidance scrutiny, and no single confirmed driver respectively) that could independently explain part of each name&rsquo;s weakness without a unifying &ldquo;AI infrastructure vs. software&rdquo; story being the sole explanation.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (SEC filing); pending (two of three reports)</span>
+        </div>
+        <h3>Spire Global tops EPS estimates but misses on revenue; Intuitive Machines and York Space Systems report today</h3>
+        <p class="story-times">Event Aug 12 after close (Spire) / Aug 13 (LUNR before open, YSS after close, both pending) &middot; Published Aug 12 &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Spire Global (SPIR) reported Q2 2026 after Tuesday&rsquo;s close: EPS &minus;$0.31, beating the &minus;$0.33 consensus by $0.02, but revenue of $18.04M missed the $18.53M consensus. FY2026 guidance: EPS &minus;$0.95 to &minus;$0.81 (vs. &minus;$0.88 consensus) and revenue $75&ndash;85M (vs. $79.91M consensus, roughly in line at the midpoint). SPIR closed Wednesday &minus;0.54% (this run&rsquo;s data), a muted reaction to a mixed print. Today, Intuitive Machines (LUNR) reports before market open &mdash; not yet released as of this report&rsquo;s cutoff, consensus revenue roughly $216.3M (+330% y/y) and EPS &minus;$0.09 vs. &minus;$0.22 a year earlier, with options pricing implying an approximately 13.5% move &mdash; and York Space Systems (YSS) reports after tonight&rsquo;s close, consensus revenue roughly $91.6M and EPS &minus;$0.14.</dd>
+          <dt>Why it matters</dt>
+          <dd>Three space-sector earnings prints in three consecutive sessions test whether the sector&rsquo;s recent broad strength (LUNR +2.85%, YSS +4.15% Wednesday, this run&rsquo;s data, both ahead of their own reports) reflects genuine pre-earnings confidence or is unrelated positioning.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Spire&rsquo;s reported figures, via SEC filing (Confirmed-primary).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>LUNR&rsquo;s and YSS&rsquo;s actual results, not yet released at this cutoff &mdash; no number is asserted for either.</dd>
+          <dt>Context</dt>
+          <dd>Continues the space-earnings-rklb-asts-aug11 thread.</dd>
+          <dt>Impact</dt>
+          <dd>Space watchlist.</dd>
+          <dt>What happens next</dt>
+          <dd>This report&rsquo;s Closing Brief will cover LUNR&rsquo;s premarket/cash-session reaction and, if timing allows, YSS&rsquo;s after-close print.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">SPIR, LUNR, YSS, RKLB, ASTS, FLY</dd>
+        </dl>
+        <p class="story-sources">Sources: Spire Global SEC 8-K (primary) &middot; StreetInsider &middot; TipRanks &middot; MarketBeat &middot; Finnhub day-of earnings feed &middot; this run&rsquo;s own Yahoo Finance data.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>Spire&rsquo;s EPS beat paired with a revenue miss is a genuinely mixed signal that the market read as such (a small decline, not a sharp reaction in either direction). With two more reports landing today, this report will wait for actual results before characterizing the sector&rsquo;s earnings season as strong or weak on balance.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple</span>
+        </div>
+        <h3>Ceva Logistics breach ripples into Steam hardware shipments and multiple European retailers</h3>
+        <p class="story-times">Event intrusion ~Jul 29&ndash;Aug 1, disclosed Aug 1 &middot; Published Aug 10&ndash;11 &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Logistics giant Ceva Logistics confirmed a data-security intrusion affecting eight or more European warehouses, with customer names, addresses, phone numbers, emails and order data compromised &mdash; no payment or credential data, per the company. Downstream customers affected include Valve (Steam hardware shipments) and multiple European retailers (Bol, de Bijenkorf, Ace &amp; Tate among those named in coverage), with ongoing shipping delays reported as a result.</dd>
+          <dt>Why it matters</dt>
+          <dd>A supply-chain/logistics-vendor breach with concrete, named downstream impact on consumer shipments &mdash; not yet on this report&rsquo;s tracked cyber-incident list.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The intrusion, its rough timeline, and the affected data categories, per Ceva&rsquo;s own customer notifications and multiple outlets.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>The threat actor&rsquo;s identity; the full scope beyond the eight-plus warehouses and named customers so far reported.</dd>
+          <dt>Context</dt>
+          <dd>New thread; distinct from the ShinyHunters/EY and Cisco/VMware exploitation threads already tracked (see Tech/AI/Cyber).</dd>
+          <dt>Impact</dt>
+          <dd>Logistics/supply-chain sector; consumer-facing shipping delays for affected retailers and Valve.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a formal Ceva statement on scope and any regulatory notification (GDPR-relevant given the European warehouses involved).</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: TechCrunch &middot; The Register &middot; The Record.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>Logistics-vendor breaches are a recurring soft spot in supply-chain security because a single compromised intermediary touches many downstream brands at once, each of which then has to notify its own customers separately &mdash; which is part of why this incident surfaced through several retailers&rsquo; names rather than one clean disclosure. No indication yet that this is part of a broader, named campaign rather than an isolated incident.</p>
+        </details>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-developing">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple (statement); Single-reliable-source (DOJ status)</span>
+        </div>
+        <h3>Trump says he hasn&rsquo;t discussed Fauci prosecution with Blanche or Pirro; DOJ still reviewing the contempt referral</h3>
+        <p class="story-times">Event Aug 10&ndash;11 (Trump remarks) &middot; Published Aug 11 &middot; Last checked 05:45 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>President Trump told reporters in the Oval Office (Aug 10&ndash;11, per Semafor&rsquo;s Shelby Talcott) he has &ldquo;not spoken&rdquo; to Attorney General Todd Blanche or D.C. U.S. Attorney Jeanine Pirro about prosecuting Anthony Fauci &mdash; a notable statement given Trump had days earlier suggested Fauci could face charges similar to the Bannon/Navarro contempt convictions. DOJ says it is &ldquo;reviewing&rdquo; the Aug 6 congressional contempt referral; no charging decision has been announced.</dd>
+          <dt>Why it matters</dt>
+          <dd>The first real test of how the new Blanche-led DOJ handles a politically charged congressional contempt referral against a former senior health official, and Trump&rsquo;s statement tempers expectations of imminent charges.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Trump&rsquo;s quote, reported across multiple outlets picking up the Semafor report.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>DOJ&rsquo;s eventual charging decision; no formal DOJ statement text beyond the general &ldquo;reviewing&rdquo; characterization was located.</dd>
+          <dt>Context</dt>
+          <dd>Builds on the fauci-contempt-referral-aug6 thread.</dd>
+          <dt>Impact</dt>
+          <dd>US politics/legal.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for any DOJ charging decision or further presidential comment.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: Semafor (via Yahoo pickup) &middot; The Hill &middot; Newsmax.</p>
+        <details>
+          <summary>Expanded analysis (collapsed by default)</summary>
+          <p>A president publicly distancing himself from a prosecutorial decision while the referral sits with the same administration&rsquo;s DOJ is worth reading carefully: it could reflect genuine non-involvement, or simply a public posture pending DOJ&rsquo;s own independent review. This report treats it as the latest data point, not a signal either way of DOJ&rsquo;s eventual decision.</p>
+        </details>
+      </article>
+    </section>
+
+    <!-- ================= 3. TWO-MINUTE EXECUTIVE BRIEF ================= -->
+    <section class="report-section" aria-labelledby="s-exec">
+      <h2 id="s-exec"><span class="kicker">Section 3 &middot; the two-minute version</span>Two-Minute Executive Brief</h2>
+      <div class="exec-summary">
+        <p><strong>The world</strong> Colombia&rsquo;s earthquake toll jumped to 265 per a presidential statement even as the disaster-management agency&rsquo;s own official count sits at 181 &mdash; two arms of the same government now diverging rather than converging. Gaza&rsquo;s 14-day disarmament-timetable checkpoint arrives today with neither Israel nor Hamas having moved off its stated conditions. DRC Ebola figures diverged again across outlets (2,011 vs. a newer, uncorroborated 2,061 deaths). Overnight, Ukraine struck Russia&rsquo;s Black Sea Fleet base at Novorossiysk while Russia hit Ukraine with a heavy missile-and-drone barrage.</p>
+        <p><strong>Markets</strong> US equities closed higher Wednesday (S&amp;P +0.26%, Nasdaq +0.54%, Russell +0.61%, Dow roughly flat at &minus;0.04%) with technology leading sectors (XLK +1.49%) as AI-infrastructure names (Arista +6.39%, Micron +4.92%, Nvidia +3.03%) extended gains against a weaker consumer-tech complex (Meta &minus;3.38%, Microsoft &minus;2.26%). Alt-asset managers KKR/Apollo/Ares/Blackstone all closed lower, their first down session since Nvidia&rsquo;s $500B financing platform broke. Futures point to a roughly flat open (ES +0.14%, NQ &minus;0.04%) ahead of today&rsquo;s July PPI. Oil fell a sharp &minus;2.0% overnight with no confirmed catalyst; gold rose modestly (+0.62%); the 10-year yield sits near 4.68%, VIX near 14.6&ndash;14.7 in a normal, non-inverted term structure, and Bitcoin near $63,600.</p>
+        <p><strong>Central theme</strong> A market rotating within mega-cap tech (AI-infrastructure strength, consumer/software softness) against a backdrop of several unresolved geopolitical and humanitarian threads &mdash; Colombia, Gaza, DRC Ebola &mdash; none of which have produced a confirmed market linkage yet.</p>
+        <p><strong>Most important new development</strong> DOJ&rsquo;s emergency Supreme Court filing seeking a stay of the mail-ballot executive order injunctions &mdash; the fight&rsquo;s first move to the Court&rsquo;s emergency docket.</p>
+        <p><strong>Most important risk</strong> Today&rsquo;s July PPI print (8:30 ET, High importance) landing hot enough to complicate yesterday&rsquo;s dovish CPI read, one day after markets had started pricing in a friendlier September Fed path.</p>
+        <p><strong>Most important positive development</strong> Spire Global&rsquo;s EPS beat and continued space-sector session strength heading into two more earnings prints today (Intuitive Machines, York Space Systems).</p>
+        <p><strong>Key unknown</strong> What actually happens at today&rsquo;s Gaza 14-day checkpoint, given neither party has withdrawn its conditions.</p>
+        <p><strong>Deserves attention today</strong></p>
+        <ul>
+          <li>8:30 AM ET &mdash; July PPI, the week&rsquo;s only remaining High-importance economic release.</li>
+          <li>Intuitive Machines (LUNR) reports before market open; York Space Systems (YSS) after tonight&rsquo;s close.</li>
+          <li>Gaza&rsquo;s 14-day disarmament-timetable checkpoint &mdash; watch for any confirmed outcome.</li>
+          <li>Colombia&rsquo;s 181-vs-265 government toll discrepancy &mdash; watch for reconciliation.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 4. SINCE YESTERDAY'S CLOSE (change log) ================= -->
+    <section class="report-section" aria-labelledby="s-since">
+      <h2 id="s-since"><span class="kicker">Section 4</span>Since Yesterday&rsquo;s Close</h2>
+      <ul class="change-log">
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Colombia earthquake toll</strong></div>
+          <p>Yesterday morning&rsquo;s 181-to-250 unreconciled range <span class="change-arrow">&rarr;</span> the president cites 265 and moves toward an economic-emergency declaration, while UNGRD&rsquo;s own official count still sits at 181 <span class="change-arrow">&rarr;</span> the gap has widened, not closed, and now spans two government sources rather than government-vs-media. Current confidence: high on continued severity, low on any single number.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Mail-ballot executive order</strong></div>
+          <p>Tuesday&rsquo;s single-state-coalition injunction <span class="change-arrow">&rarr;</span> a second, nationwide injunction Aug 11 plus a DOJ emergency Supreme Court filing Aug 12 <span class="change-arrow">&rarr;</span> the fight has escalated from district-court litigation to the Court&rsquo;s emergency docket. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Alt-asset managers</strong></div>
+          <p>Two sessions of outsized Nvidia-financing-linked gains <span class="change-arrow">&rarr;</span> all four (KKR, Apollo, Ares, Blackstone) closed lower Wednesday, the first down session since the story broke <span class="change-arrow">&rarr;</span> tests whether the rally was a durable re-rating or a bounce now mean-reverting. Current confidence: medium.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Mega-cap tech divergence</strong></div>
+          <p>Tuesday&rsquo;s first-session AI-infrastructure/consumer-tech split <span class="change-arrow">&rarr;</span> the same rotation extended into a second session Wednesday, with Technology the strongest sector ETF and Communication Services/Consumer Discretionary the weakest <span class="change-arrow">&rarr;</span> looks more like a genuine short-term rotation than one day&rsquo;s noise. Current confidence: medium.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since close</span><strong>DRC Ebola figure divergence</strong></div>
+          <p>A newer, uncorroborated figure (2,061 deaths/4,449 cases) surfaced alongside the previously tracked 2,011/4,381 &mdash; not adopted as the headline figure pending independent confirmation.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since close</span><strong>Overnight Russia-Ukraine exchange</strong></div>
+          <p>Ukraine struck Russia&rsquo;s Novorossiysk naval base, damaging four warships; Russia hit Ukraine with a heavy missile-and-drone barrage, killing 8 and injuring 57 over the past day.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since close</span><strong>Spire Global earnings</strong></div>
+          <p>EPS beat, revenue miss, muted &minus;0.54% reaction; Intuitive Machines and York Space Systems report today.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since close</span><strong>Ceva Logistics breach</strong></div>
+          <p>A newly tracked supply-chain cyber incident affecting Steam hardware shipments and multiple European retailers.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-faded">Faded</span><strong>Total solar eclipse, Kumamoto earthquake, Saudi-T&uuml;rkiye-Pakistan pact</strong></div>
+          <p>No material development found in any of these three threads since last night; dropped from Top Stories, remain on watch where applicable. Forecasts already logged on related threads remain in the ledger for Saturday grading.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================= 5. OVERNIGHT WORLD DEVELOPMENTS ================= -->
+    <section class="report-section" aria-labelledby="s-world">
+      <h2 id="s-world"><span class="kicker">Section 5</span>Overnight World Developments</h2>
+      <p><strong>Russia-Ukraine overnight exchange.</strong> See Top Story 5: Ukraine struck the Black Sea Fleet base at Novorossiysk (four warships damaged) and Krasnodar Krai (2 killed, 12 injured); Russia hit Ukraine with an Iskander-M ballistic missile, a Kh-31P anti-radiation missile, Kh-35 guided missiles and 138 Shahed-type drones, killing 8 and injuring 57 over the past day. Verification: Confirmed-multiple.</p>
+      <p><strong>Colombia earthquake.</strong> See Top Story 1: toll jumps to 265 per the president, versus UNGRD&rsquo;s own 181 &mdash; an unreconciled, widening gap.</p>
+      <p><strong>DRC Ebola.</strong> See Top Story 4: newer, uncorroborated figures (2,061/4,449) diverge from the previously tracked 2,011/4,381.</p>
+    </section>
+
+    <!-- ================= 6. US POLITICS & GOVERNMENT ================= -->
+    <section class="report-section" aria-labelledby="s-us-pol">
+      <h2 id="s-us-pol"><span class="kicker">Section 6</span>US Politics &amp; Government</h2>
+      <p><strong>Mail-ballot executive order.</strong> See Top Story 3: DOJ has escalated to an emergency Supreme Court filing after a second, nationwide district-court injunction.</p>
+      <p><strong>Fauci contempt referral.</strong> See Top Story 10: Trump says he has not discussed prosecution with Blanche or Pirro; DOJ still &ldquo;reviewing&rdquo; the Aug 6 referral, no charging decision announced.</p>
+      <p><strong>Fed Gov. Lisa Cook removal fight.</strong> No material change found this run: the White House&rsquo;s Aug 5 letter alleging mortgage-related false statements stands, and Cook&rsquo;s 21-day response deadline remains around Aug 26. Verification: Confirmed-multiple. Sources: Axios, CNN, Washington Post.</p>
+      <p><strong>Attorney General Todd Blanche.</strong> No new first-week actions found beyond the previously reported Office of Legal Counsel memo on executive-privilege claims for communications with &ldquo;private advisers.&rdquo;</p>
+      <p><strong>NDAA FY2027.</strong> Still blocked in the Senate, which remains in recess through Sept. 11; no new procedural movement found.</p>
+    </section>
+
+    <!-- ================= 7. GEOPOLITICS ================= -->
+    <section class="report-section" aria-labelledby="s-geo">
+      <h2 id="s-geo"><span class="kicker">Section 7</span>Geopolitics</h2>
+      <p><strong>Gaza disarmament checkpoint.</strong> See Top Story 2: the 14-day timetable deadline arrives today with no resolution found as of this cutoff.</p>
+      <p><strong>Strait of Hormuz.</strong> No new incident found overnight. Background: Iran and Oman remain in &ldquo;final drafting&rdquo; stage on a shipping-corridor MOU (not a full reopening); the UAE has separately accused Iran of targeting a state-oil-company tanker around Aug 9; UANI&rsquo;s tracker shows only 66 tankers departing the Gulf of Oman with Iranian cargo since a June 14 MOU, continuing to lag Trump&rsquo;s public &ldquo;open&rdquo; characterization. Overnight crude fell sharply (&minus;2.0%, see Premarket Setup) with no confirmed catalyst identified this run &mdash; notable given oil&rsquo;s cumulative rally on this same theme in prior weeks. Verification: Confirmed-multiple on the broader gap between rhetoric and tracked shipping data; Single-reliable-source on individual tanker incidents.</p>
+      <p><strong>Saudi-T&uuml;rkiye-Pakistan defense pact.</strong> Now confirmed by name: the &ldquo;Mecca Joint Deterrence Agreement,&rdquo; signed Aug 7 in Mecca by Erdo&#287;an, Crown Prince Mohammed bin Salman and PM Shehbaz Sharif, with a NATO Article 5-style mutual-defense clause. Combined statistics cited: roughly 1.4 million active personnel, 3,400 aircraft, 6,000 tanks, $124.4B combined defense spending. Turkish FM Hakan Fidan has said Turkey wants to expand membership to additional countries; no new formal-invocation statement found since the pact&rsquo;s muted response to the Aug 9 Houthi strike on Saudi Arabia. Verification: Confirmed-multiple.</p>
+      <p><strong>Fed Gov. Cook / institutional threads.</strong> See Section 6.</p>
+    </section>
+
+    <!-- ================= 8. ECONOMICS & CENTRAL BANKS ================= -->
+    <section class="report-section" aria-labelledby="s-econ">
+      <h2 id="s-econ"><span class="kicker">Section 8</span>Economics &amp; Central Banks</h2>
+      <div class="fact-card">
+        <h4>July Producer Price Index <span class="dd dd-warn">Pending &middot; scheduled 08:30 ET today</span></h4>
+        <dl>
+          <dt>Period</dt><dd>July 2026</dd>
+          <dt>Previous</dt><dd>Not independently re-confirmed this run &mdash; see live release at 08:30 ET</dd>
+          <dt>Consensus</dt><dd>Not independently sourced this run; treat any figure cited elsewhere as unverified until the release</dd>
+          <dt>Actual</dt><dd class="txt">Not yet released &mdash; after this report&rsquo;s news cutoff</dd>
+          <dt>Read</dt><dd class="txt">Arrives one day after July CPI&rsquo;s mild dovish surprise (headline +0.1% m/m, core +0.2% m/m); a hot PPI print would complicate that read given PPI often leads consumer-price pass-through. See Risks &amp; Scenarios.</dd>
+        </dl>
+      </div>
+      <p><strong>No new Fed commentary.</strong> No on-record remarks from Fed Chair Warsh, Gov. Cook, or other FOMC participants were found reacting to Tuesday&rsquo;s CPI print. Market pricing for a September move is being reported inconsistently across secondary sources at this cutoff (readings ranging from the low-40s to high-50s percent depending on the specific measure cited); this report declines to cite a single blended figure given the source conflict, consistent with recent editions&rsquo; practice.</p>
+      <p><strong>Rates context.</strong> The Aug 12 Treasury par curve (EOD official) shows 2s10s at +48bp, 3m10y at +81bp and 5s30s at +86bp &mdash; a modestly upward-sloping, non-inverted curve, essentially unchanged from Aug 11. The 10-year breakeven (T10YIE) sits at 2.26%, the 10-year real yield (DFII10) at 2.43% (flat), and SOFR at 3.64%. High-yield credit spreads (BAMLH0A0HYM2) ticked up slightly to 2.72% from 2.70% &mdash; a marginal move, not a stress signal.</p>
+      <p><strong>Labor context.</strong> Initial jobless claims (FRED ICSA, week of Aug 1) held at 199,000, up modestly from the prior week&rsquo;s 198,000. Unemployment (UNRATE) remains at July&rsquo;s 4.1% reading. Nonfarm payrolls (PAYEMS) confirm July&rsquo;s reported decline: 158,858 thousand vs. June&rsquo;s revised 158,881 thousand, a drop consistent with last week&rsquo;s shock jobs report.</p>
+    </section>
+
+    <!-- ================= 9. BUSINESS & CORPORATE ================= -->
+    <section class="report-section" aria-labelledby="s-biz">
+      <h2 id="s-biz"><span class="kicker">Section 9</span>Business &amp; Corporate</h2>
+      <p><strong>Alt-asset managers.</strong> See Top Story 6: KKR, Apollo, Ares and Blackstone all closed lower Wednesday, their first down session since Nvidia&rsquo;s financing platform broke.</p>
+      <p><strong>Mega-cap tech divergence.</strong> See Top Story 7: AI-infrastructure names extend gains against consumer-tech softness for a second session.</p>
+      <p><strong>Space-sector earnings.</strong> See Top Story 8: Spire beats on EPS, misses on revenue; Intuitive Machines and York Space Systems report today.</p>
+      <p><strong>SEC EDGAR sweep.</strong> This run&rsquo;s per-company 8-K sweep across the roughly 90-ticker company watchlist found one new filing since last night&rsquo;s cutoff: Charles Schwab (SCHW) issued $2.6B in aggregate principal ($1.25B of 5.108% 2032 notes, $1.35B of 5.655% 2037 notes) on Aug 12 &mdash; a routine debt-refinancing disclosure (Item 8.01), not assessed as material to the equity story. No other watchlist-relevant material filings found.</p>
+      <p><strong>Novo Nordisk.</strong> Berenberg downgraded NVO to Hold from Buy on Aug 12 (price target cut to $47 from $50), citing intensifying H2 2026 oral-obesity-pill competition; BMO Capital separately raised its target to $47 from $45 post-earnings while remaining cautious on longer-term growth drivers. NVO closed &minus;1.65% Wednesday (this run&rsquo;s data), the health-care watchlist&rsquo;s weakest name. Consensus overall remains a net &ldquo;Buy&rdquo; but is visibly split among covering analysts.</p>
+      <p><strong>Home Depot.</strong> No follow-up found on CEO Ted Decker&rsquo;s medical leave (announced Aug 12) beyond the original 8-K and interim-leadership announcement. HD closed &minus;3.12% Wednesday (this run&rsquo;s close-series data), the consumer watchlist&rsquo;s weakest name for a second straight session.</p>
+      <p><strong>Cisco earnings.</strong> Cisco reported Aug 12 after close: EPS $1.22 vs. $1.17 consensus (beat), revenue approximately $16.82B (+13% y/y), AI-infrastructure orders cited around $9B, guidance EPS $4.80&ndash;$5.00 (in line). Secondary reporting through this morning characterizes the market reaction as underwhelming despite the beat; not on this report&rsquo;s core watchlist, noted for its AI-infrastructure-orders relevance to the broader theme above.</p>
+    </section>
+
+    <!-- ================= 10. TECH/AI/CYBER ================= -->
+    <section class="report-section" aria-labelledby="s-tech">
+      <h2 id="s-tech"><span class="kicker">Section 10</span>Tech/AI/Cyber</h2>
+      <p><strong>Ceva Logistics breach.</strong> See Top Story 9: a newly tracked supply-chain incident affecting Steam hardware shipments and multiple European retailers.</p>
+      <p><strong>Google DeepMind reshuffle.</strong> The leadership structure first reported Aug 5 is now formally confirmed: Demis Hassabis is Google DeepMind Chairman and Alphabet Chief Scientist; Koray Kavukcuoglu (former CTO) is promoted to SVP, running DeepMind day-to-day and reporting directly to Sundar Pichai. Jeff Dean and Sanjay Ghemawat&rsquo;s independent public-benefit corporation, &ldquo;Discovery Loop,&rdquo; is likewise confirmed. Coverage cites Gemini 3.5 Pro reportedly running months behind its original June 2026 target as context for the internal reshuffle narrative &mdash; an attributed characterization from reporting, not independently verified here. Verification: Confirmed-multiple.</p>
+      <p><strong>ShinyHunters/EY.</strong> No confirmation from EY of the claimed breach as of this cutoff; remains a Single-reliable-source/Unverified extortion-gang claim, not a confirmed breach. The same group has separately claimed an unrelated Metabase-linked data leak (~Aug 10), also unverified independently.</p>
+      <p><strong>Cisco/VMware exploited CVEs.</strong> Cisco&rsquo;s ASA/FTD remote-access SSL VPN flaw (CVE-2026-20349, unauthenticated DoS) and its FMC hard-coded-credentials flaw (CVE-2026-20316, CISA KEV-listed since Jul 29) remain under active exploitation, per CISA&rsquo;s catalog. VMware&rsquo;s vCenter flaw (CVE-2026-59310, disclosed Jul 29) saw roughly 95% of ~361 identified vulnerable systems already compromised within about a week of disclosure &mdash; a notably fast exploitation curve. Verification: Confirmed-multiple, CISA KEV-listed.</p>
+      <p><strong>AI-agent &ldquo;exceeded test boundaries&rdquo; disclosures.</strong> No fourth lab found beyond the three already tracked (OpenAI, Jul 21; Anthropic, Jul 30; Meta, Aug 5&ndash;6). Reported neutrally per this report&rsquo;s standard policy, including for the company that builds this system.</p>
+      <p><strong>Anthropic/Macquarie/GIC Theseus Infrastructure.</strong> No update since its Aug 10&ndash;11 introduction.</p>
+    </section>
+
+    <!-- ================= 11. SCIENCE & ENGINEERING ================= -->
+    <section class="report-section" aria-labelledby="s-sci">
+      <h2 id="s-sci"><span class="kicker">Section 11</span>Science &amp; Engineering</h2>
+      <p><strong>Separable neural systems for language and reasoning.</strong> MIT neuroscience research (reported Aug 11) reports new evidence that language processing and logical reasoning are handled by separable neural systems in the brain, relevant to the ongoing scientific debate over whether language and thought are the same cognitive process. Verification: Single-reliable-source in this run&rsquo;s research pass (secondary science-press synthesis, not independently verified against the underlying paper this run); flagged for a primary-source check in a future edition.</p>
+      <p><strong>No new items dated within the last 24 hours</strong> were confirmed this run beyond the item above; this report declines to pad the section with older trailing-week items already covered or not clearly dated to this cycle.</p>
+    </section>
+
+    <!-- ================= 12. SPACE & SPACEFLIGHT ================= -->
+    <section class="report-section" aria-labelledby="s-space">
+      <h2 id="s-space"><span class="kicker">Section 12</span>Space &amp; Spaceflight</h2>
+      <p><strong>Space-sector earnings.</strong> See Top Story 8 for Spire&rsquo;s mixed print and today&rsquo;s two pending reports.</p>
+      <p><strong>China&rsquo;s Long March 7A failure.</strong> No formal CASC technical statement has surfaced as of this cutoff. Analyst commentary &mdash; not CASC-confirmed &mdash; continues to point to the shared YF-100 engine architecture used across the Long March family as the likely investigation focus, a potential fleet-wide grounding risk that could threaten the Chang&rsquo;e-7 lunar mission&rsquo;s roughly Aug 24 primary launch window if confirmed. Verification: Confirmed-multiple (failure, timeline); System inference (engine-architecture theory).</p>
+      <p><strong>Space-sector session strength.</strong> Wednesday&rsquo;s cash session was broadly positive across the space watchlist ahead of today&rsquo;s two reports: BlackSky +6.62%, York Space Systems +4.15%, AST SpaceMobile +3.74%, Planet Labs +3.38%, Viasat +3.21%, Intuitive Machines +2.85% (this run&rsquo;s own data, close-series method). SpaceX (SPCX) was the sector&rsquo;s standout at +9.65% on continued digestion of Tuesday&rsquo;s CEO AI-revenue remarks; the Aug 20 employee share-unlock remains the dominant near-term technical overhang, with 42 trading days of history since its June 12 IPO (no 50-day moving average yet).</p>
+    </section>
+
+    <!-- ================= 13. TODAY'S CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-cal">
+      <h2 id="s-cal"><span class="kicker">Section 13</span>Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET. Importance classified per SPEC &sect;17, reason in the row.</caption>
+          <thead>
+            <tr><th>Time ET</th><th>Event</th><th>Importance</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Before open</td><td class="txt">Intuitive Machines (LUNR) earnings</td><td><span class="chip chip--info">Low</span></td><td>Rev ~$216.3M, EPS &minus;$0.09</td><td>EPS &minus;$0.22 (yr-ago)</td></tr>
+            <tr><td>08:30</td><td class="txt">Producer Price Index (Jul)</td><td><span class="chip chip--warn">High</span></td><td>Not independently sourced this run</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt">30-Year Bond auction, $25B</td><td><span class="chip chip--warn">High</span></td><td>&mdash;</td><td>10-Yr Aug 12: 4.683% high yield, 2.53x cover</td></tr>
+            <tr><td>Gaza checkpoint</td><td class="txt">14-day disarmament-timetable deadline</td><td><span class="chip chip--bad">Critical</span></td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>After close</td><td class="txt">York Space Systems (YSS) earnings</td><td><span class="chip chip--info">Low</span></td><td>Rev ~$91.6M, EPS &minus;$0.14</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Also today: 17-Week/4-Week/8-Week Treasury bill auctions; a 20-Year Bond and 29-Year 6-Month TIPS announced for late-August settlement. Tomorrow, Aug 14, for context: 13-Week/26-Week/6-Week bill auctions; no watchlist earnings currently scheduled.</p>
+    </section>
+
+    <!-- ================= 14. PREMARKET SETUP ================= -->
+    <section class="report-section" aria-labelledby="s-pre">
+      <h2 id="s-pre"><span class="kicker">Section 14 &middot; futures &ne; guaranteed open</span>Premarket Setup</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>As of 05:50 ET &middot; futures Delayed +10m &middot; VIX Delayed +15m &middot; crypto Live.</caption>
+          <thead>
+            <tr><th>Instrument</th><th>Level</th><th>Change</th><th>Label</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ES (S&amp;P futures)</td><td>7,781.00</td><td class="up">+0.14%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>NQ (Nasdaq futures)</td><td>29,842.75</td><td class="down">&minus;0.04%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>YM (Dow futures)</td><td>54,005.00</td><td class="up">+0.25%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>RTY (Russell futures)</td><td>3,058.70</td><td class="up">+0.19%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>US 10Y yield</td><td>4.68%</td><td>&mdash;</td><td class="txt"><span class="dd">EOD official, Aug 12 curve</span></td></tr>
+            <tr><td>Dollar (EUR/USD, DXY unavailable)</td><td>1.1535</td><td class="down">&minus;0.07%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>VIX</td><td>14.65</td><td class="up">+0.69%</td><td class="txt"><span class="dd dd-ok">Delayed +15m</span></td></tr>
+            <tr><td>WTI crude</td><td>$81.60</td><td class="down">&minus;2.01%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>Gold</td><td>$4,436.40</td><td class="up">+0.62%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
+            <tr><td>Bitcoin</td><td>$63,619</td><td class="down">&minus;0.57% (24h)</td><td class="txt"><span class="dd dd-ok">Live</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Futures are essentially flat to marginally mixed (ES +0.14%, NQ &minus;0.04%, YM +0.25%, RTY +0.19%), with no clear directional signal ahead of 8:30 ET&rsquo;s PPI. The most notable move on this board is oil&rsquo;s overnight &minus;2.0% decline &mdash; a sharp reversal against the cumulative Hormuz-tension rally this report tracked in prior weeks, with no confirmed catalyst identified this run; this report does not assert a cause. VIX ticked up marginally (+0.69%) off Tuesday&rsquo;s multi-week-low close but remains low in absolute terms, with the term structure still in normal contango (9D 11.09 &lt; 30D 14.65 &lt; 3M 18.53), no inversion. DXY itself has no allowlisted free source; the dollar is described here via EUR/USD (essentially flat overnight) plus the ECB reference basket in the appendix. The most fragile assumption in this tape: that today&rsquo;s PPI does not reignite the inflation concern yesterday&rsquo;s cooler CPI eased. Technical levels (this run&rsquo;s 1-year close series): SPY +2.6% above its 20-day average and +3.3% above its 50-day, within 0.1% of its 52-week high ($773.26); QQQ +3.2%/+1.4% above its 20/50-day averages; IWM +2.4%/+2.8% above, at a fresh 52-week high ($302.71); DIA +1.8%/+2.9% above. TLT is the one laggard, &minus;1.2%/&minus;2.9% below its 20/50-day averages and within $0.05 of its 52-week low, as yields have held near cycle highs. SPCX (42 trading days since its June 12 IPO, no 50-day average yet) sits +20.6% above its 20-day average after Tuesday&rsquo;s 9.3% and Wednesday&rsquo;s further 9.65% (close-to-close) gains. Breadth context: Wednesday&rsquo;s session (this run&rsquo;s 14th tracked, still short of the 50-session threshold for a reportable EMA-based reading) saw 2,998 advancers vs. 2,088 decliners across a 5,415-name screened universe, positive breadth consistent with the small-cap/mid-cap outperformance (Russell +0.61%, IWM +0.57%) noted in the indices above.</p>
+    </section>
+
+    <!-- ================= 15. RISKS & SCENARIOS ================= -->
+    <section class="report-section" aria-labelledby="s-risk">
+      <h2 id="s-risk"><span class="kicker">Section 15 &middot; probability ranges, never fake precision</span>Risks &amp; Scenarios</h2>
+      <h3>July PPI prints hot enough to complicate yesterday&rsquo;s dovish CPI read</h3>
+      <p><strong>Preconditions:</strong> a headline or core PPI print materially above whatever consensus proves to be, plausibly reflecting the same oil-price dynamics that pressured CPI&rsquo;s energy component before yesterday&rsquo;s pullback. <strong>Probability:</strong> 20&ndash;30% (basis: PPI has historically shown more month-to-month volatility than CPI and no reliable consensus figure was independently sourced this run, so this range reflects genuine uncertainty rather than a modeled estimate). <strong>Indicators:</strong> the 8:30 ET print itself; initial reaction in TLT/IEF and the dollar. <strong>Consequences if realized:</strong> would partially reverse yesterday&rsquo;s dovish-CPI-driven equity gains and VIX decline, and revive the Fed Chair Warsh-hawkish-signal narrative. <strong>Invalidators:</strong> an in-line or cool print, or one driven by a component (e.g., trade services, energy) the Fed typically treats as noisy.</p>
+      <h3>Gaza&rsquo;s checkpoint passes without any clear resolution</h3>
+      <p><strong>Preconditions:</strong> neither Israel nor Hamas moves off its stated position before end of day. <strong>Probability:</strong> 45&ndash;60% (basis: both parties have restated incompatible conditions as recently as this week with no bridging statement found in this run&rsquo;s research). <strong>Indicators:</strong> any Board of Peace, Israeli, IVC or Hamas statement over the course of today. <strong>Consequences if realized:</strong> the roadmap continues in an ambiguous, unenforced state rather than either collapsing or formally completing this phase; likely produces further statements rather than a market-moving event. <strong>Invalidators:</strong> a clear joint statement declaring the checkpoint met, missed, or formally extended by the IVC.</p>
+      <h3>Colombia&rsquo;s toll discrepancy triggers a domestic political dispute</h3>
+      <p><strong>Preconditions:</strong> UNGRD and the president continue to cite conflicting figures (181 vs. 265) without reconciliation. <strong>Probability:</strong> 25&ndash;40% (basis: a presidential figure this far above the disaster-management agency&rsquo;s own published count is unusual enough to plausibly draw domestic scrutiny, though it could also simply reflect a lag in UNGRD&rsquo;s update cycle that resolves quietly). <strong>Consequences if realized:</strong> would complicate the emergency-declaration process and draw attention to disaster-response coordination separate from the humanitarian toll itself. <strong>Invalidators:</strong> UNGRD updating its own count to match or bridge the gap within the next day or two.</p>
+    </section>
+
+    <!-- ================= 16. PHYSICS LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-phys">
+      <h2 id="s-phys"><span class="kicker">Section 16 &middot; learning</span>Physics Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Physics 14/71 &middot; Free-Body Diagrams</p>
+        <p>A free-body diagram is a simple drawing trick with an outsized payoff: you isolate a single object, represent it as a dot or box, and draw one arrow for every force acting on it &mdash; gravity pulling down, a surface pushing back up (the normal force), a rope pulling taut, friction resisting slide &mdash; each arrow sized roughly to the force&rsquo;s strength and pointed in its actual direction. Everything else in the scene &mdash; the ground, the wall, the other objects nearby &mdash; disappears from the drawing; only the forces acting <em>on</em> your chosen object remain.</p>
+        <p>This builds directly on yesterday&rsquo;s topic, forces themselves: yesterday established that forces are vectors with size and direction, coming from identifiable sources, and that an object&rsquo;s motion depends on all of them added together. A free-body diagram is the concrete tool for actually doing that addition &mdash; by drawing every force explicitly and to scale, you can sum the arrows (component by component) to find the net force, which is exactly the calculation Newton&rsquo;s Second Law formalizes as the next step in this sequence.</p>
+      </div>
+    </section>
+
+    <!-- ================= 17. SPACEFLIGHT LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-space-lesson">
+      <h2 id="s-space-lesson"><span class="kicker">Section 17 &middot; learning</span>Spaceflight Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Spaceflight 14/75 &middot; Drag</p>
+        <p>Drag is the force that opposes an object&rsquo;s motion through a fluid &mdash; air, in a rocket&rsquo;s case &mdash; because the vehicle has to physically shove air molecules out of its way as it moves. The faster you go and the denser the air, the more molecules you&rsquo;re displacing per second, and the harder drag pushes back; that&rsquo;s why drag scales with velocity <em>squared</em>, not just velocity, and why it depends heavily on air density, the vehicle&rsquo;s cross-sectional area, and its shape (captured in a single number called the drag coefficient).</p>
+        <p>This connects directly to yesterday&rsquo;s topic, atmospheric pressure: both drag and pressure trace back to the same underlying cause &mdash; how densely packed air molecules are at a given altitude &mdash; which is why a rocket experiences its heaviest drag low in the atmosphere where air is thick, even though it&rsquo;s also traveling slower there than it will later. It sets up a concept mentioned yesterday: max-Q, the single point during ascent where the combination of still-substantial air density and rapidly rising speed makes aerodynamic stress (and therefore drag-related loads) peak together, before thinning air lets the vehicle outrun the effect entirely.</p>
+      </div>
+    </section>
+
+    <!-- ================= 18. QUANT/ML LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-quant">
+      <h2 id="s-quant"><span class="kicker">Section 18 &middot; learning</span>Quant/ML Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Quant/ML 14/118 &middot; Autoregressive Moving Average Model ARMA(p, q)</p>
+        <p>ARMA combines two ideas this sequence has built separately: persistence from a series&rsquo; own past <em>values</em> (the &ldquo;AR&rdquo; part) and a fading echo from past random <em>shocks</em> (the &ldquo;MA&rdquo; part, covered yesterday). Formally, X_t equals a sum of weighted past values (phi&#8321;X_{t&minus;1} + phi&#8322;X_{t&minus;2} + &hellip;) plus today&rsquo;s fresh shock, plus a weighted sum of past shocks&rsquo; lingering effects &mdash; a series that both remembers where it&rsquo;s been and still gets nudged by yesterday&rsquo;s surprises.</p>
+        <p>This builds directly on yesterday&rsquo;s MA(1) model, which turns out to be the special case of ARMA with zero autoregressive terms and exactly one moving-average lag (ARMA(0,1)); today&rsquo;s model restores the autoregressive persistence that MA(1) deliberately left out. ARMA is the foundational time-series building block this sequence has been assembling toward &mdash; used across prices, returns, rates and macro variables &mdash; and its deeper mechanics, including how to actually choose p and q for a real series, are covered in this evening&rsquo;s edition.</p>
+        <figure class="equation">
+          <img src="../../../equations/eq_014.png" alt="Rendered equation image eq_014: Autoregressive Moving Average Model ARMA(p, q), X_t = sum of phi_j X_(t-j) plus eps_t plus sum of theta_j eps_(t-j)." loading="lazy" width="480">
+          <figcaption>Equation 14 of 118 &mdash; embedded from site/equations/ (registry order).</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ================= 19. FULL MARKET INTELLIGENCE APPENDIX ================= -->
+    <section class="report-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix"><span class="kicker">Section 19 &middot; collapsed by default</span>Full Market Intelligence Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-supportive, narrow leadership</span> Supporting evidence: equities near record highs (SPY within 0.1% of its 52-week high, IWM at a fresh one), breadth positive Wednesday (2,998 advancers vs. 2,088 decliners), credit spreads still tight (HY OAS 2.72%, up marginally from 2.70%), VIX low and non-inverted (9D 11.09 &lt; 30D 14.65 &lt; 3M 18.53). Contradicting evidence: leadership has narrowed to AI-infrastructure/semiconductor names specifically, with consumer-facing mega-caps (Meta, Microsoft, Amazon, Tesla) all softer for a second session; oil&rsquo;s sharp overnight reversal (&minus;2.0%) muddies the recent Hormuz-driven commodity narrative; and today&rsquo;s PPI is an acknowledged single point of failure for this regime read, one day after CPI. Confidence: medium &mdash; direction unchanged from Wednesday but the leadership narrowing is worth tracking as a potential fragility.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close, 2026-08-12 &middot; EOD official.</caption>
+              <thead>
+                <tr><th>Fund/Index</th><th>Close</th><th>Day</th><th>vs 20-DMA</th><th>vs 50-DMA</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>S&amp;P 500 (^GSPC)</td><td>7,748.50</td><td class="up">+0.26%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td>Nasdaq Composite (^IXIC)</td><td>26,588.49</td><td class="up">+0.54%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td>Dow (^DJI)</td><td>53,770.27</td><td class="down">&minus;0.04%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td>Russell 2000 (^RUT)</td><td>3,045.48</td><td class="up">+0.61%</td><td>&mdash;</td><td>&mdash;</td></tr>
+                <tr><td>SPY</td><td>772.49</td><td class="up">+0.25%</td><td class="up">+2.6%</td><td class="up">+3.3%</td></tr>
+                <tr><td>QQQ</td><td>723.70</td><td class="up">+0.73%</td><td class="up">+3.2%</td><td class="up">+1.4%</td></tr>
+                <tr><td>IWM</td><td>302.71</td><td class="up">+0.57%</td><td class="up">+2.4%</td><td class="up">+2.8%</td></tr>
+                <tr><td>DIA</td><td>537.15</td><td class="down">&minus;0.02%</td><td class="up">+1.8%</td><td class="up">+2.9%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Small/mid-cap (IWM, +0.57%) outperformed the Dow&rsquo;s roughly flat close; all four broad funds remain above both their 20- and 50-day averages.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Aug 12 session &middot; EOD official &middot; 14th tracked session (needs 50 for a reportable %-above-50DMA EMA figure).</caption>
+              <thead>
+                <tr><th>Metric</th><th>Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Advancers</td><td>2,998</td></tr>
+                <tr><td>Decliners</td><td>2,088</td></tr>
+                <tr><td>Unchanged / no baseline yet</td><td>329</td></tr>
+                <tr><td>Screened universe</td><td>5,415</td></tr>
+                <tr><td>Up volume</td><td>7.76B shares</td></tr>
+                <tr><td>Down volume</td><td>5.83B shares</td></tr>
+                <tr><td>% above 50-day EMA</td><td class="txt"><span class="dd">Estimated &mdash; EMA proxy, accumulating history (14/200 sessions)</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Advance/decline line continues to build (14 sessions tracked); broadly positive breadth Wednesday, consistent with the index-level gains above.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, previous close 2026-08-12 &middot; EOD official.</caption>
+              <thead>
+                <tr><th>Sector</th><th>Close</th><th>Day</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Technology (XLK)</td><td>188.86</td><td class="up">+1.49%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td>44.49</td><td class="up">+0.93%</td></tr>
+                <tr><td>Utilities (XLU)</td><td>43.84</td><td class="up">+0.48%</td></tr>
+                <tr><td>Staples (XLP)</td><td>85.08</td><td class="up">+0.46%</td></tr>
+                <tr><td>Health Care (XLV)</td><td>168.44</td><td class="up">+0.26%</td></tr>
+                <tr><td>Financials (XLF)</td><td>57.92</td><td class="up">+0.21%</td></tr>
+                <tr><td>Energy (XLE)</td><td>61.03</td><td class="up">+0.16%</td></tr>
+                <tr><td>Industrials (XLI)</td><td>185.88</td><td class="up">+0.10%</td></tr>
+                <tr><td>Communication (XLC)</td><td>110.27</td><td class="down">&minus;0.90%</td></tr>
+                <tr><td>Discretionary (XLY)</td><td>117.89</td><td class="down">&minus;1.13%</td></tr>
+                <tr><td>Materials (XLB)</td><td>52.58</td><td class="down">&minus;1.24%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Technology led decisively on AI-infrastructure/semiconductor strength; Communication Services (likely weighed by Meta) and Discretionary (weighed by Home Depot, Amazon) lagged. No single confirmed sector-wide catalyst asserted for Materials&rsquo; weakness.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p><strong>AI infrastructure:</strong> Arista +6.39%, Micron +4.92%, Equinix +3.56%, Digital Realty +3.28%, Nvidia +3.03%, Vertiv +2.32%, Marvell +2.25%, AMD +1.81%, TSMC +1.68% led; Broadcom essentially flat (&minus;0.01%) the group&rsquo;s laggard.</p>
+          <p><strong>Mega-cap tech:</strong> SpaceX +9.65% and Nvidia +3.03% led; Meta &minus;3.38%, Microsoft &minus;2.26%, Amazon &minus;1.83%, Tesla &minus;1.59%, Apple &minus;0.87% all softer; Alphabet roughly flat (&minus;0.08%).</p>
+          <p><strong>Financials/alt-asset managers:</strong> Cboe +2.92%, Interactive Brokers +2.09%, Wells Fargo +1.69% led; KKR &minus;0.06%, Blackstone &minus;0.52%, Ares &minus;0.53%, Apollo &minus;1.19% the group&rsquo;s laggards (see Top Story 6).</p>
+          <p><strong>Space:</strong> SpaceX +9.65%, BlackSky +6.62%, York Space Systems +4.15% (ahead of tonight&rsquo;s earnings), AST SpaceMobile +3.74%, Planet Labs +3.38%, Viasat +3.21%, Intuitive Machines +2.85% (ahead of this morning&rsquo;s earnings) led; Spire Global &minus;0.54% the day after its mixed print was the group&rsquo;s laggard.</p>
+          <p><strong>Defense &amp; aerospace:</strong> BWX Technologies +1.68%, L3Harris +1.65%, Lockheed Martin +1.50%, Rocket Lab +1.45% led; Palantir &minus;2.23% the group&rsquo;s laggard, no confirmed catalyst identified.</p>
+          <p><strong>Health care:</strong> Merck +1.92%, UnitedHealth +0.84% led; Novo Nordisk &minus;1.65% the group&rsquo;s laggard (see Business &amp; Corporate, Berenberg downgrade).</p>
+          <p><strong>Consumer:</strong> Walmart +2.43%, Chipotle +2.00%, Starbucks +1.72% led; Home Depot &minus;3.12%, Airbnb &minus;2.64%, Lowe&rsquo;s &minus;2.39% the group&rsquo;s laggards.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par curve, Aug 12 &middot; EOD official.</caption>
+              <thead>
+                <tr><th>Tenor</th><th>Yield</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1M</td><td>3.78%</td></tr>
+                <tr><td>3M</td><td>3.87%</td></tr>
+                <tr><td>1Y</td><td>4.00%</td></tr>
+                <tr><td>2Y</td><td>4.20%</td></tr>
+                <tr><td>5Y</td><td>4.38%</td></tr>
+                <tr><td>10Y</td><td>4.68%</td></tr>
+                <tr><td>20Y</td><td>5.24%</td></tr>
+                <tr><td>30Y</td><td>5.24%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +48bp &middot; 3m10y +81bp &middot; 5s30s +86bp, a modestly upward-sloping, non-inverted curve, little-changed from Aug 11. 10Y breakeven (T10YIE) 2.26%, 10Y real yield (DFII10) 2.43%, SOFR 3.64% (FRED, Aug 11&ndash;12 observations).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS (BAMLH0A0HYM2) ticked up to 2.72% (Aug 11 observation) from 2.70% the prior session &mdash; a marginal move, not a stress signal. Investment-grade and high-yield credit-fund proxies (LQD +0.12%, HYG +0.13%, JNK +0.17%) were all modestly positive Wednesday, consistent with the calm credit read.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>As of 05:50 ET &middot; Cboe, Delayed +15m.</caption>
+              <thead>
+                <tr><th>Index</th><th>Level</th><th>Change</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>VIX9D</td><td>11.09</td><td>&mdash;</td></tr>
+                <tr><td>VIX</td><td>14.65</td><td class="up">+0.69%</td></tr>
+                <tr><td>VIX3M</td><td>18.53</td><td>&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Normal contango (9D &lt; 30D &lt; 3M), no inversion. Put/call ratios: <span class="dd">Source unavailable</span> &mdash; Cboe&rsquo;s daily options market-statistics path returned HTTP 403 again this run, a recurring known access issue. MOVE index and dealer gamma: not tracked, no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Frankfurter/ECB reference rates, Aug 12 fix &middot; EOD official. Base USD.</caption>
+              <thead>
+                <tr><th>Currency</th><th>Rate (per USD)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>EUR</td><td>0.86618</td></tr>
+                <tr><td>JPY</td><td>159.09</td></tr>
+                <tr><td>GBP</td><td>0.73935</td></tr>
+                <tr><td>CNY</td><td>6.7432</td></tr>
+                <tr><td>CHF</td><td>0.81126</td></tr>
+                <tr><td>CAD</td><td>1.3926</td></tr>
+                <tr><td>AUD</td><td>1.4142</td></tr>
+                <tr><td>MXN</td><td>17.0614</td></tr>
+                <tr><td>BRL</td><td>5.1557</td></tr>
+                <tr><td>INR</td><td>95.34</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">DXY has no allowlisted free source; the dollar is described via EUR/USD (Yahoo, intraday, essentially flat overnight at &minus;0.07%) plus this ECB reference basket. No broad dollar move evident overnight.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>As of 05:50 ET &middot; Yahoo Finance, Delayed +10m.</caption>
+              <thead>
+                <tr><th>Commodity</th><th>Level</th><th>Change</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>WTI crude (CL=F)</td><td>$81.60</td><td class="down">&minus;2.01%</td></tr>
+                <tr><td>Gold (GC=F)</td><td>$4,436.40</td><td class="up">+0.62%</td></tr>
+                <tr><td>Natural gas (NG=F)</td><td>$2.780</td><td class="down">&minus;0.86%</td></tr>
+                <tr><td>Copper (HG=F)</td><td>$6.554</td><td class="down">&minus;0.65%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Oil&rsquo;s overnight decline is the largest single move on this board and a sharp reversal from the recent Hormuz-linked rally; no confirmed catalyst identified this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>As of 05:50 ET &middot; Live (CoinGecko aggregate).</caption>
+              <thead>
+                <tr><th>Asset</th><th>Price</th><th>24h</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>BTC</td><td>$63,619</td><td class="down">&minus;0.57%</td></tr>
+                <tr><td>ETH</td><td>$1,885.42</td><td class="down">&minus;0.90%</td></tr>
+                <tr><td>SOL</td><td>$75.93</td><td class="down">&minus;1.00%</td></tr>
+                <tr><td>ADA</td><td>$0.1853</td><td class="down">&minus;0.62%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap $2.27T, BTC dominance 56.3%, market-cap change 24h roughly &minus;0.5%. BTC remains within the $60,000&ndash;$72,000 range this report has tracked for weeks.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Rates funds were essentially flat Wednesday (AGG +0.11%, IEF +0.10%, TIP +0.03%), with TLT the lone laggard (&minus;0.10%) as long-end yields held near cycle highs. Credit funds were uniformly modestly positive (see Credit above). International equity ETFs were led by South Korea (EWY +5.16%, a standout move with no confirmed catalyst identified this run, plausibly coinciding with the same semiconductor/AI-infrastructure strength seen domestically given Korea&rsquo;s chip-sector weighting) and Taiwan (EWT +2.15%); China-linked funds lagged broadly (KWEB &minus;1.96%, FXI &minus;1.21%, MCHI &minus;0.97%), no single confirmed regional catalyst identified.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>Spire Global (SPIR) reported after Tuesday&rsquo;s close: EPS &minus;$0.31 beat vs. &minus;$0.33 estimate, revenue $18.04M missed vs. $18.53M estimate (see Top Story 8). Intuitive Machines (LUNR) reports before today&rsquo;s open; York Space Systems (YSS) reports after tonight&rsquo;s close. Cisco (not on this report&rsquo;s core watchlist) reported Aug 12 after close: EPS $1.22 beat vs. $1.17 estimate, revenue ~$16.82B (+13% y/y).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Wednesday&rsquo;s $42B 10-Year Note auction drew a 4.683% high yield and 2.53x bid-to-cover &mdash; softer demand than Monday&rsquo;s 3-Year (2.71x) but not read as a tail. Today brings a $25B 30-Year Bond auction at 13:00 ET, plus short-dated bill auctions. SOFR held at 3.64%, no funding-stress signal. FINRA aggregate short-volume ratio (Aug 12 session, market-wide) was 50.69%; this report&rsquo;s watchlist standouts skewed toward ETFs (IWD 88.9%, EWA 88.7%, EWC 82.1%) rather than single names, consistent with routine market-making/arbitrage activity in funds rather than a bearish single-name signal &mdash; short volume is never short interest, and short interest remains settlement-dated and 2&ndash;3 weeks stale.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= 20. SOURCES & CORRECTIONS ================= -->
+    <section class="report-section sources-list" aria-labelledby="s-sources">
+      <h2 id="s-sources"><span class="kicker">Section 20</span>Sources, Methodology &amp; Corrections</h2>
+      <p><strong>Primary sources this run:</strong></p>
+      <ul>
+        <li>USGS (Colombia earthquake magnitude/location)</li>
+        <li>Board of Peace roadmap text (boardofpeace.org)</li>
+        <li>SEC EDGAR (Schwab and Spire Global filings; market-wide latest-100-filings feed; per-company sweep across ~90 watchlist tickers, UA-labeled, throttled ~5 req/s)</li>
+        <li>U.S. Treasury daily par yield curve and TreasuryDirect auction results (home.treasury.gov / treasurydirect.gov, UA-labeled)</li>
+        <li>FRED series: CPIAUCSL, CPILFESL, PAYEMS, ICSA, UNRATE, T10Y2Y, DGS2, DGS10, T10YIE, DFII10, SOFR, BAMLH0A0HYM2</li>
+        <li>Cboe VIX/VIX9D/VIX3M delayed quotes and EOD history</li>
+        <li>Frankfurter/ECB reference FX rates</li>
+        <li>CoinGecko (crypto prices, market cap, BTC dominance)</li>
+        <li>Massive grouped-daily aggregates (whole-market breadth)</li>
+        <li>FINRA daily short-volume file (Aug 12 session)</li>
+        <li>bls.gov schedule, treasurydirect.gov upcoming auctions, federalreserve.gov press feed, Launch Library 2, Finnhub day-of earnings feed</li>
+      </ul>
+      <p><strong>Secondary confirmation:</strong> Bloomberg, CNN, NPR/PBS, GMA News (Colombia toll); Israel Policy Forum, JNS, The Hill, Al Jazeera, Chatham House (Gaza checkpoint); Detroit News, Democracy Docket, Votebeat, SCOTUSblog, Law &amp; Crime (mail-ballot EO); Al Jazeera, Euronews, Washington Post, The National (DRC Ebola); Kyiv Independent, Washington Post wire, Euronews, South Front (Russia-Ukraine); TechCrunch, The Register, The Record (Ceva Logistics breach); Semafor via Yahoo, The Hill, Newsmax (Fauci).</p>
+      <p><strong>Methodology note:</strong> free-tier equity quotes are non-consolidated single-venue prices and can differ slightly from official consolidated closes; delayed data is labeled with its delay everywhere it appears; missing sources are declared unavailable, never estimated silently. Twelve Data&rsquo;s quote and time-series APIs hit their per-minute credit limit after the first 8-symbol test batch, as in recent runs; this run substituted a full Yahoo Finance close-series sweep across the 167-symbol watchlist (166/167 recovered, FM ETF returned no usable close series &mdash; a recurring known gap) and a 1-year Yahoo Finance history for technical-level calculations (SPY, QQQ, IWM, DIA, TLT, SPCX). Alpha Vantage&rsquo;s earnings calendar returned a malformed/rate-limited response this run; Finnhub&rsquo;s day-of feed was used alone and found no discrepancy against this report&rsquo;s prior tracking for today&rsquo;s two space-sector reports.</p>
+      <p><strong>Corrections:</strong> none new this run. (When corrections exist they appear here and in <code>ledgers/corrections.json</code>, with the original preserved in git history.)</p>
+    </section>
+
+    <!-- ================= HEALTH FOOTER (every report) ================= -->
+    <footer class="health-footer">
+      <h2>System health &mdash; this run</h2>
+      <ul class="health-grid">
+        <li class="ok">Treasury par curve &mdash; ok &middot; Aug 12 curve date</li>
+        <li class="ok">FRED (12 series) &mdash; ok &middot; data age 1&ndash;12 days per series</li>
+        <li class="ok">Cboe VIX/VIX9D/VIX3M &mdash; ok &middot; delayed +15m</li>
+        <li class="down">Cboe options market-statistics (put/call) &mdash; HTTP 403, recurring known access issue &middot; labeled Source unavailable</li>
+        <li class="down">Twelve Data quote/time-series batches &mdash; rate-limited after 1st test batch (8-credit/minute limit), recurring known issue &middot; substituted full Yahoo Finance close-series sweep (166/167 recovered) and 1-year history for technical levels</li>
+        <li class="ok">Yahoo Finance (167-symbol watchlist, futures/commodities/FX, technical-level series) &mdash; ok</li>
+        <li class="ok">Frankfurter FX &mdash; ok &middot; Aug 12 ECB fix</li>
+        <li class="ok">CoinGecko (public endpoint, no key configured) &mdash; ok &middot; live</li>
+        <li class="ok">Massive grouped-daily (breadth) &mdash; ok &middot; Aug 12 session, 14th tracked</li>
+        <li class="ok">FINRA short volume &mdash; ok &middot; Aug 12 session</li>
+        <li class="ok">SEC EDGAR (market-wide + ~90-ticker sweep) &mdash; ok &middot; UA-labeled, throttled</li>
+        <li class="ok">BLS/BEA/Treasury/Fed calendar feeds, Launch Library 2 &mdash; ok, refreshed (previous cache &gt;18h old)</li>
+        <li class="down">Alpha Vantage earnings calendar &mdash; malformed/rate-limited response &middot; substituted Finnhub day-of feed alone, no discrepancy found</li>
+        <li class="ok">Finnhub day-of earnings &mdash; ok</li>
+        <li class="ok">WebSearch news research (2 parallel research passes plus supplementary targeted searches) &mdash; ok, no egress blocks encountered this run</li>
+      </ul>
+      <p>Run duration approximately 90 minutes (idempotency check through composition, including two parallel background research passes) &middot; retries: none beyond the documented Twelve Data and Alpha Vantage substitutions &middot; prior run (2026-08-12-pm): success, telegram delegated, pages live &middot; no instruction-like or prompt-injection content detected in any fetched source this run.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-12-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
