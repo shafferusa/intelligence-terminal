@@ -1049,6 +1049,36 @@
       "probability": "35-50%",
       "basis": "This report's tracking of the Colombia earthquake toll has shown a pattern of continued upward revision without full reconciliation for three-plus days running; a presidential statement this far above the agency's own count creates pressure to reconcile, but the underlying pattern argues against a clean, fast convergence.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-13-pm-1",
+      "date": "2026-08-13",
+      "slot": "pm",
+      "forecast": "Rocket Lab (RKLB) underperforms the space-sector watchlist's average return over the next 5 trading sessions (through 2026-08-20), consistent with dilution-overhang pressure from today's $1.94B replacement ATM program outweighing the positive Iridium-acquisition regulatory news in the near term.",
+      "horizon": "2026-08-20",
+      "probability": "45-55%",
+      "basis": "RKLB closed -1.32% today despite objectively positive Iridium-deal milestones, a gap this report attributes to a likely, not confirmed, dilution-overhang read; no analyst commentary was found either confirming or refuting that read, so this forecast is deliberately close to a coin flip.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-13-pm-2",
+      "date": "2026-08-13",
+      "slot": "pm",
+      "forecast": "SpaceX (SPCX) closes lower at least once more before the Aug 20 employee share-unlock, extending today's -3.33% session.",
+      "horizon": "2026-08-20",
+      "probability": "55-65%",
+      "basis": "This report has tracked unlock-related positioning pressure on SPCX intermittently since Aug 10-11 (three down sessions, one sharp reversal, now another down session), a pattern more consistent with continued pre-unlock volatility than a clean resolution in either direction before Aug 20.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-13-pm-3",
+      "date": "2026-08-13",
+      "slot": "pm",
+      "forecast": "Core PPI's July re-acceleration (+0.4% m/m) draws explicit public comment from a Fed official before Jackson Hole (2026-08-27).",
+      "horizon": "2026-08-27",
+      "probability": "35-50%",
+      "basis": "No Fed official commented on either yesterday's CPI or today's PPI by this report's cutoff; Fed communications during this stretch have been sparse (this report has found no Warsh, Cook, or other FOMC public remarks in over a week), arguing against an early comment, though a data point this notable (core PPI quadrupling its prior pace) raises the odds above a pure baseline silence scenario.",
+      "status": "open"
     }
   ]
 }

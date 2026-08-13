@@ -132,20 +132,6 @@
       "watch": true
     },
     {
-      "id": "q2-productivity-costs-2026",
-      "headline": "Q2 2026 preliminary productivity report: unit labor costs +1.3%, well below the 2.1% estimate",
-      "status": "Resolved",
-      "first_seen": "2026-08-06-pm",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "BLS: nonfarm business unit labor costs +1.3% Q/Q (2.7% compensation growth, 1.4% productivity growth), well below ~2.1% consensus -- a materially cooler signal than the hot +0.9% Employment Cost Index print two weeks ago, an unresolved tension this report does not force into one narrative.",
-      "score_note": "Resolved data point; contrasts with ECI, worth tracking into the Fed's next policy discussion.",
-      "sources": [
-        "bls.gov/news.release/prod2.nr0.htm (primary)"
-      ],
-      "watch": false
-    },
-    {
       "id": "yss-unexplained-declines-aug",
       "headline": "York Space Systems (YSS) posts a third large, unexplained single-day decline in a week -- down 17.22% today",
       "status": "Continuing",
@@ -226,26 +212,6 @@
       "watch": true
     },
     {
-      "id": "megacap-earnings-split-jul30",
-      "headline": "Mega-cap earnings week closes with a split cash-session verdict: Amazon +15.5%, Apple -7.2% on weak guidance",
-      "status": "Resolved",
-      "first_seen": "2026-07-30-am",
-      "last_updated": "2026-07-31-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Amazon closed +15.46% (this run's data) on its first $200B+ quarter and 37% AWS growth. Apple closed -7.19% despite beating on revenue/EPS, dragged by weak guidance (9-11% next-quarter revenue growth vs ~12% Street), rising memory costs, a Services miss and softer Greater China revenue. Resolves forecast 2026-07-30-pm-1 (either moves >5%) as CORRECT. Closes the week's five-mega-cap earnings arc.",
-      "score_note": "Full cash-session resolution; no further tracking needed unless new developments emerge.",
-      "sources": [
-        "Amazon and Apple investor-relations releases (primary)",
-        "SEC EDGAR 8-K feed, this run (primary)",
-        "CNBC",
-        "Yahoo Finance",
-        "Gurufocus",
-        "Shacknews",
-        "AppleInsider"
-      ],
-      "watch": true
-    },
-    {
       "id": "russia-ukraine-poland-missile-jul30",
       "headline": "Ukraine's deepest strike of the war hits a refinery 750 miles inside Russia, killing 12+",
       "status": "Continuing",
@@ -317,10 +283,10 @@
       "headline": "DRC Ebola death toll crosses 2,000 for the first time -- second-largest, fastest-growing outbreak on record",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-13-am",
+      "last_updated": "2026-08-13-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "The widely-cited 4,381 cases / 2,011 deaths figure (as of Aug 11, WHO-sourced via UN News/Al Jazeera/Euronews/Washington Post) holds as of this morning. A newer, single-outlet figure (The National, Aug 12: 4,449 cases / 2,061 deaths) has not been independently corroborated and is not adopted as the headline number pending confirmation -- this report has now flagged this same class of cross-outlet reconciliation gap on multiple editions. Case-fatality rate ~45.9%; WHO calls it the fastest-growing Ebola outbreak on record, 60-70% of deaths outside formal care.",
-      "score_note": "Recurring reconciliation-gap pattern; WHO's own Disease Outbreak News page remains unreachable to this report's direct fetch.",
+      "one_line": "A CDC Health Alert Network notice (HAN00530, data through Aug 11) puts the toll at 4,566 cases / 2,128 deaths -- higher than both figures cited this morning (4,381/2,011 and an uncorroborated 4,449/2,061). Corroborated by ECDC and an independent epidemic tracker; who.int/cdc.gov direct fetch remains blocked this run.",
+      "score_note": "New highest-tracked figure; the reconciliation-gap pattern continues across editions.",
       "sources": [
         "UN News",
         "Al Jazeera",
@@ -328,24 +294,6 @@
         "WHO Disease Outbreak News (primary, not independently reachable this run)"
       ],
       "watch": true
-    },
-    {
-      "id": "blanche-ag-nomination-jul30",
-      "headline": "Todd Blanche sworn in as Attorney General",
-      "status": "Resolved",
-      "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-10-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Sworn in today at a White House ceremony (Judge Emil Bove administering), formalizing the role held on an acting basis since April, following the 50-49 Senate confirmation Aug 8. No independently confirmed first-day directive found.",
-      "score_note": "Fully resolved this weekend; no further tracking needed.",
-      "sources": [
-        "CNBC",
-        "Washington Post",
-        "NPR",
-        "NBC News",
-        "Roll Call"
-      ],
-      "watch": false
     },
     {
       "id": "europe-wildfires-jul-2026",
@@ -367,10 +315,10 @@
       "headline": "DOJ escalates to an emergency Supreme Court filing after Talwani issues a second, nationwide injunction",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-13-am",
+      "last_updated": "2026-08-13-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "On Aug 11, Judge Talwani issued a second preliminary injunction -- this one nationwide (League of Women Voters of Massachusetts v. Trump), expanding beyond her earlier narrower order, with plaintiffs ordered to post a $100 bond by Aug 18. On Aug 12, DOJ filed with the Supreme Court asking it to act promptly and stay the ruling, having already been denied a stay by the 1st Circuit on the original injunction. The fight is now concentrated at the Court's emergency docket.",
-      "score_note": "A nationwide injunction stacked atop the narrower original order gives SCOTUS a cleaner vehicle to resolve the underlying question.",
+      "one_line": "The 23-state-plus-D.C. coalition filed its 45-page response brief defending Judge Talwani's nationwide injunction at the Supreme Court's emergency docket, following DOJ's Aug 12 stay request. Briefing on both sides is now complete; no ruling yet.",
+      "score_note": "Full briefing now in front of the Court; next step is a ruling on DOJ's stay request.",
       "sources": [
         "reporting on the DOJ filing and bond order (secondary, multiple outlets)",
         "SCOTUSblog",
@@ -501,10 +449,10 @@
       "headline": "Gaza's 14-day disarmament-timetable checkpoint arrives with neither side having moved",
       "status": "Continuing",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-13-am",
+      "last_updated": "2026-08-13-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "The roadmap's 14-day deadline for preparing a disarmament timetable (not full disarmament itself) arrives today, Aug 13; extendable only by IVC/all-party agreement. No outlet has confirmed an outcome as of this morning. Netanyahu maintains Israel 'didn't agree' to the sequencing (Israeli forces reportedly control ~70% of Gaza, up from ~53% in October 2025); Hamas's Ghazi Hamad says Hamas won't implement absent an Israeli halt/withdrawal first.",
-      "score_note": "Forecast 2026-08-13-am-2 logged on whether the checkpoint passes without clear resolution in either direction.",
+      "one_line": "The 14-day checkpoint passed today without a bridging development. New: Jared Kushner (with Board of Peace envoy Nikolay Mladenov) will travel to Israel next week to press Netanyahu on the plan; an IDF strike killed a Hamas company commander in Gaza today, underscoring continued operational activity alongside the stalled diplomatic track.",
+      "score_note": "First concrete US diplomatic follow-through since Netanyahu's Aug 9 rejection of the 15-point sequencing.",
       "sources": [
         "Al Bawaba",
         "Al Jazeera",
@@ -700,24 +648,6 @@
       "last_updated": "2026-08-10-am"
     },
     {
-      "headline": "Typhoon Dolphin forces JAXA to postpone H3/Michibiki-7 launch as Category 4 storm nears Okinawa",
-      "status": "Resolved",
-      "verification": "Confirmed-multiple",
-      "one_line": "H3/Michibiki-7 (QZS-7) launched successfully Monday after the typhoon delay, carrying SACHI, a US Space Force space-domain-awareness instrument built by MIT Lincoln Laboratory -- a notable US-Japan cooperation angle. Typhoon Dolphin weakened after Zhejiang landfall; over 1 million evacuated across Wenzhou/Fujian/Shanghai, 943 flight cancellations, but no deaths or injuries reported in China, unlike Okinawa's earlier impact.",
-      "score_note": "Forward-looking risk this report flagged Aug 7 materialized into a successful, resolved outcome.",
-      "sources": [
-        "JAXA (primary)",
-        "Space.com",
-        "Hong Kong Free Press",
-        "Al Jazeera",
-        "NBC News"
-      ],
-      "watch": false,
-      "id": "typhoon-dolphin-h3-launch-aug7",
-      "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-11-am"
-    },
-    {
       "id": "saudi-turkiye-pakistan-defense-pact-aug7",
       "headline": "Saudi Arabia, Turkiye and Pakistan sign a NATO-style mutual defense pact",
       "status": "Materially changed",
@@ -794,10 +724,10 @@
       "headline": "Colombia earthquake toll jumps to 265 as the president and the disaster agency diverge on the number",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-13-am",
-      "verification": "Disputed",
-      "one_line": "President Abelardo de la Espriella cited 265 dead Wednesday evening and moved toward an economic-emergency declaration, well above UNGRD's own most recent official count of 181 dead / 2,754 injured / 189 missing -- two government sources now diverging rather than converging. Crowd-sourced missing-persons trackers separately put the missing count far above either official figure. Resolves forecast 2026-08-12-am-3 (toll surpasses 250 within 48 hours) correct, pending Saturday grading.",
-      "score_note": "Escalation to a presidential economic-emergency declaration marks a new phase; forecast 2026-08-13-am-3 logged on whether the two government figures reconcile within 5 days.",
+      "last_updated": "2026-08-13-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "UNGRD centralized all casualty reporting through the Presidency and announced a new unified figure: 273 dead, 3,824 injured, 377 missing (corroborated by 5 Colombian outlets) -- the fourth distinct upward revision since Aug 10 (181 -> 224 -> 250/265 -> 273). Resolves forecast 2026-08-13-am-3 (UNGRD converges to within 20 of the presidential 265 figure) as trending correct pending Saturday grading, since 273 is within 8 of 265.",
+      "score_note": "Centralized reporting produced a single figure superseding the prior dual-source dispute; watch whether 273 holds.",
       "sources": [
         "USGS (primary)",
         "Bloomberg",
@@ -839,30 +769,14 @@
       "watch": true
     },
     {
-      "id": "cpi-preview-aug12",
-      "headline": "July CPI prints cooler than expected on the headline, in line on core -- a mild dovish surprise that narrows but doesn't resolve the Warsh-vs-jobs Fed tension",
-      "status": "Resolved",
-      "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-12-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "BLS: headline CPI +0.1% m/m/+3.4% y/y (below the +0.2% consensus), core +0.2% m/m/+2.5% y/y (in line). This report's own FRED cross-check reproduces the same math. Indices closed modestly higher (S&P +0.28%, Nasdaq +0.51%) and VIX fell 5.43% to 14.45, this report's sharpest single-session vol decline tracked recently. No Fed official commented on the print by this report's pm cutoff. Resolves forecast 2026-08-11-pm-1 (core at/below ~0.2% consensus) as correct.",
-      "score_note": "Direct tie-breaker resolved; the broader Warsh-vs-Cook institutional dispute remains separate and unresolved.",
-      "sources": [
-        "bls.gov/news.release/cpi.nr0.htm (primary)",
-        "FRED CPIAUCSL/CPILFESL (primary, own cross-check)",
-        "this report's own Yahoo Finance and Cboe data"
-      ],
-      "watch": false
-    },
-    {
       "id": "alt-asset-manager-rally-nvda-financing-aug11",
       "headline": "KKR, Apollo, Ares and Blackstone give back part of their two-day Nvidia-financing rally -- the group's first down session since the story broke",
       "status": "Materially changed",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-12-pm",
+      "last_updated": "2026-08-13-pm",
       "verification": "Confirmed-primary",
-      "one_line": "After two sessions of outsized gains (Mon/Tue), all four closed lower today: KKR -0.29%, Apollo -0.94%, Ares -1.12%, Blackstone -0.45% (this run's own data), resolving forecast 2026-08-12-am-2 (at least two close lower) correct. No company-specific catalyst found; this run's own EDGAR sweep again came up empty. All four remain down sharply for 2026 YTD even after the two-day rally.",
-      "score_note": "Forecast 2026-08-12-pm-1 logged on whether the pullback extends over the next two sessions.",
+      "one_line": "After Wednesday's first down session since the Nvidia-financing story broke, all four rebounded sharply Thursday: Ares +4.96%, KKR +4.00%, Apollo +3.57%, Blackstone +2.00% (this run's own data), more than erasing Wednesday's pullback for three of the four names. No company-specific catalyst found; this run's own EDGAR sweep again came up empty.",
+      "score_note": "Wednesday's dip now reads as ordinary profit-taking rather than a reversal, given today's rebound.",
       "sources": [
         "this run's own Twelve Data and Yahoo Finance close-series data",
         "SEC EDGAR (primary, this run's own check)"
@@ -941,21 +855,6 @@
       "watch": true
     },
     {
-      "id": "total-solar-eclipse-aug12",
-      "headline": "Total solar eclipse crosses the Arctic, Greenland, Iceland and northern Spain/Portugal, coinciding with the Perseids peak and a six-planet alignment",
-      "status": "Resolved",
-      "first_seen": "2026-08-12-pm",
-      "last_updated": "2026-08-12-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Totality up to 2m18s along a path including A Coruna, Valencia, Zaragoza, Palma and Bilbao; ~980 million people worldwide saw at least a partial eclipse. Event is complete, predictable celestial mechanics -- not a developing story.",
-      "score_note": "New science item, not previously tracked; no further tracking needed.",
-      "sources": [
-        "NASA Science",
-        "timeanddate.com"
-      ],
-      "watch": false
-    },
-    {
       "id": "megacap-tech-divergence-aug12",
       "headline": "Mega-cap tech splits sharply: AI-infrastructure/semiconductor names rally while Microsoft, Meta, Apple and Tesla fall",
       "status": "New",
@@ -989,17 +888,67 @@
     {
       "id": "russia-ukraine-novorossiysk-aug13",
       "headline": "Ukraine strikes Russia's Black Sea Fleet base at Novorossiysk as Russia intensifies its own overnight barrage",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-13-am",
+      "last_updated": "2026-08-13-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Overnight Aug 12-13: Ukrainian strikes damaged four Russian warships at the Novorossiysk naval base and hit Krasnodar Krai (2 killed, 12 injured). Russia struck Ukraine with an Iskander-M ballistic missile, a Kh-31P anti-radiation missile, Kh-35 missiles and 138 Shahed-type drones, killing 8 and injuring 57 over the past day, including a fatal hit on an Odesa Oblast oil tanker truck.",
-      "score_note": "A naval-base strike is a different target class than the refinery/energy-infrastructure pattern tracked in recent weeks; watch for confirmation this reflects a targeting shift.",
+      "one_line": "Russia struck Ukraine's Izmail Danube grain port overnight (fire reported, no casualty figures found) -- a second consecutive night of reciprocal port strikes following Wednesday's Ukrainian strike on Novorossiysk. Ukraine also struck a Russian oil refinery (its fourth in three days) and Zelensky renewed calls for more Patriot interceptors.",
+      "score_note": "Tit-for-tat port targeting is now a two-night pattern, distinct from the refinery-focused campaign tracked through the week.",
       "sources": [
         "Kyiv Independent",
         "Washington Post (wire)",
         "Euronews",
         "South Front"
+      ],
+      "watch": true
+    },
+    {
+      "id": "rocket-lab-iridium-aug13",
+      "headline": "Rocket Lab clears major Iridium-acquisition milestones and replaces its $1.94B ATM equity program -- but the stock closes lower",
+      "status": "New",
+      "first_seen": "2026-08-13-pm",
+      "last_updated": "2026-08-13-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "This run's own SEC EDGAR sweep found two RKLB 8-Ks today: HSR antitrust clearance for the Iridium acquisition (expired 11:59pm ET Aug 12), Form S-4 filed, FCC applications filed Aug 10; and a replacement (not increased) $1,944,369,826 ATM equity program to help fund the deal. RKLB closed -1.32% despite the objectively positive regulatory news -- a gap this report attributes to a likely, unconfirmed dilution-overhang read. Forecast 2026-08-13-pm-1 logged.",
+      "score_note": "New M&A/financing thread with strong primary sourcing; watch for the S-4 becoming effective.",
+      "sources": [
+        "SEC EDGAR (primary, this run's own fetch)",
+        "investors.rocketlabcorp.com",
+        "StockTitan",
+        "Foreign Policy Journal"
+      ],
+      "watch": true
+    },
+    {
+      "id": "lunr-earnings-reversal-aug13",
+      "headline": "Intuitive Machines swings from a ~16% premarket earnings plunge to a positive close",
+      "status": "New",
+      "first_seen": "2026-08-13-pm",
+      "last_updated": "2026-08-13-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "LUNR missed on revenue ($206.2M vs ~$216.3M est.) and EPS (~-$0.16 vs ~-$0.09 est.), plunging to a premarket low of $14.29 (-15.7% vs Wednesday's close) by 9:25am ET, then recovered steadily through the session to close +3.60% at $17.56 -- this run's own minute-by-minute Yahoo Finance data. Record backlog ($1.76-1.8B) and reiterated FY26 guidance appear to have outweighed the headline miss once digested.",
+      "score_note": "Unusually large intraday round-trip; York Space Systems reports tonight, rounding out the week's space earnings.",
+      "sources": [
+        "Intuitive Machines earnings release (primary)",
+        "this run's own Yahoo Finance intraday data",
+        "TipRanks",
+        "MarketBeat"
+      ],
+      "watch": true
+    },
+    {
+      "id": "july-ppi-aug13",
+      "headline": "July PPI flat on the headline but core producer-price inflation quadruples its pace to +0.4%",
+      "status": "Resolved",
+      "first_seen": "2026-08-13-pm",
+      "last_updated": "2026-08-13-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "BLS (direct fetch): headline PPI 0.0% m/m/+4.7% y/y; core (ex food/energy/trade services) +0.4% m/m/+4.7% y/y. Energy (-3.1%) and goods (-0.9%) offset services (+0.2%) and construction (+2.2%). Markets read it net-dovish (10Y yield -4bp to 4.641%, indices closed higher for a 2nd session) despite the hotter core print. Forecast 2026-08-13-pm-3 logged on Fed commentary before Jackson Hole.",
+      "score_note": "Headline-vs-core divergence is the notable nuance; a potential complication for the Warsh-hawkish-vs-jobs-dovish tension if it persists.",
+      "sources": [
+        "bls.gov/news.release/ppi.nr0.htm (primary, direct fetch)",
+        "FRED ICSA (primary)",
+        "this run's own Yahoo Finance data"
       ],
       "watch": true
     }
