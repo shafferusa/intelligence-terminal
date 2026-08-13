@@ -317,10 +317,10 @@
       "headline": "DRC Ebola death toll crosses 2,000 for the first time -- second-largest, fastest-growing outbreak on record",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-12-pm",
+      "last_updated": "2026-08-13-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Converges today at 4,381 confirmed cases / 2,011 deaths as of Aug 11 (UN News, Al Jazeera, Euronews, all citing WHO Africa Regional Director Dr. Mohamed Janabi), resolving this morning's flagged discrepancy in the higher-figure direction. Case-fatality rate ~45.9%; WHO calls it the fastest-growing Ebola outbreak on record, 60-70% of deaths outside formal care.",
-      "score_note": "Confirms escalation rather than a data error; WHO's own Disease Outbreak News page remains unreachable to this report's direct fetch.",
+      "one_line": "The widely-cited 4,381 cases / 2,011 deaths figure (as of Aug 11, WHO-sourced via UN News/Al Jazeera/Euronews/Washington Post) holds as of this morning. A newer, single-outlet figure (The National, Aug 12: 4,449 cases / 2,061 deaths) has not been independently corroborated and is not adopted as the headline number pending confirmation -- this report has now flagged this same class of cross-outlet reconciliation gap on multiple editions. Case-fatality rate ~45.9%; WHO calls it the fastest-growing Ebola outbreak on record, 60-70% of deaths outside formal care.",
+      "score_note": "Recurring reconciliation-gap pattern; WHO's own Disease Outbreak News page remains unreachable to this report's direct fetch.",
       "sources": [
         "UN News",
         "Al Jazeera",
@@ -364,13 +364,13 @@
     },
     {
       "id": "mail-ballot-eo-scotus",
-      "headline": "DOJ formally appeals the mail-ballot EO injunction to the 1st Circuit, seeks a stay, signals possible Supreme Court emergency relief",
+      "headline": "DOJ escalates to an emergency Supreme Court filing after Talwani issues a second, nationwide injunction",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-12-pm",
+      "last_updated": "2026-08-13-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Following Judge Talwani's (D. Mass.) Aug 11 preliminary injunction, DOJ has formally appealed to the 1st Circuit (Boston) and asked the district court to stay the injunction pending appeal, arguing the state plaintiffs lacked standing. Talwani separately ordered plaintiffs to post a nominal $100 bond by Aug 18. DOJ has signaled it may seek emergency Supreme Court relief if it loses at the 1st Circuit.",
-      "score_note": "Escalates from a single district-court order into active appellate litigation with a credible path to SCOTUS's emergency docket.",
+      "one_line": "On Aug 11, Judge Talwani issued a second preliminary injunction -- this one nationwide (League of Women Voters of Massachusetts v. Trump), expanding beyond her earlier narrower order, with plaintiffs ordered to post a $100 bond by Aug 18. On Aug 12, DOJ filed with the Supreme Court asking it to act promptly and stay the ruling, having already been denied a stay by the 1st Circuit on the original injunction. The fight is now concentrated at the Court's emergency docket.",
+      "score_note": "A nationwide injunction stacked atop the narrower original order gives SCOTUS a cleaner vehicle to resolve the underlying question.",
       "sources": [
         "reporting on the DOJ filing and bond order (secondary, multiple outlets)",
         "SCOTUSblog",
@@ -498,13 +498,13 @@
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
-      "headline": "Netanyahu's Gaza rejection draws first Hamas response calling for mediator pressure",
+      "headline": "Gaza's 14-day disarmament-timetable checkpoint arrives with neither side having moved",
       "status": "Continuing",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-12-am",
+      "last_updated": "2026-08-13-am",
       "verification": "Confirmed-multiple",
-      "one_line": "No bridging development found Aug 11-12 ahead of tomorrow's (Aug 13) 14-day roadmap checkpoint. Netanyahu maintains Israel 'didn't agree' to the sequencing; Hamas's Ghazi Hamad says Hamas won't implement absent an Israeli halt/withdrawal first; mediators Egypt/Qatar/Turkiye jointly condemned Israeli strikes on civilians/healthcare facilities. Both parties' conditions remain unreconciled heading into the checkpoint date.",
-      "score_note": "Checkpoint arrives tomorrow with neither side having withdrawn its conditions; likely to produce further statements rather than clean resolution.",
+      "one_line": "The roadmap's 14-day deadline for preparing a disarmament timetable (not full disarmament itself) arrives today, Aug 13; extendable only by IVC/all-party agreement. No outlet has confirmed an outcome as of this morning. Netanyahu maintains Israel 'didn't agree' to the sequencing (Israeli forces reportedly control ~70% of Gaza, up from ~53% in October 2025); Hamas's Ghazi Hamad says Hamas won't implement absent an Israeli halt/withdrawal first.",
+      "score_note": "Forecast 2026-08-13-am-2 logged on whether the checkpoint passes without clear resolution in either direction.",
       "sources": [
         "Al Bawaba",
         "Al Jazeera",
@@ -665,21 +665,23 @@
       "watch": true
     },
     {
-      "headline": "Senate committee votes 8-5 to hold Fauci in contempt, refers directly to DOJ bypassing a floor vote",
-      "status": "Materially changed",
-      "verification": "Confirmed-multiple",
-      "one_line": "First concrete follow-on to the Aug 6 contempt referral: Sens. Ron Johnson and Rand Paul released Fauci's government-phone text messages today after HHS turned over ~34,000 messages/522 voicemails to a Senate subcommittee (CNN, single-sourced at this cutoff). Separately, Florida AG Uthmeier's state-level probe (~Aug 7) is a distinct, non-DOJ action.",
-      "score_note": "Novel procedural approach; intersects with Blanche's unresolved AG confirmation.",
+      "headline": "Trump says he hasn't discussed Fauci prosecution with Blanche or Pirro; DOJ still reviewing the contempt referral",
+      "status": "Continuing",
+      "verification": "Confirmed-multiple (statement); Single-reliable-source (DOJ review status)",
+      "one_line": "Trump told reporters Aug 10-11 (per Semafor's Shelby Talcott) he has 'not spoken' to AG Blanche or DC US Attorney Pirro about prosecuting Fauci, tempering earlier suggestions Fauci could face Bannon/Navarro-style contempt charges. DOJ says it is 'reviewing' the Aug 6 referral; no charging decision announced.",
+      "score_note": "First real test of how the Blanche DOJ handles the referral; Trump's statement is a data point, not a signal of the eventual decision either way.",
       "sources": [
         "CBS News",
         "CNN",
         "Washington Post",
-        "Time"
+        "Time",
+        "Semafor (via Yahoo)",
+        "The Hill"
       ],
       "watch": true,
       "id": "fauci-contempt-referral-aug6",
       "first_seen": "2026-08-07-am",
-      "last_updated": "2026-08-11-pm"
+      "last_updated": "2026-08-13-am"
     },
     {
       "headline": "Fighting resumes in western Tigray, most serious escalation since the 2022 Pretoria peace deal",
@@ -789,13 +791,13 @@
     },
     {
       "id": "colombia-earthquake-aug10",
-      "headline": "Colombia earthquake toll narrows toward the low-200s but remains unreconciled across outlets",
+      "headline": "Colombia earthquake toll jumps to 265 as the president and the disaster agency diverge on the number",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-12-pm",
+      "last_updated": "2026-08-13-am",
       "verification": "Disputed",
-      "one_line": "Colombia's forensic institute (Bloomberg) says it has received 202 bodies from four departments, describing the toll as 'above 200'; BBC cites 'above 220'; NPR still cites the lower official figure of 'at least 181 dead, at least 195 missing,' noting civilian-run databases put the missing count near 4,000 versus the official ~195 -- an even larger unresolved gap than the death toll itself.",
-      "score_note": "Range narrowed from this morning's 181-250 to roughly 181-224; still no single reconciled government figure three days after the quake.",
+      "one_line": "President Abelardo de la Espriella cited 265 dead Wednesday evening and moved toward an economic-emergency declaration, well above UNGRD's own most recent official count of 181 dead / 2,754 injured / 189 missing -- two government sources now diverging rather than converging. Crowd-sourced missing-persons trackers separately put the missing count far above either official figure. Resolves forecast 2026-08-12-am-3 (toll surpasses 250 within 48 hours) correct, pending Saturday grading.",
+      "score_note": "Escalation to a presidential economic-emergency declaration marks a new phase; forecast 2026-08-13-am-3 logged on whether the two government figures reconcile within 5 days.",
       "sources": [
         "USGS (primary)",
         "Bloomberg",
@@ -806,13 +808,13 @@
     },
     {
       "id": "space-earnings-rklb-asts-aug11",
-      "headline": "Rocket Lab posts a record quarter and reiterates its $8B Iridium deal; AST SpaceMobile misses on revenue/EPS but shares rise anyway",
+      "headline": "Space-sector earnings season: Spire beats on EPS but misses on revenue; Intuitive Machines and York Space Systems report today",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-12-am",
+      "last_updated": "2026-08-13-am",
       "verification": "Confirmed-primary (company releases)",
-      "one_line": "Firefly Aerospace (FLY) reported Q2 2026 after Tuesday's close: revenue $117.7M beat vs. ~$89.6M consensus, EPS -$0.42 vs. -$0.53 estimate (narrower loss than expected), cash $459.8M. FLY closed Tuesday +2.33% ahead of the print. Spire Global (SPIR, Tuesday's space-watchlist leader at +5.63%) reports after tonight's (Aug 12) close. Broader space-sector session was strong Tuesday: BKSY +4.47%, LUNR +4.44%, ASTS +4.17%, RDW +2.97%, AVAV +3.63%.",
-      "score_note": "Two more space-earnings data points; sector entered the window with real session-level momentum, not yet confirmed by all reporters.",
+      "one_line": "Spire Global (SPIR) reported Q2 2026 after Tuesday's (Aug 12) close: EPS -$0.31 beat vs. -$0.33 estimate, revenue $18.04M missed vs. $18.53M estimate; FY26 guidance roughly in line at the midpoint. SPIR closed Wednesday -0.54%, a muted reaction. Intuitive Machines (LUNR) reports before today's (Aug 13) open (options imply ~13.5% move); York Space Systems (YSS) reports after tonight's close. Broader space-sector session was strong Wednesday ahead of both: BKSY +6.62%, YSS +4.15%, ASTS +3.74%, PL +3.38%, VSAT +3.21%, LUNR +2.85%.",
+      "score_note": "Three space-earnings prints in three sessions; sector momentum going in has been real but results themselves are mixed so far.",
       "sources": [
         "Rocket Lab investor relations (primary)",
         "AST SpaceMobile earnings call transcript via Investing.com",
@@ -965,6 +967,39 @@
       "sources": [
         "this run's own Twelve Data and Yahoo Finance close-series data",
         "secondary reporting on Nebius/CoreWeave earnings"
+      ],
+      "watch": true
+    },
+    {
+      "id": "ceva-logistics-breach-aug10",
+      "headline": "Ceva Logistics breach ripples into Steam hardware shipments and multiple European retailers",
+      "status": "New",
+      "first_seen": "2026-08-13-am",
+      "last_updated": "2026-08-13-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Ceva Logistics confirmed an intrusion (~Jul 29-Aug 1, disclosed Aug 1) affecting 8+ European warehouses -- names, addresses, phone/email and order data compromised, no payment/credential data. Downstream customers affected include Valve (Steam hardware shipments) and multiple European retailers (Bol, de Bijenkorf, Ace & Tate), with ongoing shipping delays reported.",
+      "score_note": "New supply-chain/logistics-vendor breach thread, distinct from ShinyHunters/EY and the Cisco/VMware exploitation threads.",
+      "sources": [
+        "TechCrunch",
+        "The Register",
+        "The Record"
+      ],
+      "watch": true
+    },
+    {
+      "id": "russia-ukraine-novorossiysk-aug13",
+      "headline": "Ukraine strikes Russia's Black Sea Fleet base at Novorossiysk as Russia intensifies its own overnight barrage",
+      "status": "New",
+      "first_seen": "2026-08-13-am",
+      "last_updated": "2026-08-13-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Overnight Aug 12-13: Ukrainian strikes damaged four Russian warships at the Novorossiysk naval base and hit Krasnodar Krai (2 killed, 12 injured). Russia struck Ukraine with an Iskander-M ballistic missile, a Kh-31P anti-radiation missile, Kh-35 missiles and 138 Shahed-type drones, killing 8 and injuring 57 over the past day, including a fatal hit on an Odesa Oblast oil tanker truck.",
+      "score_note": "A naval-base strike is a different target class than the refinery/energy-infrastructure pattern tracked in recent weeks; watch for confirmation this reflects a targeting shift.",
+      "sources": [
+        "Kyiv Independent",
+        "Washington Post (wire)",
+        "Euronews",
+        "South Front"
       ],
       "watch": true
     }
