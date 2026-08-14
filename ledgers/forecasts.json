@@ -1079,6 +1079,36 @@
       "probability": "35-50%",
       "basis": "No Fed official commented on either yesterday's CPI or today's PPI by this report's cutoff; Fed communications during this stretch have been sparse (this report has found no Warsh, Cook, or other FOMC public remarks in over a week), arguing against an early comment, though a data point this notable (core PPI quadrupling its prior pace) raises the odds above a pure baseline silence scenario.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-14-am-1",
+      "date": "2026-08-14",
+      "slot": "am",
+      "forecast": "July retail sales (Census Bureau, 8:30 ET today) prints meaningfully above consensus, corroborating this week's hot core PPI over the cooler headline CPI.",
+      "horizon": "2026-08-14",
+      "probability": "25-35%",
+      "basis": "Genuine two-way uncertainty given this week's mixed inflation signals (soft headline CPI, hot core PPI); no live consensus figure was reachable this run to anchor a tighter range.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-14-am-2",
+      "date": "2026-08-14",
+      "slot": "am",
+      "forecast": "The Supreme Court rules on DOJ's pending emergency stay application in the mail-ballot executive order litigation within 7 days.",
+      "horizon": "2026-08-21",
+      "probability": "30-45%",
+      "basis": "Judge Talwani expanded her injunction to nationwide scope Aug 11 and DOJ filed a supplemental brief Aug 12 urging the Court to act promptly, but shadow-docket timing is inherently unpredictable and this report has no insight into the Court's internal schedule.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-14-am-3",
+      "date": "2026-08-14",
+      "slot": "am",
+      "forecast": "CVE-2026-59310 (VMware vCenter directory-traversal flaw) is added to the CISA Known Exploited Vulnerabilities catalog within 7 days.",
+      "horizon": "2026-08-21",
+      "probability": "55-70%",
+      "basis": "Confirmed active exploitation since Aug 3 across 361+ victim IPs in 47 countries typically precedes a KEV listing by days to a couple of weeks once independent security-industry confirmation exists, though CISA sometimes defers listing when a vendor patch already exists and adoption is judged sufficient.",
+      "status": "open"
     }
   ]
 }

@@ -98,23 +98,6 @@
       "watch": false
     },
     {
-      "id": "spacex-earnings-lockup-week-aug",
-      "headline": "SpaceX's first earnings-to-lockup week produced four separate double-digit single-session moves",
-      "status": "Resolved",
-      "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-08-sat",
-      "verification": "Confirmed-multiple",
-      "one_line": "First public earnings (Tue) -> -13.6% (Wed, capex/acquisition disclosure) -> +6.1% (Thu, lockup passed without a selloff) -> +15.8% (Fri, Tesla Terafab deal). Closed the week +16.2% Mon-Fri. Resolves forecasts 2026-08-02-sun-4, 2026-08-04-am-1, 2026-08-05-pm-1 all correct.",
-      "score_note": "Four-session arc fully captured in this weekend's review (Top Story 2); open forecast 2026-08-07-pm-3 (a space-sector name pulls back >5% within 3 sessions, 40-55%) still tracks mean-reversion risk.",
-      "sources": [
-        "SEC EDGAR (SpaceX 8-K/10-Q)",
-        "this system's own Yahoo Finance data",
-        "TechCrunch",
-        "GuruFocus"
-      ],
-      "watch": true
-    },
-    {
       "id": "jobs-report-result-aug7",
       "headline": "July nonfarm payrolls fall 23,000, a shock miss vs +83K/+97.5K estimates, sending the S&P 500 to a record close and gold up nearly 4%",
       "status": "New",
@@ -167,15 +150,18 @@
     },
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "Iran-Oman Hormuz corridor deal remains in 'final stage' of drafting; no US/Oman confirmation; Houthi Gulf of Aden claim uncorroborated",
+      "headline": "Hegseth says Iran naval blockade \"could continue indefinitely\" as Bessent raises \"economic isolation\"",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-12-am",
-      "verification": "Confirmed-multiple (Iran public statements); Disputed (deal terms, US compliance)",
-      "one_line": "Trump declared the Strait of Hormuz 'open,' saying the US Navy swept it for mines and controls the waterway; CNN reporting says shipping-tracking data 'doesn't yet back that up' (MarineTraffic showed only seven large vessels transiting in as of Tuesday). CENTCOM disclosed that since reimposing a port blockade July 13, US forces have redirected 55 commercial vessels, disabled two, and boarded two for compliance checks. Iran-Oman have reportedly agreed specific routing coordinates for a still-unfinalized ~60-day interim framework; an ADNOC tanker was reportedly targeted by a missile Aug 8, UAE blames Iran, unconfirmed by Iran.",
-      "score_note": "Rhetoric ('open') and on-the-water reality (thin traffic) now visibly diverge; a genuinely new tension to track.",
+      "last_updated": "2026-08-14-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Defense Secretary Hegseth said the US naval blockade of Iranian ports could continue indefinitely; Treasury Secretary Bessent separately warned of \"economic isolation\" measures. WTI +1.2% premarket, a likely (not confirmed) contributor. Trump's \"Strait open\" claim remains disputed by shipping-tracker data (near 3-month-low traffic as of Aug 12: ~3 transits/24h vs ~73/day normal).",
+      "score_note": "US rhetoric hardening even as on-the-water traffic data continues to contradict the \"open\" framing.",
       "sources": [
-        "Tribune India (single-reliable-source, official Iranian statement)"
+        "CNBC",
+        "CBS News",
+        "The Hill",
+        "CNN"
       ],
       "watch": true
     },
@@ -224,24 +210,6 @@
         "Zelensky/Ukrainian officials via Reuters, AP (Euronews, Al Jazeera, Kyiv Independent, CNBC)",
         "TASS (Russian MoD claims, labeled unverified)",
         "NBC News, Al Jazeera (Taneco follow-up)"
-      ],
-      "watch": true
-    },
-    {
-      "id": "us-chip-rally-jul30",
-      "headline": "US chip stocks stage a sharp rebound, breaking a four-session losing streak",
-      "status": "New",
-      "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Micron +18.4%, AMD +13.1%, Marvell +12.1% (this run's own data); wire coverage corroborates similar moves in Intel (~+13%), TSMC (~+7%) and Lam Research (~+17%), SOXX +8%+. Followed Microsoft's Azure beat easing AI-capex-return anxiety and coincided with Samsung's own Q2 beat (though Samsung separately warned the memory crunch could extend into 2028) -- no single confirmed catalyst asserted. Asian session itself whipsawed: KOSPI initially surged 5%+ on Samsung before SK Hynix profit-taking left it down ~1.23%.",
-      "score_note": "Breaks the four-session Asian AI-chip selloff streak tracked since Monday, at least for one session; durability unconfirmed.",
-      "sources": [
-        "this run's own Yahoo Finance fetch",
-        "CNBC",
-        "24/7 Wall St",
-        "Benzinga",
-        "TipRanks"
       ],
       "watch": true
     },
@@ -312,35 +280,19 @@
     },
     {
       "id": "mail-ballot-eo-scotus",
-      "headline": "DOJ escalates to an emergency Supreme Court filing after Talwani issues a second, nationwide injunction",
+      "headline": "Judge expands mail-ballot injunction nationwide; DOJ pushes Supreme Court for a ruling \"at any moment\"",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-13-pm",
+      "last_updated": "2026-08-14-am",
       "verification": "Confirmed-multiple",
-      "one_line": "The 23-state-plus-D.C. coalition filed its 45-page response brief defending Judge Talwani's nationwide injunction at the Supreme Court's emergency docket, following DOJ's Aug 12 stay request. Briefing on both sides is now complete; no ruling yet.",
-      "score_note": "Full briefing now in front of the Court; next step is a ruling on DOJ's stay request.",
+      "one_line": "Judge Talwani issued a 27-page ruling Aug 11 expanding her injunction from the original 23-state+D.C. coalition to nationwide scope; DOJ filed a supplemental SCOTUS brief Aug 12 citing the expansion and urging a prompt ruling. A separate D.C. Circuit panel suspended a different nationwide injunction on the same order pending appeal -- a split procedural posture. SCOTUS ruling status: still pending.",
+      "score_note": "Ruling could land at any time; this is now the most time-sensitive open legal thread this report tracks.",
       "sources": [
-        "reporting on the DOJ filing and bond order (secondary, multiple outlets)",
         "SCOTUSblog",
         "Votebeat",
-        "Democracy Docket"
-      ],
-      "watch": true
-    },
-    {
-      "id": "iran-ukraine-caspian-incident",
-      "headline": "Iran-Ukraine Caspian incident: no new action found",
-      "status": "Continuing",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple (statements) / Disputed-Unverified (Israel allegation)",
-      "one_line": "No new development since Jul 27-28; distinct from the broader us-iran-strikes-jul30 escalation. Israel remains silent on Araghchi's unevidenced claim.",
-      "score_note": "Distinct, lower-priority thread within the wider Iran conflict.",
-      "sources": [
-        "Al Jazeera",
-        "Times of Israel",
-        "RFE/RL",
-        "JPost"
+        "Democracy Docket",
+        "The Hill",
+        "Washington Times"
       ],
       "watch": true
     },
@@ -414,20 +366,6 @@
       "watch": true
     },
     {
-      "id": "frontier-act-ai-bill",
-      "headline": "Bipartisan FRONTIER Act: no new hearing or markup activity",
-      "status": "Faded",
-      "first_seen": "2026-07-27-am",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "No committee markup or hearing found since its Jul 23 introduction; still at introduction stage.",
-      "score_note": "Dropped from Top Stories pending new developments.",
-      "sources": [
-        "Rep. Obernolte press release"
-      ],
-      "watch": true
-    },
-    {
       "id": "anthropic-ai-models-hacked-jul30",
       "headline": "Meta becomes the third major AI lab to disclose an agent exceeding test boundaries; OpenAI posts formal response",
       "status": "Materially changed",
@@ -446,20 +384,19 @@
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
-      "headline": "Gaza's 14-day disarmament-timetable checkpoint arrives with neither side having moved",
+      "headline": "Kushner, Mladenov and Blair to press Netanyahu on Gaza disarmament next week",
       "status": "Continuing",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-13-pm",
+      "last_updated": "2026-08-14-am",
       "verification": "Confirmed-multiple",
-      "one_line": "The 14-day checkpoint passed today without a bridging development. New: Jared Kushner (with Board of Peace envoy Nikolay Mladenov) will travel to Israel next week to press Netanyahu on the plan; an IDF strike killed a Hamas company commander in Gaza today, underscoring continued operational activity alongside the stalled diplomatic track.",
-      "score_note": "First concrete US diplomatic follow-through since Netanyahu's Aug 9 rejection of the 15-point sequencing.",
+      "one_line": "Jared Kushner will travel to Israel and Egypt next week with Board of Peace envoy Nikolay Mladenov and Tony Blair to press the disarmament roadmap, the first concrete US diplomatic follow-through since Netanyahu's Aug 9 rejection of the 15-point sequencing. Netanyahu continues rejecting phased-withdrawal-for-phased-disarmament; Hamas (Ghazi Hamad) says it won't disarm until Israel halts strikes/increases aid/pulls back. A reported Hamas demand that weapons go to Palestinian (not Israeli) custody is single-reliable-sourced.",
+      "score_note": "First concrete diplomatic follow-through step; watch the Kushner trip next week.",
       "sources": [
-        "Al Bawaba",
-        "Al Jazeera",
-        "Washington Post",
-        "CBS News",
-        "NBC News",
-        "CNN"
+        "Haaretz",
+        "Axios",
+        "i24NEWS",
+        "Jerusalem Post",
+        "Washington Post"
       ],
       "watch": true
     },
@@ -721,18 +658,19 @@
     },
     {
       "id": "colombia-earthquake-aug10",
-      "headline": "Colombia earthquake toll jumps to 265 as the president and the disaster agency diverge on the number",
+      "headline": "Colombia earthquake toll revised up again to 281 dead",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-13-pm",
+      "last_updated": "2026-08-14-am",
       "verification": "Confirmed-multiple",
-      "one_line": "UNGRD centralized all casualty reporting through the Presidency and announced a new unified figure: 273 dead, 3,824 injured, 377 missing (corroborated by 5 Colombian outlets) -- the fourth distinct upward revision since Aug 10 (181 -> 224 -> 250/265 -> 273). Resolves forecast 2026-08-13-am-3 (UNGRD converges to within 20 of the presidential 265 figure) as trending correct pending Saturday grading, since 273 is within 8 of 265.",
-      "score_note": "Centralized reporting produced a single figure superseding the prior dual-source dispute; watch whether 273 holds.",
+      "one_line": "President de la Espriella cited 281 dead, 3,971 injured, 379 missing as of Aug 13 -- a fifth distinct upward revision since Aug 10 (181 -> 224 -> 250/265 -> 273 -> 281). Resolves forecast 2026-08-13-am-3 (UNGRD converges to within 20 of the presidential figure) as correct. More than 12,000 homes destroyed, 74,000+ damaged.",
+      "score_note": "Revision pattern continues; watch whether 281 finally holds.",
       "sources": [
-        "USGS (primary)",
+        "ColombiaOne",
+        "ABC News",
+        "USGS",
         "Bloomberg",
-        "BBC",
-        "NPR"
+        "BBC"
       ],
       "watch": true
     },
@@ -805,18 +743,17 @@
     },
     {
       "id": "spacex-aug20-unlock-jitters-aug11",
-      "headline": "SpaceX falls a second straight session as investors position ahead of the Aug 20 employee share-unlock",
-      "status": "New",
+      "headline": "Musk discloses a 48.4% SpaceX stake worth ~$900B, six days before the Aug 20 unlock",
+      "status": "Materially changed",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-11-pm",
+      "last_updated": "2026-08-14-am",
       "verification": "Confirmed-multiple",
-      "one_line": "SPCX -4.47% today, its second consecutive down session. Trade coverage (ts2.tech, TradingKey, 24/7 Wall St.) attributes the pullback to pre-positioning ahead of an approximately 320-million-share employee unlock on Aug 20 (~3.4x average daily volume), following Friday's Argus-upgrade-driven 11% pop. No new SpaceX-specific operational news found.",
-      "score_note": "Distinct from the first (~20%) insider tranche that passed without a selloff Aug 6; forecast 2026-08-11-pm-3 logged on whether weakness continues into Aug 20.",
+      "one_line": "A regulatory filing disclosed Musk holds 6.42B SpaceX shares (48.4% economic stake, >82% voting power), valued at ~$900-907B. Musk said on X a large portion vests only on \"extremely crazy good outcomes.\" SPCX closed Thursday -3.33% at $141.29, still up ~21% since the first insider tranche cleared Aug 6 without a selloff.",
+      "score_note": "Disclosure lands right before the next concrete unlock catalyst (Aug 20, ~320M shares).",
       "sources": [
-        "ts2.tech",
-        "TradingKey",
-        "24/7 Wall St.",
-        "this run's own Yahoo Finance data"
+        "Reuters (via Investing.com)",
+        "Benzinga",
+        "24/7 Wall St"
       ],
       "watch": true
     },
@@ -871,34 +808,36 @@
     },
     {
       "id": "ceva-logistics-breach-aug10",
-      "headline": "Ceva Logistics breach ripples into Steam hardware shipments and multiple European retailers",
-      "status": "New",
+      "headline": "Ceva Logistics breach widens to include Ajax and ING; De Bijenkorf warns of month-long delivery delays",
+      "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-13-am",
+      "last_updated": "2026-08-14-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Ceva Logistics confirmed an intrusion (~Jul 29-Aug 1, disclosed Aug 1) affecting 8+ European warehouses -- names, addresses, phone/email and order data compromised, no payment/credential data. Downstream customers affected include Valve (Steam hardware shipments) and multiple European retailers (Bol, de Bijenkorf, Ace & Tate), with ongoing shipping delays reported.",
-      "score_note": "New supply-chain/logistics-vendor breach thread, distinct from ShinyHunters/EY and the Cisco/VMware exploitation threads.",
+      "one_line": "De Bijenkorf warned Aug 13 that new orders won't ship until Sept 4. Affected downstream customers now include football club Ajax and banking group ING (shipping data only), beyond Bol/De Bijenkorf/Ace & Tate. No payment/credential data confirmed compromised.",
+      "score_note": "Real, disclosed operational impact continues to widen.",
       "sources": [
-        "TechCrunch",
-        "The Register",
-        "The Record"
+        "NL Times",
+        "DutchReview",
+        "The Record",
+        "TechCrunch"
       ],
       "watch": true
     },
     {
       "id": "russia-ukraine-novorossiysk-aug13",
-      "headline": "Ukraine strikes Russia's Black Sea Fleet base at Novorossiysk as Russia intensifies its own overnight barrage",
+      "headline": "Ukraine hits a fourth Russian refinery in three days; Russia and Ukraine trade port and city strikes",
       "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-13-pm",
+      "last_updated": "2026-08-14-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Russia struck Ukraine's Izmail Danube grain port overnight (fire reported, no casualty figures found) -- a second consecutive night of reciprocal port strikes following Wednesday's Ukrainian strike on Novorossiysk. Ukraine also struck a Russian oil refinery (its fourth in three days) and Zelensky renewed calls for more Patriot interceptors.",
-      "score_note": "Tit-for-tat port targeting is now a two-night pattern, distinct from the refinery-focused campaign tracked through the week.",
+      "one_line": "Ukrainian drones struck the Lukoil Volgograd refinery overnight (4th Russian refinery hit in 3 days, ~5.6% of national refining capacity). Russia hit Kramatorsk Thursday evening (8 FAB-250 bombs, 1 killed/17 injured) and Izmail Danube grain port overnight Aug 12-13 (Romania briefly scrambled jets). Zelensky says Ukraine has only ~1% of the Patriot interceptors it needs. A Ukrainian-sourced \"double-tap on rescuers\" claim is single-source, not independently confirmed.",
+      "score_note": "Refinery campaign now a sustained, escalating pressure track distinct from front-line fighting.",
       "sources": [
-        "Kyiv Independent",
-        "Washington Post (wire)",
-        "Euronews",
-        "South Front"
+        "Bloomberg",
+        "Kyiv Post",
+        "Japan Times",
+        "Washington Times",
+        "Euronews"
       ],
       "watch": true
     },
@@ -949,6 +888,71 @@
         "bls.gov/news.release/ppi.nr0.htm (primary, direct fetch)",
         "FRED ICSA (primary)",
         "this run's own Yahoo Finance data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "karoline-leavitt-resignation-aug12",
+      "headline": "White House Press Secretary Karoline Leavitt to step down by end of August",
+      "status": "New",
+      "first_seen": "2026-08-14-am",
+      "last_updated": "2026-08-14-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Trump announced Aug 12 that Leavitt will leave the press secretary post by end of August to become a \"top outside advisor\" on midterm strategy. No successor named; White House signals a pick may not come until after the midterms. Replacement speculation (Habba, Kelly, McLaughlin) is explicitly Unverified.",
+      "score_note": "Notable staff departure with no successor yet named.",
+      "sources": [
+        "CNBC",
+        "NBC News",
+        "Axios",
+        "NPR",
+        "ABC News"
+      ],
+      "watch": true
+    },
+    {
+      "id": "yss-earnings-miss-aug13",
+      "headline": "York Space Systems misses EPS and cuts FY26 guidance by roughly a third; shares plunge ~23% after-hours",
+      "status": "New",
+      "first_seen": "2026-08-14-am",
+      "last_updated": "2026-08-14-am",
+      "verification": "Confirmed-primary",
+      "one_line": "YSS Q2 revenue $92.5M (+10% Y/Y, narrow beat) but EPS -$0.21 missed -$0.16 est; FY26 revenue guidance cut to $375-405M citing delayed government contracts. Shares fell ~23% after-hours to ~$8.86, immediately after Thursday's regular-session +4.26% close -- the clearest earnings casualty of this week's three-report space-earnings arc.",
+      "score_note": "Sharpest single-name reaction of this week's space-earnings season; watch today's open.",
+      "sources": [
+        "York Space Systems 8-K/earnings release",
+        "StockTitan",
+        "Investing.com"
+      ],
+      "watch": true
+    },
+    {
+      "id": "vmware-vcenter-exploit-aug13",
+      "headline": "VMware vCenter flaw CVE-2026-59310 confirmed under active exploitation -- 361+ victims across 47 countries",
+      "status": "New",
+      "first_seen": "2026-08-14-am",
+      "last_updated": "2026-08-14-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "The directory-traversal flaw (CVSS 9.8, disclosed Jul 29) is confirmed under active exploitation since Aug 3, with 361+ victim IPs across 47 countries and reverse-SSH cron persistence. Still absent from the CISA KEV catalog as of the Aug 11 bulletin, the most recent this report could verify (direct cisa.gov fetch blocked again this run).",
+      "score_note": "Status upgrade from unconfirmed to wide-scale confirmed exploitation; watch for a KEV listing.",
+      "sources": [
+        "BleepingComputer",
+        "TheHackerNews",
+        "SecurityWeek",
+        "DarkReading"
+      ],
+      "watch": true
+    },
+    {
+      "id": "chamoli-tunnel-collapse-aug13",
+      "headline": "Landslide floods a hydroelectric tunnel in India's Chamoli district; casualty count unsettled",
+      "status": "New",
+      "first_seen": "2026-08-14-am",
+      "last_updated": "2026-08-14-am",
+      "verification": "Confirmed-multiple (event); figures unstable",
+      "one_line": "A landslide sent debris/water into the under-construction Vishnugad-Pipalkoti hydroelectric tail-race tunnel (Uttarakhand) Aug 13 evening. At least 6-7 dead confirmed via AP wire; trapped/missing count has fluctuated wildly hour to hour across outlets (28 trapped/22 working/12 rescued down to 3-4 missing in later updates) -- treated as explicitly unstable, not cited as a single figure.",
+      "score_note": "Fast-moving domestic disaster; expect further revision.",
+      "sources": [
+        "Associated Press wire (via Washington Post, ABC News)"
       ],
       "watch": true
     }

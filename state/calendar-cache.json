@@ -1,47 +1,15 @@
 {
-  "fetched": "2026-08-13T05:50:00-04:00",
-  "earnings_fetched": "2026-08-13",
-  "earnings_fetched_note": "AV EARNINGS_CALENDAR returned a malformed/rate-limited response this run (header row plus a truncated 'Information' fragment, not usable); Finnhub day-of feed used alone for Aug 13 (LUNR pre-market, YSS after close) -- no discrepancy against prior tracking.",
+  "fetched": "2026-08-14T05:50:00-04:00",
+  "earnings_fetched": "2026-08-14",
+  "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-14; no watchlist-company earnings scheduled today. This week's space-earnings arc (Spire, Intuitive Machines, York Space Systems) is complete.",
   "events": [
     {
-      "ts_et": "2026-08-13T00:00:00-04:00",
-      "type": "auction",
-      "name": "30-Year Bond auction ($25B)",
-      "importance": "Medium",
-      "reason": "Quarterly refunding cycle; settles Aug 17",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-13T08:30:00-04:00",
+      "ts_et": "2026-08-14T08:30:00-04:00",
       "type": "econ_release",
-      "name": "Producer Price Index, July 2026",
-      "importance": "High",
-      "reason": "Next PPI release, one day after CPI",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-13T00:00:00-04:00",
-      "type": "earnings",
-      "name": "Intuitive Machines (LUNR) before open; York Space Systems (YSS) after close",
-      "importance": "Low",
-      "reason": "Space-sector Q2 reports",
-      "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-13T00:00:00-04:00",
-      "type": "auction",
-      "name": "17-Week / 4-Week / 8-Week Treasury Bill auctions",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-13T00:00:00-04:00",
-      "type": "auction",
-      "name": "20-Year Bond announced, 29-Year 6-Month TIPS announced",
-      "importance": "Low",
-      "reason": "Auction announcements for late-August settlement",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
+      "name": "Retail Sales, July 2026 (Census Bureau)",
+      "importance": "Critical",
+      "reason": "First major data point after this week's CPI/PPI; a live input to the Fed hawk/dove policy fork",
+      "source": "Census Bureau release schedule -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-14T00:00:00-04:00",
@@ -49,31 +17,55 @@
       "name": "13-Week / 26-Week / 6-Week Treasury Bill auctions",
       "importance": "Low",
       "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming \u2014 Confirmed-primary"
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-15T21:52:00-04:00",
+      "type": "launch",
+      "name": "Falcon 9 -- USSF-366",
+      "importance": "Low",
+      "reason": "US Space Force payload",
+      "source": "Launch Library 2 -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-15T00:00:00-04:00",
+      "type": "launch",
+      "name": "Rocket Lab Electron -- NASA Aspera astrophysics smallsat",
+      "importance": "Low",
+      "reason": "NASA astrophysics mission",
+      "source": "NASA.gov -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-16T01:12:00-04:00",
+      "type": "launch",
+      "name": "Falcon 9 -- Globalstar 2-R Mission 1",
+      "importance": "Low",
+      "reason": "Commercial satellite deployment",
+      "source": "Launch Library 2 -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-17T00:00:00-04:00",
+      "type": "auction",
+      "name": "13-Week / 26-Week Treasury Bill reopenings",
+      "importance": "Low",
+      "reason": "Routine bill supply",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-18T08:30:00-04:00",
       "type": "econ_release",
       "name": "U.S. Import and Export Price Indexes, July 2026",
       "importance": "Low",
-      "reason": "Next week's release, noted for the following-week bridge",
-      "source": "bls.gov schedule ICS \u2014 Confirmed-primary"
+      "reason": "Next week's BLS release",
+      "source": "bls.gov schedule ICS -- Confirmed-primary"
     },
     {
-      "ts_et": "2026-08-13T00:00:00-04:00",
-      "type": "other",
-      "name": "Gaza Board of Peace 14-day disarmament-roadmap checkpoint",
-      "importance": "Critical",
-      "reason": "Netanyahu has publicly said Israel did not agree to the roadmap's disarm-before-withdraw sequencing; checkpoint contested by both parties",
-      "source": "Times of Israel, Washington Post, PBS NewsHour \u2014 Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-15T17:52:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 -- USSF-366",
-      "importance": "Low",
-      "reason": "US Space Force payload",
-      "source": "Launch Library 2 -- Confirmed-primary"
+      "ts_et": "2026-08-19T00:00:00-04:00",
+      "type": "auction",
+      "name": "20-Year Bond auction",
+      "importance": "Medium",
+      "reason": "Monthly refunding cycle",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-19T22:00:00-04:00",
@@ -88,15 +80,23 @@
       "type": "other",
       "name": "SpaceX (SPCX) employee share-unlock, ~320M shares",
       "importance": "High",
-      "reason": "Approximately 3.4x average daily volume; near-term technical overhang this report has tracked since Aug 11",
+      "reason": "Approximately 3.4x average daily volume; near-term technical overhang this report has tracked since Aug 11, now sharpened by Musk's ~$900B stake disclosure",
       "source": "ts2.tech, TradingKey, 24/7 Wall St -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-20T00:00:00-04:00",
+      "type": "auction",
+      "name": "29-Year 6-Month TIPS reopening",
+      "importance": "Low",
+      "reason": "Routine TIPS supply",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-24T00:00:00-04:00",
       "type": "launch",
       "name": "Long March 5 -- Chang'e 7 (lunar mission)",
       "importance": "Medium",
-      "reason": "Status \"To Be Confirmed\"; primary launch window at risk if the Long March 7A failure investigation implicates the shared YF-100 engine architecture",
+      "reason": "Status \"To Be Confirmed\"; the Long March 7A failure investigation is reportedly focused on the shared YF-100 engine architecture used in the Long March 5's boosters",
       "source": "Launch Library 2 -- Confirmed-primary (schedule); System inference (grounding-risk link)"
     }
   ]
