@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference.
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are; that tag appears
+     exactly once in this file, below in <head>).
+  4. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  5. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix:
+      reports/2026/07/2026-07-24-am.html  ->  ../../../assets/style.css
+                                          ->  ../../../equations/eq_011.png
+                                          ->  ../../../index.html
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  The sample content between the markers is a design reference showing every
+  structural element of a weekday MORNING report (SPEC.md section 18). All
+  figures in it are ILLUSTRATIVE ONLY and are labeled as sample data.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Intelligence Brief — Fri, Aug 14, 2026 · Logan's Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-14",
+    "slot": "pm",
+    "title": "Closing Intelligence Brief",
+    "path": "reports/2026/08/2026-08-14-pm.html",
+    "summary": "July retail sales and consumer sentiment both miss estimates, denting a two-day rally, as York Space Systems craters further on a guidance cut, a federal judge dismisses the Trump administration's Harvard antisemitism lawsuit, and the USS George Washington heads to the Middle East to relieve the USS Abraham Lincoln.",
+    "reading_minutes": 40,
+    "generated_at": "2026-08-14T16:35:00-04:00",
+    "news_cutoff": "2026-08-14T16:15:00-04:00",
+    "market_data_asof": "2026-08-14T16:01:00-04:00",
+    "timezone": "America/New_York",
+    "version": "1.0",
+    "confidence": "High",
+    "market_status": "Closed — full regular session, no holiday or early close"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+<!--REPORT:START-->
+
+    <!-- ================= 1. HEADER & FINAL-DATA STATUS ================= -->
+    <header class="report-header">
+      <span class="kicker">Weekday Closing Report</span>
+      <h1>Closing Intelligence Brief</h1>
+      <p class="report-type-line">Friday, August 14, 2026 &middot; Generated 4:35 PM ET &middot; All times Eastern (America/New_York)</p>
+      <div class="report-chips">
+        <span class="chip chip--info">Overall confidence: High &mdash; broad primary-source coverage, few source failures</span>
+        <span class="chip chip--ok">Markets: closed, full session</span>
+      </div>
+      <dl class="meta-grid">
+        <div><dt>Generated</dt><dd>2026-08-14 16:35 ET</dd></div>
+        <div><dt>News cutoff</dt><dd>2026-08-14 16:15 ET</dd></div>
+        <div><dt>Market data as of</dt><dd>2026-08-14 16:01 ET</dd></div>
+        <div><dt>Report version</dt><dd>1.0</dd></div>
+        <div><dt>Reading time</dt><dd>~40 minutes</dd></div>
+        <div><dt>Market status</dt><dd>Closed &mdash; full regular session, no holiday or early close</dd></div>
+      </dl>
+      <p class="small muted" style="margin-top:0.8rem">2 sources degraded or blocked this run (Cboe options market-statistics, Twelve Data quote/time_series batches) &mdash; see System health. Twelve Data's free tier again hit its per-minute credit cap after the first batch; the full watchlist was substituted from this run's own Yahoo Finance close-series sweep. PLTR and GS could not be reached in this run's per-company SEC EDGAR sweep after repeated timeouts (best-effort, noted for transparency).</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Data freshness by source</caption>
+          <thead><tr><th>Source</th><th>Freshness label</th><th>Data age</th></tr></thead>
+          <tbody>
+            <tr><td>Equities (watchlist, Yahoo close-series sweep)</td><td class="txt"><span class="dd">EOD official</span></td><td>Today's close</td></tr>
+            <tr><td>Index cash (^GSPC/^IXIC/^DJI/^RUT, Yahoo)</td><td class="txt"><span class="dd">EOD official</span></td><td>Today's close</td></tr>
+            <tr><td>Cboe VIX complex</td><td class="txt"><span class="dd dd-ok">Delayed +15m</span></td><td>~16 min</td></tr>
+            <tr><td>Treasury par curve</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 13 curve date (today's not yet posted)</td></tr>
+            <tr><td>FRED (CPI, PAYEMS, claims, rates, HY OAS)</td><td class="txt"><span class="dd">EOD official</span></td><td>1&ndash;44 days per series</td></tr>
+            <tr><td>Retail sales (Census Bureau, direct)</td><td class="txt"><span class="dd">EOD official</span></td><td>Released 08:30 ET today</td></tr>
+            <tr><td>Consumer sentiment (UMich, preliminary)</td><td class="txt"><span class="dd">Preliminary</span></td><td>Released 10:00 ET today</td></tr>
+            <tr><td>FX (Frankfurter/ECB fix)</td><td class="txt"><span class="dd">EOD official</span></td><td>Today's fix</td></tr>
+            <tr><td>Crypto (CoinGecko)</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>~50 min</td></tr>
+            <tr><td>Whole-market breadth</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 13 session (15th tracked; today's computed tomorrow AM)</td></tr>
+            <tr><td>FINRA short volume</td><td class="txt"><span class="dd">EOD official</span></td><td>Aug 13 session (today's file not yet published; not short interest)</td></tr>
+            <tr><td>SEC EDGAR (8-K feeds)</td><td class="txt"><span class="dd dd-ok">Live</span></td><td>Same-day filings (88/90 watchlist tickers checked)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </header>
+
+    <!-- ================= 2. TOP STORIES SINCE MORNING ================= -->
+    <section class="report-section" aria-labelledby="s-top">
+      <h2 id="s-top"><span class="kicker">Section 2</span>Top Stories Since Morning</h2>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (Census Bureau, direct fetch)</span>
+        </div>
+        <h3>July retail sales and consumer sentiment both miss estimates, denying the market a clean read on the consumer heading into the Fed's next decision</h3>
+        <p class="story-times">Retail sales released 08:30 ET &middot; Consumer sentiment released 10:00 ET &middot; Last checked market close</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The Census Bureau's advance estimate (this report's own direct fetch of census.gov/retail/marts/www/marts_current.pdf, cross-verified against Bloomberg, Axios and Floor Daily's reporting of the same release) put July retail and food-services sales at $763.6B, down 0.6% from June &mdash; the sharpest monthly decline since May 2025 &mdash; though still up 5.0% year-over-year. Excluding autos and gasoline, sales fell 0.2%. The "control group" that feeds directly into GDP's consumption estimate (ex autos, gasoline, building materials, and food services) fell 0.4%, against a consensus expecting a 0.3% gain, and May/June control-group figures were revised down. By category: motor vehicles &minus;1.8% (the sharpest decliner), nonstore/online retailers &minus;2.2%, while clothing (+1.9%), health and personal care (+0.7%) and food services (+0.5%) posted gains. Separately, the University of Michigan's preliminary August consumer sentiment index came in at 51.0, well below the 54.5 consensus and down from July's final 55.2 &mdash; a 7.6% monthly decline. The expectations sub-index fell to 50.6 from 55.4 and current conditions to 51.8 from 54.8; year-ahead inflation expectations ticked up to 4.3% from 4.2%, while the 5&ndash;10-year outlook held at 3.3% for a third straight month. Sentiment fell across demographic and political lines, most sharply among Republicans, older consumers, lower-income households, and those without college degrees, per the University of Michigan's own release.</dd>
+          <dt>Why it matters</dt>
+          <dd>This is the first hard evidence this week that the consumer, not just producer-side pricing, may be cooling: retail sales resolves this morning's open forecast (2026-08-14-am-1, that sales would print meaningfully above consensus) as wrong &mdash; the actual result was a miss, not a beat, and the control-group's downward revision compounds it. Combined with a sentiment index at its lowest levels of the year and rising inflation expectations, today's data complicates a clean read in either direction for the Fed's Warsh-hawkish-vs-jobs-dovish tension this report has tracked since Aug 10: soft demand data argues against a hike, but sentiment's inflation-expectations component cuts the other way.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Both releases' headline figures, via this report's own direct fetch of the Census Bureau's PDF release (retrieved successfully, though this run's tooling could not machine-extract its text; the $763.6B/&minus;0.6%/+5.0% figures are cross-verified against multiple independent wire and financial-media reports of the same release) and the University of Michigan's own preliminary index values as reported by multiple outlets (Axios, Yahoo Finance, Investing Live).</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether today's twin misses reflect a genuine inflection in consumer demand or a single soft month within a still-positive year-over-year trend (retail sales remain up 5.0% y/y and mark a tenth straight month of annual gains); no Fed official had commented on either release as of this report's news cutoff.</dd>
+          <dt>Context</dt>
+          <dd>Follows this week's mixed CPI (cooler, Wed) and PPI (hotter core, Thu) prints; today's data is the week's last major economic release before the Fed's Sept 16 decision and Chair Warsh's Aug 27 Jackson Hole remarks.</dd>
+          <dt>Impact</dt>
+          <dd>Rates: front-end most sensitive to a softer growth read. Equities: consumer-discretionary and retail names most directly exposed. Fed policy: adds a dovish data point to a week that otherwise leaned mixed-to-hawkish on core PPI.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for any Fed commentary on the data before Jackson Hole (Aug 27); forecast 2026-08-14-pm-1 logged.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">SPY, QQQ, XLY, WMT, TGT, HD, LOW, TLT, IEF</dd>
+        </dl>
+        <p class="story-sources">Sources: census.gov/retail/marts/www/marts_current.pdf (primary, this report's own direct fetch) &middot; sca.isr.umich.edu (primary, University of Michigan's own preliminary release, via secondary reporting) &middot; Bloomberg, Axios, Floor Daily, Yahoo Finance (secondary, corroborating figures).</p>
+      </article>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Broadcom falls nearly 6%, its worst session in weeks, on a bond-rating downgrade tied to its AI financing platform plus renewed attention to the VMware vCenter exploit</h3>
+        <p class="story-times">Downgrade and exploit reporting circulated through the session &middot; Last checked market close</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Broadcom (AVGO) closed &minus;5.94% today (this report's own Yahoo Finance close-series data), its sharpest single-name decline on the watchlist and the clearest driver of Technology's underperformance (XLK &minus;0.39%, the day's second-weakest sector). Two distinct threads converged: first, Bank of America credit analyst Tom Curcuruto downgraded Broadcom's issuer and bond ratings, citing leverage concerns tied to its "AI XPV" financing platform built jointly with Apollo and Blackstone &mdash; a roughly $35B first transaction to build over 1 gigawatt of AI computing capacity, reportedly for Anthropic (per TradingKey, TipRanks). Second, coverage circulated Friday emphasizing that CVE-2026-59310, the critical VMware vCenter directory-traversal flaw this report has tracked since Aug 13, remains under confirmed active exploitation (361+ victim IPs across 47 countries) more than two weeks after Broadcom's own emergency patch &mdash; VMware has been a Broadcom subsidiary since its 2023 acquisition.</dd>
+          <dt>Why it matters</dt>
+          <dd>This links two threads this report has followed separately &mdash; the AI-infrastructure financing wave (Nvidia's $500B platform, Anthropic/Macquarie/GIC's Theseus Infrastructure) and the ongoing VMware exploitation campaign &mdash; into a single negative catalyst for one company, and is the first credit-rating action (as opposed to equity analyst commentary) this report has tracked tied specifically to AI-financing leverage concerns.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Today's price move (this report's own data); the BofA downgrade and its stated rationale, and the confirmed-active-exploitation status of CVE-2026-59310, both via multiple independent secondary reports (TradingKey, TipRanks) though this report could not independently verify the downgrade against a primary BofA research document this run.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether today's decline is better attributed to the credit downgrade, the exploit coverage, or general semiconductor-sector profit-taking (several outlets cited a broader "sector profit-taking ahead of key catalyst events" as a contributing factor); this report cannot cleanly separate the three and labels the combination a likely, not confirmed, catalyst.</dd>
+          <dt>Context</dt>
+          <dd>Extends both the vmware-vcenter-exploit thread (tracked since Aug 13) and the broader AI-infrastructure-financing thread (Nvidia, Anthropic/Theseus) with a new, negative dimension specific to Broadcom.</dd>
+          <dt>Impact</dt>
+          <dd>Technology/AI-infrastructure watchlist: primary, single-name. Credit: a rare negative rating action within an otherwise-stable credit backdrop (HY OAS unchanged at 2.71% today).</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for Broadcom's own response to the downgrade and for CVE-2026-59310's CISA KEV status.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">AVGO, APO, BX, NVDA</dd>
+        </dl>
+        <p class="story-sources">Sources: TradingKey, TipRanks (secondary, downgrade and exploit reporting) &middot; BleepingComputer, TheHackerNews, SecurityWeek (secondary, ongoing CVE-2026-59310 coverage) &middot; this report's own Yahoo Finance close-series data.</p>
+      </article>
+
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>Intuitive Machines jumps another 8%, extending yesterday's earnings-day reversal, on a record $1.8B backlog and a wave of new contract wins</h3>
+        <p class="story-times">Contract/backlog reporting circulated through the session &middot; Last checked market close</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>Intuitive Machines (LUNR) closed +8.26% today (this report's own data), building directly on yesterday's dramatic reversal from a roughly 16% premarket earnings-day plunge to a positive close. Secondary reporting (StocksToTrade, ts2.tech, Seeking Alpha, Yahoo Finance) attributes today's continued rally to fuller digestion of Wednesday's Q2 release: a record contracted backlog of $1.8B after roughly $1.2B in new awards, including a GEO satellite deal reported above $600M and a shift in national-security revenue mix from about 3% to 30% of the business. Coverage also cites new Goonhilly Earth Station and COMSAT ground-network deals supporting deep-space communications and upcoming lunar missions. Management's reiterated FY2026 guidance ($900M&ndash;$1.0B revenue, positive adjusted EBITDA) was unchanged from Wednesday.</dd>
+          <dt>Why it matters</dt>
+          <dd>A second consecutive strong session following an initially negative earnings reaction is a meaningfully stronger signal than Wednesday's single-day round-trip alone &mdash; it suggests the market's re-rating around the backlog and national-security diversification story is proving durable, not a one-day mechanical bounce.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Today's price move (this report's own data) and the backlog/contract figures, which are consistent with (not contradicted by) the company's own Q2 release covered in yesterday's edition.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Seeking Alpha's own coverage today flags dilution as an ongoing drag on a per-share basis even as the backlog story remains positive &mdash; a nuance this report notes without a specific reconciling figure available this run.</dd>
+          <dt>Context</dt>
+          <dd>Directly continues the lunr-earnings-reversal thread from yesterday's edition; part of this week's broader, mixed space-sector earnings arc (Spire, Intuitive Machines, York Space Systems).</dd>
+          <dt>Impact</dt>
+          <dd>Space watchlist: primary, single-name, and a sharp positive counterpoint to York Space Systems' continued decline (Top Story 6) within the same sector today.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch whether the rally continues into next week or consolidates.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">LUNR, RKLB, YSS, SPIR</dd>
+        </dl>
+        <p class="story-sources">Sources: StocksToTrade, ts2.tech, Seeking Alpha, Yahoo Finance (secondary, contract/backlog reporting) &middot; this report's own Yahoo Finance close-series data.</p>
+      </article>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (company release)</span>
+        </div>
+        <h3>York Space Systems extends its post-earnings collapse into a second session and names an interim CFO, capping a rough week for the space-earnings cohort</h3>
+        <p class="story-times">CFO transition effective today &middot; Intraday decline tracked through the session &middot; Last checked market close</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>This morning's edition covered York Space Systems' (YSS) Q2 miss (EPS &minus;$0.21 vs &minus;$0.16 est.) and roughly one-third cut to FY26 revenue guidance ($375&ndash;405M, citing delayed government contracts), which sent shares down about 23% after-hours Thursday. Today the stock extended that decline, falling further intraday (down more than 11% through midday per Yahoo Finance/MarketBeat coverage) after Thursday's regular-session close of +4.26% &mdash; making this the second consecutive earnings report on which YSS has missed. Separately, the company named Brian Frantz, currently Chief Accounting Officer, as interim CFO effective today, following Kevin Messerle's departure as CFO; no reason for Messerle's departure was disclosed in sources reviewed.</dd>
+          <dt>Why it matters</dt>
+          <dd>A second consecutive earnings miss combined with a same-day CFO change is a meaningfully worse combination than either fact alone; this report has separately flagged a pattern of repeated, often-unexplained sharp single-day declines in YSS going back to early August, and today's move continues that pattern with an identifiable catalyst this time.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The earnings figures and guidance cut (company release, this morning's edition); the CFO transition, via the company's own disclosure as reported by StockTitan and Investing.com.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether Messerle's departure is connected to the earnings miss or unrelated; no company statement addressing that question was found.</dd>
+          <dt>Context</dt>
+          <dd>Continues the yss-earnings-miss thread first flagged this morning, and the broader yss-unexplained-declines pattern this report tracked earlier in August.</dd>
+          <dt>Impact</dt>
+          <dd>Space watchlist: primary, single-name. Caps a mixed week for space-sector earnings (Spire mixed, Intuitive Machines reversed higher, York now down sharply twice in two sessions).</dd>
+          <dt>What happens next</dt>
+          <dd>Watch whether YSS stabilizes or continues declining; forecast 2026-08-14-pm-2 logged.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">YSS, LUNR, SPIR, RKLB</dd>
+        </dl>
+        <p class="story-sources">Sources: York Space Systems 8-K/earnings release, company disclosure (primary) &middot; StockTitan, Investing.com, MarketBeat (secondary) &middot; this report's own Yahoo Finance close-series data.</p>
+      </article>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-continuing">Continuing</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; primary (this report's own data)</span>
+        </div>
+        <h3>Alt-asset managers KKR, Apollo, Ares and Blackstone give back part of Thursday's rebound, a third directional flip in a week</h3>
+        <p class="story-times">Session Aug 14 &middot; Last checked market close</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>All four names this report has tracked since Aug 10&ndash;11 on Nvidia's AI-infrastructure financing platform closed lower today: Ares &minus;3.61%, Blackstone &minus;3.60%, Apollo &minus;1.99%, KKR &minus;1.14% (this report's own Yahoo Finance close-series data). This follows Wednesday's pullback, Thursday's sharp rebound (Ares +4.96%, KKR +4.00%, Apollo +3.57%, Blackstone +2.00%), and today's reversal &mdash; the third directional flip in the group within a week. This report's own EDGAR sweep found no company-specific filing today for any of the four.</dd>
+          <dt>Why it matters</dt>
+          <dd>A group that flips direction three times in a week, each time without an identified company-specific catalyst, looks more like elevated, correlated single-theme volatility (the group trading as a basket on shared AI-financing-platform sentiment) than a stock-specific fundamental story &mdash; a pattern this report continues to flag rather than force into a directional narrative.</dd>
+          <dt>What is confirmed</dt>
+          <dd>Today's price moves; the absence of a company-specific catalyst via this report's own EDGAR sweep.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether today's decline connects to Broadcom's AI-financing-platform credit downgrade (Top Story 6, involving Apollo and Blackstone as named platform partners on a separate transaction) or reflects independent, unrelated profit-taking; this report notes the topical overlap without asserting a specific link.</dd>
+          <dt>Context</dt>
+          <dd>Continues the alt-asset-manager thread tracked since Aug 10.</dd>
+          <dt>Impact</dt>
+          <dd>Financials/private-capital sentiment: primary.</dd>
+          <dt>What happens next</dt>
+          <dd>Continue tracking whether this basket-like, direction-flipping pattern persists or resolves into a clearer trend.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">KKR, APO, ARES, BX, AVGO, NVDA</dd>
+        </dl>
+        <p class="story-sources">Sources: this report's own Yahoo Finance close-series data &middot; SEC EDGAR (primary, this report's own per-company 8-K sweep found no filings for any of the four today).</p>
+      </article>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>A federal judge dismisses the Trump administration's antisemitism lawsuit against Harvard, a legal setback in the government's campaign against elite universities</h3>
+        <p class="story-times">Ruling issued Aug 13 &middot; Surfaced in this report's research this run &middot; Last checked 16:15 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>U.S. District Court Judge Richard G. Stearns dismissed the Justice Department's lawsuit against Harvard University, which had alleged the school's response to campus antisemitism following the October 7, 2023 attack was so inadequate it amounted to "deliberate indifference" under civil-rights law. Filed in March, the suit sought to cut off future federal funding and claw back nearly $1B in grants. Stearns wrote that the government's amended complaint focused almost entirely on incidents from the 2023&ndash;2024 school year and cited just three incidents from March 2025, concluding the discrimination cited was "too isolated and episodic" to constitute a violation. Corroborated by The Harvard Crimson, Axios, NBC News, the Boston Globe, and CNN, all dated Aug 13.</dd>
+          <dt>Why it matters</dt>
+          <dd>This removes one legal front in the administration's broader push to force elite universities into settlements over campus antisemitism and diversity policies &mdash; a campaign that has included funding freezes and negotiated agreements at other schools.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The dismissal itself and Judge Stearns' stated reasoning, via the ruling's own text as reported by multiple independent outlets with direct docket access.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Whether the Justice Department will appeal; no statement from DOJ or the White House on next steps was found by this report's cutoff. This report notes as a completeness gap that this ruling, issued the afternoon/evening of Aug 13, was not covered in this morning's edition (news cutoff 05:50 ET Aug 14) despite same-day coverage from multiple major outlets &mdash; logged per this report's standing practice on coverage gaps (see Section 20).</dd>
+          <dt>Context</dt>
+          <dd>Not previously tracked by this report; a new legal thread distinct from the mail-ballot executive order litigation this report has followed since late July.</dd>
+          <dt>Impact</dt>
+          <dd>Political/legal: primary. No market read-through identified.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for a DOJ appeal or statement.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: The Harvard Crimson, Boston Globe, CNN, NBC News, Axios (independent, multiple, all reporting the ruling's own text and reasoning directly).</p>
+      </article>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-new">New</span>
+          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
+        </div>
+        <h3>A second US aircraft carrier heads for the Middle East to relieve the USS Abraham Lincoln after a record-setting 250+ day deployment</h3>
+        <p class="story-times">Transit confirmed today &middot; Last checked 16:15 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>The USS George Washington carrier strike group was confirmed today transiting the Strait of Malacca en route to the Indian Ocean, on course to relieve the USS Abraham Lincoln in the Middle East. The Lincoln has been deployed in support of the US war against Iran for more than 250 days &mdash; reported as a record-setting uninterrupted deployment &mdash; without a port call in roughly 200 days, prompting congressional concern over crew fatigue, maintenance, and supply shortages (NPR, Washington Post, U.S. News, all dated Aug 13&ndash;14). Separately, Defense Secretary Hegseth said Wednesday the Navy could sustain its naval posture around Iran "indefinitely" by rotating carrier strike groups, framing George Washington's deployment as part of a broader planned rotation rather than a temporary reinforcement.</dd>
+          <dt>Why it matters</dt>
+          <dd>This is the clearest evidence yet that the administration is planning for a long-duration military posture toward Iran rather than a near-term drawdown, corroborating and extending Hegseth's Aug 13 remarks (tracked this morning) that the blockade "could continue indefinitely."</dd>
+          <dt>What is confirmed</dt>
+          <dd>George Washington's transit and its relief mission, via multiple independent naval-affairs and wire reports; the Lincoln's deployment length and crew-welfare concerns, via congressional sourcing cited by NPR and the Washington Post.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>The exact date George Washington will arrive on station or when Lincoln will begin its transit home; whether this represents a net increase in US carrier presence in the region or a like-for-like swap.</dd>
+          <dt>Context</dt>
+          <dd>Extends the us-iran-strikes thread this report has tracked since Jul 30 (naval blockade, "economic isolation" rhetoric) with a new military-logistics dimension.</dd>
+          <dt>Impact</dt>
+          <dd>Geopolitical/defense: primary. Oil: a standing, unconfirmed background factor in the broader Hormuz risk premium; this report identifies no specific price reaction to today's carrier news.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for George Washington's arrival on station and any change in blockade posture.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">CL=F, LMT, RTX, NOC, GD, LHX, HII</dd>
+        </dl>
+        <p class="story-sources">Sources: NPR, Washington Post, U.S. News &amp; World Report (independent, multiple, naval-movement and congressional sourcing) &middot; Army Recognition, Eurasia Business News (secondary, corroborating).</p>
+      </article>
+      <article class="story-card">
+        <div class="story-status">
+          <span class="chip chip-updated">Materially changed</span>
+          <span class="chip chip-single-source">Single-reliable-source (casualty claim); Confirmed-multiple (fact of the offensive and today's strikes)</span>
+        </div>
+        <h3>Zelensky claims a 745-square-kilometer, eight-month Ukrainian advance killed nearly 10,000 Russian soldiers, as Moscow answers with intensified missile strikes</h3>
+        <p class="story-times">Zelensky's claim dated Aug 12 &middot; Overnight strikes Aug 13&ndash;14 &middot; Last checked 16:15 ET</p>
+        <dl class="story-facts">
+          <dt>What happened</dt>
+          <dd>President Zelensky said Ukrainian forces, in an eight-month operation on the Oleksandrivka axis spanning the Dnipropetrovsk, Donetsk, and Zaporizhzhia regions, liberated 745 square kilometers and 26 settlements, deprived Russia of nearly all the territory it had gained in Dnipropetrovsk since entering the region in June 2025, and killed at least 9,550 Russian soldiers and wounded more than 6,600 (Zelensky's own figures, via Ukrinform, United24, Al Arabiya/Reuters, and the Jerusalem Post). This report treats the Russian-casualty figure as Ukraine's own claim, not independently verifiable, and labels it accordingly. Overnight into today, Al Jazeera and other outlets reported intensified Russian ballistic-missile strikes on Ukrainian cities, which this report's research links to Ukraine's own worsening shortage of Patriot interceptors (a shortage Zelensky has separately and repeatedly flagged, most recently Aug 13). Russian air defenses separately reported downing 553 Ukrainian drones overnight over 19 Russian regions.</dd>
+          <dt>Why it matters</dt>
+          <dd>If accurate, the territorial claim would be a genuinely significant reversal of Russia's 2025 gains in Dnipropetrovsk; the casualty figure, if even directionally accurate, would represent a substantial toll from a single regional operation. This report cannot verify either figure independently and treats them with corresponding caution, while noting the pattern of intensifying Russian strikes is independently, multiply corroborated.</dd>
+          <dt>What is confirmed</dt>
+          <dd>The fact that Zelensky made these claims, and the general fact and pattern of intensified Russian strikes overnight, via multiple independent outlets.</dd>
+          <dt>What remains uncertain</dt>
+          <dd>Russia has not commented on or corroborated the territorial or casualty claims as of this report's cutoff; this report found no independent (non-Ukrainian-government) verification of either figure.</dd>
+          <dt>Context</dt>
+          <dd>Extends the russia-ukraine strike-exchange thread this report has tracked since Aug 11; the Dnipropetrovsk claim is a new territorial/casualty dimension distinct from the refinery- and port-strike campaign covered in recent editions.</dd>
+          <dt>Impact</dt>
+          <dd>Geopolitical/humanitarian: primary. No market read-through identified.</dd>
+          <dt>What happens next</dt>
+          <dd>Watch for independent corroboration of either figure and for whether the Russian strike intensification continues.</dd>
+          <dt>Related assets (exposure &ne; direction)</dt>
+          <dd class="mono">None identified</dd>
+        </dl>
+        <p class="story-sources">Sources: United24 Media, Ukrinform (Ukrainian government-aligned, primary-adjacent, Zelensky's own claims) &middot; Al Arabiya/Reuters, Jerusalem Post (secondary, independent republication) &middot; Al Jazeera (independent, overnight strike reporting).</p>
+      </article>
+    </section>
+
+    <!-- ================= 3. TWO-MINUTE CLOSING SUMMARY ================= -->
+    <section class="report-section" aria-labelledby="s-exec">
+      <h2 id="s-exec"><span class="kicker">Section 3 &middot; the two-minute version</span>Two-Minute Closing Summary</h2>
+      <div class="exec-summary">
+        <p><strong>The world</strong> July retail sales and August consumer sentiment both missed estimates, the first clean evidence this week that consumer demand may be cooling. York Space Systems extended its post-earnings collapse into a second session with a same-day CFO change. A federal judge dismissed the Trump administration's antisemitism lawsuit against Harvard. The USS George Washington is transiting toward the Middle East to relieve the USS Abraham Lincoln after a record 250+ day deployment. Zelensky claimed a 745 sq km, eight-month Ukrainian advance near Dnipropetrovsk amid intensified overnight Russian strikes. No material update was found on Colombia's earthquake toll, DRC Ebola, Gaza's disarmament roadmap, or the mail-ballot EO litigation.</p>
+        <p><strong>Markets</strong> Major large-cap indices closed modestly lower for the first session in three (S&amp;P &minus;0.17%, Nasdaq &minus;0.28%, Dow &minus;0.20%), while the Russell 2000 (+0.52%) and equal-weight RSP outperformed &mdash; a mild breadth-positive divergence. The 10-year yield rose to 4.696% (+5.5bp) despite the soft demand data, a cross-current this report flags without a confirmed explanation. The VIX fell 2.32% to 14.29. Broadcom (&minus;5.94%) was the day's sharpest single-name decliner on a bond-rating downgrade and renewed VMware-exploit attention; Intuitive Machines (+8.26%) and AMD (+6.50%) led gainers. Alt-asset managers KKR/Apollo/Ares/Blackstone gave back part of Thursday's rebound. Energy (+1.39%) led sectors on firmer oil (WTI +1.26% to $82.27); gold rose 1.57% to $4,432.20. Bitcoin eased 0.78% to $62,873. Credit spreads (HY OAS 2.71%) remained tight and stable.</p>
+        <p><strong>Central theme</strong> A week that opened with cooler CPI and closed with a soft retail-sales/sentiment double miss reinforces the dovish side of the Fed's internal hawk-dove tension, even as Thursday's hot core PPI complicates a clean read.</p>
+        <p><strong>Most important new development</strong> July retail sales' 0.6% decline and the control group's downward-revised miss &mdash; the week's first hard evidence of consumer-demand softening.</p>
+        <p><strong>Most important risk</strong> UMich's rising short-term inflation expectations (4.3%, up from 4.2%) arriving alongside falling sentiment &mdash; a combination that could keep the Fed cautious about cutting even as growth data softens.</p>
+        <p><strong>Most important positive development</strong> Credit spreads (HY OAS 2.71%) remain tight and stable despite today's soft data, showing no stress signal in credit markets.</p>
+        <p><strong>Key unknown</strong> Whether today's twin misses mark a genuine inflection in consumer demand or a single soft month within a still-positive year-over-year trend.</p>
+        <p><strong>Deserves attention today</strong></p>
+        <ul>
+          <li>Home Depot's Aug 18 earnings, the first report since CEO Ted Decker's medical leave began.</li>
+          <li>Whether today's data draws Fed commentary before Jackson Hole (Aug 27).</li>
+          <li>The Aug 20 SpaceX employee share-unlock, now six days out.</li>
+          <li>Independent corroboration of Zelensky's Dnipropetrovsk claims.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= 4. WHAT CHANGED SINCE 7:30 AM ================= -->
+    <section class="report-section" aria-labelledby="s-since">
+      <h2 id="s-since"><span class="kicker">Section 4</span>What Changed Since 7:30 AM</h2>
+      <ul class="change-log">
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since morning</span><strong>July retail sales &amp; consumer sentiment</strong></div>
+          <p>This morning: retail sales pending, an open forecast that it would print above consensus <span class="change-arrow">&rarr;</span> confirmed a 0.6% m/m decline (the sharpest since May 2025) and a control-group miss with downward revisions, plus a much-weaker-than-expected UMich sentiment reading (51.0 vs 54.5 est.) <span class="change-arrow">&rarr;</span> resolves this morning's forecast wrong and adds a genuinely dovish demand-side data point to a week that had otherwise leaned mixed-to-hawkish. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>York Space Systems</strong></div>
+          <p>This morning: shares fell ~23% after-hours Thursday on an earnings miss and guidance cut <span class="change-arrow">&rarr;</span> confirmed a further double-digit intraday decline today plus a same-day CFO transition (Brian Frantz named interim CFO) <span class="change-arrow">&rarr;</span> a second consecutive earnings miss now compounded by a leadership change. Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since morning</span><strong>Harvard antisemitism lawsuit dismissed</strong></div>
+          <p>Not covered in this morning's edition <span class="change-arrow">&rarr;</span> confirmed a federal judge dismissed the Trump administration's lawsuit against Harvard on Aug 13, before this morning's cutoff <span class="change-arrow">&rarr;</span> added one cycle late as a disclosed completeness gap (see Section 20). Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-new">New since morning</span><strong>USS George Washington deployment</strong></div>
+          <p>Not previously tracked <span class="change-arrow">&rarr;</span> confirmed a second carrier strike group transiting toward the Middle East to relieve the USS Abraham Lincoln after a 250+ day deployment <span class="change-arrow">&rarr;</span> corroborates Hegseth's Wednesday remarks that the naval posture toward Iran could continue "indefinitely." Current confidence: high.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Russia-Ukraine</strong></div>
+          <p>This morning: fourth Russian refinery struck in three days <span class="change-arrow">&rarr;</span> confirmed Zelensky's claim of a 745 sq km, eight-month Dnipropetrovsk-area advance (unverified Russian-casualty figure) amid intensified overnight Russian strikes <span class="change-arrow">&rarr;</span> a new territorial/casualty dimension alongside the ongoing strike exchange. Current confidence: high on the strikes, low-to-medium on the casualty figure.</p>
+        </li>
+        <li>
+          <div class="change-head"><span class="chip chip-faded">No material change</span><strong>Colombia earthquake, DRC Ebola, Gaza disarmament, mail-ballot EO, Iran/Hormuz</strong></div>
+          <p>No update beyond this morning's cited figures/status was found for any of these threads this run; each remains on the watchlist. Current confidence: high that no material development occurred by this report's cutoff.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ================= 5. US POLITICS & GOVERNMENT ================= -->
+    <section class="report-section" aria-labelledby="s-uspol">
+      <h2 id="s-uspol"><span class="kicker">Section 5</span>US Politics &amp; Government</h2>
+      <p>The Harvard antisemitism lawsuit dismissal (Top Story 3) is today's dominant domestic legal development. No new development was found on the mail-ballot executive order's Supreme Court briefing (both sides' briefs are now filed; no ruling yet), the Lisa Cook removal fight (the White House's Aug 5 letter still gives Cook until roughly Aug 26 to respond), the Fauci contempt-referral thread, Karoline Leavitt's announced end-of-August departure, or the FY2027 NDAA, which remains blocked in the Senate with no floor action since the Jul 14 cloture failure.</p>
+    </section>
+
+    <!-- ================= 6. GEOPOLITICS ================= -->
+    <section class="report-section" aria-labelledby="s-geo">
+      <h2 id="s-geo"><span class="kicker">Section 6</span>Geopolitics</h2>
+      <p>The USS George Washington's deployment and the Dnipropetrovsk/Russian-strike news (Top Stories 4 and 5) are today's dominant geopolitical items. On <strong>Iran/Hormuz</strong>: Strait transits ticked up to 9 vessels Thursday from 5 the day before, per Kpler data cited by multiple outlets, but remain below the month's roughly 12-vessel daily average &mdash; a modest, not material, change from the depressed-traffic pattern this report has tracked since early August. Iran's Basij commander repeated that the strait is "under Iran's control and management," directly disputing Wednesday's Trump claim of US "total control"; this dispute is unchanged in substance from what this report tracked yesterday. On <strong>Gaza</strong>: no update beyond this morning's coverage of the Kushner/Mladenov/Blair trip planned for next week; Netanyahu's office has made no new statement. On the <strong>Saudi-Turkiye-Pakistan defense pact</strong>: no new development found. On <strong>DRC Ebola</strong>: no figure newer than the CDC-sourced 4,566 cases/2,128 deaths (data through Aug 11) cited in yesterday evening's edition was found this run; who.int and cdc.gov direct fetches remain blocked in this environment. On <strong>Colombia's earthquake</strong>: no revision beyond this morning's 281 dead/3,971 injured/379 missing figure was found.</p>
+    </section>
+
+    <!-- ================= 7. ECONOMICS & CENTRAL BANKS ================= -->
+    <section class="report-section" aria-labelledby="s-econ">
+      <h2 id="s-econ"><span class="kicker">Section 7</span>Economics &amp; Central Banks</h2>
+      <p>July retail sales and the University of Michigan's preliminary August consumer sentiment reading (Top Story 1) are today's dominant economic stories. No Fed official made public remarks reacting to either release as of this report's news cutoff. No Treasury auction settled or was auctioned today; the next scheduled auctions are Monday's 13-/26-/6-week bill reopenings.</p>
+      <div class="fact-card">
+        <h4>July retail sales &amp; food services <span class="dd">Confirmed-primary &middot; released 08:30 ET, direct Census Bureau fetch</span></h4>
+        <dl>
+          <dt>Headline (m/m)</dt><dd class="down">&minus;0.6% (sharpest decline since May 2025)</dd>
+          <dt>Headline (y/y)</dt><dd>+5.0%</dd>
+          <dt>Ex-autos/gasoline (m/m)</dt><dd class="down">&minus;0.2%</dd>
+          <dt>Control group (m/m)</dt><dd class="down">&minus;0.4% (vs +0.3% consensus; May/June revised down)</dd>
+          <dt>Drivers</dt><dd class="txt">Motor vehicles &minus;1.8%, nonstore/online &minus;2.2%; clothing +1.9%, health/personal care +0.7%, food services +0.5%.</dd>
+          <dt>Read</dt><dd class="txt">The sharpest headline decline in over a year, plus a control-group miss with downward revisions &mdash; the first clean evidence this week that consumer demand, not just producer pricing, may be cooling.</dd>
+        </dl>
+      </div>
+      <div class="fact-card">
+        <h4>University of Michigan Consumer Sentiment (preliminary, August) <span class="dd">Confirmed-primary &middot; released 10:00 ET</span></h4>
+        <dl>
+          <dt>Headline</dt><dd class="down">51.0 (vs 54.5 consensus; down from 55.2 in July's final reading)</dd>
+          <dt>Expectations sub-index</dt><dd>50.6 (from 55.4)</dd>
+          <dt>Current conditions sub-index</dt><dd>51.8 (from 54.8)</dd>
+          <dt>1-year inflation expectations</dt><dd class="up">4.3% (from 4.2%)</dd>
+          <dt>5&ndash;10-year inflation expectations</dt><dd>3.3% (unchanged, third straight month)</dd>
+          <dt>Read</dt><dd class="txt">A broad-based decline across demographic and political lines; rising short-term inflation expectations alongside falling sentiment is a combination that complicates, rather than clarifies, the Fed's policy debate.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ================= 8. BUSINESS & CORPORATE ================= -->
+    <section class="report-section" aria-labelledby="s-biz">
+      <h2 id="s-biz"><span class="kicker">Section 8</span>Business &amp; Corporate</h2>
+      <p>York Space Systems' extended post-earnings decline and CFO transition (Top Story 6) is today's dominant single-name corporate story. Home Depot (HD) traded in a narrow range today, a session of relative calm heading into its Aug 18 earnings report and following last week's CEO medical-leave announcement; this report's own EDGAR sweep found no new HD filing today. Rocket Lab (RKLB) saw no new SEC filing today beyond yesterday's Iridium-acquisition milestones (already covered in yesterday's Closing Brief); this report's own EDGAR sweep found no material 8-K filing dated today among any of the 90 watchlist company tickers checked this run (88 of 90 reachable; PLTR and GS could not be fetched due to repeated timeouts, a best-effort gap noted in the health footer). Elsewhere, S&amp;P Dow Jones Indices announced Reddit (RDDT, not on this report's watchlist) will join the S&amp;P 500 before Tuesday's open, a notable index-inclusion event referenced here for market-structure context only.</p>
+    </section>
+
+    <!-- ================= 9. TECH/AI/CYBER ================= -->
+    <section class="report-section" aria-labelledby="s-tech">
+      <h2 id="s-tech"><span class="kicker">Section 9</span>Tech/AI/Cyber</h2>
+      <p>No new AI-lab safety-boundary disclosure was found today beyond the running story this report has tracked (Anthropic, OpenAI, and Meta agents exceeding test boundaries during third-party evaluations). Google said its Gemini app has surpassed 1 billion monthly active users, its fastest-growing product to date; OpenAI and Anthropic have both cut prices on some models as lower-cost Chinese competitors (DeepSeek, Moonshot AI, Z.ai) gain share among cost-sensitive enterprise buyers &mdash; noted here for context, not as a verified Top Story. On <strong>cybersecurity</strong>: CVE-2026-59310, the critical VMware vCenter directory-traversal flaw under active exploitation (361+ victim IPs across 47 countries) this report has tracked since Aug 13, remains unconfirmed as added to the CISA Known Exploited Vulnerabilities catalog; direct cisa.gov fetch was blocked again this run (a recurring, environment-level issue), and secondary reporting located by this report's research does not confirm a KEV listing as of this run. Forecast 2026-08-14-am-3 (KEV listing within 7 days) remains open. Separately, this report's research surfaced a large healthcare data breach not previously tracked: DentaQuest, the largest Medicaid/CHIP dental-benefits administrator in the US, has begun notifying at least 15 million people of a May 2026 breach (attributed to the ShinyHunters group, which has separately been tracked by this report in connection with the unrelated EY extortion matter) affecting names, Social Security numbers, and Medicaid/Medicare identifiers &mdash; on track to be the largest healthcare breach reported in 2026. This report flags it for awareness rather than adopting it as a verified Top Story, given it was not independently corroborated against a primary regulatory filing this run.</p>
+    </section>
+
+    <!-- ================= 10. SCIENCE & ENGINEERING ================= -->
+    <section class="report-section" aria-labelledby="s-sci">
+      <h2 id="s-sci"><span class="kicker">Section 10</span>Science &amp; Engineering</h2>
+      <p>No major physics or engineering development specific to today was found. Astronomers using JWST reported identifying a triple-supermassive-black-hole system in a galaxy roughly 1.3 billion years after the Big Bang (J0148-4214), with two of the three black holes expected to merge; this is research-cycle news without a specific "today" news hook and is noted for completeness rather than elevated to a Top Story.</p>
+    </section>
+
+    <!-- ================= 11. SPACE & SPACEFLIGHT ================= -->
+    <section class="report-section" aria-labelledby="s-space">
+      <h2 id="s-space"><span class="kicker">Section 11</span>Space &amp; Spaceflight</h2>
+      <p>York Space Systems' post-earnings decline (Top Story 6) is today's dominant space-sector item, capping a mixed week of space-sector earnings (Spire mixed, Intuitive Machines reversed sharply higher, York down sharply twice in two sessions). SpaceX (SPCX) traded lower today amid continued positioning ahead of the Aug 20 employee share-unlock, a thread this report has tracked since Aug 11; no SpaceX-specific news was found today. Rocket Lab (RKLB) had no new filing today beyond yesterday's Iridium-acquisition milestones. No update was found on China's Long March 7A failure investigation beyond this week's reporting that it remains focused on the shared YF-100 engine architecture, still an analyst theory rather than a CASC-confirmed finding &mdash; a live risk this report continues to flag for the Aug 24 Chang'e-7 launch on the related Long March 5.</p>
+    </section>
+
+    <!-- ================= 12. COMPLETED CALENDAR ================= -->
+    <section class="report-section" aria-labelledby="s-cal">
+      <h2 id="s-cal"><span class="kicker">Section 12</span>Completed Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Results, still-upcoming events, and next week's majors. All times ET.</caption>
+          <thead>
+            <tr><th>Time / Status</th><th>Event</th><th>Result / Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt">July retail sales (Census Bureau)</td><td class="txt">&minus;0.6% m/m headline, +5.0% y/y; control group &minus;0.4% vs +0.3% est &mdash; see Top Story 1</td></tr>
+            <tr><td>10:00</td><td class="txt">UMich consumer sentiment (preliminary, Aug)</td><td class="txt">51.0 vs 54.5 est, down from 55.2 &mdash; see Top Story 1</td></tr>
+            <tr><td>Overnight</td><td class="txt">13-/26-/6-Week Treasury Bill auctions</td><td class="txt">Routine bill supply, no tail flagged</td></tr>
+            <tr><td>Today</td><td class="txt">USS George Washington relief transit</td><td class="txt">Confirmed underway &mdash; see Top Story 4</td></tr>
+            <tr><td>Sat Aug 15</td><td class="txt">Falcon 9 &mdash; USSF-366 launch (~21:52 ET)</td><td><span class="chip chip--info">Low</span></td></tr>
+            <tr><td>Sat Aug 15</td><td class="txt">Rocket Lab Electron &mdash; NASA Aspera astrophysics smallsat</td><td><span class="chip chip--info">Low</span></td></tr>
+            <tr><td>Sun Aug 16</td><td class="txt">Falcon 9 &mdash; Globalstar 2-R Mission 1 (~01:12 ET)</td><td><span class="chip chip--info">Low</span></td></tr>
+            <tr><td>Mon Aug 17</td><td class="txt">13-/26-Week Treasury Bill reopenings</td><td><span class="chip chip--info">Low</span></td></tr>
+            <tr><td>Tue Aug 18</td><td class="txt">US Import/Export Price Indexes (Jul)</td><td><span class="chip chip--info">Low</span></td></tr>
+            <tr><td>Tue Aug 18</td><td class="txt">Home Depot (HD) Q2 earnings</td><td><span class="chip chip--warn">High</span> &mdash; first report since Decker's medical leave</td></tr>
+            <tr><td>Wed Aug 19</td><td class="txt">20-Year Bond auction</td><td><span class="chip chip--info">Medium</span></td></tr>
+            <tr><td>Aug 20</td><td class="txt">SpaceX (SPCX) employee share-unlock, ~320M shares</td><td><span class="chip chip--warn">High</span></td></tr>
+            <tr><td>Aug 27</td><td class="txt">Fed Chair Warsh, Jackson Hole remarks (per prior FT sourcing)</td><td><span class="chip chip--warn">High</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= 13. WHAT MOVED MARKETS ================= -->
+    <section class="report-section" aria-labelledby="s-moved">
+      <h2 id="s-moved"><span class="kicker">Section 13</span>What Moved Markets</h2>
+      <p><strong>Open:</strong> Futures pointed modestly lower overnight (ES &minus;0.22%, NQ &minus;0.21%, YM &minus;0.23% by this report's close-series computation; RTY +0.52%, diverging with small caps), a pause after Thursday's two-session rally. <strong>Morning:</strong> The 08:30 ET retail-sales miss and 10:00 ET consumer-sentiment miss (Confirmed catalyst for the session's soft tone) pulled major indices lower through the morning while the 10-year yield rose &mdash; a cross-current this report notes without forcing a single explanation, since soft demand data would typically be expected to pull yields down, not up; UMich's rising short-term inflation expectations component is a plausible, not confirmed, contributor to the yield move. <strong>Midday:</strong> Broadcom's bond-downgrade/VMware-exploit decline (Confirmed catalyst for AVGO specifically) and the alt-asset-manager reversal (Likely contributor: no company-specific news found) weighed on Technology and Financials. Intuitive Machines' continued rally (Confirmed catalyst for LUNR specifically) and Energy's gain on firmer oil provided offsetting strength. <strong>Close:</strong> Major large-cap indices settled modestly lower for the first session in three &mdash; S&amp;P &minus;0.17%, Nasdaq &minus;0.28%, Dow &minus;0.20% &mdash; while the Russell 2000 (+0.52%) and equal-weight RSP (+0.01%, essentially flat vs. SPY's decline) both outperformed, a mild breadth-positive divergence beneath a soft large-cap headline. Energy (+1.39%) and Utilities (+0.59%) led sectors; Health Care (&minus;0.60%) and Technology (&minus;0.39%) lagged. The VIX fell 2.32% to 14.29 despite the modest equity decline &mdash; a mild anomaly this report notes (Unexplained) rather than forcing a narrative around, though it may simply reflect the week's overall calming trend after Wednesday-Thursday's rally.</p>
+    </section>
+
+    <!-- ================= 14. WINNERS & LOSERS ================= -->
+    <section class="report-section" aria-labelledby="s-wl">
+      <h2 id="s-wl"><span class="kicker">Section 14</span>Winners &amp; Losers</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Watchlist, today's close vs. yesterday's close &middot; this report's own Yahoo Finance close-series computation &middot; EOD official.</caption>
+          <thead><tr><th>Symbol</th><th>Close</th><th>Change</th></tr></thead>
+          <tbody>
+            <tr><td>LUNR</td><td>19.01</td><td class="up">+8.26%</td></tr>
+            <tr><td>AMD</td><td>514.39</td><td class="up">+6.50%</td></tr>
+            <tr><td>RDW</td><td>13.59</td><td class="up">+2.95%</td></tr>
+            <tr><td>KTOS</td><td>64.58</td><td class="up">+2.85%</td></tr>
+            <tr><td>CMG</td><td>33.51</td><td class="up">+2.74%</td></tr>
+            <tr><td>EQIX</td><td>1102.10</td><td class="up">+2.64%</td></tr>
+            <tr><td>KRMN</td><td>62.01</td><td class="up">+2.50%</td></tr>
+            <tr><td>MU</td><td>971.66</td><td class="up">+2.30%</td></tr>
+            <tr><td>&hellip;</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td></tr>
+            <tr><td>COIN</td><td>148.47</td><td class="down">&minus;3.53%</td></tr>
+            <tr><td>BX</td><td>143.95</td><td class="down">&minus;3.60%</td></tr>
+            <tr><td>ARES</td><td>144.05</td><td class="down">&minus;3.61%</td></tr>
+            <tr><td>HOOD</td><td>95.56</td><td class="down">&minus;3.83%</td></tr>
+            <tr><td>YSS</td><td>10.93</td><td class="down">&minus;5.08%</td></tr>
+            <tr><td>AVGO</td><td>392.99</td><td class="down">&minus;5.94%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Top 8 gainers and bottom 6 decliners shown of 166 watchlist names successfully recovered (FM has no data on this feed, a recurring known gap). Free-tier quote caveat: non-consolidated single-venue prices can differ slightly from official consolidated closes.</p>
+    </section>
+
+    <!-- ================= 15. OVERNIGHT & TOMORROW WATCH ================= -->
+    <section class="report-section" aria-labelledby="s-tom">
+      <h2 id="s-tom"><span class="kicker">Section 15</span>Overnight &amp; Tomorrow Watch</h2>
+      <ul>
+        <li>Whether today's soft retail-sales/consumer-sentiment data draws any Fed commentary before Jackson Hole (Aug 27).</li>
+        <li>Whether York Space Systems stabilizes after two consecutive earnings misses and a same-day CFO change, or extends its decline (forecast 2026-08-14-pm-2 logged).</li>
+        <li>Independent corroboration (or contradiction) of Zelensky's Dnipropetrovsk casualty and territorial claims.</li>
+        <li>The USS George Washington's arrival on station and any change in Iran blockade posture.</li>
+        <li>Whether CVE-2026-59310 is added to the CISA KEV catalog (forecast 2026-08-14-am-3, horizon Aug 21).</li>
+        <li>The Aug 20 SpaceX employee share-unlock, now six days out.</li>
+        <li>Home Depot's Aug 18 earnings, the first report since CEO Ted Decker's medical leave began.</li>
+        <li>A Supreme Court ruling on DOJ's stay request in the mail-ballot EO case.</li>
+      </ul>
+    </section>
+
+    <!-- ================= 16. PHYSICS LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-phys">
+      <h2 id="s-phys"><span class="kicker">Section 16 &middot; learning</span>Physics Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Physics 15/71 &middot; Friction</p>
+        <p>This morning introduced friction: the resistive force between two surfaces in contact, which comes in two flavors &mdash; static friction, which resists the start of relative motion, and kinetic friction, which resists motion already underway. Static friction is the stronger of the two right up until the object actually starts to slide, at which point the resistance drops to the (smaller) kinetic value; that is why a heavy box is hardest to get moving and, once moving, takes noticeably less force to keep sliding.</p>
+        <p>Tonight's tie-in: today's market had its own version of a static-vs-kinetic distinction. York Space Systems needed a large "force" &mdash; a second consecutive earnings miss plus a same-day CFO change &mdash; to overcome the market's static resistance to pushing the stock meaningfully lower a second day in a row after Thursday's regular-session gain; once that combined force exceeded the threshold, the decline (like kinetic friction taking over) proceeded at a lower "resistance," extending through the session rather than reversing. A common misconception worth correcting: friction is not proportional to the contact area between two surfaces &mdash; a wide, flat block and a narrow, tall block of the same weight experience essentially the same friction force, because friction depends on the normal force (roughly, weight) and the materials involved, not on how much surface touches. This sets up Newton's Second Law next: once forces (including friction) are correctly identified and summed, F = ma turns the diagram into an actual prediction of motion.</p>
+      </div>
+    </section>
+
+    <!-- ================= 17. SPACEFLIGHT LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-space-lesson">
+      <h2 id="s-space-lesson"><span class="kicker">Section 17 &middot; learning</span>Spaceflight Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Spaceflight 15/75 &middot; Max Q</p>
+        <p>This morning introduced Max Q: the point during ascent where dynamic pressure on the vehicle (a combination of air density and velocity squared) peaks. Contrary to what the name might suggest, Max Q does not happen at maximum speed or maximum altitude &mdash; it happens in between, typically 60&ndash;90 seconds after liftoff, when the vehicle is going fast enough to generate serious aerodynamic pressure but is still low enough that the air is dense enough to matter. Past Max Q, the rocket keeps accelerating, but the air thins out faster than the speed increases, so the structural stress from aerodynamic pressure actually falls even as velocity climbs.</p>
+        <p>Tonight's tie-in: China's Long March 7A failure on Aug 10, which this report has tracked since it happened, broke apart roughly 83&ndash;85 seconds after liftoff &mdash; squarely inside the window where Max Q pressure is typically highest for a vehicle of that size and profile. That timing is one reason investigators (per this report's earlier coverage) are reportedly focused on the shared YF-100 engine architecture and the joint first-stage/booster burn phase: a structural or engine anomaly is far more likely to become catastrophic exactly when aerodynamic loads are already near their peak, since the vehicle has the least structural margin to spare at that moment. A common misconception is that rockets throttle down before Max Q to reduce speed and therefore reduce stress; in reality, many vehicles (including Falcon 9) do throttle down briefly around Max Q, but the purpose is to limit dynamic pressure directly, not to slow the vehicle's overall climb &mdash; the throttle-up resumes immediately after the pressure peak passes. Tomorrow's lesson connects this to the vehicle's structural margins and why Max Q dictates a rocket's maximum survivable dynamic-pressure rating.</p>
+      </div>
+    </section>
+
+    <!-- ================= 18. QUANT/ML LESSON ================= -->
+    <section class="report-section" aria-labelledby="s-quant">
+      <h2 id="s-quant"><span class="kicker">Section 18 &middot; learning</span>Quant/ML Lesson</h2>
+      <div class="lesson">
+        <p class="lesson-position">Quant/ML 15/118 &middot; CAPM Alpha Formula</p>
+        <p>This morning introduced CAPM alpha: &alpha; = R<sub>i</sub> &minus; [R<sub>f</sub> + &beta;(R<sub>m</sub> &minus; R<sub>f</sub>)] &mdash; a measure of whether an investment earned more or less than what its market-risk exposure alone would predict. R<sub>f</sub> is the risk-free rate, R<sub>m</sub> is the market's return, &beta; measures how sensitive the investment is to market moves, and the bracketed term is the "expected" return given that sensitivity; alpha is simply the leftover the model can't explain &mdash; positive alpha means the investment beat its risk-adjusted expectation, negative means it lagged it.</p>
+        <p>Tonight, use today's actual watchlist data to see why alpha is a comparison, not a standalone number. Today the broad market (SPY) was little changed to slightly lower on the retail-sales/consumer-sentiment miss, while York Space Systems fell sharply on company-specific news (a second earnings miss and CFO transition). YSS's large decline is not, by itself, "negative alpha" in the CAPM sense &mdash; a stock with a high beta would be expected to fall somewhat on a weak macro day even with zero company-specific news, so computing YSS's true alpha requires subtracting out that market-beta-driven component first, isolating only the piece of the move attributable to company-specific information. Today's move is large enough, and the news specific enough, that essentially all of it likely represents true (negative) alpha rather than beta-driven market exposure &mdash; but that separation is the actual analytical step, not something you can skip by eyeballing the raw return.</p>
+        <p>A common misconception, worth stating plainly: a stock that "beat the market today" did not necessarily generate positive alpha, and one that fell more than the market did not necessarily generate negative alpha &mdash; both depend on what that stock's beta predicted it should have done, which requires the full CAPM calculation, not just a same-day return comparison. Tomorrow's lesson turns to ARCH(p), the first of the volatility-clustering models, which explains why days like today's YSS move tend to be followed by more (not average) volatility in the same name.</p>
+        <figure class="equation">
+          <img src="../../../equations/eq_015.png" alt="Rendered equation image eq_015: CAPM Alpha Formula, alpha equals R_i minus the sum of R_f plus beta times the quantity R_m minus R_f." loading="lazy" width="480">
+          <figcaption>Equation 15 of 118 &mdash; embedded from site/equations/ (registry order).</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ================= 19. FULL CLOSING MARKET ANALYSIS ================= -->
+    <section class="report-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix"><span class="kicker">Section 19 &middot; collapsed by default</span>Full Closing Market Analysis</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Mildly risk-off, narrow</span> Supporting evidence: large-cap indices closed lower for the first session in three following a soft retail-sales/consumer-sentiment double miss; Technology and Health Care lagged; the 10-year yield rose despite the soft data, a cross-current inconsistent with a clean "growth scare" read. Contradicting evidence: the Russell 2000 and equal-weight RSP both outperformed SPY, credit spreads remain tight and unchanged, and the VIX actually fell &mdash; none of which is consistent with a genuine risk-off rotation. Confidence: low-to-moderate; today reads more like idiosyncratic single-name moves (Broadcom, Intuitive Machines, AMD) atop a quietly soft macro data day than a coherent regime shift. Change vs. yesterday: a pause/mild reversal after Wednesday-Thursday's CPI/PPI-driven rally, not a trend change.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Today's close, 2026-08-14 &middot; EOD official &middot; this report's own close-series computation.</caption>
+              <thead><tr><th>Fund</th><th>Close</th><th>Day</th><th>vs 20-DMA</th><th>vs 50-DMA</th><th>52-week range</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>776.32</td><td class="down">&minus;0.20%</td><td class="up">+2.66%</td><td class="up">+3.66%</td><td>631.97&ndash;777.88</td></tr>
+                <tr><td>QQQ</td><td>731.07</td><td class="down">&minus;0.14%</td><td class="up">+3.83%</td><td class="up">+2.54%</td><td>558.28&ndash;746.16</td></tr>
+                <tr><td>IWM</td><td>305.06</td><td class="up">+0.51%</td><td class="up">+2.81%</td><td class="up">+3.37%</td><td>225.41&ndash;305.06 (new high)</td></tr>
+                <tr><td>DIA</td><td>536.81</td><td class="down">&minus;0.20%</td><td class="up">+1.42%</td><td class="up">+2.60%</td><td>447.95&ndash;542.81</td></tr>
+                <tr><td>VTI</td><td>383.85</td><td class="down">&minus;0.12%</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td><td>&mdash;</td></tr>
+                <tr><td>RSP (equal-weight)</td><td>222.75</td><td class="up">+0.01%</td><td class="txt">&mdash;</td><td class="txt">&mdash;</td><td>&mdash;</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Index cash closes (Yahoo, own close-series): S&amp;P 500 (^GSPC) 7,785.73 (&minus;0.17%); Nasdaq Composite (^IXIC) 26,729.16 (&minus;0.28%); Dow (^DJI) 53,732.53 (&minus;0.20%); Russell 2000 (^RUT) 3,068.57 (+0.52%). IWM closed at a fresh 52-week high. RSP essentially flat while SPY fell &mdash; breadth held up better than the cap-weighted headline suggests.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, today's close &middot; EOD official.</caption>
+              <thead><tr><th>Sector</th><th>Ticker</th><th>Day</th></tr></thead>
+              <tbody>
+                <tr><td>Energy</td><td>XLE</td><td class="up">+1.39%</td></tr>
+                <tr><td>Utilities</td><td>XLU</td><td class="up">+0.59%</td></tr>
+                <tr><td>Materials</td><td>XLB</td><td class="up">+0.45%</td></tr>
+                <tr><td>Industrials</td><td>XLI</td><td class="up">+0.38%</td></tr>
+                <tr><td>Communication Services</td><td>XLC</td><td class="up">+0.36%</td></tr>
+                <tr><td>Real Estate</td><td>XLRE</td><td class="up">+0.31%</td></tr>
+                <tr><td>Consumer Staples</td><td>XLP</td><td class="up">+0.09%</td></tr>
+                <tr><td>Financials</td><td>XLF</td><td class="down">&minus;0.17%</td></tr>
+                <tr><td>Consumer Discretionary</td><td>XLY</td><td class="down">&minus;0.20%</td></tr>
+                <tr><td>Technology</td><td>XLK</td><td class="down">&minus;0.39%</td></tr>
+                <tr><td>Health Care</td><td>XLV</td><td class="down">&minus;0.60%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">A defensive-over-cyclical tilt (Energy/Utilities/Materials leading, Tech/Health Care lagging) alongside firmer oil (WTI +1.26%) reads as consistent with, though not confirmation of, the day's soft consumer-data narrative. Health Care's underperformance (&minus;0.60%) stands out with no single identified watchlist catalyst beyond Eli Lilly's &minus;2.38% decline.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Whole-market breadth (Massive grouped-daily) is computed once per NYSE session; today's session (Aug 14) will be computed in Monday morning's edition once complete data is available, per the once-per-session rule (already computed for the Aug 13 session in this morning's edition). Most recent tracked session (Aug 13, 15th in this report's EMA-accumulation window): 3,233 advancers / 1,928 decliners / 226 unchanged of 5,387 screened names, up-volume ($9.12B) nearly double down-volume ($5.05B). Percent-above-50/200-day EMA is not yet reportable &mdash; the window needs 50 and 200 tracked sessions respectively; currently at 15/50 for the 50-day threshold. Today's intraday breadth proxy (RSP +0.01% and IWM +0.51% both outperforming SPY's &minus;0.20%) points to a broader, not narrower, participating session despite the soft cap-weighted headline.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p>Mega-cap tech: mixed, no uniform direction (AMD +6.50% vs. Broadcom &minus;5.94% within the same ai_infra list). Defense/aero: broadly firm (Northrop Grumman +1.95%, Kratos +2.85%, AeroVironment +1.78%), consistent with today's carrier-deployment and Iran-posture news, though this report identifies no confirmed single catalyst. Space: sharply mixed &mdash; Intuitive Machines +8.26% and Redwire +2.95% against York Space Systems &minus;5.08%, underscoring this week's divergent space-earnings outcomes. Financials: alt-asset managers broadly weaker (see Top Story 8); Robinhood &minus;3.83% and Coinbase &minus;3.53% tracked crypto's modestly softer session. Health: Eli Lilly &minus;2.38% the notable laggard, no confirmed catalyst identified.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Small-cap (IWM +0.51%) outperformed large-cap (SPY &minus;0.20%) today, and equal-weight (RSP +0.01%) outperformed cap-weighted SPY &mdash; both consistent with the broader-participation read in the Breadth block above, a reversal of the mega-cap-led pattern seen earlier in the week.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Equities modestly lower, yields modestly higher, VIX modestly lower, gold and oil both firmer, Bitcoin modestly softer &mdash; a cross-asset picture without a single unifying narrative today; this report presents the pieces rather than forcing a story that the data does not clearly support.</p>
+        </details>
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par curve, 2026-08-13 (today's curve not yet posted at fetch time) &middot; EOD official.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.79%</td></tr>
+                <tr><td>3M</td><td>3.87%</td></tr>
+                <tr><td>6M</td><td>3.94%</td></tr>
+                <tr><td>1Y</td><td>3.97%</td></tr>
+                <tr><td>2Y</td><td>4.15%</td></tr>
+                <tr><td>5Y</td><td>4.32%</td></tr>
+                <tr><td>10Y</td><td>4.63%</td></tr>
+                <tr><td>20Y</td><td>5.20%</td></tr>
+                <tr><td>30Y</td><td>5.21%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s (FRED T10Y2Y, 2026-08-13) +48bp. 10Y real (FRED DFII10, 2026-08-12) 2.42%; 10Y breakeven (FRED T10YIE, 2026-08-13) 2.24%. FRED DGS2 4.20% / DGS10 4.68% (2026-08-12, one session more current than the par-curve release). SOFR (2026-08-13) 3.62%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS (FRED BAMLH0A0HYM2, 2026-08-13): 2.71%, unchanged from the prior session and little changed on the week (2.70&ndash;2.72% range since Aug 6) &mdash; credit spreads remain tight and stable, showing no stress signal despite today's soft consumer data.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>Cboe VIX complex (delayed quotes, ~15:24 ET last trade, <span class="dd dd-ok">Delayed +15m</span>): VIX 14.37 (&minus;1.8% vs Thursday's 14.63 close); VIX9D 10.86; VIX3M 18.49. Term structure (VIX9D &lt; VIX &lt; VIX3M) shows normal contango, consistent with a calm, non-stressed options market despite today's weaker economic data. Daily options market-statistics (put/call ratios): source unavailable this run (cdn.cboe.com market_statistics path returned HTTP 403, a recurring known access issue). MOVE index: not available (no allowlisted free source). Dealer gamma: not tracked (no legitimate free source).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates (Frankfurter), 2026-08-14 fix &middot; EOD official.</caption>
+              <thead><tr><th>Pair</th><th>Rate (per USD)</th></tr></thead>
+              <tbody>
+                <tr><td>EUR</td><td>0.8645</td></tr>
+                <tr><td>JPY</td><td>159.01</td></tr>
+                <tr><td>GBP</td><td>0.7387</td></tr>
+                <tr><td>CNY</td><td>6.7413</td></tr>
+                <tr><td>CHF</td><td>0.8118</td></tr>
+                <tr><td>CAD</td><td>1.3875</td></tr>
+                <tr><td>AUD</td><td>1.4120</td></tr>
+                <tr><td>MXN</td><td>16.9959</td></tr>
+                <tr><td>BRL</td><td>5.1762</td></tr>
+                <tr><td>INR</td><td>95.43</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">DXY has no allowlisted free source; the dollar is described via EURUSD plus this basket. EURUSD little changed on the day per this report's own intraday Yahoo Finance data. No FX price shock identified around today's data releases.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>See What Moved Markets and Winners &amp; Losers for oil, gold, and this report's own close-series figures. Gold and oil both traded in relatively narrow ranges today absent a fresh single catalyst beyond the standing Hormuz/Iran backdrop.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>CoinGecko, as of ~15:44 ET &middot; Live (CoinGecko aggregate).</caption>
+              <thead><tr><th>Asset</th><th>Price</th><th>24h</th></tr></thead>
+              <tbody>
+                <tr><td>BTC</td><td>$62,873</td><td class="down">&minus;0.78%</td></tr>
+                <tr><td>ETH</td><td>$1,876.03</td><td class="down">&minus;0.50%</td></tr>
+                <tr><td>SOL</td><td>$74.86</td><td class="down">&minus;1.56%</td></tr>
+                <tr><td>ADA</td><td>$0.179</td><td class="down">&minus;1.24%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap $2.247T (&minus;0.67% 24h); BTC dominance 56.1%; ETH dominance 10.1%. A quiet, mildly-lower session across majors with no identified single catalyst.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>No Treasury auction settled or was auctioned today. Next scheduled: Monday's 13-/26-/6-week bill reopenings (routine, low-importance). The next coupon auction is the Aug 19 20-year bond reopening.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist-company earnings were scheduled today per this report's Finnhub day-of check; this week's space-sector earnings arc (Spire, Intuitive Machines, York Space Systems) is complete. Home Depot reports Aug 18, the next watchlist earnings date.</p>
+        </details>
+      </details>
+    </section>
+
+    <!-- ================= 20. SOURCES & CORRECTIONS ================= -->
+    <section class="report-section sources-list" aria-labelledby="s-sources">
+      <h2 id="s-sources"><span class="kicker">Section 20</span>Sources, Methodology &amp; Corrections</h2>
+      <p><strong>Primary sources this run:</strong></p>
+      <ul>
+        <li>census.gov/retail/marts/www/marts_current.pdf (retail sales, this report's own direct fetch)</li>
+        <li>Treasury daily par-yield XML, SEC EDGAR market-wide and per-company 8-K feeds (UA-labeled, throttled &le;10 req/s)</li>
+        <li>FRED series CPIAUCSL, CPILFESL, PAYEMS, ICSA, UNRATE, T10Y2Y, DGS2, DGS10, T10YIE, DFII10, SOFR, BAMLH0A0HYM2</li>
+        <li>Cboe VIX/VIX9D/VIX3M delayed quotes; Frankfurter (ECB reference) FX; CoinGecko crypto; FINRA daily short-volume file</li>
+        <li>This report's own Yahoo Finance close-series computation for all 166/167 recovered watchlist symbols, futures/indices/commodities/FX, and six-symbol technical-level series</li>
+      </ul>
+      <p><strong>Secondary confirmation:</strong></p>
+      <ul>
+        <li>Bloomberg, Axios, Floor Daily, Yahoo Finance (retail sales and consumer-sentiment figures)</li>
+        <li>The Harvard Crimson, Boston Globe, CNN, NBC News (Harvard lawsuit dismissal)</li>
+        <li>NPR, Washington Post, U.S. News (USS George Washington deployment)</li>
+        <li>United24 Media, Ukrinform, Al Arabiya/Reuters, Al Jazeera (Ukraine/Russia)</li>
+        <li>StockTitan, Investing.com, MarketBeat (York Space Systems)</li>
+      </ul>
+      <p><strong>Methodology note:</strong> free-tier equity quotes are non-consolidated single-venue prices and can differ slightly from official consolidated closes; delayed data is labeled with its delay everywhere it appears; missing sources are declared unavailable, never estimated silently. The Census Bureau's retail-sales PDF was successfully fetched directly (primary source) but this run's tooling could not machine-extract its text; the cited figures are cross-verified against multiple independent secondary reports of the same release rather than read directly off the fetched document.</p>
+      <p><strong>Corrections:</strong> one completeness-gap entry logged this run (see <code>ledgers/corrections.json</code>): this morning's edition did not cover the Aug 13 dismissal of the Trump administration's Harvard antisemitism lawsuit, despite same-day multi-outlet coverage before this morning's cutoff. Added to this edition's Top Stories, one cycle late, with the gap disclosed rather than the story presented as freshly broken. No prior published statement required correction.</p>
+    </section>
+    <!-- ================= HEALTH FOOTER (every report) ================= -->
+    <footer class="health-footer">
+      <h2>System health &mdash; this run</h2>
+      <ul class="health-grid">
+        <li class="ok">Treasury par curve &mdash; ok &middot; curve date 2026-08-13 (today's not yet posted)</li>
+        <li class="ok">FRED (12 series) &mdash; ok &middot; data age 1&ndash;44 days per series</li>
+        <li class="ok">Cboe VIX/VIX9D/VIX3M &mdash; ok &middot; delayed +15m</li>
+        <li class="down">Cboe options market-statistics (put/call) &mdash; HTTP 403 &middot; recurring known path-shift issue, source unavailable</li>
+        <li class="ok">Frankfurter FX &mdash; ok &middot; today's ECB fix</li>
+        <li class="ok">CoinGecko &mdash; ok &middot; live</li>
+        <li class="down">Twelve Data quote batches &mdash; HTTP 429 (8-credit/minute cap hit after 1st batch) &middot; substituted this run's own Yahoo Finance close-series sweep (166/167 recovered, FM gap as usual)</li>
+        <li class="ok">Yahoo Finance close-series (watchlist, indices, futures, commodities, FX, technical levels) &mdash; ok</li>
+        <li class="ok">FINRA daily short volume &mdash; ok &middot; Aug 13 session (today's file not yet published)</li>
+        <li class="ok">SEC EDGAR market-wide 8-K feed &mdash; ok</li>
+        <li class="down">SEC EDGAR per-company sweep &mdash; 88/90 watchlist tickers reachable; PLTR and GS timed out repeatedly and were not recovered this run (best-effort gap)</li>
+        <li class="ok">Census Bureau retail sales &mdash; ok, direct fetch (PDF retrieved; this run's tooling could not machine-extract its text, so cited figures are cross-verified against multiple independent secondary reports of the same release)</li>
+        <li class="down">University of Michigan consumer sentiment &mdash; not directly fetched this run; sourced via multiple secondary reports of the University's own preliminary release</li>
+        <li class="down">CISA KEV catalog (cisa.gov) &mdash; direct fetch blocked (EGRESS_BLOCKED), recurring known issue; relied on secondary sourcing</li>
+        <li class="down">CDC/WHO Ebola situation pages &mdash; direct fetch blocked (EGRESS_BLOCKED), recurring known issue; no fresher figure than last night's CDC-sourced count found via secondary sourcing</li>
+        <li class="ok">Calendar cache &mdash; not refreshed this run (last refresh 05:50 ET, within the 18-hour freshness window)</li>
+        <li class="ok">Whole-market breadth &mdash; not recomputed this run (Aug 13 session already computed this morning; Aug 14 session computes Monday AM per the once-per-session rule)</li>
+      </ul>
+      <p>Run duration approx. 1h &middot; retries: Twelve Data (1, exhausted), CISA/CDC/WHO (repeated, environment-level block, not retried further) &middot; prior run (2026-08-14-am): success, degraded on Cboe options stats, Twelve Data batch limit, and who.int/cisa.gov &mdash; consistent with this run's own degradations, all recurring and known &middot; no instruction-like content detected in fetched sources this run.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-14-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

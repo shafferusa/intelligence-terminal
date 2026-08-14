@@ -416,20 +416,6 @@
       "watch": true
     },
     {
-      "id": "coinbase-q2-2026-loss-jul31",
-      "headline": "Coinbase posts a third straight quarterly loss as revenue falls 14%",
-      "status": "New",
-      "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-07-31-pm",
-      "verification": "Confirmed-primary (company report)",
-      "one_line": "Q2 revenue $1.22B (-14% Y/Y), net loss $359.5M, third consecutive quarterly loss. Shares closed -9.27% (this run's data), this run's sharpest financials-watchlist decliner. Forecast 2026-07-31-pm-3 logged (at least one sell-side price-target cut within 5 sessions, 55-65%).",
-      "score_note": "Sharpest single-name financials decline this run; no clear read-through to broader crypto-asset prices identified.",
-      "sources": [
-        "Coinbase Q2 2026 report (primary, via wire coverage)"
-      ],
-      "watch": true
-    },
-    {
       "id": "ndaa-fy2027",
       "headline": "NDAA FY2027 remains blocked in the Senate; no procedural movement since the Jul 14 cloture failure",
       "status": "Continuing",
@@ -443,26 +429,6 @@
         "Congress.gov CRS IN12704",
         "Breaking Defense",
         "The Hill"
-      ],
-      "watch": true
-    },
-    {
-      "id": "greece-helicopter-collision-aug2",
-      "headline": "Two firefighting helicopters collide over Greece's wildfire front, killing two crew members",
-      "status": "New",
-      "first_seen": "2026-08-03-am",
-      "last_updated": "2026-08-03-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Two firefighting helicopters collided mid-air near Psatha, west of Athens, Sunday while battling the Attica fire front. Both crew of one aircraft (a Danish pilot, a Greek coordinator) were killed; the second aircraft's crew (British pilot, Greek liaison) survived with injuries. Greece separately saw ~60 new fire ignitions in a single day (Aug 1); a Porto Germeno blaze damaged up to 150 homes and required a seaborne rescue. Spain's megafires downgraded but new flare-ups hit Leon/Caceres; France's Bordeaux-area burn scar remains contained; Turkey's fire front shifted to the Aegean/Mediterranean coasts. EU's rescEU fleet (its largest deployment on record) remains active across 12 countries.",
-      "score_note": "First aviation fatalities of this summer's European wildfire season.",
-      "sources": [
-        "ABC News",
-        "CBS News",
-        "CNN",
-        "Euronews",
-        "Greek City Times",
-        "Jerusalem Post",
-        "Al Jazeera"
       ],
       "watch": true
     },
@@ -511,25 +477,6 @@
       "sources": [
         "CBC News",
         "Al Jazeera"
-      ],
-      "watch": true
-    },
-    {
-      "id": "palantir-q2-earnings-aug4",
-      "headline": "Palantir's 93%-revenue-growth Q2 sparks the day's largest single-name move and a market-wide AI-software rally",
-      "status": "New",
-      "first_seen": "2026-08-04-pm",
-      "last_updated": "2026-08-04-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Q2 adjusted EPS $0.41 (vs $0.35 est.), revenue $1.935B (+93% Y/Y, vs $1.8B est.); US commercial revenue +149% to $764M. FY2026 revenue guidance raised to $8.150-8.158B. CEO Karp called it 'otherworldly.' Stock closed +29.5%, the watchlist's largest mover today and a lead driver of the broader risk-on tape alongside falling oil and JOLTS.",
-      "score_note": "Single largest market mover this run; reinforces the AI-infrastructure demand narrative into AMD/SpaceX earnings.",
-      "sources": [
-        "Palantir Q2 2026 earnings release (primary)",
-        "Proactive Investors",
-        "TheStreet",
-        "TradingKey",
-        "MarketScreener",
-        "this run's own Yahoo Finance fetch"
       ],
       "watch": true
     },
@@ -711,9 +658,9 @@
       "headline": "KKR, Apollo, Ares and Blackstone give back part of their two-day Nvidia-financing rally -- the group's first down session since the story broke",
       "status": "Materially changed",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-13-pm",
+      "last_updated": "2026-08-14-pm",
       "verification": "Confirmed-primary",
-      "one_line": "After Wednesday's first down session since the Nvidia-financing story broke, all four rebounded sharply Thursday: Ares +4.96%, KKR +4.00%, Apollo +3.57%, Blackstone +2.00% (this run's own data), more than erasing Wednesday's pullback for three of the four names. No company-specific catalyst found; this run's own EDGAR sweep again came up empty.",
+      "one_line": "All four (Ares -3.61%, Blackstone -3.60%, Apollo -1.99%, KKR -1.14%, this run's own data) gave back part of Thursday's rebound today -- a third directional flip within a week, still with no company-specific catalyst identified via this run's own EDGAR sweep.",
       "score_note": "Wednesday's dip now reads as ordinary profit-taking rather than a reversal, given today's rebound.",
       "sources": [
         "this run's own Twelve Data and Yahoo Finance close-series data",
@@ -828,9 +775,9 @@
       "headline": "Ukraine hits a fourth Russian refinery in three days; Russia and Ukraine trade port and city strikes",
       "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-14-am",
+      "last_updated": "2026-08-14-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Ukrainian drones struck the Lukoil Volgograd refinery overnight (4th Russian refinery hit in 3 days, ~5.6% of national refining capacity). Russia hit Kramatorsk Thursday evening (8 FAB-250 bombs, 1 killed/17 injured) and Izmail Danube grain port overnight Aug 12-13 (Romania briefly scrambled jets). Zelensky says Ukraine has only ~1% of the Patriot interceptors it needs. A Ukrainian-sourced \"double-tap on rescuers\" claim is single-source, not independently confirmed.",
+      "one_line": "Zelensky claimed (Aug 12) a 745 sq km, eight-month recapture across Dnipropetrovsk/Donetsk/Zaporizhzhia and ~9,550 Russian soldiers killed -- an unverified Ukrainian-government casualty figure -- amid intensified overnight Russian missile/drone strikes on Ukrainian cities tied to Ukraine's own worsening Patriot-interceptor shortage.",
       "score_note": "Refinery campaign now a sustained, escalating pressure track distinct from front-line fighting.",
       "sources": [
         "Bloomberg",
@@ -861,33 +808,17 @@
     {
       "id": "lunr-earnings-reversal-aug13",
       "headline": "Intuitive Machines swings from a ~16% premarket earnings plunge to a positive close",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-13-pm",
-      "last_updated": "2026-08-13-pm",
+      "last_updated": "2026-08-14-pm",
       "verification": "Confirmed-primary",
-      "one_line": "LUNR missed on revenue ($206.2M vs ~$216.3M est.) and EPS (~-$0.16 vs ~-$0.09 est.), plunging to a premarket low of $14.29 (-15.7% vs Wednesday's close) by 9:25am ET, then recovered steadily through the session to close +3.60% at $17.56 -- this run's own minute-by-minute Yahoo Finance data. Record backlog ($1.76-1.8B) and reiterated FY26 guidance appear to have outweighed the headline miss once digested.",
+      "one_line": "Extended yesterday's reversal with a further +8.26% today (this run's own data) on continued digestion of the record $1.8B backlog, ~$1.2B in new awards including a $600M+ GEO satellite deal, and a national-security revenue mix shift from ~3% to ~30%. A second consecutive strong session, not a one-day bounce.",
       "score_note": "Unusually large intraday round-trip; York Space Systems reports tonight, rounding out the week's space earnings.",
       "sources": [
         "Intuitive Machines earnings release (primary)",
         "this run's own Yahoo Finance intraday data",
         "TipRanks",
         "MarketBeat"
-      ],
-      "watch": true
-    },
-    {
-      "id": "july-ppi-aug13",
-      "headline": "July PPI flat on the headline but core producer-price inflation quadruples its pace to +0.4%",
-      "status": "Resolved",
-      "first_seen": "2026-08-13-pm",
-      "last_updated": "2026-08-13-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "BLS (direct fetch): headline PPI 0.0% m/m/+4.7% y/y; core (ex food/energy/trade services) +0.4% m/m/+4.7% y/y. Energy (-3.1%) and goods (-0.9%) offset services (+0.2%) and construction (+2.2%). Markets read it net-dovish (10Y yield -4bp to 4.641%, indices closed higher for a 2nd session) despite the hotter core print. Forecast 2026-08-13-pm-3 logged on Fed commentary before Jackson Hole.",
-      "score_note": "Headline-vs-core divergence is the notable nuance; a potential complication for the Warsh-hawkish-vs-jobs-dovish tension if it persists.",
-      "sources": [
-        "bls.gov/news.release/ppi.nr0.htm (primary, direct fetch)",
-        "FRED ICSA (primary)",
-        "this run's own Yahoo Finance data"
       ],
       "watch": true
     },
@@ -912,11 +843,11 @@
     {
       "id": "yss-earnings-miss-aug13",
       "headline": "York Space Systems misses EPS and cuts FY26 guidance by roughly a third; shares plunge ~23% after-hours",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-14-am",
-      "last_updated": "2026-08-14-am",
+      "last_updated": "2026-08-14-pm",
       "verification": "Confirmed-primary",
-      "one_line": "YSS Q2 revenue $92.5M (+10% Y/Y, narrow beat) but EPS -$0.21 missed -$0.16 est; FY26 revenue guidance cut to $375-405M citing delayed government contracts. Shares fell ~23% after-hours to ~$8.86, immediately after Thursday's regular-session +4.26% close -- the clearest earnings casualty of this week's three-report space-earnings arc.",
+      "one_line": "Extended today's intraday decline (closed -5.08%, this run's own data) on top of Thursday's -23% after-hours drop; named Brian Frantz (CAO) interim CFO effective today, replacing Kevin Messerle, with no disclosed reason for the departure. Second consecutive earnings miss now compounded by a leadership change.",
       "score_note": "Sharpest single-name reaction of this week's space-earnings season; watch today's open.",
       "sources": [
         "York Space Systems 8-K/earnings release",
@@ -953,6 +884,74 @@
       "score_note": "Fast-moving domestic disaster; expect further revision.",
       "sources": [
         "Associated Press wire (via Washington Post, ABC News)"
+      ],
+      "watch": true
+    },
+    {
+      "id": "retail-sales-consumer-sentiment-miss-aug14",
+      "headline": "July retail sales and August consumer sentiment both miss estimates, denting the week's rally",
+      "status": "New",
+      "first_seen": "2026-08-14-pm",
+      "last_updated": "2026-08-14-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "Census Bureau (direct fetch): retail sales -0.6% m/m (sharpest since May 2025), +5.0% y/y; control group -0.4% vs +0.3% est with May/June revised down. UMich preliminary August sentiment 51.0 vs 54.5 est, down from July's 55.2, with 1-year inflation expectations rising to 4.3%. Resolves forecast 2026-08-14-am-1 (sales beat consensus) wrong. Major indices closed modestly lower for the first session in three; the 10-year yield rose despite the soft data, a cross-current this report does not force a narrative around.",
+      "score_note": "Week's dominant macro story; first hard evidence of consumer-demand softening.",
+      "sources": [
+        "census.gov (primary, direct fetch)",
+        "Bloomberg",
+        "Axios",
+        "Floor Daily",
+        "Yahoo Finance"
+      ],
+      "watch": true
+    },
+    {
+      "id": "harvard-antisemitism-lawsuit-dismissed-aug13",
+      "headline": "Federal judge dismisses Trump administration's antisemitism lawsuit against Harvard",
+      "status": "New",
+      "first_seen": "2026-08-14-pm",
+      "last_updated": "2026-08-14-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Judge Richard G. Stearns dismissed DOJ's suit (filed March, sought to claw back ~$1B in grants), finding the cited antisemitism incidents 'too isolated and episodic.' Ruling issued Aug 13; not covered in the 2026-08-14-am edition despite same-day multi-outlet coverage -- logged as a completeness gap in ledgers/corrections.json, not a factual error.",
+      "score_note": "New legal thread; removes one front in the administration's university-funding campaign.",
+      "sources": [
+        "The Harvard Crimson",
+        "Boston Globe",
+        "CNN",
+        "NBC News",
+        "Axios"
+      ],
+      "watch": true
+    },
+    {
+      "id": "uss-george-washington-deployment-aug14",
+      "headline": "USS George Washington transits toward the Middle East to relieve the USS Abraham Lincoln",
+      "status": "New",
+      "first_seen": "2026-08-14-pm",
+      "last_updated": "2026-08-14-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Confirmed transiting the Strait of Malacca en route to relieve the Lincoln after a reported 250+ day deployment (no port call in ~200 days), amid congressional concern over crew fatigue. Hegseth said Wednesday the Navy can sustain the Iran posture indefinitely via rotation -- this is that rotation.",
+      "score_note": "Extends the us-iran-strikes thread with a new military-logistics dimension.",
+      "sources": [
+        "NPR",
+        "Washington Post",
+        "U.S. News & World Report"
+      ],
+      "watch": true
+    },
+    {
+      "id": "broadcom-downgrade-vmware-aug14",
+      "headline": "Broadcom falls nearly 6% on a bond-rating downgrade tied to its AI financing platform plus renewed VMware-exploit attention",
+      "status": "New",
+      "first_seen": "2026-08-14-pm",
+      "last_updated": "2026-08-14-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "AVGO closed -5.94% (this run's own data), the day's sharpest single-name decline, on a BofA issuer/bond-rating downgrade citing leverage from its ~$35B 'AI XPV' financing platform with Apollo and Blackstone (building >1GW of AI compute reportedly for Anthropic), plus continued coverage of CVE-2026-59310's confirmed active exploitation (Broadcom owns VMware). This report cannot cleanly separate the two catalysts from general sector profit-taking.",
+      "score_note": "Links the AI-infrastructure-financing thread and the VMware-exploit thread into one company-specific catalyst.",
+      "sources": [
+        "TradingKey",
+        "TipRanks",
+        "this run's own Yahoo Finance data"
       ],
       "watch": true
     }

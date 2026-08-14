@@ -1109,6 +1109,36 @@
       "probability": "55-70%",
       "basis": "Confirmed active exploitation since Aug 3 across 361+ victim IPs in 47 countries typically precedes a KEV listing by days to a couple of weeks once independent security-industry confirmation exists, though CISA sometimes defers listing when a vendor patch already exists and adoption is judged sufficient.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-14-pm-1",
+      "date": "2026-08-14",
+      "slot": "pm",
+      "forecast": "A Fed official publicly comments on today's soft retail-sales/consumer-sentiment data before Chair Warsh's Jackson Hole remarks (Aug 27).",
+      "horizon": "2026-08-27",
+      "probability": "35-50%",
+      "basis": "No Fed official commented on either Wednesday's CPI or Thursday's PPI by this report's cutoff on either day, arguing against an early comment; but a data pairing this notable (a sharp retail-sales miss plus a five-month-low sentiment reading) raises the odds above the pure baseline-silence pattern this report has observed most of August.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-14-pm-2",
+      "date": "2026-08-14",
+      "slot": "pm",
+      "forecast": "York Space Systems (YSS) extends its decline by at least another 5% over the next 3 trading sessions, rather than stabilizing.",
+      "horizon": "2026-08-19",
+      "probability": "40-55%",
+      "basis": "Two consecutive earnings misses plus a same-day CFO transition is a materially worse combination than the pattern of unexplained single-day declines this report tracked earlier in August, but the stock has shown a history of sharp, uncorrelated reversals (e.g., the Aug 6 pattern) that argue against assuming the slide continues cleanly.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-14-pm-3",
+      "date": "2026-08-14",
+      "slot": "pm",
+      "forecast": "Independent (non-Ukrainian-government) sourcing corroborates or meaningfully disputes Zelensky's Aug 12 claim of ~9,550 Russian soldiers killed in the Dnipropetrovsk-area offensive within 14 days.",
+      "horizon": "2026-08-28",
+      "probability": "20-30%",
+      "basis": "Russian-casualty figures from either side in this conflict have rarely been independently verified in near-real-time by this report's research; a claim of this specific magnitude is more likely to remain contested or simply unaddressed by independent trackers than resolved cleanly in either direction within two weeks.",
+      "status": "open"
     }
   ]
 }
