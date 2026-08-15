@@ -320,7 +320,10 @@
       "horizon": "2026-08-13",
       "probability": "45-55%",
       "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Aug 13 checkpoint passed with the disarm-before-withdraw sequencing dispute unresolved: Netanyahu's Aug 9 rejection of the 15-point document held throughout, Hamas's Ghazi Hamad continued conditioning disarmament on an Israeli halt/withdrawal, and no joint declaration or IVC extension was issued. Kushner, Mladenov and Blair are now traveling to Israel/Egypt (arriving Sun Aug 16) as the first concrete US diplomatic follow-through.",
+      "graded": "2026-08-15",
+      "lesson": "A roadmap deadline with two publicly incompatible preconditions on record (Netanyahu's rejection, Hamas's counter-condition) reliably passed without resolution, consistent with this report's now-repeated pattern on Middle East diplomatic deadlines this cycle."
     },
     {
       "id": "2026-07-31-pm-3",
@@ -499,7 +502,10 @@
       "horizon": "2026-08-10",
       "probability": "40-55%",
       "basis": "Fast-moving mass-casualty migration events often see initial figures converge within days as official counts are released, but a ~20-person spread across credible outlets this wide sometimes persists for weeks when bodies are recovered gradually or jurisdictional counting differs (Spain vs. Morocco vs. NGO estimates).",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The Ceuta toll never reconciled to a single figure within the window; instead the range widened further, with NGO Caminando Fronteras citing 141 dead via morgue-monitoring methodology (Aug 7) against a government range that never moved off 67-100 across the same period -- a wider, not narrower, spread by the Aug 10 deadline.",
+      "graded": "2026-08-15",
+      "lesson": "Divergent counting methodologies (government body counts vs. NGO morgue-monitoring vs. local-official testimony) proved more durable than the typical mass-casualty reconciliation pattern; when methodology, not just reporting lag, drives the spread, a one-week reconciliation window is too short."
     },
     {
       "id": "2026-08-04-am-1",
@@ -535,7 +541,10 @@
       "horizon": "2026-08-11",
       "probability": "40-55%",
       "basis": "Three incidents in roughly five days is an accelerating pace within the broader campaign that has damaged at least 17 merchant ships since it began Feb 28, 2026; no de-escalation signal has been confirmed on this specific risk channel.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "A fourth Hormuz-area vessel incident (the Minoan Pioneer) was confirmed within days of this forecast, matching the accelerating-pace pattern well inside the Aug 11 horizon.",
+      "graded": "2026-08-15",
+      "lesson": "The accelerating short-interval pattern (three incidents in five days) correctly predicted continuation into a fourth before any de-escalation signal appeared on this specific risk channel."
     },
     {
       "id": "2026-08-05-am-1",
@@ -607,7 +616,10 @@
       "horizon": "2026-08-12",
       "probability": "30-45%",
       "basis": "Coordinates are reported finalized and the statement is in 'final drafting,' a more concrete stage than prior weeks' talk-of-talks, but Iran's own spokesperson conditioned issuance on 'no obstacles from third parties' -- an explicit, unresolved contingency -- and this report's tracked pattern this cycle is repeated near-term optimism followed by delay.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Iran and Oman publicly confirmed their Hormuz shipping-corridor agreement by Aug 5, the same evening this forecast was issued and well inside the Aug 12 horizon.",
+      "graded": "2026-08-15",
+      "lesson": "Once coordinates were reported finalized, the remaining step to public confirmation moved within hours rather than repeating the cycle's earlier pattern of near-miss delay."
     },
     {
       "id": "2026-08-06-am-1",
@@ -643,7 +655,10 @@
       "horizon": "2026-08-13",
       "probability": "70-80%",
       "basis": "The outbreak has shown a consistent multi-week rising trend with an increasing community-spread share; an unverified newer figure (~1,751 deaths) surfaced this run consistent with continued acceleration, though not independently confirmed against a primary WHO source yet.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The toll rose well past 1,707 within days: a CDC Health Alert Network notice (HAN00530, data through Aug 11) put deaths at 2,128 (4,566 cases), and the outbreak crossed 2,000 deaths for the first time on Aug 11 -- comfortably above the forecast's threshold before the Aug 13 horizon.",
+      "graded": "2026-08-15",
+      "lesson": "The outbreak's multi-week rising trend continued without a plateau, consistent with the forecast's basis; the primary constraint on this forecast was sourcing (who.int direct fetch blocked all week), not the underlying trend direction."
     },
     {
       "id": "2026-08-06-pm-1",
@@ -679,7 +694,10 @@
       "horizon": "2026-08-11",
       "probability": "40-55%",
       "basis": "This is the third large, unexplained single-day YSS move this report has tracked in the past week (a prior 13.91% unexplained decline on Tuesday); moves of this repeated magnitude in a thinly-floated, ~$2B-market-cap stock often eventually surface a specific driver (index-related flows, an analyst note, insider-sale disclosure) even when none is identifiable same-day, though it is equally possible no single catalyst ever surfaces for a thin-float mechanical move.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No confirmed catalyst ever surfaced for the specific Aug 6 (-17.22%) decline. Instead the pattern continued uninterrupted: YSS fell a further -9.8% on Aug 10 with no identified driver, before its Aug 13 earnings (revenue beat narrowly, EPS missed, guidance cut ~1/3) triggered a separate, confirmed ~23% after-hours plunge -- a real catalyst, but for a later decline, not the one this forecast asked about.",
+      "graded": "2026-08-15",
+      "lesson": "Thin-float, repeated unexplained single-day moves in this name never did surface a specific driver within the window; the eventual real catalyst (the Aug 13 earnings miss) was a distinct, later event, a reminder not to assume an eventual earnings print will retroactively explain earlier unexplained moves in the same stock."
     },
     {
       "id": "2026-08-07-am-1",
@@ -748,7 +766,10 @@
       "horizon": "2026-08-12",
       "probability": "40-55%",
       "basis": "This report has repeatedly flagged sharp, sometimes unexplained single-session reversals in this small-cap space complex (YSS three times this week alone); base rate of volatility in this group is elevated.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "York Space Systems (YSS) fell -9.8% on Aug 10, well past the 5% threshold and well inside the 3-session window, continuing the same unexplained-decline pattern the forecast's basis cited.",
+      "graded": "2026-08-15",
+      "lesson": "The elevated base-rate volatility in this small-cap space cohort, cited as the forecast's basis, held again -- a fourth double-digit-adjacent unexplained single-session move in YSS alone within two weeks."
     },
     {
       "id": "2026-08-09-sun-1",
@@ -758,7 +779,10 @@
       "horizon": "2026-08-12",
       "probability": "60-70%",
       "basis": "Multiple street-aggregator/prediction-market estimates (Robinhood, Polymarket, Seeking Alpha, Finance Calendar) cluster near 3.5-3.6% YoY; band widened for the inherent uncertainty of non-polled consensus sourcing.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "July CPI printed +3.4% y/y headline (BLS, direct fetch), inside the 3.3-3.8% band, matching the 3.4% consensus and down from June's 3.5%.",
+      "graded": "2026-08-15",
+      "lesson": "Non-polled aggregator/prediction-market consensus (3.5-3.6%) again clustered close to the actual print, consistent with this report's growing evidence that these sources are usable proxies when a live Street consensus feed isn't reachable."
     },
     {
       "id": "2026-08-09-sun-2",
@@ -768,7 +792,10 @@
       "horizon": "2026-08-14",
       "probability": "55-65%",
       "basis": "Four incidents occurred within roughly a five-day span in early August with no claim of responsibility or resolution for any of them, but no new incident has been reported since Aug 3.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "New Gulf maritime incidents occurred Friday evening Aug 14, inside the forecast's own week-long horizon: ADNOC reported two of its vessels attacked while transiting the Strait (UAE called them unprovoked; ADNOC says 15 of its vessels have now been struck since February), and Iran separately confirmed seizing a Marshall Islands-flagged oil tanker the same day.",
+      "graded": "2026-08-15",
+      "lesson": "A quiet stretch (no incident since Aug 3) proved to be a lull, not a resolution -- the maritime-harassment campaign resumed right at the edge of the forecast's own window, a reminder that multi-day quiet periods in this specific risk channel have not yet meant de-escalation this cycle."
     },
     {
       "id": "2026-08-09-sun-3",
@@ -778,7 +805,10 @@
       "horizon": "2026-08-13",
       "probability": "60-70%",
       "basis": "Netanyahu's public \"didn't agree\" statement and the mutual-precondition standoff between Israel and Hamas reported this week.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Aug 13 checkpoint passed without a joint declaration or IVC extension; Netanyahu's rejection and Hamas's counter-condition both held through the week.",
+      "graded": "2026-08-15",
+      "lesson": "Same underlying event as forecast 2026-07-31-pm-2 -- both correctly anticipated the checkpoint passing unresolved from the standing mutual-precondition standoff."
     },
     {
       "id": "2026-08-09-sun-4",
@@ -788,7 +818,10 @@
       "horizon": "2026-08-14",
       "probability": "55-65%",
       "basis": "Growth from 7 to 12 states occurred around Aug 3-4 and has not visibly continued through this weekend, though attribution and full scope remain unsettled.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The water-utility campaign's disclosed scope held steady at roughly seven-to-twelve states through every edition this week, with no newly disclosed state or non-water critical-infrastructure sector reporting a related intrusion. A separate, unrelated VMware vCenter exploitation campaign (CVE-2026-59310) drew attention this week, but is a different threat and not a water-utility-campaign expansion.",
+      "graded": "2026-08-15",
+      "lesson": "The campaign's rapid early-August expansion (7 to 12 states in days) did not continue into a third phase this week -- growth patterns in disclosed-victim counts do not extrapolate linearly, consistent with the lesson from the Hormuz-incident forecasts this same cycle."
     },
     {
       "id": "2026-08-09-sun-5",
@@ -798,7 +831,10 @@
       "horizon": "2026-08-14",
       "probability": "55-65%",
       "basis": "RKLB's own options market already prices a ~17% swing, above its 10.4% historical average, and this cohort has shown a documented pattern of outsized reactions this cycle (ASTS, LUNR, RDW, FLY, VOYG all posted double-digit single-session moves within the past two weeks).",
-      "status": "open"
+      "status": "correct",
+      "outcome": "York Space Systems (YSS) fell ~23% after-hours on its Aug 13 report (guidance cut ~1/3), well past the 15% threshold; Intuitive Machines (LUNR) separately swung from a ~16% premarket earnings plunge to a positive close, also exceeding 15% intraday.",
+      "graded": "2026-08-15",
+      "lesson": "RKLB and ASTS themselves stayed under the threshold (+1.07% and +3.96% close-to-close), but the cohort as a whole delivered the outsized move exactly as the elevated-implied-volatility basis anticipated -- just from different names than the options market was pricing hardest."
     },
     {
       "id": "2026-08-09-sun-6",
@@ -808,7 +844,10 @@
       "horizon": "2026-08-14",
       "probability": "40-50%",
       "basis": "Analytic judgment weighing the week's binary catalysts against the absence of a confirmed near-term escalation trigger.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Several elements held: CPI printed in line with consensus, space-sector earnings were genuinely mixed (RKLB beat/muted reaction, ASTS missed/rose, YSS missed and guidance-cut/plunged, LUNR round-tripped from a plunge to a gain), and equities did hold most of Friday's gains with single-name volatility (alt-asset managers, SpaceX, Alphabet, Home Depot) dominating over index-level moves (S&P +0.36% on the week). But 'Hormuz talks continue without... a new incident' did not hold -- new ADNOC vessel strikes and an Iranian tanker seizure landed Friday evening -- and the Gaza checkpoint passed as a flat, unresolved standstill rather than a 'soft extension.'",
+      "graded": "2026-08-15",
+      "lesson": "A base-case scenario built from several independent legs succeeded on the macro/earnings/volatility legs but missed on the two geopolitical legs specifically -- worth separating 'quiet on this channel so far' from 'this channel will stay quiet' when a scenario's time horizon spans a full week."
     },
     {
       "id": "2026-08-09-sun-7",
@@ -818,7 +857,10 @@
       "horizon": "2026-08-14",
       "probability": "15-20%",
       "basis": "Requires multiple favorable confirmations (CPI, Hormuz, earnings) to align simultaneously.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "CPI came in in-line (not a clear downside surprise on both headline and core -- headline printed a modest 0.1-point undershoot, core matched exactly). No Hormuz framework agreement was reached; instead the week ended with new vessel strikes and a tanker seizure. Space-sector earnings did not beat broadly (YSS missed and cut guidance sharply). Oil did not ease -- WTI rose +5.4% on the week, the opposite of the bull case's core commodity call.",
+      "graded": "2026-08-15",
+      "lesson": "Bull scenarios requiring simultaneous favorable confirmation across CPI, geopolitics and earnings correctly carried low (15-20%) probability; the oil call in particular inverted hard, a reminder that an escalating Hormuz risk channel argues against pairing it with an 'oil eases' bull leg even when other legs look plausible."
     },
     {
       "id": "2026-08-09-sun-8",
@@ -828,7 +870,10 @@
       "horizon": "2026-08-14",
       "probability": "20-25%",
       "basis": "Analytic judgment; a soft-but-not-shock combination of the week's known catalysts.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "CPI did not run hot (in-line headline and core, though PPI's core did re-accelerate to +0.4% m/m the next day, a partial partial-match). Iran did not formally reject the Oman framework -- instead new strikes/a seizure occurred, a harder outcome than 'rejects without a new strike.' Only one space-sector name (YSS) posted a major miss, but the broader watchlist did not get dragged -- the space category finished the week mixed-to-positive (LUNR +15.9%, BKSY +6.0%, KRMN +6.5% offsetting YSS -4.2%, RKLB -3.1%). Yields fell, not rose (2Y/10Y both down 4-8bp on the week); equities gained rather than gave back Friday's record levels (S&P +0.36% on the week).",
+      "graded": "2026-08-15",
+      "lesson": "The single correctly-anticipated element (a space-sector earnings miss) was again outweighed by inverted calls on rates, the broader watchlist, and Iran's specific posture -- for the second straight week, a bear scenario built on multiple simultaneous negative legs broke when even one pillar (here, yields, which fell instead of rising) went the other way."
     },
     {
       "id": "2026-08-09-sun-9",
@@ -838,7 +883,10 @@
       "horizon": "2026-08-14",
       "probability": "8-12%",
       "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "None of the shock triggers were met: the Friday Hormuz incidents (ADNOC vessel strikes, an Iranian tanker seizure) drew no reported casualties and no US/Israeli response; the water-utility campaign caused no confirmed water-safety incident; CPI was not hot and the Gaza roadmap's unresolved-but-not-collapsing standstill did not tip into renewed open fighting. VIX fell through the week (14.90 to 14.25), not above its recent range.",
+      "graded": "2026-08-15",
+      "lesson": "Assigning only 8-12% to the shock scenario was again well-calibrated; this cycle's actual surprises (a new Hormuz incident, a hot core PPI, three single-name earnings shocks) were each individually consequential but none crossed this scenario's severe-escalation bar."
     },
     {
       "id": "2026-08-10-am-1",
@@ -848,7 +896,10 @@
       "horizon": "2026-08-12",
       "probability": "20-35%",
       "basis": "Inflation swaps still imply 2.4% average inflation and 30Y yields sit near 20-year highs, a market hedge against this outcome, even as post-jobs-report futures pricing leans toward a September hold/cut; oil has firmed for two sessions on Hormuz/Houthi headlines, a potential energy-CPI pass-through.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Core CPI printed +0.2% m/m (BLS, direct fetch), matching consensus exactly, not the >=0.3% threshold this forecast required to revive hike odds. The market read it as unambiguously dovish (VIX fell -5.43% same session, the sharpest single-session VIX move tracked this cycle).",
+      "graded": "2026-08-15",
+      "lesson": "The market-hedge signals cited (elevated inflation swaps, high 30Y yields) did not translate into an actual hot print; energy-driven pass-through into core CPI specifically did not materialize despite oil's concurrent rally."
     },
     {
       "id": "2026-08-10-am-2",
@@ -858,7 +909,10 @@
       "horizon": "2026-08-13",
       "probability": "35-50%",
       "basis": "The rejection is explicit and on-record, though five days remains time for a negotiating reset, a pattern this thread has shown before (soften-then-harden cycles).",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Aug 13 checkpoint passed with the sequencing dispute unresolved; no negotiating reset materialized in the intervening five days.",
+      "graded": "2026-08-15",
+      "lesson": "Same underlying event as forecasts 2026-07-31-pm-2 and 2026-08-09-sun-3 -- three independently issued forecasts across three editions all correctly anticipated this outcome from the same explicit, on-record rejection."
     },
     {
       "id": "2026-08-10-am-3",
@@ -878,7 +932,10 @@
       "horizon": "2026-08-13",
       "probability": "45-60%",
       "basis": "Pattern of prior deep-strike exchanges this month (each notable Ukrainian strike has been followed by an escalated Russian barrage within 1-3 days).",
-      "status": "open"
+      "status": "partial",
+      "outcome": "A large-scale Russian strike did land within the 72-hour window -- overnight Aug 10-11, Russia hit Zaporizhzhia and Kyiv with roughly 120 long-range drones plus claimed North Korean ballistic and Zircon hypersonic missiles (Zelensky's weapon-type claims independently unverified). But no report reviewed this week explicitly framed that barrage as retaliation specifically for the Taneco strike -- it reads as continuation of the conflict's ongoing tit-for-tat exchange rather than a confirmed, named response to that one strike.",
+      "graded": "2026-08-15",
+      "lesson": "The scale-and-timing prediction (a large Russian strike within 72 hours) held, but this conflict's reporting rarely labels any single Russian barrage as retaliation for one specific prior Ukrainian strike -- future forecasts on this pattern should ask for 'a large-scale strike occurs' rather than 'is confirmed as retaliatory,' since the causal label itself is usually unavailable even when the scale/timing match."
     },
     {
       "id": "2026-08-10-pm-2",
@@ -888,7 +945,10 @@
       "horizon": "2026-08-11",
       "probability": "55-65%",
       "basis": "Elevated pre-earnings implied moves typical of this cohort and today's pre-earnings de-risking pattern (both names down >3.5% into the print).",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Confirmed close-to-close reaction: RKLB +1.07% (record quarter, beat-and-raise, but a muted reaction) and ASTS +3.96% (revenue miss but shares rose, tied to a $125.9M BB7-launch-incident charge). Both well under the 8% threshold.",
+      "graded": "2026-08-15",
+      "lesson": "Elevated pre-earnings implied volatility and heavy pre-print de-risking did not translate into an outsized post-print move for either name this time -- the market appears to have already priced most of the surprise into the pre-earnings selloff itself."
     },
     {
       "id": "2026-08-10-pm-3",
@@ -908,7 +968,10 @@
       "horizon": "2026-08-12",
       "probability": "15-25%",
       "basis": "Kalshi prediction markets (as of Aug 10) price only ~11% odds core CPI prints above 2.5% y/y and ~15% odds headline above 3.4% y/y; consensus is +0.2% m/m core. Some tail-risk allowance added above the pure market-implied probability.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Core CPI printed +0.2% m/m and +2.5% y/y, matching consensus exactly and well short of the >=0.3% m/m threshold needed to corroborate Warsh's hawkish signal.",
+      "graded": "2026-08-15",
+      "lesson": "Kalshi's low (~11-15%) market-implied odds of a hot print proved well-calibrated; the residual tail-risk allowance added on top was not needed this time."
     },
     {
       "id": "2026-08-11-am-2",
@@ -928,7 +991,10 @@
       "horizon": "2026-08-13",
       "probability": "50-65%",
       "basis": "Typical pattern for major earthquakes in rural, hard-to-access terrain, where official counts are revised upward for 24-72 hours as isolated communities are reached; the toll already climbed from ~20 to 132 within one day.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The toll rose from 132 to 224 within the same day (Aug 11), well past the +20 threshold and well inside the 48-hour window; it continued climbing to 265 (Aug 13 am) and 273 (Aug 13 pm).",
+      "graded": "2026-08-15",
+      "lesson": "The rural/hard-to-access-terrain revision pattern held again, and even understated the pace -- the toll nearly doubled same-day rather than over the full 48 hours."
     },
     {
       "id": "2026-08-11-pm-1",
@@ -938,7 +1004,10 @@
       "horizon": "2026-08-12",
       "probability": "55-65%",
       "basis": "Kalshi prediction-market odds cited this morning (~85-89% core <=2.5% y/y) offset modestly by today's oil/Hormuz-driven yield spike, which raises headline (not core) inflation risk specifically.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Core CPI printed exactly +0.2% m/m, matching consensus and at the forecast's threshold, despite the prior day's oil-driven yield spike.",
+      "graded": "2026-08-15",
+      "lesson": "The oil/Hormuz-driven yield spike did raise headline inflation optics but did not pass through into core CPI, consistent with the forecast's basis distinguishing headline from core inflation risk."
     },
     {
       "id": "2026-08-11-pm-2",
@@ -948,7 +1017,10 @@
       "horizon": "2026-08-14",
       "probability": "35-50%",
       "basis": "Single-session moves of this size in mega-cap-adjacent financials often see some profit-taking, though a genuine structural re-rating around AI-infrastructure financing (Nvidia's $500B platform) could also hold without reverting.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "On Aug 14 (the third session of the window), Ares closed -3.61% and Blackstone -3.60%, both clearing the 2-percentage-point give-back threshold; the group had round-tripped through a rebound (Aug 13: Ares +4.96%, KKR +4.00%, Apollo +3.57%, Blackstone +2.00%) before that final pullback.",
+      "graded": "2026-08-15",
+      "lesson": "The mean-reversion call was right, but not on a straight line -- the group rallied further before reverting, a reminder that '3 trading sessions' windows on volatile single-sector rallies can contain a full round trip, not just a fade."
     },
     {
       "id": "2026-08-11-pm-3",
@@ -968,7 +1040,10 @@
       "horizon": "2026-08-12",
       "probability": "75-88%",
       "basis": "Kalshi prediction-market pricing cited by CNBC leans tame, with roughly 11-15% odds cited of an above-consensus print; widened slightly for genuine uncertainty given July's reported >20% oil-price rise as a flagged headwind to further disinflation, and given this run found two mutually inconsistent September rate-odds framings that could not be reconciled.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "July CPI printed +3.4% y/y headline, at the threshold and matching consensus.",
+      "graded": "2026-08-15",
+      "lesson": "Kalshi's tame pricing (11-15% odds of an above-consensus print) held; oil's concurrent rally did not pass through into the headline print within this data cycle."
     },
     {
       "id": "2026-08-12-am-2",
@@ -978,7 +1053,10 @@
       "horizon": "2026-08-12",
       "probability": "35-45%",
       "basis": "Two consecutive sessions of outsized, single-direction gains (KKR +6.88%, Apollo +6.26% Tuesday alone) without a fresh same-day catalyst often see at least partial mean-reversion, but the underlying MOU news is real and multi-week-old sentiment (per YTD-drawdown context found this run) could keep buyers engaged; two-way uncertainty, no house view.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "All four (KKR, Apollo, Ares, Blackstone) closed lower on Aug 12, exceeding the 'at least two' threshold, with no fresh company-specific catalyst identified via this report's own EDGAR sweep.",
+      "graded": "2026-08-15",
+      "lesson": "Two consecutive sessions of outsized single-direction gains without a same-day catalyst did see mean-reversion, and more broadly than the 'at least two' threshold required -- all four names participated."
     },
     {
       "id": "2026-08-12-am-3",
@@ -988,7 +1066,10 @@
       "horizon": "2026-08-14",
       "probability": "45-60%",
       "basis": "Media tallies already cite figures as high as 250 while the official government count (181) trails behind and has risen each successive check this report has made; the established pattern this week has been upward revision, though official confirmation processes can lag media tallies by days rather than hours.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "President de la Espriella cited 265 dead on Aug 13 (am edition), and UNGRD's own centralized count reached 273 dead the same day (pm edition) -- both well past 250 and well inside the 48-hour window.",
+      "graded": "2026-08-15",
+      "lesson": "The established upward-revision pattern continued to hold reliably through this specific disaster's entire tracked arc; media tallies again led official confirmation by roughly a day rather than the multi-day lag genuine uncertainty had allowed for."
     },
     {
       "id": "2026-08-12-pm-1",
@@ -998,7 +1079,10 @@
       "horizon": "2026-08-14",
       "probability": "35-50%",
       "basis": "One down day is not conclusive on its own; the group remains a large 2026 year-to-date laggard even after the two-day rally, leaving room for further mean-reversion in either direction.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Wednesday's pullback did not extend -- Thursday Aug 13 the group rebounded sharply (Ares +4.96%, KKR +4.00%, Apollo +3.57%, Blackstone +2.00%), resuming the rally rather than continuing to pull back, before a further reversal on Friday.",
+      "graded": "2026-08-15",
+      "lesson": "One down session in a volatile, story-driven group proved to be noise rather than the start of an extending pullback -- consistent with the broader lesson this cycle that this specific cohort's single-session moves do not reliably chain into multi-session trends."
     },
     {
       "id": "2026-08-12-pm-2",
@@ -1028,7 +1112,10 @@
       "horizon": "2026-08-13",
       "probability": "60-75%",
       "basis": "No independently sourced PPI consensus figure was available this run; this range reflects the general pattern that a single data release rarely fully reverses the prior session's price action absent a genuinely large surprise, weighted against real two-way uncertainty given PPI's typically higher month-to-month volatility than CPI.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Despite core PPI quadrupling its pace to +0.4% m/m, equities extended rather than reversed the prior day's CPI-driven gains: S&P +0.65%, Nasdaq +0.81%, Dow +0.13%, Russell +0.27%, the second straight higher session, and the 10Y yield fell a further 4bp.",
+      "graded": "2026-08-15",
+      "lesson": "A hot core PPI print did not reverse the prior day's rally -- markets appear to have weighted the cooler CPI and softening labor-market signals (rising jobless claims) more heavily than the one-off PPI re-acceleration."
     },
     {
       "id": "2026-08-13-am-2",
@@ -1038,7 +1125,10 @@
       "horizon": "2026-08-13",
       "probability": "45-60%",
       "basis": "Both Israel and Hamas have publicly restated incompatible conditions as recently as this week with no bridging statement found in this run's research, but the roadmap's own extension mechanism (IVC agreement) offers a plausible off-ramp that could produce a clean outcome instead.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The checkpoint passed with no finalized timetable, no formal IVC extension, and no declared collapse -- exactly the ambiguous, unresolved-in-either-direction outcome forecast.",
+      "graded": "2026-08-15",
+      "lesson": "The plausible IVC-extension off-ramp did not get used; the roadmap simply passed its checkpoint in limbo, consistent with the incompatible-conditions basis and the pattern seen across this cycle's other Gaza-checkpoint forecasts."
     },
     {
       "id": "2026-08-13-am-3",
@@ -1048,7 +1138,10 @@
       "horizon": "2026-08-18",
       "probability": "35-50%",
       "basis": "This report's tracking of the Colombia earthquake toll has shown a pattern of continued upward revision without full reconciliation for three-plus days running; a presidential statement this far above the agency's own count creates pressure to reconcile, but the underlying pattern argues against a clean, fast convergence.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Reconciliation arrived within a day, well ahead of the 5-day horizon: UNGRD Director David Santiago Tamayo's Aug 13 press conference put the official count at 273 dead -- within 8 of the president's 265 figure -- after casualty reporting was centralized through the Presidency. Graded now (Aug 15) since the evidence is conclusive, ahead of the ledger's Aug 18 horizon.",
+      "graded": "2026-08-15",
+      "lesson": "A presidential statement well above the agency's own count did create enough pressure to force fast reconciliation once reporting was centralized through a single office -- a cleaner and faster resolution than the pattern of the prior three days had suggested."
     },
     {
       "id": "2026-08-13-pm-1",
@@ -1088,7 +1181,10 @@
       "horizon": "2026-08-14",
       "probability": "25-35%",
       "basis": "Genuine two-way uncertainty given this week's mixed inflation signals (soft headline CPI, hot core PPI); no live consensus figure was reachable this run to anchor a tighter range.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "July retail sales printed -0.6% m/m (Census Bureau, direct fetch), the sharpest monthly decline since May 2025, with the control group at -0.4% versus a +0.3% consensus -- a clear miss, not a beat.",
+      "graded": "2026-08-15",
+      "lesson": "The genuine two-way uncertainty framing correctly avoided false confidence, but the actual outcome (a sharp miss) landed well outside even the lower end of what 'meaningfully above consensus' implied was the live risk -- worth widening the downside tail explicitly next time mixed inflation signals precede a demand-side release."
     },
     {
       "id": "2026-08-14-am-2",
@@ -1138,6 +1234,46 @@
       "horizon": "2026-08-28",
       "probability": "20-30%",
       "basis": "Russian-casualty figures from either side in this conflict have rarely been independently verified in near-real-time by this report's research; a claim of this specific magnitude is more likely to remain contested or simply unaddressed by independent trackers than resolved cleanly in either direction within two weeks.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-15-sat-1",
+      "date": "2026-08-15",
+      "slot": "sat",
+      "forecast": "SpaceX (SPCX) moves more than 5% in a single session around the Aug 20 employee-share unlock (~319M shares, ~$42B).",
+      "horizon": "2026-08-20",
+      "probability": "45-60%",
+      "basis": "SPCX has posted four separate double-digit single-session moves this cycle around technical/disclosure events since its June IPO, and Musk's freshly disclosed 48.4% stake sharpens positioning attention into this unlock specifically.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-15-sat-2",
+      "date": "2026-08-15",
+      "slot": "sat",
+      "forecast": "Friday's new Hormuz incidents (ADNOC vessel strikes, Iran's tanker seizure) are followed by a further vessel incident or an explicit US/Iran escalatory statement within the week.",
+      "horizon": "2026-08-21",
+      "probability": "35-50%",
+      "basis": "This cycle's maritime-harassment campaign has shown clustering behavior -- incidents arriving in short multi-day bursts (e.g. four incidents within roughly a week in early August) rather than evenly spaced -- though a confirmed US/Iran de-escalation statement would invalidate this.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-15-sat-3",
+      "date": "2026-08-15",
+      "slot": "sat",
+      "forecast": "The DRC Ebola outbreak's confirmed death toll surpasses 2,300 by next Saturday.",
+      "horizon": "2026-08-22",
+      "probability": "55-70%",
+      "basis": "The toll rose from roughly 1,707 to 2,128 confirmed deaths in about a week (per the CDC's Aug 11 HAN notice); a similar pace of increase would clear 2,300 within the horizon, though primary WHO/CDC sourcing has been intermittently blocked this cycle.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-15-sat-4",
+      "date": "2026-08-15",
+      "slot": "sat",
+      "forecast": "The Kushner/Mladenov/Blair Gaza mission (beginning Sun Aug 16) produces at least a public joint statement within the week, short of a full resolution of the disarm-before-withdraw sequencing dispute.",
+      "horizon": "2026-08-21",
+      "probability": "40-55%",
+      "basis": "A mission of this seniority (Kushner personally, plus the Board of Peace's high representative) typically produces some public readout even absent a substantive breakthrough, though Netanyahu's and Hamas's positions remain publicly incompatible with no bridging development found this week.",
       "status": "open"
     }
   ]
