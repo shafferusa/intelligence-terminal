@@ -45,10 +45,11 @@ UA = "LoganTerminal/1.0 (loganshaffer87@gmail.com)"
 # entries here should share a newsroom.
 #
 # The WSJ feeds serve double duty -- they corroborate like any other source,
-# AND they supply the link the alert carries. Logan asked for a WSJ link, so
-# WSJ coverage is preferred for the URL but never required to alert: when WSJ
-# has not picked a story up, the alert still fires and links the strongest
-# other source rather than staying silent.
+# AND they supply the link the alert carries. Logan asked for a WSJ link and
+# HAS a WSJ subscription (confirmed 2026-08-16), so the paywall is not a
+# problem and WSJ stays first in LINK_PREFERENCE. It is preferred but never
+# required: when WSJ has not picked a story up, the alert still fires and
+# links the strongest other source rather than staying silent.
 FEEDS = [
     ("WSJ",        "https://feeds.a.dj.com/rss/RSSWorldNews.xml"),
     ("WSJ",        "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml"),
