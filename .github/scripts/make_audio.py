@@ -158,13 +158,19 @@ def main():
         os.remove(out)
         return 1
 
-    # Hand the tag and filename to the workflow.
+    # Hand the tag and filename to the workflow. The title is interpolated into
+    # a shell command by the workflow, and report titles legitimately contain
+    # apostrophes, quotes and dashes -- strip anything that could break out.
+    title = entry.get("title", "Report")
+    title = re.sub(r'[\r\n"`$\\]', " ", title)
+    title = re.sub(r"\s+", " ", title).strip()[:90] or "Report"
+
     gh_out = os.environ.get("GITHUB_OUTPUT")
     if gh_out:
         with open(gh_out, "a", encoding="utf-8") as fh:
             fh.write("mp3=%s\n" % out)
             fh.write("tag=audio-%s-%s\n" % (date, slot))
-            fh.write("title=%s\n" % entry.get("title", "Report").replace("\n", " "))
+            fh.write("title=%s\n" % title)
     return 0
 
 
