@@ -10,23 +10,34 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 1. `docs/SPEC.md` — the authoritative product spec. When in doubt, it wins.
 2. `prompts/shared-rules.md` — operational rules every run must follow (labels, verification,
    Telegram, page creation, ledgers, idempotency).
-3. Your run procedure: `prompts/weekday.md` (Mon–Fri AM/PM briefs) or `prompts/weekend.md`
-   (Saturday Weekly Review / Sunday Week-Ahead Outlook).
+3. Your run procedure — one of:
+   - `prompts/learning.md` — **Learning Brief**, Mon–Fri 6:00 AM ET. Strictly learning, ONE lesson
+     per report, no news. Reads like a newspaper feature.
+   - `prompts/weekday.md` — Morning (7:30 AM) and Closing (4:30 PM) briefs. Strictly news.
+   - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
+
+**The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
+Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
 
 ## File map
 
 - `docs/SPEC.md` — product spec. `docs/RUNBOOK.md` — ops runbook + egress domain allowlist.
-- `prompts/` — routine procedures (shared-rules.md, weekday.md, weekend.md).
-- `config/settings.yml`, `config/watchlists.yml` — schedule tweaks and editable watchlists.
-- `curriculum/physics.json` (71 topics), `curriculum/spaceflight.json` (75 topics),
-  `curriculum/quant-ml/equation_registry.csv` (118 equations) — learning-track sequences.
+- `prompts/` — routine procedures (shared-rules.md, weekday.md, weekend.md, learning.md).
+- `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
+  (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
+- `curriculum/academy-150.json` — **the live curriculum**: 150 weekday lessons across seven
+  subjects for the Learning Brief.
+- `curriculum/physics.json`, `curriculum/spaceflight.json`,
+  `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
+  source material for the 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
-- `site/` — GitHub Pages root: `index.html`, `assets/` (css/js/icons), `report-template.html`,
+- `site/` — GitHub Pages root: `index.html`, `status.html`, `assets/` (css/js/icons, incl.
+  `report.js` = the listen-to-text player), `report-template.html`,
   `reports/YYYY/MM/*.html` + `reports/index.json` (archive index), `equations/eq_NNN.png`,
-  `manifest.webmanifest`, `sw.js`. Pagefind assets are build-generated, not committed.
-- `state/` — run state: `last-run.json`, `stories.json`, `curriculum.json`,
+  `manifest.webmanifest`, `sw.js`. Pagefind assets and `status.jsonl` are build-generated.
+- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
-  `run-log.jsonl`.
+  `run-log.jsonl`. `curriculum.json` is retired — do not read or write it.
 - `ledgers/` — `corrections.json`, `forecasts.json` (append-only accountability).
 - `registry/` — `entities.json` (public/private status; never hardcode — verify via EDGAR).
 - `.github/workflows/` — Pages build (runs `npx -y pagefind --site site`) and deploy.
@@ -51,5 +62,10 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
    `docs/RUNBOOK.md`. A browser-style UA is acceptable for Yahoo Finance only.
 8. **Idempotency:** if `state/last-run.json` already records today's date + slot as success,
    exit immediately — no report, no Telegram message, no commits.
+8b. **Never send a Telegram message from a run.** GitHub Actions is the only sender; pushing the
+   report triggers it. Sending from the run is what produced duplicate morning, Saturday and
+   Sunday pushes until 2026-08-16 (`prompts/shared-rules.md` §14).
+8c. **One commit per run** — report, index, state, run log and ledgers together
+   (`prompts/shared-rules.md` §15.2).
 9. **Political neutrality, verification levels, and no unsupported market causality** — the
    methods in `prompts/shared-rules.md` are requirements, not suggestions.

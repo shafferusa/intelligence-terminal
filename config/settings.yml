@@ -9,11 +9,31 @@ schedule:
   # NOTE: changing these values does NOT reschedule anything by itself —
   # the cron expressions on the cloud routine must be updated to match
   # (see docs/RUNBOOK.md, "DST bump" / schedule-change procedure).
-  weekday_am: "07:30"   # Mon-Fri Morning Brief
-  weekday_pm: "16:30"   # Mon-Fri Closing Brief
-  saturday: "09:00"     # Weekly Intelligence Review
-  sunday: "09:00"       # Week-Ahead Outlook
+  weekday_learn: "06:00"  # Mon-Fri Learning Brief (strictly learning, no news)
+  weekday_am: "07:30"     # Mon-Fri Morning Brief
+  weekday_pm: "16:30"     # Mon-Fri Closing Brief
+  saturday: "09:00"       # Weekly Review
+  sunday: "09:00"         # Week Ahead
   timezone: America/New_York
+
+# ------------------------------------------------------------
+# Local coverage (shared-rules §18). Three beats, each reported
+# in its own right, up to two items each, never padded.
+# ------------------------------------------------------------
+local:
+  home: "Bridgeville, PA"
+  beats:
+    - "Bridgeville · South Fayette · South Hills"
+    - "Pittsburgh · Allegheny County"
+    - "Pennsylvania"
+  max_items_per_beat: 2
+  weather:
+    # National Weather Service gridpoint for Bridgeville, PA.
+    # Free, no key. Requires the .gov User-Agent header.
+    latitude: 40.3565
+    longitude: -80.1120
+    office: PBZ
+    morning_only: true
 
 report:
   # Target story count for the Top Stories section — flexible by news

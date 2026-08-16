@@ -6,13 +6,19 @@
      - network-first: HTML documents and reports/index.json (always prefer fresh)
    Bump VERSION on any strategy/shell change; old caches are deleted on activate. */
 
-var VERSION = "ldn-cache-v1";
+/* v2 (2026-08-16): newspaper redesign + listen-to-text.
+   The bump is not cosmetic -- /assets/* is cache-first, so an installed PWA
+   would keep serving the OLD style.css and app.js forever without it. Bump
+   VERSION on ANY change to a file under assets/. */
+var VERSION = "ldn-cache-v2";
 
 var SHELL = [
   "./",
   "./index.html",
+  "./status.html",
   "./assets/style.css",
   "./assets/app.js",
+  "./assets/report.js",
   "./reports/index.json",
   "./manifest.webmanifest"
 ];

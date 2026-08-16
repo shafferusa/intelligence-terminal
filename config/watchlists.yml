@@ -7,6 +7,54 @@
 # ticker previously belonged to the unrelated Tuttle ETF).
 # ============================================================
 
+# ============================================================
+# THE BOARD — the watchlist chart printed near the top of every
+# CLOSING brief (shared-rules §17). Logan's list, Logan's order.
+# Rendered in these groups, every row every day; a symbol whose
+# data is missing keeps its row with em dashes.
+#
+# `src` tells the routine where the number comes from:
+#   quote    - equity/ETF quote vendor (Yahoo primary, Twelve Data spot-check)
+#   yield    - Treasury par-yield curve XML (NOT a quote vendor)
+#   index    - index level, no volume and no 52-week range printed
+# ============================================================
+board:
+  - group: US equity
+    rows:
+      - {sym: SPY,   name: "SPDR S&P 500 ETF Trust",              src: quote}
+      - {sym: QQQM,  name: "Invesco NASDAQ 100 ETF",              src: quote}
+      - {sym: DIA,   name: "SPDR Dow Jones Industrial Average ETF", src: quote}
+      - {sym: IWM,   name: "iShares Russell 2000 ETF",            src: quote}
+      - {sym: MAGS,  name: "Roundhill Magnificent Seven ETF",     src: quote}
+      - {sym: RSP,   name: "Invesco S&P 500 Equal Weight ETF",    src: quote}
+  - group: Sectors
+    rows:
+      - {sym: SMH,   name: "VanEck Semiconductor ETF",            src: quote}
+      - {sym: XLK,   name: "Technology Select Sector SPDR",       src: quote}
+      - {sym: XLF,   name: "Financial Select Sector SPDR",        src: quote}
+      - {sym: KRE,   name: "SPDR S&P Regional Banking ETF",       src: quote}
+      - {sym: XLE,   name: "Energy Select Sector SPDR",           src: quote}
+  - group: Rates & credit
+    rows:
+      - {sym: "US3M", name: "U.S. 3-month Treasury bill",         src: yield, tenor: 3M}
+      - {sym: "US10Y",name: "U.S. 10-year Treasury note",         src: yield, tenor: 10Y}
+      - {sym: TLT,   name: "iShares 20+ Year Treasury Bond ETF",  src: quote}
+      - {sym: IEF,   name: "iShares 7-10 Year Treasury Bond ETF", src: quote}
+      - {sym: TIP,   name: "iShares TIPS Bond ETF",               src: quote}
+      - {sym: LQD,   name: "iShares iBoxx $ IG Corporate Bond ETF", src: quote}
+      - {sym: HYG,   name: "iShares iBoxx $ HY Corporate Bond ETF", src: quote}
+  - group: Commodities, FX & volatility
+    rows:
+      - {sym: GLD,   name: "SPDR Gold Shares",                    src: quote}
+      - {sym: USO,   name: "United States Oil Fund",              src: quote}
+      - {sym: DXY,   name: "U.S. Dollar Index",                   src: index, yahoo: "DX-Y.NYB"}
+      - {sym: VIX,   name: "Cboe Volatility Index",               src: index, cboe: "_VIX"}
+  - group: International & crypto
+    rows:
+      - {sym: EEM,   name: "iShares MSCI Emerging Markets ETF",   src: quote}
+      - {sym: VGK,   name: "Vanguard FTSE Europe ETF",            src: quote}
+      - {sym: BTC,   name: "Grayscale Bitcoin Mini Trust ETF",    src: quote}
+
 # --- Company watchlists (SPEC §22 "Watchlists") ---
 mega_cap_tech: [AAPL, MSFT, NVDA, AMZN, GOOGL, META, TSLA, SPCX]
 

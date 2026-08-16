@@ -685,6 +685,650 @@ td.down, .fact-card dd.down { color: var(--down); }
 .health-grid .ok::before   { content: "● "; color: var(--up); }
 .health-grid .down::before { content: "● "; color: var(--down); }
 
+/* ==========================================================================
+   NEWSPAPER LAYER (v2 — 2026-08-16)
+   Used by reports published from 2026-08-17 onward. Everything above this
+   banner is retained so the 37 reports already in the archive keep rendering
+   exactly as published. New reports use the classes below.
+   ========================================================================== */
+
+/* ---------- editions ---------- */
+
+:root {
+  --rule-heavy: 3px;
+  --edition-am:    #14624E;
+  --edition-pm:    #2F4858;
+  --edition-sat:   #6B4E12;
+  --edition-sun:   #5B3A6E;
+  --edition-learn: #7E3325;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --edition-am:    #4CB398;
+    --edition-pm:    #AAC5D8;
+    --edition-sat:   #D9B876;
+    --edition-sun:   #C0A0D6;
+    --edition-learn: #E39F90;
+  }
+}
+:root[data-theme="dark"] {
+  --edition-am:    #4CB398;
+  --edition-pm:    #AAC5D8;
+  --edition-sat:   #D9B876;
+  --edition-sun:   #C0A0D6;
+  --edition-learn: #E39F90;
+}
+
+.paper { --edition: var(--edition-am); }
+.paper[data-slot="pm"]    { --edition: var(--edition-pm); }
+.paper[data-slot="sat"]   { --edition: var(--edition-sat); }
+.paper[data-slot="sun"]   { --edition: var(--edition-sun); }
+.paper[data-slot="learn"] { --edition: var(--edition-learn); }
+
+/* ---------- report masthead ---------- */
+
+.paper-head {
+  text-align: center;
+  padding: 1.6rem 0 1.1rem;
+  border-bottom: var(--rule-heavy) double var(--line);
+  margin-bottom: 1.6rem;
+}
+.paper-edition {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--edition);
+  margin: 0 0 0.7rem;
+}
+.paper-edition::before,
+.paper-edition::after {
+  content: "";
+  display: inline-block;
+  width: 1.6rem;
+  height: 1px;
+  background: currentColor;
+  vertical-align: 0.3em;
+  margin: 0 0.7rem;
+  opacity: 0.55;
+}
+.paper-head h1 {
+  font-size: clamp(1.75rem, 7vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.55rem;
+}
+.paper-dateline {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.paper-dateline .sep { opacity: 0.45; margin: 0 0.5em; }
+
+/* Standfirst — one sentence under the masthead, the whole report in a breath. */
+.paper-standfirst {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 34rem;
+  margin: 0.9rem auto 0;
+  text-align: center;
+}
+
+/* ---------- audio bar ---------- */
+
+.audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.4rem 0.55rem;
+  margin: 0 auto 1.9rem;
+  max-width: 27rem;
+  box-shadow: var(--shadow);
+}
+.audio-bar[hidden] { display: none; }
+.audio-btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  background: var(--edition, var(--accent));
+  color: var(--on-accent);
+  white-space: nowrap;
+}
+.audio-btn:hover { filter: brightness(1.08); }
+.audio-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 0.4rem 0.7rem;
+  font-weight: 500;
+}
+.audio-btn-ghost:hover { border-color: var(--edition, var(--accent)); color: var(--ink); }
+.audio-status {
+  flex: 1 1 7rem;
+  min-width: 0;
+  font-size: 0.71875rem;
+  font-family: var(--mono);
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Sentence currently being spoken. */
+.is-speaking {
+  background: var(--tone-warn-bg);
+  box-shadow: 0 0 0 3px var(--tone-warn-bg);
+  border-radius: 2px;
+}
+
+/* ---------- newspaper sections ---------- */
+
+.paper-section { margin: 2.6rem 0 0; }
+.paper-section > h2 {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--edition, var(--accent));
+  text-align: center;
+  margin: 0 0 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.paper-section > h2::before,
+.paper-section > h2::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ---------- stories ---------- */
+
+.stories { margin: 0; }
+.story {
+  border-top: 1px solid var(--line);
+  padding: 1.5rem 0 0.4rem;
+  margin: 0 0 1.5rem;
+}
+.stories > .story:first-child { border-top: 0; padding-top: 0; }
+
+.story h3 {
+  font-size: 1.3rem;
+  line-height: 1.24;
+  margin: 0 0 0.45rem;
+}
+/* The lead story of a report carries the page. */
+.story--lead h3 { font-size: clamp(1.55rem, 5.5vw, 2rem); }
+.story--lead .story-body > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--serif);
+  font-size: 3.3em;
+  line-height: 0.82;
+  font-weight: 700;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--edition, var(--accent));
+}
+
+.story-deck {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 0.85rem;
+}
+.story-body {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.68;
+}
+.story-body > p { margin: 0 0 0.85em; }
+.story-body > p:last-child { margin-bottom: 0; }
+
+/* "Why it matters" / "What's next" — the only two labels that survive. */
+.story-note {
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  border-left: 2px solid var(--edition, var(--accent));
+  padding: 0.1rem 0 0.1rem 0.85rem;
+  margin: 0.95em 0;
+  color: var(--ink);
+}
+.story-note b {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--edition, var(--accent));
+  margin-bottom: 0.1rem;
+}
+
+.story-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0.9rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.story-sourceline {
+  font-size: 0.78125rem;
+  color: var(--muted);
+  margin: 0.75rem 0 0;
+}
+.story-sourceline a { color: var(--muted); }
+
+/* Caution flag — shown ONLY when a claim is genuinely shaky. */
+.flag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25em 0.6em;
+  border-radius: 3px;
+  background: var(--tone-warn-bg);
+  color: var(--tone-warn-fg);
+  border: 1px solid var(--tone-warn-bd);
+}
+.flag--disputed { background: var(--tone-bad-bg); color: var(--tone-bad-fg); border-color: var(--tone-bad-bd); }
+
+/* ---------- the brief (short-read block) ---------- */
+
+.brief {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: var(--rule-heavy) solid var(--edition, var(--accent));
+  border-radius: 0 0 8px 8px;
+  padding: 1.3rem 1.4rem;
+  box-shadow: var(--shadow);
+}
+.brief h3 {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.9rem;
+}
+.brief ul { margin: 0; padding-left: 1.15rem; }
+.brief li { margin-bottom: 0.6em; font-size: 1rem; line-height: 1.6; }
+.brief li:last-child { margin-bottom: 0; }
+.brief li > b { font-family: var(--sans); font-size: 0.9375rem; }
+
+/* ---------- watchlist board ---------- */
+
+.board {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin: 1rem 0 1.4rem;
+}
+.board-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem 0.7rem;
+  border-bottom: 1px solid var(--line);
+}
+.board-head h3 {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0;
+}
+.board-asof { font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); }
+.board-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+table.board-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 40rem;
+  font-variant-numeric: tabular-nums;
+}
+.board-table th, .board-table td {
+  padding: 0.5rem 0.7rem;
+  text-align: right;
+  white-space: nowrap;
+  border-top: 1px solid var(--line);
+}
+.board-table thead th {
+  border-top: 0;
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  z-index: 2;
+}
+.board-table td { font-family: var(--mono); font-size: 0.8125rem; }
+.board-table .sym {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  z-index: 1;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+.board-table .sym small {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 13rem;
+}
+.board-table tr.group th {
+  text-align: left;
+  background: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.4rem 0.7rem;
+  position: static;
+}
+.board-table td.up   { color: var(--up); }
+.board-table td.down { color: var(--down); }
+.board-table td.flat { color: var(--muted); }
+
+/* 52-week position bar: --pos is 0 (52w low) to 100 (52w high). */
+.range-bar {
+  position: relative;
+  width: 6.5rem;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  margin-left: auto;
+}
+.range-bar > i {
+  position: absolute;
+  top: -3px;
+  left: calc(var(--pos, 50) * 1%);
+  transform: translateX(-50%);
+  width: 3px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--edition, var(--accent));
+}
+.range-cell { text-align: right; }
+.range-cell .range-nums {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+/* ---------- local news & weather ---------- */
+
+.weather {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0 0 1.3rem;
+  box-shadow: var(--shadow);
+}
+.weather-now {
+  flex: 1 1 11rem;
+  padding: 0.95rem 1.1rem;
+  border-right: 1px solid var(--line);
+  min-width: 0;
+}
+.weather-place {
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.3rem;
+}
+.weather-temp {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+.weather-temp small {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 0.45rem;
+}
+.weather-desc { font-size: 0.875rem; margin: 0.35rem 0 0; }
+.weather-days {
+  flex: 2 1 15rem;
+  display: flex;
+  min-width: 0;
+}
+.weather-day {
+  flex: 1 1 0;
+  padding: 0.95rem 0.6rem;
+  border-left: 1px solid var(--line);
+  text-align: center;
+  min-width: 0;
+}
+.weather-day:first-child { border-left: 0; }
+.weather-day b {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.weather-day .hi { font-family: var(--mono); font-size: 0.9375rem; font-weight: 700; }
+.weather-day .lo { font-family: var(--mono); font-size: 0.8125rem; color: var(--muted); }
+.weather-day .sky {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  margin-top: 0.2rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* An active NWS watch/warning/advisory. Only rendered when one exists. */
+.weather-alert {
+  flex: 1 1 100%;
+  border-top: 1px solid var(--tone-bad-bd);
+  background: var(--tone-bad-bg);
+  color: var(--tone-bad-fg);
+  padding: 0.6rem 1.1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.local-item {
+  border-top: 1px solid var(--line);
+  padding: 1rem 0 0;
+  margin: 0 0 1rem;
+}
+.local-item:first-child { border-top: 0; padding-top: 0; }
+.local-item h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+.local-place {
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--edition, var(--accent));
+  margin: 0 0 0.25rem;
+}
+
+/* ---------- learning brief ---------- */
+
+.track-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.1rem;
+}
+.track-subject {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--edition, var(--accent));
+  margin: 0;
+}
+.track-progress { font-family: var(--mono); font-size: 0.6875rem; color: var(--muted); }
+
+.lesson-body {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+.lesson-body h3 {
+  font-size: 1.2rem;
+  margin: 1.6em 0 0.5em;
+}
+.lesson-body h4 {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.4em 0 0.4em;
+}
+.lesson-body p { margin: 0 0 0.9em; }
+
+/* Formula plate — the equation with its symbols spelled out. */
+.formula {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--edition, var(--accent));
+  border-radius: 0 8px 8px 0;
+  padding: 1rem 1.15rem;
+  margin: 1.2em 0;
+}
+.formula .expr {
+  font-family: var(--mono);
+  font-size: 1.0625rem;
+  text-align: center;
+  margin: 0.2rem 0 0.85rem;
+  overflow-x: auto;
+}
+.formula dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 0.85rem;
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.875rem;
+}
+.formula dt { font-family: var(--mono); font-weight: 700; color: var(--edition, var(--accent)); }
+.formula dd { margin: 0; color: var(--ink); }
+
+/* Worked example. */
+.worked {
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  margin: 1.2em 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.worked > b {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.worked ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+.worked li { margin-bottom: 0.35em; }
+
+/* Where the track stands. */
+.recap {
+  background: var(--tone-info-bg);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+  margin: 1.4em 0 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  color: var(--tone-info-fg);
+}
+.recap > b {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.recap ul { margin: 0; padding-left: 1.15rem; }
+
+/* ---------- colophon (replaces the health footer in the reading path) ---------- */
+
+.colophon {
+  border-top: 1px solid var(--line);
+  margin-top: 3rem;
+  padding-top: 1.1rem;
+  font-size: 0.78125rem;
+  color: var(--muted);
+}
+.colophon h2 {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.colophon p { margin-bottom: 0.6em; }
+
 /* ---------- print ---------- */
 
 @media print {
@@ -697,9 +1341,12 @@ td.down, .fact-card dd.down { color: var(--down); }
   body { font-size: 10.5pt; }
   .wrap { max-width: none; padding: 0; }
   .top-bar, .report-nav, .site-footer, .footer-controls,
-  .search-section, .bm-btn, .btn { display: none !important; }
+  .search-section, .bm-btn, .btn, .audio-bar { display: none !important; }
   .story-card, .lesson, .exec-summary, .fact-card,
   .appendix > details.appendix-shell { box-shadow: none; break-inside: avoid; }
+  .brief, .board, .formula, .worked, .recap, .story { box-shadow: none; break-inside: avoid; }
+  .board-table thead th, .board-table .sym { position: static; }
+  .is-speaking { background: none; box-shadow: none; }
   summary::before { content: none; }
   a { color: inherit; text-decoration: none; }
   /* Report pages also open every <details> via a beforeprint handler,

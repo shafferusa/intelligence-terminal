@@ -1,0 +1,2286 @@
+{
+  "version": "1.0",
+  "created": "2026-08-16",
+  "total_days": 150,
+  "cadence": "weekdays (Mon-Fri), one lesson per weekday",
+  "target_length": "25-30 minutes of reading (~5,500-6,600 words)",
+  "note": "Logan's seven subjects. Built from the 60-day academy on his desktop (LOGAN_60_DAY_ACADEMY), curriculum/physics.json, curriculum/spaceflight.json and the quant-ml equation registry, with Accounting and Economics authored fresh because the academy did not cover them. Re-cut over 150 weekday lessons, teaching-first: no quizzes, no problem sets, no spaced repetition.",
+  "phases": [
+    {
+      "name": "Foundations",
+      "days": "1-30",
+      "mission": "The quantitative language, the mechanics of motion, and how a business records what it does. Nothing here assumes anything."
+    },
+    {
+      "name": "Core Machinery",
+      "days": "31-60",
+      "mission": "Linear algebra and multivariable calculus, electromagnetism, the macroeconomy, and the first real finance."
+    },
+    {
+      "name": "Quantitative Method",
+      "days": "61-90",
+      "mission": "Probability and statistics, thermodynamics, valuation, the accounts in anger, and the beginning of machine learning."
+    },
+    {
+      "name": "Advanced",
+      "days": "91-120",
+      "mission": "Modern physics, deep learning, derivatives and risk, and the engineering of getting to orbit."
+    },
+    {
+      "name": "Frontier and Synthesis",
+      "days": "121-150",
+      "mission": "Transformers and language models, quantum and cosmology, portfolio construction, mission design -- and the connections between them."
+    }
+  ],
+  "subject_totals": {
+    "Mathematics": 24,
+    "Physics": 26,
+    "Accounting": 18,
+    "Economics": 20,
+    "Finance": 24,
+    "Artificial Intelligence": 22,
+    "Rocketry": 16
+  },
+  "days": [
+    {
+      "day": 1,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "1 of 24",
+      "topic": "Algebra and functions",
+      "focus": "The manipulations everything downstream assumes are free.",
+      "source": "60Day: Day_01"
+    },
+    {
+      "day": 2,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "2 of 24",
+      "topic": "Trigonometry",
+      "focus": "The unit circle, identities, and why angles are the language of waves and orbits.",
+      "source": "60Day: Day_01"
+    },
+    {
+      "day": 3,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "1 of 18",
+      "topic": "What accounting is for",
+      "focus": "Stewardship, measurement, and who the audience actually is.",
+      "source": "new",
+      "connect_back": {
+        "day": 2,
+        "subject": "Mathematics",
+        "topic": "Trigonometry"
+      }
+    },
+    {
+      "day": 4,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "3 of 24",
+      "topic": "Units and dimensional analysis",
+      "focus": "The cheapest error-catching tool in quantitative work.",
+      "source": "60Day: Day_01",
+      "connect_back": {
+        "day": 3,
+        "subject": "Accounting",
+        "topic": "What accounting is for"
+      }
+    },
+    {
+      "day": 5,
+      "phase": "Foundations",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "1 of 26",
+      "topic": "Kinematics",
+      "focus": "Position, velocity, acceleration, and reading motion off a graph.",
+      "source": "phys 8-11",
+      "connect_back": {
+        "day": 4,
+        "subject": "Mathematics",
+        "topic": "Units and dimensional analysis"
+      }
+    },
+    {
+      "day": 6,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "4 of 24",
+      "topic": "Vectors",
+      "focus": "Dot and cross products, decomposition, and what they mean physically.",
+      "source": "60Day: Day_01",
+      "connect_back": {
+        "day": 5,
+        "subject": "Physics",
+        "topic": "Kinematics"
+      }
+    },
+    {
+      "day": 7,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "2 of 18",
+      "topic": "The accounting equation and double entry",
+      "focus": "Why every transaction lands twice, and why that catches errors.",
+      "source": "new",
+      "connect_back": {
+        "day": 6,
+        "subject": "Mathematics",
+        "topic": "Vectors"
+      }
+    },
+    {
+      "day": 8,
+      "phase": "Foundations",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "1 of 20",
+      "topic": "What economics is trying to answer",
+      "focus": "Scarcity, choice, incentives, and the limits of the models.",
+      "source": "new",
+      "connect_back": {
+        "day": 7,
+        "subject": "Accounting",
+        "topic": "The accounting equation and double entry"
+      }
+    },
+    {
+      "day": 9,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "5 of 24",
+      "topic": "Limits and continuity",
+      "focus": "What it means to approach a value without reaching it.",
+      "source": "60Day: Day_02",
+      "connect_back": {
+        "day": 8,
+        "subject": "Economics",
+        "topic": "What economics is trying to answer"
+      }
+    },
+    {
+      "day": 10,
+      "phase": "Foundations",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "2 of 26",
+      "topic": "Newton's laws and forces",
+      "focus": "The three laws, and free-body diagrams as a discipline.",
+      "source": "phys 12-14",
+      "connect_back": {
+        "day": 9,
+        "subject": "Mathematics",
+        "topic": "Limits and continuity"
+      }
+    },
+    {
+      "day": 11,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "6 of 24",
+      "topic": "Derivatives",
+      "focus": "Rate of change as slope, and the definition behind the shortcuts.",
+      "source": "60Day: Day_02",
+      "connect_back": {
+        "day": 10,
+        "subject": "Physics",
+        "topic": "Newton's laws and forces"
+      }
+    },
+    {
+      "day": 12,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "3 of 18",
+      "topic": "The balance sheet",
+      "focus": "Assets, liabilities, equity -- a photograph at an instant.",
+      "source": "60Day: Day_12",
+      "connect_back": {
+        "day": 11,
+        "subject": "Mathematics",
+        "topic": "Derivatives"
+      }
+    },
+    {
+      "day": 13,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "7 of 24",
+      "topic": "Rules of differentiation",
+      "focus": "Product, quotient, chain -- and implicit differentiation.",
+      "source": "60Day: Day_02",
+      "connect_back": {
+        "day": 12,
+        "subject": "Accounting",
+        "topic": "The balance sheet"
+      }
+    },
+    {
+      "day": 14,
+      "phase": "Foundations",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "2 of 20",
+      "topic": "Supply and demand",
+      "focus": "Equilibrium, elasticity, and where the framework stops working.",
+      "source": "new",
+      "connect_back": {
+        "day": 13,
+        "subject": "Mathematics",
+        "topic": "Rules of differentiation"
+      }
+    },
+    {
+      "day": 15,
+      "phase": "Foundations",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "3 of 26",
+      "topic": "Friction and circular motion",
+      "focus": "Static vs kinetic friction; why circular motion is an acceleration.",
+      "source": "phys 15-16",
+      "connect_back": {
+        "day": 14,
+        "subject": "Economics",
+        "topic": "Supply and demand"
+      }
+    },
+    {
+      "day": 16,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "8 of 24",
+      "topic": "Optimization and related rates",
+      "focus": "Finding maxima and minima, and rates that drive other rates.",
+      "source": "60Day: Day_02",
+      "connect_back": {
+        "day": 15,
+        "subject": "Physics",
+        "topic": "Friction and circular motion"
+      }
+    },
+    {
+      "day": 17,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "4 of 18",
+      "topic": "The income statement",
+      "focus": "Revenue to net income, and every subtotal's meaning.",
+      "source": "60Day: Day_12",
+      "connect_back": {
+        "day": 16,
+        "subject": "Mathematics",
+        "topic": "Optimization and related rates"
+      }
+    },
+    {
+      "day": 18,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "9 of 24",
+      "topic": "Integrals and the Fundamental Theorem",
+      "focus": "Accumulation, and why it inverts differentiation.",
+      "source": "60Day: Day_03",
+      "connect_back": {
+        "day": 17,
+        "subject": "Accounting",
+        "topic": "The income statement"
+      }
+    },
+    {
+      "day": 19,
+      "phase": "Foundations",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "4 of 26",
+      "topic": "Work, energy, power",
+      "focus": "Energy as the universal accounting currency.",
+      "source": "phys 17-19",
+      "connect_back": {
+        "day": 18,
+        "subject": "Mathematics",
+        "topic": "Integrals and the Fundamental Theorem"
+      }
+    },
+    {
+      "day": 20,
+      "phase": "Foundations",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "3 of 20",
+      "topic": "Consumer and producer theory",
+      "focus": "Utility, marginal thinking, costs, and the firm's decision.",
+      "source": "new",
+      "connect_back": {
+        "day": 19,
+        "subject": "Physics",
+        "topic": "Work, energy, power"
+      }
+    },
+    {
+      "day": 21,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "10 of 24",
+      "topic": "Techniques of integration",
+      "focus": "Substitution, parts, partial fractions -- and when to give up and go numerical.",
+      "source": "60Day: Day_03",
+      "connect_back": {
+        "day": 20,
+        "subject": "Economics",
+        "topic": "Consumer and producer theory"
+      }
+    },
+    {
+      "day": 22,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "5 of 18",
+      "topic": "The cash flow statement",
+      "focus": "Operating, investing, financing -- and why it is the hardest to fake.",
+      "source": "60Day: Day_12",
+      "connect_back": {
+        "day": 21,
+        "subject": "Mathematics",
+        "topic": "Techniques of integration"
+      }
+    },
+    {
+      "day": 23,
+      "phase": "Foundations",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "5 of 26",
+      "topic": "Momentum and collisions",
+      "focus": "Conservation, impulse, elastic vs inelastic.",
+      "source": "phys 20-21",
+      "connect_back": {
+        "day": 22,
+        "subject": "Accounting",
+        "topic": "The cash flow statement"
+      }
+    },
+    {
+      "day": 24,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "11 of 24",
+      "topic": "Sequences and series",
+      "focus": "Convergence, Taylor expansion, and why approximation is respectable.",
+      "source": "60Day: Day_03",
+      "connect_back": {
+        "day": 23,
+        "subject": "Physics",
+        "topic": "Momentum and collisions"
+      }
+    },
+    {
+      "day": 25,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "6 of 18",
+      "topic": "Accrual vs cash accounting",
+      "focus": "The single biggest source of the gap between profit and cash.",
+      "source": "new",
+      "connect_back": {
+        "day": 24,
+        "subject": "Mathematics",
+        "topic": "Sequences and series"
+      }
+    },
+    {
+      "day": 26,
+      "phase": "Foundations",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "4 of 20",
+      "topic": "Market structures",
+      "focus": "Competition, monopoly, oligopoly -- and pricing power as an investable idea.",
+      "source": "new",
+      "connect_back": {
+        "day": 25,
+        "subject": "Accounting",
+        "topic": "Accrual vs cash accounting"
+      }
+    },
+    {
+      "day": 27,
+      "phase": "Foundations",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "6 of 26",
+      "topic": "Center of mass and rotation",
+      "focus": "Torque, moment of inertia, and rotational analogues.",
+      "source": "phys 22-24",
+      "connect_back": {
+        "day": 26,
+        "subject": "Economics",
+        "topic": "Market structures"
+      }
+    },
+    {
+      "day": 28,
+      "phase": "Foundations",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "12 of 24",
+      "topic": "Linear systems and matrices",
+      "focus": "Elimination, and matrices as transformations rather than number grids.",
+      "source": "60Day: Day_04",
+      "connect_back": {
+        "day": 27,
+        "subject": "Physics",
+        "topic": "Center of mass and rotation"
+      }
+    },
+    {
+      "day": 29,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "7 of 18",
+      "topic": "Revenue recognition",
+      "focus": "When a sale becomes revenue, and how that judgment gets abused.",
+      "source": "new",
+      "connect_back": {
+        "day": 28,
+        "subject": "Mathematics",
+        "topic": "Linear systems and matrices"
+      }
+    },
+    {
+      "day": 30,
+      "phase": "Foundations",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "8 of 18",
+      "topic": "Inventory and cost of goods sold",
+      "focus": "FIFO, LIFO, weighted average, and what each does to reported profit.",
+      "source": "new",
+      "connect_back": {
+        "day": 28,
+        "subject": "Mathematics",
+        "topic": "Linear systems and matrices"
+      }
+    },
+    {
+      "day": 31,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "13 of 24",
+      "topic": "Span, independence, basis",
+      "focus": "What a vector space actually is, and what dimension counts.",
+      "source": "60Day: Day_04",
+      "connect_back": {
+        "day": 30,
+        "subject": "Accounting",
+        "topic": "Inventory and cost of goods sold"
+      }
+    },
+    {
+      "day": 32,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "7 of 26",
+      "topic": "Angular momentum",
+      "focus": "Conservation, gyroscopes, and why skaters spin faster.",
+      "source": "phys 25",
+      "connect_back": {
+        "day": 31,
+        "subject": "Mathematics",
+        "topic": "Span, independence, basis"
+      }
+    },
+    {
+      "day": 33,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "5 of 20",
+      "topic": "Market failure and externalities",
+      "focus": "Public goods, information asymmetry, the case for and against intervention.",
+      "source": "new",
+      "connect_back": {
+        "day": 32,
+        "subject": "Physics",
+        "topic": "Angular momentum"
+      }
+    },
+    {
+      "day": 34,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "14 of 24",
+      "topic": "Determinants and inverses",
+      "focus": "Volume scaling, invertibility, and what a zero determinant tells you.",
+      "source": "60Day: Day_04",
+      "connect_back": {
+        "day": 33,
+        "subject": "Economics",
+        "topic": "Market failure and externalities"
+      }
+    },
+    {
+      "day": 35,
+      "phase": "Core Machinery",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "1 of 24",
+      "topic": "Time value of money",
+      "focus": "Present value, future value, discounting -- the root of everything.",
+      "source": "60Day: Day_06",
+      "connect_back": {
+        "day": 34,
+        "subject": "Mathematics",
+        "topic": "Determinants and inverses"
+      }
+    },
+    {
+      "day": 36,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "8 of 26",
+      "topic": "Gravitation",
+      "focus": "Newton's law, orbits as falling, and potential wells.",
+      "source": "phys 26",
+      "connect_back": {
+        "day": 35,
+        "subject": "Finance",
+        "topic": "Time value of money"
+      }
+    },
+    {
+      "day": 37,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "15 of 24",
+      "topic": "Eigenvalues and eigenvectors",
+      "focus": "The directions a transformation only stretches -- the idea behind PCA and stability.",
+      "source": "60Day: Day_10",
+      "connect_back": {
+        "day": 36,
+        "subject": "Physics",
+        "topic": "Gravitation"
+      }
+    },
+    {
+      "day": 38,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "6 of 20",
+      "topic": "Measuring the economy",
+      "focus": "GDP, GDI, and what the national accounts do and do not capture.",
+      "source": "new",
+      "connect_back": {
+        "day": 37,
+        "subject": "Mathematics",
+        "topic": "Eigenvalues and eigenvectors"
+      }
+    },
+    {
+      "day": 39,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "9 of 26",
+      "topic": "Oscillations",
+      "focus": "Simple harmonic motion, damping, resonance -- and why resonance destroys bridges.",
+      "source": "phys 27",
+      "connect_back": {
+        "day": 38,
+        "subject": "Economics",
+        "topic": "Measuring the economy"
+      }
+    },
+    {
+      "day": 40,
+      "phase": "Core Machinery",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "2 of 24",
+      "topic": "Returns and compounding",
+      "focus": "Simple vs log returns, geometric vs arithmetic, and annualisation.",
+      "source": "60Day: Day_09",
+      "connect_back": {
+        "day": 39,
+        "subject": "Physics",
+        "topic": "Oscillations"
+      }
+    },
+    {
+      "day": 41,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "16 of 24",
+      "topic": "Orthogonality, least squares, SVD",
+      "focus": "Projection, the best fit, and the decomposition behind half of modern data work.",
+      "source": "60Day: Day_10",
+      "connect_back": {
+        "day": 40,
+        "subject": "Finance",
+        "topic": "Returns and compounding"
+      }
+    },
+    {
+      "day": 42,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "7 of 20",
+      "topic": "Inflation",
+      "focus": "Price levels vs rates of change, CPI vs PCE, core, shelter, expectations.",
+      "source": "new",
+      "connect_back": {
+        "day": 41,
+        "subject": "Mathematics",
+        "topic": "Orthogonality, least squares, SVD"
+      }
+    },
+    {
+      "day": 43,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "10 of 26",
+      "topic": "Waves and sound",
+      "focus": "Superposition, interference, standing waves, Doppler.",
+      "source": "phys 28-29",
+      "connect_back": {
+        "day": 42,
+        "subject": "Economics",
+        "topic": "Inflation"
+      }
+    },
+    {
+      "day": 44,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "17 of 24",
+      "topic": "Counting, conditional probability, Bayes",
+      "focus": "Updating belief on evidence, done correctly.",
+      "source": "60Day: Day_08",
+      "connect_back": {
+        "day": 43,
+        "subject": "Physics",
+        "topic": "Waves and sound"
+      }
+    },
+    {
+      "day": 45,
+      "phase": "Core Machinery",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "3 of 24",
+      "topic": "NPV, IRR and capital budgeting",
+      "focus": "Deciding whether a project is worth doing.",
+      "source": "60Day: Day_15",
+      "connect_back": {
+        "day": 44,
+        "subject": "Mathematics",
+        "topic": "Counting, conditional probability, Bayes"
+      }
+    },
+    {
+      "day": 46,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "8 of 20",
+      "topic": "Labour markets",
+      "focus": "Payrolls, participation, unemployment definitions, wages, the Phillips curve debate.",
+      "source": "new",
+      "connect_back": {
+        "day": 45,
+        "subject": "Finance",
+        "topic": "NPV, IRR and capital budgeting"
+      }
+    },
+    {
+      "day": 47,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "11 of 26",
+      "topic": "Fluid statics",
+      "focus": "Pressure, buoyancy, and the hydrostatic equation.",
+      "source": "phys 30",
+      "connect_back": {
+        "day": 46,
+        "subject": "Economics",
+        "topic": "Labour markets"
+      }
+    },
+    {
+      "day": 48,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "18 of 24",
+      "topic": "Random variables and distributions",
+      "focus": "The handful of distributions that describe most of the world.",
+      "source": "60Day: Day_08",
+      "connect_back": {
+        "day": 47,
+        "subject": "Physics",
+        "topic": "Fluid statics"
+      }
+    },
+    {
+      "day": 49,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "9 of 20",
+      "topic": "Money and banking",
+      "focus": "What money is, how banks create it, the money multiplier's limits.",
+      "source": "new",
+      "connect_back": {
+        "day": 48,
+        "subject": "Mathematics",
+        "topic": "Random variables and distributions"
+      }
+    },
+    {
+      "day": 50,
+      "phase": "Core Machinery",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "4 of 24",
+      "topic": "Bonds and duration",
+      "focus": "Price-yield inversion, duration, convexity, and credit spreads.",
+      "source": "60Day: Day_18",
+      "connect_back": {
+        "day": 49,
+        "subject": "Economics",
+        "topic": "Money and banking"
+      }
+    },
+    {
+      "day": 51,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "12 of 26",
+      "topic": "Fluid dynamics",
+      "focus": "Continuity, Bernoulli and its limits, viscosity, Reynolds number.",
+      "source": "phys 31",
+      "connect_back": {
+        "day": 50,
+        "subject": "Finance",
+        "topic": "Bonds and duration"
+      }
+    },
+    {
+      "day": 52,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "19 of 24",
+      "topic": "Expectation, variance, covariance",
+      "focus": "First and second moments -- and why covariance is the whole of portfolio theory.",
+      "source": "60Day: Day_09",
+      "connect_back": {
+        "day": 51,
+        "subject": "Physics",
+        "topic": "Fluid dynamics"
+      }
+    },
+    {
+      "day": 53,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "10 of 20",
+      "topic": "Central banking and monetary policy",
+      "focus": "The tools, the transmission mechanism, and the lags.",
+      "source": "new",
+      "connect_back": {
+        "day": 52,
+        "subject": "Mathematics",
+        "topic": "Expectation, variance, covariance"
+      }
+    },
+    {
+      "day": 54,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "13 of 26",
+      "topic": "Temperature and heat",
+      "focus": "Thermal energy, capacity, and the three transfer modes.",
+      "source": "phys 32-33",
+      "connect_back": {
+        "day": 53,
+        "subject": "Economics",
+        "topic": "Central banking and monetary policy"
+      }
+    },
+    {
+      "day": 55,
+      "phase": "Core Machinery",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "5 of 24",
+      "topic": "Equities and the claim they represent",
+      "focus": "What a share is, dividends, buybacks, total return.",
+      "source": "new",
+      "connect_back": {
+        "day": 54,
+        "subject": "Physics",
+        "topic": "Temperature and heat"
+      }
+    },
+    {
+      "day": 56,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "11 of 20",
+      "topic": "Interest rates and the yield curve",
+      "focus": "Real vs nominal, term premium, and what inversion has meant.",
+      "source": "new",
+      "connect_back": {
+        "day": 55,
+        "subject": "Finance",
+        "topic": "Equities and the claim they represent"
+      }
+    },
+    {
+      "day": 57,
+      "phase": "Core Machinery",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "20 of 24",
+      "topic": "Law of large numbers and the CLT",
+      "focus": "Why averages behave, and why normality shows up uninvited.",
+      "source": "60Day: Day_09",
+      "connect_back": {
+        "day": 56,
+        "subject": "Economics",
+        "topic": "Interest rates and the yield curve"
+      }
+    },
+    {
+      "day": 58,
+      "phase": "Core Machinery",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "14 of 26",
+      "topic": "The laws of thermodynamics",
+      "focus": "Energy conservation, entropy, and what 'irreversible' means.",
+      "source": "phys 34",
+      "connect_back": {
+        "day": 57,
+        "subject": "Mathematics",
+        "topic": "Law of large numbers and the CLT"
+      }
+    },
+    {
+      "day": 59,
+      "phase": "Core Machinery",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "6 of 24",
+      "topic": "Risk and return",
+      "focus": "Volatility, correlation, diversification, and the free lunch it provides.",
+      "source": "60Day: Day_29",
+      "connect_back": {
+        "day": 58,
+        "subject": "Physics",
+        "topic": "The laws of thermodynamics"
+      }
+    },
+    {
+      "day": 60,
+      "phase": "Core Machinery",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "12 of 20",
+      "topic": "Fiscal policy and government debt",
+      "focus": "Deficits, debt dynamics, interest expense, sustainability arithmetic.",
+      "source": "new",
+      "connect_back": {
+        "day": 59,
+        "subject": "Finance",
+        "topic": "Risk and return"
+      }
+    },
+    {
+      "day": 61,
+      "phase": "Quantitative Method",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "21 of 24",
+      "topic": "Estimation, confidence, hypothesis testing",
+      "focus": "What a p-value is, what it is not, and what a confidence interval actually claims.",
+      "source": "60Day: Day_09",
+      "connect_back": {
+        "day": 60,
+        "subject": "Economics",
+        "topic": "Fiscal policy and government debt"
+      }
+    },
+    {
+      "day": 62,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "7 of 24",
+      "topic": "Portfolio theory",
+      "focus": "The efficient frontier, and what mean-variance optimisation assumes.",
+      "source": "60Day: Day_29",
+      "connect_back": {
+        "day": 61,
+        "subject": "Mathematics",
+        "topic": "Estimation, confidence, hypothesis testing"
+      }
+    },
+    {
+      "day": 63,
+      "phase": "Quantitative Method",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "15 of 26",
+      "topic": "Kinetic theory and statistical mechanics",
+      "focus": "Temperature as motion; entropy as counting.",
+      "source": "phys 35",
+      "connect_back": {
+        "day": 62,
+        "subject": "Finance",
+        "topic": "Portfolio theory"
+      }
+    },
+    {
+      "day": 64,
+      "phase": "Quantitative Method",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "9 of 18",
+      "topic": "Depreciation and amortisation",
+      "focus": "Spreading cost over life, and why it is an estimate, not a fact.",
+      "source": "new",
+      "connect_back": {
+        "day": 63,
+        "subject": "Physics",
+        "topic": "Kinetic theory and statistical mechanics"
+      }
+    },
+    {
+      "day": 65,
+      "phase": "Quantitative Method",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "22 of 24",
+      "topic": "Multivariable functions and partial derivatives",
+      "focus": "Calculus when more than one thing varies.",
+      "source": "60Day: Day_10",
+      "connect_back": {
+        "day": 64,
+        "subject": "Accounting",
+        "topic": "Depreciation and amortisation"
+      }
+    },
+    {
+      "day": 66,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "8 of 24",
+      "topic": "CAPM, beta and the cost of capital",
+      "focus": "Systematic vs idiosyncratic risk, and WACC.",
+      "source": "60Day: Day_23",
+      "connect_back": {
+        "day": 65,
+        "subject": "Mathematics",
+        "topic": "Multivariable functions and partial derivatives"
+      }
+    },
+    {
+      "day": 67,
+      "phase": "Quantitative Method",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "16 of 26",
+      "topic": "Electric charge and fields",
+      "focus": "Coulomb, Gauss, and field lines as bookkeeping.",
+      "source": "phys 36-37",
+      "connect_back": {
+        "day": 66,
+        "subject": "Finance",
+        "topic": "CAPM, beta and the cost of capital"
+      }
+    },
+    {
+      "day": 68,
+      "phase": "Quantitative Method",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "10 of 18",
+      "topic": "Working capital",
+      "focus": "Receivables, payables, the cash conversion cycle.",
+      "source": "new",
+      "connect_back": {
+        "day": 67,
+        "subject": "Physics",
+        "topic": "Electric charge and fields"
+      }
+    },
+    {
+      "day": 69,
+      "phase": "Quantitative Method",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "23 of 24",
+      "topic": "Gradients and multivariable optimization",
+      "focus": "Steepest ascent -- the object every training loop follows downhill.",
+      "source": "60Day: Day_10",
+      "connect_back": {
+        "day": 68,
+        "subject": "Accounting",
+        "topic": "Working capital"
+      }
+    },
+    {
+      "day": 70,
+      "phase": "Quantitative Method",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "1 of 22",
+      "topic": "What machine learning is",
+      "focus": "Learning a function from data, and the three problem types.",
+      "source": "60Day: Day_25",
+      "connect_back": {
+        "day": 69,
+        "subject": "Mathematics",
+        "topic": "Gradients and multivariable optimization"
+      }
+    },
+    {
+      "day": 71,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "9 of 24",
+      "topic": "Capital structure",
+      "focus": "Debt vs equity, leverage, Modigliani-Miller and its real-world caveats.",
+      "source": "60Day: Day_26",
+      "connect_back": {
+        "day": 70,
+        "subject": "Artificial Intelligence",
+        "topic": "What machine learning is"
+      }
+    },
+    {
+      "day": 72,
+      "phase": "Quantitative Method",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "17 of 26",
+      "topic": "Electric potential and capacitance",
+      "focus": "Voltage as energy per charge; storing charge.",
+      "source": "phys 38-39",
+      "connect_back": {
+        "day": 71,
+        "subject": "Finance",
+        "topic": "Capital structure"
+      }
+    },
+    {
+      "day": 73,
+      "phase": "Quantitative Method",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "11 of 18",
+      "topic": "Debt, leases and off-balance-sheet items",
+      "focus": "What obligations look like and where they hide.",
+      "source": "new",
+      "connect_back": {
+        "day": 72,
+        "subject": "Physics",
+        "topic": "Electric potential and capacitance"
+      }
+    },
+    {
+      "day": 74,
+      "phase": "Quantitative Method",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "2 of 22",
+      "topic": "Linear and logistic regression",
+      "focus": "The workhorses, and what their coefficients mean.",
+      "source": "eqreg: Supervised Learning",
+      "connect_back": {
+        "day": 73,
+        "subject": "Accounting",
+        "topic": "Debt, leases and off-balance-sheet items"
+      }
+    },
+    {
+      "day": 75,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "10 of 24",
+      "topic": "Valuation: multiples",
+      "focus": "EV/EBITDA, P/E, comps, precedent transactions -- and their traps.",
+      "source": "60Day: Day_28",
+      "connect_back": {
+        "day": 74,
+        "subject": "Artificial Intelligence",
+        "topic": "Linear and logistic regression"
+      }
+    },
+    {
+      "day": 76,
+      "phase": "Quantitative Method",
+      "subject": "Mathematics",
+      "subject_key": "math",
+      "position": "24 of 24",
+      "topic": "Multiple integrals and vector calculus",
+      "focus": "Divergence, curl, and the theorems that make field physics tractable.",
+      "source": "60Day: Day_10",
+      "connect_back": {
+        "day": 75,
+        "subject": "Finance",
+        "topic": "Valuation: multiples"
+      }
+    },
+    {
+      "day": 77,
+      "phase": "Quantitative Method",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "18 of 26",
+      "topic": "Current, resistance, circuits",
+      "focus": "Ohm, Kirchhoff, and analysing a network three ways.",
+      "source": "phys 40-42",
+      "connect_back": {
+        "day": 76,
+        "subject": "Mathematics",
+        "topic": "Multiple integrals and vector calculus"
+      }
+    },
+    {
+      "day": 78,
+      "phase": "Quantitative Method",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "12 of 18",
+      "topic": "Equity, share issuance and buybacks",
+      "focus": "Dilution, treasury stock, and share count as a real variable.",
+      "source": "new",
+      "connect_back": {
+        "day": 77,
+        "subject": "Physics",
+        "topic": "Current, resistance, circuits"
+      }
+    },
+    {
+      "day": 79,
+      "phase": "Quantitative Method",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "3 of 22",
+      "topic": "Loss functions and optimisation",
+      "focus": "What the model is minimising, and gradient descent.",
+      "source": "eqreg: Fully Connected Networks & Optimization",
+      "connect_back": {
+        "day": 78,
+        "subject": "Accounting",
+        "topic": "Equity, share issuance and buybacks"
+      }
+    },
+    {
+      "day": 80,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "11 of 24",
+      "topic": "Valuation: discounted cash flow",
+      "focus": "Free cash flow, terminal value, and sensitivity to assumptions.",
+      "source": "60Day: Day_28",
+      "connect_back": {
+        "day": 79,
+        "subject": "Artificial Intelligence",
+        "topic": "Loss functions and optimisation"
+      }
+    },
+    {
+      "day": 81,
+      "phase": "Quantitative Method",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "19 of 26",
+      "topic": "Magnetism and induction",
+      "focus": "Lorentz, Ampere, Faraday -- and the generator.",
+      "source": "phys 43-44",
+      "connect_back": {
+        "day": 80,
+        "subject": "Finance",
+        "topic": "Valuation: discounted cash flow"
+      }
+    },
+    {
+      "day": 82,
+      "phase": "Quantitative Method",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "13 of 18",
+      "topic": "Taxes in the accounts",
+      "focus": "Current vs deferred, effective vs statutory rate.",
+      "source": "new",
+      "connect_back": {
+        "day": 81,
+        "subject": "Physics",
+        "topic": "Magnetism and induction"
+      }
+    },
+    {
+      "day": 83,
+      "phase": "Quantitative Method",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "4 of 22",
+      "topic": "Bias, variance and generalisation",
+      "focus": "Underfitting, overfitting, and the tradeoff that governs everything.",
+      "source": "eqreg: Supervised Learning",
+      "connect_back": {
+        "day": 82,
+        "subject": "Accounting",
+        "topic": "Taxes in the accounts"
+      }
+    },
+    {
+      "day": 84,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "12 of 24",
+      "topic": "Market efficiency",
+      "focus": "The three forms, the evidence, and what the debate actually settles.",
+      "source": "new",
+      "connect_back": {
+        "day": 83,
+        "subject": "Artificial Intelligence",
+        "topic": "Bias, variance and generalisation"
+      }
+    },
+    {
+      "day": 85,
+      "phase": "Quantitative Method",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "20 of 26",
+      "topic": "Maxwell's equations and EM waves",
+      "focus": "Four equations, and light falling out of them.",
+      "source": "phys 45-46",
+      "connect_back": {
+        "day": 84,
+        "subject": "Finance",
+        "topic": "Market efficiency"
+      }
+    },
+    {
+      "day": 86,
+      "phase": "Quantitative Method",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "14 of 18",
+      "topic": "Consolidation and minority interests",
+      "focus": "What happens when one company owns part of another.",
+      "source": "new",
+      "connect_back": {
+        "day": 85,
+        "subject": "Physics",
+        "topic": "Maxwell's equations and EM waves"
+      }
+    },
+    {
+      "day": 87,
+      "phase": "Quantitative Method",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "5 of 22",
+      "topic": "Regularisation and validation",
+      "focus": "L1/L2, dropout, cross-validation, and honest evaluation.",
+      "source": "eqreg: Supervised Learning",
+      "connect_back": {
+        "day": 86,
+        "subject": "Accounting",
+        "topic": "Consolidation and minority interests"
+      }
+    },
+    {
+      "day": 88,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "13 of 24",
+      "topic": "Factors",
+      "focus": "Value, size, momentum, quality, low-vol -- evidence and decay.",
+      "source": "60Day: Day_48",
+      "connect_back": {
+        "day": 87,
+        "subject": "Artificial Intelligence",
+        "topic": "Regularisation and validation"
+      }
+    },
+    {
+      "day": 89,
+      "phase": "Quantitative Method",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "6 of 22",
+      "topic": "Feature engineering and leakage",
+      "focus": "Where real-world ML actually succeeds and fails.",
+      "source": "60Day: Day_25",
+      "connect_back": {
+        "day": 88,
+        "subject": "Finance",
+        "topic": "Factors"
+      }
+    },
+    {
+      "day": 90,
+      "phase": "Quantitative Method",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "14 of 24",
+      "topic": "Derivatives: forwards and futures",
+      "focus": "No-arbitrage pricing, basis, and hedging mechanics.",
+      "source": "60Day: Day_34",
+      "connect_back": {
+        "day": 89,
+        "subject": "Artificial Intelligence",
+        "topic": "Feature engineering and leakage"
+      }
+    },
+    {
+      "day": 91,
+      "phase": "Advanced",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "21 of 26",
+      "topic": "Optics",
+      "focus": "Geometric optics, then interference and diffraction.",
+      "source": "phys 47-48",
+      "connect_back": {
+        "day": 90,
+        "subject": "Finance",
+        "topic": "Derivatives: forwards and futures"
+      }
+    },
+    {
+      "day": 92,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "7 of 22",
+      "topic": "Trees and ensembles",
+      "focus": "Decision trees, bagging, random forests, gradient boosting.",
+      "source": "eqreg: Supervised Learning",
+      "connect_back": {
+        "day": 91,
+        "subject": "Physics",
+        "topic": "Optics"
+      }
+    },
+    {
+      "day": 93,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "1 of 16",
+      "topic": "Rocket anatomy and the thrust equation",
+      "focus": "What a rocket is made of, and where thrust comes from.",
+      "source": "space 1-4",
+      "connect_back": {
+        "day": 92,
+        "subject": "Artificial Intelligence",
+        "topic": "Trees and ensembles"
+      }
+    },
+    {
+      "day": 94,
+      "phase": "Advanced",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "15 of 24",
+      "topic": "Options: payoffs and parity",
+      "focus": "Calls, puts, put-call parity, and the no-arbitrage bounds.",
+      "source": "60Day: Day_31",
+      "connect_back": {
+        "day": 93,
+        "subject": "Rocketry",
+        "topic": "Rocket anatomy and the thrust equation"
+      }
+    },
+    {
+      "day": 95,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "8 of 22",
+      "topic": "Neural networks",
+      "focus": "Layers, activations, and why depth buys expressiveness.",
+      "source": "eqreg: Fully Connected Networks & Optimization",
+      "connect_back": {
+        "day": 94,
+        "subject": "Finance",
+        "topic": "Options: payoffs and parity"
+      }
+    },
+    {
+      "day": 96,
+      "phase": "Advanced",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "22 of 26",
+      "topic": "Special relativity",
+      "focus": "Simultaneity, time dilation, length contraction, E=mc^2.",
+      "source": "phys 49",
+      "connect_back": {
+        "day": 95,
+        "subject": "Artificial Intelligence",
+        "topic": "Neural networks"
+      }
+    },
+    {
+      "day": 97,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "2 of 16",
+      "topic": "Specific impulse and exhaust velocity",
+      "focus": "Fuel mileage for rockets, and the engine-quality term.",
+      "source": "space 5-6",
+      "connect_back": {
+        "day": 96,
+        "subject": "Physics",
+        "topic": "Special relativity"
+      }
+    },
+    {
+      "day": 98,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "9 of 22",
+      "topic": "Backpropagation",
+      "focus": "The chain rule at scale -- worked through by hand once.",
+      "source": "eqreg: Fully Connected Networks & Optimization",
+      "connect_back": {
+        "day": 97,
+        "subject": "Rocketry",
+        "topic": "Specific impulse and exhaust velocity"
+      }
+    },
+    {
+      "day": 99,
+      "phase": "Advanced",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "16 of 24",
+      "topic": "Black-Scholes and the Greeks",
+      "focus": "The pricing model, its assumptions, and delta/gamma/vega/theta.",
+      "source": "60Day: Day_46",
+      "connect_back": {
+        "day": 98,
+        "subject": "Artificial Intelligence",
+        "topic": "Backpropagation"
+      }
+    },
+    {
+      "day": 100,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "3 of 16",
+      "topic": "The Tsiolkovsky rocket equation",
+      "focus": "The tyranny of the exponential, derived from momentum conservation.",
+      "source": "space 7-10",
+      "connect_back": {
+        "day": 99,
+        "subject": "Finance",
+        "topic": "Black-Scholes and the Greeks"
+      }
+    },
+    {
+      "day": 101,
+      "phase": "Advanced",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "23 of 26",
+      "topic": "Lagrangian and Hamiltonian mechanics",
+      "focus": "Reformulating mechanics around energy and action.",
+      "source": "phys 53-54",
+      "connect_back": {
+        "day": 100,
+        "subject": "Rocketry",
+        "topic": "The Tsiolkovsky rocket equation"
+      }
+    },
+    {
+      "day": 102,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "10 of 22",
+      "topic": "Training in practice",
+      "focus": "Initialisation, normalisation, learning-rate schedules, what divergence looks like.",
+      "source": "eqreg: Fully Connected Networks & Optimization",
+      "connect_back": {
+        "day": 101,
+        "subject": "Physics",
+        "topic": "Lagrangian and Hamiltonian mechanics"
+      }
+    },
+    {
+      "day": 103,
+      "phase": "Advanced",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "17 of 24",
+      "topic": "Volatility",
+      "focus": "Realised vs implied, the smile, term structure, and VIX construction.",
+      "source": "60Day: Day_46",
+      "connect_back": {
+        "day": 102,
+        "subject": "Artificial Intelligence",
+        "topic": "Training in practice"
+      }
+    },
+    {
+      "day": 104,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "4 of 16",
+      "topic": "Staging and thrust-to-weight",
+      "focus": "Why rockets shed mass, and the arithmetic that forces it.",
+      "source": "space 11-12",
+      "connect_back": {
+        "day": 103,
+        "subject": "Finance",
+        "topic": "Volatility"
+      }
+    },
+    {
+      "day": 105,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "11 of 22",
+      "topic": "Convolutional networks",
+      "focus": "Weight sharing, locality, and why images were the first win.",
+      "source": "eqreg: CNNs, RNNs, LSTMs, GRUs, Seq2Seq & Attention",
+      "connect_back": {
+        "day": 104,
+        "subject": "Rocketry",
+        "topic": "Staging and thrust-to-weight"
+      }
+    },
+    {
+      "day": 106,
+      "phase": "Advanced",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "24 of 26",
+      "topic": "Quantum mechanics: the core",
+      "focus": "Wavefunctions, the Schrodinger equation, measurement, uncertainty.",
+      "source": "phys 50, 57",
+      "connect_back": {
+        "day": 105,
+        "subject": "Artificial Intelligence",
+        "topic": "Convolutional networks"
+      }
+    },
+    {
+      "day": 107,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "5 of 16",
+      "topic": "Ascent: drag, max Q and losses",
+      "focus": "Gravity, drag and steering losses -- where the delta-v actually goes.",
+      "source": "space 13-19",
+      "connect_back": {
+        "day": 106,
+        "subject": "Physics",
+        "topic": "Quantum mechanics: the core"
+      }
+    },
+    {
+      "day": 108,
+      "phase": "Advanced",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "18 of 24",
+      "topic": "Fixed income and the curve, revisited",
+      "focus": "Bootstrapping, forwards, carry and roll-down.",
+      "source": "new",
+      "connect_back": {
+        "day": 107,
+        "subject": "Rocketry",
+        "topic": "Ascent: drag, max Q and losses"
+      }
+    },
+    {
+      "day": 109,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "12 of 22",
+      "topic": "Sequence models: RNNs, LSTMs, GRUs",
+      "focus": "Memory, vanishing gradients, and gating as the fix.",
+      "source": "eqreg: CNNs, RNNs, LSTMs, GRUs, Seq2Seq & Attention",
+      "connect_back": {
+        "day": 108,
+        "subject": "Finance",
+        "topic": "Fixed income and the curve, revisited"
+      }
+    },
+    {
+      "day": 110,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "6 of 16",
+      "topic": "Orbits I: velocity, energy, elements",
+      "focus": "What orbit means quantitatively, and the six numbers that define one.",
+      "source": "space 20-24",
+      "connect_back": {
+        "day": 109,
+        "subject": "Artificial Intelligence",
+        "topic": "Sequence models: RNNs, LSTMs, GRUs"
+      }
+    },
+    {
+      "day": 111,
+      "phase": "Advanced",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "25 of 26",
+      "topic": "Atomic and nuclear physics",
+      "focus": "Energy levels, spectra, binding energy, decay, fission and fusion.",
+      "source": "phys 51-52",
+      "connect_back": {
+        "day": 110,
+        "subject": "Rocketry",
+        "topic": "Orbits I: velocity, energy, elements"
+      }
+    },
+    {
+      "day": 112,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "13 of 22",
+      "topic": "Attention",
+      "focus": "Query, key, value -- the mechanism, derived rather than asserted.",
+      "source": "eqreg: CNNs, RNNs, LSTMs, GRUs, Seq2Seq & Attention",
+      "connect_back": {
+        "day": 111,
+        "subject": "Physics",
+        "topic": "Atomic and nuclear physics"
+      }
+    },
+    {
+      "day": 113,
+      "phase": "Advanced",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "19 of 24",
+      "topic": "Credit",
+      "focus": "Default probability, recovery, spreads as compensation, and the cycle.",
+      "source": "new",
+      "connect_back": {
+        "day": 112,
+        "subject": "Artificial Intelligence",
+        "topic": "Attention"
+      }
+    },
+    {
+      "day": 114,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "7 of 16",
+      "topic": "Orbits II: transfers and plane changes",
+      "focus": "Hohmann transfers, launch windows, and why inclination is expensive.",
+      "source": "space 25-27",
+      "connect_back": {
+        "day": 113,
+        "subject": "Finance",
+        "topic": "Credit"
+      }
+    },
+    {
+      "day": 115,
+      "phase": "Advanced",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "13 of 20",
+      "topic": "Business cycles",
+      "focus": "Expansion, recession, the indicators, and why calling turns is hard.",
+      "source": "new",
+      "connect_back": {
+        "day": 114,
+        "subject": "Rocketry",
+        "topic": "Orbits II: transfers and plane changes"
+      }
+    },
+    {
+      "day": 116,
+      "phase": "Advanced",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "14 of 22",
+      "topic": "Transformers I: the architecture",
+      "focus": "Self-attention, multi-head, positional encoding, the residual stream.",
+      "source": "eqreg: Transformers",
+      "connect_back": {
+        "day": 115,
+        "subject": "Economics",
+        "topic": "Business cycles"
+      }
+    },
+    {
+      "day": 117,
+      "phase": "Advanced",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "8 of 16",
+      "topic": "Rendezvous, docking and reentry",
+      "focus": "Relative motion, and the energy problem of coming back.",
+      "source": "space 28-32",
+      "connect_back": {
+        "day": 116,
+        "subject": "Artificial Intelligence",
+        "topic": "Transformers I: the architecture"
+      }
+    },
+    {
+      "day": 118,
+      "phase": "Advanced",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "20 of 24",
+      "topic": "Risk measurement",
+      "focus": "VaR, expected shortfall, stress testing, and what each misses.",
+      "source": "60Day: Day_44",
+      "connect_back": {
+        "day": 117,
+        "subject": "Rocketry",
+        "topic": "Rendezvous, docking and reentry"
+      }
+    },
+    {
+      "day": 119,
+      "phase": "Advanced",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "14 of 20",
+      "topic": "Growth theory",
+      "focus": "Capital, labour, productivity, and why productivity is the whole story long-run.",
+      "source": "new",
+      "connect_back": {
+        "day": 118,
+        "subject": "Finance",
+        "topic": "Risk measurement"
+      }
+    },
+    {
+      "day": 120,
+      "phase": "Advanced",
+      "subject": "Physics",
+      "subject_key": "physics",
+      "position": "26 of 26",
+      "topic": "General relativity and cosmology",
+      "focus": "Curved spacetime, black holes, expansion, dark matter and dark energy.",
+      "source": "phys 56, 69-71",
+      "connect_back": {
+        "day": 119,
+        "subject": "Economics",
+        "topic": "Growth theory"
+      }
+    },
+    {
+      "day": 121,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "15 of 22",
+      "topic": "Transformers II: training at scale",
+      "focus": "Tokenisation, objectives, scaling laws, compute and data.",
+      "source": "eqreg: Transformers",
+      "connect_back": {
+        "day": 120,
+        "subject": "Physics",
+        "topic": "General relativity and cosmology"
+      }
+    },
+    {
+      "day": 122,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "9 of 16",
+      "topic": "Propellants and engine cycles",
+      "focus": "Liquid, solid, cryogenic; gas-generator through full-flow staged combustion.",
+      "source": "space 33-42",
+      "connect_back": {
+        "day": 121,
+        "subject": "Artificial Intelligence",
+        "topic": "Transformers II: training at scale"
+      }
+    },
+    {
+      "day": 123,
+      "phase": "Frontier and Synthesis",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "21 of 24",
+      "topic": "Market microstructure",
+      "focus": "Order books, spreads, impact, and where execution cost comes from.",
+      "source": "60Day: Day_48",
+      "connect_back": {
+        "day": 122,
+        "subject": "Rocketry",
+        "topic": "Propellants and engine cycles"
+      }
+    },
+    {
+      "day": 124,
+      "phase": "Frontier and Synthesis",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "15 of 20",
+      "topic": "International trade",
+      "focus": "Comparative advantage, tariffs, and who actually pays them.",
+      "source": "new",
+      "connect_back": {
+        "day": 123,
+        "subject": "Finance",
+        "topic": "Market microstructure"
+      }
+    },
+    {
+      "day": 125,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "16 of 22",
+      "topic": "Language models: what they do",
+      "focus": "Next-token prediction, sampling, context, and where capability comes from.",
+      "source": "eqreg: Transformers",
+      "connect_back": {
+        "day": 124,
+        "subject": "Economics",
+        "topic": "International trade"
+      }
+    },
+    {
+      "day": 126,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "10 of 16",
+      "topic": "Engine cooling and combustion stability",
+      "focus": "Managing the hardest thermal and dynamic problem in the vehicle.",
+      "source": "space 43-44",
+      "connect_back": {
+        "day": 125,
+        "subject": "Artificial Intelligence",
+        "topic": "Language models: what they do"
+      }
+    },
+    {
+      "day": 127,
+      "phase": "Frontier and Synthesis",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "15 of 18",
+      "topic": "Ratio analysis",
+      "focus": "Liquidity, leverage, profitability, efficiency -- and their failure modes.",
+      "source": "new",
+      "connect_back": {
+        "day": 126,
+        "subject": "Rocketry",
+        "topic": "Engine cooling and combustion stability"
+      }
+    },
+    {
+      "day": 128,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "17 of 22",
+      "topic": "Fine-tuning, RLHF and alignment",
+      "focus": "Post-training, preference learning, and what alignment means technically.",
+      "source": "eqreg: LLM / Hybrid Decision-Loss Models",
+      "connect_back": {
+        "day": 127,
+        "subject": "Accounting",
+        "topic": "Ratio analysis"
+      }
+    },
+    {
+      "day": 129,
+      "phase": "Frontier and Synthesis",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "16 of 20",
+      "topic": "Exchange rates and the balance of payments",
+      "focus": "Parity conditions, reserve currency status, capital flows.",
+      "source": "new",
+      "connect_back": {
+        "day": 128,
+        "subject": "Artificial Intelligence",
+        "topic": "Fine-tuning, RLHF and alignment"
+      }
+    },
+    {
+      "day": 130,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "11 of 16",
+      "topic": "Guidance, navigation and control",
+      "focus": "IMUs, flight computers, and closing the loop.",
+      "source": "space 45-50",
+      "connect_back": {
+        "day": 129,
+        "subject": "Economics",
+        "topic": "Exchange rates and the balance of payments"
+      }
+    },
+    {
+      "day": 131,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "18 of 22",
+      "topic": "Retrieval, tools and agents",
+      "focus": "Extending a model past its weights, and where reliability breaks.",
+      "source": "new",
+      "connect_back": {
+        "day": 130,
+        "subject": "Rocketry",
+        "topic": "Guidance, navigation and control"
+      }
+    },
+    {
+      "day": 132,
+      "phase": "Frontier and Synthesis",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "22 of 24",
+      "topic": "Backtesting and its pathologies",
+      "focus": "Look-ahead, survivorship, overfitting, multiple testing.",
+      "source": "60Day: Day_48",
+      "connect_back": {
+        "day": 131,
+        "subject": "Artificial Intelligence",
+        "topic": "Retrieval, tools and agents"
+      }
+    },
+    {
+      "day": 133,
+      "phase": "Frontier and Synthesis",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "16 of 18",
+      "topic": "Earnings quality and red flags",
+      "focus": "Accruals, one-offs, capitalised costs, related parties.",
+      "source": "new",
+      "connect_back": {
+        "day": 132,
+        "subject": "Finance",
+        "topic": "Backtesting and its pathologies"
+      }
+    },
+    {
+      "day": 134,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "12 of 16",
+      "topic": "Structures, materials and loads",
+      "focus": "Vibration, acoustic loading, and separation events.",
+      "source": "space 51-56",
+      "connect_back": {
+        "day": 133,
+        "subject": "Accounting",
+        "topic": "Earnings quality and red flags"
+      }
+    },
+    {
+      "day": 135,
+      "phase": "Frontier and Synthesis",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "17 of 20",
+      "topic": "Financial crises",
+      "focus": "Leverage, maturity mismatch, runs, and the recurring pattern.",
+      "source": "new",
+      "connect_back": {
+        "day": 134,
+        "subject": "Rocketry",
+        "topic": "Structures, materials and loads"
+      }
+    },
+    {
+      "day": 136,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "19 of 22",
+      "topic": "Evaluation",
+      "focus": "Benchmarks, contamination, and why evaluation is the hard part.",
+      "source": "new",
+      "connect_back": {
+        "day": 135,
+        "subject": "Economics",
+        "topic": "Financial crises"
+      }
+    },
+    {
+      "day": 137,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "13 of 16",
+      "topic": "Reusability",
+      "focus": "Landing burns, grid fins, and the economics that motivate them.",
+      "source": "space 57-59",
+      "connect_back": {
+        "day": 136,
+        "subject": "Artificial Intelligence",
+        "topic": "Evaluation"
+      }
+    },
+    {
+      "day": 138,
+      "phase": "Frontier and Synthesis",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "17 of 18",
+      "topic": "Audit, controls and GAAP vs IFRS",
+      "focus": "What an auditor certifies, and what they explicitly do not.",
+      "source": "new",
+      "connect_back": {
+        "day": 137,
+        "subject": "Rocketry",
+        "topic": "Reusability"
+      }
+    },
+    {
+      "day": 139,
+      "phase": "Frontier and Synthesis",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "23 of 24",
+      "topic": "Portfolio construction in practice",
+      "focus": "Sizing, constraints, rebalancing, transaction costs, capacity.",
+      "source": "eqreg: Volatility Forecasting & Portfolio Optimization",
+      "connect_back": {
+        "day": 138,
+        "subject": "Accounting",
+        "topic": "Audit, controls and GAAP vs IFRS"
+      }
+    },
+    {
+      "day": 140,
+      "phase": "Frontier and Synthesis",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "18 of 20",
+      "topic": "Behavioural economics",
+      "focus": "Where the rational-agent assumption measurably fails.",
+      "source": "60Day: Day_21",
+      "connect_back": {
+        "day": 139,
+        "subject": "Finance",
+        "topic": "Portfolio construction in practice"
+      }
+    },
+    {
+      "day": 141,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "20 of 22",
+      "topic": "Graph neural networks",
+      "focus": "Learning on relational structure.",
+      "source": "eqreg: Graph Neural Networks",
+      "connect_back": {
+        "day": 140,
+        "subject": "Economics",
+        "topic": "Behavioural economics"
+      }
+    },
+    {
+      "day": 142,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "14 of 16",
+      "topic": "Spacecraft subsystems",
+      "focus": "Power, comms, attitude control, thermal -- the satellite as a system.",
+      "source": "space 60-65",
+      "connect_back": {
+        "day": 141,
+        "subject": "Artificial Intelligence",
+        "topic": "Graph neural networks"
+      }
+    },
+    {
+      "day": 143,
+      "phase": "Frontier and Synthesis",
+      "subject": "Accounting",
+      "subject_key": "accounting",
+      "position": "18 of 18",
+      "topic": "Reading a 10-K",
+      "focus": "Working through a real filing end to end, front to back.",
+      "source": "new",
+      "connect_back": {
+        "day": 142,
+        "subject": "Rocketry",
+        "topic": "Spacecraft subsystems"
+      }
+    },
+    {
+      "day": 144,
+      "phase": "Frontier and Synthesis",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "19 of 20",
+      "topic": "Inequality and distribution",
+      "focus": "Measurement, drivers, and the policy arguments on their merits.",
+      "source": "new",
+      "connect_back": {
+        "day": 143,
+        "subject": "Accounting",
+        "topic": "Reading a 10-K"
+      }
+    },
+    {
+      "day": 145,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "21 of 22",
+      "topic": "ML applied to markets",
+      "focus": "Deep momentum, cross-sectional models, and why finance is the adversarial case.",
+      "source": "eqreg: Deep Momentum & Cross-Sectional Momentum",
+      "connect_back": {
+        "day": 144,
+        "subject": "Economics",
+        "topic": "Inequality and distribution"
+      }
+    },
+    {
+      "day": 146,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "15 of 16",
+      "topic": "Human spaceflight",
+      "focus": "Life support, radiation, and human factors as engineering constraints.",
+      "source": "space 66-68",
+      "connect_back": {
+        "day": 145,
+        "subject": "Artificial Intelligence",
+        "topic": "ML applied to markets"
+      }
+    },
+    {
+      "day": 147,
+      "phase": "Frontier and Synthesis",
+      "subject": "Finance",
+      "subject_key": "finance",
+      "position": "24 of 24",
+      "topic": "Wealth management and the long horizon",
+      "focus": "Allocation, sequence risk, taxes, and behaviour as the binding constraint.",
+      "source": "60Day: Day_29",
+      "connect_back": {
+        "day": 146,
+        "subject": "Rocketry",
+        "topic": "Human spaceflight"
+      }
+    },
+    {
+      "day": 148,
+      "phase": "Frontier and Synthesis",
+      "subject": "Economics",
+      "subject_key": "economics",
+      "position": "20 of 20",
+      "topic": "Reading the data honestly",
+      "focus": "Revisions, seasonal adjustment, base effects, and survey vs administrative data.",
+      "source": "new",
+      "connect_back": {
+        "day": 147,
+        "subject": "Finance",
+        "topic": "Wealth management and the long horizon"
+      }
+    },
+    {
+      "day": 149,
+      "phase": "Frontier and Synthesis",
+      "subject": "Artificial Intelligence",
+      "subject_key": "ai",
+      "position": "22 of 22",
+      "topic": "AI systems, compute and limits",
+      "focus": "Inference economics, hardware, energy, and honest capability assessment.",
+      "source": "new",
+      "connect_back": {
+        "day": 148,
+        "subject": "Economics",
+        "topic": "Reading the data honestly"
+      }
+    },
+    {
+      "day": 150,
+      "phase": "Frontier and Synthesis",
+      "subject": "Rocketry",
+      "subject_key": "rocketry",
+      "position": "16 of 16",
+      "topic": "Missions and advanced propulsion",
+      "focus": "Lunar and Mars architectures, nuclear thermal, electric propulsion, refuelling.",
+      "source": "space 69-75",
+      "connect_back": {
+        "day": 149,
+        "subject": "Artificial Intelligence",
+        "topic": "AI systems, compute and limits"
+      }
+    }
+  ]
+}

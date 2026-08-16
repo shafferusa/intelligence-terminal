@@ -1,42 +1,47 @@
 <!DOCTYPE html>
 <!--
-  Logan's Daily Newspaper - report page template & design reference.
+  Logan's Daily Newspaper - report page template & design reference (v2).
 
   HOW THE CLOUD ROUTINE USES THIS FILE
-  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
   2. Replace the <title> text.
   3. Replace the JSON inside the report-meta script block in <head>
-     (keep its id and type attributes exactly as they are; that tag appears
-     exactly once in this file, below in <head>).
-  4. Replace everything between the REPORT:START and REPORT:END marker comments
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
      with the new report body. Everything outside the markers is boilerplate
      shared by every report page - do not edit it per run.
-  5. Prepend a matching entry to site/reports/index.json
-     ({date, slot, title, path, summary, reading_minutes}).
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
 
   RELATIVE PATH DEPTH RULE (read before touching any href/src)
   Published reports live exactly three directories below the site root:
       site/reports/YYYY/MM/YYYY-MM-DD-slot.html
-  so every reference back to a site-root resource uses the ../../../ prefix:
-      reports/2026/07/2026-07-24-am.html  ->  ../../../assets/style.css
-                                          ->  ../../../equations/eq_011.png
-                                          ->  ../../../index.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
   All relative paths in this template are ALREADY written for that destination
   depth. They intentionally do NOT resolve from this file's own location
   (site/report-template.html) - this file is a template, never a served page.
   Never use root-absolute paths (/assets/...): the site serves from a
   subdirectory (https://shafferusa.github.io/intelligence-terminal/).
 
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
   The sample content between the markers is a design reference showing every
-  structural element of a weekday MORNING report (SPEC.md section 18). All
-  figures in it are ILLUSTRATIVE ONLY and are labeled as sample data.
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow, noarchive">
-  <title>Sample Morning Brief — Fri, Jul 24, 2026 · Logan's Daily Newspaper</title>
+  <title>Sample Morning Brief — Fri, Jul 24, 2026 · Logan’s Daily Newspaper</title>
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
   <link rel="manifest" href="../../../manifest.webmanifest">
@@ -57,7 +62,8 @@
   <link rel="stylesheet" href="../../../assets/style.css">
 
   <!-- Machine-readable report metadata. The routine replaces this JSON every
-       run; it must stay consistent with the entry in reports/index.json. -->
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
   <script type="application/json" id="report-meta">
   {
     "date": "2026-07-24",
@@ -65,14 +71,14 @@
     "title": "Sample Morning Brief",
     "path": "reports/2026/07/2026-07-24-am.html",
     "summary": "Design-reference sample page. Every figure is illustrative, not real market or news data.",
+    "headlines": [
+      "First top development, one clause long",
+      "Second top development",
+      "Third top development"
+    ],
     "reading_minutes": 14,
     "generated_at": "2026-07-24T07:30:00-04:00",
-    "news_cutoff": "2026-07-24T07:10:00-04:00",
-    "market_data_asof": "2026-07-24T07:05:00-04:00",
-    "timezone": "America/New_York",
-    "version": "1.0",
-    "confidence": "High",
-    "market_status": "Pre-market (NYSE opens 9:30 AM ET)"
+    "timezone": "America/New_York"
   }
   </script>
 </head>
@@ -84,371 +90,322 @@
     </div>
   </div>
 
-  <main class="wrap">
+  <main class="wrap paper" data-slot="am">
 <!--REPORT:START-->
 
-    <!-- ================= 1. HEADER & FRESHNESS ================= -->
-    <header class="report-header">
-      <span class="kicker">Weekday Morning Report &middot; Sample</span>
+    <!-- ================= MASTHEAD =================
+         Edition eyebrow, headline, dateline, one-sentence standfirst.
+         Nothing else. No cutoff times, no version, no confidence rating,
+         no per-source freshness table. The audio bar is injected by
+         assets/report.js immediately after this header. -->
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
       <h1>Sample Morning Brief</h1>
-      <p class="report-type-line">Friday, July 24, 2026 &middot; Generated 7:30 AM ET &middot; All times Eastern (America/New_York)</p>
-      <div class="report-chips">
-        <span class="chip chip-sample">Sample &mdash; illustrative data</span>
-        <span class="chip chip--info">Overall confidence: High</span>
-        <span class="chip chip--warn">Markets: pre-market</span>
-      </div>
-      <dl class="meta-grid">
-        <div><dt>Generated</dt><dd>2026-07-24 07:30 ET</dd></div>
-        <div><dt>News cutoff</dt><dd>2026-07-24 07:10 ET</dd></div>
-        <div><dt>Market data as of</dt><dd>2026-07-24 07:05 ET</dd></div>
-        <div><dt>Report version</dt><dd>1.0</dd></div>
-        <div><dt>Reading time</dt><dd>~14 minutes</dd></div>
-        <div><dt>Market status</dt><dd>Closed &mdash; opens 9:30 ET</dd></div>
-      </dl>
-      <p class="small muted" style="margin-top:0.8rem">
-        Data freshness by source:
-        <span class="dd dd-ok">Index futures &mdash; Delayed +10m</span> &middot;
-        <span class="dd dd-ok">Treasury yields &mdash; Live</span> &middot;
-        <span class="dd">Equities &mdash; Previous close</span> &middot;
-        <span class="dd dd-ok">Crypto &mdash; Live</span> &middot;
-        <span class="dd">FRED series &mdash; EOD official</span> &middot;
-        <span class="dd dd-warn">Short interest &mdash; settlement 2026-07-15 (stale)</span>
+      <p class="paper-dateline">
+        Friday, July 24, 2026 <span class="sep">&middot;</span> 14 min read
+      </p>
+      <p class="paper-standfirst">
+        A one-sentence standfirst: the whole report in a breath, written last,
+        read first. (Sample text.)
       </p>
     </header>
 
-    <!-- ================= 2. TOP STORIES =================
-         8-12 story cards in a real report; two are shown here to
-         demonstrate the card structure. Every card: headline, status +
-         verification chips, three timestamps, fact ladder (what happened /
-         why it matters / confirmed / uncertain / context / impact / next /
-         related assets), sources line, and a collapsed expanded analysis. -->
-    <section class="report-section" aria-labelledby="s-top">
-      <h2 id="s-top"><span class="kicker">Section 2</span>Top Stories</h2>
-
-      <article class="story-card">
-        <div class="story-status">
-          <span class="chip chip-developing">Developing</span>
-          <span class="chip chip-confirmed">Confirmed &mdash; multiple sources</span>
-        </div>
-        <h3>Sample story: Central bank signals slower balance-sheet runoff</h3>
-        <p class="story-times">Event 02:15 ET &middot; Published 03:40 ET &middot; Last checked 07:05 ET</p>
-        <dl class="story-facts">
-          <dt>What happened</dt>
-          <dd>In prepared remarks, a policymaker said the committee is &ldquo;close to the point&rdquo; where runoff should slow. (Sample text.)</dd>
-          <dt>Why it matters</dt>
-          <dd>The pace of runoff affects bank reserves and, indirectly, money-market conditions and Treasury supply absorption.</dd>
-          <dt>What is confirmed</dt>
-          <dd>The quote itself, from the published speech text on the central bank&rsquo;s site (primary source).</dd>
-          <dt>What remains uncertain</dt>
-          <dd>Whether the remark reflects committee consensus; no vote has occurred.</dd>
-          <dt>Context</dt>
-          <dd>Runoff has proceeded at the current cap for 14 months; reserves have declined toward the range staff called &ldquo;ample.&rdquo;</dd>
-          <dt>Impact</dt>
-          <dd>Rates: front-end most sensitive. Banks: reserve trajectory. Equities: second-order, via liquidity narrative.</dd>
-          <dt>What happens next</dt>
-          <dd>Minutes in two weeks; next scheduled decision on the calendar below.</dd>
-          <dt>Related assets (exposure &ne; direction)</dt>
-          <dd class="mono">SHY, IEF, TLT, SGOV, KRE, BIL</dd>
-        </dl>
-        <p class="story-sources">Sources: central bank speech text (primary) &middot; two wire reports (secondary confirmation) &middot; desk commentary (analysis, labeled).</p>
-        <details>
-          <summary>Expanded analysis (collapsed by default)</summary>
-          <p>Sample expanded analysis: two to five paragraphs weighing the evidence, prior communications, market pricing before and after, and what would confirm or invalidate the read. Kept out of the main flow so the top of the report stays scannable.</p>
-          <p>Analysis is always labeled as analysis; unsupported market causality is never asserted &mdash; &ldquo;yields fell after the remarks&rdquo; not &ldquo;yields fell because of the remarks,&rdquo; unless causality is actually established.</p>
-        </details>
-      </article>
-
-      <article class="story-card">
-        <div class="story-status">
-          <span class="chip chip-new">New</span>
-          <span class="chip chip-single-source">Single reliable source</span>
-        </div>
-        <h3>Sample story: Launch provider slips crewed mission to September</h3>
-        <p class="story-times">Event 05:50 ET &middot; Published 06:10 ET &middot; Last checked 07:05 ET</p>
-        <dl class="story-facts">
-          <dt>What happened</dt>
-          <dd>A single trade outlet reports the mission slipped six weeks for valve requalification. (Sample text.)</dd>
-          <dt>What is confirmed</dt>
-          <dd>Nothing from the operator yet; the report is single-sourced and labeled accordingly.</dd>
-          <dt>What happens next</dt>
-          <dd>Operator&rsquo;s weekly update expected today; status will be re-checked in the closing brief.</dd>
-        </dl>
-        <p class="story-sources">Sources: one trade outlet (reliable, single) &middot; operator statement pending.</p>
-        <details>
-          <summary>Expanded analysis (collapsed by default)</summary>
-          <p>Sample: schedule history for this mission, what valve requalification typically involves, and which downstream missions inherit the slip if it holds.</p>
-        </details>
-      </article>
-    </section>
-
-    <!-- ================= 3. TWO-MINUTE EXECUTIVE BRIEF ================= -->
-    <section class="report-section" aria-labelledby="s-exec">
-      <h2 id="s-exec"><span class="kicker">Section 3 &middot; This IS the two-minute version</span>Two-Minute Executive Brief</h2>
-      <div class="exec-summary">
-        <p><strong>The world</strong> One paragraph: the day&rsquo;s global picture in plain sentences &mdash; what is genuinely new, what is continuing, what cooled off. (Sample text.)</p>
-        <p><strong>Markets</strong> One paragraph covering US and global equities, rates, credit, the dollar, commodities, crypto, and volatility &mdash; no tables here, tables live in the appendix.</p>
-        <p><strong>Central theme</strong> The single thread connecting today&rsquo;s stories.</p>
-        <p><strong>Most important new development</strong> One item, one sentence of why.</p>
-        <p><strong>Most important risk</strong> Stated with its trigger and horizon.</p>
-        <p><strong>Most important positive development</strong> Stated plainly.</p>
-        <p><strong>Key unknown</strong> The question today&rsquo;s information cannot yet answer.</p>
-        <p><strong>Deserves attention today</strong></p>
+    <!-- ================= THE BRIEF =================
+         The short read. Five to seven bullets, each a complete thought.
+         This replaces the old "Two-Minute Executive Brief" section block. -->
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
         <ul>
-          <li>Sample item one (time ET, why it matters).</li>
-          <li>Sample item two.</li>
-          <li>Sample item three &mdash; never more than five.</li>
+          <li><b>The world.</b> One sentence on the day&rsquo;s global picture &mdash; what is genuinely new, what is merely continuing. (Sample.)</li>
+          <li><b>Markets.</b> One sentence across equities, rates, the dollar and volatility. Tables live further down.</li>
+          <li><b>The thread.</b> The single theme connecting today&rsquo;s stories.</li>
+          <li><b>Biggest risk.</b> Stated with its trigger and its horizon.</li>
+          <li><b>Watch today.</b> The one scheduled event most likely to move things, with its time.</li>
         </ul>
       </div>
     </section>
 
-    <!-- ================= 4. SINCE YESTERDAY'S CLOSE (change log) ================= -->
-    <section class="report-section" aria-labelledby="s-since">
-      <h2 id="s-since"><span class="kicker">Section 4</span>Since Yesterday&rsquo;s Close</h2>
-      <ul class="change-log">
-        <li>
-          <div class="change-head"><span class="chip chip-updated">Material update</span><strong>Sample story A</strong></div>
-          <p>Previous understanding <span class="change-arrow">&rarr;</span> new information overnight <span class="change-arrow">&rarr;</span> why the change matters. Current confidence: high.</p>
-        </li>
-        <li>
-          <div class="change-head"><span class="chip chip-new">New since close</span><strong>Sample story B</strong></div>
-          <p>First appearance in this cycle; not previously tracked. Re-reported items are never labeled new.</p>
-        </li>
-        <li>
-          <div class="change-head"><span class="chip chip-faded">Faded</span><strong>Sample story C</strong></div>
-          <p>No development in 48h; dropped from Top Stories, still on the watchlist. Forecasts made on it remain in the ledger for Saturday grading.</p>
-        </li>
-      </ul>
+    <!-- ================= WATCHLIST BOARD =================
+         CLOSING BRIEF ONLY (slot pm). Fixed 25-row board from
+         config/watchlists.yml -> `board` list, in that file's order, grouped.
+         Omitted entirely from am / sat / sun / learn editions.
+         --pos on .range-bar is the 52-week position, 0 = low, 100 = high:
+             pos = round(100 * (price - low52) / (high52 - low52))
+         Clamp to 0-100; if either 52-week bound is missing, render the cell
+         as an em dash and omit the bar rather than guessing. -->
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Jul 24, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume. Sample data.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>776.34</td><td class="down">&minus;1.54</td><td class="down">&minus;0.20%</td>
+                <td class="range-cell">
+                  <span class="range-nums">629.28 &ndash; 779.37</span>
+                  <span class="range-bar" style="--pos:98"><i></i></span>
+                </td>
+                <td>31M</td><td>52M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>305.09</td><td class="up">+1.59</td><td class="up">+0.52%</td>
+                <td class="range-cell">
+                  <span class="range-nums">223.69 &ndash; 305.05</span>
+                  <span class="range-bar" style="--pos:100"><i></i></span>
+                </td>
+                <td>13M</td><td>25M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US 10Y<small>10-year Treasury note</small></td>
+                <td>4.697%</td><td class="flat">&mdash;</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">Official closes. Yields from the Treasury par-yield curve; index levels are not tradeable instruments.</p>
     </section>
 
-    <!-- ================= 5-12. MAJOR NEWS SECTIONS =================
-         The full morning order is: 5 Overnight World Developments,
-         6 US Politics & Government, 7 Geopolitics, 8 Economics & Central
-         Banks, 9 Business & Corporate, 10 Tech/AI/Cyber, 11 Science &
-         Engineering, 12 Space & Spaceflight. Each repeats this same
-         section-block pattern; two are shown as the reference. -->
-    <section class="report-section" aria-labelledby="s-world">
-      <h2 id="s-world"><span class="kicker">Sections 5&ndash;12 &middot; one block per domain</span>Overnight World Developments</h2>
-      <p>Sample body copy: two to five short paragraphs per domain section, each claim carrying its verification level inline where it is not obvious. Confirmed fact reads as fact; analysis is labeled as analysis; uncertainty is stated, not hidden.</p>
-      <h3>Sub-heading inside a section</h3>
-      <p>Sub-topics use an <code>h3</code>; nothing deeper than <code>h4</code> ever appears in a report.</p>
-    </section>
+    <!-- ================= TOP STORIES =================
+         8-12 stories. The first carries .story--lead (bigger headline,
+         drop cap). Each story: headline, deck, body prose, and at most two
+         .story-note blocks (Why it matters / What's next). The old seven
+         labelled subheads are gone - write it as prose.
+         .flag appears ONLY on a genuinely shaky claim.
+         Expanded analysis stays in a collapsed <details>. -->
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
 
-    <section class="report-section" aria-labelledby="s-econ">
-      <h2 id="s-econ"><span class="kicker">Section 8 pattern &middot; release card</span>Economics &amp; Central Banks</h2>
-      <p>Data releases use the compact fact-card. Revisions are always shown, and level vs rate-of-change is kept explicit.</p>
-      <div class="fact-card">
-        <h4>Initial jobless claims <span class="dd">EOD official &middot; released 08:30 ET Jul 23</span></h4>
-        <dl>
-          <dt>Period</dt><dd>Week ending Jul 18 (sample)</dd>
-          <dt>Previous</dt><dd>221k (revised from 218k)</dd>
-          <dt>Consensus</dt><dd>225k</dd>
-          <dt>Actual</dt><dd>219k</dd>
-          <dt>Surprise</dt><dd class="up">&minus;6k vs consensus</dd>
-          <dt>Trend</dt><dd>4-wk avg 222k, drifting sideways</dd>
-          <dt>Read</dt><dd class="txt">Labor market cooling but not cracking; does not move the policy needle by itself. (Sample analysis.)</dd>
-        </dl>
+        <article class="story story--lead">
+          <h3>Central bank signals slower balance-sheet runoff</h3>
+          <p class="story-deck">A policymaker said the committee is &ldquo;close to the point&rdquo; where runoff should slow &mdash; the clearest signal yet, and the first to name a condition.</p>
+          <div class="story-body">
+            <p>In prepared remarks published on the central bank&rsquo;s site at 2:15 AM ET, the policymaker said the committee is &ldquo;close to the point&rdquo; at which the pace of balance-sheet runoff should slow. Runoff has proceeded at the current cap for fourteen months, and reserves have declined toward the range staff have described as ample. (Sample text.)</p>
+            <p>The remark is the individual&rsquo;s, not the committee&rsquo;s: no vote has occurred, and the next scheduled decision is on the calendar below. Two wire services carried the speech within the hour; the text itself is the primary source.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The pace of runoff drives bank reserves and, through them, money-market conditions and how easily the market absorbs Treasury supply. The front end is the most sensitive part of the curve to it.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Minutes in two weeks, which will show whether the view is shared. Watch SHY, IEF, TLT, SGOV and the regional banks for the transmission &mdash; exposure, not direction.
+            </div>
+          </div>
+          <p class="story-sourceline">Central bank speech text (primary) &middot; two wire reports &middot; desk commentary, labelled as analysis.</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>Two to five paragraphs weighing prior communications, market pricing before and after, and what would confirm or invalidate the read. Analysis is always labelled as analysis; causality is never asserted without evidence &mdash; &ldquo;yields fell after the remarks,&rdquo; not &ldquo;because of&rdquo; them.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Launch provider slips crewed mission to September</h3>
+          <p class="story-deck">A six-week slip for valve requalification, reported by one trade outlet and not yet confirmed by the operator.</p>
+          <div class="story-body">
+            <p><span class="flag">Single source</span> A single trade outlet reports the mission has slipped six weeks for valve requalification. The operator has not commented, and nothing has appeared on its mission page. (Sample text.)</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The operator&rsquo;s weekly update is expected today; this will be re-checked in the closing brief.
+            </div>
+          </div>
+          <p class="story-sourceline">One trade outlet &middot; operator statement pending.</p>
+        </article>
+
       </div>
     </section>
 
-    <!-- ================= 13. TODAY'S CALENDAR ================= -->
-    <section class="report-section" aria-labelledby="s-cal">
-      <h2 id="s-cal"><span class="kicker">Section 13</span>Today&rsquo;s Calendar</h2>
+    <!-- ================= DOMAIN SECTIONS =================
+         Politics · Geopolitics · Economy · Business · Technology ·
+         Science & Space (Science and Space are ONE section now).
+         Write each as prose under the .story-body class. A section with
+         nothing material to say is OMITTED - never padded to fill the slot. -->
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Two to five short paragraphs. Releases are described in prose with the number, the expectation, the surprise and the revision, rather than in a fact-card grid. Level versus rate-of-change stays explicit; nominal versus real stays explicit.</p>
+        <p>Initial jobless claims came in at 219,000 for the week ending July 18, against a 225,000 consensus, with the prior week revised up to 221,000 from 218,000. The four-week average sits at 222,000 and has drifted sideways since spring &mdash; a labour market cooling without cracking, and not on its own enough to move the policy path. (Sample.)</p>
+      </div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
       <div class="table-wrap">
         <table class="data-table">
-          <caption>All times ET. Importance per SPEC &sect;17, with reason in the row. Sample data.</caption>
+          <caption>All times ET. Sample data.</caption>
           <thead>
-            <tr><th>Time ET</th><th>Event</th><th>Importance</th><th>Consensus</th><th>Previous</th></tr>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
           </thead>
           <tbody>
-            <tr><td>08:30</td><td class="txt">Durable goods orders (Jun)</td><td><span class="chip chip--warn">High</span></td><td>+0.5%</td><td>&minus;0.8%</td></tr>
-            <tr><td>10:00</td><td class="txt">New home sales (Jun)</td><td><span class="chip chip--info">Medium</span></td><td>640k</td><td>619k</td></tr>
-            <tr><td>11:30</td><td class="txt">Fed speaker Q&amp;A (rate path in focus)</td><td><span class="chip chip--bad">Critical</span></td><td>&mdash;</td><td>&mdash;</td></tr>
-            <tr><td>13:00</td><td class="txt">7-year Treasury auction, $44B</td><td><span class="chip chip--warn">High</span></td><td>&mdash;</td><td>tail 0.6bp</td></tr>
-            <tr><td>16:05</td><td class="txt">Sample Corp (SMPL) earnings</td><td><span class="chip chip--info">Medium</span></td><td>EPS 1.42</td><td>EPS 1.31</td></tr>
+            <tr><td>08:30</td><td class="txt">Durable goods orders (Jun)</td><td>+0.5%</td><td>&minus;0.8%</td></tr>
+            <tr><td>11:30</td><td class="txt"><strong>Fed speaker Q&amp;A</strong> &mdash; rate path in focus</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt">7-year Treasury auction, $44B</td><td>&mdash;</td><td>tail 0.6bp</td></tr>
           </tbody>
         </table>
       </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event.</p>
     </section>
 
-    <!-- ================= 14. PREMARKET SETUP ================= -->
-    <section class="report-section" aria-labelledby="s-pre">
-      <h2 id="s-pre"><span class="kicker">Section 14 &middot; futures &ne; guaranteed open</span>Premarket Setup</h2>
-      <div class="table-wrap">
-        <table class="data-table">
-          <caption>As of 07:05 ET &middot; futures Delayed +10m &middot; yields Live &middot; crypto Live &middot; sample data.</caption>
-          <thead>
-            <tr><th>Instrument</th><th>Level</th><th>Change</th><th>Label</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>ES (S&amp;P futures)</td><td>6,412.25</td><td class="up">+0.3%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
-            <tr><td>NQ (Nasdaq futures)</td><td>23,891.00</td><td class="up">+0.5%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
-            <tr><td>RTY (Russell futures)</td><td>2,301.40</td><td class="down">&minus;0.2%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
-            <tr><td>US 10Y yield</td><td>4.18%</td><td class="down">&minus;3bp</td><td class="txt"><span class="dd dd-ok">Live</span></td></tr>
-            <tr><td>DXY</td><td>103.62</td><td class="down">&minus;0.1%</td><td class="txt"><span class="dd dd-ok">Live</span></td></tr>
-            <tr><td>VIX (prior close)</td><td>13.9</td><td>&mdash;</td><td class="txt"><span class="dd">Previous close</span></td></tr>
-            <tr><td>WTI crude</td><td>$78.40</td><td class="up">+0.6%</td><td class="txt"><span class="dd dd-ok">Delayed +10m</span></td></tr>
-            <tr><td>Bitcoin</td><td>$118,240</td><td class="up">+1.1%</td><td class="txt"><span class="dd dd-ok">Live</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p>Sample narrative: what the overnight tape appears to price, which assumption is most fragile, and what would invalidate it before the open. Notable premarket movers listed best-effort with the venue caveat from the methodology note.</p>
-    </section>
-
-    <!-- ================= 15. RISKS & SCENARIOS ================= -->
-    <section class="report-section" aria-labelledby="s-risk">
-      <h2 id="s-risk"><span class="kicker">Section 15 &middot; probability ranges, never fake precision</span>Risks &amp; Scenarios</h2>
-      <h3>Sample scenario: auction tails badly</h3>
-      <p><strong>Preconditions:</strong> soft indirect demand at 13:00 auction. <strong>Probability:</strong> 15&ndash;25% (basis: last three auction tails). <strong>Indicators:</strong> bid-to-cover, dealer take-down. <strong>Consequences if realized:</strong> long-end yields up, rate-sensitive equities lag. <strong>Invalidators:</strong> stop-through or strong indirects. (Sample.)</p>
-    </section>
-
-    <!-- ================= 16-18. LEARNING TRACKS =================
-         Every lesson opens with its position line. Morning introduces the
-         concept; the closing report deepens the SAME concept. -->
-    <section class="report-section" aria-labelledby="s-phys">
-      <h2 id="s-phys"><span class="kicker">Section 16 &middot; learning</span>Physics Lesson</h2>
-      <div class="lesson">
-        <p class="lesson-position">Physics 14/71 &middot; Friction</p>
-        <p>Sample paragraph one: what friction is, in plain English &mdash; the resistive force between surfaces, static vs kinetic, and why static friction is the stronger of the two.</p>
-        <p>Sample paragraph two: how it builds on yesterday&rsquo;s topic (Newton&rsquo;s third law) &mdash; friction is the reaction pair that lets you walk at all.</p>
+    <!-- ================= MARKET SETUP =================
+         am: "Before the Open"   pm: "What Moved Markets" + "Winners & Losers"
+         sat/sun: replaced by the weekly/forward sections. -->
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Prose, not a table: where futures sit, where yields and the dollar sit, what the overnight tape appears to price, which assumption in that pricing is most fragile, and what would invalidate it before the open. Futures are not a guaranteed open and the report says so once, here, rather than in a label on every row.</p>
       </div>
     </section>
 
-    <section class="report-section" aria-labelledby="s-space-lesson">
-      <h2 id="s-space-lesson"><span class="kicker">Section 17 &middot; learning</span>Spaceflight Lesson</h2>
-      <div class="lesson">
-        <p class="lesson-position">Spaceflight 21/75 &middot; Specific Impulse</p>
-        <p>Sample paragraph one: specific impulse as &ldquo;fuel mileage for rockets&rdquo; &mdash; thrust produced per unit of propellant consumed per second, measured in seconds.</p>
-        <p>Sample paragraph two: how it builds on the previous topic (the rocket equation) &mdash; Isp is the engine-quality term inside it.</p>
+    <!-- ================= RISKS ================= -->
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Auction tails badly.</strong> Preconditions: soft indirect demand at the 1:00 PM auction. Probability 15&ndash;25%, on the basis of the last three auction tails. Indicators: bid-to-cover, dealer take-down. If it happens: long-end yields up, rate-sensitive equities lag. Invalidated by a stop-through or strong indirects. (Sample.)</p>
       </div>
     </section>
 
-    <section class="report-section" aria-labelledby="s-quant">
-      <h2 id="s-quant"><span class="kicker">Section 18 &middot; learning</span>Quant/ML Lesson</h2>
-      <div class="lesson">
-        <p class="lesson-position">Quant/ML 11/118 &middot; Sample topic</p>
-        <p>Sample paragraph one: plain-English intuition for today&rsquo;s equation, and how it connects to yesterday&rsquo;s. The quant track uses the day&rsquo;s actual market data in the closing deep-dive when it fits naturally.</p>
-        <figure class="equation">
-          <img src="../../../equations/eq_011.png" alt="Rendered equation image eq_011 from the quant/ML equation registry (sample embed)." loading="lazy" width="480">
-          <figcaption>Equation 11 of 118 &mdash; embedded from site/equations/ (registry order).</figcaption>
-        </figure>
-        <p>Sample paragraph two: one real-world tie-in and one common misconception, stated and corrected.</p>
+    <!-- ================= LOCAL NEWS =================
+         THREE beats, each covered in its own right, in this order:
+           1. Bridgeville / South Fayette / South Hills
+           2. Pittsburgh & Allegheny County
+           3. Pennsylvania
+         Up to two items per beat, each with a .local-place label naming which
+         beat it belongs to. Quality-gated, never padded: a beat with nothing
+         worth reporting is simply absent that day, and some days only one of
+         the three appears. Crime blotter, event listings and weather chatter
+         are not news.
+
+         The weather strip is MORNING EDITION ONLY, from the National Weather
+         Service gridpoint for Bridgeville, PA. It leads this section. -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">64&deg;<small>now</small></p>
+          <p class="weather-desc">Partly cloudy, wind SW 8 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">81&deg;</span> <span class="lo">63&deg;</span>
+            <span class="sky">PM storms</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">61&deg;</span>
+            <span class="sky">Showers</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">77&deg;</span> <span class="lo">58&deg;</span>
+            <span class="sky">Sunny</span>
+          </div>
+        </div>
+        <!-- Rendered only when the NWS has an active alert for the zone. -->
+        <p class="weather-alert">Flood Watch until 8:00 PM ET &mdash; Allegheny County</p>
       </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>Sample: borough council approves Washington Pike traffic study</h3>
+        <div class="story-body">
+          <p>One or two short paragraphs. What was decided, by whom, what changes, and when. The same standards apply as anywhere else in the paper: primary source where one exists (meeting minutes, the borough or township site), and a plain statement of what remains undecided. (Sample text.)</p>
+        </div>
+        <p class="story-sourceline">Borough council minutes (primary) &middot; one local outlet.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh</p>
+        <h3>Sample: county authority votes on a transit service change</h3>
+        <div class="story-body">
+          <p>City and Allegheny County government, the major employers and universities, the airport, the sports franchises when something real happens, infrastructure and transit. (Sample text.)</p>
+        </div>
+        <p class="story-sourceline">Authority board documents (primary) &middot; two Pittsburgh outlets.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Sample: Harrisburg advances a bill with statewide effect</h3>
+        <div class="story-body">
+          <p>The legislature, the governor, statewide courts and agencies, the PUC, and the state economy. Bill number, sponsor, stage and what changes if it passes &mdash; the same discipline as the national politics section. (Sample text.)</p>
+        </div>
+        <p class="story-sourceline">Legislative record (primary) &middot; statewide outlet.</p>
+      </article>
     </section>
 
-    <!-- ================= 19. FULL MARKET INTELLIGENCE APPENDIX =================
-         Collapsed by default; nested collapsed subsections; every table
-         carries a timestamp and delay label in its caption. -->
-    <section class="report-section appendix" aria-labelledby="s-appendix">
-      <h2 id="s-appendix"><span class="kicker">Section 19 &middot; collapsed by default</span>Full Market Intelligence Appendix</h2>
+    <!-- ================= MARKET APPENDIX =================
+         Unchanged and still collapsed: the full SPEC section-22 walkthrough.
+         It costs the reader nothing while closed, and it is where every
+         number with a delay label now lives. -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
       <details class="appendix-shell">
         <summary>Open the full market &amp; economic analysis</summary>
 
         <details class="appendix-block">
           <summary>Market regime</summary>
-          <p><span class="chip chip--ok">Risk-on, moderate</span> Sample assessment: supporting evidence (trend, breadth, credit) and contradicting evidence (narrow leadership) both listed; confidence stated; change vs prior report noted.</p>
-        </details>
-
-        <details class="appendix-block">
-          <summary>Broad equities</summary>
-          <div class="table-wrap">
-            <table class="data-table">
-              <caption>Previous close, 2026-07-23 &middot; EOD official &middot; sample data.</caption>
-              <thead>
-                <tr><th>Fund</th><th>Close</th><th>Day</th><th>YTD</th><th>vs SPY (1M)</th><th>Trend</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>SPY</td><td>641.20</td><td class="up">+0.4%</td><td class="up">+11.2%</td><td>&mdash;</td><td class="txt">Above 50-DMA</td></tr>
-                <tr><td>QQQ</td><td>582.31</td><td class="up">+0.7%</td><td class="up">+14.8%</td><td class="up">+1.9pp</td><td class="txt">Above 50-DMA</td></tr>
-                <tr><td>IWM</td><td>228.77</td><td class="down">&minus;0.3%</td><td class="up">+4.1%</td><td class="down">&minus;3.2pp</td><td class="txt">Below 50-DMA</td></tr>
-                <tr><td>VXUS</td><td>71.05</td><td class="up">+0.2%</td><td class="up">+9.6%</td><td class="down">&minus;0.8pp</td><td class="txt">Above 50-DMA</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="small muted">Narrative covers anomalies and leadership changes only &mdash; never a row-by-row readout.</p>
+          <p><span class="chip chip--ok">Risk-on, moderate</span> Supporting evidence (trend, breadth, credit) and contradicting evidence (narrow leadership) both listed; confidence stated; change from the prior report noted.</p>
         </details>
 
         <details class="appendix-block">
           <summary>Rates &amp; curve</summary>
           <div class="table-wrap">
             <table class="data-table">
-              <caption>As of 07:05 ET &middot; Live &middot; changes in basis points &middot; sample data.</caption>
-              <thead>
-                <tr><th>Tenor</th><th>Yield</th><th>1D</th><th>1W</th><th>1M</th></tr>
-              </thead>
+              <caption>As of 07:05 ET &middot; changes in basis points &middot; sample data.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D</th><th>1W</th><th>1M</th></tr></thead>
               <tbody>
-                <tr><td>3M</td><td>4.31%</td><td>0</td><td class="down">&minus;2</td><td class="down">&minus;5</td></tr>
                 <tr><td>2Y</td><td>3.92%</td><td class="down">&minus;2</td><td class="down">&minus;6</td><td class="down">&minus;11</td></tr>
                 <tr><td>10Y</td><td>4.18%</td><td class="down">&minus;3</td><td class="down">&minus;4</td><td class="up">+2</td></tr>
-                <tr><td>30Y</td><td>4.46%</td><td class="down">&minus;2</td><td class="down">&minus;1</td><td class="up">+6</td></tr>
               </tbody>
             </table>
           </div>
-          <p class="small muted">2s10s +26bp &middot; 10Y real 1.92% &middot; 10Y breakeven 2.26% (sample). Yields quoted in bp changes; price/yield inversion explained on first use each week.</p>
         </details>
 
-        <details class="appendix-block">
-          <summary>Crypto</summary>
-          <div class="table-wrap">
-            <table class="data-table">
-              <caption>As of 07:05 ET &middot; Live (CoinGecko) &middot; sample data.</caption>
-              <thead>
-                <tr><th>Asset</th><th>Price</th><th>24h</th><th>7d</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>BTC</td><td>$118,240</td><td class="up">+1.1%</td><td class="up">+3.4%</td></tr>
-                <tr><td>ETH</td><td>$4,382</td><td class="up">+0.8%</td><td class="down">&minus;1.2%</td></tr>
-                <tr><td>SOL</td><td>$212.40</td><td class="down">&minus;0.4%</td><td class="up">+5.1%</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="small muted">Price action, fundamentals, and leverage discussed separately; no anonymous social posts as sources.</p>
-        </details>
-
-        <!-- Real reports include the remaining SPEC section-22 blocks in this
-             same appendix-block pattern: breadth, sectors, industries,
+        <!-- Real reports carry the remaining SPEC section-22 blocks in this
+             same pattern: broad equities, breadth, sectors, industries,
              watchlists, credit, volatility, FX, commodities, factors,
              cross-asset, earnings, auctions & liquidity. -->
       </details>
     </section>
 
-    <!-- ================= 20. SOURCES & CORRECTIONS ================= -->
-    <section class="report-section sources-list" aria-labelledby="s-sources">
-      <h2 id="s-sources"><span class="kicker">Section 20</span>Sources, Methodology &amp; Corrections</h2>
-      <p><strong>Primary sources this run (sample):</strong></p>
-      <ul>
-        <li>Central bank speech text (official site, fetched 03:55 ET)</li>
-        <li>SEC EDGAR filings feed (fetched 06:40 ET, UA-labeled, &le;10 req/s)</li>
-        <li>FRED series CPIAUCSL, DGS10 (EOD official)</li>
-      </ul>
-      <p><strong>Secondary confirmation (sample):</strong></p>
-      <ul>
-        <li>Two wire-service reports on the runoff remarks</li>
-        <li>One trade outlet on the launch slip (single source &mdash; labeled)</li>
-      </ul>
-      <p><strong>Methodology note:</strong> free-tier equity quotes are non-consolidated single-venue prices and can differ slightly from official closes; delayed data is labeled with its delay everywhere it appears; missing sources are declared unavailable, never estimated silently.</p>
-      <p><strong>Corrections:</strong> none this run. (When corrections exist they appear here and in <code>ledgers/corrections.json</code>, with the original preserved in git history.)</p>
-    </section>
-
-    <!-- ================= HEALTH FOOTER (every report) ================= -->
-    <footer class="health-footer">
-      <h2>System health &mdash; this run</h2>
-      <ul class="health-grid">
-        <li class="ok">FRED &mdash; ok &middot; data age 11h</li>
-        <li class="ok">Twelve Data &mdash; ok &middot; delayed +15m</li>
-        <li class="ok">Finnhub &mdash; ok &middot; live</li>
-        <li class="ok">CoinGecko &mdash; ok &middot; live</li>
-        <li class="down">Alpha Vantage &mdash; timeout &times;3 &middot; last-good cache 2026-07-23 used (labeled)</li>
-        <li class="ok">SEC EDGAR &mdash; ok &middot; UA-labeled</li>
-      </ul>
-      <p>Run duration 4m12s &middot; retries: 1 (Alpha Vantage) &middot; prior run: success &middot; no instruction-like content detected in fetched sources. (Sample.)</p>
+    <!-- ================= COLOPHON =================
+         Replaces both the old "Sources & Corrections" section and the
+         per-run system-health footer. Short, plain, at the very bottom. -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Central bank speech text; SEC EDGAR filings; FRED series CPIAUCSL and DGS10; two wire services. Primary sources are preferred and named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition. Corrections appear here and in the correction ledger, with the original preserved in version history &mdash; never silently edited.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
     </footer>
 
     <!-- ================= PREV / NEXT NAVIGATION =================
          The routine fills the previous-report link with the actual prior
          report's relative path (same month: ./2026-07-23-pm.html; across a
-         month/year boundary: ../06/2026-06-30-pm.html style). The next-report
-         link stays disabled at publish time - the next report does not exist
-         yet; it is not backfilled. -->
+         month boundary: ../06/2026-06-30-pm.html). The next link stays
+         disabled at publish time and is never backfilled. -->
     <nav class="report-nav" aria-label="Report navigation">
       <a class="is-disabled" aria-disabled="true">&larr; Previous report</a>
       <a href="../../../index.html">Archive &amp; search</a>
@@ -458,6 +415,7 @@
 <!--REPORT:END-->
   </main>
 
+  <script src="../../../assets/report.js" defer></script>
   <script>
     /* Print support: expand every collapsed <details> before printing
        (PDF export via Safari share sheet), restore afterwards. The page is

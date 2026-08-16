@@ -21,7 +21,10 @@
   var filterBookmarks = false;
   var entries = [];
 
-  var SLOT_NAMES = { am: "Morning Brief", pm: "Closing Brief", sat: "Weekly Review", sun: "Week-Ahead Outlook" };
+  var SLOT_NAMES = {
+    am: "Morning Brief", pm: "Closing Brief", sat: "Weekly Review",
+    sun: "Week-Ahead Outlook", learn: "Learning Brief"
+  };
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -75,15 +78,20 @@
     var mount = doc.getElementById("archive");
     if (!mount) return;
     mount.textContent = "";
+    /* The newest report is already the hero card above; repeating it as the
+       first archive row made every page look like it had published twice. */
+    var pool = filterBookmarks ? entries : entries.slice(1);
     var list = filterBookmarks
-      ? entries.filter(function (e) { return bookmarks.has(e.path); })
-      : entries;
+      ? pool.filter(function (e) { return bookmarks.has(e.path); })
+      : pool;
     if (!list.length) {
       mount.appendChild(el("p", {
         class: "muted",
         text: filterBookmarks
           ? "No bookmarked reports yet — tap the star next to any report to save it here."
-          : "No reports published yet. The first scheduled run will appear here."
+          : (entries.length
+              ? "Nothing earlier yet — the latest report is above."
+              : "No reports published yet. The first scheduled run will appear here.")
       }));
       return;
     }

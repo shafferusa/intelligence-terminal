@@ -38,6 +38,11 @@ jobs:
         with:
           node-version: 20
 
+      # state/ lives outside the served site root, so the status page cannot
+      # fetch the run log directly. Copy it in at build time.
+      - name: Publish run log for the status page
+        run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
+
       - name: Build Pagefind search index
         run: npx -y pagefind --site site
 
@@ -78,28 +83,4 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python3 - <<'EOF'
-          import json, html, os, urllib.request, sys
-          idx = json.load(open('site/reports/index.json', encoding='utf-8'))
-          if not idx:
-              print('index.json empty — nothing to announce'); sys.exit(0)
-          r = idx[0]
-          base = 'https://shafferusa.github.io/intelligence-terminal/'
-          url = base + r['path']
-          title = html.escape(r.get('title', 'New report'))
-          summary = html.escape(r.get('summary', ''))
-          mins = r.get('reading_minutes')
-          tail = f'\n\n<a href="{url}">Open the full report</a>'
-          if mins: tail += f' · {mins} min read'
-          text = f'<b>{title}</b>\n\n{summary}{tail}'
-          body = json.dumps({'chat_id': os.environ['TG_CHAT'], 'text': text[:4096],
-                             'parse_mode': 'HTML',
-                             'link_preview_options': {'is_disabled': True}}).encode()
-          req = urllib.request.Request(
-              f"https://api.telegram.org/bot{os.environ['TG_TOKEN']}/sendMessage",
-              data=body, headers={'Content-Type': 'application/json'})
-          resp = json.load(urllib.request.urlopen(req))
-          print('telegram ok:', resp.get('ok'))
-          sys.exit(0 if resp.get('ok') else 1)
-          EOF
+        run: python3 .github/scripts/notify.py

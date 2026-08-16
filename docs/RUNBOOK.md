@@ -62,7 +62,16 @@ finnhub.io
 www.alphavantage.co
 api.nasdaq.com
 www.nyse.com
+api.weather.gov
 ```
+
+**`api.weather.gov` was added 2026-08-16** for the morning edition's Pittsburgh-area weather strip
+(gridpoint for Bridgeville, PA). It is free and needs no key, but like every `.gov` host it
+requires the `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)` header. **Add it to the
+environment allowlist before the first morning run**, or the strip will silently be omitted.
+
+`cdn.cboe.com` stays on the list for VIX quotes and history. Its options market-statistics path
+(put/call ratios) is retired — it returned 403 on every run for weeks.
 
 **Environment variables** (secrets live ONLY here — never in the repo):
 
@@ -77,14 +86,23 @@ www.nyse.com
 | `COINGECKO_KEY` | https://www.coingecko.com (free "demo" API key) |
 | `MASSIVE_KEY` | https://massive.com (free "Stocks Basic" key; ex-Polygon.io — enables EOD whole-market breadth; optional, reports degrade gracefully without it) |
 
-### A4. Create the two routines
+### A4. Create the three routines
 
-At **claude.ai/code/routines**, create both with: model **claude-sonnet-5**, environment **intelligence-terminal**, repository **shafferusa/intelligence-terminal** attached, and **"Allow unrestricted branch pushes" ENABLED** (the routine must push directly to `main`).
+At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**, environment **intelligence-terminal**, repository **shafferusa/intelligence-terminal** attached, and **"Allow unrestricted branch pushes" ENABLED** (the routine must push directly to `main`).
 
 | Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
 |---|---|---|---|
+| Learning Brief | `0 10 * * 1-5` | Mon–Fri 6:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
 | Weekday briefs | `30 11,20 * * 1-5` | Mon–Fri 7:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
+
+**Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
+outcome branch, which forced the §15.2b PR fallback on most runs. Leave it unset so runs push
+straight to `main`.
+
+**Cron drift check:** on 2026-08-16 the weekday cron was found to be `30 9,19 * * 1-5` — 5:30 AM
+and 3:30 PM ET, meaning the closing brief was being written *thirty minutes before the market
+closed*. If report content ever looks early, check the actual cron first (`RemoteTrigger list`).
 
 Crons are UTC; the values above are correct **during US daylight saving time**. See section B for the twice-yearly bump.
 
@@ -102,10 +120,10 @@ Run all three before trusting the schedule:
 
 Routine crons are UTC; ET shifts. Two edits per year:
 
-- **Nov 1, 2026** (fall back, EDT→EST): weekday cron `30 11,20 * * 1-5` → `30 12,21 * * 1-5`; weekend cron `0 13 * * 0,6` → `0 14 * * 0,6`.
-- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — weekday back to `30 11,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
+- **Nov 1, 2026** (fall back, EDT→EST): learning `0 10 * * 1-5` → `0 11 * * 1-5`; weekday `30 11,20 * * 1-5` → `30 12,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
+- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 10 * * 1-5`, weekday back to `30 11,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
 
-One-sentence instruction that works in any Claude session: *"Update my two intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
+One-sentence instruction that works in any Claude session: *"Update my three intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
 
 ---
 
@@ -131,7 +149,9 @@ If the token leaks or as periodic hygiene:
 | Symptom | Check |
 |---|---|
 | Report missing at expected time | claude.ai/code/routines → run list. Did the run start? Open the transcript for the failing step. If no run started, check routine is enabled and cron/DST is right (section B). |
-| Telegram silent but site updated | Run transcript: did the sendMessage call fail? Check `TELEGRAM_BOT_TOKEN` validity (A5-2 curl) and that `TELEGRAM_CHAT_ID` is `7805141860`. |
+| Telegram silent but site updated | **Actions sends it, not the run.** GitHub → Actions → "Notify Telegram on direct publish" (or the `notify` job of "Build & deploy site" on the PR path). Check the job log, then `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` **repository secrets** (not the environment variables). |
+| Telegram message arrived twice | Should be impossible since 2026-08-16. It means something is sending besides Actions — check the run transcript for a `sendMessage` curl, which `prompts/shared-rules.md` §14 forbids. Do not "fix" it by adding a guard to the workflow; that is exactly what failed before. |
+| Telegram push has no bullets | The report's `index.json` entry is missing `headlines` (shared-rules §13). Actions has no other source for them. |
 | Site stale but Telegram arrived | GitHub **Actions** tab: did "Build & deploy site" fire and pass? If it didn't fire, confirm the push touched `site/**` and hit `main`. Re-run via workflow_dispatch if needed. |
 | Blocked domain (HTTP 403 with `x-deny-reason: host_not_allowed`) | A fetch hit a host missing from the environment allowlist. Add the exact hostname to the allowlist in the environment settings (section A3) and re-run. |
 | Duplicate report risk | Runs are idempotent via `state/last-run.json` (date+slot). If a duplicate appears, inspect that file's last committed state in the run transcript. |
@@ -142,7 +162,7 @@ For any failed run: **claude.ai/code/routines → run list → transcript** is a
 
 ## F. Usage notes (Max plan)
 
-- Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 2/day weekdays and 1/day weekends — well under the cap.
+- Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 3/day weekdays (learning + morning + closing) and 1/day weekends — well under the cap.
 - Heavy interactive Claude usage on the same plan can starve scheduled runs near limits; if a run is skipped for usage, it will show in the routines run list — regenerate with "run now" once headroom returns.
 
 ---

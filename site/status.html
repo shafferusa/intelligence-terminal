@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<!--
+  System status. This is where the per-run operational detail went when it
+  was removed from the reports themselves on 2026-08-16: which sources were
+  up, what fell back to cache, whether the push and the Telegram send landed.
+  Nobody has to read it. It is linked once, from each report's colophon.
+
+  Data comes from ./status.jsonl, which the Build & deploy workflow copies
+  out of state/run-log.jsonl at build time (state/ is outside the served
+  site root, so it cannot be fetched directly).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>System status · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="wrap"><a href="./index.html">&larr; Logan&rsquo;s Daily Newspaper</a></div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+    <header class="paper-head">
+      <p class="paper-edition">Operations</p>
+      <h1>System status</h1>
+      <p class="paper-standfirst">
+        The last thirty runs: what worked, what fell back to cached data, and what failed.
+        Reports themselves no longer carry this &mdash; it lives here instead.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-runs">
+      <h2 id="s-runs">Recent runs</h2>
+      <div id="runs"><p class="muted">Loading&hellip;</p></div>
+    </section>
+
+    <footer class="colophon">
+      <p>Each run publishes a report, then appends one line here. A run that
+      records a failed source still produced a report &mdash; missing data is
+      labelled inside the report, never invented, and a partial edition is
+      always preferred to no edition.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Navigation">
+      <a href="./index.html">Archive &amp; search</a>
+    </nav>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+    var SLOT = { am: "Morning", pm: "Closing", sat: "Weekly Review",
+                 sun: "Week-Ahead", learn: "Learning", offschedule: "Off-schedule" };
+    var mount = document.getElementById("runs");
+
+    function el(tag, attrs, kids) {
+      var n = document.createElement(tag);
+      if (attrs) Object.keys(attrs).forEach(function (k) {
+        if (k === "text") n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);
+      });
+      (kids || []).forEach(function (c) { n.appendChild(c); });
+      return n;
+    }
+
+    fetch("./status.jsonl", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(function (txt) {
+        var rows = txt.trim().split("\n").map(function (l) {
+          try { return JSON.parse(l); } catch (e) { return null; }
+        }).filter(Boolean).slice(-30).reverse();
+
+        mount.textContent = "";
+        if (!rows.length) { mount.appendChild(el("p", { class: "muted", text: "No runs recorded yet." })); return; }
+
+        rows.forEach(function (r) {
+          var failed = Array.isArray(r.sources_failed) ? r.sources_failed : [];
+          var ok = r.ok !== false;
+          var card = el("article", { class: "story" });
+          card.appendChild(el("h3", {
+            text: (SLOT[r.slot] || r.slot || "run") + " — " + String(r.ts || "").slice(0, 16).replace("T", " ") + " UTC"
+          }));
+          var bits = [];
+          bits.push(ok ? "published" : "FAILED");
+          if (r.pages_ok === false) bits.push("site build not confirmed");
+          if (r.telegram_ok === false) bits.push("no Telegram push");
+          bits.push(failed.length ? failed.length + " source(s) degraded" : "all sources ok");
+          card.appendChild(el("p", { class: "story-deck", text: bits.join(" · ") }));
+
+          if (failed.length) {
+            var d = el("details");
+            d.appendChild(el("summary", { text: "Degraded sources" }));
+            var ul = el("ul");
+            failed.forEach(function (f) { ul.appendChild(el("li", { text: String(f) })); });
+            d.appendChild(ul);
+            card.appendChild(d);
+          }
+          mount.appendChild(card);
+        });
+      })
+      .catch(function () {
+        mount.textContent = "";
+        mount.appendChild(el("p", { class: "muted",
+          text: "Status data unavailable (status.jsonl is written by the site build)." }));
+      });
+  })();
+  </script>
+</body>
+</html>

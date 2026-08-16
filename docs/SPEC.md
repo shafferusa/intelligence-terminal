@@ -4,13 +4,60 @@ Authoritative requirements for the automated intelligence-report system. Distill
 
 ## 0. In-session decisions & amendments (supersede anything below)
 
+### 0a. Amendment of 2026-08-16 — the declutter, the split, and Local (SUPERSEDES §2, §3, §16, §18–§21)
+
+Logan reviewed three weeks of live editions and directed the following. Where this conflicts with
+anything later in this document, this wins.
+
+- **The newspaper is strictly news.** All three learning tracks are REMOVED from the morning,
+  closing, Saturday and Sunday editions. `state/curriculum.json` is retired.
+- **A new fifth edition, the Learning Brief**, runs **weekdays at 6:00 AM ET** and is strictly
+  learning: no news, no markets, no calendar. **One lesson per report** — one subject, one topic,
+  25–30 minutes, going deep. It reads like a newspaper feature, not a textbook.
+  Procedure: `prompts/learning.md`. Curriculum: `curriculum/academy-150.json` (150 weekday lessons
+  across Mathematics, Physics, Accounting, Economics, Finance, Artificial Intelligence and
+  Rocketry, built from Logan's 60-day academy plus the retired physics/spaceflight/quant-ml
+  sequences, with Accounting and Economics authored fresh). Position: `state/learning.json`.
+  No quizzes, no problem sets, no spaced repetition — that standing rule is unchanged.
+- **The reader is a reader, not the operator.** Removed from every report: the data-freshness
+  table, the metadata grid, news-cutoff and market-data-as-of stamps, report version, overall
+  confidence, market-status chips, `Section N` numbering, the per-run system-health footer, the
+  seven labelled story-card subheads, and verification chips on every claim. Run health moved to
+  `site/status.html`. Delay labels survive only in Market Appendix table captions. A caution flag
+  appears only on a genuinely shaky claim. **Rigour is unchanged — only presentation changed.**
+- **The Board:** the closing edition carries a fixed 25-row watchlist chart near the top, from
+  `config/watchlists.yml` → `board:`, in Logan's order and grouping (shared-rules §17).
+- **Local section**, low in every weekday edition, covering three beats in their own right:
+  Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County · Pennsylvania. Up to two
+  items per beat, quality-gated, never padded. The **morning** edition leads it with Pittsburgh-area
+  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18).
+- **Listen to text** on every report: an in-page Web Speech player injected by
+  `site/assets/report.js`. Chosen over generated audio files because it works on every report
+  including the existing archive, costs nothing, and adds nothing to the repository. Known limit,
+  accepted: iOS pauses speech when the screen locks. Pre-generated MP3s hosted on GitHub Releases
+  remain the documented upgrade path if that limit becomes annoying.
+- **Telegram is sent by GitHub Actions only.** The routine never sends. This fixes a duplicate
+  that hit every morning, Saturday and Sunday edition (shared-rules §14 explains the mechanism).
+- **Schedule corrected.** The weekday cron had drifted to 5:30 AM / 3:30 PM ET — the closing
+  edition was being written *before the market closed*. Restored to 7:30 AM / 4:30 PM ET, with the
+  Learning Brief at 6:00 AM ET.
+- **Data sources:** Yahoo v8 is the primary quote sweep and Twelve Data a spot-check (the free tier
+  is 8 credits/minute, not 300/run, and had been failing daily); DXY comes from `DX-Y.NYB` and IS
+  available; Cboe put/call is retired (403 for weeks); FINRA short volume uses the prior session.
+- Target weekday reading time after the declutter: **18–25 minutes**, down from 40+.
+
 - **Delivery (BUILT):** Telegram bot `@logannewspaperbot`, chat_id `7805141860`, `parse_mode=HTML` only (never MarkdownV2), ≤4,096 chars/message, split on paragraph boundary if longer. Token lives in the cloud environment variable `TELEGRAM_BOT_TOKEN` — never in this repo.
 - **Full reports** are mobile web pages on GitHub Pages (this repo → `site/`); the Telegram push carries title, one-sentence summary, 2–3 top developments, critical-risk flag when warranted, and the report link.
-- **Learning tracks are LIGHT** — no quizzes, no spaced repetition, no problem sets, no mastery scores. Three sequential tracks (physics, spaceflight engineering, quant finance & ML), a few short paragraphs each per report, each building on the last. Track positions in `state/curriculum.json` advance one step per completed report day.
-- **Quant/ML track** is seeded from `curriculum/quant-ml/equation_registry.csv` (118 equations, 13 sections); rendered equation images in `site/equations/eq_NNN.png` are embedded in lessons.
+- ~~**Learning tracks are LIGHT** — three sequential tracks inside the news reports.~~
+  **SUPERSEDED 2026-08-16 by §0a:** the tracks were removed from the news editions entirely and
+  replaced by the standalone weekday Learning Brief, which teaches ONE subject properly for 25–30
+  minutes. The no-quizzes / no-spaced-repetition rule carries over unchanged.
+- **Quant/ML equation registry** (`curriculum/quant-ml/equation_registry.csv`, 118 equations, 13
+  sections) and the rendered images in `site/equations/eq_NNN.png` are retained as *source
+  material* for the Learning Brief's AI and Finance lessons.
 - **SpaceX is PUBLIC** — verified against SEC EDGAR 2026-07-26: IPO 2026-06-12, Nasdaq ticker SPCX, CIK 0001181412. CRITICAL: pre-2026-04-07 "SPCX" data = the unrelated Tuttle ETF (now SPCK). SpaceX price history begins 2026-06-12; never backfill earlier SPCX data.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
-- Schedule (America/New_York): Mon–Fri 7:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports.
+- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 7:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
 
 ## 1. Mission
 
@@ -82,33 +129,73 @@ SpaceX is public (see §0) — track under public equities/aerospace/space/comms
 
 Never hardcode public/private status. Per entity: official + common name, status (public/private/acquired/merged/delisted/renamed), parent/subsidiaries, ticker, exchange, share class, IPO/delisting dates, HQ, industry, last-verified date, verification source. Verify via SEC EDGAR (`data.sec.gov/submissions/CIK##########.json` — authoritative tickers/exchanges signal; UA header required). Detect IPOs, listings, SPACs, acquisitions, spin-offs, ticker/exchange changes, delistings, bankruptcies, going-private. Private module (verified 2026-07-26, all private): OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink — track last-verified valuation + date, rounds, investors, revenue estimates + source, secondaries, contracts, IPO preparations, public proxies. NEVER invent a price for a private company. OpenAI/Anthropic/Discord have reported confidential S-1s → weekly EDGAR re-check (Saturday run); flag flips in next report. Weekly registry sweep is part of the Saturday routine.
 
-## 16. Learning tracks (light — see §0)
+## 16. The Learning Brief (weekday 6:00 AM ET) — replaces the in-report learning tracks
 
-Weekday morning: introduce today's concept (~2 short paragraphs: what it is, plain-English intuition, how it builds on yesterday). Weekday closing: deepen the SAME concept (key equation/diagram, one real-world tie-in — quant track uses that day's actual market data when natural, one misconception). Saturday: one paragraph per track — the week's through-line. Sunday: one paragraph per track previewing next week. Every lesson opens with position line (e.g. "Physics 14/71 · Friction"). Sequences: `curriculum/physics.json` (71 topics), `curriculum/spaceflight.json` (75 topics), `curriculum/quant-ml/equation_registry.csv` (118 equations, in numeric order; embed `site/equations/eq_NNN.png`). After a sequence completes, continue at same cadence into deeper material (physics: modern topics; spaceflight: current-mission engineering; quant: backtesting pitfalls, transaction costs, factor models, risk management). Advance position only when the slot's report was actually generated.
+**Superseded §16 in full on 2026-08-16.** There are no lessons in the news editions.
+
+A separate fifth edition, strictly learning, weekdays only. **One lesson per report**: one subject,
+one topic, 25–30 minutes (5,500–6,600 words), taught properly. It reads like a newspaper feature —
+same masthead, typography and voice as the news editions — not a textbook chapter.
+
+Shape: hook → the idea in plain English → the formalism, with every symbol named → at least one
+worked example with real arithmetic → where it shows up in the world → the common misconception →
+a callback paragraph tying it to an earlier lesson in a different subject → what the reader can now
+do. No quizzes, no problem sets, no spaced repetition, no self-assessment.
+
+Curriculum: `curriculum/academy-150.json` — 150 weekday lessons, five phases, seven subjects
+(Mathematics 24, Physics 26, Finance 24, Artificial Intelligence 22, Economics 20, Accounting 18,
+Rocketry 16), sequenced so prerequisites always land first (accounting before finance, covariance
+before portfolio theory, calculus before backpropagation, mechanics before orbits). Position in
+`state/learning.json`. Procedure in `prompts/learning.md`. Source material: Logan's 60-day academy,
+the retired physics and spaceflight sequences, and the quant-ml equation registry; Accounting and
+Economics were authored fresh because the academy did not cover them.
+
+At day 150 the sequence continues into deeper material in the same subjects at the same cadence.
+It never restarts.
 
 ## 17. Calendars
 
 Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnings, votes, hearings, court decisions, summits, deadlines, launches, milestones — ET primary, importance-classified (Critical/High/Medium/Low, with reason). Closing: completed (with results), delayed, canceled, still upcoming, overnight, tomorrow's majors. Sunday: full day-by-day week plan with expected market sensitivity.
 
-## 18. Weekday MORNING report structure (7:30 AM ET)
+## 18. Weekday MORNING report structure (7:30 AM ET) — revised 2026-08-16
 
-1 Header & freshness · 2 Top Stories · 3 Two-Minute Executive Brief · 4 Since Yesterday's Close · 5 Overnight World Developments · 6 US Politics & Government · 7 Geopolitics · 8 Economics & Central Banks · 9 Business & Corporate · 10 Tech/AI/Cyber · 11 Science & Engineering · 12 Space & Spaceflight · 13 Today's Calendar · 14 Premarket Setup · 15 Risks & Scenarios · 16 Physics Lesson · 17 Spaceflight Lesson · 18 Quant/ML Lesson · 19 Full Market Intelligence Appendix (collapsed) · 20 Sources & Corrections.
+Masthead · The Brief · Top Stories · Overnight · Politics & Government · The World · The Economy ·
+Business · Technology & AI · Science & Space · Today's Calendar · Before the Open ·
+Risks & Scenarios · **Local** (weather strip, then the three beats) · Market Appendix (collapsed) ·
+Colophon.
 
-Premarket Setup: ES/NQ/YM/RTY futures (10-min delayed, labeled), yields, dollar, VIX, oil, gold, BTC, overnight index moves, notable premarket movers (best-effort), key earnings, releases, technical levels, breadth context from prior close. Explain what markets appear to price, fragile assumptions, invalidators. Futures ≠ guaranteed open.
+Domain sections with nothing material are omitted, not padded. Before the Open is prose, not a
+table: futures, yields, dollar, VIX, oil, gold, BTC, what the tape appears to price, the most
+fragile assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
 
-## 19. Weekday CLOSING report structure (4:30 PM ET)
+## 19. Weekday CLOSING report structure (4:30 PM ET) — revised 2026-08-16
 
-1 Header & final-data status · 2 Top Stories Since Morning · 3 Two-Minute Closing Summary · 4 What Changed Since 7:30 AM · 5–11 same sections as morning (politics → space) · 12 Completed Calendar · 13 What Moved Markets · 14 Winners & Losers · 15 Overnight & Tomorrow Watch · 16–18 Lesson continuations · 19 Full Closing Market Analysis (collapsed) · 20 Sources & Corrections.
+Masthead · The Brief · **The Board** (the 25-row watchlist chart, shared-rules §17) · Top Stories ·
+What Changed Today · Politics & Government · The World · The Economy · Business ·
+Technology & AI · Science & Space · What Moved Markets · Winners & Losers · Tomorrow ·
+**Local** (no weather strip) · Market Appendix (collapsed) · Colophon.
+
+What Moved Markets keeps its four attribution labels — `Confirmed catalyst` / `Likely contributor` /
+`Market narrative` / `Unexplained`. Those are honesty, not clutter, and they stay.
 
 What Moved Markets: open/morning/midday/close phases; rates, data, earnings, policy, geopolitics, commodities, positioning, technicals, rebalancing/flows. Label: Confirmed catalyst / Likely contributor / Market narrative / Unexplained. Never force a narrative.
 
 ## 20. SATURDAY Weekly Intelligence Review (9:00 AM ET default)
 
-Complete retrospective that SYNTHESIZES (not concatenates): 1 Cover & date range · 2 Ten Most Important Stories of the Week (initial event → development → final status → why it mattered → what was misunderstood → unresolved → keep on watchlist?) · 3 The Week in One Page · 4 Timeline · 5 What Changed in the World · 6–14 domain weekly reviews (US politics, geopolitics, economics, central banks, business/earnings, tech/AI, cyber, science, spaceflight) · 15 Full Weekly Market Review (weekly attribution: index returns, sector/stock contributions, rates, credit, FX, commodities, earnings, surprises, expectation shifts) · 16 Best/Worst Assets · 17 Sector Rotation · 18 Rates & Credit · 19 Commodities & FX · 20 Crypto · 21 Forecast & Scenario Scorecard (vs prior Sunday: expectation → outcome → verdict → why → lesson; never hide misses) · 22 Overhyped Stories · 23 Undercovered Stories · 24 Risks Entering the Weekend · 25–27 Learning weekly recaps · 28 Registry sweep results · 29 Sources, Corrections, Methodology, weekly system-health & usage note.
+Complete retrospective that SYNTHESIZES (not concatenates): 1 Cover & date range · 2 Ten Most Important Stories of the Week (initial event → development → final status → why it mattered → what was misunderstood → unresolved → keep on watchlist?) · 3 The Week in One Page · 4 Timeline · 5 What Changed in the World · 6–14 domain weekly reviews (US politics, geopolitics, economics, central banks, business/earnings, tech/AI, cyber, science, spaceflight) · 15 Full Weekly Market Review (weekly attribution: index returns, sector/stock contributions, rates, credit, FX, commodities, earnings, surprises, expectation shifts) · 16 Best/Worst Assets · 17 Sector Rotation · 18 Rates & Credit · 19 Commodities & FX · 20 Crypto · 21 Forecast & Scenario Scorecard (vs prior Sunday: expectation → outcome → verdict → why → lesson; never hide misses) · 22 Overhyped Stories · 23 Undercovered Stories · 24 Risks Entering the Weekend · 28 Registry sweep results · 29 Sources, Corrections, Methodology.
+
+**Revised 2026-08-16:** no learning recaps (the tracks left the news editions), no system-health
+note in the report, a **Local** section covering the week's three beats, and the section list above
+consolidated per `prompts/weekend.md` — best/worst assets and sector rotation fold into The Week in
+Markets; overhyped and undercovered become one section; the registry sweep becomes one sentence in
+the colophon.
 
 ## 21. SUNDAY Week-Ahead Outlook (9:00 AM ET default)
 
-1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri: releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical events, launches, science; expected market sensitivity per day) · 5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury & Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (description, probability range, impact, horizon, trigger, early indicators, affected markets, mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected behavior, indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 20–22 Learning week previews · 23 Sources & Methodology.
+1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri: releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical events, launches, science; expected market sensitivity per day) · 5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury & Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (description, probability range, impact, horizon, trigger, early indicators, affected markets, mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected behavior, indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 23 Sources & Methodology.
+
+**Revised 2026-08-16:** no learning previews, plus a **Local Week Ahead** section; consolidated
+per `prompts/weekend.md`.
 
 ## 22. Market Intelligence Appendix (bottom of every report, collapsed subsections)
 

@@ -19,7 +19,7 @@ Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never p
    `SLOT=sat` if DOW=6, `SLOT=sun` if DOW=7. (Any other value: something is misscheduled — note it
    in the run log and follow the day the clock actually says via `prompts/weekday.md` instead.)
 2. SR §1 idempotency check with `KEY="$TODAY-$SLOT"`. Already successful → EXIT NOW. Record `RUN_START`.
-3. Read: `config/settings.yml`, `config/watchlists.yml`, `state/curriculum.json`,
+3. Read: `config/settings.yml`, `config/watchlists.yml`,
    `state/stories.json`, `state/calendar-cache.json`, `state/run-log.jsonl`,
    `registry/entities.json`, `ledgers/forecasts.json`, `ledgers/corrections.json`,
    `data/nyse-holidays.json`, and `site/reports/index.json`.
@@ -74,27 +74,35 @@ OpenAI/Anthropic/Discord have reported confidential S-1s):
 
 Sweep results go in report section 28.
 
-### S4. Compose — SPEC §20 structure, EXACTLY this order
+### S4. Compose — this order
 
-1 Cover & date range · 2 Ten Most Important Stories of the Week (each: initial event →
-development → final status → why it mattered → what was misunderstood → unresolved → keep on
-watchlist?) · 3 The Week in One Page · 4 Timeline · 5 What Changed in the World · 6 US Politics
-weekly · 7 Geopolitics weekly · 8 Economics weekly · 9 Central Banks weekly · 10 Business &
-Earnings weekly · 11 Tech/AI weekly · 12 Cyber weekly · 13 Science weekly · 14 Spaceflight weekly ·
-15 Full Weekly Market Review (weekly attribution: index returns, sector/stock contributions,
-rates, credit, FX, commodities, earnings, surprises, expectation shifts) · 16 Best/Worst Assets ·
-17 Sector Rotation · 18 Rates & Credit · 19 Commodities & FX · 20 Crypto · 21 Forecast & Scenario
-Scorecard (from S2) · 22 Overhyped Stories · 23 Undercovered Stories · 24 Risks Entering the
-Weekend · 25 Physics weekly recap · 26 Spaceflight weekly recap · 27 Quant/ML weekly recap ·
-28 Registry sweep results · 29 Sources, Corrections, Methodology + weekly system-health & usage
-note (from `run-log.jsonl`: runs ok/failed, telegram_ok/pages_ok rates, recurring
-`sources_failed`, data-age issues).
+1. **Masthead** — edition "Weekly Review", title, date range, standfirst.
+2. **The Brief** — the week in 5–7 bullets.
+3. **The Week's Ten Stories** — each: how it started → how it developed → where it ended → why it
+   mattered → what was misunderstood → what is still unresolved. Prose, `.story--lead` on the first.
+4. **Timeline** — the week day by day, compact.
+5. **What Changed in the World** — the synthesis, not a recap.
+6. **Politics & Government** · 7. **The World** · 8. **The Economy & Central Banks** ·
+   9. **Business & Earnings** · 10. **Technology & AI** · 11. **Science & Space** — weekly views.
+12. **The Week in Markets** — weekly attribution: index returns, sector and stock contributions,
+    rates, credit, FX, commodities, earnings, expectation shifts. Best/worst assets and sector
+    rotation live here as sub-parts, not as three separate sections.
+13. **Scorecard** — the forecast and scenario grading from S2. Expectation → outcome → verdict →
+    why → lesson. Misses are never hidden or softened. Refer to forecasts by content, not by ID.
+14. **Overhyped & Undercovered** — one section, both halves.
+15. **Risks Entering the Week** —
+16. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18). No
+    weather strip; a short forward look at the week's weather is fine in prose if it matters.
+17. **Market Appendix** — collapsed, SR §16.
+18. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
+    sentence ("no status changes across the nine private-module companies"), not as its own section.
 
-Lessons: ONE paragraph per track — the week's through-line across the topics covered (the last 5
-positions before the current `index` in `state/curriculum.json`). Position line included. NO
-curriculum advance on weekends. Header per SR §11; labels per SR §3; causality per SR §5;
-neutrality per SR §6; health footer per SR §11. Title: `Weekly Intelligence Review — <Mon date> to
-<Fri date>`.
+**No lessons.** Learning moved to the weekday 6:00 AM Learning Brief on 2026-08-16. Do not summarise
+it here, do not read `state/curriculum.json` (retired), and do not touch `state/learning.json` —
+the weekend routine has no learning role at all.
+
+Voice per SR §11b; causality per SR §5; neutrality per SR §6. No health footer — run health goes to
+the run log and `site/status.html`. Title: `Weekly Review — <Mon date> to <Fri date>`.
 
 ---
 
@@ -117,46 +125,54 @@ Read yesterday's Weekly Review + `state/stories.json` for live storylines, open 
 scorecard lessons. EDGAR getcurrent 8-K scan and news research for weekend developments that reset
 the setup.
 
-### U3. Compose — SPEC §21 structure, EXACTLY this order
+### U3. Compose — this order
 
-1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri:
-releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical
-events, launches, science — ET, importance-classified, expected market sensitivity per day) ·
-5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview (consensus where
-known, what a surprise would mean) · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury &
-Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar (SPEC §14
-launch cards) · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (each:
-description, probability RANGE, impact, horizon, trigger, early indicators, affected markets,
-mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected market behavior,
-indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 20 Physics week
-preview · 21 Spaceflight week preview · 22 Quant/ML week preview · 23 Sources & Methodology.
+1. **Masthead** — edition "Week Ahead", title, week label, standfirst.
+2. **The Brief** — the week ahead in 5–7 bullets.
+3. **Top Themes** —
+4. **The Week Day by Day** — Mon–Fri: releases, earnings, political events, deadlines, courts, Fed
+   speakers, auctions, geopolitical events, launches, science. ET times. One line per day on what
+   would actually move things.
+5. **Politics & Government Outlook** · 6. **The World Ahead** · 7. **The Economy Ahead** (releases
+   and central banks together, with consensus where known and what a surprise would mean) ·
+8. **Earnings & Business** (with the Treasury and credit calendar folded in) ·
+9. **Technology & AI Watch** · 10. **Science & Space Ahead** (including the launch calendar).
+11. **Market Setup** — index, sector and company catalysts in one section.
+12. **Risk Register** — description, probability RANGE, impact, horizon, trigger, early indicators,
+    affected markets, mitigants.
+13. **Scenarios** — base/bull/bear/shock: conditions, expected behaviour, indicators, confirmers,
+    invalidators. Plus what would change the outlook.
+14. **Local Week Ahead** — anything scheduled in Bridgeville/South Fayette, Pittsburgh or
+    Pennsylvania worth knowing about (council and school-board meetings that matter, state votes,
+    major local events). Omit if nothing.
+15. **Market Appendix** — collapsed. 16. **Colophon**.
 
-**Mandatory ledger write:** EVERY explicit scenario, probability, and forecast in sections 14–18
-(and anywhere else) is appended to `ledgers/forecasts.json` per SR §10 — ids `$TODAY-sun-N`,
-`status:"open"`, horizon usually next Friday, probability as a RANGE with basis. Next Saturday
-grades exactly these entries; an unlogged forecast is a spec violation.
+**No lesson previews.** Learning is entirely the weekday 6:00 AM Learning Brief's job now.
 
-Learning previews: ONE paragraph per track covering the next 5 topics (positions `index` to
-`index+4` from `state/curriculum.json` and the curriculum files). No advance. Title:
-`Week-Ahead Outlook — Week of <Mon date>`.
+**Mandatory ledger write:** EVERY explicit scenario, probability, and forecast in the Market Setup,
+Risk Register and Scenarios sections (and anywhere else) is appended to `ledgers/forecasts.json`
+per SR §10 — ids `$TODAY-sun-N`, `status:"open"`, horizon usually next Friday, probability as a
+RANGE with basis. Next Saturday grades exactly these entries; an unlogged forecast is a spec
+violation. The IDs are ledger keys — do not print them in the report.
+
+Title: `Week Ahead — Week of <Mon date>`.
 
 ---
 
-## Step 2 (both days) — Publish, deliver, log
+## Step 2 (both days) — Publish in ONE commit, then verify
 
-1. Page: SR §12 → `site/reports/YYYY/MM/$TODAY-$SLOT.html` (template asset paths already use the
-   `../../../` prefix — don't rewrite the boilerplate); archive
-   index: SR §13. Commit report + index + ledger/registry changes (`report: $TODAY $SLOT`), push
-   (SR §15.1–15.2).
-2. Telegram: SR §14 (Saturday: title + week's #1 takeaway + 2–3 biggest weekly developments;
-   Sunday: title + the week's single biggest scheduled risk + 2–3 key events; + report link).
-3. State: write `state/stories.json` (Saturday: apply "keep on watchlist?" decisions; Sunday: add
-   watch items for the week), `state/calendar-cache.json`, `state/market-history/*`. Commit
-   (`state: $TODAY $SLOT`), push.
-4. Verify + log: SR §15.3–15.6 — poll the Pages URL (~3 min), append `state/run-log.jsonl`
-   (`{"ts","slot":"sat|sun","ok","telegram_ok","pages_ok","sources_failed":[...]}`), set
-   `state/last-run.json` `runs["$TODAY-$SLOT"]` = success, final commit (`log: $TODAY $SLOT`),
-   push. Not done until this push succeeds.
+1. **Page** — SR §12 → `site/reports/YYYY/MM/$TODAY-$SLOT.html` (template asset paths already use
+   the `../../../` prefix — don't rewrite the boilerplate; keep the `assets/report.js` tag; set
+   `data-slot` to `sat` or `sun`).
+2. **Archive index** — SR §13, including `headlines` (Saturday: the week's biggest developments;
+   Sunday: the week's key scheduled events). Actions builds the Telegram push from this.
+3. **State** — `state/stories.json` (Saturday: apply "keep on watchlist?" decisions; Sunday: add
+   watch items for the week), `state/calendar-cache.json`, `state/market-history/*`.
+4. **Ledgers / registry** — Saturday's gradings and the sweep results.
+5. **Run log + `last-run.json`** — SR §15.4 and §1.5, written before committing.
+6. **Commit all of it together** (`report: $TODAY $SLOT`) and push. One commit per run (SR §15.2).
+7. **Verify** — poll the Pages URL (~3 min). **Never send a Telegram message from the run**
+   (SR §14); the push triggers it. Record `telegram_ok: "delegated"`.
 
 **Partial-failure doctrine:** same as weekdays — labeled fallbacks over dead runs; only a missing
 pushed report page is a failed run, and then last-run success is NOT recorded.
