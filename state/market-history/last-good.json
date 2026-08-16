@@ -1,21 +1,21 @@
 {
-  "fetched_at": "2026-08-14T16:01:00-04:00",
+  "fetched_at": "2026-08-16T09:35:00-04:00",
   "treasury_par_curve": {
     "1M": 3.79,
-    "1.5M": 3.79,
+    "1.5M": 3.8,
     "2M": 3.81,
-    "3M": 3.87,
+    "3M": 3.86,
     "4M": 3.88,
-    "6M": 3.94,
-    "1Y": 3.97,
-    "2Y": 4.15,
-    "3Y": 4.2,
-    "5Y": 4.32,
-    "7Y": 4.47,
-    "10Y": 4.63,
-    "20Y": 5.2,
-    "30Y": 5.21,
-    "date": "2026-08-13"
+    "6M": 3.95,
+    "1Y": 3.98,
+    "2Y": 4.17,
+    "3Y": 4.24,
+    "5Y": 4.36,
+    "7Y": 4.51,
+    "10Y": 4.68,
+    "20Y": 5.25,
+    "30Y": 5.25,
+    "date": "2026-08-14"
   },
   "fred": {
     "CPIAUCSL": {
@@ -39,24 +39,24 @@
       "value": "4.1"
     },
     "T10Y2Y": {
-      "date": "2026-08-13",
-      "value": "0.48"
+      "date": "2026-08-14",
+      "value": "0.51"
     },
     "DGS2": {
-      "date": "2026-08-12",
-      "value": "4.20"
+      "date": "2026-08-13",
+      "value": "4.1500000000"
     },
     "DGS10": {
-      "date": "2026-08-12",
-      "value": "4.68"
+      "date": "2026-08-13",
+      "value": "4.6300000000"
     },
     "T10YIE": {
-      "date": "2026-08-13",
-      "value": "2.24"
+      "date": "2026-08-14",
+      "value": "2.27"
     },
     "DFII10": {
-      "date": "2026-08-12",
-      "value": "2.42"
+      "date": "2026-08-13",
+      "value": "2.3900000000"
     },
     "SOFR": {
       "date": "2026-08-13",
@@ -64,21 +64,21 @@
     },
     "BAMLH0A0HYM2": {
       "date": "2026-08-13",
-      "value": "2.71"
+      "value": "2.7100000000"
     }
   },
   "vix_complex": {
     "vix": {
-      "close": 14.29,
+      "close": 14.25,
       "prev_close": 14.63
     },
     "vix9d": {
-      "close": 10.86
+      "close": 10.61
     },
     "vix3m": {
-      "close": 18.49
+      "close": 18.46
     },
-    "fetched_at": "2026-08-14 15:45:31"
+    "fetched_at": "2026-08-16 13:19:26"
   },
   "fx": {
     "amount": 1.0,
@@ -99,81 +99,81 @@
   },
   "crypto": {
     "bitcoin": {
-      "usd": 62873,
-      "usd_24h_change": -0.78
+      "usd": 63015,
+      "usd_24h_change": 0.04
     },
     "ethereum": {
-      "usd": 1876.03,
-      "usd_24h_change": -0.5
+      "usd": 1879.33,
+      "usd_24h_change": -0.09
     },
     "solana": {
-      "usd": 74.86,
-      "usd_24h_change": -1.56
+      "usd": 75.32,
+      "usd_24h_change": -0.08
     },
     "cardano": {
-      "usd": 0.179058,
-      "usd_24h_change": -1.24
+      "usd": 0.176077,
+      "usd_24h_change": -1.58
     },
-    "total_market_cap_usd": 2246750807038.19,
+    "total_market_cap_usd": 2252034480790.388,
     "btc_dominance": 56.15,
-    "eth_dominance": 10.08
+    "eth_dominance": 10.07
   },
   "futures_commodities_fx": {
     "ES=F": {
-      "close": 7805.25,
+      "close": 7805.0,
       "prev_close": 7822.5
     },
     "NQ=F": {
-      "close": 30124.25,
+      "close": 30141.75,
       "prev_close": 30188.5
     },
     "YM=F": {
-      "close": 53813.0,
+      "close": 53807.0,
       "prev_close": 53935.0
     },
     "RTY=F": {
-      "close": 3076.0,
-      "prev_close": 3060.2
+      "close": 3074.9,
+      "prev_close": 3060.199951171875
     },
     "^GSPC": {
-      "close": 7785.73,
-      "prev_close": 7798.9902
+      "close": 7785.76,
+      "prev_close": 7798.990234375
     },
     "^IXIC": {
-      "close": 26729.1641,
-      "prev_close": 26803.0293
+      "close": 26729.164,
+      "prev_close": 26803.029296875
     },
     "^DJI": {
-      "close": 53732.5312,
-      "prev_close": 53839.9883
+      "close": 53732.41,
+      "prev_close": 53839.98828125
     },
     "^RUT": {
-      "close": 3068.5737,
-      "prev_close": 3052.8501
+      "close": 3068.415,
+      "prev_close": 3052.85009765625
     },
     "^TNX": {
       "close": 4.696,
-      "prev_close": 4.641
+      "prev_close": 4.640999794006348
     },
     "CL=F": {
-      "close": 82.27,
+      "close": 82.4,
       "prev_close": 81.25
     },
     "GC=F": {
-      "close": 4432.2002,
-      "prev_close": 4363.6001
+      "close": 4437.3,
+      "prev_close": 4363.60009765625
     },
     "NG=F": {
-      "close": 2.72,
-      "prev_close": 2.727
+      "close": 2.733,
+      "prev_close": 2.7269999980926514
     },
     "HG=F": {
-      "close": 6.601,
-      "prev_close": 6.5925
+      "close": 6.613,
+      "prev_close": 6.59250020980835
     },
     "EURUSD=X": {
-      "close": 1.1571,
-      "prev_close": 1.1535
+      "close": 1.1573,
+      "prev_close": 1.1530035734176636
     }
   },
   "watchlist_quotes": {
@@ -190,8 +190,8 @@
       "prev_close": 118.45
     },
     "QQQ": {
-      "close": 731.07,
-      "prev_close": 732.07
+      "close": 731.070007,
+      "prev_close": 732.070007
     },
     "REGN": {
       "close": 803.48,
@@ -278,8 +278,8 @@
       "prev_close": 258.7
     },
     "VOO": {
-      "close": 713.59,
-      "prev_close": 714.95
+      "close": 713.60999,
+      "prev_close": 714.95001
     },
     "VWO": {
       "close": 60.105,
@@ -310,7 +310,7 @@
       "prev_close": 112.55
     },
     "IWM": {
-      "close": 305.06,
+      "close": 305.089996,
       "prev_close": 303.5
     },
     "BLK": {
@@ -338,8 +338,8 @@
       "prev_close": 99.37
     },
     "DIA": {
-      "close": 536.81,
-      "prev_close": 537.91
+      "close": 536.79999,
+      "prev_close": 537.90997
     },
     "VGK": {
       "close": 92.37,
@@ -382,8 +382,8 @@
       "prev_close": 29.74
     },
     "VTI": {
-      "close": 383.85,
-      "prev_close": 384.3
+      "close": 383.85001,
+      "prev_close": 384.29999
     },
     "XLRE": {
       "close": 45.26,
@@ -510,7 +510,7 @@
       "prev_close": 107.16
     },
     "RSP": {
-      "close": 222.75,
+      "close": 222.77,
       "prev_close": 222.73
     },
     "IBKR": {
@@ -558,7 +558,7 @@
       "prev_close": 287.07
     },
     "SPY": {
-      "close": 776.32,
+      "close": 776.34003,
       "prev_close": 777.88
     },
     "MTUM": {
@@ -758,8 +758,8 @@
       "prev_close": 178.62
     },
     "MDY": {
-      "close": 716.98,
-      "prev_close": 714.6
+      "close": 716.90997,
+      "prev_close": 714.59998
     },
     "VST": {
       "close": 148.145,

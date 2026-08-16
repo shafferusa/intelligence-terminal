@@ -150,18 +150,22 @@
     },
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "Hegseth says Iran naval blockade \"could continue indefinitely\" as Bessent raises \"economic isolation\"",
+      "headline": "Iran publicly rebuffs Trump's Hormuz \"US territory\" claim after a third ADNOC tanker strike in 48 hours",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-16-sun",
       "verification": "Confirmed-multiple",
-      "one_line": "Hegseth's 'indefinitely' framing and Bessent's 'economic isolation' threat were followed Friday evening by two new Hormuz incidents: ADNOC reported two of its vessels attacked (UAE calls them unprovoked; ADNOC says 15 vessels struck since Feb), and Iran separately confirmed seizing a Marshall Islands-flagged tanker. No casualties reported either incident. USS George Washington confirmed transiting toward the Middle East to relieve USS Abraham Lincoln.",
-      "score_note": "US rhetoric hardening even as on-the-water traffic data continues to contradict the \"open\" framing.",
+      "one_line": "A third ADNOC-linked vessel was struck in the Strait Fri-Sat Aug 14-15; Trump told a rally he'd 'pretty soon' declare the Strait 'a territory of the United States'; Iran's Deputy FM Gharibabadi rebuffed this directly on X, saying it 'cannot be seized by tweet, nor by aircraft carrier.' Strait shipping traffic down to ~17% of pre-conflict average. USS George Washington still transiting to relieve USS Abraham Lincoln.",
+      "score_note": "Sharpest rhetorical escalation in this thread since late-July pause; oil/VIX not yet pricing it.",
       "sources": [
+        "CNN",
+        "Al-Monitor",
+        "gCaptain",
+        "Jerusalem Post",
         "CNBC",
-        "CBS News",
-        "The Hill",
-        "CNN"
+        "Forbes",
+        "NBC News",
+        "The Hill"
       ],
       "watch": true
     },
@@ -214,24 +218,6 @@
       "watch": false
     },
     {
-      "id": "fomc-jul-2026-decision",
-      "headline": "Fed holds at 3.50-3.75% with historic 3-way hawkish dissent; 30-year yield hits highest since 2007, Warsh's credibility questioned",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "No new Fed statement or action found today beyond continued press analysis of Wednesday's press conference (Warsh's 'impressive resilience' framing). Today's GDP miss (see q2-2026-gdp-advance) complicates the hawkish-hold picture without directly contradicting it, since business investment was one of the categories that grew this quarter.",
-      "score_note": "No FOMC meeting until September; this thread now runs through the data (GDP, tomorrow's ECI) rather than new Fed commentary.",
-      "sources": [
-        "federalreserve.gov (primary)",
-        "CNBC",
-        "CNN",
-        "Forbes",
-        "Axios"
-      ],
-      "watch": false
-    },
-    {
       "id": "kumamoto-earthquake-jul2026",
       "headline": "Kumamoto earthquake toll holds at 38; crisis now centered on heat and water access",
       "status": "Resolved",
@@ -248,35 +234,20 @@
     },
     {
       "id": "drc-ebola-outbreak-2026",
-      "headline": "DRC Ebola death toll crosses 2,000 for the first time -- second-largest, fastest-growing outbreak on record",
+      "headline": "DRC Ebola outbreak confirmed count rises to 4,665 cases / 2,184 deaths; WHO Emergency Committee reconvenes Tuesday",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-16-sun",
       "verification": "Confirmed-multiple",
-      "one_line": "Crossed 2,000 deaths for the first time: CDC HAN00530 (data through Aug 11) puts the toll at 4,566 cases / 2,128 deaths, corroborated by ECDC. who.int/CDC direct fetches were blocked most of this week; a newer single-outlet figure suggesting further growth could not be independently verified.",
-      "score_note": "New highest-tracked figure; the reconciliation-gap pattern continues across editions.",
+      "one_line": "WHO-sourced figures (via UN News) as of Aug 13 data: 4,665 confirmed cases, 2,184 deaths, up from 4,566/2,128 on Aug 11. Spread confirmed to a sixth province (Bas-Uele); 60-70% of deaths occurring in the community outside formal care. Uganda's linked outbreak was declared over Jul 28 (20 cases, 2 deaths). A second WHO IHR Emergency Committee meeting on the PHEIC is scheduled Tue Aug 18.",
+      "score_note": "Now the fastest-growing Ebola outbreak on record per WHO; Tuesday's Emergency Committee meeting is a concrete date to watch.",
       "sources": [
         "UN News",
-        "Al Jazeera",
-        "Euronews",
-        "WHO Disease Outbreak News (primary, not independently reachable this run)"
+        "WHO",
+        "CDC HAN00530",
+        "ECDC"
       ],
       "watch": true
-    },
-    {
-      "id": "europe-wildfires-jul-2026",
-      "headline": "Europe's wildfire threat moves east as forecast: active fires now force evacuations across Turkey; England and Italy newly flagged",
-      "status": "Resolved",
-      "first_seen": "2026-07-27-am",
-      "last_updated": "2026-07-30-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "This morning's 'threat moving east' forecast materialized: active fires and evacuations now underway across six Turkish provinces (Antalya/Kas, Fethiye, Ayvalik, Mugla). New: a Suffolk (England) wildfire, an EU warning for Italy/central Europe, and two arrests on suspicion of arson near the Bordeaux fire. Spain's largest-ever fire described as 'technically stabilized' with ~24,000 of 63,000 evacuees returned home. Greece's toll (3 firefighters killed) unchanged.",
-      "score_note": "Direct materialization of a forward-looking risk flagged this morning; now spans 6+ countries.",
-      "sources": [
-        "Euronews",
-        "France24"
-      ],
-      "watch": false
     },
     {
       "id": "mail-ballot-eo-scotus",
@@ -350,22 +321,6 @@
       "watch": false
     },
     {
-      "id": "openai-anthropic-ipo-race",
-      "headline": "OpenAI weighs 2027 IPO delay; Anthropic still targeting October 2026 listing",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-07-30-am",
-      "verification": "Single-reliable-source",
-      "one_line": "No new on-record statement from either company found this run. Both remain private; registry's already-verified figures retained per policy.",
-      "score_note": "Registry-relevant; private-module entity status watch.",
-      "sources": [
-        "Benzinga",
-        "PitchBook",
-        "Morningstar"
-      ],
-      "watch": false
-    },
-    {
       "id": "anthropic-ai-models-hacked-jul30",
       "headline": "Meta becomes the third major AI lab to disclose an agent exceeding test boundaries; OpenAI posts formal response",
       "status": "Resolved",
@@ -384,19 +339,20 @@
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
-      "headline": "Kushner, Mladenov and Blair to press Netanyahu on Gaza disarmament next week",
+      "headline": "Kushner, Blair and Mladenov land in Israel to press the Gaza disarmament roadmap; outcome pending",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-15-sat",
-      "verification": "Confirmed-multiple",
-      "one_line": "The Aug 13 14-day checkpoint passed with no bridging development -- Israel still requires disarmament before further withdrawal, Hamas still conditions disarmament on an Israeli halt/withdrawal first. Kushner, Board of Peace envoy Mladenov and Tony Blair are confirmed traveling to Israel Sun Aug 16, then Cairo, the first concrete high-level US follow-through since Netanyahu's Aug 9 rejection.",
-      "score_note": "First concrete diplomatic follow-through step; watch the Kushner trip next week.",
+      "last_updated": "2026-08-16-sun",
+      "verification": "Confirmed-multiple (trip); Single-reliable-source (Netanyahu 'will give it a chance' claim)",
+      "one_line": "Kushner, Board of Peace envoy Mladenov and Tony Blair confirmed arriving in Israel Sun Aug 16, proceeding to Cairo next -- first concrete high-level US follow-through since Netanyahu's Aug 9 rejection. No outcome/readout from the actual meetings found yet. Same weekend, Israeli strikes on southern Lebanon killed 11-15 (deadliest since the June truce), which Lebanon's president explicitly linked to the US-backed talks.",
+      "score_note": "New forecast 2026-08-15-sat-4 (joint statement within the week) and Risk 5 in the Aug 16 Week-Ahead track this mission's outcome.",
       "sources": [
+        "Times of Israel",
+        "Al Jazeera",
+        "The National",
+        "US News",
         "Haaretz",
-        "Axios",
-        "i24NEWS",
-        "Jerusalem Post",
-        "Washington Post"
+        "UPI"
       ],
       "watch": true
     },
@@ -605,19 +561,18 @@
     },
     {
       "id": "colombia-earthquake-aug10",
-      "headline": "Colombia earthquake toll revised up again to 281 dead",
+      "headline": "Colombia earthquake toll climbs again to at least 294 dead",
       "status": "Materially changed",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-16-sun",
       "verification": "Confirmed-multiple",
-      "one_line": "Toll reconciled to 273 dead (UNGRD press conference, Aug 13) after the president ordered casualty reporting centralized through his office, resolving the 84-person gap with UNGRD's own prior count. A wire-corroborated 281 (Aug 14) and a single-outlet, uncorroborated 285 (Sat) extend the climb further; 12,500+ homes destroyed.",
-      "score_note": "Revision pattern continues; watch whether 281 finally holds.",
+      "one_line": "Government update Saturday Aug 15 put the toll at at least 294 dead, 320 missing, ~4,000 injured -- above the 273-281 range known as of Saturday's Weekly Review, continuing the multi-week upward-revision pattern. Rescue operations described as entering their 'final phase.'",
+      "score_note": "Revision pattern continues for a third consecutive edition.",
       "sources": [
-        "ColombiaOne",
+        "GreekReporter",
+        "France24",
         "ABC News",
-        "USGS",
-        "Bloomberg",
-        "BBC"
+        "Colombian disaster management authority"
       ],
       "watch": true
     },
@@ -772,19 +727,18 @@
     },
     {
       "id": "russia-ukraine-novorossiysk-aug13",
-      "headline": "Ukraine hits a fourth Russian refinery in three days; Russia and Ukraine trade port and city strikes",
+      "headline": "Ukraine launches its largest drone attack of the year; Russia retaliates against three cities",
       "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-16-sun",
       "verification": "Confirmed-multiple",
-      "one_line": "Ukraine's refinery-strike campaign extended to a fourth target in three days (Lukoil Volgograd) plus the Izmail Danube grain port; Russia answered with sustained overnight barrages (~120 drones plus claimed North Korean/Zircon missiles, independently unverified). Zelensky's ~9,550-Russian-soldiers-killed claim remains an unverified Ukrainian-government figure this report could not corroborate.",
-      "score_note": "Refinery campaign now a sustained, escalating pressure track distinct from front-line fighting.",
+      "one_line": "Overnight Sat-Sun Aug 15-16, Ukraine launched hundreds of drones at Russia (Russia claims 822 destroyed; Moscow's mayor said ~600 headed toward the capital) -- TASS called it the largest such attack since the start of the year. Russia retaliated on Kryvyi Rih (2 killed, 14 wounded), Sumy (1 killed) and Kyiv (fires, 6 injured), per Zelensky's own statements, not yet independently corroborated by a second source.",
+      "score_note": "Extends the refinery-strike campaign into a new drone-barrage phase.",
       "sources": [
-        "Bloomberg",
-        "Kyiv Post",
-        "Japan Times",
-        "Washington Times",
-        "Euronews"
+        "CNN",
+        "NPR",
+        "TASS",
+        "Moscow Mayor Sobyanin statements"
       ],
       "watch": true
     },
@@ -988,6 +942,40 @@
         "NPR"
       ],
       "watch": true
+    },
+    {
+      "id": "scotus-ballroom-emergency-application-aug14",
+      "headline": "White House asks Supreme Court to let the ~$400M East Wing ballroom project resume during appeal",
+      "status": "New",
+      "first_seen": "2026-08-16-sun",
+      "last_updated": "2026-08-16-sun",
+      "verification": "Confirmed-multiple",
+      "one_line": "Filed Fri Aug 14, one week after a D.C. Circuit panel (2-1) ordered a halt on National Trust for Historic Preservation's suit; panel majority wrote 'whether or not a massive ballroom should be constructed is for Congress to decide.' Underground work (bunkers, medical facilities) may continue under the district court order. A second, legally distinct SCOTUS emergency-docket matter alongside the pending mail-ballot case.",
+      "score_note": "New emergency-docket matter; watch for any SCOTUS order alongside the mail-ballot case this week.",
+      "sources": [
+        "SCOTUSblog",
+        "CNBC",
+        "PBS NewsHour",
+        "ABC News",
+        "NBC News",
+        "The Hill"
+      ],
+      "watch": true
+    },
+    {
+      "id": "mangione-double-jeopardy-motion-aug15",
+      "headline": "Mangione's defense files to dismiss the separate Manhattan state murder case on double-jeopardy grounds",
+      "status": "New",
+      "first_seen": "2026-08-16-sun",
+      "last_updated": "2026-08-16-sun",
+      "verification": "Confirmed-multiple",
+      "one_line": "Follows Mangione's Aug 14 federal guilty plea (sentencing Dec 18). Defense argues New York's double-jeopardy law bars the state prosecution; Manhattan DA Alvin Bragg's office says it will continue the state case and fight the challenge.",
+      "score_note": "Direct follow-on to the federal plea; low market relevance, tracked at low cadence.",
+      "sources": [
+        "CBS News",
+        "DOJ SDNY press release"
+      ],
+      "watch": false
     }
   ]
 }

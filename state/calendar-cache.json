@@ -1,52 +1,12 @@
 {
-  "fetched": "2026-08-14T05:50:00-04:00",
-  "earnings_fetched": "2026-08-14",
-  "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-14; no watchlist-company earnings scheduled today. This week's space-earnings arc (Spire, Intuitive Machines, York Space Systems) is complete.",
+  "fetched": "2026-08-16T09:30:00-04:00",
+  "earnings_fetched": "2026-08-16",
+  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub week-of feed (2026-08-17 to 2026-08-21) cross-checked. Watchlist earnings next week: Home Depot (Aug 18 BMO), Lowe's and Target (Aug 19 BMO), Walmart (Aug 20 BMO) -- the week's big-box retail block, directly relevant to the retail-sales/consumer-sentiment miss story from Aug 14.",
   "events": [
-    {
-      "ts_et": "2026-08-14T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Retail Sales, July 2026 (Census Bureau)",
-      "importance": "Critical",
-      "reason": "First major data point after this week's CPI/PPI; a live input to the Fed hawk/dove policy fork",
-      "source": "Census Bureau release schedule -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-14T00:00:00-04:00",
-      "type": "auction",
-      "name": "13-Week / 26-Week / 6-Week Treasury Bill auctions",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-15T21:52:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 -- USSF-366",
-      "importance": "Low",
-      "reason": "US Space Force payload",
-      "source": "Launch Library 2 -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-15T00:00:00-04:00",
-      "type": "launch",
-      "name": "Rocket Lab Electron -- NASA Aspera astrophysics smallsat",
-      "importance": "Low",
-      "reason": "NASA astrophysics mission",
-      "source": "NASA.gov -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-16T01:12:00-04:00",
-      "type": "launch",
-      "name": "Falcon 9 -- Globalstar 2-R Mission 1",
-      "importance": "Low",
-      "reason": "Commercial satellite deployment",
-      "source": "Launch Library 2 -- Confirmed-primary"
-    },
     {
       "ts_et": "2026-08-17T00:00:00-04:00",
       "type": "auction",
-      "name": "13-Week / 26-Week Treasury Bill reopenings",
+      "name": "13-Week / 26-Week Treasury Bill auctions",
       "importance": "Low",
       "reason": "Routine bill supply",
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
@@ -56,16 +16,48 @@
       "type": "econ_release",
       "name": "U.S. Import and Export Price Indexes, July 2026",
       "importance": "Low",
-      "reason": "Next week's BLS release",
+      "reason": "Trade-price data point; limited standalone market sensitivity but feeds inflation-trend context after the Aug 12/13 CPI/PPI prints",
       "source": "bls.gov schedule ICS -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-18T00:00:00-04:00",
+      "type": "auction",
+      "name": "6-Week Treasury Bill auction",
+      "importance": "Low",
+      "reason": "Routine bill supply",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-18T08:00:00-04:00",
+      "type": "earnings",
+      "name": "Home Depot (HD) Q2 FY2026",
+      "importance": "High",
+      "reason": "Reports before the open the same week its CEO began temporary medical leave (Aug 12); stock finished last week -4.71%, second-worst watchlist decliner; open forecast 2026-08-12-pm-3 (does not fall a further 3%+ over 5 sessions) resolves around this print. Consensus EPS estimate $4.71-4.88 (AV/Finnhub).",
+      "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-19T00:00:00-04:00",
       "type": "auction",
+      "name": "17-Week Treasury Bill auction",
+      "importance": "Low",
+      "reason": "Routine bill supply",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-19T13:00:00-04:00",
+      "type": "auction",
       "name": "20-Year Bond auction",
       "importance": "Medium",
-      "reason": "Monthly refunding cycle",
+      "reason": "Monthly refunding cycle; long-end demand read after the 10Y's Aug 13 close near 4.63-4.68%",
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-19T08:00:00-04:00",
+      "type": "earnings",
+      "name": "Lowe's (LOW) and Target (TGT) Q2 FY2026",
+      "importance": "High",
+      "reason": "Second day of the big-box retail earnings block, direct read-through on the Aug 14 retail-sales/consumer-sentiment miss (retail sales -0.6% m/m, control group -0.4% vs +0.3% est). Consensus: LOW EPS ~$4.22-4.29; TGT EPS ~$2.25-2.31.",
+      "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-19T22:00:00-04:00",
@@ -78,9 +70,9 @@
     {
       "ts_et": "2026-08-20T00:00:00-04:00",
       "type": "other",
-      "name": "SpaceX (SPCX) employee share-unlock, ~320M shares",
-      "importance": "High",
-      "reason": "Approximately 3.4x average daily volume; near-term technical overhang this report has tracked since Aug 11, now sharpened by Musk's ~$900B stake disclosure",
+      "name": "SpaceX (SPCX) employee share-unlock, ~319-320M shares (~$42B)",
+      "importance": "Critical",
+      "reason": "Approximately 3.4x average daily volume; near-term technical overhang this report has tracked since Aug 11, sharpened by Musk's ~$900B (48.4% stake) disclosure. Two open forecasts (2026-08-11-pm-3, 2026-08-12-pm-2) and one new Saturday forecast (2026-08-15-sat-1) resolve around this date.",
       "source": "ts2.tech, TradingKey, 24/7 Wall St -- Confirmed-multiple"
     },
     {
@@ -92,12 +84,76 @@
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
+      "ts_et": "2026-08-20T00:00:00-04:00",
+      "type": "auction",
+      "name": "4-Week / 8-Week Treasury Bill auctions",
+      "importance": "Low",
+      "reason": "Routine bill supply",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-20T08:00:00-04:00",
+      "type": "earnings",
+      "name": "Walmart (WMT) Q2 FY2027",
+      "importance": "High",
+      "reason": "Closes the week's big-box retail block; largest US retailer by revenue, a bellwether for consumer-spending health after the Aug 14 retail-sales miss. Consensus EPS ~$0.73-0.75.",
+      "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-20T09:00:00-04:00",
+      "type": "econ_release",
+      "name": "Summer Youth Labor Force (BLS)",
+      "importance": "Low",
+      "reason": "Seasonal/demographic labor-market report, limited market sensitivity",
+      "source": "bls.gov schedule ICS -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-21T10:00:00-04:00",
+      "type": "econ_release",
+      "name": "State Employment and Unemployment (Monthly), July 2026",
+      "importance": "Low",
+      "reason": "State-level detail on the already-published national jobs report; limited standalone market sensitivity",
+      "source": "bls.gov schedule ICS -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-17T00:00:00-04:00",
+      "type": "launch",
+      "name": "Long March 2C -- undisclosed payload",
+      "importance": "Low",
+      "reason": "Routine Chinese state launch, payload undisclosed",
+      "source": "Launch Library 2 -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-18T19:35:00-04:00",
+      "type": "launch",
+      "name": "Zhuque-3 Flight 2 (LandSpace)",
+      "importance": "Medium",
+      "reason": "Second flight of China's Zhuque-3 methalox reusable launcher (following its debut); notable for the emerging Chinese commercial reusable-rocket field this report has not previously tracked in depth",
+      "source": "Launch Library 2 -- Confirmed-primary"
+    },
+    {
       "ts_et": "2026-08-24T00:00:00-04:00",
       "type": "launch",
       "name": "Long March 5 -- Chang'e 7 (lunar mission)",
       "importance": "Medium",
-      "reason": "Status \"To Be Confirmed\"; the Long March 7A failure investigation is reportedly focused on the shared YF-100 engine architecture used in the Long March 5's boosters",
-      "source": "Launch Library 2 -- Confirmed-primary (schedule); System inference (grounding-risk link)"
+      "reason": "Status \"To Be Confirmed\"; the Long March 7A failure investigation (Aug 10) is reportedly focused on the shared YF-100 engine architecture used in the Long March 5's boosters -- a live grounding-risk question for this mission, just outside the Mon-Fri window but flagged for Overnight & Tomorrow Watch",
+      "source": "Launch Library 2 -- Confirmed-primary (schedule); System inference (grounding-risk link, unconfirmed)"
+    },
+    {
+      "ts_et": "2026-08-22T03:25:00-04:00",
+      "type": "launch",
+      "name": "Falcon 9 -- Starlink Group 15-20",
+      "importance": "Low",
+      "reason": "Routine Starlink deployment (Saturday, just past the Mon-Fri window)",
+      "source": "Launch Library 2 -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-18T00:00:00-04:00",
+      "type": "other",
+      "name": "Mail-ballot executive order: $100 bond due at the 1st Circuit",
+      "importance": "High",
+      "reason": "DOJ-set deadline tied to its appeal of Judge Talwani's nationwide injunction; the pending SCOTUS emergency-stay application (forecast 2026-08-14-am-2, 7-day horizon to Aug 21) could resolve at any point this week",
+      "source": "SCOTUSblog, Votebeat, Democracy Docket -- Confirmed-multiple"
     }
   ]
 }

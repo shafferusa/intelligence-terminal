@@ -1275,6 +1275,76 @@
       "probability": "40-55%",
       "basis": "A mission of this seniority (Kushner personally, plus the Board of Peace's high representative) typically produces some public readout even absent a substantive breakthrough, though Netanyahu's and Hamas's positions remain publicly incompatible with no bridging development found this week.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-1",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "No fourth Strait of Hormuz vessel incident (beyond the third ADNOC strike over the weekend of Aug 14-15) occurs this week.",
+      "horizon": "2026-08-21",
+      "probability": "45-55%",
+      "basis": "Three incidents occurred within a 48-hour span heading into this weekend, an accelerating pace, but no incident has yet been confirmed since Saturday and Trump's rhetorical escalation has not been matched by a concrete US policy step.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-2",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "At least two of Home Depot, Lowe's, Target and Walmart miss consensus EPS or issue cautious forward guidance this week.",
+      "horizon": "2026-08-21",
+      "probability": "35-45%",
+      "basis": "Friday's retail-sales/sentiment miss is a genuine macro data point, but big-box retailers' own comps have generally held up better than discretionary spending broadly in recent quarters.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-3",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "SpaceX (SPCX) moves more than 5% in the session of or immediately following the Aug 20 employee-share unlock.",
+      "horizon": "2026-08-21",
+      "probability": "50-60%",
+      "basis": "The stock's realized volatility around binary catalysts (earnings, the Aug 6 lockup) has consistently exceeded 5% this cycle in both directions.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-4",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "Base scenario: no fourth Hormuz incident, mixed (not uniformly weak) big-box retail earnings, a notable-but-not-extreme SpaceX unlock reaction, and Gaza-mission engagement without a breakthrough -- equities trade in a range with single-name volatility exceeding index-level volatility.",
+      "horizon": "2026-08-21",
+      "probability": "40-50%",
+      "basis": "Analytic judgment weighing this week's four concrete binary catalysts (Hormuz, retail earnings, SpaceX unlock, Gaza mission) against the prior several weeks' pattern of single-name-dominated volatility -- not a statistical model output.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-5",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "Bull scenario: retail earnings broadly beat, Hormuz stays quiet, the SpaceX unlock passes calmly, and the Gaza mission yields a concrete joint statement -- equities extend toward fresh records, yields ease, oil stays contained.",
+      "horizon": "2026-08-21",
+      "probability": "15-20%",
+      "basis": "Requires multiple favorable confirmations (retail earnings, Hormuz, unlock, Gaza) to align simultaneously.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-6",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "Bear scenario: at least two big-box retailers miss or guide cautiously, the SpaceX unlock triggers mechanical selling pressure, a fourth Hormuz incident occurs, and the Gaza mission concludes without a statement -- equities give back recent gains, XLY underperforms, yields stay elevated.",
+      "horizon": "2026-08-21",
+      "probability": "20-25%",
+      "basis": "Analytic judgment; a soft-but-not-shock combination of the week's known catalysts breaking negative.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-16-sun-7",
+      "date": "2026-08-16",
+      "slot": "sun",
+      "forecast": "Shock scenario: a Hormuz incident produces confirmed casualties or a direct US/Iran exchange, or the SpaceX unlock triggers a disorderly double-digit decline, or the Gaza mission's failure coincides with a fresh regional escalation -- oil spikes, broad risk-off, VIX moves back above its recent range.",
+      "horizon": "2026-08-21",
+      "probability": "8-12%",
+      "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
+      "status": "open"
     }
   ]
 }
