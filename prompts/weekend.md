@@ -77,24 +77,34 @@ Sweep results go in report section 28.
 ### S4. Compose — this order
 
 1. **Masthead** — edition "Weekly Review", title, date range, standfirst.
-2. **The Brief** — the week in 5–7 bullets.
-3. **The Week's Ten Stories** — each: how it started → how it developed → where it ended → why it
-   mattered → what was misunderstood → what is still unresolved. Prose, `.story--lead` on the first.
-4. **Timeline** — the week day by day, compact.
-5. **What Changed in the World** — the synthesis, not a recap.
-6. **Politics & Government** · 7. **The World** · 8. **The Economy & Central Banks** ·
-   9. **Business & Earnings** · 10. **Technology & AI** · 11. **Science & Space** — weekly views.
-12. **The Week in Markets** — weekly attribution: index returns, sector and stock contributions,
+2. **The Brief** — 5–7 bullets covering BOTH the week just gone and anything that broke since
+   Friday's close. If the biggest thing in the reader's world happened last night, it leads.
+3. **Today's News** — **the weekend edition still carries the day's news.** Everything that
+   happened since the Friday closing brief: overnight and Saturday-morning developments, weekend
+   politics, anything moving in Asia/Europe or in crypto (the only market trading), breaking
+   stories. Full story treatment per SR §11b — this is not a footnote to the retrospective, it is
+   the part of the paper that is actually new. Typically 3–6 stories; more when the weekend is
+   busy, fewer when it is genuinely quiet. If a weekend story changes how the week should be read,
+   say so here and reflect it in the retrospective below.
+4. **The Week's Ten Stories** — each: how it started → how it developed → where it ended → why it
+   mattered → what was misunderstood → what is still unresolved. Prose, `.story--lead` on the first
+   of these if no weekend story earned the lead.
+5. **Timeline** — the week day by day, compact.
+6. **What Changed in the World** — the synthesis, not a recap.
+7. **Politics & Government** · 8. **The World** · 9. **The Economy & Central Banks** ·
+   10. **Business & Earnings** · 11. **Technology & AI** · 12. **Science & Space** — weekly views,
+   each carrying any weekend development in that domain rather than repeating it from §3.
+13. **The Week in Markets** — weekly attribution: index returns, sector and stock contributions,
     rates, credit, FX, commodities, earnings, expectation shifts. Best/worst assets and sector
     rotation live here as sub-parts, not as three separate sections.
-13. **Scorecard** — the forecast and scenario grading from S2. Expectation → outcome → verdict →
+14. **Scorecard** — the forecast and scenario grading from S2. Expectation → outcome → verdict →
     why → lesson. Misses are never hidden or softened. Refer to forecasts by content, not by ID.
-14. **Overhyped & Undercovered** — one section, both halves.
-15. **Risks Entering the Week** —
-16. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18). No
-    weather strip; a short forward look at the week's weather is fine in prose if it matters.
-17. **Market Appendix** — collapsed, SR §16.
-18. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
+15. **Overhyped & Undercovered** — one section, both halves.
+16. **Risks Entering the Week** —
+17. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18), plus
+    any weekend local news. No weather strip; a short look at the week's weather is fine in prose.
+18. **Market Appendix** — collapsed, SR §16.
+19. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
     sentence ("no status changes across the nine private-module companies"), not as its own section.
 
 **No lessons.** Learning moved to the weekday 6:00 AM Learning Brief on 2026-08-16. Do not summarise
@@ -128,24 +138,30 @@ the setup.
 ### U3. Compose — this order
 
 1. **Masthead** — edition "Week Ahead", title, week label, standfirst.
-2. **The Brief** — the week ahead in 5–7 bullets.
-3. **Top Themes** —
-4. **The Week Day by Day** — Mon–Fri: releases, earnings, political events, deadlines, courts, Fed
+2. **The Brief** — 5–7 bullets covering both what happened over the weekend and what the coming
+   week turns on.
+3. **Today's News** — **the Sunday edition still carries the day's news.** Everything since
+   Saturday's edition: overnight and Sunday developments, weekend politics and diplomacy, Asian
+   markets opening Sunday evening ET, crypto, breaking stories. Full story treatment per SR §11b,
+   typically 3–6 stories. Where a weekend development changes the week's setup, say so here and
+   carry it into the outlook sections — that link is the whole point of running news on a Sunday.
+4. **Top Themes** —
+5. **The Week Day by Day** — Mon–Fri: releases, earnings, political events, deadlines, courts, Fed
    speakers, auctions, geopolitical events, launches, science. ET times. One line per day on what
    would actually move things.
-5. **Politics & Government Outlook** · 6. **The World Ahead** · 7. **The Economy Ahead** (releases
+6. **Politics & Government Outlook** · 7. **The World Ahead** · 8. **The Economy Ahead** (releases
    and central banks together, with consensus where known and what a surprise would mean) ·
-8. **Earnings & Business** (with the Treasury and credit calendar folded in) ·
-9. **Technology & AI Watch** · 10. **Science & Space Ahead** (including the launch calendar).
-11. **Market Setup** — index, sector and company catalysts in one section.
-12. **Risk Register** — description, probability RANGE, impact, horizon, trigger, early indicators,
+9. **Earnings & Business** (with the Treasury and credit calendar folded in) ·
+10. **Technology & AI Watch** · 11. **Science & Space Ahead** (including the launch calendar).
+12. **Market Setup** — index, sector and company catalysts in one section.
+13. **Risk Register** — description, probability RANGE, impact, horizon, trigger, early indicators,
     affected markets, mitigants.
-13. **Scenarios** — base/bull/bear/shock: conditions, expected behaviour, indicators, confirmers,
+14. **Scenarios** — base/bull/bear/shock: conditions, expected behaviour, indicators, confirmers,
     invalidators. Plus what would change the outlook.
-14. **Local Week Ahead** — anything scheduled in Bridgeville/South Fayette, Pittsburgh or
-    Pennsylvania worth knowing about (council and school-board meetings that matter, state votes,
-    major local events). Omit if nothing.
-15. **Market Appendix** — collapsed. 16. **Colophon**.
+15. **Local Week Ahead** — weekend local news, plus anything scheduled in Bridgeville/South
+    Fayette, Pittsburgh or Pennsylvania worth knowing about (council and school-board meetings that
+    matter, state votes, major local events). Omit if nothing.
+16. **Market Appendix** — collapsed. 17. **Colophon**.
 
 **No lesson previews.** Learning is entirely the weekday 6:00 AM Learning Brief's job now.
 

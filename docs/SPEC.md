@@ -45,6 +45,10 @@ anything later in this document, this wins.
   is 8 credits/minute, not 300/run, and had been failing daily); DXY comes from `DX-Y.NYB` and IS
   available; Cboe put/call is retired (403 for weeks); FINRA short volume uses the prior session.
 - Target weekday reading time after the declutter: **18–25 minutes**, down from 40+.
+- **Weekend editions carry the day's news too** (added 2026-08-16 on Logan's instruction). Saturday
+  = the weekend's news *plus* the week in review; Sunday = the weekend's news *plus* the week
+  ahead. Previously both were pure retrospective/forward-look and reported nothing that had
+  actually happened that morning. The news section sits directly after The Brief in both.
 
 - **Delivery (BUILT):** Telegram bot `@logannewspaperbot`, chat_id `7805141860`, `parse_mode=HTML` only (never MarkdownV2), ≤4,096 chars/message, split on paragraph boundary if longer. Token lives in the cloud environment variable `TELEGRAM_BOT_TOKEN` — never in this repo.
 - **Full reports** are mobile web pages on GitHub Pages (this repo → `site/`); the Telegram push carries title, one-sentence summary, 2–3 top developments, critical-risk flag when warranted, and the report link.
