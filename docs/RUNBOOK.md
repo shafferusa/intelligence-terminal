@@ -93,7 +93,15 @@ At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**
 | Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
 |---|---|---|---|
 | Learning Brief | `0 10 * * 1-5` | Mon–Fri 6:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
-| Weekday briefs | `30 11,20 * * 1-5` | Mon–Fri 7:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
+| Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
+
+**The 6:00 and 6:30 runs overlap by design and must not fight.** The Learning Brief writes a
+~6,000-word lesson and can still be running when the Morning Brief starts. They touch different
+report files, but both prepend to `site/reports/index.json` and append to `state/run-log.jsonl`.
+Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a conflict in
+`index.json` or `run-log.jsonl` take the remote version and re-apply your own addition. If the two
+ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
+rather than delaying the news.
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
 
 **Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
@@ -120,8 +128,8 @@ Run all three before trusting the schedule:
 
 Routine crons are UTC; ET shifts. Two edits per year:
 
-- **Nov 1, 2026** (fall back, EDT→EST): learning `0 10 * * 1-5` → `0 11 * * 1-5`; weekday `30 11,20 * * 1-5` → `30 12,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
-- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 10 * * 1-5`, weekday back to `30 11,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
+- **Nov 1, 2026** (fall back, EDT→EST): learning `0 10 * * 1-5` → `0 11 * * 1-5`; weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
+- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 10 * * 1-5`, weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
 
 One-sentence instruction that works in any Claude session: *"Update my three intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
 

@@ -10,7 +10,7 @@ schedule:
   # the cron expressions on the cloud routine must be updated to match
   # (see docs/RUNBOOK.md, "DST bump" / schedule-change procedure).
   weekday_learn: "06:00"  # Mon-Fri Learning Brief (strictly learning, no news)
-  weekday_am: "07:30"     # Mon-Fri Morning Brief
+  weekday_am: "06:30"     # Mon-Fri Morning Brief
   weekday_pm: "16:30"     # Mon-Fri Closing Brief
   saturday: "09:00"       # Weekly Review
   sunday: "09:00"         # Week Ahead

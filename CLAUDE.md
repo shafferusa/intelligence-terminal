@@ -13,7 +13,7 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 3. Your run procedure — one of:
    - `prompts/learning.md` — **Learning Brief**, Mon–Fri 6:00 AM ET. Strictly learning, ONE lesson
      per report, no news. Reads like a newspaper feature.
-   - `prompts/weekday.md` — Morning (7:30 AM) and Closing (4:30 PM) briefs. Strictly news.
+   - `prompts/weekday.md` — Morning (6:30 AM) and Closing (4:30 PM) briefs. Strictly news.
    - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.

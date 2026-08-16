@@ -39,7 +39,7 @@ anything later in this document, this wins.
 - **Telegram is sent by GitHub Actions only.** The routine never sends. This fixes a duplicate
   that hit every morning, Saturday and Sunday edition (shared-rules §14 explains the mechanism).
 - **Schedule corrected.** The weekday cron had drifted to 5:30 AM / 3:30 PM ET — the closing
-  edition was being written *before the market closed*. Restored to 7:30 AM / 4:30 PM ET, with the
+  edition was being written *before the market closed*. Corrected to 6:30 AM / 4:30 PM ET, with the
   Learning Brief at 6:00 AM ET.
 - **Data sources:** Yahoo v8 is the primary quote sweep and Twelve Data a spot-check (the free tier
   is 8 credits/minute, not 300/run, and had been failing daily); DXY comes from `DX-Y.NYB` and IS
@@ -57,7 +57,7 @@ anything later in this document, this wins.
   material* for the Learning Brief's AI and Finance lessons.
 - **SpaceX is PUBLIC** — verified against SEC EDGAR 2026-07-26: IPO 2026-06-12, Nasdaq ticker SPCX, CIK 0001181412. CRITICAL: pre-2026-04-07 "SPCX" data = the unrelated Tuttle ETF (now SPCK). SpaceX price history begins 2026-06-12; never backfill earlier SPCX data.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
-- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 7:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
+- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
 
 ## 1. Mission
 
@@ -157,7 +157,7 @@ It never restarts.
 
 Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnings, votes, hearings, court decisions, summits, deadlines, launches, milestones — ET primary, importance-classified (Critical/High/Medium/Low, with reason). Closing: completed (with results), delayed, canceled, still upcoming, overnight, tomorrow's majors. Sunday: full day-by-day week plan with expected market sensitivity.
 
-## 18. Weekday MORNING report structure (7:30 AM ET) — revised 2026-08-16
+## 18. Weekday MORNING report structure (6:30 AM ET) — revised 2026-08-16
 
 Masthead · The Brief · Top Stories · Overnight · Politics & Government · The World · The Economy ·
 Business · Technology & AI · Science & Space · Today's Calendar · Before the Open ·
