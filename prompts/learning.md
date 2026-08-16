@@ -100,9 +100,17 @@ Structure (this is the shape, not a set of required headings — write real head
    headline. This is the one place the two reports touch.
 6. **The misconception.** What almost everyone gets wrong about this, stated and corrected. Every
    lesson has one; find it.
-7. **The callback.** One paragraph connecting today to `connect_back` — the earlier day's subject
-   and topic — showing the two ideas are the same machinery in different clothes. This is what
-   makes 150 lessons a curriculum instead of 150 essays.
+7. **The callback.** One paragraph connecting today's idea to an earlier lesson in a *different*
+   subject, showing the two are the same machinery in different clothes. This is what makes 150
+   lessons a curriculum instead of 150 essays.
+
+   `connect_back` in the curriculum file is a **default, not an instruction**: it is simply the most
+   recent lesson from another subject, so it is always valid but sometimes a stretch. If an earlier
+   lesson makes a genuinely better connection — the rocket equation back to logarithms and
+   exponentials rather than to yesterday's neural network — use that one instead. Two rules: it
+   must be a subject other than today's, and it must be a day Logan has already been taught
+   (`day` < today's `day`). Never promise a connection to a future lesson as though it has
+   happened; "we will get to this on day 112" is fine, phrased as the future.
 8. **Where this leaves you.** A `.recap` block: three or four bullets on what Logan can now do or
    see that he could not yesterday, and the one thing this sets up for later.
 
