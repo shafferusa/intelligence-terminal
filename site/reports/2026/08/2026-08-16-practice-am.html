@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>PRACTICE - Morning Intelligence Brief — Sun, Aug 16, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-16",
+    "slot": "am",
+    "title": "PRACTICE - Morning Intelligence Brief",
+    "path": "reports/2026/08/2026-08-16-practice-am.html",
+    "summary": "A practice run of the Morning Brief format: the US-Iran ceasefire lapses at the Hormuz deadline with no extension agreed, Kushner meets Netanyahu today after a direct sit-down with Hamas's leadership in Cairo, the Supreme Court still hasn't ruled on the mail-ballot executive order, and a five-year-old hardware-wallet flaw has drained roughly $116 million in bitcoin since late July.",
+    "headlines": [
+      "PRACTICE EDITION - format test, not a scheduled brief",
+      "US-Iran ceasefire lapses at the Hormuz deadline, no extension agreed",
+      "Kushner meets Netanyahu today after direct Hamas talks in Cairo"
+    ],
+    "reading_minutes": 21,
+    "generated_at": "2026-08-16T20:30:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Practice Edition &middot; Morning Brief</p>
+      <h1>Morning Intelligence Brief</h1>
+      <p class="paper-dateline">
+        Sunday, August 16, 2026 <span class="sep">&middot;</span> 21 min read
+      </p>
+      <p class="paper-standfirst">
+        A US-Iran ceasefire lapses at the same hour Kushner sits down with Netanyahu over Gaza, the Supreme Court still hasn&rsquo;t ruled on the mail-ballot order, and a five-year-old wallet flaw has quietly drained &#36;116 million in bitcoin since late July; this edition is a practice run of the new Morning Brief format, not a scheduled one.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> The 60-day US-Iran ceasefire lapses today with no extension agreed; Kushner, Blair and Mladenov meet Netanyahu after a rare direct sit-down with Hamas&rsquo;s leadership in Cairo.</li>
+          <li><b>Markets.</b> Equity futures are little changed to modestly firmer, oil has eased about a point, gold is up roughly 1%, and the 10-year yield is flat &mdash; a market still treating the Hormuz standoff as background risk.</li>
+          <li><b>The thread.</b> Three separate deadlines &mdash; the Iran ceasefire, the SCOTUS mail-ballot stay decision, and Friday&rsquo;s $100 first-Circuit bond &mdash; are all sitting unresolved at once.</li>
+          <li><b>Biggest risk.</b> A confirmed new Hormuz incident or an announced closure this week, with three tanker strikes already logged in the past five days.</li>
+          <li><b>Watch today.</b> Monday&rsquo;s Empire State Manufacturing Index at 8:30 AM ET, the week&rsquo;s first hard economic data point since Friday&rsquo;s soft retail-sales read.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>US-Iran ceasefire lapses at the Hormuz deadline; Iran publicly rebuffs Trump&rsquo;s claim to the Strait</h3>
+          <p class="story-deck">The 60-day Islamabad truce expires with no extension agreed, a third tanker struck in five days, and Iran&rsquo;s deputy foreign minister answering a presidential boast with one line: it cannot be seized &ldquo;by tweet.&rdquo;</p>
+          <div class="story-body">
+            <p>The US-Iran ceasefire signed in Islamabad on June 17 runs out today. A senior Iranian source told Reuters over the weekend that no talks have taken place on extending it; Tehran&rsquo;s position is that Washington must first return to the interim deal and set an implementation timeline before any extension is possible. A senior White House official on Sunday called the situation simply &ldquo;static.&rdquo; No party has announced what, if anything, happens at the deadline itself &mdash; this report found no confirmation of an automatic snapback to hostilities, only that the truce&rsquo;s stated term has run out unresolved.</p>
+            <p>The backdrop hardened over the weekend. President Trump told a rally Friday that after Iran is &ldquo;very badly defeated,&rdquo; he would &ldquo;pretty soon&rdquo; declare the Strait of Hormuz &ldquo;a territory of the United States.&rdquo; Iran&rsquo;s deputy foreign minister, Kazem Gharibabadi, answered on X Saturday: &ldquo;The Strait of Hormuz cannot be seized by Tweet, nor by aircraft carrier, nor by issuing an order, nor by an election speech. &hellip; This strait will only be closed and opened under Iran&rsquo;s command.&rdquo; A third ADNOC tanker was struck in the strait Friday evening with no reported injuries, following two Thursday strikes the UAE has attributed to the IRGC; UKMTO separately reported an unidentified projectile hitting a bulk carrier. A headline surfaced Saturday referencing a further vessel incident, but this report could not reach a fetchable primary account of it and is not reporting a fourth strike as confirmed.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Roughly a fifth of global oil supply transits the strait. Markets have so far treated five days of escalating rhetoric and repeated tanker strikes as background risk rather than a supply threat &mdash; WTI is little changed since Thursday. That gap between the rhetoric and the price is this week&rsquo;s central test.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether Monday brings any statement marking the deadline&rsquo;s actual lapse, and whether a fourth tanker incident gets confirmed. Related, and separately reported: Israeli strikes in southern Lebanon Saturday killed at least 11 people in the deadliest exchange since that ceasefire began in June &mdash; Bloomberg linked the timing explicitly to the expiring Iran truce, though the Lebanon and Iran tracks are formally separate conflicts.
+            </div>
+          </div>
+          <p class="story-sourceline">Reuters (via The National, Middle East Monitor) &middot; Gharibabadi&rsquo;s own statement (primary, via CNBC, Fox News, NBC News, The Hill) &middot; UAE Foreign Ministry &middot; UKMTO &middot; Bloomberg, Times of Israel (Lebanon strikes).</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>Also new this weekend: Iran&rsquo;s military wrote to the ICRC claiming Qatar is holding three Iranian pilots missing since March; Qatar&rsquo;s foreign ministry spokesperson denied it, saying Qatari air defenses shot down two Iranian jets that breached Qatari airspace without responding to warnings, and that the remains of one pilot were already repatriated to Shiraz in late July. It is a distinct Iran-Qatar friction point, not part of the US track, but it adds to a regional picture of Iran contesting multiple fronts at once as the ceasefire clock runs out.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Kushner meets Hamas&rsquo;s leadership directly in Cairo; sits down with Netanyahu today</h3>
+          <p class="story-deck">The first reported direct Kushner-Hamas meeting, plus a Sisi sit-down, precede today&rsquo;s Israel stop &mdash; the most concrete US push on Gaza disarmament since Netanyahu rejected the roadmap&rsquo;s sequencing on Aug. 9.</p>
+          <div class="story-body">
+            <p>Jared Kushner, Tony Blair and Board of Peace envoy Nikolay Mladenov held a rare direct meeting with Hamas&rsquo;s leadership in Egypt on Sunday, aimed at securing the group&rsquo;s commitment to disarm under the 15-point US-backed roadmap. Separately, Egyptian President Abdel Fattah el-Sisi met Kushner in El-Alamein the same day to discuss ceasefire implementation. Multiple outlets report the three envoys are set to meet Prime Minister Netanyahu today. No outlet has reported what, if anything, Hamas agreed to &mdash; this is a process story, not yet a resolution.</p>
+            <p>IDF operations continued in Gaza over the weekend despite the ceasefire: strikes near Khan Younis and Nuseirat killed at least one person and wounded several others Sunday, including, per Palestinian reporting not yet corroborated by a wire service this report checked, a 14-year-old killed by gunfire while reportedly gathering firewood. The IDF said it struck militants it identified as Islamic Jihad and Hamas operatives in the same areas.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Netanyahu continues to reject linking a phased IDF withdrawal to phased Hamas disarmament, insisting on full demilitarization first; Hamas says it won&rsquo;t disarm until strikes stop and aid increases. Today&rsquo;s meeting is the first attempt at closing that gap with all three US envoys and Netanyahu in the same room since the Aug. 9 rejection.
+            </div>
+          </div>
+          <p class="story-sourceline">Times of Israel &middot; Al Jazeera &middot; AP (via KSAT) &middot; Jerusalem Post &middot; Middle East Monitor (Sisi meeting; Gaza strikes, single-sourced on the casualty specifics).</p>
+        </article>
+
+        <article class="story">
+          <h3>Senate confirms Todd Blanche as attorney general 50-49 in a predawn vote; voting-bill standoff ends without a bill</h3>
+          <p class="story-deck">Two fights that had kept the Senate past its scheduled recess both broke early Saturday morning &mdash; one with a confirmation, the other with a punt to September.</p>
+          <div class="story-body">
+            <p>The Senate confirmed Todd Blanche as attorney general 50-49 after 4 a.m. Saturday; only Sens. Collins (R-ME) and Murkowski (R-AK) crossed over against him, and every Democrat voted no. Blanche appeared on Meet the Press Sunday, discussing election-integrity policy and saying DOJ&rsquo;s proposed $1.8 billion &ldquo;Anti-Weaponization Fund&rdquo; is not moving forward amid legal challenges.</p>
+            <p>In the same overnight session, the standoff over the SAVE America Act &mdash; the proof-of-citizenship voting bill President Trump had demanded the Senate stay in session to pass &mdash; ended without a vote. Republicans told the White House late Friday they would instead try to attach voting-bill elements to a broader budget package, one that would also fund the Iran-related military operation and replenish Pentagon accounts, when the Senate returns Sept. 14.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether the folded-in voting provisions survive the reconciliation process, and whether the September budget fight becomes the next flashpoint over election administration ahead of the midterms.
+            </div>
+          </div>
+          <p class="story-sourceline">Washington Post &middot; NPR &middot; NBC News &middot; Meet the Press transcript &middot; PBS, ABC News wire (SAVE Act standoff).</p>
+        </article>
+
+        <article class="story">
+          <h3>Mail-ballot executive order: Supreme Court still hasn&rsquo;t ruled; Justice Jackson gives states a week to respond</h3>
+          <p class="story-deck">Judge Talwani&rsquo;s nationwide injunction stays in force while the emergency stay application sits with the full Court &mdash; and a separate $100 bond comes due at the First Circuit Tuesday.</p>
+          <div class="story-body">
+            <p>No Supreme Court ruling has issued on the administration&rsquo;s request to stay Judge Talwani&rsquo;s nationwide injunction against the March 31 mail-ballot executive order. The Court has not granted an immediate administrative stay; Justice Jackson gave the challenging states a full week to respond to the application, which is still running. Twelve states have joined DOJ in requesting the stay; 23 states are supporting the injunction. Election-law analysts continue to say the order likely could not be implemented in time for the November midterms even if the Court eventually allows it, given the logistics involved.</p>
+          </div>
+          <p class="story-sourceline">SCOTUSblog &middot; Election Law Blog &middot; Votebeat.</p>
+        </article>
+
+        <article class="story">
+          <h3>Ukraine launches its second major drone barrage in three days; Russia strikes Kyiv and Kryvyi Rih</h3>
+          <p class="story-deck">Roughly 600 drones targeted the Moscow region overnight; Russia answered with cruise and ballistic missiles on Kyiv, killing one person in Kryvyi Rih.</p>
+          <div class="story-body">
+            <p>Ukraine sent roughly 600 drones at the Moscow region overnight Saturday into Sunday, wounding three people; Russian authorities claimed 201 intercepted over the Moscow region specifically, a separate, later count from the roughly 822 Russia claimed intercepted nationwide after Friday night&rsquo;s larger barrage. Ukraine also struck a missile-fuel plant in Russia&rsquo;s Rostov region and sparked a fire at a warehouse near Moscow, per Ukrainian and Russian reporting.</p>
+            <p>Russia retaliated with Oniks anti-ship missiles, ballistic missiles and more than 100 drones against Kyiv and other cities, hitting industrial sites including a Kremenchuk oil refinery and an ArcelorMittal steel plant; a strike on Kryvyi Rih killed one woman and wounded six. A separate, single-sourced Al Jazeera headline reported a NATO jet downing a drone over Romanian airspace; this report could not verify that claim against a NATO or Romanian government statement and is not treating it as confirmed.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether the Romania drone-incursion claim is confirmed by NATO or Bucharest, which would mark a materially different kind of story &mdash; alliance territory, not just Ukrainian or Russian soil.
+            </div>
+          </div>
+          <p class="story-sourceline">France24 &middot; Al Jazeera &middot; Ukrainian and Russian government claims, labeled as such and not independently verified.</p>
+        </article>
+
+        <article class="story">
+          <h3>A five-year-old hardware-wallet flaw has quietly drained roughly $116 million in bitcoin since late July</h3>
+          <p class="story-deck">A weak random-number bug in Coldcard firmware built in March 2021 means any wallet seed generated since then may be compromised &mdash; and the running loss total keeps climbing.</p>
+          <div class="story-body">
+            <p>An attacker has been draining bitcoin since around July 30 by exploiting a five-year-old firmware flaw in Coinkite&rsquo;s Coldcard hardware wallets that produced weak, predictable seed generation &mdash; in some cases as low as 40 bits of effective key strength instead of 128. Blockchain-intelligence firm TRM Labs put the running total near 1,816 BTC, roughly $116 million, as of its most recent count; earlier tallies from other outlets ranged from $70 million to over $130 million as the incident developed across multiple waves, so treat the exact dollar figure as moving rather than settled. Coinkite has patched the flaw; any user who generated a seed on the affected firmware between 2021 and the patch should treat that wallet as compromised.</p>
+          </div>
+          <p class="story-sourceline">TRM Labs (primary research) &middot; Bloomberg &middot; TechCrunch.</p>
+        </article>
+
+        <article class="story">
+          <h3>Actively exploited VMware vCenter flaw still absent from the federal KEV catalog, and this report could not check directly</h3>
+          <p class="story-deck">361 victims across 47 countries and counting &mdash; but a direct check of CISA&rsquo;s own catalog was blocked again this run.</p>
+          <div class="story-body">
+            <p><span class="flag">Unresolved sourcing gap</span> CVE-2026-59310, a critical (CVSS 9.8) directory-traversal flaw in VMware vCenter, remains under active, wide-scale exploitation first observed Aug. 3 &mdash; five days after Broadcom&rsquo;s disclosure. Security researchers now count 361 or more victim IP addresses across 47 countries, with attackers installing reverse-SSH tools for persistent access; there is no workaround, only the patch. Whether the CVE has been added to CISA&rsquo;s Known Exploited Vulnerabilities catalog could not be checked this run &mdash; a direct fetch of cisa.gov was blocked by this environment, the same recurring issue prior editions have logged. This report is not asserting a KEV status either way until that check succeeds.</p>
+          </div>
+          <p class="story-sourceline">Rapid7 &middot; SecurityWeek &middot; BleepingComputer, TheHackerNews (secondary, multiple, consistent on exploitation scope).</p>
+        </article>
+
+        <article class="story">
+          <h3>Colombia earthquake toll revised down to 289 as search operations wind down</h3>
+          <p class="story-deck">A rare downward revision, after cross-checking, following five straight upward revisions since the Aug. 10 quake.</p>
+          <div class="story-body">
+            <p>The confirmed death toll from Colombia&rsquo;s Aug. 10 earthquake stands at 289 as of the latest reporting, revised down from the 294 this report carried Friday, after authorities cross-checked and deduplicated hospital and morgue records. 143 people remain missing. Search-and-rescue operations are winding down in the hardest-hit areas of Chocó department and Cali, with the response shifting toward debris clearance; 185,016 people are recorded as affected across 450 municipalities in 15 departments.</p>
+          </div>
+          <p class="story-sourceline">Rio Times &middot; US News &middot; CNN.</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC Ebola outbreak reaches a sixth province ahead of Tuesday&rsquo;s WHO emergency review</h3>
+          <p class="story-deck">4,665 cases and 2,184 deaths as of the last available count &mdash; already the fastest-growing outbreak on record, now spreading geographically as well.</p>
+          <div class="story-body">
+            <p>The World Health Organization&rsquo;s most recent situation report, covering data through Aug. 12, put the outbreak at 4,665 confirmed cases and 2,184 deaths, up 99 cases and 56 deaths from the prior count; no weekend update was published, which is typical for WHO&rsquo;s reporting schedule. Africa CDC confirmed the outbreak has now spread to a sixth province, Bas-Uele. The IHR Emergency Committee holds its second review of the outbreak&rsquo;s public-health-emergency status Tuesday, its first since the declaration in May. No vaccine or specific treatment exists for this Bundibugyo-species outbreak, though candidates are in testing.</p>
+          </div>
+          <p class="story-sourceline">World Health Organization (primary) &middot; Africa CDC &middot; ECDC.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>The weekend&rsquo;s heaviest news is covered above. Elsewhere: thieves stole four Renaissance-era panels attributed to Antonello da Messina, including three pieces of the 1473 &ldquo;San Gregorio Polyptych,&rdquo; from the MuMe museum in Messina, Sicily, overnight Saturday during the Ferragosto holiday &mdash; days after Parma police recovered roughly &euro;10 million in stolen Renoir, Cézanne and Matisse works, prompting Italian press to call it a mixed week for the country&rsquo;s art security. No fresh weekend developments were found on the Fed&rsquo;s effort to remove Governor Lisa Cook (her Aug. 26 deadline to respond stands unchanged) or on the pending appeal decision in the dismissed Harvard antisemitism lawsuit, where DOJ has said only that it is &ldquo;assessing next steps.&rdquo;</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>A fuller picture emerged this week of how President Trump was moved between aircraft in Turkey on July 8 after intelligence, relayed by Israel, warned of a possible Iranian assassination attempt during his Ankara-to-England leg. Reporting since Aug. 10 describes Trump boarding an alternate military aircraft after being concealed in a catering truck on the tarmac, while Secretary of State Marco Rubio and Treasury Secretary Scott Bessent flew aboard the publicly visible Air Force One as a decoy; Defense Secretary Pete Hegseth flew with Trump on the switched plane. A follow-up Washington Post report said the CIA held only &ldquo;low confidence&rdquo; in the threat before the switch was made, raising the question of whether the operation was warranted. Trump has since confirmed the episode publicly.</p>
+        <p>Speculation over Karoline Leavitt&rsquo;s replacement as White House press secretary continued into the weekend with no announcement; names circulating in press and betting-market activity &mdash; Scott Jennings, Anna Kelly, Alina Habba and Katie Miller among them &mdash; remain unconfirmed reporting, not a White House decision.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p>No Fed officials were confirmed to have spoken over the weekend. Friday&rsquo;s data &mdash; July retail sales down 0.6% month-over-month, the sharpest drop in more than a year, and August consumer sentiment missing sharply at 51.0 against a 54.5 estimate &mdash; still stands as the week&rsquo;s dominant data surprise; markets have not yet produced a clean read on whether it reflects a genuine demand slowdown or a one-off. Monday brings the first test: the Empire State Manufacturing Index at 8:30 AM ET, expected around 10.2 versus July&rsquo;s 15.6, followed by the NAHB Housing Market Index at 10 AM. FOMC minutes from the July meeting are due Wednesday, and market pricing continues to lean toward a September rate cut.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Broadcom fell nearly 6% Friday after BofA downgraded its bond rating from overweight to marketweight, flagging that its AI chip-financing platform &mdash; the XPV vehicle built with Apollo and Blackstone &mdash; could carry roughly $370 billion of senior debt by 2029 at full 20-gigawatt scale, including some $150 billion of new issuance in 2027 alone; under an extreme full-default scenario, BofA modeled potential losses near $42 billion. Credit spreads on the platform had already widened 20&ndash;30 basis points since June, meaning bond markets partly priced the risk ahead of Friday&rsquo;s equity move. AMD rose about 4% the same day on a Baird price-target increase to $1,250 &mdash; the more direct pairs trade against Broadcom&rsquo;s AI-financing concerns.</p>
+        <p>This week&rsquo;s dominant business calendar is retail earnings against a soft consumer backdrop: Home Depot reports Tuesday, its first results since chief executive Ted Decker began a temporary medical leave Aug. 12 (interim leadership is split between EVP Ann-Marie Campbell for operations and CFO Richard McPhail for finance); Lowe&rsquo;s and Target report Wednesday; Walmart closes the block Thursday. All four land directly against Friday&rsquo;s retail-sales miss. Separately, SpaceX&rsquo;s roughly $42 billion employee share-unlock &mdash; about 319&ndash;320 million shares, 3.4 times average daily volume &mdash; is set for Thursday, this week&rsquo;s single largest scheduled equity catalyst.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>OpenAI released GPT-5.6-Cyber on Aug. 10, its first model built specifically for offensive-security work, available only through a restricted program the company calls Daybreak Red. OpenAI rates it &ldquo;High,&rdquo; not &ldquo;Critical,&rdquo; on cybersecurity capability under its own Preparedness Framework, but acknowledges it &ldquo;meaningfully elevates attacker capability if misused&rdquo; &mdash; the company cites a 95% completion rate on advanced cybersecurity evaluation tasks versus 2% for its standard model under normal restrictions. Hardware security keys become mandatory for all Daybreak accounts starting Sept. 1. It is a genuine dual-use release: the same capability that helps defenders find and patch flaws like the VMware vCenter bug above is explicitly the capability OpenAI is restricting access to.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>SpaceX launched two Falcon 9 missions from Cape Canaveral 38 minutes apart Saturday night &mdash; one carrying eight Globalstar satellites, the other a Space Force payload &mdash; a cadence outlets described as a new company record. Aboard the International Space Station, the Expedition 75 crew spent the week rehearsing Canadarm2 procedures ahead of a spacewalk Tuesday to replace a space-to-ground antenna. Separately, this report could not confirm the outcome of LandSpace&rsquo;s Aug. 10 Zhuque-3 landing attempt in Gansu province, and found conflicting information on whether a second Zhuque-3 flight is scheduled later this month or already flew Aug. 10 &mdash; not reporting further on it until the record is clearer.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <p class="small muted">Markets are closed Sunday evening; below is Monday, Aug. 17&rsquo;s session, the next trading day.</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt"><strong>Empire State Manufacturing Index (Aug)</strong></td><td>10.2</td><td>15.6</td></tr>
+            <tr><td>10:00</td><td class="txt">NAHB Housing Market Index (Aug)</td><td>35.0</td><td>34.0</td></tr>
+            <tr><td>16:00</td><td class="txt">Treasury International Capital (TIC) flows (Jun)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">13-week / 26-week Treasury bill auctions</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Long March 2C launch, undisclosed payload</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event &mdash; the week&rsquo;s first hard data point since Friday&rsquo;s retail-sales miss.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Friday&rsquo;s session left the S&amp;P 500 at 7,785.76, down 0.17% on the retail-sales and sentiment miss, still near its recent highs after a strong two-week run. With Sunday-evening futures trading resumed, S&amp;P E-minis are little changed to modestly firmer versus Friday&rsquo;s settle &mdash; this report labels that read cautiously, since it comes from a single delayed proxy fetch rather than a live consolidated feed. WTI crude has eased to roughly $82.40 from Friday&rsquo;s $83.20 settle, gold has firmed about 1.2% to around $4,435, the 10-year Treasury yield sits essentially flat near 4.70%, and bitcoin is little changed near $62,850.</p>
+        <p>The tape&rsquo;s working assumption into Monday is that the Iran ceasefire lapsing on schedule and a third tanker strike are background risk, not a supply threat &mdash; oil&rsquo;s move is a decline, not a spike. That assumption is the most fragile thing priced in right now: a confirmed fourth tanker incident, an actual closure announcement, or a barrel-count disruption would invalidate it quickly. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>A confirmed Hormuz supply disruption.</strong> Three tanker strikes in five days plus a lapsed ceasefire and no extension talks. Probability of a materially disruptive incident (a confirmed closure, a tanker sinking, or a US-Iran exchange with casualties) in the next two weeks: roughly 15&ndash;25%, on the basis that none of the past several incidents has yet produced sustained oil-price movement or a formal closure, despite the rhetoric escalating faster than the on-the-water response. Watch for a fourth strike or an official Iranian or US statement marking the deadline&rsquo;s actual lapse.</p>
+        <p><strong>SpaceX&rsquo;s Thursday unlock produces outsized selling pressure.</strong> Roughly 320 million shares, about 3.4 times average daily volume, unlock the same week as a major retail-earnings block competing for investor attention. Probability of a single-day decline exceeding 10% around the unlock: roughly 20&ndash;30%, on the basis that the stock has reportedly rallied since its recent lows heading into the date (a single-outlet figure this report could not independently corroborate) and that the first insider tranche cleared without incident earlier this month.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">70&deg;<small>now</small></p>
+          <p class="weather-desc">Chance of showers and thunderstorms, wind SW 6&ndash;10 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Monday</b>
+            <span class="hi">82&deg;</span> <span class="lo">61&deg;</span>
+            <span class="sky">Showers &amp; storms likely</span>
+          </div>
+          <div class="weather-day">
+            <b>Monday night</b>
+            <span class="hi">&mdash;</span> <span class="lo">61&deg;</span>
+            <span class="sky">Storms early, then patchy fog</span>
+          </div>
+          <div class="weather-day">
+            <b>Tuesday</b>
+            <span class="hi">81&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Patchy fog, then mostly sunny</span>
+          </div>
+        </div>
+        <p class="weather-alert">Flood Watch for Allegheny County until 8:00 AM Monday &mdash; National Weather Service</p>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>Route 50 signal-upgrade work continues to disrupt Washington Pike through the South Hills</h3>
+        <div class="story-body">
+          <p>PennDOT&rsquo;s signal-upgrade project along Route 50 (Washington Pike/Washington Avenue), affecting intersections in Bridgeville, Heidelberg, Collier Township and Scott Township including Prestley Road, remains in progress and running roughly through late November. Weekday shoulder closures run 7 AM to 5 PM with brief single-lane restrictions 9 AM to 3 PM. No governance votes or new local development were found this week in Bridgeville or South Fayette specifically &mdash; a quiet week for the borough and township beyond this ongoing project.</p>
+        </div>
+        <p class="story-sourceline">PennDOT District 11 (primary) &middot; WPXI.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>County reform commission recommends mandatory reassessment every four years</h3>
+        <div class="story-body">
+          <p>Allegheny County&rsquo;s Government Review Commission voted unanimously Aug. 12 to recommend that the county adopt regularly scheduled countywide property reassessments every four years; current values still date to 2012. Commission chair Rohit Acharya said the goal is to &ldquo;depoliticize this process,&rdquo; making reassessment &ldquo;a routine, professional, data-driven public function&rdquo; rather than a periodic political fight. It is a recommendation, not yet law &mdash; county council or the executive would need to act on it next.</p>
+        </div>
+        <p class="story-sourceline">Government Review Commission (primary) &middot; WESA &middot; PublicSource.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT&rsquo;s Red Line closed between Overbrook and South Hills Junction through Aug. 31</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit has closed the Red Line between Overbrook and South Hills Junction for safety-critical track replacement &mdash; rail dating to 1982 &mdash; through the end of the month. All Red Line trips detour onto the Blue Line, with a free combined rail-and-bus shuttle running Dormont Junction&ndash;Overbrook Junction&ndash;Potomac&ndash;South Hills Junction in the meantime. South Hills commuters using the T should expect the shuttle routing for the rest of August.</p>
+        </div>
+        <p class="story-sourceline">Pittsburgh Regional Transit (primary) &middot; CBS Pittsburgh &middot; WPXI.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>State grapples with fallout as automatic life sentences for felony murder end without a legislative fix</h3>
+        <div class="story-body">
+          <p>The Pennsylvania Supreme Court&rsquo;s March ruling in <em>Commonwealth v. Lee</em> &mdash; a Pittsburgh case &mdash; struck down mandatory life-without-parole for second-degree (felony) murder as unconstitutional and gave the legislature 120 days to write a replacement. That deadline passed July 24 without a new law, and the state&rsquo;s high court has since rejected prosecutors&rsquo; request for another 120-day stay. The practical result, laid out in reporting as recently as today: roughly 1,100 people currently serving life for second-degree murder now have an opening to challenge their sentences, with no legislative framework yet governing how resentencing should work.</p>
+        </div>
+        <p class="story-sourceline">Pennsylvania Supreme Court ruling (primary) &middot; Philadelphia Inquirer &middot; Pennsylvania Capital-Star.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>PUC trims Pennsylvania American Water&rsquo;s rate increase, adds bill-discount protections</h3>
+        <div class="story-body">
+          <p>A Public Utility Commission rate decision took effect Aug. 13 for Pennsylvania American Water customers statewide, approving smaller increases than the utility requested &mdash; it had sought roughly 15% on water and 7.7% on wastewater rates &mdash; while adding consumer-protection and bill-discount provisions. This report could not confirm whether Bridgeville or South Fayette are served by Pennsylvania American Water specifically or a separate authority; the decision applies to whichever of the utility&rsquo;s customers fall in its service territory statewide.</p>
+        </div>
+        <p class="story-sourceline">Pennsylvania Public Utility Commission (primary).</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, cautious</span> Friday&rsquo;s modest pullback followed a strong two-week rally and a soft consumer print, not a risk-off break &mdash; credit and volatility both stayed calm through the miss. Contradicting evidence: gold&rsquo;s roughly 1% firming into Sunday evening suggests at least some hedging demand around the Iran deadline. Confidence: moderate: this read leans on Friday&rsquo;s official data plus Sunday-evening futures via a single delayed proxy fetch, not a full weekday data set.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>10-year Treasury yield, CBOE index (^TNX). Sunday evening futures-market read, delayed, single-vendor.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>vs. Friday</th></tr></thead>
+              <tbody>
+                <tr><td>10Y</td><td>4.696%</td><td class="flat">&minus;0.3bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Full curve (3M&ndash;30Y) and 2s10s/3m10y/5s30s not refreshed this run &mdash; Treasury&rsquo;s daily par-yield curve does not update over the weekend; Friday&rsquo;s official curve carries from the prior edition.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities &amp; crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Sunday evening, via proxy fetch &mdash; delayed, single-vendor, unverified against a second source.</caption>
+              <thead><tr><th>Asset</th><th>Level</th><th>vs. Friday settle</th></tr></thead>
+              <tbody>
+                <tr><td>WTI crude</td><td>$82.39</td><td class="down">&minus;$0.81</td></tr>
+                <tr><td>Gold</td><td>$4,435.40</td><td class="up">+$52.40</td></tr>
+                <tr><td>Bitcoin</td><td>$62,850</td><td class="down">&minus;0.35% (24h)</td></tr>
+                <tr><td>Ethereum</td><td>$1,874.08</td><td class="down">&minus;0.39% (24h)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities &amp; volatility</summary>
+          <p>SPY/QQQ/DIA/IWM levels: <span class="chip">Source unavailable this run</span> &mdash; a full watchlist sweep was not run for this practice edition given the weekend market closure; Friday&rsquo;s cash close (S&amp;P 500 7,785.76, &minus;0.17%) is the last official print. VIX complex, sector and industry breadth, FX basket and factor tables: <span class="chip">Source unavailable this run</span>, same reason. A live weekday edition runs the full SPEC &sect;22 sweep; this practice run prioritized the sections above given the scope of tonight&rsquo;s test.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Reuters, AP, Bloomberg and wire reporting via The National, Middle East Monitor, Times of Israel and CNBC on the Iran ceasefire and Gaza threads; SCOTUSblog and Election Law Blog on the mail-ballot litigation; the Washington Post, NPR and NBC News on the Senate&rsquo;s Blanche confirmation; TRM Labs on the Coldcard exploit; the World Health Organization on the DRC Ebola outbreak; the National Weather Service and Pittsburgh Regional Transit, Allegheny County&rsquo;s Government Review Commission and the Pennsylvania PUC on local and state items. Primary sources are named in each story where one exists.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> This is a practice run of the decluttered Morning Brief format, generated Sunday evening rather than at the normal 6:30 AM ET slot, to evaluate the new format before Monday&rsquo;s scheduled edition. Free-tier quotes are single-venue and can differ slightly from official closes; a direct check of CISA&rsquo;s KEV catalog was blocked this run and is noted above rather than guessed at; missing data is declared missing, never estimated. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-16-practice-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
