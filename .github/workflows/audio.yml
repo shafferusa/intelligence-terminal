@@ -42,6 +42,14 @@ jobs:
       - name: Synthesise the newest report
         id: tts
         continue-on-error: true
+        env:
+          # Logan's pick, 2026-08-16. The previous default was
+          # en-US-AndrewMultilingualNeural, a "Conversation / Copilot" voice --
+          # built for assistant chatter, which is why it read a newspaper flat.
+          # Thomas is a UK news-register voice: drier, and it holds up better
+          # across a 30-minute lesson.
+          TTS_VOICE: en-GB-ThomasNeural
+          TTS_RATE: "+8%"
         run: python3 .github/scripts/make_audio.py
 
       - name: Publish as a release asset
