@@ -19,11 +19,135 @@
 (function () {
   "use strict";
 
-  var synth = window.speechSynthesis;
-  if (!synth || typeof window.SpeechSynthesisUtterance !== "function") return;
-
   var main = document.querySelector("main");
   if (!main) return;
+
+  /* ---------- real audio, preferred ----------
+     A generated MP3 lives on GitHub Releases at a predictable URL. It beats
+     Web Speech decisively on iOS: lock-screen playback, background playback,
+     CarPlay, a scrub bar, and a voice that doesn't sound like a kiosk. So we
+     try it FIRST and only fall back to speech when it isn't there (the audio
+     job runs a couple of minutes behind the page, and can fail entirely).
+
+     No HEAD request: a cross-origin preflight would need CORS headers the
+     release CDN doesn't send. Instead we just point an <audio> element at it
+     and listen for the error event, which needs no CORS at all. */
+
+  var REPO_AUDIO = "https://github.com/shafferusa/intelligence-terminal/releases/download/";
+
+  function reportMeta() {
+    var tag = document.getElementById("report-meta");
+    if (!tag) return null;
+    try { return JSON.parse(tag.textContent); } catch (e) { return null; }
+  }
+
+  var meta = reportMeta();
+
+  function audioUrl() {
+    if (!meta || !meta.date || !meta.slot) return null;
+    var name = meta.date + "-" + meta.slot;
+    return REPO_AUDIO + "audio-" + name + "/" + name + ".mp3";
+  }
+
+  /* Takes the element that already probed the URL rather than making a new
+     one, so the file's metadata isn't fetched twice. */
+  function mountNativePlayer(audio) {
+    var wrap = document.createElement("div");
+    wrap.className = "audio-bar";
+
+    audio.controls = true;
+    audio.className = "audio-native";
+
+    var label = document.createElement("span");
+    label.className = "audio-status";
+    label.textContent = "Listen";
+
+    wrap.appendChild(label);
+    wrap.appendChild(audio);
+
+    var anchor = main.querySelector(".paper-head");
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
+    else main.insertBefore(wrap, main.firstChild);
+
+    /* Lock-screen / CarPlay metadata. */
+    if ("mediaSession" in navigator && meta) {
+      try {
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+          title: meta.title || document.title,
+          artist: "Logan's Daily Newspaper",
+          album: meta.date || ""
+        });
+      } catch (e) { /* optional */ }
+    }
+
+    /* Remember position across visits, like a podcast app. */
+    var POS = "lt-audio-time:" + location.pathname;
+    audio.addEventListener("loadedmetadata", function () {
+      var t = parseFloat(localStorage.getItem(POS) || "");
+      if (!isNaN(t) && t > 5 && t < audio.duration - 5) audio.currentTime = t;
+    });
+    audio.addEventListener("timeupdate", function () {
+      if (audio.currentTime > 5) {
+        try { localStorage.setItem(POS, String(audio.currentTime)); } catch (e) {}
+      }
+    });
+    audio.addEventListener("ended", function () {
+      try { localStorage.removeItem(POS); } catch (e) {}
+    });
+
+    return wrap;
+  }
+
+  /* Synthesis takes ~9 minutes, so the MP3 lands well after the Telegram push
+     that sent the reader here. Rather than leaving early readers on speech
+     for the whole report, keep probing quietly and upgrade when it appears --
+     but ONLY while speech is idle, because swapping the player out from under
+     someone mid-sentence would be worse than the thing it fixes. */
+  function tryAudio(url, onMissing, attempt) {
+    var probe = document.createElement("audio");
+    probe.preload = "metadata";
+    var settled = false;
+
+    function give_up() {
+      if (settled) return;
+      settled = true;
+      onMissing(attempt);
+    }
+
+    probe.addEventListener("loadedmetadata", function () {
+      if (settled) return;
+      settled = true;
+      var speech = window.speechSynthesis;
+      if (attempt > 0 && speech && (speech.speaking || speech.pending)) {
+        return;                          /* listening already -- don't disturb */
+      }
+      var old = main.querySelector(".audio-bar");
+      if (old && old.parentNode) old.parentNode.removeChild(old);
+      mountNativePlayer(probe);
+    });
+    probe.addEventListener("error", give_up);
+    setTimeout(give_up, 6000);           /* never hang with no player at all */
+    probe.src = url;
+  }
+
+  var url = audioUrl();
+  if (url) {
+    tryAudio(url, function onMissing(attempt) {
+      if (attempt === 0) startSpeechPlayer();
+      /* Re-check every 90s for ~12 minutes, then stop asking. */
+      if (attempt < 8) {
+        setTimeout(function () { tryAudio(url, onMissing, attempt + 1); }, 90000);
+      }
+    }, 0);
+  } else {
+    startSpeechPlayer();
+  }
+
+  /* ---------- Web Speech fallback ---------- */
+
+  function startSpeechPlayer() {
+  var synth = window.speechSynthesis;
+  if (!synth || typeof window.SpeechSynthesisUtterance !== "function") return;
 
   var RATES = [0.9, 1, 1.15, 1.3, 1.5, 1.75];
   var STORE_KEY = "lt-audio-pos:" + location.pathname;
@@ -351,4 +475,6 @@
     }
     if (!playing) fmtStatus();
   }, true);
+
+  } /* end startSpeechPlayer */
 })();

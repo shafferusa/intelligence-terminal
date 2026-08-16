@@ -829,6 +829,32 @@ td.down, .fact-card dd.down { color: var(--down); }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Native <audio> player: shown when a generated MP3 exists for this report.
+   Wider than the speech bar because the browser's own transport controls
+   need the room, and it earns it -- this is the one that plays on a locked
+   phone. */
+.audio-bar:has(.audio-native) {
+  max-width: 34rem;
+  border-radius: 12px;
+  padding: 0.55rem 0.7rem;
+  gap: 0.7rem;
+}
+.audio-native {
+  flex: 1 1 16rem;
+  min-width: 0;
+  height: 2.2rem;
+}
+.audio-bar .audio-status:has(+ .audio-native) {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--edition, var(--accent));
+  text-align: left;
+}
+
 /* Sentence currently being spoken. */
 .is-speaking {
   background: var(--tone-warn-bg);

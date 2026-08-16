@@ -1,0 +1,65 @@
+name: Generate report audio
+
+# Real MP3 of the newest report, so it plays on the lock screen, in the
+# background and over CarPlay -- which browser speech cannot do on iOS.
+#
+# Published as a GitHub Release asset, not committed: three reports a day at
+# ~5 MB each is ~5 GB a year and has no place in git history. The URL is
+# predictable, so the report page needs no commit-back:
+#
+#   https://github.com/<repo>/releases/download/audio-<date>-<slot>/<date>-<slot>.mp3
+#
+# This job must never fail a publish. If edge-tts breaks (it is an unofficial
+# client of Microsoft's read-aloud service), the page falls back to Web Speech
+# on its own and nothing else is affected.
+
+on:
+  push:
+    branches: [main]
+    paths: [site/reports/index.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: report-audio
+  cancel-in-progress: false
+
+jobs:
+  speak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install edge-tts
+        run: pip install --quiet edge-tts
+
+      - name: Synthesise the newest report
+        id: tts
+        continue-on-error: true
+        run: python3 .github/scripts/make_audio.py
+
+      - name: Publish as a release asset
+        if: steps.tts.outputs.mp3 != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.tts.outputs.tag }}" \
+            --title "Audio — ${{ steps.tts.outputs.title }}" \
+            --notes "Spoken edition. Generated automatically; linked from the report page." \
+            "${{ steps.tts.outputs.mp3 }}" \
+            || gh release upload "${{ steps.tts.outputs.tag }}" "${{ steps.tts.outputs.mp3 }}" --clobber
+
+      - name: Report outcome
+        if: always()
+        run: |
+          if [ -n "${{ steps.tts.outputs.mp3 }}" ]; then
+            echo "audio published: ${{ steps.tts.outputs.tag }}"
+          else
+            echo "no audio this run -- the page falls back to browser speech"
+          fi

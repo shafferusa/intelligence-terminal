@@ -1,0 +1,59 @@
+name: Breaking news alerts
+
+# Short Telegram push when something genuinely big breaks between editions.
+# News only -- no market-move alerts, by Logan's instruction. He reads the
+# actual story in the next morning or closing brief; this exists so he is not
+# the last to know for eight hours.
+#
+# SCHEDULING REALITY: GitHub's scheduled workflows are best-effort and get
+# delayed under load, so the real cadence is more like every 10-25 minutes
+# than the 10 asked for here. For "big breaking news, details tomorrow" that
+# is fine. If it ever becomes annoying, docs/RUNBOOK.md section H documents
+# the Cloudflare Worker upgrade (1-minute cron, free tier) -- the script is
+# stdlib-only and portable to it.
+#
+# Commits state/alerts.json ONLY when an alert actually fires (rare -- capped
+# at 6/day), and that path never triggers the site build.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: breaking-alerts
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan feeds and alert
+        id: scan
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 .github/scripts/breaking_alerts.py
+
+      - name: Persist the dedupe record
+        run: |
+          if git diff --quiet -- state/alerts.json; then
+            echo "no alert fired -- nothing to commit"
+            exit 0
+          fi
+          git config user.name  "Intelligence Terminal Bot"
+          git config user.email "loganshaffer87@gmail.com"
+          git add state/alerts.json
+          git commit -m "alert: breaking-news push sent"
+          # A report run may be pushing at the same moment; alerts always
+          # yield to it rather than the other way round.
+          for i in 1 2 3 4 5; do
+            git pull --rebase --strategy-option=ours origin main && git push origin main && exit 0
+            echo "push race, retry $i"; sleep 10
+          done
+          echo "could not push dedupe state; next run may re-alert" >&2

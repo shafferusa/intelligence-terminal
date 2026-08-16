@@ -46,19 +46,30 @@ site:
   base_url: https://shafferusa.github.io/intelligence-terminal/
 
 # ------------------------------------------------------------
-# Alerts (Phase 7 — NOT YET IMPLEMENTED; see SPEC.md §28).
-# Kept here so thresholds can be tuned before the Cloudflare
-# Worker exists. Until Phase 7 ships, breaking coverage comes
-# from the next scheduled report and this block is ignored.
+# Breaking-news alerts (BUILT 2026-08-16).
+# .github/workflows/breaking-alerts.yml + scripts/breaking_alerts.py
+#
+# NEWS ONLY — Logan's instruction. The market-move thresholds that
+# used to live here are gone: he does not want a push because VIX
+# jumped, he wants a push when something big happens in the world.
+#
+# The alert is deliberately minimal: BREAKING — headline, plus a
+# link (WSJ preferred). No summary, no analysis. He reads the actual
+# story in the next morning or closing brief.
+#
+# These values document the behaviour; they are currently constants
+# in the script rather than read from this file.
 # ------------------------------------------------------------
 alerts:
-  enabled: false
+  enabled: true
+  method: cross-source corroboration + topic gate   # no LLM call, no API key
+  min_newsrooms: 3            # independent outlets carrying the same event
+  min_newsrooms_severe: 2     # lowered when the SEVERITY list matches
+  window_minutes: 90          # how recent an item must be to count
+  similarity: 0.35            # Jaccard overlap that means "same story"
+  link_preference: [WSJ, CNBC, BBC, Guardian, NPR, CBS, Sky News, Al Jazeera, Deutsche Welle]
+  cooldown_minutes: 20        # never two pushes closer together than this
+  max_per_day: 6
   quiet_hours:
-    start: "22:00"        # no non-critical alerts after this (local time)
-    end: "07:00"          # ...until this
-    critical_only: true   # during quiet hours, only severity >= critical_severity
-  thresholds:
-    watchlist_move_pct: 5.0     # single-name intraday % move to alert on
-    index_move_pct: 2.0         # SPY/QQQ intraday % move
-    vix_spike_pct: 20.0         # VIX % jump vs prior close
-    critical_severity: 4        # Haiku judgment gate: severity >= this may trigger a run
+    start: "23:00"            # ET; only SEVERITY-flagged events get through
+    end: "06:30"

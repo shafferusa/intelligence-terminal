@@ -168,6 +168,69 @@ For any failed run: **claude.ai/code/routines → run list → transcript** is a
 
 ---
 
+## E2. Breaking-news alerts (built 2026-08-16)
+
+`.github/workflows/breaking-alerts.yml` + `.github/scripts/breaking_alerts.py`, every ~10 minutes.
+**News only** — no market-move alerts, by Logan's instruction. Message is deliberately minimal:
+`BREAKING — <headline>` plus a link, WSJ preferred. He reads the real story in the next edition.
+
+**How it decides something is big.** Cross-source corroboration, not keyword severity: a story
+alerts when **3+ independent newsrooms** carry the same event inside 90 minutes (2+ if a tight
+`SEVERITY` list matches). Headlines are clustered by Jaccard overlap of content words at 0.35.
+
+**Plus a topic gate**, because corroboration measures "widely covered", not "important". On the
+night this was built, three outlets all led with four Renaissance paintings stolen from a Sicilian
+museum — perfectly corroborated, not worth a push. So a cluster must also hit the `BEAT` list
+(war/diplomacy, government/law, economy/markets, tech/AI/cyber, disasters/public safety, space)
+and must not hit the `SOFT` list (arts, celebrity, royals, sport, "world's tallest"). `SEVERITY`
+overrides a `SOFT` veto, so a shooting at a museum still gets through.
+
+**Guards:** one push per 20 minutes, 6 per ET day, 23:00–06:30 ET is severity-only, and a dedupe
+record in `state/alerts.json` (matched on token overlap, so a re-worded headline of the same event
+does not alert twice). Committing that file is the only thing this workflow writes, it happens only
+when an alert actually fires, and it never touches `site/` so it cannot trigger a site build.
+
+**Tuning:** the lists and thresholds are constants at the top of the script; `config/settings.yml`
+documents them. Too noisy → raise `min_newsrooms` to 4, or add terms to `SOFT`. Too quiet → add
+outlets to `FEEDS` (they must be genuinely independent newsrooms; three feeds republishing one wire
+are one source) or add terms to `BEAT`.
+
+**Latency:** GitHub's scheduled workflows are best-effort and get delayed under load, so the real
+cadence is nearer 10–25 minutes. For "big news, details in the morning" that is fine. If it ever
+matters, port the script to a **Cloudflare Worker** (free tier, 1-minute cron): it is stdlib-only
+and the only pieces to swap are `urllib` → `fetch` and the dedupe file → Workers KV.
+
+## E3. Report audio (built 2026-08-16)
+
+`.github/workflows/audio.yml` + `.github/scripts/make_audio.py`, on every push that changes
+`site/reports/index.json`. Uses **edge-tts** (Microsoft read-aloud; free, no key, good neural
+voices) to synthesise the newest report, and publishes the MP3 as a **GitHub Release asset**.
+
+**Not committed to the repo, deliberately:** three reports a day at ~11 MB is ~12 GB a year, which
+has no business in git history. Release assets are free and outside history.
+
+**The URL is predictable**, which is what makes the whole thing work without a commit-back step or
+a race against the page build:
+
+```
+https://github.com/shafferusa/intelligence-terminal/releases/download/audio-<date>-<slot>/<date>-<slot>.mp3
+```
+
+`site/assets/report.js` points an `<audio>` element at that URL. If it loads, the reader gets a
+real player — lock screen, background, CarPlay, scrub bar, resume-where-you-left-off, and
+Media Session metadata. If it 404s, the page falls back to the Web Speech reader.
+
+**Synthesis takes ~9 minutes**, so the audio lands after the Telegram push. The page therefore
+re-probes every 90 seconds for ~12 minutes and upgrades silently — but only while speech is idle,
+never mid-sentence. A reader who opens the report immediately starts on speech and gets swapped to
+real audio a few minutes later, or on any reload.
+
+**Failure is non-fatal by design.** edge-tts is an unofficial client and can break; the job is
+`continue-on-error`, publishes nothing, and the page falls back on its own. Nothing else notices.
+
+**Voice:** `TTS_VOICE` / `TTS_RATE` env vars in the workflow (default
+`en-US-AndrewMultilingualNeural` at `+8%`). `edge-tts --list-voices` shows the alternatives.
+
 ## F. Usage notes (Max plan)
 
 - Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 3/day weekdays (learning + morning + closing) and 1/day weekends — well under the cap.
