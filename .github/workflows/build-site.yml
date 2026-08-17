@@ -63,6 +63,29 @@ jobs:
           echo "cache key: ldn-cache-$HASH"
           grep -n '^var VERSION' site/sw.js
 
+      # Release assets serve Content-Type: application/octet-stream with
+      # Content-Disposition: attachment. Chrome sniffs past that; iOS Safari
+      # does not, and refuses to play it in an <audio> element -- so the
+      # player fell back to browser speech on the one device this exists for,
+      # every time, while the MP3 sat there correct and unplayable.
+      #
+      # Pages serves .mp3 as audio/mpeg, inline, same-origin, with range
+      # requests. So copy the recent audio into the artifact at build time.
+      # Releases stay the storage -- nothing is committed, git stays clean,
+      # and only the last few days ride along in the deploy.
+      - name: Stage recent audio for same-origin playback
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p site/audio
+          gh release list --limit 8 --json tagName \
+            --jq '.[] | select(.tagName | startswith("audio-")) | .tagName' \
+          | while read -r tag; do
+              gh release download "$tag" --dir site/audio --clobber || \
+                echo "no asset on $tag"
+            done
+          echo "staged:"; ls -lh site/audio/ 2>/dev/null || echo "  (none yet)"
+
       - name: Build Pagefind search index
         run: npx -y pagefind --site site
 

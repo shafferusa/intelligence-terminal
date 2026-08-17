@@ -178,6 +178,30 @@ def parse_iso(stamp):
         return None
 
 
+def pages_audio_ready(filename):
+    """True once Pages is serving the MP3 the phone will actually play.
+
+    The release asset existing is not the finish line. Releases serve
+    application/octet-stream with a Content-Disposition of attachment, which
+    iOS Safari refuses to play, so the build stages a copy into the site and
+    the page prefers that. Waiting on the release alone would go back to
+    announcing an edition the phone still cannot listen to -- only now for a
+    subtler reason than before.
+    """
+    url = BASE + "audio/" + filename
+    req = urllib.request.Request(url, headers={"Range": "bytes=0-0"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            if resp.status not in (200, 206):
+                return False
+            ctype = (resp.headers.get("Content-Type") or "").lower()
+            # Pages must be calling it audio. If it ever serves octet-stream
+            # the iPhone is back to browser speech and the wait is pointless.
+            return "audio" in ctype or "mpeg" in ctype
+    except Exception:  # noqa: BLE001 - not deployed yet is the expected case
+        return False
+
+
 def audio_ready(tag, filename, floor):
     """True once THIS edition's MP3 is uploaded and complete.
 
@@ -237,8 +261,15 @@ def wait_for_audio(entry):
     attempt = 0
     while True:
         attempt += 1
-        if audio_ready(tag, filename, floor):
-            print("audio ready after %d check(s): %s/%s" % (attempt, tag, filename))
+        # Pages first: that is the copy the phone plays. The release is only
+        # accepted as a floor -- an archive page older than the staging window
+        # still links it, and a late Pages deploy should not hold the push
+        # past the deadline on its own.
+        if pages_audio_ready(filename):
+            print("audio ready on Pages after %d check(s): %s" % (attempt, filename))
+            return True
+        if audio_ready(tag, filename, floor) and time.monotonic() >= deadline - 120:
+            print("release asset up but Pages not serving it yet -- sending")
             return True
         if time.monotonic() >= deadline:
             print(

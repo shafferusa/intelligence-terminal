@@ -43,10 +43,28 @@
 
   var meta = reportMeta();
 
-  function audioUrl() {
-    if (!meta || !meta.date || !meta.slot) return null;
+  /* Candidate URLs, best first.
+
+     The release URL used to be the only one, and on iPhone it never worked:
+     release assets are served as application/octet-stream with a
+     Content-Disposition of attachment. Chrome sniffs past that and plays it
+     anyway, which is why this looked fine when tested on a desktop. iOS
+     Safari trusts the declared type, refuses the element, and the page
+     dropped to browser speech -- on the only device the audio exists for.
+
+     So the build stages recent MP3s into the site itself, where Pages serves
+     them as audio/mpeg, inline, same-origin. The release URL stays as a
+     second chance for archive pages older than the staging window. */
+  function audioUrls() {
+    if (!meta || !meta.date || !meta.slot) return [];
     var name = meta.date + "-" + meta.slot;
-    return REPO_AUDIO + "audio-" + name + "/" + name + ".mp3";
+    /* Report pages sit at <root>/reports/YYYY/MM/x.html, so derive the site
+       root from the path rather than guessing a depth of "../../..". */
+    var root = location.pathname.split("/reports/")[0] + "/";
+    return [
+      root + "audio/" + name + ".mp3",
+      REPO_AUDIO + "audio-" + name + "/" + name + ".mp3"
+    ];
   }
 
   /* Takes the element that already probed the URL rather than making a new
@@ -103,40 +121,69 @@
      for the whole report, keep probing quietly and upgrade when it appears --
      but ONLY while speech is idle, because swapping the player out from under
      someone mid-sentence would be worse than the thing it fixes. */
-  function tryAudio(url, onMissing, attempt) {
-    var probe = document.createElement("audio");
-    probe.preload = "metadata";
-    var settled = false;
-
-    function give_up() {
-      if (settled) return;
-      settled = true;
-      onMissing(attempt);
-    }
-
-    probe.addEventListener("loadedmetadata", function () {
-      if (settled) return;
-      settled = true;
-      var speech = window.speechSynthesis;
-      if (attempt > 0 && speech && (speech.speaking || speech.pending)) {
-        return;                          /* listening already -- don't disturb */
-      }
-      var old = main.querySelector(".audio-bar");
-      if (old && old.parentNode) old.parentNode.removeChild(old);
-      mountNativePlayer(probe);
-    });
-    probe.addEventListener("error", give_up);
-    setTimeout(give_up, 6000);           /* never hang with no player at all */
-    probe.src = url;
+  function sameOrigin(url) {
+    return url.indexOf("http") !== 0;
   }
 
-  var url = audioUrl();
-  if (url) {
-    tryAudio(url, function onMissing(attempt) {
+  /* Does this URL have a playable file behind it?
+
+     Same-origin candidates are checked with a one-byte fetch rather than by
+     watching an <audio> element for loadedmetadata. iOS defers media loading
+     aggressively -- preload="metadata" is a hint it feels free to ignore
+     until a user gesture -- so an element probe there can simply never fire
+     and time out on a file that is present and fine. A fetch always answers.
+
+     The cross-origin release URL cannot be fetched (no CORS headers on the
+     release CDN), so it keeps the element probe as a best effort. */
+  function probe(url, ok, fail) {
+    if (sameOrigin(url) && window.fetch) {
+      fetch(url, { method: "GET", headers: { Range: "bytes=0-0" } })
+        .then(function (r) { (r.status === 206 || r.ok) ? ok() : fail(); })
+        .catch(fail);
+      return;
+    }
+    var el = document.createElement("audio");
+    el.preload = "metadata";
+    var settled = false;
+    function once(fn) {
+      return function () { if (!settled) { settled = true; fn(); } };
+    }
+    el.addEventListener("loadedmetadata", once(ok));
+    el.addEventListener("error", once(fail));
+    setTimeout(once(fail), 6000);
+    el.src = url;
+  }
+
+  /* Walk the candidates in order, then report failure once all are out. */
+  function tryAudio(urls, onMissing, attempt) {
+    var i = 0;
+    (function next() {
+      if (i >= urls.length) { onMissing(attempt); return; }
+      var url = urls[i++];
+      probe(url, function () {
+        var speech = window.speechSynthesis;
+        if (attempt > 0 && speech && (speech.speaking || speech.pending)) {
+          return;                        /* listening already -- don't disturb */
+        }
+        var old = main.querySelector(".audio-bar");
+        if (old && old.parentNode) old.parentNode.removeChild(old);
+        var audio = document.createElement("audio");
+        audio.preload = "metadata";
+        /* Mount before setting src, so the resume-position listener inside
+           is attached before loadedmetadata can fire. */
+        mountNativePlayer(audio);
+        audio.src = url;
+      }, next);
+    })();
+  }
+
+  var urls = audioUrls();
+  if (urls.length) {
+    tryAudio(urls, function onMissing(attempt) {
       if (attempt === 0) startSpeechPlayer();
       /* Re-check every 90s for ~12 minutes, then stop asking. */
       if (attempt < 8) {
-        setTimeout(function () { tryAudio(url, onMissing, attempt + 1); }, 90000);
+        setTimeout(function () { tryAudio(urls, onMissing, attempt + 1); }, 90000);
       }
     }, 0);
   } else {
@@ -226,9 +273,13 @@
     if (!voices.length) return null;
     var en = voices.filter(function (v) { return /^en(-|_|$)/i.test(v.lang || ""); });
     var pool = en.length ? en : voices;
-    /* Prefer the higher-quality named voices these platforms ship. */
-    var preferred = ["Samantha", "Ava", "Allison", "Serena", "Daniel",
-                     "Google US English", "Microsoft Aria", "Microsoft Jenny", "Microsoft Guy"];
+    /* British news register first, to sit near en-GB-ThomasNeural -- this is
+       only ever reached when the MP3 is genuinely unavailable, and "the iOS
+       lady" (Samantha, the US default) is the sound of the thing being
+       broken. Daniel and Arthur are the en-GB voices iOS actually ships. */
+    var preferred = ["Daniel", "Arthur", "Oliver", "Serena",
+                     "Microsoft Ryan", "Microsoft Thomas", "Google UK English Male",
+                     "Ava", "Allison", "Samantha"];
     for (var i = 0; i < preferred.length; i++) {
       for (var j = 0; j < pool.length; j++) {
         if ((pool[j].name || "").indexOf(preferred[i]) === 0) return pool[j];

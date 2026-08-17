@@ -28,6 +28,7 @@ on:
 
 permissions:
   contents: write
+  actions: write        # to dispatch build-site.yml once the MP3 is published
 
 concurrency:
   group: report-audio
@@ -72,6 +73,15 @@ jobs:
             --notes "Spoken edition. Generated automatically; linked from the report page." \
             "${{ steps.tts.outputs.mp3 }}" \
             || gh release upload "${{ steps.tts.outputs.tag }}" "${{ steps.tts.outputs.mp3 }}" --clobber
+
+      # The release is storage, not the thing the phone plays. Pages serves the
+      # same file as audio/mpeg instead of octet-stream, which is the only form
+      # iOS Safari will accept, so the site has to be rebuilt to pick it up.
+      - name: Rebuild the site so Pages serves the new MP3
+        if: steps.tts.outputs.mp3 != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-site.yml --ref main
 
       - name: Report outcome
         if: always()
