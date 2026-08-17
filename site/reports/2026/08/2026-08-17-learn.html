@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Corner That Has to Measure Exactly Five Feet · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-17",
+    "slot": "learn",
+    "title": "The Corner That Has to Measure Exactly Five Feet",
+    "path": "reports/2026/08/2026-08-17-learn.html",
+    "summary": "Day one of the 150-day curriculum: algebra and functions, built around why a 3-4-5 triangle's hypotenuse isn't the sum of its legs.",
+    "headlines": [
+      "Day 1 of 150 · Mathematics: algebra and functions",
+      "Why most functions don't distribute over addition, and what does",
+      "A $150 jacket shows why the order you apply two functions can change the price"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-08-17T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Corner That Has to Measure Exactly Five Feet</h1>
+      <p class="paper-dateline">
+        Monday, August 17, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Before anyone could explain why, builders knew a triangle with sides three, four and five feet had to have a square corner &mdash; and the reason turns out to be the same rule that makes algebra trustworthy at all.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 1 of 150 &middot; Mathematics 1 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Long before anyone wrote down the Pythagorean theorem, builders had a trick for squaring a corner. Tie thirteen evenly spaced knots into a loop of rope. Stretch it into a triangle with sides of three knots, four knots, and five knots. The angle across from the five-knot side &mdash; every time, with no measuring tools, no theory, nothing but a rope &mdash; comes out to exactly ninety degrees. Egyptian rope-stretchers are thought to have used it to lay out temple foundations. Roman surveyors used it. Carpenters use the same trick today, under the name &ldquo;the 3-4-5 rule,&rdquo; to square a deck frame or a wall plate without a single measurement beyond the tape.</p>
+
+      <p>Here is the part that should bother you. Why five? If you walk three feet one way and four feet the other, common sense says you have covered seven feet of walking. The straight-line distance back to where you started &mdash; the diagonal, the hypotenuse, the brace a carpenter would cut for that corner &mdash; is not seven feet. It is five. Not approximately five. Exactly five, every time, for any right angle with legs of three and four, in any units, on any job site, since before anyone could write down why.</p>
+
+      <p>That two-foot gap between what you might expect (seven) and what is actually true (five) is not a curiosity about triangles. It is your first look at a fact that governs almost every formula you will ever rearrange: the rules that let you move symbols around in an equation are not the rules your intuition uses for combining plain numbers. Intuition says: if you know what three does and you know what four does, you can just add the results. Algebra says: it depends entirely on what &ldquo;does&rdquo; means, and for most operations that matter, adding first and then acting is not the same as acting first and then adding. The carpenter&rsquo;s rope is a three-thousand-year-old demonstration of a fact you are about to learn to prove, use, and never again get wrong by accident.</p>
+
+      <p>It also isn&rsquo;t a coincidence limited to the numbers three, four, and five. Double every knot spacing and the trick still works &mdash; six, eight, and ten feet make the identical right angle, and so do thirty, forty, and fifty. Scale every side of a triangle by the same factor and its angles never change; only its size does. That fact will resurface by name later in this course as similarity, but notice for now that it is itself a small piece of algebra: multiplying every term in a relationship by the same constant is one of the balanced moves you are about to learn to do on purpose, rather than stumble into with a rope.</p>
+
+      <h3>The idea, with no symbols yet</h3>
+
+      <p>Algebra has a reputation as a bag of tricks for moving letters around a page. It is not that. Algebra is a small, fixed set of moves that are guaranteed to keep a statement true while changing what it looks like. That is the entire enterprise. You start with a true statement &mdash; an equation, a fact about a relationship between quantities &mdash; and you are allowed to do certain things to both sides of it, in certain orders, and the result is still guaranteed true. Everything else &mdash; solving for an unknown, simplifying a mess of terms, rearranging a formula to isolate the one number you actually want &mdash; is just repeated application of those few guaranteed moves.</p>
+
+      <p>The reason this matters, and the reason it is worth thirty minutes on day one of a hundred-and-fifty-day course, is that every subject downstream of this one assumes you already have this. A physics equation, a spreadsheet formula, a line of code computing compound interest, the rocket equation you will meet on a much later day &mdash; none of them re-teach you how to solve for a variable. They hand you an expression and trust you to rearrange it correctly. If that trust is misplaced &mdash; if you learned a shortcut in school that happens to work on easy problems and silently fails on hard ones &mdash; the failure will not announce itself. It will just quietly hand you a wrong number that looks exactly as confident as a right one.</p>
+
+      <p>The second idea for today, sitting right next to the first, is the idea of a <em>function</em>. A function is a rule: give it an input, it gives you back exactly one output, every time, no exceptions. &ldquo;Square the number&rdquo; is a function. &ldquo;Take the square root&rdquo; is a function. &ldquo;Add three&rdquo; is a function. &ldquo;Convert a temperature from Celsius to Fahrenheit&rdquo; is a function. The word sounds technical, but you have been using functions your whole life; today is about naming what you already do and being precise enough about it to combine functions correctly &mdash; which, as the carpenter&rsquo;s corner already hinted, is not always as simple as it feels.</p>
+
+      <h3>Building the notation</h3>
+
+      <p>Start with the vocabulary, because algebra&rsquo;s notation is not decoration &mdash; every symbol is doing a specific job, and confusing the jobs is where most errors are born.</p>
+
+      <p>A <strong>variable</strong> is a letter standing in for a number you either don&rsquo;t know yet or don&rsquo;t want to fix &mdash; commonly <em>x</em>, <em>y</em>, <em>n</em>, or a letter chosen to remind you what it means, like <em>t</em> for time or <em>P</em> for price. A <strong>constant</strong> is a number that stays fixed: 3, &minus;7, &pi;. A <strong>term</strong> is a single piece being added or subtracted &mdash; in <em>3x</em> + <em>5</em>, the terms are <em>3x</em> and <em>5</em>. A <strong>coefficient</strong> is the constant multiplying a variable &mdash; the 3 in <em>3x</em>. An <strong>expression</strong> is any combination of these with no equals sign: <em>3x</em> + <em>5</em> is an expression; it has a value once you pick <em>x</em>, but it isn&rsquo;t claiming anything. An <strong>equation</strong> is two expressions joined by an equals sign, asserting they have the same value: <em>3x</em> + 5 = 20 is a claim, and exactly one value of <em>x</em> makes it true.</p>
+
+      <p>That distinction &mdash; expression versus equation &mdash; trips up more people than anything else in introductory algebra, because the two look almost identical on the page and are handled completely differently. You <em>simplify</em> an expression; you cannot solve it, because there is nothing to solve &mdash; it isn&rsquo;t claiming an unknown equals anything. You <em>solve</em> an equation, because it is a claim, and solving means finding which value of the variable makes the claim true.</p>
+
+      <p>Now the moves. The first three are properties of addition and multiplication that you have used since arithmetic without ever needing their names. The <strong>commutative property</strong> says order doesn&rsquo;t matter for addition and multiplication on their own: <em>a</em> + <em>b</em> = <em>b</em> + <em>a</em>, and <em>ab</em> = <em>ba</em>. The <strong>associative property</strong> says grouping doesn&rsquo;t matter: (<em>a</em> + <em>b</em>) + <em>c</em> = <em>a</em> + (<em>b</em> + <em>c</em>). Both feel too obvious to name &mdash; until you meet an operation where they fail. Subtraction is not commutative (5 &minus; 3 is not 3 &minus; 5). Division is not commutative. Function composition, which you will meet in a few paragraphs, is usually not commutative either. Naming the property is what lets you notice, later, when an operation quietly stops having it.</p>
+
+      <p>The third move is the one doing the real work in today&rsquo;s lesson: the <strong>distributive property</strong>.</p>
+
+      <div class="formula">
+        <p class="expr">a(b + c) = ab + ac</p>
+        <dl>
+          <dt>a</dt><dd>a number or expression multiplying the sum</dd>
+          <dt>b, c</dt><dd>the two quantities being added inside the parentheses</dd>
+          <dt>ab, ac</dt><dd>a multiplied separately by b and by c, then added</dd>
+        </dl>
+      </div>
+
+      <p>This is the one true statement about multiplication &ldquo;spreading&rdquo; across addition: multiply a sum by breaking it into pieces, multiplying each piece separately, then adding the results, and you get the same answer as multiplying the whole sum at once. It is easy to check with real numbers: 5 &times; (3 + 4) is 5 &times; 7, which is 35; and (5 &times; 3) + (5 &times; 4) is 15 + 20, which is also 35. It works. Every time. That is precisely why it has a name and a guarantee &mdash; and precisely why it is so tempting, later, to assume every other operation does the same thing. It does not. Holding onto exactly which operation earns this property, and which don&rsquo;t, is the whole payoff of today&rsquo;s lesson, and we will come back to it directly in the misconception section below.</p>
+
+      <p>One more habit belongs here before moving to equations: <strong>combining like terms</strong>. Two terms are &ldquo;like&rdquo; only if they involve the exact same variable raised to the exact same power &mdash; 3<em>x</em> and 5<em>x</em> are like terms and can be added directly, because three <em>x</em>&rsquo;s plus five <em>x</em>&rsquo;s is eight <em>x</em>&rsquo;s, the same way three apples plus five apples is eight apples. 3<em>x</em> and 5 are not like terms &mdash; one is a multiple of <em>x</em>, the other is a plain number &mdash; and they cannot be combined into a single term any more than three apples and five oranges can be combined into eight of either. Nor are 3<em>x</em> and 5<em>x</em><sup>2</sup> like terms, despite sharing the letter <em>x</em>, because the powers differ. This sounds almost too simple to state, but it is the single most common source of careless algebra errors: adding 3<em>x</em> + 5 and writing 8<em>x</em>, as if the two terms were interchangeable, is a small slip with the same root cause as the carpenter&rsquo;s seven-foot mistake &mdash; treating two different kinds of quantity as if they simply added together.</p>
+
+      <p>Equations are solved with one governing idea: an equation is a balance, like a scale with equal weight on both sides. Whatever you do to one side, you must do to the other, or the balance tips and the statement stops being true.</p>
+
+      <div class="formula">
+        <p class="expr">if a = b, then a + c = b + c, and a &times; c = b &times; c (c &ne; 0 for division)</p>
+        <dl>
+          <dt>a, b</dt><dd>the two sides of a true equation</dd>
+          <dt>c</dt><dd>any number or expression applied identically to both sides</dd>
+        </dl>
+      </div>
+
+      <p>Solving <em>3x</em> + 5 = 20 for <em>x</em> means peeling off everything that is not <em>x</em>, one balanced move at a time: subtract 5 from both sides (3<em>x</em> = 15), then divide both sides by 3 (<em>x</em> = 5). Every step keeps both sides equal to each other; the equation is never anything other than perfectly true, all the way down.</p>
+
+      <p><strong>Order of operations</strong> is the convention that makes an expression like 3 + 4 &times; 5 unambiguous. Multiplication and division happen before addition and subtraction; anything inside parentheses happens first of all; powers happen before multiplication and division. It is not a law of nature &mdash; it is a shared agreement, the same way driving on the right side of the road is an agreement, not a fact about physics. But it is a universal agreement among anyone doing mathematics, which is exactly why it is safe to build on: 3 + 4 &times; 5 is 23 (do the multiplication first: 4 &times; 5 = 20, then add 3), never 35 (which is what you&rsquo;d get by adding left to right and ignoring the convention). Parentheses exist specifically to override the default order when you need to: (3 + 4) &times; 5 is 35, because the parentheses force the addition to happen first.</p>
+
+      <p><strong>Exponents</strong> are repeated multiplication written compactly: <em>a</em><sup>3</sup> means <em>a</em> &times; <em>a</em> &times; <em>a</em>. A handful of rules govern how they combine, and they are worth having in one place because you will lean on them constantly from here on:</p>
+
+      <div class="formula">
+        <p class="expr">a<sup>m</sup> &middot; a<sup>n</sup> = a<sup>m+n</sup>  &nbsp;&nbsp; (a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup>  &nbsp;&nbsp; a<sup>0</sup> = 1  &nbsp;&nbsp; a<sup>&minus;n</sup> = 1 / a<sup>n</sup></p>
+        <dl>
+          <dt>a</dt><dd>the base &mdash; the number being multiplied by itself</dd>
+          <dt>m, n</dt><dd>the exponents &mdash; how many times a is multiplied by itself (can be zero, negative, or, later, fractional)</dd>
+        </dl>
+      </div>
+
+      <p>The first rule says multiplying two powers of the same base adds the exponents &mdash; because <em>a</em><sup>2</sup> &middot; <em>a</em><sup>3</sup> really is (<em>a</em>&middot;<em>a</em>) &middot; (<em>a</em>&middot;<em>a</em>&middot;<em>a</em>), five <em>a</em>&rsquo;s multiplied together, which is <em>a</em><sup>5</sup>. The second says raising a power to another power multiplies the exponents, for the same reason: (<em>a</em><sup>2</sup>)<sup>3</sup> is <em>a</em><sup>2</sup> three times over, six <em>a</em>&rsquo;s total. The third and fourth look like arbitrary definitions &mdash; why should anything to the power zero equal one? &mdash; but they are forced by the first rule, not chosen freely: <em>a</em><sup>3</sup> &middot; <em>a</em><sup>0</sup> must equal <em>a</em><sup>3+0</sup> = <em>a</em><sup>3</sup>, and the only number you can multiply <em>a</em><sup>3</sup> by and get <em>a</em><sup>3</sup> back is 1. So <em>a</em><sup>0</sup> = 1 is not a convention someone picked; it is the only value consistent with a rule you already accepted.</p>
+
+      <h3>What a function actually is</h3>
+
+      <p>A <strong>function</strong> is a rule that assigns exactly one output to every input it accepts. The &ldquo;exactly one&rdquo; is not a minor detail &mdash; it is the entire definition. &ldquo;Square a number&rdquo; is a function: feed it 4, it always gives back 16, never sometimes 16 and sometimes something else. &ldquo;A number whose square is 16&rdquo; is <em>not</em> a function on its own, because both 4 and &minus;4 satisfy it &mdash; one input description, two possible outputs, which breaks the rule.</p>
+
+      <p>Function notation writes this compactly. If <em>f</em> is a function, <em>f</em>(<em>x</em>) means &ldquo;the output of <em>f</em> when the input is <em>x</em>.&rdquo; It is read &ldquo;<em>f</em> of <em>x</em>,&rdquo; and it is worth saying out loud the first few times you see it, because the parentheses look exactly like multiplication and are not: <em>f</em>(<em>x</em>) is not <em>f</em> times <em>x</em>. If <em>f</em>(<em>x</em>) = <em>x</em><sup>2</sup>, then <em>f</em>(4) means substitute 4 for <em>x</em> in the rule, giving 16. The letter <em>f</em> is just a label for the rule &mdash; you could call it anything &mdash; the way &ldquo;convert Celsius to Fahrenheit&rdquo; is a label for a specific procedure regardless of what you call the procedure.</p>
+
+      <div class="formula">
+        <p class="expr">y = f(x)</p>
+        <dl>
+          <dt>f</dt><dd>the function &mdash; the name of the rule being applied</dd>
+          <dt>x</dt><dd>the input, also called the argument &mdash; the value the rule is applied to</dd>
+          <dt>y, f(x)</dt><dd>the output &mdash; the single result the rule produces for that input</dd>
+        </dl>
+      </div>
+
+      <p>Two more words matter here. The <strong>domain</strong> of a function is the full set of inputs it is allowed to accept. The <strong>range</strong> is the full set of outputs it can actually produce. These are not always &ldquo;all numbers.&rdquo; The function &ldquo;take the reciprocal&rdquo;, <em>f</em>(<em>x</em>) = 1/<em>x</em>, cannot accept 0 as an input &mdash; division by zero is not defined &mdash; so 0 is excluded from its domain even though every other real number is included. The function &ldquo;square the number&rdquo; can accept any real number, but its range excludes every negative number, because a real number squared is never negative. Knowing a function&rsquo;s domain is not a technicality; it is the difference between an equation you can safely rearrange and one that will hand you a nonsense answer if you push it past where it is defined.</p>
+
+      <p>The simplest and most important function family is <strong>linear</strong>: a straight-line relationship between input and output.</p>
+
+      <div class="formula">
+        <p class="expr">f(x) = mx + b</p>
+        <dl>
+          <dt>x</dt><dd>the input</dd>
+          <dt>m</dt><dd>the slope &mdash; how much the output changes per unit change in the input; the rate of scaling</dd>
+          <dt>b</dt><dd>the intercept &mdash; the output when the input is zero; a fixed amount added regardless of input</dd>
+          <dt>f(x)</dt><dd>the output</dd>
+        </dl>
+      </div>
+
+      <p>Hold onto that shape &mdash; a scaling part (<em>m</em>) and a shifting part (<em>b</em>) &mdash; because it is the exact anatomy that decides, in the misconception section below, whether two functions can be swapped in order without changing the result.</p>
+
+      <p>Functions combine in two ways worth naming precisely. <strong>Composition</strong> feeds the output of one function into another as its input, written (<em>f</em> &compfn; <em>g</em>)(<em>x</em>) = <em>f</em>(<em>g</em>(<em>x</em>)): first apply <em>g</em>, then apply <em>f</em> to whatever <em>g</em> produced. Order is written right-to-left and matters &mdash; more on exactly how much it matters shortly. An <strong>inverse</strong> function, written <em>f</em><sup>&minus;1</sup>, undoes what <em>f</em> did: if <em>f</em>(3) = 7, then <em>f</em><sup>&minus;1</sup>(7) = 3. Composing a function with its own inverse, in either order, gets you back exactly where you started: <em>f</em><sup>&minus;1</sup>(<em>f</em>(<em>x</em>)) = <em>x</em>. Not every function has an inverse &mdash; &ldquo;square the number&rdquo; can&rsquo;t be cleanly undone, because both 4 and &minus;4 square to 16, so &ldquo;undo the square of 16&rdquo; has two candidate answers and an inverse is only allowed exactly one, by the same &ldquo;exactly one output&rdquo; rule that defines a function in the first place.</p>
+
+      <div class="formula">
+        <p class="expr">(f &compfn; g)(x) = f(g(x))</p>
+        <dl>
+          <dt>g</dt><dd>the inner function, applied first, to the original input x</dd>
+          <dt>f</dt><dd>the outer function, applied second, to whatever g produced</dd>
+          <dt>(f &compfn; g)(x)</dt><dd>the combined function: do g, then do f to the result</dd>
+        </dl>
+      </div>
+
+      <h3>Doing it with real numbers</h3>
+
+      <p>Three worked problems, each pulling on a different piece of what you have just read. Work through the arithmetic yourself on paper as you go &mdash; the whole point of a worked example is that you can check every step.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; solving a linear equation, and rearranging a real formula</b>
+        <p>The Celsius-to-Fahrenheit conversion is a linear function: <em>F</em> = (9/5)<em>C</em> + 32, where <em>C</em> is the temperature in Celsius and <em>F</em> is the same temperature in Fahrenheit. Suppose you know a reading of 98.6&deg;F (human body temperature) and want to know what that is in Celsius &mdash; you have to solve the equation for <em>C</em> instead of <em>F</em>.</p>
+        <ol>
+          <li>Start from the equation as given, with the known value substituted for <em>F</em>: 98.6 = (9/5)<em>C</em> + 32.</li>
+          <li>Balance move: subtract 32 from both sides. 98.6 &minus; 32 = 66.6, so 66.6 = (9/5)<em>C</em>.</li>
+          <li>Balance move: multiply both sides by 5/9, the reciprocal of 9/5, to isolate <em>C</em>. 66.6 &times; 5/9 = 333/9 = 37.</li>
+          <li>Result: <em>C</em> = 37. Body temperature is 37&deg;C, which is the figure you may already have seen quoted &mdash; and now you can derive it instead of remembering it, and rearrange the same formula for any other pair of readings.</li>
+        </ol>
+        <p>Notice what happened structurally: the original formula was solved for <em>F</em> in terms of <em>C</em>. Nothing about the formula changed; what changed is which letter you treated as &ldquo;the unknown&rdquo; and which you treated as &ldquo;the known.&rdquo; Every balanced move applies to both sides regardless of which letter you&rsquo;re solving for &mdash; that is what makes the same three rules (subtract from both sides, divide both sides, and so on) sufficient to rearrange any linear formula for any one of its letters.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; why the order you apply two functions can change the answer</b>
+        <p>A $150 jacket has a $20 coupon and is subject to 7% sales tax. Does it matter whether the tax is applied before or after the coupon? Model each step as a function of price <em>x</em>: the coupon function is <em>c</em>(<em>x</em>) = <em>x</em> &minus; 20, and the tax function is <em>t</em>(<em>x</em>) = 1.07<em>x</em>.</p>
+        <ol>
+          <li><strong>Order A &mdash; coupon first, then tax:</strong> compute <em>t</em>(<em>c</em>(150)). First <em>c</em>(150) = 150 &minus; 20 = 130. Then <em>t</em>(130) = 1.07 &times; 130 = 139.10.</li>
+          <li><strong>Order B &mdash; tax first, then coupon:</strong> compute <em>c</em>(<em>t</em>(150)). First <em>t</em>(150) = 1.07 &times; 150 = 160.50. Then <em>c</em>(160.50) = 160.50 &minus; 20 = 140.50.</li>
+          <li>Compare: $139.10 versus $140.50. The two orders differ by $1.40 &mdash; on a single $150 jacket. It genuinely matters which function is applied first, and most checkout systems apply the coupon before tax (Order A) specifically because it is cheaper for the buyer and is what most sales-tax laws require, since tax is generally owed on the amount actually paid.</li>
+          <li>Why the gap exists: the tax function <em>t</em> is pure scaling (<em>b</em> = 0 in the <em>mx</em> + <em>b</em> form from the formalism above), but the coupon function <em>c</em> is a pure shift (<em>m</em> = 1). Applying the 7% scale to a smaller starting number (post-coupon) produces a smaller tax dollar amount than applying it to the full price. The $1.40 gap is exactly 7% of the $20 coupon &mdash; the tax that Order B charges on money the customer in Order A never had to pay tax on.</li>
+        </ol>
+        <p>Contrast this with two functions that are <em>both</em> pure scaling &mdash; say, the same 7% tax and a separate 15% employee discount, with no flat dollar amount anywhere. 0.85 &times; 1.07 &times; <em>x</em> and 1.07 &times; 0.85 &times; <em>x</em> give the identical result for any <em>x</em>, because multiplication is commutative (the property named above) and two pure-scaling functions compose by multiplying their scale factors. Order stops mattering the moment every function involved has no shift term. It is the flat $20 &mdash; the <em>b</em> in <em>mx</em> + <em>b</em> &mdash; that breaks the symmetry.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; exponents and a formula you will meet again</b>
+        <p>Compound interest: $1,000 invested at an annual rate of 6%, compounded monthly, for 2 years. The formula is <em>A</em> = <em>P</em>(1 + <em>r</em>/<em>n</em>)<sup><em>nt</em></sup>, where <em>A</em> is the final amount, <em>P</em> is the principal (the starting amount), <em>r</em> is the annual interest rate as a decimal, <em>n</em> is the number of times per year interest compounds, and <em>t</em> is the number of years.</p>
+        <ol>
+          <li>Identify the values: <em>P</em> = 1000, <em>r</em> = 0.06, <em>n</em> = 12 (monthly), <em>t</em> = 2.</li>
+          <li>Compute the base first, following order of operations: 1 + <em>r</em>/<em>n</em> = 1 + 0.06/12 = 1 + 0.005 = 1.005.</li>
+          <li>Compute the exponent: <em>nt</em> = 12 &times; 2 = 24. The base 1.005 is raised to the 24th power &mdash; that&rsquo;s the &ldquo;compounded monthly for 2 years&rdquo; part doing its work: interest gets applied 24 separate times, each time on the new, slightly larger balance.</li>
+          <li>1.005<sup>24</sup> works out to approximately 1.1272. Multiply by the principal: <em>A</em> = 1000 &times; 1.1272 &asymp; $1,127.20.</li>
+          <li>The account earned about $127.20 over two years &mdash; more than the $120 you&rsquo;d get from simple, non-compounding 6%-per-year interest (2 &times; $60), because each month&rsquo;s interest is computed on a slightly larger balance than the month before. That gap between $120 and $127.20 is entirely a product of the exponent rules from the formalism section: <em>a</em><sup><em>m</em></sup> stacking multiplicatively, not additively, as <em>m</em> grows.</li>
+        </ol>
+      </div>
+
+      <h3>Where this already shows up</h3>
+
+      <p>You will not go a single day of this newspaper&rsquo;s news editions without reading the output of a function. &ldquo;The 10-year Treasury yield fell 3 basis points&rdquo; is one evaluation of a function of time. &ldquo;CPI rose 0.3% month over month&rdquo; is a percentage-change function applied to two readings of a price index. A stock&rsquo;s 52-week range, its distance from its 200-day moving average, an option&rsquo;s implied move &mdash; every one of these is a specific number produced by feeding specific inputs into a specific, named rule, in a specific order. The rule you learned today about order mattering when a shift is involved is not an abstraction: it is the reason a retailer&rsquo;s &ldquo;discount then tax&rdquo; policy is not interchangeable with &ldquo;tax then discount,&rdquo; the reason compounding interest monthly is not the same as compounding it annually even at the same quoted rate, and the reason a formula in a spreadsheet that looks almost right can be quietly, permanently wrong if a parenthesis is one character out of place.</p>
+
+      <p>The same non-commuting-composition idea from the jacket example explains a pattern that shows up constantly in market reporting and trips up almost every reader the first time they notice it: a 10% loss is not undone by a 10% gain. Picture $100 invested in something that falls 10% one day, then rises 10% the next. The fall is the function <em>d</em>(<em>x</em>) = 0.90<em>x</em>: $100 becomes 0.90 &times; 100 = $90. The next day&rsquo;s rise is <em>r</em>(<em>x</em>) = 1.10<em>x</em>, applied to the new, smaller balance: 1.10 &times; 90 = $99. Not $100. The percentages look like they should cancel &mdash; down ten, up ten, net zero &mdash; but each percentage is a function applied to whatever balance exists at that moment, not to the original $100, and a fixed percentage of a smaller number is a smaller amount than the same percentage of a larger number. This is exactly why market reports describe a security as needing an 11.1% gain (not 10%) to recover from a 10% loss: 90 &times; 1.111 &asymp; 100. The asymmetry is not a market quirk; it is the same &ldquo;order and starting point both matter&rdquo; fact from the jacket, wearing percentages instead of a coupon.</p>
+
+      <p>Engineering and construction never stopped using the exact fact that opened this lesson. The 3-4-5 rule is still taught to apprentice carpenters today, for the same reason it was useful to Egyptian rope-stretchers: it is a way to guarantee a right angle using only a tape measure, no protractor and no trust required. Anywhere a foundation, a wall frame, or a deck needs a true ninety-degree corner, someone is quietly relying on the fact that three squared plus four squared equals five squared &mdash; a fact you now know is not an accident of small numbers, but a special case of a relationship (the Pythagorean theorem, <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup> = <em>c</em><sup>2</sup> for a right triangle&rsquo;s legs <em>a</em>, <em>b</em> and hypotenuse <em>c</em>) that a later mathematics day will derive properly, rather than just use.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Here is the misconception, stated plainly: people learn the distributive property &mdash; <em>a</em>(<em>b</em> + <em>c</em>) = <em>ab</em> + <em>ac</em> &mdash; correctly, and then unconsciously generalize it to every operation, not just multiplication. It feels like a general fact about how math works: &ldquo;do the thing to each piece, then add the pieces.&rdquo; It is not general. It is a specific, provable fact about multiplication over addition, and almost nothing else in ordinary algebra has it.</p>
+
+      <p>The clearest version of the mistake is exactly the one hiding in the carpenter&rsquo;s corner. If squaring &ldquo;distributed&rdquo; the way multiplication does, then (<em>a</em> + <em>b</em>)<sup>2</sup> would equal <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup>, and a right triangle with legs 3 and 4 would have a hypotenuse satisfying <em>c</em><sup>2</sup> = 3<sup>2</sup> + 4<sup>2</sup> in a way that let you skip straight to <em>c</em> = 3 + 4 = 7. It does not work that way, and the correct expansion shows exactly why:</p>
+
+      <div class="formula">
+        <p class="expr">(a + b)<sup>2</sup> = a<sup>2</sup> + 2ab + b<sup>2</sup></p>
+        <dl>
+          <dt>a, b</dt><dd>the two quantities being added before squaring</dd>
+          <dt>a<sup>2</sup>, b<sup>2</sup></dt><dd>each quantity squared on its own</dd>
+          <dt>2ab</dt><dd>the cross term &mdash; twice the product of a and b, entirely missing from the naive a<sup>2</sup> + b<sup>2</sup> guess</dd>
+        </dl>
+      </div>
+
+      <p>That middle term, 2<em>ab</em>, is the whole story. It comes directly from multiplying out (<em>a</em> + <em>b</em>)(<em>a</em> + <em>b</em>) using the distributive property twice &mdash; <em>a</em> times <em>a</em>, <em>a</em> times <em>b</em>, <em>b</em> times <em>a</em>, and <em>b</em> times <em>b</em>, four terms, and the two middle ones are identical and add together. For 3 and 4: (3 + 4)<sup>2</sup> = 49, while 3<sup>2</sup> + 4<sup>2</sup> is only 25 &mdash; the missing 2<em>ab</em> term is 2 &times; 3 &times; 4 = 24, and 25 + 24 is indeed 49. The hypotenuse of a 3-4-5 triangle isn&rsquo;t computed by adding legs at all; it satisfies <em>c</em><sup>2</sup> = <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup>, which is 9 + 16 = 25, and then you take the square root of <em>that</em>, giving 5 &mdash; not the square root of <em>a</em> plus the square root of <em>b</em>, and not <em>a</em> plus <em>b</em>.</p>
+
+      <p>The same false generalization shows up with square roots directly &mdash; the square-root function does not distribute over addition either, for the same underlying reason (it is the inverse of squaring, and squaring doesn&rsquo;t distribute, so undoing it can&rsquo;t distribute cleanly either):</p>
+
+      <div class="formula">
+        <p class="expr">&radic;(a + b) &ne; &radic;a + &radic;b &nbsp;&nbsp; (in general)</p>
+        <dl>
+          <dt>a, b</dt><dd>any two non-negative numbers being added before the root is taken</dd>
+        </dl>
+      </div>
+
+      <p>Check it with the same 9 and 16: &radic;(9 + 16) = &radic;25 = 5, while &radic;9 + &radic;16 = 3 + 4 = 7. Same numbers as the carpenter&rsquo;s triangle, because it is the identical fact wearing a different notation. The rule extends to reciprocals (1/(<em>a</em>+<em>b</em>) is not 1/<em>a</em> + 1/<em>b</em>), to most trigonometric functions, and &mdash; as Worked Example 2 showed with the jacket &mdash; to function composition itself whenever a shift term is involved. The single operation that genuinely earns the &ldquo;distribute across a sum&rdquo; property, in the algebra you will use for the rest of this course, is multiplication by a constant, and pure scaling functions built only from multiplication. The moment addition or subtraction enters a function&rsquo;s own definition &mdash; the moment there is a <em>b</em> in <em>mx</em> + <em>b</em>, or a squaring, or a root &mdash; that guarantee is gone, and it has to be checked, not assumed.</p>
+
+      <p>A close cousin of the same mistake shows up when simplifying fractions rather than expanding them &mdash; and it runs in the opposite direction, canceling something that was never a shared multiplier in the first place. Given (<em>a</em> + <em>b</em>) / (<em>a</em> + <em>c</em>), it is tempting to &ldquo;cancel the <em>a</em>&rsquo;s&rdquo; and reduce it to <em>b</em>/<em>c</em>. Try it with real numbers &mdash; <em>a</em> = 2, <em>b</em> = 3, <em>c</em> = 7: the original expression is (2 + 3) / (2 + 7) = 5/9, while the &ldquo;simplified&rdquo; version claims 3/7. Those are different numbers (5/9 &asymp; 0.556, 3/7 &asymp; 0.429), so the cancellation was not legal. Cancellation in a fraction is only valid when the shared piece is a <em>factor</em> of the entire numerator and the entire denominator &mdash; something multiplied by everything else, not just added alongside it. In 2<em>x</em>/2<em>y</em>, the 2 genuinely divides out, leaving <em>x</em>/<em>y</em>, because 2 multiplies the whole top and the whole bottom. In (<em>a</em> + <em>b</em>)/(<em>a</em> + <em>c</em>), the <em>a</em> is only added to one piece of the top and one piece of the bottom &mdash; it is not a factor of either &mdash; so there is nothing legitimate to cancel. This is the mirror image of the distributive misconception: one error invents a distributive property that isn&rsquo;t there; the other invents a common factor that isn&rsquo;t there. Both come from the same instinct &mdash; treating addition and multiplication as interchangeable when they are not &mdash; and both are caught by the identical habit: test the shortcut on two small, easy numbers before trusting it on a formula that matters.</p>
+
+      <p>The practical habit this should leave you with: whenever you are tempted to write <em>f</em>(<em>a</em> + <em>b</em>) = <em>f</em>(<em>a</em>) + <em>f</em>(<em>b</em>) for some function <em>f</em> that isn&rsquo;t simple multiplication by a constant, stop and test it on two easy numbers before you trust it. It takes ten seconds and it is the single cheapest error-check available to you in all of algebra.</p>
+
+      <h3>One thing this course will keep doing</h3>
+
+      <p>Every lesson after today closes with a paragraph tying the day&rsquo;s idea back to an earlier lesson in a different subject &mdash; physics, finance, accounting, artificial intelligence, economics, rocketry &mdash; to show that a hundred and fifty days of material is one connected structure, not a hundred and fifty separate essays. Today is day one, so there is nothing earlier to reach back to yet; this is the one lesson in the whole sequence where that paragraph has to look forward instead.</p>
+
+      <p>Here is what to watch for. The missing cross term from today, 2<em>ab</em>, is not an algebra-class curiosity &mdash; it reappears, with real financial consequences, the day this course reaches the variance of a two-asset portfolio, where the same expansion of a squared sum produces a covariance term that naive intuition drops exactly the way it wants to drop it here. The balance-scale idea behind solving an equation &mdash; do the same thing to both sides &mdash; is the exact same move a later mechanics lesson will use to isolate acceleration in Newton&rsquo;s second law, and the same move a rocketry lesson will use to isolate a rocket&rsquo;s mass ratio in the Tsiolkovsky equation. And function composition, introduced here with a jacket and a coupon, is the load-bearing idea behind every layer of a neural network: each layer is a function, the whole network is a composition of them, and the order in which those functions are stacked turns out to matter for exactly the structural reason it mattered for the tax and the coupon. None of that has happened yet in this course. It is a promise about the shape of what is coming, not a claim about what you have already been taught &mdash; and starting on whichever future day the course actually reaches those topics, that day&rsquo;s lesson will make the connection explicit and point back to this one.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can treat an equation as a balance and rearrange it by doing the identical operation to both sides, in either direction &mdash; solving a formula for any one of its letters, not just the one it was originally written for.</li>
+          <li>You know the difference between an expression (something to simplify) and an equation (something to solve), and you can read function notation, <em>f</em>(<em>x</em>), without mistaking it for multiplication.</li>
+          <li>You know exactly one operation is guaranteed to distribute over a sum &mdash; multiplication &mdash; and you have a ten-second test (try two easy numbers) for any other operation before you trust a shortcut with it.</li>
+          <li>This sets up the next several Mathematics days directly: factoring is distribution run in reverse, and solving anything beyond a straight line &mdash; a quadratic, a system of two equations &mdash; depends on the same balance-scale reasoning you just used on the Celsius formula, applied to messier expressions.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The curriculum entry for today points at Day 1 of Logan&rsquo;s 60-day academy as a topic scope; that material lives on a local machine and is not reachable from a cloud run, so this lesson &mdash; the carpenter&rsquo;s 3-4-5 rule, the Celsius&ndash;Fahrenheit and compound-interest formulas, the coupon-and-tax and percentage-loss examples &mdash; was written fresh for this report, with every worked calculation checked directly rather than quoted from elsewhere.</p>
+      <p><strong>Corrections.</strong> None in this edition &mdash; it is the first Learning Brief run, so there is no earlier lesson to have gotten wrong yet.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-16-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
