@@ -50,10 +50,20 @@ UA = "LoganTerminal/1.0 (loganshaffer87@gmail.com)"
 # problem and WSJ stays first in LINK_PREFERENCE. It is preferred but never
 # required: when WSJ has not picked a story up, the alert still fires and
 # links the strongest other source rather than staying silent.
+# feeds.a.dj.com is DEAD. It still answers 200 with well-formed RSS, which is
+# why nothing ever errored -- but every item it serves is from January 2025.
+# Dow Jones moved to feeds.content.dowjones.io and left the old host frozen.
+# Verified 2026-08-17: old host newest item 2025-01-27, new host 0.4-1.6h old
+# and carrying 60-85 items per feed rather than 20.
+#
+# The practical effect was silent: three of eleven sources contributed nothing
+# to corroboration, and WSJ -- first in LINK_PREFERENCE, and the whole reason
+# that preference exists -- could never supply a link, so every alert fell
+# through to CNBC or BBC.
 FEEDS = [
-    ("WSJ",        "https://feeds.a.dj.com/rss/RSSWorldNews.xml"),
-    ("WSJ",        "https://feeds.a.dj.com/rss/WSJcomUSBusiness.xml"),
-    ("WSJ",        "https://feeds.a.dj.com/rss/RSSMarketsMain.xml"),
+    ("WSJ",        "https://feeds.content.dowjones.io/public/rss/RSSWorldNews"),
+    ("WSJ",        "https://feeds.content.dowjones.io/public/rss/WSJcomUSBusiness"),
+    ("WSJ",        "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain"),
     ("BBC",        "https://feeds.bbci.co.uk/news/world/rss.xml"),
     ("NPR",        "https://feeds.npr.org/1001/rss.xml"),
     ("Guardian",   "https://www.theguardian.com/world/rss"),
@@ -67,6 +77,10 @@ FEEDS = [
 # Order used when WSJ has not covered the story and a fallback link is needed.
 LINK_PREFERENCE = ["WSJ", "CNBC", "BBC", "Guardian", "NPR", "CBS",
                    "Sky News", "Al Jazeera", "Deutsche Welle"]
+
+# A newsroom that has filed nothing in three days has not gone quiet -- its
+# feed has moved. Generous enough that a genuinely slow weekend never trips it.
+STALE_FEED_DAYS = 3
 
 # Corroboration answers "is this real and big" -- it does not answer "is this
 # Logan's kind of news". On the night this was built, three outlets all led
@@ -311,6 +325,19 @@ def main():
         if not entries:
             log("feed empty/unparsed: %s <%s>" % (name, url))
             continue
+
+        # A feed can rot without ever failing: feeds.a.dj.com answered 200 with
+        # valid RSS for nineteen months while serving January 2025 stories, and
+        # nothing in this loop noticed, because "parsed fine" was taken as
+        # "working". Dated entries that are all ancient mean the endpoint moved.
+        # Say so, and do not let it count toward the live-newsroom quorum it is
+        # no longer contributing to.
+        dated = [w for (_t, _l, w) in entries if w]
+        if dated and max(dated) < now - timedelta(days=STALE_FEED_DAYS):
+            log("FEED STALE: %s newest item %s <%s> -- endpoint likely moved"
+                % (name, max(dated).date().isoformat(), url))
+            continue
+
         live.add(name)
         for title, link, when in entries:
             # No timestamp: keep it, feeds order newest-first and a missing
