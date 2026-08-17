@@ -73,6 +73,9 @@ jobs:
     if: github.event_name == 'workflow_run'
     needs: deploy
     runs-on: ubuntu-latest
+    # notify.py also waits here for the report MP3 (audio.yml runs off the same
+    # publish-report completion, in parallel with this deploy).
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,4 +86,5 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/notify.py

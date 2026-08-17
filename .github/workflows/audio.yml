@@ -18,6 +18,13 @@ on:
     branches: [main]
     paths: [site/reports/index.json]
   workflow_dispatch:
+  # PR-path publishes too. A merge made with GITHUB_TOKEN fires no push event,
+  # so without this the fallback path produced no audio at all -- and now that
+  # the Telegram push waits for the MP3, that would mean waiting the full
+  # timeout for a file nobody was ever going to write.
+  workflow_run:
+    workflows: ["Publish report (auto-merge claude/ PRs)"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -28,9 +35,12 @@ concurrency:
 
 jobs:
   speak:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
