@@ -150,13 +150,13 @@
     },
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "Iran publicly rebuffs Trump's Hormuz \"US territory\" claim after a third ADNOC tanker strike in 48 hours",
+      "headline": "Iran claims full control of the Strait of Hormuz as the US ceasefire formally expires",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-17-am",
+      "last_updated": "2026-08-17-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "The 60-day Islamabad ceasefire formally lapsed over the weekend with no extension agreed; Iran's Foreign Ministry says the US must lift its Hormuz blockade first, Araghchi says no decision to resume talks. Trump's rally claim to make the Strait 'US territory' drew Gharibabadi's public rebuff; a third ADNOC tanker was struck Friday. USS George Washington still transiting to relieve USS Abraham Lincoln (250+ days at sea).",
-      "score_note": "Ceasefire's formal expiry is the most significant escalation point yet; no confirmed snapback to hostilities found.",
+      "one_line": "The June 17 US-Iran ceasefire MOU (60 days of free Hormuz passage in exchange for the lifted US naval blockade) expired Monday with no extension agreed by either government. Iran separately claimed full control of the strait over the weekend (Single-reliable-source-cluster, not independently confirmed by a Western government statement found this run); shipping trackers describe oil flow at a three-month low. WTI crude +2.91% and gold +1.00% today, a plausible but unconfirmed (Likely contributor) link. No new US/Israeli military action or confirmed shipping strike found this run.",
+      "score_note": "Ceasefire's formal expiry now confirmed with no extension; the strait-control claim is the next fact to verify independently.",
       "sources": [
         "CNN",
         "Al-Monitor",
@@ -271,13 +271,13 @@
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
-      "headline": "Kushner, Blair and Mladenov land in Israel to press the Gaza disarmament roadmap; outcome pending",
+      "headline": "Kushner and Netanyahu agree to Gaza disarmament working groups; withdrawal sequencing still unresolved",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-17-am",
-      "verification": "Confirmed-multiple (trip); Single-reliable-source (Netanyahu 'will give it a chance' claim)",
-      "one_line": "Kushner, Blair and Mladenov met Hamas leader Khalil al-Hayya directly in Egypt Sunday, then Kushner flew to Israel; a Netanyahu meeting was underway/pending as of Monday morning with no outcome yet. Same weekend, Israeli strikes killed at least 11 in southern Lebanon (deadliest since the June truce); Lebanon's president called it a message aimed at the talks.",
-      "score_note": "First direct Kushner-Hamas meeting on record; outcome of the Netanyahu sit-down is the next concrete signal.",
+      "last_updated": "2026-08-17-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "Kushner met Netanyahu for roughly three hours in Jerusalem Monday (Blair and Mladenov also present), a day after Kushner's direct Cairo meeting with Hamas's Khalil al-Hayya. The two sides agreed to working groups on Hamas disarmament (US-general-overseen) and Gaza public health, and that the weapons handover should precede reconstruction -- but Kushner reportedly assured Netanyahu Israel won't be compelled to withdraw before Hamas disarms, leaving Hamas's own withdraw-first precondition (the Aug 9 sequencing dispute) unaddressed.",
+      "score_note": "Working-group mechanism is forward motion; the core sequencing dispute is unchanged from Aug 9.",
       "sources": [
         "Times of Israel",
         "Al Jazeera",
@@ -866,13 +866,13 @@
     },
     {
       "id": "retail-earnings-tariffs-week-aug17",
-      "headline": "Retail-earnings week opens against tariff crosscurrents: Home Depot Tuesday, Canada tariff deadline, billions in refunds",
-      "status": "New",
+      "headline": "Home Depot reports tomorrow in its first call since the CEO's medical leave began",
+      "status": "Materially changed",
       "first_seen": "2026-08-17-am",
-      "last_updated": "2026-08-17-am",
-      "verification": "Confirmed-primary (HD earnings date); Confirmed-multiple (tariffs)",
-      "one_line": "Home Depot confirmed reporting Tuesday BMO (corrects this report's prior working date of Wednesday) via its own IR release; Lowe's/Target Wednesday, Walmart Thursday. 50% Section 338 Canada tariffs take effect Wednesday absent a deal. ~$100B in tariffs refunded to date post-SCOTUS ruling; Walmart potentially eligible for up to $10.2B, Target up to $2.2B.",
-      "score_note": "Direct read-through on the Aug 14 retail-sales miss; forecast 2026-08-17-am-2 logged.",
+      "last_updated": "2026-08-17-pm",
+      "verification": "Confirmed-primary (HD earnings date/consensus); Confirmed-multiple (tariffs)",
+      "one_line": "Consensus clusters around $4.71-4.73 EPS on ~$47.5B revenue (vs $4.68 a year ago) for tomorrow's 8am BMO print, the first since CEO Ted Decker's Aug 12 medical leave began; day-to-day operations split between Ann-Marie Campbell (stores/ops) and CFO Richard McPhail (finance/Pro). HD closed today -0.29% at $337.88. Lowe's/Target Wednesday, Walmart Thursday; 50% Section 338 Canada tariffs take effect Wednesday absent a deal.",
+      "score_note": "Open forecast 2026-08-12-pm-3 (no further 3%+ decline over 5 sessions) resolves around tomorrow's print.",
       "sources": [
         "Home Depot investor relations",
         "Washington Post",
@@ -960,6 +960,54 @@
         "Bloomberg"
       ],
       "watch": false
+    },
+    {
+      "id": "l3harris-ceo-departure-defense-pullback-aug17",
+      "headline": "L3Harris CEO Christopher Kubasik departs abruptly, dragging the broader defense sector lower",
+      "status": "New",
+      "first_seen": "2026-08-17-pm",
+      "last_updated": "2026-08-17-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "LHX fell 4.61% (this run's own data) after Kubasik's immediate departure; the company says the exit involved no financial-reporting issue and reaffirmed 2026 revenue guidance. The broader defense group softened alongside it (NOC -2.67%, LMT -2.45%, BA -2.47%, GD -1.17%, AVAV -6.06%) without a confirmed company-specific reason found for the wider group beyond L3Harris's own news.",
+      "score_note": "First trading day since the Aug 9-11 Pentagon production-framework rally that lifted many of these same names.",
+      "sources": [
+        "The Motley Fool",
+        "Yahoo Finance",
+        "this run's own Yahoo Finance data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "marvell-micron-chip-rally-mizuho-aug17",
+      "headline": "Marvell and Micron lead a chip/optical-networking rally on a bullish Mizuho supply-chain note",
+      "status": "New",
+      "first_seen": "2026-08-17-pm",
+      "last_updated": "2026-08-17-pm",
+      "verification": "Confirmed-multiple",
+      "one_line": "MRVL +5.54% and MU +4.13% (this run's own data) after Mizuho's Aug 16 note cited supply-chain checks pointing to a strong Nvidia VR200 ramp, framed as positive for near/co-packaged optical connectivity and specifically Marvell, Credo, Nvidia, Broadcom and Lumentum into 2027. Broadcom (-0.14%) and Nvidia (-0.07%) were little changed, indicating a narrow rally rather than broad AI-chip buying.",
+      "score_note": "Distinct from the alt-asset-manager/Nvidia-financing thread; watch whether Broadcom/Nvidia participate on a lag.",
+      "sources": [
+        "24/7 Wall St",
+        "TradingKey",
+        "this run's own Yahoo Finance data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "lunr-satellite-contract-aug17",
+      "headline": "Intuitive Machines gains 7.2% on a $600M+ satellite communications contract, possibly overlapping an earlier disclosure",
+      "status": "New",
+      "first_seen": "2026-08-17-pm",
+      "last_updated": "2026-08-17-pm",
+      "verification": "Confirmed-primary (contract existence); Unverified (whether additive to Aug 13 disclosure)",
+      "one_line": "LUNR +7.21% to $20.38 (this run's own data) after an unnamed customer authorized a multi-satellite communications program valued above $600M using the IM-1300 platform. This report could not confirm whether this is the same $600M+ GEO satellite deal disclosed in the Aug 13 earnings report or a distinct, additional award.",
+      "score_note": "Flagged for reconciliation against the Aug 13 backlog figures in the next edition.",
+      "sources": [
+        "24/7 Wall St",
+        "Yahoo Finance",
+        "Simply Wall St"
+      ],
+      "watch": true
     },
     {
       "id": "stripe-openrouter-acquisition-aug16",
