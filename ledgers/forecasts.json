@@ -1345,6 +1345,26 @@
       "probability": "8-12%",
       "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-17-am-1",
+      "date": "2026-08-17",
+      "slot": "am",
+      "forecast": "A materially disruptive Strait of Hormuz incident occurs (confirmed closure, tanker sinking, or US-Iran exchange with casualties).",
+      "horizon": "2026-08-24",
+      "probability": "30-45%",
+      "basis": "Three tanker strikes in the five days before the Islamabad ceasefire's deadline, which then lapsed with no extension talks underway; incident pace has been accelerating even as oil/equities have not moved in proportion.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-17-am-2",
+      "date": "2026-08-17",
+      "slot": "am",
+      "forecast": "At least one of Home Depot, Lowe's, Target or Walmart misses consensus revenue in this week's Q2 earnings reports.",
+      "horizon": "2026-08-20",
+      "probability": "45-60%",
+      "basis": "Friday's retail-sales print fell 0.6% m/m (sharpest since May 2025) and consumer sentiment missed sharply; Home Depot also reports the week after its CEO began medical leave.",
+      "status": "open"
     }
   ]
 }

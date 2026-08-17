@@ -153,10 +153,10 @@
       "headline": "Iran publicly rebuffs Trump's Hormuz \"US territory\" claim after a third ADNOC tanker strike in 48 hours",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "A third ADNOC-linked vessel was struck in the Strait Fri-Sat Aug 14-15; Trump told a rally he'd 'pretty soon' declare the Strait 'a territory of the United States'; Iran's Deputy FM Gharibabadi rebuffed this directly on X, saying it 'cannot be seized by tweet, nor by aircraft carrier.' Strait shipping traffic down to ~17% of pre-conflict average. USS George Washington still transiting to relieve USS Abraham Lincoln.",
-      "score_note": "Sharpest rhetorical escalation in this thread since late-July pause; oil/VIX not yet pricing it.",
+      "one_line": "The 60-day Islamabad ceasefire formally lapsed over the weekend with no extension agreed; Iran's Foreign Ministry says the US must lift its Hormuz blockade first, Araghchi says no decision to resume talks. Trump's rally claim to make the Strait 'US territory' drew Gharibabadi's public rebuff; a third ADNOC tanker was struck Friday. USS George Washington still transiting to relieve USS Abraham Lincoln (250+ days at sea).",
+      "score_note": "Ceasefire's formal expiry is the most significant escalation point yet; no confirmed snapback to hostilities found.",
       "sources": [
         "CNN",
         "Al-Monitor",
@@ -218,29 +218,14 @@
       "watch": false
     },
     {
-      "id": "kumamoto-earthquake-jul2026",
-      "headline": "Kumamoto earthquake toll holds at 38; crisis now centered on heat and water access",
-      "status": "Resolved",
-      "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-06-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Toll holds at 38, unchanged. New: extreme heat combined with damaged water/power infrastructure raises risk of further deaths among 8,200+ still-evacuated residents (single-reliable-source on the specific heat-risk warning).",
-      "score_note": "Plateaued on toll; the recovery-phase heat/water risk this report has flagged is now acute (39C forecast).",
-      "sources": [
-        "NewsOnJapan",
-        "Japan Times"
-      ],
-      "watch": false
-    },
-    {
       "id": "drc-ebola-outbreak-2026",
       "headline": "DRC Ebola outbreak confirmed count rises to 4,665 cases / 2,184 deaths; WHO Emergency Committee reconvenes Tuesday",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "WHO-sourced figures (via UN News) as of Aug 13 data: 4,665 confirmed cases, 2,184 deaths, up from 4,566/2,128 on Aug 11. Spread confirmed to a sixth province (Bas-Uele); 60-70% of deaths occurring in the community outside formal care. Uganda's linked outbreak was declared over Jul 28 (20 cases, 2 deaths). A second WHO IHR Emergency Committee meeting on the PHEIC is scheduled Tue Aug 18.",
-      "score_note": "Now the fastest-growing Ebola outbreak on record per WHO; Tuesday's Emergency Committee meeting is a concrete date to watch.",
+      "one_line": "Confirmed count rose to 4,727 cases / 2,214 deaths as of Aug 15 (Africa CDC/WHO), up from 4,665/2,184 on Aug 13. Outbreak reached a sixth province (Bas-Uele) after a fatal imported case. WHO's second IHR Emergency Committee meeting on the PHEIC is Tuesday Aug 18.",
+      "score_note": "Now confirmed the largest Ebola outbreak DRC has recorded; Tuesday's WHO meeting is the next concrete date.",
       "sources": [
         "UN News",
         "WHO",
@@ -254,10 +239,10 @@
       "headline": "Judge expands mail-ballot injunction nationwide; DOJ pushes Supreme Court for a ruling \"at any moment\"",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Judge Talwani's Aug 11 ruling expanded her injunction to nationwide scope; DOJ appealed to the 1st Circuit and filed a supplemental SCOTUS brief Aug 12 urging prompt action ($100 bond due Aug 18). The 23-state-plus-D.C. coalition filed a 45-page response brief. No Supreme Court ruling as of this report's cutoff.",
-      "score_note": "Ruling could land at any time; this is now the most time-sensitive open legal thread this report tracks.",
+      "one_line": "1st Circuit ruled 2-1 against DOJ's stay request over the weekend; DOJ's SCOTUS emergency application remains pending, re-upped Sunday. $100 bond due Tuesday Aug 18. Separately, a distinct SCOTUS emergency matter (White House ballroom project) has a Roberts-set Tuesday response deadline; the government's ballroom filing newly disclosed a Jul 8 Air Force One evacuation over an intelligence assassination threat near Turkey.",
+      "score_note": "Both SCOTUS emergency-docket matters share a Tuesday deadline; either could resolve at any time.",
       "sources": [
         "SCOTUSblog",
         "Votebeat",
@@ -266,59 +251,6 @@
         "Washington Times"
       ],
       "watch": true
-    },
-    {
-      "id": "cyber-campaigns-jul-2026",
-      "headline": "ShinyHunters/EY extortion deadline passed with no confirmed leak or payment",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-08-03-am",
-      "verification": "Single-reliable-source",
-      "one_line": "No leak-site posting or payment confirmed past EY's Jul 31 deadline; no new EY statement. (Note: an unrelated Oct 2025 EY Azure exposure incident should not be conflated with this ShinyHunters matter.)",
-      "score_note": "Deadline passed without resolution -- watch for a leak-site posting or EY statement.",
-      "sources": [
-        "BleepingComputer",
-        "SecurityWeek",
-        "HackRead",
-        "Cybersecuritynews",
-        "Infosec.ge"
-      ],
-      "watch": false
-    },
-    {
-      "id": "cyber-breaches-jul28",
-      "headline": "Cisco Secure FMC and VMware/Broadcom flaws remain confirmed exploited; two newer VMware CVEs unverified",
-      "status": "Resolved",
-      "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-05-am",
-      "verification": "Confirmed-multiple (Cisco FMC, Aria Operations); Unverified (two newer VMware CVEs)",
-      "one_line": "Cisco Secure FMC (CVE-2026-20316) and a related critical Cisco flaw (CVE-2026-20131, CVSS 10.0) remain confirmed under active exploitation. VMware Aria Operations (CVE-2026-22719) remains KEV-confirmed. Two newer VMware CVEs (CVE-2026-59310, CVE-2026-47876) appear in vendor trackers but this report could not confirm their KEV/exploitation status against a primary CISA source (cisa.gov direct fetch still 403'ing).",
-      "score_note": "No new advisory overnight; flags two unverified newer CVEs pending direct confirmation.",
-      "sources": [
-        "SecurityWeek",
-        "TheHackerNews",
-        "Help Net Security",
-        "Senserva KEV tracker"
-      ],
-      "watch": false
-    },
-    {
-      "id": "spacex-starship-flight-13",
-      "headline": "SpaceX's ~$116B lockup passes without a selloff; stock closes +6.1% as space sector posts its best session in weeks",
-      "status": "Resolved",
-      "first_seen": "2026-07-26-sun",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "~911.5M insider shares (first ~20% tranche) became tradable today; rather than mechanical selling pressure, SPCX closed +6.14% at $114.92 (this run's own data), its first up session in four. Space-sector watchlist posted its strongest session tracked this cycle (BKSY +10.48%, RDW +10.31%, VOYG +10.25%, LUNR +6.72%, FLY +5.34%) on a cluster of earnings beats (BlackSky, Voyager today; Redwire Wednesday), not a uniform SpaceX-driven halo -- YSS fell 17.22% the same session with no confirmed catalyst.",
-      "score_note": "Resolves forecast 2026-08-05-pm-1 (moves >5%) correct, in the 'extends up' rather than 'reverses down' direction.",
-      "sources": [
-        "Forbes",
-        "Motley Fool",
-        "Yahoo Finance/Morgan Stanley note",
-        "DayTradingToolkit",
-        "this run's own Yahoo Finance data"
-      ],
-      "watch": false
     },
     {
       "id": "anthropic-ai-models-hacked-jul30",
@@ -342,10 +274,10 @@
       "headline": "Kushner, Blair and Mladenov land in Israel to press the Gaza disarmament roadmap; outcome pending",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple (trip); Single-reliable-source (Netanyahu 'will give it a chance' claim)",
-      "one_line": "Kushner, Board of Peace envoy Mladenov and Tony Blair confirmed arriving in Israel Sun Aug 16, proceeding to Cairo next -- first concrete high-level US follow-through since Netanyahu's Aug 9 rejection. No outcome/readout from the actual meetings found yet. Same weekend, Israeli strikes on southern Lebanon killed 11-15 (deadliest since the June truce), which Lebanon's president explicitly linked to the US-backed talks.",
-      "score_note": "New forecast 2026-08-15-sat-4 (joint statement within the week) and Risk 5 in the Aug 16 Week-Ahead track this mission's outcome.",
+      "one_line": "Kushner, Blair and Mladenov met Hamas leader Khalil al-Hayya directly in Egypt Sunday, then Kushner flew to Israel; a Netanyahu meeting was underway/pending as of Monday morning with no outcome yet. Same weekend, Israeli strikes killed at least 11 in southern Lebanon (deadliest since the June truce); Lebanon's president called it a message aimed at the talks.",
+      "score_note": "First direct Kushner-Hamas meeting on record; outcome of the Netanyahu sit-down is the next concrete signal.",
       "sources": [
         "Times of Israel",
         "Al Jazeera",
@@ -355,38 +287,6 @@
         "UPI"
       ],
       "watch": true
-    },
-    {
-      "id": "novo-nordisk-zeus-trial-failure-jul31",
-      "headline": "Novo Nordisk hit with a third analyst downgrade (UBS, Buy to Neutral) following last week's failed cardiovascular trial",
-      "status": "Resolved",
-      "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-05-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "UBS cut NVO from Buy to Neutral today (Aug 5), following Wall Street Zen (Aug 2, Buy to Hold) and HSBC (Jul 31, Strong Buy to Hold). Some analysts (Jefferies, Citi) view the stock's reaction to the ZEUS trial failure as oversized relative to ziltivekimab's actual revenue contribution. Related HERMES/ARTEMIS ziltivekimab trials continue, readouts expected H1 2027.",
-      "score_note": "Third consecutive downgrade; no confirmation yet of whether the market reaction was overdone.",
-      "sources": [
-        "TipRanks",
-        "MarketBeat"
-      ],
-      "watch": false
-    },
-    {
-      "id": "ndaa-fy2027",
-      "headline": "NDAA FY2027 remains blocked in the Senate; no procedural movement since the Jul 14 cloture failure",
-      "status": "Resolved",
-      "first_seen": "2026-07-27-am",
-      "last_updated": "2026-08-03-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "No procedural movement since the Jul 14 cloture failure. Duckworth's position unchanged. Published Senate floor schedules show Monday's floor focus is a continuing-resolution/funding cloture vote (H.R. 6500) and Medicaid hearings, not NDAA -- suggesting no floor action is currently teed up before the Aug 10 recess, though no outlet has explicitly confirmed either way. Dropped from Top Stories this cycle (no material change), retained on watchlist.",
-      "score_note": "No material change this week beyond confirming the procedural standstill continues.",
-      "sources": [
-        "Sen. Duckworth's official press releases (primary)",
-        "Congress.gov CRS IN12704",
-        "Breaking Defense",
-        "The Hill"
-      ],
-      "watch": false
     },
     {
       "id": "ceuta-migrant-crisis-aug3",
@@ -402,53 +302,6 @@
         "Euronews",
         "RTE",
         "eurotopics.net"
-      ],
-      "watch": false
-    },
-    {
-      "id": "spokane-wildfire-complex-aug1",
-      "headline": "Spokane-area wildfire complex reaches first containment as some evacuations ease",
-      "status": "Resolved",
-      "first_seen": "2026-08-04-am",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Containment holds at 13% across all three fires (Old Trails, Autumn Lane, Fairview per this morning's read); no material change found this run beyond the previously reported evacuation easing.",
-      "score_note": "No new development this run.",
-      "sources": [
-        "MyNorthwest",
-        "Washington Times",
-        "KHQ"
-      ],
-      "watch": false
-    },
-    {
-      "id": "indonesia-ferry-fire-aug2",
-      "headline": "Indonesian ferry fire: missing-passenger count now explicitly uncertain, not settled at 41",
-      "status": "Resolved",
-      "first_seen": "2026-08-04-am",
-      "last_updated": "2026-08-05-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Officials say the Mutiara Sentosa 2's manifest (271 listed) undercounted actual passengers aboard, making the previously reported '41 missing' figure explicitly uncertain rather than settled. 229 rescued, 5 bodies recovered as of the most recent reporting; search area extends 10nm east/west, expected to run at least seven days total.",
-      "score_note": "Uncertainty about the true missing count is itself the new development.",
-      "sources": [
-        "CBC News",
-        "Al Jazeera"
-      ],
-      "watch": false
-    },
-    {
-      "id": "chipotle-salmonella-aug4",
-      "headline": "Chipotle's 8-K content confirmed directly from EDGAR: MN health dept has 'no ongoing concerns'; jalapenos identified as common ingredient",
-      "status": "Resolved",
-      "first_seen": "2026-08-04-pm",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed-primary",
-      "one_line": "This run fetched and read Chipotle's Aug 4 8-K (Item 7.01) directly from SEC EDGAR: FDA/MN Dept of Health investigating; MN DOH 'confirmed it has no ongoing concerns with Chipotle'; jalapenos identified via traceability system as a potential common ingredient from a common lot, proactively removed. Resolves last night's 'content unconfirmed' flag. Two lawsuits filed Aug 5. Case count steady at 110 as of last check. CMG closed -2.29% today.",
-      "score_note": "Resolves the prior content-unconfirmed gap; not logged as a corrections.json entry since no prior published statement was inaccurate, only incomplete.",
-      "sources": [
-        "CNN",
-        "Bloomberg",
-        "CBS News"
       ],
       "watch": false
     },
@@ -543,12 +396,12 @@
     {
       "id": "long-march-7a-failure-aug10",
       "headline": "China's Long March 7A explodes after liftoff, fourth orbital launch failure of 2026",
-      "status": "New",
+      "status": "Continuing",
       "first_seen": "2026-08-10-pm",
-      "last_updated": "2026-08-10-pm",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Long March 7A carrying ChinaSat-4B broke apart ~83-85s after an 8:02 AM ET Wenchang liftoff, during the joint first-stage/booster burn; rocket and payload lost over the South China Sea. Xinhua confirmed the failure (\"anomaly under investigation\"); independently corroborated by SpaceNews, SCMP, Space.com, Aviation Week, NASASpaceFlight. China's 4th failure of 56 launch attempts in 2026.",
-      "score_note": "No CASC statement located yet; watch for the investigation finding.",
+      "one_line": "CASC has issued no formal root-cause statement on the Aug 10 failure. LandSpace's Zhuque-3 Flight 2, postponed after the failure, is now tracked by independent launch trackers at Aug 31 (provisional, not LandSpace-confirmed) rather than the Aug 18 date this report had been carrying. Chang'e 7 (Long March 5) still targets ~Aug 24; shared YF-100 booster grounding-risk remains unconfirmed, analyst-only.",
+      "score_note": "Corrected this report's own working calendar on the Zhuque-3 date; still no CASC conclusion on LM7A.",
       "sources": [
         "Xinhua",
         "SpaceNews",
@@ -562,19 +415,19 @@
     {
       "id": "colombia-earthquake-aug10",
       "headline": "Colombia earthquake toll climbs again to at least 294 dead",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Government update Saturday Aug 15 put the toll at at least 294 dead, 320 missing, ~4,000 injured -- above the 273-281 range known as of Saturday's Weekly Review, continuing the multi-week upward-revision pattern. Rescue operations described as entering their 'final phase.'",
-      "score_note": "Revision pattern continues for a third consecutive edition.",
+      "one_line": "Toll unchanged from Saturday at 294 dead, 320 missing -- no later figure found this run. Rescue operations shifting to debris clearance.",
+      "score_note": "First edition without an upward revision; watch for confirmation the toll has genuinely plateaued.",
       "sources": [
         "GreekReporter",
         "France24",
         "ABC News",
         "Colombian disaster management authority"
       ],
-      "watch": true
+      "watch": false
     },
     {
       "id": "space-earnings-rklb-asts-aug11",
@@ -730,10 +583,10 @@
       "headline": "Ukraine launches its largest drone attack of the year; Russia retaliates against three cities",
       "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Overnight Sat-Sun Aug 15-16, Ukraine launched hundreds of drones at Russia (Russia claims 822 destroyed; Moscow's mayor said ~600 headed toward the capital) -- TASS called it the largest such attack since the start of the year. Russia retaliated on Kryvyi Rih (2 killed, 14 wounded), Sumy (1 killed) and Kyiv (fires, 6 injured), per Zelensky's own statements, not yet independently corroborated by a second source.",
-      "score_note": "Extends the refinery-strike campaign into a new drone-barrage phase.",
+      "one_line": "Ukraine's drone barrage overnight Aug 15-16 killed at least 6 in Russia (Wildberries warehouse fire near Podolsk); Russia's claim of 822 drones intercepted is unverified outside its own MoD. Russia retaliated across the week with 1,550+ drones, ~1,560 bombs and 62 missiles on 13 regions: Kryvyi Rih's ArcelorMittal plant hit (2 killed, 14 wounded, partial halt), Sumy (1 killed), Kyiv (6 injured), Zaporizhzhia (2 killed).",
+      "score_note": "Casualty figures corroborated across multiple Western outlets citing Ukrainian officials; Russian intercept claim stays single-sourced.",
       "sources": [
         "CNN",
         "NPR",
@@ -912,12 +765,12 @@
     {
       "id": "vmware-vcenter-new-cve-aug14",
       "headline": "VMware vCenter flaw CVE-2026-59310 confirmed under wide-scale active exploitation, still not KEV-listed",
-      "status": "New",
+      "status": "Continuing",
       "first_seen": "2026-08-14-am",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Directory-traversal flaw (CVSS 9.8, disclosed Jul 29 by Broadcom) confirmed under active exploitation since Aug 3 across 361+ victim IPs in 47 countries via reverse-SSH cron persistence; absent from the CISA KEV catalog as of the Aug 11 bulletin, the most recent this report could verify (cisa.gov direct fetch blocked again this week).",
-      "score_note": "Distinct from the previously tracked Cisco FMC/Aria Operations threads, which are now closed out as unchanged.",
+      "one_line": "CVE-2026-59310 remains under active, wide-scale exploitation (361+ victims, 47 countries); still could not be confirmed against the CISA KEV catalog -- direct cisa.gov fetch blocked again this run, a recurring environment issue.",
+      "score_note": "No change in KEV status resolution; recurring sourcing gap, not a new failure.",
       "sources": [
         "BleepingComputer",
         "TheHackerNews",
@@ -946,12 +799,12 @@
     {
       "id": "scotus-ballroom-emergency-application-aug14",
       "headline": "White House asks Supreme Court to let the ~$400M East Wing ballroom project resume during appeal",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-16-sun",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Filed Fri Aug 14, one week after a D.C. Circuit panel (2-1) ordered a halt on National Trust for Historic Preservation's suit; panel majority wrote 'whether or not a massive ballroom should be constructed is for Congress to decide.' Underground work (bunkers, medical facilities) may continue under the district court order. A second, legally distinct SCOTUS emergency-docket matter alongside the pending mail-ballot case.",
-      "score_note": "New emergency-docket matter; watch for any SCOTUS order alongside the mail-ballot case this week.",
+      "one_line": "Roberts set the preservationist plaintiffs' response deadline for Tuesday Aug 18. The government's filing newly disclosed a Jul 8 intelligence warning (relayed by Israel) of a possible missile attack on Air Force One near Turkey, which prompted a secret switch to an alternate aircraft -- cited as part of the administration's national-security urgency argument.",
+      "score_note": "New primary-document detail (AF1 evacuation) surfaced via the filing itself; folded into the combined SCOTUS-dockets top story.",
       "sources": [
         "SCOTUSblog",
         "CNBC",
@@ -965,15 +818,162 @@
     {
       "id": "mangione-double-jeopardy-motion-aug15",
       "headline": "Mangione's defense files to dismiss the separate Manhattan state murder case on double-jeopardy grounds",
-      "status": "New",
+      "status": "Continuing",
       "first_seen": "2026-08-16-sun",
-      "last_updated": "2026-08-16-sun",
+      "last_updated": "2026-08-17-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Follows Mangione's Aug 14 federal guilty plea (sentencing Dec 18). Defense argues New York's double-jeopardy law bars the state prosecution; Manhattan DA Alvin Bragg's office says it will continue the state case and fight the challenge.",
-      "score_note": "Direct follow-on to the federal plea; low market relevance, tracked at low cadence.",
+      "one_line": "Manhattan DA's office says it remains 'prepared to litigate the defense motions' and will continue pursuing the state case; no ruling yet from state court.",
+      "score_note": "DA response now on record; awaiting a ruling from Judge Carro.",
       "sources": [
         "CBS News",
         "DOJ SDNY press release"
+      ],
+      "watch": false
+    },
+    {
+      "id": "indonesia-flores-earthquake-aug15",
+      "headline": "Magnitude-7.7 earthquake strikes Indonesia's Flores Island; toll climbing, one outlier figure disputed",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-multiple (47-53 range); Disputed (268 figure, single outlet)",
+      "one_line": "M7.7 quake near Ende, Flores Island, East Nusa Tenggara, Sat Aug 15. Most multiply-sourced reporting puts the toll at 47-53 dead as of Sunday, ~5,000 evacuated. One outlet's report of 268 dead/151 missing is a significant outlier not corroborated and not adopted.",
+      "score_note": "Toll expected to climb further; watch for reconciliation of the disputed higher figure.",
+      "sources": [
+        "Al Jazeera",
+        "CBS News",
+        "CNBC",
+        "NBC News"
+      ],
+      "watch": true
+    },
+    {
+      "id": "indiana-flooding-aug16",
+      "headline": "Record flooding kills at least six across central Indiana; White River breaks a 113-year-old crest record",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Flooding beginning Aug 11 has killed at least 6 as of Aug 16. White River crested just shy of 25ft at Anderson/Noblesville, breaking the 1913 record (23.6ft) after 11+ inches of rain in two days. Indianapolis flooding peaked Sunday; ~100 people and dozens of pets rescued.",
+      "score_note": "Domestic disaster, first appearance in this report.",
+      "sources": [
+        "National Weather Service",
+        "CBS News",
+        "NPR",
+        "US News"
+      ],
+      "watch": false
+    },
+    {
+      "id": "retail-earnings-tariffs-week-aug17",
+      "headline": "Retail-earnings week opens against tariff crosscurrents: Home Depot Tuesday, Canada tariff deadline, billions in refunds",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-primary (HD earnings date); Confirmed-multiple (tariffs)",
+      "one_line": "Home Depot confirmed reporting Tuesday BMO (corrects this report's prior working date of Wednesday) via its own IR release; Lowe's/Target Wednesday, Walmart Thursday. 50% Section 338 Canada tariffs take effect Wednesday absent a deal. ~$100B in tariffs refunded to date post-SCOTUS ruling; Walmart potentially eligible for up to $10.2B, Target up to $2.2B.",
+      "score_note": "Direct read-through on the Aug 14 retail-sales miss; forecast 2026-08-17-am-2 logged.",
+      "sources": [
+        "Home Depot investor relations",
+        "Washington Post",
+        "CBC",
+        "NPR syndication"
+      ],
+      "watch": true
+    },
+    {
+      "id": "coldcard-bitcoin-wallet-exploit-aug",
+      "headline": "Coldcard hardware-wallet exploit continues draining bitcoin from a 2021 firmware flaw",
+      "status": "Continuing",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Theft began Jul 30, tied to a 2021 Coldcard firmware update that weakened seed-phrase randomness. Running-loss estimates vary by tracker/wave, roughly $89M-$130M+; TRM Labs' most recent count near $112-116M. Coinkite has patched the flaw and urges affected users to move funds.",
+      "score_note": "First appearance in this report; ongoing incident, not yet resolved.",
+      "sources": [
+        "Bloomberg",
+        "Fortune",
+        "CoinDesk",
+        "TechCrunch",
+        "TRM Labs"
+      ],
+      "watch": true
+    },
+    {
+      "id": "france-dgfip-breach-aug16",
+      "headline": "France's tax agency confirms a breach of 678,000 taxpayers",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-multiple (agency-confirmed); Single-reliable-source (actor identity 'Zerobytes')",
+      "one_line": "DGFiP confirmed Aug 16 a hacker stole records on 678,438 taxpayers (names, DOB, addresses, land-registry/tax-bracket data) via a late-June intrusion using compromised credentials. Secure taxpayer portal not accessed; notifications begin today.",
+      "score_note": "First appearance; actor attribution unconfirmed by the agency.",
+      "sources": [
+        "Security Affairs",
+        "The Record",
+        "Bitcoin.com News"
+      ],
+      "watch": false
+    },
+    {
+      "id": "macos-screensharing-cve-aug14",
+      "headline": "macOS Screen Sharing flaw escalated to critical severity amid active cryptomining exploitation",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "CVE-2026-65400: CISA raised severity from 7.1 to 9.8 on Aug 14 after Dutch NCSC and CISA both confirmed active exploitation to install Monero miners on exposed Macs. Apple patched Aug 6 (Tahoe 26.6.1, Sequoia 15.7.9, Sonoma 14.8.9).",
+      "score_note": "First appearance; severity escalation is the news, not the underlying flaw (already patched).",
+      "sources": [
+        "The Hacker News",
+        "Tom's Hardware",
+        "BleepingComputer"
+      ],
+      "watch": false
+    },
+    {
+      "id": "rocket-lab-mda-globalstar-launch-aug15",
+      "headline": "Rocket Lab's MDA-built Globalstar satellites reach orbit in a record SpaceX back-to-back launch",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Two Falcon 9s flew 38 minutes apart Sat Aug 15 night; one carried 8 of 17 satellite platforms Rocket Lab built for MDA Space under a $143M Globalstar replenishment deal. Rocket Lab confirmed contact with all 8, nominal performance, Aug 16.",
+      "score_note": "Positive operational item distinct from RKLB's Iridium-acquisition financing thread.",
+      "sources": [
+        "GlobeNewswire",
+        "Spaceflight Now",
+        "Rocket Lab press release"
+      ],
+      "watch": false
+    },
+    {
+      "id": "cxmt-huawei-china-chips-aug17",
+      "headline": "China's CXMT overtakes Tencent as most valuable listed company amid Huawei AI-chip ramp",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Confirmed-primary (market cap); System inference/forecast (Huawei production target)",
+      "one_line": "Memory chipmaker CXMT overtook Tencent Monday as China's most valuable listed company, market cap above $500B after a 466% Shanghai IPO-debut surge in late July. Huawei reportedly planning to roughly double 910C Ascend AI chip production next year -- a forecast, not yet realized.",
+      "score_note": "First appearance; China chip-independence narrative.",
+      "sources": [
+        "Bloomberg"
+      ],
+      "watch": false
+    },
+    {
+      "id": "stripe-openrouter-acquisition-aug16",
+      "headline": "Stripe reported to be finalizing a $7B+ acquisition of AI-routing startup OpenRouter",
+      "status": "New",
+      "first_seen": "2026-08-17-am",
+      "last_updated": "2026-08-17-am",
+      "verification": "Single-reliable-source-cluster / Unconfirmed by parties",
+      "one_line": "Multiple outlets citing the same reporting chain (Bloomberg originated) say Stripe finalized a deal above $7B for OpenRouter, down ~30% from initial ~$10B talks. Neither company has confirmed publicly.",
+      "score_note": "First appearance; treat as reported, not company-confirmed, until Stripe/OpenRouter comment.",
+      "sources": [
+        "Bloomberg",
+        "Fortune",
+        "SiliconANGLE"
       ],
       "watch": false
     }
