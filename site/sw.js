@@ -6,11 +6,20 @@
      - network-first: HTML documents and reports/index.json (always prefer fresh)
    Bump VERSION on any strategy/shell change; old caches are deleted on activate. */
 
-/* v2 (2026-08-16): newspaper redesign + listen-to-text.
-   The bump is not cosmetic -- /assets/* is cache-first, so an installed PWA
-   would keep serving the OLD style.css and app.js forever without it. Bump
-   VERSION on ANY change to a file under assets/. */
-var VERSION = "ldn-cache-v2";
+/* v3 (2026-08-17): picks up the MP3 player in report.js.
+
+   This value is a FALLBACK. build-site.yml rewrites it at deploy time to a
+   hash of everything under assets/, so the cache key tracks the actual bytes
+   being served and no longer depends on anyone remembering to bump it.
+
+   It stopped being remembered almost immediately. v2 shipped the redesign,
+   then "Breaking-news alerts and real report audio" added 132 lines of MP3
+   player to report.js and 26 to style.css without touching this file --
+   so every installed PWA kept serving the pre-MP3 report.js, which does not
+   look for an MP3 at all. The generated audio was published, correct, and
+   never requested: the page had no code to ask for it. Three days of
+   "the voice is still wrong" were this line. */
+var VERSION = "ldn-cache-v3";
 
 var SHELL = [
   "./",

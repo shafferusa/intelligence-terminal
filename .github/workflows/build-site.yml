@@ -43,6 +43,26 @@ jobs:
       - name: Publish run log for the status page
         run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
 
+      # site/assets/* is served cache-first by the service worker, so an
+      # installed PWA keeps the old file until the cache KEY changes. Bumping
+      # that key by hand was the documented rule and it was missed the very
+      # next time assets changed: the MP3 player shipped in report.js while
+      # sw.js still said ldn-cache-v2, so every phone kept running the
+      # pre-MP3 player and silently ignored audio that was being published
+      # correctly every day.
+      #
+      # So derive it instead. The key is now a hash of the asset bytes: change
+      # any asset and the cache key changes with it, forget to do anything and
+      # it still works. Only the deployed copy is rewritten; the value in the
+      # repo stays a readable fallback.
+      - name: Stamp the service-worker cache key with an asset hash
+        run: |
+          HASH=$(find site/assets -type f -exec sha256sum {} \; \
+                 | sort | sha256sum | cut -c1-12)
+          sed -i "s/^var VERSION = \".*\";/var VERSION = \"ldn-cache-$HASH\";/" site/sw.js
+          echo "cache key: ldn-cache-$HASH"
+          grep -n '^var VERSION' site/sw.js
+
       - name: Build Pagefind search index
         run: npx -y pagefind --site site
 
