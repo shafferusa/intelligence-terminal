@@ -60,7 +60,10 @@ jobs:
           # Thomas is a UK news-register voice: drier, and it holds up better
           # across a 30-minute lesson.
           TTS_VOICE: en-GB-ThomasNeural
-          TTS_RATE: "+8%"
+          # Thomas's natural pace. The old +8% was a speed-up nobody asked
+          # for; Logan compared +8%, 0% and -8% on a real edition and chose
+          # this, together with the terminal-stop fix in make_audio.py.
+          TTS_RATE: "+0%"
         run: python3 .github/scripts/make_audio.py
 
       - name: Publish as a release asset

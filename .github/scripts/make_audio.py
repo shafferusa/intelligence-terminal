@@ -29,7 +29,7 @@ import re
 import sys
 
 VOICE = os.environ.get("TTS_VOICE", "en-US-AndrewMultilingualNeural")
-RATE = os.environ.get("TTS_RATE", "+8%")
+RATE = os.environ.get("TTS_RATE", "+0%")
 
 # Mirrors the skip rules in site/assets/report.js: a spoken read-out of a
 # 25-row market table is noise, and nobody wants the colophon read to them.
@@ -84,6 +84,27 @@ class Extractor(html.parser.HTMLParser):
             self.buf.append(data)
 
 
+def polish(text):
+    """Prepare one block for speech.
+
+    Most of a report is headings and list items -- "The Brief", "Markets.
+    Equity futures are little changed" -- and they carry no terminal
+    punctuation. Without a full stop the synthesiser runs one block straight
+    into the next or clips its tail, which is heard as stop-start choppiness.
+    It sounds like the voice is rushing; it is actually missing the cue to
+    finish a sentence. Rate changes do not fix it, and Logan picked this
+    alongside the slower rate after hearing both.
+
+    "&" is spelled out for the same reason: read literally it is a stumble in
+    the middle of things like S&P.
+    """
+    text = text.replace("&", " and ")
+    text = re.sub(r"\s+", " ", text).strip()
+    if text and text[-1] not in ".!?:;,":
+        text += "."
+    return text
+
+
 def build_script(html_text, title):
     parser = Extractor()
     parser.feed(html_text)
@@ -98,7 +119,7 @@ def build_script(html_text, title):
         # A pause between sections reads far better than a wall of speech.
         if tag in ("h2", "h3"):
             lines.append("")
-        lines.append(text)
+        lines.append(polish(text))
 
     body = "\n".join(lines).strip()
     if not body:
