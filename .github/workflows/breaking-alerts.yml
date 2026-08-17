@@ -15,9 +15,14 @@ name: Breaking news alerts
 # Commits state/alerts.json ONLY when an alert actually fires (rare -- capped
 # at 6/day), and that path never triggers the site build.
 
+# TURNED OFF 2026-08-17 at Logan's request -- "just turn off the alerts, not
+# needed". The schedule is commented out rather than the workflow deleted: the
+# scanner, its topic gate and its guards all still work, so re-enabling is a
+# matter of uncommenting the cron below. Manual dispatch is left available so
+# it can still be run by hand without putting it back on a schedule.
 on:
-  schedule:
-    - cron: "*/10 * * * *"
+  # schedule:
+  #   - cron: "*/10 * * * *"
   workflow_dispatch:
 
 permissions:
