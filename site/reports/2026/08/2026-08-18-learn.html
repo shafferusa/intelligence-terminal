@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Angle Eratosthenes Never Left Egypt to Measure · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-18",
+    "slot": "learn",
+    "title": "The Angle Eratosthenes Never Left Egypt to Measure",
+    "path": "reports/2026/08/2026-08-18-learn.html",
+    "summary": "Day two of the 150-day curriculum: trigonometry, built around how a single shadow angle in Alexandria gave one man the size of the entire planet.",
+    "headlines": [
+      "Day 2 of 150 · Mathematics: trigonometry",
+      "Why sine and cosine are coordinates on a circle, not just triangle ratios",
+      "A shadow angle and a caravan's distance estimate measured the Earth to within 1%"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-08-18T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Angle Eratosthenes Never Left Egypt to Measure</h1>
+      <p class="paper-dateline">
+        Tuesday, August 18, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        A single shadow angle, measured from a library in Alexandria, gave one man the size of the entire planet &mdash; because sine and cosine turn any angle into a position on a circle, the same trick that now describes a satellite&rsquo;s orbit and the hum in a wall outlet.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 2 of 150 &middot; Mathematics 2 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Around 240 BC, a librarian in Alexandria named Eratosthenes heard a strange fact from travelers returning from Syene, a city far to the south near modern Aswan: at local noon on the summer solstice, the sun there was directly overhead. A vertical post cast no shadow at all. Light fell straight down a deep well and lit the water at the bottom. He had never seen anything like that in Alexandria &mdash; there, a post always cast some shadow, even at noon on the longest day of the year.</p>
+
+      <p>Eratosthenes did not own a ship fast enough to sail south and check the angle for himself against Syene&rsquo;s sun, and he did not need to. He had a stick, the length of its noon shadow in Alexandria on that same solstice, and a number merchants gave him for how far south the camel caravans traveled to reach Syene. From those three things &mdash; no telescope, no satellite, no trip &mdash; he calculated the circumference of the entire Earth. Modern reconstructions of his arithmetic land him within a few percent of the true value, and by some estimates within a fraction of one percent, depending on exactly which ancient unit of distance he was using. A person who never left Egypt correctly sized the planet to within the margin of error of a decent modern surveying instrument, roughly two thousand years before anyone could verify it by circling the globe.</p>
+
+      <p>Eratosthenes ran the Library of Alexandria, the largest research institution of the ancient world, and colleagues reportedly nicknamed him &ldquo;Beta&rdquo; &mdash; second-best &mdash; because he was seriously good at nearly everything (geography, poetry, astronomy, athletics, literary criticism) without being the single greatest name in any one of them. It is a slightly unfair nickname for the one calculation of his that outlasted the rest by two thousand years, and the calculation itself is where the day&rsquo;s real subject begins: not geography, but what an angle is actually measuring, and why a circle &mdash; not a triangle &mdash; turns out to be the natural place to define it.</p>
+
+      <p>The trick was not cleverness about geography. It was a fact about angles that is so simple it barely looks like mathematics the first time you see it, and so powerful that it is still the working principle behind GPS receivers, radio antennas, and the software that points a ground station at a satellite passing overhead. Today&rsquo;s lesson is that fact: what an angle actually measures, why circles are the natural home for measuring it, and why the two numbers that fall out of that circle &mdash; sine and cosine &mdash; turn out to be the right language for almost anything that goes around, swings back and forth, or repeats.</p>
+
+      <h3>The idea, with no symbols yet</h3>
+
+      <p>Forget triangles for a moment, even though they are where you likely first met the words &ldquo;sine&rdquo; and &ldquo;cosine.&rdquo; Picture instead a point moving around the rim of a circle, starting at the rightmost point and traveling counterclockwise, the way the hand of a clock would move if clocks ran backward. As that point travels, two things are constantly changing: how far right or left of center it is, and how far up or down from center it is. Sine and cosine are just names for those two quantities, tracked as the point sweeps around. Cosine is the left-right position. Sine is the up-down position. That is the entire idea, before a single formula appears.</p>
+
+      <p>Why does this matter more than the triangle definition you may already know &mdash; opposite over hypotenuse, adjacent over hypotenuse? Because the triangle definition quietly assumes an angle between 0&deg; and 90&deg;, the only range where a right triangle&rsquo;s corner makes sense. The moving-point definition has no such limit. The point can keep going past the top of the circle, past the left side, all the way around and back to where it started, and then around again. Sine and cosine are defined at every one of those positions, for angles of 200&deg;, 500&deg;, or &minus;40&deg;, in a way &ldquo;opposite over hypotenuse&rdquo; simply cannot describe, because there is no triangle once the angle exceeds 90&deg;. This is the upgrade today&rsquo;s lesson is really about: trading a definition that works for one slice of a triangle for one that works for full rotation, in either direction, without end. That upgrade is precisely what makes these two functions the right tool for anything that goes around and around &mdash; a wheel, a wave, an orbit &mdash; rather than something that happens once and stops.</p>
+
+      <p>There is a second idea buried in Eratosthenes&rsquo; stick-and-well trick, and it is just as important as the first: an angle is a ratio, not a length. A large circle and a small circle, both swept through the same angle, trace arcs of very different lengths &mdash; but the fraction of the full circle that arc represents is identical for both. Sweep one-twelfth of the way around a dinner plate and one-twelfth of the way around a wedding ring, and you have turned through the same angle, even though the two arcs you traced are wildly different lengths. An angle measures a fraction of a turn, completely independent of how big the circle is. That independence is exactly what let Eratosthenes reason from a small, local angle &mdash; measured with a stick a few feet tall &mdash; all the way up to a fact about a sphere roughly forty thousand kilometers around. The stick&rsquo;s shadow and the whole Earth are, geometrically, the same shape at two different sizes, and angle is the one measurement that does not care about the difference.</p>
+
+      <h3>Building the notation</h3>
+
+      <p>Formalizing &ldquo;a fraction of a turn&rdquo; starts with picking a unit for angle, and there are two in common use. <strong>Degrees</strong> divide a full turn into 360 equal pieces &mdash; an arbitrary but ancient choice, probably related to the roughly 360 days the Babylonians used in an early calendar. <strong>Radians</strong> take a more natural route: define the angle directly from the circle itself.</p>
+
+      <div class="formula">
+        <p class="expr">&theta; = s / r</p>
+        <dl>
+          <dt>&theta;</dt><dd>the angle, measured in radians</dd>
+          <dt>s</dt><dd>the length of the arc traced out on the circle by that angle</dd>
+          <dt>r</dt><dd>the circle&rsquo;s radius</dd>
+        </dl>
+      </div>
+
+      <p>One radian is the angle at which the arc length exactly equals the radius. Since the full circumference of a circle is 2&pi;<em>r</em>, a full turn is 2&pi;<em>r</em> / <em>r</em> = 2&pi; radians &mdash; a little over 6.28. Half a turn (180&deg;) is &pi; radians, a quarter turn (90&deg;) is &pi;/2 radians. Converting between the two units is a straight proportion:</p>
+
+      <div class="formula">
+        <p class="expr">radians = degrees &times; (&pi; / 180)</p>
+        <dl>
+          <dt>degrees</dt><dd>the angle measured on the 360-piece scale</dd>
+          <dt>&pi;</dt><dd>the ratio of any circle&rsquo;s circumference to its diameter, approximately 3.14159</dd>
+          <dt>radians</dt><dd>the same angle measured as arc length divided by radius</dd>
+        </dl>
+      </div>
+
+      <p>Degrees are a human convenience &mdash; easy to divide into neat pieces (a right angle is a clean 90, a third of a turn is a clean 120). Radians are what the mathematics itself prefers, because they tie the angle directly to a length, which is exactly what will make the arc-and-circumference reasoning in this lesson&rsquo;s first worked example fall out so cleanly. Most of the formulas later in this course, particularly anything involving rates of change, are written in radians for that reason. Keep both in your head; each has its place, and confusing which one a calculator or formula expects is the single most common practical trigonometry error, a point this lesson returns to below.</p>
+
+      <p>Now place that moving point on a circle of radius exactly 1, centered at the origin of an <em>x</em>-<em>y</em> plane &mdash; the <strong>unit circle</strong>. This is the cleanest possible setting to define sine and cosine, because on a circle of radius 1, the position of the point and the ratios from a right triangle turn out to be the exact same numbers.</p>
+
+      <div class="formula">
+        <p class="expr">a point at angle &theta; on the unit circle has coordinates (cos &theta;, sin &theta;)</p>
+        <dl>
+          <dt>&theta;</dt><dd>the angle swept counterclockwise from the positive x-axis</dd>
+          <dt>cos &theta;</dt><dd>the point&rsquo;s horizontal (x) position</dd>
+          <dt>sin &theta;</dt><dd>the point&rsquo;s vertical (y) position</dd>
+        </dl>
+      </div>
+
+      <p>For an angle between 0&deg; and 90&deg;, drop a vertical line from that point down to the x-axis and you have built a right triangle: the hypotenuse is the radius (length 1), the vertical leg has length sin&theta;, and the horizontal leg has length cos&theta;. That is exactly the familiar right-triangle definition &mdash; opposite over hypotenuse is sin&theta;/1, adjacent over hypotenuse is cos&theta;/1 &mdash; recovered as a special case of the circle definition, valid only because the hypotenuse happens to equal 1. The circle definition does not need that restriction and keeps working at 150&deg;, at 270&deg;, at any angle at all; the triangle definition was always a snapshot of the circle definition, not the other way around. The third common ratio, <strong>tangent</strong>, is the vertical position divided by the horizontal one: tan&theta; = sin&theta;/cos&theta;, which on a triangle is opposite over adjacent, and which is undefined exactly where cos&theta; = 0 &mdash; the point sitting directly above or below center, with no horizontal position to divide by.</p>
+
+      <p>The word &ldquo;sine&rdquo; itself is a translation accident worth knowing, because it shows how this mathematics actually traveled to reach you. Indian mathematicians working centuries before Eratosthenes had a term for the half-chord ratio, &ldquo;jya-ardha,&rdquo; often shortened to &ldquo;jya.&rdquo; When Arabic scholars translated Indian astronomical texts, they transliterated the sound as &ldquo;jiba&rdquo; &mdash; a word with no meaning of its own in Arabic. Later copyists, working from unvoweled Arabic script where short vowels are not written, read &ldquo;jiba&rdquo; as the ordinary Arabic word &ldquo;jaib,&rdquo; meaning a bay, a fold of cloth, or a pocket. When those texts were translated into Latin in medieval Europe, translators rendered &ldquo;jaib&rdquo; literally, using the Latin word for a bay or a fold: &ldquo;sinus.&rdquo; English inherited it as &ldquo;sine.&rdquo; The function at the center of today&rsquo;s lesson is, etymologically, named after a translator&rsquo;s misreading of a foreign transliteration of a half-chord ratio &mdash; a small reminder that even the most exact of subjects carries the fingerprints of the very human, error-prone process by which it was actually handed down across languages and centuries.</p>
+
+      <p>Because the point never leaves the circle, its coordinates are bound by the circle&rsquo;s own equation, <em>x</em><sup>2</sup> + <em>y</em><sup>2</sup> = 1 (every point at distance 1 from the origin). Substitute cos&theta; for <em>x</em> and sin&theta; for <em>y</em> and one of the most-used facts in all of trigonometry falls out for free:</p>
+
+      <div class="formula">
+        <p class="expr">sin&sup2;&theta; + cos&sup2;&theta; = 1</p>
+        <dl>
+          <dt>&theta;</dt><dd>any angle at all &mdash; the identity holds without exception</dd>
+          <dt>sin&sup2;&theta;</dt><dd>(sin&theta;)&sup2; &mdash; the vertical position, squared</dd>
+          <dt>cos&sup2;&theta;</dt><dd>(cos&theta;)&sup2; &mdash; the horizontal position, squared</dd>
+        </dl>
+      </div>
+
+      <p>This is the <strong>Pythagorean identity</strong>, and it is nothing more than the Pythagorean theorem wearing circle notation &mdash; the same <em>a</em><sup>2</sup> + <em>b</em><sup>2</sup> = <em>c</em><sup>2</sup> from a right triangle, with the hypotenuse fixed at <em>c</em> = 1. It holds for every angle, not just the ones that form a visible triangle, because it is really just a restatement of &ldquo;this point is on a circle of radius 1,&rdquo; and the point never stops being on that circle.</p>
+
+      <p>Two more structural facts follow directly from watching the point move. First, <strong>periodicity</strong>: once the point completes a full turn, it is back exactly where it started, so adding 2&pi; radians (360&deg;) to any angle changes nothing about sine or cosine &mdash; sin(&theta; + 2&pi;) = sin&theta;, and likewise for cosine. This is what makes these two functions the natural description of anything that repeats. Second, <strong>symmetry</strong>: sweeping the same angle clockwise instead of counterclockwise (a negative angle) leaves the horizontal position unchanged but flips the vertical one, since it is the mirror image across the x-axis &mdash; cos(&minus;&theta;) = cos&theta;, but sin(&minus;&theta;) = &minus;sin&theta;.</p>
+
+      <p>The circle also splits naturally into four quadrants, and keeping track of which one the point is in is what lets you find sine and cosine for <em>any</em> angle using nothing but the special values from a first-quadrant triangle like the ones in the worked examples below. In the first quadrant (0&deg; to 90&deg;) both coordinates are positive: the point is above and to the right of center. In the second quadrant (90&deg; to 180&deg;) the point has swung to the upper left, so cosine turns negative while sine stays positive. In the third quadrant (180&deg; to 270&deg;) both are negative, lower left. In the fourth quadrant (270&deg; to 360&deg;) cosine is positive again and sine is negative, lower right. Every angle outside the first quadrant has a <strong>reference angle</strong> &mdash; its mirror image back in the first quadrant, measured from the nearest end of the x-axis &mdash; and its sine and cosine are just the first-quadrant values for that reference angle, with signs assigned by whichever quadrant the point is actually sitting in. 150&deg;, for instance, is 30&deg; short of the negative x-axis, so its reference angle is 30&deg;; the point sits in the second quadrant, so cosine is negative and sine stays positive: sin150&deg; = sin30&deg; = 1/2, while cos150&deg; = &minus;cos30&deg; = &minus;&radic;3/2. This is the entire content behind classroom mnemonics like &ldquo;All Students Take Calculus&rdquo; &mdash; one letter per quadrant, counterclockwise from the first, naming which of sine, cosine, and tangent come out positive there.</p>
+
+      <p>One more piece of machinery belongs here, because it is the one this lesson&rsquo;s misconception section will spend the most time on: what happens to sine and cosine when you add two angles together rather than just doubling one. The results are not obvious from the plain-English picture, so they are simply stated here and verified with real numbers in the worked examples below.</p>
+
+      <div class="formula">
+        <p class="expr">sin(A + B) = sinA&thinsp;cosB + cosA&thinsp;sinB &nbsp;&nbsp; cos(A + B) = cosA&thinsp;cosB &minus; sinA&thinsp;sinB</p>
+        <dl>
+          <dt>A, B</dt><dd>any two angles being added together</dd>
+          <dt>sinA cosB, cosA sinB</dt><dd>cross terms mixing both angles &mdash; the part a naive guess always misses</dd>
+        </dl>
+      </div>
+
+      <p>One useful corollary falls straight out of that identity for free: set B equal to A, so you are adding an angle to itself instead of to something different.</p>
+
+      <div class="formula">
+        <p class="expr">sin(2&theta;) = 2&thinsp;sin&theta;&thinsp;cos&theta; &nbsp;&nbsp; cos(2&theta;) = cos&sup2;&theta; &minus; sin&sup2;&theta;</p>
+        <dl>
+          <dt>&theta;</dt><dd>the original angle being doubled</dd>
+          <dt>sin(2&theta;), cos(2&theta;)</dt><dd>sine and cosine of twice that angle</dd>
+        </dl>
+      </div>
+
+      <p>These are called the <strong>double-angle identities</strong>, and they are nothing more than the angle-sum identities with B replaced by A: sin(A + A) = sinA&thinsp;cosA + cosA&thinsp;sinA, which is two identical terms added together, giving 2&thinsp;sinA&thinsp;cosA. They are worth having in hand because they let you cross-check one angle&rsquo;s value against another&rsquo;s: sin60&deg; should equal sin(2 &times; 30&deg;) = 2&thinsp;sin30&deg;&thinsp;cos30&deg; = 2 &times; (1/2) &times; (&radic;3/2) = &radic;3/2 &mdash; exactly the value this lesson will derive independently, from an entirely different triangle, two paragraphs from now. When two unrelated methods agree on the same exact fraction, that is as close to a guarantee of correctness as this kind of arithmetic gets.</p>
+
+      <p>Finally, the shape that makes trigonometry the language of waves and orbits rather than just a set of triangle facts: a general sinusoidal function, one that can model anything moving back and forth or around and around at a steady rate.</p>
+
+      <div class="formula">
+        <p class="expr">y(t) = A&thinsp;sin(&omega;t + &phi;) + k</p>
+        <dl>
+          <dt>t</dt><dd>time (or, for a rotating object, angle swept &mdash; whatever the thing repeating is measured against)</dd>
+          <dt>A</dt><dd>amplitude &mdash; how far the value swings above and below its center</dd>
+          <dt>&omega;</dt><dd>angular frequency &mdash; how fast the angle inside the sine grows with t, in radians per unit time; &omega; = 2&pi;/T, where T is the period (time for one full repeat), and &omega; = 2&pi;f, where f is the frequency in cycles per unit time</dd>
+          <dt>&phi;</dt><dd>phase &mdash; a fixed offset shifting where in the cycle the motion starts at t = 0</dd>
+          <dt>k</dt><dd>the vertical center the value oscillates around</dd>
+          <dt>y(t)</dt><dd>the quantity being modeled &mdash; a height, a voltage, a position &mdash; at time t</dd>
+        </dl>
+      </div>
+
+      <p>Every term in that formula has a job: <em>A</em> sets how big the swing is, <em>&omega;</em> sets how fast it repeats, <em>&phi;</em> sets where in the cycle it starts, and <em>k</em> sets what it swings around. Strip away all four and you are left with plain sin&theta; &mdash; the point on the unit circle this whole lesson started with. Everything from here to the end of the lesson is that same point, dressed in different units for different jobs.</p>
+
+      <h3>Doing it with real numbers</h3>
+
+      <p>Three worked problems: reconstructing Eratosthenes&rsquo; own calculation, pulling exact values off the unit circle by hand, and modeling something that goes around in a circle for real.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; measuring the Earth with one shadow</b>
+        <p>Eratosthenes measured the noon shadow angle in Alexandria on the solstice at about 7.2&deg;. He took the north-south distance to Syene, from caravan travel estimates, as about 5,000 stadia &mdash; roughly 800 kilometers in modern units, though the exact length of a stadion is debated by historians today, which is why modern reconstructions of his result range anywhere from about 39,000 to 46,000 kilometers. Work the arithmetic through with those two numbers.</p>
+        <ol>
+          <li>The key assumption: sunlight arrives from the sun in essentially parallel rays, since the sun is so far away. A shadow angle of 7.2&deg; in Alexandria, with no shadow at all in Syene, means the curvature of the Earth itself accounts for that 7.2&deg; difference between the two locations.</li>
+          <li>7.2&deg; is a fraction of a full 360&deg; turn: 7.2 / 360 = 1/50. So the arc distance from Syene to Alexandria &mdash; 800 kilometers &mdash; must be 1/50th of the Earth&rsquo;s full circumference.</li>
+          <li>Multiply back up: circumference = 800 km &times; 50 = 40,000 km.</li>
+          <li>Compare with the modern measured value: Earth&rsquo;s circumference along a meridian (pole to pole and back, the direction Eratosthenes was effectively measuring) is about 40,008 km. His figure of 40,000 km &mdash; using the traditional 800 km distance estimate &mdash; misses by about 8 km, well under a tenth of one percent, though as noted above the honest uncertainty in his actual units is much larger than that suspiciously perfect-looking match suggests.</li>
+        </ol>
+        <p>Notice what did the work: step 2 is exactly the radian-style reasoning from the formalism above, arc length as a fraction of the whole, even though Eratosthenes was working in an angle unit that predates radians by centuries. You can run the same arithmetic in the radian formula directly: &theta; = 7.2&deg; &times; (&pi;/180) &asymp; 0.1257 radians, and since &theta; = <em>s</em>/<em>r</em>, the Earth&rsquo;s radius is <em>r</em> = <em>s</em>/&theta; = 800 / 0.1257 &asymp; 6,366 km &mdash; within a few kilometers of the actual mean radius, about 6,371 km. Circumference is then 2&pi;<em>r</em> &asymp; 2&pi; &times; 6,366 &asymp; 40,000 km, the identical answer reached a different way. One shadow, one distance estimate, and the definition of an angle as a fraction of a circle: that is the entire method, and it required leaving Alexandria exactly zero times.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; reading exact values off the unit circle</b>
+        <p>Two special right triangles &mdash; the 45-45-90 and the 30-60-90 &mdash; give exact sine and cosine values without a calculator, and checking them against the Pythagorean identity is a clean way to see that identity actually hold.</p>
+        <ol>
+          <li>A 45-45-90 triangle with both legs of length 1 has, by the ordinary Pythagorean theorem, a hypotenuse of &radic;(1&sup2; + 1&sup2;) = &radic;2. Scaling so the hypotenuse is 1 (matching the unit circle) shrinks each leg to 1/&radic;2, which simplifies to &radic;2/2 &asymp; 0.7071. So sin45&deg; = cos45&deg; = &radic;2/2 &mdash; the two are equal because the triangle is symmetric.</li>
+          <li>A 30-60-90 triangle is half of an equilateral triangle. Take an equilateral triangle with all sides length 2 and slice it down the middle: the short leg becomes 1, the hypotenuse stays 2, and the remaining leg is &radic;(2&sup2; &minus; 1&sup2;) = &radic;3. Scaled to a hypotenuse of 1: the leg opposite the 30&deg; angle is 1/2, and the leg opposite the 60&deg; angle is &radic;3/2 &asymp; 0.8660. So sin30&deg; = 1/2, cos30&deg; = &radic;3/2, and by the same triangle read the other way, sin60&deg; = &radic;3/2, cos60&deg; = 1/2.</li>
+          <li>Check the Pythagorean identity against the 30&deg; values: sin&sup2;30&deg; + cos&sup2;30&deg; = (1/2)&sup2; + (&radic;3/2)&sup2; = 1/4 + 3/4 = 1. It holds exactly, as it must for every angle, not approximately &mdash; these are exact fractions, not calculator roundings.</li>
+          <li>tan30&deg; = sin30&deg;/cos30&deg; = (1/2) / (&radic;3/2) = 1/&radic;3 &asymp; 0.5774, and tan45&deg; = (&radic;2/2)/(&radic;2/2) = 1, confirming that at exactly 45&deg; &mdash; where the two legs of the triangle are equal &mdash; the ratio between them is exactly 1, as it should be by symmetry.</li>
+          <li>Extend past the first quadrant using the reference-angle rule from the formalism section: 150&deg; is 30&deg; short of the negative x-axis, so its reference angle is 30&deg;, and the point sits in the second quadrant. Sine stays positive there, so sin150&deg; = sin30&deg; = 1/2; cosine turns negative, so cos150&deg; = &minus;cos30&deg; = &minus;&radic;3/2. Same triangle, same magnitudes, different signs, because the point has moved to a different part of the circle.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; a Ferris wheel, modeled with the general sinusoid</b>
+        <p>A Ferris wheel has a radius of 20 meters, with its axle mounted 22 meters above the ground, and completes one full rotation every 4 minutes (240 seconds). A rider boards at the very bottom of the wheel. Find the rider&rsquo;s height above the ground at several points in the ride, using the y(t) = A sin(&omega;t + &phi;) + k formula from the formalism section.</p>
+        <ol>
+          <li>Identify the pieces: amplitude A = 20 m (the radius &mdash; how far above and below the axle height the rider swings), center k = 22 m (the axle height), period T = 240 s, so angular frequency &omega; = 2&pi;/T = 2&pi;/240 = &pi;/120 &asymp; 0.02618 radians per second.</li>
+          <li>Because the rider starts at the bottom rather than at the side, this is most naturally written with cosine and a negative sign rather than a plain sine: height(t) = 22 &minus; 20&thinsp;cos(&omega;t). Check t = 0: cos(0) = 1, so height = 22 &minus; 20 = 2 meters &mdash; a sensible loading height above the ground, not zero.</li>
+          <li>At t = 60 s (a quarter of the way around): &omega;t = (&pi;/120)(60) = &pi;/2 radians = 90&deg;. cos(90&deg;) = 0, so height = 22 &minus; 0 = 22 m &mdash; exactly level with the axle, which is correct: a quarter-turn from the bottom puts the rider directly out to the side.</li>
+          <li>At t = 120 s (halfway around): &omega;t = &pi; radians = 180&deg;. cos(180&deg;) = &minus;1, so height = 22 &minus; 20(&minus;1) = 42 m &mdash; the top of the wheel, the maximum possible height, exactly as expected at the halfway point of one rotation.</li>
+          <li>At t = 180 s (three-quarters around): &omega;t = 3&pi;/2 radians = 270&deg;. cos(270&deg;) = 0 again, so height returns to 22 m &mdash; level with the axle on the opposite side from step 3, the same height reached by two different, symmetric positions on the wheel.</li>
+        </ol>
+        <p>The whole ride is captured by one formula and four numbers &mdash; radius, axle height, period, and starting position &mdash; because a Ferris wheel is, mechanically, nothing but the unit-circle point from the formalism section, scaled up and lifted off the ground. Anything that travels in a circle at a constant rate is described by exactly this equation with different values plugged in for A, &omega;, and k.</p>
+      </div>
+
+      <h3>Where this already shows up</h3>
+
+      <p>The clearest everyday example is the electricity in the wall behind you. The United States power grid delivers alternating current at 60 cycles per second, meaning the voltage does not sit at a constant level but oscillates as a sine wave: V(t) = V<sub>max</sub> sin(2&pi;ft), with f = 60 Hz. A standard household outlet is rated at 120 volts, but that number is a special kind of average (called RMS, root-mean-square) of a wave that actually peaks higher &mdash; at V<sub>max</sub> = 120 &times; &radic;2 &asymp; 169.7 volts &mdash; and passes back through zero 120 times every second. The angular frequency &omega; = 2&pi;f from this lesson&rsquo;s general formula is, quite literally, why AC electricity is measured in Hertz, a unit named for the same periodic behavior sine and cosine were built to describe.</p>
+
+      <p>Orbits work the same way, at a much larger scale. A satellite in a circular orbit sweeps out angle at a constant rate, exactly like the Ferris wheel in the third worked example, and a ground station tracking it converts that swept angle into the two numbers an antenna operator actually needs &mdash; elevation (how high above the horizon to point) and azimuth (which compass direction to point). This week&rsquo;s Closing Brief reported Intuitive Machines securing a satellite contract worth more than $600 million; every pass one of those satellites makes over a ground station, every window during which it is visible and in radio contact, is computed using exactly the sine and cosine machinery from today&rsquo;s lesson, applied to the geometry of an orbiting circle instead of a spinning wheel. Orbital mechanics gets more complicated once orbits stop being perfectly circular &mdash; a later Physics day will get to that &mdash; but the angular reasoning underneath never changes.</p>
+
+      <p>Surveying never stopped using Eratosthenes&rsquo; core method, either, just with better instruments. Modern GPS receivers do not measure angles from shadows; they measure precise time delays from multiple satellites and convert those delays into distances. But the underlying geometric problem &mdash; locate a point using angles or distances measured from known reference points &mdash; is the same triangulation problem land surveyors have used for centuries to measure a building&rsquo;s height, a mountain&rsquo;s distance, or a property line, all without ever walking the full distance being measured. Every one of those calculations reduces to the same right-triangle ratios from the formalism section above, applied to a triangle nobody has to physically travel around.</p>
+
+      <p>The same sinusoidal shape from Worked Example 3 governs how daylight varies across the year at any fixed latitude, Bridgeville included. Day length rises and falls smoothly between its shortest point, near the winter solstice in late December, and its longest, near the summer solstice in late June, tracing very nearly a sine curve with a one-year period &mdash; a slower, larger-scale cousin of the Ferris wheel, with the day of the year standing in for the wheel&rsquo;s swept angle and a full trip around the sun standing in for one rotation.</p>
+
+      <p>Musical pitch works the same way at a much faster timescale. A pure tone is a sine wave in air pressure, and its frequency &mdash; cycles per second, the same Hertz unit as the AC current above &mdash; is what your ear perceives as pitch. A real musical note is almost never a single sine wave; it is several sine waves of different frequencies and sizes added together, a fundamental tone plus its overtones, and pulling a recorded sound apart into those component frequencies is a direct descendant of the angle-sum reasoning this lesson has been building toward, formalized two centuries ago into a technique &mdash; Fourier analysis &mdash; that a much later Mathematics day will name properly.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Here is the misconception, and it should sound familiar if yesterday&rsquo;s lesson on algebra is still fresh: people learn that multiplication distributes over addition &mdash; <em>a</em>(<em>b</em> + <em>c</em>) = <em>ab</em> + <em>ac</em> &mdash; and then quietly assume every function works the same way, sine and cosine very much included. It feels natural to guess that sin(A + B) simply equals sinA + sinB. It does not, and the gap between the guess and the truth is not small.</p>
+
+      <p>Test it with the same clean angles from Worked Example 2: let A = 30&deg; and B = 60&deg;, so A + B = 90&deg;. The true value is easy &mdash; sin90&deg; = 1, straight off the unit circle, the point sitting at the very top. The naive guess says sinA + sinB = sin30&deg; + sin60&deg; = 1/2 + &radic;3/2 &asymp; 0.5 + 0.866 = 1.366. That is not 1. It is not close to 1. The guess overshoots the true answer by more than a third.</p>
+
+      <p>The correct value comes from the angle-sum identity given in the formalism section:</p>
+
+      <div class="formula">
+        <p class="expr">sin(30&deg; + 60&deg;) = sin30&deg;&thinsp;cos60&deg; + cos30&deg;&thinsp;sin60&deg;</p>
+        <dl>
+          <dt>sin30&deg;, cos60&deg;</dt><dd>1/2 and 1/2, from Worked Example 2</dd>
+          <dt>cos30&deg;, sin60&deg;</dt><dd>&radic;3/2 and &radic;3/2, from Worked Example 2</dd>
+        </dl>
+      </div>
+
+      <p>Plugging in the exact values from Worked Example 2: (1/2)(1/2) + (&radic;3/2)(&radic;3/2) = 1/4 + 3/4 = 1 &mdash; matching sin90&deg; = 1 exactly, as it must. The same check works for cosine: the naive guess cosA + cosB = &radic;3/2 + 1/2 &asymp; 1.366, while the true value, cos90&deg; = 0, comes from the correct identity, cosA&thinsp;cosB &minus; sinA&thinsp;sinB = (&radic;3/2)(1/2) &minus; (1/2)(&radic;3/2) = 0. Both naive guesses are wrong by the same mechanism, and both correct identities carry an extra cross term &mdash; sinA&thinsp;cosB and cosA&thinsp;sinB for sine, a subtraction of the products for cosine &mdash; that a simple &ldquo;add the pieces&rdquo; instinct always drops.</p>
+
+      <p>Sine and cosine join a long list from this course of functions that do not distribute over addition &mdash; squaring did not, on day one, and neither does this. The one operation that reliably does is plain multiplication by a fixed number, and almost nothing else earns that shortcut. A closely related practical trap, worth a sentence of its own: sin30&deg; on a calculator set to radians mode returns a completely different, meaningless number, because it treats &ldquo;30&rdquo; as 30 radians &mdash; nearly five full turns around the circle &mdash; instead of 30 degrees. Mismatched angle units are one of the most common real errors in applied trigonometry, precisely because both a wrong answer and a right one look equally plausible on a calculator screen until you check which mode it was in.</p>
+
+      <p>A related error, once quadrants enter the picture: forgetting that sine and cosine change sign outside the first quadrant, and reporting only the reference angle&rsquo;s magnitude. Told that 210&deg; has a reference angle of 30&deg;, it is tempting to pattern-match against Worked Example 2 and write sin210&deg; = 1/2. But 210&deg; sits in the third quadrant, where both coordinates are negative, so the correct value is sin210&deg; = &minus;1/2 &mdash; the right magnitude, with the sign the actual quadrant demands, dropped by treating &ldquo;same reference angle&rdquo; as &ldquo;same everything.&rdquo; In the Ferris-wheel formula from Worked Example 3, a dropped negative sign of exactly this kind is the entire difference between the wheel&rsquo;s highest point and its lowest.</p>
+
+      <h3>What today points toward</h3>
+
+      <p>This course&rsquo;s standing habit &mdash; closing each lesson by reaching back to an earlier one in a different subject &mdash; cannot quite run yet. Day one, yesterday, was also Mathematics, so there is still nothing outside this subject to connect back to; that changes starting tomorrow, when the curriculum turns to Accounting, and that lesson is built to look back at today&rsquo;s trigonometry, not the other way around. What can be said honestly, in the meantime, is where today&rsquo;s idea is headed.</p>
+
+      <p>The unit-circle picture from this lesson &mdash; a point&rsquo;s position broken into a horizontal piece and a vertical piece &mdash; is the exact tool a Physics lesson will use to decompose a thrown or launched object&rsquo;s velocity into horizontal and vertical components, the first real step toward describing projectile motion properly instead of intuitively. The general sinusoid, y(t) = A&thinsp;sin(&omega;t + &phi;) + k, is not a one-lesson trick either: it is the same shape that will describe a pendulum&rsquo;s swing, a spring&rsquo;s bounce, and&nbsp;&mdash; layered many at once, at many different frequencies&nbsp;&mdash; sound and light themselves. And the angle-sum identity from today&rsquo;s misconception section is not just a way to catch a wrong guess; it is the piece of machinery a much later lesson will need to explain why two waves of the same frequency can cancel each other out completely or reinforce each other, depending on nothing but the phase &phi; between them. None of that has been taught yet. It is a preview of where this subject goes, not a claim about what today already covered.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can define sine and cosine as coordinates of a point moving around a unit circle &mdash; a definition that works for any angle, not just the 0&deg;-to-90&deg; slice a right triangle allows.</li>
+          <li>You can convert between degrees and radians, and you know why radians &mdash; angle defined as arc length over radius &mdash; are the unit the rest of this course will lean on.</li>
+          <li>You know the Pythagorean identity, sin&sup2;&theta; + cos&sup2;&theta; = 1, holds for every angle because it is just the equation of the circle itself, and you can read the general sinusoid y(t) = A sin(&omega;t + &phi;) + k well enough to say what each of its four numbers controls.</li>
+          <li>You know sin(A + B) is not sinA + sinB &mdash; and you have a concrete pair of angles, 30&deg; and 60&deg;, you can re-check that against any time the shortcut tempts you again.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The curriculum entry for today points at Day 1 of Logan&rsquo;s 60-day academy as a topic scope; that material lives on a local machine and is not reachable from a cloud run, so this lesson was written fresh for this report. The account of Eratosthenes&rsquo; measurement of the Earth &mdash; the 7.2&deg; shadow angle, the roughly 5,000-stadia distance to Syene, and the uncertainty in reconstructing his precision given the disputed length of a stadion &mdash; was checked against public historical sources (the American Physical Society&rsquo;s history notes and Britannica among them) rather than written from memory; every other calculation, identity, and worked example was verified directly.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-17-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
