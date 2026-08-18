@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Tue, Aug 18, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-18",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/08/2026-08-18-am.html",
+    "summary": "A projectile kills a crew member in the Strait of Hormuz the morning the US-Iran ceasefire's deadline lapses and Trump threatens Oman, DRC's Ebola outbreak becomes the deadliest in the country's history hours before the WHO reconvenes, Home Depot beats under interim leadership, and two Supreme Court emergency dockets and a 50% Canada tariff deadline all land today.",
+    "headlines": [
+      "Fatal Hormuz strike as the Iran ceasefire deadline lapses; Trump threatens Oman",
+      "DRC's Ebola outbreak becomes the deadliest in the country's history; WHO meets today",
+      "Home Depot beats under interim leadership as two Supreme Court deadlines hit today"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-08-18T06:45:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Tuesday, August 18, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        A projectile kills a crew member in the Strait of Hormuz the morning the US-Iran ceasefire&rsquo;s deadline lapses and Trump threatens Oman, DRC&rsquo;s Ebola outbreak becomes the deadliest in the country&rsquo;s history hours before the WHO reconvenes, Home Depot beats under interim leadership, and two Supreme Court emergency dockets and a 50% Canada tariff deadline all land today.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> A bulk carrier was hit by an unidentified projectile in the Strait of Hormuz overnight, killing its chief engineer &mdash; the first fatality in this month&rsquo;s run of tanker strikes, arriving hours after the US-Iran ceasefire formally lapsed and Trump threatened to &ldquo;bomb&rdquo; Oman if it &ldquo;gets in the way&rdquo; of reopening talks.</li>
+          <li><b>Markets.</b> Futures are modestly lower (S&amp;P futures &minus;0.5%, Nasdaq futures &minus;1.2%), the 10-year yield sits near 4.72%, and VIX has jumped nearly 5% in early indicative trade &mdash; a market starting to notice the Hormuz escalation rather than ignoring it.</li>
+          <li><b>The thread.</b> Deadlines are landing everywhere at once today: two Supreme Court emergency dockets, a $100 bond, Canada&rsquo;s 50% tariff cutoff tomorrow, and a WHO emergency committee on the world&rsquo;s deadliest-ever DRC Ebola outbreak.</li>
+          <li><b>Biggest risk.</b> A confirmed casualty inside Hormuz with no ceasefire extension on the table and Washington now sparring publicly with a third country, Oman, over the mediation itself.</li>
+          <li><b>Watch today.</b> Home Depot&rsquo;s post-earnings open (results already beat, reaction untested) and whatever the Supreme Court does or doesn&rsquo;t do on either emergency application.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Hormuz strike kills a crew member as the US-Iran ceasefire deadline lapses; Trump threatens Oman</h3>
+          <p class="story-deck">A bulk carrier&rsquo;s chief engineer is dead after an unidentified projectile hit the vessel overnight &mdash; the first fatality in a month of Hormuz tanker strikes &mdash; while Trump threatens a third country over the stalled reopening talks.</p>
+          <div class="story-body">
+            <p>UKMTO reported early Tuesday that a vessel &mdash; identified by maritime-security sources as the Greek-owned bulk carrier <i>Minoan Dignity</i> &mdash; was struck by an unidentified projectile while transiting outbound through the Strait of Hormuz, with the ship&rsquo;s Company Security Officer reporting the incident at 1:35 AM UTC. The strike caused an engine-room fire and killed the vessel&rsquo;s chief engineer &mdash; the first confirmed fatality in the string of Hormuz incidents this report has tracked since early August; prior strikes on ADNOC-linked vessels caused no reported injuries. The Omani Coast Guard is assisting the remaining crew; no attribution for the projectile has been reported, and no environmental impact has been described. Vessel crossings remain in the single digits per day, down from more than 130 before the war.</p>
+            <p>The strike lands hours after the 60-day Islamabad ceasefire&rsquo;s deadline passed with no extension. Trump said Monday he is &ldquo;not in a hurry&rdquo; to extend it and called Iranian negotiators &ldquo;good poker players, but they&rsquo;re dying&rdquo; &mdash; and, asked about active Iran-Oman talks on reopening the Strait, said he would &ldquo;bomb&rdquo; Oman if it &ldquo;gets in the way.&rdquo; Iran confirmed it is in active talks with Oman on a reopening arrangement; Tehran&rsquo;s deputy foreign minister, Kazem Gharibabadi, has separately reiterated that the Strait &ldquo;will remain Iranian&rdquo; and cannot be seized &ldquo;by tweet, nor by aircraft carrier.&rdquo; One Pakistani wire report claimed the US and Iran had agreed to extend the ceasefire; that conflicts with Trump&rsquo;s on-record refusal and is not adopted here.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the first Hormuz incident with a confirmed death, and it lands the same day Washington is publicly threatening a mediator rather than just Iran. Oil and equities have so far priced five-plus days of tanker strikes as background risk; a fatality changes the character of that bet.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether Iran, the US or a third party claims or denies responsibility for the projectile, and whether the Oman-mediated reopening talks continue despite Trump&rsquo;s threat.
+            </div>
+          </div>
+          <p class="story-sourceline">UKMTO (primary) &middot; Arab News, Al Jazeera, gCaptain, SAFETY4SEA, Marine Link &middot; Washington Post, NBC News, CBS News, CNN, CNBC (Trump/Oman remarks).</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC&rsquo;s Ebola outbreak becomes the deadliest the country has ever recorded; WHO reconvenes today</h3>
+          <p class="story-deck">The confirmed toll has passed the 2018-2020 eastern DRC epidemic&rsquo;s death count, with WHO&rsquo;s second emergency review of the outbreak&rsquo;s global-health-emergency status scheduled for today &mdash; no outcome published yet.</p>
+          <div class="story-body">
+            <p>WHO and Africa CDC figures as of August 16 put the outbreak at 4,945 confirmed cases and 2,325 deaths, up from 4,727 and 2,214 on August 15 &mdash; 101 new infections in the preceding 24 hours alone. The death toll now exceeds the 2,299 recorded in the 2018-2020 eastern DRC epidemic, making this the deadliest Ebola outbreak in the country&rsquo;s history, with a case-fatality rate near 46%. At least 155 healthcare workers have been infected and 45 have died. The World Health Organization&rsquo;s International Health Regulations Emergency Committee was scheduled to hold its second review of the outbreak today &mdash; its first since the May 17 declaration of a public-health emergency of international concern &mdash; but no outcome or statement had been published as of this writing.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether the committee renews, narrows or expands its recommendations; this report will carry the outcome once WHO publishes it.
+            </div>
+          </div>
+          <p class="story-sourceline">World Health Organization, Africa CDC (primary) &middot; CIDRAP.</p>
+        </article>
+
+        <article class="story">
+          <h3>Home Depot beats on both lines under interim leadership, reaffirms guidance</h3>
+          <p class="story-deck">The first quarter reported since CEO Ted Decker&rsquo;s medical leave began shows adjusted EPS of $4.92 against a roughly $4.71-4.73 consensus and sales up 5.7%, with full-year guidance held.</p>
+          <div class="story-body">
+            <p>Home Depot reported fiscal Q2 results before Tuesday&rsquo;s open: sales of $47.9 billion, up 5.7% year over year, against a consensus clustered around $47.2-47.5 billion, with total comparable sales up 1.7%. Adjusted diluted EPS came in at $4.92 versus $4.68 a year earlier and a roughly $4.71-4.73 consensus &mdash; a clear beat on both lines. The company reaffirmed full-year guidance (comparable sales flat to up 2%, total sales growth of roughly 2.5-4.5%), citing IEEPA tariff refunds partly offsetting fuel, energy and input-cost pressure. This is the first quarter reported under the interim &ldquo;Office of the CEO&rdquo; &mdash; Ann-Marie Campbell overseeing stores and operations, CFO Richard McPhail handling finance and the Pro business as interim principal executive &mdash; since Decker began medical leave August 12. McPhail said results &ldquo;exceeded our expectations&rdquo; with &ldquo;broad based demand across the business.&rdquo; Neither the release nor coverage reviewed for this edition addressed Decker&rsquo;s prognosis or a return timeline. The print lands one day before new 50% Section 338 tariffs on Canadian goods take effect; the stock&rsquo;s reaction was untested as of this writing, before the open.</p>
+          </div>
+          <p class="story-sourceline">Home Depot investor relations, SEC EDGAR 8-K (primary).</p>
+        </article>
+
+        <article class="story">
+          <h3>Kushner and Netanyahu&rsquo;s Gaza disarmament framework hardens rather than resolves</h3>
+          <p class="story-deck">The two sides agreed disarmament should begin with a US-general-supervised weapons handover, but Netanyahu is publicly doubling down on no Israeli pullback before full disarmament &mdash; the opposite of a compromise on the sequencing dispute this report has tracked since August 9.</p>
+          <div class="story-body">
+            <p>Netanyahu and Kushner met roughly four hours Monday; the two sides agreed Hamas disarmament should start with a weapons handover supervised by a US general, with &ldquo;no pullbacks whatsoever&rdquo; by Israel before full disarmament of Hamas&rsquo;s light and heavy weapons, per Netanyahu&rsquo;s public position afterward. Kushner separately pressed Netanyahu to test Hamas&rsquo;s disarmament commitment with small, verifiable steps rather than waiting for a comprehensive handover; Netanyahu, heading into an October Israeli election, remains skeptical. Netanyahu also pressed Kushner on his direct Cairo meeting with Hamas&rsquo;s Khalil al-Hayya. No public Hamas response to the general-supervised framework has surfaced. The core dispute this report has followed since Netanyahu rejected the roadmap&rsquo;s sequencing on August 9 &mdash; whether Israeli withdrawal or Hamas disarmament comes first &mdash; is not resolved by Monday&rsquo;s meeting; if anything, Netanyahu&rsquo;s public framing has hardened.</p>
+          </div>
+          <p class="story-sourceline">NBC News, Axios, Times of Israel, Al Jazeera, CBS News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Two Supreme Court emergency dockets hit their deadlines today; no ruling on either yet</h3>
+          <p class="story-deck">A $100 bond in the mail-ballot case and the preservationists&rsquo; response in the East Wing ballroom case were both due today, with an Aug. 21 enforcement date approaching in the ballroom matter &mdash; neither has produced a public ruling as of this writing.</p>
+          <div class="story-body">
+            <p>Judge Indira Talwani&rsquo;s preliminary injunction blocking the administration&rsquo;s mail-ballot executive order required plaintiff organizations to post a nominal $100 bond by today; DOJ&rsquo;s emergency stay application at the Supreme Court remains pending, with 23 states supporting the injunction and 12 backing DOJ. Separately, the government&rsquo;s emergency application to let the roughly $400 million White House East Wing ballroom project resume construction during appeal set the National Trust for Historic Preservation&rsquo;s response deadline for today, ahead of an August 21 date when a lower-court order otherwise takes effect; the government&rsquo;s filing cites a July 8 intelligence warning of a possible missile threat to Air Force One as part of its national-security urgency argument. Every court that has reviewed the ballroom case so far has ruled the construction unlawful without congressional approval. No outlet reviewed for this edition confirms a Supreme Court ruling or a filed National Trust response as of this writing on either matter; both sit on the emergency &ldquo;shadow docket,&rdquo; which can move without advance notice.</p>
+          </div>
+          <p class="story-sourceline">SCOTUSblog, Votebeat, Brennan Center, ACLU &middot; PBS NewsHour, CNN, Newsweek, Fortune, National Trust for Historic Preservation statement.</p>
+        </article>
+
+        <article class="story">
+          <h3>Mangione&rsquo;s Manhattan murder trial postponed over a double-jeopardy motion</h3>
+          <p class="story-deck">Judge Gregory Carro canceled the September 8 trial date and gave the Manhattan DA until October 9 to respond to the defense&rsquo;s argument that Mangione&rsquo;s federal guilty plea bars a second state prosecution for the same conduct.</p>
+          <div class="story-body">
+            <p>Judge Gregory Carro on Monday postponed Luigi Mangione&rsquo;s Manhattan state murder trial, which had been set to begin September 8, giving the district attorney&rsquo;s office until October 9 to respond to the defense&rsquo;s double-jeopardy motion, with a hearing set for December 10 &mdash; roughly a week before Mangione&rsquo;s December 18 federal sentencing on the stalking charges he pleaded guilty to on August 14. The defense argues the federal conduct and the state murder charge are &ldquo;coterminous&rdquo; and that a second prosecution is barred; the well-established &ldquo;separate sovereigns&rdquo; exception to double jeopardy &mdash; letting state and federal governments each prosecute the same conduct &mdash; gives the defense a steep legal hurdle. The Manhattan DA&rsquo;s office says it remains &ldquo;prepared to litigate the defense motions&rdquo; and intends to keep pursuing the state case.</p>
+          </div>
+          <p class="story-sourceline">CNN, PBS NewsHour, NBC News, Fox News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Ukraine flies its largest Moscow-area drone attack in two years; Russia claims 620-plus intercepted</h3>
+          <p class="story-deck">Roughly 800 drones targeted the Moscow region overnight, wounding three including a child, as both sides continue trading large-scale strikes with no sign of de-escalation.</p>
+          <div class="story-body">
+            <p>Ukraine launched roughly 800 drones overnight into Tuesday, with Russia reporting 620-plus aimed at the Moscow region &mdash; Moscow&rsquo;s mayor said air defenses downed 180 drones between Monday evening and 5 AM Tuesday, and Russian state media called it the largest Moscow-area drone attack in two years. Three people were wounded, including a 10-year-old girl, per the Moscow region&rsquo;s governor; a Wildberries warehouse previously damaged in an earlier strike was reportedly hit again. Ukraine&rsquo;s air force said it downed or suppressed 111 of 147 Russian drones fired at Ukraine over the same period, indicating the exchange continues in both directions.</p>
+          </div>
+          <p class="story-sourceline">Al Jazeera, Kyiv Independent, NPR, ABC News, Euronews &middot; TASS (Russian figures, labeled as such).</p>
+        </article>
+
+        <article class="story">
+          <h3>A widely exploited VMware flaw still isn&rsquo;t on the federal KEV list &mdash; while a newer one got added within days</h3>
+          <p class="story-deck">CVE-2026-59310 has hit 361-plus victims across 47 countries and is now tied, with moderate confidence, to a China-nexus actor and Babuk-derived ransomware &mdash; yet a separate AI-framework flaw disclosed far more recently was added to CISA&rsquo;s Known Exploited Vulnerabilities catalog within days.</p>
+          <div class="story-body">
+            <p>The VMware vCenter flaw this report has tracked since early August remains under active, wide-scale exploitation &mdash; 361-plus victims across 47 countries, concentrated in Germany, the US, Turkey, Iran and France &mdash; and still is not listed in CISA&rsquo;s Known Exploited Vulnerabilities catalog; direct cisa.gov fetches were blocked again this run, a recurring environment limitation, but the absence is corroborated by security-industry tracking (OpenCVE, SecurityWeek). German incident-response firm QUIRSO assessed with &ldquo;moderate confidence&rdquo; that the campaign is run by a Chinese-speaking actor, citing UTC+8 timing patterns and Chinese-language tooling; a separate report describes a suspected China-nexus actor deploying Babuk-derived ransomware via the same flaw, which may be an overlapping or distinct campaign. By contrast, CISA added a different flaw &mdash; CVE-2025-62593, a code-injection vulnerability in the Ray AI/ML framework exploited by the &ldquo;ShadowRay 2.0&rdquo; cryptomining botnet &mdash; to its KEV catalog on August 17, with a federal remediation deadline of August 20. This report could not confirm a documented link between the VMware exploitation and Broadcom&rsquo;s recent bond-rating downgrade, which analysts instead tie to leverage in Broadcom&rsquo;s AI-financing platform with Blackstone and Apollo.</p>
+          </div>
+          <p class="story-sourceline">TheHackerNews, DarkReading, CISA KEV alert (Ray) &middot; OpenCVE, SecurityWeek.</p>
+        </article>
+
+        <article class="story">
+          <h3>Canada&rsquo;s 50% tariffs take effect tomorrow; talks reportedly at an impasse</h3>
+          <p class="story-deck">Prime Minister Carney says he expects to speak with Trump before the deadline, but Canadian officials described the two sides as at an impasse as of Monday on the roughly $20 billion in affected goods.</p>
+          <div class="story-body">
+            <p>Section 338 tariffs of 50% on a range of Canadian goods &mdash; dairy, alcoholic beverages, motor vehicles and other items worth roughly $20 billion a year, with no USMCA exemption &mdash; take effect Wednesday absent a deal. Canadian Prime Minister Mark Carney called the talks &ldquo;very delicate and intense&rdquo; and said he expects to speak with Trump before the deadline; Canadian officials described the two governments as at an impasse as of Monday, with talks reportedly covering &ldquo;all strategic sectors&rdquo; including autos. Carney said Canada &ldquo;will not accept a bad deal.&rdquo; No resolution had been reported as of this writing. This lands directly against the retail-earnings week Home Depot opened this morning: Lowe&rsquo;s and Target report Wednesday, Walmart Thursday.</p>
+          </div>
+          <p class="story-sourceline">Washington Post, CBC, Bloomberg.</p>
+        </article>
+
+        <article class="story">
+          <h3>House Ethics Committee opens investigation into Rep. Jimmy Gomez over sexual-misconduct allegations</h3>
+          <p class="story-deck">The California Democrat says any relations were consensual and no rules were broken; the committee's announcement Monday drew wide, bipartisan-interest coverage.</p>
+          <div class="story-body">
+            <p>The House Ethics Committee announced Monday it is reviewing whether Rep. Jimmy Gomez (D-CA) &ldquo;engaged in inappropriate sexual contact with a House staffer,&rdquo; a matter CNN first reported was under review in June. Gomez said in a statement he has &ldquo;made personal mistakes outside my marriage&rdquo; but that any relations were consensual and no House rules were broken, and that he will cooperate with the committee. The investigation is at its earliest stage &mdash; review, not findings or charges &mdash; and no timeline for its conclusion has been announced.</p>
+          </div>
+          <p class="story-sourceline">Washington Post, Fox News, CNN, Axios, NBC News, The Hill, NPR.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>Indonesia&rsquo;s Flores Island earthquake toll climbed sharply to 68-69 dead as of Monday, up from the 47-53 range reported Sunday, with 213-331 injured depending on source and roughly 5,000 displaced; more than 230 aftershocks have been recorded and the toll is expected to rise further as landslide-blocked roads keep rescuers from reaching Nagekeo regency. Colombia&rsquo;s earthquake death toll held at 294, but the missing count was revised sharply down, from 320 to roughly 140-143 &mdash; a reclassification of located survivors, not new casualties, and a genuine positive update rather than a fatality increase. Trump directed the Pentagon to &ldquo;substantially reduce&rdquo; an 18,000-troop, 11-day US-South Korea joint exercise hours before it was to begin, citing carrier strain from the Iran conflict and calling the drills &ldquo;hostile&rdquo; toward a North Korea he described as &ldquo;unthreatening and respectful&rdquo; &mdash; a second theater now competing for the same military bandwidth as Hormuz. China&rsquo;s CXMT overtook Tencent last week as China&rsquo;s most valuable listed company on reports Huawei plans to roughly double Ascend 910C AI-chip output next year; independent supply-chain analysis suggests CXMT&rsquo;s own memory-chip production may only support 250,000-300,000 units in 2026, well short of the reported 600,000 target &mdash; a forecast that may not be achievable at the stated scale, not a realized fact.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Karoline Leavitt&rsquo;s planned end-of-August departure as White House press secretary remains confirmed with no successor named; unconfirmed reports name attorney Alina Habba as a frontrunner, alongside principal deputy press secretary Anna Kelly, but this report treats the speculation as unverified pending an official announcement. Fed Governor Lisa Cook&rsquo;s response window to the administration&rsquo;s removal effort runs to roughly August 26; no new filing has surfaced. The DOJ contempt referral against Dr. Fauci remains under review with no charging decision, unchanged since August 13. Separately, The Intercept and the Freedom of the Press Foundation sued Trump in federal court over Truth Social&rsquo;s paid &ldquo;early access&rdquo; feed for his posts, calling the $60,000-$100,000-a-month service unconstitutional; Trump Media calls the suit an attempt at censorship by &ldquo;left-wing activists.&rdquo; A former DOJ attorney, Sunita Doddamani, separately sued the department over her April firing, which followed DOJ&rsquo;s public statement that it had &ldquo;terminated personnel responsible for weaponizing the FACE Act.&rdquo; Primary elections were held today in Florida (including a US Senate special election), Alaska, Wyoming and Vermont; results were not final as of this writing.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p>No new Israeli strikes on Lebanon were found since Saturday&rsquo;s attack that killed at least 11; Hezbollah has not yet retaliated. The federal government has formally attributed the string of water-utility intrusions across a dozen states &mdash; New Jersey, Minnesota, Michigan, Georgia, South Dakota and others &mdash; to Iran-affiliated actors, naming the IRGC-linked group &ldquo;CyberAv3ngers&rdquo; in a joint EPA-FBI-CISA-NSA advisory; this upgrades the attribution from contested to Confirmed-primary, a change from this report&rsquo;s prior framing. No new statement has surfaced from Saudi Arabia, Turkiye or Pakistan on whether their Mecca Joint Deterrence Agreement applies to the Houthi strike on a Saudi refinery it failed to answer, and no independent confirmation has emerged of last week&rsquo;s reported de-escalation in Ethiopia&rsquo;s Tigray region.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p>July&rsquo;s Import and Export Price Indexes are due at 8:30 AM ET today, the week&rsquo;s first hard data point after Friday&rsquo;s soft retail-sales and consumer-sentiment readings; June&rsquo;s import prices rose 0.3% month over month (7.1% year over year, the largest annual gain since 2022) while export prices fell 0.6%, the first monthly decline in a year. No Fed official was confirmed to have spoken publicly since Chair Kevin Warsh&rsquo;s July 29 press conference, where he called his upcoming Jackson Hole keynote (August 27-29) &ldquo;a blank piece of paper right now.&rdquo; The Treasury&rsquo;s own par-yield curve, as of Monday&rsquo;s close, puts the 10-year at 4.72%, the 2-year at 4.19% (2s10s spread +53 basis points) and the 3-month bill at 3.87%; high-yield credit spreads held at 2.67% (FRED, as of August 14, unchanged from the prior print).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>L3Harris&rsquo;s Christopher Kubasik was fired, not simply departed, following a board-directed code-of-conduct investigation; the company says the conduct was unrelated to financial reporting, controls or operations, and Kubasik received no severance or accelerated equity. Sam Mehta, most recently head of the company&rsquo;s space sector, was named president and CEO effective immediately &mdash; a correction to this report&rsquo;s Monday framing of the move as a departure. Stripe is now widely reported to have finalized a deal above $7 billion for AI-routing startup OpenRouter, more than five times OpenRouter&rsquo;s valuation from a few months earlier; neither company has officially confirmed it. Nvidia&rsquo;s $500 billion AI-infrastructure financing venture with Apollo, BlackRock, Blackstone, Brookfield, Goldman Sachs and KKR remains at the memorandum-of-understanding stage; CEO Jensen Huang said Nvidia has the option to backstop up to $125 billion, or 25%, of potential deals. The Army&rsquo;s PAC-3 missile-interceptor contract with Lockheed Martin &mdash; converting a one-year undefinitized order into a seven-year, 2026-2032 multiyear procurement tripling annual output to roughly 2,000 interceptors by 2030 &mdash; is now put at $53.86 billion by the most detailed reporting reviewed, the largest Patriot-family contract on record. Marvell and Micron extended their rally on a bullish Mizuho supply-chain note pointing to a strong Nvidia VR200 ramp into 2027; Broadcom and Nvidia themselves were little changed on the same note, suggesting a narrow rally rather than broad AI-chip buying.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>ShinyHunters published a 280GB archive covering 1.6 million RingCentral accounts &mdash; names, addresses, emails, phone numbers &mdash; after the communications company declined to pay following a July breach in which an employee was voice-phished into surrendering account credentials; RingCentral says core services were not disrupted, but customers face elevated phishing and business-email-compromise risk. Running losses from the Coldcard hardware-wallet exploit, tied to a 2021 firmware flaw that weakened seed-phrase randomness, now stand near $116 million across more than 5,200 addresses per Galaxy Research and TRM Labs, with a candidate fourth wave of roughly $40 million under review that could push the total above $150 million; attack activity has slowed as exposed users move funds. France&rsquo;s prime minister has ordered the national cyber agency ANSSI to audit the DGFiP tax-breach incident, with conclusions due in September; the attacker &ldquo;Zerobytes&rdquo; claims a far larger scope (roughly 2 million people) than the agency&rsquo;s confirmed 678,000, a discrepancy that remains unresolved. Google&rsquo;s Discovery Loop &mdash; the independent research venture co-founded by departing DeepMind veterans Jeff Dean, Sanjay Ghemawat, Oriol Vinyals and Quoc Le &mdash; is backed by Google as both investor and cloud provider, with Dean expected to serve as CEO; the venture aims to automate large-scale scientific experimentation.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>A coronal mass ejection that left the Sun August 14 is producing G1-to-possible-G2 geomagnetic storming as it reaches Earth, with aurora potentially visible tonight across the northern tier of the US (Washington, Montana, North Dakota, northern Michigan, Maine); a second CME is separately forecast to arrive around August 20. This report could not reach NOAA&rsquo;s primary space-weather feeds directly, but the event itself is now corroborated across multiple independent outlets rather than resting on a single source, as it did in an earlier edition. China&rsquo;s CASC has still issued no formal cause for the August 10 Long March 7A failure; independent launch trackers continue to show LandSpace&rsquo;s Zhuque-3 reflight around August 31, though one uncorroborated report suggested a launch attempt as soon as tonight &mdash; this report could not verify that claim against any primary source and is not adopting it. SpaceX&rsquo;s next major share-eligibility tranche (roughly 7% of shares, distinct from the initial August 6 unlock) is set for around August 21; analysts note share eligibility does not equal actual sale volume. NASA astronauts are conducting a roughly 6.5-hour spacewalk today to replace an ISS communications antenna.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Pre-open</td><td class="txt"><strong>Home Depot Q2 FY2026</strong> &mdash; reported: adj. EPS $4.92, revenue $47.9B</td><td>EPS $4.71&ndash;4.73</td><td>EPS $4.58</td></tr>
+            <tr><td>08:30</td><td class="txt">Import &amp; Export Price Indexes (Jul)</td><td>&mdash;</td><td>Import +0.3% m/m, Export &minus;0.6% m/m</td></tr>
+            <tr><td>All day</td><td class="txt">WHO IHR Emergency Committee reconvenes on the DRC Ebola PHEIC</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>All day</td><td class="txt">Primary elections: Florida (incl. US Senate special), Alaska, Wyoming, Vermont</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">4-Week and 8-Week Treasury Bill auctions</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">17-Week Treasury Bill auction</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Equity futures point to a modestly softer open &mdash; S&amp;P futures &minus;0.5%, Nasdaq futures &minus;1.2%, Dow futures roughly flat, Russell 2000 futures flat &mdash; after Monday&rsquo;s session already closed lower across the board (S&amp;P 500 &minus;0.47%, Nasdaq &minus;0.32%, Dow &minus;0.49%, Russell 2000 &minus;0.34%). The 10-year yield sits near 4.72%, close to its highest levels of the year per the Treasury par-yield curve. The dollar index is little changed overnight near 99.6. VIX&rsquo;s indicative quote has jumped nearly 5% in early trade to roughly 15.9 &mdash; still a low absolute level, but a notable overnight move for a gauge that closed Monday at 15.19; the VIX9D-VIX-VIX3M term structure (12.4 / 15.2 / 19.0) remains in normal contango, showing no inversion or acute near-term stress. Oil and gold are both little changed from Monday&rsquo;s close in early indicative trade, after Monday&rsquo;s Hormuz-driven gains (WTI-tracking USO +2.9%, gold-tracking GLD +1.0%). Bitcoin trades near $64,150, up modestly on the day. The tape&rsquo;s most fragile assumption: that this morning&rsquo;s fatal Hormuz strike gets absorbed the way the prior tanker incidents were, as background risk rather than a genuine supply threat &mdash; VIX&rsquo;s overnight jump suggests that assumption is now being tested, not confirmed. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Hormuz escalates further.</strong> Preconditions: a claimed or attributed follow-on strike, or a US/Israeli military response to today&rsquo;s fatality. Probability 20&ndash;35% over the next week, on the basis of five-plus strikes in the past two weeks and today&rsquo;s first confirmed death. Indicators: UKMTO advisories, Iranian and US official statements, oil futures. If it happens: oil and gold extend gains, equities give back more of the past week&rsquo;s strength. Invalidated by a confirmed Oman-brokered reopening arrangement.</p>
+        <p><strong>Canada tariffs take effect with no deal.</strong> Preconditions: no Trump-Carney call, or a call that does not produce an agreement, before Wednesday&rsquo;s deadline. Probability 45&ndash;60%, on the basis of Monday&rsquo;s reported impasse. Indicators: statements from Carney, USTR or the White House. If it happens: added cost pressure lands mid-week directly against Lowe&rsquo;s, Target and Walmart earnings. Invalidated by a last-minute agreement or extension.</p>
+        <p><strong>VMware exploitation escalates before a KEV listing.</strong> Preconditions: a major new victim disclosure or ransomware deployment via CVE-2026-59310 while it remains off the federal list. Probability 25&ndash;35%, on the basis of the campaign&rsquo;s current scale and pace. Indicators: CISA KEV catalog updates, security-vendor victim counts. If it happens: renewed pressure on Broadcom and on federal patch-compliance timelines. Invalidated by a KEV listing and a slowdown in new victim reports.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">80&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Patchy fog before 8 AM, then sunny; northwest wind 2-7 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">80&deg;</span>
+            <span class="sky">Patchy fog, then sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="lo">62&deg;</span>
+            <span class="sky">Partly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">80&deg;</span>
+            <span class="sky">Partly sunny, chance of PM storms</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT&rsquo;s Red Line shut between Overbrook and South Hills Junction through August 31 for a $150M rail-safety project</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit has closed T service between Overbrook and South Hills Junction for a safety-critical rail-replacement project running through the end of the month, running free shuttle buses every 15-20 minutes between South Hills Junction and Potomac Station, and between Dormont Junction and Overbrook Junction. South Hills riders should plan for the shuttle in place of the T through August 31.</p>
+        </div>
+        <p class="story-sourceline">Pittsburgh Regional Transit (primary) &middot; WPXI, CBS Pittsburgh.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT opens public comment on a bus-network overhaul cutting 13 routes and changing 56 more</h3>
+        <div class="story-body">
+          <p>PRT&rsquo;s &ldquo;Bus Line Refresh&rdquo; proposal, open for public comment through September 30, would eliminate 13 of the system&rsquo;s 98 bus routes and significantly change 56 others, including new South Hills-to-Oakland service (a 35-Bower Hill-Oakland route and a 45-Carrick-Oakland-East Liberty route routed via Brentwood). Four in-person hearings are planned; details are on PRT&rsquo;s Engage PRT site.</p>
+        </div>
+        <p class="story-sourceline">PRT / Engage PRT (primary) &middot; Pittsburgh Post-Gazette, WESA.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Pennsylvania American Water rate increase took effect this week, including in South Fayette and Bridgeville</h3>
+        <div class="story-body">
+          <p>A PUC-approved rate increase for Pennsylvania American Water &mdash; which serves parts of South Fayette and Bridgeville &mdash; took effect August 13. Regulators cut the utility&rsquo;s original request roughly in half, approving a 4.75% water and 14.2% wastewater increase (a net $74.9 million revenue increase against the roughly $159.5 million originally sought). A typical residential water customer will see about $3 more a month; wastewater customers, roughly $14-17 more.</p>
+        </div>
+        <p class="story-sourceline">Pennsylvania Public Utility Commission (primary) &middot; Pennsylvania American Water newsroom, Local21News.</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, mild</span> Supporting: broad indices closed lower Monday (S&amp;P &minus;0.47%, Nasdaq &minus;0.32%, Dow &minus;0.49%), breadth was negative (1,857 advancers vs. 3,345 decliners across a 5,450-name universe, down-volume exceeding up-volume $7.56B to $5.31B), and VIX has jumped nearly 5% in early indicative trade on the fatal Hormuz strike. Contradicting: the Russell 2000 outperformed (+0.51% on the day, futures flat overnight), high-yield credit spreads are unchanged at 2.67%, and the VIX term structure remains in normal contango with no inversion. Confidence: low-moderate &mdash; this reads as a single risk-off morning responding to a specific overnight event, not yet a confirmed regime shift.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official (Aug. 17, 2026, the prior business day).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.79%</td></tr>
+                <tr><td>3M</td><td>3.87%</td></tr>
+                <tr><td>6M</td><td>3.95%</td></tr>
+                <tr><td>1Y</td><td>4.00%</td></tr>
+                <tr><td>2Y</td><td>4.19%</td></tr>
+                <tr><td>3Y</td><td>4.25%</td></tr>
+                <tr><td>5Y</td><td>4.38%</td></tr>
+                <tr><td>7Y</td><td>4.54%</td></tr>
+                <tr><td>10Y</td><td>4.72%</td></tr>
+                <tr><td>20Y</td><td>5.30%</td></tr>
+                <tr><td>30Y</td><td>5.31%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +53bp &middot; 3m10y +85bp &middot; 5s30s +93bp. FRED cross-check: T10Y2Y +53bp (Aug. 17), consistent. SOFR 3.62% and DFII10 (10Y real yield) 2.41%, both EOD official Aug. 14 (FRED&rsquo;s most recent print at fetch time). 10-year breakeven inflation (T10YIE) 2.28%, Aug. 17.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Monday, Aug. 17 close vs. Friday, Aug. 14 close &mdash; Previous close, this run&rsquo;s own close-series data.</caption>
+              <thead><tr><th>Index/ETF</th><th>Close</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500 (SPY)</td><td>772.67</td><td class="down">&minus;0.47%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>26,644.91</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>Dow Jones (DIA)</td><td>534.19</td><td class="down">&minus;0.49%</td></tr>
+                <tr><td>Russell 2000 (IWM)</td><td>304.06</td><td class="up">+0.52%</td></tr>
+                <tr><td>Equal-weight S&amp;P (RSP)</td><td>220.79</td><td class="down">&minus;0.89%</td></tr>
+                <tr><td>Magnificent Seven (MAGS)</td><td>67.35</td><td class="down">&minus;1.33%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">SPY sits roughly 2% below its 52-week high ($779.37) and 23% above its 52-week low ($629.28); 20-day average $756.20, 50-day average $748.93 &mdash; price above both, a still-intact short/medium-term uptrend despite Monday&rsquo;s pullback.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Massive grouped-daily data for Monday, Aug. 17 (filtered universe: symbol length &le;5, no share-class suffix, close &ge;$1, volume &ge;100,000 &mdash; 5,450 names): 1,857 advancers, 3,345 decliners, 248 unchanged; up-volume $5.31B vs. down-volume $7.56B, a negative breadth session consistent with the index declines above. Percent of names above their 50-/200-day EMA: <span class="flag">Estimated</span> &mdash; EMA proxy, accumulating history (17 of 50 sessions needed) &mdash; not yet reportable. Advance/decline line: this system has now tracked 17 sessions since inception.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Monday, Aug. 17 close vs. Friday, Aug. 14 &mdash; Previous close.</caption>
+              <thead><tr><th>Sector SPDR</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>Energy (XLE)</td><td class="up">+1.08%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="up">+0.16%</td></tr>
+                <tr><td>Regional banks (KRE)</td><td class="down">&minus;0.69%</td></tr>
+                <tr><td>Semiconductors (SMH)</td><td class="up">+1.06%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="down">&minus;1.00%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Energy led on the Hormuz-driven oil move; financials lagged, consistent with the day&rsquo;s negative-breadth, risk-off tilt.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Notable Monday close-to-close moves (this run&rsquo;s own data, Previous close): Marvell +5.54% and Micron +4.13% on the Mizuho supply-chain note; L3Harris &minus;4.61% on the Kubasik ouster, with the broader defense group softening alongside it (Northrop &minus;2.67%, Lockheed &minus;2.45%); Intuitive Machines +7.21% on its new satellite-communications contract; York Space Systems &minus;2.47%, extending its post-earnings decline; Broadcom roughly flat (&minus;0.14%) after Friday&rsquo;s bond-downgrade-driven drop, suggesting Monday was not a continuation. KKR &minus;4.54% and Apollo &minus;4.42% pulled back within their ongoing Nvidia-financing round trip.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield OAS (BAMLH0A0HYM2) held at 2.67%, EOD official Aug. 14 &mdash; unchanged from the prior print, no new observation to append to the tracked history. FINRA short-volume ratio for the prior session (Aug. 17, aggregate across the tape) was 51.7%. Among this report&rsquo;s watchlist names, the highest short-volume ratios were in credit and rate-sensitive ETFs: JNK 83.9%, GOVT 81.6%, KRE 80.8%, XLF 77.0%; the lowest were RTX 31.6%, XLRE 27.6%, IRDM 23.7%, BKLN 21.0%. Short volume is same-day trading activity, not short interest, and carries no settlement-date implication.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX closed Monday at 15.19 (EOD official), up from 14.25 Friday; an indicative delayed quote this morning shows 15.94, up nearly 5% (Delayed +15 min, Cboe). Term structure: VIX9D 12.39, VIX 15.19, VIX3M 19.04 &mdash; normal contango, no inversion. Put/call ratios remain unavailable (Cboe&rsquo;s options market-statistics endpoint has returned 403 for weeks; not retried). MOVE index and dealer gamma: not tracked, no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, EOD official, Aug. 17.</caption>
+              <thead><tr><th>Pair</th><th>Rate</th></tr></thead>
+              <tbody>
+                <tr><td>EUR/USD</td><td>1.1593</td></tr>
+                <tr><td>USD/JPY</td><td>159.23</td></tr>
+                <tr><td>GBP/USD</td><td>1.3559</td></tr>
+                <tr><td>USD/CNY</td><td>6.7394</td></tr>
+                <tr><td>USD/CHF</td><td>0.8099</td></tr>
+                <tr><td>USD/CAD</td><td>1.3859</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Dollar index (DXY, DX-Y.NYB, ICE) 99.64, little changed overnight. Free-tier quotes are single-venue and can differ slightly from official closes.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude (USO) closed Monday +2.91% on the Hormuz ceasefire lapse, roughly flat in early indicative trade this morning. Gold (GLD) closed Monday +1.00%, also roughly flat overnight. Natural gas and copper futures little changed. Bitcoin (via CoinGecko) trades near $64,148, +1.05% on 24 hours; ether $1,896 (&minus;0.31%); total crypto market cap $2.28 trillion, Bitcoin dominance 56.5%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Monday&rsquo;s session showed a mild value/small-cap tilt (Russell 2000 and equal-weight S&amp;P diverging from cap-weighted large-cap indices), consistent with the negative-breadth, risk-off read above. Rate-sensitive long-duration Treasuries (TLT) fell 0.84% Monday as the 10-year yield firmed toward 4.72%, a normal cross-asset relationship, not a dislocation.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions</summary>
+          <p>Home Depot reported before today&rsquo;s open (see Top Stories and calendar above). Lowe&rsquo;s and Target report Wednesday before the open, Walmart Thursday. Treasury auctions this week: 4-Week and 8-Week bills and a 17-Week bill today; a 20-Year bond auction Wednesday; 13-Week, 26-Week and 6-Week bills plus 2-Year, 1-Year-11-Month and 5-Year notes Thursday; a 7-Year note Friday.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> UKMTO; the World Health Organization and Africa CDC; Home Depot investor relations and SEC EDGAR; SCOTUSblog; the US Treasury par-yield curve, FRED, Cboe and Yahoo Finance for market data; and named wire and beat reporting throughout &mdash; UKMTO, Al Jazeera, NBC News, CNN, CBS News, Washington Post, NPR, PBS NewsHour, Reuters-sourced wire coverage, Pittsburgh Regional Transit and the Pennsylvania Public Utility Commission among them.</p>
+      <p><strong>Corrections.</strong> None owed into this edition. Monday&rsquo;s framing of L3Harris CEO Christopher Kubasik&rsquo;s exit as a &ldquo;departure&rdquo; is refined above, in Business, now that his firing and Sam Mehta&rsquo;s appointment are confirmed &mdash; a completeness update, not a factual correction to a prior published sentence.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-18-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

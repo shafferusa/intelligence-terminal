@@ -71,6 +71,15 @@
       "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-08-14-am edition did not surface the story despite same-day, multi-outlet coverage of the ruling.",
       "conclusions_changed": false,
       "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-08-01 entry above (Board of Peace announcement). No prior published sentence needed correcting."
+    },
+    {
+      "found": "2026-08-18",
+      "report": "reports/2026/08/2026-08-17-pm.html",
+      "original": "Described L3Harris CEO Christopher Kubasik's exit as an 'abrupt departure,' without stating a cause.",
+      "corrected": "Multiple outlets (L3Harris's own press release, Bloomberg, Fox Business, SpaceNews, Washington Technology) report Kubasik was terminated following a board-directed code-of-conduct investigation -- not a voluntary departure -- with no severance or accelerated equity vesting; the company says the conduct was unrelated to financial reporting, controls, or operations. Sam Mehta, previously head of the company's space sector, was named president and CEO effective immediately.",
+      "error_source": "The Aug 17 closing brief was written same-day, before the cause of the exit and successor naming had been reported by any outlet; today's research surfaced the fuller picture.",
+      "conclusions_changed": false,
+      "note": "Does not change the market reaction (LHX -4.61% Monday) or the defense-sector read from yesterday's edition -- only the characterization of the exit and the (now-named) successor. Corrected in today's report (2026-08-18-am) Business section and colophon."
     }
   ]
 }

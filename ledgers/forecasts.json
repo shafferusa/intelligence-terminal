@@ -1365,6 +1365,36 @@
       "probability": "45-60%",
       "basis": "Friday's retail-sales print fell 0.6% m/m (sharpest since May 2025) and consumer sentiment missed sharply; Home Depot also reports the week after its CEO began medical leave.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-18-am-1",
+      "date": "2026-08-18",
+      "slot": "am",
+      "forecast": "The Hormuz standoff escalates further (a claimed/attributed follow-on strike, or a US/Israeli military response to today's fatal strike) within the next week.",
+      "horizon": "2026-08-25",
+      "probability": "20-35%",
+      "basis": "Five-plus tanker strikes in the past two weeks and today's first confirmed fatality, with no ceasefire extension agreed.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-18-am-2",
+      "date": "2026-08-18",
+      "slot": "am",
+      "forecast": "Canada's 50% Section 338 tariffs take effect Wednesday with no last-minute deal or extension.",
+      "horizon": "2026-08-19",
+      "probability": "45-60%",
+      "basis": "Canadian officials described talks as at an impasse as of Monday Aug 17; PM Carney says he expects to speak with Trump before the deadline but has not confirmed a deal.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-18-am-3",
+      "date": "2026-08-18",
+      "slot": "am",
+      "forecast": "VMware vCenter exploitation (CVE-2026-59310) produces a major new victim disclosure or ransomware deployment before it is added to the CISA KEV catalog.",
+      "horizon": "2026-09-01",
+      "probability": "25-35%",
+      "basis": "361+ confirmed victims across 47 countries and an active, moderate-confidence China-nexus campaign, contrasted with CISA's much faster KEV addition of a separate, more recently disclosed flaw (Ray/CVE-2025-62593) on Aug 17.",
+      "status": "open"
     }
   ]
 }

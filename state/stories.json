@@ -1,6 +1,56 @@
 {
   "stories": [
     {
+      "id": "jimmy-gomez-ethics-investigation-aug17",
+      "headline": "House Ethics Committee opens investigation into Rep. Jimmy Gomez",
+      "status": "New",
+      "first_seen": "2026-08-18-am",
+      "last_updated": "2026-08-18-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "Committee announced Monday it is reviewing whether Gomez (D-CA) 'engaged in inappropriate sexual contact with a House staffer,' a matter CNN first reported under review in June. Gomez says any relations were consensual, no rules broken, and he will cooperate. Investigation stage: review, not findings or charges.",
+      "score_note": "Wide bipartisan-interest pickup; earliest investigative stage.",
+      "sources": [
+        "Washington Post",
+        "Fox News",
+        "CNN",
+        "Axios",
+        "NBC News",
+        "The Hill"
+      ],
+      "watch": true
+    },
+    {
+      "id": "canada-tariff-deadline-aug18",
+      "headline": "Canada's 50% Section 338 tariffs take effect tomorrow; talks reportedly at an impasse",
+      "status": "New",
+      "first_seen": "2026-08-18-am",
+      "last_updated": "2026-08-18-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "50% tariffs on ~$20B of Canadian goods (dairy, alcohol, autos, no USMCA exemption) take effect Wednesday absent a deal. PM Carney says he expects to speak with Trump before the deadline and called talks 'very delicate and intense'; Canadian officials described the two sides as at an impasse as of Monday. Lands directly against this week's retail-earnings block (Lowe's/Target Wed, Walmart Thu).",
+      "score_note": "Logged forecast 2026-08-18-am-2 on whether the deadline passes without a deal.",
+      "sources": [
+        "Washington Post",
+        "CBC",
+        "Bloomberg"
+      ],
+      "watch": true
+    },
+    {
+      "id": "home-depot-q2-beat-aug18",
+      "headline": "Home Depot beats on both lines under interim leadership, reaffirms guidance",
+      "status": "New",
+      "first_seen": "2026-08-18-am",
+      "last_updated": "2026-08-18-am",
+      "verification": "Confirmed-primary",
+      "one_line": "Q2 FY2026: sales $47.9B (+5.7% YoY) vs ~$47.2-47.5B consensus; adjusted diluted EPS $4.92 vs ~$4.71-4.73 consensus and $4.68 prior year. Full-year guidance reaffirmed. First quarter reported under the interim 'Office of the CEO' (Campbell/McPhail) since Decker's Aug 12 medical leave; no prognosis or return timeline addressed. Stock reaction untested as of this writing, before the open.",
+      "score_note": "Resolves forecast 2026-08-12-pm-3 favorably (no further 3%+ decline was the open question; today's beat is a positive data point, not yet a market-tested resolution).",
+      "sources": [
+        "Home Depot investor relations",
+        "SEC EDGAR 8-K"
+      ],
+      "watch": true
+    },
+    {
       "id": "pentagon-defense-production-memo-aug9",
       "headline": "Pentagon gives defense contractors 21 days to submit faster-production plans amid Iran-war stock depletion",
       "status": "Materially changed",
@@ -150,39 +200,37 @@
     },
     {
       "id": "us-iran-strikes-jul30",
-      "headline": "Iran claims full control of the Strait of Hormuz as the US ceasefire formally expires",
+      "headline": "Fatal Hormuz strike as the US-Iran ceasefire deadline lapses; Trump threatens Oman",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-17-pm",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "The June 17 US-Iran ceasefire MOU (60 days of free Hormuz passage in exchange for the lifted US naval blockade) expired Monday with no extension agreed by either government. Iran separately claimed full control of the strait over the weekend (Single-reliable-source-cluster, not independently confirmed by a Western government statement found this run); shipping trackers describe oil flow at a three-month low. WTI crude +2.91% and gold +1.00% today, a plausible but unconfirmed (Likely contributor) link. No new US/Israeli military action or confirmed shipping strike found this run.",
-      "score_note": "Ceasefire's formal expiry now confirmed with no extension; the strait-control claim is the next fact to verify independently.",
+      "one_line": "A bulk carrier (Minoan Dignity) was hit by an unidentified projectile in Hormuz overnight, killing its chief engineer -- the first fatality in this month's tanker-strike campaign. The 60-day Islamabad ceasefire's deadline lapsed with no extension; Trump threatened to 'bomb' Oman if it 'gets in the way' of Iran-Oman reopening talks. No attribution for the projectile reported yet.",
+      "score_note": "First confirmed death in the campaign; new US threat against a third-country mediator (Oman) in the same 24 hours.",
       "sources": [
-        "CNN",
-        "Al-Monitor",
+        "UKMTO",
+        "Arab News",
+        "Al Jazeera",
         "gCaptain",
-        "Jerusalem Post",
-        "CNBC",
-        "Forbes",
+        "Washington Post",
         "NBC News",
-        "The Hill"
+        "CNBC"
       ],
       "watch": true
     },
     {
       "id": "hormuz-tanker-attacks-aug1",
-      "headline": "No fifth Hormuz vessel incident confirmed; Houthis claim separate Gulf of Aden tanker strike",
-      "status": "Continuing",
+      "headline": "First Hormuz fatality confirmed (see lead story); prior unattributed-strike thread now superseded",
+      "status": "Resolved",
       "first_seen": "2026-08-02-sun",
-      "last_updated": "2026-08-06-pm",
-      "verification": "Confirmed (no 5th Hormuz incident, negative result); Single-reliable-source (Houthi Gulf of Aden claim)",
-      "one_line": "No new Strait of Hormuz vessel incident found this run beyond the previously tracked Aug 5 Houthi Gulf of Aden claim (still single-sourced, no new corroboration).",
-      "score_note": "Unchanged from this morning.",
+      "last_updated": "2026-08-18-am",
+      "verification": "Confirmed-multiple",
+      "one_line": "This thread's open question (would a strike cause casualties) is answered by this morning's fatal strike on the Minoan Dignity, tracked as part of the main ceasefire/Hormuz story above.",
+      "score_note": "Merged into the main Hormuz/ceasefire thread.",
       "sources": [
-        "CNN",
-        "Al Jazeera"
+        "UKMTO"
       ],
-      "watch": true
+      "watch": false
     },
     {
       "id": "iran-linked-water-cyberattacks-aug1",
@@ -219,36 +267,37 @@
     },
     {
       "id": "drc-ebola-outbreak-2026",
-      "headline": "DRC Ebola outbreak confirmed count rises to 4,665 cases / 2,184 deaths; WHO Emergency Committee reconvenes Tuesday",
+      "headline": "DRC Ebola outbreak becomes the deadliest the country has ever recorded; WHO reconvenes",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-17-am",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Confirmed count rose to 4,727 cases / 2,214 deaths as of Aug 15 (Africa CDC/WHO), up from 4,665/2,184 on Aug 13. Outbreak reached a sixth province (Bas-Uele) after a fatal imported case. WHO's second IHR Emergency Committee meeting on the PHEIC is Tuesday Aug 18.",
-      "score_note": "Now confirmed the largest Ebola outbreak DRC has recorded; Tuesday's WHO meeting is the next concrete date.",
+      "one_line": "Confirmed count rose to 4,945 cases / 2,325 deaths as of Aug 16 (WHO/Africa CDC), up from 4,727/2,214 on Aug 15 -- 101 new infections in one day. Death toll now exceeds the 2018-2020 eastern DRC epidemic (2,299 deaths), making this the deadliest DRC has recorded, CFR ~46%. WHO's second IHR Emergency Committee meeting was scheduled today; no outcome published as of this run.",
+      "score_note": "Outcome of today's WHO Emergency Committee meeting is the next concrete fact to check.",
       "sources": [
-        "UN News",
-        "WHO",
-        "CDC HAN00530",
-        "ECDC"
+        "World Health Organization",
+        "Africa CDC",
+        "CIDRAP"
       ],
       "watch": true
     },
     {
       "id": "mail-ballot-eo-scotus",
-      "headline": "Judge expands mail-ballot injunction nationwide; DOJ pushes Supreme Court for a ruling \"at any moment\"",
+      "headline": "Two SCOTUS emergency dockets hit deadlines today; no ruling on either yet",
       "status": "Materially changed",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-17-am",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "1st Circuit ruled 2-1 against DOJ's stay request over the weekend; DOJ's SCOTUS emergency application remains pending, re-upped Sunday. $100 bond due Tuesday Aug 18. Separately, a distinct SCOTUS emergency matter (White House ballroom project) has a Roberts-set Tuesday response deadline; the government's ballroom filing newly disclosed a Jul 8 Air Force One evacuation over an intelligence assassination threat near Turkey.",
-      "score_note": "Both SCOTUS emergency-docket matters share a Tuesday deadline; either could resolve at any time.",
+      "one_line": "The $100 bond in the mail-ballot injunction case was due today; DOJ's SCOTUS stay application remains pending (23 states supporting the injunction, 12 backing DOJ). Separately, the National Trust's response in the East Wing ballroom emergency-stay matter was also due today, ahead of an Aug 21 enforcement date; the government's filing cites a Jul 8 Air Force One missile-threat warning as part of its urgency argument. No ruling or confirmed filing found on either matter as of this writing.",
+      "score_note": "Both remain live shadow-docket matters that can move without advance notice.",
       "sources": [
         "SCOTUSblog",
         "Votebeat",
-        "Democracy Docket",
-        "The Hill",
-        "Washington Times"
+        "Brennan Center",
+        "PBS NewsHour",
+        "CNN",
+        "Newsweek",
+        "Fortune"
       ],
       "watch": true
     },
@@ -271,20 +320,19 @@
     },
     {
       "id": "gaza-hamas-disarmament-deal-jul30",
-      "headline": "Kushner and Netanyahu agree to Gaza disarmament working groups; withdrawal sequencing still unresolved",
+      "headline": "Kushner-Netanyahu Gaza disarmament framework hardens rather than resolves the sequencing dispute",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-17-pm",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Kushner met Netanyahu for roughly three hours in Jerusalem Monday (Blair and Mladenov also present), a day after Kushner's direct Cairo meeting with Hamas's Khalil al-Hayya. The two sides agreed to working groups on Hamas disarmament (US-general-overseen) and Gaza public health, and that the weapons handover should precede reconstruction -- but Kushner reportedly assured Netanyahu Israel won't be compelled to withdraw before Hamas disarms, leaving Hamas's own withdraw-first precondition (the Aug 9 sequencing dispute) unaddressed.",
-      "score_note": "Working-group mechanism is forward motion; the core sequencing dispute is unchanged from Aug 9.",
+      "one_line": "Netanyahu and Kushner met ~4 hours Monday; agreed disarmament should start with a US-general-supervised weapons handover, 'no pullbacks whatsoever' by Israel before full disarmament, per Netanyahu's public position. Kushner separately pressed Netanyahu to test Hamas's commitment with small steps; Netanyahu remains skeptical ahead of an October Israeli election. No public Hamas response to the framework found. The Aug 9 sequencing dispute (withdrawal vs. disarmament order) is not resolved -- Netanyahu's framing has hardened, not softened.",
+      "score_note": "Working-group mechanism from last week has not yet produced compromise on the core dispute.",
       "sources": [
+        "NBC News",
+        "Axios",
         "Times of Israel",
         "Al Jazeera",
-        "The National",
-        "US News",
-        "Haaretz",
-        "UPI"
+        "CBS News"
       ],
       "watch": true
     },
@@ -580,18 +628,20 @@
     },
     {
       "id": "russia-ukraine-novorossiysk-aug13",
-      "headline": "Ukraine launches its largest drone attack of the year; Russia retaliates against three cities",
+      "headline": "Ukraine flies its largest Moscow-area drone attack in two years",
       "status": "Materially changed",
       "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-17-am",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Ukraine's drone barrage overnight Aug 15-16 killed at least 6 in Russia (Wildberries warehouse fire near Podolsk); Russia's claim of 822 drones intercepted is unverified outside its own MoD. Russia retaliated across the week with 1,550+ drones, ~1,560 bombs and 62 missiles on 13 regions: Kryvyi Rih's ArcelorMittal plant hit (2 killed, 14 wounded, partial halt), Sumy (1 killed), Kyiv (6 injured), Zaporizhzhia (2 killed).",
-      "score_note": "Casualty figures corroborated across multiple Western outlets citing Ukrainian officials; Russian intercept claim stays single-sourced.",
+      "one_line": "~800 Ukrainian drones targeted Russia overnight into Aug 18, with 620+ aimed at the Moscow region -- Moscow's mayor says defenses downed 180 between Monday evening and 5am; Russian state media called it the largest Moscow-area drone attack in two years. 3 wounded including a 10-year-old. Ukraine's air force said it downed/suppressed 111 of 147 Russian drones fired at Ukraine over the same period.",
+      "score_note": "Escalation continues in both directions with no sign of de-escalation.",
       "sources": [
-        "CNN",
+        "Al Jazeera",
+        "Kyiv Independent",
         "NPR",
-        "TASS",
-        "Moscow Mayor Sobyanin statements"
+        "ABC News",
+        "Euronews",
+        "TASS"
       ],
       "watch": true
     },
@@ -764,18 +814,19 @@
     },
     {
       "id": "vmware-vcenter-new-cve-aug14",
-      "headline": "VMware vCenter flaw CVE-2026-59310 confirmed under wide-scale active exploitation, still not KEV-listed",
+      "headline": "VMware flaw still not KEV-listed while a newer AI-framework CVE was added within days",
       "status": "Continuing",
       "first_seen": "2026-08-14-am",
-      "last_updated": "2026-08-17-am",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "CVE-2026-59310 remains under active, wide-scale exploitation (361+ victims, 47 countries); still could not be confirmed against the CISA KEV catalog -- direct cisa.gov fetch blocked again this run, a recurring environment issue.",
-      "score_note": "No change in KEV status resolution; recurring sourcing gap, not a new failure.",
+      "one_line": "CVE-2026-59310 remains under active exploitation (361+ victims, 47 countries), still not in CISA's KEV catalog (direct cisa.gov fetch blocked again, corroborated by OpenCVE/SecurityWeek tracking). German firm QUIRSO ties the campaign to a China-nexus actor with 'moderate confidence'; a separate report describes Babuk-derived ransomware via the same flaw. Contrast: CISA added a different flaw (Ray AI framework, CVE-2025-62593) to KEV on Aug 17 within days of its disclosure. No documented link found between the VMware campaign and Broadcom's bond downgrade (analysts tie that to AI-financing leverage instead).",
+      "score_note": "Accountability angle -- one CVE fast-tracked to KEV, an older wider-scale one still absent.",
       "sources": [
-        "BleepingComputer",
         "TheHackerNews",
-        "SecurityWeek",
-        "DarkReading"
+        "DarkReading",
+        "CISA KEV alert",
+        "OpenCVE",
+        "SecurityWeek"
       ],
       "watch": true
     },
@@ -817,16 +868,18 @@
     },
     {
       "id": "mangione-double-jeopardy-motion-aug15",
-      "headline": "Mangione's defense files to dismiss the separate Manhattan state murder case on double-jeopardy grounds",
-      "status": "Continuing",
+      "headline": "Mangione's Manhattan murder trial postponed over the double-jeopardy motion",
+      "status": "Materially changed",
       "first_seen": "2026-08-16-sun",
-      "last_updated": "2026-08-17-am",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "Manhattan DA's office says it remains 'prepared to litigate the defense motions' and will continue pursuing the state case; no ruling yet from state court.",
-      "score_note": "DA response now on record; awaiting a ruling from Judge Carro.",
+      "one_line": "Judge Gregory Carro postponed the Sept 8 trial date, gave the Manhattan DA until Oct 9 to respond to the double-jeopardy motion, with a hearing set for Dec 10 (roughly a week before Mangione's Dec 18 federal sentencing). DA's office says it remains 'prepared to litigate' and intends to keep pursuing the state case. Separate-sovereigns doctrine gives the defense a steep hurdle.",
+      "score_note": "Concrete judicial action with clear next dates (Oct 9, Dec 10).",
       "sources": [
-        "CBS News",
-        "DOJ SDNY press release"
+        "CNN",
+        "PBS NewsHour",
+        "NBC News",
+        "Fox News"
       ],
       "watch": false
     },
@@ -963,19 +1016,21 @@
     },
     {
       "id": "l3harris-ceo-departure-defense-pullback-aug17",
-      "headline": "L3Harris CEO Christopher Kubasik departs abruptly, dragging the broader defense sector lower",
-      "status": "New",
+      "headline": "L3Harris's Kubasik was fired for a code-of-conduct violation, not a voluntary departure; Sam Mehta named CEO",
+      "status": "Materially changed",
       "first_seen": "2026-08-17-pm",
-      "last_updated": "2026-08-17-pm",
+      "last_updated": "2026-08-18-am",
       "verification": "Confirmed-multiple",
-      "one_line": "LHX fell 4.61% (this run's own data) after Kubasik's immediate departure; the company says the exit involved no financial-reporting issue and reaffirmed 2026 revenue guidance. The broader defense group softened alongside it (NOC -2.67%, LMT -2.45%, BA -2.47%, GD -1.17%, AVAV -6.06%) without a confirmed company-specific reason found for the wider group beyond L3Harris's own news.",
-      "score_note": "First trading day since the Aug 9-11 Pentagon production-framework rally that lifted many of these same names.",
+      "one_line": "Correcting Monday's framing: Kubasik was terminated following a board-directed code-of-conduct investigation, unrelated to financial reporting/controls/operations per the company; no severance or accelerated equity. Sam Mehta (previously head of the space sector) named president and CEO effective immediately. LHX closed Monday -4.61%.",
+      "score_note": "Framing refinement logged in today's colophon, not a factual correction to a previously wrong fact.",
       "sources": [
-        "The Motley Fool",
-        "Yahoo Finance",
-        "this run's own Yahoo Finance data"
+        "L3Harris press release",
+        "Bloomberg",
+        "Fox Business",
+        "SpaceNews",
+        "Washington Technology"
       ],
-      "watch": true
+      "watch": false
     },
     {
       "id": "marvell-micron-chip-rally-mizuho-aug17",

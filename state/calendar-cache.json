@@ -1,103 +1,119 @@
 {
-  "fetched": "2026-08-17T06:50:00-04:00",
-  "earnings_fetched": "2026-08-17",
-  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub day-of feed cross-checked; no watchlist-company earnings scheduled today (Aug 17). Week's big-box retail block continues: Home Depot Aug 18 BMO, Lowe's/Target Aug 19 BMO, Walmart Aug 20 BMO.",
+  "fetched": "2026-08-18T06:50:00-04:00",
+  "earnings_fetched": "2026-08-18",
+  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub day-of feed cross-checked. Home Depot reported today (Aug 18 BMO): adj EPS $4.92 actual vs $4.8762 (Finnhub) / ~$4.71-4.73 (broader consensus), revenue $47.861B actual. Lowe's/Target Aug 19 BMO, Walmart Aug 20 BMO.",
   "events": [
     {
-      "ts_et": "2026-08-17T00:00:00-04:00",
-      "type": "auction",
-      "name": "13-Week / 26-Week Treasury Bill auctions",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+      "ts_et": "2026-08-18T08:00:00-04:00",
+      "type": "earnings",
+      "name": "Home Depot (HD) Q2 FY2026 -- REPORTED",
+      "importance": "High",
+      "reason": "First quarter reported under interim leadership since CEO Decker's Aug 12 medical leave; adjusted EPS $4.92 beat ~$4.71-4.73 consensus, revenue $47.9B (+5.7% YoY) beat, guidance reaffirmed.",
+      "source": "Home Depot investor relations, SEC EDGAR 8-K -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-18T08:30:00-04:00",
       "type": "econ_release",
       "name": "U.S. Import and Export Price Indexes, July 2026",
       "importance": "Low",
-      "reason": "Trade-price data point; limited standalone market sensitivity but feeds inflation-trend context after the Aug 12/13 CPI/PPI prints",
+      "reason": "Trade-price data point; feeds inflation-trend context after the Aug 12/13 CPI/PPI prints.",
       "source": "bls.gov schedule ICS -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-18T00:00:00-04:00",
-      "type": "auction",
-      "name": "6-Week Treasury Bill auction",
-      "importance": "Low",
-      "reason": "Routine bill supply",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-18T08:00:00-04:00",
-      "type": "earnings",
-      "name": "Home Depot (HD) Q2 FY2026",
+      "type": "other",
+      "name": "Mail-ballot EO: $100 bond due at the 1st Circuit; East Wing ballroom SCOTUS response also due today",
       "importance": "High",
-      "reason": "Reports before the open the week after its CEO began temporary medical leave (Aug 12); stock finished last week -4.71%, second-worst watchlist decliner; open forecast 2026-08-12-pm-3 (does not fall a further 3%+ over 5 sessions) resolves around this print.",
-      "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
+      "reason": "Two separate SCOTUS emergency-docket deadlines land the same day; no ruling on either confirmed as of this run. Ballroom matter has an Aug 21 enforcement date if unresolved.",
+      "source": "SCOTUSblog, Votebeat, PBS NewsHour, CNN -- Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-18T00:00:00-04:00",
       "type": "other",
-      "name": "Mail-ballot executive order: $100 bond due at the 1st Circuit",
+      "name": "WHO IHR Emergency Committee reconvenes on the DRC Ebola PHEIC",
       "importance": "High",
-      "reason": "DOJ-set deadline tied to its appeal of Judge Talwani's nationwide injunction; a pending SCOTUS emergency-stay application could resolve at any point this week",
-      "source": "SCOTUSblog, Votebeat, Democracy Docket -- Confirmed-multiple"
+      "reason": "Second review since the May 17 PHEIC declaration; outbreak now the deadliest DRC has recorded. Outcome not published as of this run.",
+      "source": "World Health Organization -- Confirmed-primary (meeting scheduled); outcome pending"
     },
     {
-      "ts_et": "2026-08-31T00:00:00-04:00",
-      "type": "launch",
-      "name": "Zhuque-3 Flight 2 (LandSpace)",
+      "ts_et": "2026-08-18T00:00:00-04:00",
+      "type": "other",
+      "name": "Primary elections: Florida (incl. US Senate special), Alaska, Wyoming, Vermont",
       "importance": "Medium",
-      "reason": "Postponed from an original Aug 10-11 target after the Aug 10 Long March 7A failure; multiple independent launch trackers (SpaceLaunchSchedule, NextSpaceflight, Space Launch Live) now converge on Aug 31, but LandSpace itself has not issued an official statement -- treat as provisional. One analyst called the delay 'sensible caution' given Zhuque-3 is a distinct LandSpace methalox vehicle, not evidence of a shared defect with Long March 7A.",
-      "source": "SpaceNews, SpaceLaunchSchedule, NextSpaceflight -- Confirmed-multiple (delay); provisional (specific Aug 31 date, unconfirmed by LandSpace)"
+      "reason": "Statewide and special-election primaries; results not final as of this run.",
+      "source": "News research -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-18T00:00:00-04:00",
+      "type": "auction",
+      "name": "4-Week and 8-Week Treasury Bill auctions",
+      "importance": "Low",
+      "reason": "Routine bill supply.",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-19T00:00:00-04:00",
       "type": "auction",
       "name": "17-Week Treasury Bill auction",
       "importance": "Low",
-      "reason": "Routine bill supply",
+      "reason": "Routine bill supply.",
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
-      "ts_et": "2026-08-19T13:00:00-04:00",
-      "type": "auction",
-      "name": "20-Year Bond auction",
-      "importance": "Medium",
-      "reason": "Monthly refunding cycle; long-end demand read after the 10Y's mid-4.6% level",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+      "ts_et": "2026-08-19T00:00:00-04:00",
+      "type": "other",
+      "name": "Canada Section 338 tariffs (50%) take effect absent a deal",
+      "importance": "High",
+      "reason": "~$20B of Canadian goods affected, no USMCA exemption; talks reportedly at an impasse as of Aug 17. Lands against Lowe's/Target earnings the same morning.",
+      "source": "Washington Post, CBC, Bloomberg -- Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-19T08:00:00-04:00",
       "type": "earnings",
       "name": "Lowe's (LOW) and Target (TGT) Q2 FY2026",
       "importance": "High",
-      "reason": "Second day of the big-box retail earnings block, direct read-through on the Aug 14 retail-sales/consumer-sentiment miss",
+      "reason": "Second day of the big-box retail earnings block, direct read-through on the Aug 14 retail-sales/consumer-sentiment miss and the Canada tariff deadline hitting the same morning.",
       "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
     },
     {
-      "ts_et": "2026-08-20T00:00:00-04:00",
-      "type": "other",
-      "name": "SpaceX (SPCX) employee share-unlock, ~319-320M shares (~$42B)",
-      "importance": "Critical",
-      "reason": "Approximately 3.4x average daily volume; near-term technical overhang sharpened by Musk's ~$900B (48.4% stake) disclosure. Open forecasts resolve around this date.",
-      "source": "ts2.tech, TradingKey, 24/7 Wall St -- Confirmed-multiple"
+      "ts_et": "2026-08-19T13:00:00-04:00",
+      "type": "auction",
+      "name": "20-Year Bond auction",
+      "importance": "Medium",
+      "reason": "Monthly refunding cycle; long-end demand read after the 10Y's mid-4.7% level.",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-20T08:00:00-04:00",
       "type": "earnings",
       "name": "Walmart (WMT) Q2 FY2027",
       "importance": "High",
-      "reason": "Closes the week's big-box retail block; largest US retailer by revenue, a bellwether for consumer-spending health",
+      "reason": "Closes the week's big-box retail block; largest US retailer by revenue, a bellwether for consumer-spending health.",
       "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-21T00:00:00-04:00",
+      "type": "other",
+      "name": "SpaceX (SPCX) next share-eligibility tranche, ~7% of shares",
+      "importance": "High",
+      "reason": "Distinct from the Aug 6 initial unlock; analysts note share eligibility does not equal actual sale volume.",
+      "source": "This run's science/space research sweep -- Confirmed-multiple (mechanics/dates)"
     },
     {
       "ts_et": "2026-08-24T00:00:00-04:00",
       "type": "launch",
       "name": "Long March 5 -- Chang'e 7 (lunar mission)",
       "importance": "Medium",
-      "reason": "Status still \"To Be Confirmed\" per Launch Library; the Long March 7A failure investigation (Aug 10) reportedly focuses on the shared YF-100 engine architecture used in the Long March 5's boosters -- a live, unconfirmed grounding-risk question",
-      "source": "Launch Library 2 -- Confirmed-primary (schedule); System inference (grounding-risk link, unconfirmed)"
+      "reason": "Status still provisional; the Long March 7A failure investigation (Aug 10) reportedly focuses on the shared YF-100 engine architecture -- a live, unconfirmed grounding-risk question.",
+      "source": "SpaceNews -- Confirmed-primary (schedule); System inference (grounding-risk link, unconfirmed)"
+    },
+    {
+      "ts_et": "2026-08-31T00:00:00-04:00",
+      "type": "launch",
+      "name": "Zhuque-3 Flight 2 (LandSpace)",
+      "importance": "Medium",
+      "reason": "Independent launch trackers converge on Aug 31; LandSpace itself has not confirmed. One uncorroborated report suggested a launch attempt as soon as Aug 18 -- not adopted, could not verify against any primary source.",
+      "source": "SpaceNews, SpaceLaunchSchedule, NextSpaceflight -- Confirmed-multiple (delay); provisional (specific date)"
     }
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
