@@ -17,11 +17,11 @@
     {
       "id": "meta-29-state-youth-safety-trial-aug18",
       "headline": "Meta goes to trial against a 29-state coalition over alleged harm to young users",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-18-pm",
-      "last_updated": "2026-08-18-pm",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Opening statements began today in Oakland federal court; California, Colorado, Kentucky and New Jersey lead a bipartisan 29-state coalition alleging Facebook/Instagram were designed to addict young users. Jury gives an advisory verdict; Judge Yvonne Gonzalez Rogers decides liability and any penalty. States have discussed damages near $200B; Meta says exposure could reach $1.4T. Zuckerberg and Mosseri expected to testify.",
+      "one_line": "Two separate Meta trials, do not conflate: in the Oakland federal case, whistleblower Arturo Bejar testified Wednesday that Meta took a \"don't ask, don't tell\" approach to under-13 users; Zuckerberg remains on the witness list, no date set. Separately, Zuckerberg himself testified today in a distinct LA state-court trial (JCCP 5255, ~1,000 consolidated suits) on teen Instagram use and beauty filters.",
       "score_note": "Landmark scale; will run for weeks -- tracking at low cadence unless a major development occurs.",
       "sources": [
         "NBC News",
@@ -50,11 +50,11 @@
     {
       "id": "jimmy-gomez-ethics-investigation-aug17",
       "headline": "House Ethics Committee opens investigation into Rep. Jimmy Gomez",
-      "status": "New",
+      "status": "Materially changed",
       "first_seen": "2026-08-18-am",
-      "last_updated": "2026-08-18-am",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Committee announced Monday it is reviewing whether Gomez (D-CA) 'engaged in inappropriate sexual contact with a House staffer,' a matter CNN first reported under review in June. Gomez says any relations were consensual, no rules broken, and he will cooperate. Investigation stage: review, not findings or charges.",
+      "one_line": "Attorneys Lisa Banks and Sarah Nesbitt said today their client told the committee she was sexually harassed and assaulted by Gomez, directly disputing his Aug 17 \"consensual\" characterization. Disputed factual claim, not adjudicated; committee review remains at the review stage.",
       "score_note": "Wide bipartisan-interest pickup; earliest investigative stage.",
       "sources": [
         "Washington Post",
@@ -71,9 +71,9 @@
       "headline": "Trump pauses Canada's 50% tariffs 90 minutes before the deadline",
       "status": "Materially changed",
       "first_seen": "2026-08-18-am",
-      "last_updated": "2026-08-19-am",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Trump paused the Section 338 tariffs on ~$20B of Canadian goods less than two hours before the midnight deadline, citing a \"pending\" deal; Carney says \"substantial progress\" but no finished text. Pause runs roughly three days (~through Friday). Reverses this report's prior working assumption that the tariffs took effect.",
+      "one_line": "Pause holds through roughly Friday Aug 21, contingent on \"finalization of documents\"; Carney says \"substantial progress\" but \"important work still to be done.\" USTR Greer says the eventual deal covers market access, economic security commitments and digital trade alignment -- not yet a finished/signed text.",
       "score_note": "New forecast logged on whether a deal is reached before the extended deadline.",
       "sources": [
         "NBC News",
@@ -130,24 +130,6 @@
       "watch": true
     },
     {
-      "id": "gao-doge-savings-report-aug6",
-      "headline": "GAO finds DOGE's claimed $110B in federal savings unreliable -- incorrect contract counts, unverifiable grants, pre-existing lease terminations",
-      "status": "New",
-      "first_seen": "2026-08-07-pm",
-      "last_updated": "2026-08-07-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "GAO review (Jan 2025-Jul 2026): 2,503 of 13,476 'terminated' contracts not actually cancelled ($27.4B claimed savings affected); could not verify method for 96% of grant savings; 108/264 'terminated' leases were already being eliminated pre-DOGE. DOGE did not respond to GAO's requests.",
-      "score_note": "Nonpartisan audit finding on a signature initiative's headline figure; reported neutrally per SR SS6.",
-      "sources": [
-        "GAO report (primary, via secondary coverage)",
-        "CBS News",
-        "CNN",
-        "CNBC",
-        "The Hill"
-      ],
-      "watch": false
-    },
-    {
       "id": "google-ai-leadership-reshuffle-aug5",
       "headline": "Google names Koray Kavukcuoglu SVP of DeepMind as Hassabis moves to Chair; Discovery Loop startup confirmed",
       "status": "Continuing",
@@ -202,29 +184,13 @@
       "watch": true
     },
     {
-      "id": "russia-ukraine-poland-missile-jul30",
-      "headline": "Ukraine's deepest strike of the war hits a refinery 750 miles inside Russia, killing 12+",
-      "status": "Resolved",
-      "first_seen": "2026-07-30-pm",
-      "last_updated": "2026-08-11-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Casualty figures from last night's Zaporizhzhia/Kyiv barrage remain unsettled (5-12 killed depending on outlet). New today: Zelensky signed decrees sanctioning 127 Russian missile-program commanders and 29 merchant ships, calling Putin 'preparing for escalation, not peace.' No new Western sanctions package announced.",
-      "score_note": "North Korean-missile claim is the new escalatory element this cycle; unverified independently.",
-      "sources": [
-        "Zelensky/Ukrainian officials via Reuters, AP (Euronews, Al Jazeera, Kyiv Independent, CNBC)",
-        "TASS (Russian MoD claims, labeled unverified)",
-        "NBC News, Al Jazeera (Taneco follow-up)"
-      ],
-      "watch": false
-    },
-    {
       "id": "drc-ebola-outbreak-2026",
       "headline": "WHO's second Emergency Committee review meets without a published outcome as the toll keeps climbing",
       "status": "Materially changed",
       "first_seen": "2026-07-30-am",
-      "last_updated": "2026-08-19-am",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "The IHR Emergency Committee's second scheduled review (a periodic reassessment of the May PHEIC, not a new declaration) met Aug 18; DG Tedros called it the second-largest Ebola outbreak on record (~4,945 cases, 2,325 deaths, six provinces, 55 health zones) and still spreading outside known contact-tracing chains. No formal outcome statement published as of this run.",
+      "one_line": "WHO confirmed the Aug 18 Emergency Committee review recommended the outbreak remain a declared PHEIC -- no de-escalation. Updated figures: 5,021 confirmed cases, 2,378 deaths, 55 health zones, six provinces, CFR ~47%. who.int direct fetch blocked again this run; sourced via wire quotation of the WHO statement.",
       "score_note": "Outcome pending; carry into tomorrow.",
       "sources": [
         "World Health Organization"
@@ -234,11 +200,11 @@
     {
       "id": "mail-ballot-eo-scotus",
       "headline": "Two SCOTUS emergency dockets remain unresolved as the ballroom case's Friday deadline nears",
-      "status": "Materially changed",
+      "status": "Continuing",
       "first_seen": "2026-07-28-am",
-      "last_updated": "2026-08-19-am",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Neither the mail-ballot EO case nor the ~$400M East Wing ballroom case has drawn a ruling. Solicitor General explicitly asked the Court to rule on the ballroom case before Friday Aug 21, when the D.C. Circuit's injunction otherwise takes effect; National Trust filed its response Monday.",
+      "one_line": "Neither emergency docket has drawn a ruling; Friday's D.C. Circuit enforcement deadline on the ballroom case is now two days out. Trump toured adjacent construction (new driveway, helipad) today, calling the complex \"the greatest military complex slash ballroom anywhere in the world\" -- continuing the administration's national-security framing, not a new legal development.",
       "score_note": "Friday is a hard deadline; shadow docket can move without notice.",
       "sources": [
         "SCOTUSblog",
@@ -252,9 +218,9 @@
       "headline": "Kushner-Netanyahu talks produce a disarmament framework outline; a Gaza harbor strike kills six",
       "status": "Materially changed",
       "first_seen": "2026-07-31-pm",
-      "last_updated": "2026-08-19-am",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "Monday's Jerusalem meeting produced agreement in principle that a US general would oversee an initial Hamas weapons handover and joint working groups on demilitarization/humanitarian basics -- but Israel has not committed to the full plan and the withdraw-before/after-disarmament sequencing dispute is unresolved. Separately an Israeli strike on a Gaza City fishing harbor killed six (IDF says Hamas Nukhba commanders; Gaza health officials have not independently confirmed identities; a child reported among the dead).",
+      "one_line": "Gaza harbor-strike toll rose from six to seven after Musab Muhammad Madi died of injuries. An FDD analysis today finds Israel has reduced the pace of strikes since the Kushner-Netanyahu meeting while still rejecting an initial IDF withdrawal (16 ceasefire violations counted Jul 31-Aug 18 per IDF) -- the sequencing dispute is hardening, not resolving.",
       "score_note": "Framework advancing on paper while strikes continue in parallel -- sequencing still the core blocker.",
       "sources": [
         "Bloomberg",
@@ -370,21 +336,6 @@
       "watch": false
     },
     {
-      "id": "colombia-earthquake-aug10",
-      "headline": "Colombia earthquake toll continues climbing, did not plateau as previously tracked",
-      "status": "Materially changed",
-      "first_seen": "2026-08-11-am",
-      "last_updated": "2026-08-19-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Government figures put the toll near 300 dead as of Tuesday, with missing-person counts ranging from several hundred (government) to over 4,000 (one private tracker) -- sourcing disagreement wide enough that this report is not adopting a single missing-count figure.",
-      "score_note": "Correction to this report's prior read that the toll had plateaued at 294.",
-      "sources": [
-        "AZERTAC",
-        "LatinTimes"
-      ],
-      "watch": false
-    },
-    {
       "id": "space-earnings-rklb-asts-aug11",
       "headline": "Space-sector earnings season: Spire beats on EPS but misses on revenue; Intuitive Machines and York Space Systems report today",
       "status": "Materially changed",
@@ -421,9 +372,9 @@
       "headline": "Musk discloses a 48.4% SpaceX stake worth ~$900B, six days before the Aug 20 unlock",
       "status": "Materially changed",
       "first_seen": "2026-08-11-pm",
-      "last_updated": "2026-08-15-sat",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "SPCX finished the week +5.18%, calm heading into the Aug 20 unlock (~319M shares, ~$42B) despite Musk's newly disclosed 48.4% stake (~$900-907B). New forecast 2026-08-15-sat-1 logged on whether the unlock triggers a >5% single-session move.",
+      "one_line": "SPCX fell 2.57% to $139.65 today ahead of tomorrow's ~319M-share unlock (~20% of tradable float); FINRA short volume in SPCX hit 64.8% of total volume Tuesday, well above its typical 40-50% range, consistent with pre-unlock hedging. The Aug 6 first unlock actually saw the stock rise ~6%, so eligibility to sell has not mechanically meant selling.",
       "score_note": "Disclosure lands right before the next concrete unlock catalyst (Aug 20, ~320M shares).",
       "sources": [
         "Reuters (via Investing.com)",
@@ -461,23 +412,6 @@
       "sources": [
         "this run's own Twelve Data and Yahoo Finance close-series data",
         "secondary reporting on Nebius/CoreWeave earnings"
-      ],
-      "watch": true
-    },
-    {
-      "id": "ceva-logistics-breach-aug10",
-      "headline": "Ceva Logistics breach widens to include Ajax and ING; De Bijenkorf warns of month-long delivery delays",
-      "status": "Materially changed",
-      "first_seen": "2026-08-13-am",
-      "last_updated": "2026-08-14-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "De Bijenkorf warned Aug 13 that new orders won't ship until Sept 4. Affected downstream customers now include football club Ajax and banking group ING (shipping data only), beyond Bol/De Bijenkorf/Ace & Tate. No payment/credential data confirmed compromised.",
-      "score_note": "Real, disclosed operational impact continues to widen.",
-      "sources": [
-        "NL Times",
-        "DutchReview",
-        "The Record",
-        "TechCrunch"
       ],
       "watch": true
     },
@@ -567,20 +501,6 @@
       "watch": true
     },
     {
-      "id": "chamoli-tunnel-collapse-aug13",
-      "headline": "Landslide floods a hydroelectric tunnel in India's Chamoli district; casualty count unsettled",
-      "status": "New",
-      "first_seen": "2026-08-14-am",
-      "last_updated": "2026-08-14-am",
-      "verification": "Confirmed-multiple (event); figures unstable",
-      "one_line": "A landslide sent debris/water into the under-construction Vishnugad-Pipalkoti hydroelectric tail-race tunnel (Uttarakhand) Aug 13 evening. At least 6-7 dead confirmed via AP wire; trapped/missing count has fluctuated wildly hour to hour across outlets (28 trapped/22 working/12 rescued down to 3-4 missing in later updates) -- treated as explicitly unstable, not cited as a single figure.",
-      "score_note": "Fast-moving domestic disaster; expect further revision.",
-      "sources": [
-        "Associated Press wire (via Washington Post, ABC News)"
-      ],
-      "watch": true
-    },
-    {
       "id": "retail-sales-consumer-sentiment-miss-aug14",
       "headline": "July retail sales and August consumer sentiment both miss estimates, denting the week's rally",
       "status": "New",
@@ -597,24 +517,6 @@
         "Yahoo Finance"
       ],
       "watch": true
-    },
-    {
-      "id": "harvard-antisemitism-lawsuit-dismissed-aug13",
-      "headline": "Federal judge dismisses Trump administration's antisemitism lawsuit against Harvard",
-      "status": "Resolved",
-      "first_seen": "2026-08-14-pm",
-      "last_updated": "2026-08-14-pm",
-      "verification": "Confirmed-multiple",
-      "one_line": "Judge Richard G. Stearns dismissed DOJ's suit (filed March, sought to claw back ~$1B in grants), finding the cited antisemitism incidents 'too isolated and episodic.' Ruling issued Aug 13; not covered in the 2026-08-14-am edition despite same-day multi-outlet coverage -- logged as a completeness gap in ledgers/corrections.json, not a factual error.",
-      "score_note": "New legal thread; removes one front in the administration's university-funding campaign.",
-      "sources": [
-        "The Harvard Crimson",
-        "Boston Globe",
-        "CNN",
-        "NBC News",
-        "Axios"
-      ],
-      "watch": false
     },
     {
       "id": "uss-george-washington-deployment-aug14",
@@ -653,16 +555,16 @@
       "headline": "VMware's CVE-2026-59310 finally added to CISA's KEV catalog",
       "status": "Materially changed",
       "first_seen": "2026-08-14-am",
-      "last_updated": "2026-08-19-am",
+      "last_updated": "2026-08-19-pm",
       "verification": "Confirmed-multiple",
-      "one_line": "CISA added the flaw to its KEV catalog Aug 18 with a federal remediation deadline of Aug 21, per CISA's own alert metadata and one aggregator -- not yet cross-confirmed by a second security-press outlet at this run's cutoff. Ends the multi-week KEV-absence gap this report has tracked. Underlying exploitation (361+ victims, 47 countries, suspected China-nexus actor) unchanged.",
+      "one_line": "Exploitation scope (361 IPs, 47 countries, reverse-SSH persistence tool, first contact ~Aug 3) now independently confirmed by multiple security-research outlets (Hacker News, SecurityWeek, Dark Reading, Rapid7), not just one report. Federal KEV remediation deadline is Friday Aug 21; no workaround exists. No actor attribution confirmed.",
       "score_note": "KEV-listing detail specifically is Single-reliable-source pending a second outlet's confirmation.",
       "sources": [
         "CISA KEV alert",
         "Rapid7",
         "BleepingComputer"
       ],
-      "watch": false
+      "watch": true
     },
     {
       "id": "mangione-guilty-plea-aug14",
@@ -738,9 +640,9 @@
       "headline": "Lowe's beats narrowly on a soft quarter; Target's print unconfirmed at press time",
       "status": "Materially changed",
       "first_seen": "2026-08-17-am",
-      "last_updated": "2026-08-19-am",
-      "verification": "Confirmed-primary (HD earnings date/consensus); Confirmed-multiple (tariffs)",
-      "one_line": "Lowe's: net sales $24.0B (+1.6% y/y), comp sales +0.2%, adjusted EPS $4.40 beat ~$4.22 consensus (Confirmed-multiple). Target: adjusted EPS $2.05 vs $2.09 est., comp sales -3.2% (stores) / +4.3% (digital) per a single wire-syndicated source, not yet corroborated by a second outlet or SEC filing as of this run -- treated as provisional. TJX, Estee Lauder, Analog Devices also report today; Walmart tomorrow.",
+      "last_updated": "2026-08-19-pm",
+      "verification": "Confirmed-primary (Target 8-K, this run's own EDGAR fetch)",
+      "one_line": "Correction: this morning's Target figures ($2.05 EPS vs $2.09 est, comps -3.2%/+4.3%) were wrong -- that $2.05 was last year's Q2 EPS, mis-cited by a secondary wire source not yet checked against a primary filing. Verified directly against Target's own SEC 8-K/press release this run: actual Q2 GAAP/adjusted EPS $4.11 (+100% y/y, includes a $994M tariff-refund benefit), net sales +5.3%, comp sales +3.8%. TJX and Estee Lauder also beat and raised guidance; Analog Devices posted a record quarter. Walmart reports tomorrow, closing the week's block.",
       "score_note": "First hard consumer-demand read since Friday's retail-sales/sentiment misses.",
       "sources": [
         "PR Newswire",
@@ -766,54 +668,6 @@
         "TRM Labs"
       ],
       "watch": true
-    },
-    {
-      "id": "france-dgfip-breach-aug16",
-      "headline": "France's tax agency confirms a breach of 678,000 taxpayers",
-      "status": "New",
-      "first_seen": "2026-08-17-am",
-      "last_updated": "2026-08-17-am",
-      "verification": "Confirmed-multiple (agency-confirmed); Single-reliable-source (actor identity 'Zerobytes')",
-      "one_line": "DGFiP confirmed Aug 16 a hacker stole records on 678,438 taxpayers (names, DOB, addresses, land-registry/tax-bracket data) via a late-June intrusion using compromised credentials. Secure taxpayer portal not accessed; notifications begin today.",
-      "score_note": "First appearance; actor attribution unconfirmed by the agency.",
-      "sources": [
-        "Security Affairs",
-        "The Record",
-        "Bitcoin.com News"
-      ],
-      "watch": false
-    },
-    {
-      "id": "cxmt-huawei-china-chips-aug17",
-      "headline": "China's CXMT overtakes Tencent as most valuable listed company amid Huawei AI-chip ramp",
-      "status": "New",
-      "first_seen": "2026-08-17-am",
-      "last_updated": "2026-08-17-am",
-      "verification": "Confirmed-primary (market cap); System inference/forecast (Huawei production target)",
-      "one_line": "Memory chipmaker CXMT overtook Tencent Monday as China's most valuable listed company, market cap above $500B after a 466% Shanghai IPO-debut surge in late July. Huawei reportedly planning to roughly double 910C Ascend AI chip production next year -- a forecast, not yet realized.",
-      "score_note": "First appearance; China chip-independence narrative.",
-      "sources": [
-        "Bloomberg"
-      ],
-      "watch": false
-    },
-    {
-      "id": "l3harris-ceo-departure-defense-pullback-aug17",
-      "headline": "L3Harris's Kubasik was fired for a code-of-conduct violation, not a voluntary departure; Sam Mehta named CEO",
-      "status": "Materially changed",
-      "first_seen": "2026-08-17-pm",
-      "last_updated": "2026-08-18-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "Correcting Monday's framing: Kubasik was terminated following a board-directed code-of-conduct investigation, unrelated to financial reporting/controls/operations per the company; no severance or accelerated equity. Sam Mehta (previously head of the space sector) named president and CEO effective immediately. LHX closed Monday -4.61%.",
-      "score_note": "Framing refinement logged in today's colophon, not a factual correction to a previously wrong fact.",
-      "sources": [
-        "L3Harris press release",
-        "Bloomberg",
-        "Fox Business",
-        "SpaceNews",
-        "Washington Technology"
-      ],
-      "watch": false
     },
     {
       "id": "marvell-micron-chip-rally-mizuho-aug17",
@@ -865,18 +719,74 @@
       "watch": false
     },
     {
-      "id": "fl-ak-wy-primaries-aug18",
-      "headline": "Florida, Alaska and Wyoming primaries set November matchups",
+      "id": "merck-moderna-cancer-vaccine-aug19",
+      "headline": "Merck and Moderna's personalized mRNA cancer vaccine clears its first Phase 3 trial",
       "status": "New",
-      "first_seen": "2026-08-19-am",
-      "last_updated": "2026-08-19-am",
-      "verification": "Confirmed-multiple",
-      "one_line": "FL governor: Trump-endorsed Rep. Byron Donalds (R, ~48%) vs. former Rep. David Jolly (D). FL special Senate: Sen. Ashley Moody (R) vs. state Rep. Angie Nixon (D). WY Senate: Rep. Harriet Hageman (R, Trump-backed) won 64.9-27.8%. AK: incumbent Sen. Dan Sullivan (R) and former Rep. Mary Peltola (D-aligned) both advance under the top-four blanket primary to ranked-choice; AK governor's race uncalled.",
-      "score_note": "Sets several November general-election matchups.",
+      "first_seen": "2026-08-19-pm",
+      "last_updated": "2026-08-19-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "Phase 3 INTerpath-001 (intismeran autogene + Keytruda, 1,137 patients, resected stage IIB-IV melanoma) met its primary (recurrence-free survival) and key secondary (distant metastasis-free survival) endpoints -- the first positive Phase 3 for an individualized neoantigen therapy and for an mRNA-based cancer therapy specifically. MRNA (not a regular watchlist name, checked specially) closed near +177%; MRK +12.60% to a 52-week high; BNTX +21.96%, NVAX +10.84%; XLV +3.51% to a record, best of 11 sector SPDRs.",
+      "score_note": "Largest single-day market move this report has tracked this cycle; a genuine scientific first, not an incremental readout.",
       "sources": [
-        "AP race calls"
+        "Merck.com and Moderna (news.modernatx.com) joint press release (primary)",
+        "this run's own Yahoo Finance data"
       ],
-      "watch": false
+      "watch": true
+    },
+    {
+      "id": "uae-iran-trade-suspension-aug19",
+      "headline": "UAE suspends all trade with Iran after a disputed missile launch claim",
+      "status": "New",
+      "first_seen": "2026-08-19-pm",
+      "last_updated": "2026-08-19-pm",
+      "verification": "Confirmed-multiple (UAE suspension, missile-detection claim); Disputed (Iran denies launching)",
+      "one_line": "UAE Foreign Ministry suspended all trade, exchanges and financial transactions with Iran \"until further notice\" after its Defence Ministry said air defenses intercepted two ballistic missiles launched from Iranian territory (one fell in UAE territorial waters, one outside; no casualties/damage). Iranian FM spokesman Esmail Baghaei denied Iran launched anything, calling it baseless. UAE supplies 30%+ of Iran's imports; lands atop the already-live Hormuz standoff (Monday's fatal tanker strike, the unconfirmed \"fully offensive\"/\"few weeks\" Iranian-official statement). Trump separately restated the Navy's Hormuz posture has been \"extremely effective\" and the US has \"total control\" -- status quo, not de-escalation.",
+      "score_note": "Real economic escalation between two Gulf states regardless of who is telling the truth about the missiles; oil/gold both worth watching.",
+      "sources": [
+        "UAE Foreign and Defence Ministry statements (primary, via wire)",
+        "Washington Post",
+        "Fortune",
+        "Al Jazeera",
+        "Xinhua",
+        "Iranian foreign ministry (denial)"
+      ],
+      "watch": true
+    },
+    {
+      "id": "marvell-google-tpu-deal-aug19",
+      "headline": "Marvell wins an expanded custom-chip deal with Google; Broadcom falls on a lost-exclusivity read",
+      "status": "New",
+      "first_seen": "2026-08-19-pm",
+      "last_updated": "2026-08-19-pm",
+      "verification": "Confirmed-primary",
+      "one_line": "SEC 8-K (this run's own EDGAR fetch): Marvell and Google expanded their custom-silicon partnership July 29 across Google's TPU ecosystem (AI inference accelerators, storage/network/memory-interface controllers, near-memory compute); Marvell issued Google a warrant Aug 18 for up to 58,970,907 shares at $206.58 strike, vesting through FY2033. MRVL +9.85% to $237.27; AVGO -4.61% to $362.48 on the read that Google is no longer Broadcom's exclusive TPU partner, compounding VMware-exploitation and credit-downgrade pressure already on the stock.",
+      "score_note": "Distinct new thread from the Aug 17 Marvell/Micron Mizuho-note rally -- a confirmed primary-source catalyst this time, not analyst commentary.",
+      "sources": [
+        "Marvell Technology SEC 8-K (primary, this run's own EDGAR fetch)",
+        "CNBC",
+        "24/7 Wall St",
+        "this run's own Yahoo Finance data"
+      ],
+      "watch": true
+    },
+    {
+      "id": "fomc-minutes-20y-auction-treasury-buyback-aug19",
+      "headline": "Markets snap a three-day losing streak as Treasury doubles bond buybacks around a soft 20-year auction and hawkish FOMC minutes",
+      "status": "New",
+      "first_seen": "2026-08-19-pm",
+      "last_updated": "2026-08-19-pm",
+      "verification": "Confirmed-primary (FOMC minutes, auction result); Confirmed-multiple (buyback increase)",
+      "one_line": "July 28-29 FOMC minutes: 9-3 vote to hold at 3.50-3.75%, with Hammack/Kashkari/Logan dissenting in favor of a 25bp HIKE (hawkish dissent); \"many participants\" said further tightening would likely be needed if inflation didn't decline; Warsh floated cutting meetings from 8/yr to 6/yr, no decision. Separately, Treasury doubled its long-bond buyback size (~$2B to $4B+ per operation), reported to have pulled 20-year yields down ahead of today's $16B 20-year auction, which priced at 5.204% (2nd-highest on record, but below the ~5.27% when-issued level flagged this morning) on soft bid-to-cover (2.53). S&P +0.21%, Nasdaq +0.16%, Dow +0.22%, Russell +0.50%; 10Y yield fell to 4.65% from 4.71%.",
+      "score_note": "Rare case with an actually-reported mechanical catalyst (buyback increase -> yields down -> equities up) rather than a forced narrative.",
+      "sources": [
+        "Federal Reserve (FOMC minutes, primary)",
+        "Treasury auction results (primary)",
+        "CNBC",
+        "ZeroHedge",
+        "qz.com",
+        "this run's own close-series data"
+      ],
+      "watch": true
     }
   ]
 }
