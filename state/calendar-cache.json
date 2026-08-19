@@ -1,55 +1,39 @@
 {
-  "fetched": "2026-08-18T06:50:00-04:00",
-  "earnings_fetched": "2026-08-18",
-  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub day-of feed cross-checked. Home Depot reported today (Aug 18 BMO): adj EPS $4.92 actual vs $4.8762 (Finnhub) / ~$4.71-4.73 (broader consensus), revenue $47.861B actual. Lowe's/Target Aug 19 BMO, Walmart Aug 20 BMO.",
+  "fetched": "2026-08-19T06:52:00-04:00",
+  "earnings_fetched": "2026-08-19",
+  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub day-of feed cross-checked. Lowe's reported today (Aug 19 BMO): net sales $24.0B (+1.6% YoY), comp sales +0.2%, adjusted EPS $4.40 (Confirmed-multiple). Target also reported today; adjusted EPS $2.05 vs $2.09 est., comp sales -3.2% stores / +4.3% digital per a single wire-syndicated source, not yet corroborated by a second outlet or SEC filing as of this run -- treated as provisional. TJX, Estee Lauder, Analog Devices also reported today. Walmart reports Aug 20 BMO.",
   "events": [
     {
-      "ts_et": "2026-08-18T08:00:00-04:00",
+      "ts_et": "2026-08-19T08:00:00-04:00",
       "type": "earnings",
-      "name": "Home Depot (HD) Q2 FY2026 -- REPORTED",
+      "name": "Lowe's (LOW), Target (TGT), TJX, Estee Lauder, Analog Devices Q2/Q3 earnings",
       "importance": "High",
-      "reason": "First quarter reported under interim leadership since CEO Decker's Aug 12 medical leave; adjusted EPS $4.92 beat ~$4.71-4.73 consensus, revenue $47.9B (+5.7% YoY) beat, guidance reaffirmed.",
-      "source": "Home Depot investor relations, SEC EDGAR 8-K -- Confirmed-primary"
+      "reason": "Second day of the big-box retail earnings block, direct read-through on the Aug 14 retail-sales/consumer-sentiment miss and the Canada tariff situation. Lowe's confirmed-multiple; Target single-reliable-source pending SEC filing.",
+      "source": "PR Newswire, Zacks-sourced wire coverage, Alpha Vantage/Finnhub calendars"
     },
     {
-      "ts_et": "2026-08-18T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "U.S. Import and Export Price Indexes, July 2026",
-      "importance": "Low",
-      "reason": "Trade-price data point; feeds inflation-trend context after the Aug 12/13 CPI/PPI prints.",
-      "source": "bls.gov schedule ICS -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-18T00:00:00-04:00",
+      "ts_et": "2026-08-19T00:00:00-04:00",
       "type": "other",
-      "name": "Mail-ballot EO: $100 bond due at the 1st Circuit; East Wing ballroom SCOTUS response also due today",
+      "name": "Canada Section 338 tariffs (50%) paused ~3 days after a Trump-Carney call",
       "importance": "High",
-      "reason": "Two separate SCOTUS emergency-docket deadlines land the same day; no ruling on either confirmed as of this run. Ballroom matter has an Aug 21 enforcement date if unresolved.",
-      "source": "SCOTUSblog, Votebeat, PBS NewsHour, CNN -- Confirmed-multiple"
+      "reason": "Trump paused the tariffs less than two hours before the midnight deadline, citing a pending deal; Carney cites substantial progress but no finished text. New effective deadline roughly Friday Aug 21-22.",
+      "source": "NBC News, Axios, CP24/CTV -- Confirmed-multiple"
     },
     {
-      "ts_et": "2026-08-18T00:00:00-04:00",
-      "type": "other",
-      "name": "WHO IHR Emergency Committee reconvenes on the DRC Ebola PHEIC",
-      "importance": "High",
-      "reason": "Second review since the May 17 PHEIC declaration; outbreak now the deadliest DRC has recorded. Outcome not published as of this run.",
-      "source": "World Health Organization -- Confirmed-primary (meeting scheduled); outcome pending"
-    },
-    {
-      "ts_et": "2026-08-18T00:00:00-04:00",
-      "type": "other",
-      "name": "Primary elections: Florida (incl. US Senate special), Alaska, Wyoming, Vermont",
-      "importance": "Medium",
-      "reason": "Statewide and special-election primaries; results not final as of this run.",
-      "source": "News research -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-18T00:00:00-04:00",
+      "ts_et": "2026-08-19T13:00:00-04:00",
       "type": "auction",
-      "name": "4-Week and 8-Week Treasury Bill auctions",
-      "importance": "Low",
-      "reason": "Routine bill supply.",
+      "name": "20-Year Bond auction, $16B",
+      "importance": "Medium",
+      "reason": "Monthly refunding cycle; when-issued yield recently indicated ~5.27%, which would be the tenor's highest since its 2020 reintroduction if it holds.",
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-19T14:00:00-04:00",
+      "type": "econ_release",
+      "name": "FOMC minutes, July 28-29 meeting",
+      "importance": "Medium",
+      "reason": "First extended look at how the committee under Chair Kevin Warsh discussed the policy path before this month's inflation and labor data.",
+      "source": "federalreserve.gov press feed -- Confirmed-primary (scheduled)"
     },
     {
       "ts_et": "2026-08-19T00:00:00-04:00",
@@ -57,30 +41,6 @@
       "name": "17-Week Treasury Bill auction",
       "importance": "Low",
       "reason": "Routine bill supply.",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-19T00:00:00-04:00",
-      "type": "other",
-      "name": "Canada Section 338 tariffs (50%) take effect absent a deal",
-      "importance": "High",
-      "reason": "~$20B of Canadian goods affected, no USMCA exemption; talks reportedly at an impasse as of Aug 17. Lands against Lowe's/Target earnings the same morning.",
-      "source": "Washington Post, CBC, Bloomberg -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-19T08:00:00-04:00",
-      "type": "earnings",
-      "name": "Lowe's (LOW) and Target (TGT) Q2 FY2026",
-      "importance": "High",
-      "reason": "Second day of the big-box retail earnings block, direct read-through on the Aug 14 retail-sales/consumer-sentiment miss and the Canada tariff deadline hitting the same morning.",
-      "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-19T13:00:00-04:00",
-      "type": "auction",
-      "name": "20-Year Bond auction",
-      "importance": "Medium",
-      "reason": "Monthly refunding cycle; long-end demand read after the 10Y's mid-4.7% level.",
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
@@ -92,28 +52,36 @@
       "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
     },
     {
+      "ts_et": "2026-08-20T00:00:00-04:00",
+      "type": "other",
+      "name": "SpaceX (SPCX) share unlock, ~319 million shares (~20% of tradable float)",
+      "importance": "High",
+      "reason": "Second major post-IPO share-eligibility event; stock has recovered above its $135 IPO price into the event after round-tripping sharply since the Aug 6 initial unlock. Distinct from the separate ~7% tranche around Aug 21.",
+      "source": "CryptoTimes, FinanceFeeds, ts2.tech -- Confirmed-multiple"
+    },
+    {
       "ts_et": "2026-08-21T00:00:00-04:00",
       "type": "other",
-      "name": "SpaceX (SPCX) next share-eligibility tranche, ~7% of shares",
+      "name": "Supreme Court's implicit deadline on the East Wing ballroom emergency application",
       "importance": "High",
-      "reason": "Distinct from the Aug 6 initial unlock; analysts note share eligibility does not equal actual sale volume.",
-      "source": "This run's science/space research sweep -- Confirmed-multiple (mechanics/dates)"
+      "reason": "D.C. Circuit's injunction blocking construction otherwise takes effect Aug 21; Solicitor General has asked the Court to rule before then. Mail-ballot EO case also remains pending with no ruling.",
+      "source": "SCOTUSblog, CBS News, PBS NewsHour -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-21T00:00:00-04:00",
+      "type": "other",
+      "name": "SpaceX (SPCX) share-eligibility tranche, ~7% of shares",
+      "importance": "Medium",
+      "reason": "Distinct from the Aug 20 unlock; analysts note share eligibility does not equal actual sale volume.",
+      "source": "This report's own science/space research sweep -- Confirmed-multiple (mechanics/dates)"
     },
     {
       "ts_et": "2026-08-24T00:00:00-04:00",
       "type": "launch",
       "name": "Long March 5 -- Chang'e 7 (lunar mission)",
       "importance": "Medium",
-      "reason": "Status still provisional; the Long March 7A failure investigation (Aug 10) reportedly focuses on the shared YF-100 engine architecture -- a live, unconfirmed grounding-risk question.",
-      "source": "SpaceNews -- Confirmed-primary (schedule); System inference (grounding-risk link, unconfirmed)"
-    },
-    {
-      "ts_et": "2026-08-31T00:00:00-04:00",
-      "type": "launch",
-      "name": "Zhuque-3 Flight 2 (LandSpace)",
-      "importance": "Medium",
-      "reason": "Independent launch trackers converge on Aug 31; LandSpace itself has not confirmed. One uncorroborated report suggested a launch attempt as soon as Aug 18 -- not adopted, could not verify against any primary source.",
-      "source": "SpaceNews, SpaceLaunchSchedule, NextSpaceflight -- Confirmed-multiple (delay); provisional (specific date)"
+      "reason": "Vehicle rolled out to the Wenchang pad Aug 19; China's space agency says the window remains on track, the clearest evidence yet the Aug 10 Long March 7A failure is not grounding the wider fleet. CASC has still not published a root-cause finding on that failure.",
+      "source": "CGTN, China Manned Space Agency -- Confirmed-primary (rollout); System inference (fleet-grounding read)"
     }
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
