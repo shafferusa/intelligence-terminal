@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>What Are the Units? The Question That Costs Nothing to Ask and Everything to Skip · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-20",
+    "slot": "learn",
+    "title": "What Are the Units? The Question That Costs Nothing to Ask and Everything to Skip",
+    "path": "reports/2026/08/2026-08-20-learn.html",
+    "summary": "Day four of the 150-day curriculum: dimensional analysis, built around a jumbo jet that ran out of fuel at 41,000 feet and a $327 million Mars orbiter, both lost to the same one-line mistake — and the pendulum-clock trick that shows the same tool can also build an answer, not just catch one gone wrong.",
+    "headlines": [
+      "Day 4 of 150 · Mathematics: units and dimensional analysis",
+      "A 1983 fuel miscalculation and a 1999 spacecraft loss traced to the identical error",
+      "How to derive a pendulum's period from nothing but units, and what that trick can't tell you"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-08-20T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>What Are the Units? The Question That Costs Nothing to Ask and Everything to Skip</h1>
+      <p class="paper-dateline">
+        Thursday, August 20, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        A jumbo jet ran out of fuel at 41,000 feet and a $327 million Mars orbiter burned up on arrival, seven years and a continent apart, for the identical reason &mdash; and the same simple habit that would have caught both mistakes can also, run in the opposite direction, hand you the shape of a physical law before you have solved a single equation.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 4 of 150 &middot; Mathematics 3 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>At just after 8:00 PM on July 23, 1983, the cockpit of Air Canada Flight 143 went quiet in a way cockpits are not supposed to go quiet. The Boeing 767 was cruising at 41,000 feet over northern Ontario, roughly halfway through a flight from Montreal to Edmonton, when the right engine flamed out. A minute or so later, the left engine followed it. Every one of a modern jet&rsquo;s primary flight and navigation instruments runs on electricity generated by those engines; with both dead, most of the cockpit&rsquo;s screens went dark, and pilots Bob Pearson and Maurice Quintal were left flying a 132-ton airliner, full of fuel and people, using a handful of battery-powered backup gauges, at gliding speed, roughly one hundred kilometers from the nearest usable runway.</p>
+
+      <p>They did not crash. Pearson, as it happened, was also an experienced glider pilot in his personal life, and he used a maneuver from that hobby &mdash; a forward slip, deliberately yawing the aircraft to increase drag and lose altitude without gaining speed &mdash; to bring the plane down onto a decommissioned Royal Canadian Air Force runway at Gimli, Manitoba, that was, on that particular Saturday, hosting a drag race and a family camping weekend on part of its old tarmac. All sixty-nine people aboard survived. The airplane became famous as the Gimli Glider, and for good reason: an airline crew turned a machine with no thrust into a controlled landing, twice over, using nothing but altitude, speed, and judgment.</p>
+
+      <p>What is easy to lose in the drama of the landing is how thoroughly unglamorous the actual cause was. This was not a storm, a bird strike, a mechanical failure in the ordinary sense, or a moment of pilot carelessness. The airplane took off from Montreal with roughly half the fuel it needed to reach Edmonton. Two separate ground crews, on two separate occasions that evening, sat down and carefully worked out how much fuel was on board, using real arithmetic, correctly performed. Both times, the number they arrived at was wrong &mdash; not because they mishandled the numbers, but because the numbers, quietly, were never measuring what everyone in the room assumed they were measuring. That gap is the entire subject of today&rsquo;s lesson, and by the end of it you will have watched it also destroy a spacecraft, and then, run the other direction, hand you the exact shape of a pendulum&rsquo;s swing without your ever writing down Newton&rsquo;s laws.</p>
+
+      <h3>The idea, before any notation</h3>
+
+      <p>Here is the plain version, with no symbols at all. Every number that describes something real in the world is secretly two things bolted together: a count, and a statement of what is being counted. &ldquo;300&rdquo; by itself is not a fuel load, a distance, or a bill &mdash; it is just an amount of something, and the something is doing at least as much work as the digits. Three hundred what? Liters tell a wildly different story from kilograms, which tell a wildly different story from gallons, and a person who reads &ldquo;300&rdquo; and silently assumes the wrong one of those has made an error that no amount of careful multiplication or division will ever catch, because the arithmetic was never given the chance to be wrong. The mistake happened one step earlier, in the reading, not the calculating.</p>
+
+      <p>This is worth sitting with, because it cuts against how most people are taught to think about being careful with numbers. The usual advice is to double-check your arithmetic: redo the multiplication, re-add the column, verify the decimal point. All of that matters, and none of it would have saved Flight 143. The Montreal ground crew&rsquo;s multiplication was fine. What they multiplied was, unbeknownst to them, the wrong kind of thing entirely &mdash; a number that was secretly measuring pounds, standing in for a number that was supposed to be measuring kilograms. No amount of re-checking the multiplication finds that error, because the multiplication itself is innocent. Only asking &ldquo;what is this number actually counting, and does that match what I need it to be counting&rdquo; finds it.</p>
+
+      <p>The generalization of that question is what this lesson calls dimensional analysis, though the name makes it sound far more technical than the idea underneath it. A speed is always a distance divided by a time, whether you express it in miles per hour, meters per second, or furlongs per fortnight &mdash; the specific unit changes, but the underlying <em>kind</em> of quantity, distance-per-time, does not. That underlying kind is called a dimension, and it is a smaller, more stable idea than a unit: there is exactly one dimension of speed, but dozens of units that can express it. Once you start tracking dimensions instead of just numbers, a remarkable amount of quantitative work becomes almost mechanically self-checking. You cannot add a distance to a time and get a sensible answer, no matter how carefully you carry the digits &mdash; the operation itself is meaningless, the way adding a paragraph to a photograph would be meaningless, and dimensional analysis is simply the discipline of noticing that before you have committed to an answer, rather than after. It costs almost nothing to check. Flight 143, and the spacecraft in the second worked example below, are both demonstrations of exactly what it costs to skip it.</p>
+
+      <p>It helps to notice, too, that this is not a rule imposed on the world from outside, the way a speed limit or a tax bracket is. It is closer to a description of a constraint that was already there. A physical quantity does not become a different kind of thing depending on who is measuring it or what instrument they reach for; a length is a length whether a surveyor calls it &ldquo;feet&rdquo; or a physicist calls it &ldquo;meters,&rdquo; and no amount of relabeling turns a length into a mass. Dimensional analysis simply insists that the symbols on the page respect a fact about the world that was true before anyone wrote the symbols down. That is part of why the check is so cheap and so reliable: it is not asking you to verify a difficult empirical claim, only to notice when a piece of notation has quietly stopped describing anything real.</p>
+
+      <h3>Building the formal system</h3>
+
+      <p>To make this precise needs a small, fixed vocabulary, and the first job is separating two words that get used almost interchangeably in casual speech but mean genuinely different things here: <strong>dimension</strong> and <strong>unit</strong>. A dimension is the fundamental kind of quantity something is &mdash; length, mass, time, and a handful of others. A unit is the specific, arbitrary scale chosen to measure a given dimension: meters, feet, and miles are three different units for the exact same dimension, length. Changing units never changes what kind of thing you are measuring; it only changes the number attached to it. The modern SI system builds every physical quantity out of seven base dimensions &mdash; length, mass, time, electric current, temperature, amount of substance, and luminous intensity &mdash; but the overwhelming majority of ordinary quantitative work, including everything in this lesson, only ever needs three of them: length (conventionally written <strong>L</strong>), mass (<strong>M</strong>), and time (<strong>T</strong>).</p>
+
+      <p>Every other dimension used in physics or engineering is built by combining those three (or the full seven) through multiplication and division, and writing that combination down explicitly is the whole trick. Square brackets around a quantity, <code>[x]</code>, are read &ldquo;the dimension of <em>x</em>,&rdquo; and the central rule governing how these combinations behave is this:</p>
+
+      <div class="formula">
+        <p class="expr">For any valid equation describing a physical relationship: [left-hand side] = [right-hand side]</p>
+        <dl>
+          <dt>[x]</dt><dd>the dimension of quantity <em>x</em>, expressed as a combination of base dimensions</dd>
+          <dt>L, M, T</dt><dd>the base dimensions length, mass, and time (three of SI&rsquo;s seven; the only three this lesson needs)</dd>
+          <dt>example: [velocity]</dt><dd>L T&minus;&sup1; &mdash; a length divided by a time, regardless of whether it is expressed in miles per hour or meters per second</dd>
+          <dt>example: [force]</dt><dd>M L T&minus;&sup2; &mdash; mass times acceleration, from Newton&rsquo;s second law, regardless of whether the force is expressed in newtons or pounds-force</dd>
+        </dl>
+      </div>
+
+      <p>This is called the principle of <strong>dimensional homogeneity</strong>, and it is worth stating plainly what it does and does not claim. It does not say an equation is correct. It says that if the two sides of a claimed equation do not reduce to the same combination of base dimensions, the equation is <em>certainly</em> wrong &mdash; not approximately, not probably, but wrong in the same unambiguous way a sentence with a missing verb is not a sentence. That makes it a filter rather than a proof: passing the filter is necessary for an equation to be true, but nowhere near sufficient, a distinction the misconception section below will lean on hard. For now, the useful fact is that the filter is nearly free. You can check dimensional homogeneity before you have any confidence at all that an equation is otherwise correct, the same way a copy editor can flag a sentence fragment without knowing whether the claim inside it is true.</p>
+
+      <p>The second piece of machinery is what actually happened, badly, in Montreal: converting a quantity from one unit to another. The clean way to think about a conversion factor is that it is nothing more exotic than multiplying by one. A kilometer and 0.6214 miles are not approximately the same distance &mdash; under the modern definition of the mile, they are exactly the same distance, just described on two different scales, which means the fraction relating them is genuinely, exactly equal to the number one:</p>
+
+      <div class="formula">
+        <p class="expr">value in unit B = (value in unit A) &times; (equivalent amount in unit B &divide; equivalent amount in unit A)</p>
+        <dl>
+          <dt>conversion factor</dt><dd>the ratio (equivalent amount in unit B &divide; equivalent amount in unit A); because the numerator and denominator describe the same real quantity, this ratio always equals exactly 1</dd>
+          <dt>why this matters</dt><dd>multiplying by a ratio that equals 1 cannot change what a quantity <em>is</em>, only how it is expressed &mdash; which is precisely the property a unit conversion is supposed to have and precisely the property the Gimli ground crew&rsquo;s arithmetic did not have, as the first worked example below shows</dd>
+        </dl>
+      </div>
+
+      <p>Because a conversion factor is a fraction with real units attached to its top and bottom, you can write those units next to the numbers and cancel them algebraically, exactly the way you would cancel a variable that appears in both a numerator and a denominator. Multiply a distance in miles by a conversion factor written as kilometers-over-miles, and the &ldquo;miles&rdquo; in your original quantity cancels against the &ldquo;miles&rdquo; in the denominator of the factor, leaving an answer that is honestly, visibly, in kilometers. Write the same conversion factor upside down by mistake, and the units refuse to cancel to anything sensible &mdash; you are left with miles-squared-over-kilometers, or some other nonsense combination, sitting right there on the page as a warning that something is backward. This is dimensional analysis functioning as a live, mechanical alarm: get the direction of a conversion wrong, and the units themselves &mdash; not your judgment, not a second pass of careful checking, just the algebra of the labels &mdash; refuse to simplify. The Montreal ground crew&rsquo;s conversion factor never had its units written down at all. It was just &ldquo;1.77,&rdquo; a bare number, and a bare number cannot set off an alarm it was never wired to.</p>
+
+      <p>There is a third, more surprising use for this same machinery, and it runs in the opposite direction from checking an equation someone else already wrote: using dimensions to help <em>discover</em> the form of a relationship you do not yet know. The formal statement is called the <strong>Buckingham Pi theorem</strong>, after physicist Edgar Buckingham, who gave it its modern general form in 1914 (the underlying idea is older, tracing back to work by Joseph Fourier and Lord Rayleigh in the nineteenth century):</p>
+
+      <div class="formula">
+        <p class="expr">A physical relationship built from n variables, spanning k independent fundamental dimensions, can always be rewritten using exactly (n &minus; k) independent dimensionless groups.</p>
+        <dl>
+          <dt>n</dt><dd>the number of physical variables believed to be relevant to the relationship</dd>
+          <dt>k</dt><dd>the number of independent fundamental dimensions (drawn from L, M, T, and the rest) that those variables collectively involve</dd>
+          <dt>n &minus; k</dt><dd>the number of independent dimensionless groups (often called &ldquo;&Pi; groups&rdquo;) the relationship reduces to &mdash; pure numbers, with no units at all, built by combining the original variables</dd>
+        </dl>
+      </div>
+
+      <p>That sentence is abstract enough to be nearly meaningless on first read, so the third worked example below does nothing but apply it, slowly, to a single familiar system: a swinging pendulum. Watching it work once is worth more than any amount of staring at the general statement.</p>
+
+      <h3>Doing it with real numbers</h3>
+
+      <p>Three worked examples: the Gimli fuel error with its actual numbers, the loss of a NASA spacecraft to the identical category of mistake at a vastly larger scale, and a pendulum&rsquo;s period derived from nothing but the theorem just stated.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; the arithmetic that grounded, and then nearly doomed, Flight 143</b>
+        <p>Boeing delivered Flight 143&rsquo;s aircraft as Air Canada&rsquo;s first all-metric 767 &mdash; every fuel calculation on it was meant to run in liters and kilograms. Its automatic Fuel Quantity Indicator System was inoperative because of a wiring fault, so ground crews had to measure fuel manually with a dripstick &mdash; a calibrated rod lowered into each tank &mdash; reading a volume in liters, which then had to be converted to the mass in kilograms that the flight plan actually required. The flight plan called for 22,300 kilograms of fuel for the Montreal&ndash;Edmonton route.</p>
+        <ol>
+          <li>The Montreal dripstick reading found 7,682 liters already in the tanks. The remaining question was how many more liters to pump in so the <em>total</em> converted to 22,300 kilograms.</li>
+          <li>To answer that, the crew needed a fuel density &mdash; a conversion factor between liters and kilograms. The figure they used, handed down from the airline&rsquo;s older, imperial-unit fleet, was 1.77. But 1.77 is the density of Jet A-1 fuel in <em>pounds</em> per liter, not kilograms per liter; the correct kilograms-per-liter figure for the same fuel is about 0.803. Nobody had written &ldquo;pounds per liter&rdquo; next to the 1.77 anywhere in the calculation &mdash; it was carried as a bare number, exactly the failure mode the formalism section above described.</li>
+          <li>Using the (wrong) figure of 1.77 as if it converted liters directly to kilograms, the crew computed the total liters needed to reach 22,300 kilograms as 22,300 &divide; 1.77 &asymp; 12,599 liters &mdash; then loaded roughly 4,917 additional liters on top of the 7,682 already aboard to reach that total. On paper, the arithmetic closed perfectly: 12,599 liters, multiplied by 1.77, gives back almost exactly 22,300 &mdash; the number everyone was checking against.</li>
+          <li>Here is the number nobody computed that evening, but that dimensional bookkeeping would have forced into view: 12,599 liters, multiplied by the <em>correct</em> density of 0.803 kilograms per liter, is only about 10,116 kilograms &mdash; less than half of the 22,300 kilograms the flight plan actually required. The airplane left Montreal carrying roughly 45% of its needed fuel while every piece of paperwork said the tanks were full.</li>
+          <li>The same mistake was repeated, not caught, at a scheduled stop in Ottawa. Ground engineers re-checked the tanks with the dripstick, found a lower volume remaining, and converted it to kilograms using the identical wrong factor of 1.77 &mdash; arriving again at a comfortable-looking number that was, by the same 1.77-versus-0.803 gap, roughly double the fuel actually on board. Satisfied, the crew continued on to Edmonton without adding more fuel. Both engines flamed out over Red Lake, Ontario, roughly halfway through the flight&rsquo;s second leg.</li>
+        </ol>
+        <p>Notice what this example is not: it is not a story about someone being bad at multiplication. Every division and multiplication the ground crew performed that evening was executed correctly, and the final number confirmed itself beautifully &mdash; 12,599 liters times 1.77 really does equal almost exactly 22,300, because that is the equation they solved for. The entire failure lived one level up, in the assumption baked silently into the number 1.77: that it converted liters into kilograms, when it actually converted liters into pounds. A units check &mdash; writing &ldquo;1.77 lb/L&rdquo; instead of just &ldquo;1.77&rdquo; on the fuel slip, and then noticing that pounds do not cancel against the kilograms the flight plan demanded &mdash; would have caught the entire error in seconds, without needing to know the correct density at all. That is the value of the dimensional homogeneity check from the formalism section: it does not require you to already know the right answer, only to notice that the units on the two sides of your calculation do not match.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; a $327.6 million spacecraft lost to the same category of error</b>
+        <p>NASA&rsquo;s Mars Climate Orbiter launched December 11, 1998, one part of a two-spacecraft mission (the Orbiter and, months later, the Mars Polar Lander) budgeted at a combined $327.6 million &mdash; $193.1 million for spacecraft development, $91.7 million for the launch, and $42.8 million for mission operations. After a nine-and-a-half-month cruise to Mars, the spacecraft was to fire its main engine and settle into orbit at a periapsis (closest approach to the planet) of roughly 140 to 150 kilometers &mdash; low enough for the science mission, but comfortably above the altitude at which Mars&rsquo;s thin outer atmosphere would begin dragging on and heating the spacecraft.</p>
+        <ol>
+          <li>Throughout the cruise, small thruster firings continually corrected the spacecraft&rsquo;s trajectory. Lockheed Martin, which built the spacecraft, wrote the ground software that calculated the impulse &mdash; force applied over time &mdash; delivered by each of those firings, and reported the result in pound-force-seconds (lbf&middot;s), a customary U.S. unit of impulse.</li>
+          <li>JPL&rsquo;s navigation software, which read those impulse values to continuously update its model of the spacecraft&rsquo;s trajectory, was built to expect the values in newton-seconds (N&middot;s), the SI unit of impulse. The two teams&rsquo; systems were never checked against a single, explicit, shared specification of which unit would cross the interface between them.</li>
+          <li>One pound-force-second equals approximately 4.45 newton-seconds. Because the navigation software simply read each incoming number and treated it as already being in newton-seconds, every thruster firing&rsquo;s effect on the trajectory was modeled as only 1 &divide; 4.45 &asymp; 22.5% of what it actually was &mdash; every correction the spacecraft made was more than four times stronger, in reality, than the navigation model believed.</li>
+          <li>That undercount compounded silently across dozens of trajectory-correction maneuvers over nine and a half months. By the time the spacecraft reached Mars on September 23, 1999, and fired its main engine for orbit insertion, its true position was far enough from the navigation model&rsquo;s prediction that instead of settling at the planned 140&ndash;150 kilometer periapsis, it passed roughly 57 kilometers above the Martian surface &mdash; deep enough into the atmosphere that the spacecraft was almost certainly destroyed by heating and structural stress, or knocked into an unrecoverable trajectory past Mars entirely. Contact was never re-established.</li>
+        </ol>
+        <p>NASA&rsquo;s subsequent mishap investigation board was explicit that this was not a coding bug in the ordinary sense: each piece of software performed its own arithmetic correctly, in its own unit system, exactly as its own team had written it. The failure was that the interface between the two systems &mdash; the file of numbers passed from Lockheed Martin&rsquo;s ground software to JPL&rsquo;s navigation software &mdash; carried no explicit, checked statement of what unit those numbers were in. It is the Gimli fuel slip again, at planetary scale and nine-figure cost: a bare number crossing a boundary between two groups of careful, competent people, each of whom correctly assumed the other was using the same units they were, and neither of whom wrote that assumption down anywhere a machine, or a colleague, could check it.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; deriving a pendulum&rsquo;s period from units alone</b>
+        <p>A simple pendulum: a small mass <em>m</em> on a string of length <em>L</em>, swinging under gravitational acceleration <em>g</em>, with period <em>T</em> &mdash; the time for one complete back-and-forth swing. Without writing down Newton&rsquo;s second law or solving any differential equation, apply the Buckingham Pi theorem from the formalism section to find out what <em>T</em> can depend on.</p>
+        <ol>
+          <li>List the variables and their dimensions: <em>T</em> has dimension T; <em>L</em> has dimension L; <em>m</em> has dimension M; and <em>g</em>, an acceleration, has dimension L T&minus;&sup2;. That is n = 4 variables, drawing on k = 3 independent fundamental dimensions (L, M, and T all appear). By the Pi theorem, n &minus; k = 1: this relationship reduces to exactly one independent dimensionless group.</li>
+          <li>Before searching for that group algebraically, notice something the theorem lets you see immediately: mass, <em>m</em>, is the <em>only</em> one of the four variables that carries dimension M. Since a dimensionless group must have every base dimension cancel out completely, and nothing else in the list carries an M to cancel it against, <em>m</em> cannot appear in the single dimensionless group at all. The pendulum&rsquo;s period, whatever it turns out to be, cannot depend on the mass of the bob &mdash; a real, testable, and famously counterintuitive prediction, obtained before any dynamics has been written down.</li>
+          <li>Find the group using only <em>T</em>, <em>L</em>, and <em>g</em>. Try a combination <em>T</em><sup>a</sup><em>L</em><sup>b</sup><em>g</em><sup>c</sup> and demand it be dimensionless: substituting dimensions gives T<sup>a</sup> L<sup>b</sup> (L T&minus;&sup2;)<sup>c</sup> = T<sup>a&minus;2c</sup> L<sup>b+c</sup>, and both exponents must equal zero for the combination to be dimensionless: a &minus; 2c = 0 and b + c = 0.</li>
+          <li>Choosing c = 1 (any nonzero choice works; this one gives the cleanest result) gives a = 2 and b = &minus;1. The dimensionless group is therefore &Pi; = T&sup2;g / L. Because there is exactly one such group (n &minus; k = 1, from step 1) and a lone dimensionless group in a physical relationship must simply equal some constant pure number &mdash; call it C&#8320; &mdash; the theorem hands you T&sup2;g / L = C&#8320;, which rearranges to T = &radic;(C&#8320;) &middot; &radic;(L / g).</li>
+          <li>Renaming &radic;(C&#8320;) as a single constant C, the period is T = C&radic;(L/g): proportional to the square root of the string&rsquo;s length divided by gravitational acceleration, independent of mass, arrived at entirely from a bookkeeping argument about which dimensions four variables carry. A full Newtonian derivation (solving the pendulum&rsquo;s equation of motion under the standard small-angle approximation) fills in the one number dimensional analysis cannot: C = 2&pi;, giving the familiar T = 2&pi;&radic;(L/g).</li>
+        </ol>
+        <p>That last gap &mdash; dimensional analysis delivering the shape of the answer, T &prop; &radic;(L/g), while staying completely silent on the value of C &mdash; is not a flaw in the method. It is the method&rsquo;s honest boundary, and the misconception section below is built entirely around what that boundary means and how often it gets missed.</p>
+      </div>
+
+      <h3>Where it already shows up</h3>
+
+      <p>This system&rsquo;s own reporting rules lean on exactly this discipline, and you have been reading its output for weeks without necessarily naming it. Every economic figure in this newspaper&rsquo;s news editions is required to state, explicitly, whether it is a level or a rate of change, and whether it is nominal or real &mdash; and those distinctions are units distinctions in the same sense as liters versus kilograms. Gross domestic product, expressed as a dollar level, and GDP growth, expressed as a percentage rate of change, are not two ways of stating the same number; they are two different dimensions of quantity, one a stock and one a flow, and treating a rate as though it were interchangeable with a level is exactly the kind of silent unit swap that emptied Flight 143&rsquo;s tanks. Nominal and real dollars are, in the same way, two different units of the same dimension &mdash; currency value &mdash; related by an explicit, stated conversion factor (a price index, tied to a specific base year) the way miles and kilometers are related by 1.609. A dollar figure with no stated year, no stated basis, is a bare &ldquo;1.77&rdquo; with no unit attached to it: technically a number, practically a trap for whoever reads it next and silently assumes the wrong basis.</p>
+
+      <p>The closing edition&rsquo;s watchlist board makes the identical point in miniature, in a single formatting decision. Equity price changes on that board are shown in percent; Treasury yield changes are shown in basis points, a hundredth of one percentage point, in a separate column. That is not a stylistic quirk &mdash; a yield is already a rate, and its natural unit of change is a small fraction of itself, so reporting a ten-year yield&rsquo;s move from 4.18% to 4.20% as &ldquo;+2%&rdquo; rather than &ldquo;+2 basis points&rdquo; would overstate the move by roughly a hundredfold, a units error wearing the clothes of a rounding choice. Keeping the two columns separate is, quietly, the same discipline that a properly labeled fuel slip would have provided in Montreal: never let two different kinds of quantity share a column, or a sentence, without saying so.</p>
+
+      <p>The habit generalizes further than either of those examples. Much further along in this curriculum, when the sequence reaches rocketry, a later lesson will lean on this exact tool to explain why a rocket engine&rsquo;s fuel efficiency &mdash; its specific impulse &mdash; is conventionally reported in seconds, of all things, which sounds like a typo until you watch the units of thrust and propellant flow rate cancel down to a single dimension of time. That lesson has not happened yet; today&rsquo;s is simply the tool it will use.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>The most common misreading of this entire subject is believing that a dimensionally consistent equation is a <em>correct</em> equation. It is not, and worked example 3 was built specifically to expose the gap: dimensional analysis handed over T = C&radic;(L/g) and then went completely silent on the value of C. Suppose someone had claimed, confidently, that a pendulum&rsquo;s period is T = 7&radic;(L/g) instead of the true T = 2&pi;&radic;(L/g) (2&pi; &asymp; 6.283, not 7). Check that claim for dimensional homogeneity and it passes without a hitch &mdash; both sides reduce to the dimension of time, exactly the same as the true equation. Dimensional analysis is structurally blind to the value of any pure, dimensionless multiplicative constant, no matter how wrong that constant is, because a dimensionless number, having no units at all, cannot violate a units check by definition. The filter only ever screens for one specific failure mode: a mismatch in what kind of quantity is on each side. It has nothing whatsoever to say about whether the numeric factor multiplying those quantities is right.</p>
+
+      <p>That makes dimensional analysis closer to a spell-checker than a fact-checker. A spell-checker will flag &ldquo;teh cat sat on teh mat&rdquo; but will wave through &ldquo;the cat sat on the moon,&rdquo; because spelling and truth are simply different axes, and a sentence can be perfectly spelled while being false. An equation can be perfectly dimensionally consistent &mdash; every base dimension canceling exactly where it should &mdash; while still being numerically wrong by a missing factor of two, a sign error, a mislabeled exponent, or a model that leaves out a real physical effect entirely. Getting the units right is a necessary checkpoint on the road to a correct equation. It is nowhere close to the whole road, and treating it as though it were is the specific, well-documented way this tool gets over-trusted.</p>
+
+      <p>A second, smaller misconception belongs alongside the first, because it runs in the opposite direction: assuming a dimensionless quantity &mdash; a pure number, with no units attached &mdash; must therefore be unimportant, a mere byproduct of having stripped the &ldquo;real&rdquo; units away. The opposite is usually closer to true. Yesterday&rsquo;s lesson worked through a current ratio &mdash; current assets divided by current liabilities &mdash; specifically because dividing away the units let a tiny bakery and a national retail chain, radically different in scale, be compared honestly on a single number. A price-to-earnings ratio does the same job for two companies of wildly different share price and market capitalization; a Reynolds number, a genuinely dimensionless combination of a fluid&rsquo;s density, velocity, a characteristic length, and its viscosity, lets an engineer judge whether flow around a coin-sized model in a wind tunnel will behave like flow around a real aircraft wing, precisely because the number carries no leftover trace of which one is actually a coin and which one is actually a wing. Dimensionless quantities turn up constantly in serious quantitative work precisely because stripping the units out is what makes a comparison across different scales, different systems, or different units in the first place legitimate rather than accidental. A dimensionless number is not a quantity with nothing left to say. It is very often the one number in a calculation specifically engineered to say something that survives every possible choice of units.</p>
+
+      <p>Return, to close, to the two disasters that opened this lesson. Neither one happened because someone chose the wrong dimensionless constant, botched a sign, or mis-derived a formula &mdash; the precise failure mode dimensional analysis cannot catch. Both happened because a unit of one kind was silently substituted for a unit of another kind describing the exact same dimension: pounds standing in for kilograms on a fuel slip, pound-force-seconds standing in for newton-seconds across a software interface. That is exactly, precisely the failure mode this lesson&rsquo;s check exists to catch, at essentially zero cost, before a single further calculation is built on top of the mistake. In both cases, nobody ran it.</p>
+
+      <h3>What today points toward</h3>
+
+      <p>Yesterday&rsquo;s lesson spent real effort on a single move: dividing one financial quantity by another &mdash; current assets by current liabilities &mdash; specifically to strip away scale and let a tiny bakery and an enormous retail chain be judged on the same footing, by the same number. Today&rsquo;s pendulum example did the identical maneuver with different material: forming a ratio of physical quantities, T&sup2;g/L, specifically engineered so that every unit cancels away entirely, leaving a pure number that must equal the same constant no matter how large or small the pendulum, the same way a current ratio of 2.0 means the same thing for a bakery and a national chain regardless of which one is ten thousand times bigger. Different subject, same machinery again: whenever a quantity is too tangled up with its own scale &mdash; whether that scale is a company&rsquo;s size or a pendulum&rsquo;s length &mdash; the standard move is not to compute the quantity more carefully. It is to divide it by something else until the units, and the scale riding along with them, cancel out completely.</p>
+
+      <p>There is a second, sharper connection to yesterday&rsquo;s lesson worth naming directly, because it is the actual hinge this lesson turns on. Yesterday&rsquo;s accounting equation, Assets = Liabilities + Equity, is enforced by double-entry bookkeeping&rsquo;s built-in balance requirement: every transaction has to leave both sides equal, not because reality has some hidden two-sided structure, but because the system was deliberately engineered so that an imbalance announces itself immediately, without anyone first needing to know whether the underlying numbers were honest. Dimensional homogeneity, [left-hand side] = [right-hand side], is the identical engineering trick, wearing physics instead of finance. It does not ask whether an equation is true, the same way a balanced ledger does not ask whether a transaction was honest &mdash; it only asks whether the two sides are built from compatible material, and lets an incompatibility announce itself before anyone has to trust the number on faith. The Montreal ground crew, in effect, credited the fuel tank in kilograms and debited the dripstick reading in pounds, and nothing in their arithmetic forced those two entries to reconcile before the aircraft left the gate. Two disciplines, invented centuries apart, for entirely different reasons, converged on the same realization: build a check that catches every <em>internally inconsistent</em> claim, cheaply, before you ever ask whether the claim is <em>true</em>.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state the difference between a dimension (length, mass, time) and a unit (meters, feet, miles) and explain why two quantities must share a dimension before they can be added or set equal to each other.</li>
+          <li>You can apply the dimensional homogeneity check, [LHS] = [RHS], to any claimed equation &mdash; and state precisely what it guarantees (no unit mismatch) and what it does not (that any dimensionless constant in the equation is correct).</li>
+          <li>You can use the Buckingham Pi theorem&rsquo;s counting argument &mdash; n variables, k fundamental dimensions, n &minus; k dimensionless groups &mdash; to derive the form of a physical relationship, as in the pendulum&rsquo;s T &prop; &radic;(L/g), without solving the underlying dynamics.</li>
+          <li>You can name two real losses &mdash; a jumbo jet nearly lost over Ontario, a $327.6 million Mars orbiter destroyed on arrival &mdash; caused by the identical category of mistake, and what a one-line units check would have cost against what skipping it actually cost.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: 60Day Day 1, used as a topic scope since Logan&rsquo;s local course material is not available to a cloud run). The Gimli Glider fuel-calculation figures (the 22,300-kilogram requirement, the 7,682-liter and later Ottawa dripstick readings, the 1.77-versus-0.803 conversion factors, and the flight&rsquo;s timeline and outcome) and the Mars Climate Orbiter failure (the pound-force-second/newton-second mismatch, the 4.45 conversion factor, the mission cost breakdown, and the resulting periapsis altitude) were checked via web search against multiple independent secondary accounts rather than written from memory. The Buckingham Pi theorem&rsquo;s attribution and general form were checked the same way. The pendulum derivation and all arithmetic in the worked examples were verified directly.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-19-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
