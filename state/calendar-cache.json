@@ -1,87 +1,79 @@
 {
-  "fetched": "2026-08-19T06:52:00-04:00",
-  "earnings_fetched": "2026-08-19",
-  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub day-of feed cross-checked. Lowe's reported today (Aug 19 BMO): net sales $24.0B (+1.6% YoY), comp sales +0.2%, adjusted EPS $4.40 (Confirmed-multiple). Target also reported today; adjusted EPS $2.05 vs $2.09 est., comp sales -3.2% stores / +4.3% digital per a single wire-syndicated source, not yet corroborated by a second outlet or SEC filing as of this run -- treated as provisional. TJX, Estee Lauder, Analog Devices also reported today. Walmart reports Aug 20 BMO.",
+  "fetched": "2026-08-20T06:50:00-04:00",
+  "earnings_fetched": "2026-08-20",
+  "earnings_fetched_note": "Alpha Vantage 3-month CSV + Finnhub day-of feed cross-checked. Walmart (WMT) reports before today's open; not yet released as of this cache refresh (Finnhub epsActual still null). Deere (DE) also reported this morning: adjusted EPS $5.10 vs $4.84 est., revenue $11.0B vs $11.05B est. (Confirmed-primary, Finnhub actuals feed).",
   "events": [
-    {
-      "ts_et": "2026-08-19T08:00:00-04:00",
-      "type": "earnings",
-      "name": "Lowe's (LOW), Target (TGT), TJX, Estee Lauder, Analog Devices Q2/Q3 earnings",
-      "importance": "High",
-      "reason": "Second day of the big-box retail earnings block, direct read-through on the Aug 14 retail-sales/consumer-sentiment miss and the Canada tariff situation. Lowe's confirmed-multiple; Target single-reliable-source pending SEC filing.",
-      "source": "PR Newswire, Zacks-sourced wire coverage, Alpha Vantage/Finnhub calendars"
-    },
-    {
-      "ts_et": "2026-08-19T00:00:00-04:00",
-      "type": "other",
-      "name": "Canada Section 338 tariffs (50%) paused ~3 days after a Trump-Carney call",
-      "importance": "High",
-      "reason": "Trump paused the tariffs less than two hours before the midnight deadline, citing a pending deal; Carney cites substantial progress but no finished text. New effective deadline roughly Friday Aug 21-22.",
-      "source": "NBC News, Axios, CP24/CTV -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-19T13:00:00-04:00",
-      "type": "auction",
-      "name": "20-Year Bond auction, $16B",
-      "importance": "Medium",
-      "reason": "Monthly refunding cycle; when-issued yield recently indicated ~5.27%, which would be the tenor's highest since its 2020 reintroduction if it holds.",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-19T14:00:00-04:00",
-      "type": "econ_release",
-      "name": "FOMC minutes, July 28-29 meeting",
-      "importance": "Medium",
-      "reason": "First extended look at how the committee under Chair Kevin Warsh discussed the policy path before this month's inflation and labor data.",
-      "source": "federalreserve.gov press feed -- Confirmed-primary (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-19T00:00:00-04:00",
-      "type": "auction",
-      "name": "17-Week Treasury Bill auction",
-      "importance": "Low",
-      "reason": "Routine bill supply.",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
     {
       "ts_et": "2026-08-20T08:00:00-04:00",
       "type": "earnings",
       "name": "Walmart (WMT) Q2 FY2027",
       "importance": "High",
-      "reason": "Closes the week's big-box retail block; largest US retailer by revenue, a bellwether for consumer-spending health.",
-      "source": "Alpha Vantage EARNINGS_CALENDAR + Finnhub calendar/earnings -- Confirmed-multiple"
+      "reason": "Closes the week's big-box retail earnings block; largest US retailer by revenue, a bellwether for consumer-spending health after last Friday's soft retail-sales/sentiment prints. Not yet released as of this edition's writing (Finnhub calendar consensus: EPS $0.75 on ~$188.8B revenue).",
+      "source": "Finnhub calendar/earnings -- Confirmed-primary (scheduled; result pending)"
+    },
+    {
+      "ts_et": "2026-08-20T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "Initial jobless claims (week ended Aug 15) + Philadelphia Fed Manufacturing Index",
+      "importance": "Medium",
+      "reason": "Prior claims print (week ended Aug 8) was 209,000, above the 202,000 estimate; four-week average 199,000. First fresh labor read since last Friday's retail-sales/sentiment misses.",
+      "source": "FRED (prior print) + BLS release schedule -- Confirmed-primary (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-20T10:00:00-04:00",
+      "type": "econ_release",
+      "name": "Conference Board Leading Economic Index (LEI), July",
+      "importance": "Low",
+      "reason": "Routine composite release; watched for confirmation of the growth-momentum picture after the soft July retail sales print.",
+      "source": "BLS/Conference Board release schedule -- Confirmed-primary (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-20T13:00:00-04:00",
+      "type": "auction",
+      "name": "29-Year 6-Month Bond reopening (effectively the 30-year), size TBD",
+      "importance": "Medium",
+      "reason": "Monthly long-bond refunding leg, a day after the softer-than-expected 20-year auction and Treasury's larger long-bond buyback operations; watched for whether demand holds up at current 30-year levels (5.19% per Wednesday's par curve).",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-20T00:00:00-04:00",
       "type": "other",
-      "name": "SpaceX (SPCX) share unlock, ~319 million shares (~20% of tradable float)",
+      "name": "SpaceX (SPCX) share-eligibility unlock, up to ~319 million shares",
       "importance": "High",
-      "reason": "Second major post-IPO share-eligibility event; stock has recovered above its $135 IPO price into the event after round-tripping sharply since the Aug 6 initial unlock. Distinct from the separate ~7% tranche around Aug 21.",
-      "source": "CryptoTimes, FinanceFeeds, ts2.tech -- Confirmed-multiple"
+      "reason": "Second post-IPO lock-up expiration (70th day after the June pricing per the final prospectus) -- roughly 20% growth in tradable float. Correction from this report's own prior tracking: this is the SAME event previously also described as a distinct ~7% tranche 'around Aug 21' -- it is one event, not two. FINRA short volume in SPCX ran 62% of total volume Wednesday (Aug 19), elevated versus a typical 40-50% range, consistent with pre-unlock hedging rather than a directional short bet. The Aug 6 first unlock saw the stock rise on the day rather than fall.",
+      "source": "This report's own science/space research sweep (FinanceFeeds, CryptoTimes) + this run's own FINRA short-volume computation -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-20T09:00:00-04:00",
+      "type": "launch",
+      "name": "Rocket Lab Electron -- \"The Lightning God Defends\" (iQPS Launch 8)",
+      "importance": "Low",
+      "reason": "SAR Earth-imaging satellite for Japan's iQPS, ninth iQPS mission on Electron, from Mahia, New Zealand.",
+      "source": "The Space Devs launch schedule -- Confirmed-primary (scheduled)"
     },
     {
       "ts_et": "2026-08-21T00:00:00-04:00",
       "type": "other",
-      "name": "Supreme Court's implicit deadline on the East Wing ballroom emergency application",
+      "name": "D.C. Circuit injunction on the East Wing ballroom case takes effect absent a Supreme Court ruling",
       "importance": "High",
-      "reason": "D.C. Circuit's injunction blocking construction otherwise takes effect Aug 21; Solicitor General has asked the Court to rule before then. Mail-ballot EO case also remains pending with no ruling.",
-      "source": "SCOTUSblog, CBS News, PBS NewsHour -- Confirmed-multiple"
+      "reason": "Briefing on SCOTUS emergency docket No. 26A203 is now complete (applicants' reply filed Aug 19); no order issued as of this morning. A ruling could land at any time today or tomorrow. Separately, the mail-ballot EO emergency application also remains fully briefed with no ruling.",
+      "source": "supremecourt.gov docket 26A203 (direct fetch this run) -- Confirmed-primary"
     },
     {
       "ts_et": "2026-08-21T00:00:00-04:00",
-      "type": "other",
-      "name": "SpaceX (SPCX) share-eligibility tranche, ~7% of shares",
+      "type": "deadline",
+      "name": "CISA KEV federal remediation deadline -- VMware vCenter CVE-2026-59310",
       "importance": "Medium",
-      "reason": "Distinct from the Aug 20 unlock; analysts note share eligibility does not equal actual sale volume.",
-      "source": "This report's own science/space research sweep -- Confirmed-multiple (mechanics/dates)"
+      "reason": "Federal civilian agencies must remediate by Friday; no workaround exists, only Broadcom's July 29 patch. 361+ confirmed victims across 47 countries as of the most recent count.",
+      "source": "CISA KEV catalog, Rapid7 -- Confirmed-multiple"
     },
     {
       "ts_et": "2026-08-24T00:00:00-04:00",
       "type": "launch",
-      "name": "Long March 5 -- Chang'e 7 (lunar mission)",
+      "name": "Long March 5 -- Chang'e 7 (lunar south-pole mission)",
       "importance": "Medium",
-      "reason": "Vehicle rolled out to the Wenchang pad Aug 19; China's space agency says the window remains on track, the clearest evidence yet the Aug 10 Long March 7A failure is not grounding the wider fleet. CASC has still not published a root-cause finding on that failure.",
-      "source": "CGTN, China Manned Space Agency -- Confirmed-primary (rollout); System inference (fleet-grounding read)"
+      "reason": "Stack completed vertical transfer to the Wenchang pad Aug 19; window remains on track. CASC still has not published a root-cause finding on the Aug 10 Long March 7A failure, though it launches from a different vehicle at the same site.",
+      "source": "CGTN, SpaceNews -- Confirmed-primary (rollout)"
     }
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
