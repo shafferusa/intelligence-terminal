@@ -1,12 +1,25 @@
 [
  {
   "date": "2026-08-21",
+  "slot": "am",
+  "title": "Morning Brief",
+  "path": "reports/2026/08/2026-08-21-am.html",
+  "summary": "Canada's paused 50% tariffs are due back at midnight with a deal 'close' but unsigned, a China-linked ransomware campaign hits federal patch deadline day, Ukraine reveals it is down to about 1% of its Patriot interceptors, Anthropic breaks from OpenAI's new AI-safety pause, and Deere's beat-and-jump next to Walmart's beat-and-plunge says more about the economy than either headline number alone.",
+  "headlines": [
+   "Canada's tariff pause expires at midnight with a deal 'very close' but unsigned",
+   "VMware patch deadline lands today amid a China-nexus ransomware campaign",
+   "Ukraine reveals it's down to about 1% of its Patriot interceptors as Kyiv's toll climbs to 17"
+  ],
+  "reading_minutes": 28
+ },
+ {
+  "date": "2026-08-21",
   "slot": "learn",
   "title": "Usain Bolt Peaked at 65 Meters. Everyone Watching Thought He Was Still Speeding Up.",
   "path": "reports/2026/08/2026-08-21-learn.html",
-  "summary": "Day five of the 150-day curriculum: kinematics — position, velocity and acceleration, and how to read them off a graph, built around Usain Bolt's own Berlin 2009 split times, the Apollo 15 hammer-feather drop, and a car's stopping distance.",
+  "summary": "Day five of the 150-day curriculum: kinematics \u2014 position, velocity and acceleration, and how to read them off a graph, built around Usain Bolt's own Berlin 2009 split times, the Apollo 15 hammer-feather drop, and a car's stopping distance.",
   "headlines": [
-   "Day 5 of 150 · Physics: kinematics",
+   "Day 5 of 150 \u00b7 Physics: kinematics",
    "Bolt's own splits show his top speed came at 65 meters, not the finish line",
    "Why acceleration and velocity are not the same thing, with a hammer, a feather, and a braking car"
   ],
