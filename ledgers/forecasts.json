@@ -18,7 +18,10 @@
       "horizon": "2026-08-22",
       "probability": "40-55%",
       "basis": "Carney's 'substantial progress' language without a finished text, after Trump paused the tariffs 90 minutes before their original deadline rather than following through.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No deal was reached: Prime Minister Carney suspended trade negotiations minutes before the extended deadline, and the 50% Section 338 tariffs on roughly $20 billion of Canadian goods (including cement and hockey sticks) took effect early Saturday Aug 22 as scheduled.",
+      "graded": "2026-08-22",
+      "lesson": "Optimistic 'substantial progress' language from negotiators proved a weak signal without a finished text -- this is the second consecutive deadline (after the original Aug 18/19 one) where rhetoric of an imminent deal was not matched by an actual signed agreement, a pattern worth weighting more heavily against future 'deal is near' framings in this negotiation."
     },
     {
       "id": "2026-08-19-am-3",
@@ -28,7 +31,10 @@
       "horizon": "2026-08-21",
       "probability": "50-65%",
       "basis": "The Solicitor General explicitly asked the Court to rule before the deadline; briefing is complete on both sides and the shadow docket can act without advance notice.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Supreme Court ruled on Aug 21, in a one-sentence order signed by Chief Justice Roberts, allowing White House East Wing ballroom construction to continue for now while the Court considers the underlying case further -- issued before the enforcement deadline.",
+      "graded": "2026-08-22",
+      "lesson": "A fully briefed shadow-docket application with an explicit request from the Solicitor General to rule by a specific date was a reliable predictor of timely Court action here, unlike the mail-ballot stay application pending the same week, which had no comparably hard deadline forcing the Court's hand."
     },
     {
       "id": "2026-07-26-sun-1",
@@ -636,7 +642,10 @@
       "horizon": "2026-08-19",
       "probability": "55-65%",
       "basis": "The company's own framing describes a planned, contained transition (Hassabis remains Chairman plus a new Alphabet Chief Scientist role; Kavukcuoglu already elevated to run DeepMind day-to-day), arguing against a broader exodus; but the same-week negative-FCF disclosure and competitive AI pressure from OpenAI/Anthropic are a plausible source of further change this report cannot rule out.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "No additional senior AI-leadership or C-suite departure occurred at Alphabet in the two weeks after Aug 5; Koray Kavukcuoglu was promoted (not removed) to run DeepMind day-to-day, and the only other notable exit found (Google News VP Shailesh Prakash) was a product-org departure, not AI leadership or C-suite.",
+      "graded": "2026-08-22",
+      "lesson": "The company's own contained-transition framing (a planned succession with a named successor already in place) was the reliable signal here -- staged executive transitions with pre-announced replacements rarely cascade into further departures the way abrupt, unexplained exits do."
     },
     {
       "id": "2026-08-05-pm-3",
@@ -763,7 +772,10 @@
       "horizon": "2026-08-21",
       "probability": "50-60%",
       "basis": "The 2022 Pretoria agreement held for roughly four years before this week's escalation; base rate favors contained flare-ups over full conflict resumption absent a specific trigger, though this report has limited visibility into current intent on either side.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Fighting that flared around Shererina in western Tigray in early August did not spread to new fronts or draw a fresh, substantive AU/UN mediation initiative by Aug 21; the Ethiopia-Sudan border area was reported calm again within days, and the only UN/AU statements found were the same 'exercise restraint, uphold the cessation of hostilities' language issued as the fighting began, not a new mediation push.",
+      "graded": "2026-08-22",
+      "lesson": "Base rates favored containment because the 2022 Pretoria framework, however strained, still gives both sides an off-ramp neither has formally abandoned; absent a specific trigger (a major town falling, direct Eritrea-Ethiopia clashes), flare-ups in this conflict have tended to plateau rather than cascade."
     },
     {
       "id": "2026-08-07-pm-1",
@@ -952,7 +964,10 @@
       "horizon": "2026-08-17",
       "probability": "60-75%",
       "basis": "Saudi Arabia has historically absorbed prior Houthi strikes without invoking multinational defense mechanisms; the pact is untested and its signing-ceremony framing has not yet been matched by any practical-application precedent.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Neither Turkiye nor Pakistan invoked the Mecca Joint Defence Agreement after the Aug 9 Houthi strikes on Jazan and Najran; Turkish FM Hakan Fidan said only that the allies would determine 'through consultations' what support, if any, to offer, and regional press (Jerusalem Post) explicitly characterized the pact as having 'failed its first test' with no invocation from either signatory.",
+      "graded": "2026-08-22",
+      "lesson": "An untested pact without a standing command or a defined activation threshold was always more likely to default to consultation than declaration -- multilateral defense agreements lacking institutionalized trigger mechanisms tend to absorb a first, ambiguous test quietly."
     },
     {
       "id": "2026-08-10-pm-1",
@@ -988,7 +1003,10 @@
       "horizon": "2026-08-17",
       "probability": "35-50%",
       "basis": "Sustained press attention on the pact's first live test and Pakistan's own reaffirmation statement today creating pressure for the other two signatories to clarify.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Turkiye explicitly addressed the pact's bearing on the Aug 9 strikes within the window: FM Hakan Fidan said the allies would decide 'through consultations' the degree and form of support owed after an attack on a signatory, and Turkish officials separately described the pact as functioning like NATO's Article 5 -- addressing applicability without formally invoking collective defense.",
+      "graded": "2026-08-22",
+      "lesson": "Sustained press scrutiny of a freshly signed, high-profile pact's first test created enough pressure that officials felt compelled to publicly characterize its relevance even while declining to trigger it -- addressing applicability was the lower-cost, more likely middle path between full invocation and total silence."
     },
     {
       "id": "2026-08-11-am-1",
@@ -1011,7 +1029,10 @@
       "horizon": "2026-08-18",
       "probability": "30-45%",
       "basis": "Reuters has not yet independently verified Zelensky's weapon-type claims; such confirmations have historically taken days to weeks when they occur, and North Korea-Russia weapons transfers are an already-documented pattern making corroboration plausible but not certain within this window.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "No Western government or independent munitions-analysis group had corroborated North Korean missile use in the specific Aug 11 Zaporizhzhia/Kyiv strikes by Aug 18; reporting reviewed showed only Ukrainian government claims (Zelensky, Ukraine's Air Force) plus a Kremlin denial, while open-source outlets noted fragment analysis was still in progress and unresolved as of publication.",
+      "graded": "2026-08-22",
+      "lesson": "Forensic corroboration of missile debris typically lags the political claim by weeks, not days, even when the underlying pattern (North Korea-Russia arms transfers) is already well documented -- an established broader pattern doesn't shortcut the specific verification of a single incident."
     },
     {
       "id": "2026-08-11-am-3",
@@ -1060,7 +1081,10 @@
       "horizon": "2026-08-19",
       "probability": "40-55%",
       "basis": "Today's -4.47% move is attributed by trade press to pre-positioning for the Aug 20 unlock, a dynamic that could continue building into the date; the pattern from the first (~20%) unlock tranche, which passed without a selloff, argues against assuming continued weakness.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "SPCX posted a further single-session decline of 3% or more within the window: it closed -3.33% on Aug 13 ($146.15 to $141.29), a second qualifying decline in the run-up to the Aug 20 unlock.",
+      "graded": "2026-08-22",
+      "lesson": "Pre-unlock positioning pressure proved to be a recurring, multi-day pattern rather than a one-off event, consistent with growing awareness of the specific Aug 20 date rather than unrelated volatility."
     },
     {
       "id": "2026-08-12-am-1",
@@ -1122,7 +1146,10 @@
       "horizon": "2026-08-20",
       "probability": "40-55%",
       "basis": "Today's catalyst (forward AI-revenue commentary from the CEO) is more fundamentals-oriented than the prior unlock-related selling, but a large unlock event remains 8 days out and could still dominate near-term positioning.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "SPCX did not hold above $140: it closed at $139.65 on Aug 19 (the day before the unlock) and $134.00 on Aug 20 itself (unlock day, -4.05%), fully round-tripping and then extending below the Aug 12 Musk-driven gain of $146.15.",
+      "graded": "2026-08-22",
+      "lesson": "A single fundamentals-oriented catalyst (forward AI-revenue commentary) was not enough to anchor the stock against a structural, mechanical supply event eight days out -- unlock-driven float expansion dominated the sentiment-driven bounce, as the size of the unlock (319M shares, ~2.7 days of volume) suggested it might."
     },
     {
       "id": "2026-08-12-pm-3",
@@ -1132,7 +1159,10 @@
       "horizon": "2026-08-19",
       "probability": "55-70%",
       "basis": "The company named clear interim leadership same-day, a pattern markets have historically treated as a lower-risk transition than an abrupt, unexplained departure; today's -2.89% move already reflects the initial reaction.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "HD did not fall more than an additional 3% attributable to the CEO news: its close ranged from $343.43 (Aug 12) to a low of $337.49 (Aug 18, -1.7%) before recovering to $344.30 by Aug 19, helped by an Aug 18 Q2 earnings beat (adjusted EPS $4.92 vs. ~$4.72 consensus).",
+      "graded": "2026-08-22",
+      "lesson": "Naming clear interim leadership the same day reliably caps the market's downside reaction to an executive health issue -- and a strong same-week earnings beat gave the stock an independent, unrelated reason to recover before the CEO story could compound."
     },
     {
       "id": "2026-08-13-am-1",
@@ -1181,7 +1211,10 @@
       "horizon": "2026-08-20",
       "probability": "45-55%",
       "basis": "RKLB closed -1.32% today despite objectively positive Iridium-deal milestones, a gap this report attributes to a likely, not confirmed, dilution-overhang read; no analyst commentary was found either confirming or refuting that read, so this forecast is deliberately close to a coin flip.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "RKLB underperformed the 15-ticker space-sector watchlist's average return from Aug 13 to Aug 20 by a narrow margin: RKLB fell 8.93% (from $80.10 to $72.95) versus a watchlist average decline of 8.45%, a gap of under half a percentage point.",
+      "graded": "2026-08-22",
+      "lesson": "The underperformance was real but the margin was razor-thin and driven mostly by a sector-wide selloff (13 of 15 watchlist tickers fell, several far more than RKLB) rather than clear confirmation of RKLB-specific dilution-overhang selling -- the forecast's own coin-flip framing was the right call, but the 'why' (dilution) is not cleanly distinguishable from broad space-sector weakness in the data."
     },
     {
       "id": "2026-08-13-pm-2",
@@ -1191,7 +1224,10 @@
       "horizon": "2026-08-20",
       "probability": "55-65%",
       "basis": "This report has tracked unlock-related positioning pressure on SPCX intermittently since Aug 10-11 (three down sessions, one sharp reversal, now another down session), a pattern more consistent with continued pre-unlock volatility than a clean resolution in either direction before Aug 20.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "SPCX closed lower again the very next session: -0.91% on Aug 14 ($141.29 to $140.00), extending the Aug 13 -3.33% decline ahead of the Aug 20 unlock.",
+      "graded": "2026-08-22",
+      "lesson": "With unlock-related positioning pressure already visibly building over three prior sessions, a continuation of soft trading into the next session was the higher-probability path, and the forecast's pattern-based reasoning held."
     },
     {
       "id": "2026-08-13-pm-3",
@@ -1224,7 +1260,10 @@
       "horizon": "2026-08-21",
       "probability": "30-45%",
       "basis": "Judge Talwani expanded her injunction to nationwide scope Aug 11 and DOJ filed a supplemental brief Aug 12 urging the Court to act promptly, but shadow-docket timing is inherently unpredictable and this report has no insight into the Court's internal schedule.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "The Supreme Court had not ruled on the stay application as of Aug 21: SCOTUSblog reported the administration was still urging the Court to 'act promptly,' and no order had issued by the horizon date -- the case (Trump v. California, No. 26A124) remained pending on the emergency docket.",
+      "graded": "2026-08-22",
+      "lesson": "Shadow-docket timing is genuinely unpredictable and the Court's own history of taking weeks on emergency applications, even ones both sides call urgent, was the better guide than the litigants' self-interested 'act promptly' framing."
     },
     {
       "id": "2026-08-14-am-3",
@@ -1234,7 +1273,10 @@
       "horizon": "2026-08-21",
       "probability": "55-70%",
       "basis": "Confirmed active exploitation since Aug 3 across 361+ victim IPs in 47 countries typically precedes a KEV listing by days to a couple of weeks once independent security-industry confirmation exists, though CISA sometimes defers listing when a vendor patch already exists and adoption is judged sufficient.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "CISA added CVE-2026-59310 to the Known Exploited Vulnerabilities catalog on Aug 18, 2026 -- 4 days after this forecast and within the 7-day window -- with a remediation deadline of Aug 21 for federal civilian agencies.",
+      "graded": "2026-08-22",
+      "lesson": "Confirmed, wide-scale active exploitation (361+ victim IPs across 47 countries) is close to a leading indicator for KEV-listing timing; CISA's typical days-to-weeks lag from confirmed exploitation to listing held at the shorter end here given the scale of the campaign."
     },
     {
       "id": "2026-08-14-pm-1",
@@ -1254,7 +1296,10 @@
       "horizon": "2026-08-19",
       "probability": "40-55%",
       "basis": "Two consecutive earnings misses plus a same-day CFO transition is a materially worse combination than the pattern of unexplained single-day declines this report tracked earlier in August, but the stock has shown a history of sharp, uncorrelated reversals (e.g., the Aug 6 pattern) that argue against assuming the slide continues cleanly.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "YSS extended its decline well past the 5% threshold: it fell from $10.93 (Aug 14 close) to $10.18 (Aug 19), a 6.9% decline over the 3 sessions, then dropped further to $9.20 on Aug 20 (-9.6% in a single session).",
+      "graded": "2026-08-22",
+      "lesson": "A CFO departure landing simultaneously with a guidance cut and earnings miss removed the 'unexplained single-day reversal' pattern that had previously supported YSS's rebounds -- compounding negative catalysts, unlike isolated ones, tend to produce sustained rather than reversing declines."
     },
     {
       "id": "2026-08-14-pm-3",
@@ -1274,7 +1319,10 @@
       "horizon": "2026-08-20",
       "probability": "45-60%",
       "basis": "SPCX has posted four separate double-digit single-session moves this cycle around technical/disclosure events since its June IPO, and Musk's freshly disclosed 48.4% stake sharpens positioning attention into this unlock specifically.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "SPCX did not move more than 5% in any single close-to-close session around the Aug 20 unlock: the largest moves in the window were -4.05% on unlock day itself (Aug 20, to $134.00) and +4.45% on Aug 17, both under the 5% threshold.",
+      "graded": "2026-08-22",
+      "lesson": "The prior double-digit single-session moves this cycle were tied to more binary, headline-driven catalysts (the first lockup, earnings); a second, well-telegraphed unlock of a smaller share count (319M vs. 911.5M in the first tranche) generated real but comparatively muted volatility, suggesting the market had partly priced this specific date in advance."
     },
     {
       "id": "2026-08-15-sat-2",
@@ -1284,7 +1332,10 @@
       "horizon": "2026-08-21",
       "probability": "35-50%",
       "basis": "This cycle's maritime-harassment campaign has shown clustering behavior -- incidents arriving in short multi-day bursts (e.g. four incidents within roughly a week in early August) rather than evenly spaced -- though a confirmed US/Iran de-escalation statement would invalidate this.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "A further vessel incident occurred within the week: UKMTO reported a vessel struck by an unknown projectile in the Strait of Hormuz on Aug 18, with engine-room damage and a crew casualty.",
+      "graded": "2026-08-22",
+      "lesson": "The maritime-harassment campaign's clustering pattern continued to hold -- incidents kept arriving days apart rather than settling into a lull, consistent with the base rate this report had already identified from early August's multi-incidents-in-a-week pattern."
     },
     {
       "id": "2026-08-15-sat-3",
@@ -1294,7 +1345,10 @@
       "horizon": "2026-08-22",
       "probability": "55-70%",
       "basis": "The toll rose from roughly 1,707 to 2,128 confirmed deaths in about a week (per the CDC's Aug 11 HAN notice); a similar pace of increase would clear 2,300 within the horizon, though primary WHO/CDC sourcing has been intermittently blocked this cycle.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The DRC Ebola outbreak's confirmed death toll passed 2,300 well before the horizon -- reported at 'more than 2,300' around Aug 16 and reaching 2,516 confirmed deaths (of 5,290 cases) by Aug 19 -- becoming the deadliest outbreak in the country's history.",
+      "graded": "2026-08-22",
+      "lesson": "The roughly week-over-week pace implied by the CDC's Aug 11 HAN notice (1,707 to 2,128) proved a reliable short-term extrapolation for an outbreak already accelerating with no approved vaccine or treatment for this Bundibugyo-species strain."
     },
     {
       "id": "2026-08-15-sat-4",
@@ -1304,7 +1358,10 @@
       "horizon": "2026-08-21",
       "probability": "40-55%",
       "basis": "A mission of this seniority (Kushner personally, plus the Board of Peace's high representative) typically produces some public readout even absent a substantive breakthrough, though Netanyahu's and Hamas's positions remain publicly incompatible with no bridging development found this week.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The mission produced public readouts without resolving the sequencing dispute: Kushner and Netanyahu agreed to form working groups on Gaza disarmament/demilitarization and on humanitarian issues, with a U.S. general proposed to oversee the process, while Netanyahu continued to insist IDF remain until Hamas disarms; separately, foreign ministers from eight countries issued a joint statement condemning Israel's rejection of the Gaza plan. Euronews summarized the mission itself as ending 'without a breakthrough.'",
+      "graded": "2026-08-22",
+      "lesson": "A mission of this seniority reliably produces a substantive public readout (working groups, a named oversight mechanism) even when the core disagreement goes unresolved -- 'some public process' and 'no resolution' are not mutually exclusive outcomes, and this forecast correctly separated them."
     },
     {
       "id": "2026-08-16-sun-1",
@@ -1314,7 +1371,10 @@
       "horizon": "2026-08-21",
       "probability": "45-55%",
       "basis": "Three incidents occurred within a 48-hour span heading into this weekend, an accelerating pace, but no incident has yet been confirmed since Saturday and Trump's rhetorical escalation has not been matched by a concrete US policy step.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "A fourth Hormuz-area vessel incident did occur within the week: UKMTO reported a vessel hit by an unknown projectile on Aug 18, causing engine-room damage and a crew casualty, following the three incidents already logged over the Aug 14-15 weekend.",
+      "graded": "2026-08-22",
+      "lesson": "An accelerating pace of incidents (three within 48 hours heading into the forecast) was the stronger signal than the absence of a fresh policy trigger -- once a harassment campaign is already clustering, the base rate favors continuation over a pause."
     },
     {
       "id": "2026-08-16-sun-2",
@@ -1324,7 +1384,10 @@
       "horizon": "2026-08-21",
       "probability": "35-45%",
       "basis": "Friday's retail-sales/sentiment miss is a genuine macro data point, but big-box retailers' own comps have generally held up better than discretionary spending broadly in recent quarters.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "None of the four missed consensus EPS or issued cautious guidance: all four beat estimates (HD adjusted EPS $4.92 vs. ~$4.72 est.; Lowe's $4.40 vs. $4.38 est.; Target's adjusted EPS beat by about 6%; Walmart $0.81 vs. $0.74 est.), and three of the four raised full-year guidance (Lowe's narrowed to the low end of its prior range without cutting it).",
+      "graded": "2026-08-22",
+      "lesson": "Friday's soft retail-sales/sentiment data point did not translate into big-box earnings weakness -- these retailers' scale, pricing power, and tariff-refund tailwinds (notably at Target) continue to insulate their reported results from broader consumer-spending anxiety, a gap between macro sentiment data and large-retailer fundamentals worth tracking going forward."
     },
     {
       "id": "2026-08-16-sun-3",
@@ -1334,7 +1397,10 @@
       "horizon": "2026-08-21",
       "probability": "50-60%",
       "basis": "The stock's realized volatility around binary catalysts (earnings, the Aug 6 lockup) has consistently exceeded 5% this cycle in both directions.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "SPCX did not move more than 5% in the session of or immediately following the unlock: it closed -4.05% on Aug 20 (unlock day) and +2.22% on Aug 21, both below the 5% threshold.",
+      "graded": "2026-08-22",
+      "lesson": "Realized volatility around this binary catalyst came in somewhat lower than the stock's recent pattern around earnings and the first lockup, suggesting the market had already partly absorbed the smaller, second unlock's supply impact through the preceding week's declines rather than reacting to it all at once."
     },
     {
       "id": "2026-08-16-sun-4",
@@ -1344,7 +1410,10 @@
       "horizon": "2026-08-21",
       "probability": "40-50%",
       "basis": "Analytic judgment weighing this week's four concrete binary catalysts (Hormuz, retail earnings, SpaceX unlock, Gaza mission) against the prior several weeks' pattern of single-name-dominated volatility -- not a statistical model output.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Two of the four assumed conditions held (a notable-but-not-extreme SpaceX unlock reaction of -4.05%/+2.22%, and Gaza-mission engagement without a breakthrough) but two did not: a fourth Hormuz vessel incident did occur (Aug 18, UKMTO), and big-box retail earnings broadly beat rather than came in mixed. The market outcome partially matched: the S&P 500 fell about 1.4% on the week (a real, if modest, pullback rather than pure range-trading) while single-name volatility (YSS -9.6% in one session, SPCX swinging between -4% and +4.5%) clearly exceeded index-level volatility.",
+      "graded": "2026-08-22",
+      "lesson": "The single-name-vol-exceeds-index-vol conclusion held even though two of the four input catalysts broke the 'wrong' way relative to the base case -- a sign the volatility-dispersion thesis was more robust than the specific catalyst assumptions used to build it."
     },
     {
       "id": "2026-08-16-sun-5",
@@ -1354,7 +1423,10 @@
       "horizon": "2026-08-21",
       "probability": "15-20%",
       "basis": "Requires multiple favorable confirmations (retail earnings, Hormuz, unlock, Gaza) to align simultaneously.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Only one of the four bull conditions clearly held (retail earnings broadly beat). Hormuz did not stay quiet (a fourth incident occurred Aug 18), and equities did not extend to fresh records -- the S&P 500 fell roughly 1.4% on the week, its second consecutive weekly loss, while the 30-year Treasury yield rose to its highest level in roughly two decades (~5.3%), the opposite of 'yields ease.'",
+      "graded": "2026-08-22",
+      "lesson": "A scenario requiring simultaneous confirmation across four independent binary catalysts was always the least probable clean path (this report assigned it only 15-20%), and the one favorable data point (strong retail earnings) was not enough to offset a still-live Hormuz campaign and rising long-end yields."
     },
     {
       "id": "2026-08-16-sun-6",
@@ -1364,7 +1436,10 @@
       "horizon": "2026-08-21",
       "probability": "20-25%",
       "basis": "Analytic judgment; a soft-but-not-shock combination of the week's known catalysts breaking negative.",
-      "status": "open"
+      "status": "partial",
+      "outcome": "Two of the four bear conditions held (a fourth Hormuz incident occurred, and Treasury yields stayed elevated) while two did not (no big-box retailer missed or guided cautiously -- all four beat -- and the Gaza mission produced public statements rather than concluding with none). The market-level outcome leaned bear-consistent: the S&P 500 posted a second straight weekly loss (about -1.4%) with tech leading declines, though the VIX stayed low (~14.25) rather than signaling the broad risk-off the scenario implied.",
+      "graded": "2026-08-22",
+      "lesson": "This scenario's market-direction call (equities give back gains, yields elevated) proved closer to reality than its causal story (weak retail earnings, a Gaza mission with no statement) -- the index moved the way the bear case predicted for reasons other than the ones it specified, a reminder that scenario probability and scenario mechanism can diverge."
     },
     {
       "id": "2026-08-16-sun-7",
@@ -1374,7 +1449,10 @@
       "horizon": "2026-08-21",
       "probability": "8-12%",
       "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "None of the three shock triggers fired at the severity specified, and the projected market consequence did not occur: the Aug 18 Hormuz incident caused a crew casualty but no confirmed fatality or direct US/Iran exchange was reported, the SpaceX unlock reaction was -4.05%/+2.22% (not a disorderly double-digit decline), and the Gaza mission ended without breakthrough but without a fresh regional escalation. Oil rose a moderate ~5% on the week to a one-month high rather than spiking, and the VIX stayed near 14 -- its lowest level since December -- the opposite of 'VIX moves back above its recent range.'",
+      "graded": "2026-08-22",
+      "lesson": "This report correctly assigned this scenario the lowest probability (8-12%): even with a real Hormuz incident in the mix, none of the individual shocks reached the severity needed to cascade into the broad risk-off/VIX-spike outcome the scenario specified -- scenario forecasts need the full causal chain, trigger AND market transmission, to resolve as 'correct,' not just the trigger alone."
     },
     {
       "id": "2026-08-17-am-1",
@@ -1394,7 +1472,10 @@
       "horizon": "2026-08-20",
       "probability": "45-60%",
       "basis": "Friday's retail-sales print fell 0.6% m/m (sharpest since May 2025) and consumer sentiment missed sharply; Home Depot also reports the week after its CEO began medical leave.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "Lowe's missed consensus revenue: $25.96 billion versus roughly $26.16 billion expected, even as its EPS of $4.40 beat estimates. Home Depot ($47.9B vs. ~$47.27B), Target (5.3% sales growth beating forecasts) and Walmart (revenue above estimates) all beat on the top line.",
+      "graded": "2026-08-22",
+      "lesson": "The macro-level retail-sales miss did surface in one retailer's results, but selectively -- Lowe's DIY-exposed comps (flat at +0.2%) were the weak link while Pro/services growth and the other three chains' broader scale and pricing power offset the same macro pressure, showing 'at least one misses' and 'broad retail strength' can both be true simultaneously."
     },
     {
       "id": "2026-08-18-am-1",
@@ -1414,7 +1495,10 @@
       "horizon": "2026-08-19",
       "probability": "45-60%",
       "basis": "Canadian officials described talks as at an impasse as of Monday Aug 17; PM Carney says he expects to speak with Trump before the deadline but has not confirmed a deal.",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Trump paused the 50% tariffs in an eleventh-hour Truth Social post on Aug 18, extending the deadline three days (to end-of-day Aug 21/midnight Aug 22) so negotiators could work toward a deal -- the tariffs did not take effect that Wednesday.",
+      "graded": "2026-08-22",
+      "lesson": "An 'impasse' framing as of the prior business day undersold this administration's demonstrated pattern of granting last-minute extensions rather than following through on a stated deadline -- this was at least the second such Trump-Canada tariff pause in this cycle, and the base rate on deadline extensions in this specific negotiation deserved more weight."
     },
     {
       "id": "2026-08-18-am-3",
@@ -1464,7 +1548,10 @@
       "horizon": "2026-08-21",
       "probability": "55-70%",
       "basis": "Bloomberg and CTV report the two sides are 'near' a deal built around 25% steel and aluminum tariffs, a US-side source calling it 'days, not months'; Carney describes 'substantial progress.'",
-      "status": "open"
+      "status": "wrong",
+      "outcome": "Neither a finalized deal nor a further extension materialized: Carney suspended negotiations minutes before the deadline and the paused 50% Section 338 tariffs took effect as scheduled just after midnight Aug 22, despite negotiators reportedly being 'near' a deal on metals tariffs.",
+      "graded": "2026-08-22",
+      "lesson": "Sourced 'near a deal' and 'days, not months' language from both sides proved to be genuine proximity in substance but not in time -- being close on the terms of an agreement did not translate into closing it before a hard deadline, a gap this report should weight more skeptically in future last-mile trade-deal forecasts."
     },
     {
       "id": "2026-08-20-pm-2",
@@ -1474,7 +1561,10 @@
       "horizon": "2026-08-21",
       "probability": "40-55%",
       "basis": "Briefing completed Wednesday Aug. 19 with the National Park Service's reply brief; the Court has moved quickly on other shadow-docket matters once fully briefed, weighed against no signal yet of imminent action.",
-      "status": "open"
+      "status": "correct",
+      "outcome": "The Supreme Court ruled on Friday Aug 21 -- a one-sentence order from Chief Justice Roberts allowing White House East Wing ballroom construction to continue for now -- issued before the D.C. Circuit injunction was set to take effect.",
+      "graded": "2026-08-22",
+      "lesson": "Complete briefing plus a specific looming enforcement date was again the right signal for fast shadow-docket action; this is the second forecast this week (alongside 2026-08-19-am-3) correctly betting on timely Court action in this same case, reinforcing that a hard external deadline is a meaningfully better predictor of shadow-docket speed than general docket-clearing patterns."
     },
     {
       "id": "2026-08-20-pm-3",

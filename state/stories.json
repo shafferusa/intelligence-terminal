@@ -3,16 +3,16 @@
   {
    "id": "broad-market-selloff-defense-rally-aug18",
    "headline": "Tech and space names lead a broad afternoon selloff while defense stocks rally",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-08-18-pm",
-   "last_updated": "2026-08-20-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-primary",
-   "one_line": "Defense reversed AGAIN today (LMT -3.00%, RTX -3.66%, NOC -3.26%) with no confirmed catalyst, while space extended its slide (YSS -9.63%, FLY -6.60%, SPCX -4.05%). Broad indices fell (S&P -0.87%, Dow -1.32%, Nasdaq -1.00%, Russell -1.34%) on a Walmart-led session and a renewed climb in long yields; VIX +7.52% to 16.01.",
+   "one_line": "One-day whipsaw, not a durable trend: defense and space both round-tripped through the week's remaining sessions with no consistent direction. Closing this thread; see Saturday's Weekly Review for the full week's sector rotation.",
    "score_note": "Two-way whipsaw in defense (rally Tue, selloff Thu) and continued space weakness -- watching for whether either becomes a trend.",
    "sources": [
     "this run's own Yahoo Finance close-series data"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "meta-29-state-youth-safety-trial-aug18",
@@ -29,22 +29,6 @@
     "Detroit News"
    ],
    "watch": true
-  },
-  {
-   "id": "etched-ai-chip-funding-aug18",
-   "headline": "AI-inference chip startup Etched raises $700M at a $21B valuation",
-   "status": "New",
-   "first_seen": "2026-08-18-pm",
-   "last_updated": "2026-08-18-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Round led by Jane Street after it deployed Etched's systems in its own data center; valuation more than doubled from $10.3B just one month earlier. Total funding to date now $1.9B; company says it holds $1B+ in customer contracts.",
-   "score_note": "Rapid valuation escalation in AI-infrastructure financing continues across multiple companies this month.",
-   "sources": [
-    "TechCrunch",
-    "GlobeNewswire",
-    "Finimize"
-   ],
-   "watch": false
   },
   {
    "id": "jimmy-gomez-ethics-investigation-aug17",
@@ -67,12 +51,12 @@
   {
    "id": "canada-tariff-deadline-aug18",
    "headline": "Canada tariff deadline hits at midnight with a deal reportedly close but still unsigned",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-08-18-am",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Friday afternoon talks continued with reported terms (autos to 15%, steel/aluminum halved, dairy protected) still unsigned as the 50% pause expires 12:01 AM ET Saturday. Canada unilaterally dropped many of its own retaliatory tariffs Friday even without a reciprocal signed text. Second time this exact deadline has been approached unsigned.",
-   "score_note": "Resolves open forecast 2026-08-20-pm-1 -- grade Saturday once the deadline actually passes.",
+   "one_line": "Resolved: Prime Minister Carney suspended negotiations minutes before the extended deadline, and the paused 50% Section 338 tariffs on roughly $20B of Canadian goods took effect just after midnight Saturday Aug 22, as scheduled. No deal, no further extension. Forecasts on this outcome graded wrong (deal/extension had been the higher-probability call).",
+   "score_note": "Closed. Third deadline approached this cycle; none produced a signed deal.",
    "sources": [
     "BNN Bloomberg",
     "CP24",
@@ -80,33 +64,17 @@
     "Al Jazeera",
     "Global News"
    ],
-   "watch": true
-  },
-  {
-   "id": "home-depot-q2-beat-aug18",
-   "headline": "Home Depot draws price-target hikes; shares roughly flat despite the beat",
-   "status": "Materially changed",
-   "first_seen": "2026-08-18-am",
-   "last_updated": "2026-08-20-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Truist raised PT to $373, Wells Fargo to $400 (both Buy/Overweight), but shares traded roughly flat Wednesday -- analysts cite lingering housing-affordability concerns as an overhang. CEO Ted Decker's medical-leave timeline remains undisclosed beyond original 'a few months' guidance.",
-   "score_note": "Beat confirmed but market reaction muted -- a data point on how much more good news the stock can absorb.",
-   "sources": [
-    "Benzinga",
-    "Yahoo Finance",
-    "Home Depot IR"
-   ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "us-iran-strikes-jul30",
    "headline": "Bessent formalizes 'economic D-Day' against Iran; gold futures run further, oil mixed",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Treasury Secretary Bessent said Friday the US will impose the 'toughest sanctions in history' on Iran; full package detailed Monday. Gold futures ran to a 3%+ intraday gain on the headline while WTI crude futures actually eased slightly -- a genuine divergence, not a clean single risk-off narrative. No confirmed kinetic strike.",
-   "score_note": "First formal high-level statement tying the sanctions campaign explicitly to reopening Hormuz.",
+   "one_line": "Bessent's 'toughest sanctions in history' package details are due Monday Aug 24. Iran's FM separately floated an Oman-brokered shipping arrangement as 'very close,' unconfirmed. A further Hormuz vessel incident (Aug 18, UKMTO) occurred within the week, and a fourth escalation this cycle. No confirmed kinetic US-Iran exchange.",
+   "score_note": "Central story entering next week -- Monday's sanctions detail is the next concrete checkpoint.",
    "sources": [
     "CNN",
     "AP/WSLS",
@@ -120,10 +88,10 @@
    "headline": "DRC Ebola outbreak 'spreading faster and wider' than ever, UN warns, as response funding runs low",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-primary",
-   "one_line": "Case count rose to 5,290 (from 5,208 two days earlier) and deaths to 2,516 (from 2,476). UN Senior Ebola Coordinator Julien Harneis says growth is exponential and response funding may run out within weeks -- new and more alarming than the PHEIC-extension confirmation two days ago.",
-   "score_note": "Genuine acceleration plus an explicit funding-shortfall warning from the UN's own coordinator.",
+   "one_line": "Case count reached 5,290/2,516 dead by Aug 19 (46-47% case-fatality rate), the largest outbreak in DRC history. UN Senior Ebola Coordinator Julien Harneis says growth is exponential and response funding may run out within weeks -- a funding-shortfall warning layered on top of the PHEIC extension confirmed the same week.",
+   "score_note": "Accelerating with an explicit funding-shortfall warning; keep at high cadence.",
    "sources": [
     "WHO situation report and Emergency Committee statement (primary)",
     "UN News",
@@ -188,7 +156,7 @@
    "headline": "Tigray fighting remains in a tentative, single-sourced lull",
    "status": "Continuing",
    "verification": "Single-reliable-source",
-   "one_line": "No new clashes reported since the tentative de-escalation first noted Aug 10; still single-sourced (TPLF-affiliated), not independently confirmed by Ethiopia's federal government.",
+   "one_line": "Forecast graded correct: no expansion to new fronts and no fresh formal AU/UN mediation statement through Aug 21. Downgrading tracking cadence given sustained containment.",
    "score_note": "Low cadence tracking continues.",
    "sources": [
     "Al Jazeera",
@@ -197,21 +165,7 @@
    "watch": false,
    "id": "ethiopia-tigray-fighting-aug1",
    "first_seen": "2026-08-07-am",
-   "last_updated": "2026-08-20-am"
-  },
-  {
-   "id": "saudi-turkiye-pakistan-defense-pact-aug7",
-   "headline": "Mecca defense pact 'failed its first test' claim not re-corroborated this pass",
-   "status": "Faded",
-   "first_seen": "2026-08-09-sun",
-   "last_updated": "2026-08-21-am",
-   "verification": "Unverified -- no corroboration found",
-   "one_line": "No outlet found connecting the pact to the UAE-Iran missile incident in this run's research; the 'failed its first test' characterization appears to have no basis and is dropped from active tracking rather than repeated.",
-   "score_note": "No new reporting; downgraded from Unverified to Faded pending any fresh angle.",
-   "sources": [
-    "prior editions' analysis (not re-confirmed this run)"
-   ],
-   "watch": true
+   "last_updated": "2026-08-22-sat"
   },
   {
    "id": "long-march-7a-failure-aug10",
@@ -234,25 +188,25 @@
    "headline": "SpaceX's ~319M-share unlock arrives today -- a correction to this report's own prior tracking",
    "status": "Resolved",
    "first_seen": "2026-08-11-pm",
-   "last_updated": "2026-08-20-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "The ~319M-share unlock arrived today as expected. SPCX fell 4.05% to $134.00 -- a muted, negative reaction relative to the August 6 unlock (which saw the stock rise), consistent with the pre-unlock hedging flagged in Wednesday's elevated FINRA short volume (62.0%).",
+   "one_line": "Event fully resolved: the ~319M-share unlock produced a muted -4.05% reaction (Aug 20) and a +2.22% recovery (Aug 21), well inside the volatility the market had priced. All related forecasts graded this week (2 correct, 3 wrong on the >5%-move calls). No further unlock scheduled; closing this thread.",
    "score_note": "Event has now occurred; no further tracking needed unless a new unlock tranche is scheduled.",
    "sources": [
     "FinanceFeeds",
     "CryptoTimes",
     "this run's own FINRA short-volume computation"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "home-depot-ceo-medical-leave-aug12",
    "headline": "Home Depot falls 2.9% after CEO Ted Decker takes temporary medical leave; two executives named to oversee operations",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-12-pm",
-   "last_updated": "2026-08-15-sat",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-primary",
-   "one_line": "HD finished the week -4.71%, the watchlist's second-worst weekly decliner. Open forecast 2026-08-12-pm-3 (does not fall a further 3%+ over 5 sessions from the Aug 12 close) remains open into next week.",
+   "one_line": "Decker's medical-leave timeline remains undisclosed beyond the original 'a few months' guidance. Forecast graded correct: HD did not fall a further 3% attributable to the leave news, helped by Tuesday's earnings beat (adj. EPS $4.92 vs. ~$4.72 est.).",
    "score_note": "Forecast 2026-08-12-pm-3 logged on whether HD falls a further 3%+ over the next 5 sessions.",
    "sources": [
     "Home Depot 8-K (SEC EDGAR, primary)",
@@ -263,64 +217,13 @@
    "watch": true
   },
   {
-   "id": "russia-ukraine-novorossiysk-aug13",
-   "headline": "Russia's 'double-tap' Kryvyi Rih strike kills six as Kyiv toll from Wednesday holds at 17",
-   "status": "Materially changed",
-   "first_seen": "2026-08-13-am",
-   "last_updated": "2026-08-21-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "A Friday drone strike on a Kryvyi Rih shopping center killed 6 and wounded roughly 91 (6 children); Zelensky described a second drone wave hitting after rescuers arrived. Separate from Wednesday's Kyiv barrage. No new diplomatic movement; the ~1% Patriot-interceptor-stock disclosure from earlier this week remains the operative explanation for unintercepted barrages.",
-   "score_note": "New casualty event, distinct location and date from the tracked Kyiv barrage.",
-   "sources": [
-    "Kyiv Independent",
-    "CNN",
-    "multiple wires"
-   ],
-   "watch": true
-  },
-  {
-   "id": "karoline-leavitt-resignation-aug12",
-   "headline": "White House Press Secretary Karoline Leavitt to step down by end of August",
-   "status": "Faded",
-   "first_seen": "2026-08-14-am",
-   "last_updated": "2026-08-21-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "No successor named; reporting suggests the White House may wait until after the midterms. No movement in over a week.",
-   "score_note": "Notable staff departure with no successor yet named.",
-   "sources": [
-    "CNBC",
-    "NBC News",
-    "Axios",
-    "NPR",
-    "ABC News"
-   ],
-   "watch": true
-  },
-  {
-   "id": "vmware-vcenter-exploit-aug13",
-   "headline": "VMware vCenter flaw CVE-2026-59310 confirmed under active exploitation -- 361+ victims across 47 countries",
-   "status": "Materially changed",
-   "first_seen": "2026-08-14-am",
-   "last_updated": "2026-08-15-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "Still not listed in the CISA KEV catalog as of the most recent bulletin this report could verify (Aug 11); direct cisa.gov fetches were blocked again this week. Broadcom (which owns VMware) fell -5.94% Thursday on a bond downgrade citing AI-financing leverage plus renewed attention to this exploit.",
-   "score_note": "Status upgrade from unconfirmed to wide-scale confirmed exploitation; watch for a KEV listing.",
-   "sources": [
-    "BleepingComputer",
-    "TheHackerNews",
-    "SecurityWeek",
-    "DarkReading"
-   ],
-   "watch": true
-  },
-  {
    "id": "vmware-vcenter-new-cve-aug14",
    "headline": "VMware vCenter deadline lands today amid China-nexus attribution and ransomware escalation",
    "status": "Materially changed",
    "first_seen": "2026-08-14-am",
-   "last_updated": "2026-08-21-am",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple (campaign scale); Single-reliable-source, moderate confidence (China-nexus attribution)",
-   "one_line": "Federal civilian remediation deadline is today. German IR firm QUIRSO assesses moderate confidence a Chinese-speaking, UTC+8 actor is behind the 361-victim/47-country campaign (not a US government attribution). New: campaign has escalated from access to deploying Babuk-derived ransomware directly on ESXi hypervisors with root backdoors.",
+   "one_line": "CISA added CVE-2026-59310 to the KEV catalog Aug 18 (forecast graded correct); the federal civilian remediation deadline landed Friday Aug 21 with compliance confirmation still pending (typically surfaces days later via CISA/GAO reporting). Moderate-confidence China-nexus attribution and Babuk-ransomware-on-ESXi escalation both stand.",
    "score_note": "Deadline-day story with a genuine new escalation (ransomware on hypervisors); attribution stays single-firm/moderate confidence.",
    "sources": [
     "Rapid7",
@@ -336,9 +239,9 @@
    "headline": "Roberts stays the ballroom injunction hours before it would have taken effect",
    "status": "Materially changed",
    "first_seen": "2026-08-16-sun",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Chief Justice Roberts signed an administrative stay of the D.C. Circuit injunction Friday, pending further order -- not a ruling on the underlying funding-authority question. Construction can resume immediately; the fuller emergency application remains before the full Court with no timeline. Resolves open forecast 2026-08-20-pm-2 as 'an order was issued' though not a merits ruling -- grade at Saturday's ledger review.",
+   "one_line": "Chief Justice Roberts issued an administrative stay Friday allowing construction to resume -- not a merits ruling. Both forecasts betting on timely Court action graded correct. The fuller emergency application remains before the full Court with no timeline; keeping this open until a merits disposition.",
    "score_note": "First concrete SCOTUS action of the week on either live emergency docket.",
    "sources": [
     "supremecourt.gov docket 26A203 (primary)",
@@ -394,16 +297,16 @@
     "TRM Labs",
     "TechCrunch"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "merck-moderna-cancer-vaccine-aug19",
    "headline": "Merck/Moderna melanoma vaccine draws independent praise as a 'landmark'; mRNA sector rallies further",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-20-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Moderna gave back 23.55% today (to $133.32) after Wednesday's near-tripling -- a sharp profit-taking reversal, though still far above where it started the week. BioNTech fell a more modest 1.97%. Merck held up better, drawing a $179 Morgan Stanley price target. Independent expert commentary (Science Media Centre, Scimex) reinforces that the release remains topline only -- no HRs/CIs disclosed, not yet peer-reviewed.",
+   "one_line": "Moderna whipsawed all week (+177% Wed, -23.55% Thu, higher again Fri) on trader repositioning around still-topline-only Phase 3 data -- no hazard ratios/CIs disclosed, not yet peer-reviewed. Merck held its gains better. Watching for the full data publication.",
    "score_note": "Rally giving back a quarter of itself in one session is itself informative about how much was durable conviction vs. momentum.",
    "sources": [
     "OncLive",
@@ -431,7 +334,7 @@
   {
    "id": "marvell-google-tpu-deal-aug19",
    "headline": "Broadcom draws a bullish initiation and reported $100B AI financing talks as Marvell pulls back",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-19-pm",
    "last_updated": "2026-08-21-pm",
    "verification": "Confirmed-multiple (BMO initiation); Single-reliable-source (financing talks)",
@@ -449,20 +352,20 @@
    "headline": "Softer 20-year auction and Treasury buybacks pull yields down into Thursday's 30-year reopening",
    "status": "Materially changed",
    "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-20-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-primary",
-   "one_line": "Today's long-bond auction was a 29-year 6-month TIPS reopening, not a nominal 30-year -- priced 2.973% high yield, 2.82 bid-to-cover (up from 2.75 Feb), 84.4% to indirect bidders, strong demand. The 10-year yield, which fell to 4.65% Wednesday on Treasury's buybacks, reversed back up to 4.69% today -- coincided with, not confirmed to have caused, today's equity decline.",
+   "one_line": "Auction cycle closed for the week. Treasury's doubled buyback program (to $4B+/operation, beginning Sept 9) is now a standing policy fact folded into the weekly rates narrative rather than a discrete item needing its own watch entry.",
    "score_note": "Buyback effect proved temporary; yields backed right up the next session.",
    "sources": [
     "Treasury auction results (primary)",
     "CNBC"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "israel-syria-turkey-airbase-aug20",
    "headline": "Turkey issues arrest warrant for Netanyahu as Idlib-area strike target is confirmed as Abu al-Duhur",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-20-am",
    "last_updated": "2026-08-21-pm",
    "verification": "Confirmed-multiple",
@@ -480,7 +383,7 @@
   {
    "id": "trump-primary-losses-aug19",
    "headline": "Trump-endorsed primary losses reach ten this cycle as Rep. Cory Mills is ousted",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-20-am",
    "last_updated": "2026-08-20-am",
    "verification": "Confirmed-multiple",
@@ -497,7 +400,7 @@
   {
    "id": "eric-swalwell-fbi-raid-aug20",
    "headline": "FBI's Swalwell investigation widens: four women say agents have contacted them",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-20-pm",
    "last_updated": "2026-08-21-am",
    "verification": "Confirmed-multiple",
@@ -514,7 +417,7 @@
   {
    "id": "openai-frontier-pause-aug20",
    "headline": "Anthropic's training-pause stance draws IPO-timing scrutiny",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-20-pm",
    "last_updated": "2026-08-21-pm",
    "verification": "Confirmed-multiple (criticism); Single-reliable-source (IPO filing timeline)",
@@ -532,7 +435,7 @@
   {
    "id": "cisa-ai-malware-ics-advisory-aug20",
    "headline": "Federal agencies warn of an active AI-generated-malware campaign against Siemens industrial control systems",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-20-pm",
    "last_updated": "2026-08-20-pm",
    "verification": "Confirmed-primary",
@@ -546,29 +449,13 @@
    "watch": true
   },
   {
-   "id": "walmart-q2-comp-miss-plunge-aug20",
-   "headline": "Walmart beats and raises guidance but falls 9% on its slowest comps since 2020",
-   "status": "New",
-   "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-20-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Adjusted EPS $0.81 (beat ~$0.73-0.74 est.), revenue $187.94B (beat), FY guidance raised -- but US comp sales grew just 2.6% (vs ~3.7% est., slowest since Q4 2020) and ~$2.9B of the beat came from a tariff refund being passed through as lower prices, not kept. Stock fell 9.15% to $103.84, worst day in 4+ years.",
-   "score_note": "Beat-and-raise that still produced the worst single day in years -- the market priced the underlying demand number, not the headline EPS.",
-   "sources": [
-    "Walmart 8-K/press release (primary)",
-    "CNBC",
-    "this run's own Yahoo Finance data"
-   ],
-   "watch": true
-  },
-  {
    "id": "walmart-deere-retail-divergence-aug21",
    "headline": "Wave of Walmart price-target cuts underscores the tariff-refund pattern seen across retail earnings",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Seven brokerages (JPMorgan, Wells Fargo, BMO, Wolfe, Baird, RBC, Guggenheim) cut Walmart price targets Friday citing the 2.6% comp-growth deceleration, mostly keeping bullish ratings -- a valuation reset, not a thesis change. Shares finished roughly flat Friday.",
+   "one_line": "Seven brokerages cut Walmart price targets Friday citing the 2.6% comp-growth deceleration (slowest since 2020), mostly keeping bullish ratings -- a valuation reset, not a thesis change. The Deere/Walmart same-day contrast (both beat, one jumped, one cratered) is this week's clearest lesson on tariff-refund-flattered headline numbers; forecast on retail broadly beating graded correct.",
    "score_note": "Sell-side response to Wednesday's plunge now on record; confirms this is read as a growth-rate story, not a franchise-health scare.",
    "sources": [
     "Deere investor relations/SEC 8-K (primary)",
@@ -630,11 +517,11 @@
   {
    "id": "kryvyi-rih-double-tap-strike-aug21",
    "headline": "Russia's 'double-tap' Kryvyi Rih strike kills six, wounds ~91",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-22-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "A Friday drone strike on a Kryvyi Rih shopping center killed 6 and wounded roughly 91 people, 6 of them children. Zelensky described a second drone wave hitting after rescuers arrived -- a 'double tap.' Separate from Wednesday night's Kyiv barrage (toll 17).",
+   "one_line": "Death toll disputed and still evolving as of Saturday morning: initial wire reports said 'at least 6,' later figures cited 14-16+ with roughly 91-130 wounded including children; rescue operations were reported ongoing Friday night. Presenting the range rather than a single figure until it settles.",
    "score_note": "New casualty event distinct from the already-tracked Kyiv barrage.",
    "sources": [
     "AP/Click on Detroit",
@@ -655,6 +542,53 @@
     "Al Jazeera",
     "Hiiraan Online",
     "gCaptain/Maritime Executive"
+   ],
+   "watch": true
+  },
+  {
+   "id": "canada-tariffs-take-effect-aug22",
+   "headline": "Canada's 50% tariffs take effect after Carney suspends talks minutes before deadline",
+   "status": "New",
+   "first_seen": "2026-08-22-sat",
+   "last_updated": "2026-08-22-sat",
+   "verification": "Confirmed-multiple",
+   "one_line": "Prime Minister Carney suspended negotiations minutes before the extended deadline; the paused Section 338 tariffs on roughly $20B of Canadian goods (including cement and hockey sticks) took effect just after midnight ET Saturday. Reported terms (autos to 15%, steel/aluminum halved, dairy protected) remain unsigned. Third deadline this cycle to pass without a finished text.",
+   "score_note": "Closes out the week's central trade-policy cliffhanger as a miss for the 'deal gets done' framing that dominated Friday's coverage.",
+   "sources": [
+    "BNN Bloomberg",
+    "CP24",
+    "CNN",
+    "Global News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "weekend-crypto-rally-aug22",
+   "headline": "Bitcoin posts its biggest weekly gain since March 2024 as it tops $77,000",
+   "status": "New",
+   "first_seen": "2026-08-22-sat",
+   "last_updated": "2026-08-22-sat",
+   "verification": "Confirmed-multiple",
+   "one_line": "Bitcoin ran from roughly $63,000 last Sunday to about $77,000-$78,000 by Saturday morning, a ~20-22% weekly gain, with Ethereum, Solana and Cardano moving alongside it -- a broad-based rally, not a single-token move. Contributing factors reported across outlets: a large short-position liquidation, continued institutional spot-ETF inflows (BlackRock took 83% of Thursday's $606M spot-BTC-ETF inflow), and risk-on spillover from Treasury's buyback announcement.",
+   "score_note": "The only market trading this weekend; watch whether the move holds into Monday's cash-equity open.",
+   "sources": [
+    "Bloomberg",
+    "CNBC",
+    "The Block"
+   ],
+   "watch": true
+  },
+  {
+   "id": "anthropic-ipo-backlash-risk-factor-aug21",
+   "headline": "Anthropic's IPO paperwork will reportedly list AI backlash as a formal risk factor",
+   "status": "New",
+   "first_seen": "2026-08-22-sat",
+   "last_updated": "2026-08-22-sat",
+   "verification": "Single-reliable-source",
+   "one_line": "CNBC reported Friday, citing people familiar with the matter, that Anthropic's confidentially filed S-1 will list AI-driven public/political backlash as a formal risk factor. Sits alongside separately-sourced, longer-running reporting of an October listing target near a $2T valuation -- which would exceed SpaceX's June IPO debut.",
+   "score_note": "Single-sourced on the specific risk-factor detail; the broader IPO trajectory is better corroborated.",
+   "sources": [
+    "CNBC"
    ],
    "watch": true
   }
