@@ -1,63 +1,135 @@
 {
-  "fetched": "2026-08-21T06:50:00-04:00",
-  "earnings_fetched": "2026-08-21",
-  "earnings_fetched_note": "Alpha Vantage 3-month CSV returned a rate-limit response (not usable this run); Finnhub day-of feed confirms no watchlist-relevant earnings today (BJ, OWLS, UI, ZKH are not tracked names).",
+  "fetched": "2026-08-23T09:30:00-04:00",
+  "earnings_fetched": "2026-08-23",
+  "earnings_fetched_note": "Alpha Vantage 3-month CSV succeeded this run; Finnhub week-of confirmation (Aug 24-28) cross-checked and matched on the two watchlist-relevant names (NVDA, MRVL).",
   "events": [
     {
-      "ts_et": "2026-08-21T10:00:00-04:00",
-      "type": "econ_release",
-      "name": "State Employment and Unemployment (Monthly)",
-      "importance": "Low",
-      "reason": "Routine state-level BLS release; no watchlist-moving history at this granularity.",
-      "source": "BLS release schedule (bls.ics) -- Confirmed-primary (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-21T11:14:00-04:00",
-      "type": "launch",
-      "name": "SpaceX Falcon 9 -- Starlink Group 10-39",
-      "importance": "Low",
-      "reason": "Rescheduled after a last-30-second abort Thursday; routine Starlink deployment.",
-      "source": "The Space Devs launch schedule -- Confirmed-primary (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-21T00:00:00-04:00",
+      "ts_et": "2026-08-24T14:00:00-04:00",
       "type": "deadline",
-      "name": "D.C. Circuit injunction on the East Wing ballroom case takes effect absent a Supreme Court ruling",
-      "importance": "High",
-      "reason": "Briefing on SCOTUS docket 26A203 closed Wednesday with the government's reply; no order issued as of this morning.",
-      "source": "supremecourt.gov docket 26A203 (primary, this run's own check) -- Confirmed-primary"
+      "name": "Treasury Secretary Bessent's full Iran sanctions package (\"Economic D-Day\") detailed",
+      "importance": "Critical",
+      "reason": "Bessent has previewed a coordinated secondary-sanctions campaign pressuring banks, firms and governments (China explicitly named as Iran's largest oil buyer) to cut ties with Iran; this is the concrete follow-through on a threat first made in this report's own tracked story a week ago.",
+      "source": "Reuters/Al-Monitor, Al Jazeera, The National -- Confirmed-multiple (announcement scheduled); package contents themselves Unverified pending Monday"
     },
     {
-      "ts_et": "2026-08-21T00:00:00-04:00",
-      "type": "deadline",
-      "name": "CISA KEV federal remediation deadline -- VMware vCenter CVE-2026-59310",
-      "importance": "High",
-      "reason": "361+ confirmed victims across 47 countries; campaign has escalated to Babuk-derived ransomware on ESXi hypervisors; a German IR firm assesses moderate-confidence China-nexus attribution (not a US government finding).",
-      "source": "CISA KEV catalog, Rapid7, The Hacker News, Dark Reading -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-22T00:01:00-04:00",
-      "type": "deadline",
-      "name": "Canada's paused 50% Section 338 tariffs are due to take effect absent a signed US-Canada deal",
-      "importance": "High",
-      "reason": "Fifth round of Washington talks Thursday produced confident language from USTR Greer but more cautious language from PM Carney; no signed text as of this morning.",
-      "source": "BNN Bloomberg, CP24, CNN, Al Jazeera -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-23T20:00:00-04:00",
+      "ts_et": "2026-08-24T20:30:00-04:00",
       "type": "launch",
       "name": "Long March 5 -- Chang'e 7 (lunar south-pole mission)",
       "importance": "Medium",
-      "reason": "State media specifies the window opening as early as 8:00 AM China Standard Time Aug 24 (8:00 PM ET Aug 23), one day later than this report's prior working estimate, repeating daily through Aug 31.",
-      "source": "Xinhua/CGTN, SpaceNews -- Confirmed-primary (window)"
+      "reason": "Launch Library 2 now specifies net 2026-08-25T00:30:00Z (8:30 PM ET Monday Aug 24) -- a one-day slip from this report's prior Aug 23 estimate. Has not launched as of this report's Sunday-morning composition.",
+      "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled); SpaceNews, Xinhua/CGTN"
     },
     {
-      "ts_et": "2026-08-24T00:00:00-04:00",
+      "ts_et": "2026-08-25T10:00:00-04:00",
+      "type": "econ_release",
+      "name": "Conference Board Consumer Confidence Index, August",
+      "importance": "Medium",
+      "reason": "Monthly consumer-sentiment gauge; relevant against this week's tariff-refund/retail-earnings backdrop.",
+      "source": "Conference Board release calendar via news research -- Confirmed-multiple (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-25T13:00:00-04:00",
       "type": "auction",
-      "name": "13-week and 26-week Treasury bill auctions",
-      "importance": "Low",
-      "reason": "Next scheduled Treasury auctions; none settle today.",
+      "name": "2-Year Treasury Note auction, $69B",
+      "importance": "Medium",
+      "reason": "First of three coupon auctions this week; sized against a backdrop of rising concern over Treasury supply after total federal debt crossed $40 trillion.",
       "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-26T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "GDP, Q2 2026 Second Estimate (with corporate profits)",
+      "importance": "High",
+      "reason": "First revision to the +1.5% annualized advance estimate; corporate-profits detail not available at the advance release.",
+      "source": "BEA release calendar -- Confirmed-primary (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-26T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "Personal Income and Outlays, July (incl. PCE price index)",
+      "importance": "High",
+      "reason": "The Fed's preferred inflation gauge, landing one day before Chair Warsh's Jackson Hole remarks -- the week's clearest Fed-relevant data point.",
+      "source": "BEA release calendar -- Confirmed-primary (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-26T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "Durable Goods Orders, July (advance)",
+      "importance": "Medium",
+      "reason": "Business-investment read; timing per Census's typical cadence, cross-checked against week-ahead trackers.",
+      "source": "Census Bureau release pattern via news research -- Confirmed-multiple (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-25T13:00:00-04:00",
+      "type": "auction",
+      "name": "5-Year Treasury Note auction, $70B",
+      "importance": "Medium",
+      "reason": "Second coupon auction of the week (Wednesday Aug 26); listed here with the cycle.",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-26T17:00:00-04:00",
+      "type": "earnings",
+      "name": "NVIDIA (NVDA) Q2 FY2027 earnings, after close",
+      "importance": "Critical",
+      "reason": "The single largest scheduled catalyst of the week for the AI-infrastructure trade; consensus clusters near $93-95B revenue. Focus: Blackwell ramp, Rubin commentary, China exposure.",
+      "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub day-of feed (matched)"
+    },
+    {
+      "ts_et": "2026-08-27T08:30:00-04:00",
+      "type": "econ_release",
+      "name": "Initial jobless claims, week of Aug 22",
+      "importance": "Medium",
+      "reason": "Weekly labor-market read; recent prints have run 198K-212K.",
+      "source": "BLS release schedule (bls.ics) -- Confirmed-primary (scheduled)"
+    },
+    {
+      "ts_et": "2026-08-27T13:00:00-04:00",
+      "type": "auction",
+      "name": "7-Year Treasury Note auction, $44B",
+      "importance": "Medium",
+      "reason": "Final coupon auction of the week's cycle; historically the most tail-prone tenor.",
+      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+    },
+    {
+      "ts_et": "2026-08-27T09:00:00-04:00",
+      "type": "conference",
+      "name": "Kansas City Fed Jackson Hole Economic Policy Symposium opens (through Aug 29)",
+      "importance": "High",
+      "reason": "Fed Chair Kevin Warsh's first Jackson Hole as chair; theme is financial innovation/payments policy. His remarks (expected Friday) will be parsed for guidance ahead of the Sept 16 FOMC meeting.",
+      "source": "Kansas City Fed symposium schedule via news research -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-27T17:00:00-04:00",
+      "type": "earnings",
+      "name": "Marvell Technology (MRVL) Q2 FY2027 earnings, after close",
+      "importance": "High",
+      "reason": "Direct read-through on the Google TPU partnership and the Broadcom-exclusivity dispute this report has tracked all week.",
+      "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub day-of feed (matched)"
+    },
+    {
+      "ts_et": "2026-08-28T09:45:00-04:00",
+      "type": "econ_release",
+      "name": "S&P Global Flash PMI, August (Manufacturing & Services)",
+      "importance": "Medium",
+      "reason": "Manufacturing consensus near 54.0, Services near 53.9; the prior flash PMI reading hit a four-year high.",
+      "source": "Newsquawk week-ahead calendar via news research -- Confirmed-multiple (scheduled), consensus figures lower-confidence"
+    },
+    {
+      "ts_et": "2026-08-28T09:00:00-04:00",
+      "type": "speech",
+      "name": "Fed Chair Kevin Warsh delivers Jackson Hole keynote",
+      "importance": "High",
+      "reason": "First Jackson Hole address as Fed Chair, landing one day after the PCE inflation print and two and a half weeks before the Sept 16 FOMC decision.",
+      "source": "Kansas City Fed symposium schedule via news research -- Confirmed-multiple"
+    },
+    {
+      "ts_et": "2026-08-30T07:26:00-04:00",
+      "type": "launch",
+      "name": "Falcon Heavy -- Nancy Grace Roman Space Telescope",
+      "importance": "High",
+      "reason": "NASA flagship infrared observatory, running roughly 8 months ahead of its prior schedule; lands the Saturday immediately after this report's Mon-Fri window, flagged here as a forward look.",
+      "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled); SpaceNews, Space.com"
     }
   ],
   "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

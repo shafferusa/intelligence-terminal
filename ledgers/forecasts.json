@@ -1585,6 +1585,86 @@
       "probability": "25-40%",
       "basis": "vCenter environments are large and complex to patch quickly at scale, and the campaign's 361 confirmed victims across 47 countries suggest broad exposure beyond what a single-day federal deadline typically clears; no reporting yet directly confirms or denies compliance.",
       "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-1",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Iran halts all Strait of Hormuz / Persian Gulf oil traffic in response to Monday's US sanctions package",
+      "horizon": "2026-08-28",
+      "probability": "10-20%",
+      "basis": "Iran's SNSC secretary Rezaei has explicitly threatened a full halt if any neighboring state joins the sanctions campaign, weighed against this cycle's consistent pattern of escalatory rhetoric outrunning on-the-water action.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-2",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Nvidia's Wednesday earnings (or guidance) trigger a broad AI-infrastructure pullback beyond NVDA itself (VRT, ETN, CEG, VST, AVGO, MRVL trading down as a group)",
+      "horizon": "2026-08-28",
+      "probability": "15-25%",
+      "basis": "Consensus clusters near $93-95B revenue with Nvidia having cleared elevated bars in recent quarters; risk concentrates on China-exposure commentary specifically rather than the headline beat/miss.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-3",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "A further Ukraine strike at or above Kryvyi Rih's casualty scale (16+ dead) occurs this week",
+      "horizon": "2026-08-28",
+      "probability": "30-40%",
+      "basis": "Putin has explicitly warned of 'far more destructive' strikes following Friday's attack, and reciprocal strikes continued nightly through the weekend with no ceasefire mechanism in place.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-4",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Fed Chair Warsh's Friday Jackson Hole keynote meaningfully shifts September rate-cut odds in either direction",
+      "horizon": "2026-08-28",
+      "probability": "25-35%",
+      "basis": "His first keynote as chair, landing one day after the PCE print, with no prior Warsh-led Jackson Hole to anchor expectations against; Jackson Hole speeches have moved market pricing in roughly a third of recent years.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-5",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Base scenario: Monday's sanctions land without an immediate Iranian oil-traffic halt, Nvidia meets or beats consensus without a China guidance shock, and Warsh's remarks read as measured -- a choppy week with the S&P holding within ~2% of Friday's 7,674.37 close",
+      "horizon": "2026-08-28",
+      "probability": "45-55%",
+      "basis": "Analytic judgment weighing the pattern of this cycle's escalatory rhetoric not yet matching market pricing, Nvidia's recent track record of clearing consensus, and the absence of any prior Warsh Jackson Hole appearance to anchor expectations either way.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-6",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Bull scenario: Nvidia beats meaningfully with strong guidance, Warsh signals continuity/measured tone, Monday's sanctions produce no immediate retaliation -- equities extend to fresh highs, yields ease on a benign PCE print, AI-infrastructure cohort leads",
+      "horizon": "2026-08-28",
+      "probability": "15-20%",
+      "basis": "Requires multiple favorable confirmations (Nvidia guidance, PCE, Warsh tone, Iran non-escalation) to align simultaneously.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-7",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Bear scenario: Nvidia disappoints on China guidance, PCE runs hot, Warsh strikes a more hawkish tone than expected -- broad AI-infrastructure pullback, yields higher across the curve, giving back some of Friday's rally",
+      "horizon": "2026-08-28",
+      "probability": "15-20%",
+      "basis": "Requires multiple unfavorable data points (Nvidia, PCE, Warsh) to align simultaneously; analytic judgment, not a statistical model.",
+      "status": "open"
+    },
+    {
+      "id": "2026-08-23-sun-8",
+      "date": "2026-08-23",
+      "slot": "sun",
+      "forecast": "Shock scenario: Iran halts Gulf oil traffic, or a mass-casualty Ukraine strike draws a formal NATO response, or both land alongside a genuine Nvidia guidance shock -- oil spike, broad risk-off, safe-haven bid, VIX back above its recent range",
+      "horizon": "2026-08-28",
+      "probability": "5-10%",
+      "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
+      "status": "open"
     }
   ]
 }

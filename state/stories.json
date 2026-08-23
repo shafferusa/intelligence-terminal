@@ -71,15 +71,15 @@
    "headline": "Bessent formalizes 'economic D-Day' against Iran; gold futures run further, oil mixed",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-23-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "Bessent's 'toughest sanctions in history' package details are due Monday Aug 24. Iran's FM separately floated an Oman-brokered shipping arrangement as 'very close,' unconfirmed. A further Hormuz vessel incident (Aug 18, UKMTO) occurred within the week, and a fourth escalation this cycle. No confirmed kinetic US-Iran exchange.",
+   "one_line": "Bessent's full 'Economic D-Day' sanctions package is detailed Monday 2:00 PM ET -- secondary sanctions pressuring banks/firms/governments (China named as Iran's largest oil buyer) to cut ties with Iran. Iran's Foreign Ministry pre-emptively rejected it as unlawful; SNSC secretary Rezaei threatened to halt all Gulf oil traffic if any neighboring state joins the campaign. Package contents unconfirmed pending Monday's announcement.",
    "score_note": "Central story entering next week -- Monday's sanctions detail is the next concrete checkpoint.",
    "sources": [
-    "CNN",
-    "AP/WSLS",
-    "CNBC",
-    "Washington Examiner"
+    "Reuters/Al-Monitor",
+    "Al Jazeera",
+    "The National",
+    "CNN"
    ],
    "watch": true
   },
@@ -172,14 +172,14 @@
    "headline": "Chang'e 7 window refined to Aug 23 8PM ET; Long March 7A root cause still unpublished",
    "status": "Continuing",
    "first_seen": "2026-08-10-pm",
-   "last_updated": "2026-08-21-am",
+   "last_updated": "2026-08-23-sun",
    "verification": "Confirmed-primary (window); System inference (engine-clearing read)",
-   "one_line": "State media specifies the Chang'e 7 window opening as early as 8:00 AM China Standard Time Aug 24 (= 8:00 PM ET Sun Aug 23), one day later than this report's prior working estimate, repeating daily through Aug 31. CASC still has not published a Long March 7A root-cause finding, but an Aug 16 Long March 12 success on a related-but-distinct engine variant is read by SpaceNews as suggestive -- not proof -- that the 7A failure wasn't engine-related; Chang'e 7's Long March 5 uses a different configuration again, so the read-through is partial.",
+   "one_line": "Live self-correction: Chang'e 7 has not launched as of Sunday morning. Launch Library 2's own schedule now specifies net 2026-08-25T00:30:00Z (8:30 PM ET Monday Aug 24), a one-day slip from this report's prior Sunday estimate, still within the daily-repeating window through Aug 31. Long March 7A root-cause finding still unpublished.",
    "score_note": "Launch-window correction plus an inferential (not confirmed) data point on the open investigation.",
    "sources": [
+    "Launch Library 2 (thespacedevs.com)",
     "SpaceNews",
-    "Xinhua/CGTN",
-    "China Daily Asia"
+    "Xinhua/CGTN"
    ],
    "watch": true
   },
@@ -400,17 +400,18 @@
   {
    "id": "eric-swalwell-fbi-raid-aug20",
    "headline": "FBI's Swalwell investigation widens: four women say agents have contacted them",
-   "status": "Continuing",
+   "status": "Materially changed",
    "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-21-am",
+   "last_updated": "2026-08-23-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "CNN reports four women have told the network the FBI contacted them as part of the probe; Swalwell is among at least six women's accusers total, with separate Manhattan DA and LA County Sheriff inquiries also open. No arrest, no charges. His attorney frames the probe as 'political retaliation.'",
+   "one_line": "Sharp escalation over the weekend: FBI agents intercepted Swalwell at SFO Saturday evening and seized his devices (iPhone, MacBook Pro) under a search warrant, then searched his D.C. home Sunday. Still an investigation -- no arrest, no charges. At least four accusers now reportedly contacted by the FBI.",
    "score_note": "Scope of the investigation (accuser count) is growing even without charges yet.",
    "sources": [
-    "CNN",
     "NBC News",
-    "NPR/AP",
-    "ABC7 San Francisco"
+    "CNN",
+    "Washington Post",
+    "NPR",
+    "The Hill"
    ],
    "watch": true
   },
@@ -519,13 +520,15 @@
    "headline": "Russia's 'double-tap' Kryvyi Rih strike kills six, wounds ~91",
    "status": "Materially changed",
    "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-23-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "Death toll disputed and still evolving as of Saturday morning: initial wire reports said 'at least 6,' later figures cited 14-16+ with roughly 91-130 wounded including children; rescue operations were reported ongoing Friday night. Presenting the range rather than a single figure until it settles.",
+   "one_line": "Toll converged to 16 dead / ~140 wounded (from Saturday's disputed 6-16+ range), still Ukrainian-official-sourced. Fresh strikes continued through the weekend on both sides: Russia killed 6 more Saturday, a Sunday drone/missile alert hit Kyiv and Zaporizhzhia; an unverified Russian-Telegram-sourced claim of a Ukrainian strike on an Orenburg logistics center has no Western corroboration. Putin has warned of 'far more destructive' strikes ahead.",
    "score_note": "New casualty event distinct from the already-tracked Kyiv barrage.",
    "sources": [
-    "AP/Click on Detroit",
-    "EA WorldView"
+    "UNN",
+    "CNN",
+    "ABC News",
+    "Manila Times wire"
    ],
    "watch": true
   },
@@ -565,16 +568,17 @@
   {
    "id": "weekend-crypto-rally-aug22",
    "headline": "Bitcoin posts its biggest weekly gain since March 2024 as it tops $77,000",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-08-22-sat",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-23-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "Bitcoin ran from roughly $63,000 last Sunday to about $77,000-$78,000 by Saturday morning, a ~20-22% weekly gain, with Ethereum, Solana and Cardano moving alongside it -- a broad-based rally, not a single-token move. Contributing factors reported across outlets: a large short-position liquidation, continued institutional spot-ETF inflows (BlackRock took 83% of Thursday's $606M spot-BTC-ETF inflow), and risk-on spillover from Treasury's buyback announcement.",
+   "one_line": "The ~22% weekly gain survived a sharp flash crash early Saturday (~04:00 UTC): BTC fell from a ~$79,500 intraday high to ~$76,500 within six minutes, the sharpest crypto flash crash since October 2025 per multiple crypto-market outlets (liquidations ~$1.7-1.8B over 24h; a widely-circulated $108B figure is crypto-blog-sourced and not corroborated by mainstream financial press). As of Sunday morning BTC trades near $77,300, still up ~20-22% for the week but the rally has not held cleanly.",
    "score_note": "The only market trading this weekend; watch whether the move holds into Monday's cash-equity open.",
    "sources": [
+    "CoinDesk",
     "Bloomberg",
-    "CNBC",
-    "The Block"
+    "CryptoRank",
+    "Coinpedia"
    ],
    "watch": true
   },
@@ -589,6 +593,55 @@
    "score_note": "Single-sourced on the specific risk-factor detail; the broader IPO trajectory is better corroborated.",
    "sources": [
     "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "visa-ban-struck-down-aug21",
+   "headline": "Federal judge strikes down the administration's 75-country visa suspension",
+   "status": "New",
+   "first_seen": "2026-08-23-sun",
+   "last_updated": "2026-08-23-sun",
+   "verification": "Confirmed-multiple",
+   "one_line": "Judge Jeannette Vargas (S.D.N.Y.) ruled Friday the suspension of immigrant-visa processing for 75 countries exceeded Secretary Rubio's statutory authority by discriminating by nationality rather than individualized assessment. Administration has not said whether it will appeal.",
+   "score_note": "New ruling; watch for an appeal decision this week.",
+   "sources": [
+    "Washington Post",
+    "CNN",
+    "NPR",
+    "JURIST"
+   ],
+   "watch": true
+  },
+  {
+   "id": "sc-senate-runoff-aug25",
+   "headline": "South Carolina Senate primary runoff Tuesday tests Trump's endorsement strength",
+   "status": "New",
+   "first_seen": "2026-08-23-sun",
+   "last_updated": "2026-08-23-sun",
+   "verification": "Confirmed-multiple",
+   "one_line": "Darline Graham (Trump-endorsed) vs. Ralph Norman for the late Sen. Lindsey Graham's seat; Graham led the first round 33-24%. Winner advances to the Nov 3 special general against Democrat Annie Andrews. Comes after 10 Trump-endorsed primary losses this cycle.",
+   "score_note": "Dated election event this week; the week's one confirmed political vote.",
+   "sources": [
+    "Ballotpedia",
+    "NPR",
+    "PBS NewsHour",
+    "NBC News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "nvda-earnings-aug26",
+   "headline": "Nvidia's Wednesday earnings are the week's single largest scheduled market catalyst",
+   "status": "New",
+   "first_seen": "2026-08-23-sun",
+   "last_updated": "2026-08-23-sun",
+   "verification": "Confirmed-primary (date/time)",
+   "one_line": "Reports Wed Aug 26 after close (call 5:00 PM ET). EPS consensus $2.01-2.13 across Alpha Vantage/Finnhub; trade-press revenue consensus ~$93-95B. Marvell reports the next day (Thu), a direct read on the Google TPU deal/Broadcom-exclusivity dispute.",
+   "score_note": "Central market event of the week; forecast logged on the magnitude of the after-hours move.",
+   "sources": [
+    "Alpha Vantage earnings calendar",
+    "Finnhub calendar"
    ],
    "watch": true
   }

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Week Ahead — Week of Aug 24, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-23",
+    "slot": "sun",
+    "title": "Week Ahead — Week of Aug 24, 2026",
+    "path": "reports/2026/08/2026-08-23-sun.html",
+    "summary": "Treasury Secretary Bessent details his \"Economic D-Day\" Iran sanctions package Monday against a Strait of Hormuz standoff that has already produced a fatality and a UAE trade suspension, Nvidia's Wednesday earnings carry the week's single largest catalyst into Fed Chair Kevin Warsh's first Jackson Hole keynote as chair, and the weekend brought a widening FBI investigation into Eric Swalwell, a struck-down visa ban, and Bitcoin's rally interrupted by a sharp flash crash.",
+    "headlines": [
+      "Bessent details \"Economic D-Day\" Iran sanctions Monday as the Hormuz standoff hardens",
+      "Nvidia's Wednesday earnings carry the week's biggest catalyst into Fed Chair Warsh's first Jackson Hole",
+      "FBI seizes Swalwell's devices and searches his home as the investigation widens"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-08-23T09:20:29-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="sun">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Week Ahead</p>
+      <h1>Week Ahead &mdash; Week of August 24, 2026</h1>
+      <p class="paper-dateline">
+        Sunday, August 23, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        Treasury Secretary Bessent details his &ldquo;Economic D-Day&rdquo; Iran sanctions package Monday against a Strait of Hormuz standoff that has already produced a fatality and a UAE trade suspension, Nvidia&rsquo;s Wednesday earnings carry the week&rsquo;s single largest catalyst into Fed Chair Kevin Warsh&rsquo;s first Jackson Hole keynote as chair, and the weekend brought a widening FBI investigation into Eric Swalwell, a struck-down visa ban, and Bitcoin&rsquo;s rally interrupted by a sharp flash crash.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Bessent unveils the full detail of his &ldquo;toughest sanctions in history&rdquo; against Iran Monday at 2:00 PM ET &mdash; secondary sanctions aimed at forcing banks, firms and governments (China explicitly named as Iran&rsquo;s largest oil buyer) to choose between Iran and the US financial system. Iran has pre-emptively rejected it and threatened to halt all Gulf oil traffic if any neighboring state joins in. Ukraine&rsquo;s Kryvyi Rih toll settled higher, at 16 dead and roughly 140 wounded, with fresh strikes on both sides overnight into Sunday.</li>
+          <li><b>Markets.</b> Nvidia reports Wednesday after the close &mdash; this week&rsquo;s single biggest scheduled catalyst for the AI-infrastructure trade &mdash; the same morning as the Fed&rsquo;s preferred inflation gauge (PCE) and a day before Marvell&rsquo;s own earnings. Jackson Hole runs Thursday into Saturday, with Fed Chair Kevin Warsh delivering his first keynote as chair Friday morning. The 2-, 5- and 7-year Treasury note auctions land Tuesday through Thursday against a backdrop of federal debt above $40 trillion.</li>
+          <li><b>The thread.</b> A week with almost no US recess-period political news collides with two genuinely large, dated catalysts &mdash; Monday&rsquo;s sanctions rollout and Wednesday&rsquo;s Nvidia print &mdash; that will do most of the work of moving markets and headlines.</li>
+          <li><b>Biggest risk.</b> A fourth escalation channel opens if Iran follows through on its threat to halt Gulf oil traffic entirely once Monday&rsquo;s sanctions take effect; none of this cycle&rsquo;s prior incidents has yet moved oil more than routine daily noise, but this would be a different kind of move.</li>
+          <li><b>Watch this week.</b> Bessent&rsquo;s 2:00 PM ET Monday press conference, Nvidia&rsquo;s Wednesday after-close report, Wednesday&rsquo;s GDP-second-estimate/PCE double release, and Warsh&rsquo;s Friday Jackson Hole remarks &mdash; four dated events carrying most of this week&rsquo;s genuine uncertainty.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-today">
+      <h2 id="s-today">Today&rsquo;s News</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>FBI seizes Eric Swalwell&rsquo;s devices at SFO, then searches his D.C. home, as the investigation widens</h3>
+          <p class="story-deck">Federal agents intercepted the former congressman Saturday evening and searched his Washington home Sunday &mdash; the sharpest escalation yet in a probe that already includes at least four accusers.</p>
+          <div class="story-body">
+            <p>Federal agents intercepted former Rep. Eric Swalwell (D-Calif.) at San Francisco International Airport on Saturday evening and seized his electronic devices, including an iPhone and a MacBook Pro, under a search warrant. The following day, the FBI searched Swalwell&rsquo;s Washington, D.C. home. Both actions are part of a widening federal investigation into sexual-assault and sexual-misconduct allegations against Swalwell, who resigned his California House seat in April after the San Francisco Chronicle reported a former aide&rsquo;s allegation that he twice assaulted her while she was too intoxicated to consent, and that he sent her an unsolicited explicit image. At least four accusers have reportedly been contacted by the FBI; Swalwell also faces separate inquiries from the Manhattan District Attorney&rsquo;s office and the Los Angeles Sheriff&rsquo;s Department.</p>
+            <p>Swalwell has not been arrested or charged and denies the allegations through his attorney, who has called the probe political retaliation. This is an investigation, not a charge &mdash; no indictment has been sought as of Sunday.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether the seized devices produce a charging decision, and whether any of the other three inquiries (Manhattan DA, LA Sheriff) moves first.
+            </div>
+          </div>
+          <p class="story-sourceline">NBC News &middot; CNN &middot; Washington Post &middot; NPR &middot; The Hill.</p>
+        </article>
+
+        <article class="story">
+          <h3>Federal judge strikes down the administration&rsquo;s 75-country visa suspension</h3>
+          <p class="story-deck">A district judge found Secretary of State Rubio exceeded his statutory authority by suspending visa processing by nationality rather than individualized assessment.</p>
+          <div class="story-body">
+            <p>U.S. District Judge Jeannette Vargas (S.D.N.Y.) ruled Friday that the administration&rsquo;s suspension of immigrant-visa processing for nationals of 75 countries &mdash; including Afghanistan, Iran, Russia and Somalia &mdash; was &ldquo;contrary to law and in excess of&rdquo; Secretary of State Marco Rubio&rsquo;s statutory authority, finding it improperly discriminated by nationality rather than individualized assessment. The administration has not indicated whether it will appeal.</p>
+          </div>
+          <p class="story-sourceline">Washington Post &middot; CNN &middot; NPR &middot; The Hill &middot; JURIST.</p>
+        </article>
+
+        <article class="story">
+          <h3>Kryvyi Rih toll settles at 16 dead as fresh strikes hit Ukraine and Russia overnight</h3>
+          <p class="story-deck">Friday&rsquo;s disputed range has converged toward the higher end; both sides struck again into Sunday morning.</p>
+          <div class="story-body">
+            <p>The death toll from Friday&rsquo;s Russian strike on a Kryvyi Rih shopping mall has settled at 16 killed and roughly 140 injured, with about 50 victims still hospitalized and nine people, including two children, still listed missing as of Saturday &mdash; the converged figure after Saturday morning&rsquo;s wider 6-to-16-plus range, still sourced to Ukrainian officials and not independently adjudicated. Russian strikes killed six more people across Ukraine Saturday, and early Sunday a ballistic-missile alert triggered a warehouse fire in Kyiv&rsquo;s Darnytskyi district while a Russian drone killed one and wounded four in Zaporizhzhia. <span class="flag">Unverified</span> Russian Telegram channels reported a Ukrainian strike on an Ozon logistics center in Orenburg, Russia overnight; Western outlets have not corroborated it. A Russian drone separately hit a passenger train in Odesa Oblast, per Ukrainian Railways&rsquo; own CEO. Putin has warned of &ldquo;far more destructive&rdquo; strikes to come; no summit with Zelensky is scheduled.</p>
+          </div>
+          <p class="story-sourceline">UNN &middot; CNN &middot; ABC News &middot; Manila Times wire reporting.</p>
+        </article>
+
+        <article class="story">
+          <h3>Bitcoin&rsquo;s record weekly gain survives a flash crash, but the rally isn&rsquo;t clean</h3>
+          <p class="story-deck">A ~22% weekly gain round-tripped through the sharpest crypto flash crash since October 2025 early Saturday morning.</p>
+          <div class="story-body">
+            <p>Bitcoin reached an intraday high near $79,500 early Saturday before a flash crash just after 04:00 UTC took it down to roughly $76,500 within six minutes &mdash; described across crypto-market outlets as the sharpest such crash since October 2025, with liquidation estimates in the $1.7&ndash;1.8 billion range over 24 hours (a much larger $108 billion figure circulating on crypto-trade blogs is not corroborated by mainstream financial press and is treated here with caution). As of this report, Bitcoin trades near $77,300, still up roughly 20&ndash;22% for the week &mdash; its best week since March 2024 &mdash; but the round trip through Saturday&rsquo;s crash means the gain has not held cleanly. Thinner weekend liquidity is cited as a contributing factor. <span class="flag">Market narrative</span> Trump&rsquo;s renewed push for the CLARITY Act and Treasury&rsquo;s debt-buyback announcement are both cited as likely contributors to the week&rsquo;s rally; no outlet has drawn a confirmed single causal line.</p>
+          </div>
+          <p class="story-sourceline">CoinDesk &middot; Bloomberg &middot; CryptoRank &middot; Coinpedia.</p>
+        </article>
+
+        <article class="story">
+          <h3>Chang&rsquo;e 7&rsquo;s launch window slips one day, to Monday evening</h3>
+          <p class="story-deck">A correction to this report&rsquo;s own prior tracking: the mission has not launched, and the window now opens roughly 24 hours later than last estimated.</p>
+          <div class="story-body">
+            <p>China&rsquo;s Chang&rsquo;e 7 lunar south-pole mission, which this report had tracked toward a roughly 8:00 PM ET Sunday window, has not launched as of this writing. Launch Library 2&rsquo;s own schedule now specifies a net time of 8:30 PM ET Monday, August 24 &mdash; a one-day slip from the prior estimate, still within the daily-repeating window CASC has described through August 31. The Long March 5 will carry an orbiter, lander, hopping probe and rover toward the illuminated rim of Shackleton crater, hunting for water ice and scouting a future lunar research-base site; any landing attempt would come months later, near year-end.</p>
+          </div>
+          <p class="story-sourceline">Launch Library 2 (thespacedevs.com) &middot; SpaceNews &middot; Xinhua/CGTN.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-themes">
+      <h2 id="s-themes">Top Themes This Week</h2>
+      <div class="story-body">
+        <p><b>Two dated catalysts do most of the work.</b> With Congress in recess, no FOMC meeting scheduled, and only Low-to-Medium-importance domestic data on the calendar until Wednesday, this week&rsquo;s genuine uncertainty concentrates almost entirely into Monday&rsquo;s Iran sanctions rollout and Wednesday&rsquo;s Nvidia earnings &mdash; a narrower, more binary setup than most weeks this report has covered.</p>
+        <p><b>Rhetoric on Iran is already ahead of the actual sanctions text.</b> Iran&rsquo;s Foreign Ministry has pre-emptively rejected Monday&rsquo;s package as unlawful, and Supreme National Security Council secretary Rezaei has threatened to halt all Gulf oil traffic if any neighboring state joins the campaign &mdash; both statements landed before Bessent has said a word about what the package actually contains.</p>
+        <p><b>The AI-infrastructure trade gets its clearest single-name test of the summer.</b> Nvidia&rsquo;s print, with consensus clustering near $93&ndash;95 billion in revenue, lands the same week as Marvell&rsquo;s own report (a direct read-through on the Google TPU deal and Broadcom-exclusivity dispute this report has tracked all month) and one day before the PCE inflation print &mdash; three separate tests of the same AI-capex-versus-inflation tension inside 48 hours.</p>
+        <p><b>Jackson Hole lands at an awkward moment for the Fed&rsquo;s new chair.</b> Kevin Warsh&rsquo;s first keynote as Fed Chair falls one day after the PCE print and two and a half weeks before the September 16 FOMC decision &mdash; the clearest opportunity yet to read his own framework rather than his predecessor&rsquo;s.</p>
+        <p><b>The weekend&rsquo;s biggest story has nothing to do with the week ahead&rsquo;s calendar.</b> The widening FBI investigation into Eric Swalwell is a genuinely new escalation (a home search, seized devices) that arrived with no advance scheduling and could produce further developments on any day this week without warning.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">The Week Day by Day</h2>
+      <p class="small muted">All times ET. No NYSE holiday or early close this week (confirmed against <code>data/nyse-holidays.json</code>; next holiday is Labor Day, Sep 7).</p>
+
+      <h3>Monday, August 24</h3>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Time</th><th>Event</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>14:00</td><td class="txt"><strong>Treasury Secretary Bessent details the full Iran sanctions package (&ldquo;Economic D-Day&rdquo;)</strong></td><td class="txt">The week&rsquo;s single most consequential scheduled event; Iran has pre-emptively rejected it. Watch oil, shipping-adjacent names and gold.</td></tr>
+          <tr><td>20:30</td><td class="txt">Long March 5 &mdash; Chang&rsquo;e 7 lunar south-pole mission</td><td class="txt">One-day slip from this report&rsquo;s prior Sunday estimate; repeating window through Aug 31.</td></tr>
+          <tr><td>&mdash;</td><td class="txt">South Carolina Senate primary runoff (Darline Graham vs. Ralph Norman)</td><td class="txt">Fills the late Sen. Lindsey Graham&rsquo;s seat; Trump-endorsed Graham led the first round 33&ndash;24%. Winner advances to the Nov 3 special general.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Tuesday, August 25</h3>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Time</th><th>Event</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>10:00</td><td class="txt">Conference Board Consumer Confidence, August</td><td class="txt">Monthly sentiment gauge.</td></tr>
+          <tr><td>13:00</td><td class="txt">2-Year Treasury Note auction, $69B</td><td class="txt">First of three coupon auctions this week.</td></tr>
+          <tr><td>&mdash;</td><td class="txt">13-Week, 26-Week, 6-Week Treasury Bill auctions</td><td class="txt">Routine bill supply.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Wednesday, August 26</h3>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Time</th><th>Event</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>08:30</td><td class="txt">GDP, Q2 2026 Second Estimate (with corporate profits)</td><td class="txt">First revision to the +1.5% annualized advance estimate.</td></tr>
+          <tr><td>08:30</td><td class="txt">Personal Income and Outlays, July (incl. PCE price index)</td><td class="txt">The Fed&rsquo;s preferred inflation gauge, one day before Warsh&rsquo;s Jackson Hole remarks.</td></tr>
+          <tr><td>08:30</td><td class="txt">Durable Goods Orders, July (advance)</td><td class="txt">Business-investment read.</td></tr>
+          <tr><td>13:00</td><td class="txt">5-Year Treasury Note auction, $70B</td><td class="txt">Second coupon auction of the week.</td></tr>
+          <tr><td>17:00</td><td class="txt"><strong>Nvidia (NVDA) Q2 FY2027 earnings, after close</strong></td><td class="txt">This week&rsquo;s single largest catalyst; consensus clusters near $93&ndash;95B revenue. Call 5:00 PM ET.</td></tr>
+          <tr><td>&mdash;</td><td class="txt">Also reporting: Salesforce, CrowdStrike, HP, Synopsys, Agilent, Okta</td><td class="txt">A loaded earnings day beyond Nvidia.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Thursday, August 27</h3>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Time</th><th>Event</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>08:30</td><td class="txt">Initial jobless claims, week of Aug 22</td><td class="txt">Recent prints have run 198K&ndash;212K.</td></tr>
+          <tr><td>09:00</td><td class="txt">Kansas City Fed Jackson Hole Symposium opens (through Aug 29)</td><td class="txt">Fed Chair Warsh&rsquo;s first symposium as chair; theme is financial innovation and payments policy.</td></tr>
+          <tr><td>13:00</td><td class="txt">7-Year Treasury Note auction, $44B</td><td class="txt">Historically the most tail-prone tenor; final coupon auction of the week.</td></tr>
+          <tr><td>17:00</td><td class="txt">Marvell Technology (MRVL) Q2 FY2027 earnings, after close</td><td class="txt">Direct read-through on the Google TPU partnership and the Broadcom-exclusivity dispute.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Friday, August 28</h3>
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Time</th><th>Event</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>09:00</td><td class="txt"><strong>Fed Chair Kevin Warsh delivers his first Jackson Hole keynote</strong></td><td class="txt">One day after the PCE print, two and a half weeks before the Sept 16 FOMC decision.</td></tr>
+          <tr><td>09:45</td><td class="txt">S&amp;P Global Flash PMI, August (Manufacturing &amp; Services)</td><td class="txt">Manufacturing consensus near 54.0, Services near 53.9; the prior flash PMI hit a four-year high.</td></tr>
+        </tbody>
+      </table></div>
+      <p class="small muted">Bridge to the following week: the Nancy Grace Roman Space Telescope, NASA&rsquo;s next flagship observatory, targets a Falcon Heavy launch Sunday, Aug 30 at 7:26 AM ET &mdash; the Saturday immediately after this window.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government Outlook</h2>
+      <div class="story-body">
+        <p>Both chambers of Congress remain in their August recess all week &mdash; the House holds no floor votes (next expected Aug 31) and the Senate meets only in pro forma session, so any national political news this week is more likely to come from the courts, agencies or campaign trail than the Hill. Two live Supreme Court emergency-docket matters could produce an order on any day without advance notice: the fully briefed mail-ballot executive-order case, where the administration continues pressing for a prompt ruling ahead of midterm election-administration deadlines, and the East Wing ballroom case, where Chief Justice Roberts&rsquo;s Friday administrative stay could be extended, modified, or referred to the full Court at any time. Tuesday&rsquo;s South Carolina special-Senate primary runoff (see calendar above) is the week&rsquo;s one confirmed dated election event, and a live test of Trump&rsquo;s endorsement strength after ten primary losses this cycle. The Missouri Supreme Court could act at any point on the appeal of Friday&rsquo;s ruling upholding the state&rsquo;s GOP-drawn congressional map, though no hearing date is confirmed. No confirmation-hearing date has been set for FDA nominee Heidi Overton, and DOJ has given no public timetable on the Fauci contempt referral &mdash; both could move without warning. Separately, Senate Appropriations leaders have reportedly struck a bipartisan framework to fund the government past the Sept 30 fiscal year-end into mid-December, which may shape recess-period messaging even though no floor vote is scheduled this week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World Ahead</h2>
+      <div class="story-body">
+        <p><b>Middle East / Iran &mdash; the week&rsquo;s dominant story.</b> Monday&rsquo;s sanctions detail (see calendar) is expected to include sweeping secondary sanctions pressuring banks, firms and governments &mdash; explicit pressure on China, which buys roughly 80% of Iran&rsquo;s seaborne oil exports &mdash; framed by Bessent as forcing US allies to choose sides. Watch for whether China responds or continues purchases regardless, whether Iran follows through on its threat to halt all Gulf oil traffic if a neighboring state joins the campaign, and whether the long-discussed Iran-Oman shipping corridor (reported &ldquo;in final drafting&rdquo; since early August) is finalized. Strait traffic remains constrained: the US Department of Energy puts current throughput at 8&ndash;9 million barrels a day via &ldquo;dark transit&rdquo; workarounds, and a Liberia-flagged tanker held near Qeshm Island remained stationary as of Friday, the first confirmed Iranian seizure since June 22.</p>
+        <p><b>Gaza.</b> No fixed deadline this week, but three threads to track: the EU&rsquo;s still-&ldquo;preparing&rdquo; sanctions package over Israel&rsquo;s E1 settlement tender (submissions due Oct 19, one week before Israel&rsquo;s Oct 27 election), the unresolved Hamas disarmament-sequencing dispute, and possible further IDF criminal-probe announcements from the roughly 145 wartime incidents still under review after last week&rsquo;s first two.</p>
+        <p><b>Russia-Ukraine.</b> No summit is scheduled; Zelensky&rsquo;s standing offer to meet Putin remains unanswered. Expect continued reciprocal strikes given Putin&rsquo;s warning of &ldquo;far more destructive&rdquo; hits to come, with elevated risk of a further mass-casualty incident following Kryvyi Rih.</p>
+        <p><b>Israel-Syria-Turkey.</b> US envoy Tom Barrack has said Israel&rsquo;s strike on Syria&rsquo;s Abu al-Duhur airbase carried &ldquo;a real risk of rapid escalation&rdquo; involving Turkey and gave the US no advance warning &mdash; a break in normal deconfliction. Washington is reportedly in quiet talks to relaunch an Israel-Syria deconfliction cell, possibly including Turkey; watch for whether that materializes, and for any Interpol action on Turkey&rsquo;s Netanyahu arrest-warrant request.</p>
+        <p><b>Africa.</b> The DRC Ebola outbreak&rsquo;s funding-shortfall clock is the key trigger to watch &mdash; UN officials say existing coverage runs out &ldquo;within weeks,&rdquo; so a fresh case-count update or formal shortfall announcement is plausible. Case counts stood at 5,290 confirmed / 2,516 dead as of Aug 20 data, with no update found over the weekend. Given the pattern of roughly one Somali piracy incident every two to four weeks since April, a further Gulf of Aden hijacking is a reasonable risk, alongside continued uncertainty over the Sibu 1 tanker seized Aug 20.</p>
+        <p><b>Elsewhere.</b> No major scheduled events were identified this week for China/Taiwan beyond ongoing gray-zone pressure activity. North Korea could test further short-range missiles if the US-South Korea drill cycle that has driven its recent launches continues. Venezuela&rsquo;s US-backed transition talks remain open-ended with a promised timeline this month for judicial reform.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy Ahead</h2>
+      <div class="story-body">
+        <p>A data-heavy Wednesday carries the week: the GDP second estimate for Q2 (first revision to the +1.5% annualized advance print, now with corporate-profits detail), Personal Income and Outlays for July including the PCE price index &mdash; the Fed&rsquo;s preferred inflation gauge &mdash; and the advance Durable Goods Orders report all land at 8:30 AM ET the same morning. Consensus for PCE points to inflation running roughly in the mid-3s year over year with a modest month-over-month softening, though this report treats specific consensus figures here as tracker-sourced rather than a polled Street consensus. Tuesday brings the Conference Board&rsquo;s Consumer Confidence read, and Thursday the week&rsquo;s initial jobless claims, which have run 198,000&ndash;212,000 over recent weeks &mdash; still a labor market cooling gradually, not cracking. Friday&rsquo;s S&amp;P Global flash composite PMI follows a reading that hit a four-year high last month.</p>
+        <p>No FOMC meeting falls in this window &mdash; the next decision is September 16 &mdash; but the Kansas City Fed&rsquo;s Jackson Hole Economic Policy Symposium runs Thursday through Saturday, themed &ldquo;Financial Innovation: Implications for Payments and Policy.&rdquo; Fed Chair Kevin Warsh delivers his first keynote as chair Friday morning, one day after the PCE print &mdash; the market&rsquo;s clearest opportunity yet to hear his own framework on the pace of any further policy moves. Vice Chair for Supervision Michelle Bowman and Governor Lisa Cook are also reported as symposium participants. No ECB, BoE, BoJ or PBoC decisions fall in this window.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-earnings">
+      <h2 id="s-earnings">Earnings &amp; Business</h2>
+      <div class="story-body">
+        <p>Cross-checked this run between Alpha Vantage and Finnhub&rsquo;s earnings calendars: both agree on two watchlist-relevant reports this week, both after Wednesday and Thursday&rsquo;s closes. <b>Nvidia (NVDA)</b> reports Wednesday, Aug 26 &mdash; consensus EPS estimates range $2.01&ndash;2.13 across the two vendors, with trade-press revenue consensus clustering near $93&ndash;95 billion, roughly 67&ndash;75% year-over-year growth. Focus: the Blackwell ramp, any Rubin-chip commentary, and China-exposure disclosure. <b>Marvell Technology (MRVL)</b> reports Thursday, Aug 27 &mdash; consensus EPS estimates range $0.65&ndash;0.94 across the two vendors &mdash; a direct read on the expanded Google TPU-ecosystem partnership and the Broadcom-exclusivity dispute that moved both stocks earlier this month. No other watchlist company (mega-cap tech, retail, defense, financials, health, space) reports this week; Broadcom&rsquo;s own Q3 print falls the following week, Sept 2.</p>
+        <p>Treasury&rsquo;s coupon-auction cycle runs Tuesday through Thursday: a $69 billion 2-Year note Tuesday, a $70 billion 5-Year note Wednesday, and a $44 billion 7-Year note Thursday &mdash; the historically most tail-prone tenor of the three &mdash; against a backdrop of elevated concern over Treasury supply after total federal debt crossed $40 trillion for the first time this month. High-yield credit spreads sit at 2.75% (BAMLH0A0HYM2, Aug 20 observation), modestly wider than a week earlier but still near multi-year tights &mdash; a neutral-to-slightly-cautious backdrop entering the auction cycle.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI Watch</h2>
+      <div class="story-body">
+        <p>House Democrats led by Rep. Greg Casar have asked Speaker Johnson for a hearing into the recent run of AI-driven cybersecurity incidents, demanding AI-company CEOs testify under oath &mdash; a request, not yet a scheduled hearing; watch for a response this week. Anthropic&rsquo;s reported IPO risk-factor detail (AI backlash listed as a formal risk in its confidential S-1) remains single-sourced to CNBC with no company confirmation or filing surfaced since Friday; watch for whether a formal S-1 filing lands this week, as reportedly-underway investor meetings continue. The VMware vCenter CVE-2026-59310 campaign&rsquo;s federal remediation deadline (Aug 21) has passed with no compliance-rate reporting yet surfaced &mdash; that typically lands days later via CISA or GAO reporting, a genuine gap to watch this week. The CISA/NSA/FBI/DOE/EPA joint advisory (AA26-231A) on AI-generated malware targeting Siemens S7 programmable logic controllers stands with no confirmed physical-damage incident and no follow-up this weekend. Michigan lawmakers return to Lansing Tuesday to consider several AI-related bills. Given an unusually high release cadence across major labs this summer, a new frontier-model announcement from any of them this week would be unsurprising, though nothing specific is confirmed.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space Ahead</h2>
+      <div class="story-body">
+        <p>The week&rsquo;s launch calendar, beyond Monday&rsquo;s Chang&rsquo;e 7 window (see Today&rsquo;s News): a Long March 6C carrying an undisclosed payload from Taiyuan early Tuesday morning ET; two SpaceX Falcon 9 Starlink missions Tuesday, one from Cape Canaveral and one from Vandenberg; and an Ariane 62 launch of the MTG-I2 weather satellite &mdash; a genuine operational asset, the second Meteosat Third Generation imager &mdash; from French Guiana Thursday afternoon ET. Looking just past this window, NASA&rsquo;s Nancy Grace Roman Space Telescope targets a Falcon Heavy launch Sunday, Aug 30 at 7:26 AM ET from Kennedy Space Center &mdash; a flagship infrared observatory running roughly eight months ahead of its prior schedule, billed as capable of wide-field surveys impossible for Hubble or Webb. No other major dated science events (conferences, embargoed papers) were identified for this specific week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Market Setup</h2>
+      <div class="story-body">
+        <p>Equities enter the week having closed a volatile Friday higher on a four-year-high flash PMI: the S&amp;P 500 at 7,674.37 (+0.43%), the Nasdaq Composite at 26,180.46 (+0.43%), the Dow at 53,277.01 (+0.98%) and the Russell 2000 at 3,017.87 (+0.85%), all EOD official Fri Aug 21 closes. The VIX complex sits in ordinary contango &mdash; VIX 15.13, VIX9D 12.58, VIX3M 18.50 &mdash; showing no sign of pricing either Monday&rsquo;s sanctions rollout or Wednesday&rsquo;s Nvidia print as a source of elevated near-term risk. The 10-year Treasury yield sits at 4.74% (curve date Aug 21), with the 2s10s spread at roughly +50bp; SOFR 3.63%, the 10-year TIPS breakeven 2.34%, the real 10-year yield 2.35%.</p>
+        <p><b>Index catalysts.</b> Wednesday&rsquo;s GDP/PCE/durable-goods trio and Nvidia&rsquo;s after-close print are the week&rsquo;s two largest scheduled index-level catalysts, landing one after the other inside 12 hours. <b>Sector catalysts.</b> Semiconductors (SMH, &minus;0.40% Friday) and technology (XLK, +0.11%) are the direct read-through sectors for Wednesday&rsquo;s Nvidia and Thursday&rsquo;s Marvell prints; financials (XLF, +0.93% Friday) and regional banks (KRE, +0.20%) carry the Treasury-auction-cycle exposure. <b>Company catalysts.</b> Beyond Nvidia and Marvell, no other watchlist company reports this week (see Earnings &amp; Business); SpaceX (SPCX) and the space-sector cohort remain this report&rsquo;s highest-realized-volatility group without a scheduled catalyst of their own this week.</p>
+        <p>Gold sits at $4,680.60/oz, WTI crude at $87.06/bbl, and Bitcoin near $77,300 (live) as of this report &mdash; all levels a reader should treat as a starting point, not a forecast, for a week that opens with Monday&rsquo;s sanctions announcement and a still-volatile crypto market fresh off Saturday&rsquo;s flash crash.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risks">
+      <h2 id="s-risks">Risk Register</h2>
+      <div class="story-body">
+        <p><b>Iran halts Gulf oil traffic entirely.</b> Description: Iran&rsquo;s Supreme National Security Council secretary Rezaei has explicitly threatened to halt all Strait of Hormuz and Persian Gulf oil traffic if any neighboring state joins Monday&rsquo;s sanctions campaign. Probability: 10&ndash;20%, on the basis that this cycle&rsquo;s escalatory rhetoric has consistently outrun on-the-water action to date. Impact: a genuine oil-supply shock, distinct from the incremental incidents priced so far. Horizon: this week. Trigger: a Gulf state publicly joining the US sanctions push. Early indicators: further Iranian statements naming specific states; a shift in dark-transit volumes reported by the Department of Energy. Affected markets: WTI/Brent, XLE, OIH, gold, shipping-adjacent names (VSAT, GSAT, IRDM). Mitigants: Iran&rsquo;s own economy depends on some continued oil flow, and no Gulf state has yet publicly joined the sanctions campaign.</p>
+        <p><b>Nvidia misses or guides cautiously on China exposure.</b> Description: consensus clusters near $93&ndash;95B revenue; a miss or cautious guidance specifically on China policy risk would be read as a referendum on the broader AI-capex trade, not just one company. Probability: 15&ndash;25%, on the basis that Nvidia has cleared elevated bars in each of its past several quarters. Impact: a broad AI-infrastructure-linked pullback (VRT, ETN, CEG, VST, AVGO, MRVL) beyond Nvidia itself. Horizon: Wednesday after close through Thursday&rsquo;s session. Trigger: guidance below the consensus range or explicit new China-export commentary. Early indicators: after-hours price action Wednesday evening. Affected markets: SMH, XLK, the broader Nasdaq. Mitigants: data-center demand signals from hyperscaler capex guidance have remained strong through the summer reporting season.</p>
+        <p><b>A further Kryvyi-Rih-scale mass-casualty strike.</b> Description: Putin has explicitly warned of &ldquo;far more destructive&rdquo; strikes following Friday&rsquo;s attack. Probability: 30&ndash;40%, on the basis of the pattern of reciprocal strikes continuing nightly through the weekend. Impact: further NATO-adjacent friction (jet scrambles, formal statements) without necessarily a policy shift. Horizon: this week. Trigger: any strike producing casualties in the double digits or above. Early indicators: continued nightly strike-and-counterstrike reporting. Affected markets: limited direct US market impact identified historically; watch European defense names and gas prices. Mitigants: none identified &mdash; this is an ongoing war without a ceasefire mechanism in place.</p>
+        <p><b>Warsh&rsquo;s Jackson Hole remarks surprise hawkish or dovish.</b> Description: his first keynote as chair, one day after the PCE print, is a genuine unknown given no prior Warsh-led Jackson Hole to anchor expectations. Probability: 25&ndash;35% of a reading that meaningfully shifts September rate-cut odds either direction, on the basis that Jackson Hole speeches have moved market pricing in roughly a third of recent years. Impact: a rates and dollar move that could reverse Friday&rsquo;s risk-on tone. Horizon: Friday morning. Trigger: explicit language on the pace of any further policy moves. Early indicators: futures-implied Fed-funds pricing shifts intraday Friday. Affected markets: TLT, IEF, DXY, rate-sensitive equities. Mitigants: Warsh has given no major public remarks yet as chair to extrapolate from, cutting both ways.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-scenarios">
+      <h2 id="s-scenarios">Scenarios</h2>
+      <div class="story-body">
+        <p><b>Base (45&ndash;55%).</b> Conditions: Monday&rsquo;s sanctions land largely as previewed without an immediate Iranian oil-traffic halt; Nvidia beats or meets consensus without a China-specific guidance shock; Warsh&rsquo;s Jackson Hole remarks are read as measured, not a clear hawkish or dovish surprise. Expected behavior: a choppy, single-name-volatility-dominated week, similar to the pattern this report has described repeatedly this cycle, with the S&amp;P holding within roughly 2% of Friday&rsquo;s 7,674.37 close. Indicators: oil trading in a familiar range through Tuesday; Nvidia&rsquo;s after-hours move inside &plusmn;8%. Confirmers: a quiet Tuesday-Wednesday news cycle on Iran. Invalidators: any of the Risk Register items above materializing.</p>
+        <p><b>Bull (15&ndash;20%).</b> Conditions: Nvidia beats meaningfully with strong guidance, Warsh signals continuity with a measured, market-friendly tone, and Monday&rsquo;s Iran sanctions produce no immediate retaliatory escalation. Expected behavior: equities extend Friday&rsquo;s gains toward fresh highs, yields ease modestly on a benign PCE print, and the AI-infrastructure cohort leads. Indicators: PCE printing at or below consensus; Nvidia guidance above the top of its revenue range. Confirmers: a risk-on tone holding through Friday&rsquo;s Jackson Hole remarks. Invalidators: any surprise on the Wednesday data trio.</p>
+        <p><b>Bear (15&ndash;20%).</b> Conditions: Nvidia disappoints on China-related guidance, PCE runs hot, and Warsh strikes a more hawkish tone than markets expect at Jackson Hole. Expected behavior: a broad AI-infrastructure pullback, yields higher across the curve, and a give-back of some of Friday&rsquo;s rally. Indicators: a Nvidia after-hours move worse than &minus;8%; PCE core month-over-month above 0.3%. Confirmers: credit spreads widening alongside the equity move. Invalidators: a dovish Warsh offset late in the week.</p>
+        <p><b>Shock (5&ndash;10%).</b> Conditions: Iran follows through on halting Gulf oil traffic, or a mass-casualty Ukraine strike draws a formal NATO response, or both land in the same week as a genuine Nvidia guidance shock. Expected behavior: an oil spike, broad risk-off, a safe-haven bid into gold and Treasuries, and the VIX back above its recent range. Indicators: any confirmed Iranian move to physically restrict Gulf shipping. Confirmers: a coordinated allied response to Monday&rsquo;s sanctions rollout. Invalidators: none of the individual triggers above materializing this week.</p>
+        <p><b>What would change the outlook.</b> A confirmed Iranian move to restrict Gulf oil traffic, a Nvidia guidance shock in either direction, or a materially hawkish or dovish surprise from Warsh&rsquo;s first Jackson Hole remarks would each, on their own, be enough to move this report&rsquo;s base case for how the week resolves.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local Week Ahead</h2>
+      <div class="story-body">
+        <p>No weekend local news broke in any of the three beats. Two items worth flagging for the week ahead: a PennDOT traffic-signal upgrade project on Route 50/Washington Pike began this week, spanning Bridgeville and Heidelberg boroughs and Collier and Scott townships, with weekday shoulder closures and short single-lane restrictions running into late November &mdash; a durable commute disruption for anyone using that corridor to reach I-79. And Pittsburgh Regional Transit holds in-person public-comment hearings Tuesday, Aug 25 (9 AM&ndash;noon and 3&ndash;6 PM at the Heinz 57 Building) on its &ldquo;Bus Line Refresh&rdquo; &mdash; a redesign adding 14 routes and cutting 20 others, with a board vote expected in November and changes rolling out in 2027; riders with a stake in South Hills or West Hills routes have their window to weigh in now, ahead of the comment period&rsquo;s Sept 30 close.</p>
+      </div>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, choppy</span> Supporting: Friday&rsquo;s broad rally on a four-year-high flash PMI, credit spreads still near multi-year tights, the VIX closing the week below its Thursday peak. Contradicting: a live, hardening Iran sanctions campaign the market has not obviously priced, and long-end yields sitting at multi-decade highs at the 30-year tenor. Confidence: moderate &mdash; entering a week where two large, largely idiosyncratic catalysts (Monday&rsquo;s sanctions, Wednesday&rsquo;s Nvidia print) are more likely to set the tone than any coherent macro regime signal. Unchanged from Saturday&rsquo;s Weekly Review.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Fri Aug 21, 2026 close.</caption>
+              <thead><tr><th>Index/fund</th><th>Level</th><th>Fri %Chg</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,674.37</td><td class="up">+0.43%</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>26,180.46</td><td class="up">+0.43%</td></tr>
+                <tr><td class="txt">Dow Jones Industrial Average</td><td>53,277.01</td><td class="up">+0.98%</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>3,017.87</td><td class="up">+0.85%</td></tr>
+                <tr><td class="txt">SPY</td><td>765.72</td><td class="up">+0.41%</td></tr>
+                <tr><td class="txt">RSP (equal-weight S&amp;P)</td><td>221.67</td><td class="up">+0.63%</td></tr>
+                <tr><td class="txt">QQQM</td><td>293.76</td><td class="up">+0.33%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Equal-weight (RSP) and small caps (IWM, +0.77%) both outperformed the cap-weighted S&amp;P Friday, consistent with a broadening session.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p><span class="chip chip--warn">Estimated &mdash; EMA proxy, accumulating history (21/50 sessions)</span> Massive grouped-daily breadth computed for the Fri Aug 21 session this run (filling the gap flagged in Saturday&rsquo;s edition): 3,395 advancers vs. 1,804 decliners across a 5,442-symbol universe, up-volume of roughly $9.1B vs. down-volume of roughly $4.4B &mdash; a broad, not narrow, advancing session. The pct-above-50/200-day EMA figures remain unavailable until the tracked universe accumulates 50 and 200 sessions of history respectively (currently 21).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <p>From the board&rsquo;s tracked sectors, Friday&rsquo;s closes: Financials (XLF) +0.93%, Regional banks (KRE) +0.20%, Technology (XLK) +0.11%, Energy (XLE) &minus;0.17%, Semiconductors (SMH) &minus;0.40%. Semiconductors and technology are this week&rsquo;s direct read-through sectors for Wednesday&rsquo;s Nvidia and Thursday&rsquo;s Marvell earnings; financials and regional banks carry the Treasury-auction-cycle exposure (Section Market Setup).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p>Mega-cap tech/AI-infrastructure names carry this week&rsquo;s clearest scheduled event risk via Nvidia (Wed) and Marvell (Thu); no other watchlist company reports earnings this week. SpaceX (SPCX) and the broader space cohort remain the highest-realized-volatility group on the sheet without a scheduled catalyst of their own. Defense, financials, health and consumer watchlist names carry no dated catalyst this week beyond the general market setup above.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Fri Aug 21, 2026.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.80%</td></tr>
+                <tr><td>3M</td><td>3.88%</td></tr>
+                <tr><td>6M</td><td>3.95%</td></tr>
+                <tr><td>1Y</td><td>4.03%</td></tr>
+                <tr><td>2Y</td><td>4.24%</td></tr>
+                <tr><td>5Y</td><td>4.43%</td></tr>
+                <tr><td>10Y</td><td>4.74%</td></tr>
+                <tr><td>20Y</td><td>5.25%</td></tr>
+                <tr><td>30Y</td><td>5.27%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +50bp, 3M/10Y +86bp, 5s30s +84bp. SOFR (FRED, Aug 20) 3.63%; 10-year TIPS breakeven (T10YIE, Aug 21) 2.34%; real 10-year yield (DFII10, Aug 20) 2.35%. This week&rsquo;s 2Y/5Y/7Y coupon auctions (Tue&ndash;Thu) are the next read on demand at these tenors.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High-Yield OAS (BAMLH0A0HYM2, FRED) sits at 2.75% (Aug 20 observation, latest available) &mdash; modestly wider than two weeks earlier but still near multi-year tights, not a stress signal. Investment-grade (LQD) and high-yield (HYG) ETF prices held narrow ranges into the weekend.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX closed Friday at 15.13 (EOD official), VIX9D 12.58, VIX3M 18.50 &mdash; normal upward-sloping contango, no inversion. Put/call ratio data remains unavailable (cdn.cboe.com options market-statistics endpoint continues returning 403; not retried, per standing practice, and not counted as a new failed source). MOVE index and dealer gamma remain untracked &mdash; no legitimate free source identified.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, Fri Aug 21, 2026 (EOD official).</caption>
+              <thead><tr><th>Pair</th><th>Rate</th></tr></thead>
+              <tbody>
+                <tr><td>USD/EUR</td><td>0.8548</td></tr>
+                <tr><td>USD/GBP</td><td>0.7323</td></tr>
+                <tr><td>USD/JPY</td><td>158.70</td></tr>
+                <tr><td>USD/CNY</td><td>6.7206</td></tr>
+                <tr><td>USD/CHF</td><td>0.7995</td></tr>
+                <tr><td>USD/CAD</td><td>1.3740</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">DXY (Yahoo DX-Y.NYB) 98.80, essentially flat into the weekend. EUR/USD 1.1678.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Front-month futures, EOD official Fri Aug 21, 2026 (halted since ~5pm ET Friday; Sunday-evening reopen not yet live as of this report).</caption>
+              <thead><tr><th>Commodity</th><th>Price</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Gold (Comex)</td><td>$4,680.60/oz</td></tr>
+                <tr><td class="txt">WTI Crude</td><td>$87.06/bbl</td></tr>
+                <tr><td class="txt">Natural Gas (Henry Hub)</td><td>$2.811/MMBtu</td></tr>
+                <tr><td class="txt">Copper (Comex)</td><td>$6.587/lb</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Gold is the asset most directly exposed to Monday&rsquo;s Iran sanctions announcement; oil is the more obvious exposure but has moved inconsistently with gold and Hormuz headlines in recent weeks, an inconsistency this report discloses rather than smooths into a single narrative.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Live (CoinGecko aggregate), Sunday morning.</caption>
+              <thead><tr><th>Asset</th><th>Price</th><th>24h Chg</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Bitcoin (BTC)</td><td>$77,319</td><td class="up">+0.12%</td></tr>
+                <tr><td class="txt">Ethereum (ETH)</td><td>$2,431.78</td><td class="up">+0.20%</td></tr>
+                <tr><td class="txt">Solana (SOL)</td><td>$94.85</td><td class="up">+0.96%</td></tr>
+                <tr><td class="txt">Cardano (ADA)</td><td>$0.2253</td><td class="down">&minus;0.44%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap $2.61T, Bitcoin dominance 59.2%. The 24-hour changes above are calm relative to the week: Bitcoin is still up roughly 20&ndash;22% since last Sunday despite Saturday&rsquo;s flash crash (see Today&rsquo;s News).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Small caps and the equal-weight S&amp;P both outperformed the cap-weighted index Friday, a broadening signal consistent with the breadth read above. Gold&rsquo;s continued strength alongside a flat dollar remains a cross-asset combination this report does not force into a single narrative &mdash; watch whether Monday&rsquo;s sanctions news breaks that pattern in either direction.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>See Earnings &amp; Business above for Nvidia and Marvell, the week&rsquo;s only two watchlist-relevant reports.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>This week&rsquo;s coupon cycle: $69B 2-Year (Tue), $70B 5-Year (Wed), $44B 7-Year (Thu) &mdash; landing against a backdrop of federal debt above $40 trillion and rising concern over Treasury supply. Routine bill auctions (13-week, 26-week, 6-week) run Monday and Tuesday. Treasury&rsquo;s doubled long-bond buyback program (to roughly $4 billion-plus per operation) begins new operations Sept 9, just past this window.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This edition rests on: the Treasury daily par-yield curve; FRED; the Cboe VIX complex; Yahoo Finance and Twelve Data quotes; Frankfurter (ECB reference rates); CoinGecko; Massive grouped-daily breadth; the BLS, BEA, TreasuryDirect and Federal Reserve release calendars; Launch Library 2; Alpha Vantage and Finnhub earnings calendars; and wire and outlet reporting from NBC News, CNN, Washington Post, NPR, Al Jazeera, Bloomberg, CoinDesk, Times of Israel and others named alongside each story.</p>
+      <p><strong>Corrections.</strong> None in this edition. This report&rsquo;s own prior working estimate of Chang&rsquo;e 7&rsquo;s launch window (roughly 8:00 PM ET Sunday) has slipped one day per the launch provider&rsquo;s own schedule &mdash; noted in Today&rsquo;s News as a live tracking update, not a ledger correction, consistent with how this report has handled comparable schedule slips before.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-22-sat.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
