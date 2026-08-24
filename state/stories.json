@@ -1,6 +1,91 @@
 {
  "stories": [
   {
+   "id": "iran-sanctions-economic-outcast-aug24",
+   "headline": "Bessent details \"Operation Economic Outcast\" against Iran; oil sells the news",
+   "status": "Materially changed",
+   "first_seen": "2026-07-30-am",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-primary (package announced); Single-reliable-source (full negative claim that no banks/NIOC officials were named)",
+   "one_line": "Treasury detailed the full package at 2pm ET: five target sectors (crypto, tech, gold, aviation, shipping), roughly 60 individuals/firms/vessels named (incl. Chinese nationals), no government sanctioned outright. Oil fell 1.8-2.5% on the news rather than jumping -- a sell-the-news reaction. Iran's FM called it escalation but made no operational threat beyond rhetoric; the SNSC secretary's Gulf-oil-blockade threat remains unfulfilled.",
+   "score_note": "Concrete follow-through on a story tracked since Jul 30; closing this thread's build-up phase, watching for Iranian response and the further sanctions Bessent flagged for later this week.",
+   "sources": [
+    "Treasury.gov press release (primary)",
+    "NPR",
+    "Bloomberg",
+    "Washington Post",
+    "CBS News",
+    "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "canada-auto-tariff-2027-aug24",
+   "headline": "Trump threatens to double Canada's auto tariffs to 50% for 2027",
+   "status": "New",
+   "first_seen": "2026-08-24-pm",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Trump said via social media the US will raise Canadian auto/parts/steel tariffs from 25% to 50% effective Jan 1, 2027, citing a ~$60B trade deficit -- the fourth escalation in this dispute in five days. Ford, Stellantis, GM fell ~2-4%; domestic steelmakers (Cleveland-Cliffs, Nucor, Steel Dynamics) rose on the other side of the trade.",
+   "score_note": "Fourth deadline/escalation in five days with none producing resolution; watch whether Canada's Sept 8 retaliation date responds to this specifically.",
+   "sources": [
+    "CNN",
+    "Bloomberg",
+    "CNBC",
+    "Al Jazeera",
+    "Benzinga"
+   ],
+   "watch": true
+  },
+  {
+   "id": "space-sector-selloff-aug24",
+   "headline": "Chip stocks and last week's biggest space-stock winners reverse hard ahead of Nvidia earnings",
+   "status": "New",
+   "first_seen": "2026-08-24-pm",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-primary (this run's own close-series computation)",
+   "one_line": "Philadelphia semiconductor index -2.6% ahead of Wednesday's Nvidia print; space-stock cohort that led last week's rally (VOYG+49%, RDW+41%, PLTR+37% weekly) round-tripped hard: ASTS -9.18%, LUNR -9.06%, BKSY -7.78%, VOYG -7.55%, AVAV -7.50%, KTOS -7.17%, RKLB -5.91%. No company-specific news found; reads as profit-taking, not asserted as such.",
+   "score_note": "New forecast logged on whether the space cohort recovers half its decline within 3 sessions.",
+   "sources": [
+    "this run's own Yahoo Finance close-series data",
+    "CNBC",
+    "Benzinga"
+   ],
+   "watch": true
+  },
+  {
+   "id": "swalwell-fbi-probe-civil-rights-aug24",
+   "headline": "Swalwell's attorney says FBI probe includes a civil-rights statute",
+   "status": "Materially changed",
+   "first_seen": "2026-08-20-pm",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-multiple (statement); Single-reliable-source (§242 detail, device inventory)",
+   "one_line": "Attorney Sara Azari said filings show the probe proceeding partly under 18 U.S.C. §242 (civil rights under color of law) alongside the original allegations; devices seized were an iPhone and MacBook Pro. Called it \"deeply concerning\" that federal law enforcement appears used to punish a critic. No DOJ/FBI statement beyond routine; no charges.",
+   "score_note": "First specific legal-theory detail on the investigation beyond the original allegations.",
+   "sources": [
+    "San Francisco Chronicle",
+    "NewsNation"
+   ],
+   "watch": true
+  },
+  {
+   "id": "congress-ai-cyber-deadline-aug24",
+   "headline": "Congress's deadline for OpenAI and Anthropic to answer for security incidents lands with no reply yet",
+   "status": "New",
+   "first_seen": "2026-08-24-pm",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-primary (House oversight letters)",
+   "one_line": "House Democrats' Aug 10 letters set today as the deadline for OpenAI (23 questions on the Astra self-assessment) and Anthropic (questions on evaluation-partner failure and attempted fund extraction) to publicly respond. No confirmed response from either company as of this afternoon.",
+   "score_note": "New forecast logged on whether either company responds within 5 business days.",
+   "sources": [
+    "Casar House.gov oversight letters (primary)",
+    "The Hill",
+    "CNBC",
+    "Axios"
+   ],
+   "watch": true
+  },
+  {
    "id": "broad-market-selloff-defense-rally-aug18",
    "headline": "Tech and space names lead a broad afternoon selloff while defense stocks rally",
    "status": "Resolved",
@@ -172,10 +257,10 @@
    "headline": "Chang'e 7 launch postponed indefinitely; Long March 7A root cause still unpublished",
    "status": "Materially changed",
    "first_seen": "2026-08-10-pm",
-   "last_updated": "2026-08-24-am",
-   "verification": "Confirmed-primary (postponement); System inference (September window)",
-   "one_line": "Correction to this report's own prior tracking: the Aug 25 00:30 UTC estimate carried in Sunday's edition did not hold. China postponed Chang'e 7's Long March 5 launch Sunday, citing failure to meet launch conditions -- multiple outlets tie this to Tropical Storm Narra near the Wenchang site. No new date confirmed; Launch Library 2 shows only a coarse Sept 30 placeholder. Long March 7A root-cause investigation remains unpublished.",
-   "score_note": "Self-correcting launch-schedule thread now shows an open-ended delay rather than a one-day slip.",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-multiple (delay scale); System inference (specific 2027 window)",
+   "one_line": "Delay now reported by multiple outlets (Scientific American, SpaceNews, ScienceTimes) as stretching well beyond weather -- realistic next window as far out as Feb/March 2027, not the Sept placeholder cited Sunday. CMSA has not published a new date or technical cause. Analysts frame this as potentially letting Blue Origin's Blue Moon Mark 1 (also 2027) reach the lunar south pole first. Long March 7A root-cause investigation remains unpublished.",
+   "score_note": "Self-correcting launch-schedule thread now shows a multi-month, not one-day, delay -- second revision to this estimate.",
    "sources": [
     "China Manned Space Agency statement",
     "SpaceNews",
@@ -291,12 +376,12 @@
   {
    "id": "coldcard-bitcoin-wallet-exploit-aug",
    "headline": "Coldcard ships patched firmware; AI-assisted audit surfaces thousands of bugs across the ecosystem",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-08-17-am",
-   "last_updated": "2026-08-21-pm",
-   "verification": "Single-reliable-source",
-   "one_line": "Coinkite shipped patched firmware and disclosed an AI-assisted 'Bitcoin Red Team' audit of 390 projects found 4,962 issues (85 critical, 635 high) in 24 hours, feeding a separate BTCPay patch; up to 3 BTC bounty offered for stolen-fund return, 0.42 BTC already paid to researchers. Losses now cited $112-116M, a modest revision within the prior range. Sourced to CoinDesk only so far.",
-   "score_note": "Genuine new development; needs a second-outlet confirmation.",
+   "last_updated": "2026-08-24-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Now independently confirmed by Bitcoin Magazine, crypto.news and news.bitcoin.com: 16 researchers, 27.5 hours, 390 repos, OpenSats-funded (~$40K), led by developer \"Calle.\" Loss estimates have drifted to $116-130M (1,800+ BTC, 5,200+ addresses) across outlets -- treat as still moving. Second-source bar cleared; closing active tracking.",
+   "score_note": "Second-outlet confirmation obtained; no further tracking needed absent a new development.",
    "sources": [
     "TRM Labs",
     "TechCrunch"
@@ -376,9 +461,9 @@
    "headline": "Turkey issues arrest warrant for Netanyahu as Idlib-area strike target is confirmed as Abu al-Duhur",
    "status": "Continuing",
    "first_seen": "2026-08-20-am",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-24-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Reporting now identifies Abu al-Duhur airbase (~70km from Turkey) as the target, which Israel says was being retrofitted for Turkish forces; Turkey denies any troop presence and has issued an arrest warrant for Netanyahu. No new strikes since Thursday.",
+   "one_line": "Clarification: the arrest warrant stems from Israel's July interception of a Gaza-bound flotilla (Interpol Red Notice request ~Aug 21), a separate matter from the Abu al-Duhur airbase strike -- the two have run in the same news cycle but are not causally connected; this report's own prior phrasing juxtaposed them in a way worth disambiguating going forward. No new strikes or statements since Thursday.",
    "score_note": "Formal Turkish legal action (arrest warrant) is a real escalation in rhetoric/posture, though not in kinetic activity.",
    "sources": [
     "NPR",
@@ -564,10 +649,10 @@
    "headline": "Canada announces Sept 8 retaliatory tariffs after its own 50% US tariffs took effect Saturday",
    "status": "Materially changed",
    "first_seen": "2026-08-22-sat",
-   "last_updated": "2026-08-24-am",
+   "last_updated": "2026-08-24-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Canada has now set Sept 8 as the date its own retaliatory tariffs on US steel, dairy and electronics take effect, following through on the trade-war escalation after Friday's deadline passed without a deal.",
-   "score_note": "First concrete reciprocal-tariff date on the calendar.",
+   "one_line": "Escalated further Monday: Trump threatens to double Canadian auto/parts/steel tariffs to 50% effective Jan 1, 2027 (see canada-auto-tariff-2027-aug24) -- the fourth escalation in this dispute in five days, still with no signed deal at any point.",
+   "score_note": "First concrete reciprocal-tariff date on the calendar; now superseded in urgency by the Jan 2027 threat.",
    "sources": [
     "BNN Bloomberg",
     "CP24",
@@ -611,12 +696,12 @@
   {
    "id": "visa-ban-struck-down-aug21",
    "headline": "Federal judge strikes down the administration's 75-country visa suspension",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-23-sun",
-   "last_updated": "2026-08-23-sun",
+   "last_updated": "2026-08-24-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Judge Jeannette Vargas (S.D.N.Y.) ruled Friday the suspension of immigrant-visa processing for 75 countries exceeded Secretary Rubio's statutory authority by discriminating by nationality rather than individualized assessment. Administration has not said whether it will appeal.",
-   "score_note": "New ruling; watch for an appeal decision this week.",
+   "one_line": "Judge Jeannette Vargas (S.D.N.Y.) ruled Friday the suspension of immigrant-visa processing for 75 countries exceeded Secretary Rubio's statutory authority. Still no public statement from the administration on whether it will appeal; legal commentators expect an emergency Second Circuit stay request, none filed as of Monday afternoon.",
+   "score_note": "No movement since Friday's ruling; watch for an appeal filing.",
    "sources": [
     "Washington Post",
     "CNN",
