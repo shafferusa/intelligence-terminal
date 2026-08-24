@@ -1,7 +1,7 @@
 {
-  "fetched": "2026-08-23T09:30:00-04:00",
+  "fetched": "2026-08-24T06:45:00-04:00",
   "earnings_fetched": "2026-08-23",
-  "earnings_fetched_note": "Alpha Vantage 3-month CSV succeeded this run; Finnhub week-of confirmation (Aug 24-28) cross-checked and matched on the two watchlist-relevant names (NVDA, MRVL).",
+  "earnings_fetched_note": "Alpha Vantage 3-month CSV succeeded Sunday's run (within the once-per-day limit, not re-fetched); Finnhub day-of feed re-checked this run for 2026-08-24 -- no watchlist-relevant earnings today.",
   "events": [
     {
       "ts_et": "2026-08-24T14:00:00-04:00",
@@ -12,12 +12,12 @@
       "source": "Reuters/Al-Monitor, Al Jazeera, The National -- Confirmed-multiple (announcement scheduled); package contents themselves Unverified pending Monday"
     },
     {
-      "ts_et": "2026-08-24T20:30:00-04:00",
+      "ts_et": null,
       "type": "launch",
-      "name": "Long March 5 -- Chang'e 7 (lunar south-pole mission)",
+      "name": "Long March 5 -- Chang'e 7 (lunar south-pole mission) -- POSTPONED, no new date",
       "importance": "Medium",
-      "reason": "Launch Library 2 now specifies net 2026-08-25T00:30:00Z (8:30 PM ET Monday Aug 24) -- a one-day slip from this report's prior Aug 23 estimate. Has not launched as of this report's Sunday-morning composition.",
-      "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled); SpaceNews, Xinhua/CGTN"
+      "reason": "China postponed the launch Sunday, citing failure to meet launch conditions; multiple outlets tie this to Tropical Storm Narra near the Wenchang site. This report's prior 8:30 PM ET Aug 24 estimate will not happen. Launch Library 2 shows only a coarse Sept 30 placeholder; no confirmed date exists.",
+      "source": "China Manned Space Agency statement (primary, via wire translation) -- Confirmed-multiple; SpaceNews, CBS News, South China Morning Post, Space.com, UPI"
     },
     {
       "ts_et": "2026-08-25T10:00:00-04:00",

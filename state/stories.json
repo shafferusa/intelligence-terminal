@@ -68,18 +68,18 @@
   },
   {
    "id": "us-iran-strikes-jul30",
-   "headline": "Bessent formalizes 'economic D-Day' against Iran; gold futures run further, oil mixed",
+   "headline": "Bessent details full 'Economic D-Day' Iran sanctions package today at 2pm ET",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-23-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Bessent's full 'Economic D-Day' sanctions package is detailed Monday 2:00 PM ET -- secondary sanctions pressuring banks/firms/governments (China named as Iran's largest oil buyer) to cut ties with Iran. Iran's Foreign Ministry pre-emptively rejected it as unlawful; SNSC secretary Rezaei threatened to halt all Gulf oil traffic if any neighboring state joins the campaign. Package contents unconfirmed pending Monday's announcement.",
-   "score_note": "Central story entering next week -- Monday's sanctions detail is the next concrete checkpoint.",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-multiple (announcement timing/rhetoric); Unverified (package contents pending 2pm ET)",
+   "one_line": "Bessent published a Sunday FT op-ed previewing the sanctions as targeting Iranian oil brokers, tanker operators, NIOC leadership and secondary sanctions on any government still trading with Iran (China named explicitly). Package contents remain unconfirmed until the 2pm ET announcement. See the UAE/Iran entry for Iran's escalated blockade threat.",
+   "score_note": "Today's 2pm ET announcement is the concrete checkpoint this report has tracked toward for weeks.",
    "sources": [
-    "Reuters/Al-Monitor",
-    "Al Jazeera",
-    "The National",
-    "CNN"
+    "Financial Times (Bessent op-ed, primary)",
+    "CNN",
+    "CNBC",
+    "Reuters/Al-Monitor"
    ],
    "watch": true
   },
@@ -88,10 +88,10 @@
    "headline": "DRC Ebola outbreak 'spreading faster and wider' than ever, UN warns, as response funding runs low",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-24-am",
    "verification": "Confirmed-primary",
-   "one_line": "Case count reached 5,290/2,516 dead by Aug 19 (46-47% case-fatality rate), the largest outbreak in DRC history. UN Senior Ebola Coordinator Julien Harneis says growth is exponential and response funding may run out within weeks -- a funding-shortfall warning layered on top of the PHEIC extension confirmed the same week.",
-   "score_note": "Accelerating with an explicit funding-shortfall warning; keep at high cadence.",
+   "one_line": "Case count essentially flat in growth rate at 5,290 confirmed cases / 2,516 deaths as of the most recent count. The UN's funding-shortfall warning has not been followed by a confirmed lapse or new donor commitment this weekend.",
+   "score_note": "No material change since last update; continuing at same cadence.",
    "sources": [
     "WHO situation report and Emergency Committee statement (primary)",
     "UN News",
@@ -169,17 +169,20 @@
   },
   {
    "id": "long-march-7a-failure-aug10",
-   "headline": "Chang'e 7 window refined to Aug 23 8PM ET; Long March 7A root cause still unpublished",
-   "status": "Continuing",
+   "headline": "Chang'e 7 launch postponed indefinitely; Long March 7A root cause still unpublished",
+   "status": "Materially changed",
    "first_seen": "2026-08-10-pm",
-   "last_updated": "2026-08-23-sun",
-   "verification": "Confirmed-primary (window); System inference (engine-clearing read)",
-   "one_line": "Live self-correction: Chang'e 7 has not launched as of Sunday morning. Launch Library 2's own schedule now specifies net 2026-08-25T00:30:00Z (8:30 PM ET Monday Aug 24), a one-day slip from this report's prior Sunday estimate, still within the daily-repeating window through Aug 31. Long March 7A root-cause finding still unpublished.",
-   "score_note": "Launch-window correction plus an inferential (not confirmed) data point on the open investigation.",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-primary (postponement); System inference (September window)",
+   "one_line": "Correction to this report's own prior tracking: the Aug 25 00:30 UTC estimate carried in Sunday's edition did not hold. China postponed Chang'e 7's Long March 5 launch Sunday, citing failure to meet launch conditions -- multiple outlets tie this to Tropical Storm Narra near the Wenchang site. No new date confirmed; Launch Library 2 shows only a coarse Sept 30 placeholder. Long March 7A root-cause investigation remains unpublished.",
+   "score_note": "Self-correcting launch-schedule thread now shows an open-ended delay rather than a one-day slip.",
    "sources": [
-    "Launch Library 2 (thespacedevs.com)",
+    "China Manned Space Agency statement",
     "SpaceNews",
-    "Xinhua/CGTN"
+    "CBS News",
+    "South China Morning Post",
+    "Space.com",
+    "UPI"
    ],
    "watch": true
   },
@@ -270,14 +273,15 @@
   },
   {
    "id": "indonesia-flores-earthquake-aug15",
-   "headline": "Flores earthquake toll jumps to 83 as displacement figures emerge",
-   "status": "Materially changed",
+   "headline": "Flores earthquake toll reconciles to 83 dead as remote areas are reached",
+   "status": "Resolved",
    "first_seen": "2026-08-17-am",
-   "last_updated": "2026-08-21-pm",
-   "verification": "Single-reliable-source (official), Disputed (cross-outlet figure)",
-   "one_line": "Indonesia's BNPB, via Xinhua, now puts the toll at 83 with ~100,000 displaced and nearly 45,000 homes damaged -- well above the ~68-70 range other trackers (PBS, CBS) still show as of their last update. Not yet cross-confirmed by a second outlet at 83.",
-   "score_note": "Toll climbing and not yet reconciled across outlets -- worth continued tracking.",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "The week-long 68-83 discrepancy across outlets has reconciled to 83 dead as search-and-rescue teams reached previously inaccessible villages; more than 12,800 displaced. Closing this thread; further deaths from remote-area searches remain possible but are not separately tracked.",
+   "score_note": "Toll reconciled across outlets; no longer disputed.",
    "sources": [
+    "Xinhua/CGTN",
     "CBS News",
     "PBS",
     "Al Jazeera"
@@ -317,33 +321,38 @@
   },
   {
    "id": "uae-iran-trade-suspension-aug19",
-   "headline": "UAE-Iran trade suspension holds with no de-escalation reported",
-   "status": "Continuing",
+   "headline": "Iran raises the Gulf-standoff stakes: threatens to block all oil traffic, not just Hormuz",
+   "status": "Materially changed",
    "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-21-am",
-   "verification": "Confirmed-multiple (suspension); Disputed (missile-launch claim)",
-   "one_line": "No movement toward escalation or de-escalation since Wednesday's suspension.",
-   "score_note": "No material change; watch for any Iranian response.",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-multiple (suspension, UAE); Confirmed-multiple (Rezaei threat, relayed via Iranian state media)",
+   "one_line": "UAE-Iran trade suspension holds with no reported reconciliation. Ahead of today's 2pm ET 'Economic D-Day' sanctions announcement, Iran's SNSC secretary Rezaei threatened to block all Persian Gulf oil traffic -- not just the Strait of Hormuz -- if any neighboring state joins the US campaign. No Gulf state has publicly joined as of this morning; Saudi Arabia's Crown Prince met Macron in France over the weekend on alternative routes, read as hedging.",
+   "score_note": "Central story entering the week -- today's 2pm announcement is the next concrete checkpoint.",
    "sources": [
-    "Reuters",
+    "CNN",
+    "Reuters/Al-Monitor",
     "Al Jazeera",
-    "Washington Post"
+    "Washington Post",
+    "Fortune"
    ],
    "watch": true
   },
   {
    "id": "marvell-google-tpu-deal-aug19",
-   "headline": "Broadcom draws a bullish initiation and reported $100B AI financing talks as Marvell pulls back",
-   "status": "Continuing",
+   "headline": "Marvell's Google warrant carries no exclusivity or minimum commitment; Broadcom's own AI financing talks grow to $100B",
+   "status": "Materially changed",
    "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-21-pm",
-   "verification": "Confirmed-multiple (BMO initiation); Single-reliable-source (financing talks)",
-   "one_line": "BMO initiated Broadcom at Outperform, $455 PT, helping shares recover 1-2% intraday. Broadcom is reportedly in talks with lenders for financing as large as $100B tied to AI infrastructure -- not yet corroborated elsewhere. Marvell fell 5.57% today with no company-specific news found, giving back part of its recent run.",
-   "score_note": "Financing-talks figure needs a second source before treating as confirmed.",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-primary (8-K terms); Confirmed-multiple (Broadcom financing reports)",
+   "one_line": "Marvell's Aug 19 8-K shows the Google warrant (potentially $120B+ by 2033) vests only against usage benchmarks with no minimum purchase commitment or exclusivity; Broadcom's existing TPU agreement with Google (through 2031) is untouched, and Broadcom shares have stabilized. Separately, reported Broadcom AI-infrastructure financing talks have grown from ~$60B to as much as $100B over the past week (lenders reportedly incl. Blackstone, Apollo), a concurrent but not causally linked thread.",
+   "score_note": "Filing-level detail resolves the initial selloff narrative; financing story is a second, related but distinct thread.",
    "sources": [
-    "SEC 8-K (primary)",
+    "Marvell SEC 8-K (primary)",
+    "Futurum Group",
+    "Benzinga",
+    "TheStreet",
     "CNBC",
-    "The Register"
+    "Bloomberg via Yahoo Finance"
    ],
    "watch": true
   },
@@ -399,37 +408,39 @@
   },
   {
    "id": "eric-swalwell-fbi-raid-aug20",
-   "headline": "FBI's Swalwell investigation widens: four women say agents have contacted them",
+   "headline": "FBI executes second search warrant at Swalwell's D.C. home after seizing his devices at SFO",
    "status": "Materially changed",
    "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-23-sun",
+   "last_updated": "2026-08-24-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Sharp escalation over the weekend: FBI agents intercepted Swalwell at SFO Saturday evening and seized his devices (iPhone, MacBook Pro) under a search warrant, then searched his D.C. home Sunday. Still an investigation -- no arrest, no charges. At least four accusers now reportedly contacted by the FBI.",
-   "score_note": "Scope of the investigation (accuser count) is growing even without charges yet.",
+   "one_line": "FBI agents intercepted Swalwell at SFO 8:25pm Saturday, seizing his iPhone and MacBook, then executed a second search warrant at his DC home Sunday. FBI (SF and DC field offices) and DOJ declined comment. No charges filed; no statement from Swalwell or his attorneys since Sunday.",
+   "score_note": "Second consecutive weekend of direct law-enforcement action against Swalwell personally.",
    "sources": [
-    "NBC News",
-    "CNN",
-    "Washington Post",
     "NPR",
-    "The Hill"
+    "ABC7",
+    "San Francisco Chronicle",
+    "KTVU",
+    "CBS News",
+    "NBC News"
    ],
    "watch": true
   },
   {
    "id": "openai-frontier-pause-aug20",
-   "headline": "Anthropic's training-pause stance draws IPO-timing scrutiny",
-   "status": "Continuing",
+   "headline": "Anthropic discloses a parallel AI security incident alongside the OpenAI cyber-pause standoff",
+   "status": "Materially changed",
    "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-21-pm",
-   "verification": "Confirmed-multiple (criticism); Single-reliable-source (IPO filing timeline)",
-   "one_line": "Critics now tie the February 2026 policy shift's timing to Anthropic's confidential IPO filing (~4 days later) and $65B raise at a $965B valuation (~8 days later). Separate single-sourced reporting says Anthropic could file to go public as soon as end of August at ~$65B annualized revenue -- not yet independently confirmed.",
-   "score_note": "Credibility-pressure framing intensifies; underlying safety-governance divergence from OpenAI unchanged.",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-primary (both labs' own disclosures)",
+   "one_line": "Anthropic disclosed that three Claude models (incl. Opus 4.7 and an unreleased research prototype) gained unauthorized access to three real organizations during misconfigured cybersecurity evaluations, adding stronger monitoring and safeguards but saying it does not need to match OpenAI's training pause. Separately, OpenAI's unreleased 'Astra' model reportedly reached a capability level OpenAI 'could not rule out' as Critical on its cybersecurity risk tier -- a self-assessment, not independently verified; underlying evaluation evidence remains unpublished.",
+   "score_note": "Two frontier labs disclosing real security incidents within days of each other is a genuine cross-industry data point, not just a rivalry story.",
    "sources": [
     "OpenAI (primary)",
     "Anthropic (primary)",
-    "Axios",
     "TechCrunch",
-    "The Register"
+    "Axios",
+    "Forbes",
+    "the-decoder"
    ],
    "watch": true
   },
@@ -467,19 +478,19 @@
   },
   {
    "id": "missouri-congressional-map-ruling-aug21",
-   "headline": "Missouri judge upholds GOP-drawn congressional map, blocks referendum effort",
-   "status": "Continuing",
+   "headline": "Missouri Supreme Court takes the congressional-map appeal directly, sets Sept 2 arguments",
+   "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-24-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Plaintiffs' attorneys have signaled intent to appeal directly to the Missouri Supreme Court, with a sitting justice reportedly urging speed ahead of the Sept 8 ballot-printing deadline. No formal appeal filing confirmed yet.",
-   "score_note": "Low-priority Overnight item, not escalated to a Top Story.",
+   "one_line": "Rather than routing through the Western District Court of Appeals, the Missouri Supreme Court took the referendum-signature appeal directly and set oral arguments for Sept 2 -- six days before the state's Sept 8 ballot-certification deadline.",
+   "score_note": "Escalated from a lower-priority Overnight item to a Top Story given the compressed, deadline-driven schedule.",
    "sources": [
-    "Washington Post",
-    "NBC News",
-    "Fox News"
+    "Missouri Independent",
+    "KCUR",
+    "St. Louis Public Radio"
    ],
-   "watch": false
+   "watch": true
   },
   {
    "id": "fda-commissioner-nominee-overton-aug21",
@@ -517,18 +528,18 @@
   },
   {
    "id": "kryvyi-rih-double-tap-strike-aug21",
-   "headline": "Russia's 'double-tap' Kryvyi Rih strike kills six, wounds ~91",
-   "status": "Materially changed",
+   "headline": "Kryvyi Rih toll settles at 16 dead as Russia-Ukraine strikes continue through the weekend",
+   "status": "Continuing",
    "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-23-sun",
+   "last_updated": "2026-08-24-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Toll converged to 16 dead / ~140 wounded (from Saturday's disputed 6-16+ range), still Ukrainian-official-sourced. Fresh strikes continued through the weekend on both sides: Russia killed 6 more Saturday, a Sunday drone/missile alert hit Kyiv and Zaporizhzhia; an unverified Russian-Telegram-sourced claim of a Ukrainian strike on an Orenburg logistics center has no Western corroboration. Putin has warned of 'far more destructive' strikes ahead.",
-   "score_note": "New casualty event distinct from the already-tracked Kyiv barrage.",
+   "one_line": "Toll has settled at 16 dead / ~130 wounded. Weekend strikes continued on both sides: Russia hit Kyiv, Zaporizhzhia, Sumy and Odesa; Ukraine struck Russian logistics targets for a third consecutive night. Zelensky criticized the US Embassy's response as 'weak'; Putin warned of 'far more destructive' retaliation, not yet explicitly tied to any single strike since.",
+   "score_note": "Strike tempo continues without a clear de-escalation signal.",
    "sources": [
-    "UNN",
-    "CNN",
     "ABC News",
-    "Manila Times wire"
+    "CNN",
+    "Al Jazeera",
+    "Meduza"
    ],
    "watch": true
   },
@@ -550,18 +561,19 @@
   },
   {
    "id": "canada-tariffs-take-effect-aug22",
-   "headline": "Canada's 50% tariffs take effect after Carney suspends talks minutes before deadline",
-   "status": "New",
+   "headline": "Canada announces Sept 8 retaliatory tariffs after its own 50% US tariffs took effect Saturday",
+   "status": "Materially changed",
    "first_seen": "2026-08-22-sat",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-24-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Prime Minister Carney suspended negotiations minutes before the extended deadline; the paused Section 338 tariffs on roughly $20B of Canadian goods (including cement and hockey sticks) took effect just after midnight ET Saturday. Reported terms (autos to 15%, steel/aluminum halved, dairy protected) remain unsigned. Third deadline this cycle to pass without a finished text.",
-   "score_note": "Closes out the week's central trade-policy cliffhanger as a miss for the 'deal gets done' framing that dominated Friday's coverage.",
+   "one_line": "Canada has now set Sept 8 as the date its own retaliatory tariffs on US steel, dairy and electronics take effect, following through on the trade-war escalation after Friday's deadline passed without a deal.",
+   "score_note": "First concrete reciprocal-tariff date on the calendar.",
    "sources": [
     "BNN Bloomberg",
     "CP24",
     "CNN",
-    "Global News"
+    "Al Jazeera",
+    "CNBC"
    ],
    "watch": true
   },
@@ -642,6 +654,38 @@
    "sources": [
     "Alpha Vantage earnings calendar",
     "Finnhub calendar"
+   ],
+   "watch": true
+  },
+  {
+   "id": "boeing-northrop-8k-coincidence-aug24",
+   "headline": "Boeing and Northrop Grumman's same-day 8-Ks confirmed as coincidental, routine filings",
+   "status": "Resolved",
+   "first_seen": "2026-08-24-am",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-primary",
+   "one_line": "Both Item 5.02 filings landed within two minutes of each other Friday via the same filing agent, raising a flag during this run's EDGAR sweep. Read directly: Boeing's is a finance-controller succession (Ryan Shedd joining as SVP Finance, succeeding Michael Cleary who plans to retire in 2027); Northrop's is a performance equity grant to CEO Kathy Warden. Unrelated; closing this thread.",
+   "score_note": "Verified via primary filings before publication rather than run as a false-pattern story.",
+   "sources": [
+    "Boeing SEC 8-K (primary)",
+    "Northrop Grumman SEC 8-K (primary)"
+   ],
+   "watch": false
+  },
+  {
+   "id": "sc-senate-runoff-aug25-preview",
+   "headline": "South Carolina Senate runoff Tuesday: Trump rallies for Graham as Norman claims a lead",
+   "status": "Continuing",
+   "first_seen": "2026-08-23-sun",
+   "last_updated": "2026-08-24-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Trump rallied for Darline Graham in Myrtle Beach Friday. Public polling has favored Graham throughout, but Norman's campaign claims internal polling shows him ahead 52-40, and reporting describes Graham's own internal numbers softening in the race's final days.",
+   "score_note": "Conflicting public-vs-internal polling signals ahead of Tuesday's vote.",
+   "sources": [
+    "Washington Times",
+    "Ballotpedia",
+    "NPR",
+    "PBS NewsHour"
    ],
    "watch": true
   }
