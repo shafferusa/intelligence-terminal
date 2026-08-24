@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Wind-Powered Car That Went Four Times Faster Than the Wind Pushing It · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-24",
+    "slot": "learn",
+    "title": "The Wind-Powered Car That Went Four Times Faster Than the Wind Pushing It",
+    "path": "reports/2026/08/2026-08-24-learn.html",
+    "summary": "Day six of the 150-day curriculum: vectors — dot and cross products, decomposition, and what they mean physically, built around the Greenbird land yacht's 126-mph run in a 30-mph wind, a wrench turning a bolt, and Earth's own orbit around the Sun.",
+    "headlines": [
+      "Day 6 of 150 · Mathematics: vectors",
+      "A wind-powered land yacht hit 126 mph in a 30-mph wind — vector subtraction explains how",
+      "Why the same two vectors give you a maximum with one operation exactly where they give you zero with the other"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-08-24T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Wind-Powered Car That Went Four Times Faster Than the Wind Pushing It</h1>
+      <p class="paper-dateline">
+        Monday, August 24, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        In 2009 a wind-powered land yacht called Greenbird hit 126 miles an hour in a 30-mile-an-hour wind &mdash; a fact that looks like it breaks physics until you learn to subtract vectors instead of speeds, the same operation quietly hiding inside every velocity, force and turning motion this newspaper has ever described as a single number.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 6 of 150 &middot; Mathematics 4 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>On March 26, 2009, on the hard, flat salt of Ivanpah Dry Lake, on the California&ndash;Nevada line, a British engineer named Richard Jenkins climbed into a three-wheeled cart called Greenbird, unfurled a 40-foot rigid wing standing straight up from its frame like a single enormous shark fin, and set the official world speed record for a wind-powered land vehicle: 126.1 miles an hour, ratified by Guinness World Records and the North American Land Sailing Association. Greenbird had no engine. It burned no fuel. Every one of those 126.1 miles an hour came from the wind blowing across the dry lakebed that day &mdash; a wind that was, at the time, blowing at roughly 30 miles an hour.</p>
+
+      <p>Sit with that pairing of numbers for a second, because it is genuinely strange. A leaf cannot outrun the breeze carrying it. A sailor running dead downwind cannot, no matter how good the sail, go faster than the air pushing the boat &mdash; the wind arrives, gives up its push, and the boat can never quite catch what has already passed it. That is the intuition almost everyone carries into this problem, and it is a reasonable intuition, because for one specific and very common kind of sailing, it happens to be correct. And yet Greenbird, powered by nothing but that same 30-mile-an-hour air, went <em>four times faster than the wind that was pushing it</em>. Not for an instant, not as a fluke gust caught at the right second &mdash; as a sustained, straight-line, independently timed run across a dry lakebed, repeatable and repeated.</p>
+
+      <p>The resolution is not a loophole and it is not an exception to physics. It is one specific piece of mathematics, applied correctly, that most people never quite finish learning: how to add and subtract quantities that have both a size <em>and</em> a direction, rather than just a size. Today&rsquo;s lesson is that mathematics &mdash; vectors, and the two operations, the dot product and the cross product, that let two vectors answer two completely different questions about each other. By the end of it, Greenbird&rsquo;s 126.1 miles an hour will stop looking like a magic trick and start looking like the unavoidable consequence of a triangle.</p>
+
+      <h3>The idea, before any notation</h3>
+
+      <p>A <strong>scalar</strong> is a single number: a temperature, a price, a mass. A <strong>vector</strong> is a number with a direction attached to it, and the entire subject of this lesson is what changes once you refuse to drop that direction, the way ordinary conversation drops it constantly. &ldquo;The wind is blowing 30 miles an hour&rdquo; is a scalar sentence pretending to describe something that is not a scalar at all; the wind is blowing 30 miles an hour <em>from the west</em>, or <em>across the lakebed</em>, or <em>into your face</em>, and which of those is true changes everything about what that wind can do to something moving through it. Velocity, force, displacement, acceleration &mdash; nearly every quantity in physics that sounds like a plain number is secretly a vector, and the moment you start treating it as one, several things that look paradoxical stop being paradoxical.</p>
+
+      <p>Vectors add and subtract geometrically, not by just adding the numbers. Walk three blocks east and then four blocks north, and you have not walked seven blocks from where you started &mdash; you have walked five, in a specific diagonal direction, because the two three-and-four legs of the trip combine tip-to-tail into a single displacement that is shorter than the sum of the two pieces (the same right-triangle relationship, 3-4-5, that runs underneath the Pythagorean theorem). Two vectors pointing the same way add fully; two vectors pointing in opposite directions partially or fully cancel; two vectors at some angle in between add to something whose size depends on that angle. This is the single fact that explains Greenbird, and it is worth having in plain words before any notation arrives: <strong>what a moving object feels of the wind is not the wind&rsquo;s velocity &mdash; it is the wind&rsquo;s velocity minus the object&rsquo;s own velocity</strong>, a genuine vector subtraction, not a comparison of two plain speeds.</p>
+
+      <p>You have already felt this without calling it physics. Stand still in falling rain and it comes straight down. Start walking forward and the same rain, falling at exactly the same speed in exactly the same direction as before, suddenly seems to slant toward your face &mdash; not because the rain changed anything about what it is doing, but because you changed what you are doing relative to it, and the rain <em>relative to you</em> is a different vector than the rain relative to the ground. Sailors and pilots have a name for the wind version of this effect: <strong>apparent wind</strong>, the wind actually felt by something in motion, as opposed to <strong>true wind</strong>, the wind blowing over the fixed ground. A sail, a wing, an airplane&rsquo;s control surfaces &mdash; none of them can feel true wind at all. They can only ever feel apparent wind, and as you will see in the first worked example below, apparent wind can be substantially larger than true wind, arriving from a substantially different direction, once the thing carrying the sail is itself moving fast.</p>
+
+      <p>Two more plain-language ideas complete the toolkit. The first is <strong>decomposition</strong>: any vector can be broken into perpendicular pieces &mdash; components &mdash; that, added back together, reproduce the original exactly. This is the &ldquo;three blocks east, four blocks north&rdquo; trick run in reverse: instead of adding two known legs to find one diagonal, you take one diagonal and split it into two legs you can each handle with ordinary one-dimensional arithmetic, then never have to think about the angle again until the very end. The second is that two vectors can combine in two genuinely different ways, and confusing the two is the most common error in this entire subject. One combination &mdash; the <strong>dot product</strong> &mdash; answers &ldquo;how much does one vector point the same way as the other,&rdquo; and it is largest when the two vectors are aligned and exactly zero when they are perpendicular. The other &mdash; the <strong>cross product</strong> &mdash; answers almost the opposite question, &ldquo;how much do the two vectors point in genuinely different directions, and what new direction does their mutual difference define,&rdquo; and it is largest when the two vectors are perpendicular and exactly zero when they are aligned. A force pulling exactly along a rope does no work turning anything and pulling exactly across it does no work stretching it &mdash; the dot product and the cross product are, in a precise sense, opposites, and this lesson&rsquo;s worked examples are built to make that opposition impossible to forget.</p>
+
+      <h3>Building the formal system</h3>
+
+      <p>Fix a set of perpendicular axes and write a vector by its components along them: <strong>a</strong> = (a&#8321;, a&#8322;, a&#8323;) in three dimensions, or just (a&#8321;, a&#8322;) in two. The vector&rsquo;s size &mdash; its <strong>magnitude</strong>, written |<strong>a</strong>| &mdash; is the straight-line length this represents, found by the same Pythagorean relationship that turned three blocks east and four north into five blocks of actual displacement, just extended to as many perpendicular directions as you have:</p>
+
+      <div class="formula">
+        <p class="expr">|<strong>a</strong>| = &radic;(a&#8321;&sup2; + a&#8322;&sup2; + a&#8323;&sup2;)</p>
+        <dl>
+          <dt>|<strong>a</strong>|</dt><dd>the magnitude (length) of vector <strong>a</strong> &mdash; always a non-negative scalar, regardless of the signs of the components</dd>
+          <dt>a&#8321;, a&#8322;, a&#8323;</dt><dd>the components of <strong>a</strong> along each of three mutually perpendicular axes, conventionally labeled x, y and z</dd>
+        </dl>
+      </div>
+
+      <p>Addition and subtraction happen component by component &mdash; add or subtract the x-parts, add or subtract the y-parts, and so on &mdash; which is the entire reason decomposition is worth the trouble: it turns one hard two- or three-dimensional problem into two or three easy one-dimensional ones done side by side. This is exactly the operation apparent wind requires: apparent wind is the true wind vector minus the object&rsquo;s velocity vector, computed one component at a time.</p>
+
+      <p>The <strong>dot product</strong> of two vectors takes two vectors and returns a single scalar number, computed two equivalent ways &mdash; multiply matching components and add them up, or multiply the two magnitudes by the cosine of the angle between the vectors:</p>
+
+      <div class="formula">
+        <p class="expr"><strong>a</strong>&middot;<strong>b</strong> = a&#8321;b&#8321; + a&#8322;b&#8322; + a&#8323;b&#8323; = |<strong>a</strong>||<strong>b</strong>|cos&theta;</p>
+        <dl>
+          <dt><strong>a</strong>&middot;<strong>b</strong></dt><dd>the dot product (also called the scalar product) of vectors <strong>a</strong> and <strong>b</strong> &mdash; a single number, not a vector</dd>
+          <dt>a&#8321;b&#8321;, a&#8322;b&#8322;, a&#8323;b&#8323;</dt><dd>the products of each vector&rsquo;s matching components</dd>
+          <dt>&theta;</dt><dd>the angle between <strong>a</strong> and <strong>b</strong>, measured however they actually meet, between 0&deg; and 180&deg;</dd>
+        </dl>
+      </div>
+
+      <p>Because cos&theta; is 1 when the vectors point the same way and 0 when they are perpendicular, the dot product is a direct measure of alignment: it is at its largest, |<strong>a</strong>||<strong>b</strong>|, when <strong>a</strong> and <strong>b</strong> point identically, falls smoothly to zero at a right angle, and goes negative once the angle passes 90&deg; and the two vectors start opposing each other. One direct use of it is finding how much of one vector lies along another &mdash; its <strong>projection</strong>, the shadow <strong>a</strong> would cast onto the line of <strong>b</strong>:</p>
+
+      <div class="formula">
+        <p class="expr">a<sub>&#8741;</sub> = (<strong>a</strong>&middot;<strong>b</strong>) / |<strong>b</strong>|</p>
+        <dl>
+          <dt>a<sub>&#8741;</sub></dt><dd>the component of <strong>a</strong> that lies along the direction of <strong>b</strong> &mdash; a scalar, positive if it points the same way as <strong>b</strong>, negative if opposite</dd>
+        </dl>
+      </div>
+
+      <p>The <strong>cross product</strong>, defined only in three dimensions in this classic form, takes two vectors and returns a third <em>vector</em> &mdash; not a scalar &mdash; perpendicular to both of the originals:</p>
+
+      <div class="formula">
+        <p class="expr"><strong>a</strong>&times;<strong>b</strong> = (a&#8322;b&#8323; &minus; a&#8323;b&#8322;,&nbsp; a&#8323;b&#8321; &minus; a&#8321;b&#8323;,&nbsp; a&#8321;b&#8322; &minus; a&#8322;b&#8321;)&nbsp;&nbsp;&nbsp;&nbsp;|<strong>a</strong>&times;<strong>b</strong>| = |<strong>a</strong>||<strong>b</strong>|sin&theta;</p>
+        <dl>
+          <dt><strong>a</strong>&times;<strong>b</strong></dt><dd>the cross product (vector product) of <strong>a</strong> and <strong>b</strong> &mdash; a vector, perpendicular to the plane containing both <strong>a</strong> and <strong>b</strong></dd>
+          <dt>|<strong>a</strong>&times;<strong>b</strong>|</dt><dd>the magnitude of that vector, equal to |<strong>a</strong>||<strong>b</strong>|sin&theta;, largest at a right angle and zero when <strong>a</strong> and <strong>b</strong> are parallel</dd>
+          <dt>direction</dt><dd>found by the right-hand rule: curl the fingers of the right hand from <strong>a</strong> toward <strong>b</strong>, and the thumb points along <strong>a</strong>&times;<strong>b</strong></dd>
+        </dl>
+      </div>
+
+      <p>Two physical quantities are built directly on the cross product and will recur constantly from here on. <strong>Torque</strong>, the turning effect of a force applied away from a pivot, is <strong>&tau;</strong> = <strong>r</strong>&times;<strong>F</strong>, where <strong>r</strong> is the vector from the pivot to the point the force is applied. <strong>Angular momentum</strong>, the rotational analogue of ordinary momentum, is <strong>L</strong> = <strong>r</strong>&times;<strong>p</strong> for a point mass (or, per unit mass, simply <strong>r</strong>&times;<strong>v</strong>), where <strong>r</strong> is the position measured from whatever point the rotation is being described around. Both quantities inherit the cross product&rsquo;s central fact: they are largest when the position vector and the force or velocity are perpendicular, and vanish entirely when the two are parallel &mdash; a push straight at a hinge, or straight at a pivot, turns nothing at all, no matter how hard it is.</p>
+
+      <h3>A war fought over how to write this down</h3>
+
+      <p>The dot product and cross product feel, by now, like settled, almost inevitable notation. They were not always the obvious choice, and the story of how they displaced the system that came before them is worth knowing, because it explains why physics spent most of the nineteenth century describing rotation and direction far more awkwardly than it needed to. On October 16, 1843, the Irish mathematician William Rowan Hamilton was walking along the towpath of Dublin&rsquo;s Royal Canal with his wife when the answer to a problem he had been chasing for over a decade &mdash; how to extend complex numbers into three dimensions, to describe rotations the way a single complex number could already describe a rotation in two &mdash; arrived all at once as he crossed Brougham Bridge (known today as Broom Bridge). Worried he would lose the insight before he got home, Hamilton carved the founding equation directly into the stone of the bridge with his pocketknife: i&sup2; = j&sup2; = k&sup2; = ijk = &minus;1. That equation defined the <strong>quaternion</strong>, a four-part number &mdash; one ordinary scalar part plus three imaginary parts, i, j and k &mdash; that Hamilton spent the remaining twenty-two years of his life promoting as the natural mathematical language for all of physics.</p>
+
+      <p>Quaternions found real, serious use: James Clerk Maxwell leaned on quaternion notation to help formulate his 1873 <em>Treatise on Electricity and Magnetism</em>, the work that first unified electricity, magnetism and light into a single theory. But even Maxwell noticed something telling in the course of using them &mdash; that almost everything he actually needed came from just one piece of how two quaternions multiply together, the piece that splits cleanly into a scalar part and a vector part. The rest of the quaternion machinery, elegant as it was, mostly rode along unused.</p>
+
+      <p>Two men, working on opposite sides of the Atlantic in the 1880s and unaware of each other&rsquo;s work, reached the same conclusion and acted on it. Josiah Willard Gibbs, a physicist at Yale, spent 1880 to 1884 stripping quaternions down to exactly the useful pieces &mdash; discarding the extra scalar baggage that came bundled into every quaternion sum, and splitting what remained into two separate, purpose-built operations: one that returns a scalar (the dot product), one that returns a new perpendicular vector (the cross product). He never formally published the result; he simply had it privately printed as a pamphlet, &ldquo;Elements of Vector Analysis,&rdquo; for use in his own Yale classroom. Oliver Heaviside, an English self-taught engineer working independently in London between 1880 and 1887, arrived at essentially the identical toolkit while trying to make Maxwell&rsquo;s twenty-some quaternion-laden equations tractable enough to actually calculate with &mdash; the effort that eventually compressed them into the four compact vector equations still taught today as Maxwell&rsquo;s equations. Neither man learned of the other&rsquo;s nearly identical work until 1888, when Gibbs mailed Heaviside a copy of his pamphlet.</p>
+
+      <p>What followed was not a quiet handoff. Between 1890 and 1894, the quaternion camp &mdash; led by the physicist Peter Guthrie Tait, a friend and champion of the by-then-deceased Hamilton &mdash; and the vector camp fought a genuine public argument out in the letters pages of <em>Nature</em> and half a dozen other journals, more than thirty contributions over five years, at times sharply personal. &ldquo;A vector is not a quaternion,&rdquo; one contributor wrote, &ldquo;it never was, and never will be.&rdquo; The vector camp won, not by proving quaternions wrong &mdash; they are not wrong, and every dot and cross product in this lesson can be recovered from quaternion multiplication if you insist &mdash; but by proving more usable: physicists and engineers doing ordinary three-dimensional work almost never needed a quaternion&rsquo;s extra scalar part, and carrying it along anyway bought nothing but confusion. By the early twentieth century, the leaner Gibbs&ndash;Heaviside notation &mdash; the same dot products and cross products built up earlier in this lesson &mdash; had become the standard the rest of physics was taught in, and largely still is.</p>
+
+      <h3>Doing it with real numbers</h3>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; the wind Greenbird actually felt</b>
+        <p>Take, for a clean illustration, the case where the true wind blows directly across Greenbird&rsquo;s intended course &mdash; a beam wind, at 90&deg; to the direction of travel &mdash; at the reported 30 mph. (The record run&rsquo;s exact wind angle relative to the course was not part of the sourcing checked for this lesson; a beam wind is the standard, well-documented setup used to illustrate this effect in sailing physics, and it reproduces the same qualitative and near-quantitative story regardless of the small deviations a real run would have from it.) Set up axes with <strong>x&#770;</strong> pointing in Greenbird&rsquo;s direction of travel and <strong>y&#770;</strong> perpendicular to it, in the plane of the ground.</p>
+        <ol>
+          <li>True wind velocity: <strong>W</strong> = (0, 30) mph &mdash; entirely in the y-direction, none of it along the direction of travel, by the beam-wind assumption.</li>
+          <li>Greenbird&rsquo;s velocity at record speed: <strong>v</strong> = (126.1, 0) mph.</li>
+          <li>Apparent wind is the wind&rsquo;s velocity relative to Greenbird &mdash; the vector subtraction <strong>W</strong> &minus; <strong>v</strong> = (0 &minus; 126.1, 30 &minus; 0) = (&minus;126.1, 30) mph. The negative x-component is the key result: relative to the craft, the air is moving backward along the direction of travel, meaning Greenbird feels a wind with a large component arriving from dead ahead &mdash; a headwind component that the true, purely-sideways wind never had at all.</li>
+          <li>Magnitude, by the same formula used for |<strong>a</strong>| above: |<strong>W</strong> &minus; <strong>v</strong>| = &radic;((&minus;126.1)&sup2; + 30&sup2;) = &radic;(15,901.21 + 900) = &radic;16,801.21 &asymp; 129.6 mph &mdash; not 30 mph, and not even close to it. The apparent wind is more than four times stronger than the true wind, purely as a consequence of Greenbird&rsquo;s own speed.</li>
+          <li>Direction, using the dot product: the angle &theta; between the apparent wind and the dead-ahead direction (&minus;<strong>x&#770;</strong>, since the apparent wind is arriving from ahead) satisfies cos&theta; = ((<strong>W</strong>&minus;<strong>v</strong>)&middot;(&minus;<strong>x&#770;</strong>)) / |<strong>W</strong>&minus;<strong>v</strong>| = 126.1 / 129.6 &asymp; 0.973, giving &theta; = arccos(0.973) &asymp; 13.4&deg;. The apparent wind is arriving from just 13.4&deg; off the bow &mdash; nearly straight ahead.</li>
+        </ol>
+        <p>Run the same two steps at a lower speed to see the pattern rather than just the endpoint. At the instant Greenbird&rsquo;s own speed happens to equal the true wind speed, 30 mph, the apparent wind is (&minus;30, 30), magnitude &radic;(900+900) &asymp; 42.4 mph at 45&deg; off the bow &mdash; already stronger than the true wind, and already swung a long way forward from the 90&deg; beam angle it started at when the craft was standing still. Keep accelerating and the apparent wind keeps growing and keeps swinging forward, exactly the way a rigid wing wants it to: trimmed at a shallow angle to a strong, nearly head-on apparent wind, the wing generates aerodynamic force the same way an airplane wing generates lift, and it is <em>that</em> force &mdash; large, because the apparent wind driving it is large &mdash; that keeps pushing the craft forward until rolling resistance and aerodynamic drag finally catch up with it. The craft is never outrunning the true wind in any sense that violates anything; it is riding an apparent wind that its own speed keeps building larger, a self-reinforcing loop that a rope-and-cloth sail running dead downwind never gets access to, because dead downwind the apparent wind can only ever shrink as boat speed rises, never grow.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; a wrench, three angles, and two opposite answers</b>
+        <p>Take a 0.3-meter wrench turning a bolt, with a steady 200 N of force applied at the far end (about 45 pounds of push &mdash; a firm two-handed effort), and ask two different questions at three different angles between the applied force and the wrench handle: how much does this force turn the bolt (the cross product, giving torque), and how much of this force is instead directed along the handle itself, doing nothing to turn anything (the dot product)?</p>
+        <ol>
+          <li><strong>Force perpendicular to the handle (&theta; = 90&deg;), the way a wrench is meant to be used.</strong> Torque magnitude |<strong>r</strong>&times;<strong>F</strong>| = (0.3)(200)sin90&deg; = 60 &times; 1 = 60 N&middot;m &mdash; the full available turning effect. The along-the-handle component, (0.3)(200)cos90&deg; = 60 &times; 0 = 0 N&middot;m: none of the push is wasted stretching or compressing the wrench, all of it goes into turning.</li>
+          <li><strong>Force at 45&deg; to the handle.</strong> Torque: 60sin45&deg; = 60 &times; 0.7071 &asymp; 42.4 N&middot;m. Along-the-handle component: 60cos45&deg; = 60 &times; 0.7071 &asymp; 42.4 N&middot;m &mdash; the same number, because sin45&deg; and cos45&deg; are equal. Exactly half the effort, in this specific sense, has stopped turning the bolt and started just pushing or pulling along the wrench instead.</li>
+          <li><strong>Force pulling straight along the handle (&theta; = 0&deg;), toward or away from the bolt.</strong> Torque: 60sin0&deg; = 60 &times; 0 = 0 N&middot;m &mdash; nothing turns, no matter how hard the 200 N pulls, because sin0&deg; is exactly zero. Along-the-handle component: 60cos0&deg; = 60 &times; 1 = 60 N&middot;m, the maximum possible &mdash; every bit of the force is now doing the one thing that does not turn the bolt at all.</li>
+        </ol>
+        <p>Line the three cases up and the relationship is exact, not approximate: wherever the cross product (turning effect) is at its maximum, the dot product (along-the-handle push) is at zero, and wherever the dot product is at its maximum, the cross product is at zero. They trade off perfectly across the same range of angles, which is precisely what sin&theta; and cos&theta; do &mdash; complementary functions of the same angle, each one&rsquo;s peak sitting exactly on the other&rsquo;s zero.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; the Earth&rsquo;s own conserved cross product</b>
+        <p>Earth&rsquo;s orbit is very nearly, but not exactly, circular: its semi-major axis is 1 astronomical unit, a &asymp; 149.6 million km, and its eccentricity is e &asymp; 0.0167. That small eccentricity puts Earth closest to the Sun (perihelion, in early January) at r<sub>p</sub> = a(1&minus;e) and farthest (aphelion, in early July) at r<sub>a</sub> = a(1+e).</p>
+        <ol>
+          <li>r<sub>p</sub> = 149.6 &times; (1 &minus; 0.0167) = 149.6 &times; 0.9833 &asymp; 147.10 million km. r<sub>a</sub> = 149.6 &times; (1 + 0.0167) = 149.6 &times; 1.0167 &asymp; 152.10 million km.</li>
+          <li>Earth&rsquo;s measured orbital speed is v<sub>p</sub> &asymp; 30.28 km/s at perihelion and v<sub>a</sub> &asymp; 29.3 km/s at aphelion &mdash; genuinely faster when closer to the Sun, genuinely slower when farther away.</li>
+          <li>At these two specific points, and only these two, Earth&rsquo;s velocity is exactly perpendicular to its position vector from the Sun (&theta; = 90&deg;, sin&theta; = 1), so the magnitude of the specific angular momentum <strong>h</strong> = <strong>r</strong>&times;<strong>v</strong> reduces to a plain product: h<sub>p</sub> = r<sub>p</sub>v<sub>p</sub> = (147.10 &times; 10&#8310; km)(30.28 km/s) &asymp; 4.454 &times; 10&#8313; km&sup2;/s.</li>
+          <li>h<sub>a</sub> = r<sub>a</sub>v<sub>a</sub> = (152.10 &times; 10&#8310; km)(29.3 km/s) &asymp; 4.457 &times; 10&#8313; km&sup2;/s.</li>
+          <li>The two numbers agree to within about 0.1% &mdash; well inside the rounding already carried in a, e, v<sub>p</sub> and v<sub>a</sub> above. That agreement is not a coincidence: the Sun&rsquo;s gravity pulls Earth directly toward the Sun at every point in the orbit, meaning the force vector <strong>F</strong> is always parallel (or antiparallel) to the position vector <strong>r</strong>, which makes the torque about the Sun, <strong>r</strong>&times;<strong>F</strong>, exactly zero everywhere on the orbit, all the time &mdash; not just at perihelion and aphelion. Zero torque means Earth&rsquo;s angular momentum <strong>r</strong>&times;<strong>v</strong> never changes, so its magnitude at perihelion has to equal its magnitude at aphelion, which is exactly the match the arithmetic above reproduces.</li>
+        </ol>
+        <p>This single conserved cross product is Kepler&rsquo;s second law, discovered by Johannes Kepler in 1609 from Tycho Brahe&rsquo;s planetary observations, decades before Newton explained <em>why</em> it was true: a planet sweeps out equal areas in equal times, faster when closer to the Sun and slower when farther away, because |<strong>r</strong>&times;<strong>v</strong>| is, up to a factor of two, exactly the rate at which the line from the Sun to the planet sweeps out area. It is also the reason astronomical calendars carry a genuine, checkable asymmetry: because Earth moves fastest in the weeks around January&rsquo;s perihelion, the interval from the September equinox to the March equinox &mdash; astronomical autumn and winter in the Northern Hemisphere &mdash; runs a few days shorter than the interval from March back to September, the same conserved quantity worked out in worked example 3 showing up as a genuinely different-length calendar season, unrelated to axial tilt, which is the separate mechanism actually responsible for the seasons existing at all.</p>
+      </div>
+
+      <h3>Where it already shows up</h3>
+
+      <p>Every spacecraft that changes orbital planes &mdash; shifting from one inclination to another rather than simply raising or lowering its altitude &mdash; is paying a direct, unavoidable bill for exactly the geometry in worked example 1. A plane-change burn only has to supply the <em>component</em> of velocity change that is perpendicular to the spacecraft&rsquo;s current velocity vector; the component already parallel to it is, in the dot-product sense, already accounted for and free. Mission planners compute that required burn from the vector difference between the velocity the spacecraft has and the velocity it needs &mdash; the same subtraction that turned a 30-mph true wind into a 129.6-mph apparent one above &mdash; which is exactly why plane changes done late, at high orbital speed, cost dramatically more propellant than the identical plane change done early, at low speed near a transfer orbit&rsquo;s far point: the same angular correction requires a much larger vector subtraction once the speed being corrected is large. This is not a hypothetical; it is one of the first numbers a mission-design team checks before committing to when, in a mission&rsquo;s timeline, an inclination change will actually happen. For the specific case of changing only a spacecraft&rsquo;s orbital plane by an angle &Delta;i while leaving its speed v otherwise unchanged, the two velocity vectors before and after &mdash; equal in length, separated by the angle &Delta;i &mdash; subtract to a required burn of &Delta;v = 2v&middot;sin(&Delta;i/2), a formula that falls straight out of decomposing the isosceles triangle those two equal-length vectors and their difference form, the same triangle-splitting instinct behind every decomposition in this lesson. Because that sine term grows with &Delta;i while v itself is often already large in a fast, low orbit, the formula is also a direct, checkable explanation for something every orbital mechanics primer states as received wisdom: plane changes are enormously expensive in propellant, and mission designers go well out of their way to avoid needing a large one.</p>
+
+      <p>The dot product shows up just as directly, and much more quietly, in how this newspaper&rsquo;s own market coverage occasionally describes two assets or two portfolios as &ldquo;similar&rdquo; in their exposures. Treat a portfolio&rsquo;s sensitivities to a set of risk factors &mdash; rates, credit, energy, the dollar &mdash; as a vector, one component per factor, and the standard way analysts measure how alike two such vectors are is <strong>cosine similarity</strong>: literally the cos&theta; term pulled back out of the dot-product formula above, <strong>a</strong>&middot;<strong>b</strong> divided by |<strong>a</strong>||<strong>b</strong>|. Two portfolios pointing the same way through factor space score close to 1; two with no factor exposures in common score close to 0; two with opposing bets score negative &mdash; the identical alignment logic that made worked example 2&rsquo;s wrench problem legible, run on eight or ten dimensions instead of one wrench handle.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Before the dot product and cross product ever enter the picture, plain vector addition itself is already a documented, widespread stumbling block. Ngoc-Loan Nguyen and David Meltzer, in a 2003 study in the <em>American Journal of Physics</em> surveying more than 2,000 students at the start of their second semester of introductory physics, found that more than a quarter of students in the calculus-based course &mdash; and more than half in the algebra-based course &mdash; could not correctly add two vectors given graphically, and that confusion specifically about what a vector&rsquo;s <em>direction</em> means, separate from its size, was widespread even among students who could recite the formal definitions. That is not a small, easily-dismissed error rate for a skill that sits underneath everything else in this lesson; it is a large fraction of a full class failing the single operation &mdash; tip-to-tail vector addition, which is exactly what apparent wind requires &mdash; that this lesson has treated as the starting point rather than the destination.</p>
+
+      <p>Layered on top of that is a second, more specific error that shows up only once products enter the picture: treating the cross product as if it behaved like ordinary multiplication, or like the dot product, and assuming the order of the two vectors does not matter. It matters enormously. The dot product is <strong>commutative</strong> &mdash; <strong>a</strong>&middot;<strong>b</strong> and <strong>b</strong>&middot;<strong>a</strong> are the same number, because a&#8321;b&#8321;+a&#8322;b&#8322;+a&#8323;b&#8323; obviously does not care which factor in each product is written first. The cross product is the opposite: <strong>a</strong>&times;<strong>b</strong> = &minus;(<strong>b</strong>&times;<strong>a</strong>), <strong>anti-commutative</strong>, because swapping the order of a right-hand-rule curl reverses which way the thumb points. Apply this to worked example 2&rsquo;s wrench: <strong>r</strong>&times;<strong>F</strong> and <strong>F</strong>&times;<strong>r</strong> have the identical magnitude at every one of the three angles computed above, but they point in exactly opposite directions &mdash; one describes the bolt turning clockwise, the other counterclockwise, from the same physical push. Writing torque as <strong>F</strong>&times;<strong>r</strong> instead of <strong>r</strong>&times;<strong>F</strong> by habit, the way a distracted student might, gets every magnitude in this lesson&rsquo;s second worked example exactly right and every direction exactly backward &mdash; the kind of error that is invisible on a magnitude-only homework answer and immediately obvious the moment a real bolt turns the wrong way.</p>
+
+      <p>A closely related confusion shows up specifically in problems, like worked example 2&rsquo;s wrench, that happen to lie flat in a single plane. Because the cross product of two vectors that both live in the x-y plane always points straight along the z-axis &mdash; there is nowhere else for it to point, once both inputs have zero z-component &mdash; introductory courses commonly teach torque in two dimensions as a signed scalar instead: positive for counterclockwise, negative for clockwise, chosen by a hand-picked convention rather than derived from the right-hand rule each time. That shortcut is not wrong, but it quietly hides the fact that it is still a cross product underneath, with the z-axis simply left out of the notation because every torque in the problem happens to point along it. Students who only ever meet the two-dimensional, signed-scalar version sometimes conclude that a cross product just <em>is</em> a plain number with a sign, the same misreading of scale that Nguyen and Meltzer&rsquo;s subjects showed for plain vector addition &mdash; and then genuinely struggle the first time a problem lifts out of the plane, into three dimensions, and the &ldquo;torque&rdquo; they have been computing turns out to need a direction rather than just a sign.</p>
+
+      <h3>What today points toward</h3>
+
+      <p>Five days ago, this newspaper taught kinematics &mdash; position, velocity and acceleration &mdash; entirely along one straight line, Usain Bolt&rsquo;s own 100-meter lane, with direction reduced to nothing more than a plus or minus sign. That was not a simplification bolted on for convenience; it was the special, one-dimensional case of exactly the machinery built today. Bolt&rsquo;s velocity was always a vector with a full direction attached to it, in principle; it simply never needed the full apparatus of this lesson because every vector in that problem happened to point along the same line, and a single sign was enough to track &ldquo;which way&rdquo; when there were only two ways to choose from. The moment a problem&rsquo;s motion is not confined to one line &mdash; a wind hitting a moving craft from the side, a planet whose velocity is never quite parallel to the line connecting it to the Sun &mdash; the plus-or-minus trick runs out, and today&rsquo;s components, dot products and cross products are what take over.</p>
+
+      <p>That handoff runs forward as well as back. Day 10 of this curriculum takes up Newton&rsquo;s laws and forces properly, where force finally gets treated as the vector quantity worked example 2&rsquo;s wrench has already previewed; day 19 covers work, energy and power, where work is defined as nothing more than a dot product &mdash; force dotted with displacement, exactly the &ldquo;how much of this push actually helps&rdquo; question this lesson built the dot product to answer; and day 32 returns to angular momentum directly, building out the full conservation law that worked example 3 only sampled at two points of Earth&rsquo;s orbit. None of that has happened yet. What today has done is hand you the one piece of grammar &mdash; a vector has a size and a direction, and two vectors combine either by how aligned they are or by how perpendicular they are &mdash; that all three of those later lessons are going to assume you already have.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can explain, with an actual vector subtraction, why a wind-powered vehicle can travel faster than the wind driving it &mdash; and why a boat sailing dead downwind cannot.</li>
+          <li>You can compute a dot product and a cross product from components, read off what each one is actually asking (alignment versus perpendicularity), and predict that they trade off exactly against each other as an angle changes.</li>
+          <li>You can compute a torque and a specific angular momentum from real position, force and velocity data, and you know why swapping the order of a cross product flips its direction rather than just its sign of convenience.</li>
+          <li>You know where this is going: force, work and angular momentum all resolve into full physics starting at day 10, using nothing more than the vector algebra taught today.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the 60-Day Academy&rsquo;s Day 1 material, used as a topic and difficulty scope reference rather than a text available to this run). Greenbird&rsquo;s 126.1-mph (202.9 km/h) land yacht speed record, the 30-mph wind at the time of the run, the March 26, 2009 date and location at Ivanpah Dry Lake, and the craft&rsquo;s rigid-wing design were checked via web search against Guinness World Records and contemporaneous reporting. Earth&rsquo;s orbital eccentricity (&asymp;0.0167), its mean orbital speed (29.78 km/s), and its perihelion/aphelion speeds (&asymp;30.28 km/s and &asymp;29.3 km/s, from NASA JPL DE430 ephemeris data as reported in secondary summaries) were checked via web search; the perihelion and aphelion distances, and all angular-momentum, torque and apparent-wind figures, were computed directly for this report from those checked constants. The Nguyen &amp; Meltzer (2003, <em>American Journal of Physics</em> 71(6)) study on introductory students&rsquo; vector understanding was checked via web search against its published abstract and summaries. The wrench and torque figures are an illustrative textbook-style setup, not a measurement of any specific tool or fastener.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-23-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
