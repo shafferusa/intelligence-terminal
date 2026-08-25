@@ -398,7 +398,10 @@ each in its own right, in this order:
 
 1. **Bridgeville · South Fayette · South Hills** — borough and township government, Chartiers Valley
    and South Fayette school districts, local development, roads (Washington Pike, I-79, Route 50),
-   local employers.
+   local employers. This beat does NOT stop at the Allegheny County line: the adjacent Washington
+   County communities — Peters Township, Canonsburg, Cecil, McDonald, and the Canon-McMillan and
+   Peters Township school districts — read as "home" from Bridgeville and belong here (added
+   2026-08-25 after the Peters Township homicide case was missed for six straight editions).
 2. **Pittsburgh · Allegheny County** — city and county government, PRT transit, the airport, UPMC /
    Highmark / PNC / universities, major projects, the sports franchises when something real happens.
 3. **Pennsylvania** — the legislature, governor, statewide courts and agencies, the PUC, the state
@@ -406,7 +409,10 @@ each in its own right, in this order:
 
 Up to two items per beat. **Quality-gated, never padded**: a beat with nothing that matters is
 simply absent that day, and plenty of days will show only one of the three. Not a crime blotter, not
-an events calendar, not weather chatter. Each item carries `.local-place` naming its beat, and the
+an events calendar, not weather chatter. "Not a crime blotter" means no routine police-log items; it
+NEVER excludes a major crime story that is leading regional coverage — a homicide touching local
+schools, families or institutions absolutely belongs (clarified 2026-08-25; over-applying this rule
+contributed to a six-edition miss). Each item carries `.local-place` naming its beat, and the
 same sourcing standards as the rest of the paper.
 
 **Weather — MORNING EDITION ONLY.** Leads the Local section, from the National Weather Service

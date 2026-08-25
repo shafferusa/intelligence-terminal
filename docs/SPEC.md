@@ -184,6 +184,12 @@ What Moved Markets keeps its four attribution labels — `Confirmed catalyst` / 
 
 What Moved Markets: open/morning/midday/close phases; rates, data, earnings, policy, geopolitics, commodities, positioning, technicals, rebalancing/flows. Label: Confirmed catalyst / Likely contributor / Market narrative / Unexplained. Never force a narrative.
 
+Winners & Losers is NOT watchlist-only (clarified 2026-08-25): alongside the largest watchlist
+moves, every closing edition must run a market-wide sweep for big off-watchlist movers — any widely
+held US large-cap (~$5B+, or any household name) moving ±8%+ on the day — and include them labeled
+`off watchlist`. A household-name mega-move (±15%+) is also a story, not just a table row. Missing
+one is a coverage failure and is logged to the corrections ledger as an omission.
+
 ## 20. SATURDAY Weekly Intelligence Review (9:00 AM ET default)
 
 Complete retrospective that SYNTHESIZES (not concatenates): 1 Cover & date range · 2 Ten Most Important Stories of the Week (initial event → development → final status → why it mattered → what was misunderstood → unresolved → keep on watchlist?) · 3 The Week in One Page · 4 Timeline · 5 What Changed in the World · 6–14 domain weekly reviews (US politics, geopolitics, economics, central banks, business/earnings, tech/AI, cyber, science, spaceflight) · 15 Full Weekly Market Review (weekly attribution: index returns, sector/stock contributions, rates, credit, FX, commodities, earnings, surprises, expectation shifts) · 16 Best/Worst Assets · 17 Sector Rotation · 18 Rates & Credit · 19 Commodities & FX · 20 Crypto · 21 Forecast & Scenario Scorecard (vs prior Sunday: expectation → outcome → verdict → why → lesson; never hide misses) · 22 Overhyped Stories · 23 Undercovered Stories · 24 Risks Entering the Weekend · 28 Registry sweep results · 29 Sources, Corrections, Methodology.

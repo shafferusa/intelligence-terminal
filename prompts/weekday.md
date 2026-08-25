@@ -317,7 +317,15 @@ Masthead per SR §11, voice per SR §11b, markup per SR §12/§12b. Set `data-sl
 12. **What Moved Markets** — open/morning/midday/close. Attribution labelled
     `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained` (SR §5).
     Never force a narrative. These four labels stay — they are honesty, not clutter.
-13. **Winners & Losers** — 14. **Tomorrow** — overnight and tomorrow's majors.
+13. **Winners & Losers** — TWO sweeps, both mandatory (added 2026-08-25 after DKS −30.68% went
+    unreported because it was on no watchlist):
+    (a) the largest single-day moves among the day's watchlist names, and
+    (b) a **market-wide sweep for big off-watchlist movers** — any widely held US large-cap
+    (roughly $5B+ market cap, or any household-name company) moving ±8% or more on the day, or
+    whose move is leading the business wires. Off-watchlist names go in the table labeled
+    `off watchlist`; the caption must describe the scope actually used. A mega-move (±15%+ in a
+    household name) is a story, not just a row — cover it in Business or What Moved Markets too.
+14. **Tomorrow** — overnight and tomorrow's majors.
 15. **Local** — no weather strip in the pm edition; items only, and omitted entirely if there
     are none.
 16. **Market Appendix** — 17. **Colophon**.

@@ -107,6 +107,24 @@
       "error_source": "This report's own tracking conflated two separate Chinese launch-vehicle stories -- Chang'e 7's weather/schedule delay and the unrelated Long March 7A/ChinaSat-4B failure -- starting with the Aug 10 story that first linked them, and the error compounded across five subsequent editions before being caught.",
       "conclusions_changed": true,
       "note": "Verified via WebSearch against SpaceNews, Space.com, NASASpaceFlight and the original Aug 10 wire coverage (Bloomberg, NBC News, CNN, SCMP) of the Long March 7A/ChinaSat-4B failure this run. Does not change Chang'e 7's actual launch status (still delayed, no new CMSA date) but changes the stated reason across five editions. Corrected in today's report (2026-08-25-pm) Top Stories and colophon."
+    },
+    {
+      "found": "2026-08-25",
+      "report": "reports/2026/08/2026-08-25-pm.html",
+      "original": "OMISSION: the Winners & Losers section reported Target (-3.78%) as the day's largest decliner because the sweep covered watchlist names only. Dick's Sporting Goods (DKS) fell 30.68% the same session ($179.33 -> $124.31 EOD official, a 52-week low on ~10x normal volume, its worst day on record) after a Q2 miss (adj EPS $3.53, revenue $5.59B) and a double full-year guidance cut, and appeared nowhere in the edition.",
+      "corrected": "A full story was added to the Winners & Losers section of the 2026-08-25-pm edition after first publication, with EOD-official numbers, the guidance details, the Foot Locker comp decline (-3.6%), and the local angle (Coraopolis HQ). Verified via Yahoo Finance EOD quote plus CNBC/Forbes/Motley Fool/Seeking Alpha/Schaeffer's coverage.",
+      "error_source": "Structural: DKS is on no watchlist and the Winners & Losers procedure scanned watchlist names only, so no market-wide sweep existed to catch a household-name collapse. Flagged by the reader.",
+      "conclusions_changed": true,
+      "note": "prompts/weekday.md and docs/SPEC.md now require a market-wide off-watchlist movers sweep (large-cap moves of roughly +/-8% or more, labeled 'off watchlist'); DKS added to the consumer watchlist. Surfaced in the 2026-08-25-pm colophon; restate in the next edition's corrections."
+    },
+    {
+      "found": "2026-08-25",
+      "report": "reports/2026/08/2026-08-25-pm.html",
+      "original": "OMISSION: no edition between 2026-08-20 (pm) and 2026-08-25 (pm) -- six consecutive editions including the Weekly Review and Week Ahead -- carried the Peters Township homicide case: Karoline Heintz, 18, of Peters Township, found dead 2026-08-20 in California Borough; boyfriend Royce Moser, 18 (Canon-McMillan HS graduate), charged with criminal homicide after telling investigators a 'demon' urged the killing; his mother Rachel Moser charged with hindering apprehension, tampering with evidence, abuse of a corpse and obstruction.",
+      "corrected": "A full story was added to the Local section (Pennsylvania beat) of the 2026-08-25-pm edition after first publication. Verified Confirmed-multiple: CBS Pittsburgh, NBC News, Observer-Reporter, Herald-Standard, ABC/AP.",
+      "error_source": "Coverage gap: the case sits in Washington County, just outside the two Allegheny County beats, and the 'not a crime blotter' rule was over-applied to a major regional story with national reach. Flagged by the reader.",
+      "conclusions_changed": true,
+      "note": "shared-rules Section 18 now names the adjacent Washington County communities (Peters Township, Canonsburg, Cecil; Canon-McMillan and Peters Township school districts) inside beat 1 and clarifies that 'not a crime blotter' never excludes a major crime story leading regional coverage. Surfaced in the 2026-08-25-pm colophon; restate in the next edition's corrections."
     }
   ]
 }
