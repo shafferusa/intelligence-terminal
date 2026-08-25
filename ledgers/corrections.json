@@ -98,6 +98,15 @@
       "error_source": "An internal day-of-week computation error when writing the Aug 24 edition, not a change to the launch provider's own schedule.",
       "conclusions_changed": false,
       "note": "Does not change the launch date, time, site or mission status -- only the day-of-week label. Corrected in today's report (2026-08-25-am) Top Stories and colophon."
+    },
+    {
+      "found": "2026-08-25",
+      "report": "reports/2026/08/2026-08-24-pm.html",
+      "original": "Every edition since 2026-08-10 has described China's Chang'e 7 lunar mission as postponed by, or tied to, a 'Long March 7A' rocket failure -- most recently: 'China's Chang'e 7 launch postponed indefinitely; Long March 7A root cause still unpublished' and 'Long March 7A root-cause investigation remains unpublished.'",
+      "corrected": "Chang'e 7 is manifested on a Long March 5, China's heavy-lift rocket, launching from Wenchang -- not a Long March 7A. The Long March 7A that exploded roughly 85 seconds after liftoff on Aug 10 was carrying an unrelated communications satellite, ChinaSat-4B; that failure's investigation is real but has nothing to do with Chang'e 7. Chang'e 7's own postponement (scrub around Aug 23-24) traces to Typhoon Narra and an expiring orbital launch window; CMSA has not published a new date. Some analysts note the Long March 5 and 7A share engine/propellant-feed architecture, a plausible but unconfirmed reason for added caution -- not the same as Chang'e 7's own rocket having failed.",
+      "error_source": "This report's own tracking conflated two separate Chinese launch-vehicle stories -- Chang'e 7's weather/schedule delay and the unrelated Long March 7A/ChinaSat-4B failure -- starting with the Aug 10 story that first linked them, and the error compounded across five subsequent editions before being caught.",
+      "conclusions_changed": true,
+      "note": "Verified via WebSearch against SpaceNews, Space.com, NASASpaceFlight and the original Aug 10 wire coverage (Bloomberg, NBC News, CNN, SCMP) of the Long March 7A/ChinaSat-4B failure this run. Does not change Chang'e 7's actual launch status (still delayed, no new CMSA date) but changes the stated reason across five editions. Corrected in today's report (2026-08-25-pm) Top Stories and colophon."
     }
   ]
 }
