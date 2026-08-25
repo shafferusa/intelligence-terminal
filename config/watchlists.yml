@@ -68,8 +68,7 @@ financials: [JPM, BAC, C, WFC, GS, MS, SCHW, IBKR, HOOD, COIN, CME, ICE, CBOE, B
 
 health: [LLY, NVO, UNH, JNJ, ABBV, MRK, PFE, VRTX, REGN, TMO, DHR, ISRG]
 
-# DKS added 2026-08-25 (hometown company, Coraopolis HQ; its -30.68% day was missed off-watchlist)
-consumer: [WMT, COST, AMZN, TGT, HD, LOW, MCD, SBUX, CMG, BKNG, ABNB, DAL, UAL, RCL, DKS]
+consumer: [WMT, COST, AMZN, TGT, HD, LOW, MCD, SBUX, CMG, BKNG, ABNB, DAL, UAL, RCL]
 
 # --- Sector ETFs: all 11 SPDR sector funds ---
 sector_etfs: [XLK, XLC, XLY, XLP, XLF, XLV, XLI, XLE, XLB, XLU, XLRE]

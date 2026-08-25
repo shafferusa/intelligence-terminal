@@ -115,7 +115,7 @@
       "corrected": "A full story was added to the Winners & Losers section of the 2026-08-25-pm edition after first publication, with EOD-official numbers, the guidance details, the Foot Locker comp decline (-3.6%), and the local angle (Coraopolis HQ). Verified via Yahoo Finance EOD quote plus CNBC/Forbes/Motley Fool/Seeking Alpha/Schaeffer's coverage.",
       "error_source": "Structural: DKS is on no watchlist and the Winners & Losers procedure scanned watchlist names only, so no market-wide sweep existed to catch a household-name collapse. Flagged by the reader.",
       "conclusions_changed": true,
-      "note": "prompts/weekday.md and docs/SPEC.md now require a market-wide off-watchlist movers sweep (large-cap moves of roughly +/-8% or more, labeled 'off watchlist'); DKS added to the consumer watchlist. Surfaced in the 2026-08-25-pm colophon; restate in the next edition's corrections."
+      "note": "prompts/weekday.md and docs/SPEC.md now require a market-wide off-watchlist movers sweep (large-cap moves of roughly +/-8% or more, labeled 'off watchlist'). DKS was briefly added to the consumer watchlist and then removed 2026-08-25 at the reader's direction -- coverage of names like it relies on the off-watchlist sweep, not the watchlist. Surfaced in the 2026-08-25-pm colophon; restate in the next edition's corrections."
     },
     {
       "found": "2026-08-25",
