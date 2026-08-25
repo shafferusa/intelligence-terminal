@@ -1,136 +1,136 @@
 {
-  "fetched": "2026-08-24T06:45:00-04:00",
-  "earnings_fetched": "2026-08-23",
-  "earnings_fetched_note": "Alpha Vantage 3-month CSV succeeded Sunday's run (within the once-per-day limit, not re-fetched); Finnhub day-of feed re-checked this run for 2026-08-24 -- no watchlist-relevant earnings today.",
-  "events": [
-    {
-      "ts_et": "2026-08-24T14:00:00-04:00",
-      "type": "deadline",
-      "name": "Treasury Secretary Bessent's full Iran sanctions package (\"Economic D-Day\") detailed",
-      "importance": "Critical",
-      "reason": "Bessent has previewed a coordinated secondary-sanctions campaign pressuring banks, firms and governments (China explicitly named as Iran's largest oil buyer) to cut ties with Iran; this is the concrete follow-through on a threat first made in this report's own tracked story a week ago.",
-      "source": "Reuters/Al-Monitor, Al Jazeera, The National -- Confirmed-multiple (announcement scheduled); package contents themselves Unverified pending Monday"
-    },
-    {
-      "ts_et": null,
-      "type": "launch",
-      "name": "Long March 5 -- Chang'e 7 (lunar south-pole mission) -- POSTPONED, no new date",
-      "importance": "Medium",
-      "reason": "China postponed the launch Sunday, citing failure to meet launch conditions; multiple outlets tie this to Tropical Storm Narra near the Wenchang site. This report's prior 8:30 PM ET Aug 24 estimate will not happen. Launch Library 2 shows only a coarse Sept 30 placeholder; no confirmed date exists.",
-      "source": "China Manned Space Agency statement (primary, via wire translation) -- Confirmed-multiple; SpaceNews, CBS News, South China Morning Post, Space.com, UPI"
-    },
-    {
-      "ts_et": "2026-08-25T10:00:00-04:00",
-      "type": "econ_release",
-      "name": "Conference Board Consumer Confidence Index, August",
-      "importance": "Medium",
-      "reason": "Monthly consumer-sentiment gauge; relevant against this week's tariff-refund/retail-earnings backdrop.",
-      "source": "Conference Board release calendar via news research -- Confirmed-multiple (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-25T13:00:00-04:00",
-      "type": "auction",
-      "name": "2-Year Treasury Note auction, $69B",
-      "importance": "Medium",
-      "reason": "First of three coupon auctions this week; sized against a backdrop of rising concern over Treasury supply after total federal debt crossed $40 trillion.",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-26T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "GDP, Q2 2026 Second Estimate (with corporate profits)",
-      "importance": "High",
-      "reason": "First revision to the +1.5% annualized advance estimate; corporate-profits detail not available at the advance release.",
-      "source": "BEA release calendar -- Confirmed-primary (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-26T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Personal Income and Outlays, July (incl. PCE price index)",
-      "importance": "High",
-      "reason": "The Fed's preferred inflation gauge, landing one day before Chair Warsh's Jackson Hole remarks -- the week's clearest Fed-relevant data point.",
-      "source": "BEA release calendar -- Confirmed-primary (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-26T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Durable Goods Orders, July (advance)",
-      "importance": "Medium",
-      "reason": "Business-investment read; timing per Census's typical cadence, cross-checked against week-ahead trackers.",
-      "source": "Census Bureau release pattern via news research -- Confirmed-multiple (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-25T13:00:00-04:00",
-      "type": "auction",
-      "name": "5-Year Treasury Note auction, $70B",
-      "importance": "Medium",
-      "reason": "Second coupon auction of the week (Wednesday Aug 26); listed here with the cycle.",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-26T17:00:00-04:00",
-      "type": "earnings",
-      "name": "NVIDIA (NVDA) Q2 FY2027 earnings, after close",
-      "importance": "Critical",
-      "reason": "The single largest scheduled catalyst of the week for the AI-infrastructure trade; consensus clusters near $93-95B revenue. Focus: Blackwell ramp, Rubin commentary, China exposure.",
-      "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub day-of feed (matched)"
-    },
-    {
-      "ts_et": "2026-08-27T08:30:00-04:00",
-      "type": "econ_release",
-      "name": "Initial jobless claims, week of Aug 22",
-      "importance": "Medium",
-      "reason": "Weekly labor-market read; recent prints have run 198K-212K.",
-      "source": "BLS release schedule (bls.ics) -- Confirmed-primary (scheduled)"
-    },
-    {
-      "ts_et": "2026-08-27T13:00:00-04:00",
-      "type": "auction",
-      "name": "7-Year Treasury Note auction, $44B",
-      "importance": "Medium",
-      "reason": "Final coupon auction of the week's cycle; historically the most tail-prone tenor.",
-      "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-    },
-    {
-      "ts_et": "2026-08-27T09:00:00-04:00",
-      "type": "conference",
-      "name": "Kansas City Fed Jackson Hole Economic Policy Symposium opens (through Aug 29)",
-      "importance": "High",
-      "reason": "Fed Chair Kevin Warsh's first Jackson Hole as chair; theme is financial innovation/payments policy. His remarks (expected Friday) will be parsed for guidance ahead of the Sept 16 FOMC meeting.",
-      "source": "Kansas City Fed symposium schedule via news research -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-27T17:00:00-04:00",
-      "type": "earnings",
-      "name": "Marvell Technology (MRVL) Q2 FY2027 earnings, after close",
-      "importance": "High",
-      "reason": "Direct read-through on the Google TPU partnership and the Broadcom-exclusivity dispute this report has tracked all week.",
-      "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub day-of feed (matched)"
-    },
-    {
-      "ts_et": "2026-08-28T09:45:00-04:00",
-      "type": "econ_release",
-      "name": "S&P Global Flash PMI, August (Manufacturing & Services)",
-      "importance": "Medium",
-      "reason": "Manufacturing consensus near 54.0, Services near 53.9; the prior flash PMI reading hit a four-year high.",
-      "source": "Newsquawk week-ahead calendar via news research -- Confirmed-multiple (scheduled), consensus figures lower-confidence"
-    },
-    {
-      "ts_et": "2026-08-28T09:00:00-04:00",
-      "type": "speech",
-      "name": "Fed Chair Kevin Warsh delivers Jackson Hole keynote",
-      "importance": "High",
-      "reason": "First Jackson Hole address as Fed Chair, landing one day after the PCE inflation print and two and a half weeks before the Sept 16 FOMC decision.",
-      "source": "Kansas City Fed symposium schedule via news research -- Confirmed-multiple"
-    },
-    {
-      "ts_et": "2026-08-30T07:26:00-04:00",
-      "type": "launch",
-      "name": "Falcon Heavy -- Nancy Grace Roman Space Telescope",
-      "importance": "High",
-      "reason": "NASA flagship infrared observatory, running roughly 8 months ahead of its prior schedule; lands the Saturday immediately after this report's Mon-Fri window, flagged here as a forward look.",
-      "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled); SpaceNews, Space.com"
-    }
-  ],
-  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
+ "fetched": "2026-08-25T06:50:00-04:00",
+ "earnings_fetched": "2026-08-25",
+ "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-25 -- no watchlist-relevant earnings today (Alpha Vantage 3-month CSV last refreshed 2026-08-23, within once-per-day limit, not re-fetched).",
+ "events": [
+  {
+   "ts_et": "2026-08-25T08:35:00-04:00",
+   "type": "other",
+   "name": "ISS spacewalk (Menon, Adenot) -- antenna replacement, ~6.5 hrs",
+   "importance": "Medium",
+   "reason": "Scheduled human-spaceflight event same-day; third Menon spacewalk this month, Adenot's second.",
+   "source": "NASA ISS blog -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-25T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Conference Board Consumer Confidence Index, August",
+   "importance": "Medium",
+   "reason": "Monthly consumer-sentiment gauge.",
+   "source": "Conference Board release calendar -- Confirmed-multiple (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-25T13:00:00-04:00",
+   "type": "auction",
+   "name": "2-Year Treasury Note auction, $69B",
+   "importance": "Medium",
+   "reason": "First of three coupon auctions this week.",
+   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-08-25T19:00:00-04:00",
+   "type": "election",
+   "name": "South Carolina Senate GOP primary runoff -- polls close",
+   "importance": "High",
+   "reason": "Trump-endorsed Darline Graham vs. Ralph Norman; winner advances to Nov 3 special general.",
+   "source": "Ballotpedia, NPR -- Confirmed-multiple (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-26T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "GDP, Q2 2026 Second Estimate (with corporate profits)",
+   "importance": "High",
+   "reason": "First revision to the +1.5% annualized advance estimate.",
+   "source": "BEA release calendar -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-26T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Personal Income and Outlays, July (incl. PCE price index)",
+   "importance": "High",
+   "reason": "The Fed's preferred inflation gauge, one day before Chair Warsh's Jackson Hole remarks.",
+   "source": "BEA release calendar -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-26T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Durable Goods Orders, July (advance)",
+   "importance": "Medium",
+   "reason": "Business-investment read.",
+   "source": "Census Bureau release pattern -- Confirmed-multiple (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-26T13:00:00-04:00",
+   "type": "auction",
+   "name": "5-Year Treasury Note auction, $70B",
+   "importance": "Medium",
+   "reason": "Second coupon auction of the week.",
+   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-08-26T17:00:00-04:00",
+   "type": "earnings",
+   "name": "NVIDIA (NVDA) Q2 FY2027 earnings, after close",
+   "importance": "Critical",
+   "reason": "Week's largest scheduled catalyst; consensus ~$93-95B revenue.",
+   "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub"
+  },
+  {
+   "ts_et": "2026-08-27T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Initial jobless claims, week of Aug 22",
+   "importance": "Medium",
+   "reason": "Weekly labor-market read.",
+   "source": "BLS release schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-08-27T13:00:00-04:00",
+   "type": "auction",
+   "name": "7-Year Treasury Note auction, $44B",
+   "importance": "Medium",
+   "reason": "Final coupon auction of the week's cycle.",
+   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-08-27T09:00:00-04:00",
+   "type": "conference",
+   "name": "Kansas City Fed Jackson Hole Economic Policy Symposium opens (through Aug 29)",
+   "importance": "High",
+   "reason": "Fed Chair Kevin Warsh's first Jackson Hole as chair.",
+   "source": "Kansas City Fed symposium schedule -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-08-27T17:00:00-04:00",
+   "type": "earnings",
+   "name": "Marvell Technology (MRVL) Q2 FY2027 earnings, after close",
+   "importance": "High",
+   "reason": "Read-through on the Google TPU partnership and Broadcom relationship.",
+   "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub"
+  },
+  {
+   "ts_et": "2026-08-28T09:45:00-04:00",
+   "type": "econ_release",
+   "name": "S&P Global Flash PMI, August (Manufacturing & Services)",
+   "importance": "Medium",
+   "reason": "Manufacturing consensus near 54.0, Services near 53.9.",
+   "source": "Newsquawk week-ahead calendar -- Confirmed-multiple (scheduled), consensus lower-confidence"
+  },
+  {
+   "ts_et": "2026-08-28T09:00:00-04:00",
+   "type": "speech",
+   "name": "Fed Chair Kevin Warsh delivers Jackson Hole keynote",
+   "importance": "High",
+   "reason": "First Jackson Hole address as Fed Chair, one day after PCE, two-and-a-half weeks before the Sept 16 FOMC decision.",
+   "source": "Kansas City Fed symposium schedule -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-08-30T07:26:00-04:00",
+   "type": "launch",
+   "name": "Falcon Heavy -- Nancy Grace Roman Space Telescope",
+   "importance": "High",
+   "reason": "NASA flagship infrared observatory, ~8 months ahead of prior schedule. Note: Aug 30, 2026 is a SUNDAY, not Saturday (corrected 2026-08-25 -- see ledgers/corrections.json).",
+   "source": "Launch Library 2 (thespacedevs.com), NASA Roman blog -- Confirmed-primary (scheduled)"
+  }
+ ],
+ "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
 }

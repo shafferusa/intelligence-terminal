@@ -5,9 +5,9 @@
    "headline": "Bessent details \"Operation Economic Outcast\" against Iran; oil sells the news",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-24-pm",
-   "verification": "Confirmed-primary (package announced); Single-reliable-source (full negative claim that no banks/NIOC officials were named)",
-   "one_line": "Treasury detailed the full package at 2pm ET: five target sectors (crypto, tech, gold, aviation, shipping), roughly 60 individuals/firms/vessels named (incl. Chinese nationals), no government sanctioned outright. Oil fell 1.8-2.5% on the news rather than jumping -- a sell-the-news reaction. Iran's FM called it escalation but made no operational threat beyond rhetoric; the SNSC secretary's Gulf-oil-blockade threat remains unfulfilled.",
+   "last_updated": "2026-08-25-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "No kinetic Iranian response and no Gulf-state accession to the US campaign as of Tuesday morning; Oman's FM visited Tehran and Pakistan's interior minister/army chief met Iranian leadership, both reporting progress toward de-escalation, while IRGC's Mohebi claims (unverified) Iranian forces control Hormuz.",
    "score_note": "Concrete follow-through on a story tracked since Jul 30; closing this thread's build-up phase, watching for Iranian response and the further sanctions Bessent flagged for later this week.",
    "sources": [
     "Treasury.gov press release (primary)",
@@ -22,11 +22,11 @@
   {
    "id": "canada-auto-tariff-2027-aug24",
    "headline": "Trump threatens to double Canada's auto tariffs to 50% for 2027",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-24-pm",
+   "last_updated": "2026-08-25-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Trump said via social media the US will raise Canadian auto/parts/steel tariffs from 25% to 50% effective Jan 1, 2027, citing a ~$60B trade deficit -- the fourth escalation in this dispute in five days. Ford, Stellantis, GM fell ~2-4%; domestic steelmakers (Cleveland-Cliffs, Nucor, Steel Dynamics) rose on the other side of the trade.",
+   "one_line": "Carney reiterated Canada will match US tariffs dollar-for-dollar; Sept 8 retaliatory tariffs stand. No new escalation from either government overnight.",
    "score_note": "Fourth deadline/escalation in five days with none producing resolution; watch whether Canada's Sept 8 retaliation date responds to this specifically.",
    "sources": [
     "CNN",
@@ -40,11 +40,11 @@
   {
    "id": "space-sector-selloff-aug24",
    "headline": "Chip stocks and last week's biggest space-stock winners reverse hard ahead of Nvidia earnings",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-24-pm",
-   "verification": "Confirmed-primary (this run's own close-series computation)",
-   "one_line": "Philadelphia semiconductor index -2.6% ahead of Wednesday's Nvidia print; space-stock cohort that led last week's rally (VOYG+49%, RDW+41%, PLTR+37% weekly) round-tripped hard: ASTS -9.18%, LUNR -9.06%, BKSY -7.78%, VOYG -7.55%, AVAV -7.50%, KTOS -7.17%, RKLB -5.91%. No company-specific news found; reads as profit-taking, not asserted as such.",
+   "last_updated": "2026-08-25-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Selloff continued/deepened Monday (ASTS -9.18%, LUNR -9.06%, BKSY -7.78%, VOYG -7.55%, RKLB -5.91%); still no company-specific catalyst identified, reads as pre-Nvidia-earnings de-risking alongside a parallel defense-sector selloff.",
    "score_note": "New forecast logged on whether the space cohort recovers half its decline within 3 sessions.",
    "sources": [
     "this run's own Yahoo Finance close-series data",
@@ -59,8 +59,8 @@
    "status": "Materially changed",
    "first_seen": "2026-08-20-pm",
    "last_updated": "2026-08-24-pm",
-   "verification": "Confirmed-multiple (statement); Single-reliable-source (§242 detail, device inventory)",
-   "one_line": "Attorney Sara Azari said filings show the probe proceeding partly under 18 U.S.C. §242 (civil rights under color of law) alongside the original allegations; devices seized were an iPhone and MacBook Pro. Called it \"deeply concerning\" that federal law enforcement appears used to punish a critic. No DOJ/FBI statement beyond routine; no charges.",
+   "verification": "Confirmed-multiple (statement); Single-reliable-source (\u00a7242 detail, device inventory)",
+   "one_line": "Attorney Sara Azari said filings show the probe proceeding partly under 18 U.S.C. \u00a7242 (civil rights under color of law) alongside the original allegations; devices seized were an iPhone and MacBook Pro. Called it \"deeply concerning\" that federal law enforcement appears used to punish a critic. No DOJ/FBI statement beyond routine; no charges.",
    "score_note": "First specific legal-theory detail on the investigation beyond the original allegations.",
    "sources": [
     "San Francisco Chronicle",
@@ -71,11 +71,11 @@
   {
    "id": "congress-ai-cyber-deadline-aug24",
    "headline": "Congress's deadline for OpenAI and Anthropic to answer for security incidents lands with no reply yet",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-24-pm",
-   "verification": "Confirmed-primary (House oversight letters)",
-   "one_line": "House Democrats' Aug 10 letters set today as the deadline for OpenAI (23 questions on the Astra self-assessment) and Anthropic (questions on evaluation-partner failure and attempted fund extraction) to publicly respond. No confirmed response from either company as of this afternoon.",
+   "last_updated": "2026-08-25-am",
+   "verification": "Reported",
+   "one_line": "Monday's House Democrats' deadline for OpenAI/Anthropic to publicly detail safety protocols passed with no public response located from either company as of Tuesday morning; not confirmed as a refusal, since a private reply to the committee is possible. Senate's separate deadline (Blunt Rochester letter) is Sept 6.",
    "score_note": "New forecast logged on whether either company responds within 5 business days.",
    "sources": [
     "Casar House.gov oversight letters (primary)",
@@ -188,11 +188,11 @@
   {
    "id": "mail-ballot-eo-scotus",
    "headline": "Mail-ballot SCOTUS emergency docket remains fully briefed with no ruling",
-   "status": "Continuing",
+   "status": "Materially changed",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-08-20-am",
+   "last_updated": "2026-08-25-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Fully briefed for over a week; Solicitor General has told justices it is 'critical that the Court act promptly.' No ruling as of Thursday morning. Tracked alongside the ballroom case as the Court's second live emergency docket.",
+   "one_line": "SCOTUS lifted, 6-3, Judge Talwani's injunction against the mail-ballot EO Monday evening on narrow implementation-timing grounds, not a merits ruling; Talwani ordered new briefing due today and could reissue a narrower injunction within days. A separate nationwide injunction on the USPS provision is untouched.",
    "score_note": "No new movement; still shadow-docket risk.",
    "sources": [
     "SCOTUSblog",
@@ -616,9 +616,9 @@
    "headline": "Kryvyi Rih toll settles at 16 dead as Russia-Ukraine strikes continue through the weekend",
    "status": "Continuing",
    "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-24-am",
+   "last_updated": "2026-08-25-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Toll has settled at 16 dead / ~130 wounded. Weekend strikes continued on both sides: Russia hit Kyiv, Zaporizhzhia, Sumy and Odesa; Ukraine struck Russian logistics targets for a third consecutive night. Zelensky criticized the US Embassy's response as 'weak'; Putin warned of 'far more destructive' retaliation, not yet explicitly tied to any single strike since.",
+   "one_line": "Toll holds at 16 dead/~130-140 wounded. Fresh overnight barrage (Iskander-M, Kh-31P, Banderol, ~150 drones) hit Kyiv, Kharkiv, Zaporizhzhia and Dnipro Mon night into Tue morning; ~83% drone intercept rate claimed by Ukraine's Air Force; no casualty figures yet for this strike.",
    "score_note": "Strike tempo continues without a clear de-escalation signal.",
    "sources": [
     "ABC News",
@@ -713,11 +713,11 @@
   {
    "id": "sc-senate-runoff-aug25",
    "headline": "South Carolina Senate primary runoff Tuesday tests Trump's endorsement strength",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-23-sun",
-   "last_updated": "2026-08-23-sun",
+   "last_updated": "2026-08-25-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Darline Graham (Trump-endorsed) vs. Ralph Norman for the late Sen. Lindsey Graham's seat; Graham led the first round 33-24%. Winner advances to the Nov 3 special general against Democrat Annie Andrews. Comes after 10 Trump-endorsed primary losses this cycle.",
+   "one_line": "Polls close 7pm ET today. Public polling has favored Darline Graham throughout; Norman's campaign claims a 52-40 internal lead and Graham's own internal numbers reportedly softened late. Winner advances to Nov 3 special general vs. Democrat Annie Andrews.",
    "score_note": "Dated election event this week; the week's one confirmed political vote.",
    "sources": [
     "Ballotpedia",
@@ -758,19 +758,64 @@
    "watch": false
   },
   {
-   "id": "sc-senate-runoff-aug25-preview",
-   "headline": "South Carolina Senate runoff Tuesday: Trump rallies for Graham as Norman claims a lead",
-   "status": "Continuing",
-   "first_seen": "2026-08-23-sun",
-   "last_updated": "2026-08-24-am",
+   "id": "south-sudan-peacekeeper-ambush-aug25",
+   "headline": "Two UN peacekeepers killed in a South Sudan ambush",
+   "status": "New",
+   "first_seen": "2026-08-25-am",
+   "last_updated": "2026-08-25-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Trump rallied for Darline Graham in Myrtle Beach Friday. Public polling has favored Graham throughout, but Norman's campaign claims internal polling shows him ahead 52-40, and reporting describes Graham's own internal numbers softening in the race's final days.",
-   "score_note": "Conflicting public-vs-internal polling signals ahead of Tuesday's vote.",
+   "one_line": "Armed assailants ambushed a UNMISS patrol near Padjut village, Jonglei State, Monday; 2 Ethiopian peacekeepers killed, 7 others injured. Attackers not identified.",
+   "score_note": "New, verified violence against UN personnel amid regional instability.",
    "sources": [
-    "Washington Times",
-    "Ballotpedia",
-    "NPR",
-    "PBS NewsHour"
+    "UN News",
+    "Al Jazeera",
+    "Washington Post",
+    "ABC News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "mass-visa-revocation-aug25",
+   "headline": "State Dept. reportedly preparing to revoke ~200,000 visitor visas tied to later asylum claims",
+   "status": "New",
+   "first_seen": "2026-08-25-am",
+   "last_updated": "2026-08-25-am",
+   "verification": "Single-reliable-source",
+   "one_line": "AP reports (via unnamed officials) State/DHS moving to revoke B1/B2 visas issued 2016-2026 to holders who later filed for asylum -- described as largest single mass revocation in US history. Still in planning; no formal announcement; single wire source reproduced across outlets, not independently corroborated.",
+   "score_note": "High-risk immigration-enforcement claim, single-sourced -- flagged in report, watch for corroboration or formal announcement.",
+   "sources": [
+    "Associated Press"
+   ],
+   "watch": true
+  },
+  {
+   "id": "chip-memory-selloff-cxmt-aug24",
+   "headline": "Memory-chip selloff on report Apple is testing Chinese-made DRAM from CXMT",
+   "status": "New",
+   "first_seen": "2026-08-25-am",
+   "last_updated": "2026-08-25-am",
+   "verification": "Reported",
+   "one_line": "Micron -5.83%, SanDisk and Western Digital also down sharply Monday on reports Apple is testing CXMT DRAM and lobbying against trade restrictions on it; CXMT reportedly weighing a second Beijing fab. Traces to one underlying report reproduced across outlets, not independently confirmed by Apple/CXMT.",
+   "score_note": "First concrete sign of a credible Chinese DRAM competitor, landing in Nvidia earnings week.",
+   "sources": [
+    "Motley Fool",
+    "24/7 Wall St.",
+    "IBTimes Australia"
+   ],
+   "watch": true
+  },
+  {
+   "id": "roman-telescope-launch-date-correction-aug25",
+   "headline": "Roman Space Telescope encapsulated for Sunday, Aug 30 launch (corrected from prior 'Saturday' framing)",
+   "status": "Continuing",
+   "first_seen": "2026-08-25-am",
+   "last_updated": "2026-08-25-am",
+   "verification": "Confirmed-primary",
+   "one_line": "NASA/SpaceX completed fairing encapsulation Monday; launch remains NET Sunday Aug 30, 7:26am ET, LC-39A, backup Monday Aug 31. Yesterday's edition mischaracterized the date as a Saturday -- corrected via ledgers/corrections.json.",
+   "score_note": "Routine positive mission-status update plus an internal date-of-week correction.",
+   "sources": [
+    "NASA Roman blog",
+    "SpaceNews"
    ],
    "watch": true
   }

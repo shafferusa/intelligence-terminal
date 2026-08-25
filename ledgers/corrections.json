@@ -89,6 +89,15 @@
       "error_source": "This morning's edition treated a single secondary wire source as sufficient for a same-day earnings figure without cross-checking against the primary SEC filing once available; the source appears to have itself conflated the current quarter's EPS with the prior-year comparison figure printed in the same release.",
       "conclusions_changed": true,
       "note": "This is a significant reversal, not a minor figure correction: this morning's edition characterized Target's quarter as a narrow miss; the actual results were a clear beat with raised guidance and a positive stock reaction (+4.28%). Corrected in today's report (2026-08-19-pm) Top Stories and colophon."
+    },
+    {
+      "found": "2026-08-25",
+      "report": "reports/2026/08/2026-08-24-am.html",
+      "original": "Described NASA's Nancy Grace Roman Space Telescope launch as scheduled for 'Saturday, Aug. 30' at 7:26 AM ET.",
+      "corrected": "August 30, 2026 is a Sunday, not a Saturday (verified via date calculation and corroborated by WRAL's own coverage referring to it as a Sunday launch). The launch date and time itself (Aug 30, 7:26 AM ET, LC-39A, backup Aug 31) are unchanged and correct -- only the day-of-week label was wrong.",
+      "error_source": "An internal day-of-week computation error when writing the Aug 24 edition, not a change to the launch provider's own schedule.",
+      "conclusions_changed": false,
+      "note": "Does not change the launch date, time, site or mission status -- only the day-of-week label. Corrected in today's report (2026-08-25-am) Top Stories and colophon."
     }
   ]
 }
