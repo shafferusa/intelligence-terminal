@@ -1784,7 +1784,10 @@
    "horizon": "2026-08-26",
    "probability": "55-70%",
    "basis": "Talwani herself said meeting the DOJ's 8am deadline gives her one business day to decide; she has moved quickly on this docket before (the original injunction, Monday's 6-3 SCOTUS review of it).",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Talwani ruled Tuesday (before the Aug 26 Federal Register publication) that USPS \"feigned compliance\" and defied her Aug 11 injunction by finalizing the mail-ballot rule, but declined to block publication since USPS itself says it cannot implement the rule while her injunction stands.",
+   "graded": "2026-08-26",
+   "lesson": "A judge who explicitly gave herself a one-business-day deadline and had already moved quickly on this docket twice before ruled on schedule again; the ruling's content (a compliance finding without blocking relief) was more nuanced than a simple win/loss for either side, worth noting for future forecasts on this docket."
   },
   {
    "id": "2026-08-25-pm-2",
@@ -1794,7 +1797,10 @@
    "horizon": "2026-08-28",
    "probability": "20-35%",
    "basis": "Iran's public posture today was defiant and rhetorical (sanctions-defeat framing) rather than addressing specific US operational claims; no Iranian source engaged with the mine-clearing claim directly as of this edition.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Iran's deputy foreign minister Kazem Gharibabadi explicitly dismissed Trump's mine-clearing claim and asserted Iranian sovereignty over the strait (\"has been Iranian, is Iranian, and will remain Iranian\"), a direct governmental denial, even as Iran and Oman worked toward a separate shipping-corridor framework.",
+   "graded": "2026-08-26",
+   "lesson": "Iran engaged with the specific operational claim directly and quickly rather than staying in general defiant rhetoric, a firmer and faster denial than the forecast's basis (prior days' pattern of rhetorical-only pushback) anticipated."
   },
   {
    "id": "2026-08-25-pm-3",
@@ -1804,6 +1810,36 @@
    "horizon": "2026-09-08",
    "probability": "25-40%",
    "basis": "Carney described talks as having 'collapsed' today, the most final language either side has used in this five-day escalation cycle; but both governments have re-engaged under deadline pressure earlier this cycle (mid-August), and neither has fully closed the door rhetorically.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-26-am-1",
+   "date": "2026-08-26",
+   "slot": "am",
+   "forecast": "Nvidia (NVDA) closes tomorrow, Aug 27, more than 5% away from tonight's pre-earnings close",
+   "horizon": "2026-08-27",
+   "probability": "45-60%",
+   "basis": "Yahoo Finance data cited by market previews shows NVDA has fallen after 6 of its last 8 earnings reports, including the last 4 in a row, and options pricing implies a large post-earnings move against a consensus (~$93.6B revenue, ~$2.13 EPS) that already assumes a large beat.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-26-am-2",
+   "date": "2026-08-26",
+   "slot": "am",
+   "forecast": "OpenAI or Anthropic issues any public, on-record response addressing the House Democrats' Aug 24 AI-security deadline within two weeks (by Sept 9)",
+   "horizon": "2026-09-09",
+   "probability": "55-70%",
+   "basis": "Sustained bipartisan congressional and press attention creates reputational pressure to respond eventually, but both companies have so far gone quiet on specifics of their respective disclosed security incidents rather than engaging publicly with congressional questions.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-26-am-3",
+   "date": "2026-08-26",
+   "slot": "am",
+   "forecast": "CMSA publishes a specific new Chang'e 7 launch date within 30 days (by Sept 25)",
+   "horizon": "2026-09-25",
+   "probability": "20-35%",
+   "basis": "CMSA has stayed silent on a replacement date for more than two weeks despite sustained international press attention, and recalculating a lunar-south-pole launch window is a slower process than a typical weather scrub.",
    "status": "open"
   }
  ]

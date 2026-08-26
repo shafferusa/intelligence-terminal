@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Wed, Aug 26, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-26",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/08/2026-08-26-am.html",
+    "summary": "A judge found Washington defied her mail-ballot order but let the rule publish anyway, South Carolina picked Trump's Senate nominee, Iran disputed the White House's Hormuz mine-clearing claim, and Nvidia reports into all of it tonight.",
+    "headlines": [
+      "Talwani finds USPS defied her mail-ballot order, but lets today's rule publish anyway",
+      "Darline Graham wins South Carolina's GOP Senate runoff over Ralph Norman",
+      "Iran and Oman float a Hormuz corridor while Tehran disputes Trump's mine-clearing claim"
+    ],
+    "reading_minutes": 21,
+    "generated_at": "2026-08-26T06:49:44-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Wednesday, August 26, 2026 <span class="sep">&middot;</span> 21 min read
+      </p>
+      <p class="paper-standfirst">
+        A federal judge found Washington defied her on mail ballots and let the rule take effect anyway, South Carolina handed Trump's operation a Senate nominee, Iran flatly disputed the White House's claim that Hormuz's mines are gone, and Nvidia reports into all of it tonight.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Oman brokered a framework for a temporary Hormuz shipping corridor with Iran, but Tehran flatly disputed Trump&rsquo;s claim that the U.S. Navy cleared the strait&rsquo;s mines, and Russia hit four Ukrainian cities overnight, killing one person in Kharkiv.</li>
+          <li><b>Washington.</b> Judge Talwani found USPS &ldquo;feigned compliance&rdquo; with her mail-ballot injunction but let today&rsquo;s rule publish anyway, and South Carolina Republicans picked Sen. Darline Graham over Rep. Ralph Norman in Tuesday&rsquo;s runoff.</li>
+          <li><b>Markets.</b> Futures sit modestly lower after Tuesday&rsquo;s broad, chip- and international-led rally; oil extended its slide on the Gulf diplomacy, and Nvidia reports after tonight&rsquo;s close.</li>
+          <li><b>The thread.</b> Two disputed claims &mdash; one legal (has the government actually complied), one military (are the mines really gone) &mdash; both still open at print time.</li>
+          <li><b>Biggest risk.</b> The DRC&rsquo;s Ebola outbreak, now the largest ever recorded there, with the UN&rsquo;s own coordinator warning response funding &ldquo;will run out&rdquo; within weeks.</li>
+          <li><b>Watch today.</b> 8:30 AM&rsquo;s GDP revision and the Fed&rsquo;s preferred inflation gauge, then Nvidia&rsquo;s 5:00 PM call.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>A federal judge says Washington defied her on mail ballots &mdash; then lets the rule take effect anyway</h3>
+          <p class="story-deck">Judge Talwani found USPS &ldquo;feigned compliance&rdquo; with her injunction, but declined to block today&rsquo;s Federal Register publication because the agency itself says it cannot enforce the rule while her order stands.</p>
+          <div class="story-body">
+            <p>Monday, the Supreme Court granted the administration and 12 Republican-led states an emergency stay of a separate, broader Talwani injunction &mdash; the one blocking Trump&rsquo;s mail-voting executive order in 23 states &mdash; in a 6-3, unsigned shadow-docket order. Justice Jackson dissented sharply, and the majority added a caveat: its action &ldquo;does not mean that any measure taken by the Government to implement the Order will necessarily be lawful.&rdquo; Talwani&rsquo;s separate Aug. 11 injunction, which blocks USPS from implementing new mail-ballot envelope and barcode procedures, was not disturbed by Monday&rsquo;s order and remains in effect.</p>
+            <p>Tuesday, Talwani ruled on the narrower fight: she found USPS defied her explicit directive by finalizing the mail-ballot rule and sending it to the Federal Register with an immediate effective date. But because USPS itself has acknowledged it cannot implement the rule while her injunction stands, she declined to order additional relief blocking today&rsquo;s scheduled publication. Net effect: the rule publishes today, but USPS remains barred from actually enforcing it for the 2026 midterms under her still-standing order.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Two federal orders now point in different directions on the same rule, with the practical effect resting on USPS&rsquo;s own compliance rather than a clean court resolution &mdash; an unusual, ambiguous state for an election-administration rule to be in this close to the midterms.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Both the government and the plaintiff states retain appeal paths on their respective losses. Watch for a fresh emergency filing from either side, or for Talwani to further clarify enforcement once the rule is formally in the Federal Register.
+            </div>
+          </div>
+          <p class="story-sourceline">Axios &middot; Washington Examiner &middot; Epoch Times &middot; Just The News &middot; NPR &middot; NBC News &middot; Washington Post (Monday&rsquo;s SCOTUS order).</p>
+        </article>
+
+        <article class="story">
+          <h3>Darline Graham wins the runoff to keep her late brother&rsquo;s Senate seat in Republican hands</h3>
+          <p class="story-deck">Trump&rsquo;s endorsement and a six-figure, last-day ad buy from his political operation carried Graham past Rep. Ralph Norman by five points.</p>
+          <div class="story-body">
+            <p>Sen. Darline Graham defeated Rep. Ralph Norman 52.5%&ndash;47.5% (193,396 to 175,327 votes) in Tuesday&rsquo;s special GOP primary runoff to permanently fill the South Carolina Senate seat she has held on an interim basis since her brother Lindsey Graham&rsquo;s death. Trump endorsed and campaigned for Graham, and MAGA Inc. spent $827,000 on her behalf in the runoff&rsquo;s final day.</p>
+            <p>Graham advances to the Nov. 3 special general election against Democratic nominee Dr. Annie Andrews.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The Nov. 3 general in a solidly Republican state; the more closely watched question through the fall will be whether Trump&rsquo;s endorsement record &mdash; already showing ten primary losses this cycle in separate races &mdash; keeps its footing in races where he is actively engaged, as this one was.
+            </div>
+          </div>
+          <p class="story-sourceline">NBC News &middot; AP via ABC News &middot; NPR &middot; Roll Call &middot; Live5News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Iran and Oman float a Hormuz framework &mdash; while Tehran flatly disputes Trump&rsquo;s mine-clearing claim</h3>
+          <p class="story-deck">Iran&rsquo;s deputy foreign minister dismissed the mine-clearing claim outright: &ldquo;The Strait of Hormuz has been Iranian, is Iranian, and will remain Iranian.&rdquo;</p>
+          <div class="story-body">
+            <p>Iranian Foreign Minister Abbas Araghchi met his Omani counterpart in Tehran Tuesday, and the two countries floated a framework for a temporary shipping corridor through the strait, including joint mine-clearing and closing the existing UN-authorized southern route, which Iran opposes. Iran&rsquo;s Deputy FM Kazem Gharibabadi called the talks &ldquo;constructive,&rdquo; though no deal is finalized.</p>
+            <p>Separately, Trump posted Tuesday that &ldquo;all mines have been removed and/or detonated&rdquo; from the strait&rsquo;s international waters, crediting the U.S. Navy, and warned Iran against laying more. Gharibabadi rejected the framing directly and asserted Iranian sovereignty over the strait. <span class="flag">Disputed</span> No independent U.S. Navy confirmation of the mine-clearing claim has surfaced; treat it as the administration&rsquo;s own account, contested by the other party.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the first time either side has engaged directly with a specific operational claim in this standoff, rather than trading general rhetoric &mdash; a sign the diplomatic track (the corridor talks) and the confrontational track (the mine dispute) are now running in parallel rather than in sequence.
+            </div>
+          </div>
+          <p class="story-sourceline">Al Jazeera &middot; US News &middot; CNN &middot; The Hill &middot; Jerusalem Post.</p>
+        </article>
+
+        <article class="story">
+          <h3>Carney matches Trump&rsquo;s tariffs dollar-for-dollar as the trade war with Canada hardens further</h3>
+          <p class="story-deck">Ottawa is doubling retaliatory tariffs to 50% on US steel, aluminum, dairy and furniture, backed by a C$25 billion domestic support package.</p>
+          <div class="story-body">
+            <p>Prime Minister Mark Carney confirmed Tuesday that Canada will double its retaliatory tariffs to 50% on US steel, aluminum, dairy, furniture, clothing and electronics, effective Sept. 8 &mdash; matching Trump&rsquo;s own threatened doubling of Canada&rsquo;s auto and parts tariffs for Jan. 1, 2027. Ottawa is pairing the move with roughly C$25 billion in support for Canadian businesses and workers hurt by the trade war. Carney separately said he will &ldquo;never let Trump own Canada.&rdquo; There is no sign either government has reopened formal talks since Carney described them as &ldquo;collapsed&rdquo; Monday.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Sept. 8 is now the hard date on both sides&rsquo; retaliation. A forecast on whether talks resume before then is logged in this edition&rsquo;s ledger.
+            </div>
+          </div>
+          <p class="story-sourceline">Bloomberg &middot; Washington Post &middot; Prime Minister of Canada (official).</p>
+        </article>
+
+        <article class="story">
+          <h3>State Department confirms it is preparing to revoke visas for up to 200,000 people who later sought asylum</h3>
+          <p class="story-deck">A named spokesman put the department on the record for the first time on what would be the largest mass visa revocation in US history.</p>
+          <div class="story-body">
+            <p>State Department spokesman Tommy Pigott confirmed the department is preparing to revoke B1/B2 (business and tourist) visas issued between 2016 and 2026 to people who later filed for asylum, coordinating with DHS; Deputy Secretary of State Christopher Landau also commented publicly. Officials describe a gradual rollout, not a single action, and say revocation would not automatically trigger deportation &mdash; affected people would instead be shifted to a different immigration category while their asylum cases proceed. No formal regulation or Federal Register notice has been published.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is a verification-level upgrade, not new substance: what was a single-sourced AP report Monday is now confirmed on the record by five outlets citing the same named officials, though it remains a plan being prepared rather than an executed action.
+            </div>
+          </div>
+          <p class="story-sourceline">CNN &middot; NPR &middot; PBS &middot; Al Jazeera &middot; ABC News.</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC&rsquo;s Ebola outbreak keeps outrunning its funding, UN says, as it becomes the country&rsquo;s deadliest ever</h3>
+          <p class="story-deck">The UN&rsquo;s own Ebola coordinator warned response funding &ldquo;will run out&rdquo; within weeks, even as the outbreak becomes the largest ever recorded in the DRC.</p>
+          <div class="story-body">
+            <p>The outbreak now stands at 5,514 confirmed cases and 2,642 deaths as of Aug. 23, the largest ever documented in the Democratic Republic of Congo and the fastest-growing on record, concentrated in Ituri, North Kivu and Haut Uele provinces. UN Senior Ebola Coordinator Julien Harneis said directly: &ldquo;We&rsquo;re only covered for the next weeks, and very soon funding will run out.&rdquo; At least 158 health workers have been infected and 45 have died.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A named UN official putting a specific timeline on a funding shortfall, in an outbreak already the country&rsquo;s worst on record, raises the stakes from a case-count update to an active resourcing crisis.
+            </div>
+          </div>
+          <p class="story-sourceline">UN News &middot; WHO Disease Outbreak News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Two Ethiopian peacekeepers killed in an unclaimed South Sudan ambush</h3>
+          <p class="story-deck">UNMISS has demanded a full investigation; no group has claimed responsibility.</p>
+          <div class="story-body">
+            <p>Armed assailants ambushed a UN patrol near Padjut village, Jonglei State, Monday, killing two peacekeepers &mdash; now identified as Ethiopian nationals &mdash; and injuring seven others, including South Sudanese police and civilian UN staff. UNMISS chief Anita Kiki Gbeho and the UN Secretary-General have condemned the attack. No group has claimed it, and no attacker has been identified.</p>
+          </div>
+          <p class="story-sourceline">UN News &middot; UNMISS (primary) &middot; Al Jazeera &middot; TRT World.</p>
+        </article>
+
+        <article class="story">
+          <h3>Russia strikes four Ukrainian cities overnight, killing one in Kharkiv</h3>
+          <p class="story-deck">Kyiv, Kharkiv, Zaporizhzhia and Dnipro were all hit simultaneously; the Kryvyi Rih shopping-center toll from last week holds at 16 dead.</p>
+          <div class="story-body">
+            <p>A missile strike in Kharkiv&rsquo;s Osnovianskyi district killed one person, per Mayor Ihor Terekhov, in an overnight barrage that also hit Kyiv &mdash; where debris from an intercepted drone or missile damaged a 16-story apartment building &mdash; along with Zaporizhzhia and Dnipro. The Aug. 21 Kryvyi Rih shopping-center strike, which killed 16, remains the deadliest single incident of the past two weeks and its toll is unchanged.</p>
+          </div>
+          <p class="story-sourceline">RBC-Ukraine &middot; CNN.</p>
+        </article>
+
+        <article class="story">
+          <h3>Nvidia reports tonight into a market already nervous about chips &mdash; and a memory fight the White House has joined</h3>
+          <p class="story-deck">Consensus sits near $93.6 billion in revenue and $2.13 in EPS; Commerce Secretary Lutnick has now weighed in against Apple sourcing Chinese memory.</p>
+          <div class="story-body">
+            <p>Nvidia reports its fiscal second-quarter results after today&rsquo;s close, with a call at 5:00 PM ET. Consensus per Finnhub sits at roughly $93.6 billion in revenue and $2.13 in adjusted EPS, up sharply year over year; one widely cited pattern from market previews notes Nvidia has fallen the session after 6 of its last 8 earnings reports, including the last 4 in a row &mdash; a historical pattern, not a prediction, but a sign expectations are already stretched.</p>
+            <p>The report lands inside a wider chip and memory backdrop: Commerce Secretary Howard Lutnick told the Wall Street Journal the administration &ldquo;does not approve&rdquo; of Apple sourcing Chinese-made DRAM from CXMT to address the ongoing memory shortage, a report that had already pressured Micron, Western Digital and SanDisk shares in recent sessions. Separately, Broadcom&rsquo;s reported AI-infrastructure financing talks &mdash; tied in part to Anthropic&rsquo;s data-center buildout &mdash; have grown from roughly $60 billion earlier this month to as much as $100 billion in the latest reporting.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              A forecast on the magnitude of tomorrow&rsquo;s post-earnings move is logged in this edition&rsquo;s ledger; Marvell reports Thursday, a direct read-through on the Google TPU partnership.
+            </div>
+          </div>
+          <p class="story-sourceline">Finnhub earnings calendar &middot; Kiplinger &middot; 9to5Mac &middot; CNBC (Broadcom financing).</p>
+        </article>
+
+        <article class="story">
+          <h3>China&rsquo;s Chang&rsquo;e 7 delay hardens toward 2027 as the launch window closes</h3>
+          <p class="story-deck">Multiple outlets now describe the slip as stretching to &ldquo;at least 2027,&rdquo; though China&rsquo;s space agency itself has not confirmed a new date.</p>
+          <div class="story-body">
+            <p>Following last weekend&rsquo;s scrub for Typhoon Narra, Scientific American, SpaceNews and Science/AAAS all now describe Chang&rsquo;e 7&rsquo;s delay as likely running into 2027, since the lunar-south-pole Sun-Earth-Moon launch geometry window needed for this mission has closed for the year. <span class="flag">Unconfirmed</span> China&rsquo;s Manned Space Agency has not itself published a replacement date &mdash; the 2027 figure is press analysis, not an official commitment, and a tracking database used by the launch industry lists the mission&rsquo;s status only as &ldquo;to be determined.&rdquo;</p>
+          </div>
+          <p class="story-sourceline">Scientific American &middot; SpaceNews &middot; Science/AAAS.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>Three threads from this week held steady rather than moving. The Israel-Turkey dispute over the Abu al-Duhur airbase near Aleppo appears to be cooling &mdash; Israel reportedly believes Turkey has abandoned its bid for a presence there, for now &mdash; even as Turkey&rsquo;s Interpol arrest-warrant request against Netanyahu over the Gaza flotilla interception stands with no fresh statement from either side. The EU and UK&rsquo;s reported sanctions package over Israel&rsquo;s E1 settlement tender remains in preparation, not yet issued. And the Somali-piracy standoff over the hijacked tanker Sibu 1 (also tracked as Seamull, a US-sanctioned vessel linked to Iran&rsquo;s shadow fleet) remains unresolved, with no report of the vessel&rsquo;s release as regional piracy runs at a decade high.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Several threads showed no material movement overnight. The FBI probe into Rep. Eric Swalwell (which includes a civil-rights-statute angle per his attorney) and the House Ethics Committee&rsquo;s investigation into Rep. Jimmy Gomez both continue with no new statements from any party. The Missouri Supreme Court&rsquo;s Sept. 2 arguments on the congressional-map appeal remain on the calendar with no new pre-argument filings found. Rep. Al Green&rsquo;s ninth impeachment resolution against Trump (H.Res.1486, filed Monday over ICE/CBP conduct) has drawn no significant reaction and has no realistic path to a floor vote. And no hearing date has been set for FDA commissioner nominee Dr. Heidi Overton, who already faces a committed no vote from Sen. Patty Murray and open concerns from Chairman Bill Cassidy.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Two senior Treasury officials indicated Monday that the department could tap its roughly $1 trillion General Account to help fund an expanded long-bond buyback program, on top of Secretary Bessent&rsquo;s existing move to double buybacks of off-the-run long-end securities to at least $4 billion per operation; Treasury yields eased on the report, with the 10-year closing Tuesday at 4.64% (Treasury.gov par curve, EOD official), down 6 basis points on the day.</p>
+        <p>The Kansas City Fed&rsquo;s Jackson Hole symposium opens tomorrow, and Chair Kevin Warsh&rsquo;s Friday keynote &mdash; his first there as chair &mdash; has become something of a referendum on his communication style after a July FOMC meeting that offered little forward guidance and was followed by long-end yields climbing to a two-decade high. September rate-path odds have swung meaningfully through the month, from roughly 81% probability of a hike in late July to closer to 30&ndash;40% by this week, tracking the softer July jobs data and Tuesday&rsquo;s weak Conference Board consumer-confidence read (an 89.4 seven-month low, with the Expectations sub-index at a level historically associated with elevated recession risk).</p>
+        <p>Today brings the Q2 GDP second estimate, July Personal Income and Outlays (including the PCE price index &mdash; the Fed&rsquo;s preferred inflation gauge, one day ahead of Warsh&rsquo;s remarks), and advance July durable goods orders, all at 8:30 AM, followed by a $70 billion 5-year Treasury auction at 1:00 PM.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Sell-side analysts continued cutting Walmart price targets this week following last Thursday&rsquo;s report, which beat on revenue and EPS but showed comparable-sales growth decelerating to 2.6% &mdash; the slowest since 2020. RBC (to $131), Wolfe Research (to $115), JPMorgan (to $125) and Bank of America (to $126) all trimmed targets while mostly keeping bullish ratings, framing it as a valuation reset rather than a change of thesis.</p>
+        <p>Marvell&rsquo;s Aug. 19 SEC filing detailing its Google warrant &mdash; up to $120 billion by 2033, vesting only against usage benchmarks with no minimum commitment or exclusivity &mdash; continues to sit alongside Broadcom&rsquo;s own, undisturbed TPU supply agreement with Google through 2031, ahead of Marvell&rsquo;s own earnings tomorrow.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>Nvidia and Supermicro both went on record Tuesday over the Taiwan indictment of nine people, including employees of each company, over falsified paperwork that routed AI servers meant for Taiwan to Chinese customers. Nvidia said it &ldquo;will work with the Taiwan authorities to help them resolve the allegations,&rdquo; and Supermicro said the arrests followed its own cooperation with investigators and that it will keep strengthening its export-compliance program.</p>
+        <p>OpenAI&rsquo;s head of data centers, Chris Malone, has departed &mdash; at least the 14th notable OpenAI personnel exit reported this year, following the company&rsquo;s chief revenue officer, chief operating officer and others, against the backdrop of OpenAI&rsquo;s own reported IPO planning. Separately, a newly disclosed, unpatched Windows Defender flaw (CVE-2026-69414, dubbed &ldquo;ShieldBreak&rdquo;) remains without a Microsoft fix as of this morning; it bypasses an earlier July patch for a related flaw. And CISA&rsquo;s joint advisory on AI-generated malware targeting Siemens industrial control systems has drawn no new named-victim disclosures since it was issued last week.</p>
+        <p>Still no public response from OpenAI or Anthropic to Monday&rsquo;s congressional deadline over their disclosed AI-security incidents.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>NASA and SpaceX confirm the Nancy Grace Roman Space Telescope remains &ldquo;Go for Launch&rdquo; aboard a Falcon Heavy from LC-39A this Sunday, Aug. 30, at 7:26 AM ET, with no new weather concern or schedule change since encapsulation.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt">GDP, Q2 2026 second estimate</td><td>&mdash;</td><td>+1.5% (advance)</td></tr>
+            <tr><td>08:30</td><td class="txt">Personal Income &amp; Outlays, Jul (incl. PCE price index)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>08:30</td><td class="txt">Durable goods orders, Jul (advance)</td><td>+0.6%</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt">5-Year Treasury Note auction, $70B</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>17:00</td><td class="txt"><strong>Nvidia (NVDA) Q2 FY2027 earnings, after close</strong></td><td>~$93.6B rev &middot; $2.13 EPS</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures sit modestly lower after Tuesday&rsquo;s broad rally: S&amp;P futures down about a tenth of a percent, Nasdaq futures off a quarter-point, both delayed readings and not a guaranteed open. The 10-year Treasury yield eased 6 basis points to 4.64% Tuesday and the 2-year fell 7 basis points to 4.17%, holding the curve&rsquo;s positive slope (2s10s at +47 basis points) roughly steady. The dollar is little changed &mdash; the ICE Dollar Index up about a tenth of a percent, euro/dollar flat &mdash; while the VIX sits at 15.71, up modestly but still historically low ahead of tonight&rsquo;s Nvidia report. Oil extended its slide, WTI down another 2.6% to $80.24, continuing to price the Hormuz diplomacy rather than Iran&rsquo;s harder rhetoric; gold is up eight-tenths of a percent and natural gas is up nearly 4%.</p>
+        <p>The tape&rsquo;s most fragile assumption right now is that the Iran-Oman corridor framework holds even though Iran itself is disputing the specific U.S. mine-clearing claim underpinning some of oil&rsquo;s recent decline; a fresh tanker incident or a harder Iranian statement on the corridor talks would be the thing to invalidate it. Bitcoin trades near $78,700, down about seven-tenths of a percent over 24 hours (CoinGecko), with total crypto market capitalization near $2.66 trillion and Bitcoin&rsquo;s share of it at 59%.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Nvidia&rsquo;s report triggers a broader semiconductor selloff.</strong> Preconditions: a headline beat that still disappoints &ldquo;whisper&rdquo; expectations on data-center guidance, following Monday&rsquo;s seventh-straight-down session and the parallel memory-sector selloff. Probability 25&ndash;35%, unchanged from yesterday&rsquo;s edition. If it happens: broad chip and AI-infrastructure names (AMD, AVGO, VRT, ETN, CEG) give back this week&rsquo;s gains; invalidated by data-center revenue and guidance both clearing consensus cleanly.</p>
+        <p><strong>Talwani reissues a narrower mail-ballot injunction before Friday.</strong> Preconditions: fresh briefing due after Monday&rsquo;s SCOTUS order and Tuesday&rsquo;s compliance-violation finding. Probability 40&ndash;55%, on the basis that the SCOTUS majority&rsquo;s stated rationale (implementation timing) leaves room for a differently grounded order. If it happens: renewed uncertainty over mail-ballot procedures ahead of the midterms; invalidated by no further Talwani action through Friday.</p>
+        <p><strong>DRC Ebola response funding actually lapses within weeks, as the UN coordinator warned.</strong> Probability 35&ndash;50%, on the basis that no new pledge has been announced since the warning and prior humanitarian funding gaps in active outbreaks have sometimes closed only after a further deterioration became visible. If it happens: case growth likely accelerates further in Ituri and North Kivu; invalidated by a donor announcement in the next two weeks.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">81&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Patchy fog before 9 AM, then partly sunny; south wind 1&ndash;6 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">81&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Fog, then sun</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">63&deg;</span>
+            <span class="sky">Mostly clear</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">83&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">PM storms (30%)</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>UPMC Children&rsquo;s commits $10 million to expand behavioral-health care at its Bridgeville campus</h3>
+        <div class="story-body">
+          <p>UPMC Children&rsquo;s Hospital is building out a previously unused fourth floor of its South (Bridgeville) campus into nine treatment rooms, observation space, a Parent-Child Interaction Therapy room and a creative-arts therapy center, aiming to bring pediatric mental-health care closer to South Hills and South Fayette families rather than requiring trips to Lawrenceville. Hospital president Diane Hupp cited rising youth behavioral-health demand and noted nearly 40% of Pennsylvania counties lack a single child psychiatrist. Completion is expected mid-2027.</p>
+        </div>
+        <p class="story-sourceline">90.5 WESA &middot; Hoodline.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT holds the first of two final public hearings on its Bus Line Refresh</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit held sessions Tuesday at the Heinz 57 Building on its proposed bus-network redesign &mdash; the first major overhaul in roughly 15 years, built from more than 20,000 public comments gathered over three years. A second hearing is set for Sept. 10, with the public-comment period running through Sept. 30; the PRT board is expected to vote in November, with any approved changes taking effect in the second half of 2027.</p>
+        </div>
+        <p class="story-sourceline">90.5 WESA &middot; Pittsburgh Post-Gazette.</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, broad</span> Supporting: Tuesday&rsquo;s advance/decline line was strongly positive (3,186 advancers vs. 1,984 decliners across a 5,380-name universe, roughly 70% of volume on the up side), international equities led (Korea, Brazil, Taiwan all up 2%+), and credit stayed tight (high-yield OAS 2.69%, near its cycle lows). Contradicting: VIX ticked up 1.7% even as equities rallied, oil&rsquo;s slide reflects genuine geopolitical uncertainty rather than pure risk-on, and the week&rsquo;s single largest catalyst (Nvidia) has not yet reported. No change in regime label from Tuesday&rsquo;s edition.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Tuesday, Aug 25 cash close &middot; EOD official.</caption>
+              <thead><tr><th>Index</th><th>Level</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,677.28</td><td class="up">+0.32%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>26,151.30</td><td class="up">+0.66%</td></tr>
+                <tr><td>Dow Jones Industrial</td><td>53,577.40</td><td class="up">+0.30%</td></tr>
+                <tr><td>Russell 2000</td><td>3,010.02</td><td class="up">+0.50%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>SPY sits 0.15% above its 20-day average and 1.75% above its 50-day; QQQ, by contrast, is 0.20% below its 20-day and 0.32% below its 50-day despite Tuesday&rsquo;s tech-sector gain &mdash; a mild divergence worth watching into Nvidia&rsquo;s report. SPY&rsquo;s 52-week range is $629.28&ndash;$779.37.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Tuesday&rsquo;s session: 3,186 advancers vs. 1,984 decliners, 210 unchanged, across a 5,380-name universe &mdash; a broad rally, with up-volume ($8.6B) more than double down-volume ($3.8B). <span class="chip chip--warn">Estimated &mdash; EMA proxy, accumulating history (23/200 sessions)</span> the 50- and 200-day EMA breadth reads are not yet statistically seasoned; treat the advance/decline count as the more reliable breadth signal for now.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, Tuesday close.</caption>
+              <thead><tr><th>Sector</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>Technology (XLK)</td><td class="up">+0.94%</td></tr>
+                <tr><td>Communications (XLC)</td><td class="up">+0.77%</td></tr>
+                <tr><td>Health Care (XLV)</td><td class="up">+0.34%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="up">+0.21%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="up">+0.15%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td class="up">+0.07%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="flat">0.00%</td></tr>
+                <tr><td>Discretionary (XLY)</td><td class="down">&minus;0.30%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="down">&minus;0.34%</td></tr>
+                <tr><td>Staples (XLP)</td><td class="down">&minus;1.06%</td></tr>
+                <tr><td>Energy (XLE)</td><td class="down">&minus;1.66%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Energy&rsquo;s underperformance tracks directly with oil&rsquo;s slide; tech and communications led on no single identified catalyst beyond general risk appetite ahead of Nvidia.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists &amp; industries</summary>
+          <p>Notable movers, Tuesday close: Robinhood +8.2%, Interactive Brokers +5.5%, AMD +4.9% (Raymond James upgrade), Marvell +4.8%, Coinbase +4.3%, Merck +3.8%, Novo Nordisk +3.7%, United Airlines +3.4% led gains. On the downside: Target &minus;3.8% (no specific catalyst identified &mdash; <span class="flag">Unexplained</span>), York Space Systems &minus;4.5%, Karman &minus;4.2%, Firefly Aerospace &minus;3.6%, Voyager Technologies &minus;2.8% and Rocket Lab &minus;2.0% extended the space cohort&rsquo;s divergence from chipmakers&rsquo; rebound, with no company-specific news identified behind the space-sector weakness. SpaceX (SPCX) closed at $137.95, 6.0% above its 20-day average but 2.2% below its 50-day, roughly midway in its $104.83&ndash;$225.64 52-week range.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, Aug 25 &middot; EOD official.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D chg</th></tr></thead>
+              <tbody>
+                <tr><td>3M</td><td>3.86%</td><td class="down">&minus;1bp</td></tr>
+                <tr><td>2Y</td><td>4.17%</td><td class="down">&minus;7bp</td></tr>
+                <tr><td>10Y</td><td>4.64%</td><td class="down">&minus;6bp</td></tr>
+                <tr><td>30Y</td><td>5.17%</td><td class="down">&minus;6bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +47bp, 3m10y +78bp, 5s30s +82bp &mdash; the curve holds its positive slope with a roughly parallel downward shift Tuesday, consistent with the Treasury buyback report weighing modestly on yields across tenors rather than a growth- or inflation-specific move at either end.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS: 2.69% (FRED, Aug 24 observation) &mdash; effectively unchanged from 2.70% three sessions earlier and near its cycle tights. No stress signal in credit spreads.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 15.71 (+1.7%, delayed 15 min), VIX9D 13.45, VIX3M 18.21 &mdash; normal contango, no term-structure inversion. Put/call ratio data remains unavailable (Cboe&rsquo;s options market-statistics feed has returned 403 on every attempt for weeks); MOVE index and dealer gamma remain untracked, as noted in every edition, for lack of a legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>ICE Dollar Index (DXY) 99.01, +0.09%. EUR/USD 1.1667, essentially flat (&minus;0.01%). ECB reference basket (Frankfurter, Aug 25 fix): EUR 0.8575, JPY 159.24, GBP 0.7336, CNY 6.7198 per USD.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude $80.24, &minus;2.6% &mdash; continuing to price the Hormuz diplomatic track. Gold $4,674.10, +0.8%. Natural gas $2.878, +3.9%. Copper $6.809, +1.5%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $78,718, &minus;0.7% over 24 hours (CoinGecko). Ethereum $2,465.80 (&minus;0.5%), Solana $97.13 (&minus;2.4%), Cardano $0.2113 (&minus;3.6%). Total crypto market capitalization $2.66 trillion; Bitcoin dominance 59.2%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Growth factors led Tuesday (IWF +0.65%, MTUM +0.60%, VUG +0.54%) while low-volatility and dividend factors lagged (SPLV &minus;0.49%, PKW &minus;0.42%, SCHD &minus;0.28%) &mdash; consistent with the day&rsquo;s risk-on tone.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset &amp; international</summary>
+          <p>International equities outpaced the US Tuesday: South Korea (EWY) +3.75%, Brazil (EWZ) +2.02%, Taiwan (EWT) +2.00%, India (INDA) +1.78%, broad emerging markets (EEM) +1.72%. Only France (EWQ, &minus;0.06%) declined among the tracked country funds.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>Nvidia reports after today&rsquo;s close (~5:00 PM ET); Marvell follows tomorrow after close. Consensus for Nvidia: ~$93.6B revenue, ~$2.13 EPS (Finnhub, day-of).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Monday&rsquo;s 2-year Treasury auction drew a 4.204% high yield and 2.60x bid-to-cover, stopping through by roughly 0.4 basis points &mdash; solid demand. Today brings a $70 billion 5-year auction at 1:00 PM ET; the week&rsquo;s cycle closes with a $44 billion 7-year auction tomorrow. FINRA short-volume ratio for Tuesday&rsquo;s session: 49.8% aggregate, in normal range; AST SpaceMobile stood out at roughly 70% of its volume shorted, consistent with the name&rsquo;s recent volatility.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This edition rests on the Federal Register and Talwani&rsquo;s docket, the Treasury par-yield curve and FRED, Cboe&rsquo;s VIX complex, a 174-symbol Yahoo Finance close-series sweep cross-checked against Twelve Data, CoinGecko, FINRA short-volume data, a SEC EDGAR 8-K sweep, the National Weather Service, and named wire and outlet reporting (NBC News, NPR, Al Jazeera, UN News, WHO, CNN and others cited story by story above).</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes; missing data is declared missing, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-26-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

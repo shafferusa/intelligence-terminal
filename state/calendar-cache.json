@@ -1,40 +1,8 @@
 {
- "fetched": "2026-08-25T06:50:00-04:00",
- "earnings_fetched": "2026-08-25",
- "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-25 -- no watchlist-relevant earnings today (Alpha Vantage 3-month CSV last refreshed 2026-08-23, within once-per-day limit, not re-fetched).",
+ "fetched": "2026-08-26T06:49:44-04:00",
+ "earnings_fetched": "2026-08-26",
+ "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-26: NVDA confirmed amc, EPS estimate $2.1283, revenue estimate ~$93.63B (Alpha Vantage 3-month CSV last refreshed 2026-08-23, within once-per-day limit, not re-fetched).",
  "events": [
-  {
-   "ts_et": "2026-08-25T08:35:00-04:00",
-   "type": "other",
-   "name": "ISS spacewalk (Menon, Adenot) -- antenna replacement, ~6.5 hrs",
-   "importance": "Medium",
-   "reason": "Scheduled human-spaceflight event same-day; third Menon spacewalk this month, Adenot's second.",
-   "source": "NASA ISS blog -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-08-25T10:00:00-04:00",
-   "type": "econ_release",
-   "name": "Conference Board Consumer Confidence Index, August",
-   "importance": "Medium",
-   "reason": "Monthly consumer-sentiment gauge.",
-   "source": "Conference Board release calendar -- Confirmed-multiple (scheduled)"
-  },
-  {
-   "ts_et": "2026-08-25T13:00:00-04:00",
-   "type": "auction",
-   "name": "2-Year Treasury Note auction, $69B",
-   "importance": "Medium",
-   "reason": "First of three coupon auctions this week.",
-   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-08-25T19:00:00-04:00",
-   "type": "election",
-   "name": "South Carolina Senate GOP primary runoff -- polls close",
-   "importance": "High",
-   "reason": "Trump-endorsed Darline Graham vs. Ralph Norman; winner advances to Nov 3 special general.",
-   "source": "Ballotpedia, NPR -- Confirmed-multiple (scheduled)"
-  },
   {
    "ts_et": "2026-08-26T08:30:00-04:00",
    "type": "econ_release",
@@ -72,8 +40,8 @@
    "type": "earnings",
    "name": "NVIDIA (NVDA) Q2 FY2027 earnings, after close",
    "importance": "Critical",
-   "reason": "Week's largest scheduled catalyst; consensus ~$93-95B revenue.",
-   "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub"
+   "reason": "Week's largest scheduled catalyst; consensus ~$93.6B revenue, ~$2.13 EPS.",
+   "source": "Finnhub earnings calendar (Confirmed-primary, day-of) cross-checked against Alpha Vantage"
   },
   {
    "ts_et": "2026-08-27T08:30:00-04:00",
@@ -128,7 +96,7 @@
    "type": "launch",
    "name": "Falcon Heavy -- Nancy Grace Roman Space Telescope",
    "importance": "High",
-   "reason": "NASA flagship infrared observatory, ~8 months ahead of prior schedule. Note: Aug 30, 2026 is a SUNDAY, not Saturday (corrected 2026-08-25 -- see ledgers/corrections.json).",
+   "reason": "NASA flagship infrared observatory, ~8 months ahead of prior schedule. Confirmed \"Go for Launch\" per Launch Library 2 as of 2026-08-26.",
    "source": "Launch Library 2 (thespacedevs.com), NASA Roman blog -- Confirmed-primary (scheduled)"
   }
  ],
