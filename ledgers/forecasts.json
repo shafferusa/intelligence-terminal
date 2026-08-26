@@ -1744,7 +1744,10 @@
    "horizon": "2026-08-25",
    "probability": "25-35%",
    "basis": "Public polling has consistently favored Graham by wide margins since the first round; Norman's campaign claims a 52-40 internal lead and reports describe Graham's own internal numbers softening late, but a trailing campaign's internal-poll claims don't reliably overturn consistent public polling.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Darline Graham defeated Ralph Norman 52.5%-47.5% in the runoff; no upset.",
+   "graded": "2026-08-26",
+   "lesson": "A trailing campaign's claimed internal-poll lead did not overturn consistent public polling; the 25-35% probability band was reasonable but the outcome landed on the disfavored side of it."
   },
   {
    "id": "2026-08-25-am-2",
@@ -1774,7 +1777,10 @@
    "horizon": "2026-08-27",
    "probability": "25-35%",
    "basis": "Recurring pattern across recent high-multiple mega-cap earnings; Monday's pre-earnings selloff (Nvidia's seventh straight down session, plus a separate memory-sector selloff on the CXMT report) suggests the market is already positioned defensively.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Nvidia's Q3 guidance ($108B vs ~$92-93B consensus) was a large raise, not a disappointment -- the forecast's core premise did not occur, independent of Thursday's stock reaction.",
+   "graded": "2026-08-26",
+   "lesson": "The recent pre-earnings selloff read as market caution, but caution ahead of a print is not evidence the print itself will disappoint -- distinguish positioning from outcome."
   },
   {
    "id": "2026-08-25-pm-1",
@@ -1840,6 +1846,36 @@
    "horizon": "2026-09-25",
    "probability": "20-35%",
    "basis": "CMSA has stayed silent on a replacement date for more than two weeks despite sustained international press attention, and recalculating a lunar-south-pole launch window is a slower process than a typical weather scrub.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-26-pm-1",
+   "date": "2026-08-26",
+   "slot": "pm",
+   "forecast": "Nvidia (NVDA) closes Thursday, Aug 27, higher than tonight's pre-earnings close ($209.66), despite the stock having fallen the day after each of its last four earnings reports",
+   "horizon": "2026-08-27",
+   "probability": "40-55%",
+   "basis": "Tonight's beat-and-raise was unusually large (Q3 guide of $108B vs ~$92-93B consensus) and the explicit zero-China-revenue framing removes a specific uncertainty rather than adding one, but the stock's post-earnings pattern (4 straight declines despite beats) and after-hours volatility argue for caution.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-26-pm-2",
+   "date": "2026-08-26",
+   "slot": "pm",
+   "forecast": "A US government official confirms on the record, within one week, that the administration objects to the Iran-Oman Hormuz framework's joint outbound-route management",
+   "horizon": "2026-09-02",
+   "probability": "30-45%",
+   "basis": "The objection is currently sourced to unnamed reporting via CNBC and wire pickups with no on-record confirmation from either government; administrations often let such objections play out through private diplomatic channels rather than public confirmation, but this dispute has drawn heavy press attention that raises pressure to respond.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-26-pm-3",
+   "date": "2026-08-26",
+   "slot": "pm",
+   "forecast": "A federal court receives an emergency motion (TRO or preliminary injunction request) in the new 25-state mail-ballot lawsuit within two weeks",
+   "horizon": "2026-09-09",
+   "probability": "40-55%",
+   "basis": "This dispute's earlier rounds (the original injunction fight, the Supreme Court's Monday ruling) moved to emergency posture quickly once a rule took legal effect, and the midterms create real time pressure; but the plaintiff coalition may also choose to litigate on a standard merits track given the SCOTUS ruling just went against a companion injunction.",
    "status": "open"
   }
  ]

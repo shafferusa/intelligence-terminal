@@ -70,10 +70,10 @@
    "headline": "Congress's deadline for OpenAI and Anthropic to answer for security incidents lands with no reply yet",
    "status": "Continuing",
    "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-26-am",
-   "verification": "Reported",
-   "one_line": "Still no public response from OpenAI or Anthropic to the Aug 24 congressional deadline as of this morning. Separately, OpenAI's head of data centers, Chris Malone, departed -- at least the 14th notable OpenAI personnel exit in 2026 -- reported against the backdrop of OpenAI's own IPO planning.",
-   "score_note": "Absence of a congressional response continues; the exec departure is a related but distinct personnel story.",
+   "last_updated": "2026-08-26-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Two full days past Monday's deadline, neither OpenAI nor Anthropic has published a substantive response to Congress's AI-security questions. OpenAI's only comment predates the deadline (reviewing with external advisors). Forecast open on a response by Sept 9.",
+   "score_note": "The absence itself, not a new event, is the story now.",
    "sources": [
     "The Hill",
     "CNBC"
@@ -183,15 +183,15 @@
    "headline": "Mail-ballot SCOTUS emergency docket remains fully briefed with no ruling",
    "status": "Materially changed",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-08-26-am",
+   "last_updated": "2026-08-26-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Talwani ruled Tuesday that USPS \"feigned compliance\" and defied her Aug 11 injunction by finalizing the mail-ballot rule, but declined to block its scheduled Aug 26 Federal Register publication since USPS itself says it cannot implement the rule while her injunction stands. Net effect: the rule publishes today but cannot be enforced for the midterms under her still-standing order. Forecast graded correct.",
-   "score_note": "Second consecutive on-schedule ruling from this judge; the legal ambiguity (published but unenforceable) is itself the story now.",
+   "one_line": "Talwani vacated her own injunction today, citing Monday's SCOTUS ruling; the rule is now formally in effect nationwide. 23 states + DC + PA's governor filed a new merits lawsuit in Boston federal court same day. Fight has shifted from 'can it publish' to 'is it lawful.'",
+   "score_note": "First time the litigation posture matches the rule's actual legal status since the dispute began.",
    "sources": [
     "Axios",
-    "Washington Examiner",
-    "Epoch Times",
-    "Just The News"
+    "Washington Post",
+    "CT Mirror",
+    "Democracy Docket"
    ],
    "watch": true
   },
@@ -401,16 +401,14 @@
    "headline": "Iran raises the Gulf-standoff stakes: threatens to block all oil traffic, not just Hormuz",
    "status": "Materially changed",
    "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-24-am",
-   "verification": "Confirmed-multiple (suspension, UAE); Confirmed-multiple (Rezaei threat, relayed via Iranian state media)",
-   "one_line": "UAE-Iran trade suspension holds with no reported reconciliation. Ahead of today's 2pm ET 'Economic D-Day' sanctions announcement, Iran's SNSC secretary Rezaei threatened to block all Persian Gulf oil traffic -- not just the Strait of Hormuz -- if any neighboring state joins the US campaign. No Gulf state has publicly joined as of this morning; Saudi Arabia's Crown Prince met Macron in France over the weekend on alternative routes, read as hedging.",
-   "score_note": "Central story entering the week -- today's 2pm announcement is the next concrete checkpoint.",
+   "last_updated": "2026-08-26-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Gharibabadi detailed the Iran-Oman framework: no military vessels transit, Iranian-controlled inbound routing, temporary status with a 30-60 day deadline for a permanent scheme. Trump administration reportedly objects to joint Iranian-Omani management of the outbound route (Single-reliable-source, not on record). Oil little changed to modestly higher today despite the harder details.",
+   "score_note": "First framework detailed enough to carry a deadline and an explicit US objection.",
    "sources": [
-    "CNN",
-    "Reuters/Al-Monitor",
     "Al Jazeera",
-    "Washington Post",
-    "Fortune"
+    "Fortune",
+    "CNBC"
    ],
    "watch": true
   },
@@ -832,18 +830,18 @@
   {
    "id": "taiwan-nvidia-supermicro-export-indictment-aug25",
    "headline": "Taiwan indicts Nvidia and Supermicro employees over illegal AI-server exports to China",
-   "status": "Continuing",
+   "status": "Materially changed",
    "first_seen": "2026-08-25-pm",
-   "last_updated": "2026-08-26-am",
+   "last_updated": "2026-08-26-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Both named companies have now commented: Nvidia said it \"will work with the Taiwan authorities to help them resolve the allegations,\" and Supermicro said the arrests followed its own cooperation with Taiwanese authorities and it will keep strengthening its export-compliance program. No new charges beyond the original nine defendants.",
-   "score_note": "Corporate statements are now on record, not just the original charges.",
+   "one_line": "Scheme now detailed at ~$2.5B: 74 servers reached China via 3 routes (50 via Indonesia, 16 direct, 8 via Japan/Hong Kong); a separate 56-server attempt failed and stayed in Taiwan. Both Nvidia and Supermicro have issued on-record statements.",
+   "score_note": "Corporate statements and scheme scale now both on record.",
    "sources": [
-    "Washington Post",
-    "PBS News",
-    "Al Jazeera"
+    "Wire coverage of Taiwan prosecutors",
+    "Nvidia statement (primary)",
+    "Supermicro statement (primary)"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "al-green-impeachment-articles-aug24",
@@ -875,6 +873,68 @@
     "Hoodline"
    ],
    "watch": false
+  },
+  {
+   "headline": "Nvidia beats big, guides to $108B assuming zero China data-center revenue",
+   "status": "New",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-26-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Q2 FY27 revenue $96.221B (+106% y/y) beat ~$92-93B consensus; non-GAAP EPS $2.22. Q3 guidance $108.0B +/-2%, explicitly assuming zero China data-center revenue. Stock closed the pre-earnings session -1.59% to $209.66; after-hours reaction volatile and not characterized. Forecast logged on tomorrow's directional close.",
+   "score_note": "Beat-and-raise this large against a stock that has fallen after 4 straight earnings reports makes tomorrow's reaction the real story.",
+   "sources": [
+    "NVIDIA Corp. 8-K Exhibit 99.1, SEC EDGAR (primary)"
+   ],
+   "watch": true,
+   "id": "nvda-q2-fy27-earnings-aug26"
+  },
+  {
+   "headline": "Catastrophic Nepal-Tibet border flash flood; death toll in open dispute",
+   "status": "New",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-26-pm",
+   "verification": "Unverified (casualty count)",
+   "one_line": "Ice/rock avalanche into the Lhende Khola triggered flash floods through Rasuwa, Nuwakot, Dhading and Gorkha districts plus Tibet. Death toll ranges wildly across outlets (8 to 160+); ~403 tourists including Americans unaccounted for per Nepal's tourism ministry. Not printing a single figure until it stabilizes.",
+   "score_note": "Major breaking disaster with a significant American-tourist angle; casualty count needs active tracking.",
+   "sources": [
+    "Al Jazeera",
+    "CNN",
+    "NPR",
+    "Japan Times"
+   ],
+   "watch": true,
+   "id": "nepal-tibet-flash-flood-aug26"
+  },
+  {
+   "headline": "Islamabad hospital nursery fire kills 14 newborns",
+   "status": "New",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-26-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Fire in PIMS hospital's neonatal ward, apparent AC-compressor explosion; 14 of ~15 newborns present died. PM Shehbaz Sharif ordered an investigation. Reports of locked ward doors not yet independently confirmed.",
+   "score_note": "Clear single-incident tragedy with a formal government investigation already ordered.",
+   "sources": [
+    "Al Jazeera",
+    "CNN",
+    "CBS News"
+   ],
+   "watch": false,
+   "id": "islamabad-hospital-fire-aug26"
+  },
+  {
+   "headline": "Trump declares national emergency over foreign-sourced grid equipment",
+   "status": "New",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-26-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "New EO under IEEPA/NEA bars federal agencies and US persons from acquiring bulk-power-system equipment (transformers, grid software) tied to a foreign adversary posing unacceptable risk -- revives a 2020 order Biden revoked in 2021.",
+   "score_note": "New emergency-powers use targeting grid supply chain; fits a pattern of China-hardware national-security actions this year.",
+   "sources": [
+    "Department of Energy (primary)",
+    "White House presidential-actions page (primary)"
+   ],
+   "watch": false,
+   "id": "grid-equipment-national-emergency-aug26"
   }
  ]
 }
