@@ -1538,7 +1538,10 @@
    "horizon": "2026-08-25",
    "probability": "40-55%",
    "basis": "Both cases hit procedural deadlines today (the mail-ballot $100 bond and the ballroom response), and the ballroom matter carries an Aug. 21 enforcement date that puts real time pressure on the Court.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Both matters saw Court action within the window: Chief Justice Roberts issued an administrative stay in the ballroom case Aug 21, and the full Court issued a 6-3 stay in the mail-ballot case Aug 24 -- both before the Aug 25 horizon.",
+   "graded": "2026-08-27-pm",
+   "lesson": "Procedural deadlines and enforcement dates did produce the predicted Court action, though as narrow/administrative orders rather than merits rulings, consistent with the forecast's own framing."
   },
   {
    "id": "2026-08-20-pm-1",
@@ -1704,7 +1707,10 @@
    "horizon": "2026-08-27",
    "probability": "35-50%",
    "basis": "Reported unofficial 'whisper' expectations run above the published $93-95B consensus, a dynamic that has produced outsized post-earnings moves at other high-multiple mega-caps this cycle even on headline beats; the stock's current position near recent highs raises the bar for an unambiguous beat.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "NVDA closed Thu Aug 27 at $227.98, +8.74% close-to-close vs Wed's $209.66 -- well above the 5% threshold.",
+   "graded": "2026-08-27-pm",
+   "lesson": "The zero-China-revenue framing and the scale of the FY28 growth guide (~70% vs ~44% consensus) were enough to break the stock's 4-report losing streak decisively, not just marginally."
   },
   {
    "id": "2026-08-24-pm-1",
@@ -1826,7 +1832,10 @@
    "horizon": "2026-08-27",
    "probability": "45-60%",
    "basis": "Yahoo Finance data cited by market previews shows NVDA has fallen after 6 of its last 8 earnings reports, including the last 4 in a row, and options pricing implies a large post-earnings move against a consensus (~$93.6B revenue, ~$2.13 EPS) that already assumes a large beat.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "NVDA closed Thu Aug 27 at $227.98, +8.74% from Wed's $209.66 pre-earnings close -- move exceeded 5%.",
+   "graded": "2026-08-27-pm",
+   "lesson": "Same resolution as 2026-08-24-am-4; both forecasts on the same underlying event graded together."
   },
   {
    "id": "2026-08-26-am-2",
@@ -1856,7 +1865,10 @@
    "horizon": "2026-08-27",
    "probability": "40-55%",
    "basis": "Tonight's beat-and-raise was unusually large (Q3 guide of $108B vs ~$92-93B consensus) and the explicit zero-China-revenue framing removes a specific uncertainty rather than adding one, but the stock's post-earnings pattern (4 straight declines despite beats) and after-hours volatility argue for caution.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "NVDA closed Thu Aug 27 at $227.98, above Wed's $209.66 pre-earnings close, breaking the stock's streak of falling after its last four earnings reports.",
+   "graded": "2026-08-27-pm",
+   "lesson": "A sufficiently large beat-and-raise, with a specific uncertainty (China revenue) explicitly removed rather than left ambiguous, was enough to overcome the recent pattern of post-earnings declines."
   },
   {
    "id": "2026-08-26-pm-2",
