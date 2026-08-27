@@ -1,6 +1,10 @@
 {
-  "last_success": "2026-08-26-pm",
+  "last_success": "2026-08-27-learn",
   "runs": {
+    "2026-08-27-learn": {
+      "status": "success",
+      "ts": "2026-08-27T10:11:36Z"
+    },
     "2026-08-26-learn": {
       "status": "success",
       "ts": "2026-08-26T10:10:14Z"
@@ -76,14 +80,6 @@
     "2026-07-30-am": {
       "status": "success",
       "ts": "2026-07-30T10:19:12Z"
-    },
-    "2026-07-27-am": {
-      "status": "success",
-      "ts": "2026-07-27T12:31:46Z"
-    },
-    "2026-07-27-pm": {
-      "status": "success",
-      "ts": "2026-07-27T21:03:18Z"
     },
     "2026-07-28-am": {
       "status": "success",

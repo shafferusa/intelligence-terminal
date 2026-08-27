@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Ball That Bounces Forever and Stops in About Four Seconds · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-27",
+    "slot": "learn",
+    "title": "The Ball That Bounces Forever and Stops in About Four Seconds",
+    "path": "reports/2026/08/2026-08-27-learn.html",
+    "summary": "Day nine of the 150-day curriculum: limits and continuity, built around a 2,500-year-old paradox about Achilles and a tortoise, a bouncing ball that takes infinitely many hops to come to rest, and the exact, finite number the stopwatch reads anyway.",
+    "headlines": [
+      "Day 9 of 150 · Mathematics: limits and continuity",
+      "A ball bounces infinitely many times and still stops in about four seconds — the limit is why",
+      "Why 0.999... genuinely equals 1, not just “almost” 1"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-08-27T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Ball That Bounces Forever and Stops in About Four Seconds</h1>
+      <p class="paper-dateline">
+        Thursday, August 27, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        A dropped ball bounces infinitely many times on its way to lying still, a runner named Achilles can never quite catch a tortoise if you add up his progress the naive way, and 0.999999&hellip; is not almost 1 &mdash; it is 1, exactly &mdash; and the single idea that resolves all three, cleanly and for good, is the limit.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 9 of 150 &middot; Mathematics 5 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Drop a rubber ball from about waist height onto a bare floor and time it with a stopwatch. It bounces, and bounces again lower, and again lower still, and somewhere around the four-second mark it is lying still. You have watched this a thousand times and it has never struck you as strange, because it isn&rsquo;t &mdash; until you look at what has to be true underneath it. Each bounce returns a fixed fraction of the height of the one before it, and a process that always keeps a fixed fraction of what it had a moment ago never technically hits zero. There is always a next bounce, a little smaller than the last: a centimeter, then a few millimeters, then a fraction of a millimeter, on and on, with no bounce ever being literally the last one. If the sequence of bounces genuinely never ends, and each bounce genuinely takes some nonzero sliver of time, then simple arithmetic seems to say the total time has to be infinite &mdash; you cannot add up infinitely many positive numbers, however small, and get a finite answer. That is exactly how addition works with two numbers, or two thousand.</p>
+
+      <p>Except the stopwatch does not read infinity. It reads about four seconds, and it reads about four seconds every time you run the experiment, on any ball that bounces the way real balls bounce. This is not an approximation forced on the world by clumsy measurement, either &mdash; it is a genuine, documented feature of the mathematics of bouncing, one precise enough that control engineers and roboticists have a name for it. A ball bouncing on a hard floor is the standard textbook illustration of what is called <strong>Zeno behavior</strong>: a system that undergoes infinitely many events in a strictly finite stretch of time. Researchers who study robots that walk, hop, or otherwise make repeated contact with the ground have to design around this fact explicitly, because a simulation that tries to step through every single one of an infinite sequence of bounces one at a time will simply never finish computing, even though the real, physical ball finishes bouncing in a few seconds flat.</p>
+
+      <p>The puzzle is roughly 2,500 years old, and today&rsquo;s lesson is the piece of mathematics built, over two millennia, specifically to resolve it: the <strong>limit</strong>, and its close relative, <strong>continuity</strong>. By the end of this lesson you will be able to compute the bouncing ball&rsquo;s exact stopping time from first principles, and you will understand why a question that stumped some of the sharpest minds in antiquity has a clean, one-line answer once you have the right tool.</p>
+
+      <h3>A runner, a tortoise, and an argument nobody could refute for two thousand years</h3>
+
+      <p>The clearest ancient version of this puzzle comes down to us through Aristotle&rsquo;s <em>Physics</em>, Book VI, where he records and argues against a set of paradoxes devised by the philosopher Zeno of Elea, working in Greece around the mid-400s BCE. Zeno&rsquo;s own writings are lost; everything known of his paradoxes survives because later philosophers, Aristotle chief among them, quoted and wrestled with them. The most famous is the story of Achilles and the tortoise. Achilles, the fastest runner in the Iliad, races a tortoise that gets a head start. By the time Achilles reaches the tortoise&rsquo;s starting point, the tortoise, however slowly, has moved a little further on. By the time Achilles closes that new gap, the tortoise has again moved a little further, however little. This repeats without end: every time Achilles arrives where the tortoise just was, the tortoise is a little bit further ahead. Zeno&rsquo;s conclusion, as Aristotle reports it, was that the fast runner can never overtake the slow one &mdash; an infinite number of gaps to close, each one taking some positive amount of time, again seeming to force an infinite total.</p>
+
+      <p>Ordinary experience says this is nonsense &mdash; fast runners obviously do overtake slow tortoises, constantly, in reality. Zeno&rsquo;s point was never that runners can&rsquo;t actually overtake tortoises; it was that the reasoning everyone used to describe motion led to an absurd conclusion, and something in that reasoning had to be wrong. Aristotle himself offered a partial philosophical response, distinguishing a distance that is infinitely divisible <em>in principle</em> from one that would require infinite time to traverse <em>in practice</em> &mdash; but he had no way to make that distinction mathematically precise, and neither did anyone else for a very long time. The paradox sat, formally unresolved, for roughly two thousand years, waiting on an idea that simply had not been invented yet: a rigorous way to add up infinitely many shrinking quantities and land on an exact, finite total. That idea is what this lesson teaches, and the first worked example below runs Achilles and the tortoise through it with real numbers, arriving at the exact moment he catches up.</p>
+
+      <h3>The idea, before any notation</h3>
+
+      <p>Here is the concept in plain words, with no symbols at all. A <strong>limit</strong> describes what a quantity gets arbitrarily close to as some other quantity approaches a particular value &mdash; without needing that quantity to actually equal, or even be defined at, the value it&rsquo;s approaching. The phrase &ldquo;approach a value without reaching it&rdquo; captures the flavor of the idea but is a little too strong as a rule, and clearing that up now will save real confusion later: a limit is about the process of getting close, and it says nothing one way or the other about whether the endpoint is technically attained. Sometimes it plainly is &mdash; if you are walking toward a wall, your distance from the wall approaches zero, and, if you don&rsquo;t stop, eventually equals zero, you walk into it. Sometimes it plainly is not &mdash; the bouncing ball&rsquo;s height approaches zero without any single bounce actually being height zero. The limit machinery works identically in both cases; it just answers a slightly different question than &ldquo;does it get there,&rdquo; namely: what is the process homing in on, whether or not it happens to land exactly on it.</p>
+
+      <p><strong>Continuity</strong> is the natural next question once you have limits: does a function&rsquo;s value at a point actually match what the function was approaching as you closed in on that point from either side? A continuous function is one you could trace with a pencil without ever lifting it off the page &mdash; no holes, no sudden jumps, no places the graph shoots off toward infinity. Almost every function this newspaper&rsquo;s learning track has used so far &mdash; position over time, height over time, price over time &mdash; has been implicitly assumed continuous, because the physical or economic quantities behind them don&rsquo;t teleport. Today is the first lesson that makes continuity a defined, checkable property rather than an unexamined assumption, and gives you the vocabulary for the specific, everyday ways a function can fail to have it.</p>
+
+      <h3>Building the formal system</h3>
+
+      <p>The formal definition of a limit had almost as long and difficult a history as the paradox it was built to answer. Isaac Newton and Gottfried Leibniz, working independently in the 1660s and 1670s, built the calculus this lesson is laying the groundwork for using an intuitive but logically shaky notion of infinitesimals &mdash; quantities somehow smaller than any positive number yet not quite zero &mdash; and calculus worked, in the sense of giving correct answers to real problems, for well over a century before anyone could say precisely what an infinitesimal actually was. The mathematician Augustin-Louis Cauchy, in his 1821 <em>Cours d&rsquo;Analyse</em>, pushed hard toward modern rigor and used epsilon-based arguments in a number of his proofs, but his own working definition of a limit was still built on an intuitive, not fully formalized, notion of infinitely small quantities rather than the finished symbolic definition used today. Bernard Bolzano, working in Prague, appears to have reached a genuinely rigorous version of the modern definition earlier still, in work that went largely unnoticed at the time. It was the German mathematician Karl Weierstrass who, in his lectures beginning around 1861, gave the definition its final, precise, and widely adopted form &mdash; the one every calculus course still teaches, nearly two centuries after Cauchy and roughly 2,300 years after Zeno first noticed something was wrong with how everyone talked about motion.</p>
+
+      <p>The delay was not for lack of trying, and it was not a quiet, purely academic gap either. Newton and Leibniz themselves fell into one of the bitterest priority disputes in the history of science over which of them had really invented calculus first &mdash; a fight that consumed the Royal Society, drew in accusations of plagiarism on both sides, and split European mathematics for a generation along roughly national lines, the English continuing to use Newton&rsquo;s notation and the continent adopting Leibniz&rsquo;s cleaner dy/dx. Modern historians generally agree the two arrived at the core ideas independently, Newton somewhat earlier (in the 1660s, though he published later) and Leibniz with the notation that proved easier to build on. Neither man, in all of that argument over who deserved credit, actually supplied the missing logical foundation; both were, in a sense, equally exposed on the same point, which the Irish philosopher George Berkeley exploited in 1734 with a pamphlet mocking infinitesimals as the &ldquo;ghosts of departed quantities&rdquo; &mdash; a genuinely sharp objection that calculus&rsquo;s practitioners spent the better part of a century unable to fully answer, even while continuing to use the method productively because it kept producing correct answers to real problems in orbital mechanics, shipbuilding, and everything else it touched. Weierstrass&rsquo;s epsilon-delta definition, arriving in the 1860s, is precisely the belated answer to Berkeley&rsquo;s ghost: it replaces &ldquo;an infinitely small quantity&rdquo; with a finite, ordinary, entirely un-mysterious two-number negotiation that never requires anything smaller than any positive number you could name, only smaller than whichever positive number a skeptic happens to demand.</p>
+
+      <p>Weierstrass&rsquo;s definition replaces the vague phrase &ldquo;gets arbitrarily close&rdquo; with a precise back-and-forth challenge between two small positive numbers, conventionally named with the Greek letters epsilon and delta:</p>
+
+      <div class="formula">
+        <p class="expr">lim<sub>x&rarr;a</sub> f(x) = L &nbsp;&nbsp;means:&nbsp;&nbsp; for every &epsilon; &gt; 0, there exists a &delta; &gt; 0 such that 0 &lt; |x &minus; a| &lt; &delta; implies |f(x) &minus; L| &lt; &epsilon;</p>
+        <dl>
+          <dt>a</dt><dd>the input value x is approaching &mdash; f itself need not even be defined at a</dd>
+          <dt>L</dt><dd>the limit &mdash; the single value f(x) is claimed to approach as x approaches a</dd>
+          <dt>&epsilon;</dt><dd>epsilon &mdash; an arbitrarily small tolerance on how close f(x) must land to L; chosen first, by whoever is testing the claim</dd>
+          <dt>&delta;</dt><dd>delta &mdash; how close x must be kept to a (excluding a itself) in order to guarantee f(x) lands within &epsilon; of L; found second, in response to the chosen &epsilon;</dd>
+          <dt>0 &lt; |x &minus; a|</dt><dd>x is within &delta; of a, but not equal to a &mdash; what happens exactly at a is deliberately excluded from the definition</dd>
+        </dl>
+      </div>
+
+      <p>Read it as a challenge-and-response game rather than a static formula, because that is genuinely what the quantifiers mean: a skeptic names how close they want f(x) squeezed to L &mdash; that&rsquo;s &epsilon;, and it can be made as small as the skeptic likes &mdash; and to win the claim that the limit equals L, you have to be able to name a window of x-values around a &mdash; that&rsquo;s &delta; &mdash; narrow enough that every x in that window (other than a itself) produces an f(x) inside the skeptic&rsquo;s tolerance. If you can always find such a &delta;, no matter how small an &epsilon; the skeptic demands, the limit genuinely equals L. If there is some &epsilon; for which no &delta; works, it doesn&rsquo;t. The order of the two quantifiers is not a stylistic choice; it is the entire content of the definition. Epsilon is chosen first and delta responds to it &mdash; never the reverse &mdash; because a single delta has to work for one particular epsilon, not the other way around.</p>
+
+      <p>Limits also come with a direction. The <strong>left-hand limit</strong>, written lim<sub>x&rarr;a<sup>&minus;</sup></sub> f(x), only considers x-values approaching a from below; the <strong>right-hand limit</strong>, lim<sub>x&rarr;a<sup>+</sup></sub> f(x), only considers values from above. The two-sided limit used in the definition above exists precisely when both one-sided limits exist and agree with each other &mdash; if a function approaches different values from the left and from the right, there is no single number it is &ldquo;approaching,&rdquo; and the two-sided limit simply does not exist at that point.</p>
+
+      <p>Continuity builds directly on top of this, in three separate conditions that all have to hold at once:</p>
+
+      <div class="formula">
+        <p class="expr">f is continuous at a &nbsp;&hArr;&nbsp; (1) f(a) is defined,&nbsp; (2) lim<sub>x&rarr;a</sub> f(x) exists,&nbsp; (3) lim<sub>x&rarr;a</sub> f(x) = f(a)</p>
+        <dl>
+          <dt>(1)</dt><dd>the function actually has a value sitting at the point in question &mdash; nothing missing</dd>
+          <dt>(2)</dt><dd>the left- and right-hand limits at that point both exist and agree with each other</dd>
+          <dt>(3)</dt><dd>the value the function approaches from both sides is the exact same number the function actually equals there &mdash; no gap between the approach and the landing</dd>
+        </dl>
+      </div>
+
+      <p>A function that fails any one of these three conditions at a point has a <strong>discontinuity</strong> there, and discontinuities come in a small number of recognizable shapes. A <strong>removable discontinuity</strong> is a single missing or misplaced point in an otherwise well-behaved graph &mdash; the limit exists perfectly well, but condition (1) or (3) fails, usually because the function was never defined at that exact point, or was defined there incorrectly; &ldquo;removable&rdquo; because filling in that one point with the correct value patches the function into a continuous one. A <strong>jump discontinuity</strong> is where the left-hand and right-hand limits both exist but disagree with each other &mdash; the graph genuinely steps from one level to another, the way a tax bracket or a shipping-rate schedule jumps at a threshold rather than sliding smoothly through it. An <strong>infinite discontinuity</strong> (sometimes called essential) is where the function shoots off toward positive or negative infinity as x approaches the point, the way 1/x behaves as x approaches zero &mdash; there, no finite limit exists at all, from either side.</p>
+
+      <p>The jump discontinuity is worth sitting with for a moment, because unlike the other two it shows up constantly in ordinary, non-mathematical life, usually by deliberate design rather than as some flaw in a model. Flat parking rates that jump from $5 to $10 the instant you cross the one-hour mark, a shipping calculator that jumps from $6 to $12 the instant a package crosses one pound, an income-tax bracket that (contrary to a very common piece of folk economics) does <em>not</em> actually cause a jump in total tax owed but does cause one in the marginal rate applied to the next dollar earned &mdash; all of these are jump discontinuities, deliberately engineered into a rule because a discrete threshold is administratively simpler than a smoothly sliding scale. None of them is a defect in the mathematics; a jump discontinuity is a perfectly legitimate, well-defined kind of function, and this lesson&rsquo;s vocabulary exists precisely so you can say what kind of break you&rsquo;re looking at rather than just gesturing at &ldquo;something weird happens there.&rdquo;</p>
+
+      <h3>Achilles and the tortoise, run with real numbers</h3>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; catching the tortoise, exactly</b>
+        <p>Give the tortoise a 100-meter head start. Achilles runs at a steady 10 meters per second; the tortoise, unhurried, manages 1 meter per second. Zeno&rsquo;s argument breaks the race into an endless sequence of legs: first, the time for Achilles to reach the tortoise&rsquo;s current position; then the (shorter) time to reach wherever the tortoise has crept to meanwhile; and so on, forever. Add up that sequence directly, the way Zeno&rsquo;s argument invites you to, and see what actually happens to the total.</p>
+        <ol>
+          <li>Leg 1: Achilles has 100 m to cover at 10 m/s, taking t&#8321; = 100/10 = 10 s. In those 10 s, the tortoise, moving at 1 m/s, advances 1 &times; 10 = 10 m further.</li>
+          <li>Leg 2: Achilles now has that new 10 m gap to close, taking t&#8322; = 10/10 = 1 s. In that 1 s, the tortoise advances 1 &times; 1 = 1 m further.</li>
+          <li>Leg 3: the gap is now 1 m, taking t&#8323; = 1/10 = 0.1 s to close, during which the tortoise advances 0.1 m further.</li>
+          <li>Each leg&rsquo;s time is exactly one-tenth of the leg before it &mdash; the ratio of tortoise speed to Achilles speed, 1/10 &mdash; so the full, infinite sequence of leg-times is a <strong>geometric series</strong>: 10 + 1 + 0.1 + 0.01 + &hellip;, first term t&#8321; = 10, common ratio r = 0.1. A geometric series with |r| &lt; 1 has a finite sum given by S = t&#8321; / (1 &minus; r), a formula that itself falls out of a short limit argument (summing the first n terms and letting n approach infinity makes the shrinking r<sup>n</sup> tail vanish in the limit). Here: S = 10 / (1 &minus; 0.1) = 10 / 0.9 = 11.111&hellip; s.</li>
+          <li>Check it the direct way, with no infinite sum at all: relative to each other, Achilles closes the gap at 10 &minus; 1 = 9 m/s, and the initial gap is 100 m, so the catch-up time is simply 100 / 9 = 11.111&hellip; s. The two methods agree exactly &mdash; the endless sequence of ever-shrinking legs really does add up to one clean, finite, entirely ordinary number: eleven and one-ninth seconds.</li>
+        </ol>
+        <p>Notice what that number is: 100/9, a repeating decimal, 11.1&#772; seconds. Hold onto that repeating-decimal detail &mdash; the misconception section below returns to exactly this kind of number and the discomfort it tends to cause.</p>
+      </div>
+
+      <h3>The ball, finished properly</h3>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; how long the bouncing actually takes</b>
+        <p>Drop a ball from height h&#8320; = 1 meter. Ignore air resistance and spin &mdash; a standard simplification for a first pass at this problem, and one that changes the numbers only slightly for a dense, low-bounce ball dropped a short distance. Each bounce returns a fraction of the impact speed rather than the impact height directly: the <strong>coefficient of restitution</strong>, r, is the ratio of a ball&rsquo;s rebound speed to its impact speed, a number between 0 (a totally inelastic thud) and 1 (a perfectly elastic bounce). Take r = 0.8, a reasonable value for a bouncy rubber ball on a hard floor. Because falling height and impact speed are related by ordinary kinematics (already familiar from Day 5&rsquo;s lesson on motion), and kinetic energy scales with the square of speed, a rebound speed fraction of r shrinks the next bounce&rsquo;s peak height by a factor of r&sup2;, not r &mdash; a detail worth being precise about, because it is easy to reach for the wrong exponent here.</p>
+        <ol>
+          <li>Time to fall the first meter: from h = &frac12;gt&sup2;, t&#8320; = &radic;(2h&#8320;/g) = &radic;(2 &times; 1 / 9.8) = &radic;0.2041 &asymp; 0.4518 s.</li>
+          <li>After the first bounce, the ball rises to h&#8320;r&sup2; = 1 &times; 0.64 = 0.64 m, then falls back down &mdash; a round trip taking 2 &times; &radic;(2 &times; 0.64/9.8) = 2 &times; 0.8 &times; t&#8320; = 1.6 &times; 0.4518 &asymp; 0.7229 s. In general, the k-th full bounce cycle (up and back down) takes 2r<sup>k</sup>t&#8320;.</li>
+          <li>Total time is the first fall plus every bounce cycle after it, again a geometric series: T = t&#8320; + 2t&#8320;(r + r&sup2; + r&sup3; + &hellip;) = t&#8320;[1 + 2r/(1 &minus; r)] = t&#8320; &times; (1 + r)/(1 &minus; r).</li>
+          <li>Plugging in: T = 0.4518 &times; (1.8/0.2) = 0.4518 &times; 9 &asymp; 4.066 s &mdash; the entire infinite sequence of bounces, summed exactly, lands on a number you could read off a kitchen stopwatch.</li>
+          <li>How many of those infinitely many bounces are physically noticeable? Solve h&#8320;r<sup>2n</sup> &lt; 1 mm for n: r<sup>2n</sup> &lt; 0.001 gives n &gt; ln(0.001) / (2 ln 0.8) = (&minus;6.908) / (&minus;0.446) &asymp; 15.5, so by the 16th bounce the ball is already rebounding less than the thickness of a dime &mdash; visually and practically at rest, even though the mathematics behind it keeps generating bounces forever.</li>
+        </ol>
+        <p>That last step is the real resolution of the paradox, stated plainly: there is nothing physically wrong with an unending sequence of ever-smaller events, because the corresponding sequence of times shrinks fast enough that its infinite sum still converges &mdash; approaches, and in the limiting sense equals &mdash; a specific finite number. The bouncing genuinely never mathematically ends; the elapsed time genuinely does. Those two facts are not in tension. They were only ever made to look like they were in tension by treating &ldquo;infinitely many terms&rdquo; and &ldquo;infinite total&rdquo; as if they had to go together, which the geometric series in both of today&rsquo;s worked examples so far shows they simply do not.</p>
+      </div>
+
+      <h3>Reading a discontinuity off the algebra</h3>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; a hole in the graph, and proving it with &epsilon; and &delta;</b>
+        <p>Take f(x) = (x&sup2; &minus; 4)/(x &minus; 2). Plug in x = 2 directly and you get 0/0 &mdash; undefined, not zero, because division by zero is never allowed. It is tempting to conclude the function simply has no limit at x = 2. It does; the function just isn&rsquo;t <em>continuous</em> there, which is a different claim.</p>
+        <ol>
+          <li>Factor the numerator: x&sup2; &minus; 4 = (x &minus; 2)(x + 2), so for every x &ne; 2 (which is the only case the limit definition ever actually looks at &mdash; recall the 0 &lt; |x &minus; a| in the &epsilon;-&delta; definition explicitly excludes x = a), f(x) = (x &minus; 2)(x + 2)/(x &minus; 2) = x + 2.</li>
+          <li>As x approaches 2, x + 2 approaches 4. So the claim is lim<sub>x&rarr;2</sub> f(x) = 4, even though f(2) itself is not defined at all.</li>
+          <li>Prove it with the formal definition: pick any &epsilon; &gt; 0. Need |f(x) &minus; 4| &lt; &epsilon; whenever 0 &lt; |x &minus; 2| &lt; &delta;. For x &ne; 2, |f(x) &minus; 4| = |(x + 2) &minus; 4| = |x &minus; 2|. So choosing &delta; = &epsilon; works exactly: whenever 0 &lt; |x &minus; 2| &lt; &delta; = &epsilon;, it is immediately true that |f(x) &minus; 4| = |x &minus; 2| &lt; &epsilon;. The proof is genuinely that short once the algebra is done &mdash; the hard work is always the algebraic simplification, not the &epsilon;-&delta; bookkeeping around it.</li>
+          <li>Classify the discontinuity: the limit at x = 2 exists (it&rsquo;s 4), but condition (1) of continuity fails &mdash; f(2) itself is undefined. This is exactly a removable discontinuity: define a new function that equals f(x) everywhere except sets its value to 4 at x = 2, and the result is continuous everywhere, with a graph that is a perfectly ordinary straight line, x + 2, missing only the single point directly above x = 2 &mdash; a hairline gap invisible at any normal zoom level, but a real, checkable failure of the formal definition all the same.</li>
+        </ol>
+      </div>
+
+      <h3>Where this already shows up</h3>
+
+      <p>The single most consequential limit in applied mathematics almost certainly is not any of the ones above &mdash; it is the one buried inside compound interest. In 1683, the Swiss mathematician Jacob Bernoulli asked a simple question: if a sum of money earns 100% annual interest, and that interest is compounded more and more frequently &mdash; not once a year, but twice, then monthly, then daily &mdash; how large can the final balance possibly grow? Compounding once a year on $1 gives $2.00. Twice a year gives $2.25. Compounding monthly gives roughly $2.613; daily, roughly $2.714. The balance keeps climbing as the compounding gets more frequent, but Bernoulli showed it does not climb without bound &mdash; it is squeezed between 2 and 3 no matter how finely the compounding is sliced, and it approaches a specific, fixed number as the number of compounding periods n heads toward infinity:</p>
+
+      <div class="formula">
+        <p class="expr">e = lim<sub>n&rarr;&infin;</sub> (1 + 1/n)<sup>n</sup> &asymp; 2.718281828&hellip;</p>
+        <dl>
+          <dt>e</dt><dd>Euler&rsquo;s number &mdash; an irrational constant, defined as nothing more or less than this limit</dd>
+          <dt>n</dt><dd>the number of compounding periods per year &mdash; the quantity being sent toward infinity</dd>
+        </dl>
+      </div>
+
+      <p>Bernoulli could pin the value between 2 and 3 but never named or computed it precisely; that fell to Leonhard Euler roughly fifty years later, who calculated it to 18 decimal places and attached the letter e to it, a notation that first appears in his correspondence in the early 1730s and has stuck ever since. This limit is, by most accounts, the first time in the history of mathematics that a genuinely new number was defined <em>as</em> a limit rather than constructed some other way &mdash; which makes it a fitting piece of &ldquo;where it shows up&rdquo; material for the very lesson that formalizes what a limit is. Watching the sequence itself converge is more persuasive than being told it does:</p>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>(1 + 1/n)<sup>n</sup> as the number of compounding periods n grows &mdash; computed directly for this report.</caption>
+          <thead><tr><th>n</th><th>Compounding</th><th>(1 + 1/n)<sup>n</sup></th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td class="txt">Annually</td><td>2.000000</td></tr>
+            <tr><td>2</td><td class="txt">Semiannually</td><td>2.250000</td></tr>
+            <tr><td>12</td><td class="txt">Monthly</td><td>2.613035</td></tr>
+            <tr><td>365</td><td class="txt">Daily</td><td>2.714567</td></tr>
+            <tr><td>8,760</td><td class="txt">Hourly</td><td>2.718127</td></tr>
+            <tr><td>31,536,000</td><td class="txt">Every second</td><td>2.718282</td></tr>
+            <tr><td>&rarr; &infin;</td><td class="txt">Continuous</td><td><em>e</em> &asymp; 2.718281828&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Each row is a direct evaluation of (1 + 1/n)<sup>n</sup>; the limit row is the constant e itself.</p>
+
+      <p>Notice how little ground is left to cover between hourly compounding and the limiting value &mdash; the sequence has essentially arrived by the time n reaches a few thousand, and every period after that buys a smaller and smaller improvement, the same shrinking-increments pattern that let the bouncing ball&rsquo;s infinite bounces sum to a finite time above. The practical descendant of Bernoulli&rsquo;s question is the continuous-compounding formula, A = Pe<sup>rt</sup>, used throughout finance to model growth under compounding so frequent that treating it as continuous is simpler than tracking discrete periods &mdash; the mathematical idealization every bond-pricing and options model quietly assumes once it reaches for the constant e. It is also, less obviously, the reason continuous quantities in this newspaper&rsquo;s own market coverage &mdash; a bond&rsquo;s yield, a stock&rsquo;s implied volatility &mdash; are treated as evolving smoothly between the discrete print times any real feed actually reports: the underlying financial theory assumes a continuous-time process precisely because the limit of ever-more-frequent trading converges the same way Bernoulli&rsquo;s compounding did.</p>
+
+      <p>Continuity failures in that same market data are not merely theoretical, either, and connect directly back to the jump-discontinuity vocabulary from a few paragraphs above. A stock&rsquo;s price, plotted against time, behaves as an almost-continuous function during ordinary trading &mdash; but it has a genuine, textbook jump discontinuity every single overnight session, opening at a materially different level from where it closed, and a much larger one on the rare day a regulatory circuit breaker halts trading outright and reopens the stock at a new level with no trades at all in between. A chartist drawing a candlestick chart is, whether the term is ever used or not, drawing a function with a predictable, recurring jump discontinuity built into its daily structure &mdash; exactly the kind of break today&rsquo;s vocabulary was built to name precisely instead of just eyeballing.</p>
+
+      <p>A second, quieter appearance of today&rsquo;s machinery sits underneath the whole discipline of economics, and connects directly back to a lesson already taught. Day 8 of this curriculum described economics as the study of choices made under scarcity, where every decision carries a genuine tradeoff. What that lesson did not yet make explicit is how economists actually formalize &ldquo;how much of a tradeoff&rdquo; at a specific point &mdash; the idea of a <strong>marginal</strong> quantity, as in marginal cost or marginal utility: the change in total cost, or total satisfaction, from one additional, infinitesimally small unit of something. A marginal quantity is defined as the limit of an average rate of change &mdash; total cost change divided by quantity change &mdash; as that quantity change shrinks toward zero. That is, precisely, a derivative, and a derivative is nothing but a limit of exactly the shape built in this lesson, evaluated on a cost or utility function instead of a position function. Day 11 of this curriculum will define the derivative formally and by name; today has already handed you every piece of machinery it needs.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Ask most people whether 0.999999&hellip;, repeating forever, is equal to 1 or is instead a hair&rsquo;s width below it, and a large fraction will say it is below &mdash; close to 1, essentially 1 for any practical purpose, but not <em>actually</em> 1. This is not a fringe confusion; it is one of the most carefully documented misconceptions in mathematics education. In a 1978 study, &ldquo;Conflicts in the Learning of Real Numbers and Limits,&rdquo; the researchers David Tall and Robert Schwarzenberger surveyed groups of students on exactly this question and found a substantial share genuinely believed 0.999&hellip; was strictly less than 1 &mdash; in one surveyed group, 14 of 36 students initially gave that answer &mdash; and traced the confusion to a specific, identifiable source: the informal language used to introduce limits (&ldquo;gets closer and closer but never quite reaches&rdquo;) plants an intuition that a limit, by its nature, must fall just short of the value it describes. That intuition is exactly the overcorrection flagged earlier in this lesson &mdash; and it is worth saying again here, at the point where it does the most damage, because this is the single misconception today&rsquo;s lesson exists to correct: a limit can be, and very often is, exactly equal to the value it approaches.</p>
+
+      <p>The number 0.999&hellip; is defined, by the very meaning of an infinite repeating decimal, as the limit of the sequence of finite sums 0.9, 0.99, 0.999, 0.9999, and so on &mdash; which is itself a geometric series, the same tool that solved both of today&rsquo;s other worked examples: 9/10 + 9/100 + 9/1000 + &hellip;, first term 9/10, common ratio 1/10. Its sum is S = (9/10) / (1 &minus; 1/10) = (9/10)/(9/10) = 1, exactly, with no approximation and no rounding anywhere in the calculation. There is no room left over for a number that could sit strictly between 0.999&hellip; and 1 &mdash; any such number would have to differ from 1 by some fixed positive amount, but the partial sums 0.9, 0.99, 0.999, &hellip; eventually get closer to 1 than any fixed positive amount you could name, which is exactly what it means for their limit to equal 1 outright. In the Tall and Schwarzenberger study, most of the students who initially rejected the equality &mdash; 13 of the 14 in that surveyed group &mdash; changed their answer once this reasoning was put to them directly, which is itself a useful data point: the confusion is not a failure of intelligence, it is a completely understandable side effect of teaching limits with language that overpromises &ldquo;never reaches.&rdquo; You now have the corrected version of that language on hand.</p>
+
+      <p>It is worth being honest about why the resistance is so persistent even after the algebra is shown, because the algebra alone rarely settles it on the first pass. &ldquo;0.999&hellip;&rdquo; looks, to the eye, like an unfinished process &mdash; a 9 that keeps getting appended, forever, and something in ordinary intuition insists that a number described by an unfinished process must itself be somehow unfinished, permanently a little short of its destination. The fix is recognizing that the three dots are not an instruction to keep computing; they are a name for the completed limit of that computation, in exactly the same way &ldquo;&pi;&rdquo; is not an instruction to keep computing digits of a circle&rsquo;s circumference-to-diameter ratio but a name for the one specific number all of those digits are approximating. Once a repeating or infinite decimal is understood as a name for a limit rather than a stalled process, the same reasoning that resolved Achilles and the bouncing ball resolves this too: an unending sequence of steps and a finite, exact destination are not in conflict, because the destination is not reached by taking one more step after the last one &mdash; there is no last one &mdash; it is reached in the limit, which is a different and, once you have today&rsquo;s formal definition in hand, an entirely precise idea.</p>
+
+      <h3>The callback</h3>
+
+      <p>Five lessons ago felt like a completely different subject: Day 8 was economics, opening with scarcity, opportunity cost, and the blunt fact that every choice forecloses some other choice. Nothing about that lesson looked like it had anything to do with a ball bouncing on a floor or an ancient Greek footrace. But the specific tool economists reach for to answer &ldquo;how much of this tradeoff, exactly, at this exact point&rdquo; &mdash; a marginal cost, a marginal benefit &mdash; is defined the same way every quantity in today&rsquo;s lesson was defined: as a limit, of an average rate of change, as the interval being averaged over shrinks to nothing. Strip away the dollar signs and the utility functions, and Day 8&rsquo;s &ldquo;how much does one more unit really cost you, right now&rdquo; and today&rsquo;s &ldquo;what does this function approach as x approaches a&rdquo; are, underneath the vocabulary, the identical operation. That is the pattern this 150-day sequence keeps returning to: the same handful of ideas, worn by different clothing in different subjects.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state the formal &epsilon;-&delta; definition of a limit, explain why the order of &ldquo;for every &epsilon;&rdquo; before &ldquo;there exists a &delta;&rdquo; is the entire content of the definition, and use it to prove a specific limit, as in worked example 3.</li>
+          <li>You can define continuity as three separate conditions, and classify a discontinuity as removable, jump, or infinite by checking which condition fails and how.</li>
+          <li>You can resolve Zeno&rsquo;s Achilles-and-the-tortoise paradox and the bouncing-ball paradox with the same tool &mdash; a convergent geometric series &mdash; and compute their exact numbers rather than waving at them: 11.1&#772; seconds and about 4.07 seconds.</li>
+          <li>You know why 0.999&hellip; equals 1 outright, not approximately, and you know the specific, well-documented misreading of &ldquo;approaches but never reaches&rdquo; that causes most people to doubt it.</li>
+          <li>You know where this is going: Day 11 defines the derivative directly on top of today&rsquo;s limit machinery, and it is the same operation Day 8&rsquo;s marginal cost and marginal utility were already quietly using.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the 60-Day Academy&rsquo;s Day 2 material, used as a topic and difficulty scope reference rather than a text available to this run). Zeno of Elea&rsquo;s Achilles-and-the-tortoise paradox and its transmission through Aristotle&rsquo;s <em>Physics</em>, Book VI, were checked via web search against standard historical accounts. The history of the &epsilon;-&delta; limit definition &mdash; Cauchy&rsquo;s 1821 <em>Cours d&rsquo;Analyse</em>, Bolzano&rsquo;s earlier but little-disseminated rigorous version, and Weierstrass&rsquo;s circa-1861 formalization &mdash; was checked via web search against academic summaries of the period. Jacob Bernoulli&rsquo;s 1683 compound-interest problem and Euler&rsquo;s later calculation and naming of e were checked via web search. The Tall &amp; Schwarzenberger (1978) study, &ldquo;Conflicts in the Learning of Real Numbers and Limits,&rdquo; and its reported student figures were checked via web search against summaries of the published work. &ldquo;Zeno behavior&rdquo; as a term of art in hybrid-systems and robotics research, and the bouncing-ball example specifically, were checked via web search against control-theory literature. All arithmetic in the three worked examples &mdash; the Achilles catch-up time, the bouncing ball&rsquo;s total stopping time and bounce count, and the removable-discontinuity proof &mdash; was computed directly for this report from stated, checked constants (g = 9.8 m/s&sup2;; a coefficient of restitution of 0.8 is an illustrative assumption for a generic bouncy ball, not a measurement of any specific object).</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-26-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
