@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Horse, the Cart, and the Force You Forgot to Draw · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-28",
+    "slot": "learn",
+    "title": "The Horse, the Cart, and the Force You Forgot to Draw",
+    "path": "reports/2026/08/2026-08-28-learn.html",
+    "summary": "Day ten of the 150-day curriculum: Newton's three laws of motion and the discipline of the free-body diagram, built around the two-century-old horse-and-cart paradox, a block sliding down a ramp, and the exact acceleration of a Falcon 9 at the instant it leaves the pad.",
+    "headlines": [
+      "Day 10 of 150 · Physics: Newton's laws and free-body diagrams",
+      "The horse-and-cart paradox, resolved with real numbers at the hooves",
+      "Why F = ma is not actually Newton's second law"
+    ],
+    "reading_minutes": 28,
+    "generated_at": "2026-08-28T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Horse, the Cart, and the Force You Forgot to Draw</h1>
+      <p class="paper-dateline">
+        Friday, August 28, 2026 <span class="sep">&middot;</span> 28 min read
+      </p>
+      <p class="paper-standfirst">
+        A horse pulls a cart forward, and by Newton&rsquo;s third law the cart pulls back on the horse with exactly the same force &mdash; an equality that has convinced generations of careful people that nothing should be able to move at all, until you draw one diagram that isolates the horse alone and finds an entirely different pair of forces at its hooves that the paradox never considered.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Physics</p>
+      <span class="track-progress">Day 10 of 150 &middot; Physics 2 of 26 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Here is a piece of reasoning that looks airtight. A horse is harnessed to a cart and leans into the collar, pulling the cart forward. Newton&rsquo;s third law says that whenever one body exerts a force on a second, the second exerts an equal and opposite force back on the first &mdash; so the instant the horse pulls the cart forward, the cart is pulling the horse backward, just as hard. Two forces, equal in size, opposite in direction. Add them together and they cancel exactly. And if the forces cancel, the textbook says, there is no net force on the horse-and-cart system &mdash; which by the same Newton&rsquo;s laws this lesson is about to state formally, means no acceleration, which means the cart should simply sit there, forever, no matter how hard the horse pulls.</p>
+
+      <p>Carts driven by horses have never, in the history of carts and horses, had this problem. They move. Every farmer, every child watching a hay wagon go by, every physics student on the first day this puzzle is posed to them, knows perfectly well that horses pull carts and the carts go. So either Newton&rsquo;s third law is wrong &mdash; and it isn&rsquo;t, it is one of the most thoroughly confirmed statements in all of physics &mdash; or there is a mistake somewhere in that first paragraph&rsquo;s reasoning. Finding the mistake is not a matter of cleverness. It is a matter of discipline: drawing, correctly, the one diagram the paradox skips, a diagram that isolates a single body and asks only what is pushing or pulling on it &mdash; never what it is pushing or pulling on something else. That diagram is called a free-body diagram, and today&rsquo;s lesson is built around learning to draw it properly, because the three laws of motion it depends on are not hard to state. Using them correctly, every time, without smuggling in a force that belongs to a different diagram, is the actual skill, and it is one a surprising number of people never quite pick up even after memorizing the laws perfectly.</p>
+
+      <p>By the end of this lesson you will be able to resolve the horse-and-cart paradox with real numbers rather than a hand-wave, work out whether a box on a ramp slides or sits still, find the tension and acceleration in a pair of masses hung over a pulley, and compute &mdash; from nothing but a rocket&rsquo;s thrust and its weight &mdash; almost exactly how hard it accelerates in the first instant it leaves the pad.</p>
+
+      <h3>What the three laws actually say</h3>
+
+      <p>Set aside the equations for a moment, because the three laws are, underneath the notation, three plain and almost obvious-sounding claims about how the world behaves &mdash; and the fact that they sound obvious once stated is exactly why it took until 1687 for anyone to state them this cleanly. Isaac Newton laid them out in his <em>Philosophi&aelig; Naturalis Principia Mathematica</em>, published that year after the astronomer Edmond Halley &mdash; the same Halley the comet is named for &mdash; visited Newton in 1684, learned he had already worked out the mathematics of orbital motion, and talked him into writing it up properly. What began as a short paper called <em>De Motu</em>, &ldquo;On Motion,&rdquo; grew over two and a half years into the <em>Principia</em>, financed by Halley himself, and the three laws sit near the very front of it, stated as axioms everything else in the book depends on.</p>
+
+      <p>The <strong>first law</strong> says that an object&rsquo;s motion does not change on its own. Left alone &mdash; genuinely alone, with no force acting on it at all &mdash; a resting object stays at rest and a moving object keeps moving in a straight line at a constant speed, forever. This is the law of <strong>inertia</strong>, and the reason it needed stating explicitly is that ordinary experience seems to say the opposite: push a book across a table and it slows down and stops, all by itself, with nobody touching it after your push ends. It looks like motion runs down on its own. What is actually running the book down is friction &mdash; a real, ongoing force from the table&rsquo;s surface &mdash; and the moment you account for that force honestly, the book&rsquo;s slowing is no exception to the first law at all; it is the first law applied correctly, with the friction force included rather than ignored. A hockey puck on very smooth ice, where friction is nearly zero, keeps sliding for a remarkably long way at a remarkably constant speed &mdash; the first law showing itself with the confounding force mostly out of the way.</p>
+
+      <p>The <strong>second law</strong> says that when a force is not absent &mdash; when something really does push or pull on an object &mdash; the object&rsquo;s motion changes at a rate set by how big that force is and how much matter is being pushed. A bigger force changes the motion faster; the same force changes a heavier object&rsquo;s motion more slowly. This is the law most people can already recite as &ldquo;force equals mass times acceleration,&rdquo; and that is a genuinely useful and almost always correct way to use it &mdash; with one real subtlety, addressed in the misconception section below, about what Newton actually wrote versus what most textbooks shorthand it to.</p>
+
+      <p>The <strong>third law</strong> is the one the horse and cart trade on, and it is worth stating with unusual care because the horse-and-cart paradox lives entirely in a sloppy reading of it. Whenever one object exerts a force on a second object, the second object exerts a force back on the first, equal in size and opposite in direction, along the same line. The critical, easy-to-miss detail is <em>which two objects</em> each force acts on. The two forces in a third-law pair never act on the same object &mdash; one acts on the first body, the other acts on the second body, and that is precisely why they can never cancel each other out for either body individually, even though they are equal and opposite. Two forces cancel only when both act on the <em>same</em> object at the <em>same</em> time. The cart-pulls-back-on-the-horse force acts on the horse. The horse-pulls-forward-on-the-cart force acts on the cart. They are a genuine third-law pair, they really are equal and opposite, and they still do not cancel &mdash; because nothing is ever asking them to. The paradox&rsquo;s mistake is treating &ldquo;equal and opposite&rdquo; as automatically meaning &ldquo;cancel,&rdquo; a shortcut that only ever works within a single, carefully isolated free-body diagram.</p>
+
+      <h3>Building the formal system</h3>
+
+      <p>Andrew Motte&rsquo;s 1729 English translation of the <em>Principia</em> &mdash; the first, published two years after Newton&rsquo;s death &mdash; renders the three laws almost exactly as physics still states them. The first: &ldquo;Every body perseveres in its state of rest, or of uniform motion in a right line, unless it is compelled to change that state by forces impressed thereon.&rdquo; The third: &ldquo;To every action there is always opposed an equal reaction: or the mutual actions of two bodies upon each other are always equal, and directed to contrary parts.&rdquo; The second law&rsquo;s original wording is the one worth reading slowly, because it is not phrased the way modern courses usually introduce it: &ldquo;The alteration of motion is ever proportional to the motive force impressed; and is made in the direction of the right line in which that force is impressed.&rdquo; Newton is not talking about acceleration by that name. He is talking about a change in a quantity he called &ldquo;motion,&rdquo; which is what today would be called <strong>momentum</strong> &mdash; mass times velocity. The modern symbolic form makes both readings available at once:</p>
+
+      <p>The three laws of motion were, by the standards of the rest of the <em>Principia</em>, the uncontroversial part. The book&rsquo;s other headline result &mdash; the law of universal gravitation, a later lesson in this Physics track&rsquo;s own right &mdash; dragged Newton into one of the bitterest priority disputes of his career, with the natural philosopher Robert Hooke publicly claiming, after the <em>Principia</em>&rsquo;s publication, that he had suggested the inverse-square shape of gravity to Newton first in an earlier exchange of letters. Newton never fully credited Hooke in the finished work, the two men&rsquo;s already poor relationship curdled further, and some historians trace Newton&rsquo;s later, deliberate removal of nearly all mentions of Hooke from his subsequent writing directly to this fight. None of that dispute ever touched the three laws of motion themselves; those were Newton&rsquo;s own systematic statement of ideas that had been accumulating since Galileo, and nobody seriously contested his authorship of them.</p>
+
+      <div class="formula">
+        <p class="expr">F<sub>net</sub> = dp/dt &nbsp;&nbsp;&hArr;&nbsp;&nbsp; F<sub>net</sub> = ma &nbsp;(when mass is constant)</p>
+        <dl>
+          <dt>F<sub>net</sub></dt><dd>the vector sum of every real force acting on one chosen object &mdash; never a force that object exerts on something else</dd>
+          <dt>p</dt><dd>momentum, p = mv &mdash; mass times velocity, a vector pointing the same way as the velocity</dd>
+          <dt>dp/dt</dt><dd>the rate at which that object&rsquo;s momentum changes with time &mdash; Newton&rsquo;s &ldquo;alteration of motion,&rdquo; stated precisely</dd>
+          <dt>m</dt><dd>the object&rsquo;s mass, in kilograms &mdash; how much matter is being accelerated, not its weight</dd>
+          <dt>a</dt><dd>acceleration, the rate at which velocity itself changes &mdash; a vector, pointing the same way as the net force</dd>
+        </dl>
+      </div>
+
+      <p>The right-hand form, F = ma, is what almost every practical calculation in this lesson actually uses, and it is entirely valid whenever the mass of the object under study is not itself changing over the interval in question. The left-hand form is the one that never breaks, including in the one case &mdash; a rocket burning propellant &mdash; where F = ma alone quietly stops telling the whole story, which the fourth worked example below returns to directly.</p>
+
+      <p>The third law needs its own symbolic statement, because &ldquo;equal and opposite&rdquo; hides the detail that matters most:</p>
+
+      <div class="formula">
+        <p class="expr">F<sub>A on B</sub> = &minus;F<sub>B on A</sub></p>
+        <dl>
+          <dt>F<sub>A on B</sub></dt><dd>the force object A exerts on object B &mdash; this force acts on B, and belongs only in B&rsquo;s free-body diagram</dd>
+          <dt>F<sub>B on A</sub></dt><dd>the force object B exerts on A, in return &mdash; equal in size, opposite in direction, and belongs only in A&rsquo;s free-body diagram</dd>
+          <dt>&minus;</dt><dd>opposite direction &mdash; same magnitude, same line of action, reversed sense</dd>
+        </dl>
+      </div>
+
+      <p>A <strong>free-body diagram</strong> is the discipline that keeps these two forces from ever getting mixed into the same picture by accident. To draw one correctly: pick exactly one object. Draw every force acting <em>on</em> that object, and only forces acting on that object &mdash; gravity pulling it down, a surface pushing on it, a rope pulling on it, friction resisting it, and so on &mdash; each as an arrow from the object&rsquo;s center, pointing in the force&rsquo;s true direction, with the arrow&rsquo;s length loosely proportional to the force&rsquo;s size. Never include a force the object exerts on something else &mdash; that force belongs on a different diagram, for a different object. The horse-and-cart paradox&rsquo;s entire error, stated in this vocabulary, is drawing (or mentally imagining) a single diagram containing both halves of a third-law pair, which is a diagram no real free body ever actually has, because no real force pair ever acts twice on the same object.</p>
+
+      <p>Three specific mistakes account for most of the wrong answers a free-body diagram produces, and it is worth naming them before the worked examples, because each one shows up at least once below. The first is the horse-and-cart error already named: including a force that belongs to a different body&rsquo;s diagram, usually because it is easy to mentally see and hard to remember it doesn&rsquo;t act where you think it does. The second is the opposite failure &mdash; leaving a real force off the diagram entirely, most commonly the normal force from a surface, which is easy to forget precisely because it isn&rsquo;t being actively applied by anyone; a surface pushes back only because something is pressing into it, and that reactive quality makes it the single most commonly omitted force in a beginner&rsquo;s diagram. The third is inventing a force that isn&rsquo;t there at all, the classic case being a phantom &ldquo;force of motion&rdquo; supposedly keeping a thrown ball moving forward after it leaves the hand &mdash; there is no such force; the ball keeps moving forward because of the first law, with nothing needed to sustain motion that is already happening, and the only real forces on it in flight are gravity and air resistance, both already pointing somewhere other than &ldquo;the direction it&rsquo;s going.&rdquo; A correct free-body diagram is not a matter of drawing more forces or fewer; it is a matter of drawing exactly the ones that are physically real, each on the one body it actually acts on, and no others.</p>
+
+      <h3>The horse, the cart, and the ground</h3>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; resolving the paradox, at the hooves</b>
+        <p>Take a horse of mass 500 kg pulling a loaded cart of mass 250 kg by a harness, on level ground, starting from rest. Let the harness tension &mdash; the force of the pull, transmitted through the traces &mdash; be an unknown, T, and let the cart experience a steady resistive force of 100 N from its own rolling friction and axle drag as it moves. The paradox&rsquo;s force pair, the harness tension pulling the cart forward and pulling the horse backward, is real. The question is what else is acting, and on which body.</p>
+        <ol>
+          <li>Draw the cart&rsquo;s free-body diagram alone: the only horizontal forces on it are T, forward (from the harness), and 100 N of resistance, backward. Newton&rsquo;s second law for the cart: T &minus; 100 = (250)a.</li>
+          <li>Draw the horse&rsquo;s free-body diagram alone: the harness pulls back on the horse with T (the third-law partner of the force the horse exerts on the cart), and the ground pushes forward on the horse&rsquo;s hooves with a static friction force, f &mdash; this is the force the paradox leaves out entirely, because it has nothing to do with the cart at all. It exists because the horse&rsquo;s hoof pushes backward against the ground with each stride, and by the third law the ground pushes forward on the hoof in return. Newton&rsquo;s second law for the horse: f &minus; T = (500)a.</li>
+          <li>Add the two equations together. T cancels exactly &mdash; it must, since it is an internal force between the two bodies of the system, appearing with opposite sign in each equation. What is left is f &minus; 100 = (750)a, an equation with no mention of the harness tension at all. Whether the system accelerates depends entirely on f, the hoof-to-ground force, and never on the harness.</li>
+          <li>Suppose the horse walks off at a modest a = 0.4 m/s&sup2;. Then f = (750)(0.4) + 100 = 400 N. Substituting back into the cart&rsquo;s equation gives T = (250)(0.4) + 100 = 200 N &mdash; a genuine, nonzero harness tension, coexisting perfectly well with a genuine, nonzero acceleration, because T was never the force deciding whether the system moves.</li>
+          <li>Check that 400 N of forward hoof friction is physically available. The horse&rsquo;s weight is roughly (500)(9.8) &asymp; 4,900 N, and a generous illustrative static-friction coefficient for hoof on packed earth or pavement, &mu;<sub>s</sub> &asymp; 0.6 (a rough, order-of-magnitude figure, not a measurement of any specific animal or surface), caps the available friction at about (0.6)(4,900) &asymp; 2,940 N &mdash; far more than the 400 N actually needed. The horse has plenty of traction in reserve.</li>
+        </ol>
+        <p>The paradox&rsquo;s force pair &mdash; T pulling the cart forward, T pulling the horse backward &mdash; is entirely genuine and entirely irrelevant to whether the system moves, because it is internal: it appears once in each body&rsquo;s diagram, with opposite sign, and cancels the moment the two diagrams are combined. What actually propels the horse and cart is a completely different third-law pair, external to the horse-cart system: the horse&rsquo;s hoof pushing backward on the ground, and the ground pushing forward on the horse in return. Nobody&rsquo;s cart moves without dirt or pavement underneath the horse&rsquo;s feet &mdash; try the same harness and the same horse on wet ice, where &mu;<sub>s</sub> collapses toward zero, and the cart goes nowhere, not because the third law stopped working, but because the one external force that was ever going to move anything is no longer available.</p>
+      </div>
+
+      <h3>A box on a ramp: drawing the diagram properly</h3>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; does it slide, and how fast</b>
+        <p>A 12 kg crate sits on a wooden ramp tilted 30&deg; above horizontal. The static friction coefficient between crate and ramp is &mu;<sub>s</sub> = 0.4; once sliding, kinetic friction drops to &mu;<sub>k</sub> = 0.3 (both illustrative values typical of wood on wood, not measurements of this specific crate). Released from rest, does the crate slide, and if so, how fast does it accelerate?</p>
+        <ol>
+          <li>Draw the crate&rsquo;s free-body diagram alone, using axes tilted to match the ramp &mdash; one axis along the slope, one perpendicular to it, a standard simplification that turns an otherwise two-dimensional problem into two independent one-dimensional ones. Three forces act on the crate: gravity, straight down, magnitude mg; the normal force, N, perpendicular to the ramp&rsquo;s surface, pushing the crate away from it; and friction, along the surface, direction depending on whether the crate is sliding.</li>
+          <li>Resolve gravity into the tilted axes. The component pulling the crate down the slope is mg&nbsp;sin&theta;; the component pressing the crate into the ramp&rsquo;s surface is mg&nbsp;cos&theta;. With m = 12 kg and g = 9.8 m/s&sup2;: mg = 117.6 N. Down-slope component: 117.6 &times; sin30&deg; = 117.6 &times; 0.5 = 58.8 N. Into-surface component: 117.6 &times; cos30&deg; = 117.6 &times; 0.8660 &asymp; 101.86 N.</li>
+          <li>Because the crate does not accelerate perpendicular to the ramp&rsquo;s surface &mdash; it stays on the ramp, neither lifting off nor sinking in &mdash; the perpendicular forces must sum to zero: N = 101.86 N exactly, no more, no less. The normal force is not some fixed property of the crate; it is whatever value makes the perpendicular free-body equation balance.</li>
+          <li>Find the maximum static friction available: f<sub>s,max</sub> = &mu;<sub>s</sub>N = 0.4 &times; 101.86 &asymp; 40.75 N. Compare this to the 58.8 N already pulling the crate down the slope. Because 58.8 N exceeds the 40.75 N ceiling on static friction, static friction cannot hold the crate in place &mdash; it slides. This comparison, maximum available static friction against the force actually demanded of it, is the entire test for whether something &ldquo;sticks&rdquo; or &ldquo;slips,&rdquo; and it has to be done before assuming either answer.</li>
+          <li>Once sliding, friction switches to its kinetic value and opposes the motion, so it now points up the slope: f<sub>k</sub> = &mu;<sub>k</sub>N = 0.3 &times; 101.86 &asymp; 30.56 N. The net force along the slope is the down-slope pull minus this opposing kinetic friction: 58.8 &minus; 30.56 = 28.24 N.</li>
+          <li>Apply the second law along the slope, where the crate&rsquo;s full mass genuinely does resist the net force: a = F<sub>net</sub>/m = 28.24/12 &asymp; 2.35 m/s&sup2;, directed down the ramp.</li>
+        </ol>
+        <p>Notice what the free-body discipline bought here: two entirely separate one-dimensional equations, along the slope and perpendicular to it, each with its own force balance, from a single consistent diagram. Guessing rather than checking step 4 &mdash; assuming the crate stays put because &ldquo;it&rsquo;s just sitting there&rdquo; &mdash; is the single most common error in this class of problem, and it is exactly the kind of mistake the discipline of always drawing, and always checking, the diagram is built to catch.</p>
+      </div>
+
+      <h3>Two masses, one string, one pulley</h3>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; an Atwood machine</b>
+        <p>Two blocks, m<sub>1</sub> = 5 kg and m<sub>2</sub> = 3 kg, hang from opposite ends of a light string running over a pulley &mdash; idealized, for this first pass, as frictionless and massless. Released from rest, m<sub>1</sub> falls and m<sub>2</sub> rises. Find the string tension and the common acceleration.</p>
+        <ol>
+          <li>Draw m<sub>1</sub>&rsquo;s free-body diagram alone: weight m<sub>1</sub>g downward, tension T upward (the string can only pull, never push). Taking downward as positive for m<sub>1</sub> (the direction it actually accelerates): m<sub>1</sub>g &minus; T = m<sub>1</sub>a.</li>
+          <li>Draw m<sub>2</sub>&rsquo;s free-body diagram alone: weight m<sub>2</sub>g downward, tension T upward. Taking upward as positive for m<sub>2</sub> (the direction it actually accelerates): T &minus; m<sub>2</sub>g = m<sub>2</sub>a.</li>
+          <li>Because the string is inextensible and the pulley merely redirects it without stretching or slipping, both blocks share the same acceleration magnitude, a &mdash; the one genuine constraint linking two otherwise separate free-body diagrams. Add the two equations: m<sub>1</sub>g &minus; m<sub>2</sub>g = (m<sub>1</sub> + m<sub>2</sub>)a, so a = (m<sub>1</sub> &minus; m<sub>2</sub>)g/(m<sub>1</sub> + m<sub>2</sub>) = (5 &minus; 3)(9.8)/(5 + 3) = 19.6/8 = 2.45 m/s&sup2;.</li>
+          <li>Substitute back into either single-block equation to find T. From m<sub>2</sub>&rsquo;s equation: T = m<sub>2</sub>(g + a) = 3(9.8 + 2.45) = 3(12.25) = 36.75 N. Check against m<sub>1</sub>&rsquo;s equation: T = m<sub>1</sub>(g &minus; a) = 5(9.8 &minus; 2.45) = 5(7.35) = 36.75 N &mdash; the same number both ways, as it has to be.</li>
+        </ol>
+        <p>That the tension comes out identical on both sides of the pulley is not a coincidence to be waved past; it is itself a consequence of Newton&rsquo;s second law, applied to the pulley as its own free body. A massless pulley must have zero net force and zero net torque on it no matter how fast the system accelerates &mdash; an object with no mass offers no resistance to acceleration, so any imbalance in force would produce an undefined, infinite acceleration, which is physically impossible. The only way to avoid that is for the string tension pulling down on one side to exactly match the tension pulling down on the other. A real pulley, with real mass and real friction in its bearing, breaks this equality very slightly, and the tensions on the two sides genuinely do differ by a small amount &mdash; the frictionless, massless pulley used here is a deliberate simplification, worth naming rather than hiding, that is accurate to within a percent or two for a well-made real pulley and complicated only when the pulley itself becomes worth modeling in detail.</p>
+      </div>
+
+      <h3>What it takes to lift 549 tons off a pad</h3>
+
+      <div class="worked">
+        <b>Worked example 4 &middot; a rocket at the instant of liftoff</b>
+        <p>SpaceX&rsquo;s Falcon 9, in its current Block 5 configuration, has a liftoff mass of roughly 549,000 kg and a first-stage total sea-level thrust from its nine Merlin engines of roughly 7,600,000 N (7,600 kN) &mdash; both figures as published in the vehicle&rsquo;s standard specifications, not measured for this report. At the exact instant the hold-down clamps release, before the vehicle has burned off any meaningful fraction of its propellant, treat the mass as momentarily fixed and find the rocket&rsquo;s initial upward acceleration.</p>
+        <ol>
+          <li>Draw the rocket&rsquo;s free-body diagram at that instant: two forces, thrust straight up and weight straight down (air resistance is negligible at zero velocity, and there is no ground contact once the clamps release). Weight: W = mg = 549,000 &times; 9.8 &asymp; 5,380,200 N, or about 5.38 MN.</li>
+          <li>Net upward force: F<sub>net</sub> = Thrust &minus; W = 7,600,000 &minus; 5,380,200 &asymp; 2,219,800 N, about 2.22 MN &mdash; roughly 41% of the vehicle&rsquo;s own weight, left over once gravity has been overcome.</li>
+          <li>Apply the second law: a = F<sub>net</sub>/m = 2,219,800/549,000 &asymp; 4.04 m/s&sup2; &mdash; about 0.41 g of acceleration added on top of simply resisting gravity, which is why a Falcon 9 climbs off the pad in the first second or two looking almost deliberate rather than explosive; the visible acceleration only builds from there as the vehicle burns off propellant mass while thrust stays roughly constant.</li>
+        </ol>
+        <p>The third law is doing something worth naming explicitly here, because a rocket engine is the cleanest possible illustration of the third law with nothing else around to confuse it. A common intuition holds that a rocket pushes against the air, or against the launch pad, the way a swimmer pushes against water or a runner pushes against the ground &mdash; and that intuition is simply wrong, which is exactly why rockets work in the vacuum of space, where there is no air and nothing to push against. What is actually happening: the engine accelerates a mass of hot propellant gas backward, out the nozzle, at very high speed; by the third law, that propellant pushes forward on the engine with a force exactly equal to the force the engine exerted on it. Thrust is the reaction to throwing mass one way, not a push against anything external at all. This is precisely the same logic as the horse&rsquo;s hoof pushing back on the ground to be pushed forward in return &mdash; except a rocket in vacuum carries its own &ldquo;ground&rdquo; along with it, in the form of the propellant it is about to expel.</p>
+      </div>
+
+      <h3>Where this already shows up</h3>
+
+      <p>The impulse-momentum idea buried in the momentum form of the second law &mdash; F<sub>net</sub> = dp/dt, rearranged as F<sub>net</sub>&nbsp;dt = dp, an impulse equal to a change in momentum &mdash; is the entire engineering logic behind a car&rsquo;s crumple zone, its airbags, and its seatbelts. In any collision, a fixed change in the vehicle occupant&rsquo;s momentum &mdash; from highway speed to zero &mdash; has to happen one way or another; that part is fixed by the crash itself and cannot be engineered away. What crumple zones, airbags and seatbelts actually change is the <em>time</em> over which that fixed momentum change occurs. Stopping the same change in momentum over 100 milliseconds of crushing metal and inflating fabric instead of 5 milliseconds against a rigid, un-deformed dashboard cuts the average force on the occupant&rsquo;s body by roughly a factor of twenty, because for a fixed &Delta;p, force and time trade off directly against each other. Nothing about this requires new physics beyond the second law stated in its momentum form &mdash; it requires taking that form seriously as more than a rearrangement of F = ma, which is exactly the point the misconception section below insists on.</p>
+
+      <p>The horse-and-cart mechanism &mdash; propulsion by pushing backward against the ground and being pushed forward in return &mdash; is also, without any real difference, how a person walks. Every step, a foot pushes backward and slightly downward against the ground; the ground, by the third law, pushes the foot forward and slightly upward in return, and that reaction force is the entire propulsive force behind ordinary walking. It is a genuinely common and genuinely mistaken intuition that leg muscles &ldquo;push the body forward&rdquo; directly the way a hand pushes a box &mdash; muscles supply the internal effort, but the actual external force that accelerates a walking body forward comes from the ground, exactly as it does for the horse. This is also why walking on ice is difficult in a way that has nothing to do with balance alone: the available friction, &mu;<sub>s</sub>, drops sharply, and the same worked-example-1 arithmetic applies &mdash; there simply isn&rsquo;t enough external force on offer to accelerate the body forward, no matter how hard the muscles work internally.</p>
+
+      <p>A rifle&rsquo;s recoil is the same third law again, without a ground or a pulley to disguise it. Firing a bullet accelerates it forward at extremely high speed; by the third law, the expanding propellant gas pushes back on the gun (and the shoulder holding it) with a force equal to the one accelerating the bullet forward. Because the bullet has far less mass than the gun, the second law &mdash; the same F = ma used throughout this lesson, this time solved backward for a shared force &mdash; guarantees the gun&rsquo;s resulting acceleration, and therefore its recoil speed, is correspondingly far smaller than the bullet&rsquo;s, in exactly the inverse ratio of their masses. A rocket engine, described in the fourth worked example above, is not a different phenomenon from a gun&rsquo;s recoil; it is the identical mechanism, run continuously rather than in one single sharp event &mdash; a rocket is, in a real sense, a gun that keeps firing the same shot for two and a half minutes.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Ask most people, including most people who did reasonably well in a physics class at some point, to state Newton&rsquo;s second law, and the overwhelming majority will say &ldquo;force equals mass times acceleration&rdquo; without qualification &mdash; treating F = ma as the law itself, rather than as a convenient special case of it. This is such a widespread simplification in introductory teaching that a fair amount has been written specifically criticizing it, on grounds worth taking seriously: F = ma silently assumes the object&rsquo;s mass is not changing, and that assumption, almost always safe for a thrown ball or a sliding crate, fails outright for the single most consequential application of Newtonian mechanics to engineering in the last century &mdash; the rocket.</p>
+
+      <p>Worked example 4 above was careful to say &ldquo;at the exact instant&rdquo; the Falcon 9 leaves the pad, treating its mass as momentarily fixed &mdash; and at any single instant, that is a legitimate use of F = ma, because mass genuinely does have some definite value at any one moment in time. But a real Falcon 9 first-stage burn lasts roughly two and a half minutes, during which the vehicle sheds a large fraction of its own mass as burned propellant, continuously, the whole way up. F = ma, applied instant by instant, remains technically correct at each individual instant, but it gives no direct way to add those instants together into a single clean answer for how fast the rocket is moving once the burn ends &mdash; because m itself is a moving target throughout the calculation, not a constant you can factor cleanly out the way every problem in this lesson so far has done. The momentum form, F<sub>net</sub> = dp/dt = d(mv)/dt, handles a changing mass without any extra machinery, because it was never assuming mass stays fixed in the first place; expanded with the product rule, it splits cleanly into a familiar ma term plus a second term that accounts for the mass being lost. Working out exactly what that second term equals, for a rocket specifically, is what produces the famous relationship between a rocket&rsquo;s change in speed and the fraction of its mass burned as propellant &mdash; the subject of a dedicated lesson later in this curriculum&rsquo;s Rocketry track, built directly on the momentum form introduced today rather than on F = ma.</p>
+
+      <p>The practical lesson to take from this is not that F = ma is wrong &mdash; it isn&rsquo;t, within its own domain, and nothing in this lesson&rsquo;s worked examples needed anything more than it. The lesson is narrower and more useful than that: F = ma is the constant-mass special case of a more general law, and the moment a problem involves an object visibly gaining or shedding mass &mdash; a rocket burning fuel, a raindrop accreting mist as it falls, a rolling snowball, sand pouring onto a moving conveyor belt &mdash; reaching for F = ma without checking whether mass is actually constant is the specific, well-documented way this particular shortcut misleads people who learned only the shorthand and never the law it was shorthand for.</p>
+
+      <h3>The callback</h3>
+
+      <p>Four lessons ago, Day 6 introduced vectors &mdash; quantities with both a size and a direction, and the specific skill of decomposing one vector into components along two chosen, mutually perpendicular axes. That skill did not stay confined to arrows on a page for long. Every force in today&rsquo;s lesson is a vector, and the entire second worked example turned on decomposing exactly one vector, the crate&rsquo;s weight, into two components along axes tilted to match the ramp &mdash; the identical operation Day 6 taught, applied to a physical force instead of an abstract arrow. A free-body diagram, looked at from that angle, is nothing more than Day 6&rsquo;s vector addition run in reverse and then forward again: decompose every force into convenient components, sum each set of components separately, and set each sum equal to mass times the corresponding component of acceleration. The horse-and-cart paradox itself is, underneath the physics vocabulary, a vector-addition error &mdash; adding two vectors that happen to be equal and opposite and concluding they cancel, without first checking Day 6&rsquo;s most basic rule for when vectors are even allowed to be added together in the first place: they have to be acting on the same object. Today&rsquo;s lesson is Day 6&rsquo;s machinery, worn in different clothes, exactly the way this curriculum keeps circling back to the same handful of ideas.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state all three of Newton&rsquo;s laws in plain language and in symbolic form, including the momentum form of the second law, F<sub>net</sub> = dp/dt, and explain why it is the more general statement that F = ma specializes from.</li>
+          <li>You can draw a free-body diagram for a single object correctly &mdash; every force acting on that object, no force it exerts on anything else &mdash; and you know exactly why the horse-and-cart paradox breaks that discipline.</li>
+          <li>You can test whether an object on an incline slides or stays put by comparing the force demanded of static friction against the maximum it can supply, and compute its acceleration once it does slide, as in the ramp example above.</li>
+          <li>You can compute a rocket&rsquo;s instantaneous liftoff acceleration from nothing but its thrust and its weight, and you know why a rocket needs no air or ground to push against.</li>
+          <li>You know where this is going: a later lesson in this curriculum&rsquo;s Physics track pushes friction further, into circular motion; a later Rocketry lesson builds the full relationship between a rocket&rsquo;s speed and its burned propellant directly on top of today&rsquo;s momentum form of the second law.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the topic and difficulty scope of physics track entries 12&ndash;14, used as a reference rather than a text available to this run). The publication history of Newton&rsquo;s <em>Principia</em> (1687), Edmond Halley&rsquo;s 1684 visit and the tract <em>De Motu</em>, and Andrew Motte&rsquo;s 1729 English translation and its exact wording of the three laws were checked via web search against Britannica and standard historical accounts. The 1679&ndash;1687 Hooke&ndash;Newton priority dispute over the inverse-square law of gravitation was checked via web search against the Wikipedia summary of the controversy and secondary historical accounts. The resolution of the horse-and-cart paradox via the ground-friction force on the puller was checked via web search against physics-education explanations of the problem. Falcon 9 Block 5&rsquo;s published liftoff mass (&asymp;549,000 kg) and total sea-level thrust (&asymp;7,600 kN from nine Merlin 1D engines) were checked via web search against aerospace reference sources; both are the vehicle&rsquo;s standard specifications, not a measurement of any specific flight. The distinction between F = ma and the momentum form of the second law, and its relevance to variable-mass systems including rockets, was checked via web search against physics-education discussions of the same point. All arithmetic in the four worked examples was computed directly for this report from the stated, checked constants (g = 9.8 m/s&sup2;); friction coefficients in the horse-and-cart and ramp examples, and the masses in the Atwood-machine example, are illustrative, typical-range figures, not measurements of any specific animal, crate, or object.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-27-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
