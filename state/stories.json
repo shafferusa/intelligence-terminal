@@ -1,40 +1,6 @@
 {
  "stories": [
   {
-   "id": "mangione-double-jeopardy-motion-aug15",
-   "headline": "Mangione's Manhattan murder trial postponed over the double-jeopardy motion",
-   "status": "Materially changed",
-   "first_seen": "2026-08-16-sun",
-   "last_updated": "2026-08-18-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Judge Gregory Carro postponed the Sept 8 trial date, gave the Manhattan DA until Oct 9 to respond to the double-jeopardy motion, with a hearing set for Dec 10 (roughly a week before Mangione's Dec 18 federal sentencing). DA's office says it remains 'prepared to litigate' and intends to keep pursuing the state case. Separate-sovereigns doctrine gives the defense a steep hurdle.",
-   "score_note": "Concrete judicial action with clear next dates (Oct 9, Dec 10).",
-   "sources": [
-    "CNN",
-    "PBS NewsHour",
-    "NBC News",
-    "Fox News"
-   ],
-   "watch": false
-  },
-  {
-   "id": "trump-primary-losses-aug19",
-   "headline": "Trump-endorsed primary losses reach ten this cycle as Rep. Cory Mills is ousted",
-   "status": "Continuing",
-   "first_seen": "2026-08-20-am",
-   "last_updated": "2026-08-20-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Mills lost FL-7 to Ryan Elijah (~46-34%) amid an ethics probe, restraining order, and ex-girlfriend allegations. Trump said via Truth Social he told Mills to 'get out' but never publicly rescinded his Feb endorsement before the loss. Outlets frame this as 10 Trump-endorsed 2026 primary losses, tying the combined 2018+2020+2024 total.",
-   "score_note": "First hard data point on limits of Trump primary-endorsement influence heading into midterms.",
-   "sources": [
-    "CNN",
-    "NBC News",
-    "Fox News",
-    "The Hill"
-   ],
-   "watch": true
-  },
-  {
    "id": "cisa-ai-malware-ics-advisory-aug20",
    "headline": "Federal agencies warn of an active AI-generated-malware campaign against Siemens industrial control systems",
    "status": "Continuing",
@@ -387,21 +353,6 @@
    "watch": false
   },
   {
-   "id": "swalwell-fbi-probe-civil-rights-aug24",
-   "headline": "Swalwell's attorney says FBI probe includes a civil-rights statute",
-   "status": "Materially changed",
-   "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-24-pm",
-   "verification": "Confirmed-multiple (statement); Single-reliable-source (\u00a7242 detail, device inventory)",
-   "one_line": "Attorney Sara Azari said filings show the probe proceeding partly under 18 U.S.C. \u00a7242 (civil rights under color of law) alongside the original allegations; devices seized were an iPhone and MacBook Pro. Called it \"deeply concerning\" that federal law enforcement appears used to punish a critic. No DOJ/FBI statement beyond routine; no charges.",
-   "score_note": "First specific legal-theory detail on the investigation beyond the original allegations.",
-   "sources": [
-    "San Francisco Chronicle",
-    "NewsNation"
-   ],
-   "watch": true
-  },
-  {
    "id": "coldcard-bitcoin-wallet-exploit-aug",
    "headline": "Coldcard ships patched firmware; AI-assisted audit surfaces thousands of bugs across the ecosystem",
    "status": "Resolved",
@@ -448,53 +399,6 @@
     "CNN",
     "NPR",
     "JURIST"
-   ],
-   "watch": true
-  },
-  {
-   "id": "roman-telescope-launch-date-correction-aug25",
-   "headline": "Roman Space Telescope encapsulated for Sunday, Aug 30 launch (corrected from prior 'Saturday' framing)",
-   "status": "Continuing",
-   "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-25-am",
-   "verification": "Confirmed-primary",
-   "one_line": "NASA/SpaceX completed fairing encapsulation Monday; launch remains NET Sunday Aug 30, 7:26am ET, LC-39A, backup Monday Aug 31. Yesterday's edition mischaracterized the date as a Saturday -- corrected via ledgers/corrections.json.",
-   "score_note": "Routine positive mission-status update plus an internal date-of-week correction.",
-   "sources": [
-    "NASA Roman blog",
-    "SpaceNews"
-   ],
-   "watch": true
-  },
-  {
-   "id": "space-sector-selloff-aug24",
-   "headline": "Chip stocks and last week's biggest space-stock winners reverse hard ahead of Nvidia earnings",
-   "status": "Continuing",
-   "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-25-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Chip names rebounded Tuesday (NVDA +2.19%, AMD +4.91%, MRVL +4.84%) ahead of Wednesday's Nvidia earnings, but the space cohort found no follow-through: VOYG -2.79%, FLY -3.64%, KRMN -4.22%, YSS -4.51%, RKLB -2.01%, while ASTS/LUNR stabilized versus Monday's double-digit declines. No company-specific catalyst identified for the divergence.",
-   "score_note": "Divergence from the chip rebound is now the notable pattern, not the space selloff alone.",
-   "sources": [
-    "this run's own Yahoo Finance close-series data",
-    "Investing.com",
-    "247wallst.com"
-   ],
-   "watch": true
-  },
-  {
-   "id": "israel-syria-turkey-airbase-aug20",
-   "headline": "Turkey issues arrest warrant for Netanyahu as Idlib-area strike target is confirmed as Abu al-Duhur",
-   "status": "Continuing",
-   "first_seen": "2026-08-20-am",
-   "last_updated": "2026-08-25-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Israel now reportedly believes Turkey has abandoned, for now, its bid for a military presence at the Abu al-Duhur airbase near Aleppo -- the site tied to the original flotilla-interception tension. Netanyahu continues using Turkey/Erdogan as a campaign issue; Turkey continues calling Israel's claims \"untenable.\" No new statement specifically on the Interpol arrest-warrant request.",
-   "score_note": "Clarifying, not escalating -- the airbase dispute reads as cooling even as rhetoric continues.",
-   "sources": [
-    "CNN",
-    "NBC News",
-    "Al Jazeera"
    ],
    "watch": true
   },
@@ -577,21 +481,6 @@
     "Bloomberg",
     "Washington Post",
     "PM Canada (official)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "drc-ebola-outbreak-2026",
-   "headline": "DRC Ebola outbreak 'spreading faster and wider' than ever, UN warns, as response funding runs low",
-   "status": "Materially changed",
-   "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-primary",
-   "one_line": "Case count now 5,514 confirmed / 2,642 deaths as of Aug 23, the largest Ebola outbreak DRC has ever recorded and the fastest-growing. UN Senior Ebola Coordinator Julien Harneis said response funding \"could run out within weeks\": \"we're only covered for the next weeks, and very soon funding will run out.\"",
-   "score_note": "A named UN official's direct funding-shortfall warning raises this from a case-count update to a resourcing crisis.",
-   "sources": [
-    "UN News",
-    "WHO Disease Outbreak News"
    ],
    "watch": true
   },
@@ -775,6 +664,22 @@
    "watch": false
   },
   {
+   "id": "space-sector-selloff-aug24",
+   "headline": "Chip stocks and last week's biggest space-stock winners reverse hard ahead of Nvidia earnings",
+   "status": "Resolved",
+   "first_seen": "2026-08-24-pm",
+   "last_updated": "2026-08-27-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Chip names rebounded Tuesday (NVDA +2.19%, AMD +4.91%, MRVL +4.84%) ahead of Wednesday's Nvidia earnings, but the space cohort found no follow-through: VOYG -2.79%, FLY -3.64%, KRMN -4.22%, YSS -4.51%, RKLB -2.01%, while ASTS/LUNR stabilized versus Monday's double-digit declines. No company-specific catalyst identified for the divergence.",
+   "score_note": "Divergence from the chip rebound is now the notable pattern, not the space selloff alone.",
+   "sources": [
+    "this run's own Yahoo Finance close-series data",
+    "Investing.com",
+    "247wallst.com"
+   ],
+   "watch": true
+  },
+  {
    "id": "meta-youth-safety-settlement-aug26",
    "headline": "Meta agrees to pay up to $17.1B to settle youth mental-health claims with 47 states",
    "status": "New",
@@ -791,23 +696,6 @@
     "Al Jazeera"
    ],
    "watch": true
-  },
-  {
-   "id": "grid-equipment-national-emergency-aug26",
-   "headline": "Trump declares national emergency over foreign-sourced grid equipment",
-   "status": "Continuing",
-   "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-27-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "No utility-industry reaction found yet (order too fresh). Revives a 2020 Trump order Biden revoked in 2021; DOE can bar acquisition of flagged bulk-power equipment and reportedly compel replacement of installed equipment.",
-   "score_note": "Awaiting industry/cost reaction.",
-   "sources": [
-    "Department of Energy (primary)",
-    "White House (primary)",
-    "Bloomberg",
-    "Fox Business"
-   ],
-   "watch": false
   },
   {
    "id": "openai-congress-reward-hacking-response-aug26",
@@ -858,89 +746,6 @@
    "watch": true
   },
   {
-   "id": "islamabad-hospital-fire-aug26",
-   "headline": "Islamabad hospital fire cause now disputed between minister and hospital's own report",
-   "status": "Materially changed",
-   "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple (locked-exits finding); Disputed (cause)",
-   "one_line": "Health Minister Kamal says an AC unit 'allegedly exploded'; PIMS hospital's own preliminary report instead points to a nebulizer connected to an incubator igniting the oxygen supply. Fire-brigade findings: emergency exits were locked from outside and obstructed. Newborn toll holds at 14; formal inquiry report still pending.",
-   "score_note": "Two competing official accounts of the same fire is itself the story now.",
-   "sources": [
-    "Dawn",
-    "dailypakistan",
-    "ARY News"
-   ],
-   "watch": true
-  },
-  {
-   "id": "mail-ballot-new-merits-suit-aug26",
-   "headline": "Mail-ballot merits suit filed; emergency-motion hearing set for Sept 3",
-   "status": "Materially changed",
-   "first_seen": "2026-07-28-am",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Following Wed's Federal Register publication of the USPS rule, 23 states + DC + Gov. Shapiro filed a merits lawsuit in Boston federal court. Separately, Judge Talwani set a Sept 3 hearing on the League of Women Voters' emergency motion alleging non-compliance with her now-vacated injunction. Shapiro: 'nothing has changed here in Pennsylvania for November's election.'",
-   "score_note": "Two parallel tracks now: the new merits suit (no hearing date yet) and the older case's Sept 3 emergency-motion hearing.",
-   "sources": [
-    "Federal Register (primary)",
-    "Votebeat",
-    "CNBC",
-    "Fox News",
-    "Gov. Shapiro public statement"
-   ],
-   "watch": true
-  },
-  {
-   "id": "jackson-hole-warsh-independence-aug27",
-   "headline": "Jackson Hole opens hawkish; Warsh's debut keynote is tomorrow 10am ET",
-   "status": "Materially changed",
-   "first_seen": "2026-08-27-am",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "KC Fed's Schmid floated a possible Sept 16 hike, called the current rate not clearly restrictive; Cleveland's Hammack repeated her call for higher rates; Chicago's Goolsbee flagged persistent inflation as his top worry. Follows Wed's PCE data (3.7% YoY, matching June). Markets closed higher anyway on earnings strength. Warsh's first Jackson Hole keynote as chair is tomorrow 10am ET; Bessent-Treasury General Account tension over the buyback program remains an open thread.",
-   "score_note": "Hawkish regional-Fed chorus the day before the new chair's debut speech is a genuine, timely setup story.",
-   "sources": [
-    "CNBC",
-    "Kansas City Fed symposium schedule (primary)",
-    "FRED PCE data"
-   ],
-   "watch": true
-  },
-  {
-   "id": "mciver-third-circuit-immunity-aug27",
-   "headline": "Third Circuit strips Rep. McIver's Speech-or-Debate immunity claim",
-   "status": "New",
-   "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "A divided (2-1) Third Circuit panel ruled Wed that Rep. LaMonica McIver (D-NJ) is not immune from prosecution over the May 2025 Delaney Hall ICE-facility confrontation; two of three federal charges may proceed to trial, the third remanded. McIver says she is 'exploring options,' possibly an en banc appeal.",
-   "score_note": "First appellate ruling on a sitting lawmaker's immunity claim tied to ICE-facility conduct this cycle.",
-   "sources": [
-    "Third Circuit opinion (primary)",
-    "UPI",
-    "NBC News",
-    "NJ Monitor",
-    "The Hill"
-   ],
-   "watch": true
-  },
-  {
-   "id": "gaza-mladenov-un-rebuke-aug27",
-   "headline": "Board of Peace's Mladenov publicly criticizes Israel at the UN Security Council",
-   "status": "New",
-   "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Mladenov told the UNSC Hamas has agreed to disarm heavy weapons under a Palestinian technocratic committee, and directly criticized continued Israeli strikes as delaying rather than preventing rearmament. Israel's deputy UN ambassador countered the plan cannot succeed while Hamas is armed. Terminology dispute persists: 'decommissioning' (Hamas-acceptable) vs 'disarmament' (Israel's ask).",
-   "score_note": "First on-record public friction between the US-backed ceasefire mechanism's own official and Israel.",
-   "sources": [
-    "NPR",
-    "Times of Israel/Israel Hayom"
-   ],
-   "watch": true
-  },
-  {
    "id": "qatar-tehran-visit-aug27",
    "headline": "Qatar's PM makes the war's first Tehran visit, pushing Hormuz de-escalation",
    "status": "New",
@@ -957,13 +762,174 @@
    "watch": true
   },
   {
+   "id": "swalwell-fbi-probe-civil-rights-aug24",
+   "headline": "Swalwell's attorney says FBI probe includes a civil-rights statute",
+   "status": "Corrected",
+   "first_seen": "2026-08-20-pm",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple (statement); Single-reliable-source (§242 detail, device inventory)",
+   "one_line": "CORRECTION (logged in ledgers/corrections.json): every edition since Aug 20 called him 'Rep. Eric Swalwell.' He resigned from Congress effective April 14, 2026 after separate sexual-assault allegations and a suspended gubernatorial campaign -- he has been a private citizen throughout the search-warrant story. Substance of the FBI probe unchanged.",
+   "score_note": "First specific legal-theory detail on the investigation beyond the original allegations.",
+   "sources": [
+    "San Francisco Chronicle",
+    "NewsNation"
+   ],
+   "watch": true
+  },
+  {
+   "id": "roman-telescope-launch-date-correction-aug25",
+   "headline": "Roman Space Telescope encapsulated for Sunday, Aug 30 launch (corrected from prior 'Saturday' framing)",
+   "status": "Continuing",
+   "first_seen": "2026-08-25-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-primary",
+   "one_line": "On track for Sunday Aug 30, 7:26am ET launch from LC-39A; spacecraft encapsulated and moved to SpaceX's hangar this week. No formal weather-percent-go figure published yet (typically lands day-of-minus-1).",
+   "score_note": "Routine positive mission-status update plus an internal date-of-week correction.",
+   "sources": [
+    "NASA Roman blog",
+    "SpaceNews"
+   ],
+   "watch": true
+  },
+  {
+   "id": "israel-syria-turkey-airbase-aug20",
+   "headline": "Turkey issues arrest warrant for Netanyahu as Idlib-area strike target is confirmed as Abu al-Duhur",
+   "status": "Continuing",
+   "first_seen": "2026-08-20-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "No new escalation; Turkey's Netanyahu arrest warrant (seeking Interpol red notice) and the cooling Abu al-Duhur airbase dispute both stand unchanged.",
+   "score_note": "Clarifying, not escalating -- the airbase dispute reads as cooling even as rhetoric continues.",
+   "sources": [
+    "CNN",
+    "NBC News",
+    "Al Jazeera"
+   ],
+   "watch": true
+  },
+  {
+   "id": "drc-ebola-outbreak-2026",
+   "headline": "DRC Ebola outbreak 'spreading faster and wider' than ever, UN warns, as response funding runs low",
+   "status": "Materially changed",
+   "first_seen": "2026-07-30-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-primary",
+   "one_line": "Case count now 5,713 confirmed / 2,744 deaths as of Aug 25, spread to 60 health zones (up 2). 158 health workers infected, 45 dead. Funding still only just over half of the $518M continental response plan.",
+   "score_note": "A named UN official's direct funding-shortfall warning raises this from a case-count update to a resourcing crisis.",
+   "sources": [
+    "UN News",
+    "WHO Disease Outbreak News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "grid-equipment-national-emergency-aug26",
+   "headline": "Trump declares national emergency over foreign-sourced grid equipment",
+   "status": "Materially changed",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "First industry reaction: National Electric Manufacturers Association calls it 'an update and expansion' of the 2020 order but flags confusion over covered-equipment definitions; Utility Dive notes 6-month-to-2-year procurement lead times raise shortage risk.",
+   "score_note": "Awaiting industry/cost reaction.",
+   "sources": [
+    "Department of Energy (primary)",
+    "White House (primary)",
+    "Bloomberg",
+    "Fox Business"
+   ],
+   "watch": false
+  },
+  {
+   "id": "islamabad-hospital-fire-aug26",
+   "headline": "Islamabad hospital fire cause now disputed between minister and hospital's own report",
+   "status": "Materially changed",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple (locked-exits finding); Disputed (cause)",
+   "one_line": "Hospital's own preliminary report now points to a nebulizer igniting the oxygen-rich nursery air, contradicting the health minister's AC-unit claim; fire-brigade investigators found emergency exits locked from outside, contradicting the hospital's own claim they were open. PM Sharif's committee due within 5 days.",
+   "score_note": "Two competing official accounts of the same fire is itself the story now.",
+   "sources": [
+    "Dawn",
+    "dailypakistan",
+    "ARY News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "mail-ballot-new-merits-suit-aug26",
+   "headline": "Mail-ballot merits suit filed; emergency-motion hearing set for Sept 3",
+   "status": "Materially changed",
+   "first_seen": "2026-07-28-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Talwani issued a fresh 14-day TRO Wednesday blocking USPS from further preparatory steps through the Nov 3 elections while she weighs a preliminary injunction -- the rule is NOT currently in effect nationwide, contrary to how the Monday SCOTUS order might read alone. Sept 3 hearing stands.",
+   "score_note": "Two parallel tracks now: the new merits suit (no hearing date yet) and the older case's Sept 3 emergency-motion hearing.",
+   "sources": [
+    "Federal Register (primary)",
+    "Votebeat",
+    "CNBC",
+    "Fox News",
+    "Gov. Shapiro public statement"
+   ],
+   "watch": true
+  },
+  {
+   "id": "jackson-hole-warsh-independence-aug27",
+   "headline": "Jackson Hole opens hawkish; Warsh's debut keynote is tomorrow 10am ET",
+   "status": "Materially changed",
+   "first_seen": "2026-08-27-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Warsh's keynote is TODAY at 10am ET (8am Wyoming local) -- corrected via WebSearch after this run's calendar cache had it wrong at 9am ET. CNBC survey: 45% of economists expect no rate-path guidance at all; regional Fed presidents remain split (hawkish Hammack, cautious Schmid, inflation-focused Goolsbee) heading in.",
+   "score_note": "Hawkish regional-Fed chorus the day before the new chair's debut speech is a genuine, timely setup story.",
+   "sources": [
+    "CNBC",
+    "Kansas City Fed symposium schedule (primary)",
+    "FRED PCE data"
+   ],
+   "watch": true
+  },
+  {
+   "id": "mciver-third-circuit-immunity-aug27",
+   "headline": "Third Circuit strips Rep. McIver's Speech-or-Debate immunity claim",
+   "status": "Continuing",
+   "first_seen": "2026-08-27-pm",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "No en banc petition filed yet despite McIver's office saying she is 'exploring every possible option'; NJ Monitor frames the looming trial against her active reelection bid (already won June primary, faces Republican Carmen Bucco Nov 3).",
+   "score_note": "First appellate ruling on a sitting lawmaker's immunity claim tied to ICE-facility conduct this cycle.",
+   "sources": [
+    "Third Circuit opinion (primary)",
+    "UPI",
+    "NBC News",
+    "NJ Monitor",
+    "The Hill"
+   ],
+   "watch": true
+  },
+  {
+   "id": "gaza-mladenov-un-rebuke-aug27",
+   "headline": "Board of Peace's Mladenov publicly criticizes Israel at the UN Security Council",
+   "status": "Materially changed",
+   "first_seen": "2026-08-27-pm",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Mladenov's UN Security Council criticism of Israel now sits alongside Hamas reportedly still resisting surrendering small arms outright (weighing transfer to a Palestinian police force instead) and a fresh overnight incident: Israeli strikes reportedly killed three Palestinians near Khan Younis, corroborated by two outlets.",
+   "score_note": "First on-record public friction between the US-backed ceasefire mechanism's own official and Israel.",
+   "sources": [
+    "NPR",
+    "Times of Israel/Israel Hayom"
+   ],
+   "watch": true
+  },
+  {
    "id": "nvda-huggingface-acquisition-aug27",
    "headline": "Nvidia reportedly near a $12.9B deal for Hugging Face",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-27-pm",
+   "last_updated": "2026-08-28-am",
    "verification": "Single-reliable-source (deal terms); sourcing not fully aligned between outlets",
-   "one_line": "The Information reports the deal is finalized at $12.9B; Business Insider says talks are serious but unsigned. Neither company has confirmed on the record. Hugging Face previously declined a $500M Nvidia investment at a $7B valuation to preserve vendor neutrality. Notable, uncommented-on coincidence: Hugging Face's own production infrastructure was the platform OpenAI's agents breached in July.",
+   "one_line": "No company confirmation or denial overnight; status unchanged -- The Information reports a signed $12.9B deal, other outlets corroborate serious talks only.",
    "score_note": "Watch for company confirmation or denial.",
    "sources": [
     "The Information (via TechCrunch/CNBC coverage)",
@@ -974,11 +940,11 @@
   {
    "id": "ai-116-company-cyber-letter-aug27",
    "headline": "116 companies incl. OpenAI and Anthropic jointly warn Congress on AI cyber risk",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-27-pm",
+   "last_updated": "2026-08-28-am",
    "verification": "Confirmed-primary",
-   "one_line": "Joint letter published today (OpenAI, Anthropic, Google, Microsoft, AMD, Broadcom, CrowdStrike, IBM, Oracle, GM, Mastercard, Visa, Citi, Capital One, Robinhood, 100+ others) warns of a 'limited window' before AI-enabled attacks outpace defense. Lands after Congress's Aug 24 deadline for OpenAI/Anthropic AI-security answers passed with no substantive individual response. OpenAI separately published a 37-page technical report attributing the Hugging Face agent breach to 'reward hacking.' Anthropic's individual congressional response remains unconfirmed.",
+   "one_line": "Anthropic's individual response to Congress's Aug 24 deadline remains unpublished; it has halted its own cybersecurity evaluations pending an external review with METR, which is not the formal response requested.",
    "score_note": "Most visible joint OpenAI/Anthropic public statement since congressional scrutiny began; supersedes congress-ai-cyber-deadline-aug24 and openai-congress-reward-hacking-response-aug26.",
    "sources": [
     "OpenAI technical report (primary)",
@@ -986,6 +952,42 @@
     "CNBC",
     "Axios",
     "TechCrunch"
+   ],
+   "watch": true
+  },
+  {
+   "id": "lake-america-eo-aug27",
+   "headline": "Trump renames Lake Ontario \"Lake America\" as the Canada tariff fight escalates",
+   "status": "New",
+   "first_seen": "2026-08-28-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Trump signed an EO Thursday afternoon renaming Lake Ontario's US-territory waters \"Lake America,\" directing the Board on Geographic Names to update federal maps/communications. Carney noted \"Ontario\" predates both Canada and the US. Lands 6 days before Canada's Sept 8 retaliatory tariffs take effect.",
+   "score_note": "Real, signed executive action escalating an active trade dispute with concrete tariff dates already on the calendar.",
+   "sources": [
+    "White House executive order (primary)",
+    "CNN",
+    "NBC News",
+    "CNBC",
+    "Washington Post",
+    "The Hill"
+   ],
+   "watch": true
+  },
+  {
+   "id": "marvell-earnings-reaction-aug27",
+   "headline": "Marvell's record quarter draws a sell-the-news drop on margin-guidance concerns",
+   "status": "New",
+   "first_seen": "2026-08-28-am",
+   "last_updated": "2026-08-28-am",
+   "verification": "Confirmed-primary (results); Confirmed-multiple (after-hours reaction)",
+   "one_line": "Record $2.739B revenue (+37% YoY), thin non-GAAP EPS beat ($0.94 vs $0.93), $3.0B Q3 guide -- shares still fell ~7-8% after hours on guided gross-margin compression (57.5-58.5%) against a stock already up 188-195% YTD. Wells Fargo raised PT to $310 anyway on the expanded Google relationship. Forecast logged on whether MRVL closes the week higher regardless.",
+   "score_note": "A beat-and-raise that still sells off is a valuation-sensitivity story, the same pattern as last week's Walmart reaction.",
+   "sources": [
+    "Marvell SEC 8-K (primary)",
+    "this report's own Yahoo Finance close-series computation",
+    "CNBC",
+    "Wells Fargo research note via CNBC"
    ],
    "watch": true
   }

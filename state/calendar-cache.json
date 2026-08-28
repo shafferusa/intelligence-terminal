@@ -1,7 +1,7 @@
 {
- "fetched": "2026-08-27T06:54:18-04:00",
- "earnings_fetched": "2026-08-27",
- "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-27: MRVL confirmed amc. NVDA's Aug 26 amc report is now reported (see 8-K, Business/Top Stories). Alpha Vantage 3-month CSV last refreshed 2026-08-23, within once-per-day limit, not re-fetched.",
+ "fetched": "2026-08-28T06:47:00-04:00",
+ "earnings_fetched": "2026-08-28",
+ "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-28: no major watchlist earnings scheduled today. Marvell's Aug 27 amc report is now reported (see 8-K, Business/Top Stories). Alpha Vantage 3-month CSV last refreshed 2026-08-23, within once-per-day limit, not re-fetched.",
  "events": [
   {
    "ts_et": "2026-08-26T08:30:00-04:00",
@@ -84,12 +84,12 @@
    "source": "Newsquawk week-ahead calendar -- Confirmed-multiple (scheduled), consensus lower-confidence"
   },
   {
-   "ts_et": "2026-08-28T09:00:00-04:00",
+   "ts_et": "2026-08-28T10:00:00-04:00",
    "type": "speech",
    "name": "Fed Chair Kevin Warsh delivers Jackson Hole keynote",
-   "importance": "High",
-   "reason": "First Jackson Hole address as Fed Chair, one day after PCE, two-and-a-half weeks before the Sept 16 FOMC decision.",
-   "source": "Kansas City Fed symposium schedule -- Confirmed-multiple"
+   "importance": "Critical",
+   "reason": "First Jackson Hole address as Fed Chair (8am Wyoming local / 10am ET -- corrected this run; the prior 09:00 ET cache entry was wrong), one day after PCE, two-and-a-half weeks before the Sept 16 FOMC decision.",
+   "source": "CNBC, Bloomberg, NPR -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-08-30T07:26:00-04:00",
