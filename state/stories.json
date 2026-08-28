@@ -36,19 +36,19 @@
   },
   {
    "id": "gaza-hamas-disarmament-deal-jul30",
-   "headline": "EU and UK edge toward sanctions over E1 as Israel opens first criminal probes of the war",
+   "headline": "Israel expels Dutch diplomats from Gaza ceasefire center as fresh strikes kill Palestinians in Gaza and the West Bank",
    "status": "Materially changed",
    "first_seen": "2026-07-31-pm",
-   "last_updated": "2026-08-21-am",
+   "last_updated": "2026-08-28-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Israel's E1 tender is now specified at 1,234 units. UK summoned Israel's charge d'affaires Aug 19; Miliband says a 'comprehensive sanctions package' is coming within weeks, not yet enacted by EU or UK. IDF opened its first-ever criminal investigations into the Hind Rajab killing (now admits its own troops fired on the vehicle) and the killing of 15 Red Crescent paramedics. Disarmament sequencing dispute remains unresolved; Hamas has not confirmed a response to the reported US-general-supervised handover framework.",
-   "score_note": "First formal IDF criminal accountability step of the war on either killing.",
+   "one_line": "Israel's FM Sa'ar removed two Dutch diplomats from the US-backed Gaza ceasefire coordination center over the Netherlands' incoming settlement-goods trade ban; UK says it was warned Israel may do the same to British officials there -- first reported friction inside the coordination structure itself. Separately: Israeli strikes killed 4 in Gaza (Khan Younis/Sabra) and 3 in a rare West Bank strike in Jenin, where Israel names one dead as a Hamas figure that Hamas denies and Palestinian Islamic Jihad claims as its own.",
+   "score_note": "Friction with European partners inside the coordination center is a new axis of strain, distinct from the Board of Peace/Mladenov dispute; West Bank strike expands the conflict's geography.",
    "sources": [
     "Times of Israel",
-    "The National",
-    "NPR",
-    "CNN",
-    "Chatham House"
+    "Al Jazeera",
+    "Washington Post/AP",
+    "Haaretz",
+    "JPost"
    ],
    "watch": true
   },
@@ -184,21 +184,6 @@
     "Axios"
    ],
    "watch": true
-  },
-  {
-   "id": "fomc-minutes-20y-auction-treasury-buyback-aug19",
-   "headline": "Softer 20-year auction and Treasury buybacks pull yields down into Thursday's 30-year reopening",
-   "status": "Materially changed",
-   "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-22-sat",
-   "verification": "Confirmed-primary",
-   "one_line": "Auction cycle closed for the week. Treasury's doubled buyback program (to $4B+/operation, beginning Sept 9) is now a standing policy fact folded into the weekly rates narrative rather than a discrete item needing its own watch entry.",
-   "score_note": "Buyback effect proved temporary; yields backed right up the next session.",
-   "sources": [
-    "Treasury auction results (primary)",
-    "CNBC"
-   ],
-   "watch": false
   },
   {
    "id": "walmart-deere-retail-divergence-aug21",
@@ -338,36 +323,6 @@
    "watch": true
   },
   {
-   "id": "boeing-northrop-8k-coincidence-aug24",
-   "headline": "Boeing and Northrop Grumman's same-day 8-Ks confirmed as coincidental, routine filings",
-   "status": "Resolved",
-   "first_seen": "2026-08-24-am",
-   "last_updated": "2026-08-24-am",
-   "verification": "Confirmed-primary",
-   "one_line": "Both Item 5.02 filings landed within two minutes of each other Friday via the same filing agent, raising a flag during this run's EDGAR sweep. Read directly: Boeing's is a finance-controller succession (Ryan Shedd joining as SVP Finance, succeeding Michael Cleary who plans to retire in 2027); Northrop's is a performance equity grant to CEO Kathy Warden. Unrelated; closing this thread.",
-   "score_note": "Verified via primary filings before publication rather than run as a false-pattern story.",
-   "sources": [
-    "Boeing SEC 8-K (primary)",
-    "Northrop Grumman SEC 8-K (primary)"
-   ],
-   "watch": false
-  },
-  {
-   "id": "coldcard-bitcoin-wallet-exploit-aug",
-   "headline": "Coldcard ships patched firmware; AI-assisted audit surfaces thousands of bugs across the ecosystem",
-   "status": "Resolved",
-   "first_seen": "2026-08-17-am",
-   "last_updated": "2026-08-24-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Now independently confirmed by Bitcoin Magazine, crypto.news and news.bitcoin.com: 16 researchers, 27.5 hours, 390 repos, OpenSats-funded (~$40K), led by developer \"Calle.\" Loss estimates have drifted to $116-130M (1,800+ BTC, 5,200+ addresses) across outlets -- treat as still moving. Second-source bar cleared; closing active tracking.",
-   "score_note": "Second-outlet confirmation obtained; no further tracking needed absent a new development.",
-   "sources": [
-    "TRM Labs",
-    "TechCrunch"
-   ],
-   "watch": false
-  },
-  {
    "id": "canada-tariffs-take-effect-aug22",
    "headline": "Canada announces Sept 8 retaliatory tariffs after its own 50% US tariffs took effect Saturday",
    "status": "Materially changed",
@@ -417,38 +372,6 @@
     "MacRumors"
    ],
    "watch": true
-  },
-  {
-   "id": "openai-russia-influence-campaign-aug25",
-   "headline": "OpenAI discloses and disrupts a Russian covert influence campaign built on ChatGPT",
-   "status": "New",
-   "first_seen": "2026-08-25-pm",
-   "last_updated": "2026-08-25-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "OpenAI's own blog post says it banned accounts tied to a covert Russian operation that used ChatGPT to build a fake Israel-based think-tank front (\"International Burke Institute\") laundering pro-Moscow narratives across Substack, Telegram, X, Facebook and LinkedIn, using VPNs to evade OpenAI's Russia access restrictions.",
-   "score_note": "OpenAI's own disclosure, corroborated same-day by outside reporting; lands the same week Congress's AI-security deadline for OpenAI/Anthropic passed unanswered.",
-   "sources": [
-    "OpenAI (primary)",
-    "CNBC",
-    "Yahoo/AFP"
-   ],
-   "watch": false
-  },
-  {
-   "id": "al-green-impeachment-articles-aug24",
-   "headline": "Rep. Al Green files a ninth set of impeachment articles against Trump",
-   "status": "New",
-   "first_seen": "2026-08-25-pm",
-   "last_updated": "2026-08-25-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Green filed H.Res.1486 Monday, citing ICE/CBP conduct as \"unaccountable paramilitary police forces\" and naming several deaths in custody or during encounters. Green is retiring in January; no realistic path to a floor vote.",
-   "score_note": "Minor procedural item reflecting ongoing intra-Democratic strategy debate, not a new legal threshold.",
-   "sources": [
-    "Al Green official release (primary)",
-    "The Hill",
-    "UPI"
-   ],
-   "watch": false
   },
   {
    "id": "iran-sanctions-economic-outcast-aug24",
@@ -514,24 +437,6 @@
     "CNN"
    ],
    "watch": true
-  },
-  {
-   "id": "sc-senate-runoff-aug25",
-   "headline": "South Carolina Senate primary runoff Tuesday tests Trump's endorsement strength",
-   "status": "Resolved",
-   "first_seen": "2026-08-23-sun",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Sen. Darline Graham defeated Rep. Ralph Norman 52.5%-47.5% (193,396 to 175,327 votes) in Tuesday's runoff to keep her late brother Lindsey Graham's seat in Republican hands, after Trump's endorsement and a $827,000 final-day ad buy from MAGA Inc. She advances to the Nov 3 special general against Democrat Dr. Annie Andrews.",
-   "score_note": "Result in; closing this thread.",
-   "sources": [
-    "NBC News",
-    "AP/ABC News",
-    "NPR",
-    "Roll Call",
-    "Live5News"
-   ],
-   "watch": false
   },
   {
    "id": "nvda-earnings-aug26",
@@ -633,35 +538,20 @@
   },
   {
    "id": "uae-iran-trade-suspension-aug19",
-   "headline": "Iran raises the Gulf-standoff stakes: threatens to block all oil traffic, not just Hormuz",
+   "headline": "Qatar's LNG losses mount as Iran prepares to name its Hormuz terms",
    "status": "Materially changed",
    "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-26-pm",
+   "last_updated": "2026-08-28-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Gharibabadi detailed the Iran-Oman framework: no military vessels transit, Iranian-controlled inbound routing, temporary status with a 30-60 day deadline for a permanent scheme. Trump administration reportedly objects to joint Iranian-Omani management of the outbound route (Single-reliable-source, not on record). Oil little changed to modestly higher today despite the harder details.",
-   "score_note": "First framework detailed enough to carry a deadline and an explicit US objection.",
+   "one_line": "QatarEnergy extended force majeure on LNG cargoes into October/November (LNG can't be ship-to-ship transferred around the blockage, unlike crude) -- exports down as much as 96% over six months, ~$24B in lost sales, the standoff's first concrete economic price tag. Iran is preparing to formally demand a full end to the US naval blockade, war-damage compensation and sanctions relief before reopening -- sequencing opposite the US position.",
+   "score_note": "First hard economic figure attached to the six-month standoff; Iran's stated terms show no sign of narrowing the gap with Washington.",
    "sources": [
+    "Bloomberg",
     "Al Jazeera",
-    "Fortune",
+    "NBC News",
     "CNBC"
    ],
    "watch": true
-  },
-  {
-   "id": "taiwan-nvidia-supermicro-export-indictment-aug25",
-   "headline": "Taiwan indicts Nvidia and Supermicro employees over illegal AI-server exports to China",
-   "status": "Materially changed",
-   "first_seen": "2026-08-25-pm",
-   "last_updated": "2026-08-26-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Scheme now detailed at ~$2.5B: 74 servers reached China via 3 routes (50 via Indonesia, 16 direct, 8 via Japan/Hong Kong); a separate 56-server attempt failed and stayed in Taiwan. Both Nvidia and Supermicro have issued on-record statements.",
-   "score_note": "Corporate statements and scheme scale now both on record.",
-   "sources": [
-    "Wire coverage of Taiwan prosecutors",
-    "Nvidia statement (primary)",
-    "Supermicro statement (primary)"
-   ],
-   "watch": false
   },
   {
    "id": "space-sector-selloff-aug24",
@@ -712,36 +602,20 @@
    "watch": true
   },
   {
-   "id": "nvda-q2-fy27-earnings-aug26",
-   "headline": "Nvidia closes +8.7% the session after its beat-and-raise; Marvell reports after tonight's close",
-   "status": "Resolved",
-   "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "NVDA closed Thu at $227.98, +8.74% (close-to-close), confirming the market's positive read on Wed's after-close Q3 guide ($108B, zero China DC revenue) and ~70% FY28 growth guidance. Forecast on >5% move graded correct. Marvell separately reported record revenue ($2.739B, +37% YoY), non-GAAP EPS $0.94 beat, and a $3.15B next-quarter guide after tonight's close -- its stock reaction awaits Friday.",
-   "score_note": "Earnings reaction resolved; closing this thread. Marvell's own reaction is a fresh, separate thread if warranted tomorrow.",
-   "sources": [
-    "NVIDIA Corp. SEC 8-K (primary)",
-    "Marvell Technology SEC 8-K (primary)",
-    "this report's own Yahoo Finance close-series computation"
-   ],
-   "watch": false
-  },
-  {
    "id": "nepal-tibet-flash-flood-aug26",
-   "headline": "Nepal-Tibet flood toll surges past 380; China's count still unreconciled",
+   "headline": "Nepal's own government reports two different flood tolls as a barrier lake nears overflow",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple (Nepal toll); Disputed (reconciliation with China's count)",
-   "one_line": "Nepal's death toll has more than doubled since this morning to 380+, with 1,300-1,500 missing across Nepal and Tibet combined (many foreign tourists/pilgrims, dozens of Americans). China's CCTV still reports only 3 deaths on its side, alongside 558 missing in Gyirong County -- gap widening, not narrowing, no joint accounting from either government.",
-   "score_note": "Lead-tier: rapidly rising toll, American exposure, still-unreconciled cross-border reporting gap.",
+   "last_updated": "2026-08-28-pm",
+   "verification": "Disputed (Nepal Police vs Nepal PM's Office); Disputed (Nepal vs China)",
+   "one_line": "Nepal Police say 553 dead; Nepal PM's Office says 469 confirmed with 977 missing -- two domestic figures roughly 500 apart, not reconciled with each other, let alone with China's unchanged count of 3 dead/558 missing. China's embassy in Nepal says the rescue effort has reached a 'critical stage': two new landslide-dammed lakes have formed, at least one beginning to overflow, raising risk of a second flood wave. ~644 missing reported to be foreign nationals, ~90 American.",
+   "score_note": "Toll dispute is now intra-government, not just cross-border, while a fresh flood risk is actively forming.",
    "sources": [
-    "Nepal Tourism Board (primary)",
-    "Reuters via CNBC",
     "Al Jazeera",
-    "CP24",
-    "CCTV"
+    "CBS News",
+    "ABC News",
+    "NPR",
+    "China Central Television"
    ],
    "watch": true
   },
@@ -781,12 +655,13 @@
    "headline": "Roman Space Telescope encapsulated for Sunday, Aug 30 launch (corrected from prior 'Saturday' framing)",
    "status": "Continuing",
    "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-08-28-pm",
    "verification": "Confirmed-primary",
-   "one_line": "On track for Sunday Aug 30, 7:26am ET launch from LC-39A; spacecraft encapsulated and moved to SpaceX's hangar this week. No formal weather-percent-go figure published yet (typically lands day-of-minus-1).",
-   "score_note": "Routine positive mission-status update plus an internal date-of-week correction.",
+   "one_line": "NASA/SpaceX completed the joint Launch Readiness Review today and declared the mission formally 'Go for Launch' for Sunday 7:26am ET from LC-39A. Space Launch Delta 45 forecasts 60% favorable weather for the primary window; backup Monday 7:22am ET carries reduced thunderstorm risk. Fairing encapsulation complete.",
+   "score_note": "First official weather-percent-go figure; launch now imminent.",
    "sources": [
     "NASA Roman blog",
+    "Space Launch Delta 45 (primary)",
     "SpaceNews"
    ],
    "watch": true
@@ -821,23 +696,6 @@
     "WHO Disease Outbreak News"
    ],
    "watch": true
-  },
-  {
-   "id": "grid-equipment-national-emergency-aug26",
-   "headline": "Trump declares national emergency over foreign-sourced grid equipment",
-   "status": "Materially changed",
-   "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-28-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "First industry reaction: National Electric Manufacturers Association calls it 'an update and expansion' of the 2020 order but flags confusion over covered-equipment definitions; Utility Dive notes 6-month-to-2-year procurement lead times raise shortage risk.",
-   "score_note": "Awaiting industry/cost reaction.",
-   "sources": [
-    "Department of Energy (primary)",
-    "White House (primary)",
-    "Bloomberg",
-    "Fox Business"
-   ],
-   "watch": false
   },
   {
    "id": "islamabad-hospital-fire-aug26",
@@ -875,19 +733,23 @@
   },
   {
    "id": "jackson-hole-warsh-independence-aug27",
-   "headline": "Jackson Hole opens hawkish; Warsh's debut keynote is tomorrow 10am ET",
+   "headline": "Warsh's hawkish Jackson Hole debut sends yields up and splits the tape",
    "status": "Materially changed",
    "first_seen": "2026-08-27-am",
-   "last_updated": "2026-08-28-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Warsh's keynote is TODAY at 10am ET (8am Wyoming local) -- corrected via WebSearch after this run's calendar cache had it wrong at 9am ET. CNBC survey: 45% of economists expect no rate-path guidance at all; regional Fed presidents remain split (hawkish Hammack, cautious Schmid, inflation-focused Goolsbee) heading in.",
-   "score_note": "Hawkish regional-Fed chorus the day before the new chair's debut speech is a genuine, timely setup story.",
+   "last_updated": "2026-08-28-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Warsh's 10am ET keynote (Fed transcript, primary) emphasized above-target inflation (PCE 3.7% YoY) over forward guidance, calling guidance a practice that has \"overstayed its welcome.\" September rate-hike odds rose sharply; Treasury's par curve moved +6bp at 3M/10Y, +14bp at 2Y (front-end-led flattening). Equities gave back gains (S&P -0.25%, Nasdaq -0.52%); chip/space names sold off hardest, financials/consumer/mega-cap tech gained. Forecast 2026-08-28-am-1 (10Y moves >10bp intraday) graded wrong -- this report's own intraday computation put the day's range at ~7-8bp.",
+   "score_note": "First public signal of how Warsh intends to run the Fed differently from Powell; resolved the week's central watch item.",
    "sources": [
+    "Federal Reserve speech transcript (primary)",
     "CNBC",
-    "Kansas City Fed symposium schedule (primary)",
-    "FRED PCE data"
+    "Washington Post",
+    "Axios",
+    "NPR",
+    "Bloomberg",
+    "this report's own Treasury and Yahoo Finance computations"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "mciver-third-circuit-immunity-aug27",
@@ -927,10 +789,10 @@
    "headline": "Nvidia reportedly near a $12.9B deal for Hugging Face",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-08-28-pm",
    "verification": "Single-reliable-source (deal terms); sourcing not fully aligned between outlets",
-   "one_line": "No company confirmation or denial overnight; status unchanged -- The Information reports a signed $12.9B deal, other outlets corroborate serious talks only.",
-   "score_note": "Watch for company confirmation or denial.",
+   "one_line": "No confirmation or denial from either company as of Friday afternoon; status unchanged from Thursday. The Information's $12.9B signed-deal claim remains the most specific report; other outlets still frame it as serious talks only.",
+   "score_note": "Third consecutive day with no company statement; watch continues.",
    "sources": [
     "The Information (via TechCrunch/CNBC coverage)",
     "Business Insider"
@@ -942,9 +804,9 @@
    "headline": "116 companies incl. OpenAI and Anthropic jointly warn Congress on AI cyber risk",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-08-28-pm",
    "verification": "Confirmed-primary",
-   "one_line": "Anthropic's individual response to Congress's Aug 24 deadline remains unpublished; it has halted its own cybersecurity evaluations pending an external review with METR, which is not the formal response requested.",
+   "one_line": "Anthropic's individual response to Congress's Aug 24 deadline remains unpublished. Separately (not a response to Congress), a federal judge struck down the Pentagon's 'supply chain risk' designation of Anthropic today as illegal retaliation for its public safety advocacy -- see anthropic-pentagon-ruling-aug28.",
    "score_note": "Most visible joint OpenAI/Anthropic public statement since congressional scrutiny began; supersedes congress-ai-cyber-deadline-aug24 and openai-congress-reward-hacking-response-aug26.",
    "sources": [
     "OpenAI technical report (primary)",
@@ -957,37 +819,68 @@
   },
   {
    "id": "lake-america-eo-aug27",
-   "headline": "Trump renames Lake Ontario \"Lake America\" as the Canada tariff fight escalates",
-   "status": "New",
+   "headline": "Trump's Lake Ontario renaming draws bipartisan pushback",
+   "status": "Materially changed",
    "first_seen": "2026-08-28-am",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-08-28-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Trump signed an EO Thursday afternoon renaming Lake Ontario's US-territory waters \"Lake America,\" directing the Board on Geographic Names to update federal maps/communications. Carney noted \"Ontario\" predates both Canada and the US. Lands 6 days before Canada's Sept 8 retaliatory tariffs take effect.",
-   "score_note": "Real, signed executive action escalating an active trade dispute with concrete tariff dates already on the calendar.",
+   "one_line": "Rep. Debbie Dingell (D-MI) plans a 'Hands Off Our Great Lakes Act' to nullify the EO; NY Gov. Hochul and Senate Minority Leader Schumer both rejected it publicly (Schumer: 'juvenile'); Ontario Premier Doug Ford and Seneca Nation President J.C. Seneca condemned it too. No White House response to the pushback found.",
+   "score_note": "Domestic legislative flashpoint now attached to the trade dispute, six days before Canada's Sept 8 retaliatory tariffs take effect.",
    "sources": [
-    "White House executive order (primary)",
-    "CNN",
-    "NBC News",
-    "CNBC",
-    "Washington Post",
-    "The Hill"
+    "Time",
+    "Detroit News",
+    "NY1"
    ],
    "watch": true
   },
   {
    "id": "marvell-earnings-reaction-aug27",
-   "headline": "Marvell's record quarter draws a sell-the-news drop on margin-guidance concerns",
-   "status": "New",
+   "headline": "Marvell's post-earnings selloff deepens to -10.3% on Friday",
+   "status": "Resolved",
    "first_seen": "2026-08-28-am",
-   "last_updated": "2026-08-28-am",
-   "verification": "Confirmed-primary (results); Confirmed-multiple (after-hours reaction)",
-   "one_line": "Record $2.739B revenue (+37% YoY), thin non-GAAP EPS beat ($0.94 vs $0.93), $3.0B Q3 guide -- shares still fell ~7-8% after hours on guided gross-margin compression (57.5-58.5%) against a stock already up 188-195% YTD. Wells Fargo raised PT to $310 anyway on the expanded Google relationship. Forecast logged on whether MRVL closes the week higher regardless.",
-   "score_note": "A beat-and-raise that still sells off is a valuation-sensitivity story, the same pattern as last week's Walmart reaction.",
+   "last_updated": "2026-08-28-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "MRVL closed Friday at $216.62, down 10.3%, extending Thursday's after-hours drop into a second down session despite a raised FY28 revenue outlook (~$18B from $16.5B) -- gross-margin guidance (57.5-58.5%) continued to outweigh the beat against a stock up ~190% YTD. Forecast 2026-08-28-am-3 (MRVL closes the week above Thursday's $241.45) graded wrong.",
+   "score_note": "Beat-and-raise still sold off -- the same valuation-sensitivity pattern as Walmart's reaction last week; closing this thread.",
    "sources": [
     "Marvell SEC 8-K (primary)",
     "this report's own Yahoo Finance close-series computation",
     "CNBC",
     "Wells Fargo research note via CNBC"
+   ],
+   "watch": false
+  },
+  {
+   "id": "anthropic-pentagon-ruling-aug28",
+   "headline": "Federal judge strikes down the Pentagon's \"supply chain risk\" designation of Anthropic",
+   "status": "New",
+   "first_seen": "2026-08-28-pm",
+   "last_updated": "2026-08-28-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "U.S. District Judge Rita Lin (N.D. Cal.) ruled the DoD's Feb. 2026 designation of Anthropic as a national-security supply-chain risk -- imposed after Anthropic declined to let the military use Claude for mass surveillance or autonomous weapons -- was arbitrary and capricious and violated First/Fifth Amendment rights. 59-page order directs withdrawal of the directives. Government expected to appeal; no appeal confirmed filed yet. This report has not independently reviewed the order text.",
+   "score_note": "First court win for an AI lab against the administration's use of national-security authority as a policy lever; lands the same week Congress's own AI-security deadline passed with only a joint industry letter in hand.",
+   "sources": [
+    "NPR",
+    "CNBC",
+    "TechCrunch",
+    "Forbes",
+    "The Hill",
+    "Axios"
+   ],
+   "watch": true
+  },
+  {
+   "id": "nk-freedom-edge-drill-aug28",
+   "headline": "US, South Korea and Japan announce a trilateral drill after North Korea vows retaliation",
+   "status": "New",
+   "first_seen": "2026-08-28-pm",
+   "last_updated": "2026-08-28-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Seoul, Washington and Tokyo announced 'Freedom Edge,' a five-day naval/military exercise off Jeju Island starting Sept 7, a day after North Korea vowed to retaliate against unspecified 'US hostilities.' Comes despite the administration's earlier scaled-back bilateral drill, a stated goodwill gesture toward Pyongyang -- suggesting that diplomatic track has stalled.",
+   "score_note": "New flashpoint not previously tracked; diplomacy-with-Pyongyang track appears stalled.",
+   "sources": [
+    "NPR/Houston Public Media",
+    "CP24/US News"
    ],
    "watch": true
   }
