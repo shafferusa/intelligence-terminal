@@ -56,7 +56,7 @@
    "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
    "horizon": "2026-07-30",
    "probability": "55-65%",
-   "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
+   "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate \u2014 treat as low-confidence.",
    "status": "partial",
    "outcome": "Q2 GDP advance printed +1.5% annualized -- inside the stated 1.5-3.0% range, but exactly at the bottom edge.",
    "graded": "2026-08-01",
@@ -95,7 +95,7 @@
    "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
    "horizon": "2026-07-31",
    "probability": "60-70%",
-   "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
+   "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly \u00b110% around spot given no crypto-specific catalyst identified this week.",
    "status": "correct",
    "outcome": "Bitcoin traded within the $60,000-$72,000 band all week (high ~$64,914 Mon, low ~$62,944 Fri; $63,046 as of this run).",
    "graded": "2026-08-01",
@@ -342,7 +342,7 @@
    "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
    "horizon": "2026-08-07",
    "probability": "55-65%",
-   "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+   "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
    "status": "correct",
    "outcome": "Novo Nordisk closed the Aug 7 session at $47.24, well below the ~$49.90 half-recovery threshold, after three consecutive sell-side downgrades (HSBC, Wall Street Zen, UBS) through the week.",
    "graded": "2026-08-08",
@@ -355,7 +355,7 @@
    "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
    "horizon": "2026-08-13",
    "probability": "45-55%",
-   "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+   "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
    "status": "correct",
    "outcome": "The Aug 13 checkpoint passed with the disarm-before-withdraw sequencing dispute unresolved: Netanyahu's Aug 9 rejection of the 15-point document held throughout, Hamas's Ghazi Hamad continued conditioning disarmament on an Israeli halt/withdrawal, and no joint declaration or IVC extension was issued. Kushner, Mladenov and Blair are now traveling to Israel/Egypt (arriving Sun Aug 16) as the first concrete US diplomatic follow-through.",
    "graded": "2026-08-15",
@@ -1038,7 +1038,7 @@
    "id": "2026-08-11-am-3",
    "date": "2026-08-11",
    "slot": "am",
-   "forecast": "The confirmed death toll from the Aug 10 Colombia (Chocó) earthquake rises by at least 20 more (above the 132 reported this morning) within 48 hours.",
+   "forecast": "The confirmed death toll from the Aug 10 Colombia (Choc\u00f3) earthquake rises by at least 20 more (above the 132 reported this morning) within 48 hours.",
    "horizon": "2026-08-13",
    "probability": "50-65%",
    "basis": "Typical pattern for major earthquakes in rural, hard-to-access terrain, where official counts are revised upward for 24-72 hours as isolated communities are reached; the toll already climbed from ~20 to 132 within one day.",
@@ -1237,7 +1237,10 @@
    "horizon": "2026-08-27",
    "probability": "35-50%",
    "basis": "No Fed official commented on either yesterday's CPI or today's PPI by this report's cutoff; Fed communications during this stretch have been sparse (this report has found no Warsh, Cook, or other FOMC public remarks in over a week), arguing against an early comment, though a data point this notable (core PPI quadrupling its prior pace) raises the odds above a pure baseline silence scenario.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Multiple Fed officials made explicit, hawkish public comments on persistently hot inflation as the Jackson Hole symposium opened Aug 27, most notably KC Fed's Jeffrey Schmid calling inflation \"stubborn\" and \"sticky\" and questioning whether policy is even restrictive -- delivered on the eve of/during Jackson Hole's opening, before Warsh's Aug 28 keynote and within this forecast's Aug 27 horizon.",
+   "graded": "2026-08-29",
+   "lesson": "Fed communications discipline broke down pre-keynote once back-to-back hot prints accumulated; the specific data series cited (core PPI) mattered less than the correct directional call that officials would speak up early."
   },
   {
    "id": "2026-08-14-am-1",
@@ -1286,7 +1289,10 @@
    "horizon": "2026-08-27",
    "probability": "35-50%",
    "basis": "No Fed official commented on either Wednesday's CPI or Thursday's PPI by this report's cutoff on either day, arguing against an early comment; but a data pairing this notable (a sharp retail-sales miss plus a five-month-low sentiment reading) raises the odds above the pure baseline-silence pattern this report has observed most of August.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No Fed official was found publicly commenting on the Aug 14 soft retail-sales (-0.6%) or weak consumer-sentiment (51.0) prints before Warsh's Aug 28 keynote; the pre-Jackson-Hole commentary that did surface (Schmid and others) was uniformly about inflation running hot, not demand-side softness.",
+   "graded": "2026-08-29",
+   "lesson": "Commentary discipline held on the demand side even as it broke on the inflation side -- officials appear more willing to flag upside inflation risk publicly than to validate soft-landing-adjacent data pre-meeting."
   },
   {
    "id": "2026-08-14-pm-2",
@@ -1309,7 +1315,10 @@
    "horizon": "2026-08-28",
    "probability": "20-30%",
    "basis": "Russian-casualty figures from either side in this conflict have rarely been independently verified in near-real-time by this report's research; a claim of this specific magnitude is more likely to remain contested or simply unaddressed by independent trackers than resolved cleanly in either direction within two weeks.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "No independent source directly corroborated or refuted Zelensky's ~9,550-killed figure. The closest check, the Institute for the Study of War, assessed Ukraine's related territorial claim for the same offensive (745 sq km) as moderately inflated against its own conservative geolocated estimate (~627 sq km) -- suggestive of an upward bias in Ukrainian battlefield claims generally, but not a corroboration or refutation of the casualty number itself.",
+   "graded": "2026-08-29",
+   "lesson": "Precise single-offensive casualty claims from either side remain effectively unverifiable in near-real time; a related, indirect open-source check (territorial claims) can suggest a bias without resolving the specific number."
   },
   {
    "id": "2026-08-15-sat-1",
@@ -1462,7 +1471,10 @@
    "horizon": "2026-08-24",
    "probability": "30-45%",
    "basis": "Three tanker strikes in the five days before the Islamabad ceasefire's deadline, which then lapsed with no extension talks underway; incident pace has been accelerating even as oil/equities have not moved in proportion.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "An Aug 18 UKMTO-reported strike disabled a cargo ship's engine room and killed one crew member in the Strait -- a materially disruptive, fatal incident inside the window -- but it does not match any of the three named trigger conditions (no confirmed full closure, no sinking, no direct US-Iran military exchange).",
+   "graded": "2026-08-29",
+   "lesson": "Correctly called continued escalation risk but drew the trigger conditions too narrowly; this campaign's actual escalation path has been recurring attacks on merchant shipping with occasional fatalities, not the more dramatic named scenarios."
   },
   {
    "id": "2026-08-17-am-2",
@@ -1485,7 +1497,10 @@
    "horizon": "2026-08-25",
    "probability": "20-35%",
    "basis": "Five-plus tanker strikes in the past two weeks and today's first confirmed fatality, with no ceasefire extension agreed.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Follow-on attacks occurred within the week: a further tanker was struck by an unknown projectile off Oman near the strait around Aug 24, and another tanker strike sparked a fire reported Aug 27 -- both consistent with the same escalation pattern as the Aug 18 fatal strike.",
+   "graded": "2026-08-29",
+   "lesson": "Correctly read this as an ongoing low-intensity campaign rather than a one-off; attacks recurred roughly weekly, confirming the forecast's escalation base rate."
   },
   {
    "id": "2026-08-18-am-2",
@@ -1528,7 +1543,10 @@
    "horizon": "2026-08-26",
    "probability": "35-50%",
    "basis": "Today's Trump-Carney call produced no announced deal, but Carney has repeatedly signaled continued engagement and called the talks 'delicate' rather than broken off.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No deal or extension was reached. Talks collapsed after three days in Washington; the 50% US tariffs on roughly $20B of Canadian goods took effect Aug 22 as scheduled, and Canada announced dollar-for-dollar retaliatory tariffs effective Sept 8, with PM Carney calling the US demands \"uneconomic\" and \"unfair.\"",
+   "graded": "2026-08-29",
+   "lesson": "Underestimated how far apart the two sides actually were -- this was a genuine breakdown, not the brinkmanship-then-deal pattern seen earlier in the cycle, and the Sept 8 retaliation timeline shows both sides settling in for an extended standoff."
   },
   {
    "id": "2026-08-18-pm-3",
@@ -1597,7 +1615,10 @@
    "horizon": "2026-08-28",
    "probability": "10-20%",
    "basis": "Iran's SNSC secretary Rezaei has explicitly threatened a full halt if any neighboring state joins the sanctions campaign, weighed against this cycle's consistent pattern of escalatory rhetoric outrunning on-the-water action.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Iran did not halt Gulf oil traffic after Monday's sanctions. Iran and Oman instead continued negotiating a temporary shipping-lane/demining arrangement, Trump claimed mines had been cleared, and Iran's response stayed limited to seizure threats plus continuation of its existing sporadic-strike campaign (tanker incidents Aug 24-25 and Aug 27) rather than a full traffic halt.",
+   "graded": "2026-08-29",
+   "lesson": "The full-halt shock scenario overweighted Iran's rhetorical threats relative to its demonstrated preference all year for harassment and sporadic strikes that preserve its own oil-smuggling routes, rather than a self-defeating full closure."
   },
   {
    "id": "2026-08-23-sun-2",
@@ -1607,7 +1628,10 @@
    "horizon": "2026-08-28",
    "probability": "15-25%",
    "basis": "Consensus clusters near $93-95B revenue with Nvidia having cleared elevated bars in recent quarters; risk concentrates on China-exposure commentary specifically rather than the headline beat/miss.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The opposite happened: NVDA beat on revenue ($96.2B vs. ~$92-93B consensus) and EPS ($2.22 vs. ~$2.10) with guidance above consensus and rallied roughly 8.7% Aug 27, lifting the AI-infrastructure complex rather than dragging it down -- Broadcom, the Philadelphia Semiconductor Index and AI-power names (CEG, VST) all rose on the print.",
+   "graded": "2026-08-29",
+   "lesson": "Should have weighted the beat-and-raise scenario more heavily given Nvidia's recent print history; a strong guide pulled the whole AI-capex cohort up rather than triggering the feared rotation out of it."
   },
   {
    "id": "2026-08-23-sun-3",
@@ -1617,7 +1641,10 @@
    "horizon": "2026-08-28",
    "probability": "30-40%",
    "basis": "Putin has explicitly warned of 'far more destructive' strikes following Friday's attack, and reciprocal strikes continued nightly through the weekend with no ceasefire mechanism in place.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Russia's large-scale overnight aerial attack on the Kyiv area (roughly 600 drones and dozens of missiles) late Aug 28 killed at least 37 people in the village of Myla near Kyiv, per multiple wires -- well past the Kryvyi Rih benchmark (16 dead) and inside the forecast's window.",
+   "graded": "2026-08-29",
+   "lesson": "Correctly extrapolated from an already-elevated tempo of mass-casualty strikes that another comparable or larger strike within the week was the higher-probability path, not a lull."
   },
   {
    "id": "2026-08-23-sun-4",
@@ -1627,7 +1654,10 @@
    "horizon": "2026-08-28",
    "probability": "25-35%",
    "basis": "His first keynote as chair, landing one day after the PCE print, with no prior Warsh-led Jackson Hole to anchor expectations against; Jackson Hole speeches have moved market pricing in roughly a third of recent years.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Warsh's Aug 28 keynote meaningfully repriced September rate-path odds: CME-tracked hike odds jumped from roughly a third to the mid-50s percent, with hold-odds collapsing correspondingly, even though the 10-year yield's own intraday move stayed modest (see the separately graded 2026-08-28-am-1, which asked the narrower bp-move question).",
+   "graded": "2026-08-29",
+   "lesson": "Speech content moved probability-weighted rate-path expectations sharply even without a matching move in headline long-end yields -- treating the two as separate questions, as this forecast pair did, was the right methodological choice."
   },
   {
    "id": "2026-08-23-sun-5",
@@ -1637,7 +1667,10 @@
    "horizon": "2026-08-28",
    "probability": "45-55%",
    "basis": "Analytic judgment weighing the pattern of this cycle's escalatory rhetoric not yet matching market pricing, Nvidia's recent track record of clearing consensus, and the absence of any prior Warsh Jackson Hole appearance to anchor expectations either way.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The S&P 500 closed Aug 28 at 7,711.76, within about half a percent of Friday Aug 21's 7,674.37 close -- squarely inside the assumed ~2% band -- and Iran did not halt oil traffic. But two of the scenario's other premises broke: Warsh's tone was more hawkish than \"measured,\" and Nvidia did not merely meet or beat, it beat decisively and rallied nearly 9%.",
+   "graded": "2026-08-29",
+   "lesson": "The index-level call was right for reasons other than the ones assumed -- a hawkish Fed and a bullish Nvidia print partly offset each other, producing the predicted quiet index with far more volatile internals than the base case described; scenario forecasts should allow explicitly for offsetting surprises."
   },
   {
    "id": "2026-08-23-sun-6",
@@ -1647,7 +1680,10 @@
    "horizon": "2026-08-28",
    "probability": "15-20%",
    "basis": "Requires multiple favorable confirmations (Nvidia guidance, PCE, Warsh tone, Iran non-escalation) to align simultaneously.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Nvidia did beat meaningfully with strong guidance, matching this scenario's one bullish leg, but Warsh was hawkish rather than measured, July PCE ran hot on the headline (3.7% y/y vs. a ~3.6% consensus) rather than benign, and the S&P 500 did not extend to fresh highs, closing below its mid-August intraday record (7,814.88).",
+   "graded": "2026-08-29",
+   "lesson": "Overestimated how consistently bullish catalysts would compound; a strong single-name earnings beat could not overcome a hawkish Fed and a hot PCE print at the index level, even though it clearly lifted the stock's own sector."
   },
   {
    "id": "2026-08-23-sun-7",
@@ -1657,7 +1693,10 @@
    "horizon": "2026-08-28",
    "probability": "15-20%",
    "basis": "Requires multiple unfavorable data points (Nvidia, PCE, Warsh) to align simultaneously; analytic judgment, not a statistical model.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Warsh was hawkish and PCE ran hot, matching two of this scenario's legs, but its defining claim -- a broad AI-infrastructure pullback -- was the opposite of reality: Nvidia beat and rallied, pulling Broadcom, Constellation Energy and Vistra higher rather than lower.",
+   "graded": "2026-08-29",
+   "lesson": "Macro deterioration (hawkish Fed, hot inflation) and single-stock catalysts (Nvidia's earnings) decoupled this week; a bear scenario requiring both to move together missed that a strong idiosyncratic beat can override a weakening macro backdrop for its own sector."
   },
   {
    "id": "2026-08-23-sun-8",
@@ -1667,7 +1706,10 @@
    "horizon": "2026-08-28",
    "probability": "5-10%",
    "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "None of the shock triggers materialized in combination: no Iran oil-traffic halt, no formal NATO response to the large Aug 28 Kyiv-area strike despite its scale, and no Nvidia guidance shock -- so no oil spike, broad risk-off or VIX breakout followed.",
+   "graded": "2026-08-29",
+   "lesson": "Tail-risk scenarios requiring multiple independent shocks to land simultaneously are correctly assigned low probability; this week illustrates why compound-shock scenarios rarely realize even in a genuinely volatile geopolitical and macro environment."
   },
   {
    "id": "2026-08-24-am-1",
@@ -1687,7 +1729,10 @@
    "horizon": "2026-08-24",
    "probability": "25-40%",
    "basis": "Oil already reversed roughly 2.5% overnight ahead of the announcement, showing the market is positioning on the headline; actual package contents are unknown until 2pm ET, and past sanctions-related headlines this cycle have produced moves in this range without a Gulf-wide supply disruption.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "WTI moved from Friday Aug 21's $87.06 settle to roughly $85.29-85.50 on sanctions day, a decline of about 2.0-2.3% -- described in coverage as profit-taking ahead of the announcement, not a move exceeding the 3% intraday threshold.",
+   "graded": "2026-08-29",
+   "lesson": "The pre-announcement \"sell the rumor\" move was real but moderate; markets had already priced in much of the sanctions expectation over the prior two-week rally, dampening the reaction on the announcement day itself."
   },
   {
    "id": "2026-08-24-am-3",
@@ -1730,7 +1775,10 @@
    "horizon": "2026-08-27",
    "probability": "40-55%",
    "basis": "Today's move reads as profit-taking after last week's historic rally (VOYG +49%, RDW +41%, PLTR +37% weekly) rather than a fresh negative catalyst, arguing for some bounce, but this cohort's realized volatility this cycle has shown moves compounding rather than mean-reverting within days.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The five names showed an uneven, partial bounce rather than a clean failure to recover: ASTS fell sharply Aug 24 but rebounded Aug 26 on a Falcon 9 BlueBird satellite launch, and this report's own week-in-markets reconstruction found the group \"briefly rose Thursday\" (the third session) before being crushed again the following Friday, which falls outside this forecast's Aug 27 horizon. Precise per-stock closing levels for all five names across the exact window were not independently re-verified this run.",
+   "graded": "2026-08-29",
+   "lesson": "This small-cap space cohort's post-selloff bounces this cycle have tended to be real but short-lived and catalyst-dependent (a launch, a beat) rather than durable -- a pattern that makes a clean 3-session recovery/no-recovery call unusually sensitive to exactly which session is checked."
   },
   {
    "id": "2026-08-24-pm-3",
@@ -1763,7 +1811,10 @@
    "horizon": "2026-08-28",
    "probability": "40-55%",
    "basis": "Talwani ordered new briefing due today after Monday's SCOTUS stay; the majority's stated rationale was narrow (implementation timing), leaving room for a differently grounded order.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Judge Talwani issued a fresh 14-day TRO on Thursday, Aug 27, again barring USPS from enforcing the new mail-ballot design and rejection rules pending a Sept 3 hearing -- delivered days after the Supreme Court had stayed her earlier injunction and before this forecast's Aug 28 horizon.",
+   "graded": "2026-08-29",
+   "lesson": "Correctly anticipated that Talwani would move quickly to reinstate protection via a narrower TRO rather than let the compliance-finding-without-relief posture stand as final, consistent with her pattern throughout this litigation of promptly refiling narrower orders after being overturned procedurally."
   },
   {
    "id": "2026-08-25-am-3",

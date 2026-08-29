@@ -1,5 +1,5 @@
 {
-  "_readme": "Entity registry per docs/SPEC.md §15. Never hardcode public/private status elsewhere — read it from here. Verify public entities against SEC EDGAR (data.sec.gov/submissions/CIK##########.json, UA header required). Weekly registry sweep runs in the Saturday routine; entities with recheck_trigger 'EDGAR weekly sweep' get an EDGAR full-text/submissions re-check every Saturday. NEVER invent a price or valuation for a private company.",
+  "_readme": "Entity registry per docs/SPEC.md \u00a715. Never hardcode public/private status elsewhere \u2014 read it from here. Verify public entities against SEC EDGAR (data.sec.gov/submissions/CIK##########.json, UA header required). Weekly registry sweep runs in the Saturday routine; entities with recheck_trigger 'EDGAR weekly sweep' get an EDGAR full-text/submissions re-check every Saturday. NEVER invent a price or valuation for a private company.",
   "public": [
     {
       "official_name": "Space Exploration Technologies Corp.",
@@ -12,7 +12,7 @@
       "share_classes": "dual (Class A traded, Class B 10x votes)",
       "index_membership": "Nasdaq-100 since 2026-07-07",
       "industry": "Aerospace / launch / satellite communications / AI (absorbed xAI, incl. Grok and the X platform, in a $1.25T all-stock merger closed 2026-02-02, ahead of the June IPO)",
-      "note": "CRITICAL: the ticker 'SPCX' belonged to the unrelated Tuttle ETF until 2026-04-07 (that fund is now SPCK). SpaceX price history begins 2026-06-12 — NEVER backfill earlier SPCX data. First quarterly report as a public company (Q2 2026, 8-K + 10-Q) filed 2026-08-04. SEC EDGAR classifies SPCX under a computer-programming/data-processing SIC code, not a pure aerospace code, consistent with the xAI merger.",
+      "note": "CRITICAL: the ticker 'SPCX' belonged to the unrelated Tuttle ETF until 2026-04-07 (that fund is now SPCK). SpaceX price history begins 2026-06-12 \u2014 NEVER backfill earlier SPCX data. First quarterly report as a public company (Q2 2026, 8-K + 10-Q) filed 2026-08-04. SEC EDGAR classifies SPCX under a computer-programming/data-processing SIC code, not a pure aerospace code, consistent with the xAI merger.",
       "last_verified": "2026-08-10",
       "source": "SEC EDGAR data.sec.gov/submissions/CIK0001181412.json (SIC classification); CNBC, Motley Fool, Yahoo Finance (xAI merger, secondary-multiple, not independently confirmed on EDGAR this run)"
     },
@@ -70,10 +70,10 @@
       "industry": "Artificial intelligence",
       "valuation": null,
       "valuation_date": null,
-      "ipo_preparation": "Confidential S-1 filing reported 2026-06-08 (targeted Q3/Q4 2026 at a valuation near $1T) — now reportedly weighing a delay into 2027 following SpaceX's public debut, per press reports 2026-07-24/26. Press-reported only, NOT confirmed on public EDGAR.",
+      "ipo_preparation": "Confidential S-1 filing reported 2026-06-08 (targeted Q3/Q4 2026 at a valuation near $1T) \u2014 now reportedly weighing a delay into 2027 following SpaceX's public debut, per press reports 2026-07-24/26. Press-reported only, NOT confirmed on public EDGAR.",
       "recheck_trigger": "EDGAR weekly sweep",
-      "last_verified": "2026-08-22",
-      "source": "Press reports (TechCrunch, Barchart, IndMoney; confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15 as the ongoing comparable metric (an exact-phrase full-legal-name query was tried once and rejected as non-comparable). Sweep 2026-08-15: 87 hits, no self-filing. Sweep 2026-08-22: 87 hits (unchanged), no self-filing -- top hits remain other issuers' S-1/A filings (Cerebras Systems, CoreWeave) referencing OpenAI, not OpenAI itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports (TechCrunch, Barchart, IndMoney; confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15 as the ongoing comparable metric (an exact-phrase full-legal-name query was tried once and rejected as non-comparable). Sweep 2026-08-15: 87 hits, no self-filing. Sweep 2026-08-22: 87 hits (unchanged), no self-filing -- top hits remain other issuers' S-1/A filings (Cerebras Systems, CoreWeave) referencing OpenAI, not OpenAI itself. 87 hits (unchanged), no self-filing."
     },
     {
       "official_name": "Anthropic, PBC",
@@ -82,10 +82,10 @@
       "industry": "Artificial intelligence",
       "valuation": "$965B post-money (Series H)",
       "valuation_date": "2026-05-28",
-      "ipo_preparation": "Confidential S-1 filing reported ~2026-06-01 — reportedly lining up investor meetings for a listing as soon as Oct 2026, ahead of OpenAI, per press reports 2026-07-15/26. Press-reported only, NOT confirmed on public EDGAR.",
+      "ipo_preparation": "Confidential S-1 filing reported ~2026-06-01 \u2014 reportedly lining up investor meetings for a listing as soon as Oct 2026, ahead of OpenAI, per press reports 2026-07-15/26. Press-reported only, NOT confirmed on public EDGAR.",
       "recheck_trigger": "EDGAR weekly sweep",
-      "last_verified": "2026-08-22",
-      "source": "Series H round and IPO-timing per company/press reports (CNBC 2026-07-15); filing per press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 30 hits, no self-filing. Sweep 2026-08-22: 30 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (SpaceX, Cerebras Systems, Tailwind 2.0 Acquisition) referencing Anthropic, not Anthropic itself."
+      "last_verified": "2026-08-29",
+      "source": "Series H round and IPO-timing per company/press reports (CNBC 2026-07-15); filing per press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 30 hits, no self-filing. Sweep 2026-08-22: 30 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (SpaceX, Cerebras Systems, Tailwind 2.0 Acquisition) referencing Anthropic, not Anthropic itself. 30 hits (unchanged), no self-filing."
     },
     {
       "official_name": "Stripe, Inc.",
@@ -94,8 +94,8 @@
       "industry": "Payments / fintech",
       "valuation": "$159B (employee tender offer)",
       "valuation_date": "2026-02",
-      "last_verified": "2026-08-22",
-      "source": "Press reports on February 2026 tender offer. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 510 hits, no self-filing. Sweep 2026-08-22: 510 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (FullPAC, Celebiddy) referencing Stripe's payment platform, not Stripe itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports on February 2026 tender offer. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 510 hits, no self-filing. Sweep 2026-08-22: 510 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (FullPAC, Celebiddy) referencing Stripe's payment platform, not Stripe itself. 511 hits (+1 vs last week), no self-filing -- the new hit is FullPAC, Inc.'s S-1/A filed 2026-08-27, a third-party filer referencing Stripe's payments platform, not a Stripe filing."
     },
     {
       "official_name": "Databricks, Inc.",
@@ -105,8 +105,8 @@
       "valuation": null,
       "valuation_date": null,
       "ipo_preparation": "CEO publicly ruled out a 2026 listing",
-      "last_verified": "2026-08-22",
-      "source": "Press reports of CEO statements. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 21 hits, no self-filing. Sweep 2026-08-22: 21 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Plum Acquisition, Informatica, Aurora Acquisition, Mobiquity) referencing Databricks, not Databricks itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports of CEO statements. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 21 hits, no self-filing. Sweep 2026-08-22: 21 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Plum Acquisition, Informatica, Aurora Acquisition, Mobiquity) referencing Databricks, not Databricks itself. 21 hits (unchanged), no self-filing."
     },
     {
       "official_name": "Anduril Industries, Inc.",
@@ -115,8 +115,8 @@
       "industry": "Defense technology",
       "valuation": "~$61B (Series H)",
       "valuation_date": "2026-05",
-      "last_verified": "2026-08-22",
-      "source": "Press reports on May 2026 Series H. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 33 hits, no self-filing. Sweep 2026-08-22: 33 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Health Assurance Acquisition, Revolution Healthcare Acquisition, RMG Acquisition II/V) referencing Anduril, not Anduril itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports on May 2026 Series H. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 33 hits, no self-filing. Sweep 2026-08-22: 33 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Health Assurance Acquisition, Revolution Healthcare Acquisition, RMG Acquisition II/V) referencing Anduril, not Anduril itself. 34 hits (+1 vs last week), no self-filing -- the new hit is Starfighters Space, Inc. (ticker FJET) S-1/A filed 2026-08-26, referencing Anduril as a third party, not an Anduril filing."
     },
     {
       "official_name": "Canva Pty Ltd",
@@ -126,8 +126,8 @@
       "valuation": "~$66B (secondary-market marks)",
       "valuation_date": "2026",
       "ipo_preparation": "2027 listing target per press reports",
-      "last_verified": "2026-08-22",
-      "source": "Press reports / secondary-market marks. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 14 hits, no self-filing. Sweep 2026-08-22: 17 hits (+3 vs last week), no self-filing -- increase traced to two new S-1/A filings by SharonAI Holdings Inc. (CIK 0002068385, filed 2026-08-18 and 2026-08-20) that reference Canva as a third-party product/competitor; Canva itself has not filed. Not a self-filing signal; flagged only as the source of the count movement."
+      "last_verified": "2026-08-29",
+      "source": "Press reports / secondary-market marks. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 14 hits, no self-filing. Sweep 2026-08-22: 17 hits (+3 vs last week), no self-filing -- increase traced to two new S-1/A filings by SharonAI Holdings Inc. (CIK 0002068385, filed 2026-08-18 and 2026-08-20) that reference Canva as a third-party product/competitor; Canva itself has not filed. Not a self-filing signal; flagged only as the source of the count movement. 17 hits (unchanged), no self-filing."
     },
     {
       "official_name": "Discord Inc.",
@@ -136,10 +136,10 @@
       "industry": "Communications software",
       "valuation": null,
       "valuation_date": null,
-      "ipo_preparation": "Confidential filing reported; process delayed — press-reported only, NOT confirmed on public EDGAR",
+      "ipo_preparation": "Confidential filing reported; process delayed \u2014 press-reported only, NOT confirmed on public EDGAR",
       "recheck_trigger": "EDGAR weekly sweep",
-      "last_verified": "2026-08-22",
-      "source": "Press reports (confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 163 hits, no self-filing. Sweep 2026-08-22: 163 hits (unchanged), no self-filing -- top hits remain Asset Entities Inc. S-1/A filings referencing Discord, not Discord itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports (confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 163 hits, no self-filing. Sweep 2026-08-22: 163 hits (unchanged), no self-filing -- top hits remain Asset Entities Inc. S-1/A filings referencing Discord, not Discord itself. 163 hits (unchanged), no self-filing."
     },
     {
       "official_name": "Epic Games, Inc.",
@@ -148,8 +148,8 @@
       "industry": "Gaming & interactive software",
       "valuation": "~$15.7B-$22.5B (range of reported marks)",
       "valuation_date": "2026",
-      "last_verified": "2026-08-22",
-      "source": "Press reports / investor marks (range; no single authoritative figure). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 81 hits, no self-filing. Sweep 2026-08-22: 81 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Snail Inc., Super League Gaming) referencing Epic Games, not Epic Games itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports / investor marks (range; no single authoritative figure). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 81 hits, no self-filing. Sweep 2026-08-22: 81 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Snail Inc., Super League Gaming) referencing Epic Games, not Epic Games itself. 81 hits (unchanged), no self-filing."
     },
     {
       "official_name": "Neuralink Corp.",
@@ -159,8 +159,8 @@
       "valuation": null,
       "valuation_date": null,
       "ipo_preparation": "No IPO plans",
-      "last_verified": "2026-08-22",
-      "source": "Press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 23 hits, no self-filing. Sweep 2026-08-22: 23 hits (unchanged), no self-filing -- top hits remain Cortigent Inc. S-1/A filings referencing Neuralink, not Neuralink itself."
+      "last_verified": "2026-08-29",
+      "source": "Press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 23 hits, no self-filing. Sweep 2026-08-22: 23 hits (unchanged), no self-filing -- top hits remain Cortigent Inc. S-1/A filings referencing Neuralink, not Neuralink itself. 23 hits (unchanged), no self-filing."
     }
   ]
 }

@@ -39,10 +39,10 @@
    "headline": "Israel expels Dutch diplomats from Gaza ceasefire center as fresh strikes kill Palestinians in Gaza and the West Bank",
    "status": "Materially changed",
    "first_seen": "2026-07-31-pm",
-   "last_updated": "2026-08-28-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Israel's FM Sa'ar removed two Dutch diplomats from the US-backed Gaza ceasefire coordination center over the Netherlands' incoming settlement-goods trade ban; UK says it was warned Israel may do the same to British officials there -- first reported friction inside the coordination structure itself. Separately: Israeli strikes killed 4 in Gaza (Khan Younis/Sabra) and 3 in a rare West Bank strike in Jenin, where Israel names one dead as a Hamas figure that Hamas denies and Palestinian Islamic Jihad claims as its own.",
-   "score_note": "Friction with European partners inside the coordination center is a new axis of strain, distinct from the Board of Peace/Mladenov dispute; West Bank strike expands the conflict's geography.",
+   "one_line": "Board of Peace director-general Mladenov publicly warned Friday that the ceasefire risks collapse over the same disarm-first-vs-parallel-track dispute, his second public break with Israel in three days after Wednesday's UN Security Council criticism. Friday strikes killed 5 in Gaza and 3 in a rare West Bank Jenin strike (first since Feb 2025) -- IDF says it targeted a Hamas operative and two associates.",
+   "score_note": "Mladenov's language has escalated from criticism to explicitly warning of collapse -- the mechanism's own overseer, not an outside critic.",
    "sources": [
     "Times of Israel",
     "Al Jazeera",
@@ -91,16 +91,16 @@
    "headline": "Somali pirates hijack an Iran shadow-fleet tanker as regional piracy hits a 10-year high",
    "status": "New",
    "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-21-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Somali pirates hijacked the tanker Sibu 1 (also tracked as Seamull, a US-sanctioned vessel linked to Iran's shadow fleet) off Yemen Thursday -- the second hijacking in four days and, per UKMTO, near a decade-high regional piracy rate. Not directly tied to the US-Iran standoff but worth watching alongside this week's sanctions escalation.",
+   "one_line": "No new developments found this week. Downgrading tracking cadence.",
    "score_note": "Possible secondary pressure point in the Iran standoff via shadow-fleet shipping.",
    "sources": [
     "Al Jazeera",
     "Hiiraan Online",
     "gCaptain/Maritime Executive"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "headline": "Tigray fighting remains in a tentative, single-sourced lull",
@@ -120,11 +120,11 @@
   {
    "id": "home-depot-ceo-medical-leave-aug12",
    "headline": "Home Depot falls 2.9% after CEO Ted Decker takes temporary medical leave; two executives named to oversee operations",
-   "status": "Continuing",
+   "status": "Resolved",
    "first_seen": "2026-08-12-pm",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-primary",
-   "one_line": "Decker's medical-leave timeline remains undisclosed beyond the original 'a few months' guidance. Forecast graded correct: HD did not fall a further 3% attributable to the leave news, helped by Tuesday's earnings beat (adj. EPS $4.92 vs. ~$4.72 est.).",
+   "one_line": "No further movement; the CEO medical-leave story has produced no new developments in over a week and the related forecast graded correct on 2026-08-22. Closing this thread.",
    "score_note": "Forecast 2026-08-12-pm-3 logged on whether HD falls a further 3%+ over the next 5 sessions.",
    "sources": [
     "Home Depot 8-K (SEC EDGAR, primary)",
@@ -132,7 +132,7 @@
     "Bloomberg",
     "this run's own Twelve Data close-series data"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "vmware-vcenter-new-cve-aug14",
@@ -188,18 +188,18 @@
   {
    "id": "walmart-deere-retail-divergence-aug21",
    "headline": "Wave of Walmart price-target cuts underscores the tariff-refund pattern seen across retail earnings",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Seven brokerages cut Walmart price targets Friday citing the 2.6% comp-growth deceleration (slowest since 2020), mostly keeping bullish ratings -- a valuation reset, not a thesis change. The Deere/Walmart same-day contrast (both beat, one jumped, one cratered) is this week's clearest lesson on tariff-refund-flattered headline numbers; forecast on retail broadly beating graded correct.",
+   "one_line": "No further movement this week; the retail-earnings/tariff-refund thread has run its course. Closing this thread.",
    "score_note": "Sell-side response to Wednesday's plunge now on record; confirms this is read as a growth-rate story, not a franchise-health scare.",
    "sources": [
     "Deere investor relations/SEC 8-K (primary)",
     "Walmart 8-K (primary)",
     "Ross Stores SEC 8-K exhibit (primary)"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "anthropic-ipo-backlash-risk-factor-aug21",
@@ -237,10 +237,10 @@
    "headline": "Bessent details full 'Economic D-Day' Iran sanctions package today at 2pm ET",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-24-am",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-multiple (announcement timing/rhetoric); Unverified (package contents pending 2pm ET)",
-   "one_line": "Bessent published a Sunday FT op-ed previewing the sanctions as targeting Iranian oil brokers, tanker operators, NIOC leadership and secondary sanctions on any government still trading with Iran (China named explicitly). Package contents remain unconfirmed until the 2pm ET announcement. See the UAE/Iran entry for Iran's escalated blockade threat.",
-   "score_note": "Today's 2pm ET announcement is the concrete checkpoint this report has tracked toward for weeks.",
+   "one_line": "This weekend Iran's IRGC Navy claimed \"complete and decisive\" control of the Strait of Hormuz and called US claims the strait is open \"an outright lie\"; the White House response (single-sourced so far, via Al Jazeera) maintains the naval blockade \"stays fully active\" and the strait is open. Neither claim is independently verified. No new vessel incident was reported over the weekend. Monday's Bessent sanctions rollout (\"Operation Economic Outcast\") saw oil sell off moderately (2.0-2.3%, not the >3% some expected) as most of the expectation was already priced in; a forecast that Iran would halt all Gulf oil traffic graded wrong.",
+   "score_note": "Dueling, unverifiable claims about strait control are a new rhetorical escalation distinct from the underlying tanker-harassment campaign, which continued at its established pace this week.",
    "sources": [
     "Financial Times (Bessent op-ed, primary)",
     "CNN",
@@ -362,16 +362,16 @@
    "headline": "Memory-chip selloff on report Apple is testing Chinese-made DRAM from CXMT",
    "status": "Continuing",
    "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-25-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Reported",
-   "one_line": "Micron and Western Digital partly rebounded today (Micron +2.48%); SanDisk continued lower (-0.83%). No new Apple/CXMT confirmation or denial found; the only administration commentary locatable (Commerce Secretary Lutnick opposing Apple sourcing Chinese memory) predates this story's Aug 24 break.",
+   "one_line": "No fresh developments found this week; no new Apple/CXMT confirmation or denial, and no further administration commentary beyond Lutnick's prior opposition. Downgrading tracking cadence given the story has gone quiet.",
    "score_note": "Partial mean-reversion, not a new catalyst.",
    "sources": [
     "this run's own Yahoo Finance close-series data",
     "9to5Mac",
     "MacRumors"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "iran-sanctions-economic-outcast-aug24",
@@ -426,33 +426,33 @@
   {
    "id": "kryvyi-rih-double-tap-strike-aug21",
    "headline": "Kryvyi Rih toll settles at 16 dead as Russia-Ukraine strikes continue through the weekend",
-   "status": "Continuing",
+   "status": "Resolved",
    "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-26-am",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Fresh overnight barrage (Aug 25 into Aug 26) hit Kyiv, Kharkiv, Zaporizhzhia and Dnipro simultaneously; a Kharkiv missile strike in the Osnovianskyi district killed one person per Mayor Terekhov, and debris from an intercepted drone/missile damaged a 16-story Kyiv apartment building. The Aug 21 Kryvyi Rih toll (16 dead) is unchanged.",
+   "one_line": "No further movement on this specific strike; its casualty benchmark (16 dead) has since been superseded by Friday night's much larger Myla strike near Kyiv (37+ dead) -- see that entry. Closing this thread.",
    "score_note": "Strike tempo continues without a clear de-escalation signal.",
    "sources": [
     "RBC-Ukraine",
     "CNN"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "nvda-earnings-aug26",
    "headline": "Nvidia's Wednesday earnings are the week's single largest scheduled market catalyst",
-   "status": "Continuing",
+   "status": "Resolved",
    "first_seen": "2026-08-23-sun",
-   "last_updated": "2026-08-26-am",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-primary (date/time)",
-   "one_line": "Reports today after close (call ~5:00 PM ET); consensus now ~$93.6B revenue, ~$2.13 EPS per Finnhub. Context sharpened overnight: Commerce Secretary Lutnick told the WSJ the administration \"does not approve\" of Apple sourcing Chinese CXMT memory, and Broadcom's AI-infrastructure financing talks have grown to as much as $100B. New forecast logged on the magnitude of tomorrow's post-earnings move.",
-   "score_note": "The report now sits inside a wider chip/memory-policy backdrop, not just a standalone print.",
+   "one_line": "Reported Wed after close: revenue $96.221B (vs ~$92-93B consensus), EPS $2.22 (vs ~$2.10), Q3 guide $108B assuming zero China data-center revenue, FY28 growth guide ~70% vs Street's ~44%. Stock closed +8.74% Thursday, breaking a four-report losing streak, then gave back none of it Friday even as Warsh's keynote hit the broader chip cohort. Multiple forecasts on the >5% post-earnings move graded correct; a forecast that the print would trigger a broad AI-infrastructure pullback graded wrong.",
+   "score_note": "Clean resolution; closing this thread.",
    "sources": [
     "Kiplinger",
     "Finnhub earnings calendar",
     "9to5Mac"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "south-sudan-peacekeeper-ambush-aug25",
@@ -606,10 +606,10 @@
    "headline": "Nepal's own government reports two different flood tolls as a barrier lake nears overflow",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-28-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Disputed (Nepal Police vs Nepal PM's Office); Disputed (Nepal vs China)",
-   "one_line": "Nepal Police say 553 dead; Nepal PM's Office says 469 confirmed with 977 missing -- two domestic figures roughly 500 apart, not reconciled with each other, let alone with China's unchanged count of 3 dead/558 missing. China's embassy in Nepal says the rescue effort has reached a 'critical stage': two new landslide-dammed lakes have formed, at least one beginning to overflow, raising risk of a second flood wave. ~644 missing reported to be foreign nationals, ~90 American.",
-   "score_note": "Toll dispute is now intra-government, not just cross-border, while a fresh flood risk is actively forming.",
+   "one_line": "Toll keeps climbing without reconciling: Nepal Police now count 626 dead (up from 553) against the PM's Office's lower Friday figure (469 confirmed, 977 missing) -- the two domestic Nepali counts remain unreconciled, as does China's separate, far lower Tibet-side count (~5-7 dead, ~554-558 missing). The first landslide-dammed lake overflowed Friday, briefly halting rescue operations; a second lake has since formed with more rain forecast this weekend.",
+   "score_note": "Now one of the largest disaster-toll disputes this report has tracked, spanning two governments and an international border, with the gap widening rather than narrowing.",
    "sources": [
     "Al Jazeera",
     "CBS News",
@@ -641,7 +641,7 @@
    "status": "Corrected",
    "first_seen": "2026-08-20-pm",
    "last_updated": "2026-08-28-am",
-   "verification": "Confirmed-multiple (statement); Single-reliable-source (§242 detail, device inventory)",
+   "verification": "Confirmed-multiple (statement); Single-reliable-source (\u00a7242 detail, device inventory)",
    "one_line": "CORRECTION (logged in ledgers/corrections.json): every edition since Aug 20 called him 'Rep. Eric Swalwell.' He resigned from Congress effective April 14, 2026 after separate sexual-assault allegations and a suspended gubernatorial campaign -- he has been a private citizen throughout the search-warrant story. Substance of the FBI probe unchanged.",
    "score_note": "First specific legal-theory detail on the investigation beyond the original allegations.",
    "sources": [
@@ -789,9 +789,9 @@
    "headline": "Nvidia reportedly near a $12.9B deal for Hugging Face",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-28-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Single-reliable-source (deal terms); sourcing not fully aligned between outlets",
-   "one_line": "No confirmation or denial from either company as of Friday afternoon; status unchanged from Thursday. The Information's $12.9B signed-deal claim remains the most specific report; other outlets still frame it as serious talks only.",
+   "one_line": "Still no confirmation or denial from either company as of Saturday morning; CNBC's own sourcing describes the acquisition only as having \"been part of ongoing and recent talks,\" not a signed deal. Status unchanged from Friday.",
    "score_note": "Third consecutive day with no company statement; watch continues.",
    "sources": [
     "The Information (via TechCrunch/CNBC coverage)",
@@ -804,9 +804,9 @@
    "headline": "116 companies incl. OpenAI and Anthropic jointly warn Congress on AI cyber risk",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-28-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-primary",
-   "one_line": "Anthropic's individual response to Congress's Aug 24 deadline remains unpublished. Separately (not a response to Congress), a federal judge struck down the Pentagon's 'supply chain risk' designation of Anthropic today as illegal retaliation for its public safety advocacy -- see anthropic-pentagon-ruling-aug28.",
+   "one_line": "More than 100 AI and cybersecurity companies (incl. OpenAI and Anthropic) signed a joint letter on AI cyber risk this week -- the most visible joint statement either lab has made, but not an individual response to House Democrats' original Aug 24 deadline about their own disclosed incidents. Neither company has substantively answered that original inquiry.",
    "score_note": "Most visible joint OpenAI/Anthropic public statement since congressional scrutiny began; supersedes congress-ai-cyber-deadline-aug24 and openai-congress-reward-hacking-response-aug26.",
    "sources": [
     "OpenAI technical report (primary)",
@@ -838,9 +838,9 @@
    "headline": "Marvell's post-earnings selloff deepens to -10.3% on Friday",
    "status": "Resolved",
    "first_seen": "2026-08-28-am",
-   "last_updated": "2026-08-28-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-primary",
-   "one_line": "MRVL closed Friday at $216.62, down 10.3%, extending Thursday's after-hours drop into a second down session despite a raised FY28 revenue outlook (~$18B from $16.5B) -- gross-margin guidance (57.5-58.5%) continued to outweigh the beat against a stock up ~190% YTD. Forecast 2026-08-28-am-3 (MRVL closes the week above Thursday's $241.45) graded wrong.",
+   "one_line": "No further movement beyond Friday's -10.3% close ($216.62). Same beat-and-sell-off pattern this report flagged with Walmart the prior week: a genuine beat and raise (record revenue, FY28 guide raised to ~$18B) still sold off on gross-margin guidance (57.5-58.5%) against a richly valued stock (~190% YTD before the drop).",
    "score_note": "Beat-and-raise still sold off -- the same valuation-sensitivity pattern as Walmart's reaction last week; closing this thread.",
    "sources": [
     "Marvell SEC 8-K (primary)",
@@ -855,10 +855,10 @@
    "headline": "Federal judge strikes down the Pentagon's \"supply chain risk\" designation of Anthropic",
    "status": "New",
    "first_seen": "2026-08-28-pm",
-   "last_updated": "2026-08-28-pm",
+   "last_updated": "2026-08-29-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "U.S. District Judge Rita Lin (N.D. Cal.) ruled the DoD's Feb. 2026 designation of Anthropic as a national-security supply-chain risk -- imposed after Anthropic declined to let the military use Claude for mass surveillance or autonomous weapons -- was arbitrary and capricious and violated First/Fifth Amendment rights. 59-page order directs withdrawal of the directives. Government expected to appeal; no appeal confirmed filed yet. This report has not independently reviewed the order text.",
-   "score_note": "First court win for an AI lab against the administration's use of national-security authority as a policy lever; lands the same week Congress's own AI-security deadline passed with only a joint industry letter in hand.",
+   "one_line": "Important nuance surfaced this weekend, absent from this report's own Thursday coverage: a separate, narrower case remains pending before the D.C. Circuit over a different Pentagon rule that also designates Anthropic a supply-chain risk -- Thursday's win removes one instrument, not the underlying label, until that case resolves. No formal government notice of appeal found yet in the Judge Lin case as of Saturday morning.",
+   "score_note": "First court win for an AI lab against the administration's use of national-security authority as a policy lever -- but narrower in scope than headlines (including this report's own) suggested.",
    "sources": [
     "NPR",
     "CNBC",
@@ -881,6 +881,38 @@
    "sources": [
     "NPR/Houston Public Media",
     "CP24/US News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "kyiv-myla-strike-aug28",
+   "headline": "Russian drone-and-missile strike on the village of Myla near Kyiv kills at least 37",
+   "status": "New",
+   "first_seen": "2026-08-29-sat",
+   "last_updated": "2026-08-29-sat",
+   "verification": "Confirmed-multiple",
+   "one_line": "A drone-and-missile barrage hit an ammunition/drone-component storage site in the residential village of Myla, ~5km west of Kyiv, around 8:10pm local Aug 28; secondary explosions killed at least 37 and injured 42 (incl. 4 children), damaged ~50 buildings and a care facility, and forced 381 evacuations. The deadliest single strike this report has tracked in weeks, exceeding Aug 21's Kryvyi Rih toll (16 dead) by more than double. Zelensky called for accountability over the storage decision itself.",
+   "score_note": "Forecast (2026-08-23-sun-3) that a strike at or above Kryvyi Rih's casualty scale would land this week graded correct against this event.",
+   "sources": [
+    "AP",
+    "Kyiv Independent",
+    "Reuters",
+    "Globe and Mail",
+    "UNITED24 Media"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pa-measles-shapiro-kennedy-aug29",
+   "headline": "Pennsylvania reports two measles deaths; Gov. Shapiro and HHS Secretary Kennedy clash publicly over the cause",
+   "status": "New",
+   "first_seen": "2026-08-29-sat",
+   "last_updated": "2026-08-29-sat",
+   "verification": "Confirmed-multiple",
+   "one_line": "Shapiro announced PA's first two measles-related deaths of this outbreak after a contentious call with HHS Secretary Kennedy, accusing him of promoting vaccine misinformation that has contributed to the disease's return (measles had been eliminated in the US for ~25 years). This report has not independently verified the call's content beyond Shapiro's own characterization and has not found a public HHS response yet.",
+   "score_note": "National health-policy story with a Pennsylvania-specific news hook; watching for an HHS response.",
+   "sources": [
+    "The Washington Post and wire pickups"
    ],
    "watch": true
   }

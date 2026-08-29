@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Weekly Review — Aug 24&ndash;28, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-29",
+    "slot": "sat",
+    "title": "Weekly Review",
+    "path": "reports/2026/08/2026-08-29-sat.html",
+    "summary": "A hawkish Jackson Hole debut from Fed Chair Warsh undid Nvidia's blowout earnings rally within 24 hours, capping a week where beat-and-sell-off struck Marvell just as it struck Walmart the week before -- while a Russian strike near Kyiv killed at least 37 overnight, Nepal's flood toll passed 600 unreconciled, and Anthropic won its first court fight against the Pentagon.",
+    "headlines": [
+      "Russian strike near Kyiv kills at least 37 overnight, the war's worst single strike this report has tracked in weeks",
+      "Nvidia's blowout earnings rally erased by Fed Chair Warsh's hawkish Jackson Hole debut a day later",
+      "Anthropic wins its first court fight against the Pentagon; Nepal's flood toll passes 600 still unreconciled"
+    ],
+    "reading_minutes": 37,
+    "generated_at": "2026-08-29T09:40:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="sat">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Weekly Review</p>
+      <h1>Weekly Review &mdash; Aug 24&ndash;28, 2026</h1>
+      <p class="paper-dateline">
+        Saturday, August 29, 2026 <span class="sep">&middot;</span> 37 min read
+      </p>
+      <p class="paper-standfirst">
+        Nvidia&rsquo;s best earnings print in months and Fed Chair Warsh&rsquo;s hawkish first Jackson Hole speech pulled the market in opposite directions inside 24 hours, and the Fed won &mdash; while overnight, a Russian strike near Kyiv killed at least 37, Nepal&rsquo;s flood toll passed 600 with no reconciliation in sight, and Anthropic beat the Pentagon in court for the first time.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> A Russian drone-and-missile barrage on the village of Myla, just outside Kyiv, killed at least 37 people overnight Friday into Saturday &mdash; the worst single strike this report has tracked in weeks, and worse than the Kryvyi Rih toll that framed last week's edition. Nepal's flood toll climbed past 600 (Nepal Police) without ever reconciling against the PM's Office's lower count or China's separate tally, and a second landslide-dammed lake is now forming. Gaza's ceasefire overseer publicly warned Friday that the process risks collapse.</li>
+          <li><b>Markets.</b> The S&amp;P 500 rose a modest 0.49% on the week (7,674.37 to 7,711.76) but that flat-looking number hides a violent internal swing: Nvidia's blowout Wednesday earnings drove the Nasdaq's best session in weeks Thursday, and Fed Chair Kevin Warsh's hawkish Jackson Hole debut Friday erased most of the leadership it created. The Russell 2000 fell 1.51% on the week; gold fell 3.24% Friday alone.</li>
+          <li><b>The thread.</b> A single Fed speech moved more of this week's market outcome than a genuinely historic earnings beat did &mdash; and Marvell's beat-and-raise selling off 10.3% anyway, the same pattern that hit Walmart the week before, suggests the market is pricing something beneath the headline number more consistently than any one earnings report can offset.</li>
+          <li><b>Biggest risk.</b> September rate-path odds roughly doubled on Warsh's tone alone; combined with a Strait of Hormuz standoff now featuring dueling Iranian and American claims about who controls it, and a Ukraine war still producing mass-casualty strikes, next week opens with more live triggers than settled ones.</li>
+          <li><b>Scorecard.</b> Of 27 forecasts graded this week, 11 were correct, 12 wrong and 4 partial &mdash; one forecast (on federal VMware-patch compliance) is left open pending evidence that typically surfaces later. The cleanest pattern: this report's own scenario matrices keep getting the index-level outcome right while getting the causal mechanism wrong, twice in three weeks now.</li>
+          <li><b>Watch this week.</b> The Nancy Grace Roman Space Telescope launches Sunday morning; Canada's Sept 8 retaliatory tariffs and the mail-ballot litigation's Sept 3 hearing both approach; and whether Warsh's hawkish debut proves durable or partially unwinds, as one of this week's own forecasts now questions, is the live macro question entering September.</li>
+          <li><b>Undercovered.</b> Thursday's Pentagon court win for Anthropic is narrower than it reads: a separate, still-pending D.C. Circuit case involves a different Pentagon rule that also designates Anthropic a supply-chain risk, so the company has not actually shed that designation entirely &mdash; a nuance largely absent from this week's own and other outlets' coverage.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-today">
+      <h2 id="s-today">Today&rsquo;s News</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Russian strike near Kyiv kills at least 37 overnight, the deadliest this report has tracked in weeks</h3>
+          <p class="story-deck">A drone-and-missile barrage hit an ammunition and drone-component storage site in a residential village outside the capital, with secondary explosions doing most of the damage.</p>
+          <div class="story-body">
+            <p>Russia struck the village of Myla, roughly five kilometers west of Kyiv, around 8:10 PM local time Friday with drones and missiles that hit what Russia's defense ministry described as a warehouse storing long-range drone components; the resulting fire and secondary detonations tore through nearby housing. At least 37 people are confirmed dead and 42 injured, including four children, per multiple wire reports; roughly 50 residential buildings and a care facility for elderly and disabled residents were damaged, and 381 people were evacuated. The head of the local Dmytrivka community, Taras Didych, was among those killed. Ukrainian officials separately described a wider overnight barrage of roughly 267 drones plus Oniks and Iskander missiles across multiple cities &mdash; Myla was the deadliest single site.</p>
+            <p>President Zelensky said ammunition should never have been stored this close to homes and called for accountability, a rare public acknowledgment of a Ukrainian storage decision rather than only Russian conduct. This is the scale of strike this report's own Sunday outlook flagged as plausible this week (a forecast that a strike at or above Kryvyi Rih's 16-dead casualty scale would land before Aug 28 graded correct, in this week's Scorecard below) &mdash; and it exceeds that benchmark by more than double.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the deadliest single strike either side has produced in the weeks this report has been tracking the war's tempo, and it lands during a week when Ukraine separately disclosed it is down to roughly 1% of its US Patriot interceptor stock &mdash; a shortage that helps explain why intercept rates against exactly this kind of mixed drone-and-missile barrage have been falling.
+            </div>
+          </div>
+          <p class="story-sourceline">AP &middot; Kyiv Independent &middot; Reuters &middot; Globe and Mail &middot; UNITED24 Media.</p>
+        </article>
+
+        <article class="story">
+          <h3>Nepal's flood toll passes 600, still unreconciled between the country's own agencies &mdash; and a second lake is forming</h3>
+          <p class="story-deck">Nepal Police now count 626 dead; the Prime Minister's Office had put the figure at 469 confirmed with 977 missing as recently as Friday. Neither side has explained the gap.</p>
+          <div class="story-body">
+            <p>Nepal Police's count reached 626 dead by Saturday morning, up from 553 earlier in the week, with roughly 2,500 people still missing across Nepal and Tibet combined and 2,301 rescued so far. That figure sits well above the Prime Minister's Office's own Friday count of 469 confirmed dead with 977 missing &mdash; the two domestic Nepali institutions have not reconciled their numbers, let alone squared them against China's separate, much lower Tibet-side count (which has drifted only slightly, to roughly 5&ndash;7 dead and 554&ndash;558 missing). This report treats the toll as still in dispute rather than settling on either figure.</p>
+            <p>The immediate danger has not passed: the first landslide-dammed lake that formed after the initial glacier collapse overflowed Friday, briefly halting rescue operations before they resumed, and officials are now watching a second, newly formed lake on the China side as more weekend rain is forecast. Nepal is reportedly preparing mass burials for unidentifiable remains.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              A joint or reconciled Nepal-China toll remains, per this report's own forecast logged last Friday, a low-probability event in the near term (15&ndash;25%, graded open, horizon Sept 4) &mdash; the gap has widened, not narrowed, since Wednesday.
+            </div>
+          </div>
+          <p class="story-sourceline">CNN &middot; Al Jazeera &middot; AP &middot; China Central Television.</p>
+        </article>
+
+        <article class="story">
+          <h3>Gaza's ceasefire overseer warns the process risks collapse, as strikes continue in Gaza and a rare West Bank airstrike kills three</h3>
+          <p class="story-deck">Nickolay Mladenov's warning follows his Wednesday UN Security Council criticism of Israel &mdash; the second public break between the ceasefire mechanism's own overseer and Israel in three days.</p>
+          <div class="story-body">
+            <p>Board of Peace director-general Nickolay Mladenov said publicly Friday that the Gaza ceasefire risks collapsing over the same disarm-first-versus-parallel-track sequencing dispute this report has tracked for weeks, criticizing both Israel's restrictions on shelter supplies and continued strikes, and Hamas's non-fulfillment of its own disarmament commitments. Israeli strikes Friday killed five in Gaza &mdash; a family of three near Khan Younis and two people in Gaza City &mdash; and a separate, rare Israeli airstrike in the West Bank city of Jenin killed three named Palestinians (Qais Bitawi, 22; Basel Turkman, 26; Moamen Jaradat, 22); the Israeli military said it targeted a Hamas operative and two associates. This is the first West Bank airstrike since February 2025, and the second West Bank strike in as many weeks this report has recorded.</p>
+            <p><span class="flag">Single source</span> A Times of Israel liveblog headline separately references settlers "reportedly attacking" the West Bank village of Qusra on Saturday; this report found no corroborating detail or second source and is not treating it as confirmed.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Mladenov's Friday warning is a sharper escalation than his Wednesday UN criticism &mdash; the mechanism's own senior official is now using the word "collapse" publicly, not just registering disagreement.
+            </div>
+          </div>
+          <p class="story-sourceline">Al Jazeera &middot; Times of Israel &middot; Media Line.</p>
+        </article>
+
+        <article class="story">
+          <h3>Iran's navy claims &ldquo;complete and decisive&rdquo; control of the Strait of Hormuz; Washington calls it open</h3>
+          <p class="story-deck">Neither claim is independently verified. No new vessel incident was reported this weekend.</p>
+          <div class="story-body">
+            <p>Iran's IRGC Navy declared this weekend that it holds "complete and decisive" control over the Strait of Hormuz and called American claims that the strait is open "an outright lie." <span class="flag">Single source</span> The White House response, reported so far only via Al Jazeera, maintains that the US naval blockade "stays fully active" and that the strait "remains open and cleared of mines." Both statements are self-serving assertions from parties to the standoff; this report presents them as competing claims rather than fact. No new maritime incident was reported over the weekend, and Qatar's mediation push &mdash; Thursday's Doha-to-Tehran visit by Qatar's prime minister &mdash; continues alongside the unresolved Iran-Oman shipping-corridor framework.</p>
+          </div>
+          <p class="story-sourceline">Al Jazeera (single source on the White House response) &middot; Iranian state media via wire pickups.</p>
+        </article>
+
+        <article class="story">
+          <h3>Pennsylvania reports two measles deaths; Gov. Shapiro and HHS Secretary Kennedy clash publicly over the cause</h3>
+          <p class="story-deck">Measles had been eliminated in the US for roughly 25 years before this year's resurgence; the dispute is over why it is back.</p>
+          <div class="story-body">
+            <p>Gov. Josh Shapiro announced Pennsylvania's first two measles-related deaths of this outbreak after a contentious call with HHS Secretary Robert F. Kennedy Jr., accusing Kennedy of promoting vaccine misinformation that has contributed to the disease's return; measles had been declared eliminated in the United States for about 25 years before this year. This report has not independently verified the content of the Shapiro-Kennedy call beyond the governor's own public characterization of it, and has not seen a public response from Secretary Kennedy or HHS as of this writing.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether HHS responds directly to Shapiro's characterization, and whether other states report similar disputes as the outbreak continues, are both open.
+            </div>
+          </div>
+          <p class="story-sourceline">The Washington Post and wire pickups.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-week-stories">
+      <h2 id="s-week-stories">The Week&rsquo;s Ten Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Nvidia's best quarter in months and Fed Chair Warsh's hawkish debut pulled the market in opposite directions &mdash; and the Fed won</h3>
+          <p class="story-deck">A beat that should have defined the week instead lasted about eighteen trading hours.</p>
+          <div class="story-body">
+            <p>Nvidia reported Wednesday after the close: revenue of $96.221 billion against roughly $92&ndash;93 billion consensus, EPS of $2.22 against roughly $2.10, Data Center revenue up 117% year over year, a third-quarter guide of $108 billion (plus or minus 2%) that explicitly assumes zero China data-center revenue, and a fiscal-2028 growth guide of roughly 70% against the Street's roughly 44% estimate. The stock closed Thursday up 8.74%, breaking a streak of falling after each of its last four earnings reports, and dragged the Nasdaq to its best session in weeks alongside Salesforce (+22.6%) and CrowdStrike (+20.5%), both also reporting Wednesday night. Broadcom, the broader semiconductor index and AI-power names (Constellation Energy, Vistra) all rose with it &mdash; a forecast betting the print would instead trigger a broad AI-infrastructure pullback graded wrong, in this week's Scorecard.</p>
+            <p>Then Friday, Fed Chair Kevin Warsh delivered his first Jackson Hole keynote as chair, and the tape reversed inside a single session. Warsh emphasized above-target inflation (July's PCE price index printed 3.7% year over year, above a roughly 3.6% consensus) over forward guidance, calling guidance a practice that has "overstayed its welcome." September rate-hike odds roughly doubled by some measures, from about a third to the mid-50% range; the Treasury curve moved 2Y +14bp, 10Y +6bp, flattening 2s10s from roughly 47bp to 39bp. Equities gave back Thursday's gains (S&amp;P &minus;0.25%, Russell 2000 &minus;1.39%), leadership flipped from technology and semiconductors to financials and communication services, gold fell 3.24% and the dollar index rose 0.52% &mdash; all in one session.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A hawkish five-minute framing shift from one speaker moved more of this week's net market outcome than a historically strong earnings beat from the world's most valuable chipmaker did. That is itself informative about where markets currently weight risk.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              One of this week's own forecasts, logged Friday, now asks whether the roughly doubled September hike odds partially unwind over the coming week absent a confirming data point &mdash; that forecast is graded next Saturday.
+            </div>
+          </div>
+          <p class="story-sourceline">Nvidia and Marvell SEC filings (primary) &middot; Federal Reserve speech transcript (primary) &middot; CNBC &middot; Bloomberg &middot; this system's own Treasury and Yahoo Finance computations.</p>
+        </article>
+
+        <article class="story">
+          <h3>Bessent's Iran sanctions rollout met a market that had already priced most of it in</h3>
+          <p class="story-deck">Oil sold off on the announcement rather than spiking; Iran's response has stayed rhetorical, not operational.</p>
+          <div class="story-body">
+            <p>Treasury Secretary Bessent detailed "Operation Economic Outcast" Monday at 2 PM ET &mdash; sanctions targeting Iranian oil brokers, tanker operators, NIOC leadership and secondary sanctions on any government still trading with Iran, with China named explicitly. WTI crude fell from Friday Aug 21's $87.06 settle to roughly $85.29&ndash;85.50 Monday, a moderate 2.0&ndash;2.3% decline that a forecast betting on a move exceeding 3% intraday graded wrong &mdash; most of the sanctions expectation had already been priced in during the prior two-week rally. Iran's government response has stayed limited to threats: this weekend the IRGC Navy claimed full control of the strait (see Today's News), but a forecast that Iran would halt all Gulf oil traffic in response graded wrong outright, consistent with this campaign's established pattern of rhetoric outrunning action.</p>
+            <p>Underneath the sanctions story, the maritime-harassment campaign continued at its established pace: a further tanker was struck by an unknown projectile off Oman around Aug 24, and another tanker strike sparked a fire reported Aug 27. Qatar's prime minister made the war's first high-level Qatari visit to Tehran Thursday, layering a third mediator (after Oman and the US) onto an already crowded diplomatic track.</p>
+            <div class="story-note">
+              <b>What was misunderstood</b>
+              This week's own Sunday scenario matrix assumed Nvidia's earnings, Warsh's tone and the sanctions rollout would move roughly independently; instead the sanctions story stayed a slow-burn, low-market-impact thread all week while the other two dominated every session's price action.
+            </div>
+          </div>
+          <p class="story-sourceline">Treasury Department (primary) &middot; UKMTO &middot; Reuters &middot; Al Jazeera.</p>
+        </article>
+
+        <article class="story">
+          <h3>Nepal's glacier-collapse flood became the deadliest disaster this report has tracked all summer &mdash; and its toll still will not settle</h3>
+          <p class="story-deck">Three separate counting authorities across two countries have now produced three different numbers, with no sign of convergence.</p>
+          <div class="story-body">
+            <p>The Nepal-Tibet flood, first reported in the prior week's edition with a combined toll above 150, grew all week: Nepal Police's count climbed from 553 to 626 dead by Saturday, while the country's own Prime Minister's Office reported a lower, differently structured figure (469 confirmed, 977 missing) as recently as Friday &mdash; the two Nepali government bodies have not explained or reconciled the gap. China's Tibet-side count has moved only slightly (roughly 5&ndash;7 dead, 554&ndash;558 missing), a divergence from Nepal's numbers this report has flagged as unresolved since the story broke. Roughly 644 of the missing are reported to be foreign nationals, including about 90 Americans.</p>
+            <p>The physical danger has not resolved either: a landslide-dammed lake overflowed Friday, and a second lake has since formed with more rain forecast this weekend (see Today's News).</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is now one of the largest disaster-toll disputes this report has tracked, spanning two governments and an international border, with the gap between figures actively widening rather than narrowing as the week has gone on.
+            </div>
+          </div>
+          <p class="story-sourceline">CNN &middot; Al Jazeera &middot; AP &middot; ABC News &middot; NPR &middot; China Central Television.</p>
+        </article>
+
+        <article class="story">
+          <h3>Anthropic beats the Pentagon in court &mdash; a narrower win than the headline suggests</h3>
+          <p class="story-deck">A federal judge called the "supply chain risk" designation retaliation for protected speech. A separate, differently framed Pentagon rule still designates Anthropic the same way.</p>
+          <div class="story-body">
+            <p>U.S. District Judge Rita Lin (N.D. Cal.) ruled Thursday that the Defense Department's February 2026 designation of Anthropic as a national-security supply-chain risk &mdash; imposed after Anthropic declined to let the military use Claude for mass surveillance or autonomous weapons &mdash; was arbitrary and capricious and violated the company's First and Fifth Amendment rights. The 59-page order directs the Pentagon to withdraw the directive; the government has not yet filed a formal notice of appeal as of Saturday morning, though its litigation posture in the case (arguing the designation stemmed from a contractual dispute, not viewpoint retaliation) and its pattern of appealing adverse AI-policy rulings this year both point toward one.</p>
+            <p>What has not been widely reported, including in this outlet's own Thursday coverage: a separate, narrower case is still pending before the D.C. Circuit Court of Appeals, involving a different Pentagon rule that also designates Anthropic a supply-chain risk. Anthropic has not actually shed that designation entirely &mdash; Thursday's win removes one instrument, not the underlying label, until the D.C. Circuit case resolves.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the first court win for an AI lab against the administration's use of national-security authority as a policy lever, arriving the same week Congress's own AI-security deadline passed with only a joint industry letter in hand &mdash; but the fuller picture is more contested than a single ruling implies.
+            </div>
+          </div>
+          <p class="story-sourceline">U.S. District Court, N.D. Cal. opinion (primary) &middot; NPR &middot; CNBC &middot; TechCrunch &middot; Forbes &middot; The Hill &middot; Axios.</p>
+        </article>
+
+        <article class="story">
+          <h3>Meta settles with 47 states for up to $17.1 billion over youth mental health &mdash; structured to pressure the whole industry, not just Meta</h3>
+          <p class="story-deck">$5.3 billion of the total is contingent on whether TikTok and YouTube adopt matching rules.</p>
+          <div class="story-body">
+            <p>Meta agreed Wednesday to pay roughly $12.7 billion regardless, with a further $5.3 billion contingent on whether TikTok and YouTube adopt matching minor time-limit and age-assurance rules &mdash; a structure explicitly designed to set an industry standard rather than resolve a single company's liability. Florida, New Mexico and Texas are not part of the settlement. Required changes include a two-hour daily soft cap for minors, a "Productive Pause" prompt after fifteen minutes, hidden like-counts for minors, banned beauty filters for teens and a feed opt-out.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the largest youth-safety settlement of its kind, and its contingent-payment structure is a novel enforcement mechanism worth watching if other states try to replicate it against other platforms.
+            </div>
+          </div>
+          <p class="story-sourceline">NPR &middot; Stateline &middot; Variety &middot; Axios &middot; Al Jazeera.</p>
+        </article>
+
+        <article class="story">
+          <h3>Marvell beat and raised guidance &mdash; and fell 10.3% anyway, the same pattern that hit Walmart last week</h3>
+          <p class="story-deck">Record revenue, a raised full-year outlook, and a stock that closed lower for a second straight session.</p>
+          <div class="story-body">
+            <p>Marvell reported Thursday after the close: record revenue of $2.739 billion (+37% year over year), a beat, and a raised fiscal-2028 revenue guide to roughly $18 billion from $16.5 billion. But its gross-margin guidance (57.5&ndash;58.5%) disappointed against a stock already up roughly 190% year to date, and shares fell 7&ndash;8% after hours Thursday before closing Friday down 10.3% to $216.62 &mdash; a second straight down session that erased the entire post-earnings pop. A forecast that Marvell would close the week above Thursday's $241.45 pre-selloff level had already graded wrong in Friday's own edition.</p>
+            <div class="story-note">
+              <b>What was misunderstood</b>
+              This is the same valuation-sensitivity pattern Walmart showed the prior week: a genuine beat-and-raise still gets sold when one line item (there, comparable-sales growth; here, gross margin) gives a richly valued stock's bears a specific number to point to.
+            </div>
+          </div>
+          <p class="story-sourceline">Marvell SEC 8-K (primary) &middot; this system's own Yahoo Finance close-series computation &middot; CNBC &middot; Wells Fargo research note via CNBC.</p>
+        </article>
+
+        <article class="story">
+          <h3>Canada's trade fight with the US hardens further &mdash; retaliatory tariffs, a symbolic lake renaming, and no sign of resumed talks</h3>
+          <p class="story-deck">A forecast that the two sides would reach a deal or extension before this week's deadline graded wrong for the fourth time this cycle.</p>
+          <div class="story-body">
+            <p>Following last week's collapse of talks and the US 50% tariffs taking effect Aug 22, Canada confirmed dollar-for-dollar retaliatory tariffs (15&ndash;50%, covering roughly $27 billion of imports and 700-plus US products including steel, aluminum, appliances, farm equipment and electronics) effective Sept 8, paired with a C$25 billion domestic support package. Separately, President Trump signed an executive order renaming Lake Ontario "Lake America," a largely symbolic move that drew bipartisan pushback: Rep. Debbie Dingell (D-MI) plans a "Hands Off Our Great Lakes Act," New York Gov. Hochul and Senate Minority Leader Schumer both rejected it publicly, and Ontario's premier and a Seneca Nation leader condemned it as well. No talks have resumed.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A forecast that the US and Canada would reach a deal or extension within five trading days of the Aug 19 deadline graded wrong this week &mdash; the fourth distinct forecast on this negotiation to miss in either direction since mid-August. This report is treating "talks are close" language in this specific dispute as an unreliable signal going forward.
+            </div>
+          </div>
+          <p class="story-sourceline">BNN Bloomberg &middot; Washington Post &middot; PM Canada (official) &middot; Time &middot; Detroit News &middot; NY1.</p>
+        </article>
+
+        <article class="story">
+          <h3>The mail-ballot litigation whipsawed again: a compliance finding, a fresh injunction, and a Sept 3 hearing still to come</h3>
+          <p class="story-deck">Judge Talwani found USPS "feigned compliance," then reinstated protection anyway with a narrower order.</p>
+          <div class="story-body">
+            <p>Judge Talwani ruled Tuesday that USPS "feigned compliance" with her earlier injunction by finalizing the mail-ballot rule, but declined to block its Federal Register publication, since USPS itself said it could not implement the rule while her injunction stood. Thursday, in a further twist a forecast on this docket correctly anticipated, she issued a fresh 14-day temporary restraining order again barring USPS from enforcing the new ballot-design and rejection rules through the November elections, ahead of a Sept 3 hearing on a longer-term injunction. Separately, the parallel 23-state-plus-D.C.-plus-Pennsylvania merits lawsuit has not yet produced a fresh injunction of its own.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Sept 3's hearing is the next concrete checkpoint on whether Talwani's narrower TRO becomes a standing injunction.
+            </div>
+          </div>
+          <p class="story-sourceline">NPR &middot; CNN &middot; CNBC &middot; Federal Register (primary).</p>
+        </article>
+
+        <article class="story">
+          <h3>The AI industry answered Congress collectively &mdash; 116 companies, one joint letter, still no individual response from either frontier lab named in the original inquiry</h3>
+          <p class="story-deck">OpenAI and Anthropic signed a group statement on AI cyber risk. Neither has yet answered Congress's original questions about their own disclosed security incidents.</p>
+          <div class="story-body">
+            <p>More than 100 AI and cybersecurity companies, including OpenAI and Anthropic, signed a joint letter this week urging closer industry-government collaboration on defending against AI-enabled cyberattacks. It is the most visible joint public statement either frontier lab has made since congressional scrutiny of their disclosed security incidents began &mdash; but it is not a response to the specific questions House Democrats posed by their Aug 24 deadline about the Hugging Face breach and Anthropic's own disclosed incidents. Neither company has published an individual, substantive answer to that original inquiry as of this report.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A collective industry statement is easier to issue than an individual accounting of one's own incident, and this week's letter should not be read as satisfying the specific congressional deadline it followed by three days.
+            </div>
+          </div>
+          <p class="story-sourceline">OpenAI (primary) &middot; CBS News &middot; CNBC &middot; Axios &middot; TechCrunch.</p>
+        </article>
+
+        <article class="story">
+          <h3>North Korea and a US-South Korea-Japan drill both hardened their positions, with neither side backing down</h3>
+          <p class="story-deck">A trilateral naval exercise lands the same week a federal court handed Anthropic its Pentagon win, and the week's other courts kept moving too.</p>
+          <div class="story-body">
+            <p>The US, South Korea and Japan confirmed "Freedom Edge," a five-day naval exercise off Jeju Island running Sept 7&ndash;11, a day after North Korea vowed to retaliate against unspecified "US hostilities." Kim Yo Jong reiterated Pyongyang's "no interest" in reduced drills and warned of "negative consequences," a restatement of a standing position rather than a fresh escalation. Separately this week, the Third Circuit stripped Rep. McIver's Speech-or-Debate immunity claim tied to her conduct at an ICE facility, sending two charges toward trial as she runs for re-election; no en banc petition has been filed.</p>
+            <div class="story-note">
+              <b>What's next</b>
+              Whether North Korea takes any concrete action beyond rhetoric before or during the Sept 7&ndash;11 drill window.
+            </div>
+          </div>
+          <p class="story-sourceline">NPR/Houston Public Media &middot; CP24/US News &middot; Third Circuit opinion (primary) &middot; NJ Monitor.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-timeline">
+      <h2 id="s-timeline">The Week, Day by Day</h2>
+      <div class="story-body">
+        <p><b>Monday.</b> Bessent detailed the "Operation Economic Outcast" Iran sanctions package at 2 PM ET; oil sold off on the news rather than spiking. Chip and space names sold off ahead of Wednesday's Nvidia print (S&amp;P &minus;0.28%, Nasdaq &minus;0.76%).</p>
+        <p><b>Tuesday.</b> Oil fell further (a confirmed catalyst: Oman-Iran Hormuz-corridor talks progressing); chips rebounded on de-risking into earnings (S&amp;P +0.32%, Nasdaq +0.66%). GDP and PCE data were due the next morning.</p>
+        <p><b>Wednesday.</b> Q2 GDP's second estimate, July's PCE price index (3.7% y/y) and durable goods orders all released at 8:30 AM; a $70B 5-year Treasury auction followed. Meta announced its $17.1 billion youth-safety settlement. Markets sat essentially flat (S&amp;P &minus;0.02%) awaiting Nvidia's after-close report.</p>
+        <p><b>Thursday.</b> Nvidia's blowout beat-and-raise, plus Salesforce and CrowdStrike earnings, drove the Nasdaq's best session in weeks (S&amp;P +0.72%, Nasdaq +1.57%) even as the equal-weight S&amp;P lagged, a sign of narrow leadership. Marvell reported after close and fell in after-hours trading despite beating. The Third Circuit stripped Rep. McIver's immunity claim; Gaza's Mladenov criticized Israel at the UN; Judge Talwani issued a fresh mail-ballot TRO. Jackson Hole opened.</p>
+        <p><b>Friday.</b> Fed Chair Warsh's hawkish keynote reversed Thursday's leadership within the session (S&amp;P &minus;0.25%, Russell &minus;1.39%, gold &minus;3.24%, dollar +0.52%). Marvell's selloff deepened to &minus;10.3%. Judge Lin struck down the Pentagon's Anthropic designation. The US, South Korea and Japan announced the Freedom Edge drill. Late Friday night into Saturday, the Myla strike near Kyiv killed at least 37.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed-world">
+      <h2 id="s-changed-world">What Changed in the World</h2>
+      <div class="story-body">
+        <p>Three threads ran under this week's individual stories. First, the week's two largest scheduled catalysts &mdash; Nvidia's earnings and Warsh's Jackson Hole debut &mdash; pointed in opposite directions, and the macro one won: a single hawkish speech undid more of the market's gains than a historic beat-and-raise added, a reminder that idiosyncratic good news does not automatically compound into a market-wide trend when a policy signal cuts the other way. Second, "beat the number and still sell off" struck a second company in a second consecutive week &mdash; Marvell after Walmart &mdash; suggesting markets are now consistently pricing something beneath the headline (margin guidance, comparable-sales growth) rather than the earnings-per-share line itself, at least for richly valued names. Third, three separate disaster and conflict tolls (Nepal-Tibet's flood, the Myla strike, and the ongoing Hormuz standoff's competing claims) all got harder to pin down this week rather than easier, even as each event itself grew more consequential &mdash; a pattern this report is watching rather than forcing into a single resolved number before the underlying facts settle.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Beyond the mail-ballot litigation and McIver's Third Circuit ruling covered above, the Missouri Supreme Court's direct review of the state's congressional-map referendum appeal remains on track for Sept 2 oral arguments, six days ahead of the state's Sept 8 ballot-certification deadline; a forecast that the court would rule before that deadline remains open. The FDA commissioner nomination of Dr. Heidi Overton saw no new movement this week, with Sen. Murray's no vote and Sen. Cassidy's unresolved concerns both standing. The federal investigations into former Rep. Eric Swalwell and into Rep. Jimmy Gomez both continued without new developments this week. Trump's executive order renaming Lake Ontario "Lake America" and Pennsylvania's Shapiro-Kennedy measles dispute are both covered above.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p>Beyond Iran/Hormuz, Gaza, Ukraine and Nepal covered above, North Korea's Freedom Edge response is covered above as well. The DRC's Ebola outbreak, already the deadliest in the country's history at last week's count (5,713 confirmed cases, 2,744 deaths as of Aug 25), had no fresher figures surface this week in this report's own research; it remains an active, unresolved risk rather than a resolved story (see Risks, below). Turkey's arrest warrant for Netanyahu and the Abu al-Duhur airbase dispute both remain unchanged from last week, described by multiple outlets as cooling rather than escalating.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy &amp; Central Banks</h2>
+      <div class="story-body">
+        <p>Wednesday's data block ran hot on the Fed's preferred gauge: July's PCE price index printed 3.7% year over year, above a roughly 3.6% consensus, the day before Chair Warsh's keynote made clear the committee is weighting exactly this kind of print heavily. Durable goods orders for July came in at $339.25 billion, up from June's $335.65 billion, a continued modest uptrend in business investment. Initial jobless claims for the week of Aug 22 fell to 203,000 from 207,000 the prior week and 212,000 two weeks prior &mdash; a labor market still cooling gradually, not cracking, and not the demand-side warning sign the Fed's own hawkish tone might otherwise suggest.</p>
+        <p>High-yield credit spreads (ICE BofA OAS) tightened through the week, from 2.70% (Aug 21/24) to 2.63% (Aug 27 observation) &mdash; no stress signal despite Friday's equity wobble. The Treasury's 5-year and 7-year note auctions ($70B and $44B respectively) drew routine demand this week with no reported tail. Warsh's keynote itself, and its market reaction, is covered in full in this week's lead story above; a forecast that his remarks would move the 10-year yield more than 10 basis points intraday graded wrong (the actual intraday range was roughly 7&ndash;8bp), while a separately logged forecast asking whether his tone would meaningfully shift September rate-path odds graded correct &mdash; the two questions resolved in opposite directions, a distinction this week's Scorecard discusses further.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business &amp; Earnings</h2>
+      <div class="story-body">
+        <p>See The Week's Ten Stories for Nvidia, Marvell and Meta's settlement. Elsewhere, reports that Nvidia is nearing a $12.9 billion acquisition of Hugging Face continued through the week without confirmation or denial from either company; CNBC's own sourcing describes only that the acquisition "has been part of ongoing and recent talks," not a signed deal. This report is treating deal terms as preliminary and single-sourced, while the existence of talks is more broadly corroborated across outlets.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>See The Week's Ten Stories for Anthropic's Pentagon court win and the AI industry's joint congressional letter. This week's registry sweep of the nine private-module companies (OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink) found no status changes: hit counts held flat for seven of the nine, and the two that moved (Stripe +1, Anduril +1) both traced to unrelated third-party shell-company filings referencing those companies, not self-filings.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>NASA and SpaceX completed the joint Launch Readiness Review Friday and declared the Nancy Grace Roman Space Telescope "Go for Launch" ahead of Sunday's 7:26 AM ET window on a Falcon Heavy from LC-39A &mdash; a NASA flagship infrared observatory arriving roughly eight months ahead of its original schedule. Space Launch Delta 45 forecasts a 60% chance of favorable weather for the primary window, with a backup available Monday at 7:22 AM ET carrying reduced thunderstorm risk. A forecast that the mission launches successfully within its primary or backup window remains open, graded next week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-markets">
+      <h2 id="s-markets">The Week in Markets</h2>
+      <div class="story-body">
+        <p>The S&amp;P 500 rose 0.49% on the week, from 7,674.37 to 7,711.76; the Nasdaq Composite rose 0.85% (26,180.46 to 26,402.42); the Dow rose 0.53% (53,277.01 to 53,559.99); the Russell 2000 fell 1.51% (3,017.87 to 2,972.37), the week's clearest underperformer. Day to day on the S&amp;P: Monday &minus;0.28%, Tuesday +0.32%, Wednesday &minus;0.02%, Thursday +0.72% (the Nasdaq's best session in weeks on Nvidia's earnings, though the equal-weight S&amp;P fell 0.30% the same day, a sign of narrow leadership), Friday &minus;0.25% as Warsh's keynote reversed much of Thursday's rotation. Sector leadership flipped hard across the week: financials and defensives led Monday, technology and communication services led Tuesday through Thursday (XLK +3.16%, semiconductors +3.10% Thursday alone), then value and rate-sensitive sectors reasserted Friday (communication services, discretionary and financials up; technology and semiconductors down, semiconductors &minus;3.47%). Space-sector names (ASTS, LUNR, BKSY, VOYG, RKLB, KTOS, AVAV) gave back a chunk of the prior week's historic rally Monday, stayed weak through midweek with only a brief Thursday bounce, then were hit again Friday alongside chips, with no consistent single confirmed catalyst identified across the week for that cohort's moves.</p>
+        <p>Rates: the 10-year yield ended the week at 4.73%, roughly flat net (4.74% to 4.73%) despite a mid-week dip to 4.64%; the 2-year rose 10 basis points net (4.24% to 4.34%), almost entirely on Friday's Warsh-driven repricing. The 2s10s spread flattened from roughly 50 basis points to 39 basis points across the week. High-yield spreads tightened from 2.70% to 2.63% &mdash; credit did not confirm equity-market wobbles. The dollar index rose roughly 0.9% on the week, essentially all of it Friday (+0.52%). Gold round-tripped to a fresh high midweek before falling 1.58% Thursday and 3.24% Friday on the stronger dollar and higher real yields, ending the week at $408.89 (GLD), down from roughly $423 the prior Friday. WTI crude fell from Friday Aug 21's $87.06 settle toward the mid-$80s early in the week on the sanctions rollout, recovered partway midweek on Hormuz-corridor progress, and settled Friday around $83&ndash;85. Bitcoin traded in a roughly $77,300&ndash;$80,000 range most of the week, spiking to $80,001 Thursday on the broad risk-on tape before falling 3.27% Friday on the same Warsh-driven repricing that hit equities &mdash; a round trip that left it little changed for the week net.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-scorecard">
+      <h2 id="s-scorecard">Scorecard</h2>
+      <div class="story-body">
+        <p>Twenty-seven forecasts came due for grading this week (ten resolved inline during the week's own editions, seventeen graded in today's backlog sweep): 11 correct, 12 wrong, 4 partial. One forecast &mdash; whether any federal civilian agency missed the Aug 21 VMware vCenter patch deadline &mdash; is left open rather than force-graded: this kind of individual-agency compliance failure typically surfaces later via GAO or CISA reporting, not same-week press coverage.</p>
+        <p><b>The week's clearest miss: this report's own Sunday scenario matrix, again.</b> All four of last Sunday's scenarios (base, bull, bear, shock) graded partial or wrong. The base scenario got the index-level outcome right &mdash; the S&amp;P closed the week within half a percent of the assumed band &mdash; but for the wrong reasons: it assumed Warsh would read as measured and Nvidia would merely meet consensus, when in fact Warsh was more hawkish than expected and Nvidia beat decisively, with the two surprises partly canceling out rather than the week unfolding calmly as described. The bull and bear scenarios both assumed Nvidia's earnings and the Fed's tone would move markets in the same direction as each other; instead they moved in opposite directions, breaking both scenarios' central premise. The shock scenario correctly stayed low-probability and none of its triggers fired. This is the second time in three weeks this report's own scenario matrices have gotten the market-level number right while getting the causal mechanism wrong &mdash; a pattern worth naming rather than treating as three unrelated misses.</p>
+        <p><b>Nvidia's own forecasts held up better than the scenarios around it.</b> A standalone forecast that Nvidia's post-earnings move would exceed 5% in either direction graded correct (three separate versions of essentially this same call, issued across three editions, all graded correct together) &mdash; the zero-China framing and the scale of the FY28 guide were enough to break the stock's four-report losing streak decisively. A forecast that the print would trigger a broad AI-infrastructure pullback graded wrong: the opposite happened, and the cohort rallied with Nvidia rather than against it.</p>
+        <p><b>Geopolitical escalation kept clustering, mostly as expected.</b> A forecast that Hormuz would see further escalation within the week graded correct (a further tanker strike and fire, both within days of the prior fatal incident); a narrower forecast asking specifically about a full closure, sinking, or direct US-Iran exchange graded only partial, since the actual escalation (a fatal but more limited strike) didn't match those exact trigger conditions &mdash; a reminder to name broader trigger categories when the underlying pattern is recurring harassment rather than a single dramatic event. A forecast that Iran would halt all Gulf oil traffic in response to Monday's sanctions graded wrong, consistent with this campaign's established pattern of threats outrunning action. A forecast that a Ukraine strike at or above Kryvyi Rih's casualty scale would land this week graded correct, resolved by the Myla strike covered in Today's News.</p>
+        <p><b>Canada's trade fight keeps producing wrong forecasts, now for a fourth straight week.</b> A forecast that the US and Canada would reach a deal or extension within five trading days of the Aug 19 deadline graded wrong &mdash; talks instead collapsed outright, with Canada's Sept 8 retaliatory tariffs now the operative fact rather than a deal. This report is treating "close to a deal" language in this specific negotiation as an unreliable signal until it sees a signed text.</p>
+        <p><b>Courts moved on schedule when a specific date forced their hand.</b> A forecast that Judge Talwani would reissue a narrower mail-ballot injunction before Aug 28 graded correct, consistent with her pattern throughout this litigation of promptly refiling after being overturned procedurally.</p>
+        <p><b>Fed communications discipline broke down selectively.</b> A forecast that hot inflation data (July's core PPI) would draw explicit Fed comment before Jackson Hole graded correct &mdash; KC Fed's Jeffrey Schmid called inflation "stubborn" and "sticky" days before the keynote. A parallel forecast that a Fed official would comment on the same week's soft retail-sales and consumer-sentiment data before Jackson Hole graded wrong: no such comment surfaced. Officials, it turns out, spoke up early about inflation running hot but stayed quiet on demand-side softness &mdash; a asymmetry worth tracking into future Fed-communications forecasts.</p>
+        <p><b>Standalone calls that missed cleanly.</b> A forecast that oil would move more than 3% intraday on the day of the Iran sanctions announcement graded wrong &mdash; the actual move was a moderate 2.0&ndash;2.3%, most of the expectation already priced in. A forecast on whether the week's hardest-hit space-sector names would recover half their Aug 24 decline within three sessions graded partial: the group showed a real but uneven, catalyst-dependent bounce (a Falcon 9 launch lifted ASTS specifically) rather than a clean recovery or a clean failure to recover.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-hype">
+      <h2 id="s-hype">Overhyped &amp; Undercovered</h2>
+      <div class="story-body">
+        <p><b>Overhyped.</b> Last Sunday's scenario matrix treated Nvidia's earnings, Warsh's Jackson Hole debut and the Iran sanctions rollout as three roughly independent catalysts that could combine into a coherent bull, bear or base case; in practice the sanctions story stayed a slow-burn thread all week while Nvidia and Warsh dominated every session's price action and moved in opposite directions from each other, breaking the tidy combined-scenario framing this report itself built. Thursday's Anthropic-Pentagon court win was covered across outlets, including this one, as a clean legal victory without the caveat that a separate, differently framed designation remains in place pending a different case.</p>
+        <p><b>Undercovered.</b> That same D.C. Circuit nuance on Anthropic's Pentagon designation is the week's clearest undercovered story &mdash; it changes how complete Thursday's win actually is, and this report did not catch it until today's own research. Ukraine's Patriot-interceptor shortage, disclosed the prior week, is the quiet backdrop to why the Myla strike's intercept rate was as low as it was; no outlet this week connected the two directly. The gap between Nepal Police's and the Nepal PM's Office's own flood tolls &mdash; two domestic government bodies with substantially different numbers &mdash; received far less scrutiny than the more visible Nepal-China cross-border discrepancy.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risks">
+      <h2 id="s-risks">Risks Entering the Week</h2>
+      <div class="story-body">
+        <p><b>Whether Warsh's hawkish repricing holds.</b> This week's own forecast asks whether the roughly doubled September hike odds partially unwind absent a confirming data point &mdash; graded next Saturday.</p>
+        <p><b>The Strait of Hormuz's dueling claims.</b> Iran's IRGC Navy and the White House are making directly contradictory public statements about who controls the strait, with no independent verification of either.</p>
+        <p><b>Nepal-Tibet's unreconciled tolls</b> and the newly formed second landslide-dammed lake, with more rain forecast this weekend.</p>
+        <p><b>Gaza's ceasefire mechanism</b>, now publicly flagged by its own overseer as at risk of collapse.</p>
+        <p><b>Canada's Sept 8 retaliatory tariffs</b> and the mail-ballot litigation's Sept 3 hearing both land the same week, with no sign either dispute is close to resolution.</p>
+        <p><b>The DRC's Ebola outbreak</b>, the deadliest in the country's history at last count, without a fresher figure this week and with the UN's own funding-shortfall warning from the prior week still unaddressed.</p>
+        <p><b>Ukraine's Patriot-interceptor shortage</b> remains a live, ongoing military constraint following the Myla strike.</p>
+        <p><b>Freedom Edge</b> (Sept 7&ndash;11) lands as North Korea maintains its rejection of reduced drills.</p>
+        <p><b>The Roman Space Telescope's Sunday launch window</b> carries a 60% favorable-weather forecast, not a certainty.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+      <div class="story-body">
+        <article class="local-item">
+          <p class="local-place">Bridgeville &middot; South Fayette</p>
+          <h3>UPMC Children's commits $10 million to a Bridgeville behavioral-health expansion</h3>
+          <div class="story-body">
+            <p>UPMC Children's Hospital is building out a previously unused fourth floor of its South (Bridgeville) campus &mdash; nine treatment rooms, observation rooms, a Parent-Child Interaction Therapy room and a creative-arts therapy center &mdash; to bring pediatric mental-health care closer to South Hills and South Fayette families instead of requiring trips to Lawrenceville. Expected completion is mid-2027.</p>
+          </div>
+          <p class="story-sourceline">90.5 WESA &middot; Hoodline.</p>
+        </article>
+        <article class="local-item">
+          <p class="local-place">Pennsylvania</p>
+          <h3>Shapiro-Kennedy measles dispute, covered above</h3>
+          <div class="story-body">
+            <p>See Today's News for the governor's dispute with HHS Secretary Kennedy over Pennsylvania's first two measles deaths of this outbreak.</p>
+          </div>
+        </article>
+        <p>No material Pittsburgh-specific news cleared this report's bar this week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-neutral, high internal dispersion</span> Supporting a constructive read: the S&amp;P notched a small weekly gain, credit spreads tightened to 2.63%, and the VIX ended the week lower (14.43 vs. 15.13 the prior Friday). Contradicting it: the Russell 2000 fell 1.51%, leadership reversed entirely within 24 hours on Warsh's keynote, and the 2s10s curve flattened 11bp in a single session. Confidence: low-to-moderate &mdash; this week's net index moves mask violent, largely offsetting single-session swings rather than reflecting a coherent regime shift in either direction.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Weekly path, EOD official closes.</caption>
+              <thead><tr><th>Index</th><th>Fri Aug 21</th><th>Fri Aug 28</th><th>Week %Chg</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">S&amp;P 500</td><td>7,674.37</td><td>7,711.76</td><td class="up">+0.49%</td></tr>
+                <tr><td class="txt">Nasdaq Composite</td><td>26,180.46</td><td>26,402.42</td><td class="up">+0.85%</td></tr>
+                <tr><td class="txt">Dow Jones Industrial Average</td><td>53,277.01</td><td>53,559.99</td><td class="up">+0.53%</td></tr>
+                <tr><td class="txt">Russell 2000</td><td>3,017.87</td><td>2,972.37</td><td class="down">&minus;1.51%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Daily S&amp;P path: Mon &minus;0.28%, Tue +0.32%, Wed &minus;0.02%, Thu +0.72%, Fri &minus;0.25%. Equal-weight S&amp;P (RSP) fell 0.30% Thursday even as the cap-weighted index rose 0.72%, evidence of narrow leadership on Nvidia's print.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p><span class="chip chip--warn">Source unavailable</span> <code>state/market-history/breadth.json</code> was not recomputed this weekend run (a weekday-keyed computation). As a rough proxy: Thursday's equal-weight underperformance versus the cap-weighted index (RSP &minus;0.30% vs. S&amp;P +0.72%) points to narrow, mega-cap-driven leadership that day; Friday's reversal (value and financials up, technology and semiconductors down) broadened participation without a clean improving/deteriorating read for the week overall.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <p>Friday's session (day-over-day, Yahoo Finance): Technology (XLK) +1.30%, Communication Services (XLC) +1.43%, Financials (XLF) +1.08%, Real Estate (XLRE) &minus;1.33%, Industrials (XLI) &minus;1.73%, Health Care (XLV) &minus;1.98%, Energy (XLE) &minus;1.51%, Materials (XLB) &minus;0.67%, Consumer Staples (XLP) &minus;0.63%, Consumer Discretionary (XLY) &minus;0.69%, Utilities (XLU) &minus;0.09%. Across the full week, leadership flipped entirely: financials and defensives led Monday, technology and communication services led Tuesday through Thursday (XLK +3.16%, semiconductors +3.10% Thursday alone), then value and rate-sensitive sectors reasserted Friday (semiconductors &minus;3.47%, technology &minus;1.55%) as Warsh's keynote landed. Rotation matrix: Financials and Communication Services Improving into the weekend; Technology and Semiconductors Weakening after Thursday's spike; Real Estate and Utilities Lagging all week on the higher-rate backdrop.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>AI infrastructure and semiconductors were the week's most volatile cohort: Nvidia +8.74% Thursday on its earnings beat, Marvell falling a cumulative &minus;10.3%-plus from its pre-earnings close over Thursday-Friday despite also beating and raising. Space-sector names (ASTS, LUNR, BKSY, VOYG, RKLB, KTOS, AVAV) gave back a chunk of the prior week's historic rally Monday (&minus;6% to &minus;9%), stayed weak through midweek with a brief Thursday bounce (ASTS specifically lifted by a Falcon 9 BlueBird satellite launch Aug 26), then were hit again Friday alongside chips (&minus;3.5% to &minus;7.4%), with no single confirmed catalyst identified for the Friday move beyond the broader Warsh-driven growth-stock selloff. Meta (not a regular watchlist name, checked specially given its settlement) traded without major disruption from the news.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Fri Aug 28, 2026.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.84%</td></tr>
+                <tr><td>3M</td><td>3.90%</td></tr>
+                <tr><td>6M</td><td>4.02%</td></tr>
+                <tr><td>1Y</td><td>4.15%</td></tr>
+                <tr><td>2Y</td><td>4.34%</td></tr>
+                <tr><td>5Y</td><td>4.48%</td></tr>
+                <tr><td>7Y</td><td>4.59%</td></tr>
+                <tr><td>10Y</td><td>4.73%</td></tr>
+                <tr><td>20Y</td><td>5.21%</td></tr>
+                <tr><td>30Y</td><td>5.22%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +39bp, 3M/10Y +83bp, 5s30s +74bp. Week-over-week (vs. Fri Aug 21): 2Y +10bp, 10Y &minus;1bp, a front-end-led flattening driven almost entirely by Friday's Warsh repricing (2Y +14bp, 10Y +6bp that single session). SOFR (FRED, Aug 27) 3.64%; 10-year TIPS breakeven (T10YIE, Aug 28) 2.31%; real 10-year yield (DFII10, Aug 27) 2.34%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High-Yield OAS (BAMLH0A0HYM2, FRED) tightened from 2.70% (Aug 21/24) to 2.63% (Aug 27 observation) across the week &mdash; no stress signal despite Friday's equity reversal. Investment-grade (LQD, +0.41% Friday) and high-yield (HYG, +0.16% Friday) ETF prices both held up better than equities into the Friday selloff, consistent with credit not confirming the equity-market wobble.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX closed the week at 14.43 (Cboe, Fri Aug 28 prior-session close), down from 15.13 the prior Friday. VIX9D 11.22, VIX3M 17.48 &mdash; normal upward-sloping contango, no inversion despite Friday's reversal. Put/call ratio data remains unavailable (the Cboe options market-statistics endpoint continues returning 403; not retried, per standing practice, and not counted as a new failed source). MOVE index and dealer gamma remain untracked &mdash; no legitimate free source identified.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, Fri Aug 28, 2026 (EOD official).</caption>
+              <thead><tr><th>Pair</th><th>Rate</th></tr></thead>
+              <tbody>
+                <tr><td>USD/EUR</td><td>0.8589</td></tr>
+                <tr><td>USD/GBP</td><td>0.7362</td></tr>
+                <tr><td>USD/JPY</td><td>159.68</td></tr>
+                <tr><td>USD/CNY</td><td>6.7209</td></tr>
+                <tr><td>USD/CHF</td><td>0.8043</td></tr>
+                <tr><td>USD/CAD</td><td>1.3854</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">DXY (Yahoo DX-Y.NYB) 99.68, up roughly 0.9% on the week, almost all of it Friday (+0.52%) on Warsh's hawkish repricing. EUR/USD roughly 1.159, down from about 1.168 the prior Friday.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Front-month futures, as of Friday Aug 28's close (halted since ~5pm ET Friday for the weekend).</caption>
+              <thead><tr><th>Commodity</th><th>Price</th><th>Week</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Gold (Comex)</td><td>$4,529.90/oz</td><td class="down">roughly &minus;3% net, on a sharp Thu&ndash;Fri reversal</td></tr>
+                <tr><td class="txt">WTI Crude</td><td>~$83&ndash;85/bbl</td><td class="down">down from $87.06 the prior Friday</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">GLD (ETF) fell from roughly $423 (Fri Aug 21) to $408.89 (Fri Aug 28), essentially all of the decline landing Thursday (&minus;1.58%) and Friday (&minus;3.24%) on the stronger dollar and higher real yields following Warsh's keynote. WTI fell on Monday's sanctions rollout, partly recovered midweek on Hormuz-corridor progress, and gave that back into Friday.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Live (CoinGecko aggregate), Saturday morning.</caption>
+              <thead><tr><th>Asset</th><th>Price</th><th>24h Chg</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Bitcoin (BTC)</td><td>$77,630</td><td class="down">&minus;2.18%</td></tr>
+                <tr><td class="txt">Ethereum (ETH)</td><td>$2,433.81</td><td class="down">&minus;2.65%</td></tr>
+                <tr><td class="txt">Solana (SOL)</td><td>$103.60</td><td class="down">&minus;1.22%</td></tr>
+                <tr><td class="txt">Cardano (ADA)</td><td>$0.1999</td><td class="down">&minus;3.73%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Total crypto market cap $2.63T, Bitcoin dominance 58.98%. Bitcoin traded roughly $77,300&ndash;$80,000 across the week, spiking to $80,001 Thursday on the broad risk-on tape before falling with equities Friday on Warsh's hawkish repricing &mdash; net little-changed for the week, a much quieter week than the prior weekend's historic rally.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Value outperformed growth sharply on Friday alone (IWD +0.29% vs. VUG &minus;0.40%, MTUM &minus;1.49%), a clean reversal of the growth-led tape Nvidia's Thursday earnings had produced. Small caps (Russell 2000, &minus;1.51% on the week) underperformed both the Nasdaq (+0.85%) and the S&amp;P 500 (+0.49%), consistent with rate-sensitive names bearing the brunt of Friday's repricing. Gold and long Treasuries both fell alongside equities Friday rather than acting as hedges &mdash; a genuinely broad risk-asset selloff on the day, not a rotation into safety, this report notes rather than smooths into a single narrative.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>The week's calendar was dominated by Nvidia (Wed after close: revenue $96.221B vs. ~$92&ndash;93B consensus, EPS $2.22 vs. ~$2.10, Q3 guide $108B assuming zero China data-center revenue) and Marvell (Thu after close: record revenue $2.739B, +37% y/y, beat and raised FY28 guide to ~$18B, but gross-margin guidance of 57.5&ndash;58.5% disappointed against a stock up ~190% YTD). Both are covered in full in The Week's Ten Stories. Salesforce (+22.6%) and CrowdStrike (+20.5%), also reporting Wednesday, contributed to Thursday's broad software rally.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>The week's Treasury calendar included a $70 billion 5-year note auction (Wednesday) and a $44 billion 7-year note auction (Thursday), both drawing routine demand with no reported tail. No further material Treasury auctions are scheduled before Tuesday, Sept 1 given the Labor Day holiday falls the following Monday, Sept 7.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This week's editions rest on: Nvidia and Marvell SEC filings; the Treasury daily par-yield curve; FRED; the Cboe VIX complex; Yahoo Finance and Twelve Data quotes; Frankfurter (ECB reference rates); CoinGecko; the Federal Reserve's own speech transcripts; SEC EDGAR full-text search; a federal district court's published opinion (N.D. Cal.); UKMTO; and wire and outlet reporting from AP, Reuters, CNN, CNBC, Bloomberg, NPR, Al Jazeera, the Kyiv Independent and others named alongside each story. This week's SEC EDGAR weekly sweep of the nine private-module companies (OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink) found no status changes; two hit-count movements (Stripe +1, Anduril +1) both traced to unrelated third-party filings, not self-filings.</p>
+      <p><strong>Corrections.</strong> None in this edition. One nuance surfaced this week that this outlet's own Thursday coverage did not fully capture: Anthropic's Pentagon court win removes one supply-chain-risk designation, not the only one &mdash; a separate case remains pending before the D.C. Circuit over a different Pentagon rule carrying the same label. This is presented as additional context above rather than a formal correction, since Thursday's report did not state the designation was fully removed.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-28-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
