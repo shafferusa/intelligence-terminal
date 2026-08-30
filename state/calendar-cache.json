@@ -1,103 +1,127 @@
 {
- "fetched": "2026-08-28T06:47:00-04:00",
- "earnings_fetched": "2026-08-28",
- "earnings_fetched_note": "Finnhub day-of feed checked for 2026-08-28: no major watchlist earnings scheduled today. Marvell's Aug 27 amc report is now reported (see 8-K, Business/Top Stories). Alpha Vantage 3-month CSV last refreshed 2026-08-23, within once-per-day limit, not re-fetched.",
+ "fetched": "2026-08-30T09:21:05-04:00",
+ "earnings_fetched": "2026-08-30",
+ "earnings_fetched_note": "Alpha Vantage 3-month CSV re-fetched (full refresh, not previously exhausted -- prior partial read was a local pipe-truncation artifact, re-pull succeeded, 1590 rows). Cross-checked against Finnhub earnings calendar for 2026-09-01..2026-09-05. Only watchlist name reporting in the window: Broadcom (AVGO), Sept 2 after close -- estimates diverge between sources (Finnhub ~$3.30 EPS/~$29.9B rev vs Alpha Vantage ~$2.83 EPS), likely differing analyst blends; reported as a range. Sept 1-5 is a genuinely quiet week for the tracked watchlist otherwise (broader-market names reporting but not on the tracked list: Dell, Palo Alto Networks, MongoDB, Zscaler, Snowflake, HPE, NetApp, Lululemon, Ciena, Barrick, DocuSign, Guidewire).",
  "events": [
   {
-   "ts_et": "2026-08-26T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "GDP, Q2 2026 Second Estimate (with corporate profits)",
-   "importance": "High",
-   "reason": "First revision to the +1.5% annualized advance estimate.",
-   "source": "BEA release calendar -- Confirmed-primary (scheduled)"
+   "ts_et": "2026-09-01T00:00:00-04:00",
+   "type": "congress",
+   "name": "House in session Sept 1-4 (returned Mon Aug 31 from August recess) for a one-week work period; Senate remains in recess all week, not returning until Sept 14",
+   "importance": "Low",
+   "reason": "No confirmed high-profile floor votes, markups, or hearings identified for this window via search; noted for awareness ahead of the Sept 7 Labor Day recess week when both chambers are out. congress.gov API not queried (CONGRESS_API_KEY not set).",
+   "source": "WebSearch (Roll Call congressional-calendar reporting, house.gov/dailypress.senate.gov calendar summaries) -- Confirmed-multiple, lower-confidence on specifics"
   },
   {
-   "ts_et": "2026-08-26T08:30:00-04:00",
+   "ts_et": "2026-09-01T10:00:00-04:00",
    "type": "econ_release",
-   "name": "Personal Income and Outlays, July (incl. PCE price index)",
-   "importance": "High",
-   "reason": "The Fed's preferred inflation gauge, one day before Chair Warsh's Jackson Hole remarks.",
-   "source": "BEA release calendar -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-08-26T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Durable Goods Orders, July (advance)",
+   "name": "Job Openings and Labor Turnover Survey (JOLTS), July 2026",
    "importance": "Medium",
-   "reason": "Business-investment read.",
-   "source": "Census Bureau release pattern -- Confirmed-multiple (scheduled)"
+   "reason": "Labor-demand slack indicator the Fed watches closely; comes 2.5 weeks before the Sept 16 FOMC decision.",
+   "source": "BLS release schedule ICS (bls.gov/schedule/news_release/bls.ics) -- Confirmed-primary (scheduled)"
   },
   {
-   "ts_et": "2026-08-26T13:00:00-04:00",
+   "ts_et": "2026-09-01T11:30:00-04:00",
    "type": "auction",
-   "name": "5-Year Treasury Note auction, $70B",
-   "importance": "Medium",
-   "reason": "Second coupon auction of the week.",
+   "name": "52-Week Treasury Bill auction, $52B",
+   "importance": "Low",
+   "reason": "Routine cash-management bill auction; only a coupon-heavy calendar or a big surprise in bid-to-cover typically moves markets on bill auctions.",
    "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-08-26T17:00:00-04:00",
-   "type": "earnings",
-   "name": "NVIDIA (NVDA) Q2 FY2027 earnings, after close",
-   "importance": "Critical",
-   "reason": "Week's largest scheduled catalyst; consensus ~$93.6B revenue, ~$2.13 EPS.",
-   "source": "Finnhub earnings calendar (Confirmed-primary, day-of) cross-checked against Alpha Vantage"
-  },
-  {
-   "ts_et": "2026-08-27T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Initial jobless claims, week of Aug 22",
-   "importance": "Medium",
-   "reason": "Weekly labor-market read.",
-   "source": "BLS release schedule -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-08-27T13:00:00-04:00",
+   "ts_et": "2026-09-01T11:30:00-04:00",
    "type": "auction",
-   "name": "7-Year Treasury Note auction, $44B",
-   "importance": "Medium",
-   "reason": "Final coupon auction of the week's cycle.",
+   "name": "6-Week Treasury Bill auction, $85B",
+   "importance": "Low",
+   "reason": "Routine cash-management bill auction.",
    "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-08-27T09:00:00-04:00",
-   "type": "conference",
-   "name": "Kansas City Fed Jackson Hole Economic Policy Symposium opens (through Aug 29)",
-   "importance": "High",
-   "reason": "Fed Chair Kevin Warsh's first Jackson Hole as chair.",
-   "source": "Kansas City Fed symposium schedule -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-08-27T17:00:00-04:00",
-   "type": "earnings",
-   "name": "Marvell Technology (MRVL) Q2 FY2027 earnings, after close",
-   "importance": "High",
-   "reason": "Read-through on the Google TPU partnership and Broadcom relationship.",
-   "source": "Alpha Vantage earnings calendar (Confirmed-primary) cross-checked against Finnhub"
-  },
-  {
-   "ts_et": "2026-08-28T09:45:00-04:00",
-   "type": "econ_release",
-   "name": "S&P Global Flash PMI, August (Manufacturing & Services)",
-   "importance": "Medium",
-   "reason": "Manufacturing consensus near 54.0, Services near 53.9.",
-   "source": "Newsquawk week-ahead calendar -- Confirmed-multiple (scheduled), consensus lower-confidence"
-  },
-  {
-   "ts_et": "2026-08-28T10:00:00-04:00",
-   "type": "speech",
-   "name": "Fed Chair Kevin Warsh delivers Jackson Hole keynote",
-   "importance": "Critical",
-   "reason": "First Jackson Hole address as Fed Chair (8am Wyoming local / 10am ET -- corrected this run; the prior 09:00 ET cache entry was wrong), one day after PCE, two-and-a-half weeks before the Sept 16 FOMC decision.",
-   "source": "CNBC, Bloomberg, NPR -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-08-30T07:26:00-04:00",
+   "ts_et": "2026-09-02T03:46:00-04:00",
    "type": "launch",
-   "name": "Falcon Heavy -- Nancy Grace Roman Space Telescope",
-   "importance": "High",
-   "reason": "NASA flagship infrared observatory, ~8 months ahead of prior schedule. Confirmed \"Go for Launch\" per Launch Library 2 as of 2026-08-26.",
-   "source": "Launch Library 2 (thespacedevs.com), NASA Roman blog -- Confirmed-primary (scheduled)"
+   "name": "Falcon 9 -- Starlink Group 15-23 (Vandenberg SFB)",
+   "importance": "Low",
+   "reason": "Routine Starlink batch launch, not a novel mission profile.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled, \"Go for Launch\")"
+  },
+  {
+   "ts_et": "2026-09-02T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Metropolitan Area Employment and Unemployment, monthly (July 2026 data)",
+   "importance": "Low",
+   "reason": "Regional labor detail; rarely market-moving on its own.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-02T11:30:00-04:00",
+   "type": "auction",
+   "name": "17-Week Treasury Bill auction",
+   "importance": "Low",
+   "reason": "Routine cash-management bill auction; offering amount not yet published as of this fetch (announcement same-day, Sept 1).",
+   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary (amount pending)"
+  },
+  {
+   "ts_et": "2026-09-02T16:05:00-04:00",
+   "type": "earnings",
+   "name": "Broadcom (AVGO) Q3 FY2026 earnings, after close",
+   "importance": "Critical",
+   "reason": "Week's largest scheduled catalyst and the only tracked watchlist name reporting -- AI-infra bellwether (custom AI silicon, networking, VMware); consensus ~$29.9B revenue / ~$3.30 EPS per Finnhub, though Alpha Vantage's estimate runs lower (~$2.83 EPS), likely a different analyst blend or GAAP/non-GAAP basis -- report the range, not a single point estimate.",
+   "source": "Finnhub earnings calendar (Confirmed-primary) cross-checked against Alpha Vantage 3-month CSV (Confirmed-primary, diverging estimate)"
+  },
+  {
+   "ts_et": "2026-09-03T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Productivity and Costs, Q2 2026 (revised)",
+   "importance": "Medium",
+   "reason": "Unit labor cost read, relevant to the wage-price side of the Fed's inflation assessment ahead of the Sept 16 FOMC meeting.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-03T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Initial jobless claims, week of Aug 29",
+   "importance": "Medium",
+   "reason": "Weekly labor-market read; recurring Thursday 8:30 ET release.",
+   "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule; this item is a DOL/ETA program and is NOT itemized in the BLS ICS feed, unlike the prior week's cache entry implied)"
+  },
+  {
+   "ts_et": "2026-09-03T11:30:00-04:00",
+   "type": "auction",
+   "name": "4-Week Treasury Bill auction",
+   "importance": "Low",
+   "reason": "Routine cash-management bill auction; offering amount not yet published as of this fetch.",
+   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary (amount pending)"
+  },
+  {
+   "ts_et": "2026-09-03T11:30:00-04:00",
+   "type": "auction",
+   "name": "8-Week Treasury Bill auction",
+   "importance": "Low",
+   "reason": "Routine cash-management bill auction; offering amount not yet published as of this fetch.",
+   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary (amount pending)"
+  },
+  {
+   "ts_et": "2026-09-03T17:25:00-04:00",
+   "type": "launch",
+   "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
+   "importance": "Low",
+   "reason": "Indian earth-observation satellite; notable on the global space calendar but not a US market or policy event.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled, \"Go for Launch\")"
+  },
+  {
+   "ts_et": "2026-09-04T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Employment Situation, August 2026 (nonfarm payrolls, unemployment rate, average hourly earnings)",
+   "importance": "Critical",
+   "reason": "The single most-watched data point of the week -- first-Friday jobs report, ~2 weeks before the Sept 16 FOMC decision, and the first payrolls print to land squarely in the pre-meeting window for Fed Chair Warsh.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-04T16:00:00-04:00",
+   "type": "launch",
+   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, Andøya Spaceport, Norway)",
+   "importance": "Medium",
+   "reason": "European orbital launch attempt (Isar Aerospace); status listed \"To Be Confirmed\" per Launch Library 2, so timing/go status could still slip.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved as of fetch"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

@@ -2036,6 +2036,106 @@
    "probability": "55-70%",
    "basis": "Multiple outlets report the government is 'expected to fight' the ruling, and the administration has consistently appealed adverse rulings in other Anthropic/AI-policy disputes this year",
    "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-1",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "The August jobs report (Friday Sept 4) prints nonfarm payrolls growth of 100,000 or below",
+   "horizon": "2026-09-04",
+   "probability": "40-50%",
+   "basis": "Previews circulating this weekend scatter widely (roughly 50,000 to 140,000), but two of three named individual estimates (LPL Financial's 50,000 and Capital Economics' 90,000, the latter citing immigration curbs on labor supply) sit at or below 100,000, and the most recent preview found skews lower (58,000) than an earlier one (110,000).",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-2",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "CME-measured September rate-hike odds move by more than 10 percentage points, in either direction, off Friday's jobs report",
+   "horizon": "2026-09-04",
+   "probability": "45-60%",
+   "basis": "This is the first major data release to land in the pre-FOMC window since Warsh's hawkish Jackson Hole debut, and CME-derived odds (~60%) and Kalshi's own market (47%) already disagree by 13 points before any new data arrives -- a wide-open setup for a large swing.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-3",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Judge Talwani converts her mail-ballot TRO into a longer-term preliminary injunction at or shortly after the Sept 3 hearing",
+   "horizon": "2026-09-04",
+   "probability": "55-70%",
+   "basis": "Talwani's own Aug 27 order found the record 'lacks any evidence of fraudulent mail-in voting' and called USPS's interest 'dwarfed' by disenfranchisement risk -- language that reads as already leaning toward the plaintiffs, consistent with her pattern throughout this litigation of promptly refiling protective orders.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-4",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Broadcom's Wednesday earnings move AVGO shares more than 5% in either direction the next session",
+   "horizon": "2026-09-03",
+   "probability": "55-65%",
+   "basis": "High-multiple AI-infrastructure names have produced outsized post-earnings moves all month (Nvidia +8.7%, Marvell -10.3% cumulative), and Broadcom's own estimate range is unusually wide across sources ($2.83-$3.30 EPS), raising the odds of a surprise relative to at least one consensus view.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-5",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Putin agrees to some form of the Ratcliffe-floated trilateral summit, even in principle, this week",
+   "horizon": "2026-09-04",
+   "probability": "10-20%",
+   "basis": "Reporting so far describes Putin as having rejected the idea, and Russia has stated a precondition (control of the rest of Donbas) that remains unmet; the Kremlin has not addressed the proposal on the record in either direction.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-6",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Nepal's own domestic agencies (its disaster authority vs. Nepal Police) formally reconcile their flood death tolls by end of this week",
+   "horizon": "2026-09-04",
+   "probability": "10-20%",
+   "basis": "The domestic gap has widened rather than narrowed at every check since the flood began, and no reconciliation process has been announced by either Nepali body.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-7",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Base scenario: the jobs report lands in the middle of the scattered preview range (roughly 60,000-100,000) without a clean surprise, Talwani extends the TRO as expected, and Broadcom beats revenue but guides cautiously on margin (echoing the Marvell pattern), leaving equities little changed on net for the week",
+   "horizon": "2026-09-04",
+   "probability": "40-50%",
+   "basis": "This is the modal outcome given how scattered the jobs previews already are and the recent pattern of high-multiple AI names selling off on cautious guidance even after a beat.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-8",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Bull scenario: the jobs report reinforces a soft-landing narrative, Broadcom beats convincingly on both revenue and margin guidance (breaking the sell-the-beat pattern), and none of Ukraine, Gaza or the Strait of Hormuz produce a fresh shock, driving a broad risk-on week",
+   "horizon": "2026-09-04",
+   "probability": "15-25%",
+   "basis": "Requires two separate positive surprises (payrolls and Broadcom margins) to land together while three live geopolitical risks all stay contained -- a genuine but not the most likely combination.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-9",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Bear scenario: a weak jobs print (comfortably below 50,000) alongside continued hawkish Fed rhetoric and a disappointing Broadcom margin guide drive credit spreads back above 2.75% and lead a broad risk-off week",
+   "horizon": "2026-09-04",
+   "probability": "15-20%",
+   "basis": "Credit currently reads calm (2.63% OAS, VIX at 14.43 in normal contango) with no confirming stress signal yet -- this scenario requires that calm to break, which is possible but not yet indicated.",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-30-sun-10",
+   "date": "2026-08-30",
+   "slot": "sun",
+   "forecast": "Shock scenario: a Ukraine strike matching or exceeding Myla's toll draws a Western response beyond rhetoric, or a direct Iran-US Hormuz confrontation occurs, or North Korea's pre-Freedom-Edge signaling produces a missile test that draws a US-South Korea response, or Nepal's dammed lake fails catastrophically",
+   "horizon": "2026-09-04",
+   "probability": "5-10%",
+   "basis": "Each individual trigger is a live but low-probability risk on its own (per the Risk Register); this scenario requires at least one to cross from rhetoric or containment into an actual escalatory event.",
+   "status": "open"
   }
  ]
 }

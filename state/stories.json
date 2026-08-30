@@ -37,18 +37,20 @@
   {
    "id": "gaza-hamas-disarmament-deal-jul30",
    "headline": "Israel expels Dutch diplomats from Gaza ceasefire center as fresh strikes kill Palestinians in Gaza and the West Bank",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-07-31-pm",
-   "last_updated": "2026-08-29-sat",
+   "last_updated": "2026-08-30-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "Board of Peace director-general Mladenov publicly warned Friday that the ceasefire risks collapse over the same disarm-first-vs-parallel-track dispute, his second public break with Israel in three days after Wednesday's UN Security Council criticism. Friday strikes killed 5 in Gaza and 3 in a rare West Bank Jenin strike (first since Feb 2025) -- IDF says it targeted a Hamas operative and two associates.",
-   "score_note": "Mladenov's language has escalated from criticism to explicitly warning of collapse -- the mechanism's own overseer, not an outside critic.",
+   "one_line": "Mladenov's Friday warning that the ceasefire risks collapse stands unanswered -- no new statement from him, Israel or Hamas since. Sunday saw fresh strikes: a Deir al-Balah bakery strike killed two (incl. a 3-year-old) per Gaza medics, IDF says it targeted a Hamas fighter; a separate Khan Younis strike killed two the IDF identified as Nukhba operatives. As with prior strikes, the fact of the strikes is confirmed multiply; target characterization is disputed between Gaza health authorities and the IDF.",
+   "score_note": "Mladenov's language has escalated from criticism to explicitly warning of collapse -- the mechanism's own overseer, not an outside critic. No de-escalatory event found this weekend.",
    "sources": [
     "Times of Israel",
     "Al Jazeera",
     "Washington Post/AP",
     "Haaretz",
-    "JPost"
+    "JPost",
+    "Dubai Eye",
+    "The Hill"
    ],
    "watch": true
   },
@@ -603,18 +605,20 @@
   },
   {
    "id": "nepal-tibet-flash-flood-aug26",
-   "headline": "Nepal's own government reports two different flood tolls as a barrier lake nears overflow",
+   "headline": "Nepal's flood toll passes 750 combined, still unreconciled between Nepal's own agencies",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Disputed (Nepal Police vs Nepal PM's Office); Disputed (Nepal vs China)",
-   "one_line": "Toll keeps climbing without reconciling: Nepal Police now count 626 dead (up from 553) against the PM's Office's lower Friday figure (469 confirmed, 977 missing) -- the two domestic Nepali counts remain unreconciled, as does China's separate, far lower Tibet-side count (~5-7 dead, ~554-558 missing). The first landslide-dammed lake overflowed Friday, briefly halting rescue operations; a second lake has since formed with more rain forecast this weekend.",
-   "score_note": "Now one of the largest disaster-toll disputes this report has tracked, spanning two governments and an international border, with the gap widening rather than narrowing.",
+   "last_updated": "2026-08-30-sun",
+   "verification": "Disputed (Nepal's own domestic agencies); Disputed (Nepal vs China)",
+   "one_line": "Nepal's disaster authority now counts 734 dead (up from Nepal Police's 626 Saturday), with combined regional figures citing at least 750 dead and 3,000+ missing. China's Tibet-side count rose to 16 dead/546 missing (from ~5-7 dead) -- still far below Nepal's per-capita toll, still unreconciled. 8,100+ rescued in Nepal per the Red Cross; the landslide-dammed lake is described by Chinese state media as 'currently stable' but remains the top operational risk to rescue crews with more rain possible.",
+   "score_note": "Now one of the largest disaster-toll disputes this report has tracked, spanning two governments and an international border, with the gap widening rather than narrowing -- domestically within Nepal, not just across the border.",
    "sources": [
     "Al Jazeera",
     "CBS News",
     "ABC News",
     "NPR",
+    "NBC News",
+    "CNN",
     "China Central Television"
    ],
    "watch": true
@@ -652,19 +656,19 @@
   },
   {
    "id": "roman-telescope-launch-date-correction-aug25",
-   "headline": "Roman Space Telescope encapsulated for Sunday, Aug 30 launch (corrected from prior 'Saturday' framing)",
-   "status": "Continuing",
+   "headline": "Roman Space Telescope launches successfully on schedule",
+   "status": "Resolved",
    "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-28-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "NASA/SpaceX completed the joint Launch Readiness Review today and declared the mission formally 'Go for Launch' for Sunday 7:26am ET from LC-39A. Space Launch Delta 45 forecasts 60% favorable weather for the primary window; backup Monday 7:22am ET carries reduced thunderstorm risk. Fairing encapsulation complete.",
-   "score_note": "First official weather-percent-go figure; launch now imminent.",
+   "last_updated": "2026-08-30-sun",
+   "verification": "Confirmed-multiple",
+   "one_line": "Launched 7:26am ET Sunday Aug 30 on a Falcon Heavy from LC-39A -- clean ascent, stage separation at T+31min, solar-array sun shield deployed within the following ~30 min, no anomalies reported. Now transiting toward Sun-Earth L2 (~1 month journey); first images expected Jan 2027. Resolves the open forecast (2026-08-28-pm-2) logged Friday -- graded next Saturday.",
+   "score_note": "Clean mission execution on the primary attempt; closing this thread.",
    "sources": [
-    "NASA Roman blog",
-    "Space Launch Delta 45 (primary)",
-    "SpaceNews"
+    "NASA Roman blog (primary)",
+    "NPR",
+    "Space.com"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "israel-syria-turkey-airbase-aug20",
@@ -886,12 +890,12 @@
   },
   {
    "id": "kyiv-myla-strike-aug28",
-   "headline": "Russian drone-and-missile strike on the village of Myla near Kyiv kills at least 37",
-   "status": "New",
+   "headline": "Russian drone-and-missile strike on the village of Myla near Kyiv kills at least 38",
+   "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-08-29-sat",
+   "last_updated": "2026-08-30-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "A drone-and-missile barrage hit an ammunition/drone-component storage site in the residential village of Myla, ~5km west of Kyiv, around 8:10pm local Aug 28; secondary explosions killed at least 37 and injured 42 (incl. 4 children), damaged ~50 buildings and a care facility, and forced 381 evacuations. The deadliest single strike this report has tracked in weeks, exceeding Aug 21's Kryvyi Rih toll (16 dead) by more than double. Zelensky called for accountability over the storage decision itself.",
+   "one_line": "Toll rose to 38 dead (from 37), 4 still missing, ~20 injured incl. 2 children, per Zelensky's own Sunday statement. Russia's defense ministry separately said this weekend it is preparing 'massive' strikes on Ukraine's energy infrastructure -- a stated intent, not yet executed. Overnight bombardment continued: 20+ hits on Dnipropetrovsk region, a Sunday-morning warehouse fire in Zaporizhzhia.",
    "score_note": "Forecast (2026-08-23-sun-3) that a strike at or above Kryvyi Rih's casualty scale would land this week graded correct against this event.",
    "sources": [
     "AP",
@@ -913,6 +917,41 @@
    "score_note": "National health-policy story with a Pennsylvania-specific news hook; watching for an HHS response.",
    "sources": [
     "The Washington Post and wire pickups"
+   ],
+   "watch": true
+  },
+  {
+   "id": "ratcliffe-moscow-summit-proposal-aug30",
+   "headline": "CIA director's secret Moscow trip surfaces a Trump-Putin-Zelensky summit proposal",
+   "status": "New",
+   "first_seen": "2026-08-30-sun",
+   "last_updated": "2026-08-30-sun",
+   "verification": "Confirmed-multiple (trip and proposal); Single-reliable-source (Putin's reported rejection)",
+   "one_line": "CIA Director Ratcliffe made a covert Moscow visit this past week and floated a Trump-Putin-Zelensky summit to Russian intelligence chiefs Naryshkin and Bortnikov, per Axios (original) corroborated by NYT; Trump called the trip 'standard business.' Zelensky was briefed Friday and has voiced support. Putin's reported rejection comes from unnamed sources only -- the Kremlin has not addressed it on the record.",
+   "score_note": "First reported concrete high-level diplomatic overture on ending the war in weeks; no summit date set.",
+   "sources": [
+    "Axios",
+    "New York Times",
+    "Kyiv Post",
+    "Ukrainska Pravda",
+    "AP",
+    "Reuters"
+   ],
+   "watch": true
+  },
+  {
+   "id": "turkey-netanyahu-flotilla-warrant-aug30",
+   "headline": "Turkey issues a fresh, separate arrest warrant for Netanyahu over the May flotilla interception",
+   "status": "New",
+   "first_seen": "2026-08-30-sun",
+   "last_updated": "2026-08-30-sun",
+   "verification": "Confirmed-multiple",
+   "one_line": "Turkey's Justice Ministry is seeking Interpol red notices for Netanyahu and one other Israeli official over the May flotilla interception, alleging genocide, as part of a 35-person case -- distinct from an earlier warrant tied to the Gaza campaign. An escalation, not a continuation, of what this report described last week as a cooling dispute. Israel does not recognize Turkish jurisdiction; practical effect likely remains symbolic.",
+   "score_note": "Escalation worth tracking for any Israeli or Turkish follow-on response.",
+   "sources": [
+    "Times of Israel",
+    "Haaretz",
+    "Ynet"
    ],
    "watch": true
   }
