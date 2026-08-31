@@ -1,1 +1,2196 @@
-{"fetched_at": "2026-08-31T10:53:59Z", "treasury_par_curve": {"curve_date": "2026-08-28", "1M": 3.84, "1.5M": 3.83, "2M": 3.86, "3M": 3.9, "4M": 3.94, "6M": 4.02, "1Y": 4.15, "2Y": 4.34, "3Y": 4.41, "5Y": 4.48, "7Y": 4.59, "10Y": 4.73, "20Y": 5.21, "30Y": 5.22, "2s10s_bp": 39, "3m10y_bp": 83, "5s30s_bp": 74}, "fred": {"CPIAUCSL": {"date": "2026-07-01", "value": "332.813"}, "CPILFESL": {"date": "2026-07-01", "value": "336.789"}, "PAYEMS": {"date": "2026-07-01", "value": "158858"}, "ICSA": {"date": "2026-08-22", "value": "203000"}, "UNRATE": {"date": "2026-07-01", "value": "4.1"}, "T10Y2Y": {"date": "2026-08-28", "value": "0.39"}, "DGS2": {"date": "2026-08-27", "value": "4.2"}, "DGS10": {"date": "2026-08-27", "value": "4.67"}, "T10YIE": {"date": "2026-08-28", "value": "2.31"}, "DFII10": {"date": "2026-08-27", "value": "2.34"}, "SOFR": {"date": "2026-08-27", "value": "3.64"}, "BAMLH0A0HYM2": {"date": "2026-08-27", "value": "2.63"}}, "vix_complex": {"date": "2026-08-28", "VIX": {"close": 14.43}, "VIX9D": {"close": 11.22}, "VIX3M": {"close": 17.48}}, "fx": {"amount": 1.0, "base": "USD", "date": "2026-08-28", "rates": {"AUD": 1.3899, "BRL": 5.1641, "CAD": 1.3854, "CHF": 0.80426, "CNY": 6.7209, "EUR": 0.85889, "GBP": 0.73624, "INR": 95.39, "JPY": 159.68, "MXN": 16.9481}}, "crypto": {"prices": {"bitcoin": {"usd": 78501, "usd_market_cap": 1575947598791.6077, "usd_24h_vol": 26127092372.949627, "usd_24h_change": 0.5519557502504001}, "ethereum": {"usd": 2449.62, "usd_market_cap": 295576591965.47534, "usd_24h_vol": 14128337913.712017, "usd_24h_change": -0.269794746595431}, "solana": {"usd": 103.14, "usd_market_cap": 60317441735.49305, "usd_24h_vol": 3720481563.995651, "usd_24h_change": -1.6451174115777976}, "cardano": {"usd": 0.196664, "usd_market_cap": 7375087994.340094, "usd_24h_vol": 373458434.95087355, "usd_24h_change": -2.4102372858017795}}, "global": {"total_mcap_usd": 2626758324668.3506, "btc_dominance": 59.71923570261279}}, "watchlist_quotes": {"SPY": {"price": 769.35, "prevClose_meta": null, "last_close_series": 769.35, "prev_close_series": 771.1, "high52": 779.37, "low52": 629.28, "volume": 36342284, "avgVolume": null, "currency": "USD"}, "QQQM": {"price": 295.0, "prevClose_meta": null, "last_close_series": 295.0, "prev_close_series": 296.92, "high52": 308.21, "low52": 228.75, "volume": 2646238, "avgVolume": null, "currency": "USD"}, "DIA": {"price": 535.06, "prevClose_meta": null, "last_close_series": 535.06, "prev_close_series": 535.22, "high52": 546.75, "low52": 450.16, "volume": 2547752, "avgVolume": null, "currency": "USD"}, "IWM": {"price": 295.75, "prevClose_meta": null, "last_close_series": 295.75, "prev_close_series": 299.81, "high52": 305.18, "low52": 228.9, "volume": 18953677, "avgVolume": null, "currency": "USD"}, "MAGS": {"price": 69.07, "prevClose_meta": null, "last_close_series": 69.07, "prev_close_series": 68.6, "high52": 71.16, "low52": 55.085, "volume": 4299971, "avgVolume": null, "currency": "USD"}, "RSP": {"price": 220.69, "prevClose_meta": null, "last_close_series": 220.69, "prev_close_series": 221.45, "high52": 223.44, "low52": 182.11, "volume": 5409746, "avgVolume": null, "currency": "USD"}, "SMH": {"price": 553.11, "prevClose_meta": null, "last_close_series": 553.11, "prev_close_series": 573.0, "high52": 671.83, "low52": 281.74, "volume": 6464256, "avgVolume": null, "currency": "USD"}, "XLK": {"price": 185.69, "prevClose_meta": null, "last_close_series": 185.69, "prev_close_series": 188.61, "high52": 198.73, "low52": 126.68, "volume": 6285003, "avgVolume": null, "currency": "USD"}, "XLF": {"price": 58.1, "prevClose_meta": null, "last_close_series": 58.1, "prev_close_series": 57.88, "high52": 58.41, "low52": 47.67, "volume": 25049523, "avgVolume": null, "currency": "USD"}, "KRE": {"price": 74.3, "prevClose_meta": null, "last_close_series": 74.3, "prev_close_series": 74.35, "high52": 78.35, "low52": 57.55, "volume": 13398951, "avgVolume": null, "currency": "USD"}, "XLE": {"price": 62.68, "prevClose_meta": null, "last_close_series": 62.68, "prev_close_series": 62.29, "high52": 64.7, "low52": 42.35, "volume": 20594210, "avgVolume": null, "currency": "USD"}, "TLT": {"price": 82.88, "prevClose_meta": null, "last_close_series": 82.88, "prev_close_series": 83.13, "high52": 92.19, "low52": 81.17, "volume": 35806006, "avgVolume": null, "currency": "USD"}, "IEF": {"price": 92.85, "prevClose_meta": null, "last_close_series": 92.85, "prev_close_series": 93.23, "high52": 98.05, "low52": 92.69, "volume": 8008532, "avgVolume": null, "currency": "USD"}, "TIP": {"price": 106.94, "prevClose_meta": null, "last_close_series": 106.94, "prev_close_series": 107.44, "high52": 112.26, "low52": 106.73, "volume": 1573825, "avgVolume": null, "currency": "USD"}, "LQD": {"price": 106.35, "prevClose_meta": null, "last_close_series": 106.35, "prev_close_series": 106.73, "high52": 112.93, "low52": 105.42, "volume": 27252327, "avgVolume": null, "currency": "USD"}, "HYG": {"price": 79.74, "prevClose_meta": null, "last_close_series": 79.74, "prev_close_series": 79.87, "high52": 81.36, "low52": 78.57, "volume": 35119569, "avgVolume": null, "currency": "USD"}, "GLD": {"price": 408.89, "prevClose_meta": null, "last_close_series": 408.89, "prev_close_series": 422.6, "high52": 509.7, "low52": 320.24, "volume": 24358092, "avgVolume": null, "currency": "USD"}, "USO": {"price": 129.7, "prevClose_meta": null, "last_close_series": 129.7, "prev_close_series": 130.01, "high52": 154.08, "low52": 65.99, "volume": 2062922, "avgVolume": null, "currency": "USD"}, "EEM": {"price": 67.14, "prevClose_meta": null, "last_close_series": 67.14, "prev_close_series": 67.61, "high52": 71.57, "low52": 49.35, "volume": 11717495, "avgVolume": null, "currency": "USD"}, "VGK": {"price": 91.98, "prevClose_meta": null, "last_close_series": 91.98, "prev_close_series": 92.28, "high52": 93.29, "low52": 77.01, "volume": 1433394, "avgVolume": null, "currency": "USD"}, "BTC": {"price": 34.3, "prevClose_meta": null, "last_close_series": 34.3, "prev_close_series": 35.34, "high52": 55.96, "low52": 25.65, "volume": 3546751, "avgVolume": null, "currency": "USD"}, "AAPL": {"price": 319.7, "prevClose_meta": null, "last_close_series": 319.7, "prev_close_series": 314.58, "high52": 344.57, "low52": 225.95, "volume": 38623623, "avgVolume": null, "currency": "USD"}, "MSFT": {"price": 513.53, "prevClose_meta": null, "last_close_series": 513.53, "prev_close_series": 505.06, "high52": 553.72, "low52": 349.2, "volume": 29189683, "avgVolume": null, "currency": "USD"}, "NVDA": {"price": 217.55, "prevClose_meta": null, "last_close_series": 217.55, "prev_close_series": 227.98, "high52": 236.54, "low52": 164.07, "volume": 194792961, "avgVolume": null, "currency": "USD"}, "AMZN": {"price": 266.43, "prevClose_meta": null, "last_close_series": 266.43, "prev_close_series": 256.26, "high52": 287.2, "low52": 196.0, "volume": 49518292, "avgVolume": null, "currency": "USD"}, "GOOGL": {"price": 346.59, "prevClose_meta": null, "last_close_series": 346.59, "prev_close_series": 340.65, "high52": 408.61, "low52": 206.2, "volume": 25327816, "avgVolume": null, "currency": "USD"}, "META": {"price": 578.02, "prevClose_meta": null, "last_close_series": 578.02, "prev_close_series": 571.1, "high52": 790.8, "low52": 520.26, "volume": 16032439, "avgVolume": null, "currency": "USD"}, "TSLA": {"price": 348.75, "prevClose_meta": null, "last_close_series": 348.75, "prev_close_series": 354.81, "high52": 498.83, "low52": 297.38, "volume": 32928287, "avgVolume": null, "currency": "USD"}, "SPCX": {"price": 141.5, "prevClose_meta": null, "last_close_series": 141.5, "prev_close_series": 140.87, "high52": 225.64, "low52": 104.83, "volume": 55037559, "avgVolume": null, "currency": "USD"}, "AMD": {"price": 465.58, "prevClose_meta": null, "last_close_series": 465.58, "prev_close_series": 476.67, "high52": 584.73, "low52": 149.22, "volume": 15351151, "avgVolume": null, "currency": "USD"}, "AVGO": {"price": 368.79, "prevClose_meta": null, "last_close_series": 368.79, "prev_close_series": 371.54, "high52": 495.0, "low52": 287.17, "volume": 16580662, "avgVolume": null, "currency": "USD"}, "TSM": {"price": 417.52, "prevClose_meta": null, "last_close_series": 417.52, "prev_close_series": 427.3, "high52": 479.0, "low52": 225.63, "volume": 8859447, "avgVolume": null, "currency": "USD"}, "ASML": {"price": 1696.16, "prevClose_meta": null, "last_close_series": 1696.16, "prev_close_series": 1735.01, "high52": 1999.96, "low52": 716.2, "volume": 1257930, "avgVolume": null, "currency": "USD"}, "MU": {"price": 932.86, "prevClose_meta": null, "last_close_series": 932.86, "prev_close_series": 935.39, "high52": 1255.0, "low52": 114.25, "volume": 22851288, "avgVolume": null, "currency": "USD"}, "MRVL": {"price": 216.62, "prevClose_meta": null, "last_close_series": 216.62, "prev_close_series": 241.45, "high52": 329.88, "low52": 61.44, "volume": 48902801, "avgVolume": null, "currency": "USD"}, "ANET": {"price": 195.38, "prevClose_meta": null, "last_close_series": 195.38, "prev_close_series": 201.09, "high52": 214.89, "low52": 114.52, "volume": 3061286, "avgVolume": null, "currency": "USD"}, "VRT": {"price": 257.08, "prevClose_meta": null, "last_close_series": 257.08, "prev_close_series": 269.28, "high52": 379.935, "low52": 118.7, "volume": 3834647, "avgVolume": null, "currency": "USD"}, "ETN": {"price": 402.78, "prevClose_meta": null, "last_close_series": 402.78, "prev_close_series": 416.04, "high52": 478.0, "low52": 311.92, "volume": 1822113, "avgVolume": null, "currency": "USD"}, "PWR": {"price": 602.7, "prevClose_meta": null, "last_close_series": 602.7, "prev_close_series": 621.83, "high52": 788.75, "low52": 363.01, "volume": 881696, "avgVolume": null, "currency": "USD"}, "CEG": {"price": 276.75, "prevClose_meta": null, "last_close_series": 276.75, "prev_close_series": 282.41, "high52": 412.7, "low52": 228.63, "volume": 1772165, "avgVolume": null, "currency": "USD"}, "VST": {"price": 137.09, "prevClose_meta": null, "last_close_series": 137.09, "prev_close_series": 139.81, "high52": 219.82, "low52": 132.66, "volume": 3049673, "avgVolume": null, "currency": "USD"}, "EQIX": {"price": 1044.41, "prevClose_meta": null, "last_close_series": 1044.41, "prev_close_series": 1076.45, "high52": 1128.68, "low52": 720.62, "volume": 477063, "avgVolume": null, "currency": "USD"}, "DLR": {"price": 185.47, "prevClose_meta": null, "last_close_series": 185.47, "prev_close_series": 192.1, "high52": 208.14, "low52": 146.23, "volume": 1699377, "avgVolume": null, "currency": "USD"}, "LMT": {"price": 563.85, "prevClose_meta": null, "last_close_series": 563.85, "prev_close_series": 565.89, "high52": 692.0, "low52": 437.25, "volume": 611694, "avgVolume": null, "currency": "USD"}, "RTX": {"price": 211.71, "prevClose_meta": null, "last_close_series": 211.71, "prev_close_series": 212.08, "high52": 226.88, "low52": 150.61, "volume": 2311449, "avgVolume": null, "currency": "USD"}, "NOC": {"price": 545.57, "prevClose_meta": null, "last_close_series": 545.57, "prev_close_series": 545.13, "high52": 774.0, "low52": 479.02, "volume": 392852, "avgVolume": null, "currency": "USD"}, "GD": {"price": 379.32, "prevClose_meta": null, "last_close_series": 379.32, "prev_close_series": 380.06, "high52": 400.0, "low52": 306.77, "volume": 624400, "avgVolume": null, "currency": "USD"}, "BA": {"price": 209.82, "prevClose_meta": null, "last_close_series": 209.82, "prev_close_series": 209.89, "high52": 254.35, "low52": 176.77, "volume": 4559660, "avgVolume": null, "currency": "USD"}, "LHX": {"price": 262.82, "prevClose_meta": null, "last_close_series": 262.82, "prev_close_series": 261.98, "high52": 379.23, "low52": 258.54, "volume": 1397351, "avgVolume": null, "currency": "USD"}, "HII": {"price": 294.21, "prevClose_meta": null, "last_close_series": 294.21, "prev_close_series": 297.29, "high52": 460.0, "low52": 263.62, "volume": 438475, "avgVolume": null, "currency": "USD"}, "BWXT": {"price": 152.85, "prevClose_meta": null, "last_close_series": 152.85, "prev_close_series": 155.85, "high52": 241.82, "low52": 147.74, "volume": 869878, "avgVolume": null, "currency": "USD"}, "AVAV": {"price": 147.94, "prevClose_meta": null, "last_close_series": 147.94, "prev_close_series": 152.28, "high52": 417.86, "low52": 135.2, "volume": 1185546, "avgVolume": null, "currency": "USD"}, "KTOS": {"price": 52.0, "prevClose_meta": null, "last_close_series": 52.0, "prev_close_series": 53.69, "high52": 134.0, "low52": 43.09, "volume": 1972415, "avgVolume": null, "currency": "USD"}, "PLTR": {"price": 186.29, "prevClose_meta": null, "last_close_series": 186.29, "prev_close_series": 185.93, "high52": 207.52, "low52": 106.37, "volume": 25023108, "avgVolume": null, "currency": "USD"}, "RKLB": {"price": 64.39, "prevClose_meta": null, "last_close_series": 64.39, "prev_close_series": 67.53, "high52": 151.0, "low52": 37.57, "volume": 18528936, "avgVolume": null, "currency": "USD"}, "ASTS": {"price": 58.05, "prevClose_meta": null, "last_close_series": 58.05, "prev_close_series": 61.44, "high52": 133.86, "low52": 36.08, "volume": 9431872, "avgVolume": null, "currency": "USD"}, "LUNR": {"price": 15.37, "prevClose_meta": null, "last_close_series": 15.37, "prev_close_series": 16.18, "high52": 46.75, "low52": 7.78, "volume": 5810274, "avgVolume": null, "currency": "USD"}, "RDW": {"price": 10.87, "prevClose_meta": null, "last_close_series": 10.87, "prev_close_series": 11.27, "high52": 26.64, "low52": 4.87, "volume": 9723960, "avgVolume": null, "currency": "USD"}, "PL": {"price": 19.98, "prevClose_meta": null, "last_close_series": 19.98, "prev_close_series": 21.16, "high52": 51.76, "low52": 6.255, "volume": 8235198, "avgVolume": null, "currency": "USD"}, "BKSY": {"price": 23.7, "prevClose_meta": null, "last_close_series": 23.7, "prev_close_series": 24.76, "high52": 52.88, "low52": 12.41, "volume": 725537, "avgVolume": null, "currency": "USD"}, "IRDM": {"price": 46.6, "prevClose_meta": null, "last_close_series": 46.6, "prev_close_series": 47.64, "high52": 57.18, "low52": 15.65, "volume": 1507621, "avgVolume": null, "currency": "USD"}, "SPIR": {"price": 13.17, "prevClose_meta": null, "last_close_series": 13.17, "prev_close_series": 14.0, "high52": 25.93, "low52": 6.6, "volume": 500422, "avgVolume": null, "currency": "USD"}, "VSAT": {"price": 67.37, "prevClose_meta": null, "last_close_series": 67.37, "prev_close_series": 72.73, "high52": 93.03, "low52": 26.1, "volume": 1844818, "avgVolume": null, "currency": "USD"}, "GSAT": {"price": 81.76, "prevClose_meta": null, "last_close_series": 81.76, "prev_close_series": 82.05, "high52": 84.85, "low52": 29.36, "volume": 925891, "avgVolume": null, "currency": "USD"}, "KRMN": {"price": 45.57, "prevClose_meta": null, "last_close_series": 45.57, "prev_close_series": 47.42, "high52": 118.38, "low52": 43.681, "volume": 2079979, "avgVolume": null, "currency": "USD"}, "VOYG": {"price": 34.29, "prevClose_meta": null, "last_close_series": 34.29, "prev_close_series": 34.73, "high52": 52.4, "low52": 17.41, "volume": 695394, "avgVolume": null, "currency": "USD"}, "FLY": {"price": 21.26, "prevClose_meta": null, "last_close_series": 21.26, "prev_close_series": 22.16, "high52": 62.17, "low52": 16.0, "volume": 2908115, "avgVolume": null, "currency": "USD"}, "YSS": {"price": 8.97, "prevClose_meta": null, "last_close_series": 8.97, "prev_close_series": 9.19, "high52": 44.54, "low52": 8.89, "volume": 2158409, "avgVolume": null, "currency": "USD"}, "JPM": {"price": 357.62, "prevClose_meta": null, "last_close_series": 357.62, "prev_close_series": 354.22, "high52": 366.5, "low52": 279.1, "volume": 3911023, "avgVolume": null, "currency": "USD"}, "BAC": {"price": 62.32, "prevClose_meta": null, "last_close_series": 62.32, "prev_close_series": 61.17, "high52": 65.23, "low52": 46.12, "volume": 32915990, "avgVolume": null, "currency": "USD"}, "C": {"price": 132.9, "prevClose_meta": null, "last_close_series": 132.9, "prev_close_series": 132.68, "high52": 147.96, "low52": 92.96, "volume": 12091189, "avgVolume": null, "currency": "USD"}, "WFC": {"price": 86.69, "prevClose_meta": null, "last_close_series": 86.69, "prev_close_series": 84.97, "high52": 97.76, "low52": 72.78, "volume": 12020214, "avgVolume": null, "currency": "USD"}, "GS": {"price": 1033.99, "prevClose_meta": null, "last_close_series": 1033.99, "prev_close_series": 1040.87, "high52": 1153.99, "low52": 721.16, "volume": 1043471, "avgVolume": null, "currency": "USD"}, "MS": {"price": 214.77, "prevClose_meta": null, "last_close_series": 214.77, "prev_close_series": 214.86, "high52": 232.25, "low52": 145.66, "volume": 3733893, "avgVolume": null, "currency": "USD"}, "SCHW": {"price": 110.16, "prevClose_meta": null, "last_close_series": 110.16, "prev_close_series": 108.05, "high52": 114.53, "low52": 83.96, "volume": 12818280, "avgVolume": null, "currency": "USD"}, "IBKR": {"price": 95.84, "prevClose_meta": null, "last_close_series": 95.84, "prev_close_series": 96.55, "high52": 98.75, "low52": 58.95, "volume": 2236687, "avgVolume": null, "currency": "USD"}, "HOOD": {"price": 104.26, "prevClose_meta": null, "last_close_series": 104.26, "prev_close_series": 109.76, "high52": 153.86, "low52": 63.515, "volume": 16257928, "avgVolume": null, "currency": "USD"}, "COIN": {"price": 178.64, "prevClose_meta": null, "last_close_series": 178.64, "prev_close_series": 190.72, "high52": 402.16, "low52": 139.11, "volume": 9997036, "avgVolume": null, "currency": "USD"}, "CME": {"price": 285.8, "prevClose_meta": null, "last_close_series": 285.8, "prev_close_series": 280.94, "high52": 329.16, "low52": 218.31, "volume": 2981908, "avgVolume": null, "currency": "USD"}, "ICE": {"price": 162.33, "prevClose_meta": null, "last_close_series": 162.33, "prev_close_series": 161.24, "high52": 177.0, "low52": 121.79, "volume": 3000843, "avgVolume": null, "currency": "USD"}, "CBOE": {"price": 310.45, "prevClose_meta": null, "last_close_series": 310.45, "prev_close_series": 313.95, "high52": 371.18, "low52": 227.15, "volume": 953714, "avgVolume": null, "currency": "USD"}, "BLK": {"price": 1164.48, "prevClose_meta": null, "last_close_series": 1164.48, "prev_close_series": 1167.5699, "high52": 1219.94, "low52": 917.39, "volume": 699850, "avgVolume": null, "currency": "USD"}, "BX": {"price": 142.39, "prevClose_meta": null, "last_close_series": 142.39, "prev_close_series": 143.64, "high52": 190.09, "low52": 101.73, "volume": 2440148, "avgVolume": null, "currency": "USD"}, "KKR": {"price": 108.68, "prevClose_meta": null, "last_close_series": 108.68, "prev_close_series": 109.32, "high52": 152.1, "low52": 82.67, "volume": 2423598, "avgVolume": null, "currency": "USD"}, "APO": {"price": 135.04, "prevClose_meta": null, "last_close_series": 135.04, "prev_close_series": 133.44, "high52": 153.29, "low52": 99.56, "volume": 2243349, "avgVolume": null, "currency": "USD"}, "ARES": {"price": 142.53, "prevClose_meta": null, "last_close_series": 142.53, "prev_close_series": 142.41, "high52": 186.85, "low52": 95.8, "volume": 1096964, "avgVolume": null, "currency": "USD"}, "LLY": {"price": 1174.61, "prevClose_meta": null, "last_close_series": 1174.61, "prev_close_series": 1176.1, "high52": 1292.65, "low52": 712.05, "volume": 2447356, "avgVolume": null, "currency": "USD"}, "NVO": {"price": 45.61, "prevClose_meta": null, "last_close_series": 45.61, "prev_close_series": 46.26, "high52": 64.16, "low52": 35.12, "volume": 8487691, "avgVolume": null, "currency": "USD"}, "UNH": {"price": 392.95, "prevClose_meta": null, "last_close_series": 392.95, "prev_close_series": 395.05, "high52": 461.62, "low52": 255.97, "volume": 2453364, "avgVolume": null, "currency": "USD"}, "JNJ": {"price": 268.04, "prevClose_meta": null, "last_close_series": 268.04, "prev_close_series": 265.77, "high52": 276.47, "low52": 173.33, "volume": 5761434, "avgVolume": null, "currency": "USD"}, "ABBV": {"price": 255.48, "prevClose_meta": null, "last_close_series": 255.48, "prev_close_series": 258.15, "high52": 267.47, "low52": 190.75, "volume": 3222214, "avgVolume": null, "currency": "USD"}, "MRK": {"price": 148.35, "prevClose_meta": null, "last_close_series": 148.35, "prev_close_series": 149.54, "high52": 156.92, "low52": 77.58, "volume": 8063261, "avgVolume": null, "currency": "USD"}, "PFE": {"price": 27.96, "prevClose_meta": null, "last_close_series": 27.96, "prev_close_series": 28.02, "high52": 28.75, "low52": 23.58, "volume": 27164507, "avgVolume": null, "currency": "USD"}, "VRTX": {"price": 541.69, "prevClose_meta": null, "last_close_series": 541.69, "prev_close_series": 547.55, "high52": 555.69, "low52": 374.17, "volume": 886909, "avgVolume": null, "currency": "USD"}, "REGN": {"price": 794.19, "prevClose_meta": null, "last_close_series": 794.19, "prev_close_series": 807.71, "high52": 847.0, "low52": 541.0, "volume": 488295, "avgVolume": null, "currency": "USD"}, "TMO": {"price": 622.18, "prevClose_meta": null, "last_close_series": 622.18, "prev_close_series": 630.7, "high52": 647.0, "low52": 435.27, "volume": 1016554, "avgVolume": null, "currency": "USD"}, "DHR": {"price": 216.07, "prevClose_meta": null, "last_close_series": 216.07, "prev_close_series": 215.68, "high52": 242.8, "low52": 160.93, "volume": 2859906, "avgVolume": null, "currency": "USD"}, "ISRG": {"price": 372.6, "prevClose_meta": null, "last_close_series": 372.6, "prev_close_series": 367.07, "high52": 603.88, "low52": 328.57, "volume": 1801724, "avgVolume": null, "currency": "USD"}, "WMT": {"price": 103.09, "prevClose_meta": null, "last_close_series": 103.09, "prev_close_series": 102.63, "high52": 135.16, "low52": 96.51, "volume": 19400109, "avgVolume": null, "currency": "USD"}, "COST": {"price": 945.47, "prevClose_meta": null, "last_close_series": 945.47, "prev_close_series": 934.66, "high52": 1096.5, "low52": 844.06, "volume": 1401384, "avgVolume": null, "currency": "USD"}, "TGT": {"price": 163.18, "prevClose_meta": null, "last_close_series": 163.18, "prev_close_series": 165.93, "high52": 170.75, "low52": 83.44, "volume": 3569281, "avgVolume": null, "currency": "USD"}, "HD": {"price": 330.19, "prevClose_meta": null, "last_close_series": 330.19, "prev_close_series": 328.61, "high52": 426.75, "low52": 289.1, "volume": 2659416, "avgVolume": null, "currency": "USD"}, "LOW": {"price": 208.05, "prevClose_meta": null, "last_close_series": 208.05, "prev_close_series": 206.74, "high52": 293.06, "low52": 199.4, "volume": 2742791, "avgVolume": null, "currency": "USD"}, "MCD": {"price": 265.0, "prevClose_meta": null, "last_close_series": 265.0, "prev_close_series": 260.06, "high52": 341.75, "low52": 259.85, "volume": 3882072, "avgVolume": null, "currency": "USD"}, "SBUX": {"price": 107.85, "prevClose_meta": null, "last_close_series": 107.85, "prev_close_series": 107.26, "high52": 110.51, "low52": 77.99, "volume": 4832228, "avgVolume": null, "currency": "USD"}, "CMG": {"price": 38.03, "prevClose_meta": null, "last_close_series": 38.03, "prev_close_series": 37.22, "high52": 42.82, "low52": 28.04, "volume": 12709639, "avgVolume": null, "currency": "USD"}, "BKNG": {"price": 205.63, "prevClose_meta": null, "last_close_series": 205.63, "prev_close_series": 202.56, "high52": 226.1, "low52": 150.14, "volume": 3591895, "avgVolume": null, "currency": "USD"}, "ABNB": {"price": 189.43, "prevClose_meta": null, "last_close_series": 189.43, "prev_close_series": 184.4, "high52": 193.453, "low52": 110.81, "volume": 4829584, "avgVolume": null, "currency": "USD"}, "DAL": {"price": 80.07, "prevClose_meta": null, "last_close_series": 80.07, "prev_close_series": 81.14, "high52": 95.68, "low52": 55.03, "volume": 3800189, "avgVolume": null, "currency": "USD"}, "UAL": {"price": 110.6, "prevClose_meta": null, "last_close_series": 110.6, "prev_close_series": 112.39, "high52": 138.77, "low52": 84.64, "volume": 2285326, "avgVolume": null, "currency": "USD"}, "RCL": {"price": 279.41, "prevClose_meta": null, "last_close_series": 279.41, "prev_close_series": 284.8, "high52": 362.79, "low52": 232.1, "volume": 1107231, "avgVolume": null, "currency": "USD"}, "XLC": {"price": 112.99, "prevClose_meta": null, "last_close_series": 112.99, "prev_close_series": 111.41, "high52": 120.405, "low52": 105.03, "volume": 3735596, "avgVolume": null, "currency": "USD"}, "XLY": {"price": 117.21, "prevClose_meta": null, "last_close_series": 117.21, "prev_close_series": 115.88, "high52": 125.01, "low52": 105.19, "volume": 4437417, "avgVolume": null, "currency": "USD"}, "XLP": {"price": 85.45, "prevClose_meta": null, "last_close_series": 85.45, "prev_close_series": 85.08, "high52": 90.14, "low52": 75.16, "volume": 6807034, "avgVolume": null, "currency": "USD"}, "XLV": {"price": 171.16, "prevClose_meta": null, "last_close_series": 171.16, "prev_close_series": 171.58, "high52": 176.6, "low52": 133.73, "volume": 4862181, "avgVolume": null, "currency": "USD"}, "XLI": {"price": 177.14, "prevClose_meta": null, "last_close_series": 177.14, "prev_close_series": 178.8, "high52": 188.19, "low52": 147.14, "volume": 8225295, "avgVolume": null, "currency": "USD"}, "XLB": {"price": 53.18, "prevClose_meta": null, "last_close_series": 53.18, "prev_close_series": 53.23, "high52": 54.19, "low52": 42.035, "volume": 13585933, "avgVolume": null, "currency": "USD"}, "XLU": {"price": 42.73, "prevClose_meta": null, "last_close_series": 42.73, "prev_close_series": 43.18, "high52": 47.8, "low52": 41.15, "volume": 20354517, "avgVolume": null, "currency": "USD"}, "XLRE": {"price": 44.48, "prevClose_meta": null, "last_close_series": 44.48, "prev_close_series": 44.66, "high52": 46.455, "low52": 39.725, "volume": 3800937, "avgVolume": null, "currency": "USD"}, "VOO": {"price": 707.24, "prevClose_meta": null, "last_close_series": 707.24, "prev_close_series": 708.75, "high52": 716.39, "low52": 578.46, "volume": 8067208, "avgVolume": null, "currency": "USD"}, "QQQ": {"price": 716.43, "prevClose_meta": null, "last_close_series": 716.43, "prev_close_series": 721.11, "high52": 748.65, "low52": 555.6, "volume": 34067577, "avgVolume": null, "currency": "USD"}, "VTI": {"price": 379.36, "prevClose_meta": null, "last_close_series": 379.36, "prev_close_series": 380.63, "high52": 385.12, "low52": 310.4, "volume": 2811099, "avgVolume": null, "currency": "USD"}, "MDY": {"price": 690.55, "prevClose_meta": null, "last_close_series": 690.55, "prev_close_series": 698.61, "high52": 717.35, "low52": 568.21, "volume": 430965, "avgVolume": null, "currency": "USD"}, "IJH": {"price": 75.76, "prevClose_meta": null, "last_close_series": 75.76, "prev_close_series": 76.65, "high52": 78.71, "low52": 62.22, "volume": 4392332, "avgVolume": null, "currency": "USD"}, "AVUV": {"price": 125.57, "prevClose_meta": null, "last_close_series": 125.57, "prev_close_series": 126.02, "high52": 129.05, "low52": 93.87, "volume": 1225372, "avgVolume": null, "currency": "USD"}, "IWN": {"price": 223.14, "prevClose_meta": null, "last_close_series": 223.14, "prev_close_series": 224.74, "high52": 227.86, "low52": 168.75, "volume": 345051, "avgVolume": null, "currency": "USD"}, "VXUS": {"price": 87.52, "prevClose_meta": null, "last_close_series": 87.52, "prev_close_series": 87.93, "high52": 88.62, "low52": 70.36, "volume": 4898164, "avgVolume": null, "currency": "USD"}, "VEA": {"price": 73.06, "prevClose_meta": null, "last_close_series": 73.06, "prev_close_series": 73.42, "high52": 74.04, "low52": 57.81, "volume": 7602277, "avgVolume": null, "currency": "USD"}, "EFA": {"price": 107.72, "prevClose_meta": null, "last_close_series": 107.72, "prev_close_series": 108.02, "high52": 108.89, "low52": 90.04, "volume": 13216869, "avgVolume": null, "currency": "USD"}, "VWO": {"price": 60.79, "prevClose_meta": null, "last_close_series": 60.79, "prev_close_series": 61.01, "high52": 61.52, "low52": 51.01, "volume": 5239968, "avgVolume": null, "currency": "USD"}, "VT": {"price": 161.01, "prevClose_meta": null, "last_close_series": 161.01, "prev_close_series": 161.57, "high52": 162.71, "low52": 131.89, "volume": 1591926, "avgVolume": null, "currency": "USD"}, "FEZ": {"price": 71.36, "prevClose_meta": null, "last_close_series": 71.36, "prev_close_series": 71.34, "high52": 72.36, "low52": 58.76, "volume": 534967, "avgVolume": null, "currency": "USD"}, "EWJ": {"price": 95.87, "prevClose_meta": null, "last_close_series": 95.87, "prev_close_series": 95.84, "high52": 98.79, "low52": 77.38, "volume": 10519309, "avgVolume": null, "currency": "USD"}, "MCHI": {"price": 55.23, "prevClose_meta": null, "last_close_series": 55.23, "prev_close_series": 54.9, "high52": 67.37, "low52": 49.88, "volume": 1892813, "avgVolume": null, "currency": "USD"}, "FXI": {"price": 35.51, "prevClose_meta": null, "last_close_series": 35.51, "prev_close_series": 35.24, "high52": 42.0, "low52": 31.19, "volume": 14793111, "avgVolume": null, "currency": "USD"}, "KWEB": {"price": 26.32, "prevClose_meta": null, "last_close_series": 26.32, "prev_close_series": 26.1, "high52": 43.365, "low52": 23.23, "volume": 11168820, "avgVolume": null, "currency": "USD"}, "INDA": {"price": 49.56, "prevClose_meta": null, "last_close_series": 49.56, "prev_close_series": 49.53, "high52": 55.5, "low52": 45.21, "volume": 3364874, "avgVolume": null, "currency": "USD"}, "EWT": {"price": 107.9, "prevClose_meta": null, "last_close_series": 107.9, "prev_close_series": 108.63, "high52": 112.78, "low52": 57.56, "volume": 3433846, "avgVolume": null, "currency": "USD"}, "EWY": {"price": 180.2, "prevClose_meta": null, "last_close_series": 180.2, "prev_close_series": 182.14, "high52": 220.89, "low52": 71.39, "volume": 11263719, "avgVolume": null, "currency": "USD"}, "EWZ": {"price": 35.55, "prevClose_meta": null, "last_close_series": 35.55, "prev_close_series": 35.76, "high52": 42.02, "low52": 28.66, "volume": 25820689, "avgVolume": null, "currency": "USD"}, "EWW": {"price": 76.48, "prevClose_meta": null, "last_close_series": 76.48, "prev_close_series": 77.16, "high52": 81.65, "low52": 61.2, "volume": 790882, "avgVolume": null, "currency": "USD"}, "EWC": {"price": 61.73, "prevClose_meta": null, "last_close_series": 61.73, "prev_close_series": 62.26, "high52": 62.71, "low52": 48.14, "volume": 1149671, "avgVolume": null, "currency": "USD"}, "EWU": {"price": 48.55, "prevClose_meta": null, "last_close_series": 48.55, "prev_close_series": 48.63, "high52": 49.39, "low52": 40.67, "volume": 637773, "avgVolume": null, "currency": "USD"}, "EWG": {"price": 44.59, "prevClose_meta": null, "last_close_series": 44.59, "prev_close_series": 44.58, "high52": 44.85, "low52": 37.98, "volume": 823106, "avgVolume": null, "currency": "USD"}, "EWQ": {"price": 46.2, "prevClose_meta": null, "last_close_series": 46.2, "prev_close_series": 46.13, "high52": 48.39, "low52": 41.58, "volume": 244577, "avgVolume": null, "currency": "USD"}, "EWA": {"price": 30.0, "prevClose_meta": null, "last_close_series": 30.0, "prev_close_series": 30.11, "high52": 30.48, "low52": 24.94, "volume": 3899038, "avgVolume": null, "currency": "USD"}, "KSA": {"price": 39.26, "prevClose_meta": null, "last_close_series": 39.26, "prev_close_series": 39.3, "high52": 41.5, "low52": 35.81, "volume": 308221, "avgVolume": null, "currency": "USD"}, "VNM": {"price": 18.18, "prevClose_meta": null, "last_close_series": 18.18, "prev_close_series": 18.24, "high52": 19.85, "low52": 16.22, "volume": 709659, "avgVolume": null, "currency": "USD"}, "SGOV": {"price": 100.69, "prevClose_meta": null, "last_close_series": 100.69, "prev_close_series": 100.66, "high52": 100.73, "low52": 100.27, "volume": 24268084, "avgVolume": null, "currency": "USD"}, "BIL": {"price": 91.65, "prevClose_meta": null, "last_close_series": 91.65, "prev_close_series": 91.63, "high52": 91.77, "low52": 91.26, "volume": 7186552, "avgVolume": null, "currency": "USD"}, "SHY": {"price": 81.89, "prevClose_meta": null, "last_close_series": 81.89, "prev_close_series": 82.04, "high52": 83.2, "low52": 81.75, "volume": 5756226, "avgVolume": null, "currency": "USD"}, "IEI": {"price": 116.19, "prevClose_meta": null, "last_close_series": 116.19, "prev_close_series": 116.6, "high52": 120.78, "low52": 116.07, "volume": 1349968, "avgVolume": null, "currency": "USD"}, "GOVT": {"price": 22.46, "prevClose_meta": null, "last_close_series": 22.46, "prev_close_series": 22.53, "high52": 23.39, "low52": 22.4, "volume": 11237518, "avgVolume": null, "currency": "USD"}, "SCHP": {"price": 25.93, "prevClose_meta": null, "last_close_series": 25.93, "prev_close_series": 26.04, "high52": 27.19, "low52": 25.87, "volume": 19868183, "avgVolume": null, "currency": "USD"}, "BND": {"price": 72.31, "prevClose_meta": null, "last_close_series": 72.31, "prev_close_series": 72.54, "high52": 75.23, "low52": 72.07, "volume": 7871539, "avgVolume": null, "currency": "USD"}, "AGG": {"price": 97.49, "prevClose_meta": null, "last_close_series": 97.49, "prev_close_series": 97.83, "high52": 101.46, "low52": 97.12, "volume": 9894398, "avgVolume": null, "currency": "USD"}, "MUB": {"price": 105.22, "prevClose_meta": null, "last_close_series": 105.22, "prev_close_series": 105.39, "high52": 109.0, "low52": 103.86, "volume": 3296853, "avgVolume": null, "currency": "USD"}, "VCIT": {"price": 81.15, "prevClose_meta": null, "last_close_series": 81.15, "prev_close_series": 81.44, "high52": 84.84, "low52": 80.86, "volume": 9534127, "avgVolume": null, "currency": "USD"}, "JNK": {"price": 95.97, "prevClose_meta": null, "last_close_series": 95.97, "prev_close_series": 96.13, "high52": 98.24, "low52": 94.49, "volume": 1930238, "avgVolume": null, "currency": "USD"}, "BKLN": {"price": 20.52, "prevClose_meta": null, "last_close_series": 20.52, "prev_close_series": 20.53, "high52": 21.07, "low52": 20.11, "volume": 7589174, "avgVolume": null, "currency": "USD"}, "SRLN": {"price": 40.77, "prevClose_meta": null, "last_close_series": 40.77, "prev_close_series": 40.78, "high52": 41.63, "low52": 39.39, "volume": 777953, "avgVolume": null, "currency": "USD"}, "VUG": {"price": 88.54, "prevClose_meta": null, "last_close_series": 88.54, "prev_close_series": 88.9, "high52": 90.6, "low52": 69.633, "volume": 4007598, "avgVolume": null, "currency": "USD"}, "IWF": {"price": 122.75, "prevClose_meta": null, "last_close_series": 122.75, "prev_close_series": 123.89, "high52": 129.14, "low52": 102.23, "volume": 3205450, "avgVolume": null, "currency": "USD"}, "VTV": {"price": 225.29, "prevClose_meta": null, "last_close_series": 225.29, "prev_close_series": 225.45, "high52": 228.57, "low52": 180.84, "volume": 1868288, "avgVolume": null, "currency": "USD"}, "IWD": {"price": 258.33, "prevClose_meta": null, "last_close_series": 258.33, "prev_close_series": 257.58, "high52": 260.19, "low52": 199.13, "volume": 1260246, "avgVolume": null, "currency": "USD"}, "MTUM": {"price": 299.71, "prevClose_meta": null, "last_close_series": 299.71, "prev_close_series": 304.23, "high52": 345.59, "low52": 229.42, "volume": 679603, "avgVolume": null, "currency": "USD"}, "QUAL": {"price": 223.62, "prevClose_meta": null, "last_close_series": 223.62, "prev_close_series": 224.6, "high52": 227.32, "low52": 185.89, "volume": 757690, "avgVolume": null, "currency": "USD"}, "USMV": {"price": 101.74, "prevClose_meta": null, "last_close_series": 101.74, "prev_close_series": 101.98, "high52": 102.21, "low52": 91.02, "volume": 1591130, "avgVolume": null, "currency": "USD"}, "SPLV": {"price": 75.08, "prevClose_meta": null, "last_close_series": 75.08, "prev_close_series": 75.12, "high52": 78.82, "low52": 69.63, "volume": 1133190, "avgVolume": null, "currency": "USD"}, "VYM": {"price": 164.25, "prevClose_meta": null, "last_close_series": 164.25, "prev_close_series": 164.41, "high52": 167.61, "low52": 137.42, "volume": 880976, "avgVolume": null, "currency": "USD"}, "SCHD": {"price": 34.9, "prevClose_meta": null, "last_close_series": 34.9, "prev_close_series": 34.83, "high52": 35.31, "low52": 26.32, "volume": 20950162, "avgVolume": null, "currency": "USD"}, "PKW": {"price": 152.85, "prevClose_meta": null, "last_close_series": 152.85, "prev_close_series": 152.28, "high52": 153.36, "low52": 125.47, "volume": 41910, "avgVolume": null, "currency": "USD"}, "SPHQ": {"price": 85.71, "prevClose_meta": null, "last_close_series": 85.71, "prev_close_series": 86.15, "high52": 90.36, "low52": 71.4, "volume": 816188, "avgVolume": null, "currency": "USD"}}, "futures_commodities_fx": {"ES=F": {"price": 7707.25, "prev": 7722.0, "pct": -0.191}, "NQ=F": {"price": 29454.5, "prev": 29491.75, "pct": -0.126}, "YM=F": {"price": 53472.0, "prev": 53584.0, "pct": -0.209}, "RTY=F": {"price": 2975.2, "prev": 2977.5, "pct": -0.077}, "^GSPC": {"price": 7711.7598, "prev": 7730.9902, "pct": -0.249}, "^IXIC": {"price": 26402.4199, "prev": 26541.3496, "pct": -0.523}, "^DJI": {"price": 53559.9883, "prev": 53569.4414, "pct": -0.018}, "^RUT": {"price": 2972.3701, "prev": 3014.3401, "pct": -1.392}, "^TNX": {"price": 4.72, "prev": 4.672, "pct": 1.027}, "CL=F": {"price": 86.2, "prev": 83.4, "pct": 3.357}, "GC=F": {"price": 4499.6001, "prev": 4478.1001, "pct": 0.48}, "NG=F": {"price": 2.898, "prev": 2.888, "pct": 0.346}, "HG=F": {"price": 6.6625, "prev": 6.562, "pct": 1.532}, "EURUSD=X": {"price": 1.1604, "prev": 1.1656, "pct": -0.453}, "DX-Y.NYB": {"price": 99.527, "prev": 99.7, "pct": -0.174}}, "technical_levels": {"SPY": {"price": 769.35, "dma20": 769.22, "dma50": 753.96, "dist20_pct": 0.02, "dist50_pct": 2.04, "high52": 779.37, "low52": 629.28}, "QQQ": {"price": 716.43, "dma20": 717.94, "dma50": 712.06, "dist20_pct": -0.21, "dist50_pct": 0.61, "high52": 748.65, "low52": 555.6}, "IWM": {"price": 295.75, "dma20": 300.26, "dma50": 297.31, "dist20_pct": -1.5, "dist50_pct": -0.53, "high52": 305.18, "low52": 228.9}, "DIA": {"price": 535.06, "dma20": 535.74, "dma50": 527.43, "dist20_pct": -0.13, "dist50_pct": 1.45, "high52": 546.75, "low52": 450.16}, "TLT": {"price": 82.88, "dma20": 82.5, "dma50": 83.87, "dist20_pct": 0.46, "dist50_pct": -1.19, "high52": 92.19, "low52": 81.17}, "SPCX": {"price": 141.5, "dma20": 134.54, "dma50": 137.56, "dist20_pct": 5.17, "dist50_pct": 2.86, "high52": 225.64, "low52": 104.83}}}
+{
+ "fetched_at": "2026-08-31T20:58:00Z",
+ "treasury_par_curve": {
+  "curve_date": "2026-08-31",
+  "1M": 3.85,
+  "1.5M": 3.86,
+  "2M": 3.88,
+  "3M": 3.91,
+  "4M": 3.96,
+  "6M": 3.99,
+  "1Y": 4.16,
+  "2Y": 4.34,
+  "3Y": 4.4,
+  "5Y": 4.49,
+  "7Y": 4.62,
+  "10Y": 4.75,
+  "20Y": 5.24,
+  "30Y": 5.25,
+  "2s10s_bp": 41,
+  "3m10y_bp": 84,
+  "5s30s_bp": 76
+ },
+ "fred": {
+  "CPIAUCSL": {
+   "date": "2026-07-01",
+   "value": "332.813",
+   "prior_date": "2026-06-01",
+   "prior_value": "332.568"
+  },
+  "CPILFESL": {
+   "date": "2026-07-01",
+   "value": "336.789",
+   "prior_date": "2026-06-01",
+   "prior_value": "336.065"
+  },
+  "PAYEMS": {
+   "date": "2026-07-01",
+   "value": "158858",
+   "prior_date": "2026-06-01",
+   "prior_value": "158881"
+  },
+  "ICSA": {
+   "date": "2026-08-22",
+   "value": "203000",
+   "prior_date": "2026-08-15",
+   "prior_value": "207000"
+  },
+  "UNRATE": {
+   "date": "2026-07-01",
+   "value": "4.1",
+   "prior_date": "2026-06-01",
+   "prior_value": "4.2"
+  },
+  "T10Y2Y": {
+   "date": "2026-08-28",
+   "value": "0.39",
+   "prior_date": "2026-08-27",
+   "prior_value": "0.47"
+  },
+  "DGS2": {
+   "date": "2026-08-28",
+   "value": "4.34",
+   "prior_date": "2026-08-27",
+   "prior_value": "4.2"
+  },
+  "DGS10": {
+   "date": "2026-08-28",
+   "value": "4.73",
+   "prior_date": "2026-08-27",
+   "prior_value": "4.67"
+  },
+  "T10YIE": {
+   "date": "2026-08-28",
+   "value": "2.31",
+   "prior_date": "2026-08-27",
+   "prior_value": "2.33"
+  },
+  "DFII10": {
+   "date": "2026-08-28",
+   "value": "2.42",
+   "prior_date": "2026-08-27",
+   "prior_value": "2.34"
+  },
+  "SOFR": {
+   "date": "2026-08-28",
+   "value": "3.65",
+   "prior_date": "2026-08-27",
+   "prior_value": "3.64"
+  },
+  "BAMLH0A0HYM2": {
+   "date": "2026-08-28",
+   "value": "2.6",
+   "prior_date": "2026-08-27",
+   "prior_value": "2.63"
+  }
+ },
+ "vix_complex": {
+  "date": "2026-08-31",
+  "VIX": {
+   "close": 14.92
+  },
+  "VIX9D": {
+   "close": 12.34
+  },
+  "VIX3M": {
+   "close": 17.53
+  }
+ },
+ "fx": {
+  "amount": 1.0,
+  "base": "USD",
+  "date": "2026-08-31",
+  "rates": {
+   "AUD": 1.3963,
+   "BRL": 5.1718,
+   "CAD": 1.3886,
+   "CHF": 0.80855,
+   "CNY": 6.7197,
+   "EUR": 0.86237,
+   "GBP": 0.7386,
+   "INR": 95.17,
+   "JPY": 159.73,
+   "MXN": 17.0083
+  }
+ },
+ "crypto": {
+  "prices": {
+   "bitcoin": {
+    "usd": 78885,
+    "usd_market_cap": 1583838360019.393,
+    "usd_24h_vol": 32202158948.599316,
+    "usd_24h_change": 0.38700015774034274
+   },
+   "ethereum": {
+    "usd": 2474.16,
+    "usd_market_cap": 298584440439.6893,
+    "usd_24h_vol": 14983312503.421387,
+    "usd_24h_change": -0.6704218277124133
+   },
+   "solana": {
+    "usd": 103.76,
+    "usd_market_cap": 60723268318.628975,
+    "usd_24h_vol": 3748177992.674281,
+    "usd_24h_change": -1.00913458684224
+   },
+   "cardano": {
+    "usd": 0.199117,
+    "usd_market_cap": 7466600538.767334,
+    "usd_24h_vol": 391510838.60723835,
+    "usd_24h_change": -1.0910144618591644
+   }
+  },
+  "global": {
+   "total_mcap_usd": 2667797834136.4795,
+   "btc_dominance": 59.1987211477474
+  }
+ },
+ "watchlist_quotes": {
+  "SPY": {
+   "price": 767.05,
+   "prevClose_meta": null,
+   "last_close_series": 767.05,
+   "prev_close_series": 769.35,
+   "high52": 779.37,
+   "low52": 629.28,
+   "volume": 34347091,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "QQQM": {
+   "price": 295.18,
+   "prevClose_meta": null,
+   "last_close_series": 295.18,
+   "prev_close_series": 295.0,
+   "high52": 308.21,
+   "low52": 228.75,
+   "volume": 2322919,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "DIA": {
+   "price": 531.57,
+   "prevClose_meta": null,
+   "last_close_series": 531.57,
+   "prev_close_series": 535.06,
+   "high52": 546.75,
+   "low52": 450.16,
+   "volume": 1651466,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IWM": {
+   "price": 293.93,
+   "prevClose_meta": null,
+   "last_close_series": 293.93,
+   "prev_close_series": 295.75,
+   "high52": 305.18,
+   "low52": 228.9,
+   "volume": 20640568,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MAGS": {
+   "price": 68.74,
+   "prevClose_meta": null,
+   "last_close_series": 68.74,
+   "prev_close_series": 69.07,
+   "high52": 71.16,
+   "low52": 55.085,
+   "volume": 1994618,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "RSP": {
+   "price": 219.39,
+   "prevClose_meta": null,
+   "last_close_series": 219.39,
+   "prev_close_series": 220.69,
+   "high52": 223.44,
+   "low52": 182.11,
+   "volume": 6007632,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SMH": {
+   "price": 556.63,
+   "prevClose_meta": null,
+   "last_close_series": 556.63,
+   "prev_close_series": 553.11,
+   "high52": 671.83,
+   "low52": 281.74,
+   "volume": 4244054,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLK": {
+   "price": 186.5,
+   "prevClose_meta": null,
+   "last_close_series": 186.5,
+   "prev_close_series": 185.69,
+   "high52": 198.73,
+   "low52": 126.68,
+   "volume": 4556340,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLF": {
+   "price": 57.71,
+   "prevClose_meta": null,
+   "last_close_series": 57.71,
+   "prev_close_series": 58.1,
+   "high52": 58.41,
+   "low52": 47.67,
+   "volume": 24945041,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "KRE": {
+   "price": 73.56,
+   "prevClose_meta": null,
+   "last_close_series": 73.56,
+   "prev_close_series": 74.3,
+   "high52": 78.35,
+   "low52": 57.55,
+   "volume": 12861606,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLE": {
+   "price": 63.96,
+   "prevClose_meta": null,
+   "last_close_series": 63.96,
+   "prev_close_series": 62.68,
+   "high52": 64.7,
+   "low52": 42.35,
+   "volume": 27040956,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "TLT": {
+   "price": 82.52,
+   "prevClose_meta": null,
+   "last_close_series": 82.52,
+   "prev_close_series": 82.88,
+   "high52": 92.19,
+   "low52": 81.17,
+   "volume": 35372103,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IEF": {
+   "price": 92.74,
+   "prevClose_meta": null,
+   "last_close_series": 92.74,
+   "prev_close_series": 92.85,
+   "high52": 98.05,
+   "low52": 92.62,
+   "volume": 8124654,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "TIP": {
+   "price": 106.82,
+   "prevClose_meta": null,
+   "last_close_series": 106.82,
+   "prev_close_series": 106.94,
+   "high52": 112.26,
+   "low52": 106.72,
+   "volume": 2225824,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "LQD": {
+   "price": 106.21,
+   "prevClose_meta": null,
+   "last_close_series": 106.21,
+   "prev_close_series": 106.35,
+   "high52": 112.93,
+   "low52": 105.42,
+   "volume": 29335264,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "HYG": {
+   "price": 79.81,
+   "prevClose_meta": null,
+   "last_close_series": 79.81,
+   "prev_close_series": 79.74,
+   "high52": 81.36,
+   "low52": 78.57,
+   "volume": 35294863,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "GLD": {
+   "price": 408.42,
+   "prevClose_meta": null,
+   "last_close_series": 408.42,
+   "prev_close_series": 408.89,
+   "high52": 509.7,
+   "low52": 320.24,
+   "volume": 9083686,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "USO": {
+   "price": 133.7,
+   "prevClose_meta": null,
+   "last_close_series": 133.7,
+   "prev_close_series": 129.7,
+   "high52": 154.08,
+   "low52": 65.99,
+   "volume": 4135752,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EEM": {
+   "price": 67.02,
+   "prevClose_meta": null,
+   "last_close_series": 67.02,
+   "prev_close_series": 67.14,
+   "high52": 71.57,
+   "low52": 49.35,
+   "volume": 20735725,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VGK": {
+   "price": 91.66,
+   "prevClose_meta": null,
+   "last_close_series": 91.66,
+   "prev_close_series": 91.98,
+   "high52": 93.29,
+   "low52": 77.01,
+   "volume": 1762444,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BTC": {
+   "price": 34.88,
+   "prevClose_meta": null,
+   "last_close_series": 34.88,
+   "prev_close_series": 34.3,
+   "high52": 55.96,
+   "low52": 25.65,
+   "volume": 2294316,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AAPL": {
+   "price": 316.85,
+   "prevClose_meta": null,
+   "last_close_series": 316.85,
+   "prev_close_series": 319.7,
+   "high52": 344.57,
+   "low52": 225.95,
+   "volume": 39470324,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MSFT": {
+   "price": 507.29,
+   "prevClose_meta": null,
+   "last_close_series": 507.29,
+   "prev_close_series": 513.53,
+   "high52": 553.72,
+   "low52": 349.2,
+   "volume": 25398187,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "NVDA": {
+   "price": 220.78,
+   "prevClose_meta": null,
+   "last_close_series": 220.78,
+   "prev_close_series": 217.55,
+   "high52": 236.54,
+   "low52": 164.07,
+   "volume": 120586441,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AMZN": {
+   "price": 259.77,
+   "prevClose_meta": null,
+   "last_close_series": 259.77,
+   "prev_close_series": 266.43,
+   "high52": 287.2,
+   "low52": 196.0,
+   "volume": 44877584,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "GOOGL": {
+   "price": 339.35,
+   "prevClose_meta": null,
+   "last_close_series": 339.35,
+   "prev_close_series": 346.59,
+   "high52": 408.61,
+   "low52": 206.2,
+   "volume": 31467862,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "META": {
+   "price": 572.34,
+   "prevClose_meta": null,
+   "last_close_series": 572.34,
+   "prev_close_series": 578.02,
+   "high52": 790.8,
+   "low52": 520.26,
+   "volume": 12785070,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "TSLA": {
+   "price": 367.95,
+   "prevClose_meta": null,
+   "last_close_series": 367.95,
+   "prev_close_series": 348.75,
+   "high52": 498.83,
+   "low52": 297.38,
+   "volume": 60898473,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SPCX": {
+   "price": 143.69,
+   "prevClose_meta": null,
+   "last_close_series": 143.69,
+   "prev_close_series": 141.5,
+   "high52": 225.64,
+   "low52": 104.83,
+   "volume": 62531679,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AMD": {
+   "price": 470.72,
+   "prevClose_meta": null,
+   "last_close_series": 470.72,
+   "prev_close_series": 465.58,
+   "high52": 584.73,
+   "low52": 149.22,
+   "volume": 12190125,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AVGO": {
+   "price": 370.34,
+   "prevClose_meta": null,
+   "last_close_series": 370.34,
+   "prev_close_series": 368.79,
+   "high52": 495.0,
+   "low52": 287.17,
+   "volume": 21228226,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "TSM": {
+   "price": 415.32,
+   "prevClose_meta": null,
+   "last_close_series": 415.32,
+   "prev_close_series": 417.52,
+   "high52": 479.0,
+   "low52": 225.63,
+   "volume": 6515070,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ASML": {
+   "price": 1696.01,
+   "prevClose_meta": null,
+   "last_close_series": 1696.01,
+   "prev_close_series": 1696.16,
+   "high52": 1999.96,
+   "low52": 716.2,
+   "volume": 1139422,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MU": {
+   "price": 958.73,
+   "prevClose_meta": null,
+   "last_close_series": 958.73,
+   "prev_close_series": 932.86,
+   "high52": 1255.0,
+   "low52": 114.25,
+   "volume": 22227299,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MRVL": {
+   "price": 211.66,
+   "prevClose_meta": null,
+   "last_close_series": 211.66,
+   "prev_close_series": 216.62,
+   "high52": 329.88,
+   "low52": 61.44,
+   "volume": 23460678,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ANET": {
+   "price": 195.69,
+   "prevClose_meta": null,
+   "last_close_series": 195.69,
+   "prev_close_series": 195.38,
+   "high52": 214.89,
+   "low52": 114.52,
+   "volume": 4921543,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VRT": {
+   "price": 258.72,
+   "prevClose_meta": null,
+   "last_close_series": 258.72,
+   "prev_close_series": 257.08,
+   "high52": 379.935,
+   "low52": 118.7,
+   "volume": 4042091,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ETN": {
+   "price": 401.88,
+   "prevClose_meta": null,
+   "last_close_series": 401.88,
+   "prev_close_series": 402.78,
+   "high52": 478.0,
+   "low52": 311.92,
+   "volume": 1982589,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "PWR": {
+   "price": 607.09,
+   "prevClose_meta": null,
+   "last_close_series": 607.09,
+   "prev_close_series": 602.7,
+   "high52": 788.75,
+   "low52": 363.01,
+   "volume": 1379960,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "CEG": {
+   "price": 274.77,
+   "prevClose_meta": null,
+   "last_close_series": 274.77,
+   "prev_close_series": 276.75,
+   "high52": 412.7,
+   "low52": 228.63,
+   "volume": 2475459,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VST": {
+   "price": 137.37,
+   "prevClose_meta": null,
+   "last_close_series": 137.37,
+   "prev_close_series": 137.09,
+   "high52": 219.82,
+   "low52": 132.66,
+   "volume": 4101038,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EQIX": {
+   "price": 1046.72,
+   "prevClose_meta": null,
+   "last_close_series": 1046.72,
+   "prev_close_series": 1044.41,
+   "high52": 1128.68,
+   "low52": 720.62,
+   "volume": 676105,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "DLR": {
+   "price": 185.59,
+   "prevClose_meta": null,
+   "last_close_series": 185.59,
+   "prev_close_series": 185.47,
+   "high52": 208.14,
+   "low52": 146.23,
+   "volume": 6287350,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "LMT": {
+   "price": 561.23,
+   "prevClose_meta": null,
+   "last_close_series": 561.23,
+   "prev_close_series": 563.85,
+   "high52": 692.0,
+   "low52": 437.25,
+   "volume": 909102,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "RTX": {
+   "price": 207.73,
+   "prevClose_meta": null,
+   "last_close_series": 207.73,
+   "prev_close_series": 211.71,
+   "high52": 226.88,
+   "low52": 150.61,
+   "volume": 3894290,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "NOC": {
+   "price": 539.7,
+   "prevClose_meta": null,
+   "last_close_series": 539.7,
+   "prev_close_series": 545.57,
+   "high52": 774.0,
+   "low52": 479.02,
+   "volume": 726852,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "GD": {
+   "price": 371.35,
+   "prevClose_meta": null,
+   "last_close_series": 371.35,
+   "prev_close_series": 379.32,
+   "high52": 400.0,
+   "low52": 306.77,
+   "volume": 1240882,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BA": {
+   "price": 207.78,
+   "prevClose_meta": null,
+   "last_close_series": 207.78,
+   "prev_close_series": 209.82,
+   "high52": 254.35,
+   "low52": 176.77,
+   "volume": 4985611,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "LHX": {
+   "price": 266.25,
+   "prevClose_meta": null,
+   "last_close_series": 266.25,
+   "prev_close_series": 262.82,
+   "high52": 379.23,
+   "low52": 258.54,
+   "volume": 2447827,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "HII": {
+   "price": 291.2,
+   "prevClose_meta": null,
+   "last_close_series": 291.2,
+   "prev_close_series": 294.21,
+   "high52": 460.0,
+   "low52": 263.62,
+   "volume": 434810,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BWXT": {
+   "price": 152.29,
+   "prevClose_meta": null,
+   "last_close_series": 152.29,
+   "prev_close_series": 152.85,
+   "high52": 241.82,
+   "low52": 147.74,
+   "volume": 996585,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AVAV": {
+   "price": 148.35,
+   "prevClose_meta": null,
+   "last_close_series": 148.35,
+   "prev_close_series": 147.94,
+   "high52": 417.86,
+   "low52": 135.2,
+   "volume": 848489,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "KTOS": {
+   "price": 50.98,
+   "prevClose_meta": null,
+   "last_close_series": 50.98,
+   "prev_close_series": 52.0,
+   "high52": 134.0,
+   "low52": 43.09,
+   "volume": 2140423,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "PLTR": {
+   "price": 186.38,
+   "prevClose_meta": null,
+   "last_close_series": 186.38,
+   "prev_close_series": 186.29,
+   "high52": 207.52,
+   "low52": 106.37,
+   "volume": 25143380,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "RKLB": {
+   "price": 63.92,
+   "prevClose_meta": null,
+   "last_close_series": 63.92,
+   "prev_close_series": 64.39,
+   "high52": 151.0,
+   "low52": 37.57,
+   "volume": 15022760,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ASTS": {
+   "price": 59.1,
+   "prevClose_meta": null,
+   "last_close_series": 59.1,
+   "prev_close_series": 58.05,
+   "high52": 133.86,
+   "low52": 36.08,
+   "volume": 8232721,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "LUNR": {
+   "price": 15.36,
+   "prevClose_meta": null,
+   "last_close_series": 15.36,
+   "prev_close_series": 15.37,
+   "high52": 46.75,
+   "low52": 7.78,
+   "volume": 4414049,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "RDW": {
+   "price": 10.7,
+   "prevClose_meta": null,
+   "last_close_series": 10.7,
+   "prev_close_series": 10.87,
+   "high52": 26.64,
+   "low52": 4.87,
+   "volume": 10806475,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "PL": {
+   "price": 19.85,
+   "prevClose_meta": null,
+   "last_close_series": 19.85,
+   "prev_close_series": 19.98,
+   "high52": 51.76,
+   "low52": 6.255,
+   "volume": 6774980,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BKSY": {
+   "price": 23.1,
+   "prevClose_meta": null,
+   "last_close_series": 23.1,
+   "prev_close_series": 23.7,
+   "high52": 52.88,
+   "low52": 12.41,
+   "volume": 774719,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IRDM": {
+   "price": 46.98,
+   "prevClose_meta": null,
+   "last_close_series": 46.98,
+   "prev_close_series": 46.6,
+   "high52": 57.18,
+   "low52": 15.65,
+   "volume": 927584,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SPIR": {
+   "price": 13.27,
+   "prevClose_meta": null,
+   "last_close_series": 13.27,
+   "prev_close_series": 13.17,
+   "high52": 25.93,
+   "low52": 6.6,
+   "volume": 390334,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VSAT": {
+   "price": 67.27,
+   "prevClose_meta": null,
+   "last_close_series": 67.27,
+   "prev_close_series": 67.37,
+   "high52": 93.03,
+   "low52": 26.1,
+   "volume": 1301082,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "GSAT": {
+   "price": 81.55,
+   "prevClose_meta": null,
+   "last_close_series": 81.55,
+   "prev_close_series": 81.76,
+   "high52": 84.85,
+   "low52": 29.36,
+   "volume": 609833,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "KRMN": {
+   "price": 41.45,
+   "prevClose_meta": null,
+   "last_close_series": 41.45,
+   "prev_close_series": 45.57,
+   "high52": 118.38,
+   "low52": 41.44,
+   "volume": 4219354,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VOYG": {
+   "price": 33.63,
+   "prevClose_meta": null,
+   "last_close_series": 33.63,
+   "prev_close_series": 34.29,
+   "high52": 52.4,
+   "low52": 17.41,
+   "volume": 1631796,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "FLY": {
+   "price": 21.12,
+   "prevClose_meta": null,
+   "last_close_series": 21.12,
+   "prev_close_series": 21.26,
+   "high52": 62.17,
+   "low52": 16.0,
+   "volume": 2164301,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "YSS": {
+   "price": 9.09,
+   "prevClose_meta": null,
+   "last_close_series": 9.09,
+   "prev_close_series": 8.97,
+   "high52": 44.54,
+   "low52": 8.89,
+   "volume": 1908527,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "JPM": {
+   "price": 356.02,
+   "prevClose_meta": null,
+   "last_close_series": 356.02,
+   "prev_close_series": 357.62,
+   "high52": 366.5,
+   "low52": 279.1,
+   "volume": 7110432,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BAC": {
+   "price": 61.94,
+   "prevClose_meta": null,
+   "last_close_series": 61.94,
+   "prev_close_series": 62.32,
+   "high52": 65.23,
+   "low52": 46.12,
+   "volume": 42931814,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "C": {
+   "price": 131.62,
+   "prevClose_meta": null,
+   "last_close_series": 131.62,
+   "prev_close_series": 132.9,
+   "high52": 147.96,
+   "low52": 92.96,
+   "volume": 7264060,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "WFC": {
+   "price": 86.39,
+   "prevClose_meta": null,
+   "last_close_series": 86.39,
+   "prev_close_series": 86.69,
+   "high52": 97.76,
+   "low52": 72.78,
+   "volume": 18964200,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "GS": {
+   "price": 1025.9,
+   "prevClose_meta": null,
+   "last_close_series": 1025.9,
+   "prev_close_series": 1033.99,
+   "high52": 1153.99,
+   "low52": 721.16,
+   "volume": 1330092,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MS": {
+   "price": 213.32,
+   "prevClose_meta": null,
+   "last_close_series": 213.32,
+   "prev_close_series": 214.77,
+   "high52": 232.25,
+   "low52": 145.66,
+   "volume": 3940288,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SCHW": {
+   "price": 109.82,
+   "prevClose_meta": null,
+   "last_close_series": 109.82,
+   "prev_close_series": 110.16,
+   "high52": 114.53,
+   "low52": 83.96,
+   "volume": 6076327,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IBKR": {
+   "price": 97.29,
+   "prevClose_meta": null,
+   "last_close_series": 97.29,
+   "prev_close_series": 95.84,
+   "high52": 98.75,
+   "low52": 58.95,
+   "volume": 3488279,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "HOOD": {
+   "price": 104.81,
+   "prevClose_meta": null,
+   "last_close_series": 104.81,
+   "prev_close_series": 104.26,
+   "high52": 153.86,
+   "low52": 63.515,
+   "volume": 16161183,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "COIN": {
+   "price": 188.12,
+   "prevClose_meta": null,
+   "last_close_series": 188.12,
+   "prev_close_series": 178.64,
+   "high52": 402.16,
+   "low52": 139.11,
+   "volume": 10308856,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "CME": {
+   "price": 285.5,
+   "prevClose_meta": null,
+   "last_close_series": 285.5,
+   "prev_close_series": 285.8,
+   "high52": 329.16,
+   "low52": 218.31,
+   "volume": 3020983,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ICE": {
+   "price": 160.7,
+   "prevClose_meta": null,
+   "last_close_series": 160.7,
+   "prev_close_series": 162.33,
+   "high52": 177.0,
+   "low52": 121.79,
+   "volume": 4054043,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "CBOE": {
+   "price": 300.2,
+   "prevClose_meta": null,
+   "last_close_series": 300.2,
+   "prev_close_series": 310.45,
+   "high52": 371.18,
+   "low52": 227.15,
+   "volume": 2050667,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BLK": {
+   "price": 1155.61,
+   "prevClose_meta": null,
+   "last_close_series": 1155.61,
+   "prev_close_series": 1164.48,
+   "high52": 1219.94,
+   "low52": 917.39,
+   "volume": 755351,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BX": {
+   "price": 143.24,
+   "prevClose_meta": null,
+   "last_close_series": 143.24,
+   "prev_close_series": 142.39,
+   "high52": 190.09,
+   "low52": 101.73,
+   "volume": 3279680,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "KKR": {
+   "price": 109.72,
+   "prevClose_meta": null,
+   "last_close_series": 109.72,
+   "prev_close_series": 108.68,
+   "high52": 152.1,
+   "low52": 82.67,
+   "volume": 3819827,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "APO": {
+   "price": 136.58,
+   "prevClose_meta": null,
+   "last_close_series": 136.58,
+   "prev_close_series": 135.04,
+   "high52": 153.29,
+   "low52": 99.56,
+   "volume": 2571628,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ARES": {
+   "price": 143.17,
+   "prevClose_meta": null,
+   "last_close_series": 143.17,
+   "prev_close_series": 142.53,
+   "high52": 186.85,
+   "low52": 95.8,
+   "volume": 1847803,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "LLY": {
+   "price": 1156.73,
+   "prevClose_meta": null,
+   "last_close_series": 1156.73,
+   "prev_close_series": 1174.61,
+   "high52": 1292.65,
+   "low52": 712.05,
+   "volume": 2804948,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "NVO": {
+   "price": 45.33,
+   "prevClose_meta": null,
+   "last_close_series": 45.33,
+   "prev_close_series": 45.61,
+   "high52": 64.16,
+   "low52": 35.12,
+   "volume": 7554639,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "UNH": {
+   "price": 389.41,
+   "prevClose_meta": null,
+   "last_close_series": 389.41,
+   "prev_close_series": 392.95,
+   "high52": 461.62,
+   "low52": 255.97,
+   "volume": 5511601,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "JNJ": {
+   "price": 265.85,
+   "prevClose_meta": null,
+   "last_close_series": 265.85,
+   "prev_close_series": 268.04,
+   "high52": 276.47,
+   "low52": 173.33,
+   "volume": 7565514,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ABBV": {
+   "price": 256.42,
+   "prevClose_meta": null,
+   "last_close_series": 256.42,
+   "prev_close_series": 255.48,
+   "high52": 267.47,
+   "low52": 190.75,
+   "volume": 4173074,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MRK": {
+   "price": 147.76,
+   "prevClose_meta": null,
+   "last_close_series": 147.76,
+   "prev_close_series": 148.35,
+   "high52": 156.92,
+   "low52": 77.58,
+   "volume": 10668102,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "PFE": {
+   "price": 28.46,
+   "prevClose_meta": null,
+   "last_close_series": 28.46,
+   "prev_close_series": 27.96,
+   "high52": 28.75,
+   "low52": 23.58,
+   "volume": 44352959,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VRTX": {
+   "price": 544.52,
+   "prevClose_meta": null,
+   "last_close_series": 544.52,
+   "prev_close_series": 541.69,
+   "high52": 555.69,
+   "low52": 374.17,
+   "volume": 1153543,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "REGN": {
+   "price": 799.08,
+   "prevClose_meta": null,
+   "last_close_series": 799.08,
+   "prev_close_series": 794.19,
+   "high52": 847.0,
+   "low52": 541.0,
+   "volume": 751715,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "TMO": {
+   "price": 617.1,
+   "prevClose_meta": null,
+   "last_close_series": 617.1,
+   "prev_close_series": 622.18,
+   "high52": 647.0,
+   "low52": 435.27,
+   "volume": 1401498,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "DHR": {
+   "price": 213.56,
+   "prevClose_meta": null,
+   "last_close_series": 213.56,
+   "prev_close_series": 216.07,
+   "high52": 242.8,
+   "low52": 160.93,
+   "volume": 3578587,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ISRG": {
+   "price": 376.86,
+   "prevClose_meta": null,
+   "last_close_series": 376.86,
+   "prev_close_series": 372.6,
+   "high52": 603.88,
+   "low52": 328.57,
+   "volume": 1869857,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "WMT": {
+   "price": 104.87,
+   "prevClose_meta": null,
+   "last_close_series": 104.87,
+   "prev_close_series": 103.09,
+   "high52": 135.16,
+   "low52": 96.51,
+   "volume": 33719672,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "COST": {
+   "price": 943.89,
+   "prevClose_meta": null,
+   "last_close_series": 943.89,
+   "prev_close_series": 945.47,
+   "high52": 1096.5,
+   "low52": 844.06,
+   "volume": 2295810,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "TGT": {
+   "price": 160.88,
+   "prevClose_meta": null,
+   "last_close_series": 160.88,
+   "prev_close_series": 163.18,
+   "high52": 170.75,
+   "low52": 83.44,
+   "volume": 3825783,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "HD": {
+   "price": 327.83,
+   "prevClose_meta": null,
+   "last_close_series": 327.83,
+   "prev_close_series": 330.19,
+   "high52": 426.75,
+   "low52": 289.1,
+   "volume": 3387196,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "LOW": {
+   "price": 204.7,
+   "prevClose_meta": null,
+   "last_close_series": 204.7,
+   "prev_close_series": 208.05,
+   "high52": 293.06,
+   "low52": 199.4,
+   "volume": 4141059,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MCD": {
+   "price": 263.54,
+   "prevClose_meta": null,
+   "last_close_series": 263.54,
+   "prev_close_series": 265.0,
+   "high52": 341.75,
+   "low52": 259.85,
+   "volume": 5155191,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SBUX": {
+   "price": 106.25,
+   "prevClose_meta": null,
+   "last_close_series": 106.25,
+   "prev_close_series": 107.85,
+   "high52": 110.51,
+   "low52": 77.99,
+   "volume": 6386249,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "CMG": {
+   "price": 38.03,
+   "prevClose_meta": null,
+   "last_close_series": 38.03,
+   "prev_close_series": 38.03,
+   "high52": 42.82,
+   "low52": 28.04,
+   "volume": 16610341,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BKNG": {
+   "price": 199.09,
+   "prevClose_meta": null,
+   "last_close_series": 199.09,
+   "prev_close_series": 205.63,
+   "high52": 226.1,
+   "low52": 150.14,
+   "volume": 4746307,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "ABNB": {
+   "price": 183.22,
+   "prevClose_meta": null,
+   "last_close_series": 183.22,
+   "prev_close_series": 189.43,
+   "high52": 193.453,
+   "low52": 110.81,
+   "volume": 7566277,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "DAL": {
+   "price": 78.0,
+   "prevClose_meta": null,
+   "last_close_series": 78.0,
+   "prev_close_series": 80.07,
+   "high52": 95.68,
+   "low52": 55.03,
+   "volume": 6068497,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "UAL": {
+   "price": 107.99,
+   "prevClose_meta": null,
+   "last_close_series": 107.99,
+   "prev_close_series": 110.6,
+   "high52": 138.77,
+   "low52": 84.64,
+   "volume": 3385860,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "RCL": {
+   "price": 268.74,
+   "prevClose_meta": null,
+   "last_close_series": 268.74,
+   "prev_close_series": 279.41,
+   "high52": 362.79,
+   "low52": 232.1,
+   "volume": 2732560,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLC": {
+   "price": 111.46,
+   "prevClose_meta": null,
+   "last_close_series": 111.46,
+   "prev_close_series": 112.99,
+   "high52": 120.405,
+   "low52": 105.03,
+   "volume": 3313035,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLY": {
+   "price": 116.59,
+   "prevClose_meta": null,
+   "last_close_series": 116.59,
+   "prev_close_series": 117.21,
+   "high52": 125.01,
+   "low52": 105.19,
+   "volume": 4901094,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLP": {
+   "price": 84.98,
+   "prevClose_meta": null,
+   "last_close_series": 84.98,
+   "prev_close_series": 85.45,
+   "high52": 90.14,
+   "low52": 75.16,
+   "volume": 6883592,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLV": {
+   "price": 170.54,
+   "prevClose_meta": null,
+   "last_close_series": 170.54,
+   "prev_close_series": 171.16,
+   "high52": 176.6,
+   "low52": 133.73,
+   "volume": 6976665,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLI": {
+   "price": 175.13,
+   "prevClose_meta": null,
+   "last_close_series": 175.13,
+   "prev_close_series": 177.14,
+   "high52": 188.19,
+   "low52": 147.14,
+   "volume": 7336853,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLB": {
+   "price": 52.69,
+   "prevClose_meta": null,
+   "last_close_series": 52.69,
+   "prev_close_series": 53.18,
+   "high52": 54.19,
+   "low52": 42.035,
+   "volume": 11920151,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLU": {
+   "price": 42.23,
+   "prevClose_meta": null,
+   "last_close_series": 42.23,
+   "prev_close_series": 42.73,
+   "high52": 47.8,
+   "low52": 41.15,
+   "volume": 31491285,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "XLRE": {
+   "price": 44.11,
+   "prevClose_meta": null,
+   "last_close_series": 44.11,
+   "prev_close_series": 44.48,
+   "high52": 46.455,
+   "low52": 39.725,
+   "volume": 7293373,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VOO": {
+   "price": 704.89,
+   "prevClose_meta": null,
+   "last_close_series": 704.89,
+   "prev_close_series": 707.24,
+   "high52": 716.39,
+   "low52": 578.46,
+   "volume": 5718949,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "QQQ": {
+   "price": 716.76,
+   "prevClose_meta": null,
+   "last_close_series": 716.76,
+   "prev_close_series": 716.43,
+   "high52": 748.65,
+   "low52": 555.6,
+   "volume": 31393831,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VTI": {
+   "price": 378.15,
+   "prevClose_meta": null,
+   "last_close_series": 378.15,
+   "prev_close_series": 379.36,
+   "high52": 385.12,
+   "low52": 310.4,
+   "volume": 3178981,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MDY": {
+   "price": 687.13,
+   "prevClose_meta": null,
+   "last_close_series": 687.13,
+   "prev_close_series": 690.55,
+   "high52": 717.35,
+   "low52": 568.21,
+   "volume": 484389,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IJH": {
+   "price": 75.35,
+   "prevClose_meta": null,
+   "last_close_series": 75.35,
+   "prev_close_series": 75.76,
+   "high52": 78.71,
+   "low52": 62.22,
+   "volume": 5591232,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AVUV": {
+   "price": 124.97,
+   "prevClose_meta": null,
+   "last_close_series": 124.97,
+   "prev_close_series": 125.57,
+   "high52": 129.05,
+   "low52": 93.87,
+   "volume": 1135487,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IWN": {
+   "price": 221.8,
+   "prevClose_meta": null,
+   "last_close_series": 221.8,
+   "prev_close_series": 223.14,
+   "high52": 227.86,
+   "low52": 168.75,
+   "volume": 516840,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VXUS": {
+   "price": 87.32,
+   "prevClose_meta": null,
+   "last_close_series": 87.32,
+   "prev_close_series": 87.52,
+   "high52": 88.62,
+   "low52": 70.36,
+   "volume": 5431040,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VEA": {
+   "price": 72.92,
+   "prevClose_meta": null,
+   "last_close_series": 72.92,
+   "prev_close_series": 73.06,
+   "high52": 74.04,
+   "low52": 57.81,
+   "volume": 9795167,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EFA": {
+   "price": 107.45,
+   "prevClose_meta": null,
+   "last_close_series": 107.45,
+   "prev_close_series": 107.72,
+   "high52": 108.89,
+   "low52": 90.04,
+   "volume": 9494277,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VWO": {
+   "price": 60.52,
+   "prevClose_meta": null,
+   "last_close_series": 60.52,
+   "prev_close_series": 60.79,
+   "high52": 61.52,
+   "low52": 51.01,
+   "volume": 7225985,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VT": {
+   "price": 160.55,
+   "prevClose_meta": null,
+   "last_close_series": 160.55,
+   "prev_close_series": 161.01,
+   "high52": 162.71,
+   "low52": 131.89,
+   "volume": 2022219,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "FEZ": {
+   "price": 70.84,
+   "prevClose_meta": null,
+   "last_close_series": 70.84,
+   "prev_close_series": 71.36,
+   "high52": 72.36,
+   "low52": 58.76,
+   "volume": 1061439,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWJ": {
+   "price": 95.88,
+   "prevClose_meta": null,
+   "last_close_series": 95.88,
+   "prev_close_series": 95.87,
+   "high52": 98.79,
+   "low52": 77.38,
+   "volume": 5303274,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MCHI": {
+   "price": 54.72,
+   "prevClose_meta": null,
+   "last_close_series": 54.72,
+   "prev_close_series": 55.23,
+   "high52": 67.37,
+   "low52": 49.88,
+   "volume": 1837468,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "FXI": {
+   "price": 35.37,
+   "prevClose_meta": null,
+   "last_close_series": 35.37,
+   "prev_close_series": 35.51,
+   "high52": 42.0,
+   "low52": 31.19,
+   "volume": 11108167,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "KWEB": {
+   "price": 25.81,
+   "prevClose_meta": null,
+   "last_close_series": 25.81,
+   "prev_close_series": 26.32,
+   "high52": 43.365,
+   "low52": 23.23,
+   "volume": 12581263,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "INDA": {
+   "price": 49.7,
+   "prevClose_meta": null,
+   "last_close_series": 49.7,
+   "prev_close_series": 49.56,
+   "high52": 55.5,
+   "low52": 45.21,
+   "volume": 5491321,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWT": {
+   "price": 108.03,
+   "prevClose_meta": null,
+   "last_close_series": 108.03,
+   "prev_close_series": 107.9,
+   "high52": 112.78,
+   "low52": 57.56,
+   "volume": 4625252,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWY": {
+   "price": 180.86,
+   "prevClose_meta": null,
+   "last_close_series": 180.86,
+   "prev_close_series": 180.2,
+   "high52": 220.89,
+   "low52": 71.39,
+   "volume": 9837993,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWZ": {
+   "price": 36.03,
+   "prevClose_meta": null,
+   "last_close_series": 36.03,
+   "prev_close_series": 35.55,
+   "high52": 42.02,
+   "low52": 28.66,
+   "volume": 23942600,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWW": {
+   "price": 76.72,
+   "prevClose_meta": null,
+   "last_close_series": 76.72,
+   "prev_close_series": 76.48,
+   "high52": 81.65,
+   "low52": 61.2,
+   "volume": 1246898,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWC": {
+   "price": 61.43,
+   "prevClose_meta": null,
+   "last_close_series": 61.43,
+   "prev_close_series": 61.73,
+   "high52": 62.71,
+   "low52": 48.14,
+   "volume": 1512435,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWU": {
+   "price": 48.37,
+   "prevClose_meta": null,
+   "last_close_series": 48.37,
+   "prev_close_series": 48.55,
+   "high52": 49.39,
+   "low52": 40.67,
+   "volume": 1674302,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWG": {
+   "price": 44.23,
+   "prevClose_meta": null,
+   "last_close_series": 44.23,
+   "prev_close_series": 44.59,
+   "high52": 44.85,
+   "low52": 37.98,
+   "volume": 1256294,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWQ": {
+   "price": 45.86,
+   "prevClose_meta": null,
+   "last_close_series": 45.86,
+   "prev_close_series": 46.2,
+   "high52": 48.39,
+   "low52": 41.58,
+   "volume": 185996,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "EWA": {
+   "price": 30.02,
+   "prevClose_meta": null,
+   "last_close_series": 30.02,
+   "prev_close_series": 30.0,
+   "high52": 30.48,
+   "low52": 24.94,
+   "volume": 2172059,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "KSA": {
+   "price": 38.8,
+   "prevClose_meta": null,
+   "last_close_series": 38.8,
+   "prev_close_series": 39.26,
+   "high52": 41.5,
+   "low52": 35.81,
+   "volume": 770323,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VNM": {
+   "price": 18.06,
+   "prevClose_meta": null,
+   "last_close_series": 18.06,
+   "prev_close_series": 18.18,
+   "high52": 19.85,
+   "low52": 16.22,
+   "volume": 436800,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SGOV": {
+   "price": 100.69,
+   "prevClose_meta": null,
+   "last_close_series": 100.69,
+   "prev_close_series": 100.69,
+   "high52": 100.73,
+   "low52": 100.27,
+   "volume": 33200798,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BIL": {
+   "price": 91.66,
+   "prevClose_meta": null,
+   "last_close_series": 91.66,
+   "prev_close_series": 91.65,
+   "high52": 91.77,
+   "low52": 91.26,
+   "volume": 13100620,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SHY": {
+   "price": 81.89,
+   "prevClose_meta": null,
+   "last_close_series": 81.89,
+   "prev_close_series": 81.89,
+   "high52": 83.2,
+   "low52": 81.75,
+   "volume": 4555629,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IEI": {
+   "price": 116.17,
+   "prevClose_meta": null,
+   "last_close_series": 116.17,
+   "prev_close_series": 116.19,
+   "high52": 120.78,
+   "low52": 116.07,
+   "volume": 853350,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "GOVT": {
+   "price": 22.44,
+   "prevClose_meta": null,
+   "last_close_series": 22.44,
+   "prev_close_series": 22.46,
+   "high52": 23.39,
+   "low52": 22.4,
+   "volume": 9810395,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SCHP": {
+   "price": 25.91,
+   "prevClose_meta": null,
+   "last_close_series": 25.91,
+   "prev_close_series": 25.93,
+   "high52": 27.19,
+   "low52": 25.87,
+   "volume": 5973621,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BND": {
+   "price": 72.24,
+   "prevClose_meta": null,
+   "last_close_series": 72.24,
+   "prev_close_series": 72.31,
+   "high52": 75.23,
+   "low52": 72.07,
+   "volume": 6550137,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "AGG": {
+   "price": 97.41,
+   "prevClose_meta": null,
+   "last_close_series": 97.41,
+   "prev_close_series": 97.49,
+   "high52": 101.46,
+   "low52": 97.12,
+   "volume": 11782560,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MUB": {
+   "price": 105.1,
+   "prevClose_meta": null,
+   "last_close_series": 105.1,
+   "prev_close_series": 105.22,
+   "high52": 109.0,
+   "low52": 103.86,
+   "volume": 3879897,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VCIT": {
+   "price": 81.09,
+   "prevClose_meta": null,
+   "last_close_series": 81.09,
+   "prev_close_series": 81.15,
+   "high52": 84.84,
+   "low52": 80.86,
+   "volume": 8871721,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "JNK": {
+   "price": 96.06,
+   "prevClose_meta": null,
+   "last_close_series": 96.06,
+   "prev_close_series": 95.97,
+   "high52": 98.24,
+   "low52": 94.49,
+   "volume": 3048053,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "BKLN": {
+   "price": 20.57,
+   "prevClose_meta": null,
+   "last_close_series": 20.57,
+   "prev_close_series": 20.52,
+   "high52": 21.07,
+   "low52": 20.11,
+   "volume": 11829518,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SRLN": {
+   "price": 40.8,
+   "prevClose_meta": null,
+   "last_close_series": 40.8,
+   "prev_close_series": 40.77,
+   "high52": 41.63,
+   "low52": 39.39,
+   "volume": 2537034,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VUG": {
+   "price": 88.24,
+   "prevClose_meta": null,
+   "last_close_series": 88.24,
+   "prev_close_series": 88.54,
+   "high52": 90.6,
+   "low52": 69.633,
+   "volume": 4401098,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IWF": {
+   "price": 122.71,
+   "prevClose_meta": null,
+   "last_close_series": 122.71,
+   "prev_close_series": 122.75,
+   "high52": 129.14,
+   "low52": 102.23,
+   "volume": 4601731,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VTV": {
+   "price": 224.85,
+   "prevClose_meta": null,
+   "last_close_series": 224.85,
+   "prev_close_series": 225.29,
+   "high52": 228.57,
+   "low52": 180.84,
+   "volume": 2067162,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "IWD": {
+   "price": 256.91,
+   "prevClose_meta": null,
+   "last_close_series": 256.91,
+   "prev_close_series": 258.33,
+   "high52": 260.19,
+   "low52": 199.13,
+   "volume": 2404848,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "MTUM": {
+   "price": 300.36,
+   "prevClose_meta": null,
+   "last_close_series": 300.36,
+   "prev_close_series": 299.71,
+   "high52": 345.59,
+   "low52": 229.42,
+   "volume": 594590,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "QUAL": {
+   "price": 222.62,
+   "prevClose_meta": null,
+   "last_close_series": 222.62,
+   "prev_close_series": 223.62,
+   "high52": 227.32,
+   "low52": 185.89,
+   "volume": 834399,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "USMV": {
+   "price": 101.52,
+   "prevClose_meta": null,
+   "last_close_series": 101.52,
+   "prev_close_series": 101.74,
+   "high52": 102.21,
+   "low52": 91.02,
+   "volume": 1252588,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SPLV": {
+   "price": 74.69,
+   "prevClose_meta": null,
+   "last_close_series": 74.69,
+   "prev_close_series": 75.08,
+   "high52": 78.82,
+   "low52": 69.63,
+   "volume": 2371966,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "VYM": {
+   "price": 163.87,
+   "prevClose_meta": null,
+   "last_close_series": 163.87,
+   "prev_close_series": 164.25,
+   "high52": 167.61,
+   "low52": 137.42,
+   "volume": 1363156,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SCHD": {
+   "price": 34.89,
+   "prevClose_meta": null,
+   "last_close_series": 34.89,
+   "prev_close_series": 34.9,
+   "high52": 35.31,
+   "low52": 26.32,
+   "volume": 20895281,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "PKW": {
+   "price": 152.237,
+   "prevClose_meta": null,
+   "last_close_series": 152.237,
+   "prev_close_series": 152.85,
+   "high52": 153.36,
+   "low52": 125.47,
+   "volume": 10923,
+   "avgVolume": null,
+   "currency": "USD"
+  },
+  "SPHQ": {
+   "price": 85.4,
+   "prevClose_meta": null,
+   "last_close_series": 85.4,
+   "prev_close_series": 85.71,
+   "high52": 90.36,
+   "low52": 71.4,
+   "volume": 854070,
+   "avgVolume": null,
+   "currency": "USD"
+  }
+ },
+ "futures_commodities_fx": {
+  "ES=F": {
+   "price": 7702.5,
+   "prev": 7707.25,
+   "pct": -0.062
+  },
+  "NQ=F": {
+   "price": 29517.25,
+   "prev": 29454.5,
+   "pct": 0.213
+  },
+  "YM=F": {
+   "price": 53269.0,
+   "prev": 53472.0,
+   "pct": -0.38
+  },
+  "RTY=F": {
+   "price": 2959.7,
+   "prev": 2975.2,
+   "pct": -0.521
+  },
+  "^GSPC": {
+   "price": 7686.1401,
+   "prev": 7711.7598,
+   "pct": -0.332
+  },
+  "^IXIC": {
+   "price": 26370.8887,
+   "prev": 26402.4199,
+   "pct": -0.119
+  },
+  "^DJI": {
+   "price": 53185.8984,
+   "prev": 53559.9883,
+   "pct": -0.698
+  },
+  "^RUT": {
+   "price": 2956.4519,
+   "prev": 2972.3701,
+   "pct": -0.536
+  },
+  "^TNX": {
+   "price": 4.758,
+   "prev": 4.72,
+   "pct": 0.805
+  },
+  "CL=F": {
+   "price": 86.32,
+   "prev": 86.2,
+   "pct": 0.139
+  },
+  "GC=F": {
+   "price": 4498.2002,
+   "prev": 4499.6001,
+   "pct": -0.031
+  },
+  "NG=F": {
+   "price": 2.925,
+   "prev": 2.898,
+   "pct": 0.932
+  },
+  "HG=F": {
+   "price": 6.6895,
+   "prev": 6.6625,
+   "pct": 0.405
+  },
+  "EURUSD=X": {
+   "price": 1.1621,
+   "prev": 1.1604,
+   "pct": 0.148
+  },
+  "DX-Y.NYB": {
+   "price": 99.433,
+   "prev": 99.527,
+   "pct": -0.094
+  }
+ },
+ "technical_levels": {
+  "SPY": {
+   "price": 767.0499877929688,
+   "dma20": 769.1,
+   "dma50": 753.91,
+   "dist20_pct": -0.27,
+   "dist50_pct": 1.74,
+   "high52": 779.37,
+   "low52": 629.28
+  },
+  "QQQ": {
+   "price": 716.760009765625,
+   "dma20": 717.96,
+   "dma50": 712.07,
+   "dist20_pct": -0.17,
+   "dist50_pct": 0.66,
+   "high52": 748.65,
+   "low52": 555.6
+  },
+  "IWM": {
+   "price": 293.92999267578125,
+   "dma20": 300.16,
+   "dma50": 297.28,
+   "dist20_pct": -2.08,
+   "dist50_pct": -1.13,
+   "high52": 305.18,
+   "low52": 228.9
+  },
+  "DIA": {
+   "price": 531.5700073242188,
+   "dma20": 535.57,
+   "dma50": 527.36,
+   "dist20_pct": -0.75,
+   "dist50_pct": 0.8,
+   "high52": 546.75,
+   "low52": 450.16
+  },
+  "TLT": {
+   "price": 82.5199966430664,
+   "dma20": 82.48,
+   "dma50": 83.87,
+   "dist20_pct": 0.04,
+   "dist50_pct": -1.61,
+   "high52": 92.19,
+   "low52": 81.17
+  },
+  "SPCX": {
+   "price": 143.69000244140625,
+   "dma20": 134.65,
+   "dma50": 137.61,
+   "dist20_pct": 6.72,
+   "dist50_pct": 4.42,
+   "high52": 225.64,
+   "low52": 104.83
+  }
+ }
+}

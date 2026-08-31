@@ -682,9 +682,9 @@
    "headline": "Nvidia reportedly near a $12.9B deal for Hugging Face",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-29-sat",
+   "last_updated": "2026-08-31-pm",
    "verification": "Single-reliable-source (deal terms); sourcing not fully aligned between outlets",
-   "one_line": "Still no confirmation or denial from either company as of Saturday morning; CNBC's own sourcing describes the acquisition only as having \"been part of ongoing and recent talks,\" not a signed deal. Status unchanged from Friday.",
+   "one_line": "Still unconfirmed by either company as of this afternoon; multiple outlets continue describing it as talks that 'could still collapse' with no signed contract. New color: Hugging Face reportedly turned down a $500M Nvidia investment last year at a $7B valuation, underscoring the scale of the jump a $12.9B deal would represent.",
    "score_note": "Third consecutive day with no company statement; watch continues.",
    "sources": [
     "The Information (via TechCrunch/CNBC coverage)",
@@ -763,18 +763,18 @@
   {
    "id": "kyiv-myla-strike-aug28",
    "headline": "Russian drone-and-missile strike on the village of Myla near Kyiv kills at least 38",
-   "status": "Continuing",
+   "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-08-31-am",
+   "last_updated": "2026-08-31-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Toll holds at 38 dead/4 missing. Russia's threatened 'massive' energy-infrastructure strike has not been executed as of Monday morning; overnight bombardment continued at a normal pace (2 Iskander-M missiles, ~130 drones) rather than the threatened scale.",
-   "score_note": "Forecast (2026-08-23-sun-3) that a strike at or above Kryvyi Rih's casualty scale would land this week graded correct against this event.",
+   "one_line": "Russia's defense ministry confirmed it carried out the 'massive' energy-infrastructure strike it had threatened, hitting Zaporizhzhia, Rivne and Lviv regions overnight with drones and missiles; regional officials report at least 3 additional deaths, separate from the Myla toll (holds at 38 dead/4 missing). Moscow frames it as retaliation for Ukraine's own strikes on Russian refineries and gas facilities.",
+   "score_note": "Forecast that a Kryvyi-Rih-scale strike would land this week already graded correct against Myla; this is Moscow following through on a distinct, separately threatened escalation.",
    "sources": [
-    "AP",
-    "Kyiv Independent",
-    "Reuters",
-    "Globe and Mail",
-    "UNITED24 Media"
+    "Russian Ministry of Defense statement",
+    "Regional Ukrainian officials (social media)",
+    "NPR",
+    "CNBC",
+    "Euronews"
    ],
    "watch": true
   },
@@ -797,19 +797,17 @@
    "headline": "CIA director's secret Moscow trip surfaces a Trump-Putin-Zelensky summit proposal",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-multiple (trip and proposal); Single-reliable-source (Putin's reported rejection)",
-   "one_line": "Kremlin spokesman Peskov gave the first on-record response: Putin sees 'absolutely no point' in a Trump-Putin-Zelensky summit unless it is to formally sign a completed deal, not negotiate one. Zelensky separately rejected meeting in Moscow ('he can come to Kyiv'). Neither side has narrowed the underlying gap; open forecast 2026-08-30-sun-5 leans toward wrong given Peskov's framing, but not yet gradeable (grades Saturday).",
-   "score_note": "First reported concrete high-level diplomatic overture on ending the war in weeks; no summit date set.",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-multiple (Peskov statements); Single-reliable-source, unverified (Ukrainian intelligence claim of new Russian offensive prep)",
+   "one_line": "Peskov's rejection hardened over the weekend: from 'no point' in a summit unless it's to sign a completed deal, to directly blaming Kyiv for not wanting a settlement at all. Zelensky maintains Putin 'can come to Kyiv' instead. Separately, a Zelensky deputy chief of staff says Ukrainian intelligence indicates Putin ordered preparation of scenarios for a new offensive in northern Ukraine -- an Ukrainian-sourced claim with no independent corroboration.",
+   "score_note": "Both sides now openly assigning blame for the summit's stall rather than just declining logistics -- a rhetorical hardening. Open forecast 2026-08-30-sun-5 not yet due for grading.",
    "sources": [
     "AP",
     "New York Times",
     "Meduza",
     "Ukrainska Pravda",
-    "Kyiv Post",
     "Reuters",
-    "Axios",
-    "UA.news"
+    "Axios"
    ],
    "watch": true
   },
@@ -832,21 +830,23 @@
   {
    "id": "us-iran-jordan-strikes-aug31",
    "headline": "US strikes Iranian launchers near Hormuz; Iran fires missiles at US bases in Jordan",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-multiple (US strike, Jordan interception); Single-reliable-source (IRGC casualty claim, Iranian state media)",
-   "one_line": "US forces struck two Iranian rocket launchers on Larak Island late Sat/Sun after intel indicated IRGC was prepping sea mines for the strait; the IRGC vowed retaliation and Iran fired missiles at King Hussein and Al-Azraq air bases in Jordan early Monday, which Jordan's military says it intercepted (8 missiles, no casualties). First direct US-Iran exchange in a month.",
-   "score_note": "Sharpest escalation yet of the six-month Hormuz standoff; oil reacted (+3-4%) while equity futures stayed flat, an energy-specific not broad risk-off market read so far.",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-multiple (Jordan strike/interception, CENTCOM rebuttal); Disputed (Iran's claimed UAE strike vs UAE denial); Single-reliable-source/Unverified (IRGC casualty claim; Trump's Kharg Island video)",
+   "one_line": "Iran's retaliation ('Punishment of the Aggressor') hit Jordan (8 missiles intercepted, no casualties) and, by Iran's account only, the UAE's Al Minhad Air Base -- the UAE confirms downing one drone over water but flatly denies any base was struck. CENTCOM rejected Iran's 'act of aggression' framing of the original Larak Island strike. Trump posted an AI-generated video claiming Kharg Island (90% of Iran's oil exports) was struck; no corroboration exists and Iran's oil chief called it 'laughable' -- treated as unverified/fabricated. Oil reacted directly: Brent +2.9% to ~$90.69, WTI proxy (USO) +3.08%.",
+   "score_note": "First reported Iranian strike (disputed) on a third country (UAE) in this standoff, plus a US strike on a US ally (Jordan) both this cycle; Trump's fabricated-seeming Kharg video is a new and unusual verification challenge.",
    "sources": [
     "CENTCOM (primary, via wire)",
     "Jordan military statement",
-    "CNN",
-    "Gulf News",
-    "RFE/RL",
-    "ABC Australia",
+    "UAE Ministry of Defense and Foreign Ministry (primary)",
+    "Al Jazeera",
+    "Fox News",
     "Jerusalem Post",
-    "Time"
+    "Khaleej Times",
+    "RFE/RL",
+    "The National",
+    "OilPrice.com"
    ],
    "watch": true
   },
@@ -855,20 +855,18 @@
    "headline": "Lancaster County coroner disputes PA's measles-death count",
    "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Coroner Dr. Stephen Diamantoni says an Aug 14 infant death (Christiana Borough) was caused by a ruptured spleen, not measles, and his office attributes zero deaths in the county to measles -- directly disputing Gov. Shapiro's Aug 29 announcement. CDC says PA's Governor's Office has declined its assistance offers; CMS Administrator Oz says cause is unclear. PA Health Dept clarifies 'measles-associated' means detected, not necessarily causal. Case count now 460 across 31 counties.",
-   "score_note": "Escalated from a state-vs-HHS-Secretary dispute to a three-way dispute including a named county coroner's own autopsy finding.",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-multiple (CDC exclusion, coroner finding); Disputed (cause of death, three-way: state vs coroner vs HHS)",
+   "one_line": "CDC's Sunday-updated national measles tally omits PA's two deaths, saying it's still reviewing whether measles caused them and that available information 'does not establish' causation -- turning the Shapiro-Kennedy war of words into a concrete federal-state data dispute. PA Health Secretary Bogen stands by the count as properly reported; Kennedy suggested on social media the deaths 'may even have been altogether fabricated' by Shapiro staff, an unsupported claim reported as a statement, not fact. Case count ~460 across 31 counties; PA has run 4,100+ MMR vaccinations at 91 pop-up clinics since April.",
+   "score_note": "Escalated from rhetoric to an actual federal agency declining to count a state-reported death -- a credibility dispute with real public-health-messaging stakes.",
    "sources": [
-    "LNP/LancasterOnline (coroner, primary)",
-    "NBC News",
-    "Daily Caller",
-    "WFMZ",
-    "CDC (primary statement)",
-    "Politico",
-    "The Hill",
-    "ABC News",
-    "PA Dept of Health (primary)"
+    "CDC national measles surveillance update (primary)",
+    "Pennsylvania Dept of Health (primary)",
+    "Philadelphia Inquirer",
+    "PhillyVoice",
+    "NBC10 Philadelphia",
+    "CNN",
+    "LNP/LancasterOnline"
    ],
    "watch": true
   },
@@ -877,16 +875,16 @@
    "headline": "Nepal-Tibet flood toll jumps past 900, still not internally reconciled",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-multiple (toll figure); Unconfirmed (cause of the jump -- new deaths vs tally reconciliation)",
-   "one_line": "Combined toll now 919 dead (903 Nepal, 16 Tibet) and ~4,793 missing as of Monday, up sharply from Sunday's 750+/734 figure. Unclear whether this reflects new casualties or Nepal's disaster-authority/police tallies finally reconciling -- the specific reconciliation this outlet has tracked since last week remains unconfirmed either way.",
-   "score_note": "Largest single-day jump in this outlet's tracking of the toll; open forecast (2026-08-30-sun-6) on reconciliation still unresolved.",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Combined toll 919 dead (903 Nepal, 16 Tibet), ~4,700 missing. The jump from ~750 Sunday now appears attributable to ongoing body recovery (bodies found up to 240km downstream in India, morgues running low on capacity) rather than to the police-vs-PM's-office tally dispute this outlet tracked last week. ~933 missing hydropower workers in Rasuwa/Nuwakot remain part of the search.",
+   "score_note": "Resolves some ambiguity from Sunday's report: this is recovery progress revealing scale, not a reconciliation dispute, though the toll itself keeps climbing.",
    "sources": [
+    "ABC News/AP",
+    "Al Jazeera",
     "NBC News",
     "CNN",
-    "TASS (citing Chinese state TV)",
-    "UPI",
-    "Korea Times"
+    "TASS (citing Chinese state media)"
    ],
    "watch": true
   },
@@ -927,14 +925,69 @@
   {
    "id": "house-funding-bill-vote-aug31",
    "headline": "House returns; funding bill floor vote expected Tuesday under suspension",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-08-31-am",
-   "verification": "Single-reliable-source (Tuesday timing, single wire text); Confirmed-primary (underlying CR terms/Senate vote)",
-   "one_line": "House returned Monday for a one-week session built around the Senate-passed continuing resolution (funds govt through Dec 11, passed Senate 90-6 Aug 8); AP/NPR wire reporting points to a Tuesday floor vote under suspension of the rules (needs 2/3, not simple majority) -- not yet independently confirmed beyond the shared wire text. Senate stays in recess until Sept 14.",
-   "score_note": "Higher vote threshold (2/3) than a simple majority makes passage less certain than routine floor votes.",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-multiple (bill number, schedule, suspension procedure); Single-reliable-source (exact vote day within the Tue-Thu window)",
+   "one_line": "Bill identified via primary sources as H.R. 6500 ('Continuing Appropriations and Extensions Act, 2027'), the Senate-passed CR (90-6, Aug 8) funding govt through Dec 11. Majority Leader's official schedule and a CBO publication confirm it's being brought up under suspension of the rules (needs 2/3 majority), with no exact vote hour set -- expectations point to Tue-Thu this week. Today's own House floor business was pushed to a 6:30pm ET vote series. Also on the agenda: a GOP 'condemning socialism' resolution and a possible Russia-sanctions bill vote.",
+   "score_note": "Upgraded from single-wire-text sourcing this morning to confirmed via the Majority Leader's own schedule and CBO -- the 2/3 threshold detail is the genuine uncertainty now, not the bill's existence or terms.",
    "sources": [
-    "NPR/AP wire (single text, multiple affiliates)"
+    "Majority Leader weekly schedule (primary)",
+    "Congressional Budget Office publication 62588 (primary)",
+    "congress.gov",
+    "PBS NewsHour",
+    "Daily Signal"
+   ],
+   "watch": true
+  },
+  {
+   "id": "trump-welker-fcc-threat-aug31",
+   "headline": "Trump threatens NBC's Welker with FCC action; commission's lone Democrat calls it 'dangerous'",
+   "status": "New",
+   "first_seen": "2026-08-31-pm",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Trump posted Sunday that Kristen Welker should be 'reported to the FCC for rebuke or punishment,' misattributing to her a comment about his primary endorsements having 'mixed results' that she did not make on-air (closest matching comments were made in separate local DC-market appearances). FCC Chair Brendan Carr, a Trump appointee, has not responded to press inquiries. Commissioner Anna Gomez, the FCC's sole Democrat, publicly said the agency 'has no authority to punish journalists this administration doesn't like' and called the threat 'dangerous.'",
+   "score_note": "A live test of press-freedom norms at the FCC, with the chair silent and pushback coming only from the minority-party commissioner.",
+   "sources": [
+    "CNN",
+    "The Hill",
+    "Variety",
+    "Forbes",
+    "Fortune",
+    "Editor & Publisher"
+   ],
+   "watch": true
+  },
+  {
+   "id": "ice-africa-deportations-aug31",
+   "headline": "ICE deported 100+ people to eight African countries, none their own",
+   "status": "New",
+   "first_seen": "2026-08-31-pm",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Single-reliable-source",
+   "one_line": "CBS News, citing internal documents it says it obtained, reports three flights over ten days deported 100+ people -- nationals of Afghanistan (including wartime US military allies), Cuba, Nicaragua, Iran, Nepal, Turkey and Venezuela -- to Burundi, Cameroon, Central African Republic, Equatorial Guinea, Eswatini, Liberia, Rwanda and Sierra Leone, none the deportees' home countries. Other outlets are aggregating, not independently confirming, the reporting.",
+   "score_note": "Third-country removals to unconnected nations are more legally contested than home-country deportation; the inclusion of Afghan wartime allies raises the stakes.",
+   "sources": [
+    "CBS News (primary reporting, citing internal documents)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "cisa-papercut-fireant-aug31",
+   "headline": "CISA adds PaperCut zero-days to KEV catalog as researchers detail a new China-linked Cisco campaign",
+   "status": "New",
+   "first_seen": "2026-08-31-pm",
+   "last_updated": "2026-08-31-pm",
+   "verification": "Confirmed-primary (CISA KEV addition); Moderate confidence, private-sector attribution (Fire Ant/China-nexus)",
+   "one_line": "CISA added CVE-2026-81578 and CVE-2026-82078 (PaperCut NG/MF, chainable to unauthenticated RCE) to its KEV catalog; federal remediation deadline Sept 14. Separately, Sygnia published research (Aug 30) that the China-nexus 'Fire Ant' actor, previously known for VMware ESXi compromise, has expanded to hijacking Cisco IOS XR routers, TACACS+ servers and Linux management hosts to build covert surveillance/credential-harvesting platforms. No US government confirmation of the China-nexus attribution; no victims named.",
+   "score_note": "Two distinct, dated cyber developments the same day -- a hard federal compliance deadline plus evidence a known actor is broadening from hypervisors into core network gear.",
+   "sources": [
+    "CISA KEV catalog (primary)",
+    "Sygnia (primary research)",
+    "BleepingComputer",
+    "SecurityAffairs",
+    "eSentire advisory"
    ],
    "watch": true
   }
