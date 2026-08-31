@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Zero Divided by Zero, and the Trick That Makes It Mean Something · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-31",
+    "slot": "learn",
+    "title": "Zero Divided by Zero, and the Trick That Makes It Mean Something",
+    "path": "reports/2026/08/2026-08-31-learn.html",
+    "summary": "Day eleven of the 150-day curriculum: the formal definition of the derivative as a limit of a difference quotient, built around Zeno's arrow paradox, the tangent line to a parabola derived by hand, a dropped object's instantaneous velocity, and what the S&P 500's own recent closes can and can't honestly tell you about its instantaneous rate of change.",
+    "headlines": [
+      "Day 11 of 150 · Mathematics: the derivative, defined from first principles",
+      "Why an instantaneous rate of change is a 0/0 fraction Newton and Leibniz learned to trust",
+      "The 2,000-year-old paradox it finally answers, and the gap Bishop Berkeley found in the answer"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-08-31T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Zero Divided by Zero, and the Trick That Makes It Mean Something</h1>
+      <p class="paper-dateline">
+        Monday, August 31, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Ask how fast something is moving at this exact instant and you are asking for a distance of zero divided by a time of zero &mdash; a fraction that should be meaningless, and for roughly two thousand years was, until the derivative gave it an honest, exact answer.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 11 of 150 &middot; Mathematics 6 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Around 450 BCE, a philosopher named Zeno of Elea proposed a small argument that has never entirely stopped bothering people who think carefully about it. Take an arrow in flight. At any single instant, Zeno said, the arrow occupies a region of space exactly equal to its own length &mdash; it is, in that instant, simply <em>where it is</em>, no more and no less, the way a photograph freezes one frame with no blur in it. But a thing that occupies a fixed space equal to itself, neither advancing into new space nor retreating from old space, is by definition at rest. And this is true of the arrow at every single instant of its flight, without exception. So the arrow, Zeno concluded, is at rest during its entire flight &mdash; even though everyone watching it can plainly see it is not.</p>
+
+      <p>Most people&rsquo;s first reaction is that this must be a trick, a word game, and that motion obviously exists and Zeno is simply wrong. That reaction is correct about the conclusion and wrong about the difficulty. The paradox is not a word game. It identifies something genuinely unsettled about the idea of an instant, and the unease it points at is real: if you try to define the arrow&rsquo;s speed <em>at</em> one instant using the ordinary meaning of speed &mdash; distance covered, divided by time elapsed &mdash; you run straight into a division that should not be legal. At a single instant, no time elapses. Zero seconds pass. And in zero seconds, the arrow covers zero distance, because covering any distance at all requires some duration to cover it in. So the arrow&rsquo;s instantaneous speed looks like it has to be zero distance divided by zero time: 0/0, a fraction that division does not define for any number, let alone a definite one like the speed a radar gun reads off a fastball or the number your car&rsquo;s speedometer needle is pointing at right now.</p>
+
+      <p>And yet every driver on the road treats that speedometer reading as a real, definite, trustworthy number, updated continuously, never once described as &ldquo;undefined.&rdquo; A police radar gun claims to catch a driver going 74 in a 55 at one specific moment, not averaged over a stretch of road, and that claim holds up in traffic court. Somewhere between Zeno&rsquo;s honest logical trap and the number glowing on a dashboard, someone found a way to make 0/0 answer a question instead of refusing to. That someone was, more precisely, two people working independently a continent apart in the second half of the seventeenth century, and the tool they built is the subject of today&rsquo;s lesson: the <strong>derivative</strong>, the formal machinery for extracting an honest, exact, non-zero-over-zero answer to &ldquo;how fast, right now?&rdquo;&nbsp;&mdash; and, more generally, to any question of the shape &ldquo;how fast is this changing, at this exact point.&rdquo;</p>
+
+      <h3>Slope, when it refuses to sit still</h3>
+
+      <p>Start with something that has no paradox in it at all: a straight line. If a car travels at a perfectly constant 60 miles per hour, then over any stretch of the trip &mdash; the first hour, the third hour, any two-minute slice you like &mdash; the ratio of distance covered to time elapsed comes out to exactly 60 miles per hour, every time, no matter which stretch you pick. Graph distance against time for this trip and you get a straight line, and the defining property of a straight line is that its <strong>slope</strong> &mdash; the amount it rises for a given amount it runs &mdash; is the same number everywhere along it. Constant speed and constant slope are the same fact wearing two different names, one from driving and one from geometry, and for a straight line there is nothing more to say: pick any two points on it, divide the rise between them by the run between them, and you get the one number that describes the whole line.</p>
+
+      <p>Almost nothing interesting behaves like that. A car accelerating away from a stoplight is not moving at constant speed; a dropped ball speeds up as it falls; a stock price wanders up and down all day. Graph any of these &mdash; distance against time, price against time, whatever quantity against whatever it depends on &mdash; and you get a curve, not a line, and a curve&rsquo;s defining property is exactly that its slope is <em>not</em> the same number everywhere. It is steep in some places, shallow in others, sometimes rising, sometimes falling. The question &ldquo;what is the slope of this curve&rdquo; stops having one answer and starts needing a location: the slope <em>at this particular point</em>, not the slope of the curve as a whole, because the curve as a whole does not have a single slope to report.</p>
+
+      <p>Here is the honest way to approach that question, and it is the same move underneath the speedometer, the radar gun, and everything else in this lesson. Pick the point on the curve you actually care about, and pick a second point somewhere else on the curve. Draw a straight line connecting those two points &mdash; this connecting line is called a <strong>secant line</strong>, from the Latin for &ldquo;cutting,&rdquo; because it cuts across the curve rather than following it. A secant line, being a straight line, has one well-defined slope, and that slope is exactly the <em>average</em> rate of change of the curve between those two points &mdash; the same kind of number as &ldquo;average speed over the first hour of the trip,&rdquo; nothing paradoxical about it, computable from ordinary rise-over-run with no special machinery required.</p>
+
+      <p>Now slide the second point along the curve, moving it steadily closer to the first point. As it moves, the secant line pivots, its slope changing to match, and the average rate of change it represents is being computed over a shorter and shorter stretch of the curve &mdash; a tighter and tighter window around the point you actually care about. Watch what the secant line&rsquo;s slope does as that window shrinks toward nothing: for any curve smooth enough to have a well-defined direction at the point in question, the secant line&rsquo;s slope settles down and approaches one specific number, and the secant line itself rotates into one specific position &mdash; the line that just grazes the curve at that single point, touching it without crossing it there, called the <strong>tangent line</strong>. The tangent line&rsquo;s slope is what &ldquo;the slope of the curve, right at this point&rdquo; actually means, and it is exactly the same idea as &ldquo;speed, right at this instant&rdquo;&nbsp;&mdash; the case where the curve being graphed happens to be distance against time.</p>
+
+      <p>This is the resolution to Zeno&rsquo;s trap, stated plainly before any symbols enter the picture: you never actually divide zero by zero. What you do instead is exactly what day nine of this curriculum spent its whole lesson building the machinery for &mdash; a <strong>limit</strong>. You compute the average rate of change over a window that never quite closes to zero width, and you ask what number that average rate of change is being steered toward as the window is made narrower and narrower without limit. That target number, the one the secant slopes are visibly homing in on, is a perfectly well-defined, ordinary number &mdash; even though the ratio that produces it would turn into the meaningless 0/0 if you literally set the window&rsquo;s width to zero rather than merely shrinking it toward zero. The limit lets you ask &ldquo;what does this ratio approach&rdquo; without ever having to ask the illegal question &ldquo;what is this ratio equal to when the denominator is exactly zero.&rdquo; That distinction &mdash; approaching a value honestly, rather than reaching an undefined one carelessly &mdash; is the entire trick, and everything that follows in this lesson is that one idea, written out formally and then put to work.</p>
+
+      <h3>Writing it down properly</h3>
+
+      <p>Put numbers to the picture just described. Say the curve is the graph of some function, called <var>f</var>, so that <var>f(x)</var> is the height of the curve above the point <var>x</var> on the horizontal axis. Pick the point you care about, at horizontal position <var>x</var>, and pick a second point a small horizontal distance <var>h</var> away, at position <var>x</var>&nbsp;+&nbsp;<var>h</var>. The two points on the curve are then (<var>x</var>, <var>f(x)</var>) and (<var>x</var>&nbsp;+&nbsp;<var>h</var>, <var>f(x</var>&nbsp;+&nbsp;<var>h)</var>), and the secant line&rsquo;s slope &mdash; its rise divided by its run &mdash; is exactly the ratio below, called the <strong>difference quotient</strong>, because it is literally a difference of two <var>f</var>-values divided by a difference of two <var>x</var>-values.</p>
+
+      <div class="formula">
+        <p class="expr">average rate of change on [x, x + h] &nbsp;=&nbsp; [ f(x + h) &minus; f(x) ] / h</p>
+        <dl>
+          <dt>f(x)</dt><dd>the curve&rsquo;s height at the point you care about &mdash; the first of the two points defining the secant line</dd>
+          <dt>f(x + h)</dt><dd>the curve&rsquo;s height at a second point, a horizontal distance h away from the first &mdash; the point you are about to slide back toward the first</dd>
+          <dt>h</dt><dd>the horizontal distance between the two points, the width of the window; h can be positive or negative, and everything in this lesson concerns what happens as h shrinks toward zero without ever equalling it</dd>
+          <dt>[ f(x + h) &minus; f(x) ] / h</dt><dd>the difference quotient &mdash; rise over run for the secant line, and exactly the ordinary formula for an average rate of change over the interval from x to x + h</dd>
+        </dl>
+      </div>
+
+      <p>Every quantity in that formula is perfectly ordinary arithmetic for any nonzero <var>h</var>, however small &mdash; there is nothing illegal about dividing by 0.0001. The derivative is what you get by taking the limit of this ordinary, well-defined quantity as <var>h</var> is steered toward zero, using precisely the limit machinery day nine of this curriculum built and precisely the guarantee a limit provides: that a quantity can be pinned down exactly, as the value it is being driven toward, without that quantity ever actually being evaluated at the forbidden point itself.</p>
+
+      <div class="formula">
+        <p class="expr">f&prime;(x) &nbsp;=&nbsp; lim<sub>h &rarr; 0</sub> &nbsp; [ f(x + h) &minus; f(x) ] / h</p>
+        <dl>
+          <dt>f&prime;(x)</dt><dd>the derivative of f at the point x &mdash; read aloud as &ldquo;f prime of x&rdquo; &mdash; the slope of the tangent line to the curve at that one point, and the exact instantaneous rate of change of f with respect to x there</dd>
+          <dt>lim<sub>h &rarr; 0</sub></dt><dd>&ldquo;the limit, as h approaches zero&rdquo; &mdash; the value the expression that follows is being steered toward as h is made smaller and smaller, without h itself ever being set to exactly zero</dd>
+          <dt>[ f(x + h) &minus; f(x) ] / h</dt><dd>the same difference quotient defined above, evaluated for smaller and smaller nonzero h &mdash; a sequence of ordinary secant slopes, closing in on the tangent slope</dd>
+        </dl>
+      </div>
+
+      <p>This one definition carries three different notations in active use today, and knowing all three matters because different fields default to different ones. Joseph-Louis Lagrange&rsquo;s prime notation, <var>f&prime;(x)</var>, is what this lesson has used so far and is the cleanest for pure algebra. Gottfried Leibniz&rsquo;s notation, <var>dy/dx</var>, writes the derivative as though it were literally a ratio of two infinitesimally small quantities, &ldquo;dy&rdquo; over &ldquo;dx&rdquo; &mdash; a genuinely useful way to think about it for bookkeeping purposes, and the notation this curriculum&rsquo;s own physics track has already used without pausing to define it, but one that hides a real logical subtlety this lesson&rsquo;s misconception section returns to directly. Isaac Newton&rsquo;s own notation, a dot placed over the variable &mdash; <var>&#7818;</var> for a derivative with respect to time &mdash; survives today specifically in physics, precisely because time-derivatives come up so constantly there that a compact mark for &ldquo;rate of change with respect to time&rdquo; earns its keep. All three notations describe the identical limit defined above; none of them is more correct than the others, and reading physics, economics or pure mathematics fluently means recognizing all three on sight.</p>
+
+      <p>One more thing the definition quietly requires, easy to skip past and important not to: the limit has to actually exist &mdash; a single finite number that the difference quotient approaches whether <var>h</var> shrinks toward zero from the positive side or the negative side, with both sides agreeing. Where that limit fails to exist, the derivative simply is not defined at that point, no matter how reasonable the function looks otherwise. The misconception section below returns to exactly this, with a function that is perfectly smooth-looking everywhere except one point where this quietly breaks.</p>
+
+      <h3>Finding the slope of a parabola, by hand</h3>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; the derivative of f(x) = x&sup2;, from the definition</b>
+        <p>Take the simplest curved function there is, f(x) = x&sup2;, and find its derivative directly from the limit definition &mdash; not a shortcut, not a memorized rule, the actual limit, computed by hand.</p>
+        <ol>
+          <li>Write the difference quotient for this f: [f(x + h) &minus; f(x)] / h = [(x + h)&sup2; &minus; x&sup2;] / h.</li>
+          <li>Expand (x + h)&sup2; using ordinary algebra: (x + h)&sup2; = x&sup2; + 2xh + h&sup2;. Substitute this in: [(x&sup2; + 2xh + h&sup2;) &minus; x&sup2;] / h.</li>
+          <li>The x&sup2; terms cancel &mdash; this cancellation is not a coincidence, it happens for every polynomial, and it is exactly what keeps the difference quotient from being simply undefined the moment h shrinks: [2xh + h&sup2;] / h.</li>
+          <li>Factor h out of the numerator and cancel it against the h in the denominator &mdash; legal because, throughout this whole computation, h is a small but genuinely nonzero number, never actually zero: [h(2x + h)] / h = 2x + h.</li>
+          <li>Only now, after the division that would have been illegal at h = 0 has already been safely completed while h was still nonzero, take the limit as h &rarr; 0: lim<sub>h &rarr; 0</sub> (2x + h) = 2x + 0 = 2x. So f&prime;(x) = 2x.</li>
+        </ol>
+        <p>Notice the order of operations that made this work, because it is the order every derivative-from-the-definition calculation in this curriculum will follow: first, do the algebra that simplifies the difference quotient <em>while h is still nonzero</em>, cancelling the h in the denominator against a factor of h you have pulled out of the numerator; only after that cancellation is safely done, substitute h = 0 into whatever is left. Substituting h = 0 too early, before the cancellation, produces the same 0/0 that troubled Zeno. Substituting it too late &mdash; or never &mdash; leaves you with an answer still cluttered with h, an average rate of change over some small window rather than the exact instantaneous one.</p>
+        <p>Check this at a specific point, say x = 3, where the formula predicts f&prime;(3) = 2(3) = 6. The table below computes the actual secant slope [f(3 + h) &minus; f(3)] / h for h shrinking toward zero, using nothing but the raw definition and a calculator, to watch the limit happen numerically rather than just algebraically:</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <caption>Secant slope at x = 3 for f(x) = x&sup2;, as h shrinks toward zero.</caption>
+            <thead><tr><th>h</th><th>f(3 + h)</th><th>[f(3 + h) &minus; f(3)] / h</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>16</td><td>7.000</td></tr>
+              <tr><td>0.1</td><td>9.61</td><td>6.100</td></tr>
+              <tr><td>0.01</td><td>9.0601</td><td>6.010</td></tr>
+              <tr><td>0.001</td><td>9.006001</td><td>6.001</td></tr>
+              <tr><td>&minus;0.001</td><td>8.994001</td><td>5.999</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>From both sides &mdash; h shrinking through positive values and through negative values &mdash; the secant slope closes in on 6.000, exactly what the algebra predicted, and exactly the slope of the one line that just grazes the parabola y = x&sup2; at the point (3, 9) without crossing it there.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; the derivative of f(x) = x&sup3;, and a pattern starting to show</b>
+        <p>Repeat the same process for f(x) = x&sup3;, using the same discipline: expand, cancel while h is still nonzero, then take the limit.</p>
+        <ol>
+          <li>Write the difference quotient: [(x + h)&sup3; &minus; x&sup3;] / h.</li>
+          <li>Expand (x + h)&sup3; by multiplying it out: (x + h)&sup3; = x&sup3; + 3x&sup2;h + 3xh&sup2; + h&sup3;.</li>
+          <li>Substitute and cancel the x&sup3; terms: [3x&sup2;h + 3xh&sup2; + h&sup3;] / h.</li>
+          <li>Factor h out of every remaining term in the numerator and cancel against the denominator: 3x&sup2; + 3xh + h&sup2;.</li>
+          <li>Take the limit as h &rarr; 0: every term still carrying an h vanishes, leaving f&prime;(x) = 3x&sup2;.</li>
+        </ol>
+        <p>Line the two results up: x&sup2; differentiates to 2x; x&sup3; differentiates to 3x&sup2;. A pattern is visibly forming &mdash; the exponent seems to drop down in front as a multiplier, and the power on x seems to drop by one &mdash; and it is tempting to declare a general rule right now and move on. Resist that temptation for one more lesson. What has actually been proven here is two specific cases, each nailed down by a full limit computation from the raw definition; a later lesson in this Mathematics track will prove the general pattern holds for every whole-number power at once, and only then will it be honest to call it a rule rather than a hunch. The difference matters: a rule you have derived is something you understand; a rule you have merely noticed twice is something you are trusting on faith, and faith is exactly what a limit was invented to replace.</p>
+      </div>
+
+      <h3>What the derivative measures when the curve is a falling object</h3>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; the instantaneous velocity of a dropped object</b>
+        <p>Drop an object from rest and let it fall under gravity alone, ignoring air resistance. Its height below the release point after t seconds is given by y(t) = 4.9t&sup2; meters &mdash; a formula this curriculum&rsquo;s Physics track has already used without deriving where the 4.9 comes from; it is exactly half of Earth&rsquo;s gravitational acceleration, g &asymp; 9.8 m/s&sup2;, and today&rsquo;s tools are what actually justify that specific number, in the callback section below. Find the object&rsquo;s exact instantaneous speed at t = 3 seconds.</p>
+        <ol>
+          <li>Write the difference quotient for y at t = 3: [y(3 + h) &minus; y(3)] / h = [4.9(3 + h)&sup2; &minus; 4.9(3)&sup2;] / h.</li>
+          <li>Expand (3 + h)&sup2; = 9 + 6h + h&sup2;, so 4.9(3 + h)&sup2; = 4.9(9 + 6h + h&sup2;) = 44.1 + 29.4h + 4.9h&sup2;. And 4.9(3)&sup2; = 44.1.</li>
+          <li>Subtract: [44.1 + 29.4h + 4.9h&sup2; &minus; 44.1] / h = [29.4h + 4.9h&sup2;] / h.</li>
+          <li>Factor h out of the numerator and cancel: 29.4 + 4.9h.</li>
+          <li>Take the limit as h &rarr; 0: y&prime;(3) = 29.4 m/s.</li>
+        </ol>
+        <p>At the precise instant three seconds into the fall, the object is moving at exactly 29.4 meters per second &mdash; not an average over some window before or after that instant, an exact instantaneous value, gotten the same honest way as every other derivative in this lesson: a limit of ordinary average speeds over shrinking windows, closing in on one number rather than resting on a division by zero. Notice, too, that the general shape of the algebra was identical to worked example 1&rsquo;s x&sup2; case, scaled by the constant 4.9 &mdash; a first hint that a derivative interacts predictably with a constant multiplier out front, another piece of the general pattern a later lesson will formalize.</p>
+      </div>
+
+      <h3>What a real price chart can and cannot honestly tell you</h3>
+
+      <p>Friday&rsquo;s closing edition of this newspaper reported the S&amp;P 500 at 7,711.76, and reported two other numbers worth pulling out specifically for this lesson: SPY, the exchange-traded fund tracking that same index, was running +0.02% above its own 20-trading-day average price and +2.04% above its 50-trading-day average &mdash; two different average rates of change, computed over two different windows, both perfectly legitimate secant-line calculations. Treat trading days as the horizontal axis and SPY&rsquo;s price as the curve, and those two figures are two different difference quotients: an average rate of change over the most recent 20 sessions, and a larger average rate of change over the most recent 50 sessions. Subtracting the shorter window&rsquo;s contribution from the longer one and dividing by the 30 trading days between them &mdash; (2.04% &minus; 0.02%) &divide; 30 &asymp; 0.067% per session &mdash; gives the average rate of change over just the earlier 30 of those 50 sessions, distinct from the roughly 0.001% per session (0.02% &divide; 20) the most recent 20 sessions actually averaged. Read honestly, that comparison says the rally lost speed: the earlier stretch was climbing faster, on average, than the most recent stretch has been.</p>
+
+      <p>Here is exactly where this lesson&rsquo;s honesty standard has to intervene, though, because it would be easy &mdash; and wrong &mdash; to call any of that &ldquo;the derivative of the S&amp;P 500.&rdquo; A derivative, as defined above, requires a genuine limit: a curve smooth enough that its secant slopes keep converging as the window narrows toward zero width. A real closing-price series is not that. It has exactly one value per trading day, a single dot, with nothing at all defined for the hours the market is closed and no meaningful notion of a window narrower than one session &mdash; there is no such thing as &ldquo;half a trading day&rdquo; in the data the market actually produces. What Friday&rsquo;s report legitimately supports are average rates of change &mdash; secant slopes, computed over 20-session and 50-session windows, exactly the same well-defined arithmetic as &ldquo;average speed over the first hour of the trip&rdquo; &mdash; and nothing narrower than that. Calling that &ldquo;the market&rsquo;s instantaneous rate of change&rdquo; would smuggle in a smoothness assumption the data never actually earns; the correct, honest statement is the more modest one, that momentum measured over the last 20 sessions has been running below momentum measured over the preceding 30. That distinction &mdash; between a real derivative on a genuinely continuous curve and a mere average rate of change on discrete data that only resembles one &mdash; is worth carrying forward every time a chart looks smooth on a screen; the smoothness is the plotting software connecting dots, not a property the underlying data actually has.</p>
+
+      <p>The same distinction shows up outside markets constantly, and usually more forgivably, because the underlying process actually is continuous even when the instrument reading it is not. A car&rsquo;s speedometer, going back to this lesson&rsquo;s opening question, does not compute a true instant-by-instant derivative either &mdash; it typically counts wheel rotations, or GPS position updates, over some very short but genuinely nonzero sampling interval, commonly a fraction of a second, and reports the resulting average rate as though it were instantaneous. Because a car&rsquo;s motion genuinely is smooth at the scale of a fraction of a second &mdash; nothing about a car&rsquo;s speed jumps discontinuously the way, say, a light switch does &mdash; that approximation is extremely good, indistinguishable from the true derivative for any practical purpose. The market case above fails not because the sampling window is too short, but because the daily-close data itself never had the fine structure a derivative needs in the first place &mdash; there is no shorter window to sample, only the one the exchange happens to report at the end of each session.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Isaac Newton, in England, and Gottfried Wilhelm Leibniz, in Germany and later Hanover, each developed the core machinery of calculus independently in the second half of the seventeenth century &mdash; Newton mostly in the mid-1660s, calling his version &ldquo;fluxions&rdquo; and using the dot notation this lesson mentioned above; Leibniz slightly later, publishing first, in 1684, calling his version &ldquo;differentials&rdquo; and introducing the dy/dx notation still in everyday use. What followed was one of the ugliest priority disputes in the history of science: by 1712 the accusations of plagiarism had grown serious enough that the Royal Society in London convened a committee to investigate who had truly invented calculus first. That committee was, in substance, Newton judging his own case &mdash; he was the Royal Society&rsquo;s own president at the time, he personally selected every member of the investigating committee, and historians examining the surviving papers have found that he anonymously drafted large portions of its final 1712&ndash;13 report himself, titled <em>Commercium Epistolicum</em>. Unsurprisingly, the report found decisively for Newton, ruling that Leibniz had derived his calculus from Newton&rsquo;s ideas rather than discovering it independently. The modern historical consensus, reached only much later once both men&rsquo;s private papers had been studied by scholars with no stake in either camp, is that the report was unjust: Newton likely did work the ideas out first, in private notes, but Leibniz appears to have arrived at an equivalent system independently, through his own route, publishing his account years before Newton ever published his own.</p>
+
+      <p>Both men&rsquo;s original versions of calculus, however, shared a genuine logical weakness, and it is the specific misconception this lesson exists to correct. Leibniz&rsquo;s dy and dx were conceived of as &ldquo;infinitesimals&rdquo; &mdash; quantities somehow smaller than any positive real number and yet not actually zero, small enough to be discarded when added to an ordinary number but, apparently, still substantial enough to be divided into one another to produce a meaningful ratio, dy/dx. This is precisely the trap this lesson opened with, dressed in different notation: at some point in the classical derivation, you divide by dx, which requires dx to be nonzero; then, moments later in the same calculation, you set dx equal to zero to drop the remaining higher-order terms. Both moves cannot honestly be true of the same quantity in the same breath.</p>
+
+      <p>The philosopher and Anglican bishop George Berkeley made exactly this objection, publicly and pointedly, in a 1734 pamphlet titled <em>The Analyst</em>, aimed at the mathematicians of his day who had grown fond of criticizing the logical rigor of religious faith while, in Berkeley&rsquo;s view, resting their own celebrated new mathematics on an equally unexamined leap of faith. Describing these vanishing-yet-not-quite-zero infinitesimal quantities, Berkeley wrote a line still quoted in mathematics courses nearly three centuries later: &ldquo;They are neither finite quantities, nor quantities infinitely small, nor yet nothing. May we not call them the ghosts of departed quantities?&rdquo; Berkeley was not disputing that calculus produced correct answers &mdash; he readily granted that it did, repeatedly and reliably. His objection was narrower and, on its own terms, entirely fair: nobody in 1734 could actually explain, with logical precision, <em>why</em> a method built on dividing by something and then discarding it as though it were nothing should be trusted to give correct answers rather than merely appearing to, by luck, every time.</p>
+
+      <p>Berkeley&rsquo;s challenge went essentially unanswered, in the rigorous sense he was demanding, for close to a century. It was Augustin-Louis Cauchy in the 1820s, and then more completely Karl Weierstrass in the 1860s, who finally rebuilt the whole structure on exactly the foundation this lesson has been using throughout: the limit, defined not as a mysteriously small quantity but as a precisely specified process &mdash; a target value that a sequence of perfectly ordinary numbers, the secant slopes, provably gets and stays arbitrarily close to, without any of those numbers, or the target itself, ever requiring an illegal division by zero at any stage. Weierstrass&rsquo;s formulation, built on ideas Bernard Bolzano had sketched with little notice decades earlier, is essentially the same limit definition day nine of this curriculum introduced and this lesson has leaned on throughout. So the honest version of the difference-quotient definition given above is not merely a convenient modern shortcut for teaching calculus &mdash; it is the specific, hard-won fix for the exact logical gap Berkeley identified, arrived at roughly 130 years after his challenge and around 180 years after Newton and Leibniz first got the right answers without being able to fully explain why they worked.</p>
+
+      <p>The misconception to carry forward, then, is this: dy/dx is not literally a fraction, a tiny number divided by another tiny number. It is a single, indivisible symbol for one specific limit &mdash; the number f&prime;(x) that the ordinary, perfectly legal difference quotient [f(x + h) &minus; f(x)]/h approaches as h shrinks toward, but never reaches, zero. Leibniz&rsquo;s notation is worth keeping, because it makes certain later manipulations &mdash; particularly the chain rule, waiting a few lessons ahead in this track &mdash; look almost automatic. But treating it as an actual ratio of actual infinitesimals, the way it visually presents itself, is exactly the ghost Berkeley was pointing at, and exactly what a century and a half of mathematicians worked to exorcise.</p>
+
+      <p>A second, smaller misconception belongs alongside the first: assuming that any function smooth enough to draw without lifting your pen must have a derivative everywhere. It does not. Take f(x) = |x|, the absolute value function &mdash; a perfectly continuous, unbroken V-shaped graph, with no gap, no jump, nothing that looks remotely troubled at x = 0, the sharp point of the V. Compute the difference quotient there anyway: for h approaching 0 from the positive side, [|0 + h| &minus; |0|]/h = h/h = 1; for h approaching 0 from the negative side, [|0 + h| &minus; |0|]/h = &minus;h/h = &minus;1. The two one-sided answers disagree &mdash; 1 from the right, &minus;1 from the left &mdash; so no single limit exists, and f&prime;(0) is simply undefined, at a point where the function itself is perfectly well-behaved and continuous. Geometrically, this is exactly what the sharp corner in the V shape means: there is no single line that grazes the curve at that point without crossing it, because the curve itself changes direction abruptly right there, and a tangent line has no well-defined direction to inherit. This is precisely why the definition given above matters more than any shortcut ever will: a shortcut rule, applied blindly, would either fail to notice a corner like this one or would need to be told in advance to check for it, while the definition itself simply and automatically fails to produce an answer exactly where no honest answer exists.</p>
+
+      <h3>The callback</h3>
+
+      <p>Ten lessons ago, this curriculum&rsquo;s Physics track wrote Newton&rsquo;s second law in its original, more general form: F<sub>net</sub> = dp/dt, the net force on an object equal to the rate at which its momentum changes with time. That lesson explained in words what dp/dt meant &mdash; &ldquo;the rate at which that object&rsquo;s momentum changes with time&rdquo; &mdash; without ever explaining what a rate of change with respect to time actually <em>is</em>, mathematically, or why writing it as a ratio of two letters was legitimate rather than a notational sleight of hand. That gap is exactly what today&rsquo;s lesson closes: dp/dt is nothing more exotic than today&rsquo;s f&prime;(x), with time playing the role of x and momentum playing the role of f &mdash; the limit of [p(t + h) &minus; p(t)]/h as h shrinks toward zero, the identical machinery built from scratch above, simply pointed at a different pair of quantities. Newton&rsquo;s own dot notation for a time-derivative, mentioned above, exists specifically because physics needed this exact operation so often that a whole extra layer of Leibniz-style notation felt like clutter.</p>
+
+      <p>That earlier lesson also flagged, without being able to resolve it yet, exactly why the ordinary shortcut F = ma quietly fails for a rocket burning propellant: mass itself is changing over time, and F = ma silently assumes it is not. Today&rsquo;s tools are the first real step toward seeing why the fuller momentum form handles that case and F = ma does not &mdash; p = mv is a product of two quantities that can both be changing at once, and differentiating a product correctly, rather than treating one factor as a fixed constant the way every worked example in today&rsquo;s lesson did, needs its own rule. That rule, the product rule, is one lesson away, on Day 13; once it exists, this curriculum&rsquo;s Rocketry track will be able to build the full variable-mass rocket equation on exactly the foundation laid today, rather than on the F = ma shortcut that was never built to carry that weight in the first place.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state the formal limit definition of the derivative, explain in plain language why it resolves Zeno&rsquo;s 0/0 problem honestly rather than sidestepping it, and read the same idea in prime, Leibniz, and Newton dot notation.</li>
+          <li>You can compute a derivative from that definition by hand for a polynomial like x&sup2; or x&sup3;, using the discipline of cancelling h before ever substituting h = 0, and you can verify the result numerically by watching real secant slopes converge, the way the table above did at x = 3.</li>
+          <li>You can tell the difference between an average rate of change &mdash; a secant slope, computable from any two real data points, including a stock&rsquo;s 20-day and 50-day price levels &mdash; and a true instantaneous derivative, which requires an actually continuous underlying process, not just a chart that happens to look smooth.</li>
+          <li>You know a function can be perfectly continuous and still have no derivative at a point, as |x| does at x = 0, and why that is the definition doing its job rather than failing at it.</li>
+          <li>You know where this is going: Day 13 names and proves the general pattern behind today&rsquo;s x&sup2; &rarr; 2x and x&sup3; &rarr; 3x&sup2; results, plus the product and chain rules that make F<sub>net</sub> = dp/dt fully usable for a rocket shedding mass as it burns.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the topic and difficulty scope of a first-principles treatment of derivatives, used as a reference rather than a text available to this run). Zeno of Elea&rsquo;s arrow paradox is standard material in the history of philosophy and mathematics. The chronology of Newton&rsquo;s and Leibniz&rsquo;s independent development of calculus, the 1712&ndash;13 Royal Society Commercium Epistolicum investigation, Newton&rsquo;s undisclosed authorship of much of its content, and the modern historical consensus that both men worked independently were checked via web search against standard historical accounts. George Berkeley&rsquo;s 1734 pamphlet <em>The Analyst</em> and its &ldquo;ghosts of departed quantities&rdquo; line were checked via web search against Britannica and the text of the pamphlet itself. The chronology of Cauchy&rsquo;s 1820s work, Bernard Bolzano&rsquo;s earlier but little-noticed contribution, and Karl Weierstrass&rsquo;s 1860s epsilon-delta formalization of the limit were checked via web search against standard histories of mathematical analysis. The S&amp;P 500 close of 7,711.76 and SPY&rsquo;s 20-day (+0.02%) and 50-day (+2.04%) price distances are drawn from this newspaper&rsquo;s own closing edition published Friday, August 28, 2026, already verified in that run. All arithmetic in the worked examples, including the numerical convergence table, was computed directly for this report from the stated functions and values (g = 9.8 m/s&sup2; for the falling-object example, following this curriculum&rsquo;s Physics track).</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-30-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
