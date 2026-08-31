@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Mon, Aug 31, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-08-31",
+    "slot": "am",
+    "title": "Morning Brief — Mon, Aug 31, 2026",
+    "path": "reports/2026/08/2026-08-31-am.html",
+    "summary": "US forces struck Iranian rocket launchers near the Strait of Hormuz overnight and Iran fired missiles at US-linked bases in Jordan, the first direct US-Iran exchange in a month, as Nepal's flood toll surged past 900, a Pennsylvania coroner disputed the state's own measles-death count, and Anthropic warned that credential-stealing malware is hijacking Claude accounts.",
+    "headlines": [
+      "US strikes Iranian launchers near Hormuz; Iran fires missiles at US-linked bases in Jordan",
+      "Nepal-Tibet flood toll jumps past 900 dead as Nepal's own tally keeps shifting",
+      "PA coroner disputes state's measles-death count; CDC says Harrisburg has shut it out"
+    ],
+    "reading_minutes": 23,
+    "generated_at": "2026-08-31T07:15:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Monday, August 31, 2026 <span class="sep">&middot;</span> 23 min read
+      </p>
+      <p class="paper-standfirst">
+        US forces struck Iranian rocket launchers near the Strait of Hormuz overnight and Iran fired missiles at two US-linked bases in Jordan, breaking a month of relative calm, as Nepal&rsquo;s flood toll jumped past 900, a Lancaster County coroner publicly disputed Pennsylvania&rsquo;s own measles-death count, and Anthropic warned that credential-stealing malware is hijacking Claude accounts.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> The US struck two Iranian rocket launchers near the Strait of Hormuz Sunday night; Iran answered with missiles at US-linked bases in Jordan early Monday, which Jordan says it intercepted &mdash; the first direct US-Iran exchange in a month. Nepal&rsquo;s own agencies now put the flood death toll near 900&ndash;919, up sharply from Sunday&rsquo;s 750-plus and still not internally reconciled.</li>
+          <li><b>Markets.</b> Equity futures are little changed (S&amp;P and Nasdaq futures both roughly flat) despite the overnight strikes; oil is the clear mover, up more than 3% on the Hormuz exchange, and the VIX has ticked up from Friday&rsquo;s close. Friday&rsquo;s session itself closed lower across every major index on Fed Chair Warsh&rsquo;s hawkish reception, with breadth notably weak underneath.</li>
+          <li><b>The thread.</b> A month-long lull in both the Iran standoff and the Fed-guidance debate broke at nearly the same moment &mdash; markets are now pricing a geopolitical shock and a more hawkish Fed simultaneously, and neither premise has fully firmed up yet.</li>
+          <li><b>Biggest risk.</b> Iran&rsquo;s Revolutionary Guard has vowed further retaliation beyond Monday&rsquo;s Jordan strikes; a second attack on a US base, ally, or Hormuz shipping lane within the next week would be the clearest sign this is escalating rather than settling.</li>
+          <li><b>Watch today.</b> The House returns from recess to vote Tuesday on the Senate-passed funding bill; Broadcom&rsquo;s Wednesday earnings and Friday&rsquo;s jobs report are the week&rsquo;s two biggest scheduled catalysts. Expect scattered thunderstorms in Bridgeville this afternoon.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>US strikes Iranian launchers near Hormuz; Iran fires missiles at US-linked bases in Jordan</h3>
+          <p class="story-deck">The first direct US-Iran military exchange in a month, and the sharpest escalation yet of the standoff over the strait.</p>
+          <div class="story-body">
+            <p>US Central Command said forces struck two Iranian rocket launchers on Larak Island, near the Strait of Hormuz, late Saturday into Sunday, after intelligence indicated Iranian Revolutionary Guard Corps (IRGC) personnel were preparing to launch sea mines into the strait. CENTCOM spokesman Capt. Tim Hawkins confirmed the strike; it is the first publicly acknowledged US strike on Iranian forces since late July, a month in which the administration had signaled a shift toward economic rather than military pressure.</p>
+            <p>The IRGC vowed retaliation, saying it had suffered casualties in the US strike &mdash; a claim carried only by Iranian state broadcasters (IRIB/Press TV) and not independently verified. Early Monday, Iran fired ballistic missiles at two bases hosting US personnel in Jordan, King Hussein Air Base and Al-Azraq Air Base; Jordan&rsquo;s military said it intercepted eight missiles that entered its airspace, with no casualties or damage reported. The strike and interception are reported by CNN, Gulf News, RFE/RL, ABC Australia, the Jerusalem Post and Time, consistently.</p>
+            <p>Markets moved first on oil: WTI crude was up roughly 3&ndash;4% in early trading, by far the largest move across futures, commodities and currencies this morning, while equity-index futures were little changed. That split &mdash; a sharp oil reaction against flat equity futures &mdash; suggests traders are treating this as an energy-supply risk rather than a broader risk-off event, for now.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the most direct US-Iran military contact since the standoff over the strait began in February, and it comes atop six months of tanker seizures, shadow-fleet piracy and dueling claims over who actually controls Hormuz traffic. A second Iranian strike beyond Jordan would be the clearest signal this is escalating rather than a one-off exchange.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Watch for any further IRGC action against US forces, allies or shipping in the region, and for whether the White House frames Monday&rsquo;s exchange as closed or ongoing. Oil (CL=F, USO) and Gulf shipping insurance rates are the most direct market channels.
+            </div>
+          </div>
+          <p class="story-sourceline">CENTCOM (primary, via wire pickups) &middot; Jordan&rsquo;s military statement &middot; CNN, Gulf News, RFE/RL, ABC Australia, Jerusalem Post, Time &middot; IRGC casualty claim: Iranian state media (IRIB/Press TV), unverified.</p>
+        </article>
+
+        <article class="story">
+          <h3>Nepal-Tibet flood toll jumps past 900 dead as Nepal&rsquo;s own tally keeps shifting</h3>
+          <p class="story-deck">The combined death toll has nearly doubled from Sunday&rsquo;s figure inside 24 hours, and Nepal&rsquo;s disaster authority and police still haven&rsquo;t converged on one number.</p>
+          <div class="story-body">
+            <p>As of Monday, Nepal&rsquo;s own count stands at 903 dead with roughly 4,247 still missing; combined with Tibet&rsquo;s 16 dead and 546 missing, the cross-border total is 919 dead and about 4,793 missing. That is a sharp jump from the 734&ndash;750-plus figure this outlet reported Sunday. NBC News, CNN, the Korea Times, UPI and TASS (citing Chinese state television) all report figures in the 900&ndash;919 range as of Monday, but it remains unclear whether the jump reflects new casualties, a reconciliation of Nepal&rsquo;s own disaster-authority and police counts, or both &mdash; the specific reconciliation this outlet has been tracking since last week has not been confirmed either way.</p>
+          </div>
+          <p class="story-sourceline">NBC News, CNN, TASS (citing Chinese state television), UPI, Korea Times &mdash; Confirmed-multiple on the toll figure; the cause of the jump (new deaths vs. tally reconciliation) is unconfirmed.</p>
+        </article>
+
+        <article class="story">
+          <h3>Lancaster County coroner disputes Pennsylvania&rsquo;s measles-death count; CDC says Harrisburg has shut it out</h3>
+          <p class="story-deck">The state calls an infant&rsquo;s death &ldquo;measles-associated&rdquo;; the county coroner&rsquo;s own autopsy blames a ruptured spleen and says his office attributes zero deaths in the county to measles.</p>
+          <div class="story-body">
+            <p>Lancaster County Coroner Dr. Stephen Diamantoni told LNP/LancasterOnline that an infant who died Aug. 14 at a Christiana Borough birthing center died of a lacerated, ruptured spleen and massive blood loss; the infant tested positive for measles, but the forensic pathologist found no evidence the spleen was inflamed or infected by the virus. Diamantoni said his office currently attributes zero deaths in the county to measles &mdash; a direct challenge to Gov. Shapiro&rsquo;s Aug. 29 announcement of the state&rsquo;s first two measles-related deaths in roughly 25 years. Pennsylvania&rsquo;s Health Department, per Politico reporting Aug. 30, has since clarified that its &ldquo;measles-associated&rdquo; label means measles was detected in the deceased, not that it was necessarily the immediate cause of death.</p>
+            <p>Separately, the CDC posted publicly that it &ldquo;appreciate[s] Secretary Kennedy&rsquo;s efforts to clarify conflicting information from Pennsylvania officials&rdquo; and said &ldquo;the Governor&rsquo;s Office has not provided CDC with information relevant to the outbreak and has declined our offers of assistance&rdquo; &mdash; the agency&rsquo;s own account, corroborated by ABC News and The Hill. CMS Administrator Dr. Mehmet Oz said publicly, &ldquo;We don&rsquo;t know if the children died from measles or had another condition.&rdquo; This outlet has not independently verified either side&rsquo;s characterization of what the other has or hasn&rsquo;t shared. Pennsylvania&rsquo;s statewide case count reached 460 confirmed across 31 counties as of Aug. 29, up from the low-to-mid 300s a few days earlier.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is now a three-way dispute &mdash; a named county coroner, the state health department and federal officials &mdash; over how to characterize the same set of facts, in the middle of the country&rsquo;s first measles deaths in a generation. The underlying case count is not in dispute; the cause-of-death framing is.
+            </div>
+          </div>
+          <p class="story-sourceline">Lancaster County Coroner (primary, via LNP/LancasterOnline, corroborated by NBC News, Daily Caller, WFMZ) &middot; CDC public statement (primary) &middot; Politico &middot; The Hill &middot; ABC News &middot; Pennsylvania Dept. of Health (primary, case counts).</p>
+        </article>
+
+        <article class="story">
+          <h3>DOJ tells appeals court the mail-ballot rule needs emergency relief before ballots go out</h3>
+          <p class="story-deck">The Justice Department&rsquo;s filing to the First Circuit cites a hard deadline: some states start mailing ballots within two weeks.</p>
+          <div class="story-body">
+            <p>Building on Judge Talwani&rsquo;s Aug. 27 temporary restraining order and the government&rsquo;s subsequent notice of appeal, weekend reporting (Washington Times, Aug. 30) shows the DOJ&rsquo;s filing to the First Circuit Court of Appeals argues urgency because &ldquo;some states are scheduled to begin mailing out ballots to voters in the next two weeks.&rdquo; No ruling or briefing schedule from the First Circuit has been reported yet. The Sept. 3 emergency-motion hearing before Talwani, and the separate 23-states-plus-D.C.-and-Pennsylvania&rsquo;s-governor merits suit in Boston federal court, both remain pending with no new filings found since Friday.</p>
+          </div>
+          <p class="story-sourceline">Washington Times &middot; corroborated by NPR, The Hill, Democracy Docket on the underlying chronology.</p>
+        </article>
+
+        <article class="story">
+          <h3>&ldquo;Lake America&rdquo; lands on Google Maps for US users; White House celebrates as Ford calls it &ldquo;Saturday Night Live&rdquo;</h3>
+          <p class="story-deck">Ontario&rsquo;s premier used a Sunday national TV appearance to mock the renaming order six days before Canada&rsquo;s retaliatory tariffs take effect.</p>
+          <div class="story-body">
+            <p>Google Maps began showing &ldquo;Lake America&rdquo; to US users Saturday for what has been Lake Ontario, following President Trump&rsquo;s executive order; Canadian users still see &ldquo;Lake Ontario,&rdquo; and users elsewhere see both names. White House Communications Director Steven Cheung publicly celebrated the change (&ldquo;It&rsquo;s official! LAKE AMERICA on Google Maps&rdquo;) &mdash; the first substantive White House response to a week of bipartisan pushback that has included a nullification bill from Rep. Debbie Dingell, and public objections from Gov. Hochul, Sen. Schumer and the Seneca Nation.</p>
+            <p>Ontario Premier Doug Ford appeared on ABC&rsquo;s &ldquo;This Week&rdquo; Sunday, calling the order &ldquo;like something out of Saturday Night Live&rdquo; and separately warning that Trump&rsquo;s proposed doubling of Canadian auto tariffs to 50% (effective Jan. 1, 2027) would be &ldquo;devastating&rdquo; for both countries. No new joint statement or resumption of trade talks was reported over the weekend; Canada&rsquo;s own Sept. 8 retaliatory tariffs remain on track.</p>
+          </div>
+          <p class="story-sourceline">ABC News (transcript, primary) &middot; Axios &middot; Bloomberg &middot; Google Maps (observed change) &middot; White House Communications Director statement (primary).</p>
+        </article>
+
+        <article class="story">
+          <h3>House returns from recess; funding bill floor vote expected Tuesday</h3>
+          <p class="story-deck">The Senate-passed continuing resolution needs a two-thirds vote under the expedited procedure Republican leadership is planning to use.</p>
+          <div class="story-body">
+            <p>The House returned Monday for a one-week session built around bringing the Senate-passed continuing resolution &mdash; which funds the government through Dec. 11 and passed the Senate 90-6 on Aug. 8 &mdash; to the floor under suspension of the rules, a procedure that requires a two-thirds vote rather than a simple majority. Reporting (via the AP/NPR wire, carried by several public-radio affiliates) points to a Tuesday floor vote, though this outlet has not yet found independent confirmation of that specific timing beyond the shared wire text. The Senate remains in recess until Sept. 14 and has no floor action scheduled this week.</p>
+          </div>
+          <p class="story-sourceline">NPR/AP wire (single wire text, carried by multiple affiliates) &mdash; timing single-sourced pending independent confirmation.</p>
+        </article>
+
+        <article class="story">
+          <h3>Anthropic warns infostealer malware is hijacking Claude accounts to burn through paid usage</h3>
+          <p class="story-deck">Six known credential-stealing malware families are lifting already-logged-in browser sessions to bypass passwords and two-factor authentication entirely.</p>
+          <div class="story-body">
+            <p>Anthropic disclosed that six infostealer malware families &mdash; Vidar, LummaC2, StealC, RedLine and Acreed on Windows, Atomic Stealer (AMOS) on macOS &mdash; are stealing authenticated browser session cookies from infected machines and using them to hijack Claude logins, bypassing passwords and two-factor authentication because the session is already signed in. The company said it is proactively signing out affected users, removing saved payment methods and refunding unauthorized charges, and stated plainly that it has &ldquo;no reason to believe this malware is related to Claude, installed through Claude, or related to anything you did with Claude&rdquo; &mdash; the campaigns are general-purpose credential theft, not a Claude-specific compromise. The disclosure is corroborated by BleepingComputer, Security Affairs, The Cyber Express and other outlets, all citing Anthropic&rsquo;s own advisory.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              It is a rare instance of an AI lab issuing a security advisory about attacks on its users rather than on its models, and it marks paid AI-subscription accounts as a monetizable target for existing credential-theft infrastructure &mdash; the same malware families that have long targeted banking and crypto-exchange logins.
+            </div>
+          </div>
+          <p class="story-sourceline">Anthropic (primary disclosure) &middot; BleepingComputer &middot; Security Affairs &middot; The Cyber Express.</p>
+        </article>
+
+        <article class="story">
+          <h3>September rate-hike odds climb toward 60% as Warsh and Bessent pull in different directions</h3>
+          <p class="story-deck">CME-implied odds of a hike have nearly doubled since Wednesday even as Treasury keeps intervening to hold long yields down.</p>
+          <div class="story-body">
+            <p>CME FedWatch-implied odds of a 25-basis-point September hike stood near 60% as of the weekend, up from about 56% Friday and roughly 35% before Fed Chair Warsh&rsquo;s Thursday Jackson Hole keynote. Deutsche Bank called the speech hawkish and &ldquo;more specific&rdquo; than expected; not everyone agrees the repricing is right &mdash; Miller Tabak&rsquo;s Matthew Maley argued there is &ldquo;no empirical basis for a rate hike&rdquo; given soft labor data, and one analysis put the true CME-implied probability closer to 58% against social-media framing suggesting figures near 90%. The 30-year Treasury yield touched roughly 5.3%, a near two-decade high, prompting Treasury Secretary Bessent to intervene by doubling the department&rsquo;s buyback capacity &mdash; a structurally awkward pairing, since Warsh is arguing for less Fed communication and more market-driven price discovery at the same time Treasury is actively managing long-end yields down.</p>
+          </div>
+          <p class="story-sourceline">CNBC (analyst commentary, secondary) &middot; Axios &middot; Yahoo Finance &middot; no primary Fed transcript from the weekend itself; no new individual Fed speaker appearances found since Warsh&rsquo;s Friday remarks.</p>
+        </article>
+
+        <article class="story">
+          <h3>Missouri congressional-map fight stays on track for Wednesday arguments</h3>
+          <p class="story-deck">The expedited briefing schedule closed Monday with the challenger&rsquo;s reply brief, six days before the state&rsquo;s ballot-certification deadline.</p>
+          <div class="story-body">
+            <p>Per the expedited schedule the Missouri Supreme Court set for <em>Von Glahn v. Hoskins</em>, the challenger&rsquo;s reply brief was due today, Aug. 31, following the state&rsquo;s Aug. 27 response and the original Aug. 25 opening brief. Oral arguments remain set for Sept. 2, with a ruling required before the state&rsquo;s Sept. 8 ballot-certification deadline. This is procedural movement rather than a new development in substance &mdash; no ruling has issued.</p>
+          </div>
+          <p class="story-sourceline">Court filing schedule (primary, via Democracy Docket).</p>
+        </article>
+
+        <article class="story">
+          <h3>Roman Space Telescope &ldquo;flying on its own&rdquo; after a clean launch; Turkey signs the Artemis Accords today</h3>
+          <p class="story-deck">No anomalies reported since Sunday&rsquo;s 7:26 a.m. ET liftoff, as the telescope begins its months-long transit and commissioning journey to L2.</p>
+          <div class="story-body">
+            <p>NASA&rsquo;s mission blog confirmed the Solar Array Sun Shield fully deployed roughly 83 minutes after Sunday&rsquo;s Falcon Heavy launch from LC-39A, Goddard mission control acquired telemetry within about seven minutes of liftoff, and the Falcon Heavy side boosters landed and were recovered. NASA has since concluded live launch coverage and posted a &ldquo;Roman Space Telescope Flying on Its Own&rdquo; update; no anomalies have been reported by NASA, SpaceNews, NPR or Space.com. NASA now describes the trip to the Sun-Earth L2 point as a roughly three-month journey including commissioning, not just a one-month transit &mdash; a fuller framing of the same timeline rather than a change to it; first images remain expected around January 2027.</p>
+            <p>Separately, NASA said Turkey will sign the Artemis Accords at NASA headquarters at 2:30 p.m. ET today, a scheduled but not-yet-occurred event as of this writing.</p>
+          </div>
+          <p class="story-sourceline">NASA mission blog (primary) &middot; SpaceNews &middot; NPR &middot; Space.com.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>The Kremlin gave its first on-record response to the Trump-Putin-Zelensky summit CIA Director Ratcliffe reportedly floated during a secret Moscow visit last week: spokesman Dmitry Peskov said Putin sees &ldquo;absolutely no point&rdquo; in such a summit unless it is to formally sign a completed deal &mdash; not to negotiate one. Zelensky separately rejected a Putin counter-offer to meet in Moscow, saying &ldquo;he can come to Kyiv.&rdquo; Neither side has narrowed the underlying gap. Overnight Ukraine bombardment continued at a normal pace (two Iskander-M missiles, roughly 130 drones) rather than the &ldquo;massive&rdquo; energy-infrastructure strike Russia&rsquo;s defense ministry threatened over the weekend; the Myla-strike toll near Kyiv remains 38 dead, 4 missing.</p>
+        <p>Pakistan&rsquo;s inquiry into the Aug. 26 Islamabad hospital fire, led by a former interior secretary, found no working fire alarm or sprinklers in the nursery and no supervisory staff on duty, and recommended criminal proceedings; eight officials were suspended Aug. 29. The dispute over immediate cause &mdash; a nebulizer versus an air-conditioning unit &mdash; was not definitively resolved in the inquiry as reported. DRC&rsquo;s Ebola outbreak ticked up to 5,794 confirmed cases and 2,786 deaths as of Aug. 27 (from 5,713/2,744 a week ago); the WHO has separately declared the linked Uganda outbreak over after 42 days with no new case.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p>Headline CPI rose to an index level of 332.813 in July (from 332.568 in June); core CPI (ex food and energy) rose to 336.789 from 336.065 &mdash; both level readings, not yet the month-over-month percentage change, but consistent with inflation still running above the Fed&rsquo;s target and the backdrop Warsh cited at Jackson Hole. Nonfarm payrolls (PAYEMS) stood at 158.858 million for July, essentially flat versus June&rsquo;s 158.881 million. The unemployment rate ticked down to 4.1% from 4.2%, and initial jobless claims fell to 203,000 for the week of Aug. 22 from 207,000 the week before &mdash; a labor market cooling gradually rather than cracking. Friday&rsquo;s Treasury par curve showed the 2s10s spread compressing to 39 basis points from 47, a front-end-led flattening consistent with the market pricing more near-term Fed tightening than long-run growth risk; the 3-month/10-year spread held flat at 83 basis points.</p>
+        <p>FactSet consensus for Friday&rsquo;s August jobs report has narrowed to roughly +110,000 nonfarm payrolls (from July&rsquo;s 73,000), unemployment holding at 4.2%, and average hourly earnings up 0.3% month over month &mdash; a tighter anchor than the 50,000&ndash;140,000 range circulating a week ago, though forecaster dispersion remains real. The report lands about two weeks before the Sept. 16 FOMC meeting and is the week&rsquo;s single biggest scheduled data point.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Broadcom reports Wednesday after the close, the week&rsquo;s largest single-stock catalyst and the only tracked-watchlist name reporting. Consensus remains split across sources &mdash; Finnhub&rsquo;s figures run around $29.9 billion revenue and $3.30 non-GAAP EPS, while Alpha Vantage&rsquo;s estimate runs lower near $2.83 EPS, likely reflecting a different GAAP/non-GAAP basis &mdash; so treat it as a range rather than a single number. A Sunday Motley Fool piece argued the stock could run further post-earnings given a roughly 19x forward P/E against the Nasdaq-100&rsquo;s 24x, alongside consensus estimates near 70% EPS growth this fiscal year; that is analyst commentary, not new guidance from the company.</p>
+        <p>Marvell closed Friday down 10.3% for the week at $216.62 after a beat-and-raise quarter sold off on gross-margin guidance &mdash; the same pattern this outlet flagged in Walmart&rsquo;s reaction the week before. Several brokerages (Morgan Stanley, Melius, BofA) framed the move as overdone and raised price targets, with a median near $275; no new weekend catalyst changed that picture. Nvidia&rsquo;s reported $12.9 billion approach for Hugging Face remains unconfirmed by either company as of this morning &mdash; still no statement, filing or denial from either side.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>&mdash;</td><td class="txt">House returns from August recess for a one-week session</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>14:30</td><td class="txt"><strong>Turkey signs the Artemis Accords at NASA HQ</strong></td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">A quiet day for scheduled data. The week ahead: JOLTS Tuesday, Broadcom earnings Wednesday after the close, initial jobless claims and productivity/costs Thursday, and August nonfarm payrolls Friday at 8:30 AM &mdash; the week&rsquo;s most consequential release, bolded above where it lands.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Equity futures are little changed despite the overnight Iran-Jordan exchange: S&amp;P futures roughly flat, Nasdaq futures up about 0.1&ndash;0.5%, Dow and Russell 2000 futures slightly negative. The clear mover is oil &mdash; WTI crude up roughly 3&ndash;4% &mdash; while gold is up modestly (around half a percent) and the dollar index is essentially flat. The 10-year Treasury yield sits near 4.72%, little changed from Friday&rsquo;s close. The VIX has ticked up to roughly 15.2 from Friday&rsquo;s official close of 14.43, still a low-volatility regime rather than a stress reading. Bitcoin trades near $78,500, modestly higher on the day.</p>
+        <p>The tape appears to be pricing the Hormuz strikes as an energy-specific risk rather than a broad geopolitical shock &mdash; equities shrugging, oil reacting sharply. The most fragile assumption in that read is that Monday&rsquo;s exchange is the end of the escalation rather than the start of one; a further Iranian strike against a US base, ally or Gulf shipping target would invalidate it quickly. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Iran retaliates again beyond today&rsquo;s Jordan strikes.</strong> The IRGC has vowed further retaliation for the Larak Island strike, and Monday&rsquo;s missiles at Jordan may not be the full response. Probability 30&ndash;45% of a further Iranian strike against a US, allied or shipping target within 7 days, on the basis of the IRGC&rsquo;s explicit retaliation vow and the pattern of escalation-then-pause seen earlier in this six-month standoff. If it happens: a sharper oil move and a broader equity risk-off than today&rsquo;s narrow reaction. Invalidated by a quiet week or a diplomatic statement from either side signaling this exchange is considered closed.</p>
+        <p><strong>The House funding bill fails or slips past Tuesday.</strong> Suspension-of-the-rules procedure requires a two-thirds vote, a higher bar than a simple majority; the timing itself is single-sourced pending independent confirmation. Probability 20&ndash;30% that the vote slips past Tuesday or fails outright, on the basis of the higher vote threshold and the lack of independent confirmation on timing. If it slips: government-funding uncertainty re-enters the news cycle closer to the Dec. 11 deadline than currently expected.</p>
+        <p><strong>September rate-hike odds push past 65% before Friday&rsquo;s jobs report.</strong> CME-implied odds have already moved from roughly 35% to 60% since Wednesday. Probability 35&ndash;50% that odds cross 65% before Friday&rsquo;s release, on the basis of the pace of the move so far and continued hawkish commentary. If it happens: further pressure on rate-sensitive equities (regional banks, small caps) ahead of the print itself.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">87&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Scattered rain showers, becoming isolated showers and thunderstorms</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">87&deg;</span>
+            <span class="sky">Scattered showers, isolated storms</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">72&deg;</span>
+            <span class="sky">Mostly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">91&deg;</span>
+            <span class="sky">Mostly sunny, then scattered storms</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT&rsquo;s Red Line reopens Tuesday after a 2.5-month closure</h3>
+        <div class="story-body">
+          <p>Pittsburgh Regional Transit&rsquo;s Red Line resumes service Tuesday, Sept. 1, following track replacement and reconstruction of four grade crossings since June 16; test runs between Dormont Junction and South Hills Junction took place over the weekend. It directly affects South Hills and Bridgeville-area commuters who use the T.</p>
+        </div>
+        <p class="story-sourceline">PRT statements, via CBS News Pittsburgh, Railway Track &amp; Structures, Metro Magazine.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>County awards another $1.7 million from opioid-settlement funds</h3>
+        <div class="story-body">
+          <p>Allegheny County announced $1.7 million in new opioid-settlement-fund awards Thursday, covering emergency childcare for parents in a substance-use crisis, an occupational therapist and pharmacist for street-outreach medicine teams, and additional recovery specialists &mdash; part of the county&rsquo;s ongoing, multi-year disbursement of manufacturer and distributor settlement money.</p>
+        </div>
+        <p class="story-sourceline">Allegheny County (primary) &middot; WESA &middot; CBS News Pittsburgh.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>A second daily Amtrak Pennsylvanian train begins mid-November</h3>
+        <div class="story-body">
+          <p>Gov. Shapiro and PennDOT announced Sunday that a second daily Pennsylvanian round trip (New York&ndash;Harrisburg&ndash;Pittsburgh via Amtrak and Norfolk Southern) will start mid-November, part of more than $80 million the state has invested in the rail expansion.</p>
+        </div>
+        <p class="story-sourceline">Governor&rsquo;s office press release (primary).</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Cautiously risk-on, narrow underneath</span> Supporting: major indices hold well above their 50-day levels, credit spreads (HY OAS 2.63%) remain historically tight, and Friday&rsquo;s selloff was orderly rather than disorderly. Contradicting: Friday&rsquo;s breadth was weak (1,653 advancers vs. 3,505 decliners across a 5,312-name universe, roughly 31% advancing) despite indices closing only modestly lower, and the space/small-cap cohort sold off far harder than headline indices suggest. Confidence: moderate. Change from the prior report: breadth deteriorated further from Thursday&rsquo;s already-narrow reading, and the overnight Iran-Jordan exchange adds a fresh, unpriced geopolitical variable that Friday&rsquo;s regime read did not include.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities &amp; breadth</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Friday, Aug. 28 official closes vs. Thursday, Aug. 27 &middot; EOD official.</caption>
+              <thead><tr><th>Index/ETF</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500 (SPY)</td><td class="down">&minus;0.23%</td></tr>
+                <tr><td>Nasdaq (QQQM)</td><td class="down">&minus;0.65%</td></tr>
+                <tr><td>Dow (DIA)</td><td class="down">&minus;0.03%</td></tr>
+                <tr><td>Russell 2000 (IWM)</td><td class="down">&minus;1.35%</td></tr>
+                <tr><td>Equal-weight S&amp;P (RSP)</td><td class="down">&minus;0.34%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Breadth (Massive grouped-daily, Friday Aug. 28 session, universe filtered to price &ge;$1 and volume &ge;100,000): 1,653 advancers vs. 3,505 decliners vs. 154 unchanged across 5,312 names &mdash; roughly 31% advancing, a materially negative breadth day despite the S&amp;P closing down only 0.23%. Down-volume ($8.4B) outran up-volume ($4.1B) by roughly 2-to-1. Percent-above-50/200-day EMA figures remain <span class="chip chip--warn">Estimated &mdash; EMA proxy, accumulating history (26/200 sessions)</span> and are not yet reportable on a stable basis.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Friday, Aug. 28 sector SPDR closes vs. Thursday.</caption>
+              <thead><tr><th>Sector</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>Communication Services (XLC)</td><td class="up">+1.42%</td></tr>
+                <tr><td>Consumer Discretionary (XLY)</td><td class="up">+1.15%</td></tr>
+                <tr><td>Consumer Staples (XLP)</td><td class="up">+0.43%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="up">+0.38%</td></tr>
+                <tr><td>Energy (XLE)</td><td class="up">+0.63%</td></tr>
+                <tr><td>Health Care (XLV)</td><td class="down">&minus;0.24%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="down">&minus;0.09%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td class="down">&minus;0.40%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="down">&minus;1.04%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="down">&minus;0.93%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="down">&minus;1.55%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Technology was Friday&rsquo;s weakest sector on continued chip-margin anxiety following Marvell&rsquo;s report; communication services and consumer discretionary led, consistent with the mega-cap-tech-and-financials-over-chips rotation this outlet flagged Friday afternoon.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>The space cohort was Friday&rsquo;s most extreme mover: ASTS &minus;5.5%, PL &minus;5.6%, SPIR &minus;5.9%, VSAT &minus;7.4%, RKLB &minus;4.7%, FLY &minus;4.1%, KRMN &minus;3.9%, against SPCX (+0.5%) and GSAT (&minus;0.4%) holding up. AI-infrastructure names were broadly weaker on the Marvell read-through: NVDA &minus;4.6%, VRT &minus;4.5%, DLR &minus;3.5%, ETN &minus;3.2%, EQIX &minus;3.0%, PWR &minus;3.1%, against AVGO roughly flat ahead of Wednesday&rsquo;s report. Mega-cap tech diverged sharply from the broader tech complex: AMZN +4.0%, MSFT +1.7%, GOOGL +1.7%, AAPL +1.6%, META +1.2%, while TSLA fell 1.7% and NVDA fell 4.6% &mdash; the same divergence between AI-hardware-adjacent names and platform mega-caps seen for most of the past week. Defense names were mixed and calmer: LMT and RTX roughly flat, AVAV &minus;2.9%, KTOS &minus;3.2%, PLTR +0.2%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; credit</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, Aug. 28 &middot; EOD official &middot; changes in basis points vs. Aug. 27.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D chg</th></tr></thead>
+              <tbody>
+                <tr><td>3M</td><td>3.90%</td><td class="up">+6bp</td></tr>
+                <tr><td>2Y</td><td>4.34%</td><td class="up">+14bp</td></tr>
+                <tr><td>5Y</td><td>4.48%</td><td class="up">+10bp</td></tr>
+                <tr><td>10Y</td><td>4.73%</td><td class="up">+6bp</td></tr>
+                <tr><td>30Y</td><td>5.22%</td><td class="up">+3bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s compressed to 39bp from 47bp, 5s30s compressed to 74bp from 81bp &mdash; a front-end-led flattening consistent with the market pricing near-term Fed tightening more than it&rsquo;s pricing higher long-run growth or inflation. High-yield OAS (BAMLH0A0HYM2, FRED) held at 2.63% as of Aug. 27, unchanged from the prior session and still historically tight &mdash; credit is not confirming the equity-breadth weakness. TLT (&minus;0.30%), IEF (&minus;0.41%) and LQD (&minus;0.36%) all fell modestly Friday alongside the yield backup; HYG held nearly flat (&minus;0.16%).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX: 14.43 official close Friday, <span class="chip chip--ok">Delayed (+15 min)</span> quote 15.23 as of this morning, up about 5.5% intraday on the overnight Iran-Jordan news. VIX9D and VIX3M were not independently re-quoted this run beyond the complex snapshot; the term structure remains in normal contango, consistent with an elevated-but-not-stressed regime. Put/call ratio data remains unavailable (cdn.cboe.com options market-statistics endpoint has returned 403 on every run for weeks; not retried). MOVE index and dealer gamma remain untracked &mdash; no legitimate free source for either.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>DXY (ICE dollar index) at 99.53, roughly flat overnight (&minus;0.17%) and down slightly from Friday&rsquo;s 99.70 close. EUR/USD at 1.1604, down about 0.45%. Frankfurter (ECB reference, Aug. 28 fix, EOD official): EUR 0.8589, JPY 159.68, GBP 0.7362, CNY 6.7209, CHF 0.8043, CAD 1.3854, AUD 1.3899, MXN 16.9481, BRL 5.1641, INR 95.39, all per USD. The dollar is not confirming a clean risk-off read this morning &mdash; a modestly weaker dollar alongside a sharp oil rally points to an energy-specific, not broad macro, shock so far.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude (CL=F) $86.20, up roughly 3.4% overnight on the Hormuz strikes &mdash; the clearest single market reaction to the overnight news. Gold (GC=F) $4,499.60, up about 0.5%; a modest, not dramatic, safe-haven bid. Natural gas (NG=F) up about 0.4%; copper (HG=F) up about 1.5%. GLD (&minus;3.24%) and USO (&minus;0.24%) both fell in Friday&rsquo;s official session, before this morning&rsquo;s move &mdash; the ETFs have not yet caught up to the overnight futures reaction.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $78,501 (CoinGecko, <span class="chip chip--ok">Live aggregate</span>), up 0.55% over 24 hours; Ethereum $2,449.62 (&minus;0.27%); Solana $103.14 (&minus;1.65%); Cardano $0.1967 (&minus;2.41%). Total crypto market cap $2.63 trillion; Bitcoin dominance 59.7%. The Grayscale Bitcoin Mini Trust ETF (BTC) fell 2.94% in Friday&rsquo;s official session, lagging spot bitcoin&rsquo;s own weekend and overnight strength &mdash; a timing gap between the ETF&rsquo;s last official close and spot&rsquo;s continuous trading, not a genuine divergence.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Friday&rsquo;s equal-weight-vs-cap-weight S&amp;P gap (RSP &minus;0.34% vs. SPY &minus;0.23%) and the weak breadth reading both point the same direction: index-level moves are being cushioned by a handful of large names even as the median stock underperforms. Small caps (IWM &minus;1.35%) underperformed large caps by more than a percentage point, consistent with the flattening front end of the curve raising the discount-rate headwind for smaller, more rate-sensitive names.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions</summary>
+          <p>Broadcom (AVGO) reports Wednesday, Sept. 2 after the close &mdash; the week&rsquo;s only tracked-watchlist earnings report and its largest scheduled catalyst; see Business section above for the estimate range. Treasury auctions this week are routine cash-management bills (52-week $52B and 6-week $85B Tuesday; 17-week Wednesday, amount pending; 4-week and 8-week Thursday, amounts pending) &mdash; none of a scale that typically moves markets absent a surprise in bid-to-cover.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Short interest &amp; liquidity</summary>
+          <p>FINRA daily short volume, Friday Aug. 28 session: aggregate short-volume ratio 51.0% across reporting names. Watchlist standouts by short-volume ratio: KRE 79.6%, YSS 74.2%, GSAT 71.9%, RSP 70.0%, LQD 67.7%, VSAT 67.1%, TLT 66.7%, IWM 66.6%. This is daily short volume, not short interest &mdash; short interest itself is settlement-dated and runs two to three weeks stale, and a high short-volume ratio reflects trading activity (including market-making and hedging flow), not necessarily a bearish net position.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> CENTCOM and Jordan&rsquo;s military statements; the Treasury par-yield curve and FRED (CPIAUCSL, PAYEMS, UNRATE, ICSA, T10Y2Y, BAMLH0A0HYM2 and related series); Cboe VIX complex; Yahoo Finance close-series data across the board, sector, company and futures/commodity/FX universe; Frankfurter ECB reference rates; CoinGecko; FINRA daily short volume; Massive grouped-daily breadth data; SEC EDGAR; NASA&rsquo;s mission blog; Anthropic&rsquo;s own security disclosure; the Lancaster County Coroner via LNP/LancasterOnline; the Pennsylvania Department of Health and CDC; wire and beat reporting from CNN, NPR, Axios, CNBC, Bloomberg, ABC News, NBC News, Washington Times, Democracy Docket, WESA, CBS News Pittsburgh and others named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes; missing data is declared unavailable, never estimated; this edition was written and published automatically, with no human review before you. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-08-31-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

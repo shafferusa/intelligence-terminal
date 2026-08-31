@@ -1,8 +1,16 @@
 {
- "fetched": "2026-08-30T09:21:05-04:00",
+ "fetched": "2026-08-31T06:50:00-04:00",
  "earnings_fetched": "2026-08-30",
  "earnings_fetched_note": "Alpha Vantage 3-month CSV re-fetched (full refresh, not previously exhausted -- prior partial read was a local pipe-truncation artifact, re-pull succeeded, 1590 rows). Cross-checked against Finnhub earnings calendar for 2026-09-01..2026-09-05. Only watchlist name reporting in the window: Broadcom (AVGO), Sept 2 after close -- estimates diverge between sources (Finnhub ~$3.30 EPS/~$29.9B rev vs Alpha Vantage ~$2.83 EPS), likely differing analyst blends; reported as a range. Sept 1-5 is a genuinely quiet week for the tracked watchlist otherwise (broader-market names reporting but not on the tracked list: Dell, Palo Alto Networks, MongoDB, Zscaler, Snowflake, HPE, NetApp, Lululemon, Ciena, Barrick, DocuSign, Guidewire).",
  "events": [
+  {
+   "ts_et": "2026-08-31T14:30:00-04:00",
+   "type": "diplomatic",
+   "name": "Turkey signs the Artemis Accords at NASA HQ",
+   "importance": "Low",
+   "reason": "Symbolic space-diplomacy event; expands the Accords signatory list, not a market or policy catalyst.",
+   "source": "NASA (primary), via mission-blog/press reporting -- Confirmed-multiple"
+  },
   {
    "ts_et": "2026-09-01T00:00:00-04:00",
    "type": "congress",
@@ -104,7 +112,7 @@
    "type": "launch",
    "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
    "importance": "Low",
-   "reason": "Indian earth-observation satellite; notable on the global space calendar but not a US market or policy event.",
+   "reason": "Indian earth-observation satellite; status upgraded to \"Go for Launch\" (from earlier TBC) per Launch Library 2 -- notable on the global space calendar but not a US market or policy event.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled, \"Go for Launch\")"
   },
   {
@@ -118,7 +126,7 @@
   {
    "ts_et": "2026-09-04T16:00:00-04:00",
    "type": "launch",
-   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, Andøya Spaceport, Norway)",
+   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, And\u00f8ya Spaceport, Norway)",
    "importance": "Medium",
    "reason": "European orbital launch attempt (Isar Aerospace); status listed \"To Be Confirmed\" per Launch Library 2, so timing/go status could still slip.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved as of fetch"

@@ -120,23 +120,6 @@
    "last_updated": "2026-08-22-sat"
   },
   {
-   "id": "home-depot-ceo-medical-leave-aug12",
-   "headline": "Home Depot falls 2.9% after CEO Ted Decker takes temporary medical leave; two executives named to oversee operations",
-   "status": "Resolved",
-   "first_seen": "2026-08-12-pm",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-primary",
-   "one_line": "No further movement; the CEO medical-leave story has produced no new developments in over a week and the related forecast graded correct on 2026-08-22. Closing this thread.",
-   "score_note": "Forecast 2026-08-12-pm-3 logged on whether HD falls a further 3%+ over the next 5 sessions.",
-   "sources": [
-    "Home Depot 8-K (SEC EDGAR, primary)",
-    "ir.homedepot.com press release (primary)",
-    "Bloomberg",
-    "this run's own Twelve Data close-series data"
-   ],
-   "watch": false
-  },
-  {
    "id": "vmware-vcenter-new-cve-aug14",
    "headline": "VMware vCenter deadline lands today amid China-nexus attribution and ransomware escalation",
    "status": "Materially changed",
@@ -186,22 +169,6 @@
     "Axios"
    ],
    "watch": true
-  },
-  {
-   "id": "walmart-deere-retail-divergence-aug21",
-   "headline": "Wave of Walmart price-target cuts underscores the tariff-refund pattern seen across retail earnings",
-   "status": "Resolved",
-   "first_seen": "2026-08-21-am",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "No further movement this week; the retail-earnings/tariff-refund thread has run its course. Closing this thread.",
-   "score_note": "Sell-side response to Wednesday's plunge now on record; confirms this is read as a growth-rate story, not a franchise-health scare.",
-   "sources": [
-    "Deere investor relations/SEC 8-K (primary)",
-    "Walmart 8-K (primary)",
-    "Ross Stores SEC 8-K exhibit (primary)"
-   ],
-   "watch": false
   },
   {
    "id": "anthropic-ipo-backlash-risk-factor-aug21",
@@ -426,37 +393,6 @@
    "watch": true
   },
   {
-   "id": "kryvyi-rih-double-tap-strike-aug21",
-   "headline": "Kryvyi Rih toll settles at 16 dead as Russia-Ukraine strikes continue through the weekend",
-   "status": "Resolved",
-   "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "No further movement on this specific strike; its casualty benchmark (16 dead) has since been superseded by Friday night's much larger Myla strike near Kyiv (37+ dead) -- see that entry. Closing this thread.",
-   "score_note": "Strike tempo continues without a clear de-escalation signal.",
-   "sources": [
-    "RBC-Ukraine",
-    "CNN"
-   ],
-   "watch": false
-  },
-  {
-   "id": "nvda-earnings-aug26",
-   "headline": "Nvidia's Wednesday earnings are the week's single largest scheduled market catalyst",
-   "status": "Resolved",
-   "first_seen": "2026-08-23-sun",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-primary (date/time)",
-   "one_line": "Reported Wed after close: revenue $96.221B (vs ~$92-93B consensus), EPS $2.22 (vs ~$2.10), Q3 guide $108B assuming zero China data-center revenue, FY28 growth guide ~70% vs Street's ~44%. Stock closed +8.74% Thursday, breaking a four-report losing streak, then gave back none of it Friday even as Warsh's keynote hit the broader chip cohort. Multiple forecasts on the >5% post-earnings move graded correct; a forecast that the print would trigger a broad AI-infrastructure pullback graded wrong.",
-   "score_note": "Clean resolution; closing this thread.",
-   "sources": [
-    "Kiplinger",
-    "Finnhub earnings calendar",
-    "9to5Mac"
-   ],
-   "watch": false
-  },
-  {
    "id": "south-sudan-peacekeeper-ambush-aug25",
    "headline": "Two UN peacekeepers killed in a South Sudan ambush",
    "status": "Materially changed",
@@ -556,22 +492,6 @@
    "watch": true
   },
   {
-   "id": "space-sector-selloff-aug24",
-   "headline": "Chip stocks and last week's biggest space-stock winners reverse hard ahead of Nvidia earnings",
-   "status": "Resolved",
-   "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Chip names rebounded Tuesday (NVDA +2.19%, AMD +4.91%, MRVL +4.84%) ahead of Wednesday's Nvidia earnings, but the space cohort found no follow-through: VOYG -2.79%, FLY -3.64%, KRMN -4.22%, YSS -4.51%, RKLB -2.01%, while ASTS/LUNR stabilized versus Monday's double-digit declines. No company-specific catalyst identified for the divergence.",
-   "score_note": "Divergence from the chip rebound is now the notable pattern, not the space selloff alone.",
-   "sources": [
-    "this run's own Yahoo Finance close-series data",
-    "Investing.com",
-    "247wallst.com"
-   ],
-   "watch": true
-  },
-  {
    "id": "meta-youth-safety-settlement-aug26",
    "headline": "Meta agrees to pay up to $17.1B to settle youth mental-health claims with 47 states",
    "status": "New",
@@ -640,37 +560,6 @@
    "watch": true
   },
   {
-   "id": "swalwell-fbi-probe-civil-rights-aug24",
-   "headline": "Swalwell's attorney says FBI probe includes a civil-rights statute",
-   "status": "Corrected",
-   "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-28-am",
-   "verification": "Confirmed-multiple (statement); Single-reliable-source (\u00a7242 detail, device inventory)",
-   "one_line": "CORRECTION (logged in ledgers/corrections.json): every edition since Aug 20 called him 'Rep. Eric Swalwell.' He resigned from Congress effective April 14, 2026 after separate sexual-assault allegations and a suspended gubernatorial campaign -- he has been a private citizen throughout the search-warrant story. Substance of the FBI probe unchanged.",
-   "score_note": "First specific legal-theory detail on the investigation beyond the original allegations.",
-   "sources": [
-    "San Francisco Chronicle",
-    "NewsNation"
-   ],
-   "watch": true
-  },
-  {
-   "id": "roman-telescope-launch-date-correction-aug25",
-   "headline": "Roman Space Telescope launches successfully on schedule",
-   "status": "Resolved",
-   "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-30-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Launched 7:26am ET Sunday Aug 30 on a Falcon Heavy from LC-39A -- clean ascent, stage separation at T+31min, solar-array sun shield deployed within the following ~30 min, no anomalies reported. Now transiting toward Sun-Earth L2 (~1 month journey); first images expected Jan 2027. Resolves the open forecast (2026-08-28-pm-2) logged Friday -- graded next Saturday.",
-   "score_note": "Clean mission execution on the primary attempt; closing this thread.",
-   "sources": [
-    "NASA Roman blog (primary)",
-    "NPR",
-    "Space.com"
-   ],
-   "watch": false
-  },
-  {
    "id": "israel-syria-turkey-airbase-aug20",
    "headline": "Turkey issues arrest warrant for Netanyahu as Idlib-area strike target is confirmed as Abu al-Duhur",
    "status": "Continuing",
@@ -691,9 +580,9 @@
    "headline": "DRC Ebola outbreak 'spreading faster and wider' than ever, UN warns, as response funding runs low",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-08-31-am",
    "verification": "Confirmed-primary",
-   "one_line": "Case count now 5,713 confirmed / 2,744 deaths as of Aug 25, spread to 60 health zones (up 2). 158 health workers infected, 45 dead. Funding still only just over half of the $518M continental response plan.",
+   "one_line": "Case count ticked up to 5,794 confirmed/2,786 deaths as of Aug 27 (from 5,713/2,744 a week prior), still across 60 health zones. WHO separately declared the linked Uganda outbreak over after 42 days with no new case.",
    "score_note": "A named UN official's direct funding-shortfall warning raises this from a case-count update to a resourcing crisis.",
    "sources": [
     "UN News",
@@ -706,16 +595,16 @@
    "headline": "Islamabad hospital fire cause now disputed between minister and hospital's own report",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-08-31-am",
    "verification": "Confirmed-multiple (locked-exits finding); Disputed (cause)",
-   "one_line": "Hospital's own preliminary report now points to a nebulizer igniting the oxygen-rich nursery air, contradicting the health minister's AC-unit claim; fire-brigade investigators found emergency exits locked from outside, contradicting the hospital's own claim they were open. PM Sharif's committee due within 5 days.",
+   "one_line": "PM Sharif's inquiry (led by a former interior secretary) found no working fire alarm/sprinklers in the nursery and no supervisory staff on duty, recommending criminal proceedings; 8 officials suspended Aug 29. The nebulizer-vs-AC-unit cause dispute was not definitively resolved in the inquiry as reported.",
    "score_note": "Two competing official accounts of the same fire is itself the story now.",
    "sources": [
     "Dawn",
     "dailypakistan",
     "ARY News"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "mail-ballot-new-merits-suit-aug26",
@@ -838,23 +727,6 @@
    "watch": true
   },
   {
-   "id": "marvell-earnings-reaction-aug27",
-   "headline": "Marvell's post-earnings selloff deepens to -10.3% on Friday",
-   "status": "Resolved",
-   "first_seen": "2026-08-28-am",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-primary",
-   "one_line": "No further movement beyond Friday's -10.3% close ($216.62). Same beat-and-sell-off pattern this report flagged with Walmart the prior week: a genuine beat and raise (record revenue, FY28 guide raised to ~$18B) still sold off on gross-margin guidance (57.5-58.5%) against a richly valued stock (~190% YTD before the drop).",
-   "score_note": "Beat-and-raise still sold off -- the same valuation-sensitivity pattern as Walmart's reaction last week; closing this thread.",
-   "sources": [
-    "Marvell SEC 8-K (primary)",
-    "this report's own Yahoo Finance close-series computation",
-    "CNBC",
-    "Wells Fargo research note via CNBC"
-   ],
-   "watch": false
-  },
-  {
    "id": "anthropic-pentagon-ruling-aug28",
    "headline": "Federal judge strikes down the Pentagon's \"supply chain risk\" designation of Anthropic",
    "status": "New",
@@ -891,11 +763,11 @@
   {
    "id": "kyiv-myla-strike-aug28",
    "headline": "Russian drone-and-missile strike on the village of Myla near Kyiv kills at least 38",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-08-30-sun",
+   "last_updated": "2026-08-31-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Toll rose to 38 dead (from 37), 4 still missing, ~20 injured incl. 2 children, per Zelensky's own Sunday statement. Russia's defense ministry separately said this weekend it is preparing 'massive' strikes on Ukraine's energy infrastructure -- a stated intent, not yet executed. Overnight bombardment continued: 20+ hits on Dnipropetrovsk region, a Sunday-morning warehouse fire in Zaporizhzhia.",
+   "one_line": "Toll holds at 38 dead/4 missing. Russia's threatened 'massive' energy-infrastructure strike has not been executed as of Monday morning; overnight bombardment continued at a normal pace (2 Iskander-M missiles, ~130 drones) rather than the threatened scale.",
    "score_note": "Forecast (2026-08-23-sun-3) that a strike at or above Kryvyi Rih's casualty scale would land this week graded correct against this event.",
    "sources": [
     "AP",
@@ -923,19 +795,21 @@
   {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
    "headline": "CIA director's secret Moscow trip surfaces a Trump-Putin-Zelensky summit proposal",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-08-30-sun",
+   "last_updated": "2026-08-31-am",
    "verification": "Confirmed-multiple (trip and proposal); Single-reliable-source (Putin's reported rejection)",
-   "one_line": "CIA Director Ratcliffe made a covert Moscow visit this past week and floated a Trump-Putin-Zelensky summit to Russian intelligence chiefs Naryshkin and Bortnikov, per Axios (original) corroborated by NYT; Trump called the trip 'standard business.' Zelensky was briefed Friday and has voiced support. Putin's reported rejection comes from unnamed sources only -- the Kremlin has not addressed it on the record.",
+   "one_line": "Kremlin spokesman Peskov gave the first on-record response: Putin sees 'absolutely no point' in a Trump-Putin-Zelensky summit unless it is to formally sign a completed deal, not negotiate one. Zelensky separately rejected meeting in Moscow ('he can come to Kyiv'). Neither side has narrowed the underlying gap; open forecast 2026-08-30-sun-5 leans toward wrong given Peskov's framing, but not yet gradeable (grades Saturday).",
    "score_note": "First reported concrete high-level diplomatic overture on ending the war in weeks; no summit date set.",
    "sources": [
-    "Axios",
-    "New York Times",
-    "Kyiv Post",
-    "Ukrainska Pravda",
     "AP",
-    "Reuters"
+    "New York Times",
+    "Meduza",
+    "Ukrainska Pravda",
+    "Kyiv Post",
+    "Reuters",
+    "Axios",
+    "UA.news"
    ],
    "watch": true
   },
@@ -952,6 +826,115 @@
     "Times of Israel",
     "Haaretz",
     "Ynet"
+   ],
+   "watch": true
+  },
+  {
+   "id": "us-iran-jordan-strikes-aug31",
+   "headline": "US strikes Iranian launchers near Hormuz; Iran fires missiles at US bases in Jordan",
+   "status": "New",
+   "first_seen": "2026-08-31-am",
+   "last_updated": "2026-08-31-am",
+   "verification": "Confirmed-multiple (US strike, Jordan interception); Single-reliable-source (IRGC casualty claim, Iranian state media)",
+   "one_line": "US forces struck two Iranian rocket launchers on Larak Island late Sat/Sun after intel indicated IRGC was prepping sea mines for the strait; the IRGC vowed retaliation and Iran fired missiles at King Hussein and Al-Azraq air bases in Jordan early Monday, which Jordan's military says it intercepted (8 missiles, no casualties). First direct US-Iran exchange in a month.",
+   "score_note": "Sharpest escalation yet of the six-month Hormuz standoff; oil reacted (+3-4%) while equity futures stayed flat, an energy-specific not broad risk-off market read so far.",
+   "sources": [
+    "CENTCOM (primary, via wire)",
+    "Jordan military statement",
+    "CNN",
+    "Gulf News",
+    "RFE/RL",
+    "ABC Australia",
+    "Jerusalem Post",
+    "Time"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pa-measles-coroner-dispute-aug31",
+   "headline": "Lancaster County coroner disputes PA's measles-death count",
+   "status": "Materially changed",
+   "first_seen": "2026-08-29-sat",
+   "last_updated": "2026-08-31-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Coroner Dr. Stephen Diamantoni says an Aug 14 infant death (Christiana Borough) was caused by a ruptured spleen, not measles, and his office attributes zero deaths in the county to measles -- directly disputing Gov. Shapiro's Aug 29 announcement. CDC says PA's Governor's Office has declined its assistance offers; CMS Administrator Oz says cause is unclear. PA Health Dept clarifies 'measles-associated' means detected, not necessarily causal. Case count now 460 across 31 counties.",
+   "score_note": "Escalated from a state-vs-HHS-Secretary dispute to a three-way dispute including a named county coroner's own autopsy finding.",
+   "sources": [
+    "LNP/LancasterOnline (coroner, primary)",
+    "NBC News",
+    "Daily Caller",
+    "WFMZ",
+    "CDC (primary statement)",
+    "Politico",
+    "The Hill",
+    "ABC News",
+    "PA Dept of Health (primary)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "nepal-tibet-flood-toll-aug31",
+   "headline": "Nepal-Tibet flood toll jumps past 900, still not internally reconciled",
+   "status": "Materially changed",
+   "first_seen": "2026-08-26-pm",
+   "last_updated": "2026-08-31-am",
+   "verification": "Confirmed-multiple (toll figure); Unconfirmed (cause of the jump -- new deaths vs tally reconciliation)",
+   "one_line": "Combined toll now 919 dead (903 Nepal, 16 Tibet) and ~4,793 missing as of Monday, up sharply from Sunday's 750+/734 figure. Unclear whether this reflects new casualties or Nepal's disaster-authority/police tallies finally reconciling -- the specific reconciliation this outlet has tracked since last week remains unconfirmed either way.",
+   "score_note": "Largest single-day jump in this outlet's tracking of the toll; open forecast (2026-08-30-sun-6) on reconciliation still unresolved.",
+   "sources": [
+    "NBC News",
+    "CNN",
+    "TASS (citing Chinese state TV)",
+    "UPI",
+    "Korea Times"
+   ],
+   "watch": true
+  },
+  {
+   "id": "anthropic-infostealer-warning-aug31",
+   "headline": "Anthropic warns infostealer malware is hijacking Claude accounts",
+   "status": "New",
+   "first_seen": "2026-08-31-am",
+   "last_updated": "2026-08-31-am",
+   "verification": "Confirmed-primary",
+   "one_line": "Anthropic disclosed six infostealer malware families (Vidar, LummaC2, StealC, RedLine, Acreed, Atomic Stealer/AMOS) are stealing authenticated browser session cookies to hijack Claude logins, bypassing passwords/2FA. Anthropic is signing out affected users, removing saved payment methods and refunding unauthorized charges; says the campaigns are general-purpose credential theft unrelated to Claude itself.",
+   "score_note": "Rare instance of a lab disclosing attacks on its users rather than its models.",
+   "sources": [
+    "Anthropic (primary)",
+    "BleepingComputer",
+    "Security Affairs",
+    "The Cyber Express"
+   ],
+   "watch": false
+  },
+  {
+   "id": "lake-america-google-maps-aug31",
+   "headline": "Lake America lands on Google Maps; White House celebrates, Ford mocks it on ABC",
+   "status": "Materially changed",
+   "first_seen": "2026-08-28-am",
+   "last_updated": "2026-08-31-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Google Maps began showing 'Lake America' to US users Saturday; White House Communications Director Cheung publicly celebrated it -- the first substantive White House response to a week of bipartisan pushback. Ontario Premier Doug Ford called the order 'like something out of Saturday Night Live' on ABC's This Week Sunday, and warned a proposed doubling of Canadian auto tariffs would be 'devastating.' No resumption of trade talks reported; Canada's Sept 8 retaliatory tariffs remain on track.",
+   "score_note": "First White House response to the pushback thread; escalation via consumer-facing platform (Google Maps) rather than official channels.",
+   "sources": [
+    "ABC News (transcript, primary)",
+    "Axios",
+    "Bloomberg",
+    "White House Communications Director statement (primary)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "house-funding-bill-vote-aug31",
+   "headline": "House returns; funding bill floor vote expected Tuesday under suspension",
+   "status": "New",
+   "first_seen": "2026-08-31-am",
+   "last_updated": "2026-08-31-am",
+   "verification": "Single-reliable-source (Tuesday timing, single wire text); Confirmed-primary (underlying CR terms/Senate vote)",
+   "one_line": "House returned Monday for a one-week session built around the Senate-passed continuing resolution (funds govt through Dec 11, passed Senate 90-6 Aug 8); AP/NPR wire reporting points to a Tuesday floor vote under suspension of the rules (needs 2/3, not simple majority) -- not yet independently confirmed beyond the shared wire text. Senate stays in recess until Sept 14.",
+   "score_note": "Higher vote threshold (2/3) than a simple majority makes passage less certain than routine floor votes.",
+   "sources": [
+    "NPR/AP wire (single text, multiple affiliates)"
    ],
    "watch": true
   }

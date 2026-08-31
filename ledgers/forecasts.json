@@ -2136,6 +2136,36 @@
    "probability": "5-10%",
    "basis": "Each individual trigger is a live but low-probability risk on its own (per the Risk Register); this scenario requires at least one to cross from rhetoric or containment into an actual escalatory event.",
    "status": "open"
+  },
+  {
+   "id": "2026-08-31-am-1",
+   "date": "2026-08-31",
+   "slot": "am",
+   "forecast": "Iran conducts a further retaliatory strike against a US, allied, or Gulf-shipping target beyond today's Jordan missile strikes",
+   "horizon": "2026-09-07",
+   "probability": "30-45%",
+   "basis": "IRGC explicitly vowed further retaliation for the Larak Island strike; pattern of escalation-then-pause seen earlier in the six-month Hormuz standoff",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-31-am-2",
+   "date": "2026-08-31",
+   "slot": "am",
+   "forecast": "The House funding-bill floor vote slips past Tuesday or fails to reach two-thirds under suspension of the rules",
+   "horizon": "2026-09-02",
+   "probability": "20-30%",
+   "basis": "Suspension procedure requires 2/3, a higher bar than simple majority; Tuesday timing is single-sourced (one wire text) pending independent confirmation",
+   "status": "open"
+  },
+  {
+   "id": "2026-08-31-am-3",
+   "date": "2026-08-31",
+   "slot": "am",
+   "forecast": "CME-implied September rate-hike odds push past 65% before Friday's August jobs report",
+   "horizon": "2026-09-04",
+   "probability": "35-50%",
+   "basis": "Odds already moved from ~35% to ~60% since Wednesday's Jackson Hole keynote; continued hawkish sell-side commentary through the weekend",
+   "status": "open"
   }
  ]
 }
