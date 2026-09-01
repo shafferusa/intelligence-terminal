@@ -1,38 +1,46 @@
 {
- "fetched": "2026-08-31T06:50:00-04:00",
+ "fetched": "2026-09-01T06:52:00-04:00",
  "earnings_fetched": "2026-08-30",
- "earnings_fetched_note": "Alpha Vantage 3-month CSV re-fetched (full refresh, not previously exhausted -- prior partial read was a local pipe-truncation artifact, re-pull succeeded, 1590 rows). Cross-checked against Finnhub earnings calendar for 2026-09-01..2026-09-05. Only watchlist name reporting in the window: Broadcom (AVGO), Sept 2 after close -- estimates diverge between sources (Finnhub ~$3.30 EPS/~$29.9B rev vs Alpha Vantage ~$2.83 EPS), likely differing analyst blends; reported as a range. Sept 1-5 is a genuinely quiet week for the tracked watchlist otherwise (broader-market names reporting but not on the tracked list: Dell, Palo Alto Networks, MongoDB, Zscaler, Snowflake, HPE, NetApp, Lululemon, Ciena, Barrick, DocuSign, Guidewire).",
+ "earnings_fetched_note": "Not re-pulled today (once-per-day rule); prior pull still current. Only watchlist name reporting this week: Broadcom (AVGO), Sept 2 after close -- Finnhub consensus ~$3.30 EPS/~$29.9B rev, cross-checked fresh via Finnhub earnings-calendar endpoint this run (2026-09-02, amc, epsEstimate 3.30, revenueEstimate ~$29.95B).",
  "events": [
   {
-   "ts_et": "2026-08-31T14:30:00-04:00",
-   "type": "diplomatic",
-   "name": "Turkey signs the Artemis Accords at NASA HQ",
+   "ts_et": "2026-09-01T08:30:00-04:00",
+   "type": "space",
+   "name": "ISS spacewalk (NASA's Jessica Meir, ESA's Sophie Adenot), ~6.5 hours",
    "importance": "Low",
-   "reason": "Symbolic space-diplomacy event; expands the Accords signatory list, not a market or policy catalyst.",
-   "source": "NASA (primary), via mission-blog/press reporting -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-01T00:00:00-04:00",
-   "type": "congress",
-   "name": "House in session Sept 1-4 (returned Mon Aug 31 from August recess) for a one-week work period; Senate remains in recess all week, not returning until Sept 14",
-   "importance": "Low",
-   "reason": "No confirmed high-profile floor votes, markups, or hearings identified for this window via search; noted for awareness ahead of the Sept 7 Labor Day recess week when both chambers are out. congress.gov API not queried (CONGRESS_API_KEY not set).",
-   "source": "WebSearch (Roll Call congressional-calendar reporting, house.gov/dailypress.senate.gov calendar summaries) -- Confirmed-multiple, lower-confidence on specifics"
+   "reason": "Routine but newsworthy maintenance EVA (navigational-aid replacement, cosmic-particle detector prep, data-relay cabling); the station's 284th spacewalk since 1998.",
+   "source": "NASA (primary) -- Confirmed-primary (scheduled)"
   },
   {
    "ts_et": "2026-09-01T10:00:00-04:00",
    "type": "econ_release",
-   "name": "Job Openings and Labor Turnover Survey (JOLTS), July 2026",
+   "name": "JOLTS Job Openings and Labor Turnover Survey (July 2026)",
+   "importance": "Critical",
+   "reason": "First hard-data test since Fed Chair Warsh's hawkish Jackson Hole/G20 remarks and Treasury Secretary Bessent's on-record public pushback; comes ahead of the Sept 16 FOMC decision.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-01T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "ISM Manufacturing PMI (August 2026)",
    "importance": "Medium",
-   "reason": "Labor-demand slack indicator the Fed watches closely; comes 2.5 weeks before the Sept 16 FOMC decision.",
-   "source": "BLS release schedule ICS (bls.gov/schedule/news_release/bls.ics) -- Confirmed-primary (scheduled)"
+   "reason": "Consensus ~55.2, down from 55.6; would be an eighth straight month above the 50 expansion line if it holds.",
+   "source": "ISM -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-01T11:00:00-04:00",
+   "type": "congress",
+   "name": "House convenes; H.R. 6500 (Continuing Appropriations and Extensions Act, 2027) floor vote expected under suspension of the rules",
+   "importance": "High",
+   "reason": "Senate-passed 90-6, funds government through Dec 11; suspension requires 2/3 vote, a higher bar than simple majority. Exact vote hour not yet confirmed.",
+   "source": "CBO publication 62588 (primary); Majority Leader weekly schedule (primary) -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-01T11:30:00-04:00",
    "type": "auction",
    "name": "52-Week Treasury Bill auction, $52B",
    "importance": "Low",
-   "reason": "Routine cash-management bill auction; only a coupon-heavy calendar or a big surprise in bid-to-cover typically moves markets on bill auctions.",
+   "reason": "Routine cash-management bill auction.",
    "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
   },
   {
@@ -44,36 +52,44 @@
    "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary"
   },
   {
+   "ts_et": "2026-09-01T20:00:00-04:00",
+   "type": "election",
+   "name": "Massachusetts Senate primary (Markey vs. Moulton), polls close",
+   "importance": "Medium",
+   "reason": "Polls close well after this edition's cutoff; results belong in the closing/next edition.",
+   "source": "WebSearch (state election calendar) -- Confirmed-multiple"
+  },
+  {
    "ts_et": "2026-09-02T03:46:00-04:00",
    "type": "launch",
    "name": "Falcon 9 -- Starlink Group 15-23 (Vandenberg SFB)",
    "importance": "Low",
-   "reason": "Routine Starlink batch launch, not a novel mission profile.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled, \"Go for Launch\")"
+   "reason": "Routine Starlink batch launch, slipped one day from Sept 1.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
   },
   {
-   "ts_et": "2026-09-02T10:00:00-04:00",
-   "type": "econ_release",
-   "name": "Metropolitan Area Employment and Unemployment, monthly (July 2026 data)",
+   "ts_et": "2026-09-02T11:00:00-04:00",
+   "type": "launch",
+   "name": "Electron -- Owl Around the World (StriX Launch 11), Mahia NZ",
    "importance": "Low",
-   "reason": "Regional labor detail; rarely market-moving on its own.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-02T11:30:00-04:00",
-   "type": "auction",
-   "name": "17-Week Treasury Bill auction",
-   "importance": "Low",
-   "reason": "Routine cash-management bill auction; offering amount not yet published as of this fetch (announcement same-day, Sept 1).",
-   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary (amount pending)"
+   "reason": "Slipped from Aug 31/Sept 1 on launch-site weather.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
   },
   {
    "ts_et": "2026-09-02T16:05:00-04:00",
    "type": "earnings",
    "name": "Broadcom (AVGO) Q3 FY2026 earnings, after close",
    "importance": "Critical",
-   "reason": "Week's largest scheduled catalyst and the only tracked watchlist name reporting -- AI-infra bellwether (custom AI silicon, networking, VMware); consensus ~$29.9B revenue / ~$3.30 EPS per Finnhub, though Alpha Vantage's estimate runs lower (~$2.83 EPS), likely a different analyst blend or GAAP/non-GAAP basis -- report the range, not a single point estimate.",
-   "source": "Finnhub earnings calendar (Confirmed-primary) cross-checked against Alpha Vantage 3-month CSV (Confirmed-primary, diverging estimate)"
+   "reason": "Week's largest scheduled catalyst and the only tracked watchlist name reporting -- AI-infra bellwether. Consensus ~$29.9B revenue / ~$3.30 EPS (Finnhub); options market pricing a ~12% post-earnings move.",
+   "source": "Finnhub earnings calendar (Confirmed-primary)"
+  },
+  {
+   "ts_et": "2026-09-03T21:25:00-04:00",
+   "type": "launch",
+   "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
+   "importance": "Low",
+   "reason": "India's first launch since a January 2026 failure; on track per Launch Library 2.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
   },
   {
    "ts_et": "2026-09-03T08:30:00-04:00",
@@ -89,47 +105,23 @@
    "name": "Initial jobless claims, week of Aug 29",
    "importance": "Medium",
    "reason": "Weekly labor-market read; recurring Thursday 8:30 ET release.",
-   "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule; this item is a DOL/ETA program and is NOT itemized in the BLS ICS feed, unlike the prior week's cache entry implied)"
-  },
-  {
-   "ts_et": "2026-09-03T11:30:00-04:00",
-   "type": "auction",
-   "name": "4-Week Treasury Bill auction",
-   "importance": "Low",
-   "reason": "Routine cash-management bill auction; offering amount not yet published as of this fetch.",
-   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary (amount pending)"
-  },
-  {
-   "ts_et": "2026-09-03T11:30:00-04:00",
-   "type": "auction",
-   "name": "8-Week Treasury Bill auction",
-   "importance": "Low",
-   "reason": "Routine cash-management bill auction; offering amount not yet published as of this fetch.",
-   "source": "treasurydirect.gov TA_WS upcoming -- Confirmed-primary (amount pending)"
-  },
-  {
-   "ts_et": "2026-09-03T17:25:00-04:00",
-   "type": "launch",
-   "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
-   "importance": "Low",
-   "reason": "Indian earth-observation satellite; status upgraded to \"Go for Launch\" (from earlier TBC) per Launch Library 2 -- notable on the global space calendar but not a US market or policy event.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (scheduled, \"Go for Launch\")"
+   "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule)"
   },
   {
    "ts_et": "2026-09-04T08:30:00-04:00",
    "type": "econ_release",
    "name": "Employment Situation, August 2026 (nonfarm payrolls, unemployment rate, average hourly earnings)",
    "importance": "Critical",
-   "reason": "The single most-watched data point of the week -- first-Friday jobs report, ~2 weeks before the Sept 16 FOMC decision, and the first payrolls print to land squarely in the pre-meeting window for Fed Chair Warsh.",
+   "reason": "The single most-watched data point of the week -- first-Friday jobs report, ~2 weeks before the Sept 16 FOMC decision.",
    "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
   },
   {
-   "ts_et": "2026-09-04T16:00:00-04:00",
+   "ts_et": "2026-09-04T20:00:00-04:00",
    "type": "launch",
-   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, And\u00f8ya Spaceport, Norway)",
+   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, Andoya Spaceport, Norway)",
    "importance": "Medium",
-   "reason": "European orbital launch attempt (Isar Aerospace); status listed \"To Be Confirmed\" per Launch Library 2, so timing/go status could still slip.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved as of fetch"
+   "reason": "European orbital launch attempt; status still To Be Confirmed per Launch Library 2.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

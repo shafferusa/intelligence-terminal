@@ -36,21 +36,18 @@
   },
   {
    "id": "gaza-hamas-disarmament-deal-jul30",
-   "headline": "Israel expels Dutch diplomats from Gaza ceasefire center as fresh strikes kill Palestinians in Gaza and the West Bank",
-   "status": "Continuing",
+   "headline": "Disputed pre-dawn incident in Gaza City as Israel says it arrested a senior Hamas operative",
+   "status": "Materially changed",
    "first_seen": "2026-07-31-pm",
-   "last_updated": "2026-08-30-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Mladenov's Friday warning that the ceasefire risks collapse stands unanswered -- no new statement from him, Israel or Hamas since. Sunday saw fresh strikes: a Deir al-Balah bakery strike killed two (incl. a 3-year-old) per Gaza medics, IDF says it targeted a Hamas fighter; a separate Khan Younis strike killed two the IDF identified as Nukhba operatives. As with prior strikes, the fact of the strikes is confirmed multiply; target characterization is disputed between Gaza health authorities and the IDF.",
-   "score_note": "Mladenov's language has escalated from criticism to explicitly warning of collapse -- the mechanism's own overseer, not an outside critic. No de-escalatory event found this weekend.",
+   "last_updated": "2026-09-01-am",
+   "verification": "Confirmed-multiple (strikes/arrest); Single-sourced/disputed (assassination-attempt narrative, casualty count)",
+   "one_line": "Israeli forces struck and exchanged gunfire near Gaza City's al-Katiba area before dawn Tuesday after a compromised special-forces operation; Defense Minister Katz says Israel arrested a senior Hamas operative. A Hamas-aligned outlet alleges a militia tried to assassinate a Hamas internal-security official under cover of the Israeli strikes -- unconfirmed by Israel. Casualty counts diverge: 3 dead (Al-Shifa) vs. 8 dead (Israel Hayom). Most serious flare-up since Mladenov's collapse warning last week.",
+   "score_note": "No agreed account of the incident exists yet between sources; escalation inside the ceasefire framework itself.",
    "sources": [
-    "Times of Israel",
-    "Al Jazeera",
-    "Washington Post/AP",
     "Haaretz",
-    "JPost",
-    "Dubai Eye",
-    "The Hill"
+    "Israel Hayom",
+    "Al-Araby (via secondary reporting)",
+    "Al Jazeera"
    ],
    "watch": true
   },
@@ -89,44 +86,13 @@
    "watch": true
   },
   {
-   "id": "somali-piracy-iran-shadow-fleet-aug21",
-   "headline": "Somali pirates hijack an Iran shadow-fleet tanker as regional piracy hits a 10-year high",
-   "status": "New",
-   "first_seen": "2026-08-21-pm",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "No new developments found this week. Downgrading tracking cadence.",
-   "score_note": "Possible secondary pressure point in the Iran standoff via shadow-fleet shipping.",
-   "sources": [
-    "Al Jazeera",
-    "Hiiraan Online",
-    "gCaptain/Maritime Executive"
-   ],
-   "watch": false
-  },
-  {
-   "headline": "Tigray fighting remains in a tentative, single-sourced lull",
-   "status": "Continuing",
-   "verification": "Single-reliable-source",
-   "one_line": "Forecast graded correct: no expansion to new fronts and no fresh formal AU/UN mediation statement through Aug 21. Downgrading tracking cadence given sustained containment.",
-   "score_note": "Low cadence tracking continues.",
-   "sources": [
-    "Al Jazeera",
-    "Amnesty International"
-   ],
-   "watch": false,
-   "id": "ethiopia-tigray-fighting-aug1",
-   "first_seen": "2026-08-07-am",
-   "last_updated": "2026-08-22-sat"
-  },
-  {
    "id": "vmware-vcenter-new-cve-aug14",
    "headline": "VMware vCenter deadline lands today amid China-nexus attribution and ransomware escalation",
    "status": "Materially changed",
    "first_seen": "2026-08-14-am",
-   "last_updated": "2026-08-22-sat",
+   "last_updated": "2026-09-01-am",
    "verification": "Confirmed-multiple (campaign scale); Single-reliable-source, moderate confidence (China-nexus attribution)",
-   "one_line": "CISA added CVE-2026-59310 to the KEV catalog Aug 18 (forecast graded correct); the federal civilian remediation deadline landed Friday Aug 21 with compliance confirmation still pending (typically surfaces days later via CISA/GAO reporting). Moderate-confidence China-nexus attribution and Babuk-ransomware-on-ESXi escalation both stand.",
+   "one_line": "Federal remediation deadline (Aug. 21) has now passed by over a week with no published CISA/GAO compliance rate. Rapid7's exploitation-scale figures (361 compromised IPs, 47 countries) remain the most current public numbers.",
    "score_note": "Deadline-day story with a genuine new escalation (ransomware on hypervisors); attribution stays single-firm/moderate confidence.",
    "sources": [
     "Rapid7",
@@ -140,17 +106,18 @@
   {
    "id": "scotus-ballroom-emergency-application-aug14",
    "headline": "Roberts stays the ballroom injunction hours before it would have taken effect",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-08-16-sun",
-   "last_updated": "2026-08-22-sat",
-   "verification": "Confirmed-multiple",
-   "one_line": "Chief Justice Roberts issued an administrative stay Friday allowing construction to resume -- not a merits ruling. Both forecasts betting on timely Court action graded correct. The fuller emergency application remains before the full Court with no timeline; keeping this open until a merits disposition.",
-   "score_note": "First concrete SCOTUS action of the week on either live emergency docket.",
+   "last_updated": "2026-09-01-am",
+   "verification": "Confirmed-primary",
+   "one_line": "The full Supreme Court ruled 5-4 Monday that the National Trust for Historic Preservation likely lacks standing, superseding Roberts's own stay and letting construction continue; Roberts dissented with the three liberal justices, writing the project 'is likely unlawful.' The ruling resolves the emergency-application docket without deciding the underlying legality question.",
+   "score_note": "Full-Court disposition ends this specific emergency-application thread; underlying legality remains open to a future suit with a plaintiff who has standing.",
    "sources": [
-    "supremecourt.gov docket 26A203 (primary)",
-    "SCOTUSblog",
-    "PBS NewsHour",
-    "CNN"
+    "Supreme Court order (primary)",
+    "CNN",
+    "NBC News",
+    "NPR",
+    "Fox News"
    ],
    "watch": true
   },
@@ -428,21 +395,6 @@
    "watch": true
   },
   {
-   "id": "upmc-bridgeville-behavioral-health-aug26",
-   "headline": "UPMC Children's commits $10M to expand behavioral-health care at its Bridgeville campus",
-   "status": "New",
-   "first_seen": "2026-08-26-am",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "UPMC Children's Hospital is building out a previously unused fourth floor of its South (Bridgeville) campus -- nine treatment rooms, observation rooms, a Parent-Child Interaction Therapy room and a creative-arts therapy center -- to bring pediatric mental-health care closer to South Hills/South Fayette families instead of requiring trips to Lawrenceville. Expected completion mid-2027.",
-   "score_note": "First Bridgeville-beat item to clear the bar in several weeks of otherwise-empty local coverage.",
-   "sources": [
-    "90.5 WESA",
-    "Hoodline"
-   ],
-   "watch": false
-  },
-  {
    "id": "congress-ai-cyber-deadline-aug24",
    "headline": "Congress's deadline for OpenAI and Anthropic to answer for security incidents lands with no reply yet",
    "status": "Continuing",
@@ -682,9 +634,9 @@
    "headline": "Nvidia reportedly near a $12.9B deal for Hugging Face",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-31-pm",
+   "last_updated": "2026-09-01-am",
    "verification": "Single-reliable-source (deal terms); sourcing not fully aligned between outlets",
-   "one_line": "Still unconfirmed by either company as of this afternoon; multiple outlets continue describing it as talks that 'could still collapse' with no signed contract. New color: Hugging Face reportedly turned down a $500M Nvidia investment last year at a $7B valuation, underscoring the scale of the jump a $12.9B deal would represent.",
+   "one_line": "Still unconfirmed by either company; reporting continues to trace to a single originating source (The Information) describing talks that 'could still collapse.' No update on Marvell's Google warrant or Broadcom's AI financing talks.",
    "score_note": "Third consecutive day with no company statement; watch continues.",
    "sources": [
     "The Information (via TechCrunch/CNBC coverage)",
@@ -697,9 +649,9 @@
    "headline": "116 companies incl. OpenAI and Anthropic jointly warn Congress on AI cyber risk",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-29-sat",
+   "last_updated": "2026-09-01-am",
    "verification": "Confirmed-primary",
-   "one_line": "More than 100 AI and cybersecurity companies (incl. OpenAI and Anthropic) signed a joint letter on AI cyber risk this week -- the most visible joint statement either lab has made, but not an individual response to House Democrats' original Aug 24 deadline about their own disclosed incidents. Neither company has substantively answered that original inquiry.",
+   "one_line": "Neither OpenAI nor Anthropic has individually answered House Democrats' original Aug. 24 deadline about their own disclosed security incidents; the 116-company joint letter remains a collective statement, not a point-by-point response. No new movement found overnight.",
    "score_note": "Most visible joint OpenAI/Anthropic public statement since congressional scrutiny began; supersedes congress-ai-cyber-deadline-aug24 and openai-congress-reward-hacking-response-aug26.",
    "sources": [
     "OpenAI technical report (primary)",
@@ -731,9 +683,9 @@
    "headline": "Federal judge strikes down the Pentagon's \"supply chain risk\" designation of Anthropic",
    "status": "New",
    "first_seen": "2026-08-28-pm",
-   "last_updated": "2026-08-29-sat",
+   "last_updated": "2026-09-01-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Important nuance surfaced this weekend, absent from this report's own Thursday coverage: a separate, narrower case remains pending before the D.C. Circuit over a different Pentagon rule that also designates Anthropic a supply-chain risk -- Thursday's win removes one instrument, not the underlying label, until that case resolves. No formal government notice of appeal found yet in the Judge Lin case as of Saturday morning.",
+   "one_line": "No new filing found in the narrower, still-pending D.C. Circuit case since the Aug. 28 district-court win; no government notice of appeal in the district-court case either.",
    "score_note": "First court win for an AI lab against the administration's use of national-security authority as a policy lever -- but narrower in scope than headlines (including this report's own) suggested.",
    "sources": [
     "NPR",
@@ -829,24 +781,22 @@
   },
   {
    "id": "us-iran-jordan-strikes-aug31",
-   "headline": "US strikes Iranian launchers near Hormuz; Iran fires missiles at US bases in Jordan",
+   "headline": "Two oil tankers struck overnight in the Strait of Hormuz as the US-Iran standoff widens further",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-08-31-pm",
-   "verification": "Confirmed-multiple (Jordan strike/interception, CENTCOM rebuttal); Disputed (Iran's claimed UAE strike vs UAE denial); Single-reliable-source/Unverified (IRGC casualty claim; Trump's Kharg Island video)",
-   "one_line": "Iran's retaliation ('Punishment of the Aggressor') hit Jordan (8 missiles intercepted, no casualties) and, by Iran's account only, the UAE's Al Minhad Air Base -- the UAE confirms downing one drone over water but flatly denies any base was struck. CENTCOM rejected Iran's 'act of aggression' framing of the original Larak Island strike. Trump posted an AI-generated video claiming Kharg Island (90% of Iran's oil exports) was struck; no corroboration exists and Iran's oil chief called it 'laughable' -- treated as unverified/fabricated. Oil reacted directly: Brent +2.9% to ~$90.69, WTI proxy (USO) +3.08%.",
-   "score_note": "First reported Iranian strike (disputed) on a third country (UAE) in this standoff, plus a US strike on a US ally (Jordan) both this cycle; Trump's fabricated-seeming Kharg video is a new and unusual verification challenge.",
+   "last_updated": "2026-09-01-am",
+   "verification": "Confirmed-multiple (Jordan/UAE strikes, CENTCOM rebuttal); Unverified/unclaimed (overnight tanker strikes)",
+   "one_line": "UKMTO reported two tankers struck overnight in the Strait of Hormuz (Saudi VLCC Sidr near Khasab, Oman; Liberia-flagged Senegal Prosperity hit by three projectiles) -- no casualties, no claim of responsibility, no CENTCOM or Iranian statement yet. Trump ruled out nuclear weapons while vowing to 'hit them hard'; the Pentagon denied striking Kharg Island after Trump's AI-generated video went viral. Shipping through Hormuz has reportedly collapsed to ~5 crossings/day from 130+ pre-standoff.",
+   "score_note": "Third consecutive day of escalation; strikes on commercial tankers rather than military targets is a new axis of the standoff.",
    "sources": [
-    "CENTCOM (primary, via wire)",
-    "Jordan military statement",
-    "UAE Ministry of Defense and Foreign Ministry (primary)",
+    "UKMTO (primary)",
+    "CENTCOM and Jordan military statements (primary)",
+    "UAE MoD/Foreign Ministry (primary)",
+    "Bloomberg",
     "Al Jazeera",
-    "Fox News",
-    "Jerusalem Post",
-    "Khaleej Times",
-    "RFE/RL",
-    "The National",
-    "OilPrice.com"
+    "CBS News",
+    "NBC News",
+    "The Hill"
    ],
    "watch": true
   },
@@ -855,10 +805,10 @@
    "headline": "Lancaster County coroner disputes PA's measles-death count",
    "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-08-31-pm",
+   "last_updated": "2026-09-01-am",
    "verification": "Confirmed-multiple (CDC exclusion, coroner finding); Disputed (cause of death, three-way: state vs coroner vs HHS)",
-   "one_line": "CDC's Sunday-updated national measles tally omits PA's two deaths, saying it's still reviewing whether measles caused them and that available information 'does not establish' causation -- turning the Shapiro-Kennedy war of words into a concrete federal-state data dispute. PA Health Secretary Bogen stands by the count as properly reported; Kennedy suggested on social media the deaths 'may even have been altogether fabricated' by Shapiro staff, an unsupported claim reported as a statement, not fact. Case count ~460 across 31 counties; PA has run 4,100+ MMR vaccinations at 91 pop-up clinics since April.",
-   "score_note": "Escalated from rhetoric to an actual federal agency declining to count a state-reported death -- a credibility dispute with real public-health-messaging stakes.",
+   "one_line": "Lancaster County Coroner Diamantoni confirmed a new report Monday of a person who died 'with measles,' separate from the infant case already ruled death-by-lacerated-spleen; too early to determine cause or whether it matches the second death Shapiro cited. CDC still excludes PA's deaths from its national tally pending review; Kennedy's unsupported 'fabricated' claim stands unretracted. Case count ~460 across 31 counties; 4,100+ MMR vaccinations administered at 91 pop-up clinics since April.",
+   "score_note": "Second distinct death report now in play alongside the original disputed case; dispute shows no sign of resolving.",
    "sources": [
     "CDC national measles surveillance update (primary)",
     "Pennsylvania Dept of Health (primary)",
@@ -924,13 +874,13 @@
   },
   {
    "id": "house-funding-bill-vote-aug31",
-   "headline": "House returns; funding bill floor vote expected Tuesday under suspension",
+   "headline": "House convenes for expected H.R. 6500 funding-bill vote today",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-08-31-pm",
+   "last_updated": "2026-09-01-am",
    "verification": "Confirmed-multiple (bill number, schedule, suspension procedure); Single-reliable-source (exact vote day within the Tue-Thu window)",
-   "one_line": "Bill identified via primary sources as H.R. 6500 ('Continuing Appropriations and Extensions Act, 2027'), the Senate-passed CR (90-6, Aug 8) funding govt through Dec 11. Majority Leader's official schedule and a CBO publication confirm it's being brought up under suspension of the rules (needs 2/3 majority), with no exact vote hour set -- expectations point to Tue-Thu this week. Today's own House floor business was pushed to a 6:30pm ET vote series. Also on the agenda: a GOP 'condemning socialism' resolution and a possible Russia-sanctions bill vote.",
-   "score_note": "Upgraded from single-wire-text sourcing this morning to confirmed via the Majority Leader's own schedule and CBO -- the 2/3 threshold detail is the genuine uncertainty now, not the bill's existence or terms.",
+   "one_line": "House convenes 11:00 AM ET Tuesday with H.R. 6500 (funds government through Dec. 11, Senate-passed 90-6) expected on the floor under suspension of the rules -- a two-thirds-vote threshold, not a simple majority. Exact vote hour still unconfirmed as of this writing; outcome not yet known.",
+   "score_note": "Compressed to a same-day watch item; the 2/3 suspension threshold remains the real uncertainty, not the bill's substance.",
    "sources": [
     "Majority Leader weekly schedule (primary)",
     "Congressional Budget Office publication 62588 (primary)",
@@ -990,6 +940,59 @@
     "eSentire advisory"
    ],
    "watch": true
+  },
+  {
+   "id": "army-secretary-driscoll-resigns-sep1",
+   "headline": "Army Secretary Dan Driscoll resigns amid reported friction with Hegseth",
+   "status": "New",
+   "first_seen": "2026-09-01-am",
+   "last_updated": "2026-09-01-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "White House confirmed Driscoll's resignation Monday, effective Sept. 3, after 18 months; no official reason given. Multiple outlets tie it to months of friction with Hegseth over Army 'transformation and readiness,' following Hegseth's April removal of Gen. Randy George and June exit of Gen. Christopher Donahue -- both seen as Driscoll allies.",
+   "score_note": "Third senior Army/Pentagon departure this year tied to the same internal power struggle; a Vance ally leaving the administration.",
+   "sources": [
+    "White House statement (primary)",
+    "CNN",
+    "NBC News",
+    "NPR",
+    "Axios",
+    "The Hill",
+    "Military Times"
+   ],
+   "watch": true
+  },
+  {
+   "id": "fed-warsh-bessent-split-sep1",
+   "headline": "Fed rate-hike odds near two-thirds as Warsh hardens his tone and Bessent pushes back on the record",
+   "status": "Materially changed",
+   "first_seen": "2026-08-27-am",
+   "last_updated": "2026-09-01-am",
+   "verification": "Confirmed-primary (Bessent CNBC interview); Confirmed-multiple, single-source-variance (exact CME odds)",
+   "one_line": "Warsh hardened his Jackson Hole tone at the G20 Monday (financial conditions 'didn't look restrictive enough'); Bessent told CNBC the same day 'you don't raise interest rates into a supply shock' -- first direct, same-day public disagreement between the two since Jackson Hole. CME-implied Sept-hike odds have risen from ~40% (Aug 21) to the high 50s/60s; sources diverge on the exact reading (57-66%).",
+   "score_note": "Supersedes jackson-hole-warsh-independence-aug27; the story is now the Bessent-Warsh public split, not just Warsh alone.",
+   "sources": [
+    "CNBC (Bessent interview, primary)",
+    "KuCoin/CME FedWatch trackers",
+    "investinglive.com"
+   ],
+   "watch": true
+  },
+  {
+   "id": "hasbro-data-breach-disclosure-sep1",
+   "headline": "Hasbro discloses employee data breach tied to March cyberattack",
+   "status": "New",
+   "first_seen": "2026-09-01-am",
+   "last_updated": "2026-09-01-am",
+   "verification": "Confirmed-primary",
+   "one_line": "Hasbro's state breach-notification filings (Massachusetts AG filing lists 436 residents) disclose that the March 28 cyberattack that took its systems offline also exposed employee Social Security numbers, financial account/payment card data and driver's license numbers -- roughly a five-month gap between intrusion and notification. Total affected count nationwide not yet disclosed.",
+   "score_note": "A disclosure-timeline and cost data point alongside the broader cyber roundup (Anthropic infostealer, Fire Ant, PaperCut KEV).",
+   "sources": [
+    "Hasbro SEC filings (primary)",
+    "Massachusetts AG breach notification (primary)",
+    "BleepingComputer",
+    "SecurityWeek"
+   ],
+   "watch": false
   }
  ]
 }
