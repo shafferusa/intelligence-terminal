@@ -36,18 +36,19 @@
   },
   {
    "id": "gaza-hamas-disarmament-deal-jul30",
-   "headline": "Disputed pre-dawn incident in Gaza City as Israel says it arrested a senior Hamas operative",
+   "headline": "Israel says the Gaza City raid captured Hamas's internal-security chief",
    "status": "Materially changed",
    "first_seen": "2026-07-31-pm",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-multiple (strikes/arrest); Single-sourced/disputed (assassination-attempt narrative, casualty count)",
-   "one_line": "Israeli forces struck and exchanged gunfire near Gaza City's al-Katiba area before dawn Tuesday after a compromised special-forces operation; Defense Minister Katz says Israel arrested a senior Hamas operative. A Hamas-aligned outlet alleges a militia tried to assassinate a Hamas internal-security official under cover of the Israeli strikes -- unconfirmed by Israel. Casualty counts diverge: 3 dead (Al-Shifa) vs. 8 dead (Israel Hayom). Most serious flare-up since Mladenov's collapse warning last week.",
-   "score_note": "No agreed account of the incident exists yet between sources; escalation inside the ceasefire framework itself.",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Confirmed-multiple (arrest, covering strikes); the earlier assassination-attempt narrative was not repeated today",
+   "one_line": "Israeli officials (Katz, IDF, Shin Bet) say the pre-dawn raid captured Muein al-Arabid, described as Hamas's internal-security chief; covering strikes during the firefight killed at least 3 Palestinians including 2 children, per Gaza officials, uncontested by Israel. Resolves Tuesday morning's disputed 'assassination attempt' narrative toward an arrest framing; the covering-strike casualty toll stands unaddressed by Israel.",
+   "score_note": "Most serious individual flare-up inside the ceasefire framework in over a month; arrest framing does not erase the reported child deaths.",
    "sources": [
+    "IDF, Shin Bet, Defense Minister Katz statements (primary, via wire)",
+    "Gaza health officials",
     "Haaretz",
-    "Israel Hayom",
-    "Al-Araby (via secondary reporting)",
-    "Al Jazeera"
+    "Al Jazeera",
+    "Times of Israel"
    ],
    "watch": true
   },
@@ -100,24 +101,6 @@
     "Dark Reading",
     "QUIRSO research writeup",
     "CISA KEV catalog (primary)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "scotus-ballroom-emergency-application-aug14",
-   "headline": "Roberts stays the ballroom injunction hours before it would have taken effect",
-   "status": "Resolved",
-   "first_seen": "2026-08-16-sun",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-primary",
-   "one_line": "The full Supreme Court ruled 5-4 Monday that the National Trust for Historic Preservation likely lacks standing, superseding Roberts's own stay and letting construction continue; Roberts dissented with the three liberal justices, writing the project 'is likely unlawful.' The ruling resolves the emergency-application docket without deciding the underlying legality question.",
-   "score_note": "Full-Court disposition ends this specific emergency-application thread; underlying legality remains open to a future suit with a plaintiff who has standing.",
-   "sources": [
-    "Supreme Court order (primary)",
-    "CNN",
-    "NBC News",
-    "NPR",
-    "Fox News"
    ],
    "watch": true
   },
@@ -292,22 +275,6 @@
     "JURIST"
    ],
    "watch": true
-  },
-  {
-   "id": "chip-memory-selloff-cxmt-aug24",
-   "headline": "Memory-chip selloff on report Apple is testing Chinese-made DRAM from CXMT",
-   "status": "Continuing",
-   "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Reported",
-   "one_line": "No fresh developments found this week; no new Apple/CXMT confirmation or denial, and no further administration commentary beyond Lutnick's prior opposition. Downgrading tracking cadence given the story has gone quiet.",
-   "score_note": "Partial mean-reversion, not a new catalyst.",
-   "sources": [
-    "this run's own Yahoo Finance close-series data",
-    "9to5Mac",
-    "MacRumors"
-   ],
-   "watch": false
   },
   {
    "id": "iran-sanctions-economic-outcast-aug24",
@@ -543,22 +510,6 @@
    "watch": true
   },
   {
-   "id": "islamabad-hospital-fire-aug26",
-   "headline": "Islamabad hospital fire cause now disputed between minister and hospital's own report",
-   "status": "Materially changed",
-   "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-multiple (locked-exits finding); Disputed (cause)",
-   "one_line": "PM Sharif's inquiry (led by a former interior secretary) found no working fire alarm/sprinklers in the nursery and no supervisory staff on duty, recommending criminal proceedings; 8 officials suspended Aug 29. The nebulizer-vs-AC-unit cause dispute was not definitively resolved in the inquiry as reported.",
-   "score_note": "Two competing official accounts of the same fire is itself the story now.",
-   "sources": [
-    "Dawn",
-    "dailypakistan",
-    "ARY News"
-   ],
-   "watch": false
-  },
-  {
    "id": "mail-ballot-new-merits-suit-aug26",
    "headline": "Mail-ballot merits suit filed; emergency-motion hearing set for Sept 3",
    "status": "Materially changed",
@@ -575,26 +526,6 @@
     "Gov. Shapiro public statement"
    ],
    "watch": true
-  },
-  {
-   "id": "jackson-hole-warsh-independence-aug27",
-   "headline": "Warsh's hawkish Jackson Hole debut sends yields up and splits the tape",
-   "status": "Materially changed",
-   "first_seen": "2026-08-27-am",
-   "last_updated": "2026-08-28-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Warsh's 10am ET keynote (Fed transcript, primary) emphasized above-target inflation (PCE 3.7% YoY) over forward guidance, calling guidance a practice that has \"overstayed its welcome.\" September rate-hike odds rose sharply; Treasury's par curve moved +6bp at 3M/10Y, +14bp at 2Y (front-end-led flattening). Equities gave back gains (S&P -0.25%, Nasdaq -0.52%); chip/space names sold off hardest, financials/consumer/mega-cap tech gained. Forecast 2026-08-28-am-1 (10Y moves >10bp intraday) graded wrong -- this report's own intraday computation put the day's range at ~7-8bp.",
-   "score_note": "First public signal of how Warsh intends to run the Fed differently from Powell; resolved the week's central watch item.",
-   "sources": [
-    "Federal Reserve speech transcript (primary)",
-    "CNBC",
-    "Washington Post",
-    "Axios",
-    "NPR",
-    "Bloomberg",
-    "this report's own Treasury and Yahoo Finance computations"
-   ],
-   "watch": false
   },
   {
    "id": "mciver-third-circuit-immunity-aug27",
@@ -634,7 +565,7 @@
    "headline": "Nvidia reportedly near a $12.9B deal for Hugging Face",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-09-01-am",
+   "last_updated": "2026-09-01-pm",
    "verification": "Single-reliable-source (deal terms); sourcing not fully aligned between outlets",
    "one_line": "Still unconfirmed by either company; reporting continues to trace to a single originating source (The Information) describing talks that 'could still collapse.' No update on Marvell's Google warrant or Broadcom's AI financing talks.",
    "score_note": "Third consecutive day with no company statement; watch continues.",
@@ -649,7 +580,7 @@
    "headline": "116 companies incl. OpenAI and Anthropic jointly warn Congress on AI cyber risk",
    "status": "Continuing",
    "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-09-01-am",
+   "last_updated": "2026-09-01-pm",
    "verification": "Confirmed-primary",
    "one_line": "Neither OpenAI nor Anthropic has individually answered House Democrats' original Aug. 24 deadline about their own disclosed security incidents; the 116-company joint letter remains a collective statement, not a point-by-point response. No new movement found overnight.",
    "score_note": "Most visible joint OpenAI/Anthropic public statement since congressional scrutiny began; supersedes congress-ai-cyber-deadline-aug24 and openai-congress-reward-hacking-response-aug26.",
@@ -781,34 +712,35 @@
   },
   {
    "id": "us-iran-jordan-strikes-aug31",
-   "headline": "Two oil tankers struck overnight in the Strait of Hormuz as the US-Iran standoff widens further",
+   "headline": "US strikes IRGC targets in Iran; the overnight tanker attacks remain unclaimed",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-multiple (Jordan/UAE strikes, CENTCOM rebuttal); Unverified/unclaimed (overnight tanker strikes)",
-   "one_line": "UKMTO reported two tankers struck overnight in the Strait of Hormuz (Saudi VLCC Sidr near Khasab, Oman; Liberia-flagged Senegal Prosperity hit by three projectiles) -- no casualties, no claim of responsibility, no CENTCOM or Iranian statement yet. Trump ruled out nuclear weapons while vowing to 'hit them hard'; the Pentagon denied striking Kharg Island after Trump's AI-generated video went viral. Shipping through Hormuz has reportedly collapsed to ~5 crossings/day from 130+ pre-standoff.",
-   "score_note": "Third consecutive day of escalation; strikes on commercial tankers rather than military targets is a new axis of the standoff.",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Confirmed-multiple (US strike, Jordan/UAE interceptions); Unverified/unclaimed (overnight tanker strikes, specific target/casualty counts)",
+   "one_line": "Around noon ET Tuesday, US forces struck IRGC targets inside Iran (CENTCOM: 'limited, precise action'), a direct response to Monday night's unclaimed tanker strikes near Hormuz. Iran fired at US-linked bases in Jordan and, by its own account, at the UAE; both intercepted, no casualties. Second consecutive day of direct US-Iran military action. Tanker strikes and any Iranian casualty figures remain unattributed/unconfirmed. Oil (WTI) rose 5.9% to $90.79, Brent reportedly topped $95 intraday.",
+   "score_note": "Escalation pace, not a single incident -- US action on consecutive days for the first time in this standoff.",
    "sources": [
+    "CENTCOM statement (primary, via wire)",
+    "Jordan military statement (primary)",
+    "UAE Ministry of Defense statement (primary)",
     "UKMTO (primary)",
-    "CENTCOM and Jordan military statements (primary)",
-    "UAE MoD/Foreign Ministry (primary)",
     "Bloomberg",
-    "Al Jazeera",
-    "CBS News",
-    "NBC News",
-    "The Hill"
+    "Washington Post",
+    "CNN",
+    "Stars and Stripes",
+    "UPI"
    ],
    "watch": true
   },
   {
    "id": "pa-measles-coroner-dispute-aug31",
    "headline": "Lancaster County coroner disputes PA's measles-death count",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-01-am",
+   "last_updated": "2026-09-01-pm",
    "verification": "Confirmed-multiple (CDC exclusion, coroner finding); Disputed (cause of death, three-way: state vs coroner vs HHS)",
    "one_line": "Lancaster County Coroner Diamantoni confirmed a new report Monday of a person who died 'with measles,' separate from the infant case already ruled death-by-lacerated-spleen; too early to determine cause or whether it matches the second death Shapiro cited. CDC still excludes PA's deaths from its national tally pending review; Kennedy's unsupported 'fabricated' claim stands unretracted. Case count ~460 across 31 counties; 4,100+ MMR vaccinations administered at 91 pop-up clinics since April.",
-   "score_note": "Second distinct death report now in play alongside the original disputed case; dispute shows no sign of resolving.",
+   "score_note": "Second distinct death report now in play alongside the original disputed case; dispute shows no sign of resolving. No new statement from Shapiro, Kennedy or the CDC found Sept. 1.",
    "sources": [
     "CDC national measles surveillance update (primary)",
     "Pennsylvania Dept of Health (primary)",
@@ -822,19 +754,17 @@
   },
   {
    "id": "nepal-tibet-flood-toll-aug31",
-   "headline": "Nepal-Tibet flood toll jumps past 900, still not internally reconciled",
+   "headline": "Nepal-Tibet flood toll crosses 1,000",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-08-31-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Combined toll 919 dead (903 Nepal, 16 Tibet), ~4,700 missing. The jump from ~750 Sunday now appears attributable to ongoing body recovery (bodies found up to 240km downstream in India, morgues running low on capacity) rather than to the police-vs-PM's-office tally dispute this outlet tracked last week. ~933 missing hydropower workers in Rasuwa/Nuwakot remain part of the search.",
-   "score_note": "Resolves some ambiguity from Sunday's report: this is recovery progress revealing scale, not a reconciliation dispute, though the toll itself keeps climbing.",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Confirmed-multiple; exact combined figure still provisional (varies by several dozen across outlets)",
+   "one_line": "Combined toll crossed 1,000 Tuesday, up from 919 Monday, continuing to reflect ongoing body recovery rather than a reconciliation dispute -- consistent with the pattern noted Monday. Tibet's count remains far smaller than Nepal's per-capita toll, a gap that has not narrowed.",
+   "score_note": "Fourth consecutive day the toll has risen materially; recovery-driven, not dispute-driven.",
    "sources": [
-    "ABC News/AP",
     "Al Jazeera",
-    "NBC News",
-    "CNN",
-    "TASS (citing Chinese state media)"
+    "Nepal disaster-authority figures (via wire)",
+    "Chinese state media (Tibet-side figures)"
    ],
    "watch": true
   },
@@ -874,21 +804,20 @@
   },
   {
    "id": "house-funding-bill-vote-aug31",
-   "headline": "House convenes for expected H.R. 6500 funding-bill vote today",
-   "status": "Materially changed",
+   "headline": "House passes H.R. 6500, funding the government through Dec. 11",
+   "status": "Resolved",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-multiple (bill number, schedule, suspension procedure); Single-reliable-source (exact vote day within the Tue-Thu window)",
-   "one_line": "House convenes 11:00 AM ET Tuesday with H.R. 6500 (funds government through Dec. 11, Senate-passed 90-6) expected on the floor under suspension of the rules -- a two-thirds-vote threshold, not a simple majority. Exact vote hour still unconfirmed as of this writing; outcome not yet known.",
-   "score_note": "Compressed to a same-day watch item; the 2/3 suspension threshold remains the real uncertainty, not the bill's substance.",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The House passed the Senate-amended continuing resolution 370-48 Tuesday afternoon (19 Republicans, 29 Democrats voting no), clearing the two-thirds suspension threshold comfortably. Bill now goes to the president for signature; funds the government through Dec. 11, removing the Sept. 30 shutdown deadline.",
+   "score_note": "Resolves the funding-bill watch item; Dec. 11 becomes the next fiscal deadline.",
    "sources": [
-    "Majority Leader weekly schedule (primary)",
-    "Congressional Budget Office publication 62588 (primary)",
-    "congress.gov",
-    "PBS NewsHour",
-    "Daily Signal"
+    "Congress.gov bill record (primary)",
+    "Axios",
+    "Roll Call",
+    "ABC7"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "trump-welker-fcc-threat-aug31",
@@ -993,6 +922,56 @@
     "SecurityWeek"
    ],
    "watch": false
+  },
+  {
+   "id": "chuck-edwards-censure-sep1",
+   "headline": "House to vote on censuring Rep. Chuck Edwards tonight",
+   "status": "New",
+   "first_seen": "2026-09-01-pm",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Confirmed-multiple (scheduling, committee finding); outcome not yet known",
+   "one_line": "House Ethics Committee found Rep. Chuck Edwards (R-NC) engaged in persistent unprofessional and inappropriate conduct toward two female staffers; floor vote on censure begins 5:15 PM ET, after this edition's cutoff. GOP leadership not whipping the vote; Edwards denies the findings. Would be first majority-party censure in decades if it passes.",
+   "score_note": "A free vote on an undisputed factual finding makes the outcome genuinely uncertain; result due in tomorrow's Morning Brief.",
+   "sources": [
+    "House Ethics Committee finding (primary)",
+    "Washington Post",
+    "Axios",
+    "NBC News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "ms365-outage-sep1",
+   "headline": "Microsoft 365 outage resolves after more than a day",
+   "status": "New",
+   "first_seen": "2026-09-01-pm",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Multi-service Microsoft 365 outage (Exchange Online, Teams, SharePoint, Copilot, Defender XDR) began ~8 AM ET Monday, traced to a misconfigured core-authentication networking change; mail flow/search restored by noon ET Tuesday, other services improving through the afternoon. No root-cause post-mortem published yet beyond the initial explanation.",
+   "score_note": "Day-plus outage across a major enterprise cloud platform touching mail, chat and file-sharing simultaneously.",
+   "sources": [
+    "Microsoft (primary, service-health updates)",
+    "TechCrunch",
+    "Computerworld"
+   ],
+   "watch": false
+  },
+  {
+   "id": "jfrog-artifactory-exploit-sep1",
+   "headline": "Critical JFrog Artifactory flaw under active exploitation",
+   "status": "New",
+   "first_seen": "2026-09-01-pm",
+   "last_updated": "2026-09-01-pm",
+   "verification": "Moderate-to-strong confidence (private-sector telemetry); no government advisory yet",
+   "one_line": "WatchTowr reports active exploitation of CVE-2026-82329 (CVSS 9.8, authentication bypass, patched Aug 28) in JFrog Artifactory, with attackers minting admin tokens and enumerating credentials/access topology on unpatched servers. No victims named; no CISA advisory yet.",
+   "score_note": "Artifactory sits inside software build-and-release pipelines at many enterprises -- a supply-chain-adjacent risk, not a single-server compromise.",
+   "sources": [
+    "WatchTowr research",
+    "The Hacker News",
+    "SecurityWeek",
+    "GBHackers"
+   ],
+   "watch": true
   }
  ]
 }

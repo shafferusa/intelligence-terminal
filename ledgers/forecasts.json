@@ -2175,7 +2175,10 @@
    "horizon": "2026-09-08",
    "probability": "30-45%",
    "basis": "Three consecutive days of strike-and-counter-strike (Larak Island, Jordan/UAE, now unclaimed Hormuz tanker strikes) is an accelerating pattern, not a settling one.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "US forces struck IRGC targets inside Iran around noon ET Tuesday, Sep 1 -- confirmed by CENTCOM; Iran fired at US-linked bases in Jordan and, by its own account, the UAE, both intercepted with no casualties.",
+   "graded": "2026-09-01-pm",
+   "lesson": "The escalating pattern read from three days of prior strikes held; worth continuing to log this as an open forecast since the pattern, not a single event, is what's being tracked."
   },
   {
    "id": "2026-09-01-am-2",
@@ -2185,7 +2188,9 @@
    "horizon": "2026-09-02",
    "probability": "55-65%",
    "basis": "Bipartisan 90-6 Senate passage and leadership's stated intent to move quickly, tempered by suspension's two-thirds threshold (vs. simple majority) and no confirmed vote hour.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Passed 370-48 Tuesday afternoon, comfortably clearing the two-thirds suspension threshold.",
+   "graded": "2026-09-01-pm"
   },
   {
    "id": "2026-09-01-am-3",
@@ -2195,6 +2200,36 @@
    "horizon": "2026-09-04",
    "probability": "35-50%",
    "basis": "Odds have climbed from ~40% (Aug 21) to the high 50s/60s over the past week and a half, and both Warsh and Bessent spoke publicly Monday without moving toward each other.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-01-pm-1",
+   "date": "2026-09-01",
+   "slot": "pm",
+   "forecast": "A group or government claims responsibility for, or credible attribution emerges for, the two Hormuz tanker strikes",
+   "horizon": "2026-09-08",
+   "probability": "30-45%",
+   "basis": "No claim surfaced in over 16 hours despite two direct government responses (US strike, Iranian retaliation) built on top of the incident; most attacks in this six-month standoff have gone unclaimed rather than claimed.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-01-pm-2",
+   "date": "2026-09-01",
+   "slot": "pm",
+   "forecast": "The House votes to censure Rep. Chuck Edwards tonight",
+   "horizon": "2026-09-02",
+   "probability": "55-70%",
+   "basis": "GOP leadership is not whipping the vote (a free vote), but the underlying Ethics Committee finding is specific and undisputed as a finding even though Edwards disputes the characterization; majority-party censures of their own members are historically rare, which cuts against a high-confidence call either way.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-01-pm-3",
+   "date": "2026-09-01",
+   "slot": "pm",
+   "forecast": "CME-implied September rate-hike odds close the week above 70%",
+   "horizon": "2026-09-05",
+   "probability": "30-45%",
+   "basis": "Odds sat in the mid-to-high 60s today; both JOLTS (a narrow miss) and ISM Manufacturing (a miss, decelerating from July) were softer than needed to force odds decisively through 70%, so a further push likely needs a hot Friday jobs report.",
    "status": "open"
   }
  ]
