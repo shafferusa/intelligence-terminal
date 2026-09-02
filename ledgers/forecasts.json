@@ -2220,7 +2220,10 @@
    "horizon": "2026-09-02",
    "probability": "55-70%",
    "basis": "GOP leadership is not whipping the vote (a free vote), but the underlying Ethics Committee finding is specific and undisputed as a finding even though Edwards disputes the characterization; majority-party censures of their own members are historically rare, which cuts against a high-confidence call either way.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "House voted 413-2 to censure Edwards Tuesday night.",
+   "graded": "2026-09-02",
+   "lesson": "A free vote on an undisputed Ethics Committee finding produced a near-unanimous result rather than the closer outcome the 55-70% range implied was plausible -- worth weighting undisputed-finding free votes toward the high end of a probability range in future calls."
   },
   {
    "id": "2026-09-01-pm-3",
@@ -2230,6 +2233,36 @@
    "horizon": "2026-09-05",
    "probability": "30-45%",
    "basis": "Odds sat in the mid-to-high 60s today; both JOLTS (a narrow miss) and ISM Manufacturing (a miss, decelerating from July) were softer than needed to force odds decisively through 70%, so a further push likely needs a hot Friday jobs report.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-02-am-1",
+   "date": "2026-09-02",
+   "slot": "am",
+   "forecast": "A further confirmed attack on Gulf shipping (tanker or vessel, by Iran or an unclaimed actor) occurs in the Strait of Hormuz region, following the newly declared US 'tanker for tanker' retaliation policy.",
+   "horizon": "2026-09-09",
+   "probability": "35-50%",
+   "basis": "Escalating strike-and-counterstrike cadence since Aug. 30 plus a newly declared retaliation policy that structurally raises the odds of a further round.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-02-am-2",
+   "date": "2026-09-02",
+   "slot": "am",
+   "forecast": "Broadcom's (AVGO) post-earnings stock move stays within the options market's implied roughly 12% range rather than exceeding it.",
+   "horizon": "2026-09-03",
+   "probability": "55-65%",
+   "basis": "Broadcom's recent history of landing inside its options-implied post-earnings range more often than not.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-02-am-3",
+   "date": "2026-09-02",
+   "slot": "am",
+   "forecast": "Missouri's Supreme Court rules, in either direction, on the congressional-map challenges (Harris v. Hoskins / Von Glahn v. Hoskins) before the Sept. 8 ballot-certification deadline.",
+   "horizon": "2026-09-08",
+   "probability": "60-70%",
+   "basis": "Compressed timeline to the certification deadline and the court's decision to hear the case directly.",
    "status": "open"
   }
  ]
