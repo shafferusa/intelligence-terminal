@@ -55,10 +55,10 @@ Look up `TODAY` in `data/nyse-holidays.json` (`years.<YYYY>.holidays` and `.earl
   Run 2.1–2.7 and 2.10–2.14 exactly as normal — Yahoo simply returns the last session's bar, dated
   the prior trading day; skip only 2.8 and 2.9, because no new US session exists (the next trading
   day's run computes the holiday-eve session with `D` = that Friday from the holiday table).
-  Labels: every US figure is `Previous close (<Fri, Sep 4>)`, never `Cached` — the data is not a
-  fallback, it is the last close. The standfirst says US markets are closed for <holiday>.
+  Labels: every US figure is `Previous close (<last session's date>)`, never `Cached` — the data
+  is not a fallback, it is the last close. The standfirst says US markets are closed for <holiday>.
   **am:** replace Before the Open with a "Markets Closed — <holiday>" section: global markets,
-  futures if they are trading (say if they are not), crypto, and what Tuesday's open will have to
+  futures if they are trading (say if they are not), crypto, and what the next open will have to
   digest. The calendar section covers the shortened week. The weather strip runs as usual.
   **pm:** The Board prints Friday's official closes with Friday's day change, and `.board-asof`
   reads "Fri, Sep 4, 2026 close · US markets closed today (Labor Day)"; What Moved Markets and
@@ -66,8 +66,9 @@ Look up `TODAY` in `data/nyse-holidays.json` (`years.<YYYY>.holidays` and `.earl
   markets, futures, crypto — there is no US tape to attribute); Tomorrow covers the reopen. What
   Changed Today, the domain sections, Local and the appendix run normally, with the appendix's US
   tables carrying the Friday date in their captions.
-- **Early close (13:00 ET):** note it in the header; the pm report labels final data
-  "EOD official (13:00 ET early close)" and says so in What Moved Markets.
+- **Early close (13:00 ET):** say it once in The Brief's Markets bullet (the masthead carries
+  nothing but edition, title, dateline and standfirst); the pm Board's as-of line reads "1:00 PM ET
+  early close" and the appendix captions label final data `EOD official (13:00 ET early close)`.
 
 ## Step 2 — Gather: the data-source playbook
 
