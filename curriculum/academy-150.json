@@ -339,7 +339,7 @@
       "subject_key": "math",
       "position": "10 of 24",
       "topic": "Techniques of integration",
-      "focus": "Substitution, parts, partial fractions -- and when to give up and go numerical.",
+      "focus": "Substitution, parts, partial fractions -- and when to give up and go numerical. Plus the first differential equation: y' = ky solved by separating variables, which is where e^x and the natural logarithm enter as the growth-and-decay pair every later lesson leans on (oscillations, circuits, the rocket equation, Black-Scholes).",
       "source": "60Day: Day_03",
       "connect_back": {
         "day": 20,
@@ -384,7 +384,7 @@
       "subject_key": "math",
       "position": "11 of 24",
       "topic": "Sequences and series",
-      "focus": "Convergence, Taylor expansion, and why approximation is respectable.",
+      "focus": "Convergence, Taylor expansion, and why approximation is respectable. Ends on e^(i*theta) = cos(theta) + i*sin(theta), the bridge from exponentials to oscillation that Day 39 and quantum mechanics both need.",
       "source": "60Day: Day_03",
       "connect_back": {
         "day": 23,
@@ -609,7 +609,7 @@
       "subject_key": "physics",
       "position": "9 of 26",
       "topic": "Oscillations",
-      "focus": "Simple harmonic motion, damping, resonance -- and why resonance destroys bridges.",
+      "focus": "Simple harmonic motion, damping, resonance -- and why resonance destroys bridges. Write the equation of motion x'' = -(k/m)x explicitly and verify the sine solution against it; this is the first differential equation the physics track solves, so say so and connect it to Day 21.",
       "source": "phys 27",
       "connect_back": {
         "day": 38,
@@ -1524,7 +1524,7 @@
       "subject_key": "rocketry",
       "position": "3 of 16",
       "topic": "The Tsiolkovsky rocket equation",
-      "focus": "The tyranny of the exponential, derived from momentum conservation.",
+      "focus": "The tyranny of the exponential, derived from momentum conservation. Derive it for the closed system of rocket plus expelled propellant: m dv/dt = F_ext + u dm/dt with u the exhaust velocity relative to the rocket -- and say plainly that Day 13's callback wrote the variable-mass law as m dv/dt + v dm/dt with v the rocket's own velocity, which is the classic mistake this lesson corrects (see ledgers/corrections.json, 2026-09-02).",
       "source": "space 7-10",
       "connect_back": {
         "day": 99,

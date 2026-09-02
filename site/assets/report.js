@@ -260,16 +260,44 @@
   /* Elements whose text is worth hearing, in document order. Tables, the
      colophon, navigation and collapsed <details> are skipped: a screen-read
      of a 25-row market table is noise, not listening. */
-  var READ_SELECTOR = "h1, h2, h3, h4, p, li, blockquote, figcaption";
+  var READ_SELECTOR = "h1, h2, h3, h4, p, li, blockquote, figcaption, dt, dd";
   var SKIP_CLOSEST = ".board, .colophon, .report-nav, .top-bar, .audio-bar, " +
                      "table, .data-table, .health-footer, .meta-grid, .story-tags, " +
                      ".story-sourceline, .sources-list, .paper-dateline";
 
   var blocks = [];
 
+  /* Notation, spoken. "(1 + y)<sup>−n</sup>" flattens to "(1 + y)−n" and the
+     voice says "minus n" for "to the power of minus n"; a formula plate's
+     raw .expr line is translated symbol by symbol, and a lesson that supplies
+     its own spoken form (<p class="expr-spoken">) wins over the translation.
+     Mirrors .github/scripts/make_audio.py. */
+  var SPOKEN = [
+    [/≈/g, " approximately equals "], [/≠/g, " is not equal to "],
+    [/≤/g, " is less than or equal to "], [/≥/g, " is greater than or equal to "],
+    [/→/g, " goes to "], [/∞/g, " infinity "], [/√/g, " the square root of "],
+    [/∂/g, " partial "], [/Δ/g, " delta "], [/Σ/g, " the sum of "], [/∫/g, " the integral of "],
+    [/π/g, " pi "], [/[·×]/g, " times "], [/−/g, " minus "],
+    [/²/g, " squared "], [/³/g, " cubed "], [/′/g, " prime "],
+    [/\^/g, " to the power of "], [/=/g, " equals "], [/\+/g, " plus "], [/\//g, " over "]
+  ];
+  function spokenText(node, math) {
+    var clone = node.cloneNode(true);
+    Array.prototype.forEach.call(clone.querySelectorAll("sup"), function (s) {
+      s.textContent = " to the power of " + s.textContent + " ";
+    });
+    Array.prototype.forEach.call(clone.querySelectorAll("sub"), function (s) {
+      s.textContent = " sub " + s.textContent + " ";
+    });
+    var t = clone.textContent || "";
+    if (math) SPOKEN.forEach(function (p) { t = t.replace(p[0], p[1]); });
+    return t.replace(/\s+/g, " ").trim();
+  }
+
   function collect() {
     blocks = [];
     var nodes = main.querySelectorAll(READ_SELECTOR);
+    var lastDt = "";
     Array.prototype.forEach.call(nodes, function (node) {
       if (node.closest(SKIP_CLOSEST)) return;
       /* Skip anything inside a collapsed <details> — if the reader hasn't
@@ -277,7 +305,17 @@
       var det = node.closest("details");
       if (det && !det.open) return;
       if (node.offsetParent === null && node.getClientRects().length === 0) return;
-      var text = (node.textContent || "").replace(/\s+/g, " ").trim();
+      var text;
+      if (node.classList.contains("expr")) {
+        var plate = node.closest(".formula");
+        if (plate && plate.querySelector(".expr-spoken")) return;   /* authored form wins */
+        text = spokenText(node, true);
+      } else {
+        text = spokenText(node, false);
+      }
+      /* Symbol lists read as "P, the price of the bond", not two clipped blocks. */
+      if (node.tagName === "DT") { lastDt = text; return; }
+      if (node.tagName === "DD") { text = (lastDt ? lastDt + ", " : "") + text; lastDt = ""; }
       if (text.length < 2) return;
       blocks.push({ node: node, text: text });
     });

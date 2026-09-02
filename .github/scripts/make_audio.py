@@ -39,7 +39,28 @@ SKIP_CLASSES = {
     "sources-list", "paper-dateline", "table-wrap", "range-cell",
 }
 SKIP_TAGS = {"script", "style", "table", "nav", "figcaption"}
-READ_TAGS = {"h1", "h2", "h3", "h4", "p", "li", "blockquote"}
+READ_TAGS = {"h1", "h2", "h3", "h4", "p", "li", "blockquote", "dt", "dd"}
+
+# Notation read literally is noise, or worse: "(1 + y)<sup>−n</sup>" flattens
+# to "(1 + y)−n" and the voice says "minus n" where the lesson means "to the
+# power of minus n". So a raw .expr line is translated symbol by symbol, and
+# a lesson that supplies its own spoken form (<p class="expr-spoken">, which
+# prompts/learning.md asks for) wins over the translation.
+SPOKEN = [
+    ("≈", " approximately equals "), ("≠", " is not equal to "),
+    ("≤", " is less than or equal to "), ("≥", " is greater than or equal to "),
+    ("→", " goes to "), ("∞", " infinity "), ("√", " the square root of "),
+    ("∂", " partial "), ("Δ", " delta "), ("Σ", " the sum of "), ("∫", " the integral of "),
+    ("π", " pi "), ("·", " times "), ("×", " times "), ("−", " minus "),
+    ("²", " squared "), ("³", " cubed "), ("′", " prime "),
+    ("^", " to the power of "), ("=", " equals "), ("+", " plus "), ("/", " over "),
+]
+
+
+def speak_math(text):
+    for sym, words in SPOKEN:
+        text = text.replace(sym, words)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 class Extractor(html.parser.HTMLParser):
@@ -51,7 +72,9 @@ class Extractor(html.parser.HTMLParser):
         self.stack = []
         self.capture = 0
         self.buf = []
-        self.blocks = []
+        self.blocks = []       # (tag, text, kind, plate)
+        self.kind = None       # "expr" / "spoken" / None for the block being captured
+        self.plate = 0         # formula-plate counter, so .expr and .expr-spoken pair up
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
@@ -63,17 +86,29 @@ class Extractor(html.parser.HTMLParser):
         self.stack.append(skip)
         if skip:
             self.depth_skip += 1
+        if "formula" in classes:
+            self.plate += 1
         if tag in READ_TAGS and not self.depth_skip:
             self.capture += 1
             self.buf = []
+            self.kind = "spoken" if "expr-spoken" in classes else ("expr" if "expr" in classes else None)
+        elif self.capture and not self.depth_skip:
+            # Exponents and subscripts inside a captured block.
+            if tag == "sup":
+                self.buf.append(" to the power of ")
+            elif tag == "sub":
+                self.buf.append(" sub ")
 
     def handle_endtag(self, tag):
         if tag in READ_TAGS and self.capture:
             text = re.sub(r"\s+", " ", "".join(self.buf)).strip()
             if len(text) > 1:
-                self.blocks.append((tag, text))
+                self.blocks.append((tag, text, self.kind, self.plate))
             self.capture = 0
             self.buf = []
+            self.kind = None
+        elif tag in ("sup", "sub") and self.capture:
+            self.buf.append(" ")
         if self.stack:
             skip = self.stack.pop()
             if skip:
@@ -109,13 +144,28 @@ def build_script(html_text, title):
     parser = Extractor()
     parser.feed(html_text)
 
+    # Plates that carry their own spoken form: drop the raw notation there.
+    spoken_plates = {plate for (_t, _x, kind, plate) in parser.blocks if kind == "spoken"}
+
     lines = []
     seen_h1 = False
-    for tag, text in parser.blocks:
+    pending_dt = None
+    for tag, text, kind, plate in parser.blocks:
         if tag == "h1":
             if seen_h1:
                 continue
             seen_h1 = True
+        if kind == "expr":
+            if plate in spoken_plates:
+                continue
+            text = speak_math(text)
+        # Symbol lists: "P, the price of the bond" rather than two clipped blocks.
+        if tag == "dt":
+            pending_dt = text
+            continue
+        if tag == "dd":
+            text = (pending_dt + ", " + text) if pending_dt else text
+            pending_dt = None
         # A pause between sections reads far better than a wall of speech.
         if tag in ("h2", "h3"):
             lines.append("")

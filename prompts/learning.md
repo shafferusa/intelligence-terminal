@@ -38,7 +38,11 @@ Headings are plain-language, not "Section 3.2 — Derivation."
    to `state/run-log.jsonl`, commit, push, end the session. The Learning Brief is weekdays only —
    150 lessons at five per week finishes in about thirty weeks.
 3. SR §1 idempotency with `KEY="$TODAY-learn"`. Already successful → EXIT NOW. Record `RUN_START`.
-4. Read `state/learning.json` and `curriculum/academy-150.json`.
+4. Read `state/learning.json`, `curriculum/academy-150.json`, and `ledgers/corrections.json`. Any
+   correction whose `report` is a `-learn.html` page and which no later Learning Brief has yet
+   stated goes in today's colophon, plainly ("Day 13 wrote the variable-mass form of Newton's
+   second law with the rocket's own velocity in the v·dm/dt term; the correct form is…"). A lesson
+   that taught something wrong is corrected in the next lesson, whatever subject that lesson is.
 
 ## Step 1 — Find today's lesson
 
@@ -91,7 +95,17 @@ Structure (this is the shape, not a set of required headings — write real head
    plain words, it is not understood well enough to teach.
 3. **The formalism.** Now the notation, built up rather than dropped in. Every equation goes in a
    `.formula` plate with a `<dl>` naming **every symbol** — no exceptions, including the ones that
-   "obviously" mean what they always mean.
+   "obviously" mean what they always mean. A multi-line derivation may live in ONE plate with
+   several `.expr` lines and a single `<dl>` covering every symbol used in any of them; a plate
+   that introduces a new symbol (dP/dy, [g(x)]⁻¹) always names it. Five of Day 13's twelve plates
+   had no `<dl>` at all, including the one the whole worked example rested on.
+
+   **Say the equation as well as writing it.** After the `.expr` line(s), every plate carries
+   `<p class="expr-spoken visually-hidden">` with the equation in words, as you would read it to
+   someone over the phone: "P of y equals F times, open bracket, one plus y, close bracket, to the
+   power of minus n." The MP3 and the browser reader speak that line instead of the raw notation,
+   which otherwise turns exponents into subtractions and reads "dP/dy" as a single word. Logan
+   listens to this edition on a commute more than any other; the spoken form is not optional.
 4. **A worked example**, in a `.worked` block, with numbered steps and real numbers. At least one
    per lesson; two or three for anything quantitative. Show the arithmetic. This is the part that
    converts reading into understanding.
@@ -127,6 +141,17 @@ self-assessment scoring. He reads it; that is the whole interaction.
 - Define jargon on first use, every time, even if it appeared eighty days ago.
 - Admit the boundaries: where the model breaks, what the simplification costs, what a later
   lesson will fix. "This is a lie we will correct on day 112" is a legitimate and useful sentence.
+- **Real headings, not slot names.** Fourteen lessons in a row headed their misconception section
+  "The mistake almost everyone makes" and five headed the callback "The callback". Those are the
+  Step 2 slot names, not headings. A heading names the idea: "Why a rocket needs the product rule",
+  "Where sixty billion dollars of equity went".
+- **Tics.** "exactly", "genuinely", "worth pausing on", "two lessons ago" — a handful per lesson at
+  most (Day 13 used "exactly" 32 times). They are especially audible in the spoken edition.
+- **Get the physics of the tie-in right, not just the calculus.** The Day 13 callback applied the
+  product rule flawlessly to p = mv and produced the wrong equation for a rocket, because F = dp/dt
+  was applied to the rocket alone rather than to rocket plus expelled propellant. When a lesson
+  reaches into another subject, check the result against that subject's canonical treatment
+  (WebSearch/WebFetch), not only against the algebra.
 
 ## Step 3 — Build the page
 
@@ -140,7 +165,8 @@ SR §12, with these specifics:
 - Immediately under the masthead, a `.track-head`:
   `<p class="track-subject">Mathematics</p>` and
   `<span class="track-progress">Day 37 of 150 · Mathematics 15 of 24 · Core Machinery</span>`.
-- Body in `.lesson-body`, with `.formula`, `.worked` and `.recap` blocks as above.
+- Body in `.lesson-body`, with `.formula` (each with its `<dl>` and its `.expr-spoken` line),
+  `.worked` and `.recap` blocks as above.
 - **Omit entirely:** The Brief, The Board, Top Stories, all domain sections, the calendar, Local,
   the weather strip, and the Market Appendix. This report has a masthead, a track head, a lesson,
   and a colophon. Nothing else.

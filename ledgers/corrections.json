@@ -134,6 +134,15 @@
    "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the prior two editions did not surface the story despite prominent, same-day, multi-outlet coverage.",
    "conclusions_changed": false,
    "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-07-31 and 2026-08-14 entries above. No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-02",
+   "report": "reports/2026/09/2026-09-02-learn.html",
+   "original": "The Day 13 callback wrote Newton's second law for a rocket as F_net = d(mv)/dt = m·dv/dt + v·dm/dt, with v the rocket's own velocity, and named v·dm/dt as 'the term a rocket cannot afford to drop'.",
+   "corrected": "That is the classic variable-mass mistake. With v the rocket's velocity, m·dv/dt + v·dm/dt is not the force on the rocket (the result would depend on which inertial frame you measure v in). Apply F = dp/dt to the closed system of rocket plus expelled propellant and the correct equation for the rocket body is m·dv/dt = F_ext + u·dm/dt, where u is the exhaust velocity relative to the rocket (dm/dt is negative, so the u·dm/dt term is the thrust). The product rule was applied correctly; it was applied to the wrong system. Day 100, the Tsiolkovsky rocket equation, derives the right form from momentum conservation.",
+   "error_source": "A physics error in the Day 13 (2026-09-02) Learning Brief's callback paragraph, found in a maintenance review on 2026-09-02; the lesson's calculus was right, its choice of system was wrong.",
+   "conclusions_changed": true,
+   "note": "Surface in the next Learning Brief's colophon (prompts/learning.md Step 0 now reads this ledger). The equation plate in the published lesson is preserved as published; the correction is stated here and in the next lesson."
   }
  ]
 }
