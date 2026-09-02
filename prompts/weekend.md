@@ -24,7 +24,7 @@ Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never p
    `registry/entities.json`, `ledgers/forecasts.json`, `ledgers/corrections.json`,
    `data/nyse-holidays.json`, and `site/reports/index.json`.
 4. Markets are closed — every market number this weekend is `EOD official (Friday <date> close)`
-   or `Previous close`, except crypto (`Live`) and any Sunday-evening futures (Yahoo, labeled).
+   or `Previous close`, except crypto (`Live`).
 
 ## Step 1 — Shared weekend gather (SR §2 fetch discipline throughout)
 
@@ -34,8 +34,9 @@ Twelve Data at most a two-batch spot-check, exactly as `prompts/weekday.md` §2.
 indices/futures/commodities/EURUSD/DXY (browser UA acceptable for Yahoo only), Treasury par curve XML (this week's
 dates), FRED weekly deltas for `DGS2 DGS10 T10Y2Y T10YIE DFII10 SOFR BAMLH0A0HYM2 ICSA` (+ append
 `hy-oas.csv` if a new observation exists), Cboe history CSVs (VIX/VIX9D/VIX3M week path),
-CoinGecko simple/price + global, `state/market-history/breadth.json` history for the week's
-breadth arc. Exact endpoints, keys, labels: `prompts/weekday.md` Step 2. Update
+CoinGecko simple/price + global, and this week's rows of `state/market-history/breadth.json`
+for the breadth arc — written in words ("through Thursday, advancers led on two of four sessions";
+Friday's session is computed Monday morning), never as a file path, "not recomputed" or a key name. Exact endpoints, keys, labels: `prompts/weekday.md` Step 2. Update
 `state/market-history/last-good.json`. News research per SR §4–§6 for weekend developments.
 
 ---
@@ -48,8 +49,9 @@ A retrospective that SYNTHESIZES the week — never a concatenation of the daili
 
 From `site/reports/index.json`, open every report since last Saturday (Mon–Fri am+pm + last
 Sunday's outlook) in `site/reports/YYYY/MM/`. Extract: each story's arc (initial event →
-developments → final status), forecasts made, corrections, lesson topics covered, and each day's
-market summary. Read `state/run-log.jsonl` entries for the week for the health note.
+developments → final status), forecasts made, corrections, and each day's market summary. Read
+the week's `state/run-log.jsonl` lines only to know what data was missing (for your own use —
+nothing about run health is printed).
 
 ### S2. Forecast & scenario scorecard (do this BEFORE writing)
 
@@ -73,7 +75,9 @@ OpenAI/Anthropic/Discord have reported confidential S-1s):
    flag it prominently in this report and the next, and never backfill pre-listing price history
    (SR §8.5 — the SPCX/Tuttle lesson).
 
-Sweep results go in report section 28.
+Sweep results go in the colophon, one sentence (S4 item 19). Overwrite each entry's `source` with
+this week's one-line result and keep dated results in a `sweep_history` array capped at eight
+entries, so the field stops accumulating every past sweep as running prose.
 
 ### S4. Compose — this order
 

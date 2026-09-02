@@ -36,7 +36,9 @@ Headings are plain-language, not "Section 3.2 — Derivation."
 2. **Weekday guard:** if `DOW` is 6 or 7, this report does not run. Append
    `{"ts":"<UTC ISO>","slot":"offschedule","ok":true,"note":"learning brief invoked on a weekend; exited by design"}`
    to `state/run-log.jsonl`, commit, push, end the session. The Learning Brief is weekdays only —
-   150 lessons at five per week finishes in about thirty weeks.
+   150 lessons at five per week finishes in about thirty weeks. Market holidays that fall on a
+   weekday (Labor Day, Thanksgiving, Christmas) are lesson days like any other: this edition has no
+   markets in it, and the cadence is the curriculum's, not the exchange's.
 3. SR §1 idempotency with `KEY="$TODAY-learn"`. Already successful → EXIT NOW. Record `RUN_START`.
 4. Read `state/learning.json`, `curriculum/academy-150.json`, and `ledgers/corrections.json`. Any
    correction whose `report` is a `-learn.html` page and which no later Learning Brief has yet

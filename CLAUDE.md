@@ -72,6 +72,7 @@ Never put a lesson in a news edition; never put headlines or markets in the Lear
    report triggers it. Sending from the run is what produced duplicate morning, Saturday and
    Sunday pushes until 2026-08-16 (`prompts/shared-rules.md` §14).
 8c. **One commit per run** — report, index, state, run log and ledgers together
-   (`prompts/shared-rules.md` §15.2).
+   (`prompts/shared-rules.md` §15.2). The only sanctioned second commit is the run-log-only
+   `log: confirm pages_ok …` line after the live-URL poll (§15.4).
 9. **Political neutrality, verification levels, and no unsupported market causality** — the
    methods in `prompts/shared-rules.md` are requirements, not suggestions.

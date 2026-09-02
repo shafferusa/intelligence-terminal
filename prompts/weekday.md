@@ -29,6 +29,13 @@ report, send no Telegram message.
    ```
 
 2. Slot: if `HOUR` < 12 → `SLOT=am` (Morning Brief), else `SLOT=pm` (Closing Brief).
+   **0b. Schedule drift check (added 2026-09-02).** Compare `NOW_ET` with `schedule.weekday_am` /
+   `schedule.weekday_pm` in `config/settings.yml`. If the run started more than 40 minutes from the
+   slot's scheduled time, put one sentence in this run's run-log `note`: "schedule drift: ran at
+   <NOW_ET>, expected <HH:MM> ET — DST bump missed? see docs/RUNBOOK.md §B". If `SLOT=pm` and it is
+   before 16:00 ET, do the news research first and do not fetch a single quote until 16:02 ET
+   (wait, up to 45 minutes) — a Closing Brief written before the close is the failure of
+   2026-08-16, and the cron drifts by an hour twice a year.
 3. Run the SR §1 idempotency check with `KEY="$TODAY-$SLOT"`. If already successful, EXIT NOW.
 4. Record `RUN_START`. Read: `config/settings.yml`, `config/watchlists.yml`,
    `state/stories.json`, `state/calendar-cache.json`,
@@ -44,14 +51,21 @@ report, send no Telegram message.
 
 Look up `TODAY` in `data/nyse-holidays.json` (`years.<YYYY>.holidays` and `.early_closes`).
 
-- **Full holiday → HOLIDAY MODE (SPEC §24):** state plainly that US markets are closed for
-  <holiday name>. Skip US equity/breadth gathering (2.4 partially, 2.8, 2.9); still gather global
-  and futures data if trading (Yahoo), FX, crypto, rates history, calendars, EDGAR, and full news.
-  Never present stale US data as current — label everything `Previous close` with its date.
-  Replace "Before the Open" (am) / "What Moved Markets" + "Winners & Losers" (pm) with a
-  "Markets Closed — <holiday>" section covering global markets, futures, and crypto. The pm
-  edition's Board carries the last official closes with their date stated in the header. All other
-  sections run normally.
+- **Full holiday → HOLIDAY MODE (SPEC §24; rewritten 2026-09-02 ahead of Labor Day, Mon Sep 7).**
+  Run 2.1–2.7 and 2.10–2.14 exactly as normal — Yahoo simply returns the last session's bar, dated
+  the prior trading day; skip only 2.8 and 2.9, because no new US session exists (the next trading
+  day's run computes the holiday-eve session with `D` = that Friday from the holiday table).
+  Labels: every US figure is `Previous close (<Fri, Sep 4>)`, never `Cached` — the data is not a
+  fallback, it is the last close. The standfirst says US markets are closed for <holiday>.
+  **am:** replace Before the Open with a "Markets Closed — <holiday>" section: global markets,
+  futures if they are trading (say if they are not), crypto, and what Tuesday's open will have to
+  digest. The calendar section covers the shortened week. The weather strip runs as usual.
+  **pm:** The Board prints Friday's official closes with Friday's day change, and `.board-asof`
+  reads "Fri, Sep 4, 2026 close · US markets closed today (Labor Day)"; What Moved Markets and
+  Winners & Losers are replaced by the same "Markets Closed — <holiday>" section (global cash
+  markets, futures, crypto — there is no US tape to attribute); Tomorrow covers the reopen. What
+  Changed Today, the domain sections, Local and the appendix run normally, with the appendix's US
+  tables carrying the Friday date in their captions.
 - **Early close (13:00 ET):** note it in the header; the pm report labels final data
   "EOD official (13:00 ET early close)" and says so in What Moved Markets.
 
@@ -71,6 +85,11 @@ https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages
 
 Parse the most recent entry: 1M→30Y par yields. Compute 2s10s, 3m10y, 5s30s from it.
 Label `EOD official (<curve date>)` — it is always the prior business day in the am run.
+On the first business day of a month the current month's file is empty until that afternoon, so
+if it has no entry dated before `TODAY` (or no entries at all), also fetch the previous month
+(`field_tdr_date_value_month=$(TZ=America/New_York date -d "$(date +%Y-%m-01) -1 day" +%Y%m)`) and
+take the most recent entry across both. Always keep the two most recent curve dates, so the
+day-change in basis points never falls back to "unchanged" for want of a comparison row.
 
 ### 2.2 FRED (key `$FRED_API_KEY`)
 
@@ -120,9 +139,14 @@ after its first batch and fell back to a full Yahoo sweep anyway. Stop pretendin
 2. **Twelve Data is a spot-check only**: at most 2 batches of 8, used to sanity-check The Board's
    closes against a second vendor. On 429, note it and move on — it is not a failure worth
    reporting.
-3. Trim the universe to what actually reaches the page: the §17 board rows, the 11 sector ETFs,
-   and the company watchlists that appear in the appendix. Fetching 166 symbols to print 30 is
-   what caused the rate-limit thrash.
+3. The fetch universe is exactly what reaches the page, and nothing that does not: the 25 Board
+   rows, the 11 sector ETFs, the seven company lists, and the `broad_us_etfs`,
+   `international_etfs`, `rates_funds`, `credit_funds` and `factor_funds` lists in
+   `config/watchlists.yml` — about 175 symbols after deduplication, all of which the appendix
+   tables use. Pace the sweep at no more than two requests per second, alternating `query1` and
+   `query2`; a 429 means slow down, not fall back. A symbol that returns no bar on five consecutive
+   runs is a config error (a delisted or liquidated fund) — say so in the run-log `note` so it can
+   be removed from the YAML, and stop listing it as a failed source.
 
 Labels: am run → `Previous close`; pm run → `EOD official` once after 16:00 ET, else
 `Delayed (+15 min)`. SPCX: price history begins 2026-06-12 — never chart or cite earlier "SPCX"
@@ -144,8 +168,13 @@ https://query1.finance.yahoo.com/v8/finance/chart/<SYM>?interval=1d&range=5d
 had no free source and told the report to say so — that was wrong. Use it for The Board and the
 appendix; keep the EURUSD + basket description as the narrative colour, not the substitute.
 
-Also use the 60-day series (`?interval=1d&range=3mo`) for `SPY QQQ IWM DIA TLT SPCX` to compute
-20/50/200-DMA distances and the 52-week range.
+For `SPY QQQ IWM DIA TLT SPCX` use `?interval=1d&range=1y` (one call each): the close array
+gives the 20-, 50- and 200-day simple averages and the distances from them, `meta` gives the
+52-week range, and the volume array gives the same three-month average volume the Board uses.
+Store `dma20`/`dma50`/`dma200` in `last-good.json` → `dma_technical_levels`. (A 3-month series was
+being asked for a 200-day average, which is why the appendix only ever printed 20- and 50-day
+distances.) SPCX has no 200-day average until March 2027 — print "not yet available", never a
+shorter proxy.
 
 ### 2.6 Frankfurter FX (no key)
 
@@ -168,9 +197,19 @@ Label `Live (CoinGecko aggregate)`. Total cap and BTC dominance come from `/glob
 
 ### 2.8 Whole-market breadth — Massive grouped daily (1 call; skip if already done for this session)
 
-Only run when `state/market-history/breadth.json` has no `history` entry for the previous NYSE
-session `D` (previous business day per `data/nyse-holidays.json`; both am and pm runs would
-otherwise duplicate it).
+`D` is the last completed NYSE session strictly before `TODAY` (previous business day per
+`data/nyse-holidays.json`; Massive's free tier serves a session only the next morning, so the pm
+run never asks for today's date). Only run when `state/market-history/breadth.json` has no
+`history` entry for `D` (both am and pm runs would otherwise duplicate it).
+
+**How the reader hears about it (2026-09-02).** The appendix says "Breadth for Tuesday's session,
+the latest available: 1,343 advancing, 4,023 declining — a quarter of the market advancing" and
+nothing about how it got there. Never "not recomputed this run", "the once-per-session rule",
+"computes in tomorrow's run", a file name, or a key name. While the moving-average share is still
+accumulating, print this sentence and nothing more technical: "The share of stocks above their 50-
+and 200-day averages is not yet available — the history behind it began July 24 and needs 50
+sessions (early October) and 200 sessions (spring 2027)."
+
 
 ```
 https://api.massive.com/v2/aggs/grouped/locale/us/market/stocks/<D>?adjusted=true&apiKey=${MASSIVE_KEY:-${POLYGON_API_KEY:-}}
@@ -184,8 +223,10 @@ If neither key env var is set, or the response is 401/403: breadth = `Source una
    For each symbol: advancing if `c_D > ma_state[sym].c`. Update EMAs (seed with `c` at n=0):
    `e50 += (2/51)(c−e50)`, `e200 += (2/201)(c−e200)`, `n += 1`, then store `c`.
 3. Append to `history`: `{"date":D,"advancers":N,"decliners":N,"unchanged":N,"universe":N,"up_vol":V,"down_vol":V,"pct_above_e50":x,"pct_above_e200":y}`.
-   Report `pct_above_*` only over symbols with `n≥50` / `n≥200`; until then label
-   `Estimated — EMA proxy, accumulating history (<n_max>/200 sessions)`. A/D line = cumulative
+   Report `pct_above_*` only over symbols with `n≥50` / `n≥200`; until then the fields stay
+   `null` and the reader gets the accumulating sentence above (the old `Estimated — EMA proxy`
+   label was a run internal and is retired). Every `history` row carries the same key set,
+   including `n50_count` and `n200_count` (0 until the thresholds are met). A/D line = cumulative
    advancers−decliners across `history`. Keep the file lean: prune symbols not seen for 30 sessions.
 
 ### 2.9 FINRA daily short volume (PRIOR session only; best-effort; skip in holiday mode)
@@ -213,8 +254,8 @@ If `fetched` is null or older than 18 hours, refresh (each best-effort; .gov UA 
 - Congress (ONLY if optional `CONGRESS_API_KEY` is set): `https://api.congress.gov/v3/bill?api_key=...`;
   otherwise congressional scheduling comes from news research.
 - Launches: `https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=10` (free tier ~15 req/hr — one call).
-- Earnings, two layers: Alpha Vantage 3-month CSV **at most once per day** (store `earnings_fetched`
-  date in the cache; AV free tier is tiny):
+- Earnings, two layers: Alpha Vantage 3-month CSV **once per day, in the am run only** (store
+  `earnings_fetched`; the pm run and the weekend reuse it; AV's free tier is tiny):
   `https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=${ALPHA_VANTAGE_KEY}`
   plus Finnhub day-of confirmations:
   `https://finnhub.io/api/v1/calendar/earnings?from=$TODAY&to=$TODAY&token=${FINNHUB_KEY}`
@@ -226,16 +267,22 @@ set `fetched` to now. Importance is classified by you, with the reason stated (S
 
 - Latest 8-Ks, market-wide:
   `https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&count=100&output=atom`
-- Per-company Atom feeds, for every ticker in the deduplicated **company** watchlists:
-  `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=<TICKER>&type=8-K&dateb=&owner=include&count=5&output=atom`
-  Keep filings newer than the previous run (`last_success` in `state/last-run.json`). Any
-  material filing becomes a Business/Corporate item with the filing as primary source.
-  **Ticker lookups that return no entries (SPCX does this every run):** the ticker-to-CIK
-  resolution behind `browse-edgar` is unreliable for recent listings. When a ticker returns an
-  empty feed, retry with the CIK recorded in `registry/entities.json` (SpaceX: `CIK=0001181412`),
-  or read `https://data.sec.gov/submissions/CIK0001181412.json` (its `filings.recent` arrays carry
-  form type, filing date and accession number). Only if the CIK route also fails is it a failed
-  source; an empty ticker lookup by itself is not one, so do not log it.
+- **Watchlist filings — by CIK, not by 130 per-ticker feeds (rewritten 2026-09-02).** The
+  per-ticker `browse-edgar` loop timed out (08-19: 12 of 130 feeds), was skipped on other
+  mornings, and never resolved SPCX at all. Instead:
+  1. Once, and again in the Saturday sweep, build `registry/watchlist-ciks.json` from
+     `https://www.sec.gov/files/company_tickers.json` (.gov UA): every ticker in the company
+     watchlists → its 10-digit CIK (SpaceX: `0001181412`). A ticker absent from that file is
+     looked up in `registry/entities.json` or `data.sec.gov/submissions/`.
+  2. am run: fetch the prior session's daily form index — one request, complete for that day:
+     `https://www.sec.gov/Archives/edgar/daily-index/<YYYY>/QTR<n>/form.<YYYYMMDD>.idx` — and keep
+     the rows whose CIK is in the map (8-K, 10-Q, 10-K, S-1, 425, SC 13D, 13G, Form 4 in bulk).
+  3. pm run: page the market-wide feed above with `&start=0`, `100`, `200`, `300` (four requests)
+     and filter by CIK the same way.
+  4. Fetch only the matched filings (`https://www.sec.gov/Archives/edgar/data/<CIK>/<accession>/`).
+  Keep filings newer than the previous run (`last_success` in `state/last-run.json`). Any material
+  filing becomes a Business/Corporate item with the filing as primary source. An empty result is
+  not a failed source; only an HTTP failure after retries is.
 - Any public/private status question → SR §8 registry procedure. Never trust memory for tickers.
 
 ### 2.12 News research (WebSearch / WebFetch)

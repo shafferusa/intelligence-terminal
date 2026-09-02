@@ -149,6 +149,7 @@ If the token leaks or as periodic hygiene:
 
 - **NYSE holiday table** (each December): refresh `data/nyse-holidays.json` from https://www.nyse.com/markets/hours-calendars — holidays and early closes, kept ~3 years ahead.
 - **FOMC calendar** (when the Fed publishes next year's dates, usually mid-year): refresh the committed FOMC meeting dates from federalreserve.gov so calendar sections stay accurate.
+- **Watchlist hygiene** (whenever `site/status.html` shows the same symbol degraded on five consecutive runs): a fund that returns no bar for a week has been delisted or liquidated (FM was, in 2025, and sat in the failed-sources list for weeks). Remove or replace it in `config/watchlists.yml`; the routine picks the change up on the next run.
 
 ---
 

@@ -57,7 +57,9 @@ When environment variables are missing or egress is blocked (403 `host_not_allow
   **Source unavailable** instead; never invent a fallback. One failed provider never kills the run;
   a partial report beats no report.
 - After a successful market-data gather, overwrite `state/market-history/last-good.json` with the fresh
-  snapshot (per-source: values + fetch timestamp) so the next run has a fallback.
+  snapshot (per-source: values + fetch timestamp) so the next run has a fallback. Fetch timestamps
+  are captured with `date -u +%FT%TZ` at fetch time and copied verbatim — never typed from memory
+  or rounded to the hour; they become the `Cached (as of <ts>)` labels.
 - .gov hosts (treasury.gov, bls.gov, bea.gov, treasurydirect.gov, federalreserve.gov, sec.gov,
   data.sec.gov, efts.sec.gov, congress.gov): send header
   `User-Agent: LoganTerminal/1.0 (loganshaffer87@gmail.com)`. SEC ≤10 req/s. Never a browser UA on .gov.
@@ -70,7 +72,10 @@ When environment variables are missing or egress is blocked (403 `host_not_allow
 `Live` · `Delayed (+N min)` · `Previous close` · `EOD official` · `Estimated` ·
 `Source unavailable` · `Preliminary` · `Revised` · `Cached (as of <ts>)`
 
-- Every figure carries source + timestamp + one of these labels. Never mix unlabeled data types.
+- Every figure in a Market Appendix table carries source + timestamp + one of these labels, in
+  the caption. In prose the date is said in words ("Tuesday's close", "as of Friday") and nothing
+  else — per-figure labels in sentences were removed 2026-08-16 (§11). Never mix unlabeled data
+  types within a table.
 - Delayed data is never presented as live. Missing source → the section says "unavailable," never invents.
 - Always explicit: nominal vs real, level vs rate-of-change, revision direction and whether it changes
   the interpretation. Short interest carries its settlement date (always 2–3 weeks stale).
@@ -141,16 +146,18 @@ Closing-report move attribution uses exactly these labels:
   "the committee's finding, which he denies". Election results: margins, turnout and endorsements;
   why voters chose as they did is attributed to a named analyst or exit poll or left unsaid.
 
-## 7. Story card requirements (every Top Story)
+## 7. What every Top Story must answer (in prose)
 
-Factual headline · status (`New/Developing/Materially changed/Continuing/Resolved/Corrected/Unconfirmed`)
-· times (event vs published vs last checked) · what happened · why it matters · what is confirmed ·
-what remains uncertain · context · impact (only relevant dimensions: people/policy/security/markets/
-industries/companies/inflation/rates/energy/supply chains/tech/space/science) · what happens next ·
-related assets (exposure ≠ direction) · sources (primary vs secondary vs analysis vs data) ·
-expandable deeper analysis inside `<details>` (collapsed by default).
+A story answers, in paragraphs: what happened, why it matters, what is confirmed and what is not,
+what happens next, and — only where it is real — which assets are exposed (exposure ≠ direction) and
+which of people / policy / security / markets / industries / rates / energy / supply chains / tech /
+space / science it touches. A factual headline, a deck, at most two `.story-note` blocks, a
+sourceline naming primary and secondary sources, and optionally one collapsed `<details>` for the
+deeper analysis. Status (`New/Developing/Materially changed/Continuing/Resolved/Corrected/
+Unconfirmed`), event and publication times, "last checked", the verification level and the scoring
+rationale are recorded in `state/stories.json` — none of it is printed (the seven labelled
+subheads were removed 2026-08-16, §11b).
 Select ~8–12 stories by the SPEC §4 scoring criteria; don't pad thin days, don't suppress heavy ones.
-Keep the scoring rationale in `state/stories.json` entries.
 
 ## 8. Entity-registry check procedure
 
@@ -361,8 +368,9 @@ duplicate push every morning is what this replaced.
 1. Ensure git identity: if unset, `git config user.name "Intelligence Terminal Bot"` and
    `git config user.email "loganshaffer87@gmail.com"`.
 2. Stage only files inside the allowed write set (`site/reports/`, `state/`, `ledgers/`, `registry/`).
-   `git pull --rebase origin main` before each push; if rebase conflicts on `index.json` or
-   `run-log.jsonl`, take the remote version and re-apply your addition. Commit with a message like
+   `git pull --rebase origin main` before each push; on any rebase conflict under `state/`,
+   `ledgers/`, `registry/` or `site/reports/index.json`, take the remote version, re-apply only
+   your own entries or keys, and re-validate the JSON before pushing. Commit with a message like
    `report: 2026-07-27 am`, then `git push origin main`. **Never force-push.**
 
    **ONE COMMIT PER RUN.** The report page, `site/reports/index.json`, all `state/` files
@@ -407,9 +415,14 @@ duplicate push every morning is what this replaced.
 4. Append one line to `state/run-log.jsonl` — written BEFORE the commit in step 2, so it ships in
    the same commit as the report:
    `{"ts":"<ISO8601 UTC>","slot":"am|pm|sat|sun|learn","ok":true,"telegram_ok":"delegated","pages_ok":null,"sources_failed":["..."],"note":"…"}`
-   `pages_ok` is `null` at commit time (the page cannot be live before it is pushed). If the step-3
-   poll later shows a problem worth recording, append a SECOND short line rather than rewriting the
-   first — this file is append-only.
+   `pages_ok` is `null` at commit time (the page cannot be live before it is pushed). After the
+   step-3 poll, append a SECOND short line with the verdict (`"pages_ok": true|false`) and commit it
+   as `log: confirm pages_ok for <date> <slot>` — run-log only. That confirmation commit is the one
+   sanctioned second commit of a run (CLAUDE.md 8c); the status page folds the two lines into one
+   card. Never rewrite the first line — this file is append-only.
+   `sources_failed` lists only sources that were actually attempted this run and failed after the
+   §2 retries. Never a retired source (put/call), never a delisted symbol, never a rate-limit note on
+   a spot-check, never a success — those belong in `note`, if anywhere.
    Keep `note` to a few sentences: what the edition led with and anything genuinely odd about the
    run. It feeds the status page, not the report.
 5. Update `state/last-run.json` per §1 step 5 (this is what makes the run idempotent — never skip
@@ -423,6 +436,9 @@ Watchlists · Rates · Credit · Volatility & options · FX · Commodities · Cr
 Cross-asset · Earnings · Auctions & liquidity), each inside `<details>`. Narrate anomalies and
 leadership changes, not every row. Show supporting AND contradicting regime evidence. Dealer gamma is
 not tracked (no legitimate free source) — say so. Every table carries timestamps and delay labels.
+Untracked inputs (put/call ratios, the MOVE index, dealer positioning) get at most one standing
+clause — "MOVE, put/call and dealer positioning are not tracked here" — never an endpoint, a host,
+an HTTP status, or "for weeks". The reader is not debugging the feed.
 
 The appendix is UNCHANGED by the 2026-08-16 declutter and stays collapsed by default. It is the one
 place in the report where delay labels and source stamps still belong on every table.
