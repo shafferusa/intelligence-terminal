@@ -654,20 +654,90 @@
   },
   {
    "id": "us-iran-jordan-strikes-aug31",
-   "headline": "US strikes ~100 Iranian targets, including two tankers for the first time, under new 'tanker for tanker' policy",
+   "headline": "Iran retaliates against Jordan, Bahrain, Kuwait and Iraq for the weekend's US strikes",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-02-am",
-   "verification": "Confirmed-primary (CENTCOM statement); Unverified/unclaimed (the tanker strikes that triggered this round)",
-   "one_line": "CENTCOM struck roughly 100 Iranian targets overnight incl. air defense, radar, minelaying gear, comms and -- for the first time -- two Iranian government tankers, under a newly disclosed 'tanker for tanker' retaliation policy approved by Trump. Follows Mon/Tue's still-unclaimed tanker strikes on a Saudi VLCC and a Liberia-flagged carrier. No Iranian response confirmed as of this writing; oil's premarket reaction is notably muted vs. prior rounds.",
-   "score_note": "Policy shift (standing retaliation rule, not a one-off) is the more significant development than the target count.",
+   "last_updated": "2026-09-02-pm",
+   "verification": "Confirmed-multiple (Jordanian, Bahraini, Kuwaiti government statements; Iran's IRGC statement)",
+   "one_line": "Before dawn Wednesday Iran fired missiles and drones at Jordan (13 missiles, 10 intercepted, 3 landed in remote areas), Bahrain (drones intercepted near Sheikh Isa Air Base and a desalination plant) and Kuwait (drones targeted Ali Al Salem Air Base); Iraq was also named among the targeted countries. The widest single round of this six-month standoff, retaliating for CENTCOM's weekend strike on ~100 Iranian targets. Trump says the US gave Gulf allies advance notice and is in no hurry to force Iran to the table; single-sourced reporting says some allies were unhappy with the coordination. Oil hit five-week highs (Brent ~$95.32) but stocks rallied anyway on a weak ADP print.",
+   "score_note": "Widest round of Iranian retaliation yet -- four countries in one morning -- but markets treated it as familiar rather than escalatory, a genuine shift from Tuesday's risk-off reaction to the same conflict.",
    "sources": [
-    "CENTCOM statement (primary)",
-    "Axios",
+    "Jordanian, Bahraini and Kuwaiti government statements (primary)",
+    "Iran's Revolutionary Guard statement (primary)",
+    "CENTCOM (primary, weekend strike)",
+    "NPR",
+    "CNN",
+    "Al Jazeera",
+    "Gulf News",
+    "The National"
+   ],
+   "watch": true
+  },
+  {
+   "id": "broadcom-q3-earnings-sep2",
+   "headline": "Broadcom beats on revenue and EPS but AI chip guidance disappoints",
+   "status": "New",
+   "first_seen": "2026-09-02-pm",
+   "last_updated": "2026-09-02-pm",
+   "verification": "Confirmed-primary (earnings release); Preliminary (after-hours move magnitude, sourcing not reconciled)",
+   "one_line": "Fiscal Q3 revenue ~$29.6B (vs ~$29.5-29.9B consensus) and adjusted EPS ~$3.32 (vs ~$3.21-3.30 consensus) both beat; Q4 revenue guide of $29.4B topped the ~$28.6B consensus. But Q4 AI semiconductor guide of ~$16B missed the ~$17.2B analysts wanted and the company did not raise its full-year AI forecast -- the detail that moved the stock. Shares fell sharply after hours; exact magnitude disputed across sources (6.5%-12%), not yet printed pending a full session.",
+   "score_note": "Week's largest scheduled catalyst; a beat-but-guidance-sells-off pattern echoing the prior quarter.",
+   "sources": [
+    "Broadcom earnings release (primary)",
+    "Yahoo Finance"
+   ],
+   "watch": true
+  },
+  {
+   "id": "adp-payrolls-miss-sep2",
+   "headline": "ADP: August private payrolls rise just 38,000, weakest since January",
+   "status": "New",
+   "first_seen": "2026-09-02-pm",
+   "last_updated": "2026-09-02-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Private payrolls +38K vs ~46-48K consensus, down from an already-weak, downwardly-revised July gain of 44K. Nearly all net gains came from large employers (500+); small firms added just 3K. Wage growth flat. Complicates Fed Chair Warsh's hawkish case two days ahead of Friday's August jobs report.",
+   "score_note": "Second straight soft ADP month; the data point markets appeared to trade on today over the wider Iran retaliation.",
+   "sources": [
+    "ADP Research Institute (primary)",
     "CNBC",
-    "The Hill",
-    "ABC News",
-    "RFE/RL"
+    "ZeroHedge"
+   ],
+   "watch": true
+  },
+  {
+   "id": "tyler-robinson-trial-ruling-sep1",
+   "headline": "Utah judge rules Tyler Robinson will stand trial for Charlie Kirk's killing",
+   "status": "New",
+   "first_seen": "2026-09-02-pm",
+   "last_updated": "2026-09-02-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Judge Tony Graf found probable cause on all seven counts Tuesday, including aggravated-murder and victim-targeting enhancements making Robinson eligible for the death penalty. Robinson pleaded not guilty; next court date in October. This report did not cover the Tuesday ruling until this edition -- a coverage gap disclosed in the colophon and logged to the corrections ledger.",
+   "score_note": "One of the highest-profile capital murder cases in the country; covered one news cycle late.",
+   "sources": [
+    "Utah 4th District Court ruling (primary, via reporting)",
+    "CNN",
+    "NPR",
+    "NBC News",
+    "Deseret News",
+    "Time",
+    "KUER"
+   ],
+   "watch": true
+  },
+  {
+   "id": "langflow-rails-exploitation-sep2",
+   "headline": "Langflow and Ruby on Rails flaws chained for active credential-theft attacks",
+   "status": "New",
+   "first_seen": "2026-09-02-pm",
+   "last_updated": "2026-09-02-pm",
+   "verification": "Moderate confidence (vendor telemetry, not yet government-confirmed)",
+   "one_line": "VulnCheck reports CVE-2026-0768 (Langflow code-validator bypass) chained with CVE-2026-66066 (Rails secret_key_base/credentials exposure via arbitrary file read); detections rose from ~50 (Aug 30) to 360 (Monday), concentrated from one France-linked source IP hitting canaries in Singapore, Israel and the UK.",
+   "score_note": "Another fast, automated post-disclosure exploitation wave, the pattern this report has tracked repeatedly this year.",
+   "sources": [
+    "VulnCheck (primary research)",
+    "The Hacker News",
+    "SocRadar",
+    "CyberPress"
    ],
    "watch": true
   },
@@ -706,23 +776,6 @@
    "watch": true
   },
   {
-   "id": "anthropic-infostealer-warning-aug31",
-   "headline": "Anthropic warns infostealer malware is hijacking Claude accounts",
-   "status": "New",
-   "first_seen": "2026-08-31-am",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-primary",
-   "one_line": "Anthropic disclosed six infostealer malware families (Vidar, LummaC2, StealC, RedLine, Acreed, Atomic Stealer/AMOS) are stealing authenticated browser session cookies to hijack Claude logins, bypassing passwords/2FA. Anthropic is signing out affected users, removing saved payment methods and refunding unauthorized charges; says the campaigns are general-purpose credential theft unrelated to Claude itself.",
-   "score_note": "Rare instance of a lab disclosing attacks on its users rather than its models.",
-   "sources": [
-    "Anthropic (primary)",
-    "BleepingComputer",
-    "Security Affairs",
-    "The Cyber Express"
-   ],
-   "watch": false
-  },
-  {
    "id": "lake-america-google-maps-aug31",
    "headline": "Lake America lands on Google Maps; White House celebrates, Ford mocks it on ABC",
    "status": "Materially changed",
@@ -738,23 +791,6 @@
     "White House Communications Director statement (primary)"
    ],
    "watch": true
-  },
-  {
-   "id": "house-funding-bill-vote-aug31",
-   "headline": "House passes H.R. 6500, funding the government through Dec. 11",
-   "status": "Resolved",
-   "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-01-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "The House passed the Senate-amended continuing resolution 370-48 Tuesday afternoon (19 Republicans, 29 Democrats voting no), clearing the two-thirds suspension threshold comfortably. Bill now goes to the president for signature; funds the government through Dec. 11, removing the Sept. 30 shutdown deadline.",
-   "score_note": "Resolves the funding-bill watch item; Dec. 11 becomes the next fiscal deadline.",
-   "sources": [
-    "Congress.gov bill record (primary)",
-    "Axios",
-    "Roll Call",
-    "ABC7"
-   ],
-   "watch": false
   },
   {
    "id": "trump-welker-fcc-threat-aug31",
@@ -842,58 +878,6 @@
     "investinglive.com"
    ],
    "watch": true
-  },
-  {
-   "id": "hasbro-data-breach-disclosure-sep1",
-   "headline": "Hasbro discloses employee data breach tied to March cyberattack",
-   "status": "New",
-   "first_seen": "2026-09-01-am",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-primary",
-   "one_line": "Hasbro's state breach-notification filings (Massachusetts AG filing lists 436 residents) disclose that the March 28 cyberattack that took its systems offline also exposed employee Social Security numbers, financial account/payment card data and driver's license numbers -- roughly a five-month gap between intrusion and notification. Total affected count nationwide not yet disclosed.",
-   "score_note": "A disclosure-timeline and cost data point alongside the broader cyber roundup (Anthropic infostealer, Fire Ant, PaperCut KEV).",
-   "sources": [
-    "Hasbro SEC filings (primary)",
-    "Massachusetts AG breach notification (primary)",
-    "BleepingComputer",
-    "SecurityWeek"
-   ],
-   "watch": false
-  },
-  {
-   "id": "chuck-edwards-censure-sep1",
-   "headline": "House censures Rep. Chuck Edwards 413-2",
-   "status": "Resolved",
-   "first_seen": "2026-09-01-pm",
-   "last_updated": "2026-09-02-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "House voted 413-2 Tuesday night to censure Edwards; only Edwards and Rep. Ralph Norman voted no. Leadership did not whip the vote. Edwards stood in the well as Speaker Johnson read the resolution; censure does not remove him from office. Forecast 2026-09-01-pm-2 graded correct.",
-   "score_note": "Near-unanimous free vote on an undisputed Ethics Committee finding; resolves the outcome watch item.",
-   "sources": [
-    "House Ethics Committee report (primary)",
-    "NBC News",
-    "CBS News",
-    "NPR",
-    "NOTUS",
-    "19th News"
-   ],
-   "watch": false
-  },
-  {
-   "id": "ms365-outage-sep1",
-   "headline": "Microsoft 365 outage resolves after more than a day",
-   "status": "New",
-   "first_seen": "2026-09-01-pm",
-   "last_updated": "2026-09-01-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Multi-service Microsoft 365 outage (Exchange Online, Teams, SharePoint, Copilot, Defender XDR) began ~8 AM ET Monday, traced to a misconfigured core-authentication networking change; mail flow/search restored by noon ET Tuesday, other services improving through the afternoon. No root-cause post-mortem published yet beyond the initial explanation.",
-   "score_note": "Day-plus outage across a major enterprise cloud platform touching mail, chat and file-sharing simultaneously.",
-   "sources": [
-    "Microsoft (primary, service-health updates)",
-    "TechCrunch",
-    "Computerworld"
-   ],
-   "watch": false
   },
   {
    "id": "jfrog-artifactory-exploit-sep1",

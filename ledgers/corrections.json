@@ -1,130 +1,139 @@
 {
-  "corrections": [
-    {
-      "found": "2026-07-27",
-      "report": "reports/2026/07/2026-07-26-sun.html",
-      "original": "Report referred to the FOMC press conference and rate-path commentary as \"Powell's\" throughout (nine references), implying Jerome Powell remained Federal Reserve Chair.",
-      "corrected": "Kevin Warsh has served as Federal Reserve Chair since May 22, 2026 (nominated by President Trump Mar 4, 2026; confirmed by the Senate 54-45 on May 12-13, 2026; sworn in May 22, 2026), succeeding Jerome Powell. Wednesday Jul 29's FOMC press conference will be led by Warsh, not Powell.",
-      "error_source": "Prior edition carried forward a stale assumption about Fed leadership without verifying against a primary source; not independently checked before Sunday's publication.",
-      "conclusions_changed": false,
-      "note": "Verified directly against federalreserve.gov press release other20260522a.htm this run. Does not change the FOMC meeting date/time, non-SEP status, or hold/hike odds framing from Sunday's edition -- only the identity of who delivers the press conference and statement. Corrected in today's report (2026-07-27-am) Top Stories and Section 20."
-    },
-    {
-      "found": "2026-07-28",
-      "report": "reports/2026/07/2026-07-28-am.html",
-      "original": "Described the US-Iran strike pause as \"holding a fifth day\" as of Tuesday, July 28, 2026.",
-      "corrected": "Contemporaneous, dated reporting (Al Jazeera, NPR, CS Monitor, Washington Times, all dated Jul 26) describes Saturday Jul 25 as the pause's first day and Sunday Jul 26 as its \"second day\" on their own datelines, making Tuesday Jul 28 the pause's fourth day, not fifth.",
-      "error_source": "An off-by-one day-count drift that began in the 2026-07-27-pm edition, which incremented the count on the same calendar day as that morning's edition without re-verifying the pause's actual start date against dated source reporting; today's AM edition continued the drift by one more day.",
-      "conclusions_changed": false,
-      "note": "Verified via WebSearch against multiple outlets' own datelines this run. Does not change any prior story's substance -- only the day-count label. Corrected in today's report (2026-07-28-pm) Top Stories and Section 20."
-    },
-    {
-      "found": "2026-07-31",
-      "report": "reports/2026/07/2026-07-31-am.html",
-      "original": "This morning's edition (2026-07-31-am) did not cover President Trump's Board of Peace announcement of a Hamas disarmament agreement for Gaza, a major story that broke Thursday afternoon/evening (2026-07-30), before that edition's news cutoff.",
-      "corrected": "Added to today's Closing Brief (2026-07-31-pm) Top Stories and Section 4, one news cycle late, with the coverage gap disclosed explicitly rather than the story being folded in as if newly broken.",
-      "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-07-31-am edition did not surface the story despite its prominence in wire coverage dated Jul 30.",
-      "conclusions_changed": false,
-      "note": "This is a completeness gap, not an inaccurate statement previously published. Logged per SR SS9 for transparency; no prior published sentence needed correcting, so no diff against prior report text is shown."
-    },
-    {
-      "found": "2026-08-01",
-      "report": "reports/2026/07/2026-07-30-pm.html",
-      "original": "Named the Saudi-led Multinational Maritime Defense Alliance's 14 founding countries as Saudi Arabia, Kuwait, Bahrain, Qatar, Pakistan, Turkey, Egypt, Jordan, Yemen, Bangladesh, Nigeria, Sudan, Djibouti, and Somalia.",
-      "corrected": "Multiple wire sources describing the actual July 30 charter-signing joint declaration (Saudi Gazette, Anadolu Agency, Arabian Business, Middle East Monitor) instead list Saudi Arabia, Kuwait, Bahrain, Qatar, Jordan, Egypt, Pakistan, Turkiye, Djibouti, Somalia, Bangladesh, Yemen, and the Comoros as the 14 founding/signatory states -- Nigeria and Sudan do not appear among the charter signatories; the Comoros does.",
-      "error_source": "The Thursday edition's list appears to have reflected an earlier or broader roster (possibly drawn from the wider 43-nation planning talks) rather than the smaller charter-signing roster confirmed once the alliance's founding declaration was actually issued Jul 30.",
-      "conclusions_changed": false,
-      "note": "Verified via WebSearch against multiple wire sources this run (2026-08-01-sat). Does not change the story's substance -- the alliance's formation, headquarters, and purpose are unaffected -- only the named country roster. Corrected in today's report (2026-08-01-sat) Top Story 9 and Section 29."
-    },
-    {
-      "found": "2026-08-03",
-      "report": "reports/2026/08/2026-08-03-am.html",
-      "original": "Premarket Setup table and related Top Stories/Executive Brief framing reported sharp premarket futures gains (ES +2.80%, NQ +4.45%, YM +2.35%, RTY +1.41%), gold +1.73%, and EUR/USD +1.42% (framed in the FX appendix as \"this morning's dollar weakness coincided with the broader risk-on...tape\"), all computed against Yahoo Finance's chartPreviousClose field.",
-      "corrected": "Yahoo's chartPreviousClose field for range=5d chart fetches of these instruments returned a value lagging TWO trading sessions behind (e.g. ES=F's chartPreviousClose of 7351.25 was Wednesday Jul 29's close, not Friday Jul 31's actual settle of 7519.25). Recomputed against each instrument's own close-to-close series (the same fix already applied to the 167-symbol equity watchlist in an earlier edition, now confirmed necessary for futures/commodities/FX too): the correct premarket moves at the same 05:31-05:52 ET price levels were ES +0.50%, NQ +0.54%, YM +0.65%, RTY +0.63%, gold +1.37%, and EUR/USD +0.05% (essentially flat, not the reported dollar weakness). Oil's figure (-5.55% published vs -5.79% corrected) was not materially affected because Wednesday's and Friday's WTI settles happened to be close together.",
-      "error_source": "The chartPreviousClose-field bug identified and fixed for the equity watchlist in an earlier edition was not recognized as also affecting the Premarket Setup futures/commodities/FX table, which independently used the same buggy field.",
-      "conclusions_changed": true,
-      "note": "The equity-futures 'sharp rally' framing in Monday morning's Top Stories, Executive Brief, and Premarket Setup was overstated by roughly 4-5x; the FX appendix's specific claim that dollar weakness coincided with the risk-on tape is not supported by the corrected, essentially-flat EUR/USD move. This does not change the qualitative direction (futures were higher, oil was lower) or the report's core caveat that the moves rested on a disputed Iran de-escalation premise -- only the reported magnitude. Discovered while recomputing intraday figures for this run (2026-08-03-pm) using the close-series method; this same class of bug likely affected prior editions' futures/commodity/FX premarket tables too, flagged here for awareness though a full historical re-audit is out of scope for this run. All Yahoo Finance chart fetches from this edition forward use the close-series method for every instrument class, not just the equity watchlist. Corrected in today's report (2026-08-03-pm) Section 20."
-    },
-    {
-      "found": "2026-08-07",
-      "report": "reports/2026/08/2026-08-06-am.html",
-      "original": "Described the federal appeals-court panel that declined to block the mail-ballot executive order (Aug 4) as a 'D.C. Circuit three-judge panel' / 'D.C. Circuit panel', in both the Top Stories card and the Since Yesterday's Close change log.",
-      "corrected": "Per SCOTUSblog and multiple wire sources, the panel that declined to block the order -- and the panel Justice Jackson is assigned to for the pending emergency stay application -- is the 1st Circuit Court of Appeals, not the D.C. Circuit. The 'D.C.' in the 23-states-plus-D.C. coalition challenging the order refers to the District of Columbia as a party to the suit, not to the D.C. Circuit court.",
-      "error_source": "Apparent conflation of 'D.C.' (the jurisdiction party to the suit) with 'D.C. Circuit' (a specific appeals court) during composition; not caught before publication.",
-      "conclusions_changed": false,
-      "note": "Does not change the substance of the circuit split or the pending SCOTUS stay application -- only which circuit court is involved. Corrected in today's report (2026-08-07-am) Section 20."
-    },
-    {
-      "found": "2026-08-12",
-      "report": "reports/2026/08/2026-08-11-pm.html",
-      "original": "Described Sens. Ron Johnson and Rand Paul releasing Fauci's government-phone text messages as occurring \"today\" (Tuesday, Aug 11).",
-      "corrected": "Multiple outlets (CNN, Forbes) dateline the release of the initial batch of 11 texts (Fauci-Walensky-Murthy) to Monday evening, Aug 10, not Tuesday Aug 11.",
-      "error_source": "Same-day sourcing (CNN, single-sourced at that report's cutoff) apparently reflected same-day pickup coverage of the release rather than the event's actual dateline, which subsequent research places one day earlier.",
-      "conclusions_changed": false,
-      "note": "Does not change the substance of the disclosure or the Fauci contempt-referral thread -- only the day the texts were released. Corrected in today's report (2026-08-12-am) Section 6 and Section 20."
-    },
-    {
-      "found": "2026-08-14",
-      "report": "reports/2026/08/2026-08-14-am.html",
-      "original": "This morning's edition (2026-08-14-am, news cutoff 05:50 ET) did not cover a federal judge's dismissal of the Trump administration's antisemitism lawsuit against Harvard University, a ruling issued the afternoon/evening of Aug 13 and covered same-day by multiple major outlets (The Harvard Crimson, Boston Globe, CNN, NBC News, Axios).",
-      "corrected": "Added to today's Closing Brief (2026-08-14-pm) Top Stories, one news cycle late, with the coverage gap disclosed explicitly rather than the story being folded in as if newly broken.",
-      "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-08-14-am edition did not surface the story despite same-day, multi-outlet coverage of the ruling.",
-      "conclusions_changed": false,
-      "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-08-01 entry above (Board of Peace announcement). No prior published sentence needed correcting."
-    },
-    {
-      "found": "2026-08-18",
-      "report": "reports/2026/08/2026-08-17-pm.html",
-      "original": "Described L3Harris CEO Christopher Kubasik's exit as an 'abrupt departure,' without stating a cause.",
-      "corrected": "Multiple outlets (L3Harris's own press release, Bloomberg, Fox Business, SpaceNews, Washington Technology) report Kubasik was terminated following a board-directed code-of-conduct investigation -- not a voluntary departure -- with no severance or accelerated equity vesting; the company says the conduct was unrelated to financial reporting, controls, or operations. Sam Mehta, previously head of the company's space sector, was named president and CEO effective immediately.",
-      "error_source": "The Aug 17 closing brief was written same-day, before the cause of the exit and successor naming had been reported by any outlet; today's research surfaced the fuller picture.",
-      "conclusions_changed": false,
-      "note": "Does not change the market reaction (LHX -4.61% Monday) or the defense-sector read from yesterday's edition -- only the characterization of the exit and the (now-named) successor. Corrected in today's report (2026-08-18-am) Business section and colophon."
-    },
-    {
-      "found": "2026-08-19",
-      "report": "reports/2026/08/2026-08-19-am.html",
-      "original": "Reported Target's second-quarter 2026 adjusted EPS as $2.05, versus a $2.09 estimate, with comp sales -3.2% (stores) / +4.3% (digital), sourced to a single wire-syndicated (Zacks) report and flagged provisional pending a primary filing.",
-      "corrected": "Verified directly against Target's own SEC 8-K/press release this run: the $2.05 figure was actually Target's prior-year (fiscal 2025) second-quarter EPS, cited in the company's own release for year-over-year comparison -- the wire report this outlet relied on this morning appears to have attached last year's number to this year's quarter. Actual second-quarter 2026 results: GAAP and adjusted EPS $4.11 (+100% y/y, including a $994 million pretax tariff-refund benefit worth $1.65/share; +20% y/y excluding it), net sales +5.3% to $26.5B, comparable sales +3.8% (traffic +3.6%), store comps +2.7%, digital comps +8.7%. Target raised full-year guidance.",
-      "error_source": "This morning's edition treated a single secondary wire source as sufficient for a same-day earnings figure without cross-checking against the primary SEC filing once available; the source appears to have itself conflated the current quarter's EPS with the prior-year comparison figure printed in the same release.",
-      "conclusions_changed": true,
-      "note": "This is a significant reversal, not a minor figure correction: this morning's edition characterized Target's quarter as a narrow miss; the actual results were a clear beat with raised guidance and a positive stock reaction (+4.28%). Corrected in today's report (2026-08-19-pm) Top Stories and colophon."
-    },
-    {
-      "found": "2026-08-25",
-      "report": "reports/2026/08/2026-08-24-am.html",
-      "original": "Described NASA's Nancy Grace Roman Space Telescope launch as scheduled for 'Saturday, Aug. 30' at 7:26 AM ET.",
-      "corrected": "August 30, 2026 is a Sunday, not a Saturday (verified via date calculation and corroborated by WRAL's own coverage referring to it as a Sunday launch). The launch date and time itself (Aug 30, 7:26 AM ET, LC-39A, backup Aug 31) are unchanged and correct -- only the day-of-week label was wrong.",
-      "error_source": "An internal day-of-week computation error when writing the Aug 24 edition, not a change to the launch provider's own schedule.",
-      "conclusions_changed": false,
-      "note": "Does not change the launch date, time, site or mission status -- only the day-of-week label. Corrected in today's report (2026-08-25-am) Top Stories and colophon."
-    },
-    {
-      "found": "2026-08-25",
-      "report": "reports/2026/08/2026-08-24-pm.html",
-      "original": "Every edition since 2026-08-10 has described China's Chang'e 7 lunar mission as postponed by, or tied to, a 'Long March 7A' rocket failure -- most recently: 'China's Chang'e 7 launch postponed indefinitely; Long March 7A root cause still unpublished' and 'Long March 7A root-cause investigation remains unpublished.'",
-      "corrected": "Chang'e 7 is manifested on a Long March 5, China's heavy-lift rocket, launching from Wenchang -- not a Long March 7A. The Long March 7A that exploded roughly 85 seconds after liftoff on Aug 10 was carrying an unrelated communications satellite, ChinaSat-4B; that failure's investigation is real but has nothing to do with Chang'e 7. Chang'e 7's own postponement (scrub around Aug 23-24) traces to Typhoon Narra and an expiring orbital launch window; CMSA has not published a new date. Some analysts note the Long March 5 and 7A share engine/propellant-feed architecture, a plausible but unconfirmed reason for added caution -- not the same as Chang'e 7's own rocket having failed.",
-      "error_source": "This report's own tracking conflated two separate Chinese launch-vehicle stories -- Chang'e 7's weather/schedule delay and the unrelated Long March 7A/ChinaSat-4B failure -- starting with the Aug 10 story that first linked them, and the error compounded across five subsequent editions before being caught.",
-      "conclusions_changed": true,
-      "note": "Verified via WebSearch against SpaceNews, Space.com, NASASpaceFlight and the original Aug 10 wire coverage (Bloomberg, NBC News, CNN, SCMP) of the Long March 7A/ChinaSat-4B failure this run. Does not change Chang'e 7's actual launch status (still delayed, no new CMSA date) but changes the stated reason across five editions. Corrected in today's report (2026-08-25-pm) Top Stories and colophon."
-    },
-    {
-      "found": "2026-08-28",
-      "report": "reports/2026/08/2026-08-20-pm.html",
-      "original": "Every edition since 2026-08-20 has referred to Eric Swalwell as 'Rep. Eric Swalwell' in coverage of the FBI's search-warrant activity against him (device seizure at SFO, the search of his D.C. home, and the subsequent civil-rights-statute reporting).",
-      "corrected": "Swalwell resigned from Congress effective April 14, 2026, after separate sexual-assault allegations surfaced and he suspended his gubernatorial campaign (NPR, NBC News, PBS, Spectrum News, all dated 2026-04-13/14). He has been a private citizen, not a sitting member of Congress, for the entire period this outlet has covered the FBI search-warrant story -- he should be referred to as 'former Rep. Eric Swalwell.'",
-      "error_source": "This report's own research never independently verified Swalwell's current office-holder status before first reporting the FBI story on 2026-08-20; it appears to have carried forward an unverified assumption that he remained a sitting Representative.",
-      "conclusions_changed": false,
-      "note": "Verified via WebSearch against NPR, NBC News, PBS and Spectrum News coverage of the April 2026 resignation this run. Does not change any fact about the FBI probe itself -- only Swalwell's current title, used incorrectly across every edition from 2026-08-20 through 2026-08-27. Corrected in today's report (2026-08-28-am) and colophon."
-    },
-    {
-      "found": "2026-09-02",
-      "report": "reports/2026/08/2026-08-31-learn.html",
-      "original": "Ten lessons ago, this curriculum's Physics track wrote Newton's second law in its original, more general form: F_net = dp/dt, the net force on an object equal to the rate at which its momentum changes with time.",
-      "corrected": "Day Ten's Physics lesson (Friday, August 28, 2026), which wrote Newton's second law as F_net = dp/dt, was the immediately preceding lesson relative to Day Eleven (Monday, August 31, 2026) -- one lesson earlier, not ten. The physics content and the callback argument in the Day Eleven lesson are otherwise correct and unaffected; only the lesson-count was wrong.",
-      "error_source": "An internal counting error when writing the Day Eleven callback paragraph.",
-      "conclusions_changed": false,
-      "note": "Caught while writing Day Thirteen (2026-09-02-learn), which itself calls back to Day Ten's Newton's-second-law lesson via the product rule. Corrected in today's report's colophon."
-    }
-  ]
+ "corrections": [
+  {
+   "found": "2026-07-27",
+   "report": "reports/2026/07/2026-07-26-sun.html",
+   "original": "Report referred to the FOMC press conference and rate-path commentary as \"Powell's\" throughout (nine references), implying Jerome Powell remained Federal Reserve Chair.",
+   "corrected": "Kevin Warsh has served as Federal Reserve Chair since May 22, 2026 (nominated by President Trump Mar 4, 2026; confirmed by the Senate 54-45 on May 12-13, 2026; sworn in May 22, 2026), succeeding Jerome Powell. Wednesday Jul 29's FOMC press conference will be led by Warsh, not Powell.",
+   "error_source": "Prior edition carried forward a stale assumption about Fed leadership without verifying against a primary source; not independently checked before Sunday's publication.",
+   "conclusions_changed": false,
+   "note": "Verified directly against federalreserve.gov press release other20260522a.htm this run. Does not change the FOMC meeting date/time, non-SEP status, or hold/hike odds framing from Sunday's edition -- only the identity of who delivers the press conference and statement. Corrected in today's report (2026-07-27-am) Top Stories and Section 20."
+  },
+  {
+   "found": "2026-07-28",
+   "report": "reports/2026/07/2026-07-28-am.html",
+   "original": "Described the US-Iran strike pause as \"holding a fifth day\" as of Tuesday, July 28, 2026.",
+   "corrected": "Contemporaneous, dated reporting (Al Jazeera, NPR, CS Monitor, Washington Times, all dated Jul 26) describes Saturday Jul 25 as the pause's first day and Sunday Jul 26 as its \"second day\" on their own datelines, making Tuesday Jul 28 the pause's fourth day, not fifth.",
+   "error_source": "An off-by-one day-count drift that began in the 2026-07-27-pm edition, which incremented the count on the same calendar day as that morning's edition without re-verifying the pause's actual start date against dated source reporting; today's AM edition continued the drift by one more day.",
+   "conclusions_changed": false,
+   "note": "Verified via WebSearch against multiple outlets' own datelines this run. Does not change any prior story's substance -- only the day-count label. Corrected in today's report (2026-07-28-pm) Top Stories and Section 20."
+  },
+  {
+   "found": "2026-07-31",
+   "report": "reports/2026/07/2026-07-31-am.html",
+   "original": "This morning's edition (2026-07-31-am) did not cover President Trump's Board of Peace announcement of a Hamas disarmament agreement for Gaza, a major story that broke Thursday afternoon/evening (2026-07-30), before that edition's news cutoff.",
+   "corrected": "Added to today's Closing Brief (2026-07-31-pm) Top Stories and Section 4, one news cycle late, with the coverage gap disclosed explicitly rather than the story being folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-07-31-am edition did not surface the story despite its prominence in wire coverage dated Jul 30.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published. Logged per SR SS9 for transparency; no prior published sentence needed correcting, so no diff against prior report text is shown."
+  },
+  {
+   "found": "2026-08-01",
+   "report": "reports/2026/07/2026-07-30-pm.html",
+   "original": "Named the Saudi-led Multinational Maritime Defense Alliance's 14 founding countries as Saudi Arabia, Kuwait, Bahrain, Qatar, Pakistan, Turkey, Egypt, Jordan, Yemen, Bangladesh, Nigeria, Sudan, Djibouti, and Somalia.",
+   "corrected": "Multiple wire sources describing the actual July 30 charter-signing joint declaration (Saudi Gazette, Anadolu Agency, Arabian Business, Middle East Monitor) instead list Saudi Arabia, Kuwait, Bahrain, Qatar, Jordan, Egypt, Pakistan, Turkiye, Djibouti, Somalia, Bangladesh, Yemen, and the Comoros as the 14 founding/signatory states -- Nigeria and Sudan do not appear among the charter signatories; the Comoros does.",
+   "error_source": "The Thursday edition's list appears to have reflected an earlier or broader roster (possibly drawn from the wider 43-nation planning talks) rather than the smaller charter-signing roster confirmed once the alliance's founding declaration was actually issued Jul 30.",
+   "conclusions_changed": false,
+   "note": "Verified via WebSearch against multiple wire sources this run (2026-08-01-sat). Does not change the story's substance -- the alliance's formation, headquarters, and purpose are unaffected -- only the named country roster. Corrected in today's report (2026-08-01-sat) Top Story 9 and Section 29."
+  },
+  {
+   "found": "2026-08-03",
+   "report": "reports/2026/08/2026-08-03-am.html",
+   "original": "Premarket Setup table and related Top Stories/Executive Brief framing reported sharp premarket futures gains (ES +2.80%, NQ +4.45%, YM +2.35%, RTY +1.41%), gold +1.73%, and EUR/USD +1.42% (framed in the FX appendix as \"this morning's dollar weakness coincided with the broader risk-on...tape\"), all computed against Yahoo Finance's chartPreviousClose field.",
+   "corrected": "Yahoo's chartPreviousClose field for range=5d chart fetches of these instruments returned a value lagging TWO trading sessions behind (e.g. ES=F's chartPreviousClose of 7351.25 was Wednesday Jul 29's close, not Friday Jul 31's actual settle of 7519.25). Recomputed against each instrument's own close-to-close series (the same fix already applied to the 167-symbol equity watchlist in an earlier edition, now confirmed necessary for futures/commodities/FX too): the correct premarket moves at the same 05:31-05:52 ET price levels were ES +0.50%, NQ +0.54%, YM +0.65%, RTY +0.63%, gold +1.37%, and EUR/USD +0.05% (essentially flat, not the reported dollar weakness). Oil's figure (-5.55% published vs -5.79% corrected) was not materially affected because Wednesday's and Friday's WTI settles happened to be close together.",
+   "error_source": "The chartPreviousClose-field bug identified and fixed for the equity watchlist in an earlier edition was not recognized as also affecting the Premarket Setup futures/commodities/FX table, which independently used the same buggy field.",
+   "conclusions_changed": true,
+   "note": "The equity-futures 'sharp rally' framing in Monday morning's Top Stories, Executive Brief, and Premarket Setup was overstated by roughly 4-5x; the FX appendix's specific claim that dollar weakness coincided with the risk-on tape is not supported by the corrected, essentially-flat EUR/USD move. This does not change the qualitative direction (futures were higher, oil was lower) or the report's core caveat that the moves rested on a disputed Iran de-escalation premise -- only the reported magnitude. Discovered while recomputing intraday figures for this run (2026-08-03-pm) using the close-series method; this same class of bug likely affected prior editions' futures/commodity/FX premarket tables too, flagged here for awareness though a full historical re-audit is out of scope for this run. All Yahoo Finance chart fetches from this edition forward use the close-series method for every instrument class, not just the equity watchlist. Corrected in today's report (2026-08-03-pm) Section 20."
+  },
+  {
+   "found": "2026-08-07",
+   "report": "reports/2026/08/2026-08-06-am.html",
+   "original": "Described the federal appeals-court panel that declined to block the mail-ballot executive order (Aug 4) as a 'D.C. Circuit three-judge panel' / 'D.C. Circuit panel', in both the Top Stories card and the Since Yesterday's Close change log.",
+   "corrected": "Per SCOTUSblog and multiple wire sources, the panel that declined to block the order -- and the panel Justice Jackson is assigned to for the pending emergency stay application -- is the 1st Circuit Court of Appeals, not the D.C. Circuit. The 'D.C.' in the 23-states-plus-D.C. coalition challenging the order refers to the District of Columbia as a party to the suit, not to the D.C. Circuit court.",
+   "error_source": "Apparent conflation of 'D.C.' (the jurisdiction party to the suit) with 'D.C. Circuit' (a specific appeals court) during composition; not caught before publication.",
+   "conclusions_changed": false,
+   "note": "Does not change the substance of the circuit split or the pending SCOTUS stay application -- only which circuit court is involved. Corrected in today's report (2026-08-07-am) Section 20."
+  },
+  {
+   "found": "2026-08-12",
+   "report": "reports/2026/08/2026-08-11-pm.html",
+   "original": "Described Sens. Ron Johnson and Rand Paul releasing Fauci's government-phone text messages as occurring \"today\" (Tuesday, Aug 11).",
+   "corrected": "Multiple outlets (CNN, Forbes) dateline the release of the initial batch of 11 texts (Fauci-Walensky-Murthy) to Monday evening, Aug 10, not Tuesday Aug 11.",
+   "error_source": "Same-day sourcing (CNN, single-sourced at that report's cutoff) apparently reflected same-day pickup coverage of the release rather than the event's actual dateline, which subsequent research places one day earlier.",
+   "conclusions_changed": false,
+   "note": "Does not change the substance of the disclosure or the Fauci contempt-referral thread -- only the day the texts were released. Corrected in today's report (2026-08-12-am) Section 6 and Section 20."
+  },
+  {
+   "found": "2026-08-14",
+   "report": "reports/2026/08/2026-08-14-am.html",
+   "original": "This morning's edition (2026-08-14-am, news cutoff 05:50 ET) did not cover a federal judge's dismissal of the Trump administration's antisemitism lawsuit against Harvard University, a ruling issued the afternoon/evening of Aug 13 and covered same-day by multiple major outlets (The Harvard Crimson, Boston Globe, CNN, NBC News, Axios).",
+   "corrected": "Added to today's Closing Brief (2026-08-14-pm) Top Stories, one news cycle late, with the coverage gap disclosed explicitly rather than the story being folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-08-14-am edition did not surface the story despite same-day, multi-outlet coverage of the ruling.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-08-01 entry above (Board of Peace announcement). No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-08-18",
+   "report": "reports/2026/08/2026-08-17-pm.html",
+   "original": "Described L3Harris CEO Christopher Kubasik's exit as an 'abrupt departure,' without stating a cause.",
+   "corrected": "Multiple outlets (L3Harris's own press release, Bloomberg, Fox Business, SpaceNews, Washington Technology) report Kubasik was terminated following a board-directed code-of-conduct investigation -- not a voluntary departure -- with no severance or accelerated equity vesting; the company says the conduct was unrelated to financial reporting, controls, or operations. Sam Mehta, previously head of the company's space sector, was named president and CEO effective immediately.",
+   "error_source": "The Aug 17 closing brief was written same-day, before the cause of the exit and successor naming had been reported by any outlet; today's research surfaced the fuller picture.",
+   "conclusions_changed": false,
+   "note": "Does not change the market reaction (LHX -4.61% Monday) or the defense-sector read from yesterday's edition -- only the characterization of the exit and the (now-named) successor. Corrected in today's report (2026-08-18-am) Business section and colophon."
+  },
+  {
+   "found": "2026-08-19",
+   "report": "reports/2026/08/2026-08-19-am.html",
+   "original": "Reported Target's second-quarter 2026 adjusted EPS as $2.05, versus a $2.09 estimate, with comp sales -3.2% (stores) / +4.3% (digital), sourced to a single wire-syndicated (Zacks) report and flagged provisional pending a primary filing.",
+   "corrected": "Verified directly against Target's own SEC 8-K/press release this run: the $2.05 figure was actually Target's prior-year (fiscal 2025) second-quarter EPS, cited in the company's own release for year-over-year comparison -- the wire report this outlet relied on this morning appears to have attached last year's number to this year's quarter. Actual second-quarter 2026 results: GAAP and adjusted EPS $4.11 (+100% y/y, including a $994 million pretax tariff-refund benefit worth $1.65/share; +20% y/y excluding it), net sales +5.3% to $26.5B, comparable sales +3.8% (traffic +3.6%), store comps +2.7%, digital comps +8.7%. Target raised full-year guidance.",
+   "error_source": "This morning's edition treated a single secondary wire source as sufficient for a same-day earnings figure without cross-checking against the primary SEC filing once available; the source appears to have itself conflated the current quarter's EPS with the prior-year comparison figure printed in the same release.",
+   "conclusions_changed": true,
+   "note": "This is a significant reversal, not a minor figure correction: this morning's edition characterized Target's quarter as a narrow miss; the actual results were a clear beat with raised guidance and a positive stock reaction (+4.28%). Corrected in today's report (2026-08-19-pm) Top Stories and colophon."
+  },
+  {
+   "found": "2026-08-25",
+   "report": "reports/2026/08/2026-08-24-am.html",
+   "original": "Described NASA's Nancy Grace Roman Space Telescope launch as scheduled for 'Saturday, Aug. 30' at 7:26 AM ET.",
+   "corrected": "August 30, 2026 is a Sunday, not a Saturday (verified via date calculation and corroborated by WRAL's own coverage referring to it as a Sunday launch). The launch date and time itself (Aug 30, 7:26 AM ET, LC-39A, backup Aug 31) are unchanged and correct -- only the day-of-week label was wrong.",
+   "error_source": "An internal day-of-week computation error when writing the Aug 24 edition, not a change to the launch provider's own schedule.",
+   "conclusions_changed": false,
+   "note": "Does not change the launch date, time, site or mission status -- only the day-of-week label. Corrected in today's report (2026-08-25-am) Top Stories and colophon."
+  },
+  {
+   "found": "2026-08-25",
+   "report": "reports/2026/08/2026-08-24-pm.html",
+   "original": "Every edition since 2026-08-10 has described China's Chang'e 7 lunar mission as postponed by, or tied to, a 'Long March 7A' rocket failure -- most recently: 'China's Chang'e 7 launch postponed indefinitely; Long March 7A root cause still unpublished' and 'Long March 7A root-cause investigation remains unpublished.'",
+   "corrected": "Chang'e 7 is manifested on a Long March 5, China's heavy-lift rocket, launching from Wenchang -- not a Long March 7A. The Long March 7A that exploded roughly 85 seconds after liftoff on Aug 10 was carrying an unrelated communications satellite, ChinaSat-4B; that failure's investigation is real but has nothing to do with Chang'e 7. Chang'e 7's own postponement (scrub around Aug 23-24) traces to Typhoon Narra and an expiring orbital launch window; CMSA has not published a new date. Some analysts note the Long March 5 and 7A share engine/propellant-feed architecture, a plausible but unconfirmed reason for added caution -- not the same as Chang'e 7's own rocket having failed.",
+   "error_source": "This report's own tracking conflated two separate Chinese launch-vehicle stories -- Chang'e 7's weather/schedule delay and the unrelated Long March 7A/ChinaSat-4B failure -- starting with the Aug 10 story that first linked them, and the error compounded across five subsequent editions before being caught.",
+   "conclusions_changed": true,
+   "note": "Verified via WebSearch against SpaceNews, Space.com, NASASpaceFlight and the original Aug 10 wire coverage (Bloomberg, NBC News, CNN, SCMP) of the Long March 7A/ChinaSat-4B failure this run. Does not change Chang'e 7's actual launch status (still delayed, no new CMSA date) but changes the stated reason across five editions. Corrected in today's report (2026-08-25-pm) Top Stories and colophon."
+  },
+  {
+   "found": "2026-08-28",
+   "report": "reports/2026/08/2026-08-20-pm.html",
+   "original": "Every edition since 2026-08-20 has referred to Eric Swalwell as 'Rep. Eric Swalwell' in coverage of the FBI's search-warrant activity against him (device seizure at SFO, the search of his D.C. home, and the subsequent civil-rights-statute reporting).",
+   "corrected": "Swalwell resigned from Congress effective April 14, 2026, after separate sexual-assault allegations surfaced and he suspended his gubernatorial campaign (NPR, NBC News, PBS, Spectrum News, all dated 2026-04-13/14). He has been a private citizen, not a sitting member of Congress, for the entire period this outlet has covered the FBI search-warrant story -- he should be referred to as 'former Rep. Eric Swalwell.'",
+   "error_source": "This report's own research never independently verified Swalwell's current office-holder status before first reporting the FBI story on 2026-08-20; it appears to have carried forward an unverified assumption that he remained a sitting Representative.",
+   "conclusions_changed": false,
+   "note": "Verified via WebSearch against NPR, NBC News, PBS and Spectrum News coverage of the April 2026 resignation this run. Does not change any fact about the FBI probe itself -- only Swalwell's current title, used incorrectly across every edition from 2026-08-20 through 2026-08-27. Corrected in today's report (2026-08-28-am) and colophon."
+  },
+  {
+   "found": "2026-09-02",
+   "report": "reports/2026/08/2026-08-31-learn.html",
+   "original": "Ten lessons ago, this curriculum's Physics track wrote Newton's second law in its original, more general form: F_net = dp/dt, the net force on an object equal to the rate at which its momentum changes with time.",
+   "corrected": "Day Ten's Physics lesson (Friday, August 28, 2026), which wrote Newton's second law as F_net = dp/dt, was the immediately preceding lesson relative to Day Eleven (Monday, August 31, 2026) -- one lesson earlier, not ten. The physics content and the callback argument in the Day Eleven lesson are otherwise correct and unaffected; only the lesson-count was wrong.",
+   "error_source": "An internal counting error when writing the Day Eleven callback paragraph.",
+   "conclusions_changed": false,
+   "note": "Caught while writing Day Thirteen (2026-09-02-learn), which itself calls back to Day Ten's Newton's-second-law lesson via the product rule. Corrected in today's report's colophon."
+  },
+  {
+   "found": "2026-09-02",
+   "report": "reports/2026/09/2026-09-02-am.html",
+   "original": "This morning's edition (2026-09-02-am, and yesterday's 2026-09-01-pm and 2026-09-01-am editions) did not cover a Utah judge's Tuesday, Sept. 1 ruling that Tyler Robinson will stand trial, facing a possible death penalty, for the murder of Charlie Kirk -- a major, same-day, multi-outlet-covered story (CNN, NPR, NBC News, Deseret News, Time, KUER).",
+   "corrected": "Added to today's Closing Brief (2026-09-02-pm) Top Stories, one news cycle late, with the coverage gap disclosed explicitly rather than folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the prior two editions did not surface the story despite prominent, same-day, multi-outlet coverage.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-07-31 and 2026-08-14 entries above. No prior published sentence needed correcting."
+  }
+ ]
 }

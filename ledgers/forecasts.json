@@ -2145,7 +2145,10 @@
    "horizon": "2026-09-07",
    "probability": "30-45%",
    "basis": "IRGC explicitly vowed further retaliation for the Larak Island strike; pattern of escalation-then-pause seen earlier in the six-month Hormuz standoff",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Iran struck Jordan, Bahrain, Kuwait and Iraq before dawn Sept 2 -- a further retaliatory strike against allied targets beyond the original Jordan missile strikes, well within the Sept 7 horizon.",
+   "graded": "2026-09-02-pm",
+   "lesson": "The escalation-then-pause pattern held for about 48 hours before the next round; probability band (30-45%) was reasonable given how quickly it resolved."
   },
   {
    "id": "2026-08-31-am-2",
@@ -2155,7 +2158,10 @@
    "horizon": "2026-09-02",
    "probability": "20-30%",
    "basis": "Suspension procedure requires 2/3, a higher bar than simple majority; Tuesday timing is single-sourced (one wire text) pending independent confirmation",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The House vote occurred on Tuesday, Sept 1, as originally reported, passing 370-48 -- comfortably clearing the two-thirds suspension threshold. It did not slip past Tuesday and did not fail.",
+   "graded": "2026-09-02-pm",
+   "lesson": "The single-sourced Tuesday timing held up; hedging a probability band on sourcing quality alone, without a specific reason to doubt the date, added noise rather than signal here."
   },
   {
    "id": "2026-08-31-am-3",
@@ -2263,6 +2269,26 @@
    "horizon": "2026-09-08",
    "probability": "60-70%",
    "basis": "Compressed timeline to the certification deadline and the court's decision to hear the case directly.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-02-pm-1",
+   "date": "2026-09-02",
+   "slot": "pm",
+   "forecast": "CME-implied September rate-hike odds fall back below 55% following today's weak ADP print, ahead of Friday's August jobs report",
+   "horizon": "2026-09-04",
+   "probability": "40-55%",
+   "basis": "ADP's 38K print is the weakest since January and complicates Fed Chair Warsh's hawkish framing directly; odds sat in the mid-to-high 60s Tuesday before this data.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-02-pm-2",
+   "date": "2026-09-02",
+   "slot": "pm",
+   "forecast": "Iran or an Iran-aligned actor conducts a further attack against a US ally, Gulf shipping, or US personnel within the next week",
+   "horizon": "2026-09-09",
+   "probability": "35-50%",
+   "basis": "Today's four-country retaliation (Jordan, Bahrain, Kuwait, Iraq) is the widest round of this standoff yet, and the US's new 'tanker for tanker' policy structurally invites further exchanges from either side.",
    "status": "open"
   }
  ]
