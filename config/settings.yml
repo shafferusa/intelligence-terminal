@@ -61,7 +61,8 @@ site:
 # in the script rather than read from this file.
 # ------------------------------------------------------------
 alerts:
-  enabled: true
+  enabled: false              # switched off 2026-08-17 at Logan's request ("not needed");
+                              # the cron in breaking-alerts.yml is commented out, manual dispatch remains
   method: cross-source corroboration + topic gate   # no LLM call, no API key
   min_newsrooms: 3            # independent outlets carrying the same event
   min_newsrooms_severe: 2     # lowered when the SEVERITY list matches

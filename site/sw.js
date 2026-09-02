@@ -25,6 +25,7 @@ var SHELL = [
   "./",
   "./index.html",
   "./status.html",
+  "./academy.html",
   "./assets/style.css",
   "./assets/app.js",
   "./assets/report.js",

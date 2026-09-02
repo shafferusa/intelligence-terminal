@@ -8,7 +8,7 @@ name: Breaking news alerts
 # SCHEDULING REALITY: GitHub's scheduled workflows are best-effort and get
 # delayed under load, so the real cadence is more like every 10-25 minutes
 # than the 10 asked for here. For "big breaking news, details tomorrow" that
-# is fine. If it ever becomes annoying, docs/RUNBOOK.md section H documents
+# is fine. If it ever becomes annoying, docs/RUNBOOK.md section E2 documents
 # the Cloudflare Worker upgrade (1-minute cron, free tier) -- the script is
 # stdlib-only and portable to it.
 #

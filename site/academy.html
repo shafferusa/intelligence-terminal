@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!--
+  The Academy: the Learning Brief's curriculum, lesson by lesson.
+
+  150 weekday lessons across seven subjects (curriculum/academy-150.json).
+  This page lists all of them in order, links the ones already taught to
+  their Learning Brief, and shows where the sequence stands. It is the
+  table of contents the daily lesson pages cannot carry themselves.
+
+  Data: ./academy.json (the Build & deploy workflow copies it in from
+  curriculum/academy-150.json, since curriculum/ is outside the site root)
+  and ./reports/index.json (which Learning Brief taught which day: the
+  first headline of every learn entry reads "Day N of 150 · Subject: ...").
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Academy · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+  <div class="top-bar">
+    <div class="wrap"><a href="./index.html">&larr; Logan&rsquo;s Daily Newspaper</a></div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+    <header class="paper-head">
+      <p class="paper-edition">The Academy</p>
+      <h1>One lesson a day, in order</h1>
+      <p class="paper-standfirst" id="standfirst">
+        Seven subjects across 150 weekday lessons, each one a Learning Brief that goes deep on a single idea.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-progress">
+      <h2 id="s-progress">Where it stands</h2>
+      <div id="progress"><p class="muted">Loading&hellip;</p></div>
+    </section>
+
+    <div id="phases">
+      <noscript>
+        <p class="muted">The lesson list needs JavaScript. Every Learning Brief is also in the
+        <a href="./index.html">archive</a>, filtered by edition.</p>
+      </noscript>
+    </div>
+
+    <footer class="colophon">
+      <p>Lessons already taught link to their Learning Brief. The sequence never restarts and never
+      skips: a lesson that fails to publish is taught again the next weekday. No quizzes, no problem
+      sets &mdash; you read it, and that is the whole interaction.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Navigation">
+      <a href="./index.html">Archive &amp; search</a>
+    </nav>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+    var doc = document;
+    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    function el(tag, attrs, kids) {
+      var n = doc.createElement(tag);
+      if (attrs) Object.keys(attrs).forEach(function (k) {
+        if (k === "text") n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);
+      });
+      (kids || []).forEach(function (c) { n.appendChild(c); });
+      return n;
+    }
+    function fmtDate(iso) {
+      var p = iso.split("-"), dt = new Date(+p[0], +p[1] - 1, +p[2]);
+      return DAYS[dt.getDay()] + " " + MONTHS[dt.getMonth()] + " " + dt.getDate() + ", " + dt.getFullYear();
+    }
+    function lessonDay(entry) {
+      if (!entry || entry.slot !== "learn" || !Array.isArray(entry.headlines)) return null;
+      var m = /^Day\s+(\d+)\s+of\s+(\d+)/i.exec(String(entry.headlines[0] || ""));
+      return m ? +m[1] : null;
+    }
+    function getJson(url) {
+      return fetch(url, { cache: "no-cache" }).then(function (r) {
+        if (!r.ok) throw new Error(url + " " + r.status);
+        return r.json();
+      });
+    }
+    function unavailable(msg) {
+      var p = doc.getElementById("progress");
+      p.textContent = "";
+      p.appendChild(el("p", { class: "muted", text: msg }));
+    }
+
+    Promise.all([getJson("./academy.json"), getJson("./reports/index.json").catch(function () { return []; })])
+      .then(function (res) {
+        var academy = res[0] || {}, index = Array.isArray(res[1]) ? res[1] : [];
+        var days = Array.isArray(academy.days) ? academy.days.slice() : [];
+        if (!days.length) { unavailable("The curriculum is not available on this build."); return; }
+        days.sort(function (a, b) { return a.day - b.day; });
+        var total = academy.total_days || days.length;
+
+        /* Which day each Learning Brief taught. Newest first in the index, so
+           the first entry seen for a day wins (a re-run replaces a failed one). */
+        var taught = {};
+        index.forEach(function (e) {
+          var d = lessonDay(e);
+          if (d && !taught[d]) taught[d] = e;
+        });
+        var taughtCount = Object.keys(taught).length;
+        var nextDay = null;
+        for (var i = 0; i < days.length; i++) {
+          if (!taught[days[i].day]) { nextDay = days[i]; break; }
+        }
+
+        /* Standfirst and progress. */
+        var sf = doc.getElementById("standfirst");
+        sf.textContent = taughtCount
+          ? "Day " + taughtCount + " of " + total + " taught" +
+            (nextDay ? ". Next: " + nextDay.subject + " — " + nextDay.topic + "." : ". The sequence is complete.")
+          : "Seven subjects across " + total + " weekday lessons. The first lesson has not been published yet.";
+
+        var progress = doc.getElementById("progress");
+        progress.textContent = "";
+        var perSubject = {};
+        days.forEach(function (d) {
+          var s = perSubject[d.subject] || (perSubject[d.subject] = { total: 0, done: 0 });
+          s.total++;
+          if (taught[d.day]) s.done++;
+        });
+        var ul = el("ul", { class: "subjects" });
+        Object.keys(perSubject).forEach(function (name) {
+          var s = perSubject[name];
+          var li = el("li");
+          li.appendChild(el("span", { class: "subject-name" }, [
+            el("span", { text: name }),
+            el("span", { class: "subject-count", text: s.done + " / " + s.total })
+          ]));
+          var bar = el("span", { class: "subject-bar" }, [el("i")]);
+          bar.setAttribute("style", "--pct:" + Math.round(100 * s.done / s.total));
+          li.appendChild(bar);
+          ul.appendChild(li);
+        });
+        progress.appendChild(ul);
+
+        /* The phases, each with its lessons. */
+        var mount = doc.getElementById("phases");
+        var phases = Array.isArray(academy.phases) ? academy.phases : [];
+        var byPhase = {};
+        days.forEach(function (d) {
+          (byPhase[d.phase] || (byPhase[d.phase] = [])).push(d);
+        });
+        var order = phases.map(function (p) { return p.name; });
+        Object.keys(byPhase).forEach(function (name) { if (order.indexOf(name) < 0) order.push(name); });
+
+        order.forEach(function (name, pi) {
+          var list = byPhase[name];
+          if (!list) return;
+          var meta = phases.filter(function (p) { return p.name === name; })[0];
+          var sec = el("section", { class: "paper-section", "aria-labelledby": "phase-" + pi });
+          sec.appendChild(el("h2", { id: "phase-" + pi,
+            text: name + (meta && meta.days ? " · days " + meta.days : "") }));
+          if (meta && meta.mission) sec.appendChild(el("p", { class: "phase-mission", text: meta.mission }));
+          var ol = el("ol", { class: "lessons" });
+          list.forEach(function (d) {
+            var e = taught[d.day];
+            var row = el("li", { class: "lesson-row " + (e ? "is-taught" : (nextDay && nextDay.day === d.day ? "is-next" : "is-future")) });
+            row.appendChild(el("span", { class: "lesson-num", text: String(d.day) }));
+            var body = el("div");
+            body.appendChild(el("p", { class: "lesson-subject",
+              text: d.subject + (d.position ? " · " + d.position : "") }));
+            if (e) {
+              body.appendChild(el("p", { class: "lesson-topic" }, [el("a", { href: "./" + e.path, text: d.topic })]));
+              body.appendChild(el("p", { class: "lesson-headline", text: e.title }));
+              body.appendChild(el("p", { class: "lesson-date",
+                text: fmtDate(e.date) + " · " + e.reading_minutes + " min read" }));
+            } else {
+              body.appendChild(el("p", { class: "lesson-topic", text: d.topic }));
+              if (d.focus) body.appendChild(el("p", { class: "lesson-headline", text: d.focus }));
+            }
+            row.appendChild(body);
+            ol.appendChild(row);
+          });
+          sec.appendChild(ol);
+          mount.appendChild(sec);
+        });
+      })
+      .catch(function () {
+        unavailable("The curriculum is not available (academy.json is written by the site build).");
+      });
+  })();
+  </script>
+</body>
+</html>

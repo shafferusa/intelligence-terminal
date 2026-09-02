@@ -28,9 +28,10 @@ Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never p
 
 ## Step 1 — Shared weekend gather (SR §2 fetch discipline throughout)
 
-Lighter than a weekday: Twelve Data quotes for the deduplicated watchlist universe (batches of 8,
-<300 credits, priority order as in `prompts/weekday.md` §2.4), Yahoo v8 for indices/futures/
-commodities/EURUSD (browser UA acceptable for Yahoo only), Treasury par curve XML (this week's
+Lighter than a weekday: Yahoo v8 close series for the trimmed watchlist universe (the Board rows,
+the 11 sector ETFs and the company watchlists that reach the appendix — Yahoo is the primary sweep and
+Twelve Data at most a two-batch spot-check, exactly as `prompts/weekday.md` §2.4), Yahoo v8 for
+indices/futures/commodities/EURUSD/DXY (browser UA acceptable for Yahoo only), Treasury par curve XML (this week's
 dates), FRED weekly deltas for `DGS2 DGS10 T10Y2Y T10YIE DFII10 SOFR BAMLH0A0HYM2 ICSA` (+ append
 `hy-oas.csv` if a new observation exists), Cboe history CSVs (VIX/VIX9D/VIX3M week path),
 CoinGecko simple/price + global, `state/market-history/breadth.json` history for the week's
@@ -87,8 +88,9 @@ Sweep results go in report section 28.
    busy, fewer when it is genuinely quiet. If a weekend story changes how the week should be read,
    say so here and reflect it in the retrospective below.
 4. **The Week's Ten Stories** — each: how it started → how it developed → where it ended → why it
-   mattered → what was misunderstood → what is still unresolved. Prose, `.story--lead` on the first
-   of these if no weekend story earned the lead.
+   mattered → what was misunderstood → what is still unresolved. Prose. Exactly one `.story--lead`
+   in the whole edition: on the weekend story if one earned it, otherwise on the first of the Ten —
+   never both (the 2026-08-29 edition carried two).
 5. **Timeline** — the week day by day, compact.
 6. **What Changed in the World** — the synthesis, not a recap.
 7. **Politics & Government** · 8. **The World** · 9. **The Economy & Central Banks** ·
@@ -103,6 +105,8 @@ Sweep results go in report section 28.
 16. **Risks Entering the Week** —
 17. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18), plus
     any weekend local news. No weather strip; a short look at the week's weather is fine in prose.
+    SR §18's padding rules apply: no "nothing cleared the bar" sentences, no items that only point
+    at a story covered above, no crime blotter.
 18. **Market Appendix** — collapsed, SR §16.
 19. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
     sentence ("no status changes across the nine private-module companies"), not as its own section.
@@ -112,7 +116,7 @@ it here, do not read `state/curriculum.json` (retired), and do not touch `state/
 the weekend routine has no learning role at all.
 
 Voice per SR §11b; causality per SR §5; neutrality per SR §6. No health footer — run health goes to
-the run log and `site/status.html`. Title: `Weekly Review — <Mon date> to <Fri date>`.
+the run log and `site/status.html`. Title (SR §12.4 — h1, report-meta `title` and index `title` identical): `Weekly Review — Aug 24–28, 2026`.
 
 ---
 
@@ -171,7 +175,7 @@ per SR §10 — ids `$TODAY-sun-N`, `status:"open"`, horizon usually next Friday
 RANGE with basis. Next Saturday grades exactly these entries; an unlogged forecast is a spec
 violation. The IDs are ledger keys — do not print them in the report.
 
-Title: `Week Ahead — Week of <Mon date>`.
+Title (SR §12.4 — h1, report-meta `title` and index `title` identical): `Week Ahead — Week of Sep 7, 2026`.
 
 ---
 

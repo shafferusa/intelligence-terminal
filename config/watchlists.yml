@@ -77,7 +77,10 @@ sector_etfs: [XLK, XLC, XLY, XLP, XLF, XLV, XLI, XLE, XLB, XLU, XLRE]
 broad_us_etfs: [SPY, VOO, QQQ, DIA, IWM, VTI, RSP, MDY, IJH, AVUV, IWN]
 
 # --- International equity ETFs ---
-international_etfs: [VXUS, VEA, EFA, VWO, EEM, VT, VGK, FEZ, EWJ, MCHI, FXI, KWEB, INDA, EWT, EWY, EWZ, EWW, EWC, EWU, EWG, EWQ, EWA, KSA, VNM, FM]
+# FM (iShares Frontier and Select EM ETF) was removed 2026-09-02: the fund was liquidated
+# in 2025, Yahoo returns nothing for it, and it had been logged as a failed source on
+# every run for weeks. A dead ticker is a config error, not a degraded source.
+international_etfs: [VXUS, VEA, EFA, VWO, EEM, VT, VGK, FEZ, EWJ, MCHI, FXI, KWEB, INDA, EWT, EWY, EWZ, EWW, EWC, EWU, EWG, EWQ, EWA, KSA, VNM]
 
 # --- Rates / Treasury & bond funds ---
 rates_funds: [SGOV, BIL, SHY, IEI, IEF, TLT, GOVT, TIP, SCHP, BND, AGG, MUB]

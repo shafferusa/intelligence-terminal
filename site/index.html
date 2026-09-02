@@ -41,6 +41,10 @@
       </div>
     </section>
 
+    <!-- Curriculum position; filled by app.js from the newest Learning Brief
+         entry, hidden until then. Links to the Academy page. -->
+    <section id="academy-strip" class="academy-strip" aria-label="The Academy" hidden></section>
+
     <section class="search-section" aria-label="Search the archive">
       <h2>Search the archive</h2>
       <div id="search">
@@ -53,6 +57,8 @@
         <h2>Archive</h2>
         <button id="bm-filter" class="btn" aria-pressed="false" hidden>Bookmarked only</button>
       </div>
+      <!-- Edition chips (All / Learning / Morning / Closing / Weekend); app.js fills it. -->
+      <div id="edition-filter" class="chips" role="group" aria-label="Filter by edition"></div>
       <div id="archive">
         <p class="muted" id="archive-status">Loading the archive&hellip;</p>
         <noscript>
@@ -74,7 +80,8 @@
       Share &rarr; Print (or Markup) and save. The print layout expands every
       collapsed section automatically.</p>
       <p>Private archive &middot; not indexed &middot; generated automatically.
-      Data carries source and delay labels inside each report.</p>
+      Data carries source and delay labels inside each report.
+      <a href="./academy.html">The Academy</a> &middot; <a href="./status.html">System status</a></p>
     </div>
   </footer>
 

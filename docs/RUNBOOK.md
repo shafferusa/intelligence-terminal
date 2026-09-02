@@ -94,6 +94,7 @@ At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**
 |---|---|---|---|
 | Learning Brief | `0 10 * * 1-5` | Mon–Fri 6:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
 | Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
+| Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
 
 **The 6:00 and 6:30 runs overlap by design and must not fight.** The Learning Brief writes a
 ~6,000-word lesson and can still be running when the Morning Brief starts. They touch different
@@ -102,7 +103,6 @@ Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a c
 `index.json` or `run-log.jsonl` take the remote version and re-apply your own addition. If the two
 ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
 rather than delaying the news.
-| Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
 
 **Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
 outcome branch, which forced the §15.2b PR fallback on most runs. Leave it unset so runs push
@@ -168,7 +168,12 @@ For any failed run: **claude.ai/code/routines → run list → transcript** is a
 
 ---
 
-## E2. Breaking-news alerts (built 2026-08-16)
+## E2. Breaking-news alerts (built 2026-08-16, switched OFF 2026-08-17)
+
+**Off at Logan's request** ("just turn off the alerts, not needed"). The schedule in
+`.github/workflows/breaking-alerts.yml` is commented out; `workflow_dispatch` still works for a manual
+run. To turn it back on, uncomment the cron — nothing else needs to change. The rest of this section
+describes how it behaves when it runs.
 
 `.github/workflows/breaking-alerts.yml` + `.github/scripts/breaking_alerts.py`, every ~10 minutes.
 **News only** — no market-move alerts, by Logan's instruction. Message is deliberately minimal:
@@ -228,8 +233,17 @@ real audio a few minutes later, or on any reload.
 **Failure is non-fatal by design.** edge-tts is an unofficial client and can break; the job is
 `continue-on-error`, publishes nothing, and the page falls back on its own. Nothing else notices.
 
-**Voice:** `TTS_VOICE` / `TTS_RATE` env vars in the workflow (default
-`en-US-AndrewMultilingualNeural` at `+8%`). `edge-tts --list-voices` shows the alternatives.
+**Voice:** `TTS_VOICE` / `TTS_RATE` env vars in `audio.yml`. Logan's pick (2026-08-16) is
+`en-GB-ThomasNeural` at `+0%` — a UK news-register voice at its natural pace, chosen after comparing
++8% / 0% / −8% on a real edition. The earlier default (`en-US-AndrewMultilingualNeural` at `+8%`) read a
+newspaper flat and rushed. `edge-tts --list-voices` shows the alternatives.
+
+**Where the phone plays it from:** GitHub Releases serve MP3s as `application/octet-stream` with an
+attachment disposition, which iOS Safari refuses to play inline. So `build-site.yml` stages the most
+recent release MP3s into `site/audio/` at build time (Pages serves them as `audio/mpeg`, same-origin,
+with range requests) and `report.js` tries that URL first. A report older than the staging window falls
+back to the release URL — which works in desktop Chrome and NOT on the iPhone — and then to browser
+speech. If a lesson from last week has the wrong voice, the staging window in `build-site.yml` is why.
 
 ## F. Usage notes (Max plan)
 

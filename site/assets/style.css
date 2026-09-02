@@ -964,6 +964,25 @@ td.down, .fact-card dd.down { color: var(--down); }
 }
 .story-sourceline a { color: var(--muted); }
 
+/* What Moved Markets attribution — exactly four labels (Confirmed catalyst /
+   Likely contributor / Market narrative / Unexplained), one per move, opening
+   the sentence it judges. Set like the story-note kicker so it reads as a
+   verdict, not as a stray capitalised word in the middle of a paragraph. */
+.verdict {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--edition, var(--accent));
+  border-bottom: 1px solid currentColor;
+  margin-right: 0.5em;
+  vertical-align: 0.1em;
+  white-space: nowrap;
+}
+
 /* Caution flag — shown ONLY when a claim is genuinely shaky. */
 .flag {
   display: inline-block;
@@ -1377,4 +1396,146 @@ table.board-table {
   a { color: inherit; text-decoration: none; }
   /* Report pages also open every <details> via a beforeprint handler,
      so collapsed analysis and the market appendix print in full. */
+}
+
+/* ==========================================================================
+   ARCHIVE & ACADEMY (2026-09-02)
+   The index shows every edition of the latest day, filters the archive by
+   edition, and links to the Academy page (the curriculum, lesson by lesson).
+   ========================================================================== */
+
+/* The rest of the latest day's editions, inside the hero card. */
+.hero-more {
+  border-top: 1px solid var(--line);
+  margin-top: 1.25rem;
+  padding-top: 0.9rem;
+}
+.hero-more .hero-kicker { margin-bottom: 0.1rem; }
+.hero-more .report-row:last-child { border-bottom: 0; padding-bottom: 0.2rem; }
+
+/* Edition filter chips above the archive. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.8rem 0 0.2rem;
+}
+.chips:empty { display: none; }
+.chip-btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  cursor: pointer;
+}
+.chip-btn:hover { border-color: var(--accent); color: var(--ink); }
+.chip-btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* The Academy strip on the index page. */
+.academy-strip { margin: 0 0 1.75rem; }
+.academy-link {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--edition-learn, var(--accent));
+  border-radius: 0 10px 10px 0;
+  padding: 0.75rem 1.1rem;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.academy-link:hover { border-color: var(--edition-learn, var(--accent)); }
+.academy-kicker {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--edition-learn, var(--accent));
+}
+.academy-progress { font-family: var(--serif); font-weight: 700; }
+.academy-cta { margin-left: auto; font-size: 0.8125rem; color: var(--muted); }
+
+/* ---------- academy page ---------- */
+
+.subjects {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.6rem 1.2rem;
+}
+.subjects li { font-size: 0.875rem; }
+.subjects .subject-name { display: flex; justify-content: space-between; gap: 0.5rem; }
+.subjects .subject-count { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.subject-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  margin-top: 0.3rem;
+  overflow: hidden;
+}
+.subject-bar > i {
+  display: block;
+  height: 100%;
+  width: calc(var(--pct, 0) * 1%);
+  background: var(--edition, var(--accent));
+}
+
+.phase-mission {
+  font-family: var(--serif);
+  color: var(--muted);
+  margin: -0.6rem 0 1rem;
+  text-align: center;
+  font-size: 0.9375rem;
+}
+.lessons { list-style: none; margin: 0; padding: 0; }
+.lesson-row {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr;
+  gap: 0.2rem 0.7rem;
+  align-items: baseline;
+  padding: 0.6rem 0.2rem;
+  border-top: 1px solid var(--line);
+}
+.lesson-row:first-child { border-top: 0; }
+.lesson-num {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+}
+.lesson-subject {
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.lesson-topic { margin: 0; font-family: var(--serif); font-weight: 700; }
+.lesson-row.is-taught .lesson-subject { color: var(--edition, var(--accent)); }
+.lesson-row.is-taught .lesson-topic a { color: inherit; text-decoration: none; }
+.lesson-row.is-taught .lesson-topic a:hover { text-decoration: underline; }
+.lesson-headline { margin: 0.1rem 0 0; font-size: 0.875rem; color: var(--ink); }
+.lesson-date { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); margin: 0.1rem 0 0; }
+.lesson-row.is-next { background: var(--tone-info-bg); border-radius: 6px; padding-left: 0.5rem; padding-right: 0.5rem; }
+.lesson-row.is-next .lesson-subject::after { content: " · next"; letter-spacing: 0; text-transform: none; font-weight: 600; }
+.lesson-row.is-future .lesson-topic { font-weight: 400; color: var(--muted); }
+
+@media print {
+  .chips, .academy-strip, .hero-more { display: none !important; }
 }

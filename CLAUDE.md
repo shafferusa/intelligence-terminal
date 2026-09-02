@@ -31,16 +31,22 @@ Never put a lesson in a news edition; never put headlines or markets in the Lear
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
   source material for the 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
-- `site/` — GitHub Pages root: `index.html`, `status.html`, `assets/` (css/js/icons, incl.
-  `report.js` = the listen-to-text player), `report-template.html`,
-  `reports/YYYY/MM/*.html` + `reports/index.json` (archive index), `equations/eq_NNN.png`,
-  `manifest.webmanifest`, `sw.js`. Pagefind assets and `status.jsonl` are build-generated.
+- `site/` — GitHub Pages root: `index.html` (latest day's editions, filterable archive, search),
+  `academy.html` (the 150-lesson curriculum, taught lessons linked), `status.html` (run health),
+  `assets/` (css/js/icons, incl. `report.js` = the audio player + read-time prev/next nav),
+  `report-template.html`, `reports/YYYY/MM/*.html` + `reports/index.json` (archive index),
+  `equations/eq_NNN.png`, `manifest.webmanifest`, `sw.js`. Build-generated, never committed:
+  Pagefind assets, `status.jsonl`, `academy.json`, `audio/*.mp3`.
 - `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
-  `run-log.jsonl`. `curriculum.json` is retired — do not read or write it.
+  `run-log.jsonl`. `curriculum.json` (the pre-2026-08-16 three-track position) was retired and
+  deleted — never recreate it.
 - `ledgers/` — `corrections.json`, `forecasts.json` (append-only accountability).
 - `registry/` — `entities.json` (public/private status; never hardcode — verify via EDGAR).
-- `.github/workflows/` — Pages build (runs `npx -y pagefind --site site`) and deploy.
+- `.github/workflows/` — Pages build & deploy (Pagefind over `site/reports/`, stages recent MP3s,
+  copies the run log and curriculum into the site), report audio (edge-tts → GitHub Release),
+  the Telegram notifier (Actions is the ONLY sender), the `claude/*` PR auto-merge, and the
+  switched-off breaking-news scanner.
 
 ## Iron rules (non-negotiable)
 

@@ -82,9 +82,29 @@
     fetch("./status.jsonl", { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(function (txt) {
-        var rows = txt.trim().split("\n").map(function (l) {
+        var lines = txt.trim().split("\n").map(function (l) {
           try { return JSON.parse(l); } catch (e) { return null; }
-        }).filter(Boolean).slice(-30).reverse();
+        }).filter(Boolean);
+
+        /* A run writes two lines: the run itself at commit time, then a short
+           confirmation once the page answers 200. Fold each pair into one
+           card, so thirty cards are thirty runs rather than fifteen. */
+        var runs = [], byKey = {};
+        lines.forEach(function (r) {
+          var key = (r.slot || "run") + "|" + String(r.ts || "").slice(0, 10);
+          var run = byKey[key];
+          var isConfirm = r.sources_failed === undefined && r.telegram_ok === undefined;
+          if (run && isConfirm) {
+            if (r.pages_ok !== undefined && r.pages_ok !== null) run.pages_ok = r.pages_ok;
+            if (r.ok === false) run.ok = false;
+            return;
+          }
+          run = { slot: r.slot, ts: r.ts, ok: r.ok, pages_ok: r.pages_ok,
+                  telegram_ok: r.telegram_ok, sources_failed: r.sources_failed, note: r.note };
+          byKey[key] = run;
+          runs.push(run);
+        });
+        var rows = runs.slice(-30).reverse();
 
         mount.textContent = "";
         if (!rows.length) { mount.appendChild(el("p", { class: "muted", text: "No runs recorded yet." })); return; }
@@ -98,7 +118,8 @@
           }));
           var bits = [];
           bits.push(ok ? "published" : "FAILED");
-          if (r.pages_ok === false) bits.push("site build not confirmed");
+          if (r.pages_ok === true) bits.push("page confirmed live");
+          else if (r.pages_ok === false) bits.push("site build not confirmed");
           if (r.telegram_ok === false) bits.push("no Telegram push");
           bits.push(failed.length ? failed.length + " source(s) degraded" : "all sources ok");
           card.appendChild(el("p", { class: "story-deck", text: bits.join(" · ") }));
@@ -110,6 +131,12 @@
             failed.forEach(function (f) { ul.appendChild(el("li", { text: String(f) })); });
             d.appendChild(ul);
             card.appendChild(d);
+          }
+          if (r.note) {
+            var n = el("details");
+            n.appendChild(el("summary", { text: "Run note" }));
+            n.appendChild(el("p", { class: "small", text: String(r.note) }));
+            card.appendChild(n);
           }
           mount.appendChild(card);
         });

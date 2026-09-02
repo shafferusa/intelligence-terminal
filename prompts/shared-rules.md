@@ -78,8 +78,22 @@ When environment variables are missing or egress is blocked (403 `host_not_allow
 
 ## 4. Verification levels & the high-risk two-source rule
 
-Tag every story: `Confirmed-primary` · `Confirmed-multiple` · `Single-reliable-source` ·
-`Preliminary` · `Disputed` · `Unverified` · `System inference`.
+Determine the level for every story — `Confirmed-primary` · `Confirmed-multiple` ·
+`Single-reliable-source` · `Preliminary` · `Disputed` · `Unverified` · `System inference` — and
+record it in `state/stories.json`. **It is not printed.** The reader sees sourcing in the sentence
+and in the sourceline. A `.flag` carries doubt only (`Single source`, `Unverified`, `Disputed`,
+`Preliminary`); a flag reading `Confirmed-multiple` or `Confirmed-primary` is a decoration on the
+paper's best-sourced claim and was never intended — confirmation is the default (2026-09-02: eight
+flags in one closing edition, three of them "Confirmed").
+
+- **An anonymous official in one outlet is one source.** A policy or intent claim sourced that way
+  ("a US official told Axios the strikes reflect a new policy") is `Single-reliable-source` until a
+  second independent outlet or an on-record statement confirms it. It may appear in a headline or
+  The Brief only with the attribution in the sentence ("Axios reports…"), and a forecast may not
+  rest on it alone.
+- **Sourcelines name primary sources and reputable wires.** Never cite aggregators or partisan
+  outlets (ZeroHedge, Western Journal and their like) in a sourceline; if such a site is the only
+  place a claim appeared, the claim is single-sourced at best and is treated as such.
 
 - Prefer primary sources (agencies, central banks, legislatures, courts, regulators, IR pages, SEC
   filings, journals, NASA/ESA, launch providers). Secondary wires/outlets for confirmation and context.
@@ -99,6 +113,17 @@ Banned without documented evidence of the catalyst: "because," "driven by," "on 
 Closing-report move attribution uses exactly these labels:
 `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained`. Never force a narrative.
 
+- Print the label verbatim, in its own `<span class="verdict">`, opening the sentence it judges —
+  no hybrids ("Likely contributor, not a single confirmed catalyst"), no parenthetical inside the
+  span, no punctuation inside the span. Qualifiers go in the prose after it.
+- "because", "driven by", "-driven", "on the news that", "on [X] hopes/enthusiasm" stay banned
+  even when hedged with "plausibly" or "looks". "Coincided with" and "followed" are always safe.
+- **The Brief cannot out-claim the label.** The standfirst, The Brief, and the index entry's
+  `summary` and `headlines` (which become the Telegram push) may never assert a stronger cause than
+  What Moved Markets gave the move. If the label is `Likely contributor` or `Unexplained`, the
+  Brief says "appeared to", "coincided with", "a likely contributor" — never "revived rate-cut
+  hopes" or "markets are pricing a cut" unless a rates-market reading in the same edition shows it.
+
 ## 6. Political neutrality method
 
 - Report what occurred, who acted, the authority used, what the document actually says, current stage,
@@ -112,6 +137,9 @@ Closing-report move attribution uses exactly these labels:
   undecideds. Polls ≠ predictions. No cherry-picking.
 - Legal matters: always name the stage — allegation → investigation → charge → indictment → trial →
   verdict → appeal → final.
+- Never call a finding, charge or allegation "undisputed" when its subject disputes it — write
+  "the committee's finding, which he denies". Election results: margins, turnout and endorsements;
+  why voters chose as they did is attributed to a named analyst or exit poll or left unsaid.
 
 ## 7. Story card requirements (every Top Story)
 
@@ -157,6 +185,14 @@ Saturday grades due entries: set `status` to `correct|partial|wrong`, add `"outc
 `"lesson"`. Entries are never deleted; misses are never hidden. Probabilities are RANGES with a stated
 basis — no fake precision.
 
+**Never log a call the reader did not see (2026-09-02).** The ledger mirrors the paper: every entry
+corresponds to forecast text, with its range, printed in the edition that logged it. Morning editions
+make their calls in Risks & Scenarios; the closing edition makes any call in **Tomorrow**, as a
+sentence with its range ("a further attack on Gulf shipping within a week: 35–50%, on the basis
+of…"); the weekend editions in the Risk Register and Scenarios. Five closing-edition forecasts were
+logged and graded in late August/early September that no edition ever printed — a scorecard the
+reader cannot check is not accountability.
+
 ## 11. Masthead & colophon (every report)
 
 **You are writing a newspaper for one reader.** He is the reader, not the operator. Everything
@@ -181,7 +217,9 @@ table captions inside the Market Appendix, where they mean something.
 
 **Colophon** (`.colophon`, bottom of the page) is three short paragraphs, no lists of run internals:
 - **Sources.** The primary sources this edition rests on, named plainly.
-- **Corrections.** Any correction surfaced this run, or "None in this edition."
+- **Corrections.** Any correction surfaced this run, stated plainly — what was wrong, what is right,
+  which edition — or "None in this edition." This paragraph is the only place the paper refers to
+  its own process; a story never says "logged to the corrections ledger".
 - **Method.** The one-line standing note (free-tier quotes are single-venue; missing data is
   declared, never invented; written and published automatically) and the
   `<a href="../../../status.html">System status</a>` link.
@@ -203,6 +241,13 @@ English. Concretely:
   Use a `.flag` ONLY for a claim that is genuinely single-sourced, unconfirmed, or disputed, and
   at most a handful per edition. A flag on every story is a flag on nothing.
 - **No numbered sections, no "Section 12", no internal spec references** anywhere a reader can see.
+- **The paper does not talk about itself.** "This report", "this outlet", "this run", "this
+  edition's research pass", "per this report's standing practice", "logged to the corrections
+  ledger" — none of it belongs in a story. Write what a newspaper writes: "no second source was
+  found", "the operator has not commented", "Tuesday's edition said…". The one exception is the
+  colophon's Corrections paragraph (§11).
+- **Flags carry only doubt.** Never flag a claim as `Confirmed-*`; confirmation is the default and
+  the sourceline conveys it.
 - **Cut hedging boilerplate.** "It should be noted that," "it is important to understand,"
   "as always," "in an environment where" — delete on sight.
 - The §4 verification standards, §5 causality language, §6 neutrality method and §10 forecast
@@ -226,8 +271,16 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
    End the body with the template's `report-nav` block: link "Previous report" to the prior entry in
    `site/reports/index.json` (relative path, e.g. `./2026-07-23-pm.html` same month or
    `../06/2026-06-30-pm.html` across a boundary; keep it disabled if no prior report exists), keep
-   "Next report" disabled (never backfilled), keep the Archive link `../../../index.html`.
-4. Set `<title>` to the report title (e.g. `Morning Brief — Mon, Jul 27, 2026 · Logan's Daily Newspaper`).
+   "Next report" disabled (never backfilled by a run — `report.js` enables both links at read time
+   from `index.json`, so what you write is only the no-JavaScript fallback), keep the Archive link
+   `../../../index.html`.
+4. **Titles — one rule (2026-09-02).** The `<h1>`, the report-meta `title` and the index `title`
+   are the same string, exactly: weekday news editions `Morning Brief` / `Closing Brief` (the
+   dateline beneath the masthead carries the date, the archive row and the Telegram push carry it
+   too); Saturday `Weekly Review — Aug 24–28, 2026`; Sunday `Week Ahead — Week of Sep 7, 2026`;
+   Learning Brief = the lesson headline. `<title>` = that string + ` — <Day, Mon D, YYYY> · Logan's
+   Daily Newspaper` (e.g. `Closing Brief — Wed, Sep 2, 2026 · Logan's Daily Newspaper`). The
+   archive had four different title shapes for the same edition in two weeks; pick nothing else.
 5. Set `data-slot` on `<main class="paper" data-slot="…">` to this run's slot.
 6. Fill the JSON inside `<script type="application/json" id="report-meta">`. Preserve the template's
    exact key set and fill every key:
@@ -248,15 +301,19 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
    colour for the whole page. Setting it wrong makes a Monday morning look like a Learning Brief.
 2. **Section headings** use `.paper-section > h2` with a plain label: `Top Stories`, `The Economy`,
    `Local`, `Market Appendix`. No numbers, no kickers, no spec references.
-3. **Stories** use `.story` (first one also `.story--lead`), with `.story-deck`, `.story-body`, at
-   most two `.story-note` blocks, and `.story-sourceline`. Deeper analysis stays in `<details>`.
+3. **Stories** use `.story` (exactly ONE `.story--lead` per edition — the first story, or on a
+   weekend the weekend story if it earned the lead, never both), with `.story-deck`, `.story-body`,
+   at most two `.story-note` blocks, and `.story-sourceline`. Deeper analysis stays in `<details>`.
 4. **Tables must fit phones**: the watchlist board uses `.board` / `.board-table`; every other table
    goes inside `.table-wrap` with `.data-table`.
 5. **Forecast IDs** (`YYYY-MM-DD-slot-N`) are still logged to `ledgers/forecasts.json`, but they are
    NOT printed in the report body — an internal ledger key means nothing to the reader. Saturday's
    scorecard refers to forecasts by their content, not their ID.
 6. **Sections with nothing to say are omitted**, not padded with "no material developments."
-   A shorter edition on a quiet day is a feature.
+   A shorter edition on a quiet day is a feature. That includes the closing-edition habit of
+   "Beyond X and Y (above), no new movement was found today on…" followed by a list of threads —
+   a section whose only content is a list of things that did not happen is omitted, and continuing
+   threads with nothing new are not listed anywhere in the paper.
 7. **Reading time**: `reading_minutes` = body word count / 220, rounded up. Target for a weekday
    edition after the 2026-08-16 declutter is **18–25 minutes**, not 40+. If you are over 30, you are
    writing scaffolding, restating the same story in two sections, or padding a domain section.
@@ -286,6 +343,9 @@ Those two triggers are mutually exclusive (a `GITHUB_TOKEN` merge does not fire 
 exactly one message goes out per edition.
 
 Record `telegram_ok: "delegated"` in the run log, always.
+
+The push is built from the index entry's `title`, `summary` and `headlines`, so those obey §5: a
+headline may not assert a market cause the edition itself only labelled `Likely contributor`.
 
 **Why this rule exists — do not "helpfully" restore the old behaviour.** Until 2026-08-16 the run
 sent its own message and a guard in `notify-telegram.yml` was supposed to suppress the workflow's
@@ -383,6 +443,11 @@ The `pm` edition carries a fixed watchlist board near the top, right after The B
 - **Colour:** `class="up"` / `class="down"` on the Chg and %Chg cells only; `class="flat"` when the
   change is zero or unavailable. Nothing else on the board is coloured.
 - **Volume formatting:** `31M`, `2.1M`, `961K` — two significant figures, matching the source.
+- **Avg vol** is the three-month average daily volume, computed by the routine from the Yahoo
+  daily series (`prompts/weekday.md` §2.4) — the quote `meta` block never carried it, which is why
+  the column was empty for nine editions. The caption says "3-month average volume" once; an em
+  dash in that cell means that symbol's series failed, and the caption never carries a standing
+  note about the feed.
 - **Yields** (US 3M, US 10Y) come from the Treasury par-yield curve, not from a quote vendor. They
   have no volume or 52-week range; those cells are em dashes. Show the day's change in basis points
   in the Chg column, `—` in %Chg.
@@ -407,7 +472,12 @@ each in its own right, in this order:
 Up to two items per beat. **Quality-gated, never padded**: a beat with nothing that matters is
 simply absent that day, and plenty of days will show only one of the three. Not a crime blotter, not
 an events calendar, not weather chatter. Each item carries `.local-place` naming its beat, and the
-same sourcing standards as the rest of the paper.
+same sourcing standards as the rest of the paper. Concretely (2026-09-02, after two weeks of
+editions): never print a sentence saying a beat had nothing ("Nothing cleared the bar today in the
+Pennsylvania beat"); never add a Local item that only points at a story elsewhere in the paper (a
+Pennsylvania story that is already a Top Story is not repeated here); a police incident is out
+unless it changes a policy or a public decision. If all three beats are empty, the Local section is
+absent (the morning weather strip still runs on its own).
 
 **Weather — MORNING EDITION ONLY.** Leads the Local section, from the National Weather Service
 (free, no key, `.gov` UA header required per §2):
@@ -419,6 +489,8 @@ https://api.weather.gov/alerts/active?point=40.3565,-80.1120
 ```
 
 Cache the gridpoint URL in `state/calendar-cache.json` (`weather_grid`) — the points lookup only
-needs to happen once, not daily. Render `.weather` with current conditions, today / tonight /
-tomorrow, and `.weather-alert` ONLY when an alert is actually active. If NWS fails, omit the strip
-entirely — never substitute a guess, and never let it hold up the edition.
+needs to happen once, not daily. Render `.weather` with current conditions (a real observation
+from the nearest station — `prompts/weekday.md` §2.14 — never a forecast high labelled "now"),
+today / tonight / tomorrow with highs and lows, and `.weather-alert` ONLY when an alert is actually
+active. If NWS fails, omit the strip entirely — never substitute a guess, and never let it hold up
+the edition.

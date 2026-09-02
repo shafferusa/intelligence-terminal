@@ -107,7 +107,16 @@ after its first batch and fell back to a full Yahoo sweep anyway. Stop pretendin
 1. **Yahoo v8 is the primary sweep** for the whole symbol universe (§2.5 shape, one call per
    symbol, browser UA acceptable for Yahoo only). Its `meta` block carries
    `regularMarketPrice`, `previousClose`, `fiftyTwoWeekHigh`, `fiftyTwoWeekLow`,
-   `regularMarketVolume` — everything The Board needs.
+   `regularMarketVolume` — everything The Board needs **except average volume**.
+   **Avg vol (fixed 2026-09-02):** the `meta` block has NO `averageDailyVolume*` field — asking for
+   one is why the Board's Avg vol column was a column of em dashes for nine straight closing
+   editions. Fetch the Board's `quote` rows with `interval=1d&range=3mo` instead of `range=5d`
+   (same one call per symbol) and compute Avg vol yourself as the mean of the non-null entries in
+   `chart.result[0].indicators.quote[0].volume`, excluding today's partial bar in the pm run
+   (`timestamp[-1]` on today's date). Print it with the same two-significant-figure formatting as
+   Volume (`31M`, `2.1M`, `961K`). The Board caption calls it "3-month average volume". Only when
+   the series itself fails does the cell get an em dash — and then it is a per-symbol failure,
+   not a standing caption about the feed.
 2. **Twelve Data is a spot-check only**: at most 2 batches of 8, used to sanity-check The Board's
    closes against a second vendor. On 429, note it and move on — it is not a failure worth
    reporting.
@@ -145,8 +154,8 @@ https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,JPY,GBP,CNY,CHF,CAD,A
 ```
 
 ECB reference rates, one fix per business day — label `EOD official (ECB reference, <date>)`.
-DXY has no allowlisted free source: describe the dollar via EURUSD (intraday from Yahoo) plus this
-basket, and say DXY itself is unavailable.
+DXY itself comes from Yahoo `DX-Y.NYB` (§2.5). This basket is the narrative colour around it — never
+say DXY is unavailable when `DX-Y.NYB` answered; say so only if that fetch actually failed.
 
 ### 2.7 CoinGecko (demo key `$COINGECKO_KEY` via header `x-cg-demo-api-key`)
 
@@ -221,6 +230,12 @@ set `fetched` to now. Importance is classified by you, with the reason stated (S
   `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=<TICKER>&type=8-K&dateb=&owner=include&count=5&output=atom`
   Keep filings newer than the previous run (`last_success` in `state/last-run.json`). Any
   material filing becomes a Business/Corporate item with the filing as primary source.
+  **Ticker lookups that return no entries (SPCX does this every run):** the ticker-to-CIK
+  resolution behind `browse-edgar` is unreliable for recent listings. When a ticker returns an
+  empty feed, retry with the CIK recorded in `registry/entities.json` (SpaceX: `CIK=0001181412`),
+  or read `https://data.sec.gov/submissions/CIK0001181412.json` (its `filings.recent` arrays carry
+  form type, filing date and accession number). Only if the CIK route also fails is it a failed
+  source; an empty ticker lookup by itself is not one, so do not log it.
 - Any public/private status question → SR §8 registry procedure. Never trust memory for tickers.
 
 ### 2.12 News research (WebSearch / WebFetch)
@@ -266,10 +281,22 @@ https://api.weather.gov/alerts/active?point=40.3565,-80.1120
 ```
 
 Cache the resolved gridpoint URL in `state/calendar-cache.json` as `weather_grid` — the points
-lookup is a one-time resolution, not a daily fetch. Take the first three forecast `periods` for the
-strip and the current temperature from the first period. Render `.weather-alert` ONLY when
-`/alerts/active` actually returns a feature; carry its `event` and `ends` time. On any failure omit
-the strip entirely and move on — weather never delays or degrades the edition.
+lookup is a one-time resolution, not a daily fetch. The strip has three parts:
+
+- **Now** (`.weather-now`): the current observation, not the forecast. Resolve the nearest station
+  once via `https://api.weather.gov/gridpoints/PBZ/<x>,<y>/stations` (first feature's
+  `stationIdentifier`, cached as `weather_station` next to `weather_grid`), then each morning read
+  `https://api.weather.gov/stations/<id>/observations/latest` — `temperature.value` (°C → °F) and
+  `textDescription`. If the observation call fails, print the first forecast period's temperature
+  with the small label `today` rather than `now`; never label a forecast high as the current reading.
+- **Today / Tonight / Tomorrow** (`.weather-days`): the first three forecast `periods`. A daytime
+  period supplies the high; its following night period supplies the low; `shortForecast` is the sky
+  text. Tonight has no high (em dash).
+- **Alert** (`.weather-alert`): ONLY when `/alerts/active` actually returns a feature; carry its
+  `event` and `ends` time.
+
+On any failure omit the affected part (or the whole strip) and move on — weather never delays or
+degrades the edition.
 
 ## Step 3 — Change log vs story memory
 
@@ -277,6 +304,14 @@ Compare candidate stories against `state/stories.json`: new / materially updated
 faded / resolved / corrected; forecasts confirmed or contradicted; data revised; risks up or down.
 Re-reported ≠ new. This drives "Overnight" (am) / "What Changed Today" (pm):
 each item as previous understanding → new information → why it matters → current confidence.
+
+**Reconcile before you write (added 2026-09-02).** For every continuing thread, re-read the previous
+edition's version of it (the prior page in `site/reports/`, and `state/market-history/last-good.json`
+for levels) and reconcile dates, counts, casualty figures, price levels and percentage changes with
+what you are about to print. A figure that reverses — "no casualties" becoming "two crew killed", a
+strike re-dated, an oil level that does not follow from yesterday's close and today's move — is
+either a What Changed Today item with its source named, or a correction (SR §9), never a silent
+overwrite. Percentages describe the day: a +0.5% session is not a "jump", whatever the level.
 
 ## Step 4 — Compose the report
 
@@ -313,10 +348,19 @@ Masthead per SR §11, voice per SR §11b, markup per SR §12/§12b. Set `data-sl
 4. **Top Stories** — what developed since the morning edition; new stories lead.
 5. **What Changed Today** — previous understanding → new information → why it matters.
 6. **Politics & Government** — 7. **The World** — 8. **The Economy** — 9. **Business** —
-   10. **Technology & AI** — 11. **Science & Space** (same omission rule).
+   10. **Technology & AI** — 11. **Science & Space** (same omission rule). A domain section whose
+   only content would be "no new movement was found today on X, Y and Z" is omitted, not written:
+   continuing threads with nothing new are not listed anywhere in the paper. Earnings in Business
+   are graded against the consensus figures the morning edition printed; if a different tracker's
+   number is used, print both and name them — a "beat" against a lower bar than this morning's is
+   not a beat.
 12. **What Moved Markets** — open/morning/midday/close. Attribution labelled
-    `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained` (SR §5).
-    Never force a narrative. These four labels stay — they are honesty, not clutter.
+    `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained` (SR §5), each
+    label in its own `<span class="verdict">` opening the sentence it judges, no punctuation inside
+    the span, qualifiers in the prose after it; one paragraph per attributed move, not one wall of
+    text with five verdicts buried in it. Never force a narrative. These four labels stay —
+    they are honesty, not clutter. Whatever label a move gets here is the strongest claim the
+    standfirst, The Brief and the index `summary`/`headlines` may make about it (SR §5).
 13. **Winners & Losers** — 14. **Tomorrow** — overnight and tomorrow's majors.
 15. **Local** — no weather strip in the pm edition; items only, and omitted entirely if there
     are none.

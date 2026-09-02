@@ -63,6 +63,23 @@ anything later in this document, this wins.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
 - Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
 
+### 0b. Built since the amendment — a record, not new decisions (2026-09-02)
+
+- **Spoken editions are real MP3s now, not only Web Speech.** `.github/workflows/audio.yml` +
+  `.github/scripts/make_audio.py` synthesise every edition with edge-tts (voice: Logan's pick,
+  `en-GB-ThomasNeural` at `+0%`), publish it as a GitHub Release asset, and the site build stages
+  the recent MP3s into `site/audio/` so the iPhone plays them same-origin (lock screen, CarPlay,
+  resume position). `report.js` falls back to Web Speech only when no MP3 is reachable. The Telegram
+  push waits for the MP3 before sending (`notify.py`), so the link opens on the real voice.
+- **Breaking-news alerts** were built 2026-08-16 (news only, cross-source corroboration) and
+  switched **off** 2026-08-17 at Logan's request. The workflow stays, unscheduled.
+- **Run health** lives on `site/status.html`, built from `state/run-log.jsonl`; §25's per-report
+  health footer is superseded by §0a.
+- **Archive and Academy (2026-09-02):** the index shows every edition of the latest day, filters the
+  archive by edition, and links to `site/academy.html` — the 150-lesson curriculum with every taught
+  lesson linked and the next one marked. Report pages gain working previous/next links at read time
+  (lessons step through lessons, news through news). Search indexes report pages only.
+
 ## 1. Mission
 
 A permanent, automated, mobile-first personal intelligence platform: global news desk + market terminal + economic research + political/geopolitical brief + company & industry watcher + space dashboard + light physics/spaceflight/quant tutors + searchable archive. It must gather, verify, analyze, generate, store, and deliver polished reports to Logan's iPhone with NO computer on, NO open session, NO custom app, NO manual step. Accuracy, clarity, evidence, organization, reliability and intellectual honesty over speed or drama. It must never feel like a chatbot transcript, feed clone, or AI wall of text.
@@ -230,7 +247,7 @@ Committed NYSE holiday/early-close table (`data/nyse-holidays.json`, published 3
 
 ## 25. Reliability
 
-Idempotent runs (`state/last-run.json` date+slot check → no duplicate reports/deliveries). Per-source timeout + 3 retries + exponential backoff → repo-cached last-good fallback, labeled. Partial reports over no reports; one failed provider never kills the run. Delivery verification (Telegram API response checked; page URL probed). Health footer every report: sources up/down, data ages, run duration, prior failures. Manual regeneration: run-now at claude.ai/code/routines. Everything rebuildable from repo alone. Runbook in `docs/RUNBOOK.md` (token rotation, DST bump, holiday refresh, failure triage).
+Idempotent runs (`state/last-run.json` date+slot check → no duplicate reports/deliveries). Per-source timeout + 3 retries + exponential backoff → repo-cached last-good fallback, labeled. Partial reports over no reports; one failed provider never kills the run. Delivery verification (Telegram API response checked; page URL probed). ~~Health footer every report: sources up/down, data ages, run duration, prior failures.~~ **Superseded 2026-08-16 (§0a):** run health goes to `state/run-log.jsonl` and `site/status.html`, never into the report. Manual regeneration: run-now at claude.ai/code/routines. Everything rebuildable from repo alone. Runbook in `docs/RUNBOOK.md` (token rotation, DST bump, holiday refresh, failure triage).
 
 ## 26. Security
 
@@ -246,4 +263,4 @@ Cloudflare Worker (free), 1-min cron in market hours: watchlist %-moves (Finnhub
 
 ## 29. Acceptance tests (system incomplete until all pass)
 
-All four report types delivered on schedule · correct ET & DST behavior · holiday behavior · computer-off & session-closed operation · iPhone notification + full report opens · searchable archive · citations everywhere · dedupe works · "since previous report" works · neutral politics · fact-vs-analysis labels · every table timestamped & delay-labeled · registry verification live (SpaceX public under SPCX with correct ticker-history handling) · source-failure tolerance · duplicate prevention · editable watchlists · morning ≠ closing differentiation · Saturday synthesis · Sunday forward plan · three learning tracks sequential across a full week · secure credentials · runbook complete.
+All four report types delivered on schedule · correct ET & DST behavior · holiday behavior · computer-off & session-closed operation · iPhone notification + full report opens · searchable archive · citations everywhere · dedupe works · "since previous report" works · neutral politics · fact-vs-analysis labels · every table timestamped & delay-labeled · registry verification live (SpaceX public under SPCX with correct ticker-history handling) · source-failure tolerance · duplicate prevention · editable watchlists · morning ≠ closing differentiation · Saturday synthesis · Sunday forward plan · ~~three learning tracks sequential across a full week~~ the Learning Brief advances one curriculum day per weekday and never skips or restarts (§0a, §16) · secure credentials · runbook complete.

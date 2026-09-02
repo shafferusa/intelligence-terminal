@@ -43,6 +43,11 @@ jobs:
       - name: Publish run log for the status page
         run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
 
+      # Same idea for the Academy page: the curriculum lives in curriculum/,
+      # outside the site root, and academy.html lists all 150 lessons from it.
+      - name: Publish the curriculum for the Academy page
+        run: cp curriculum/academy-150.json site/academy.json || echo "no curriculum"
+
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping
       # that key by hand was the documented rule and it was missed the very
@@ -72,13 +77,19 @@ jobs:
       # Pages serves .mp3 as audio/mpeg, inline, same-origin, with range
       # requests. So copy the recent audio into the artifact at build time.
       # Releases stay the storage -- nothing is committed, git stays clean,
-      # and only the last few days ride along in the deploy.
+      # and only the recent editions ride along in the deploy.
+      #
+      # How many: three editions a weekday, so 8 releases was under three
+      # days -- a lesson from last week fell back to the release URL, which
+      # the iPhone will not play, and then to browser speech. 30 releases is
+      # roughly ten days (~9 MB each, ~270 MB in the artifact), enough to
+      # re-listen to any lesson from the past two working weeks.
       - name: Stage recent audio for same-origin playback
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p site/audio
-          gh release list --limit 8 --json tagName \
+          gh release list --limit 30 --json tagName \
             --jq '.[] | select(.tagName | startswith("audio-")) | .tagName' \
           | while read -r tag; do
               gh release download "$tag" --dir site/audio --clobber || \
@@ -86,8 +97,13 @@ jobs:
             done
           echo "staged:"; ls -lh site/audio/ 2>/dev/null || echo "  (none yet)"
 
+      # Only the reports are searchable. Without the glob, Pagefind also
+      # indexed site/report-template.html -- the design sample, whose fake
+      # "central bank signals slower runoff" story and illustrative figures
+      # then turned up as real search hits -- plus the archive and status
+      # pages, which have nothing worth finding.
       - name: Build Pagefind search index
-        run: npx -y pagefind --site site
+        run: npx -y pagefind --site site --glob "reports/**/*.html"
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

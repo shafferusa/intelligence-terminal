@@ -190,6 +190,57 @@
     startSpeechPlayer();
   }
 
+  /* ---------- prev / next from the archive index ----------
+     The routine fills "Previous report" at publish time and leaves "Next
+     report" disabled, because the next report does not exist yet and nothing
+     ever comes back to fill it in. So a reader working forward through the
+     archive -- or from one lesson to the next -- hit a dead link on every
+     page. The index knows the order, so ask it at read time: lessons step
+     through lessons, news editions step through the paper. On a lesson the
+     middle link goes to the Academy (the top bar still leads home). Any
+     failure leaves the routine-written links exactly as they were. */
+  (function enhanceNav() {
+    var nav = main.querySelector(".report-nav");
+    if (!nav || !meta || !meta.path || !window.fetch) return;
+    var root = location.pathname.split("/reports/")[0] + "/";
+    fetch(root + "reports/index.json", { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (list) {
+        if (!Array.isArray(list)) return;
+        var lesson = meta.slot === "learn";
+        var seq = list.filter(function (e) { return e && (e.slot === "learn") === lesson; });
+        var i = -1;
+        for (var k = 0; k < seq.length; k++) {
+          if (seq[k] && seq[k].path === meta.path) { i = k; break; }
+        }
+        if (i < 0) return;
+        var prev = seq[i + 1], next = seq[i - 1];   /* the index is newest first */
+        var links = nav.querySelectorAll("a");
+        if (links.length < 2) return;
+        function set(a, target, label) {
+          a.textContent = label;
+          if (!target || !target.path) {
+            a.removeAttribute("href");
+            a.classList.add("is-disabled");
+            a.setAttribute("aria-disabled", "true");
+            return;
+          }
+          a.setAttribute("href", root + target.path);
+          a.setAttribute("title", target.title || "");
+          a.classList.remove("is-disabled");
+          if (!a.className) a.removeAttribute("class");
+          a.removeAttribute("aria-disabled");
+        }
+        set(links[0], prev, lesson ? "\u2190 Previous lesson" : "\u2190 Previous report");
+        set(links[links.length - 1], next, lesson ? "Next lesson \u2192" : "Next report \u2192");
+        if (lesson && links.length === 3) {
+          links[1].setAttribute("href", root + "academy.html");
+          links[1].textContent = "The Academy";
+        }
+      })
+      .catch(function () { /* keep the links the routine wrote */ });
+  })();
+
   /* ---------- Web Speech fallback ---------- */
 
   function startSpeechPlayer() {
