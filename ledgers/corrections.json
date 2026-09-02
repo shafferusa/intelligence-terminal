@@ -116,6 +116,15 @@
       "error_source": "This report's own research never independently verified Swalwell's current office-holder status before first reporting the FBI story on 2026-08-20; it appears to have carried forward an unverified assumption that he remained a sitting Representative.",
       "conclusions_changed": false,
       "note": "Verified via WebSearch against NPR, NBC News, PBS and Spectrum News coverage of the April 2026 resignation this run. Does not change any fact about the FBI probe itself -- only Swalwell's current title, used incorrectly across every edition from 2026-08-20 through 2026-08-27. Corrected in today's report (2026-08-28-am) and colophon."
+    },
+    {
+      "found": "2026-09-02",
+      "report": "reports/2026/08/2026-08-31-learn.html",
+      "original": "Ten lessons ago, this curriculum's Physics track wrote Newton's second law in its original, more general form: F_net = dp/dt, the net force on an object equal to the rate at which its momentum changes with time.",
+      "corrected": "Day Ten's Physics lesson (Friday, August 28, 2026), which wrote Newton's second law as F_net = dp/dt, was the immediately preceding lesson relative to Day Eleven (Monday, August 31, 2026) -- one lesson earlier, not ten. The physics content and the callback argument in the Day Eleven lesson are otherwise correct and unaffected; only the lesson-count was wrong.",
+      "error_source": "An internal counting error when writing the Day Eleven callback paragraph.",
+      "conclusions_changed": false,
+      "note": "Caught while writing Day Thirteen (2026-09-02-learn), which itself calls back to Day Ten's Newton's-second-law lesson via the product rule. Corrected in today's report's colophon."
     }
   ]
 }

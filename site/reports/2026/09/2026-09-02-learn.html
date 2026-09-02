@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Hidden Number Behind Every Basis Point — Learning Brief, Wed, Sep 2, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-02",
+    "slot": "learn",
+    "title": "The Hidden Number Behind Every Basis Point",
+    "path": "reports/2026/09/2026-09-02-learn.html",
+    "summary": "Day thirteen of the 150-day curriculum: the product, quotient, chain and implicit-differentiation rules, proved rather than announced, used to price Tuesday's real 10-year Treasury yield move to the penny and to fix the F = ma shortcut Day Ten's rocket problem broke.",
+    "headlines": [
+      "Day 13 of 150 · Mathematics: the rules that differentiate combinations of functions",
+      "The product rule, chain rule and quotient rule, each proved rather than memorized",
+      "What a real 4-basis-point Treasury move actually costs, computed exactly"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-02T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Hidden Number Behind Every Basis Point</h1>
+      <p class="paper-dateline">
+        Wednesday, September 2, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Four rules for differentiating combinations of functions &mdash; proved, not announced &mdash; checked against a real Treasury yield from Tuesday&rsquo;s own paper and against the rocket-losing-mass problem Day Ten&rsquo;s physics lesson left deliberately unfinished.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 13 of 150 &middot; Mathematics 7 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Every closing edition of this newspaper prints the U.S. 10-year Treasury note&rsquo;s yield to the basis point. Tuesday&rsquo;s did: 4.79%, up 4 basis points on the day, its highest level in this report&rsquo;s tracking window. Somewhere underneath that four-basis-point move is a dollar figure &mdash; exactly how much a real 10-year bond&rsquo;s price fell when its yield rose by that precise amount &mdash; and no edition of this paper has ever printed it, not because the number is unknowable, but because computing it exactly needs a tool this curriculum has not yet built.</p>
+
+      <p>Two lessons ago, this column proved the derivative from first principles &mdash; the limit of a difference quotient, closing a two-thousand-year-old logical gap Zeno of Elea had opened with an arrow &mdash; and then, deliberately, stopped. Every function differentiated in that lesson was a single moving piece: x&sup2;, x&sup3;, a falling object&rsquo;s height. Isaac Newton&rsquo;s second law, written in its full and correct form, is not a single moving piece. It is a product of two things that can both be changing at once, and that lesson ended with an explicit debt: the rule needed to handle a product correctly, and the rocket equation that rule eventually unlocks, were both left for today.</p>
+
+      <p>They are not the only debt today pays off. A bond&rsquo;s price is not a straight-line function of its yield &mdash; it is a yield raised to a power, buried inside a fraction, and pulling a number out of that shape by hand, honestly, needs the same family of tools. By the end of this lesson, using nothing invented for the occasion and nothing borrowed from memory, that missing dollar figure for Tuesday&rsquo;s 10-year note gets computed exactly, from the real yield this paper actually printed.</p>
+
+      <h3>What a rule for combinations actually buys you</h3>
+
+      <p>Strip away the notation for a moment and the whole of today&rsquo;s lesson is one plain observation: most of the functions worth differentiating are not raw, standalone shapes like x&sup2;. They are combinations &mdash; one function multiplied by another, one function divided by another, one function stuffed inside another like a smaller box inside a bigger one, or two quantities tangled together in a single equation with neither one solved for in terms of the other. The limit definition from two lessons ago can, in principle, grind through any of these directly. It is also exhausting to use that way for anything beyond the simplest cases, and worse, doing it from scratch every time buries the actual structure of the calculation under a pile of algebra that has nothing to do with why the answer comes out the way it does.</p>
+
+      <p>What today&rsquo;s four rules do is take that grinding, once, for each of the four ways functions commonly combine, and package the result into a shortcut that can be applied by inspection forever after. That is the entire point of a derived rule, in mathematics generally and not just here: prove it hard once, from the definition, so that it can be used easily and correctly a thousand times afterward without re-deriving it. Two of the four combinations are the most intuitive ones &mdash; multiplying two functions together, and dividing one by another. The third, composition, is subtler: it is what happens when the output of one function becomes the input of a second, a box inside a box, and it turns out to be the deepest of the four, in the sense that the other three all secretly lean on it. The fourth, implicit differentiation, is not really a new rule at all &mdash; it is what happens when you take the third rule and refuse to do the one algebra step, solving for y, that would let you avoid needing it.</p>
+
+      <p>One more piece of plain-English groundwork, because it will matter for how today&rsquo;s rules get proved: a derivative is <em>not</em> a machine that treats a compound expression the way ordinary addition works. If you add two functions, f(x) + g(x), the derivative of the sum genuinely is just the sum of the derivatives, f&prime;(x) + g&prime;(x) &mdash; that fact is easy to prove from the limit definition and this curriculum will use it without comment from here on. Multiplication, division and composition do not get off that easily. The rate at which a product changes has to account for <em>both</em> pieces changing at once, and untangling exactly how much each piece contributes is what today&rsquo;s first rule, and its proof, is actually about.</p>
+
+      <h3>The product rule, proved rather than announced</h3>
+
+      <p>Take two functions of x, call them <var>f</var> and <var>g</var>, and ask for the derivative of their product, <var>f(x)g(x)</var>. The tempting first guess &mdash; that the derivative of a product is simply the product of the derivatives, f&prime;(x)g&prime;(x) &mdash; is wrong, and worth checking against a case simple enough to check by hand before trusting any general argument. Let f(x) = x&sup2; and g(x) = x, so that f(x)g(x) = x&sup3;. Two lessons ago this column proved directly, from the limit definition, that the derivative of x&sup3; is 3x&sup2;. The tempting guess says it should be f&prime;(x)g&prime;(x) = (2x)(1) = 2x. Those two answers, 3x&sup2; and 2x, are not the same function, so the tempting guess is simply false, not just imprecise. Something more careful is needed, and it comes straight out of the limit definition, the same way every result in this curriculum&rsquo;s Mathematics track has so far.</p>
+
+      <p>Write the difference quotient for the product directly:</p>
+
+      <div class="formula">
+        <p class="expr">[ f(x + h)g(x + h) &minus; f(x)g(x) ] / h</p>
+        <dl>
+          <dt>f(x + h)g(x + h)</dt><dd>the value of the product at the shifted point x + h</dd>
+          <dt>f(x)g(x)</dt><dd>the value of the product at the original point x</dd>
+          <dt>h</dt><dd>the same shrinking, never-quite-zero horizontal step used throughout the limit definition</dd>
+        </dl>
+      </div>
+
+      <p>The numerator does not simplify the way a single function&rsquo;s did, because there are now two shifted quantities tangled together. The standard trick &mdash; and it is a genuine trick, not a mechanical step, the kind worth noticing rather than memorizing &mdash; is to insert a term that is equal to zero, by adding and subtracting the same quantity, f(x + h)g(x), in the numerator. Nothing about the value of the expression changes; only its shape does:</p>
+
+      <div class="formula">
+        <p class="expr">[ f(x + h)g(x + h) &minus; f(x + h)g(x) + f(x + h)g(x) &minus; f(x)g(x) ] / h</p>
+      </div>
+
+      <p>Group the four terms into two pairs, factoring f(x + h) out of the first pair and g(x) out of the second:</p>
+
+      <div class="formula">
+        <p class="expr">f(x + h) &middot; [ g(x + h) &minus; g(x) ] / h &nbsp;+&nbsp; g(x) &middot; [ f(x + h) &minus; f(x) ] / h</p>
+      </div>
+
+      <p>Now take the limit as h &rarr; 0, term by term. The second factor in the first piece, [g(x + h) &minus; g(x)]/h, is exactly g&rsquo;s difference quotient, which approaches g&prime;(x) by definition. The second factor in the second piece is f&rsquo;s difference quotient, approaching f&prime;(x). And f(x + h), in the first piece, approaches f(x) as h &rarr; 0 &mdash; a function has to be continuous at x for its derivative to exist there at all, and continuity means exactly that f(x + h) closes in on f(x) as h shrinks. Putting the pieces together:</p>
+
+      <div class="formula">
+        <p class="expr">d/dx [ f(x)g(x) ] &nbsp;=&nbsp; f&prime;(x)g(x) &nbsp;+&nbsp; f(x)g&prime;(x)</p>
+        <dl>
+          <dt>f(x), g(x)</dt><dd>the two functions being multiplied together</dd>
+          <dt>f&prime;(x), g&prime;(x)</dt><dd>their individual derivatives, each computable on its own by whatever means already exist for that function</dd>
+          <dt>d/dx [ f(x)g(x) ]</dt><dd>the derivative of the whole product, read &ldquo;the derivative with respect to x of f of x times g of x&rdquo;</dd>
+        </dl>
+      </div>
+
+      <p>In words, worth holding onto more than the symbols: the derivative of a product is the derivative of the first factor times the second factor, plus the first factor times the derivative of the second. Every source of change gets its own term, and the two terms get added, not multiplied together the way the tempting wrong guess assumed. Check it against the x&sup2; &middot; x case that exposed the wrong guess above: f = x&sup2;, g = x, f&prime; = 2x, g&prime; = 1. The product rule gives (2x)(x) + (x&sup2;)(1) = 2x&sup2; + x&sup2; = 3x&sup2; &mdash; exactly matching the known derivative of x&sup3;, and nothing like the wrong guess&rsquo;s 2x.</p>
+
+      <h3>The chain rule: differentiating a box inside a box</h3>
+
+      <p>Composition is what happens when one function&rsquo;s output feeds directly into a second function&rsquo;s input &mdash; not f(x) times g(x), but f of g of x, written f(g(x)), where g(x) is computed first and its result is handed straight to f. A concrete instance: h(x) = sin(x&sup2;). Here x is squared first, and then the sine function is applied to whatever that squaring produced. The function being squared, x&sup2;, is called the <strong>inner function</strong>; the sine wrapped around it is the <strong>outer function</strong>.</p>
+
+      <p>The cleanest way to see why composition needs its own rule, rather than being some special case of the product rule, is to think in terms of rates directly, in Leibniz&rsquo;s notation. Let u = g(x) be the inner function&rsquo;s output, so that y = f(u) is the outer function applied to that output. The chain rule states:</p>
+
+      <div class="formula">
+        <p class="expr">dy/dx &nbsp;=&nbsp; dy/du &nbsp;&middot;&nbsp; du/dx</p>
+        <dl>
+          <dt>u</dt><dd>the inner function&rsquo;s output, treated as an intermediate quantity that itself depends on x</dd>
+          <dt>dy/du</dt><dd>how fast the outer function&rsquo;s output changes per unit change in u &mdash; the outer function&rsquo;s own derivative, evaluated at u</dd>
+          <dt>du/dx</dt><dd>how fast the inner function&rsquo;s output changes per unit change in x &mdash; the inner function&rsquo;s own derivative</dd>
+          <dt>dy/dx</dt><dd>how fast the whole composed function&rsquo;s output changes per unit change in x &mdash; the quantity actually wanted</dd>
+        </dl>
+      </div>
+
+      <p>The plausibility argument for why this should be true is almost arithmetic: if y changes twice as fast as u, and u changes three times as fast as x, then y ought to change six times as fast as x &mdash; the two rate multipliers simply multiply, the way &ldquo;miles per gallon&rdquo; times &ldquo;gallons per hour&rdquo; gives &ldquo;miles per hour,&rdquo; with the shared unit cancelling. Writing the same statement in prime notation, without the intermediate variable u, is the form most calculus is actually done in: d/dx [ f(g(x)) ] = f&prime;(g(x)) &middot; g&prime;(x) &mdash; take the outer function&rsquo;s derivative, evaluate it at the inner function&rsquo;s original, un-differentiated output, and multiply by the inner function&rsquo;s own derivative.</p>
+
+      <p>That miles-per-gallon argument is a genuine intuition and not a proof, and it is worth being honest about exactly where it wobbles: the step that treats dy/du and du/dx as though they were literally two ordinary fractions that cancel a shared &ldquo;du&rdquo; is doing real work it has not earned, precisely the kind of move the misconception section of two lessons ago warned against for a single derivative, now happening twice at once. A fully rigorous proof exists &mdash; it patches the gap by defining a helper function that stays well-behaved even at the one point the naive argument breaks down, rather than dividing by a quantity that might be zero &mdash; but it is more machinery than this lesson needs to put to work the rule correctly. What matters for using the chain rule honestly is remembering that it is a genuine theorem with a real proof behind it, not merely a suggestive cancellation of letters that happens to give the right answer.</p>
+
+      <h3>The quotient rule, built from the two rules already in hand</h3>
+
+      <p>Division could be attacked directly from the limit definition, the same way the product rule was &mdash; and in many textbooks, it is. But having just built the product rule and the chain rule, it is both faster and more illuminating to get the quotient rule from them, because doing so reveals that division was never really a fourth, independent kind of combination. Write f(x)/g(x) as a product: f(x) &middot; [g(x)]<sup>&minus;1</sup>. The second factor, [g(x)]<sup>&minus;1</sup>, is a composition &mdash; the outer function is &ldquo;raise to the power &minus;1,&rdquo; whose own derivative is &minus;u<sup>&minus;2</sup>, and the inner function is g(x) &mdash; so differentiating it needs the chain rule:</p>
+
+      <div class="formula">
+        <p class="expr">d/dx [ g(x)<sup>&minus;1</sup> ] &nbsp;=&nbsp; &minus;1 &middot; g(x)<sup>&minus;2</sup> &middot; g&prime;(x) &nbsp;=&nbsp; &minus;g&prime;(x) / [g(x)]&sup2;</p>
+      </div>
+
+      <p>Now apply the product rule to f(x) &middot; [g(x)]<sup>&minus;1</sup>, using this result for the derivative of the second factor:</p>
+
+      <div class="formula">
+        <p class="expr">d/dx [ f(x)/g(x) ] &nbsp;=&nbsp; f&prime;(x)/g(x) &nbsp;&minus;&nbsp; f(x)g&prime;(x)/[g(x)]&sup2;</p>
+      </div>
+
+      <p>Putting both terms over the common denominator [g(x)]&sup2; gives the quotient rule in the form it is usually memorized:</p>
+
+      <div class="formula">
+        <p class="expr">d/dx [ f(x)/g(x) ] &nbsp;=&nbsp; [ f&prime;(x)g(x) &minus; f(x)g&prime;(x) ] / [g(x)]&sup2;</p>
+        <dl>
+          <dt>f(x)</dt><dd>the numerator function</dd>
+          <dt>g(x)</dt><dd>the denominator function, required to be nonzero at the point in question &mdash; the quotient itself is undefined wherever g(x) = 0, and so is its derivative</dd>
+          <dt>f&prime;(x)g(x) &minus; f(x)g&prime;(x)</dt><dd>the numerator&rsquo;s derivative times the denominator, minus the numerator times the denominator&rsquo;s derivative &mdash; note the order matters and the sign is a minus, unlike the product rule&rsquo;s plus</dd>
+          <dt>[g(x)]&sup2;</dt><dd>the original denominator, squared</dd>
+        </dl>
+      </div>
+
+      <p>The order of the subtraction in the numerator is the single most common place to slip when recalling this rule from memory rather than re-deriving it: f&prime;g &minus; fg&prime;, not fg&prime; &minus; f&prime;g. Having just derived it from the product and chain rules rather than memorized it cold is exactly the insurance against that slip &mdash; the minus sign traces directly back to the &minus;1 exponent&rsquo;s own derivative above, and a rule you can rebuild in thirty seconds is a rule you can no longer misremember with confidence.</p>
+
+      <h3>Implicit differentiation: when solving for y first is not an option</h3>
+
+      <p>Every function differentiated so far has had y &mdash; or f(x), the same thing under different notation &mdash; already isolated on one side of the equals sign, ready to be handed straight to a rule. Plenty of equations worth differentiating are not so cooperative. The equation of a circle of radius 5 centered at the origin, x&sup2; + y&sup2; = 25, relates x and y without solving for either one in terms of the other, and while this particular equation <em>can</em> be solved for y &mdash; y = &plusmn;&radic;(25 &minus; x&sup2;), two separate functions, one for the top half of the circle and one for the bottom &mdash; plenty of equations that arise honestly cannot be solved for y at all, or can only be solved into something far uglier than the original.</p>
+
+      <p>Implicit differentiation sidesteps the whole question of whether an equation can be solved for y by never attempting it. Instead, treat y as some unspecified function of x &mdash; it does not matter, for the method to work, that its explicit formula is unknown or ugly &mdash; and differentiate both sides of the equation with respect to x, term by term, exactly as always. The only new wrinkle is that every term containing y needs the chain rule, because y is being treated as g(x) with an unknown g, wrapped inside whatever operation surrounds it. Differentiating y&sup2; with respect to x, for instance, means differentiating (y)&sup2; where y is the inner function: the chain rule gives 2y &middot; dy/dx, not simply 2y &mdash; the dy/dx factor is the inner function&rsquo;s own derivative, and it does not vanish just because y has not been solved for explicitly.</p>
+
+      <div class="formula">
+        <p class="expr">General method: differentiate F(x, y) = c term by term with respect to x, applying the chain rule to every y-term to produce a dy/dx factor, then solve the resulting equation algebraically for dy/dx.</p>
+        <dl>
+          <dt>F(x, y) = c</dt><dd>any equation relating x and y, with c an arbitrary constant &mdash; the circle equation x&sup2; + y&sup2; = 25 is one instance, with F(x, y) = x&sup2; + y&sup2; and c = 25</dd>
+          <dt>dy/dx</dt><dd>the slope of the curve at a given point (x, y) &mdash; still exactly the same derivative this whole lesson has been computing, just extracted by a different route because y was never isolated to begin with</dd>
+        </dl>
+      </div>
+
+      <h3>Four rules, one worked example each</h3>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; proving the power rule for every whole-number exponent, using the product rule</b>
+        <p>Two lessons ago, the limit definition produced two specific results by brute force: the derivative of x&sup2; is 2x, and the derivative of x&sup3; is 3x&sup2;. That lesson explicitly declined to generalize from two examples to a rule, calling that a hunch rather than a proof. The product rule, proved above, is exactly the tool that upgrades the hunch into a genuine theorem, for every positive whole-number exponent at once, using a technique called mathematical induction: prove a base case directly, then prove that whenever the pattern holds for one exponent it automatically holds for the next one up, which means it holds for every exponent from the base case onward, without having to check each one individually.</p>
+        <ol>
+          <li><strong>Base case, n = 1.</strong> The function x&sup1; is just x. Its difference quotient is [(x + h) &minus; x]/h = h/h = 1 for any nonzero h, so the limit as h &rarr; 0 is 1 &mdash; and the power rule&rsquo;s general prediction, n&middot;x<sup>n&minus;1</sup>, at n = 1 gives 1&middot;x<sup>0</sup> = 1&middot;1 = 1. They agree: the base case holds.</li>
+          <li><strong>Inductive hypothesis.</strong> Assume the power rule already holds for some whole number k &mdash; that is, assume d/dx[x<sup>k</sup>] = k&middot;x<sup>k&minus;1</sup> is already established, whether k is 1, 2, 50, or any other specific whole number. This is not assuming the general rule is true; it is assuming one particular case is true, in order to show the next case follows from it.</li>
+          <li><strong>The inductive step.</strong> Write x<sup>k+1</sup> as a product: x<sup>k+1</sup> = x &middot; x<sup>k</sup>. Apply the product rule just proved, with f(x) = x and g(x) = x<sup>k</sup>: d/dx[x &middot; x<sup>k</sup>] = (d/dx[x]) &middot; x<sup>k</sup> + x &middot; (d/dx[x<sup>k</sup>]).</li>
+          <li>The first piece, d/dx[x], is 1, from the base case. The second piece, d/dx[x<sup>k</sup>], is k&middot;x<sup>k&minus;1</sup>, by the inductive hypothesis. Substitute both: 1&middot;x<sup>k</sup> + x&middot;(k&middot;x<sup>k&minus;1</sup>) = x<sup>k</sup> + k&middot;x<sup>k</sup> = (k + 1)&middot;x<sup>k</sup>.</li>
+          <li>That result, (k + 1)&middot;x<sup>k</sup>, is exactly what the power rule predicts for the exponent k + 1: (k+1)&middot;x<sup>(k+1)&minus;1</sup> = (k+1)&middot;x<sup>k</sup>. The pattern survives the step from k to k + 1.</li>
+        </ol>
+        <p>Because the rule holds at n = 1, and holding at any k forces it to hold at k + 1, it holds at n = 2 (from n = 1), then at n = 3 (from n = 2), then at every whole number after that, forever, without ever needing to check one individually the way two lessons ago did for x&sup2; and x&sup3; by hand. That is the debt two lessons ago left unpaid, settled: d/dx[x<sup>n</sup>] = n&middot;x<sup>n&minus;1</sup> for every positive whole number n, proved rather than merely noticed.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; the quotient rule on a real rational function</b>
+        <p>Find the derivative of f(x) = (x&sup2; + 1)/(x &minus; 2), and evaluate it at x = 5.</p>
+        <ol>
+          <li>Identify the two pieces: numerator function x&sup2; + 1, so its derivative is 2x; denominator function x &minus; 2, so its derivative is 1.</li>
+          <li>Apply the quotient rule, f&prime;(x)g(x) &minus; f(x)g&prime;(x) all over [g(x)]&sup2;, with f(x) = x&sup2; + 1, f&prime;(x) = 2x, g(x) = x &minus; 2, g&prime;(x) = 1: f&prime;(x) = [ 2x(x &minus; 2) &minus; (x&sup2; + 1)(1) ] / (x &minus; 2)&sup2;.</li>
+          <li>Expand the numerator: 2x(x &minus; 2) = 2x&sup2; &minus; 4x. Subtract (x&sup2; + 1): 2x&sup2; &minus; 4x &minus; x&sup2; &minus; 1 = x&sup2; &minus; 4x &minus; 1.</li>
+          <li>So f&prime;(x) = (x&sup2; &minus; 4x &minus; 1) / (x &minus; 2)&sup2;.</li>
+          <li>Evaluate at x = 5: numerator = 25 &minus; 20 &minus; 1 = 4. Denominator = (5 &minus; 2)&sup2; = 9. So f&prime;(5) = 4/9 &asymp; 0.444.</li>
+        </ol>
+        <p>At x = 5, this function is increasing at roughly 0.444 units of output per unit of input &mdash; a modest, gentle climb, worth sanity-checking against the graph&rsquo;s actual shape: f(5) = 26/3 &asymp; 8.667 and f(5.1) = 27.01/3.1 &asymp; 8.713, a rise of about 0.046 over a run of 0.1, or about 0.46 per unit &mdash; in the same neighborhood as the 0.444 the exact derivative predicts, with the remaining gap being exactly the kind of approximation error a genuine limit, evaluated at a run of 0.1 rather than a true limit of zero, is expected to carry.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; the chain rule on a composed trigonometric function</b>
+        <p>Find the derivative of h(x) = sin(3x&sup2; + 1), and evaluate it at x = 1.</p>
+        <ol>
+          <li>Identify the outer and inner functions. The outer function is f(u) = sin(u), whose derivative is f&prime;(u) = cos(u). The inner function is u = g(x) = 3x&sup2; + 1, whose derivative, by the power and sum rules, is g&prime;(x) = 6x.</li>
+          <li>Apply the chain rule, f&prime;(g(x)) &middot; g&prime;(x): h&prime;(x) = cos(3x&sup2; + 1) &middot; 6x.</li>
+          <li>Note what did <em>not</em> happen: the argument inside the cosine, 3x&sup2; + 1, is carried along unchanged into the answer &mdash; it is not differentiated a second time, and it is not dropped. Only the outer function gets replaced by its own derivative, evaluated at the untouched inner expression; the inner function contributes only through the separate multiplying factor g&prime;(x) = 6x.</li>
+          <li>Evaluate at x = 1: the inner expression is 3(1)&sup2; + 1 = 4, so h&prime;(1) = cos(4) &middot; 6(1) = 6&middot;cos(4). Using cos(4 radians) &asymp; &minus;0.6536, h&prime;(1) &asymp; 6 &times; (&minus;0.6536) &asymp; &minus;3.92.</li>
+        </ol>
+        <p>The negative sign is doing real work here and is worth pausing on rather than passing over: at x = 1, the inner expression 3x&sup2; + 1 has climbed to 4 radians, a point on the cosine wave where cosine itself has swung negative &mdash; sin(u) is momentarily decreasing as u increases, even though u itself is increasing as x increases. The composed function h(x), at that specific point, is heading downward as x increases, purely because of where the inner function happened to land on the outer function&rsquo;s wave, a fact the chain rule captures automatically and a fact that would be easy to get backwards by assuming a composition of an always-increasing inner function with a familiar outer function must itself always be increasing.</p>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 4 &middot; implicit differentiation on a circle</b>
+        <p>For the circle x&sup2; + y&sup2; = 25, find dy/dx &mdash; the slope of the circle &mdash; at the point (3, 4), and again at the point (4, &minus;3).</p>
+        <ol>
+          <li>Differentiate both sides of x&sup2; + y&sup2; = 25 with respect to x, term by term. The left side has two terms; the right side is a constant.</li>
+          <li>d/dx[x&sup2;] = 2x, by the ordinary power rule &mdash; no chain rule needed here, because x is the variable being differentiated with respect to itself.</li>
+          <li>d/dx[y&sup2;] = 2y &middot; dy/dx, by the chain rule &mdash; y is being treated as an unspecified function of x, so squaring it and then differentiating requires exactly the outer-function/inner-function machinery of worked example 3, with &ldquo;square&rdquo; as the outer function and y itself as the inner one.</li>
+          <li>d/dx[25] = 0, since a constant never changes.</li>
+          <li>Putting the pieces together: 2x + 2y &middot; dy/dx = 0. Solve algebraically for dy/dx: 2y &middot; dy/dx = &minus;2x, so dy/dx = &minus;x/y.</li>
+          <li>At the point (3, 4): dy/dx = &minus;3/4. At the point (4, &minus;3): dy/dx = &minus;4/(&minus;3) = 4/3.</li>
+        </ol>
+        <p>Both answers can be checked against plain geometry, which is exactly what makes this example a useful one to build intuition on: a radius drawn from the origin to (3, 4) has slope 4/3, and a tangent line to a circle is always perpendicular to the radius at that point &mdash; perpendicular slopes multiply to &minus;1, and (4/3)&middot;(&minus;3/4) = &minus;1, exactly matching. The same check at (4, &minus;3) confirms the second answer the same way. Notice, too, what implicit differentiation bought here that solving for y first would have cost: the single formula dy/dx = &minus;x/y works at any point on the circle, upper half or lower, without ever having to split the circle into two separate functions the way isolating y explicitly would have required.</p>
+      </div>
+
+      <h3>Where it shows up: pricing Tuesday&rsquo;s basis point</h3>
+
+      <p>Back to the question this lesson opened with. A bond&rsquo;s price is a function of the yield the market demands for holding it, and for the cleanest possible case &mdash; a bond that pays no coupons along the way, just a single lump sum at maturity, called a zero-coupon bond &mdash; that function has a genuinely simple closed form. A zero-coupon bond with face value F, maturing in n years, priced at annual yield y, is worth today exactly F/(1 + y)<sup>n</sup>: the face value, discounted back n years at the compounding rate the market is demanding.</p>
+
+      <div class="formula">
+        <p class="expr">P(y) &nbsp;=&nbsp; F &middot; (1 + y)<sup>&minus;n</sup></p>
+        <dl>
+          <dt>P(y)</dt><dd>the bond&rsquo;s price today, as a function of the yield y &mdash; the quantity this section wants the rate of change of</dd>
+          <dt>F</dt><dd>the face value paid at maturity, a fixed constant of the bond&rsquo;s terms</dd>
+          <dt>n</dt><dd>years to maturity, also fixed by the bond&rsquo;s terms</dd>
+          <dt>y</dt><dd>the annual yield the market currently demands &mdash; the one quantity actually varying, and the one this paper reports to the basis point every closing edition</dd>
+        </dl>
+      </div>
+
+      <p>Differentiating P(y) with respect to y is a direct chain rule application: the outer function is &ldquo;raise to the power &minus;n,&rdquo; the inner function is (1 + y), and the inner function&rsquo;s own derivative with respect to y is simply 1, since y&rsquo;s coefficient is 1 and the constant 1 contributes nothing.</p>
+
+      <div class="formula">
+        <p class="expr">dP/dy &nbsp;=&nbsp; F &middot; (&minus;n) &middot; (1 + y)<sup>&minus;n&minus;1</sup> &middot; 1 &nbsp;=&nbsp; &minus;nF(1 + y)<sup>&minus;n&minus;1</sup></p>
+      </div>
+
+      <p>Apply this to a real instrument, using the real number Tuesday&rsquo;s closing edition printed: treat the 10-year Treasury note as a $1,000-face-value, 10-year zero-coupon bond &mdash; a simplification (real Treasury notes pay semiannual coupons, which changes the exact numbers but not the method) flagged honestly rather than smuggled in silently &mdash; priced at Tuesday&rsquo;s reported yield, y = 4.79%, or 0.0479 as a decimal.</p>
+
+      <div class="worked">
+        <b>Worked example 5 &middot; what one basis point actually costs, using Tuesday&rsquo;s real yield</b>
+        <ol>
+          <li>Price at the reported yield: P(0.0479) = 1000 &middot; (1.0479)<sup>&minus;10</sup> &asymp; $626.33.</li>
+          <li>Apply the derivative formula above at F = 1000, n = 10, y = 0.0479: dP/dy = &minus;10 &middot; 1000 &middot; (1.0479)<sup>&minus;11</sup> &asymp; &minus;$5,976.98 per unit change in y.</li>
+          <li>A basis point is one hundredth of one percent, or 0.0001 in decimal terms. Multiply the derivative by that step size to get the approximate price change for a one-basis-point move: &minus;5,976.98 &times; 0.0001 &asymp; &minus;$0.5977.</li>
+          <li>Tuesday&rsquo;s actual move was 4 basis points, not one, so the approximate total price change is 4 &times; (&minus;$0.5977) &asymp; &minus;$2.39, on a bond worth about $626.33 &mdash; a decline of roughly 0.38%.</li>
+          <li>Check this derivative-based approximation against direct substitution, computing the price at the new yield exactly rather than approximating: P(0.0483) = 1000 &middot; (1.0483)<sup>&minus;10</sup> &asymp; $623.94, a decline of $2.39 from $626.33.</li>
+        </ol>
+        <p>The derivative&rsquo;s estimate, $2.39, and the exact recomputation, $2.39, agree to the penny at this scale &mdash; the tiny remaining gap between the two methods, visible only past the second decimal, is exactly the kind of approximation error worked example 2 flagged above, the cost of using a straight-line rate of change to estimate a genuinely curved function&rsquo;s move, here made almost invisible because a four-basis-point step is such a small fraction of the yield itself. This is exactly what bond traders call <strong>duration</strong>, though they usually express it in a normalized form &mdash; modified duration, &minus;(dP/dy)/P, which for this bond works out to roughly 9.54 years, meaning the bond&rsquo;s price moves by about 9.54% for every 100-basis-point move in yield. Every 10-year Treasury note quoted anywhere trades on exactly this sensitivity, computed by exactly this chain rule, whether or not the trader quoting it has ever seen the derivation. The number this paper has never printed, then, is not unknowable at all: for Tuesday&rsquo;s 4-basis-point move on a bond shaped like this one, it is about $2.39 &mdash; small on one bond, and the reason a fund holding billions of dollars of long-duration Treasuries can lose or gain tens of millions of dollars on a single day&rsquo;s yield move that barely shows up as a headline.</p>
+      </div>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>The wrong guess this lesson opened the product rule with &mdash; that the derivative of a product is just the product of the derivatives &mdash; is not a mistake beginners make once and outgrow. It is the single most persistent error in this entire area of calculus, precisely because it is the <em>correct</em> rule for addition, learned first and learned solidly: the derivative of f(x) + g(x) genuinely is f&prime;(x) + g&prime;(x), no correction terms, no extra factors. It is entirely natural to assume differentiation is what mathematicians call a <strong>linear</strong> operation across the board &mdash; that it distributes cleanly over any way of combining two functions, the way multiplication distributes over addition. It does not. Differentiation is linear over addition and over multiplication by a constant, and stops being linear the instant two genuinely varying functions are multiplied, divided, or composed together. Each of today&rsquo;s three rules exists specifically because each of those three operations breaks the naive distributive instinct in its own particular way, and each rule is the precise, provable correction &mdash; not a guess, not a convention, a fact forced by the limit definition, as the product rule&rsquo;s proof above showed line by line.</p>
+
+      <p>Implicit differentiation has its own instance of the identical error, worth naming separately because it disguises itself differently: forgetting the dy/dx factor entirely when differentiating a y-term, and writing d/dx[y&sup2;] = 2y instead of the correct 2y &middot; dy/dx. This is not a different mistake from the product-rule fallacy &mdash; it is the chain rule&rsquo;s version of exactly the same instinct, treating y as though it were an inert constant, like the 25 on the circle equation&rsquo;s right-hand side, rather than a genuinely varying quantity whose own rate of change with respect to x is precisely the unknown the whole calculation is trying to find. Skip that factor and worked example 4&rsquo;s circle problem collapses into nonsense: 2x + 2y = 0 would claim every point on the circle has y = &minus;x, which is false for all but two of the infinitely many points on it. The dy/dx factor is not decoration. It is the entire content of the method, the one piece of bookkeeping that distinguishes differentiating an equation that secretly defines y as a function of x from differentiating an equation where y has been mistaken for a fixed number.</p>
+
+      <p>The unifying lesson underneath both versions of the error is worth stating on its own, separate from either rule: a derivative measures how sensitive an output is to a small nudge in the input, and when an output is built from more than one moving part, every moving part gets its own accounting, added together rather than multiplied. Reciting the product, quotient, and chain rules from memory, without holding onto that underlying reason, is exactly how the errors above keep recurring under exam pressure or a late-night calculation &mdash; a rule reconstructed from what it is actually accounting for is far harder to misapply than a rule recalled as a bare string of symbols.</p>
+
+      <h3>The callback</h3>
+
+      <p>Two lessons ago, this column quoted Day Ten&rsquo;s Physics lesson, from Friday, August 28, on Newton&rsquo;s second law in its full and original form: F<sub>net</sub> = dp/dt, the net force on an object equal to the rate at which its momentum changes with time, rather than the simplified F = ma most people meet first. That Day Ten lesson flagged, without being able to resolve it, exactly why the simplified version quietly breaks for an object whose mass is itself changing &mdash; a rocket burning propellant being the clearest case &mdash; and promised that the fix would have to wait for a rule this curriculum had not yet built.</p>
+
+      <p>Momentum is p = mv, mass times velocity, and for a rocket in flight both factors are genuinely varying at once: velocity is changing because thrust is pushing the rocket, and mass is changing because propellant is being burned and ejected out the back. Differentiating p = mv with respect to time is exactly today&rsquo;s first rule, applied to a product where both factors depend on t rather than x:</p>
+
+      <div class="formula">
+        <p class="expr">F<sub>net</sub> &nbsp;=&nbsp; dp/dt &nbsp;=&nbsp; d(mv)/dt &nbsp;=&nbsp; m &middot; dv/dt &nbsp;+&nbsp; v &middot; dm/dt</p>
+        <dl>
+          <dt>m &middot; dv/dt</dt><dd>mass times acceleration &mdash; the familiar F = ma term, and the only term that survives when mass genuinely is constant</dd>
+          <dt>v &middot; dm/dt</dt><dd>velocity times the rate at which mass is changing &mdash; entirely absent from F = ma, and the term a rocket cannot afford to drop, since dm/dt is exactly the rate propellant is being burned and ejected</dd>
+        </dl>
+      </div>
+
+      <p>F = ma is not wrong, in other words &mdash; it is the special case of today&rsquo;s product rule applied to momentum when dm/dt happens to be zero, which is true for almost everything a person encounters day to day and false for a rocket every second it is firing. This is the precise debt two lessons ago left open, and today&rsquo;s product rule is what pays it: not the finished rocket equation itself, which a later lesson in this curriculum&rsquo;s Rocketry track will build once the tools for handling both terms together over the whole burn are in hand, but the specific piece of machinery, the product rule for a time-varying product, that makes the fuller version of Newton&rsquo;s second law usable rather than merely stated.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can differentiate any product, quotient, or composition of functions by rule, and you have watched all three rules get proved or derived rather than handed down &mdash; the product rule straight from the limit definition, the chain rule from a rate-multiplication argument with its own honestly flagged gap, and the quotient rule as the product and chain rules combined.</li>
+          <li>You can find dy/dx for a curve defined implicitly, without first needing to solve the equation for y &mdash; and you know exactly why forgetting the dy/dx factor on a y-term is not a small slip but the same fallacy the product rule exists to correct, wearing different clothes.</li>
+          <li>The power rule two lessons ago left as an unproven pattern from two examples, x&sup2; and x&sup3;, is now a proved theorem for every whole-number exponent, by induction on the product rule.</li>
+          <li>You have watched the chain rule compute a real, checkable number twice &mdash; a bond&rsquo;s exact price sensitivity to Tuesday&rsquo;s real 10-year yield, and the correction that turns F = ma into the momentum form a rocket actually needs &mdash; and both times, the exact derivative agreed with a direct, independent check to within a rounding error.</li>
+          <li>What this sets up: three lessons from now, day sixteen turns these same rate-of-change tools toward finding maxima and minima, and toward related rates &mdash; problems where several quantities, tied together the way x and y were tied together on today&rsquo;s circle, all change at once and the question is how fast one of them moves given how fast the others do.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The product rule, chain rule, quotient rule and implicit differentiation &mdash; and their standard proofs and derivations, including proof of the power rule by induction &mdash; are common mathematical knowledge, written fresh for this report rather than drawn from any single text. The U.S. 10-year Treasury note&rsquo;s close of 4.79% (+4bp) is drawn from this newspaper&rsquo;s own closing edition of Tuesday, September 1, 2026, already verified in that run; the bond-pricing arithmetic built on it, and all other arithmetic in the worked examples, was computed directly for this report and checked by independent recomputation (finite-difference and geometric checks are shown alongside each result). The callback to Newton&rsquo;s second law draws on this curriculum&rsquo;s own Day Ten (Friday, August 28, 2026) and Day Eleven (Monday, August 31, 2026) Mathematics and Physics lessons, both already published.</p>
+      <p><strong>Corrections.</strong> Day Eleven&rsquo;s lesson (Monday, August 31) told Logan that its Newton&rsquo;s-second-law callback reached back &ldquo;ten lessons&rdquo; to Day Ten &mdash; Day Ten was in fact the immediately preceding lesson, one lesson earlier, not ten. The physics and the argument in that lesson are unaffected; only the count was wrong, caught while writing today&rsquo;s own callback to the same lesson. Logged in the correction ledger.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-01-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
