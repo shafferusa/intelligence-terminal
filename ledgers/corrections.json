@@ -134,6 +134,15 @@
    "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the prior two editions did not surface the story despite prominent, same-day, multi-outlet coverage.",
    "conclusions_changed": false,
    "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-07-31 and 2026-08-14 entries above. No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-03",
+   "report": "reports/2026/09/2026-09-02-pm.html",
+   "original": "Described Broadcom's Q4 AI semiconductor guide as \"~$16B\" and said it \"missed the ~$17.2B analysts wanted,\" framing this as \"the detail that moved the stock.\"",
+   "corrected": "Broadcom's own SEC Form 8-K (Exhibit 99.1), reviewed directly this run, shows the $16.7B figure was actually Q3 FY2026's *actual* AI-semiconductor revenue (up 221% year over year), not a Q4 guide. Broadcom's real Q4 FY2026 AI-semiconductor guidance is $21.7B, up 236% year over year -- a sharp raise, not a miss. What actually fell narrowly short was total company Q4 revenue guidance of ~$34.8B against a ~$35.03B analyst consensus, which appears to be the actual driver of the after-hours share decline.",
+   "error_source": "Tuesday's closing edition relied on same-day secondary wire commentary about the earnings release rather than the primary SEC filing, and appears to have conflated the current quarter's actual AI-semiconductor result with next quarter's guidance for that same segment.",
+   "conclusions_changed": true,
+   "note": "This reverses, not refines, Tuesday night's framing of what moved the stock. Verified directly against Broadcom's SEC EDGAR filing (data.sec.gov, CIK 0001730168) this run. Corrected in today's report (2026-09-03-am) Top Stories and colophon."
   }
  ]
 }

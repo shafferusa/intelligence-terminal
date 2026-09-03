@@ -2171,7 +2171,10 @@
    "horizon": "2026-09-04",
    "probability": "35-50%",
    "basis": "Odds already moved from ~35% to ~60% since Wednesday's Jackson Hole keynote; continued hawkish sell-side commentary through the weekend",
-   "status": "open"
+   "status": "correct",
+   "outcome": "CME-implied September rate-hike odds were already at roughly 66% as of Aug 31-Sept 1 data (Forbes/CME FedWatch), ahead of Friday's jobs report -- condition met before the horizon.",
+   "graded": "2026-09-03",
+   "lesson": "Odds moved faster than the horizon anticipated; Warsh's hawkish tone and the broader hike narrative built momentum within days, not weeks."
   },
   {
    "id": "2026-09-01-am-1",
@@ -2206,7 +2209,10 @@
    "horizon": "2026-09-04",
    "probability": "35-50%",
    "basis": "Odds have climbed from ~40% (Aug 21) to the high 50s/60s over the past week and a half, and both Warsh and Bessent spoke publicly Monday without moving toward each other.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Same CME reading (~66%) satisfies this forecast's 65-70% range, confirmed via the same Aug 31-Sept 1 data ahead of Friday's jobs report.",
+   "graded": "2026-09-03",
+   "lesson": "Duplicate-window forecast; see 2026-08-31-am-3."
   },
   {
    "id": "2026-09-01-pm-1",
@@ -2259,7 +2265,10 @@
    "horizon": "2026-09-03",
    "probability": "55-65%",
    "basis": "Broadcom's recent history of landing inside its options-implied post-earnings range more often than not.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Broadcom fell more than 6% after hours per multiple market reports (shares testing/falling below $350 intraday from a $367.24 pre-earnings close) -- within the options market's implied ~12% range. Exact settled magnitude not yet printed as of this edition.",
+   "graded": "2026-09-03",
+   "lesson": "Options-implied move ranges are a reasonable calibration anchor even when the specific driver (revenue guidance, not AI-chip guidance) was misread same-night."
   },
   {
    "id": "2026-09-02-am-3",
@@ -2289,6 +2298,39 @@
    "horizon": "2026-09-09",
    "probability": "35-50%",
    "basis": "Today's four-country retaliation (Jordan, Bahrain, Kuwait, Iraq) is the widest round of this standoff yet, and the US's new 'tanker for tanker' policy structurally invites further exchanges from either side.",
+   "status": "correct",
+   "outcome": "Iran struck Kuwait's Ahmed al-Jaber air base area and, reportedly for the first time, the UAE's Al Minhad air base overnight Sept 2-3 -- the widest round yet of this standoff.",
+   "graded": "2026-09-03",
+   "lesson": "The pattern of near-daily escalation this week made a within-a-week further attack close to a base-rate call; the genuine uncertainty was scope (which country), not whether."
+  },
+  {
+   "id": "2026-09-03-am-1",
+   "date": "2026-09-03",
+   "slot": "am",
+   "forecast": "The US or an allied power (UAE, Kuwait) responds directly and militarily to last night's strikes within 48-72 hours",
+   "horizon": "2026-09-06",
+   "probability": "30-45%",
+   "basis": "This week's pattern has been same-week, not same-day, retaliation; a confirmed UAE strike would be a bigger provocation than Tuesday's Jordan/Bahrain hits, which drew no immediate US military response.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-03-am-2",
+   "date": "2026-09-03",
+   "slot": "am",
+   "forecast": "Friday's August jobs report (nonfarm payrolls) comes in weak, extending the soft ADP signal (below the trailing 12-month trend pace)",
+   "horizon": "2026-09-04",
+   "probability": "40-55%",
+   "basis": "Two consecutive soft ADP prints (44K July revised down, 38K August) are a directional signal only, since ADP and nonfarm payrolls have diverged meaningfully in prior months this year.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-03-am-3",
+   "date": "2026-09-03",
+   "slot": "am",
+   "forecast": "The administration files a notice of appeal in Judge Boardman's birthright-citizenship injunction within the week",
+   "horizon": "2026-09-10",
+   "probability": "55-70%",
+   "basis": "The administration has consistently and quickly appealed similar injunctions against this policy earlier in 2026.",
    "status": "open"
   }
  ]

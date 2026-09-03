@@ -1,48 +1,8 @@
 {
- "fetched": "2026-09-02T07:10:00-04:00",
- "earnings_fetched": "2026-08-30",
- "earnings_fetched_note": "Not re-pulled today (once-per-day rule); prior pull still current. Broadcom (AVGO) reports today, Sept 2 after close -- Finnhub consensus ~$3.30 EPS/~$29.95B rev, last cross-checked 2026-09-02.",
+ "fetched": "2026-09-03T06:55:00-04:00",
+ "earnings_fetched": "2026-09-03",
+ "earnings_fetched_note": "Re-pulled today (Finnhub day-of confirmations) -- no watchlist-tracked names reporting today; small-caps only (AMBA, AMBR, AOUT). Broadcom's Sept 2 report is now settled via primary 8-K.",
  "events": [
-  {
-   "ts_et": "2026-09-02T08:15:00-04:00",
-   "type": "econ_release",
-   "name": "ADP National Employment Report (Aug)",
-   "importance": "High",
-   "reason": "Last private-payrolls read before Friday's August jobs report, itself two weeks ahead of the Sept 16 FOMC decision.",
-   "source": "ADP Research Institute release schedule -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-02T10:30:00-04:00",
-   "type": "econ_release",
-   "name": "EIA weekly petroleum status report",
-   "importance": "Medium",
-   "reason": "Routine weekly inventory data, elevated relevance given the active Hormuz standoff and oil's volatility this week.",
-   "source": "EIA release schedule -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-02T11:00:00-04:00",
-   "type": "space",
-   "name": "Electron -- Owl Around the World (StriX Launch 11), Mahia NZ",
-   "importance": "Low",
-   "reason": "Slipped a day on launch-site weather; on track per Launch Library 2.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
-  },
-  {
-   "ts_et": "2026-09-02T12:00:00-04:00",
-   "type": "legal",
-   "name": "Missouri Supreme Court oral arguments -- Harris v. Hoskins / Von Glahn v. Hoskins (congressional map)",
-   "importance": "High",
-   "reason": "Six days before the Sept 8 ballot-certification deadline; exact hour not published.",
-   "source": "Missouri Independent, News From The States -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-02T16:05:00-04:00",
-   "type": "earnings",
-   "name": "Broadcom (AVGO) Q3 FY2026 earnings, after close",
-   "importance": "Critical",
-   "reason": "Week's largest scheduled catalyst and the only tracked watchlist name reporting -- AI-infra bellwether. Consensus ~$29.95B revenue / ~$3.30 EPS (Finnhub); options market pricing a ~12% post-earnings move.",
-   "source": "Finnhub earnings calendar (Confirmed-primary)"
-  },
   {
    "ts_et": "2026-09-03T08:30:00-04:00",
    "type": "econ_release",
@@ -56,7 +16,7 @@
    "type": "econ_release",
    "name": "Initial jobless claims, week of Aug 29",
    "importance": "Medium",
-   "reason": "Weekly labor-market read; recurring Thursday 8:30 ET release.",
+   "reason": "Weekly labor-market read; recurring Thursday 8:30 ET release. Prior week (Aug 22) was 203,000.",
    "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule)"
   },
   {
@@ -64,15 +24,23 @@
    "type": "legal",
    "name": "Judge Talwani hearing on longer-term mail-ballot EO block",
    "importance": "High",
-   "reason": "Her Aug 28 14-day TRO is set to expire around this window; hearing determines whether a longer block replaces it before the elections.",
-   "source": "Federal Register, Votebeat -- Confirmed-multiple"
+   "reason": "Her Aug 28 14-day TRO is set to expire around this window; hearing determines whether a longer preliminary injunction replaces it before the elections.",
+   "source": "Federal Register, Votebeat, PBS, CNBC -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-03T00:00:00-04:00",
+   "type": "legal",
+   "name": "Missouri Supreme Court ruling watch -- congressional map case",
+   "importance": "High",
+   "reason": "Multiple outlets (STLPR, KCUR, KBIA, ABC17) expect a quick ruling after Sept 2 oral arguments, given the Sept 8 ballot-certification deadline; no exact hour published.",
+   "source": "STLPR, KCUR, KBIA, ABC17 -- Confirmed-multiple (ruling pending, not yet issued)"
   },
   {
    "ts_et": "2026-09-03T21:25:00-04:00",
    "type": "launch",
    "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
-   "importance": "Low",
-   "reason": "India's first launch since a January 2026 failure; on track per Launch Library 2.",
+   "importance": "Medium",
+   "reason": "India's first launch since a January 2026 failure and the replacement for the EOS-03/GISAT-1 payload lost in the 2021 GSLV failure; status \"Go\" per Launch Library 2, no scrub reported as of this morning.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
   },
   {
@@ -84,11 +52,11 @@
    "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
   },
   {
-   "ts_et": "2026-09-04T20:00:00-04:00",
-   "type": "launch",
+   "ts_et": "2026-09-04T16:00:00-04:00",
+   "type": "space",
    "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, Andoya Spaceport, Norway)",
    "importance": "Medium",
-   "reason": "European orbital launch attempt; status still To Be Confirmed per Launch Library 2.",
+   "reason": "European orbital launch attempt; status remains \"to be confirmed\" per Launch Library 2, consistent with the mission's history of repeated delays.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved"
   },
   {

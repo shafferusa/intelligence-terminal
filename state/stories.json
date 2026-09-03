@@ -39,9 +39,9 @@
    "headline": "Israel says the Gaza City raid captured Hamas's internal-security chief",
    "status": "Materially changed",
    "first_seen": "2026-07-31-pm",
-   "last_updated": "2026-09-01-pm",
+   "last_updated": "2026-09-03-am",
    "verification": "Confirmed-multiple (arrest, covering strikes); the earlier assassination-attempt narrative was not repeated today",
-   "one_line": "Israeli officials (Katz, IDF, Shin Bet) say the pre-dawn raid captured Muein al-Arabid, described as Hamas's internal-security chief; covering strikes during the firefight killed at least 3 Palestinians including 2 children, per Gaza officials, uncontested by Israel. Resolves Tuesday morning's disputed 'assassination attempt' narrative toward an arrest framing; the covering-strike casualty toll stands unaddressed by Israel.",
+   "one_line": "Israeli officials (Katz, IDF, Shin Bet) say the pre-dawn raid captured Muein al-Arabid, described as Hamas's internal-security chief; covering strikes during the firefight killed at least 3 Palestinians including 2 children, per Gaza officials, uncontested by Israel. Resolves Tuesday morning's disputed 'assassination attempt' narrative toward an arrest framing; the covering-strike casualty toll stands unaddressed by Israel. UPDATE: Hamas now warns the ceasefire framework \"could collapse\" over the raid; a Gaza security source disputes Israel's account, claiming the operation against the intended \"prominent\" target was thwarted and only a lower-ranking official was actually taken -- unresolved either way.",
    "score_note": "Most serious individual flare-up inside the ceasefire framework in over a month; arrest framing does not erase the reported child deaths.",
    "sources": [
     "IDF, Shin Bet, Defense Minister Katz statements (primary, via wire)",
@@ -230,9 +230,9 @@
    "headline": "Missouri Supreme Court hears oral arguments today on the congressional map",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-02-am",
+   "last_updated": "2026-09-03-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Oral arguments proceed today as scheduled in Harris v. Hoskins and Von Glahn v. Hoskins, six days before the Sept 8 ballot-certification deadline. People Not Politicians rallying outside the courthouse same morning. New forecast logged on a ruling landing before Sept 8.",
+   "one_line": "Oral arguments concluded Sept 2 as scheduled; multiple outlets (STLPR, KCUR, KBIA, ABC17) expect a \"quick ruling\" given Friday's Sept 8 certification deadline, but none had landed as of this morning.",
    "score_note": "Arguments day itself is the story; ruling timing is now the open question.",
    "sources": [
     "Missouri Independent",
@@ -438,9 +438,9 @@
    "headline": "DRC Ebola case count nears 6,100 as outbreak continues to widen",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-02-am",
+   "last_updated": "2026-09-03-am",
    "verification": "Confirmed-multiple (case count); not yet echoed in a fresh WHO bulletin",
-   "one_line": "Case count now reported near 6,100 confirmed with deaths approaching 2,950, up from 6,041/2,911 as of Aug 27-31 figures. Still the country's largest outbreak ever recorded; still no approved vaccine for the Bundibugyo strain.",
+   "one_line": "WHO's latest bulletin (through Aug 31) puts the case count at 6,186 confirmed with 3,007 deaths, up from 6,041-6,100/2,911-2,950 in recent editions. Still the country's largest outbreak ever recorded; still no approved vaccine for the Bundibugyo strain.",
    "score_note": "Continuing rise; funding-shortfall warning from prior week stands.",
    "sources": [
     "UN News",
@@ -454,9 +454,9 @@
    "headline": "Mail-ballot merits suit filed; emergency-motion hearing set for Sept 3",
    "status": "Materially changed",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-08-28-am",
+   "last_updated": "2026-09-03-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Talwani issued a fresh 14-day TRO Wednesday blocking USPS from further preparatory steps through the Nov 3 elections while she weighs a preliminary injunction -- the rule is NOT currently in effect nationwide, contrary to how the Monday SCOTUS order might read alone. Sept 3 hearing stands.",
+   "one_line": "Talwani's Aug 28 fourteen-day TRO is set to expire around today's window; she holds a hearing today on whether to convert it into a longer preliminary injunction. DOJ has separately appealed a related mail-ballot order to the First Circuit.",
    "score_note": "Two parallel tracks now: the new merits suit (no hearing date yet) and the older case's Sept 3 emergency-motion hearing.",
    "sources": [
     "Federal Register (primary)",
@@ -654,22 +654,21 @@
   },
   {
    "id": "us-iran-jordan-strikes-aug31",
-   "headline": "Iran retaliates against Jordan, Bahrain, Kuwait and Iraq for the weekend's US strikes",
+   "headline": "Iran widens the Gulf war overnight, striking Kuwait and, apparently for the first time, the UAE",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-02-pm",
-   "verification": "Confirmed-multiple (Jordanian, Bahraini, Kuwaiti government statements; Iran's IRGC statement)",
-   "one_line": "Before dawn Wednesday Iran fired missiles and drones at Jordan (13 missiles, 10 intercepted, 3 landed in remote areas), Bahrain (drones intercepted near Sheikh Isa Air Base and a desalination plant) and Kuwait (drones targeted Ali Al Salem Air Base); Iraq was also named among the targeted countries. The widest single round of this six-month standoff, retaliating for CENTCOM's weekend strike on ~100 Iranian targets. Trump says the US gave Gulf allies advance notice and is in no hurry to force Iran to the table; single-sourced reporting says some allies were unhappy with the coordination. Oil hit five-week highs (Brent ~$95.32) but stocks rallied anyway on a weak ADP print.",
-   "score_note": "Widest round of Iranian retaliation yet -- four countries in one morning -- but markets treated it as familiar rather than escalatory, a genuine shift from Tuesday's risk-off reaction to the same conflict.",
+   "last_updated": "2026-09-03-am",
+   "verification": "Confirmed-multiple (Kuwait strike); Moderate confidence, Iranian claim only (UAE strike, pending confirmation)",
+   "one_line": "Iran fired missiles and drones at Kuwait (near Ahmed al-Jaber air base, intercepted, no casualties reported) and, per Iranian claims echoed by regional wires, the UAE's Al Minhad air base for the first time in this standoff -- the widest single round yet. Qatar's Foreign Ministry condemned the Kuwait strike as a sovereignty violation, a break from its mediator posture. UAE strike remains moderate-confidence pending US/UAE confirmation.",
+   "score_note": "Widest round yet -- two countries hit including an apparent first-time UAE target -- while markets continued to shrug it off via commodities rather than equities.",
    "sources": [
-    "Jordanian, Bahraini and Kuwaiti government statements (primary)",
-    "Iran's Revolutionary Guard statement (primary)",
-    "CENTCOM (primary, weekend strike)",
-    "NPR",
-    "CNN",
-    "Al Jazeera",
-    "Gulf News",
-    "The National"
+    "Iran's Revolutionary Guard statement (primary, via wire)",
+    "Kuwait's army statement (primary, via wire)",
+    "Qatar's Ministry of Foreign Affairs (primary)",
+    "Times of Israel",
+    "ABC News",
+    "i24NEWS",
+    "APA"
    ],
    "watch": true
   },
@@ -743,19 +742,19 @@
   },
   {
    "id": "pa-measles-coroner-dispute-aug31",
-   "headline": "Lancaster commissioner accuses Shapiro of 'deception' in measles-death dispute",
+   "headline": "PA measles dispute escalates as CDC's national tally excludes both deaths the state reported",
    "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-02-am",
+   "last_updated": "2026-09-03-am",
    "verification": "Confirmed-multiple (commissioner's statement); Disputed (cause of death, three-way: state vs. coroner vs. HHS)",
-   "one_line": "County Commissioner Joshua Parsons said the evidence 'now leads to the conclusion that there is deception happening' by the Shapiro administration. State health officials have not revisited their 'measles-associated' classification despite the coroner's lacerated-spleen finding on the infant case. Kennedy separately called the deaths possibly 'fabricated.' Shapiro says he told Kennedy directly his rhetoric is harmful.",
+   "one_line": "The CDC's national tally now shows zero confirmed 2026 measles deaths, directly contradicting Pennsylvania's own count of two. Kennedy has suggested the deaths may be \"fabricated\"; Shapiro says Kennedy is spreading dangerous misinformation. Coroner Dr. Stephen Diamantoni maintains an infant's death was caused by a lacerated spleen, not measles, despite antibody presence.",
    "score_note": "First elected local official (not just the coroner) to publicly accuse the state of deception -- an escalation in who is making the claim.",
    "sources": [
-    "Local21News",
-    "Fox News",
-    "Western Journal",
     "Lancaster County Coroner's office (primary)",
-    "Pennsylvania Dept of Health (primary)"
+    "Pennsylvania Dept of Health (primary)",
+    "The Hill",
+    "Fox News",
+    "Medical Daily"
    ],
    "watch": true
   },
@@ -932,21 +931,83 @@
    "watch": true
   },
   {
-   "id": "ma-senate-primary-markey-sep2",
-   "headline": "Ed Markey defeats Seth Moulton in Massachusetts Senate Democratic primary",
-   "status": "Resolved",
-   "first_seen": "2026-09-02-am",
-   "last_updated": "2026-09-02-am",
+   "id": "boardman-birthright-citizenship-sep2",
+   "headline": "Federal judge blocks Trump's newest birthright-citizenship order",
+   "status": "New",
+   "first_seen": "2026-09-03-am",
+   "last_updated": "2026-09-03-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Markey (80) led by 30+ points over Moulton (47) on the strength of the party's progressive wing (Sanders, Warren, AOC endorsements). Advances to face Republican John Deaton in November.",
-   "score_note": "Resolves the primary-outcome watch item flagged in yesterday's calendar.",
+   "one_line": "Judge Deborah Boardman (D. Md.) issued a preliminary injunction Sept 2 blocking the administration's newest birthright-citizenship EO (targeting children of alleged terrorist-org members/foreign-government employees), calling it \"almost certainly unconstitutional\" given SCOTUS's June ruling against the original Day-One order. No word yet on an appeal.",
+   "score_note": "Second court loss for a version of this policy since the June SCOTUS ruling.",
    "sources": [
+    "CNN",
     "NBC News",
-    "WBUR",
-    "Axios Boston",
-    "The Hill"
+    "WTOP",
+    "Washington Times"
+   ],
+   "watch": true
+  },
+  {
+   "id": "broadcom-q4-guidance-correction-sep3",
+   "headline": "Broadcom's post-earnings slide traces to revenue guidance, not AI chips, filing shows",
+   "status": "New",
+   "first_seen": "2026-09-03-am",
+   "last_updated": "2026-09-03-am",
+   "verification": "Confirmed-primary (SEC 8-K)",
+   "one_line": "Broadcom's own SEC filing shows Q3 AI-semiconductor revenue was $16.7B actual (+221% YoY) and Q4 guidance for that segment is $21.7B (+236% YoY) -- a raise, not the miss the prior edition described. The real shortfall was total Q4 revenue guidance (~$34.8B vs ~$35.03B consensus), which appears to have driven the >6% after-hours decline. Corrected in ledgers/corrections.json.",
+   "score_note": "Correction of this outlet's own prior-night framing; conclusions changed.",
+   "sources": [
+    "Broadcom Inc. Form 8-K, Exhibit 99.1 (primary, SEC EDGAR)"
    ],
    "watch": false
+  },
+  {
+   "id": "uber-layoffs-sep2",
+   "headline": "Uber to cut about 3,300 jobs, its largest round since the pandemic",
+   "status": "New",
+   "first_seen": "2026-09-03-am",
+   "last_updated": "2026-09-03-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Uber announced Sept 2 it will lay off ~3,300 employees (~10% of staff, ~20% of management roles) to help fund $10B+ in robotaxi/autonomous-vehicle investment.",
+   "score_note": "Largest Uber layoff since the pandemic; funded by internal restructuring rather than new capital.",
+   "sources": [
+    "TechCrunch",
+    "Bloomberg",
+    "Al Jazeera",
+    "Skift"
+   ],
+   "watch": false
+  },
+  {
+   "id": "nvidia-huggingface-14b-sep2",
+   "headline": "Nvidia's approach for Hugging Face reportedly grows to $14 billion",
+   "status": "New",
+   "first_seen": "2026-09-03-am",
+   "last_updated": "2026-09-03-am",
+   "verification": "Single-reliable-source",
+   "one_line": "Bloomberg reports Nvidia is nearing a ~$14B deal for Hugging Face including a $1B retention package, up from the ~$12.9B figure reported in late August; neither company has confirmed.",
+   "score_note": "Deal-talk detail continues firming but remains unconfirmed by either party.",
+   "sources": [
+    "Bloomberg",
+    "Yahoo Finance"
+   ],
+   "watch": true
+  },
+  {
+   "id": "jfrog-artifactory-kev-sep2",
+   "headline": "CISA adds critical JFrog Artifactory flaw to KEV catalog amid active exploitation",
+   "status": "New",
+   "first_seen": "2026-09-03-am",
+   "last_updated": "2026-09-03-am",
+   "verification": "Confirmed-primary (CISA KEV)",
+   "one_line": "CISA added CVE-2026-82329 (CVSS 9.8, Artifactory auth bypass) to its KEV catalog Sept 2 as part of a 7-CVE batch, federal remediation deadline Sept 10. watchTowr first reported active exploitation Sept 1 (admin-token minting, credential enumeration). No victims named.",
+   "score_note": "Government confirmation follows private-sector telemetry within a day.",
+   "sources": [
+    "CISA KEV catalog (primary)",
+    "watchTowr research",
+    "SC Media"
+   ],
+   "watch": true
   }
  ]
 }

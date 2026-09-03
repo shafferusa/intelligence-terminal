@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Thu, Sep 3, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-03",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/09/2026-09-03-am.html",
+    "summary": "Iran widens the Gulf war overnight to Kuwait and, apparently for the first time, the UAE, while markets barely flinch; a federal judge blocks Trump's newest birthright-citizenship order; and Broadcom's own SEC filing shows last night's selloff was about revenue guidance, not AI chips as this report described Tuesday.",
+    "headlines": [
+      "Iran strikes Kuwait and, for the first time, the UAE overnight",
+      "Federal judge blocks Trump's newest birthright-citizenship order",
+      "Broadcom's slide was about revenue guidance, not AI chips, filing shows"
+    ],
+    "reading_minutes": 20,
+    "generated_at": "2026-09-03T07:10:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Thursday, September 3, 2026 <span class="sep">&middot;</span> 20 min read
+      </p>
+      <p class="paper-standfirst">
+        Iran widens the Gulf war overnight to Kuwait and, apparently for the first time, the UAE, while markets shrug it off; a federal judge blocks Trump&rsquo;s newest birthright-citizenship order; and Broadcom&rsquo;s own filing shows last night&rsquo;s selloff wasn&rsquo;t about AI chips at all.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Iran struck Kuwait and, for the first time in this six-month standoff, the UAE overnight &mdash; the widest single round yet, though neither the US nor UAE has confirmed damage or casualties.</li>
+          <li><b>Markets.</b> Futures are close to flat, but oil and gold both jumped hard overnight and the dollar softened &mdash; a safe-haven bid without an equity selloff.</li>
+          <li><b>The thread.</b> Markets have grown used to Gulf escalation as background noise this week; that calm holds only until a US or allied service member is actually hurt.</li>
+          <li><b>Biggest risk.</b> A confirmed casualty from last night&rsquo;s strikes, or any disruption to tanker traffic through Hormuz itself, would end that calm fast.</li>
+          <li><b>Watch today.</b> Missouri&rsquo;s Supreme Court could rule on the congressional map any time before Friday&rsquo;s certification deadline, and Judge Talwani holds a hearing that decides whether the mail-ballot order gets a longer block.</li>
+          <li><b>Legal.</b> A federal judge blocked the administration&rsquo;s newest birthright-citizenship executive order, calling it &ldquo;almost certainly unconstitutional.&rdquo;</li>
+          <li><b>Business.</b> Broadcom&rsquo;s after-hours slide traces to a narrow miss on total revenue guidance &mdash; its own filing shows AI-chip revenue guidance was raised sharply, the opposite of how this report described it Tuesday night.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Iran widens the Gulf war overnight, striking Kuwait and, apparently for the first time, the UAE</h3>
+          <p class="story-deck">Kuwait&rsquo;s military confirms it intercepted an incoming barrage; the reported strike on a UAE air base is so far sourced mainly to Iran&rsquo;s own account.</p>
+          <div class="story-body">
+            <p>Iran&rsquo;s military said early Thursday it fired missiles and drones at US-linked facilities in Kuwait and the United Arab Emirates, in what would be the widest single round yet of the six-month confrontation over the Strait of Hormuz. Kuwait&rsquo;s army said its air defenses engaged incoming projectiles near a military camp, a power station and a desalination plant close to Ahmed al-Jaber air base; Kuwaiti officials have not reported casualties. Qatar&rsquo;s Foreign Ministry issued a pointed condemnation of the Kuwait strike Wednesday, calling it a violation of Kuwaiti sovereignty and holding Iran &ldquo;legally responsible&rdquo; &mdash; a notable break from Doha&rsquo;s usual mediator posture in this standoff.</p>
+            <p><span class="flag">Unverified</span> The reported strike on the UAE&rsquo;s Al Minhad air base is so far sourced mainly to Iranian state claims echoed by regional wires; neither the UAE government nor US CENTCOM had confirmed an attack on Emirati soil as of this writing. This report treats it as moderate confidence pending that confirmation.</p>
+            <p>The attack follows Tuesday&rsquo;s Iranian strikes on Jordan, Bahrain, Kuwait and Iraq, which were themselves retaliation for the weekend&rsquo;s roughly 100-target US strike inside Iran under Washington&rsquo;s disclosed &ldquo;tanker for tanker&rdquo; policy.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Two countries &mdash; Kuwait for a second time, and apparently the UAE for the first &mdash; have now taken direct fire in a dispute that began over tanker traffic. Oil and gold both jumped overnight even as US equity futures stayed close to flat, a market that has grown used to this pattern of strike-and-shrug.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether Washington or Abu Dhabi responds directly within the next day or two is the swing factor for whether this stays a war of gestures.
+            </div>
+          </div>
+          <p class="story-sourceline">Iran&rsquo;s Revolutionary Guard statement, Kuwait&rsquo;s army statement, Qatar&rsquo;s Ministry of Foreign Affairs (primary, via wire) &middot; Times of Israel, ABC News, i24NEWS, APA (secondary)</p>
+        </article>
+
+        <article class="story">
+          <h3>Federal judge blocks Trump&rsquo;s newest birthright-citizenship order</h3>
+          <p class="story-deck">Judge Deborah Boardman called the order &ldquo;almost certainly unconstitutional&rdquo; three months after the Supreme Court struck down its predecessor.</p>
+          <div class="story-body">
+            <p>U.S. District Judge Deborah Boardman (D. Md.) issued a preliminary injunction Wednesday blocking the administration&rsquo;s latest attempt to restrict birthright citizenship &mdash; this version targeting children born to alleged members of designated foreign terrorist organizations or employees of certain foreign governments. Boardman, a Biden appointee, wrote the order was &ldquo;almost certainly unconstitutional&rdquo; in light of the Supreme Court&rsquo;s June ruling against the administration&rsquo;s original Day-One order on the same underlying question.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the second time in three months a federal court has stopped a version of this policy. The administration has not said whether it will appeal.
+            </div>
+          </div>
+          <p class="story-sourceline">CNN, NBC News, WTOP, Washington Times (confirmed-multiple)</p>
+        </article>
+
+        <article class="story">
+          <h3>Broadcom&rsquo;s slide was about revenue guidance, not AI chips &mdash; last night&rsquo;s framing needs a correction</h3>
+          <p class="story-deck">The company&rsquo;s own filing shows Q4 AI-semiconductor guidance was raised to $21.7 billion; the miss was on total company revenue against an even higher bar.</p>
+          <div class="story-body">
+            <p>Broadcom&rsquo;s SEC filing on its third-quarter results, reviewed directly this run, shows AI-semiconductor revenue of $16.7 billion for the quarter just ended (up 221% year over year) &mdash; and CEO Hock Tan told investors that figure will &ldquo;accelerate to $21.7 billion&rdquo; next quarter, up 236% year over year. That is a raise, not the disappointment this report described in Tuesday&rsquo;s closing edition. What actually fell short was total fourth-quarter revenue guidance of approximately $34.8 billion (still up 93% year over year) against a roughly $35.03 billion analyst consensus &mdash; a narrow miss that appears to be what sent shares down more than 6% after hours, per multiple market reports; the exact settled magnitude was not yet printed as of this writing.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This reverses Tuesday night&rsquo;s framing rather than refining it. See the colophon for the formal correction.
+            </div>
+          </div>
+          <p class="story-sourceline">Broadcom Inc. Form 8-K, Exhibit 99.1 (primary, SEC EDGAR) &middot; multiple wire reports on the after-hours share move</p>
+        </article>
+
+        <article class="story">
+          <h3>Uber to cut about 3,300 jobs, its largest round since the pandemic</h3>
+          <p class="story-deck">Roughly 10% of staff and a fifth of management roles go, to help fund more than $10 billion in robotaxi investment.</p>
+          <div class="story-body">
+            <p>Uber said Wednesday it will lay off approximately 3,300 employees, about 10% of its workforce and roughly a fifth of management positions, in a restructuring the company frames as funding its push into autonomous-vehicle partnerships rather than raising new capital for it.</p>
+          </div>
+          <p class="story-sourceline">TechCrunch, Bloomberg, Al Jazeera, Skift (confirmed-multiple)</p>
+        </article>
+
+        <article class="story">
+          <h3>Nvidia&rsquo;s approach for Hugging Face reportedly grows to $14 billion</h3>
+          <p class="story-deck">Bloomberg reports a deal including a $1 billion retention package could close this week; neither company has confirmed it.</p>
+          <div class="story-body">
+            <p><span class="flag">Unconfirmed</span> Bloomberg reported Wednesday that Nvidia is nearing a deal for Hugging Face valued near $14 billion, up from the roughly $12.9 billion figure reported in late August, including a $1 billion employee retention package. Neither company has commented.</p>
+          </div>
+          <p class="story-sourceline">Bloomberg, Yahoo Finance (single-reliable-source)</p>
+        </article>
+
+        <article class="story">
+          <h3>CISA adds a critical JFrog Artifactory flaw to its must-patch list</h3>
+          <p class="story-deck">The authentication-bypass bug, under active exploitation since at least Monday, lets attackers mint admin tokens inside software build-and-release pipelines.</p>
+          <div class="story-body">
+            <p>CISA added CVE-2026-82329 (CVSS 9.8) to its Known Exploited Vulnerabilities catalog Tuesday, part of a seven-CVE batch that also included ownCloud and Linux Kernel flaws, setting a September 10 federal remediation deadline. watchTowr first reported active exploitation Monday; attackers are using the bug to mint admin tokens and enumerate credentials on unpatched Artifactory servers. No victims have been named.</p>
+          </div>
+          <p class="story-sourceline">CISA KEV catalog (primary) &middot; watchTowr research &middot; SC Media</p>
+        </article>
+
+        <article class="story">
+          <h3>Gaza&rsquo;s ceasefire framework strains again after a disputed Gaza City raid</h3>
+          <p class="story-deck">Hamas warns the truce &ldquo;could collapse&rdquo;; a Gaza security source now disputes Israel&rsquo;s account of who was actually captured Tuesday.</p>
+          <div class="story-body">
+            <p>Hamas warned this week that the ceasefire framework could collapse following Tuesday&rsquo;s Gaza City raid, in which Israel said it captured the group&rsquo;s internal-security chief. <span class="flag">Disputed</span> A Gaza security source now claims the operation against that &ldquo;prominent&rdquo; figure was actually thwarted, and that only a lower-ranking official was taken &mdash; a direct contradiction of Israel&rsquo;s own account that this report has not been able to resolve either way.</p>
+          </div>
+          <p class="story-sourceline">Bloomberg, regional wire coverage (disputed on the raid&rsquo;s outcome)</p>
+        </article>
+
+        <article class="story">
+          <h3>Pennsylvania&rsquo;s measles dispute escalates as the CDC&rsquo;s national count excludes both deaths the state reported</h3>
+          <p class="story-deck">The CDC&rsquo;s tally shows zero 2026 measles deaths nationally, directly contradicting Pennsylvania&rsquo;s count of two &mdash; and the state&rsquo;s own coroner disputes the cause.</p>
+          <div class="story-body">
+            <p>The Lancaster County coroner&rsquo;s dispute with Gov. Shapiro&rsquo;s administration has widened into a three-way disagreement. Coroner Dr. Stephen Diamantoni told the Philadelphia Inquirer an infant&rsquo;s death the state classified as &ldquo;measles-associated&rdquo; was actually caused by a lacerated spleen, not measles, despite the presence of measles antibodies. Separately, the CDC&rsquo;s own national tally now shows zero confirmed 2026 measles deaths &mdash; omitting both fatalities Pennsylvania&rsquo;s Department of Health has counted. HHS Secretary Kennedy has suggested the deaths may have been &ldquo;fabricated&rdquo;; Shapiro says Kennedy is spreading dangerous misinformation. Neither side has produced new documentation resolving the underlying cause-of-death question.</p>
+          </div>
+          <p class="story-sourceline">Lancaster County Coroner&rsquo;s office (primary), Pennsylvania Dept. of Health (primary) &middot; The Hill, Fox News, Medical Daily</p>
+        </article>
+
+        <article class="story">
+          <h3>BepiColombo begins its final approach to Mercury today</h3>
+          <p class="story-deck">The ESA/JAXA spacecraft separates its transfer module this morning, seven years after launch, with orbital insertion set for November.</p>
+          <div class="story-body">
+            <p>ESA and JAXA&rsquo;s BepiColombo mission enters its Mercury-arrival phase today: the Mercury Transfer Module is scheduled to separate from the orbiter pair around 8:00 AM ET, with the Mercury Planetary Orbiter and Mercury Magnetospheric Orbiter settling into their science orbits in November. The spacecraft launched in October 2018 and has used a long series of gravity-assist flybys to reach the solar system&rsquo;s innermost planet.</p>
+          </div>
+          <p class="story-sourceline">ESA, CNN (confirmed-multiple)</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>Missouri&rsquo;s Supreme Court heard oral arguments Tuesday in Harris v. Hoskins and Von Glahn v. Hoskins, the congressional-map challenges; multiple outlets (STLPR, KCUR, KBIA, ABC17) expect a &ldquo;quick ruling&rdquo; given Friday&rsquo;s ballot-certification deadline, but none had landed as of this morning &mdash; still an open forecast on this desk.</p>
+        <p>Judge Talwani holds a hearing today on whether to convert her August 28 fourteen-day temporary restraining order against further USPS mail-ballot preparation into a longer preliminary injunction; that TRO is set to expire around this same window. The Justice Department has separately appealed a related mail-ballot order to the First Circuit.</p>
+        <p>The DRC&rsquo;s Ebola outbreak keeps widening: the World Health Organization&rsquo;s latest bulletin, through August 31, puts the case count at 6,186 confirmed with 3,007 deaths, both up from the low-6,000s and high-2,900s in recent editions &mdash; still the country&rsquo;s largest outbreak on record, with no approved vaccine for the Bundibugyo strain.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Judge Boardman&rsquo;s injunction against the newest birthright-citizenship order (Top Stories, above) is the second court loss for a version of this policy since the Supreme Court&rsquo;s June ruling against the administration&rsquo;s original Day-One order. No notice of appeal has been filed in either the Boardman case or the earlier Judge Vargas ruling striking down the 75-country visa suspension, and neither the Third Circuit McIver immunity case nor the Ethics Committee&rsquo;s review of Rep. Gomez has moved since last week.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p>The Iran-Gulf standoff (Top Stories, above) is now the widest it has been since it began: Kuwait struck for a second time, and the UAE apparently for the first. No new Bessent statement on the &ldquo;Economic D-Day&rdquo; sanctions package has surfaced since late August; that rollout stands as before.</p>
+        <p>North Korea&rsquo;s position on the &ldquo;Freedom Edge&rdquo; trilateral drill (US, South Korea, Japan; Jeju Island, Sept. 7&ndash;11) is unchanged: Kim Yo Jong reiterated Pyongyang has &ldquo;no interest&rdquo; in reduced drills, a restated line rather than new escalation. Turkey&rsquo;s Interpol arrest-warrant request for Netanyahu over the flotilla interception has seen no follow-up since it was filed.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Two releases are due at 8:30 AM ET today &mdash; the revised Q2 productivity and unit-labor-cost figures, and initial jobless claims for the week of August 29 (prior week: 203,000) &mdash; neither had printed as of this writing. The Fed is not yet in its pre-meeting blackout (that begins around September 5), but no Fed speaker has added new commentary since Monday; CME&rsquo;s FedWatch tool still shows roughly a two-thirds probability of a September rate hike, a reading last updated August 31&ndash;September 1 and not yet moved by today&rsquo;s data. Friday&rsquo;s August jobs report is the week&rsquo;s real test, arriving two weeks before the Fed&rsquo;s September 16 decision.</p>
+        <p>Oil resumed climbing overnight as the Iran-Gulf standoff widened: WTI crude (via futures) is up roughly 1.9% from Wednesday&rsquo;s settle, reversing an earlier report of a slight Wednesday pullback, alongside a sharp overnight jump in gold. Both moves are consistent with a safe-haven bid tracking the new Kuwait and UAE strikes rather than any new economic data.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Broadcom and Uber are covered in full above. Broadcom&rsquo;s consensus rating remained &ldquo;Strong Buy&rdquo; with an average pre-print analyst target near $526 as of Tuesday; no same-day downgrade has been found following the earnings release, and any framing of one should be treated as unconfirmed until a dated analyst note surfaces. Vertiv&rsquo;s roughly $2.6 billion acquisition of UtilityInnovation Group, announced Tuesday, drew a modest, largely settled market reaction &mdash; shares dipped under 1% before flattening, with no fresh analyst commentary overnight.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>The JFrog Artifactory KEV addition is covered above. Separately, OpenAI has said its newest model, internally called Astra, is the first to cross the &ldquo;Critical&rdquo; tier on the company&rsquo;s own cybersecurity capability framework &mdash; a self-assessment based on a perfect score on OpenAI&rsquo;s ExploitBench and autonomous zero-day discovery in internal testing. OpenAI says it will gate the model&rsquo;s more advanced cyber capabilities to a coalition of vetted partners it calls &ldquo;Daybreak.&rdquo; This is OpenAI&rsquo;s own account, not independently verified by any outside evaluator this report has found, and sits alongside the unresolved congressional questions about the company&rsquo;s earlier Hugging Face &ldquo;swarm&rdquo; incident (see this report&rsquo;s recent editions).</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>BepiColombo&rsquo;s Mercury approach is covered above. Rocket Lab&rsquo;s Electron rocket successfully launched the &ldquo;Owl Around the World&rdquo; mission from Mahia, New Zealand on Wednesday, deploying a Synspective StriX radar satellite &mdash; the fifth of a ten-launch bulk order. India&rsquo;s GSLV Mk II is due to lift off tonight at 9:25 PM ET carrying the GISAT-1A (EOS-05) satellite, India&rsquo;s first launch attempt since a failure in January; status remained &ldquo;Go&rdquo; as of this morning with no scrub reported. NASA&rsquo;s Nancy Grace Roman Space Telescope, launched August 30, has deployed its antenna and sunshade and activated its coronagraph instrument; its wide-field instrument is expected to power on within the next two weeks as the telescope continues toward its L2 orbit.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt">Productivity &amp; unit labor costs, Q2 2026 (revised)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>08:30</td><td class="txt"><strong>Initial jobless claims</strong>, week of Aug 29</td><td>&mdash;</td><td>203,000</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Missouri Supreme Court congressional-map ruling watch</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Judge Talwani mail-ballot hearing</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>21:25</td><td class="txt">GSLV Mk II launch (GISAT-1A), India</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event; Friday&rsquo;s August jobs report is the bigger event for the week as a whole.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Equity futures are close to flat and mixed &mdash; S&amp;P and Russell futures slightly lower, Dow futures slightly higher, Nasdaq futures down about a fifth of a percent &mdash; while oil and gold both jumped hard overnight (WTI crude up roughly 1.9%, gold up more than 2%) and the dollar softened modestly against a basket of major currencies. The 10-year Treasury yield sits near 4.79%, essentially unchanged from Tuesday&rsquo;s close, and the VIX ticked up about 1.5% in premarket trading to the mid-15s, still comfortably inside its normal, non-inverted term structure. Futures are not a guaranteed open.</p>
+        <p>The overnight tape is pricing a widened Gulf conflict as background risk rather than a shock: gold and oil are doing the safe-haven work while equity futures barely move. The most fragile assumption in that pricing is that last night&rsquo;s Kuwait and UAE strikes produced no US or allied casualties and no disruption to actual tanker traffic through Hormuz &mdash; either one would very likely break the pattern of markets shrugging off this conflict that has held for the past several sessions.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>The US or an allied power responds directly to last night&rsquo;s Kuwait/UAE strikes within 48&ndash;72 hours.</strong> Probability 30&ndash;45%, on the basis of this week&rsquo;s pattern of same-week (not same-day) retaliation, and the fact that a confirmed UAE strike would be a bigger provocation than Tuesday&rsquo;s hits on Jordan and Bahrain, which drew no immediate US military response. If it happens: oil and gold extend their overnight gains and equity futures likely give back today&rsquo;s calm.</p>
+        <p><strong>Missouri&rsquo;s Supreme Court rules on the congressional map before Friday&rsquo;s certification deadline.</strong> Probability 50&ndash;65%, on the basis of multiple outlets citing court-watchers&rsquo; expectation of a &ldquo;quick ruling&rdquo; after Tuesday&rsquo;s arguments and the hard Sept. 8 deadline forcing the court&rsquo;s hand either way.</p>
+        <p><strong>Friday&rsquo;s August jobs report comes in weak, extending the ADP signal.</strong> Probability 40&ndash;55%, on the basis of two consecutive soft ADP prints (a downwardly revised 44,000 in July, 38,000 in August) &mdash; a directional signal only, since ADP and the official nonfarm payrolls figure have diverged meaningfully in prior months.</p>
+        <p><strong>The administration appeals Judge Boardman&rsquo;s birthright-citizenship injunction within the week.</strong> Probability 55&ndash;70%, on the basis of the administration&rsquo;s consistent pattern of quickly appealing similar injunctions earlier this year.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">91&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Slight chance of morning storms, then a chance of afternoon storms; heat index near 100</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">91&deg;</span> <span class="lo">69&deg;</span>
+            <span class="sky">Storms possible</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">69&deg;</span>
+            <span class="sky">Chance of storms</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">87&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Showers &amp; storms</span>
+          </div>
+        </div>
+        <p class="weather-alert">Heat Advisory until 8:00 PM ET today</p>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>House Rules Committee again rejects Senate&rsquo;s SEPTA funding plan as PRT warns its own deficit is widening</h3>
+        <div class="story-body">
+          <p><span class="flag">Date unconfirmed</span> Per CBS Philadelphia reporting, the state House Rules Committee has again rejected the Senate&rsquo;s latest SEPTA funding proposal &mdash; the exact date of that vote was not independently pinned down this run. Statewide transit funding remains unresolved as Pittsburgh Regional Transit separately posted its best ridership year since fiscal 2020 (39.1 million trips, up 5% year over year) even while warning that pandemic-relief funds are now exhausted and a structural budget deficit looms.</p>
+        </div>
+        <p class="story-sourceline">CBS Philadelphia &middot; rideprt.org (primary, ridership and funding figures)</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, moderate</span> Supporting: Wednesday's broad-market gain (S&amp;P +0.46%, Russell +1.13% leading), regional banks (KRE +2.23%) and small/mid caps outperforming, VIX still in the mid-teens with a normal term structure. Contradicting: mega-cap tech (XLK) was flat to slightly down even as broader semis (SMH +0.96%) gained, financial exchanges and asset managers (CME &minus;3.03%, CBOE &minus;4.39%, BLK &minus;1.86%) fell sharply with no confirmed catalyst, and overnight gold/oil strength reflects a genuine safe-haven bid running alongside the risk-on equity tape. No change from the prior report's moderate risk-on read.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <p>Wednesday's close (Previous close, Yahoo Finance, close-to-close): S&amp;P 500 +0.46% to 7,666.60; Nasdaq Composite +0.45% to 26,217.83; Dow +0.56% to 53,061.95; Russell 2000 +1.13% to 2,953.17, the clear leader as small caps outperformed large caps for a second straight session. Equal-weight S&amp;P (RSP) rose 0.46%, in line with the cap-weighted index &mdash; no unusual breadth divergence at the index level despite the small-cap leadership.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Massive grouped-daily computation for the Sept 2 session (prior session; today's session computes in the pm run): 3,565 advancers vs. 1,711 decliners vs. 192 unchanged across a 5,468-symbol universe &mdash; 65.2% advancing, a strong breadth day consistent with the small-cap leadership above and a marked improvement from Sept 1's 25% advancing (the weakest tracked session this cycle). Up-volume ($8.97B) outpaced down-volume ($3.79B) by better than 2-to-1. Percent-above-50/200-day EMA is not yet reportable &mdash; no symbol in the tracked universe has accumulated 50 sessions of history yet; that estimate remains labeled <em>Estimated &mdash; EMA proxy, accumulating history</em> until enough sessions accrue.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close (Sept 2 vs. Sept 1) &middot; Yahoo Finance, close-to-close.</caption>
+              <thead><tr><th>Sector</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td class="txt">Materials (XLB)</td><td class="up">+1.69%</td></tr>
+                <tr><td class="txt">Communication Svcs (XLC)</td><td class="up">+1.39%</td></tr>
+                <tr><td class="txt">Financials (XLF)</td><td class="up">+0.80%</td></tr>
+                <tr><td class="txt">Health Care (XLV)</td><td class="up">+0.75%</td></tr>
+                <tr><td class="txt">Energy (XLE)</td><td class="up">+0.51%</td></tr>
+                <tr><td class="txt">Staples (XLP)</td><td class="up">+0.33%</td></tr>
+                <tr><td class="txt">Utilities (XLU)</td><td class="up">+0.26%</td></tr>
+                <tr><td class="txt">Discretionary (XLY)</td><td class="up">+0.24%</td></tr>
+                <tr><td class="txt">Industrials (XLI)</td><td class="flat">+0.03%</td></tr>
+                <tr><td class="txt">Technology (XLK)</td><td class="down">&minus;0.02%</td></tr>
+                <tr><td class="txt">Real Estate (XLRE)</td><td class="down">&minus;0.70%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Materials led on broad industrial-metals strength (copper futures +1.5% overnight); technology lagged the broader market for a second day even as the semiconductor-specific SMH ETF gained 0.96%, a sign the mega-cap tech names inside XLK, not chips broadly, were the drag.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Regional banks (KRE +2.23%) and broker-dealers (HOOD +3.36%) outperformed within financials even as financial-market-infrastructure names fell sharply and without a confirmed catalyst: CBOE &minus;4.39%, CME &minus;3.03%, BlackRock &minus;1.86% &mdash; flagged <em>Unexplained</em>. AST SpaceMobile (ASTS) jumped 11.83% on heavy volume with no confirmed news found this run, also <em>Unexplained</em>. Palantir (PLTR) fell 5.81%, its second consecutive down day. Brazil (EWZ) was the standout international mover, up 4.16%, also <em>Unexplained</em> pending a country-specific catalyst. Airlines gained broadly (UAL +3.56%, DAL +2.3%). Novo Nordisk (NVO) rose 3.66% and Regeneron (REGN) rose 3.42% within health care; Nvidia (NVDA) rose 3.21% and Micron (MU) rose 2.43% within chips, both notable given Broadcom's post-earnings framing the night before.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official (Sept 2, 2026).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.83%</td></tr>
+                <tr><td>3M</td><td>3.92%</td></tr>
+                <tr><td>6M</td><td>4.00%</td></tr>
+                <tr><td>1Y</td><td>4.16%</td></tr>
+                <tr><td>2Y</td><td>4.39%</td></tr>
+                <tr><td>10Y</td><td>4.79%</td></tr>
+                <tr><td>30Y</td><td>5.27%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +40bp, 3m10y +87bp, 5s30s +73bp &mdash; curve essentially unchanged from Sept 1. FRED (EOD official, Sept 1&ndash;2 observations): 10-year real yield (DFII10) 2.44%, unchanged; 10-year breakeven inflation (T10YIE) 2.34%, down 1bp; SOFR 3.66%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield OAS (BAMLH0A0HYM2, FRED, EOD official Sept 1) 2.65%, up 2bp from Aug 31's 2.63% &mdash; a small widening, still historically tight. HYG (+0.01%) and JNK (flat) both showed negligible moves Wednesday; investment-grade LQD rose 0.12%. No stress signal in credit despite the overnight geopolitical escalation.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX: previous close 15.20 (Sept 2), current delayed quote 15.42 (+1.45%, Delayed +15 min). VIX9D 12.57, VIX3M 17.73 &mdash; a normal, non-inverted term structure (VIX9D &lt; VIX &lt; VIX3M), consistent with no acute near-term stress being priced despite the Gulf headlines. Put/call ratio data remains unavailable (cdn.cboe.com options market-statistics endpoint retired from this report Aug 16 after persistent 403s). MOVE index and dealer gamma remain untracked &mdash; no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>Dollar index (DXY, DX-Y.NYB) 99.24, down 0.32% overnight &mdash; a modest safe-haven-adjacent softening. EUR/USD 1.1601 (+0.05%). ECB reference basket (Frankfurter, EOD official Sept 2): JPY 159.60, GBP 0.7417 (implying GBP/USD &asymp; 1.3483), CNY 6.7215, CHF 0.8140, CAD 1.3925, AUD 1.3991, MXN 17.00, BRL 5.15, INR 94.97.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude (CL=F) $92.69, +1.85% overnight &mdash; resuming its climb as the Gulf standoff widened, after an earlier report of a slight Wednesday pullback. Gold (GC=F) $4,466.70, +2.30% overnight, a sharp safe-haven move. Copper (HG=F) +1.49%. Natural gas (NG=F) +1.08%. GLD (the ETF, previous close) rose 1.52% Wednesday to $402.78; USO rose 0.11% to $141.15.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $77,495, +1.33% over 24 hours (Live, CoinGecko aggregate). Ethereum $2,391.31, +1.23%. Solana $100.01, +2.05%. Cardano $0.2058, +6.67%, the standout mover. Total crypto market cap approximately $2.60 trillion per CoinGecko's aggregate.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Value (VTV +0.65%) modestly outperformed growth (VUG +0.26%) Wednesday. Momentum (MTUM +0.18%) and quality (QUAL +0.19%) lagged the broader tape. Low-volatility (USMV) was the lone negative factor ETF, down 0.14%, consistent with a risk-on session where defensive positioning underperformed.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Equities, credit and the equal-weight index all point the same direction (risk-on) while gold and oil point the opposite (safe-haven), a genuine divergence rather than a data artifact &mdash; consistent with markets pricing Wednesday's session on its own merits while separately, overnight, pricing in the new Gulf escalation via commodities rather than equities.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>Broadcom's Q3 FY2026 results are covered in Top Stories and Business above. No other tracked watchlist name reports today; Finnhub's day-of calendar shows only small-cap names (AMBA, AMBR, AOUT) scheduled.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Treasury auctioned a 4-week bill Wednesday (announced Sept 1, auction Sept 3 per the published schedule); results were not yet posted as of this writing. No other note-or-bond auction is scheduled today per TreasuryDirect's upcoming-securities feed.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Short volume</summary>
+          <p>FINRA daily short volume, Sept 2 session (EOD official): aggregate short-volume ratio 50.4%, essentially unchanged from Sept 1's 50.3%. Standouts within the tracked universe: QQQM (70.7%), TLT (69.5%), XLE (66.8%), REGN (65.9%), MAGS (64.6%). Daily short volume is not short interest; short interest is settlement-dated and runs two to three weeks stale.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Iran's Revolutionary Guard and Kuwait's army statements via wire, Qatar's Ministry of Foreign Affairs; U.S. District Court rulings (Boardman, Talwani); Broadcom's SEC Form 8-K; CISA's KEV catalog; the Treasury par-yield curve, FRED, Cboe, Yahoo Finance, Frankfurter, CoinGecko and FINRA for market data; the Lancaster County Coroner's office and Pennsylvania Department of Health for the measles dispute.</p>
+      <p><strong>Corrections.</strong> Tuesday's closing edition (2026-09-02-pm) described Broadcom's "Q4 AI semiconductor guide" as missing analyst expectations. Broadcom's own SEC filing, reviewed directly this run, shows that figure was actually Q3's <em>actual</em> AI-semiconductor revenue ($16.7 billion), and the company's real Q4 guidance for that segment is $21.7 billion &mdash; a sharp raise, not a miss. The after-hours share decline instead tracks a narrow miss on total company revenue guidance (~$34.8 billion vs. a ~$35.03 billion consensus). Logged to the corrections ledger; see Top Stories above for the corrected account.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-02-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
