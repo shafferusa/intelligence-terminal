@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Why Oil Jumped Six Percent While Production Stood Still — Learning Brief, Thu, Sep 3, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-03",
+    "slot": "learn",
+    "title": "Why Oil Jumped Six Percent While Production Stood Still",
+    "path": "reports/2026/09/2026-09-03-learn.html",
+    "summary": "Day fourteen of the 150-day curriculum: supply and demand as two curves meeting at an equilibrium price, elasticity as the measure of how hard quantity pushes back, a product-rule proof that revenue is maximized exactly where demand is unit-elastic, and why this week's real oil-market jump moved on expectations rather than a single barrel.",
+    "headlines": [
+      "Day 14 of 150 · Economics: supply and demand, equilibrium and elasticity",
+      "Why WTI jumped nearly 6% this week without a barrel of production changing",
+      "A product-rule proof that revenue peaks exactly where demand is unit-elastic"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-03T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>Why Oil Jumped Six Percent While Production Stood Still</h1>
+      <p class="paper-dateline">
+        Thursday, September 3, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Two curves, the price where they meet, the elasticity that measures how hard quantity pushes back against a price move, a product-rule proof that revenue peaks exactly where demand is unit-elastic, and the real reason this week&rsquo;s oil market moved before a single barrel did.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Economics</p>
+      <span class="track-progress">Day 14 of 150 &middot; Economics 2 of 20 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>On Tuesday, September 1, at roughly noon Eastern, U.S. Central Command struck Iranian Revolutionary Guard Corps targets inside Iran &mdash; the first direct American military action in a six-month standoff, coming hours after two oil tankers were struck, unclaimed, near the Strait of Hormuz overnight. The front-month WTI crude contract closed that day at $90.79 a barrel, up 5.87% &mdash; this newspaper&rsquo;s own closing edition called it the sharpest single-day oil move in its entire tracking window &mdash; with Brent crude trading above $95 intraday. The next afternoon, Iran retaliated with missiles and drones against Jordan, Bahrain, Kuwait and Iraq. Oil did not fall back. It climbed again, to a fresh five-week high.</p>
+
+      <p>Now ask the question a careful reader ought to ask before accepting any of that as normal: what, physically, changed in the world&rsquo;s oil supply on either of those two days? No tanker sank. No pipeline shut down. No refinery went offline. No government, including Iran&rsquo;s own, had even claimed responsibility for the overnight tanker strikes that started the sequence. The U.S. Energy Information Administration&rsquo;s weekly petroleum status report, covering the week that ended August 28, showed commercial crude inventories fell 4.5 million barrels to 424.5 million &mdash; a perfectly ordinary draw, about 1% above the five-year average for the week, that a wire service would not have led with in a quiet news cycle. Refineries ran at 98.0% of capacity, near normal. By every measure of oil actually pumped, shipped, refined and burned, this was an unremarkable week. And yet the price of a barrel moved by more in one session than most commodities move in a month.</p>
+
+      <p>The honest answer to what moved is not a mystery, and it is not unique to oil, or to this week, or to war. It is the single most useful idea in economics &mdash; so familiar that it is easy to believe you already understand it, and so easy to flatten into a slogan that even people who trade the stuff for a living misapply under pressure. Supply and demand. Not the cartoon version, two lines crossing in an X on a whiteboard, but the actual mechanism underneath: what each curve represents and why it has the slope it does, what makes a curve slide along itself versus actually move, a number called elasticity that measures how hard a market pushes back against a price change, and &mdash; because the topic would be dishonest without this part &mdash; the specific, well-understood places where the whole framework quietly stops describing the world at all.</p>
+
+      <h3>What a market is actually doing</h3>
+
+      <p>Strip away the diagram for a moment. A market is not a building or a website; it is simply the sum of every arrangement by which people who want to buy something and people who want to sell it find each other and agree on a quantity and a price. Two separate forces are always operating inside it, and it helps to hold them apart before combining them.</p>
+
+      <p>The buyer side is <strong>demand</strong>: at any given price, some quantity of buyers are willing and able to pay it. Demand curves slope downward &mdash; more is bought at a lower price than at a higher one &mdash; for reasons that are almost embarrassingly intuitive once stated plainly. At a lower price, people who were on the fence become willing buyers. Existing buyers, for whom the good just got cheaper relative to their other options, buy more of it. And near-substitutes &mdash; other goods that do roughly the same job &mdash; start to look relatively worse, pulling their own buyers over. None of that requires a model of human psychology beyond &ldquo;people respond to a better deal,&rdquo; and it is close to a universal regularity across every market economists have ever studied carefully, with a small number of genuinely strange exceptions this lesson will name later.</p>
+
+      <p>The seller side is <strong>supply</strong>, and it slopes the other way: more is offered for sale at a higher price than at a lower one. Producing more of almost anything costs more at the margin &mdash; a farmer works less fertile land, an oil producer drills a costlier well, a factory pays overtime &mdash; and a higher price is what makes that additional, costlier unit worth producing. A price rise also pulls in sellers who were sitting out entirely because the previous price did not cover their costs.</p>
+
+      <p>At any price you might name, the quantity buyers want and the quantity sellers want to offer are generally two different numbers, and the gap between them is where all the interesting action lives. If the price is low, buyers want more than sellers are willing to supply &mdash; a shortage, and a strong incentive for a seller to raise the price rather than turn a customer away. If the price is high, sellers have more on offer than buyers want at that price &mdash; a surplus, and an incentive for a seller to cut the price rather than watch inventory sit unsold. There is exactly one price at which those two quantities agree, where nobody on either side of the market has a reason to change what they just did. Nobody decrees that price. No committee sets it. It is the emergent byproduct of an enormous number of separate, self-interested decisions, each one small, each one made by someone who has never met most of the other people whose decisions are shaping the same number.</p>
+
+      <p>The idea that prices coordinate strangers this way is old &mdash; Adam Smith wrote about an &ldquo;invisible hand&rdquo; guiding self-interested trade toward outcomes nobody individually intended, in 1776 &mdash; but Smith never drew a diagram, and for over a century afterward economists argued, not always productively, over whether a good&rsquo;s value came from what it cost to produce or from how much buyers wanted it. Alfred Marshall&rsquo;s 1890 <cite>Principles of Economics</cite> is where the argument effectively ended, with a metaphor that has outlived almost everything else written about the subject that year: asking whether it is supply or demand that sets a price, Marshall wrote, is like asking whether it is the upper or the lower blade of a pair of scissors that does the cutting. Neither blade alone cuts anything; the two curves crossing on a single diagram, which Marshall was also the first to draw in the form still taught today, was the resolution &mdash; and the same book coined the word this lesson has been building toward, &ldquo;elasticity,&rdquo; to describe exactly how sharply each blade responds to a change in the other.</p>
+
+      <h3>The two curves, and where they meet</h3>
+
+      <p>Put numbers to the two forces above and the plain-English story becomes something you can actually compute. The simplest useful version treats both demand and supply as straight lines in price and quantity &mdash; real curves are rarely perfectly linear, but a line is honest enough over the range of prices a market actually visits, and it is the version worth learning first because every complication economists add later is a departure from this baseline, not a replacement for it.</p>
+
+      <div class="formula">
+        <p class="expr">Q<sub>d</sub>(P) = a &minus; bP &nbsp;&nbsp;&nbsp;&nbsp; Q<sub>s</sub>(P) = c + dP</p>
+        <dl>
+          <dt>Q<sub>d</sub>(P)</dt><dd>quantity demanded at price P &mdash; how much buyers want to buy if the price is P</dd>
+          <dt>Q<sub>s</sub>(P)</dt><dd>quantity supplied at price P &mdash; how much sellers want to sell if the price is P</dd>
+          <dt>a</dt><dd>the choke price&rsquo;s mirror &mdash; the quantity demanded if the good were free, P = 0</dd>
+          <dt>b</dt><dd>a positive constant: how many fewer units are demanded for each one-unit rise in price &mdash; the demand curve&rsquo;s steepness</dd>
+          <dt>c</dt><dd>the quantity sellers would supply at a price of zero &mdash; commonly negative, meaning no one supplies anything until price clears some minimum</dd>
+          <dt>d</dt><dd>a positive constant: how many more units are supplied for each one-unit rise in price &mdash; the supply curve&rsquo;s steepness</dd>
+        </dl>
+      </div>
+
+      <p><strong>Equilibrium</strong> is the price at which the two quantities are equal &mdash; Q<sub>d</sub>(P) = Q<sub>s</sub>(P) &mdash; solved by setting the two expressions equal and isolating P:</p>
+
+      <div class="formula">
+        <p class="expr">a &minus; bP = c + dP &nbsp;&nbsp;&#8658;&nbsp;&nbsp; P* = (a &minus; c) / (b + d)</p>
+        <dl>
+          <dt>P*</dt><dd>the equilibrium price &mdash; the one price at which quantity demanded and quantity supplied agree</dd>
+          <dt>Q*</dt><dd>the equilibrium quantity, found by substituting P* back into either Q<sub>d</sub>(P) or Q<sub>s</sub>(P) &mdash; both give the same answer at equilibrium, by construction</dd>
+        </dl>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; solving for equilibrium</b>
+        <p>A market has demand Q<sub>d</sub>(P) = 200 &minus; 5P and supply Q<sub>s</sub>(P) = &minus;40 + 7P, with P in dollars and Q in units per period. Numbers chosen for clean arithmetic, not read off any real market. Find the equilibrium price and quantity.</p>
+        <ol>
+          <li>Set the two expressions equal: 200 &minus; 5P = &minus;40 + 7P.</li>
+          <li>Collect the P terms on one side and the constants on the other: 200 + 40 = 7P + 5P, so 240 = 12P.</li>
+          <li>Solve for P: P* = 240 / 12 = $20.</li>
+          <li>Substitute back into either curve to get the quantity. Using demand: Q* = 200 &minus; 5(20) = 200 &minus; 100 = 100 units. Check against supply: Q* = &minus;40 + 7(20) = &minus;40 + 140 = 100 units &mdash; the two agree, confirming the arithmetic.</li>
+          <li>Sanity-check that this is a genuine equilibrium and not an accident of the algebra: at a price of $25, demand falls to 200 &minus; 125 = 75 while supply rises to &minus;40 + 175 = 135 &mdash; a surplus of 60 units, exactly the kind of gap that gives sellers a reason to cut price back toward $20. At $15, demand is 200 &minus; 75 = 125 while supply is &minus;40 + 105 = 65 &mdash; a shortage of 60 units, pushing price back up. Only at $20 does neither side have a reason to move.</li>
+        </ol>
+      </div>
+
+      <h3>How sharply quantity pushes back: elasticity</h3>
+
+      <p>Knowing where the curves cross is only half the picture. The other half is how sharply each curve responds when price moves &mdash; whether a small price change causes a large swing in quantity, or barely moves it at all. Economists call this responsiveness <strong>elasticity</strong>, and it is worth being precise about what it measures: not the slope of the curve itself, but the ratio of <em>percentage</em> changes, which is what makes it comparable across goods measured in wildly different units. It makes no sense to compare &ldquo;barrels per dollar&rdquo; for oil to &ldquo;loaves per dollar&rdquo; for bread; it makes perfect sense to compare how many percent quantity moves for every one percent price moves, for any good at all.</p>
+
+      <div class="formula">
+        <p class="expr">E<sub>d</sub> = (%&Delta;Q) / (%&Delta;P) &nbsp;=&nbsp; (dQ/dP) &middot; (P/Q)</p>
+        <dl>
+          <dt>E<sub>d</sub></dt><dd>the price elasticity of demand at a point &mdash; how many percent quantity demanded changes for a one-percent change in price</dd>
+          <dt>dQ/dP</dt><dd>the derivative of the demand curve with respect to price &mdash; the curve&rsquo;s instantaneous slope, in the exact sense built two lessons ago</dd>
+          <dt>P, Q</dt><dd>the price and quantity at the specific point on the curve being evaluated &mdash; elasticity is a local property, generally different at every point along a curve, even a straight line</dd>
+        </dl>
+      </div>
+
+      <p>Because demand curves slope downward, E<sub>d</sub> comes out negative by this formula &mdash; a price rise causing a quantity fall. Economists routinely quote its absolute value in conversation (&ldquo;an elasticity of 0.3&rdquo; meaning &minus;0.3), and this lesson will flag the sign explicitly wherever it matters rather than let the convention hide it. A good is called <strong>elastic</strong> where |E<sub>d</sub>| &gt; 1 &mdash; quantity swings by a larger percentage than price does &mdash; and <strong>inelastic</strong> where |E<sub>d</sub>| &lt; 1, quantity barely moving even when price swings hard. The boundary, |E<sub>d</sub>| = 1, is called <strong>unit elastic</strong>, and it will matter a great deal later in this lesson.</p>
+
+      <p>The exact derivative form above needs a known function to differentiate. Working from real, observed data &mdash; two price-quantity pairs actually seen in a market, with no underlying equation known &mdash; calls for an approximation called the <strong>midpoint</strong> or <strong>arc</strong> elasticity, which uses the average of the two points as the base for each percentage change rather than picking one endpoint arbitrarily:</p>
+
+      <div class="formula">
+        <p class="expr">E<sub>d</sub> &asymp; [ (Q<sub>2</sub> &minus; Q<sub>1</sub>) / ((Q<sub>2</sub> + Q<sub>1</sub>)/2) ] &nbsp;/&nbsp; [ (P<sub>2</sub> &minus; P<sub>1</sub>) / ((P<sub>2</sub> + P<sub>1</sub>)/2) ]</p>
+        <dl>
+          <dt>(P<sub>1</sub>, Q<sub>1</sub>), (P<sub>2</sub>, Q<sub>2</sub>)</dt><dd>two observed price-quantity points on the same demand curve</dd>
+          <dt>midpoint convention</dt><dd>using the average of the two prices (and the average of the two quantities) as the denominator for each percentage change, rather than P<sub>1</sub> or P<sub>2</sub> alone, so the answer does not depend on which point is labeled &ldquo;first&rdquo;</dd>
+        </dl>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; point elasticity versus arc elasticity, at the same market</b>
+        <p>Using worked example 1&rsquo;s market, Q<sub>d</sub>(P) = 200 &minus; 5P, find the point elasticity of demand at the equilibrium (P* = $20, Q* = 100), then approximate it from two nearby observed points and compare.</p>
+        <ol>
+          <li>The demand curve is linear, so its derivative is simply its slope: dQ/dP = &minus;5, the same at every point on the line.</li>
+          <li>Apply the point-elasticity formula at P = 20, Q = 100: E<sub>d</sub> = (&minus;5) &middot; (20/100) = (&minus;5)(0.2) = &minus;1.0. This market&rsquo;s demand is exactly unit elastic at its own equilibrium &mdash; a fact this lesson will use again shortly, not a coincidence this section is pointing out for its own sake.</li>
+          <li>Now approximate the same thing from data, the way an economist working from real observations would have to. Suppose price rose from $20 to $21 and quantity demanded, observed directly, fell from 100 to 95 units (consistent with the same line: Q<sub>d</sub>(21) = 200 &minus; 105 = 95).</li>
+          <li>Midpoint quantity change: (95 &minus; 100) / ((95 + 100)/2) = &minus;5 / 97.5 &asymp; &minus;0.0513, or &minus;5.13%.</li>
+          <li>Midpoint price change: (21 &minus; 20) / ((21 + 20)/2) = 1 / 20.5 &asymp; 0.0488, or 4.88%.</li>
+          <li>Arc elasticity: &minus;0.0513 / 0.0488 &asymp; &minus;1.051.</li>
+        </ol>
+        <p>The arc estimate, &minus;1.051, and the exact point value, &minus;1.0, are close but not identical &mdash; the gap is the same kind of approximation error a straight-line estimate always carries over a finite step rather than an infinitesimal one, the same issue worked example 5 of two lessons ago flagged for a bond&rsquo;s price sensitivity. The two methods agree well precisely because the step, one dollar on a twenty-dollar base, is small; a cruder observation &mdash; price doubling, say &mdash; would show a bigger gap between the arc approximation and the true local slope.</p>
+      </div>
+
+      <p>Elasticity is not limited to a good&rsquo;s own price. <strong>Cross-price elasticity</strong> measures how the quantity demanded of one good responds to a change in a <em>different</em> good&rsquo;s price &mdash; positive for substitutes (gasoline and diesel-adjacent transit fares, roughly), negative for complements (gasoline and the cars that burn it). <strong>Income elasticity</strong> measures how quantity demanded responds to buyers having more or less money to spend, holding price fixed &mdash; positive for most goods, negative for the minority economists call inferior goods, where higher income actually reduces the quantity bought as buyers trade up to a preferred substitute. Supply has its own elasticity, defined the identical way with quantity supplied in place of quantity demanded, and it tends to be far lower for oil than for goods that can be manufactured on short notice: a new well takes months to years to bring online, so short-run supply is close to fixed regardless of price, which is a second, independent reason &mdash; separate from demand&rsquo;s steepness &mdash; that a supply scare in this particular market shows up overwhelmingly as a price move rather than a quantity one.</p>
+
+      <h3>Where it shows up: an oil market that moved before a barrel did</h3>
+
+      <p>Return to Tuesday and Wednesday&rsquo;s nearly 6% and 0.5% oil moves with the machinery now in hand, and the honest first move is to notice what did <em>not</em> shift: the physical, already-realized quantity of oil pumped, loaded and refined that week. The EIA&rsquo;s own inventory data, cited above, shows a routine week. What moved is something the simple textbook diagram assumes is fixed but the real world does not: expectations about <em>future</em> supply.</p>
+
+      <p>The Strait of Hormuz, the narrow passage between Iran and the Arabian Peninsula that the strikes and counter-strikes centered on, is not a minor shipping lane. The EIA has tracked it for years as the world&rsquo;s single most important oil chokepoint, with volumes passing through it representing roughly a fifth of total world petroleum liquids consumption. A credible threat to that passage &mdash; not an actual closure, just a materially raised probability of one, or of further strikes on tankers moving through it &mdash; changes what every oil trader, refiner and airline fuel buyer expects to be able to buy next month and at what price. That expectation shows up in the price of oil traded <em>today</em>, because crude oil futures and spot markets are exactly the mechanism by which expected future scarcity gets priced into a transaction happening right now, well before the scarcity, if it ever arrives, actually does. In the language of this lesson&rsquo;s two curves: this is best read as a leftward shift in the supply curve that traders expect to face in the weeks ahead &mdash; less oil available at every price than they assumed a week earlier &mdash; not a movement along a supply curve that has stayed put while some already-realized quantity of production fell.</p>
+
+      <p>Why did that shift in expectations produce a nearly 6% price jump rather than a barely noticeable one? This is where elasticity, not just the existence of a shift, does real explanatory work. Demand for oil and its refined products &mdash; overwhelmingly gasoline, diesel and jet fuel &mdash; is famously inelastic in the short run. A widely cited 2008 NBER study by Hughes, Knittel and Sperling estimated the short-run price elasticity of U.S. gasoline demand at roughly &minus;0.03 to &minus;0.08 in the 2001&ndash;2006 period, a small fraction of the &minus;0.21 to &minus;0.34 range the same kind of study found for the late 1970s &mdash; drivers, in other words, changed how much they drove only slightly even as prices swung, and did so noticeably less than their counterparts a generation earlier. That number is the missing piece connecting this lesson&rsquo;s formalism to Tuesday&rsquo;s headline directly: when demand is this steep &mdash; this unresponsive to price, in the language established above &mdash; even a modest expected shortfall in supply requires a comparatively large price move to bring the market back into balance, because a small price change barely nudges the quantity anyone is willing to buy. An elastic market absorbs a supply scare with a small price move and a real change in quantity consumed; an inelastic one absorbs it almost entirely through price. Oil, in the short run that a war scare operates on, is much closer to the second case, and that is a genuine, quantitative reason &mdash; not a hand-wave &mdash; that a geopolitical shock this size can move a nearly $91 commodity by several dollars in a single session.</p>
+
+      <p>None of this should be overstated into a single, tidy explanation this newspaper&rsquo;s own closing editions were careful not to offer for the trading day&rsquo;s other moves. A one-day 5.87% jump reflects some mix of a genuine reassessment of Hormuz risk, momentum and hedging flows among traders who trade the expectation rather than the barrel, and ordinary volatility in a market already primed by months of standoff &mdash; and separating exactly how much each contributed is not something the price move alone can tell you. What the supply-and-demand framework, taken seriously rather than as a slogan, does deliver honestly is the <em>mechanism</em>: a market that prices expected future scarcity into a transaction today, meeting a demand curve too steep to absorb that repricing through quantity alone, so it absorbs it through price instead.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>&ldquo;Demand for oil went up&rdquo; is one of the most common sentences in financial media during a week like this one, and it is very often the wrong sentence &mdash; not for a subtle reason, but for the single most common conceptual error in this entire subject: confusing a <strong>movement along</strong> a curve with a <strong>shift of</strong> the curve itself.</p>
+
+      <p>A movement along the demand curve happens when price changes and, in response, quantity demanded changes &mdash; sliding to a different point on the same, unchanged curve. A shift of the demand curve happens when something <em>other</em> than the good&rsquo;s own price changes the quantity people want at every price simultaneously &mdash; income rising, a substitute good getting more expensive, a change in tastes, or a genuine change in expectations about the future. The two look identical in a single number, &ldquo;quantity bought went up,&rdquo; and produce completely different diagrams and completely different correct sentences.</p>
+
+      <p>Apply that distinction to this week honestly. Did the underlying demand for gasoline and jet fuel &mdash; the amount people actually wanted to burn, at any given price, this particular week &mdash; shift outward? There is no evidence of that in anything this lesson has cited; nobody suddenly wanted to drive more because of a strike near the Strait of Hormuz. What shifted was the <em>supply</em> side&rsquo;s expected future position, and, plausibly, some precautionary buying by traders and refiners hedging against the risk of a real disruption &mdash; itself a demand-side shift, but a shift in the demand to <em>hold</em> oil or contracts on oil as a hedge, a genuinely different thing from the demand to <em>burn</em> it as fuel. Saying &ldquo;demand for oil went up&rdquo; without that distinction blurs together at least two different economic actors doing two different things, and it is exactly the kind of loose shorthand that makes the underlying mechanism harder to see rather than easier. The correct, more careful sentence is longer and less quotable, which is precisely why the wrong one keeps winning: expected future supply tightened, and a demand curve too steep to absorb that news through quantity absorbed it through price instead.</p>
+
+      <h3>Where the framework stops working</h3>
+
+      <p>Everything above rests on assumptions worth stating openly rather than leaving implicit: many buyers and many sellers, none large enough alone to move the price; a reasonably homogeneous good; buyers and sellers who can act on roughly the same information; and a price free to move to wherever clears the market. Real markets violate every one of these somewhere, and knowing where is not a footnote to the theory &mdash; it is the difference between using the tool correctly and using it as a slogan.</p>
+
+      <p>Oil itself is the cleanest illustration of the first violation. OPEC+, the coalition of oil-exporting nations and allied producers including Russia, does not passively sit on a fixed supply curve and watch the price find it. Its members meet periodically specifically to agree on how much crude the group as a whole will pump, an explicit, coordinated decision about where to place supply rather than an outcome that emerges from many independent sellers each separately deciding how much to produce at the going price. That is <strong>market power</strong> on the seller side, and the textbook diagram&rsquo;s promise &mdash; that price settles wherever independent supply and demand happen to cross &mdash; simply does not hold when one coalition can choose to withhold or release output specifically to move that price. A market with one dominant seller is called a monopoly; the buyer-side mirror, one dominant buyer facing many sellers, is a monopsony, seen for instance where a single large employer sets wages in a small local labor market rather than taking the going wage as given.</p>
+
+      <p>A second, entirely different failure is the <strong>externality</strong>: a cost or benefit of a transaction that lands on someone who was not part of the transaction at all. Burning the gasoline traded in the market this lesson has been describing releases carbon dioxide into a shared atmosphere, imposing a cost on people who never bought or sold a drop of it. The equilibrium price and quantity this lesson has been computing reflect only what buyers and sellers privately paid or received &mdash; nothing in Q<sub>d</sub>(P) or Q<sub>s</sub>(P) prices in that outside cost. Economists across a wide range of political views broadly agree the textbook diagram is, in this specific and narrow sense, incomplete when an externality is present, whatever they disagree about regarding what if anything should be done about it; this lesson takes no position on the second question and only teaches the first as a matter of how the model itself behaves.</p>
+
+      <p>A third failure is <strong>stickiness</strong>: the simple story assumes price is always free to move instantly to whatever level clears the market, and plenty of real prices are not. Wages are the sharpest example &mdash; workers and employers sign contracts, adjust reluctantly out of fairness norms or fear of morale damage, and change pay far less often than market conditions change &mdash; which is a large part of why labor markets can carry persistent unemployment rather than snapping instantly to a wage that clears them. A price ceiling imposed from outside the market produces a related but distinct failure worth working through directly, because unlike the slow adjustment of stickiness, it is a hard constraint the market cannot get around at all.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; a price ceiling and the shortage it creates</b>
+        <p>Return to worked example 1&rsquo;s market, Q<sub>d</sub>(P) = 200 &minus; 5P and Q<sub>s</sub>(P) = &minus;40 + 7P, equilibrium at P* = $20, Q* = 100. Suppose a price ceiling is imposed at P = $14, below equilibrium &mdash; a legal maximum price, illustrative numbers again, not read off any real policy. What happens?</p>
+        <ol>
+          <li>At the ceiling price of $14, quantity demanded is Q<sub>d</sub>(14) = 200 &minus; 70 = 130 units.</li>
+          <li>At the same price, quantity supplied is Q<sub>s</sub>(14) = &minus;40 + 98 = 58 units.</li>
+          <li>These are not equal, and by law the price cannot rise to close the gap the way it did in worked example 1&rsquo;s sanity check. The market is stuck at a genuine shortage of 130 &minus; 58 = 72 units &mdash; more than two-thirds of the equilibrium quantity, unmet.</li>
+          <li>The diagram does not say who gets the 58 units that are available. Some other, non-price mechanism necessarily takes over &mdash; a queue, rationing by coupon, favoritism, or a black market where the good changes hands above the legal ceiling anyway. The framework that computed P* and Q* cleanly has nothing further to say about which of those mechanisms actually allocates the shortage; that is a separate question the simple model was never built to answer.</li>
+        </ol>
+      </div>
+
+      <p>A fourth failure sits outside the diagram entirely rather than distorting it: some goods have no market at all to fail in. National defense, a lighthouse&rsquo;s beam, or basic scientific research are <strong>non-excludable</strong> (you cannot easily stop someone from benefiting once it exists) and <strong>non-rivalrous</strong> (one person&rsquo;s benefit does not reduce anyone else&rsquo;s) &mdash; economists call these public goods, and a private market systematically underprovides them, because no individual seller can charge each beneficiary for a benefit that cannot be withheld from non-payers. There is no meaningful Q<sub>d</sub>(P) and Q<sub>s</sub>(P) to intersect, because the ordinary machinery of exclusion that makes a market work &mdash; pay, or do not receive the good &mdash; is missing by the good&rsquo;s very nature.</p>
+
+      <p>A fifth failure is <strong>information asymmetry</strong>: the model assumes buyers and sellers can each judge what they are trading, and in plenty of real markets one side simply knows more than the other. Economist George Akerlof&rsquo;s 1970 paper on the used-car market, &ldquo;The Market for Lemons,&rdquo; showed something the clean diagram cannot: when sellers know a car&rsquo;s true condition and buyers cannot tell a good car from a defective one before buying, buyers rationally offer only an average price reflecting the risk of getting a lemon &mdash; which drives owners of genuinely good cars to exit the market rather than accept an average price for an above-average car, leaving a disproportionate share of lemons behind and pushing the average price, and average quality, down further still. Insurance markets show the same failure in reverse: an insurer who cannot fully observe an applicant&rsquo;s true risk tends to attract disproportionately the highest-risk applicants at any given premium, a problem called adverse selection. Neither case is really about supply or demand shifting in the ordinary sense; both are about the market&rsquo;s price mechanism breaking down specifically because the two sides of the same transaction are not working from the same information.</p>
+
+      <p>A sixth, closer to psychology than to market structure: the model assumes buyers and sellers know what they want and calculate accordingly, and real decision-makers demonstrably do not always do that. Behavioral economics has documented systematic deviations &mdash; anchoring on a first-seen price, weighting a loss more heavily than an equivalent gain, herding into or out of a position because others are doing the same &mdash; that can make a price overshoot or undershoot what a fully rational recalculation of expected future supply and demand alone would justify. Whether Tuesday&rsquo;s 5.87% oil move was entirely proportionate to the actual, probability-weighted change in expected future supply, or partly amplified by traders reacting to each other&rsquo;s reactions, is a genuinely open, unresolved question in financial economics &mdash; sometimes called excess volatility &mdash; and this lesson does not have a confident answer to offer beyond naming that the question exists and is real.</p>
+
+      <h3>The callback</h3>
+
+      <p>Two lessons ago, this column proved the product rule from the limit definition and used it, among other things, to correct Newton&rsquo;s second law for an object whose mass is itself changing. That same rule, applied to a completely different kind of product, answers a question this lesson has been circling since worked example 1: why did this lesson&rsquo;s illustrative market turn out to have an elasticity of exactly &minus;1.0 at its own equilibrium, and was that an accident of the numbers chosen?</p>
+
+      <p>It was not an accident, and the proof is short. Consider a seller&rsquo;s total revenue as a function of the price it sets, R(P) = P &middot; Q(P) &mdash; price times the quantity that price generates, exactly the shape of a product of two functions of the same variable that the product rule was built to differentiate. Applying it directly, with f(P) = P and g(P) = Q(P):</p>
+
+      <div class="formula">
+        <p class="expr">dR/dP &nbsp;=&nbsp; Q(P) + P &middot; Q&prime;(P) &nbsp;=&nbsp; Q(P) &middot; [ 1 + (P/Q(P)) &middot; Q&prime;(P) ] &nbsp;=&nbsp; Q(P) &middot; (1 + E<sub>d</sub>)</p>
+        <dl>
+          <dt>Q(P) + P &middot; Q&prime;(P)</dt><dd>the raw product rule applied to R(P) = P &middot; Q(P): the derivative of the first factor (P, which is 1) times the second, plus the first factor times the derivative of the second</dd>
+          <dt>(P/Q(P)) &middot; Q&prime;(P)</dt><dd>exactly this lesson&rsquo;s point-elasticity formula, E<sub>d</sub>, factored back out of the bracket</dd>
+        </dl>
+      </div>
+
+      <p>Revenue is maximized where dR/dP = 0. Since Q(P) is not zero at any price a seller would actually charge, the bracket itself must vanish: 1 + E<sub>d</sub> = 0, meaning E<sub>d</sub> = &minus;1 exactly &mdash; unit elastic, precisely the boundary this lesson defined earlier and precisely what worked example 1&rsquo;s market happened to land on at its own equilibrium, not by coincidence but because those numbers were quietly chosen to demonstrate this theorem cleanly once it arrived. This is a genuine, general result, true for any downward-sloping demand curve, not a special property of straight lines: revenue rises with price while demand is inelastic (a price increase more than compensates for the resulting small quantity loss), peaks exactly at unit elasticity, and falls with further price increases once demand turns elastic (quantity now falls faster, in percentage terms, than price rises). A seller with genuine pricing power &mdash; the market-power violation named two sections ago, not a price-taker in a fully competitive market &mdash; who wants to maximize revenue should raise price only as long as demand stays inelastic, and stop exactly at the unit-elastic point, a rule derived here from the same product rule that fixed Newton&rsquo;s second law two lessons ago, applied to a market instead of a moving mass.</p>
+
+      <p>A quick numerical check, independent of worked example 1&rsquo;s equilibrium: a monopolist faces demand Q(P) = 500 &minus; 10P. Revenue is R(P) = 500P &minus; 10P&sup2;, so dR/dP = 500 &minus; 20P by the product rule above; setting this to zero gives P = 25, at which Q = 500 &minus; 250 = 250 and revenue is 25 &times; 250 = 6,250. Elasticity at that exact point: dQ/dP = &minus;10, so E<sub>d</sub> = (&minus;10)(25/250) = &minus;1.0 &mdash; unit elastic, confirming the theorem on a market with no relationship to the earlier example beyond sharing the same underlying rule.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can set up a linear demand and supply curve, solve for the equilibrium price and quantity algebraically, and check that equilibrium by confirming neither a surplus nor a shortage remains.</li>
+          <li>You can compute price elasticity of demand exactly, from a derivative at a known point, or approximately, from two observed price-quantity pairs using the midpoint formula &mdash; and you know which situation calls for which.</li>
+          <li>You can now read &ldquo;the price of oil jumped&rdquo; as a specific, checkable claim about a shift in expected future supply meeting an unusually steep, inelastic demand curve, rather than as an unexplained fact, and you know precisely why loosely saying &ldquo;demand went up&rdquo; blurs a shift with a movement along the curve.</li>
+          <li>You have watched a genuine, general theorem &mdash; revenue is maximized exactly where demand is unit elastic &mdash; fall directly out of the product rule proved two lessons ago, and you can name at least six specific, well-documented ways real markets depart from the clean equilibrium story: market power, externalities, sticky prices, missing markets for public goods, information asymmetry, and systematically non-rational behavior.</li>
+          <li>What this sets up: elasticity of supply, taxation&rsquo;s split between buyers and sellers, and consumer and producer surplus all build directly on the two curves and the derivative machinery this lesson established, and later lessons in this track will return to the market-power and externality violations named here in more depth once game theory and welfare analysis are in hand.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The linear supply-and-demand model, elasticity and its midpoint approximation, and the revenue-elasticity theorem are standard microeconomic theory, traced to Alfred Marshall&rsquo;s 1890 <cite>Principles of Economics</cite> (the demand-supply cross diagram and the term &ldquo;elasticity of demand&rdquo; both originate there) and written fresh for this report. This week&rsquo;s oil-market figures &mdash; WTI at $90.79 (+5.87%) on Tuesday, September 1, and $90.70 (+0.53%) on Wednesday, September 2, Brent at $95.32 on Wednesday, and the EIA weekly petroleum status report for the week ended August 28 &mdash; are drawn from this newspaper&rsquo;s own closing editions of those two days, already verified in those runs. The Strait of Hormuz&rsquo;s roughly one-fifth share of world petroleum liquids consumption is the U.S. Energy Information Administration&rsquo;s own published figure. The short-run gasoline demand elasticity estimates (&minus;0.03 to &minus;0.08 for 2001&ndash;2006, versus &minus;0.21 to &minus;0.34 for 1975&ndash;1980) are from Hughes, Knittel and Sperling, &ldquo;Evidence of a Shift in the Short-Run Price Elasticity of Gasoline Demand,&rdquo; NBER Working Paper 12530 (2008). The used-car market example is George Akerlof, &ldquo;The Market for &lsquo;Lemons&rsquo;: Quality Uncertainty and the Market Mechanism,&rdquo; <cite>Quarterly Journal of Economics</cite> (1970). All worked-example arithmetic was computed directly for this report and checked by independent recomputation.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-02-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
