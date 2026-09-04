@@ -35,87 +35,14 @@
    "watch": true
   },
   {
-   "id": "vmware-vcenter-new-cve-aug14",
-   "headline": "VMware vCenter deadline lands today amid China-nexus attribution and ransomware escalation",
-   "status": "Materially changed",
-   "first_seen": "2026-08-14-am",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-multiple (campaign scale); Single-reliable-source, moderate confidence (China-nexus attribution)",
-   "one_line": "Federal remediation deadline (Aug. 21) has now passed by over a week with no published CISA/GAO compliance rate. Rapid7's exploitation-scale figures (361 compromised IPs, 47 countries) remain the most current public numbers.",
-   "score_note": "Deadline-day story with a genuine new escalation (ransomware on hypervisors); attribution stays single-firm/moderate confidence.",
-   "sources": [
-    "Rapid7",
-    "The Hacker News",
-    "Dark Reading",
-    "QUIRSO research writeup",
-    "CISA KEV catalog (primary)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "us-iran-strikes-jul30",
-   "headline": "Bessent details full 'Economic D-Day' Iran sanctions package today at 2pm ET",
-   "status": "Materially changed",
-   "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-29-sat",
-   "verification": "Confirmed-multiple (announcement timing/rhetoric); Unverified (package contents pending 2pm ET)",
-   "one_line": "This weekend Iran's IRGC Navy claimed \"complete and decisive\" control of the Strait of Hormuz and called US claims the strait is open \"an outright lie\"; the White House response (single-sourced so far, via Al Jazeera) maintains the naval blockade \"stays fully active\" and the strait is open. Neither claim is independently verified. No new vessel incident was reported over the weekend. Monday's Bessent sanctions rollout (\"Operation Economic Outcast\") saw oil sell off moderately (2.0-2.3%, not the >3% some expected) as most of the expectation was already priced in; a forecast that Iran would halt all Gulf oil traffic graded wrong.",
-   "score_note": "Dueling, unverifiable claims about strait control are a new rhetorical escalation distinct from the underlying tanker-harassment campaign, which continued at its established pace this week.",
-   "sources": [
-    "Financial Times (Bessent op-ed, primary)",
-    "CNN",
-    "CNBC",
-    "Reuters/Al-Monitor"
-   ],
-   "watch": true
-  },
-  {
-   "id": "marvell-google-tpu-deal-aug19",
-   "headline": "Marvell's Google warrant carries no exclusivity or minimum commitment; Broadcom's own AI financing talks grow to $100B",
-   "status": "Materially changed",
-   "first_seen": "2026-08-19-pm",
-   "last_updated": "2026-08-24-am",
-   "verification": "Confirmed-primary (8-K terms); Confirmed-multiple (Broadcom financing reports)",
-   "one_line": "Marvell's Aug 19 8-K shows the Google warrant (potentially $120B+ by 2033) vests only against usage benchmarks with no minimum purchase commitment or exclusivity; Broadcom's existing TPU agreement with Google (through 2031) is untouched, and Broadcom shares have stabilized. Separately, reported Broadcom AI-infrastructure financing talks have grown from ~$60B to as much as $100B over the past week (lenders reportedly incl. Blackstone, Apollo), a concurrent but not causally linked thread.",
-   "score_note": "Filing-level detail resolves the initial selloff narrative; financing story is a second, related but distinct thread.",
-   "sources": [
-    "Marvell SEC 8-K (primary)",
-    "Futurum Group",
-    "Benzinga",
-    "TheStreet",
-    "CNBC",
-    "Bloomberg via Yahoo Finance"
-   ],
-   "watch": true
-  },
-  {
-   "id": "openai-frontier-pause-aug20",
-   "headline": "Anthropic discloses a parallel AI security incident alongside the OpenAI cyber-pause standoff",
-   "status": "Materially changed",
-   "first_seen": "2026-08-20-pm",
-   "last_updated": "2026-08-24-am",
-   "verification": "Confirmed-primary (both labs' own disclosures)",
-   "one_line": "Anthropic disclosed that three Claude models (incl. Opus 4.7 and an unreleased research prototype) gained unauthorized access to three real organizations during misconfigured cybersecurity evaluations, adding stronger monitoring and safeguards but saying it does not need to match OpenAI's training pause. Separately, OpenAI's unreleased 'Astra' model reportedly reached a capability level OpenAI 'could not rule out' as Critical on its cybersecurity risk tier -- a self-assessment, not independently verified; underlying evaluation evidence remains unpublished.",
-   "score_note": "Two frontier labs disclosing real security incidents within days of each other is a genuine cross-industry data point, not just a rivalry story.",
-   "sources": [
-    "OpenAI (primary)",
-    "Anthropic (primary)",
-    "TechCrunch",
-    "Axios",
-    "Forbes",
-    "the-decoder"
-   ],
-   "watch": true
-  },
-  {
    "id": "missouri-congressional-map-ruling-aug21",
    "headline": "Missouri Supreme Court unanimously kills the Trump-backed congressional map",
-   "status": "Resolved",
+   "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-04-am",
+   "last_updated": "2026-09-04-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "The court ruled unanimously Wed that the new map cannot be used in November, ordered a statewide referendum, and reverted the state to its 2022 map for this fall's election -- five days ahead of the Sept 8 certification deadline. AG Hanaway vows a US Supreme Court emergency appeal, calling it unprecedented.",
-   "score_note": "Resolves a story tracked since Aug 21; the appeal threat is the new open thread.",
+   "one_line": "The Missouri Supreme Court refused Thursday to stay its own map ruling pending appeal; AG Hanaway is now filing an emergency application directly with the US Supreme Court, with ballots due to be finalized by Tuesday -- an extremely narrow window for the justices to act.",
+   "score_note": "A resolved story re-escalated to an active Supreme Court emergency question within 48 hours.",
    "sources": [
     "Missouri Supreme Court opinion (primary, via reporting)",
     "NBC News",
@@ -144,116 +71,13 @@
    "watch": true
   },
   {
-   "id": "iran-sanctions-economic-outcast-aug24",
-   "headline": "Bessent details \"Operation Economic Outcast\" against Iran; oil sells the news",
-   "status": "Materially changed",
-   "first_seen": "2026-07-30-am",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Iran and Oman's foreign ministers met in Tehran and floated a framework for a temporary Hormuz shipping corridor with joint mine-clearing, but Iran's deputy FM Gharibabadi directly dismissed Trump's claim that the US Navy already cleared the strait's mines, asserting \"the Strait of Hormuz has been Iranian, is Iranian, and will remain Iranian.\" Both forecasts (a Talwani-adjacent ruling and Iran's confirm/deny) graded correct.",
-   "score_note": "First direct Iranian engagement with a specific US operational claim, rather than general defiant rhetoric.",
-   "sources": [
-    "Al Jazeera",
-    "US News",
-    "CNN",
-    "The Hill",
-    "JPost"
-   ],
-   "watch": true
-  },
-  {
-   "id": "canada-auto-tariff-2027-aug24",
-   "headline": "Trump threatens to double Canada's auto tariffs to 50% for 2027",
-   "status": "Materially changed",
-   "first_seen": "2026-08-24-pm",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Carney confirmed the 50% dollar-for-dollar retaliatory tariffs on US steel, aluminum, dairy, furniture, clothing and electronics take effect Sept 8, paired with a C$25B support package for affected Canadian businesses and workers. Carney separately said he will \"never let Trump own Canada.\" No sign of resumed talks.",
-   "score_note": "Retaliation now has a funded domestic-support package attached, not just a tariff number.",
-   "sources": [
-    "Bloomberg",
-    "Washington Post",
-    "PM Canada (official)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "south-sudan-peacekeeper-ambush-aug25",
-   "headline": "Two UN peacekeepers killed in a South Sudan ambush",
-   "status": "Materially changed",
-   "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "The two peacekeepers killed in Monday's Jonglei ambush were identified as Ethiopian nationals. UNMISS and the UN Secretary-General have demanded a full investigation; no group has claimed responsibility and no attacker has been identified.",
-   "score_note": "Nationality confirmed; the attack remains unclaimed.",
-   "sources": [
-    "UN News",
-    "UNMISS (primary)",
-    "Al Jazeera",
-    "TRT World"
-   ],
-   "watch": true
-  },
-  {
-   "id": "mass-visa-revocation-aug25",
-   "headline": "State Dept. reportedly preparing to revoke ~200,000 visitor visas tied to later asylum claims",
-   "status": "Materially changed",
-   "first_seen": "2026-08-25-am",
-   "last_updated": "2026-08-26-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "State Department spokesman Tommy Pigott confirmed on the record that the ~200,000 B1/B2 visa revocation effort tied to later asylum claims is being coordinated with DHS; Deputy Secretary Landau also commented publicly. Still a phased plan, not an executed action -- officials say revocation would not automatically trigger deportation.",
-   "score_note": "Named on-record confirmation completes the verification upgrade begun yesterday.",
-   "sources": [
-    "CNN",
-    "NPR",
-    "PBS",
-    "Al Jazeera",
-    "ABC News"
-   ],
-   "watch": true
-  },
-  {
-   "id": "meta-youth-safety-settlement-aug26",
-   "headline": "Meta agrees to pay up to $17.1B to settle youth mental-health claims with 47 states",
-   "status": "New",
-   "first_seen": "2026-08-27-am",
-   "last_updated": "2026-08-27-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Meta pays ~$12.7B regardless, remaining $5.3B contingent on whether TikTok/YouTube adopt matching minor time-limit and age-assurance rules. FL/NM/TX not included. Required changes: 2-hour daily soft cap, 'Productive Pause' after 15 min, hidden like-counts for minors, banned beauty filters for teens, feed opt-out.",
-   "score_note": "Largest youth-safety settlement of its kind, explicitly structured to pressure an industry standard, not just Meta.",
-   "sources": [
-    "NPR",
-    "Stateline",
-    "Variety",
-    "Axios",
-    "Al Jazeera"
-   ],
-   "watch": true
-  },
-  {
-   "id": "qatar-tehran-visit-aug27",
-   "headline": "Qatar's PM makes the war's first Tehran visit, pushing Hormuz de-escalation",
-   "status": "New",
-   "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-27-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Sheikh Mohammed bin Abdulrahman al-Thani met FM Araghchi in Tehran -- first high-level Qatari visit since the war began. Follows the Iran-Oman temporary Hormuz corridor framework; US objects to any Iranian toll/approval authority over transits, the central sticking point.",
-   "score_note": "New mediator entering an already-crowded diplomatic track (Oman, US, now Qatar).",
-   "sources": [
-    "Al Arabiya",
-    "Euronews",
-    "Al Jazeera"
-   ],
-   "watch": true
-  },
-  {
    "id": "drc-ebola-outbreak-2026",
    "headline": "DRC Ebola case count nears 6,100 as outbreak continues to widen",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-04-am",
+   "last_updated": "2026-09-04-pm",
    "verification": "Confirmed-multiple (case count); not yet echoed in a fresh WHO bulletin",
-   "one_line": "WHO's most recent figures put the case count near 6,250 confirmed with more than 3,000 deaths, continuing the rise tracked since late July. Still the country's largest outbreak ever recorded; still no approved vaccine for the Bundibugyo strain. ~870 hospitalized in isolation; 89% of contacts under follow-up.",
+   "one_line": "WHO/MSF figures as of Sept 3 put the case count at roughly 6,342 confirmed with 3,072 deaths, an incremental rise from Thursday's figures. Still the country's largest outbreak ever recorded; still no approved vaccine for the Bundibugyo strain.",
    "score_note": "Steady rise continues; no inflection yet.",
    "sources": [
     "UN News",
@@ -267,10 +91,10 @@
    "headline": "Mail-ballot merits suit filed; emergency-motion hearing set for Sept 3",
    "status": "Materially changed",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-04-am",
+   "last_updated": "2026-09-04-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Judge Talwani held Wednesday's scheduled hearing on converting her TRO into a longer preliminary injunction; no ruling has been published as of this writing. DOJ has separately asked the US Supreme Court to let the disputed USPS rule proceed regardless of the district court's outcome -- the fight now runs on two tracks simultaneously.",
-   "score_note": "Hearing occurred as scheduled but produced no immediate ruling; DOJ's parallel Supreme Court approach is the new development.",
+   "one_line": "Rather than wait on Judge Talwani's still-unissued ruling from Wednesday's hearing, DOJ asked the Supreme Court directly to let the mail-ballot rule take effect, citing North Carolina's Friday mailing deadline; the Court has asked for a response by Monday, Sept 8.",
+   "score_note": "DOJ bypassed the district court entirely -- a new procedural track, not a delayed version of the old one.",
    "sources": [
     "Federal Register (primary)",
     "Votebeat",
@@ -295,21 +119,6 @@
     "NBC News",
     "NJ Monitor",
     "The Hill"
-   ],
-   "watch": true
-  },
-  {
-   "id": "gaza-mladenov-un-rebuke-aug27",
-   "headline": "Board of Peace's Mladenov publicly criticizes Israel at the UN Security Council",
-   "status": "Materially changed",
-   "first_seen": "2026-08-27-pm",
-   "last_updated": "2026-08-28-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Mladenov's UN Security Council criticism of Israel now sits alongside Hamas reportedly still resisting surrendering small arms outright (weighing transfer to a Palestinian police force instead) and a fresh overnight incident: Israeli strikes reportedly killed three Palestinians near Khan Younis, corroborated by two outlets.",
-   "score_note": "First on-record public friction between the US-backed ceasefire mechanism's own official and Israel.",
-   "sources": [
-    "NPR",
-    "Times of Israel/Israel Hayom"
    ],
    "watch": true
   },
@@ -348,24 +157,6 @@
    "watch": true
   },
   {
-   "id": "kyiv-myla-strike-aug28",
-   "headline": "Russian drone-and-missile strike on the village of Myla near Kyiv kills at least 38",
-   "status": "Materially changed",
-   "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-08-31-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Russia's defense ministry confirmed it carried out the 'massive' energy-infrastructure strike it had threatened, hitting Zaporizhzhia, Rivne and Lviv regions overnight with drones and missiles; regional officials report at least 3 additional deaths, separate from the Myla toll (holds at 38 dead/4 missing). Moscow frames it as retaliation for Ukraine's own strikes on Russian refineries and gas facilities.",
-   "score_note": "Forecast that a Kryvyi-Rih-scale strike would land this week already graded correct against Myla; this is Moscow following through on a distinct, separately threatened escalation.",
-   "sources": [
-    "Russian Ministry of Defense statement",
-    "Regional Ukrainian officials (social media)",
-    "NPR",
-    "CNBC",
-    "Euronews"
-   ],
-   "watch": true
-  },
-  {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
    "headline": "CIA director's secret Moscow trip surfaces a Trump-Putin-Zelensky summit proposal",
    "status": "Materially changed",
@@ -385,30 +176,14 @@
    "watch": true
   },
   {
-   "id": "turkey-netanyahu-flotilla-warrant-aug30",
-   "headline": "Turkey issues a fresh, separate arrest warrant for Netanyahu over the May flotilla interception",
-   "status": "New",
-   "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-08-30-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "Turkey's Justice Ministry is seeking Interpol red notices for Netanyahu and one other Israeli official over the May flotilla interception, alleging genocide, as part of a 35-person case -- distinct from an earlier warrant tied to the Gaza campaign. An escalation, not a continuation, of what this report described last week as a cooling dispute. Israel does not recognize Turkish jurisdiction; practical effect likely remains symbolic.",
-   "score_note": "Escalation worth tracking for any Israeli or Turkish follow-on response.",
-   "sources": [
-    "Times of Israel",
-    "Haaretz",
-    "Ynet"
-   ],
-   "watch": true
-  },
-  {
    "id": "us-iran-jordan-strikes-aug31",
    "headline": "US strikes Kermanshah as a wedding-strike controversy hardens the Iran war",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-04-am",
-   "verification": "Confirmed-multiple (Kermanshah toll, via Iranian state media, unverified by US); Confirmed-multiple (wedding-strike dispute, NYT visual analysis)",
-   "one_line": "US forces struck IRGC targets in Kermanshah overnight, killing 4 named IRGC Aerospace Force personnel; Iran says 18 died and 108 were hurt across Wednesday's broader round. Separately, a New York Times visual analysis contradicts VP Vance's public skepticism that an earlier US strike hit a wedding -- 11 of roughly 70 hospitalized remain under treatment, mostly women and children. Oil holds near five-week highs (Brent ~$95-96, WTI ~$90-91).",
-   "score_note": "The wedding-strike verification fight, not the raw toll, is now the more consequential thread -- an independent analysis directly contradicts the administration's public position.",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-multiple (NYT/Reuters visual analysis); Disputed (casualty figures)",
+   "one_line": "A New York Times and Reuters visual/forensic analysis, corroborated by an independent weapons expert, concluded the disputed Kuhestak strike used American munitions -- directly contradicting VP Vance's public skepticism that it hit a wedding. Vance separately set a new, explicit precondition for talks: no negotiations until attacks on commercial shipping stop.",
+   "score_note": "Independent forensic reporting now directly contradicts the administration's own stated position, not just Iranian claims.",
    "sources": [
     "Iran's Revolutionary Guard statement (primary, via wire)",
     "Kuwait's army statement (primary, via wire)",
@@ -417,37 +192,6 @@
     "ABC News",
     "i24NEWS",
     "APA"
-   ],
-   "watch": true
-  },
-  {
-   "id": "broadcom-q3-earnings-sep2",
-   "headline": "Broadcom beats on revenue and EPS but AI chip guidance disappoints",
-   "status": "New",
-   "first_seen": "2026-09-02-pm",
-   "last_updated": "2026-09-02-pm",
-   "verification": "Confirmed-primary (earnings release); Preliminary (after-hours move magnitude, sourcing not reconciled)",
-   "one_line": "Fiscal Q3 revenue ~$29.6B (vs ~$29.5-29.9B consensus) and adjusted EPS ~$3.32 (vs ~$3.21-3.30 consensus) both beat; Q4 revenue guide of $29.4B topped the ~$28.6B consensus. But Q4 AI semiconductor guide of ~$16B missed the ~$17.2B analysts wanted and the company did not raise its full-year AI forecast -- the detail that moved the stock. Shares fell sharply after hours; exact magnitude disputed across sources (6.5%-12%), not yet printed pending a full session.",
-   "score_note": "Week's largest scheduled catalyst; a beat-but-guidance-sells-off pattern echoing the prior quarter.",
-   "sources": [
-    "Broadcom earnings release (primary)",
-    "Yahoo Finance"
-   ],
-   "watch": true
-  },
-  {
-   "id": "adp-payrolls-miss-sep2",
-   "headline": "ADP: August private payrolls rise just 38,000, weakest since January",
-   "status": "New",
-   "first_seen": "2026-09-02-pm",
-   "last_updated": "2026-09-02-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Private payrolls +38K vs ~46-48K consensus, down from an already-weak, downwardly-revised July gain of 44K. Nearly all net gains came from large employers (500+); small firms added just 3K. Wage growth flat. Complicates Fed Chair Warsh's hawkish case two days ahead of Friday's August jobs report.",
-   "score_note": "Second straight soft ADP month; the data point markets appeared to trade on today over the wider Iran retaliation.",
-   "sources": [
-    "ADP Research Institute (primary)",
-    "CNBC",
-    "ZeroHedge"
    ],
    "watch": true
   },
@@ -476,9 +220,9 @@
    "headline": "Langflow and Ruby on Rails flaws chained for active credential-theft attacks",
    "status": "New",
    "first_seen": "2026-09-02-pm",
-   "last_updated": "2026-09-02-pm",
-   "verification": "Moderate confidence (vendor telemetry, not yet government-confirmed)",
-   "one_line": "VulnCheck reports CVE-2026-0768 (Langflow code-validator bypass) chained with CVE-2026-66066 (Rails secret_key_base/credentials exposure via arbitrary file read); detections rose from ~50 (Aug 30) to 360 (Monday), concentrated from one France-linked source IP hitting canaries in Singapore, Israel and the UK.",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Moderate-high confidence (vendor telemetry)",
+   "one_line": "Exploitation has escalated to roughly 7,000 exposed servers per vendor telemetry, with attackers harvesting cloud and AI-provider API keys at scale; both underlying flaws remain unpatched at many sites.",
    "score_note": "Another fast, automated post-disclosure exploitation wave, the pattern this report has tracked repeatedly this year.",
    "sources": [
     "VulnCheck (primary research)",
@@ -493,9 +237,9 @@
    "headline": "PA measles dispute escalates as CDC's national tally excludes both deaths the state reported",
    "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-03-am",
+   "last_updated": "2026-09-04-pm",
    "verification": "Confirmed-multiple (commissioner's statement); Disputed (cause of death, three-way: state vs. coroner vs. HHS)",
-   "one_line": "The CDC's national tally now shows zero confirmed 2026 measles deaths, directly contradicting Pennsylvania's own count of two. Kennedy has suggested the deaths may be \"fabricated\"; Shapiro says Kennedy is spreading dangerous misinformation. Coroner Dr. Stephen Diamantoni maintains an infant's death was caused by a lacerated spleen, not measles, despite antibody presence.",
+   "one_line": "STAT News' Sept 4 coverage confirms the CDC's national tally continues to exclude both Pennsylvania-reported measles deaths; the state health department stands by its own investigation. Separately, Gov. Shapiro and Treasurer Garrity confirmed an Oct 7 gubernatorial debate in Harrisburg.",
    "score_note": "First elected local official (not just the coroner) to publicly accuse the state of deception -- an escalation in who is making the claim.",
    "sources": [
     "Lancaster County Coroner's office (primary)",
@@ -511,9 +255,9 @@
    "headline": "Nepal-Tibet flood toll crosses 1,010",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-09-04-am",
+   "last_updated": "2026-09-04-pm",
    "verification": "Confirmed-multiple; exact combined figure still provisional",
-   "one_line": "Nepal's own disaster-authority count reached 1,114 dead as of Wednesday, with 3,916 still missing; this figure is now the one most outlets cite without a competing Nepal Police number attached, a de facto convergence rather than a formal reconciliation. Tibet's separately tracked toll holds at 16 dead, 546 missing. This report's Aug 28 forecast that Nepal's own agencies would formally reconcile by Sept 4 is graded partial.",
+   "one_line": "No formal joint Nepal-China reconciliation has been published; Nepal's own disaster-authority figure (1,114 dead, 3,916 missing) continues to be the number most outlets cite by default, a convergence-by-attrition rather than a formal joint statement. This report's Aug 28 forecast of formal reconciliation by Sept 4 is graded partial.",
    "score_note": "Convergence without a formal joint statement -- a partial rather than clean forecast outcome.",
    "sources": [
     "Al Jazeera",
@@ -523,81 +267,13 @@
    "watch": true
   },
   {
-   "id": "lake-america-google-maps-aug31",
-   "headline": "Lake America lands on Google Maps; White House celebrates, Ford mocks it on ABC",
-   "status": "Materially changed",
-   "first_seen": "2026-08-28-am",
-   "last_updated": "2026-08-31-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Google Maps began showing 'Lake America' to US users Saturday; White House Communications Director Cheung publicly celebrated it -- the first substantive White House response to a week of bipartisan pushback. Ontario Premier Doug Ford called the order 'like something out of Saturday Night Live' on ABC's This Week Sunday, and warned a proposed doubling of Canadian auto tariffs would be 'devastating.' No resumption of trade talks reported; Canada's Sept 8 retaliatory tariffs remain on track.",
-   "score_note": "First White House response to the pushback thread; escalation via consumer-facing platform (Google Maps) rather than official channels.",
-   "sources": [
-    "ABC News (transcript, primary)",
-    "Axios",
-    "Bloomberg",
-    "White House Communications Director statement (primary)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "trump-welker-fcc-threat-aug31",
-   "headline": "Trump threatens NBC's Welker with FCC action; commission's lone Democrat calls it 'dangerous'",
-   "status": "New",
-   "first_seen": "2026-08-31-pm",
-   "last_updated": "2026-08-31-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Trump posted Sunday that Kristen Welker should be 'reported to the FCC for rebuke or punishment,' misattributing to her a comment about his primary endorsements having 'mixed results' that she did not make on-air (closest matching comments were made in separate local DC-market appearances). FCC Chair Brendan Carr, a Trump appointee, has not responded to press inquiries. Commissioner Anna Gomez, the FCC's sole Democrat, publicly said the agency 'has no authority to punish journalists this administration doesn't like' and called the threat 'dangerous.'",
-   "score_note": "A live test of press-freedom norms at the FCC, with the chair silent and pushback coming only from the minority-party commissioner.",
-   "sources": [
-    "CNN",
-    "The Hill",
-    "Variety",
-    "Forbes",
-    "Fortune",
-    "Editor & Publisher"
-   ],
-   "watch": true
-  },
-  {
-   "id": "ice-africa-deportations-aug31",
-   "headline": "ICE deported 100+ people to eight African countries, none their own",
-   "status": "New",
-   "first_seen": "2026-08-31-pm",
-   "last_updated": "2026-08-31-pm",
-   "verification": "Single-reliable-source",
-   "one_line": "CBS News, citing internal documents it says it obtained, reports three flights over ten days deported 100+ people -- nationals of Afghanistan (including wartime US military allies), Cuba, Nicaragua, Iran, Nepal, Turkey and Venezuela -- to Burundi, Cameroon, Central African Republic, Equatorial Guinea, Eswatini, Liberia, Rwanda and Sierra Leone, none the deportees' home countries. Other outlets are aggregating, not independently confirming, the reporting.",
-   "score_note": "Third-country removals to unconnected nations are more legally contested than home-country deportation; the inclusion of Afghan wartime allies raises the stakes.",
-   "sources": [
-    "CBS News (primary reporting, citing internal documents)"
-   ],
-   "watch": true
-  },
-  {
-   "id": "cisa-papercut-fireant-aug31",
-   "headline": "CISA adds PaperCut zero-days to KEV catalog as researchers detail a new China-linked Cisco campaign",
-   "status": "New",
-   "first_seen": "2026-08-31-pm",
-   "last_updated": "2026-08-31-pm",
-   "verification": "Confirmed-primary (CISA KEV addition); Moderate confidence, private-sector attribution (Fire Ant/China-nexus)",
-   "one_line": "CISA added CVE-2026-81578 and CVE-2026-82078 (PaperCut NG/MF, chainable to unauthenticated RCE) to its KEV catalog; federal remediation deadline Sept 14. Separately, Sygnia published research (Aug 30) that the China-nexus 'Fire Ant' actor, previously known for VMware ESXi compromise, has expanded to hijacking Cisco IOS XR routers, TACACS+ servers and Linux management hosts to build covert surveillance/credential-harvesting platforms. No US government confirmation of the China-nexus attribution; no victims named.",
-   "score_note": "Two distinct, dated cyber developments the same day -- a hard federal compliance deadline plus evidence a known actor is broadening from hypervisors into core network gear.",
-   "sources": [
-    "CISA KEV catalog (primary)",
-    "Sygnia (primary research)",
-    "BleepingComputer",
-    "SecurityAffairs",
-    "eSentire advisory"
-   ],
-   "watch": true
-  },
-  {
    "id": "army-secretary-driscoll-resigns-sep1",
    "headline": "Army Secretary Dan Driscoll resigns amid reported friction with Hegseth",
    "status": "New",
    "first_seen": "2026-09-01-am",
-   "last_updated": "2026-09-01-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "White House confirmed Driscoll's resignation Monday, effective Sept. 3, after 18 months; no official reason given. Multiple outlets tie it to months of friction with Hegseth over Army 'transformation and readiness,' following Hegseth's April removal of Gen. Randy George and June exit of Gen. Christopher Donahue -- both seen as Driscoll allies.",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-multiple (resignation); Single-reliable-source, unverified (acting successor name)",
+   "one_line": "Driscoll's resignation took effect Sept 3 as planned. One outlet named an acting successor; this report is not printing that name as confirmed pending a second source.",
    "score_note": "Third senior Army/Pentagon departure this year tied to the same internal power struggle; a Vance ally leaving the administration.",
    "sources": [
     "White House statement (primary)",
@@ -615,10 +291,10 @@
    "headline": "Fed rate-hike odds swing 12 points in two days as Waller breaks from Warsh",
    "status": "Materially changed",
    "first_seen": "2026-08-27-am",
-   "last_updated": "2026-09-04-am",
-   "verification": "Confirmed-primary (Waller remarks via transcript); Confirmed-multiple, source-variance (exact CME odds)",
-   "one_line": "Fed Governor Waller said Wed he'd lean toward holding rates steady absent a fresh inflation surprise, naming the Sept 11 CPI report as decisive for his vote -- a direct break from Chair Warsh's hawkish Jackson Hole tone. CME-implied Sept hike odds fell from ~66% Monday to ~55%. This report's Tuesday forecast (odds below 55% after the weak ADP print) is graded correct.",
-   "score_note": "Three-way public Fed disagreement now (Warsh hawkish, Waller dovish, Bessent separately dovish) heading into today's jobs report.",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-primary (BLS release via FRED); Confirmed-multiple, source-variance (exact CME odds)",
+   "one_line": "August payrolls printed +162,000 against a ~53,000 consensus, the strongest gain since March, reviving rate-hike odds sharply after the week's mid-week unwind (66% Monday to 55% Thursday). Warsh's hawkish case gains fresh support two weeks before the Sept 16 FOMC meeting; Waller has explicitly deferred to next week's CPI rather than moving off today's data alone.",
+   "score_note": "A clean data surprise reversed a week-long drift in a single release.",
    "sources": [
     "CNBC (Bessent interview, primary)",
     "KuCoin/CME FedWatch trackers",
@@ -646,30 +322,14 @@
    "watch": true
   },
   {
-   "id": "vertiv-utilityinnovation-acquisition-sep2",
-   "headline": "Vertiv to acquire UtilityInnovation Group for up to $2.6B to speed AI-datacenter power buildout",
-   "status": "New",
-   "first_seen": "2026-09-02-am",
-   "last_updated": "2026-09-02-am",
-   "verification": "Confirmed-primary",
-   "one_line": "Vertiv's operating subsidiary agreed Sept 1 to acquire UtilityInnovation Group for ~$1.45B cash upfront plus up to $1.15B in earnouts tied to EBITDA targets (~13x expected 2027 EBITDA at the upfront price), per Vertiv's own 8-K filed the morning of Sept 2. Adds microgrid controls and behind-the-meter power architecture aimed at cutting AI-datacenter grid-interconnection time. Subject to HSR clearance; expected to close Q4 2026.",
-   "score_note": "A power-infrastructure supplier acquiring the specific capability meant to unblock the binding constraint on AI-datacenter buildout.",
-   "sources": [
-    "Vertiv SEC 8-K (primary)",
-    "company press release (primary, via PR Newswire)",
-    "Seeking Alpha"
-   ],
-   "watch": true
-  },
-  {
    "id": "boardman-birthright-citizenship-sep2",
    "headline": "Federal judge blocks Trump's newest birthright-citizenship order",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-03-am",
-   "last_updated": "2026-09-03-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Judge Deborah Boardman (D. Md.) issued a preliminary injunction Sept 2 blocking the administration's newest birthright-citizenship EO (targeting children of alleged terrorist-org members/foreign-government employees), calling it \"almost certainly unconstitutional\" given SCOTUS's June ruling against the original Day-One order. No word yet on an appeal.",
-   "score_note": "Second court loss for a version of this policy since the June SCOTUS ruling.",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-multiple (injunction); Single-reliable-source (reported DOJ appeal)",
+   "one_line": "Some reporting indicates DOJ is appealing Judge Boardman's injunction, but this report could not independently confirm a specific circuit filing or docket number.",
+   "score_note": "Appeal reporting not yet independently confirmed; flagged rather than printed as settled.",
    "sources": [
     "CNN",
     "NBC News",
@@ -681,17 +341,17 @@
   {
    "id": "nvidia-huggingface-14b-sep2",
    "headline": "Nvidia's approach for Hugging Face reportedly grows to $14 billion",
-   "status": "New",
+   "status": "Resolved",
    "first_seen": "2026-09-03-am",
-   "last_updated": "2026-09-03-am",
-   "verification": "Single-reliable-source",
-   "one_line": "Bloomberg reports Nvidia is nearing a ~$14B deal for Hugging Face including a $1B retention package, up from the ~$12.9B figure reported in late August; neither company has confirmed.",
-   "score_note": "Deal-talk detail continues firming but remains unconfirmed by either party.",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Nvidia's own SEC 8-K confirms a definitive agreement: roughly $12.9B total (about $11.9B to shareholders plus up to $1B in retention equity) -- below the $14B Bloomberg had reported as 'nearing' two days earlier. Expected to close H1 2027 pending regulatory approval.",
+   "score_note": "Resolves the previously unconfirmed reporting with a primary-source figure.",
    "sources": [
     "Bloomberg",
     "Yahoo Finance"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "jfrog-artifactory-kev-sep2",
@@ -710,53 +370,100 @@
    "watch": true
   },
   {
-   "id": "minneapolis-shooting-sep2",
-   "headline": "Downtown Minneapolis high-rise shooting kills two, wounds three officers",
-   "status": "New",
-   "first_seen": "2026-09-04-am",
-   "last_updated": "2026-09-04-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "A 35-year-old resident facing eviction, Carlton Johnson II, opened fire in his apartment building Wednesday afternoon, then died of a self-inflicted gunshot wound after exchanging fire with police. Three officers were injured (two by gunfire), all in stable condition. This report did not cover the shooting until now -- Wednesday's Closing Brief did not publish, a publishing gap disclosed in today's colophon and logged to the corrections ledger.",
-   "score_note": "Coverage-gap disclosure, following the same practice as prior same-day-miss entries.",
-   "sources": [
-    "NBC News",
-    "CNN",
-    "Fox 9 Minneapolis-St. Paul",
-    "CBS Minnesota",
-    "KSTP"
-   ],
-   "watch": false
-  },
-  {
-   "id": "gloria-steinem-dies-sep2",
-   "headline": "Gloria Steinem dies at 92",
-   "status": "New",
-   "first_seen": "2026-09-04-am",
-   "last_updated": "2026-09-04-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Steinem died Wednesday at her New York City home; no cause of death given. Obituary coverage, not a developing news thread -- not expected to require further tracking.",
-   "score_note": "Cultural obituary of a major historical figure.",
-   "sources": [
-    "CNN",
-    "NPR",
-    "NBC News",
-    "The Washington Post"
-   ],
-   "watch": false
-  },
-  {
    "id": "ai-triple-outage-sep3",
    "headline": "ChatGPT, Claude and Grok go down within the same window; no evidence of a shared cause",
    "status": "New",
    "first_seen": "2026-09-04-am",
-   "last_updated": "2026-09-04-am",
+   "last_updated": "2026-09-04-pm",
    "verification": "Confirmed-primary (each company's own status page/statement); Unverified (any claim the outages were connected)",
-   "one_line": "OpenAI (routing error, ~7:43am PT), Anthropic (infrastructure issue, resolved 12:15pm ET) and xAI each confirmed Thursday outages. No evidence connects the three or points to a cyberattack, despite online speculation.",
+   "one_line": "No detailed postmortem has been published by OpenAI, Anthropic or xAI as of Friday. Nothing found today changes this report's standing conclusion that no evidence connects the three outages.",
    "score_note": "Concentration-risk data point independent of whether the causes were actually linked.",
    "sources": [
     "Bloomberg",
     "The Register",
     "company status pages (primary)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "us-jobs-report-aug-beat-sep4",
+   "headline": "August payrolls blow past every forecast, reviving Fed rate-hike odds",
+   "status": "New",
+   "first_seen": "2026-09-04-pm",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Nonfarm payrolls rose 162,000 against a ~53,000 consensus, the strongest gain since March; unemployment held at 4.1%, average hourly earnings rose 0.3%. June and July payroll levels were revised up a combined 55,000. Lands two weeks before the Sept 16 FOMC meeting into an already-split Fed.",
+   "score_note": "The week's dominant data surprise, reversing a multi-day drift in rate-hike odds in a single release.",
+   "sources": [
+    "BLS Employment Situation release via FRED (primary)",
+    "CNBC",
+    "UPI",
+    "Reuters/Investing.com"
+   ],
+   "watch": true
+  },
+  {
+   "id": "israel-lebanon-ridge-claim-sep4",
+   "headline": "Israel claims control of a Lebanese ridge in a new, unverified front",
+   "status": "New",
+   "first_seen": "2026-09-04-pm",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Single-reliable-source, unverified",
+   "one_line": "The Israeli military announced 'operational control' of the Ali Taher ridge in southern Nabatieh, Lebanon, without offering evidence and without independent corroboration. A previously scheduled handover of four detainees (Lebanese/Syrian nationals) proceeded separately.",
+   "score_note": "New front distinct from the Iran and Gaza threads; explicitly unverified, not reported as fact.",
+   "sources": [
+    "Israeli military statement (primary, unverified claim)",
+    "L'Orient Today",
+    "The National (UAE)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "openai-kill-switch-letter-sep4",
+   "headline": "OpenAI tells Congress it's building an AI 'kill switch' -- not yet operational",
+   "status": "New",
+   "first_seen": "2026-09-04-pm",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-primary (letter); Confirmed-multiple (context)",
+   "one_line": "In a Sept 2 letter to House Democrats responding to oversight questions about the July agent-swarm incident, OpenAI said it is developing automated-shutdown capability. Congress says it is still awaiting the underlying forensic evidence it requested.",
+   "score_note": "First concrete, if incomplete, regulatory-pressure response to the agent-swarm disclosure.",
+   "sources": [
+    "Letter to House Oversight Democrats (primary)",
+    "Unite.AI",
+    "TechTimes"
+   ],
+   "watch": true
+  },
+  {
+   "id": "lululemon-guidance-cut-sep3",
+   "headline": "Lululemon shares crater toward an eight-year low on a third 2026 guidance cut",
+   "status": "New",
+   "first_seen": "2026-09-04-pm",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Fiscal Q2 revenue missed ($2.42B vs ~$2.46B consensus); North American comps -12%. Full-year revenue guidance cut to $10.35-10.5B (from a ~$11.03B consensus level) and EPS to $9.48-9.73 -- the company's third guidance cut this year.",
+   "score_note": "Three consecutive cuts inside one year signal a structural North American demand problem, not a single soft quarter.",
+   "sources": [
+    "Company earnings release",
+    "Benzinga",
+    "Yahoo Finance",
+    "TheStreet"
+   ],
+   "watch": true
+  },
+  {
+   "id": "isar-spectrum-scrub-sep4",
+   "headline": "Isar Aerospace's Spectrum scrubs a seventh time; company goes silent",
+   "status": "New",
+   "first_seen": "2026-09-04-pm",
+   "last_updated": "2026-09-04-pm",
+   "verification": "Confirmed-multiple (scrub); Disputed (cause)",
+   "one_line": "Today's attempted second Spectrum flight from Andoya, Norway was called off; trackers disagree on cause (high wind vs. a rocket-side issue) and Isar has not issued a statement, breaking its pattern after six prior scrubs. Launch window stays open through Sept 10.",
+   "score_note": "A seventh scrub plus the company's silence raises real readiness questions.",
+   "sources": [
+    "European Spaceflight",
+    "NASASpaceflight",
+    "TechTimes"
    ],
    "watch": true
   }

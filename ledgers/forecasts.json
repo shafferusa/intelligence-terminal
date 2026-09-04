@@ -1995,7 +1995,10 @@
    "horizon": "2026-09-04",
    "probability": "15-25%",
    "basis": "The gap between the two governments' counts has widened rather than narrowed since Wednesday with no explanation offered by either side, and cross-border disaster accounting of this kind has historically taken far longer to resolve publicly, if it resolves at all",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Nepal's own disaster-authority figure (1,114 dead) has become the de facto number most outlets cite, but no formal joint statement or explicit reconciliation with China/Tibet's separately tracked toll (16 dead) has been published.",
+   "graded": "2026-09-04-pm",
+   "lesson": "Convergence-by-attrition (one figure simply becomes the default cite) is a different, weaker outcome than a formal joint reconciliation -- worth distinguishing in future casualty-count forecasts."
   },
   {
    "id": "2026-08-28-am-3",
@@ -2018,7 +2021,10 @@
    "horizon": "2026-09-04",
    "probability": "40-55%",
    "basis": "Warsh's speech withheld explicit rate-path guidance and emphasized data-dependence over commitment; single-speech repricings of this size have partially reversed before without a confirming catalyst, though the inflation emphasis was unambiguous",
-   "status": "open"
+   "status": "partial",
+   "outcome": "CME-tracked odds did partially unwind from roughly 66% Monday to roughly 55% Thursday absent a new data point, exactly as forecast -- but today's jobs beat (the 'confirming data point' the forecast's caveat anticipated wouldn't arrive) reversed much of that unwind, pushing odds back toward the high-50s/mid-60s range by Friday's close.",
+   "graded": "2026-09-04-pm",
+   "lesson": "The mid-week unwind resolved correctly on its own terms; the forecast's implicit assumption that no confirming data would arrive within the week was the part that broke."
   },
   {
    "id": "2026-08-28-pm-2",
@@ -2048,7 +2054,10 @@
    "horizon": "2026-09-04",
    "probability": "40-50%",
    "basis": "Previews circulating this weekend scatter widely (roughly 50,000 to 140,000), but two of three named individual estimates (LPL Financial's 50,000 and Capital Economics' 90,000, the latter citing immigration curbs on labor supply) sit at or below 100,000, and the most recent preview found skews lower (58,000) than an earlier one (110,000).",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "August nonfarm payrolls printed +162,000, over 60,000 above the top of every cited preview and more than 60,000 above even the most bullish named estimate.",
+   "graded": "2026-09-04-pm",
+   "lesson": "A scattered preview range with a low-end skew is not the same as a reliable base rate -- this month's data broke well outside every cited estimate."
   },
   {
    "id": "2026-08-30-sun-2",
@@ -2058,7 +2067,10 @@
    "horizon": "2026-09-04",
    "probability": "45-60%",
    "basis": "This is the first major data release to land in the pre-FOMC window since Warsh's hawkish Jackson Hole debut, and CME-derived odds (~60%) and Kalshi's own market (47%) already disagree by 13 points before any new data arrives -- a wide-open setup for a large swing.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Sources disagree on the exact magnitude of the swing in CME-implied September rate-hike odds -- some outlets report roughly a 10-point move (55% to 65%), others a smaller move from a different starting level (49.4% to 58%). Direction (a jump toward hike pricing) is confirmed across sources; whether the move cleared 10 points cleanly is not.",
+   "graded": "2026-09-04-pm",
+   "lesson": "This report should capture a single clean CME FedWatch reading at file time rather than relying on outlets' own inconsistent snapshots when grading precision-dependent forecasts."
   },
   {
    "id": "2026-08-30-sun-3",
@@ -2068,7 +2080,10 @@
    "horizon": "2026-09-04",
    "probability": "55-70%",
    "basis": "Talwani's own Aug 27 order found the record 'lacks any evidence of fraudulent mail-in voting' and called USPS's interest 'dwarfed' by disenfranchisement risk -- language that reads as already leaning toward the plaintiffs, consistent with her pattern throughout this litigation of promptly refiling protective orders.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "As of Friday's edition, Judge Talwani has issued no ruling converting her TRO into a preliminary injunction, over 24 hours after Wednesday's hearing. DOJ instead bypassed her entirely, asking the Supreme Court directly to clear the mail-ballot rule.",
+   "graded": "2026-09-04-pm",
+   "lesson": "DOJ's direct-to-SCOTUS maneuver was the actual development, not a delayed version of the forecast district-court ruling -- a reminder to watch for parties routing around, not just through, the court being tracked."
   },
   {
    "id": "2026-08-30-sun-4",
@@ -2078,7 +2093,10 @@
    "horizon": "2026-09-03",
    "probability": "55-65%",
    "basis": "High-multiple AI-infrastructure names have produced outsized post-earnings moves all month (Nvidia +8.7%, Marvell -10.3% cumulative), and Broadcom's own estimate range is unusually wide across sources ($2.83-$3.30 EPS), raising the odds of a surprise relative to at least one consensus view.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "AVGO's next full regular session (Sept 3) closed at $357.16 versus Sept 2's $367.24 close -- a decline of roughly 2.7%, well under the 5% threshold. The 6.5-12% after-hours move reported Tuesday night substantially reversed once a full session priced the results, consistent with the raised AI-semiconductor guidance this report later confirmed via Broadcom's own 8-K.",
+   "graded": "2026-09-04-pm",
+   "lesson": "After-hours percentage moves on thin volume are not a reliable proxy for the next full session's close -- this report should wait for regular-session prices before citing earnings-reaction magnitudes as settled."
   },
   {
    "id": "2026-08-30-sun-5",
@@ -2114,7 +2132,10 @@
    "horizon": "2026-09-04",
    "probability": "40-50%",
    "basis": "This is the modal outcome given how scattered the jobs previews already are and the recent pattern of high-multiple AI names selling off on cautious guidance even after a beat.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The defining condition -- payrolls landing in the scattered 60,000-100,000 preview range without a clean surprise -- was violated by a 162,000 print, more than 60,000 above the range's top. Broadcom's AI-semiconductor guidance was actually raised, not cautious. The week did not land as modeled.",
+   "graded": "2026-09-04-pm",
+   "lesson": "None of the four scenarios anticipated a genuine data surprise in either direction on jobs; the actual week fell outside the quartet's framing entirely."
   },
   {
    "id": "2026-08-30-sun-8",
@@ -2124,7 +2145,10 @@
    "horizon": "2026-09-04",
    "probability": "15-25%",
    "basis": "Requires two separate positive surprises (payrolls and Broadcom margins) to land together while three live geopolitical risks all stay contained -- a genuine but not the most likely combination.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The jobs beat reignited rate-hike fears rather than reinforcing a soft-landing narrative, and today's session was a rotational pullback in rate-sensitive growth names, not a broad risk-on week. The Iran conflict also continued to escalate (the Kermanshah strike, the wedding-strike dispute) rather than staying contained.",
+   "graded": "2026-09-04-pm",
+   "lesson": "A strong jobs number is not automatically bullish when the market is pricing Fed policy risk rather than recession risk -- this report's own scenario set didn't account for a 'good news is bad news' dynamic."
   },
   {
    "id": "2026-08-30-sun-9",
@@ -2134,7 +2158,10 @@
    "horizon": "2026-09-04",
    "probability": "15-20%",
    "basis": "Credit currently reads calm (2.63% OAS, VIX at 14.43 in normal contango) with no confirming stress signal yet -- this scenario requires that calm to break, which is possible but not yet indicated.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Jobs printed strong, not weak; credit spreads (2.65% OAS) stayed well under the 2.75% threshold and show no stress; today's session was a narrow rotation, not a broad risk-off week.",
+   "graded": "2026-09-04-pm",
+   "lesson": "None."
   },
   {
    "id": "2026-08-30-sun-10",
@@ -2144,7 +2171,10 @@
    "horizon": "2026-09-04",
    "probability": "5-10%",
    "basis": "Each individual trigger is a live but low-probability risk on its own (per the Risk Register); this scenario requires at least one to cross from rhetoric or containment into an actual escalatory event.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The US-Iran conflict continued and arguably intensified (the Kermanshah strike, the disputed wedding strike, Vance's new shipping-attacks precondition for talks) but this report found no discrete new escalatory event crossing the scenario's stated bar (no matching Ukraine strike, no NK missile test drawing a US-South Korea response, no Nepal dam failure). The ongoing conflict is a continuation of an already-elevated baseline, not the scenario's envisioned step-change.",
+   "graded": "2026-09-04-pm",
+   "lesson": "A 'shock' scenario framed against a static baseline stops being well-defined once the baseline itself is already an active, escalating conflict -- future scenario forecasts should set a higher, more specific bar when the starting point is already volatile."
   },
   {
    "id": "2026-08-31-am-1",
@@ -2336,7 +2366,10 @@
    "horizon": "2026-09-04",
    "probability": "40-55%",
    "basis": "Two consecutive soft ADP prints (44K July revised down, 38K August) are a directional signal only, since ADP and nonfarm payrolls have diverged meaningfully in prior months this year.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "August payrolls printed +162,000, the strongest gain since March -- the opposite of an extension of the soft ADP signal.",
+   "graded": "2026-09-04-pm",
+   "lesson": "ADP and BLS payrolls diverged sharply again this month; ADP continues to be an unreliable same-week proxy for the official print."
   },
   {
    "id": "2026-09-03-am-3",
@@ -2376,6 +2409,36 @@
    "horizon": "2026-09-07",
    "probability": "45-60%",
    "basis": "Near-daily escalation pattern tracked across the past two weeks of this standoff, with each round drawing a response within one to three days.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-pm-1",
+   "date": "2026-09-04",
+   "slot": "pm",
+   "forecast": "The US Supreme Court acts (grants, denies, or otherwise disposes of Missouri AG Hanaway's emergency application) on the congressional-map stay before Tuesday's Sept 8 ballot-finalization deadline",
+   "horizon": "2026-09-08",
+   "probability": "55-70%",
+   "basis": "Missouri's ballot-finalization deadline creates a hard, days-away forcing event; the Court's emergency docket has historically acted close to comparable election-map deadlines rather than let them pass unaddressed.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-pm-2",
+   "date": "2026-09-04",
+   "slot": "pm",
+   "forecast": "The Supreme Court responds by its Sept 8 deadline to DOJ's direct application on the mail-ballot rule, and North Carolina's ballots go out this weekend under the status quo (pre-rule) process absent an emergency order",
+   "horizon": "2026-09-08",
+   "probability": "55-70%",
+   "basis": "North Carolina's mailing deadline arrives before the Court's own response deadline, and emergency administrative stays this close to a mailing deadline are uncommon without a clearer circuit split already ruled on.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-pm-3",
+   "date": "2026-09-04",
+   "slot": "pm",
+   "forecast": "CME-implied September rate-hike odds hold above 55% into Tuesday's session (the next trading day after Labor Day), rather than fully unwinding again before the Sept 16 FOMC meeting",
+   "horizon": "2026-09-09",
+   "probability": "50-65%",
+   "basis": "Today's jobs beat was a clean, primary-sourced surprise (not a single speech), and Waller has explicitly deferred his own view to next week's CPI rather than pushing back on the odds move today -- there is no confirmed dovish counter-catalyst before Tuesday.",
    "status": "open"
   }
  ]
