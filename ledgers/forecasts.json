@@ -1742,7 +1742,10 @@
    "horizon": "2026-09-08",
    "probability": "65-80%",
    "basis": "The court took the case directly (bypassing the appeals level) specifically because of the Sept 8 deadline, and a report says a sitting justice has urged speed -- both signal the court intends to rule in time, though compressed timelines can still slip.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Missouri Supreme Court ruled unanimously Sept 3, five days ahead of the Sept 8 deadline, blocking the map and ordering a referendum.",
+   "graded": "2026-09-04",
+   "lesson": "A unanimous state supreme court ruling landed with real time to spare before its own certification deadline -- worth noting for how this court has handled deadline pressure in other pending matters."
   },
   {
    "id": "2026-08-24-am-4",
@@ -2085,7 +2088,10 @@
    "horizon": "2026-09-04",
    "probability": "10-20%",
    "basis": "Reporting so far describes Putin as having rejected the idea, and Russia has stated a precondition (control of the rest of Donbas) that remains unmet; the Kremlin has not addressed the proposal on the record in either direction.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Kremlin aide Yuri Ushakov said Sept 2 there is no agreement for a Trump-Putin-Zelensky summit, a harder denial than the conditional rejection Peskov had offered previously.",
+   "graded": "2026-09-04",
+   "lesson": "Russian officials' summit rhetoric hardened rather than softened over the horizon window -- a reminder that early optimistic framing (Ratcliffe's proposal, Zelensky's openness) does not reliably predict the other side's actual response, echoing the pattern already logged for the Canada trade talks."
   },
   {
    "id": "2026-08-30-sun-6",
@@ -2095,7 +2101,10 @@
    "horizon": "2026-09-04",
    "probability": "10-20%",
    "basis": "The domestic gap has widened rather than narrowed at every check since the flood began, and no reconciliation process has been announced by either Nepali body.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "No formal joint Nepal-China reconciliation was found. Nepal's own NDRRMA count (1,114 as of Wednesday) has become the figure most outlets cite without a competing Nepal Police number attached -- a de facto convergence within Nepal's own reporting, but not the cross-agency joint statement the forecast specified, and no reconciliation with Tibet's separately tracked toll.",
+   "graded": "2026-09-04",
+   "lesson": "Domestic figures can converge in practice (one agency's count becoming the de facto standard) well before -- or instead of -- any formal reconciliation statement; worth distinguishing these two outcomes explicitly in future toll-reconciliation forecasts."
   },
   {
    "id": "2026-08-30-sun-7",
@@ -2278,7 +2287,10 @@
    "horizon": "2026-09-08",
    "probability": "60-70%",
    "basis": "Compressed timeline to the certification deadline and the court's decision to hear the case directly.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Missouri Supreme Court ruled Sept 3 (unanimously blocking the map), resolving the case in either-direction terms this forecast covered.",
+   "graded": "2026-09-04",
+   "lesson": "Duplicate-window forecast to 2026-08-24-am-3; both resolve on the same ruling."
   },
   {
    "id": "2026-09-02-pm-1",
@@ -2288,7 +2300,10 @@
    "horizon": "2026-09-04",
    "probability": "40-55%",
    "basis": "ADP's 38K print is the weakest since January and complicates Fed Chair Warsh's hawkish framing directly; odds sat in the mid-to-high 60s Tuesday before this data.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Fed Governor Waller's Sept 3 remarks pushed CME-implied Sept hike odds down to roughly 55%, from ~66% Monday -- at or just below the 55% threshold this forecast specified.",
+   "graded": "2026-09-04",
+   "lesson": "A single Fed governor's on-record comments moved a market-implied probability by double digits within a day -- worth weighting individual Fed speaker remarks heavily in this cycle's odds-tracking, not just scheduled events."
   },
   {
    "id": "2026-09-02-pm-2",
@@ -2331,6 +2346,36 @@
    "horizon": "2026-09-10",
    "probability": "55-70%",
    "basis": "The administration has consistently and quickly appealed similar injunctions against this policy earlier in 2026.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-am-1",
+   "date": "2026-09-04",
+   "slot": "am",
+   "forecast": "Missouri Attorney General Hanaway files an emergency application with the US Supreme Court seeking to reinstate the new congressional map",
+   "horizon": "2026-09-18",
+   "probability": "55-70%",
+   "basis": "Hanaway's explicit, on-record statement that she would appeal, calling the ruling unprecedented, made within hours of the decision.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-am-2",
+   "date": "2026-09-04",
+   "slot": "am",
+   "forecast": "The Pentagon or CENTCOM issues an on-record statement directly addressing the New York Times' wedding-strike visual analysis",
+   "horizon": "2026-09-11",
+   "probability": "30-45%",
+   "basis": "Vance has said the military is investigating 'very fully,' but the administration's pattern this campaign has generally been to let contested-strike claims go unaddressed rather than confirm or deny specific outlet analyses.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-am-3",
+   "date": "2026-09-04",
+   "slot": "am",
+   "forecast": "A further Iran-linked strike or retaliatory action (by Iran or a US/allied response) occurs within 72 hours of the Kermanshah strike",
+   "horizon": "2026-09-07",
+   "probability": "45-60%",
+   "basis": "Near-daily escalation pattern tracked across the past two weeks of this standoff, with each round drawing a response within one to three days.",
    "status": "open"
   }
  ]

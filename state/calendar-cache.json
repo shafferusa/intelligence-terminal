@@ -1,63 +1,39 @@
 {
- "fetched": "2026-09-03T06:55:00-04:00",
- "earnings_fetched": "2026-09-03",
- "earnings_fetched_note": "Re-pulled today (Finnhub day-of confirmations) -- no watchlist-tracked names reporting today; small-caps only (AMBA, AMBR, AOUT). Broadcom's Sept 2 report is now settled via primary 8-K.",
+ "fetched": "2026-09-04T06:55:00-04:00",
+ "earnings_fetched": "2026-09-04",
+ "earnings_fetched_note": "Finnhub day-of confirmations only today (AV monthly pull skipped, no material change expected) -- no watchlist-tracked names reporting; small-caps only (ARDC, BDJ, BYSI, HURC, KNOP, PAXS).",
  "events": [
-  {
-   "ts_et": "2026-09-03T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Productivity and Costs, Q2 2026 (revised)",
-   "importance": "Medium",
-   "reason": "Unit labor cost read, relevant to the wage-price side of the Fed's inflation assessment ahead of the Sept 16 FOMC meeting.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-03T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Initial jobless claims, week of Aug 29",
-   "importance": "Medium",
-   "reason": "Weekly labor-market read; recurring Thursday 8:30 ET release. Prior week (Aug 22) was 203,000.",
-   "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule)"
-  },
-  {
-   "ts_et": "2026-09-03T00:00:00-04:00",
-   "type": "legal",
-   "name": "Judge Talwani hearing on longer-term mail-ballot EO block",
-   "importance": "High",
-   "reason": "Her Aug 28 14-day TRO is set to expire around this window; hearing determines whether a longer preliminary injunction replaces it before the elections.",
-   "source": "Federal Register, Votebeat, PBS, CNBC -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-03T00:00:00-04:00",
-   "type": "legal",
-   "name": "Missouri Supreme Court ruling watch -- congressional map case",
-   "importance": "High",
-   "reason": "Multiple outlets (STLPR, KCUR, KBIA, ABC17) expect a quick ruling after Sept 2 oral arguments, given the Sept 8 ballot-certification deadline; no exact hour published.",
-   "source": "STLPR, KCUR, KBIA, ABC17 -- Confirmed-multiple (ruling pending, not yet issued)"
-  },
-  {
-   "ts_et": "2026-09-03T21:25:00-04:00",
-   "type": "launch",
-   "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
-   "importance": "Medium",
-   "reason": "India's first launch since a January 2026 failure and the replacement for the EOS-03/GISAT-1 payload lost in the 2021 GSLV failure; status \"Go\" per Launch Library 2, no scrub reported as of this morning.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
-  },
   {
    "ts_et": "2026-09-04T08:30:00-04:00",
    "type": "econ_release",
    "name": "Employment Situation, August 2026 (nonfarm payrolls, unemployment rate, average hourly earnings)",
    "importance": "Critical",
-   "reason": "The single most-watched data point of the week -- first-Friday jobs report, ~2 weeks before the Sept 16 FOMC decision.",
+   "reason": "The most-watched data point of the week, two weeks before the Sept 16 FOMC decision, landing into an already-split Fed (Warsh hawkish, Waller dovish).",
    "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-04T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Initial jobless claims, week of Aug 29",
+   "importance": "Medium",
+   "reason": "Weekly labor-market read; recurring Thursday/Friday-adjacent 8:30 ET release.",
+   "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule)"
   },
   {
    "ts_et": "2026-09-04T16:00:00-04:00",
    "type": "space",
-   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, Andoya Spaceport, Norway)",
+   "name": "Spectrum -- \"Onward and Upward\" second flight (Isar Aerospace, Andoya Spaceport, Norway)",
    "importance": "Medium",
-   "reason": "European orbital launch attempt; status remains \"to be confirmed\" per Launch Library 2, consistent with the mission's history of repeated delays.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved"
+   "reason": "Second Spectrum flight after the first ended in failure; carries five CubeSats for ESA's Boost! program. Status per Launch Library 2 as of this morning: scheduled, repeatedly delayed history (Jan/Mar/Apr/Jun 2026 attempts scrubbed).",
+   "source": "Launch Library 2 (thespacedevs.com), European Spaceflight -- Confirmed-primary, status subject to scrub"
+  },
+  {
+   "ts_et": "2026-09-07T00:00:00-04:00",
+   "type": "market_holiday",
+   "name": "Labor Day -- NYSE closed",
+   "importance": "Medium",
+   "reason": "Full US market holiday; no Morning or Closing Brief Monday. Next Closing Brief resumes Tuesday Sept 8.",
+   "source": "data/nyse-holidays.json -- Confirmed-primary"
   },
   {
    "ts_et": "2026-09-08T00:00:00-04:00",
@@ -66,6 +42,38 @@
    "importance": "High",
    "reason": "Dollar-for-dollar tariffs on steel, dairy, appliances, agricultural equipment, paper and electronics; no resumption of US-Canada talks reported.",
    "source": "Al Jazeera, CNBC -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-08T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions: 13-week, 26-week, 6-week; 3-year note",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions plus the 3-year note leg of this month's refunding.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury note auction: 9-year, 11-month",
+   "importance": "Low",
+   "reason": "Refunding leg.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bond auction: 29-year, 11-month",
+   "importance": "Low",
+   "reason": "Refunding leg.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-11T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Consumer Price Index, August 2026",
+   "importance": "Critical",
+   "reason": "Fed Governor Waller has named this release as the decisive input for his own Sept 16 vote.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
