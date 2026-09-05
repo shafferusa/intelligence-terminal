@@ -39,17 +39,15 @@
    "headline": "Missouri Supreme Court unanimously kills the Trump-backed congressional map",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-04-pm",
+   "last_updated": "2026-09-05-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "The Missouri Supreme Court refused Thursday to stay its own map ruling pending appeal; AG Hanaway is now filing an emergency application directly with the US Supreme Court, with ballots due to be finalized by Tuesday -- an extremely narrow window for the justices to act.",
-   "score_note": "A resolved story re-escalated to an active Supreme Court emergency question within 48 hours.",
+   "one_line": "AG Hanaway formally filed her emergency application with the US Supreme Court Saturday, asking for a ruling by Monday given Tuesday's ballot-certification deadline. Missouri has already reverted operationally to its 2022 map.",
+   "score_note": "A resolved story re-escalated to an active Supreme Court emergency question within 48 hours, now formally before the Court.",
    "sources": [
-    "Missouri Supreme Court opinion (primary, via reporting)",
-    "NBC News",
-    "CNN",
-    "The Hill",
-    "Yahoo News",
-    "Townhall"
+    "ABC17News",
+    "KCUR",
+    "KCTV5",
+    "Missouri Independent"
    ],
    "watch": true
   },
@@ -158,20 +156,18 @@
   },
   {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
-   "headline": "CIA director's secret Moscow trip surfaces a Trump-Putin-Zelensky summit proposal",
+   "headline": "US envoys land in Moscow with a Ukraine peace plan as Putin orders a three-day ceasefire",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-09-04-am",
-   "verification": "Confirmed-multiple (Peskov statements); Single-reliable-source, unverified (Ukrainian intelligence claim of new Russian offensive prep)",
-   "one_line": "Kremlin aide Yuri Ushakov said Sept 2 there is no agreement for a Trump-Putin-Zelensky summit, directly contradicting earlier White House suggestions one was arranged. This report's Aug 30 forecast that Putin would agree to some form of the summit by Sept 4 is graded wrong.",
-   "score_note": "Clean resolution of the open forecast; Kremlin's public position has hardened into outright denial rather than conditional rejection.",
+   "last_updated": "2026-09-05-sat",
+   "verification": "Confirmed-multiple (envoy trip, ceasefire order)",
+   "one_line": "Steve Witkoff and Jared Kushner arrived in Moscow Saturday with what the White House calls a plan to end the war; Putin ordered a three-day halt to strikes on Kyiv and Zelensky reciprocated, with the envoys expected in Kyiv Sunday -- the first concrete movement since the Kremlin flatly rejected the earlier floated summit Sept 2.",
+   "score_note": "Story arc: floated summit (Aug 30) -> flat Kremlin rejection (Sept 2) -> envoys on the ground with a reciprocal ceasefire (Sept 5). Watch whether it survives contact with Monday.",
    "sources": [
-    "AP",
-    "New York Times",
-    "Meduza",
-    "Ukrainska Pravda",
-    "Reuters",
-    "Axios"
+    "CNN",
+    "CNBC",
+    "Trump remarks to reporters (primary, via wire)",
+    "Zelensky public statement (primary, via wire)"
    ],
    "watch": true
   },
@@ -367,7 +363,7 @@
     "watchTowr research",
     "SC Media"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "ai-triple-outage-sep3",
@@ -383,7 +379,7 @@
     "The Register",
     "company status pages (primary)"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "us-jobs-report-aug-beat-sep4",
@@ -449,7 +445,7 @@
     "Yahoo Finance",
     "TheStreet"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "isar-spectrum-scrub-sep4",
@@ -464,6 +460,23 @@
     "European Spaceflight",
     "NASASpaceflight",
     "TechTimes"
+   ],
+   "watch": true
+  },
+  {
+   "id": "kharg-island-tanker-strike-sep5",
+   "headline": "Iranian state media: a US strike disabled a tanker off Kharg Island itself",
+   "status": "Unconfirmed",
+   "first_seen": "2026-09-05-sat",
+   "last_updated": "2026-09-05-sat",
+   "verification": "Single-reliable-source, unverified (Iranian state media claim, with video corroboration; no CENTCOM confirmation)",
+   "one_line": "Tasnim reports four US missiles struck the tanker Stark 1 roughly six nautical miles off Kharg Island Saturday morning, with video via Iran International showing radio warnings beforehand; no casualties reported. CENTCOM has not confirmed or commented. Distinct from Trump's Aug 31 AI-generated video claim of a Kharg strike, which was never corroborated and is treated as fabricated.",
+   "score_note": "The most direct threat yet to Iran's main oil-export terminal if confirmed; watch for a CENTCOM statement.",
+   "sources": [
+    "Tasnim (Iranian state media, primary claim, unverified)",
+    "Iran International (video)",
+    "CNBC",
+    "Euronews"
    ],
    "watch": true
   }

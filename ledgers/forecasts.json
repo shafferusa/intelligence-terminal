@@ -1523,7 +1523,10 @@
    "horizon": "2026-09-01",
    "probability": "25-35%",
    "basis": "361+ confirmed victims across 47 countries and an active, moderate-confidence China-nexus campaign, contrasted with CISA's much faster KEV addition of a separate, more recently disclosed flaw (Ray/CVE-2025-62593) on Aug 17.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CISA added CVE-2026-59310 to its KEV catalog on 2026-08-18 itself (BOD 26-04 remediation deadline 2026-08-21). No additional major victim disclosure or new ransomware deployment beyond the already-known 361-victim/47-country scope was found in this week's research before or since that listing.",
+   "graded": "2026-09-05",
+   "lesson": "A forecast anchored to 'before it is added to KEV' needs the KEV-addition date itself confirmed at write time, not assumed still pending."
   },
   {
    "id": "2026-08-18-pm-1",
@@ -1533,7 +1536,10 @@
    "horizon": "2026-09-01",
    "probability": "30-45%",
    "basis": "Iran's senior-official statement to Reuters citing a 'few weeks' deadline, five-plus strikes in the past two weeks, and no ceasefire extension on the table.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Hormuz standoff produced extensive follow-on attacks well beyond a single incident: the Aug 30 Larak Island strike, Aug 31 Jordan/UAE strikes, Sept 1 unclaimed tanker strikes, Sept 2 ~100-target US strike, Sept 3 Jordan/Bahrain/Kuwait/Iraq retaliation, Sept 4 Kuwait/UAE strikes and Kermanshah, and a Sept 5 unconfirmed Kharg Island tanker strike.",
+   "graded": "2026-09-05",
+   "lesson": "This forecast undershot the scale of what followed -- useful context for calibrating future Hormuz-related probability ranges upward."
   },
   {
    "id": "2026-08-18-pm-2",
@@ -1605,7 +1611,10 @@
    "horizon": "2026-08-28",
    "probability": "25-40%",
    "basis": "vCenter environments are large and complex to patch quickly at scale, and the campaign's 361 confirmed victims across 47 countries suggest broad exposure beyond what a single-day federal deadline typically clears; no reporting yet directly confirms or denies compliance.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No report surfaced within the week, or since, confirming any specific federal civilian agency missed the Aug 21 VMware vCenter KEV remediation deadline. Absence of confirming reporting is not proof of compliance, and this report is not claiming the latter -- only that the forecasted news event did not occur.",
+   "graded": "2026-09-05",
+   "lesson": "This forecast should have been graded last Saturday (2026-08-29), its horizon; it was missed in that sweep and is graded a week late here. Logged as a gap, not hidden."
   },
   {
    "id": "2026-08-23-sun-1",
@@ -1768,7 +1777,10 @@
    "horizon": "2026-08-31",
    "probability": "70-80%",
    "basis": "Iran's FM spokesman response today was rhetorical (\"consequences,\" not a stated action), and this campaign's pattern throughout has been threats outrunning action; the wider Gulf-oil-blockade threat is explicitly conditioned on a Gulf state joining the sanctions, which has not happened.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Iran's response to the Aug 24 sanctions package stayed rhetorical through Aug 31. The kinetic exchange that began Aug 30 traces to a separate proximate cause -- the US strike near Larak Island -- not the sanctions package itself.",
+   "graded": "2026-09-05",
+   "lesson": "Worth naming explicitly: this forecast's narrow framing (retaliation for THIS package specifically) held even as the broader standoff escalated dramatically for other reasons in the same window."
   },
   {
    "id": "2026-08-24-pm-2",
@@ -1791,7 +1803,10 @@
    "horizon": "2026-08-31",
    "probability": "55-70%",
    "basis": "Both companies have already engaged publicly on the underlying incidents (blog posts, interviews); a formal congressional deadline raises the pressure to respond even if incompletely, though neither has a legal obligation to answer a letter from members not in the majority.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The 116-company joint letter on AI cyber risk, which both OpenAI and Anthropic signed within the window, was explicitly not an individual response to House Democrats' specific questions. OpenAI's actual individual letter to Congress did not arrive until Sept 2, past the 5-business-day window (~Aug 31).",
+   "graded": "2026-09-05",
+   "lesson": "A collective industry statement should not have been treated as even partially satisfying this forecast; the distinction was already flagged in real time and held up under grading."
   },
   {
    "id": "2026-08-25-am-1",
@@ -1827,7 +1842,10 @@
    "horizon": "2026-09-01",
    "probability": "80-90%",
    "basis": "Active Oman/Pakistan diplomatic track and no Gulf-state statement since Monday's sanctions rollout, despite Iran's all-Gulf blockade threat.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "No Gulf state formally joined the named US sanctions campaign ('Operation Economic Outcast') by name. But the UAE announced an indefinite trade and financial embargo on Iran this week after alleging an Iranian missile strike on its own territory -- major unilateral economic action against Iran, functionally similar in effect though framed as the UAE's own retaliation rather than joining Washington's campaign.",
+   "graded": "2026-09-05",
+   "lesson": "Forecasts about a state 'joining' a US-branded campaign should anticipate that allies may take parallel action for their own stated reasons rather than formally aligning with the US framing -- a distinction with a difference on paper, less of one in practice."
   },
   {
    "id": "2026-08-25-am-4",
@@ -1932,7 +1950,10 @@
    "horizon": "2026-09-02",
    "probability": "30-45%",
    "basis": "The objection is currently sourced to unnamed reporting via CNBC and wire pickups with no on-record confirmation from either government; administrations often let such objections play out through private diplomatic channels rather than public confirmation, but this dispute has drawn heavy press attention that raises pressure to respond.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "President Trump's own on-record threat to bomb Oman 'if it gets in the way' of the standoff functions as a direct, on-record US objection to the Iran-Oman Hormuz corridor framework, within the one-week window.",
+   "graded": "2026-09-05",
+   "lesson": "The objection surfaced in a more dramatic form (a public threat) than the forecast anticipated (a formal diplomatic statement) -- both should count as satisfying 'confirms on the record.'"
   },
   {
    "id": "2026-08-26-pm-3",
@@ -1952,7 +1973,10 @@
    "horizon": "2026-09-03",
    "probability": "45-60%",
    "basis": "China's much larger missing count (558) has not yet been folded into any combined toll; Nepal's own count (157 confirmed, 403 missing) is still moving",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Nepal-Tibet flood toll rose far past 200 -- to over 900 within a week, past 1,000 within ten days, and to 1,287 by Sept 4 -- now Nepal's deadliest disaster since the 2015 earthquake.",
+   "graded": "2026-09-05",
+   "lesson": "Correct in direction but dramatically underestimated in magnitude; a lesson in not anchoring disaster-toll forecasts too conservatively when search-and-rescue access is still expanding."
   },
   {
    "id": "2026-08-27-am-2",
@@ -2034,7 +2058,10 @@
    "horizon": "2026-08-31",
    "probability": "75-85%",
    "basis": "NASA/SpaceX have formally declared the mission 'Go for Launch' after completing the Launch Readiness Review, with a 60% favorable-weather forecast for the primary window and a backup day available if needed",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Nancy Grace Roman Space Telescope launched successfully at 7:26 AM ET Sunday Aug 30 on its primary attempt, with no anomalies reported at any stage.",
+   "graded": "2026-09-05",
+   "lesson": "Clean resolution; NASA/SpaceX's own 'Go for Launch' declaration and the 60% favorable-weather forecast both proved reliable signals here."
   },
   {
    "id": "2026-08-28-pm-3",
@@ -2284,7 +2311,10 @@
    "horizon": "2026-09-05",
    "probability": "30-45%",
    "basis": "Odds sat in the mid-to-high 60s today; both JOLTS (a narrow miss) and ISM Manufacturing (a miss, decelerating from July) were softer than needed to force odds decisively through 70%, so a further push likely needs a hot Friday jobs report.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CME-implied September rate-hike odds closed the week in the high 50s to mid-60s percent range following Friday's payrolls beat, per multiple trackers -- a real jump from Thursday's ~55%, but not above the 70% threshold this forecast required.",
+   "graded": "2026-09-05",
+   "lesson": "The direction of Friday's move was correctly anticipated by other forecasts this week, but this specific threshold (70%) overshot even a genuinely large surprise -- a reminder that a correct directional call can still miss a specific numeric bar."
   },
   {
    "id": "2026-09-02-am-1",
