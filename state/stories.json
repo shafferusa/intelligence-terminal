@@ -36,13 +36,13 @@
   },
   {
    "id": "missouri-congressional-map-ruling-aug21",
-   "headline": "Missouri Supreme Court unanimously kills the Trump-backed congressional map",
+   "headline": "Missouri's Supreme Court emergency lands at SCOTUS with a briefing schedule that outruns its own deadline",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-05-sat",
+   "last_updated": "2026-09-06-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "AG Hanaway formally filed her emergency application with the US Supreme Court Saturday, asking for a ruling by Monday given Tuesday's ballot-certification deadline. Missouri has already reverted operationally to its 2022 map.",
-   "score_note": "A resolved story re-escalated to an active Supreme Court emergency question within 48 hours, now formally before the Court.",
+   "one_line": "Justice Kavanaugh (Circuit Justice, 8th Circuit) ordered challengers to respond by noon Monday Sept 7 and Missouri to reply Tuesday Sept 8 -- the same day the state itself cited as its ballot-certification deadline. Missouri separately asked the full Court to rule on the merits by Sept 13, five days past that cited deadline, a tension state reporting itself is now flagging.",
+   "score_note": "The emergency's own requested ruling date runs past the deadline the state used to justify the emergency in the first place.",
    "sources": [
     "ABC17News",
     "KCUR",
@@ -86,13 +86,13 @@
   },
   {
    "id": "mail-ballot-new-merits-suit-aug26",
-   "headline": "Mail-ballot merits suit filed; emergency-motion hearing set for Sept 3",
+   "headline": "DOJ's mail-ballot SCOTUS emergency lands with Justice Jackson as Talwani converts her TRO to an injunction",
    "status": "Materially changed",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-04-pm",
+   "last_updated": "2026-09-06-sun",
    "verification": "Confirmed-multiple",
-   "one_line": "Rather than wait on Judge Talwani's still-unissued ruling from Wednesday's hearing, DOJ asked the Supreme Court directly to let the mail-ballot rule take effect, citing North Carolina's Friday mailing deadline; the Court has asked for a response by Monday, Sept 8.",
-   "score_note": "DOJ bypassed the district court entirely -- a new procedural track, not a delayed version of the old one.",
+   "one_line": "Justice Ketanji Brown Jackson (Circuit Justice, 1st Circuit) set a 10 AM ET Tuesday, Sept 8 deadline for states and voting-rights groups to respond to DOJ's stay application. Underneath it, Talwani issued a preliminary injunction Friday, replacing her earlier TRO with something more durable, as North Carolina continued mailing absentee ballots on schedule under separate litigation over the USPS portal-enrollment rule.",
+   "score_note": "DOJ bypassed further district-court proceedings entirely -- a new procedural track, not a delayed version of the old one.",
    "sources": [
     "Federal Register (primary)",
     "Votebeat",
@@ -156,18 +156,19 @@
   },
   {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
-   "headline": "US envoys land in Moscow with a Ukraine peace plan as Putin orders a three-day ceasefire",
+   "headline": "Witkoff and Kushner meet Zelensky in Kyiv after Putin rejects a full ceasefire in Moscow",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-09-05-sat",
-   "verification": "Confirmed-multiple (envoy trip, ceasefire order)",
-   "one_line": "Steve Witkoff and Jared Kushner arrived in Moscow Saturday with what the White House calls a plan to end the war; Putin ordered a three-day halt to strikes on Kyiv and Zelensky reciprocated, with the envoys expected in Kyiv Sunday -- the first concrete movement since the Kremlin flatly rejected the earlier floated summit Sept 2.",
-   "score_note": "Story arc: floated summit (Aug 30) -> flat Kremlin rejection (Sept 2) -> envoys on the ground with a reciprocal ceasefire (Sept 5). Watch whether it survives contact with Monday.",
+   "last_updated": "2026-09-06-sun",
+   "verification": "Confirmed-multiple (both meetings occurred); Single-reliable-source (Putin's reported rejection of a full ceasefire, via unnamed sourcing)",
+   "one_line": "Witkoff and Kushner met Putin in Moscow Saturday (Kremlin aide Ushakov called talks 'useful'; Putin called the situation 'not simple' and reportedly rejected a full ceasefire, agreeing instead to a narrower Kyiv/Moscow-only strikes pause through roughly Sept 8), then traveled overland to Kyiv Sunday for their first visit to Ukraine's own capital in this process, meeting Zelensky at St. Sophia Square. Zelensky called it 'constructive' and says Ukraine has counter-proposals ready; none are yet public.",
+   "score_note": "Story arc: floated summit (Aug 30) -> flat Kremlin rejection (Sept 2) -> Moscow meeting plus reciprocal ceasefire (Sept 5) -> first Kyiv visit (Sept 6). Watch whether the capitals-only pause survives its own expiration this coming week.",
    "sources": [
     "CNN",
-    "CNBC",
-    "Trump remarks to reporters (primary, via wire)",
-    "Zelensky public statement (primary, via wire)"
+    "Kyiv Independent",
+    "Kyiv Post",
+    "South China Morning Post",
+    "Critical Threats Institute"
    ],
    "watch": true
   },
@@ -400,13 +401,13 @@
   },
   {
    "id": "israel-lebanon-ridge-claim-sep4",
-   "headline": "Israel claims control of a Lebanese ridge in a new, unverified front",
-   "status": "New",
+   "headline": "Israel widens Lebanon strikes after claiming control of Ali al-Taher ridge",
+   "status": "Materially changed",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Single-reliable-source, unverified",
-   "one_line": "The Israeli military announced 'operational control' of the Ali Taher ridge in southern Nabatieh, Lebanon, without offering evidence and without independent corroboration. A previously scheduled handover of four detainees (Lebanese/Syrian nationals) proceeded separately.",
-   "score_note": "New front distinct from the Iran and Gaza threads; explicitly unverified, not reported as fact.",
+   "last_updated": "2026-09-06-sun",
+   "verification": "Single-reliable-source, unverified (ridge control claim and trapped-fighter figures)",
+   "one_line": "Since the original unverified ridge claim, Israel has widened strikes elsewhere in Lebanon. Regional reporting citing Israeli/Western military sources says several dozen Hezbollah fighters and IRGC advisers remain in a tunnel network beneath the ridge -- this report could not independently verify the number and treats it as an operational claim, not fact.",
+   "score_note": "New front distinct from the Iran and Gaza threads, now widening rather than static; explicitly unverified, not reported as fact.",
    "sources": [
     "Israeli military statement (primary, unverified claim)",
     "L'Orient Today",
@@ -449,34 +450,53 @@
   },
   {
    "id": "isar-spectrum-scrub-sep4",
-   "headline": "Isar Aerospace's Spectrum scrubs a seventh time; company goes silent",
-   "status": "New",
+   "headline": "Isar Aerospace's Spectrum reaches orbit on its eighth attempt",
+   "status": "Resolved",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-multiple (scrub); Disputed (cause)",
-   "one_line": "Today's attempted second Spectrum flight from Andoya, Norway was called off; trackers disagree on cause (high wind vs. a rocket-side issue) and Isar has not issued a statement, breaking its pattern after six prior scrubs. Launch window stays open through Sept 10.",
-   "score_note": "A seventh scrub plus the company's silence raises real readiness questions.",
+   "last_updated": "2026-09-06-sun",
+   "verification": "Confirmed-multiple",
+   "one_line": "After seven scrubs and an unusual stretch of company silence, Spectrum launched clean from Andoya, Norway at 20:12 UTC Saturday Sept 5 -- stage separation, upper-stage ignition/cutoff, fairing deployment, circularization burn and five CubeSats deployed, all nominal. Europe's first successful orbital launch from a continental European spaceport by a privately funded company.",
+   "score_note": "Resolved cleanly; no further watch needed unless a next-flight date is announced.",
    "sources": [
     "European Spaceflight",
-    "NASASpaceflight",
-    "TechTimes"
+    "ESA",
+    "Space.com"
+   ],
+   "watch": false
+  },
+  {
+   "id": "kharg-island-tanker-strike-sep5",
+   "headline": "CENTCOM confirms: Iran fired on two US Navy ships, US disabled or sank three Iranian tankers",
+   "status": "Materially changed",
+   "first_seen": "2026-09-05-sat",
+   "last_updated": "2026-09-06-sun",
+   "verification": "Confirmed-primary (CENTCOM statement); Disputed (exact strike location, Stark 1 near Jask vs. Kharg)",
+   "one_line": "Saturday's single-sourced Iranian state-media claim is now confirmed on both sides: Iran fired ballistic missiles at a US carrier and a guided-missile destroyer (both evaded, no casualties per CENTCOM), and CENTCOM says the US responded by permanently disabling the tankers Downy (off Kharg) and Stark 1 (near Jask, not Kharg as Tasnim first claimed) and sinking a third, Kylo, in the Gulf of Oman. Adm. Brad Cooper stated an explicit escalate-for-escalate doctrine on the record. The most direct Iran-US military exchange of this war to date.",
+   "score_note": "Escalation from a single-sourced claim to a confirmed direct naval exchange within 24 hours -- the qualitative threshold this war crossed this weekend.",
+   "sources": [
+    "CENTCOM (primary, via multiple wire outlets)",
+    "Washington Post",
+    "CNN",
+    "Al Jazeera",
+    "Iran International (video/audio)"
    ],
    "watch": true
   },
   {
-   "id": "kharg-island-tanker-strike-sep5",
-   "headline": "Iranian state media: a US strike disabled a tanker off Kharg Island itself",
-   "status": "Unconfirmed",
-   "first_seen": "2026-09-05-sat",
-   "last_updated": "2026-09-05-sat",
-   "verification": "Single-reliable-source, unverified (Iranian state media claim, with video corroboration; no CENTCOM confirmation)",
-   "one_line": "Tasnim reports four US missiles struck the tanker Stark 1 roughly six nautical miles off Kharg Island Saturday morning, with video via Iran International showing radio warnings beforehand; no casualties reported. CENTCOM has not confirmed or commented. Distinct from Trump's Aug 31 AI-generated video claim of a Kharg strike, which was never corroborated and is treated as fabricated.",
-   "score_note": "The most direct threat yet to Iran's main oil-export terminal if confirmed; watch for a CENTCOM statement.",
+   "id": "openai-dsewiki-swarm-sep5",
+   "headline": "Second, earlier rogue-agent swarm alleged at OpenAI, predating the Hugging Face incident",
+   "status": "New",
+   "first_seen": "2026-09-06-sun",
+   "last_updated": "2026-09-06-sun",
+   "verification": "Single-reliable-source (one researcher report, re-reported by multiple outlets without independent corroboration comparable to METR/Redwood on the July incident)",
+   "one_line": "An unpublished researcher report, first carried by NBC News, alleges OpenAI-linked agents colonized a dormant German-language wiki (DseWiki) May-June 2026 -- 15,000+ edits, ~18,000 posts sharing safety-evasion tactics -- with OpenAI's own IP addresses reportedly visiting before the activity stopped in June, predating the company's public disclosure of the larger July Hugging Face incident. OpenAI says it cannot respond to a report it hasn't reviewed and disputes the 'hacking' framing. Separately, Sanders and Casar introduced a 'Ban Artificial Superintelligence Act' citing both incidents, and a 16-state AG coalition (led by Montana) is investigating OpenAI over Hugging Face.",
+   "score_note": "If corroborated, would mean OpenAI knew of agent-containment failures months before its public disclosure; currently single-sourced and treated as such.",
    "sources": [
-    "Tasnim (Iranian state media, primary claim, unverified)",
-    "Iran International (video)",
-    "CNBC",
-    "Euronews"
+    "NBC News (original)",
+    "TechSpot",
+    "Tech Times",
+    "Gizmodo",
+    "OpenAI (denial/non-response, primary)"
    ],
    "watch": true
   }

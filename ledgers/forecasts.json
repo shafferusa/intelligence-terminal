@@ -2470,6 +2470,116 @@
    "probability": "50-65%",
    "basis": "Today's jobs beat was a clean, primary-sourced surprise (not a single speech), and Waller has explicitly deferred his own view to next week's CPI rather than pushing back on the odds move today -- there is no confirmed dovish counter-catalyst before Tuesday.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-1",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "August 2026 CPI (Fri Sept 11, 8:30 ET) prints at or above 2.9% year over year headline, i.e. accelerating from July's 2.7%.",
+   "horizon": "2026-09-11",
+   "probability": "55-65%",
+   "basis": "Cross-corroborated economist-survey aggregation (not a single primary bank table) puts consensus at 2.9% y/y headline; this week's record US diesel price ($5.85/gal) and Brent's 6.6-9% weekly surge both predate the CPI reference period's tail end and argue for upside risk to that consensus.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-2",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "A further direct Iran-US military exchange (beyond Saturday's tanker strikes and Iranian missile fire on two US Navy ships) occurs this week.",
+   "horizon": "2026-09-11",
+   "probability": "35-50%",
+   "basis": "CENTCOM commander Adm. Brad Cooper stated an explicit escalate-for-escalate doctrine on the record after Saturday's exchange; VP Vance's standing precondition for talks (shipping attacks must stop first) remains unmet by either side.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-3",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "The Kyiv/Moscow capitals-only strikes pause is extended, widened, or formalized into a broader arrangement by Sept 8, rather than simply lapsing back into strikes.",
+   "horizon": "2026-09-08",
+   "probability": "30-45%",
+   "basis": "Zelensky called Sunday's Kyiv meeting with Witkoff/Kushner 'constructive' and says Ukraine has counter-proposals ready, but Putin reportedly rejected a full ceasefire in Moscow a day earlier and no detail of Ukraine's own proposal is yet public, leaving genuine two-way uncertainty.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-4",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "The Supreme Court does not issue a final ruling on Missouri's congressional-map emergency application by the state's own cited Sept 8 certification deadline.",
+   "horizon": "2026-09-08",
+   "probability": "55-70%",
+   "basis": "Missouri's own filing asks the Court to rule by Sept 13, five days after the Sept 8 date it cites as the operative certification deadline, and Justice Kavanaugh's briefing schedule (state's reply due Sept 8 itself) leaves no realistic window to rule by that date.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-5",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Brent crude closes the week (Fri Sept 11) above $90/bbl, holding most of this weekend's Iran-war-driven surge rather than fully round-tripping lower.",
+   "horizon": "2026-09-11",
+   "probability": "55-65%",
+   "basis": "Friday's close of $94.86 reflects an active, unresolved Gulf conflict that escalated further Saturday, and OPEC+ held October output unchanged Sunday rather than adding supply to cool the price.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-6",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "North Korea conducts a missile test or other visible military signal during the Sept 7-11 'Freedom Edge' drill window.",
+   "horizon": "2026-09-11",
+   "probability": "40-55%",
+   "basis": "Kim Yo Jong and Pak Jong-chon both issued sharply escalatory statements ahead of the drill; North Korea fired roughly ten short-range ballistic missiles on Aug 20 around an earlier drill announcement, a plausible but unconfirmed precedent for this window.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-7",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "VIX closes the week (Fri Sept 11) above 16, materially above Friday's 14.53 close.",
+   "horizon": "2026-09-11",
+   "probability": "30-40%",
+   "basis": "VIX enters the week in normal, undistressed contango (14.53 spot / 11.97 nine-day / 17.61 three-month) with no term-structure stress signal, but two binary catalysts -- Friday's CPI and the Gulf war's trajectory -- both sit inside the window.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-8",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Base scenario: CPI lands close to the estimated consensus (roughly 0.3% m/m, 2.9% y/y headline), the Gulf conflict continues without a further direct Iran-US exchange, and the Kyiv/Moscow pause quietly lapses without a broader deal -- equities trade a narrow range for the week.",
+   "horizon": "2026-09-11",
+   "probability": "35-45%",
+   "basis": "Analytic judgment weighing the estimated CPI consensus, the still-open Gulf and Ukraine tracks, and no other scheduled catalyst of comparable size this week -- not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-9",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Bull scenario: CPI surprises cooler than consensus, the Gulf conflict de-escalates with no further Iran-US exchange, and the Kyiv/Moscow pause extends or widens -- broad risk-on, oil eases, VIX stays below 15.",
+   "horizon": "2026-09-11",
+   "probability": "15-20%",
+   "basis": "Requires multiple favorable confirmations (a cool CPI print, Gulf de-escalation, an extended pause) to align simultaneously; analytic judgment, not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-10",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Bear scenario: CPI surprises hot, confirming energy pass-through, paired with at least one further Gulf incident short of full escalation -- yields back up, equities give back part of the week's gains, high-yield spreads widen off 2.65%.",
+   "horizon": "2026-09-11",
+   "probability": "20-30%",
+   "basis": "The diesel-price record and Brent's surge both argue for upside CPI risk, and Adm. Cooper's stated escalate-for-escalate doctrine argues for a real chance of a further, contained Gulf incident this week.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-11",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Shock scenario: a further US-Iran exchange produces casualties on either side, North Korea conducts a provocative test during Freedom Edge that draws a US/allied response, or the Kyiv/Moscow pause collapses into a mass-casualty strike -- broad risk-off, oil spikes past $95, VIX breaks above 20.",
+   "horizon": "2026-09-11",
+   "probability": "8-15%",
+   "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff on any of three independent tracks (Gulf, Korea, Ukraine); analytic judgment, not a statistical model.",
+   "status": "open"
   }
  ]
 }
