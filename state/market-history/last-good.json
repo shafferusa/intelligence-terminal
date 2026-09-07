@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-07T11:15:00Z",
+ "fetched_at": "2026-09-07T20:45:00Z",
  "treasury_par_curve": {
   "date": "2026-09-04",
   "BC_1MONTH": 3.79,
@@ -70,43 +70,43 @@
   "label": "EOD official"
  },
  "fx": {
-  "AUD": 1.3882,
-  "BRL": 5.1114,
-  "CAD": 1.38,
+  "AUD": 1.3861,
+  "BRL": 5.1261,
+  "CAD": 1.382,
   "CHF": 0.80924,
-  "CNY": 6.7109,
+  "CNY": 6.711,
   "EUR": 0.86044,
-  "GBP": 0.7391,
+  "GBP": 0.73906,
   "INR": 94.49,
-  "JPY": 156.25,
-  "MXN": 16.8991
+  "JPY": 154.75,
+  "MXN": 16.9121
  },
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 79418,
-    "usd_24h_change": -0.71
+    "usd": 79209,
+    "usd_24h_change": -0.886
    },
    "ethereum": {
-    "usd": 2490.34,
-    "usd_24h_change": -0.36
+    "usd": 2490.97,
+    "usd_24h_change": -0.159
    },
    "solana": {
-    "usd": 105.00,
-    "usd_24h_change": -1.46
+    "usd": 104.05,
+    "usd_24h_change": -1.545
    },
    "cardano": {
-    "usd": 0.2194,
-    "usd_24h_change": 0.26
+    "usd": 0.220777,
+    "usd_24h_change": 0.033
    }
   },
   "global": {
-   "total_market_cap_usd": 2689532190621,
-   "btc_dominance": 59.13,
-   "eth_dominance": 11.26,
-   "market_cap_change_24h_pct": -3.12
+   "total_market_cap_usd": 2684548065110.24,
+   "btc_dominance": 59.109,
+   "eth_dominance": 11.293,
+   "market_cap_change_24h_pct": -3.141
   },
-  "as_of": "2026-09-07 11:15 UTC (Live, Labor Day morning)"
+  "as_of": "2026-09-07 20:45 UTC (Live, Labor Day afternoon)"
  },
  "indices": {
   "^GSPC": {
@@ -132,64 +132,64 @@
  },
  "futures_commodities_fx": {
   "ES=F": {
-   "price": 7716.25,
-   "prev": 7754.75
+   "price": 7722.0,
+   "prev": 7722.0
   },
   "NQ=F": {
-   "price": 29524.0,
-   "prev": 29524.75
+   "price": 29565.25,
+   "prev": 29565.25
   },
   "YM=F": {
-   "price": 53277.0,
-   "prev": 53745.0
+   "price": 53440.0,
+   "prev": 53440.0
   },
   "RTY=F": {
-   "price": 2974.300048828125,
-   "prev": 2969.699951171875
+   "price": 2976.6,
+   "prev": 2976.6
   },
   "^GSPC": {
-   "price": 7718.60009765625,
-   "prev": 7747.7099609375
+   "price": 7718.6,
+   "prev": 7718.6
   },
   "^IXIC": {
-   "price": 26506.990234375,
-   "prev": 26584.060546875
+   "price": 26506.99,
+   "prev": 26506.99
   },
   "^DJI": {
    "price": 53414.25,
-   "prev": 53686.109375
+   "prev": 53414.25
   },
   "^RUT": {
-   "price": 2975.64794921875,
-   "prev": 2968.27001953125
+   "price": 2975.65,
+   "prev": 2975.65
   },
   "^TNX": {
-   "price": 4.783999919891357,
-   "prev": 4.76200008392334
+   "price": 4.784,
+   "prev": 4.784
   },
   "CL=F": {
-   "price": 91.25,
-   "prev": 91.30000305175781
+   "price": 91.48,
+   "prev": 91.48
   },
   "GC=F": {
-   "price": 4476.7998046875,
-   "prev": 4491.7001953125
+   "price": 4476.6,
+   "prev": 4429.8
   },
   "NG=F": {
-   "price": 2.946000099182129,
-   "prev": 2.9130001068115234
+   "price": 2.975,
+   "prev": 2.975
   },
   "HG=F": {
-   "price": 6.665999889373779,
-   "prev": 6.577000141143799
+   "price": 6.6825,
+   "prev": 6.597
   },
   "EURUSD=X": {
-   "price": 1.1615750789642334,
-   "prev": 1.1628313064575195
+   "price": 1.16252,
+   "prev": 1.1614
   },
   "DX-Y.NYB": {
-   "price": 99.15799713134766,
-   "prev": 99.0
+   "price": 99.176,
+   "prev": 99.16
   }
  },
  "watchlist": {
@@ -1696,6 +1696,33 @@
    "l52": 3.947,
    "vol": 0,
    "avgvol": null
+  }
+ },
+ "global_indices": {
+  "^N225": {
+   "price": 66399.84,
+   "prev": 66215.34,
+   "date": "2026-09-07"
+  },
+  "^HSI": {
+   "price": 25413.12,
+   "prev": 25566.99,
+   "date": "2026-09-07"
+  },
+  "000001.SS": {
+   "price": 3932.7,
+   "prev": 3979.89,
+   "date": "2026-09-07"
+  },
+  "^FTSE": {
+   "price": 10822.13,
+   "prev": 10824.3,
+   "date": "2026-09-07"
+  },
+  "^GDAXI": {
+   "price": 26006.53,
+   "prev": 26258.11,
+   "date": "2026-09-07"
   }
  }
 }

@@ -1,6 +1,24 @@
 {
  "stories": [
   {
+   "id": "miami-cargo-plane-crash-sep6",
+   "headline": "Amazon-branded cargo jet overruns Miami runway, kills five",
+   "status": "New",
+   "first_seen": "2026-09-07-pm",
+   "last_updated": "2026-09-07-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Prime Air Flight 7598, a 21 Air-operated Boeing 767 from San Juan, overran the runway landing at Miami International around 2pm ET Sunday, struck vehicles and caught fire. Five dead, five injured. FAA/NTSB investigating. This outlet did not cover the Sunday-afternoon crash until this pm edition, roughly 26 hours late -- logged to the corrections ledger.",
+   "score_note": "Fatal US aviation accident; coverage gap disclosed rather than folded in as newly broken.",
+   "sources": [
+    "Miami-Dade Fire Rescue (primary, via reporting)",
+    "CNN",
+    "ABC News",
+    "NBC News",
+    "NPR"
+   ],
+   "watch": true
+  },
+  {
    "id": "gaza-hamas-disarmament-deal-jul30",
    "headline": "Hamas warns Gaza ceasefire \"could collapse\" as violation tally hits 29 in three weeks",
    "status": "Materially changed",
@@ -39,15 +57,14 @@
    "headline": "Missouri's Supreme Court emergency lands at SCOTUS with a briefing schedule that outruns its own deadline",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-07-am",
+   "last_updated": "2026-09-07-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "As of Monday morning, challenger Richard von Glahn's noon response had not yet been filed. Missouri Independent/KCUR report the state's own statutory ballot-certification deadline falls Tuesday Sept 8 -- the same day Missouri's own SCOTUS reply is due, and five days before the Sept 13 merits ruling Missouri itself requested. AG Hanaway separately cites a Sept 19 cutoff for mailing overseas/military ballots. Absent a stay by Tuesday, the 2022 map likely governs regardless of the federal appeal's outcome.",
-   "score_note": "The emergency's own requested ruling date runs past the deadline the state used to justify the emergency in the first place.",
+   "one_line": "Challenger Richard von Glahn filed his SCOTUS opposition brief Monday, arguing the case 'does not present a real emergency' and that Missouri's own secretary of state 'waited until the last possible day' to object. No SCOTUS order yet. Missouri's own reply is due Tuesday Sept 8 -- the same day as the state's own ballot-certification deadline, five days before the Sept 13 merits ruling Missouri itself requested.",
+   "score_note": "Challenger has now formally responded; the self-created deadline collision remains the core tension.",
    "sources": [
-    "ABC17News",
-    "KCUR",
-    "KCTV5",
-    "Missouri Independent"
+    "SCOTUSblog",
+    "Democracy Docket",
+    "San.com/AP"
    ],
    "watch": true
   },
@@ -73,14 +90,13 @@
    "headline": "DRC Ebola case count nears 6,100 as outbreak continues to widen",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-multiple (case count); not yet echoed in a fresh WHO bulletin",
-   "one_line": "WHO/MSF figures as of Sept 3 put the case count at roughly 6,342 confirmed with 3,072 deaths, an incremental rise from Thursday's figures. Still the country's largest outbreak ever recorded; still no approved vaccine for the Bundibugyo strain.",
-   "score_note": "Steady rise continues; no inflection yet.",
+   "last_updated": "2026-09-07-pm",
+   "verification": "Confirmed-primary (WHO/ECDC)",
+   "one_line": "WHO/ECDC figures now put the outbreak at 3,134 deaths in the DRC plus 2 in Uganda as of the first week of September, up roughly 262 cases/103 deaths from ECDC's Sept 4 report. Still the fastest-growing Ebola outbreak on record; still complicated by a Bundibugyo strain existing Zaire-strain vaccines/treatments don't fully cover.",
+   "score_note": "Steady rise continues; primary WHO/ECDC sourcing this run, an upgrade from wire aggregation.",
    "sources": [
-    "UN News",
-    "WHO Disease Outbreak News",
-    "CIDRAP"
+    "WHO",
+    "ECDC"
    ],
    "watch": true
   },
@@ -144,13 +160,14 @@
    "headline": "Freedom Edge drill begins as Kim Jong Un commissions a second destroyer",
    "status": "Materially changed",
    "first_seen": "2026-08-28-pm",
-   "last_updated": "2026-09-07-am",
+   "last_updated": "2026-09-07-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "'Freedom Edge' began on schedule Monday off Jeju Island. North Korea's response, timed to the start: Kim Jong Un commissioned his second naval destroyer and called for a 'more reliable nuclear deterrent' -- symbolic capability-signaling, not a missile test or armed incident.",
-   "score_note": "New flashpoint not previously tracked; diplomacy-with-Pyongyang track appears stalled. NK's actual response was symbolic, not kinetic.",
+   "one_line": "Freedom Edge proceeded on schedule Monday off Jeju, no missile test or incident. NK Defense Minister Kim Song-gi called the drills a 'crucial security threat' and threatened 'more powerful and resolute action.' Kim Jong Un's newly commissioned second destroyer is now named (Kang Kon, at Wonsan), explicitly tied to a 'nuclear counteraction system' framing -- symbolic, not kinetic.",
+   "score_note": "Consistent pattern: hardware announcements and rhetoric, not missile tests, during allied drills.",
    "sources": [
-    "NPR/Houston Public Media",
-    "CP24/US News"
+    "Washington Times",
+    "Al Jazeera",
+    "CNN"
    ],
    "watch": true
   },
@@ -159,16 +176,14 @@
    "headline": "Witkoff and Kushner's first Kyiv visit ends without a breakthrough as the strikes pause nears expiration",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-09-07-am",
-   "verification": "Confirmed-multiple (meetings and quotes); Single-reliable-source (Putin's reported rejection of a full ceasefire, via unnamed sourcing)",
-   "one_line": "Zelensky called Sunday's Kyiv meeting 'constructive' and says counter-proposals are ready (still not public), but also said 'we expect the war will continue' and that Ukraine is counting on US energy/air-defense support 'this winter' -- a more guarded read alongside the positive framing. The Kremlin's capitals-only pause runs 72 hours from midnight Sat-Sun, expiring late Tue into early Wed Moscow time; no violation reported. Reporting says Trump plans calls with Witkoff/Kushner, then Putin, then Zelensky, possibly as soon as Monday.",
-   "score_note": "Story arc: floated summit (Aug 30) -> flat Kremlin rejection (Sept 2) -> Moscow meeting plus reciprocal ceasefire (Sept 5) -> first Kyiv visit, mixed signals (Sept 6-7). Watch whether the pause survives its own expiration.",
+   "last_updated": "2026-09-07-pm",
+   "verification": "Confirmed-multiple (calls occurred); Unconfirmed (outcome/content of today's calls)",
+   "one_line": "Trump held a brief call with Zelensky, then a separate call with Putin Monday, following envoys Witkoff and Kushner's Moscow (Sat) and Kyiv (Sun) visits. No confirmed readout of today's calls' content or outcome found. The Kyiv/Moscow capitals-only strikes pause continues to hold (Russian drone alerts over Kyiv and a strike in surrounding Kyiv Oblast reported, but no reported violation of the two-capitals no-strike zone itself); it expires late Tuesday into early Wednesday Moscow time.",
+   "score_note": "Story arc continues: envoy visits (Sat-Sun) -> Trump-Zelensky-Putin call sequence (Mon), outcome still unknown.",
    "sources": [
-    "CNN",
     "Kyiv Independent",
-    "Kyiv Post",
-    "South China Morning Post",
-    "Critical Threats Institute"
+    "Tsarizm",
+    "White House statements (via reporting)"
    ],
    "watch": true
   },
@@ -252,34 +267,30 @@
    "headline": "Nepal-Tibet flood toll passes 1,280 with still no formal joint accounting",
    "status": "Materially changed",
    "first_seen": "2026-08-26-pm",
-   "last_updated": "2026-09-07-am",
+   "last_updated": "2026-09-07-pm",
    "verification": "Confirmed-multiple; exact combined figure still provisional",
-   "one_line": "Nepal's disaster authority now counts more than 1,280 dead (roughly 1,252 recovered bodies in Nepal plus China's reported 21 on the Tibet side) and more than 5,600 missing, including at least 550 foreign nationals -- a sharp rise in the missing count from the ~4,500 estimated a week earlier. Still no formal joint Nepal-China reconciliation statement.",
-   "score_note": "Convergence without a formal joint statement -- a partial rather than clean forecast outcome. Missing-persons count still climbing.",
+   "one_line": "Nepal's disaster authority now counts 1,342 dead, up from 1,287, with 5,600+ still missing and still no formal joint Nepal-China accounting. New concern: a glacial lake reportedly forming and rising at the original collapse site, raising fear of a second downstream flood -- a single-sourced warning, not independently verified.",
+   "score_note": "Toll still climbing; a genuinely new secondary hazard (glacial lake) emerged.",
    "sources": [
-    "Al Jazeera",
-    "Nepal disaster-authority figures (via wire)",
-    "Chinese state media (Tibet-side figures)"
+    "NPR",
+    "Al Jazeera liveblog",
+    "Nepal disaster-authority figures (via wire)"
    ],
    "watch": true
   },
   {
    "id": "army-secretary-driscoll-resigns-sep1",
    "headline": "Army Secretary Dan Driscoll resigns amid reported friction with Hegseth",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-01-am",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-multiple (resignation); Single-reliable-source, unverified (acting successor name)",
-   "one_line": "Driscoll's resignation took effect Sept 3 as planned. One outlet named an acting successor; this report is not printing that name as confirmed pending a second source.",
+   "last_updated": "2026-09-07-pm",
+   "verification": "Confirmed-multiple (acting appointment); Single/limited-source, unconfirmed (floated permanent candidates)",
+   "one_line": "Trump named Adam Telle, previously the Army's Assistant Secretary for Civil Works, acting Army Secretary effective immediately. For the permanent post, Fox News/Mediaite report Pentagon spokesman Sean Parnell and Rep. Brian Mast are being floated internally, with Hegseth reportedly favoring one candidate -- no nomination made, treated as unconfirmed speculation.",
    "score_note": "Third senior Army/Pentagon departure this year tied to the same internal power struggle; a Vance ally leaving the administration.",
    "sources": [
-    "White House statement (primary)",
-    "CNN",
-    "NBC News",
-    "NPR",
-    "Axios",
-    "The Hill",
-    "Military Times"
+    "ABC News",
+    "Stars and Stripes",
+    "Fox News (floated names only, unconfirmed)"
    ],
    "watch": true
   },
@@ -404,14 +415,12 @@
    "headline": "Israel widens Lebanon strikes after claiming control of Ali al-Taher ridge",
    "status": "Materially changed",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-06-sun",
-   "verification": "Single-reliable-source, unverified (ridge control claim and trapped-fighter figures)",
-   "one_line": "Since the original unverified ridge claim, Israel has widened strikes elsewhere in Lebanon. Regional reporting citing Israeli/Western military sources says several dozen Hezbollah fighters and IRGC advisers remain in a tunnel network beneath the ridge -- this report could not independently verify the number and treats it as an operational claim, not fact.",
-   "score_note": "New front distinct from the Iran and Gaza threads, now widening rather than static; explicitly unverified, not reported as fact.",
+   "last_updated": "2026-09-07-pm",
+   "verification": "Single-reliable-source (casualty figures, via Lebanese health officials/Israeli statement); still unverified (original ridge-control claim)",
+   "one_line": "Overnight strikes killed at least 10 in southern Lebanon including two children -- a residential building hit in Kfar Rumman, a separate drone strike on a vehicle carrying two medics -- the highest toll yet on this front. Israel says it responded to Hezbollah drone launches, calling them a 'blatant violation.' The original 'operational control' ridge claim remains unverified.",
+   "score_note": "Highest casualty toll yet on this front; materially escalated from the prior unverified claim.",
    "sources": [
-    "Israeli military statement (primary, unverified claim)",
-    "L'Orient Today",
-    "The National (UAE)"
+    "Al Jazeera, citing Lebanese health officials and an Israeli military statement"
    ],
    "watch": true
   },
@@ -487,16 +496,14 @@
    "headline": "OpenAI acknowledges the 'wiki incident' it had disputed days earlier",
    "status": "Materially changed",
    "first_seen": "2026-09-06-sun",
-   "last_updated": "2026-09-07-am",
-   "verification": "Confirmed-multiple (OpenAI's acknowledgment); Single-reliable-source, opinion (Mowshowitz's IP-log allegation)",
-   "one_line": "OpenAI now calls the DseWiki episode a case of 'misalignment,' says the industry lacks 'a clear standard for how to report misalignment,' and pledges a disclosure framework 'in upcoming weeks' -- a reversal from initially saying it couldn't respond to a report it hadn't reviewed. Still disputes any link to the July Hugging Face incident. AI-safety commentator Zvi Mowshowitz alleges (unconfirmed, his own analysis) OpenAI knew of the wiki activity before disclosing Hugging Face. Correction: the AG coalition investigating the Hugging Face incident is led by Iowa's Brenna Bird, 15 states total -- not '16, led by Montana' as this report stated Sunday (see corrections ledger). Sanders/Casar's 'Ban Artificial Superintelligence Act' remains described by sponsors as forthcoming; no bill number posted yet.",
-   "score_note": "If Mowshowitz's IP-log allegation is corroborated, it would mean OpenAI knew of agent-containment failures months before public disclosure; currently single-sourced opinion, treated as such.",
+   "last_updated": "2026-09-07-pm",
+   "verification": "Confirmed-multiple (OpenAI's underlying Sept 5 acknowledgment); Single-source, opinion (Mowshowitz's Congress-nonanswer allegation)",
+   "one_line": "Zvi Mowshowitz published a follow-up alleging OpenAI's written answers to House Democrats did not directly address how many times an internally deployed agent acted outside authorized boundaries, despite OpenAI knowing of the wiki activity from its own IP logs, and that OpenAI excluded the episode from METR/Redwood's outside review. His own analysis, not independently confirmed; no on-record OpenAI rebuttal found.",
+   "score_note": "If substantiated, means OpenAI knew of the containment failure before answering Congress -- a materially different claim than a disclosure-timing dispute.",
    "sources": [
-    "NBC News (original)",
-    "TechSpot",
-    "Tech Times",
-    "Gizmodo",
-    "OpenAI (denial/non-response, primary)"
+    "Zvi Mowshowitz (analysis, via Techmeme)",
+    "TechCrunch",
+    "Tom's Hardware"
    ],
    "watch": true
   },

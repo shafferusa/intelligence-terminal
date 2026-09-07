@@ -2,6 +2,15 @@
  "corrections": [
   {
    "found": "2026-09-07",
+   "report": "reports/2026/09/2026-09-07-am.html",
+   "original": "This morning's edition (2026-09-07-am and, before it, 2026-09-06-sun) did not cover a fatal Amazon-branded cargo plane crash at Miami International Airport Sunday afternoon (Sept 6, roughly 2pm ET) -- a 21 Air-operated Boeing 767 (Prime Air Flight 7598) overran the runway on landing, struck multiple vehicles and caught fire, killing five and injuring five, a major same-day, multi-outlet story (CNN, NPR, ABC News, NBC News).",
+   "corrected": "Added to today's Closing Brief (2026-09-07-pm) Top Stories, roughly 26 hours after the event, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-09-06-sun and 2026-09-07-am editions did not surface the story despite prominent, same-day, multi-outlet coverage.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-07-31, 2026-08-14, 2026-09-02 and 2026-09-04 entries above. No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-07",
    "report": "reports/2026/09/2026-09-06-sun.html",
    "original": "Referred to the state coalition investigating OpenAI over the Hugging Face incident as a \"16-state AG coalition (led by Montana).\"",
    "corrected": "Iowa Attorney General Brenna Bird leads the coalition, per the Iowa Attorney General's own press release. It totals 15 states: Alabama, Arkansas, Florida, Idaho, Indiana, Iowa, Kansas, Missouri, Montana, Nebraska, Oklahoma, Pennsylvania, South Carolina, Texas and Utah. Montana's attorney general is a member and a prominent public voice on the investigation, not its lead.",

@@ -1,6 +1,36 @@
 {
  "forecasts": [
   {
+   "id": "2026-09-07-pm-1",
+   "date": "2026-09-07",
+   "slot": "pm",
+   "forecast": "Today's reported Trump-Zelensky-then-Putin calls produce a publicly announced concrete step (an extended pause, a summit date, or a new proposal) within 48 hours, rather than another unbroken-down 'constructive talks' readout",
+   "horizon": "2026-09-09",
+   "probability": "20-35%",
+   "basis": "Sunday's Kyiv visit and Saturday's Moscow visit both ended with positive characterizations but no announced concrete step; this pattern of atmospherics-without-substance has repeated across the last three rounds of shuttle diplomacy.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-07-pm-2",
+   "date": "2026-09-07",
+   "slot": "pm",
+   "forecast": "Israel conducts further strikes in Lebanon beyond today's reported toll (a third distinct location or a casualty count materially above today's) within 72 hours",
+   "horizon": "2026-09-10",
+   "probability": "35-50%",
+   "basis": "Today's strikes mark an escalation from the single, unverified ridge-control claim of Sept 4 to a confirmed multi-location toll; this outlet's tracking of the broader Iran-linked conflict has shown near-daily continuation once a front becomes active.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-07-pm-3",
+   "date": "2026-09-07",
+   "slot": "pm",
+   "forecast": "OpenAI issues an on-record response specifically addressing Mowshowitz's allegation that its written Congressional answers did not directly address the wiki-incident question, within one week",
+   "horizon": "2026-09-14",
+   "probability": "25-40%",
+   "basis": "OpenAI has responded to each prior round of wiki-incident scrutiny within days, but this specific allegation (about the substance of a Congressional filing) is a narrower and more legally sensitive target than its earlier general acknowledgments.",
+   "status": "open"
+  },
+  {
    "id": "2026-09-07-am-1",
    "date": "2026-09-07",
    "slot": "am",
@@ -2416,7 +2446,10 @@
    "horizon": "2026-09-06",
    "probability": "30-45%",
    "basis": "This week's pattern has been same-week, not same-day, retaliation; a confirmed UAE strike would be a bigger provocation than Tuesday's Jordan/Bahrain hits, which drew no immediate US military response.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "CENTCOM confirmed Saturday Sept 5 (within the window) that the US disabled or sank three Iranian tankers after Iran fired on two US Navy ships -- a direct US military response, not the UAE/Kuwait actor named in the forecast, but satisfying its core claim (a direct US/allied military response within 48-72 hours).",
+   "graded": "2026-09-07",
+   "lesson": "The near-daily escalation pattern this report tracked through late August correctly predicted timing; it named the wrong likely actor (a Gulf ally rather than the US itself), a reminder to keep probability spread across all named actors rather than anchoring on the most novel one."
   },
   {
    "id": "2026-09-03-am-2",
@@ -2469,7 +2502,10 @@
    "horizon": "2026-09-07",
    "probability": "45-60%",
    "basis": "Near-daily escalation pattern tracked across the past two weeks of this standoff, with each round drawing a response within one to three days.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Iran fired on two US Navy ships Saturday Sept 5, and CENTCOM confirmed the US disabled or sank three Iranian tankers in response -- squarely within the 72-hour window and the most direct exchange of the conflict to date.",
+   "graded": "2026-09-07",
+   "lesson": "Second consecutive correct call on this standoff's escalation cadence; the pattern held again."
   },
   {
    "id": "2026-09-04-pm-1",
