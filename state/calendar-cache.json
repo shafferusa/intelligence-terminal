@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-06T10:15:00-04:00",
+ "fetched": "2026-09-07T06:50:00-04:00",
  "earnings_fetched": "2026-09-06",
  "earnings_fetched_note": "Two independent aggregators (Yahoo Finance, Kiplinger) show no headline S&P 500-grade earnings this week (~101 companies reporting in aggregate, none named as market-moving). Recommend a fresh named-ticker pull closer to each day if the earnings section needs specifics.",
  "events": [
@@ -8,24 +8,24 @@
    "type": "market_holiday",
    "name": "Labor Day -- NYSE, Nasdaq and bond market closed",
    "importance": "Medium",
-   "reason": "Full US market holiday; no Morning or Closing Brief Monday. Next Closing Brief resumes Tuesday Sept 8.",
-   "source": "data/nyse-holidays.json -- Confirmed-primary"
+   "reason": "Full US market holiday. CORRECTION 2026-09-07: an earlier version of this note incorrectly said 'no Morning or Closing Brief Monday' -- that was wrong. Per SPEC SS24/shared-rules SS0, a full holiday triggers Holiday Mode (state markets closed, skip US equity/breadth gathering, cover global markets/futures/FX/crypto/news at full quality), not a skipped edition; both editions run normally.",
+   "source": "data/nyse-holidays.json -- Confirmed-primary; docs/SPEC.md SS24 (Holiday Mode procedure)"
   },
   {
    "ts_et": "2026-09-07T00:00:00-04:00",
    "type": "military",
    "name": "\"Freedom Edge\" trilateral naval/air exercise begins (US, South Korea, Japan, off Jeju Island)",
    "importance": "High",
-   "reason": "Five-day drill through Sept 11, running amid sharply escalated North Korean rhetoric (Kim Yo Jong, Pak Jong-chon) following an Aug 20 precedent of a ten-missile launch tied to an earlier drill announcement.",
-   "source": "HNGN, Deccan Herald -- Confirmed-multiple (statements); drill schedule Confirmed-primary"
+   "reason": "Five-day drill through Sept 11, begun on schedule Sept 7. North Korea's response so far is symbolic (Kim Jong Un commissioned a second naval destroyer), not a missile test or drill-related incident.",
+   "source": "South Korea MND, NBC News, Korea Herald, Japan Times -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-07T12:00:00-04:00",
    "type": "legal",
    "name": "Missouri redistricting challengers' SCOTUS response deadline (Justice Kavanaugh's order)",
    "importance": "High",
-   "reason": "Response to Missouri's emergency stay application on the congressional-map ruling; Missouri's own reply and requested certification deadline both fall the next day, Sept 8.",
-   "source": "SCOTUSblog, Missouri Independent -- Confirmed-multiple"
+   "reason": "Response to Missouri's emergency stay application on the congressional-map ruling; not yet filed as of this morning's edition. Missouri's own state-law ballot-certification deadline falls the next day, Sept 8 -- the same day Missouri's own SCOTUS reply is due and before the Sept 13 merits ruling the state itself requested.",
+   "source": "SCOTUSblog, Missouri Independent, KCUR -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-08T00:00:00-04:00",
@@ -40,8 +40,8 @@
    "type": "legal",
    "name": "Mail-ballot SCOTUS emergency: states/voting-rights groups' response deadline (Justice Jackson's order)",
    "importance": "High",
-   "reason": "DOJ's application to stay Judge Talwani's preliminary injunction against the USPS mail-ballot rule; North Carolina continues mailing absentee ballots under separate, related litigation.",
-   "source": "NPR, SCOTUSblog, NBC News -- Confirmed-multiple"
+   "reason": "DOJ withdrew its original Sept 3 application Sunday Sept 6 and filed a new ~40-page application seeking a stay of Judge Talwani's Friday Sept 4 preliminary injunction against the USPS mail-ballot rule specifically; the 10 AM Tuesday deadline carries over to the new filing. North Carolina continues mailing absentee ballots under separate, related litigation.",
+   "source": "Supreme Court docket 26A297 (primary); NPR, SCOTUSblog, NBC News, The Hill, PBS NewsHour -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-08T00:00:00-04:00",

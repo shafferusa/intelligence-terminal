@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-06T13:14:00Z",
+ "fetched_at": "2026-09-07T11:15:00Z",
  "treasury_par_curve": {
   "date": "2026-09-04",
   "BC_1MONTH": 3.79,
@@ -84,29 +84,29 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 79905,
-    "usd_24h_change": 0.26
+    "usd": 79418,
+    "usd_24h_change": -0.71
    },
    "ethereum": {
-    "usd": 2498.04,
-    "usd_24h_change": 1.60
+    "usd": 2490.34,
+    "usd_24h_change": -0.36
    },
    "solana": {
-    "usd": 106.69,
-    "usd_24h_change": 3.40
+    "usd": 105.00,
+    "usd_24h_change": -1.46
    },
    "cardano": {
-    "usd": 0.2200,
-    "usd_24h_change": 1.63
+    "usd": 0.2194,
+    "usd_24h_change": 0.26
    }
   },
   "global": {
-   "total_market_cap_usd": 2703500000000,
-   "btc_dominance": 59.20,
-   "eth_dominance": 11.25,
-   "market_cap_change_24h_pct": -2.81
+   "total_market_cap_usd": 2689532190621,
+   "btc_dominance": 59.13,
+   "eth_dominance": 11.26,
+   "market_cap_change_24h_pct": -3.12
   },
-  "as_of": "2026-09-06 13:14 UTC (Live, Sunday morning)"
+  "as_of": "2026-09-07 11:15 UTC (Live, Labor Day morning)"
  },
  "indices": {
   "^GSPC": {

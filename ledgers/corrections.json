@@ -1,6 +1,15 @@
 {
  "corrections": [
   {
+   "found": "2026-09-07",
+   "report": "reports/2026/09/2026-09-06-sun.html",
+   "original": "Referred to the state coalition investigating OpenAI over the Hugging Face incident as a \"16-state AG coalition (led by Montana).\"",
+   "corrected": "Iowa Attorney General Brenna Bird leads the coalition, per the Iowa Attorney General's own press release. It totals 15 states: Alabama, Arkansas, Florida, Idaho, Indiana, Iowa, Kansas, Missouri, Montana, Nebraska, Oklahoma, Pennsylvania, South Carolina, Texas and Utah. Montana's attorney general is a member and a prominent public voice on the investigation, not its lead.",
+   "error_source": "Sunday's edition appears to have picked up secondary coverage (e.g. a Montana DOJ press release framed around Montana's own participation) that emphasized Montana without independently checking which state's attorney general is actually leading the coalition.",
+   "conclusions_changed": false,
+   "note": "Verified directly against the Iowa Attorney General's newsroom release this run, cross-checked against Bloomberg Law and The Hill coverage. Does not change the substance of the investigation or its demands -- only which AG leads it and the exact state count/roster. Corrected in today's report (2026-09-07-am) Top Stories and colophon."
+  },
+  {
    "found": "2026-07-27",
    "report": "reports/2026/07/2026-07-26-sun.html",
    "original": "Report referred to the FOMC press conference and rate-path commentary as \"Powell's\" throughout (nine references), implying Jerome Powell remained Federal Reserve Chair.",
