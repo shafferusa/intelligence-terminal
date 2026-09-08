@@ -38,34 +38,39 @@
   },
   {
    "id": "meta-29-state-youth-safety-trial-aug18",
-   "headline": "Zuckerberg takes the stand in Meta's Oakland youth-safety trial",
-   "status": "Materially changed",
+   "headline": "Correction: Meta's Oakland youth-safety litigation is two separate cases, not one",
+   "status": "Corrected",
    "first_seen": "2026-08-18-pm",
-   "last_updated": "2026-09-02-am",
+   "last_updated": "2026-09-08-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Zuckerberg has now testified, denying Instagram is designed to target children and saying he resisted pressure to censor the platforms, while acknowledging regret over slow progress identifying underage users. Trial (29 states, Judge Gonzalez Rogers presiding) continues; expected to run six weeks from its Aug 18 start.",
-   "score_note": "First confirmed in-person Zuckerberg testimony since the trial opened.",
+   "one_line": "This report's own tracking had conflated a settled $18B, ~47-state AG coalition case (approved by Judge Gonzalez Rogers Aug 26, before this report's Sept 2 edition ran) with a separate, still-live $1.4T four-state trial (California, Colorado, Kentucky, New Jersey plus 25 states on child-data claims) that opened Aug 18 in the same Oakland courtroom before the same judge -- the case in which Zuckerberg actually testified. The four-state trial continues, expected to run six to seven weeks toward an advisory jury verdict. Florida did not join the Aug 26 settlement and pursues its own separate suit. Correction logged to ledgers/corrections.json.",
+   "score_note": "Corrects a multi-edition conflation of two distinct lawsuits sharing a judge and courthouse.",
    "sources": [
-    "Yahoo News (transcript coverage)",
-    "Barchart",
-    "NPR"
+    "CNN",
+    "NPR",
+    "Washington Post",
+    "CNBC",
+    "KTVU",
+    "KQED",
+    "Press Democrat"
    ],
    "watch": true
   },
   {
    "id": "missouri-congressional-map-ruling-aug21",
-   "headline": "Missouri's map fight hits its own deadline collision today",
+   "headline": "Missouri's own ballot deadline passes with briefing complete, no ruling yet",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-08-am",
+   "last_updated": "2026-09-08-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Challenger Richard von Glahn filed his opposition over the weekend, backed by an ACLU/ACLU Voting Rights Project/Campaign Legal Center amicus brief. Missouri's own reply is due today, the same day as the secretary of state's own ballot-certification deadline, five days before the Sept 13 merits ruling Missouri itself requested. No SCOTUS order yet.",
-   "score_note": "Full briefing now closes today; the state's own requested timeline still runs past its own cited deadline.",
+   "one_line": "Missouri filed its reply brief today, completing briefing after challengers' Sunday filing. Missouri's own state-law ballot-certification deadline arrived today, Sept 8, with the map still undecided; its own remaining hard deadline (printing overseas/military ballots) is Sept 19, and it had asked the Court to rule by roughly Sept 13-14. No SCOTUS stay or merits order has issued.",
+   "score_note": "Full briefing now closed with the state's own certification deadline already passed unresolved.",
    "sources": [
-    "SCOTUSblog",
+    "Ballot Access News",
+    "Election Law Blog",
+    "KCTV5",
     "Missouri Independent",
-    "KCUR",
-    "CNN"
+    "KCUR"
    ],
    "watch": true
   },
@@ -88,16 +93,17 @@
   },
   {
    "id": "drc-ebola-outbreak-2026",
-   "headline": "DRC Ebola case count nears 6,100 as outbreak continues to widen",
+   "headline": "DRC Ebola toll revised sharply upward: 6,604 cases, 3,175 deaths",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-07-pm",
+   "last_updated": "2026-09-08-pm",
    "verification": "Confirmed-primary (WHO/ECDC)",
-   "one_line": "WHO/ECDC figures now put the outbreak at 3,134 deaths in the DRC plus 2 in Uganda as of the first week of September, up roughly 262 cases/103 deaths from ECDC's Sept 4 report. Still the fastest-growing Ebola outbreak on record; still complicated by a Bundibugyo strain existing Zaire-strain vaccines/treatments don't fully cover.",
-   "score_note": "Steady rise continues; primary WHO/ECDC sourcing this run, an upgrade from wire aggregation.",
+   "one_line": "ECDC's Sept 6 report (data through Sept 5) puts the outbreak at 6,604 confirmed cases and 3,175 deaths in the DRC plus 2 in Uganda, up 82 cases/41 deaths day-over-day; 851 hospitalized in isolation. Ituri accounts for roughly 82% of cases. Still complicated by a Bundibugyo strain existing Zaire-strain vaccines/treatments don't fully cover.",
+   "score_note": "Largest single day-over-day jump this report has logged for the outbreak.",
    "sources": [
     "WHO",
-    "ECDC"
+    "ECDC",
+    "DRC Ministry of Health"
    ],
    "watch": true
   },
@@ -173,20 +179,20 @@
   },
   {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
-   "headline": "Russia resumes strikes on Kyiv as the capitals-only pause lapses",
+   "headline": "Russia resumes Kyiv strikes; Trump-Putin call ends without a concrete deal",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-09-08-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "The three-day Kyiv/Moscow capitals-only pause expired Monday evening without renewal; Russia struck Kyiv overnight with a combined ballistic/cruise/drone attack, killing at least two and hitting 50+ sites across five districts. Trump's Monday calls with Zelensky then Putin, following Witkoff/Kushner's weekend Moscow/Kyiv trip, produced rhetoric ('closer than people realize') but no confirmed concrete step.",
-   "score_note": "Pause lapsed into resumed strikes rather than being extended -- resolves the open question from the weekend's diplomacy.",
+   "last_updated": "2026-09-08-pm",
+   "verification": "Confirmed-multiple (strikes, casualties); Confirmed-primary (call occurred); Single-reliable-source (call content, Kremlin readout only)",
+   "one_line": "Overnight strikes on Kyiv killed at least 5 and injured 63 (climbing through the day; one outlet's combined figure of 18 is unreconciled) after the capitals-only pause lapsed Monday evening. Trump and Putin spoke for about an hour today; the Kremlin called it 'constructive and quite frank' with no US-side account or concrete outcome published. Zelensky called the strikes deliberately harmful and said he hopes to meet Trump within two weeks.",
+   "score_note": "Pause's lapse into worse strikes on the same day as an inconclusive Trump-Putin call resolves the weekend's open question toward the pessimistic case.",
    "sources": [
-    "Ukrainian air force and city officials (primary, via wire)",
-    "Al Jazeera",
+    "Kyiv Independent",
+    "Meduza",
+    "Ukrinform",
     "Bloomberg",
-    "NBC News",
-    "CBS News",
-    "France24"
+    "Al Jazeera",
+    "Moscow Times"
    ],
    "watch": true
   },
@@ -415,17 +421,16 @@
   },
   {
    "id": "israel-lebanon-ridge-claim-sep4",
-   "headline": "Israeli strikes in Lebanon push toll past two dozen since the weekend",
+   "headline": "Israel-Lebanon toll rises again; reconciling the count remains unresolved",
    "status": "Materially changed",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-08-am",
-   "verification": "Confirmed-multiple (strikes occurring); Disputed (exact toll, ranges 9-12 for worst single incident; drone-provocation claim)",
-   "one_line": "Cumulative wire aggregation puts the toll since Saturday at 'at least 27,' though no single outlet independently verified that combined figure. The worst incident (Kfar Rumman residential strike plus a separate drone strike on two medics) is reported anywhere from 9 to 12 dead including at least two children. Israel says it responded to Hezbollah drone launches, a claim not independently confirmed.",
-   "score_note": "Casualty range now explicitly disputed across otherwise-reliable outlets -- flagged rather than presented as a single hard number.",
+   "last_updated": "2026-09-08-pm",
+   "verification": "Confirmed-multiple (strikes occurring, Monday toll); Disputed (reconciliation with weekend cumulative figure)",
+   "one_line": "Lebanon's Health Ministry reported 13 killed, including women and children, in Monday Sept 7 strikes -- surfacing in Sept 8 coverage. Not clear whether this is additive to, or a subset of, the 'at least 27 since Saturday' cumulative figure this report cited Sept 8 morning; no outlet has published a single reconciled running total. Israel says it continues targeting Hezbollah over alleged ceasefire violations.",
+   "score_note": "Toll continues rising in real terms regardless of the reconciliation gap between cited figures.",
    "sources": [
-    "Al Jazeera, citing Lebanese health officials",
-    "Times of Israel",
-    "Washington Times",
+    "Lebanese Ministry of Public Health",
+    "Al Jazeera",
     "Israeli military statement"
    ],
    "watch": true
@@ -515,17 +520,19 @@
   },
   {
    "id": "amy-acton-canfield-fair-attack-sep6",
-   "headline": "Havas court appearance expected today; outcome pending",
-   "status": "Continuing",
+   "headline": "Patrick Havas pleads not guilty in Amy Acton confrontation case",
+   "status": "Materially changed",
    "first_seen": "2026-09-07-am",
-   "last_updated": "2026-09-08-am",
-   "verification": "Confirmed-multiple (incident and charges); Unverified (today's court outcome, not yet occurred)",
-   "one_line": "Patrick Havas's first court appearance on two felony assault counts and disorderly conduct is expected today in Mahoning County; no outcome reported as of this writing.",
-   "score_note": "Awaiting today's court outcome.",
+   "last_updated": "2026-09-08-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Havas's Labor Day-delayed arraignment happened today in Mahoning County Area Court; he pleaded not guilty to two first-degree-misdemeanor assault counts, first-degree-misdemeanor inducing panic and fourth-degree-misdemeanor disorderly conduct. Bond set at $5,000 with conditions: surrender all firearms, no contact with Acton or the two people allegedly pushed, no speaking to media. Outlets differ on the exact weapons found on him -- disputed, not resolved.",
+   "score_note": "Resolves the immediate court-appearance question; case continues toward further proceedings.",
    "sources": [
     "Vindy.com",
-    "CBS News",
-    "CNN"
+    "Ohio Capital Journal",
+    "Fox8",
+    "Fox19",
+    "WKBN"
    ],
    "watch": true
   },
@@ -563,20 +570,22 @@
   },
   {
    "id": "magento-stylesmuggler-sep7",
-   "headline": "A perfect-10 flaw hit Magento stores before Adobe could patch it",
-   "status": "New",
+   "headline": "CISA adds Magento 'StyleSmuggler' and three more flaws to its exploited-vulnerabilities catalog",
+   "status": "Materially changed",
    "first_seen": "2026-09-08-am",
-   "last_updated": "2026-09-08-am",
+   "last_updated": "2026-09-08-pm",
    "verification": "Confirmed-primary",
-   "one_line": "Sansec disclosed 'StyleSmuggler' (CVE-2026-75650, CVSS 10.0), an unauthenticated RCE in Magento Open Source/Adobe Commerce, exploited via a two-stage chain (PHP injected through a failure report, executed via a failed-payment email) since around Sept 4 -- including at least one victim already running a fully patched build. Adobe's fix (APSB26-146) landed at its highest priority level Sunday evening.",
-   "score_note": "CVSS 10.0 flaw exploited before any patch existed, against e-commerce infrastructure at scale.",
+   "one_line": "CISA added CVE-2026-75650 (StyleSmuggler, CVSS 10.0) to its KEV catalog today, alongside CVE-2026-81963 (Windows Link Following), CVE-2026-85880 (Windows Heap Overflow) and CVE-2026-86218 (N-able N-central Static Code Injection), triggering federal remediation deadlines. Confirmed victim count remains small (2+ breached Magento stores per Disrex Group forensics); broader exposure estimates (100,000+ stores) remain a theoretical ceiling, not a confirmed compromise count.",
+   "score_note": "Government KEV listing follows four days after private-sector telemetry confirmed active exploitation.",
    "sources": [
-    "Sansec (primary discoverer)",
-    "Adobe advisory APSB26-146 (primary)",
+    "CISA KEV catalog",
+    "Sansec",
+    "Disrex Group",
     "BleepingComputer",
-    "SecurityWeek"
+    "The Hacker News",
+    "TechTimes"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "germany-afd-saxony-anhalt-sep6",
@@ -591,6 +600,25 @@
     "Al Jazeera",
     "NPR",
     "official Saxony-Anhalt election results"
+   ],
+   "watch": true
+  },
+  {
+   "id": "houthi-saudi-aramco-attack-sep8",
+   "headline": "Houthi drone-and-missile attack hits Saudi oil infrastructure, wounds 73",
+   "status": "New",
+   "first_seen": "2026-09-08-pm",
+   "last_updated": "2026-09-08-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Yemen's Houthi movement struck Saudi Aramco facilities in Najran and Abha, the ~400,000-bpd Jizan refinery, a fuel terminal and King Khalid Air Base today; Saudi officials reported 73 wounded. Houthi spokesman Yahya Saree claimed responsibility as retaliation for Saudi strikes on Yemen; Saudi Arabia vowed to 'finish the job.' A distinct escalation from Saturday's CENTCOM-confirmed US-Iran naval exchange, which still has no Gulf-state public comment five days on. WTI rose 3.04% to $94.26; Brent reported near $98-99.",
+   "score_note": "Direct proxy-force strike on a US ally's oil infrastructure is a materially different, more concrete escalation than the naval skirmishing and rhetorical Hormuz threats tracked to date.",
+   "sources": [
+    "Washington Post",
+    "NPR",
+    "CNN",
+    "US News",
+    "Houthi military statement (primary, via Reuters/CBC)",
+    "CENTCOM (background, primary)"
    ],
    "watch": true
   }

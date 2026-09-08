@@ -38,7 +38,10 @@
    "horizon": "2026-09-08",
    "probability": "65-75%",
    "basis": "Emergency applications rarely resolve within days absent full briefing, and Missouri's own application already requests a merits ruling by Sept 13 -- after its own Sept 8 deadline -- suggesting even the state doesn't expect action by Tuesday.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Missouri's ballot-certification deadline passed today, Sept 8, with no SCOTUS stay of the Missouri Supreme Court's ruling and no merits order.",
+   "graded": "2026-09-08",
+   "lesson": "Consistent with the same-day 2026-09-06-sun-4 forecast: the emergency docket did not act on the state's own forcing deadline."
   },
   {
    "id": "2026-09-07-am-2",
@@ -116,7 +119,7 @@
    "forecast": "Q2 2026 GDP advance estimate (Jul 30, 8:30 ET) prints in a 1.5-3.0% annualized range.",
    "horizon": "2026-07-30",
    "probability": "55-65%",
-   "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate \u2014 treat as low-confidence.",
+   "basis": "No GDPNow/tracking-estimate data was reachable this run (FRED key not configured); range is a wide default band reflecting genuine uncertainty rather than a modeled estimate — treat as low-confidence.",
    "status": "partial",
    "outcome": "Q2 GDP advance printed +1.5% annualized -- inside the stated 1.5-3.0% range, but exactly at the bottom edge.",
    "graded": "2026-08-01",
@@ -155,7 +158,7 @@
    "forecast": "Bitcoin trades in a $60,000-$72,000 range through Friday.",
    "horizon": "2026-07-31",
    "probability": "60-70%",
-   "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly \u00b110% around spot given no crypto-specific catalyst identified this week.",
+   "basis": "Spot $65,000 as of Sunday evening (CoinGecko), 24h change +0.9%; range sized at roughly ±10% around spot given no crypto-specific catalyst identified this week.",
    "status": "correct",
    "outcome": "Bitcoin traded within the $60,000-$72,000 band all week (high ~$64,914 Mon, low ~$62,944 Fri; $63,046 as of this run).",
    "graded": "2026-08-01",
@@ -402,7 +405,7 @@
    "forecast": "Novo Nordisk (NVO) does not recover half of today's ~8.6% decline within the next 5 trading sessions (closes below approximately $49.90 through Aug 7).",
    "horizon": "2026-08-07",
    "probability": "55-65%",
-   "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset \u2014 a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
+   "basis": "A failed pivotal cardiovascular trial removes a major pipeline asset — a fundamental repricing that historically proves more durable than a sentiment-driven earnings-reaction selloff.",
    "status": "correct",
    "outcome": "Novo Nordisk closed the Aug 7 session at $47.24, well below the ~$49.90 half-recovery threshold, after three consecutive sell-side downgrades (HSBC, Wall Street Zen, UBS) through the week.",
    "graded": "2026-08-08",
@@ -415,7 +418,7 @@
    "forecast": "The Gaza disarmament roadmap required within 14 days of Thursday's Board of Peace announcement (due on or around Aug 13) is not finalized on schedule.",
    "horizon": "2026-08-13",
    "probability": "45-55%",
-   "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested \u2014 a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
+   "basis": "Coverage gathered this run notes both Israeli skepticism that Hamas will actually disarm and a senior Hamas official's comments suggesting the disarmament/withdrawal sequencing is still contested — a genuinely two-way outcome given both sides have nonetheless publicly engaged with the process.",
    "status": "correct",
    "outcome": "The Aug 13 checkpoint passed with the disarm-before-withdraw sequencing dispute unresolved: Netanyahu's Aug 9 rejection of the 15-point document held throughout, Hamas's Ghazi Hamad continued conditioning disarmament on an Israeli halt/withdrawal, and no joint declaration or IVC extension was issued. Kushner, Mladenov and Blair are now traveling to Israel/Egypt (arriving Sun Aug 16) as the first concrete US diplomatic follow-through.",
    "graded": "2026-08-15",
@@ -1098,7 +1101,7 @@
    "id": "2026-08-11-am-3",
    "date": "2026-08-11",
    "slot": "am",
-   "forecast": "The confirmed death toll from the Aug 10 Colombia (Choc\u00f3) earthquake rises by at least 20 more (above the 132 reported this morning) within 48 hours.",
+   "forecast": "The confirmed death toll from the Aug 10 Colombia (Chocó) earthquake rises by at least 20 more (above the 132 reported this morning) within 48 hours.",
    "horizon": "2026-08-13",
    "probability": "50-65%",
    "basis": "Typical pattern for major earthquakes in rural, hard-to-access terrain, where official counts are revised upward for 24-72 hours as isolated communities are reached; the toll already climbed from ~20 to 132 within one day.",
@@ -2524,7 +2527,10 @@
    "horizon": "2026-09-08",
    "probability": "55-70%",
    "basis": "Missouri's ballot-finalization deadline creates a hard, days-away forcing event; the Court's emergency docket has historically acted close to comparable election-map deadlines rather than let them pass unaddressed.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Supreme Court took no action (no grant, denial, or other disposition) on Missouri's emergency application before today's ballot-finalization deadline; briefing only completed today with Missouri's own reply brief.",
+   "graded": "2026-09-08",
+   "lesson": "This report over-weighted the deadline's forcing effect on the Court itself -- the Court moved at the pace of full briefing, which did not close until the deadline day itself, not at the pace of the state's operational deadline."
   },
   {
    "id": "2026-09-04-pm-2",
@@ -2590,7 +2596,10 @@
    "horizon": "2026-09-08",
    "probability": "55-70%",
    "basis": "Missouri's own filing asks the Court to rule by Sept 13, five days after the Sept 8 date it cites as the operative certification deadline, and Justice Kavanaugh's briefing schedule (state's reply due Sept 8 itself) leaves no realistic window to rule by that date.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No SCOTUS ruling on Missouri's emergency application was issued by Sept 8; Missouri's own ballot-certification deadline passed today with the map still undecided.",
+   "graded": "2026-09-08",
+   "lesson": "The state's own briefing schedule (its reply not due until the deadline itself) was a better predictor than any urgency implied by the deadline's own hard-forcing framing."
   },
   {
    "id": "2026-09-06-sun-5",
@@ -2690,6 +2699,36 @@
    "horizon": "2026-09-12",
    "probability": "50-65%",
    "basis": "The pause already lapsed with strikes resuming overnight and no new pause announced; Monday's Trump-Zelensky-Putin calls produced rhetoric but no confirmed concrete step.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-pm-1",
+   "date": "2026-09-08",
+   "slot": "pm",
+   "forecast": "Saudi Arabia takes a confirmed retaliatory military action against Houthi positions in Yemen in direct response to today's attack on its oil infrastructure",
+   "horizon": "2026-09-15",
+   "probability": "40-55%",
+   "basis": "Saudi officials said today they would 'finish the job' against the Houthis, but the coalition has cycled through similar rhetoric after prior attacks without always following through quickly.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-pm-2",
+   "date": "2026-09-08",
+   "slot": "pm",
+   "forecast": "WTI crude closes above $95/bbl at least once this week, extending today's Gulf-driven jump",
+   "horizon": "2026-09-12",
+   "probability": "45-60%",
+   "basis": "WTI closed today at $94.26 on the Houthi attack alone; a further Gulf escalation or a cold CPI print easing broader risk appetite could each push it through $95, but de-escalation or profit-taking could just as easily cap it.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-pm-3",
+   "date": "2026-09-08",
+   "slot": "pm",
+   "forecast": "No Gulf state issues a public statement on Saturday's CENTCOM-confirmed US-Iran naval exchange near Kharg Island by Sept 15, ten days after the incident",
+   "horizon": "2026-09-15",
+   "probability": "55-70%",
+   "basis": "Five consecutive days of silence from every Gulf state on that specific incident, even as they absorb a separate, more direct Houthi attack today, suggests a deliberate posture of non-comment rather than a delay that is about to end.",
    "status": "open"
   }
  ]
