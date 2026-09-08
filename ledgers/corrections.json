@@ -1,6 +1,15 @@
 {
  "corrections": [
   {
+   "found": "2026-09-08",
+   "report": "reports/2026/09/2026-09-07-am.html",
+   "original": "This outlet's 2026-09-07-am and 2026-09-07-pm editions described the mail-ballot Supreme Court emergency's response deadline as \"the 10 AM Tuesday deadline carries over to the new filing\" -- i.e., 10:00 AM ET Tuesday, September 8.",
+   "corrected": "Per SCOTUSblog's direct reporting on Justice Jackson's order, the actual response deadline for the states/voting-rights groups is 4:00 PM EDT Wednesday, September 9 -- one day later than reported, and at 4 PM rather than 10 AM. The case is also now docketed as USPS v. California, No. 26A305 (not 26A297 as previously carried), reflecting the solicitor general's withdrawal and refiling of the application after Judge Talwani's Sept 4 preliminary injunction. No stay has been granted; North Carolina continues mailing ballots on schedule under separate litigation.",
+   "error_source": "The Sept 7 editions carried forward a deadline that applied to an earlier version of DOJ's application (before Talwani's Sept 4 ruling and the weekend refiling) without re-verifying it against the new filing's own briefing schedule.",
+   "conclusions_changed": false,
+   "note": "Verified directly against SCOTUSblog's account of Justice Jackson's order this run (2026-09-08-am), cross-checked against Axios, NBC News and PBS NewsHour. Does not change the substance of the underlying dispute -- only the response deadline's date, time and docket number. Corrected in today's report (2026-09-08-am) Top Stories and colophon; also corrected in state/calendar-cache.json."
+  },
+  {
    "found": "2026-09-07",
    "report": "reports/2026/09/2026-09-07-am.html",
    "original": "This morning's edition (2026-09-07-am and, before it, 2026-09-06-sun) did not cover a fatal Amazon-branded cargo plane crash at Miami International Airport Sunday afternoon (Sept 6, roughly 2pm ET) -- a 21 Air-operated Boeing 767 (Prime Air Flight 7598) overran the runway on landing, struck multiple vehicles and caught fire, killing five and injuring five, a major same-day, multi-outlet story (CNN, NPR, ABC News, NBC News).",

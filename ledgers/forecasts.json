@@ -1954,7 +1954,10 @@
    "horizon": "2026-09-08",
    "probability": "25-40%",
    "basis": "Carney described talks as having 'collapsed' today, the most final language either side has used in this five-day escalation cycle; but both governments have re-engaged under deadline pressure earlier this cycle (mid-August), and neither has fully closed the door rhetorically.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Canada's tariffs took effect on schedule at 12:01 AM Sept 8 with no formal resumption of US-Canada trade talks reported; Carney's 'collapsed' framing held.",
+   "graded": "2026-09-08",
+   "lesson": "When a government uses maximally final language ('collapsed') under deadline pressure, weight that more heavily than the base rate of prior re-engagements in the same cycle."
   },
   {
    "id": "2026-08-26-am-1",
@@ -2056,7 +2059,10 @@
    "horizon": "2026-09-08",
    "probability": "35-50%",
    "basis": "The same court system has already granted relief once in this dispute; approaching midterms create urgency",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Judge Talwani granted a preliminary injunction Sept 4 blocking the USPS mail-ballot rule, before its practical effect date and before North Carolina's mailing deadline.",
+   "graded": "2026-09-08",
+   "lesson": "The same-court-already-granted-relief-once heuristic held up here."
   },
   {
    "id": "2026-08-28-am-1",
@@ -2348,7 +2354,10 @@
    "horizon": "2026-09-08",
    "probability": "30-45%",
    "basis": "No claim surfaced in over 16 hours despite two direct government responses (US strike, Iranian retaliation) built on top of the incident; most attacks in this six-month standoff have gone unclaimed rather than claimed.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "CENTCOM's Sept 5 statement confirmed direct US military action against Iranian vessels (attribution via the US side), but this did not resolve responsibility for the specific two earlier Hormuz tanker strikes the forecast referenced -- those remain formally unclaimed even as the broader standoff produced government-level attribution days later.",
+   "graded": "2026-09-08",
+   "lesson": "A compound forecast referencing a specific pair of incidents can be overtaken by a larger, related event; grade the original claim narrowly rather than letting adjacent news carry it to 'correct.'"
   },
   {
    "id": "2026-09-01-pm-2",
@@ -2525,7 +2534,10 @@
    "horizon": "2026-09-08",
    "probability": "55-70%",
    "basis": "North Carolina's mailing deadline arrives before the Court's own response deadline, and emergency administrative stays this close to a mailing deadline are uncommon without a clearer circuit split already ruled on.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "North Carolina's ballots did go out over the weekend under the status-quo process absent an emergency order, exactly as forecast. But the Supreme Court did not respond by Sept 8 -- because, per this run's own correction, the actual response deadline Justice Jackson set is Wednesday Sept 9, not Sept 8. The forecast's Sept 8 premise was itself wrong, which this outlet only caught today.",
+   "graded": "2026-09-08",
+   "lesson": "A forecast inherits any error in the calendar entry it's built on -- this is a direct downstream cost of the deadline mistake corrected in today's ledger."
   },
   {
    "id": "2026-09-04-pm-3",
@@ -2565,7 +2577,10 @@
    "horizon": "2026-09-08",
    "probability": "30-45%",
    "basis": "Zelensky called Sunday's Kyiv meeting with Witkoff/Kushner 'constructive' and says Ukraine has counter-proposals ready, but Putin reportedly rejected a full ceasefire in Moscow a day earlier and no detail of Ukraine's own proposal is yet public, leaving genuine two-way uncertainty.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Kyiv/Moscow capitals-only pause lapsed Monday evening without renewal or formalization; Russia resumed strikes on Kyiv overnight into Sept 8, killing at least two.",
+   "graded": "2026-09-08",
+   "lesson": "Envoy visits described as 'constructive' by one side are weak evidence of an extension when the other side has not confirmed any reciprocal commitment -- this is the second time this pattern has resolved toward simple lapse rather than extension."
   },
   {
    "id": "2026-09-06-sun-4",
@@ -2645,6 +2660,36 @@
    "horizon": "2026-09-11",
    "probability": "8-15%",
    "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff on any of three independent tracks (Gulf, Korea, Ukraine); analytic judgment, not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-am-1",
+   "date": "2026-09-08",
+   "slot": "am",
+   "forecast": "Iran publishes coordinates for, or takes an enforcement action under, a Hormuz-area 'exclusion zone'",
+   "horizon": "2026-09-22",
+   "probability": "20-35%",
+   "basis": "Rhetoric has escalated twice this week (Ghalibaf's 'era of proportionate responses is over,' now Rezaei's zone threat) without a matching action on the water; most threats in this standoff have stayed rhetorical.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-am-2",
+   "date": "2026-09-08",
+   "slot": "am",
+   "forecast": "The Supreme Court disposes of Missouri AG Hanaway's emergency application (grants, denies, or otherwise rules) by the state's own requested Sept 13 date",
+   "horizon": "2026-09-13",
+   "probability": "55-70%",
+   "basis": "Full briefing closes today with Missouri's reply; the state's own filing asks for a ruling by this date, and the emergency docket has historically acted close to comparable election-map deadlines.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-am-3",
+   "date": "2026-09-08",
+   "slot": "am",
+   "forecast": "No renewed Kyiv/Moscow capitals-only pause is announced this week; strikes continue on both sides at roughly pre-pause tempo",
+   "horizon": "2026-09-12",
+   "probability": "50-65%",
+   "basis": "The pause already lapsed with strikes resuming overnight and no new pause announced; Monday's Trump-Zelensky-Putin calls produced rhetoric but no confirmed concrete step.",
    "status": "open"
   }
  ]

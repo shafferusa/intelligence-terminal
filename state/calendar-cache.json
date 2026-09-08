@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-07T06:50:00-04:00",
+ "fetched": "2026-09-08T06:50:00-04:00",
  "earnings_fetched": "2026-09-06",
  "earnings_fetched_note": "Two independent aggregators (Yahoo Finance, Kiplinger) show no headline S&P 500-grade earnings this week (~101 companies reporting in aggregate, none named as market-moving). Recommend a fresh named-ticker pull closer to each day if the earnings section needs specifics.",
  "events": [
@@ -36,12 +36,12 @@
    "source": "Canada.ca Department of Finance official notice -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-09-08T10:00:00-04:00",
+   "ts_et": "2026-09-09T16:00:00-04:00",
    "type": "legal",
    "name": "Mail-ballot SCOTUS emergency: states/voting-rights groups' response deadline (Justice Jackson's order)",
    "importance": "High",
-   "reason": "DOJ withdrew its original Sept 3 application Sunday Sept 6 and filed a new ~40-page application seeking a stay of Judge Talwani's Friday Sept 4 preliminary injunction against the USPS mail-ballot rule specifically; the 10 AM Tuesday deadline carries over to the new filing. North Carolina continues mailing absentee ballots under separate, related litigation.",
-   "source": "Supreme Court docket 26A297 (primary); NPR, SCOTUSblog, NBC News, The Hill, PBS NewsHour -- Confirmed-multiple"
+   "reason": "CORRECTED 2026-09-08: this outlet previously carried a 10 AM Tuesday Sept 8 deadline forward from the withdrawn application; that date did not carry over. DOJ withdrew its original Sept 3 application and filed a new application (now docketed 26A305, not 26A297) seeking a stay of Judge Talwani's Sept 4 preliminary injunction against the USPS mail-ballot rule specifically. Justice Jackson set the response deadline at 4:00 PM EDT Wednesday Sept 9. North Carolina continues mailing absentee ballots under separate, related litigation. Logged to ledgers/corrections.json.",
+   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog, Axios, NBC News, PBS NewsHour -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-08T00:00:00-04:00",
@@ -156,12 +156,28 @@
    "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
   },
   {
-   "ts_et": "2026-09-09T00:00:00-04:00",
+   "ts_et": "2026-10-10T00:00:00-04:00",
    "type": "legal",
    "name": "Rep. McIver's en banc petition window closes (approx.), Third Circuit",
    "importance": "Low",
-   "reason": "Fourteen days from the Third Circuit panel's Aug 26 ruling; no filing confirmed as of this cycle. Date is approximate, not a court-set deadline this system has directly verified.",
+   "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
    "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
+  },
+  {
+   "ts_et": "2026-09-08T00:00:00-04:00",
+   "type": "election",
+   "name": "New Hampshire state primary (open US Senate seat)",
+   "importance": "Medium",
+   "reason": "Polls close this evening; results not yet available. Pre-election coverage frames Rep. Chris Pappas as likely Democratic nominee and former Sen. John Sununu (Trump-endorsed) as likely Republican nominee, but these are expectations, not results.",
+   "source": "NPR, Ballotpedia, Concord Monitor -- Confirmed-multiple on the primary occurring; Unverified on outcome"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "political",
+   "name": "GOP \"midterm convention\" opens, Dallas",
+   "importance": "Medium",
+   "reason": "First-ever Republican midterm convention; Trump, Vance and roughly 100 other speakers expected before ~20,000 attendees.",
+   "source": "Multiple wire reports -- Confirmed-multiple"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

@@ -1,13 +1,26 @@
 [
  {
   "date": "2026-09-08",
+  "slot": "am",
+  "title": "Morning Brief",
+  "path": "reports/2026/09/2026-09-08-am.html",
+  "summary": "Russia resumed strikes on Kyiv as the capitals-only pause lapsed, Iran floated a Hormuz \"exclusion zone\" as oil jumped, and two Supreme Court election-law emergencies hit their own deadlines today.",
+  "headlines": [
+   "Russia strikes Kyiv again as ceasefire pause lapses without renewal",
+   "Iran threatens a Hormuz exclusion zone; oil jumps toward $94",
+   "Missouri's map fight and a corrected mail-ballot deadline both come to a head"
+  ],
+  "reading_minutes": 23
+ },
+ {
+  "date": "2026-09-08",
   "slot": "learn",
-  "title": "The Line That Grew Three Times Faster Than Apple’s Business Did",
+  "title": "The Line That Grew Three Times Faster Than Apple\u2019s Business Did",
   "path": "reports/2026/09/2026-09-08-learn.html",
   "summary": "Day seventeen of the 150-day curriculum: the income statement, built line by line from Apple's own fiscal 2025 and fiscal 2024 10-Ks, tracing exactly why net income rose 19.5% on revenue that rose only 6.4%, and closing the loop, account by account, back into the balance sheet lesson twelve built.",
   "headlines": [
-   "Day 17 of 150 · Accounting: the income statement, revenue to net income",
-   "Apple's profit grew three times faster than its sales — a decade-old EU tax case explains almost all of the gap",
+   "Day 17 of 150 \u00b7 Accounting: the income statement, revenue to net income",
+   "Apple's profit grew three times faster than its sales \u2014 a decade-old EU tax case explains almost all of the gap",
    "How net income flows, dollar for dollar, into the balance sheet's retained-earnings line"
   ],
   "reading_minutes": 27
@@ -45,7 +58,7 @@
   "path": "reports/2026/09/2026-09-07-learn.html",
   "summary": "Day sixteen of the 150-day curriculum: how a single test -- where a rate of change hits zero -- finds the largest field a farmer can fence and the least metal a can needs, and how that same derivative, turned around, tells you how fast a sliding ladder's top is falling without ever tracking its position directly.",
   "headlines": [
-   "Day 16 of 150 · Mathematics: optimization and related rates",
+   "Day 16 of 150 \u00b7 Mathematics: optimization and related rates",
    "Why the standard soda can isn't the shape calculus would build",
    "A sliding ladder's top speeds up even though its bottom moves at a steady pace"
   ],
