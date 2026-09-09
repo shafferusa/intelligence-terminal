@@ -1,17 +1,67 @@
 {
  "stories": [
   {
+   "id": "meta-muse-ai-agent-sep9",
+   "headline": "Meta launches Muse, its first personal AI agent, sending shares up 6%",
+   "status": "New",
+   "first_seen": "2026-09-09-pm",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Meta launched Muse, described as the first personal AI agent built for everyone, with free, $20 and $100 subscription tiers able to send emails, schedule appointments, make purchases and book reservations. Shares rose 6.17% to $651.28; Mizuho analyst Lloyd Walmsley called it a meaningful step toward demonstrating returns on Meta's AI capital spending.",
+   "score_note": "The clearest single-stock catalyst of the session, on a day the broader market fell for a third straight session.",
+   "sources": [
+    "CNN Business",
+    "Yahoo Finance",
+    "CNBC"
+   ],
+   "watch": false
+  },
+  {
+   "id": "openai-navier-stokes-credit-dispute-sep9",
+   "headline": "OpenAI's claimed Millennium Prize solution triggers a credit dispute with an Anthropic researcher",
+   "status": "New",
+   "first_seen": "2026-09-09-pm",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-multiple (announcement and dispute); Unconfirmed (the mathematical claim itself)",
+   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alp\u00f6ge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
+   "score_note": "The mathematical claim is unverified; the authorship dispute is a new front in OpenAI-Anthropic researcher tension the same week as the Coxon resignation.",
+   "sources": [
+    "Axios",
+    "CNN",
+    "Forbes",
+    "The Express Tribune"
+   ],
+   "watch": true
+  },
+  {
+   "id": "anthropic-researcher-resignation-sep9",
+   "headline": "Anthropic researcher publicly resigns, warns neither major lab is acting responsibly on self-improving AI",
+   "status": "New",
+   "first_seen": "2026-09-09-pm",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Anthropic pretraining researcher Jacob Coxon, 27, announced his resignation on X today, saying neither Anthropic nor OpenAI \"is acting responsibly\" on self-improving AI and that both are \"racing straight to self-improving superintelligence.\" His thread reportedly drew roughly 76 million views overnight (a platform-reported metric, not independently audited). Lands four days before Rep. Casar's Sept 15 deadline for both companies to answer oversight questions about AI agents acting outside their instructions.",
+   "score_note": "A researcher resigning publicly from inside one of the two labs under direct congressional scrutiny this week adds a new, insider voice to the oversight narrative.",
+   "sources": [
+    "CoinDesk",
+    "Newsweek",
+    "Forbes",
+    "Deadline"
+   ],
+   "watch": true
+  },
+  {
    "id": "west-bank-settlement-goods-ban-sep8",
    "headline": "Twelve countries announce import bans on Israeli West Bank settlement goods",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-09-am",
-   "last_updated": "2026-09-09-am",
+   "last_updated": "2026-09-09-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "The UK, France, Canada, Denmark, Finland, Iceland, Ireland, Norway, Poland, Portugal, Spain and Sweden announced Sept 8 they will ban imports of goods from Israeli West Bank settlements, citing settler violence (roughly 80 attacks Aug 11-24) and continued settlement expansion. Israel 'strongly condemned' the move and announced retaliatory steps, including closing the British consulate in East Jerusalem, per Israeli press reporting.",
-   "score_note": "A coordinated 12-country economic response is a materially larger diplomatic step than prior individual-country statements on settlements.",
+   "one_line": "UK Foreign Secretary Ed Miliband today publicly defended yesterday's 12-country coordinated import ban on West Bank settlement goods, reiterating that the \"occupation is unlawful.\" Israel has banned 12 UK lawmakers from entering the country in response and given Britain 30 days to close its East Jerusalem consulate. Neither side has shown signs of reversing course.",
+   "score_note": "Both sides escalated further rather than de-escalating in the 24 hours since the bans were announced.",
    "sources": [
-    "Joint statement of the 12 governments (primary, via wire)",
-    "Haaretz"
+    "CNBC",
+    "ABC Australia"
    ],
    "watch": true
   },
@@ -76,17 +126,18 @@
    "headline": "SCOTUS denies Missouri's stay request; a federal judge's separate order muddies which map governs",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-09-am",
-   "verification": "Confirmed-multiple (denial of stay); Unconfirmed (which map is currently operative)",
-   "one_line": "The Supreme Court denied Missouri's emergency application to stay the Missouri Supreme Court's ruling, leaving that court's injunction (ordering use of the old 2022 map) in place. Hours later, a federal judge separately and briefly blocked use of the old map, producing what multiple outlets call 'competing court orders.' Which map actually governs Missouri's Nov. 2026 congressional election is not yet clear as of this morning; a same-day follow-up is needed once the current operative order is confirmed.",
-   "score_note": "A rare instance of state and federal courts issuing orders that appear to conflict on the same electoral question.",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The Eighth Circuit denied an emergency stay motion from redistricting group People Not Politicians, which had appealed federal Judge Clark's Sept 8 order requiring use of the newer, 2025 GOP-favored map -- the panel said it \"either lack[s] jurisdiction over the appeal or, based on the briefing we have so far, the stay factors have not been met,\" leaving Clark's order controlling for now. Hours later, Missouri Supreme Court Chief Justice W. Brent Powell ordered Secretary of State Denny Hoskins to show cause why he shouldn't be held in contempt for directing officials to use the 2025 map in defiance of the state court's own ruling; Hoskins must respond in writing by noon today and appear in person Thursday, Sept 10, 10 AM for a hearing.",
+   "score_note": "A state supreme court moving toward holding its own secretary of state in contempt over which map governs is a sharp escalation from the prior 'competing court orders' confusion.",
    "sources": [
-    "Missouri Supreme Court order (primary)",
-    "SCOTUS emergency docket (primary)",
-    "CNN",
-    "NOTUS",
+    "Eighth Circuit order (primary, via ABC17News)",
+    "The Federalist",
+    "Democracy Docket",
     "Missouri Independent",
-    "KFVS12"
+    "NBC News",
+    "UPI",
+    "Jefferson City News Tribune"
    ],
    "watch": true
   },
@@ -128,16 +179,13 @@
    "headline": "Mail-ballot SCOTUS emergency: states' response due 4 PM today, no ruling yet",
    "status": "Continuing",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-09-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Justice Jackson's 4:00 PM EDT Wednesday deadline for California-led states and voting-rights groups to respond to the government's stay application (USPS v. California, No. 26A305) has not yet passed as of this edition. Four amicus briefs were filed Sept 8 (bipartisan members of Congress, the Society for The Rule of Law, Whistleblower Aid, and election-law professors); no respondents' brief or Court order has appeared on the docket yet. This outlet's research this run found no evidence of a second, distinct '25-state mail-ballot lawsuit' separate from this litigation thread -- likely the same case tracked under two labels across editions.",
-   "score_note": "Live, developing story; today's 4 PM deadline is the next concrete checkpoint.",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Justice Jackson's 4:00 PM EDT Wednesday deadline passed with California and the League of Women Voters of Massachusetts filing opposition briefs, plus roughly a dozen additional amicus briefs (bipartisan former governors, DSCC/DCCC/DNC/Democratic Governors Association, LULAC, American Postal Workers Union, election officials, others). No ruling or order has issued as of this writing. The underlying dispute (the government's stay application targeting Judge Talwani's Sept 4 preliminary injunction against new USPS mail-ballot rules) is unchanged.",
+   "score_note": "Briefing now complete on both sides; next checkpoint is whether and when the Court acts.",
    "sources": [
     "Supreme Court docket 26A305 (primary)",
-    "SCOTUSblog",
-    "CNN",
-    "NPR",
-    "Axios"
+    "SCOTUSblog"
    ],
    "watch": true
   },
@@ -199,17 +247,16 @@
    "headline": "Russia resumes Kyiv strikes; Trump-Putin call ends without a concrete deal",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-09-08-pm",
-   "verification": "Confirmed-multiple (strikes, casualties); Confirmed-primary (call occurred); Single-reliable-source (call content, Kremlin readout only)",
-   "one_line": "Overnight strikes on Kyiv killed at least 5 and injured 63 (climbing through the day; one outlet's combined figure of 18 is unreconciled) after the capitals-only pause lapsed Monday evening. Trump and Putin spoke for about an hour today; the Kremlin called it 'constructive and quite frank' with no US-side account or concrete outcome published. Zelensky called the strikes deliberately harmful and said he hopes to meet Trump within two weeks.",
-   "score_note": "Pause's lapse into worse strikes on the same day as an inconclusive Trump-Putin call resolves the weekend's open question toward the pessimistic case.",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-multiple (strikes); Single-reliable-source (Kremlin readout of Trump-Putin call); Confirmed (Zelensky's stated meeting target)",
+   "one_line": "Russia struck Kyiv again overnight, partially destroying a TV channel building; reported deaths ranged 3-5 across outlets, unreconciled. This follows Tuesday's Trump-Putin call, which the Kremlin called \"constructive and quite frank\" with no US-side account; Zelensky was more skeptical, saying the call showed Moscow \"not ready to stop fighting.\" New: Zelensky now says he expects to meet Trump \"by late September,\" specifically around Sept 20 alongside the UN General Assembly -- firmer than the prior \"within two weeks.\"",
+   "score_note": "A firmer, dated meeting target replaces the vaguer 'within two weeks' framing, even as strikes continue.",
    "sources": [
-    "Kyiv Independent",
-    "Meduza",
-    "Ukrinform",
-    "Bloomberg",
+    "ABC Australia",
+    "CNN",
+    "ABC News",
     "Al Jazeera",
-    "Moscow Times"
+    "Euronews"
    ],
    "watch": true
   },
@@ -441,15 +488,14 @@
    "headline": "Israel-Lebanon toll rises again; reconciling the count remains unresolved",
    "status": "Materially changed",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-09-am",
-   "verification": "Confirmed-multiple (strikes occurring); Disputed (cumulative toll -- two irreconcilable running totals in circulation)",
-   "one_line": "Lebanon's Health Ministry reported at least 13 killed including women and children in Sept 7-8 strikes, one of the larger single-day tolls in recent weeks; Israel says it struck in response to Hezbollah drone launches and continues accusing Hezbollah of ceasefire violations since the June truce. Separately, outlets are now citing wildly divergent cumulative tolls since Hezbollah rejoined fighting in March (one figure near 4,300 dead, another near 8,900) reflecting different counting windows or methodologies -- neither reconciled, and this outlet is not adopting either uncritically.",
-   "score_note": "The reconciliation gap has widened, not narrowed, since first flagged.",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Single-reliable-source (timing of the specific exchange described below is ambiguous and may predate today); Disputed (cumulative toll, unchanged two-count problem)",
+   "one_line": "Lebanon's army today accused Israel of \"deadly escalation\" in the south, saying continued strikes threaten the June ceasefire; separately, at least 3 killed and 23 wounded in strikes the IDF said followed a Hezbollah drone launch it called a \"blatant violation\" of the truce -- sourcing on the exact timing of this exchange is ambiguous and may predate today. The two irreconcilable cumulative death tolls this outlet has flagged since early September (roughly 4,300 vs roughly 8,900 since March) remain unreconciled.",
+   "score_note": "First time Lebanon's own army, not just Hezbollah or health officials, has used escalation language against Israel in this outlet's tracking.",
    "sources": [
-    "Lebanese Ministry of Public Health",
-    "Israeli military statement",
-    "Al Jazeera",
-    "CBC"
+    "Lebanese army statement (primary)",
+    "IDF statement (primary)",
+    "Times of Israel"
    ],
    "watch": true
   },
@@ -507,19 +553,18 @@
    "headline": "US destroys ten Iranian tankers in a week as Iran strikes a US-linked base in Jordan",
    "status": "Materially changed",
    "first_seen": "2026-09-05-sat",
-   "last_updated": "2026-09-09-am",
-   "verification": "Confirmed-multiple (CENTCOM statement, Jordanian Armed Forces statement, cross-confirmed by AP/Al Jazeera/ABC/Al-Monitor); Disputed (IRGC claim of hitting US destroyers, denied by CENTCOM)",
-   "one_line": "CENTCOM destroyed five more IRGC-linked crude tankers Sept 8 (Kaviz, Charminar, Horizon 1, Riesco, Derya) -- ten in a week -- after the IRGC fired ballistic missiles at a US Navy warship twice over Sept 7-8. Iran retaliated with missile strikes on the Al Azraq base in Jordan, used by US forces; Jordanian air defenses intercepted 18 of 20 incoming missiles, two landed in remote areas. IRGC claims of striking US destroyers are denied by CENTCOM -- disputed, not confirmed. Iran has formally declared a Hormuz 'exclusion zone.' Gulf states, silent for days, are now speaking: Saudi Arabia and Qatar called for de-escalation, and a UAE adviser said Gulf states have 'no alternative to engagement' with Tehran -- a possible hedge away from full alignment with Washington.",
-   "score_note": "The sharpest escalation this outlet has tracked in this war: a direct strike on a base hosting US forces, not just shipping.",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Confirmed-primary (CENTCOM denial); Disputed (IRGC claim of striking two US destroyers, uncorroborated by any independent source)",
+   "one_line": "Iran's Revolutionary Guard claimed today it struck the USS Delbert D. Black and USS John Paul Jones plus eight more tankers; CENTCOM denied it within hours, calling the claim \"completely FALSE\" and saying no US Navy warship has been struck. No independent source (imagery, ship-tracking, a third government) has corroborated either account -- this outlet found the IRGC claim carried only by regional/lower-tier outlets. Separately, Saudi-led coalition forces retaliated overnight against Houthi positions in Yemen following Monday's Aramco attack; Brent crude traded above $100/bbl again.",
+   "score_note": "A disputed claim of a direct hit on US Navy vessels, even if false, is the kind of escalatory claim that has preceded further action earlier in this conflict.",
    "sources": [
-    "CENTCOM statement (primary)",
-    "Jordanian Armed Forces statement (primary)",
-    "IRGC statement (primary, disputed claims)",
-    "NBC News",
-    "Al Jazeera",
+    "CENTCOM (primary)",
+    "IRGC statement (primary, disputed)",
+    "Houthi military statement via AP, Al Jazeera",
     "ABC News",
-    "The National",
-    "Euronews"
+    "This Is Beirut",
+    "Sunday Guardian",
+    "Azernews"
    ],
    "watch": true
   },
@@ -631,18 +676,13 @@
    "headline": "Houthi drone-and-missile attack hits Saudi oil infrastructure, wounds 73",
    "status": "Materially changed",
    "first_seen": "2026-09-08-pm",
-   "last_updated": "2026-09-09-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Brent crude crossed $100/bbl for the first time since July (settling $100.73 Sept 8, +2.87%) as the Houthi strike on Saudi Aramco facilities compounded with the same day's Iran-Jordan-Hormuz escalation; WTI settled $95.38 (+2.53%). The Saudi-led coalition called the Houthi attack a 'dangerous escalation' and vowed 'all necessary measures'; no confirmed large-scale Saudi retaliatory strike campaign against Houthi positions had followed as of this morning. Separately, Houthis accuse Saudi Arabia of killing seven people in a Sept 7 Yemen prison strike -- disputed, unconfirmed independently.",
-   "score_note": "Oil's move now reflects two compounding Gulf shocks on the same day, not one.",
+   "last_updated": "2026-09-09-pm",
+   "verification": "Single-reliable-source (Houthi spokesman's account of the retaliatory strike count, via AP/Al Jazeera); Confirmed-multiple (that a retaliation occurred)",
+   "one_line": "Saudi-led coalition forces retaliated overnight against Houthi positions in Yemen, following Monday's drone-and-missile attack on Saudi Aramco facilities that wounded 73. A Houthi military spokesman said the coalition struck 32 targets across Taiz, Hodeida, Jawf and Marib provinces -- a claim from the party being struck, not independently confirmed. Coalition spokesman Turki al-Malki had called Monday's attack a \"serious escalation\" and vowed further measures.",
+   "score_note": "Confirms the retaliation this outlet flagged as a likely next step Monday; strike-count specifics remain single-sourced to the party being struck.",
    "sources": [
     "Saudi-led coalition statement (primary)",
-    "Yahya Saree/Houthi military statement (primary)",
-    "CNN",
-    "NPR",
-    "Al Jazeera",
-    "Foreign Policy",
-    "CBC"
+    "Houthi military statement via AP, Al Jazeera (primary, single-source on strike count)"
    ],
    "watch": true
   }
