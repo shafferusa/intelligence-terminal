@@ -1,6 +1,36 @@
 {
  "forecasts": [
   {
+   "id": "2026-09-09-am-1",
+   "date": "2026-09-09",
+   "slot": "am",
+   "forecast": "A further direct Iran-US or Iran-Gulf-ally military exchange (beyond the Sept 8-9 tanker strikes and Jordan base attack) occurs within 72 hours",
+   "horizon": "2026-09-12",
+   "probability": "45-60%",
+   "basis": "Ten tankers destroyed and a direct strike on a base hosting US forces in one week is the sharpest escalation this outlet has tracked in this conflict; Iran's declared Hormuz 'exclusion zone' gives it a stated pretext for a further incident, and neither side has signaled de-escalation.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-am-2",
+   "date": "2026-09-09",
+   "slot": "am",
+   "forecast": "The Supreme Court rules on the USPS v. California mail-ballot stay application (26A305) within 72 hours of today's 4:00 PM EDT response deadline",
+   "horizon": "2026-09-12",
+   "probability": "35-50%",
+   "basis": "The shadow docket can act quickly once briefing closes, but this case has already seen one withdrawn-and-refiled application and no publicly stated urgency comparable to a hard mailing deadline; this outlet's own tracking of comparable emergency applications this cycle shows mixed timing.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-am-3",
+   "date": "2026-09-09",
+   "slot": "am",
+   "forecast": "Reporting converges on a single operative congressional map for Missouri's Nov. 2026 election (resolving the 'competing court orders' confusion) within one week",
+   "horizon": "2026-09-16",
+   "probability": "40-55%",
+   "basis": "Missouri's own requested SCOTUS merits ruling was targeted for roughly Sept 13-14, which would settle the question if it issues on schedule; absent that, the state and federal court orders remain in tension with no forcing deadline until ballot printing later in the fall.",
+   "status": "open"
+  },
+  {
    "id": "2026-09-07-pm-1",
    "date": "2026-09-07",
    "slot": "pm",
@@ -8,7 +38,10 @@
    "horizon": "2026-09-09",
    "probability": "20-35%",
    "basis": "Sunday's Kyiv visit and Saturday's Moscow visit both ended with positive characterizations but no announced concrete step; this pattern of atmospherics-without-substance has repeated across the last three rounds of shuttle diplomacy.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No jointly announced concrete step emerged. Kyiv-aligned reporting says a Trump-Zelensky meeting is 'tentatively agreed' for around Sept 20, possibly at the UN General Assembly, but Kremlin-aligned sources dispute that any such meeting was actually agreed -- a live dispute, not a confirmed summit date. No extended pause and no new written proposal surfaced.",
+   "graded": "2026-09-09",
+   "lesson": "The atmospherics-without-substance pattern held a fourth time; even the closest thing to a 'concrete step' this round (a possible future meeting) immediately became a new point of dispute between the two sides rather than a jointly confirmed outcome."
   },
   {
    "id": "2026-09-07-pm-2",
@@ -51,7 +84,10 @@
    "horizon": "2026-09-09",
    "probability": "40-55%",
    "basis": "This conflict's prior pauses have generally held only as long as explicitly extended, and no extension has been announced following Sunday's Kyiv visit.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Russia resumed strikes on Kyiv overnight Sept 8-9, killing at least 5 and injuring roughly 30 across five districts -- a clear, confirmed-multiple violation within hours of the pause's expiration.",
+   "graded": "2026-09-09",
+   "lesson": "Consistent with this conflict's established pattern (also seen in the 2026-08-30 pause): an unextended pause lapsed into renewed strikes almost immediately, reinforcing that only explicitly-extended pauses in this war have held."
   },
   {
    "id": "2026-09-07-am-3",
@@ -1983,7 +2019,10 @@
    "horizon": "2026-09-09",
    "probability": "55-70%",
    "basis": "Sustained bipartisan congressional and press attention creates reputational pressure to respond eventually, but both companies have so far gone quiet on specifics of their respective disclosed security incidents rather than engaging publicly with congressional questions.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Both companies responded by roughly Sept 2, ahead of the window's close: OpenAI told Congress it is building automated-shutdown capability (without sharing internal logs), and Anthropic replied but did not address Rep. Casar's specific container-escape question. Casar publicly rejected both responses as insufficient and set a new Sept 15 deadline.",
+   "graded": "2026-09-09",
+   "lesson": "The forecast's bar (any public response) was cleared, but the substance was thin enough that Congress immediately re-escalated with a tighter follow-up deadline -- a reminder to track the quality of a response, not just its existence, in future compliance-deadline forecasts."
   },
   {
    "id": "2026-08-26-am-3",
@@ -2029,7 +2068,10 @@
    "horizon": "2026-09-09",
    "probability": "40-55%",
    "basis": "This dispute's earlier rounds (the original injunction fight, the Supreme Court's Monday ruling) moved to emergency posture quickly once a rule took legal effect, and the midterms create real time pressure; but the plaintiff coalition may also choose to litigate on a standard merits track given the SCOTUS ruling just went against a companion injunction.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The 25-state coalition's suit produced a TRO, then a Sept 4 preliminary injunction from the U.S. District Court for the District of Massachusetts blocking USPS's mail-ballot rule -- now the subject of the government's emergency SCOTUS stay application (docket 26A305). Research this run could not find evidence of a second, separate 25-state suit distinct from this one; it appears this is the same litigation thread tracked under multiple labels across editions, worth reconciling in the ledger going forward.",
+   "graded": "2026-09-09",
+   "lesson": "The emergency-posture pattern held, but this outlet's own tracking may have described one case under two different names across editions -- a bookkeeping issue to fix rather than a forecasting error, flagged for the next case-identity check."
   },
   {
    "id": "2026-08-27-am-1",
@@ -2396,7 +2438,10 @@
    "horizon": "2026-09-09",
    "probability": "35-50%",
    "basis": "Escalating strike-and-counterstrike cadence since Aug. 30 plus a newly declared retaliation policy that structurally raises the odds of a further round.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "CENTCOM destroyed five more IRGC-linked crude tankers (Kaviz, Charminar, Horizon 1, Riesco, Derya) on Sept 8, bringing the week's total to ten, after Iran fired ballistic missiles at a US Navy warship twice over Sept 7-8. Iran also claims to have targeted shipping near Hormuz. This exceeded the forecast's scope, not just met it.",
+   "graded": "2026-09-09",
+   "lesson": "The escalating-cadence base rate under-forecast, if anything -- the tanker-strike pace nearly doubled in a single day rather than producing one further isolated incident."
   },
   {
    "id": "2026-09-02-am-2",
@@ -2553,7 +2598,10 @@
    "horizon": "2026-09-09",
    "probability": "50-65%",
    "basis": "Today's jobs beat was a clean, primary-sourced surprise (not a single speech), and Waller has explicitly deferred his own view to next week's CPI rather than pushing back on the odds move today -- there is no confirmed dovish counter-catalyst before Tuesday.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The most recent confirmed reading (Sept 7, secondary-sourced) had hike odds at roughly 58.7%, still above the 55% floor though down from 66% on Aug 31. No same-day Tuesday reading or dovish reversal catalyst was found; CME's own FedWatch page was outside this run's reachable sources.",
+   "graded": "2026-09-09",
+   "lesson": "Odds held above the floor on the last confirmed read, but this system still lacks a reliable same-day CME FedWatch pull -- worth fixing before the next odds-threshold forecast, since grading here rests on a two-day-old secondary number."
   },
   {
    "id": "2026-09-06-sun-1",

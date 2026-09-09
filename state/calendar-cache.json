@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-08T06:50:00-04:00",
+ "fetched": "2026-09-09T06:50:00-04:00",
  "earnings_fetched": "2026-09-06",
  "earnings_fetched_note": "Two independent aggregators (Yahoo Finance, Kiplinger) show no headline S&P 500-grade earnings this week (~101 companies reporting in aggregate, none named as market-moving). Recommend a fresh named-ticker pull closer to each day if the earnings section needs specifics.",
  "events": [
@@ -132,14 +132,6 @@
    "source": "Fragomen, Boundless immigration-law trackers -- Confirmed-multiple"
   },
   {
-   "ts_et": "2026-09-09T09:00:00-04:00",
-   "type": "space",
-   "name": "Long March 2D (undisclosed payload, Jiuquan) and Progress MS-35 cargo resupply to ISS (Soyuz, Baikonur)",
-   "importance": "Low",
-   "reason": "Routine scheduled launches.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
-  },
-  {
    "ts_et": "2026-09-10T15:37:00-04:00",
    "type": "space",
    "name": "Falcon 9 -- USSF-153 national security payload (Vandenberg SFB)",
@@ -166,10 +158,10 @@
   {
    "ts_et": "2026-09-08T00:00:00-04:00",
    "type": "election",
-   "name": "New Hampshire state primary (open US Senate seat)",
+   "name": "New Hampshire state primary (open US Senate seat) -- RESULTS: Sununu (R), Pappas (D) advance",
    "importance": "Medium",
-   "reason": "Polls close this evening; results not yet available. Pre-election coverage frames Rep. Chris Pappas as likely Democratic nominee and former Sen. John Sununu (Trump-endorsed) as likely Republican nominee, but these are expectations, not results.",
-   "source": "NPR, Ballotpedia, Concord Monitor -- Confirmed-multiple on the primary occurring; Unverified on outcome"
+   "reason": "John E. Sununu defeated Scott Brown for the GOP nod; Chris Pappas defeated Karishma Manzur for the Democratic nod. Both advance to the Nov 3 general election for Sen. Jeanne Shaheen's open seat. Gov. Kelly Ayotte (R) also won her primary; faces Democrat Cinde Warmington (unopposed) in November.",
+   "source": "NHPR, NBC News, Washington Post, Fox News, Boston Globe -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-09T00:00:00-04:00",
@@ -178,6 +170,54 @@
    "importance": "Medium",
    "reason": "First-ever Republican midterm convention; Trump, Vance and roughly 100 other speakers expected before ~20,000 attendees.",
    "source": "Multiple wire reports -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Employer Costs for Employee Compensation, 10:00 AM ET",
+   "importance": "Low",
+   "reason": "Routine BLS release.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-09T16:00:00-04:00",
+   "type": "legal",
+   "name": "Mail-ballot SCOTUS emergency (USPS v. California, 26A305): states'/voting-rights groups' response deadline",
+   "importance": "Critical",
+   "reason": "Justice Jackson's deadline for the California-led coalition to respond to the government's stay application targeting Judge Talwani's Sept 4 preliminary injunction. No respondents' brief or Court order on the docket as of this morning.",
+   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "political",
+   "name": "GOP 'midterm convention' opens, Dallas (American Airlines Center) -- Vance keynote tonight",
+   "importance": "Medium",
+   "reason": "First-ever Republican midterm convention; roughly 109 speakers, ~20,000 expected each night. Vance keynotes tonight; Trump speaks both nights with a closing address Thursday.",
+   "source": "Fox4, Axios, Texas Tribune, The Hill -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T13:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 9-year-11-month note reopening ($39B) and 17-week bill ($72B)",
+   "importance": "Low",
+   "reason": "Refunding leg (10-year-equivalent reopening) plus routine bill auction.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T09:00:00-04:00",
+   "type": "space",
+   "name": "Long March 2D/YZ-3 (undisclosed payload, Jiuquan)",
+   "importance": "Low",
+   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for today (Sept 9); Launch Library 2's current schedule has it for Sept 10.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-16T00:00:00-04:00",
+   "type": "space",
+   "name": "Progress MS-35 cargo resupply to ISS (Soyuz-2.1b, Baikonur)",
+   "importance": "Low",
+   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for Sept 9; Launch Library 2's current schedule has it slipped to Sept 16, exact time to be determined.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

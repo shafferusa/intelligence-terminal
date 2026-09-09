@@ -1,6 +1,21 @@
 {
  "stories": [
   {
+   "id": "west-bank-settlement-goods-ban-sep8",
+   "headline": "Twelve countries announce import bans on Israeli West Bank settlement goods",
+   "status": "New",
+   "first_seen": "2026-09-09-am",
+   "last_updated": "2026-09-09-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "The UK, France, Canada, Denmark, Finland, Iceland, Ireland, Norway, Poland, Portugal, Spain and Sweden announced Sept 8 they will ban imports of goods from Israeli West Bank settlements, citing settler violence (roughly 80 attacks Aug 11-24) and continued settlement expansion. Israel 'strongly condemned' the move and announced retaliatory steps, including closing the British consulate in East Jerusalem, per Israeli press reporting.",
+   "score_note": "A coordinated 12-country economic response is a materially larger diplomatic step than prior individual-country statements on settlements.",
+   "sources": [
+    "Joint statement of the 12 governments (primary, via wire)",
+    "Haaretz"
+   ],
+   "watch": true
+  },
+  {
    "id": "miami-cargo-plane-crash-sep6",
    "headline": "Amazon-branded cargo jet overruns Miami runway, kills five",
    "status": "New",
@@ -58,19 +73,20 @@
   },
   {
    "id": "missouri-congressional-map-ruling-aug21",
-   "headline": "Missouri's own ballot deadline passes with briefing complete, no ruling yet",
+   "headline": "SCOTUS denies Missouri's stay request; a federal judge's separate order muddies which map governs",
    "status": "Materially changed",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-08-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Missouri filed its reply brief today, completing briefing after challengers' Sunday filing. Missouri's own state-law ballot-certification deadline arrived today, Sept 8, with the map still undecided; its own remaining hard deadline (printing overseas/military ballots) is Sept 19, and it had asked the Court to rule by roughly Sept 13-14. No SCOTUS stay or merits order has issued.",
-   "score_note": "Full briefing now closed with the state's own certification deadline already passed unresolved.",
+   "last_updated": "2026-09-09-am",
+   "verification": "Confirmed-multiple (denial of stay); Unconfirmed (which map is currently operative)",
+   "one_line": "The Supreme Court denied Missouri's emergency application to stay the Missouri Supreme Court's ruling, leaving that court's injunction (ordering use of the old 2022 map) in place. Hours later, a federal judge separately and briefly blocked use of the old map, producing what multiple outlets call 'competing court orders.' Which map actually governs Missouri's Nov. 2026 congressional election is not yet clear as of this morning; a same-day follow-up is needed once the current operative order is confirmed.",
+   "score_note": "A rare instance of state and federal courts issuing orders that appear to conflict on the same electoral question.",
    "sources": [
-    "Ballot Access News",
-    "Election Law Blog",
-    "KCTV5",
+    "Missouri Supreme Court order (primary)",
+    "SCOTUS emergency docket (primary)",
+    "CNN",
+    "NOTUS",
     "Missouri Independent",
-    "KCUR"
+    "KFVS12"
    ],
    "watch": true
   },
@@ -96,12 +112,12 @@
    "headline": "DRC Ebola toll revised sharply upward: 6,604 cases, 3,175 deaths",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-08-pm",
-   "verification": "Confirmed-primary (WHO/ECDC)",
-   "one_line": "ECDC's Sept 6 report (data through Sept 5) puts the outbreak at 6,604 confirmed cases and 3,175 deaths in the DRC plus 2 in Uganda, up 82 cases/41 deaths day-over-day; 851 hospitalized in isolation. Ituri accounts for roughly 82% of cases. Still complicated by a Bundibugyo strain existing Zaire-strain vaccines/treatments don't fully cover.",
-   "score_note": "Largest single day-over-day jump this report has logged for the outbreak.",
+   "last_updated": "2026-09-09-am",
+   "verification": "Confirmed-primary (WHO)",
+   "one_line": "WHO/DRC Ministry of Health data through Sept 6-7 now puts the outbreak at 6,686 confirmed cases and 3,226 deaths (up from 6,604/3,175 reported Sept 6), 819 hospitalized in isolation, 1,563 recovered among confirmed positives.",
+   "score_note": "Continuing upward trend; pace of increase similar to prior updates.",
    "sources": [
-    "WHO",
+    "WHO Disease Outbreak News",
     "ECDC",
     "DRC Ministry of Health"
    ],
@@ -109,18 +125,19 @@
   },
   {
    "id": "mail-ballot-new-merits-suit-aug26",
-   "headline": "Corrected: mail-ballot SCOTUS deadline is Wednesday, not today",
-   "status": "Corrected",
+   "headline": "Mail-ballot SCOTUS emergency: states' response due 4 PM today, no ruling yet",
+   "status": "Continuing",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-08-am",
+   "last_updated": "2026-09-09-am",
    "verification": "Confirmed-multiple",
-   "one_line": "This outlet previously reported the states/voting-rights groups' response deadline as 10 AM today; per SCOTUSblog's account of Justice Jackson's order, it is actually 4:00 PM EDT Wednesday Sept 9, and the case is now docketed 26A305 (not 26A297). No stay granted; North Carolina continues mailing ballots on schedule. Correction logged to ledgers/corrections.json.",
-   "score_note": "Internal date error caught and corrected before the wrong deadline could mislead the reader about when to expect action.",
+   "one_line": "Justice Jackson's 4:00 PM EDT Wednesday deadline for California-led states and voting-rights groups to respond to the government's stay application (USPS v. California, No. 26A305) has not yet passed as of this edition. Four amicus briefs were filed Sept 8 (bipartisan members of Congress, the Society for The Rule of Law, Whistleblower Aid, and election-law professors); no respondents' brief or Court order has appeared on the docket yet. This outlet's research this run found no evidence of a second, distinct '25-state mail-ballot lawsuit' separate from this litigation thread -- likely the same case tracked under two labels across editions.",
+   "score_note": "Live, developing story; today's 4 PM deadline is the next concrete checkpoint.",
    "sources": [
+    "Supreme Court docket 26A305 (primary)",
     "SCOTUSblog",
-    "Axios",
-    "NBC News",
-    "PBS NewsHour"
+    "CNN",
+    "NPR",
+    "Axios"
    ],
    "watch": true
   },
@@ -424,14 +441,15 @@
    "headline": "Israel-Lebanon toll rises again; reconciling the count remains unresolved",
    "status": "Materially changed",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-08-pm",
-   "verification": "Confirmed-multiple (strikes occurring, Monday toll); Disputed (reconciliation with weekend cumulative figure)",
-   "one_line": "Lebanon's Health Ministry reported 13 killed, including women and children, in Monday Sept 7 strikes -- surfacing in Sept 8 coverage. Not clear whether this is additive to, or a subset of, the 'at least 27 since Saturday' cumulative figure this report cited Sept 8 morning; no outlet has published a single reconciled running total. Israel says it continues targeting Hezbollah over alleged ceasefire violations.",
-   "score_note": "Toll continues rising in real terms regardless of the reconciliation gap between cited figures.",
+   "last_updated": "2026-09-09-am",
+   "verification": "Confirmed-multiple (strikes occurring); Disputed (cumulative toll -- two irreconcilable running totals in circulation)",
+   "one_line": "Lebanon's Health Ministry reported at least 13 killed including women and children in Sept 7-8 strikes, one of the larger single-day tolls in recent weeks; Israel says it struck in response to Hezbollah drone launches and continues accusing Hezbollah of ceasefire violations since the June truce. Separately, outlets are now citing wildly divergent cumulative tolls since Hezbollah rejoined fighting in March (one figure near 4,300 dead, another near 8,900) reflecting different counting windows or methodologies -- neither reconciled, and this outlet is not adopting either uncritically.",
+   "score_note": "The reconciliation gap has widened, not narrowed, since first flagged.",
    "sources": [
     "Lebanese Ministry of Public Health",
+    "Israeli military statement",
     "Al Jazeera",
-    "Israeli military statement"
+    "CBC"
    ],
    "watch": true
   },
@@ -486,17 +504,22 @@
   },
   {
    "id": "kharg-island-tanker-strike-sep5",
-   "headline": "Iran threatens a Hormuz 'exclusion zone' as oil jumps",
+   "headline": "US destroys ten Iranian tankers in a week as Iran strikes a US-linked base in Jordan",
    "status": "Materially changed",
    "first_seen": "2026-09-05-sat",
-   "last_updated": "2026-09-08-am",
-   "verification": "Single-reliable-source (exclusion-zone plan, via Iranian state broadcaster); Confirmed-primary (Saturday's CENTCOM-confirmed naval exchange, unchanged)",
-   "one_line": "Iran's new Supreme National Security Council chief Mohsen Rezaei said Tehran will announce a Hormuz-area 'exclusion zone' in coming days/weeks; any vessel entering it while attempting a transit would be sanctioned. Nothing drawn or enforced yet -- a stated plan, not a fact on the water. Oil (WTI) traded near $93.75, a three-month high, roughly 9% higher over the past week. No Gulf state has yet commented on Saturday's direct naval exchange, five days on.",
-   "score_note": "Second rhetorical escalation this week (after Ghalibaf) without a matching action -- the pattern this outlet has tracked continues.",
+   "last_updated": "2026-09-09-am",
+   "verification": "Confirmed-multiple (CENTCOM statement, Jordanian Armed Forces statement, cross-confirmed by AP/Al Jazeera/ABC/Al-Monitor); Disputed (IRGC claim of hitting US destroyers, denied by CENTCOM)",
+   "one_line": "CENTCOM destroyed five more IRGC-linked crude tankers Sept 8 (Kaviz, Charminar, Horizon 1, Riesco, Derya) -- ten in a week -- after the IRGC fired ballistic missiles at a US Navy warship twice over Sept 7-8. Iran retaliated with missile strikes on the Al Azraq base in Jordan, used by US forces; Jordanian air defenses intercepted 18 of 20 incoming missiles, two landed in remote areas. IRGC claims of striking US destroyers are denied by CENTCOM -- disputed, not confirmed. Iran has formally declared a Hormuz 'exclusion zone.' Gulf states, silent for days, are now speaking: Saudi Arabia and Qatar called for de-escalation, and a UAE adviser said Gulf states have 'no alternative to engagement' with Tehran -- a possible hedge away from full alignment with Washington.",
+   "score_note": "The sharpest escalation this outlet has tracked in this war: a direct strike on a base hosting US forces, not just shipping.",
    "sources": [
     "CENTCOM statement (primary)",
-    "Iranian state broadcaster (via Reuters, CBC, Just the News)",
-    "Al Jazeera (oil)"
+    "Jordanian Armed Forces statement (primary)",
+    "IRGC statement (primary, disputed claims)",
+    "NBC News",
+    "Al Jazeera",
+    "ABC News",
+    "The National",
+    "Euronews"
    ],
    "watch": true
   },
@@ -590,15 +613,15 @@
   {
    "id": "germany-afd-saxony-anhalt-sep6",
    "headline": "Germany's AfD wins a state election outright for the first time",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-08-am",
-   "last_updated": "2026-09-08-am",
+   "last_updated": "2026-09-09-am",
    "verification": "Confirmed-multiple",
-   "one_line": "The AfD took 43.79% (39/83 seats) in Sunday's Saxony-Anhalt state election, more than doubling its 2021 result, as the CDU collapsed to 17.23% from 37.1%. Every other party has ruled out governing with the AfD; a CDU-SPD-Greens-Linke-BSW combination (44 seats) is the only non-AfD majority available.",
-   "score_note": "First outright state-election win for the AfD -- a marker for the European far-right trendline.",
+   "one_line": "AfD's 43.8% fell three seats short of an outright majority (39 of 83). National co-leader Tino Chrupalla claimed the political 'firewall' against the AfD had been 'definitively rejected' by voters; outgoing CDU premier Sven Schulze conceded the result 'hit us hard.' No confirmed coalition deal or path has emerged; a CDU-SPD-Greens-Linke-BSW combination (44 seats) is the only non-AfD majority mathematically available. Analysts flag the Bundesrat impact (Saxony-Anhalt's four votes) as the most concrete near-term national consequence.",
+   "score_note": "Government formation remains unresolved a week+ after the vote.",
    "sources": [
-    "Al Jazeera",
-    "NPR",
+    "CNBC",
+    "Reuters/wire reports",
     "official Saxony-Anhalt election results"
    ],
    "watch": true
@@ -606,19 +629,20 @@
   {
    "id": "houthi-saudi-aramco-attack-sep8",
    "headline": "Houthi drone-and-missile attack hits Saudi oil infrastructure, wounds 73",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-08-pm",
-   "last_updated": "2026-09-08-pm",
+   "last_updated": "2026-09-09-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Yemen's Houthi movement struck Saudi Aramco facilities in Najran and Abha, the ~400,000-bpd Jizan refinery, a fuel terminal and King Khalid Air Base today; Saudi officials reported 73 wounded. Houthi spokesman Yahya Saree claimed responsibility as retaliation for Saudi strikes on Yemen; Saudi Arabia vowed to 'finish the job.' A distinct escalation from Saturday's CENTCOM-confirmed US-Iran naval exchange, which still has no Gulf-state public comment five days on. WTI rose 3.04% to $94.26; Brent reported near $98-99.",
-   "score_note": "Direct proxy-force strike on a US ally's oil infrastructure is a materially different, more concrete escalation than the naval skirmishing and rhetorical Hormuz threats tracked to date.",
+   "one_line": "Brent crude crossed $100/bbl for the first time since July (settling $100.73 Sept 8, +2.87%) as the Houthi strike on Saudi Aramco facilities compounded with the same day's Iran-Jordan-Hormuz escalation; WTI settled $95.38 (+2.53%). The Saudi-led coalition called the Houthi attack a 'dangerous escalation' and vowed 'all necessary measures'; no confirmed large-scale Saudi retaliatory strike campaign against Houthi positions had followed as of this morning. Separately, Houthis accuse Saudi Arabia of killing seven people in a Sept 7 Yemen prison strike -- disputed, unconfirmed independently.",
+   "score_note": "Oil's move now reflects two compounding Gulf shocks on the same day, not one.",
    "sources": [
-    "Washington Post",
-    "NPR",
+    "Saudi-led coalition statement (primary)",
+    "Yahya Saree/Houthi military statement (primary)",
     "CNN",
-    "US News",
-    "Houthi military statement (primary, via Reuters/CBC)",
-    "CENTCOM (background, primary)"
+    "NPR",
+    "Al Jazeera",
+    "Foreign Policy",
+    "CBC"
    ],
    "watch": true
   }
