@@ -95,7 +95,8 @@ day-change in basis points never falls back to "unchanged" for want of a compari
 ### 2.2 FRED (key `$FRED_API_KEY`)
 
 For each series — `CPIAUCSL CPILFESL PAYEMS ICSA UNRATE T10Y2Y DGS2 DGS10 T10YIE DFII10 SOFR
-BAMLH0A0HYM2` — one call:
+BAMLH0A0HYM2 DFF` — one call (`DFF` is the daily effective federal funds rate, the anchor for the
+Fed-path arithmetic in §2.15):
 
 ```
 https://api.stlouisfed.org/fred/series/observations?series_id=<S>&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=30
@@ -164,6 +165,13 @@ https://query1.finance.yahoo.com/v8/finance/chart/<SYM>?interval=1d&range=5d
 
 `query2.finance.yahoo.com` is the retry host. Futures labeled `Delayed (+10 min)`; `^TNX` is the
 10-year yield × 10 (42.5 → 4.25%). Futures ≠ guaranteed open — say so in Before the Open.
+
+**Fed funds futures (added 2026-09-09, for §2.15):** also fetch `ZQ=F` (the front 30-day fed funds
+contract) and the month contracts for the month AFTER each of the next two FOMC decision dates —
+`ZQ<code><yy>.CBT`, month codes F G H J K M N Q U V X Z for Jan–Dec (a September 16 meeting →
+`ZQV26.CBT`, October; the following late-October meeting → `ZQX26.CBT`). Implied average rate for
+that month = 100 − price. If a month contract returns nothing, say the path beyond the front month
+is unavailable this run; never invent it.
 
 **DXY:** `DX-Y.NYB` is the ICE dollar index and it works. Earlier versions of this file claimed DXY
 had no free source and told the report to say so — that was wrong. Use it for The Board and the
@@ -346,6 +354,27 @@ lookup is a one-time resolution, not a daily fetch. The strip has three parts:
 On any failure omit the affected part (or the whole strip) and move on — weather never delays or
 degrades the edition.
 
+### 2.15 The Fed path (every weekday edition; added 2026-09-09)
+
+The paper has printed "rate-hike odds near two-thirds" from unnamed sources and, on other days,
+had no reading at all. Compute one every edition and print it in The Economy (Step 4):
+
+1. **FOMC decision dates** come from `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`
+   (.gov UA), cached in `state/calendar-cache.json` as `fomc_dates` (the decision days, ISO dates)
+   and refreshed when the list is empty or older than 30 days.
+2. **Current rate**: FRED `DFF`, latest observation (§2.2). **Market-implied**: for each of the next
+   two meetings, the §2.5 contract for the following month gives the implied average effective rate
+   for that month. Implied change at the meeting = implied rate − DFF (for the second meeting, minus
+   the first meeting's implied change). Rough probability of a 25bp move = implied change ÷ 0.25,
+   clamped to 0–100% and printed as a band of ±5 points ("roughly 55–65% for a September hike").
+3. **Say what it is**: "fed funds futures, Yahoo, delayed" — never "the market says" without the
+   instrument. If a wire quotes CME FedWatch, that may be printed too, named and time-stamped
+   ("CME FedWatch 62% as of 4:05 PM ET, per Reuters"); it never replaces the computed reading.
+4. **Track the change**: keep yesterday's reading in `state/market-history/last-good.json` →
+   `fed_path` and print the day's move in points. The Fed-path paragraph is the one place the
+   morning "Watch today" and the closing attribution labels can point to when they say rates
+   repriced.
+
 ## Step 3 — Change log vs story memory
 
 Compare candidate stories against `state/stories.json`: new / materially updated / continuing /
@@ -366,53 +395,99 @@ overwrite. Percentages describe the day: a +0.5% session is not a "jump", whatev
 **This is a newspaper. It is strictly news.** No lessons, no curriculum, no teaching — that moved to
 the 6:00 AM Learning Brief (`prompts/learning.md`) on 2026-08-16 and must not reappear here.
 
-Select ~8–12 Top Stories (SPEC §4 scoring — keep the rationale in story memory, not in the report).
-Masthead per SR §11, voice per SR §11b, markup per SR §12/§12b. Set `data-slot`.
+Select 8–10 Top Stories (SPEC §4 scoring — keep the rationale in story memory, not in the report),
+**at least four of them markets, economy or business** and at most five or six general news (SR §7:
+this is a markets paper first). Masthead per SR §11, voice per SR §11b, markup per SR §12/§12b,
+word budget per SR §12b.7. Set `data-slot`.
+
+**The three sections that carry the markets weight** (both editions; added 2026-09-09):
+
+- **The Economy** (250–400 words). Every release that printed since the last edition gets a
+  release card in prose — actual, consensus, prior, revision and whether the revision changes the
+  read, where it sits against the last year, and what it does to the Fed path — followed by the
+  standing **Fed-path paragraph** from §2.15: current effective rate, the implied rate and rough
+  probability for the next two meetings, the day's change in points, and the one thing that would
+  move it. Level versus rate-of-change and nominal versus real stay explicit (SR §3). On a day with
+  no release, the section is the Fed-path paragraph plus whatever central-bank or fiscal news moved.
+- **Business** (150–300 words). Corporate news beyond the watchlist: M&A, IPOs, bankruptcies,
+  leadership, regulation, labour, pricing. Per SPEC §11: event, company, ticker, source, why it
+  matters financially and strategically, who else it touches, the market reaction if any.
+- **Watchlist** (250–450 words, three to six items, `.watch-item` with a `.watch-ticker` label).
+  What happened on the names in `config/watchlists.yml` since the last edition: 8-K filings from
+  the §2.11 sweep (contracts, guidance, leadership, offerings, restructurings), earnings, guidance
+  changes, analyst days, index changes, and the SPCX/space and defense/AI-infra names Logan tracks.
+  **Earnings, the right way round:** the morning a watchlist name reports, a pre-report card —
+  report time, consensus revenue and EPS, the guidance question, the implied move where the options
+  market gives one, how the stock reacted last quarter; at the close, a post-report card — actuals
+  against the morning's consensus, guidance, margins, capex, cash flow, the reaction with its SR §5
+  label. Never "beat/miss" alone. Sources: the company's own release or 8-K first.
+- **Markets** (400–600 words, four `<h3>` sub-heads, prose with the numbers in the sentences,
+  no tables): **The regime** — risk-on to crisis, with the supporting and the contradicting evidence
+  and the change from the last edition; **Rates & credit** — the curve, real yields and breakevens,
+  HY and IG spreads, what the day's move says about growth versus inflation versus supply;
+  **Sectors & factors** — leadership, rotation, equal-weight versus cap-weight, small versus large,
+  value versus growth, what changed; **Cross-asset & commodities** — dollar, oil, gold, copper, BTC,
+  the correlations that held and the ones that broke. This is the prose that used to sit in the
+  collapsed appendix; the appendix now keeps only the tables for these (SR §16). Every claim about
+  cause obeys SR §5.
 
 **Morning (am) — this order:**
 
 1. **Masthead** — edition, title, date + reading time, one-sentence standfirst.
-2. **The Brief** — 5–7 bullets. The world · markets · the thread · biggest risk · watch today.
-3. **Top Stories** — 8–12, first one `.story--lead`. Prose, decks, at most two `.story-note` each.
+2. **The Brief** — 5–7 bullets. The world · markets (with numbers) · the thread · biggest risk ·
+   watch today.
+3. **Top Stories** — 8–10, first one `.story--lead`, at least four market/economy/business.
+   Prose, decks, at most two `.story-note` each. On jobs, CPI, PCE and FOMC days the data or the
+   Fed leads.
 4. **Overnight** — what happened while the US slept, and what changed since yesterday's close
    (these were two separate sections; they are one now, because they were always the same story).
-5. **Politics & Government** — 6. **The World** — 7. **The Economy** — 8. **Business** —
-   9. **Technology & AI** — 10. **Science & Space** (Science and Space are ONE section now).
-   Omit any of these that has nothing material. Do not write "no significant developments."
-11. **Today's Calendar** — time, event, consensus, previous. Bold the single most consequential
-    row instead of printing an importance chip on every row.
-12. **Before the Open** — prose, not a table: futures, yields, dollar, VIX, oil, gold, BTC, what
+5. **The Economy** — 6. **Business** — 7. **Watchlist** — as above.
+8. **Politics & Government** — 9. **The World** — 10. **Technology & AI** — 11. **Science &
+   Space** (Science and Space are ONE section now). 80–150 words each; omit any that has nothing
+   material. Do not write "no significant developments." Running tolls, patch catalogues and
+   court-calendar mechanics get a sentence here, not a story, unless something materially changed.
+12. **Today's Calendar** — time, event, consensus, previous. Bold the single most consequential
+    row instead of printing an importance chip on every row. Watchlist names reporting today are
+    rows here as well as cards in Watchlist.
+13. **Before the Open** — prose, not a table: futures, yields, dollar, VIX, oil, gold, BTC, what
     the tape appears to price, the most fragile assumption, what would invalidate it. Say once that
     futures are not a guaranteed open.
-13. **Risks & Scenarios** — probability RANGES with a stated basis (SR §10 logging unchanged).
-14. **Local** — weather strip first (SR §18), then up to two items per beat.
-15. **Market Appendix** — collapsed, SR §16, unchanged.
-16. **Colophon** — sources, corrections, method (SR §11).
+14. **Markets** — as above.
+15. **Risks & Scenarios** — probability RANGES with a stated basis (SR §10 logging unchanged).
+16. **Local** — weather strip first (SR §18), then up to two items per beat.
+17. **Market Appendix** — collapsed, SR §16 (tables; the narrative is in Markets).
+18. **Colophon** — sources, corrections, method (SR §11).
 
 **Closing (pm) — this order:**
 
 1. **Masthead** — 2. **The Brief** —
 3. **The Board** — the watchlist chart, SR §17. Closing edition only.
-4. **Top Stories** — what developed since the morning edition; new stories lead.
+4. **Top Stories** — what developed since the morning edition; new stories lead; at least four
+   market/economy/business, and on a data or Fed day the tape's reaction to it is the lead.
 5. **What Changed Today** — previous understanding → new information → why it matters.
-6. **Politics & Government** — 7. **The World** — 8. **The Economy** — 9. **Business** —
-   10. **Technology & AI** — 11. **Science & Space** (same omission rule). A domain section whose
-   only content would be "no new movement was found today on X, Y and Z" is omitted, not written:
-   continuing threads with nothing new are not listed anywhere in the paper. Earnings in Business
-   are graded against the consensus figures the morning edition printed; if a different tracker's
-   number is used, print both and name them — a "beat" against a lower bar than this morning's is
-   not a beat.
-12. **What Moved Markets** — open/morning/midday/close. Attribution labelled
+6. **The Economy** — 7. **Business** — 8. **Watchlist** — as above; the post-report earnings
+   cards live in Watchlist. Earnings are graded against the consensus figures the morning edition
+   printed; if a different tracker's number is used, print both and name them — a "beat" against a
+   lower bar than this morning's is not a beat.
+9. **Politics & Government** — 10. **The World** — 11. **Technology & AI** — 12. **Science &
+   Space** (same omission rule, 80–150 words each). A domain section whose only content would be
+   "no new movement was found today on X, Y and Z" is omitted, not written: continuing threads with
+   nothing new are not listed anywhere in the paper.
+13. **What Moved Markets** — open/morning/midday/close. Attribution labelled
     `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained` (SR §5), each
     label in its own `<span class="verdict">` opening the sentence it judges, no punctuation inside
     the span, qualifiers in the prose after it; one paragraph per attributed move, not one wall of
     text with five verdicts buried in it. Never force a narrative. These four labels stay —
     they are honesty, not clutter. Whatever label a move gets here is the strongest claim the
     standfirst, The Brief and the index `summary`/`headlines` may make about it (SR §5).
-13. **Winners & Losers** — 14. **Tomorrow** — overnight and tomorrow's majors.
-15. **Local** — no weather strip in the pm edition; items only, and omitted entirely if there
+14. **Markets** — as above (the closing edition's is written from official closes).
+15. **Winners & Losers** — across the watchlists, with the reason where one is confirmed and
+    "no identifiable catalyst" where none is. 16. **Tomorrow** — overnight and tomorrow's majors,
+    including every watchlist name reporting, and any call the edition makes with its range
+    (SR §10).
+17. **Local** — no weather strip in the pm edition; items only, and omitted entirely if there
     are none.
-16. **Market Appendix** — 17. **Colophon**.
+18. **Market Appendix** — 19. **Colophon**.
 
 **Ledgers while composing:** every explicit forecast/probability → SR §10 entry (logged to the
 ledger, ID not printed). Any discovered error in a prior report → SR §9, surfaced in the colophon.

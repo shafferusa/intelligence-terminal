@@ -80,6 +80,34 @@ anything later in this document, this wins.
   lesson linked and the next one marked. Report pages gain working previous/next links at read time
   (lessons step through lessons, news through news). Search indexes report pages only.
 
+### 0c. Amendment of 2026-09-09 — the markets weight (SUPERSEDES the category balance in §4 and the section lists in §18–§21)
+
+Logan, after three weeks of the decluttered paper: *"the newspapers aren't containing enough
+markets/finance/business/economics stories and analysis."* Measured over the week of Sep 3–8:
+markets, the economy and business were 17–24% of the weekday reading path and 8% of the Saturday
+review; the Business section ran 40–80 words; two or three Top Stories a day touched a market; the
+real analysis sat in the collapsed appendix that neither the reader nor the audio player opens.
+Directed:
+
+- **This is a markets paper first.** SPEC §4's "relevance to Logan's interests" means markets,
+  the economy, central banks, business, earnings and the watchlist names, weighted above general
+  news of similar magnitude. At least four Top Stories come from them every edition; on jobs, CPI,
+  PCE and FOMC days the data or the Fed leads. General-news Top Stories are capped at five or six.
+- **Two new standing weekday sections**: **Watchlist** (three to six items from
+  `config/watchlists.yml` names — filings, earnings with pre- and post-report cards, guidance,
+  contracts) and **Markets** (the regime, rates & credit, sectors & factors, cross-asset &
+  commodities, in prose, 400–600 words). The Market Appendix keeps the tables and drops the
+  duplicated narrative.
+- **The Economy** carries a release card for every print and a standing Fed-path paragraph
+  computed from fed funds futures and the effective rate (`prompts/weekday.md` §2.15).
+- **Weekend**: The Week in Markets runs 1,000 words or more with a weekly returns table; Sunday's
+  Economy Ahead and Earnings & Business carry consensus tables and Market Setup runs 400 or more.
+- **Paid for inside 18–25 minutes**: markets, the economy and business are roughly 40% or more of
+  the reading path (`prompts/shared-rules.md` §12b.7 has the word budget); running tolls,
+  vulnerability catalogues and court-calendar mechanics become a sentence in a domain section
+  unless something materially changed.
+- **The Telegram push always carries one markets clause with its number.**
+
 ## 1. Mission
 
 A permanent, automated, mobile-first personal intelligence platform: global news desk + market terminal + economic research + political/geopolitical brief + company & industry watcher + space dashboard + light physics/spaceflight/quant tutors + searchable archive. It must gather, verify, analyze, generate, store, and deliver polished reports to Logan's iPhone with NO computer on, NO open session, NO custom app, NO manual step. Accuracy, clarity, evidence, organization, reliability and intellectual honesty over speed or drama. It must never feel like a chatbot transcript, feed clone, or AI wall of text.
@@ -180,10 +208,11 @@ Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnin
 
 ## 18. Weekday MORNING report structure (6:30 AM ET) — revised 2026-08-16
 
-Masthead · The Brief · Top Stories · Overnight · Politics & Government · The World · The Economy ·
-Business · Technology & AI · Science & Space · Today's Calendar · Before the Open ·
-Risks & Scenarios · **Local** (weather strip, then the three beats) · Market Appendix (collapsed) ·
-Colophon.
+Masthead · The Brief · Top Stories · Overnight · The Economy · Business · **Watchlist** ·
+Politics & Government · The World · Technology & AI · Science & Space · Today's Calendar ·
+Before the Open · **Markets** · Risks & Scenarios · **Local** (weather strip, then the three
+beats) · Market Appendix (collapsed) · Colophon. *(Watchlist and Markets added, and the market
+sections moved ahead of the general-news domains, 2026-09-09 — §0c.)*
 
 Domain sections with nothing material are omitted, not padded. Before the Open is prose, not a
 table: futures, yields, dollar, VIX, oil, gold, BTC, what the tape appears to price, the most
@@ -192,9 +221,10 @@ fragile assumption, and what would invalidate it. Futures ≠ guaranteed open, s
 ## 19. Weekday CLOSING report structure (4:30 PM ET) — revised 2026-08-16
 
 Masthead · The Brief · **The Board** (the 25-row watchlist chart, shared-rules §17) · Top Stories ·
-What Changed Today · Politics & Government · The World · The Economy · Business ·
-Technology & AI · Science & Space · What Moved Markets · Winners & Losers · Tomorrow ·
-**Local** (no weather strip) · Market Appendix (collapsed) · Colophon.
+What Changed Today · The Economy · Business · **Watchlist** · Politics & Government · The World ·
+Technology & AI · Science & Space · What Moved Markets · **Markets** · Winners & Losers ·
+Tomorrow · **Local** (no weather strip) · Market Appendix (collapsed) · Colophon. *(Watchlist and
+Markets added, and the market sections moved ahead of the general-news domains, 2026-09-09 — §0c.)*
 
 What Moved Markets keeps its four attribution labels — `Confirmed catalyst` / `Likely contributor` /
 `Market narrative` / `Unexplained`. Those are honesty, not clutter, and they stay.
@@ -209,14 +239,16 @@ Complete retrospective that SYNTHESIZES (not concatenates): 1 Cover & date range
 note in the report, a **Local** section covering the week's three beats, and the section list above
 consolidated per `prompts/weekend.md` — best/worst assets and sector rotation fold into The Week in
 Markets; overhyped and undercovered become one section; the registry sweep becomes one sentence in
-the colophon.
+the colophon. **Revised 2026-09-09 (§0c):** The Week in Markets runs 1,000 words or more and opens
+with a weekly returns table; The Economy & Central Banks and Business & Earnings run 300 or more.
 
 ## 21. SUNDAY Week-Ahead Outlook (9:00 AM ET default)
 
 1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri: releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical events, launches, science; expected market sensitivity per day) · 5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury & Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (description, probability range, impact, horizon, trigger, early indicators, affected markets, mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected behavior, indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 23 Sources & Methodology.
 
 **Revised 2026-08-16:** no learning previews, plus a **Local Week Ahead** section; consolidated
-per `prompts/weekend.md`.
+per `prompts/weekend.md`. **Revised 2026-09-09 (§0c):** consensus tables for the week's releases and
+the watchlist earnings, the Fed path in The Economy Ahead, and Market Setup at 400 words or more.
 
 ## 22. Market Intelligence Appendix (bottom of every report, collapsed subsections)
 

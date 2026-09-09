@@ -19,6 +19,11 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
 
+**The 2026-09-09 weighting:** the newspaper is a markets paper first. At least four Top Stories
+from markets, the economy or business every edition, standing **Watchlist** and **Markets**
+sections, a Fed-path paragraph in The Economy, and roughly 40% or more of the reading path on
+those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
+
 ## File map
 
 - `docs/SPEC.md` — product spec. `docs/RUNBOOK.md` — ops runbook + egress domain allowlist.

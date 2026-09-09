@@ -927,6 +927,17 @@ td.down, .fact-card dd.down { color: var(--down); }
 }
 .story-body > p { margin: 0 0 0.85em; }
 .story-body > p:last-child { margin-bottom: 0; }
+/* Sub-heads inside a prose section (the Markets section's four parts). */
+.story-body > h3 {
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--edition, var(--accent));
+  margin: 1.3em 0 0.35em;
+}
+.story-body > h3:first-child { margin-top: 0; }
 
 /* "Why it matters" / "What's next" — the only two labels that survive. */
 .story-note {
@@ -1229,14 +1240,15 @@ table.board-table {
   font-weight: 600;
 }
 
-.local-item {
+.local-item, .watch-item {
   border-top: 1px solid var(--line);
   padding: 1rem 0 0;
   margin: 0 0 1rem;
 }
-.local-item:first-child { border-top: 0; padding-top: 0; }
-.local-item h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
-.local-place {
+.local-item:first-child, .watch-item:first-of-type { border-top: 0; padding-top: 0; }
+.local-item h3, .watch-item h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+/* Watchlist items (2026-09-09) share the local-item shape; the label is the ticker line. */
+.local-place, .watch-ticker {
   font-family: var(--sans);
   font-size: 0.625rem;
   font-weight: 700;
