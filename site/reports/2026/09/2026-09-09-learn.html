@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Theorem That Turns a Speedometer Into an Odometer — Learning Brief, Wed, Sep 9, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-09",
+    "slot": "learn",
+    "title": "The Theorem That Turns a Speedometer Into an Odometer",
+    "path": "reports/2026/09/2026-09-09-learn.html",
+    "summary": "Day eighteen of the 150-day curriculum: the Fundamental Theorem of Calculus, built from the odometer sitting on every dashboard, proved with a Riemann sum and a reversed power rule, and checked twice over against a real car's velocity and the U.S. Treasury's own daily debt figures.",
+    "headlines": [
+      "Day 18 of 150 · Mathematics: integrals and the Fundamental Theorem",
+      "Why a car has never needed a distance sensor to run its odometer",
+      "The U.S. debt fell $81 billion in four days — and the same theorem that explains an odometer explains why that is not the whole story"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-09T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Theorem That Turns a Speedometer Into an Odometer</h1>
+      <p class="paper-dateline">
+        Wednesday, September 9, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        A speedometer has never once measured distance, and yet every odometer in every car on the road is computed from nothing else &mdash; the Fundamental Theorem of Calculus is the exact, provable reason that trick works, and it turns out to be the same theorem lurking inside a bond&rsquo;s odometer-like duration, the U.S. Treasury&rsquo;s daily debt figure, and, read the right way, the accounting bridge yesterday&rsquo;s lesson already built by hand.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 18 of 150 &middot; Mathematics 9 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>The instrument that has never measured what it displays</h3>
+
+      <p>Look at a car&rsquo;s dashboard on a highway drive and two numbers sit side by side, close enough to touch: the speedometer, reporting how fast the car is moving at this exact instant, and the odometer, reporting how far it has traveled since the day it left the factory. They read as though they must be two separate instruments doing two separate jobs, the way a thermometer and a barometer are separate instruments &mdash; one measuring speed directly, the way a ruler measures length, the other keeping its own independent count of ground covered. Open the actual electronics behind either number and that assumption falls apart immediately: there is no distance sensor anywhere in a modern car. There has only ever been a rate sensor.</p>
+
+      <p>A magnetic sensor sits near the transmission&rsquo;s output shaft or a wheel hub, watching a toothed wheel spin past it, and every tooth that passes generates a single electrical pulse. That is all the sensor produces &mdash; a pulse each time the wheel turns through a fixed small angle &mdash; and pulses arriving more often simply means the wheel is turning faster: a count of events per unit time, which is nothing but a rate. The car&rsquo;s onboard computer already knows, from the tire&rsquo;s known circumference, exactly how much ground a single pulse corresponds to, the same fixed sliver of distance every time. Multiply the number of pulses arriving in the last second by that fixed sliver and the result is the speedometer&rsquo;s reading. Multiply and add that same fixed sliver in for every pulse the car has ever produced, going back to the day it left the factory, and the running total is the odometer&rsquo;s reading. The speedometer and the odometer are computed from the identical stream of electrical pulses, by the identical sensor; the only difference between them is what the computer does with that stream &mdash; report the rate as it arrives, or keep an unbroken running sum of it.</p>
+
+      <p>That running sum is the entire subject of today&rsquo;s lesson, dressed down to its simplest possible case. The deeper question underneath the dashboard is one this curriculum has been circling for nine lessons without quite naming outright: if all you are ever handed is a rate &mdash; how fast something is changing at each individual instant, with no direct access to the total itself &mdash; can an exact total actually be recovered from that rate alone? Not an estimate, not a plausible reconstruction, but a number provably equal to whatever a genuine, independent distance-measuring instrument would have read, had one existed. The odometer works, in every car, every day, because the answer is yes, and because a precise mathematical machine exists for carrying out exactly that conversion: turning a record of nothing but instantaneous rates into an exact accumulated total. That machine is called integration, and the theorem proving it is the exact reverse of the differentiation this curriculum spent lessons nine through sixteen building carries a name that, for once, undersells nothing: the Fundamental Theorem of Calculus.</p>
+
+      <h3>Running a tally backward: the idea before any notation</h3>
+
+      <p>Differentiation, the operation built starting eleven lessons ago, takes a total &mdash; a position, a value, an amount &mdash; and extracts the instantaneous rate at which that total is changing at one exact moment: a derivative. Today&rsquo;s operation runs in the opposite direction. It takes a rate, known or at least knowable at every individual instant across some stretch, and reconstructs the total amount that must have accumulated over that stretch. Differentiation answers &ldquo;how fast, right now.&rdquo; Integration answers &ldquo;how much, all together, between here and there.&rdquo; The two could easily be two unrelated operations, the way multiplication and, say, taking a square root are both &ldquo;things you can do to a number&rdquo; without being any particular mirror of one another. The single fact this lesson exists to establish is that differentiation and integration are not merely related. They are exact inverses of each other &mdash; the same relationship addition has to subtraction, or squaring has to square-rooting for positive numbers: apply one and then the other, in the right order, and the result is exactly where you started, with nothing lost and nothing added.</p>
+
+      <p>Picture the accumulation half of that first, with no notation at all, the way the odometer already sketched it. Break a stretch of time into pieces small enough that the rate barely changes across any single piece &mdash; a tenth of a second, if the rate is changing quickly; a full second, if it is nearly steady. Within one such piece, multiply the rate by the length of the piece, and the result is a good estimate of how much accumulated during just that piece: one small sliver of the running total. Do that for every piece across the whole stretch and add every sliver together, and the sum is an estimate of the total accumulation across the entire stretch. Now slice more finely still &mdash; pieces a hundredth of a second wide, then a thousandth, then finer than any clock could actually resolve. Each individual slice&rsquo;s contribution grows less trustworthy to compute from a single sampled rate value, because you are treating the rate as constant across a piece that is, by construction, growing arbitrarily short &mdash; but for that exact reason, the error in that assumption shrinks right along with the piece. As the number of pieces grows without any bound at all, the accumulating sum of increasingly accurate slivers approaches one exact number, in precisely the sense lesson nine built the word &ldquo;approaches&rdquo; to mean, with its own &epsilon;-&delta; guarantee standing behind it. That exact number, and the entire machine built to compute it, is called the definite integral.</p>
+
+      <p>The word itself has a specific, traceable origin worth a sentence, because it says something true about the idea before any formula does. Gottfried Leibniz&rsquo;s own earliest name for this operation was <em>calculus summatorius</em> &mdash; the &ldquo;summing calculus&rdquo; &mdash; a name that describes exactly the slicing-and-adding procedure above and nothing more. In May 1690, in the journal <em>Acta Eruditorum</em>, the mathematician Jacob Bernoulli used the word <em>integral</em> for what is believed to be the first time, drawing on the Latin <em>integer</em>, meaning whole or untouched: the operation takes a quantity that has been cut into infinitely many separate pieces and reassembles it into one whole number again. By 1696, Leibniz and Jacob&rsquo;s brother Johann Bernoulli had agreed on <em>calculus integralis</em> as the field&rsquo;s standing name, and it has been the integral calculus ever since. The etymology is not decoration: &ldquo;making whole again out of infinitely many pieces&rdquo; is, in one phrase, exactly what an odometer&rsquo;s running total is doing to a stream of individually meaningless wheel-rotation pulses.</p>
+
+      <p>One piece of vocabulary is worth settling before the notation arrives, because the rest of this lesson leans on it constantly. A function F is called an <strong>antiderivative</strong> of a function f if differentiating F recovers f exactly &mdash; F&prime; = f. Because differentiation is what today&rsquo;s lesson claims integration exactly reverses, finding an antiderivative and computing an accumulated total ought to turn out, in the most literal sense possible, to be the same task viewed from two directions. Confirming that they really are the same task &mdash; not merely similar, not merely related by a rough analogy, but provably, exactly identical &mdash; is the entire content of the Fundamental Theorem of Calculus, and building it precisely enough to trust is where the notation finally has to arrive.</p>
+
+      <h3>Slicing time into pieces thin enough to trust</h3>
+
+      <p>The idea that a total quantity could be found by imagining it sliced into an enormous number of thin strips is far older than any calculus this curriculum has built so far &mdash; Archimedes used a version of it, with no algebra and no limits, to bound the area of a circle and a parabolic segment more than two thousand years before Newton was born. The version this lesson actually uses took roughly two more centuries to reach its current shape. Isaac Barrow, the Cambridge mathematician who held the university&rsquo;s Lucasian professorship before resigning it in favor of his own student, worked out and lectured on a geometric version of the connection between areas and tangent lines &mdash; accumulation and rate of change &mdash; publishing an account of it around 1670, in lectures a young Isaac Newton is thought to have attended. Neither Barrow&rsquo;s geometry nor Newton&rsquo;s own early work through the 1670s expressed the relationship as a general algorithm that could be run on an arbitrary function. Gottfried Leibniz, working independently on the European continent and publishing a geometric proof of the same connection in <em>Acta Eruditorum</em> in 1693, gets credit alongside Newton for building it into a portable, general-purpose method rather than a result about one curve at a time &mdash; the same two names, and very nearly the same decades, lesson nine already credited with the other half of calculus. Both men, later in life, pointed back to Barrow&rsquo;s geometric work as a direct forerunner of what they had built, much the way lesson sixteen found Newton and Leibniz pointing back to Fermat&rsquo;s method of adequality.</p>
+
+      <p>The theorem worked, and was put to real use in navigation, astronomy, and engineering for a century and a half, well before anyone could say precisely which functions it was safe to apply it to. That gap closed in two further steps. Augustin-Louis Cauchy &mdash; the same mathematician lesson nine credited with pushing calculus toward rigor through his early &epsilon;-based arguments &mdash; gave the definite integral its first fully rigorous definition, as the limit of exactly the kind of slicing sum this lesson is about to write down, in lectures published in 1823. Three decades later, Bernhard Riemann went further still, in his 1854 habilitation lecture, pinning down precisely which functions the slicing procedure is even guaranteed to converge for at all &mdash; a question Cauchy&rsquo;s version had not asked. The sum this lesson is about to name after Riemann, and the bar a function has to clear to be called Riemann-integrable, are exactly that 1854 result, still the working definition every calculus course opens with.</p>
+
+      <p>Put the slicing procedure itself into symbols. Take an interval from a to b &mdash; a stretch of time, or of any other quantity the rate depends on &mdash; and cut it into n equal pieces, each of width &Delta;x = (b&minus;a)/n. Inside the i-th piece, pick any single point x<sub>i</sub>* at which to sample the rate: the left edge, the right edge, the midpoint, or any other point inside it; which one you pick barely matters once the pieces are thin enough, though it can matter noticeably when they are not, as the first worked example below shows directly. Multiply the sampled rate by the piece&rsquo;s width, f(x<sub>i</sub>*)&Delta;x, to get that piece&rsquo;s estimated contribution, and add every piece&rsquo;s contribution together to form one <strong>Riemann sum</strong>. Then let n grow without bound.</p>
+
+      <div class="formula">
+        <p class="expr">&int;<sub>a</sub><sup>b</sup> f(x) dx &nbsp;=&nbsp; lim<sub>n&rarr;&infin;</sub> &Sigma;<sub>i=1</sub><sup>n</sup> f(x<sub>i</sub>*) &Delta;x</p>
+        <dl>
+          <dt>a, b</dt><dd>the endpoints of the interval being accumulated over &mdash; the two instants an odometer, or any accumulation, is being measured between</dd>
+          <dt>n</dt><dd>the number of equal pieces the interval [a,b] is sliced into</dd>
+          <dt>&Delta;x</dt><dd>the width of each slice, (b&minus;a)/n &mdash; shrinking toward zero as n grows</dd>
+          <dt>x<sub>i</sub>*</dt><dd>a sample point chosen inside the i-th slice, at which the rate f is evaluated</dd>
+          <dt>f(x<sub>i</sub>*)&Delta;x</dt><dd>the i-th slice&rsquo;s estimated contribution &mdash; the sampled rate times how wide the slice is</dd>
+          <dt>&Sigma;<sub>i=1</sub><sup>n</sup></dt><dd>add up all n slices&rsquo; contributions &mdash; one Riemann sum, a single approximation of the total</dd>
+          <dt>lim<sub>n&rarr;&infin;</sub></dt><dd>let the slice count grow without bound (equivalently, &Delta;x&rarr;0) &mdash; the identical limit process lesson nine built with &epsilon; and &delta;, here aimed at a sum instead of a single function value</dd>
+          <dt>&int;<sub>a</sub><sup>b</sup> f(x) dx</dt><dd>the definite integral &mdash; the exact value that limit approaches, when it exists; read aloud as &ldquo;the integral of f from a to b&rdquo;</dd>
+        </dl>
+      </div>
+
+      <p>This is not merely a computational recipe for approximating an integral; it is the actual definition of one. A definite integral is, by construction, whatever number the Riemann sum converges to as the slices get arbitrarily thin &mdash; and &ldquo;converges to,&rdquo; here, means exactly what lesson nine&rsquo;s &epsilon;-&delta; machinery already built the word &ldquo;limit&rdquo; to mean, applied now to a running sum with more and more terms rather than to a single function value approaching a point. Nothing new had to be invented to make this rigorous once limits themselves were rigorous; the definite integral simply borrows lesson nine&rsquo;s entire apparatus and points it at a sum instead of a function. And not every function clears the bar this definition quietly assumes: a function riddled with the kind of infinite discontinuity lesson nine named &mdash; shooting off toward infinity inside the interval, the way 1/x behaves approaching zero &mdash; can make the slicing procedure fail to settle on any single number at all, no matter how the pieces are cut. A function with only a jump discontinuity or two, the kind lesson nine used a parking-rate schedule to illustrate, causes no such trouble: it is still perfectly Riemann-integrable, the sum still converges, and only the finite handful of jump points need any extra care when an antiderivative is actually being built.</p>
+
+      <h3>The reversal made precise</h3>
+
+      <p>The Riemann-sum definition above is completely rigorous, and completely useless for actually computing anything by hand &mdash; nobody sums an infinite sequence of shrinking rectangles to find how far a car traveled. The entire practical power of calculus&rsquo;s integral half rests on a single theorem that sidesteps that infinite sum whenever an antiderivative can be found, which turns out to be surprisingly often. State it in two parts, because it genuinely says two different things.</p>
+
+      <div class="formula">
+        <p class="expr">Part&nbsp;1: &nbsp;d/dx &lsqb;&int;<sub>a</sub><sup>x</sup> f(t) dt&rsqb; = f(x) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Part&nbsp;2: &nbsp;&int;<sub>a</sub><sup>b</sup> f(x) dx = F(b) &minus; F(a), &nbsp;where F&prime; = f &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &int;f(x)dx = F(x) + C</p>
+        <dl>
+          <dt>&int;<sub>a</sub><sup>x</sup> f(t) dt</dt><dd>the &ldquo;accumulation function&rdquo; &mdash; a new function of x, built by integrating f from a fixed starting point a up to a variable, moving endpoint x</dd>
+          <dt>Part 1</dt><dd>differentiating the accumulation function, with respect to its own moving endpoint x, gives back f(x) exactly &mdash; the running tally&rsquo;s own rate of change is the rate that was being tallied</dd>
+          <dt>F(x)</dt><dd>any antiderivative of f &mdash; any function at all whose own derivative equals f(x) exactly, reversing lesson thirteen&rsquo;s differentiation rules</dd>
+          <dt>Part 2 (the Evaluation Theorem)</dt><dd>the definite integral of f from a to b equals the difference between any one antiderivative&rsquo;s values at the two endpoints &mdash; no slicing, no limit, no infinite sum required once an antiderivative is in hand</dd>
+          <dt>&int;f(x)dx = F(x) + C</dt><dd>the indefinite integral &mdash; not one number but a whole family of functions, every antiderivative of f at once</dd>
+          <dt>C</dt><dd>the constant of integration &mdash; valid because lesson eleven already established that the derivative of any constant is zero, so F(x)+C differentiates back to f(x) for every real number C</dd>
+        </dl>
+      </div>
+
+      <p>Part 1 says something almost startling once you sit with it: build a new function by integrating f from some fixed starting point a up to a variable endpoint x, and that new function&rsquo;s own derivative, taken with respect to x, is f(x) itself, exactly, with nothing lost or approximated anywhere in the process. Differentiate an accumulation and you get back the very rate that was being accumulated. That is the precise sense in which integration and differentiation are inverse operations, stated as a proven theorem rather than asserted as an analogy: run one operation and then the other, in this specific order, and the two exactly cancel, the way lesson sixteen&rsquo;s recap already promised they would.</p>
+
+      <p>Part 2, sometimes called the Evaluation Theorem, is the version that actually gets used to compute a number. It says that if F is any antiderivative of f at all &mdash; not necessarily the specific one built by the accumulation-function construction above, but literally any function whose derivative happens to equal f &mdash; then the definite integral of f from a to b equals nothing more than F(b) minus F(a): the antiderivative&rsquo;s value at the far end, minus its value at the near end. Notice what has vanished from that statement: no limit, no infinite sum, no slicing of the interval into pieces at all. Find one antiderivative, evaluate it at two points, subtract, and the entire Riemann-sum machinery from the previous section is answered in three arithmetic steps. This is the shortcut an odometer, an accountant, and every worked example in the rest of this lesson actually relies on; the slicing definition exists so the shortcut can be trusted, not so it has to be used.</p>
+
+      <p>The indefinite integral, &int;f(x)dx = F(x)+C, packages every antiderivative of f into a single expression rather than naming just one. The constant earns its place for a reason already built into this curriculum: since the derivative of any constant is exactly zero, if F is one antiderivative of f, then F plus any constant at all is equally valid an antiderivative, because differentiating a constant contributes nothing and leaves F&prime;=f untouched. An indefinite integral therefore names an entire family of functions differing only by a vertical shift, not one specific function. A definite integral, by contrast, names one specific number, because whichever constant is chosen cancels exactly on subtraction &mdash; &lsqb;F(b)+C&rsqb; minus &lsqb;F(a)+C&rsqb; leaves no C behind at all &mdash; a small piece of algebra worth actually checking rather than taking on faith, and one the second worked example below checks directly.</p>
+
+      <p>One rule for actually building antiderivatives is worth stating now, because every worked example in the rest of this lesson leans on it directly, and it falls straight out of a rule this curriculum already owns. Lesson thirteen&rsquo;s power rule for derivatives said that differentiating x<sup>n</sup> produces nx<sup>n&minus;1</sup>. Run that statement in reverse: differentiating x<sup>n+1</sup>/(n+1) produces (n+1)x<sup>n</sup>/(n+1), and the (n+1)&rsquo;s cancel, leaving exactly x<sup>n</sup>. So x<sup>n+1</sup>/(n+1) is an antiderivative of x<sup>n</sup>, for any exponent n other than &minus;1, where dividing by n+1 would mean dividing by zero and the rule simply stops working; what actually integrates 1/x is a function this curriculum has not yet built, a boundary this lesson names honestly rather than crosses. Every other whole- or fractional-power term reverses this cleanly, term by term, exactly the way lesson thirteen&rsquo;s differentiation rules applied term by term going the other direction.</p>
+
+      <h3>The odometer, run by hand</h3>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; a speedometer&rsquo;s reading, added up by hand</b>
+        <p>A car pulls onto a straight test track and accelerates smoothly from a rolling start. Its velocity across the next five seconds is v(t) = 4t + 2, in meters per second, where t is measured in seconds since the test began &mdash; a steadily increasing rate consistent with the constant-acceleration kinematics lesson five built and the constant net force lesson ten&rsquo;s F=ma would assign as its cause: an acceleration of exactly a = 4 m/s&sup2; on top of an initial velocity of 2 m/s. Find the exact distance covered in those five seconds three separate ways, and confirm they agree.</p>
+        <ol>
+          <li>Bound it crudely with Riemann sums first, sampling once per second (&Delta;t = 1 s, n = 5). Sampling each interval&rsquo;s left edge (t = 0,1,2,3,4): v = 2, 6, 10, 14, 18 m/s; sum &times; &Delta;t = (2+6+10+14+18) &times; 1 = <strong>50 m</strong>. Sampling instead at each interval&rsquo;s right edge (t = 1,2,3,4,5): v = 6, 10, 14, 18, 22 m/s; sum = <strong>70 m</strong>. Because v(t) is increasing throughout, the left sum always samples the slower speed at the start of each second and undershoots; the right sum always samples the faster speed at the end of each second and overshoots. The true distance has to sit between 50 m and 70 m &mdash; a genuine bound, straight out of the Riemann-sum definition above, not a guess.</li>
+          <li>Average the two: (50+70)/2 = <strong>60 m</strong>. That averaging is not a coincidence specific to this example &mdash; because v(t) is exactly linear, the error the left sum makes on each second is exactly equal and opposite to the error the right sum makes on that same second, so averaging cancels the error completely rather than merely shrinking it. For a curved, non-linear velocity this same averaging &mdash; the trapezoidal rule &mdash; only reduces the error; it does not eliminate it outright the way it happens to here.</li>
+          <li>Now compute it the exact way, using Part 2 instead of any sum at all. An antiderivative of v(t) = 4t+2 is, by the reversed power rule above applied term by term &mdash; 4t reverses to 4t&sup2;/2 = 2t&sup2;, and the constant 2 reverses to 2t &mdash; s(t) = 2t&sup2; + 2t. Displacement over &lsqb;0,5&rsqb; is s(5) &minus; s(0) = (2(25)+2(5)) &minus; 0 = (50+10) &minus; 0 = <strong>60 m</strong>, matching the averaged Riemann sum exactly, and reached without slicing the interval at all.</li>
+          <li>Cross-check against kinematics directly, with no integral notation in sight: lesson five&rsquo;s constant-acceleration formula, displacement = v<sub>0</sub>t + &frac12;at&sup2;, gives 2(5) + &frac12;(4)(25) = 10 + 50 = <strong>60 m</strong>, the identical number a third time. That formula was never, when lesson five taught it, presented as an integral &mdash; but it is exactly the antiderivative of v(t) = v<sub>0</sub>+at evaluated from 0 to t, which is precisely why it works, and precisely why this lesson can now say something lesson five could not yet say: every constant-acceleration formula that curriculum has used since lesson five has secretly been an application of the Fundamental Theorem of Calculus, five lessons before that theorem had a name.</li>
+        </ol>
+        <p>That is the whole mechanism behind the dashboard this lesson opened with, made completely explicit. Velocity is the derivative of position, in lesson eleven&rsquo;s own vocabulary; Part 2 of today&rsquo;s theorem is precisely the statement that recovering position from velocity &mdash; integrating &mdash; is the exact reverse of that differentiation. A car&rsquo;s onboard computer never needed a distance sensor. It needed a rate sensor, a clock fine enough to slice time thinly, and, whether its engineers ever thought of it in these terms or not, the Fundamental Theorem of Calculus.</p>
+      </div>
+
+      <h3>A definite integral, done the fast way</h3>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; the reversed power rule, term by term</b>
+        <p>Compute &int;<sub>1</sub><sup>3</sup> (3x&sup2; &minus; 4x + 1) dx directly, with no physical story attached at all &mdash; a plain demonstration of how quickly Part 2 settles a problem that would take real effort to bound with Riemann sums alone.</p>
+        <ol>
+          <li>Find an antiderivative term by term, using the reversed power rule on each piece separately: 3x&sup2; reverses to 3&middot;x&sup3;/3 = x&sup3;; &minus;4x reverses to &minus;4&middot;x&sup2;/2 = &minus;2x&sup2;; the constant 1 (that is, 1&middot;x&sup0;) reverses to x. One valid antiderivative: F(x) = x&sup3; &minus; 2x&sup2; + x.</li>
+          <li>Evaluate at the upper limit: F(3) = 27 &minus; 18 + 3 = <strong>12</strong>.</li>
+          <li>Evaluate at the lower limit: F(1) = 1 &minus; 2 + 1 = <strong>0</strong>.</li>
+          <li>Subtract: &int;<sub>1</sub><sup>3</sup>(3x&sup2;&minus;4x+1)dx = F(3) &minus; F(1) = 12 &minus; 0 = <strong>12</strong>.</li>
+          <li>Confirm the constant of integration genuinely does not matter, as claimed above: pick a different antiderivative, F(x)+5 = x&sup3;&minus;2x&sup2;+x+5. Evaluating: (27&minus;18+3+5) &minus; (1&minus;2+1+5) = 17 &minus; 5 = <strong>12</strong>, the identical answer. Every antiderivative in the family gives the same definite integral, because whatever constant is added is added at both endpoints and subtracts away completely.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up: the government&rsquo;s own odometer</h3>
+
+      <p>The clearest large-scale example of exactly this machine sits inside a number this newspaper&rsquo;s own market pages already track: the total public debt of the United States government, published every business day by the U.S. Treasury&rsquo;s Fiscal Data service. At the close of business on August 31, 2026, total public debt outstanding stood at $40,175,641,071,634.14. Four business days later, at the close of business on September 4, 2026, it stood at $40,094,590,636,301.70 &mdash; a decline of $81,050,435,332.44, or roughly $81.1 billion, over those four days.</p>
+
+      <p>Treat the debt as a running balance F(t) and the government&rsquo;s day-to-day net borrowing &mdash; new debt issued minus debt retired, on net, each day &mdash; as its instantaneous rate f(t) = F&prime;(t), and Part 2 of today&rsquo;s theorem states exactly F(Sept&nbsp;4) &minus; F(Aug&nbsp;31) = &int;<sub>Aug 31</sub><sup>Sept 4</sup> f(t) dt: whatever the day-to-day net borrowing rate did across those four days &mdash; positive on some days, negative on others &mdash; its accumulated total across the whole stretch is fixed, in advance, by nothing more than the two endpoint balances. Treasury&rsquo;s own daily accounting for each individual day is not required to know the four-day total changed by &minus;$81.1 billion; the two snapshots alone already contain that information, exactly as the Evaluation Theorem promises.</p>
+
+      <p>That four-day rate &mdash; a decline of roughly $20.3 billion per day, on average, over that specific short window &mdash; is not the government&rsquo;s typical daily pace, and holding the two side by side is itself a genuine, useful lesson in how a short sub-interval&rsquo;s average rate can diverge sharply, even in sign, from a much longer interval&rsquo;s average. The Congressional Budget Office&rsquo;s own account of fiscal year 2025 (October 2024 through September 2025) put the federal deficit &mdash; the year&rsquo;s total net addition to the debt &mdash; at $1.8 trillion, which works out to an average daily rate of roughly +$4.9 billion per day across the entire fiscal year. The four days at the end of August 2026 ran at an average rate more than four times larger than that, and in the opposite direction, for reasons that have nothing to do with any change in the government&rsquo;s underlying fiscal trajectory: month-end and quarter-end settlement patterns in Treasury bill issuance and redemption routinely swing the daily balance by tens of billions of dollars in either direction, a well-documented feature of how the debt figure is actually constructed day to day, not a sign the deficit itself reversed. A single day&rsquo;s, or even a single week&rsquo;s, rate is real data &mdash; but it is local data, exactly the way a speedometer&rsquo;s reading at one instant says nothing on its own about whether an entire trip, taken as a whole, moved the car forward or backward on net.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>The single most common misreading of an integral is treating it as a machine for adding up &ldquo;how much happened,&rdquo; full stop, when what a definite integral actually computes is the <strong>signed net change</strong> &mdash; positive contributions and negative contributions, added together with their signs intact, so that they can and often do partially cancel. Worked example one&rsquo;s velocity was positive throughout, so the distinction never surfaced: displacement and distance traveled came out to the same 60 meters, because the car never once moved backward. That equality is the exception, not the rule, and it is worth watching it break to see the integral doing exactly what it was built to do, rather than something subtly wrong.</p>
+
+      <p>Suppose the same car instead has velocity v(t) = 4t &minus; 12 m/s over the same five-second window &mdash; negative at first, as though the car is briefly rolling backward down a slight grade before its engine engages, crossing zero at t=3 s, and positive afterward. An antiderivative, by the identical reversed power rule used throughout this lesson, is s(t) = 2t&sup2; &minus; 12t. Net displacement over the full interval is s(5) &minus; s(0) = (50&minus;60) &minus; 0 = <strong>&minus;10 m</strong>: the car ends up 10 meters behind where it started. Read carelessly, that single number might seem to say the car &ldquo;traveled 10 meters.&rdquo; It did not. Split the interval exactly at the zero-crossing, t=3, where v(3)=0: from t=0 to t=3, s runs from s(0)=0 to s(3)=2(9)&minus;36=&minus;18, an 18-meter slide backward; from t=3 to t=5, s runs from &minus;18 back up to s(5)=&minus;10, an 8-meter recovery forward. Add the two pieces of actual ground covered, ignoring direction: 18+8 = <strong>26 m</strong> of total distance traveled, against a net displacement of only &minus;10 m. The 16-meter gap between them is ground the car covered twice &mdash; once going backward, once partway coming back &mdash; that a single integral taken over the whole interval in one pass simply cancels out of the answer.</p>
+
+      <p>The correct, general rule follows directly, and stating it precisely explains why the correction works rather than merely patching the specific numbers above: total distance traveled is &int;|v(t)|dt &mdash; the integral of the rate&rsquo;s absolute value, found by locating every point where the rate changes sign, splitting the interval there, and adding the unsigned size of each piece &mdash; while net displacement is simply &int;v(t)dt, sign intact, taken over the whole interval in one pass. The two integrals ask genuinely different questions, and there is no shortcut that produces one from the other without actually locating the sign changes; when v(t) never changes sign across the interval, as in worked example one, the two questions happen to share an answer, which is exactly why the distinction is so easy to miss the first several times it does not matter.</p>
+
+      <p>The identical trap sits inside the debt figure from the previous section. The four-day, &minus;$81.1 billion net change is a genuine, correctly computed signed integral of the government&rsquo;s daily net borrowing rate &mdash; but it says nothing at all about the government&rsquo;s gross activity over those same four days: the actual dollar volume of new Treasury bills, notes, and bonds issued, and the actual dollar volume of older debt maturing and being redeemed, both of which run into the hundreds of billions of dollars most weeks and largely offset each other, the same way the car&rsquo;s 18 meters backward and 8 meters forward mostly offset into a net &minus;10. A signed integral, by design, discards exactly that gross-activity information on the way to computing the one number &mdash; net change &mdash; it was actually built to answer; recovering the other number requires integrating the absolute value of the rate instead, exactly as with the car.</p>
+
+      <h3>The callback</h3>
+
+      <p>Yesterday&rsquo;s lesson, on a completely different subject, ended by tracing one specific number &mdash; Apple&rsquo;s fiscal 2025 net income of $112.010 billion &mdash; into a specific line of the balance sheet called retained earnings, and showed the arithmetic connecting them exactly: a beginning balance of &minus;$19.154 billion, plus that year&rsquo;s $112.010 billion of net income, minus $15.421 billion in dividends and $90.711 billion in share repurchases, landing on an ending balance of &minus;$14.264 billion &mdash; a net change, across the whole fiscal year, of +$4.890 billion. At the time, that bridge equation was presented as accounting&rsquo;s own procedure, a specific rule for reconciling two financial statements. It is worth naming plainly what it actually is, now that today&rsquo;s lesson has built the general machinery sitting underneath it.</p>
+
+      <p>Let R(t) stand for a company&rsquo;s retained-earnings balance, tracked continuously at every instant t across the fiscal year rather than sampled just once at its close, and let R&prime;(t) be its instantaneous rate of change at each moment &mdash; net income being earned, minus dividends and repurchases being paid out, all happening continuously as the business actually operates rather than in one lump sum on the last day of the year. Today&rsquo;s Evaluation Theorem, in perfectly general symbols, reads R(b) &minus; R(a) = &int;<sub>a</sub><sup>b</sup> R&prime;(t) dt: the change in the balance between two instants equals the accumulated integral of its own rate of change across the time in between, computable in full from nothing but the two endpoint snapshots &mdash; exactly the way this lesson&rsquo;s Treasury figures worked, and exactly the way worked example one&rsquo;s odometer worked. Apple&rsquo;s fiscal year is a single, once-a-year sample of that continuous relationship: the $4.890 billion change yesterday&rsquo;s lesson computed as a discrete bridge equation is nothing but this lesson&rsquo;s F(b) &minus; F(a), with a full year of daily earning, dividend, and repurchase activity compressed into the interval between two snapshots.</p>
+
+      <p>This is also the precise sense in which yesterday&rsquo;s two central metaphors and today&rsquo;s lesson are the same idea, not merely similar ones. Yesterday called the balance sheet a photograph &mdash; a value frozen at one exact instant &mdash; and called the income statement the movie playing between two such photographs. A photograph is exactly what this lesson calls F(t): an antiderivative&rsquo;s value at one instant. A movie, played at every instant between two photographs and then added up, is exactly what this lesson calls &int;f(t)dt. Accounting built that vocabulary from a completely different starting point &mdash; auditors, fiscal years, the SEC&rsquo;s Regulation S-X &mdash; and arrived, without ever writing an integral sign, at the identical structure the Fundamental Theorem of Calculus makes explicit: a running total, an instantaneous rate feeding it, and one theorem guaranteeing the two are related by nothing more than subtraction at the endpoints, however much the rate wanders in between.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can define the definite integral as the limit of a Riemann sum &mdash; using lesson nine&rsquo;s own limit machinery &mdash; and state both parts of the Fundamental Theorem of Calculus: the accumulation function&rsquo;s derivative recovers the original rate, and the definite integral equals any antiderivative evaluated at the two endpoints and subtracted.</li>
+          <li>You can build an antiderivative with the reversed power rule, directly out of lesson thirteen&rsquo;s differentiation rules, and use it to evaluate a definite integral in three steps instead of an infinite sum &mdash; and you have checked that same shortcut three independent ways on one real velocity function and its kinematics.</li>
+          <li>You can compute a genuine, signed accumulation from real data &mdash; the U.S. Treasury&rsquo;s own daily debt figures &mdash; and explain precisely why a short window&rsquo;s average rate can run in the opposite direction from a full year&rsquo;s, without either number being wrong.</li>
+          <li>You know the specific, common error of mistaking a signed integral&rsquo;s net result for total unsigned activity, and you can compute both correctly &mdash; net displacement against total distance traveled, net debt change against gross issuance and redemption &mdash; whenever a rate changes sign partway through.</li>
+          <li>You know where this is going: two lessons from now, techniques of integration builds the toolkit for antiderivatives the reversed power rule alone cannot reach, and tomorrow&rsquo;s physics lesson on work, energy, and power puts today&rsquo;s theorem to work immediately &mdash; a force integrated over a distance, the identical operation as a rate integrated over time.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the topic and difficulty scope of the 60-Day Academy&rsquo;s Day 3 calculus material, used as a reference point rather than a text available to this run), building directly on the limit definition of lesson nine, the derivative and power rule of lessons eleven and thirteen, and the kinematics of lessons five and ten. The total U.S. public debt outstanding for August 31 and September 4, 2026 ($40,175,641,071,634.14 and $40,094,590,636,301.70) was retrieved directly from the U.S. Treasury&rsquo;s Fiscal Data API, the Debt to the Penny dataset (fiscaldata.treasury.gov), a primary government source. The fiscal year 2025 federal deficit figure ($1.8 trillion) is the Congressional Budget Office&rsquo;s own published account in its Monthly Budget Review: Summary for Fiscal Year 2025. The history of the Fundamental Theorem of Calculus &mdash; Barrow&rsquo;s circa-1670 geometric version, Newton&rsquo;s and Leibniz&rsquo;s independent generalizations, Leibniz&rsquo;s 1693 Acta Eruditorum proof, Cauchy&rsquo;s 1823 rigorous definition of the integral as a limit of sums, and Riemann&rsquo;s 1854 habilitation lecture &mdash; and the origin of the word &ldquo;integral&rdquo; in Jacob Bernoulli&rsquo;s 1690 usage and the 1696 adoption of &ldquo;calculus integralis,&rdquo; were checked via web search against standard historical accounts. The mechanism of an automotive vehicle-speed sensor computing both instantaneous speed and cumulative odometer distance from the same stream of wheel-rotation pulses was checked via web search against standard automotive-engineering references. All worked-example arithmetic, and the recomputed retained-earnings bridge drawn from lesson seventeen&rsquo;s own sourced Apple figures, were computed directly for this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-08-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
