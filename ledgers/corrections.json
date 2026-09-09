@@ -1,6 +1,33 @@
 {
  "corrections": [
   {
+   "found": "2026-09-08",
+   "report": "reports/2026/09/2026-09-07-am.html",
+   "original": "This outlet's 2026-09-07-am and 2026-09-07-pm editions described the mail-ballot Supreme Court emergency's response deadline as \"the 10 AM Tuesday deadline carries over to the new filing\" -- i.e., 10:00 AM ET Tuesday, September 8.",
+   "corrected": "Per SCOTUSblog's direct reporting on Justice Jackson's order, the actual response deadline for the states/voting-rights groups is 4:00 PM EDT Wednesday, September 9 -- one day later than reported, and at 4 PM rather than 10 AM. The case is also now docketed as USPS v. California, No. 26A305 (not 26A297 as previously carried), reflecting the solicitor general's withdrawal and refiling of the application after Judge Talwani's Sept 4 preliminary injunction. No stay has been granted; North Carolina continues mailing ballots on schedule under separate litigation.",
+   "error_source": "The Sept 7 editions carried forward a deadline that applied to an earlier version of DOJ's application (before Talwani's Sept 4 ruling and the weekend refiling) without re-verifying it against the new filing's own briefing schedule.",
+   "conclusions_changed": false,
+   "note": "Verified directly against SCOTUSblog's account of Justice Jackson's order this run (2026-09-08-am), cross-checked against Axios, NBC News and PBS NewsHour. Does not change the substance of the underlying dispute -- only the response deadline's date, time and docket number. Corrected in today's report (2026-09-08-am) Top Stories and colophon; also corrected in state/calendar-cache.json."
+  },
+  {
+   "found": "2026-09-07",
+   "report": "reports/2026/09/2026-09-07-am.html",
+   "original": "This morning's edition (2026-09-07-am and, before it, 2026-09-06-sun) did not cover a fatal Amazon-branded cargo plane crash at Miami International Airport Sunday afternoon (Sept 6, roughly 2pm ET) -- a 21 Air-operated Boeing 767 (Prime Air Flight 7598) overran the runway on landing, struck multiple vehicles and caught fire, killing five and injuring five, a major same-day, multi-outlet story (CNN, NPR, ABC News, NBC News).",
+   "corrected": "Added to today's Closing Brief (2026-09-07-pm) Top Stories, roughly 26 hours after the event, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research pass for the 2026-09-06-sun and 2026-09-07-am editions did not surface the story despite prominent, same-day, multi-outlet coverage.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as the 2026-07-31, 2026-08-14, 2026-09-02 and 2026-09-04 entries above. No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-07",
+   "report": "reports/2026/09/2026-09-06-sun.html",
+   "original": "Referred to the state coalition investigating OpenAI over the Hugging Face incident as a \"16-state AG coalition (led by Montana).\"",
+   "corrected": "Iowa Attorney General Brenna Bird leads the coalition, per the Iowa Attorney General's own press release. It totals 15 states: Alabama, Arkansas, Florida, Idaho, Indiana, Iowa, Kansas, Missouri, Montana, Nebraska, Oklahoma, Pennsylvania, South Carolina, Texas and Utah. Montana's attorney general is a member and a prominent public voice on the investigation, not its lead.",
+   "error_source": "Sunday's edition appears to have picked up secondary coverage (e.g. a Montana DOJ press release framed around Montana's own participation) that emphasized Montana without independently checking which state's attorney general is actually leading the coalition.",
+   "conclusions_changed": false,
+   "note": "Verified directly against the Iowa Attorney General's newsroom release this run, cross-checked against Bloomberg Law and The Hill coverage. Does not change the substance of the investigation or its demands -- only which AG leads it and the exact state count/roster. Corrected in today's report (2026-09-07-am) Top Stories and colophon."
+  },
+  {
    "found": "2026-07-27",
    "report": "reports/2026/07/2026-07-26-sun.html",
    "original": "Report referred to the FOMC press conference and rate-path commentary as \"Powell's\" throughout (nine references), implying Jerome Powell remained Federal Reserve Chair.",
@@ -143,6 +170,33 @@
    "error_source": "A physics error in the Day 13 (2026-09-02) Learning Brief's callback paragraph, found in a maintenance review on 2026-09-02; the lesson's calculus was right, its choice of system was wrong.",
    "conclusions_changed": true,
    "note": "Surface in the next Learning Brief's colophon (prompts/learning.md Step 0 now reads this ledger). The equation plate in the published lesson is preserved as published; the correction is stated here and in the next lesson."
+  },
+  {
+   "found": "2026-09-03",
+   "report": "reports/2026/09/2026-09-02-pm.html",
+   "original": "Described Broadcom's Q4 AI semiconductor guide as \"~$16B\" and said it \"missed the ~$17.2B analysts wanted,\" framing this as \"the detail that moved the stock.\"",
+   "corrected": "Broadcom's own SEC Form 8-K (Exhibit 99.1), reviewed directly this run, shows the $16.7B figure was actually Q3 FY2026's *actual* AI-semiconductor revenue (up 221% year over year), not a Q4 guide. Broadcom's real Q4 FY2026 AI-semiconductor guidance is $21.7B, up 236% year over year -- a sharp raise, not a miss. What actually fell narrowly short was total company Q4 revenue guidance of ~$34.8B against a ~$35.03B analyst consensus, which appears to be the actual driver of the after-hours share decline.",
+   "error_source": "Tuesday's closing edition relied on same-day secondary wire commentary about the earnings release rather than the primary SEC filing, and appears to have conflated the current quarter's actual AI-semiconductor result with next quarter's guidance for that same segment.",
+   "conclusions_changed": true,
+   "note": "This reverses, not refines, Tuesday night's framing of what moved the stock. Verified directly against Broadcom's SEC EDGAR filing (data.sec.gov, CIK 0001730168) this run. Corrected in today's report (2026-09-03-am) Top Stories and colophon."
+  },
+  {
+   "found": "2026-09-04",
+   "report": "reports/2026/09/2026-09-04-am.html",
+   "original": "Wednesday's Closing Brief (2026-09-03-pm) did not publish, so this outlet did not cover a downtown Minneapolis high-rise shooting Wednesday afternoon (Sept 2) that killed two people plus the suspected gunman and wounded three police officers -- major, same-day, multi-outlet-covered news (NBC News, CNN, Fox 9, CBS Minnesota, KSTP).",
+   "corrected": "Added to today's Morning Brief (2026-09-04-am) Top Stories, roughly 38 hours after the event, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Operational gap, not a research failure: the 2026-09-03-pm run did not execute, so no edition existed to cover same-day news between Wednesday morning and this Friday morning edition.",
+   "conclusions_changed": false,
+   "note": "This is a publishing-continuity gap, not an inaccurate statement previously published, following the same disclosure practice as prior same-cycle-miss entries (2026-07-31, 2026-08-14, 2026-09-02). No prior published sentence needed correcting."
+  },
+  {
+   "found": "2026-09-08",
+   "report": "reports/2026/09/2026-09-02-am.html",
+   "original": "This report's Sept 2 and subsequent editions described a single ongoing '29-state' Meta youth-safety trial in Oakland (Judge Gonzalez Rogers presiding) in which Mark Zuckerberg had just testified, denying claims and citing regret over slow progress on underage-user detection.",
+   "corrected": "That conflated two distinct Meta lawsuits before the same Oakland judge. A roughly 47-state attorneys-general coalition case (the '29 states' that sued jointly in 2023, plus others) was resolved by an $18 billion settlement Judge Gonzalez Rogers approved Aug 26 -- before this report's Sept 2 edition ran. A separate trial brought by four states (California, Colorado, Kentucky, New Jersey) representing themselves and 25 other states on child-data claims, seeking as much as $1.4 trillion, opened Aug 18 in the same courtroom before the same judge and is the case in which Zuckerberg actually testified; it continues, expected to run six to seven weeks toward an advisory jury verdict and a final ruling by Judge Gonzalez Rogers.",
+   "error_source": "This report's own research treated 'the Oakland Meta trial' as a single case because both lawsuits share a judge, a courthouse and overlapping subject matter, without checking whether the $18B settlement reported Aug 26 and the ongoing testimony reported in early September referred to the same proceeding.",
+   "conclusions_changed": true,
+   "note": "Verified via CNN, NPR, Washington Post, CNBC, KTVU, KQED and Press Democrat coverage this run. Does not change the facts of either case individually -- only this report's own prior conflation of which case is settled ($18B, closed) and which is still contested ($1.4T, ongoing). Corrected in today's report (2026-09-08-pm) Top Stories and colophon."
   }
  ]
 }

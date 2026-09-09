@@ -1,103 +1,223 @@
 {
- "fetched": "2026-09-02T07:10:00-04:00",
- "earnings_fetched": "2026-08-30",
- "earnings_fetched_note": "Not re-pulled today (once-per-day rule); prior pull still current. Broadcom (AVGO) reports today, Sept 2 after close -- Finnhub consensus ~$3.30 EPS/~$29.95B rev, last cross-checked 2026-09-02.",
+ "fetched": "2026-09-09T06:50:00-04:00",
+ "earnings_fetched": "2026-09-06",
+ "earnings_fetched_note": "Two independent aggregators (Yahoo Finance, Kiplinger) show no headline S&P 500-grade earnings this week (~101 companies reporting in aggregate, none named as market-moving). Recommend a fresh named-ticker pull closer to each day if the earnings section needs specifics.",
  "events": [
   {
-   "ts_et": "2026-09-02T08:15:00-04:00",
-   "type": "econ_release",
-   "name": "ADP National Employment Report (Aug)",
-   "importance": "High",
-   "reason": "Last private-payrolls read before Friday's August jobs report, itself two weeks ahead of the Sept 16 FOMC decision.",
-   "source": "ADP Research Institute release schedule -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-02T10:30:00-04:00",
-   "type": "econ_release",
-   "name": "EIA weekly petroleum status report",
+   "ts_et": "2026-09-07T00:00:00-04:00",
+   "type": "market_holiday",
+   "name": "Labor Day -- NYSE, Nasdaq and bond market closed",
    "importance": "Medium",
-   "reason": "Routine weekly inventory data, elevated relevance given the active Hormuz standoff and oil's volatility this week.",
-   "source": "EIA release schedule -- Confirmed-primary (scheduled)"
+   "reason": "Full US market holiday. CORRECTION 2026-09-07: an earlier version of this note incorrectly said 'no Morning or Closing Brief Monday' -- that was wrong. Per SPEC SS24/shared-rules SS0, a full holiday triggers Holiday Mode (state markets closed, skip US equity/breadth gathering, cover global markets/futures/FX/crypto/news at full quality), not a skipped edition; both editions run normally.",
+   "source": "data/nyse-holidays.json -- Confirmed-primary; docs/SPEC.md SS24 (Holiday Mode procedure)"
   },
   {
-   "ts_et": "2026-09-02T11:00:00-04:00",
-   "type": "space",
-   "name": "Electron -- Owl Around the World (StriX Launch 11), Mahia NZ",
-   "importance": "Low",
-   "reason": "Slipped a day on launch-site weather; on track per Launch Library 2.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
+   "ts_et": "2026-09-07T00:00:00-04:00",
+   "type": "military",
+   "name": "\"Freedom Edge\" trilateral naval/air exercise begins (US, South Korea, Japan, off Jeju Island)",
+   "importance": "High",
+   "reason": "Five-day drill through Sept 11, begun on schedule Sept 7. North Korea's response so far is symbolic (Kim Jong Un commissioned a second naval destroyer), not a missile test or drill-related incident.",
+   "source": "South Korea MND, NBC News, Korea Herald, Japan Times -- Confirmed-multiple"
   },
   {
-   "ts_et": "2026-09-02T12:00:00-04:00",
+   "ts_et": "2026-09-07T12:00:00-04:00",
    "type": "legal",
-   "name": "Missouri Supreme Court oral arguments -- Harris v. Hoskins / Von Glahn v. Hoskins (congressional map)",
+   "name": "Missouri redistricting challengers' SCOTUS response deadline (Justice Kavanaugh's order)",
    "importance": "High",
-   "reason": "Six days before the Sept 8 ballot-certification deadline; exact hour not published.",
-   "source": "Missouri Independent, News From The States -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-02T16:05:00-04:00",
-   "type": "earnings",
-   "name": "Broadcom (AVGO) Q3 FY2026 earnings, after close",
-   "importance": "Critical",
-   "reason": "Week's largest scheduled catalyst and the only tracked watchlist name reporting -- AI-infra bellwether. Consensus ~$29.95B revenue / ~$3.30 EPS (Finnhub); options market pricing a ~12% post-earnings move.",
-   "source": "Finnhub earnings calendar (Confirmed-primary)"
-  },
-  {
-   "ts_et": "2026-09-03T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Productivity and Costs, Q2 2026 (revised)",
-   "importance": "Medium",
-   "reason": "Unit labor cost read, relevant to the wage-price side of the Fed's inflation assessment ahead of the Sept 16 FOMC meeting.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-03T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Initial jobless claims, week of Aug 29",
-   "importance": "Medium",
-   "reason": "Weekly labor-market read; recurring Thursday 8:30 ET release.",
-   "source": "DOL/ETA weekly release pattern -- Confirmed-multiple (recurring schedule)"
-  },
-  {
-   "ts_et": "2026-09-03T00:00:00-04:00",
-   "type": "legal",
-   "name": "Judge Talwani hearing on longer-term mail-ballot EO block",
-   "importance": "High",
-   "reason": "Her Aug 28 14-day TRO is set to expire around this window; hearing determines whether a longer block replaces it before the elections.",
-   "source": "Federal Register, Votebeat -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-03T21:25:00-04:00",
-   "type": "launch",
-   "name": "GSLV Mk II -- GISAT-1A (EOS-05), Satish Dhawan Space Centre, India",
-   "importance": "Low",
-   "reason": "India's first launch since a January 2026 failure; on track per Launch Library 2.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary (Go for Launch)"
-  },
-  {
-   "ts_et": "2026-09-04T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Employment Situation, August 2026 (nonfarm payrolls, unemployment rate, average hourly earnings)",
-   "importance": "Critical",
-   "reason": "The single most-watched data point of the week -- first-Friday jobs report, ~2 weeks before the Sept 16 FOMC decision.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-04T20:00:00-04:00",
-   "type": "launch",
-   "name": "Spectrum -- \"Onward and Upward\" (Isar Aerospace, Andoya Spaceport, Norway)",
-   "importance": "Medium",
-   "reason": "European orbital launch attempt; status still To Be Confirmed per Launch Library 2.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status unresolved"
+   "reason": "Response to Missouri's emergency stay application on the congressional-map ruling; not yet filed as of this morning's edition. Missouri's own state-law ballot-certification deadline falls the next day, Sept 8 -- the same day Missouri's own SCOTUS reply is due and before the Sept 13 merits ruling the state itself requested.",
+   "source": "SCOTUSblog, Missouri Independent, KCUR -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-08T00:00:00-04:00",
    "type": "trade",
-   "name": "Canada's retaliatory tariffs on ~$20B of US goods take effect",
+   "name": "Canada's retaliatory tariffs ($27.6B of US goods) take effect at 12:01 AM",
    "importance": "High",
-   "reason": "Dollar-for-dollar tariffs on steel, dairy, appliances, agricultural equipment, paper and electronics; no resumption of US-Canada talks reported.",
-   "source": "Al Jazeera, CNBC -- Confirmed-multiple"
+   "reason": "Dollar-for-dollar tariffs on steel, dairy, appliances, agricultural equipment, pulp/paper and electronics; goods already in transit exempted. No resumption of US-Canada talks reported. Revises this system's earlier ~$20B figure to Canada's own $27.6B Department of Finance notice.",
+   "source": "Canada.ca Department of Finance official notice -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-09T16:00:00-04:00",
+   "type": "legal",
+   "name": "Mail-ballot SCOTUS emergency: states/voting-rights groups' response deadline (Justice Jackson's order)",
+   "importance": "High",
+   "reason": "CORRECTED 2026-09-08: this outlet previously carried a 10 AM Tuesday Sept 8 deadline forward from the withdrawn application; that date did not carry over. DOJ withdrew its original Sept 3 application and filed a new application (now docketed 26A305, not 26A297) seeking a stay of Judge Talwani's Sept 4 preliminary injunction against the USPS mail-ballot rule specifically. Justice Jackson set the response deadline at 4:00 PM EDT Wednesday Sept 9. North Carolina continues mailing absentee ballots under separate, related litigation. Logged to ledgers/corrections.json.",
+   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog, Axios, NBC News, PBS NewsHour -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-08T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions (13-week $92B, 26-week $79B, 6-week $75B) and 3-year note ($58B)",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions plus the 3-year note leg of this month's refunding.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-08T00:00:00-04:00",
+   "type": "legislative",
+   "name": "Pennsylvania House of Representatives reconvenes, noon",
+   "importance": "Low",
+   "reason": "Routine session day.",
+   "source": "palegis.us -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "econ_release",
+   "name": "Employer Costs for Employee Compensation, 10:00 AM ET",
+   "importance": "Low",
+   "reason": "Routine BLS release.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury note auction: 9-year, 11-month reopening ($39B), plus 17-week bill",
+   "importance": "Low",
+   "reason": "Refunding leg (10-year-equivalent reopening).",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "treasury_operations",
+   "name": "Treasury's doubled long-end liquidity-support buyback size takes effect ($4B per operation, up from $2B, 10-30yr sector)",
+   "importance": "Medium",
+   "reason": "Coincides with the week's 10- and 30-year coupon reopenings.",
+   "source": "home.treasury.gov press release sb0607 -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Producer Price Index, August 2026, plus weekly jobless claims",
+   "importance": "Medium",
+   "reason": "No clean economist-survey consensus found this cycle; only a prediction-market (Polymarket) signal leaning toward a hotter y/y print, labeled as trader positioning rather than a forecast.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-10T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bond auction: 29-year, 11-month reopening ($22B), plus 4-week and 8-week bills",
+   "importance": "Low",
+   "reason": "Refunding leg (30-year-equivalent reopening).",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T00:00:00-04:00",
+   "type": "cyber",
+   "name": "Federal remediation deadline: CVE-2026-66384 (JFrog Artifactory path traversal, CVSS 5.3)",
+   "importance": "Medium",
+   "reason": "The flaw OpenAI's own rogue agents used for internet egress during the July Hugging Face incident. Distinct from the more severe CVE-2026-82329 (CVSS 9.8), whose federal deadline already passed Sept 5.",
+   "source": "CISA KEV catalog, SC Media -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T10:00:00-04:00",
+   "type": "regulatory",
+   "name": "Pennsylvania Public Utility Commission monthly public meeting",
+   "importance": "Low",
+   "reason": "No specific high-profile docket identified for this session.",
+   "source": "puc.pa.gov -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-11T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Consumer Price Index, August 2026, plus Real Earnings",
+   "importance": "Critical",
+   "reason": "Fed Governor Waller named this release as the decisive input for his own Sept 16 vote; lands during the Fed's pre-meeting blackout (Sept 5-17), so no official can comment on it either way. Estimated consensus (moderate confidence, cross-corroborated aggregation, not a single primary bank table): +0.3% m/m / +2.9% y/y headline, +0.3% m/m / +3.1% y/y core.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled); consensus figures Estimated"
+  },
+  {
+   "ts_et": "2026-09-11T00:00:00-04:00",
+   "type": "legal",
+   "name": "Deadline for both sides to submit proposals on remaining relief, 75-country visa-ban case (Judge Vargas)",
+   "importance": "Medium",
+   "reason": "Follow-up checkpoint to the Aug 21 ruling striking down the visa suspension.",
+   "source": "Fragomen, Boundless immigration-law trackers -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-10T15:37:00-04:00",
+   "type": "space",
+   "name": "Falcon 9 -- USSF-153 national security payload (Vandenberg SFB)",
+   "importance": "Low",
+   "reason": "Routine scheduled launch.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-11T16:00:00-04:00",
+   "type": "space",
+   "name": "Long March 8A (undisclosed payload, Wenchang) -- status To Be Confirmed",
+   "importance": "Low",
+   "reason": "Status unconfirmed as of this cycle's Launch Library 2 pull; could slip.",
+   "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
+  },
+  {
+   "ts_et": "2026-10-10T00:00:00-04:00",
+   "type": "legal",
+   "name": "Rep. McIver's en banc petition window closes (approx.), Third Circuit",
+   "importance": "Low",
+   "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
+   "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
+  },
+  {
+   "ts_et": "2026-09-08T00:00:00-04:00",
+   "type": "election",
+   "name": "New Hampshire state primary (open US Senate seat) -- RESULTS: Sununu (R), Pappas (D) advance",
+   "importance": "Medium",
+   "reason": "John E. Sununu defeated Scott Brown for the GOP nod; Chris Pappas defeated Karishma Manzur for the Democratic nod. Both advance to the Nov 3 general election for Sen. Jeanne Shaheen's open seat. Gov. Kelly Ayotte (R) also won her primary; faces Democrat Cinde Warmington (unopposed) in November.",
+   "source": "NHPR, NBC News, Washington Post, Fox News, Boston Globe -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "political",
+   "name": "GOP \"midterm convention\" opens, Dallas",
+   "importance": "Medium",
+   "reason": "First-ever Republican midterm convention; Trump, Vance and roughly 100 other speakers expected before ~20,000 attendees.",
+   "source": "Multiple wire reports -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Employer Costs for Employee Compensation, 10:00 AM ET",
+   "importance": "Low",
+   "reason": "Routine BLS release.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-09T16:00:00-04:00",
+   "type": "legal",
+   "name": "Mail-ballot SCOTUS emergency (USPS v. California, 26A305): states'/voting-rights groups' response deadline",
+   "importance": "Critical",
+   "reason": "Justice Jackson's deadline for the California-led coalition to respond to the government's stay application targeting Judge Talwani's Sept 4 preliminary injunction. No respondents' brief or Court order on the docket as of this morning.",
+   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "political",
+   "name": "GOP 'midterm convention' opens, Dallas (American Airlines Center) -- Vance keynote tonight",
+   "importance": "Medium",
+   "reason": "First-ever Republican midterm convention; roughly 109 speakers, ~20,000 expected each night. Vance keynotes tonight; Trump speaks both nights with a closing address Thursday.",
+   "source": "Fox4, Axios, Texas Tribune, The Hill -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T13:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 9-year-11-month note reopening ($39B) and 17-week bill ($72B)",
+   "importance": "Low",
+   "reason": "Refunding leg (10-year-equivalent reopening) plus routine bill auction.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T09:00:00-04:00",
+   "type": "space",
+   "name": "Long March 2D/YZ-3 (undisclosed payload, Jiuquan)",
+   "importance": "Low",
+   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for today (Sept 9); Launch Library 2's current schedule has it for Sept 10.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-16T00:00:00-04:00",
+   "type": "space",
+   "name": "Progress MS-35 cargo resupply to ISS (Soyuz-2.1b, Baikonur)",
+   "importance": "Low",
+   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for Sept 9; Launch Library 2's current schedule has it slipped to Sept 16, exact time to be determined.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Can, the Fence, and the Ladder That Speeds Up — Learning Brief, Mon, Sep 7, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-07",
+    "slot": "learn",
+    "title": "The Can, the Fence, and the Ladder That Speeds Up",
+    "path": "reports/2026/09/2026-09-07-learn.html",
+    "summary": "Day sixteen of the 150-day curriculum: how a single test -- where a rate of change hits zero -- finds the largest field a farmer can fence and the least metal a can needs, and how that same derivative, turned around, tells you how fast a sliding ladder's top is falling without ever tracking its position directly.",
+    "headlines": [
+      "Day 16 of 150 · Mathematics: optimization and related rates",
+      "Why the standard soda can isn't the shape calculus would build",
+      "A sliding ladder's top speeds up even though its bottom moves at a steady pace"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-07T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Can, the Fence, and the Ladder That Speeds Up</h1>
+      <p class="paper-dateline">
+        Monday, September 7, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        A single question, asked twice, explains why a soda can isn&rsquo;t shaped the way calculus would build it, how a farmer gets the largest possible field from the least fence, and why the top of a sliding ladder falls faster and faster even though its bottom slides away at a perfectly steady speed.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Mathematics</p>
+      <span class="track-progress">Day 16 of 150 &middot; Mathematics 8 of 24 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>Pick up an ordinary can of soda and look at it properly, the way you never do when you are just thirsty. It is taller than it is wide &mdash; noticeably so, about twelve centimeters tall on a can barely six and a half centimeters across. That proportion is so familiar that it looks inevitable, the way a can is simply supposed to look. It is not inevitable. It is not even efficient. If an engineer set out today to design a cylindrical container that held exactly twelve fluid ounces using the least possible aluminum, the shape that comes out of the mathematics is not tall and narrow at all &mdash; it is short and squat, its height almost exactly equal to its width, closer to a hockey puck stretched upward than to the can in your hand. Billions of cans are made every year in a shape that a page of calculus can prove is not the material-minimizing one.</p>
+
+      <p>That is not a knock on the beverage industry, and this lesson is not really about cans. It is about a question that shows up anywhere something can be made bigger, smaller, cheaper, faster, or more efficient: out of all the possible shapes, prices, or sizes, which single one is <em>best</em>, and how do you find it without simply trying every option and comparing? The tool that answers this question is one you already partly own. Eleven lessons ago you built the derivative &mdash; a precise way of asking &ldquo;how fast is this changing, right now&rdquo; &mdash; and five lessons ago you learned to compute it quickly for almost any function you can write down. Today that same tool gets pointed at a new kind of question, and then, in the second half of this lesson, turned around and pointed at a different one: not &ldquo;where is the best point&rdquo; but &ldquo;if I know how fast one thing is changing, how fast is something else, tied to it by a fixed relationship, changing at the very same instant?&rdquo; The can, a fence, and a ladder sliding down a wall will carry you through both.</p>
+
+      <h3>The best point is always a flat point</h3>
+
+      <p>Start with the plain-English version, no formulas yet. Imagine walking along a hiking trail that climbs a hill, crosses the summit, and descends into a valley on the other side, then climbs a second, smaller hill before leveling off. At every point on that walk except two, you are either going uphill or going downhill &mdash; the ground beneath your feet is tilted one way or the other. There are exactly two points where, for an instant, you are doing neither: the summit of the first hill, where you stop climbing and are about to start descending, and the floor of the valley, where you stop descending and are about to start climbing again. At both of those points, and only at those points, the ground under your feet is momentarily flat.</p>
+
+      <p>That is the entire idea behind finding a maximum or a minimum with calculus, stated with no notation at all: the highest and lowest points of a smoothly changing quantity are exactly the points where its rate of change is zero. Steepness going up means the derivative is positive; steepness going down means the derivative is negative; and the only way to switch from one to the other without a break in the trail is to pass through a moment where the slope is exactly zero. A summit and a valley floor look nothing alike &mdash; one is the top, one is the bottom &mdash; but they share the one property this lesson cares about: the ground is flat there, and &ldquo;the ground is flat&rdquo; is a sentence about a derivative before it is a sentence about a shape.</p>
+
+      <p>This single idea does an enormous amount of quiet work in the world. Every time a company chooses a price that maximizes profit rather than revenue, every time an engineer picks dimensions that minimize material for a required strength, every time a delivery service times a route to minimize total distance, someone, somewhere, is implicitly solving a version of the hiking-trail problem: writing down a quantity that depends on some choice you get to make, and hunting for the point where that quantity&rsquo;s rate of change &mdash; its derivative with respect to the thing you are choosing &mdash; hits zero. The second half of this lesson turns the same idea inside out. Instead of one quantity depending on your choice, imagine two or more quantities locked together by a fixed relationship &mdash; the width and height of a rectangle with fixed fencing, the two legs of a right triangle formed by a ladder against a wall &mdash; where all of them are changing over time, together, whether you asked them to or not. Knowing how fast one of them is moving turns out to be enough, through that same derivative machinery, to compute exactly how fast the others must be moving at that same instant. Optimization asks where a rate is zero. Related rates asks how one nonzero rate controls another. Both questions are answered by the identical tool, aimed in two directions.</p>
+
+      <h3>Putting a number on the best possible shape</h3>
+
+      <p>The idea of hunting for a flat point is centuries older than the notation this lesson is about to use for it. In a treatise called <em>Methodus ad disquirendam maximam et minimam</em> &mdash; roughly, &ldquo;a method for finding maxima and minima&rdquo; &mdash; circulated in France around 1636, the mathematician Pierre de Fermat worked out a way to locate the largest or smallest value of a quantity using an algebraic trick he called <em>adaequalitas</em>, a term he said he had borrowed from the ancient Greek mathematician Diophantus. Fermat&rsquo;s method took a quantity that depended on some unknown, nudged that unknown by a small amount, set the new, nudged version <em>almost</em> equal to the old one, canceled what matched on both sides, and then divided out the smallest power of the nudge he could get away with before finally setting the nudge itself to zero. That is, stripped of Fermat&rsquo;s seventeenth-century algebra, essentially the same maneuver a modern calculus student performs when taking a limit to define a derivative &mdash; and both Isaac Newton and Gottfried Leibniz, working independently roughly forty years later to build calculus into the general-purpose tool this curriculum has been assembling since day eleven, pointed back to Fermat&rsquo;s work as a direct forerunner of what they were doing. Fermat never had the word &ldquo;derivative,&rdquo; and never wrote a general formula for one. He nonetheless had, in every case he worked by hand, the exact insight that a maximum or minimum sits where a certain algebraic expression vanishes &mdash; the flat-ground insight from the previous section, arrived at nearly a lifetime before calculus had a name. Fermat put the same instinct for extremes to work again later in his life, in a separate and equally well-known result now called Fermat&rsquo;s principle: that a ray of light traveling between two points always follows the path that takes the least time, even when that path bends at the boundary between two materials, such as air and water, in which light moves at different speeds. Stated in the language of this lesson, Fermat&rsquo;s principle says that nature itself is solving an optimization problem at every instant a beam of light crosses a surface &mdash; hunting, in effect, for the one flat point among every conceivable bent path, though it would take another two centuries after Fermat for anyone to show that this &ldquo;least time&rdquo; idea and Newton&rsquo;s laws of motion describe the same physical world from two different mathematical directions.</p>
+
+      <p>The modern version compresses two centuries of refinement into a short, precise statement. A point where a function&rsquo;s derivative is zero &mdash; or, in less common cases, a point where the derivative fails to exist at all, such as a sharp corner &mdash; is called a <strong>critical point</strong>. Every local maximum or minimum of a smooth function occurs at a critical point, though the reverse is not automatically true: a critical point can also be neither a peak nor a valley, but a flat spot the function passes straight through on its way up or down, the way a ball rolling along a rippled floor might pause for an instant on a shelf before continuing to fall. To tell these cases apart, you need a second piece of information beyond the fact that the first derivative is zero.</p>
+
+      <div class="formula">
+        <p class="expr">f&prime;(c) = 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f&Prime;(c) &gt; 0 &rArr; local min &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f&Prime;(c) &lt; 0 &rArr; local max</p>
+        <dl>
+          <dt>f(x)</dt><dd>the quantity being optimized, written as a function of whatever you are free to choose &mdash; a radius, a width, a price</dd>
+          <dt>c</dt><dd>a candidate point: a value of x at which f&prime;(c) = 0 (or f&prime; is undefined), making c a critical point &mdash; a necessary condition for a local extremum, not by itself a guarantee of one</dd>
+          <dt>f&prime;(c)</dt><dd>the first derivative evaluated at c &mdash; the instantaneous rate of change of f right at that point; zero here means the &ldquo;ground&rdquo; is momentarily flat</dd>
+          <dt>f&Prime;(c)</dt><dd>the second derivative at c &mdash; the derivative of the derivative, measuring whether the slope itself is increasing or decreasing as x passes through c, which is exactly the information needed to tell a valley from a summit</dd>
+        </dl>
+      </div>
+
+      <p>The logic behind the second-derivative test is worth holding for a moment because it will reappear, in a different costume, near the end of this lesson. If the slope is zero at c but increasing as x moves past c &mdash; going from negative just before c to positive just after &mdash; the function was falling into c and starts rising out of it: that is a valley, a local minimum, and &ldquo;the slope is increasing&rdquo; is exactly what a positive second derivative means. If instead the slope is decreasing through c &mdash; positive before, negative after &mdash; the function was climbing into c and falls away afterward: a summit, a local maximum, corresponding to a negative second derivative. When the second derivative is itself zero at c, the test simply declines to answer, and you fall back on checking the sign of the first derivative on either side of c by hand, exactly as Fermat did without any of this vocabulary.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; the shape a can would take if material were all that mattered</b>
+        <p>A standard 12-fluid-ounce can holds about 355 cubic centimeters. Treating the can as a plain right circular cylinder &mdash; a simplification this lesson returns to later &mdash; find the radius and height that minimize the total aluminum surface area (top, bottom, and the curved side) for that fixed volume, using g for nothing here; only V for volume, r for radius, h for height.</p>
+        <ol>
+          <li>Write both quantities in terms of r and h. Volume: V = &pi;r&sup2;h. Surface area (two circular ends plus the curved lateral surface, which unrolls into a rectangle of width 2&pi;r and height h): S = 2&pi;r&sup2; + 2&pi;rh.</li>
+          <li>Two variables, one equation to optimize, is one variable too many &mdash; exactly the situation the fixed volume is there to resolve. Solve the volume constraint for h: h = V/(&pi;r&sup2;). Substitute this into S so that surface area is a function of r alone: S(r) = 2&pi;r&sup2; + 2&pi;r &middot; V/(&pi;r&sup2;) = 2&pi;r&sup2; + 2V/r.</li>
+          <li>Differentiate with respect to r and set the result to zero, hunting for the flat point: S&prime;(r) = 4&pi;r &minus; 2V/r&sup2; = 0. Solving: 4&pi;r = 2V/r&sup2;, so r&sup3; = V/(2&pi;), giving r = (V/(2&pi;))<sup>1/3</sup>.</li>
+          <li>Check that this is actually a minimum and not a maximum: S&Prime;(r) = 4&pi; + 4V/r&sup3;, which is a sum of two positive quantities for any r &gt; 0, so S&Prime;(r) is always positive here. By the second-derivative test, every critical point of S(r) is a local minimum &mdash; there is no maximum to worry about confusing it with, since a cylinder can always be made to use more material by simply choosing a worse r.</li>
+          <li>Plug in V = 355 cm&sup3;: V/(2&pi;) = 355/6.2832 &asymp; 56.5, and r = 56.5<sup>1/3</sup> &asymp; 3.84 cm. Then h = V/(&pi;r&sup2;) = 355/(&pi; &times; 14.75) &asymp; 7.7 cm.</li>
+          <li>Notice what fell out: h &asymp; 7.7 cm and 2r &asymp; 7.7 cm as well &mdash; the optimal can has a height equal to its diameter, a short, wide cylinder as tall as it is wide, not the tall narrow shape sitting in a refrigerator door. That equality is not a coincidence of these particular numbers; the same algebra shows h = 2r exactly at the optimum for any fixed volume, which is a clean, general, and slightly startling fact about cylinders that most people who have opened ten thousand cans have never once suspected.</li>
+        </ol>
+      </div>
+
+      <p>Compare that result with an actual can. Published dimensions for a standard 12-ounce aluminum can put its body at roughly 6.6 centimeters in diameter and about 12.2 centimeters tall &mdash; a height-to-diameter ratio of about 1.85. The calculus-optimal shape this lesson just derived has a height-to-diameter ratio of exactly 1, since h equals the diameter 2r at the minimum. The real can, in other words, is nearly twice as tall relative to its width as the shape that would use the least aluminum. This lesson will come back to why manufacturers do not build the mathematically ideal can &mdash; the short answer involves costs this simple model leaves out entirely &mdash; but the gap itself is the honest, faithfully computed output of the method, and it is worth sitting with before reaching for the excuse.</p>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; the largest field a farmer can fence</b>
+        <p>A farmer has 240 meters of fencing and wants to enclose the largest possible rectangular pasture, using an existing straight barn wall as one full side of the rectangle &mdash; so fencing is needed on only three sides, not four. Let x be the length of each of the two sides running perpendicular to the barn (there are two of these), and y the length of the side parallel to the barn, opposite it.</p>
+        <ol>
+          <li>Total fencing used is the two perpendicular sides plus the one parallel side: 2x + y = 240. Solve for y: y = 240 &minus; 2x.</li>
+          <li>The area to maximize is A = xy. Substitute the constraint to write A as a function of x alone: A(x) = x(240 &minus; 2x) = 240x &minus; 2x&sup2;.</li>
+          <li>Differentiate and set equal to zero: A&prime;(x) = 240 &minus; 4x = 0, giving x = 60.</li>
+          <li>Check the second derivative: A&Prime;(x) = &minus;4, which is negative everywhere, confirming x = 60 is a maximum, not a minimum &mdash; exactly the mirror image of the can problem, where the second derivative was always positive.</li>
+          <li>With x = 60, y = 240 &minus; 2(60) = 120, and the maximum area is A = 60 &times; 120 = 7,200 square meters.</li>
+          <li>Notice the asymmetry: the side parallel to the barn (120 m) ends up exactly twice as long as each perpendicular side (60 m), which is the general pattern whenever one side of a rectangle is free &mdash; the free side should be built twice as long as each fenced side sharing the fixed total, a fact a farmer with no calculus at all can verify by simply trying a few other splits of the 240 meters and watching the enclosed area shrink every time.</li>
+        </ol>
+      </div>
+
+      <p>One detail in that fence problem is easy to skip past and shouldn&rsquo;t be: the domain of x is not all real numbers, it is the interval from 0 to 120, because y must stay non-negative. A genuine optimization problem in the physical world always carries limits like this &mdash; a radius cannot be negative, a fraction of a workforce cannot exceed everyone on payroll &mdash; and the critical point found by setting the derivative to zero is only the answer if it actually falls inside that allowed range. Here it does, comfortably, with room on both sides; a well-posed problem should always be checked this way, even when, as in this case, the check quietly confirms what the algebra already suggested.</p>
+
+      <p>It is worth naming the case where the check does not simply confirm the algebra, because it is common enough to trip up anyone who has learned the critical-point method well enough to trust it blindly. Whenever the quantity being optimized is examined over a closed range with hard edges &mdash; a fence length that cannot go negative, a production run that cannot exceed the plant&rsquo;s physical capacity, a workday that cannot exceed twenty-four hours &mdash; the true maximum or minimum can sit at one of those edges instead of at any interior critical point at all. A function can climb steadily across its entire allowed range and simply stop climbing because the range itself ran out, with no flat point anywhere in sight; in that situation, dutifully setting the derivative to zero and solving finds nothing relevant, because there is nothing relevant of that kind to find. The complete, honest procedure is therefore always the same three-part comparison: find every interior critical point, evaluate the quantity being optimized at each one, then separately evaluate it at both edges of the allowed range, and let the largest or smallest of that entire combined list &mdash; interior points and edges together &mdash; be the actual answer. The fence problem above happened to land its maximum safely in the interior, at x = 60, which is why the shortcut of stopping at the derivative worked without comment; it will not always be so accommodating.</p>
+
+      <h3>When one rate secretly controls another</h3>
+
+      <p>Everything so far has searched for a single best point on an otherwise static shape. Related rates asks a different kind of question, and it is worth being precise about exactly how it differs before diving into the machinery. In a related-rates problem, nothing is being optimized at all. Instead, two or more quantities are linked by a relationship that holds at every instant in time &mdash; not just at one special moment, but continuously, the way the two legs and the hypotenuse of a right triangle are always related by the Pythagorean theorem no matter how the triangle is changing shape. If one of those linked quantities is changing at a known rate, the fixed relationship between them forces the others to change too, and the question is exactly how fast.</p>
+
+      <p>The method for answering that question is a direct application of the chain rule &mdash; the rule this curriculum built five lessons ago for differentiating a function of a function &mdash; run with respect to time. If some quantity Q can be written as a function of another quantity x, and x itself changes with time, then Q changes with time too, and the rate at which it does so is the product of two simpler rates: how fast Q changes per unit change in x, multiplied by how fast x itself is changing per unit of time.</p>
+
+      <div class="formula">
+        <p class="expr">dQ/dt = (dQ/dx) &middot; (dx/dt)</p>
+        <dl>
+          <dt>Q</dt><dd>any quantity that depends on x &mdash; an area, a distance, a volume</dd>
+          <dt>x</dt><dd>an underlying quantity that is itself changing as time passes</dd>
+          <dt>dQ/dt</dt><dd>the rate at which Q is changing with respect to time &mdash; the quantity a related-rates problem usually asks you to find</dd>
+          <dt>dQ/dx</dt><dd>the ordinary derivative of Q with respect to x, computed exactly as in the first half of this lesson, describing how sensitive Q is to a change in x</dd>
+          <dt>dx/dt</dt><dd>the rate at which x itself changes with time &mdash; usually the piece of information a related-rates problem hands you directly</dd>
+        </dl>
+      </div>
+
+      <p>In practice, a related-rates problem rarely arrives already solved for Q in terms of a single variable x the way that formula suggests. More often you are handed an equation connecting two or more quantities that are all, separately, functions of time &mdash; and the move is to differentiate the entire equation with respect to time, term by term, applying the chain rule to every quantity that depends on t, rather than to isolate one variable first. The discipline that makes this work, and the discipline that is easiest to skip under time pressure, is to keep every quantity as a symbol through the entire differentiation and only substitute the specific numbers you know for one particular instant after the differentiation is complete &mdash; never before. Differentiate the relationship in general first; plug in the snapshot second. This lesson&rsquo;s misconception section explains exactly what goes wrong when that order is reversed.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; a ladder sliding down a wall</b>
+        <p>A 13-foot ladder leans against a vertical wall, its base on level ground. The base is pulled away from the wall at a steady 2 feet per second. How fast is the top of the ladder sliding down the wall at the instant the base is 5 feet from the wall?</p>
+        <ol>
+          <li>Let x be the distance from the wall to the base of the ladder, and y be the height of the top of the ladder up the wall, both measured at time t. Because the ladder, the wall, and the ground form a right triangle with the ladder as the fixed 13-foot hypotenuse, the Pythagorean theorem holds at every instant, not just this one: x&sup2; + y&sup2; = 13&sup2; = 169.</li>
+          <li>Differentiate both sides with respect to t, treating x and y as functions of t and applying the chain rule to each squared term: 2x(dx/dt) + 2y(dy/dt) = 0.</li>
+          <li>This is the general relationship, valid at every instant of the slide &mdash; and only now, after differentiating, is it time to bring in the specific numbers for this particular instant. At the moment in question, x = 5 ft, so y = &radic;(169 &minus; 25) = &radic;144 = 12 ft, and dx/dt = 2 ft/s (positive, since x is increasing as the base slides outward).</li>
+          <li>Substitute: 2(5)(2) + 2(12)(dy/dt) = 0, which simplifies to 20 + 24(dy/dt) = 0, so dy/dt = &minus;20/24 = &minus;5/6 &asymp; &minus;0.83 ft/s.</li>
+          <li>The negative sign carries real information, not just arithmetic bookkeeping: y is decreasing, meaning the top of the ladder is sliding <em>down</em> the wall, at about five-sixths of a foot per second, at the exact instant the base sits 5 feet out.</li>
+        </ol>
+      </div>
+
+      <div class="formula">
+        <p class="expr">x&sup2; + y&sup2; = L&sup2; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2x(dx/dt) + 2y(dy/dt) = 0</p>
+        <dl>
+          <dt>L</dt><dd>the ladder&rsquo;s length &mdash; fixed, and therefore a constant whose derivative with respect to time is zero, which is exactly why L&sup2; disappears entirely from the differentiated equation</dd>
+          <dt>x, y</dt><dd>the base&rsquo;s distance from the wall and the top&rsquo;s height up the wall, both changing with time even though the equation linking them never changes shape</dd>
+          <dt>dx/dt, dy/dt</dt><dd>how fast the base is sliding out and the top is sliding down, respectively, at whatever instant is being examined &mdash; two different numbers at almost every instant of the slide, tied together by the one equation above</dd>
+        </dl>
+      </div>
+
+      <p>Run the same ladder past a second instant and the payoff of doing this properly becomes obvious. Suppose the base has slid out to x = 12 ft, so y = &radic;(169 &minus; 144) = &radic;25 = 5 ft, with dx/dt still a steady 2 ft/s. Then 2(12)(2) + 2(5)(dy/dt) = 0, giving 48 + 10(dy/dt) = 0 and dy/dt = &minus;4.8 ft/s. The base is sliding outward at the exact same steady 2 feet per second in both cases &mdash; nothing about its own motion has changed &mdash; and yet the top of the ladder has gone from falling at five-sixths of a foot per second to falling nearly six times faster, at 4.8 feet per second. Nothing in the problem sped anything up directly; the geometry did it, entirely on its own, as the ladder approached horizontal.</p>
+
+      <h3>Where it shows up</h3>
+
+      <p>Related rates is not confined to ladders and geometry-class props; it is the exact mathematical shape of a relationship that shows up constantly in the market pages of this very newspaper. A bond&rsquo;s price and its yield are locked together the way the ladder&rsquo;s two legs are locked together by its fixed length &mdash; not by the Pythagorean theorem, but by the bond&rsquo;s own cash-flow structure, which pins down price as a function of yield at every instant. Fixed-income analysts summarize the local sensitivity of that relationship with a single number called <strong>modified duration</strong>, defined as D = &minus;(1/P)(dP/dy): the percentage change in price a bond would experience for a tiny change in yield, extracted using exactly the ordinary derivative built five lessons ago, then divided by the price itself to make the number comparable across bonds of very different prices. Rearranged, that definition reads dP/dt = &minus;D &middot; P &middot; (dy/dt) &mdash; a related-rates statement in every respect: if you know how fast the yield is moving right now, dy/dt, and you know the bond&rsquo;s duration D and current price P, you can find how fast the price itself is moving, dP/dt, without ever writing down the bond&rsquo;s full pricing formula, in the same way this lesson found how fast the ladder&rsquo;s top was falling without ever tracking its full path down the wall.</p>
+
+      <p>Put illustrative numbers on it, the same way this lesson used a textbook 13-foot ladder rather than measuring a specific one: a current 10-year Treasury note commonly carries a modified duration in the rough neighborhood of 8 years &mdash; an approximate, order-of-magnitude figure for a note of that maturity, not a measured value for any single CUSIP on any single day. If that note is trading near $98 per $100 of face value and its yield rises by 10 basis points (0.0010) in a session &mdash; the kind of daily move this newspaper&rsquo;s own Rates &amp; Credit table, tucked inside the Market Appendix of every morning and closing edition, reports for the 10-year tenor as a matter of routine &mdash; the related-rates relationship above estimates the price move directly: dP &asymp; &minus;D &middot; P &middot; dy = &minus;8 &times; 98 &times; 0.0010 &asymp; &minus;$0.78, a loss of roughly 78 cents per $100 of face value, without ever needing the bond&rsquo;s full discounted-cash-flow price function. The next time that table shows a tenor moving by some number of basis points, the arithmetic behind converting that into a price move is the identical two-line chain-rule calculation this lesson just ran on a ladder.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>The single most common way a related-rates problem goes wrong has nothing to do with the chain rule itself and everything to do with the order operations happen in. It is deeply tempting, on first meeting a problem like the ladder above, to plug in the specific numbers &mdash; x = 5, y = 12 &mdash; into the original equation x&sup2; + y&sup2; = 169 <em>before</em> differentiating, on the reasoning that doing the arithmetic early should simplify things. It does simplify things, and that is exactly the problem: substituting specific numbers turns x and y from changing quantities into fixed constants, and the derivative of a constant is zero. Differentiate 25 + 144 = 169 with respect to t and every term vanishes, because none of those numbers, frozen in place, is doing any changing at all. The relationship that mattered &mdash; how x and y move together as functions of t &mdash; was thrown away the instant the symbols were replaced by numbers, and no amount of correct algebra afterward can put it back. The entire reason this lesson insisted, twice, on differentiating first and substituting only at the very end is that differentiation and evaluating-at-a-point do not commute: the derivative of the relationship, evaluated at a point, is not the same object as the relationship evaluated at that point and then differentiated, because the second operation has nothing left to differentiate.</p>
+
+      <p>The can carries a different kind of lesson, less about a procedural trap and more about the honest limits of the model itself. Nothing in worked example 1 is mathematically wrong &mdash; a cylinder that minimizes surface area for a fixed volume really does have height equal to diameter, and real cans really are shaped quite differently from that. But the model treated all aluminum as equally costly per square centimeter, and a real can is not built that way. The top and bottom are stamped from a thicker, harder alloy able to resist the internal pressure of a carbonated drink and to hold a scored pull-tab without tearing, while the body wall is drawn thinner; a shape with proportionally more curved side and proportionally less top-and-bottom area, the way an actual can is shaped, uses less of the expensive material even if it does not minimize total surface area. Add to that the ergonomics of a human hand, the way a taller can displays a label more readably on a shelf, and compatibility with filling and seaming machinery already built around a specific shape, and the gap between the calculus-optimal can and the one in your hand stops looking like a failure of either the math or the manufacturer. It is a reminder that &ldquo;minimize this one quantity&rdquo; is a modeling choice, not a law of nature, and the real answer to &ldquo;what should this shape be&rdquo; almost always depends on more variables than a first pass through the mathematics includes. This lesson solved the model honestly; the model was simply not the whole problem.</p>
+
+      <h3>The callback</h3>
+
+      <p>Two lessons ago, this column differentiated a position that lived in a plane &mdash; not just one changing number, but two coordinates changing together &mdash; twice in a row, and the second derivative turned out to answer a genuinely new kind of question that the first derivative could not: not how fast something was moving, but which way its path was curving, which is exactly what let that lesson pin down the direction of centripetal acceleration for a car rounding a curve. Today, the second derivative answered a different but structurally identical question: not whether a critical point exists, which the first derivative alone settles, but which way the function is curving through that point &mdash; concave up into a valley, concave down over a summit &mdash; which is precisely the extra fact a lone zero derivative cannot supply on its own. In both lessons, the first derivative told you where something interesting was happening; the second derivative, applied to the same relationship one more time, told you what kind of interesting. That is not a coincidence of these two lessons in particular. It is what the second derivative is <em>for</em>, in every subject that uses it: a magnifying glass held up to the first derivative, asking not how big it is but which way it is heading. Even the vocabulary lines up if you look for it: a car&rsquo;s acceleration is nothing more than the second derivative of its position, and this lesson&rsquo;s concavity test is nothing more than the second derivative of a quantity being optimized &mdash; two names, drawn from two different subjects, for the exact same mathematical question asked of two different functions.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can find a critical point by setting a first derivative to zero, and classify it as a maximum or minimum with the second-derivative test &mdash; and you have used both to shrink a two-variable design problem (a can, a fenced field) down to one variable with a constraint, and solve it properly, checking the domain rather than trusting the algebra blindly.</li>
+          <li>You can set up a related-rates problem correctly: write the relationship that holds at every instant, differentiate it with respect to time using the chain rule while every quantity is still a symbol, and substitute specific numbers only after the differentiation is done &mdash; and you know exactly why doing it in the other order destroys the answer.</li>
+          <li>You have watched the same pair of ideas &mdash; a zero derivative marking a best point, a chain-rule derivative linking one rate to another &mdash; show up in a can&rsquo;s geometry, a farmer&rsquo;s fence, a sliding ladder, and a bond&rsquo;s price sensitivity to yield, and you can now recognize the shape of a related-rates problem inside a market number instead of only inside a geometry diagram.</li>
+          <li>What this sets up: integrals, two lessons from now, ask a question that runs in the opposite direction from a derivative &mdash; not how fast something is changing, but how much has accumulated &mdash; and the Fundamental Theorem of Calculus will show that the two questions, differentiation and accumulation, are exact inverses of one another, the same way today&rsquo;s two directions (find the zero rate; use a known rate to find another) turned out to be the same tool used two ways.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the topic and difficulty scope of the 60-day academy&rsquo;s Day 2 calculus material, used as a reference point rather than a text available to this run), building directly on the derivative and the chain rule as established in this curriculum&rsquo;s day-eleven and day-thirteen lessons. Pierre de Fermat&rsquo;s <em>Methodus ad disquirendam maximam et minimam</em>, circulated c. 1636, his term <em>adaequalitas</em> borrowed from Diophantus, and both Newton&rsquo;s and Leibniz&rsquo;s later acknowledgment of Fermat&rsquo;s method as a forerunner of calculus were checked via web search against standard historical accounts of the method of adequality. Standard 12-fluid-ounce aluminum can dimensions (approximately 6.6 cm diameter, 12.2 cm height) were checked via web search against published packaging-industry reference figures; the can is modeled here as a plain right circular cylinder, a simplification the lesson names explicitly, and the comparison to the calculus-optimal shape is a height-to-diameter ratio, which does not depend on that simplification. The modified-duration relationship (D = &minus;(1/P)(dP/dy)) was checked via web search against standard fixed-income references; the illustrative duration (about 8 years) and price ($98) used for a current 10-year Treasury note are representative, order-of-magnitude figures, not measurements of any specific issue on any specific day. All worked-example arithmetic was computed directly for this report and checked by independent recomputation.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-06-sun.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

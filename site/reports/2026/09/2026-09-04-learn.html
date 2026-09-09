@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>The Curve, the Coin, and the Force That Runs Out — Learning Brief, Fri, Sep 4, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-04",
+    "slot": "learn",
+    "title": "The Curve, the Coin, and the Force That Runs Out",
+    "path": "reports/2026/09/2026-09-04-learn.html",
+    "summary": "Day fifteen of the 150-day curriculum: the actual law behind friction's grip, why moving in a circle at constant speed is still acceleration, a highway ramp and a spinning record worked in full, and gravity as the centripetal force that keeps a Starlink satellite in orbit.",
+    "headlines": [
+      "Day 15 of 150 · Physics: friction's real law, and why a turn is always an acceleration",
+      "A highway ramp, a spinning record and a satellite, solved with the same equation",
+      "Why the outward push you feel in a turn is a force that was never there"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-09-04T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>The Curve, the Coin, and the Force That Runs Out</h1>
+      <p class="paper-dateline">
+        Friday, September 4, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        A car doesn&rsquo;t turn because some new outward force reaches out and grabs it &mdash; it turns because ordinary friction points toward the center of the curve, and once you see that a constant speed can still mean a constant acceleration, a turning car, a spinning record and a satellite in orbit turn out to be the same problem wearing three different disguises.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Physics</p>
+      <span class="track-progress">Day 15 of 150 &middot; Physics 3 of 26 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <p>The on-ramp has a small yellow sign, easy to miss, that reads &ldquo;35 MPH&rdquo; in black block letters under a curved arrow. A driver who has taken this ramp a hundred times at 45 without incident takes it at 50 this time, distracted, running a few minutes late. Partway around the curve the back tires let go. There is a half-second of shriek, the rear end steps sideways, and everyone in the car feels themselves shoved hard toward the passenger-side door &mdash; a real, physical push, unmistakable, the kind that makes a driver&rsquo;s hands tighten on the wheel before the brain has finished processing what happened. The driver corrects, the tires bite again, the car straightens out, and thirty seconds later everyone is breathing normally and asking what that was.</p>
+
+      <p>Ask the honest question before reaching for the obvious-sounding answer: what, exactly, pushed everyone toward that door? It feels like something reached into the car and shoved sideways, the same way a hand on your shoulder would. But nothing reached into the car. No new force appeared at the moment the tires lost their grip &mdash; if anything, a force <em>disappeared</em>. And that disappearance points at something stranger sitting underneath the whole ninety seconds of driving that preceded the skid, something that gets skipped over even by people who can recite Newton&rsquo;s laws from memory: for the entire smooth, uneventful, unremarkable stretch of curve before the tires ever slipped, the car was accelerating. Constantly. Even though the speedometer needle never moved, even though nothing about the trip felt like &ldquo;speeding up&rdquo; in the ordinary sense of the word.</p>
+
+      <p>Those two facts &mdash; that grip has an exact, calculable ceiling, and that turning at a perfectly steady speed is itself a continuous acceleration &mdash; are the whole of today&rsquo;s lesson, and they turn out to be the same lesson told twice, because the thing that most often supplies the acceleration a turn requires is exactly the thing that just ran out on that ramp: friction. This lesson works both ideas properly, with real numbers, on three objects that turn out to be the identical problem in different clothing &mdash; a car rounding a highway curve, a coin resting on a spinning record, and a satellite circling the Earth &mdash; and it ends with the specific, well-documented reason the shove toward that car door is one of the most persistently misunderstood sensations in physics.</p>
+
+      <h3>Two things people lump together as &ldquo;friction&rdquo;</h3>
+
+      <p>Friction is the resistance that shows up whenever two surfaces in contact try to slide against each other &mdash; a tire against pavement, a shoe against a floor, a book against a desk. Nearly everyone has an intuitive feel for it. Far fewer people notice that everyday language quietly uses the word &ldquo;friction&rdquo; for two genuinely different things, and the difference between them is exactly what decides whether that car makes the curve or spins out.</p>
+
+      <p><strong>Static friction</strong> is the friction between two surfaces that are not sliding against each other &mdash; a book sitting still on a tilted desk, a car&rsquo;s tire rolling without skidding. The word &ldquo;static&rdquo; describes the surfaces, not the friction itself, because static friction is not one fixed number. It is whatever force, in whichever direction, is needed to keep the two surfaces from sliding &mdash; and it adjusts itself automatically, moment to moment, to exactly cancel out whatever is trying to make them slide. Push gently on a heavy crate and it does not move; static friction quietly matched your push, force for force, in the opposite direction. Push harder and it still does not move, because static friction matched that too. But static friction cannot match a push forever. It has a ceiling &mdash; a largest value it is capable of supplying &mdash; and the instant the force trying to cause sliding exceeds that ceiling, static friction can no longer keep up, and the surfaces begin to slide.</p>
+
+      <p><strong>Kinetic friction</strong> is the friction between two surfaces that are already sliding against each other. Unlike its static cousin, kinetic friction is not adjusting itself to cancel anything; it is, to good approximation, one roughly fixed value for a given pair of surfaces and a given normal force, and it always opposes the direction of the relative sliding. This is the friction that finally slows a skidding car back down, that lets a hockey puck glide rather than stop dead, that makes a rug bunch up when you drag furniture across it. It is very often, though not always, somewhat smaller than the static ceiling that preceded it &mdash; which is exactly the small, sudden &ldquo;give&rdquo; you feel when a stuck drawer finally lets go, or when a car that has just started to skid seems, for a fraction of a second, to slide even more easily than the moment before. The surfaces needed less force to keep sliding than they needed to start sliding in the first place.</p>
+
+      <p>One more property of ordinary dry friction is worth holding onto because it will do real work later in this lesson: to good approximation, how much friction is available does not depend on how large the contact patch is &mdash; a wide tire and a narrow one, pressed onto the road with the same weight behind them, offer roughly the same grip, contrary to what most people would guess. What friction actually depends on is how hard the two surfaces are being pressed together. A heavier crate, pressed harder into the floor, has more friction available to it in rough proportion to that extra weight, not because more crate is touching the floor but because the two surfaces are jammed together more forcefully. That single fact &mdash; friction tracks the pressing force, not the contact area &mdash; is the entire content of the formula this lesson is about to write down.</p>
+
+      <h3>An acceleration that never shows up on a speedometer</h3>
+
+      <p>Set friction aside for a moment and think only about what &ldquo;acceleration&rdquo; actually means. Ten lessons ago this curriculum defined velocity and acceleration properly, and the definition that matters here is easy to state but easy to forget in practice: velocity is not just a speed, it is a <em>vector</em> &mdash; a quantity with both a size and a direction &mdash; and acceleration is any change in that vector, full stop. Not &ldquo;any change in speed.&rdquo; Any change in velocity, and velocity can change in two independent ways: its magnitude can change (speeding up or slowing down, the case everyone thinks of first) or its <em>direction</em> can change, with the magnitude staying exactly the same.</p>
+
+      <p>A car going around a curve at a rock-steady 45 miles per hour is doing the second thing, continuously, for the entire length of the curve. The speedometer, which only measures the vector&rsquo;s magnitude, reports 45 the whole way through and never budges. But the direction the car is pointed changes every single instant &mdash; smoothly sweeping from, say, due north to due east over the course of the turn &mdash; and a velocity vector that is changing direction, by the definition above, is a velocity vector undergoing acceleration, exactly as real and exactly as physical as the acceleration of a car pulling away from a stoplight. Nothing about the car is speeding up. Everything about the car is accelerating. Those two sentences are not in tension; they are simply using &ldquo;acceleration&rdquo; in its correct, technical sense rather than its everyday one, and untangling that gap is most of what makes this topic genuinely subtle rather than merely unfamiliar.</p>
+
+      <p>This kind of acceleration has a name &mdash; <strong>centripetal acceleration</strong>, from the Latin for &ldquo;center-seeking&rdquo; &mdash; and a direction that is easy to state and slightly counterintuitive to accept: it points from the car toward the center of the curve it is tracing, at every instant, regardless of which way the car itself is pointed. Not forward, not backward, not outward &mdash; inward, toward the center. And because Newton&rsquo;s second law ties acceleration directly to net force (F<sub>net</sub> = ma, the relationship this curriculum derived carefully on day ten), an object accelerating toward the center of a curve must, by that same law, have a net real force acting on it that also points toward the center. Something has to be pulling or pushing the car inward for the whole length of that curve, or the car would simply travel in a straight line, the way Newton&rsquo;s first law says any object does in the absence of a net force. For a car on a flat road, that inward-pointing force is friction &mdash; the same force this lesson just spent several paragraphs defining, doing an entirely different job than the one people usually picture it doing.</p>
+
+      <h3>Putting a number on how much grip is available</h3>
+
+      <p>The formal law behind everything said so far about friction is far older than most of the physics taught around it. In 1493, in a notebook small enough to fit in a hand &mdash; roughly the size of a deck of cards, now held at the Victoria and Albert Museum in London &mdash; Leonardo da Vinci scribbled a note, in his characteristic mirror-writing running right to left, stating that the force of friction between two sliding surfaces is proportional to how hard they are pressed together, and does not depend on how large the area of contact is. That note sat unread for over five hundred years, misfiled among sketches an art historian had judged irrelevant, until a Cambridge engineer named Ian Hutchings identified it in 2016. Da Vinci&rsquo;s work had no influence on later science &mdash; nobody else read it until it was far too late to matter &mdash; because in 1699, working independently and two centuries later, the French scientist Guillaume Amontons rediscovered the identical relationship by sliding blocks of wood down inclined planes and over pulleys, and published it in the proceedings of the French Royal Academy of Sciences. Amontons&rsquo; law, still taught under his name, is usually stated in two parts: friction is proportional to the normal force pressing the two surfaces together, and friction is independent of the apparent area of contact. Roughly a century later, in 1785, the French physicist and engineer Charles-Augustin de Coulomb &mdash; the same Coulomb whose name later attached itself to the law of electric charge &mdash; ran a far more systematic set of experiments and is generally credited with the clean distinction this lesson has already drawn in plain language: that the maximum static friction available and the (usually somewhat smaller) kinetic friction that applies once sliding has begun behave as two separate quantities, each proportional to the same normal force but through two different constants.</p>
+
+      <div class="formula">
+        <p class="expr">f<sub>s</sub> &le; &mu;<sub>s</sub>N &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f<sub>k</sub> = &mu;<sub>k</sub>N</p>
+        <dl>
+          <dt>f<sub>s</sub></dt><dd>the static friction force actually supplied at a given moment &mdash; not a fixed number, but whatever value up to the ceiling on the right is needed to prevent sliding</dd>
+          <dt>&mu;<sub>s</sub></dt><dd>the coefficient of static friction &mdash; a dimensionless number, typically between about 0.1 (ice on ice) and just under 1 (rubber on dry pavement), that depends on the specific pair of materials in contact and how clean and dry their surfaces are</dd>
+          <dt>N</dt><dd>the normal force &mdash; the force pressing the two surfaces together, perpendicular to the surface of contact; for a flat, level surface this is often, but not always, equal to the object&rsquo;s weight</dd>
+          <dt>f<sub>k</sub></dt><dd>the kinetic friction force, once the surfaces are actually sliding &mdash; opposes the direction of relative sliding, and to good approximation independent of the sliding speed</dd>
+          <dt>&mu;<sub>k</sub></dt><dd>the coefficient of kinetic friction for the same pair of surfaces &mdash; usually somewhat smaller than &mu;<sub>s</sub> for the same two materials, though the two are close enough that some introductory problems treat them as equal</dd>
+        </dl>
+      </div>
+
+      <p>Notice what is missing from that formula: contact area does not appear anywhere in it, exactly as da Vinci and Amontons found. A drag-racing slick, wide enough to cover a dinner table, and a bicycle&rsquo;s narrow street tire, pressed onto the same road with the same weight behind them, are governed by the identical equation &mdash; whatever advantage the wider tire seems to offer in practice comes from other effects (heat management, the rubber compound, avoiding pavement irregularities) layered on top of Amontons&rsquo; law, not from the law itself. And notice the inequality sign on the static side, versus the plain equals sign on the kinetic side: that single typographic difference is the entire mathematical statement of the idea from the previous section &mdash; static friction is a range of possible values, capped from above, while kinetic friction is a single number once sliding has actually begun.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &middot; the highway ramp, dry and wet</b>
+        <p>A car rounds a flat, unbanked curve of radius r = 50 meters. Treat the tires and road as governed by a commonly cited textbook value for rubber on dry asphalt, &mu;<sub>s</sub> = 0.8 &mdash; a typical figure for a modern street tire, not a measurement of this specific car or this specific stretch of road. Using g = 9.8 m/s&sup2;, find the fastest speed the car can take the curve without its tires losing grip, and then find how that speed changes if rain drops the coefficient to a typical wet-asphalt value, &mu;<sub>s</sub> = 0.4.</p>
+        <ol>
+          <li>On a flat curve, friction is the only horizontal force available to supply the inward, centripetal push the turn requires (this lesson&rsquo;s next section derives exactly why that inward push equals mv&sup2;/r). The car does not slide as long as the friction actually needed stays at or below the maximum static friction can supply: mv&sup2;/r &le; &mu;<sub>s</sub>N.</li>
+          <li>On level ground, the normal force N exactly balances the car&rsquo;s weight: N = mg. Substituting: mv&sup2;/r &le; &mu;<sub>s</sub>mg.</li>
+          <li>The mass m appears on both sides and cancels completely &mdash; a genuinely useful fact this lesson will return to, and the reason a loaded minivan and an empty compact car have, in principle, the identical maximum safe cornering speed on the same curve with the same tires. What remains is v&sup2; &le; &mu;<sub>s</sub>gr, or v<sub>max</sub> = &radic;(&mu;<sub>s</sub>gr).</li>
+          <li>Dry: v<sub>max</sub> = &radic;(0.8 &times; 9.8 &times; 50) = &radic;392 &asymp; 19.8 m/s. Converting, that is about 44.3 mph (71.3 km/h) &mdash; in the right range for a highway ramp advisory sign, which typically posts a speed with a safety margin built in below this theoretical limit.</li>
+          <li>Wet: v<sub>max</sub> = &radic;(0.4 &times; 9.8 &times; 50) = &radic;196 = 14.0 m/s, about 31.3 mph (50.4 km/h).</li>
+          <li>Halving &mu;<sub>s</sub> did not halve the safe speed &mdash; it multiplied it by &radic;0.5 &asymp; 0.707, a roughly 29% cut, because v<sub>max</sub> depends on the <em>square root</em> of &mu;<sub>s</sub>, not on &mu;<sub>s</sub> directly. That square root is the precise, quantitative version of the advice printed on every rain-slicked highway sign: slow down more than the change in the road seems to demand, because the relationship between grip and safe speed is not a straight line.</li>
+        </ol>
+      </div>
+
+      <h3>Putting a number on the turn itself</h3>
+
+      <p>The worked example above leaned on a claim &mdash; that holding a curve of radius r at speed v requires an inward force of mv&sup2;/r &mdash; without yet justifying it. Justifying it means going back to exactly the machinery day eleven of this curriculum built for an entirely different purpose: the derivative, the tool for turning a changing quantity into an exact instantaneous rate. There, it was applied once, to a single position function, to define instantaneous speed. Here it gets applied twice, to two coordinate functions describing a position that lives in a plane rather than on a line &mdash; the same operation, run on a genuinely two-dimensional object for the first time in this curriculum.</p>
+
+      <p>Picture an object tracing a circle of radius R at a constant angular rate &omega; (the Greek letter omega, measured in radians per second &mdash; how fast the angle around the circle is sweeping). Its position at time t, written as two ordinary coordinate functions of the single variable t, is:</p>
+
+      <div class="formula">
+        <p class="expr">x(t) = R cos(&omega;t) &nbsp;&nbsp;&nbsp;&nbsp; y(t) = R sin(&omega;t)</p>
+        <dl>
+          <dt>R</dt><dd>the radius of the circle &mdash; constant, since the object stays the same distance from the center throughout</dd>
+          <dt>&omega;</dt><dd>the angular velocity &mdash; constant here, meaning the object sweeps out equal angles in equal times, the definition of moving around the circle at a steady rate</dd>
+          <dt>x(t), y(t)</dt><dd>the object&rsquo;s horizontal and vertical position at time t, with the center of the circle placed at the origin</dd>
+        </dl>
+      </div>
+
+      <p>Differentiate each coordinate with respect to t exactly the way day eleven and day thirteen of this curriculum defined and then mechanized &mdash; the derivative of cosine is negative sine, the derivative of sine is cosine, both scaled by the chain rule&rsquo;s constant &omega; falling out of the inner function &omega;t &mdash; to get the two components of velocity:</p>
+
+      <div class="formula">
+        <p class="expr">v<sub>x</sub>(t) = &minus;R&omega; sin(&omega;t) &nbsp;&nbsp;&nbsp;&nbsp; v<sub>y</sub>(t) = R&omega; cos(&omega;t)</p>
+        <dl>
+          <dt>v<sub>x</sub>(t), v<sub>y</sub>(t)</dt><dd>the horizontal and vertical components of velocity &mdash; the derivatives of x(t) and y(t), exactly as day eleven defined a derivative for any function of one variable</dd>
+        </dl>
+      </div>
+
+      <p>Two things fall out of this immediately, and both are worth pausing on before differentiating a second time. First, the object&rsquo;s speed &mdash; the magnitude of its velocity vector, &radic;(v<sub>x</sub>&sup2; + v<sub>y</sub>&sup2;) &mdash; works out to R&omega;&radic;(sin&sup2;(&omega;t) + cos&sup2;(&omega;t)) = R&omega;, using the identity sin&sup2; + cos&sup2; = 1. That expression has no t left in it: the speed is a genuine constant, R&omega;, unchanging as the object goes around. This is the algebraic confirmation of what the previous section argued in words &mdash; uniform circular motion really does hold speed exactly constant. Second, the velocity vector itself, (v<sub>x</sub>, v<sub>y</sub>), is always perpendicular to the position vector, (x, y) &mdash; a fact you can check directly by noticing that swapping cosine and sine and flipping one sign, which is exactly what differentiating did, is precisely the operation that rotates a vector ninety degrees. An object moving in a circle is always moving directly sideways to the line connecting it to the center, never toward the center and never away from it, which is exactly what &ldquo;staying on the circle&rdquo; requires.</p>
+
+      <p>Now differentiate a second time, applying the identical rule to v<sub>x</sub>(t) and v<sub>y</sub>(t), to get acceleration:</p>
+
+      <div class="formula">
+        <p class="expr">a<sub>x</sub>(t) = &minus;R&omega;&sup2; cos(&omega;t) = &minus;&omega;&sup2;x(t) &nbsp;&nbsp;&nbsp;&nbsp; a<sub>y</sub>(t) = &minus;R&omega;&sup2; sin(&omega;t) = &minus;&omega;&sup2;y(t)</p>
+        <dl>
+          <dt>a<sub>x</sub>(t), a<sub>y</sub>(t)</dt><dd>the horizontal and vertical components of acceleration &mdash; the derivatives of v<sub>x</sub>(t) and v<sub>y</sub>(t), and by extension the second derivatives of x(t) and y(t)</dd>
+        </dl>
+      </div>
+
+      <p>Look closely at what that result actually says: the acceleration vector, (a<sub>x</sub>, a<sub>y</sub>), equals &minus;&omega;&sup2; times the position vector, (x, y). Not some unrelated new direction &mdash; the exact opposite direction of the position vector itself, scaled by a positive constant. Since the position vector always points outward from the center to wherever the object currently is, the acceleration vector, being its exact negative, always points from the object&rsquo;s current position straight back toward the center. That is centripetal acceleration, derived rather than asserted, falling directly out of differentiating twice &mdash; the same limit-built machinery day eleven introduced to answer &ldquo;how fast, right now,&rdquo; applied a second time to answer &ldquo;how is that speed&rsquo;s direction changing, right now,&rdquo; on an object whose position happens to live in a plane instead of on a line.</p>
+
+      <p>The acceleration&rsquo;s magnitude is &omega;&sup2;R (the length of the vector &minus;&omega;&sup2;(x, y), which is &omega;&sup2; times the length of (x, y), namely R). Using the constant speed found above, v = R&omega;, so &omega; = v/R, this converts into the form that appeared without proof in worked example 1:</p>
+
+      <div class="formula">
+        <p class="expr">a<sub>c</sub> = &omega;&sup2;R = v&sup2;/R &nbsp;&nbsp;&nbsp;&nbsp; F<sub>net,inward</sub> = ma<sub>c</sub> = mv&sup2;/R</p>
+        <dl>
+          <dt>a<sub>c</sub></dt><dd>the magnitude of centripetal acceleration, pointing toward the center at every instant</dd>
+          <dt>F<sub>net,inward</sub></dt><dd>often called simply &ldquo;centripetal force&rdquo; &mdash; but this is a name for whatever combination of ordinary, already-known forces (friction, gravity, a string&rsquo;s tension, a normal force) happens to sum to a net inward push, not a new kind of force in its own right, exactly as day ten of this curriculum insisted F<sub>net</sub> in Newton&rsquo;s second law always refers to real forces actually acting on the object, never to a force invented to make the answer come out right</dd>
+        </dl>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &middot; a coin on a spinning record</b>
+        <p>A coin sits on a record spinning at a steady rate, held in place by ordinary static friction between coin and vinyl. Use an illustrative, not measured, coefficient &mu;<sub>s</sub> = 0.25. A standard 12-inch LP has a radius of about 15 cm. First, at the classic long-playing speed of 33&frac13; rpm, how far from the center could a coin sit before it slides off? Then repeat for 78 rpm, the speed of an older shellac disc, and compare.</p>
+        <ol>
+          <li>Convert rotations per minute to angular velocity in radians per second: &omega; = 2&pi;N/60, where N is rpm. For 33&frac13; rpm: &omega; = 2&pi;(100/3)/60 = 10&pi;/9 &asymp; 3.49 rad/s. For 78 rpm: &omega; = 2&pi;(78)/60 &asymp; 8.17 rad/s.</li>
+          <li>The coin stays put as long as the friction actually required does not exceed the static maximum: m&omega;&sup2;r &le; &mu;<sub>s</sub>mg. Mass cancels again, exactly as it did for the car, leaving a maximum radius at which the coin can sit: r<sub>max</sub> = &mu;<sub>s</sub>g/&omega;&sup2;.</li>
+          <li>At 33&frac13; rpm: r<sub>max</sub> = (0.25 &times; 9.8) / (3.49)&sup2; = 2.45 / 12.18 &asymp; 0.201 m, about 20.1 cm &mdash; larger than the record&rsquo;s own 15 cm radius. A coin placed anywhere on this record, right up to its outer edge, stays put at this speed.</li>
+          <li>At 78 rpm: r<sub>max</sub> = 2.45 / (8.17)&sup2; = 2.45 / 66.7 &asymp; 0.0367 m, about 3.7 cm &mdash; far inside the record&rsquo;s 15 cm edge. A coin resting anywhere beyond about 3.7 cm from the spindle at this speed slides straight off, even though nothing about the coin, the record, or the friction between them has changed &mdash; only the rotation rate.</li>
+          <li>The 78 rpm speed is only about 2.34 times the angular rate of 33&frac13; rpm, but the safe radius shrank to roughly 3.7/20.1 &asymp; 18% of its previous value &mdash; because r<sub>max</sub> depends on 1/&omega;&sup2;, so doubling the spin rate roughly quarters the safe zone, not halves it. The same squared relationship that made worked example 1&rsquo;s wet road cut speed by more than the friction drop alone would suggest is, seen from the opposite side of the same equation, exactly what makes a faster spin shrink the safe radius so sharply here.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up</h3>
+
+      <p>Neither friction nor a physical surface is required for something to supply a centripetal force &mdash; any real force that happens to point toward a center will do, and the cleanest large-scale example available is one this curriculum has already been keeping an eye on. SpaceX, now trading publicly on Nasdaq under the ticker SPCX since its June 2026 listing, operates the Starlink constellation: thousands of satellites in low Earth orbit, historically concentrated near an altitude of about 550 kilometers, with the company in the process during 2026 of lowering a large share of that constellation toward roughly 480 kilometers to shorten how long a dead satellite lingers before it deorbits. At that altitude, no surface, no friction, no tether holds a Starlink satellite on its circular path. Gravity does the entire job, and it does it by exactly the mechanism this lesson has been building: gravity supplies a force pointed straight at the center of the Earth, and for an object moving fast enough sideways, that inward pull is not enough to pull the object down &mdash; it is exactly enough to keep bending the object&rsquo;s straight-line path into a circle that matches the curvature of the Earth beneath it, forever falling toward the center and forever missing.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &middot; how fast a Starlink satellite has to move to stay up</b>
+        <p>Take a satellite in a circular orbit at 550 km altitude. Earth&rsquo;s mean radius is about 6,371 km, so the orbital radius, measured from Earth&rsquo;s center, is r = 6,371 + 550 = 6,921 km = 6.921 &times; 10&sup6; m. Earth&rsquo;s standard gravitational parameter &mdash; the product GM, where G is the gravitational constant and M is Earth&rsquo;s mass, a single well-measured number that spares this calculation from needing G and M separately &mdash; is GM &asymp; 3.986 &times; 10&sup14; m&sup3;/s&sup2;. Find the orbital speed and the time for one full trip around the Earth.</p>
+        <ol>
+          <li>Gravity supplies the entire centripetal force here, so set the gravitational force equal to mv&sup2;/r. Newton&rsquo;s law of gravitation gives the gravitational force as GMm/r&sup2; (a relationship this curriculum will derive properly in a later physics lesson; it is used here as a stated, standard result). Setting them equal: GMm/r&sup2; = mv&sup2;/r.</li>
+          <li>The satellite&rsquo;s own mass, m, cancels from both sides &mdash; a third and final appearance of the same cancellation from worked examples 1 and 2, and for the identical reason: whatever force is supplying the centripetal push, Newton&rsquo;s second law always has a lone m multiplying acceleration on the other side, and it cancels whenever that supplying force is itself proportional to m, as both ordinary friction (via N = mg) and gravity (via GMm/r&sup2;) happen to be.</li>
+          <li>Solving what remains for v: v = &radic;(GM/r).</li>
+          <li>v = &radic;(3.986 &times; 10&sup14; / 6.921 &times; 10&sup6;) = &radic;(5.759 &times; 10&sup7;) &asymp; 7,589 m/s, about 7.59 km/s &mdash; roughly 17,000 mph, an order of magnitude faster than a rifle bullet, maintained continuously, forever, with no engine running, for as long as the orbit is undisturbed.</li>
+          <li>The time for one full circuit, the orbital period, is the circle&rsquo;s circumference divided by that speed: T = 2&pi;r/v = 2&pi;(6.921 &times; 10&sup6;)/7,589 &asymp; 5,731 seconds, about 95.5 minutes &mdash; consistent with the widely reported fact that a satellite this low circles the entire planet in roughly an hour and a half, sixteen or more times in a single day.</li>
+        </ol>
+      </div>
+
+      <p>The number worth sitting with here is not the arithmetic but what canceled out of it: satellite mass never entered the final answer for orbital speed. A car&rsquo;s maximum cornering speed on a given curve does not depend on how heavily loaded it is; a coin&rsquo;s maximum safe radius on a spinning record does not depend on whether it is a penny or a half-dollar; and a satellite&rsquo;s orbital speed at a given altitude does not depend on whether it is a shoebox-sized Starlink unit or something far heavier. All three cancellations happen for the same underlying reason, traced directly back to F<sub>net</sub> = mv&sup2;/r: whenever the force supplying the centripetal push is itself proportional to the object&rsquo;s own mass &mdash; as friction is, through the normal force, and as gravity is, through Newton&rsquo;s law of gravitation &mdash; that mass drops out of the motion entirely. It is the same deep fact, discovered independently through a highway ramp, a record player, and low Earth orbit.</p>
+
+      <h3>The mistake almost everyone makes</h3>
+
+      <p>Go back to the skid that opened this lesson. Ask a room of otherwise careful people what pushed the car&rsquo;s occupants toward the door, and the overwhelming majority will answer some version of &ldquo;centrifugal force&rdquo; &mdash; an outward-pointing force, supposedly created by the turn itself, that shoves things away from the center. It is one of the most durable misconceptions in introductory physics, repeated confidently by people who have otherwise learned Newton&rsquo;s laws correctly, and it is wrong in a precise, diagnosable way: there is no outward force acting on the car&rsquo;s occupants at all. Every real, physical force this lesson has discussed &mdash; friction, gravity, the normal force from a seat &mdash; either points inward or has no horizontal component whatsoever. The only thing pointing outward in that car is a memory of where the passengers were a moment ago.</p>
+
+      <p>Here is what is actually happening, using nothing but Newton&rsquo;s first law, stated eleven days ago in this curriculum: an object in motion continues in a straight line unless a net force acts on it. Before the tires lost grip, friction was quietly supplying exactly the inward force needed to bend the car&rsquo;s path &mdash; and the passengers&rsquo; bodies, in turn, were being pushed inward too, by the friction of the seat beneath them and, more directly, by the car&rsquo;s door and frame pressing against them wherever they touched it. The moment the rear tires lost their grip, that inward force on the <em>car</em> dropped, but nothing suddenly reached out and pushed the <em>passengers</em> outward &mdash; their bodies simply continued, by Newton&rsquo;s first law, in whatever direction they were already moving at that instant, which was no longer the same curving path the car was now failing to hold. The car (or what was left of its inward pull) curved one way; the passengers, obeying inertia and nothing else, kept going straight; and the two paths diverging is what a passenger experiences as being &ldquo;flung&rdquo; toward the door, even though the only force actually touching them in that moment is the door itself, pressing inward as it catches up to where their straight-line path has carried them. The felt push is real &mdash; the door genuinely does press against you &mdash; but its direction is the reverse of the story most people tell about it: it is the inward force of the door finally reasserting itself against a body that never stopped wanting to travel straight, not an outward force flinging the body away.</p>
+
+      <p>The name &ldquo;centrifugal force&rdquo; is not entirely nonsense &mdash; physicists and engineers do use it deliberately, as a bookkeeping device, when solving a problem from inside a spinning reference frame rather than from the outside, stationary viewpoint every worked example above used. In that specific, technical sense it is what is called a <strong>fictitious force</strong>, a mathematical correction added to make Newton&rsquo;s laws come out right when the observer is rotating along with the system rather than watching it from outside, and it plays a genuinely useful role in that narrower context. But used the way it is used at a kitchen table &mdash; as a real, physical outward push belonging to the turning object itself, felt by anyone watching from outside the car as well as inside it &mdash; it describes a force that a stationary observer standing on the shoulder of that highway ramp, watching the whole skid unfold, would never see acting on anything at all. Everything that stationary observer sees is friction, inertia, and a door catching up to a straight line. There is a smaller, closely related error worth naming in the same breath: it is common to assume static friction always equals its maximum value, &mu;<sub>s</sub>N, whenever two surfaces are in contact and not sliding. It does not. A book sitting untouched on a level table has zero static friction acting on it &mdash; nothing is trying to make it slide, so nothing needs to be resisted. Static friction supplies exactly what is needed, ramping up from zero toward its ceiling as the demand on it increases, and it only ever equals the full &mu;<sub>s</sub>N at the single instant sliding is about to begin &mdash; the same inequality-versus-equality distinction this lesson&rsquo;s formula plate wrote down explicitly, and the same distinction that made worked examples 1 and 2 solve for a maximum rather than for one fixed number.</p>
+
+      <h3>The callback</h3>
+
+      <p>Four lessons ago, this column resolved Zeno&rsquo;s arrow paradox by building the derivative: an instantaneous rate of change, extracted honestly from a ratio that looks like an illegal 0/0 by asking what a secant line&rsquo;s slope approaches as the two points defining it slide together, rather than asking what it equals when they coincide. That entire construction was built, deliberately, on the simplest possible case &mdash; a single function of a single variable, tracing a curve on a flat page, like distance plotted against time for a car on a straight road. Today&rsquo;s lesson took that identical machinery and ran it twice, on two coordinate functions at once, and something new fell out that the single-variable case could never produce on its own: a derivative that changes not the <em>size</em> of a quantity but its <em>direction</em>. Day eleven&rsquo;s derivative told you how fast a number was growing or shrinking. Applied to a position that lives in a plane rather than on a line, the same operation can instead tell you how a direction is turning &mdash; and centripetal acceleration, the entire subject of this lesson&rsquo;s second half, is nothing but that fact, worked out in full. Nothing about the limit definition changed between day eleven and today; what changed is that the object being differentiated grew a second coordinate, and a second coordinate is exactly what a straight line can never have room for.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state Amontons&rsquo; and Coulomb&rsquo;s friction law precisely &mdash; f<sub>s</sub> &le; &mu;<sub>s</sub>N for static friction, f<sub>k</sub> = &mu;<sub>k</sub>N once sliding has begun &mdash; and you know why contact area never appears in it.</li>
+          <li>You can explain, without hand-waving, why an object moving in a circle at a perfectly constant speed is still accelerating, and you have derived the direction and the exact size of that acceleration, a<sub>c</sub> = v&sup2;/r, directly from two derivatives of a position that lives in a plane.</li>
+          <li>You can solve a real cornering, spinning, or orbiting problem for the maximum safe speed, radius, or rotation rate a given amount of friction or gravity can support &mdash; and you have watched an object&rsquo;s own mass cancel out of that answer three separate times, for the same underlying reason each time.</li>
+          <li>You know exactly what is and is not happening physically when a car skids or a passenger feels flung sideways &mdash; and why &ldquo;centrifugal force,&rdquo; as most people use the phrase, describes a force that a stationary observer would never actually see.</li>
+          <li>What this sets up: rotational motion, torque and angular momentum, later in this same physics track, all extend today&rsquo;s two-coordinate derivative trick to objects that spin as well as orbit &mdash; and the vector-derivative machinery built today is exactly what a later lesson on orbital mechanics will lean on directly, this time letting the radius itself change rather than holding it fixed.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> This lesson was written fresh for this report (curriculum source: the topic and difficulty scope of physics track entries 15&ndash;16, used as a reference rather than a text available to this run), building directly on Newton&rsquo;s laws as established in this curriculum&rsquo;s day-ten lesson and the derivative as established on day eleven. Leonardo da Vinci&rsquo;s 1493 notebook (Victoria and Albert Museum, London) and its 2016 identification by Cambridge engineer Ian Hutchings, Guillaume Amontons&rsquo; 1699 publication in the M&eacute;moires de l&rsquo;Acad&eacute;mie Royale des Sciences, and Charles-Augustin de Coulomb&rsquo;s 1785 refinement distinguishing static from kinetic friction were checked via web search against Cambridge University&rsquo;s research news release and standard historical accounts of friction research. Typical coefficients of static friction for rubber tires on dry asphalt (commonly cited around 0.7&ndash;0.9) and on wet asphalt (commonly cited around 0.4&ndash;0.7) were checked via web search against tire-friction reference material; the specific values used in worked example 1 (0.8 dry, 0.4 wet) are illustrative, representative figures, not measurements of any specific vehicle, tire, or road surface, exactly as the coin&rsquo;s &mu;<sub>s</sub> = 0.25 in worked example 2 is illustrative rather than measured. Earth&rsquo;s standard gravitational parameter (GM &asymp; 3.986 &times; 10&sup14; m&sup3;/s&sup2;) and Starlink&rsquo;s historical operating altitude near 550 km, along with SpaceX&rsquo;s 2026 program to lower much of the constellation toward roughly 480 km, were checked via web search against standard orbital-mechanics references and current reporting on the Starlink constellation. SpaceX&rsquo;s public listing (Nasdaq: SPCX, June 2026) is drawn from this newspaper&rsquo;s own entity registry, verified against SEC EDGAR in an earlier run. All worked-example arithmetic was computed directly for this report and checked by independent recomputation.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Missing information is declared, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-03-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

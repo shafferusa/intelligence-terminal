@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Fri, Sep 4, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-04",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/09/2026-09-04-am.html",
+    "summary": "The US strikes IRGC targets in Kermanshah overnight as a New York Times visual analysis undercuts Vice President Vance's public skepticism that an earlier strike hit a wedding party; Missouri's Supreme Court unanimously kills the Trump-backed congressional map; and August's jobs report lands two hours after this edition with rate-hike odds already down 12 points on Fed Governor Waller's dovish break from Chair Warsh.",
+    "headlines": [
+      "US strikes Kermanshah as NYT analysis contradicts Vance's wedding-strike skepticism",
+      "Missouri Supreme Court unanimously kills the Trump-backed congressional map",
+      "Fed rate-hike odds fall to ~55% ahead of today's jobs report"
+    ],
+    "reading_minutes": 24,
+    "generated_at": "2026-09-04T06:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Friday, September 4, 2026 <span class="sep">&middot;</span> 24 min read
+      </p>
+      <p class="paper-standfirst">
+        A widening war reaches a wedding party and Kermanshah overnight, Missouri's top court throws out Trump's congressional map six days before certification, and the week's biggest number &mdash; August payrolls &mdash; lands two hours after this edition, with rate-hike odds already sliding on Fed Governor Waller's dovish break from Chair Warsh.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> The US struck IRGC targets in Kermanshah overnight, killing four; Iranian officials say 18 died and 108 were injured in Wednesday's round, and a New York Times visual analysis contradicts Vice President Vance's public skepticism that a wedding was hit &mdash; 11 people, mostly women and children, remain hospitalized.</li>
+          <li><b>Markets.</b> Stocks rallied hard Thursday (S&amp;P +1.06%, Nasdaq +1.40%) as yields eased on dovish Fed comments; futures are roughly flat this morning ahead of the 8:30 ET jobs report, the week's real catalyst.</li>
+          <li><b>The thread.</b> Institutions keep resolving fights this paper has tracked for weeks &mdash; Missouri's Supreme Court killed the Trump-backed map, a federal judge is weighing the mail-ballot rule's fate, and the Fed's Warsh-Waller split just moved rate-hike odds by 12 points in two days.</li>
+          <li><b>Biggest risk.</b> A weak jobs number arriving into an already-jumpy rate debate could whipsaw both the dollar and the curve within minutes of the release, before this desk can even confirm the print against a primary source.</li>
+          <li><b>Watch today.</b> August's jobs report at 8:30 AM ET &mdash; consensus clusters near 50,000-58,000 added, unemployment holding at 4.1%, after two straight soft months.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>US strikes Kermanshah overnight as a wedding-strike controversy hardens the Iran war</h3>
+          <p class="story-deck">Iran says 18 people died and 108 were hurt in Wednesday's round of strikes; a New York Times visual analysis undercuts Vice President Vance's on-record skepticism that a US strike hit a wedding, as oil holds near five-week highs.</p>
+          <div class="story-body">
+            <p>US forces struck Islamic Revolutionary Guard Corps targets in Kermanshah province overnight, killing four IRGC Aerospace Force personnel the Guard named as Reza Mohammadi, Shahram Jafari, Alireza Shakiba and Jafar Kahrizi, according to Iranian state media. President Trump said on Truth Social the strike answered a "failed attempt at adding sea mines" in the Strait of Hormuz. Iranian officials separately said 18 people were killed and 108 injured across Wednesday's broader round of US strikes &mdash; a toll this paper has not independently verified beyond the Iranian government's own count.</p>
+            <p>The more consequential development is a credibility fight over an earlier strike. Iran alleges a US strike hit a wedding celebration, killing four civilians and wounding dozens; Vice President Vance told reporters he is "extremely skeptical" of the claim, citing Iranian state media's record, and said the military is investigating "very fully." But a New York Times visual analysis, cross-checked against an independent weapons expert, concluded the wedding was in fact struck by a US-released bomb. A local hospital chief said most of the roughly 70 people admitted after the strike have been discharged, but 11 remain under treatment, most of them women and children. Vance separately said he "wouldn't call" the six-month exchange a war.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A credibly documented civilian strike, contested at the vice-presidential level even as independent analysis contradicts the administration's skepticism, is a different kind of story than a rhetorical escalation &mdash; it is a verification fight this paper will keep pressing on primary imagery and DoD statements, not just competing claims.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether the Pentagon confirms or disputes the Times analysis on the record; whether Kermanshah draws a further Iranian response before the weekend.
+            </div>
+          </div>
+          <p class="story-sourceline">CBS News, RFE/RL, Time, Middle East Eye (Vance remarks, primary via transcript) &middot; New York Times (visual analysis) &middot; Iranian state media via wire (Kermanshah toll, casualty figures, unverified) &middot; Trump Truth Social post (primary).</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>This is the fourth distinct escalation track this paper has tracked inside the six-month Hormuz standoff in the past ten days alone: the widened Kuwait/UAE strikes Tuesday, Wednesday's Jordan/Bahrain/Kuwait retaliation, and now Kermanshah plus the wedding-strike dispute. Oil has not given back its gains from any of them &mdash; Brent traded near $95-96 and WTI near $90-91 through Wednesday, up more than 7% on the week per multiple financial outlets, even as US equities rallied through the same news. Energy Secretary Chris Wright told CNBC that a wartime-record 17 million barrels transited Hormuz on Monday under US military escort, though Wednesday's transit count fell to six vessels versus a 10-day average near 13 &mdash; shipping has not collapsed, but it has not normalized either.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Missouri's Supreme Court unanimously kills the Trump-backed congressional map</h3>
+          <p class="story-deck">The court ordered a November referendum and reverted the state to its 2022 district lines for this fall's election; Missouri's attorney general vows to appeal to the US Supreme Court.</p>
+          <div class="story-body">
+            <p>The Missouri Supreme Court ruled unanimously Wednesday that the state's new, Trump-backed congressional map cannot be used for the November election, ordering a statewide referendum on whether to adopt it going forward. Missouri will instead use its 2022 map for this fall's contests. The court held that a state constitutional provision allowing a referendum on "any act" of the legislature covers congressional redistricting &mdash; the legal question at the center of a case this paper has followed since oral arguments concluded Sept. 2, one day ahead of the Sept. 8 ballot-certification deadline the ruling beat by five days.</p>
+            <p>The map reached the court after People Not Politicians Missouri gathered more than 300,000 signatures for a veto referendum; Secretary of State Denny Hoskins had refused to certify it as unconstitutional. Republican Attorney General Catherine Hanaway called the ruling "unprecedented," said no court has ever overturned a congressional map after a primary and before a general election, and said it "clearly violates federal law" &mdash; signaling an emergency appeal to the US Supreme Court.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether Hanaway files the promised US Supreme Court emergency application, and on what timeline given the state has already reverted to the 2022 map operationally.
+            </div>
+          </div>
+          <p class="story-sourceline">NBC News, CNN, The Hill, Yahoo News, Townhall (ruling coverage) &middot; Missouri Supreme Court opinion (primary, via reporting).</p>
+        </article>
+
+        <article class="story">
+          <h3>August jobs report lands at 8:30 ET &mdash; the week's real catalyst, two hours after this edition publishes</h3>
+          <p class="story-deck">Consensus clusters near 50,000-58,000 net new jobs and a 4.1% unemployment rate, after June and July combined for essentially zero net hiring; a Haiti TPS work-permit expiration is a wildcard economists are flagging as a possible added drag.</p>
+          <div class="story-body">
+            <p>The Bureau of Labor Statistics releases the Employment Situation for August at 8:30 AM ET. The Dow Jones consensus estimate is +53,000 nonfarm payrolls; broader surveys cluster from roughly +50,000 to +58,000, with unemployment expected to hold at 4.1%. The bar is low: June and July combined for a net loss of 3,000 jobs, and July's initial print of a 23,000 decline missed a Dow Jones consensus of +83,000 by a wide margin. Some economists are flagging the expiration of Temporary Protected Status work permits for roughly 200,000 Haitian workers as a possible one-time drag distinct from any underlying trend.</p>
+            <p>This report logged a forecast Wednesday (2026-09-03-am-2) that Friday's print would come in weak, extending the soft ADP signal from Tuesday (+38,000, the weakest since January). That forecast cannot be graded until the number is in hand.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the last full jobs report before the Sept. 16 FOMC decision, and it lands into a Fed that is visibly split &mdash; see below &mdash; making today's number unusually likely to move the rate path in either direction within the hour.
+            </div>
+          </div>
+          <p class="story-sourceline">BLS release schedule (primary, scheduled) &middot; CNBC, Kiplinger, TradingKey, Seeking Alpha (consensus surveys) &middot; this report's own forecast ledger.</p>
+        </article>
+
+        <article class="story">
+          <h3>Fed rate-hike odds fall 12 points in two days as Waller breaks publicly from Warsh</h3>
+          <p class="story-deck">CME-implied September hike odds slid from roughly 66% Monday to about 55% after Governor Waller said Wednesday he would lean toward holding rates steady absent a fresh inflation surprise &mdash; a direct contrast with Chair Warsh's hawkish Jackson Hole tone.</p>
+          <div class="story-body">
+            <p>Fed Governor Christopher Waller said Wednesday he would be "inclined to support holding the target for the federal funds rate at its current setting" if incoming data over the next two weeks continues on its recent path, naming the Aug. 11 CPI report as the decisive input for his own vote. That is a direct break from Chair Kevin Warsh, whose Jackson Hole remarks &mdash; that softer inflation readings "do not tell me that underlying trends have meaningfully improved" &mdash; had pushed CME-tracked hike odds as high as roughly 66% earlier this week, per multiple trackers. Odds have since eased to around 55%, a swing large enough to satisfy &mdash; and this paper grades correct &mdash; its own Tuesday forecast that odds would fall back below 55% following that day's weak ADP print.</p>
+            <p>Treasury yields eased across the curve Thursday on the shift &mdash; the 10-year fell 2 basis points to 4.77%, the 2-year fell 5 basis points to 4.34% &mdash; helping drive Thursday's equity rally. The 2s10s spread stands at a positively sloped 43 basis points.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Today's jobs report and next Thursday's CPI print are now the two swing inputs before the Sept. 16 decision; Bessent has separately argued publicly against raising rates "into a supply shock," a third voice in what is now an open three-way Fed disagreement.
+            </div>
+          </div>
+          <p class="story-sourceline">CNBC, PBS NewsHour, Washington Times, Axios (Waller remarks, primary via transcript) &middot; CME FedWatch (odds tracking, multiple secondary aggregators, exact reading varies by source) &middot; Treasury par-yield curve (primary, EOD official).</p>
+        </article>
+
+        <article class="story">
+          <h3>Downtown Minneapolis high-rise shooting kills two, wounds three officers</h3>
+          <p class="story-deck">A 35-year-old resident facing eviction opened fire in his apartment building Wednesday afternoon, then died of a self-inflicted gunshot wound after exchanging fire with police; this report did not cover the shooting until now, one news cycle late.</p>
+          <div class="story-body">
+            <p><span class="flag">Coverage gap</span> A shooting at a downtown Minneapolis high-rise near 15 East Grant Street left two people dead Wednesday afternoon, plus the suspected gunman, who authorities say died of a self-inflicted gunshot wound after exchanging fire with responding officers. Three officers were injured, two by gunfire &mdash; one shot in the stomach, one in the leg &mdash; and are in stable condition at Hennepin County Medical Center. Police identified the suspect as Carlton Johnson II, 35, a resident of the building's ninth floor who was facing eviction and had made concerning statements about a firearm to a security officer in June. Officers responding to the building also encountered an airborne haze that affected several additional officers' visibility during the response; its source was not specified in available reporting.</p>
+            <p>Wednesday's closing edition of this paper did not run &mdash; a publishing gap, not an editorial choice &mdash; so this is the first coverage of an event now roughly 38 hours old.</p>
+          </div>
+          <p class="story-sourceline">NBC News, CNN, Fox 9 Minneapolis-St. Paul, CBS Minnesota, KSTP (primary local coverage, multiple independently reporting).</p>
+        </article>
+
+        <article class="story">
+          <h3>Gloria Steinem, who helped build the modern women's movement, dies at 92</h3>
+          <p class="story-deck">Steinem died Wednesday at her New York City home; no cause of death was given.</p>
+          <div class="story-body">
+            <p>Gloria Steinem, the journalist, organizer and Ms. magazine co-founder who became one of the most visible figures of the modern American women's movement, died Wednesday at her home in New York City. She was 92. A statement posted to her Instagram account said she "passed away peacefully... surrounded by some of the many who loved her"; no cause of death was disclosed. Steinem spent more than five decades organizing around reproductive rights, workplace equality and sexual harassment, remaining a public voice on those fights into her 90s.</p>
+          </div>
+          <p class="story-sourceline">CNN, NPR, NBC News, The Washington Post (obituary coverage, multiple independently reporting).</p>
+        </article>
+
+        <article class="story">
+          <h3>Hamas warns Gaza ceasefire "could collapse" as the UN's own tally shows 29 violations in three weeks</h3>
+          <p class="story-deck">The dispute over Tuesday's raid that Israel says captured Hamas's internal-security chief has not resolved; UNMISS-style monitoring from the ceasefire mechanism itself now documents nearly one violation a day since Aug. 19.</p>
+          <div class="story-body">
+            <p>Hamas issued a fresh public warning that the US-backed Gaza ceasefire framework "could collapse," a direct escalation from its earlier statement disputing Israel's account of Tuesday's raid. Separately, a monitoring tally tied to the ceasefire mechanism counted 29 Israeli strikes or ceasefire violations between Aug. 19 and Sept. 3 &mdash; roughly one every three days, a cadence that has not slowed since the Board of Peace stabilization plan took effect. The specific dispute over who Israel actually captured Tuesday &mdash; Hamas's internal-security chief, per Israeli officials, versus a lower-ranking official, per a Gaza security source cited earlier this week &mdash; remains unresolved either way, as does responsibility for the covering-strike deaths of at least three Palestinians, including two children, that Israel has not disputed but also has not addressed.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A framework built to reduce strikes that instead averages one documented violation every three days is a ceasefire in name only if the trend does not reverse; Hamas's language shift from disputing one raid to threatening the whole framework is the more significant move.
+            </div>
+          </div>
+          <p class="story-sourceline">Longwarjournal.org/FDD analysis (violation count, citing ceasefire-mechanism monitoring) &middot; Middle East Monitor, Al Jazeera (Hamas statement) &middot; prior editions' sourcing on the raid dispute (IDF, Shin Bet statements; Gaza security source, unverified).</p>
+        </article>
+
+        <article class="story">
+          <h3>ChatGPT, Claude and Grok all go down within the same window; no evidence of a shared cause</h3>
+          <p class="story-deck">OpenAI, Anthropic and xAI each confirmed Thursday outages disrupting millions of users simultaneously; each company attributes its own outage to a distinct internal cause, and no evidence has surfaced connecting the three.</p>
+          <div class="story-body">
+            <p>OpenAI's ChatGPT and Codex, Anthropic's Claude, and xAI's Grok all experienced outages within a similar window Thursday, according to user reports and each company's own status page. OpenAI attributed its disruption to a routing error beginning around 7:43 AM PT; Anthropic said Claude's outage traced to an infrastructure issue and was resolved by 12:15 PM ET. <span class="flag">Unconfirmed</span> No public evidence connects the three companies' outages to a shared cause, and no party has suggested a cyberattack; speculation to that effect circulating online is not corroborated by any of the three companies' own incident statements.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Whatever the individual causes, three of the most heavily used AI platforms failing in the same window is itself a data point on how much of the internet's day-to-day workflow now runs through a small number of AI vendors &mdash; a concentration-risk argument independent of whether the outages were actually linked.
+            </div>
+          </div>
+          <p class="story-sourceline">Bloomberg, The Register, company status pages (primary, each company's own account).</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC's Ebola toll passes 6,250 as the outbreak remains the country's largest ever recorded</h3>
+          <p class="story-deck">WHO's most recent figures put the case count near 6,250 with more than 3,000 deaths; no vaccine is yet approved for the Bundibugyo strain driving the outbreak.</p>
+          <div class="story-body">
+            <p>The Democratic Republic of Congo's Ebola outbreak, caused by the rare Bundibugyo virus, has grown to roughly 6,250 confirmed cases and more than 3,000 deaths as of the most recent reporting window, continuing a rise this paper has tracked since late July. It remains the largest Ebola epidemic ever recorded in the country. Roughly 870 patients are currently hospitalized in isolation, and about 89% of identified case contacts are under active follow-up in the affected provinces &mdash; Ituri and North Kivu account for the bulk of new cases.</p>
+          </div>
+          <p class="story-sourceline">WHO Disease Outbreak News (primary) &middot; Al Jazeera, UN News (case-count reporting).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>Because Thursday's closing edition did not publish &mdash; a publishing gap on this end, not a quiet news day &mdash; this section spans back to Wednesday morning's edition. The headline items are covered as Top Stories above; three smaller threads moved without clearing that bar on their own.</p>
+        <p>Judge Indira Talwani held Wednesday's scheduled hearing on whether to convert her mail-ballot temporary restraining order into a longer preliminary injunction. As of this writing, no ruling has been published; the DOJ has separately asked the US Supreme Court to let the disputed USPS mail-ballot rule proceed regardless of the outcome below, so the fight is now running on two tracks at once &mdash; the district court and, potentially, the high court's emergency docket.</p>
+        <p>Kremlin aide Yuri Ushakov said Sept. 2 there is no agreement for a Trump-Putin-Zelensky summit, directly contradicting earlier White House suggestions that one had been arranged; this paper grades wrong its own Aug. 30 forecast that Putin would agree to some form of the CIA-floated trilateral meeting by today. Nepal's own disaster authority count (1,114 dead as of Wednesday) has become the figure most outlets now cite without a competing Nepal Police number attached &mdash; a de facto convergence rather than a formal joint reconciliation with Tibet's separately tracked toll (16 dead, 546 missing), so this paper grades its reconciliation forecast partial rather than correct or wrong.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Congress's stopgap funding bill, passed 370-48 and signed this week, keeps the government funded through Dec. 11 and pushes the next shutdown fight past the midterms &mdash; already covered in this report's earlier editions and unchanged since. Fox News confirmed Thursday it has parted ways with longtime anchor Maria Bartiromo after more than a decade at the network; no reason was given publicly by either party.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-economy">
+      <h2 id="s-economy">The Economy</h2>
+      <div class="story-body">
+        <p>Treasury yields eased across the curve Thursday: the 10-year fell 2 basis points to 4.77% (EOD official, Sept. 3), the 2-year fell 5 basis points to 4.34%, and the 30-year fell 2 basis points to 5.25%. Over the past week yields are still net higher &mdash; the 10-year is up 10 basis points and the 2-year up 14 basis points versus a week ago &mdash; reflecting the Warsh-driven hawkish repricing earlier in the period that Wednesday's Waller comments only partly unwound. The curve remains positively sloped: 2s10s at 43 basis points, 3-month/10-year at 88 basis points, 5s30s at 73 basis points.</p>
+        <p>High-yield credit spreads (FRED BAMLH0A0HYM2) ticked up to 2.66% as of the Sept. 2 observation, from 2.65% the prior session &mdash; a one-basis-point move that keeps spreads near their tightest levels of the year and shows no credit-market stress from the Iran escalation. SOFR held at 3.65%. Weekly initial jobless claims for the week of Aug. 29 are on the calendar below alongside the payrolls report.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Broadcom's post-earnings framing, corrected in Wednesday's edition after this paper reviewed the company's own SEC filing, stands: the real Q4 shortfall was total revenue guidance (~$34.8B versus ~$35.03B consensus), not AI-semiconductor guidance, which was actually raised to $21.7B. No new corporate filings from watchlist-tracked companies stood out in Thursday evening's or this morning's SEC EDGAR sweep.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>Beyond Thursday's triple outage (Top Stories, above), CISA added seven vulnerabilities to its Known Exploited Vulnerabilities catalog Wednesday, including a critical Cisco Nexus 9000 root remote-code-execution flaw (CVSS 9.8) and an Apple ANE kernel bug with public proof-of-concept code already circulating. Neither has a confirmed federal remediation deadline reported yet in available coverage; this paper will confirm the exact date against CISA's own KEV catalog entry in a future edition. OpenAI said its unreleased Astra model is the first of its own models to cross its Preparedness Framework's critical cybersecurity threshold in internal testing, scoring what the company describes as a perfect result on its ExploitBench benchmark and autonomously finding two zero-day vulnerabilities in a controlled test &mdash; a self-reported result this paper has not seen independently verified.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt"><strong>Employment Situation &mdash; August 2026 (nonfarm payrolls, unemployment, avg. hourly earnings)</strong></td><td>+53K / 4.1%</td><td>&minus;23K (Jul) / 4.1%</td></tr>
+            <tr><td>08:30</td><td class="txt">Initial jobless claims, week of Aug. 29</td><td>&mdash;</td><td>206,000 (Aug 22 week)</td></tr>
+            <tr><td>16:00</td><td class="txt">Spectrum &ldquo;Onward and Upward&rdquo; launch attempt (Isar Aerospace, Andøya, Norway)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Treasury auction announcements: 13-week, 26-week, 6-week bills and 3-year note (auctioned Sept. 8)</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event. NYSE is closed Monday, Sept. 7 for Labor Day; the next Closing Brief runs Tuesday.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures sit close to flat, a notably muted premarket for a morning carrying the week's most-watched economic release two hours out: S&amp;P futures (ES) +0.08%, Nasdaq futures (NQ) +0.52%, Dow futures (YM) &minus;0.11%, Russell futures (RTY) &minus;0.04%, all measured against Wednesday's settle. That quiet sits on top of Thursday's outright rally &mdash; the S&amp;P 500 closed at 7,747.71 (+1.06%), the Nasdaq at 26,584.06 (+1.40%), the Dow at 53,686.11 (+1.18%) &mdash; so the tape is not pricing a jobs-day surprise so much as sitting on Thursday's gains and waiting.</p>
+        <p>The dollar is mixed rather than directional: the ICE Dollar Index (DX-Y.NYB) is up 0.10% to 99.10, while EURUSD is up 0.32% to 1.1623 &mdash; a combination that says more about idiosyncratic euro strength than broad dollar weakness. The VIX closed Wednesday at 14.32, down sharply from Tuesday, with VIX9D at 11.68 and VIX3M at 17.42 &mdash; a normal, non-inverted term structure showing no near-term hedging stress despite the Iran headlines. Oil (WTI, CL=F) is essentially flat this morning at $90.52, still up more than 7% on the week and close to its five-week high on the Hormuz escalation; gold (GC=F) is up 0.61% to $4,519.20, a modest continuation of its rally rather than a fresh flight-to-safety spike. Bitcoin is sharply higher, up 4.62% over 24 hours to $81,063, part of a broader crypto rally that has pushed total crypto market cap to roughly $2.71 trillion.</p>
+        <p>The most fragile assumption in this morning's pricing is that the jobs report lands close to consensus. Two straight months of weak or negative payrolls prints, a below-consensus ADP read Tuesday, and a Fed that just moved rate-hike odds 12 points on a single official's comments all point to a market that could reprice quickly in either direction once the actual number crosses the wire &mdash; something this futures-implied calm is not obviously pricing. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Jobs report reprices the Fed sharply in either direction.</strong> Preconditions: a print more than roughly 30,000 away from the ~53,000 consensus in either direction. Probability 35&ndash;50% of a move that size, on the basis of the past two months' large consensus misses. If weak: rate-hike odds likely fall further from today's ~55%, yields ease, small-caps (already lagging &mdash; IWM sits below both its 20- and 50-day averages) could catch a relief bid. If strong: odds could snap back toward Monday's ~66% level, pressuring the recent rally in rate-sensitive growth names. Invalidated by a print landing within a few thousand of consensus with no meaningful revision to prior months.</p>
+        <p><strong>Iran war widens to a fifth country or a US base is hit directly.</strong> Preconditions: continued Iranian retaliatory rhetoric following Kermanshah and the wedding-strike dispute. Probability 20&ndash;30% within the next week, on the basis of the pattern of near-daily escalation since late August. If it happens: oil likely extends its move toward or past $100 Brent; equities have so far shrugged off each individual escalation, which may not hold if a US base or personnel are directly hit. Invalidated by a de-escalatory signal from either Tehran or Washington, of which there has been none this week.</p>
+        <p><strong>Missouri's map fight reaches the US Supreme Court on an emergency basis.</strong> Preconditions: Attorney General Hanaway files the promised application. Probability 55&ndash;70% within the next two weeks, on the basis of her explicit public statement. If it happens: a national test case for how late in an election cycle a state court can redraw maps, with direct relevance to ongoing redistricting fights in other states this paper has tracked. Invalidated by Missouri instead pursuing an en banc or procedural path that avoids the emergency docket.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">85&deg;<small>today's high</small></p>
+          <p class="weather-desc">Slight chance of storms before noon, then showers and thunderstorms</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">85&deg;</span>
+            <span class="sky">AM/PM storms</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">67&deg;</span>
+            <span class="sky">Chance storms</span>
+          </div>
+          <div class="weather-day">
+            <b>Saturday</b>
+            <span class="hi">81&deg;</span>
+            <span class="sky">Storms likely</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Shapiro and Garrity agree to a single televised governor's debate, Oct. 7</h3>
+        <div class="story-body">
+          <p>Democratic Gov. Josh Shapiro and Republican Treasurer Stacy Garrity have agreed to their first and only scheduled debate ahead of November's gubernatorial election, set for Oct. 7 at abc27's Harrisburg studio and broadcast across Nexstar's Pennsylvania stations, moderated by Dennis Owens. Separately, both candidates have voiced support this week for banning Flock automated license-plate-reader cameras statewide, citing privacy concerns; lawmakers from both parties are drafting proposals ranging from a full ban to targeted regulation.</p>
+        </div>
+        <p class="story-sourceline">PoliticsPA (debate agreement) &middot; WSB/wire coverage (Flock camera position).</p>
+      </article>
+
+      <p class="small muted">Bridgeville/South Fayette and Pittsburgh/Allegheny County beats had nothing clearing the bar this morning.</p>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, broad-based</span> Thursday's rally was confirmed by breadth (3,419 advancing vs. 1,820 declining, 63.2% of a 5,411-name universe &mdash; the strongest breadth session in this paper's short EMA-tracking history), a positively sloped Treasury curve (2s10s +43bp), and tight, un-stressed high-yield spreads (2.66%). Contradicting evidence: small-caps lagged (IWM +0.40% vs. SPY +1.06%) and sit below both their 20- and 50-day averages; energy and materials were the only sector laggards despite oil near five-week highs, an unusual divergence. Confidence: moderate &mdash; the picture is unusually dependent on this morning's jobs report resolving cleanly.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad US equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Close-to-close, Sept. 3 vs. Sept. 2 &middot; EOD official (prior session) &middot; Yahoo Finance close series.</caption>
+              <thead><tr><th>Index/ETF</th><th>Level</th><th>1D %</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,747.71</td><td class="up">+1.06%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>26,584.06</td><td class="up">+1.40%</td></tr>
+                <tr><td>Dow Jones Industrial Avg.</td><td>53,686.11</td><td class="up">+1.18%</td></tr>
+                <tr><td>Russell 2000</td><td>2,968.27</td><td class="up">+0.51%</td></tr>
+                <tr><td>SPY</td><td>773.17</td><td class="up">+1.05%</td></tr>
+                <tr><td>QQQ</td><td>717.67</td><td class="up">+1.19%</td></tr>
+                <tr><td>IWM</td><td>295.19</td><td class="up">+0.40%</td></tr>
+                <tr><td>RSP (equal-weight)</td><td>220.05</td><td class="up">+0.66%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">SPY sits 0.8% below its 52-week high (779.37) and 22.9% above its 52-week low (629.28); 20-day distance +0.52%, 50-day +2.25%. QQQ sits roughly at its 20-day average (&minus;0.01%) and 4.1% below its 52-week high (748.65).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Sept. 3 session (Massive grouped-daily, filtered universe: symbol &le;5 chars, no share-class suffix, close &ge;$1, volume &ge;100,000): 3,419 advancing, 1,820 declining, 172 unchanged of 5,411 names &mdash; 63.2% advancing, up sharply from Sept. 2's already-strong 65.2% (note: methodology differs slightly session to session as new symbols enter the tracked universe). <span class="chip chip--warn">Estimated &mdash; EMA proxy, accumulating history (30/200 sessions)</span> percent-above-50/200-day breadth is not yet reportable; this is the 30th session of EMA accumulation toward the 50-session minimum.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Sept. 3 close vs. Sept. 2 &middot; SPDR sector ETFs.</caption>
+              <thead><tr><th>Sector</th><th>1D %</th></tr></thead>
+              <tbody>
+                <tr><td>Financials (XLF)</td><td class="up">+1.56%</td></tr>
+                <tr><td>Discretionary (XLY)</td><td class="up">+1.39%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="up">+1.29%</td></tr>
+                <tr><td>Real estate (XLRE)</td><td class="up">+1.19%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="up">+1.03%</td></tr>
+                <tr><td>Communications (XLC)</td><td class="up">+0.85%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="up">+0.84%</td></tr>
+                <tr><td>Health care (XLV)</td><td class="up">+0.18%</td></tr>
+                <tr><td>Staples (XLP)</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="down">&minus;0.62%</td></tr>
+                <tr><td>Energy (XLE)</td><td class="down">&minus;0.74%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Nine of eleven sectors gained; energy's decline despite oil near five-week highs is this session's clearest divergence, consistent with a rally read as broad risk-appetite rather than an energy-specific move.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Semiconductors (SMH) +0.39%, lagging the broader tech rally; regional banks (KRE) +0.85%, in line with financials broadly. Within the AI-infrastructure watchlist, no name moved more than 3% on no identified single-stock catalyst. Magnificent Seven proxy MAGS +2.43% to $70.43, outpacing SPY by more than 2 points on the session &mdash; mega-cap tech led, not lagged, Thursday's rally.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve &middot; EOD official (Sept. 3) &middot; changes in basis points.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D</th><th>1W</th><th>1M</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.83%</td><td class="flat">0</td><td class="up">+2</td><td class="up">+6</td></tr>
+                <tr><td>3M</td><td>3.89%</td><td class="down">&minus;3</td><td class="up">+5</td><td class="flat">0</td></tr>
+                <tr><td>6M</td><td>3.95%</td><td class="down">&minus;5</td><td class="up">+1</td><td class="down">&minus;3</td></tr>
+                <tr><td>1Y</td><td>4.11%</td><td class="down">&minus;5</td><td class="up">+7</td><td class="up">+8</td></tr>
+                <tr><td>2Y</td><td>4.34%</td><td class="down">&minus;5</td><td class="up">+14</td><td class="up">+16</td></tr>
+                <tr><td>5Y</td><td>4.52%</td><td class="down">&minus;2</td><td class="up">+14</td><td class="up">+19</td></tr>
+                <tr><td>10Y</td><td>4.77%</td><td class="down">&minus;2</td><td class="up">+10</td><td class="up">+14</td></tr>
+                <tr><td>30Y</td><td>5.25%</td><td class="down">&minus;2</td><td class="up">+6</td><td class="up">+8</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +43bp &middot; 3-month/10-year +88bp &middot; 5s30s +73bp, all positively sloped. SOFR 3.65% (Sept. 2). 10-year breakeven inflation (T10YIE) 2.35%; 10-year real yield (DFII10) 2.45% (both Sept. 2/3 observations).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS (BAMLH0A0HYM2) 2.66% as of the Sept. 2 observation, up 1bp from 2.65% the prior session &mdash; near its tightest levels of the year, showing no credit stress from the Iran escalation. Investment-grade proxy LQD +0.14%; high-yield proxy HYG +0.13%; TIPS (TIP) +0.13%; intermediate Treasuries (IEF) +0.11% &mdash; a quiet, low-dispersion session across fixed income relative to Thursday's equity move.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX closed Sept. 3 at 14.32 (<span class="chip">Previous close</span>), down sharply from Tuesday's elevated print. VIX9D 11.68, VIX3M 17.42 &mdash; a normal, non-inverted contango term structure. Put/call ratio remains unavailable (Cboe's market-statistics endpoint has returned 403 on every attempt since mid-August; not retried). MOVE index and dealer gamma remain untracked &mdash; no legitimate free source identified for either.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Frankfurter (ECB reference, Sept. 3) &middot; USD base.</caption>
+              <thead><tr><th>Pair</th><th>Rate</th></tr></thead>
+              <tbody>
+                <tr><td>EUR</td><td>0.8610</td></tr>
+                <tr><td>GBP</td><td>0.7409</td></tr>
+                <tr><td>JPY</td><td>156.01</td></tr>
+                <tr><td>CNY</td><td>6.7191</td></tr>
+                <tr><td>CHF</td><td>0.8084</td></tr>
+                <tr><td>CAD</td><td>1.3792</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">ICE Dollar Index (DX-Y.NYB) 99.10, +0.10% intraday this morning. EURUSD (intraday, Yahoo) 1.1623, +0.32%. DXY has no separate allowlisted free source beyond this ICE-ticker feed, which is used directly above.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI (CL=F) $90.52, roughly flat this morning, still up more than 7% on the week amid the Hormuz standoff; Brent traded near $95-96 through Wednesday per multiple financial outlets (not independently re-verified against a delayed quote vendor this run). Gold (GC=F) $4,519.20, +0.61%. Natural gas (NG=F) $2.93, +0.58%. Copper (HG=F) $6.65, +1.04%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p><span class="chip chip--ok">Live (CoinGecko aggregate)</span> Bitcoin $81,063, +4.62% (24h); Ethereum $2,525.74, +5.64%; Solana $103.98, +4.02%; Cardano $0.2208, +7.32%. Total crypto market cap $2.71T, +1.24% (24h); Bitcoin dominance 59.8%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Growth outperformed value Thursday &mdash; VUG +1.46% vs. VTV +0.71% &mdash; a reversal of the value-over-growth tilt seen earlier this week, consistent with mega-cap tech (MAGS +2.43%) leading the session. Low-volatility factors (USMV +0.82%, SPLV +0.78%) kept pace with the broad market rather than lagging it, unusual for a risk-on session and worth watching for whether it persists.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Equities, credit and crypto all confirmed Thursday's risk-on move; rates eased in support. The one genuine divergence is commodities: oil stayed elevated on the Iran premium while energy equities (XLE &minus;0.74%) lagged the broader market &mdash; a split between the physical-commodity risk premium and how equity investors are pricing energy-sector earnings.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist-tracked company reports today; Finnhub's day-of confirmation list shows only small-cap names (ARDC, BDJ, BYSI, HURC, KNOP, PAXS), none tracked by this paper's watchlists.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Treasury has announced 13-week, 26-week and 6-week bill auctions plus a 3-year note, all auctioned Sept. 8; a 9-year, 11-month note auctions Sept. 9, and a 29-year, 11-month bond auctions Sept. 10. None auction today.</p>
+        </details>
+
+      </details>
+    </section>
+
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Iranian state media and multiple Western wires on the Kermanshah strikes and wedding-strike dispute; the Missouri Supreme Court's own opinion via reporting; BLS, FRED and the Treasury par-yield curve for economic and rate data; Cboe, Yahoo Finance and CoinGecko for market levels; WHO Disease Outbreak News for the DRC Ebola count; the National Weather Service for Bridgeville conditions.</p>
+      <p><strong>Corrections.</strong> This edition discloses one coverage gap rather than a factual error: Wednesday's Minneapolis shooting is covered here for the first time, one news cycle late, because Thursday's Closing Brief did not publish. Logged to the corrections ledger. No other corrections in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-03-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

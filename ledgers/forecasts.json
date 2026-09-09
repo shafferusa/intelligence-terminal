@@ -1,6 +1,135 @@
 {
  "forecasts": [
   {
+   "id": "2026-09-09-pm-1",
+   "date": "2026-09-09",
+   "slot": "pm",
+   "forecast": "Missouri's Thursday contempt hearing for Secretary of State Hoskins produces an outcome (compliance, a finding of contempt, or a new stay/injunction) that clarifies which congressional map governs by Sept 11",
+   "horizon": "2026-09-11",
+   "probability": "40-55%",
+   "basis": "A state supreme court show-cause order with an in-person hearing set for Thursday is a forcing event, but the underlying federal-vs-state conflict has already produced two rounds of unresolved 'competing orders'; courts moving quickly to a clear result is plausible but not assured on this record.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-pm-2",
+   "date": "2026-09-09",
+   "slot": "pm",
+   "forecast": "The Supreme Court acts (grants, denies, or issues a further scheduling order) on the USPS v. California mail-ballot stay application (26A305) within five days of today's completed briefing",
+   "horizon": "2026-09-14",
+   "probability": "35-50%",
+   "basis": "Briefing closed today with a dozen-plus amicus filings; this outlet's own tracking of comparable emergency applications this cycle shows the shadow docket can move quickly once briefing is complete, but has also sat on fully-briefed applications for a week or more without an obvious forcing deadline here.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-pm-3",
+   "date": "2026-09-09",
+   "slot": "pm",
+   "forecast": "The IRGC's claim of striking two US Navy destroyers remains uncorroborated by any independent source through the end of this week",
+   "horizon": "2026-09-12",
+   "probability": "60-75%",
+   "basis": "CENTCOM issued an immediate, specific denial and no third-party imagery, ship-tracking data, or independent government statement has surfaced; claims of this kind in this conflict have more often gone uncorroborated than confirmed.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-am-1",
+   "date": "2026-09-09",
+   "slot": "am",
+   "forecast": "A further direct Iran-US or Iran-Gulf-ally military exchange (beyond the Sept 8-9 tanker strikes and Jordan base attack) occurs within 72 hours",
+   "horizon": "2026-09-12",
+   "probability": "45-60%",
+   "basis": "Ten tankers destroyed and a direct strike on a base hosting US forces in one week is the sharpest escalation this outlet has tracked in this conflict; Iran's declared Hormuz 'exclusion zone' gives it a stated pretext for a further incident, and neither side has signaled de-escalation.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-am-2",
+   "date": "2026-09-09",
+   "slot": "am",
+   "forecast": "The Supreme Court rules on the USPS v. California mail-ballot stay application (26A305) within 72 hours of today's 4:00 PM EDT response deadline",
+   "horizon": "2026-09-12",
+   "probability": "35-50%",
+   "basis": "The shadow docket can act quickly once briefing closes, but this case has already seen one withdrawn-and-refiled application and no publicly stated urgency comparable to a hard mailing deadline; this outlet's own tracking of comparable emergency applications this cycle shows mixed timing.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-09-am-3",
+   "date": "2026-09-09",
+   "slot": "am",
+   "forecast": "Reporting converges on a single operative congressional map for Missouri's Nov. 2026 election (resolving the 'competing court orders' confusion) within one week",
+   "horizon": "2026-09-16",
+   "probability": "40-55%",
+   "basis": "Missouri's own requested SCOTUS merits ruling was targeted for roughly Sept 13-14, which would settle the question if it issues on schedule; absent that, the state and federal court orders remain in tension with no forcing deadline until ballot printing later in the fall.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-07-pm-1",
+   "date": "2026-09-07",
+   "slot": "pm",
+   "forecast": "Today's reported Trump-Zelensky-then-Putin calls produce a publicly announced concrete step (an extended pause, a summit date, or a new proposal) within 48 hours, rather than another unbroken-down 'constructive talks' readout",
+   "horizon": "2026-09-09",
+   "probability": "20-35%",
+   "basis": "Sunday's Kyiv visit and Saturday's Moscow visit both ended with positive characterizations but no announced concrete step; this pattern of atmospherics-without-substance has repeated across the last three rounds of shuttle diplomacy.",
+   "status": "wrong",
+   "outcome": "No jointly announced concrete step emerged. Kyiv-aligned reporting says a Trump-Zelensky meeting is 'tentatively agreed' for around Sept 20, possibly at the UN General Assembly, but Kremlin-aligned sources dispute that any such meeting was actually agreed -- a live dispute, not a confirmed summit date. No extended pause and no new written proposal surfaced.",
+   "graded": "2026-09-09",
+   "lesson": "The atmospherics-without-substance pattern held a fourth time; even the closest thing to a 'concrete step' this round (a possible future meeting) immediately became a new point of dispute between the two sides rather than a jointly confirmed outcome."
+  },
+  {
+   "id": "2026-09-07-pm-2",
+   "date": "2026-09-07",
+   "slot": "pm",
+   "forecast": "Israel conducts further strikes in Lebanon beyond today's reported toll (a third distinct location or a casualty count materially above today's) within 72 hours",
+   "horizon": "2026-09-10",
+   "probability": "35-50%",
+   "basis": "Today's strikes mark an escalation from the single, unverified ridge-control claim of Sept 4 to a confirmed multi-location toll; this outlet's tracking of the broader Iran-linked conflict has shown near-daily continuation once a front becomes active.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-07-pm-3",
+   "date": "2026-09-07",
+   "slot": "pm",
+   "forecast": "OpenAI issues an on-record response specifically addressing Mowshowitz's allegation that its written Congressional answers did not directly address the wiki-incident question, within one week",
+   "horizon": "2026-09-14",
+   "probability": "25-40%",
+   "basis": "OpenAI has responded to each prior round of wiki-incident scrutiny within days, but this specific allegation (about the substance of a Congressional filing) is a narrower and more legally sensitive target than its earlier general acknowledgments.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-07-am-1",
+   "date": "2026-09-07",
+   "slot": "am",
+   "forecast": "Missouri's own state-law ballot-certification deadline passes Tuesday Sept 8 without SCOTUS staying the Missouri Supreme Court's map ruling",
+   "horizon": "2026-09-08",
+   "probability": "65-75%",
+   "basis": "Emergency applications rarely resolve within days absent full briefing, and Missouri's own application already requests a merits ruling by Sept 13 -- after its own Sept 8 deadline -- suggesting even the state doesn't expect action by Tuesday.",
+   "status": "correct",
+   "outcome": "Missouri's ballot-certification deadline passed today, Sept 8, with no SCOTUS stay of the Missouri Supreme Court's ruling and no merits order.",
+   "graded": "2026-09-08",
+   "lesson": "Consistent with the same-day 2026-09-06-sun-4 forecast: the emergency docket did not act on the state's own forcing deadline."
+  },
+  {
+   "id": "2026-09-07-am-2",
+   "date": "2026-09-07",
+   "slot": "am",
+   "forecast": "The Kyiv/Moscow capitals-only strikes pause survives its own expiration (~late Sept 8 into Sept 9) without a confirmed violation",
+   "horizon": "2026-09-09",
+   "probability": "40-55%",
+   "basis": "This conflict's prior pauses have generally held only as long as explicitly extended, and no extension has been announced following Sunday's Kyiv visit.",
+   "status": "wrong",
+   "outcome": "Russia resumed strikes on Kyiv overnight Sept 8-9, killing at least 5 and injuring roughly 30 across five districts -- a clear, confirmed-multiple violation within hours of the pause's expiration.",
+   "graded": "2026-09-09",
+   "lesson": "Consistent with this conflict's established pattern (also seen in the 2026-08-30 pause): an unextended pause lapsed into renewed strikes almost immediately, reinforcing that only explicitly-extended pauses in this war have held."
+  },
+  {
+   "id": "2026-09-07-am-3",
+   "date": "2026-09-07",
+   "slot": "am",
+   "forecast": "Iran follows Parliament Speaker Ghalibaf's 'no longer proportionate' threat with a further kinetic move against a US or allied target within 7 days",
+   "horizon": "2026-09-14",
+   "probability": "25-35%",
+   "basis": "Roughly one distinct escalation every 2-3 days since late August, weighed against Saturday's naval exchange already having been framed by both CENTCOM and Iranian officials as a completed, proportionate cycle.",
+   "status": "open"
+  },
+  {
    "id": "2026-08-19-am-1",
    "date": "2026-08-19",
    "slot": "am",
@@ -1523,7 +1652,10 @@
    "horizon": "2026-09-01",
    "probability": "25-35%",
    "basis": "361+ confirmed victims across 47 countries and an active, moderate-confidence China-nexus campaign, contrasted with CISA's much faster KEV addition of a separate, more recently disclosed flaw (Ray/CVE-2025-62593) on Aug 17.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CISA added CVE-2026-59310 to its KEV catalog on 2026-08-18 itself (BOD 26-04 remediation deadline 2026-08-21). No additional major victim disclosure or new ransomware deployment beyond the already-known 361-victim/47-country scope was found in this week's research before or since that listing.",
+   "graded": "2026-09-05",
+   "lesson": "A forecast anchored to 'before it is added to KEV' needs the KEV-addition date itself confirmed at write time, not assumed still pending."
   },
   {
    "id": "2026-08-18-pm-1",
@@ -1533,7 +1665,10 @@
    "horizon": "2026-09-01",
    "probability": "30-45%",
    "basis": "Iran's senior-official statement to Reuters citing a 'few weeks' deadline, five-plus strikes in the past two weeks, and no ceasefire extension on the table.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Hormuz standoff produced extensive follow-on attacks well beyond a single incident: the Aug 30 Larak Island strike, Aug 31 Jordan/UAE strikes, Sept 1 unclaimed tanker strikes, Sept 2 ~100-target US strike, Sept 3 Jordan/Bahrain/Kuwait/Iraq retaliation, Sept 4 Kuwait/UAE strikes and Kermanshah, and a Sept 5 unconfirmed Kharg Island tanker strike.",
+   "graded": "2026-09-05",
+   "lesson": "This forecast undershot the scale of what followed -- useful context for calibrating future Hormuz-related probability ranges upward."
   },
   {
    "id": "2026-08-18-pm-2",
@@ -1605,7 +1740,10 @@
    "horizon": "2026-08-28",
    "probability": "25-40%",
    "basis": "vCenter environments are large and complex to patch quickly at scale, and the campaign's 361 confirmed victims across 47 countries suggest broad exposure beyond what a single-day federal deadline typically clears; no reporting yet directly confirms or denies compliance.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No report surfaced within the week, or since, confirming any specific federal civilian agency missed the Aug 21 VMware vCenter KEV remediation deadline. Absence of confirming reporting is not proof of compliance, and this report is not claiming the latter -- only that the forecasted news event did not occur.",
+   "graded": "2026-09-05",
+   "lesson": "This forecast should have been graded last Saturday (2026-08-29), its horizon; it was missed in that sweep and is graded a week late here. Logged as a gap, not hidden."
   },
   {
    "id": "2026-08-23-sun-1",
@@ -1742,7 +1880,10 @@
    "horizon": "2026-09-08",
    "probability": "65-80%",
    "basis": "The court took the case directly (bypassing the appeals level) specifically because of the Sept 8 deadline, and a report says a sitting justice has urged speed -- both signal the court intends to rule in time, though compressed timelines can still slip.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Missouri Supreme Court ruled unanimously Sept 3, five days ahead of the Sept 8 deadline, blocking the map and ordering a referendum.",
+   "graded": "2026-09-04",
+   "lesson": "A unanimous state supreme court ruling landed with real time to spare before its own certification deadline -- worth noting for how this court has handled deadline pressure in other pending matters."
   },
   {
    "id": "2026-08-24-am-4",
@@ -1765,7 +1906,10 @@
    "horizon": "2026-08-31",
    "probability": "70-80%",
    "basis": "Iran's FM spokesman response today was rhetorical (\"consequences,\" not a stated action), and this campaign's pattern throughout has been threats outrunning action; the wider Gulf-oil-blockade threat is explicitly conditioned on a Gulf state joining the sanctions, which has not happened.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Iran's response to the Aug 24 sanctions package stayed rhetorical through Aug 31. The kinetic exchange that began Aug 30 traces to a separate proximate cause -- the US strike near Larak Island -- not the sanctions package itself.",
+   "graded": "2026-09-05",
+   "lesson": "Worth naming explicitly: this forecast's narrow framing (retaliation for THIS package specifically) held even as the broader standoff escalated dramatically for other reasons in the same window."
   },
   {
    "id": "2026-08-24-pm-2",
@@ -1788,7 +1932,10 @@
    "horizon": "2026-08-31",
    "probability": "55-70%",
    "basis": "Both companies have already engaged publicly on the underlying incidents (blog posts, interviews); a formal congressional deadline raises the pressure to respond even if incompletely, though neither has a legal obligation to answer a letter from members not in the majority.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The 116-company joint letter on AI cyber risk, which both OpenAI and Anthropic signed within the window, was explicitly not an individual response to House Democrats' specific questions. OpenAI's actual individual letter to Congress did not arrive until Sept 2, past the 5-business-day window (~Aug 31).",
+   "graded": "2026-09-05",
+   "lesson": "A collective industry statement should not have been treated as even partially satisfying this forecast; the distinction was already flagged in real time and held up under grading."
   },
   {
    "id": "2026-08-25-am-1",
@@ -1824,7 +1971,10 @@
    "horizon": "2026-09-01",
    "probability": "80-90%",
    "basis": "Active Oman/Pakistan diplomatic track and no Gulf-state statement since Monday's sanctions rollout, despite Iran's all-Gulf blockade threat.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "No Gulf state formally joined the named US sanctions campaign ('Operation Economic Outcast') by name. But the UAE announced an indefinite trade and financial embargo on Iran this week after alleging an Iranian missile strike on its own territory -- major unilateral economic action against Iran, functionally similar in effect though framed as the UAE's own retaliation rather than joining Washington's campaign.",
+   "graded": "2026-09-05",
+   "lesson": "Forecasts about a state 'joining' a US-branded campaign should anticipate that allies may take parallel action for their own stated reasons rather than formally aligning with the US framing -- a distinction with a difference on paper, less of one in practice."
   },
   {
    "id": "2026-08-25-am-4",
@@ -1873,7 +2023,10 @@
    "horizon": "2026-09-08",
    "probability": "25-40%",
    "basis": "Carney described talks as having 'collapsed' today, the most final language either side has used in this five-day escalation cycle; but both governments have re-engaged under deadline pressure earlier this cycle (mid-August), and neither has fully closed the door rhetorically.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Canada's tariffs took effect on schedule at 12:01 AM Sept 8 with no formal resumption of US-Canada trade talks reported; Carney's 'collapsed' framing held.",
+   "graded": "2026-09-08",
+   "lesson": "When a government uses maximally final language ('collapsed') under deadline pressure, weight that more heavily than the base rate of prior re-engagements in the same cycle."
   },
   {
    "id": "2026-08-26-am-1",
@@ -1896,7 +2049,10 @@
    "horizon": "2026-09-09",
    "probability": "55-70%",
    "basis": "Sustained bipartisan congressional and press attention creates reputational pressure to respond eventually, but both companies have so far gone quiet on specifics of their respective disclosed security incidents rather than engaging publicly with congressional questions.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Both companies responded by roughly Sept 2, ahead of the window's close: OpenAI told Congress it is building automated-shutdown capability (without sharing internal logs), and Anthropic replied but did not address Rep. Casar's specific container-escape question. Casar publicly rejected both responses as insufficient and set a new Sept 15 deadline.",
+   "graded": "2026-09-09",
+   "lesson": "The forecast's bar (any public response) was cleared, but the substance was thin enough that Congress immediately re-escalated with a tighter follow-up deadline -- a reminder to track the quality of a response, not just its existence, in future compliance-deadline forecasts."
   },
   {
    "id": "2026-08-26-am-3",
@@ -1929,7 +2085,10 @@
    "horizon": "2026-09-02",
    "probability": "30-45%",
    "basis": "The objection is currently sourced to unnamed reporting via CNBC and wire pickups with no on-record confirmation from either government; administrations often let such objections play out through private diplomatic channels rather than public confirmation, but this dispute has drawn heavy press attention that raises pressure to respond.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "President Trump's own on-record threat to bomb Oman 'if it gets in the way' of the standoff functions as a direct, on-record US objection to the Iran-Oman Hormuz corridor framework, within the one-week window.",
+   "graded": "2026-09-05",
+   "lesson": "The objection surfaced in a more dramatic form (a public threat) than the forecast anticipated (a formal diplomatic statement) -- both should count as satisfying 'confirms on the record.'"
   },
   {
    "id": "2026-08-26-pm-3",
@@ -1939,7 +2098,10 @@
    "horizon": "2026-09-09",
    "probability": "40-55%",
    "basis": "This dispute's earlier rounds (the original injunction fight, the Supreme Court's Monday ruling) moved to emergency posture quickly once a rule took legal effect, and the midterms create real time pressure; but the plaintiff coalition may also choose to litigate on a standard merits track given the SCOTUS ruling just went against a companion injunction.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The 25-state coalition's suit produced a TRO, then a Sept 4 preliminary injunction from the U.S. District Court for the District of Massachusetts blocking USPS's mail-ballot rule -- now the subject of the government's emergency SCOTUS stay application (docket 26A305). Research this run could not find evidence of a second, separate 25-state suit distinct from this one; it appears this is the same litigation thread tracked under multiple labels across editions, worth reconciling in the ledger going forward.",
+   "graded": "2026-09-09",
+   "lesson": "The emergency-posture pattern held, but this outlet's own tracking may have described one case under two different names across editions -- a bookkeeping issue to fix rather than a forecasting error, flagged for the next case-identity check."
   },
   {
    "id": "2026-08-27-am-1",
@@ -1949,7 +2111,10 @@
    "horizon": "2026-09-03",
    "probability": "45-60%",
    "basis": "China's much larger missing count (558) has not yet been folded into any combined toll; Nepal's own count (157 confirmed, 403 missing) is still moving",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Nepal-Tibet flood toll rose far past 200 -- to over 900 within a week, past 1,000 within ten days, and to 1,287 by Sept 4 -- now Nepal's deadliest disaster since the 2015 earthquake.",
+   "graded": "2026-09-05",
+   "lesson": "Correct in direction but dramatically underestimated in magnitude; a lesson in not anchoring disaster-toll forecasts too conservatively when search-and-rescue access is still expanding."
   },
   {
    "id": "2026-08-27-am-2",
@@ -1969,7 +2134,10 @@
    "horizon": "2026-09-08",
    "probability": "35-50%",
    "basis": "The same court system has already granted relief once in this dispute; approaching midterms create urgency",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Judge Talwani granted a preliminary injunction Sept 4 blocking the USPS mail-ballot rule, before its practical effect date and before North Carolina's mailing deadline.",
+   "graded": "2026-09-08",
+   "lesson": "The same-court-already-granted-relief-once heuristic held up here."
   },
   {
    "id": "2026-08-28-am-1",
@@ -1992,7 +2160,10 @@
    "horizon": "2026-09-04",
    "probability": "15-25%",
    "basis": "The gap between the two governments' counts has widened rather than narrowed since Wednesday with no explanation offered by either side, and cross-border disaster accounting of this kind has historically taken far longer to resolve publicly, if it resolves at all",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Nepal's own disaster-authority figure (1,114 dead) has become the de facto number most outlets cite, but no formal joint statement or explicit reconciliation with China/Tibet's separately tracked toll (16 dead) has been published.",
+   "graded": "2026-09-04-pm",
+   "lesson": "Convergence-by-attrition (one figure simply becomes the default cite) is a different, weaker outcome than a formal joint reconciliation -- worth distinguishing in future casualty-count forecasts."
   },
   {
    "id": "2026-08-28-am-3",
@@ -2015,7 +2186,10 @@
    "horizon": "2026-09-04",
    "probability": "40-55%",
    "basis": "Warsh's speech withheld explicit rate-path guidance and emphasized data-dependence over commitment; single-speech repricings of this size have partially reversed before without a confirming catalyst, though the inflation emphasis was unambiguous",
-   "status": "open"
+   "status": "partial",
+   "outcome": "CME-tracked odds did partially unwind from roughly 66% Monday to roughly 55% Thursday absent a new data point, exactly as forecast -- but today's jobs beat (the 'confirming data point' the forecast's caveat anticipated wouldn't arrive) reversed much of that unwind, pushing odds back toward the high-50s/mid-60s range by Friday's close.",
+   "graded": "2026-09-04-pm",
+   "lesson": "The mid-week unwind resolved correctly on its own terms; the forecast's implicit assumption that no confirming data would arrive within the week was the part that broke."
   },
   {
    "id": "2026-08-28-pm-2",
@@ -2025,7 +2199,10 @@
    "horizon": "2026-08-31",
    "probability": "75-85%",
    "basis": "NASA/SpaceX have formally declared the mission 'Go for Launch' after completing the Launch Readiness Review, with a 60% favorable-weather forecast for the primary window and a backup day available if needed",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Nancy Grace Roman Space Telescope launched successfully at 7:26 AM ET Sunday Aug 30 on its primary attempt, with no anomalies reported at any stage.",
+   "graded": "2026-09-05",
+   "lesson": "Clean resolution; NASA/SpaceX's own 'Go for Launch' declaration and the 60% favorable-weather forecast both proved reliable signals here."
   },
   {
    "id": "2026-08-28-pm-3",
@@ -2045,7 +2222,10 @@
    "horizon": "2026-09-04",
    "probability": "40-50%",
    "basis": "Previews circulating this weekend scatter widely (roughly 50,000 to 140,000), but two of three named individual estimates (LPL Financial's 50,000 and Capital Economics' 90,000, the latter citing immigration curbs on labor supply) sit at or below 100,000, and the most recent preview found skews lower (58,000) than an earlier one (110,000).",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "August nonfarm payrolls printed +162,000, over 60,000 above the top of every cited preview and more than 60,000 above even the most bullish named estimate.",
+   "graded": "2026-09-04-pm",
+   "lesson": "A scattered preview range with a low-end skew is not the same as a reliable base rate -- this month's data broke well outside every cited estimate."
   },
   {
    "id": "2026-08-30-sun-2",
@@ -2055,7 +2235,10 @@
    "horizon": "2026-09-04",
    "probability": "45-60%",
    "basis": "This is the first major data release to land in the pre-FOMC window since Warsh's hawkish Jackson Hole debut, and CME-derived odds (~60%) and Kalshi's own market (47%) already disagree by 13 points before any new data arrives -- a wide-open setup for a large swing.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Sources disagree on the exact magnitude of the swing in CME-implied September rate-hike odds -- some outlets report roughly a 10-point move (55% to 65%), others a smaller move from a different starting level (49.4% to 58%). Direction (a jump toward hike pricing) is confirmed across sources; whether the move cleared 10 points cleanly is not.",
+   "graded": "2026-09-04-pm",
+   "lesson": "This report should capture a single clean CME FedWatch reading at file time rather than relying on outlets' own inconsistent snapshots when grading precision-dependent forecasts."
   },
   {
    "id": "2026-08-30-sun-3",
@@ -2065,7 +2248,10 @@
    "horizon": "2026-09-04",
    "probability": "55-70%",
    "basis": "Talwani's own Aug 27 order found the record 'lacks any evidence of fraudulent mail-in voting' and called USPS's interest 'dwarfed' by disenfranchisement risk -- language that reads as already leaning toward the plaintiffs, consistent with her pattern throughout this litigation of promptly refiling protective orders.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "As of Friday's edition, Judge Talwani has issued no ruling converting her TRO into a preliminary injunction, over 24 hours after Wednesday's hearing. DOJ instead bypassed her entirely, asking the Supreme Court directly to clear the mail-ballot rule.",
+   "graded": "2026-09-04-pm",
+   "lesson": "DOJ's direct-to-SCOTUS maneuver was the actual development, not a delayed version of the forecast district-court ruling -- a reminder to watch for parties routing around, not just through, the court being tracked."
   },
   {
    "id": "2026-08-30-sun-4",
@@ -2075,7 +2261,10 @@
    "horizon": "2026-09-03",
    "probability": "55-65%",
    "basis": "High-multiple AI-infrastructure names have produced outsized post-earnings moves all month (Nvidia +8.7%, Marvell -10.3% cumulative), and Broadcom's own estimate range is unusually wide across sources ($2.83-$3.30 EPS), raising the odds of a surprise relative to at least one consensus view.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "AVGO's next full regular session (Sept 3) closed at $357.16 versus Sept 2's $367.24 close -- a decline of roughly 2.7%, well under the 5% threshold. The 6.5-12% after-hours move reported Tuesday night substantially reversed once a full session priced the results, consistent with the raised AI-semiconductor guidance this report later confirmed via Broadcom's own 8-K.",
+   "graded": "2026-09-04-pm",
+   "lesson": "After-hours percentage moves on thin volume are not a reliable proxy for the next full session's close -- this report should wait for regular-session prices before citing earnings-reaction magnitudes as settled."
   },
   {
    "id": "2026-08-30-sun-5",
@@ -2085,7 +2274,10 @@
    "horizon": "2026-09-04",
    "probability": "10-20%",
    "basis": "Reporting so far describes Putin as having rejected the idea, and Russia has stated a precondition (control of the rest of Donbas) that remains unmet; the Kremlin has not addressed the proposal on the record in either direction.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Kremlin aide Yuri Ushakov said Sept 2 there is no agreement for a Trump-Putin-Zelensky summit, a harder denial than the conditional rejection Peskov had offered previously.",
+   "graded": "2026-09-04",
+   "lesson": "Russian officials' summit rhetoric hardened rather than softened over the horizon window -- a reminder that early optimistic framing (Ratcliffe's proposal, Zelensky's openness) does not reliably predict the other side's actual response, echoing the pattern already logged for the Canada trade talks."
   },
   {
    "id": "2026-08-30-sun-6",
@@ -2095,7 +2287,10 @@
    "horizon": "2026-09-04",
    "probability": "10-20%",
    "basis": "The domestic gap has widened rather than narrowed at every check since the flood began, and no reconciliation process has been announced by either Nepali body.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "No formal joint Nepal-China reconciliation was found. Nepal's own NDRRMA count (1,114 as of Wednesday) has become the figure most outlets cite without a competing Nepal Police number attached -- a de facto convergence within Nepal's own reporting, but not the cross-agency joint statement the forecast specified, and no reconciliation with Tibet's separately tracked toll.",
+   "graded": "2026-09-04",
+   "lesson": "Domestic figures can converge in practice (one agency's count becoming the de facto standard) well before -- or instead of -- any formal reconciliation statement; worth distinguishing these two outcomes explicitly in future toll-reconciliation forecasts."
   },
   {
    "id": "2026-08-30-sun-7",
@@ -2105,7 +2300,10 @@
    "horizon": "2026-09-04",
    "probability": "40-50%",
    "basis": "This is the modal outcome given how scattered the jobs previews already are and the recent pattern of high-multiple AI names selling off on cautious guidance even after a beat.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The defining condition -- payrolls landing in the scattered 60,000-100,000 preview range without a clean surprise -- was violated by a 162,000 print, more than 60,000 above the range's top. Broadcom's AI-semiconductor guidance was actually raised, not cautious. The week did not land as modeled.",
+   "graded": "2026-09-04-pm",
+   "lesson": "None of the four scenarios anticipated a genuine data surprise in either direction on jobs; the actual week fell outside the quartet's framing entirely."
   },
   {
    "id": "2026-08-30-sun-8",
@@ -2115,7 +2313,10 @@
    "horizon": "2026-09-04",
    "probability": "15-25%",
    "basis": "Requires two separate positive surprises (payrolls and Broadcom margins) to land together while three live geopolitical risks all stay contained -- a genuine but not the most likely combination.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The jobs beat reignited rate-hike fears rather than reinforcing a soft-landing narrative, and today's session was a rotational pullback in rate-sensitive growth names, not a broad risk-on week. The Iran conflict also continued to escalate (the Kermanshah strike, the wedding-strike dispute) rather than staying contained.",
+   "graded": "2026-09-04-pm",
+   "lesson": "A strong jobs number is not automatically bullish when the market is pricing Fed policy risk rather than recession risk -- this report's own scenario set didn't account for a 'good news is bad news' dynamic."
   },
   {
    "id": "2026-08-30-sun-9",
@@ -2125,7 +2326,10 @@
    "horizon": "2026-09-04",
    "probability": "15-20%",
    "basis": "Credit currently reads calm (2.63% OAS, VIX at 14.43 in normal contango) with no confirming stress signal yet -- this scenario requires that calm to break, which is possible but not yet indicated.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Jobs printed strong, not weak; credit spreads (2.65% OAS) stayed well under the 2.75% threshold and show no stress; today's session was a narrow rotation, not a broad risk-off week.",
+   "graded": "2026-09-04-pm",
+   "lesson": "None."
   },
   {
    "id": "2026-08-30-sun-10",
@@ -2135,7 +2339,10 @@
    "horizon": "2026-09-04",
    "probability": "5-10%",
    "basis": "Each individual trigger is a live but low-probability risk on its own (per the Risk Register); this scenario requires at least one to cross from rhetoric or containment into an actual escalatory event.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The US-Iran conflict continued and arguably intensified (the Kermanshah strike, the disputed wedding strike, Vance's new shipping-attacks precondition for talks) but this report found no discrete new escalatory event crossing the scenario's stated bar (no matching Ukraine strike, no NK missile test drawing a US-South Korea response, no Nepal dam failure). The ongoing conflict is a continuation of an already-elevated baseline, not the scenario's envisioned step-change.",
+   "graded": "2026-09-04-pm",
+   "lesson": "A 'shock' scenario framed against a static baseline stops being well-defined once the baseline itself is already an active, escalating conflict -- future scenario forecasts should set a higher, more specific bar when the starting point is already volatile."
   },
   {
    "id": "2026-08-31-am-1",
@@ -2171,7 +2378,10 @@
    "horizon": "2026-09-04",
    "probability": "35-50%",
    "basis": "Odds already moved from ~35% to ~60% since Wednesday's Jackson Hole keynote; continued hawkish sell-side commentary through the weekend",
-   "status": "open"
+   "status": "correct",
+   "outcome": "CME-implied September rate-hike odds were already at roughly 66% as of Aug 31-Sept 1 data (Forbes/CME FedWatch), ahead of Friday's jobs report -- condition met before the horizon.",
+   "graded": "2026-09-03",
+   "lesson": "Odds moved faster than the horizon anticipated; Warsh's hawkish tone and the broader hike narrative built momentum within days, not weeks."
   },
   {
    "id": "2026-09-01-am-1",
@@ -2206,7 +2416,10 @@
    "horizon": "2026-09-04",
    "probability": "35-50%",
    "basis": "Odds have climbed from ~40% (Aug 21) to the high 50s/60s over the past week and a half, and both Warsh and Bessent spoke publicly Monday without moving toward each other.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Same CME reading (~66%) satisfies this forecast's 65-70% range, confirmed via the same Aug 31-Sept 1 data ahead of Friday's jobs report.",
+   "graded": "2026-09-03",
+   "lesson": "Duplicate-window forecast; see 2026-08-31-am-3."
   },
   {
    "id": "2026-09-01-pm-1",
@@ -2216,7 +2429,10 @@
    "horizon": "2026-09-08",
    "probability": "30-45%",
    "basis": "No claim surfaced in over 16 hours despite two direct government responses (US strike, Iranian retaliation) built on top of the incident; most attacks in this six-month standoff have gone unclaimed rather than claimed.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "CENTCOM's Sept 5 statement confirmed direct US military action against Iranian vessels (attribution via the US side), but this did not resolve responsibility for the specific two earlier Hormuz tanker strikes the forecast referenced -- those remain formally unclaimed even as the broader standoff produced government-level attribution days later.",
+   "graded": "2026-09-08",
+   "lesson": "A compound forecast referencing a specific pair of incidents can be overtaken by a larger, related event; grade the original claim narrowly rather than letting adjacent news carry it to 'correct.'"
   },
   {
    "id": "2026-09-01-pm-2",
@@ -2239,7 +2455,10 @@
    "horizon": "2026-09-05",
    "probability": "30-45%",
    "basis": "Odds sat in the mid-to-high 60s today; both JOLTS (a narrow miss) and ISM Manufacturing (a miss, decelerating from July) were softer than needed to force odds decisively through 70%, so a further push likely needs a hot Friday jobs report.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CME-implied September rate-hike odds closed the week in the high 50s to mid-60s percent range following Friday's payrolls beat, per multiple trackers -- a real jump from Thursday's ~55%, but not above the 70% threshold this forecast required.",
+   "graded": "2026-09-05",
+   "lesson": "The direction of Friday's move was correctly anticipated by other forecasts this week, but this specific threshold (70%) overshot even a genuinely large surprise -- a reminder that a correct directional call can still miss a specific numeric bar."
   },
   {
    "id": "2026-09-02-am-1",
@@ -2249,7 +2468,10 @@
    "horizon": "2026-09-09",
    "probability": "35-50%",
    "basis": "Escalating strike-and-counterstrike cadence since Aug. 30 plus a newly declared retaliation policy that structurally raises the odds of a further round.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "CENTCOM destroyed five more IRGC-linked crude tankers (Kaviz, Charminar, Horizon 1, Riesco, Derya) on Sept 8, bringing the week's total to ten, after Iran fired ballistic missiles at a US Navy warship twice over Sept 7-8. Iran also claims to have targeted shipping near Hormuz. This exceeded the forecast's scope, not just met it.",
+   "graded": "2026-09-09",
+   "lesson": "The escalating-cadence base rate under-forecast, if anything -- the tanker-strike pace nearly doubled in a single day rather than producing one further isolated incident."
   },
   {
    "id": "2026-09-02-am-2",
@@ -2259,7 +2481,10 @@
    "horizon": "2026-09-03",
    "probability": "55-65%",
    "basis": "Broadcom's recent history of landing inside its options-implied post-earnings range more often than not.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Broadcom fell more than 6% after hours per multiple market reports (shares testing/falling below $350 intraday from a $367.24 pre-earnings close) -- within the options market's implied ~12% range. Exact settled magnitude not yet printed as of this edition.",
+   "graded": "2026-09-03",
+   "lesson": "Options-implied move ranges are a reasonable calibration anchor even when the specific driver (revenue guidance, not AI-chip guidance) was misread same-night."
   },
   {
    "id": "2026-09-02-am-3",
@@ -2269,7 +2494,10 @@
    "horizon": "2026-09-08",
    "probability": "60-70%",
    "basis": "Compressed timeline to the certification deadline and the court's decision to hear the case directly.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Missouri Supreme Court ruled Sept 3 (unanimously blocking the map), resolving the case in either-direction terms this forecast covered.",
+   "graded": "2026-09-04",
+   "lesson": "Duplicate-window forecast to 2026-08-24-am-3; both resolve on the same ruling."
   },
   {
    "id": "2026-09-02-pm-1",
@@ -2279,7 +2507,10 @@
    "horizon": "2026-09-04",
    "probability": "40-55%",
    "basis": "ADP's 38K print is the weakest since January and complicates Fed Chair Warsh's hawkish framing directly; odds sat in the mid-to-high 60s Tuesday before this data.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Fed Governor Waller's Sept 3 remarks pushed CME-implied Sept hike odds down to roughly 55%, from ~66% Monday -- at or just below the 55% threshold this forecast specified.",
+   "graded": "2026-09-04",
+   "lesson": "A single Fed governor's on-record comments moved a market-implied probability by double digits within a day -- worth weighting individual Fed speaker remarks heavily in this cycle's odds-tracking, not just scheduled events."
   },
   {
    "id": "2026-09-02-pm-2",
@@ -2289,6 +2520,293 @@
    "horizon": "2026-09-09",
    "probability": "35-50%",
    "basis": "Today's four-country retaliation (Jordan, Bahrain, Kuwait, Iraq) is the widest round of this standoff yet, and the US's new 'tanker for tanker' policy structurally invites further exchanges from either side.",
+   "status": "correct",
+   "outcome": "Iran struck Kuwait's Ahmed al-Jaber air base area and, reportedly for the first time, the UAE's Al Minhad air base overnight Sept 2-3 -- the widest round yet of this standoff.",
+   "graded": "2026-09-03",
+   "lesson": "The pattern of near-daily escalation this week made a within-a-week further attack close to a base-rate call; the genuine uncertainty was scope (which country), not whether."
+  },
+  {
+   "id": "2026-09-03-am-1",
+   "date": "2026-09-03",
+   "slot": "am",
+   "forecast": "The US or an allied power (UAE, Kuwait) responds directly and militarily to last night's strikes within 48-72 hours",
+   "horizon": "2026-09-06",
+   "probability": "30-45%",
+   "basis": "This week's pattern has been same-week, not same-day, retaliation; a confirmed UAE strike would be a bigger provocation than Tuesday's Jordan/Bahrain hits, which drew no immediate US military response.",
+   "status": "correct",
+   "outcome": "CENTCOM confirmed Saturday Sept 5 (within the window) that the US disabled or sank three Iranian tankers after Iran fired on two US Navy ships -- a direct US military response, not the UAE/Kuwait actor named in the forecast, but satisfying its core claim (a direct US/allied military response within 48-72 hours).",
+   "graded": "2026-09-07",
+   "lesson": "The near-daily escalation pattern this report tracked through late August correctly predicted timing; it named the wrong likely actor (a Gulf ally rather than the US itself), a reminder to keep probability spread across all named actors rather than anchoring on the most novel one."
+  },
+  {
+   "id": "2026-09-03-am-2",
+   "date": "2026-09-03",
+   "slot": "am",
+   "forecast": "Friday's August jobs report (nonfarm payrolls) comes in weak, extending the soft ADP signal (below the trailing 12-month trend pace)",
+   "horizon": "2026-09-04",
+   "probability": "40-55%",
+   "basis": "Two consecutive soft ADP prints (44K July revised down, 38K August) are a directional signal only, since ADP and nonfarm payrolls have diverged meaningfully in prior months this year.",
+   "status": "wrong",
+   "outcome": "August payrolls printed +162,000, the strongest gain since March -- the opposite of an extension of the soft ADP signal.",
+   "graded": "2026-09-04-pm",
+   "lesson": "ADP and BLS payrolls diverged sharply again this month; ADP continues to be an unreliable same-week proxy for the official print."
+  },
+  {
+   "id": "2026-09-03-am-3",
+   "date": "2026-09-03",
+   "slot": "am",
+   "forecast": "The administration files a notice of appeal in Judge Boardman's birthright-citizenship injunction within the week",
+   "horizon": "2026-09-10",
+   "probability": "55-70%",
+   "basis": "The administration has consistently and quickly appealed similar injunctions against this policy earlier in 2026.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-am-1",
+   "date": "2026-09-04",
+   "slot": "am",
+   "forecast": "Missouri Attorney General Hanaway files an emergency application with the US Supreme Court seeking to reinstate the new congressional map",
+   "horizon": "2026-09-18",
+   "probability": "55-70%",
+   "basis": "Hanaway's explicit, on-record statement that she would appeal, calling the ruling unprecedented, made within hours of the decision.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-am-2",
+   "date": "2026-09-04",
+   "slot": "am",
+   "forecast": "The Pentagon or CENTCOM issues an on-record statement directly addressing the New York Times' wedding-strike visual analysis",
+   "horizon": "2026-09-11",
+   "probability": "30-45%",
+   "basis": "Vance has said the military is investigating 'very fully,' but the administration's pattern this campaign has generally been to let contested-strike claims go unaddressed rather than confirm or deny specific outlet analyses.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-04-am-3",
+   "date": "2026-09-04",
+   "slot": "am",
+   "forecast": "A further Iran-linked strike or retaliatory action (by Iran or a US/allied response) occurs within 72 hours of the Kermanshah strike",
+   "horizon": "2026-09-07",
+   "probability": "45-60%",
+   "basis": "Near-daily escalation pattern tracked across the past two weeks of this standoff, with each round drawing a response within one to three days.",
+   "status": "correct",
+   "outcome": "Iran fired on two US Navy ships Saturday Sept 5, and CENTCOM confirmed the US disabled or sank three Iranian tankers in response -- squarely within the 72-hour window and the most direct exchange of the conflict to date.",
+   "graded": "2026-09-07",
+   "lesson": "Second consecutive correct call on this standoff's escalation cadence; the pattern held again."
+  },
+  {
+   "id": "2026-09-04-pm-1",
+   "date": "2026-09-04",
+   "slot": "pm",
+   "forecast": "The US Supreme Court acts (grants, denies, or otherwise disposes of Missouri AG Hanaway's emergency application) on the congressional-map stay before Tuesday's Sept 8 ballot-finalization deadline",
+   "horizon": "2026-09-08",
+   "probability": "55-70%",
+   "basis": "Missouri's ballot-finalization deadline creates a hard, days-away forcing event; the Court's emergency docket has historically acted close to comparable election-map deadlines rather than let them pass unaddressed.",
+   "status": "wrong",
+   "outcome": "The Supreme Court took no action (no grant, denial, or other disposition) on Missouri's emergency application before today's ballot-finalization deadline; briefing only completed today with Missouri's own reply brief.",
+   "graded": "2026-09-08",
+   "lesson": "This report over-weighted the deadline's forcing effect on the Court itself -- the Court moved at the pace of full briefing, which did not close until the deadline day itself, not at the pace of the state's operational deadline."
+  },
+  {
+   "id": "2026-09-04-pm-2",
+   "date": "2026-09-04",
+   "slot": "pm",
+   "forecast": "The Supreme Court responds by its Sept 8 deadline to DOJ's direct application on the mail-ballot rule, and North Carolina's ballots go out this weekend under the status quo (pre-rule) process absent an emergency order",
+   "horizon": "2026-09-08",
+   "probability": "55-70%",
+   "basis": "North Carolina's mailing deadline arrives before the Court's own response deadline, and emergency administrative stays this close to a mailing deadline are uncommon without a clearer circuit split already ruled on.",
+   "status": "partial",
+   "outcome": "North Carolina's ballots did go out over the weekend under the status-quo process absent an emergency order, exactly as forecast. But the Supreme Court did not respond by Sept 8 -- because, per this run's own correction, the actual response deadline Justice Jackson set is Wednesday Sept 9, not Sept 8. The forecast's Sept 8 premise was itself wrong, which this outlet only caught today.",
+   "graded": "2026-09-08",
+   "lesson": "A forecast inherits any error in the calendar entry it's built on -- this is a direct downstream cost of the deadline mistake corrected in today's ledger."
+  },
+  {
+   "id": "2026-09-04-pm-3",
+   "date": "2026-09-04",
+   "slot": "pm",
+   "forecast": "CME-implied September rate-hike odds hold above 55% into Tuesday's session (the next trading day after Labor Day), rather than fully unwinding again before the Sept 16 FOMC meeting",
+   "horizon": "2026-09-09",
+   "probability": "50-65%",
+   "basis": "Today's jobs beat was a clean, primary-sourced surprise (not a single speech), and Waller has explicitly deferred his own view to next week's CPI rather than pushing back on the odds move today -- there is no confirmed dovish counter-catalyst before Tuesday.",
+   "status": "correct",
+   "outcome": "The most recent confirmed reading (Sept 7, secondary-sourced) had hike odds at roughly 58.7%, still above the 55% floor though down from 66% on Aug 31. No same-day Tuesday reading or dovish reversal catalyst was found; CME's own FedWatch page was outside this run's reachable sources.",
+   "graded": "2026-09-09",
+   "lesson": "Odds held above the floor on the last confirmed read, but this system still lacks a reliable same-day CME FedWatch pull -- worth fixing before the next odds-threshold forecast, since grading here rests on a two-day-old secondary number."
+  },
+  {
+   "id": "2026-09-06-sun-1",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "August 2026 CPI (Fri Sept 11, 8:30 ET) prints at or above 2.9% year over year headline, i.e. accelerating from July's 2.7%.",
+   "horizon": "2026-09-11",
+   "probability": "55-65%",
+   "basis": "Cross-corroborated economist-survey aggregation (not a single primary bank table) puts consensus at 2.9% y/y headline; this week's record US diesel price ($5.85/gal) and Brent's 6.6-9% weekly surge both predate the CPI reference period's tail end and argue for upside risk to that consensus.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-2",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "A further direct Iran-US military exchange (beyond Saturday's tanker strikes and Iranian missile fire on two US Navy ships) occurs this week.",
+   "horizon": "2026-09-11",
+   "probability": "35-50%",
+   "basis": "CENTCOM commander Adm. Brad Cooper stated an explicit escalate-for-escalate doctrine on the record after Saturday's exchange; VP Vance's standing precondition for talks (shipping attacks must stop first) remains unmet by either side.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-3",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "The Kyiv/Moscow capitals-only strikes pause is extended, widened, or formalized into a broader arrangement by Sept 8, rather than simply lapsing back into strikes.",
+   "horizon": "2026-09-08",
+   "probability": "30-45%",
+   "basis": "Zelensky called Sunday's Kyiv meeting with Witkoff/Kushner 'constructive' and says Ukraine has counter-proposals ready, but Putin reportedly rejected a full ceasefire in Moscow a day earlier and no detail of Ukraine's own proposal is yet public, leaving genuine two-way uncertainty.",
+   "status": "wrong",
+   "outcome": "The Kyiv/Moscow capitals-only pause lapsed Monday evening without renewal or formalization; Russia resumed strikes on Kyiv overnight into Sept 8, killing at least two.",
+   "graded": "2026-09-08",
+   "lesson": "Envoy visits described as 'constructive' by one side are weak evidence of an extension when the other side has not confirmed any reciprocal commitment -- this is the second time this pattern has resolved toward simple lapse rather than extension."
+  },
+  {
+   "id": "2026-09-06-sun-4",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "The Supreme Court does not issue a final ruling on Missouri's congressional-map emergency application by the state's own cited Sept 8 certification deadline.",
+   "horizon": "2026-09-08",
+   "probability": "55-70%",
+   "basis": "Missouri's own filing asks the Court to rule by Sept 13, five days after the Sept 8 date it cites as the operative certification deadline, and Justice Kavanaugh's briefing schedule (state's reply due Sept 8 itself) leaves no realistic window to rule by that date.",
+   "status": "correct",
+   "outcome": "No SCOTUS ruling on Missouri's emergency application was issued by Sept 8; Missouri's own ballot-certification deadline passed today with the map still undecided.",
+   "graded": "2026-09-08",
+   "lesson": "The state's own briefing schedule (its reply not due until the deadline itself) was a better predictor than any urgency implied by the deadline's own hard-forcing framing."
+  },
+  {
+   "id": "2026-09-06-sun-5",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Brent crude closes the week (Fri Sept 11) above $90/bbl, holding most of this weekend's Iran-war-driven surge rather than fully round-tripping lower.",
+   "horizon": "2026-09-11",
+   "probability": "55-65%",
+   "basis": "Friday's close of $94.86 reflects an active, unresolved Gulf conflict that escalated further Saturday, and OPEC+ held October output unchanged Sunday rather than adding supply to cool the price.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-6",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "North Korea conducts a missile test or other visible military signal during the Sept 7-11 'Freedom Edge' drill window.",
+   "horizon": "2026-09-11",
+   "probability": "40-55%",
+   "basis": "Kim Yo Jong and Pak Jong-chon both issued sharply escalatory statements ahead of the drill; North Korea fired roughly ten short-range ballistic missiles on Aug 20 around an earlier drill announcement, a plausible but unconfirmed precedent for this window.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-7",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "VIX closes the week (Fri Sept 11) above 16, materially above Friday's 14.53 close.",
+   "horizon": "2026-09-11",
+   "probability": "30-40%",
+   "basis": "VIX enters the week in normal, undistressed contango (14.53 spot / 11.97 nine-day / 17.61 three-month) with no term-structure stress signal, but two binary catalysts -- Friday's CPI and the Gulf war's trajectory -- both sit inside the window.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-8",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Base scenario: CPI lands close to the estimated consensus (roughly 0.3% m/m, 2.9% y/y headline), the Gulf conflict continues without a further direct Iran-US exchange, and the Kyiv/Moscow pause quietly lapses without a broader deal -- equities trade a narrow range for the week.",
+   "horizon": "2026-09-11",
+   "probability": "35-45%",
+   "basis": "Analytic judgment weighing the estimated CPI consensus, the still-open Gulf and Ukraine tracks, and no other scheduled catalyst of comparable size this week -- not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-9",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Bull scenario: CPI surprises cooler than consensus, the Gulf conflict de-escalates with no further Iran-US exchange, and the Kyiv/Moscow pause extends or widens -- broad risk-on, oil eases, VIX stays below 15.",
+   "horizon": "2026-09-11",
+   "probability": "15-20%",
+   "basis": "Requires multiple favorable confirmations (a cool CPI print, Gulf de-escalation, an extended pause) to align simultaneously; analytic judgment, not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-10",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Bear scenario: CPI surprises hot, confirming energy pass-through, paired with at least one further Gulf incident short of full escalation -- yields back up, equities give back part of the week's gains, high-yield spreads widen off 2.65%.",
+   "horizon": "2026-09-11",
+   "probability": "20-30%",
+   "basis": "The diesel-price record and Brent's surge both argue for upside CPI risk, and Adm. Cooper's stated escalate-for-escalate doctrine argues for a real chance of a further, contained Gulf incident this week.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-06-sun-11",
+   "date": "2026-09-06",
+   "slot": "sun",
+   "forecast": "Shock scenario: a further US-Iran exchange produces casualties on either side, North Korea conducts a provocative test during Freedom Edge that draws a US/allied response, or the Kyiv/Moscow pause collapses into a mass-casualty strike -- broad risk-off, oil spikes past $95, VIX breaks above 20.",
+   "horizon": "2026-09-11",
+   "probability": "8-15%",
+   "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff on any of three independent tracks (Gulf, Korea, Ukraine); analytic judgment, not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-am-1",
+   "date": "2026-09-08",
+   "slot": "am",
+   "forecast": "Iran publishes coordinates for, or takes an enforcement action under, a Hormuz-area 'exclusion zone'",
+   "horizon": "2026-09-22",
+   "probability": "20-35%",
+   "basis": "Rhetoric has escalated twice this week (Ghalibaf's 'era of proportionate responses is over,' now Rezaei's zone threat) without a matching action on the water; most threats in this standoff have stayed rhetorical.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-am-2",
+   "date": "2026-09-08",
+   "slot": "am",
+   "forecast": "The Supreme Court disposes of Missouri AG Hanaway's emergency application (grants, denies, or otherwise rules) by the state's own requested Sept 13 date",
+   "horizon": "2026-09-13",
+   "probability": "55-70%",
+   "basis": "Full briefing closes today with Missouri's reply; the state's own filing asks for a ruling by this date, and the emergency docket has historically acted close to comparable election-map deadlines.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-am-3",
+   "date": "2026-09-08",
+   "slot": "am",
+   "forecast": "No renewed Kyiv/Moscow capitals-only pause is announced this week; strikes continue on both sides at roughly pre-pause tempo",
+   "horizon": "2026-09-12",
+   "probability": "50-65%",
+   "basis": "The pause already lapsed with strikes resuming overnight and no new pause announced; Monday's Trump-Zelensky-Putin calls produced rhetoric but no confirmed concrete step.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-pm-1",
+   "date": "2026-09-08",
+   "slot": "pm",
+   "forecast": "Saudi Arabia takes a confirmed retaliatory military action against Houthi positions in Yemen in direct response to today's attack on its oil infrastructure",
+   "horizon": "2026-09-15",
+   "probability": "40-55%",
+   "basis": "Saudi officials said today they would 'finish the job' against the Houthis, but the coalition has cycled through similar rhetoric after prior attacks without always following through quickly.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-pm-2",
+   "date": "2026-09-08",
+   "slot": "pm",
+   "forecast": "WTI crude closes above $95/bbl at least once this week, extending today's Gulf-driven jump",
+   "horizon": "2026-09-12",
+   "probability": "45-60%",
+   "basis": "WTI closed today at $94.26 on the Houthi attack alone; a further Gulf escalation or a cold CPI print easing broader risk appetite could each push it through $95, but de-escalation or profit-taking could just as easily cap it.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-08-pm-3",
+   "date": "2026-09-08",
+   "slot": "pm",
+   "forecast": "No Gulf state issues a public statement on Saturday's CENTCOM-confirmed US-Iran naval exchange near Kharg Island by Sept 15, ten days after the incident",
+   "horizon": "2026-09-15",
+   "probability": "55-70%",
+   "basis": "Five consecutive days of silence from every Gulf state on that specific incident, even as they absorb a separate, more direct Houthi attack today, suggests a deliberate posture of non-comment rather than a delay that is about to end.",
    "status": "open"
   }
  ]
