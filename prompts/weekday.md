@@ -65,7 +65,11 @@ Look up `TODAY` in `data/nyse-holidays.json` (`years.<YYYY>.holidays` and `.earl
   Winners & Losers are replaced by the same "Markets Closed — <holiday>" section (global cash
   markets, futures, crypto — there is no US tape to attribute); Tomorrow covers the reopen. What
   Changed Today, the domain sections, Local and the appendix run normally, with the appendix's US
-  tables carrying the Friday date in their captions.
+  tables carrying the Friday date in their captions. **Watchlist runs normally** in both editions
+  (filings and earnings do not stop for a holiday). **Markets is folded into the "Markets Closed"
+  section as its second half** — the regime call and rates & credit from the last session, the
+  cross-asset and commodity tape from whatever is trading; the Sectors & factors sub-head is
+  omitted because there is no US tape.
 - **Early close (13:00 ET):** say it once in The Brief's Markets bullet (the masthead carries
   nothing but edition, title, dateline and standfirst); the pm Board's as-of line reads "1:00 PM ET
   early close" and the appendix captions label final data `EOD official (13:00 ET early close)`.
@@ -290,7 +294,8 @@ set `fetched` to now. Importance is classified by you, with the reason stated (S
      and filter by CIK the same way.
   4. Fetch only the matched filings (`https://www.sec.gov/Archives/edgar/data/<CIK>/<accession>/`).
   Keep filings newer than the previous run (`last_success` in `state/last-run.json`). Any material
-  filing becomes a Business/Corporate item with the filing as primary source. An empty result is
+  filing becomes a Watchlist item (Step 4) — or a Business item if the filer is not a watchlist
+  name — with the filing as primary source. An empty result is
   not a failed source; only an HTTP failure after retries is.
 - Any public/private status question → SR §8 registry procedure. Never trust memory for tickers.
 
@@ -360,20 +365,35 @@ The paper has printed "rate-hike odds near two-thirds" from unnamed sources and,
 had no reading at all. Compute one every edition and print it in The Economy (Step 4):
 
 1. **FOMC decision dates** come from `https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm`
-   (.gov UA), cached in `state/calendar-cache.json` as `fomc_dates` (the decision days, ISO dates)
-   and refreshed when the list is empty or older than 30 days.
-2. **Current rate**: FRED `DFF`, latest observation (§2.2). **Market-implied**: for each of the next
-   two meetings, the §2.5 contract for the following month gives the implied average effective rate
-   for that month. Implied change at the meeting = implied rate − DFF (for the second meeting, minus
-   the first meeting's implied change). Rough probability of a 25bp move = implied change ÷ 0.25,
-   clamped to 0–100% and printed as a band of ±5 points ("roughly 55–65% for a September hike").
+   (.gov UA; the page lists two-day ranges — the decision day is the second day), cached in
+   `state/calendar-cache.json` as `fomc_dates` (ISO dates, at least two of them in the future) with
+   `fomc_fetched` = the fetch timestamp. Refresh when `fomc_dates` holds fewer than two dates after
+   today or `fomc_fetched` is absent or older than 30 days; the 18-hour `fetched` cycle of §2.10
+   does not govern this key.
+2. **Current rate**: FRED `DFF`, latest observation (§2.2). **Sanity check**: `ZQ=F` (100 − price)
+   should sit within a few basis points of DFF; if it does not, say the futures read is unreliable
+   this run and print DFF alone. **Market-implied**, in percentage points: for the first meeting,
+   implied change = implied average rate for the month after it − DFF; for the second meeting,
+   implied change = implied average rate for the month after it − implied average rate for the month
+   after the first meeting. **The sign is the direction** (positive = hike, negative = cut). Rough
+   probability of one 25bp move in that direction = |implied change| ÷ 0.25 (equivalently, basis
+   points ÷ 25), clamped to 0–100% and printed as a band of ±5 points, naming the direction the
+   market is pricing and never the near-zero odds of the other one ("roughly 55–65% for a September
+   hike"; "roughly 50–60% for an October cut"). Under 5bp either way prints as "little priced for
+   September", not as a probability; over 25bp prints as "more than one quarter-point priced", not
+   as 100%. The month-after contract can straddle the following meeting by a few days; say
+   "roughly" and move on.
 3. **Say what it is**: "fed funds futures, Yahoo, delayed" — never "the market says" without the
    instrument. If a wire quotes CME FedWatch, that may be printed too, named and time-stamped
    ("CME FedWatch 62% as of 4:05 PM ET, per Reuters"); it never replaces the computed reading.
-4. **Track the change**: keep yesterday's reading in `state/market-history/last-good.json` →
-   `fed_path` and print the day's move in points. The Fed-path paragraph is the one place the
-   morning "Watch today" and the closing attribution labels can point to when they say rates
-   repriced.
+4. **Track the change**: append one row per edition to `state/market-history/fed-path.csv`
+   (header `date,slot,dff,meeting1,rate1,chg_bp1,prob1,meeting2,rate2,chg_bp2,prob2`; append-only,
+   like `hy-oas.csv` — never rewrite a row). The day's move in points compares against the previous
+   row; on the first run, or when the previous row is missing, say "no prior reading" — never a
+   fabricated move. Saturday's start-of-week against end-of-week comparison (`prompts/weekend.md`
+   S4 item 9) reads Monday's am row and Friday's pm row from this file. The Fed-path paragraph is
+   the one place the morning "Watch today" and the closing attribution labels can point to when
+   they say rates repriced.
 
 ## Step 3 — Change log vs story memory
 
@@ -396,11 +416,11 @@ overwrite. Percentages describe the day: a +0.5% session is not a "jump", whatev
 the 6:00 AM Learning Brief (`prompts/learning.md`) on 2026-08-16 and must not reappear here.
 
 Select 8–10 Top Stories (SPEC §4 scoring — keep the rationale in story memory, not in the report),
-**at least four of them markets, economy or business** and at most five or six general news (SR §7:
+**at least four of them markets, economy or business** and at most six general news (SR §7:
 this is a markets paper first). Masthead per SR §11, voice per SR §11b, markup per SR §12/§12b,
 word budget per SR §12b.7. Set `data-slot`.
 
-**The three sections that carry the markets weight** (both editions; added 2026-09-09):
+**The four sections that carry the markets weight** (both editions; added 2026-09-09):
 
 - **The Economy** (250–400 words). Every release that printed since the last edition gets a
   release card in prose — actual, consensus, prior, revision and whether the revision changes the
@@ -412,7 +432,9 @@ word budget per SR §12b.7. Set `data-slot`.
 - **Business** (150–300 words). Corporate news beyond the watchlist: M&A, IPOs, bankruptcies,
   leadership, regulation, labour, pricing. Per SPEC §11: event, company, ticker, source, why it
   matters financially and strategically, who else it touches, the market reaction if any.
-- **Watchlist** (250–450 words, three to six items, `.watch-item` with a `.watch-ticker` label).
+- **Watchlist** (250–450 words, up to six items — one or two on a quiet day is fine, and the
+  section is omitted only when nothing at all moved on the names, SR §12b.6; `.watch-item` with a
+  `.watch-ticker` label).
   What happened on the names in `config/watchlists.yml` since the last edition: 8-K filings from
   the §2.11 sweep (contracts, guidance, leadership, offerings, restructurings), earnings, guidance
   changes, analyst days, index changes, and the SPCX/space and defense/AI-infra names Logan tracks.
@@ -428,8 +450,18 @@ word budget per SR §12b.7. Set `data-slot`.
   **Sectors & factors** — leadership, rotation, equal-weight versus cap-weight, small versus large,
   value versus growth, what changed; **Cross-asset & commodities** — dollar, oil, gold, copper, BTC,
   the correlations that held and the ones that broke. This is the prose that used to sit in the
-  collapsed appendix; the appendix now keeps only the tables for these (SR §16). Every claim about
-  cause obeys SR §5.
+  collapsed appendix; the appendix now keeps the tables and one sentence per block for these
+  (SR §16). Every claim about cause obeys SR §5.
+
+**Written once, pointed to elsewhere.** A release is written in full once — as the release card in
+The Economy; if it is also the lead Top Story, the story carries the number, the surprise and what
+it means for the world, and the card is two sentences plus the Fed-path paragraph. A watchlist name
+lives in Watchlist: its Top Story (if it earns one) is about what the result means beyond the
+company; Winners & Losers gives it one line with the move; Tomorrow and the Calendar give it one
+row. Before the Open gives the overnight levels and what the open prices; Markets does not repeat
+the levels — it says what they mean for the regime. What Moved Markets carries the attribution
+labels; Markets → Rates & credit refers to them ("the repricing labelled above") rather than
+re-judging the same move.
 
 **Morning (am) — this order:**
 
@@ -437,8 +469,9 @@ word budget per SR §12b.7. Set `data-slot`.
 2. **The Brief** — 5–7 bullets. The world · markets (with numbers) · the thread · biggest risk ·
    watch today.
 3. **Top Stories** — 8–10, first one `.story--lead`, at least four market/economy/business.
-   Prose, decks, at most two `.story-note` each. On jobs, CPI, PCE and FOMC days the data or the
-   Fed leads.
+   Prose, decks, at most two `.story-note` each. On jobs, CPI, PCE and FOMC days the morning lead
+   is the preview — what is priced, what the Fed path does on a miss in either direction, the two
+   numbers that matter — and the closing lead is the print and the tape's reaction to it.
 4. **Overnight** — what happened while the US slept, and what changed since yesterday's close
    (these were two separate sections; they are one now, because they were always the same story).
 5. **The Economy** — 6. **Business** — 7. **Watchlist** — as above.
@@ -452,7 +485,11 @@ word budget per SR §12b.7. Set `data-slot`.
 13. **Before the Open** — prose, not a table: futures, yields, dollar, VIX, oil, gold, BTC, what
     the tape appears to price, the most fragile assumption, what would invalidate it. Say once that
     futures are not a guaranteed open.
-14. **Markets** — as above.
+14. **Markets** — the morning version, 250–400 words: **The regime** (the call, and whether
+    overnight changed it); **Rates & credit** (the overnight move in the curve, the dollar and the
+    credit ETFs); **Breadth** (yesterday's session from §2.8 — the one reading only the morning
+    has); **Cross-asset & commodities** (what moved overnight and which correlation it tested). It
+    does not re-describe yesterday's sector tape — the Closing Brief did that.
 15. **Risks & Scenarios** — probability RANGES with a stated basis (SR §10 logging unchanged).
 16. **Local** — weather strip first (SR §18), then up to two items per beat.
 17. **Market Appendix** — collapsed, SR §16 (tables; the narrative is in Markets).

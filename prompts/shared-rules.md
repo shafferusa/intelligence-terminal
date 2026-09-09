@@ -157,7 +157,7 @@ deeper analysis. Status (`New/Developing/Materially changed/Continuing/Resolved/
 Unconfirmed`), event and publication times, "last checked", the verification level and the scoring
 rationale are recorded in `state/stories.json` — none of it is printed (the seven labelled
 subheads were removed 2026-08-16, §11b).
-Select ~8–12 stories by the SPEC §4 scoring criteria; don't pad thin days, don't suppress heavy ones.
+Select 8–10 stories by the SPEC §4 scoring criteria; don't pad thin days, don't suppress heavy ones.
 
 **This is a markets paper first (Logan, 2026-09-09; SPEC §0c).** Measured over the first three
 weeks of the decluttered paper, markets, the economy and business were 17–24% of the weekday
@@ -165,14 +165,20 @@ reading path and 8% of the Saturday review, the Business section ran 40–80 wor
 three Top Stories a day touched a market. That is the wrong paper for this reader. So:
 
 - **At least four of the Top Stories** come from markets, the economy, central banks, business,
-  earnings, filings or the watchlist names — every edition, not only on data days. "Relevance to
+  earnings, filings or the watchlist names — every edition, not only on data days (on Saturday the
+  rule applies to The Week's Ten Stories, on Sunday to Top Themes, where at least two are market or
+  economic; the weekend Today's News sections are exempt — they carry whatever happened since
+  Friday's close). "Relevance to
   Logan's interests" in the SPEC §4 scoring means exactly these subjects, weighted above general
   news of similar magnitude: a Fed governor breaking publicly with the chair, a guidance cut on a
   watchlist name, a $13B acquisition, a 20bp move in the 2-year, are Top Stories, not lines in a
   domain section.
 - **On jobs, CPI, PCE and FOMC days the lead is the data or the Fed**, whatever else happened,
   unless something happened that a reasonable person would call a war or a constitutional crisis.
-- **Non-market Top Stories are capped at five or six.** Running disaster tolls, vulnerability
+  The 6:30 edition cannot lead with a print that lands at 8:30: the morning lead is the preview —
+  what is priced, what the Fed path does on a miss either way, the two numbers that matter — and
+  the closing lead is the print and the tape's reaction to it.
+- **Non-market Top Stories are capped at six.** Running disaster tolls, vulnerability
   catalogues, court-calendar mechanics and the day's incremental war reporting get one paragraph
   in their domain section unless something materially changed; they are not Top Stories by
   repetition.
@@ -218,7 +224,7 @@ basis — no fake precision.
 corresponds to forecast text, with its range, printed in the edition that logged it. Morning editions
 make their calls in Risks & Scenarios; the closing edition makes any call in **Tomorrow**, as a
 sentence with its range ("a further attack on Gulf shipping within a week: 35–50%, on the basis
-of…"); the weekend editions in the Risk Register and Scenarios. Five closing-edition forecasts were
+of…"); the weekend editions in the Risk Register, Scenarios and Sunday's Market Setup. Five closing-edition forecasts were
 logged and graded in late August/early September that no edition ever printed — a scorecard the
 reader cannot check is not accountability.
 
@@ -316,7 +322,10 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
    `{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N,"generated_at":"<ISO8601 with ET offset>","timezone":"America/New_York"}`
    Every key must match the `reports/index.json` entry (§13). `headlines` is 2–3 short clauses — it
    is what the Telegram push renders as bullets, so write them for someone reading a lock screen.
-7. Compute `reading_minutes` = total body word count / 220, rounded up.
+7. Compute `reading_minutes` = words in the reading path / 220, rounded up — the body minus anything
+   inside a collapsed `<details>`, minus `.board` and every `.table-wrap` table: exactly what
+   `report.js` and `make_audio.py` read aloud. (Until 2026-09-09 the appendix and the Board were
+   counted, which is why a 25-minute stamp sat on a 17-minute read.)
 8. Pages are readable with JS off: use semantic HTML, `<details>` for collapsed sections, real text
    (no content injected by script). The listen-to-text player is injected by
    `site/assets/report.js` — the template already loads it; never hand-write an audio bar, and
@@ -343,18 +352,26 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
    "Beyond X and Y (above), no new movement was found today on…" followed by a list of threads —
    a section whose only content is a list of things that did not happen is omitted, and continuing
    threads with nothing new are not listed anywhere in the paper.
-7. **Reading time**: `reading_minutes` = body word count / 220, rounded up. Target for a weekday
-   edition after the 2026-08-16 declutter is **18–25 minutes**, not 40+. If you are over 30, you are
-   writing scaffolding, restating the same story in two sections, or padding a domain section.
+7. **Reading time**: `reading_minutes` = words in the reading path / 220, rounded up (§12.7: the
+   collapsed appendix, the Board and the tables do not count — the reader does not read them and
+   the audio does not speak them). Target for a weekday edition is **18–25 minutes**, not 40+. If
+   you are over 25, you are writing scaffolding, restating the same story in two sections, or
+   padding a domain section.
    **The budget inside those minutes (2026-09-09):** roughly 4,000–5,000 words in the reading
-   path. Top Stories 1,600–2,000 (eight to ten stories, at least four of them markets, economy or
-   business); The Economy 250–400; Business 150–300; Watchlist 250–450; Markets 400–600; Before
-   the Open 200–300 (am) or What Moved Markets 300–450 plus Winners & Losers 150–250 (pm);
-   Overnight / What Changed Today 150–250; Risks & Scenarios 150–250 (am); Tomorrow 100–200 (pm);
-   Politics & Government, The World, Technology & AI, Science & Space 80–150 each and omitted when
-   thin; Local at most 250. Markets, the economy and business therefore land near half the words.
-   Weekend editions: 25–35 minutes, with The Week in Markets at 1,000 words or more (Saturday)
-   and Market Setup at 400 or more (Sunday).
+   path, The Brief (at most 200) and the colophon (at most 80) included. Top Stories 1,500–1,900
+   (eight to ten stories, at least four of them markets, economy or business); The Economy
+   250–400; Business 150–300; Watchlist 250–450; Markets 400–550 (pm) or 250–400 (am, the morning
+   version in `prompts/weekday.md` Step 4); Before the Open 200–300 (am) or What Moved Markets
+   300–450 plus Winners & Losers 150–200 (pm); Overnight / What Changed Today 150–250; Risks &
+   Scenarios 150–250 (am); Tomorrow 100–150 (pm); Politics & Government, The World, Technology &
+   AI, Science & Space 80–120 each and omitted when thin; Local at most 200. **The tops of these
+   ranges sum to about 5,500 words, or 25 minutes: they are ceilings, not targets** — an edition at
+   the top of every range is over budget. Markets, the economy and business land near half.
+   **Weekend:** Saturday 6,500–7,500 words in the reading path (30–35 minutes) — The Brief at most
+   250, Today's News at most 800, The Week's Ten Stories 1,500–2,000, The Week in Markets 1,000 or
+   more, The Economy & Central Banks and Business & Earnings 300 or more each, the four other
+   domains 100–200 each, Scorecard at most 400. Sunday 5,500–7,000 (25–32 minutes), Market Setup
+   400 or more.
 
 ## 13. Archive index update (`site/reports/index.json`)
 
@@ -365,7 +382,8 @@ Read the file (JSON array, newest first), **prepend**:
 Telegram push from this entry and has no other way to know the top developments. Omitting it
 produces a bare title-and-summary push. **One of the clauses is always the market or economic
 development of the edition** (the tape, the data, the Fed path, an earnings or watchlist move),
-with its number: "S&P −0.8% as the 2-year jumps 14bp on payrolls", not "stocks fell". The
+with its number: "S&P −0.8%, 2-year +14bp after payrolls", not "stocks fell" ("after" and "as",
+never "on" — §5 applies to the push). The
 Learning Brief keeps its own three-clause shape (`prompts/learning.md` Step 4).
 
 Re-serialize and verify the result parses as valid JSON before committing. Never remove old entries.
@@ -467,9 +485,12 @@ duplicate push every morning is what this replaced.
 
 Follow SPEC §22 subsections in order (Regime · Broad equities · Breadth · Sectors · Industries ·
 Watchlists · Rates · Credit · Volatility & options · FX · Commodities · Crypto · Factors ·
-Cross-asset · Earnings · Auctions & liquidity), each inside `<details>`. Narrate anomalies and
-leadership changes, not every row. Show supporting AND contradicting regime evidence. Dealer gamma is
-not tracked (no legitimate free source) — say so. Every table carries timestamps and delay labels.
+Cross-asset · Earnings · Auctions & liquidity), each inside `<details>`. The narrative for the
+regime, rates, credit, sectors, factors, cross-asset, commodities, FX and crypto is written once,
+in the weekday Markets section; here those blocks are tables plus at most one sentence each (Regime:
+the one-line call and its chip). The other blocks narrate anomalies and leadership changes, not
+every row. Dealer gamma is not tracked (no legitimate free source) — say so. Every table carries
+timestamps and delay labels.
 Untracked inputs (put/call ratios, the MOVE index, dealer positioning) get at most one standing
 clause — "MOVE, put/call and dealer positioning are not tracked here" — never an endpoint, a host,
 an HTTP status, or "for weeks". The reader is not debugging the feed.
@@ -481,9 +502,9 @@ source stamps still belong on every table.
 (`prompts/weekday.md` Step 4) carries the regime call, rates & credit, sectors & factors and
 cross-asset & commodities as prose in the reading path, where the reader — and the audio player,
 which skips collapsed blocks — will actually meet it. Do not write those paragraphs twice: in the
-appendix, the Regime, Rates, Credit, Sectors, Factors, Cross-asset and Commodities blocks carry their
-tables and at most one sentence each; the remaining blocks (broad equities, breadth, industries,
-watchlists, volatility, FX, crypto, earnings, auctions & liquidity) are unchanged.
+appendix, the Regime, Rates, Credit, Sectors, Factors, Cross-asset, Commodities, FX and Crypto blocks
+carry their tables and at most one sentence each; the remaining blocks (broad equities, breadth,
+industries, watchlists, volatility, earnings, auctions & liquidity) are unchanged.
 
 ## 17. The Board — watchlist chart (CLOSING EDITION ONLY)
 

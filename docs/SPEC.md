@@ -80,7 +80,7 @@ anything later in this document, this wins.
   lesson linked and the next one marked. Report pages gain working previous/next links at read time
   (lessons step through lessons, news through news). Search indexes report pages only.
 
-### 0c. Amendment of 2026-09-09 — the markets weight (SUPERSEDES the category balance in §4 and the section lists in §18–§21)
+### 0c. Amendment of 2026-09-09 — the markets weight (SUPERSEDES the story count and category balance in §4 and the section lists in §18–§21)
 
 Logan, after three weeks of the decluttered paper: *"the newspapers aren't containing enough
 markets/finance/business/economics stories and analysis."* Measured over the week of Sep 3–8:
@@ -92,8 +92,9 @@ Directed:
 - **This is a markets paper first.** SPEC §4's "relevance to Logan's interests" means markets,
   the economy, central banks, business, earnings and the watchlist names, weighted above general
   news of similar magnitude. At least four Top Stories come from them every edition; on jobs, CPI,
-  PCE and FOMC days the data or the Fed leads. General-news Top Stories are capped at five or six.
-- **Two new standing weekday sections**: **Watchlist** (three to six items from
+  PCE and FOMC days the data or the Fed leads (the morning with the preview, the closing with the
+  print). Top Stories are 8–10; general-news Top Stories are capped at six.
+- **Two new standing weekday sections**: **Watchlist** (up to six items from
   `config/watchlists.yml` names — filings, earnings with pre- and post-report cards, guidance,
   contracts) and **Markets** (the regime, rates & credit, sectors & factors, cross-asset &
   commodities, in prose, 400–600 words). The Market Appendix keeps the tables and drops the
@@ -102,8 +103,10 @@ Directed:
   computed from fed funds futures and the effective rate (`prompts/weekday.md` §2.15).
 - **Weekend**: The Week in Markets runs 1,000 words or more with a weekly returns table; Sunday's
   Economy Ahead and Earnings & Business carry consensus tables and Market Setup runs 400 or more.
-- **Paid for inside 18–25 minutes**: markets, the economy and business are roughly 40% or more of
-  the reading path (`prompts/shared-rules.md` §12b.7 has the word budget); running tolls,
+- **Paid for inside 18–25 minutes of reading path** — the collapsed appendix, the Board and the
+  tables no longer count toward `reading_minutes`, since the reader does not read them and the audio
+  does not speak them. Markets, the economy and business are roughly 40% or more of that reading
+  path (`prompts/shared-rules.md` §12b.7 has the word budget, whose range tops are ceilings); running tolls,
   vulnerability catalogues and court-calendar mechanics become a sentence in a domain section
   unless something materially changed.
 - **The Telegram push always carries one markets clause with its number.**

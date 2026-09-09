@@ -1245,7 +1245,10 @@ table.board-table {
   padding: 1rem 0 0;
   margin: 0 0 1rem;
 }
-.local-item:first-child, .watch-item:first-of-type { border-top: 0; padding-top: 0; }
+/* :first-of-type, not :first-child - the first item follows the h2 (and in the
+   morning the weather strip), so :first-child never matched and the first Local
+   item always drew a top rule. */
+.local-item:first-of-type, .watch-item:first-of-type { border-top: 0; padding-top: 0; }
 .local-item h3, .watch-item h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
 /* Watchlist items (2026-09-09) share the local-item shape; the label is the ticker line. */
 .local-place, .watch-ticker {

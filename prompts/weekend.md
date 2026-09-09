@@ -31,13 +31,22 @@ Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never p
 Lighter than a weekday: Yahoo v8 close series for the trimmed watchlist universe (the Board rows,
 the 11 sector ETFs and the company watchlists that reach the appendix — Yahoo is the primary sweep and
 Twelve Data at most a two-batch spot-check, exactly as `prompts/weekday.md` §2.4), Yahoo v8 for
-indices/futures/commodities/EURUSD/DXY (browser UA acceptable for Yahoo only), Treasury par curve XML (this week's
-dates), FRED weekly deltas for `DGS2 DGS10 T10Y2Y T10YIE DFII10 SOFR BAMLH0A0HYM2 ICSA` (+ append
-`hy-oas.csv` if a new observation exists), Cboe history CSVs (VIX/VIX9D/VIX3M week path),
+indices/futures/commodities/EURUSD/DXY plus the fed funds contracts of `prompts/weekday.md` §2.5
+(`ZQ=F` and the month after each of the next two FOMC dates; browser UA acceptable for Yahoo only),
+Treasury par curve XML (this week's dates), FRED weekly deltas for `DGS2 DGS10 DGS30 T10Y2Y T10YIE
+DFII10 SOFR BAMLH0A0HYM2 ICSA DFF` (+ append `hy-oas.csv` if a new observation exists), Cboe
+history CSVs (VIX/VIX9D/VIX3M week path),
 CoinGecko simple/price + global, and this week's rows of `state/market-history/breadth.json`
 for the breadth arc — written in words ("through Thursday, advancers led on two of four sessions";
-Friday's session is computed Monday morning), never as a file path, "not recomputed" or a key name. Exact endpoints, keys, labels: `prompts/weekday.md` Step 2. Update
-`state/market-history/last-good.json`. News research per SR §4–§6 for weekend developments.
+Friday's session is computed Monday morning), never as a file path, "not recomputed" or a key name. Exact endpoints, keys, labels: `prompts/weekday.md` Step 2. The Fed path
+(`prompts/weekday.md` §2.15, including the cached `fomc_dates`) is computed on both weekend days
+and appended to `state/market-history/fed-path.csv` like any edition. **For Saturday's Week in
+Markets table only:** fetch each ETF, index and commodity row plus `DX-Y.NYB` and `BTC-USD` once
+with `interval=1d&range=ytd` (about 26 calls, paced as §2.4) and take the first close of the year
+as the year-to-date base; yields from FRED `DGS2 DGS10 DGS30` with `observation_start=<Jan 1>`;
+HY OAS year-to-date from `state/market-history/hy-oas.csv`. A row whose series fails carries an
+em dash in that cell only. Update `state/market-history/last-good.json`. News research per
+SR §4–§6 for weekend developments.
 
 ---
 
@@ -82,31 +91,35 @@ entries, so the field stops accumulating every past sweep as running prose.
 ### S4. Compose — this order
 
 1. **Masthead** — edition "Weekly Review", title, date range, standfirst.
-2. **The Brief** — 5–7 bullets covering BOTH the week just gone and anything that broke since
-   Friday's close. If the biggest thing in the reader's world happened last night, it leads.
+2. **The Brief** — 5–7 bullets, at most 250 words, covering BOTH the week just gone and anything
+   that broke since Friday's close. If the biggest thing in the reader's world happened last night,
+   it leads.
 3. **Today's News** — **the weekend edition still carries the day's news.** Everything that
    happened since the Friday closing brief: overnight and Saturday-morning developments, weekend
    politics, anything moving in Asia/Europe or in crypto (the only market trading), breaking
    stories. Full story treatment per SR §11b — this is not a footnote to the retrospective, it is
-   the part of the paper that is actually new. Typically 3–6 stories; more when the weekend is
-   busy, fewer when it is genuinely quiet. If a weekend story changes how the week should be read,
-   say so here and reflect it in the retrospective below.
+   the part of the paper that is actually new. Typically 3–6 stories and at most 800 words; more
+   only when the weekend is genuinely busy, fewer when it is quiet. If a weekend story changes how
+   the week should be read, say so here and reflect it in the retrospective below.
 4. **The Week's Ten Stories** — each: how it started → how it developed → where it ended → why it
-   mattered → what was misunderstood → what is still unresolved. Prose. Exactly one `.story--lead`
-   in the whole edition: on the weekend story if one earned it, otherwise on the first of the Ten —
-   never both (the 2026-08-29 edition carried two).
+   mattered → what was misunderstood → what is still unresolved. Prose, about 150–200 words each —
+   1,500–2,000 for the Ten; the arc, not the retelling. At least four of the Ten are markets, the
+   economy, central banks, earnings or business (SR §7); Today's News is exempt. Exactly one
+   `.story--lead` in the whole edition: on the weekend story if one earned it, otherwise on the
+   first of the Ten — never both (the 2026-08-29 edition carried two).
 5. **Timeline** — the week day by day, compact.
 6. **What Changed in the World** — the synthesis, not a recap.
 7. **Politics & Government** · 8. **The World** · 9. **The Economy & Central Banks** (300 words
    or more: every release of the week as a one-line card — actual, consensus, revision — and the
-   Fed path at the start of the week against the end of it, from `prompts/weekday.md` §2.15) ·
+   Fed path at the start of the week against the end of it — Monday's am row against Friday's pm
+   row of `state/market-history/fed-path.csv`, `prompts/weekday.md` §2.15) ·
    10. **Business & Earnings** (300 words or more: every watchlist name that reported, actual
    against consensus, guidance, reaction; the week's M&A, filings and leadership changes) ·
    11. **Technology & AI** · 12. **Science & Space** — weekly views, each carrying any weekend
    development in that domain rather than repeating it from §3. Politics, World, Technology and
    Science are 100–200 words each; the two market sections are the long ones.
 13. **The Week in Markets** — **1,000 words or more (2026-09-09; it had been running under 400).**
-    Open with one `.data-table` of the week: the four indices, the 11 sector SPDRs, RSP vs SPY,
+    Open with one `.data-table` inside `.table-wrap` (SR §12b.4) of the week: the four indices, the 11 sector SPDRs, RSP vs SPY,
     IWM vs SPY, the 2-, 10- and 30-year yields in basis points, HY OAS, DXY, WTI, gold, copper,
     BTC — Friday close, weekly change, and the year-to-date change where the series allows. Then
     prose: weekly attribution (what actually moved the index — sectors, stocks, rates, data,
@@ -115,7 +128,8 @@ entries, so the field stops accumulating every past sweep as running prose.
     commodities, the expectation shifts (Fed path, earnings revisions, oil), and what the tape is
     now pricing into next week. This is the section the reader would pay for.
 14. **Scorecard** — the forecast and scenario grading from S2. Expectation → outcome → verdict →
-    why → lesson. Misses are never hidden or softened. Refer to forecasts by content, not by ID.
+    why → lesson, at most 400 words: one paragraph per graded call. Misses are never hidden or
+    softened. Refer to forecasts by content, not by ID.
 15. **Overhyped & Undercovered** — one section, both halves.
 16. **Risks Entering the Week** —
 17. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18), plus
@@ -164,15 +178,17 @@ the setup.
    markets opening Sunday evening ET, crypto, breaking stories. Full story treatment per SR §11b,
    typically 3–6 stories. Where a weekend development changes the week's setup, say so here and
    carry it into the outlook sections — that link is the whole point of running news on a Sunday.
-4. **Top Themes** —
+4. **Top Themes** — at least two of them market or economic (SR §7).
 5. **The Week Day by Day** — Mon–Fri: releases, earnings, political events, deadlines, courts, Fed
    speakers, auctions, geopolitical events, launches, science. ET times. One line per day on what
    would actually move things.
 6. **Politics & Government Outlook** · 7. **The World Ahead** · 8. **The Economy Ahead** (releases
-   and central banks together: a `.data-table` of the week's releases with day, time, consensus
+   and central banks together: a `.data-table` inside `.table-wrap` of the week's releases with day, time, consensus
    and prior, then what a surprise in each direction would mean, and the Fed path as it stands —
-   `prompts/weekday.md` §2.15 — with the meetings, speakers and blackout dates) ·
-9. **Earnings & Business** (a `.data-table` of every watchlist name reporting, with day, time and
+   `prompts/weekday.md` §2.15 — with the meetings, speakers and blackout dates; the blackout runs
+   from the second Saturday before a meeting through the Thursday after it, computed from
+   `fomc_dates`) ·
+9. **Earnings & Business** (a `.data-table` inside `.table-wrap` of every watchlist name reporting, with day, time and
    consensus revenue and EPS, then the two or three that matter most and why, then the Treasury
    auction and credit calendar folded in) ·
 10. **Technology & AI Watch** · 11. **Science & Space Ahead** (including the launch calendar).

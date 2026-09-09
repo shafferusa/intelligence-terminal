@@ -187,7 +187,8 @@
     </section>
 
     <!-- ================= TOP STORIES =================
-         8-12 stories. The first carries .story--lead (bigger headline,
+         8-10 stories, at least four of them markets, the economy or business
+         (2026-09-09). The first carries .story--lead (bigger headline,
          drop cap). Each story: headline, deck, body prose, and at most two
          .story-note blocks (Why it matters / What's next). The old seven
          labelled subheads are gone - write it as prose.
@@ -236,8 +237,9 @@
     </section>
 
     <!-- ================= DOMAIN SECTIONS =================
-         Politics · Geopolitics · Economy · Business · Technology ·
-         Science & Space (Science and Space are ONE section now).
+         The Economy · Business · Watchlist · Politics · The World ·
+         Technology & AI · Science & Space, in that order (2026-09-09: the
+         market sections lead the domains; Science and Space are ONE section).
          Write each as prose under the .story-body class. A section with
          nothing material to say is OMITTED - never padded to fill the slot. -->
     <section class="paper-section" aria-labelledby="s-econ">
@@ -246,6 +248,10 @@
         <p>Two to five short paragraphs. Releases are described in prose with the number, the expectation, the surprise and the revision, rather than in a fact-card grid. Level versus rate-of-change stays explicit; nominal versus real stays explicit.</p>
         <p>Initial jobless claims came in at 219,000 for the week ending July 18, against a 225,000 consensus, with the prior week revised up to 221,000 from 218,000. The four-week average sits at 222,000 and has drifted sideways since spring &mdash; a labour market cooling without cracking, and not on its own enough to move the policy path. (Sample.)</p>
         <p><strong>The Fed path.</strong> The effective rate is 4.33%. Fed funds futures (Yahoo, delayed) put the average rate for the month after the September meeting at 4.47%, an implied 14 basis points of tightening, roughly a 50&ndash;60% chance of a quarter-point hike, up 8 points on the day; the following meeting adds nothing further. What moves it next is Friday&rsquo;s payrolls. (Sample.)</p>
+        <!-- The paragraph always names the direction the market is pricing:
+             a negative implied change reads "roughly 50-60% for an October
+             cut", never "0-5% for a hike". Under 5bp either way: "little
+             priced for October". See prompts/weekday.md 2.15. -->
       </div>
     </section>
 
@@ -296,7 +302,8 @@
     </section>
 
     <!-- ================= MARKET SETUP =================
-         am: "Before the Open"   pm: "What Moved Markets" + "Winners & Losers"
+         am: "Before the Open"   pm: "What Moved Markets", then the Markets
+         section below, then "Winners & Losers".
          sat/sun: replaced by the weekly/forward sections. -->
     <section class="paper-section" aria-labelledby="s-setup">
       <h2 id="s-setup">Before the Open</h2>
@@ -408,9 +415,11 @@
     </section>
 
     <!-- ================= MARKET APPENDIX =================
-         Unchanged and still collapsed: the full SPEC section-22 walkthrough.
-         It costs the reader nothing while closed, and it is where every
-         number with a delay label now lives. -->
+         Collapsed. Since 2026-09-09 the regime, rates, credit, sectors,
+         factors, cross-asset, commodities, FX and crypto blocks are tables
+         plus at most one sentence each - the prose is in the Markets section
+         above. It costs the reader nothing while closed, and it is where
+         every number with a delay label now lives. -->
     <section class="paper-section appendix" aria-labelledby="s-appendix">
       <h2 id="s-appendix">Market Appendix</h2>
       <details class="appendix-shell">
@@ -418,7 +427,7 @@
 
         <details class="appendix-block">
           <summary>Market regime</summary>
-          <p><span class="chip chip--ok">Risk-on, moderate</span> Supporting evidence (trend, breadth, credit) and contradicting evidence (narrow leadership) both listed; confidence stated; change from the prior report noted.</p>
+          <p><span class="chip chip--ok">Risk-on, moderate</span> One sentence: the call and the change from the prior edition. The evidence for and against is in the Markets section above, not repeated here. (Sample.)</p>
         </details>
 
         <details class="appendix-block">
