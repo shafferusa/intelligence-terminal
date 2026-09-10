@@ -55,9 +55,9 @@
    "headline": "Twelve countries announce import bans on Israeli West Bank settlement goods",
    "status": "Materially changed",
    "first_seen": "2026-09-09-am",
-   "last_updated": "2026-09-09-pm",
+   "last_updated": "2026-09-10-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "UK Foreign Secretary Ed Miliband today publicly defended yesterday's 12-country coordinated import ban on West Bank settlement goods, reiterating that the \"occupation is unlawful.\" Israel has banned 12 UK lawmakers from entering the country in response and given Britain 30 days to close its East Jerusalem consulate. Neither side has shown signs of reversing course.",
+   "one_line": "No new development Thursday: Israel's 30-day consulate-closure deadline for the UK and its ban on 12 British MPs both stand as announced Tuesday; neither side has moved.",
    "score_note": "Both sides escalated further rather than de-escalating in the 24 hours since the bans were announced.",
    "sources": [
     "CNBC",
@@ -124,22 +124,22 @@
   {
    "id": "missouri-congressional-map-ruling-aug21",
    "headline": "SCOTUS denies Missouri's stay request; a federal judge's separate order muddies which map governs",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-09-pm",
+   "last_updated": "2026-09-10-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "The Eighth Circuit denied an emergency stay motion from redistricting group People Not Politicians, which had appealed federal Judge Clark's Sept 8 order requiring use of the newer, 2025 GOP-favored map -- the panel said it \"either lack[s] jurisdiction over the appeal or, based on the briefing we have so far, the stay factors have not been met,\" leaving Clark's order controlling for now. Hours later, Missouri Supreme Court Chief Justice W. Brent Powell ordered Secretary of State Denny Hoskins to show cause why he shouldn't be held in contempt for directing officials to use the 2025 map in defiance of the state court's own ruling; Hoskins must respond in writing by noon today and appear in person Thursday, Sept 10, 10 AM for a hearing.",
-   "score_note": "A state supreme court moving toward holding its own secretary of state in contempt over which map governs is a sharp escalation from the prior 'competing court orders' confusion.",
+   "one_line": "The Supreme Court granted People Not Politicians' emergency application staying Judge Clark's federal TRO that required the 2025 map -- Justice Kavanaugh referred the request to the full Court rather than ruling alone, the second Supreme Court loss for the map's backers this week. With Clark's order stayed, only the state supreme court's own ruling (2022 map governs) stands. Sec. of State Hoskins agreed at his contempt hearing to use the 2022 map; Chief Justice Powell said Hoskins had 'purged himself of contempt' by complying. Whether the state court still sanctions Hoskins for his pre-compliance conduct is unresolved.",
+   "score_note": "A five-week state-federal standoff ended in compliance rather than another round of competing orders -- a genuine resolution, not just another development.",
    "sources": [
-    "Eighth Circuit order (primary, via ABC17News)",
-    "The Federalist",
-    "Democracy Docket",
+    "SCOTUSblog",
     "Missouri Independent",
-    "NBC News",
-    "UPI",
-    "Jefferson City News Tribune"
+    "STLPR",
+    "ABC17News",
+    "KRCU",
+    "Newsweek",
+    "CNN"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "visa-ban-struck-down-aug21",
@@ -179,9 +179,9 @@
    "headline": "Mail-ballot SCOTUS emergency: states' response due 4 PM today, no ruling yet",
    "status": "Continuing",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-09-pm",
+   "last_updated": "2026-09-10-pm",
    "verification": "Confirmed-primary",
-   "one_line": "Justice Jackson's 4:00 PM EDT Wednesday deadline passed with California and the League of Women Voters of Massachusetts filing opposition briefs, plus roughly a dozen additional amicus briefs (bipartisan former governors, DSCC/DCCC/DNC/Democratic Governors Association, LULAC, American Postal Workers Union, election officials, others). No ruling or order has issued as of this writing. The underlying dispute (the government's stay application targeting Judge Talwani's Sept 4 preliminary injunction against new USPS mail-ballot rules) is unchanged.",
+   "one_line": "Still no ruling as of Thursday evening. California and roughly two dozen other states continue to warn the Court that letting the USPS mail-ballot rule take effect for November could cause 'chaos' and disenfranchise eligible voters. Briefing has been complete since Wednesday's 4 PM deadline; the case could be decided at any time.",
    "score_note": "Briefing now complete on both sides; next checkpoint is whether and when the Court acts.",
    "sources": [
     "Supreme Court docket 26A305 (primary)",
@@ -674,11 +674,11 @@
   {
    "id": "houthi-saudi-aramco-attack-sep8",
    "headline": "Houthi drone-and-missile attack hits Saudi oil infrastructure, wounds 73",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-09-08-pm",
-   "last_updated": "2026-09-10-am",
+   "last_updated": "2026-09-10-pm",
    "verification": "Single-reliable-source",
-   "one_line": "Saudi-led coalition conducted 54 airstrikes across six Yemeni provinces overnight; Houthis claim (disputed attribution) a coalition strike on a Jawf prison killed seven. Saudi Civil Defense issued fresh Thursday-morning alerts for Khamis Mushait/Abha, no casualties reported from those alerts.",
+   "one_line": "Saudi-led coalition conducted 54 airstrikes across six Yemeni provinces overnight; Houthis claim (disputed attribution) a coalition strike on a Jawf prison killed seven. Saudi Civil Defense issued fresh Thursday-morning alerts for Khamis Mushait/Abha, no casualties reported from those alerts. No new coalition or Houthi action confirmed Thursday beyond Wednesday night's activity, already reported.",
    "score_note": "Confirms the retaliation this outlet flagged as a likely next step Monday; strike-count specifics remain single-sourced to the party being struck.",
    "sources": [
     "Saudi-led coalition statement (primary)",
@@ -689,11 +689,11 @@
   {
    "id": "missouri-hoskins-federal-block-sep10",
    "headline": "Missouri's secretary of state asks a federal judge to block his own state supreme court's contempt hearing",
-   "status": "Developing",
+   "status": "Resolved",
    "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-am",
+   "last_updated": "2026-09-10-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Hours before Thursday's 11 AM ET contempt hearing over Missouri's congressional map, Sec. of State Hoskins filed an emergency motion asking federal Judge Clark to block the state supreme court from holding it, arguing Clark's own Purcell-principle order preempts state authority. Clark had not ruled as of publication.",
+   "one_line": "Superseded: Judge Clark never ruled on Hoskins's motion to block the state hearing -- instead the Supreme Court itself stayed Clark's underlying TRO on a separate application from People Not Politicians, mooting the question. See missouri-congressional-map-ruling-aug21 for the resolution.",
    "score_note": "Direct state-federal jurisdictional collision layered on an already-live redistricting fight; outcome unknown at press time.",
    "sources": [
     "Missouri Independent",
@@ -702,16 +702,16 @@
     "KCUR/STLPR",
     "NBC News"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "uk-israel-consulate-order-sep9",
    "headline": "Israel orders the UK to close its East Jerusalem consulate over West Bank settlement-goods bans",
    "status": "Materially changed",
    "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-am",
+   "last_updated": "2026-09-10-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "After 12 countries including the UK announced restrictions on West Bank settlement-goods trade Sept 8, Israel ordered the UK to close its East Jerusalem consulate within 30 days, stripped diplomats there of status, and barred 12 UK MPs. UK Foreign Secretary Miliband called the measures a 'comprehensive sanction regime'; Israel disputes the UK's characterization.",
+   "one_line": "After 12 countries including the UK announced restrictions on West Bank settlement-goods trade Sept 8, Israel ordered the UK to close its East Jerusalem consulate within 30 days, stripped diplomats there of status, and barred 12 UK MPs. UK Foreign Secretary Miliband called the measures a 'comprehensive sanction regime'; Israel disputes the UK's characterization. No change as of Thursday; both measures stand as announced.",
    "score_note": "Notable diplomatic escalation between close allies over a long-running policy dispute.",
    "sources": [
     "NBC News",
@@ -759,35 +759,38 @@
   {
    "id": "apple-iphone-duo-sep9",
    "headline": "Apple unveils its first foldable, the iPhone Duo, under new CEO John Ternus",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-am",
+   "last_updated": "2026-09-10-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Apple's Sept 9 keynote (Ternus's first) unveiled the iPhone Duo foldable, $1,999-$3,199, preorders Oct 16/ships Oct 23. Early reviews are mixed on whether the matte inner display actually hides the crease better than rival foldables.",
+   "one_line": "Thursday's hands-on coverage read more favorably than Tuesday's mixed early reactions -- Bloomberg News called it 'the most exciting new iPhone since the iPhone X in 2017' after time with the device at Apple Park. Separate reporting (not an Apple statement) says Apple expects to sell as many units as it can manufacture through the first six months, a stronger demand signal than Tuesday's 'extremely limited' supply framing. Shares rose 3.56% Thursday, the clearest mega-cap tech outperformer on an otherwise negative day.",
    "score_note": "First major hardware bet under new CEO.",
    "sources": [
     "CNN",
     "NPR",
     "Digital Trends",
-    "9to5Google"
+    "9to5Google",
+    "Bloomberg News",
+    "Irish Times"
    ],
-   "watch": false
+   "watch": true
   },
   {
    "id": "meta-muse-security-flaws-sep9",
    "headline": "Meta's Muse AI agent launch rallies shares; Forbes reports internal security flaws flagged pre-launch",
    "status": "Developing",
    "first_seen": "2026-09-09-pm",
-   "last_updated": "2026-09-10-am",
+   "last_updated": "2026-09-10-pm",
    "verification": "Single-reliable-source",
-   "one_line": "Meta's Sept 8 Muse launch drove a ~6% share rally and bullish analyst notes; Forbes (single source, uncorroborated) reports internal testing flagged private-data exposure issues that led Meta to delay the original April release.",
+   "one_line": "Meta's Sept 8 Muse launch drove a ~6% share rally and bullish analyst notes; Forbes (single source, uncorroborated) reports internal testing flagged private-data exposure issues that led Meta to delay the original April release. JPMorgan upgraded Meta to overweight Thursday, citing Muse as evidence of a stronger competitive position in consumer AI; shares nonetheless fell 1.42% Thursday with the broader technology selloff.",
    "score_note": "Business angle continuing from Sept 9 top story; new detail is the Forbes internal-flaws report.",
    "sources": [
     "Meta",
     "Bloomberg",
     "TechCrunch",
     "Forbes",
-    "CNBC"
+    "CNBC",
+    "JPMorgan (via Bloomberg News)"
    ],
    "watch": true
   },
@@ -807,6 +810,22 @@
     "SecurityWeek"
    ],
    "watch": false
+  },
+  {
+   "id": "aerovironment-locust-contract-sep10",
+   "headline": "AeroVironment's record quarter includes a first-of-its-kind US Army directed-energy contract",
+   "status": "New",
+   "first_seen": "2026-09-10-pm",
+   "last_updated": "2026-09-10-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "AeroVironment reported a record fiscal Q2 ($480.5M revenue, +5.7% y/y, above consensus) and record $1.5B funded backlog (+37% y/y), including a nearly $465M Army contract for its LOCUST directed-energy system -- described by the company as the US military's first production contract for a directed-energy weapon -- plus a $117M P550 drone contract, a $30M Puma order for Germany and a $51M Switchblade 600 award. Shares traded as much as ~10% higher intraday before settling +4.45%, the session's largest single-stock gain on this report's watchlists; AVAV remains down sharply for the year.",
+   "score_note": "A production-scale directed-energy weapons contract, if the 'first of its kind' framing holds, is a genuine capability milestone worth tracking for follow-on orders or competitor responses.",
+   "sources": [
+    "Benzinga",
+    "StockStory",
+    "this report's own Yahoo Finance data"
+   ],
+   "watch": true
   }
  ]
 }

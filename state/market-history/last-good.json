@@ -1,25 +1,25 @@
 {
- "fetched_at": "2026-09-10T10:45:38Z",
+ "fetched_at": "2026-09-10T21:05:00Z",
  "treasury_par_curve": {
-  "date": "2026-09-09",
-  "BC_1MONTH": 3.81,
-  "BC_1_5MONTH": 3.88,
-  "BC_2MONTH": 3.93,
-  "BC_3MONTH": 3.95,
-  "BC_4MONTH": 4.06,
-  "BC_6MONTH": 4.01,
-  "BC_1YEAR": 4.17,
-  "BC_2YEAR": 4.43,
-  "BC_3YEAR": 4.49,
-  "BC_5YEAR": 4.61,
-  "BC_7YEAR": 4.71,
-  "BC_10YEAR": 4.83,
-  "BC_20YEAR": 5.28,
-  "BC_30YEAR": 5.28,
-  "2s10s_bp": 40,
-  "3m10y_bp": 88,
-  "5s30s_bp": 67,
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "date": "2026-09-10",
+  "BC_1MONTH": 3.91,
+  "BC_1_5MONTH": 3.93,
+  "BC_2MONTH": 4.01,
+  "BC_3MONTH": 4.0,
+  "BC_4MONTH": 4.11,
+  "BC_6MONTH": 4.07,
+  "BC_1YEAR": 4.28,
+  "BC_2YEAR": 4.56,
+  "BC_3YEAR": 4.63,
+  "BC_5YEAR": 4.75,
+  "BC_7YEAR": 4.84,
+  "BC_10YEAR": 4.95,
+  "BC_20YEAR": 5.39,
+  "BC_30YEAR": 5.37,
+  "2s10s_bp": 39,
+  "3m10y_bp": 95,
+  "5s30s_bp": 62,
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "fred": {
   "CPIAUCSL": {
@@ -41,10 +41,10 @@
    "prior_value": "158913"
   },
   "ICSA": {
-   "date": "2026-08-29",
+   "date": "2026-09-05",
    "value": "206000",
-   "prior_date": "2026-08-22",
-   "prior_value": "204000"
+   "prior_date": "2026-08-29",
+   "prior_value": "207000"
   },
   "UNRATE": {
    "date": "2026-08-01",
@@ -59,16 +59,16 @@
    "prior_value": "0.41"
   },
   "DGS2": {
-   "date": "2026-09-08",
-   "value": "4.39",
-   "prior_date": "2026-09-04",
-   "prior_value": "4.37"
+   "date": "2026-09-09",
+   "value": "4.43",
+   "prior_date": "2026-09-08",
+   "prior_value": "4.39"
   },
   "DGS10": {
-   "date": "2026-09-08",
-   "value": "4.8",
-   "prior_date": "2026-09-04",
-   "prior_value": "4.78"
+   "date": "2026-09-09",
+   "value": "4.83",
+   "prior_date": "2026-09-08",
+   "prior_value": "4.8"
   },
   "T10YIE": {
    "date": "2026-09-09",
@@ -77,1330 +77,1321 @@
    "prior_value": "2.37"
   },
   "DFII10": {
-   "date": "2026-09-08",
-   "value": "2.43",
-   "prior_date": "2026-09-04",
+   "date": "2026-09-09",
+   "value": "2.46",
+   "prior_date": "2026-09-08",
    "prior_value": "2.43"
   },
   "SOFR": {
-   "date": "2026-09-08",
+   "date": "2026-09-09",
    "value": "3.64",
-   "prior_date": "2026-09-04",
-   "prior_value": "3.65"
+   "prior_date": "2026-09-08",
+   "prior_value": "3.64"
   },
   "BAMLH0A0HYM2": {
-   "date": "2026-09-08",
-   "value": "2.67",
-   "prior_date": "2026-09-07",
-   "prior_value": "2.68"
+   "date": "2026-09-09",
+   "value": "2.71",
+   "prior_date": "2026-09-08",
+   "prior_value": "2.67"
   },
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "vix_complex": {
-  "VIX": 16.46,
-  "VIX_chg_pct": 0.1215,
-  "VIX9D": 15.59,
-  "VIX3M": 18.87,
-  "term_structure": "contango (VIX9D < VIX < VIX3M), non-inverted",
-  "as_of": "2026-09-09T16:15:00-04:00",
-  "label": "Delayed (+15 min) at fetch time; shown as previous close",
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "VIX": 17.84,
+  "VIX_chg_pct": 8.38,
+  "VIX9D": 17.7,
+  "VIX3M": 19.73,
+  "term_structure": "contango (VIX9D < VIX < VIX3M), non-inverted but compressing sharply",
+  "as_of": "2026-09-10T16:15:01-04:00",
+  "label": "Delayed (+15 min) at fetch time; shown as close",
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "fx": {
   "base": "USD",
-  "date": "2026-09-09",
+  "date": "2026-09-10",
   "rates": {
-   "AUD": 1.3841,
-   "BRL": 5.0889,
-   "CAD": 1.3768,
-   "CHF": 0.80707,
-   "CNY": 6.7078,
-   "EUR": 0.85822,
-   "GBP": 0.7372,
-   "INR": 95.11,
-   "JPY": 153.27,
-   "MXN": 16.9025
+   "AUD": 1.3918,
+   "BRL": 5.1247,
+   "CAD": 1.3816,
+   "CHF": 0.81198,
+   "CNY": 6.7063,
+   "EUR": 0.86088,
+   "GBP": 0.73963,
+   "INR": 95.44,
+   "JPY": 154.18,
+   "MXN": 16.9435
   },
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 77989,
-    "usd_market_cap": 1566390927722.2397,
-    "usd_24h_vol": 32338779925.30904,
-    "usd_24h_change": -1.3720241581825383
+    "usd": 77231,
+    "usd_market_cap": 1550997804355.84,
+    "usd_24h_vol": 31282946606.17,
+    "usd_24h_change": -1.352
    },
    "ethereum": {
-    "usd": 2468.71,
-    "usd_market_cap": 301270811143.31903,
-    "usd_24h_vol": 12338645786.436981,
-    "usd_24h_change": -0.8634241152809295
+    "usd": 2463.2,
+    "usd_market_cap": 300603617149.73,
+    "usd_24h_vol": 16127560380.57,
+    "usd_24h_change": -0.251
    },
    "solana": {
-    "usd": 101.19,
-    "usd_market_cap": 59329626693.70493,
-    "usd_24h_vol": 3229103252.524373,
-    "usd_24h_change": -2.5411079052882934
+    "usd": 99.97,
+    "usd_market_cap": 58620244973.91,
+    "usd_24h_vol": 3257578639.46,
+    "usd_24h_change": -2.544
    },
    "cardano": {
-    "usd": 0.212851,
-    "usd_market_cap": 7980566721.097564,
-    "usd_24h_vol": 435140027.64201534,
-    "usd_24h_change": -2.6041553707441283
+    "usd": 0.209381,
+    "usd_market_cap": 7853993911.37,
+    "usd_24h_vol": 439579730.74,
+    "usd_24h_change": -2.153
    }
   },
-  "total_market_cap_usd": 2669984573410.4653,
-  "btc_dominance_pct": 58.55862933798575,
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "total_market_cap_usd": 2648379854708.6,
+  "btc_dominance_pct": 58.434,
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "indices": {
-  "date": "2026-09-09",
+  "date": "2026-09-10",
   "SPX": {
-   "close": 7636.36,
-   "chg": -37.16,
-   "chg_pct": -0.484
+   "close": 7591.7,
+   "chg": -44.66,
+   "chg_pct": -0.58
   },
   "IXIC": {
-   "close": 26253.34,
-   "chg": -168.072,
-   "chg_pct": -0.636
+   "close": 26081.72,
+   "chg": -171.62,
+   "chg_pct": -0.65
   },
   "DJI": {
-   "close": 52380.66,
-   "chg": -405.41,
-   "chg_pct": -0.768
+   "close": 52064.1,
+   "chg": -316.56,
+   "chg_pct": -0.6
   },
   "RUT": {
-   "close": 2921.2344,
-   "chg": -38.9692,
-   "chg_pct": -1.3164
+   "close": 2890.947,
+   "chg": -30.293,
+   "chg_pct": -1.04
   }
  },
  "futures_commodities_fx": {
   "YM=F": {
-   "last": 52533.0,
+   "last": 52106.0,
    "prev": 52425.0,
-   "pct_chg": 0.20600858369098715
-  },
-  "^IXIC": {
-   "last": 26253.33984375,
-   "prev": 26421.41015625,
-   "pct_chg": -0.6361140889379928
+   "pct_chg": -0.608488316642819
   },
   "GC=F": {
-   "last": 4429.7998046875,
+   "last": 4359.2001953125,
    "prev": 4416.0,
-   "pct_chg": 0.3124955771625906
-  },
-  "^DJI": {
-   "last": 52380.66015625,
-   "prev": 52786.0703125,
-   "pct_chg": -0.7680248858267384
+   "pct_chg": -1.286227461220557
   },
   "RTY=F": {
-   "last": 2925.60009765625,
+   "last": 2893.199951171875,
    "prev": 2923.0,
-   "pct_chg": 0.08895305016250428
-  },
-  "^TNX": {
-   "last": 4.836999893188477,
-   "prev": 4.806000232696533,
-   "pct_chg": 0.6450199540367101
-  },
-  "^GSPC": {
-   "last": 7636.35986328125,
-   "prev": 7673.52001953125,
-   "pct_chg": -0.4842647983639455
+   "pct_chg": -1.0195021836512108
   },
   "ES=F": {
-   "last": 7649.0,
+   "last": 7604.0,
    "prev": 7643.75,
-   "pct_chg": 0.06868356500408831
+   "pct_chg": -0.5200327064595278
   },
   "NG=F": {
-   "last": 2.7939999103546143,
+   "last": 2.8389999866485596,
    "prev": 2.822000026702881,
-   "pct_chg": -0.9922082240722332
+   "pct_chg": 0.6024082134946207
   },
   "NQ=F": {
-   "last": 29374.0,
+   "last": 29147.0,
    "prev": 29448.75,
-   "pct_chg": -0.25383080775924277
-  },
-  "^RUT": {
-   "last": 2921.239990234375,
-   "prev": 2960.199951171875,
-   "pct_chg": -1.3161259908161491
+   "pct_chg": -1.0246614881786131
   },
   "CL=F": {
-   "last": 97.27999877929688,
+   "last": 103.58000183105469,
    "prev": 96.05000305175781,
-   "pct_chg": 1.2805785408213501
+   "pct_chg": 7.8396653201970645
   },
   "HG=F": {
-   "last": 6.626999855041504,
+   "last": 6.526000022888184,
    "prev": 6.803500175476074,
-   "pct_chg": -2.5942576009740415
+   "pct_chg": -4.078785116933914
   },
   "EURUSD=X": {
-   "last": 1.1627906560897827,
-   "prev": 1.1627366542816162,
-   "pct_chg": 0.004644371360243074
+   "last": 1.1610356569290161,
+   "prev": 1.1633858680725098,
+   "pct_chg": -0.20201475778517386
   },
   "DX-Y.NYB": {
-   "last": 98.87799835205078,
+   "last": 99.09300231933594,
    "prev": 98.7699966430664,
-   "pct_chg": 0.10934667677945765
+   "pct_chg": 0.32702813328708835
   },
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "^IXIC": {
+   "last": 26081.724609375,
+   "prev": 26253.33984375,
+   "pct_chg": -0.6536891511571108
+  },
+  "^DJI": {
+   "last": 52064.1015625,
+   "prev": 52380.66015625,
+   "pct_chg": -0.6043425050499818
+  },
+  "^TNX": {
+   "last": 4.943999767303467,
+   "prev": 4.836999893188477,
+   "pct_chg": 2.2121123935865405
+  },
+  "^GSPC": {
+   "last": 7591.7001953125,
+   "prev": 7636.35986328125,
+   "pct_chg": -0.5848292742657635
+  },
+  "^RUT": {
+   "last": 2890.947021484375,
+   "prev": 2921.239990234375,
+   "pct_chg": -1.0369900744638727
+  },
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "watchlist": {
   "ABBV": {
-   "last": 250.91000366210938,
-   "prev": 248.77999877929688,
-   "pct_chg": 0.8561801162729791,
+   "last": 255.0,
+   "prev": 250.91,
+   "pct_chg": 1.63,
    "52w_high": 267.47,
    "52w_low": 190.75,
-   "volume": 3643141,
+   "volume": 4392921,
    "name": "AbbVie Inc."
   },
-  "ASML": {
-   "last": 1729.52001953125,
-   "prev": 1764.8499755859375,
-   "pct_chg": -2.001867384957625,
-   "52w_high": 1999.96,
-   "52w_low": 798.51,
-   "volume": 1037030,
-   "name": "ASML Holding N.V."
-  },
   "ABNB": {
-   "last": 169.6300048828125,
-   "prev": 174.5399932861328,
-   "pct_chg": -2.8131022070518266,
+   "last": 167.65,
+   "prev": 169.63,
+   "pct_chg": -1.17,
    "52w_high": 193.453,
    "52w_low": 110.81,
-   "volume": 4893682,
+   "volume": 3949079,
    "name": "Airbnb, Inc."
   },
-  "ARES": {
-   "last": 134.3699951171875,
-   "prev": 138.6199951171875,
-   "pct_chg": -3.0659357594170356,
-   "52w_high": 186.85,
-   "52w_low": 95.8,
-   "volume": 2261439,
-   "name": "Ares Management Corporation"
-  },
-  "AMZN": {
-   "last": 252.39999389648438,
-   "prev": 256.9700012207031,
-   "pct_chg": -1.7784205559051698,
-   "52w_high": 287.2,
-   "52w_low": 196.0,
-   "volume": 32177880,
-   "name": "Amazon.com, Inc."
+  "AAPL": {
+   "last": 326.57,
+   "prev": 315.34,
+   "pct_chg": 3.56,
+   "52w_high": 344.57,
+   "52w_low": 226.65,
+   "volume": 69357158,
+   "name": "Apple Inc."
   },
   "ANET": {
-   "last": 192.92999267578125,
-   "prev": 194.9600067138672,
-   "pct_chg": -1.0412463931975984,
+   "last": 188.99,
+   "prev": 192.93,
+   "pct_chg": -2.04,
    "52w_high": 214.89,
    "52w_low": 114.52,
-   "volume": 3673079,
+   "volume": 2806123,
    "name": "Arista Networks, Inc."
   },
   "ASTS": {
-   "last": 62.41999816894531,
-   "prev": 66.12000274658203,
-   "pct_chg": -5.595892958168373,
+   "last": 59.91,
+   "prev": 62.42,
+   "pct_chg": -4.02,
    "52w_high": 133.86,
    "52w_low": 37.18,
-   "volume": 8241917,
+   "volume": 8256813,
    "name": "AST SpaceMobile, Inc."
   },
+  "ARES": {
+   "last": 130.63,
+   "prev": 134.37,
+   "pct_chg": -2.78,
+   "52w_high": 186.85,
+   "52w_low": 95.8,
+   "volume": 2661882,
+   "name": "Ares Management Corporation"
+  },
+  "AMZN": {
+   "last": 251.89,
+   "prev": 252.4,
+   "pct_chg": -0.2,
+   "52w_high": 287.2,
+   "52w_low": 196.0,
+   "volume": 24861116,
+   "name": "Amazon.com, Inc."
+  },
   "APO": {
-   "last": 130.97999572753906,
-   "prev": 131.80999755859375,
-   "pct_chg": -0.6296956577104291,
+   "last": 127.91,
+   "prev": 130.98,
+   "pct_chg": -2.34,
    "52w_high": 153.29,
    "52w_low": 99.56,
-   "volume": 2436524,
+   "volume": 2133314,
    "name": "Apollo Global Management, Inc."
   },
   "AMD": {
-   "last": 521.0999755859375,
-   "prev": 505.739990234375,
-   "pct_chg": 3.0371308672751436,
+   "last": 503.6,
+   "prev": 521.1,
+   "pct_chg": -3.36,
    "52w_high": 584.73,
    "52w_low": 149.85,
-   "volume": 22033121,
+   "volume": 15878348,
    "name": "Advanced Micro Devices, Inc."
   },
-  "AVGO": {
-   "last": 364.3800048828125,
-   "prev": 368.55999755859375,
-   "pct_chg": -1.1341417146381205,
-   "52w_high": 495.0,
-   "52w_low": 289.96,
-   "volume": 24562370,
-   "name": "Broadcom Inc."
+  "ASML": {
+   "last": 1687.4301,
+   "prev": 1729.52,
+   "pct_chg": -2.43,
+   "52w_high": 1999.96,
+   "52w_low": 798.51,
+   "volume": 1073434,
+   "name": "ASML Holding N.V."
   },
   "AVAV": {
-   "last": 140.8000030517578,
-   "prev": 148.77999877929688,
-   "pct_chg": -5.363621315373676,
+   "last": 147.065,
+   "prev": 140.8,
+   "pct_chg": 4.45,
    "52w_high": 417.86,
    "52w_low": 135.2,
-   "volume": 4758110,
+   "volume": 8692161,
    "name": "AeroVironment, Inc."
   },
-  "BA": {
-   "last": 206.4199981689453,
-   "prev": 210.72999572753906,
-   "pct_chg": -2.0452700830337944,
-   "52w_high": 254.35,
-   "52w_low": 176.77,
-   "volume": 4290596,
-   "name": "The Boeing Company"
+  "AVGO": {
+   "last": 360.83,
+   "prev": 364.38,
+   "pct_chg": -0.97,
+   "52w_high": 495.0,
+   "52w_low": 289.96,
+   "volume": 21287430,
+   "name": "Broadcom Inc."
   },
   "BKNG": {
-   "last": 173.42999267578125,
-   "prev": 180.3000030517578,
-   "pct_chg": -3.810321830113571,
+   "last": 174.33,
+   "prev": 173.43,
+   "pct_chg": 0.52,
    "52w_high": 224.996,
    "52w_low": 150.14,
-   "volume": 11991504,
+   "volume": 6282319,
    "name": "Booking Holdings Inc."
   },
-  "AAPL": {
-   "last": 315.3399963378906,
-   "prev": 316.2200012207031,
-   "pct_chg": -0.27828881140200484,
-   "52w_high": 344.57,
-   "52w_low": 226.65,
-   "volume": 64902991,
-   "name": "Apple Inc."
-  },
-  "BAC": {
-   "last": 62.66999816894531,
-   "prev": 62.38999938964844,
-   "pct_chg": 0.4487879179933628,
-   "52w_high": 65.23,
-   "52w_low": 46.12,
-   "volume": 35254412,
-   "name": "Bank of America Corporation"
-  },
   "BKSY": {
-   "last": 21.610000610351562,
-   "prev": 22.079999923706055,
-   "pct_chg": -2.1286200859533535,
+   "last": 20.75,
+   "prev": 21.61,
+   "pct_chg": -3.98,
    "52w_high": 52.88,
    "52w_low": 12.41,
-   "volume": 1204742,
+   "volume": 641138,
    "name": "BlackSky Technology Inc."
   },
-  "BX": {
-   "last": 129.07000732421875,
-   "prev": 133.97000122070312,
-   "pct_chg": -3.6575306798811553,
-   "52w_high": 190.09,
-   "52w_low": 101.73,
-   "volume": 3917370,
-   "name": "Blackstone Inc."
-  },
-  "BTC": {
-   "last": 34.59000015258789,
-   "prev": 34.68000030517578,
-   "pct_chg": -0.25951600863872726,
-   "52w_high": 55.96,
-   "52w_low": 25.65,
-   "volume": 1562014,
-   "name": "Grayscale Bitcoin Mini Trust ETF"
+  "BAC": {
+   "last": 62.56,
+   "prev": 62.67,
+   "pct_chg": -0.18,
+   "52w_high": 65.23,
+   "52w_low": 46.12,
+   "volume": 26477791,
+   "name": "Bank of America Corporation"
   },
   "BLK": {
-   "last": 1072.030029296875,
-   "prev": 1095.3699951171875,
-   "pct_chg": -2.130783746528997,
+   "last": 1062.4,
+   "prev": 1072.03,
+   "pct_chg": -0.9,
    "52w_high": 1219.94,
    "52w_low": 917.39,
-   "volume": 463460,
+   "volume": 351603,
    "name": "BlackRock, Inc."
   },
+  "BTC": {
+   "last": 34.07,
+   "prev": 34.59,
+   "pct_chg": -1.5,
+   "52w_high": 55.96,
+   "52w_low": 25.65,
+   "volume": 1073889,
+   "name": "Grayscale Bitcoin Mini Trust ETF"
+  },
   "BWXT": {
-   "last": 156.7100067138672,
-   "prev": 160.41000366210938,
-   "pct_chg": -2.3065874096206183,
+   "last": 152.49,
+   "prev": 156.71,
+   "pct_chg": -2.69,
    "52w_high": 241.82,
    "52w_low": 147.74,
-   "volume": 629043,
+   "volume": 871504,
    "name": "BWX Technologies, Inc."
   },
-  "CBOE": {
-   "last": 291.8699951171875,
-   "prev": 293.3299865722656,
-   "pct_chg": -0.4977300384931621,
-   "52w_high": 371.18,
-   "52w_low": 227.15,
-   "volume": 1017411,
-   "name": "Cboe Global Markets, Inc."
-  },
-  "COST": {
-   "last": 902.5999755859375,
-   "prev": 910.1799926757812,
-   "pct_chg": -0.8328041871761794,
-   "52w_high": 1096.5,
-   "52w_low": 844.06,
-   "volume": 2031382,
-   "name": "Costco Wholesale Corporation"
-  },
-  "C": {
-   "last": 137.8000030517578,
-   "prev": 136.74000549316406,
-   "pct_chg": 0.7751919818715685,
-   "52w_high": 147.96,
-   "52w_low": 93.66,
-   "volume": 6652368,
-   "name": "Citigroup Inc."
-  },
-  "CME": {
-   "last": 274.70001220703125,
-   "prev": 278.2300109863281,
-   "pct_chg": -1.2687340113968997,
-   "52w_high": 329.16,
-   "52w_low": 218.31,
-   "volume": 1599604,
-   "name": "CME Group Inc."
+  "BA": {
+   "last": 204.8,
+   "prev": 206.42,
+   "pct_chg": -0.78,
+   "52w_high": 254.35,
+   "52w_low": 176.77,
+   "volume": 4615630,
+   "name": "The Boeing Company"
   },
   "CEG": {
-   "last": 293.9049987792969,
-   "prev": 299.04998779296875,
-   "pct_chg": -1.720444482088972,
+   "last": 285.97,
+   "prev": 293.905,
+   "pct_chg": -2.7,
    "52w_high": 412.7,
    "52w_low": 228.63,
-   "volume": 2197755,
+   "volume": 2209957,
    "name": "Constellation Energy Corporation"
   },
-  "COIN": {
-   "last": 174.72000122070312,
-   "prev": 178.94000244140625,
-   "pct_chg": -2.3583330519317283,
-   "52w_high": 402.16,
-   "52w_low": 139.11,
-   "volume": 5928989,
-   "name": "Coinbase Global, Inc."
+  "CME": {
+   "last": 274.07,
+   "prev": 274.7,
+   "pct_chg": -0.23,
+   "52w_high": 329.16,
+   "52w_low": 218.31,
+   "volume": 1666708,
+   "name": "CME Group Inc."
   },
-  "DIA": {
-   "last": 524.0700073242188,
-   "prev": 528.030029296875,
-   "pct_chg": -0.7499615084258403,
-   "52w_high": 546.75,
-   "52w_low": 450.44,
-   "volume": 3665376,
-   "name": "State Street SPDR Dow Jones Industrial Average ETF Trust"
+  "BX": {
+   "last": 125.41,
+   "prev": 129.07,
+   "pct_chg": -2.84,
+   "52w_high": 190.09,
+   "52w_low": 101.73,
+   "volume": 4592392,
+   "name": "Blackstone Inc."
   },
   "CMG": {
-   "last": 36.029998779296875,
-   "prev": 36.959999084472656,
-   "pct_chg": -2.5162346542548635,
+   "last": 36.13,
+   "prev": 36.03,
+   "pct_chg": 0.28,
    "52w_high": 42.82,
    "52w_low": 28.04,
-   "volume": 9028294,
+   "volume": 9927800,
    "name": "Chipotle Mexican Grill, Inc."
   },
-  "DLR": {
-   "last": 189.0800018310547,
-   "prev": 189.5,
-   "pct_chg": -0.22163491764924143,
-   "52w_high": 208.14,
-   "52w_low": 146.23,
-   "volume": 1497763,
-   "name": "Digital Realty Trust, Inc."
+  "C": {
+   "last": 138.5,
+   "prev": 137.8,
+   "pct_chg": 0.51,
+   "52w_high": 147.96,
+   "52w_low": 93.66,
+   "volume": 7116823,
+   "name": "Citigroup Inc."
   },
-  "DAL": {
-   "last": 78.75,
-   "prev": 78.95999908447266,
-   "pct_chg": -0.26595629040977564,
-   "52w_high": 95.68,
-   "52w_low": 55.03,
-   "volume": 4524852,
-   "name": "Delta Air Lines, Inc."
+  "CBOE": {
+   "last": 287.49,
+   "prev": 291.87,
+   "pct_chg": -1.5,
+   "52w_high": 371.18,
+   "52w_low": 227.15,
+   "volume": 856802,
+   "name": "Cboe Global Markets, Inc."
   },
-  "DX-Y.NYB": {
-   "last": 98.87699890136719,
-   "prev": 98.7699966430664,
-   "pct_chg": 0.10833477972816427,
-   "52w_high": 101.8,
-   "52w_low": 95.55,
-   "volume": null,
-   "name": "US Dollar Index"
+  "COIN": {
+   "last": 172.28,
+   "prev": 174.72,
+   "pct_chg": -1.4,
+   "52w_high": 402.16,
+   "52w_low": 139.11,
+   "volume": 4791007,
+   "name": "Coinbase Global, Inc."
   },
-  "EEM": {
-   "last": 68.4800033569336,
-   "prev": 68.83000183105469,
-   "pct_chg": -0.508496970521918,
-   "52w_high": 71.57,
-   "52w_low": 51.82,
-   "volume": 16265658,
-   "name": "iShares MSCI Emerging Markets ETF"
-  },
-  "GD": {
-   "last": 352.6700134277344,
-   "prev": 356.5799865722656,
-   "pct_chg": -1.0965206382211927,
-   "52w_high": 400.0,
-   "52w_low": 306.77,
-   "volume": 873946,
-   "name": "General Dynamics Corporation"
+  "COST": {
+   "last": 902.38,
+   "prev": 902.6,
+   "pct_chg": -0.02,
+   "52w_high": 1096.5,
+   "52w_low": 844.06,
+   "volume": 1861310,
+   "name": "Costco Wholesale Corporation"
   },
   "DHR": {
-   "last": 204.85000610351562,
-   "prev": 205.22999572753906,
-   "pct_chg": -0.18515306336014706,
+   "last": 200.53,
+   "prev": 204.85,
+   "pct_chg": -2.11,
    "52w_high": 242.8,
    "52w_low": 160.93,
-   "volume": 2768855,
+   "volume": 2946690,
    "name": "Danaher Corporation"
   },
-  "GLD": {
-   "last": 403.3500061035156,
-   "prev": 399.7200012207031,
-   "pct_chg": 0.908136913771351,
-   "52w_high": 509.7,
-   "52w_low": 332.97,
-   "volume": 8050955,
-   "name": "SPDR Gold Shares"
+  "DAL": {
+   "last": 78.24,
+   "prev": 78.75,
+   "pct_chg": -0.65,
+   "52w_high": 95.68,
+   "52w_low": 55.03,
+   "volume": 5714983,
+   "name": "Delta Air Lines, Inc."
+  },
+  "DIA": {
+   "last": 520.75,
+   "prev": 524.07,
+   "pct_chg": -0.63,
+   "52w_high": 546.75,
+   "52w_low": 450.44,
+   "volume": 4715167,
+   "name": "State Street SPDR Dow Jones Industrial Average ETF Trust"
+  },
+  "EEM": {
+   "last": 67.0,
+   "prev": 68.48,
+   "pct_chg": -2.16,
+   "52w_high": 71.57,
+   "52w_low": 51.82,
+   "volume": 22137171,
+   "name": "iShares MSCI Emerging Markets ETF"
   },
   "EQIX": {
-   "last": 1043.06005859375,
-   "prev": 1041.2099609375,
-   "pct_chg": 0.17768727976672272,
+   "last": 1023.81,
+   "prev": 1043.0601,
+   "pct_chg": -1.85,
    "52w_high": 1128.68,
    "52w_low": 720.62,
-   "volume": 471729,
+   "volume": 421306,
    "name": "Equinix, Inc."
   },
+  "ETN": {
+   "last": 409.15,
+   "prev": 415.22,
+   "pct_chg": -1.46,
+   "52w_high": 478.0,
+   "52w_low": 311.92,
+   "volume": 1514163,
+   "name": "Eaton Corporation plc"
+  },
+  "DLR": {
+   "last": 185.37,
+   "prev": 189.08,
+   "pct_chg": -1.96,
+   "52w_high": 208.14,
+   "52w_low": 146.23,
+   "volume": 1532159,
+   "name": "Digital Realty Trust, Inc."
+  },
+  "GLD": {
+   "last": 396.36,
+   "prev": 403.35,
+   "pct_chg": -1.73,
+   "52w_high": 509.7,
+   "52w_low": 332.97,
+   "volume": 9889004,
+   "name": "SPDR Gold Shares"
+  },
+  "GD": {
+   "last": 354.25,
+   "prev": 352.67,
+   "pct_chg": 0.45,
+   "52w_high": 400.0,
+   "52w_low": 306.77,
+   "volume": 850357,
+   "name": "General Dynamics Corporation"
+  },
   "GOOGL": {
-   "last": 330.6499938964844,
-   "prev": 338.3599853515625,
-   "pct_chg": -2.2786357101497376,
+   "last": 332.6,
+   "prev": 330.65,
+   "pct_chg": 0.59,
    "52w_high": 408.61,
    "52w_low": 235.84,
-   "volume": 32730889,
+   "volume": 22623768,
    "name": "Alphabet Inc."
   },
   "FLY": {
-   "last": 21.809999465942383,
-   "prev": 22.899999618530273,
-   "pct_chg": -4.759826073123084,
+   "last": 20.9,
+   "prev": 21.81,
+   "pct_chg": -4.17,
    "52w_high": 62.17,
    "52w_low": 16.0,
-   "volume": 2213947,
+   "volume": 2159154,
    "name": "Firefly Aerospace Inc."
   },
-  "ETN": {
-   "last": 415.2200012207031,
-   "prev": 422.1300048828125,
-   "pct_chg": -1.636937337355979,
-   "52w_high": 478.0,
-   "52w_low": 311.92,
-   "volume": 1774951,
-   "name": "Eaton Corporation plc"
-  },
-  "GSAT": {
-   "last": 81.68000030517578,
-   "prev": 82.22000122070312,
-   "pct_chg": -0.6567756111774061,
-   "52w_high": 84.85,
-   "52w_low": 29.36,
-   "volume": 652079,
-   "name": "Globalstar, Inc."
-  },
-  "HOOD": {
-   "last": 115.27999877929688,
-   "prev": 117.33999633789062,
-   "pct_chg": -1.7555800433654436,
-   "52w_high": 153.86,
-   "52w_low": 63.515,
-   "volume": 18242415,
-   "name": "Robinhood Markets, Inc."
-  },
-  "IBKR": {
-   "last": 90.27999877929688,
-   "prev": 90.97000122070312,
-   "pct_chg": -0.7584944840576938,
-   "52w_high": 98.75,
-   "52w_low": 58.95,
-   "volume": 2638720,
-   "name": "Interactive Brokers Group, Inc."
-  },
-  "GS": {
-   "last": 1028.780029296875,
-   "prev": 1036.530029296875,
-   "pct_chg": -0.7476869729724255,
-   "52w_high": 1153.99,
-   "52w_low": 740.01,
-   "volume": 1661117,
-   "name": "The Goldman Sachs Group, Inc."
-  },
-  "HYG": {
-   "last": 78.9800033569336,
-   "prev": 79.12000274658203,
-   "pct_chg": -0.176945632948029,
-   "52w_high": 81.36,
-   "52w_low": 78.57,
-   "volume": 31592398,
-   "name": "iShares iBoxx $ High Yield Corporate Bond ETF"
-  },
-  "HII": {
-   "last": 280.8500061035156,
-   "prev": 287.6700134277344,
-   "pct_chg": -2.370774500600496,
-   "52w_high": 460.0,
-   "52w_low": 263.62,
-   "volume": 356332,
-   "name": "Huntington Ingalls Industries, Inc."
-  },
   "HD": {
-   "last": 310.45001220703125,
-   "prev": 313.70001220703125,
-   "pct_chg": -1.0360216364464503,
+   "last": 305.69,
+   "prev": 310.45,
+   "pct_chg": -1.53,
    "52w_high": 426.75,
    "52w_low": 289.1,
-   "volume": 3357754,
+   "volume": 4298897,
    "name": "The Home Depot, Inc."
   },
+  "GSAT": {
+   "last": 81.97,
+   "prev": 81.68,
+   "pct_chg": 0.36,
+   "52w_high": 84.85,
+   "52w_low": 29.36,
+   "volume": 391694,
+   "name": "Globalstar, Inc."
+  },
+  "HII": {
+   "last": 281.67,
+   "prev": 280.85,
+   "pct_chg": 0.29,
+   "52w_high": 460.0,
+   "52w_low": 263.62,
+   "volume": 403881,
+   "name": "Huntington Ingalls Industries, Inc."
+  },
+  "GS": {
+   "last": 1019.77,
+   "prev": 1028.78,
+   "pct_chg": -0.88,
+   "52w_high": 1153.99,
+   "52w_low": 740.01,
+   "volume": 1886197,
+   "name": "The Goldman Sachs Group, Inc."
+  },
+  "HOOD": {
+   "last": 113.33,
+   "prev": 115.28,
+   "pct_chg": -1.69,
+   "52w_high": 153.86,
+   "52w_low": 63.515,
+   "volume": 16054542,
+   "name": "Robinhood Markets, Inc."
+  },
+  "HYG": {
+   "last": 78.62,
+   "prev": 78.98,
+   "pct_chg": -0.46,
+   "52w_high": 81.36,
+   "52w_low": 78.57,
+   "volume": 52602156,
+   "name": "iShares iBoxx $ High Yield Corporate Bond ETF"
+  },
+  "IBKR": {
+   "last": 89.42,
+   "prev": 90.28,
+   "pct_chg": -0.95,
+   "52w_high": 98.75,
+   "52w_low": 58.95,
+   "volume": 2861288,
+   "name": "Interactive Brokers Group, Inc."
+  },
   "IRDM": {
-   "last": 47.060001373291016,
-   "prev": 47.79999923706055,
-   "pct_chg": -1.5481127104198618,
+   "last": 47.03,
+   "prev": 47.06,
+   "pct_chg": -0.06,
    "52w_high": 57.18,
    "52w_low": 15.65,
-   "volume": 541740,
+   "volume": 557335,
    "name": "Iridium Communications Inc."
   },
-  "ISRG": {
-   "last": 353.239990234375,
-   "prev": 350.1600036621094,
-   "pct_chg": 0.8795940541620769,
-   "52w_high": 603.88,
-   "52w_low": 328.57,
-   "volume": 2361333,
-   "name": "Intuitive Surgical, Inc."
-  },
-  "IEF": {
-   "last": 91.9000015258789,
-   "prev": 92.16000366210938,
-   "pct_chg": -0.2821203623035075,
-   "52w_high": 98.05,
-   "52w_low": 91.78,
-   "volume": 5437996,
-   "name": "iShares 7-10 Year Treasury Bond ETF"
-  },
-  "IWM": {
-   "last": 290.6400146484375,
-   "prev": 294.6700134277344,
-   "pct_chg": -1.3676311112956874,
-   "52w_high": 305.18,
-   "52w_low": 228.9,
-   "volume": 19035168,
-   "name": "iShares Russell 2000 ETF"
-  },
   "ICE": {
-   "last": 156.5,
-   "prev": 157.75999450683594,
-   "pct_chg": -0.7986780874167312,
+   "last": 155.81,
+   "prev": 156.5,
+   "pct_chg": -0.44,
    "52w_high": 176.59,
    "52w_low": 121.79,
-   "volume": 2758727,
+   "volume": 2821247,
    "name": "Intercontinental Exchange, Inc."
   },
+  "ISRG": {
+   "last": 360.46,
+   "prev": 353.24,
+   "pct_chg": 2.04,
+   "52w_high": 603.88,
+   "52w_low": 328.57,
+   "volume": 3344320,
+   "name": "Intuitive Surgical, Inc."
+  },
+  "IWM": {
+   "last": 287.7,
+   "prev": 290.64,
+   "pct_chg": -1.01,
+   "52w_high": 305.18,
+   "52w_low": 228.9,
+   "volume": 26649988,
+   "name": "iShares Russell 2000 ETF"
+  },
   "JPM": {
-   "last": 354.7099914550781,
-   "prev": 353.510009765625,
-   "pct_chg": 0.3394477260343224,
+   "last": 353.56,
+   "prev": 354.71,
+   "pct_chg": -0.32,
    "52w_high": 366.5,
    "52w_low": 279.1,
-   "volume": 6262650,
+   "volume": 4136862,
    "name": "JPMorgan Chase & Co."
   },
-  "JNJ": {
-   "last": 267.0799865722656,
-   "prev": 269.1199951171875,
-   "pct_chg": -0.7580293482219927,
-   "52w_high": 281.07,
-   "52w_low": 173.33,
-   "volume": 5967693,
-   "name": "Johnson & Johnson"
-  },
-  "KRE": {
-   "last": 73.44999694824219,
-   "prev": 74.30999755859375,
-   "pct_chg": -1.1573148144345562,
-   "52w_high": 78.35,
-   "52w_low": 57.55,
-   "volume": 10842022,
-   "name": "State Street SPDR S&P Regional Banking ETF"
-  },
   "KKR": {
-   "last": 104.08999633789062,
-   "prev": 105.7300033569336,
-   "pct_chg": -1.5511273687436422,
+   "last": 100.87,
+   "prev": 104.09,
+   "pct_chg": -3.09,
    "52w_high": 152.1,
    "52w_low": 82.67,
-   "volume": 4351873,
+   "volume": 4206273,
    "name": "KKR & Co. Inc."
   },
+  "IEF": {
+   "last": 91.18,
+   "prev": 91.9,
+   "pct_chg": -0.78,
+   "52w_high": 98.05,
+   "52w_low": 91.11,
+   "volume": 9629434,
+   "name": "iShares 7-10 Year Treasury Bond ETF"
+  },
+  "KRE": {
+   "last": 73.81,
+   "prev": 73.45,
+   "pct_chg": 0.49,
+   "52w_high": 78.35,
+   "52w_low": 57.55,
+   "volume": 10133467,
+   "name": "State Street SPDR S&P Regional Banking ETF"
+  },
+  "JNJ": {
+   "last": 266.35,
+   "prev": 267.08,
+   "pct_chg": -0.27,
+   "52w_high": 281.07,
+   "52w_low": 173.33,
+   "volume": 4843071,
+   "name": "Johnson & Johnson"
+  },
   "KTOS": {
-   "last": 46.7400016784668,
-   "prev": 48.20000076293945,
-   "pct_chg": -3.029043695773624,
+   "last": 46.98,
+   "prev": 46.74,
+   "pct_chg": 0.51,
    "52w_high": 134.0,
    "52w_low": 43.09,
-   "volume": 4567922,
+   "volume": 3386607,
    "name": "Kratos Defense & Security Solutions, Inc."
   },
   "KRMN": {
-   "last": 35.220001220703125,
-   "prev": 39.689998626708984,
-   "pct_chg": -11.262276544897182,
+   "last": 34.39,
+   "prev": 35.22,
+   "pct_chg": -2.36,
    "52w_high": 118.38,
-   "52w_low": 35.18,
-   "volume": 4420152,
+   "52w_low": 34.21,
+   "volume": 4104269,
    "name": "Karman Holdings Inc."
   },
-  "LHX": {
-   "last": 250.41000366210938,
-   "prev": 255.74000549316406,
-   "pct_chg": -2.084148633991157,
-   "52w_high": 379.23,
-   "52w_low": 250.28,
-   "volume": 1251081,
-   "name": "L3Harris Technologies, Inc."
-  },
-  "LQD": {
-   "last": 105.30999755859375,
-   "prev": 105.4800033569336,
-   "pct_chg": -0.16117348590193104,
-   "52w_high": 112.93,
-   "52w_low": 105.08,
-   "volume": 34195958,
-   "name": "iShares iBoxx $ Investment Grade Corporate Bond ETF"
-  },
-  "LLY": {
-   "last": 1124.2099609375,
-   "prev": 1123.9100341796875,
-   "pct_chg": 0.02668601121898593,
-   "52w_high": 1292.65,
-   "52w_low": 712.05,
-   "volume": 2016282,
-   "name": "Eli Lilly and Company"
-  },
   "LMT": {
-   "last": 524.4600219726562,
-   "prev": 536.1500244140625,
-   "pct_chg": -2.1803603299620846,
+   "last": 530.12,
+   "prev": 524.46,
+   "pct_chg": 1.08,
    "52w_high": 692.0,
    "52w_low": 437.25,
-   "volume": 1367549,
+   "volume": 1071198,
    "name": "Lockheed Martin Corporation"
   },
+  "LHX": {
+   "last": 248.37,
+   "prev": 250.41,
+   "pct_chg": -0.81,
+   "52w_high": 379.23,
+   "52w_low": 246.585,
+   "volume": 1672791,
+   "name": "L3Harris Technologies, Inc."
+  },
   "LOW": {
-   "last": 198.60000610351562,
-   "prev": 200.8000030517578,
-   "pct_chg": -1.0956159934296021,
+   "last": 196.59,
+   "prev": 198.6,
+   "pct_chg": -1.01,
    "52w_high": 293.06,
-   "52w_low": 197.14,
-   "volume": 2444148,
+   "52w_low": 195.06,
+   "volume": 2486114,
    "name": "Lowe's Companies, Inc."
   },
-  "META": {
-   "last": 653.6900024414062,
-   "prev": 613.47998046875,
-   "pct_chg": 6.554414692054405,
-   "52w_high": 790.8,
-   "52w_low": 520.26,
-   "volume": 35359694,
-   "name": "Meta Platforms, Inc."
+  "LQD": {
+   "last": 104.36,
+   "prev": 105.31,
+   "pct_chg": -0.9,
+   "52w_high": 112.93,
+   "52w_low": 104.325,
+   "volume": 34906770,
+   "name": "iShares iBoxx $ Investment Grade Corporate Bond ETF"
   },
   "LUNR": {
-   "last": 14.9399995803833,
-   "prev": 15.680000305175781,
-   "pct_chg": -4.719392285650754,
+   "last": 14.62,
+   "prev": 14.94,
+   "pct_chg": -2.14,
    "52w_high": 46.75,
    "52w_low": 7.78,
-   "volume": 6731930,
+   "volume": 6766661,
    "name": "Intuitive Machines, Inc."
   },
   "MAGS": {
-   "last": 69.31999969482422,
-   "prev": 69.06999969482422,
-   "pct_chg": 0.3619516448596913,
+   "last": 69.18,
+   "prev": 69.32,
+   "pct_chg": -0.2,
    "52w_high": 71.16,
    "52w_low": 55.085,
-   "volume": 2394716,
+   "volume": 2480760,
    "name": "Roundhill Magnificent Seven ETF"
   },
-  "MRVL": {
-   "last": 235.00999450683594,
-   "prev": 225.41000366210938,
-   "pct_chg": 4.258901862721671,
-   "52w_high": 329.88,
-   "52w_low": 66.14,
-   "volume": 20034900,
-   "name": "Marvell Technology, Inc."
-  },
   "MCD": {
-   "last": 253.47999572753906,
-   "prev": 255.80999755859375,
-   "pct_chg": -0.9108329827965368,
+   "last": 253.05,
+   "prev": 253.48,
+   "pct_chg": -0.17,
    "52w_high": 341.75,
-   "52w_low": 253.346,
-   "volume": 4374768,
+   "52w_low": 252.55,
+   "volume": 4063979,
    "name": "McDonald's Corporation"
   },
+  "LLY": {
+   "last": 1123.0,
+   "prev": 1124.21,
+   "pct_chg": -0.11,
+   "52w_high": 1292.65,
+   "52w_low": 712.05,
+   "volume": 1944829,
+   "name": "Eli Lilly and Company"
+  },
+  "META": {
+   "last": 644.38,
+   "prev": 653.69,
+   "pct_chg": -1.42,
+   "52w_high": 790.8,
+   "52w_low": 520.26,
+   "volume": 20384909,
+   "name": "Meta Platforms, Inc."
+  },
   "MRK": {
-   "last": 147.52999877929688,
-   "prev": 148.4600067138672,
-   "pct_chg": -0.6264366782380344,
+   "last": 144.71,
+   "prev": 147.53,
+   "pct_chg": -1.91,
    "52w_high": 156.92,
    "52w_low": 77.58,
-   "volume": 7893508,
+   "volume": 7442586,
    "name": "Merck & Co., Inc."
   },
+  "MRVL": {
+   "last": 226.96,
+   "prev": 235.01,
+   "pct_chg": -3.43,
+   "52w_high": 329.88,
+   "52w_low": 66.14,
+   "volume": 16050991,
+   "name": "Marvell Technology, Inc."
+  },
   "MS": {
-   "last": 215.35000610351562,
-   "prev": 216.24000549316406,
-   "pct_chg": -0.41157943351817605,
+   "last": 212.66,
+   "prev": 215.35,
+   "pct_chg": -1.25,
    "52w_high": 232.25,
    "52w_low": 151.84,
-   "volume": 3963557,
+   "volume": 4467855,
    "name": "Morgan Stanley"
   },
   "MSFT": {
-   "last": 491.6499938964844,
-   "prev": 493.95001220703125,
-   "pct_chg": -0.46563786895562603,
+   "last": 492.44,
+   "prev": 491.65,
+   "pct_chg": 0.16,
    "52w_high": 553.72,
    "52w_low": 349.2,
-   "volume": 12778304,
+   "volume": 15404946,
    "name": "Microsoft Corporation"
   },
-  "NVDA": {
-   "last": 223.6699981689453,
-   "prev": 225.72999572753906,
-   "pct_chg": -0.9125936284871112,
-   "52w_high": 236.54,
-   "52w_low": 164.27,
-   "volume": 79204871,
-   "name": "NVIDIA Corporation"
-  },
   "MU": {
-   "last": 1027.77001953125,
-   "prev": 1000.260009765625,
-   "pct_chg": 2.7502858753766417,
+   "last": 977.41,
+   "prev": 1027.77,
+   "pct_chg": -4.9,
    "52w_high": 1255.0,
    "52w_low": 147.61,
-   "volume": 23573851,
+   "volume": 25282097,
    "name": "Micron Technology, Inc."
   },
-  "NVO": {
-   "last": 44.560001373291016,
-   "prev": 45.15999984741211,
-   "pct_chg": -1.328606014500411,
-   "52w_high": 64.16,
-   "52w_low": 35.12,
-   "volume": 8788337,
-   "name": "Novo Nordisk A/S"
-  },
   "NOC": {
-   "last": 515.5700073242188,
-   "prev": 518.5800170898438,
-   "pct_chg": -0.5804330414651355,
+   "last": 518.95,
+   "prev": 515.57,
+   "pct_chg": 0.66,
    "52w_high": 774.0,
    "52w_low": 479.02,
-   "volume": 690523,
+   "volume": 796676,
    "name": "Northrop Grumman Corporation"
   },
+  "NVDA": {
+   "last": 218.36,
+   "prev": 223.67,
+   "pct_chg": -2.37,
+   "52w_high": 236.54,
+   "52w_low": 164.27,
+   "volume": 100588554,
+   "name": "NVIDIA Corporation"
+  },
+  "NVO": {
+   "last": 44.01,
+   "prev": 44.56,
+   "pct_chg": -1.23,
+   "52w_high": 64.16,
+   "52w_low": 35.12,
+   "volume": 6501554,
+   "name": "Novo Nordisk A/S"
+  },
   "PFE": {
-   "last": 27.780000686645508,
-   "prev": 27.790000915527344,
-   "pct_chg": -0.03598498939324764,
+   "last": 27.65,
+   "prev": 27.78,
+   "pct_chg": -0.47,
    "52w_high": 29.21,
    "52w_low": 23.58,
-   "volume": 28631707,
+   "volume": 27608188,
    "name": "Pfizer Inc."
   },
-  "PLTR": {
-   "last": 169.52999877929688,
-   "prev": 170.3000030517578,
-   "pct_chg": -0.4521457772534019,
-   "52w_high": 207.52,
-   "52w_low": 106.37,
-   "volume": 20123908,
-   "name": "Palantir Technologies Inc."
-  },
-  "PL": {
-   "last": 17.219999313354492,
-   "prev": 17.809999465942383,
-   "pct_chg": -3.312746604603404,
-   "52w_high": 51.76,
-   "52w_low": 9.13,
-   "volume": 13224407,
-   "name": "Planet Labs PBC"
-  },
-  "QQQM": {
-   "last": 294.9700012207031,
-   "prev": 295.760009765625,
-   "pct_chg": -0.26711134664484126,
-   "52w_high": 308.21,
-   "52w_low": 228.75,
-   "volume": 1895355,
-   "name": "Invesco NASDAQ 100 ETF"
-  },
   "PWR": {
-   "last": 626.97998046875,
-   "prev": 639.0499877929688,
-   "pct_chg": -1.8887422822593085,
+   "last": 618.73,
+   "prev": 626.98,
+   "pct_chg": -1.32,
    "52w_high": 788.75,
    "52w_low": 373.4,
-   "volume": 530084,
+   "volume": 552242,
    "name": "Quanta Services, Inc."
   },
+  "PL": {
+   "last": 16.69,
+   "prev": 17.22,
+   "pct_chg": -3.08,
+   "52w_high": 51.76,
+   "52w_low": 9.13,
+   "volume": 11061490,
+   "name": "Planet Labs PBC"
+  },
+  "PLTR": {
+   "last": 165.86,
+   "prev": 169.53,
+   "pct_chg": -2.16,
+   "52w_high": 207.52,
+   "52w_low": 106.37,
+   "volume": 20728531,
+   "name": "Palantir Technologies Inc."
+  },
+  "QQQM": {
+   "last": 291.8,
+   "prev": 294.97,
+   "pct_chg": -1.07,
+   "52w_high": 308.21,
+   "52w_low": 228.75,
+   "volume": 2288581,
+   "name": "Invesco NASDAQ 100 ETF"
+  },
+  "RCL": {
+   "last": 259.01,
+   "prev": 259.76,
+   "pct_chg": -0.29,
+   "52w_high": 356.39,
+   "52w_low": 232.1,
+   "volume": 2133490,
+   "name": "Royal Caribbean Cruises Ltd."
+  },
+  "REGN": {
+   "last": 793.26,
+   "prev": 807.65,
+   "pct_chg": -1.78,
+   "52w_high": 859.34,
+   "52w_low": 541.0,
+   "volume": 519487,
+   "name": "Regeneron Pharmaceuticals, Inc."
+  },
   "RDW": {
-   "last": 10.699999809265137,
-   "prev": 11.229999542236328,
-   "pct_chg": -4.719499150270205,
+   "last": 10.87,
+   "prev": 10.7,
+   "pct_chg": 1.59,
    "52w_high": 26.64,
    "52w_low": 4.87,
-   "volume": 12409031,
+   "volume": 13884888,
    "name": "Redwire Corporation"
   },
   "RKLB": {
-   "last": 63.06999969482422,
-   "prev": 65.87000274658203,
-   "pct_chg": -4.250801480197454,
+   "last": 61.96,
+   "prev": 63.07,
+   "pct_chg": -1.76,
    "52w_high": 151.0,
    "52w_low": 37.57,
-   "volume": 26298292,
+   "volume": 18724681,
    "name": "Rocket Lab Corporation"
   },
-  "RCL": {
-   "last": 259.760009765625,
-   "prev": 264.5,
-   "pct_chg": -1.7920567993856333,
-   "52w_high": 356.39,
-   "52w_low": 232.1,
-   "volume": 2409231,
-   "name": "Royal Caribbean Cruises Ltd."
-  },
   "RSP": {
-   "last": 214.63999938964844,
-   "prev": 216.72999572753906,
-   "pct_chg": -0.9643318318143893,
+   "last": 213.17,
+   "prev": 214.64,
+   "pct_chg": -0.68,
    "52w_high": 223.44,
    "52w_low": 182.11,
-   "volume": 7009108,
+   "volume": 7723596,
    "name": "Invesco S&P 500 Equal Weight ETF"
   },
-  "REGN": {
-   "last": 807.6500244140625,
-   "prev": 810.3099975585938,
-   "pct_chg": -0.32826611451735255,
-   "52w_high": 859.34,
-   "52w_low": 541.0,
-   "volume": 565689,
-   "name": "Regeneron Pharmaceuticals, Inc."
-  },
   "SCHW": {
-   "last": 106.54000091552734,
-   "prev": 106.87000274658203,
-   "pct_chg": -0.3087880813825859,
+   "last": 107.33,
+   "prev": 106.54,
+   "pct_chg": 0.74,
    "52w_high": 114.53,
    "52w_low": 83.96,
-   "volume": 7815087,
+   "volume": 6635172,
    "name": "The Charles Schwab Corporation"
   },
-  "SBUX": {
-   "last": 100.04000091552734,
-   "prev": 102.01000213623047,
-   "pct_chg": -1.9311843735404135,
-   "52w_high": 110.51,
-   "52w_low": 77.99,
-   "volume": 5852327,
-   "name": "Starbucks Corporation"
-  },
   "RTX": {
-   "last": 197.5500030517578,
-   "prev": 198.80999755859375,
-   "pct_chg": -0.6337681818363229,
+   "last": 198.12,
+   "prev": 197.55,
+   "pct_chg": 0.29,
    "52w_high": 226.88,
    "52w_low": 154.36,
-   "volume": 3182846,
+   "volume": 2622927,
    "name": "RTX Corporation"
   },
   "SMH": {
-   "last": 574.2899780273438,
-   "prev": 573.72998046875,
-   "pct_chg": 0.0976064660480562,
+   "last": 560.28,
+   "prev": 574.29,
+   "pct_chg": -2.44,
    "52w_high": 671.83,
    "52w_low": 301.37,
-   "volume": 3395360,
+   "volume": 6231350,
    "name": "VanEck Semiconductor ETF"
   },
-  "SPCX": {
-   "last": 147.5500030517578,
-   "prev": 153.47000122070312,
-   "pct_chg": -3.8574301960367117,
-   "52w_high": 225.64,
-   "52w_low": 104.83,
-   "volume": 120147894,
-   "name": "Space Exploration Technologies Corp."
-  },
-  "TGT": {
-   "last": 157.52000427246094,
-   "prev": 162.7100067138672,
-   "pct_chg": -3.1897254177692345,
-   "52w_high": 170.75,
-   "52w_low": 83.44,
-   "volume": 3383178,
-   "name": "Target Corporation"
-  },
   "SPIR": {
-   "last": 11.489999771118164,
-   "prev": 12.140000343322754,
-   "pct_chg": -5.354205550431498,
+   "last": 11.28,
+   "prev": 11.49,
+   "pct_chg": -1.83,
    "52w_high": 25.93,
    "52w_low": 6.6,
-   "volume": 503767,
+   "volume": 635021,
    "name": "Spire Global, Inc."
   },
-  "TLT": {
-   "last": 81.7300033569336,
-   "prev": 82.19999694824219,
-   "pct_chg": -0.571768380483674,
-   "52w_high": 92.19,
-   "52w_low": 81.17,
-   "volume": 40501732,
-   "name": "iShares 20+ Year Treasury Bond ETF"
+  "SPCX": {
+   "last": 148.18,
+   "prev": 147.55,
+   "pct_chg": 0.43,
+   "52w_high": 225.64,
+   "52w_low": 104.83,
+   "volume": 116048106,
+   "name": "Space Exploration Technologies Corp."
+  },
+  "SBUX": {
+   "last": 99.22,
+   "prev": 100.04,
+   "pct_chg": -0.82,
+   "52w_high": 110.51,
+   "52w_low": 77.99,
+   "volume": 6939393,
+   "name": "Starbucks Corporation"
+  },
+  "SPY": {
+   "last": 757.83,
+   "prev": 762.4,
+   "pct_chg": -0.6,
+   "52w_high": 779.37,
+   "52w_low": 629.28,
+   "volume": 41498244,
+   "name": "State Street SPDR S&P 500 ETF Trust"
+  },
+  "TGT": {
+   "last": 155.73,
+   "prev": 157.52,
+   "pct_chg": -1.14,
+   "52w_high": 170.75,
+   "52w_low": 83.44,
+   "volume": 3197439,
+   "name": "Target Corporation"
   },
   "TIP": {
-   "last": 106.80000305175781,
-   "prev": 107.05000305175781,
-   "pct_chg": -0.23353572430925298,
+   "last": 106.33,
+   "prev": 106.8,
+   "pct_chg": -0.44,
    "52w_high": 112.26,
-   "52w_low": 106.69,
-   "volume": 2036947,
+   "52w_low": 106.25,
+   "volume": 2001250,
    "name": "iShares TIPS Bond ETF"
   },
   "TSLA": {
-   "last": 367.80999755859375,
-   "prev": 368.1600036621094,
-   "pct_chg": -0.09506901891408452,
+   "last": 363.56,
+   "prev": 367.81,
+   "pct_chg": -1.16,
    "52w_high": 498.83,
    "52w_low": 297.38,
-   "volume": 32340063,
+   "volume": 29480068,
    "name": "Tesla, Inc."
   },
-  "TMO": {
-   "last": 605.6900024414062,
-   "prev": 603.02001953125,
-   "pct_chg": 0.44276853565023055,
-   "52w_high": 647.0,
-   "52w_low": 435.27,
-   "volume": 1919360,
-   "name": "Thermo Fisher Scientific Inc."
-  },
-  "UAL": {
-   "last": 107.12000274658203,
-   "prev": 108.23999786376953,
-   "pct_chg": -1.0347331294269997,
-   "52w_high": 138.77,
-   "52w_low": 84.64,
-   "volume": 2701704,
-   "name": "United Airlines Holdings, Inc."
-  },
-  "USO": {
-   "last": 149.97000122070312,
-   "prev": 146.02999877929688,
-   "pct_chg": 2.6980774322685512,
-   "52w_high": 154.08,
-   "52w_low": 65.99,
-   "volume": 5407678,
-   "name": "United States Oil Fund, LP"
-  },
-  "SPY": {
-   "last": 762.4000244140625,
-   "prev": 765.9600219726562,
-   "pct_chg": -0.4647758964528357,
-   "52w_high": 779.37,
-   "52w_low": 629.28,
-   "volume": 32250970,
-   "name": "State Street SPDR S&P 500 ETF Trust"
+  "TLT": {
+   "last": 80.78,
+   "prev": 81.73,
+   "pct_chg": -1.16,
+   "52w_high": 92.19,
+   "52w_low": 80.665,
+   "volume": 59495786,
+   "name": "iShares 20+ Year Treasury Bond ETF"
   },
   "TSM": {
-   "last": 435.3599853515625,
-   "prev": 439.0,
-   "pct_chg": -0.8291605121725512,
+   "last": 428.03,
+   "prev": 435.36,
+   "pct_chg": -1.68,
    "52w_high": 479.0,
    "52w_low": 257.98,
-   "volume": 7443121,
+   "volume": 8182539,
    "name": "Taiwan Semiconductor Manufacturing Company Limited"
   },
   "UNH": {
-   "last": 393.05999755859375,
-   "prev": 400.8399963378906,
-   "pct_chg": -1.9409237726712971,
+   "last": 388.28,
+   "prev": 393.06,
+   "pct_chg": -1.22,
    "52w_high": 461.62,
    "52w_low": 255.97,
-   "volume": 7730118,
+   "volume": 4184287,
    "name": "UnitedHealth Group Incorporated"
   },
-  "VGK": {
-   "last": 90.20999908447266,
-   "prev": 91.19000244140625,
-   "pct_chg": -1.0746828936245405,
-   "52w_high": 93.29,
-   "52w_low": 77.82,
-   "volume": 1723592,
-   "name": "Vanguard FTSE Europe ETF"
+  "TMO": {
+   "last": 603.18,
+   "prev": 605.69,
+   "pct_chg": -0.41,
+   "52w_high": 647.0,
+   "52w_low": 435.27,
+   "volume": 1539414,
+   "name": "Thermo Fisher Scientific Inc."
+  },
+  "USO": {
+   "last": 158.38,
+   "prev": 149.97,
+   "pct_chg": 5.61,
+   "52w_high": 158.88,
+   "52w_low": 65.99,
+   "volume": 9595438,
+   "name": "United States Oil Fund, LP"
+  },
+  "UAL": {
+   "last": 106.49,
+   "prev": 107.12,
+   "pct_chg": -0.59,
+   "52w_high": 138.77,
+   "52w_low": 84.64,
+   "volume": 3761232,
+   "name": "United Airlines Holdings, Inc."
   },
   "VOYG": {
-   "last": 33.75,
-   "prev": 35.40999984741211,
-   "pct_chg": -4.687940848814853,
+   "last": 32.97,
+   "prev": 33.75,
+   "pct_chg": -2.31,
    "52w_high": 52.4,
    "52w_low": 17.41,
-   "volume": 917712,
+   "volume": 957702,
    "name": "Voyager Technologies, Inc."
   },
+  "VGK": {
+   "last": 89.42,
+   "prev": 90.21,
+   "pct_chg": -0.88,
+   "52w_high": 93.29,
+   "52w_low": 77.82,
+   "volume": 1282944,
+   "name": "Vanguard FTSE Europe ETF"
+  },
   "VRT": {
-   "last": 262.8900146484375,
-   "prev": 290.8299865722656,
-   "pct_chg": -9.60697768931251,
+   "last": 248.13,
+   "prev": 262.89,
+   "pct_chg": -5.61,
    "52w_high": 379.935,
    "52w_low": 132.685,
-   "volume": 9735461,
+   "volume": 10000578,
    "name": "Vertiv Holdings Co"
   },
   "VSAT": {
-   "last": 72.36000061035156,
-   "prev": 77.75,
-   "pct_chg": -6.932475099226286,
+   "last": 74.18,
+   "prev": 72.36,
+   "pct_chg": 2.52,
    "52w_high": 93.03,
    "52w_low": 26.1,
-   "volume": 1433304,
+   "volume": 1797200,
    "name": "Viasat, Inc."
   },
-  "VST": {
-   "last": 151.10000610351562,
-   "prev": 151.72000122070312,
-   "pct_chg": -0.40864428697545907,
-   "52w_high": 219.82,
-   "52w_low": 132.66,
-   "volume": 3867234,
-   "name": "Vistra Corp."
-  },
   "VRTX": {
-   "last": 521.1199951171875,
-   "prev": 528.9000244140625,
-   "pct_chg": -1.4709829717807332,
+   "last": 514.56,
+   "prev": 521.12,
+   "pct_chg": -1.26,
    "52w_high": 560.25,
    "52w_low": 374.17,
-   "volume": 931510,
+   "volume": 809919,
    "name": "Vertex Pharmaceuticals Incorporated"
   },
+  "VST": {
+   "last": 147.05,
+   "prev": 151.1,
+   "pct_chg": -2.68,
+   "52w_high": 219.82,
+   "52w_low": 132.66,
+   "volume": 4456192,
+   "name": "Vistra Corp."
+  },
+  "XLB": {
+   "last": 50.76,
+   "prev": 51.39,
+   "pct_chg": -1.23,
+   "52w_high": 54.19,
+   "52w_low": 42.035,
+   "volume": 9628999,
+   "name": "State Street Materials Select Sector SPDR ETF"
+  },
   "WFC": {
-   "last": 89.66999816894531,
-   "prev": 87.95999908447266,
-   "pct_chg": 1.9440644637006572,
+   "last": 89.45,
+   "prev": 89.67,
+   "pct_chg": -0.25,
    "52w_high": 97.76,
    "52w_low": 72.78,
-   "volume": 14396645,
+   "volume": 13064983,
    "name": "Wells Fargo & Company"
   },
   "XLC": {
-   "last": 110.83000183105469,
-   "prev": 111.5199966430664,
-   "pct_chg": -0.618718465550293,
+   "last": 111.5,
+   "prev": 110.83,
+   "pct_chg": 0.6,
    "52w_high": 120.405,
    "52w_low": 105.03,
-   "volume": 4802307,
+   "volume": 4958668,
    "name": "State Street Communication Services Select Sector SPDR ETF"
   },
-  "XLB": {
-   "last": 51.38999938964844,
-   "prev": 51.939998626708984,
-   "pct_chg": -1.0589126908018862,
-   "52w_high": 54.19,
-   "52w_low": 42.035,
-   "volume": 13103490,
-   "name": "State Street Materials Select Sector SPDR ETF"
-  },
-  "XLE": {
-   "last": 65.30999755859375,
-   "prev": 64.7699966430664,
-   "pct_chg": 0.8337207712132104,
-   "52w_high": 65.92,
-   "52w_low": 42.35,
-   "volume": 25178949,
-   "name": "State Street Energy Select Sector SPDR ETF"
-  },
   "XLI": {
-   "last": 171.7899932861328,
-   "prev": 174.4199981689453,
-   "pct_chg": -1.5078574191160383,
+   "last": 170.55,
+   "prev": 171.79,
+   "pct_chg": -0.72,
    "52w_high": 188.19,
    "52w_low": 147.14,
-   "volume": 6379102,
+   "volume": 7690789,
    "name": "State Street Industrial Select Sector SPDR ETF"
   },
-  "WMT": {
-   "last": 105.83000183105469,
-   "prev": 106.05000305175781,
-   "pct_chg": -0.2074504614542568,
-   "52w_high": 135.16,
-   "52w_low": 98.88,
-   "volume": 15347532,
-   "name": "Walmart Inc."
-  },
-  "XLY": {
-   "last": 112.45999908447266,
-   "prev": 113.98999786376953,
-   "pct_chg": -1.3422219562854893,
-   "52w_high": 125.01,
-   "52w_low": 105.19,
-   "volume": 7648466,
-   "name": "State Street Consumer Discretionary Select Sector SPDR ETF"
-  },
-  "XLU": {
-   "last": 42.939998626708984,
-   "prev": 43.45000076293945,
-   "pct_chg": -1.1737678418304507,
-   "52w_high": 47.8,
-   "52w_low": 41.74,
-   "volume": 16890067,
-   "name": "State Street Utilities Select Sector SPDR ETF"
-  },
-  "XLV": {
-   "last": 166.5800018310547,
-   "prev": 167.1300048828125,
-   "pct_chg": -0.3290869596655976,
-   "52w_high": 176.6,
-   "52w_low": 133.73,
-   "volume": 7997013,
-   "name": "State Street Health Care Select Sector SPDR ETF"
-  },
-  "XLRE": {
-   "last": 43.40999984741211,
-   "prev": 43.900001525878906,
-   "pct_chg": -1.1161769053195647,
-   "52w_high": 46.455,
-   "52w_low": 39.725,
-   "volume": 5833062,
-   "name": "State Street Real Estate Select Sector SPDR ETF"
-  },
-  "YSS": {
-   "last": 8.069999694824219,
-   "prev": 8.930000305175781,
-   "pct_chg": -9.630465632270031,
-   "52w_high": 44.54,
-   "52w_low": 8.05,
-   "volume": 2957745,
-   "name": "York Space Systems, Inc."
-  },
-  "XLK": {
-   "last": 187.8699951171875,
-   "prev": 187.8699951171875,
-   "pct_chg": 0.0,
-   "52w_high": 198.73,
-   "52w_low": 126.68,
-   "volume": 5972161,
-   "name": "State Street Technology Select Sector SPDR ETF"
-  },
-  "XLP": {
-   "last": 83.05000305175781,
-   "prev": 84.0199966430664,
-   "pct_chg": -1.1544794454459677,
-   "52w_high": 90.14,
-   "52w_low": 75.16,
-   "volume": 12200149,
-   "name": "State Street Consumer Staples Select Sector SPDR ETF"
-  },
   "XLF": {
-   "last": 57.060001373291016,
-   "prev": 57.29999923706055,
-   "pct_chg": -0.418844444965202,
+   "last": 56.87,
+   "prev": 57.06,
+   "pct_chg": -0.33,
    "52w_high": 58.6,
    "52w_low": 47.67,
-   "volume": 27341993,
+   "volume": 24880351,
    "name": "State Street Financial Select Sector SPDR ETF"
   },
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "XLK": {
+   "last": 185.22,
+   "prev": 187.87,
+   "pct_chg": -1.41,
+   "52w_high": 198.73,
+   "52w_low": 126.68,
+   "volume": 5518623,
+   "name": "State Street Technology Select Sector SPDR ETF"
+  },
+  "XLE": {
+   "last": 64.93,
+   "prev": 65.31,
+   "pct_chg": -0.58,
+   "52w_high": 66.17,
+   "52w_low": 42.35,
+   "volume": 36941966,
+   "name": "State Street Energy Select Sector SPDR ETF"
+  },
+  "XLP": {
+   "last": 83.09,
+   "prev": 83.05,
+   "pct_chg": 0.05,
+   "52w_high": 90.14,
+   "52w_low": 75.16,
+   "volume": 10328376,
+   "name": "State Street Consumer Staples Select Sector SPDR ETF"
+  },
+  "XLU": {
+   "last": 42.52,
+   "prev": 42.94,
+   "pct_chg": -0.98,
+   "52w_high": 47.8,
+   "52w_low": 41.74,
+   "volume": 20596278,
+   "name": "State Street Utilities Select Sector SPDR ETF"
+  },
+  "YSS": {
+   "last": 7.45,
+   "prev": 8.07,
+   "pct_chg": -7.68,
+   "52w_high": 44.54,
+   "52w_low": 7.45,
+   "volume": 3609658,
+   "name": "York Space Systems, Inc."
+  },
+  "WMT": {
+   "last": 105.73,
+   "prev": 105.83,
+   "pct_chg": -0.09,
+   "52w_high": 135.16,
+   "52w_low": 98.88,
+   "volume": 16371170,
+   "name": "Walmart Inc."
+  },
+  "XLRE": {
+   "last": 43.05,
+   "prev": 43.41,
+   "pct_chg": -0.83,
+   "52w_high": 46.455,
+   "52w_low": 39.725,
+   "volume": 4699627,
+   "name": "State Street Real Estate Select Sector SPDR ETF"
+  },
+  "XLV": {
+   "last": 165.66,
+   "prev": 166.58,
+   "pct_chg": -0.55,
+   "52w_high": 176.6,
+   "52w_low": 133.73,
+   "volume": 7633909,
+   "name": "State Street Health Care Select Sector SPDR ETF"
+  },
+  "XLY": {
+   "last": 111.96,
+   "prev": 112.46,
+   "pct_chg": -0.44,
+   "52w_high": 125.01,
+   "52w_low": 105.19,
+   "volume": 5794778,
+   "name": "State Street Consumer Discretionary Select Sector SPDR ETF"
+  },
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "global_indices": {},
  "dma": {
   "SPY": {
-   "last": 762.4000244140625,
-   "dma20": 768.2914947509765,
-   "dma20_dist_pct": -0.7668274837304584,
-   "dma50": 758.0246020507813,
-   "dma50_dist_pct": 0.5772137673953924,
+   "last": 757.83,
+   "dma20": 767.5585,
+   "dma20_dist_pct": -1.2675,
+   "dma50": 758.2458,
+   "dma50_dist_pct": -0.0548,
    "52w_high": 779.37,
    "52w_low": 629.28,
-   "n_closes": 63
+   "n_closes": 251
   },
   "QQQ": {
-   "last": 716.3099975585938,
-   "dma20": 717.2779998779297,
-   "dma20_dist_pct": -0.13495497136405654,
-   "dma50": 711.1663989257812,
-   "dma50_dist_pct": 0.723262325186055,
+   "last": 708.69,
+   "dma20": 716.5275,
+   "dma20_dist_pct": -1.0938,
+   "dma50": 710.6122,
+   "dma50_dist_pct": -0.2705,
    "52w_high": 748.65,
    "52w_low": 555.6,
-   "n_closes": 63
+   "n_closes": 251
   },
   "IWM": {
-   "last": 290.6400146484375,
-   "dma20": 298.082502746582,
-   "dma20_dist_pct": -2.49678797969293,
-   "dma50": 296.74420166015625,
-   "dma50_dist_pct": -2.0570535085667885,
+   "last": 287.7,
+   "dma20": 297.332,
+   "dma20_dist_pct": -3.2395,
+   "dma50": 296.4892,
+   "dma50_dist_pct": -2.9644,
    "52w_high": 305.18,
    "52w_low": 228.9,
-   "n_closes": 63
+   "n_closes": 251
   },
   "DIA": {
-   "last": 524.0700073242188,
-   "dma20": 532.9704986572266,
-   "dma20_dist_pct": -1.6699782362122968,
-   "dma50": 529.1596020507812,
-   "dma50_dist_pct": -0.9618260174884001,
+   "last": 520.75,
+   "dma20": 532.1505,
+   "dma20_dist_pct": -2.1423,
+   "dma50": 529.1268,
+   "dma50_dist_pct": -1.5831,
    "52w_high": 546.75,
    "52w_low": 450.44,
-   "n_closes": 63
+   "n_closes": 251
   },
   "TLT": {
-   "last": 81.7300033569336,
-   "dma20": 82.35249938964844,
-   "dma20_dist_pct": -0.755892094749338,
-   "dma50": 83.19359970092773,
-   "dma50_dist_pct": -1.759265555590353,
+   "last": 80.78,
+   "dma20": 82.286,
+   "dma20_dist_pct": -1.8302,
+   "dma50": 83.0808,
+   "dma50_dist_pct": -2.7694,
    "52w_high": 92.19,
-   "52w_low": 81.17,
-   "n_closes": 63
+   "52w_low": 80.665,
+   "n_closes": 251
   },
   "SPCX": {
-   "last": 147.5500030517578,
-   "dma20": 142.3959991455078,
-   "dma20_dist_pct": 3.6194864583122004,
-   "dma50": 135.6547998046875,
-   "dma50_dist_pct": 8.768730088575358,
+   "last": 148.18,
+   "dma20": 142.4975,
+   "dma20_dist_pct": 3.9878,
+   "dma50": 135.2012,
+   "dma50_dist_pct": 9.5996,
    "52w_high": 225.64,
    "52w_low": 104.83,
-   "n_closes": 61
+   "n_closes": 62
   },
-  "fetched_at": "2026-09-10T10:45:38Z"
+  "fetched_at": "2026-09-10T21:05:00Z"
  },
  "breadth_latest": {
   "date": "2026-09-09",
