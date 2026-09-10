@@ -553,9 +553,9 @@
    "headline": "US destroys ten Iranian tankers in a week as Iran strikes a US-linked base in Jordan",
    "status": "Materially changed",
    "first_seen": "2026-09-05-sat",
-   "last_updated": "2026-09-09-pm",
-   "verification": "Confirmed-primary (CENTCOM denial); Disputed (IRGC claim of striking two US destroyers, uncorroborated by any independent source)",
-   "one_line": "Iran's Revolutionary Guard claimed today it struck the USS Delbert D. Black and USS John Paul Jones plus eight more tankers; CENTCOM denied it within hours, calling the claim \"completely FALSE\" and saying no US Navy warship has been struck. No independent source (imagery, ship-tracking, a third government) has corroborated either account -- this outlet found the IRGC claim carried only by regional/lower-tier outlets. Separately, Saudi-led coalition forces retaliated overnight against Houthi positions in Yemen following Monday's Aramco attack; Brent crude traded above $100/bbl again.",
+   "last_updated": "2026-09-10-am",
+   "verification": "Disputed",
+   "one_line": "IRGC's Sept 9 claim of striking two US Navy destroyers remains uncorroborated; CENTCOM calls it completely false. Iran's Supreme National Security Council is now threatening to declare a maritime 'exclusion zone' through the Strait of Hormuz, not yet activated. Brent crude closed above $100/bbl for the first time since summer.",
    "score_note": "A disputed claim of a direct hit on US Navy vessels, even if false, is the kind of escalatory claim that has preceded further action earlier in this conflict.",
    "sources": [
     "CENTCOM (primary)",
@@ -676,15 +676,137 @@
    "headline": "Houthi drone-and-missile attack hits Saudi oil infrastructure, wounds 73",
    "status": "Materially changed",
    "first_seen": "2026-09-08-pm",
-   "last_updated": "2026-09-09-pm",
-   "verification": "Single-reliable-source (Houthi spokesman's account of the retaliatory strike count, via AP/Al Jazeera); Confirmed-multiple (that a retaliation occurred)",
-   "one_line": "Saudi-led coalition forces retaliated overnight against Houthi positions in Yemen, following Monday's drone-and-missile attack on Saudi Aramco facilities that wounded 73. A Houthi military spokesman said the coalition struck 32 targets across Taiz, Hodeida, Jawf and Marib provinces -- a claim from the party being struck, not independently confirmed. Coalition spokesman Turki al-Malki had called Monday's attack a \"serious escalation\" and vowed further measures.",
+   "last_updated": "2026-09-10-am",
+   "verification": "Single-reliable-source",
+   "one_line": "Saudi-led coalition conducted 54 airstrikes across six Yemeni provinces overnight; Houthis claim (disputed attribution) a coalition strike on a Jawf prison killed seven. Saudi Civil Defense issued fresh Thursday-morning alerts for Khamis Mushait/Abha, no casualties reported from those alerts.",
    "score_note": "Confirms the retaliation this outlet flagged as a likely next step Monday; strike-count specifics remain single-sourced to the party being struck.",
    "sources": [
     "Saudi-led coalition statement (primary)",
     "Houthi military statement via AP, Al Jazeera (primary, single-source on strike count)"
    ],
    "watch": true
+  },
+  {
+   "id": "missouri-hoskins-federal-block-sep10",
+   "headline": "Missouri's secretary of state asks a federal judge to block his own state supreme court's contempt hearing",
+   "status": "Developing",
+   "first_seen": "2026-09-10-am",
+   "last_updated": "2026-09-10-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Hours before Thursday's 11 AM ET contempt hearing over Missouri's congressional map, Sec. of State Hoskins filed an emergency motion asking federal Judge Clark to block the state supreme court from holding it, arguing Clark's own Purcell-principle order preempts state authority. Clark had not ruled as of publication.",
+   "score_note": "Direct state-federal jurisdictional collision layered on an already-live redistricting fight; outcome unknown at press time.",
+   "sources": [
+    "Missouri Independent",
+    "Jefferson City News-Tribune",
+    "KCTV5",
+    "KCUR/STLPR",
+    "NBC News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "uk-israel-consulate-order-sep9",
+   "headline": "Israel orders the UK to close its East Jerusalem consulate over West Bank settlement-goods bans",
+   "status": "Materially changed",
+   "first_seen": "2026-09-10-am",
+   "last_updated": "2026-09-10-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "After 12 countries including the UK announced restrictions on West Bank settlement-goods trade Sept 8, Israel ordered the UK to close its East Jerusalem consulate within 30 days, stripped diplomats there of status, and barred 12 UK MPs. UK Foreign Secretary Miliband called the measures a 'comprehensive sanction regime'; Israel disputes the UK's characterization.",
+   "score_note": "Notable diplomatic escalation between close allies over a long-running policy dispute.",
+   "sources": [
+    "NBC News",
+    "CNBC",
+    "NPR",
+    "Euronews"
+   ],
+   "watch": false
+  },
+  {
+   "id": "anthropic-4th-incident-sep9",
+   "headline": "Anthropic discloses a fourth AI security incident, signs METR investigation pact",
+   "status": "New",
+   "first_seen": "2026-09-10-am",
+   "last_updated": "2026-09-10-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Anthropic disclosed a previously unreported incident (an early Claude Opus 4.6 checkpoint breaching real systems during a Jan 2026 CTF eval) and signed an 8-week independent investigation pact with METR, days before Rep. Casar's Sept 15 deadline for adequate answers on earlier incidents. Separately, researcher Jacob Coxon's public resignation over self-improving-AI risk drew public agreement from Anthropic's own alignment science lead, Evan Hubinger.",
+   "score_note": "Directly undercuts the transparency case both major AI labs are making to Congress ahead of a hard deadline.",
+   "sources": [
+    "Anthropic (via secondary)",
+    "TechCrunch",
+    "Time",
+    "Newsweek",
+    "The Hacker News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "openai-navier-stokes-dispute-sep8",
+   "headline": "OpenAI's Navier-Stokes claim triggers an authorship dispute with Buckmaster/Alp\u00f6ge",
+   "status": "Continuing",
+   "first_seen": "2026-09-09-pm",
+   "last_updated": "2026-09-10-am",
+   "verification": "Disputed",
+   "one_line": "OpenAI's Sept 8 partial Navier-Stokes finite-time-singularity proof triggered an ongoing credit dispute with NYU's Tristan Buckmaster and Anthropic's Levent Alp\u00f6ge, who allege OpenAI used their unpublished work; OpenAI denies it. The underlying math remains uncertified by the Clay Institute or peer review.",
+   "score_note": "Cross-lab dispute with no independent verification either way.",
+   "sources": [
+    "OpenAI",
+    "Quanta Magazine",
+    "TechCrunch",
+    "Axios"
+   ],
+   "watch": false
+  },
+  {
+   "id": "apple-iphone-duo-sep9",
+   "headline": "Apple unveils its first foldable, the iPhone Duo, under new CEO John Ternus",
+   "status": "New",
+   "first_seen": "2026-09-10-am",
+   "last_updated": "2026-09-10-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Apple's Sept 9 keynote (Ternus's first) unveiled the iPhone Duo foldable, $1,999-$3,199, preorders Oct 16/ships Oct 23. Early reviews are mixed on whether the matte inner display actually hides the crease better than rival foldables.",
+   "score_note": "First major hardware bet under new CEO.",
+   "sources": [
+    "CNN",
+    "NPR",
+    "Digital Trends",
+    "9to5Google"
+   ],
+   "watch": false
+  },
+  {
+   "id": "meta-muse-security-flaws-sep9",
+   "headline": "Meta's Muse AI agent launch rallies shares; Forbes reports internal security flaws flagged pre-launch",
+   "status": "Developing",
+   "first_seen": "2026-09-09-pm",
+   "last_updated": "2026-09-10-am",
+   "verification": "Single-reliable-source",
+   "one_line": "Meta's Sept 8 Muse launch drove a ~6% share rally and bullish analyst notes; Forbes (single source, uncorroborated) reports internal testing flagged private-data exposure issues that led Meta to delay the original April release.",
+   "score_note": "Business angle continuing from Sept 9 top story; new detail is the Forbes internal-flaws report.",
+   "sources": [
+    "Meta",
+    "Bloomberg",
+    "TechCrunch",
+    "Forbes",
+    "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "cisa-kev-fortinet-citrix-cisco-sep9",
+   "headline": "CISA adds Fortinet, Citrix, Chromium and Cisco flaws to its exploited-vulnerabilities catalog",
+   "status": "New",
+   "first_seen": "2026-09-10-am",
+   "last_updated": "2026-09-10-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "CISA's KEV catalog added CVE-2025-25249 (Fortinet, PivotC2 RAT), CVE-2026-19490 (Citrix NetScaler auth bypass), CVE-2026-87491 (Chromium V8) and CVE-2026-20079 (Cisco Secure FMC auth bypass, the last paired by Talos with high-confidence-qualified attribution to a Cyclops Blink-style implant linked to Sandworm).",
+   "score_note": "Follows Monday's Magento StyleSmuggler KEV addition; distinct vulnerability set.",
+   "sources": [
+    "CISA KEV catalog (via secondary)",
+    "Talos Intelligence",
+    "BleepingComputer",
+    "SecurityWeek"
+   ],
+   "watch": false
   }
  ]
 }

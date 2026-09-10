@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-09T06:50:00-04:00",
+ "fetched": "2026-09-10T06:47:00-04:00",
  "earnings_fetched": "2026-09-06",
  "earnings_fetched_note": "Two independent aggregators (Yahoo Finance, Kiplinger) show no headline S&P 500-grade earnings this week (~101 companies reporting in aggregate, none named as market-moving). Recommend a fresh named-ticker pull closer to each day if the earnings section needs specifics.",
  "events": [
@@ -218,6 +218,38 @@
    "importance": "Low",
    "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for Sept 9; Launch Library 2's current schedule has it slipped to Sept 16, exact time to be determined.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-10T11:00:00-04:00",
+   "type": "legal",
+   "name": "Missouri Supreme Court contempt hearing for Secretary of State Hoskins",
+   "importance": "High",
+   "reason": "Hoskins separately asked federal Judge Clark to block this hearing entirely; no ruling as of publication. Outcome unknown -- scheduled after this edition's cutoff.",
+   "source": "Missouri Independent, KCTV5, NBC News -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-10T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Producer Price Index, August 2026, plus weekly jobless claims",
+   "importance": "Medium",
+   "reason": "No clean economist-survey consensus found this cycle.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-10T13:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 29-year-11-month bond reopening ($22B), 4-week bill ($90B), 8-week bill ($85B)",
+   "importance": "Low",
+   "reason": "Refunding leg (30-year-equivalent reopening) plus routine weekly bills.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T11:37:00-04:00",
+   "type": "launch",
+   "name": "SpaceX Falcon 9 / USSF-153, Vandenberg SLC-4E",
+   "importance": "Low",
+   "reason": "Classified US Space Force payload; scheduled after this edition's publication.",
+   "source": "Spaceflight Now, NASASpaceFlight.com launch schedules -- Confirmed-multiple"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
