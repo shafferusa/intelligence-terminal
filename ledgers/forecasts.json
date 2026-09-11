@@ -8,7 +8,10 @@
    "horizon": "2026-09-11",
    "probability": "40-55%",
    "basis": "A state supreme court show-cause order with an in-person hearing set for Thursday is a forcing event, but the underlying federal-vs-state conflict has already produced two rounds of unresolved 'competing orders'; courts moving quickly to a clear result is plausible but not assured on this record.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The hearing (and the Supreme Court's Wednesday stay of the competing federal order) clarified the map by Sept 11: the Missouri Supreme Court found Hoskins in contempt, then ruled he purged himself by complying with the 2022 map. That map is now the sole governing order for November.",
+   "graded": "2026-09-11",
+   "lesson": "A state supreme court show-cause hearing, backed by a same-week federal stay resolving the competing-order problem, did produce the clarifying outcome the forecast hedged as 40-55% likely -- a reminder that a forcing hearing plus outside intervention on the same conflict raises resolution odds meaningfully above what the hearing alone would suggest."
   },
   {
    "id": "2026-09-09-pm-2",
@@ -2887,6 +2890,36 @@
    "horizon": "2026-10-11",
    "probability": "15-25%",
    "basis": "Chief Justice Powell's ruling that Hoskins 'purged himself of contempt' by complying left his earlier defiance itself unaddressed rather than closed -- an open question, not a foreclosed one.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-11-pm-1",
+   "date": "2026-09-11",
+   "slot": "pm",
+   "forecast": "Monday's planned Iran-GCC talks in Salalah, Oman on the Strait of Hormuz proceed without being cancelled or postponed.",
+   "horizon": "2026-09-14",
+   "probability": "40-55%",
+   "basis": "The meeting was only just agreed today, before this week's Saudi pipeline shutdown and Mocha airstrikes; genuine two-way risk given the diplomatic and military tracks are moving in opposite directions within the same conflict.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-11-pm-2",
+   "date": "2026-09-11",
+   "slot": "pm",
+   "forecast": "The FOMC delivers a 25bp hike at next Wednesday's (Sept 16) meeting rather than a hold.",
+   "horizon": "2026-09-16",
+   "probability": "70-85%",
+   "basis": "Futures-implied odds this report found ran roughly 85-90% immediately after today's hot core CPI print; set modestly below that market-implied range to reflect residual two-way uncertainty and the reported administration pressure against a hike, rather than treating the market price as a certainty.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-11-pm-3",
+   "date": "2026-09-11",
+   "slot": "pm",
+   "forecast": "Saudi Arabia's airstrikes on Mocha draw a further Houthi response against Saudi territory (beyond this week's pipeline-area attacks) within 5 days.",
+   "horizon": "2026-09-16",
+   "probability": "40-55%",
+   "basis": "This week's pattern shows escalation begetting escalation on both sides within days, not weeks, though the Houthis may instead prioritize consolidating their new territorial gains (Mocha, the Bab el-Mandeb islands) over further offensive action.",
    "status": "open"
   }
  ]

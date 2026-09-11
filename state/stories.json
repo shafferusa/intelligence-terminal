@@ -1,6 +1,125 @@
 {
  "stories": [
   {
+   "id": "saudi-pipeline-mocha-strike-sep11",
+   "headline": "Saudi Arabia shuts a major oil pipeline and strikes Mocha as the Yemen war widens",
+   "status": "New",
+   "first_seen": "2026-09-11-pm",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Saudi Arabia shut its ~7M bpd East-West pipeline after attacks near Riyadh/Medina and struck the airport at Mocha, the port the Houthis captured Thursday; Houthi forces by several accounts also now hold the Bab el-Mandeb islands of Perim and Zuqar. In parallel, Iran agreed to meet Gulf Cooperation Council states in Salalah, Oman, Monday on the strait's future -- the first such direct dialogue since the war began, though not clear it survives this week's escalation.",
+   "score_note": "A direct Saudi military response and a diplomatic opening landed the same day -- the most consequential Gulf development this report has tracked in a week already dominated by the conflict.",
+   "sources": [
+    "Bloomberg/CNBC",
+    "The National",
+    "Newsweek",
+    "CNN",
+    "NPR",
+    "Al Jazeera",
+    "NBC News",
+    "Axios"
+   ],
+   "watch": true
+  },
+  {
+   "id": "aug-cpi-hike-odds-sep11",
+   "headline": "Hot core CPI pushes Sept 16 hike odds toward 90%; stocks rally anyway",
+   "status": "New",
+   "first_seen": "2026-09-11-pm",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "August CPI: headline +0.4% m/m / 3.4% y/y (unchanged from July); core +0.3% m/m but 2.4% y/y, down from July's 2.5%. The hotter monthly core pace pushed futures-implied odds of a Sept 16 hike to roughly 85-90% from ~70% beforehand. Equities rallied broadly regardless (S&P +0.86%, Nasdaq +0.96%, Dow +0.98%) -- unexplained by this report. Fed in blackout through Sept 17; no official comment. Bloomberg reports Trump and other officials pressing against a hike, setting up potential tension with new Chair Warsh.",
+   "score_note": "A hawkish data surprise and a broad equity rally landed the same day -- a genuine divergence this report is not resolving into one narrative.",
+   "sources": [
+    "BLS CPI release (primary)",
+    "this report's own FRED-derived cross-check",
+    "Bloomberg",
+    "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "papercut-ai-agent-breach-sep11",
+   "headline": "An AI agent swarm breaches 395 organizations through PaperCut flaws",
+   "status": "New",
+   "first_seen": "2026-09-11-pm",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "GreyNoise: a likely Russian-speaking actor used hundreds of autonomous AI agents (OpenAI Codex harness + DeepSeek model) to develop and fire exploits against two PaperCut print-server flaws, compromising 440+ instances across 395 orgs in 48 countries, reaching RCE in under 4 hours and domain-admin access at 12 victims. Attribution carries GreyNoise's own confidence qualifier, not a government finding.",
+   "score_note": "The most concrete documented case to date of an offensive cyber campaign run substantially by autonomous AI agents.",
+   "sources": [
+    "GreyNoise (primary)",
+    "BleepingComputer",
+    "The Hacker News",
+    "Help Net Security"
+   ],
+   "watch": true
+  },
+  {
+   "id": "anthropic-distillation-accusation-sep10",
+   "headline": "Anthropic accuses five China-based AI firms of mass distillation of Claude",
+   "status": "New",
+   "first_seen": "2026-09-11-pm",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Single-reliable-source",
+   "one_line": "Anthropic's own report accuses Alibaba, Moonshot AI, DeepSeek, Xiaomi and Zhipu of unauthorized distillation across ~200M flagged exchanges; Alibaba's campaign alone >151M interactions via ~3,500 fraudulent accounts. None of the five companies has publicly responded; no independent verification of the underlying data found.",
+   "score_note": "A large allegation resting entirely on the accusing party's own account -- flagged single-source pending any response.",
+   "sources": [
+    "Anthropic (primary, single-party)",
+    "TechCrunch",
+    "The Hacker News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "hawley-openai-investigation-sep10",
+   "headline": "Sen. Hawley opens a second, Senate-side investigation into OpenAI",
+   "status": "New",
+   "first_seen": "2026-09-11-pm",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Sen. Josh Hawley opened a GOP-led Senate Homeland Security subcommittee investigation into OpenAI's handling of the July Hugging Face agent-swarm incident, calling it 'reckless' and demanding documents by Oct 1 -- a parallel track to Rep. Casar's pending Sept 15 deadline for OpenAI and Anthropic.",
+   "score_note": "Bipartisan congressional scrutiny of AI-agent containment failures is widening, not narrowing.",
+   "sources": [
+    "hawley.senate.gov (primary)",
+    "Axios",
+    "The Hill"
+   ],
+   "watch": true
+  },
+  {
+   "id": "trump-500-aca-rebate-sep10",
+   "headline": "Trump announces $500 ACA rebate checks ahead of the midterms",
+   "status": "New",
+   "first_seen": "2026-09-11-pm",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Trump said ~1M ACA marketplace enrollees across 30 federal-exchange states will get $500 rebate checks starting October, funded from exchange operational fees. Trump attributes to prior-administration 'overcharging'; some health-policy commentary disputes the characterization, unresolved.",
+   "score_note": "A concrete, dated cash payment ahead of the midterms, distinct from Wednesday's unfunded $5,000 pledge.",
+   "sources": [
+    "Washington Post",
+    "CNN",
+    "Axios"
+   ],
+   "watch": true
+  },
+  {
+   "id": "drc-ebola-outbreak-2026",
+   "headline": "DRC Ebola toll accelerates sharply: 6,942 cases, 3,349 deaths",
+   "status": "Materially changed",
+   "first_seen": "2026-07-30-am",
+   "last_updated": "2026-09-11-pm",
+   "verification": "Confirmed-primary (WHO)",
+   "one_line": "WHO/DRC data through Sept 10 shows 6,942 confirmed cases and 3,349 deaths, up from 6,686/3,226 on Sept 9 -- a jump of 99 cases and 39 deaths in a single day, the steepest this report has tracked. Caused by Bundibugyo ebolavirus, a strain outside standard vaccine coverage. Now called the fastest-growing Ebola outbreak on record.",
+   "score_note": "Sharpest single-day acceleration tracked in this outbreak, plus a vaccine-coverage gap.",
+   "sources": [
+    "WHO Disease Outbreak News",
+    "ECDC",
+    "DRC Ministry of Health"
+   ],
+   "watch": true
+  },
+  {
    "id": "meta-muse-ai-agent-sep9",
    "headline": "Meta launches Muse, its first personal AI agent, sending shares up 6%",
    "status": "New",
@@ -155,22 +274,6 @@
     "CNN",
     "NPR",
     "JURIST"
-   ],
-   "watch": true
-  },
-  {
-   "id": "drc-ebola-outbreak-2026",
-   "headline": "DRC Ebola toll revised sharply upward: 6,604 cases, 3,175 deaths",
-   "status": "Materially changed",
-   "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-09-am",
-   "verification": "Confirmed-primary (WHO)",
-   "one_line": "WHO/DRC Ministry of Health data through Sept 6-7 now puts the outbreak at 6,686 confirmed cases and 3,226 deaths (up from 6,604/3,175 reported Sept 6), 819 hospitalized in isolation, 1,563 recovered among confirmed positives.",
-   "score_note": "Continuing upward trend; pace of increase similar to prior updates.",
-   "sources": [
-    "WHO Disease Outbreak News",
-    "ECDC",
-    "DRC Ministry of Health"
    ],
    "watch": true
   },
@@ -761,28 +864,29 @@
    "headline": "Apple unveils its first foldable, the iPhone Duo, under new CEO John Ternus",
    "status": "Materially changed",
    "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-pm",
+   "last_updated": "2026-09-11-pm",
    "verification": "Confirmed-multiple",
    "one_line": "Thursday's hands-on coverage read more favorably than Tuesday's mixed early reactions -- Bloomberg News called it 'the most exciting new iPhone since the iPhone X in 2017' after time with the device at Apple Park. Separate reporting (not an Apple statement) says Apple expects to sell as many units as it can manufacture through the first six months, a stronger demand signal than Tuesday's 'extremely limited' supply framing. Shares rose 3.56% Thursday, the clearest mega-cap tech outperformer on an otherwise negative day.",
-   "score_note": "First major hardware bet under new CEO.",
+   "score_note": "First major hardware bet under new CEO; teardown-specialist repairability finding adds a durability angle beyond the sales/reception narrative.",
    "sources": [
     "CNN",
     "NPR",
     "Digital Trends",
     "9to5Google",
     "Bloomberg News",
-    "Irish Times"
+    "Irish Times",
+    "iFixit"
    ],
    "watch": true
   },
   {
    "id": "meta-muse-security-flaws-sep9",
    "headline": "Meta's Muse AI agent launch rallies shares; Forbes reports internal security flaws flagged pre-launch",
-   "status": "Developing",
+   "status": "Materially changed",
    "first_seen": "2026-09-09-pm",
-   "last_updated": "2026-09-10-pm",
+   "last_updated": "2026-09-11-pm",
    "verification": "Single-reliable-source",
-   "one_line": "Meta's Sept 8 Muse launch drove a ~6% share rally and bullish analyst notes; Forbes (single source, uncorroborated) reports internal testing flagged private-data exposure issues that led Meta to delay the original April release. JPMorgan upgraded Meta to overweight Thursday, citing Muse as evidence of a stronger competitive position in consumer AI; shares nonetheless fell 1.42% Thursday with the broader technology selloff.",
+   "one_line": "Meta's Sept 8 Muse launch drove a ~6% share rally and bullish analyst notes; Forbes (single source, uncorroborated) reports internal testing flagged private-data exposure issues that led Meta to delay the original April release. JPMorgan upgraded Meta to overweight Thursday and raised its price target to $820 from $640 Friday, citing Muse (reportedly No. 3 on the App Store, usage ~10x internal training-cohort levels) and Meta's new Model API. Shares rose a modest 0.57% Friday.",
    "score_note": "Business angle continuing from Sept 9 top story; new detail is the Forbes internal-flaws report.",
    "sources": [
     "Meta",
