@@ -1,7 +1,7 @@
 {
- "fetched": "2026-09-10T06:47:00-04:00",
- "earnings_fetched": "2026-09-06",
- "earnings_fetched_note": "Two independent aggregators (Yahoo Finance, Kiplinger) show no headline S&P 500-grade earnings this week (~101 companies reporting in aggregate, none named as market-moving). Recommend a fresh named-ticker pull closer to each day if the earnings section needs specifics.",
+ "fetched": "2026-09-11T07:15:00-04:00",
+ "earnings_fetched": "2026-09-11",
+ "earnings_fetched_note": "Finnhub day-of confirmations for Sept 11 show no S&P 500-grade names reporting (ANAB, BUKS, CRMT, HOFT, MNY, RENT, TMXN only) -- consistent with the Market Appendix note that no headline earnings land today.",
  "events": [
   {
    "ts_et": "2026-09-07T00:00:00-04:00",
@@ -114,14 +114,6 @@
    "importance": "Low",
    "reason": "No specific high-profile docket identified for this session.",
    "source": "puc.pa.gov -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-09-11T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Consumer Price Index, August 2026, plus Real Earnings",
-   "importance": "Critical",
-   "reason": "Fed Governor Waller named this release as the decisive input for his own Sept 16 vote; lands during the Fed's pre-meeting blackout (Sept 5-17), so no official can comment on it either way. Estimated consensus (moderate confidence, cross-corroborated aggregation, not a single primary bank table): +0.3% m/m / +2.9% y/y headline, +0.3% m/m / +3.1% y/y core.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled); consensus figures Estimated"
   },
   {
    "ts_et": "2026-09-11T00:00:00-04:00",
@@ -250,6 +242,38 @@
    "importance": "Low",
    "reason": "Classified US Space Force payload; scheduled after this edition's publication.",
    "source": "Spaceflight Now, NASASpaceFlight.com launch schedules -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-11T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Consumer Price Index, August 2026, plus Real Earnings",
+   "importance": "Critical",
+   "reason": "Fed Governor Waller named this release as the decisive input for his own Sept 16 vote; lands during the Fed's pre-meeting blackout (Sept 5-17). Pre-release consensus estimates found this run were unusually dispersed across sources (roughly +2.9% to +3.4% y/y headline) -- treat any single figure as indicative only.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled); consensus figures Estimated, wide dispersion"
+  },
+  {
+   "ts_et": "2026-09-11T00:00:00-04:00",
+   "type": "legal",
+   "name": "Deadline for both sides to submit proposals on remaining relief, 75-country visa-ban case (Judge Vargas)",
+   "importance": "Medium",
+   "reason": "Follow-up checkpoint to the Aug 21 ruling striking down the visa suspension. No outlet had reported what either side filed as of this morning's edition, since the deadline falls the same day.",
+   "source": "Boundless, Al Jazeera, PBS, NPR -- Confirmed-multiple on the ruling and deadline"
+  },
+  {
+   "ts_et": "2026-09-11T16:00:00-04:00",
+   "type": "space",
+   "name": "Long March 8A (undisclosed payload, Wenchang) -- status To Be Confirmed",
+   "importance": "Low",
+   "reason": "Status unconfirmed as of this cycle's Launch Library 2 pull; could slip.",
+   "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
+  },
+  {
+   "ts_et": "2026-09-11T00:00:00-04:00",
+   "type": "military",
+   "name": "\"Freedom Edge\" trilateral naval/air exercise concludes (US, South Korea, Japan, off Jeju Island)",
+   "importance": "Low",
+   "reason": "Five-day drill concludes today on schedule. North Korea's response has stayed symbolic (a newly commissioned destroyer) rather than a missile test or incident.",
+   "source": "South Korea MND, NBC News, Korea Herald, Japan Times -- Confirmed-multiple"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
