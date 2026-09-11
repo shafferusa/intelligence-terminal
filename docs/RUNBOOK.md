@@ -104,6 +104,15 @@ Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a c
 ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
 rather than delaying the news.
 
+**Year two of the Academy (from about 2027-03-12).** Year-one lessons are 25–30 minutes; year-two
+lessons (`curriculum/academy-260.json`, SPEC §0d) are 60–120 minutes and their audio takes edge-tts
+proportionally longer. Before the handover, move the Learning Brief to **5:00 AM ET** — during EST
+(Nov–Mar) that is `0 10 * * 1-5`, during EDT (from 2027-03-14) `0 9 * * 1-5` — so the lesson and
+its MP3 are finished before the Morning Brief publishes and neither push waits on the other. The
+handover is automatic: `state/learning.json` → `curriculum` flips to `academy-260` on the first
+weekday after day 150. If a two-hour lesson ever fails to finish inside a run, the failed-run rule
+re-teaches the same day; nothing is skipped.
+
 **Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
 outcome branch, which forced the §15.2b PR fallback on most runs. Leave it unset so runs push
 straight to `main`.
@@ -233,6 +242,12 @@ real audio a few minutes later, or on any reload.
 
 **Failure is non-fatal by design.** edge-tts is an unofficial client and can break; the job is
 `continue-on-error`, publishes nothing, and the page falls back on its own. Nothing else notices.
+
+**Size, from year two of the Academy:** a 60–120-minute lesson is a 20–45 MB MP3 (edge-tts writes
+~48 kbps, so about 0.35 MB per spoken minute). `build-site.yml` stages recent audio newest-first
+until about 650 MB is in the deploy (always the three newest), which keeps the Pages artifact under
+the 1 GB soft limit; `notify.py` gives the Learning Brief's push a 45-minute audio ceiling
+(`AUDIO_WAIT_LEARN_SECONDS`) against 20 minutes for the news editions.
 
 **Voice:** `TTS_VOICE` / `TTS_RATE` env vars in `audio.yml`. Logan's pick (2026-08-16) is
 `en-GB-ThomasNeural` at `+0%` — a UK news-register voice at its natural pace, chosen after comparing

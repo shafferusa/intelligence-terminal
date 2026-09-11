@@ -31,7 +31,8 @@ This wait lives here, not in the workflows, because both publish paths call
 this one script -- one place to be correct instead of two to keep in sync.
 
 Reads: site/reports/index.json (newest entry first).
-Env:   TG_TOKEN, TG_CHAT, AUDIO_WAIT_SECONDS (default 900, 0 disables).
+Env:   TG_TOKEN, TG_CHAT, AUDIO_WAIT_SECONDS (default 1200, 0 disables),
+       AUDIO_WAIT_LEARN_SECONDS (default 2700, the Learning Brief's ceiling).
 """
 
 import calendar
@@ -61,6 +62,12 @@ MIN_MP3 = 20_000
 # clears that worst case with room, and still gives up long before a broken
 # edge-tts could sit on an edition indefinitely.
 AUDIO_WAIT = int(os.environ.get("AUDIO_WAIT_SECONDS", "1200"))
+# A year-two Learning Brief (60-120 minutes of reading, from 2027) takes
+# edge-tts two to three times longer than a news edition, and it can still be
+# queued behind another edition's job. The lesson's push can afford to wait
+# longer -- nobody is reading a two-hour lesson at 6:05 -- so the learn slot
+# gets its own, longer ceiling. The news editions keep the shorter one.
+AUDIO_WAIT_LEARN = int(os.environ.get("AUDIO_WAIT_LEARN_SECONDS", "2700"))
 AUDIO_POLL = 30
 
 EDITION = {
@@ -247,7 +254,8 @@ def audio_ready(tag, filename, floor):
 
 def wait_for_audio(entry):
     """Hold the push until this edition's MP3 is up. True if it turned up."""
-    if AUDIO_WAIT <= 0:
+    wait_for = AUDIO_WAIT_LEARN if entry.get("slot") == "learn" else AUDIO_WAIT
+    if wait_for <= 0:
         print("audio wait disabled -- sending immediately")
         return False
 
@@ -257,7 +265,7 @@ def wait_for_audio(entry):
         return False
 
     floor = report_commit_epoch()
-    deadline = time.monotonic() + AUDIO_WAIT
+    deadline = time.monotonic() + wait_for
     attempt = 0
     while True:
         attempt += 1
@@ -274,7 +282,7 @@ def wait_for_audio(entry):
         if time.monotonic() >= deadline:
             print(
                 "audio still missing after %ds -- sending anyway; the page "
-                "falls back to browser speech" % AUDIO_WAIT
+                "falls back to browser speech" % wait_for
             )
             return False
         time.sleep(AUDIO_POLL)

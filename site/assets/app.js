@@ -73,15 +73,19 @@
      records it, and it is what makes the lessons navigable as a sequence. */
   function lessonDay(entry) {
     if (!entry || entry.slot !== "learn" || !Array.isArray(entry.headlines)) return null;
-    var m = /^Day\s+(\d+)\s+of\s+(\d+)(?:\s*·\s*([^:]+))?/i.exec(String(entry.headlines[0] || ""));
+    /* Year one: "Day 13 of 150 · Mathematics: …"; year two: "Year 2 · Day 37 of 260 · Finance & Markets: …". */
+    var m = /^(?:Year\s+(\d+)\s*·\s*)?Day\s+(\d+)\s+of\s+(\d+)(?:\s*·\s*([^:]+))?/i.exec(String(entry.headlines[0] || ""));
     if (!m) return null;
-    return { day: +m[1], total: +m[2], subject: (m[3] || "").trim() };
+    return { year: m[1] ? +m[1] : 1, day: +m[2], total: +m[3], subject: (m[4] || "").trim() };
+  }
+  function lessonLabel(d) {
+    return (d.year > 1 ? "Year " + d.year + " · " : "") + "Day " + d.day + " of " + d.total;
   }
 
   function metaLine(entry) {
     var d = lessonDay(entry);
     return fmtDate(entry.date) + " · " + (SLOT_NAMES[entry.slot] || entry.slot) +
-      (d ? " · Day " + d.day + " of " + d.total : "") +
+      (d ? " · " + lessonLabel(d) : "") +
       " · " + entry.reading_minutes + " min read";
   }
   function markRead(path) { readPaths.add(path); saveSet("lt-read", readPaths); }
@@ -133,7 +137,7 @@
     var link = el("a", { class: "academy-link", href: "./academy.html" }, [
       el("span", { class: "academy-kicker", text: "The Academy" }),
       el("span", { class: "academy-progress",
-        text: "Day " + d.day + " of " + d.total + (d.subject ? " · " + d.subject : "") }),
+        text: lessonLabel(d) + (d.subject ? " · " + d.subject : "") }),
       el("span", { class: "academy-cta", text: "Every lesson, in order →" })
     ]);
     mount.appendChild(link);

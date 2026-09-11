@@ -1351,6 +1351,25 @@ table.board-table {
 .worked ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
 .worked li { margin-bottom: 0.35em; }
 
+/* Year-two lessons: a contents list before Part 1, and each part is a
+   .paper-section so its h2 gets the section-label treatment and the audio
+   gets a chapter break. */
+.lesson-contents {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.8rem 1.1rem;
+  margin: 0 0 1.4rem;
+  font-family: var(--sans);
+  font-size: 0.875rem;
+}
+.lesson-contents ol { margin: 0; padding-left: 1.4rem; }
+.lesson-contents li { margin: 0.2em 0; }
+.lesson-contents a { color: var(--ink); text-decoration: none; font-weight: 600; }
+.lesson-contents a:hover { text-decoration: underline; }
+.lesson-contents small { color: var(--muted); font-weight: 400; margin-left: 0.4em; }
+.lesson-part { margin-top: 2.2rem; }
+
 /* Where the track stands. */
 .recap {
   background: var(--tone-info-bg);

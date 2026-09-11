@@ -35,7 +35,7 @@ jobs:
     # notify.py holds the push for up to 20 min waiting on the report MP3, so
     # this job is mostly spent idling on purpose. The cap sits above that wait
     # so the timeout can only ever fire on a genuine hang.
-    timeout-minutes: 30
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
 

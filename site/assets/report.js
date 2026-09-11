@@ -261,7 +261,7 @@
      colophon, navigation and collapsed <details> are skipped: a screen-read
      of a 25-row market table is noise, not listening. */
   var READ_SELECTOR = "h1, h2, h3, h4, p, li, blockquote, figcaption, dt, dd";
-  var SKIP_CLOSEST = ".board, .colophon, .report-nav, .top-bar, .audio-bar, " +
+  var SKIP_CLOSEST = ".board, .colophon, .report-nav, .top-bar, .audio-bar, .lesson-contents, " +
                      "table, .data-table, .health-footer, .meta-grid, .story-tags, " +
                      ".story-sourceline, .sources-list, .paper-dateline";
 

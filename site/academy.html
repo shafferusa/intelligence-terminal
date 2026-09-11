@@ -2,15 +2,17 @@
 <!--
   The Academy: the Learning Brief's curriculum, lesson by lesson.
 
-  150 weekday lessons across seven subjects (curriculum/academy-150.json).
+  Year one: 150 weekday lessons across seven subjects (curriculum/academy-150.json).
+  Year two: 260 lessons in thirteen blocks of twenty (curriculum/academy-260.json).
   This page lists all of them in order, links the ones already taught to
   their Learning Brief, and shows where the sequence stands. It is the
   table of contents the daily lesson pages cannot carry themselves.
 
-  Data: ./academy.json (the Build & deploy workflow copies it in from
-  curriculum/academy-150.json, since curriculum/ is outside the site root)
-  and ./reports/index.json (which Learning Brief taught which day: the
-  first headline of every learn entry reads "Day N of 150 · Subject: ...").
+  Data: ./academy.json and ./academy-260.json (the Build & deploy workflow
+  copies them in from curriculum/, which is outside the site root) and
+  ./reports/index.json (which Learning Brief taught which day: the first
+  headline of a learn entry reads "Day N of 150 · Subject: ..." in year one
+  and "Year 2 · Day N of 260 · Subject: ..." in year two).
 -->
 <html lang="en">
 <head>
@@ -46,7 +48,7 @@
       <p class="paper-edition">The Academy</p>
       <h1>One lesson a day, in order</h1>
       <p class="paper-standfirst" id="standfirst">
-        Seven subjects across 150 weekday lessons, each one a Learning Brief that goes deep on a single idea.
+        Year one: seven subjects across 150 weekday lessons. Year two: thirteen blocks of twenty, one to two hours each. Every lesson a Learning Brief that goes deep on a single idea.
       </p>
     </header>
 
@@ -92,10 +94,11 @@
       var p = iso.split("-"), dt = new Date(+p[0], +p[1] - 1, +p[2]);
       return DAYS[dt.getDay()] + " " + MONTHS[dt.getMonth()] + " " + dt.getDate() + ", " + dt.getFullYear();
     }
+    /* Year one: "Day 13 of 150 · …"; year two: "Year 2 · Day 37 of 260 · …". */
     function lessonDay(entry) {
       if (!entry || entry.slot !== "learn" || !Array.isArray(entry.headlines)) return null;
-      var m = /^Day\s+(\d+)\s+of\s+(\d+)/i.exec(String(entry.headlines[0] || ""));
-      return m ? +m[1] : null;
+      var m = /^(?:Year\s+(\d+)\s*·\s*)?Day\s+(\d+)\s+of\s+(\d+)/i.exec(String(entry.headlines[0] || ""));
+      return m ? { year: m[1] ? +m[1] : 1, day: +m[2] } : null;
     }
     function getJson(url) {
       return fetch(url, { cache: "no-cache" }).then(function (r) {
@@ -108,42 +111,86 @@
       p.textContent = "";
       p.appendChild(el("p", { class: "muted", text: msg }));
     }
+    function orNull() { return null; }
 
-    Promise.all([getJson("./academy.json"), getJson("./reports/index.json").catch(function () { return []; })])
-      .then(function (res) {
-        var academy = res[0] || {}, index = Array.isArray(res[1]) ? res[1] : [];
-        var days = Array.isArray(academy.days) ? academy.days.slice() : [];
-        if (!days.length) { unavailable("The curriculum is not available on this build."); return; }
-        days.sort(function (a, b) { return a.day - b.day; });
-        var total = academy.total_days || days.length;
+    Promise.all([
+      getJson("./academy.json").catch(orNull),
+      getJson("./academy-260.json").catch(orNull),
+      getJson("./reports/index.json").catch(function () { return []; })
+    ]).then(function (res) {
+      var index = Array.isArray(res[2]) ? res[2] : [];
 
-        /* Which day each Learning Brief taught. Newest first in the index, so
-           the first entry seen for a day wins (a re-run replaces a failed one). */
-        var taught = {};
-        index.forEach(function (e) {
-          var d = lessonDay(e);
-          if (d && !taught[d]) taught[d] = e;
+      /* Which Learning Brief taught which day of which year. Newest first in
+         the index, so the first entry seen for a day wins. */
+      var taught = { 1: {}, 2: {} };
+      index.forEach(function (e) {
+        var d = lessonDay(e);
+        if (d && taught[d.year] && !taught[d.year][d.day]) taught[d.year][d.day] = e;
+      });
+
+      /* Normalise both curricula into years of groups of days. Year one is
+         grouped by phase, year two by block. */
+      var years = [];
+      if (res[0] && Array.isArray(res[0].days) && res[0].days.length) {
+        var y1 = res[0], d1 = y1.days.slice().sort(function (a, b) { return a.day - b.day; });
+        var byPhase = {}, order1 = (y1.phases || []).map(function (p) { return p.name; });
+        d1.forEach(function (d) { (byPhase[d.phase] || (byPhase[d.phase] = [])).push(d); });
+        Object.keys(byPhase).forEach(function (n) { if (order1.indexOf(n) < 0) order1.push(n); });
+        years.push({ year: 1, name: "Year one", total: y1.total_days || d1.length, days: d1,
+          groups: order1.filter(function (n) { return byPhase[n]; }).map(function (n) {
+            var meta = (y1.phases || []).filter(function (p) { return p.name === n; })[0] || {};
+            return { title: n + (meta.days ? " · days " + meta.days : ""), mission: meta.mission || "", days: byPhase[n] };
+          }) });
+      }
+      if (res[1] && Array.isArray(res[1].days) && res[1].days.length) {
+        var y2 = res[1], d2 = y2.days.slice().sort(function (a, b) { return a.day - b.day; });
+        var byBlock = {};
+        d2.forEach(function (d) { (byBlock[d.block] || (byBlock[d.block] = [])).push(d); });
+        var blocks = (y2.blocks || []).slice().sort(function (a, b) { return a.block - b.block; });
+        Object.keys(byBlock).forEach(function (b) {
+          if (!blocks.some(function (x) { return String(x.block) === String(b); })) blocks.push({ block: +b, title: "Block " + b });
         });
-        var taughtCount = Object.keys(taught).length;
-        var nextDay = null;
-        for (var i = 0; i < days.length; i++) {
-          if (!taught[days[i].day]) { nextDay = days[i]; break; }
+        years.push({ year: 2, name: "Year two", total: y2.total_days || d2.length, days: d2,
+          groups: blocks.filter(function (b) { return byBlock[b.block]; }).map(function (b) {
+            var ds = byBlock[b.block];
+            return { title: "Block " + b.block + " · " + (b.title || b.subject || "") + " · days " + ds[0].day + "–" + ds[ds.length - 1].day,
+                     mission: b.mission || "", days: ds };
+          }) });
+      }
+      if (!years.length) { unavailable("The curriculum is not available on this build."); return; }
+
+      /* Progress per year, and the single next lesson across both. */
+      var nextRef = null;
+      years.forEach(function (y) {
+        y.taughtCount = Object.keys(taught[y.year] || {}).length;
+        y.next = null;
+        for (var i = 0; i < y.days.length; i++) {
+          if (!(taught[y.year] || {})[y.days[i].day]) { y.next = y.days[i]; break; }
         }
+        if (!nextRef && y.next) nextRef = { year: y.year, day: y.next.day, lesson: y.next };
+      });
 
-        /* Standfirst and progress. */
-        var sf = doc.getElementById("standfirst");
-        sf.textContent = taughtCount
-          ? "Day " + taughtCount + " of " + total + " taught" +
-            (nextDay ? ". Next: " + nextDay.subject + " — " + nextDay.topic + "." : ". The sequence is complete.")
-          : "Seven subjects across " + total + " weekday lessons. The first lesson has not been published yet.";
+      var sf = doc.getElementById("standfirst");
+      var y1s = years.filter(function (y) { return y.year === 1; })[0];
+      var y2s = years.filter(function (y) { return y.year === 2; })[0];
+      var bits = [];
+      if (y1s) bits.push("Year one: day " + y1s.taughtCount + " of " + y1s.total + " taught" +
+        (y1s.next ? ". Next: " + y1s.next.subject + " — " + y1s.next.topic + "." : "; complete."));
+      if (y2s) bits.push(y1s && y1s.next
+        ? "Year two: " + y2s.total + " lessons in thirteen blocks of twenty, one to two hours each, begins when year one ends."
+        : "Year two: day " + y2s.taughtCount + " of " + y2s.total + " taught" +
+          (y2s.next ? ". Next: " + y2s.next.subject + " — " + y2s.next.topic + "." : "; complete."));
+      sf.textContent = bits.join(" ") || "The first lesson has not been published yet.";
 
-        var progress = doc.getElementById("progress");
-        progress.textContent = "";
+      var progress = doc.getElementById("progress");
+      progress.textContent = "";
+      years.forEach(function (y) {
+        progress.appendChild(el("h3", { text: y.name + " · " + y.taughtCount + " of " + y.total }));
         var perSubject = {};
-        days.forEach(function (d) {
+        y.days.forEach(function (d) {
           var s = perSubject[d.subject] || (perSubject[d.subject] = { total: 0, done: 0 });
           s.total++;
-          if (taught[d.day]) s.done++;
+          if ((taught[y.year] || {})[d.day]) s.done++;
         });
         var ul = el("ul", { class: "subjects" });
         Object.keys(perSubject).forEach(function (name) {
@@ -159,29 +206,21 @@
           ul.appendChild(li);
         });
         progress.appendChild(ul);
+      });
 
-        /* The phases, each with its lessons. */
-        var mount = doc.getElementById("phases");
-        var phases = Array.isArray(academy.phases) ? academy.phases : [];
-        var byPhase = {};
-        days.forEach(function (d) {
-          (byPhase[d.phase] || (byPhase[d.phase] = [])).push(d);
-        });
-        var order = phases.map(function (p) { return p.name; });
-        Object.keys(byPhase).forEach(function (name) { if (order.indexOf(name) < 0) order.push(name); });
-
-        order.forEach(function (name, pi) {
-          var list = byPhase[name];
-          if (!list) return;
-          var meta = phases.filter(function (p) { return p.name === name; })[0];
-          var sec = el("section", { class: "paper-section", "aria-labelledby": "phase-" + pi });
-          sec.appendChild(el("h2", { id: "phase-" + pi,
-            text: name + (meta && meta.days ? " · days " + meta.days : "") }));
-          if (meta && meta.mission) sec.appendChild(el("p", { class: "phase-mission", text: meta.mission }));
+      /* The lessons, year by year, group by group. */
+      var mount = doc.getElementById("phases");
+      years.forEach(function (y) {
+        y.groups.forEach(function (g, gi) {
+          var id = "y" + y.year + "-g" + gi;
+          var sec = el("section", { class: "paper-section", "aria-labelledby": id });
+          sec.appendChild(el("h2", { id: id, text: (y.year === 2 ? "Year two · " : "") + g.title }));
+          if (g.mission) sec.appendChild(el("p", { class: "phase-mission", text: g.mission }));
           var ol = el("ol", { class: "lessons" });
-          list.forEach(function (d) {
-            var e = taught[d.day];
-            var row = el("li", { class: "lesson-row " + (e ? "is-taught" : (nextDay && nextDay.day === d.day ? "is-next" : "is-future")) });
+          g.days.forEach(function (d) {
+            var e = (taught[y.year] || {})[d.day];
+            var isNext = nextRef && nextRef.year === y.year && nextRef.day === d.day;
+            var row = el("li", { class: "lesson-row " + (e ? "is-taught" : (isNext ? "is-next" : "is-future")) });
             row.appendChild(el("span", { class: "lesson-num", text: String(d.day) }));
             var body = el("div");
             body.appendChild(el("p", { class: "lesson-subject",
@@ -194,6 +233,9 @@
             } else {
               body.appendChild(el("p", { class: "lesson-topic", text: d.topic }));
               if (d.focus) body.appendChild(el("p", { class: "lesson-headline", text: d.focus }));
+              if (Array.isArray(d.parts) && d.parts.length) {
+                body.appendChild(el("p", { class: "lesson-date", text: d.parts.length + " parts · " + d.parts.join(" · ") }));
+              }
             }
             row.appendChild(body);
             ol.appendChild(row);
@@ -201,10 +243,11 @@
           sec.appendChild(ol);
           mount.appendChild(sec);
         });
-      })
-      .catch(function () {
-        unavailable("The curriculum is not available (academy.json is written by the site build).");
       });
+    })
+    .catch(function () {
+      unavailable("The curriculum is not available (academy.json is written by the site build).");
+    });
   })();
   </script>
 </body>

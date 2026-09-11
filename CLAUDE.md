@@ -12,7 +12,8 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
    Telegram, page creation, ledgers, idempotency).
 3. Your run procedure — one of:
    - `prompts/learning.md` — **Learning Brief**, Mon–Fri 6:00 AM ET. Strictly learning, ONE lesson
-     per report, no news. Reads like a newspaper feature.
+     per report, no news. Reads like a newspaper feature. 25–30 minutes in year one; 60–120
+     minutes, in parts, in year two.
    - `prompts/weekday.md` — Morning (6:30 AM) and Closing (4:30 PM) briefs. Strictly news.
    - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
 
@@ -31,7 +32,10 @@ those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
 - `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
 - `curriculum/academy-150.json` — **the live curriculum**: 150 weekday lessons across seven
-  subjects for the Learning Brief.
+  subjects for the Learning Brief. `curriculum/academy-260.json` — **year two** (from day 151,
+  projected 2027-03-12): thirteen blocks of twenty lessons, 60–120 minutes each
+  (`docs/SPEC.md` §0d, `prompts/learning.md` → Year Two). `state/learning.json` → `curriculum`
+  says which is running.
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
   source material for the 150-day curriculum.
@@ -42,7 +46,8 @@ those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
   `report-template.html`, `reports/YYYY/MM/*.html` + `reports/index.json` (archive index),
   `equations/eq_NNN.png`, `manifest.webmanifest`, `sw.js`. Build-generated, never committed:
   Pagefind assets, `status.jsonl`, `academy.json`, `audio/*.mp3`.
-- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),
+- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum and day;
+  `learning-refresh.json` holds the re-planned AI block when it runs),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
   `run-log.jsonl`. `curriculum.json` (the pre-2026-08-16 three-track position) was retired and
   deleted — never recreate it.

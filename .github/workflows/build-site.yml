@@ -43,10 +43,12 @@ jobs:
       - name: Publish run log for the status page
         run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
 
-      # Same idea for the Academy page: the curriculum lives in curriculum/,
-      # outside the site root, and academy.html lists all 150 lessons from it.
-      - name: Publish the curriculum for the Academy page
-        run: cp curriculum/academy-150.json site/academy.json || echo "no curriculum"
+      # Same idea for the Academy page: the curricula live in curriculum/,
+      # outside the site root, and academy.html lists every lesson from them.
+      - name: Publish the curricula for the Academy page
+        run: |
+          cp curriculum/academy-150.json site/academy.json || echo "no year-one curriculum"
+          cp curriculum/academy-260.json site/academy-260.json || echo "no year-two curriculum yet"
 
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping
@@ -81,19 +83,27 @@ jobs:
       #
       # How many: three editions a weekday, so 8 releases was under three
       # days -- a lesson from last week fell back to the release URL, which
-      # the iPhone will not play, and then to browser speech. 30 releases is
-      # roughly ten days (~9 MB each, ~270 MB in the artifact), enough to
-      # re-listen to any lesson from the past two working weeks.
+      # the iPhone will not play, and then to browser speech. Newest first,
+      # up to 40 releases, stopping once about 650 MB is staged: a news
+      # edition is ~9 MB, a year-one lesson ~10 MB, and a year-two lesson
+      # (60-120 minutes, from 2027) 20-45 MB, so the byte cap is what keeps
+      # the deploy under GitHub Pages' 1 GB soft limit once the long lessons
+      # start. The three newest are always staged regardless.
       - name: Stage recent audio for same-origin playback
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p site/audio
-          gh release list --limit 30 --json tagName \
+          budget=$((650 * 1024 * 1024)); total=0; n=0
+          gh release list --limit 40 --json tagName \
             --jq '.[] | select(.tagName | startswith("audio-")) | .tagName' \
           | while read -r tag; do
+              if [ "$total" -ge "$budget" ] && [ "$n" -ge 3 ]; then
+                echo "audio budget reached; not staging $tag"; continue
+              fi
               gh release download "$tag" --dir site/audio --clobber || \
-                echo "no asset on $tag"
+                { echo "no asset on $tag"; continue; }
+              total=$(du -sb site/audio | cut -f1); n=$((n + 1))
             done
           echo "staged:"; ls -lh site/audio/ 2>/dev/null || echo "  (none yet)"
 
@@ -134,7 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     # notify.py also waits here for the report MP3 (audio.yml runs off the same
     # publish-report completion, in parallel with this deploy).
-    timeout-minutes: 30
+    timeout-minutes: 55
     steps:
       - name: Checkout
         uses: actions/checkout@v4

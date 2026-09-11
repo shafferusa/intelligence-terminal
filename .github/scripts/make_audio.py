@@ -36,7 +36,7 @@ RATE = os.environ.get("TTS_RATE", "+0%")
 SKIP_CLASSES = {
     "board", "colophon", "report-nav", "top-bar", "audio-bar", "data-table",
     "health-footer", "meta-grid", "story-tags", "story-sourceline",
-    "sources-list", "paper-dateline", "table-wrap", "range-cell",
+    "sources-list", "paper-dateline", "table-wrap", "range-cell", "lesson-contents",
 }
 SKIP_TAGS = {"script", "style", "table", "nav", "figcaption"}
 READ_TAGS = {"h1", "h2", "h3", "h4", "p", "li", "blockquote", "dt", "dd"}

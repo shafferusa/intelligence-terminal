@@ -111,6 +111,34 @@ Directed:
   unless something materially changed.
 - **The Telegram push always carries one markets clause with its number.**
 
+### 0d. Amendment of 2026-09-11 — year two of the Academy (extends §16)
+
+Logan's instruction for what follows the 150-day curriculum: *thirteen topics, twenty lessons
+each — one topic for twenty weekdays straight — way more in depth and advanced than the 150-day,
+up to one to two hours per day, covering a full year.* Built as `curriculum/academy-260.json`:
+
+- **Thirteen blocks of twenty**, in this order: Finance & Markets I and II (a 40-lesson course
+  shaped on the public CFA topic areas, plus trading), Economics (advanced macro, ten; advanced
+  micro, ten), Physics, Philosophy (knowledge and mind, ten; value and society, ten — Logan wrote
+  "Philosophy & Philosophy (10 days each)", read as two halves of the discipline), Mathematics,
+  Political Science and its theories, Rocketry (mechanical and flight), AI/Technology/Coding,
+  Accounting I and II (a 40-lesson course shaped on the public CPA blueprint), Wealth Management I
+  and II (a 40-lesson course shaped on the public CFP principal knowledge topics). No claim of
+  affiliation with any credentialing body.
+- **60–120 minutes per lesson** (working target 75–90), written in four to six parts, each a
+  chapter with its own formalism and worked examples on real data; exam-shaped blocks end with a
+  prose *what a practitioner is expected to know*. Still no quizzes, problem sets or self-assessment.
+- **The AI block is re-planned on its first morning** from current sources (`refresh_before_run`),
+  because it runs about a year after it was written; the refreshed plan lives in `state/`.
+- **Handover**: on the weekday after year one's day 150 (projected 2027-03-11), the Learning
+  Brief switches to `academy-260` day 1; `state/learning.json` carries a `curriculum` key.
+  Year two's day 260 lands around 2028-03-09.
+- **Consequences**: the Learning Brief cron should move to 5:00 AM ET before year two starts so
+  a two-hour lesson and its audio are done before the Morning Brief (`docs/RUNBOOK.md` A4); the
+  lesson MP3 grows to 20–45 MB, so the site stages recent audio within a byte budget and the
+  Telegram push for a lesson waits longer for it; the Academy page lists both years.
+  Procedure: `prompts/learning.md` → **Year Two**.
+
 ## 1. Mission
 
 A permanent, automated, mobile-first personal intelligence platform: global news desk + market terminal + economic research + political/geopolitical brief + company & industry watcher + space dashboard + light physics/spaceflight/quant tutors + searchable archive. It must gather, verify, analyze, generate, store, and deliver polished reports to Logan's iPhone with NO computer on, NO open session, NO custom app, NO manual step. Accuracy, clarity, evidence, organization, reliability and intellectual honesty over speed or drama. It must never feel like a chatbot transcript, feed clone, or AI wall of text.
@@ -202,8 +230,9 @@ before portfolio theory, calculus before backpropagation, mechanics before orbit
 the retired physics and spaceflight sequences, and the quant-ml equation registry; Accounting and
 Economics were authored fresh because the academy did not cover them.
 
-At day 150 the sequence continues into deeper material in the same subjects at the same cadence.
-It never restarts.
+At day 150 the sequence hands over to year two — `curriculum/academy-260.json`, thirteen blocks of
+twenty lessons at 60–120 minutes each (§0d) — and after day 260 continues deeper at the same
+cadence. It never restarts.
 
 ## 17. Calendars
 
