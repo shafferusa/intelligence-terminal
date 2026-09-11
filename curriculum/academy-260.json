@@ -9576,21 +9576,22 @@
    "day": 182,
    "subject": "Accounting",
    "position": "2 of 40",
-   "topic": "Revenue under ASC 606, part one: contract, obligations, price",
-   "headline_hint": "A sale is not a number until you have found the promises inside it — the first three steps of ASC 606",
-   "focus": "Year one's day 29 taught when a sale becomes revenue; this lesson takes steps one to three of ASC 606 to the bottom. Step one: the five contract criteria, the collectibility threshold, combining contracts and the modification that is really a new contract. Step two: what makes a promise distinct, the series provision, assurance versus service warranties and the customer option that is a material right. Step three: variable consideration by expected value or most likely amount, the constraint, refund liabilities, the significant financing component, noncash consideration and consideration payable to a customer. Afterwards the reader can take a pharmaceutical sale with rebates and chargebacks or a subscription with a discounted renewal and write down the transaction price with its constraint.",
+   "topic": "Revenue under ASC 606: the five steps, agents, licences and contract costs",
+   "headline_hint": "How a drugmaker turns $100 of list price into half that much revenue, and what a backlog is worth",
+   "focus": "Year one's day 29 taught when a sale becomes revenue; this lesson takes all five steps of ASC 606 to the bottom in one sitting. Identifying the contract and the distinct promises; the transaction price with variable consideration and its constraint, financing components and payments to customers; allocation on relative standalone selling prices and the residual approach; satisfaction over time versus at a point (the three criteria, input and output methods, control); principal versus agent; licences, royalties and the cost of obtaining a contract under ASC 340-40; and the balance-sheet trail — contract assets, contract liabilities and the remaining-performance-obligation disclosure that the Finance block read as an analyst. This block owns the Codification; Finance & Markets I's revenue-quality lesson assumed it.",
    "parts": [
-    "What makes a contract a contract: the five criteria, collectibility, and the modification that is really a new contract",
-    "Finding the promises: distinct goods and services, the series, warranties and the option that is a material right",
-    "Pricing what you cannot yet know: variable consideration, expected value, most likely amount, and the constraint",
-    "Money with a time cost: the significant financing component, noncash consideration and payments to the customer",
-    "Gross to net: how a drugmaker turns $100 of list price into roughly half that much revenue"
+    "What makes a contract a contract, and which promises are distinct: the five criteria, the series, warranties and the material right",
+    "Pricing what you cannot yet know: variable consideration, the constraint, financing components and payments to the customer",
+    "Splitting the price and deciding when: standalone selling prices, the residual approach, over time versus at a point",
+    "Whose sale is it? Principal, agent, licences and royalties",
+    "The cost of winning the contract: ASC 340-40 and the capitalised commission",
+    "What the balance sheet shows: contract assets, contract liabilities and the remaining-performance-obligation disclosure"
    ],
    "worked_examples": [
-    "Pfizer's 2023 10-K revenue note: the accruals for chargebacks, rebates, sales allowances and returns treated as variable consideration under the expected-value method, and the balance-sheet accounts they sit in",
-    "Microsoft's fiscal 2024 10-K revenue policy: Windows OEM licences at a point in time, Microsoft 365 subscriptions over time, the separate performance obligations inside one enterprise agreement, and a mid-term modification accounted for prospectively",
-    "Costco's fiscal 2024 10-K: membership fees deferred and recognised ratably over the twelve-month term, with the one-year practical expedient and the test for whether a financing component is significant",
-    "Alnylam Pharmaceuticals' 2023 10-K: the Roche collaboration's upfront payment and development milestones, the milestones constrained until the uncertainty resolves, and a $1 million equipment sale with a 20% chance of a $100,000 penalty priced by both variable-consideration methods"
+    "Microsoft's fiscal 2024 10-K: Windows OEM licences at a point in time, Microsoft 365 ratably, and the remaining performance obligation note — the portion expected within twelve months, reconciled to deferred revenue.",
+    "Boeing's 2023 10-K: over-time revenue on defence contracts by the cost-to-cost input method, the estimate-at-completion changes disclosed as cumulative catch-ups, and the $520 billion backlog against the RPO figure.",
+    "Pfizer's 2023 10-K revenue note: chargebacks, rebates and sales allowances as variable consideration, gross-to-net for a named product.",
+    "Uber's 2023 10-K: Mobility revenue presented net as an agent, the control indicators the note cites, and what gross presentation would have done to revenue growth."
    ],
    "prerequisites": {
     "year1": [
@@ -9598,7 +9599,9 @@
      29,
      35,
      48,
-     52
+     52,
+     68,
+     133
     ],
     "year2": [
      181
@@ -9611,13 +9614,13 @@
     "topic": "Expectation, variance, covariance"
    },
    "sources": [
-    "FASB ASC 606, Revenue from Contracts with Customers (ASU 2014-09 as amended), esp. 606-10-25 (contract and performance obligations) and 606-10-32 (transaction price)",
-    "FASB/IASB Joint Transition Resource Group for Revenue Recognition, staff memos and meeting summaries (2014–2016)",
-    "PwC, Revenue from contracts with customers (accounting guide), current edition",
-    "Kieso, Weygandt & Warfield, Intermediate Accounting, 18th ed. (Wiley, 2022), ch. 18"
+    "FASB ASC 606, Revenue from Contracts with Customers (ASU 2014-09 and subsequent ASUs 2016-08, 2016-10, 2016-12)",
+    "FASB ASC 340-40, Other Assets and Deferred Costs — Contracts with Customers",
+    "PwC, Revenue from contracts with customers (accounting guide, current edition)",
+    "Kieso, Weygandt & Warfield, Intermediate Accounting, 18th ed. (2022), chs. 18–19"
    ],
    "depth": "professional-exam",
-   "exam_map": "FAR Area III (Select Transactions): revenue recognition — the five-step model and variable consideration; BAR Area II (Technical Accounting and Reporting): revenue recognition",
+   "exam_map": "FAR Area III (Select Transactions): revenue recognition — the five-step model, principal/agent, contract costs and disclosures",
    "block": 10,
    "day_in_block": 2
   },
@@ -9625,28 +9628,30 @@
    "day": 183,
    "subject": "Accounting",
    "position": "3 of 40",
-   "topic": "Revenue under ASC 606, part two: allocation, satisfaction, agents and costs",
-   "headline_hint": "Uber never sells you a ride, and Salesforce spreads a salesman's commission over years — the back half of ASC 606",
-   "focus": "Steps four and five and everything ASC 606 hangs on them. Allocation on relative standalone selling prices (adjusted market, expected cost plus margin, the residual approach) and where discounts and variable amounts land. Satisfaction over time — the three criteria, input and output methods, uninstalled materials — versus the point-in-time indicators of control. Then the judgments that decide a company's top line: principal versus agent, functional versus symbolic licences and the royalty exception, repurchase agreements, bill-and-hold and consignment, the incremental costs of obtaining a contract under ASC 340-40, and the balance-sheet presentation of contract assets, receivables and contract liabilities. Afterwards the reader can rebuild a software company's deferred revenue roll-forward and judge whether a marketplace's gross or net presentation is right.",
+   "topic": "Credit on both sides of the balance sheet: CECL (ASC 326) and debt under ASC 470",
+   "headline_hint": "The loss a bank books before anyone misses a payment, and the gain a company books for not paying its debt",
+   "focus": "Two liabilities-and-credit topics a FAR course cannot skip and the block otherwise had nowhere to put. First, the current expected credit loss model of ASC 326 on receivables and loans: lifetime expected losses at origination, the pooling, the reasonable-and-supportable forecast period and reversion, the allowance roll-forward and its disclosure, and the day-one hit banks took in 2020. Second, debt under ASC 470: the effective-interest method for discounts, premiums and issuance costs, troubled-debt restructurings and the ASC 470-50 modification-versus-extinguishment test (the 10% cash-flow test), extinguishment gains and losses, and convertible instruments after ASU 2020-06 removed the beneficial-conversion and cash-conversion models. The reader can rebuild a bank's allowance from its roll-forward and restate a convertible note under the current rule.",
    "parts": [
-    "Splitting the price: standalone selling prices, the residual approach, and where discounts land",
-    "Over time or at a point: the three criteria, measuring progress, and what 'control' actually means",
-    "Whose sale is it? Principal, agent and the net-revenue question at Uber and Amazon",
-    "Licences and royalties: the right to use versus the right to access",
-    "The cost of winning a contract: ASC 340-40 and the capitalised commission",
-    "What the balance sheet shows: contract assets, contract liabilities and the remaining-performance-obligation disclosure"
+    "Expected, not incurred: what CECL changed and why the 2020 day-one charge was so large",
+    "The allowance roll-forward: pooling, the forecast horizon, reversion and the disclosure that lets you check it",
+    "Debt at amortised cost: the effective-interest method for discounts, premiums and issuance costs",
+    "Modified or extinguished? The 10% test, troubled-debt restructurings and the gain on not paying",
+    "Convertibles after ASU 2020-06: one instrument, one liability, and the if-converted share count",
+    "What the two topics share: the credit spread as the number that moves both sides of the balance sheet"
    ],
    "worked_examples": [
-    "Uber's 2023 10-K: Mobility revenue presented net as an agent, the control indicators the note relies on, and the effect on the ratio of gross bookings to revenue; beside it, Amazon's third-party seller services recorded net",
-    "Salesforce's fiscal 2024 10-K: capitalised costs to obtain revenue contracts (sales commissions), the amortisation period chosen and the balances, walked through both statements",
-    "Boeing's 2023 10-K: over-time revenue on defence contracts by the cost-to-cost input method, point-in-time revenue on commercial aircraft delivery, and the reach-forward loss on the KC-46 programme as a contract-level loss provision",
-    "Microsoft's fiscal 2024 10-K: the remaining performance obligation disclosure, the portion expected within twelve months, and the contract liability roll-forward from opening balance to revenue recognised"
+    "JPMorgan Chase's 2023 10-K allowance for credit losses roll-forward: beginning balance, provision, net charge-offs, ending balance, and the reasonable-and-supportable forecast disclosure, rebuilt from the note.",
+    "Carnival Corporation's April 2020 $2.0 billion 5.75% convertible notes: the accounting under the old cash-conversion model versus ASU 2020-06, and the diluted-share effect.",
+    "A $500 million 4.25% bond issued at 98.5 with $4 million of issuance costs: the effective-interest schedule for the first three years and the carrying amount at each date.",
+    "A 2023 refinancing that extends maturity and cuts the coupon: the ASC 470-50 10% cash-flow test worked both ways, and the extinguishment gain when it fails."
    ],
    "prerequisites": {
     "year1": [
-     29,
-     68,
-     133
+     22,
+     25,
+     50,
+     56,
+     113
     ],
     "year2": [
      181,
@@ -9655,18 +9660,18 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 123,
+    "day": 113,
     "subject": "Finance",
-    "topic": "Market microstructure"
+    "topic": "Credit"
    },
    "sources": [
-    "FASB ASC 606-10-32-28 to 32-41 (allocation), 606-10-25-23 to 25-37 (satisfaction), 606-10-55-36 to 55-40 (principal versus agent) and 606-10-55-54 to 55-65 (licensing)",
-    "FASB ASC 340-40, Other Assets and Deferred Costs — Contracts with Customers",
-    "ASU 2016-08 (Principal versus Agent Considerations) and ASU 2016-10 (Identifying Performance Obligations and Licensing)",
-    "Spiceland, Nelson & Thomas, Intermediate Accounting, 11th ed. (McGraw Hill, 2022), ch. 6"
+    "FASB ASC 326, Financial Instruments — Credit Losses (ASU 2016-13)",
+    "FASB ASC 470, Debt, incl. Subtopic 470-50 (Modifications and Extinguishments) and ASU 2020-06",
+    "JPMorgan Chase & Co., Form 10-K for fiscal 2023, allowance for credit losses note",
+    "Kieso, Weygandt & Warfield, Intermediate Accounting, 18th ed., ch. 14"
    ],
    "depth": "professional-exam",
-   "exam_map": "FAR Area III: revenue recognition — allocation and satisfaction of performance obligations; BAR Area II: revenue recognition (principal versus agent, licensing, contract costs)",
+   "exam_map": "FAR Area II/III: financial instruments — expected credit losses; debt and convertible instruments",
    "block": 10,
    "day_in_block": 3
   },
@@ -9722,20 +9727,18 @@
    "day": 185,
    "subject": "Accounting",
    "position": "5 of 40",
-   "topic": "Fair value (ASC 820) and investments: AFS, HTM, equity securities and CECL",
+   "topic": "Fair value (ASC 820) and investments: AFS, HTM and equity securities",
    "headline_hint": "Silicon Valley Bank was solvent on paper the day it died — the accounting that let $15 billion of losses hide in plain sight",
-   "focus": "Fair value measurement and the investment standards that depend on it. ASC 820: the exit-price definition, principal market, the market, income and cost approaches, the Level 1/2/3 hierarchy, the Level 3 roll-forward and unobservable-input disclosures, the NAV practical expedient and the fair value option. ASC 320's three buckets for debt securities — trading, available-for-sale through OCI with recycling, held-to-maturity at amortised cost — and the tainting and transfer rules; ASC 321's fair-value-through-income rule for equity securities and the measurement alternative. Then ASC 326: the current expected credit loss model for loans, receivables and HTM securities (aging, PD/LGD, discounted cash flow and vintage methods, macro scenarios), the allowance model for AFS credit losses, and purchased credit-deteriorated assets. Afterwards the reader can classify a bank's securities book, rebuild an allowance roll-forward and explain SVB's balance sheet.",
+   "focus": "Fair value measurement and the investment standards that depend on it. ASC 820: the exit-price definition, principal market, the market, income and cost approaches, the Level 1/2/3 hierarchy, the Level 3 roll-forward and unobservable-input disclosures, the NAV practical expedient and the fair value option. ASC 320's three buckets for debt securities — trading, available-for-sale through OCI with recycling, held-to-maturity at amortised cost — and the tainting and transfer rules; ASC 321's fair-value-through-income rule for equity securities and the measurement alternative. Then ASC 326: the current expected credit loss model for loans, receivables and HTM securities (aging, PD/LGD, discounted cash flow and vintage methods, macro scenarios), the allowance model for AFS credit losses, and purchased credit-deteriorated assets. Afterwards the reader can classify a bank's securities book, rebuild an allowance roll-forward and explain SVB's balance sheet. Expected credit losses on debt securities are only signposted here; day 3 taught CECL.",
    "parts": [
     "What fair value means: the exit price, the principal market and the three approaches",
     "Levels 1, 2 and 3: the hierarchy, the Level 3 roll-forward and the NAV expedient",
     "Three buckets for a bond: trading, available-for-sale and held-to-maturity, and the accounting cost of each",
     "Equity securities after ASU 2016-01: fair value through income, and the measurement alternative",
-    "CECL: from incurred loss to expected loss, and how an allowance is actually built",
     "The bank that was solvent at amortised cost: SVB's 2022 balance sheet"
    ],
    "worked_examples": [
     "SVB Financial Group's 2022 10-K (filed 24 February 2023): $91.3 billion of held-to-maturity securities at amortised cost with roughly $15 billion of unrealised losses disclosed only in the footnote, the AFS book marked through OCI, and the tangible-equity arithmetic if the HTM book were marked",
-    "JPMorgan Chase's 2023 10-K: the allowance for credit losses roll-forward for the card portfolio, the weighted macroeconomic scenarios behind the lifetime estimate, and the day-one allowance on the loans purchased from First Republic",
     "A $10 million 4% bond bought at 96 to yield about 5%: the effective-interest table, the year-end AFS mark through OCI with its deferred tax, and the same bond after a transfer to held-to-maturity",
     "Blackstone's 2023 10-K fair value tables: Level 3 investments, the unobservable inputs disclosed (discount rates, exit multiples), and the Level 3 roll-forward from opening balance to closing"
    ],
@@ -10335,18 +10338,18 @@
    "day": 197,
    "subject": "Accounting",
    "position": "17 of 40",
-   "topic": "The statement of cash flows at depth: classification, reconstruction and the free-cash-flow bridge",
+   "topic": "The statement of cash flows at depth: classification and reconstruction",
    "headline_hint": "Amazon publishes three free cash flows and none of them is the one you would compute — ASC 230 rebuilt from the balance sheet",
-   "focus": "Year one's day 22 taught the three sections and why the statement is hard to fake; this lesson teaches how it is built and where it bends. The classification rules and the eight cases ASU 2016-15 had to settle (debt prepayment costs, contingent consideration payments, insurance proceeds, equity-method distributions, beneficial interests, the predominance principle), restricted cash after ASU 2016-18, and supplier finance programs under ASU 2022-04. The full indirect-method reconstruction from two balance sheets, an income statement and an acquisition — stripping acquired balances and the FX effect so the statement ties. Where the accruals hide: deferred taxes, stock compensation, pension contributions versus expense, operating and finance leases. Noncash investing and financing, interest and taxes paid, the direct-method reconciliation, and the analyst's adjustments — capitalised content and software, finance-lease principal, SBC. Afterwards the reader can rebuild a cash flow statement that ties and reconcile Amazon's three free-cash-flow measures.",
+   "focus": "Year one's day 22 taught the three sections and why the statement is hard to fake; this lesson teaches how it is built and where it bends. The classification rules and the eight cases ASU 2016-15 had to settle (debt prepayment costs, contingent consideration payments, insurance proceeds, equity-method distributions, beneficial interests, the predominance principle), restricted cash after ASU 2016-18, and supplier finance programs under ASU 2022-04. The full indirect-method reconstruction from two balance sheets, an income statement and an acquisition — stripping acquired balances and the FX effect so the statement ties. Where the accruals hide: deferred taxes, stock compensation, pension contributions versus expense, operating and finance leases. Noncash investing and financing, interest and taxes paid, the direct-method reconciliation, and the analyst's adjustments — capitalised content and software, finance-lease principal, SBC. Afterwards the reader can rebuild a cash flow statement that ties and reconcile Amazon's three free-cash-flow measures. Free-cash-flow construction is Finance & Markets I's subject; here the statement is built, not bridged.",
    "parts": [
     "Operating, investing, financing — and the eight cases where the answer was not obvious",
     "The reconstruction: from two balance sheets, an income statement and an acquisition to a cash flow statement that ties",
     "Where the accruals hide: deferred taxes, stock compensation, pensions, leases and the working-capital lines",
-    "Amazon's three free cash flows and Netflix's content spend: what the statement does not classify for you",
+    "Interest, dividends and taxes: where IFRS lets them go and US GAAP does not, and what that does to comparability",
     "Supplier finance, restricted cash and the direct method: the disclosures that changed the statement in the 2020s"
    ],
    "worked_examples": [
-    "Amazon's 2023 10-K: operating cash flow of $84.9 billion, purchases of property and equipment of $52.7 billion less proceeds, free cash flow of $36.8 billion, the $24.0 billion stock-based compensation add-back, and the two further measures that subtract finance-lease and financing-obligation principal — reconciled line by line",
+    "Shell plc's 2024 IFRS cash flow statement against ExxonMobil's ASC 230 statement: interest paid and dividends received classified differently, and the operating cash flow restated on a common basis.",
     "A full indirect-method reconstruction for a company that made a $120 million acquisition during the year: stripping acquired working capital and PP&E from the balance-sheet deltas, isolating the FX effect, and tying to the change in cash and restricted cash",
     "Netflix's 2023 10-K: about $13 billion of cash payments for content assets against $14.2 billion of content amortisation in the income statement, and the bridge from net income to operating cash flow that the difference creates",
     "Boeing's 2023 10-K: the supplier finance program obligations disclosed under ASU 2022-04, and the classification of the payments that settle them"
@@ -10391,13 +10394,14 @@
    "position": "18 of 40",
    "topic": "The back of the book: segments, contingencies, guarantees, subsequent events and related parties",
    "headline_hint": "3M booked $16 billion of settlements before a dollar was paid, and Broadcom bought VMware three weeks after its year ended — the notes that carry the risk",
-   "focus": "The notes a careful reader turns to first. Segment reporting under ASC 280: the management approach, the chief operating decision maker, operating segments, the aggregation criteria, the 10% and 75% tests, ASU 2023-07's significant segment expenses and the entity-wide disclosures. Contingencies under ASC 450: probable, reasonably possible and remote, the low end of a range, gain contingencies, discounting when timing is fixed, unasserted claims and the litigation accrual. Guarantees under ASC 460 at fair value, subsequent events under ASC 855 (recognised versus nonrecognised, the evaluation date for SEC filers, reissuance), related parties under ASC 850, risks and uncertainties, and the going-concern assessment. Afterwards the reader can apply the segment tests to a real company, judge a litigation accrual against its disclosed range and classify any post-year-end event.",
+   "focus": "The notes a careful reader turns to first. Segment reporting under ASC 280: the management approach, the chief operating decision maker, operating segments, the aggregation criteria, the 10% and 75% tests, ASU 2023-07's significant segment expenses and the entity-wide disclosures. Contingencies under ASC 450: probable, reasonably possible and remote, the low end of a range, gain contingencies, discounting when timing is fixed, unasserted claims and the litigation accrual. Guarantees under ASC 460 at fair value, subsequent events under ASC 855 (recognised versus nonrecognised, the evaluation date for SEC filers, reissuance), related parties under ASC 850, risks and uncertainties, and the going-concern assessment. Afterwards the reader can apply the segment tests to a real company, judge a litigation accrual against its disclosed range and classify any post-year-end event. Also here, because a FAR course must have it somewhere: ASC 250 on accounting changes and error corrections — retrospective for principle changes, prospective for estimates, and the restatement with its Big R / little r judgement.",
    "parts": [
     "How a company is cut up for the reader: the CODM, operating segments, the 10% and 75% tests, and ASU 2023-07's expense disclosures",
     "Probable, reasonably possible, remote: ASC 450 and the low end of the range",
     "3M's PFAS and Combat Arms accruals: present value, insurance recoveries and the reasonably-possible range",
     "After the balance sheet date: recognised and nonrecognised subsequent events, and Broadcom's Note 15",
-    "Guarantees, related parties and going concern: the notes that are read only when something is wrong"
+    "Guarantees, related parties and going concern: the notes that are read only when something is wrong",
+    "Changing your mind: ASC 250 — retrospective and prospective changes, error corrections and the restatement"
    ],
    "worked_examples": [
     "Amazon's 2024 10-K: North America, International and AWS as reportable segments, the significant segment expenses newly disclosed under ASU 2023-07, and the 10% and 75% tests applied to the disclosed figures",
@@ -10885,6 +10889,53 @@
    "day": 208,
    "subject": "Accounting",
    "position": "28 of 40",
+   "topic": "Derivatives and hedge accounting under ASC 815",
+   "headline_hint": "Hedge accounting is permission to tell the truth about two instruments at once",
+   "focus": "The definition of a derivative (underlying, notional, little or no initial net investment, net settlement) and its scope exceptions, embedded derivatives and the clearly-and-closely-related test, own-equity contracts under ASC 815-40 after ASU 2020-06, and the three hedge models — fair value, cash flow and net investment — with designation, documentation, effectiveness assessment, the shortcut and critical-terms-match methods, the ASU 2017-12 and ASU 2022-01 simplifications, discontinuation, and the ASC 815-10-50 disclosures; valuation of the instruments from the year-one derivatives lessons. Professional-exam level: the reader can decide whether an instrument is a derivative, choose the hedge model and post every entry through income and OCI. Placed here, before the tax run, as the FAR carry-over the block needs: the fair-value machinery it rests on was Accounting I's.",
+   "parts": [
+    "What makes an instrument a derivative, and the contracts the definition deliberately leaves out",
+    "Embedded derivatives and contracts on your own stock: the tests that decide where the value goes",
+    "Fair value hedges: the hedged item moves too, and the income statement shows both",
+    "Cash flow hedges: parking the gain in OCI until the forecasted transaction arrives",
+    "Net investment hedges, effectiveness, discontinuation and the disclosure table"
+   ],
+   "worked_examples": [
+    "Is it a derivative? ASC 815-10-15-83's four characteristics applied to a Southwest jet-fuel option, an Apple foreign-currency forward, a purchase order for 1,000 tons of hot-rolled coil (the normal-purchases-and-normal-sales exception), and a SPAC warrant under ASC 815-40 as reclassified after the SEC staff statement of April 12, 2021",
+    "A fair value hedge of fixed-rate debt: a receive-fixed/pay-floating swap on a $1 billion 3.85% note (Apple's FY2024 10-K describes interest-rate swaps hedging its term debt) — the hedged item's fair-value change on a 25-basis-point move computed with DV01 from day 50 of year one, the swap's offsetting change, the income-statement geography under ASU 2017-12 and the conditions for the shortcut method",
+    "Southwest's fuel hedges from its FY2024 10-K (WTI, Brent and heating-oil contracts; the $37 million second-half 2024 loss on undesignated WTI positions): AOCI deferral, reclassification as the fuel is consumed, the discontinuation when forecasted purchases cease to be probable, and the 2024 decision to add no new hedges through 2027",
+    "A euro-denominated borrowing designated as a net-investment hedge of a European subsidiary; a convertible note's conversion feature after ASU 2020-06; the clearly-and-closely-related test on an inflation-indexed lease; and the tabular ASC 815-10-50 disclosure of fair values by hedge type built from Apple's FY2024 derivatives note"
+   ],
+   "prerequisites": {
+    "year1": [
+     73,
+     90,
+     94,
+     99,
+     108
+    ],
+    "year2": []
+   },
+   "connect_back": {
+    "year": 1,
+    "day": 108,
+    "subject": "Finance",
+    "topic": "Fixed income and the curve, revisited"
+   },
+   "sources": [
+    "FASB ASC 815 (Derivatives and Hedging) including ASU 2017-12, ASU 2020-04, ASU 2020-06, ASU 2022-01; ASC 820 (Fair Value Measurement)",
+    "SEC Staff Statement on Accounting and Reporting Considerations for Warrants Issued by Special Purpose Acquisition Companies (April 12, 2021)",
+    "PwC, Derivatives and Hedging guide (2024 edition); EY Financial Reporting Developments, Derivatives and Hedging (2025)",
+    "Southwest Airlines Co. Form 10-K for fiscal 2024 (derivatives note); Apple Inc. Form 10-K for fiscal 2024 (financial instruments note); Hull, Options, Futures, and Other Derivatives (11th ed.)"
+   ],
+   "depth": "professional-exam",
+   "exam_map": "BAR Area II – Technical Accounting and Reporting (derivatives and hedge accounting, ASC 815)",
+   "block": 11,
+   "day_in_block": 8
+  },
+  {
+   "day": 209,
+   "subject": "Accounting",
+   "position": "29 of 40",
    "topic": "Individual income tax I: gross income, adjustments and deductions",
    "headline_hint": "Form 1040 is a funnel, and the whole Code is written in the order the numbers fall through it",
    "focus": "The individual tax formula from §61 gross income through exclusions (§§101–139), above-the-line adjustments (§62), the standard deduction versus itemized deductions (§§163(h), 164 with the OBBBA SALT cap, 165, 170, 213, and §68's absence), filing status and dependents (§§1, 2, 152), and the tax computed on the current year's brackets, with Pennsylvania's flat 3.07% and local earned-income tax alongside. Professional-exam level: the reader can prepare a complete 2026-rules return by hand and defend each line with the section that governs it. Figures are stated for tax year 2026 (Rev. Proc. 2025-32) and restated by the run for the latest year the IRS has published.",
@@ -10924,12 +10975,12 @@
    "depth": "professional-exam",
    "exam_map": "REG Area IV – Federal Taxation of Individuals (gross income, adjustments, deductions, filing status)",
    "block": 11,
-   "day_in_block": 8
+   "day_in_block": 9
   },
   {
-   "day": 209,
+   "day": 210,
    "subject": "Accounting",
-   "position": "29 of 40",
+   "position": "30 of 40",
    "topic": "Individual income tax II: credits, AMT, NIIT and the qualified business income deduction",
    "headline_hint": "The second tax system nobody plans for, and the credits that quietly set your marginal rate",
    "focus": "Everything that happens after taxable income: the ordering of capital-gain and qualified-dividend rates (§1(h)) with the 0/15/20% stacking, the alternative minimum tax (§§55–59, Form 6251) with the OBBBA exemption and phase-out, the 3.8% net investment income tax (§1411) and the 0.9% additional Medicare tax, nonrefundable and refundable credits (child, earned income, education, dependent care, premium, saver's) with their phase-outs, the §199A qualified business income deduction at the individual level, and estimated tax and the §6654 penalty. Professional-exam level: the reader can compute AMT on an ISO exercise and the true marginal rate inside a credit phase-out. Figures for 2026 (Rev. Proc. 2025-32), restated by the run.",
@@ -10954,7 +11005,7 @@
      82
     ],
     "year2": [
-     208
+     209
     ]
    },
    "connect_back": {
@@ -10972,12 +11023,12 @@
    "depth": "professional-exam",
    "exam_map": "REG Area IV – Federal Taxation of Individuals (credits, AMT, NIIT, qualified business income, estimated tax)",
    "block": 11,
-   "day_in_block": 9
+   "day_in_block": 10
   },
   {
-   "day": 210,
+   "day": 211,
    "subject": "Accounting",
-   "position": "30 of 40",
+   "position": "31 of 40",
    "topic": "Property transactions: basis, cost recovery, recapture and nonrecognition",
    "headline_hint": "Basis is memory: every dollar that was ever taxed or deducted is written into the asset",
    "focus": "Realized versus recognized gain under §1001, basis rules (cost, §1015 gifts with dual basis, §1014 inheritances, §1091 wash sales, §267 related parties, stock splits and specific identification), MACRS, §179 and bonus depreciation as they set adjusted basis, the character machine — §1221 capital assets, §1231 with its five-year lookback, §1245 and §1250 recapture and the 25% unrecaptured §1250 gain — and the nonrecognition provisions: §1031 like-kind exchanges with boot and liabilities, §121 residences, §1033 involuntary conversions and §453 installment sales. Professional-exam level: the reader can compute the whole chain from purchase to disposal with real tables and the current-year limits.",
@@ -11002,7 +11053,7 @@
      64
     ],
     "year2": [
-     208
+     209
     ]
    },
    "connect_back": {
@@ -11020,12 +11071,12 @@
    "depth": "professional-exam",
    "exam_map": "REG Area III – Federal Taxation of Property Transactions (basis, cost recovery, §1231/§1245/§1250, nontaxable dispositions)",
    "block": 11,
-   "day_in_block": 10
+   "day_in_block": 11
   },
   {
-   "day": 211,
+   "day": 212,
    "subject": "Accounting",
-   "position": "31 of 40",
+   "position": "32 of 40",
    "topic": "C corporations: formation, earnings and profits, distributions, liquidations and losses",
    "headline_hint": "The corporate tax is a second layer with its own memory, and E&P is the ledger it keeps",
    "focus": "Subchapter C from birth to death: §351 formation with boot, services and liabilities (§357), §358 and §362 basis; the corporate tax base at the 21% rate with the dividends-received deduction, the 10% charitable limit, capital-loss carryovers and the §172 NOL 80% limitation with §382 after an ownership change; earnings and profits under §312 and the §301/§316 characterization of distributions; §302 redemptions versus dividends; complete liquidations under §§331/336 and parent-subsidiary liquidations under §§332/337; the accumulated-earnings and personal-holding-company penalties; the 15% corporate alternative minimum tax on large filers; §1202 qualified small business stock after the 2025 Act; and the Schedule M-1/M-3 book-tax bridge back to the day-82 deferred-tax accounts. Professional-exam level.",
@@ -11051,8 +11102,8 @@
      86
     ],
     "year2": [
-     208,
-     210
+     209,
+     211
     ]
    },
    "connect_back": {
@@ -11070,12 +11121,12 @@
    "depth": "professional-exam",
    "exam_map": "REG Area V – Federal Taxation of Entities (C corporations)",
    "block": 11,
-   "day_in_block": 11
+   "day_in_block": 12
   },
   {
-   "day": 212,
+   "day": 213,
    "subject": "Accounting",
-   "position": "32 of 40",
+   "position": "33 of 40",
    "topic": "S corporations and partnerships: pass-through mechanics, basis and distributions",
    "headline_hint": "The entity pays nothing, so every dollar has to find an owner — and a basis to land in",
    "focus": "Subchapter S: eligibility and the §1362 election, separately stated items, the §1367 basis ordering rules for stock and debt basis, the §1368 distribution tiers with and without earnings and profits, the accumulated adjustments account, built-in gains under §1374, and reasonable compensation. Subchapter K: §721 formation, capital accounts under §704(b) and substantial economic effect, §704(c) built-in gain, §752 liability shares and outside basis, guaranteed payments, §731 distributions, §751 hot assets on a sale, the §754 election with §743(b) and §734(b) adjustments, and §736 payments to a retiring partner. The loss-limitation gauntlet in order — basis, at-risk, passive, excess business loss — and self-employment tax. Professional-exam level with the K-1 in hand.",
@@ -11100,9 +11151,9 @@
      86
     ],
     "year2": [
-     208,
-     210,
-     211
+     209,
+     211,
+     212
     ]
    },
    "connect_back": {
@@ -11120,12 +11171,12 @@
    "depth": "professional-exam",
    "exam_map": "REG Area V – Federal Taxation of Entities (S corporations, partnerships)",
    "block": 11,
-   "day_in_block": 12
+   "day_in_block": 13
   },
   {
-   "day": 213,
+   "day": 214,
    "subject": "Accounting",
-   "position": "33 of 40",
+   "position": "34 of 40",
    "topic": "Estate, gift and generation-skipping transfer tax, and the income taxation of trusts",
    "headline_hint": "The unified credit is a lifetime account, and every gift is a withdrawal from it",
    "focus": "The transfer-tax system as one integrated regime: taxable gifts under §§2501–2524 (annual exclusion, gift-splitting, marital and charitable deductions, §2503(e) tuition and medical payments), the gross estate under §§2031–2046 (retained interests under §2036, life insurance under §2042, joint property, powers of appointment), the estate-tax computation of §2001 with the unified credit on the current basic exclusion and portability of the deceased spousal unused exclusion, the generation-skipping transfer tax and exemption allocation, §1014 basis at death versus §1015 carryover, and the income taxation of estates and trusts (distributable net income, the distribution deduction, simple versus complex trusts, grantor trusts). Professional-exam level; figures for 2026 restated by the run.",
@@ -11150,8 +11201,8 @@
      147
     ],
     "year2": [
-     208,
-     210
+     209,
+     211
     ]
    },
    "connect_back": {
@@ -11169,12 +11220,12 @@
    "depth": "professional-exam",
    "exam_map": "REG Area V – Federal Taxation of Entities (income taxation of trusts and estates); estate and gift tax basics as set out in the public TCP discipline outline",
    "block": 11,
-   "day_in_block": 13
+   "day_in_block": 14
   },
   {
-   "day": 214,
+   "day": 215,
    "subject": "Accounting",
-   "position": "34 of 40",
+   "position": "35 of 40",
    "topic": "Tax procedure and the ethics of tax practice",
    "headline_hint": "A tax position is a bet with disclosed odds, and the Code prices every one of them",
    "focus": "The procedural Code and the rules of practice: statutes of limitation on assessment and refund (§§6501, 6511), the examination, appeals, deficiency and litigation paths (notice of deficiency, §6213 and the Tax Court, district court and the Court of Federal Claims, §7491 burden of proof, §7525 privilege), the penalty structure (§§6651, 6662, 6663, 6694, 6695, 6676, 6707A) with the standards of authority — reasonable basis, substantial authority, more likely than not — and disclosure on Form 8275; Circular 230 (31 CFR Part 10) duties and sanctions, the AICPA Statements on Standards for Tax Services as revised in 2024, §7216 confidentiality, and the limits of IRS authority over preparers. Professional-exam level: the reader can date every deadline on a timeline and price a position's penalty exposure.",
@@ -11198,9 +11249,9 @@
      138
     ],
     "year2": [
-     208,
      209,
-     211
+     210,
+     212
     ]
    },
    "connect_back": {
@@ -11218,28 +11269,28 @@
    "depth": "professional-exam",
    "exam_map": "REG Area I – Ethics, Professional Responsibilities and Federal Tax Procedures (Circular 230, SSTS, penalties, statutes of limitation, audits and appeals)",
    "block": 11,
-   "day_in_block": 14
+   "day_in_block": 15
   },
   {
-   "day": 215,
+   "day": 216,
    "subject": "Accounting",
-   "position": "35 of 40",
-   "topic": "Contracts, UCC Article 2 and agency",
+   "position": "36 of 40",
+   "topic": "Contracts, agency and business entities",
    "headline_hint": "Every invoice on the ledger is a promise the law will enforce — on terms neither side fully read",
-   "focus": "Common-law contract formation (offer, acceptance, consideration, the objective theory), defenses (capacity, fraud, duress, mistake, illegality), the statute of frauds and parol evidence, performance, breach and remedies (expectation, reliance, restitution, consequential damages and mitigation), third-party rights; UCC Article 2 for the sale of goods (merchants, firm offers, the battle of the forms under §2-207, risk of loss, perfect tender and cure, express and implied warranties and their disclaimer, buyer's and seller's remedies); and agency under the Restatement (Third) — actual and apparent authority, ratification, disclosed and undisclosed principals, respondeat superior and the agent's fiduciary duties. Professional-exam level with numbers in every remedy.",
+   "focus": "Common-law contract formation (offer, acceptance, consideration, the objective theory), defenses (capacity, fraud, duress, mistake, illegality), the statute of frauds and parol evidence, performance, breach and remedies (expectation, reliance, restitution, consequential damages and mitigation), third-party rights; UCC Article 2 for the sale of goods (merchants, firm offers, the battle of the forms under §2-207, risk of loss, perfect tender and cure, express and implied warranties and their disclaimer, buyer's and seller's remedies); and agency under the Restatement (Third) — actual and apparent authority, ratification, disclosed and undisclosed principals, respondeat superior and the agent's fiduciary duties. Professional-exam level with numbers in every remedy. Business entities and the duties of those who run them are here too (moved from the secured-transactions lesson): formation and the choice of entity, limited liability and veil-piercing, the duties of care and loyalty, the business judgment rule and oversight, and the accountant's own exposure under privity, negligence, §11 and Rule 10b-5. UCC Article 2 is trimmed to formation, warranties and remedies.",
    "parts": [
     "A contract is what a reasonable person would think was agreed: formation and the objective theory",
     "Defenses, writings and the words that never make it in: statute of frauds and parol evidence",
     "Article 2 changes the rules for goods: merchants, firm offers and the battle of the forms",
     "Delivery, risk of loss, perfect tender and the warranties that travel with the goods",
-    "Remedies with arithmetic: cover, market damages, lost volume and the Hadley limit",
-    "Agency: who can bind whom, and who pays when the agent causes harm"
+    "Entities and the people who run them: formation, care, loyalty, the business judgment rule and oversight",
+    "The accountant's own exposure: privity, negligence, §11 and Rule 10b-5"
    ],
    "worked_examples": [
     "Battle of the forms under UCC §2-207: a purchase order for 5,000 aluminum extrusions with 30-day payment terms meets an acknowledgment adding an arbitration clause and a warranty disclaimer — which terms enter the contract between merchants under §2-207(2), and what §2-207(3) supplies when the forms never agreed, with Hill v. Gateway 2000 (7th Cir. 1997) on terms in the box",
     "Remedies computed: the seller repudiates a $120,000 contract; the buyer covers at $135,000 (§2-712) or takes market damages at $131,000 (§2-713); a lost-volume dealer recovers lost profit under §2-708(2); consequential damages under §2-715 and Hadley v. Baxendale (1854) for a shut-down production line the seller was told about",
     "Risk of loss and warranties: FOB shipping point versus FOB destination under §2-509, a nonconforming shipment shifting risk back under §2-510, the perfect-tender rule of §2-601 and the seller's right to cure under §2-508; §§2-313, 2-314 and 2-315 warranties tested against a real consumer limited warranty and its conspicuous §2-316 disclaimer",
-    "Agency on real fact patterns: a purchasing manager's actual authority versus the apparent authority a supplier relies on, ratification of an unauthorized order, an undisclosed principal's liability, respondeat superior for a delivery driver's accident versus an independent contractor's, and the agent's duty of loyalty — with Lucy v. Zehmer (Va. 1954) and Hamer v. Sidway (N.Y. 1891) anchoring formation and consideration"
+    "Fiduciary duties in Delaware: the business judgment rule and §102(b)(7) exculpation, Smith v. Van Gorkom and the Caremark oversight claim, applied to a board that approved a merger in two hours."
    ],
    "prerequisites": {
     "year1": [
@@ -11258,33 +11309,32 @@
     "Restatement (Second) of Contracts (1981); Farnsworth, Contracts (4th ed., Aspen)",
     "Uniform Commercial Code Article 2 (Official Text), §§2-201, 2-205, 2-206, 2-207, 2-313 to 2-316, 2-508 to 2-510, 2-601, 2-703 to 2-715",
     "Restatement (Third) of Agency (2006)",
-    "Hill v. Gateway 2000, Inc., 105 F.3d 1147 (7th Cir. 1997); Hadley v. Baxendale, 9 Ex. 341 (1854); Lucy v. Zehmer, 84 S.E.2d 516 (Va. 1954)"
+    "Delaware General Corporation Law §§102(b)(7), 141, 144; Smith v. Van Gorkom, 488 A.2d 858 (Del. 1985); Ultramares Corp. v. Touche, 174 N.E. 441 (N.Y. 1931)"
    ],
    "depth": "professional-exam",
    "exam_map": "REG Area II – Business Law (contracts, UCC Article 2 sales, agency)",
    "block": 11,
-   "day_in_block": 15
+   "day_in_block": 16
   },
   {
-   "day": 216,
+   "day": 217,
    "subject": "Accounting",
-   "position": "36 of 40",
-   "topic": "Secured transactions, bankruptcy, business entities and fiduciary duties",
+   "position": "37 of 40",
+   "topic": "Secured transactions and bankruptcy: Article 9 attachment, perfection and priority; Chapters 7, 11 and 13; the automatic stay, preferences and absolute priority",
    "headline_hint": "When the money runs out, the law has already decided who stands where in line",
-   "focus": "UCC Article 9 (attachment, perfection by filing, possession, control and automatic perfection, purchase-money security interests and their windows, priority rules, proceeds, buyers in ordinary course, default and disposition); the Bankruptcy Code (Chapters 7, 11 and 13 and Subchapter V, the automatic stay, the estate, executory contracts, priorities, preferences and fraudulent transfers, discharge and its exceptions, plan confirmation and absolute priority); suretyship; and business entities — formation and governance of corporations, LLCs and limited partnerships, the duties of care and loyalty, the business judgment rule, oversight liability, exculpation and veil-piercing — closing with the CPA's own civil liability. Professional-exam level, on a real Chapter 11 docket.",
+   "focus": "UCC Article 9 (attachment, perfection by filing, possession, control and automatic perfection, purchase-money security interests and their windows, priority rules, proceeds, buyers in ordinary course, default and disposition); the Bankruptcy Code (Chapters 7, 11 and 13 and Subchapter V, the automatic stay, the estate, executory contracts, preferences and fraudulent transfers, the priority ladder and the absolute priority rule, discharge and its exceptions). Business entities and fiduciary duties moved to day 15; the accountant's own liability sits with the ethics lesson.",
    "parts": [
     "Attachment, perfection and the race to the filing office",
     "Priority: purchase-money interests, buyers in ordinary course, proceeds and what happens on default",
     "Bankruptcy's architecture: the stay, the estate, the chapters and the priority ladder",
     "Clawbacks and discharge: preferences, fraudulent transfers and the debts that survive",
-    "Entities and the people who run them: care, loyalty, the business judgment rule and oversight",
-    "The accountant's own exposure: privity, negligence, §11 and Rule 10b-5"
+    "The waterfall in practice: how a Chapter 11 plan pays a secured lender, an unsecured bondholder and a shareholder"
    ],
    "worked_examples": [
     "An Article 9 priority timeline: a bank files a blanket financing statement on all equipment and inventory on January 10; a PMSI lender delivers a $400,000 machine on June 1 and files on June 15 (inside the 20-day window of §9-324(a)); an inventory PMSI that needed advance notice under §9-324(b); a buyer in ordinary course taking free under §9-320; proceeds under §9-315; and a commercially reasonable disposition under §§9-610 and 9-615 with the surplus and deficiency computed",
     "Spirit Airlines' Chapter 11 (S.D.N.Y., petition November 18, 2024): the §362 automatic stay, §364 debtor-in-possession financing, the §507 priority ladder, the prepackaged plan confirmed under §1129 with equity cancelled under the absolute-priority rule, and the March 2025 emergence — contrasted with an individual's Chapter 7 (§§523 and 727 discharge exceptions) and Subchapter V's post-2024 debt ceiling",
     "Clawbacks: a $250,000 payment to an unsecured supplier 60 days before the petition tested under §547(b), the ordinary-course and subsequent-new-value defenses of §547(c), the one-year insider window; a §548 constructive fraudulent transfer where an insolvent debtor sold an asset for less than reasonably equivalent value; a surety's rights of exoneration, reimbursement and subrogation",
-    "Fiduciary duties in Delaware: the business judgment rule and §102(b)(7) exculpation, Smith v. Van Gorkom (1985) on care, Caremark (1996) and Marchand v. Barnhill (2019) on oversight of mission-critical risk; an LLC operating agreement under RULLCA; veil-piercing factors; and the CPA's liability from Ultramares v. Touche (N.Y. 1931) to §11 of the Securities Act (no scienter) and Rule 10b-5 (scienter required)"
+    "Hertz Global's 2020–21 Chapter 11: the DIP financing, the equity that recovered while unsecured creditors were paid in full, and the plan waterfall read against the absolute priority rule."
    ],
    "prerequisites": {
     "year1": [
@@ -11293,7 +11343,7 @@
      135
     ],
     "year2": [
-     215
+     216
     ]
    },
    "connect_back": {
@@ -11305,39 +11355,37 @@
    "sources": [
     "Uniform Commercial Code Article 9 (2010 amendments), §§9-203, 9-308 to 9-324, 9-609 to 9-625",
     "Bankruptcy Code, 11 U.S.C. §§101, 362, 364, 365, 507, 523, 541, 547, 548, 727, 1129, 1181–1195, 1325; Spirit Airlines, Inc., Case No. 24-11988 (Bankr. S.D.N.Y.) docket",
-    "Delaware General Corporation Law §§102(b)(7), 141, 144; Revised Uniform Limited Liability Company Act (2006, amended 2013); Smith v. Van Gorkom, 488 A.2d 858 (Del. 1985); In re Caremark, 698 A.2d 959 (Del. Ch. 1996); Marchand v. Barnhill, 212 A.3d 805 (Del. 2019)",
-    "Ultramares Corp. v. Touche, 174 N.E. 441 (N.Y. 1931); Securities Act of 1933 §11; Exchange Act Rule 10b-5"
+    "In re Hertz Corp., Bankr. D. Del., Case No. 20-11218, confirmed plan (June 2021)"
    ],
    "depth": "professional-exam",
    "exam_map": "REG Area II – Business Law (debtor-creditor relationships: secured transactions, bankruptcy, suretyship; business structure and fiduciary duties)",
    "block": 11,
-   "day_in_block": 16
+   "day_in_block": 17
   },
   {
-   "day": 217,
+   "day": 218,
    "subject": "Accounting",
-   "position": "37 of 40",
-   "topic": "Financial statement analysis for decisions",
-   "headline_hint": "Ratios are questions; the decision is what you do when two of them disagree",
-   "focus": "Analysis aimed at a decision rather than a description: the five-step DuPont decomposition and what drives each term, cash-flow-based measures and accrual quality, credit analysis (coverage, leverage, the agency grids and distress scores), non-GAAP measures under Regulation G and Item 10(e), segment analysis after ASU 2023-07, earnings-per-share quality, common-size and trend analysis across cycles, and pro forma forecasting with the percent-of-sales method, external financing needed and sustainable growth. Practitioner level: the reader can take two real 10-Ks, say which business is better and why, and build the forecast that tests the claim.",
+   "position": "38 of 40",
+   "topic": "SEC reporting: Regulation S-X and S-K, the 10-Q and 8-K, MD&A and Item 303, non-GAAP under Regulation G, and segment reporting under ASC 280",
+   "headline_hint": "The reconciliation table at the bottom of the press release is the most-litigated page in the filing",
+   "focus": "The CPA content no other block covers: how a public company's reporting is regulated. Regulation S-X (the form and content of the statements, the age of financial statements, pro forma requirements under Article 11) and Regulation S-K (the non-financial items — Item 303 MD&A with its known-trends and critical-accounting-estimate requirements, Item 305 market risk, Item 402 executive compensation, the 2024 cybersecurity and climate items and their status); the 10-Q's interim rules and the 8-K's triggering items and four-business-day clock; non-GAAP measures under Regulation G and Item 10(e) with the SEC's Compliance and Disclosure Interpretations; and segment reporting under ASC 280 after ASU 2023-07's significant-expense disclosures. Financial statement analysis itself was Finance & Markets I's job and is assumed.",
    "parts": [
-    "DuPont in five steps: where return on equity actually comes from",
-    "Cash against accruals: the measures that survive an aggressive accounting policy",
-    "Credit analysis: coverage, leverage, the rating grids and the scores that predict distress",
-    "Non-GAAP, segments and per-share numbers: reading around what management chose to show",
-    "Forecasting: percent of sales, financing needed, sustainable growth and the sensitivity that matters"
+    "S-X and S-K: which regulation governs which page, and the age-of-statements and pro forma rules",
+    "MD&A under Item 303: known trends, uncertainties, liquidity and the critical accounting estimates the SEC actually comments on",
+    "The 10-Q and the 8-K: interim reporting, the triggering items and the four-business-day clock",
+    "Non-GAAP under Regulation G and Item 10(e): the prohibitions, the C&DIs and the reconciliation read line by line",
+    "Segments under ASC 280 after ASU 2023-07: the chief operating decision maker, aggregation and the significant-expense principle",
+    "Comment letters and enforcement: what the SEC pushes back on, and what a restatement of a non-GAAP number looks like"
    ],
    "worked_examples": [
-    "Five-step DuPont on Costco's fiscal 2024 10-K (total revenue $254.5 billion, net income $7.37 billion) against Walmart's fiscal 2025 10-K (revenues $681.0 billion): tax burden, interest burden, operating margin, asset turnover and leverage — why Costco's return is built on turnover and Walmart's on margin and leverage, with every input taken from the filed statements",
-    "Credit analysis of Boeing's FY2024 10-K: interest coverage, debt to EBITDA and funds-from-operations to debt against the published rating-agency grid for aerospace and defense, an Altman Z''-score, and Spirit AeroSystems' FY2024 going-concern position (gross loss $1.37 billion) read through the same ratios",
-    "Non-GAAP and segments: Uber's FY2024 adjusted EBITDA reconciled to GAAP net income under Regulation G, Item 10(e) and the SEC staff's 2022 Compliance and Disclosure Interpretations 100.01–100.06; Amazon's FY2024 segment note under ASU 2023-07 with AWS operating income against the rest of the company",
-    "A pro forma forecast for a private manufacturer at 8% sales growth by the percent-of-sales method: the external financing needed, sustainable growth rate g = ROE × retention, a sensitivity table over growth and margin, and the Beneish M-score applied to Kraft Heinz's restated 2017–2018 periods"
+    "Salesforce's fiscal 2025 fourth-quarter earnings release (Form 8-K, Exhibit 99.1): the non-GAAP operating margin reconciliation checked line by line against Regulation G and the C&DIs on recurring adjustments.",
+    "Amazon's 2023 10-K Item 303 MD&A: the known-trend disclosures on AWS capital expenditure and the critical accounting estimate on useful lives, compared with the SEC's 2020 MD&A modernisation release.",
+    "A real SEC comment letter and response on segment aggregation (from EDGAR's UPLOAD/CORRESP filings for a named registrant), and how the segments changed in the next 10-K.",
+    "An 8-K timeline: a CEO resignation, a material agreement and an impairment, each mapped to its Item number and its deadline."
    ],
    "prerequisites": {
     "year1": [
      22,
-     75,
-     127,
      133,
      143
     ],
@@ -11347,25 +11395,25 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 75,
+    "day": 84,
     "subject": "Finance",
-    "topic": "Valuation: multiples"
+    "topic": "Market efficiency"
    },
    "sources": [
-    "Penman, Financial Statement Analysis and Security Valuation (5th ed., McGraw Hill); Subramanyam, Financial Statement Analysis (11th ed.)",
-    "CFA Institute, Financial Statement Analysis (2024 curriculum readings); Altman, 'Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy', Journal of Finance (1968); Beneish, 'The Detection of Earnings Manipulation', Financial Analysts Journal (1999)",
-    "SEC Regulation G and Regulation S-K Item 10(e); SEC Division of Corporation Finance, Non-GAAP Financial Measures C&DIs (updated December 2022); ASC 280 as amended by ASU 2023-07",
-    "Costco Wholesale Corp. Form 10-K for fiscal 2024; Walmart Inc. Form 10-K for fiscal 2025; The Boeing Company Form 10-K for fiscal 2024; Uber Technologies Form 10-K for fiscal 2024"
+    "SEC Regulation S-X (17 CFR Part 210) and Regulation S-K (17 CFR Part 229), esp. Items 303, 10(e), 402",
+    "SEC Regulation G (17 CFR 244) and the Division of Corporation Finance C&DIs on Non-GAAP Financial Measures (updated 2022)",
+    "FASB ASC 280, Segment Reporting, as amended by ASU 2023-07",
+    "SEC Release No. 33-10890, Management's Discussion and Analysis, Selected Financial Data, and Supplementary Financial Information (2020)"
    ],
-   "depth": "practitioner",
-   "exam_map": "BAR Area I – Business Analysis (financial statement analysis; non-financial and non-GAAP measures)",
+   "depth": "professional-exam",
+   "exam_map": "BAR Area I / FAR Area I – SEC reporting requirements, MD&A, non-GAAP measures and segment reporting",
    "block": 11,
-   "day_in_block": 17
+   "day_in_block": 18
   },
   {
-   "day": 218,
+   "day": 219,
    "subject": "Accounting",
-   "position": "38 of 40",
+   "position": "39 of 40",
    "topic": "Cost accounting, budgets, variances and forecasting",
    "headline_hint": "A variance is the distance between the plan and the world, decomposed until someone owns each piece",
    "focus": "Managerial accounting as the exam and a plant manager both use it: cost behavior and estimation (high-low, regression), cost-volume-profit and operating leverage, absorption versus variable costing, job and process costing, activity-based costing and its death spiral, the master budget from sales to the cash budget, flexible budgets and the full standard-cost variance set (materials price and quantity, labor rate and efficiency, variable-overhead spending and efficiency, fixed-overhead budget and volume) reconciled to actual, transfer pricing, and prospective financial information under AT-C 305. Practitioner level: the reader can build the budget, compute every variance from real input prices and say which manager answers for each.",
@@ -11391,7 +11439,7 @@
      74
     ],
     "year2": [
-     217
+     218
     ]
    },
    "connect_back": {
@@ -11408,55 +11456,6 @@
    ],
    "depth": "practitioner",
    "exam_map": "BAR Area I – Business Analysis (managerial and cost accounting, variance analysis, budgeting, forecasting and projection)",
-   "block": 11,
-   "day_in_block": 18
-  },
-  {
-   "day": 219,
-   "subject": "Accounting",
-   "position": "39 of 40",
-   "topic": "Derivatives and hedge accounting under ASC 815",
-   "headline_hint": "Hedge accounting is permission to tell the truth about two instruments at once",
-   "focus": "The definition of a derivative (underlying, notional, little or no initial net investment, net settlement) and its scope exceptions, embedded derivatives and the clearly-and-closely-related test, own-equity contracts under ASC 815-40 after ASU 2020-06, and the three hedge models — fair value, cash flow and net investment — with designation, documentation, effectiveness assessment, the shortcut and critical-terms-match methods, the ASU 2017-12 and ASU 2022-01 simplifications, discontinuation, and the ASC 815-10-50 disclosures; valuation of the instruments from the year-one derivatives lessons. Professional-exam level: the reader can decide whether an instrument is a derivative, choose the hedge model and post every entry through income and OCI.",
-   "parts": [
-    "What makes an instrument a derivative, and the contracts the definition deliberately leaves out",
-    "Embedded derivatives and contracts on your own stock: the tests that decide where the value goes",
-    "Fair value hedges: the hedged item moves too, and the income statement shows both",
-    "Cash flow hedges: parking the gain in OCI until the forecasted transaction arrives",
-    "Net investment hedges, effectiveness, discontinuation and the disclosure table"
-   ],
-   "worked_examples": [
-    "Is it a derivative? ASC 815-10-15-83's four characteristics applied to a Southwest jet-fuel option, an Apple foreign-currency forward, a purchase order for 1,000 tons of hot-rolled coil (the normal-purchases-and-normal-sales exception), and a SPAC warrant under ASC 815-40 as reclassified after the SEC staff statement of April 12, 2021",
-    "A fair value hedge of fixed-rate debt: a receive-fixed/pay-floating swap on a $1 billion 3.85% note (Apple's FY2024 10-K describes interest-rate swaps hedging its term debt) — the hedged item's fair-value change on a 25-basis-point move computed with DV01 from day 50 of year one, the swap's offsetting change, the income-statement geography under ASU 2017-12 and the conditions for the shortcut method",
-    "Southwest's fuel hedges from its FY2024 10-K (WTI, Brent and heating-oil contracts; the $37 million second-half 2024 loss on undesignated WTI positions): AOCI deferral, reclassification as the fuel is consumed, the discontinuation when forecasted purchases cease to be probable, and the 2024 decision to add no new hedges through 2027",
-    "A euro-denominated borrowing designated as a net-investment hedge of a European subsidiary; a convertible note's conversion feature after ASU 2020-06; the clearly-and-closely-related test on an inflation-indexed lease; and the tabular ASC 815-10-50 disclosure of fair values by hedge type built from Apple's FY2024 derivatives note"
-   ],
-   "prerequisites": {
-    "year1": [
-     73,
-     90,
-     94,
-     99,
-     108
-    ],
-    "year2": [
-     205
-    ]
-   },
-   "connect_back": {
-    "year": 1,
-    "day": 108,
-    "subject": "Finance",
-    "topic": "Fixed income and the curve, revisited"
-   },
-   "sources": [
-    "FASB ASC 815 (Derivatives and Hedging) including ASU 2017-12, ASU 2020-04, ASU 2020-06, ASU 2022-01; ASC 820 (Fair Value Measurement)",
-    "SEC Staff Statement on Accounting and Reporting Considerations for Warrants Issued by Special Purpose Acquisition Companies (April 12, 2021)",
-    "PwC, Derivatives and Hedging guide (2024 edition); EY Financial Reporting Developments, Derivatives and Hedging (2025)",
-    "Southwest Airlines Co. Form 10-K for fiscal 2024 (derivatives note); Apple Inc. Form 10-K for fiscal 2024 (financial instruments note); Hull, Options, Futures, and Other Derivatives (11th ed.)"
-   ],
-   "depth": "professional-exam",
-   "exam_map": "BAR Area II – Technical Accounting and Reporting (derivatives and hedge accounting, ASC 815)",
    "block": 11,
    "day_in_block": 19
   },
@@ -11491,7 +11490,7 @@
     ],
     "year2": [
      204,
-     217
+     218
     ]
    },
    "connect_back": {
@@ -11515,22 +11514,22 @@
    "day": 221,
    "subject": "Wealth Management",
    "position": "1 of 40",
-   "topic": "The financial planning process and fiduciary standards",
-   "headline_hint": "Whose side is the adviser on? Four legal answers to one question, and what each costs the client",
-   "focus": "The seven-step planning process as CFP Board's Code and Standards defines it, mapped against the four legal standards that actually govern advice in the United States: the Investment Advisers Act §206 fiduciary duty as read in SEC v. Capital Gains Research Bureau, Regulation Best Interest for broker-dealers, ERISA §3(21) for plan advice after the 2024 Retirement Security Rule was vacated in March 2026, and the NAIC best-interest model for annuities. The reader learns the compensation models (AUM, flat, hourly, commission, fee-based versus fee-only), how to read a Form ADV Part 2A and a Form CRS, and the disclosure-versus-avoidance distinction in conflicts. Afterwards he can place any adviser on the standards map and price the difference in 30-year dollars.",
+   "topic": "The financial planning process and the CFP Board's Code and Standards",
+   "headline_hint": "The seven steps are a liability map, not a checklist",
+   "focus": "The seven-step planning process as CFP Board's Code and Standards defines it, taught as what it requires at each step and where practitioners are disciplined for falling short: the fiduciary duty at all times when giving financial advice and its three components, the fifteen duties, material-conflict disclosure and management, the Practice Standards' documentation requirements, and the engagement letter that sets scope. The statutes that also govern advice — the Advisers Act, Regulation Best Interest, ERISA — are Wealth Management II's regulation lesson, not this one; the CFA Standards were Finance & Markets II's.",
    "parts": [
-    "The seven steps are a liability map, not a checklist: what the Code and Standards actually requires at each one",
-    "Capital Gains Research Bureau and the fiduciary duty that Congress never wrote down",
-    "Regulation Best Interest: what 'best interest' means when it does not mean fiduciary",
-    "ERISA, the vacated 2024 rule and PTE 2020-02: who is a fiduciary to a rollover",
-    "Reading a Form ADV: fee schedules, conflicts and the thirty-year cost of a percentage point",
-    "Engagement letters, scope and the Hartwells' first meeting"
+    "What the Code and Standards actually requires at each of the seven steps",
+    "The fiduciary duty at all times: its three components and the fifteen duties",
+    "Conflicts under the Code: what must be disclosed, what must be managed, and what disclosure cannot cure",
+    "The Practice Standards as documentation: what a file must show if a client complains",
+    "Scope, engagement letters and the first meeting with a hypothetical Bridgeville household",
+    "What the Board disciplines for: the public sanction record read as a syllabus"
    ],
    "worked_examples": [
-    "SEC v. Capital Gains Research Bureau, 375 U.S. 180 (1963): the scalping facts and the holding that §206 imports a duty of disclosure of conflicts",
-    "A published Form ADV Part 2A fee schedule (Vanguard Personal Advisor's tiered AUM fee, as filed on IAPD) applied to the Hartwells' $400,000 portfolio: 30 years at 6% gross with a 1.00% fee ends at about $1.73 million and with 0.30% at about $2.11 million, so the fee gap is worth about $380,000",
-    "The DOL's Federal Register notice of court vacatur of the Retirement Security Rule (March 20, 2026) and the restored text of PTE 2020-02: which of the Hartwells' rollover conversations are fiduciary advice and which are not",
-    "A Form CRS read line by line against Reg BI's four obligations (disclosure, care, conflict of interest, compliance) for a hypothetical dual-registrant recommending a variable annuity"
+    "CFP Board's published disciplinary actions for a recent year: the categories, the most common failures, and one full case read against the fifteen duties.",
+    "An engagement letter for a two-earner Pittsburgh household drafted clause by clause: scope, the excluded areas, compensation and the conflict disclosures.",
+    "The seven steps applied to a real-shaped case: the data the planner must gather, the analysis it must document, and the recommendations' rationale as the Practice Standards require.",
+    "A material-conflict disclosure for a planner who also earns insurance commissions, written, then tested against the Code's 'informed consent' standard."
    ],
    "prerequisites": {
     "year1": [
@@ -11548,13 +11547,13 @@
     "topic": "Audit, controls and GAAP vs IFRS"
    },
    "sources": [
-    "CFP Board, Code of Ethics and Standards of Conduct (effective June 30, 2020) and the Practice Standards for the Financial Planning Process",
-    "Investment Advisers Act of 1940 §206; SEC v. Capital Gains Research Bureau, 375 U.S. 180 (1963)",
-    "SEC, Regulation Best Interest, 17 CFR 240.15l-1 (Release No. 34-86031, 2019) and Form CRS (Release No. 34-86032)",
-    "DOL, Retirement Security Rule: Notice of Court Vacatur, 91 Fed. Reg. (March 20, 2026); PTE 2020-02 as originally published December 18, 2020"
+    "CFP Board, Code of Ethics and Standards of Conduct (current edition) and the Practice Standards for the Financial Planning Process",
+    "CFP Board, Disciplinary Rules and Procedures, and the public Disciplinary Actions record",
+    "Dalton, M. and Dalton, J., Fundamentals of Financial Planning (current edition)",
+    "CFP Board, Guide to the Practice Standards for the Financial Planning Process"
    ],
    "depth": "professional-exam",
-   "exam_map": "CFP Principal Knowledge Domain A, Professional Conduct and Regulation (Code of Ethics and Standards of Conduct; fiduciary standard and its application; financial services regulations) and Domain B, the financial planning process",
+   "exam_map": "CFP Principal Knowledge Domain A, Professional Conduct and Regulation — CFP Board's Code and Standards; financial planning process",
    "block": 12,
    "day_in_block": 1
   },
@@ -11564,12 +11563,12 @@
    "position": "2 of 40",
    "topic": "Client psychology and behavioural finance in practice",
    "headline_hint": "The 1.2 points a year that investors pay for their own behaviour, and what a planner can do about it on a Tuesday",
-   "focus": "Year one's day 140 established that the rational-agent model fails; this lesson is the practice that follows. It measures the behaviour gap with Morningstar's Mind the Gap 2025, separates risk tolerance (psychometric), risk capacity (arithmetic) and risk need (goal-based), teaches the Klontz money-script framework and the Grable-Lytton scale as instruments rather than slogans, and works through the counselling and communication methods CFP Board added as Domain H in 2021. The reader can afterwards run a discovery meeting, score a risk questionnaire, translate a client's stated goals into a goals-based allocation, and design the default and commitment devices that Save More Tomorrow proved.",
+   "focus": "Year one's day 140 established that the rational-agent model fails; this lesson is the practice that follows. It measures the behaviour gap with Morningstar's Mind the Gap 2025, separates risk tolerance (psychometric), risk capacity (arithmetic) and risk need (goal-based), teaches the Klontz money-script framework and the Grable-Lytton scale as instruments rather than slogans, and works through the counselling and communication methods CFP Board added as Domain H in 2021. The reader can afterwards run a discovery meeting, score a risk questionnaire, translate a client's stated goals into a goals-based allocation, and design the default and commitment devices that Save More Tomorrow proved. The descriptive theory (prospect theory, the anomalies) was the Economics block's, and the normative theory (Savage, the paradoxes) the Philosophy block's; both are assumed. This lesson is practice: the CFP Board's psychology domain, risk-tolerance questionnaires and their validity, the Kahneman–Klein 'expert intuition' debate on when an advisor's judgement deserves trust, and the advisor's scripts for a drawdown.",
    "parts": [
     "Mind the Gap: how a fund can return 8.2% while its investors earn 7.0%",
     "Tolerance, capacity and need are three different numbers, and only one of them is a feeling",
     "Money scripts and the discovery meeting: turning Klontz's four categories into questions",
-    "Save More Tomorrow and the architecture of defaults: what the 2004 field study actually measured",
+    "Defaults and expert intuition: Save More Tomorrow as design, and the Kahneman–Klein debate on when an advisor's judgement is trustworthy",
     "Goals-based planning: Chhabra's three buckets and the mental accounting that helps rather than hurts",
     "March 2020 as a case file: the sell-at-the-bottom arithmetic and the conversation that prevents it"
    ],
@@ -11611,22 +11610,22 @@
    "day": 223,
    "subject": "Wealth Management",
    "position": "3 of 40",
-   "topic": "Cash-flow and debt management",
+   "topic": "Cash-flow, debt management and the liquidity ladder",
    "headline_hint": "A household is a small company with a bad chart of accounts: the statements, the ratios and the arithmetic of every loan the Hartwells carry",
-   "focus": "Personal financial statements built to the same discipline as year one's corporate ones, the planning ratios that lenders and planners actually use (28/36 housing, the 43% and 50% DTI limits in the agency underwriting guides, savings rate, liquidity), and the mechanics of household debt done to the bottom: fixed-rate amortization, the refinancing NPV, credit-card minimum-payment dynamics at the Fed's G.19 average APR, HELOCs, auto loans and the federal student-loan system as rewritten by the 2025 reconciliation law (the Repayment Assistance Plan from July 1, 2026). The reader can afterwards build the Hartwells' balance sheet and cash-flow statement, rank their debts by after-tax cost, and decide pay-down versus invest with a number.",
+   "focus": "Personal financial statements built to the same discipline as year one's corporate ones, the planning ratios that lenders and planners actually use (28/36 housing, the 43% and 50% DTI limits in the agency underwriting guides, savings rate, liquidity), and the mechanics of household debt done to the bottom: fixed-rate amortization, the refinancing NPV, credit-card minimum-payment dynamics at the Fed's G.19 average APR, HELOCs, auto loans and the federal student-loan system as rewritten by the 2025 reconciliation law (the Repayment Assistance Plan from July 1, 2026). The reader can afterwards build the Hartwells' balance sheet and cash-flow statement, rank their debts by after-tax cost, and decide pay-down versus invest with a number. The emergency reserve and the liquidity ladder behind it — months of essential spend, tiered by yield and access, Roth contribution basis, HELOCs, plan loans and the SECURE 2.0 emergency provisions — are one part of this lesson rather than a lesson of their own.",
    "parts": [
     "The household balance sheet and cash-flow statement: what to mark to market and what to leave at cost",
     "Ratios that mean something: housing, total debt service, savings rate and the lender's DTI",
     "Amortization from first principles: the payment formula, the balance formula and where the interest goes",
     "Refinancing is a capital-budgeting decision: closing costs, break-even and the NPV over the horizon you will actually keep the loan",
-    "Revolving credit and the minimum-payment trap; avalanche versus snowball as arithmetic and as psychology",
+    "Revolving credit, the minimum-payment trap, and the liquidity ladder: the reserve sized, tiered and backstopped by Roth basis, a HELOC and the SECURE 2.0 provisions",
     "Student loans after the 2025 law: standard, RAP and the deduction the Hartwells have already lost"
    ],
    "worked_examples": [
     "The Hartwells' $372,000 30-year mortgage at 6.625% (originated 2023): payment $2,381.96, balance $358,968 after 36 payments, about $23,600 of interest in year four, and the pay-down-versus-invest comparison at their combined marginal rate",
     "Refinancing that balance to 5.75% for the remaining 27 years with $6,500 of closing costs: payment $2,184.21, monthly saving $197.75, break-even 33 months, and a five-year NPV of about +$4,200 at a 4% discount rate; then the same numbers at the Freddie Mac PMMS rate on the run date",
     "An $8,000 balance at the Fed G.19 average APR on accounts assessed interest (about 22% in 2025): the payoff time and total interest under the issuer's minimum-payment formula versus a fixed $300 a month, and why the 2%-of-balance minimum never finishes",
-    "Dana's $28,000 of Direct loans at 5.50%: the 10-year standard payment versus the Repayment Assistance Plan's 1%-10%-of-AGI schedule less $50 per dependent, and the §221 interest deduction the household loses above the 2026 $175,000-$205,000 MFJ phase-out"
+    "The Hartwells' essential monthly spend ($9,400) sized into a reserve for a two-earner household with one self-employed spouse, tiered across a savings account, a money fund and 13-week bills at the after-tax yield in the 24% bracket plus Pennsylvania's 3.07%."
    ],
    "prerequisites": {
     "year1": [
@@ -11661,28 +11660,29 @@
    "day": 224,
    "subject": "Wealth Management",
    "position": "4 of 40",
-   "topic": "Emergency reserves and liquidity",
-   "headline_hint": "Cash is an insurance policy with a visible premium: sizing the reserve, choosing where it sits, and pricing what it costs to hold",
-   "focus": "The reserve as a self-insurance layer: how many months, of what expenses, for which household (two earners, one of them self-employed), and the liquidity ladder behind it, from Roth contribution basis and a HELOC to the SECURE 2.0 emergency provisions (the $1,000 penalty-free distribution, pension-linked emergency savings accounts up to $2,500, 401(k) loans under §72(p)). The vehicles are compared on after-tax yield with Pennsylvania's exemption of Treasury interest, and the opportunity cost of holding the reserve is priced as a present value against the cost of a forced sale in a drawdown. The reader can afterwards size and place the Hartwells' reserve and defend both numbers.",
+   "topic": "Housing: the mortgage decision, points and refinancing breakevens, prepay-versus-invest, PMI, ARMs and home equity",
+   "headline_hint": "The largest asset most households own is the one they never analyse",
+   "focus": "Housing done as the household's largest capital-budgeting decision. Rent versus buy on a full cash-flow basis (opportunity cost of the down payment, transaction costs, maintenance, the tax treatment after the 2025 law's mortgage-interest and SALT rules); the mortgage menu — 30-year, 15-year, ARM structures and their caps, points as a prepaid-interest bet with a breakeven; PMI and how to be rid of it; prepay-versus-invest as an after-tax, risk-adjusted comparison; the refinancing decision with closing costs and the horizon you will actually keep the loan; and home equity as an asset — HELOCs, cash-out refinancing, reverse mortgages in outline — and as a liability of concentration. The reader can run the numbers on a real listing.",
    "parts": [
-    "What the reserve insures against, and why 'three to six months' is a range and not an answer",
-    "Bills, savings accounts, money funds and I bonds: after-tax yield when your state does not tax Treasuries",
-    "The liquidity ladder: Roth basis, HELOCs, plan loans and the SECURE 2.0 emergency provisions",
-    "The premium you pay to hold cash: a present-value calculation, and the drawdown that justifies it",
-    "The Fed's $400 question: what the SHED survey says about who has a reserve at all"
+    "Rent or buy: the full cash-flow comparison and the assumption that decides it",
+    "The mortgage menu: 30-year, 15-year, ARMs and caps, and points as a bet with a breakeven",
+    "PMI, escrow and the true monthly cost; getting to 20% and cancelling the insurance",
+    "Prepay or invest: the after-tax, risk-adjusted comparison, and why the answer depends on the rest of the balance sheet",
+    "Refinancing as capital budgeting: closing costs, the breakeven and the NPV over your real horizon",
+    "Home equity as an asset and as concentration: HELOCs, cash-out, reverse mortgages and the household balance sheet"
    ],
    "worked_examples": [
-    "The Hartwells' essential monthly spend ($9,400 from the day-3 cash-flow statement) sized at six and nine months ($56,400 and $84,600), with the nine-month case argued from Marcus's S-corporation income",
-    "Tax-equivalent yields at the 24% federal bracket plus Pennsylvania's 3.07%: a 13-week Treasury bill at the auction yield on the run date versus a high-yield savings account and a prime money-market fund, showing when the state exemption makes the bill win",
-    "The opportunity cost of a $70,000 reserve earning 4% instead of a 60/40 portfolio's expected 6.5% over 30 years, discounted to a present value, set against the realised 2022 60/40 drawdown of about 16% and the tax cost of a forced sale",
-    "Roth IRA ordering under §408A(d)(4): the Hartwells' $60,000 of Roth balances contain $46,000 of contribution basis that can be withdrawn tax- and penalty-free, and how that changes the reserve size"
+    "A $400,000 Bridgeville purchase at 6.5% with 20% down: the 15- versus 30-year comparison on payment, total interest and the invested difference, with Allegheny County property tax and PMI if the down payment is 10%.",
+    "A 1-point refinance breakeven: $4,800 of closing costs against a 1% rate cut on a $320,000 balance, held five, ten and thirty years.",
+    "Rent versus buy for the same house against a $2,400 monthly rent, with the down payment invested at a 60/40 expected return and a 3% home-price assumption, over seven years.",
+    "Prepaying $500 a month on a 6.5% mortgage versus investing it in a taxable account at the 24% bracket, over the loan's life."
    ],
    "prerequisites": {
     "year1": [
      35,
-     50,
-     56,
-     118
+     40,
+     45,
+     82
     ],
     "year2": [
      223
@@ -11690,18 +11690,18 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 68,
-    "subject": "Accounting",
-    "topic": "Working capital"
+    "day": 24,
+    "subject": "Mathematics",
+    "topic": "Sequences and series"
    },
    "sources": [
-    "Federal Reserve Board, Economic Well-Being of U.S. Households (SHED), latest annual report",
-    "IRC §72(t)(2)(I) (emergency personal expense distributions) and §402A(e) (pension-linked emergency savings accounts), as added by SECURE 2.0 Act of 2022 §§115 and 127; IRC §72(p) plan loans; §408A(d)(4) Roth ordering rules",
-    "TreasuryDirect, Series I savings bond composite rate announcements; Treasury auction results for 13-week bills",
-    "Rejda, G. and McNamara, M., Principles of Risk Management and Insurance, 14th ed. (Pearson), the risk-retention and self-insurance chapters"
+    "Freddie Mac Primary Mortgage Market Survey and Fannie Mae Selling Guide (ARM, PMI cancellation rules under the Homeowners Protection Act)",
+    "IRS Publication 936, Home Mortgage Interest Deduction, and the 2025 Act's permanent $750,000 limit",
+    "Consumer Financial Protection Bureau, Ability-to-Repay/Qualified Mortgage rule and the ARM disclosure requirements",
+    "Dalton, M. and Dalton, J., Fundamentals of Financial Planning (current edition), housing chapter"
    ],
    "depth": "practitioner",
-   "exam_map": "CFP Principal Knowledge Domain B, General Principles of Financial Planning (cash flow management; emergency fund) and Domain C (risk retention as a risk-management technique)",
+   "exam_map": "CFP Principal Knowledge Domain B, General Principles of Financial Planning — housing and debt decisions",
    "block": 12,
    "day_in_block": 4
   },
@@ -11888,9 +11888,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 94,
-    "subject": "Finance",
-    "topic": "Options: payoffs and parity"
+    "day": 44,
+    "subject": "Mathematics",
+    "topic": "Counting, conditional probability, Bayes"
    },
    "sources": [
     "IRC §7702 (as amended by the Consolidated Appropriations Act, 2021, Div. EE §205), §7702A, §101(a), §72(e), §1035, §101(j), §264",
@@ -12107,6 +12107,57 @@
    "day": 233,
    "subject": "Wealth Management",
    "position": "13 of 40",
+   "topic": "The marginal rate stack: brackets, the capital-gains schedule, NIIT, the AMT crossover, IRMAA cliffs and phase-outs, and bunching against the standard deduction",
+   "headline_hint": "The tax rate on your next dollar is almost never the one in the table",
+   "focus": "The planner's map of the individual income tax, assuming the statutory computation Accounting II taught: how the ordinary brackets, the 0/15/20% gain and qualified-dividend schedule, the 3.8% net investment income tax, the AMT crossover, the IRMAA cliffs, the credit and deduction phase-outs and Pennsylvania's flat 3.07% combine into an effective marginal rate on the next dollar — a curve with spikes the tables never show — and the planning that follows from it: bunching deductions against the standard deduction, timing income and gains, and the Roth-versus-traditional question stated as a comparison of that marginal rate now and later (the conversion arithmetic itself is Wealth Management II's).",
+   "parts": [
+    "The stack: how ordinary income, gains and qualified dividends sit on top of each other at the run-year figures",
+    "The surtaxes and the cliffs: NIIT, IRMAA and the phase-outs that create marginal rates the tables never show",
+    "The AMT crossover after the 2025 Act: when it bites and what income does it",
+    "Pennsylvania and the local earned-income tax: the state layer on the same dollar",
+    "The effective marginal rate curve drawn, and the decisions it changes: timing income, harvesting gains, filling brackets",
+    "Bunching: the standard deduction, donor-advised funds and the two-year cadence"
+   ],
+   "worked_examples": [
+    "A Bridgeville married couple at $180,000 of wages plus $40,000 of long-term gains: the effective marginal rate on the next $10,000 of Roth conversion, computed with the gain stack, NIIT and the child-credit phase-out.",
+    "The Hartwells' effective marginal rate curve from $200,000 to $450,000 of AGI at the run-year figures: where the 24% bracket, the 20% gain rate, NIIT and the IRMAA tiers each switch on.",
+    "Bunching $8,000 of annual giving into $16,000 every other year through a donor-advised fund against the run-year standard deduction: the two-year tax saved.",
+    "An ISO exercise sized to the AMT crossover: the largest exercise in the run year that adds no AMT."
+   ],
+   "prerequisites": {
+    "year1": [
+     11,
+     35,
+     60,
+     82
+    ],
+    "year2": [
+     223,
+     225,
+     231
+    ]
+   },
+   "connect_back": {
+    "year": 1,
+    "day": 11,
+    "subject": "Mathematics",
+    "topic": "Derivatives"
+   },
+   "sources": [
+    "IRC §1, §1(h), §§55–59, §63, §164(b)(6), §1411; Rev. Proc. 2025-32 (2026 inflation adjustments)",
+    "Form 1040 instructions, Qualified Dividends and Capital Gain Tax Worksheet; Form 6251 and Form 8960 instructions",
+    "SSA, Medicare Part B and Part D IRMAA brackets for the run year",
+    "Pennsylvania Department of Revenue, PA-40 instructions; Kitces, M., \"Understanding Marginal Tax Rates\" (Nerd's Eye View)"
+   ],
+   "depth": "practitioner",
+   "exam_map": "CFP Principal Knowledge Domain E, Tax Planning — tax reduction and management techniques; marginal-rate analysis",
+   "block": 12,
+   "day_in_block": 13
+  },
+  {
+   "day": 234,
+   "subject": "Wealth Management",
+   "position": "14 of 40",
    "topic": "Asset location and tax-efficient investing",
    "headline_hint": "The same portfolio in three accounts is three different after-tax portfolios: the arithmetic of location, the government's share of a 401(k), and the fund structures that leak",
    "focus": "After-tax return as the only return that matters to a household: the tax-drag formulas for interest, qualified dividends, realised gains and deferral; the Reichenstein framework in which the government owns a fraction of every traditional-account dollar and the Roth dollar is worth more than it looks; the location decision (high-tax-cost assets in tax-deferred, equities in taxable for the 15% rate, deferral and step-up, highest expected return in Roth) with Vanguard's published range for its value; municipal bonds and the tax-equivalent yield with Pennsylvania's own exemption; and vehicle structure (ETF in-kind redemption under Rule 6c-11, mutual-fund capital-gain distributions, Morningstar's tax-cost ratio). The reader can afterwards locate the Hartwells' 60/40 across their three account types and quantify the annual gain in basis points.",
@@ -12135,7 +12186,8 @@
     ],
     "year2": [
      223,
-     224
+     224,
+     233
     ]
    },
    "connect_back": {
@@ -12153,12 +12205,12 @@
    "depth": "practitioner",
    "exam_map": "CFP Principal Knowledge Domain D, Investment Planning (characteristics, uses and taxation of investment vehicles; portfolio development) and Domain E, Tax Planning (tax reduction and management techniques)",
    "block": 12,
-   "day_in_block": 13
+   "day_in_block": 14
   },
   {
-   "day": 234,
+   "day": 235,
    "subject": "Wealth Management",
-   "position": "14 of 40",
+   "position": "15 of 40",
    "topic": "Tax-loss harvesting and direct indexing",
    "headline_hint": "A loss is worth its tax rate today minus its tax rate later: the wash-sale rule, a real 2022 harvest, and what the academic estimates of harvesting alpha really say",
    "focus": "Harvesting taken to the bottom: §1091's wash-sale rule (thirty days either side, substantially identical, IRAs and spouses per Rev. Rul. 2008-5), the netting rules of §1(h) and the $3,000 ordinary offset with indefinite carryforward, specific-identification lot selection under Reg. §1.1012-1(c), the true economics (deferral value, the rate arbitrage between short-term and long-term, the step-up or charitable exit that makes deferral permanent) and the literature (Arnott, Berkin and Ye 2001; Chaudhuri, Burnham and Lo 2020) with its assumptions exposed. Then direct indexing: separately managed accounts harvesting single names, tracking error, loss decay as basis rises, fees, and when it does not pay. Also the mirror image, gain harvesting into the 0% bracket. The reader can afterwards execute and value a harvest for the Hartwells and decide whether direct indexing is worth its fee.",
@@ -12185,14 +12237,15 @@
      139
     ],
     "year2": [
-     233
+     233,
+     234
     ]
    },
    "connect_back": {
     "year": 1,
-    "day": 35,
-    "subject": "Finance",
-    "topic": "Time value of money"
+    "day": 64,
+    "subject": "Accounting",
+    "topic": "Depreciation and amortisation"
    },
    "sources": [
     "IRC §1091, §1211, §1212, §1(h); Rev. Rul. 2008-5; Treas. Reg. §1.1012-1(c); IRS Publication 550 and the Form 8949 and Schedule D instructions",
@@ -12203,12 +12256,12 @@
    "depth": "practitioner",
    "exam_map": "CFP Principal Knowledge Domain D, Investment Planning (investment strategies; tax-efficient investing) and Domain E, Tax Planning (tax consequences of property transactions)",
    "block": 12,
-   "day_in_block": 14
+   "day_in_block": 15
   },
   {
-   "day": 235,
+   "day": 236,
    "subject": "Wealth Management",
-   "position": "15 of 40",
+   "position": "16 of 40",
    "topic": "Concentrated positions",
    "headline_hint": "Four percent of stocks created all of the market's net wealth: the case against the single stock, and eight ways out that are not simply selling",
    "focus": "The concentrated position as the commonest wealth-destroying exposure in employee households: Bessembinder's evidence on single-stock outcomes, the volatility and drawdown arithmetic versus the index, and then the exits at statute depth: staged sales and the capital-gains stacking that prices them (with NIIT and the 20% bracket), gifting appreciated shares and the 30%-of-AGI limit, donor-advised funds, charitable remainder trusts under §664 and the §7520 rate, exchange funds under §721 and the qualifying-asset requirement, collars and the constructive-sale rule of §1259, prepaid variable forwards, Rule 10b5-1 plans as amended in 2022, net unrealised appreciation under §402(e)(4), §1042 for ESOP sales and §1202 for qualified small-business stock as expanded in 2025. The reader can afterwards lay out a multi-year exit for a real position and price each route after tax.",
@@ -12237,14 +12290,15 @@
     ],
     "year2": [
      233,
-     234
+     234,
+     235
     ]
    },
    "connect_back": {
     "year": 1,
-    "day": 99,
-    "subject": "Finance",
-    "topic": "Black-Scholes and the Greeks"
+    "day": 48,
+    "subject": "Mathematics",
+    "topic": "Random variables and distributions"
    },
    "sources": [
     "Bessembinder, H., 'Do stocks outperform Treasury bills?', Journal of Financial Economics 129(3), 2018",
@@ -12255,28 +12309,28 @@
    "depth": "practitioner",
    "exam_map": "CFP Principal Knowledge Domain D, Investment Planning (investment strategies; alternative investments and liquidity risk) and Domain E, Tax Planning (tax consequences of property transactions; charitable contributions)",
    "block": 12,
-   "day_in_block": 15
+   "day_in_block": 16
   },
   {
-   "day": 236,
+   "day": 237,
    "subject": "Wealth Management",
-   "position": "16 of 40",
-   "topic": "Monte Carlo and the safe-withdrawal research",
-   "headline_hint": "The 4% rule is a 1966 artifact with a 95% confidence interval: what Bengen, Trinity and Morningstar actually measured, and how to simulate a retirement honestly",
-   "focus": "The withdrawal-rate literature read as primary research, not as a rule of thumb: Bengen's 1994 method and data, the Trinity study's success tables, Pfau's international evidence, Blanchett-Finke-Pfau on low yields, Bengen's own later revisions and Morningstar's 2025 base case of 3.9% with 5.2% under guardrails and 4.5% from a TIPS ladder. Then the machinery: parametric lognormal simulation, block bootstrap of Shiller's data, regime and valuation conditioning through CAPE, the sensitivity of success probability to the expected-return input, the magnitude of failure as a better objective than its probability, and Milevsky and Robinson's closed-form ruin probability from the reciprocal gamma distribution, derived and computed. The reader can afterwards build a defensible simulation, criticise anyone else's, and state the Hartwells' sustainable rate with its uncertainty.",
+   "position": "17 of 40",
+   "topic": "Capital-market assumptions and the simulation engine",
+   "headline_hint": "A Monte Carlo is only as honest as its inputs",
+   "focus": "The engine behind every retirement projection, taken apart: where expected returns come from (historical averages and their standard errors, building-block and valuation-conditioned estimates, the survivorship in the US record), what the return distribution actually looks like (fat tails, volatility clustering, the autocorrelation in real returns that a normal draw ignores), and the three simulation designs — parametric, bootstrapped, block-bootstrapped or regime-based — that give three different answers to the same question. The withdrawal-rate literature itself is Wealth Management II's decumulation lesson; this lesson builds the machine it will run on and shows why the expected-return input dominates everything else.",
    "parts": [
-    "Bengen 1994 and Trinity 1998: the data, the method and the worst start year they found",
-    "The historical SAFEMAX by start year, 1926 to 1995, from Shiller's data",
-    "Parametric, bootstrapped and regime-based Monte Carlo: three ways to get three different answers",
-    "The expected return is the whole answer: sensitivity, CAPE and the case for conditioning",
-    "Ruin in closed form: the Milevsky-Robinson derivation and the number it gives",
-    "Morningstar's 3.9%, the TIPS ladder's 4.5% and what the Hartwells should take from all of it"
+    "Where the expected return comes from: the historical mean, its standard error, and why 1926 is not a law of nature",
+    "Building blocks and valuation: earnings yield, CAPE and the case for conditioning the assumption",
+    "What the distribution really looks like: fat tails, clustering, and the autocorrelation in real returns",
+    "Three engines: parametric, i.i.d. bootstrap and block bootstrap, and why they disagree",
+    "Sensitivity: the expected return is the whole answer, and what a 1% change does to a 30-year plan",
+    "Reporting a simulation honestly: success rates, shortfall magnitude and the confidence you do not have"
    ],
    "worked_examples": [
-    "Bengen's 1994 table reconstructed with Ibbotson-style data: the 30-year maximum safe rate for a 50/50 portfolio for each start year 1926-1976, with 1966's 4.15% as the binding case; the Trinity 1998 success rates for 4% and 5% at 30 years and 75/25",
-    "The distribution of 30-year SAFEMAX across start years from Shiller's monthly S&P and 10-year Treasury series with CPI, 1926-1995: median, minimum, and the 15-year real return that explains most of the variance",
-    "Milevsky and Robinson (2005): with a 3% real expected return, 12% volatility, 4% spending and an exponential remaining lifetime with median 21 years, the reciprocal-gamma parameters (alpha about 3.05, beta about 0.024) give a lifetime ruin probability near 23%; the same at 3% spending and at 8% volatility",
-    "A 10,000-path Monte Carlo for a $1.5 million portfolio spending $60,000 real: success probability at expected real returns of 2%, 3% and 4% (the last two roughly 1/CAPE at the run date), showing the probability swinging by more than 30 points on one input"
+    "The SBBI-style and Damodaran historical series (stocks, bonds, bills, 1928–2025): the arithmetic and geometric means, the standard error of the mean, and the range of 30-year averages actually observed.",
+    "A 10,000-path Monte Carlo for a $1.5 million 60/40 portfolio spending $60,000 real, run three ways — normal draws, i.i.d. bootstrap and 5-year block bootstrap from Shiller's data — and the three success rates compared.",
+    "The same plan under a CAPE-conditioned expected return one point below the historical mean: the fall in the success rate and the shortfall distribution.",
+    "Fat tails measured: the excess kurtosis of monthly S&P 500 real returns 1926–2025 and the frequency of 3-sigma months against the normal prediction."
    ],
    "prerequisites": {
     "year1": [
@@ -12284,78 +12338,25 @@
      52,
      57,
      61,
-     118,
      132,
      147
     ],
-    "year2": [
-     233
-    ]
+    "year2": []
    },
    "connect_back": {
     "year": 1,
-    "day": 132,
-    "subject": "Finance",
-    "topic": "Backtesting and its pathologies"
-   },
-   "sources": [
-    "Bengen, W., 'Determining Withdrawal Rates Using Historical Data', Journal of Financial Planning 7(4), October 1994; Cooley, P., Hubbard, C. and Walz, D., 'Retirement Savings: Choosing a Withdrawal Rate That Is Sustainable', AAII Journal, February 1998",
-    "Milevsky, M. and Robinson, C., 'A Sustainable Spending Rate without Simulation', Financial Analysts Journal 61(6), 2005",
-    "Morningstar, The State of Retirement Income 2025; Blanchett, D., Finke, M. and Pfau, W., 'Low Bond Yields and Safe Portfolio Withdrawal Rates', Journal of Wealth Management 16(2), 2013",
-    "Shiller, R., online U.S. stock market data (monthly, 1871-present) accompanying Irrational Exuberance, 3rd ed. (Princeton, 2015)"
-   ],
-   "depth": "graduate",
-   "exam_map": "CFP Principal Knowledge Domain F, Retirement Savings and Income Planning (retirement needs analysis; retirement income and distribution strategies) and Domain D (quantitative investment concepts)",
-   "block": 12,
-   "day_in_block": 16
-  },
-  {
-   "day": 237,
-   "subject": "Wealth Management",
-   "position": "17 of 40",
-   "topic": "Sequence-of-returns risk and dynamic withdrawal policies",
-   "headline_hint": "Two retirees with identical average returns and half a million dollars between them: the path-dependence of withdrawals, and the spending rules that trade certainty for survival",
-   "focus": "Sequence risk formalised: the terminal-wealth recursion under withdrawals, why the order of returns matters only when cash flows are present, the first-decade real return as the dominant variable, the retirement red zone, and the accumulation-phase mirror. Then the dynamic policies with their rules stated exactly and tested on real data: constant-percentage, Guyton-Klinger guardrails, Vanguard's ceiling-and-floor, RMD-based spending from the Uniform Lifetime Table, Bengen's floor-and-ceiling, the rising equity glidepath of Pfau and Kitces, bucket strategies and Estrada's critique, and the non-portfolio hedges (delaying Social Security, paying off the mortgage, partial annuitisation, previewed for block 2). The reader can afterwards run the 2000 retiree through each rule with actual returns and explain the trade each rule makes.",
-   "parts": [
-    "The recursion: why order matters once money is moving, and the accumulation mirror",
-    "The 2000 retiree and the 2009 retiree: identical decades on average, opposite outcomes",
-    "The first ten years decide: Kitces's correlation and the retirement red zone",
-    "Guardrails, ceilings and floors: Guyton-Klinger and Vanguard's rules applied to real history",
-    "RMD-based, floor-and-ceiling and the rising equity glidepath",
-    "What the Hartwells' plan should say about sequence, thirty years before they retire"
-   ],
-   "worked_examples": [
-    "A $1 million 60/40 portfolio withdrawing $40,000 real from January 2000 versus from March 2009, using annual S&P 500 total returns, 10-year Treasury returns and CPI from Damodaran's historical series: the 2000 retiree's real balance after 25 years against the 2009 retiree's, with the average annual return of each 25-year window shown to be within a point",
-    "The same 2000 retiree under Guyton-Klinger: the capital-preservation cut triggered in 2003 and 2009 (withdrawal rate 20% above initial), the prosperity-rule raises, the inflation-rule skips, and the terminal wealth against the constant-real-dollar rule",
-    "Kitces (2008): the correlation of the 30-year safe withdrawal rate with the first 15 years' real return (about 0.91) reproduced from Shiller's data, and the corresponding weakness of the 30-year average return as a predictor",
-    "The Pfau-Kitces rising glidepath (30% equity at retirement rising to 60% over 30 years) versus a static 60/40 for the 1966 and 2000 start years, and the RMD-based rule's first-year spending at age 72 from the Uniform Lifetime Table (1/27.4, 3.65%)"
-   ],
-   "prerequisites": {
-    "year1": [
-     24,
-     40,
-     59,
-     139,
-     147
-    ],
-    "year2": [
-     236
-    ]
-   },
-   "connect_back": {
-    "year": 1,
-    "day": 24,
+    "day": 61,
     "subject": "Mathematics",
-    "topic": "Sequences and series"
+    "topic": "Estimation, confidence, hypothesis testing"
    },
    "sources": [
-    "Guyton, J. and Klinger, W., 'Decision Rules and Maximum Initial Withdrawal Rates', Journal of Financial Planning 19(3), 2006",
-    "Pfau, W. and Kitces, M., 'Reducing Retirement Risk with a Rising Equity Glide Path', Journal of Financial Planning 27(1), 2014; Kitces, M., 'Understanding Sequence of Return Risk and Safe Withdrawal Rates', The Kitces Report, 2008",
-    "Estrada, J., 'The Bucket Approach for Retirement: A Suboptimal Behavioral Trick?', Journal of Wealth Management 21(4), 2019; Vanguard Research, 'From assets to income: A goals-based approach to retirement spending'",
-    "Damodaran, A., 'Historical Returns on Stocks, Bonds and Bills: 1928-present' (NYU Stern data page); Treas. Reg. §1.401(a)(9)-9 (Uniform Lifetime Table)"
+    "Damodaran, A., 'Historical Returns on Stocks, Bonds and Bills: 1928–present' (annual data page)",
+    "Shiller, R., online U.S. stock market data (monthly, 1871–present)",
+    "Pfau, W., 'Capital Market Expectations, Asset Allocation, and Safe Withdrawal Rates', Journal of Financial Planning (2012)",
+    "Politis, D. and Romano, J., 'The Stationary Bootstrap', Journal of the American Statistical Association 89 (1994)"
    ],
    "depth": "graduate",
-   "exam_map": "CFP Principal Knowledge Domain F, Retirement Savings and Income Planning (retirement income and distribution strategies) and Domain D, Investment Planning (types of investment risk)",
+   "exam_map": "CFP Principal Knowledge Domain D, Investment Planning — capital-market assumptions and Monte Carlo analysis",
    "block": 12,
    "day_in_block": 17
   },
@@ -12363,51 +12364,49 @@
    "day": 238,
    "subject": "Wealth Management",
    "position": "18 of 40",
-   "topic": "The individual income tax at depth: brackets, capital gains, NIIT and the AMT",
-   "headline_hint": "One household, three tax systems: the Form 1040 walked from gross income to the check, then the capital-gains stack and the alternative minimum tax computed by hand",
-   "focus": "The federal individual income tax as a machine, at the run year's figures: gross income, above-the-line adjustments, AGI, the standard deduction versus itemized after the 2025 law (the $40,400 SALT cap with its phase-down, the permanent $750,000 mortgage limit, the 0.5% charitable floor, the 2/37 limitation for the top bracket), §199A for Marcus's S-corporation, the ordinary brackets, the capital-gains stack at 0/15/20 with the worksheet done by hand, §1250 and collectibles, the child tax credit and its phase-out, the net investment income tax and additional Medicare tax, and the AMT with its 2026 exemption, 50% phase-out, 26/28 rates and preference items. The lesson maps the household's effective marginal rate across income, including cliffs, and finishes with withholding and the §6654 safe harbours. The reader can afterwards compute the Hartwells' federal and Pennsylvania liability from the primary tables and identify every threshold they are near.",
+   "topic": "Goals-based investing and the household investment policy statement",
+   "headline_hint": "Risk capacity is arithmetic; risk tolerance is a feeling; the IPS is where they meet",
+   "focus": "The household's investment policy statement built from goals rather than from a single risk score: risk capacity (the arithmetic of what the plan can survive) against risk tolerance (the psychometric result from the psychology lesson) against risk need (what the goals require); mental accounting made rigorous in Brunel's goals-based framework and Chhabra's buckets; the liability-relative view in which each goal is a liability with a date and a discount rate; the rebalancing policy, the ranges and the tax-aware rules; and what the document must say about drawdowns before one happens. Sequence risk and dynamic withdrawal policies are Wealth Management II's; this lesson writes the policy those rules will live in.",
    "parts": [
-    "The architecture of Form 1040: what is income, what comes off above the line, and why AGI is the number everything keys on",
-    "Deductions after 2025: standard versus itemized, the SALT cap and phase-down, the charitable floor and the 2/37 haircut",
-    "§199A for a pass-through owner: the 20% deduction, the thresholds and the specified-service question",
-    "The ordinary brackets and the capital-gains stack: the worksheet by hand",
-    "NIIT, additional Medicare tax, the credit phase-outs and Pennsylvania's flat 3.07%: the true marginal rate curve",
-    "The alternative minimum tax: exemption, phase-out, preferences and the credit that comes back"
+    "Three numbers, not one: risk capacity, risk tolerance and risk need, and what to do when they disagree",
+    "Goals as liabilities: dates, discount rates and the funded ratio of a household",
+    "Brunel and Chhabra: mental accounting that helps, and where the buckets break",
+    "From goals to an allocation: the policy portfolio, the ranges and the rebalancing rule",
+    "The tax-aware and location-aware IPS: what changes when the accounts are not one account",
+    "Writing the drawdown clause: what the document says in March 2020 so that nobody has to decide then"
    ],
    "worked_examples": [
-    "The Hartwells' 2026 return computed line by line: W-2 wages $244,000, S-corporation K-1 $40,000, interest and dividends $6,000, long-term gains $12,000, Dana's $20,000 401(k) deferral and the $8,750 HSA: AGI $273,250, taxable income $241,050 after the $32,200 standard deduction, ordinary tax about $41,600 from the 2026 brackets with $16,000 of preferential income stacked at 15%, child tax credits $4,400, NIIT about $684 on the excess over $250,000, net federal about $37,900; Pennsylvania at 3.07% on about $293,000 (no deduction for the 401(k) deferral) about $9,000",
-    "The capital-gains worksheet by hand for a couple with $80,000 of ordinary taxable income and $40,000 of long-term gains: $18,900 taxed at 0% up to the 2026 $98,900 threshold and $21,100 at 15%, and the marginal rate on the next dollar of wages (12% plus the 15% it pushes off the 0% shelf, 27%)",
-    "A $600,000 MFJ itemizer in 2026 with $40,400 of SALT (phase-down begins at $505,000 MAGI), $30,000 of mortgage interest and $20,000 of charity: regular tax versus tentative minimum tax with the $140,200 exemption intact below the $1,000,000 phase-out, the 28% rate above $244,500 of AMTI, and whether AMT applies",
-    "The Hartwells' effective marginal rate curve from $200,000 to $450,000 of AGI: the 24% bracket, the NIIT switching on at $250,000, the Roth phase-out at $242,000-$252,000, the child credit phase-out at $400,000, and the §6654 110%-of-prior-year safe harbour for their estimated payments"
+    "The Hartwells' three goals — retirement at 65, two college bills, a house move — priced as liabilities at goal-appropriate discount rates, and the household funded ratio computed.",
+    "A goals-based allocation for the same household versus a single 70/30 portfolio: the difference in expected shortfall on the essential goal.",
+    "A rebalancing policy tested on 2008–09 and 2020: calendar versus 5/25 ranges, and the turnover and tax cost of each.",
+    "An investment policy statement for the Hartwells drafted clause by clause, with the drawdown clause written and then read against the March 2020 sequence."
    ],
    "prerequisites": {
     "year1": [
-     11,
-     35,
-     60,
-     82
+     59,
+     62,
+     139,
+     147
     ],
     "year2": [
-     223,
-     225,
-     231,
-     233
+     222,
+     237
     ]
    },
    "connect_back": {
     "year": 1,
-    "day": 60,
-    "subject": "Economics",
-    "topic": "Fiscal policy and government debt"
+    "day": 52,
+    "subject": "Mathematics",
+    "topic": "Expectation, variance, covariance"
    },
    "sources": [
-    "IRC §1, §1(h), §55-59, §63, §68 as amended, §164(b)(6), §199A, §1411, §3101(b)(2), §6654; P.L. 119-21 (2025)",
-    "Rev. Proc. 2025-32 (2026 inflation adjustments: brackets, standard deduction, AMT, capital-gains thresholds) and IRS Publication 17, Your Federal Income Tax",
-    "Form 1040 instructions (Qualified Dividends and Capital Gain Tax Worksheet) and Form 6251 and Form 8960 instructions for the run year",
-    "Pennsylvania Department of Revenue, PA-40 instructions and Personal Income Tax Guide (compensation; retirement contributions); Pennsylvania Act 32 local earned income tax"
+    "Brunel, J., Goals-Based Wealth Management (Wiley, 2015)",
+    "Chhabra, A., 'Beyond Markowitz: A Comprehensive Wealth Allocation Framework for Individual Investors', Journal of Wealth Management (2005)",
+    "CFA Institute, Investment Policy Statement guidance for individual investors (Level III curriculum reading)",
+    "Vanguard Research, 'Best practices for portfolio rebalancing' (current edition)"
    ],
-   "depth": "professional-exam",
-   "exam_map": "CFP Principal Knowledge Domain E, Tax Planning (income tax fundamentals and calculations; fundamental and current tax law; alternative minimum tax; characteristics and income taxation of business entities)",
+   "depth": "practitioner",
+   "exam_map": "CFP Principal Knowledge Domain D, Investment Planning — investment policy statements, asset allocation and portfolio development",
    "block": 12,
    "day_in_block": 18
   },
@@ -12415,16 +12414,16 @@
    "day": 239,
    "subject": "Wealth Management",
    "position": "19 of 40",
-   "topic": "Employee benefits and equity compensation",
+   "topic": "Equity compensation and the non-retirement benefits: RSUs, ISOs, NSOs, ESPPs, §83(b), §409A, §125 and §79",
    "headline_hint": "Paid in paper: RSUs, options, purchase plans and deferred compensation taxed event by event, with the withholding trap, the AMT trap and the option-value trap",
-   "focus": "Equity compensation at statute depth: restricted stock and RSUs under §83 with the supplemental-withholding shortfall, the §83(b) election and its 30-day rule, incentive stock options under §422 (the $100,000 rule, qualifying and disqualifying dispositions, the AMT preference and the AMT credit), non-qualified options and the early-exercise decision as an option-value question using year one's Black-Scholes, §423 employee stock purchase plans with the lookback and the $25,000 limit, and non-qualified deferred compensation under §409A and §3121(v)(2). Then the rest of the benefits package: §125 cafeteria plans, health and dependent-care FSAs at the run year's limits, group term, employer student-loan assistance under §127, Roth matching and the mandatory Roth catch-up for higher earners from 2026, and after-tax contributions to the §415(c) limit. The reader can afterwards tax any grant on any date, decide when to exercise, and read Dana's total compensation statement as a planner.",
+   "focus": "Equity compensation at statute depth: restricted stock and RSUs under §83 with the supplemental-withholding shortfall, the §83(b) election and its 30-day rule, incentive stock options under §422 (the $100,000 rule, qualifying and disqualifying dispositions, the AMT preference and the AMT credit), non-qualified options and the early-exercise decision as an option-value question using year one's Black-Scholes, §423 employee stock purchase plans with the lookback and the $25,000 limit, and non-qualified deferred compensation under §409A and §3121(v)(2). Then the rest of the benefits package: §125 cafeteria plans, health and dependent-care FSAs at the run year's limits, group term, employer student-loan assistance under §127, Roth matching and the mandatory Roth catch-up for higher earners from 2026, and after-tax contributions to the §415(c) limit. The reader can afterwards tax any grant on any date, decide when to exercise, and read Dana's total compensation statement as a planner. Qualified retirement plans are Wealth Management II's rulebook lesson and are not repeated here; this lesson owns equity compensation and the rest of the benefits package.",
    "parts": [
     "§83 and the RSU: taxed at vest, withheld at 22%, and the April surprise for a 32% earner",
     "Restricted stock and the §83(b) election: thirty days, no extensions, and the bet you are making",
     "Incentive stock options: qualifying dispositions, the AMT preference and the credit that returns",
     "Non-qualified options and the question of when: time value, the Greeks and the taxes",
     "The §423 purchase plan: lookback, the $25,000 limit and the two holding periods",
-    "Deferred compensation and the rest of the package: §409A, FSAs, §127 and the Roth catch-up rule"
+    "The rest of the package: §409A deferred compensation, §125 cafeteria plans and FSAs, §127 education assistance, and group term life under §79"
    ],
    "worked_examples": [
     "Dana's grant of 400 RSUs in PPG Industries (NYSE: PPG) vesting 25 a quarter: the 100 shares that vest on a stated date in the run year at PPG's close that day, withheld at the 22% supplemental rate though her marginal rate is 24% federal plus 3.07% Pennsylvania, the sell-to-cover share count, the basis and holding period established at vest, and the underwithholding to fix on Form W-4",
@@ -12443,7 +12442,7 @@
     ],
     "year2": [
      231,
-     238
+     233
     ]
    },
    "connect_back": {
@@ -12467,55 +12466,55 @@
    "day": 240,
    "subject": "Wealth Management",
    "position": "20 of 40",
-   "topic": "Roth versus traditional, charitable strategies and bunching: the integrated year",
-   "headline_hint": "The whole household in one tax year: every dollar of savings ordered, the Roth question settled by arithmetic, the gifts bunched under the new floor, and the liability stated before and after",
-   "focus": "The capstone integrates the block into one plan. Roth versus traditional is done as the commutative-property argument with its real exceptions (the limit asymmetry, tax diversification, the marginal rate on withdrawals once Social Security and Medicare premiums are in the picture, and Pennsylvania's refusal to deduct deferrals while exempting retirement distributions), the backdoor Roth with the pro-rata rule and Form 8606, conversions filled to the top of a target bracket, and the 2026 Roth-catch-up and Roth-match rules. Charitable planning is done under the 2025 law: the 0.5%-of-AGI floor, the 35% value cap, the non-itemizer deduction, appreciated-stock gifts and the 30% limit, donor-advised-fund bunching, and qualified charitable distributions at the 2026 $111,000 limit for the Hartwells' parents. The lesson closes by ordering the Hartwells' $70,000 of savings capacity across every account in the block and stating the household's liability before and after, with the limits cited to the revenue procedure for the run year.",
+   "topic": "The household balance sheet: human capital, home equity, the lifecycle model and the integrated net-worth statement",
+   "headline_hint": "The biggest asset on a 35-year-old's balance sheet is one no bank will lend against",
+   "focus": "The block's capstone: the household as a balance sheet that includes what the accounts leave out. Human capital as the present value of future labour income, discounted at a rate that reflects its own risk and its correlation with the market (Bodie, Merton and Samuelson); why that asset argues for more equity when young and for insurance against its loss; home equity and the mortgage as a levered real-asset position; the lifecycle model of consumption and saving and what it says the savings rate should be at each age; and the integrated net-worth statement in which the goals from the IPS lesson are liabilities. Then the decisions that only look right on that balance sheet: mortgage-versus-invest, how much life and disability insurance human capital requires, and the equity share by age. Roth conversions and charitable vehicles are Wealth Management II's.",
    "parts": [
-    "The commutative property and its exceptions: when Roth wins, when traditional wins, and why the answer is usually both",
-    "Pennsylvania changes the answer: a state that taxes the contribution and exempts the withdrawal",
-    "The backdoor, the pro-rata rule and the conversion filled to the bracket top",
-    "Charity after 2025: the floor, the cap, the non-itemizer deduction and gifts of appreciated stock",
-    "Bunching through a donor-advised fund, and the qualified charitable distribution for the older generation",
-    "The Hartwells' integrated year: seventy thousand dollars ordered across every account in the block"
+    "Human capital: pricing thirty years of paychecks, and the discount rate that reflects whose paychecks they are",
+    "Bodie, Merton and Samuelson: why the young should hold more equity, and when they should not",
+    "Home equity and the mortgage: the levered real-asset position most households never analyse as one",
+    "The lifecycle model: consumption smoothing, the savings rate by age, and what the evidence says people actually do",
+    "The integrated statement: assets, liabilities, goals-as-liabilities and the household funded ratio",
+    "The decisions that only look right on this balance sheet: insurance sizing, the equity share, mortgage versus invest"
    ],
    "worked_examples": [
-    "Dana's $20,000 deferral as traditional at a 24% federal rate versus Roth, withdrawn at 22% and at 24% in 25 years at 6%, with Pennsylvania's 3.07% applied to the contribution in both cases and to neither withdrawal; then the limit asymmetry: a full $24,500 Roth deferral against a $24,500 traditional deferral plus the $5,880 of tax saved invested in a taxable account",
-    "The backdoor Roth for both spouses at the 2026 $7,500 limit, blocked by Marcus's $95,000 SEP-IRA under the §408(d)(2) pro-rata rule: the taxable fraction of a $7,500 conversion with the SEP in place (about 92.7%) versus after rolling the SEP into a solo 401(k), on Form 8606",
-    "The Hartwells' $8,000 of annual giving under the 2026 rules: the 0.5%-of-AGI floor ($1,366 on $273,250) reduces the deductible gift to $6,634; three years bunched into a donor-advised fund funded with $24,000 of PPG shares carrying a $9,000 basis, deducting fair value, avoiding $15,000 of gain, and itemizing $46,000 against the $32,200 standard deduction; Dana's parents' $20,000 qualified charitable distribution against the $111,000 2026 limit",
-    "The integrated plan: $70,000 of capacity ordered as the 401(k) to the match, the family HSA ($8,750), the PA 529 ($19,000 per beneficiary per spouse deductible at 3.07%), the 401(k) to the $24,500 limit, two backdoor Roths, the donor-advised fund and the taxable account; federal, NIIT and Pennsylvania liability before and after, the effective marginal rate at the end, and whether AGI lands below the $250,000 NIIT threshold"
+    "The Hartwells' human capital: Dana's and Marcus's expected earnings to 65, discounted at wage-growth-adjusted rates that differ because one income is bond-like and the other equity-like, and the total set against their $400,000 of financial assets.",
+    "The integrated net-worth statement for the same household: house at market less the mortgage, financial assets by account, human capital, and the three goals as liabilities, with the funded ratio.",
+    "The equity share by age implied by the human-capital argument for the Hartwells, against the target-date fund glidepath they are actually in.",
+    "Mortgage-versus-invest on the integrated balance sheet: the after-tax mortgage rate against the expected return of the marginal dollar, and how the answer changes when human capital is bond-like."
    ],
    "prerequisites": {
     "year1": [
      35,
-     69,
-     82,
+     59,
+     62,
+     66,
      147
     ],
     "year2": [
      223,
      224,
-     225,
-     231,
+     227,
+     229,
      233,
      234,
-     238,
-     239
+     238
     ]
    },
    "connect_back": {
     "year": 1,
-    "day": 69,
-    "subject": "Mathematics",
-    "topic": "Gradients and multivariable optimization"
+    "day": 12,
+    "subject": "Accounting",
+    "topic": "The balance sheet"
    },
    "sources": [
-    "IRC §408A, §408(d)(2), §402A, §414(v)(7) (Roth catch-up), §170(b), §170(p) (non-itemizer deduction) and §68 as amended by P.L. 119-21; §408(d)(8) (qualified charitable distributions); IRS Publications 590-A, 590-B and 526; Form 8606 instructions",
-    "Rev. Proc. 2025-32 and IRS Notice 2025-67 (2026 limits: standard deduction $32,200 MFJ, IRA $7,500, 401(k) $24,500, QCD $111,000, gift exclusion $19,000)",
-    "Reichenstein, W., 'Tax-Efficient Sequencing of Accounts to Tap in Retirement', Journal of Financial Planning, 2006; Kitces, M., 'The Taxation of Roth Conversions and the Commutative Property' (Nerd's Eye View)",
-    "Pennsylvania Department of Revenue, Personal Income Tax Guide, Chapter 7 (Gross Compensation: retirement plan contributions and distributions)"
+    "Bodie, Z., Merton, R. and Samuelson, W., 'Labor Supply Flexibility and Portfolio Choice in a Life Cycle Model', Journal of Economic Dynamics and Control 16 (1992)",
+    "Ibbotson, R., Milevsky, M., Chen, P. and Zhu, K., Lifetime Financial Advice: Human Capital, Asset Allocation, and Insurance (CFA Institute Research Foundation, 2007)",
+    "Modigliani, F. and Brumberg, R., the life-cycle hypothesis (1954), as presented in Deaton, Understanding Consumption (1992)",
+    "Merton, R., \"Optimum Consumption and Portfolio Rules in a Continuous-Time Model\", Journal of Economic Theory 3 (1971)"
    ],
-   "depth": "practitioner",
-   "exam_map": "CFP Principal Knowledge Domain E, Tax Planning (tax reduction and management techniques; charitable and philanthropic contributions and deductions) and Domain F (Roth versus traditional retirement savings)",
+   "depth": "graduate",
+   "exam_map": "CFP Principal Knowledge Domain B, General Principles of Financial Planning — personal financial statements and the household as a balance sheet",
    "block": 12,
    "day_in_block": 20
   },
@@ -12599,9 +12598,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 40,
-    "subject": "Finance",
-    "topic": "Returns and compounding"
+    "day": 1,
+    "subject": "Mathematics",
+    "topic": "Algebra and functions"
    },
    "sources": [
     "IRC §§72(t), 402(c), 402(e)(4), 408(d), 408A; Treas. Reg. §1.408A-6",
@@ -12789,9 +12788,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 50,
-    "subject": "Finance",
-    "topic": "Bonds and duration"
+    "day": 52,
+    "subject": "Mathematics",
+    "topic": "Expectation, variance, covariance"
    },
    "sources": [
     "IRC §§72, 401(a)(11), 417(e)(3), 430; ERISA Title IV; IRS notices on the applicable mortality table and monthly segment rates for the run year",
@@ -12810,7 +12809,7 @@
    "position": "27 of 40",
    "topic": "Decumulation: the withdrawal-rate literature and sequence risk",
    "headline_hint": "Four percent, three point seven, or none of the above: thirty years of arguing about how much to spend",
-   "focus": "The research on turning a portfolio into income, read paper by paper and re-run on the data: Bengen's 1994 SAFEMAX, the Trinity study and its updates, Pfau's international evidence, Blanchett's spending smile and Morningstar's annual safe-withdrawal estimate, Guyton-Klinger guardrails and Kitces' ratchet, the Scott-Sharpe-Watson critique, Merton's 'crisis', Milevsky-Robinson's ruin probability in closed form, the Waring-Siegel annually-recalculated annuity, bucket, total-return and floor-and-upside architectures, and the RMD rule. Sequence risk shown on Shiller's data for the 1966 and 2000 retirees; Monte Carlo and its return assumptions; then the tax layer — withdrawal ordering after Cook-Meyer-Reichenstein, bracket-filling, conversions in the gap years, and home equity as the last reserve. The reader can build and defend a spending policy.",
+   "focus": "The research on turning a portfolio into income, read paper by paper and re-run on the data: Bengen's 1994 SAFEMAX, the Trinity study and its updates, Pfau's international evidence, Blanchett's spending smile and Morningstar's annual safe-withdrawal estimate, Guyton-Klinger guardrails and Kitces' ratchet, the Scott-Sharpe-Watson critique, Merton's 'crisis', Milevsky-Robinson's ruin probability in closed form, the Waring-Siegel annually-recalculated annuity, bucket, total-return and floor-and-upside architectures, and the RMD rule. Sequence risk shown on Shiller's data for the 1966 and 2000 retirees; Monte Carlo and its return assumptions; then the tax layer — withdrawal ordering after Cook-Meyer-Reichenstein, bracket-filling, conversions in the gap years, and home equity as the last reserve. The reader can build and defend a spending policy. The simulation engine and the household investment policy statement were Wealth Management I's last lessons and are assumed, not rebuilt; this lesson runs the withdrawal research on that engine and writes the rules into that policy.",
    "parts": [
     "Bengen, Trinity and the birth of the four percent rule — replicated on Shiller's data",
     "Sequence risk in numbers: the 1966 and 2000 retirees, and why average return is the wrong statistic",
@@ -12861,22 +12860,22 @@
    "day": 248,
    "subject": "Wealth Management",
    "position": "28 of 40",
-   "topic": "Long-term care and the insurance ledger of retirement",
-   "headline_hint": "The one-in-two risk nobody prices: paying for care when the market is not the problem",
-   "focus": "The non-market risks of retirement, each with its probability and its price. Long-term care: the ASPE incidence and duration data, the CareScout cost-of-care medians for Pittsburgh and the nation, traditional policies and their pricing (elimination period, benefit period, inflation rider, §7702B tax treatment and the run-year §213(d)(10) deductibility bands), hybrid life/LTC contracts, Partnership policies, self-insurance done as a probability tree, and Medicaid in Pennsylvania — the asset limit, the sixty-month lookback, the community-spouse allowances and compliant annuities. Then the rest of the ledger: longevity risk from the SOA tables, life insurance in retirement and pension maximisation, umbrella liability and property, and the Society of Actuaries' post-retirement risk framework. The reader can write the risk page of a plan with numbers on every line.",
+   "topic": "Funding the last decade: self-insurance versus the policy, Medicaid eligibility and the five-year look-back, spend-down, Pennsylvania estate recovery, and the annuity strategies that survive them",
+   "headline_hint": "The state is everyone's long-term care insurer of last resort, on terms almost nobody has read",
+   "focus": "Wealth Management I taught the long-term care product and its pricing; this lesson is the funding decision in retirement. The probability tree of needing care and for how long, priced against self-insurance from the portfolio, the traditional policy and the hybrid; Medicaid as the default plan — the countable-asset limits, the five-year look-back and the penalty divisor, the community-spouse allowances, spend-down that is legal and spend-down that is not, and Pennsylvania's estate-recovery rules; the annuity and trust strategies that survive scrutiny (Medicaid-compliant annuities, the irrevocable trust five years out) and the ones that do not; and the longevity side of the same ledger — pension maximisation and the mortality tables the plan should use.",
    "parts": [
-    "The incidence and cost of care: ASPE's 56% and CareScout's medians, Pittsburgh included",
-    "Traditional long-term care insurance: pricing the contract and the §7702B tax treatment",
-    "Hybrids, Partnership policies and the self-insurance probability tree",
-    "Medicaid as the insurer of last resort: Pennsylvania's limits, the lookback and the community spouse",
-    "Longevity, life insurance and pension maximisation: the SOA tables in the plan",
-    "Liability, property and the retirement risk matrix: the rest of the ledger"
+    "The decision tree: incidence, duration and cost, priced as self-insurance, policy or hybrid",
+    "Medicaid as the insurer of last resort: countable assets, the look-back, the penalty divisor and the community spouse",
+    "Pennsylvania's rules: spend-down, the sole-use trust, estate recovery and what the Department of Human Services actually claims",
+    "Strategies that survive: Medicaid-compliant annuities, the five-years-out trust, and the ones the case law has killed",
+    "Longevity on the same ledger: pension maximisation, life insurance and the SOA tables in the plan",
+    "Writing the care plan: who decides, what triggers it, and the money that funds it"
    ],
    "worked_examples": [
-    "A 60-year-old couple choosing between a traditional $200-a-day, three-year, 3% compound policy each at roughly $3,800 a year, a $120,000 single-premium hybrid, and self-insuring: expected cost from ASPE's incidence and duration distribution at CareScout's 2024 medians ($127,750 private nursing room, $70,800 assisted living, $77,792 home health aide), inflated at 4%.",
-    "A Pennsylvania couple with $420,000 of countable assets when one spouse enters a nursing home: the run-year community spouse resource allowance (2025 maximum $157,920), the spend-down, and a Medicaid-compliant annuity's arithmetic.",
-    "Pension maximisation for a 64-year-old: single-life $4,100 a month against joint-and-100% $3,560, the $540 difference funding a $450,000 20-year term policy at a quoted premium — when it works and when it fails at 84.",
-    "The probability that at least one of a 65-year-old couple reaches 90 from the SOA RP-2014 tables with MP-2021 improvement, and the reserve that implies at a 3.5% withdrawal rate."
+    "Genworth/CareScout Cost of Care figures for Pittsburgh (private room, assisted living, home health aide) against a $3,000-a-month hybrid policy bought at 55: the present value of each path over a three-year care episode at 80.",
+    "A Pennsylvania couple with $420,000 of countable assets when one spouse enters a nursing home: the community-spouse resource allowance, the spend-down that is permitted, and a Medicaid-compliant annuity sized to the gap.",
+    "A $250,000 gift to the children four years before an application: the penalty period computed on the run-year Pennsylvania divisor, and the cure.",
+    "Pension maximisation for a 64-year-old: the single-life $4,100 a month against joint-and-100% $3,450, and the term policy that would have to replace the difference."
    ],
    "prerequisites": {
     "year1": [
@@ -12897,13 +12896,13 @@
     "topic": "Counting, conditional probability, Bayes"
    },
    "sources": [
-    "IRC §§213(d)(10), 7702B; 42 U.S.C. §1396p (Medicaid transfers and estate recovery); 55 Pa. Code Chapter 178 (Pennsylvania resource eligibility)",
-    "ASPE, 'Long-Term Services and Supports for Older Americans: Risks and Financing' (2022 research brief); CareScout/Genworth, Cost of Care Survey (2024 and latest)",
-    "Society of Actuaries, Managing Post-Retirement Risks: Strategies for a Secure Retirement (2020 ed.); SOA RP-2014 and MP-2021 mortality tables",
-    "Brown and Finkelstein, 'The Interaction of Public and Private Insurance: Medicaid and the Long-Term Care Insurance Market', American Economic Review 98(3), 2008"
+    "42 U.S.C. §1396p (transfers of assets, estate recovery); 55 Pa. Code Chapter 178 (Medicaid resource provisions) and the Pennsylvania DHS estate-recovery program",
+    "Genworth Financial and CareScout, Cost of Care Survey (current edition)",
+    "Society of Actuaries, Managing Post-Retirement Risks: Strategies for a Secure Retirement (current edition)",
+    "Brown, J. and Finkelstein, A., 'The Interaction of Public and Private Insurance: Medicaid and the Long-Term Care Insurance Market', American Economic Review 98 (2008)"
    ],
    "depth": "practitioner",
-   "exam_map": "Risk Management and Insurance Planning — Long-term care insurance and long-term care planning; Retirement Savings and Income Planning — Eldercare and special needs planning",
+   "exam_map": "Risk Management and Insurance Planning — long-term care funding; Retirement Savings and Income Planning — retirement risks",
    "block": 13,
    "day_in_block": 8
   },
@@ -13006,22 +13005,22 @@
    "day": 251,
    "subject": "Wealth Management",
    "position": "31 of 40",
-   "topic": "Gift, estate and GST tax: the unified credit, portability and basis",
-   "headline_hint": "One tax, three doors: how the government counts what you give away, and what it forgets when you die",
-   "focus": "The federal transfer-tax system computed on its own forms. The gift tax: annual exclusion, the present-interest requirement, tuition and medical exclusions, gift-splitting, Form 709 and the tax-exclusive base; the estate tax: the gross estate section by section (§2033 through §2044, with joint property, powers and life insurance), the deductions (§§2053–2058), adjusted taxable gifts, the tentative tax, the unified credit on the run-year basic exclusion ($15,000,000 for 2026 under the 2025 Act, indexed thereafter) and the anti-clawback regulations; portability and the deceased spousal unused exclusion with the five-year late election; the generation-skipping tax with inclusion ratios and automatic allocation; and basis — §1014 step-up, §1015 carryover, the one-year rule — which decides between giving and bequeathing. Valuation closes it, with Michael Jackson's estate as the case. The reader can fill in a Form 706 and choose between a lifetime gift and a bequest in dollars.",
+   "topic": "Gift or hold? The basis step-up against the estate-tax saving, portability against a credit-shelter trust, and the annual-exclusion programme over twenty years",
+   "headline_hint": "Under a $15 million exemption, most estates should give less and die holding more",
+   "focus": "Accounting II taught the transfer-tax computation — the gross estate, Form 706 and 709, the unified credit, the GST. This lesson is the decision analysis built on it: for a given estate, whether lifetime gifts save more estate tax than they cost in forgone basis step-up under §1014; the tax-exclusive gift base against the tax-inclusive estate base; portability's DSUE against a credit-shelter trust (asset protection, GST allocation, appreciation shielded, the second step-up lost); an annual-exclusion programme compounded over twenty years; and the exemption's own path — the post-2025 $15 million indexed figure and what a future Congress could do to it. The reader can advise a $9 million estate and a $40 million one differently and say why.",
    "parts": [
-    "The gift tax: exclusions, splitting, Form 709 and the tax-exclusive base",
-    "The gross estate, section by section: §2033 to §2044",
-    "Deductions, the tentative tax and the unified credit on the run-year exclusion",
-    "Portability and the DSUE: the election, the late election and the last-deceased-spouse rule",
-    "The generation-skipping tax: skip persons, inclusion ratios and automatic allocation",
-    "Basis decides: §1014, §1015, the one-year rule and the gift-versus-bequest arithmetic"
+    "Two bases: why a gift is taxed tax-exclusive and an estate tax-inclusive, and what that is worth",
+    "The step-up against the saving: when holding low-basis assets to death beats giving them",
+    "Portability or a credit-shelter trust: the DSUE, the lost second step-up, GST and asset protection",
+    "The annual-exclusion programme: $19,000 a year to each of many, compounded over twenty years",
+    "Timing the exemption: use it or lose it, the clawback regulations, and what the law could become",
+    "A decision rule by estate size: under the exemption, near it, and well over it"
    ],
    "worked_examples": [
-    "Form 709 for a married couple giving $2,000,000 of stock to two children in 2026: two $19,000 exclusions each with splitting, $1,924,000 of taxable gifts against the $15,000,000 exclusion, and the adjusted-taxable-gift carry into the estate.",
-    "Form 706 for a $24,000,000 widow dying in 2026 whose husband died in 2022 with $8,000,000 of unused exclusion: DSUE plus her own $15,000,000, the tentative tax, the $5,945,800 unified credit plus the DSUE credit, and 40% on the remainder.",
-    "A $10,000,000 taxable gift above the exclusion against the same money left at death: $4,000,000 of tax-exclusive gift tax moves $10,000,000, while $14,000,000 at death pays $5,600,000 and moves $8,400,000 — and the §2035(b) three-year gross-up.",
-    "Estate of Michael J. Jackson, T.C. Memo 2021-48: the IRS's $161 million against the estate's $2,105 for name and likeness, the Tax Court's $4.15 million, and what a valuation report must show."
+    "A $9 million estate under the post-2025 $15 million exemption: the couple's plan with and without portability, the assets to hold for step-up, and the estate tax at the second death under three exemption scenarios.",
+    "A $40 million estate: a $10 million lifetime gift of low-basis stock against holding it — the estate tax saved, the capital-gains tax the children will pay, and the breakeven appreciation.",
+    "An annual-exclusion programme for a couple with three children and five grandchildren over twenty years at 6% growth: the wealth moved outside the estate and the tax it avoids.",
+    "Portability versus a credit-shelter trust for a $12 million couple whose assets will double: the second-death tax under each, and the basis outcome."
    ],
    "prerequisites": {
     "year1": [
@@ -13040,13 +13039,13 @@
     "topic": "Inequality and distribution"
    },
    "sources": [
-    "IRC §§2001, 2010, 2031–2058, 2501–2524, 2601–2664; Treas. Reg. §20.2010-1 (anti-clawback); Rev. Proc. 2022-32 (late portability election); Public Law 119-21 §70106 (the 2026 basic exclusion)",
-    "Stephens, Maxfield, Lind, Calfee and Smith, Federal Estate and Gift Taxation (9th ed., Thomson Reuters, updated)",
-    "IRS Form 706 and Form 709 instructions (run year); Rev. Rul. 59-60; Estate of Michael J. Jackson v. Commissioner, T.C. Memo 2021-48",
-    "McNulty and McCouch, Federal Estate and Gift Taxation in a Nutshell (9th ed., 2020)"
+    "IRC §§1014, 1015, 2010, 2505, 2631; Treas. Reg. §20.2010-1(c) (anti-clawback); P.L. 119-21 §70106 (basic exclusion amount)",
+    "IRS Form 706 and Form 709 instructions (run year)",
+    "Stephens, Maxfield, Lind, Calfee and Smith, Federal Estate and Gift Taxation (current edition)",
+    "Blattmachr, J. and Gans, M., \"The Estate Planner's Guide to Portability\" (Estate Planning journal)"
    ],
    "depth": "professional-exam",
-   "exam_map": "Estate Planning — Gift, estate, and GST tax compliance and calculation",
+   "exam_map": "Estate Planning — gift and estate planning strategies; portability and basis planning",
    "block": 13,
    "day_in_block": 11
   },
@@ -13056,14 +13055,14 @@
    "position": "32 of 40",
    "topic": "GRATs, IDGT sales, ILITs, SLATs, QPRTs and valuation discounts",
    "headline_hint": "Beating the hurdle rate: the estate freezes that turn the IRS's own interest rate into a gift",
-   "focus": "The transfer techniques that exploit §7520 and the applicable federal rates, each built from its statute and priced at the current rate (5.40% for September 2026, re-fetched for the run month). Grantor retained annuity trusts after Walton — the zeroed-out annuity, the mortality risk, rolling two-year GRATs and the reported Adelson and Zuckerberg uses; the sale to an intentionally defective grantor trust with seed gift and AFR note, and self-cancelling notes; irrevocable life insurance trusts — incidents of ownership, the three-year rule, Crummey powers and the 5-and-5 lapse; spousal lifetime access trusts and reciprocity; qualified personal residence trusts; family limited partnerships, lack-of-control and marketability discounts, §2704 and Estate of Powell. Then the honest question at a $15,000,000 exclusion: who actually needs any of this. The reader can model a GRAT or IDGT sale and say what it saves.",
+   "focus": "The transfer techniques that exploit §7520 and the applicable federal rates, each built from its statute and priced at the current rate (5.40% for September 2026, re-fetched for the run month). Grantor retained annuity trusts after Walton — the zeroed-out annuity, the mortality risk, rolling two-year GRATs and the reported Adelson and Zuckerberg uses; the sale to an intentionally defective grantor trust with seed gift and AFR note, and self-cancelling notes; irrevocable life insurance trusts — incidents of ownership, the three-year rule, Crummey powers and the 5-and-5 lapse; spousal lifetime access trusts and reciprocity; qualified personal residence trusts; family limited partnerships, lack-of-control and marketability discounts, §2704 and Estate of Powell. Then the honest question at a $15,000,000 exclusion: who actually needs any of this. The reader can model a GRAT or IDGT sale and say what it saves. The valuation-discount case law (Powell, Kelley, Holman) lives here; the business-succession lesson assumes it.",
    "parts": [
     "The hurdle: §7520, the AFRs and why every freeze is a bet against a published rate",
     "The GRAT after Walton: zeroing out, mortality risk, rolling GRATs and the famous ones",
     "The sale to an IDGT: seed gift, note at AFR, SCINs and the §2036 exposure",
     "The ILIT: §2042, the three-year rule, Crummey powers and the 5-and-5 lapse",
     "SLATs, QPRTs and the reciprocal-trust doctrine",
-    "Discounts and their limits: FLPs, §2704, Estate of Powell — and who needs a freeze at $15 million"
+    "Discounts and their limits: FLPs, §2704, Estate of Powell, Estate of Kelley and Holman — and who needs a freeze at $15 million"
    ],
    "worked_examples": [
     "A two-year zeroed-out GRAT funded with $5,000,000 of stock at a 5.40% §7520 rate: the annuity of about $2,704,000 a year from the Table B factor, a remainder near zero, and the roughly $540,000 that passes if the stock returns 12% — against nothing if it returns 4%.",
@@ -13084,9 +13083,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 94,
-    "subject": "Finance",
-    "topic": "Options: payoffs and parity"
+    "day": 24,
+    "subject": "Mathematics",
+    "topic": "Sequences and series"
    },
    "sources": [
     "IRC §§2035, 2036, 2042, 2514(e), 2702, 2704, 7520; Treas. Reg. §25.2702-3; Rev. Rul. 2026-17 (September 2026 rates) and the run-month revenue ruling",
@@ -13133,9 +13132,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 35,
-    "subject": "Finance",
-    "topic": "Time value of money"
+    "day": 18,
+    "subject": "Mathematics",
+    "topic": "Integrals and the Fundamental Theorem"
    },
    "sources": [
     "IRC §§170, 408(d)(8), 642(c), 664, 2055, 2522, 4940–4945; Treas. Reg. §§1.664-1 through 1.664-4; Public Law 119-21 (2025) charitable provisions effective 2026",
@@ -13152,22 +13151,22 @@
    "day": 254,
    "subject": "Wealth Management",
    "position": "34 of 40",
-   "topic": "State estate and inheritance taxes, and domicile: Pennsylvania in depth",
+   "topic": "State death taxes and domicile: Pennsylvania's inheritance tax in depth, the estate-tax states and their cliffs, the Florida move and domicile audits, and multi-state trust taxation",
    "headline_hint": "The 4.5% that hits a Bridgeville estate at a hundred dollars, not fifteen million",
-   "focus": "The state layer, which for a Pennsylvanian matters more than the federal one. The map for the run year: the estate-tax states with their thresholds and cliffs (New York's cliff, Massachusetts, Oregon, Washington's top rate), the inheritance-tax states, and the §2058 deduction. Then Pennsylvania's Inheritance and Estate Tax Act to the bottom: the four rates by relationship, what is exempt (spouse, charity, life insurance, retirement accounts of the under-59½, the family farm and family business exemptions), the one-year gift lookback with its $3,000 per-donee allowance, joint property, sole-use trusts, the 5% prepayment discount, REV-1500 and the nine-month deadline, and how the tax interacts with revocable trusts (it does not avoid it) and beneficiary designations. Then domicile as a plan: the factors courts use, the Pennsylvania-to-Florida move, state income tax on retirement income (Pennsylvania's exemption, the flat 3.07% and the local earned-income tax), and the residency audit. The reader can compute a Pennsylvania inheritance-tax return and advise on a change of domicile.",
+   "focus": "The state layer, which for a Pennsylvanian matters more than the federal one. The map for the run year: the estate-tax states with their thresholds and cliffs (New York's cliff, Massachusetts, Oregon, Washington's top rate), the inheritance-tax states, and the §2058 deduction. Then Pennsylvania's Inheritance and Estate Tax Act to the bottom — the four rate classes, the exemptions, the one-year look-back, REV-1500 and the 5% discount, the family-farm and family-business exemptions — set beside the twelve estate-tax states and their cliffs (New York's above 105% of the exclusion), the domicile change as a plan and the residency audit that follows it, and multi-state trust taxation after North Carolina v. Kaestner. The reader can compute a Pennsylvania inheritance-tax bill by recipient class and say whether a move to Florida is worth what it costs.",
    "parts": [
     "The map: estate-tax states, inheritance-tax states, cliffs and the §2058 deduction",
-    "Pennsylvania's Inheritance Tax Act: rates, exemptions and the one-year lookback",
-    "REV-1500 in practice: joint property, retirement accounts, sole-use trusts and the 5% discount",
+    "Pennsylvania's Inheritance Tax Act: the four classes, exemptions, the one-year look-back and REV-1500 in practice",
     "Family farms and family businesses: the exemptions and their seven-year strings",
-    "Domicile as a plan: the factors, the Florida move and the residency audit",
-    "Retirement income across state lines: Pennsylvania's exemption, the flat 3.07% and the local EIT"
+    "The cliff states: New York above 105%, Massachusetts, Oregon and Washington, and the planning each provokes",
+    "Domicile as a plan: the factors, the Florida move, the residency audit and what it costs to fail one",
+    "Trusts across state lines: Kaestner, the resident-trust rules and where a trustee should sit"
    ],
    "worked_examples": [
-    "A $3,000,000 Bridgeville estate — house, IRA, brokerage account, life insurance — passing to two children and a sibling: REV-1500 line by line at 4.5% and 12%, the insurance exclusion and the under-59½ retirement-account rule, and the 5% discount if paid by month three.",
-    "The same $3,000,000 estate in New York (the cliff above 105% of the run-year exclusion), Massachusetts ($2,000,000 threshold) and Washington (the post-2025 rate schedule): three state bills against Pennsylvania's.",
-    "A $6,000,000 family-owned machine shop with 22 employees: Pennsylvania's qualified family-owned business exemption under 72 P.S. §9111(t) — the tests, the seven-year continuation, and the recapture if it is sold in year four.",
-    "A retired couple with $140,000 of pension and IRA income choosing between Pennsylvania (retirement income exempt) and Florida or North Carolina: the full state and local income-tax line and the death-tax line over twenty years."
+    "A Pennsylvania decedent with a jointly held house, an IRA left to a sibling and a life-insurance policy to a child: the inheritance tax computed under each recipient class, with the 5% discount for early payment.",
+    "The same $3,000,000 estate in New York (the cliff above 105% of the run-year exclusion), Massachusetts and Florida: the state tax in each.",
+    "A $6,000,000 family-owned machine shop with 22 employees: Pennsylvania's qualified family-owned business exemption and the seven-year condition, and what breaks it.",
+    "A retired couple with $140,000 of pension and IRA income and a $2 million taxable account weighing Pennsylvania (retirement income exempt, 3.07% on the rest, inheritance tax at death) against Florida, with the domicile-audit factors listed."
    ],
    "prerequisites": {
     "year1": [
@@ -13186,10 +13185,10 @@
     "topic": "Fiscal policy and government debt"
    },
    "sources": [
-    "72 P.S. §9101 et seq. (Pennsylvania Inheritance and Estate Tax Act), especially §§9111, 9116 and 9142; Pennsylvania Department of Revenue, REV-1500 instructions and inheritance-tax informational notices (current)",
-    "IRC §2058; New York Tax Law §952; Massachusetts G.L. c. 65C; Washington RCW 83.100 (current rates)",
-    "Tax Foundation, 'Estate and Inheritance Taxes by State' (run-year edition)",
-    "Pennsylvania Bar Institute, Pennsylvania Inheritance Tax (current edition)"
+    "72 P.S. §9101 et seq. (Pennsylvania Inheritance and Estate Tax Act); Pennsylvania Department of Revenue, REV-1500 instructions",
+    "IRC §2058; New York Tax Law §952; Massachusetts G.L. c. 65C; Washington RCW 83.100",
+    "North Carolina Dept. of Revenue v. Kimberley Rice Kaestner 1992 Family Trust, 588 U.S. 262 (2019)",
+    "Tax Foundation, 'Estate and Inheritance Taxes by State' (run year)"
    ],
    "depth": "professional-exam",
    "exam_map": "Estate Planning — Gift, estate, and GST tax compliance and calculation; Tax Planning — Fundamental and current tax law",
@@ -13200,22 +13199,22 @@
    "day": 255,
    "subject": "Wealth Management",
    "position": "35 of 40",
-   "topic": "Closely held businesses: valuation, buy-sell agreements and succession",
+   "topic": "Closely held businesses: the buy-sell agreement, Connelly, §2703, and the succession, ESOP and installment-sale choices",
    "headline_hint": "After Connelly, the life-insurance policy that was supposed to pay the estate tax is now part of the estate",
-   "focus": "The owner's estate as a business problem. Valuation under Rev. Rul. 59-60 and the discounts; buy-sell agreements — cross-purchase, entity-purchase and wait-and-see — and their funding with life insurance after Connelly v. United States; §2703 and whether the agreement fixes value; estate liquidity through §303 redemptions and §6166 installment deferral; §2032A special-use valuation; transfers within the family by gift of minority interests, installment sale and the IDGT; ESOPs and the §1042 rollover; qualified small business stock under §1202 as expanded in 2025; the S corporation and §199A in the owner's income plan; nonqualified deferred compensation and key-person coverage for the successor team; and the exit to a third party, priced. The reader can design a funded buy-sell and a liquidity plan for a real-size company.",
+   "focus": "The owner's estate as a business problem, assuming the valuation machinery — Rev. Rul. 59-60, the discounts and their case law are Finance & Markets I's private-company lesson and the transfer-technique lesson before this one. The buy-sell agreement at statute depth: cross-purchase versus entity-purchase versus wait-and-see, funding with life insurance and what Connelly v. United States did to the entity-purchase structure, §2703 and whether the agreement fixes value for estate tax; estate liquidity through §303 redemptions and §6166 deferral; and the exits — keeping it in the family through minority-interest gifts and installment sales, the ESOP and §1042, §1202 after the 2025 expansion, and the third-party sale — with the owner's own retirement plan folded in.",
    "parts": [
-    "What the business is worth: Rev. Rul. 59-60, discounts and §2703",
-    "Buy-sell agreements: cross-purchase, entity, wait-and-see — and Connelly's reversal",
+    "Buy-sell agreements: cross-purchase, entity, wait-and-see — and Connelly's reversal of the insurance-proceeds question",
+    "Funding the agreement: life insurance, the number of policies, and the tax treatment of each structure",
+    "§2703: when the agreement fixes value for estate tax, and when the IRS ignores it",
     "Liquidity at death: §303 redemptions, §6166 deferral and §2032A",
     "Keeping it in the family: minority-interest gifts, installment sales and the IDGT revisited",
-    "Selling it: ESOPs and §1042, §1202 after 2025, and the third-party exit",
-    "The owner's own retirement: cash balance plans, §199A, nonqualified deferred compensation and key-person cover"
+    "Selling it: ESOPs and §1042, §1202 after 2025, the third-party exit, and the owner's own retirement plan"
    ],
    "worked_examples": [
-    "Connelly v. United States, 602 U.S. 257 (2024): Crown C Supply, Michael Connelly's 77.18%, the $3,500,000 policies, the $3,000,000 redemption, the estate's $3,860,000 company value against the IRS's $6,860,000, and the $889,914 of additional tax — then the cross-purchase or insurance-LLC structure that would have avoided it.",
-    "Two 50% owners of a $12,000,000 S corporation: a cross-purchase funded with $6,000,000 of insurance on each — premiums by age, the survivor's basis step-up, and the entity-purchase alternative's lost basis.",
-    "A $20,000,000 estate that is 45% closely held stock: the §6166 test, the run-year 2-percent portion (2025: $1,900,000), the interest schedule and the ten equal instalments over years five to fourteen.",
-    "A founder's $8,000,000 of §1202 stock issued in August 2025 and sold after four years: the 75% tier under the 2025 Act, the $15,000,000 cap, and the tax against an ordinary sale."
+    "Connelly v. United States, 602 U.S. 257 (2024): Crown C Supply, Michael Connelly's 77.18%, the $3 million policy the Court counted in the value, and the cross-purchase that would have avoided it.",
+    "Two 50% owners of a $12,000,000 S corporation: a cross-purchase funded with $6,000,000 of insurance on each versus an entity purchase, the basis outcome for the survivor under each.",
+    "A $20,000,000 estate that is 45% closely held stock: the §6166 test, the run-year 2-percent portion and the interest cost of deferral.",
+    "A founder's $8,000,000 of §1202 stock issued in August 2025 and sold after four years: the exclusion under the 2025 tiers and the state tax on the rest."
    ],
    "prerequisites": {
     "year1": [
@@ -13232,9 +13231,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 80,
-    "subject": "Finance",
-    "topic": "Valuation: discounted cash flow"
+    "day": 78,
+    "subject": "Accounting",
+    "topic": "Equity, share issuance and buybacks"
    },
    "sources": [
     "IRC §§303, 1042, 1202, 2032A, 2703, 6166; Rev. Rul. 59-60; Public Law 119-21 (2025) §1202 amendments",
@@ -13352,22 +13351,22 @@
    "day": 258,
    "subject": "Wealth Management",
    "position": "38 of 40",
-   "topic": "Sudden wealth, equity compensation and the expatriate",
+   "topic": "Sudden wealth and the expatriate: the windfall protocol, §1202 QSBS, IPO lock-ups, the §877A exit tax, PFICs and FBAR/FATCA",
    "headline_hint": "When the money arrives all at once — or leaves the country with you",
-   "focus": "Three circumstances that break the ordinary plan. Sudden wealth from a liquidity event, inheritance or windfall: the behavioural evidence, the decision-free period, concentration and its unwinding through 10b5-1 plans, exchange funds, collars and charitable vehicles. Equity compensation to the bottom: incentive and nonqualified options, restricted stock and RSUs, the §83(b) election, the alternative minimum tax on ISO exercise at the run-year exemption, the disqualifying disposition, and employee stock purchase plans. The expatriate in both senses: the American abroad (the §911 exclusion and housing amount, foreign tax credits, FBAR and FATCA reporting, totalization agreements, PFICs, Medicare's non-coverage and Social Security's payability abroad) and the renouncing citizen or long-term resident (the §877A covered-expatriate tests, the mark-to-market exit tax with the run-year exclusion, deferred-compensation and IRA treatment, and the §2801 tax on gifts from covered expatriates). The reader can plan a founder's exit year and an expatriation.",
+   "focus": "Two circumstances that break the ordinary plan. Sudden wealth from a liquidity event, inheritance or windfall: the behavioural evidence, the decision-free period, the windfall protocol, the concentration that comes with it (its unwinding — 10b5-1 plans, exchange funds, collars, charitable vehicles — was Wealth Management I's), qualified small business stock under §1202 after the 2025 expansion, IPO lock-ups and their expiry. Equity compensation itself was Wealth Management I's and is assumed. The American abroad: §911, foreign tax credits, FBAR, FATCA, PFICs and totalization; and leaving for good — §877A's covered-expatriate tests, the exit tax and the §2801 inheritance tax on gifts from expatriates.",
    "parts": [
-    "The windfall: what the evidence says people do, and the decision-free period",
-    "Concentration and its unwinding: 10b5-1 plans, exchange funds, collars and charity",
-    "Options, RSUs and the §83(b) election: taxed when, on what, at which rate",
-    "The AMT trap on incentive stock options, worked at the run-year exemption",
-    "The American abroad: §911, foreign tax credits, FBAR, FATCA, PFICs and totalization",
-    "Leaving for good: §877A's covered-expatriate tests, the exit tax and §2801"
+    "The windfall: what the evidence says people do, the decision-free period and the protocol",
+    "§1202 qualified small business stock after 2025: the tiers, the holding period, the $15 million cap and the stacking",
+    "IPO lock-ups and the concentrated founder: the expiry, the 10b5-1 plan, and the unwinding assumed from block one",
+    "The American abroad: §911, the foreign tax credit, FBAR, FATCA, PFICs and totalization",
+    "Leaving for good: §877A's covered-expatriate tests and the mark-to-market exit tax",
+    "§2801 and the family left behind: the inheritance tax on gifts from a covered expatriate"
    ],
    "worked_examples": [
-    "A founder with 400,000 ISOs at a $2 strike exercised at $40 and held: the $15,200,000 AMT preference, tentative minimum tax at the 2026 exemption and phase-out, the AMT credit carryforward, and the same exercise-and-sell as a disqualifying disposition.",
-    "A 10b5-1 plan for $6,000,000 of post-IPO stock: the cooling-off period under the 2022 Rule 10b5-1 amendments, a 24-month sale schedule, the tax by lot, and the exchange-fund alternative's seven-year lock.",
-    "An engineer in Munich earning €140,000: the 2026 §911 exclusion, the housing amount, German tax and foreign-tax-credit stacking, FBAR on €60,000 of accounts, and the totalization agreement's effect on Social Security credits.",
-    "A green-card holder of 12 years with $4,000,000 of net worth surrendering it: the covered-expatriate tests (net worth $2,000,000; the run-year average-tax threshold), mark-to-market gain of $1,800,000 less the run-year exclusion ($910,000 for 2026), and the IRA's deemed distribution."
+    "A founder's $10,000,000 of §1202 stock issued in 2025 and sold in 2030: the exclusion under the 2025 tiers, stacking across trusts, and the state treatment.",
+    "A 10b5-1 plan for $6,000,000 of post-IPO stock: the cooling-off period under the 2022 rule, the lock-up expiry and the tax-aware sale schedule.",
+    "An engineer in Munich earning €140,000: the run-year §911 exclusion, the housing amount, German tax and the foreign tax credit, and the PFIC problem with a German fund.",
+    "A green-card holder of 12 years with $4,000,000 of net worth surrendering it: the covered-expatriate tests, the deemed sale and the $890,000 exclusion (run-year figure), and the §2801 exposure of gifts to US children."
    ],
    "prerequisites": {
     "year1": [
@@ -13383,15 +13382,15 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 99,
-    "subject": "Finance",
-    "topic": "Black-Scholes and the Greeks"
+    "day": 129,
+    "subject": "Economics",
+    "topic": "Exchange rates and the balance of payments"
    },
    "sources": [
-    "IRC §§55–59, 83, 421–424, 877A, 911, 1291–1298, 2801; SEC Rule 10b5-1 as amended (Release 33-11138, December 2022)",
-    "31 U.S.C. §5314 and FinCEN Form 114; IRC §6038D and Form 8938; IRS Form 8854 instructions (run year)",
-    "IRS Publications 54 and 525 (run year); Rev. Proc. 2025-32 (2026 §911 and §877A amounts) and the run-year procedure",
-    "Brunel, Goals-Based Wealth Management (2015)"
+    "IRC §§877A, 911, 1202, 1291–1298, 2801; SEC Rule 10b5-1 as amended (2022)",
+    "31 U.S.C. §5314 and FinCEN Form 114; IRC §6038D and Form 8938",
+    "IRS Publications 54 and 519 (run year); Rev. Proc. 2025-32 (run-year §877A exclusion amount)",
+    "Brunel, J., Goals-Based Wealth Management (2015), ch. on sudden wealth"
    ],
    "depth": "practitioner",
    "exam_map": "Tax Planning — Tax implications of special circumstances; Investment Planning — Tax-efficient investment strategies; Estate Planning — Strategies to transfer property",
@@ -13402,22 +13401,22 @@
    "day": 259,
    "subject": "Wealth Management",
    "position": "39 of 40",
-   "topic": "Ethics, fiduciary duty and the regulation of advice",
-   "headline_hint": "Whose side is the adviser on? The rules that answer, and the data on who breaks them",
-   "focus": "The professional-conduct layer, from the standards to the enforcement data. The CFP Board's Code of Ethics and Standards of Conduct in its current edition: the fiduciary duty at all times when giving financial advice, its three components, the fifteen duties, material-conflict disclosure and management, and the Practice Standards' seven-step process the capstone will follow. Then the law around it: the Investment Advisers Act after Capital Gains Research Bureau and the SEC's 2019 interpretation, Form ADV and Form CRS, the Marketing Rule, custody and Regulation S-P; Regulation Best Interest for broker-dealers and where it stops short of a fiduciary standard; ERISA's functional fiduciary and the Department of Labor's rule and its litigation; state registration; senior-protection rules; and the compensation models with their conflicts priced. Egan, Matvos and Seru's misconduct data and the share-class and cash-sweep enforcement cases close it. The reader can apply the standard to a real recommendation and read a Form ADV for what it does not say.",
+   "topic": "The regulation of advice: the Advisers Act and Form ADV, the custody rule, Regulation Best Interest against the fiduciary standard, ERISA §3(21)/3(38) and the DOL rule, and state registration",
+   "headline_hint": "Four bodies of law govern the same recommendation, and only one of them uses the word fiduciary",
+   "focus": "The statute and regulation of financial advice, the body of law Wealth Management I's Code-and-Standards lesson and Finance & Markets II's CFA-Standards lesson left to this one. The Investment Advisers Act §206 fiduciary duty as read in SEC v. Capital Gains Research Bureau and the SEC's 2019 interpretation; Form ADV Parts 1, 2A, 2B and Form CRS; the marketing rule and the custody rule; Regulation Best Interest for broker-dealers and where it falls short of a fiduciary standard; ERISA §3(21) and §3(38) fiduciaries, the 2024 Retirement Security Rule and its vacatur, PTE 2020-02 and the rollover recommendation; state RIA registration and the $100 million line; and the enforcement record that shows what the rules actually catch.",
    "parts": [
-    "The Code and Standards: fiduciary at all times, the fifteen duties and the seven steps",
-    "Conflicts: what must be disclosed, what must be managed, and what disclosure cannot cure",
-    "The Advisers Act: Capital Gains, the 2019 interpretation, Form ADV, marketing and custody",
-    "Regulation Best Interest and Form CRS: what 'best interest' means for a broker and what it does not",
-    "ERISA fiduciaries, the Department of Labor's rule and the courts",
-    "The evidence: Egan-Matvos-Seru, the enforcement cases and pricing the conflict"
+    "The Advisers Act: Capital Gains Research Bureau, the 2019 interpretation and what §206 requires",
+    "Form ADV and Form CRS: what must be disclosed, and how to read a fee schedule against a thirty-year horizon",
+    "The custody and marketing rules: where advisers actually get caught",
+    "Regulation Best Interest: what best interest means for a broker and what it does not",
+    "ERISA fiduciaries, the vacated 2024 rule, PTE 2020-02 and the rollover",
+    "State registration, the $100 million line, and the enforcement record read as a syllabus"
    ],
    "worked_examples": [
-    "A recommendation to convert $400,000 of IRA to Roth and fund a fixed-indexed annuity paying a 6% commission: the Code's duty analysis step by step, the alternatives a fiduciary must consider, and the disclosure Reg BI would have required instead.",
-    "Reading a real Form ADV Part 2A fee schedule (a 1.0% tier on $2,000,000): thirty-year cost against a flat-fee planner at $8,000 a year at 6% growth — and the conflicts the brochure discloses in Items 5 and 12.",
-    "Egan, Matvos and Seru (JPE 2019): 7% of advisers with misconduct records, 38% repeat offenders, misconduct concentrated in counties with older and less-educated populations — the tables read directly.",
-    "The SEC's share-class selection disclosure initiative (2018–2020, over $139 million returned) and the 2024–2025 cash-sweep cases: what the conflict was, what the disclosure said, and what the client lost per $100,000 a year."
+    "SEC v. Capital Gains Research Bureau, 375 U.S. 180 (1963): the scalping facts and the holding, and the SEC's 2019 Commission Interpretation Regarding Standard of Conduct for Investment Advisers read against it.",
+    "An SEC enforcement action on undisclosed revenue sharing (SEC v. Commonwealth Financial Network, D. Mass., judgment 2024): the conflict, the disclosure the court found inadequate, and the disgorgement.",
+    "Reading a real Form ADV Part 2A fee schedule (a 1.0% tier on $2,000,000): the thirty-year cost of a percentage point, and the conflicts section line by line.",
+    "A rollover recommendation from a 401(k) to an IRA under PTE 2020-02: the documentation required, and how the same recommendation fares under Reg BI and under the Code and Standards."
    ],
    "prerequisites": {
     "year1": [
@@ -13438,13 +13437,13 @@
     "topic": "Market failure and externalities"
    },
    "sources": [
-    "CFP Board, Code of Ethics and Standards of Conduct (current edition) and Procedural Rules",
-    "Investment Advisers Act of 1940 §§206, 208; SEC v. Capital Gains Research Bureau, 375 U.S. 180 (1963); SEC Release IA-5248 (2019 fiduciary interpretation); Rule 206(4)-1 (marketing); Regulation Best Interest, Release 34-86031 (2019)",
-    "Egan, Matvos and Seru, 'The Market for Financial Adviser Misconduct', Journal of Political Economy 127(1), 2019; Bergstresser, Chalmers and Tufano, 'Assessing the Costs and Benefits of Brokers in the Mutual Fund Industry', Review of Financial Studies 22(10), 2009",
-    "ERISA §3(21); DOL Retirement Security Rule (89 Fed. Reg. 32122, April 2024, stayed July 2024) and PTE 2020-02, with the run-year litigation status"
+    "Investment Advisers Act of 1940 §§206, 208; SEC v. Capital Gains Research Bureau, 375 U.S. 180 (1963); SEC Release No. IA-5248 (2019 interpretation)",
+    "SEC, Regulation Best Interest, 17 CFR 240.15l-1 (Release No. 34-86031); Form CRS",
+    "ERISA §3(21) and §3(38); DOL Retirement Security Rule (89 Fed. Reg. 32122) and the notice of court vacatur; PTE 2020-02",
+    "Egan, M., Matvos, G. and Seru, A., 'The Market for Financial Adviser Misconduct', Journal of Political Economy 127 (2019)"
    ],
    "depth": "professional-exam",
-   "exam_map": "Professional Conduct and Regulation — CFP Board's Code of Ethics and Standards of Conduct; Fiduciary standard and application; Financial services regulations and requirements",
+   "exam_map": "Professional Conduct and Regulation — function, purpose and general structure of financial institutions and regulation; fiduciary and best-interest standards",
    "block": 13,
    "day_in_block": 19
   },
@@ -13495,9 +13494,9 @@
    },
    "connect_back": {
     "year": 1,
-    "day": 147,
-    "subject": "Finance",
-    "topic": "Wealth management and the long horizon"
+    "day": 143,
+    "subject": "Accounting",
+    "topic": "Reading a 10-K"
    },
    "sources": [
     "CFP Board, Practice Standards for the Financial Planning Process (current Code and Standards edition)",
