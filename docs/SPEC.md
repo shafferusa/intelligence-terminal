@@ -135,6 +135,12 @@ up to one to two hours per day, covering a full year.* Built as `curriculum/acad
   Year two's day 260 lands around 2028-03-09.
 - **No audio for year-two lessons** (Logan, 2026-09-12): the audio job, the Telegram push and the
   page all skip them. Year-one lessons keep their MP3s.
+- **Depth pass, 2026-09-12**: Logan's instruction "ensure this is advanced stuff", with a suggested
+  topic list per subject. Every block was audited against that list at graduate / professional-exam
+  depth, gaps folded in as parts and worked examples (whole days replaced only in block 5, where
+  Psychology had displaced ethics, metaethics and political philosophy: the philosophy half now runs
+  seven knowledge-and-mind days and three value-and-society days), factual slips corrected, and each
+  block's record carries a `coverage_note` saying what is taught, what was left to year one and why.
 - **Consequences**: the Learning Brief cron should move to 5:00 AM ET before year two starts so a
   two-hour lesson is finished before the Morning Brief publishes (`docs/RUNBOOK.md` A4); the Academy
   page lists both years. Procedure: `prompts/learning.md` → **Year Two**.

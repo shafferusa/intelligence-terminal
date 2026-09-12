@@ -231,7 +231,11 @@ real numbers, real headings, the callback, the recap). These are the differences
 ### Y1. The file
 
 `academy-260.json` has `blocks[]` (thirteen: `block`, `key`, `title`, `subject`, `days`, `mission`,
-`builds_on`, `modelled_on`, `capstone`, `refresh_before_run`) and `days[]` (260). Each day carries
+`builds_on`, `modelled_on`, `capstone`, `refresh_before_run`, `coverage_note`) and `days[]` (260).
+The `coverage_note` records the 2026-09-12 depth pass: which of Logan's advanced-topic checklist
+items the block teaches, which were left to year one (with the day), and which were omitted and
+why — read it when a lesson's part titles seem to skip something the subject's name promises.
+Each day carries
 `block`, `subject`, `position` ("17 of 40" for the two-block subjects, "Macro 3 of 10" for a
 split block), `topic`, `headline_hint`, `focus`, `parts` (four to six chapter titles), `worked_examples`
 (with the real data they use), `prerequisites` (`year1` day numbers in `academy-150.json`, `year2`
