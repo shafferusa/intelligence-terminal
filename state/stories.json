@@ -1,14 +1,29 @@
 {
  "stories": [
   {
+   "id": "brics-summit-delhi-sep12",
+   "headline": "Putin, Xi and Iran's president gather in New Delhi for a BRICS summit as the Gulf war escalates",
+   "status": "New",
+   "first_seen": "2026-09-12-sat",
+   "last_updated": "2026-09-12-sat",
+   "verification": "Confirmed-multiple (summit itself); Single-reliable-source-cluster (specific bilateral discussion of the Gulf war)",
+   "one_line": "India is hosting an 11-member BRICS summit in New Delhi Sept 12-13. Modi held bilateral talks Friday with Putin and Iran's Pezeshkian; Xi Jinping arrives Saturday for his own meeting with Modi. Indian outlets report the Gulf war is a live topic among the leaders assembled; this outlet has so far found that detail sourced mainly to Indian-market coverage rather than independently confirmed by a Western wire, and labels it accordingly.",
+   "score_note": "Three heads of state with direct stakes in the Gulf war are in the same room this weekend -- new leverage this outlet has not seen exercised before, if any of it translates into action.",
+   "sources": [
+    "Outlook India",
+    "Deccan Herald"
+   ],
+   "watch": true
+  },
+  {
    "id": "saudi-pipeline-mocha-strike-sep11",
    "headline": "Saudi Arabia shuts a major oil pipeline and strikes Mocha as the Yemen war widens",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-11-pm",
+   "last_updated": "2026-09-12-sat",
    "verification": "Confirmed-multiple",
-   "one_line": "Saudi Arabia shut its ~7M bpd East-West pipeline after attacks near Riyadh/Medina and struck the airport at Mocha, the port the Houthis captured Thursday; Houthi forces by several accounts also now hold the Bab el-Mandeb islands of Perim and Zuqar. In parallel, Iran agreed to meet Gulf Cooperation Council states in Salalah, Oman, Monday on the strait's future -- the first such direct dialogue since the war began, though not clear it survives this week's escalation.",
-   "score_note": "A direct Saudi military response and a diplomatic opening landed the same day -- the most consequential Gulf development this report has tracked in a week already dominated by the conflict.",
+   "one_line": "Saturday reporting says Houthi forces completed a sweep of Yemen's entire Red Sea coastline, reportedly adding the Greater and Lesser Hanish islands and the mainland town of Dhubab to Thursday/Friday's capture of Mocha and the islands of Perim and Zuqar -- effective control of every Yemeni-side chokepoint on the strait. Saudi Crown Prince Mohammed bin Salman is reported (single-source) to have again pressed Trump for direct US intervention; Trump continues to decline, offering intelligence support only. Saudi Arabia's East-West pipeline remains shut. Monday's Iran-GCC talks in Salalah, Oman on the strait's future are still scheduled, now against a considerably harder weekend backdrop.",
+   "score_note": "A non-state actor now controls every chokepoint on one side of a major strait, with the region's largest oil exporter publicly asking for -- and being denied -- direct US intervention.",
    "sources": [
     "Bloomberg/CNBC",
     "The National",
@@ -17,7 +32,9 @@
     "NPR",
     "Al Jazeera",
     "NBC News",
-    "Axios"
+    "Axios",
+    "CBC",
+    "The War Zone"
    ],
    "watch": true
   },
@@ -101,7 +118,7 @@
     "CNN",
     "Axios"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "drc-ebola-outbreak-2026",
@@ -142,7 +159,7 @@
    "first_seen": "2026-09-09-pm",
    "last_updated": "2026-09-09-pm",
    "verification": "Confirmed-multiple (announcement and dispute); Unconfirmed (the mathematical claim itself)",
-   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alp\u00f6ge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
+   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alpöge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
    "score_note": "The mathematical claim is unverified; the authorship dispute is a new front in OpenAI-Anthropic researcher tension the same week as the Coxon resignation.",
    "sources": [
     "Axios",
@@ -200,7 +217,7 @@
     "NBC News",
     "NPR"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "gaza-hamas-disarmament-deal-jul30",
@@ -343,23 +360,24 @@
     "Al Jazeera",
     "CNN"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
    "headline": "Russia resumes Kyiv strikes; Trump-Putin call ends without a concrete deal",
    "status": "Materially changed",
    "first_seen": "2026-08-30-sun",
-   "last_updated": "2026-09-09-pm",
+   "last_updated": "2026-09-12-sat",
    "verification": "Confirmed-multiple (strikes); Single-reliable-source (Kremlin readout of Trump-Putin call); Confirmed (Zelensky's stated meeting target)",
-   "one_line": "Russia struck Kyiv again overnight, partially destroying a TV channel building; reported deaths ranged 3-5 across outlets, unreconciled. This follows Tuesday's Trump-Putin call, which the Kremlin called \"constructive and quite frank\" with no US-side account; Zelensky was more skeptical, saying the call showed Moscow \"not ready to stop fighting.\" New: Zelensky now says he expects to meet Trump \"by late September,\" specifically around Sept 20 alongside the UN General Assembly -- firmer than the prior \"within two weeks.\"",
-   "score_note": "A firmer, dated meeting target replaces the vaguer 'within two weeks' framing, even as strikes continue.",
+   "one_line": "Russia struck Ukraine overnight into Saturday, killing at least eleven and injuring roughly 96 nationwide (Ukrainian officials, toll still updating); Odesa was hit hardest, cruise missiles striking a residential building around 5:30am local time and injuring at least 35, including an infant. Ukraine says it struck Russia's tanker 'shadow fleet' the same night. Putin separately warned that European troops sent into Ukraine 'would amount to direct conflict with Russia.' This outlet could not independently confirm a specific Sept 20 Trump-Zelensky meeting date reported elsewhere; Zelensky has said only 'the latter half of September,' plausibly tied to the UN General Assembly's Sept 22 opening.",
+   "score_note": "A deadly overnight strike and a pointed nuclear-armed-power warning to Europe both land the same weekend, with no new pause in sight.",
    "sources": [
     "ABC Australia",
     "CNN",
     "ABC News",
     "Al Jazeera",
-    "Euronews"
+    "Euronews",
+    "AP wire"
    ],
    "watch": true
   },
@@ -849,7 +867,7 @@
    "first_seen": "2026-09-09-pm",
    "last_updated": "2026-09-11-am",
    "verification": "Disputed",
-   "one_line": "OpenAI posted a direct statement saying it 'did not see any of' Buckmaster's and Alp\u00f6ge's unpublished work 'through any means' before its own agents produced the result, while hedging that de-identified usage data 'cannot rule out' an indirect influence. Buckmaster and Alp\u00f6ge have since released their own Lean-verified proofs of finite-time blowup for three fluid systems, a related but distinct claim. Neither the Clay Institute nor peer review has certified OpenAI's original claim.",
+   "one_line": "OpenAI posted a direct statement saying it 'did not see any of' Buckmaster's and Alpöge's unpublished work 'through any means' before its own agents produced the result, while hedging that de-identified usage data 'cannot rule out' an indirect influence. Buckmaster and Alpöge have since released their own Lean-verified proofs of finite-time blowup for three fluid systems, a related but distinct claim. Neither the Clay Institute nor peer review has certified OpenAI's original claim.",
    "score_note": "Cross-lab dispute with no independent verification either way.",
    "sources": [
     "OpenAI",

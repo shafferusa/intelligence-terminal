@@ -31,7 +31,10 @@
    "horizon": "2026-09-12",
    "probability": "60-75%",
    "basis": "CENTCOM issued an immediate, specific denial and no third-party imagery, ship-tracking data, or independent government statement has surfaced; claims of this kind in this conflict have more often gone uncorroborated than confirmed.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Through Sept 12, CENTCOM continues to flatly deny the IRGC's claim of striking the USS Delbert D. Black and USS John Paul Jones ('all IRGC attempted attacks failed'), and no independent source -- ship-tracking data, allied government, journalist on the scene -- has corroborated any damage to either destroyer.",
+   "graded": "2026-09-12",
+   "lesson": "Absent battle-damage imagery or third-party confirmation, an adversary's self-reported strike claim in an active conflict should default to unproven -- the evidentiary gap held through the full week as this forecast expected."
   },
   {
    "id": "2026-09-09-am-1",
@@ -41,7 +44,10 @@
    "horizon": "2026-09-12",
    "probability": "45-60%",
    "basis": "Ten tankers destroyed and a direct strike on a base hosting US forces in one week is the sharpest escalation this outlet has tracked in this conflict; Iran's declared Hormuz 'exclusion zone' gives it a stated pretext for a further incident, and neither side has signaled de-escalation.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "On Sept 10, IRGC forces claimed to have struck a US Navy Saildrone Explorer unmanned surface vessel near the Strait of Hormuz, and four projectiles hit two vessels near Khasab, Oman -- a further exchange distinct from the Sept 8-9 tanker strikes and Jordan base attack, within the 72-hour window.",
+   "graded": "2026-09-12",
+   "lesson": "With new incidents surfacing almost daily in this conflict, a 72-hour 'nothing else happens' bet was always the harder one to win."
   },
   {
    "id": "2026-09-09-am-2",
@@ -51,7 +57,10 @@
    "horizon": "2026-09-12",
    "probability": "35-50%",
    "basis": "The shadow docket can act quickly once briefing closes, but this case has already seen one withdrawn-and-refiled application and no publicly stated urgency comparable to a hard mailing deadline; this outlet's own tracking of comparable emergency applications this cycle shows mixed timing.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "As of Sept 12, no Supreme Court order resolving the 26A305 stay application has been found; the First Circuit denied a related, narrower USPS stay motion Sept 10, but the Court's own emergency-docket ruling on the underlying Talwani injunction had not issued within 72 hours of the Sept 9 briefing deadline.",
+   "graded": "2026-09-12",
+   "lesson": "Shadow-docket rulings often take longer than a 'respond by' deadline implies, especially with heavy amicus briefing -- that deadline is a proxy for when the Court can rule, not for when it will."
   },
   {
    "id": "2026-09-09-am-3",
@@ -84,7 +93,10 @@
    "horizon": "2026-09-10",
    "probability": "35-50%",
    "basis": "Today's strikes mark an escalation from the single, unverified ridge-control claim of Sept 4 to a confirmed multi-location toll; this outlet's tracking of the broader Iran-linked conflict has shown near-daily continuation once a front becomes active.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Israel struck again Sept 8, killing roughly 9-13 more people and hitting an additional location (Al-Mansouri) alongside renewed strikes on Kfar Rumman -- both a new location and a materially higher cumulative toll than Sept 7's, within the 72-hour window.",
+   "graded": "2026-09-12",
+   "lesson": "In a ceasefire both sides keep violating, betting on continuation of the near-daily-strike pattern is the safer call than betting on a pause."
   },
   {
    "id": "2026-09-07-pm-3",
@@ -2215,7 +2227,10 @@
    "horizon": "2026-09-11",
    "probability": "55-70%",
    "basis": "Multiple outlets report the government is 'expected to fight' the ruling, and the administration has consistently appealed adverse rulings in other Anthropic/AI-policy disputes this year",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No notice of appeal specific to the Anthropic Pentagon supply-chain-risk ruling was confirmed in any docket or report found by Sept 11; coverage continued to describe an appeal only as 'expected,' echoing the same language used since the ruling. Treated as not filed on this record.",
+   "graded": "2026-09-12",
+   "lesson": "A government's well-established habit of appealing adverse rulings is not the same as a confirmed filing -- this ledger should distinguish 'expected to appeal' from 'has appealed' rather than assume the pattern held on schedule."
   },
   {
    "id": "2026-08-30-sun-1",
@@ -2562,7 +2577,10 @@
    "horizon": "2026-09-10",
    "probability": "55-70%",
    "basis": "The administration has consistently and quickly appealed similar injunctions against this policy earlier in 2026.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Reporting on Judge Boardman's Sept 2 birthright-citizenship injunction continued to describe an appeal as merely 'expected' through Sept 10; a joint status report was due that day, but no notice of appeal specific to this injunction was confirmed on any docket found.",
+   "graded": "2026-09-12",
+   "lesson": "Procedural forecasts pinned to a short, one-week legal deadline are risky -- filings can slip a few days without being independently newsworthy, so 'expected' should not be graded as 'done' absent a docket citation."
   },
   {
    "id": "2026-09-04-am-1",
@@ -2582,7 +2600,10 @@
    "horizon": "2026-09-11",
    "probability": "30-45%",
    "basis": "Vance has said the military is investigating 'very fully,' but the administration's pattern this campaign has generally been to let contested-strike claims go unaddressed rather than confirm or deny specific outlet analyses.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CENTCOM's only on-record comment (a general denial that the US military targets civilians) predates and does not engage the NYT/Reuters forensic analysis specifically; outlets reported the Pentagon 'avoiding questions' on the visual analysis as the war continued, with no statement addressing that evidence by Sept 11.",
+   "graded": "2026-09-12",
+   "lesson": "A boilerplate denial made before specific forensic evidence existed doesn't satisfy a forecast that the evidence itself would draw a response -- the bar should be engagement with the claim's substance, not just an acknowledgment a claim exists."
   },
   {
    "id": "2026-09-04-am-3",
@@ -2644,7 +2665,10 @@
    "horizon": "2026-09-11",
    "probability": "55-65%",
    "basis": "Cross-corroborated economist-survey aggregation (not a single primary bank table) puts consensus at 2.9% y/y headline; this week's record US diesel price ($5.85/gal) and Brent's 6.6-9% weekly surge both predate the CPI reference period's tail end and argue for upside risk to that consensus.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "BLS's August CPI printed 3.4% y/y headline (+0.4% m/m) and 2.4% y/y core (+0.3% m/m, down from July's 2.5%), released Friday Sept 11 -- comfortably clearing the 2.9% threshold this forecast set.",
+   "graded": "2026-09-12",
+   "lesson": "The record diesel price and Brent's weekly surge, both flagged as upside risks to the CPI consensus, came through in the actual print; energy pass-through proved a reliable near-term inflation signal this cycle."
   },
   {
    "id": "2026-09-06-sun-2",
@@ -2654,7 +2678,10 @@
    "horizon": "2026-09-11",
    "probability": "35-50%",
    "basis": "CENTCOM commander Adm. Brad Cooper stated an explicit escalate-for-escalate doctrine on the record after Saturday's exchange; VP Vance's standing precondition for talks (shipping attacks must stop first) remains unmet by either side.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "On Sept 8-9 the US destroyed five more Iranian tankers beyond the Sept 5 strikes, and Iran retaliated with roughly ten Hormuz-area vessel strikes and a missile attack on Jordan's Al Azraq base hosting US forces -- a clear further direct exchange well inside the week.",
+   "graded": "2026-09-12",
+   "lesson": "In an active tit-for-tat conflict with a stated escalation pattern, betting on continuation was the higher-probability call than betting on an early lull."
   },
   {
    "id": "2026-09-06-sun-3",
@@ -2690,7 +2717,10 @@
    "horizon": "2026-09-11",
    "probability": "55-65%",
    "basis": "Friday's close of $94.86 reflects an active, unresolved Gulf conflict that escalated further Saturday, and OPEC+ held October output unchanged Sunday rather than adding supply to cool the price.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Brent settled Friday Sept 11 at $104.61/bbl, having touched an intraday high above $108 Thursday -- comfortably above the $90 threshold, holding rather than round-tripping the week's Gulf-driven surge.",
+   "graded": "2026-09-12",
+   "lesson": "An active, unresolved conflict with no de-escalation signal (a shut Saudi pipeline, a captured Red Sea port) kept crude elevated through the week, exactly as the forecast's basis anticipated."
   },
   {
    "id": "2026-09-06-sun-6",
@@ -2700,7 +2730,10 @@
    "horizon": "2026-09-11",
    "probability": "40-55%",
    "basis": "Kim Yo Jong and Pak Jong-chon both issued sharply escalatory statements ahead of the drill; North Korea fired roughly ten short-range ballistic missiles on Aug 20 around an earlier drill announcement, a plausible but unconfirmed precedent for this window.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "During the actual Sept 7-11 drill window, North Korea's only visible response stayed symbolic -- commissioning the destroyer Kang Kon just before drills began. Its short-range ballistic missile launches from Wonsan came Sept 12, one day after the exercise concluded.",
+   "graded": "2026-09-12",
+   "lesson": "Pyongyang's provocations often land just outside the window being watched rather than inside it -- a forecast should grade the literal stated window even when a near-miss follows almost immediately after."
   },
   {
    "id": "2026-09-06-sun-7",
@@ -2710,7 +2743,10 @@
    "horizon": "2026-09-11",
    "probability": "30-40%",
    "basis": "VIX enters the week in normal, undistressed contango (14.53 spot / 11.97 nine-day / 17.61 three-month) with no term-structure stress signal, but two binary catalysts -- Friday's CPI and the Gulf war's trajectory -- both sit inside the window.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "VIX closed Friday Sept 11 at 15.84 (Cboe), a razor-thin 0.16 points below the 16 threshold -- despite an intraweek high of 18.17 Thursday amid the week's stacked CPI and Gulf-war catalysts.",
+   "graded": "2026-09-12",
+   "lesson": "Peak-week stress did not carry through to Friday's close; VIX's tendency to mean-revert once the specific binary catalyst (CPI) resolved without a full shock proved stronger than the forecast weighted -- a near-miss is still a miss."
   },
   {
    "id": "2026-09-06-sun-8",
@@ -2720,7 +2756,10 @@
    "horizon": "2026-09-11",
    "probability": "35-45%",
    "basis": "Analytic judgment weighing the estimated CPI consensus, the still-open Gulf and Ukraine tracks, and no other scheduled catalyst of comparable size this week -- not a statistical model.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Two of the scenario's four legs missed: CPI printed well above 'close to consensus' (3.4% vs. the ~2.9% consensus cited), and a further direct Iran-US exchange did occur (five more tankers, the Jordan base strike) rather than the Gulf conflict continuing without one. The Kyiv/Moscow pause did quietly lapse as described, but equities moved more than a narrow range (Dow -1.57%, Russell -2.41% on the week, with near-1%-a-day swings).",
+   "graded": "2026-09-12",
+   "lesson": "A base case built from the least-dramatic reading of each open question undersold how much this particular week actually moved on nearly every axis -- worth defaulting future base scenarios toward continuation-of-trend rather than reversion when multiple fronts are already escalating."
   },
   {
    "id": "2026-09-06-sun-9",
@@ -2730,7 +2769,10 @@
    "horizon": "2026-09-11",
    "probability": "15-20%",
    "basis": "Requires multiple favorable confirmations (a cool CPI print, Gulf de-escalation, an extended pause) to align simultaneously; analytic judgment, not a statistical model.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Every leg of the bull case failed: August CPI ran hot on energy pass-through (headline 3.4% y/y, gasoline +3.9% m/m), the Gulf conflict escalated sharply rather than de-escalating (five tankers hit, the Jordan base attacked, a ten-vessel Iranian retaliation), oil stayed elevated in the high-$90s to low-$100s rather than easing, and VIX closed Friday at 15.84 -- above the scenario's 'stays below 15' bar even after a sharp intraday drop.",
+   "graded": "2026-09-12",
+   "lesson": "Multi-condition bull scenarios are easy to grade cleanly when the world moves the other way on every axis at once; the discipline is not softening a clean sweep into 'partial' just because sentiment felt calmer by Friday's close."
   },
   {
    "id": "2026-09-06-sun-10",
@@ -2740,7 +2782,10 @@
    "horizon": "2026-09-11",
    "probability": "20-30%",
    "basis": "The diesel-price record and Brent's surge both argue for upside CPI risk, and Adm. Cooper's stated escalate-for-escalate doctrine argues for a real chance of a further, contained Gulf incident this week.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The data half landed -- CPI ran hot with clear energy pass-through (gasoline +27.4% y/y) and a real further Gulf incident occurred -- but the market-reaction half inverted: the S&P 500 rose 0.86% Friday rather than giving back gains, the 10-year yield eased intraday, VIX fell over 11% to 15.84, and high-yield spreads stayed pinned near 2.66-2.70% instead of widening materially.",
+   "graded": "2026-09-12",
+   "lesson": "Getting the fundamental data print right does not guarantee getting the market's interpretation right -- a hot-but-not-shocking CPI paired with a 'no incremental catastrophe' Gulf read triggered a relief rally rather than the risk-off this scenario expected."
   },
   {
    "id": "2026-09-06-sun-11",
@@ -2750,7 +2795,10 @@
    "horizon": "2026-09-11",
    "probability": "8-15%",
    "basis": "Requires a confirmed, severe escalation beyond anything observed as of this report's cutoff on any of three independent tracks (Gulf, Korea, Ukraine); analytic judgment, not a statistical model.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "None of the shock triggers clearly fired -- no confirmed US casualties from the Jordan base attack, no North Korean test during the drill window itself, no mass-casualty collapse of the Kyiv/Moscow pause -- and markets moved the opposite direction from the scenario's prediction: VIX closed Friday at 15.84, well under the 20 threshold, on a risk-on session.",
+   "graded": "2026-09-12",
+   "lesson": "Genuinely severe-sounding headlines (tanker destruction, a hit air base) did not translate into the market stress this scenario predicted; a shock scenario needs a market-pricing check, not just an events check, before it's called."
   },
   {
    "id": "2026-09-08-am-1",
@@ -2780,7 +2828,10 @@
    "horizon": "2026-09-12",
    "probability": "50-65%",
    "basis": "The pause already lapsed with strikes resuming overnight and no new pause announced; Monday's Trump-Zelensky-Putin calls produced rhetoric but no confirmed concrete step.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The Sept 6-8 capitals-only pause ended on schedule and was never renewed; Russia resumed strikes on Kyiv Sept 8 (killing at least five), and both sides continued trading strikes through Sept 11-12 (a 66-drone barrage injuring 8, Ukrainian strikes on Bryansk/Kursk/Crimea) with no new pause announced.",
+   "graded": "2026-09-12",
+   "lesson": "A pause tied to a specific envoy visit's calendar is best treated as bounded by that visit, not as durable de-escalation -- this forecast correctly discounted it as an artifact of the Witkoff/Kushner trip rather than a turning point."
   },
   {
    "id": "2026-09-08-pm-1",
@@ -2800,7 +2851,10 @@
    "horizon": "2026-09-12",
    "probability": "45-60%",
    "basis": "WTI closed today at $94.26 on the Houthi attack alone; a further Gulf escalation or a cold CPI print easing broader risk appetite could each push it through $95, but de-escalation or profit-taking could just as easily cap it.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "WTI closed above $95 on multiple sessions this week ($96.05 Sept 9, $102.48 Sept 10, $100.05 Sept 11), and traded near $96-97 into Saturday -- comfortably clearing the threshold on the Gulf tanker war and Strait-of-Hormuz risk premium.",
+   "graded": "2026-09-12",
+   "lesson": "With live Strait-of-Hormuz disruption risk fully in the headlines, this forecast had a wide margin for error -- the lesson here is about the strength of the fundamental driver, not the precision of the call."
   },
   {
    "id": "2026-09-08-pm-3",

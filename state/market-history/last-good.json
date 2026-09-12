@@ -1,26 +1,26 @@
 {
- "fetched_at": "2026-09-11T20:55:00Z",
+ "fetched_at": "2026-09-12T13:30:00Z",
  "treasury_par_curve": {
-  "date": "2026-09-10",
-  "BC_1MONTH": 3.91,
-  "BC_1_5MONTH": 3.93,
-  "BC_2MONTH": 4.01,
-  "BC_3MONTH": 4.0,
-  "BC_4MONTH": 4.11,
-  "BC_6MONTH": 4.07,
-  "BC_1YEAR": 4.28,
-  "BC_2YEAR": 4.56,
-  "BC_3YEAR": 4.63,
-  "BC_5YEAR": 4.75,
-  "BC_7YEAR": 4.84,
-  "BC_10YEAR": 4.95,
-  "BC_20YEAR": 5.39,
-  "BC_30YEAR": 5.37,
-  "2s10s_bp": 39,
-  "3m10y_bp": 95,
-  "5s30s_bp": 62,
-  "fetched_at": "2026-09-11T20:55:00Z",
-  "note": "Sep 11 curve not yet published by Treasury as of this run; carried from Sep 10."
+  "date": "2026-09-11",
+  "BC_1MONTH": 3.93,
+  "BC_1_5MONTH": 3.99,
+  "BC_2MONTH": 4.05,
+  "BC_3MONTH": 4.07,
+  "BC_4MONTH": 4.15,
+  "BC_6MONTH": 4.12,
+  "BC_1YEAR": 4.35,
+  "BC_2YEAR": 4.63,
+  "BC_3YEAR": 4.69,
+  "BC_5YEAR": 4.78,
+  "BC_7YEAR": 4.87,
+  "BC_10YEAR": 4.96,
+  "BC_20YEAR": 5.38,
+  "BC_30YEAR": 5.35,
+  "2s10s_bp": 33,
+  "3m10y_bp": 89,
+  "5s30s_bp": 57,
+  "fetched_at": "2026-09-12T13:30:00Z",
+  "note": "Friday Sept 11 official par curve (home.treasury.gov)."
  },
  "fred": {
   "CPIAUCSL": {
@@ -54,10 +54,10 @@
    "prior_value": "4.1"
   },
   "T10Y2Y": {
-   "date": "2026-09-10",
-   "value": "0.39",
-   "prior_date": "2026-09-09",
-   "prior_value": "0.40"
+   "date": "2026-09-11",
+   "value": "0.33",
+   "prior_date": "2026-09-10",
+   "prior_value": "0.39"
   },
   "DGS2": {
    "date": "2026-09-10",
@@ -72,10 +72,10 @@
    "prior_value": "4.83"
   },
   "T10YIE": {
-   "date": "2026-09-10",
-   "value": "2.40",
-   "prior_date": "2026-09-09",
-   "prior_value": "2.37"
+   "date": "2026-09-11",
+   "value": "2.36",
+   "prior_date": "2026-09-10",
+   "prior_value": "2.40"
   },
   "DFII10": {
    "date": "2026-09-10",
@@ -95,7 +95,7 @@
    "prior_date": "2026-09-09",
    "prior_value": "2.71"
   },
-  "fetched_at": "2026-09-11T20:55:00Z",
+  "fetched_at": "2026-09-12T13:30:00Z",
   "cpi_derived": {
    "headline_yoy_pct": 3.35,
    "headline_mom_pct": 0.4,
@@ -109,10 +109,16 @@
   "VIX_chg_pct": -11.21,
   "VIX9D": 14.47,
   "VIX3M": 18.6,
-  "term_structure": "contango (VIX9D < VIX < VIX3M), re-steepened vs Sep 10",
-  "as_of": "2026-09-11T16:15:01-04:00",
+  "term_structure": "contango (VIX9D < VIX < VIX3M); Thu 9/10 saw a near-inversion (17.70/17.84/19.73) before reverting Friday",
+  "as_of": "2026-09-11T16:15:00-04:00",
   "label": "EOD official",
-  "fetched_at": "2026-09-11T20:55:00Z"
+  "week_path": {
+   "2026-09-08": 15.72,
+   "2026-09-09": 16.46,
+   "2026-09-10": 17.84,
+   "2026-09-11": 15.84
+  },
+  "fetched_at": "2026-09-12T13:30:00Z"
  },
  "fx": {
   "base": "USD",
@@ -129,61 +135,63 @@
    "JPY": 154.04,
    "MXN": 16.9771
   },
-  "fetched_at": "2026-09-11T20:55:00Z"
+  "dxy": 99.12,
+  "eurusd": 1.1601,
+  "fetched_at": "2026-09-12T13:30:00Z"
  },
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 77414,
-    "usd_market_cap": 1554709169081.47,
-    "usd_24h_vol": 35251788093.56,
-    "usd_24h_change": 0.2216
+    "usd": 77366,
+    "usd_market_cap": 1553742185922.83,
+    "usd_24h_change": -0.29
    },
    "ethereum": {
-    "usd": 2537.15,
-    "usd_market_cap": 309621801423.92,
-    "usd_24h_vol": 24294266407.56,
-    "usd_24h_change": 2.9993
-   },
-   "solana": {
-    "usd": 102.71,
-    "usd_market_cap": 60242893746.07,
-    "usd_24h_vol": 4483802814.11,
-    "usd_24h_change": 2.7165
-   },
-   "cardano": {
-    "usd": 0.206864,
-    "usd_market_cap": 7760307972.09,
-    "usd_24h_vol": 589302614.91,
-    "usd_24h_change": -1.222
+    "usd": 2540.31,
+    "usd_market_cap": 310022439247.56,
+    "usd_24h_change": 1.67
    }
   },
-  "total_market_cap_usd": 2659725764847.71,
-  "btc_dominance_pct": 58.23,
-  "fetched_at": "2026-09-11T20:55:00Z"
+  "total_market_cap_usd": 2665010615893.44,
+  "btc_dominance_pct": 58.17,
+  "week_note": "BTC ~81,265 Fri 9/4 -> ~76,555 Fri 9/11 close (-5.8% wk) -> ~77,366 as of this Sat run",
+  "fetched_at": "2026-09-12T13:30:00Z"
  },
  "indices": {
-  "date": "2026-09-11",
-  "SPX": {
-   "close": 7656.97998046875,
-   "chg": 65.28,
-   "chg_pct": 0.8599
+  "sp500": {
+   "9/4": 7718.6,
+   "9/8": 7673.52,
+   "9/9": 7636.36,
+   "9/10": 7591.7,
+   "9/11": 7656.98,
+   "wk_pct": -0.8
   },
-  "IXIC": {
-   "close": 26333.03515625,
-   "chg": 251.31,
-   "chg_pct": 0.9636
+  "nasdaq": {
+   "9/4": 26506.99,
+   "9/8": 26421.41,
+   "9/9": 26253.34,
+   "9/10": 26081.72,
+   "9/11": 26333.04,
+   "wk_pct": -0.66
   },
-  "DJI": {
-   "close": 52573.2890625,
-   "chg": 509.19,
-   "chg_pct": 0.978
+  "dow": {
+   "9/4": 53414.25,
+   "9/8": 52786.07,
+   "9/9": 52380.66,
+   "9/10": 52064.1,
+   "9/11": 52573.29,
+   "wk_pct": -1.57
   },
-  "RUT": {
-   "close": 2903.9443359375,
-   "chg": 12.99,
-   "chg_pct": 0.4495
-  }
+  "russell2000": {
+   "9/4": 2975.65,
+   "9/8": 2960.2,
+   "9/9": 2921.24,
+   "9/10": 2890.95,
+   "9/11": 2903.94,
+   "wk_pct": -2.41
+  },
+  "label": "EOD official (Yahoo Finance, free-tier/non-consolidated)",
+  "fetched_at": "2026-09-12T13:30:00Z"
  },
  "futures_commodities_fx": {
   "ES=F": {
@@ -1396,5 +1404,97 @@
  "finra_short_vol": {
   "date": "2026-09-10",
   "aggregate_pct": 50.85
+ },
+ "sector_etfs_wk": {
+  "XLK": {
+   "9/4": 187.28,
+   "9/11": 187.67,
+   "wk_pct": 0.21
+  },
+  "XLF": {
+   "9/4": 58.1,
+   "9/11": 57.25,
+   "wk_pct": -1.46
+  },
+  "XLE": {
+   "9/4": 64.06,
+   "9/11": 65.14,
+   "wk_pct": 1.69
+  },
+  "XLV": {
+   "9/4": 171.45,
+   "9/11": 165.36,
+   "wk_pct": -3.55
+  },
+  "XLI": {
+   "9/4": 175.27,
+   "9/11": 172.37,
+   "wk_pct": -1.65
+  },
+  "XLY": {
+   "9/4": 114.91,
+   "9/11": 112.96,
+   "wk_pct": -1.7
+  },
+  "XLP": {
+   "9/4": 84.58,
+   "9/11": 83.38,
+   "wk_pct": -1.42
+  },
+  "XLC": {
+   "9/4": 112.03,
+   "9/11": 112.6,
+   "wk_pct": 0.51
+  },
+  "XLB": {
+   "9/4": 52.44,
+   "9/11": 50.95,
+   "wk_pct": -2.84
+  },
+  "XLU": {
+   "9/4": 43.08,
+   "9/11": 42.39,
+   "wk_pct": -1.6
+  },
+  "XLRE": {
+   "9/4": 43.93,
+   "9/11": 43.42,
+   "wk_pct": -1.16
+  },
+  "SMH": {
+   "9/4": 567.01,
+   "9/11": 568.53,
+   "wk_pct": 0.27
+  },
+  "KRE": {
+   "9/4": 75.27,
+   "9/11": 73.9,
+   "wk_pct": -1.82
+  },
+  "label": "Previous close (Yahoo, free-tier)",
+  "fetched_at": "2026-09-12T13:30:00Z"
+ },
+ "commodities": {
+  "brent": {
+   "8/31": 90.49,
+   "9/8": 97.92,
+   "9/9": 101.21,
+   "9/10": 107.63,
+   "9/11": 104.61,
+   "intraday_high_note": "stories.json cites an intraday print above $108 Thursday 9/10"
+  },
+  "wti": {
+   "8/31": 85.76,
+   "9/8": 93.03,
+   "9/9": 96.05,
+   "9/10": 102.48,
+   "9/11": 100.05
+  },
+  "gold": {
+   "8/31": 4431.1,
+   "9/11": 4366.2
+  },
+  "label": "Previous close / Delayed (Yahoo futures, free-tier)",
+  "fetched_at": "2026-09-12T13:30:00Z"
  }
 }
