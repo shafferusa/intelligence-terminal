@@ -177,8 +177,18 @@
     })();
   }
 
-  var urls = audioUrls();
-  if (urls.length) {
+  /* Year-two Learning Briefs (60-120 minutes, from 2027) carry no audio at
+     all, by Logan's instruction: no MP3 is generated and no speech player is
+     offered. The test matches make_audio.py and notify.py. */
+  function isYearTwoLesson() {
+    if (!meta || meta.slot !== "learn" || !Array.isArray(meta.headlines)) return false;
+    return /^\s*Year\s+([2-9]|\d{2,})\b/.test(String(meta.headlines[0] || ""));
+  }
+
+  var urls = isYearTwoLesson() ? [] : audioUrls();
+  if (isYearTwoLesson()) {
+    /* no player of any kind */
+  } else if (urls.length) {
     tryAudio(urls, function onMissing(attempt) {
       if (attempt === 0) startSpeechPlayer();
       /* Re-check every 90s for ~12 minutes, then stop asking. */

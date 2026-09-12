@@ -117,10 +117,10 @@ Logan's instruction for what follows the 150-day curriculum: *thirteen topics, t
 each — one topic for twenty weekdays straight — way more in depth and advanced than the 150-day,
 up to one to two hours per day, covering a full year.* Built as `curriculum/academy-260.json`:
 
-- **Thirteen blocks of twenty**, in this order: Finance & Markets I and II (a 40-lesson course
-  shaped on the public CFA topic areas, plus trading), Economics (advanced macro, ten; advanced
-  micro, ten), Physics, Philosophy (knowledge and mind, ten; value and society, ten — Logan wrote
-  "Philosophy & Philosophy (10 days each)", read as two halves of the discipline), Mathematics,
+- **Thirteen blocks of twenty**, in this order (confirmed and adjusted by Logan 2026-09-12):
+  Finance & Markets I and II (a 40-lesson course shaped on the public CFA topic areas, plus
+  trading), Economics (advanced micro, ten, then advanced macro, ten), Mathematics (moved ahead of
+  Physics so the physics lessons can assume it), Philosophy & Psychology (ten and ten), Physics,
   Political Science and its theories, Rocketry (mechanical and flight), AI/Technology/Coding,
   Accounting I and II (a 40-lesson course shaped on the public CPA blueprint), Wealth Management I
   and II (a 40-lesson course shaped on the public CFP principal knowledge topics). No claim of
@@ -133,11 +133,11 @@ up to one to two hours per day, covering a full year.* Built as `curriculum/acad
 - **Handover**: on the weekday after year one's day 150 (projected 2027-03-11), the Learning
   Brief switches to `academy-260` day 1; `state/learning.json` carries a `curriculum` key.
   Year two's day 260 lands around 2028-03-09.
-- **Consequences**: the Learning Brief cron should move to 5:00 AM ET before year two starts so
-  a two-hour lesson and its audio are done before the Morning Brief (`docs/RUNBOOK.md` A4); the
-  lesson MP3 grows to 20–45 MB, so the site stages recent audio within a byte budget and the
-  Telegram push for a lesson waits longer for it; the Academy page lists both years.
-  Procedure: `prompts/learning.md` → **Year Two**.
+- **No audio for year-two lessons** (Logan, 2026-09-12): the audio job, the Telegram push and the
+  page all skip them. Year-one lessons keep their MP3s.
+- **Consequences**: the Learning Brief cron should move to 5:00 AM ET before year two starts so a
+  two-hour lesson is finished before the Morning Brief publishes (`docs/RUNBOOK.md` A4); the Academy
+  page lists both years. Procedure: `prompts/learning.md` → **Year Two**.
 
 ## 1. Mission
 

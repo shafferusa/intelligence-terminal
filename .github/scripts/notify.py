@@ -39,6 +39,7 @@ import calendar
 import html
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -77,6 +78,16 @@ EDITION = {
     "sun": "Week-Ahead Outlook",
     "learn": "Learning Brief",
 }
+
+
+def is_year_two_lesson(entry):
+    """Same test as make_audio.py and report.js: a learn entry whose first
+    headline starts 'Year 2 · Day N of 260'. Those lessons have no audio."""
+    if entry.get("slot") != "learn":
+        return False
+    heads = entry.get("headlines") or []
+    first = str(heads[0]) if heads else ""
+    return re.match(r"\s*Year\s+([2-9]|\d{2,})\b", first) is not None
 
 
 def build_message(entry):
@@ -255,6 +266,11 @@ def audio_ready(tag, filename, floor):
 def wait_for_audio(entry):
     """Hold the push until this edition's MP3 is up. True if it turned up."""
     wait_for = AUDIO_WAIT_LEARN if entry.get("slot") == "learn" else AUDIO_WAIT
+    if is_year_two_lesson(entry):
+        # No MP3 is ever produced for a year-two lesson (make_audio.py), so
+        # there is nothing to wait for.
+        print("year-two Learning Brief -- no audio, sending now")
+        return False
     if wait_for <= 0:
         print("audio wait disabled -- sending immediately")
         return False

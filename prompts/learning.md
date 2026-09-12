@@ -237,9 +237,10 @@ split block), `topic`, `headline_hint`, `focus`, `parts` (four to six chapter ti
 (with the real data they use), `prerequisites` (`year1` day numbers in `academy-150.json`, `year2`
 earlier days in the same block), `connect_back` (`year`, `day`, `subject`, `topic`), `sources`,
 `depth` and, for the exam-shaped blocks, `exam_map`. The blocks run in file order, twenty weekdays
-each: Finance & Markets I and II, Economics (macro then micro), Physics, Philosophy (knowledge and
-mind, then value and society), Mathematics, Political Science, Rocketry, AI/Technology/Coding,
-Accounting I and II, Wealth Management I and II.
+each: Finance & Markets I and II, Economics (micro then macro), Mathematics, Philosophy & Psychology
+(ten and ten), Physics, Political Science, Rocketry, AI/Technology/Coding, Accounting I and II,
+Wealth Management I and II. (Logan, 2026-09-12: Mathematics moved ahead of Physics so the physics
+lessons can assume it; the second half of block 5 is Psychology.)
 
 ### Y2. Length and shape
 
@@ -309,12 +310,15 @@ it was written and the field moves. On the block's **first** day, before writing
   correction to an earlier lesson (either year), and — on a block's first day — the block's mission
   in one sentence.
 
-### Y6. Time and audio
+### Y6. Time, and no audio
 
 A two-hour lesson is a long run. Write the opening and Part 1 first and save; if the run is at risk
 of not finishing, a published lesson of 60 minutes with every part it promised beats an unpublished
 one of 120 — but a lesson may never publish with a part missing that its own contents list names.
-The MP3 of a year-two lesson is 20–45 MB and takes edge-tts longer; the Telegram push waits longer
-for it (`notify.py`), and the site keeps recent audio within a size budget (`build-site.yml`). Part
-headings give the listener chapter breaks; that is another reason they are real `<h2>`s.
+
+**Year-two lessons carry no audio** (Logan, 2026-09-12). The audio job skips them, the Telegram
+push does not wait for an MP3, and `report.js` mounts no player on the page — all three recognise
+the `Year 2 · Day N of 260` prefix in `headlines[0]`, which is why that prefix must be exact. The
+`.expr-spoken` line in a formula plate is therefore optional in year two; the `<dl>` naming every
+symbol is not. Part headings stay real `<h2>`s for the reader's sake.
 
