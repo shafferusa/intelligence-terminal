@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-12T13:30:00Z",
+ "fetched_at": "2026-09-13T13:27:00Z",
  "treasury_par_curve": {
   "date": "2026-09-11",
   "BC_1MONTH": 3.93,
@@ -142,20 +142,22 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 77366,
-    "usd_market_cap": 1553742185922.83,
-    "usd_24h_change": -0.29
+    "usd": 76674,
+    "usd_24h_change": -0.89
    },
    "ethereum": {
-    "usd": 2540.31,
-    "usd_market_cap": 310022439247.56,
-    "usd_24h_change": 1.67
+    "usd": 2473.39,
+    "usd_24h_change": -2.63
+   },
+   "solana": {
+    "usd": 99.61,
+    "usd_24h_change": -2.49
    }
   },
-  "total_market_cap_usd": 2665010615893.44,
-  "btc_dominance_pct": 58.17,
-  "week_note": "BTC ~81,265 Fri 9/4 -> ~76,555 Fri 9/11 close (-5.8% wk) -> ~77,366 as of this Sat run",
-  "fetched_at": "2026-09-12T13:30:00Z"
+  "total_market_cap_usd": 2610752970976.12,
+  "btc_dominance_pct": 58.86,
+  "week_note": "BTC ~77,366 Sat 9/12 morning -> ~76,674 Sun 9/13 morning -- continued gentle weekend slide, not a reversal.",
+  "fetched_at": "2026-09-13T13:27:00Z"
  },
  "indices": {
   "sp500": {

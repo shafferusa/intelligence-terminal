@@ -2975,6 +2975,106 @@
    "probability": "40-55%",
    "basis": "This week's pattern shows escalation begetting escalation on both sides within days, not weeks, though the Houthis may instead prioritize consolidating their new territorial gains (Mocha, the Bab el-Mandeb islands) over further offensive action.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-1",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "The FOMC hikes the federal funds target by 25bp to 3.75-4.00% at Wednesday Sept 16's decision, as recent press-reported odds (~85-90%) imply.",
+   "horizon": "2026-09-16",
+   "probability": "65-80%",
+   "basis": "Recent press accounts (not an independently confirmed live CME FedWatch pull this run) put hike odds near 85-90% after the hot August CPI print; Warsh's own rhetoric has been read as hawkish. Probability set somewhat below the press-reported figure to reflect this report's inability to verify it directly and reported administration pressure against a hike.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-2",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "The FOMC surprises with a hold at 3.50-3.75% instead of hiking.",
+   "horizon": "2026-09-16",
+   "probability": "15-25%",
+   "basis": "Inverse of forecast sun-1; Warsh's hawkish rhetoric and the hot CPI print argue against a hold, but reported White House pressure and a split economist reaction (e.g. Citigroup's Hollenhorst calling the tone only marginally hawkish) keep this a live possibility.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-3",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "Monday's Iran-GCC Salalah talks fail to produce even a modest agreement, and a further Gulf incident with confirmed casualties on a US or allied asset occurs before Friday.",
+   "horizon": "2026-09-18",
+   "probability": "30-45%",
+   "basis": "Bahrain's boycott and Iran's own lowered expectations make a thin session likely; the unresolved Qeshm Island strike and destroyer claim show the conflict's verification gaps are widening, though both sides have so far avoided their most severe escalation options.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-4",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "The Qeshm Island vessel-strike attribution dispute hardens into a formal, on-record US-Iran accusation exchange within the week.",
+   "horizon": "2026-09-18",
+   "probability": "25-40%",
+   "basis": "Trump's own remarks ('Iran was probably to blame') read as skepticism of Iran's account rather than a US claim of responsibility, arguing against fast escalation on this specific point, but the incident is new and unresolved.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-5",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "Neither OpenAI's nor Anthropic's Tuesday Sept 15 submission satisfies Rep. Casar, prompting a public rebuke or new hearing announcement within the week.",
+   "horizon": "2026-09-18",
+   "probability": "40-55%",
+   "basis": "Casar has twice already called both companies' written answers insufficient, a pattern that argues for continued dissatisfaction, though both have engaged rather than refusing outright.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-6",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "The Supreme Court issues an order (grant, deny, or other) on the USPS v. California (26A305) mail-ballot stay application within the week.",
+   "horizon": "2026-09-18",
+   "probability": "20-30%",
+   "basis": "Lowered from a prior forecast on this same case that graded wrong; briefing has been complete since Sept 9 with no order yet, and shadow-docket rulings have repeatedly taken longer than a response deadline implies in this cycle.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-7",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "Base scenario: FOMC hikes 25bp with a measured, 'one-and-done' tone; Salalah talks produce no deal but no collapse; the S&P 500 closes Friday within roughly 2% of last Friday's 7,656.98.",
+   "horizon": "2026-09-18",
+   "probability": "35-45%",
+   "basis": "Analytic judgment weighing a hike largely priced in against genuine uncertainty on Warsh's forward guidance and the Gulf talks' outcome; not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-8",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "Bull scenario: FOMC hikes but signals it as the cycle's last hike; retail sales/housing data hold up; oil eases under $95; equities rally through the week with VIX under 15.",
+   "horizon": "2026-09-18",
+   "probability": "15-20%",
+   "basis": "Requires several favorable confirmations (dovish forward guidance, in-line-to-strong data, an oil pullback) to align simultaneously; analytic judgment, not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-9",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "Bear scenario: FOMC hikes with hawkish forward guidance; hot retail sales; Gulf risk stays elevated with oil above $100; equities give back a meaningful share of Friday's rally and yields push to new cycle highs.",
+   "horizon": "2026-09-18",
+   "probability": "20-30%",
+   "basis": "A hawkish-hike-plus-hot-data combination is a plausible extension of the week's already-hawkish setup; analytic judgment, not a statistical model.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-13-sun-10",
+   "date": "2026-09-13",
+   "slot": "sun",
+   "forecast": "Shock scenario: a Gulf incident with confirmed US/allied casualties, the Qeshm attribution resolving into a direct US-Iran accusation exchange, or a genuine FOMC surprise reprices risk sharply -- oil spikes, equities sell off, VIX moves back above 20.",
+   "horizon": "2026-09-18",
+   "probability": "10-15%",
+   "basis": "Requires a confirmed, severe escalation or a genuine policy surprise beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
+   "status": "open"
   }
  ]
 }

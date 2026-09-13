@@ -1,7 +1,7 @@
 {
- "fetched": "2026-09-11T07:15:00-04:00",
- "earnings_fetched": "2026-09-11",
- "earnings_fetched_note": "Finnhub day-of confirmations for Sept 11 show no S&P 500-grade names reporting (ANAB, BUKS, CRMT, HOFT, MNY, RENT, TMXN only) -- consistent with the Market Appendix note that no headline earnings land today.",
+ "fetched": "2026-09-13T09:35:00-04:00",
+ "earnings_fetched": "2026-09-13",
+ "earnings_fetched_note": "No watchlist mega-cap/AI-infra/defense/financial/consumer names report the week of Sept 14-18, 2026. Lennar (LEN, non-watchlist) reports Q3 after close Wed Sept 16, call Thu Sept 17 11:00 AM ET.",
  "events": [
   {
    "ts_et": "2026-09-07T00:00:00-04:00",
@@ -274,6 +274,134 @@
    "importance": "Low",
    "reason": "Five-day drill concludes today on schedule. North Korea's response has stayed symbolic (a newly commissioned destroyer) rather than a missile test or incident.",
    "source": "South Korea MND, NBC News, Korea Herald, Japan Times -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-14T12:00:00-04:00",
+   "type": "legislative",
+   "name": "House takes up H.R. 6500, the stopgap funding bill (already Senate-passed 90-6), funding government through Dec 11",
+   "importance": "Medium",
+   "reason": "Low-drama given the lopsided Senate vote, but this week's one concrete fiscal deadline.",
+   "source": "congress.gov/house.gov schedule search -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-14T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions: 13-week ($92B) and 26-week ($79B), settling Sept 17",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions. Confirmed directly via TreasuryDirect TA_WS upcoming-securities API.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "econ_release",
+   "name": "Empire State Manufacturing Survey (Sept)",
+   "importance": "Low",
+   "reason": "Routine regional Fed survey.",
+   "source": "NY Fed schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "regulatory",
+   "name": "Rep. Casar's deadline for OpenAI and Anthropic to provide fuller answers on AI-agent incidents",
+   "importance": "High",
+   "reason": "Casar has twice called both companies' prior written answers insufficient. No weekend statement from either company found ahead of the deadline.",
+   "source": "Rep. Casar's office (primary) -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 6-week bill ($75B) and 19-year-11-month bond reopening ($13B), settling Sept 17/18",
+   "importance": "Low",
+   "reason": "Confirmed directly via TreasuryDirect TA_WS upcoming-securities API.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "military",
+   "name": "Iran-GCC talks in Salalah, Oman on the Strait of Hormuz's future",
+   "importance": "Critical",
+   "reason": "Bahrain announced Saturday it will boycott; a senior Iranian official downplayed hopes for a signed deal. First direct Iran-Gulf dialogue since the war began, now diminished before it starts.",
+   "source": "Al Jazeera, Dawn, Al-Monitor -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-16T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Retail Sales (Aug) and Import/Export Price Indexes (Aug)",
+   "importance": "High",
+   "reason": "Lands ahead of the 2:00 PM FOMC decision; a hot print would reinforce hike odds already near 85-90% per press accounts.",
+   "source": "Census.gov, BLS release schedules -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-16T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "NAHB Housing Market Index (Sept)",
+   "importance": "Low",
+   "reason": "Routine housing-sentiment survey.",
+   "source": "Secondary aggregator -- not independently confirmed from NAHB directly"
+  },
+  {
+   "ts_et": "2026-09-16T14:00:00-04:00",
+   "type": "fed",
+   "name": "FOMC rate decision + Summary of Economic Projections (dot plot); Chair Warsh press conference ~2:30 PM",
+   "importance": "Critical",
+   "reason": "Two-day meeting Sept 15-16 per the Federal Reserve's own published calendar (confirmed directly). Recent press accounts put hike odds near 85-90%, not independently confirmed via a live CME FedWatch pull this run. Reported White House pressure against a hike adds a political dimension.",
+   "source": "federalreserve.gov FOMC calendar (primary, confirmed via direct fetch) -- press odds Confirmed-multiple, Estimated"
+  },
+  {
+   "ts_et": "2026-09-16T00:00:00-04:00",
+   "type": "business",
+   "name": "Lennar (LEN) Q3 FY2026 earnings, after close; call Thu 11:00 AM ET",
+   "importance": "Low",
+   "reason": "Non-watchlist homebuilder; useful housing-sector context alongside NAHB/housing-starts data this week.",
+   "source": "StockTitan, company release -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-17T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Housing Starts / Building Permits (Aug) and weekly initial jobless claims",
+   "importance": "Medium",
+   "reason": "Standard Thursday releases.",
+   "source": "Census.gov, BLS release schedules -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-17T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 9-year-10-month note reopening ($19B, settles Sept 30) plus 4-week and 8-week bills",
+   "importance": "Low",
+   "reason": "Confirmed directly via TreasuryDirect TA_WS upcoming-securities API; corrects an earlier secondary-source guess that this was a 10-year TIPS reopening.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-17T00:00:00-04:00",
+   "type": "fed",
+   "name": "Bank of Japan two-day meeting concludes (exact day, Thu or Fri Tokyo time, unconfirmed)",
+   "importance": "Medium",
+   "reason": "Could not confirm which day of the two-day meeting carries the decision from available sources.",
+   "source": "Secondary aggregator -- Unconfirmed"
+  },
+  {
+   "ts_et": "2026-09-18T09:15:00-04:00",
+   "type": "econ_release",
+   "name": "Industrial Production & Capacity Utilization (Aug)",
+   "importance": "Low",
+   "reason": "Routine Fed G.17 release.",
+   "source": "federalreserve.gov G.17 schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-18T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Conference Board Leading Economic Index (Aug)",
+   "importance": "Low",
+   "reason": "Routine release.",
+   "source": "Conference Board schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-18T08:15:00-04:00",
+   "type": "space",
+   "name": "SpaceX Starship Flight 14 -- first orbital flight of the V3 vehicle, ~20 Starlink V3 satellites, Starbase TX",
+   "importance": "Medium",
+   "reason": "Window 8:15-10:14 AM ET; backup date Saturday Sept 19. Genuine milestone given the vehicle's redesign.",
+   "source": "Multiple launch trackers (SpaceLaunchSchedule, NextSpaceFlight) -- Confirmed-multiple, status subject to change"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
