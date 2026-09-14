@@ -3105,6 +3105,36 @@
    "probability": "10-15%",
    "basis": "Requires a confirmed, severe escalation or a genuine policy surprise beyond anything observed as of this report's cutoff; analytic judgment, not a statistical model.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-14-pm-1",
+   "date": "2026-09-14",
+   "slot": "pm",
+   "forecast": "The Fed hikes 25bp at Wednesday's Sept 16 FOMC meeting.",
+   "horizon": "2026-09-16",
+   "probability": "80-90%",
+   "basis": "Futures-implied odds per multiple wire reports (CME FedWatch-derived, not independently pulled live this run) sit in the mid-to-high 80s percent following Thursday's hotter-than-expected core CPI.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-14-pm-2",
+   "date": "2026-09-14",
+   "slot": "pm",
+   "forecast": "Neither OpenAI nor Anthropic fully satisfies Rep. Casar's Tuesday Sept 15 deadline with complete underlying incident-log disclosure.",
+   "horizon": "2026-09-15",
+   "probability": "55-70%",
+   "basis": "Both companies have twice been called insufficient by Casar's office and have so far declined to release the specific logs requested, citing security and competitive concerns in their Sept 2 letters.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-14-pm-3",
+   "date": "2026-09-14",
+   "slot": "pm",
+   "forecast": "AI-infrastructure names (SMH, Vertiv, Marvell, ASML, Constellation Energy) recover at least half of today's single-day loss within the next three trading sessions absent a confirmed capex-cut announcement.",
+   "horizon": "2026-09-17",
+   "probability": "40-55%",
+   "basis": "Comparable sharp single-day AI-sector selloffs this year have partially mean-reverted within a week when the move traced to sentiment/rhetoric rather than a fundamental earnings or guidance change; today's move followed public statements, not a reported capex cut.",
+   "status": "open"
   }
  ]
 }

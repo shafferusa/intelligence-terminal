@@ -1,6 +1,91 @@
 {
  "stories": [
   {
+   "id": "epa-power-plant-carbon-repeal-sep14",
+   "headline": "EPA repeals power-plant carbon limits, calling it the largest deregulatory move in US history",
+   "status": "New",
+   "first_seen": "2026-09-14-pm",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "EPA Administrator Lee Zeldin announced today, at a G20 energy ministers' meeting in Houston, the repeal of the Biden-era rule limiting greenhouse-gas emissions from coal- and gas-fired power plants, plus a related action meant to prevent future administrations from regulating power-plant climate pollution the same way. Zeldin put the savings to energy companies at $120 million a year; it follows this year's earlier rollbacks of vehicle-emissions standards and the 2009 endangerment finding. Legal challenges are expected from environmental groups and Democratic state attorneys general; none confirmed filed yet.",
+   "score_note": "A major, dated rollback of the primary federal limit on roughly a quarter of US greenhouse-gas emissions.",
+   "sources": [
+    "EPA Administrator Zeldin's remarks (primary, via wire)",
+    "Washington Post",
+    "Washington Times",
+    "Utility Dive",
+    "AP"
+   ],
+   "watch": true
+  },
+  {
+   "id": "public-charge-green-card-suit-sep14",
+   "headline": "Twenty-two states sue to block a new green-card rule before it takes effect this week",
+   "status": "New",
+   "first_seen": "2026-09-14-pm",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "NY AG Letitia James led a coalition of 22 states, DC and Pennsylvania's governor in an SDNY suit today against a new DHS rule broadening the \"public charge\" test for green cards and visas to count non-cash benefits (food stamps, Medicaid, housing vouchers), reversing the longstanding cash-only standard. States cite DHS's own $4.05B/year estimated loss in federal Medicaid/CHIP transfers and argue the rule is arbitrary and capricious. A separate suit was filed by a coalition of cities/counties. The rule takes effect at the end of this week.",
+   "score_note": "New, high-stakes immigration litigation with a hard effective-date clock.",
+   "sources": [
+    "New York Attorney General's office complaint (primary)",
+    "CNN",
+    "Stateline",
+    "The Hill"
+   ],
+   "watch": true
+  },
+  {
+   "id": "space-force-orbital-weapons-disclosure-sep14",
+   "headline": "The Air Force confirms, for the first time, that the US has weapons in orbit",
+   "status": "New",
+   "first_seen": "2026-09-14-pm",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Secretary of the Air Force Troy Meink said today at the Air and Space Forces Association's conference that the US \"now has on-orbit space control weapons capable of defending the joint force against hostile adversary actions\" -- the first on-record Pentagon confirmation of its kind, offered deliberately (\"very well thought out\" wording) without naming system type or count.",
+   "score_note": "A genuinely new category of official disclosure with obvious relevance to this year's regional tensions.",
+   "sources": [
+    "Secretary Meink's remarks (primary, via reporting)",
+    "DefenseScoop",
+    "Air & Space Forces Magazine",
+    "Defense One",
+    "Breaking Defense"
+   ],
+   "watch": true
+  },
+  {
+   "id": "treasury-vtb-sanctions-sep14",
+   "headline": "Treasury sanctions Russia's VTB Bank over Iran sanctions evasion",
+   "status": "New",
+   "first_seen": "2026-09-14-pm",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "OFAC designated VTB Bank today for helping Iran evade sanctions -- the \"large bank\" Treasury Secretary Bessent had previewed, deliberately timed to Sept 11. Part of \"Operation Economic Outcast\"; Bessent warned continued dealing with Tehran risks \"an extinction-level event\" for sanctioned parties.",
+   "score_note": "Extends the Iran sanctions campaign into direct Russia-Iran financial-conduit targeting.",
+   "sources": [
+    "US Treasury press release (primary)",
+    "CNBC",
+    "OFAC recent-actions list"
+   ],
+   "watch": false
+  },
+  {
+   "id": "indonesia-ferry-capsize-sep13",
+   "headline": "A Java Sea ferry capsizes with 129 still missing",
+   "status": "New",
+   "first_seen": "2026-09-14-pm",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The Virgo Transport 8, carrying 240+ people from Surabaya to Banjarmasin, capsized in rough seas in the Masalembo waters early Sunday after losing contact. As of today: 108 rescued, six bodies recovered, 129 still missing; search ongoing, toll likely to change.",
+   "score_note": "Major humanitarian/maritime disaster developing alongside the dominant Gulf-war coverage.",
+   "sources": [
+    "Indonesian search-and-rescue authorities (primary, via wire)",
+    "NPR",
+    "Euronews"
+   ],
+   "watch": true
+  },
+  {
    "id": "salalah-talks-postponed-sep14",
    "headline": "Iran-GCC Hormuz talks postponed hours before they were due to start",
    "status": "Materially changed",
@@ -39,36 +124,37 @@
   {
    "id": "iran-nuclear-chief-vienna-blocked-sep14",
    "headline": "Iran's nuclear chief turned back from Vienna IAEA meeting; Austria summoned",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-14-am",
-   "last_updated": "2026-09-14-am",
-   "verification": "Confirmed-multiple (visa denial and summons); Single-reliable-source (US-pressure claim)",
-   "one_line": "Iran's AEOI chief Mohammad Eslami and his delegation were denied visas and turned back Saturday en route to the IAEA's annual conference in Vienna. Iran summoned Austria's charge d'affaires Monday; FM spokesman Baghaei called the refusal \"completely unjustified\" and said it occurred \"under American pressure,\" a claim neither Austria nor the US has confirmed.",
-   "score_note": "Further narrows the little diplomatic contact that exists on Iran's nuclear file, alongside the collapsed Salalah talks.",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Iran formally summoned Austria's charge d'affaires today over the visa denial. Austria's own IAEA ambassador said a UN Security Council sanctions committee -- not Austria unilaterally -- rejected a requested travel-ban exemption for Eslami, so Austria says it was \"obliged\" to deny entry. Russia's Vienna ambassador backed Iran, accusing Austria of violating host-nation obligations, pulling Moscow further into open alignment with Tehran at the IAEA.",
+   "score_note": "Adds a second diplomatic-track breakdown alongside Salalah, plus open Russian alignment with Iran at the IAEA.",
    "sources": [
-    "Times of Israel",
-    "Arab News",
-    "Naharnet"
+    "The Media Line",
+    "ABC News/AP",
+    "Washington Times/AP"
    ],
    "watch": true
   },
   {
    "id": "anthropic-openai-pace-frontier-sep13",
    "headline": "Anthropic and OpenAI call for the industry to \"pace the frontier\"; Asian AI stocks slide",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-14-am",
-   "last_updated": "2026-09-14-am",
-   "verification": "Confirmed-primary (each company's own statements); Confirmed-multiple (market reaction)",
-   "one_line": "Anthropic CEO Dario Amodei published an essay Saturday arguing the industry must deliberately slow capability gains, warning of agents \"capable of taking over the entire internet\" within 6-12 months absent that; Anthropic will give third-party evaluators including METR permanent system access. OpenAI's Altman agreed within hours and committed to the same access, separately ruling out a 2026 IPO. Microsoft's Nadella welcomed the move. Asian AI-linked shares fell sharply Monday (SoftBank -13.2% intraday in Tokyo); this outlet's own futures snapshot at 6:34 AM ET showed US index futures essentially flat, calmer than some weekend wire accounts of a sharper premarket selloff.",
-   "score_note": "Reads as industry leadership's most direct on-record answer yet to the Coxon/Marks/Hubinger internal safety warnings, landing one day before Casar's oversight deadline.",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-primary (Trump remarks, Casar office); Confirmed-multiple (market reaction, China response)",
+   "one_line": "Trump publicly rejected the weekend pacing call today (\"whoever wins AI wins\"), followed by a Truth Social post warning of a \"SICK conspiracy\" against AI and data centers; adviser David Sacks was more pointed, telling labs to slow down unilaterally without government help. DeepMind's Hassabis aligned rhetorically without matching Anthropic's embedded-evaluator pledge; Meta made no statement. Casar's office said today both companies' Sept 2 follow-up letters remain insufficient -- OpenAI hasn't released requested logs and its response revealed \"significant security errors\" including improper sandboxing; Anthropic hasn't said whether an internally deployed model ever escaped its own container -- with Tuesday's deadline unchanged. Markets split sharply: AI-infrastructure names (Vertiv, Eaton, Marvell, ASML, Constellation Energy) fell 7%+, Nvidia fell 3.4% and SMH fell 4.75%, while Meta (+2.7%) and Alphabet (+3.2%) gained; SoftBank fell roughly 11-13% in Tokyo on the pacing news plus a separately reported OpenAI 2026-IPO delay, even as SoftBank secured an upsized $11.9B loan for its OpenAI stake. China's government rejected Amodei's companion warning about a Chinese AI lead as unwarranted; fuller reporting also expands the distillation-accusation company count from five to seven (adding MiniMax and SenseTime).",
+   "score_note": "The clearest divergence yet between AI as an industry investors keep funding and AI infrastructure as a trade they are starting to question, landing the day before Congress's own deadline.",
    "sources": [
-    "Anthropic (primary)",
-    "OpenAI (primary)",
-    "Microsoft (primary)",
-    "CNBC",
-    "Fortune",
+    "Trump remarks and Truth Social post (primary, via wire)",
+    "Casar's office (primary)",
+    "Anthropic, OpenAI, DeepMind statements (primary)",
     "Bloomberg",
-    "Business Standard"
+    "CNBC",
+    "The Hacker News",
+    "NBC News",
+    "The Hill"
    ],
    "watch": true
   },
@@ -90,18 +176,20 @@
   {
    "id": "ukraine-refinery-strikes-poland-train-sep13",
    "headline": "Ukraine strikes Russian refineries; Trump asks it to stop; a drone hits a train near the Polish border",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-14-am",
-   "last_updated": "2026-09-14-am",
-   "verification": "Confirmed-multiple (both incidents); Unconfirmed (whether the diplomats' train was the intended target)",
-   "one_line": "Ukraine struck two Russian refineries overnight Fri-Sat (Slavyansk-Eco, Taneco), part of a 60-plus-strike campaign against 24+ refineries this year; Trump publicly urged Zelensky Sunday to stop, citing global fuel-market strain, and Zelensky defended the strikes. Separately, a Russian Geran-5 drone struck a passenger train (208 aboard, no casualties) near the Polish border minutes after a diplomats' train carrying Boris Johnson and Carl Bildt passed the same corridor -- Ukraine's rail operator calls it plausible the diplomats were the target, an assessment, not a confirmed fact. Polish PM Tusk called it a Russian escalation and said Poland \"cannot rule out\" further spillover.",
-   "score_note": "Two new points of friction opened the same weekend: US-Ukraine tactical disagreement, and a drone landing minutes from a train carrying senior European officials.",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-multiple (Trump statement, Tusk response); Single-institutional-source (Ukrzaliznytsia target assessment)",
+   "one_line": "Ukraine struck the TANECO refinery in Tatarstan overnight; Russian officials say two civilians died. Trump, citing US diesel above $6/gallon, said today he has urged Zelensky to stop the strikes. Ukraine's rail operator called it \"highly probable\" the diplomats' train (Johnson, Bildt) was the drone's actual target -- the operator's own assessment, not independently confirmed; a third train carrying David Petraeus was still at the station when the drone struck. Polish PM Tusk warned of \"very intensified actions on the Russian side\" ahead, said Poland \"cannot rule out\" the war reaching its territory, and will consult NATO allies; Rutte reportedly pledged more support for Ukraine.",
+   "score_note": "The closest a Russian strike has come to senior Western officials during this war, landing the same day as the US-Ukraine disagreement over refinery strikes.",
    "sources": [
     "Ukrainian rail operator and military statements (primary, via wire)",
+    "Trump remarks (primary, via wire)",
     "Polish government statements (primary)",
-    "Reuters",
+    "NBC News",
+    "CNN",
     "AP",
-    "Politico Europe"
+    "TVP World"
    ],
    "watch": true
   },
@@ -146,21 +234,17 @@
    "headline": "Saudi Arabia shuts a major oil pipeline and strikes Mocha as the Yemen war widens",
    "status": "Materially changed",
    "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-12-sat",
+   "last_updated": "2026-09-14-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Saturday reporting says Houthi forces completed a sweep of Yemen's entire Red Sea coastline, reportedly adding the Greater and Lesser Hanish islands and the mainland town of Dhubab to Thursday/Friday's capture of Mocha and the islands of Perim and Zuqar -- effective control of every Yemeni-side chokepoint on the strait. Saudi Crown Prince Mohammed bin Salman is reported (single-source) to have again pressed Trump for direct US intervention; Trump continues to decline, offering intelligence support only. Saudi Arabia's East-West pipeline remains shut. Monday's Iran-GCC talks in Salalah, Oman on the strait's future are still scheduled, now against a considerably harder weekend backdrop.",
-   "score_note": "A non-state actor now controls every chokepoint on one side of a major strait, with the region's largest oil exporter publicly asking for -- and being denied -- direct US intervention.",
+   "one_line": "Reporting today says Saudi Arabia's East-West pipeline will be \"mostly out of service for several weeks,\" longer than earlier estimates. Houthi forces have added the Greater and Lesser Hanish islands to their control of Yemen's Red Sea coastline, roughly 160km north of Bab el-Mandeb. Brent traded near $107-108/bbl today, a four-month high, on the combination of the Hormuz strike, the pipeline outage and the Houthi advance -- no single confirmed catalyst. A separate Houthi projectile struck Saudi Arabia's Jazan region Saturday, wounding two and damaging a mosque (Saudi civil-defense attribution, not independently corroborated).",
+   "score_note": "The pipeline outage is now measured in weeks, not days, while Houthi territorial control keeps expanding -- military and economic pressure both intensifying with every diplomatic channel stalled.",
    "sources": [
-    "Bloomberg/CNBC",
-    "The National",
-    "Newsweek",
-    "CNN",
-    "NPR",
-    "Al Jazeera",
+    "Saudi Energy Ministry (primary)",
+    "CNN Business",
     "NBC News",
-    "Axios",
-    "CBC",
-    "The War Zone"
+    "Al Jazeera",
+    "Euronews",
+    "Arab News"
    ],
    "watch": true
   },
@@ -231,34 +315,17 @@
    "watch": true
   },
   {
-   "id": "trump-500-aca-rebate-sep10",
-   "headline": "Trump announces $500 ACA rebate checks ahead of the midterms",
-   "status": "New",
-   "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-11-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Trump said ~1M ACA marketplace enrollees across 30 federal-exchange states will get $500 rebate checks starting October, funded from exchange operational fees. Trump attributes to prior-administration 'overcharging'; some health-policy commentary disputes the characterization, unresolved.",
-   "score_note": "A concrete, dated cash payment ahead of the midterms, distinct from Wednesday's unfunded $5,000 pledge.",
-   "sources": [
-    "Washington Post",
-    "CNN",
-    "Axios"
-   ],
-   "watch": false
-  },
-  {
    "id": "drc-ebola-outbreak-2026",
    "headline": "DRC Ebola toll accelerates sharply: 6,942 cases, 3,349 deaths",
    "status": "Materially changed",
    "first_seen": "2026-07-30-am",
-   "last_updated": "2026-09-11-pm",
-   "verification": "Confirmed-primary (WHO)",
-   "one_line": "WHO/DRC data through Sept 10 shows 6,942 confirmed cases and 3,349 deaths, up from 6,686/3,226 on Sept 9 -- a jump of 99 cases and 39 deaths in a single day, the steepest this report has tracked. Caused by Bundibugyo ebolavirus, a strain outside standard vaccine coverage. Now called the fastest-growing Ebola outbreak on record.",
-   "score_note": "Sharpest single-day acceleration tracked in this outbreak, plus a vaccine-coverage gap.",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Secondary-sourced this run (WHO's own site unreachable) -- DRC Ministry of Health data via ECDC aggregation",
+   "one_line": "DRC's own Sept 13 situation update, aggregated via ECDC, puts the outbreak at roughly 7,200 cases and 3,475 deaths, up from 6,942/3,349 through Sept 10 -- several hundred additional cases in three days. The outbreak has reached a new health zone (Kayna, North Kivu), now 61 affected zones across six provinces. Still the fastest-growing Ebola outbreak on record; caused by Bundibugyo ebolavirus, outside standard vaccine coverage.",
+   "score_note": "Continued steep acceleration and geographic spread; this run could not independently verify against WHO's own site.",
    "sources": [
-    "WHO Disease Outbreak News",
-    "ECDC",
-    "DRC Ministry of Health"
+    "DRC Ministry of Health data (via ECDC aggregation)",
+    "ECDC"
    ],
    "watch": true
   },
@@ -326,24 +393,6 @@
     "ABC Australia"
    ],
    "watch": true
-  },
-  {
-   "id": "miami-cargo-plane-crash-sep6",
-   "headline": "Amazon-branded cargo jet overruns Miami runway, kills five",
-   "status": "New",
-   "first_seen": "2026-09-07-pm",
-   "last_updated": "2026-09-07-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Prime Air Flight 7598, a 21 Air-operated Boeing 767 from San Juan, overran the runway landing at Miami International around 2pm ET Sunday, struck vehicles and caught fire. Five dead, five injured. FAA/NTSB investigating. This outlet did not cover the Sunday-afternoon crash until this pm edition, roughly 26 hours late -- logged to the corrections ledger.",
-   "score_note": "Fatal US aviation accident; coverage gap disclosed rather than folded in as newly broken.",
-   "sources": [
-    "Miami-Dade Fire Rescue (primary, via reporting)",
-    "CNN",
-    "ABC News",
-    "NBC News",
-    "NPR"
-   ],
-   "watch": false
   },
   {
    "id": "gaza-hamas-disarmament-deal-jul30",
@@ -423,15 +472,19 @@
   {
    "id": "mail-ballot-new-merits-suit-aug26",
    "headline": "Mail-ballot Supreme Court case remains unresolved as this outlet's five-day forecast window lapses",
-   "status": "Continuing",
+   "status": "Materially changed",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-14-am",
-   "verification": "Confirmed-primary (direct docket read)",
-   "one_line": "A direct read of the Supreme Court's docket for USPS v. California (26A305) shows no order through Monday morning -- only amicus filings dated Sept 9-10. This outlet's own forecast (2026-09-09-pm-2) that the Court would act within five days of briefing closing has now passed its window without resolution and will grade wrong in Saturday's scorecard.",
-   "score_note": "Briefing complete since Sept 9-10; next checkpoint is whether and when the Court acts, now well past this outlet's own forecast window.",
+   "last_updated": "2026-09-14-pm",
+   "verification": "Confirmed-multiple (Nichols ruling); Confirmed-primary (SCOTUS docket read)",
+   "one_line": "A second federal judge, Carl Nichols (D.D.C., a Trump appointee), issued a 24-page opinion late Sunday separately blocking the mail-ballot rule on different statutory grounds than Judge Talwani's Sept 4 injunction -- finding \"key portions\" exceed \"any conception of the outer bounds\" of USPS's authority. Plaintiffs: DSCC, LULAC, NAACP. Rather than a separate appeal, the government filed a supplemental brief today folding Nichols into its existing Supreme Court stay application (26A305); no order has issued. This outlet's 2026-09-09-pm-2 forecast that the Court would act within five days of briefing closing has now graded wrong (Saturday scorecard).",
+   "score_note": "The administration now faces two injunctions on two separate legal theories -- a materially harder position than a week ago.",
    "sources": [
     "Supreme Court docket 26A305 (primary)",
-    "SCOTUSblog"
+    "Judge Nichols's opinion (primary, via reporting)",
+    "NBC News",
+    "The Hill",
+    "Axios",
+    "Daily Signal"
    ],
    "watch": true
   },
@@ -716,22 +769,6 @@
    "watch": true
   },
   {
-   "id": "isar-spectrum-scrub-sep4",
-   "headline": "Isar Aerospace's Spectrum reaches orbit on its eighth attempt",
-   "status": "Resolved",
-   "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-06-sun",
-   "verification": "Confirmed-multiple",
-   "one_line": "After seven scrubs and an unusual stretch of company silence, Spectrum launched clean from Andoya, Norway at 20:12 UTC Saturday Sept 5 -- stage separation, upper-stage ignition/cutoff, fairing deployment, circularization burn and five CubeSats deployed, all nominal. Europe's first successful orbital launch from a continental European spaceport by a privately funded company.",
-   "score_note": "Resolved cleanly; no further watch needed unless a next-flight date is announced.",
-   "sources": [
-    "European Spaceflight",
-    "ESA",
-    "Space.com"
-   ],
-   "watch": false
-  },
-  {
    "id": "kharg-island-tanker-strike-sep5",
    "headline": "Houthis seize a Red Sea port as Saudi Arabia asks Trump to strike directly -- he declines",
    "status": "Materially changed",
@@ -804,22 +841,6 @@
    "watch": true
   },
   {
-   "id": "canada-us-tariff-retaliation-sep8",
-   "headline": "Canada's retaliatory tariffs take effect; no sign talks are resuming",
-   "status": "Resolved",
-   "first_seen": "2026-09-07-am",
-   "last_updated": "2026-09-08-am",
-   "verification": "Confirmed-primary",
-   "one_line": "Canada's $27.6B retaliatory tariffs took effect as scheduled at 12:01 AM Sept 8; no formal resumption of US-Canada trade talks reported, and no US response to the retaliation itself has surfaced. This outlet's own forecast that talks would resume first (2026-08-25-pm-3) graded wrong.",
-   "score_note": "Scheduled action proceeded exactly as announced; the open question (would talks resume first) is now resolved.",
-   "sources": [
-    "Canada.ca Department of Finance (primary)",
-    "CNBC",
-    "Globe and Mail"
-   ],
-   "watch": false
-  },
-  {
    "id": "magento-stylesmuggler-sep7",
    "headline": "CISA adds Magento 'StyleSmuggler' and three more flaws to its exploited-vulnerabilities catalog",
    "status": "Materially changed",
@@ -868,24 +889,6 @@
     "Houthi military statement via AP, Al Jazeera (primary, single-source on strike count)"
    ],
    "watch": true
-  },
-  {
-   "id": "missouri-hoskins-federal-block-sep10",
-   "headline": "Missouri's secretary of state asks a federal judge to block his own state supreme court's contempt hearing",
-   "status": "Resolved",
-   "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Superseded: Judge Clark never ruled on Hoskins's motion to block the state hearing -- instead the Supreme Court itself stayed Clark's underlying TRO on a separate application from People Not Politicians, mooting the question. See missouri-congressional-map-ruling-aug21 for the resolution.",
-   "score_note": "Direct state-federal jurisdictional collision layered on an already-live redistricting fight; outcome unknown at press time.",
-   "sources": [
-    "Missouri Independent",
-    "Jefferson City News-Tribune",
-    "KCTV5",
-    "KCUR/STLPR",
-    "NBC News"
-   ],
-   "watch": false
   },
   {
    "id": "uk-israel-consulate-order-sep9",
