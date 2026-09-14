@@ -1,6 +1,24 @@
 {
  "corrections": [
   {
+   "found": "2026-09-14",
+   "report": "reports/2026/09/2026-09-13-sun.html",
+   "original": "Sunday's edition reported: \"An Iranian commercial vessel was struck near Qeshm Island... Iranian state media and the Qeshm governor blamed 'the US terrorist enemy'... President Trump, traveling in Ireland, told reporters 'Iran was probably to blame' -- a remark reading as skepticism of Iran's own account.\"",
+   "corrected": "Verified against contemporaneous, dated reporting (CNN, Business Recorder, Times of Israel, US News, Al Jazeera): Trump's 'I think they are, probably they are' remark, made Saturday in Dublin, answered a question about a separate incident -- Thursday's drone attack on Saudi Arabia's East-West oil pipeline, which Riyadh and Baghdad have linked to Iran-backed militias in Iraq (those militias deny it). Asked specifically about Sunday's Qeshm Island vessel strike, Trump's actual on-record answer was 'I don't want to say' -- a refusal to comment, not an attribution either way. This outlet's Sunday edition conflated the two separate incidents and misattributed the 'probably' remark to the wrong one.",
+   "error_source": "Sunday's news-research pass appears to have merged two same-weekend Trump remarks on two distinct Gulf incidents (the Thursday Saudi pipeline attack and the Sunday Qeshm vessel strike) into a single quote attached to the wrong event.",
+   "conclusions_changed": true,
+   "note": "This changes what Trump is actually on record saying about the Qeshm strike specifically -- from an implied lean toward Iranian responsibility to an explicit non-answer. It does not change the facts of either underlying incident. Verified independently via WebSearch this run against multiple dated outlets for both remarks. Corrected in today's report (2026-09-14-am) Top Stories and colophon."
+  },
+  {
+   "found": "2026-09-14",
+   "report": "reports/2026/09/2026-09-13-sun.html",
+   "original": "Sunday's edition described H.R. 6500, the stopgap government-funding bill, as coming before the House Monday Sept 14: \"House takes up H.R. 6500... funding government through Dec 11 -- a low-drama procedural item given the lopsided Senate vote, but this week's one concrete fiscal deadline.\"",
+   "corrected": "H.R. 6500 (the Continuing Appropriations and Extensions Act, 2027) passed the House 370-48 on Sept. 1, had already passed the Senate 90-6, and was signed into law by the President on Sept. 2 as Public Law No. 119-103, funding the government through Dec. 11. There is no House floor action on this bill pending; it is closed, not live.",
+   "error_source": "This system's calendar cache carried the bill forward as a pending Monday House action without re-verifying its status against Congress.gov or the White House's own signing statement before Sunday's edition published it.",
+   "conclusions_changed": false,
+   "note": "Does not change the substance of government funding (already resolved through Dec. 11) -- only whether any action was pending today. Verified directly against congress.gov, govtrack.us and whitehouse.gov this run. Corrected in today's report (2026-09-14-am) Politics & Government and colophon; also corrected in state/calendar-cache.json."
+  },
+  {
    "found": "2026-09-08",
    "report": "reports/2026/09/2026-09-07-am.html",
    "original": "This outlet's 2026-09-07-am and 2026-09-07-pm editions described the mail-ballot Supreme Court emergency's response deadline as \"the 10 AM Tuesday deadline carries over to the new filing\" -- i.e., 10:00 AM ET Tuesday, September 8.",

@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-13T13:27:00Z",
+ "fetched_at": "2026-09-14T10:41:00Z",
  "treasury_par_curve": {
   "date": "2026-09-11",
   "BC_1MONTH": 3.93,
@@ -142,22 +142,26 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 76674,
-    "usd_24h_change": -0.89
+    "usd": 77914,
+    "usd_24h_change": 1.53
    },
    "ethereum": {
-    "usd": 2473.39,
-    "usd_24h_change": -2.63
+    "usd": 2515.29,
+    "usd_24h_change": 1.44
    },
    "solana": {
-    "usd": 99.61,
-    "usd_24h_change": -2.49
+    "usd": 101.8,
+    "usd_24h_change": 2.17
+   },
+   "cardano": {
+    "usd": 0.210299,
+    "usd_24h_change": 2.81
    }
   },
-  "total_market_cap_usd": 2610752970976.12,
-  "btc_dominance_pct": 58.86,
-  "week_note": "BTC ~77,366 Sat 9/12 morning -> ~76,674 Sun 9/13 morning -- continued gentle weekend slide, not a reversal.",
-  "fetched_at": "2026-09-13T13:27:00Z"
+  "total_market_cap_usd": 2650506863008.59,
+  "btc_dominance_pct": 58.92,
+  "week_note": "BTC ~76,674 Sun 9/13 morning -> ~77,914 Mon 9/14 morning -- weekend slide reversed modestly overnight; total-market-cap 24h change (-1.35%) diverges from the coin-level gains, likely smaller-altcoin weakness, not a data error.",
+  "fetched_at": "2026-09-14T10:41:16Z"
  },
  "indices": {
   "sp500": {
@@ -197,61 +201,63 @@
  },
  "futures_commodities_fx": {
   "ES=F": {
-   "last": 7662.75,
-   "prev": 7598.5,
-   "pct_chg": 0.8456
+   "last": 7605.0,
+   "prev": 7604.25,
+   "pct_chg": 0.0099,
+   "note": "Monday 6:34 AM ET intraday vs Friday's official close; Delayed (+10 min)."
   },
   "RTY=F": {
-   "last": 2907.699951171875,
-   "prev": 2893.39990234375,
-   "pct_chg": 0.4942
+   "last": 2918.5,
+   "prev": 2917.8,
+   "pct_chg": 0.024
   },
   "YM=F": {
-   "last": 52599.0,
-   "prev": 52095.0,
-   "pct_chg": 0.9675
+   "last": 52908.0,
+   "prev": 52909.0,
+   "pct_chg": -0.0019
   },
   "NQ=F": {
-   "last": 29390.25,
-   "prev": 29135.25,
-   "pct_chg": 0.8752
+   "last": 28913.5,
+   "prev": 28906.5,
+   "pct_chg": 0.0242
   },
   "NG=F": {
-   "last": 2.819999933242798,
-   "prev": 2.8340001106262207,
-   "pct_chg": -0.494
+   "last": 2.9019999504089355,
+   "prev": 2.8310000896453857,
+   "pct_chg": 2.508
   },
   "CL=F": {
-   "last": 100.33000183105469,
-   "prev": 102.4800033569336,
-   "pct_chg": -2.098
+   "last": 102.30999755859375,
+   "prev": 102.41000366210938,
+   "pct_chg": -0.0977
   },
   "GC=F": {
-   "last": 4390.0,
-   "prev": 4364.5,
-   "pct_chg": 0.5843
+   "last": 4331.7998046875,
+   "prev": 4330.2001953125,
+   "pct_chg": 0.0369
   },
   "^TNX": {
    "last": 4.974999904632568,
-   "prev": 4.943999767303467,
-   "pct_chg": 0.627
+   "prev": 4.96,
+   "pct_chg": 0.3024,
+   "note": "Cross-checked vs Treasury's own Sept 11 par curve 10Y (4.96%); ^TNX value used directly, not multiplied by 10 -- current Yahoo formatting already matches the actual yield level."
   },
   "HG=F": {
-   "last": 6.546999931335449,
-   "prev": 6.4670000076293945,
-   "pct_chg": 1.237
+   "last": 6.442999839782715,
+   "prev": 6.4695000648498535,
+   "pct_chg": -0.4111
   },
   "DX-Y.NYB": {
-   "last": 99.12799835205078,
-   "prev": 99.08999633789062,
-   "pct_chg": 0.0384
+   "last": 99.55699920654297,
+   "prev": 99.555,
+   "pct_chg": 0.002
   },
   "EURUSD=X": {
-   "last": 1.1595547199249268,
-   "prev": 1.1633858680725098,
-   "pct_chg": -0.3293
+   "last": 1.154334545135498,
+   "prev": 1.1609952449798584,
+   "pct_chg": -0.5734
   },
-  "fetched_at": "2026-09-11T20:55:00Z"
+  "fetched_at": "2026-09-14T10:34:00Z"
  },
  "watchlist": {
   "RSP": {
@@ -1397,15 +1403,15 @@
   }
  },
  "breadth_latest": {
-  "date": "2026-09-10",
-  "advancers": 1321,
-  "decliners": 3994,
-  "unchanged": 156,
-  "universe": 5471
+  "date": "2026-09-11",
+  "advancers": 3172,
+  "decliners": 2022,
+  "unchanged": 176,
+  "universe": 5370
  },
  "finra_short_vol": {
-  "date": "2026-09-10",
-  "aggregate_pct": 50.85
+  "date": "2026-09-11",
+  "aggregate_pct": 51.11
  },
  "sector_etfs_wk": {
   "XLK": {

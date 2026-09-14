@@ -1,35 +1,74 @@
 {
  "stories": [
   {
-   "id": "salalah-talks-bahrain-boycott-sep12",
-   "headline": "Bahrain boycotts Monday's Iran-GCC talks in Oman; Iran itself downplays hopes for a deal",
-   "status": "New",
+   "id": "salalah-talks-postponed-sep14",
+   "headline": "Iran-GCC Hormuz talks postponed hours before they were due to start",
+   "status": "Materially changed",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-13-sun",
+   "last_updated": "2026-09-14-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Bahrain's foreign ministry said Saturday it will not attend Monday's Iran-GCC talks in Salalah, Oman on the Strait of Hormuz's future, citing severed 2016 relations with Iran; a senior Iranian official separately said the session will be a discussion forum, not a signing event, since Iran still wants transit fees Oman rejects. The talks proceed with a narrowed roster against a harder backdrop than when Iran agreed to them Friday.",
-   "score_note": "The war's one diplomatic opening is missing a Gulf state and downgraded by its own participant before it starts.",
+   "one_line": "Monday's Salalah meeting between Iran, Iraq and five GCC states on Strait of Hormuz safety was postponed, Omani FM Albusaidi said Sunday, describing it as a joint Tehran-Muscat decision \"in the interest of consensus\" at the request of some regional countries. No new date set. This follows Bahrain's Saturday boycott and Sunday's fatal strike on an Iranian vessel near Qeshm Island; Iran's foreign ministry says Tehran won't cooperate on reopening Hormuz until Washington agrees to its own terms, suggesting a genuine impasse rather than a scheduling conflict.",
+   "score_note": "The war's only prospective diplomatic session on the strait collapsed entirely before it could happen, not merely narrowed.",
    "sources": [
+    "Omani foreign ministry (primary, via wire)",
     "Al Jazeera",
-    "Dawn",
-    "Al-Monitor",
-    "Jerusalem Post"
+    "France 24",
+    "TASS/FT",
+    "Oman Observer",
+    "Gulf News"
    ],
    "watch": true
   },
   {
    "id": "qeshm-island-strike-sep13",
-   "headline": "A disputed strike hits an Iranian vessel near Qeshm Island; attribution contested between Iran and Trump",
-   "status": "New",
+   "headline": "Qeshm Island vessel strike: attribution remains unresolved; this outlet's own Sunday account conflated it with a separate pipeline attack",
+   "status": "Corrected",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-13-sun",
+   "last_updated": "2026-09-14-am",
    "verification": "Confirmed-multiple (the event); Disputed (attribution)",
-   "one_line": "An Iranian commercial vessel was struck near Qeshm Island in the Strait of Hormuz early Sunday, killing one and wounding 3-4. Iranian state media blamed the US; Trump, traveling in Ireland, said Iran was \"probably\" to blame. No independent forensic account exists on either side.",
-   "score_note": "A lethal strike inside the strait itself, not on a tanker transiting it, is a new category of incident in this war.",
+   "one_line": "An Iranian commercial vessel was struck near Qeshm Island early Sunday, killing one crew member (named by state media as Jamshid Rajabi) and wounding four. Iran's government blames an unnamed enemy and, on state TV, the US directly; no government has claimed responsibility. Sunday's edition incorrectly reported Trump called Iran \"probably\" responsible for this strike -- that remark actually concerned a separate Saturday drone attack on a Saudi oil pipeline. Trump's actual, on-record answer about Qeshm was \"I don't want to say.\" Correction logged to ledgers/corrections.json.",
+   "score_note": "A lethal strike inside the strait itself is a new category of incident in this war; the attribution-conflation correction is itself newsworthy given it materially changes what Trump is on record saying.",
    "sources": [
-    "IRIB (primary, disputed)",
+    "IRNA (primary, disputed)",
     "CNN",
-    "Oman Observer"
+    "France 24",
+    "Philadelphia Inquirer"
+   ],
+   "watch": true
+  },
+  {
+   "id": "iran-nuclear-chief-vienna-blocked-sep14",
+   "headline": "Iran's nuclear chief turned back from Vienna IAEA meeting; Austria summoned",
+   "status": "New",
+   "first_seen": "2026-09-14-am",
+   "last_updated": "2026-09-14-am",
+   "verification": "Confirmed-multiple (visa denial and summons); Single-reliable-source (US-pressure claim)",
+   "one_line": "Iran's AEOI chief Mohammad Eslami and his delegation were denied visas and turned back Saturday en route to the IAEA's annual conference in Vienna. Iran summoned Austria's charge d'affaires Monday; FM spokesman Baghaei called the refusal \"completely unjustified\" and said it occurred \"under American pressure,\" a claim neither Austria nor the US has confirmed.",
+   "score_note": "Further narrows the little diplomatic contact that exists on Iran's nuclear file, alongside the collapsed Salalah talks.",
+   "sources": [
+    "Times of Israel",
+    "Arab News",
+    "Naharnet"
+   ],
+   "watch": true
+  },
+  {
+   "id": "anthropic-openai-pace-frontier-sep13",
+   "headline": "Anthropic and OpenAI call for the industry to \"pace the frontier\"; Asian AI stocks slide",
+   "status": "New",
+   "first_seen": "2026-09-14-am",
+   "last_updated": "2026-09-14-am",
+   "verification": "Confirmed-primary (each company's own statements); Confirmed-multiple (market reaction)",
+   "one_line": "Anthropic CEO Dario Amodei published an essay Saturday arguing the industry must deliberately slow capability gains, warning of agents \"capable of taking over the entire internet\" within 6-12 months absent that; Anthropic will give third-party evaluators including METR permanent system access. OpenAI's Altman agreed within hours and committed to the same access, separately ruling out a 2026 IPO. Microsoft's Nadella welcomed the move. Asian AI-linked shares fell sharply Monday (SoftBank -13.2% intraday in Tokyo); this outlet's own futures snapshot at 6:34 AM ET showed US index futures essentially flat, calmer than some weekend wire accounts of a sharper premarket selloff.",
+   "score_note": "Reads as industry leadership's most direct on-record answer yet to the Coxon/Marks/Hubinger internal safety warnings, landing one day before Casar's oversight deadline.",
+   "sources": [
+    "Anthropic (primary)",
+    "OpenAI (primary)",
+    "Microsoft (primary)",
+    "CNBC",
+    "Fortune",
+    "Bloomberg",
+    "Business Standard"
    ],
    "watch": true
   },
@@ -45,6 +84,42 @@
    "sources": [
     "Rep. Casar's office (primary)",
     "Sen. Hawley's office (primary)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "ukraine-refinery-strikes-poland-train-sep13",
+   "headline": "Ukraine strikes Russian refineries; Trump asks it to stop; a drone hits a train near the Polish border",
+   "status": "New",
+   "first_seen": "2026-09-14-am",
+   "last_updated": "2026-09-14-am",
+   "verification": "Confirmed-multiple (both incidents); Unconfirmed (whether the diplomats' train was the intended target)",
+   "one_line": "Ukraine struck two Russian refineries overnight Fri-Sat (Slavyansk-Eco, Taneco), part of a 60-plus-strike campaign against 24+ refineries this year; Trump publicly urged Zelensky Sunday to stop, citing global fuel-market strain, and Zelensky defended the strikes. Separately, a Russian Geran-5 drone struck a passenger train (208 aboard, no casualties) near the Polish border minutes after a diplomats' train carrying Boris Johnson and Carl Bildt passed the same corridor -- Ukraine's rail operator calls it plausible the diplomats were the target, an assessment, not a confirmed fact. Polish PM Tusk called it a Russian escalation and said Poland \"cannot rule out\" further spillover.",
+   "score_note": "Two new points of friction opened the same weekend: US-Ukraine tactical disagreement, and a drone landing minutes from a train carrying senior European officials.",
+   "sources": [
+    "Ukrainian rail operator and military statements (primary, via wire)",
+    "Polish government statements (primary)",
+    "Reuters",
+    "AP",
+    "Politico Europe"
+   ],
+   "watch": true
+  },
+  {
+   "id": "kushner-doha-strike-remarks-sep13",
+   "headline": "Kushner's Doha-strike remarks draw Israeli political pushback",
+   "status": "New",
+   "first_seen": "2026-09-14-am",
+   "last_updated": "2026-09-14-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "Jared Kushner said Sunday the administration leveraged Israel's \"global isolation\" after last month's Doha strike on Hamas leadership to help broker the current Gaza ceasefire, calling the strike itself \"a terrible thing\" and \"unsuccessful as a military operation.\" Netanyahu's Likud pushed back, arguing the strike helped pressure Hamas toward releasing hostages. The ceasefire remains formally in place but strained.",
+   "score_note": "A senior US official publicly criticizing an Israeli military operation, drawing an on-record rebuttal from the governing party, is a genuine friction point between allies.",
+   "sources": [
+    "Kushner's own remarks (primary, via wire)",
+    "Likud statement (primary)",
+    "Axios",
+    "Times of Israel",
+    "Haaretz"
    ],
    "watch": true
   },
@@ -347,13 +422,13 @@
   },
   {
    "id": "mail-ballot-new-merits-suit-aug26",
-   "headline": "Mail-ballot SCOTUS emergency: states' response due 4 PM today, no ruling yet",
+   "headline": "Mail-ballot Supreme Court case remains unresolved as this outlet's five-day forecast window lapses",
    "status": "Continuing",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-10-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Still no ruling as of Thursday evening. California and roughly two dozen other states continue to warn the Court that letting the USPS mail-ballot rule take effect for November could cause 'chaos' and disenfranchise eligible voters. Briefing has been complete since Wednesday's 4 PM deadline; the case could be decided at any time.",
-   "score_note": "Briefing now complete on both sides; next checkpoint is whether and when the Court acts.",
+   "last_updated": "2026-09-14-am",
+   "verification": "Confirmed-primary (direct docket read)",
+   "one_line": "A direct read of the Supreme Court's docket for USPS v. California (26A305) shows no order through Monday morning -- only amicus filings dated Sept 9-10. This outlet's own forecast (2026-09-09-pm-2) that the Court would act within five days of briefing closing has now passed its window without resolution and will grade wrong in Saturday's scorecard.",
+   "score_note": "Briefing complete since Sept 9-10; next checkpoint is whether and when the Court acts, now well past this outlet's own forecast window.",
    "sources": [
     "Supreme Court docket 26A305 (primary)",
     "SCOTUSblog"
@@ -491,13 +566,13 @@
   },
   {
    "id": "pa-measles-coroner-dispute-aug31",
-   "headline": "PA measles dispute escalates as CDC's national tally excludes both deaths the state reported",
+   "headline": "Pennsylvania records its first adult, and third overall, measles death",
    "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-multiple (commissioner's statement); Disputed (cause of death, three-way: state vs. coroner vs. HHS)",
-   "one_line": "STAT News' Sept 4 coverage confirms the CDC's national tally continues to exclude both Pennsylvania-reported measles deaths; the state health department stands by its own investigation. Separately, Gov. Shapiro and Treasurer Garrity confirmed an Oct 7 gubernatorial debate in Harrisburg.",
-   "score_note": "First elected local official (not just the coroner) to publicly accuse the state of deception -- an escalation in who is making the claim.",
+   "last_updated": "2026-09-14-am",
+   "verification": "Confirmed-multiple (new death); Disputed (cause of death tally, three-way: state vs. coroner vs. CDC)",
+   "one_line": "Jefferson County Coroner Greg Furlong confirmed Saturday Sept 12 that a 40-year-old unvaccinated woman died from measles-related complications -- the state's third measles death of 2026 and its first involving an adult, after two infant deaths in late August. The CDC's national tally continues to exclude the earlier two deaths pending its own review; unclear as of Monday whether the CDC will include or continue to exclude this third case. Gov. Shapiro and Treasurer Garrity's Oct 7 Harrisburg debate remains confirmed.",
+   "score_note": "A third death, and the first adult case, sharpens rather than resolves the CDC-versus-state tally dispute.",
    "sources": [
     "Lancaster County Coroner's office (primary)",
     "Pennsylvania Dept of Health (primary)",
@@ -592,53 +667,6 @@
    "watch": true
   },
   {
-   "id": "nvidia-huggingface-14b-sep2",
-   "headline": "Nvidia's approach for Hugging Face reportedly grows to $14 billion",
-   "status": "Resolved",
-   "first_seen": "2026-09-03-am",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "Nvidia's own SEC 8-K confirms a definitive agreement: roughly $12.9B total (about $11.9B to shareholders plus up to $1B in retention equity) -- below the $14B Bloomberg had reported as 'nearing' two days earlier. Expected to close H1 2027 pending regulatory approval.",
-   "score_note": "Resolves the previously unconfirmed reporting with a primary-source figure.",
-   "sources": [
-    "Bloomberg",
-    "Yahoo Finance"
-   ],
-   "watch": false
-  },
-  {
-   "id": "jfrog-artifactory-kev-sep2",
-   "headline": "CISA adds critical JFrog Artifactory flaw to KEV catalog amid active exploitation",
-   "status": "New",
-   "first_seen": "2026-09-03-am",
-   "last_updated": "2026-09-03-am",
-   "verification": "Confirmed-primary (CISA KEV)",
-   "one_line": "CISA added CVE-2026-82329 (CVSS 9.8, Artifactory auth bypass) to its KEV catalog Sept 2 as part of a 7-CVE batch, federal remediation deadline Sept 10. watchTowr first reported active exploitation Sept 1 (admin-token minting, credential enumeration). No victims named.",
-   "score_note": "Government confirmation follows private-sector telemetry within a day.",
-   "sources": [
-    "CISA KEV catalog (primary)",
-    "watchTowr research",
-    "SC Media"
-   ],
-   "watch": false
-  },
-  {
-   "id": "ai-triple-outage-sep3",
-   "headline": "ChatGPT, Claude and Grok go down within the same window; no evidence of a shared cause",
-   "status": "New",
-   "first_seen": "2026-09-04-am",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-primary (each company's own status page/statement); Unverified (any claim the outages were connected)",
-   "one_line": "No detailed postmortem has been published by OpenAI, Anthropic or xAI as of Friday. Nothing found today changes this report's standing conclusion that no evidence connects the three outages.",
-   "score_note": "Concentration-risk data point independent of whether the causes were actually linked.",
-   "sources": [
-    "Bloomberg",
-    "The Register",
-    "company status pages (primary)"
-   ],
-   "watch": false
-  },
-  {
    "id": "us-jobs-report-aug-beat-sep4",
    "headline": "August payrolls blow past every forecast, reviving Fed rate-hike odds",
    "status": "New",
@@ -686,23 +714,6 @@
     "TechTimes"
    ],
    "watch": true
-  },
-  {
-   "id": "lululemon-guidance-cut-sep3",
-   "headline": "Lululemon shares crater toward an eight-year low on a third 2026 guidance cut",
-   "status": "New",
-   "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Fiscal Q2 revenue missed ($2.42B vs ~$2.46B consensus); North American comps -12%. Full-year revenue guidance cut to $10.35-10.5B (from a ~$11.03B consensus level) and EPS to $9.48-9.73 -- the company's third guidance cut this year.",
-   "score_note": "Three consecutive cuts inside one year signal a structural North American demand problem, not a single soft quarter.",
-   "sources": [
-    "Company earnings release",
-    "Benzinga",
-    "Yahoo Finance",
-    "TheStreet"
-   ],
-   "watch": false
   },
   {
    "id": "isar-spectrum-scrub-sep4",

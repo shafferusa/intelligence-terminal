@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Mon, Sep 14, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-14",
+    "slot": "am",
+    "title": "Hormuz Talks Collapse as AI Labs Call for a Pause",
+    "path": "reports/2026/09/2026-09-14-am.html",
+    "summary": "Monday's planned Iran-Gulf talks on Strait of Hormuz safety collapsed before they began, Iran's nuclear chief was turned back from a Vienna IAEA meeting, oil held near four-month highs, and Anthropic's and OpenAI's own leaders called for the industry to slow down as Asian AI stocks sold off.",
+    "headlines": [
+      "Iran-GCC Hormuz safety talks postponed hours before they were due to start",
+      "Anthropic and OpenAI call to 'pace the frontier' as Asian AI stocks slide",
+      "Oil holds near $102 as Gulf risk compounds; Pennsylvania records its first adult measles death"
+    ],
+    "reading_minutes": 24,
+    "generated_at": "2026-09-14T07:15:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <!-- ================= MASTHEAD ================= -->
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Hormuz Talks Collapse as AI Labs Call for a Pause</h1>
+      <p class="paper-dateline">
+        Monday, September 14, 2026 <span class="sep">&middot;</span> 24 min read
+      </p>
+      <p class="paper-standfirst">
+        The war&rsquo;s only scheduled diplomacy dissolved before it began, oil held near four-month highs, and the two labs building the most capable AI systems both told the public they need to slow down.
+      </p>
+    </header>
+
+    <!-- ================= THE BRIEF ================= -->
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Monday&rsquo;s Iran-Gulf talks on Strait of Hormuz safety were postponed hours before they were due to start in Salalah, Oman &mdash; the war&rsquo;s first prospective diplomatic session, called off after Sunday&rsquo;s fatal strike on an Iranian vessel near Qeshm Island and Bahrain&rsquo;s boycott. Iran&rsquo;s nuclear chief was separately turned back from a Vienna IAEA meeting.</li>
+          <li><b>Markets.</b> Oil is holding near $102/bbl after Friday&rsquo;s jump; this report&rsquo;s own overnight snapshot shows US equity futures essentially flat, a calmer read than some weekend wire accounts of a sharper premarket AI-driven selloff, though Asian AI-linked shares fell hard overnight. The 10-year sits near 4.98% three days before the Fed&rsquo;s decision.</li>
+          <li><b>The thread.</b> Two systems under strain at once: a war with no working channel to de-escalate a strait one-fifth of the world&rsquo;s oil moves through, and an AI industry whose own leaders are now publicly asking each other to slow down.</li>
+          <li><b>Biggest risk.</b> A second Hormuz-area incident before any dialogue mechanism exists to manage it &mdash; probability estimated 30&ndash;45% within a week, given no new talks date has been set.</li>
+          <li><b>Watch today.</b> A quiet calendar by this week&rsquo;s standards &mdash; Treasury&rsquo;s 13- and 26-week bill auctions are the only scheduled US item before the Fed&rsquo;s blackout gives way to Tuesday&rsquo;s FOMC meeting.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= TOP STORIES =================
+         8-12 stories. The first carries .story--lead (bigger headline,
+         drop cap). Each story: headline, deck, body prose, and at most two
+         .story-note blocks (Why it matters / What's next). The old seven
+         labelled subheads are gone - write it as prose.
+         .flag appears ONLY on a genuinely shaky claim.
+         Expanded analysis stays in a collapsed <details>. -->
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Iran-Gulf talks on Hormuz safety collapse before they begin</h3>
+          <p class="story-deck">The war&rsquo;s first prospective diplomatic session was postponed hours before it was due to start &mdash; Oman calls it a joint decision &ldquo;in the interest of consensus,&rdquo; but the timing points to Sunday&rsquo;s fatal strike near Qeshm Island.</p>
+          <div class="story-body">
+            <p>Monday&rsquo;s planned meeting in Salalah, Oman &mdash; Iran and Iraq sitting down with five Gulf Cooperation Council states (Saudi Arabia, the UAE, Kuwait, Qatar and Oman) on managing safety through the Strait of Hormuz &mdash; was postponed, Omani Foreign Minister Badr Albusaidi said Sunday, describing it as a joint Tehran-Muscat decision taken at the request of some regional countries &ldquo;in the interest of consensus.&rdquo; No new date has been set. It would have been the first Iran-GCC ministerial contact since the war began in February.</p>
+            <p>Two pressures converged on the meeting before it could happen. Bahrain announced Saturday it would not attend at all, citing relations with Iran severed since 2016 and rejecting Iran&rsquo;s proposed transit-fee mechanism outright. Then, in the early hours of Sunday, an Iranian-flagged cargo vessel carrying ten crew was struck near Qeshm Island inside the strait, killing one crew member &mdash; named by state media as Jamshid Rajabi &mdash; and wounding four; a fire aboard was contained during evacuation. Iran&rsquo;s government blames an unnamed &ldquo;terrorist enemy&rdquo; and, on state television, the United States directly; no government has claimed responsibility, and asked by a reporter Sunday whether the US struck the vessel, President Trump said only, &ldquo;I don&rsquo;t want to say.&rdquo; <span class="flag">Disputed attribution</span> That is a refusal to answer, not a denial or a confirmation, and this outlet treats attribution as unresolved. Separate wire reporting quotes Iran&rsquo;s foreign ministry saying Tehran will not cooperate on reopening Hormuz until Washington agrees to its own terms &mdash; language suggesting a genuine impasse behind the postponement, not just a scheduling conflict.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This was the only diplomatic channel addressing the strait directly, in a week when a Saudi export pipeline is already shut and Houthi forces control every chokepoint on the Yemeni side of the Red Sea approach. Its collapse leaves no working mechanism to de-escalate the next incident.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              No rescheduled date. Watch for whether Oman, which brokered the original session, attempts a narrower bilateral track with Iran alone.
+            </div>
+          </div>
+          <p class="story-sourceline">Omani foreign ministry statement (primary, via wire) &middot; Al Jazeera, France 24, TASS/FT, Oman Observer, Gulf News (Confirmed-multiple on the postponement).</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>The sequence matters: Iran agreed to the Salalah session Friday, then a senior Iranian official spent the weekend downgrading expectations to a discussion forum rather than a signing event, before the meeting was pulled entirely following Sunday&rsquo;s strike. Each step narrowed what the session could plausibly achieve even before it was called off. A genuinely narrower bilateral Oman-Iran track, if one emerges, would be a real if partial substitute; a full Iran-GCC session with Bahrain still absent would not resolve the underlying dispute over transit fees regardless.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Correction: this outlet&rsquo;s account of Trump&rsquo;s Qeshm remark conflated two separate strikes</h3>
+          <p class="story-deck">Sunday&rsquo;s edition said Trump called Iran &ldquo;probably&rdquo; responsible for the Qeshm Island vessel strike. He didn&rsquo;t &mdash; that comment was about a different attack, on a Saudi pipeline, two days earlier.</p>
+          <div class="story-body">
+            <p>This outlet&rsquo;s Sunday edition reported that President Trump, asked about the Qeshm Island strike, said &ldquo;Iran was probably to blame.&rdquo; That is incorrect. Verified against contemporaneous, dated reporting: Trump&rsquo;s &ldquo;I think they are, probably they are&rdquo; remark, made Saturday in Dublin, answered a question about Thursday&rsquo;s drone attack on Saudi Arabia&rsquo;s East-West oil pipeline &mdash; a separate incident that Riyadh and Baghdad have linked to Iran-backed militias operating from Iraq, a claim those militias deny. Asked specifically about Sunday&rsquo;s Qeshm vessel strike, Trump&rsquo;s actual, on-record answer was &ldquo;I don&rsquo;t want to say&rdquo; &mdash; a refusal to comment, not an attribution either way. Logged to the corrections ledger; see the colophon.</p>
+          </div>
+          <p class="story-sourceline">CNN, Business Recorder, Times of Israel, US News, Al Jazeera (Thursday pipeline attack, Trump&rsquo;s Dublin remark) &middot; CNN, France 24, the Philadelphia Inquirer (Sunday Qeshm strike and Trump&rsquo;s actual quote) &mdash; Confirmed-multiple on both, independently verified this run.</p>
+        </article>
+
+        <article class="story">
+          <h3>Iran&rsquo;s nuclear chief turned back from Vienna; Austria summoned</h3>
+          <p class="story-deck">Tehran says Austria denied visas under American pressure and has summoned its charg&eacute; d&rsquo;affaires &mdash; a claim neither Austria nor Washington has confirmed.</p>
+          <div class="story-body">
+            <p>Iran&rsquo;s Atomic Energy Organization chief Mohammad Eslami and his delegation were denied visas and turned back Saturday en route to the IAEA&rsquo;s annual conference in Vienna. Iran summoned Austria&rsquo;s charg&eacute; d&rsquo;affaires Monday in protest; foreign ministry spokesman Esmail Baghaei called the refusal &ldquo;completely unjustified&rdquo; and said &ldquo;it is clear to us this occurred under American pressure,&rdquo; while adding that does not absolve Austria of responsibility. <span class="flag">Single-sourced claim</span> No Austrian or US official has confirmed or denied the pressure allegation on the record; treat it as Iran&rsquo;s account pending independent confirmation.</p>
+          </div>
+          <p class="story-sourceline">Times of Israel, Arab News, Naharnet (Confirmed-multiple on the visa denial and summons; Single-reliable-source on the US-pressure claim).</p>
+        </article>
+
+        <article class="story">
+          <h3>Anthropic and OpenAI call for the industry to &ldquo;pace the frontier&rdquo;</h3>
+          <p class="story-deck">Anthropic&rsquo;s CEO warned of agents capable of internet-scale damage within a year; OpenAI agreed within hours. Asian AI stocks sold off hard overnight; this report&rsquo;s own snapshot shows US futures barely moved.</p>
+          <div class="story-body">
+            <p>Anthropic CEO Dario Amodei published a roughly 3,800-word essay Saturday, &ldquo;We Must Pace the Frontier,&rdquo; arguing the industry must deliberately slow capability gains so safety work can keep pace, and warning that absent that, AI agents could within six to twelve months be &ldquo;capable of taking over the entire internet, potentially causing hundreds of billions of dollars in damage.&rdquo; Anthropic said it will unilaterally give third-party evaluators, including METR, permanent, employee-level access to its systems. Within hours, OpenAI&rsquo;s Sam Altman said publicly he agrees &ldquo;we need to pace the frontier&rdquo; and committed OpenAI to the same evaluator access; in a separate Fortune interview, Altman said an OpenAI IPO in 2026 would be &ldquo;ill-advised&rdquo; and ruled one out this year &mdash; a reversal from earlier reporting that a filing could come this fall. Microsoft&rsquo;s Satya Nadella welcomed the move Sunday and announced a code of conduct for Microsoft&rsquo;s own in-house AI models. Not everyone agreed: former White House AI and crypto adviser David Sacks said the labs should pace themselves without seeking anything from Washington in return, and Trump downplayed AI-risk concerns Sunday.</p>
+            <p>Asian AI-linked shares fell sharply Monday on the combination of this news and separate reporting on Chinese chip constraints &mdash; SoftBank down as much as 13.2% in Tokyo, China&rsquo;s Z.ai down roughly 10.5%, Minimax about 7.8%, Zhongji Innolight about 6.7%. US equity futures, by contrast, were essentially flat as of this report&rsquo;s own data pull at 6:34 AM ET (S&amp;P futures +0.01%, Nasdaq futures +0.02% versus Friday&rsquo;s settle) &mdash; a calmer picture than some earlier weekend wire accounts describing a sharper premarket US selloff. Those earlier figures may reflect an earlier moment or prove more accurate once cash trading opens; this report states only what its own snapshot showed at the time stated.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This lands one day before Rep. Casar&rsquo;s Tuesday deadline for OpenAI and Anthropic to give fuller answers on AI-agent incidents, and follows a week of Anthropic researchers (Jacob Coxon, Samuel Marks, Evan Hubinger) publicly warning neither lab is acting responsibly on self-improving AI. Read as leadership&rsquo;s most direct on-record answer yet to those internal warnings &mdash; not a response to Congress&rsquo;s specific document requests, which remain outstanding.
+            </div>
+          </div>
+          <p class="story-sourceline">Anthropic&rsquo;s own essay and evaluator-access statement (primary) &middot; OpenAI&rsquo;s and Microsoft&rsquo;s own statements (primary) &middot; CNBC, Fortune, Bloomberg, Business Standard (market reaction, Confirmed-multiple) &middot; this report&rsquo;s own Yahoo Finance futures snapshot.</p>
+        </article>
+
+        <article class="story">
+          <h3>Oil holds near four-month highs as Gulf supply risk compounds</h3>
+          <p class="story-deck">A shut Saudi pipeline, Houthi control of Bab el-Mandeb&rsquo;s Yemeni-side chokepoints, and now Sunday&rsquo;s Qeshm strike and the collapsed talks all point the same direction.</p>
+          <div class="story-body">
+            <p>WTI crude settled Friday at $102.41/bbl, up 2.36% on the day; this morning&rsquo;s snapshot (6:34 AM ET, Delayed) shows it holding those gains at $102.31. The rise coincided with several concurrent developments rather than any single confirmed catalyst: Saudi Arabia&rsquo;s East-West pipeline, with roughly 4-5 million barrels a day of capacity, remains shut after Thursday&rsquo;s drone attack, which Riyadh and Baghdad have linked to Iran-backed militias in Iraq (those militias deny it); Houthi forces completed a sweep of Yemen&rsquo;s Red Sea coastline last week, giving them effective control of every chokepoint on the strait&rsquo;s Yemeni side; and now the Qeshm strike and the Salalah talks&rsquo; collapse add a more direct threat to the strait itself. Gold held roughly flat near $4,332/oz; the dollar index ticked up slightly to 99.56.</p>
+          </div>
+          <p class="story-sourceline">This report&rsquo;s own Yahoo Finance close-to-close data (Delayed) &middot; CNN, Bloomberg, Reuters wire coverage of the pipeline and Houthi developments (Confirmed-multiple).</p>
+        </article>
+
+        <article class="story">
+          <h3>Ukraine strikes Russian refineries; Trump asks it to stop; a drone hits a train near the Polish border</h3>
+          <p class="story-deck">Two fronts of friction opened at once: Washington publicly asking Kyiv to ease off one tactic, and a Russian drone landing minutes after a diplomats&rsquo; train passed the same corridor.</p>
+          <div class="story-body">
+            <p>Ukraine struck two Russian refineries overnight Friday into Saturday &mdash; Slavyansk-Eco in Krasnodar Krai and Taneco in Tatarstan &mdash; part of a campaign that has now hit more than 24 refineries with over 60 strikes this year. Trump publicly urged Zelensky on Sunday to stop targeting Russian refineries and diesel infrastructure, citing strain on global fuel markets; Zelensky defended the strikes, and Ukrainian officials frame them as pressure on the economic base sustaining Russia&rsquo;s war. Separately, a Russian Geran-5 drone struck a passenger train carrying 208 people (no casualties) overnight near the Yahodyn-Dorohusk crossing on the Polish border &mdash; minutes, Ukraine&rsquo;s rail operator says, after a diplomatic train carrying Boris Johnson, Carl Bildt and other European officials had passed the same corridor on an adjusted schedule. <span class="flag">Unconfirmed</span> Whether the diplomats&rsquo; train was the intended target is the rail operator&rsquo;s own assessment, not independently confirmed; Russia has not commented. Polish Foreign Minister Sikorski said there was &ldquo;no border violation&rdquo; but called the strike &ldquo;a Russian escalation&rdquo;; Prime Minister Tusk said the war is &ldquo;getting closer to our borders&rdquo; and that Poland &ldquo;cannot rule out&rdquo; further spillover.</p>
+          </div>
+          <p class="story-sourceline">Ukrainian rail operator and military statements (primary, via wire) &middot; Polish government statements (primary) &middot; Reuters, AP, Politico Europe (Confirmed-multiple on both incidents; target-intent claim Unconfirmed).</p>
+        </article>
+
+        <article class="story">
+          <h3>Kushner&rsquo;s Doha-strike remarks draw Israeli political pushback</h3>
+          <p class="story-deck">Kushner said Israel&rsquo;s post-strike isolation helped force the ceasefire deal; Netanyahu&rsquo;s Likud says the strike itself helped free hostages.</p>
+          <div class="story-body">
+            <p>Jared Kushner said Sunday the administration leveraged Israel&rsquo;s &ldquo;global isolation&rdquo; after last month&rsquo;s strike on Hamas leadership in Doha to help broker the current Gaza hostage-ceasefire deal, calling the Doha strike itself &ldquo;a terrible thing&rdquo; and &ldquo;unsuccessful as a military operation.&rdquo; Netanyahu&rsquo;s Likud pushed back publicly, arguing the strike helped pressure Hamas toward releasing hostages rather than undermining the process. The ceasefire itself remains formally in place but strained, with Hamas warning last week it &ldquo;could collapse&rdquo; and a still-unresolved tally of alleged violations on both sides.</p>
+          </div>
+          <p class="story-sourceline">Kushner&rsquo;s own remarks (primary, via wire) &middot; Likud statement (primary) &middot; Axios, Times of Israel, Haaretz (Confirmed-multiple).</p>
+        </article>
+
+        <article class="story">
+          <h3>Pennsylvania records its first adult, and third overall, measles death</h3>
+          <p class="story-deck">A Jefferson County coroner confirmed a 40-year-old unvaccinated woman died Saturday &mdash; and the CDC-versus-state tally dispute is now sharper, not resolved.</p>
+          <div class="story-body">
+            <p>Jefferson County Coroner Greg Furlong confirmed Saturday that a 40-year-old unvaccinated woman died from measles-related complications &mdash; Pennsylvania&rsquo;s third measles death of 2026, and its first involving an adult after two infant deaths in late August. The CDC has excluded both of the earlier deaths from its national tally pending its own review, a dispute this outlet has tracked since late August; it remains unclear as of Monday morning whether the CDC will include or continue to exclude this third case.</p>
+          </div>
+          <p class="story-sourceline">Jefferson County Coroner&rsquo;s office (primary, via reporting) &middot; NPR, NBC News (Confirmed-multiple).</p>
+        </article>
+
+        <article class="story">
+          <h3>Mail-ballot Supreme Court case remains unresolved as briefing-plus-five-days passes</h3>
+          <p class="story-deck">No order has issued in USPS v. California since briefing closed Sept. 9-10; this outlet&rsquo;s own forecast that the Court would act within five days is set to grade wrong.</p>
+          <div class="story-body">
+            <p>A direct read of the Supreme Court&rsquo;s own docket for USPS v. California (No. 26A305) shows no order or ruling through this morning &mdash; only amicus filings dated Sept. 9-10 from groups including the DSCC, NAACP, LULAC and a bipartisan group of former governors. The case concerns a government stay application targeting a district-court injunction against a USPS mail-ballot rule. This outlet logged a forecast last week estimating a 35-50% chance the Court would act within five days of briefing closing; that window has now passed without action, and the forecast will be graded in Saturday&rsquo;s scorecard.</p>
+          </div>
+          <p class="story-sourceline">Supreme Court docket 26A305 (primary, direct read this run) &middot; SCOTUSblog.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ================= OVERNIGHT ================= -->
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>The sequence since Sunday morning&rsquo;s edition, roughly in order: Friday night into Saturday, Ukraine struck two Russian refineries and Trump made his Dublin remark on the Saudi pipeline attack. Saturday, Bahrain announced its Salalah boycott, Anthropic&rsquo;s Amodei published his pacing essay, and Iran&rsquo;s nuclear chief was turned back from Vienna. Sunday in the early hours, the Qeshm Island vessel was struck and a drone hit the train near the Polish border; later Sunday, Oman announced the Salalah talks&rsquo; postponement, Kushner made his Doha remarks, and Trump publicly asked Zelensky to ease off refinery strikes. Overnight into Monday, Asian AI-linked equities sold off sharply while US index futures held roughly flat through this report&rsquo;s 6:34 AM ET data pull. Full detail on each thread is in Top Stories above; nothing here is new beyond the timeline itself.</p>
+      </div>
+    </section>
+
+    <!-- ================= DOMAIN SECTIONS ================= -->
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p><strong>Correction: H.R. 6500 is already law, not pending House action.</strong> Sunday&rsquo;s edition described H.R. 6500, the stopgap government-funding bill, as coming before the House today. That was wrong: the bill passed the House 370-48 on Sept. 1, passed the Senate 90-6 before that, and was signed into law Sept. 2 as Public Law No. 119-103, funding the government through Dec. 11. There is no House floor action on this bill pending. Logged to the corrections ledger; see the colophon.</p>
+        <p>No weekend movement was found on two other tracked deadlines: Rep. Casar&rsquo;s Tuesday deadline for OpenAI and Anthropic to answer AI-agent-incident questions more fully, and Sen. Hawley&rsquo;s Oct. 1 document deadline for OpenAI on the Hugging Face incident. Trump repeated his $5,000 midterm &ldquo;dividend&rdquo; pledge again Sunday from Ireland, tying it explicitly to a GOP House-and-Senate win in November; no funding mechanism or legislative vehicle has emerged for either that pledge or the previously announced $500 ACA rebate checks.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>The Fed&rsquo;s blackout period, in effect since Saturday, runs through the day after Wednesday&rsquo;s decision; no official comment is expected before then. Press-reported CME FedWatch odds continue to show roughly 85-90% probability of a 25-basis-point hike to 3.75-4.00% at Wednesday&rsquo;s meeting &mdash; unchanged from Friday&rsquo;s reading by press accounts; this outlet did not pull a live CME reading this run and labels the figure Estimated. Treasury auctions 13-week ($92B) and 26-week ($79B) bills today, settling Sept. 17 &mdash; routine. One calendar correction from Sunday&rsquo;s edition: the Empire State Manufacturing Survey is Tuesday, not today, and Retail Sales and Import/Export Price Indexes land Wednesday morning, roughly 5.5 hours ahead of the 2:00 PM rate decision.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>Djibouti is set to sign the Artemis Accords today at NASA headquarters, becoming the 72nd signatory nation. SpaceX&rsquo;s Starship Flight 14 &mdash; the V3 vehicle&rsquo;s first flight to carry a live payload, roughly 20 Starlink V3 satellites &mdash; is still targeting Friday, Sept. 18, from Starbase (backup Saturday); the date is not yet final. Roscosmos&rsquo;s Progress MS-35 resupply mission remains on schedule for Wednesday, Sept. 16, launching from Baikonur and docking at the ISS two days later.</p>
+      </div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>&mdash;</td><td class="txt"><strong>Treasury bill auctions</strong> &mdash; 13-week ($92B), 26-week ($79B), settle Sept. 17</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Djibouti signs the Artemis Accords, NASA HQ (72nd signatory)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">No watchlist companies report earnings this week</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">A quiet day by this week&rsquo;s standard; the Treasury auctions are the only scheduled US item, bolded for that reason rather than for genuine market weight. Tomorrow: the FOMC&rsquo;s two-day meeting begins, alongside the Empire State Manufacturing Survey.</p>
+    </section>
+
+    <!-- ================= MARKET SETUP ================= -->
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures were little changed as of this report&rsquo;s 6:34 AM ET data pull: S&amp;P 500 futures +0.01%, Nasdaq-100 futures +0.02%, Dow futures roughly flat, Russell 2000 futures +0.02% &mdash; all Delayed (+10 min) and none a guaranteed open. That calm sits oddly against overnight reality: Asian AI-linked shares fell sharply on the Amodei/Altman pacing news, and some earlier weekend wire accounts described a sharper US premarket selloff than this snapshot shows; this report states only what its own data pull found at the time stated, not what came before or may come after. The 10-year Treasury yield sits near 4.98% (cross-checked against Friday&rsquo;s official par curve at 4.96%), the dollar index at 99.56, essentially flat. Crude is holding just above $102/bbl, gold near $4,332/oz. Cboe&rsquo;s own indicative pre-open VIX read shows a sharp jump from Friday&rsquo;s 15.84 close, but the cash index itself will not print a fresh, tradeable value until the 9:30 AM ET open &mdash; treat the pre-open figure as indicative only.</p>
+        <p>The most fragile assumption in this morning&rsquo;s calm futures tape is that it holds once cash trading actually absorbs both the Hormuz diplomatic collapse and the AI-industry pacing story that already hit Asian markets hard. What would invalidate it: a further Gulf incident, a hawkish headline ahead of the Fed&rsquo;s decision, or renewed AI-sector selling once US trading opens.</p>
+      </div>
+    </section>
+
+    <!-- ================= RISKS ================= -->
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>A further Hormuz-area incident before any new talks date.</strong> Preconditions: no rescheduled Salalah session, an unresolved attribution dispute over the Qeshm strike, and a Saudi pipeline already shut. Probability 30-45% within a week, on the basis that both a fatal vessel strike and a pipeline attack occurred in the same week with no de-escalation channel now in place. Indicators: further attacks on shipping or coastal facilities, official Iranian or Gulf-state statements. If it happens: oil spikes further, shipping-insurance costs in the Gulf rise. Invalidated by a newly announced talks date or a confirmed, mutually accepted attribution.</p>
+        <p><strong>The AI-sector selloff spreads into the US cash session.</strong> Preconditions: Asian AI-linked shares already down sharply overnight on the same set of facts US futures have so far shrugged off. Probability 30-40%, on the basis that premarket futures often understate a story&rsquo;s eventual reach into the cash session. Indicators: SMH, XLK and mega-cap AI names at the open. If it happens: broad tech-led weakness rather than an isolated move. Invalidated by a calm cash open matching this morning&rsquo;s futures snapshot.</p>
+      </div>
+    </section>
+
+    <!-- ================= LOCAL NEWS =================
+         THREE beats, each covered in its own right, in this order:
+           1. Bridgeville / South Fayette / South Hills
+           2. Pittsburgh & Allegheny County
+           3. Pennsylvania
+         Up to two items per beat, each with a .local-place label naming which
+         beat it belongs to. Quality-gated, never padded: a beat with nothing
+         worth reporting is simply absent that day, and some days only one of
+         the three appears. Crime blotter, event listings and weather chatter
+         are not news.
+
+         The weather strip is MORNING EDITION ONLY, from the National Weather
+         Service gridpoint for Bridgeville, PA. It leads this section. -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">71&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Sunny, north wind 6-9 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">71&deg;</span>
+            <span class="sky">Sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="lo">50&deg;</span>
+            <span class="sky">Partly cloudy</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">82&deg;</span>
+            <span class="sky">Mostly sunny</span>
+          </div>
+        </div>
+        <!-- No active NWS alert for this point as of this run -- omitted. -->
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>Council meets tonight at a relocated venue; a stop-sign ordinance is on the agenda</h3>
+        <div class="story-body">
+          <p>Bridgeville Borough Council&rsquo;s regular second-Monday meeting is being held tonight at Chartiers Park, Shelter No. 1, rather than the Borough Building &mdash; a one-month venue change that also means no Zoom livestream. On the agenda: an ordinance amending Chapter 15 (Motor Vehicles &amp; Traffic), Part 2, &sect;15-211.1, governing stop intersections. Separately, PennDOT has traffic-signal upgrade work underway along Washington Pike/Washington Avenue through Bridgeville, Heidelberg and Collier, including the Chartiers Valley Shopping Center and the I-79 interchange, with longer-range plans to widen Route 50 near that interchange and add turn lanes at Alpine and Boyce roads in South Fayette.</p>
+        </div>
+        <p class="story-sourceline">Bridgeville Borough official notice; PennDOT District 11 (primary) &middot; WPXI.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Paid-parental-leave proposal likely to be scaled back; PRT&rsquo;s route-redesign comment period is open</h3>
+        <div class="story-body">
+          <p>After a Sept. 10 County Council public hearing on a proposal requiring county employers to provide 18 weeks of paid leave after a birth, adoption or foster placement &mdash; among the most generous such mandates in the country as written &mdash; a Sept. 14 report says the bill is likely to be scaled back before any further vote. Separately, Pittsburgh Regional Transit&rsquo;s &ldquo;Bus Line Refresh&rdquo; is taking public comment through Sept. 30 on a redesigned network adding 14 routes and modifying 56, targeting 20% more Saturday service and 18% more Sunday service. The state&rsquo;s new budget included no new transit funding; PRT instead won approval to draw $107M in state capital funds to cover its deficit over the next two years, leaving the redesigned network&rsquo;s durability past 2028 an open question.</p>
+        </div>
+        <p class="story-sourceline">WESA &middot; Engage PRT (rideprt.org, primary) &middot; PublicSource, NextPittsburgh.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Shapiro-Garrity debate set for Oct. 7; legislature returns Sept. 28</h3>
+        <div class="story-body">
+          <p>Gov. Josh Shapiro and challenger Stacy Garrity have agreed to a single prime-time debate, Oct. 7 at 8 PM, moderated by Dennis Owens at abc27&rsquo;s Harrisburg studio and carried across Nexstar&rsquo;s Pennsylvania stations; it remains the only debate scheduled, though Garrity&rsquo;s campaign has proposed additional ones. The state House&rsquo;s own calendar confirms it is out of session until Sept. 28. (See also this morning&rsquo;s Top Story on the state&rsquo;s third measles death, a Pennsylvania story with a national dimension via the CDC tally dispute.)</p>
+        </div>
+        <p class="story-sourceline">ABC27, PoliticsPA, Philadelphia Inquirer &middot; palegis.us (primary, legislative calendar).</p>
+      </article>
+    </section>
+
+    <!-- ================= MARKET APPENDIX ================= -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, narrowing</span> Supporting: the S&amp;P and Nasdaq closed Friday near record levels, Friday's whole-market breadth was positive (3,172 advancers vs. 2,022 decliners, EOD official, universe 5,370), and high-yield spreads remain tight at 2.70% (EOD official, Sept. 10 observation). Contradicting: small caps lag (IWM 2.6% below its 20-day average, near the bottom of this report's tracked range), Treasuries sit near 52-week-low prices (TLT within 0.3% of its 52-week low), and volatility's term structure, while still in contango, has compressed sharply (VIX9D 14.47, VIX 15.84, VIX3M 18.60, EOD official Sept. 11 close). Confidence: moderate. Change from prior report: little changed since Friday's close &mdash; no US cash trading occurred over the weekend.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Sept. 11 close vs. Sept. 10 close, unless noted.</caption>
+              <thead><tr><th>Fund</th><th>Close</th><th>1D</th><th>vs. 20-DMA</th><th>vs. 50-DMA</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>764.29</td><td class="up">+0.85%</td><td class="down">&minus;0.34%</td><td class="up">+0.75%</td></tr>
+                <tr><td>QQQ</td><td>714.88<small>(QQQM 294.39)</small></td><td class="up">+0.89%</td><td class="down">&minus;0.11%</td><td class="up">+0.63%</td></tr>
+                <tr><td>DIA</td><td>525.79</td><td class="up">+0.97%</td><td class="down">&minus;1.08%</td><td class="down">&minus;0.64%</td></tr>
+                <tr><td>IWM</td><td>288.89</td><td class="up">+0.41%</td><td class="down">&minus;2.60%</td><td class="down">&minus;2.49%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Large caps (SPY, QQQ, DIA) sit modestly above their 50-day averages and slightly below their 20-day; small caps (IWM) sit meaningfully below both &mdash; the narrowing-leadership pattern the regime read above describes. VOO, VTI, MDY, IJH, AVUV and IWN were not pulled this run (universe trimmed to reduce redundant fetches, per this system's fetch-discipline rule); no signal implied by their absence.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Friday, Sept. 11 (EOD official, Massive grouped-daily, universe 5,370 symbols &ge;$1 and &ge;100k volume): 3,172 advancers, 2,022 decliners, 176 unchanged; up-volume $8.14B vs. down-volume $4.62B &mdash; broad, not narrow, participation on the day. This system's EMA-based %-above-50/200-day metric remains <span class="chip">Estimated &mdash; EMA proxy, accumulating history (35/200 sessions)</span> and is not yet reportable as a reliable read.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Sept. 11 vs. Sept. 10 close.</caption>
+              <thead><tr><th>Sector</th><th>1D</th></tr></thead>
+              <tbody>
+                <tr><td>XLK (Technology)</td><td class="up">+1.32%</td></tr>
+                <tr><td>XLI (Industrials)</td><td class="up">+1.07%</td></tr>
+                <tr><td>XLC (Comm. Services)</td><td class="up">+0.99%</td></tr>
+                <tr><td>XLY (Cons. Discretionary)</td><td class="up">+0.89%</td></tr>
+                <tr><td>XLRE (Real Estate)</td><td class="up">+0.86%</td></tr>
+                <tr><td>XLF (Financials)</td><td class="up">+0.67%</td></tr>
+                <tr><td>XLB (Materials)</td><td class="up">+0.37%</td></tr>
+                <tr><td>XLP (Cons. Staples)</td><td class="up">+0.35%</td></tr>
+                <tr><td>XLE (Energy)</td><td class="up">+0.32%</td></tr>
+                <tr><td>XLU (Utilities)</td><td class="down">&minus;0.31%</td></tr>
+                <tr><td>XLV (Health Care)</td><td class="down">&minus;0.18%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Rotation matrix read: Technology and Industrials Leading; Communication Services and Consumer Discretionary Improving; Utilities and Health Care Lagging, consistent with a risk-on, rate-insensitive-favoring session. No sector fell more than 0.31%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Mega-cap tech (EOD official, Sept. 11 vs. Sept. 10): AMZN +1.94%, GOOGL +1.77%, AAPL +1.75%, MSFT +0.65%, TSLA +0.52%, META +0.57%, NVDA &minus;0.03%, SPCX +2.05% (SPCX also sits 11.95% above its 50-day average, the widest of any name tracked here &mdash; price history begins 2026-06-12 per this system's registry, no earlier data used). Defense/aero and space: RKLB +1.60%, PLTR +0.83%, AVAV &minus;0.24%, LMT &minus;1.12%, RTX &minus;0.22%. Broader AI-infrastructure, financials, health and consumer single names were not individually pulled this run beyond the sector-ETF level above; treat their absence as a trimmed universe, not a null result.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official, Sept. 11 (most recent published curve).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th><th>1D chg</th></tr></thead>
+              <tbody>
+                <tr><td>3M</td><td>4.07%</td><td class="up">+7bp</td></tr>
+                <tr><td>2Y</td><td>4.63%</td><td class="up">+7bp</td></tr>
+                <tr><td>5Y</td><td>4.78%</td><td class="up">+3bp</td></tr>
+                <tr><td>10Y</td><td>4.96%</td><td class="up">+1bp</td></tr>
+                <tr><td>30Y</td><td>5.35%</td><td class="down">&minus;2bp</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +33bp, 3m10y +89bp, 5s30s +57bp &mdash; curve still positively sloped and steepening modestly at the front end. 10-year real yield (DFII10) 2.55% (Sept. 10 obs.), 10-year breakeven (T10YIE) 2.36% (Sept. 11 obs.), SOFR 3.62% (Sept. 10 obs.) &mdash; all EOD official via FRED. Funds: TLT +0.11%, IEF &minus;0.19%, TIP &minus;0.46% (Sept. 11 vs. Sept. 10 close); TLT sits within 0.3% of its 52-week low ($80.67), reflecting the elevated-yield backdrop. SGOV, BIL, SHY, IEI, GOVT, SCHP, BND, AGG and MUB were not pulled this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA high-yield OAS: 2.70% (EOD official, Sept. 10 observation via FRED; no newer observation available as of this run, so no new row was appended to this system's own hy-oas.csv archive). LQD &minus;0.04%, HYG &minus;0.03% (Sept. 11 vs. Sept. 10) &mdash; both essentially flat. HYG/LQD ratio 0.753, little changed. Credit is not confirming the oil-driven risk narrative in Top Stories one way or the other this week &mdash; spreads remain near cycle-tight levels even as Gulf risk has risen, worth watching for a lag rather than an absence of reaction. JNK, VCIT, BKLN and SRLN were not pulled this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 15.84 (EOD official, Sept. 11 close), VIX9D 14.47, VIX3M 18.60 &mdash; contango across the curve, not inverted. Cboe's delayed pre-open quote for Monday shows a sharp indicative jump (roughly +13% over Friday's close), but this is not a tradeable print; the cash index resumes at 9:30 AM ET. Put/call ratios remain unavailable (Cboe's endpoint has returned 403 for weeks; not counted as a failed source per this system's standing note). MOVE index: no allowlisted free source. Dealer gamma: not tracked, no legitimate free source.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>Dollar index (DX-Y.NYB) 99.56, +0.44% Sept. 11 vs. Sept. 10 (Delayed, Yahoo). ECB reference fix (EOD official, Frankfurter, Sept. 11, last business-day fix &mdash; no weekend update): EUR/USD 1.159, USD/JPY 154.04, GBP/USD 1.351, USD/CNY 6.708, USD/CHF 0.815, USD/CAD 1.386, AUD/USD 0.717, USD/MXN 16.98, USD/BRL 5.111, USD/INR 95.56. Yahoo's own intraday EUR/USD (Delayed) shows 1.1543, a modest vendor-to-vendor difference typical of comparing an intraday quote to a fixed daily reference rate, not a data error.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI $102.31 (Delayed), essentially holding Friday's $102.41 EOD official close (+2.36% that session). Gold $4,331.80 (Delayed) vs. Friday's $4,330.20 close &mdash; flat. Silver (front-month future) $63.31, &minus;1.92% Sept. 11 vs. Sept. 10. Copper (front-month future) $6.443, &minus;0.41%. Natural gas (front-month future) $2.902, +2.51%. Platinum (front-month future) $1,770.60, &minus;1.28%. Agricultural contracts (corn, wheat, soybeans, coffee, cocoa, sugar, cotton, cattle) and uranium indicators were not pulled this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Bitcoin $77,914 (Live, CoinGecko aggregate), +1.53% 24h; Ether $2,515.29, +1.44%; Solana $101.80, +2.17%; Cardano $0.2103, +2.81%. Total crypto market cap $2.65T, Bitcoin dominance 58.9%, per CoinGecko's /global endpoint the total-market-cap figure shows &minus;1.35% over 24h &mdash; a modest inconsistency against the individual coins' own positive 24h changes, most likely explained by weaker performance among smaller altcoins not tracked individually here, not a data error in either figure. ETF-flow, funding/basis/OI and liquidation data were not pulled this run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors &amp; cross-asset</summary>
+          <p>Factor-fund levels (VUG, IWF, VTV, IWD, MTUM, QUAL, USMV, SPLV, VYM, SCHD, PKW, SPHQ) were not pulled this run; RSP (equal-weight) rose 0.80% Sept. 11 vs. SPY's 0.85%, a negligible gap that does not, on its own, support a strong breadth read either way. Cross-asset: Treasuries sitting near 52-week lows in price even as credit spreads stay tight is the notable divergence this week &mdash; rates markets are pricing meaningfully more Fed-hike risk than credit markets are pricing default or growth risk, a gap worth watching into Wednesday's decision rather than a resolved story.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist company (mega-cap tech, AI infrastructure, defense/aerospace, financials, health or consumer lists) reports earnings this week, per this system's Alpha Vantage and Finnhub calendar pulls. Lennar (LEN, not on any tracked watchlist) reports Wednesday after the close as useful housing-sector context alongside this week's NAHB and housing-starts data.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Confirmed directly via TreasuryDirect's TA_WS upcoming-securities API.</caption>
+              <thead><tr><th>Date</th><th>Security</th><th>Size</th></tr></thead>
+              <tbody>
+                <tr><td>Sept. 14 (today)</td><td class="txt">13-week bill</td><td>$92B</td></tr>
+                <tr><td>Sept. 14 (today)</td><td class="txt">26-week bill</td><td>$79B</td></tr>
+                <tr><td>Sept. 15</td><td class="txt">6-week bill</td><td>$75B</td></tr>
+                <tr><td>Sept. 15</td><td class="txt">19-year, 11-month bond reopening</td><td>$13B</td></tr>
+                <tr><td>Sept. 17</td><td class="txt">9-year, 10-month note reopening</td><td>$19B</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">All settle within the week shown; routine issuance, no signal of stress in sizes or tenors this week.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= COLOPHON ================= -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Omani foreign ministry, Iran's foreign ministry and IRNA, the Supreme Court's own docket, Congress.gov and the White House's own signing statement, Jefferson County's coroner, Anthropic's and OpenAI's own statements, the Treasury par-yield curve, FRED, Cboe, Yahoo Finance, CoinGecko, SEC EDGAR, FINRA, National Weather Service, and named wire services and outlets throughout each story.</p>
+      <p><strong>Corrections.</strong> Two in this edition. First: Sunday's report stated Trump called Iran &ldquo;probably&rdquo; responsible for the Qeshm Island vessel strike; that remark actually concerned a separate, earlier attack on a Saudi oil pipeline, and Trump's actual comment on the Qeshm strike was &ldquo;I don't want to say.&rdquo; Second: Sunday's report described H.R. 6500 as pending House action Monday; the bill was actually signed into law Sept. 2 as Public Law No. 119-103. Both are logged in full in the corrections ledger.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-14-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

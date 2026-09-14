@@ -1,6 +1,36 @@
 {
  "forecasts": [
   {
+   "id": "2026-09-14-am-1",
+   "date": "2026-09-14",
+   "slot": "am",
+   "forecast": "A further attack on a vessel or coastal facility in or near the Strait of Hormuz occurs within a week, given the collapsed Salalah talks and no new diplomatic date set.",
+   "horizon": "2026-09-21",
+   "probability": "30-45%",
+   "basis": "Both a fatal vessel strike (Qeshm, Sept 13) and a pipeline attack (Sept 10-11) occurred within the same week, and the only prospective diplomatic channel addressing the strait directly was just postponed indefinitely with no de-escalation mechanism now in place.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-14-am-2",
+   "date": "2026-09-14",
+   "slot": "am",
+   "forecast": "The FOMC delivers a 25bp hike to 3.75-4.00% on Sept 16 rather than holding.",
+   "horizon": "2026-09-16",
+   "probability": "80-90%",
+   "basis": "Press-reported CME FedWatch odds have run 85-90% since Thursday's hot core CPI print; this outlet did not pull a live CME reading this run, so the figure is Estimated, not independently confirmed.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-14-am-3",
+   "date": "2026-09-14",
+   "slot": "am",
+   "forecast": "The S&P 500 closes today down more than 0.5%, as the AI-industry-pacing selloff that hit Asian markets overnight carries into the US cash session despite this morning's calm futures snapshot.",
+   "horizon": "2026-09-14",
+   "probability": "30-40%",
+   "basis": "Asian AI-linked shares fell sharply overnight on the Amodei/Altman pacing statements (SoftBank -13.2% intraday), while this report's own 6:34 AM ET Yahoo Finance futures pull showed US index futures essentially flat -- premarket futures have understated a story's eventual cash-session reach before.",
+   "status": "open"
+  },
+  {
    "id": "2026-09-09-pm-1",
    "date": "2026-09-09",
    "slot": "pm",

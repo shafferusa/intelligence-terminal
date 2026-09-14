@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-13T09:35:00-04:00",
+ "fetched": "2026-09-14T06:45:00-04:00",
  "earnings_fetched": "2026-09-13",
  "earnings_fetched_note": "No watchlist mega-cap/AI-infra/defense/financial/consumer names report the week of Sept 14-18, 2026. Lennar (LEN, non-watchlist) reports Q3 after close Wed Sept 16, call Thu Sept 17 11:00 AM ET.",
  "events": [
@@ -276,12 +276,20 @@
    "source": "South Korea MND, NBC News, Korea Herald, Japan Times -- Confirmed-multiple"
   },
   {
-   "ts_et": "2026-09-14T12:00:00-04:00",
+   "ts_et": "2026-09-02T00:00:00-04:00",
    "type": "legislative",
-   "name": "House takes up H.R. 6500, the stopgap funding bill (already Senate-passed 90-6), funding government through Dec 11",
-   "importance": "Medium",
-   "reason": "Low-drama given the lopsided Senate vote, but this week's one concrete fiscal deadline.",
-   "source": "congress.gov/house.gov schedule search -- Confirmed-multiple"
+   "name": "CORRECTED 2026-09-14: H.R. 6500 already signed into law -- not pending House action",
+   "importance": "Low",
+   "reason": "This cache and the 2026-09-13-sun report both incorrectly carried H.R. 6500 as coming before the House on Sept 14. Verified directly this run: the House passed it 370-48 on Sept 1, the Senate had already passed it 90-6, and the President signed it Sept 2 as Public Law No. 119-103, funding the government through Dec 11. No House floor action on this bill is pending. Logged to ledgers/corrections.json and corrected in the 2026-09-14-am report.",
+   "source": "whitehouse.gov signing statement, congress.gov/govtrack.us bill actions -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "military",
+   "name": "Iran-GCC Salalah talks POSTPONED, not held -- no new date",
+   "importance": "Critical",
+   "reason": "CORRECTED 2026-09-14: the talks previously scheduled for Sept 14 in Salalah, Oman were postponed by joint Tehran-Muscat decision \"in the interest of consensus,\" per Omani FM Albusaidi, following Bahrain's boycott and Sunday's fatal strike on an Iranian vessel near Qeshm Island. No new date set.",
+   "source": "Omani foreign ministry (primary, via wire); Al Jazeera, France 24, Oman Observer -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-14T00:00:00-04:00",
@@ -402,6 +410,14 @@
    "importance": "Medium",
    "reason": "Window 8:15-10:14 AM ET; backup date Saturday Sept 19. Genuine milestone given the vehicle's redesign.",
    "source": "Multiple launch trackers (SpaceLaunchSchedule, NextSpaceFlight) -- Confirmed-multiple, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-14T12:00:00-04:00",
+   "type": "space",
+   "name": "Djibouti signs the Artemis Accords, NASA HQ (72nd signatory nation)",
+   "importance": "Low",
+   "reason": "Routine accession, no material policy shift.",
+   "source": "NASA (primary) -- Confirmed-multiple"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
