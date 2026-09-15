@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Tue, Sep 15, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-15",
+    "slot": "pm",
+    "title": "The 10-Year Hits Its Highest Since 2007 as Crypto Craters and the Kennedy Center Votes to Close",
+    "path": "reports/2026/09/2026-09-15-pm.html",
+    "summary": "The 10-year Treasury yield hit its highest level since 2007 and crypto sold off sharply ahead of Wednesday's Fed decision, the Kennedy Center's board voted to close its building after a chaotic call with Trump, the Senate's marquee crypto bill failed a cloture vote, and Rep. Casar escalated Congress's AI-oversight fight by demanding sworn CEO testimony.",
+    "headlines": [
+      "10-year Treasury yield hits 5.04%, its highest since 2007, as stocks slide and crypto craters",
+      "Kennedy Center board votes to close the building after a chaotic Trump call; Senate's CLARITY Act cloture vote fails",
+      "Rep. Casar demands OpenAI and Anthropic testify under oath as Houthi forces detail a Saudi airbase strike"
+    ],
+    "reading_minutes": 25,
+    "generated_at": "2026-09-15T17:05:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>The 10-Year Hits Its Highest Since 2007 as Crypto Craters and the Kennedy Center Votes to Close</h1>
+      <p class="paper-dateline">
+        Tuesday, September 15, 2026 <span class="sep">&middot;</span> 25 min read
+      </p>
+      <p class="paper-standfirst">
+        The 10-year Treasury yield touched its highest level since 2007 and crypto sold off far harder than stocks on the eve of the Fed&rsquo;s decision, the Kennedy Center&rsquo;s board voted to close its building after a chaotic call with Trump, the Senate&rsquo;s marquee crypto bill failed to advance, and Rep. Casar escalated Congress&rsquo;s AI-oversight fight by demanding sworn testimony from OpenAI and Anthropic&rsquo;s CEOs.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Houthi forces detailed their strike on a Saudi airbase as the UN Security Council met on the Bab el-Mandeb chokepoint; the Kennedy Center&rsquo;s board voted to close its building, tying reopening to a pending federal appeal over Trump&rsquo;s name.</li>
+          <li><b>Markets.</b> All four major indices closed lower (S&amp;P &minus;0.45%, Nasdaq &minus;0.78%), the 10-year Treasury yield hit 5.04% intraday &mdash; its highest since July 2007 &mdash; oil extended its rally past $105, and crypto cratered (bitcoin &minus;4.6%, Coinbase &minus;10.1%) even as the VIX barely moved.</li>
+          <li><b>The thread.</b> Congress produced two clean failures today &mdash; the CLARITY Act&rsquo;s cloture vote and, before that, the AI-oversight deadline &mdash; while markets priced tomorrow&rsquo;s Fed decision from a 19-year high in long-end yields.</li>
+          <li><b>Biggest risk.</b> A second global chokepoint under a hostile actor&rsquo;s control with no active diplomatic channel, now before the UN Security Council with an outcome still pending.</li>
+          <li><b>Watch tomorrow.</b> The FOMC&rsquo;s 2:00 PM ET decision and Chair Warsh&rsquo;s press conference, preceded by Retail Sales and Import/Export Price data at 8:30 AM.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Sep 15, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Tuesday September 15, 2026.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>757.39</td><td class="down">&minus;3.49</td><td class="down">&minus;0.46%</td>
+                <td class="range-cell"><span class="range-nums">629.28 &ndash; 779.37</span><span class="range-bar" style="--pos:85"><i></i></span></td>
+                <td>44M</td><td>41M</td>
+              </tr>
+              <tr>
+                <td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td>
+                <td>290.09</td><td class="down">&minus;1.93</td><td class="down">&minus;0.66%</td>
+                <td class="range-cell"><span class="range-nums">228.75 &ndash; 308.21</span><span class="range-bar" style="--pos:77"><i></i></span></td>
+                <td>3.6M</td><td>2.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td>
+                <td>521.23</td><td class="down">&minus;3.26</td><td class="down">&minus;0.62%</td>
+                <td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:74"><i></i></span></td>
+                <td>3.2M</td><td>3.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>285.14</td><td class="down">&minus;2.77</td><td class="down">&minus;0.96%</td>
+                <td class="range-cell"><span class="range-nums">228.90 &ndash; 305.18</span><span class="range-bar" style="--pos:74"><i></i></span></td>
+                <td>25M</td><td>25M</td>
+              </tr>
+              <tr>
+                <td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td>
+                <td>69.60</td><td class="down">&minus;0.50</td><td class="down">&minus;0.71%</td>
+                <td class="range-cell"><span class="range-nums">55.09 &ndash; 71.16</span><span class="range-bar" style="--pos:90"><i></i></span></td>
+                <td>4.5M</td><td>3.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td>
+                <td>213.96</td><td class="down">&minus;1.05</td><td class="down">&minus;0.49%</td>
+                <td class="range-cell"><span class="range-nums">182.11 &ndash; 223.44</span><span class="range-bar" style="--pos:77"><i></i></span></td>
+                <td>7.1M</td><td>6.8M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr>
+                <td class="sym">SMH<small>VanEck Semiconductor ETF</small></td>
+                <td>542.11</td><td class="up">+0.61</td><td class="up">+0.11%</td>
+                <td class="range-cell"><span class="range-nums">301.37 &ndash; 671.83</span><span class="range-bar" style="--pos:65"><i></i></span></td>
+                <td>5.9M</td><td>6.5M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLK<small>Technology Select Sector SPDR</small></td>
+                <td>183.74</td><td class="down">&minus;0.54</td><td class="down">&minus;0.29%</td>
+                <td class="range-cell"><span class="range-nums">126.68 &ndash; 198.73</span><span class="range-bar" style="--pos:79"><i></i></span></td>
+                <td>6.1M</td><td>6.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLF<small>Financial Select Sector SPDR</small></td>
+                <td>56.85</td><td class="down">&minus;0.18</td><td class="down">&minus;0.32%</td>
+                <td class="range-cell"><span class="range-nums">47.67 &ndash; 58.60</span><span class="range-bar" style="--pos:84"><i></i></span></td>
+                <td>30M</td><td>31M</td>
+              </tr>
+              <tr>
+                <td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td>
+                <td>74.05</td><td class="down">&minus;0.06</td><td class="down">&minus;0.08%</td>
+                <td class="range-cell"><span class="range-nums">57.55 &ndash; 78.35</span><span class="range-bar" style="--pos:79"><i></i></span></td>
+                <td>17M</td><td>12M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLE<small>Energy Select Sector SPDR</small></td>
+                <td>65.93</td><td class="up">+1.40</td><td class="up">+2.17%</td>
+                <td class="range-cell"><span class="range-nums">42.35 &ndash; 66.17</span><span class="range-bar" style="--pos:99"><i></i></span></td>
+                <td>34M</td><td>35M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US3M<small>U.S. 3-month Treasury bill</small></td>
+                <td>4.11%</td><td class="flat">0bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">US10Y<small>U.S. 10-year Treasury note</small></td>
+                <td>5.00%</td><td class="up">+3bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td>
+                <td>80.71</td><td class="down">&minus;0.22</td><td class="down">&minus;0.27%</td>
+                <td class="range-cell"><span class="range-nums">80.46 &ndash; 92.19</span><span class="range-bar" style="--pos:2"><i></i></span></td>
+                <td>35M</td><td>42M</td>
+              </tr>
+              <tr>
+                <td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td>
+                <td>90.82</td><td class="down">&minus;0.11</td><td class="down">&minus;0.12%</td>
+                <td class="range-cell"><span class="range-nums">90.75 &ndash; 98.05</span><span class="range-bar" style="--pos:1"><i></i></span></td>
+                <td>9.4M</td><td>8.2M</td>
+              </tr>
+              <tr>
+                <td class="sym">TIP<small>iShares TIPS Bond ETF</small></td>
+                <td>105.79</td><td class="down">&minus;0.03</td><td class="down">&minus;0.03%</td>
+                <td class="range-cell"><span class="range-nums">105.68 &ndash; 112.26</span><span class="range-bar" style="--pos:2"><i></i></span></td>
+                <td>1.4M</td><td>2.2M</td>
+              </tr>
+              <tr>
+                <td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td>
+                <td>104.28</td><td class="down">&minus;0.02</td><td class="down">&minus;0.02%</td>
+                <td class="range-cell"><span class="range-nums">104.05 &ndash; 112.93</span><span class="range-bar" style="--pos:3"><i></i></span></td>
+                <td>31M</td><td>32M</td>
+              </tr>
+              <tr>
+                <td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td>
+                <td>78.38</td><td class="down">&minus;0.15</td><td class="down">&minus;0.19%</td>
+                <td class="range-cell"><span class="range-nums">78.38 &ndash; 81.36</span><span class="range-bar" style="--pos:0"><i></i></span></td>
+                <td>42M</td><td>42M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr>
+                <td class="sym">GLD<small>SPDR Gold Shares</small></td>
+                <td>394.15</td><td class="up">+1.31</td><td class="up">+0.33%</td>
+                <td class="range-cell"><span class="range-nums">335.62 &ndash; 495.90</span><span class="range-bar" style="--pos:37"><i></i></span></td>
+                <td>6.6M</td><td>12M</td>
+              </tr>
+              <tr>
+                <td class="sym">USO<small>United States Oil Fund</small></td>
+                <td>161.86</td><td class="up">+5.20</td><td class="up">+3.32%</td>
+                <td class="range-cell"><span class="range-nums">66.17 &ndash; 161.86</span><span class="range-bar" style="--pos:100"><i></i></span></td>
+                <td>6.7M</td><td>5.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">DXY<small>U.S. Dollar Index</small></td>
+                <td>99.65</td><td class="up">+0.19</td><td class="up">+0.19%</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VIX<small>Cboe Volatility Index</small></td>
+                <td>17.20</td><td class="up">+0.10</td><td class="up">+0.58%</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr>
+                <td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td>
+                <td>65.76</td><td class="down">&minus;0.23</td><td class="down">&minus;0.35%</td>
+                <td class="range-cell"><span class="range-nums">51.82 &ndash; 71.57</span><span class="range-bar" style="--pos:71"><i></i></span></td>
+                <td>14M</td><td>17M</td>
+              </tr>
+              <tr>
+                <td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td>
+                <td>88.96</td><td class="down">&minus;0.27</td><td class="down">&minus;0.30%</td>
+                <td class="range-cell"><span class="range-nums">77.82 &ndash; 93.29</span><span class="range-bar" style="--pos:72"><i></i></span></td>
+                <td>1.3M</td><td>1.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td>
+                <td>33.64</td><td class="down">&minus;1.27</td><td class="down">&minus;3.64%</td>
+                <td class="range-cell"><span class="range-nums">25.65 &ndash; 55.96</span><span class="range-bar" style="--pos:26"><i></i></span></td>
+                <td>3.6M</td><td>2.3M</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">Official closes as of 4:00 PM ET. Yields from the Treasury par-yield curve (basis-point change on the day; %Chg not applicable); VIX and DXY are index levels with no volume or 52-week range.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>The 10-year Treasury yield hits its highest level since 2007 as stocks slide and crypto craters ahead of the Fed</h3>
+          <p class="story-deck">Oil&rsquo;s continued surge past $105 pulled long-end yields to a 19-year high intraday, all four major indices closed lower, and crypto sold off far harder than equities &mdash; bitcoin down almost 5%, Coinbase down more than 10% &mdash; in the same window the Senate&rsquo;s marquee crypto bill failed.</p>
+          <div class="story-body">
+            <p>The 10-year Treasury yield climbed to 5.041% intraday Tuesday, its highest level since July 2007, before settling at an official 5.00% close on the Treasury&rsquo;s par curve &mdash; a third straight session above the psychologically significant 5% threshold. The move tracked another leg higher in oil, with WTI futures trading near $105.60 (+4.15% intraday) and the United States Oil Fund (USO) closing at a fresh 52-week high, up 3.32%, as the Saudi pipeline outage and Houthi control of the Bab el-Mandeb strait continued to squeeze supply expectations ahead of tomorrow&rsquo;s Fed decision. The average 30-year mortgage rate has followed past 7%, per market reporting.</p>
+            <p>All four major US indices closed lower: the S&amp;P 500 fell 0.45% to 7,585.73, the Nasdaq Composite 0.78% to 25,981.57 (the session&rsquo;s laggard), the Dow 0.63% to 52,093.11 and the Russell 2000 0.76% to 2,870.29. Energy was the sole bright spot among the 11 S&amp;P sectors &mdash; the Energy Select Sector SPDR (XLE) rose 2.17% on the oil rally &mdash; while consumer discretionary (XLY, &minus;1.75%) and utilities (XLU, &minus;1.20%) led the losses. The VIX, by contrast, barely moved, up just 0.58% to 17.20 &mdash; a notably muted reaction from the volatility complex given the scale of the rate and equity moves.</p>
+            <p>Crypto sold off far harder than equities: bitcoin fell 4.59% to $75,752, ether 7.30%, solana 7.26% and cardano 8.79%, and Coinbase was the day&rsquo;s single sharpest loser among watchlist names, down 10.10%; Cboe Global Markets and Robinhood also fell more than 3%. The slide coincided with the Senate&rsquo;s 2:15 PM cloture vote failing to advance the CLARITY Act, crypto&rsquo;s marquee market-structure bill (see below) &mdash; a plausible, though not independently confirmed, contributor to the sharper crypto-specific selloff.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Three separate stress points &mdash; long-end rates, equities and crypto &mdash; moved together today for related but distinct reasons, all pointing at tomorrow&rsquo;s FOMC decision as the pivot investors are positioning around.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Wednesday&rsquo;s 2:00 PM FOMC decision and Chair Warsh&rsquo;s 2:30 PM press conference. Hike-odds trackers diverged sharply today &mdash; a spread as wide as roughly 50% to 90% depending on source &mdash; that this outlet could not reconcile to one reliable figure this evening.
+            </div>
+          </div>
+          <p class="story-sourceline">Treasury par-yield curve (primary) &middot; CNBC &middot; Bloomberg &middot; this report&rsquo;s own Yahoo Finance and CoinGecko data.</p>
+        </article>
+
+        <article class="story">
+          <h3>The Kennedy Center&rsquo;s board votes to close the building after a &ldquo;chaotic&rdquo; call with Trump, reviving the renaming fight</h3>
+          <p class="story-deck">The board warned of &ldquo;certain fiscal collapse&rdquo; in Monday court papers; today it voted to shut the main building for an estimated two years, a decision Trump says now depends on whether a federal appeals court lets his name go on it.</p>
+          <div class="story-body">
+            <p>The Kennedy Center&rsquo;s Trump-appointed board voted today to close the center&rsquo;s main building, citing both the Sept. 5 ceiling collapse from water damage that officials say makes continued occupancy unsafe, and a financial position the board itself described in Monday court papers as &ldquo;dire&rdquo; &mdash; warning the institution risks being unable to cover payroll or routine maintenance within weeks, a &ldquo;certain fiscal collapse.&rdquo; <span class="flag">Partly single-sourced</span> The vote followed what CNN, citing people on the call, described as a chaotic phone conversation in which Trump participated directly; the AP, NBC News and PBS confirmed the vote and the general financial-and-naming framing without matching every detail of CNN&rsquo;s account of the call itself.</p>
+            <p>The board had been weighing two linked questions: whether to close the building, and whether to inscribe Trump&rsquo;s name on the facade in exchange for his fundraising help &mdash; an inscription a federal judge already found would violate the statute establishing the Center, which requires it honor &ldquo;President Kennedy and President Kennedy alone.&rdquo; Trump posted afterward that the renovation &ldquo;cannot begin&rdquo; until the D.C. Circuit rules on the board&rsquo;s approved name, and that a ruling against the board means &ldquo;the Reconstruction and Renovation of The Kennedy Center will not take place&rdquo; &mdash; language that ties the building&rsquo;s physical future directly to the pending appeal.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This converts the open financial-and-legal threat this outlet flagged this morning into a concrete decision, one that now makes a live federal appeal a precondition for reopening a national cultural institution.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The D.C. Circuit&rsquo;s ruling on the renaming question, and whether former chairman David Rubenstein&rsquo;s spokesperson&rsquo;s dispute of the board&rsquo;s financial framing gets a fuller airing.
+            </div>
+          </div>
+          <p class="story-sourceline">CNN (primary reporting on the board call) &middot; AP wire via CP24, Boston Globe, Local10, WRAL &middot; NBC News &middot; PBS &middot; Trump&rsquo;s own statement (primary, via wire).</p>
+        </article>
+
+        <article class="story">
+          <h3>Senate cloture vote fails on the CLARITY Act, likely ending this year&rsquo;s crypto market-structure push</h3>
+          <p class="story-deck">Several Democratic senators who spent months negotiating the bill voted no on the motion to proceed, falling short of the 60 votes needed; one of its Republican champions said flatly, &ldquo;I think we&rsquo;re done.&rdquo;</p>
+          <div class="story-body">
+            <p>The Senate&rsquo;s 2:15 PM cloture vote on the motion to proceed to the CLARITY Act (H.R. 3633), the House-passed digital-asset market-structure bill, failed to reach the 60 votes required. Several Democratic senators who had spent months negotiating the bill&rsquo;s terms &mdash; Kirsten Gillibrand, Mark Warner, Cory Booker, Raphael Warnock, Ruben Gallego, Angela Alsobrooks and Catherine Cortez Masto among them &mdash; voted against advancing it, per multiple crypto-industry outlets tracking the vote; this outlet could not independently confirm the precise roll-call tally against the Senate&rsquo;s own record as of this edition. Sen. Cynthia Lummis (R-WY), one of the bill&rsquo;s Republican champions, was quoted saying &ldquo;I think we&rsquo;re done&rdquo; &mdash; read by several outlets as acknowledging the push is unlikely to resume before the midterms reshape the chamber, and possibly not until after the next presidential cycle.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This morning&rsquo;s edition noted the vote needed at least seven Democratic or independent votes just to open debate; it fell short, ending &mdash; for now &mdash; the most advanced attempt yet at comprehensive federal crypto market-structure legislation.
+            </div>
+          </div>
+          <p class="story-sourceline">CoinDesk &middot; Coingape &middot; CryptoTimes; official Senate roll call not independently verified this edition.</p>
+        </article>
+
+        <article class="story">
+          <h3>Rep. Casar calls for OpenAI and Anthropic&rsquo;s CEOs to testify under oath after both miss a second deadline</h3>
+          <p class="story-deck">&ldquo;These AI CEOs need to come before Congress and be put under oath,&rdquo; Casar told Fox News today &mdash; the escalation this morning&rsquo;s edition flagged as its most likely near-term outcome.</p>
+          <div class="story-body">
+            <p>With Tuesday&rsquo;s deadline for fuller answers on AI-agent incidents having passed unanswered by both OpenAI and Anthropic, Rep. Greg Casar told Fox News today that &ldquo;these AI CEOs need to come before Congress and be put under oath&rdquo; &mdash; the clearest escalation yet in an oversight fight this outlet has tracked since Casar&rsquo;s original letters this summer. Casar&rsquo;s office reiterated that both companies&rsquo; written responses omitted material facts: OpenAI has not released the underlying logs from July&rsquo;s Hugging Face agent-swarm incident, and Anthropic has not said whether an internally deployed model has ever escaped its own container. Neither company had issued a public response to Casar&rsquo;s remarks as of this edition. Separately, OpenAI CEO Sam Altman told Fortune today the company will not pursue a public listing in 2026 &mdash; &ldquo;not 2026, we got a lot of stuff to do,&rdquo; citing AI-safety work &mdash; the first on-record confirmation from Altman himself of a delay this outlet had previously reported only via secondary sourcing.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the second deadline both companies have now missed, and Casar&rsquo;s call for sworn testimony is a materially harder ask than a third letter.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Whether Speaker Johnson schedules the CEO hearings Casar has separately pressed for, and whether either company responds directly to today&rsquo;s remarks.
+            </div>
+          </div>
+          <p class="story-sourceline">Rep. Casar&rsquo;s Fox News interview and House office statements (primary) &middot; Fortune (Altman interview, primary quote).</p>
+        </article>
+
+        <article class="story">
+          <h3>Houthi forces detail a strike on a Saudi airbase as the UN Security Council meets on the Bab el-Mandeb chokepoint</h3>
+          <p class="story-deck">Houthi spokesman Yahya Saree said the group targeted Khamis Mushait&rsquo;s hangars, radar and runways; France&rsquo;s requested Security Council session met this afternoon with no outcome confirmed by this edition&rsquo;s close.</p>
+          <div class="story-body">
+            <p><span class="flag">Single-party claims, each side</span> Houthi military spokesman Yahya Saree said today the group&rsquo;s Monday missile and drone barrage specifically targeted Khamis Mushait airbase&rsquo;s aircraft hangars, radar systems, runways and ammunition depots &mdash; more operational detail than this morning&rsquo;s report had. The Saudi-led coalition&rsquo;s own account, unchanged from this morning, puts the toll at 13 civilians wounded and seven homes and two vehicles damaged, and repeats its pledge to respond &ldquo;responsibly and firmly.&rdquo; Saree separately claimed Saudi forces conducted 54 airstrikes across Yemen&rsquo;s Lahj, Taiz, al-Jawf and Hajjah provinces in response &mdash; a claim this outlet could not independently verify against a Saudi coalition statement.</p>
+            <p>France, holding the Security Council presidency this month, convened the requested session on Bab el-Mandeb this afternoon; no outcome &mdash; a statement, a resolution, or neither &mdash; was confirmed as of this edition&rsquo;s close.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Both sides&rsquo; own casualty and strike claims remain single-party-attributed, standard for this conflict, but the UN session is the first multilateral venue to formally take up Houthi control of a second global chokepoint.
+            </div>
+          </div>
+          <p class="story-sourceline">Houthi military spokesman Yahya Saree (primary, single-party) &middot; Saudi-led coalition spokesman (primary, single-party) &middot; RTE &middot; Al Jazeera &middot; Washington Times &middot; France24.</p>
+        </article>
+
+        <article class="story">
+          <h3>FBI Director Patel faces sharp bipartisan questioning at his first Senate Judiciary appearance in four months</h3>
+          <p class="story-deck">Patel touted crime statistics and defended a revised FBI hiring policy; Sen. Durbin pressed him on his earlier statements about the shooting of a US citizen by a Border Patrol agent.</p>
+          <div class="story-body">
+            <p>FBI Director Kash Patel testified before the Senate Judiciary Committee today, his first appearance before the panel since clashing with lawmakers over conduct and performance reports roughly four months ago. Patel cited internal statistics &mdash; gang-member arrests up 31%, 10 of the FBI&rsquo;s most-wanted captured &mdash; and defended a revised hiring policy that would newly allow consideration of some applicants with certain criminal histories tied to circumstances such as trafficking victimization; the change drew pointed questions from both Sen. John Kennedy (R-LA) and Democrats on the panel. Outlets characterized the policy differently and this report is not repeating any single outlet&rsquo;s specific framing pending the committee&rsquo;s own transcript. Sen. Dick Durbin pressed Patel on his prior public statements about the shooting of US citizen Marimar Martinez by a Customs and Border Protection agent; Patel denied his earlier statements were false. Patel declined to discuss the FBI&rsquo;s ongoing &ldquo;Arctic Frost&rdquo; investigation, which Judiciary Committee records show has expanded to roughly 92 Republican individuals and organizations tied to efforts to overturn the 2020 election.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is Patel&rsquo;s first return to the committee since the earlier clash, and the hiring-policy questioning previews a fight likely to continue as the FBI implements the change.
+            </div>
+          </div>
+          <p class="story-sourceline">Senate Judiciary Committee hearing (via livestream) &middot; Washington Post &middot; ABC News &middot; NBC News &middot; The Hill &middot; PBS.</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump adds a trade threat to his pressure campaign on the Fed, a day before its decision</h3>
+          <p class="story-deck">The president said he would halt trade with surplus countries if the Fed doesn&rsquo;t cut rates &mdash; a more concrete escalation layered onto a campaign that already includes Vance, Bessent and Hassett.</p>
+          <div class="story-body">
+            <p><span class="flag">Single-reliable-source</span> Trump today reportedly threatened to halt US trade with countries running a trade surplus against the United States if the Federal Reserve does not cut interest rates &mdash; an escalation of the pressure campaign this outlet has tracked since Monday, when he posted that &ldquo;high interest rates put the U.S.A. at a very unfair disadvantage.&rdquo; This outlet located the threat via wire aggregation rather than a primary transcript or Truth Social post and labels it accordingly pending direct confirmation. Vice President Vance, Treasury Secretary Bessent and chief economist Kevin Hassett have each weighed in this week as well, with Bessent&rsquo;s Monday remark &mdash; &ldquo;the bond market has taken out more governments than howitzers&rdquo; &mdash; read as giving Fed Chair Warsh room to hike despite the public pressure.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The pressure campaign is intensifying the day before the decision itself, even as senior officials&rsquo; private posture increasingly treats a hike as likely.
+            </div>
+          </div>
+          <p class="story-sourceline">AP/PBS wire aggregation &middot; Philadelphia Inquirer; primary Trump statement not independently located this edition.</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC&rsquo;s Ebola outbreak keeps climbing, now near 7,300 cases across six provinces</h3>
+          <p class="story-deck">The fastest-growing Ebola outbreak on record, caused by a strain outside standard vaccine coverage, added roughly 60 cases and 35 deaths in the two days since this outlet&rsquo;s last count.</p>
+          <div class="story-body">
+            <p>The Democratic Republic of Congo&rsquo;s Ebola outbreak, tracked via ECDC aggregation of the country&rsquo;s Ministry of Health data, now stands at roughly 7,258 cases and 3,510 deaths as of the latest Sept. 13&ndash;14 update &mdash; up from the 7,200 cases and 3,475 deaths this outlet reported Monday evening. It remains the fastest-growing Ebola outbreak on record, spans 61 health zones across six provinces, and is caused by Bundibugyo ebolavirus, a strain outside the coverage of vaccines built for the more common Zaire strain. Roughly 905 patients remain hospitalized in isolation.</p>
+          </div>
+          <p class="story-sourceline">ECDC aggregation of DRC Ministry of Health data.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p>The Iran-Trump overture-and-rejection cycle flagged this morning held steady, with no new movement: Rezaei&rsquo;s rejection stands as posted, and Salalah&rsquo;s postponed talks still carry no new date. The Java Sea ferry search is similarly unchanged &mdash; 129 still missing, six confirmed dead, as of the last update this outlet could locate. Gaza and south Lebanon saw no material escalation beyond this morning&rsquo;s account.</p>
+        <p>Two threads worth noting for completeness moved without becoming standalone stories: Allegheny County&rsquo;s Board of Health is now expected to introduce a scaled-back paid-parental-leave proposal at tomorrow&rsquo;s meeting, a concrete next step after last week&rsquo;s record ~1,400 public comments (see Local); and RTX filed an 8-K today naming Jill Albertelli president of Pratt &amp; Whitney, effective Jan. 1, 2027, succeeding the retiring Shane Eddy (see Business).</p>
+        <p>Three threads this outlet is tracking produced no confirmed update today: the government&rsquo;s Second Circuit appeal in the 75-country visa-ban case, any lawsuit against Monday&rsquo;s EPA power-plant carbon-rule repeal despite the NRDC&rsquo;s stated intent to sue, and the five-to-seven Chinese AI firms Anthropic accused of distillation, none of which issued a statement today.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>The New York Fed&rsquo;s Empire State Manufacturing Survey for September came in at 7.6, down 13 points from a strong August reading but still in expansion territory. Components were mixed: new orders edged up and unfilled orders rose, but shipments dipped and delivery times lengthened; prices paid jumped to 63.1, near a four-year high, while prices received rose to 28.1 &mdash; a renewed input-cost signal landing squarely inside the Fed&rsquo;s blackout period. The forward-looking business-conditions index held at 29.0, with roughly half of respondents expecting improvement over the next six months.</p>
+        <p>Treasury auctioned a 6-week bill ($75B) and reopened its 19-year-11-month bond ($13B) at 1:00 PM ET; results were not independently confirmed by this edition&rsquo;s close. The Fed remains in its formal blackout period through tomorrow&rsquo;s decision, so no official commentary was expected or found. See Top Stories for the fuller Fed-eve market picture, including the 10-year&rsquo;s move to its highest level since 2007.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>RTX filed an 8-K today naming Jill Albertelli president of Pratt &amp; Whitney, effective Jan. 1, 2027, succeeding Shane Eddy, who is retiring after more than 40 years with the company and will remain through March as a special advisor during the transition. Albertelli most recently led Pratt &amp; Whitney&rsquo;s Military Engines unit, where she secured the F-35&rsquo;s sole-source propulsion contract.</p>
+        <p>No other 8-K filings from watchlist companies were found in today&rsquo;s SEC EDGAR current-filings feed. The day&rsquo;s dominant equity story was the broad, cross-asset selloff detailed in the lead story above, with crypto-adjacent names &mdash; Coinbase, Cboe, Robinhood &mdash; among the session&rsquo;s sharpest movers; see Winners &amp; Losers below.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>Rep. Casar&rsquo;s escalation and Altman&rsquo;s on-record 2026-IPO denial, both covered in Top Stories, were the day&rsquo;s dominant AI-policy developments. No new statement was found from any of the Chinese AI firms Anthropic has accused of distilling Claude. This outlet found several claims circulating today about new AI model releases and specific company financials that it could not corroborate against the companies&rsquo; own primary newsrooms this run; they are treated as unverified and are not repeated here.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>SpaceX confirmed via Elon Musk Monday that Ship 41, part of the upcoming Starship Flight 14 (the redesigned V3 vehicle&rsquo;s first orbital flight), will not attempt a Pad 2 catch. Flight 14 itself remains targeted for Sept. 22, though this outlet found conflicting launch-window times between secondary trackers (roughly 8:15 AM ET and 12:15 PM ET) it could not reconcile against a SpaceX primary source this evening &mdash; treat the date as firmer than the exact time. This morning&rsquo;s scheduled Falcon 9 launch of the classified USSF-259 payload from Vandenberg had not been confirmed as flown by this edition&rsquo;s close.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-moved">
+      <h2 id="s-moved">What Moved Markets</h2>
+      <div class="story-body">
+        <p><b>Open.</b> Markets opened lower, extending Monday&rsquo;s AI-infrastructure-driven weakness into a broader decline, as overnight oil gains on the Saudi pipeline outage and Houthi control of Bab el-Mandeb pushed Treasury yields higher ahead of the Fed&rsquo;s two-day meeting start &mdash; <span class="chip">Several factors</span>, no single confirmed catalyst for the early risk-off tone.</p>
+        <p><b>Morning.</b> The 10-year yield pushed through 5% intraday, touching 5.041% &mdash; its highest since July 2007 &mdash; as oil extended its rally past $105 and traders raised the odds of Wednesday&rsquo;s hike &mdash; <span class="chip">Confirmed catalyst</span>, cited directly by multiple outlets tying the yield move to the oil-driven inflation read and Fed expectations.</p>
+        <p><b>Midday.</b> The Senate&rsquo;s 2:15 PM cloture vote on the CLARITY Act failed to advance, and crypto assets and crypto-adjacent equities (Coinbase, Cboe, Robinhood) sold off sharply in the same window &mdash; <span class="chip">Likely contributor</span>, timing-consistent but not a link this outlet independently verified.</p>
+        <p><b>Close.</b> Broad indices settled at session lows &mdash; the S&amp;P 500 down 0.45%, the Nasdaq down 0.78%, the Dow down 0.63% and the Russell 2000 down 0.76% &mdash; while the VIX rose just 0.58% to 17.20, a muted volatility reaction given the scale of the rate and equity moves &mdash; <span class="chip">Unexplained</span>, no confirmed reason found for the volatility complex&rsquo;s relative calm.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Largest single-day moves among watchlist names, Tuesday September 15, 2026 close.</caption>
+          <thead>
+            <tr><th>Symbol</th><th class="txt">Name</th><th>%Chg</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>KRMN</td><td class="txt">Karman Holdings</td><td class="up">+7.86%</td></tr>
+            <tr><td>TMO</td><td class="txt">Thermo Fisher Scientific</td><td class="up">+4.53%</td></tr>
+            <tr><td>VOYG</td><td class="txt">Voyager Technologies</td><td class="up">+4.26%</td></tr>
+            <tr><td>DHR</td><td class="txt">Danaher</td><td class="up">+3.01%</td></tr>
+            <tr><td>BKSY</td><td class="txt">BlackSky Technology</td><td class="up">+2.79%</td></tr>
+            <tr><td>&hellip;</td><td class="txt">&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>TGT</td><td class="txt">Target</td><td class="down">&minus;2.71%</td></tr>
+            <tr><td>SPCX</td><td class="txt">SpaceX</td><td class="down">&minus;3.15%</td></tr>
+            <tr><td>HOOD</td><td class="txt">Robinhood Markets</td><td class="down">&minus;3.39%</td></tr>
+            <tr><td>FLY</td><td class="txt">Firefly Aerospace</td><td class="down">&minus;4.07%</td></tr>
+            <tr><td>CBOE</td><td class="txt">Cboe Global Markets</td><td class="down">&minus;4.94%</td></tr>
+            <tr><td>CMG</td><td class="txt">Chipotle Mexican Grill</td><td class="down">&minus;5.94%</td></tr>
+            <tr><td>COIN</td><td class="txt">Coinbase Global</td><td class="down">&minus;10.10%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Watchlist universe only; official closes. No confirmed company-specific catalyst was found for several of the largest movers (Karman, Voyager, BlackSky, Chipotle, Target, Firefly, SpaceX) &mdash; not printed as a narrative this outlet could not stand up.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="story-body">
+        <p>Wednesday brings the FOMC&rsquo;s rate decision and Summary of Economic Projections at 2:00 PM ET, with Chair Warsh&rsquo;s press conference roughly 2:30 PM &mdash; the week&rsquo;s pivotal event, landing after today&rsquo;s 19-year-high 10-year yield and a genuinely wide spread in hike-probability trackers this outlet could not reconcile to one figure. Ahead of it: Retail Sales and Import/Export Price Indexes at 8:30 AM ET, and the NAHB Housing Market Index at 10:00 AM ET. No date has been set for the D.C. Circuit&rsquo;s ruling on the Kennedy Center naming dispute that now determines whether its renovation proceeds at all. Later this week, the Eighth Circuit hears arguments Thursday in Missouri&rsquo;s federal-court redistricting challenge.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Paid-parental-leave proposal heads to Wednesday&rsquo;s Board of Health meeting in a scaled-back form</h3>
+        <div class="story-body">
+          <p>Following the roughly 1,400 public comments that closed out the county&rsquo;s final in-person hearing last week &mdash; a record volume, per county officials &mdash; Board of Health members are expected to introduce a scaled-back version of the countywide paid-parental-leave mandate at tomorrow&rsquo;s meeting, per reporting published Monday. The specific terms of the revised plan were not yet public as of this edition.</p>
+        </div>
+        <p class="story-sourceline">WESA (primary reporting) &middot; Pittsburgh Post-Gazette.</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, moderate, unconfirmed by volatility</span> Supporting evidence: all four major indices closed at session lows, the 10-year Treasury yield hit its highest level since July 2007, oil extended Monday&rsquo;s rally to a fresh 52-week high in USO, high-yield spreads widened 6bp over three sessions, and crypto sold off far harder than equities (bitcoin &minus;4.6%, Coinbase &minus;10.1%). Contradicting evidence: the VIX rose just 0.58% to 17.20, a muted reaction given the scale of the rate and equity moves; gold gained modestly (+0.33%) despite a firmer dollar, a mild safe-haven signal; and several individual names &mdash; Karman, Voyager, BlackSky, Thermo Fisher, Danaher &mdash; rallied against the broader tape. Confidence: moderate. Change from Monday: more broadly negative across all four indices rather than concentrated in AI-infrastructure names, though the volatility complex still hasn&rsquo;t confirmed genuine stress.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Official closes, Sept 15, 2026. 20/50-day distances from the 3-month daily series.</caption>
+              <thead><tr><th>Fund</th><th>Price</th><th>%Chg</th><th>vs 20-DMA</th><th>vs 50-DMA</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>757.39</td><td class="down">&minus;0.46%</td><td class="down">&minus;1.04%</td><td class="down">&minus;0.22%</td></tr>
+                <tr><td>QQQ</td><td>704.54</td><td class="down">&minus;0.65%</td><td class="down">&minus;1.23%</td><td class="down">&minus;0.77%</td></tr>
+                <tr><td>IWM</td><td>285.14</td><td class="down">&minus;0.96%</td><td class="down">&minus;3.28%</td><td class="down">&minus;3.61%</td></tr>
+                <tr><td>DIA</td><td>521.23</td><td class="down">&minus;0.62%</td><td class="down">&minus;1.71%</td><td class="down">&minus;1.46%</td></tr>
+                <tr><td>TLT</td><td>80.71</td><td class="down">&minus;0.27%</td><td class="down">&minus;1.71%</td><td class="down">&minus;2.53%</td></tr>
+                <tr><td>SPCX</td><td>143.49</td><td class="down">&minus;3.15%</td><td class="up">+0.16%</td><td class="up">+6.72%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Small caps (IWM) remain the clearest laggard on both moving averages, consistent with the rate-sensitive part of the market underperforming as the 10-year pushed to a 19-year high. SPCX sold off on the day but remains well above both its 20- and 50-day averages.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>No fresh breadth read exists for today&rsquo;s session &mdash; the Massive grouped-daily fetch is deliberately run once per NYSE session and Monday&rsquo;s (Sept. 14) session was already captured by this morning&rsquo;s run. Monday&rsquo;s reading stands: 2,302 advancers, 3,079 decliners, 178 unchanged across a filtered 5,559-name universe, with down-volume ($7.76B) exceeding up-volume ($5.90B). The cumulative advance-decline line across the last 36 sessions on file is <span class="chip">&minus;3,454</span>, a persistently negative breadth trend into today&rsquo;s session; given today&rsquo;s broader index declines, same-day breadth is very likely negative too, but no fetched figure exists for Sept. 15 &mdash; <span class="chip">Source unavailable</span> rather than estimated. Percent-above-50/200-day figures remain <span class="chip">Estimated &mdash; EMA proxy, accumulating history</span> and are not yet reportable as a reliable read.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors &amp; industries</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>All 11 SPDR sectors, Tuesday close, 1-day change.</caption>
+              <thead><tr><th>Sector</th><th>1D</th></tr></thead>
+              <tbody>
+                <tr><td>Energy (XLE)</td><td class="up">+2.17%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="up">+0.48%</td></tr>
+                <tr><td>Health care (XLV)</td><td class="down">&minus;0.05%</td></tr>
+                <tr><td>Real estate (XLRE)</td><td class="down">&minus;0.12%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="down">&minus;0.29%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="down">&minus;0.64%</td></tr>
+                <tr><td>Communication services (XLC)</td><td class="down">&minus;0.90%</td></tr>
+                <tr><td>Staples (XLP)</td><td class="down">&minus;0.82%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="down">&minus;1.20%</td></tr>
+                <tr><td>Consumer discretionary (XLY)</td><td class="down">&minus;1.75%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Energy was the only sector to close higher, tracking oil&rsquo;s rally to a fresh 52-week high in USO. Semiconductors (SMH, +0.11%) diverged positively from the broader technology sector (XLK, &minus;0.29%) &mdash; a partial stabilization after Monday&rsquo;s sharp AI-infrastructure selloff, though Nvidia and peers were not individually re-checked this run. Regional banks (KRE) were roughly flat (&minus;0.08%) while financials broadly (XLF) lagged slightly.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p>Across the full deduplicated company-watchlist universe (mega-cap tech, AI infrastructure, defense/aerospace, space, financials, health care, consumer), losers skewed crypto- and finance-adjacent &mdash; Coinbase &minus;10.10%, Chipotle &minus;5.94% (no confirmed company-specific catalyst found), Cboe &minus;4.94%, Robinhood &minus;3.39% &mdash; consistent with the crypto rout and the CLARITY Act&rsquo;s cloture failure. Winners skewed small/mid-cap defense and space names &mdash; Karman +7.86%, Voyager Technologies +4.26%, BlackSky +2.79% &mdash; alongside health-care names Thermo Fisher (+4.53%) and Danaher (+3.01%); this outlet found no confirmed company-specific news explaining the scale of any of these individual moves and is not inventing one. SpaceX (SPCX) fell 3.15% to $143.49, in line with the broader tape.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Tuesday Sept 15 close.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>3M</td><td>4.11%</td></tr>
+                <tr><td>2Y</td><td>4.67%</td></tr>
+                <tr><td>10Y</td><td>5.00%</td></tr>
+                <tr><td>30Y</td><td>5.36%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +33bp, 3m10y +89bp, 5s30s +53bp &mdash; each a modest steepening versus Monday. The 10-year touched 5.041% intraday, its highest since July 2007, before settling at the official close above. SOFR held at 3.62% (FRED, Sept 14 observation, unchanged versus Sept 11) &mdash; note this series runs one day behind the same-day Treasury par curve and should not be conflated with it.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield OAS widened to 2.71% (FRED BAMLH0A0HYM2, Sept 14 observation) from 2.65% on Sept 11 &mdash; a 6bp widening over three sessions, still near cycle tights but a genuine, modest deterioration. Investment-grade (LQD &minus;0.02%) and high-yield (HYG &minus;0.19%) corporate-bond ETFs both eased today, high-yield underperforming slightly, consistent with the OAS move. Daily short-volume ratio for Monday&rsquo;s session (the most recent available, FINRA) ran 50.18% market-wide, with ARES (74.0%), IEF (72.3%), XLY (71.6%) and MAGS (70.1%) the highest among watchlist names above 200,000 shares traded; daily short volume is not short interest, which is settlement-dated and runs 2&ndash;3 weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 17.20 (+0.58%), VIX9D 17.21, VIX3M 19.36 &mdash; Delayed (+15 min), last trade 16:15:01 ET. The front end sits fractionally inverted (VIX9D marginally above VIX) while VIX3M holds well above both &mdash; a flat-to-slightly-inverted front against continued contango further out, not a meaningful backwardation signal. Cboe put/call ratios remain unavailable (retired Aug. 16 after weeks of 403 errors). The MOVE index has no allowlisted free source; dealer gamma is not tracked, no legitimate free source exists.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>ECB reference rates, Tuesday Sept 15 fix: EUR 0.86663, JPY 155.00, GBP 0.74166, CNY 6.7115, CHF 0.81818, CAD 1.3920, AUD 1.4034, MXN 17.1568, BRL 5.1512, INR 95.96 per USD. EURUSD sat at 1.1543, down 0.44% versus Monday&rsquo;s settle. The ICE Dollar Index closed at 99.65, up 0.19% on the day. DXY has no allowlisted free source beyond this index itself; EURUSD and the ECB basket provide the narrative color.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude futures traded near $105.60 in this evening&rsquo;s continuing quote, up 4.15% intraday (Delayed +10 min; futures trade near-continuously and this is not a settled close); the United States Oil Fund (USO, EOD official) closed at a fresh 52-week high, $161.86, up 3.32%, corroborating a genuine oil rally rather than a data artifact. Gold futures eased 0.41% to $4,334.20 (Delayed +10 min) even as SPDR Gold Shares (GLD, EOD official) gained 0.33% to $394.15 &mdash; a small divergence within normal futures-vs-ETF noise. Natural gas rose 1.52%; copper rose 1.94%. Both moves track the day&rsquo;s broader Gulf-driven commodity strength.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p><span class="chip">Live (CoinGecko aggregate)</span> Bitcoin $75,752 (&minus;4.59% 24h), Ethereum $2,403.10 (&minus;7.30%), Solana $97.05 (&minus;7.26%), Cardano $0.1958 (&minus;8.79%). Total crypto market cap $2.593T (down from $2.616T this morning); bitcoin dominance 58.51%, ethereum dominance 11.27%. This was a broad, sharp crypto-specific selloff, worse than equities across every major token, and coincided with (not confirmed as caused by) the Senate&rsquo;s CLARITY Act cloture failure this afternoon &mdash; see What Moved Markets.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>No factor-fund basket (growth/value/momentum/quality/low-volatility) was independently pulled this run; today&rsquo;s sector dispersion above is the best available proxy &mdash; energy and materials outperformed consumer discretionary and utilities, a commodity-led rather than a clean growth-versus-value rotation.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Today&rsquo;s combination &mdash; equities down, oil up to a 52-week high in USO, gold modestly up, the dollar firmer, yields at a 19-year high, and crypto down far more than equities &mdash; reads as an oil-and-rate-driven repricing with a genuine but partial safe-haven bid (gold), rather than a uniform flight from risk. Crypto&rsquo;s much sharper decline than equities, against a VIX that barely moved, suggests today&rsquo;s stress concentrated in rate-sensitive and speculative assets specifically rather than broadening into a systemic equity selloff.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist mega-cap, AI-infrastructure, defense, financial or consumer name reports this week. Lennar (LEN, non-watchlist) reports fiscal Q3 after tomorrow&rsquo;s close, call Thursday 11:00 AM ET &mdash; useful housing-sector context alongside this week&rsquo;s NAHB and housing-starts data, given mortgage rates now past 7%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Today: a 6-week Treasury bill ($75B) and a 19-year-11-month bond reopening ($13B), results not independently confirmed by this edition&rsquo;s close. Treasury&rsquo;s doubled long-end liquidity-support buyback size ($4B per operation, up from $2B, 10&ndash;30yr sector) remains in effect through this month&rsquo;s refunding cycle.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Treasury par-yield curve; FRED, Cboe, Yahoo Finance, Frankfurter and CoinGecko market data; SEC EDGAR filings; CNN, AP wire, NBC News and PBS on the Kennedy Center vote; CoinDesk and Coingape on the CLARITY Act vote; Senate Judiciary Committee hearing coverage; Houthi and Saudi-led coalition statements; WESA and the Pittsburgh Post-Gazette for local coverage. Primary sources are preferred and named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition. The corrections ledger carries no unsurfaced entries as of this run.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes; missing data is declared missing, never invented. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-15-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
