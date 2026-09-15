@@ -49,3 +49,11 @@ A personal, automated intelligence terminal. Scheduled Claude Code cloud routine
 - All credentials (Telegram token, data-API keys) live in the cloud environment's variables — nothing sensitive is stored in this repository.
 - All state needed to rebuild or move the system lives in the repository itself.
 - Reports favor primary sources, explicit uncertainty labels, and corrections over speed or drama; see `docs/SPEC.md`.
+
+## finsim — institutional finance simulation (separate application)
+
+`finsim/` is a self-contained, single-player simulation of an institutional financial
+system (event-sourced double-entry ledger, simulated multi-asset market, order execution,
+trade lifecycle, DVP settlement and custody, corporate actions, NAV/P&L explain, audit
+trail). It is unrelated to the newspaper routines and never touches real markets.
+See `finsim/README.md` — run with `cd finsim && python3 -m finsim serve`.
