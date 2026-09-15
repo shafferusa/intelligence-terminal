@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-14T20:41:00Z",
+ "fetched_at": "2026-09-15T11:10:00Z",
  "treasury_par_curve": {
   "date": "2026-09-14",
   "BC_1MONTH": 3.94,
@@ -1396,15 +1396,15 @@
   }
  },
  "breadth_latest": {
-  "date": "2026-09-11",
-  "advancers": 3172,
-  "decliners": 2022,
-  "unchanged": 176,
-  "universe": 5370
+  "date": "2026-09-14",
+  "advancers": 2302,
+  "decliners": 3079,
+  "unchanged": 178,
+  "universe": 5559
  },
  "finra_short_vol": {
-  "date": "2026-09-11",
-  "aggregate_pct": 51.11
+  "date": "2026-09-14",
+  "aggregate_pct": 50.17
  },
  "sector_etfs_wk": {
   "XLK": {
@@ -1486,5 +1486,20 @@
   },
   "label": "Official close (Yahoo futures, free-tier)",
   "fetched_at": "2026-09-14T20:40:00Z"
+ },
+ "premarket_tuesday": {
+  "as_of": "2026-09-15T06:35:00-04:00",
+  "label": "Delayed (+10 min), premarket, Yahoo Finance futures",
+  "ES_F_pct": 0.6,
+  "NQ_F_pct": 0.76,
+  "YM_F_pct": 0.42,
+  "RTY_F_pct": 0.39,
+  "CL_F_pct": 1.88,
+  "GC_F_pct": -0.83,
+  "NG_F_pct": -0.41,
+  "HG_F_pct": 0.97,
+  "EURUSD_pct": -0.09,
+  "DXY_pct": 0.14,
+  "note": "Percent changes computed close-to-close against the Monday Sept 14 daily bar per the corrected close-series methodology (see ledgers/corrections.json 2026-08-03 entry), not against the meta chartPreviousClose field."
  }
 }

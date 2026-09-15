@@ -1,6 +1,73 @@
 {
  "stories": [
   {
+   "id": "fomc-eve-hike-odds-sep15",
+   "headline": "Fed enters its decision with hike odds near 90%, the 10-year yield above 5%, and Bessent giving Warsh cover",
+   "status": "New",
+   "first_seen": "2026-09-15-am",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-multiple; Estimated (odds)",
+   "one_line": "Reuters poll of 101 economists (published Monday): 85% expect a 25bp hike Wednesday to 3.75-4.00%; prediction markets/CME-derived pricing cluster 86-91%. The 10-year yield broke above 5% intraday Monday (oil-driven, Saudi pipeline/Hormuz risk) before settling at an official 4.97% close; mortgage rates past 7%. Treasury Secretary Bessent's 'bond market has taken out more governments than howitzers' remark reads as giving Chair Warsh room to hike despite continued Trump pressure; chief economist Hassett says the administration will '100% support' the decision while personally arguing against a hike, citing an inflation figure inconsistent with BLS's own 2.4% core reading.",
+   "score_note": "A visible gap between the administration's public pressure and its senior officials' private posture heading into Wednesday's decision.",
+   "sources": [
+    "Reuters poll (primary)",
+    "Bessent remarks (primary, via wire)",
+    "Trump's Truth Social post (primary)",
+    "Fortune",
+    "Bloomberg",
+    "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "softbank-ai-infra-rebound-sep15",
+   "headline": "AI-infrastructure selloff partially reverses as SoftBank rebounds roughly 8% in Tokyo",
+   "status": "New",
+   "first_seen": "2026-09-15-am",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "SoftBank shares rebounded roughly 8% in Tokyo Tuesday, recovering most of Monday's overnight loss tied to the 'pace the frontier' fallout and a reported OpenAI listing delay to 2027. Nikkei 225 finished essentially flat; Hang Seng, ASX 200 and Kospi mixed. US index futures pointed modestly higher (S&P +0.60%, Nasdaq +0.76%) ahead of the open.",
+   "score_note": "First sign of stabilization after Monday's sharp AI-infrastructure-versus-application divergence.",
+   "sources": [
+    "AP wire (via affiliates)",
+    "this report's own Yahoo Finance data"
+   ],
+   "watch": true
+  },
+  {
+   "id": "kennedy-center-fiscal-collapse-sep15",
+   "headline": "Kennedy Center warns of 'certain fiscal collapse'; special board meeting could shutter the building for two years",
+   "status": "New",
+   "first_seen": "2026-09-15-am",
+   "last_updated": "2026-09-15-am",
+   "verification": "Single-reliable-source (financial figures, leaked document); Confirmed-multiple (fact of the meeting)",
+   "one_line": "A 57-page board packet obtained by the Washington Post says the Kennedy Center -- under the Trump-appointed board installed after February's leadership shakeup -- budgeted roughly $220M in revenue but expects to collect only about $124M, warning it may be unable to cover payroll or maintenance 'within weeks'; officials separately say the main building is unsafe after a Sept 5 ceiling collapse. A special board meeting today will consider closing the building for up to two years. This follows an Aug 13 board vote (to restore Trump's name and close the building) a federal judge had already found violated the Center's founding statute. A spokesperson for former chairman David Rubenstein disputes the financial framing.",
+   "score_note": "Financial claims rest on a single leaked document, not yet corroborated by the Center's own public statement.",
+   "sources": [
+    "Washington Post (primary reporting on leaked document)",
+    "NPR",
+    "CBS News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "dod-ig-iran-war-cost-sep15",
+   "headline": "Pentagon watchdog puts a $33.4 billion price on five months of war, warns of a munitions shortfall",
+   "status": "New",
+   "first_seen": "2026-09-15-am",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "A Defense Department Inspector General report made public Tuesday puts the campaign against Iran's total cost at roughly $33.4B ($22.3B munitions, $3.7B equipment losses, $7.4B other) and finds munitions expenditure created strategic-inventory shortfalls, exposing industrial-base resupply bottlenecks. Secretary Hegseth has publicly denied the US is 'running low' on munitions -- in direct tension with the IG's finding. No formal Pentagon response to the report yet.",
+   "score_note": "First official, on-record confirmation of a sustainment problem in a war stretching past five months.",
+   "sources": [
+    "DoD Inspector General report (primary, via wire)",
+    "Bloomberg",
+    "NBC News",
+    "Israel Hayom"
+   ],
+   "watch": true
+  },
+  {
    "id": "epa-power-plant-carbon-repeal-sep14",
    "headline": "EPA repeals power-plant carbon limits, calling it the largest deregulatory move in US history",
    "status": "New",
@@ -19,19 +86,19 @@
    "watch": true
   },
   {
-   "id": "public-charge-green-card-suit-sep14",
-   "headline": "Twenty-two states sue to block a new green-card rule before it takes effect this week",
-   "status": "New",
-   "first_seen": "2026-09-14-pm",
-   "last_updated": "2026-09-14-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "NY AG Letitia James led a coalition of 22 states, DC and Pennsylvania's governor in an SDNY suit today against a new DHS rule broadening the \"public charge\" test for green cards and visas to count non-cash benefits (food stamps, Medicaid, housing vouchers), reversing the longstanding cash-only standard. States cite DHS's own $4.05B/year estimated loss in federal Medicaid/CHIP transfers and argue the rule is arbitrary and capricious. A separate suit was filed by a coalition of cities/counties. The rule takes effect at the end of this week.",
-   "score_note": "New, high-stakes immigration litigation with a hard effective-date clock.",
+   "id": "indonesia-ferry-capsize-sep13",
+   "headline": "Java Sea ferry search enters its third day; roughly 129 still missing",
+   "status": "Continuing",
+   "first_seen": "2026-09-13-sun",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-multiple (toll); Unverified (cause)",
+   "one_line": "Search continues for the Virgo Transport 8, which capsized in the Masalembo waters early Sunday after losing contact in heavy seas (captain's distress call cited ~10-foot waves). Roughly 280 personnel have recovered six bodies and rescued just over 100 people; about 129 still missing out of 240+ aboard. Cause remains under investigation.",
+   "score_note": "Toll essentially unchanged from Monday but search remains open with a large unresolved gap between rescued and missing.",
    "sources": [
-    "New York Attorney General's office complaint (primary)",
-    "CNN",
-    "Stateline",
-    "The Hill"
+    "Indonesian search-and-rescue authorities (primary, via wire)",
+    "NPR",
+    "Al Jazeera",
+    "Euronews"
    ],
    "watch": true
   },
@@ -160,36 +227,36 @@
   },
   {
    "id": "ai-oversight-tuesday-deadline-sep15",
-   "headline": "OpenAI and Anthropic face Rep. Casar's Tuesday Sept 15 deadline for fuller AI-agent-incident answers",
-   "status": "Continuing",
+   "headline": "Casar's Tuesday AI-oversight deadline passes with no answer from OpenAI or Anthropic",
+   "status": "Materially changed",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-13-sun",
+   "last_updated": "2026-09-15-am",
    "verification": "Confirmed-primary",
-   "one_line": "Neither company issued any weekend statement ahead of Tuesday's deadline, which Casar set after calling both companies' earlier answers insufficient. Sen. Hawley's separate Senate probe (Oct 1 document deadline) is unaffected and saw no weekend movement either.",
-   "score_note": "The deadline lands one day before the Fed's own contested vote, compressing two unrelated stories into the same 48 hours.",
+   "one_line": "As of Tuesday morning neither company had issued any statement or document release responding to Rep. Casar's deadline. House Democrats met privately on AI policy this morning (Jeffries pushing to 'slow down the pace of development'); Sens. Hawley and Blumenthal introduced the bipartisan Artificial Intelligence Risk Evaluation Act (DOE pre-deployment safety-data submission), distinct from Hawley's separate Oct 1 document-demand probe, which is unaffected.",
+   "score_note": "Second deadline both companies have now effectively missed; the day's real movement came from elsewhere in Congress rather than the companies themselves.",
    "sources": [
     "Rep. Casar's office (primary)",
-    "Sen. Hawley's office (primary)"
+    "Sen. Hawley's office (primary)",
+    "AP wire",
+    "Bloomberg"
    ],
    "watch": true
   },
   {
    "id": "ukraine-refinery-strikes-poland-train-sep13",
-   "headline": "Ukraine strikes Russian refineries; Trump asks it to stop; a drone hits a train near the Polish border",
+   "headline": "Zelensky disputes Trump's claimed refinery-strike truce; NATO's Rutte confirms alliance will boost support",
    "status": "Materially changed",
-   "first_seen": "2026-09-14-am",
-   "last_updated": "2026-09-14-pm",
-   "verification": "Confirmed-multiple (Trump statement, Tusk response); Single-institutional-source (Ukrzaliznytsia target assessment)",
-   "one_line": "Ukraine struck the TANECO refinery in Tatarstan overnight; Russian officials say two civilians died. Trump, citing US diesel above $6/gallon, said today he has urged Zelensky to stop the strikes. Ukraine's rail operator called it \"highly probable\" the diplomats' train (Johnson, Bildt) was the drone's actual target -- the operator's own assessment, not independently confirmed; a third train carrying David Petraeus was still at the station when the drone struck. Polish PM Tusk warned of \"very intensified actions on the Russian side\" ahead, said Poland \"cannot rule out\" the war reaching its territory, and will consult NATO allies; Rutte reportedly pledged more support for Ukraine.",
-   "score_note": "The closest a Russian strike has come to senior Western officials during this war, landing the same day as the US-Ukraine disagreement over refinery strikes.",
+   "first_seen": "2026-09-13-sun",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-multiple/primary",
+   "one_line": "Trump said Sunday he'd asked Zelensky to stop refinery strikes, framing it as close to an agreed pause; Zelensky publicly disputed that characterization on Telegram Monday, calling it a proposal rather than a settled arrangement, and said Ukraine will keep striking refineries unless Russia halts attacks on Ukrainian energy/food infrastructure. NATO Secretary-General Rutte confirmed on the record the alliance will increase support for Kyiv and eastern-flank defenses after Sunday's drone strike near the Polish border, which came minutes behind a train carrying Boris Johnson and Carl Bildt; Poland pledged its own border-security increase.",
+   "score_note": "A direct, on-record US-Ukraine disagreement about what was agreed, plus a hardened NATO response, both upgrade this thread's verification level.",
    "sources": [
-    "Ukrainian rail operator and military statements (primary, via wire)",
-    "Trump remarks (primary, via wire)",
-    "Polish government statements (primary)",
-    "NBC News",
-    "CNN",
-    "AP",
-    "TVP World"
+    "Zelensky's Telegram post (primary)",
+    "Rutte's remarks (primary, via wire)",
+    "UPI",
+    "PBS",
+    "Al Jazeera"
    ],
    "watch": true
   },
@@ -231,19 +298,17 @@
   },
   {
    "id": "saudi-pipeline-mocha-strike-sep11",
-   "headline": "Saudi Arabia shuts a major oil pipeline and strikes Mocha as the Yemen war widens",
+   "headline": "Houthi forces complete control of Bab el-Mandeb; UN Security Council meets, Saudi Arabia vows a firm response after strikes wound 13",
    "status": "Materially changed",
    "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-14-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Reporting today says Saudi Arabia's East-West pipeline will be \"mostly out of service for several weeks,\" longer than earlier estimates. Houthi forces have added the Greater and Lesser Hanish islands to their control of Yemen's Red Sea coastline, roughly 160km north of Bab el-Mandeb. Brent traded near $107-108/bbl today, a four-month high, on the combination of the Hormuz strike, the pipeline outage and the Houthi advance -- no single confirmed catalyst. A separate Houthi projectile struck Saudi Arabia's Jazan region Saturday, wounding two and damaging a mosque (Saudi civil-defense attribution, not independently corroborated).",
-   "score_note": "The pipeline outage is now measured in weeks, not days, while Houthi territorial control keeps expanding -- military and economic pressure both intensifying with every diplomatic channel stalled.",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-primary (strikes/casualties); Confirmed-multiple (territorial control); Single-reliable-source (UNSC session timing, unnamed diplomatic sources)",
+   "one_line": "Houthi ballistic missiles and drones struck Khamis Mushait, Abha and Taif Monday, wounding 13 and damaging property, per Saudi-led coalition spokesman Maj. Gen. Turki al-Malki; the coalition vowed a 'responsible and firm' response. Houthi forces have effectively completed control of Yemen's Red Sea coastline (Perim/Mayun, Hanish Islands), giving them practical control of the Bab el-Mandeb chokepoint -- a second maritime pressure point alongside Hormuz. France, holding the Security Council presidency, requested a session on the strait, expected Tuesday afternoon; likely a statement rather than a binding resolution given veto risk.",
+   "score_note": "A second global chokepoint now under a hostile actor's control compounds the pipeline-outage oil story into a structural shipping-risk story.",
    "sources": [
-    "Saudi Energy Ministry (primary)",
-    "CNN Business",
-    "NBC News",
+    "Saudi-led coalition spokesman (primary)",
     "Al Jazeera",
-    "Euronews",
+    "CNN",
     "Arab News"
    ],
    "watch": true
@@ -328,22 +393,6 @@
     "ECDC"
    ],
    "watch": true
-  },
-  {
-   "id": "meta-muse-ai-agent-sep9",
-   "headline": "Meta launches Muse, its first personal AI agent, sending shares up 6%",
-   "status": "New",
-   "first_seen": "2026-09-09-pm",
-   "last_updated": "2026-09-09-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Meta launched Muse, described as the first personal AI agent built for everyone, with free, $20 and $100 subscription tiers able to send emails, schedule appointments, make purchases and book reservations. Shares rose 6.17% to $651.28; Mizuho analyst Lloyd Walmsley called it a meaningful step toward demonstrating returns on Meta's AI capital spending.",
-   "score_note": "The clearest single-stock catalyst of the session, on a day the broader market fell for a third straight session.",
-   "sources": [
-    "CNN Business",
-    "Yahoo Finance",
-    "CNBC"
-   ],
-   "watch": false
   },
   {
    "id": "openai-navier-stokes-credit-dispute-sep9",
@@ -433,26 +482,6 @@
    "watch": true
   },
   {
-   "id": "missouri-congressional-map-ruling-aug21",
-   "headline": "Missouri map fight ends as Hoskins purges himself of contempt",
-   "status": "Resolved",
-   "first_seen": "2026-08-21-am",
-   "last_updated": "2026-09-11-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Thursday's contempt hearing resolved as expected: the Missouri Supreme Court held Hoskins in contempt for his earlier defiance, he reversed and ordered the 2022 map used, and Chief Justice Powell said he had 'purged himself of contempt' by complying -- no fine or further sanction imposed. The state court's own 2022-map ruling now stands as the sole governing order after SCOTUS stayed the competing federal order Wednesday. Whether the court will separately sanction Hoskins for his pre-compliance conduct remains unaddressed, not foreclosed.",
-   "score_note": "A five-week state-federal standoff ended in compliance rather than another round of competing orders -- a genuine resolution, not just another development.",
-   "sources": [
-    "SCOTUSblog",
-    "Missouri Independent",
-    "STLPR",
-    "ABC17News",
-    "KRCU",
-    "Newsweek",
-    "CNN"
-   ],
-   "watch": false
-  },
-  {
    "id": "visa-ban-struck-down-aug21",
    "headline": "Federal judge strikes down the administration's 75-country visa suspension",
    "status": "Continuing",
@@ -471,22 +500,21 @@
   },
   {
    "id": "mail-ballot-new-merits-suit-aug26",
-   "headline": "Mail-ballot Supreme Court case remains unresolved as this outlet's five-day forecast window lapses",
-   "status": "Materially changed",
+   "headline": "Supreme Court denies stay, leaving the mail-ballot rule blocked through the 2026 midterms",
+   "status": "Resolved",
    "first_seen": "2026-07-28-am",
-   "last_updated": "2026-09-14-pm",
-   "verification": "Confirmed-multiple (Nichols ruling); Confirmed-primary (SCOTUS docket read)",
-   "one_line": "A second federal judge, Carl Nichols (D.D.C., a Trump appointee), issued a 24-page opinion late Sunday separately blocking the mail-ballot rule on different statutory grounds than Judge Talwani's Sept 4 injunction -- finding \"key portions\" exceed \"any conception of the outer bounds\" of USPS's authority. Plaintiffs: DSCC, LULAC, NAACP. Rather than a separate appeal, the government filed a supplemental brief today folding Nichols into its existing Supreme Court stay application (26A305); no order has issued. This outlet's 2026-09-09-pm-2 forecast that the Court would act within five days of briefing closing has now graded wrong (Saturday scorecard).",
-   "score_note": "The administration now faces two injunctions on two separate legal theories -- a materially harder position than a week ago.",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-primary (order text); Confirmed-multiple (reporting)",
+   "one_line": "The Supreme Court denied the government's stay application in USPS v. California (26A305) Monday night, finding it unlikely to succeed on the merits. Both underlying injunctions (Talwani, Nichols) remain in effect; the rule cannot be enforced for 2026. Kavanaugh concurred separately (APA 'arbitrary and capricious' given election officials' compressed timeline); Alito dissented, joined by Thomas. This closes the emergency-relief stage this outlet tracked since late July; merits litigation presumably continues below. This outlet's 2026-09-13-sun-6 forecast that the Court would act is now resolved (grading due Saturday).",
+   "score_note": "Clean resolution of a long-tracked emergency-docket fight with direct 2026-midterm impact.",
    "sources": [
-    "Supreme Court docket 26A305 (primary)",
-    "Judge Nichols's opinion (primary, via reporting)",
-    "NBC News",
-    "The Hill",
-    "Axios",
-    "Daily Signal"
+    "Supreme Court order, docket 26A305 (primary)",
+    "CNBC",
+    "NPR",
+    "CNN",
+    "NBC News"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "mciver-third-circuit-immunity-aug27",
@@ -526,22 +554,6 @@
    "watch": true
   },
   {
-   "id": "nk-freedom-edge-drill-aug28",
-   "headline": "Freedom Edge drill begins as Kim Jong Un commissions a second destroyer",
-   "status": "Materially changed",
-   "first_seen": "2026-08-28-pm",
-   "last_updated": "2026-09-07-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "Freedom Edge proceeded on schedule Monday off Jeju, no missile test or incident. NK Defense Minister Kim Song-gi called the drills a 'crucial security threat' and threatened 'more powerful and resolute action.' Kim Jong Un's newly commissioned second destroyer is now named (Kang Kon, at Wonsan), explicitly tied to a 'nuclear counteraction system' framing -- symbolic, not kinetic.",
-   "score_note": "Consistent pattern: hardware announcements and rhetoric, not missile tests, during allied drills.",
-   "sources": [
-    "Washington Times",
-    "Al Jazeera",
-    "CNN"
-   ],
-   "watch": false
-  },
-  {
    "id": "ratcliffe-moscow-summit-proposal-aug30",
    "headline": "Russia resumes Kyiv strikes; Trump-Putin call ends without a concrete deal",
    "status": "Materially changed",
@@ -562,21 +574,19 @@
   },
   {
    "id": "us-iran-jordan-strikes-aug31",
-   "headline": "US strikes Kermanshah as a wedding-strike controversy hardens the Iran war",
+   "headline": "Trump floats reopening Iran talks; Tehran's security chief rejects, as Iran claims an uncorroborated second US drone downing",
    "status": "Materially changed",
    "first_seen": "2026-08-31-am",
-   "last_updated": "2026-09-04-pm",
-   "verification": "Confirmed-multiple (NYT/Reuters visual analysis); Disputed (casualty figures)",
-   "one_line": "A New York Times and Reuters visual/forensic analysis, corroborated by an independent weapons expert, concluded the disputed Kuhestak strike used American munitions -- directly contradicting VP Vance's public skepticism that it hit a wedding. Vance separately set a new, explicit precondition for talks: no negotiations until attacks on commercial shipping stop.",
-   "score_note": "Independent forensic reporting now directly contradicts the administration's own stated position, not just Iranian claims.",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-primary (Trump/Rezaei statements); Unverified/Disputed (drone claim)",
+   "one_line": "Trump posted Monday that Iran 'wants to make a deal, quickly and badly,' saying he would decide on engagement. Mohsen Rezaei, secretary of Iran's Supreme National Security Council, rejected it on the record Tuesday, dismissing Trump's 'mixed signals' and saying no talks until Iran's own conditions (reparations, sanctions relief) are met. Separately, Iranian state media (PressTV, Tehran Times) cited the IRGC claiming a second US MQ-1 drone downed over Hormuz Monday; no US confirmation found anywhere.",
+   "score_note": "The overture-and-rejection cycle plus an unconfirmed new drone-loss claim underscore no active de-escalation channel currently exists.",
    "sources": [
-    "Iran's Revolutionary Guard statement (primary, via wire)",
-    "Kuwait's army statement (primary, via wire)",
-    "Qatar's Ministry of Foreign Affairs (primary)",
-    "Times of Israel",
-    "ABC News",
-    "i24NEWS",
-    "APA"
+    "Trump's Truth Social post (primary)",
+    "Rezaei's statement (primary)",
+    "IRGC/PressTV (primary, single-party, disputed)",
+    "Business Recorder",
+    "Antiwar.com"
    ],
    "watch": true
   },
@@ -738,17 +748,18 @@
   },
   {
    "id": "israel-lebanon-ridge-claim-sep4",
-   "headline": "Israel destroys a major Hezbollah tunnel network, felt as a magnitude-4.1 quake",
+   "headline": "IDF finds and destroys an armed Hezbollah rocket launcher and tunnel shaft in the south Lebanon buffer zone",
    "status": "Materially changed",
    "first_seen": "2026-09-04-pm",
-   "last_updated": "2026-09-11-am",
-   "verification": "Confirmed-multiple (IDF operation, seismic data); Disputed (cumulative toll, unchanged two-count problem, now inconsistent even within Lebanese sources)",
-   "one_line": "The IDF said Thursday it destroyed a Hezbollah tunnel network beneath the Ali Taher Ridge near Beaufort -- roughly 1,100 tons of explosives across eight tunnels spanning 5.4 km, registered as a magnitude-4.1 seismic event on independent monitors (USGS, Euro-Med Seismological Centre), felt in Sidon and Tyre. Lebanon's army separately accused Israel of \"deadly escalation.\" The death-toll counts this outlet has flagged as irreconcilable since early September are now inconsistent even within Lebanese sources alone: the Health Ministry has been cited at both 4,358 and 4,381 killed since March 2 by different outlets the same day.",
-   "score_note": "A tunnel network of this scale is a materially different kind of operation than the strike-and-counter-strike pattern that has otherwise defined the ceasefire period.",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-primary (IDF statement); no independent Lebanese-side confirmation or dispute found",
+   "one_line": "IDF says troops operating in the buffer zone located and destroyed a Hezbollah fighting position -- a rocket launcher loaded with 32 rockets plus a tunnel shaft -- which it says Hezbollah left behind before the ceasefire took effect. No Lebanese army or Hezbollah response found. The broader death-toll dispute (Lebanese Health Ministry figures cited inconsistently even within Lebanese sources) remains unresolved; no new figures found this run.",
+   "score_note": "Continues the pattern of IDF finding pre-ceasefire Hezbollah infrastructure inside the buffer zone without a new strike or casualty event.",
    "sources": [
-    "Lebanese army statement (primary)",
     "IDF statement (primary)",
-    "Times of Israel"
+    "Times of Israel",
+    "JFeed",
+    "i24NEWS"
    ],
    "watch": true
   },
@@ -891,23 +902,6 @@
    "watch": true
   },
   {
-   "id": "uk-israel-consulate-order-sep9",
-   "headline": "Israel orders the UK to close its East Jerusalem consulate over West Bank settlement-goods bans",
-   "status": "Materially changed",
-   "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-pm",
-   "verification": "Confirmed-multiple",
-   "one_line": "After 12 countries including the UK announced restrictions on West Bank settlement-goods trade Sept 8, Israel ordered the UK to close its East Jerusalem consulate within 30 days, stripped diplomats there of status, and barred 12 UK MPs. UK Foreign Secretary Miliband called the measures a 'comprehensive sanction regime'; Israel disputes the UK's characterization. No change as of Thursday; both measures stand as announced.",
-   "score_note": "Notable diplomatic escalation between close allies over a long-running policy dispute.",
-   "sources": [
-    "NBC News",
-    "CNBC",
-    "NPR",
-    "Euronews"
-   ],
-   "watch": false
-  },
-  {
    "id": "anthropic-4th-incident-sep9",
    "headline": "Congress calls the AI labs' incident answers inadequate as a second Anthropic researcher backs the resignation warning",
    "status": "Materially changed",
@@ -924,23 +918,6 @@
     "The Hacker News"
    ],
    "watch": true
-  },
-  {
-   "id": "openai-navier-stokes-dispute-sep8",
-   "headline": "OpenAI publicly rebuts the Navier-Stokes credit-theft allegation",
-   "status": "Materially changed",
-   "first_seen": "2026-09-09-pm",
-   "last_updated": "2026-09-11-am",
-   "verification": "Disputed",
-   "one_line": "OpenAI posted a direct statement saying it 'did not see any of' Buckmaster's and Alp\u00f6ge's unpublished work 'through any means' before its own agents produced the result, while hedging that de-identified usage data 'cannot rule out' an indirect influence. Buckmaster and Alp\u00f6ge have since released their own Lean-verified proofs of finite-time blowup for three fluid systems, a related but distinct claim. Neither the Clay Institute nor peer review has certified OpenAI's original claim.",
-   "score_note": "Cross-lab dispute with no independent verification either way.",
-   "sources": [
-    "OpenAI",
-    "Quanta Magazine",
-    "TechCrunch",
-    "Axios"
-   ],
-   "watch": false
   },
   {
    "id": "apple-iphone-duo-sep9",
@@ -983,20 +960,21 @@
   },
   {
    "id": "cisa-kev-fortinet-citrix-cisco-sep9",
-   "headline": "CISA adds Fortinet, Citrix, Chromium and Cisco flaws to its exploited-vulnerabilities catalog",
-   "status": "New",
+   "headline": "Cisco Secure FMC flaw exploitation now attributed to three clusters, including suspected Sandworm/Qilin ransomware activity",
+   "status": "Materially changed",
    "first_seen": "2026-09-10-am",
-   "last_updated": "2026-09-10-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "CISA's KEV catalog added CVE-2025-25249 (Fortinet, PivotC2 RAT), CVE-2026-19490 (Citrix NetScaler auth bypass), CVE-2026-87491 (Chromium V8) and CVE-2026-20079 (Cisco Secure FMC auth bypass, the last paired by Talos with high-confidence-qualified attribution to a Cyclops Blink-style implant linked to Sandworm).",
-   "score_note": "Follows Monday's Magento StyleSmuggler KEV addition; distinct vulnerability set.",
+   "last_updated": "2026-09-15-am",
+   "verification": "Confirmed-multiple; attribution carries Talos's own confidence qualifier",
+   "one_line": "Cisco Talos now describes three distinct threat clusters exploiting CVE-2026-20079 (Cisco Secure FMC auth bypass, CVSS 10.0), including deployment of Qilin ransomware and Cyclops Blink malware; one intrusion is 'believed to be' the Russian state-linked group Sandworm, an attribution Talos itself qualifies rather than a government finding. CISA's federal remediation deadline passed Sept 12.",
+   "score_note": "Update to a previously tracked KEV addition with fuller exploitation and attribution detail.",
    "sources": [
-    "CISA KEV catalog (via secondary)",
-    "Talos Intelligence",
+    "Cisco Talos",
     "BleepingComputer",
-    "SecurityWeek"
+    "SecurityWeek",
+    "Help Net Security",
+    "The Hacker News"
    ],
-   "watch": false
+   "watch": true
   },
   {
    "id": "aerovironment-locust-contract-sep10",
@@ -1035,22 +1013,6 @@
     "Bipartisan Policy Center"
    ],
    "watch": true
-  },
-  {
-   "id": "cisa-kev-mikrotik-sep10",
-   "headline": "CISA adds MikroTik router flaws to KEV amid active 'MikroTrick' exploitation",
-   "status": "New",
-   "first_seen": "2026-09-11-am",
-   "last_updated": "2026-09-11-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "CISA added CVE-2026-67277 (unauthenticated RouterOS memory disclosure/DoS) and CVE-2026-86060 (CVSS 9.2, SSH login flaw granting full admin control) to its KEV catalog this week. Poland's CERT Polska bundled these with a third flaw into an exploit chain it calls 'MikroTrick,' warning compromised routers become durable footholds for credential theft and botnet recruitment. Fixed in RouterOS 6.49.21, 7.23.4, 7.24.2.",
-   "score_note": "Follows the Sept 8-9 Magento/Fortinet/Citrix/Cisco KEV batches; distinct vulnerability set.",
-   "sources": [
-    "CERT Polska",
-    "BleepingComputer",
-    "Help Net Security"
-   ],
-   "watch": false
   }
  ]
 }

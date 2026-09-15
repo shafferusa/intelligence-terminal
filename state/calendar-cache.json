@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-14T06:45:00-04:00",
+ "fetched": "2026-09-15T06:50:00-04:00",
  "earnings_fetched": "2026-09-13",
  "earnings_fetched_note": "No watchlist mega-cap/AI-infra/defense/financial/consumer names report the week of Sept 14-18, 2026. Lennar (LEN, non-watchlist) reports Q3 after close Wed Sept 16, call Thu Sept 17 11:00 AM ET.",
  "events": [
@@ -354,6 +354,46 @@
    "importance": "Critical",
    "reason": "Two-day meeting Sept 15-16 per the Federal Reserve's own published calendar (confirmed directly). Recent press accounts put hike odds near 85-90%, not independently confirmed via a live CME FedWatch pull this run. Reported White House pressure against a hike adds a political dimension.",
    "source": "federalreserve.gov FOMC calendar (primary, confirmed via direct fetch) -- press odds Confirmed-multiple, Estimated"
+  },
+  {
+   "ts_et": "2026-09-15T09:00:00-04:00",
+   "type": "legal",
+   "name": "FBI Director Kash Patel testifies before Senate Judiciary Committee",
+   "importance": "Medium",
+   "reason": "First testimony before the panel since clashing with lawmakers roughly four months ago over conduct/performance reports. Expected topics: FBI hiring-criteria changes and the 'Arctic Frost' investigation into 2020-election-overturning efforts.",
+   "source": "Senate Judiciary Committee hearing calendar -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "legal",
+   "name": "Kennedy Center special board meeting on possible building closure",
+   "importance": "Medium",
+   "reason": "An internal board packet reviewed by the Washington Post (reported Sept 13) projects a roughly $23M deficit and warns of inability to cover payroll or maintenance within weeks; separately, officials say the main building is unsafe for continued occupancy after a Sept 5 ceiling collapse. Board meets today to consider closing the building, possibly for up to two years. A spokesperson for former chairman Rubenstein disputes the financial framing.",
+   "source": "Washington Post (primary reporting on leaked document); NPR, CBS News -- Confirmed-multiple on the fact of the meeting, Single-reliable-source on the financial figures"
+  },
+  {
+   "ts_et": "2026-09-15T14:15:00-04:00",
+   "type": "legislative",
+   "name": "Senate cloture vote on motion to proceed to H.R. 3633 (CLARITY Act, digital-asset market structure)",
+   "importance": "Low",
+   "reason": "Needs 60 votes; Republicans hold 53 seats, so at least 7 Democratic/independent votes required. Passed the House 294-134 in July 2025. Cloture only opens formal Senate debate, not final passage.",
+   "source": "Senate floor schedule -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-14T20:00:00-04:00",
+   "type": "legal",
+   "name": "RESOLVED: Supreme Court denies government's stay application in USPS v. California, 26A305 -- mail-ballot rule stays blocked for 2026 midterms",
+   "importance": "Critical",
+   "reason": "The Court denied the stay Monday night, finding the government unlikely to succeed on the merits; Kavanaugh concurred separately (APA 'arbitrary and capricious' given election officials' compressed timeline), Alito dissented (joined by Thomas). Both underlying injunctions (Talwani, D. Mass.; Nichols, D.D.C.) remain in effect; the rule cannot be enforced for the 2026 elections. This closes out the emergency-relief stage of the case this outlet has tracked since late July; merits litigation presumably continues in the ordinary appellate courts.",
+   "source": "Supreme Court order, docket 26A305 (primary); CNBC, NPR, CNN, NBC News -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-22T12:15:00-04:00",
+   "type": "space",
+   "name": "SpaceX Starship Flight 14 (V3 debut) -- now targeting Sept 22, not Sept 18",
+   "importance": "Medium",
+   "reason": "CORRECTED 2026-09-15: this cache's Sept 18 date (08:15-10:14 AM ET window, backup Sept 19) came from secondary launch trackers. Launch Library 2's current schedule (checked directly this run) has it slipped to Sept 22, ~16:15 UTC (~12:15 PM ET), status 'To Be Confirmed.' First orbital flight of the redesigned V3 vehicle carrying roughly 20 Starlink V3 satellites, Starbase, TX.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   },
   {
    "ts_et": "2026-09-16T00:00:00-04:00",
