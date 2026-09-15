@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>finsim — institutional finance simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="logo">FINSIM<small>simulation · not connected to any real market</small></span>
+    <select id="worldSel" title="World"></select>
+    <button class="btn" id="newWorldBtn">+ World</button>
+    <select id="pfSel" title="Portfolio"></select>
+    <button class="btn" id="newPfBtn">+ Portfolio</button>
+    <span class="spacer"></span>
+    <span id="regimeBadge" class="badge"></span>
+    <span class="simdate" id="simDate">—</span>
+    <button class="btn primary" data-adv="1">Advance 1D</button>
+    <button class="btn" data-adv="5">1W</button>
+    <button class="btn" data-adv="21">1M</button>
+  </header>
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<script src="/app.js"></script>
+</body>
+</html>
