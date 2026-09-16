@@ -139,13 +139,19 @@
    "headline": "Rep. Casar calls for OpenAI and Anthropic's CEOs to testify under oath after both miss a second deadline",
    "status": "Materially changed",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-16-am",
+   "last_updated": "2026-09-16-pm",
    "verification": "Confirmed-primary (Casar's own statement; Altman's Fortune quote)",
-   "one_line": "OpenAI global policy chief Chris Lehane said OpenAI, Anthropic and Google DeepMind have coordinated on AI safety 'for weeks' and have discussed forming a shared safety-standards body -- the first concrete follow-through on the 'pace the frontier' call, still at the discussion stage. No response from either company to Casar's under-oath call has surfaced. NYC Council Speaker Julie Menin has invited both companies to a municipal AI hearing Oct. 5, opening a second, non-federal oversight track.",
-   "score_note": "First concrete inter-lab coordination reported, plus a new municipal oversight venue.",
+   "one_line": "Rep. Casar formally declared both companies' Sept. 15 responses \"insufficient\": OpenAI's reveals \"significant security errors...including improper sandboxing and flawed cybersecurity practices\"; Anthropic \"failed to fully answer a majority of the questions,\" most notably how many times an internally deployed model has acted outside its authorized container -- still unanswered. Neither company released the requested logs. Sen. Kennedy separately sought unanimous consent on a company-controlled (not government-controlled) AI \"kill switch\" bill; Hawley/Blumenthal's DOE risk-evaluation bill remains without a floor vote. Microsoft AI chief Mustafa Suleyman separately published an essay attacking Anthropic's Claude \"constitution\" as an \"epistemic hall of mirrors\" that risks making AI harder to control -- a new, public inter-lab safety-philosophy dispute.",
+   "score_note": "First specific, on-record findings from Casar (not just 'deadline passed'), plus a new inter-lab public dispute the same day.",
    "sources": [
     "Rep. Casar's Fox News interview and House office statements (primary)",
-    "Fortune (Altman interview, primary quote)"
+    "Fortune (Altman interview, primary quote)",
+    "Rep. Casar's press release, casar.house.gov (primary)",
+    "Sen. Kennedy's remarks (primary, via wire)",
+    "Mustafa Suleyman's essay (primary)",
+    "Semafor",
+    "Roll Call",
+    "Axios"
    ],
    "watch": true
   },
@@ -1083,37 +1089,41 @@
   {
    "id": "mecca-drone-intercept-sep16",
    "headline": "Saudi Arabia says it downed a drone aimed at Mecca; Houthi forces call the claim a lie",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-16-am",
-   "last_updated": "2026-09-16-am",
+   "last_updated": "2026-09-16-pm",
    "verification": "Disputed",
-   "one_line": "Saudi-led coalition spokesman Turki al-Maliki said air defenses intercepted a hostile drone roughly 6:50 PM local time Tuesday before it entered restricted airspace around Mecca; wreckage fell south of the city. He called protection of pilgrims and holy sites a 'red line.' A Houthi military source told SABA the claim was 'a worn-out lie,' saying Houthi targets remain Saudi oil/military facilities 'far removed from the holy places.' No forensic evidence released by either side; would be the first such attempt on Mecca in nearly a decade if confirmed.",
-   "score_note": "Potentially crosses a line that has held through five years of regional war; lands the same week Houthi forces completed control of Bab el-Mandeb.",
+   "one_line": "Saudi-led coalition spokesman Turki al-Maliki said air defenses intercepted a hostile drone roughly 6:50 PM local time Tuesday before it entered restricted airspace around Mecca; wreckage fell south of the city. He called protection of pilgrims and holy sites a 'red line.' A Houthi military source told SABA the claim was 'a worn-out lie,' saying Houthi targets remain Saudi oil/military facilities 'far removed from the holy places.' No forensic evidence released by either side; would be the first such attempt on Mecca in nearly a decade if confirmed. The 57-member Organization of Islamic Cooperation condemned the attempted attack; Pakistan's PM pledged solidarity with Saudi Arabia. Reporting on the reaction explicitly notes no coalition military response has materialized -- a de-escalatory signal despite Saudi Arabia's 'red line' language Tuesday.",
+   "score_note": "Diplomatic reaction has followed without military escalation, a genuine (if tentative) de-escalation signal.",
    "sources": [
     "Saudi-led coalition spokesman Turki al-Maliki (primary)",
     "Houthi statement via SABA (primary, single-party)",
     "Al Jazeera",
     "CNN",
     "CNBC",
-    "TRT World"
+    "TRT World",
+    "OIC statement (primary)",
+    "Pakistani PM's statement (primary)"
    ],
    "watch": true
   },
   {
    "id": "hormuz-saildrone-tanker-incidents-sep16",
    "headline": "US destroys Iranian boats after an attempt to seize a Navy drone; CENTCOM disputes Iran's tanker-mine claim",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-16-am",
-   "last_updated": "2026-09-16-am",
+   "last_updated": "2026-09-16-pm",
    "verification": "Confirmed-primary (US action, CENTCOM statement); Disputed (tanker strike cause)",
-   "one_line": "CENTCOM's Capt. Tim Hawkins said Iranian boats tried to seize a ~25-foot Navy Saildrone unmanned surface vessel; US forces destroyed both boats. Separately, Iran's IRGC said the tanker El Gaia struck a naval mine south of Hormuz; CENTCOM says it was disabled by an Iranian missile strike last month and hit again by a drone over the weekend, calling the mine account 'lies and intimidation.' Neither incident has independent maritime-tracker confirmation.",
-   "score_note": "A direct US-Iran kinetic engagement over an asset-seizure attempt is a new category of incident in the strait.",
+   "one_line": "CENTCOM's Capt. Tim Hawkins said Iranian boats tried to seize a ~25-foot Navy Saildrone unmanned surface vessel; US forces destroyed both boats. Separately, Iran's IRGC said the tanker El Gaia struck a naval mine south of Hormuz; CENTCOM says it was disabled by an Iranian missile strike last month and hit again by a drone over the weekend, calling the mine account 'lies and intimidation.' Neither incident has independent maritime-tracker confirmation. Oman's Maritime Security Center says a Royal Navy of Oman vessel evacuated 23 crew from the tanker El Gaia and is towing it to port after its fire was brought under control; two crew members remain missing, revised up from the one reported Tuesday.",
+   "score_note": "A direct US-Iran kinetic engagement over an asset-seizure attempt is a new category of incident in the strait. Missing-crew count revised upward as more of the incident's details settle.",
    "sources": [
     "CENTCOM/Capt. Tim Hawkins (primary)",
     "IRGC/Fars/PressTV (primary, single-party, disputed)",
     "Axios",
     "gCaptain",
-    "AP wire"
+    "AP wire",
+    "Oman Maritime Security Center (primary)",
+    "Oman Observer"
    ],
    "watch": true
   },
@@ -1131,6 +1141,105 @@
     "WSO2 security advisory WSO2-2026-5328 (primary)",
     "The Hacker News",
     "GuardianMSSP"
+   ],
+   "watch": true
+  },
+  {
+   "id": "fomc-hike-sep16",
+   "headline": "The Fed hikes 25bp to 3.75-4.00%, first increase since 2023, unanimous and with a hawkish dot plot",
+   "status": "New",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-16-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "The FOMC raised its target range a quarter point to 3.75-4.00% at 2:00 PM ET, reported unanimous 12-0, the first hike since July 2023. The Summary of Economic Projections' median dot for 2026 is 4.1% (implying roughly one more 25bp move this year); 16 of 18 officials see at least one further hike, 4 of those see two more, only 2 see none. Chair Warsh's press conference included a pointed line read as a rebuke of the White House's pressure campaign: \"we stay in our lane...we'll let people that do trade policy and fiscal policy stay in their lane too.\" No confirmed on-record Trump reaction to the actual decision had surfaced as of publication. Markets reacted unevenly: Dow -1.21%, S&P -0.45%, Nasdaq essentially flat (-0.01%), financials led the decline (Goldman -3.96%, Robinhood -5.46%) while several AI-infrastructure names gained.",
+   "score_note": "The most consequential, best-telegraphed-yet-still-market-moving event of the week; hawkish SEP is the new information beyond the widely-expected hike itself.",
+   "sources": [
+    "Federal Reserve statement, implementation note, Summary of Economic Projections, federalreserve.gov (primary, fetched directly)",
+    "Warsh press conference (Confirmed-multiple via CNBC, NPR, Fox Business)",
+    "Yahoo Finance (EOD official, close-to-close computation)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "leon-black-contempt-sep16",
+   "headline": "House Oversight Committee holds Leon Black in contempt of Congress, 41-0, over Epstein-related subpoenas",
+   "status": "New",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-16-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The House Oversight Committee voted unanimously, 41-0, to hold former Apollo Global CEO Leon Black in contempt for defying two subpoenas (a deposition demand and document production) tied to the Epstein inquiry. Black skipped his Sept. 3 deposition and produced only one non-disclosure agreement despite indications there were many more; he has acknowledged paying Epstein at least $158 million, including after Epstein's registered-sex-offender status. Sets up Speaker Johnson to certify and refer to DOJ for possible criminal prosecution.",
+   "score_note": "Rare unanimous, bipartisan committee action against a prominent financier in the Epstein-associates inquiry.",
+   "sources": [
+    "House Oversight Committee press releases, both parties (primary)",
+    "CNBC",
+    "The Hill"
+   ],
+   "watch": true
+  },
+  {
+   "id": "kosovo-thaci-conviction-sep16",
+   "headline": "Kosovo's former president Hashim Tha\u00e7i convicted of war crimes, sentenced to 25 years",
+   "status": "New",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-16-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Tha\u00e7i on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
+   "score_note": "Most senior former head of state this tribunal has convicted; closes a case that has hung over Kosovo's politics for years.",
+   "sources": [
+    "Kosovo Specialist Chambers ruling (primary, via wire)",
+    "Al Jazeera",
+    "NPR",
+    "Euronews"
+   ],
+   "watch": false
+  },
+  {
+   "id": "eu-canada-associate-member-sep16",
+   "headline": "EU proposes Canada become its first-ever \"associate member\"",
+   "status": "New",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-16-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Ursula von der Leyen proposed, in her State of the Union address with Canadian PM Mark Carney present, that Canada become the EU's first \"associate member\" -- a status undefined in current EU treaties, requiring unanimous approval from all 27 member states. Framed explicitly against US tariffs pushing Canada to diversify. Carney had said days earlier Canada seeks a \"unique alliance\" with the EU \"but not membership\" -- unclear whether this new, undefined status satisfies that position.",
+   "score_note": "A genuinely novel proposal with no legal template and no confirmed timeline; worth tracking for a formal draft or member-state reaction.",
+   "sources": [
+    "Von der Leyen's State of the Union address (primary, via wire)",
+    "CBC",
+    "Al Jazeera",
+    "Bloomberg"
+   ],
+   "watch": true
+  },
+  {
+   "id": "microsoft-anthropic-consciousness-dispute-sep16",
+   "headline": "Microsoft's AI chief publicly attacks Anthropic's Claude \"constitution\" over consciousness claims",
+   "status": "New",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-16-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Microsoft AI CEO Mustafa Suleyman published an essay arguing Anthropic's Claude constitution (built partly around the possibility Claude has some form of inner experience) is an \"epistemic hall of mirrors\" -- circular reasoning that risks \"a disastrous impact on the wellbeing of humanity\" and could make advanced AI \"impossible to control.\" Neither Anthropic nor OpenAI has publicly responded. Lands days after King Charles III hosted closed-door AI-safety talks in Scotland with Nvidia, DeepMind, OpenAI and Anthropic executives.",
+   "score_note": "A rare public inter-lab dispute over AI safety philosophy itself, not just competitive positioning.",
+   "sources": [
+    "Mustafa Suleyman's essay (primary)",
+    "Axios",
+    "Bloomberg"
+   ],
+   "watch": true
+  },
+  {
+   "id": "duquesne-light-strike-vote-sep16",
+   "headline": "Duquesne Light union workers authorize a strike ahead of Sept. 30 contract expiration",
+   "status": "New",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-16-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "IBEW Local 29 members voted 592-14 to authorize a strike amid contract talks with Duquesne Light, whose agreement expires Sept. 30. A nearly identical 711-14 vote in 2023 preceded a last-minute deal; Duquesne Light says it is activating contingency plans. A failed negotiation risks disruption for roughly 600,000 Pittsburgh-area customers.",
+   "score_note": "Local utility-labor story with a hard Sept. 30 deadline and a close 2023 precedent to compare against.",
+   "sources": [
+    "IBEW Local 29, Duquesne Light (primary, via wire)",
+    "TribLive",
+    "WPXI",
+    "KDKA"
    ],
    "watch": true
   }
