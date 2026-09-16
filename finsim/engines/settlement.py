@@ -44,6 +44,8 @@ class SettlementEngine:
         today = w.current_date.isoformat()
         for pf in w.portfolios.values():
             for t in list(pf.trades.values()):
+                if w.securities[t.security_id].is_future:
+                    continue
                 if t.status == "EXECUTED":
                     self._status(t, "CAPTURED", cause, "trade captured in middle-office system")
                 if t.status == "CAPTURED":

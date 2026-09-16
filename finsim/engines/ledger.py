@@ -25,6 +25,7 @@ CHART = {
     "1210": ("Dividends Receivable", "ASSET"),
     "1220": ("Accrued Interest Receivable - Bonds", "ASSET"),
     "1230": ("Accrued Interest Receivable - Cash", "ASSET"),
+    "1300": ("Margin Deposits - Futures Clearing", "ASSET"),
     "2100": ("Payable - Securities Purchased", "LIABILITY"),
     "2300": ("Accrued Interest Payable - Cash", "LIABILITY"),
     "3000": ("Contributed Capital", "EQUITY"),
@@ -32,6 +33,7 @@ CHART = {
     "4100": ("Unrealized Gain/Loss - Investments", "INCOME"),
     "4200": ("Dividend Income", "INCOME"),
     "4300": ("Interest Income", "INCOME"),
+    "4400": ("Futures Trading Gain/Loss (variation margin)", "INCOME"),
     "5000": ("Commissions & Fees", "EXPENSE"),
     "5100": ("Interest Expense", "EXPENSE"),
 }

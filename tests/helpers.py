@@ -25,6 +25,12 @@ def assert_ledger_invariants(tc, w, pf):
     # sub-ledgers reconcile to the GL
     for pos in pf.positions.values():
         sec = w.securities[pos.security_id]
+        if pos.is_future:
+            tc.assertEqual(pos.settled_quantity, pos.quantity)
+            tc.assertEqual(pos.market_value, D(0))
+            tc.assertEqual(pos.valuation_adjustment, D(0))
+            tc.assertEqual(led.security_balance(pos.security_id, "4400"), pos.variation_margin_total)
+            continue
         acct = "1110" if sec.is_bond else "1100"
         tc.assertEqual(led.security_balance(pos.security_id, acct), pos.cost_basis, f"cost basis {pos.security_id}")
         tc.assertEqual(led.security_balance(pos.security_id, "1150"), pos.valuation_adjustment)
@@ -34,3 +40,4 @@ def assert_ledger_invariants(tc, w, pf):
         tc.assertEqual(pos.settled_quantity + pos.pending_receive - pos.pending_deliver, pos.quantity)
     for ccy, ca in pf.cash.items():
         tc.assertEqual(led.balance(f"1010:{ccy}"), ca.balance)
+    tc.assertEqual(led.balance("1300"), w.futures.required_margin(pf) if any(p.is_future and p.quantity for p in pf.positions.values()) else D(0))

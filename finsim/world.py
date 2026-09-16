@@ -17,6 +17,7 @@ from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
 
 from .calendar import BusinessCalendar, SettlementConfig
+from .clock import ClockConfig, next_update, target_sim_date
 from .domain.events import E, Event
 from .domain.models import Bar, NewsItem, Portfolio, Security, YieldCurve
 from .engines.ledger import Ledger
@@ -53,13 +54,19 @@ class World:
         self.news: List[NewsItem] = []
         self.day_count = 0
         self._pending: List[Event] = []
+        self.clock = ClockConfig()
+        self.last_processed_utc: Optional[str] = None
         # engines
-        from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation
+        from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
+        from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
         self.corporate = corporate_actions.CorporateActionEngine(self)
         self.accruals = accruals.AccrualEngine(self)
         self.pnl = pnl.PnLEngine(self)
+        self.futures = futures.FuturesEngine(self)
+        self.careers = careers.CareerEngine(self)
+        self.briefing = briefing.BriefingEngine(self)
         self.simulation = simulation.SimulationEngine(self)
         self._register_core()
 
@@ -123,12 +130,16 @@ class World:
         self.on(E.MARKET_CLOSE, World._h_market_close)
         self.on(E.LEDGER_POSTED, World._h_ledger_posted)
         self.on(E.NEWS_PUBLISHED, World._h_news)
+        self.on(E.DAY_STARTED, World._h_day_started)
         self.on(E.DAY_CLOSED, World._h_day_closed)
         self.trading.register()
         self.settlement.register()
         self.corporate.register()
         self.accruals.register()
         self.pnl.register()
+        self.futures.register()
+        self.careers.register()
+        self.briefing.register()
 
     def _h_world_created(self, ev: Event) -> None:
         p = ev.payload
@@ -137,6 +148,7 @@ class World:
         self.start_date = date.fromisoformat(p["start_date"])
         self.current_date = self.start_date
         self.base_currency = p.get("base_currency", "USD")
+        self.clock = ClockConfig(p.get("clock_mode", "SANDBOX"), p.get("timezone", "America/New_York"), p.get("update_time", "09:00"))
         if p.get("settlement_cycles"):
             self.settlement_config = SettlementConfig(cycles=dict(p["settlement_cycles"]))
         self.securities = build_universe(self.start_date, self.seed)
@@ -145,11 +157,14 @@ class World:
                                    initial_regime=p.get("initial_regime", "NORMAL_GROWTH"))
         self.market.bootstrap()
 
+    def _h_day_started(self, ev: Event) -> None:
+        self.current_date = date.fromisoformat(ev.payload["date"])
+
     def _h_portfolio_created(self, ev: Event) -> None:
         p = ev.payload
         pf = Portfolio(id=p["portfolio_id"], name=p["name"], portfolio_type=p["portfolio_type"], base_currency=p["base_currency"],
                        benchmark=p.get("benchmark"), created=ev.sim_date, realism=p.get("realism", "PROFESSIONAL"),
-                       mode=p.get("mode", "SANDBOX"), custody_account=p["custody_account"])
+                       mode=p.get("mode", "SANDBOX"), custody_account=p["custody_account"], job=p.get("job", "SANDBOX"))
         pf.cash_account(pf.base_currency)
         self.portfolios[pf.id] = pf
         self.ledgers[pf.id] = Ledger(pf.id)
@@ -173,7 +188,7 @@ class World:
         if self.replaying:
             bars = {t: Bar(p["date"], D(b[0]), D(b[1]), D(b[2]), D(b[3]), int(b[4]), D(b[5]), D(b[6])) for t, b in p["bars"].items()}
             curve = YieldCurve(p["date"], p["curve"]["tenors"], p["curve"]["rates"], p["curve"]["ig"], p["curve"]["hy"], p["curve"]["policy"])
-            self.market.ingest_close(d, bars, curve, p["state"])
+            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"))
         self.current_date = d
         self.day_count = int(p.get("day_index", self.day_count))
 
@@ -190,6 +205,8 @@ class World:
         for pf in self.portfolios.values():
             pf.day_trade_ids = []
             pf.day_capital_flows = ZERO
+            for pos in pf.positions.values():
+                pos.day_fills = []
 
     # ------------------------------------------------------------------ helpers used by engines
     def post(self, portfolio_id: str, memo: str, lines: List[Dict], cause: Event, reference: Optional[Dict] = None) -> Optional[Event]:
@@ -226,15 +243,18 @@ class World:
     # ------------------------------------------------------------------ commands
     @classmethod
     def create(cls, world_id: str, name: str, seed: int, start_date: date, store=None, base_currency: str = "USD",
-               prehistory_days: int = 260, initial_regime: str = "NORMAL_GROWTH") -> "World":
+               prehistory_days: int = 260, initial_regime: str = "NORMAL_GROWTH", clock: Optional[ClockConfig] = None) -> "World":
         w = cls(world_id, store)
+        clock = clock or ClockConfig()
         if store is not None:
             store.create_world(world_id, name)
         w.emit(E.WORLD_CREATED, {"name": name, "seed": seed, "start_date": start_date.isoformat(), "base_currency": base_currency,
                                  "prehistory_days": prehistory_days, "initial_regime": initial_regime,
-                                 "settlement_cycles": SettlementConfig().cycles}, sim_date=start_date.isoformat())
-        w.simulation.open_day(start_date, first=True)
-        w.corporate.declare_upcoming(w.events[-1])
+                                 "settlement_cycles": SettlementConfig().cycles, "clock_mode": clock.mode, "timezone": clock.timezone,
+                                 "update_time": clock.update_time}, sim_date=start_date.isoformat())
+        # The start date is the first processed day: the world opens with a briefing already waiting.
+        w.current_date = w.calendar.prev_business_day(start_date)
+        w.simulation.run_daily_process(start_date)
         w.flush()
         return w
 
@@ -245,17 +265,27 @@ class World:
         return w
 
     def create_portfolio(self, name: str, portfolio_type: str = "PERSONAL", capital: Decimal = D(10_000_000), currency: str = "USD",
-                         benchmark: Optional[str] = "SPXE", realism: str = "PROFESSIONAL", mode: str = "SANDBOX") -> Portfolio:
+                         benchmark: Optional[str] = "SPXE", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", job: str = "SANDBOX") -> Portfolio:
+        from .careers import JOBS
         if not name.strip():
             raise CommandError("Portfolio name is required")
+        if job not in JOBS:
+            raise CommandError(f"unknown job {job}")
+        if JOBS[job].status != "PLAYABLE":
+            raise CommandError(f"{JOBS[job].title} is not playable yet: {JOBS[job].status}")
         pid = self.new_id("PF")
-        ev = self.emit(E.PORTFOLIO_CREATED, {"portfolio_id": pid, "name": name.strip(), "portfolio_type": portfolio_type, "base_currency": currency,
-                                             "benchmark": benchmark, "realism": realism, "mode": mode,
-                                             "custody_account": f"MERIDIAN-CUST-{pid[-6:]}"}, portfolio_id=pid)
+        self.emit(E.PORTFOLIO_CREATED, {"portfolio_id": pid, "name": name.strip(), "portfolio_type": portfolio_type, "base_currency": currency,
+                                        "benchmark": benchmark, "realism": realism, "mode": mode, "job": job,
+                                        "custody_account": f"MERIDIAN-CUST-{pid[-6:]}"}, portfolio_id=pid)
         if D(capital) > 0:
             self.contribute_capital(pid, currency, D(capital))
+        pf = self.portfolios[pid]
+        pf.peak_nav = D(capital)
+        # a fresh portfolio gets a briefing for the current day immediately
+        self.pnl.snapshot(self.events[-1])
+        self.briefing.build(self.events[-1])
         self.flush()
-        return self.portfolios[pid]
+        return pf
 
     def contribute_capital(self, portfolio_id: str, currency: str, amount: Decimal) -> Event:
         self.portfolio(portfolio_id)
@@ -266,8 +296,10 @@ class World:
         return ev
 
     def place_order(self, portfolio_id: str, security_id: str, side: str, quantity, order_type: str = "MARKET",
-                    limit_price=None, stop_price=None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None):
-        order = self.trading.enter_order(portfolio_id, security_id, side, quantity, order_type, limit_price, stop_price, time_in_force, strategy_tag)
+                    limit_price=None, stop_price=None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None,
+                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None):
+        order = self.trading.enter_order(portfolio_id, security_id, side, quantity, order_type, limit_price, stop_price, time_in_force,
+                                         strategy_tag, trail_pct, condition)
         self.flush()
         return order
 
@@ -276,12 +308,30 @@ class World:
         self.flush()
         return o
 
-    def advance(self, days: int = 1) -> List[str]:
+    def advance(self, days: int = 1, force: bool = False) -> List[str]:
+        if self.clock.mode == "REAL_TIME" and not force:
+            raise CommandError("This is a career world: the market updates once a day at "
+                               f"{self.clock.update_time} {self.clock.timezone}. Create a sandbox world to advance manually.")
         closed = []
         for _ in range(max(1, days)):
             closed.append(self.simulation.advance_one_day())
         self.flush()
         return closed
+
+    def catch_up(self, at=None) -> List[str]:
+        """Career worlds: process every business day whose update time has passed."""
+        if self.clock.mode != "REAL_TIME":
+            return []
+        target = target_sim_date(self.clock, self.calendar, at)
+        closed = []
+        while self.current_date < target:
+            closed.append(self.simulation.advance_one_day())
+        if closed:
+            self.flush()
+        return closed
+
+    def next_update_at(self, at=None):
+        return next_update(self.clock, self.calendar, at) if self.clock.mode == "REAL_TIME" else None
 
     # ------------------------------------------------------------------ audit
     def audit_chain(self, event_id: str) -> Dict:

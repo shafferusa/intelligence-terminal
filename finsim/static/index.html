@@ -9,13 +9,14 @@
 <body>
 <div id="app">
   <header>
-    <span class="logo">FINSIM<small>simulation · not connected to any real market</small></span>
+    <span class="logo">FINSIM<small>simulation</small></span>
     <select id="worldSel" title="World"></select>
-    <button class="btn" id="newWorldBtn">+ World</button>
+    <button class="btn" id="newWorldBtn">+ Save</button>
     <select id="pfSel" title="Portfolio"></select>
-    <button class="btn" id="newPfBtn">+ Portfolio</button>
+    <button class="btn" id="newPfBtn">+ Book</button>
     <span class="spacer"></span>
     <span id="regimeBadge" class="badge"></span>
+    <span id="nextUpdate" class="mono" style="color:var(--fg2);font-size:11px"></span>
     <span class="simdate" id="simDate">—</span>
     <button class="btn primary" data-adv="1">Advance 1D</button>
     <button class="btn" data-adv="5">1W</button>

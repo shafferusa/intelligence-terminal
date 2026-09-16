@@ -6,6 +6,7 @@ import json
 import mimetypes
 import os
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -23,6 +24,8 @@ class Router:
     def dispatch(self, method: str, path: str, query: dict, body: dict):
         s = self.s
         parts = [p for p in path.split("/") if p]
+        if parts == ["api", "jobs"]:
+            return s.jobs()
         # /api/worlds ...
         if parts[:2] == ["api", "worlds"]:
             rest = parts[2:]
@@ -30,10 +33,13 @@ class Router:
                 if method == "GET":
                     return s.list_worlds()
                 if method == "POST":
-                    return s.create_world(body.get("name", "New world"), body.get("seed", 42), body.get("start_date", "2026-01-05"),
-                                          body.get("capital", 10_000_000), body.get("portfolio_name", "Main Portfolio"), body.get("portfolio_type", "PERSONAL"),
+                    return s.create_world(body.get("name", "New world"), body.get("seed", 42), body.get("start_date"),
+                                          body.get("capital"), body.get("portfolio_name", "Main Portfolio"), body.get("portfolio_type", "PERSONAL"),
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
-                                          body.get("benchmark", "SPXE"))
+                                          body.get("benchmark", "SPXE"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
+                                          body.get("timezone", "America/New_York"), body.get("update_time", "09:00"))
+            if parts[2:] == ["jobs"] if len(parts) > 2 else False:
+                return s.jobs()
             wid = rest[0]
             sub = rest[1:]
             if not sub:
@@ -50,6 +56,10 @@ class Router:
                 return s.security(wid, sub[1], query.get("period", ["1Y"])[0])
             if sub == ["yield-curve"]:
                 return s.yield_curve(wid)
+            if sub == ["commodities"]:
+                return s.commodities(wid)
+            if sub[0] == "commodities" and len(sub) == 2:
+                return s.commodity(wid, sub[1])
             if sub == ["news"]:
                 return s.news(wid)
             if sub == ["corporate-actions"]:
@@ -61,7 +71,7 @@ class Router:
                 return s.event(wid, sub[1])
             if sub == ["portfolios"] and method == "POST":
                 return s.create_portfolio(wid, body.get("name", "Portfolio"), body.get("portfolio_type", "PERSONAL"), body.get("capital", 10_000_000),
-                                          body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("benchmark", "SPXE"))
+                                          body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("benchmark", "SPXE"), body.get("job", "SANDBOX"))
             if sub[0] == "portfolios" and len(sub) >= 2:
                 pid = sub[1]
                 leaf = sub[2:]
@@ -74,8 +84,13 @@ class Router:
                 if leaf == ["orders"]:
                     if method == "POST":
                         return s.place_order(wid, pid, body["security_id"], body["side"], body["quantity"], body.get("order_type", "MARKET"),
-                                             body.get("limit_price"), body.get("stop_price"), body.get("time_in_force", "DAY"), body.get("strategy_tag"))
+                                             body.get("limit_price"), body.get("stop_price"), body.get("time_in_force", "DAY"), body.get("strategy_tag"),
+                                             body.get("trail_pct"), body.get("condition"))
                     return s.orders(wid, pid)
+                if leaf == ["briefing"]:
+                    return s.briefing(wid, pid, query.get("date", [None])[0])
+                if leaf == ["career"]:
+                    return s.career(wid, pid)
                 if leaf[:1] == ["orders"] and len(leaf) == 2:
                     if method == "DELETE":
                         return s.cancel_order(wid, pid, leaf[1])
@@ -165,12 +180,30 @@ def make_handler(router: Router):
     return Handler
 
 
+def start_scheduler(router: Router, interval: int = 60) -> threading.Thread:
+    """Process due days for career worlds every `interval` seconds, whether or not anyone is logged in."""
+    def loop():
+        while True:
+            try:
+                with router.lock:
+                    done = router.s.catch_up_all()
+                for wid, days in done.items():
+                    print(f"[scheduler] world {wid}: processed {', '.join(days)}")
+            except Exception as e:  # pragma: no cover
+                print(f"[scheduler] error: {e!r}")
+            time.sleep(interval)
+    t = threading.Thread(target=loop, daemon=True, name="finsim-scheduler")
+    t.start()
+    return t
+
+
 def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000):
     from ..store import EventStore
     service = Service(EventStore(db_path))
     router = Router(service)
+    start_scheduler(router)
     httpd = ThreadingHTTPServer((host, port), make_handler(router))
-    print(f"finsim terminal: http://{host}:{port}/  (db: {db_path})")
+    print(f"finsim terminal: http://{host}:{port}/  (db: {db_path}) — career worlds update daily at their configured time")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

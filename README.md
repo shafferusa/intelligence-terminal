@@ -1,49 +1,82 @@
 # finsim — a miniature institutional financial system
 
-A single-player simulation of how institutional finance actually works: portfolio
-accounting, a double-entry general ledger, a simulated multi-asset market, order
-execution with liquidity, a full post-trade lifecycle, DVP settlement and custody,
-corporate actions, accruals, daily NAV with P&L explain, and an immutable audit trail
-that every number on screen can be traced back to.
+A single-player simulation of how institutional finance actually works, designed
+around **one login per day**. Every morning at your update time the simulated
+business day is processed whether or not you log in: markets move, your
+overnight instructions meet the session, positions are marked and margined,
+settlements progress, corporate actions pay, and a daily briefing is written.
+In the evening you read the briefing, review the book, and leave instructions
+for the next day.
 
-**This is a simulation.** It never connects to a broker, exchange or market-data feed.
-All prices are generated from a seed.
-
-## Status: Phase 1 (financial core) — the vertical slice works end to end
-
-The spec's 17-step first build (§46) is implemented, tested and demonstrable:
+**This is a simulation.** It never connects to a broker, exchange or market-data
+feed. All prices are generated from a seed.
 
 ```
-python3 -m finsim demo          # prints the walkthrough with every accounting entry
-python3 -m finsim serve         # http://127.0.0.1:8000  (terminal UI + JSON API)
+python3 -m finsim serve         # http://127.0.0.1:8000  (terminal UI + JSON API + daily scheduler)
+python3 -m finsim demo          # a scripted week: instructions, fills, settlement, dividend, futures, audit
 python3 -m unittest discover -s tests
 ```
 
 No third-party packages are required (see *Environment note* below).
 
+## The daily cycle
+
+A save is a job. Career saves run in **real time**: one calendar day is one
+simulated business day, aligned to the real date, processed at 09:00 in your
+timezone (both configurable). Weekends and exchange holidays do not process a
+session, but Monday's update carries three days of commodity/news event risk.
+If the server was off or you were away, the world catches up day by day the
+next time it runs (a scheduler thread checks every minute; every API call also
+checks). Sandbox saves ignore the clock and advance on demand.
+
+`SimulationEngine.run_daily_process(d)` is the whole day, in order:
+
+1. macro/regime update, commodity fundamentals, news
+2. reprice equities, bonds, the curve, credit spreads, commodity curves and every
+   listed futures contract; list new contract months
+3. execute the instructions left overnight against the session (open/high/low/close
+   and volume): market, limit, stop, stop-limit, take-profit, trailing stop, and
+   any order carrying a *condition* on a security close, a curve tenor yield
+   (`CURVE:10Y`) or a commodity spot (`SPOT:CL`); partial fills above 20% of
+   session volume; good-for-day = good for the next session
+4. post-trade lifecycle and settlements due today (fails retry daily)
+5. corporate actions: ex/pay dates, coupons, maturities
+6. futures: expiries auto-close, variation margin, initial-margin sweep, margin
+   calls, forced liquidation after three unpaid days; bond and cash interest accruals
+7. mark positions, check the job's risk limits, snapshot NAV with a P&L explain
+   that reconciles to the ledger, expire good-for-day orders, generate period-end
+   performance reviews
+8. write the **daily briefing**: NAV and today's P&L by bucket (equities,
+   commodities, rates, credit, dividends, bond interest, financing, fees), what
+   happened in markets, today's news, position movers, what your instructions did,
+   and a "requires your attention" list (margin calls, overdrafts, failed
+   settlements, limit breaches, expiring contracts, settlements and cash flows due,
+   ex-dates, reviews, regime changes)
+
+Nothing requires intraday attention; the challenge is positioning, hedging,
+funding, liquidity and risk over days and months.
+
 ### What is built
 
 | Area | What exists |
 |---|---|
-| **World** | Seeded, deterministic. 260 business days of pre-history. Multiple worlds per database, multiple portfolios per world (personal, L/S equity, macro, fixed income, credit, pension, bank desk, treasury desk …). Realism setting (Beginner / Intermediate / Professional) and Sandbox / Portfolio-Manager mode with an ETF benchmark. |
-| **Market engine** | 24 fictional equities/ETFs/ADR/preferred/REIT across 10 sectors with fundamentals, liquidity tiers, ADV, spreads, dividend policies; 4 Treasuries and 3 corporate bonds (A- / BBB / B+). Returns come from a **factor model** (market + sector + idiosyncratic) — assets are correlated, not independent random walks. Nelson–Siegel yield curve and IG/HY spread indices shocked with loadings on the market factor. Five **regimes** (normal growth, hiking, cutting, recession, liquidity crisis) via a Markov chain that change drift, vol, spreads, depth and the stock/rates correlation. Prices drop by the dividend on ex-date. |
-| **Pricing engine** | Uniform `Instrument` interface (`price / market_value / accrued / cash_flows / risk_metrics / next_events`). Bonds: clean/dirty price off the curve (+ credit spread), Act/Act accrued, YTM (Newton), Macaulay/modified duration, convexity, DV01, benchmark spread, hazard-implied PD. Equities: beta, realized vol, beta-dollar exposure. |
-| **Trading** | Market / limit / stop / stop-limit, DAY / GTC. Market orders cross the spread and pay square-root **market impact** scaled by realized vol and participation; orders above 20% of session volume **partially fill** and keep working; limit orders fill only when marketable; stops trigger on the tape. Every fill records reference quotes, spread cost, impact cost and participation. Pre-trade checks: projected settled cash (settled cash + receivables − payables − working buys), long position net of working sells, lot sizes; no naked shorts until the securities-lending module exists. |
-| **Positions** | Trade-date quantity vs settled (custody) quantity, pending receive/deliver, **FIFO lots**, cost basis, realized/unrealized, per-security income and fees. |
-| **Ledger** | Institutional chart of accounts, trade-date accounting, balanced journal entries with a security dimension, trial balance, balance sheet, income statement. Ledger NAV == economic NAV is asserted in tests after every scenario. |
-| **Lifecycle & settlement** | EXECUTED → CAPTURED → MATCHED → AFFIRMED → CLEARED → SETTLEMENT_PENDING → SETTLED, with seeded match breaks. Settlement instructions (RVP/DVP) with ISIN/CUSIP, delivering/receiving party, custodian. Configurable settlement cycles per market (US equity T+1, EU T+2 …) and a rule-based NYSE holiday calendar. **Fails** when settled cash or custody securities are short; failed instructions retry daily and settle late. Cash movements and securities movements are recorded separately. |
-| **Corporate actions & accruals** | Dividend declared (news) → ex-date entitlement (income + receivable) → pay date (cash). Bond coupons, maturities, daily Act/Act accrual. Cash earns policy − 25bp / pays policy + 150bp (Act/360), accrued daily and settled monthly. |
-| **NAV & P&L explain** | Daily snapshot whose explain (equity price, fixed-income price, dividends, bond interest, cash interest, commissions) is derived from ledger account deltas and **sums exactly** to the NAV change; per-position attribution; live "NAV explain" on the dashboard down to the journal entries. |
-| **Audit** | Append-only event log (sqlite). Every event has a `cause_id`; the UI shows the causal tree (e.g. `ORDER_ENTERED → TRADE_EXECUTED → {LEDGER_POSTED, SETTLEMENT_INSTRUCTION_CREATED, VALUATION_MARKED → LEDGER_POSTED}`). State is a projection: reloading a world replays the log and reproduces it exactly (tested). |
-| **UI** | Terminal-style pages: Home (dashboard), Markets, Security (candles, order book, analytics, fundamentals, ticket), Portfolio (positions, exposures, P&L explain), Position drill-down (lots, trades, settlements, ledger, dividends, custody, daily attribution, relationships), Trading (blotters, ticket, trade lifecycle modal), Fixed Income (curve, history, bond analytics), Settlements & Custody, Treasury (cash ledgers, liquidity projection), News, Accounting (balance sheet, trial balance, journal), Audit trail (event explorer). |
+| **Saves & careers** | Multiple independent saves. Jobs: Sandbox, Portfolio Manager ($100MM vs equity benchmark), Global Macro Trader ($250MM; rates, index and commodity futures, government bonds), Commodity Trader ($100MM; energy, metals, ags, livestock), Fixed-Income PM ($250MM; Treasuries, corporates, note futures vs a 5Y benchmark). Each job fixes capital, mandate (instrument classes enforced at order entry), risk limits (gross leverage, single-position %, drawdown), benchmark and a promotion ladder. Hedge-fund, bank-trader, derivatives, sec-lending, repo, treasury and risk-manager jobs are listed as *planned* until their modules exist. |
+| **Reviews & progression** | Month, quarter and year-end reviews from the book's own history: return, benchmark, alpha, max drawdown, Sharpe, largest contributor/loss, P&L by bucket, risk breaches, settlement failures, margin calls missed, a rating and an evaluation. EXCEEDS at a quarter end promotes and allocates capital; two UNACCEPTABLE quarters demote. |
+| **Market engine** | 24 fictional equities/ETFs/ADR/preferred/REIT with fundamentals and liquidity tiers; 4 Treasuries and 3 corporates. Factor-model returns (market + sector + idiosyncratic), Nelson–Siegel curve and IG/HY spreads shocked on the same factor, five Markov regimes, a volatility index, ex-dividend price drops. |
+| **Commodities** | 21 commodities (WTI, Brent, natural gas, gasoline, heating oil; gold, silver, copper, platinum, palladium, aluminum; corn, wheat, soybeans, coffee, sugar, cotton, cocoa; live cattle, feeder cattle, lean hogs) each with a supply/demand state: cyclical demand, decaying supply shocks that arrive as news, inventories that accumulate the balance and jump on scheduled reports (EIA weekly, USDA/LME monthly). Prices respond to changes in the balance, the macro cycle and seasonality; the **futures curve** is cost-of-carry with a convenience yield that rises when inventories are tight, so shortages backwardate and gluts contango. A COMMODITIES desk page and a page per commodity show spot, curve (today / 5d / 1m ago), contracts, fundamentals and news. |
+| **Futures** | Real month codes (CLZ26), per-commodity listing cycles and expiry rules, contract multipliers, ticks, margins; equity-index (ES on SPXE) and 10Y note (ZN) futures by carry. Long or short; commissions per contract; **daily variation margin** moves cash and posts to income; initial margin is swept to a clearing account at a regime-dependent rate; margin calls when cash is overdrawn; forced liquidation after three days; positions auto-close on the last trade date so nobody takes delivery. |
+| **Trading** | Market-on-next-update semantics; spread crossing and square-root impact; participation caps; trailing stops that ratchet; conditional orders evaluated at the close; FIFO lots; pre-trade cash, position, margin and mandate checks. |
+| **Ledger & operations** | Institutional chart of accounts with margin-deposit and futures-P&L accounts; trade-date accounting; balanced journal entries with a security dimension; trial balance and balance sheet. Trade lifecycle to settlement, RVP/DVP instructions, configurable settlement cycles, holiday calendar, fails with retry, separate cash and custody movements. Dividends, coupons, maturities, daily interest accruals. |
+| **Audit** | Append-only sqlite event log; every event has a cause; state (including briefings, reviews, futures margin) is rebuilt by replay and tested to be identical. |
+| **UI** | Daily briefing (login screen), portfolio (positions, futures, exposures, NAV explain, P&L explain), trading (instructions blotter, trade lifecycle), markets, commodities desk, fixed income, settlements & custody, treasury, news, accounting, career, audit trail. New-save dialog picks job, clock mode, timezone and update time. |
 
 ### What is deliberately not built yet
 
-The navigation lists these as *Not yet built* rather than showing screens that do nothing:
-securities lending / shorting, repo, margin & prime brokerage, collateral, futures & options,
-OTC derivatives & ISDA/CSA, risk dashboard (VaR, stress), counterparties, macro dashboard,
-news engine beyond real corporate-action/regime events, career modes, AI institutions.
-They correspond to Phases 2–8 of the spec and plug into the same event/ledger core.
+Listed in the navigation as *Not yet built* rather than as screens that do nothing:
+securities lending / shorting cash securities, repo, prime-brokerage margin loans, FX,
+options, OTC derivatives and ISDA/CSA collateral, a risk dashboard (VaR, stress), counterparties,
+AI institutions, physical-commodity mechanics, bank RFQ flow. They correspond to Phases 2–8 of the
+spec and plug into the same event/ledger/daily-cycle core.
 
 ## Architecture
 
@@ -54,15 +87,20 @@ finsim/
   domain/events.py    Event + type constants        domain/models.py  state projections
   world.py            World: command handlers, event log, replay, derive(), handler registry
   store.py            sqlite event store (append-only; swap for PostgreSQL by changing this file)
+  clock.py            real-time clock: target date, next update, catch-up
+  careers.py          jobs, mandates, limits, reviews, promotion
   engines/
-    market.py         universe, regimes, factor model, curve, dividends (pure function of seed+date)
+    market.py         universe, regimes, factor model, curve, dividends, contract listings, vol index
+    commodities.py    commodity specs, fundamentals, spot, futures curves, contract expiry rules, news
     pricing.py        Instrument interface, BondPricer
-    trading.py        order validation, execution model, TRADE_EXECUTED handler (lots/FIFO, ledger, SI, mark)
+    trading.py        order validation, once-per-day execution against the session, lots/FIFO, futures fills
+    futures.py        variation margin, initial-margin sweeps, margin calls, forced liquidation, expiry
     settlement.py     lifecycle states, DVP/RVP processing, fails, custody & cash movements
     corporate_actions.py  dividends, coupons, maturities
     accruals.py       bond and cash interest
-    pnl.py            marks, NAV snapshots, explain
-    simulation.py     the daily cycle
+    pnl.py            marks, NAV snapshots, explain buckets
+    briefing.py       the daily briefing
+    simulation.py     the daily process
   api/service.py      framework-agnostic API (dicts in/out)
   api/server.py       stdlib HTTP adapter + static UI
   static/             index.html, app.js, style.css (no build step, no CDN)
@@ -76,12 +114,9 @@ derives its ledger posting, settlement instruction and valuation mark). On repla
 `derive` is a no-op because the derived events are already in the log — so the state is
 always a pure projection of the stored sequence.
 
-**Daily cycle** (`SimulationEngine.advance_one_day`): close the current day — lifecycle
-statuses, settlements due, corporate actions, accruals, mark-to-market, NAV snapshot,
-expire DAY orders — then open the next business day: publish its prices, re-mark
-positions, fill working orders at the open, declare new dividends, announce regime
-changes. The player trades "in" the open day at that day's quotes. This is the
-daily-granularity convention; intraday time is a later refinement.
+**Clock** (`clock.py`): the target simulated date at any real moment is the latest
+business day whose update time has passed in the save's timezone; `World.catch_up()`
+runs each missed day in order. Career worlds refuse manual advancing.
 
 **Determinism.** Every random draw is seeded from `(world_seed, date, …)`, never from a
 running RNG, so replay, pre-history regeneration and per-order execution noise are all
@@ -90,12 +125,15 @@ reproducible and independent of call order.
 ## API (all JSON)
 
 ```
-GET  /api/worlds                                  POST /api/worlds {name, seed, start_date, capital, ...}
-GET  /api/worlds/{w}                              POST /api/worlds/{w}/advance {days}
+GET  /api/jobs
+GET  /api/worlds                                  POST /api/worlds {name, seed, job, clock_mode, timezone, update_time, start_date, capital, ...}
+GET  /api/worlds/{w}                              POST /api/worlds/{w}/advance {days}   (sandbox only)
 GET  /api/worlds/{w}/securities                   GET  /api/worlds/{w}/securities/{id}?period=3M
+GET  /api/worlds/{w}/commodities                  GET  /api/worlds/{w}/commodities/{code}
 GET  /api/worlds/{w}/yield-curve | news | corporate-actions | events?type=&q= | events/{id}
 POST /api/worlds/{w}/portfolios                   POST /api/worlds/{w}/portfolios/{p}/orders
-GET  /api/worlds/{w}/portfolios/{p}/dashboard | positions/{sec} | orders | orders/{id} (DELETE cancels)
+     {security_id, side, quantity, order_type, limit_price, stop_price, trail_pct, condition:{ref,op,value}, time_in_force}
+GET  /api/worlds/{w}/portfolios/{p}/briefing?date= | career | dashboard | positions/{sec} | orders | orders/{id} (DELETE cancels)
      | trades | trades/{id} | settlements | custody | cash | ledger?account=&security_id=
      | balance-sheet | pnl-explain?date= | nav-explain
 ```
