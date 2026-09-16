@@ -70,7 +70,7 @@ class SecLendingEngine:
         if q <= 0:
             raise CommandError("locate quantity must be positive")
         st = w.market.lending.state.get(sec.id)
-        if st is None:
+        if st is None or sec.is_option or sec.is_future:
             raise CommandError(f"{sec.id} is not lendable (no lending market for this instrument)")
         rng = random.Random(f"{w.seed}|locate|{sec.id}|{w.current_date.isoformat()}|{len(pf.locates)}")
         market_avail = w.market.lending.available(sec.id, self.player_on_loan().get(sec.id, 0))
@@ -268,6 +268,8 @@ class SecLendingEngine:
         w = self.w
         rows = []
         for pos in pf.positions.values():
+            if pos.is_option or pos.is_future:
+                continue          # written options and short futures are cleared, not borrowed
             if pos.quantity < 0 or pos.borrowed_quantity > 0:
                 sec = w.securities[pos.security_id]
                 st = w.market.lending.state.get(sec.id)

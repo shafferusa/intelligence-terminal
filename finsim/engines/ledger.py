@@ -32,6 +32,8 @@ CHART = {
     "1410": ("Accrued Rebate Receivable - Cash Collateral", "ASSET"),
     "1500": ("Reverse Repo Receivable", "ASSET"),
     "1600": ("Derivative Assets - FX Forwards", "ASSET"),
+    "1700": ("Options Purchased (at cost)", "ASSET"),
+    "1750": ("Option Valuation Adjustment - Long (MTM)", "ASSET"),
     "2100": ("Payable - Securities Purchased", "LIABILITY"),
     "2300": ("Accrued Interest Payable - Cash", "LIABILITY"),
     "2310": ("Accrued Borrow Fees Payable", "LIABILITY"),
@@ -44,6 +46,8 @@ CHART = {
     "2610": ("Short Position Valuation Adjustment (MTM)", "LIABILITY"),
     "2700": ("Prime Broker Margin Loan", "LIABILITY"),
     "2800": ("Derivative Liabilities - FX Forwards", "LIABILITY"),
+    "2900": ("Options Written (at premium received)", "LIABILITY"),
+    "2910": ("Option Valuation Adjustment - Written (MTM)", "LIABILITY"),
     "3000": ("Contributed Capital", "EQUITY"),
     "4000": ("Realized Gain/Loss - Investments", "INCOME"),
     "4100": ("Unrealized Gain/Loss - Investments", "INCOME"),
@@ -55,6 +59,7 @@ CHART = {
     "4600": ("Unrealized FX Translation Gain/Loss", "INCOME"),
     "4650": ("Realized FX Gain/Loss", "INCOME"),
     "4700": ("FX Forward MTM Gain/Loss", "INCOME"),
+    "4800": ("Option Settlement Gain/Loss (cash-settled, expiry)", "INCOME"),
     "5000": ("Commissions & Fees", "EXPENSE"),
     "5100": ("Interest Expense", "EXPENSE"),
     "5300": ("Securities Borrow Expense", "EXPENSE"),
@@ -65,6 +70,21 @@ CHART = {
 }
 
 DEBIT_NORMAL = {"ASSET", "EXPENSE"}
+
+
+def cost_account(sec, short: bool) -> str:
+    """Position cost account: long equities 1100, long bonds 1110, long options 1700; shorts 2600 (securities) / 2900 (written options)."""
+    if getattr(sec, "is_option", False):
+        return "2900" if short else "1700"
+    if short:
+        return "2600"
+    return "1110" if sec.is_bond else "1100"
+
+
+def adj_account(sec, short: bool) -> str:
+    if getattr(sec, "is_option", False):
+        return "2910" if short else "1750"
+    return "2610" if short else "1150"
 
 
 def account_name(code: str) -> str:

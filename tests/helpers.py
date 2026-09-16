@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from finsim.money import D  # noqa: E402
 from finsim.store import EventStore  # noqa: E402
 from finsim.world import World  # noqa: E402
+from finsim.engines.ledger import cost_account, adj_account  # noqa: E402
 
 
 def make_world(seed=42, start="2026-01-05", capital=10_000_000, store=None, regime="NORMAL_GROWTH"):
@@ -31,28 +32,34 @@ def assert_ledger_invariants(tc, w, pf):
             tc.assertEqual(pos.valuation_adjustment, D(0))
             tc.assertEqual(led.security_balance(pos.security_id, "4400"), pos.variation_margin_total)
             continue
-        acct = "1110" if sec.is_bond else "1100"
+        acct, sacct = cost_account(sec, False), cost_account(sec, True)
+        ladj, sadj = adj_account(sec, False), adj_account(sec, True)
         tc.assertEqual(sum((l.quantity for l in pos.lots), D(0)), pos.quantity, f"lots {pos.security_id}")
         tc.assertEqual(sum((l.cost_total for l in pos.lots), D(0)), pos.cost_basis, f"lot cost {pos.security_id}")
         tc.assertEqual(pos.valuation_adjustment, pos.market_value - pos.cost_basis, f"valuation {pos.security_id}")
         if pos.quantity < 0:
-            tc.assertEqual(led.security_balance(pos.security_id, "2600"), -pos.cost_basis, f"short proceeds {pos.security_id}")
-            tc.assertEqual(led.security_balance(pos.security_id, "2610"), -pos.valuation_adjustment, f"short MTM {pos.security_id}")
+            tc.assertEqual(led.security_balance(pos.security_id, sacct), -pos.cost_basis, f"short proceeds {pos.security_id}")
+            tc.assertEqual(led.security_balance(pos.security_id, sadj), -pos.valuation_adjustment, f"short MTM {pos.security_id}")
             tc.assertEqual(led.security_balance(pos.security_id, acct), D(0))
-            tc.assertEqual(led.security_balance(pos.security_id, "1150"), D(0))
+            tc.assertEqual(led.security_balance(pos.security_id, ladj), D(0))
             tc.assertGreaterEqual(pos.borrowed_quantity, D(0))
         else:
             tc.assertEqual(led.security_balance(pos.security_id, acct), pos.cost_basis, f"cost basis {pos.security_id}")
-            tc.assertEqual(led.security_balance(pos.security_id, "1150"), pos.valuation_adjustment, f"long MTM {pos.security_id}")
-            tc.assertEqual(led.security_balance(pos.security_id, "2600"), D(0))
-            tc.assertEqual(led.security_balance(pos.security_id, "2610"), D(0))
+            tc.assertEqual(led.security_balance(pos.security_id, ladj), pos.valuation_adjustment, f"long MTM {pos.security_id}")
+            tc.assertEqual(led.security_balance(pos.security_id, sacct), D(0))
+            tc.assertEqual(led.security_balance(pos.security_id, sadj), D(0))
+        if sec.is_option:
+            tc.assertEqual(pos.borrowed_quantity, D(0))
         # custody box = economic position + borrowed shares (in transit adjustments)
         tc.assertEqual(pos.settled_quantity + pos.pending_receive - pos.pending_deliver, pos.quantity + pos.borrowed_quantity, f"custody {pos.security_id}")
-        tc.assertLessEqual(pf.pledged_quantity(pos.security_id), pos.settled_quantity, f"pledged more than in custody {pos.security_id}")
+        if not sec.is_option:
+            tc.assertLessEqual(pf.pledged_quantity(pos.security_id), pos.settled_quantity, f"pledged more than in custody {pos.security_id}")
         tc.assertEqual(pos.borrowed_quantity, sum((l.quantity for l in pf.loans.values() if l.security_id == pos.security_id and l.status == "OPEN"), D(0)))
     for ccy, ca in pf.cash.items():
         tc.assertEqual(led.balance(f"1010:{ccy}"), ca.base_value, f"cash carrying value {ccy}")
-    tc.assertEqual(led.balance("1300"), w.futures.required_margin(pf) if any(p.is_future and p.quantity for p in pf.positions.values()) else D(0))
+    tc.assertEqual(led.balance("1300"), w.futures.total_required(pf) if any((p.is_future or p.is_option) and p.quantity for p in pf.positions.values()) else D(0),
+                   "clearing margin = futures IM + options margin")
+    tc.assertEqual(led.balance("1300"), w.futures.required_margin(pf) + pf.options_margin)
     tc.assertEqual(led.balance("1400"), sum(pf.cash_collateral.values(), D(0)), "cash collateral posted")
     tc.assertEqual(led.balance("2310"), sum((l.accrued_fee for l in pf.loans.values()), D(0)), "accrued borrow fees")
     tc.assertEqual(led.balance("1410"), sum((l.accrued_rebate for l in pf.loans.values()), D(0)), "accrued rebates")

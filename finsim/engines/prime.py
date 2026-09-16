@@ -48,7 +48,9 @@ class PrimeEngine:
             if pos.is_future or pos.quantity <= 0:
                 continue
             sec = w.securities[pos.security_id]
-            avail = w.collateral.available_quantity(pf, sec.id)
+            if sec.is_option:
+                continue
+            avail = w.collateral.available_quantity(pf, sec.id, include_covered=True)
             h = w.collateral.haircut(sec, "PRIME")
             mv = w.collateral.market_value(sec, max(ZERO, avail))
             v = money(mv * D(str(1 - h))) if h is not None and avail > 0 else ZERO
@@ -56,7 +58,8 @@ class PrimeEngine:
             rows.append({"security_id": sec.id, "available": avail, "market_value": mv, "haircut": h, "collateral_value": v, "eligible": h is not None})
         cash = pf.cash_account(pf.base_currency).balance
         cv += max(ZERO, cash)
-        short_mv = sum((-pos.market_value for pos in pf.positions.values() if pos.quantity < 0 and not pos.is_future), ZERO)
+        # short securities need PB margin; written options are margined at the options clearing member (1300), not here
+        short_mv = sum((-pos.market_value for pos in pf.positions.values() if pos.quantity < 0 and not pos.is_future and not pos.is_option), ZERO)
         short_req = money(short_mv * D(str(SHORT_MARGIN)))
         requirement = pf.margin_loan + short_req
         excess = cv - requirement
@@ -164,7 +167,20 @@ class PrimeEngine:
             w.futures._settle_position_now(pf, pos, ev)
             closed.append(sec.id)
             shortfall -= pos.initial_margin
-        longs = sorted([p for p in pf.positions.values() if not p.is_future and p.quantity > 0], key=lambda p: -float(p.market_value))
+        # then written options (buy to close at the ask); their clearing margin comes back to cash at once
+        shorts = sorted([p for p in pf.positions.values() if p.is_option and p.quantity < 0], key=lambda p: -float(p.margin_requirement))
+        for pos in shorts:
+            if shortfall <= 0:
+                break
+            sec = w.securities[pos.security_id]
+            held = w.ledgers[pf.id].balance("1300")
+            t = w.trading.system_order(pf, sec, "BUY", abs(pos.quantity), ev, f"forced liquidation for margin call {call.id}", forced=True)
+            closed.append(sec.id)
+            w.options.recompute_margin(pf, ev)
+            w.futures.sweep_margin(ev)
+            released = held - w.ledgers[pf.id].balance("1300")
+            shortfall -= released - (t.net_amount if t else ZERO)
+        longs = sorted([p for p in pf.positions.values() if not p.is_future and not p.is_option and p.quantity > 0], key=lambda p: -float(p.market_value))
         for pos in longs:
             if shortfall <= 0:
                 break

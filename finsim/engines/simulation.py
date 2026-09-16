@@ -41,7 +41,7 @@ class SimulationEngine:
                    "bars": {t: [b.open, b.high, b.low, b.close, b.volume, b.bid, b.ask] for t, b in bars.items()},
                    "curve": {"tenors": curve.tenors, "rates": curve.rates, "ig": curve.ig_spread_bps, "hy": curve.hy_spread_bps, "policy": curve.policy_rate},
                    "state": st, "regime_change": regime_change, "commodities": w.market.commodity_payload(),
-                   "lending": w.market.lending_payload(), "fx": w.market.fx_payload()}
+                   "lending": w.market.lending_payload(), "fx": w.market.fx_payload(), "vol": w.market.vol_payload()}
         mkt = w.emit(E.MARKET_CLOSE, payload, cause_id=start.id, sim_date=d.isoformat())
         if regime_change:
             r = REGIMES[regime_change]
@@ -65,6 +65,7 @@ class SimulationEngine:
         w.seclending.process_day(closing, prev)
         w.repo.process_day(closing, prev)
         w.fx.process_day(closing)
+        w.options.process_day(closing)
         w.pnl.mark_all(closing)
         w.futures.sweep_margin(closing)
         w.prime.process_day(closing, prev)

@@ -62,6 +62,16 @@ class Router:
                 return s.lending_history(wid, sub[1])
             if sub == ["repo-quote"] and method == "POST":
                 return s.repo_quote(wid, body["side"], body["security_id"], body["quantity"], body.get("term_type", "OVERNIGHT"), body.get("term_days", 1))
+            if sub == ["options"]:
+                return s.options_underlyings(wid)
+            if sub[0] == "options" and len(sub) == 3 and sub[2] == "chain":
+                return s.option_chain(wid, sub[1], query.get("expiry", [None])[0])
+            if sub[0] == "options" and len(sub) == 3 and sub[2] == "surface":
+                return s.vol_surface(wid, sub[1])
+            if sub[0] == "options" and len(sub) == 3 and sub[2] == "contract":
+                return s.option_contract(wid, sub[1])
+            if sub == ["force-split"] and method == "POST":
+                return s.force_split(wid, body["security_id"], body["ratio"])
             if sub == ["commodities"]:
                 return s.commodities(wid)
             if sub[0] == "commodities" and len(sub) == 2:
@@ -119,6 +129,18 @@ class Router:
                     return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"))
                 if leaf == ["fx", "forward"] and method == "POST":
                     return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"])
+                if leaf == ["options"]:
+                    return s.options_book(wid, pid)
+                if leaf == ["options", "exercise"] and method == "POST":
+                    return s.exercise(wid, pid, body["contract_id"], body.get("quantity"))
+                if leaf == ["strategies", "preview"] and method == "POST":
+                    return s.strategy_preview(wid, pid, body)
+                if leaf == ["strategies"]:
+                    if method == "POST":
+                        return s.place_strategy(wid, pid, body)
+                    return s.options_book(wid, pid)["strategies"]
+                if leaf[:1] == ["strategies"] and len(leaf) == 2:
+                    return s.strategy(wid, pid, leaf[1])
                 if leaf == ["career"]:
                     return s.career(wid, pid)
                 if leaf[:1] == ["orders"] and len(leaf) == 2:

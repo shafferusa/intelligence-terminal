@@ -34,7 +34,7 @@ class BriefingEngine:
                        "market": self._market_summary(), "news": self._news_today(), "attention": self._attention(pf, snap),
                        "movers": self._movers(snap), "regime": w.market.regime().label, "job_title": w.careers.level_title(pf),
                        "orders_summary": self._orders_summary(pf), "financing": self._financing(pf, snap), "collateral": self._collateral(pf),
-                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf)}
+                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf), "derivatives": self._derivatives(pf, snap)}
             w.emit(E.DAILY_BRIEFING, payload, cause_id=cause.id, portfolio_id=pf.id)
 
     # ------------------------------------------------------------------ pieces
@@ -112,6 +112,38 @@ class BriefingEngine:
         return {"market_value": sb["short_mv"], "borrow_cost_today": -snap.explain.get("borrow_fees", ZERO), "hard_to_borrow": sb["htb"], "recalls": sb["recalls"],
                 "positions": [{"security_id": r["security_id"], "short_quantity": r["short_quantity"], "rate": r["rate"], "category": r["category"],
                                "market_value": r["market_value"], "recalled": r["recalled"]} for r in sb["rows"] if r["short_quantity"] > 0 or r["borrowed"] > 0]}
+
+    def _option_events_today(self, pf) -> List[Dict]:
+        w = self.w
+        today = w.current_date.isoformat()
+        out = []
+        for ev in reversed(w.events):
+            if ev.sim_date != today:
+                break
+            if ev.portfolio_id == pf.id and ev.type in (E.OPTION_EXERCISED, E.OPTION_ASSIGNED, E.OPTION_EXPIRED):
+                p = ev.payload
+                out.append({"kind": ev.type, "security_id": p["security_id"], "quantity": D(p["quantity"]), "event_id": ev.id,
+                            "detail": p.get("outcome") or p.get("reason") or p.get("note", ""), "underlying_level": p.get("underlying_level"),
+                            "amount": D(p["amount"]) if p.get("amount") is not None else None})
+        out.reverse()
+        return out
+
+    def _derivatives(self, pf, snap) -> Dict:
+        w = self.w
+        rows = w.options.position_rows(pf)
+        g = w.options.aggregate_greeks(pf)["total"]
+        expiring = []
+        for r in rows:
+            bd = w.calendar.business_days_between(w.current_date, date.fromisoformat(r["expiry"]))
+            if bd <= 5:
+                expiring.append({"security_id": r["security_id"], "contracts": r["contracts"], "expiry": r["expiry"], "business_days": bd,
+                                 "intrinsic": r["intrinsic"], "style": r["style"], "market_value": r["market_value"]})
+        strategies = [{"id": st.id, "type": st.strategy_type, "underlying": st.underlying, "status": st.status, "quantity": st.quantity, "net_premium": st.net_premium}
+                      for st in pf.strategies.values() if st.status in ("WORKING", "FILLED")]
+        return {"positions": len(rows), "market_value": sum((r["market_value"] for r in rows), ZERO), "delta_shares": g["delta"], "dollar_delta": g["dollar_delta"],
+                "gamma": g["gamma"], "vega": g["vega"], "theta": g["theta"], "margin": pf.options_margin, "events": self._option_events_today(pf),
+                "expiring": expiring, "strategies": strategies, "options_pnl_today": snap.explain.get("options", ZERO),
+                "greek_attribution": {k: v for k, v in snap.greek_attribution.items() if k != "rows"}}
 
     def _fx(self, pf) -> Dict:
         ex = self.w.fx.exposures(pf)
@@ -212,6 +244,44 @@ class BriefingEngine:
         for c in pf.career_log:
             if c["date"] == today.isoformat():
                 add("INFO", f"Career: {c['kind']} — {c['text']}", "#/career")
+        # listed options: expirations, exercise/assignment, margin
+        for r in w.options.position_rows(pf):
+            sec = w.securities[r["security_id"]]
+            bd = w.calendar.business_days_between(today, date.fromisoformat(sec.expiry))
+            n = r["contracts"]
+            if not (0 <= bd <= 3):
+                continue
+            shares = abs(n) * D(str(sec.multiplier))
+            if r["intrinsic"] > 0:
+                if sec.settlement_style == "CASH":
+                    what = f"cash-settled at intrinsic value (~{r['intrinsic'] * float(shares):,.0f} {'received' if n > 0 else 'paid'})"
+                elif n > 0:
+                    what = (f"auto-exercised: {'buy' if sec.option_type == 'C' else 'sell'} {shares:,} {sec.underlying} at {sec.strike:g} "
+                            f"({float(shares) * sec.strike:,.0f} cash {'needed' if sec.option_type == 'C' else 'received'}); sell the contract to keep the extrinsic value instead")
+                else:
+                    what = f"assignment: {'deliver' if sec.option_type == 'C' else 'buy'} {shares:,} {sec.underlying} at {sec.strike:g}; buy the contract back or roll to avoid it"
+                add("HIGH" if bd <= 1 else "MEDIUM", f"EXPIRATION — {n:+,} {sec.id} expires in {bd} session(s), {r['intrinsic']:.2f}/share in the money: {what}", "#/options")
+            else:
+                add("INFO", f"EXPIRATION — {n:+,} {sec.id} expires in {bd} session(s), out of the money: expires worthless unless {sec.underlying} moves through {sec.strike:g}", "#/options")
+        for e in self._option_events_today(pf):
+            if e["kind"] == E.OPTION_ASSIGNED:
+                add("HIGH", f"ASSIGNED — {e['quantity']:,} {e['security_id']}: {e['detail']}; the underlying trade settles through custody", "#/options")
+            elif e["kind"] == E.OPTION_EXERCISED:
+                add("INFO", f"EXERCISED — {e['quantity']:,} {e['security_id']}: delivery at the strike is in settlement", "#/options")
+            elif e["kind"] == E.OPTION_EXPIRED:
+                add("INFO", f"EXPIRED — {e['quantity']:+,} {e['security_id']}: {str(e['detail']).replace('_', ' ').lower()}", "#/options")
+        margin_evs = [ev for ev in reversed(w.events) if ev.sim_date == today.isoformat() and ev.type == E.OPTIONS_MARGIN_COMPUTED and ev.portfolio_id == pf.id]
+        if margin_evs:
+            new = pf.options_margin
+            for ev in reversed(w.events):
+                if ev.sim_date < today.isoformat() and ev.type == E.OPTIONS_MARGIN_COMPUTED and ev.portfolio_id == pf.id:
+                    old = D(ev.payload["total"])
+                    if (old == 0 and new > 0) or (old > 0 and abs(new - old) / old >= 0.25):
+                        add("MEDIUM", f"OPTIONS MARGIN — requirement moved from {old:,.0f} to {new:,.0f} (regime multiplier {margin_evs[0].payload['regime_multiplier']}x)", "#/options")
+                    break
+        for st in pf.strategies.values():
+            if st.notes and st.notes[-1]["date"] == today.isoformat() and st.status in ("FILLED", "EXPIRED"):
+                add("INFO", f"Strategy {st.id} {st.strategy_type} on {st.underlying}: {st.status.lower()}" + (f" at net {st.net_premium:+,.2f}/unit" if st.status == "FILLED" else " (legs unfilled)"), "#/options")
         # regime
         if w.market.regime_history and w.market.regime_history[-1][0] == today.isoformat() and len(w.market.regime_history) > 1:
             add("MEDIUM", f"Market regime changed to {w.market.regime().label}: {w.market.regime().description}", "#/markets")

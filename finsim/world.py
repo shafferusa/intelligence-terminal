@@ -58,7 +58,7 @@ class World:
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
-        from .engines import collateral, seclending, repo, prime, fx
+        from .engines import collateral, seclending, repo, prime, fx, options
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
@@ -71,6 +71,7 @@ class World:
         self.repo = repo.RepoEngine(self)
         self.prime = prime.PrimeEngine(self)
         self.fx = fx.FXEngine(self)
+        self.options = options.OptionsEngine(self)
         self.careers = careers.CareerEngine(self)
         self.briefing = briefing.BriefingEngine(self)
         self.simulation = simulation.SimulationEngine(self)
@@ -149,6 +150,7 @@ class World:
         self.repo.register()
         self.prime.register()
         self.fx.register()
+        self.options.register()
         self.careers.register()
         self.briefing.register()
         self.on(E.REGIME_FORCED, World._h_regime_forced)
@@ -167,6 +169,7 @@ class World:
         self.market = MarketEngine(self.seed, self.start_date, self.calendar, self.securities,
                                    prehistory_days=int(p.get("prehistory_days", 260)),
                                    initial_regime=p.get("initial_regime", "NORMAL_GROWTH"))
+        self.market.bar_provider = lambda sid: self.options.option_bar(self.securities[sid])
         self.market.bootstrap()
 
     def _h_day_started(self, ev: Event) -> None:
@@ -207,9 +210,10 @@ class World:
         if self.replaying:
             bars = {t: Bar(p["date"], D(b[0]), D(b[1]), D(b[2]), D(b[3]), int(b[4]), D(b[5]), D(b[6])) for t, b in p["bars"].items()}
             curve = YieldCurve(p["date"], p["curve"]["tenors"], p["curve"]["rates"], p["curve"]["ig"], p["curve"]["hy"], p["curve"]["policy"])
-            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"))
+            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"), p.get("vol"))
         self.current_date = d
         self.day_count = int(p.get("day_index", self.day_count))
+        self.options.ensure_listings(d)
 
     def _h_ledger_posted(self, ev: Event) -> None:
         p = ev.payload
@@ -375,6 +379,28 @@ class World:
 
     def fx_forward(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount, maturity: str):
         return self._cmd(self.fx.forward, self.portfolio(portfolio_id), buy_ccy, sell_ccy, buy_amount, maturity)
+
+    # ------------------------------------------------------------------ phase 3 commands (listed options)
+    def exercise_option(self, portfolio_id: str, contract_id: str, quantity=None):
+        return self._cmd(self.options.exercise, self.portfolio(portfolio_id), contract_id, quantity)
+
+    def place_strategy(self, portfolio_id: str, strategy_type: str, underlying: str, expiry: str, strikes, quantity, net_limit=None,
+                       expiry2: Optional[str] = None, time_in_force: str = "DAY"):
+        return self._cmd(self.options.place_strategy, self.portfolio(portfolio_id), strategy_type, underlying, expiry, strikes, quantity, net_limit,
+                         expiry2, time_in_force)
+
+    def force_split(self, security_id: str, ratio: float) -> Event:
+        """Scenario control for sandbox worlds: an immediate stock split (ratio 2 = 2-for-1, 0.5 = 1-for-2 reverse)."""
+        if self.clock.mode == "REAL_TIME":
+            raise CommandError("splits cannot be forced in a career world")
+        sec = self.security(security_id)
+        if sec.is_bond or sec.is_future or sec.is_option:
+            raise CommandError("only equities split")
+        if float(ratio) <= 0 or float(ratio) == 1.0:
+            raise CommandError("ratio must be positive and not 1")
+        ev = self.options.apply_split(sec.id, float(ratio), None)
+        self.flush()
+        return ev
 
     def force_regime(self, regime: str) -> Event:
         """Scenario control for sandbox worlds: the next processed day starts in `regime`."""

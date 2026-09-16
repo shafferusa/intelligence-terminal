@@ -57,6 +57,16 @@ class Security:
     margin_pct: float = 0.0                # initial margin as fraction of notional (before regime multiplier)
     unit: str = ""
     expired: bool = False
+    # option fields
+    option_type: Optional[str] = None       # C | P
+    strike: Optional[float] = None
+    exercise_style: Optional[str] = None    # AMERICAN | EUROPEAN
+    settlement_style: Optional[str] = None  # PHYSICAL | CASH
+    deliverable: Optional[Dict] = None      # {"security_id": ..., "quantity": shares per contract, "cash": extra cash per contract}
+    exchange: Optional[str] = None
+    listed: Optional[str] = None
+    index_level_source: Optional[str] = None  # for cash-settled index options: security whose price * factor is the index level
+    index_factor: float = 1.0
 
     @property
     def is_bond(self) -> bool:
@@ -65,6 +75,10 @@ class Security:
     @property
     def is_future(self) -> bool:
         return self.asset_class == "FUTURE"
+
+    @property
+    def is_option(self) -> bool:
+        return self.asset_class == "OPTION"
 
 
 @dataclass
@@ -132,6 +146,12 @@ class Position:
     day_variation_margin: Decimal = ZERO
     average_cost_future: Decimal = ZERO
     day_fills: List[Dict] = field(default_factory=list)
+    # options
+    is_option: bool = False
+    greeks: Dict[str, float] = field(default_factory=dict)   # last mark's per-contract greeks and IV
+    prev_greeks: Dict[str, float] = field(default_factory=dict)   # previous close's greeks (for approximate attribution)
+    covered_by_shares: Decimal = ZERO       # short calls covered by long stock (contracts)
+    margin_requirement: Decimal = ZERO
     # short book
     borrowed_quantity: Decimal = ZERO       # shares held under open securities loans
     borrow_fees: Decimal = ZERO
@@ -437,6 +457,7 @@ class NAVSnapshot:
     leverage: Decimal
     ledger_nav: Decimal
     event_id: str
+    greek_attribution: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -483,6 +504,9 @@ class Portfolio:
     fx_forwards: Dict[str, FXForward] = field(default_factory=dict)
     manufactured_payable: Decimal = ZERO
     collateral_received: Dict[str, Dict] = field(default_factory=dict)  # reference -> {security_id, quantity, value}
+    strategies: Dict[str, Strategy] = field(default_factory=dict)
+    options_margin: Decimal = ZERO
+    options_margin_detail: List[Dict] = field(default_factory=list)
     cash: Dict[str, CashAccount] = field(default_factory=dict)
     positions: Dict[str, Position] = field(default_factory=dict)
     orders: Dict[str, Order] = field(default_factory=dict)
@@ -507,6 +531,21 @@ class Portfolio:
         if security_id not in self.positions:
             self.positions[security_id] = Position(self.id, security_id)
         return self.positions[security_id]
+
+
+@dataclass
+class Strategy:
+    id: str
+    portfolio_id: str
+    strategy_type: str
+    underlying: str
+    legs: List[Dict]                    # [{"security_id", "side", "ratio", "quantity", "order_id"}]
+    quantity: Decimal                   # number of strategy units
+    net_limit: Optional[Decimal]        # net debit (+) / credit (-) limit per unit, None = market
+    status: str                         # WORKING | FILLED | PARTIAL | CANCELLED | EXPIRED
+    entered_date: str
+    net_premium: Decimal = ZERO         # realised net premium per unit at fill (debit positive)
+    notes: List[Dict] = field(default_factory=list)
 
 
 @dataclass

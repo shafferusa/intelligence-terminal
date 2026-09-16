@@ -93,12 +93,14 @@ class CollateralEngine:
         return money(self.market_value(sec, quantity) * D(str(1 - h)))
 
     # ------------------------------------------------------------------ availability
-    def available_quantity(self, pf: Portfolio, security_id: str, exclude_ref: Optional[str] = None) -> Decimal:
-        """Settled, unencumbered quantity not committed to a pending delivery."""
+    def available_quantity(self, pf: Portfolio, security_id: str, exclude_ref: Optional[str] = None, include_covered: bool = False) -> Decimal:
+        """Settled, unencumbered quantity not committed to a pending delivery. Shares covering written calls are reserved
+        (they cannot be sold, lent or pledged) unless `include_covered` (prime-broker collateral value still counts them)."""
         pos = pf.positions.get(security_id)
         if pos is None:
             return ZERO
-        return pos.settled_quantity - pos.pending_deliver - pf.pledged_quantity(security_id, exclude_ref)
+        reserved = ZERO if include_covered else self.w.options.covered_shares_needed(pf, security_id)
+        return pos.settled_quantity - pos.pending_deliver - pf.pledged_quantity(security_id, exclude_ref) - reserved
 
     def pledge(self, pf: Portfolio, sec: Security, quantity: Decimal, purpose: str, reference: str, cause: Event) -> None:
         from ..world import CommandError

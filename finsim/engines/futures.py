@@ -53,6 +53,10 @@ class FuturesEngine:
                 total += self.initial_margin_per_contract(self.w.securities[pos.security_id]) * abs(pos.quantity)
         return total
 
+    def total_required(self, pf: Portfolio) -> Decimal:
+        """Everything the clearing member holds: futures initial margin plus listed-options margin."""
+        return self.required_margin(pf) + pf.options_margin
+
     # ------------------------------------------------------------------ daily processing
     def expire_contracts(self, cause: Event) -> None:
         w = self.w
@@ -91,18 +95,19 @@ class FuturesEngine:
     def sweep_margin(self, cause: Event) -> None:
         w = self.w
         for pf in w.portfolios.values():
-            required = self.required_margin(pf)
+            required = self.total_required(pf)
             held = w.ledgers[pf.id].balance("1300")
             delta = required - held
             if delta != 0:
                 w.emit(E.MARGIN_SWEPT, {"portfolio_id": pf.id, "required": required, "held_before": held, "amount": delta, "currency": pf.base_currency,
-                                        "margin_multiplier": self.margin_multiplier()}, cause_id=cause.id, portfolio_id=pf.id)
+                                        "margin_multiplier": self.margin_multiplier(), "futures_margin": self.required_margin(pf), "options_margin": pf.options_margin},
+                       cause_id=cause.id, portfolio_id=pf.id)
 
     def _check_margin_call(self, pf: Portfolio, cause: Event) -> None:
         w = self.w
         cash = pf.cash_account(pf.base_currency).balance
         open_call = next((m for m in pf.margin_calls if m.status == "OPEN"), None)
-        if cash < 0 and self.required_margin(pf) > 0:
+        if cash < 0 and self.total_required(pf) > 0:
             shortfall = -cash
             if open_call is None:
                 w.emit(E.MARGIN_CALL, {"portfolio_id": pf.id, "call_id": f"MC-{w.next_seq():06d}", "amount": shortfall, "status": "OPEN", "days_open": 1,
@@ -135,10 +140,20 @@ class FuturesEngine:
             closed.append(sec.id)
             # settle the closing fill immediately so cash reflects it
             self._settle_position_now(pf, pos, ev)
-            if pf.cash_account(pf.base_currency).balance + w.ledgers[pf.id].balance("1300") - self.required_margin(pf) >= 0:
+            if pf.cash_account(pf.base_currency).balance + w.ledgers[pf.id].balance("1300") - self.total_required(pf) >= 0:
                 break
+        # then short option positions (buy to close at the ask), largest margin first
+        if pf.cash_account(pf.base_currency).balance + w.ledgers[pf.id].balance("1300") - self.total_required(pf) < 0:
+            shorts = sorted([p for p in pf.positions.values() if p.is_option and p.quantity < 0], key=lambda p: -p.margin_requirement)
+            for pos in shorts:
+                sec = w.securities[pos.security_id]
+                w.trading.system_order(pf, sec, "BUY", abs(pos.quantity), ev, f"forced liquidation for margin call {call.id}", forced=True)
+                closed.append(sec.id)
+                w.options.recompute_margin(pf, ev)
+                if pf.cash_account(pf.base_currency).balance + w.ledgers[pf.id].balance("1300") - self.total_required(pf) >= 0:
+                    break
         # release margin no longer required
-        required = self.required_margin(pf)
+        required = self.total_required(pf)
         held = w.ledgers[pf.id].balance("1300")
         if required != held:
             w.emit(E.MARGIN_SWEPT, {"portfolio_id": pf.id, "required": required, "held_before": held, "amount": required - held, "currency": pf.base_currency,

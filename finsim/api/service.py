@@ -18,6 +18,7 @@ from ..domain.events import E
 from ..engines.commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, MONTH_CODES
 from ..engines.ledger import CHART, account_name, account_type
 from ..engines.market import REGIMES
+from ..engines.options import REGIME_MARGIN_MULT, STRATEGY_TEMPLATES
 from ..engines.pricing import BondPricer, Instrument, interp_rate
 from ..money import D, money, ZERO
 from ..store import EventStore
@@ -164,7 +165,7 @@ class Service:
         w = self.world(world_id)
         out = []
         for sec in w.securities.values():
-            if sec.is_future and (sec.expired or not w.market.history.get(sec.id)):
+            if sec.is_option or (sec.is_future and (sec.expired or not w.market.history.get(sec.id))):
                 continue
             bar = w.market.last_bar(sec.id)
             h = w.market.history[sec.id]
@@ -189,6 +190,8 @@ class Service:
 
     def security(self, world_id: str, security_id: str, period: str = "1Y") -> Dict:
         w = self.world(world_id)
+        if security_id in w.securities and w.securities[security_id].is_option:
+            return self.option_contract(world_id, security_id)
         if security_id not in w.securities:
             raise NotFound(f"security {security_id} not found")
         sec = w.securities[security_id]
@@ -489,6 +492,12 @@ class Service:
             inst = Instrument(sec, pos.mark, w.current_date, w.market.curve())
             rm = inst.risk_metrics(pos.quantity) if pos.quantity else {}
             avg_cost = pos.average_cost * (100 if sec.is_bond else 1)   # bonds: price per 100 face
+            if sec.is_option:
+                n = float(pos.quantity) * sec.multiplier
+                avg_cost = (pos.cost_basis / (pos.quantity * D(str(sec.multiplier)))).quantize(D("0.0001")) if pos.quantity else ZERO
+                rm = {**{k: v * n for k, v in pos.greeks.items() if k in ("delta", "gamma", "vega", "theta", "rho")}, "iv": pos.greeks.get("iv"),
+                      "underlying": pos.greeks.get("underlying"), "dollar_delta": pos.greeks.get("delta", 0.0) * n * pos.greeks.get("underlying", 0.0),
+                      "days_to_expiry": (date.fromisoformat(sec.expiry) - w.current_date).days, "margin": pos.margin_requirement, "covered": pos.covered_by_shares}
             rows.append({"security_id": sec.id, "name": sec.name, "asset_class": sec.asset_class, "sector": sec.sector, "currency": sec.currency,
                          "country": sec.country, "quantity": pos.quantity, "settled_quantity": pos.settled_quantity, "pending_receive": pos.pending_receive,
                          "pending_deliver": pos.pending_deliver, "average_cost": avg_cost, "cost_basis": pos.cost_basis, "mark": pos.mark,
@@ -499,7 +508,14 @@ class Service:
                          "borrow_status": (f"short: {pos.borrowed_quantity:,} borrowed" if pos.quantity < 0 else f"{pos.borrowed_quantity:,} borrowed, unsold" if pos.borrowed_quantity else "n/a (long)"),
                          "collateral_status": (f"{pf.pledged_quantity(sec.id):,} pledged" if pf.pledged_quantity(sec.id) else "unencumbered"),
                          "financing": ("borrow fees" if pos.quantity < 0 else "none"), "is_future": False, "pledged": pf.pledged_quantity(sec.id),
-                         "borrow_fees": pos.borrow_fees, "manufactured_dividends": pos.manufactured_dividends})
+                         "borrow_fees": pos.borrow_fees, "manufactured_dividends": pos.manufactured_dividends, "is_option": sec.is_option,
+                         **({"option": {"underlying": sec.underlying, "type": sec.option_type, "strike": sec.strike, "expiry": sec.expiry, "style": sec.exercise_style,
+                                        "settlement": sec.settlement_style, "multiplier": sec.multiplier, "deliverable": sec.deliverable}} if sec.is_option else {})})
+            if sec.is_option:
+                rows[-1]["borrow_status"] = "n/a (cleared option)"
+                rows[-1]["financing"] = f"margin {pos.margin_requirement:,.0f}" if pos.quantity < 0 else "premium paid in full"
+                rows[-1]["collateral_status"] = (f"covered by {pos.covered_by_shares * D(str(sec.multiplier)):,} shares" if pos.covered_by_shares else
+                                                 ("margined at clearing member" if pos.quantity < 0 else "unencumbered"))
         rows.sort(key=lambda r: -abs(float(r["notional"])))
         return jsonable(rows)
 
@@ -545,6 +561,22 @@ class Service:
                              {"kind": "COLLATERAL", "description": f"Collateral posted {sum((l.collateral_amount if l.collateral_type == 'CASH' else l.collateral_value for l in open_loans), ZERO):,.0f} (marked daily at 102%)"},
                              {"kind": "BORROW_FEES", "description": f"Accrued borrow fees {sum((l.accrued_fee for l in open_loans), ZERO):,.2f}; paid to date {sum((l.fees_paid for l in pf.loans.values() if l.security_id == security_id), ZERO):,.2f}"},
                              {"kind": "DIVIDEND_OBLIGATIONS", "description": f"Manufactured dividends owed to date {pos.manufactured_dividends:,.2f}"}] +                             [{"kind": "RECALL", "description": f"RECALL — return {l.recall_quantity:,} shares by {l.recall_due}"} for l in open_loans if l.recall_status == "RECALLED"] +                             [r for r in relationships if r["kind"] == "SETTLEMENT"]
+        if sec.is_option:
+            g = pos.greeks or {}
+            n = float(pos.quantity) * sec.multiplier
+            side = "Long" if pos.quantity > 0 else "Short"
+            relationships = [{"kind": "UNDERLYING", "description": f"{side} {abs(pos.quantity):,} {sec.underlying} {sec.expiry} {sec.strike:g} {'call' if sec.option_type == 'C' else 'put'} "
+                                                                    f"({sec.exercise_style.lower()}, {sec.settlement_style.lower()}): delta {g.get('delta', 0) * n:,.0f} shares, "
+                                                                    f"dollar delta {g.get('delta', 0) * n * g.get('underlying', 0):,.0f}, gamma {g.get('gamma', 0) * n:,.2f}, vega {g.get('vega', 0) * n:,.0f}/vol pt, theta {g.get('theta', 0) * n:,.0f}/day"},
+                             {"kind": "EXPIRY", "description": f"Expires {sec.expiry} ({(date.fromisoformat(sec.expiry) - w.current_date).days} days): "
+                                                               + ("cash-settled at the index level" if sec.settlement_style == "CASH" else f"delivers {sec.deliverable.get('quantity')} shares of {sec.underlying} per contract at {sec.strike:g}")},
+                             {"kind": "MARGIN" if pos.quantity < 0 else "PREMIUM", "description": (f"Margin requirement {pos.margin_requirement:,.0f} at the clearing member"
+                                                                                                 + (f"; {pos.covered_by_shares} contract(s) covered by long stock" if pos.covered_by_shares else "")) if pos.quantity < 0
+                                                                                                 else f"Premium paid {pos.cost_basis:,.2f}; maximum loss is the premium"},
+                             ] + [r for r in relationships if r["kind"] == "SETTLEMENT"]
+            for st in pf.strategies.values():
+                if any(l["security_id"] == sec.id for l in st.legs):
+                    relationships.append({"kind": "STRATEGY", "description": f"Leg of {st.id} {st.strategy_type} ({st.status})"})
         if pledges:
             relationships.append({"kind": "ENCUMBRANCE", "description": "; ".join(f"{p['quantity']:,} pledged to {p['reference']} ({p['purpose']})" for p in pledges)})
         return jsonable({"position": row, "lots": [asdict(l) for l in pos.lots], "trades": trades, "settlements": sis, "ledger_entries": entries,
@@ -810,6 +842,140 @@ class Service:
         return {"event_id": ev.id, "regime": regime}
 
     # ------------------------------------------------------------------ audit
+    # ------------------------------------------------------------------ listed options (phase 3)
+    def options_underlyings(self, world_id: str) -> List[Dict]:
+        w = self.world(world_id)
+        out = []
+        for under in w.options.optionable():
+            src = w.securities["SPXE"] if under == "SPXI" else w.securities[under]
+            st = w.market.vol.state.get(under)
+            if st is None or not w.market.history.get(src.id):
+                continue
+            rank = w.market.vol.iv_rank(under)
+            out.append({"underlying": under, "name": "Broad Market Index (10x SPXE, cash-settled European)" if under == "SPXI" else src.name, "level": w.options.underlying_level(under),
+                        "atm_iv": st.atm, "skew": st.skew, "term": st.term, "realized_20d": w.market.realized_vol(src.id), "iv_rank": rank["iv_rank"] if rank else None,
+                        "style": "EUROPEAN/CASH" if under == "SPXI" else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
+                        "contracts": sum(1 for s in w.securities.values() if s.is_option and s.underlying == under and not s.expired)})
+        return jsonable(out)
+
+    def option_chain(self, world_id: str, underlying: str, expiry: Optional[str] = None) -> Dict:
+        w = self.world(world_id)
+        if underlying not in w.market.vol.state:
+            raise NotFound(f"no option chain for {underlying}")
+        ch = w.options.chain(underlying, expiry)
+        vs = w.market.vol.state[underlying]
+        ch["atm_iv"] = vs.atm
+        ch["regime"] = w.market.regime().name
+        return jsonable(ch)
+
+    def vol_surface(self, world_id: str, underlying: str) -> Dict:
+        w = self.world(world_id)
+        if underlying not in w.market.vol.state:
+            raise NotFound(f"no vol surface for {underlying}")
+        return jsonable(w.options.surface(underlying))
+
+    def option_contract(self, world_id: str, contract_id: str) -> Dict:
+        w = self.world(world_id)
+        sec = w.securities.get(contract_id)
+        if sec is None or not sec.is_option:
+            raise NotFound(f"unknown option {contract_id}")
+        q = w.options.quote(sec) if not sec.expired else {}
+        bar = w.options.option_bar(sec) if not sec.expired else None
+        positions = {pf.id: pf.positions[sec.id].quantity for pf in w.portfolios.values() if sec.id in pf.positions and pf.positions[sec.id].quantity}
+        return jsonable({"security": asdict(sec), "is_option": True, "quote": q, "bar": asdict(bar) if bar else None, "positions": positions,
+                         "days_to_expiry": (date.fromisoformat(sec.expiry) - w.current_date).days, "underlying_level": w.options.underlying_level(sec.underlying),
+                         "chain_link": f"#/options/{sec.underlying}/{sec.expiry}"})
+
+    def options_book(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        rows = w.options.position_rows(pf)
+        agg = w.options.aggregate_greeks(pf)
+        total, detail = w.options.margin_requirement(pf)
+        strategies = []
+        for st in pf.strategies.values():
+            legs = [{**l, "order_status": pf.orders[l["order_id"]].status if l.get("order_id") in pf.orders else None,
+                     "fill_price": pf.orders[l["order_id"]].avg_fill_price if l.get("order_id") in pf.orders else None} for l in st.legs]
+            strategies.append({"id": st.id, "strategy_type": st.strategy_type, "underlying": st.underlying, "quantity": st.quantity, "net_limit": st.net_limit,
+                               "status": st.status, "entered_date": st.entered_date, "net_premium": st.net_premium, "legs": legs, "notes": st.notes})
+        expirations = []
+        for r in rows:
+            bd = w.calendar.business_days_between(w.current_date, date.fromisoformat(r["expiry"]))
+            expirations.append({**r, "business_days": bd})
+        expirations.sort(key=lambda r: (r["expiry"], r["security_id"]))
+        events = []
+        for ev in w.events:
+            if ev.portfolio_id == pf.id and ev.type in ("OPTION_EXERCISED", "OPTION_ASSIGNED", "OPTION_EXPIRED", "CONTRACT_ADJUSTED"):
+                events.append({"event_id": ev.id, "date": ev.sim_date, "kind": ev.type, **{k: v for k, v in ev.payload.items() if k != "portfolio_id"}})
+            elif ev.type == "CONTRACT_ADJUSTED" and ev.payload.get("security_id") in pf.positions:
+                events.append({"event_id": ev.id, "date": ev.sim_date, "kind": ev.type, **ev.payload})
+        snap = pf.nav_history[-1] if pf.nav_history else None
+        cash = pf.cash_account(pf.base_currency).balance
+        return jsonable({"positions": rows, "greeks": agg, "margin": {"total": total, "detail": detail, "held_at_clearing": w.ledgers[pf.id].balance("1300"),
+                         "futures_margin": w.futures.required_margin(pf), "regime_multiplier": REGIME_MARGIN_MULT.get(w.market.state.regime, 1.0),
+                         "cash": cash, "excess_liquidity": w.prime.financing(pf)["excess_liquidity"]},
+                         "strategies": strategies, "expirations": expirations, "events": events[-100:], "underlyings": w.options.optionable(),
+                         "options_pnl_today": snap.explain.get("options") if snap else None, "greek_attribution": snap.greek_attribution if snap else {},
+                         "strategy_types": {k: {"legs": [{"type": t, "side": sd, "strike_index": ki, "expiry_index": ei, "ratio": r} for (t, sd, ki, ei, r) in v[0]], "needs_shares": v[1]}
+                                            for k, v in STRATEGY_TEMPLATES.items()}})
+
+    def exercise(self, world_id: str, portfolio_id: str, contract_id: str, quantity: Optional[float] = None) -> Dict:
+        w = self.world(world_id)
+        r = w.exercise_option(portfolio_id, contract_id, quantity)
+        return jsonable(r)
+
+    def strategy_preview(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        from ..domain.models import Strategy
+        from ..engines.options import STRATEGY_TEMPLATES, contract_id as cid_of
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        st_type = str(body["strategy_type"]).upper()
+        if st_type not in STRATEGY_TEMPLATES:
+            raise CommandError(f"unknown strategy {st_type}")
+        template, needs_shares = STRATEGY_TEMPLATES[st_type]
+        strikes = [float(k) for k in body["strikes"]]
+        exps = [body["expiry"], body.get("expiry2") or body["expiry"]]
+        n = D(str(body.get("quantity", 1)))
+        legs = []
+        for (ot, side, ki, ei, ratio) in template:
+            if ki >= len(strikes):
+                raise CommandError(f"{st_type} needs {max(k for _, _, k, _, _ in template) + 1} strike(s)")
+            cid = cid_of(body["underlying"], date.fromisoformat(exps[ei]), ot, strikes[ki])
+            if cid not in w.securities:
+                raise CommandError(f"contract {cid} is not listed")
+            legs.append({"security_id": cid, "side": side, "ratio": ratio, "quantity": n * ratio, "order_id": None})
+        st = Strategy(id="PREVIEW", portfolio_id=pf.id, strategy_type=st_type, underlying=body["underlying"], legs=legs, quantity=n, net_limit=None, status="PREVIEW",
+                      entered_date=w.current_date.isoformat())
+        a = w.options.strategy_analytics(pf, st)
+        extra = [(w.securities[l["security_id"]], (l["quantity"] if l["side"] == "BUY" else -l["quantity"])) for l in legs]
+        base, _ = w.options.margin_requirement(pf)
+        after, det = w.options.margin_requirement(pf, extra=extra)
+        a["incremental_margin"] = max(ZERO, after - base)
+        a["margin_detail"] = [d for d in det if any(d["contract"] == l["security_id"] for l in legs)]
+        a["legs"] = [{**l, "quote": w.options.quote(w.securities[l["security_id"]])} for l in legs]
+        a["needs_shares"] = n * 100 if needs_shares else ZERO
+        return jsonable(a)
+
+    def place_strategy(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        st = w.place_strategy(portfolio_id, body["strategy_type"], body["underlying"], body["expiry"], [float(k) for k in body["strikes"]], body.get("quantity", 1),
+                              body.get("net_limit"), body.get("expiry2"), body.get("time_in_force", "DAY"))
+        return jsonable({"strategy_id": st.id, "status": st.status, "legs": st.legs, "analytics": w.options.strategy_analytics(w.portfolio(portfolio_id), st)})
+
+    def strategy(self, world_id: str, portfolio_id: str, strategy_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        if strategy_id not in pf.strategies:
+            raise NotFound(f"unknown strategy {strategy_id}")
+        st = pf.strategies[strategy_id]
+        return jsonable({"id": st.id, "strategy_type": st.strategy_type, "underlying": st.underlying, "quantity": st.quantity, "net_limit": st.net_limit, "status": st.status,
+                         "entered_date": st.entered_date, "net_premium": st.net_premium, "legs": st.legs, "notes": st.notes, "analytics": w.options.strategy_analytics(pf, st)})
+
+    def force_split(self, world_id: str, security_id: str, ratio: float) -> Dict:
+        w = self.world(world_id)
+        ev = w.force_split(security_id, float(ratio))
+        return {"event_id": ev.id, "security_id": security_id, "ratio": float(ratio)}
+
     def events(self, world_id: str, limit: int = 200, offset: int = 0, etype: Optional[str] = None, portfolio_id: Optional[str] = None, q: Optional[str] = None) -> Dict:
         w = self.world(world_id)
         evs = w.events
