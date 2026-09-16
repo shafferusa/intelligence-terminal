@@ -31,6 +31,7 @@ class CorporateActionEngine:
         w.on(E.DIVIDEND_OBLIGATION, lambda world, ev: self._h_obligation(ev))
         w.on(E.DIVIDEND_OBLIGATION_PAID, lambda world, ev: self._h_obligation_paid(ev))
         w.on(E.BOND_MATURED, lambda world, ev: self._h_matured(ev))
+        w.on(E.BOND_DEFAULTED, lambda world, ev: self._h_defaulted(ev))
 
     # ------------------------------------------------------------------ scheduling
     def declare_upcoming(self, cause: Event) -> None:
@@ -62,18 +63,7 @@ class CorporateActionEngine:
             if ca.action_type != "CASH_DIVIDEND":
                 continue
             if ca.ex_date == today and ca.status == "DECLARED":
-                for pf in w.portfolios.values():
-                    q = self._quantity_before_today(pf, ca.security_id)
-                    if q > 0:
-                        amt = money(q * ca.amount_per_unit)
-                        w.emit(E.DIVIDEND_ENTITLED, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": q,
-                                                     "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
-                    elif q < 0:
-                        amt = money(-q * ca.amount_per_unit)
-                        w.emit(E.DIVIDEND_OBLIGATION, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": -q,
-                                                       "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
-                # mark EX even if nobody held it
-                ca.status = "EX"
+                self.entitle_today(ca, cause)
             if ca.pay_date == today and ca.status == "EX":
                 for pid, ent in ca.entitlements.items():
                     if not ent.get("paid"):
@@ -90,6 +80,12 @@ class CorporateActionEngine:
                 sec = w.securities[pos.security_id]
                 if not sec.is_bond or pos.quantity <= 0:
                     continue
+                if sec.defaulted:
+                    if sec.recovery_date == today:
+                        w.emit(E.BOND_MATURED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity,
+                                                "principal": money(pos.quantity * D(repr(sec.recovery_rate))), "currency": sec.currency, "recovery": True},
+                               cause_id=cause.id, portfolio_id=pf.id)
+                    continue
                 cds = [d.isoformat() for d in BondPricer.coupon_dates(sec)]
                 if today in cds:
                     cpn = money(pos.quantity * D(sec.coupon) / sec.freq)
@@ -98,6 +94,63 @@ class CorporateActionEngine:
                 if sec.maturity == today:
                     w.emit(E.BOND_MATURED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "principal": money(pos.quantity),
                                             "currency": sec.currency}, cause_id=cause.id, portfolio_id=pf.id)
+
+    def entitle_today(self, ca, cause: Event) -> None:
+        """Ex-date processing for a cash dividend: holders are entitled, shorts owe a manufactured dividend."""
+        w = self.w
+        if True:
+            if True:
+                for pf in w.portfolios.values():
+                    q = self._quantity_before_today(pf, ca.security_id)
+                    if q > 0:
+                        amt = money(q * ca.amount_per_unit)
+                        w.emit(E.DIVIDEND_ENTITLED, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": q,
+                                                     "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
+                    elif q < 0:
+                        amt = money(-q * ca.amount_per_unit)
+                        w.emit(E.DIVIDEND_OBLIGATION, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": -q,
+                                                       "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
+                # mark EX even if nobody held it
+                ca.status = "EX"
+
+
+    def default_bond(self, reference: str, recovery: float, cause: Event) -> None:
+        """Issuer default: the bond marks at recovery, accrued interest is written off, coupons stop, and the recovery
+        is paid 30 business days later."""
+        w = self.w
+        sec = w.securities[reference]
+        if sec.defaulted:
+            return
+        writeoffs = {pf.id: pf.positions[reference].accrued_interest for pf in w.portfolios.values()
+                     if reference in pf.positions and pf.positions[reference].quantity > 0}
+        w.emit(E.BOND_DEFAULTED, {"security_id": reference, "issuer": sec.issuer, "recovery": recovery, "redemption_date": w.calendar.add_business_days(w.current_date, 30).isoformat(),
+                                  "writeoffs": writeoffs}, cause_id=cause.id)
+
+    def _h_defaulted(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        sec = w.securities[p["security_id"]]
+        sec.defaulted = True
+        sec.recovery_rate = float(p["recovery"])
+        sec.recovery_date = p["redemption_date"]
+        sec.rating = "D"
+        rp = D(repr(float(p["recovery"]) * 100)).quantize(D("0.0001"))
+        h = w.market.history.get(sec.id)
+        if h:
+            b = h[-1]
+            b.close, b.bid, b.ask = rp, rp, rp
+            b.low = min(b.low, rp)
+        w.market._prev_close[sec.id] = rp
+        for pid, acc in p.get("writeoffs", {}).items():
+            pf = w.portfolios[pid]
+            pos = pf.position(sec.id)
+            amt = D(acc)
+            pos.accrued_interest = ZERO
+            pos.interest_income -= amt
+            if amt:
+                w.post(pf.id, f"Default of {sec.issuer}: accrued interest {amt:,.2f} on {sec.id} written off",
+                       [dr("4300", amt, sec.id, "accrued interest written off"), cr("1220", amt, sec.id, "accrued interest receivable reversed")], ev, {"security_id": sec.id, "kind": "DEFAULT"})
+            w.pnl.mark_position(pf, sec.id, ev)
 
     def _quantity_before_today(self, pf: Portfolio, security_id: str) -> Decimal:
         pos = pf.positions.get(security_id)

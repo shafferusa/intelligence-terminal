@@ -30,6 +30,8 @@ from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel
 from .lending_market import LendingMarket
 from .fx_market import FXModel
 from .counterparties import DealerModel
+from .corporate_events import CorporateEventModel
+from .macro import MacroModel
 from .vol import VolSurfaceModel, optionable_underlyings, structural_vol, INDEX_ID as OPT_INDEX_ID, INDEX_SOURCE as OPT_INDEX_SOURCE
 
 TENORS = [0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 20.0, 30.0]
@@ -244,6 +246,12 @@ class MarketEngine:
         self._vol_payload: Dict[str, Dict] = {}
         self.dealers = DealerModel(seed)
         self._dealer_payload: Dict[str, Dict] = {}
+        self.macro = MacroModel(seed, securities, calendar)
+        self._macro_payload: Dict = {}
+        self.cevents = CorporateEventModel(seed, calendar)
+        self._cevent_payload: List[Dict] = []
+        self._forced_returns: Dict[str, float] = {}
+        self._forced_rate_bp: float = 0.0
         self.bar_provider = None      # set by the world: synthetic bars for instruments priced off others (listed options)
         self.player_on_loan: Dict[str, int] = {}
         self.vol_index_history: List[Tuple[str, float]] = []
@@ -368,15 +376,46 @@ class MarketEngine:
                 regime = new
         R = REGIMES[regime]
         dt = 1.0 / TRADING_DAYS
+        prev_bd = date.fromisoformat(prev.date)
+        # macro world: releases, meetings, earnings, credit; corporate events (only once the world is live)
+        oil = self.commodities.spot_history.get("CL") or []
+        oil20 = math.log(oil[-1][1] / oil[-21][1]) if len(oil) > 21 and oil[-21][1] else 0.0
+        macro_out = self.macro.step(d, prev_bd, regime, oil20, prev.hy_spread, 0.0, allow_defaults=(d >= self.start), live=(d >= self.start),
+                                    short_rate=nelson_siegel(prev.level, prev.slope, prev.curv, 0.25, 0.08))
+        self._macro_payload = macro_out
+        extra_ret: Dict[str, float] = {}
+        if d >= self.start:
+            prices_now = {t: float(c) for t, c in self._prev_close.items()}
+            cev, cnews_corp, cshocks = self.cevents.step(d, self.securities, regime, prices_now, prev.level)
+            extra_ret.update(cshocks)
+        else:
+            cev, cnews_corp = [], []
+        self._cevent_payload = cev
+        for e in macro_out["earnings"]:
+            extra_ret[e["security_id"]] = extra_ret.get(e["security_id"], 0.0) + e["jump"]
+        for dflt in macro_out["defaults"]:
+            tick = BOND_ISSUER_TICKER.get(dflt["reference"])
+            if tick:
+                extra_ret[tick] = extra_ret.get(tick, 0.0) - 1.5
+        for sid, fr in self._forced_returns.items():
+            extra_ret[sid] = extra_ret.get(sid, 0.0) + fr
+        macro_out["forced_returns"] = dict(self._forced_returns)
+        macro_out["forced_rate_bp"] = self._forced_rate_bp
+        macro_out["rate_shock_bp"] += self._forced_rate_bp
+        self._forced_returns = {}
+        self._forced_rate_bp = 0.0
 
         # Market factor and sector factors
         z_m = rng.gauss(0, 1)
-        mkt = (R.mkt_drift - 0.5 * R.mkt_vol ** 2) * dt + R.mkt_vol * math.sqrt(dt) * z_m
+        mkt = (R.mkt_drift - 0.5 * R.mkt_vol ** 2) * dt + R.mkt_vol * math.sqrt(dt) * z_m + macro_out["equity_shock"]
         sectors = {s: rng.gauss(0, v) * R.idio_mult for s, v in SECTOR_VOL.items()}
 
         # Rates: level shock correlated with the market factor
         z_r = R.stock_rate_corr * z_m + math.sqrt(max(0.0, 1 - R.stock_rate_corr ** 2)) * rng.gauss(0, 1)
         level = prev.level + (R.rate_level_drift_bp / 1e4) * dt + (R.rate_vol_bp / 1e4) * z_r
+        level += macro_out["rate_shock_bp"] / 1e4
+        if d >= self.start:   # the short end is pulled toward the policy rate once the central bank is live
+            level += 0.05 * (self.macro.state.policy_rate - nelson_siegel(prev.level, prev.slope, prev.curv, 0.25, 0.08))
         level = min(max(level, 0.001), 0.15)
         slope = prev.slope + (R.slope_drift_bp / 1e4) * dt + (R.rate_vol_bp * 0.5 / 1e4) * rng.gauss(0, 1)
         slope = min(max(slope, -0.03), 0.03)
@@ -395,7 +434,12 @@ class MarketEngine:
         bars: Dict[str, Bar] = {}
         from .pricing import BondPricer  # local import to avoid cycle
         for t, sec in list(self.securities.items()):
-            if sec.is_future or sec.is_option:
+            if sec.is_future or sec.is_option or sec.delisted or sec.asset_class == "PHYSICAL":
+                continue
+            if sec.is_bond and sec.defaulted:
+                rp = qprice(D(repr(sec.recovery_rate * 100)))
+                bars[t] = Bar(d.isoformat(), rp, rp, rp, rp, int(sec.adv * 0.1), rp, rp)
+                self._prev_close[t] = rp
                 continue
             if sec.is_bond:
                 clean = BondPricer.clean_price_from_curve(sec, curve, d)
@@ -414,7 +458,7 @@ class MarketEngine:
             if sec.asset_class == "ETF" and sec.sector == "Government":
                 # Short treasury ETF: tiny duration, carries at the short rate.
                 r = curve.rates[1] * dt - 0.4 * (level - prev.level) + idio
-            r = max(min(r, 0.35), -0.45)
+            r = max(min(r, 0.35), -0.45) + extra_ret.get(t, 0.0)      # exogenous jumps (earnings, deals, defaults) are not clamped
             close_f = float(pc) * math.exp(r)
             div = self.dividend_on(sec, d)
             close_f = max(0.05, close_f - float(div))
@@ -448,6 +492,14 @@ class MarketEngine:
             rng_range = abs(ret) * rr.uniform(0.3, 0.9) + 0.004
             spot_shapes[code] = (math.exp(gap), 1 + rng_range * rr.uniform(0.2, 1.0), 1 - rng_range * rr.uniform(0.2, 1.0))
         fbars = self.commodities.bars_for_contracts(d, cpayload, self.securities, self._prev_close, spot_shapes, R.depth_mult, R.spread_mult)
+        # physical inventory (phase 9) is priced at the commodity's spot with a dealing spread
+        for t, sec in self.securities.items():
+            if sec.asset_class == "PHYSICAL" and sec.underlying in self.commodities.state:
+                sp = qprice(D(repr(self.commodities.state[sec.underlying].spot)))
+                pc = self._prev_close.get(t, sp)
+                half = sp * D(str(sec.spread_bps / 2 / 1e4))
+                fbars[t] = Bar(d.isoformat(), qprice(pc), qprice(max(pc, sp)), qprice(min(pc, sp)), sp, int(sec.adv * R.depth_mult), qprice(sp - half), qprice(sp + half))
+                self._prev_close[t] = sp
         for cid, b in fbars.items():
             bars[cid] = b
             self._prev_close[cid] = b.close
@@ -455,14 +507,14 @@ class MarketEngine:
         self._lending_payload = lpayload
         self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
         self._dealer_payload, dnews = self.dealers.step(d, regime, hy, mkt)
-        self.day_news = cnews + lnews + dnews
+        self.day_news = cnews + lnews + dnews + macro_out["news"] + cnews_corp
         self._commodity_payload = cpayload
         self.state = MarketState(d.isoformat(), regime, level, slope, curv, ig, hy, mkt, sectors)
         for t, b in bars.items():
             self.history[t].append(b)
         self.curves.append(curve)
         prev_vix = self.vol_index()
-        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPXE"))
+        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPXE")) * (1 + macro_out["vol_bump"])
         self.vol_index_history.append((d.isoformat(), round(vix, 2)))
         vchg = (vix / prev_vix - 1) if prev_vix else 0.0
         self._vol_payload = {}
@@ -476,8 +528,10 @@ class MarketEngine:
 
     # ---------------- ingest (replay) ----------------
     def ingest_close(self, d: date, bars: Dict[str, Bar], curve: YieldCurve, state: Dict, commodities: Optional[Dict] = None,
-                     lending: Optional[Dict] = None, fx: Optional[Dict] = None, vol: Optional[Dict] = None, dealers: Optional[Dict] = None) -> None:
+                     lending: Optional[Dict] = None, fx: Optional[Dict] = None, vol: Optional[Dict] = None, dealers: Optional[Dict] = None,
+                     macro: Optional[Dict] = None, cevents: Optional[List[Dict]] = None) -> None:
         """Used on replay: adopt stored bars instead of regenerating them."""
+        self._forced_returns, self._forced_rate_bp = {}, 0.0   # queued shocks were consumed by the stored close
         self.ensure_listings(d)
         for t, b in bars.items():
             self.history.setdefault(t, []).append(b)
@@ -500,6 +554,12 @@ class MarketEngine:
         if dealers:
             self.dealers.ingest(d, dealers)
             self._dealer_payload = dealers
+        if macro:
+            self.macro.ingest(d, macro)
+            self._macro_payload = macro
+        if cevents is not None:
+            self.cevents.ingest(cevents)
+            self._cevent_payload = cevents
         self.vol_index_history.append((d.isoformat(), state.get("vol_index", 0.0)))
         if not self.regime_history or self.regime_history[-1][1] != state["regime"]:
             self.regime_history.append((d.isoformat(), state["regime"]))
@@ -547,3 +607,33 @@ class MarketEngine:
 
     def dealer_payload(self) -> Dict:
         return getattr(self, "_dealer_payload", {})
+
+    def macro_payload(self) -> Dict:
+        return getattr(self, "_macro_payload", {})
+
+    def corporate_events_payload(self) -> List[Dict]:
+        return getattr(self, "_cevent_payload", [])
+
+    def corporate_announcements(self) -> List[Dict]:
+        return list(self.corporate_events_payload())
+
+    def force_return(self, security_id: str, log_return: float) -> None:
+        """Queue an exogenous log return for the next session (forced corporate events / defaults in sandbox worlds)."""
+        self._forced_returns[security_id] = self._forced_returns.get(security_id, 0.0) + log_return
+
+    def force_rate_shock(self, bp: float) -> None:
+        """Queue an exogenous parallel shift of the curve (basis points) for the next session."""
+        self._forced_rate_bp += float(bp)
+
+    def list_security(self, sec: Security, price: Decimal, day: str) -> None:
+        """A new listing (spin-off): starts trading at `price` from the next session."""
+        self.securities[sec.id] = sec
+        self.history.setdefault(sec.id, [])
+        self._prev_close[sec.id] = qprice(price)
+        if not self.history[sec.id]:
+            p = qprice(price)
+            half = p * D(str(sec.spread_bps / 2 / 1e4))
+            self.history[sec.id].append(Bar(day, p, p, p, p, 0, qprice(p - half), qprice(p + half)))
+        self.lending.init_security(sec)
+        if sec.asset_class in ("EQUITY", "ETF", "REIT", "ADR") and sec.liquidity_tier in ("LARGE", "MID") and sec.shares_outstanding:
+            self.vol.init_underlying(sec.id, structural_vol(self.securities, sec.id))

@@ -60,7 +60,7 @@ funding, liquidity and risk over days and months.
 
 | Area | What exists |
 |---|---|
-| **Saves & careers** | Multiple independent saves. Jobs: Sandbox, Portfolio Manager ($100MM vs equity benchmark), Global Macro Trader ($250MM; rates, index and commodity futures, government bonds), Commodity Trader ($100MM; energy, metals, ags, livestock), Fixed-Income PM ($250MM; Treasuries, corporates, note futures vs a 5Y benchmark). Each job fixes capital, mandate (instrument classes enforced at order entry), risk limits (gross leverage, single-position %, drawdown), benchmark and a promotion ladder. Hedge-fund, bank-trader, derivatives, sec-lending, repo, treasury and risk-manager jobs are listed as *planned* until their modules exist. |
+| **Saves & careers** | Multiple independent saves. Jobs: Sandbox, Portfolio Manager ($100MM vs equity benchmark), Global Macro Trader ($250MM; rates, index and commodity futures, government bonds), Commodity Trader ($100MM; energy, metals, ags, livestock), Fixed-Income PM ($250MM; Treasuries, corporates, note futures vs a 5Y benchmark). Each job fixes capital, mandate (instrument classes enforced at order entry), risk limits (gross leverage, single-position %, drawdown), benchmark and a promotion ladder. Phase 8 adds the Hedge Fund Manager ($500MM, outside investors), Bank Rates & Credit Trader, Derivatives Trader, Securities Lending Trader, Repo/Funding Trader, Corporate Treasurer and Risk Manager (four AI desks), each with missions, plus crisis mode. |
 | **Reviews & progression** | Month, quarter and year-end reviews from the book's own history: return, benchmark, alpha, max drawdown, Sharpe, largest contributor/loss, P&L by bucket, risk breaches, settlement failures, margin calls missed, a rating and an evaluation. EXCEEDS at a quarter end promotes and allocates capital; two UNACCEPTABLE quarters demote. |
 | **Market engine** | 24 fictional equities/ETFs/ADR/preferred/REIT with fundamentals and liquidity tiers; 4 Treasuries and 3 corporates. Factor-model returns (market + sector + idiosyncratic), Nelson–Siegel curve and IG/HY spreads shocked on the same factor, five Markov regimes, a volatility index, ex-dividend price drops. |
 | **Commodities** | 21 commodities (WTI, Brent, natural gas, gasoline, heating oil; gold, silver, copper, platinum, palladium, aluminum; corn, wheat, soybeans, coffee, sugar, cotton, cocoa; live cattle, feeder cattle, lean hogs) each with a supply/demand state: cyclical demand, decaying supply shocks that arrive as news, inventories that accumulate the balance and jump on scheduled reports (EIA weekly, USDA/LME monthly). Prices respond to changes in the balance, the macro cycle and seasonality; the **futures curve** is cost-of-carry with a convenience yield that rises when inventories are tight, so shortages backwardate and gluts contango. A COMMODITIES desk page and a page per commodity show spot, curve (today / 5d / 1m ago), contracts, fundamentals and news. |
@@ -68,7 +68,7 @@ funding, liquidity and risk over days and months.
 | **Trading** | Market-on-next-update semantics; spread crossing and square-root impact; participation caps; trailing stops that ratchet; conditional orders evaluated at the close; FIFO lots; pre-trade cash, position, margin and mandate checks. |
 | **Ledger & operations** | Institutional chart of accounts with margin-deposit and futures-P&L accounts; trade-date accounting; balanced journal entries with a security dimension; trial balance and balance sheet. Trade lifecycle to settlement, RVP/DVP instructions, configurable settlement cycles, holiday calendar, fails with retry, separate cash and custody movements. Dividends, coupons, maturities, daily interest accruals. |
 | **Audit** | Append-only sqlite event log; every event has a cause; state (including briefings, reviews, futures margin) is rebuilt by replay and tested to be identical. |
-| **UI** | Daily briefing (login screen), portfolio (positions, futures, exposures, NAV explain, P&L explain), trading (instructions blotter, trade lifecycle), markets, commodities desk, fixed income, settlements & custody, treasury, news, accounting, career, audit trail. New-save dialog picks job, clock mode, timezone and update time. |
+| **UI** | Daily briefing (login screen), portfolio (positions, futures, exposures, NAV explain, P&L explain), trading (instructions blotter, trade lifecycle), markets, commodities desk (spread tickets, physical delivery, inventory), fixed income, options, OTC derivatives, risk, macro, sec lending, repo, collateral, settlements & custody, treasury & FX, news, accounting, MY DESK (the job's own book), career (missions, scenario), audit trail. New-save dialog picks job, clock mode, timezone, update time, initial regime and scenario. |
 
 ### Phase 2 — financing (built)
 
@@ -128,10 +128,89 @@ Simplifications, stated: single zero curve for all discounting and forwards (no 
 | **Limits** | Per job, soft and hard: VaR 99%/NAV, ES/NAV, largest counterparty exposure/NAV, illiquid share, plus the job's leverage and drawdown. Soft breaches warn; a hard breach accepts only risk-reducing orders and no new OTC trades until the next close is back within limits. Daily `RISK_SNAPSHOT` in the log (history on the page), `RISK_BREACH` events with severity. |
 | **UI** | RISK page: overview (VaR tiles, factor exposures, component VaR, historical P&L series, exposure rows), stress (table, chart, custom scenario), liquidity (position ladder, cash ladder), limits (utilisation bars), history. Briefing risk section and breach attention items. |
 
+### Phase 6 — operations depth (built)
+
+| Piece | What exists |
+|---|---|
+| **Corporate events** (`engines/corporate_events.py`) | Seeded announcements with future effective dates (stored in the market close): stock dividends (processed as splits, options adjusted), special dividends, cash tender offers (election up to the cap, bought at the offer on the effective date), rights issues (subscribe at the discount by the deadline, unexercised rights lapse), cash mergers (price jumps toward the deal, options settle at intrinsic against the deal price, TRS terminated, every holder cashed out, stock delisted), spin-offs (new listing with its own history, shares distributed pro rata with cost basis carved out), bond calls (redeemed at the call price plus accrued). Sandbox `POST /force-corporate-event` for any of them. |
+| **Elections** | `POST /portfolios/{p}/elections {ca_id, quantity}`; deadlines and outcomes in the briefing; election status on SETTLEMENTS & CUSTODY. |
+| **Fails** | Failed deliveries and payments charged daily (3% annual on the cash amount, `5800`); a delivery failed for five sessions is bought in by the receiving party through a forced purchase with a 2% penalty. Match breaks, affirmation states, DVP/RVP retry existed already. |
+| **Custody view** | Per security: settled, trade-date, pending receive/deliver, pledged, borrowed, reserved for written calls, failing, available. |
+
+### Phase 7 — macro world (built)
+
+| Piece | What exists |
+|---|---|
+| **Macro state** (`engines/macro.py`) | Growth, inflation (fed by growth and the 20-day oil move) and unemployment (Okun) mean-revert toward the regime's anchors; stored in the market close. |
+| **Central bank** | Reaction function (real neutral rate r* + inflation + ½ inflation gap + ½ growth gap), eight meetings a year on a fixed calendar, 25/50bp steps toward the target with occasional surprises; the curve's short end is pulled toward the policy rate; decisions move rates, equities and vol. During the seeded prehistory the policy rate simply tracks the curve; at go-live the activity variables snap to the initial regime's anchors and r* is calibrated so the world starts in equilibrium (the bank then reacts to how growth and inflation drift). |
+| **Releases** | Payrolls, PMI, CPI, retail sales, quarterly GDP on calendar dates with consensus from the state and seeded surprises that shock the curve level, the equity factor, FX and the vol index; each release is an `ECONOMIC_RELEASE` event and news. |
+| **Earnings** | Every company reports each quarter on a seeded date against a consensus from its fundamentals; the surprise jumps the stock and updates EPS/revenue; dividend cuts in downturns and raises after strong years. `EARNINGS_REPORTED` events, calendar on the MACRO page and in the briefing. |
+| **Credit** | Issuer spreads track rating norms scaled by the credit index; monthly rating migration when spreads trade wide or tight; daily default hazard from the spread (higher in recession and stress). A default marks the bonds at recovery (flat), writes off accrued interest, stops coupons, pays the recovery 30 sessions later, settles CDS and collapses the equity next session. Sustained dealer stress can end in a counterparty default. `RATING_CHANGED`, `ISSUER_DEFAULTED`, `BOND_DEFAULTED` events. |
+| **UI** | MACRO page (state, policy path chart, calendar, releases, earnings, issuer credit, rating changes, corporate events); briefing macro and corporate sections with attention items. |
+
+### Phase 8 — careers and game modes (built)
+
+Every job in `careers.py` is playable. A save is a job; each job has a mandate (allowed asset classes, gross
+leverage, concentration, drawdown), a ladder of titles, monthly/quarterly reviews, and **missions** — proficiency
+tests checked at every close from the portfolio's actual state (`MISSION_STARTED/UPDATED/COMPLETED/FAILED`); a
+completed mission earns a 5% capital allocation. The **MY DESK** page and the briefing's `desk` section carry the
+job's own book:
+
+| Job | Desk book |
+|---|---|
+| **Hedge fund** (`engines/investors.py`) | Six seeded investors own the fund. A 1.5% management fee accrues daily (`5900`/`2360`) and is paid monthly; a 15% performance fee over the high-water mark crystallises in December. Investors score trailing returns, drawdown and the regime: redemptions are notified on the 15th and paid at month end (`CAPITAL_WITHDRAWN`), subscriptions follow good quarters. |
+| **Bank trader / derivatives trader** (`engines/clients.py`) | Named clients send one to three requests a session (Treasury and corporate blocks, equity blocks, IRS, FRA, swaptions, CDS, TRS, cross-currency). You quote a level in the request's unit or pass; the client compares it with the street's half-width and, if you win, deals **at your level**: blocks book as commission-free trades, OTC requests become client-facing trades under a client CSA (counterparty `CLIENT:*`, visible in exposure with `is_client`). Missions count wins and DV01 discipline. |
+| **Securities lending** (`LendDeskEngine` in `engines/seclending.py`) | The lend side: lend settled inventory against 102% cash collateral (`2460`), earn the fee (`4360`, receivable `1430`), pay the rebate (`5310`, payable `2370`), monthly settlement, recalls with a two-day return, random early returns after a five-session minimum, collateral marked daily. Lent shares are encumbered (`LENT` pledges) so they cannot be delivered. |
+| **Corporate treasurer** (`engines/treasury.py`) | A company's treasury: 600MM of debt (two fixed notes, a floating term loan) funding operating assets carried at cost (`1900`/`2380`); monthly EUR/GBP/JPY receipts and base-currency payments on the 20th (`OPERATING_FLOW`, `4980`); coupons and maturities (`DEBT_SERVICE`, `5950`); a minimum-liquidity rule. Missions: hedge the receipts with forwards or a cross-currency swap, fix the floating debt with pay-fixed swaps, never breach liquidity. |
+| **Repo trader** | Matched-book and term-funding missions on the Phase 2 repo desk. |
+| **Risk manager** | See Phase 10. |
+
+**Crisis mode** (`scenario: CRISIS` at creation, sandbox or career): a scripted funding crisis keyed on the
+processed-day index — liquidity stress and a Treasury sell-off on day 1, an issuer default on day 5, a dealer
+failure on day 10, recession from day 31, easing from day 96 — recorded as `SCENARIO_EVENT`s, shown on the career
+page and in the briefing. Sandbox worlds can also shock the curve directly (`POST /force-rates {bp}`).
+
+### Phase 10 — AI institutions (built)
+
+`engines/institutions.py`: a risk-manager save creates four rule-based desks (equity momentum, rates/credit carry,
+index vol seller with delta hedging, commodity trend) as ordinary portfolios with jobs, limits and reviews. They
+trade through the same order, settlement, margin, P&L and risk engines. Orders above 8% of a desk's NAV (× its
+`request_mult`) are escalated as `DESK_REQUEST`s; the risk manager approves (placed at once), rejects, or lets
+them lapse after five sessions, after which the desk works the order in clips at the threshold. The risk manager
+sets `gross_mult` / `request_mult` / `var_mult`, can force a reduction (a market order on the desk's behalf), and
+sees every desk's breaches, hard limits and pending requests in the briefing and on MY DESK. Missions: no hard
+breach on any desk for 20 sessions, decide eight requests in time.
+
+### Phase 9 — commodity depth (built)
+
+| Piece | What exists |
+|---|---|
+| **Calendar-spread tickets** (`engines/commodity_desk.py`) | Buy one contract month, sell another of the same commodity as one all-or-none ticket (a `FUTURES_CALENDAR` strategy) with an optional differential limit; the clearing house margins the pair at 35% of one outright (`futures.required_margin` nets paired lots per commodity). Ticket on the commodity page. |
+| **Options on futures** (`engines/options.py`) | American options on the front two contract months of every physical commodity, one future per contract, expiring three sessions before the future's last trade date; priced with Black-76 (the futures price is its own forward) off a vol surface seeded from the contract's structural vol; exercise and assignment open a futures position at the strike, marked to settlement that night; margin: covered one-for-one by an opposite future, spreads at the width, naked shorts at premium plus the future's initial margin. P&L in the commodities bucket, delta in commodity exposure. |
+| **Physical delivery** | A portfolio setting (`POST /physical-delivery`). Held into the last trade date, a long takes delivery (the future closes at settlement and inventory `PHYS-<code>` is bought at settlement, T+2), a short delivers from inventory or is bought in at settlement plus a 2% penalty (`5700`). Inventory is a `PHYSICAL` security priced daily at the commodity's spot with a dealing spread, pays storage and insurance daily (`5320`, explain bucket `storage`), cannot be pledged or shorted, and is sold with an ordinary sell order. |
+
+### Phase 11 — infrastructure (built)
+
+| Piece | What exists |
+|---|---|
+| **Save versioning** (`version.py`, `migrations.py`) | Every save records the `SAVE_VERSION` it was created with; `World.load` migrates older logs step by step with pure functions over the event list (v1→v2 stamps the scenario and the macro/corporate-event keys older closes lack), reports the migration, and refuses saves from a newer engine. The store carries the version and upgrades its own schema. |
+| **Resilient replay** | `World.load(strict=False)` isolates a damaged event, records it in `replay_errors` and continues; strict mode raises `ReplayError` with the sequence number. Every load runs an integrity check (trial balances, ledger vs economic NAV, custody). The service opens saves non-strictly by default (`FINSIM_STRICT_REPLAY=1` to change), the UI shows a banner, `GET /api/health` reports status, versions, scheduler state and per-world integrity. |
+| **Scheduler under test** (`api/server.py`) | `Scheduler.tick(at)` is the unit of work; the thread loop injects the real clock and sleep. Tests drive it with a fake clock across weekends, a holiday and update times, and check idempotency, ordering and `next_update`. |
+| **Logging** (`log.py`) | One `finsim` logger (level `FINSIM_LOG_LEVEL`, rotating file at `FINSIM_LOG`): world creation, days processed with event counts and timings (`run_log`), rejected commands, request outcomes, replay errors, migrations. |
+| **Master scenario** (`tests/test_master_scenario.py`) | A 45-step end-to-end walk through every subsystem in one world (trading, financing, derivatives, OTC, risk, operations, macro, careers, commodities, infrastructure) with the accounting invariants checked at every checkpoint, replay equality and a bit-for-bit determinism check against a second run. |
+
+### Test map
+
+`python3 -m unittest discover -s tests` (stdlib only). By subsystem: Core (`test_engines`, `test_daily`, `test_api`,
+`test_vertical_slice`), Financing (`test_financing`), Options (`test_options`), OTC (`test_otc`), Risk (`test_risk`),
+Operations (`test_operations`), Macro (`test_macro`), Game/Careers (`test_careers`, `test_institutions`),
+Commodities (`test_commodities`), Infrastructure (`test_infrastructure`, `test_master_scenario`).
+
 ### What is deliberately not built yet
 
-AI institutions, physical-commodity mechanics and bank RFQ flow (the player as dealer) are not
-built; they correspond to Phases 6–8 of the spec and plug into the same event/ledger/daily-cycle core.
+Everything in the roadmap has a first implementation. Remaining depth (a second tier) would be: serial and
+mid-curve commodity options, exchange-for-physical and warehouse receipts, sector-specific desk strategies for the AI
+institutions, and a richer investor model (side pockets, gates).
 
 ## Architecture
 
@@ -143,7 +222,7 @@ finsim/
   world.py            World: command handlers, event log, replay, derive(), handler registry
   store.py            sqlite event store (append-only; swap for PostgreSQL by changing this file)
   clock.py            real-time clock: target date, next update, catch-up
-  careers.py          jobs, mandates, limits, reviews, promotion
+  careers.py          jobs, mandates, limits, reviews, promotion, missions, the crisis script
   engines/
     market.py         universe, regimes, factor model, curve, dividends, contract listings, vol index, vol surfaces
     commodities.py    commodity specs, fundamentals, spot, futures curves, contract expiry rules, news
@@ -160,10 +239,23 @@ finsim/
     vol.py            implied-vol surfaces per underlying (ATM, skew, curvature, term; regime dynamics)
     options_pricing.py  BSM, CRR tree with control variate, Greeks, bounds, implied vol
     options.py        listings, chains, quotes, synthetic bars, margin, exercise/assignment/expiry, strategies, splits
+    otc_pricing.py    curve bootstrapping, swap/FRA/cap/swaption/CDS/XCCY/TRS/commodity-swap valuation
+    counterparties.py dealers (ratings, CDS, stress, per-product widths), CSA terms, client counterparties
+    otc.py            RFQ, execution, lifecycle, netting sets, CSA margin, close-out, credit events, defaults, exposure/PFE
+    risk.py           factor exposures, historical VaR/ES, parametric VaR, stress, liquidity ladders, limits
+    corporate_events.py  seeded corporate events (tenders, rights, mergers, spin-offs, calls), elections, fails/buy-ins
+    macro.py          macro state, central-bank reaction function, releases, earnings, credit migration, defaults
+    investors.py      hedge-fund investors: fees, notices, redemptions, subscriptions, high-water mark
+    clients.py        the client franchise for bank/derivatives traders: requests, quotes, win logic, booking
+    treasury.py       corporate treasury: debt stack, operating flows, debt service, hedging dashboard
+    institutions.py   AI desks (momentum, carry, vol seller, commodity trend), requests, oversight
+    seclending.py     … plus LendDeskEngine (the lend side)
     counterparties.py dealers, credit state, quoting widths, ISDA/CSA terms
     otc_pricing.py    curve utilities, swaps, FRAs, Black-76 caps/swaptions, CDS, TRS, commodity swaps
     otc.py            RFQ, trade lifecycle (fixings, payments, resets, exercise), marks, CSA margining, exposure, close-outs
     risk.py           exposures, historical VaR/ES, stress, component VaR, liquidity ladders, limits
+    corporate_events.py  corporate event announcements, elections, effective-date processing, fail charges, buy-ins
+    macro.py          macro state, central bank, releases, earnings, credit migration and defaults
     settlement.py     lifecycle states, DVP/RVP processing, fails, custody & cash movements
     corporate_actions.py  dividends, coupons, maturities
     accruals.py       bond and cash interest
@@ -223,6 +315,12 @@ GET  /api/worlds/{w}/otc/dealers                  GET  /api/worlds/{w}/portfolio
 POST /api/worlds/{w}/portfolios/{p}/otc/rfq {product, params}   POST .../otc/rfq/{id}/execute {dealer}   POST .../otc/{trade}/terminate
 POST /api/worlds/{w}/credit-event {reference}     POST /api/worlds/{w}/default-counterparty {dealer}   (sandbox)
 GET  /api/worlds/{w}/portfolios/{p}/risk          POST .../risk/stress {equity, rates_bp, spreads_bp, vol_pts, commodity, fx, commodity_by_code}
+GET  /api/worlds/{w}/macro                        GET  /api/worlds/{w}/portfolios/{p}/corporate-actions   POST .../elections {ca_id, quantity}
+POST /api/worlds/{w}/force-corporate-event {security_id, kind, terms, effective}   (sandbox)
+POST /api/worlds/{w}/force-rates {bp}   (sandbox)         POST /api/worlds {..., scenario: NONE|CRISIS}
+GET  /api/worlds/{w}/portfolios/{p}/desk                  (investors | clients | lending | treasury | oversight, by job; missions)
+POST /api/worlds/{w}/portfolios/{p}/desk/quote {rfq_id, level | pass}   POST .../desk/lend {security_id, quantity}   POST .../desk/recall {lend_id, quantity}
+POST /api/worlds/{w}/portfolios/{p}/desk/decide {desk_id, request_id, approve, note}   POST .../desk/limit {desk_id, key, value}   POST .../desk/reduce {desk_id, security_id, fraction}
 ```
 
 ## Environment note

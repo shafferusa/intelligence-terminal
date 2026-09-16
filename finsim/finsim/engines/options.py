@@ -86,6 +86,30 @@ def strike_step(level: float) -> float:
     return 100.0
 
 
+def strike_step_future(level: float) -> float:
+    """Strike spacing for options on futures (finer than equity options: commodity vol is quoted per unit)."""
+    if level < 5:
+        return 0.05
+    if level < 25:
+        return 0.25
+    if level < 150:
+        return 1.0
+    if level < 500:
+        return 5.0
+    if level < 2000:
+        return 10.0
+    return 25.0
+
+
+def cm(sec) -> int:
+    """Contract multiplier: 100 shares for equity options, the futures contract size for options on futures."""
+    return int(sec.multiplier)
+
+
+def is_fut_opt(sec) -> bool:
+    return bool(sec.is_option and (sec.deliverable or {}).get("future"))
+
+
 def contract_id(under: str, expiry: date, otype: str, strike: float) -> str:
     k = f"{strike:g}".replace(".", "_")
     return f"{under}{expiry.strftime('%y%m%d')}{otype}{k}"
@@ -114,7 +138,26 @@ class OptionsEngine:
     def optionable(self) -> List[str]:
         out = [s.id for s in self.w.securities.values() if s.asset_class in ("EQUITY", "ETF", "REIT", "ADR") and s.liquidity_tier in ("LARGE", "MID")
                and s.shares_outstanding]
-        return sorted(out) + [INDEX_ID]
+        return sorted(out) + [INDEX_ID] + self.optionable_futures()
+
+    def optionable_futures(self) -> List[str]:
+        """Options on futures: the front two unexpired contracts of each physical commodity with at least 20 sessions left."""
+        w = self.w
+        d = w.current_date
+        by_code: Dict[str, List] = {}
+        for s in w.securities.values():
+            if s.is_future and (s.underlying_class or "").startswith("COMMODITY") and not s.expired and s.expiry and w.market.history.get(s.id):
+                if w.calendar.business_days_between(d, date.fromisoformat(s.expiry)) >= 20:
+                    by_code.setdefault(s.underlying, []).append(s)
+        out = []
+        for code in sorted(by_code):
+            for s in sorted(by_code[code], key=lambda x: x.expiry)[:2]:
+                out.append(s.id)
+        return out
+
+    def is_future_underlying(self, under: str) -> bool:
+        sec = self.w.securities.get(under)
+        return bool(sec is not None and sec.is_future)
 
     def underlying_level(self, under: str, when: str = "close") -> float:
         m = self.w.market
@@ -124,13 +167,21 @@ class OptionsEngine:
         return float(getattr(m.last_bar(under), when))
 
     def underlying_yield(self, under: str) -> float:
+        if self.is_future_underlying(under):
+            return 0.0
         src = INDEX_SOURCE if under == INDEX_ID else under
         return self.w.securities[src].dividend_yield
 
     def structural_vol(self, under: str) -> float:
+        if self.is_future_underlying(under):
+            return self.w.securities[under].sigma_annual
         src = INDEX_SOURCE if under == INDEX_ID else under
         sec = self.w.securities[src]
         return math.sqrt((sec.beta * 0.16) ** 2 + sec.sigma_annual ** 2) if under != INDEX_ID else 0.16
+
+    def future_option_expiry(self, under: str) -> date:
+        """Options on a futures contract expire three sessions before the contract's last trade date."""
+        return self.w.calendar.add_business_days(date.fromisoformat(self.w.securities[under].expiry), -3)
 
     def expiries(self, d: date) -> List[date]:
         out = []
@@ -163,9 +214,19 @@ class OptionsEngine:
             if under != INDEX_ID and not w.market.history.get(under):
                 continue
             level = self.underlying_level(under)
-            step = strike_step(level)
+            fut = self.is_future_underlying(under)
+            step = strike_step_future(level) if fut else strike_step(level)
             atm = round(level / step) * step
-            for exp in self.expiries(d):
+            if fut:
+                fsec = w.securities[under]
+                exps = [self.future_option_expiry(under)]
+                if exps[0] <= d:
+                    continue
+                if under not in w.market.vol.state:
+                    w.market.vol.init_underlying(under, fsec.sigma_annual)
+            else:
+                exps = self.expiries(d)
+            for exp in exps:
                 for i in range(-STRIKE_RANGE, STRIKE_RANGE + 1):
                     k = atm + i * step
                     if k <= 0:
@@ -176,14 +237,20 @@ class OptionsEngine:
                             continue
                         self._seq += 1
                         european = under == INDEX_ID
+                        if fut:
+                            deliverable = {"security_id": under, "quantity": 1, "future": True}
+                            multiplier = fsec.multiplier
+                        else:
+                            deliverable = ({"cash": True, "index": INDEX_ID, "source": INDEX_SOURCE, "factor": INDEX_FACTOR} if european else {"security_id": under, "quantity": MULTIPLIER})
+                            multiplier = MULTIPLIER
                         w.securities[cid] = Security(
                             id=cid, name=f"{under} {exp.isoformat()} {k:g} {'Call' if ot == 'C' else 'Put'}", asset_class="OPTION", market="US_OPTIONS",
                             currency="USD", country="US", sector="Options", isin=f"XO{self._seq:09d}O", cusip=f"O{self._seq:08d}", adv=self._listing_volume(under, k, level, exp, d),
                             spread_bps=0.0, liquidity_tier=w.securities[INDEX_SOURCE if under == INDEX_ID else under].liquidity_tier, underlying=under,
-                            underlying_class="OPTION", multiplier=MULTIPLIER, tick_size=0.01, expiry=exp.isoformat(), option_type=ot, strike=float(k),
+                            underlying_class="OPTION", multiplier=multiplier, tick_size=(fsec.tick_size if fut else 0.01), expiry=exp.isoformat(), option_type=ot, strike=float(k),
                             exercise_style="EUROPEAN" if european else "AMERICAN", settlement_style="CASH" if european else "PHYSICAL",
-                            deliverable=({"cash": True, "index": INDEX_ID, "source": INDEX_SOURCE, "factor": INDEX_FACTOR} if european else {"security_id": under, "quantity": MULTIPLIER}),
-                            exchange="Harbor Options Exchange", listed=d.isoformat(), index_level_source=INDEX_SOURCE if european else None,
+                            deliverable=deliverable,
+                            exchange="Harbor Commodity Options" if fut else "Harbor Options Exchange", listed=d.isoformat(), index_level_source=INDEX_SOURCE if european else None,
                             index_factor=INDEX_FACTOR if european else 1.0, lot_size=1, beta=0.0, sigma_annual=0.0)
                         added += 1
         for sec in w.securities.values():
@@ -199,6 +266,8 @@ class OptionsEngine:
         base = {"LARGE": 4000, "MID": 900, "SMALL": 150}.get(src.liquidity_tier, 500)
         if under == INDEX_ID:
             base = 15000
+        if src.is_future:
+            base = max(100, int(src.adv * 0.15))
         dist = abs(math.log(k / level)) if level > 0 else 0
         near = max(0.25, 1.0 - (exp - d).days / 400)
         return max(5, int(base * math.exp(-8 * dist) * near * rng.uniform(0.6, 1.4)))
@@ -212,7 +281,7 @@ class OptionsEngine:
         S = S if S is not None else self.underlying_level(sec.underlying)
         T = max(0.0, (date.fromisoformat(sec.expiry) - w.current_date).days / 365.0)
         r = self.curve_rate(T)
-        q = self.underlying_yield(sec.underlying)
+        q = r if is_fut_opt(sec) else self.underlying_yield(sec.underlying)
         F = S * math.exp((r - q) * T)
         sigma = w.market.vol.iv(sec.underlying, sec.strike, F, T) if T > 0 else w.market.vol.state[sec.underlying].atm
         return S, T, r, q, sigma
@@ -328,12 +397,13 @@ class OptionsEngine:
             sec = self.w.securities[pos.security_id]
             q = self.quote(sec)
             n = float(pos.quantity)
+            M = cm(sec)
             rows.append({"security_id": sec.id, "underlying": sec.underlying, "type": sec.option_type, "strike": sec.strike, "expiry": sec.expiry,
-                         "style": sec.exercise_style, "contracts": pos.quantity, "average_cost": (pos.cost_basis / (pos.quantity * MULTIPLIER)).quantize(D("0.0001")) if pos.quantity else ZERO,
-                         "mark": pos.mark, "market_value": pos.market_value,
-                         "unrealized": pos.unrealized_pnl, "realized": pos.realized_pnl, "iv": q["iv"], "delta": q["delta"] * n * MULTIPLIER,
-                         "gamma": q["gamma"] * n * MULTIPLIER, "vega": q["vega"] * n * MULTIPLIER, "theta": q["theta"] * n * MULTIPLIER, "rho": q["rho"] * n * MULTIPLIER,
-                         "delta_shares": q["delta"] * n * MULTIPLIER, "dollar_delta": q["delta"] * n * MULTIPLIER * q["underlying"],
+                         "style": sec.exercise_style, "contracts": pos.quantity, "average_cost": (pos.cost_basis / (pos.quantity * M)).quantize(D("0.0001")) if pos.quantity else ZERO,
+                         "mark": pos.mark, "market_value": pos.market_value, "on_future": is_fut_opt(sec), "multiplier": M,
+                         "unrealized": pos.unrealized_pnl, "realized": pos.realized_pnl, "iv": q["iv"], "delta": q["delta"] * n * M,
+                         "gamma": q["gamma"] * n * M, "vega": q["vega"] * n * M, "theta": q["theta"] * n * M, "rho": q["rho"] * n * M,
+                         "delta_shares": q["delta"] * n * M, "dollar_delta": q["delta"] * n * M * q["underlying"],
                          "days_to_expiry": (date.fromisoformat(sec.expiry) - self.w.current_date).days, "intrinsic": q["intrinsic"], "extrinsic": q["extrinsic"],
                          "margin": pos.margin_requirement, "covered": pos.covered_by_shares})
         return rows
@@ -351,7 +421,7 @@ class OptionsEngine:
 
     def covered_shares_needed(self, pf: Portfolio, under: str) -> Decimal:
         """Shares of `under` reserved to cover short calls (so they cannot be sold or pledged while the calls are open)."""
-        return sum((pos.covered_by_shares * MULTIPLIER for pos in pf.positions.values() if pos.is_option and pos.covered_by_shares
+        return sum((pos.covered_by_shares * cm(self.w.securities[pos.security_id]) for pos in pf.positions.values() if pos.is_option and pos.covered_by_shares
                     and self.w.securities[pos.security_id].underlying == under), ZERO)
 
     def margin_requirement(self, pf: Portfolio, extra: Optional[List[Tuple[Security, Decimal]]] = None) -> Tuple[Decimal, List[Dict]]:
@@ -371,6 +441,9 @@ class OptionsEngine:
         detail: List[Dict] = []
         for under, items in by_under.items():
             S = D(repr(self.underlying_level(under)))
+            if self.is_future_underlying(under):
+                total += self._futures_option_margin(pf, under, items, S, mult, detail)
+                continue
             shares = ZERO
             if under != INDEX_ID and under in pf.positions:
                 shares = max(ZERO, pf.positions[under].settled_quantity + pf.positions[under].pending_receive - pf.positions[under].pending_deliver
@@ -382,10 +455,10 @@ class OptionsEngine:
             # 1. covered calls
             remaining_shares = shares
             for sec, n in short_calls:
-                cov = min(n, remaining_shares // MULTIPLIER)
+                cov = min(n, remaining_shares // cm(sec))
                 if cov > 0:
-                    detail.append({"underlying": under, "kind": "COVERED_CALL", "contract": sec.id, "contracts": cov, "requirement": ZERO, "note": f"covered by {cov * MULTIPLIER:,} shares"})
-                    remaining_shares -= cov * MULTIPLIER
+                    detail.append({"underlying": under, "kind": "COVERED_CALL", "contract": sec.id, "contracts": cov, "requirement": ZERO, "note": f"covered by {cov * cm(sec):,} shares"})
+                    remaining_shares -= cov * cm(sec)
                 uncovered = n - cov
                 items_left = uncovered
                 # 2. call spreads: pair with long calls (same expiry)
@@ -394,7 +467,7 @@ class OptionsEngine:
                         continue
                     pair = min(items_left, ln)
                     width = max(D(0), D(repr(lc.strike - sec.strike)))
-                    req = money(width * pair * MULTIPLIER * D(str(mult)))
+                    req = money(width * pair * cm(sec) * D(str(mult)))
                     detail.append({"underlying": under, "kind": "CALL_SPREAD", "contract": sec.id, "contracts": pair, "requirement": req, "note": f"vs long {lc.id}: width {width}"})
                     total += req
                     long_calls[j] = (lc, ln - pair)
@@ -404,7 +477,7 @@ class OptionsEngine:
                     prem = D(repr(q["mid"]))
                     otm = max(ZERO, D(repr(sec.strike)) - S)
                     req_unit = max(prem + S * D("0.20") - otm, prem + S * D("0.10"))
-                    req = money(req_unit * items_left * MULTIPLIER * D(str(mult)))
+                    req = money(req_unit * items_left * cm(sec) * D(str(mult)))
                     detail.append({"underlying": under, "kind": "NAKED_CALL", "contract": sec.id, "contracts": items_left, "requirement": req,
                                    "note": f"premium + 20% underlying − OTM (floor 10%), × regime {mult}"})
                     total += req
@@ -415,7 +488,7 @@ class OptionsEngine:
                         continue
                     pair = min(items_left, ln)
                     width = max(D(0), D(repr(sec.strike - lp.strike)))
-                    req = money(width * pair * MULTIPLIER * D(str(mult)))
+                    req = money(width * pair * cm(sec) * D(str(mult)))
                     detail.append({"underlying": under, "kind": "PUT_SPREAD", "contract": sec.id, "contracts": pair, "requirement": req, "note": f"vs long {lp.id}: width {width}"})
                     total += req
                     long_puts[j] = (lp, ln - pair)
@@ -426,11 +499,52 @@ class OptionsEngine:
                     K = D(repr(sec.strike))
                     otm = max(ZERO, S - K)
                     req_unit = max(prem + S * D("0.20") - otm, prem + K * D("0.10"))
-                    req = money(req_unit * items_left * MULTIPLIER * D(str(mult)))
+                    req = money(req_unit * items_left * cm(sec) * D(str(mult)))
                     detail.append({"underlying": under, "kind": "NAKED_PUT", "contract": sec.id, "contracts": items_left, "requirement": req,
                                    "note": f"premium + 20% underlying − OTM (floor 10% of strike), × regime {mult}; cash-secured if cash ≥ strike × 100"})
                     total += req
         return total, detail
+
+    def _futures_option_margin(self, pf: Portfolio, under: str, items, S: Decimal, mult: float, detail: List[Dict]) -> Decimal:
+        """Options on futures: a short call is covered by a long future (and a short put by a short future) one for one;
+        vertical spreads need the width; naked shorts need the premium plus the future's initial margin."""
+        w = self.w
+        fpos = pf.positions.get(under)
+        fq = fpos.quantity if fpos else ZERO
+        im = w.futures.initial_margin_per_contract(w.securities[under])
+        total = ZERO
+        long_f = max(ZERO, fq)
+        short_f = max(ZERO, -fq)
+        for otype, cover in (("C", long_f), ("P", short_f)):
+            shorts = sorted([(s_, -n) for s_, n in items if s_.option_type == otype and n < 0], key=lambda x: x[0].strike if otype == "C" else -x[0].strike)
+            longs = sorted([(s_, n) for s_, n in items if s_.option_type == otype and n > 0], key=lambda x: x[0].strike if otype == "C" else -x[0].strike)
+            remaining_cover = cover
+            for sec, n in shorts:
+                M = cm(sec)
+                cov = min(n, remaining_cover)
+                if cov > 0:
+                    detail.append({"underlying": under, "kind": "COVERED_BY_FUTURE", "contract": sec.id, "contracts": cov, "requirement": ZERO,
+                                   "note": f"covered by {cov} {'long' if otype == 'C' else 'short'} {under}"})
+                    remaining_cover -= cov
+                left = n - cov
+                for j, (lo, ln) in enumerate(longs):
+                    if left <= 0 or ln <= 0 or lo.expiry != sec.expiry:
+                        continue
+                    pair = min(left, ln)
+                    width = max(D(0), D(repr((lo.strike - sec.strike) if otype == "C" else (sec.strike - lo.strike))))
+                    req = money(width * pair * M * D(str(mult)))
+                    detail.append({"underlying": under, "kind": f"{'CALL' if otype == 'C' else 'PUT'}_SPREAD", "contract": sec.id, "contracts": pair, "requirement": req,
+                                   "note": f"vs long {lo.id}: width {width}"})
+                    total += req
+                    longs[j] = (lo, ln - pair)
+                    left -= pair
+                if left > 0:
+                    prem = D(repr(self.quote(sec)["mid"]))
+                    req = money((prem * M + im) * left * D(str(mult)))
+                    detail.append({"underlying": under, "kind": f"NAKED_{'CALL' if otype == 'C' else 'PUT'}", "contract": sec.id, "contracts": left, "requirement": req,
+                                   "note": f"premium + futures initial margin {im:,.0f} per contract, × regime {mult}"})
+                    total += req
+        return total
 
     def incremental_margin(self, pf: Portfolio, sec: Security, signed: Decimal) -> Decimal:
         base, _ = self.margin_requirement(pf)
@@ -482,7 +596,7 @@ class OptionsEngine:
             raise CommandError("contract has expired")
         q = self.quote(sec)
         ev = w.emit(E.OPTION_EXERCISED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": n, "strike": sec.strike, "underlying": sec.underlying,
-                                         "option_type": sec.option_type, "extrinsic_forgone": money(D(repr(q["extrinsic"])) * n * MULTIPLIER),
+                                         "option_type": sec.option_type, "extrinsic_forgone": money(D(repr(q["extrinsic"])) * n * cm(sec)),
                                          "note": "exercised by holder"}, portfolio_id=pf.id)
         return {"event_id": ev.id, "quantity": n}
 
@@ -491,6 +605,7 @@ class OptionsEngine:
         w = self.w
         under = w.securities[sec.deliverable["security_id"]]
         shares = n * D(sec.deliverable["quantity"])
+        # for an option on a future the "delivery" is a futures position opened at the strike; it is marked to settlement tonight
         w.trading.system_order(pf, under, direction, shares, ev, reason, forced=False, fixed_price=D(repr(sec.strike)), allow_short=True)
 
     def _close_option(self, pf: Portfolio, sec: Security, n: Decimal, price_per_share: Decimal, ev: Event, reason: str) -> None:
@@ -542,7 +657,7 @@ class OptionsEngine:
             self._close_option(pf, sec, n, ZERO, ev, f"expired worthless ({sec.id})")
             return
         if sec.settlement_style == "CASH":
-            amount = money(D(repr(intrinsic)) * n * MULTIPLIER)
+            amount = money(D(repr(intrinsic)) * n * cm(sec))
             ev = w.emit(E.OPTION_EXPIRED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "underlying_level": S, "intrinsic": intrinsic,
                                            "outcome": "CASH_SETTLED", "amount": amount if long else -amount}, cause_id=cause.id, portfolio_id=pf.id)
             self._close_option(pf, sec, n, D(repr(intrinsic)), ev, f"cash settlement at expiry ({sec.id}, level {S:,.2f})")
@@ -573,7 +688,7 @@ class OptionsEngine:
             p = 0.02 if extrinsic < 0.005 * S else 0.005
         # dividend capture: deep ITM call before an ex-date where the dividend exceeds the remaining extrinsic value
         ex_tomorrow = False
-        if sec.option_type == "C" and sec.underlying != INDEX_ID:
+        if sec.option_type == "C" and sec.underlying != INDEX_ID and not is_fut_opt(sec):
             nxt = w.calendar.next_business_day(w.current_date).isoformat()
             for ca in w.corporate_actions.values():
                 if ca.security_id == sec.underlying and ca.ex_date == nxt and float(ca.amount_per_unit) > extrinsic:
@@ -615,8 +730,9 @@ class OptionsEngine:
             legs.append({"security_id": cid, "side": side, "ratio": ratio, "quantity": n * ratio})
         if needs_shares:
             have = pf.positions[underlying].quantity if underlying in pf.positions else ZERO
-            if have < n * MULTIPLIER:
-                raise CommandError(f"{st} needs {n * MULTIPLIER:,} shares of {underlying} (have {have:,})")
+            unit = 1 if self.is_future_underlying(underlying) else MULTIPLIER
+            if have < n * unit:
+                raise CommandError(f"{st} needs {n * unit:,} {'contracts' if unit == 1 else 'shares'} of {underlying} (have {have:,})")
         # margin/affordability check on the whole package
         extra = [(w.securities[l["security_id"]], (l["quantity"] if l["side"] == "BUY" else -l["quantity"])) for l in legs]
         base, _ = self.margin_requirement(pf)
@@ -625,7 +741,7 @@ class OptionsEngine:
         for l in legs:
             q = self.quote(w.securities[l["security_id"]])
             px = D(repr(q["ask"] if l["side"] == "BUY" else q["bid"]))
-            debit += px * l["quantity"] * MULTIPLIER * (1 if l["side"] == "BUY" else -1)
+            debit += px * l["quantity"] * cm(w.securities[l["security_id"]]) * (1 if l["side"] == "BUY" else -1)
         need = max(ZERO, after - base) + max(ZERO, debit)
         why = w.prime.affordable(pf, money(need), None) if need > 0 else None
         if why:
@@ -643,7 +759,7 @@ class OptionsEngine:
         for leg in st.legs:
             o = pf.orders.get(leg.get("order_id"))
             if o and o.filled_quantity:
-                total += o.avg_fill_price * o.filled_quantity * MULTIPLIER * (1 if o.side == "BUY" else -1)
+                total += o.avg_fill_price * o.filled_quantity * cm(self.w.securities[o.security_id]) * (1 if o.side == "BUY" else -1)
         return money(total / st.quantity) if st.quantity else ZERO
 
     def strategy_net_at(self, pf: Portfolio, st: Strategy, session: str) -> Decimal:
@@ -651,15 +767,17 @@ class OptionsEngine:
         total = ZERO
         for leg in st.legs:
             sec = self.w.securities[leg["security_id"]]
-            bar = self.option_bar(sec)
+            bar = self.option_bar(sec) if sec.is_option else self.w.market.last_bar(sec.id)     # futures legs (calendar spread tickets)
             px = bar.open if session == "OPEN" else bar.close
             half = (bar.ask - bar.bid) / 2
             fill = px + half if leg["side"] == "BUY" else px - half
-            total += fill * leg["ratio"] * MULTIPLIER * (1 if leg["side"] == "BUY" else -1)
+            total += fill * leg["ratio"] * cm(sec) * (1 if leg["side"] == "BUY" else -1)
         return money(total)
 
     def strategy_analytics(self, pf: Portfolio, st: Strategy) -> Dict:
         w = self.w
+        if st.strategy_type == "FUTURES_CALENDAR":
+            return w.cdesk.spread_analytics(pf, st)
         secs = [w.securities[l["security_id"]] for l in st.legs]
         S = self.underlying_level(st.underlying)
         same_expiry = len({s.expiry for s in secs}) == 1
@@ -669,7 +787,7 @@ class OptionsEngine:
             q = self.quote(sec)
             sign = 1 if l["side"] == "BUY" else -1
             for k in greeks:
-                greeks[k] += q[k] * sign * float(l["ratio"]) * MULTIPLIER * float(st.quantity)
+                greeks[k] += q[k] * sign * float(l["ratio"]) * cm(sec) * float(st.quantity)
         out = {"net_premium_per_unit": net, "units": st.quantity, "greeks": greeks, "defined": same_expiry,
                "note": "payoff, max gain and max loss are for the whole ticket at expiry (per-unit net x units); breakevens are underlying levels"}
         if same_expiry:
@@ -682,7 +800,7 @@ class OptionsEngine:
                 v = -float(net)
                 for l, sec in zip(st.legs, secs):
                     intrinsic = max(0.0, s_ - sec.strike) if sec.option_type == "C" else max(0.0, sec.strike - s_)
-                    v += intrinsic * (1 if l["side"] == "BUY" else -1) * float(l["ratio"]) * MULTIPLIER
+                    v += intrinsic * (1 if l["side"] == "BUY" else -1) * float(l["ratio"]) * cm(sec)
                 payoff.append(v * units)      # whole ticket: per-unit payoff x units
             slope_lo = payoff[1] - payoff[0]
             slope_hi = payoff[-1] - payoff[-2]
@@ -700,6 +818,27 @@ class OptionsEngine:
         margin, detail = self.margin_requirement(pf)
         out["margin_detail"] = [d for d in detail if any(d["contract"] == l["security_id"] for l in st.legs)]
         return out
+
+    # ------------------------------------------------------------------ corporate action: cash-out (merger)
+    def settle_underlying_at(self, under: str, price: float, cause: Event, note: str) -> None:
+        """All contracts on `under` settle in cash at intrinsic value against `price` (cash merger) and are delisted."""
+        w = self.w
+        for pf in w.portfolios.values():
+            for pos in list(pf.positions.values()):
+                if not pos.is_option or pos.quantity == 0:
+                    continue
+                sec = w.securities[pos.security_id]
+                if sec.underlying != under:
+                    continue
+                intrinsic = max(0.0, price - sec.strike) if sec.option_type == "C" else max(0.0, sec.strike - price)
+                n = abs(pos.quantity)
+                amount = money(D(repr(intrinsic)) * n * D(str(sec.multiplier)))
+                ev = w.emit(E.OPTION_EXPIRED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "underlying_level": price, "intrinsic": intrinsic,
+                                               "outcome": "CASH_SETTLED_CORPORATE", "amount": amount if pos.quantity > 0 else -amount, "note": note}, cause_id=cause.id, portfolio_id=pf.id)
+                self._close_option(pf, sec, n, D(repr(intrinsic)), ev, f"{note}: contract settled at intrinsic {intrinsic:.2f}")
+        for c in w.securities.values():
+            if c.is_option and c.underlying == under:
+                c.expired = True
 
     # ------------------------------------------------------------------ corporate action: split
     def apply_split(self, sec_id: str, ratio: float, cause: Optional[Event]) -> Event:
@@ -792,6 +931,12 @@ class OptionsEngine:
             for pl in pf.pledges:
                 if pl.security_id == sid:
                     pl.quantity = qqty(pl.quantity * ratio)
+            for ld in pf.lends.values():             # inventory lent out (phase 8) splits with the shares
+                if ld["security_id"] == sid and ld["status"] == "OPEN":
+                    ld["quantity"] = qqty(D(ld["quantity"]) * ratio)
+                    ld["original_quantity"] = qqty(D(ld["original_quantity"]) * ratio)
+                    if ld.get("recall_quantity"):
+                        ld["recall_quantity"] = qqty(D(ld["recall_quantity"]) * ratio)
         # option contracts
         whole = float(ratio) == int(float(ratio))
         for c in list(w.securities.values()):

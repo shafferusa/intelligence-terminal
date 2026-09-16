@@ -120,6 +120,11 @@ class BusinessCalendar:
             d -= timedelta(days=1)
         return d
 
+    def month_end(self, d: date) -> date:
+        """Last business day of d's month."""
+        y, m = (d.year + 1, 1) if d.month == 12 else (d.year, d.month + 1)
+        return self.prev_business_day(date(y, m, 1))
+
     def is_month_end(self, d: date) -> bool:
         return self.next_business_day(d).month != d.month
 
@@ -143,6 +148,7 @@ class SettlementConfig:
         "FX_SPOT": 2,
         "FUTURES": 0,          # cleared: margined daily, no DVP settlement
         "US_OPTIONS": 1,       # listed option premium settles T+1 through the clearinghouse
+        "PHYSICAL": 2,         # physical commodity inventory: title and cash two sessions after the deal
     })
     calendars: Dict[str, str] = field(default_factory=lambda: {"default": "US"})
 

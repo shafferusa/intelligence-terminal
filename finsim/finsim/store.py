@@ -26,17 +26,30 @@ class EventStore:
                           "type TEXT NOT NULL, sim_date TEXT NOT NULL, cause_id TEXT, portfolio_id TEXT, body TEXT NOT NULL, "
                           "PRIMARY KEY (world_id, seq))")
         self.conn.execute("CREATE INDEX IF NOT EXISTS ix_events_type ON events(world_id, type)")
+        cols = {r[1] for r in self.conn.execute("PRAGMA table_info(worlds)").fetchall()}
+        if "save_version" not in cols:       # schema upgrade for databases created before save versioning
+            self.conn.execute("ALTER TABLE worlds ADD COLUMN save_version INTEGER NOT NULL DEFAULT 1")
         self.conn.commit()
 
-    def create_world(self, world_id: str, name: str) -> None:
-        self.conn.execute("INSERT INTO worlds (id, name, created_utc) VALUES (?, ?, ?)",
-                          (world_id, name, datetime.now(timezone.utc).isoformat()))
+    def create_world(self, world_id: str, name: str, save_version: int = None) -> None:
+        from .version import SAVE_VERSION
+        self.conn.execute("INSERT INTO worlds (id, name, created_utc, save_version) VALUES (?, ?, ?, ?)",
+                          (world_id, name, datetime.now(timezone.utc).isoformat(), int(save_version or SAVE_VERSION)))
+        self.conn.commit()
+
+    def set_save_version(self, world_id: str, save_version: int) -> None:
+        self.conn.execute("UPDATE worlds SET save_version = ? WHERE id = ?", (int(save_version), world_id))
         self.conn.commit()
 
     def list_worlds(self) -> List[Dict]:
-        rows = self.conn.execute("SELECT w.id, w.name, w.created_utc, (SELECT COUNT(*) FROM events e WHERE e.world_id = w.id) "
+        rows = self.conn.execute("SELECT w.id, w.name, w.created_utc, (SELECT COUNT(*) FROM events e WHERE e.world_id = w.id), w.save_version "
                                  "FROM worlds w ORDER BY w.created_utc DESC").fetchall()
-        return [{"id": r[0], "name": r[1], "created_utc": r[2], "events": r[3]} for r in rows]
+        return [{"id": r[0], "name": r[1], "created_utc": r[2], "events": r[3], "save_version": r[4]} for r in rows]
+
+    def replace_event(self, world_id: str, seq: int, event: Event) -> None:
+        """Test/maintenance hook: overwrite one stored event body (used to simulate old or damaged saves)."""
+        self.conn.execute("UPDATE events SET type = ?, body = ? WHERE world_id = ? AND seq = ?", (event.type, event.to_json(), world_id, seq))
+        self.conn.commit()
 
     def append_events(self, world_id: str, events: List[Event]) -> None:
         self.conn.executemany(

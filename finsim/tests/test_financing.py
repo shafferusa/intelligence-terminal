@@ -552,7 +552,13 @@ class DefinitionOfDoneTest(unittest.TestCase):
         w.force_regime("LIQUIDITY_STRESS")
         w.advance(1)
         self.assertGreater(repo.haircut, 0.03, "Treasury repo haircut widens in a liquidity crisis")
+        # the wider haircut raises the requirement by ~3% of the collateral; a flight-to-quality rally can cushion it,
+        # so layer a dash-for-cash Treasury sell-off (+40bp) on top of the regime: the call is then unavoidable
         call = w.collateral.open_call(pf, "REPO", repo.id)
+        if call is None:
+            w.force_rates(40, "dash for cash")
+            w.advance(1)
+            call = w.collateral.open_call(pf, "REPO", repo.id)
         self.assertIsNotNone(call)
         self.assertTrue(any(a["severity"] == "HIGH" and "Repo collateral call" in a["text"] for a in pf.briefings[-1]["attention"]))
         # 19: post additional collateral (cash margin), call met next cycle

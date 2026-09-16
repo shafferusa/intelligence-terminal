@@ -82,6 +82,16 @@ def assert_ledger_invariants(tc, w, pf):
             tc.assertEqual(led.security_balance(t.id, "1800"), D(0), f"closed trade {t.id} still on the balance sheet")
             tc.assertEqual(led.security_balance(t.id, "2800"), D(0))
     tc.assertEqual(led.balance("2450"), sum((c.vm_received for c in pf.csas.values()), D(0)), "VM received")
+    open_lends = [l for l in pf.lends.values() if l["status"] == "OPEN"]
+    tc.assertEqual(led.balance("2460"), sum((D(l["collateral"]) for l in open_lends), D(0)), "cash collateral received on lent inventory")
+    tc.assertEqual(led.balance("1430"), sum((D(l["accrued_fee"]) for l in open_lends), D(0)), "lending fees receivable")
+    tc.assertEqual(led.balance("2370"), sum((D(l["accrued_rebate"]) for l in open_lends), D(0)), "rebate payable")
+    for l in open_lends:
+        tc.assertEqual(sum((p.quantity for p in pf.pledges if p.reference == l["id"] and p.purpose == "LENT"), D(0)), D(l["quantity"]), f"lent {l['id']} pledged")
+    if pf.investors:
+        tc.assertEqual(led.balance("2360"), D(pf.investors.get("mgmt_accrued", 0)) + D(pf.investors.get("perf_accrued", 0)), "fees payable")
+    if pf.treasury:
+        tc.assertEqual(led.balance("2380"), sum((D(x["principal"]) for x in pf.treasury.get("debt", []) if not x.get("retired")), D(0)), "long-term debt")
     tc.assertEqual(sum((v for k, v in pf.cash_collateral.items() if k.startswith(("CSA:", "IM:"))), D(0)),
                    sum((c.vm_posted + c.im_posted for c in pf.csas.values()), D(0)), "VM/IM posted under CSAs")
     for c in pf.csas.values():

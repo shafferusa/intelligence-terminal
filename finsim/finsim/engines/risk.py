@@ -98,7 +98,11 @@ class RiskEngine:
                 n = _f(pos.quantity) * sec.multiplier
                 S = g.get("underlying", 0.0)
                 src = sec.index_level_source or sec.underlying
-                row["equity"][src] = g.get("delta", 0.0) * n * S
+                usec = w.securities.get(sec.underlying)
+                if usec is not None and usec.is_future:
+                    row["commodity"][usec.underlying] = row["commodity"].get(usec.underlying, 0.0) + g.get("delta", 0.0) * n * S
+                else:
+                    row["equity"][src] = g.get("delta", 0.0) * n * S
                 row["gamma_usd"] = 0.5 * g.get("gamma", 0.0) * n * S * S     # P&L per (return)^2
                 row["vega"] = g.get("vega", 0.0) * n
                 row["underlying"] = src
@@ -108,6 +112,8 @@ class RiskEngine:
                 if sec.asset_class == "CORP_BOND":
                     row["cs01"] = -rm.get("position_dv01", 0.0)
                     row["rating"] = sec.rating
+            elif sec.asset_class == "PHYSICAL":
+                row["commodity"][sec.underlying] = row["commodity"].get(sec.underlying, 0.0) + _f(pos.market_value)
             else:
                 row["equity"][sec.id] = _f(pos.market_value)
             rows.append(row)
@@ -326,7 +332,7 @@ class RiskEngine:
                     flows[d].append({"kind": "SETTLEMENT", "amount": _f(-si.cash_amount if si.instruction_type == "RVP" else si.cash_amount), "ref": si.id})
         for ca in w.corporate_actions.values():
             ent = ca.entitlements.get(pf.id)
-            if ent and not ent.get("paid") and ca.pay_date in flows:
+            if ent and ent.get("amount") is not None and not ent.get("paid") and ca.pay_date in flows:
                 flows[ca.pay_date].append({"kind": "DIVIDEND", "amount": _f(ent["amount"]), "ref": ca.id})
         for pos in pf.positions.values():
             sec = w.securities[pos.security_id]

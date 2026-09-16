@@ -57,6 +57,9 @@ class Security:
     margin_pct: float = 0.0                # initial margin as fraction of notional (before regime multiplier)
     unit: str = ""
     expired: bool = False
+    delisted: bool = False
+    defaulted: bool = False
+    recovery_date: Optional[str] = None     # defaulted bonds: when the recovery is paid
     # option fields
     option_type: Optional[str] = None       # C | P
     strike: Optional[float] = None
@@ -509,6 +512,7 @@ class Portfolio:
     rfqs: Dict[str, Any] = field(default_factory=dict)           # RFQ
     csas: Dict[str, Any] = field(default_factory=dict)           # dealer -> CSA
     risk_history: List[Dict] = field(default_factory=list)      # daily RISK_SNAPSHOT payloads
+    fail_charges: Decimal = ZERO
     options_margin: Decimal = ZERO
     options_margin_detail: List[Dict] = field(default_factory=list)
     cash: Dict[str, CashAccount] = field(default_factory=dict)
@@ -522,6 +526,22 @@ class Portfolio:
     contributed_capital: Decimal = ZERO
     day_capital_flows: Decimal = ZERO
     day_trade_ids: List[str] = field(default_factory=list)
+    # phase 8/10 books: careers, investors, client franchise, lending desk, corporate treasury, AI-desk oversight
+    missions: List[Dict] = field(default_factory=list)
+    mission_state: Dict[str, Any] = field(default_factory=dict)
+    investors: Dict[str, Any] = field(default_factory=dict)
+    client_rfqs: Dict[str, Dict] = field(default_factory=dict)
+    client_stats: Dict[str, Any] = field(default_factory=dict)
+    lends: Dict[str, Dict] = field(default_factory=dict)
+    lend_fees_earned: Decimal = ZERO
+    treasury: Dict[str, Any] = field(default_factory=dict)
+    desk_requests: Dict[str, Dict] = field(default_factory=dict)
+    desk_limits: Dict[str, float] = field(default_factory=lambda: {"gross_mult": 1.0, "request_mult": 1.0, "var_mult": 1.0})
+    desk_notes: List[Dict] = field(default_factory=list)
+    # phase 9 commodity depth
+    physical_delivery: bool = False
+    physical_deliveries: List[Dict] = field(default_factory=list)
+    storage_paid: Dict[str, Decimal] = field(default_factory=dict)
 
     def cash_account(self, ccy: str) -> CashAccount:
         if ccy not in self.cash:
