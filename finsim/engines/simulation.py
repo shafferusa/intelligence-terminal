@@ -33,13 +33,15 @@ class SimulationEngine:
         w = self.w
         prev = w.current_date if w.current_date and w.current_date < d else w.calendar.prev_business_day(d)
         start = w.emit(E.DAY_STARTED, {"date": d.isoformat(), "previous": prev.isoformat()}, sim_date=d.isoformat())
-        # A/B/C — markets
+        # A/B/C — markets (the lending market sees what the player has on loan)
+        w.market.player_on_loan = w.seclending.player_on_loan()
         bars, curve, regime_change = w.market.generate_day(d)
         st = w.market.state_dict()
         payload = {"date": d.isoformat(), "day_index": w.day_count + 1,
                    "bars": {t: [b.open, b.high, b.low, b.close, b.volume, b.bid, b.ask] for t, b in bars.items()},
                    "curve": {"tenors": curve.tenors, "rates": curve.rates, "ig": curve.ig_spread_bps, "hy": curve.hy_spread_bps, "policy": curve.policy_rate},
-                   "state": st, "regime_change": regime_change, "commodities": w.market.commodity_payload()}
+                   "state": st, "regime_change": regime_change, "commodities": w.market.commodity_payload(),
+                   "lending": w.market.lending_payload(), "fx": w.market.fx_payload()}
         mkt = w.emit(E.MARKET_CLOSE, payload, cause_id=start.id, sim_date=d.isoformat())
         if regime_change:
             r = REGIMES[regime_change]
@@ -57,12 +59,17 @@ class SimulationEngine:
         w.settlement.process_due(closing)
         # I — corporate actions
         w.corporate.process_day(closing)
-        # F/G — futures and accruals
+        # F/G — futures, financing desks, accruals
         w.futures.expire_contracts(closing)
         w.futures.daily_settlement(closing)
-        w.accruals.process_day(closing, prev)
+        w.seclending.process_day(closing, prev)
+        w.repo.process_day(closing, prev)
+        w.fx.process_day(closing)
         w.pnl.mark_all(closing)
         w.futures.sweep_margin(closing)
+        w.prime.process_day(closing, prev)
+        w.accruals.process_day(closing, prev)
+        w.pnl.mark_all(closing)
         # J — results
         w.careers.check_limits(closing)
         w.pnl.snapshot(closing)

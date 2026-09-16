@@ -28,6 +28,8 @@ class CorporateActionEngine:
         w.on(E.DIVIDEND_ENTITLED, lambda world, ev: self._h_entitled(ev))
         w.on(E.DIVIDEND_PAID, lambda world, ev: self._h_paid(ev))
         w.on(E.COUPON_PAID, lambda world, ev: self._h_coupon(ev))
+        w.on(E.DIVIDEND_OBLIGATION, lambda world, ev: self._h_obligation(ev))
+        w.on(E.DIVIDEND_OBLIGATION_PAID, lambda world, ev: self._h_obligation_paid(ev))
         w.on(E.BOND_MATURED, lambda world, ev: self._h_matured(ev))
 
     # ------------------------------------------------------------------ scheduling
@@ -66,13 +68,21 @@ class CorporateActionEngine:
                         amt = money(q * ca.amount_per_unit)
                         w.emit(E.DIVIDEND_ENTITLED, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": q,
                                                      "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
+                    elif q < 0:
+                        amt = money(-q * ca.amount_per_unit)
+                        w.emit(E.DIVIDEND_OBLIGATION, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": -q,
+                                                       "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
                 # mark EX even if nobody held it
                 ca.status = "EX"
             if ca.pay_date == today and ca.status == "EX":
                 for pid, ent in ca.entitlements.items():
                     if not ent.get("paid"):
-                        w.emit(E.DIVIDEND_PAID, {"ca_id": ca.id, "portfolio_id": pid, "security_id": ca.security_id, "amount": ent["amount"],
-                                                 "currency": ca.currency}, cause_id=cause.id, portfolio_id=pid)
+                        if ent.get("obligation"):
+                            w.emit(E.DIVIDEND_OBLIGATION_PAID, {"ca_id": ca.id, "portfolio_id": pid, "security_id": ca.security_id, "amount": ent["amount"],
+                                                                "currency": ca.currency}, cause_id=cause.id, portfolio_id=pid)
+                        else:
+                            w.emit(E.DIVIDEND_PAID, {"ca_id": ca.id, "portfolio_id": pid, "security_id": ca.security_id, "amount": ent["amount"],
+                                                     "currency": ca.currency}, cause_id=cause.id, portfolio_id=pid)
                 ca.status = "PAID"
         # bonds
         for pf in w.portfolios.values():
@@ -132,6 +142,38 @@ class CorporateActionEngine:
         w.record_cash_movement(pf, p["currency"], amt, "DIVIDEND", f"Dividend {ca.id} on {p['security_id']}", ev)
         w.post(pf.id, f"Dividend paid {p['security_id']} {ca.id}: {amt:,.2f}",
                [dr(f"1010:{p['currency']}", amt, p["security_id"], "dividend cash received"), cr("1210", amt, p["security_id"], "receivable extinguished")], ev,
+               {"ca_id": ca.id, "security_id": p["security_id"]})
+
+    def _h_obligation(self, ev: Event) -> None:
+        """Manufactured dividend: short over the ex-date owes the lender a payment in lieu."""
+        w = self.w
+        p = ev.payload
+        ca = w.corporate_actions[p["ca_id"]]
+        pf = w.portfolios[p["portfolio_id"]]
+        amt = D(p["amount"])
+        ca.entitlements[pf.id] = {"quantity": -D(p["quantity"]), "amount": amt, "paid": False, "obligation": True}
+        ca.status = "EX"
+        pos = pf.position(p["security_id"])
+        pos.manufactured_dividends += amt
+        pf.manufactured_payable += amt
+        w.post(pf.id, f"Manufactured dividend {p['security_id']}: short {D(p['quantity']):,} x {ca.amount_per_unit} = {amt:,.2f} owed to lender, payable {p['pay_date']}",
+               [dr("5400", amt, p["security_id"], "payment in lieu of dividend"), cr("2320", amt, p["security_id"], "manufactured dividend payable")], ev,
+               {"ca_id": ca.id, "security_id": p["security_id"], "kind": "MANUFACTURED_DIVIDEND"})
+
+    def _h_obligation_paid(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        ca = w.corporate_actions[p["ca_id"]]
+        pf = w.portfolios[p["portfolio_id"]]
+        amt = D(p["amount"])
+        ca.entitlements[pf.id]["paid"] = True
+        pf.manufactured_payable -= amt
+        ca_ = pf.cash_account(p["currency"])
+        ca_.balance -= amt
+        ca_.base_value -= amt
+        w.record_cash_movement(pf, p["currency"], -amt, "MANUFACTURED_DIVIDEND", f"Payment in lieu {ca.id} on {p['security_id']} to lender", ev)
+        w.post(pf.id, f"Manufactured dividend paid {p['security_id']} {ca.id}: {amt:,.2f}",
+               [dr("2320", amt, p["security_id"], "payable settled"), cr(f"1010:{p['currency']}", amt, p["security_id"], "cash paid to lender")], ev,
                {"ca_id": ca.id, "security_id": p["security_id"]})
 
     def _h_coupon(self, ev: Event) -> None:

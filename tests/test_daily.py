@@ -97,38 +97,23 @@ class FuturesTest(unittest.TestCase):
         self.assertEqual(led.balance("1300"), w.futures.required_margin(pf))
         assert_ledger_invariants(self, w, pf)
 
-    def test_margin_call_then_forced_liquidation(self):
+    def test_futures_losses_are_financed_by_the_prime_broker(self):
+        """Variation margin and initial margin that overdraw cash become an explicit margin loan; cash never stays negative."""
         w, pf, _ = make_world(capital=3_000_000)
         cl = [s for s in w.securities.values() if s.underlying == "CL" and not s.expired][1]
-        # 40 contracts * ~70 * 1000 = ~2.8MM notional; margin ~8% = 224k. A big adverse move overdraws cash only
-        # with leverage, so tie up cash in stock first, leaving little free cash.
         w.place_order(pf.id, "SPXE", "BUY", 5000)
         w.place_order(pf.id, cl.id, "BUY", 25)
         w.advance(2)
-        self.assertEqual(pf.positions[cl.id].quantity, D(25))
-        # force an overdraft: contribute nothing, and drain cash by buying more stock with projected cash
         avail = w.trading.projected_cash(pf, "USD")
         px = w.market.last_bar("BRWN").ask
         w.place_order(pf.id, "BRWN", "BUY", int(avail / px * D("0.98")))
-        w.advance(2)
-        # cash is now near zero; any VM loss overdraws. Walk forward until a margin call appears.
-        called = False
-        for _ in range(60):
+        drew = False
+        for _ in range(40):
             w.advance(1)
-            if any(m.status == "OPEN" for m in pf.margin_calls):
-                called = True
-                break
-        if called:
-            call = [m for m in pf.margin_calls if m.status == "OPEN"][0]
-            self.assertTrue(any(a["severity"] == "HIGH" and "Margin call" in a["text"] for a in pf.briefings[-1]["attention"]))
-            for _ in range(6):
-                w.advance(1)
-                if call.status != "OPEN":
-                    break
-            self.assertIn(call.status, ("MET", "FORCED"))
-            if call.status == "FORCED":
-                self.assertTrue(any(t.execution_detail.get("forced") for t in pf.trades.values()))
-                self.assertTrue(any(e.type == E.FORCED_LIQUIDATION for e in w.events))
+            self.assertGreaterEqual(pf.cash["USD"].balance, D(0))
+            if pf.margin_loan > 0:
+                drew = True
+        self.assertTrue(drew or any(m.kind == "MARGIN_LOAN" for m in pf.cash_movements), "at least one overnight shortfall was financed")
         assert_ledger_invariants(self, w, pf)
 
     def test_contract_expiry_auto_closes(self):

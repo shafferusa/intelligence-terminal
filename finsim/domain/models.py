@@ -132,6 +132,11 @@ class Position:
     day_variation_margin: Decimal = ZERO
     average_cost_future: Decimal = ZERO
     day_fills: List[Dict] = field(default_factory=list)
+    # short book
+    borrowed_quantity: Decimal = ZERO       # shares held under open securities loans
+    borrow_fees: Decimal = ZERO
+    manufactured_dividends: Decimal = ZERO
+    buy_in_count: int = 0
 
     @property
     def unrealized_pnl(self) -> Decimal:
@@ -146,8 +151,148 @@ class Position:
 class CashAccount:
     portfolio_id: str
     currency: str
-    balance: Decimal = ZERO             # settled cash (ledger 1010:CCY)
-    accrued_interest: Decimal = ZERO    # receivable(+)/payable(-) not yet settled
+    balance: Decimal = ZERO             # settled cash in local currency
+    accrued_interest: Decimal = ZERO    # receivable(+)/payable(-) not yet settled, local currency
+    is_base: bool = True
+    _base_value: Decimal = ZERO
+
+    @property
+    def base_value(self) -> Decimal:
+        """Carrying value in the base currency (= ledger 1010:CCY balance)."""
+        return self.balance if self.is_base else self._base_value
+
+    @base_value.setter
+    def base_value(self, v: Decimal) -> None:
+        if not self.is_base:
+            self._base_value = v
+
+
+@dataclass
+class Locate:
+    id: str
+    portfolio_id: str
+    security_id: str
+    requested: Decimal
+    available: Decimal
+    rate: float
+    lender: str
+    date: str
+    valid_through: str
+    used: Decimal = ZERO
+    status: str = "OPEN"                # OPEN | USED | EXPIRED | NONE
+
+
+@dataclass
+class SecurityLoan:
+    id: str
+    portfolio_id: str
+    security_id: str
+    lender: str
+    borrower: str
+    quantity: Decimal
+    loan_date: str
+    borrow_rate: float                  # annual fee on loan market value
+    rebate_rate: float                  # earned on cash collateral
+    collateral_type: str                # CASH | security id (Treasuries)
+    collateralization: float            # e.g. 1.02
+    market_value: Decimal = ZERO
+    collateral_amount: Decimal = ZERO   # cash posted (CASH) or pledged face (security)
+    collateral_value: Decimal = ZERO    # haircut-adjusted value of collateral
+    accrued_fee: Decimal = ZERO
+    accrued_rebate: Decimal = ZERO
+    fees_paid: Decimal = ZERO
+    recall_quantity: Decimal = ZERO
+    recall_due: Optional[str] = None
+    recall_status: str = "NONE"         # NONE | RECALLED | SATISFIED | BOUGHT_IN
+    status: str = "OPEN"                # OPEN | RETURNED
+    returned_quantity: Decimal = ZERO
+    hold_until: str = ""
+    rate_history: List[Dict] = field(default_factory=list)
+    original_quantity: Decimal = ZERO
+
+
+@dataclass
+class RepoTrade:
+    id: str
+    portfolio_id: str
+    side: str                           # REPO (we borrow cash) | REVERSE (we lend cash)
+    counterparty: str
+    security_id: str
+    quantity: Decimal                   # face pledged / received
+    start_date: str
+    maturity: Optional[str]             # None = open
+    term_type: str                      # OVERNIGHT | TERM | OPEN
+    rate: float
+    haircut: float
+    principal: Decimal                  # cash borrowed / lent
+    accrued_interest: Decimal = ZERO
+    interest_paid: Decimal = ZERO
+    collateral_mv: Decimal = ZERO
+    required_collateral_mv: Decimal = ZERO
+    cash_margin: Decimal = ZERO         # cash posted against a shortfall (REPO side)
+    status: str = "OPEN"                # OPEN | CLOSED
+    rolls: int = 0
+    auto_roll: bool = True
+    call_id: Optional[str] = None
+    history: List[Dict] = field(default_factory=list)
+
+
+@dataclass
+class CollateralCall:
+    id: str
+    portfolio_id: str
+    source: str                         # REPO | PRIME | SECLOAN
+    reference: str                      # repo id / "PRIME" / loan id
+    amount: Decimal
+    issued: str
+    due: str
+    status: str                         # OPEN | MET | FORCED | CANCELLED
+    reason: str = ""
+    cycles_open: int = 0
+    resolved: Optional[str] = None
+
+
+@dataclass
+class Pledge:
+    reference: str                      # what it secures
+    purpose: str                        # REPO | SECLOAN | PRIME
+    security_id: str
+    quantity: Decimal
+
+
+@dataclass
+class FXTrade:
+    id: str
+    portfolio_id: str
+    buy_ccy: str
+    sell_ccy: str
+    buy_amount: Decimal
+    sell_amount: Decimal
+    rate: float                         # sell_ccy per 1 buy_ccy
+    trade_date: str
+    settlement_date: str
+    status: str                         # PENDING | SETTLED
+    counterparty: str = "Harbor Securities FX"
+    usd_value: Decimal = ZERO
+    realized_fx: Decimal = ZERO
+
+
+@dataclass
+class FXForward:
+    id: str
+    portfolio_id: str
+    counterparty: str
+    buy_ccy: str
+    sell_ccy: str
+    buy_amount: Decimal
+    sell_amount: Decimal
+    forward_rate: float                 # sell_ccy per 1 buy_ccy
+    trade_date: str
+    maturity: str
+    mtm: Decimal = ZERO                 # base-currency mark
+    status: str = "OPEN"                # OPEN | SETTLED
+    spot_at_trade: float = 0.0
+    history: List[Dict] = field(default_factory=list)
 
 
 @dataclass
@@ -325,6 +470,19 @@ class Portfolio:
     briefings: List[Dict] = field(default_factory=list)
     career_log: List[Dict] = field(default_factory=list)
     peak_nav: Decimal = ZERO
+    # phase 2 books
+    locates: Dict[str, Locate] = field(default_factory=dict)
+    loans: Dict[str, SecurityLoan] = field(default_factory=dict)
+    repos: Dict[str, RepoTrade] = field(default_factory=dict)
+    pledges: List[Pledge] = field(default_factory=list)
+    collateral_calls: Dict[str, CollateralCall] = field(default_factory=dict)
+    cash_collateral: Dict[str, Decimal] = field(default_factory=dict)   # reference -> cash posted (base ccy)
+    margin_loan: Decimal = ZERO
+    margin_interest_accrued: Decimal = ZERO
+    fx_trades: Dict[str, FXTrade] = field(default_factory=dict)
+    fx_forwards: Dict[str, FXForward] = field(default_factory=dict)
+    manufactured_payable: Decimal = ZERO
+    collateral_received: Dict[str, Dict] = field(default_factory=dict)  # reference -> {security_id, quantity, value}
     cash: Dict[str, CashAccount] = field(default_factory=dict)
     positions: Dict[str, Position] = field(default_factory=dict)
     orders: Dict[str, Order] = field(default_factory=dict)
@@ -339,8 +497,11 @@ class Portfolio:
 
     def cash_account(self, ccy: str) -> CashAccount:
         if ccy not in self.cash:
-            self.cash[ccy] = CashAccount(self.id, ccy)
+            self.cash[ccy] = CashAccount(self.id, ccy, is_base=(ccy == self.base_currency))
         return self.cash[ccy]
+
+    def pledged_quantity(self, security_id: str, exclude_ref: Optional[str] = None) -> Decimal:
+        return sum((p.quantity for p in self.pledges if p.security_id == security_id and p.reference != exclude_ref), ZERO)
 
     def position(self, security_id: str) -> Position:
         if security_id not in self.positions:

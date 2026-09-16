@@ -421,9 +421,11 @@ class Service:
             "unrealized": s["unrealized"], "realized": s["realized"], "income": {
                 "dividends": led.balance("4200"), "interest": led.balance("4300"), "commissions": led.balance("5000"), "interest_expense": led.balance("5100")},
             "gross_exposure": s["gross_exposure"], "net_exposure": s["net_exposure"], "long_exposure": s["long_exposure"], "short_exposure": s["short_exposure"],
-            "leverage": s["leverage"], "margin_used": s["margin_deposits"], "available_liquidity": w.trading.projected_cash(pf, pf.base_currency),
-            "collateral_posted": s["margin_deposits"], "collateral_received": ZERO,
-            "margin_calls": [asdict(m) for m in pf.margin_calls if m.status == "OPEN"], "futures_long": s["futures_long"], "futures_short": s["futures_short"],
+            "leverage": s["leverage"], "margin_used": s["margin_deposits"] + s["margin_loan"], "available_liquidity": w.prime.financing(pf)["excess_liquidity"],
+            "collateral_posted": s["margin_deposits"] + s["collateral_posted"] + sum((w.collateral.market_value(w.securities[p.security_id], p.quantity) for p in pf.pledges), ZERO),
+            "collateral_received": sum((D(str(r["value"])) for r in pf.collateral_received.values()), ZERO),
+            "margin_calls": [asdict(c) for c in pf.collateral_calls.values() if c.status == "OPEN"], "futures_long": s["futures_long"], "futures_short": s["futures_short"],
+            "repo_borrowing": s["repo_borrowing"], "margin_loan": s["margin_loan"], "short_market_value": s["short_market_value"], "collateral_posted_total": s["collateral_posted"],
             "job": pf.job, "level_title": w.careers.level_title(pf), "clock_mode": w.clock.mode,
             "largest_risk": largest, "upcoming_settlements": upcoming_settle[:10], "upcoming_cash_flows": cashflows[:10],
             "positions": positions, "working_orders": [jsonable(asdict(o)) for o in pf.orders.values() if o.status in ("WORKING", "PARTIALLY_FILLED")],
@@ -494,7 +496,10 @@ class Service:
                          "day_pnl": day_row.get("total", ZERO),
                          "dividend_income": pos.dividend_income, "interest_income": pos.interest_income, "commissions": pos.commissions,
                          "accrued_interest": pos.accrued_interest, "weight": float(pos.market_value / nav) if nav else 0.0, "beta": sec.beta, "risk": rm, "lots": len(pos.lots),
-                         "borrow_status": "n/a (long)", "collateral_status": "unencumbered", "financing": "none", "is_future": False})
+                         "borrow_status": (f"short: {pos.borrowed_quantity:,} borrowed" if pos.quantity < 0 else f"{pos.borrowed_quantity:,} borrowed, unsold" if pos.borrowed_quantity else "n/a (long)"),
+                         "collateral_status": (f"{pf.pledged_quantity(sec.id):,} pledged" if pf.pledged_quantity(sec.id) else "unencumbered"),
+                         "financing": ("borrow fees" if pos.quantity < 0 else "none"), "is_future": False, "pledged": pf.pledged_quantity(sec.id),
+                         "borrow_fees": pos.borrow_fees, "manufactured_dividends": pos.manufactured_dividends})
         rows.sort(key=lambda r: -abs(float(r["notional"])))
         return jsonable(rows)
 
@@ -527,8 +532,24 @@ class Service:
                 relationships.append({"kind": "CREDIT_RISK", "description": f"Credit spread {sec.spread_bps_credit:.0f}bp, rating {sec.rating}, no CDS hedge"})
         if pos.pending_receive or pos.pending_deliver:
             relationships.append({"kind": "SETTLEMENT", "description": f"Pending receive {pos.pending_receive:,}, pending deliver {pos.pending_deliver:,}"})
+        loans = [asdict(l) for l in pf.loans.values() if l.security_id == security_id]
+        loan_ids = {l["id"] for l in loans}
+        collateral_moves = [asdict(m) for m in pf.cash_movements if m.kind in ("COLLATERAL", "BORROW_FEE", "BUY_IN_PENALTY", "MANUFACTURED_DIVIDEND")
+                            and any(lid in m.reference for lid in loan_ids | {security_id})]
+        pledges = [asdict(p) for p in pf.pledges if p.security_id == security_id]
+        if pos.quantity < 0:
+            st = w.market.lending.state.get(security_id)
+            open_loans = [l for l in pf.loans.values() if l.security_id == security_id and l.status == "OPEN"]
+            relationships = [{"kind": "SHORT_EXPOSURE", "description": f"Short {-pos.quantity:,} {sec.id}: market value {pos.market_value:,.0f}; average sale price {pos.average_cost:,.4f}"},
+                             {"kind": "SECURITY_LOAN", "description": f"{sum((l.quantity for l in open_loans), ZERO):,} shares borrowed from {', '.join(sorted({l.lender for l in open_loans})) or '—'} at {(st.rate if st else 0):.2%} ({st.category if st else ''})"},
+                             {"kind": "COLLATERAL", "description": f"Collateral posted {sum((l.collateral_amount if l.collateral_type == 'CASH' else l.collateral_value for l in open_loans), ZERO):,.0f} (marked daily at 102%)"},
+                             {"kind": "BORROW_FEES", "description": f"Accrued borrow fees {sum((l.accrued_fee for l in open_loans), ZERO):,.2f}; paid to date {sum((l.fees_paid for l in pf.loans.values() if l.security_id == security_id), ZERO):,.2f}"},
+                             {"kind": "DIVIDEND_OBLIGATIONS", "description": f"Manufactured dividends owed to date {pos.manufactured_dividends:,.2f}"}] +                             [{"kind": "RECALL", "description": f"RECALL — return {l.recall_quantity:,} shares by {l.recall_due}"} for l in open_loans if l.recall_status == "RECALLED"] +                             [r for r in relationships if r["kind"] == "SETTLEMENT"]
+        if pledges:
+            relationships.append({"kind": "ENCUMBRANCE", "description": "; ".join(f"{p['quantity']:,} pledged to {p['reference']} ({p['purpose']})" for p in pledges)})
         return jsonable({"position": row, "lots": [asdict(l) for l in pos.lots], "trades": trades, "settlements": sis, "ledger_entries": entries,
                          "dividends": divs, "custody_movements": custody, "daily_pnl": pnl_days, "relationships": relationships,
+                         "loans": loans, "collateral_movements": collateral_moves, "pledges": pledges,
                          "ledger_balances": {a: led.security_balance(security_id, a) for a in sorted({l.account for e in led.entries for l in e.lines if l.security_id == security_id})}})
 
     # ------------------------------------------------------------------ trading & ops
@@ -584,7 +605,7 @@ class Service:
         pf = w.portfolio(portfolio_id)
         policy = w.market.curve().policy_rate
         accounts = [{"currency": c.currency, "settled_balance": c.balance, "accrued_interest": c.accrued_interest, "projected": w.trading.projected_cash(pf, c.currency),
-                     "deposit_rate": policy - 0.0025, "overdraft_rate": policy + 0.015} for c in pf.cash.values()]
+                     "base_value": c.base_value, "deposit_rate": policy - 0.0025, "overdraft_rate": policy + 0.015} for c in pf.cash.values()]
         proj = self._liquidity_projection(w, pf)
         return jsonable({"accounts": accounts, "movements": [asdict(m) for m in reversed(pf.cash_movements)], "upcoming": self._upcoming_cash_flows(w, pf),
                          "projection": proj, "policy_rate": policy})
@@ -666,6 +687,127 @@ class Service:
         return jsonable({"nav": s["nav"], "since": last.date if last else None, "prev_nav": last.nav if last else pf.contributed_capital,
                          "capital_flows": pf.day_capital_flows, "components": rows, "entries": entries_since[-100:],
                          "composition": {"cash": s["cash"], "market_value": s["market_value"], "receivables": s["receivables"], "payables": s["payables"]}})
+
+    # ------------------------------------------------------------------ phase 2: financing desks
+    def seclending(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        market = [w.seclending.market_row(sec) for sec in w.securities.values() if sec.shares_outstanding and w.market.lending.state.get(sec.id)]
+        for row in market:
+            row.pop("history", None)
+            mine = [l for l in pf.loans.values() if l.security_id == row["security_id"] and l.status == "OPEN"]
+            row["my_borrowed"] = sum((l.quantity for l in mine), ZERO)
+            row["my_collateral"] = sum((l.collateral_amount if l.collateral_type == "CASH" else l.collateral_value for l in mine), ZERO)
+            row["my_accrued_fee"] = sum((l.accrued_fee for l in mine), ZERO)
+            row["recall"] = any(l.recall_status == "RECALLED" for l in mine)
+        market.sort(key=lambda r: (-float(r["my_borrowed"]), -r["rate"]))
+        loans = [asdict(l) for l in sorted(pf.loans.values(), key=lambda l: l.loan_date, reverse=True)]
+        locates = [asdict(l) for l in sorted(pf.locates.values(), key=lambda l: l.date, reverse=True)][:30]
+        return jsonable({"market": market, "loans": loans, "locates": locates, "short_book": w.seclending.short_book(pf), "rebate_rate": w.seclending.rebate_rate(),
+                         "treasuries": [s.id for s in w.securities.values() if s.asset_class == "GOVT_BOND"]})
+
+    def lending_history(self, world_id: str, security_id: str) -> Dict:
+        w = self.world(world_id)
+        return jsonable({"security_id": security_id, "history": w.market.lending.history.get(security_id, [])[-260:]})
+
+    def request_locate(self, world_id: str, portfolio_id: str, security_id: str, quantity: float) -> Dict:
+        w = self.world(world_id)
+        loc = w.request_locate(portfolio_id, security_id.upper(), D(str(quantity)))
+        return jsonable(asdict(loc))
+
+    def borrow(self, world_id: str, portfolio_id: str, locate_id: str, quantity: float, collateral_type: str = "CASH") -> Dict:
+        w = self.world(world_id)
+        loan = w.borrow_securities(portfolio_id, locate_id, D(str(quantity)), collateral_type)
+        return jsonable(asdict(loan))
+
+    def return_loan(self, world_id: str, portfolio_id: str, loan_id: str, quantity: Optional[float] = None) -> Dict:
+        w = self.world(world_id)
+        loan = w.return_securities(portfolio_id, loan_id, D(str(quantity)) if quantity else None)
+        return jsonable(asdict(loan))
+
+    def repo_desk(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        book = w.repo.book(pf)
+        eligible = []
+        for pos in pf.positions.values():
+            sec = w.securities[pos.security_id]
+            if pos.quantity > 0 and not pos.is_future and w.collateral.eligible(sec, "REPO"):
+                eligible.append({"security_id": sec.id, "name": sec.name, "available": w.collateral.available_quantity(pf, sec.id), "haircut": w.collateral.haircut(sec, "REPO"),
+                                 "market_value_available": w.collateral.market_value(sec, w.collateral.available_quantity(pf, sec.id))})
+        haircuts = {k: w.collateral.haircut(s, "REPO") for k, s in w.securities.items() if not s.is_future and w.collateral.eligible(s, "REPO")}
+        from ..engines.collateral import HAIRCUTS
+        return jsonable({**book, "eligible": eligible, "haircut_schedule": {k: v["REPO"] for k, v in HAIRCUTS.items()}, "regime_multiplier": w.collateral.regime_mult(),
+                         "policy_rate": w.market.curve().policy_rate, "counterparties": __import__("finsim.engines.repo", fromlist=["COUNTERPARTIES"]).COUNTERPARTIES})
+
+    def repo_quote(self, world_id: str, side: str, security_id: str, quantity: float, term_type: str = "OVERNIGHT", term_days: int = 1) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.repo_quote(side, security_id.upper(), D(str(quantity)), term_type, int(term_days)))
+
+    def repo_open(self, world_id: str, portfolio_id: str, side: str, security_id: str, quantity: float, term_type: str = "OVERNIGHT", term_days: int = 1, auto_roll: bool = True) -> Dict:
+        w = self.world(world_id)
+        r = w.open_repo(portfolio_id, side, security_id.upper(), D(str(quantity)), term_type, int(term_days), bool(auto_roll))
+        return jsonable(asdict(r))
+
+    def repo_action(self, world_id: str, portfolio_id: str, repo_id: str, action: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        if action == "close":
+            r = w.close_repo(portfolio_id, repo_id)
+        elif action == "collateral":
+            r = w.repo_post_collateral(portfolio_id, repo_id, body["security_id"].upper(), D(str(body["quantity"])))
+        elif action == "cash":
+            r = w.repo_post_cash(portfolio_id, repo_id, D(str(body["amount"])))
+        elif action == "reduce":
+            r = w.repo_reduce(portfolio_id, repo_id, D(str(body["amount"])))
+        elif action == "substitute":
+            r = w.repo_substitute(portfolio_id, repo_id, body["old_security_id"].upper(), D(str(body["old_quantity"])), body["new_security_id"].upper(), D(str(body["new_quantity"])))
+        else:
+            raise NotFound(f"unknown repo action {action}")
+        return jsonable(asdict(r))
+
+    def collateral(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        d = w.collateral.dashboard(pf)
+        d["calls"] = [asdict(c) for c in sorted(d["calls"], key=lambda c: c.issued, reverse=True)]
+        d["prime"] = {k: v for k, v in w.prime.financing(pf).items() if k != "call"}
+        d["prime"]["call"] = asdict(w.prime.financing(pf)["call"]) if w.prime.financing(pf)["call"] else None
+        return jsonable(d)
+
+    def financing(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        fin = w.prime.financing(pf)
+        fin["call"] = asdict(fin["call"]) if fin["call"] else None
+        fxm = w.market.fx
+        rates = {c: {"spot": fxm.spot[c], "rate": fxm.rate[c], "display": (1 / fxm.spot[c]) if c == "JPY" else fxm.spot[c]} for c in fxm.spot}
+        return jsonable({"prime": fin, "repo": w.repo.book(pf), "fx": {"rates": rates, "exposures": w.fx.exposures(pf),
+                         "trades": [asdict(t) for t in sorted(pf.fx_trades.values(), key=lambda t: t.trade_date, reverse=True)],
+                         "forwards": [asdict(f) for f in sorted(pf.fx_forwards.values(), key=lambda f: f.trade_date, reverse=True)],
+                         "history": {c: h[-120:] for c, h in fxm.history.items() if c != "USD"}}})
+
+    def margin_action(self, world_id: str, portfolio_id: str, action: str, amount: float) -> Dict:
+        w = self.world(world_id)
+        if action == "draw":
+            w.margin_draw(portfolio_id, D(str(amount)))
+        elif action == "repay":
+            w.margin_repay(portfolio_id, D(str(amount)))
+        else:
+            raise NotFound(f"unknown margin action {action}")
+        return self.financing(world_id, portfolio_id)["prime"]
+
+    def fx_spot(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount: float, amount_ccy: str = "BUY") -> Dict:
+        w = self.world(world_id)
+        return jsonable(asdict(w.fx_spot(portfolio_id, buy_ccy, sell_ccy, D(str(amount)), amount_ccy)))
+
+    def fx_forward(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount: float, maturity: str) -> Dict:
+        w = self.world(world_id)
+        return jsonable(asdict(w.fx_forward(portfolio_id, buy_ccy, sell_ccy, D(str(buy_amount)), maturity)))
+
+    def force_regime(self, world_id: str, regime: str) -> Dict:
+        w = self.world(world_id)
+        ev = w.force_regime(regime)
+        return {"event_id": ev.id, "regime": regime}
 
     # ------------------------------------------------------------------ audit
     def events(self, world_id: str, limit: int = 200, offset: int = 0, etype: Optional[str] = None, portfolio_id: Optional[str] = None, q: Optional[str] = None) -> Dict:

@@ -33,7 +33,8 @@ class BriefingEngine:
                        "pnl_buckets": {k: v for k, v in snap.explain.items() if not k.startswith("_")},
                        "market": self._market_summary(), "news": self._news_today(), "attention": self._attention(pf, snap),
                        "movers": self._movers(snap), "regime": w.market.regime().label, "job_title": w.careers.level_title(pf),
-                       "orders_summary": self._orders_summary(pf)}
+                       "orders_summary": self._orders_summary(pf), "financing": self._financing(pf, snap), "collateral": self._collateral(pf),
+                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf)}
             w.emit(E.DAILY_BRIEFING, payload, cause_id=cause.id, portfolio_id=pf.id)
 
     # ------------------------------------------------------------------ pieces
@@ -88,19 +89,76 @@ class BriefingEngine:
                 "expired_today": [{"order_id": o.id, "side": o.side, "security_id": o.security_id, "quantity": o.quantity - o.filled_quantity}
                                   for o in pf.orders.values() if o.status == "EXPIRED" and any(h.get("date") == today for h in o.history)]}
 
+    def _financing(self, pf, snap) -> Dict:
+        w = self.w
+        book = w.repo.book(pf)
+        fin = w.prime.financing(pf)
+        ex = {k: v for k, v in snap.explain.items()}
+        return {"repo_balance": book["repo_balance"], "avg_repo_rate": book["avg_repo_rate"], "reverse_balance": book["reverse_balance"],
+                "repo_cost_today": -ex.get("repo_financing", ZERO), "borrow_expense_today": -ex.get("borrow_fees", ZERO),
+                "margin_loan": fin["loan_balance"], "margin_rate": fin["rate"], "margin_cost_today": -ex.get("margin_financing", ZERO),
+                "excess_liquidity": fin["excess_liquidity"], "collateral_value": fin["collateral_value"]}
+
+    def _collateral(self, pf) -> Dict:
+        d = self.w.collateral.dashboard(pf)
+        posted = sum(d["cash_collateral_posted"].values(), ZERO) + sum(d["securities_collateral_posted"].values(), ZERO)
+        open_calls = [c for c in d["calls"] if c.status == "OPEN"]
+        return {"posted": posted, "available": d["available_collateral_value_repo"], "calls_due": sum((c.amount for c in open_calls), ZERO),
+                "calls": [{"id": c.id, "source": c.source, "reference": c.reference, "amount": c.amount, "due": c.due} for c in open_calls],
+                "treasury_encumbrance_pct": d["treasury_encumbrance_pct"], "received": sum(d["received"].values(), ZERO)}
+
+    def _short_book(self, pf, snap) -> Dict:
+        sb = self.w.seclending.short_book(pf)
+        return {"market_value": sb["short_mv"], "borrow_cost_today": -snap.explain.get("borrow_fees", ZERO), "hard_to_borrow": sb["htb"], "recalls": sb["recalls"],
+                "positions": [{"security_id": r["security_id"], "short_quantity": r["short_quantity"], "rate": r["rate"], "category": r["category"],
+                               "market_value": r["market_value"], "recalled": r["recalled"]} for r in sb["rows"] if r["short_quantity"] > 0 or r["borrowed"] > 0]}
+
+    def _fx(self, pf) -> Dict:
+        ex = self.w.fx.exposures(pf)
+        return {"balances": {c: {"local": ca.balance, "base": ca.base_value} for c, ca in pf.cash.items()},
+                "exposures": {c: v for c, v in ex.items() if c != pf.base_currency and v["local"] != 0},
+                "forwards": sum(1 for f in pf.fx_forwards.values() if f.status == "OPEN")}
+
     def _attention(self, pf, snap) -> List[Dict]:
         w = self.w
         today = w.current_date
         items: List[Dict] = []
         add = lambda sev, text, link=None: items.append({"severity": sev, "text": text, "link": link})
-        for m in pf.margin_calls:
-            if m.status == "OPEN":
-                add("HIGH", f"Margin call: {m.amount:,.0f} {pf.base_currency} due at the clearing member ({m.days_open} day(s) open; forced liquidation after 3)", "#/treasury")
-            elif m.status == "FORCED" and m.resolved_date == today.isoformat():
-                add("HIGH", f"Clearing member force-liquidated futures positions today for margin call {m.id}", "#/trading")
+        # collateral / margin calls
+        for c in pf.collateral_calls.values():
+            if c.status == "OPEN":
+                src = {"PRIME": "Prime-broker margin call", "REPO": f"Repo collateral call on {c.reference}", "SECLOAN": f"Collateral call on loan {c.reference}"}[c.source]
+                add("HIGH", f"{src}: {c.amount:,.0f} {pf.base_currency} due {c.due} — {c.reason}", "#/collateral")
+            elif c.status == "FORCED" and c.resolved == today.isoformat():
+                add("HIGH", f"Unmet call {c.id} ({c.source}): counterparty {'liquidated positions' if c.source == 'PRIME' else 'unwound the repo'} today", "#/trading")
+        # recalls and buy-ins
+        for l in pf.loans.values():
+            if l.status == "OPEN" and l.recall_status == "RECALLED":
+                add("HIGH", f"SECURITY RECALL — return {l.recall_quantity:,} {l.security_id} to {l.lender} by {l.recall_due} (find a replacement borrow, buy to cover, or return from custody)", "#/seclending")
+            if l.recall_status == "BOUGHT_IN" and any(t.trade_date == today.isoformat() and "buy-in" in t.execution_detail.get("note", "") for t in pf.trades.values()):
+                add("HIGH", f"Lender executed a buy-in on {l.security_id} for the unmet recall on {l.id}; penalty charged", "#/seclending")
+            if l.status == "OPEN" and len(l.rate_history) >= 2:
+                prev, cur = l.rate_history[-2]["rate"], l.rate_history[-1]["rate"]
+                if l.rate_history[-1]["date"] == today.isoformat() and (cur >= prev + 0.05 or (prev > 0 and cur >= 2 * prev and cur >= 0.02)):
+                    add("MEDIUM", f"BORROW RATE SPIKE — {l.security_id} re-rated from {prev:.2%} to {cur:.2%} on {l.quantity:,} shares", "#/seclending")
+        # repo maturities (term) and rolls in stress
+        nxt = w.calendar.next_business_day(today).isoformat()
+        for r in pf.repos.values():
+            if r.status == "OPEN" and r.term_type == "TERM" and r.maturity == nxt:
+                add("MEDIUM", f"REPO MATURITY — {r.id}: {r.principal:,.0f} {'repayable' if r.side == 'REPO' else 'returns'} tomorrow (collateral {r.quantity:,} {r.security_id})", "#/repo")
+        coll = self._collateral(pf)
+        if coll["treasury_encumbrance_pct"] >= 0.70:
+            add("MEDIUM", f"COLLATERAL CONCENTRATION — {coll['treasury_encumbrance_pct']:.0%} of Treasury holdings are encumbered", "#/collateral")
+        # cash
+        for ccy, ca in pf.cash.items():
+            if ca.balance < 0 and abs(ca.base_value) >= 10_000:
+                add("HIGH", f"NEGATIVE CASH — {ccy} account {ca.balance:,.0f}; overdraft interest accruing", "#/treasury")
+        if pf.margin_loan > 0 and any(m.kind == "MARGIN_LOAN" and m.date == today.isoformat() and m.amount > 0 for m in pf.cash_movements):
+            add("MEDIUM", f"Prime-broker margin loan drawn today; balance {pf.margin_loan:,.0f} at {w.prime.rate():.2%}", "#/treasury")
+        for f in pf.fx_forwards.values():
+            if f.status == "OPEN" and f.maturity == nxt:
+                add("INFO", f"FX forward {f.id} settles tomorrow: receive {f.buy_ccy} {f.buy_amount:,.0f}, deliver {f.sell_ccy} {f.sell_amount:,.0f}", "#/treasury")
         cash = pf.cash_account(pf.base_currency).balance
-        if cash < 0:
-            add("HIGH", f"Cash overdrawn: {cash:,.0f} {pf.base_currency}; overdraft interest accruing at policy + 150bp", "#/treasury")
         failed = [si for si in pf.settlements.values() if si.status == "FAILED"]
         if failed:
             add("HIGH", f"{len(failed)} settlement(s) failed: " + "; ".join(f"{si.id} {si.security_id} — {si.fail_reason}" for si in failed[:3]), "#/settlements")
