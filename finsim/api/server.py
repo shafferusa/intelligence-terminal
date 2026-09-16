@@ -8,10 +8,15 @@ import os
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from datetime import datetime, timezone
+from typing import Dict, List
 from urllib.parse import parse_qs, urlparse
 
 from .service import NotFound, Service
+from ..log import get_logger
 from ..world import CommandError
+
+log = get_logger("server")
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
 
@@ -26,6 +31,8 @@ class Router:
         parts = [p for p in path.split("/") if p]
         if parts == ["api", "jobs"]:
             return s.jobs()
+        if parts == ["api", "health"]:
+            return s.health()
         # /api/worlds ...
         if parts[:2] == ["api", "worlds"]:
             rest = parts[2:]
@@ -37,7 +44,7 @@ class Router:
                                           body.get("capital"), body.get("portfolio_name", "Main Portfolio"), body.get("portfolio_type", "PERSONAL"),
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
                                           body.get("benchmark", "SPXE"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
-                                          body.get("timezone", "America/New_York"), body.get("update_time", "09:00"))
+                                          body.get("timezone", "America/New_York"), body.get("update_time", "09:00"), body.get("scenario", "NONE"))
             if parts[2:] == ["jobs"] if len(parts) > 2 else False:
                 return s.jobs()
             wid = rest[0]
@@ -58,6 +65,8 @@ class Router:
                 return s.yield_curve(wid)
             if sub == ["force-regime"] and method == "POST":
                 return s.force_regime(wid, body["regime"])
+            if sub == ["force-rates"] and method == "POST":
+                return s.force_rates(wid, body["bp"])
             if sub[0] == "lending-history" and len(sub) == 2:
                 return s.lending_history(wid, sub[1])
             if sub == ["repo-quote"] and method == "POST":
@@ -70,6 +79,10 @@ class Router:
                 return s.vol_surface(wid, sub[1])
             if sub[0] == "options" and len(sub) == 3 and sub[2] == "contract":
                 return s.option_contract(wid, sub[1])
+            if sub == ["macro"]:
+                return s.macro(wid)
+            if sub == ["force-corporate-event"] and method == "POST":
+                return s.force_corporate_event(wid, body)
             if sub == ["otc", "dealers"]:
                 return s.otc_dealers(wid)
             if sub == ["credit-event"] and method == "POST":
@@ -135,6 +148,30 @@ class Router:
                     return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"))
                 if leaf == ["fx", "forward"] and method == "POST":
                     return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"])
+                if leaf == ["corporate-actions"]:
+                    return s.corporate_actions_for(wid, pid)
+                if leaf == ["elections"] and method == "POST":
+                    return s.elect(wid, pid, body["ca_id"], body["quantity"])
+                if leaf == ["desk"]:
+                    return s.desk(wid, pid)
+                if leaf == ["commodity-desk"]:
+                    return s.commodity_desk(wid, pid)
+                if leaf == ["spreads"] and method == "POST":
+                    return s.place_spread(wid, pid, body)
+                if leaf == ["physical-delivery"] and method == "POST":
+                    return s.set_physical_delivery(wid, pid, body.get("on", True))
+                if leaf == ["desk", "quote"] and method == "POST":
+                    return s.quote_client(wid, pid, body["rfq_id"], body.get("level"), body.get("pass", False))
+                if leaf == ["desk", "lend"] and method == "POST":
+                    return s.lend_out(wid, pid, body["security_id"], body["quantity"])
+                if leaf == ["desk", "recall"] and method == "POST":
+                    return s.recall_lent(wid, pid, body["lend_id"], body.get("quantity"))
+                if leaf == ["desk", "decide"] and method == "POST":
+                    return s.decide_request(wid, pid, body["desk_id"], body["request_id"], body["approve"], body.get("note", ""))
+                if leaf == ["desk", "limit"] and method == "POST":
+                    return s.set_desk_limit(wid, pid, body["desk_id"], body["key"], body["value"])
+                if leaf == ["desk", "reduce"] and method == "POST":
+                    return s.force_reduce(wid, pid, body["desk_id"], body["security_id"], body["fraction"])
                 if leaf == ["risk"]:
                     return s.risk(wid, pid)
                 if leaf == ["risk", "stress"] and method == "POST":
@@ -224,20 +261,32 @@ def make_handler(router: Router):
                     body = json.loads(self.rfile.read(n) or b"{}")
                 except json.JSONDecodeError:
                     return self._send(400, {"error": "invalid JSON body"})
+            t0 = time.perf_counter()
+            code = 200
             try:
                 with router.lock:
                     out = router.dispatch(method, u.path, parse_qs(u.query), body)
                 self._send(200, out)
             except NotFound as e:
+                code = 404
                 self._send(404, {"error": str(e)})
             except CommandError as e:
+                code = 400
+                log.warning("%s %s rejected: %s", method, u.path, e)
                 self._send(400, {"error": str(e)})
             except (KeyError, ValueError, TypeError) as e:
+                code = 400
+                log.warning("%s %s bad request: %r", method, u.path, e)
                 self._send(400, {"error": f"bad request: {e!r}"})
             except Exception as e:  # pragma: no cover
-                import traceback
-                traceback.print_exc()
+                code = 500
+                log.exception("%s %s failed", method, u.path)
                 self._send(500, {"error": f"internal error: {e!r}"})
+            finally:
+                if method != "GET" or code != 200:
+                    log.info("%s %s -> %d (%.0f ms)", method, u.path, code, (time.perf_counter() - t0) * 1000)
+                else:
+                    log.debug("%s %s -> %d (%.0f ms)", method, u.path, code, (time.perf_counter() - t0) * 1000)
 
         def do_GET(self):
             self._handle("GET")
@@ -254,29 +303,57 @@ def make_handler(router: Router):
     return Handler
 
 
+class Scheduler:
+    """Processes due days for career worlds. `tick(at)` is the unit of work; the thread loop just calls it on an
+    interval with the real clock. Tests drive `tick` with a fake clock (`at`) and a fake sleep."""
+
+    def __init__(self, router: Router, interval: int = 60, clock=None, sleep=None):
+        self.router = router
+        self.interval = interval
+        self.clock = clock          # callable returning an aware datetime; None = real time
+        self.sleep = sleep or time.sleep
+        self.stop = threading.Event()
+        self.thread: threading.Thread = None
+
+    def tick(self, at=None) -> Dict[str, List[str]]:
+        at = at or (self.clock() if self.clock else None)
+        with self.router.lock:
+            done = self.router.s.catch_up_all(at)
+        st = self.router.s.scheduler_state
+        st["ticks"] += 1
+        st["last_tick"] = (at.isoformat() if at else datetime.now(timezone.utc).isoformat())
+        st["last_result"] = done
+        for wid, days in done.items():
+            log.info("scheduler: world %s processed %s", wid, ", ".join(days))
+        return done
+
+    def loop(self) -> None:
+        while not self.stop.is_set():
+            try:
+                self.tick()
+            except Exception:  # pragma: no cover
+                log.exception("scheduler tick failed")
+            self.sleep(self.interval)
+
+    def start(self) -> threading.Thread:
+        self.thread = threading.Thread(target=self.loop, daemon=True, name="finsim-scheduler")
+        self.thread.start()
+        return self.thread
+
+
 def start_scheduler(router: Router, interval: int = 60) -> threading.Thread:
     """Process due days for career worlds every `interval` seconds, whether or not anyone is logged in."""
-    def loop():
-        while True:
-            try:
-                with router.lock:
-                    done = router.s.catch_up_all()
-                for wid, days in done.items():
-                    print(f"[scheduler] world {wid}: processed {', '.join(days)}")
-            except Exception as e:  # pragma: no cover
-                print(f"[scheduler] error: {e!r}")
-            time.sleep(interval)
-    t = threading.Thread(target=loop, daemon=True, name="finsim-scheduler")
-    t.start()
-    return t
+    return Scheduler(router, interval).start()
 
 
 def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000):
     from ..store import EventStore
+    get_logger("finsim", level=os.environ.get("FINSIM_LOG_LEVEL", "INFO"))   # the server logs at INFO by default; libraries stay quiet
     service = Service(EventStore(db_path))
     router = Router(service)
     start_scheduler(router)
     httpd = ThreadingHTTPServer((host, port), make_handler(router))
+    log.info("finsim terminal: http://%s:%s/  (db: %s) — career worlds update daily at their configured time", host, port, db_path)
     print(f"finsim terminal: http://{host}:{port}/  (db: {db_path}) — career worlds update daily at their configured time")
     try:
         httpd.serve_forever()

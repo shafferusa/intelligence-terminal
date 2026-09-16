@@ -36,7 +36,7 @@ class AccrualEngine:
             # bonds
             for pos in pf.positions.values():
                 sec = w.securities[pos.security_id]
-                if not sec.is_bond or pos.quantity <= 0:
+                if not sec.is_bond or pos.quantity <= 0 or sec.defaulted:
                     continue
                 target = money(pos.quantity * BondPricer.accrued_per_100(sec, today) / 100)
                 delta = target - pos.accrued_interest

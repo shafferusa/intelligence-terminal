@@ -154,7 +154,7 @@ class CareerTest(unittest.TestCase):
         with self.assertRaises(CommandError):
             w.place_order(fund.id, "NVRA", "BUY", 100)        # equities outside the mandate
         with self.assertRaises(CommandError):
-            w.create_portfolio("HF", "FUND", D(1), job="HEDGE_FUND")   # planned job not playable
+            w.create_portfolio("AI", "FUND", D(1), job="AI_MOMENTUM")   # AI desks are created by the risk manager's world, never directly
         cl = [s for s in w.securities.values() if s.underlying == "CL" and not s.expired][2]
         w.place_order(fund.id, cl.id, "BUY", 900)              # tens of MM notional: well over the 35% single-position limit
         w.advance(1)

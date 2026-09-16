@@ -47,11 +47,25 @@ class FuturesEngine:
         return money(bar.close * D(str(sec.multiplier)) * D(str(sec.margin_pct)) * D(str(self.margin_multiplier())))
 
     def required_margin(self, pf: Portfolio) -> Decimal:
+        """Outright initial margin, less the calendar-spread offset: a long and a short contract of the same commodity are
+        margined together at SPREAD_MARGIN_RATE of one outright (the clearing house recognises the paired risk)."""
+        from .commodity_desk import SPREAD_MARGIN_RATE
         total = ZERO
+        by_code: Dict[str, Dict] = {}
         for pos in pf.positions.values():
             if pos.is_future and pos.quantity != 0 and not self.w.securities[pos.security_id].expired:
-                total += self.initial_margin_per_contract(self.w.securities[pos.security_id]) * abs(pos.quantity)
-        return total
+                sec = self.w.securities[pos.security_id]
+                im = self.initial_margin_per_contract(sec)
+                total += im * abs(pos.quantity)
+                if (sec.underlying_class or "").startswith("COMMODITY"):
+                    g = by_code.setdefault(sec.underlying, {"long": ZERO, "short": ZERO, "im": None})
+                    g["long" if pos.quantity > 0 else "short"] += abs(pos.quantity)
+                    g["im"] = im if g["im"] is None else min(g["im"], im)
+        for g in by_code.values():
+            paired = min(g["long"], g["short"])
+            if paired > 0:      # a pair contributed 2 outrights above; it is margined at SPREAD_MARGIN_RATE of one
+                total -= money(paired * g["im"] * D(str(2 - SPREAD_MARGIN_RATE)))
+        return max(ZERO, money(total))
 
     def total_required(self, pf: Portfolio) -> Decimal:
         """Everything the clearing member holds: futures initial margin plus listed-options margin."""
@@ -65,6 +79,9 @@ class FuturesEngine:
             for pos in list(pf.positions.values()):
                 sec = w.securities[pos.security_id]
                 if pos.is_future and pos.quantity != 0 and sec.expiry == today:
+                    if pf.physical_delivery and w.cdesk.is_physical_commodity(sec):
+                        w.cdesk.deliver(pf, sec, pos, cause)
+                        continue
                     ev = w.emit(E.CONTRACT_EXPIRED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity,
                                                      "note": "last trade date: position auto-closed at settlement to avoid delivery"},
                                 cause_id=cause.id, portfolio_id=pf.id)

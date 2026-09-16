@@ -121,7 +121,9 @@ class DealerModel:
             elif st.cds < 1.2 * spec.cds0 and st.rating != spec.rating and idx > 0 and rng.random() < 0.02:
                 st.rating = RATING_ORDER[idx - 1]
             self.history[k].append((d.isoformat(), st.cds))
-            out[k] = {"cds": st.cds, "rating": st.rating, "stress": st.stress, "defaulted": False}
+            # a dealer under sustained funding stress can fail (rare; the world closes its netting sets out)
+            default_now = st.stress > 0.75 and st.cds > 4 * spec.cds0 and rng.random() < 0.04
+            out[k] = {"cds": st.cds, "rating": st.rating, "stress": st.stress, "defaulted": False, "default_now": default_now}
         return out, news
 
     def ingest(self, d: date, payload: Dict[str, Dict]) -> None:
@@ -146,3 +148,27 @@ def quote_half_width(product: str, dealer: str, regime: str, stress: float) -> f
 
 def dealers_for(product: str) -> List[str]:
     return [k for k, s in DEALERS.items() if product in s.products]
+
+
+# ---------------------------------------------------------------- clients (the desk's customers when the player is the dealer)
+CLIENT_SPECS: Dict[str, Dict] = {
+    "PENSION_A": {"name": "Lakeshore Teachers' Pension", "rating": "AA", "cds": 35.0},
+    "INSURER_B": {"name": "Orchard Life Insurance", "rating": "A+", "cds": 60.0},
+    "HF_C": {"name": "Kestrel Macro Fund", "rating": "BBB", "cds": 220.0},
+    "CORP_D": {"name": "Titan Machinery Treasury", "rating": "A-", "cds": 95.0},
+    "AM_E": {"name": "Meridian Asset Management", "rating": "A", "cds": 70.0},
+    "SOV_F": {"name": "Nordic Sovereign Reserve", "rating": "AAA", "cds": 20.0},
+}
+CLIENT_CSA = {"threshold": 1_000_000, "mta": 250_000, "im": {p: 0.0 for p in HALF_WIDTH}}
+
+
+def counterparty_name(key: str) -> str:
+    if key in DEALERS:
+        return DEALERS[key].name
+    if key.startswith("CLIENT:"):
+        return CLIENT_SPECS.get(key[7:], {}).get("name", key[7:])
+    return key
+
+
+def csa_terms_for(key: str) -> Dict:
+    return CSA_TERMS[key] if key in CSA_TERMS else CLIENT_CSA

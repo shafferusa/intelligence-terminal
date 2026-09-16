@@ -72,6 +72,21 @@ CHART = {
     "5500": ("Repo Interest Expense", "EXPENSE"),
     "5600": ("Margin Loan Interest Expense", "EXPENSE"),
     "5700": ("Buy-in Penalties", "EXPENSE"),
+    "5800": ("Settlement Fail Charges", "EXPENSE"),
+    # phase 8: investors, lending desk, corporate treasury
+    "1430": ("Securities Lending Fees Receivable (lent inventory)", "ASSET"),
+    "1900": ("Operating Assets (corporate treasury; non-financial, at cost)", "ASSET"),
+    "2360": ("Management & Performance Fees Payable", "LIABILITY"),
+    "2370": ("Rebate Payable on Cash Collateral Received", "LIABILITY"),
+    "2380": ("Long-Term Debt (corporate treasury)", "LIABILITY"),
+    "2460": ("Cash Collateral Received (securities lent)", "LIABILITY"),
+    "4360": ("Securities Lending Fee Income (lent inventory)", "INCOME"),
+    "4980": ("Operating Result (corporate treasury)", "INCOME"),
+    "5310": ("Rebate Expense on Cash Collateral Received", "EXPENSE"),
+    "5900": ("Management Fees (to the manager)", "EXPENSE"),
+    "5910": ("Performance Fees (to the manager)", "EXPENSE"),
+    "5950": ("Interest on Long-Term Debt", "EXPENSE"),
+    "5320": ("Storage & Insurance (physical inventory)", "EXPENSE"),
 }
 
 DEBIT_NORMAL = {"ASSET", "EXPENSE"}

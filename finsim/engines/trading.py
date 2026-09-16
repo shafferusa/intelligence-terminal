@@ -133,6 +133,8 @@ class TradingEngine:
                 return f"unknown condition reference {ref} (use a ticker, CURVE:10Y, or SPOT:CL)"
         if sec.is_bond and date.fromisoformat(sec.maturity) <= w.current_date:
             return f"{sec.id} has matured"
+        if sec.delisted:
+            return f"{sec.id} has been delisted"
         if sec.is_future and (sec.expired or (sec.expiry and date.fromisoformat(sec.expiry) <= w.current_date)):
             return f"{sec.id} has expired / is in its last session; use a later contract month"
         job = w.careers.job_for(pf)
@@ -233,6 +235,8 @@ class TradingEngine:
             return sec.underlying_class or "FUTURE"
         if sec.is_bond:
             return sec.asset_class
+        if sec.asset_class == "PHYSICAL":
+            return "PHYSICAL"
         return "EQUITY"
 
     @staticmethod
@@ -351,6 +355,9 @@ class TradingEngine:
         sec = w.securities[order.security_id]
         if (sec.is_future or sec.is_option) and (sec.expired or (sec.expiry and sec.expiry < w.current_date.isoformat())):
             self._set_status(order, "CANCELLED", cause, "contract expired before the order could execute")
+            return
+        if sec.delisted:
+            self._set_status(order, "CANCELLED", cause, "security delisted")
             return
         bar = self._bar(sec)
         if bar is None:

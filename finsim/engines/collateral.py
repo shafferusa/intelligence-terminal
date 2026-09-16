@@ -27,16 +27,17 @@ from ..money import D, money, ZERO
 # base haircuts by (purpose) -> asset key. Purposes: REPO (secured financing), SECLOAN (collateral to a lender),
 # PRIME (financing value at the prime broker).
 HAIRCUTS = {
-    "GOVT_BOND": {"REPO": 0.02, "SECLOAN": 0.02, "PRIME": 0.03},
-    "CORP_BOND_IG": {"REPO": 0.08, "SECLOAN": None, "PRIME": 0.12},
-    "CORP_BOND_HY": {"REPO": 0.15, "SECLOAN": None, "PRIME": 0.25},
-    "EQUITY_LARGE": {"REPO": 0.25, "SECLOAN": None, "PRIME": 0.25},
-    "EQUITY_MID": {"REPO": 0.35, "SECLOAN": None, "PRIME": 0.35},
-    "EQUITY_SMALL": {"REPO": None, "SECLOAN": None, "PRIME": 0.50},
-    "PREFERRED": {"REPO": None, "SECLOAN": None, "PRIME": 0.40},
-    "ADR": {"REPO": None, "SECLOAN": None, "PRIME": 0.35},
-    "ETF": {"REPO": 0.20, "SECLOAN": None, "PRIME": 0.20},
+    "GOVT_BOND": {"REPO": 0.02, "SECLOAN": 0.02, "PRIME": 0.03, "LENT": 0.0},
+    "CORP_BOND_IG": {"REPO": 0.08, "SECLOAN": None, "PRIME": 0.12, "LENT": 0.0},
+    "CORP_BOND_HY": {"REPO": 0.15, "SECLOAN": None, "PRIME": 0.25, "LENT": 0.0},
+    "EQUITY_LARGE": {"REPO": 0.25, "SECLOAN": None, "PRIME": 0.25, "LENT": 0.0},
+    "EQUITY_MID": {"REPO": 0.35, "SECLOAN": None, "PRIME": 0.35, "LENT": 0.0},
+    "EQUITY_SMALL": {"REPO": None, "SECLOAN": None, "PRIME": 0.50, "LENT": 0.0},
+    "PREFERRED": {"REPO": None, "SECLOAN": None, "PRIME": 0.40, "LENT": 0.0},
+    "ADR": {"REPO": None, "SECLOAN": None, "PRIME": 0.35, "LENT": 0.0},
+    "ETF": {"REPO": 0.20, "SECLOAN": None, "PRIME": 0.20, "LENT": 0.0},
     "FUTURE": {"REPO": None, "SECLOAN": None, "PRIME": None},
+    "PHYSICAL": {"REPO": None, "SECLOAN": None, "PRIME": None, "LENT": None},
 }
 REGIME_HAIRCUT_MULT = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.0, "RATE_HIKING": 1.1, "RECESSION": 1.5, "LIQUIDITY_STRESS": 2.5}
 IG_RATINGS = {"AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-"}
@@ -45,6 +46,8 @@ IG_RATINGS = {"AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-"}
 def asset_key(sec: Security) -> str:
     if sec.is_future:
         return "FUTURE"
+    if sec.asset_class == "PHYSICAL":
+        return "PHYSICAL"
     if sec.asset_class == "GOVT_BOND":
         return "GOVT_BOND"
     if sec.asset_class == "CORP_BOND":
@@ -182,6 +185,8 @@ class CollateralEngine:
             posted[src] += amt
         posted_sec = {"SECLOAN": ZERO, "REPO": ZERO, "PRIME": ZERO}
         for p in pf.pledges:
+            if p.purpose == "LENT":
+                continue
             posted_sec[p.purpose] = posted_sec.get(p.purpose, ZERO) + self.market_value(w.securities[p.security_id], p.quantity)
         received = {"SECLOAN": ZERO, "REVERSE_REPO": ZERO, "OTC_VM": sum((c.vm_received for c in pf.csas.values()), ZERO)}
         for ref, r in pf.collateral_received.items():

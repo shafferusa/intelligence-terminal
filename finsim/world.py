@@ -11,6 +11,7 @@ is a projection of the log.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import asdict
 from datetime import date
 from decimal import Decimal
@@ -19,10 +20,19 @@ from typing import Any, Callable, Dict, List, Optional
 from .calendar import BusinessCalendar, SettlementConfig
 from .clock import ClockConfig, next_update, target_sim_date
 from .domain.events import E, Event
+from .version import SAVE_VERSION, ENGINE_VERSION
+from .log import get_logger
 from .domain.models import Bar, NewsItem, Portfolio, Security, YieldCurve
 from .engines.ledger import Ledger
 from .engines.market import MarketEngine, REGIMES, build_universe
 from .money import D, money, ZERO
+
+
+class ReplayError(Exception):
+    """A stored event could not be applied on load (strict replay)."""
+    def __init__(self, seq: int, etype: str, error: Exception):
+        super().__init__(f"replay failed at event {seq} ({etype}): {error!r}")
+        self.seq, self.etype, self.error = seq, etype, error
 
 
 class CommandError(Exception):
@@ -58,7 +68,8 @@ class World:
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
-        from .engines import collateral, seclending, repo, prime, fx, options, otc, risk
+        from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
+        from .engines import investors, clients, treasury, institutions, commodity_desk
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
@@ -74,6 +85,20 @@ class World:
         self.options = options.OptionsEngine(self)
         self.otc = otc.OTCEngine(self)
         self.risk = risk.RiskEngine(self)
+        self.cevents = corporate_events.CorporateEventsEngine(self)
+        self.investors = investors.InvestorEngine(self)
+        self.clients = clients.ClientEngine(self)
+        self.treasury = treasury.TreasuryEngine(self)
+        self.institutions = institutions.InstitutionEngine(self)
+        self.lenddesk = seclending.LendDeskEngine(self)
+        self.cdesk = commodity_desk.CommodityDeskEngine(self)
+        self.scenario = "NONE"
+        self.scenario_log: List[Dict] = []
+        self.save_version = SAVE_VERSION
+        self.migration: Dict = {"from": SAVE_VERSION, "to": SAVE_VERSION, "notes": [], "migrated": False}
+        self.replay_errors: List[Dict] = []
+        self.integrity: Dict = {}
+        self.run_log: List[Dict] = []        # {date, events, ms} per processed day in this process (not part of the save)
         self.careers = careers.CareerEngine(self)
         self.briefing = briefing.BriefingEngine(self)
         self.simulation = simulation.SimulationEngine(self)
@@ -122,14 +147,49 @@ class World:
         for fn in self.handlers.get(ev.type, []):
             fn(self, ev)
 
-    def replay(self, events: List[Event]) -> None:
+    def replay(self, events: List[Event], strict: bool = True) -> None:
+        """Rebuild state from the log. Strict: the first failing event raises ReplayError. Resilient (strict=False):
+        failures are recorded in `replay_errors` and replay continues, so a damaged save still opens (read-mostly)
+        and the damage is reported instead of hiding behind a crash."""
+        log = get_logger("world")
         self.replaying = True
         try:
             for ev in events:
                 self._append(ev)
-                self._apply(ev)
+                try:
+                    self._apply(ev)
+                except Exception as e:      # noqa: BLE001 — the whole point is to isolate a bad event
+                    if strict:
+                        raise ReplayError(ev.seq, ev.type, e) from e
+                    self.replay_errors.append({"seq": ev.seq, "type": ev.type, "sim_date": ev.sim_date, "error": repr(e)})
+                    log.error("world %s: replay error at %s %s: %r", self.id, ev.seq, ev.type, e)
         finally:
             self.replaying = False
+
+    def check_integrity(self) -> Dict:
+        """Cheap post-load checks: every ledger balances and reconciles to the economic NAV; no negative custody."""
+        problems: List[str] = []
+        navs: Dict[str, str] = {}
+        for pid, led in self.ledgers.items():
+            pf = self.portfolios.get(pid)
+            if pf is None:
+                continue
+            tb = led.trial_balance()
+            if not tb["balanced"]:
+                problems.append(f"{pid}: trial balance does not balance")
+            try:
+                nav = self.pnl.compute_summary(pf)["nav"]
+                if nav != led.nav():
+                    problems.append(f"{pid}: ledger NAV {led.nav()} != economic NAV {nav}")
+                navs[pid] = str(led.nav())
+            except Exception as e:      # noqa: BLE001
+                problems.append(f"{pid}: NAV could not be computed: {e!r}")
+            for pos in pf.positions.values():
+                if pos.settled_quantity < 0 and not pos.is_option and not pos.is_future and pos.borrowed_quantity == 0:
+                    problems.append(f"{pid}: negative custody in {pos.security_id}")
+        self.integrity = {"ok": not problems and not self.replay_errors, "problems": problems, "replay_errors": len(self.replay_errors),
+                          "events": len(self.events), "nav": navs, "engine_version": ENGINE_VERSION, "save_version": self.save_version}
+        return self.integrity
 
     # ------------------------------------------------------------------ core handlers
     def _register_core(self) -> None:
@@ -155,9 +215,20 @@ class World:
         self.options.register()
         self.otc.register()
         self.risk.register()
+        self.cevents.register()
+        self.investors.register()
+        self.clients.register()
+        self.treasury.register()
+        self.institutions.register()
+        self.lenddesk.register()
+        self.cdesk.register()
+        self.on(E.SCENARIO_EVENT, World._h_scenario_event)
+        for et in (E.ECONOMIC_RELEASE, E.EARNINGS_REPORTED, E.RATING_CHANGED, E.ISSUER_DEFAULTED):
+            self.on(et, lambda world, ev: None)
         self.careers.register()
         self.briefing.register()
         self.on(E.REGIME_FORCED, World._h_regime_forced)
+        self.on(E.RATES_SHOCK_FORCED, World._h_rates_forced)
 
     def _h_world_created(self, ev: Event) -> None:
         p = ev.payload
@@ -167,6 +238,8 @@ class World:
         self.current_date = self.start_date
         self.base_currency = p.get("base_currency", "USD")
         self.clock = ClockConfig(p.get("clock_mode", "SANDBOX"), p.get("timezone", "America/New_York"), p.get("update_time", "09:00"))
+        self.scenario = p.get("scenario", "NONE")
+        self.save_version = int(p.get("save_version", 1))
         if p.get("settlement_cycles"):
             self.settlement_config = SettlementConfig(cycles=dict(p["settlement_cycles"]))
         self.securities = build_universe(self.start_date, self.seed)
@@ -178,6 +251,12 @@ class World:
 
     def _h_day_started(self, ev: Event) -> None:
         self.current_date = date.fromisoformat(ev.payload["date"])
+
+    def _h_scenario_event(self, ev: Event) -> None:
+        self.scenario_log.append({"date": ev.sim_date, **ev.payload})
+
+    def _h_rates_forced(self, ev: Event) -> None:
+        self.market.force_rate_shock(float(ev.payload["bp"]))
 
     def _h_regime_forced(self, ev: Event) -> None:
         r = ev.payload["regime"]
@@ -214,7 +293,8 @@ class World:
         if self.replaying:
             bars = {t: Bar(p["date"], D(b[0]), D(b[1]), D(b[2]), D(b[3]), int(b[4]), D(b[5]), D(b[6])) for t, b in p["bars"].items()}
             curve = YieldCurve(p["date"], p["curve"]["tenors"], p["curve"]["rates"], p["curve"]["ig"], p["curve"]["hy"], p["curve"]["policy"])
-            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"), p.get("vol"), p.get("dealers"))
+            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"), p.get("vol"), p.get("dealers"),
+                                     p.get("macro"), p.get("corporate_events"))
         self.current_date = d
         self.day_count = int(p.get("day_index", self.day_count))
         self.options.ensure_listings(d)
@@ -270,7 +350,8 @@ class World:
     # ------------------------------------------------------------------ commands
     @classmethod
     def create(cls, world_id: str, name: str, seed: int, start_date: date, store=None, base_currency: str = "USD",
-               prehistory_days: int = 260, initial_regime: str = "NORMAL_GROWTH", clock: Optional[ClockConfig] = None) -> "World":
+               prehistory_days: int = 260, initial_regime: str = "NORMAL_GROWTH", clock: Optional[ClockConfig] = None,
+               scenario: str = "NONE") -> "World":
         w = cls(world_id, store)
         clock = clock or ClockConfig()
         if store is not None:
@@ -278,7 +359,8 @@ class World:
         w.emit(E.WORLD_CREATED, {"name": name, "seed": seed, "start_date": start_date.isoformat(), "base_currency": base_currency,
                                  "prehistory_days": prehistory_days, "initial_regime": initial_regime,
                                  "settlement_cycles": SettlementConfig().cycles, "clock_mode": clock.mode, "timezone": clock.timezone,
-                                 "update_time": clock.update_time}, sim_date=start_date.isoformat())
+                                 "update_time": clock.update_time, "scenario": scenario, "save_version": SAVE_VERSION, "engine_version": ENGINE_VERSION},
+                sim_date=start_date.isoformat())
         # The start date is the first processed day: the world opens with a briefing already waiting.
         w.current_date = w.calendar.prev_business_day(start_date)
         w.simulation.run_daily_process(start_date)
@@ -286,20 +368,28 @@ class World:
         return w
 
     @classmethod
-    def load(cls, store, world_id: str) -> "World":
+    def load(cls, store, world_id: str, strict: bool = True) -> "World":
+        from .migrations import migrate
+        events, report = migrate(store.load_events(world_id))
         w = cls(world_id, store)
-        w.replay(store.load_events(world_id))
+        w.migration = report
+        if report["migrated"]:
+            get_logger("world").info("world %s: migrated save v%s -> v%s (%s)", world_id, report["from"], report["to"], "; ".join(report["notes"]))
+        w.replay(events, strict=strict)
+        w.save_version = report["to"]
+        w.check_integrity()
         return w
 
     def create_portfolio(self, name: str, portfolio_type: str = "PERSONAL", capital: Decimal = D(10_000_000), currency: str = "USD",
-                         benchmark: Optional[str] = "SPXE", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", job: str = "SANDBOX") -> Portfolio:
+                         benchmark: Optional[str] = "SPXE", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", job: str = "SANDBOX",
+                         _ai_desk: bool = False) -> Portfolio:
         from .careers import JOBS
         if not name.strip():
             raise CommandError("Portfolio name is required")
         if job not in JOBS:
             raise CommandError(f"unknown job {job}")
-        if JOBS[job].status != "PLAYABLE":
-            raise CommandError(f"{JOBS[job].title} is not playable yet: {JOBS[job].status}")
+        if JOBS[job].status != "PLAYABLE" and not (_ai_desk and JOBS[job].status == "AI"):
+            raise CommandError(f"{JOBS[job].title} is not playable: {JOBS[job].status}")
         pid = self.new_id("PF")
         self.emit(E.PORTFOLIO_CREATED, {"portfolio_id": pid, "name": name.strip(), "portfolio_type": portfolio_type, "base_currency": currency,
                                         "benchmark": benchmark, "realism": realism, "mode": mode, "job": job,
@@ -308,10 +398,19 @@ class World:
             self.contribute_capital(pid, currency, D(capital))
         pf = self.portfolios[pid]
         pf.peak_nav = D(capital)
+        cause = self.events[-1]
+        # job-specific books
+        if job == "TREASURY_MANAGER":
+            self.treasury.setup(pf, cause)
+        if job == "RISK_MANAGER" and not self.institutions.desks():
+            from .engines.institutions import AI_JOBS
+            for ai_job in AI_JOBS:
+                self.create_portfolio(JOBS[ai_job].title, "INSTITUTIONAL", JOBS[ai_job].capital, currency, JOBS[ai_job].benchmark, realism, mode, ai_job, _ai_desk=True)
+        self.careers.start_missions(pf, cause)
         # a fresh portfolio gets a briefing for the current day immediately
-        self.pnl.snapshot(self.events[-1])
-        self.risk.process_day(self.events[-1])
-        self.briefing.build(self.events[-1])
+        self.pnl.snapshot(cause)
+        self.risk.process_day(cause)
+        self.briefing.build(cause)
         self.flush()
         return pf
 
@@ -418,10 +517,57 @@ class World:
         return self._cmd(self.otc.terminate, self.portfolio(portfolio_id), trade_id)
 
     def credit_event(self, reference: str, recovery: Optional[float] = None) -> Event:
-        """Scenario control (sandbox) and the hook the macro engine uses: an issuer fails; CDS settle."""
+        """Scenario control (sandbox): an issuer fails today — CDS settle, its bonds mark at recovery, its equity collapses next session."""
         if self.clock.mode == "REAL_TIME":
             raise CommandError("credit events cannot be forced in a career world")
-        return self._cmd(self.otc.credit_event, reference, None, recovery)
+        sec = self.security(reference)
+        if sec.asset_class != "CORP_BOND":
+            raise CommandError("credit events apply to corporate bond issuers")
+        if sec.defaulted:
+            raise CommandError(f"{reference} has already defaulted")
+        rec = recovery if recovery is not None else sec.recovery_rate
+        return self._cmd(self.issuer_default, reference, rec, None, True)
+
+    def issuer_default(self, reference: str, recovery: float, cause: Optional[Event], forced: bool = False) -> Event:
+        ev = self.emit(E.ISSUER_DEFAULTED, {"reference": reference, "issuer": self.securities[reference].issuer, "recovery": recovery, "forced": forced},
+                       cause_id=cause.id if cause else None)
+        self.otc.credit_event(reference, ev, recovery)
+        self.corporate.default_bond(reference, recovery, ev)
+        if forced:
+            from .engines.market import BOND_ISSUER_TICKER
+            self.market.macro.mark_defaulted(reference, self.current_date)
+            tick = BOND_ISSUER_TICKER.get(reference)
+            if tick:
+                self.market.force_return(tick, -1.5)      # the issuer's equity collapses next session
+        return ev
+
+    # ------------------------------------------------------------------ phase 6 commands (corporate events)
+    def elect(self, portfolio_id: str, ca_id: str, quantity):
+        return self._cmd(self.cevents.elect, self.portfolio(portfolio_id), ca_id, quantity)
+
+    def force_corporate_event(self, security_id: str, kind: str, terms: Dict, effective: str) -> Event:
+        """Scenario control for sandbox worlds: announce a corporate event with the given terms and effective date."""
+        from .engines.corporate_events import EVENT_TYPES
+        if self.clock.mode == "REAL_TIME":
+            raise CommandError("corporate events cannot be forced in a career world")
+        sec = self.security(security_id)
+        kind = kind.upper()
+        if kind not in EVENT_TYPES:
+            raise CommandError(f"kind must be one of {', '.join(EVENT_TYPES)}")
+        eff = self.calendar.roll(date.fromisoformat(effective))
+        if eff <= self.current_date:
+            raise CommandError("effective date must be after today")
+        payload = {"id": f"CE-{sec.id}-{self.current_date.isoformat()}-F", "kind": kind, "security_id": sec.id, "announced": self.current_date.isoformat(),
+                   "effective": eff.isoformat(), "terms": dict(terms), "forced": True}
+        ev = self.emit(E.CORPORATE_EVENT_ANNOUNCED, payload)
+        self.market.cevents.ingest([payload])
+        if kind in ("TENDER_OFFER", "CASH_MERGER"):
+            ref = float(terms.get("offer_price", terms.get("deal_price", 0)))
+            last = float(self.market.last_bar(sec.id).close)
+            if ref and last:
+                self.market.force_return(sec.id, 0.8 * math.log(ref / last))
+        self.flush()
+        return ev
 
     def default_counterparty(self, dealer: str, recovery: float = 0.4) -> Event:
         if self.clock.mode == "REAL_TIME":
@@ -439,14 +585,76 @@ class World:
         self.flush()
         return ev
 
+    def apply_scenario(self, cause: Event) -> None:
+        """Scripted scenarios (crisis mode): forced events keyed on the processed-day index, replay-safe (they are events)."""
+        if self.scenario != "CRISIS" or self.replaying:
+            return
+        from .careers import CRISIS_SCRIPT
+        idx = self.day_count      # the creation day is processed with day_count 0; the first advance is day 1
+        for step in CRISIS_SCRIPT:
+            if step["day"] != idx:
+                continue
+            self.emit(E.SCENARIO_EVENT, {"scenario": self.scenario, "day": idx, "note": step["note"], **{k: v for k, v in step.items() if k not in ("day", "note")}},
+                      cause_id=cause.id)
+            if "regime" in step:
+                from .engines.market import REGIMES
+                self.emit(E.REGIME_FORCED, {"regime": step["regime"], "label": REGIMES[step["regime"]].label, "scenario": True}, cause_id=cause.id)
+            if "rates_bp" in step:
+                self.emit(E.RATES_SHOCK_FORCED, {"bp": float(step["rates_bp"]), "note": step["note"]}, cause_id=cause.id)
+            if "issuer_default" in step:
+                self.issuer_default(step["issuer_default"], float(step.get("recovery", 0.3)), cause, forced=True)
+            if "dealer_default" in step and not self.market.dealers.state[step["dealer_default"]].defaulted:
+                self.otc.default_counterparty(step["dealer_default"], cause)
+
+    # ------------------------------------------------------------------ phase 8 commands (careers: clients, lending desk, oversight)
+    def quote_client(self, portfolio_id: str, rfq_id: str, level: Optional[float] = None, pass_: bool = False) -> Dict:
+        return self._cmd(self.clients.quote, self.portfolio(portfolio_id), rfq_id, level, pass_)
+
+    def lend_out(self, portfolio_id: str, security_id: str, quantity) -> Dict:
+        return self._cmd(self.lenddesk.lend, self.portfolio(portfolio_id), self.security(security_id), quantity)
+
+    def recall_lent(self, portfolio_id: str, lend_id: str, quantity=None) -> Dict:
+        return self._cmd(self.lenddesk.recall, self.portfolio(portfolio_id), lend_id, quantity)
+
+    def decide_request(self, portfolio_id: str, desk_id: str, request_id: str, approve: bool, note: str = "") -> Dict:
+        return self._cmd(self.institutions.decide, self.portfolio(portfolio_id), self.portfolio(desk_id), request_id, approve, note)
+
+    def set_desk_limit(self, portfolio_id: str, desk_id: str, key: str, value: float) -> Dict:
+        return self._cmd(self.institutions.set_limit, self.portfolio(portfolio_id), self.portfolio(desk_id), key, value)
+
+    def force_reduce(self, portfolio_id: str, desk_id: str, security_id: str, fraction: float) -> Dict:
+        return self._cmd(self.institutions.force_reduce, self.portfolio(portfolio_id), self.portfolio(desk_id), security_id, fraction)
+
+    # ------------------------------------------------------------------ phase 9 commands (commodity depth)
+    def place_spread(self, portfolio_id: str, near_id: str, far_id: str, side: str, quantity, limit_points=None, time_in_force: str = "DAY"):
+        return self._cmd(self.cdesk.place_spread, self.portfolio(portfolio_id), near_id, far_id, side, quantity, limit_points, time_in_force)
+
+    def set_physical_delivery(self, portfolio_id: str, on: bool) -> Dict:
+        return self._cmd(self.cdesk.set_physical_delivery, self.portfolio(portfolio_id), on)
+
+    def force_rates(self, bp: float, note: str = "") -> Event:
+        """Scenario control for sandbox worlds: an exogenous parallel curve shift (bp) on the next processed day."""
+        if self.clock.mode == "REAL_TIME":
+            raise CommandError("rate shocks cannot be forced in a career world")
+        if abs(float(bp)) > 500:
+            raise CommandError("rate shocks are limited to ±500bp")
+        ev = self.emit(E.RATES_SHOCK_FORCED, {"bp": float(bp), "note": note})
+        self.flush()
+        return ev
+
     def advance(self, days: int = 1, force: bool = False) -> List[str]:
         if self.clock.mode == "REAL_TIME" and not force:
             raise CommandError("This is a career world: the market updates once a day at "
                                f"{self.clock.update_time} {self.clock.timezone}. Create a sandbox world to advance manually.")
         closed = []
+        import time as _time
         for _ in range(max(1, days)):
+            _t0 = _time.perf_counter()
+            _n0 = len(self.events)
             closed.append(self.simulation.advance_one_day())
+            self.run_log.append({"date": closed[-1], "events": len(self.events) - _n0, "ms": round((_time.perf_counter() - _t0) * 1000, 1)})
         self.flush()
+        get_logger("world").info("world %s: advanced %d day(s) to %s", self.id, len(closed), self.current_date.isoformat())
         return closed
 
     def catch_up(self, at=None) -> List[str]:
@@ -455,10 +663,14 @@ class World:
             return []
         target = target_sim_date(self.clock, self.calendar, at)
         closed = []
+        import time as _time
         while self.current_date < target:
+            _t0, _n0 = _time.perf_counter(), len(self.events)
             closed.append(self.simulation.advance_one_day())
+            self.run_log.append({"date": closed[-1], "events": len(self.events) - _n0, "ms": round((_time.perf_counter() - _t0) * 1000, 1)})
         if closed:
             self.flush()
+            get_logger("world").info("world %s: caught up %d day(s) to %s", self.id, len(closed), self.current_date.isoformat())
         return closed
 
     def next_update_at(self, at=None):

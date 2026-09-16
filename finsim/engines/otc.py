@@ -27,7 +27,7 @@ from ..domain.events import Event
 from ..domain.models import Portfolio
 from ..domain.otc_models import BUCKET_BY_PRODUCT, CSA, OE, OTCTrade, PRODUCTS, RFQ
 from ..engines import otc_pricing as px
-from ..engines.counterparties import CSA_TERMS, DEALERS, HALF_WIDTH, UNIT, dealers_for, quote_half_width
+from ..engines.counterparties import CLIENT_SPECS, CSA_TERMS, DEALERS, HALF_WIDTH, UNIT, counterparty_name, csa_terms_for, dealers_for, quote_half_width
 from ..engines.ledger import dr, cr
 from ..engines.pricing import interp_rate
 from ..money import D, money, ZERO
@@ -99,9 +99,21 @@ class OTCEngine:
                 return BUCKET_BY_PRODUCT.get(t.product, "rates")
         return "rates"
 
+    def cp_state(self, key: str):
+        """Credit state for any counterparty: dealers from the market model, clients from the static registry."""
+        w = self.w
+        if key in w.market.dealers.state:
+            return w.market.dealers.state[key]
+        from ..engines.counterparties import DealerState
+        spec = CLIENT_SPECS.get(key[7:] if key.startswith("CLIENT:") else key, {"rating": "BBB", "cds": 150.0})
+        return DealerState(float(spec["cds"]), spec["rating"])
+
+    def cp_name(self, key: str) -> str:
+        return counterparty_name(key)
+
     def csa(self, pf: Portfolio, dealer: str) -> CSA:
         if dealer not in pf.csas:
-            terms = CSA_TERMS[dealer]
+            terms = csa_terms_for(dealer)
             pf.csas[dealer] = CSA(counterparty=dealer, portfolio_id=pf.id, threshold=D(terms["threshold"]), mta=D(terms["mta"]), im_pct=dict(terms["im"]),
                                   eligible=["CASH"])
         return pf.csas[dealer]
@@ -535,11 +547,26 @@ class OTCEngine:
             return terms, N, base, today, M["maturity"], initial
         raise ValueError(p)
 
+    def open_client_trade(self, pf: Portfolio, product: str, params: Dict, level: float, counterparty: str, client_name: str, cause: Event) -> OTCTrade:
+        """Book a trade the desk won from a client at the desk's own level (the desk is the price maker)."""
+        w = self.w
+        params = self._norm_params(product, params)
+        fair = self.fair(product, params)
+        q = {"dealer": counterparty, "name": client_name, "level": level, "cost_vs_mid": 0.0, "declined": False}
+        r = RFQ(id=f"CLIENT-{cause.id}", portfolio_id=pf.id, product=product, params=params, quotes=[q], mid={k: v for k, v in fair.items() if k != "strip"} | ({"strip": fair["strip"]} if "strip" in fair else {}),
+                status="EXECUTED", date=w.current_date.isoformat(), expires=w.current_date.isoformat())
+        terms, notional, ccy, start, maturity, initial = self._build_terms(r, q)
+        tid = w.new_id("OTC")
+        w.emit(OE.OTC_TRADE_OPENED, {"portfolio_id": pf.id, "trade_id": tid, "product": product, "counterparty": counterparty, "notional": notional, "currency": ccy,
+                                     "start": start, "maturity": maturity, "terms": terms, "initial_cashflows": initial, "rfq_id": None, "dealer_level": level,
+                                     "mid": fair.get("mid"), "cost_vs_mid": 0.0, "client": client_name}, cause_id=cause.id, portfolio_id=pf.id)
+        return pf.otc_trades[tid]
+
     # ------------------------------------------------------------------ commands: terminate, credit events, defaults
     def unwind_cost(self, t: OTCTrade) -> Decimal:
         w = self.w
-        dst = w.market.dealers.state[t.counterparty]
-        hw = quote_half_width(t.product, t.counterparty, w.market.state.regime, dst.stress)
+        dst = self.cp_state(t.counterparty)
+        hw = quote_half_width(t.product, t.counterparty if t.counterparty in DEALERS else "ATLAS", w.market.state.regime, dst.stress)
         an = t.analytics
         if t.product in ("IRS", "FRA"):
             c = hw * abs(an.get("dv01", 0.0))
@@ -879,10 +906,15 @@ class OTCEngine:
                                              "mta": csa.mta, "currency": pf.base_currency}, cause_id=cause.id, portfolio_id=pf.id)
             if shortfall > 0:
                 if call is not None and call.cycles_open >= CSA_CALL_GRACE_CYCLES:
-                    self.close_out(pf, dealer, cause, f"unmet CSA call {call.id}: {DEALERS[dealer].name} terminated the netting set")
+                    self.close_out(pf, dealer, cause, f"unmet CSA call {call.id}: {self.cp_name(dealer)} terminated the netting set")
                     w.collateral.resolve_call(pf, call, "FORCED", "dealer closed out the netting set at mid less unwind costs", cause)
+                    # the netting set is empty: every collateral balance under the CSA is returned the same day
+                    for kind, bal in (("VM_POSTED", csa.vm_posted), ("VM_RECEIVED", csa.vm_received), ("IM_POSTED", csa.im_posted), ("IM_RECEIVED", csa.im_received)):
+                        if bal:
+                            w.emit(OE.CSA_MARGIN_MOVED, {"portfolio_id": pf.id, "dealer": dealer, "kind": kind, "amount": -bal, "net_mtm": ZERO, "threshold": csa.threshold,
+                                                         "mta": csa.mta, "currency": pf.base_currency}, cause_id=cause.id, portfolio_id=pf.id)
                 else:
-                    w.collateral.issue_or_update_call(pf, "OTC", dealer, shortfall, f"CSA margin call from {DEALERS[dealer].name}: {shortfall:,.0f} of variation/initial margin could not be funded", cause)
+                    w.collateral.issue_or_update_call(pf, "OTC", dealer, shortfall, f"CSA margin call from {self.cp_name(dealer)}: {shortfall:,.0f} of variation/initial margin could not be funded", cause)
             elif call is not None:
                 w.collateral.resolve_call(pf, call, "MET", "margin posted", cause)
 
@@ -899,10 +931,11 @@ class OTCEngine:
         nav = w.pnl.compute_summary(pf)["nav"]
         rows = []
         sets = self.netting_sets(pf)
-        for dealer, spec in DEALERS.items():
+        keys = list(DEALERS) + sorted(k for k in set(list(sets) + list(pf.csas)) if k not in DEALERS)
+        for dealer in keys:
             trades = sets.get(dealer, [])
             csa = pf.csas.get(dealer)
-            dst = w.market.dealers.state[dealer]
+            dst = self.cp_state(dealer)
             pos = sum((t.mtm for t in trades if t.mtm > 0), ZERO)
             neg = sum((t.mtm for t in trades if t.mtm < 0), ZERO)
             net = pos + neg
@@ -916,13 +949,13 @@ class OTCEngine:
                 addon += money(D(repr(PFE_ADDON[t.product] * math.sqrt(T_))) * t.notional)
             ngr = float(max(ZERO, net) / pos) if pos > 0 else 0.0
             pfe = max(ZERO, net - vm_recv) + money(addon * D(repr(0.4 + 0.6 * ngr)))
-            pd1 = w.market.dealers.default_probability_1y(dealer)
-            rows.append({"dealer": dealer, "name": spec.name, "rating": dst.rating, "cds_bps": dst.cds, "stress": dst.stress, "defaulted": dst.defaulted,
+            pd1 = min(0.99, (dst.cds / 1e4) / (1 - DEFAULT_RECOVERY))
+            rows.append({"dealer": dealer, "name": self.cp_name(dealer), "rating": dst.rating, "cds_bps": dst.cds, "stress": dst.stress, "defaulted": dst.defaulted,
                          "trades": len(trades), "gross_positive": pos, "gross_negative": neg, "net_mtm": net, "vm_received": vm_recv, "vm_posted": vm_post,
                          "im_posted": im_post, "im_received": csa.im_received if csa else ZERO, "current_exposure": current, "pfe": pfe,
                          "expected_loss_1y": money(pfe * D(repr(pd1 * (1 - DEFAULT_RECOVERY)))), "pd_1y": pd1, "netting_benefit": pos - max(ZERO, net),
-                         "pct_nav": float(current / nav) if nav else 0.0, "threshold": csa.threshold if csa else D(CSA_TERMS[dealer]["threshold"]),
-                         "mta": csa.mta if csa else D(CSA_TERMS[dealer]["mta"]), "csa_status": csa.status if csa else "NONE",
+                         "pct_nav": float(current / nav) if nav else 0.0, "threshold": csa.threshold if csa else D(csa_terms_for(dealer)["threshold"]),
+                         "mta": csa.mta if csa else D(csa_terms_for(dealer)["mta"]), "csa_status": csa.status if csa else "NONE", "is_client": dealer not in DEALERS,
                          "call": w.collateral.open_call(pf, "OTC", dealer)})
         return {"rows": rows, "total_current_exposure": sum((r["current_exposure"] for r in rows), ZERO), "total_pfe": sum((r["pfe"] for r in rows), ZERO),
                 "method": "current exposure = max(0, net MTM − VM received) + VM posted; PFE = current + add-on (notional × product factor × √T) × (0.4 + 0.6 × net/gross); "
@@ -987,7 +1020,7 @@ class OTCEngine:
         w = self.w
         rows = []
         for t in pf.otc_trades.values():
-            rows.append({"id": t.id, "product": t.product, "counterparty": t.counterparty, "dealer_name": DEALERS[t.counterparty].name, "notional": t.notional,
+            rows.append({"id": t.id, "product": t.product, "counterparty": t.counterparty, "dealer_name": self.cp_name(t.counterparty), "notional": t.notional,
                          "currency": t.currency, "trade_date": t.trade_date, "start": t.start, "maturity": t.maturity, "status": t.status, "mtm": t.mtm,
                          "realized": t.realized, "terms": t.terms, "analytics": t.analytics, "state": {k: v for k, v in t.state.items() if k != "paid"},
                          "cashflows": t.cashflows[-12:], "fixings": t.fixings, "bucket": BUCKET_BY_PRODUCT[t.product], "description": self.describe(t),
@@ -1048,7 +1081,7 @@ class OTCEngine:
         pf = w.portfolios[p["portfolio_id"]]
         t = OTCTrade(id=p["trade_id"], portfolio_id=pf.id, product=p["product"], counterparty=p["counterparty"], notional=D(p["notional"]), currency=p["currency"],
                      trade_date=ev.sim_date, start=p["start"], maturity=p["maturity"], terms=_decimals(p["terms"]))
-        t.notes.append({"date": ev.sim_date, "note": f"opened with {DEALERS[t.counterparty].name} at {p.get('dealer_level')} (mid {p.get('mid')}, cost vs mid {_f(p.get('cost_vs_mid', 0)):,.0f})"})
+        t.notes.append({"date": ev.sim_date, "note": f"opened with {self.cp_name(t.counterparty)} at {p.get('dealer_level')} (mid {p.get('mid')}, cost vs mid {_f(p.get('cost_vs_mid', 0)):,.0f})"})
         pf.otc_trades[t.id] = t
         self.csa(pf, t.counterparty)
         for cf in p.get("initial_cashflows", []):
@@ -1140,7 +1173,7 @@ class OTCEngine:
             ca.balance += amt
             ca.base_value += amt
             csa.vm_received += amt
-            w.record_cash_movement(pf, ccy, amt, "COLLATERAL", f"Variation margin {'received from' if amt > 0 else 'returned to'} {DEALERS[p['dealer']].name} (CSA)", ev)
+            w.record_cash_movement(pf, ccy, amt, "COLLATERAL", f"Variation margin {'received from' if amt > 0 else 'returned to'} {self.cp_name(p['dealer'])} (CSA)", ev)
             lines = [dr(f"1010:{ccy}", amt, None, "VM cash received"), cr("2450", amt, None, f"cash collateral received CSA:{p['dealer']}")]
             w.post(pf.id, f"CSA {p['dealer']}: variation margin received {amt:+,.2f} (net MTM {D(p['net_mtm']):,.2f})", lines, ev, {"reference": f"CSA:{p['dealer']}", "kind": "COLLATERAL"})
         elif kind == "VM_POSTED":
@@ -1185,7 +1218,7 @@ class OTCEngine:
                 continue
             net = sum((t.mtm for t in trades), ZERO)
             for t in trades:
-                self._status(pf, t, "TERMINATED", ev, f"counterparty default of {DEALERS[dealer].name}: early termination at mid")
+                self._status(pf, t, "TERMINATED", ev, f"counterparty default of {self.cp_name(dealer)}: early termination at mid")
             if csa is None:
                 continue
             vm_recv, vm_post, im_post = csa.vm_received, csa.vm_posted, csa.im_posted

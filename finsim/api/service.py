@@ -22,6 +22,8 @@ from ..engines.options import REGIME_MARGIN_MULT, STRATEGY_TEMPLATES
 from ..engines.pricing import BondPricer, Instrument, interp_rate
 from ..money import D, money, ZERO
 from ..store import EventStore
+from ..log import get_logger
+from ..version import ENGINE_VERSION
 from ..world import CommandError, World
 
 
@@ -44,9 +46,15 @@ def jsonable(o: Any) -> Any:
 
 
 class Service:
-    def __init__(self, store: EventStore):
+    def __init__(self, store: EventStore, strict_replay: Optional[bool] = None):
+        import os as _os
+        import time as _time
         self.store = store
         self.worlds: Dict[str, World] = {}
+        self.strict_replay = (_os.environ.get("FINSIM_STRICT_REPLAY") == "1") if strict_replay is None else bool(strict_replay)
+        self.started_utc = _time.time()
+        self.scheduler_state: Dict = {"last_tick": None, "ticks": 0, "last_result": {}}
+        self.log = get_logger("service")
 
     # ------------------------------------------------------------------ worlds
     def list_worlds(self) -> List[Dict]:
@@ -55,7 +63,7 @@ class Service:
     def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
                      benchmark: Optional[str] = "SPXE", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
-                     update_time: str = "09:00") -> Dict:
+                     update_time: str = "09:00", scenario: str = "NONE", at=None) -> Dict:
         """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
         themselves at the update time; sandbox saves start wherever you like and advance on demand."""
         if initial_regime not in REGIMES:
@@ -63,39 +71,60 @@ class Service:
         if job not in JOBS:
             raise CommandError(f"unknown job {job}")
         if JOBS[job].status != "PLAYABLE":
-            raise CommandError(f"{JOBS[job].title} is not playable yet: {JOBS[job].status}")
+            raise CommandError(f"{JOBS[job].title} is not playable: {JOBS[job].status}")
+        scenario = (scenario or "NONE").upper()
+        if scenario not in ("NONE", "CRISIS"):
+            raise CommandError("scenario must be NONE or CRISIS")
         clock = ClockConfig(clock_mode.upper(), timezone, update_time)
         cal = World("tmp").calendar
         if clock.mode == "REAL_TIME":
-            cal_sd = target_sim_date(clock, cal)
+            cal_sd = target_sim_date(clock, cal, at)
         else:
-            cal_sd = cal.roll(date.fromisoformat(start_date) if start_date else target_sim_date(ClockConfig("SANDBOX", timezone, update_time), cal))
+            cal_sd = cal.roll(date.fromisoformat(start_date) if start_date else target_sim_date(ClockConfig("SANDBOX", timezone, update_time), cal, at))
         wid = "W-" + uuid.uuid4().hex[:8]
-        w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime, clock=clock)
+        w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime, clock=clock, scenario=scenario)
+        self.log.info("created world %s (%s, job %s, clock %s, seed %s, scenario %s)", wid, name, job, clock.mode, seed, scenario)
         self.worlds[wid] = w
         cap = D(str(capital)) if (capital and job == "SANDBOX") else JOBS[job].capital
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
         pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
         return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode}
 
-    def catch_up_all(self) -> Dict[str, List[str]]:
-        """Process due days for every career world (called by the scheduler and on access)."""
+    def catch_up_all(self, at=None) -> Dict[str, List[str]]:
+        """Process due days for every career world (called by the scheduler and on access). `at` injects the clock."""
         out = {}
         for info in self.store.list_worlds():
-            w = self.world(info["id"])
-            closed = w.catch_up()
+            w = self.world(info["id"], at, catch_up=False)
+            closed = w.catch_up(at)
             if closed:
                 out[w.id] = closed
         return out
 
-    def world(self, world_id: str) -> World:
+    def world(self, world_id: str, at=None, catch_up: bool = True) -> World:
         if world_id not in self.worlds:
             if not any(x["id"] == world_id for x in self.store.list_worlds()):
                 raise NotFound(f"world {world_id} not found")
-            self.worlds[world_id] = World.load(self.store, world_id)
+            w = World.load(self.store, world_id, strict=self.strict_replay)
+            if w.migration.get("migrated"):
+                self.store.set_save_version(world_id, w.save_version)
+            if w.replay_errors:
+                self.log.error("world %s opened with %d replay error(s); first: %s", world_id, len(w.replay_errors), w.replay_errors[0])
+            self.worlds[world_id] = w
         w = self.worlds[world_id]
-        w.catch_up()
+        if catch_up:
+            w.catch_up(at)
         return w
+
+    def health(self) -> Dict:
+        import time as _time
+        from ..version import ENGINE_VERSION, SAVE_VERSION
+        loaded = list(self.worlds.values())
+        return jsonable({"status": "ok" if not any(w.replay_errors for w in loaded) else "degraded", "engine_version": ENGINE_VERSION, "save_version": SAVE_VERSION,
+                         "uptime_s": round(_time.time() - self.started_utc, 1), "worlds_stored": len(self.store.list_worlds()), "worlds_loaded": len(loaded),
+                         "strict_replay": self.strict_replay, "scheduler": self.scheduler_state,
+                         "worlds": [{"id": w.id, "current_date": w.current_date, "clock_mode": w.clock.mode, "events": len(w.events), "replay_errors": len(w.replay_errors),
+                                     "integrity_ok": w.integrity.get("ok", True), "save_version": w.save_version, "migrated": w.migration.get("migrated", False),
+                                     "last_run": w.run_log[-1] if w.run_log else None} for w in loaded]})
 
     def delete_world(self, world_id: str) -> None:
         self.worlds.pop(world_id, None)
@@ -107,6 +136,9 @@ class Service:
         nu = w.next_update_at()
         return jsonable({"id": w.id, "name": w.name, "seed": w.seed, "start_date": w.start_date, "current_date": w.current_date,
                          "day_index": w.day_count, "events": len(w.events), "regime": {"name": r.name, "label": r.label, "description": r.description},
+                         "scenario": w.scenario, "scenario_log": w.scenario_log,
+                         "save_version": w.save_version, "engine_version": ENGINE_VERSION, "migration": w.migration, "replay_errors": w.replay_errors,
+                         "integrity": w.integrity,
                          "portfolios": [{"id": p.id, "name": p.name, "type": p.portfolio_type, "realism": p.realism, "mode": p.mode, "benchmark": p.benchmark,
                                          "job": p.job, "job_title": JOBS[p.job].title if p.job in JOBS else p.job, "level_title": w.careers.level_title(p)}
                                         for p in w.portfolios.values()],
@@ -119,7 +151,7 @@ class Service:
     def jobs(self) -> List[Dict]:
         return [{"key": j.key, "title": j.title, "description": j.description, "capital": float(j.capital), "benchmark": j.benchmark,
                  "allowed_classes": sorted(j.allowed_classes), "max_gross_leverage": j.max_gross_leverage, "max_position_pct": j.max_position_pct,
-                 "max_drawdown": j.max_drawdown, "ladder": list(j.ladder), "status": j.status} for j in JOBS.values()]
+                 "max_drawdown": j.max_drawdown, "ladder": list(j.ladder), "status": j.status} for j in JOBS.values() if j.status != "AI"]
 
     # ------------------------------------------------------------------ commands
     def create_portfolio(self, world_id: str, name: str, portfolio_type: str, capital: float, realism: str, mode: str, benchmark: Optional[str],
@@ -295,7 +327,7 @@ class Service:
         prev5 = ch[-6][1] if len(ch) > 6 else cur
         prev22 = ch[-23][1] if len(ch) > 23 else cur
         contracts = []
-        for sec in sorted((s for s in w.securities.values() if s.underlying == code and not s.expired and w.market.history.get(s.id)), key=lambda s: s.contract_month):
+        for sec in sorted((s for s in w.securities.values() if s.is_future and s.underlying == code and not s.expired and w.market.history.get(s.id)), key=lambda s: s.contract_month):
             bar = w.market.last_bar(sec.id)
             h = w.market.history[sec.id]
             pc = h[-2].close if len(h) > 1 else bar.close
@@ -376,7 +408,52 @@ class Service:
                                                             "limit": job.max_position_pct if job else None},
                                            "drawdown": {"value": float((peak - nav) / peak) if peak else 0.0, "limit": job.max_drawdown if job else None}},
                          "reviews": list(reversed(pf.reviews)), "breaches": list(reversed(pf.breaches[-50:])), "career_log": list(reversed(pf.career_log)),
-                         "margin_calls": [asdict(m) for m in reversed(pf.margin_calls)]})
+                         "margin_calls": [asdict(m) for m in reversed(pf.margin_calls)], "missions": pf.missions,
+                         "scenario": w.scenario, "scenario_log": w.scenario_log})
+
+    # ------------------------------------------------------------------ phase 8/10: the job's desk
+    def desk(self, world_id: str, portfolio_id: str) -> Dict:
+        """Everything specific to the portfolio's job: investors, client requests, lending desk, corporate treasury, AI-desk oversight."""
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        out: Dict = {"job": pf.job, "title": JOBS[pf.job].title if pf.job in JOBS else pf.job, "missions": pf.missions, "date": w.current_date}
+        if w.investors.applies(pf):
+            out["investors"] = w.investors.book(pf)
+        if w.clients.applies(pf):
+            reqs = sorted(pf.client_rfqs.values(), key=lambda r: (r["date"], r["id"]), reverse=True)
+            out["clients"] = {"open": [r for r in reqs if r["status"] in ("OPEN", "QUOTED")], "history": [r for r in reqs if r["status"] not in ("OPEN", "QUOTED")][:60],
+                              "stats": pf.client_stats}
+        if pf.job in ("SEC_LENDING", "SANDBOX", "HEDGE_FUND", "PORTFOLIO_MANAGER", "FIXED_INCOME_PM"):
+            out["lending"] = w.lenddesk.book(pf)
+        if w.treasury.applies(pf):
+            out["treasury"] = w.treasury.dashboard(pf)
+        if pf.job == "RISK_MANAGER":
+            out["oversight"] = w.institutions.oversight(pf)
+        return jsonable(out)
+
+    def quote_client(self, world_id: str, portfolio_id: str, rfq_id: str, level: Optional[float], pass_: bool) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.quote_client(portfolio_id, rfq_id, None if level is None else float(level), bool(pass_)))
+
+    def lend_out(self, world_id: str, portfolio_id: str, security_id: str, quantity) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.lend_out(portfolio_id, security_id, D(str(quantity))))
+
+    def recall_lent(self, world_id: str, portfolio_id: str, lend_id: str, quantity=None) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.recall_lent(portfolio_id, lend_id, None if quantity in (None, "") else D(str(quantity))))
+
+    def decide_request(self, world_id: str, portfolio_id: str, desk_id: str, request_id: str, approve: bool, note: str = "") -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.decide_request(portfolio_id, desk_id, request_id, bool(approve), note or ""))
+
+    def set_desk_limit(self, world_id: str, portfolio_id: str, desk_id: str, key: str, value) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.set_desk_limit(portfolio_id, desk_id, key, float(value)))
+
+    def force_reduce(self, world_id: str, portfolio_id: str, desk_id: str, security_id: str, fraction) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.force_reduce(portfolio_id, desk_id, security_id, float(fraction)))
 
     def news(self, world_id: str) -> List[Dict]:
         w = self.world(world_id)
@@ -453,7 +530,7 @@ class Service:
                             "currency": si.currency, "ref": f"{si.id} {si.security_id}"})
         for ca in w.corporate_actions.values():
             ent = ca.entitlements.get(pf.id)
-            if ent and not ent.get("paid"):
+            if ent and ent.get("amount") is not None and not ent.get("paid"):
                 out.append({"date": ca.pay_date, "kind": "DIVIDEND", "amount": ent["amount"], "currency": ca.currency, "ref": ca.id})
             elif ca.status == "DECLARED" and ca.security_id in pf.positions and pf.positions[ca.security_id].quantity > 0:
                 out.append({"date": ca.pay_date, "kind": "DIVIDEND (projected)", "amount": money(pf.positions[ca.security_id].quantity * ca.amount_per_unit),
@@ -628,7 +705,10 @@ class Service:
         pf = w.portfolio(portfolio_id)
         holdings = [{"security_id": p.security_id, "name": w.securities[p.security_id].name, "isin": w.securities[p.security_id].isin,
                      "settled_quantity": p.settled_quantity, "trade_date_quantity": p.quantity, "pending_receive": p.pending_receive,
-                     "pending_deliver": p.pending_deliver} for p in pf.positions.values() if p.settled_quantity or p.pending_receive or p.pending_deliver or p.quantity]
+                     "pending_deliver": p.pending_deliver, "pledged": pf.pledged_quantity(p.security_id), "borrowed": p.borrowed_quantity,
+                     "reserved_for_calls": w.options.covered_shares_needed(pf, p.security_id), "available": w.collateral.available_quantity(pf, p.security_id),
+                     "failing": sum((si.quantity for si in pf.settlements.values() if si.security_id == p.security_id and si.status == "FAILED"), ZERO)}
+                    for p in pf.positions.values() if p.settled_quantity or p.pending_receive or p.pending_deliver or p.quantity]
         return jsonable({"custodian": "Meridian Custody Services", "account": pf.custody_account, "holdings": holdings,
                          "movements": [asdict(c) for c in reversed(pf.custody_movements)]})
 
@@ -840,6 +920,31 @@ class Service:
         w = self.world(world_id)
         ev = w.force_regime(regime)
         return {"event_id": ev.id, "regime": regime}
+
+    # ------------------------------------------------------------------ phase 9: commodity desk
+    def place_spread(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        st = w.place_spread(portfolio_id, body["near"], body["far"], body.get("side", "BUY"), D(str(body["quantity"])),
+                            None if body.get("limit_points") in (None, "") else float(body["limit_points"]), body.get("time_in_force", "DAY"))
+        return jsonable({"strategy_id": st.id, "status": st.status, "legs": st.legs, "analytics": w.options.strategy_analytics(w.portfolio(portfolio_id), st)})
+
+    def set_physical_delivery(self, world_id: str, portfolio_id: str, on: bool) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.set_physical_delivery(portfolio_id, bool(on)))
+
+    def commodity_desk(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        spreads = [{"id": st.id, "status": st.status, "underlying": st.underlying, "legs": st.legs, "quantity": st.quantity, "net_limit": st.net_limit,
+                    "net_premium": st.net_premium, "entered": st.entered_date} for st in pf.strategies.values() if st.strategy_type == "FUTURES_CALENDAR"]
+        return jsonable({"physical_delivery": pf.physical_delivery, "inventory": w.cdesk.inventory(pf), "deliveries": pf.physical_deliveries[-30:],
+                         "spreads": list(reversed(spreads))[:40], "futures_margin": w.futures.required_margin(pf),
+                         "options_on_futures": [u for u in w.options.optionable_futures()]})
+
+    def force_rates(self, world_id: str, bp: float) -> Dict:
+        w = self.world(world_id)
+        ev = w.force_rates(float(bp))
+        return {"event_id": ev.id, "bp": float(bp)}
 
     # ------------------------------------------------------------------ audit
     # ------------------------------------------------------------------ listed options (phase 3)
@@ -1063,6 +1168,36 @@ class Service:
             custom["commodity_by_code"] = {k.upper(): float(v) for k, v in body["commodity_by_code"].items()}
         custom["label"] = body.get("label", "Custom")
         return jsonable(w.risk.stress(pf, custom=custom))
+
+    # ------------------------------------------------------------------ macro world & corporate events (phases 6-7)
+    def macro(self, world_id: str) -> Dict:
+        w = self.world(world_id)
+        cur = w.market.curve()
+        return jsonable({**w.market.macro.dashboard(w.current_date), "regime": w.market.regime().label, "curve": asdict(cur),
+                         "corporate_events": w.market.cevents.announced[-60:], "date": w.current_date})
+
+    def corporate_actions_for(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        rows = []
+        for ca in sorted(w.corporate_actions.values(), key=lambda c: c.ex_date, reverse=True):
+            ent = ca.entitlements.get(pf.id)
+            terms = ca.entitlements.get("_terms", {})
+            held = pf.positions[ca.security_id].quantity if ca.security_id in pf.positions else ZERO
+            rows.append({"id": ca.id, "kind": ca.action_type, "security_id": ca.security_id, "declared": ca.declared_date, "ex_date": ca.ex_date, "pay_date": ca.pay_date,
+                         "amount_per_unit": ca.amount_per_unit, "status": ca.status, "terms": terms, "held": held, "entitlement": ent,
+                         "election_open": ca.action_type in ("TENDER_OFFER", "RIGHTS_ISSUE") and ca.status == "DECLARED" and w.current_date.isoformat() <= str(terms.get("deadline", ""))})
+        return jsonable({"rows": rows[:200], "fail_charges": pf.fail_charges,
+                         "fails": [asdict(si) for si in pf.settlements.values() if si.status == "FAILED"]})
+
+    def elect(self, world_id: str, portfolio_id: str, ca_id: str, quantity: float) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.elect(portfolio_id, ca_id, quantity))
+
+    def force_corporate_event(self, world_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        ev = w.force_corporate_event(body["security_id"], body["kind"], body.get("terms", {}), body["effective"])
+        return {"event_id": ev.id, "ca_id": ev.payload["id"]}
 
     def force_split(self, world_id: str, security_id: str, ratio: float) -> Dict:
         w = self.world(world_id)

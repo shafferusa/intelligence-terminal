@@ -456,3 +456,232 @@ class SecLendingEngine:
         w.record_cash_movement(pf, ccy, -pen, "BUY_IN_PENALTY", f"Buy-in penalty {loan.id}", ev)
         w.post(pf.id, f"Buy-in penalty {loan.id} {p['security_id']}: {pen:,.2f}", [dr("5700", pen, p["security_id"], "buy-in penalty"), cr(f"1010:{ccy}", pen, p["security_id"], "cash")],
                ev, {"loan_id": loan.id, "security_id": p["security_id"]})
+
+
+# ====================================================================== lend side (securities-lending trader job)
+class LE:
+    SECURITY_LENT = "SECURITY_LENT"
+    LEND_MARKED = "LEND_MARKED"
+    LEND_FEE_ACCRUED = "LEND_FEE_ACCRUED"
+    LEND_FEE_SETTLED = "LEND_FEE_SETTLED"
+    LEND_RECALLED = "LEND_RECALLED"
+    LEND_RETURNED = "LEND_RETURNED"
+
+
+LEND_COLLATERAL = 1.02
+MIN_LEND_SESSIONS = 5              # borrowers keep a loan at least this long before a random early return
+EARLY_RETURN_P = 0.015             # daily probability of an early return after that
+BORROWERS = ["Kestrel Macro Fund", "Vantage Multi-Strategy", "Harbor Securities Swaps", "Atlas Capital Markets", "Meridian Bank Derivatives"]
+
+
+class LendDeskEngine:
+    """The player as lender: lend inventory out against cash collateral, earn the fee, pay the rebate, recall when needed."""
+
+    def __init__(self, world):
+        self.w = world
+
+    def register(self) -> None:
+        w = self.w
+        w.on(LE.SECURITY_LENT, lambda world, ev: self._h_lent(ev))
+        w.on(LE.LEND_MARKED, lambda world, ev: self._h_marked(ev))
+        w.on(LE.LEND_FEE_ACCRUED, lambda world, ev: self._h_accrued(ev))
+        w.on(LE.LEND_FEE_SETTLED, lambda world, ev: self._h_settled(ev))
+        w.on(LE.LEND_RECALLED, lambda world, ev: self._h_recalled(ev))
+        w.on(LE.LEND_RETURNED, lambda world, ev: self._h_returned(ev))
+
+    # ------------------------------------------------------------------ commands
+    def lend(self, pf: Portfolio, sec: Security, quantity) -> Dict:
+        from ..world import CommandError
+        w = self.w
+        q = qqty(quantity)
+        if q <= 0:
+            raise CommandError("quantity must be positive")
+        st = w.market.lending.state.get(sec.id)
+        if st is None or sec.is_option or sec.is_future:
+            raise CommandError(f"{sec.id} has no lending market")
+        avail = w.collateral.available_quantity(pf, sec.id)
+        if avail < q:
+            raise CommandError(f"only {avail:,} {sec.id} unencumbered in custody (settled, not pledged, not lent, not reserved)")
+        # demand: borrowers take what the market's utilisation implies is wanted; specials are taken in full
+        demand = int(st.supply * min(1.0, st.utilization + 0.15)) if st.category == "GC" else int(st.supply)
+        already = sum((D(l["quantity"]) for l in pf.lends.values() if l["security_id"] == sec.id and l["status"] == "OPEN"), ZERO)
+        take = min(q, max(ZERO, D(demand) - already))
+        if take <= 0:
+            raise CommandError(f"no borrower demand for more {sec.id} today (market utilisation {st.utilization:.0%})")
+        mv = w.collateral.market_value(sec, take)
+        coll = money(mv * D(str(LEND_COLLATERAL)))
+        rng = random.Random(f"{w.seed}|lendout|{pf.id}|{sec.id}|{w.current_date.isoformat()}")
+        lid = w.new_id("LD")
+        w.emit(LE.SECURITY_LENT, {"portfolio_id": pf.id, "lend_id": lid, "security_id": sec.id, "quantity": take, "borrower": rng.choice(BORROWERS), "rate": st.rate,
+                                  "rebate_rate": max(0.0, w.market.curve().policy_rate - 0.0025), "market_value": mv, "collateral": coll, "category": st.category},
+               portfolio_id=pf.id)
+        return pf.lends[lid]
+
+    def recall(self, pf: Portfolio, lend_id: str, quantity=None) -> Dict:
+        from ..world import CommandError
+        w = self.w
+        l = pf.lends.get(lend_id)
+        if l is None or l["status"] != "OPEN":
+            raise CommandError("no open loan with that id")
+        q = qqty(quantity) if quantity is not None else D(l["quantity"])
+        if q <= 0 or q > D(l["quantity"]):
+            raise CommandError(f"recall quantity must be between 1 and {D(l['quantity']):,}")
+        due = w.calendar.add_business_days(w.current_date, 2).isoformat()
+        w.emit(LE.LEND_RECALLED, {"portfolio_id": pf.id, "lend_id": lend_id, "quantity": q, "due": due}, portfolio_id=pf.id)
+        return pf.lends[lend_id]
+
+    # ------------------------------------------------------------------ daily
+    def process_day(self, cause: Event, prev: date) -> None:
+        w = self.w
+        today = w.current_date
+        days = max(1, (today - prev).days)
+        for pf in w.portfolios.values():
+            for l in list(pf.lends.values()):
+                if l["status"] != "OPEN":
+                    continue
+                sec = w.securities[l["security_id"]]
+                q = D(l["quantity"])
+                # returns: recalled loans come back on the due date; borrowers also return early sometimes
+                rng = random.Random(f"{w.seed}|lendret|{l['id']}|{today.isoformat()}")
+                seasoned = w.calendar.business_days_between(date.fromisoformat(l["opened"]), today) >= MIN_LEND_SESSIONS
+                if (l.get("recall_due") and l["recall_due"] <= today.isoformat()) or (seasoned and rng.random() < EARLY_RETURN_P):
+                    rq = D(l.get("recall_quantity", 0)) if l.get("recall_due") and l["recall_due"] <= today.isoformat() else q
+                    w.emit(LE.LEND_RETURNED, {"portfolio_id": pf.id, "lend_id": l["id"], "quantity": rq, "note": "recalled shares returned" if l.get("recall_due") else "borrower returned early"},
+                           cause_id=cause.id, portfolio_id=pf.id)
+                    if D(pf.lends[l["id"]]["quantity"]) <= 0:
+                        # a fully returned loan settles its accrued fee and rebate on the spot
+                        if D(l.get("accrued_fee", 0)) or D(l.get("accrued_rebate", 0)):
+                            w.emit(LE.LEND_FEE_SETTLED, {"portfolio_id": pf.id, "lend_id": l["id"], "fee": D(l.get("accrued_fee", 0)), "rebate": D(l.get("accrued_rebate", 0)),
+                                                         "currency": pf.base_currency}, cause_id=cause.id, portfolio_id=pf.id)
+                        continue
+                    q = D(pf.lends[l["id"]]["quantity"])
+                # re-rate to the market and mark collateral
+                st = w.market.lending.state.get(sec.id)
+                rate = st.rate if st else l["rate"]
+                mv = w.collateral.market_value(sec, q)
+                coll = money(mv * D(str(LEND_COLLATERAL)))
+                w.emit(LE.LEND_MARKED, {"portfolio_id": pf.id, "lend_id": l["id"], "rate": rate, "rebate_rate": max(0.0, w.market.curve().policy_rate - 0.0025), "market_value": mv,
+                                        "collateral": coll, "delta": coll - D(l["collateral"])}, cause_id=cause.id, portfolio_id=pf.id)
+                fee = money(mv * D(repr(rate)) * days / 360)
+                rebate = money(D(l["collateral"]) * D(repr(pf.lends[l["id"]]["rebate_rate"])) * days / 360)
+                if fee or rebate:
+                    w.emit(LE.LEND_FEE_ACCRUED, {"portfolio_id": pf.id, "lend_id": l["id"], "fee": fee, "rebate": rebate, "days": days}, cause_id=cause.id, portfolio_id=pf.id)
+            if today.month != prev.month:
+                for l in list(pf.lends.values()):
+                    if D(l.get("accrued_fee", 0)) or D(l.get("accrued_rebate", 0)):
+                        w.emit(LE.LEND_FEE_SETTLED, {"portfolio_id": pf.id, "lend_id": l["id"], "fee": D(l.get("accrued_fee", 0)), "rebate": D(l.get("accrued_rebate", 0)),
+                                                     "currency": pf.base_currency}, cause_id=cause.id, portfolio_id=pf.id)
+
+    def book(self, pf: Portfolio) -> Dict:
+        w = self.w
+        rows = list(pf.lends.values())
+        open_rows = [l for l in rows if l["status"] == "OPEN"]
+        inventory = []
+        for pos in pf.positions.values():
+            sec = w.securities[pos.security_id]
+            if pos.quantity <= 0 or sec.is_future or sec.is_option:
+                continue
+            st = w.market.lending.state.get(sec.id)
+            lent = sum((D(l["quantity"]) for l in open_rows if l["security_id"] == sec.id), ZERO)
+            inventory.append({"security_id": sec.id, "held": pos.quantity, "lent": lent, "available": w.collateral.available_quantity(pf, sec.id),
+                              "rate": st.rate if st else None, "category": st.category if st else None, "utilization": st.utilization if st else None,
+                              "annual_fee_if_lent": money(w.collateral.market_value(sec, pos.quantity) * D(repr(st.rate))) if st else ZERO})
+        return {"loans": rows, "inventory": inventory, "on_loan_mv": sum((D(l["market_value"]) for l in open_rows), ZERO),
+                "collateral_held": sum((D(l["collateral"]) for l in open_rows), ZERO), "accrued_fees": sum((D(l.get("accrued_fee", 0)) for l in open_rows), ZERO),
+                "accrued_rebate": sum((D(l.get("accrued_rebate", 0)) for l in open_rows), ZERO), "fees_earned": pf.lend_fees_earned,
+                "utilisation_of_inventory": float(sum((D(l["quantity"]) for l in open_rows), ZERO) / sum((i["held"] for i in inventory), ZERO)) if inventory and sum((i["held"] for i in inventory), ZERO) else 0.0}
+
+    # ------------------------------------------------------------------ handlers
+    def _h_lent(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        pf = w.portfolios[p["portfolio_id"]]
+        q, coll = D(p["quantity"]), D(p["collateral"])
+        pf.lends[p["lend_id"]] = {"id": p["lend_id"], "security_id": p["security_id"], "quantity": q, "original_quantity": q, "borrower": p["borrower"], "rate": float(p["rate"]),
+                                  "rebate_rate": float(p["rebate_rate"]), "market_value": D(p["market_value"]), "collateral": coll, "opened": ev.sim_date, "status": "OPEN",
+                                  "accrued_fee": ZERO, "accrued_rebate": ZERO, "fees_earned": ZERO, "recall_due": None, "recall_quantity": ZERO, "category": p["category"], "history": []}
+        w.collateral.pledge(pf, w.securities[p["security_id"]], q, "LENT", p["lend_id"], ev)
+        ca = pf.cash_account(pf.base_currency)
+        ca.balance += coll
+        ca.base_value += coll
+        w.record_cash_movement(pf, pf.base_currency, coll, "COLLATERAL", f"Cash collateral received from {p['borrower']} on loan {p['lend_id']} ({q:,} {p['security_id']})", ev)
+        w.post(pf.id, f"Lent {q:,} {p['security_id']} to {p['borrower']} at {float(p['rate']):.2%}; cash collateral {coll:,.2f} received",
+               [dr(f"1010:{pf.base_currency}", coll, p["security_id"], "collateral cash received"), cr("2460", coll, p["security_id"], "cash collateral received (securities lent)")], ev,
+               {"lend_id": p["lend_id"], "security_id": p["security_id"], "kind": "LEND"})
+
+    def _h_marked(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        pf = w.portfolios[p["portfolio_id"]]
+        l = pf.lends[p["lend_id"]]
+        delta = D(p["delta"])
+        l["rate"], l["rebate_rate"], l["market_value"], l["collateral"] = float(p["rate"]), float(p["rebate_rate"]), D(p["market_value"]), D(p["collateral"])
+        if delta != 0:
+            ca = pf.cash_account(pf.base_currency)
+            ca.balance += delta
+            ca.base_value += delta
+            w.record_cash_movement(pf, pf.base_currency, delta, "COLLATERAL", f"Collateral mark on loan {l['id']} {'received' if delta > 0 else 'returned'}", ev)
+            w.post(pf.id, f"Lend {l['id']} collateral mark {delta:+,.2f}", [dr(f"1010:{pf.base_currency}", delta, l["security_id"], "collateral mark"), cr("2460", delta, l["security_id"], "collateral received adjusted")], ev,
+                   {"lend_id": l["id"], "kind": "LEND_MARK"})
+
+    def _h_accrued(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        pf = w.portfolios[p["portfolio_id"]]
+        l = pf.lends[p["lend_id"]]
+        fee, rebate = D(p["fee"]), D(p["rebate"])
+        l["accrued_fee"] = D(l.get("accrued_fee", 0)) + fee
+        l["accrued_rebate"] = D(l.get("accrued_rebate", 0)) + rebate
+        lines = [dr("1430", fee, l["security_id"], "lending fee receivable"), cr("4360", fee, l["security_id"], "securities lending fee income"),
+                 dr("5310", rebate, l["security_id"], "rebate on cash collateral"), cr("2370", rebate, l["security_id"], "rebate payable")]
+        w.post(pf.id, f"Lend {l['id']}: fee {fee:,.2f} accrued, rebate {rebate:,.2f} accrued ({p['days']}d)", lines, ev, {"lend_id": l["id"], "kind": "LEND_ACCRUAL"})
+
+    def _h_settled(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        pf = w.portfolios[p["portfolio_id"]]
+        l = pf.lends[p["lend_id"]]
+        fee, rebate = D(p["fee"]), D(p["rebate"])
+        net = fee - rebate
+        l["accrued_fee"] = D(l.get("accrued_fee", 0)) - fee
+        l["accrued_rebate"] = D(l.get("accrued_rebate", 0)) - rebate
+        l["fees_earned"] = D(l.get("fees_earned", 0)) + fee
+        pf.lend_fees_earned += fee
+        ca = pf.cash_account(p["currency"])
+        ca.balance += net
+        ca.base_value += net
+        w.record_cash_movement(pf, p["currency"], net, "BORROW_FEE", f"Lend {l['id']}: fee {fee:,.2f} received less rebate {rebate:,.2f}", ev)
+        w.post(pf.id, f"Lend {l['id']} monthly settlement: fee {fee:,.2f} less rebate {rebate:,.2f}",
+               [dr(f"1010:{p['currency']}", net, l["security_id"], "net fee received"), cr("1430", fee, l["security_id"], "fee receivable settled"), dr("2370", rebate, l["security_id"], "rebate paid")], ev,
+               {"lend_id": l["id"], "kind": "LEND_SETTLE"})
+
+    def _h_recalled(self, ev: Event) -> None:
+        p = ev.payload
+        l = self.w.portfolios[p["portfolio_id"]].lends[p["lend_id"]]
+        l["recall_due"], l["recall_quantity"] = p["due"], D(p["quantity"])
+        l["history"].append({"date": ev.sim_date, "note": f"recalled {D(p['quantity']):,} due {p['due']}"})
+
+    def _h_returned(self, ev: Event) -> None:
+        w = self.w
+        p = ev.payload
+        pf = w.portfolios[p["portfolio_id"]]
+        l = pf.lends[p["lend_id"]]
+        q = min(D(p["quantity"]), D(l["quantity"]))
+        frac = q / D(l["quantity"]) if D(l["quantity"]) else D(1)
+        coll_back = money(D(l["collateral"]) * frac)
+        l["quantity"] = D(l["quantity"]) - q
+        l["collateral"] = D(l["collateral"]) - coll_back
+        l["market_value"] = money(D(l["market_value"]) * (1 - frac))
+        l["recall_due"], l["recall_quantity"] = None, ZERO
+        if l["quantity"] <= 0:
+            l["status"] = "RETURNED"
+            l["closed"] = ev.sim_date
+        l["history"].append({"date": ev.sim_date, "note": f"{q:,} returned: {p.get('note', '')}"})
+        w.collateral.release(pf, l["security_id"], q, l["id"], ev, "shares returned by borrower")
+        ca = pf.cash_account(pf.base_currency)
+        ca.balance -= coll_back
+        ca.base_value -= coll_back
+        w.record_cash_movement(pf, pf.base_currency, -coll_back, "COLLATERAL", f"Collateral returned to {l['borrower']} on loan {l['id']}", ev)
+        w.post(pf.id, f"Lend {l['id']}: {q:,} {l['security_id']} returned, collateral {coll_back:,.2f} repaid",
+               [dr("2460", coll_back, l["security_id"], "collateral received repaid"), cr(f"1010:{pf.base_currency}", coll_back, l["security_id"], "cash returned")], ev,
+               {"lend_id": l["id"], "kind": "LEND_RETURN"})

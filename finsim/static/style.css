@@ -81,6 +81,8 @@ pre { background: var(--bg); border: 1px solid var(--line); padding: 8px; font-s
 .tree li { padding: 2px 0; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 14px; font-family: var(--mono); font-size: 12px; }
 .kv div:nth-child(odd) { color: var(--fg3); }
+#banner { position: fixed; top: 46px; left: 200px; right: 0; z-index: 30; background: #3a1414; color: #f4d7d7; border-bottom: 1px solid #7a2a2a; padding: 6px 14px; font-size: 12px; }
+#banner.info { background: #12243a; color: #d3e4f7; border-bottom-color: #2a4a7a; }
 .toast { position: fixed; bottom: 16px; right: 16px; background: var(--bg3); border: 1px solid var(--accent); padding: 10px 14px; border-radius: 4px; font-family: var(--mono); z-index: 20; max-width: 480px; }
 .toast.err { border-color: var(--red); color: var(--red); }
 .hint { color: var(--fg3); font-size: 11px; margin: 6px 0; }
