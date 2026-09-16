@@ -18,7 +18,7 @@ from ..engines.ledger import dr, cr, adj_account
 from ..engines.pricing import Instrument
 from ..money import D, money, ZERO
 
-PNL_ACCOUNTS = ["4000", "4100", "4200", "4300", "4350", "4400", "4500", "4600", "4650", "4700", "4800", "5000", "5100", "5300", "5400", "5500", "5600", "5700"]
+PNL_ACCOUNTS = ["4000", "4100", "4200", "4300", "4350", "4400", "4500", "4600", "4650", "4700", "4800", "4900", "4910", "5000", "5100", "5300", "5400", "5500", "5600", "5700"]
 
 
 class PnLEngine:
@@ -137,6 +137,9 @@ class PnLEngine:
         pay = (led.balance("2100") + led.balance("2300") + led.balance("2310") + led.balance("2320") + led.balance("2330") + led.balance("2340") + led.balance("2350"))
         repo = led.balance("2500")
         margin_loan = led.balance("2700")
+        otc_assets = led.balance("1800")
+        otc_liabilities = led.balance("2800")
+        vm_received = led.balance("2450")
         long_exp = sum((p.market_value for p in pf.positions.values() if p.quantity > 0 and not p.is_future), ZERO)
         short_exp = sum((-p.market_value for p in pf.positions.values() if p.quantity < 0 and not p.is_future), ZERO)
         fut_long = fut_short = ZERO
@@ -149,12 +152,13 @@ class PnLEngine:
                     fut_long += notional
                 else:
                     fut_short += notional
-        nav = cash_base + mv + recv + margin + collateral_posted + reverse_repo + fx_forwards - pay - repo - margin_loan
+        nav = cash_base + mv + recv + margin + collateral_posted + reverse_repo + fx_forwards + otc_assets - otc_liabilities - vm_received - pay - repo - margin_loan
         unreal = sum((p.unrealized_pnl for p in pf.positions.values() if not p.is_future), ZERO)
         gross = long_exp + short_exp + fut_long + fut_short
         return {"nav": nav, "ledger_nav": led.nav(), "cash": cash, "cash_base": cash_base, "market_value": mv, "receivables": recv, "payables": pay,
                 "margin_deposits": margin, "collateral_posted": collateral_posted, "reverse_repo": reverse_repo, "fx_forwards": fx_forwards,
-                "repo_borrowing": repo, "margin_loan": margin_loan, "short_market_value": -short_exp,
+                "repo_borrowing": repo, "margin_loan": margin_loan, "short_market_value": -short_exp, "otc_assets": otc_assets,
+                "otc_liabilities": otc_liabilities, "vm_received": vm_received,
                 "unrealized": unreal, "realized": led.balance("4000") + led.balance("4400"), "long_exposure": long_exp + fut_long,
                 "short_exposure": short_exp + fut_short, "futures_long": fut_long, "futures_short": fut_short,
                 "gross_exposure": gross, "net_exposure": long_exp + fut_long - short_exp - fut_short,
@@ -173,16 +177,17 @@ class PnLEngine:
             d = {a: balances[a] - D(prev_bal.get(a, 0)) for a in PNL_ACCOUNTS}
             # per-security
             by_pos: Dict[str, Dict[str, Decimal]] = {}
-            buckets = {"equities": ZERO, "commodities": ZERO, "rates": ZERO, "credit": ZERO, "options": ZERO}
+            buckets = {"equities": ZERO, "commodities": ZERO, "rates": ZERO, "credit": ZERO, "options": ZERO, "fx": ZERO}
             bond_int = ZERO
             for sid in set(list(led.security_balances) + list(prev_sec)):
                 cur = {a: led.security_balance(sid, a) for a in PNL_ACCOUNTS}
                 pb = prev_sec.get(sid, {})
                 dd = {a: cur[a] - D(pb.get("_" + a, 0)) for a in PNL_ACCOUNTS}
-                price_pnl = dd["4000"] + dd["4100"] + dd["4400"] + dd["4800"]
-                sec = w.securities[sid]
-                buckets[self.bucket_of(sec)] += price_pnl
-                if sec.is_bond:
+                price_pnl = dd["4000"] + dd["4100"] + dd["4400"] + dd["4800"] + dd["4900"] + dd["4910"]
+                sec = w.securities.get(sid)
+                bucket = self.bucket_of(sec) if sec is not None else w.otc.bucket_of(sid)
+                buckets[bucket] += price_pnl
+                if sec is not None and sec.is_bond:
                     bond_int += dd["4300"]
                 pos = pf.positions.get(sid)
                 fin_sid = dd["4350"] - dd["5300"] - dd["5700"] - dd["5400"] + dd["4500"] - dd["5500"]
@@ -190,9 +195,9 @@ class PnLEngine:
                                "interest": dd["4300"], "commissions": -dd["5000"], "financing": fin_sid,
                                "total": price_pnl + dd["4200"] + dd["4300"] - dd["5000"] + fin_sid,
                                "quantity": pos.quantity if pos else ZERO, "market_value": pos.market_value if pos else ZERO,
-                               "mark": pos.mark if pos else ZERO, "bucket": self.bucket_of(sec), **{"_" + a: cur[a] for a in PNL_ACCOUNTS}}
+                               "mark": pos.mark if pos else ZERO, "bucket": bucket, **{"_" + a: cur[a] for a in PNL_ACCOUNTS}}
             cash_int = d["4300"] - bond_int - d["5100"]
-            fx = d["4600"] + d["4650"] + d["4700"]
+            fx = d["4600"] + d["4650"] + d["4700"] + buckets["fx"]      # cash translation, spot realisation, forwards, cross-currency swaps
             borrow = d["4350"] - d["5300"] - d["5700"]
             repo_fin = d["4500"] - d["5500"]
             explain = {"equities": buckets["equities"], "commodities": buckets["commodities"], "rates": buckets["rates"], "credit": buckets["credit"],

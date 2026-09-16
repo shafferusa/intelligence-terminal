@@ -176,14 +176,14 @@ class CollateralEngine:
                     encumbered.append({"security_id": sec.id, "quantity": p.quantity, "purpose": p.purpose, "reference": p.reference,
                                        "market_value": self.market_value(sec, p.quantity)})
         cash = pf.cash_account(pf.base_currency).balance
-        posted = {"SECLOAN": ZERO, "REPO": ZERO, "PRIME": ZERO}
+        posted = {"SECLOAN": ZERO, "REPO": ZERO, "PRIME": ZERO, "OTC": ZERO}
         for ref, amt in pf.cash_collateral.items():
-            src = "SECLOAN" if ref.startswith("LN-") else "REPO" if ref.startswith("RP-") else "PRIME"
+            src = "SECLOAN" if ref.startswith("LN-") else "REPO" if ref.startswith("RP-") else "OTC" if ref.startswith(("CSA:", "IM:")) else "PRIME"
             posted[src] += amt
         posted_sec = {"SECLOAN": ZERO, "REPO": ZERO, "PRIME": ZERO}
         for p in pf.pledges:
             posted_sec[p.purpose] = posted_sec.get(p.purpose, ZERO) + self.market_value(w.securities[p.security_id], p.quantity)
-        received = {"SECLOAN": ZERO, "REVERSE_REPO": ZERO}
+        received = {"SECLOAN": ZERO, "REVERSE_REPO": ZERO, "OTC_VM": sum((c.vm_received for c in pf.csas.values()), ZERO)}
         for ref, r in pf.collateral_received.items():
             received["REVERSE_REPO" if ref.startswith("RP-") else "SECLOAN"] += D(r["value"])
         calls = [c for c in pf.collateral_calls.values()]

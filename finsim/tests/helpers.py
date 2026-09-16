@@ -74,6 +74,18 @@ def assert_ledger_invariants(tc, w, pf):
     pending_fx = sum((t.usd_value for t in pf.fx_trades.values() if t.status == "PENDING"), D(0))
     tc.assertEqual(led.balance("1250"), pending_fx, "fx receivable")
     tc.assertEqual(led.balance("2350"), pending_fx, "fx payable")
+    open_otc = [t for t in pf.otc_trades.values() if t.status == "OPEN"]
+    tc.assertEqual(led.balance("1800"), sum((t.mtm for t in open_otc if t.mtm > 0), D(0)), "OTC derivative assets = positive PVs")
+    tc.assertEqual(led.balance("2800"), sum((-t.mtm for t in open_otc if t.mtm < 0), D(0)), "OTC derivative liabilities = negative PVs")
+    for t in pf.otc_trades.values():
+        if t.status != "OPEN":
+            tc.assertEqual(led.security_balance(t.id, "1800"), D(0), f"closed trade {t.id} still on the balance sheet")
+            tc.assertEqual(led.security_balance(t.id, "2800"), D(0))
+    tc.assertEqual(led.balance("2450"), sum((c.vm_received for c in pf.csas.values()), D(0)), "VM received")
+    tc.assertEqual(sum((v for k, v in pf.cash_collateral.items() if k.startswith(("CSA:", "IM:"))), D(0)),
+                   sum((c.vm_posted + c.im_posted for c in pf.csas.values()), D(0)), "VM/IM posted under CSAs")
+    for c in pf.csas.values():
+        tc.assertFalse(c.vm_posted > 0 and c.vm_received > 0, f"VM cannot be posted and received at once under CSA {c.counterparty}")
     tc.assertGreaterEqual(pf.cash_account(pf.base_currency).balance, D(0), "base cash must never stay negative: shortfalls become margin loans")
     for p in pf.pledges:
         tc.assertGreater(p.quantity, D(0))

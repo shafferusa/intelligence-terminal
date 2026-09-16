@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ..money import ZERO
 
@@ -505,6 +505,9 @@ class Portfolio:
     manufactured_payable: Decimal = ZERO
     collateral_received: Dict[str, Dict] = field(default_factory=dict)  # reference -> {security_id, quantity, value}
     strategies: Dict[str, Strategy] = field(default_factory=dict)
+    otc_trades: Dict[str, Any] = field(default_factory=dict)     # OTCTrade (domain.otc_models)
+    rfqs: Dict[str, Any] = field(default_factory=dict)           # RFQ
+    csas: Dict[str, Any] = field(default_factory=dict)           # dealer -> CSA
     options_margin: Decimal = ZERO
     options_margin_detail: List[Dict] = field(default_factory=list)
     cash: Dict[str, CashAccount] = field(default_factory=dict)

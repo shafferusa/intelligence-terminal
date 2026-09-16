@@ -29,6 +29,7 @@ from ..money import D, money, price as qprice
 from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel
 from .lending_market import LendingMarket
 from .fx_market import FXModel
+from .counterparties import DealerModel
 from .vol import VolSurfaceModel, optionable_underlyings, structural_vol, INDEX_ID as OPT_INDEX_ID, INDEX_SOURCE as OPT_INDEX_SOURCE
 
 TENORS = [0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 20.0, 30.0]
@@ -241,6 +242,8 @@ class MarketEngine:
         for under in optionable_underlyings(securities):
             self.vol.init_underlying(under, structural_vol(securities, under), is_index=(under == OPT_INDEX_ID))
         self._vol_payload: Dict[str, Dict] = {}
+        self.dealers = DealerModel(seed)
+        self._dealer_payload: Dict[str, Dict] = {}
         self.bar_provider = None      # set by the world: synthetic bars for instruments priced off others (listed options)
         self.player_on_loan: Dict[str, int] = {}
         self.vol_index_history: List[Tuple[str, float]] = []
@@ -451,7 +454,8 @@ class MarketEngine:
         lpayload, lnews = self.lending.step(d, self.securities, regime, self.realized_vol, self.player_on_loan, max(1, (d - prev_bd).days))
         self._lending_payload = lpayload
         self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
-        self.day_news = cnews + lnews
+        self._dealer_payload, dnews = self.dealers.step(d, regime, hy, mkt)
+        self.day_news = cnews + lnews + dnews
         self._commodity_payload = cpayload
         self.state = MarketState(d.isoformat(), regime, level, slope, curv, ig, hy, mkt, sectors)
         for t, b in bars.items():
@@ -472,7 +476,7 @@ class MarketEngine:
 
     # ---------------- ingest (replay) ----------------
     def ingest_close(self, d: date, bars: Dict[str, Bar], curve: YieldCurve, state: Dict, commodities: Optional[Dict] = None,
-                     lending: Optional[Dict] = None, fx: Optional[Dict] = None, vol: Optional[Dict] = None) -> None:
+                     lending: Optional[Dict] = None, fx: Optional[Dict] = None, vol: Optional[Dict] = None, dealers: Optional[Dict] = None) -> None:
         """Used on replay: adopt stored bars instead of regenerating them."""
         self.ensure_listings(d)
         for t, b in bars.items():
@@ -493,6 +497,9 @@ class MarketEngine:
         if vol:
             self.vol.ingest(d, vol)
             self._vol_payload = vol
+        if dealers:
+            self.dealers.ingest(d, dealers)
+            self._dealer_payload = dealers
         self.vol_index_history.append((d.isoformat(), state.get("vol_index", 0.0)))
         if not self.regime_history or self.regime_history[-1][1] != state["regime"]:
             self.regime_history.append((d.isoformat(), state["regime"]))
@@ -537,3 +544,6 @@ class MarketEngine:
 
     def vol_payload(self) -> Dict:
         return getattr(self, "_vol_payload", {})
+
+    def dealer_payload(self) -> Dict:
+        return getattr(self, "_dealer_payload", {})
