@@ -96,6 +96,8 @@ class SettlementEngine:
                 return f"insufficient settled {si.currency} cash: need {si.cash_amount:,.2f}, have {bal:,.2f}; prime broker would not finance the shortfall"
         else:
             pos = pf.position(si.security_id)
+            if self.w.securities[si.security_id].is_option:
+                return None      # writing contracts: the clearinghouse is the counterparty; nothing has to be in the box
             if pos.settled_quantity < si.quantity:
                 return f"securities not in custody: need {si.quantity:,}, settled position is {pos.settled_quantity:,}"
         return None

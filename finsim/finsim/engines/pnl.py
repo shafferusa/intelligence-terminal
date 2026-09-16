@@ -8,16 +8,17 @@ less capital flows. No number is invented.
 """
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 from typing import Dict
 
 from ..domain.events import E, Event
 from ..domain.models import NAVSnapshot, Portfolio
-from ..engines.ledger import dr, cr
+from ..engines.ledger import dr, cr, adj_account
 from ..engines.pricing import Instrument
 from ..money import D, money, ZERO
 
-PNL_ACCOUNTS = ["4000", "4100", "4200", "4300", "4350", "4400", "4500", "4600", "4650", "4700", "5000", "5100", "5300", "5400", "5500", "5600", "5700"]
+PNL_ACCOUNTS = ["4000", "4100", "4200", "4300", "4350", "4400", "4500", "4600", "4650", "4700", "4800", "5000", "5100", "5300", "5400", "5500", "5600", "5700"]
 
 
 class PnLEngine:
@@ -33,17 +34,34 @@ class PnLEngine:
         w = self.w
         pos = pf.position(security_id)
         sec = w.securities[security_id]
-        if sec.is_future or not w.market.history.get(security_id):
+        if sec.is_future:
             return
-        mark = w.market.last_bar(security_id).close
-        inst = Instrument(sec, mark, w.current_date, w.market.curve())
-        mv = inst.market_value(pos.quantity) if pos.quantity else ZERO
+        greeks = None
+        if sec.is_option:
+            if pos.quantity == 0 and pos.cost_basis == 0 and pos.valuation_adjustment == 0 and pos.market_value == 0:
+                return
+            if sec.expired or not w.market.history.get(sec.index_level_source or sec.underlying):
+                return
+            q = w.options.quote(sec)
+            mark = D(repr(q["mid"])).quantize(D("0.0001"))
+            mv = money(pos.quantity * mark * D(str(sec.multiplier))) if pos.quantity else ZERO
+            greeks = {"delta": q["delta"], "gamma": q["gamma"], "vega": q["vega"], "theta": q["theta"], "rho": q["rho"], "iv": q["iv"],
+                      "underlying": q["underlying"], "T": q["T"], "date": w.current_date.isoformat(), "intrinsic": q["intrinsic"], "extrinsic": q["extrinsic"]}
+        else:
+            if not w.market.history.get(security_id):
+                return
+            mark = w.market.last_bar(security_id).close
+            inst = Instrument(sec, mark, w.current_date, w.market.curve())
+            mv = inst.market_value(pos.quantity) if pos.quantity else ZERO
         target = mv - pos.cost_basis
         delta = target - pos.valuation_adjustment
-        if delta == 0 and pos.mark == mark and pos.market_value == mv:
+        if delta == 0 and pos.mark == mark and pos.market_value == mv and (greeks is None or pos.greeks.get("date") == greeks["date"]):
             return
-        w.derive(E.VALUATION_MARKED, {"portfolio_id": pf.id, "security_id": security_id, "mark": mark, "quantity": pos.quantity, "market_value": mv,
-                                      "cost_basis": pos.cost_basis, "unrealized": target, "adjustment": delta}, cause, portfolio_id=pf.id)
+        payload = {"portfolio_id": pf.id, "security_id": security_id, "mark": mark, "quantity": pos.quantity, "market_value": mv,
+                   "cost_basis": pos.cost_basis, "unrealized": target, "adjustment": delta}
+        if greeks is not None:
+            payload["greeks"] = greeks
+        w.derive(E.VALUATION_MARKED, payload, cause, portfolio_id=pf.id)
 
     def mark_all(self, cause: Event) -> None:
         for pf in self.w.portfolios.values():
@@ -57,29 +75,39 @@ class PnLEngine:
         pos = pf.position(p["security_id"])
         sid = p["security_id"]
         led = w.ledgers[pf.id]
+        sec = w.securities[sid]
         pos.mark = D(p["mark"])
         pos.market_value = D(p["market_value"])
         delta = D(p["adjustment"])
         pos.valuation_adjustment += delta
-        # the valuation adjustment lives in 1150 for longs and 2610 for shorts; reclassify on a flip
+        if p.get("greeks") is not None:
+            pos.is_option = True
+            g = {k: (v if k == "date" else float(v)) for k, v in p["greeks"].items()}
+            if pos.greeks and pos.greeks.get("date") != g["date"]:
+                pos.prev_greeks = pos.greeks
+            pos.greeks = g
+        # the valuation adjustment lives in a long account (1150 / 1750) or a short account (2610 / 2910); reclassify on a flip
         short = pos.quantity < 0
+        la, sa = adj_account(sec, False), adj_account(sec, True)
         lines = []
-        long_bal = led.security_balance(sid, "1150")          # debit-natural
-        short_bal = led.security_balance(sid, "2610")         # credit-natural (positive = liability)
+        long_bal = led.security_balance(sid, la)          # debit-natural
+        short_bal = led.security_balance(sid, sa)         # credit-natural (positive = liability)
         if short and long_bal != 0:
-            lines += [cr("1150", long_bal, sid, "reclassify to short adjustment"), dr("2610", long_bal, sid, "reclassify from long adjustment")]
+            lines += [cr(la, long_bal, sid, "reclassify to short adjustment"), dr(sa, long_bal, sid, "reclassify from long adjustment")]
         if not short and short_bal != 0:
-            lines += [cr("2610", -short_bal, sid, "reclassify to long adjustment"), dr("1150", -short_bal, sid, "reclassify from short adjustment")]
+            lines += [cr(sa, -short_bal, sid, "reclassify to long adjustment"), dr(la, -short_bal, sid, "reclassify from short adjustment")]
         if delta != 0:
             if short:
-                lines += [dr("2610", delta, sid, "short valuation adjustment (liability falls on gains)"), cr("4100", delta, sid, "unrealized gain/loss")]
+                lines += [dr(sa, delta, sid, "short valuation adjustment (liability falls on gains)"), cr("4100", delta, sid, "unrealized gain/loss")]
             else:
-                lines += [dr("1150", delta, sid, "valuation adjustment"), cr("4100", delta, sid, "unrealized gain/loss")]
+                lines += [dr(la, delta, sid, "valuation adjustment"), cr("4100", delta, sid, "unrealized gain/loss")]
         if lines:
             w.post(pf.id, f"Mark {sid} @ {pos.mark}: unrealized {D(p['unrealized']):,.2f} (change {delta:,.2f})", lines, ev, {"security_id": sid, "kind": "MTM"})
 
     @staticmethod
     def bucket_of(sec) -> str:
+        if sec.is_option:
+            return "options"
         if sec.is_future:
             uc = sec.underlying_class or ""
             if uc.startswith("COMMODITY"):
@@ -145,13 +173,13 @@ class PnLEngine:
             d = {a: balances[a] - D(prev_bal.get(a, 0)) for a in PNL_ACCOUNTS}
             # per-security
             by_pos: Dict[str, Dict[str, Decimal]] = {}
-            buckets = {"equities": ZERO, "commodities": ZERO, "rates": ZERO, "credit": ZERO}
+            buckets = {"equities": ZERO, "commodities": ZERO, "rates": ZERO, "credit": ZERO, "options": ZERO}
             bond_int = ZERO
             for sid in set(list(led.security_balances) + list(prev_sec)):
                 cur = {a: led.security_balance(sid, a) for a in PNL_ACCOUNTS}
                 pb = prev_sec.get(sid, {})
                 dd = {a: cur[a] - D(pb.get("_" + a, 0)) for a in PNL_ACCOUNTS}
-                price_pnl = dd["4000"] + dd["4100"] + dd["4400"]
+                price_pnl = dd["4000"] + dd["4100"] + dd["4400"] + dd["4800"]
                 sec = w.securities[sid]
                 buckets[self.bucket_of(sec)] += price_pnl
                 if sec.is_bond:
@@ -167,10 +195,12 @@ class PnLEngine:
             fx = d["4600"] + d["4650"] + d["4700"]
             borrow = d["4350"] - d["5300"] - d["5700"]
             repo_fin = d["4500"] - d["5500"]
-            explain = {"equities": buckets["equities"], "commodities": buckets["commodities"], "rates": buckets["rates"], "credit": buckets["credit"], "fx": fx,
+            explain = {"equities": buckets["equities"], "commodities": buckets["commodities"], "rates": buckets["rates"], "credit": buckets["credit"],
+                       "options": buckets["options"], "fx": fx,
                        "dividends": d["4200"], "manufactured_dividends": -d["5400"], "bond_interest": bond_int, "cash_interest": cash_int,
                        "borrow_fees": borrow, "repo_financing": repo_fin, "margin_financing": -d["5600"], "fees": -d["5000"], "_balances": balances}
             day_pnl = sum((v for k, v in explain.items() if not k.startswith("_")), ZERO)
+            greek_attr = self.greek_attribution(pf, buckets["options"])
             prev_nav = prev.nav if prev else ZERO
             payload = {"portfolio_id": pf.id, "date": w.current_date.isoformat(), "nav": s["nav"], "ledger_nav": s["ledger_nav"], "cash": s["cash"],
                        "market_value": s["market_value"], "receivables": s["receivables"], "payables": s["payables"],
@@ -179,7 +209,7 @@ class PnLEngine:
                        "gross_exposure": s["gross_exposure"], "net_exposure": s["net_exposure"], "long_exposure": s["long_exposure"],
                        "short_exposure": s["short_exposure"], "leverage": money(s["leverage"] * 10000) / 10000 if s["nav"] else ZERO,
                        "prev_nav": prev_nav, "reconciles": (s["nav"] - prev_nav - pf.day_capital_flows) == day_pnl,
-                       "margin_deposits": s["margin_deposits"]}
+                       "margin_deposits": s["margin_deposits"], "greek_attribution": greek_attr}
             w.emit(E.NAV_SNAPSHOT, payload, cause_id=cause.id, portfolio_id=pf.id)
             for pos in pf.positions.values():
                 pos.day_variation_margin = ZERO
@@ -193,5 +223,47 @@ class PnLEngine:
                            by_position={sid: {k: (v if k == "bucket" else D(v)) for k, v in row.items()} for sid, row in p["by_position"].items()},
                            capital_flows=D(p["capital_flows"]), cumulative_realized=D(p["cumulative_realized"]), unrealized=D(p["unrealized"]),
                            gross_exposure=D(p["gross_exposure"]), net_exposure=D(p["net_exposure"]), long_exposure=D(p["long_exposure"]),
-                           short_exposure=D(p["short_exposure"]), leverage=D(p["leverage"]), ledger_nav=D(p["ledger_nav"]), event_id=ev.id)
+                           short_exposure=D(p["short_exposure"]), leverage=D(p["leverage"]), ledger_nav=D(p["ledger_nav"]), event_id=ev.id,
+                           greek_attribution=_ga(p.get("greek_attribution")))
         pf.nav_history.append(snap)
+        pf.day_capital_flows = ZERO      # the snapshot consumed today's flows: the next one explains NAV from this one
+
+    # ------------------------------------------------------------------ approximate option attribution
+    def greek_attribution(self, pf: Portfolio, actual: Decimal) -> Dict:
+        """Approximate: yesterday's Greeks x today's moves in the underlying, implied vol and time. The residual is the
+        difference from the exact ledger P&L of the options bucket (which includes trades, spreads, higher-order terms)."""
+        w = self.w
+        rows = []
+        tot = {"delta": 0.0, "gamma": 0.0, "vega": 0.0, "theta": 0.0}
+        for pos in pf.positions.values():
+            if not pos.is_option or not pos.prev_greeks or not pos.greeks or pos.greeks.get("date") != w.current_date.isoformat():
+                continue
+            g0, g1 = pos.prev_greeks, pos.greeks
+            if g0.get("date") == g1.get("date"):
+                continue
+            sec = w.securities[pos.security_id]
+            n = float(pos.quantity) * float(sec.multiplier)
+            dS = g1["underlying"] - g0["underlying"]
+            dIV = (g1["iv"] - g0["iv"]) * 100.0
+            days = max(1, (date.fromisoformat(g1["date"]) - date.fromisoformat(g0["date"])).days)
+            r = {"security_id": sec.id, "contracts": pos.quantity, "dS": dS, "dIV_pts": dIV, "days": days,
+                 "delta": g0["delta"] * dS * n, "gamma": 0.5 * g0["gamma"] * dS * dS * n, "vega": g0["vega"] * dIV * n, "theta": g0["theta"] * days * n}
+            rows.append(r)
+            for k in tot:
+                tot[k] += r[k]
+        if not rows:
+            return {}
+        explained = sum(tot.values())
+        return {"method": "first/second-order Taylor from previous close Greeks (delta, 1/2 gamma dS^2, vega x dIV, theta x days); "
+                          "residual = exact ledger options P&L - explained (trades, spreads, cross terms)",
+                "rows": rows, **{k: round(v, 2) for k, v in tot.items()}, "explained": round(explained, 2), "actual": actual,
+                "residual": round(float(actual) - explained, 2)}
+
+
+def _ga(ga):
+    if not ga:
+        return {}
+    out = dict(ga)
+    if "actual" in out and out["actual"] is not None:
+        out["actual"] = D(out["actual"])
+    return out

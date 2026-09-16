@@ -142,6 +142,7 @@ class SettlementConfig:
         "JP_EQUITY": 2,
         "FX_SPOT": 2,
         "FUTURES": 0,          # cleared: margined daily, no DVP settlement
+        "US_OPTIONS": 1,       # listed option premium settles T+1 through the clearinghouse
     })
     calendars: Dict[str, str] = field(default_factory=lambda: {"default": "US"})
 

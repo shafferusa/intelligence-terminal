@@ -35,7 +35,7 @@ from typing import Dict, List, Optional, Tuple
 from ..calendar import settlement_date
 from ..domain.events import E, Event
 from ..domain.models import Bar, Lot, Order, Portfolio, Security, Trade
-from ..engines.ledger import dr, cr
+from ..engines.ledger import dr, cr, cost_account, adj_account
 from ..engines.pricing import BondPricer, interp_rate
 from ..money import D, money, price as qprice, qty as qqty, ZERO
 
@@ -45,6 +45,8 @@ EQUITY_COMMISSION_PER_SHARE = D("0.005")
 EQUITY_COMMISSION_MIN = D("1.00")
 BOND_COMMISSION_BPS = D("0.5")
 FUTURES_COMMISSION_PER_CONTRACT = D("2.50")
+OPTION_COMMISSION_PER_CONTRACT = D("0.65")
+OPTION_SIGMA_DAILY = 0.03
 ORDER_TYPES = ("MARKET", "LIMIT", "STOP", "STOP_LIMIT", "TAKE_PROFIT", "TRAILING_STOP")
 
 
@@ -70,7 +72,8 @@ class TradingEngine:
         sec = w.security(security_id)
         side, order_type, tif = side.upper(), order_type.upper(), time_in_force.upper()
         q = qqty(quantity)
-        last = w.market.last_bar(sec.id).close if w.market.history.get(sec.id) else ZERO
+        lb = self._bar(sec)
+        last = lb.close if lb else ZERO
         trail_level = None
         if order_type == "TRAILING_STOP" and trail_pct:
             trail_level = qprice(last * D(1 - float(trail_pct))) if side == "SELL" else qprice(last * D(1 + float(trail_pct)))
@@ -78,7 +81,7 @@ class TradingEngine:
                 "limit_price": qprice(limit_price) if limit_price is not None else None,
                 "stop_price": qprice(stop_price) if stop_price is not None else None, "time_in_force": tif, "strategy_tag": strategy_tag,
                 "trail_pct": float(trail_pct) if trail_pct else None, "trail_level": trail_level, "condition": self._norm_condition(condition)}
-        reason = self._validate(pf, sec, side, order_type, q, base["limit_price"], base["stop_price"], tif, base["trail_pct"], base["condition"])
+        reason = self._validate(pf, sec, side, order_type, q, base["limit_price"], base["stop_price"], tif, base["trail_pct"], base["condition"], strategy_tag)
         if reason:
             w.emit(E.ORDER_REJECTED, {**base, "order_id": w.new_id("ORD"), "reason": reason}, portfolio_id=pf.id)
             raise CommandError(f"Order rejected: {reason}")
@@ -102,7 +105,8 @@ class TradingEngine:
         self.w.emit(E.ORDER_CANCELLED, {"portfolio_id": pf.id, "order_id": order_id}, portfolio_id=pf.id)
         return o
 
-    def _validate(self, pf: Portfolio, sec: Security, side: str, order_type: str, q: Decimal, limit, stop, tif, trail_pct, condition) -> Optional[str]:
+    def _validate(self, pf: Portfolio, sec: Security, side: str, order_type: str, q: Decimal, limit, stop, tif, trail_pct, condition,
+                  strategy_tag: Optional[str] = None) -> Optional[str]:
         w = self.w
         if side not in ("BUY", "SELL"):
             return f"side must be BUY or SELL, got {side}"
@@ -134,6 +138,8 @@ class TradingEngine:
         job = w.careers.job_for(pf)
         if job and job.allowed_classes and self._class_key(sec) not in job.allowed_classes:
             return f"{sec.id} ({self._class_key(sec)}) is outside this job's mandate ({', '.join(sorted(job.allowed_classes))})"
+        if sec.is_option:
+            return self._validate_option(pf, sec, side, order_type, q, limit, strategy_tag)
         if sec.is_future:
             # margin check: initial margin for the resulting position must be financeable
             im = self.w.futures.initial_margin_per_contract(sec) * q
@@ -152,7 +158,9 @@ class TradingEngine:
             if deliverable < q:
                 borrowed = pos.borrowed_quantity if pos else ZERO
                 pledged = pf.pledged_quantity(sec.id)
-                hint = (f"; {pledged:,} pledged as collateral cannot be sold" if pledged else "")
+                reserved = w.options.covered_shares_needed(pf, sec.id)
+                hint = (f"; {pledged:,} pledged as collateral cannot be sold" if pledged else "") + \
+                       (f"; {reserved:,} shares are reserved to cover written calls (buy the calls back first)" if reserved else "")
                 if deliverable <= 0 and borrowed == 0:
                     return (f"nothing to deliver in {sec.id}: to sell short, request a locate and borrow the shares on the securities-lending desk first{hint}")
                 return f"sell quantity {q:,} exceeds deliverable shares {max(ZERO, deliverable):,} (custody incl. borrowed, net of pledges, pending deliveries and working sells){hint}"
@@ -167,13 +175,71 @@ class TradingEngine:
                 return f"insufficient {sec.currency} cash or financing: order {why}"
         return None
 
+    def _validate_option(self, pf: Portfolio, sec: Security, side: str, order_type: str, q: Decimal, limit, strategy_tag: Optional[str]) -> Optional[str]:
+        """Listed options: expiry, then premium affordability (buys) or transparent margin (sells to open)."""
+        w = self.w
+        if sec.expired or (sec.expiry and sec.expiry < w.current_date.isoformat()):
+            return f"{sec.id} has expired"
+        if sec.expiry == w.current_date.isoformat():
+            return f"{sec.id} expires today: it cannot be traded in the next session (it is settled at today's close)"
+        pos = pf.positions.get(sec.id)
+        held = pos.quantity if pos else ZERO
+        mult = D(str(sec.multiplier))
+        # a strategy ticket was checked as a package (net premium + margin) when it was placed
+        packaged = strategy_tag in pf.strategies and pf.strategies[strategy_tag].status == "WORKING"
+        working_same = sum((o.quantity - o.filled_quantity for o in pf.orders.values()
+                            if o.security_id == sec.id and o.side == side and o.status in ("WORKING", "PARTIALLY_FILLED")), ZERO)
+        q_option = w.options.quote(sec)
+        if side == "BUY":
+            px = limit if (order_type in ("LIMIT", "TAKE_PROFIT") and limit) else D(repr(q_option["ask"]))
+            est = money(q * px * mult) + self._commission(sec, q)
+            closing = min(q, max(ZERO, -held - working_same))
+            released = w.options.incremental_margin_release(pf, sec, closing) if closing > 0 else ZERO
+            if packaged:
+                return None
+            why = w.prime.affordable(pf, max(ZERO, est - released), None)
+            if why:
+                return f"premium not financeable (long options are not marginable): {why}"
+            return None
+        # SELL: close long first, the rest opens a short subject to margin
+        closing = min(q, max(ZERO, held - working_same))
+        opening = q - closing
+        if opening <= 0 or packaged:
+            return None
+        px = limit if (order_type in ("LIMIT", "TAKE_PROFIT") and limit) else D(repr(q_option["bid"]))
+        premium = money(opening * px * mult) - self._commission(sec, opening)
+        need = w.options.incremental_margin(pf, sec, -opening)
+        why = w.prime.affordable(pf, max(ZERO, need - premium), None) if need > premium else None
+        if why:
+            return f"option margin of {need:,.0f} for writing {opening:,} {sec.id} is not financeable: {why}"
+        return None
+
+    def _bar(self, sec: Security) -> Optional[Bar]:
+        """Today's session bar: listed options are priced off the underlying's session through the options engine."""
+        w = self.w
+        if sec.is_option:
+            src = sec.index_level_source or sec.underlying
+            return w.options.option_bar(sec) if w.market.history.get(src) else None
+        return w.market.last_bar(sec.id) if w.market.history.get(sec.id) else None
+
     @staticmethod
     def _class_key(sec: Security) -> str:
+        if sec.is_option:
+            return "OPTION"
         if sec.is_future:
             return sec.underlying_class or "FUTURE"
         if sec.is_bond:
             return sec.asset_class
         return "EQUITY"
+
+    @staticmethod
+    def _unit(sec: Security) -> Decimal:
+        """Cash per unit of quantity at a price of 1: bonds trade per 100 face, options and futures carry a multiplier."""
+        if sec.is_bond:
+            return D(1) / 100
+        if sec.is_future or sec.is_option:
+            return D(str(sec.multiplier))
+        return D(1)
 
     def _estimate_cost(self, sec: Security, q: Decimal, px: Decimal) -> Decimal:
         if sec.is_future:
@@ -182,7 +248,7 @@ class TradingEngine:
             gross = money(q * px / 100)
             acc = money(q * BondPricer.accrued_per_100(sec, self.w.current_date) / 100)
             return gross + acc + self._commission(sec, q)
-        return money(q * px) + self._commission(sec, q)
+        return money(q * px * self._unit(sec)) + self._commission(sec, q)
 
     def projected_cash(self, pf: Portfolio, ccy: str) -> Decimal:
         """Settled cash + sale receivables - purchase payables - working buys (+ working sells at the bid) - margin for futures orders.
@@ -204,16 +270,20 @@ class TradingEngine:
                 if sec.is_future:
                     working += self._estimate_cost(sec, o.quantity - o.filled_quantity, ZERO)
                 elif o.side == "BUY":
-                    px = o.limit_price or w.market.last_bar(sec.id).ask
+                    bar = self._bar(sec)
+                    px = o.limit_price or (bar.ask if bar else ZERO)
                     working += self._estimate_cost(sec, o.quantity - o.filled_quantity, px)
                 else:
-                    px = o.limit_price if o.order_type in ("LIMIT", "TAKE_PROFIT") and o.limit_price else w.market.last_bar(sec.id).bid
+                    bar = self._bar(sec)
+                    px = o.limit_price if o.order_type in ("LIMIT", "TAKE_PROFIT") and o.limit_price else (bar.bid if bar else ZERO)
                     rem = o.quantity - o.filled_quantity
-                    working -= (money(rem * px / 100) if sec.is_bond else money(rem * px)) - self._commission(sec, rem)
+                    working -= money(rem * px * self._unit(sec)) - self._commission(sec, rem)
         return cash + recv - pay - working
 
     # ------------------------------------------------------------------ execution during the daily update
     def _commission(self, sec: Security, q: Decimal) -> Decimal:
+        if sec.is_option:
+            return money(q * OPTION_COMMISSION_PER_CONTRACT)
         if sec.is_future:
             return money(q * FUTURES_COMMISSION_PER_CONTRACT)
         if sec.is_bond:
@@ -232,24 +302,57 @@ class TradingEngine:
         return None
 
     def work_orders(self, cause: Event) -> None:
-        """Evaluate every working order against today's session."""
+        """Evaluate every working order against today's session. Strategy tickets are all-or-none: every leg fills
+        at the open only if the package's net debit/credit is within its limit and every leg has the depth to fill whole."""
         w = self.w
         for pf in w.portfolios.values():
+            grouped: Dict[str, List[Order]] = {}
             for o in list(pf.orders.values()):
                 if o.status in ("WORKING", "PARTIALLY_FILLED"):
+                    if o.strategy_tag in pf.strategies:
+                        grouped.setdefault(o.strategy_tag, []).append(o)
+                    else:
+                        self._evaluate(o, cause)
+            for sid, legs in grouped.items():
+                st = pf.strategies[sid]
+                ok, note = self._strategy_ok(pf, st, legs)
+                if not ok:
+                    for o in legs:
+                        self._note(o, cause, note)
+                    continue
+                for o in legs:
                     self._evaluate(o, cause)
+
+    def _strategy_ok(self, pf: Portfolio, st, legs: List[Order]) -> Tuple[bool, str]:
+        w = self.w
+        for o in legs:
+            sec = w.securities[o.security_id]
+            bar = self._bar(sec)
+            if bar is None:
+                return False, "no session data"
+            if (sec.is_option or sec.is_future) and sec.expired:
+                return False, "a leg has expired"
+            cap = max(1, int(max(1, int(bar.volume)) * PARTICIPATION_CAP))
+            if o.quantity - o.filled_quantity > cap:
+                return False, f"all-or-none: leg {sec.id} needs {o.quantity - o.filled_quantity:,} contracts, session depth allows {cap:,}"
+        if st.net_limit is not None:
+            net = w.options.strategy_net_at(pf, st, "OPEN")
+            if net > st.net_limit:
+                kind = "debit" if st.net_limit >= 0 else "credit"
+                return False, f"all-or-none: package net {net:+,.2f}/unit at the open is outside the {kind} limit {st.net_limit:+,.2f}"
+        return True, ""
 
     def _evaluate(self, order: Order, cause: Event) -> None:
         w = self.w
         pf = w.portfolios[order.portfolio_id]
         sec = w.securities[order.security_id]
-        if not w.market.history.get(sec.id):
-            return
-        bar = w.market.last_bar(sec.id)
-        today = w.current_date.isoformat()
-        if sec.is_future and sec.expired:
+        if (sec.is_future or sec.is_option) and (sec.expired or (sec.expiry and sec.expiry < w.current_date.isoformat())):
             self._set_status(order, "CANCELLED", cause, "contract expired before the order could execute")
             return
+        bar = self._bar(sec)
+        if bar is None:
+            return
+        today = w.current_date.isoformat()
         remaining = order.quantity - order.filled_quantity
         if remaining <= 0:
             return
@@ -325,7 +428,7 @@ class TradingEngine:
         self._fill(order, sec, bar, base, half, session, cause)
 
     def _fill(self, order: Order, sec: Security, bar: Bar, base: Decimal, half: Decimal, session: str, cause: Event,
-              forced: bool = False, note: str = "") -> Optional[Trade]:
+              forced: bool = False, note: str = "", fixed_price: Optional[Decimal] = None, commission_free: bool = False) -> Optional[Trade]:
         w = self.w
         pf = w.portfolios[order.portfolio_id]
         remaining = order.quantity - order.filled_quantity
@@ -336,11 +439,13 @@ class TradingEngine:
         if sec.lot_size > 1:
             cap = max(D(sec.lot_size), cap - (cap % sec.lot_size))
         cap = max(D(1), cap)
-        fill_qty = min(remaining, cap) if not forced else remaining
+        fill_qty = min(remaining, cap) if not (forced or fixed_price is not None) else remaining
         if sec.is_bond:
             sigma_daily = 0.003
         elif sec.is_future:
             sigma_daily = max(0.003, sec.sigma_annual / math.sqrt(252.0))
+        elif sec.is_option:
+            sigma_daily = OPTION_SIGMA_DAILY
         else:
             sigma_daily = max(0.002, w.market.realized_vol(sec.id) / math.sqrt(252.0))
         participation = float(fill_qty) / max(1.0, float(sec.adv) * regime.depth_mult)
@@ -349,6 +454,9 @@ class TradingEngine:
             impact_frac *= 0.5
         if forced:
             impact_frac += 0.005
+        if fixed_price is not None:
+            # contractual price (exercise/assignment at the strike, expiry settlement): no spread, no impact
+            half, impact_frac, participation, base = ZERO, 0.0, 0.0, qprice(fixed_price)
         if order.side == "BUY":
             px = qprice(float(base + half) * (1 + impact_frac))
             if order.limit_price is not None and order.order_type in ("LIMIT", "STOP_LIMIT", "TAKE_PROFIT") and px > order.limit_price:
@@ -360,10 +468,10 @@ class TradingEngine:
         if sec.is_future and sec.tick_size:
             t = D(str(sec.tick_size))
             px = qprice((px / t).quantize(Decimal("1")) * t)
-        unit = D(1) / 100 if sec.is_bond else (D(str(sec.multiplier)) if sec.is_future else D(1))
+        unit = self._unit(sec)
         spread_cost = money(half * fill_qty * unit)
         impact_cost = money(abs(px - (base + half if order.side == "BUY" else base - half)) * fill_qty * unit)
-        commission = self._commission(sec, fill_qty)
+        commission = ZERO if commission_free else self._commission(sec, fill_qty)
         if sec.is_bond:
             gross = money(fill_qty * px / 100)
             accrued = money(fill_qty * BondPricer.accrued_per_100(sec, w.current_date) / 100)
@@ -371,7 +479,7 @@ class TradingEngine:
             gross = money(fill_qty * px * D(str(sec.multiplier)))    # notional, informational
             accrued = ZERO
         else:
-            gross = money(fill_qty * px)
+            gross = money(fill_qty * px * unit)
             accrued = ZERO
         if sec.is_future:
             net = commission
@@ -387,7 +495,7 @@ class TradingEngine:
                                  "reference_close": bar.close, "base_price": base, "spread_cost": spread_cost, "impact_cost": impact_cost,
                                  "impact_bps": round(impact_frac * 1e4, 2), "participation_of_adv": round(participation, 4),
                                  "session_volume": session_volume, "partial": bool(fill_qty < remaining), "regime": regime.name,
-                                 "forced": forced, "note": note},
+                                 "forced": forced, "note": note, "contractual": fixed_price is not None},
         }
         ev = w.emit(E.TRADE_EXECUTED, payload, cause_id=cause.id, portfolio_id=pf.id)
         return pf.trades[tid]
@@ -408,16 +516,21 @@ class TradingEngine:
                 if o.time_in_force == "DAY" and o.status in ("WORKING", "PARTIALLY_FILLED", "ENTERED") and o.entered_date < today:
                     self._set_status(o, "EXPIRED", cause, "good-for-day order expired unfilled" if o.filled_quantity == 0 else "day order expired after partial fill")
 
-    def system_order(self, pf: Portfolio, sec: Security, side: str, qty: Decimal, cause: Event, reason: str, forced: bool) -> Optional[Trade]:
-        """Order created by the system (contract expiry, forced liquidation). Fills at the close with slippage."""
+    def system_order(self, pf: Portfolio, sec: Security, side: str, qty: Decimal, cause: Event, reason: str, forced: bool,
+                     fixed_price: Optional[Decimal] = None, allow_short: bool = False, commission_free: bool = False) -> Optional[Trade]:
+        """Order created by the system (contract expiry, forced liquidation, exercise and assignment). Fills at the close with
+        slippage, or at `fixed_price` (a contractual price such as a strike) with no spread or impact."""
         w = self.w
         oid = w.new_id("ORD")
         w.emit(E.ORDER_ENTERED, {"portfolio_id": pf.id, "security_id": sec.id, "side": side, "order_type": "MARKET", "quantity": qty,
                                  "limit_price": None, "stop_price": None, "time_in_force": "DAY", "strategy_tag": "SYSTEM", "order_id": oid,
                                  "trail_pct": None, "trail_level": None, "condition": None, "system_reason": reason}, cause_id=cause.id, portfolio_id=pf.id)
         order = pf.orders[oid]
-        bar = w.market.last_bar(sec.id)
-        return self._fill(order, sec, bar, bar.close, (bar.ask - bar.bid) / 2, "CLOSE", cause, forced=forced, note=reason)
+        bar = self._bar(sec)
+        if bar is None:
+            raise RuntimeError(f"no session data for {sec.id}")
+        return self._fill(order, sec, bar, bar.close, (bar.ask - bar.bid) / 2, "CLOSE", cause, forced=forced, note=reason, fixed_price=fixed_price,
+                          commission_free=commission_free)
 
     # ------------------------------------------------------------------ handlers
     def _order_from_payload(self, p: Dict, status: str, ev: Event) -> Order:
@@ -433,7 +546,9 @@ class TradingEngine:
     def _h_order_entered(self, ev: Event) -> None:
         p = ev.payload
         pf = self.w.portfolios[p["portfolio_id"]]
-        pf.orders[p["order_id"]] = self._order_from_payload(p, "WORKING", ev)
+        o = pf.orders[p["order_id"]] = self._order_from_payload(p, "WORKING", ev)
+        if o.strategy_tag in pf.strategies:
+            self.w.options.link_leg(pf, o)
 
     def _h_order_rejected(self, ev: Event) -> None:
         p = ev.payload
@@ -471,9 +586,12 @@ class TradingEngine:
                       currency=p["currency"], trade_date=p["trade_date"], settlement_date=p["settlement_date"], status="EXECUTED",
                       execution_detail={k: (D(v) if isinstance(v, str) and _looks_decimal(v) else v) for k, v in p["execution_detail"].items()})
         trade.status_history.append({"status": "EXECUTED", "date": ev.sim_date, "event_id": ev.id,
-                                     "note": "filled by clearing broker" if sec.is_future else "filled by executing broker"})
+                                     "note": "filled by clearing broker" if sec.is_future else ("filled on Harbor Options Exchange; cleared via the options clearinghouse"
+                                                                                                 if sec.is_option else "filled by executing broker")})
         if sec.is_future:
             trade.broker = "Harbor Securities (futures clearing member)"
+        if sec.is_option:
+            trade.broker = "Harbor Securities (options clearing member)"
         pf.trades[trade.id] = trade
         pf.day_trade_ids.append(trade.id)
         pos = pf.position(sec.id)
@@ -490,7 +608,10 @@ class TradingEngine:
             self._apply_futures_trade(pf, pos, sec, trade, ev)
             return
 
-        cost_acct = "1110" if sec.is_bond else "1100"
+        cost_acct = cost_account(sec, False)
+        short_acct = cost_account(sec, True)
+        if sec.is_option:
+            pos.is_option = True
         lines: List[Dict] = []
         memo = f"{trade.side} {q:,} {sec.id} @ {px} (trade {trade.id})"
         if trade.side == "BUY":
@@ -508,7 +629,8 @@ class TradingEngine:
                 pos.realized_pnl += realized
                 pos.pending_receive += q_cover
                 memo += f" cover realized {realized:,.2f}"
-                lines += [dr("2600", proceeds_relieved, sec.id, "short proceeds relieved (FIFO)"), dr("5000", comm_c, sec.id, "commission"),
+                lines += [dr(short_acct, proceeds_relieved, sec.id, "premium received relieved (FIFO)" if sec.is_option else "short proceeds relieved (FIFO)"),
+                          dr("5000", comm_c, sec.id, "commission"),
                           cr("2100", gross_c + comm_c, sec.id, f"payable to broker, settles {trade.settlement_date}"), cr("4000", realized, sec.id, "realized on short cover")]
             if q_long > 0:
                 frac = q_long / q
@@ -522,7 +644,7 @@ class TradingEngine:
                 pos.pending_receive += q_long
                 if sec.is_bond:
                     pos.accrued_interest += acc_l
-                lines += [dr(cost_acct, gross_l, sec.id, "cost of securities purchased"),
+                lines += [dr(cost_acct, gross_l, sec.id, "premium paid on options purchased" if sec.is_option else "cost of securities purchased"),
                           dr("1220", acc_l, sec.id, "accrued interest purchased") if sec.is_bond else None,
                           dr("5000", comm_l, sec.id, "commission"),
                           cr("2100", gross_l + acc_l + comm_l, sec.id, f"payable to broker, settles {trade.settlement_date}")]
@@ -565,10 +687,10 @@ class TradingEngine:
                 pos.quantity -= q_short
                 pos.cost_basis -= gross_s
                 pos.pending_deliver += q_short
-                memo += f" short sale (delivering borrowed shares)"
-                lines += [dr("1200", gross_s - comm_s, sec.id, f"short-sale proceeds receivable, settles {trade.settlement_date}"),
+                memo += " options written" if sec.is_option else " short sale (delivering borrowed shares)"
+                lines += [dr("1200", gross_s - comm_s, sec.id, f"{'premium' if sec.is_option else 'short-sale proceeds'} receivable, settles {trade.settlement_date}"),
                           dr("5000", comm_s, sec.id, "commission"),
-                          cr("2600", gross_s, sec.id, "obligation to return borrowed shares, at proceeds")]
+                          cr(short_acct, gross_s, sec.id, "options written, at premium received" if sec.is_option else "obligation to return borrowed shares, at proceeds")]
         lines = [l for l in lines if l]
         w.post(pf.id, memo, lines, ev, {"trade_id": trade.id, "order_id": order.id, "security_id": sec.id})
         w.derive(E.SETTLEMENT_INSTRUCTION_CREATED, {
@@ -577,7 +699,7 @@ class TradingEngine:
             "currency": sec.currency, "trade_date": trade.trade_date, "settlement_date": trade.settlement_date,
             "delivering_party": trade.broker if trade.side == "BUY" else pf.custody_account,
             "receiving_party": pf.custody_account if trade.side == "BUY" else trade.broker,
-            "custodian": "Meridian Custody Services"}, ev, portfolio_id=pf.id)
+            "custodian": "Harbor Securities (options clearing member)" if sec.is_option else "Meridian Custody Services"}, ev, portfolio_id=pf.id)
         w.pnl.mark_position(pf, sec.id, ev)
 
     def _apply_futures_trade(self, pf: Portfolio, pos, sec: Security, trade: Trade, ev: Event) -> None:

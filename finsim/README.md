@@ -85,12 +85,30 @@ funding, liquidity and risk over days and months.
 
 The definition-of-done scenario ($100MM → Treasuries → repo → equities → locate → borrow → short → proceeds settle → fees and marks → dividend while short → partial recall and replacement borrow → liquidity crisis → haircut up → collateral call → post collateral → cover → return → repay repo → replay) is `tests/test_financing.py::DefinitionOfDoneTest`, deterministic under seed 42.
 
+### Phase 3 — listed options (built)
+
+| Piece | What exists |
+|---|---|
+| **Instruments** (`engines/options.py`) | Contracts are securities (`asset_class OPTION`) with a deliverable abstraction: equity/ETF/ADR/REIT options on large and mid caps deliver 100 shares (American, physical); index options on `SPXI` (10× the SPXE level) are European and cash-settled. Chains list deterministically: four monthlies plus two quarterlies on third Fridays (rolled to a business day), 17 strikes around spot at a price-dependent step, re-listed as spot moves; contracts expire in the log. |
+| **Vol surface** (`engines/vol.py`) | Per underlying: 30-day ATM IV, skew, curvature and term slope. ATM mean-reverts toward structural vol, 20-day realized vol, the market volatility index and the regime, jumps with the vol index and is persistent; skew steepens and the term structure inverts in stress. Stored in the market close so replay is exact. |
+| **Pricing** (`engines/options_pricing.py`) | Black–Scholes–Merton for European contracts; Cox–Ross–Rubinstein tree with early exercise and a European control variate for American ones; Greeks (delta, gamma, vega per vol point, theta per day, rho per bp) analytic or read off the tree; intrinsic/extrinsic; no-arbitrage bounds; implied vol. Verified against put–call parity, finite differences and American ≥ European. |
+| **Quotes & liquidity** | Theoretical mid wrapped in a spread that widens with distance from the money, tenor, the underlying's tier and regime stress; seeded volume and open interest; synthetic session bars derived from the underlying's open/high/low/close, so option orders use the same order types, participation cap and impact model as everything else. |
+| **Orders & accounting** | BUY/SELL open or close through the ordinary order engine (market, limit, stop, stop-limit, take-profit, DAY/GTC, conditions). Premium × 100 settles T+1 through the settlement engine; $0.65/contract commission. Long options at cost (`1700`) with MTM (`1750`); written options as a liability at premium received (`2900`) with MTM (`2910`); FIFO lots; realized on close. Clearing chain exchange → clearinghouse → clearing member. |
+| **Margin** | Transparent rules: long — none; covered call — none, and the covering shares are reserved (cannot be sold, lent or pledged); vertical (same expiry) — strike width; naked — premium + 20% of the underlying − OTM amount, floor 10%; × regime multiplier. Swept with futures initial margin to the clearing account (`1300`), financeable by the prime broker; unmet calls end in forced liquidation that buys written options back. |
+| **Exercise, assignment, expiry** | Holder exercise (American) books an ordinary trade in the underlying at the strike that settles through custody and cash, and closes the contract. Seeded assignment on short American contracts: deep ITM puts (rational), calls mainly the day before an ex-dividend date when the dividend exceeds the remaining extrinsic. Expiry: OTM expires worthless, ITM (≥ $0.01) auto-exercised/assigned, index contracts cash-settled at intrinsic; briefing warns three sessions ahead with exactly what will happen. |
+| **Strategies** | Tickets for covered call, protective put, bull/bear call and put spreads, straddles, strangles, calendar, butterfly, iron condor, collar, synthetic long/short: parent strategy with child legs, a net debit/credit limit per unit, all-or-none execution at the next open, analytics (net premium, max gain/loss, breakevens, payoff, Greeks, margin). |
+| **Corporate actions** | Stock splits (sandbox `POST /force-split`) scale history, positions, lots, loans and pledges; whole ratios multiply contracts and divide strikes, other ratios adjust the deliverable; every contract adjustment is an event. |
+| **P&L** | Exact ledger P&L in an `options` bucket; an approximate Greek attribution (delta, ½ gamma dS², vega × dIV, theta × days) from the previous close's Greeks with the residual shown and labelled approximate. |
+| **UI** | OPTIONS page: chain with ticket, positions & Greeks by contract and underlying, strategies (preview, place, detail with payoff chart), volatility (term structure, skew grid, IV history, IV rank), expirations, exercise/assignment log, margin detail. Option contract and option position pages; derivatives section and attention items in the briefing. |
+
+The deterministic options scenario (shares → covered call → protective put → index iron condor → naked put → early exercise → 2-for-1 split → recession → expirations → replay) is `tests/test_options.py::OptionsDefinitionOfDoneTest`.
+
 ### What is deliberately not built yet
 
 Listed in the navigation as *Not yet built* rather than as screens that do nothing:
-options, OTC derivatives and ISDA/CSA collateral, a risk dashboard (VaR, stress), counterparties
+OTC derivatives and ISDA/CSA collateral, a risk dashboard (VaR, stress), counterparties
 with credit quality and default, AI institutions, physical-commodity mechanics, bank RFQ flow.
-They correspond to Phases 3–8 of the spec and plug into the same event/ledger/daily-cycle core.
+They correspond to Phases 4–8 of the spec and plug into the same event/ledger/daily-cycle core.
 
 ## Architecture
 
@@ -104,7 +122,7 @@ finsim/
   clock.py            real-time clock: target date, next update, catch-up
   careers.py          jobs, mandates, limits, reviews, promotion
   engines/
-    market.py         universe, regimes, factor model, curve, dividends, contract listings, vol index
+    market.py         universe, regimes, factor model, curve, dividends, contract listings, vol index, vol surfaces
     commodities.py    commodity specs, fundamentals, spot, futures curves, contract expiry rules, news
     pricing.py        Instrument interface, BondPricer
     trading.py        order validation, once-per-day execution against the session, lots/FIFO, futures fills
@@ -116,6 +134,9 @@ finsim/
     prime.py          margin loan, financing value, excess liquidity, calls, forced liquidation
     fx_market.py      spot rates and short rates per currency
     fx.py             multi-currency cash, spot, forwards, translation
+    vol.py            implied-vol surfaces per underlying (ATM, skew, curvature, term; regime dynamics)
+    options_pricing.py  BSM, CRR tree with control variate, Greeks, bounds, implied vol
+    options.py        listings, chains, quotes, synthetic bars, margin, exercise/assignment/expiry, strategies, splits
     settlement.py     lifecycle states, DVP/RVP processing, fails, custody & cash movements
     corporate_actions.py  dividends, coupons, maturities
     accruals.py       bond and cash interest
@@ -166,6 +187,11 @@ POST /api/worlds/{w}/portfolios/{p}/repo/{id}/close | collateral | cash | reduce
 POST /api/worlds/{w}/portfolios/{p}/margin/draw | repay {amount}
 POST /api/worlds/{w}/portfolios/{p}/fx/spot {buy_ccy, sell_ccy, amount, amount_ccy}   POST .../fx/forward {buy_ccy, sell_ccy, buy_amount, maturity}
 POST /api/worlds/{w}/force-regime {regime}   (sandbox)
+GET  /api/worlds/{w}/options                      GET  /api/worlds/{w}/options/{underlying}/chain?expiry= | surface   GET .../options/{contract}/contract
+GET  /api/worlds/{w}/portfolios/{p}/options       POST .../options/exercise {contract_id, quantity}
+POST /api/worlds/{w}/portfolios/{p}/strategies {strategy_type, underlying, expiry, strikes[], quantity, net_limit, expiry2, time_in_force}
+POST /api/worlds/{w}/portfolios/{p}/strategies/preview   GET .../strategies | strategies/{id}
+POST /api/worlds/{w}/force-split {security_id, ratio}   (sandbox)
 ```
 
 ## Environment note

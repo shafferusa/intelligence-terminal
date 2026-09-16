@@ -29,6 +29,7 @@ from ..money import D, money, price as qprice
 from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel
 from .lending_market import LendingMarket
 from .fx_market import FXModel
+from .vol import VolSurfaceModel, optionable_underlyings, structural_vol, INDEX_ID as OPT_INDEX_ID, INDEX_SOURCE as OPT_INDEX_SOURCE
 
 TENORS = [0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 20.0, 30.0]
 TRADING_DAYS = 252.0
@@ -236,6 +237,11 @@ class MarketEngine:
         for sec in securities.values():
             self.lending.init_security(sec)
         self.fx = FXModel(seed)
+        self.vol = VolSurfaceModel(seed)
+        for under in optionable_underlyings(securities):
+            self.vol.init_underlying(under, structural_vol(securities, under), is_index=(under == OPT_INDEX_ID))
+        self._vol_payload: Dict[str, Dict] = {}
+        self.bar_provider = None      # set by the world: synthetic bars for instruments priced off others (listed options)
         self.player_on_loan: Dict[str, int] = {}
         self.vol_index_history: List[Tuple[str, float]] = []
         self._contract_seq = 1000
@@ -386,7 +392,7 @@ class MarketEngine:
         bars: Dict[str, Bar] = {}
         from .pricing import BondPricer  # local import to avoid cycle
         for t, sec in list(self.securities.items()):
-            if sec.is_future:
+            if sec.is_future or sec.is_option:
                 continue
             if sec.is_bond:
                 clean = BondPricer.clean_price_from_curve(sec, curve, d)
@@ -451,15 +457,22 @@ class MarketEngine:
         for t, b in bars.items():
             self.history[t].append(b)
         self.curves.append(curve)
+        prev_vix = self.vol_index()
         vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPXE"))
         self.vol_index_history.append((d.isoformat(), round(vix, 2)))
+        vchg = (vix / prev_vix - 1) if prev_vix else 0.0
+        self._vol_payload = {}
+        for under in list(self.vol.state):
+            src = OPT_INDEX_SOURCE if under == OPT_INDEX_ID else under
+            self._vol_payload[under] = self.vol.step(d, under, structural_vol(self.securities, under), self.realized_vol(src), vix, vchg, regime,
+                                                     is_index=(under == OPT_INDEX_ID))
         if regime_change or not self.regime_history:
             self.regime_history.append((d.isoformat(), regime))
         return bars, curve, regime_change
 
     # ---------------- ingest (replay) ----------------
     def ingest_close(self, d: date, bars: Dict[str, Bar], curve: YieldCurve, state: Dict, commodities: Optional[Dict] = None,
-                     lending: Optional[Dict] = None, fx: Optional[Dict] = None) -> None:
+                     lending: Optional[Dict] = None, fx: Optional[Dict] = None, vol: Optional[Dict] = None) -> None:
         """Used on replay: adopt stored bars instead of regenerating them."""
         self.ensure_listings(d)
         for t, b in bars.items():
@@ -477,14 +490,19 @@ class MarketEngine:
         if fx:
             self.fx.ingest(d, fx)
             self._fx_payload = fx
+        if vol:
+            self.vol.ingest(d, vol)
+            self._vol_payload = vol
         self.vol_index_history.append((d.isoformat(), state.get("vol_index", 0.0)))
         if not self.regime_history or self.regime_history[-1][1] != state["regime"]:
             self.regime_history.append((d.isoformat(), state["regime"]))
 
     # ---------------- queries ----------------
     def last_bar(self, security_id: str) -> Bar:
-        h = self.history[security_id]
+        h = self.history.get(security_id)
         if not h:
+            if self.bar_provider is not None and security_id in self.securities and self.securities[security_id].is_option:
+                return self.bar_provider(security_id)
             raise KeyError(f"no market data for {security_id}")
         return h[-1]
 
@@ -516,3 +534,6 @@ class MarketEngine:
 
     def fx_payload(self) -> Dict:
         return getattr(self, "_fx_payload", {})
+
+    def vol_payload(self) -> Dict:
+        return getattr(self, "_vol_payload", {})

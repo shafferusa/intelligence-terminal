@@ -88,3 +88,8 @@ pre { background: var(--bg); border: 1px solid var(--line); padding: 8px; font-s
 .book .bidc { color: var(--green); } .book .askc { color: var(--red); }
 .legend { font-family: var(--mono); font-size: 11px; color: var(--fg2); }
 .legend i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: middle; }
+/* options chain */
+table.chain th { text-align: center; }
+table.chain tr.atm td, table.chain tr.atm th { background: rgba(255, 200, 80, 0.08); }
+table.chain td.optq { cursor: pointer; }
+table.chain td.optq:hover { background: rgba(120, 180, 255, 0.12); }
