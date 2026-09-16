@@ -1,7 +1,7 @@
 {
- "fetched": "2026-09-15T06:50:00-04:00",
- "earnings_fetched": "2026-09-13",
- "earnings_fetched_note": "No watchlist mega-cap/AI-infra/defense/financial/consumer names report the week of Sept 14-18, 2026. Lennar (LEN, non-watchlist) reports Q3 after close Wed Sept 16, call Thu Sept 17 11:00 AM ET.",
+ "fetched": "2026-09-16T10:55:00-04:00",
+ "earnings_fetched": "2026-09-16",
+ "earnings_fetched_note": "Alpha Vantage 3-month calendar refreshed 2026-09-16 (76 watchlist-company matches over the next 3 months). No watchlist mega-cap/AI-infra/defense/financial/health/consumer name reports through Sept 23; nearest is COST on Sept 24. Non-watchlist same-day earnings: FedEx (FDX, before this run's cutoff not stated in AV/Finnhub 'hour' field) and Lennar (LEN, after close, call Thu Sept 17 11:00 AM ET) -- confirmed day-of via Finnhub.",
  "events": [
   {
    "ts_et": "2026-09-07T00:00:00-04:00",
@@ -204,12 +204,12 @@
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   },
   {
-   "ts_et": "2026-09-16T00:00:00-04:00",
+   "ts_et": "2026-09-16T09:33:53-04:00",
    "type": "space",
-   "name": "Progress MS-35 cargo resupply to ISS (Soyuz-2.1b, Baikonur)",
+   "name": "Progress MS-35 cargo resupply to ISS (Soyuz-2.1b, Baikonur) -- launch time confirmed",
    "importance": "Low",
-   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for Sept 9; Launch Library 2's current schedule has it slipped to Sept 16, exact time to be determined.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+   "reason": "CONFIRMED 2026-09-16: Launch Library 2 now shows a firm liftoff time (13:33:53 UTC / 9:33:53 AM ET), status 'Go'. Previously listed exact time to be determined.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status Go"
   },
   {
    "ts_et": "2026-09-10T11:00:00-04:00",
@@ -352,8 +352,8 @@
    "type": "fed",
    "name": "FOMC rate decision + Summary of Economic Projections (dot plot); Chair Warsh press conference ~2:30 PM",
    "importance": "Critical",
-   "reason": "Two-day meeting Sept 15-16 per the Federal Reserve's own published calendar (confirmed directly). Recent press accounts put hike odds near 85-90%, not independently confirmed via a live CME FedWatch pull this run. Reported White House pressure against a hike adds a political dimension.",
-   "source": "federalreserve.gov FOMC calendar (primary, confirmed via direct fetch) -- press odds Confirmed-multiple, Estimated"
+   "reason": "Two-day meeting Sept 15-16, directly reconfirmed 2026-09-16 via federalreserve.gov's own FOMC calendar page (marked with an asterisk denoting a Summary of Economic Projections meeting). Recent press accounts put hike odds near 85-90%, not independently confirmed via a live CME FedWatch pull this run. Reported White House pressure against a hike adds a political dimension. Ahead of the decision: Retail Sales/Import-Export Price Indexes land at 8:30 AM ET and NAHB Housing Market Index at 10:00 AM ET the same morning.",
+   "source": "federalreserve.gov FOMC calendar (primary, reconfirmed via direct fetch 2026-09-16) -- press odds Confirmed-multiple, Estimated"
   },
   {
    "ts_et": "2026-09-15T09:00:00-04:00",
@@ -388,12 +388,12 @@
    "source": "Supreme Court order, docket 26A305 (primary); CNBC, NPR, CNN, NBC News -- Confirmed-multiple"
   },
   {
-   "ts_et": "2026-09-22T12:15:00-04:00",
+   "ts_et": "2026-09-22T08:15:00-04:00",
    "type": "space",
-   "name": "SpaceX Starship Flight 14 (V3 debut) -- now targeting Sept 22, not Sept 18",
+   "name": "SpaceX Starship Flight 14 (V3 debut) -- Sept 22, window opens 8:15 AM ET",
    "importance": "Medium",
-   "reason": "CORRECTED 2026-09-15: this cache's Sept 18 date (08:15-10:14 AM ET window, backup Sept 19) came from secondary launch trackers. Launch Library 2's current schedule (checked directly this run) has it slipped to Sept 22, ~16:15 UTC (~12:15 PM ET), status 'To Be Confirmed.' First orbital flight of the redesigned V3 vehicle carrying roughly 20 Starlink V3 satellites, Starbase, TX.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+   "reason": "CORRECTED 2026-09-16: Launch Library 2's direct feed (checked this run) shows liftoff at 12:15 UTC (8:15 AM ET), not the ~16:15 UTC (~12:15 PM ET) this cache carried as of Sept 15 -- a four-hour discrepancy against secondary trackers used the day before. First orbital flight of the redesigned V3 vehicle carrying roughly 20 Starlink V3 satellites, Starbase, TX. Status 'To Be Confirmed' per LL2.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status To Be Confirmed"
   },
   {
    "ts_et": "2026-09-16T00:00:00-04:00",
@@ -444,20 +444,36 @@
    "source": "Conference Board schedule -- Confirmed-primary (scheduled)"
   },
   {
-   "ts_et": "2026-09-18T08:15:00-04:00",
-   "type": "space",
-   "name": "SpaceX Starship Flight 14 -- first orbital flight of the V3 vehicle, ~20 Starlink V3 satellites, Starbase TX",
-   "importance": "Medium",
-   "reason": "Window 8:15-10:14 AM ET; backup date Saturday Sept 19. Genuine milestone given the vehicle's redesign.",
-   "source": "Multiple launch trackers (SpaceLaunchSchedule, NextSpaceFlight) -- Confirmed-multiple, status subject to change"
-  },
-  {
    "ts_et": "2026-09-14T12:00:00-04:00",
    "type": "space",
    "name": "Djibouti signs the Artemis Accords, NASA HQ (72nd signatory nation)",
    "importance": "Low",
    "reason": "Routine accession, no material policy shift.",
    "source": "NASA (primary) -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-18T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "State Employment and Unemployment (Monthly)",
+   "importance": "Low",
+   "reason": "Routine BLS regional release.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-16T00:00:00-04:00",
+   "type": "business",
+   "name": "FedEx (FDX) Q1 FY2027 earnings",
+   "importance": "Low",
+   "reason": "Non-watchlist; useful freight/logistics read on consumer and industrial demand the same day as Retail Sales.",
+   "source": "Finnhub earnings calendar day-of confirmation -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-16T06:08:18-04:00",
+   "type": "business",
+   "name": "Karman Holdings (KRMN) files 8-K -- Item 7.01 Reg FD Disclosure and Item 9.01 Financial Statements/Exhibits",
+   "importance": "Medium",
+   "reason": "Filed this morning ahead of the open; SEC filing itself does not state the disclosure's content in the index summary (5 MB exhibit package). Space/defense-aero watchlist name -- primary filing not yet read in full this run; treat as a lead for the Business section pending exhibit review.",
+   "source": "SEC EDGAR (data.sec.gov / www.sec.gov), accession 0001193125-26-392480 -- Confirmed-primary (filing exists), content Unconfirmed pending exhibit review"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

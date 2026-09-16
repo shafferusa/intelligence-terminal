@@ -19,12 +19,12 @@
   {
    "id": "patel-senate-judiciary-testimony-sep15",
    "headline": "FBI Director Patel faces sharp bipartisan questioning at his first Senate Judiciary appearance in four months",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-15-pm",
-   "last_updated": "2026-09-15-pm",
+   "last_updated": "2026-09-16-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Patel cited crime-reduction statistics and defended a revised FBI hiring policy allowing consideration of some applicants with certain criminal histories tied to circumstances like trafficking victimization, drawing bipartisan questions. Sen. Durbin pressed him on prior statements about the shooting of US citizen Marimar Martinez by a CBP agent; Patel denied his earlier statements were false. Patel declined to discuss the 'Arctic Frost' 2020-election investigation, now expanded to ~92 Republican individuals/organizations per committee records.",
-   "score_note": "First appearance since a prior clash with the panel roughly four months ago.",
+   "one_line": "The FBI's own official X account posted attacks on sitting Senate Judiciary Committee members during Tuesday's hearing -- an unusual step for an agency account to take against its own overseers -- and Patel told Chairman Grassley he'd 'appreciate it if you concluded this hearing' after a heated exchange. No on-record Democratic resignation call tied specifically to Tuesday's hearing has surfaced.",
+   "score_note": "New granular detail on the hearing's conduct, not just its substance.",
    "sources": [
     "Senate Judiciary Committee hearing (via livestream)",
     "Washington Post",
@@ -55,10 +55,10 @@
    "headline": "10-year Treasury yield hits its highest level since 2007 as markets sell off and crypto craters ahead of the Fed",
    "status": "Materially changed",
    "first_seen": "2026-09-15-am",
-   "last_updated": "2026-09-15-pm",
-   "verification": "Confirmed-multiple; Estimated (hike odds, wide source variance)",
-   "one_line": "The 10-year Treasury yield climbed to 5.041% intraday Tuesday, its highest since July 2007, before settling at an official 5.00% close, as oil extended its rally past $105. All four major US indices closed lower (S&P -0.45%, Nasdaq -0.78%, Dow -0.63%, Russell -0.76%); crypto sold off far harder (bitcoin -4.59%, Coinbase -10.10%), coinciding with the Senate's CLARITY Act cloture failure. VIX rose just 0.58% to 17.20, a muted reaction. Hike-odds trackers diverged sharply (roughly 50-90% depending on source) and could not be reconciled to one figure.",
-   "score_note": "A visible gap between the administration's public pressure and its senior officials' private posture heading into Wednesday's decision.",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-multiple (bank consensus shift); Estimated (any single hike-odds percentage, sources still disagree)",
+   "one_line": "Goldman Sachs, JPMorgan, HSBC and Deutsche Bank all moved to a 25bp hike call this week (Bank of America projects 75bp across 2026) -- a genuine bank-consensus shift. Odds trackers still disagree widely: CME FedWatch-derived readings ~87-93%, Polymarket ~81% (below its own 85% for October, an inversion), Kalshi ranging high-40s to high-60s% depending on snapshot. The 10-year, which touched 5.041% intraday Tuesday (highest since July 2007), held near 5.00% into Wednesday's decision. Trump's trade-threat pressure campaign continues; Bessent's 'bond market has taken out more governments than howitzers' remark and Hassett's 'we respect independence' comment both read as the administration's own officials distancing from an outright anti-hike position.",
+   "score_note": "FOMC decision day itself; bank consensus has shifted materially since Tuesday even though trackers have not converged.",
    "sources": [
     "Treasury par-yield curve",
     "CNBC",
@@ -85,12 +85,12 @@
   {
    "id": "kennedy-center-fiscal-collapse-sep15",
    "headline": "Kennedy Center's board votes to close the building after a chaotic call with Trump, reviving the renaming fight",
-   "status": "Resolved",
+   "status": "Materially changed",
    "first_seen": "2026-09-15-am",
-   "last_updated": "2026-09-15-pm",
+   "last_updated": "2026-09-16-am",
    "verification": "Single-reliable-source (financial figures, leaked document); Confirmed-multiple (fact of the meeting)",
-   "one_line": "The Trump-appointed board voted Tuesday to close the Kennedy Center's main building, citing the Sept 5 ceiling collapse and the 'dire' financial position warned of Monday. CNN (partly single-sourced) describes a chaotic phone call in which Trump participated; AP, NBC News and PBS confirm the vote and general framing. Trump posted that renovation 'cannot begin' until the D.C. Circuit rules on the board's approved name, tying reopening to the pending appeal over a renaming a federal judge already found unlawful.",
-   "score_note": "Resolves this morning's open question (would the board vote to close); the renaming/legal question remains open and is now the story to watch.",
+   "one_line": "Judge Christopher Cooper ruled the board cannot install any memorial -- Trump-named or otherwise -- without congressional authorization, in a ruling described as calling the renaming maneuver 'linguistic gymnastics.' DOJ and the Kennedy Center formally appealed to the D.C. Circuit Tuesday evening; Trump says DOJ will seek an expedited hearing and has tied renovation start to the appeal's outcome. A related D.C. Circuit appeal (No. 25-7156) already has oral argument scheduled Oct. 13 -- unconfirmed whether this is the same docket.",
+   "score_note": "Legal escalation directly follows Tuesday's board vote to close the building.",
    "sources": [
     "CNN (primary reporting on the board call)",
     "AP wire via CP24, Boston Globe, Local10, WRAL",
@@ -122,10 +122,10 @@
    "headline": "Java Sea ferry search enters its third day; roughly 129 still missing",
    "status": "Continuing",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-15-am",
+   "last_updated": "2026-09-16-am",
    "verification": "Confirmed-multiple (toll); Unverified (cause)",
-   "one_line": "Search continues for the Virgo Transport 8, which capsized in the Masalembo waters early Sunday after losing contact in heavy seas (captain's distress call cited ~10-foot waves). Roughly 280 personnel have recovered six bodies and rescued just over 100 people; about 129 still missing out of 240+ aboard. Cause remains under investigation.",
-   "score_note": "Toll essentially unchanged from Monday but search remains open with a large unresolved gap between rescued and missing.",
+   "one_line": "Search enters its fourth day with the toll unchanged: six confirmed dead, 108 rescued, 129 still missing of 243 aboard the Virgo Transport 8. Rough seas continue to block the underwater search.",
+   "score_note": "No material change in toll for a second straight edition; still an open search.",
    "sources": [
     "Indonesian search-and-rescue authorities (primary, via wire)",
     "NPR",
@@ -139,10 +139,10 @@
    "headline": "Rep. Casar calls for OpenAI and Anthropic's CEOs to testify under oath after both miss a second deadline",
    "status": "Materially changed",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-15-pm",
+   "last_updated": "2026-09-16-am",
    "verification": "Confirmed-primary (Casar's own statement; Altman's Fortune quote)",
-   "one_line": "With Tuesday's deadline passed unanswered, Casar told Fox News today 'these AI CEOs need to come before Congress and be put under oath' -- the escalation this outlet's own morning edition flagged as the most likely near-term outcome. Neither company has responded publicly. Separately, Sam Altman told Fortune OpenAI will not IPO in 2026, the first on-record confirmation from Altman himself of a previously secondary-sourced delay.",
-   "score_note": "Second deadline both companies have now effectively missed; the day's real movement came from elsewhere in Congress rather than the companies themselves.",
+   "one_line": "OpenAI global policy chief Chris Lehane said OpenAI, Anthropic and Google DeepMind have coordinated on AI safety 'for weeks' and have discussed forming a shared safety-standards body -- the first concrete follow-through on the 'pace the frontier' call, still at the discussion stage. No response from either company to Casar's under-oath call has surfaced. NYC Council Speaker Julie Menin has invited both companies to a municipal AI hearing Oct. 5, opening a second, non-federal oversight track.",
+   "score_note": "First concrete inter-lab coordination reported, plus a new municipal oversight venue.",
    "sources": [
     "Rep. Casar's Fox News interview and House office statements (primary)",
     "Fortune (Altman interview, primary quote)"
@@ -154,10 +154,10 @@
    "headline": "Zelensky disputes Trump's claimed refinery-strike truce; NATO's Rutte confirms alliance will boost support",
    "status": "Materially changed",
    "first_seen": "2026-09-13-sun",
-   "last_updated": "2026-09-15-am",
+   "last_updated": "2026-09-16-am",
    "verification": "Confirmed-multiple/primary",
-   "one_line": "Trump said Sunday he'd asked Zelensky to stop refinery strikes, framing it as close to an agreed pause; Zelensky publicly disputed that characterization on Telegram Monday, calling it a proposal rather than a settled arrangement, and said Ukraine will keep striking refineries unless Russia halts attacks on Ukrainian energy/food infrastructure. NATO Secretary-General Rutte confirmed on the record the alliance will increase support for Kyiv and eastern-flank defenses after Sunday's drone strike near the Polish border, which came minutes behind a train carrying Boris Johnson and Carl Bildt; Poland pledged its own border-security increase.",
-   "score_note": "A direct, on-record US-Ukraine disagreement about what was agreed, plus a hardened NATO response, both upgrade this thread's verification level.",
+   "one_line": "Zelensky confirmed Ukraine struck the Syzran refinery in Russia's Samara region Monday, undercutting Trump's claimed mutual pause on energy-strikes. Russia launched roughly 149-200 drones (source range) at Ukraine overnight Monday into Tuesday; Ukraine says it downed 128. A Sumy shopping-mall strike killed at least two, injured 23. NATO aviation assets flew over Polish airspace overnight, continuing from Sunday's Rutte support pledge.",
+   "score_note": "Confirms the disputed truce was never operative on either side.",
    "sources": [
     "Zelensky's Telegram post (primary)",
     "Rutte's remarks (primary, via wire)",
@@ -169,13 +169,13 @@
   },
   {
    "id": "saudi-pipeline-mocha-strike-sep11",
-   "headline": "Houthi forces detail a strike on a Saudi airbase as the UN Security Council meets on the Bab el-Mandeb chokepoint",
+   "headline": "Houthi forces complete control of the Bab el-Mandeb corridor as the UN reports nearly 2,900 war casualties since August",
    "status": "Materially changed",
    "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-15-pm",
-   "verification": "Confirmed-primary (strikes/casualties); Confirmed-multiple (territorial control); Single-reliable-source (UNSC session timing, unnamed diplomatic sources)",
-   "one_line": "Houthi spokesman Yahya Saree detailed Monday's barrage as targeting Khamis Mushait airbase's hangars, radar, runways and ammo depots, and claimed 54 Saudi airstrikes in response across four Yemeni provinces (unverified). Saudi coalition toll (13 wounded) is unchanged from this morning. France convened the requested UN Security Council session on Bab el-Mandeb this afternoon; no outcome confirmed by this edition's close.",
-   "score_note": "A second global chokepoint now under a hostile actor's control compounds the pipeline-outage oil story into a structural shipping-risk story.",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-multiple (territorial changes, casualty/displacement figures via secondary wire citation of UN session); Single-reliable-source-cluster (Yemeni government's claimed Taiz counter-advance)",
+   "one_line": "A September offensive gave Houthi forces the port of Mokha (~Sept 10), Perim Island (Sept 11), and the Greater and Lesser Hanish islands (Sept 14) -- completing effective Yemeni-side control of Bab el-Mandeb and ending a four-year truce. UN Special Envoy Hans Grundberg told the Security Council (France-requested emergency session, Tuesday) Yemen faces 'a new and more dangerous phase of war.' WHO: 2,883 casualties since Aug 6; IOM: 93,864 newly displaced. Separately, Saudi Arabia says it intercepted a Houthi drone aimed at Mecca Tuesday evening -- Houthis call the claim 'a worn-out lie.' CENTCOM also disputed an Iranian mine claim on the tanker El Gaia (says a drone hit it, not a mine) and said US forces destroyed two Iranian boats that tried to seize a Navy Saildrone in the Strait of Hormuz.",
+   "score_note": "Reframes an intermittent strike-and-response cycle into a completed territorial outcome with new, disputed escalation on top (Mecca claim, Hormuz incidents).",
    "sources": [
     "Houthi military spokesman Yahya Saree (primary, single-party)",
     "Saudi-led coalition spokesman (primary, single-party)",
@@ -292,12 +292,12 @@
   {
    "id": "space-force-orbital-weapons-disclosure-sep14",
    "headline": "The Air Force confirms, for the first time, that the US has weapons in orbit",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-14-pm",
-   "last_updated": "2026-09-14-pm",
+   "last_updated": "2026-09-16-am",
    "verification": "Confirmed-primary",
-   "one_line": "Secretary of the Air Force Troy Meink said today at the Air and Space Forces Association's conference that the US \"now has on-orbit space control weapons capable of defending the joint force against hostile adversary actions\" -- the first on-record Pentagon confirmation of its kind, offered deliberately (\"very well thought out\" wording) without naming system type or count.",
-   "score_note": "A genuinely new category of official disclosure with obvious relevance to this year's regional tensions.",
+   "one_line": "China's foreign ministry warned against turning space into a 'battlefield' and told the US to stop 'preparing for war in outer space'; Russia's Peskov said orbit 'must be free from any weapon.' Neither government offered specifics on what the US disclosure changes operationally.",
+   "score_note": "Converts a unilateral US disclosure into an actual diplomatic exchange with both rivals on record.",
    "sources": [
     "Secretary Meink's remarks (primary, via reporting)",
     "DefenseScoop",
@@ -326,12 +326,12 @@
   {
    "id": "indonesia-ferry-capsize-sep13",
    "headline": "A Java Sea ferry capsizes with 129 still missing",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-09-14-pm",
-   "last_updated": "2026-09-14-pm",
+   "last_updated": "2026-09-16-am",
    "verification": "Confirmed-multiple",
-   "one_line": "The Virgo Transport 8, carrying 240+ people from Surabaya to Banjarmasin, capsized in rough seas in the Masalembo waters early Sunday after losing contact. As of today: 108 rescued, six bodies recovered, 129 still missing; search ongoing, toll likely to change.",
-   "score_note": "Major humanitarian/maritime disaster developing alongside the dominant Gulf-war coverage.",
+   "one_line": "Search enters its fourth day with the toll unchanged: six confirmed dead, 108 rescued, 129 still missing of 243 aboard the Virgo Transport 8. Rough seas continue to block the underwater search.",
+   "score_note": "No material change in toll for a second straight edition; still an open search.",
    "sources": [
     "Indonesian search-and-rescue authorities (primary, via wire)",
     "NPR",
@@ -435,10 +435,10 @@
    "headline": "Pennsylvania records its first adult, and third overall, measles death",
    "status": "Materially changed",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-14-am",
-   "verification": "Confirmed-multiple (new death); Disputed (cause of death tally, three-way: state vs. coroner vs. CDC)",
-   "one_line": "Jefferson County Coroner Greg Furlong confirmed Saturday Sept 12 that a 40-year-old unvaccinated woman died from measles-related complications -- the state's third measles death of 2026 and its first involving an adult, after two infant deaths in late August. The CDC's national tally continues to exclude the earlier two deaths pending its own review; unclear as of Monday whether the CDC will include or continue to exclude this third case. Gov. Shapiro and Treasurer Garrity's Oct 7 Harrisburg debate remains confirmed.",
-   "score_note": "A third death, and the first adult case, sharpens rather than resolves the CDC-versus-state tally dispute.",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-multiple (death count, lab confirmation); Disputed (federal vs. state tally, unresolved)",
+   "one_line": "Pennsylvania confirmed two more measles-associated deaths Monday: postmortem testing now confirms an active measles infection in the previously 'probable' Jefferson County case, and an 18-year-old Mifflin County resident died of acute disseminated encephalomyelitis, a rare measles complication. State total now four deaths in 2026 -- the most in the US since 1992 -- against roughly 700 cases across 38 counties. The CDC's national tally, now relying solely on NCHS cause-of-death coding rather than state case reports, still shows zero 2026 measles deaths.",
+   "score_note": "Death toll and lab confirmation both advanced since last report; federal-state dispute persists.",
    "sources": [
     "Lancaster County Coroner's office (primary)",
     "Pennsylvania Dept of Health (primary)",
@@ -1043,6 +1043,94 @@
     "NBC News",
     "NJ Monitor",
     "The Hill"
+   ],
+   "watch": true
+  },
+  {
+   "id": "brennan-grand-jury-subpoena-sep16",
+   "headline": "DOJ subpoenas ex-CIA Director Brennan; prosecutor leading the probe resigns the same day",
+   "status": "New",
+   "first_seen": "2026-09-16-am",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-multiple (subpoena, date, venue, lawyer's statement); Unverified (specific underlying charge, if any)",
+   "one_line": "Attorney Ken Wainstein disclosed DOJ delivered a grand-jury subpoena requiring Brennan to testify Oct. 15 in Fort Pierce, FL -- Judge Aileen Cannon's courthouse. DOJ is reportedly running two tracks: a broad 'grand conspiracy' probe into whether former law-enforcement/intelligence officials conspired to deprive Trump of civil rights during the Russia investigations, and a narrower inquiry into whether Brennan lied to Congress. CBS: two former FBI officials tied to the Trump-Russia probe were also subpoenaed. Prosecutor Joe diGenova, who led the 'grand conspiracy' probe, resigned the same day amid reported DOJ/White House frustration over its pace. Brennan denies wrongdoing.",
+   "score_note": "A sitting administration convening a grand jury against a former CIA director ties directly to the tracked Arctic Frost thread.",
+   "sources": [
+    "Ken Wainstein's statement (primary)",
+    "NPR",
+    "CBS News",
+    "ABC News/AP wire",
+    "Fox News"
+   ],
+   "watch": true
+  },
+  {
+   "id": "house-warpowers-vote-sep15",
+   "headline": "House passes a third Iran war-powers resolution, 220-204, with a record seven Republican defections",
+   "status": "New",
+   "first_seen": "2026-09-16-am",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-primary (House Clerk roll call)",
+   "one_line": "Late Tuesday (10:32 PM ET, after this outlet's Tuesday edition published), the House passed a concurrent resolution directing the president to remove US forces from hostilities against Iran absent a declaration of war, 220-204. Seven Republicans crossed over -- Massie, Fitzpatrick, Davidson, Barrett, Mace, Miller-Meeks and Nunn -- up from roughly four in July; Mace, Miller-Meeks and Nunn voted this way for the first time. Non-binding in practice; no Senate companion found, no White House response found.",
+   "score_note": "Largest GOP defection yet on the Iran war-powers question, landing the same week as the DoD IG's cost/shortfall report.",
+   "sources": [
+    "House Clerk roll-call vote (primary)",
+    "AP/ABC News",
+    "Al Jazeera"
+   ],
+   "watch": true
+  },
+  {
+   "id": "mecca-drone-intercept-sep16",
+   "headline": "Saudi Arabia says it downed a drone aimed at Mecca; Houthi forces call the claim a lie",
+   "status": "New",
+   "first_seen": "2026-09-16-am",
+   "last_updated": "2026-09-16-am",
+   "verification": "Disputed",
+   "one_line": "Saudi-led coalition spokesman Turki al-Maliki said air defenses intercepted a hostile drone roughly 6:50 PM local time Tuesday before it entered restricted airspace around Mecca; wreckage fell south of the city. He called protection of pilgrims and holy sites a 'red line.' A Houthi military source told SABA the claim was 'a worn-out lie,' saying Houthi targets remain Saudi oil/military facilities 'far removed from the holy places.' No forensic evidence released by either side; would be the first such attempt on Mecca in nearly a decade if confirmed.",
+   "score_note": "Potentially crosses a line that has held through five years of regional war; lands the same week Houthi forces completed control of Bab el-Mandeb.",
+   "sources": [
+    "Saudi-led coalition spokesman Turki al-Maliki (primary)",
+    "Houthi statement via SABA (primary, single-party)",
+    "Al Jazeera",
+    "CNN",
+    "CNBC",
+    "TRT World"
+   ],
+   "watch": true
+  },
+  {
+   "id": "hormuz-saildrone-tanker-incidents-sep16",
+   "headline": "US destroys Iranian boats after an attempt to seize a Navy drone; CENTCOM disputes Iran's tanker-mine claim",
+   "status": "New",
+   "first_seen": "2026-09-16-am",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-primary (US action, CENTCOM statement); Disputed (tanker strike cause)",
+   "one_line": "CENTCOM's Capt. Tim Hawkins said Iranian boats tried to seize a ~25-foot Navy Saildrone unmanned surface vessel; US forces destroyed both boats. Separately, Iran's IRGC said the tanker El Gaia struck a naval mine south of Hormuz; CENTCOM says it was disabled by an Iranian missile strike last month and hit again by a drone over the weekend, calling the mine account 'lies and intimidation.' Neither incident has independent maritime-tracker confirmation.",
+   "score_note": "A direct US-Iran kinetic engagement over an asset-seizure attempt is a new category of incident in the strait.",
+   "sources": [
+    "CENTCOM/Capt. Tim Hawkins (primary)",
+    "IRGC/Fars/PressTV (primary, single-party, disputed)",
+    "Axios",
+    "gCaptain",
+    "AP wire"
+   ],
+   "watch": true
+  },
+  {
+   "id": "wso2-cve-2026-5430-sep16",
+   "headline": "Maximum-severity WSO2 API Manager flaw under active exploitation",
+   "status": "New",
+   "first_seen": "2026-09-16-am",
+   "last_updated": "2026-09-16-am",
+   "verification": "Confirmed-multiple; no threat-actor attribution offered",
+   "one_line": "CVE-2026-5430 (CVSS 9.8), a JWT signature-verification bypass in WSO2 API Manager/Control Plane/Traffic Manager/Universal Gateway, is under active exploitation per security firm watchTowr, whose honeypots captured forged admin-privilege tokens beginning Sept 13. Affects versions 4.1.0-4.6.0. Not yet on CISA's KEV catalog as of this morning.",
+   "score_note": "Second live enterprise-infrastructure exploitation story in two weeks, alongside the tracked Cisco Secure FMC/Sandworm thread.",
+   "sources": [
+    "watchTowr research",
+    "WSO2 security advisory WSO2-2026-5328 (primary)",
+    "The Hacker News",
+    "GuardianMSSP"
    ],
    "watch": true
   }

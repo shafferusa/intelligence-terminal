@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Wed, Sep 16, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-16",
+    "slot": "am",
+    "title": "Wall Street Turns Hawkish on the Fed as War Reaches the Edge of Mecca",
+    "path": "reports/2026/09/2026-09-16-am.html",
+    "summary": "Wall Street's largest banks now expect the Fed to hike at 2 o'clock even as the White House fights it, Saudi Arabia says it intercepted a drone bound for Mecca, Yemen's chokepoint war reaches full territorial collapse, and Pennsylvania records its fourth measles death of the year.",
+    "headlines": [
+      "Wall Street's biggest banks now expect the Fed to hike, not cut, at 2 PM",
+      "Saudi Arabia says it downed a drone bound for Mecca; Houthis call it a lie",
+      "Houthi forces complete control of Bab el-Mandeb as the UN counts nearly 2,900 war casualties"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-16T07:20:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <!-- ================= MASTHEAD ================= -->
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Wall Street Turns Hawkish on the Fed as War Reaches the Edge of Mecca</h1>
+      <p class="paper-dateline">
+        Wednesday, September 16, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        The Fed decides at 2 o&rsquo;clock with Wall Street&rsquo;s biggest banks now betting on a hike Washington is publicly fighting to prevent, while Saudi Arabia says it downed a drone aimed at Mecca, Yemen&rsquo;s chokepoint war reaches full territorial collapse, and Pennsylvania records its fourth measles death of the year.
+      </p>
+    </header>
+
+    <!-- ================= THE BRIEF ================= -->
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Saudi Arabia says it shot down a Houthi drone bound for Mecca &mdash; a claim the Houthis call a lie &mdash; just as Houthi forces complete control of the Bab el-Mandeb corridor and the House votes, for a third time, to end the Iran war.</li>
+          <li><b>Markets.</b> Futures point higher (S&amp;P futures +1.1%) and gold and copper are both firmer too, an unusual combination heading into the most consequential Fed meeting since 2023.</li>
+          <li><b>The thread.</b> Consequential decisions are moving forward because the arguments have hardened, not because they&rsquo;ve quieted: one likely hike, three war votes, one grand-jury subpoena and a fourth state measles death, all landing within a day of each other.</li>
+          <li><b>Biggest risk.</b> No forecast has been reconciled. Hike-odds trackers still span ten-plus points even as they skew hawkish, and Saudi Arabia&rsquo;s own &ldquo;red line&rdquo; language on Mecca could turn into a direct military response within days if the drone claim is confirmed.</li>
+          <li><b>Washington.</b> The Justice Department has subpoenaed former CIA Director John Brennan to a Florida grand jury &mdash; the same day the prosecutor leading that probe resigned &mdash; and Pennsylvania&rsquo;s measles death toll reached four, the most in the US since 1992.</li>
+          <li><b>Watch today.</b> The Fed&rsquo;s 2:00 PM rate decision and Chair Warsh&rsquo;s 2:30 PM press conference &mdash; the first test of whether he can hike without reigniting the bond-market stress of July.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- No Board section: closing-edition only. -->
+
+    <!-- ================= TOP STORIES ================= -->
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Wall Street&rsquo;s Biggest Banks Now Expect the Fed to Hike, Not Cut</h3>
+          <p class="story-deck">Goldman Sachs, JPMorgan, HSBC and Deutsche Bank have all moved to a 25-basis-point hike call this week, even as the White House escalates its pressure campaign and prediction markets still can&rsquo;t agree on the odds.</p>
+          <div class="story-body">
+            <p>The Federal Reserve announces its rate decision and updated Summary of Economic Projections at 2:00 PM ET today, with Chair Kevin Warsh&rsquo;s press conference to follow around 2:30. If the bank consensus holds, it would be the Fed&rsquo;s first hike since 2023 &mdash; a genuinely unusual outcome after a year in which this outlet has mostly covered the case for cuts. The backdrop: August core CPI ran hotter than markets wanted, oil has extended its run past $100 a barrel as the Gulf war has widened, and the 10-year Treasury yield touched 5.041% intraday Tuesday &mdash; its highest since July 2007 &mdash; before settling near 5.00%, where it remained early Wednesday, per CNBC.</p>
+            <p>Goldman Sachs, JPMorgan, HSBC and Deutsche Bank have all moved off &ldquo;no change&rdquo; calls to expect a quarter-point hike this week, and Bank of America projects 75 basis points of hikes across 2026 &mdash; a genuine shift in bank consensus, not a probability nudge. Odds trackers, though, still disagree by a wide margin: CME FedWatch&ndash;derived readings cluster from roughly 87% to 93% for a hike, Polymarket sits near 81% (oddly below its own 85% reading for the following meeting in October), and Kalshi contracts have ranged from the high-40s to high-60s percent depending on the exact snapshot sampled this week. This report labels any single number here <em>Estimated</em> rather than picking one &mdash; the trackers have moved toward &ldquo;hike&rdquo; together without actually converging.</p>
+            <p>President Trump has escalated his own pressure campaign, reportedly threatening to halt US trade with surplus countries if the Fed doesn&rsquo;t cut &mdash; an addition to a week that has also included Vance, Bessent and Hassett weighing in. <span class="flag">Single-reliable-source</span> That specific threat comes from wire aggregation; this report has not independently located a primary Trump statement making it. Treasury Secretary Bessent&rsquo;s own Tuesday remark &mdash; that &ldquo;the bond market has taken out more governments than howitzers&rdquo; &mdash; reads to some observers as cover for Warsh to hike despite the pressure. National Economic Council Director Hassett struck a different note, saying &ldquo;we respect [the Fed&rsquo;s] independence&rdquo; while separately arguing the data itself, not politics, would justify a hold rather than a cut &mdash; a distinction worth keeping rather than flattening into a single administration position.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A hike delivered over open White House objection would be a real test of whether the Fed chair the administration itself installed in May will diverge publicly from it &mdash; and after Tuesday&rsquo;s multi-year-high yield print, a test of whether the bond market takes that independence as credible.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Retail Sales and Import/Export Price Indexes land at 8:30 AM, the NAHB Housing Market Index at 10:00 &mdash; both before the decision, and both capable of moving odds that banks consider settled but markets don&rsquo;t. The Summary of Economic Projections will show whether Wednesday is one-and-done or the start of a series.
+            </div>
+          </div>
+          <p class="story-sourceline">CME FedWatch, Polymarket, Kalshi (trackers, labeled Estimated) &middot; Treasury par-yield curve &middot; Bessent&rsquo;s and Hassett&rsquo;s own remarks (primary, via wire) &middot; Reuters, CNBC, Bloomberg reporting on bank positioning.</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>Morgan Stanley&rsquo;s own position could not be reconciled from available reporting this morning &mdash; one account describes the bank assigning roughly 90% odds to a &ldquo;hawkish pass&rdquo; (no hike), while a separate headline describes it as expecting hikes to resume. This report does not attribute a specific call to Morgan Stanley pending a primary source. Separately, Fed Governor Waller has previously named August CPI as the decisive input for his own vote, and Warsh&rsquo;s own hawkish Jackson Hole remarks (Aug. 28) have led some commentary to describe him as having &ldquo;boxed himself in&rdquo; to a hike &mdash; framing worth noting without adopting as fact.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Saudi Arabia Says It Downed a Drone Aimed at Mecca; Houthi Forces Call the Claim a Lie</h3>
+          <p class="story-deck">If confirmed, it would be the first Houthi attempt on Islam&rsquo;s holiest city in nearly a decade &mdash; neither side&rsquo;s account has been independently verified.</p>
+          <div class="story-body">
+            <p><span class="flag">Disputed</span> Saudi-led coalition spokesman Turki al-Maliki said air defenses intercepted a hostile drone at roughly 6:50 PM local time Tuesday before it entered restricted airspace around Mecca, with wreckage falling south of the city. He called the protection of pilgrims and holy sites a &ldquo;red line&rdquo; and warned of further deterrent measures. A Houthi military source told Yemen&rsquo;s state SABA news agency the claim was &ldquo;a worn-out lie,&rdquo; saying Houthi targets remain Saudi oil facilities and military bases &ldquo;far removed from the holy places.&rdquo; Neither government has released forensic evidence establishing the drone&rsquo;s actual trajectory or intended target, and the two accounts directly conflict.</p>
+            <p>The claim lands the same week Houthi forces completed control of the Bab el-Mandeb corridor (next story) &mdash; a confirmed strike credibly linked to Mecca would cross a line that has held even through five years of regional war.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Saudi officials have promised &ldquo;further deterrent measures&rdquo; if the claim is substantiated; reaction from other Gulf states and the broader Muslim world would likely follow confirmation either way.
+            </div>
+          </div>
+          <p class="story-sourceline">Saudi-led coalition spokesman Turki al-Maliki (primary) &middot; Houthi statement via SABA (primary, single-party) &middot; Al Jazeera, CNN, CNBC, TRT World.</p>
+        </article>
+
+        <article class="story">
+          <h3>Houthi Forces Complete Control of the Bab el-Mandeb Corridor as the UN Reports Nearly 2,900 War Casualties Since August</h3>
+          <p class="story-deck">The capture of Mokha, Perim Island and the Hanish islands ends a four-year truce and hands a hostile, Iran-aligned force command of a passage carrying roughly 9% of global maritime trade.</p>
+          <div class="story-body">
+            <p>A September offensive gave Houthi forces the port of Mokha (around Sept. 10), Perim Island (Sept. 11) and the Greater and Lesser Hanish islands (Sept. 14) &mdash; completing effective control of the Yemeni side of Bab el-Mandeb. Yemen&rsquo;s Saudi-backed government claimed a partial counter-advance near Jardad in western Taiz over the weekend with coalition air support; no independent confirmation of that claim was found. UN Special Envoy for Yemen Hans Grundberg told the Security Council, in an emergency session France requested Tuesday, that the country faces &ldquo;a new and more dangerous phase of war.&rdquo; The World Health Organization put casualties since Aug. 6 at 2,883; the International Organization for Migration counted 93,864 people newly displaced by the September fighting, some crossing the strait to Djibouti.</p>
+            <p><span class="flag">Secondary-sourced</span> This report could not reach the UN&rsquo;s own briefing pages directly this morning; the WHO and IOM figures above come via wire citation of the UN session, not a primary UN document.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This reframes what had read as an intermittent strike-and-response cycle into a territorial outcome with a direct global-shipping consequence &mdash; a hostile, Iran-aligned force now controls both Red Sea chokepoints this outlet tracks.
+            </div>
+          </div>
+          <p class="story-sourceline">UN Security Council session (secondary wire citation) &middot; FDD analysis &middot; Euronews, Times of Israel, Al Jazeera, Arab News.</p>
+        </article>
+
+        <article class="story">
+          <h3>House Votes a Third Time to End the Iran War, With a Record Seven Republicans Crossing Over</h3>
+          <p class="story-deck">The 220&ndash;204 vote late Tuesday is non-binding without Senate action, but the Republican defection count has nearly doubled since the last such vote in July.</p>
+          <div class="story-body">
+            <p>The House passed a concurrent resolution directing the president to remove US forces from hostilities against Iran absent a declaration of war, 220&ndash;204, in a roll call recorded at 10:32 PM ET Tuesday &mdash; after this outlet&rsquo;s Tuesday edition had already published. Seven Republicans crossed over: Reps. Massie (KY), Fitzpatrick (PA), Davidson (OH), Barrett (MI), Mace (SC), Miller-Meeks (IA) and Nunn (IA), the last three voting this way for the first time. The measure is not binding in practice &mdash; prior versions have not reached the president&rsquo;s desk, and a veto would be expected &mdash; but the defection count has grown from zero in March to roughly four in June and July to seven now.</p>
+            <p>The vote lands the same week as Tuesday&rsquo;s Pentagon Inspector General report putting the war&rsquo;s cost at $33.4 billion and warning of a munitions shortfall, and as Vice President Vance told the <em>New York Post</em> the war&rsquo;s &ldquo;first phase&rdquo; is complete and a &ldquo;much different&rdquo; second phase begins within &ldquo;a couple of months&rdquo; &mdash; broadly endorsing President Trump&rsquo;s own prediction that the conflict winds down after November&rsquo;s midterms. That timeline sits in tension with an independent shipping tracker, straits.live, which counted the Strait of Hormuz at day 198 of an effective closure this week, transits still near zero against a normal baseline near 85 ships a day; this report cannot reconcile the two and presents both without adjudicating.</p>
+          </div>
+          <p class="story-sourceline">House Clerk roll-call vote (primary) &middot; AP/ABC News, Al Jazeera &middot; Vance&rsquo;s <em>New York Post</em> interview (primary, via wire) &middot; straits.live (independent tracker, Single-reliable-source).</p>
+        </article>
+
+        <article class="story">
+          <h3>US Destroys Iranian Boats After an Attempt to Seize a Navy Drone in the Strait of Hormuz</h3>
+          <p class="story-deck">CENTCOM also disputed Iran&rsquo;s account of a separate tanker strike this week, saying a drone &mdash; not a naval mine &mdash; disabled the vessel.</p>
+          <div class="story-body">
+            <p>CENTCOM spokesman Capt. Tim Hawkins said Iranian boats &ldquo;recently attempted to take possession&rdquo; of a roughly 25-foot Navy Saildrone unmanned surface vessel used for maritime surveillance; US forces &ldquo;forcefully responded,&rdquo; destroying both boats. Iranian state media separately reported an attack on fishing boats in Hormozgan province with several fishermen reported missing; it is unclear whether this describes the same incident.</p>
+            <p><span class="flag">Disputed</span> On a separate incident, Iran&rsquo;s IRGC said the Panama-flagged tanker <em>El Gaia</em> struck a naval mine south of the strait. CENTCOM rejected that account, saying the vessel had already been disabled by an Iranian missile strike last month and was hit again by an Iranian drone over the weekend while sitting off Oman &mdash; calling the mine account &ldquo;yet another example of [IRGC] lies and intimidation.&rdquo; Neither incident has independent maritime-tracker confirmation.</p>
+          </div>
+          <p class="story-sourceline">CENTCOM/Capt. Tim Hawkins (primary) &middot; IRGC/Fars/PressTV (primary, single-party, disputed) &middot; Axios, gCaptain, AP wire.</p>
+        </article>
+
+        <article class="story">
+          <h3>Justice Department Subpoenas Ex-CIA Director Brennan; Prosecutor Leading the Probe Resigns the Same Day</h3>
+          <p class="story-deck">Brennan is ordered to testify before a grand jury next month in the Florida courthouse that dismissed Trump&rsquo;s own documents case &mdash; his lawyer says DOJ could not clearly articulate the underlying crime.</p>
+          <div class="story-body">
+            <p>Attorney Ken Wainstein disclosed that DOJ delivered a grand-jury subpoena the prior Thursday requiring Brennan to testify Oct. 15 in Fort Pierce, Florida &mdash; the courthouse of Judge Aileen Cannon, who dismissed the Mar-a-Lago documents case in 2024. DOJ is reportedly pursuing two tracks: a broad &ldquo;grand conspiracy&rdquo; inquiry into whether former law-enforcement and intelligence officials conspired to deprive Trump of civil rights during the Russia investigations, and a narrower question of whether Brennan lied to Congress. CBS News reports two former FBI officials tied to the Trump-Russia probe were also subpoenaed. Wainstein sought a preservation order for DOJ records, arguing indictment risk is not speculative and saying DOJ could not clearly state the crime being investigated. Separately, prosecutor Joe diGenova &mdash; who had led the &ldquo;grand conspiracy&rdquo; investigation &mdash; resigned the same day the subpoena surfaced, amid reported frustration inside DOJ and the White House over the probe&rsquo;s pace.</p>
+            <p>Brennan denies wrongdoing. This report has not found an on-record statement establishing the specific charge, if any, DOJ is contemplating.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A sitting administration convening a grand jury against a former CIA director who was a chief antagonist of the first Trump term ties directly into this outlet&rsquo;s tracked &ldquo;Arctic Frost&rdquo; thread, which FBI Director Patel declined to discuss at Tuesday&rsquo;s Senate Judiciary hearing.
+            </div>
+          </div>
+          <p class="story-sourceline">Ken Wainstein&rsquo;s statement (primary) &middot; NPR, CBS News, ABC News/AP wire, Fox News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Pennsylvania&rsquo;s Measles Death Toll Reaches Four &mdash; the Most in the US Since 1992</h3>
+          <p class="story-deck">A newly confirmed 18-year-old victim and lab confirmation of an earlier &ldquo;probable&rdquo; case both landed this week, while the CDC still counts none of the state&rsquo;s deaths nationally.</p>
+          <div class="story-body">
+            <p>Pennsylvania health officials confirmed two additional measles-associated deaths Monday: a Jefferson County resident whose postmortem testing has now confirmed an active measles infection at time of death (resolving the &ldquo;probable&rdquo; label this outlet carried last week), and an 18-year-old Mifflin County resident whose cause of death was acute disseminated encephalomyelitis, a rare and severe measles complication. Both were unvaccinated. The state total now stands at four deaths in 2026, against roughly 700 cases across 38 counties, about 100 of them in the past week. The CDC&rsquo;s national tally &mdash; which recently shifted to rely solely on NCHS cause-of-death coding rather than state case reports &mdash; still shows zero 2026 measles deaths; Pennsylvania disputes the federal characterization of what its own epidemiologists provided.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is the most US measles deaths recorded in a single year since 1992, and it sharpens rather than resolves an ongoing federal-state dispute over how those deaths get counted.
+            </div>
+          </div>
+          <p class="story-sourceline">Pennsylvania Department of Health, Jefferson County Coroner (primary) &middot; STAT News, CNN, AP wire.</p>
+        </article>
+
+        <article class="story">
+          <h3>Kennedy Center Appeals Naming Ruling to the D.C. Circuit as Trump Ties Renovation to the Outcome</h3>
+          <p class="story-deck">A federal judge called the board&rsquo;s renaming maneuver &ldquo;linguistic gymnastics&rdquo; in blocking any memorial without congressional authorization &mdash; DOJ is seeking an expedited appeal.</p>
+          <div class="story-body">
+            <p>Judge Christopher Cooper ruled Tuesday that the Kennedy Center&rsquo;s board cannot install any memorial &mdash; Trump-named or otherwise &mdash; without authorization from Congress, a decision one characterization described as calling the board&rsquo;s renaming effort &ldquo;linguistic gymnastics.&rdquo; DOJ and the Kennedy Center formally appealed to the D.C. Circuit Tuesday evening, and Trump said DOJ will seek an expedited hearing. On Truth Social, Trump framed the building&rsquo;s closure &mdash; already voted by the board &mdash; as proceeding immediately, while &ldquo;Renovation and Reconstruction&hellip;cannot begin&rdquo; until the appeals court rules on the board&rsquo;s chosen name.</p>
+            <p><span class="flag">Unconfirmed</span> A related D.C. Circuit appeal (No. 25-7156) already has oral argument scheduled for Oct. 13; this report could not confirm whether Tuesday&rsquo;s filing is on that same docket or a separate track.</p>
+          </div>
+          <p class="story-sourceline">Judge Cooper&rsquo;s ruling, DOJ filing (primary) &middot; NPR, Bloomberg Law, NBC News, CNBC, ABC News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Zelensky Confirms a Strike on a Russian Refinery as Nearly 150 Drones Hit Ukraine Overnight</h3>
+          <p class="story-deck">Kyiv says it struck the Syzran refinery in Russia&rsquo;s Samara region, undercutting Trump&rsquo;s claimed energy-strike truce, even as Moscow launched one of its largest drone barrages in weeks.</p>
+          <div class="story-body">
+            <p>Zelensky confirmed Ukraine struck the Syzran oil refinery in Russia&rsquo;s Samara region Monday, despite Trump&rsquo;s claim two days earlier of a mutual pause on energy-infrastructure strikes. Russia, in turn, launched roughly 149 drones at Ukraine overnight Monday into Tuesday (Ukraine&rsquo;s air force count; other wire figures run closer to 200, a range this report cannot resolve), about half jet-powered Shaheds and the rest Gerbera/Parody decoys; Ukraine says it downed 128. Strikes hit 13 locations; a shopping-mall strike in Sumy killed at least two and injured 23. NATO aviation assets flew over Polish airspace overnight in response to drone activity near the border, continuing from Sunday&rsquo;s pledge by NATO Secretary-General Rutte to boost eastern-flank support.</p>
+          </div>
+          <p class="story-sourceline">Zelensky&rsquo;s own statement (primary) &middot; NBC News, ABC News, The Hill, Al Jazeera.</p>
+        </article>
+
+        <article class="story">
+          <h3>OpenAI, Anthropic and Google DeepMind Confirm Weeks of Quiet AI-Safety Coordination</h3>
+          <p class="story-deck">The three labs have reportedly discussed forming a shared safety-standards body &mdash; the first concrete follow-through on last week&rsquo;s &ldquo;pace the frontier&rdquo; call, as a second oversight track opens in New York City.</p>
+          <div class="story-body">
+            <p>OpenAI global policy chief Chris Lehane told reporters in Washington Tuesday that OpenAI, Anthropic and Google DeepMind have been coordinating on AI safety &ldquo;for weeks&rdquo; and have discussed forming a shared safety-standards body &mdash; still at the discussion stage, not yet formed. It comes as Rep. Casar continues pressing, in a Fox News interview, for OpenAI&rsquo;s and Anthropic&rsquo;s CEOs to testify under oath after both missed a second congressional deadline Tuesday; no response from either company has surfaced since, and Speaker Johnson has said developers, not Congress, bear responsibility for AI safety and has not scheduled a hearing. Separately, New York City Council Speaker Julie Menin has invited both companies to a municipal AI hearing set for Oct. 5 &mdash; a second, non-federal oversight track.</p>
+          </div>
+          <p class="story-sourceline">Chris Lehane&rsquo;s remarks (primary) &middot; TechCrunch, Bloomberg &middot; casar.house.gov, City &amp; State NY.</p>
+        </article>
+
+        <article class="story">
+          <h3>A Maximum-Severity Flaw in Widely Used API Gateway Software Is Under Active Attack</h3>
+          <p class="story-deck">Security researchers say forged admin credentials targeting WSO2 API Manager have been captured in honeypots since last weekend &mdash; the second live enterprise-infrastructure exploitation story in two weeks.</p>
+          <div class="story-body">
+            <p>CVE-2026-5430 (CVSS 9.8), a JSON Web Token signature-verification bypass in WSO2 API Manager, Control Plane, Traffic Manager and Universal Gateway, is under active exploitation, according to security firm watchTowr, whose honeypots began capturing forged admin-privilege tokens Sept. 13. The flaw affects WSO2 API Manager versions 4.1.0 through 4.6.0 and related products; it has not yet been added to CISA&rsquo;s Known Exploited Vulnerabilities catalog as of this morning. No attribution to a specific threat actor has been offered.</p>
+          </div>
+          <p class="story-sourceline">watchTowr research, WSO2 security advisory WSO2-2026-5328 (primary) &middot; The Hacker News, GuardianMSSP.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ================= OVERNIGHT ================= -->
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>While Wall Street was closed, Asian markets traded mostly lower for a third straight session &mdash; the Nikkei near 63,484, the Hang Seng down roughly 1.0% to 24,667, the Kospi off 0.85% &mdash; and European benchmarks opened softer too, the Euro Stoxx 50 and FTSE 100 both down about 0.4%, even as US index futures ticked higher into the Fed decision. This report does not try to explain that divergence.</p>
+        <p>Iran&rsquo;s nuclear chief, Mohammad Eslami, was barred from entering Austria for this week&rsquo;s IAEA General Conference in Vienna despite reportedly holding a valid Schengen visa. Austria&rsquo;s own IAEA ambassador said the decision wasn&rsquo;t unilateral: a UN Security Council sanctions committee denied a requested waiver of Eslami&rsquo;s travel ban, leaving Austria, in its telling, &ldquo;obliged&rdquo; to deny entry. His deputy, Behrouz Kamalvandi, delivered Iran&rsquo;s address in his place; a senior Iranian diplomat called the episode a &ldquo;serious violation&rdquo; of Iran&rsquo;s IAEA membership rights, and Russia&rsquo;s own Vienna ambassador backed Iran&rsquo;s objection, continuing the open Russian alignment with Tehran at the nuclear watchdog tracked since last week.</p>
+        <p>In Indonesia, the search for the ferry <em>Virgo Transport 8</em> enters its fourth day with the toll unchanged: six confirmed dead, 108 rescued, 129 still missing of 243 aboard, as rough seas continue to block the underwater search. A second classified SpaceX national-security mission, USSF-259, scrubbed before fueling Tuesday evening with no reason given; the backup window opens tonight at 9:00 PM ET. Roscosmos&rsquo;s Progress MS-35 cargo craft is due to lift off from Baikonur at 9:33 AM ET this morning, bound for the ISS.</p>
+      </div>
+    </section>
+
+    <!-- ================= POLITICS & GOVERNMENT ================= -->
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Fallout from FBI Director Patel&rsquo;s Tuesday Senate Judiciary appearance continued to surface overnight: the FBI&rsquo;s own official account on X posted attacks on sitting committee members during the hearing, an unusual step for an agency account to take against its own congressional overseers, and Patel told Chairman Grassley he&rsquo;d &ldquo;appreciate it if you concluded this hearing&rdquo; after a heated exchange. No on-the-record Democratic call for Patel&rsquo;s resignation tied specifically to Tuesday&rsquo;s hearing has surfaced.</p>
+        <p>The Senate cloture failure on the CLARITY Act appears to have ended this year&rsquo;s digital-asset market-structure push, as Sen. Lummis suggested Tuesday; no new legislative movement has been reported since. Separately, environmental groups and Democratic state attorneys general are pursuing legal challenges over EPA&rsquo;s earlier repeal of the 2009 endangerment finding, but this report found no confirmation that a lawsuit specifically targeting Tuesday&rsquo;s power-plant carbon-rule repeal has been filed yet &mdash; that remains &ldquo;expected, not confirmed,&rdquo; unchanged from Tuesday.</p>
+      </div>
+    </section>
+
+    <!-- ================= THE WORLD ================= -->
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p>DRC&rsquo;s Ebola outbreak, the fastest-growing on record, had no newer case count available as of this morning; the last confirmed figures (ECDC aggregation of Ministry of Health data, Sept. 13&ndash;14) stood at roughly 7,258 cases and 3,510 deaths across six provinces and 61 health zones. Germany&rsquo;s AfD-Saxony-Anhalt coalition question remains unresolved a week and a half after the vote, with no new session or result found this cycle.</p>
+      </div>
+    </section>
+
+    <!-- ================= THE ECONOMY ================= -->
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Wednesday&rsquo;s decision follows a summer of data that turned more hawkish than expected. August headline CPI held at 3.4% year over year with core CPI easing to 2.4% from July&rsquo;s 2.5%, but the month-over-month core pace (+0.3%) ran hotter than markets wanted. Payrolls (August, 159.075 million, BLS) grew modestly from July; unemployment held at 4.1%. Initial claims for the week of Sept. 5 eased to 206,000 from a slightly revised 207,000, still consistent with a labor market cooling without cracking.</p>
+        <p>The Treasury&rsquo;s par-yield curve &mdash; still showing Tuesday&rsquo;s close, since Wednesday&rsquo;s has not yet posted &mdash; has the 2-year note at 4.67% against a 10-year at 5.00%: a 33-basis-point 2s10s spread, an 89-basis-point 3-month-to-10-year spread, and a 53-basis-point 5s30s spread. High-yield credit (the ICE BofA index, via FRED) widened slightly to 2.71% from 2.65% the prior week &mdash; a small but real move as the market prices policy uncertainty.</p>
+      </div>
+    </section>
+
+    <!-- ================= BUSINESS ================= -->
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Karman Holdings (KRMN) filed an 8-K at 6:08 AM ET this morning disclosing a Regulation FD item alongside a roughly 5-megabyte financial-exhibit package; shares were quoted 7.9% higher against Tuesday&rsquo;s close. This report has not yet reviewed the filing&rsquo;s underlying content and will follow up once it is available.</p>
+        <p>Tuesday&rsquo;s tape had a wider spread of moves than the headline indices suggested: Coinbase fell 10.1% alongside bitcoin&rsquo;s continued slide, Cboe Global Markets fell 4.9%, and Chipotle fell 5.9%; Thermo Fisher Scientific gained 4.5% and Voyager Technologies gained 4.3%. Energy (XLE, +2.2%) was the only S&amp;P sector to close higher Tuesday as oil extended its run; Consumer Discretionary (XLY, &minus;1.7%) and Utilities (XLU, &minus;1.2%) lagged. Whole-market breadth for Tuesday&rsquo;s session was negative &mdash; 1,566 advancers against 3,882 decliners across a 5,632-name universe &mdash; a narrower, more cap-weighted picture than the modest index-level declines implied on their own.</p>
+        <p>Sam Altman told <em>Fortune</em>, in a follow-up interview, that OpenAI&rsquo;s IPO delay to 2027 is not about market conditions: &ldquo;given everything happening with safety, right now would be an ill-advised moment to go public, and we don&rsquo;t feel pressure on that,&rdquo; he said, tying the delay to the &ldquo;pace the frontier&rdquo; moment and work still required on safety and alignment.</p>
+      </div>
+    </section>
+
+    <!-- ================= TECHNOLOGY & AI ================= -->
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>China&rsquo;s foreign ministry warned Tuesday against turning space into a &ldquo;battlefield,&rdquo; telling the US to &ldquo;stop expanding its military capabilities and preparing for war in outer space&rdquo; &mdash; the first Chinese government response to Monday&rsquo;s Air Force disclosure that the US already has weapons on orbit. Russia&rsquo;s Kremlin spokesman Dmitry Peskov separately said orbit &ldquo;must be free from any weapon,&rdquo; reaffirming Moscow&rsquo;s own push for space demilitarization. Neither government offered specifics on what, if anything, they believe the disclosure changes operationally.</p>
+      </div>
+    </section>
+
+    <!-- ================= SCIENCE & SPACE ================= -->
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>Roscosmos&rsquo;s Progress MS-35 cargo craft is scheduled to lift off from Baikonur&rsquo;s Site 31 at 9:33:53 AM ET this morning aboard a Soyuz-2.1b rocket, bound for the ISS&rsquo;s Poisk module &mdash; the sixth Soyuz 2.1b mission of 2026 and the vehicle family&rsquo;s 105th overall. A second classified SpaceX national-security mission, USSF-259 (Falcon 9, Vandenberg SLC-4E, on booster B1097&rsquo;s 13th flight), scrubbed before fueling Tuesday evening with no reason given; the backup window opens tonight at 9:00 PM ET. SpaceX&rsquo;s Starship Flight 14 &mdash; the V3 vehicle&rsquo;s debut, carrying roughly 20 Starlink V3 satellites from Starbase, Texas &mdash; now has a confirmed primary window of Sept. 22 at 8:15 AM ET per Launch Library 2&rsquo;s direct feed, four hours earlier than the roughly 12:15 PM ET window this report carried as of Tuesday; a backup falls the next day. Separately, NASA&rsquo;s Crew-12 astronauts &mdash; Jessica Meir and Jack Hathaway (NASA), Sophie Adenot (ESA) and Andrey Fedyaev (Roscosmos) &mdash; hold a pre-departure press conference from the ISS this afternoon ahead of returning to Earth, closing out an eight-month mission that launched in February.</p>
+      </div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt">Retail Sales (Aug)</td><td>Estimated +0.2% (single-source tracker)</td><td>&minus;0.6% (Jul)</td></tr>
+            <tr><td>08:30</td><td class="txt">Import / Export Price Indexes (Aug)</td><td>&mdash;</td><td>Import &minus;0.4%, Export &minus;1.3% (Jul)</td></tr>
+            <tr><td>09:33</td><td class="txt">Progress MS-35 cargo launch, Baikonur</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>10:00</td><td class="txt">NAHB Housing Market Index (Sept)</td><td>&mdash;</td><td>35 (Aug)</td></tr>
+            <tr><td>13:00</td><td class="txt">17-week Treasury bill auction, $72B</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>14:00</td><td class="txt"><strong>FOMC rate decision + Summary of Economic Projections; Chair Warsh press conference ~2:30 PM</strong></td><td>25bp hike (bank consensus); trackers Estimated 48&ndash;93%</td><td>Hold, prior meeting</td></tr>
+            <tr><td>After close</td><td class="txt">Lennar (LEN) Q3 FY2026 earnings; FedEx (FDX) Q1 FY2027 earnings</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event. No watchlist company reports before Costco on Sept. 24.</p>
+    </section>
+
+    <!-- ================= BEFORE THE OPEN ================= -->
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures point to a firmer open: S&amp;P 500 futures were up about 1.1%, Nasdaq-100 futures up 1.45%, Dow futures up roughly 0.95%, and Russell 2000 futures up 0.88% against Tuesday&rsquo;s cash close. Gold futures were also higher, up 1.3%, and copper futures up 2.1% &mdash; an unusual combination heading into a Fed meeting increasingly priced for a hike, where higher real rates would typically pressure both equities and non-yielding metals at once. Oil pulled back 1.9% from Tuesday&rsquo;s spike after Saudi Arabia signaled its East-West pipeline, shut since a Sept. 10 drone attack, should return to something near its 7-million-barrel-a-day capacity within days &mdash; even as Saudi Aramco has reportedly cancelled or delayed several late-September European crude cargoes and suspended loadings at the Red Sea port of Yanbu, a documented supply-side element behind this month&rsquo;s broader oil rally, not merely headline risk. The dollar index was essentially flat (+0.04%) and euro-dollar barely moved (&minus;0.07%). Bitcoin extended its slide overnight to roughly $75,900, continuing to digest both Tuesday&rsquo;s CLARITY Act cloture failure and Fed-decision uncertainty.</p>
+        <p>The most fragile assumption in this morning&rsquo;s tape is that today&rsquo;s data won&rsquo;t materially move hike odds that bank economists have already converged toward but prediction markets still haven&rsquo;t. A soft retail print, or an upside surprise in the price indexes, could reopen a debate Wall Street&rsquo;s biggest banks consider largely settled. Futures are not a guaranteed open.</p>
+      </div>
+    </section>
+
+    <!-- ================= RISKS ================= -->
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>The Fed hikes but signals it is done for now.</strong> Preconditions: a 25-basis-point hike accompanied by a Summary of Economic Projections or press-conference language ruling out near-term further tightening. Probability 35&ndash;45%, combining the roughly 85&ndash;90% bank/tracker-weighted hike likelihood with an unresolved question over how hawkish Warsh chooses to sound. Indicators: the dot plot median, the tone of Warsh&rsquo;s 2:30 remarks. If it happens: risk assets likely stabilize and yields ease off Tuesday&rsquo;s multi-year high. Invalidated by a &ldquo;more hikes coming&rdquo; signal or by a surprise hold.</p>
+        <p><strong>Saudi Arabia authorizes a direct military response tied to the Mecca-drone claim.</strong> Preconditions: Saudi forensic attribution confirming genuine Houthi intent against Mecca. Probability 15&ndash;25% within the week, on the basis that Saudi Arabia has previously declined US requests for more direct escalation even after significant provocations, though its own &ldquo;red line&rdquo; language this time is more pointed than prior statements.</p>
+        <p><strong>A further US-Iran kinetic incident in the Strait of Hormuz.</strong> Preconditions: continuation of this week&rsquo;s pattern (disputed tanker strike, Saildrone-seizure attempt). Probability 25&ndash;35% within two weeks, on the basis that no diplomatic track is currently open &mdash; the Salalah Iran-GCC talks remain postponed with no new date.</p>
+      </div>
+    </section>
+
+    <!-- ================= LOCAL ================= -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">88&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Mostly sunny, slight chance of afternoon storms</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">88&deg;</span>
+            <span class="sky">Storms possible 2&ndash;5 PM (38%)</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="lo">69&deg;</span>
+            <span class="sky">Chance of storms before 3 AM (51%)</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">84&deg;</span>
+            <span class="sky">Showers and storms likely (77%)</span>
+          </div>
+        </div>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>PennDOT&rsquo;s Route 50 signal upgrade continues into late November</h3>
+        <div class="story-body">
+          <p>PennDOT&rsquo;s traffic-signal upgrade on Washington Pike/Washington Avenue (Route 50) through Bridgeville, Heidelberg, Collier and Scott townships, underway since May, continues on weekdays through late November: shoulder closures 7 AM&ndash;5 PM and short single-lane restrictions 9 AM&ndash;3 PM, affecting the Prestley Road, Chartiers Valley Shopping Center, Commercial Drive/Mayer Street, Great Southern Shopping Center, Vanadium Road, I-79 interchange, Steen Road and Thoms Run Road intersections.</p>
+        </div>
+        <p class="story-sourceline">PennDOT District 11 (primary) &middot; WPXI.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Pittsburgh Regional Transit&rsquo;s federal funding cut confirmed at $7.3 million</h3>
+        <div class="story-body">
+          <p>A federal continuing resolution passed this month cuts PRT&rsquo;s expected federal funding by $7.3 million, part of a nationwide roughly $4.2 billion cut to transit formula and competitive funds. PRT says it has no confirmed plan for the shortfall pending further congressional action; the agency&rsquo;s already-approved FY26 budget separately assumes a 35% service cut and 9% fare increase contingent on state funding, with public hearings continuing this fall.</p>
+        </div>
+        <p class="story-sourceline">rideprt.org (primary) &middot; Pittsburgh Post-Gazette, PublicSource, Mass Transit trade press.</p>
+      </article>
+    </section>
+
+    <!-- ================= MARKET APPENDIX ================= -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-on tilt, fragile</span> Supporting: equity futures higher, bank-consensus hike call now largely priced. Contradicting: Tuesday&rsquo;s breadth was negative (1,566 advancers vs. 3,882 decliners) despite modest index-level declines, the 10-year sits near a 19-year high, and gold and copper are both firm alongside equity futures &mdash; an unusual pairing heading into a hike. Confidence: moderate. Changed from Tuesday&rsquo;s framing as the bank-consensus hike shift adds a new hawkish input the market has not fully digested.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close (Tue Sept 15 EOD official).</caption>
+              <thead><tr><th>Index</th><th>Close</th><th>Chg</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,585.73</td><td class="down">&minus;34.25</td><td class="down">&minus;0.45%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>25,981.57</td><td class="down">&minus;204.84</td><td class="down">&minus;0.78%</td></tr>
+                <tr><td>Dow Jones Industrial</td><td>52,093.11</td><td class="down">&minus;328.09</td><td class="down">&minus;0.63%</td></tr>
+                <tr><td>Russell 2000</td><td>2,870.29</td><td class="down">&minus;21.95</td><td class="down">&minus;0.76%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p>Tuesday Sept. 15 session (Massive grouped-daily, EOD official): 1,566 advancers, 3,882 decliners, 184 unchanged across a 5,632-name filtered universe; up-volume $4.64B vs. down-volume $9.59B. Percent-above-50/200-day-EMA remain <span class="chip">Estimated &mdash; EMA proxy, accumulating history (37/200 sessions)</span> and are not yet reliable.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>SPDR sector ETFs, previous close, Tue Sept 15.</caption>
+              <thead><tr><th>Sector</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>Energy (XLE)</td><td class="up">+2.17%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="up">+0.48%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="down">&minus;0.29%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td class="down">&minus;0.12%</td></tr>
+                <tr><td>Health Care (XLV)</td><td class="down">&minus;0.05%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="down">&minus;0.64%</td></tr>
+                <tr><td>Staples (XLP)</td><td class="down">&minus;0.82%</td></tr>
+                <tr><td>Communication Svcs (XLC)</td><td class="down">&minus;0.90%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="down">&minus;1.20%</td></tr>
+                <tr><td>Discretionary (XLY)</td><td class="down">&minus;1.75%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries &amp; watchlists</summary>
+          <p>Notable movers among company watchlists, Tuesday close: Karman (KRMN) +7.86% (ahead of this morning&rsquo;s 8-K), Thermo Fisher (TMO) +4.53%, Voyager Technologies (VOYG) +4.26%, Rocket Lab (RKLB) +1.60%; Coinbase (COIN) &minus;10.10%, Chipotle (CMG) &minus;5.94%, Cboe Global Markets (CBOE) &minus;4.94%, Firefly Aerospace (FLY) &minus;4.07%, SpaceX (SPCX) &minus;3.15%, Target (TGT) &minus;2.71%. SPCX price history is tracked only from its 2026-06-12 IPO date forward.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Sept 15 (Sept 16 not yet posted).</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.93%</td></tr>
+                <tr><td>3M</td><td>4.11%</td></tr>
+                <tr><td>6M</td><td>4.17%</td></tr>
+                <tr><td>1Y</td><td>4.39%</td></tr>
+                <tr><td>2Y</td><td>4.67%</td></tr>
+                <tr><td>5Y</td><td>4.83%</td></tr>
+                <tr><td>10Y</td><td>5.00%</td></tr>
+                <tr><td>20Y</td><td>5.40%</td></tr>
+                <tr><td>30Y</td><td>5.36%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +33bp &middot; 3m10y +89bp &middot; 5s30s +53bp. FRED cross-check (EOD official, Sept 14): DGS2 4.65%, DGS10 4.97%, SOFR 3.62%, 10-year TIPS breakeven (T10YIE) 2.38%, 10-year real yield (DFII10) 2.60%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High Yield OAS (FRED BAMLH0A0HYM2, EOD official Sept 14): 2.71%, up from 2.65% the prior week. HYG (high yield) &minus;0.19% and LQD (investment grade) &minus;0.02% Tuesday, both <em>Previous close</em>.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 17.20 (+0.58%), VIX9D 17.21, VIX3M 19.36 &mdash; <span class="chip">Delayed (+15 min)</span>, all as of Tuesday&rsquo;s 4:15 PM ET close. Term structure: flat front month (VIX9D essentially level with VIX), normal contango further out, unchanged in shape from Monday. Put/call ratios remain retired (persistent 403 from the data source); MOVE index and dealer gamma are not tracked &mdash; no legitimate free source for either.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>Dollar index (DXY) 99.69, +0.04% pre-open <span class="chip">Delayed (+10 min)</span>. EUR/USD 1.1541, &minus;0.07%. ECB reference basket (Frankfurter, <span class="chip">EOD official, Sept 15 fix</span>): EUR 0.8666, JPY 155.00, GBP 0.7417, CNY 6.7115, CHF 0.8182, CAD 1.3920, AUD 1.4034, MXN 17.1568, BRL 5.1512, INR 95.96 (all per USD).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>WTI crude (CL=F) $103.80, &minus;1.92% pre-open. Gold (GC=F) $4,389.10, +1.30%. Copper (HG=F) $6.50, +2.11%. Natural gas (NG=F) $2.93, +0.31%. All <span class="chip">Delayed (+10 min)</span>, pre-open futures vs. Tuesday close.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p><span class="chip">Live (CoinGecko aggregate)</span> Bitcoin $75,916 (&minus;1.31% 24h), Ethereum $2,402.33 (&minus;2.94%), Solana $97.25 (&minus;3.53%), Cardano $0.1943 (&minus;5.21%). Total crypto market cap $2.599T (&minus;4.35% 24h); Bitcoin dominance 58.5%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>60-day distance from moving averages (insufficient history yet for 200-DMA on any name, 63 sessions available): SPY &minus;1.04% (20-DMA) / &minus;0.22% (50-DMA); QQQ &minus;1.23% / &minus;0.77%; IWM &minus;3.28% / &minus;3.61%; DIA &minus;1.71% / &minus;1.46%; TLT &minus;1.71% / &minus;2.53%; SPCX (from its 2026-06-12 IPO) +0.16% / +6.72%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>The cross-asset picture into today&rsquo;s decision is genuinely mixed: equity futures, gold and copper are all higher pre-open, which is not the textbook reaction to a meeting increasingly priced for a hike; the dollar is flat; oil is pulling back from its war-driven spike; and Tuesday&rsquo;s negative breadth sits underneath a relatively calm index-level tape. No single narrative reconciles all of it, and this report does not force one.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>No watchlist company reports before Costco on Sept. 24. Non-watchlist context: Lennar (LEN) reports Q3 FY2026 after today&rsquo;s close (call Thursday 11:00 AM ET); FedEx (FDX) reports Q1 FY2027 today.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>17-week Treasury bill auction, $72B, settles this week. Treasury&rsquo;s doubled long-end liquidity-support buyback size ($4B per operation, up from $2B, 10&ndash;30-year sector) remains in effect. FINRA short volume, prior session (Sept 15, <span class="chip">EOD official</span>): aggregate 51.08%; watchlist standouts include Ares Management (ARES) 79.6%, Globalstar (GSAT) 76.6%, Voyager Technologies (VOYG) 75.2%, Vanguard FTSE Europe (VGK) 70.9% and Target (TGT) 70.7%. Short volume is not short interest, and carries no settlement-date lag comparable to the latter.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= COLOPHON =================
+         Replaces both the old "Sources & Corrections" section and the
+         per-run system-health footer. Short, plain, at the very bottom. -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Treasury par-yield curve, FRED, Cboe, Yahoo Finance, Frankfurter, CoinGecko, FINRA, SEC EDGAR and the National Weather Service for data; Saudi-led coalition and Houthi statements, CENTCOM, the House Clerk, DOJ filings, the Pennsylvania Department of Health, and wire services including AP, Reuters, AFP, NPR, CNBC, Bloomberg, Al Jazeera and CNN for news, named in each story.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-16-learn.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
