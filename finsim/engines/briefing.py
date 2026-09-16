@@ -34,7 +34,7 @@ class BriefingEngine:
                        "market": self._market_summary(), "news": self._news_today(), "attention": self._attention(pf, snap),
                        "movers": self._movers(snap), "regime": w.market.regime().label, "job_title": w.careers.level_title(pf),
                        "orders_summary": self._orders_summary(pf), "financing": self._financing(pf, snap), "collateral": self._collateral(pf),
-                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf), "derivatives": self._derivatives(pf, snap)}
+                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf), "derivatives": self._derivatives(pf, snap), "otc": self._otc(pf, snap)}
             w.emit(E.DAILY_BRIEFING, payload, cause_id=cause.id, portfolio_id=pf.id)
 
     # ------------------------------------------------------------------ pieces
@@ -145,6 +145,24 @@ class BriefingEngine:
                 "expiring": expiring, "strategies": strategies, "options_pnl_today": snap.explain.get("options", ZERO),
                 "greek_attribution": {k: v for k, v in snap.greek_attribution.items() if k != "rows"}}
 
+    def _otc(self, pf, snap) -> Dict:
+        w = self.w
+        today = w.current_date.isoformat()
+        open_trades = [t for t in pf.otc_trades.values() if t.status == "OPEN"]
+        pnl_today = sum((snap.by_position.get(t.id, {}).get("price_pnl", ZERO) for t in pf.otc_trades.values()), ZERO)
+        flows = [{"trade_id": t.id, "product": t.product, "kind": cf["kind"], "amount": cf["base"], "note": cf["note"]}
+                 for t in pf.otc_trades.values() for cf in t.cashflows if cf["date"] == today]
+        ex = w.otc.exposure(pf)
+        top = sorted([r for r in ex["rows"] if r["trades"]], key=lambda r: -float(r["current_exposure"]))[:4]
+        closed_today = [t for t in pf.otc_trades.values() if t.closed_date == today]
+        return {"open": len(open_trades), "net_mtm": sum((t.mtm for t in open_trades), ZERO), "pnl_today": pnl_today,
+                "vm_posted": sum((c.vm_posted for c in pf.csas.values()), ZERO), "vm_received": sum((c.vm_received for c in pf.csas.values()), ZERO),
+                "im_posted": sum((c.im_posted for c in pf.csas.values()), ZERO), "cashflows_today": flows,
+                "closed_today": [{"trade_id": t.id, "product": t.product, "status": t.status, "note": t.notes[-1]["note"] if t.notes else ""} for t in closed_today],
+                "upcoming": w.otc.upcoming(pf, 5), "exposure": [{"dealer": r["dealer"], "current_exposure": r["current_exposure"], "pfe": r["pfe"], "pct_nav": r["pct_nav"],
+                                                                   "rating": r["rating"], "cds_bps": r["cds_bps"]} for r in top],
+                "rfqs_open": sum(1 for r in pf.rfqs.values() if r.status == "OPEN"), "rates_dv01": w.otc.book(pf)["aggregate"]["rates_dv01"] if open_trades else 0.0}
+
     def _fx(self, pf) -> Dict:
         ex = self.w.fx.exposures(pf)
         return {"balances": {c: {"local": ca.balance, "base": ca.base_value} for c, ca in pf.cash.items()},
@@ -159,9 +177,10 @@ class BriefingEngine:
         # collateral / margin calls
         for c in pf.collateral_calls.values():
             if c.status == "OPEN":
-                src = {"PRIME": "Prime-broker margin call", "REPO": f"Repo collateral call on {c.reference}", "SECLOAN": f"Collateral call on loan {c.reference}"}[c.source]
-                add("HIGH", f"{src}: {c.amount:,.0f} {pf.base_currency} due {c.due} — {c.reason}", "#/collateral")
-            elif c.status == "FORCED" and c.resolved == today.isoformat():
+                src = {"PRIME": "Prime-broker margin call", "REPO": f"Repo collateral call on {c.reference}", "SECLOAN": f"Collateral call on loan {c.reference}",
+                       "OTC": f"CSA margin call from {c.reference}"}.get(c.source, f"{c.source} collateral call {c.reference}")
+                add("HIGH", f"{src}: {c.amount:,.0f} {pf.base_currency} due {c.due} — {c.reason}", "#/otc/csa" if c.source == "OTC" else "#/collateral")
+            elif c.status == "FORCED" and c.resolved == today.isoformat() and c.source != "OTC":
                 add("HIGH", f"Unmet call {c.id} ({c.source}): counterparty {'liquidated positions' if c.source == 'PRIME' else 'unwound the repo'} today", "#/trading")
         # recalls and buy-ins
         for l in pf.loans.values():
@@ -282,6 +301,32 @@ class BriefingEngine:
         for st in pf.strategies.values():
             if st.notes and st.notes[-1]["date"] == today.isoformat() and st.status in ("FILLED", "EXPIRED"):
                 add("INFO", f"Strategy {st.id} {st.strategy_type} on {st.underlying}: {st.status.lower()}" + (f" at net {st.net_premium:+,.2f}/unit" if st.status == "FILLED" else " (legs unfilled)"), "#/options")
+        # OTC derivatives, CSA collateral and counterparties
+        for c in pf.collateral_calls.values():
+            if c.source == "OTC" and c.status == "FORCED" and c.resolved == today.isoformat():
+                add("HIGH", f"CSA CLOSE-OUT — {c.reference} terminated the netting set after the unmet margin call {c.id}", "#/otc")
+        for t in pf.otc_trades.values():
+            if t.closed_date == today.isoformat() and t.status in ("TERMINATED", "SETTLED_DEFAULT", "EXERCISED", "EXPIRED", "MATURED"):
+                sev = "HIGH" if t.status in ("SETTLED_DEFAULT", "TERMINATED") else "INFO"
+                add(sev, f"OTC {t.status.replace('_', ' ').lower()} — {t.id} {t.product} with {t.counterparty}: {t.notes[-1]['note'] if t.notes else ''}", "#/otc")
+        ex = w.otc.exposure(pf) if pf.otc_trades else {"rows": []}
+        for r in ex["rows"]:
+            if r["trades"] and r["pct_nav"] >= 0.05:
+                add("MEDIUM", f"COUNTERPARTY CONCENTRATION — {r['name']}: current exposure {r['current_exposure']:,.0f} ({r['pct_nav']:.1%} of NAV), PFE {r['pfe']:,.0f}, CDS {r['cds_bps']:.0f}bp", "#/otc/counterparties")
+            if r["trades"] and r["defaulted"]:
+                add("HIGH", f"COUNTERPARTY DEFAULT — {r['name']}: netting set closed out", "#/otc/counterparties")
+        for n in w.news:
+            if n.date == today.isoformat() and n.category == "COUNTERPARTY":
+                sev = "MEDIUM" if any(t.status == "OPEN" and t.counterparty in n.refs for t in pf.otc_trades.values()) else "INFO"
+                add(sev, f"DEALER CREDIT — {n.headline}", "#/otc/counterparties")
+        for u in w.otc.upcoming(pf, 3):
+            if u["kind"] in ("EXPIRY", "NOTIONAL_EXCHANGE", "FRA_SETTLEMENT", "MATURITY"):
+                add("MEDIUM" if u["kind"] in ("EXPIRY", "NOTIONAL_EXCHANGE") else "INFO", f"OTC {u['kind'].replace('_', ' ').lower()} in {u['business_days']} session(s) — {u['trade_id']} {u['product']}: {u['note']}", "#/otc")
+            elif u["business_days"] == 1:
+                add("INFO", f"OTC {u['kind'].replace('_', ' ').lower()} next session — {u['trade_id']} {u['product']}: {u['note']}", "#/otc")
+        open_rfqs = [r for r in pf.rfqs.values() if r.status == "OPEN"]
+        if open_rfqs:
+            add("INFO", f"{len(open_rfqs)} open RFQ(s) expire at the next update unless executed", "#/otc")
         # regime
         if w.market.regime_history and w.market.regime_history[-1][0] == today.isoformat() and len(w.market.regime_history) > 1:
             add("MEDIUM", f"Market regime changed to {w.market.regime().label}: {w.market.regime().description}", "#/markets")

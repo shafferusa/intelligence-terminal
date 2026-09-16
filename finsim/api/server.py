@@ -70,6 +70,12 @@ class Router:
                 return s.vol_surface(wid, sub[1])
             if sub[0] == "options" and len(sub) == 3 and sub[2] == "contract":
                 return s.option_contract(wid, sub[1])
+            if sub == ["otc", "dealers"]:
+                return s.otc_dealers(wid)
+            if sub == ["credit-event"] and method == "POST":
+                return s.credit_event(wid, body["reference"], body.get("recovery"))
+            if sub == ["default-counterparty"] and method == "POST":
+                return s.default_counterparty(wid, body["dealer"], body.get("recovery", 0.4))
             if sub == ["force-split"] and method == "POST":
                 return s.force_split(wid, body["security_id"], body["ratio"])
             if sub == ["commodities"]:
@@ -129,6 +135,18 @@ class Router:
                     return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"))
                 if leaf == ["fx", "forward"] and method == "POST":
                     return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"])
+                if leaf == ["otc"]:
+                    return s.otc_book(wid, pid)
+                if leaf == ["otc", "rfq"] and method == "POST":
+                    return s.otc_rfq(wid, pid, body)
+                if leaf[:1] == ["otc"] and len(leaf) == 4 and leaf[1] == "rfq" and leaf[3] == "execute" and method == "POST":
+                    return s.otc_execute(wid, pid, leaf[2], body["dealer"])
+                if leaf[:1] == ["otc"] and len(leaf) == 3 and leaf[2] == "terminate" and method == "POST":
+                    return s.otc_terminate(wid, pid, leaf[1])
+                if leaf[:1] == ["otc"] and len(leaf) == 2:
+                    return s.otc_trade(wid, pid, leaf[1])
+                if leaf == ["counterparties"]:
+                    return s.counterparties(wid, pid)
                 if leaf == ["options"]:
                     return s.options_book(wid, pid)
                 if leaf == ["options", "exercise"] and method == "POST":

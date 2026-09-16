@@ -58,7 +58,7 @@ class World:
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
-        from .engines import collateral, seclending, repo, prime, fx, options
+        from .engines import collateral, seclending, repo, prime, fx, options, otc
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
@@ -72,6 +72,7 @@ class World:
         self.prime = prime.PrimeEngine(self)
         self.fx = fx.FXEngine(self)
         self.options = options.OptionsEngine(self)
+        self.otc = otc.OTCEngine(self)
         self.careers = careers.CareerEngine(self)
         self.briefing = briefing.BriefingEngine(self)
         self.simulation = simulation.SimulationEngine(self)
@@ -151,6 +152,7 @@ class World:
         self.prime.register()
         self.fx.register()
         self.options.register()
+        self.otc.register()
         self.careers.register()
         self.briefing.register()
         self.on(E.REGIME_FORCED, World._h_regime_forced)
@@ -210,7 +212,7 @@ class World:
         if self.replaying:
             bars = {t: Bar(p["date"], D(b[0]), D(b[1]), D(b[2]), D(b[3]), int(b[4]), D(b[5]), D(b[6])) for t, b in p["bars"].items()}
             curve = YieldCurve(p["date"], p["curve"]["tenors"], p["curve"]["rates"], p["curve"]["ig"], p["curve"]["hy"], p["curve"]["policy"])
-            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"), p.get("vol"))
+            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"), p.get("vol"), p.get("dealers"))
         self.current_date = d
         self.day_count = int(p.get("day_index", self.day_count))
         self.options.ensure_listings(d)
@@ -401,6 +403,27 @@ class World:
         ev = self.options.apply_split(sec.id, float(ratio), None)
         self.flush()
         return ev
+
+    # ------------------------------------------------------------------ phase 4 commands (OTC, dealers, ISDA/CSA)
+    def request_quote(self, portfolio_id: str, product: str, params: Dict):
+        return self._cmd(self.otc.request_quote, self.portfolio(portfolio_id), product, params)
+
+    def execute_rfq(self, portfolio_id: str, rfq_id: str, dealer: str):
+        return self._cmd(self.otc.execute_rfq, self.portfolio(portfolio_id), rfq_id, dealer)
+
+    def terminate_otc(self, portfolio_id: str, trade_id: str):
+        return self._cmd(self.otc.terminate, self.portfolio(portfolio_id), trade_id)
+
+    def credit_event(self, reference: str, recovery: Optional[float] = None) -> Event:
+        """Scenario control (sandbox) and the hook the macro engine uses: an issuer fails; CDS settle."""
+        if self.clock.mode == "REAL_TIME":
+            raise CommandError("credit events cannot be forced in a career world")
+        return self._cmd(self.otc.credit_event, reference, None, recovery)
+
+    def default_counterparty(self, dealer: str, recovery: float = 0.4) -> Event:
+        if self.clock.mode == "REAL_TIME":
+            raise CommandError("counterparty defaults cannot be forced in a career world")
+        return self._cmd(self.otc.default_counterparty, dealer, None, recovery)
 
     def force_regime(self, regime: str) -> Event:
         """Scenario control for sandbox worlds: the next processed day starts in `regime`."""

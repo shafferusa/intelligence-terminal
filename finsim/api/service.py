@@ -971,6 +971,83 @@ class Service:
         return jsonable({"id": st.id, "strategy_type": st.strategy_type, "underlying": st.underlying, "quantity": st.quantity, "net_limit": st.net_limit, "status": st.status,
                          "entered_date": st.entered_date, "net_premium": st.net_premium, "legs": st.legs, "notes": st.notes, "analytics": w.options.strategy_analytics(pf, st)})
 
+    # ------------------------------------------------------------------ OTC derivatives, dealers, ISDA/CSA (phase 4)
+    def otc_dealers(self, world_id: str) -> Dict:
+        from ..engines.counterparties import CSA_TERMS, DEALERS, HALF_WIDTH, UNIT, quote_half_width
+        from ..domain.otc_models import PRODUCTS
+        w = self.world(world_id)
+        regime = w.market.state.regime
+        rows = []
+        for k, spec in DEALERS.items():
+            st = w.market.dealers.state[k]
+            rows.append({"dealer": k, "name": spec.name, "rating": st.rating, "base_rating": spec.rating, "cds_bps": st.cds, "cds_base": spec.cds0, "stress": st.stress,
+                         "defaulted": st.defaulted, "capital_bn": spec.capital_bn, "products": list(spec.products), "style": spec.style,
+                         "pd_1y": w.market.dealers.default_probability_1y(k), "csa": CSA_TERMS[k],
+                         "half_widths": {p: quote_half_width(p, k, regime, st.stress) for p in spec.products},
+                         "history": [{"date": d, "cds": c} for d, c in w.market.dealers.history.get(k, [])[-260:]]})
+        return jsonable({"dealers": rows, "products": list(PRODUCTS), "units": UNIT, "standard_half_widths": HALF_WIDTH, "regime": regime,
+                         "rate_vol": w.otc.rate_vol(), "market_basis": {c: w.otc.market_basis(c) for c in ("EUR", "GBP", "JPY", "CHF", "CAD", "AUD")}})
+
+    def otc_book(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        return jsonable(w.otc.book(pf))
+
+    def otc_trade(self, world_id: str, portfolio_id: str, trade_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        t = pf.otc_trades.get(trade_id)
+        if t is None:
+            raise NotFound(f"unknown OTC trade {trade_id}")
+        led = w.ledgers[pf.id]
+        entries = [self._entry(e) for e in led.entries if any(l.security_id == trade_id for l in e.lines)]
+        sched = []
+        T = t.terms
+        if t.product == "IRS":
+            sched = [{"leg": "FIXED", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat()} for s, e, p in w.otc.periods(t.start, t.maturity, T["fixed_months"])] + \
+                    [{"leg": "FLOAT", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat(), "fixing": t.fixings.get(s.isoformat())} for s, e, p in w.otc.periods(t.start, t.maturity, T["float_months"])]
+        elif t.product in ("CAP", "FLOOR", "XCCY", "COMMODITY_SWAP"):
+            sched = [{"leg": t.product, "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat(), "fixing": t.fixings.get(s.isoformat())} for s, e, p in w.otc.periods(t.start, t.maturity, T["months"])]
+        elif t.product == "CDS":
+            sched = [{"leg": "PREMIUM", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat()} for s, e, p in w.otc.periods(t.start, t.maturity, 3)]
+        elif t.product == "TRS":
+            sched = [{"leg": "RESET", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat()} for s, e, p in w.otc.periods(t.start, t.maturity, T["reset_months"])]
+        row = next(r for r in w.otc.book(pf)["trades"] if r["id"] == trade_id)
+        return jsonable({**row, "cashflows": t.cashflows, "schedule": sched, "ledger_entries": entries, "csa": pf.csas.get(t.counterparty),
+                         "ledger_balances": {a: led.security_balance(trade_id, a) for a in ("1800", "2800", "4900", "4910")}})
+
+    def otc_rfq(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        r = w.request_quote(portfolio_id, body["product"], body.get("params", {}))
+        return jsonable({"id": r.id, "product": r.product, "params": r.params, "quotes": r.quotes, "mid": r.mid, "status": r.status, "expires": r.expires})
+
+    def otc_execute(self, world_id: str, portfolio_id: str, rfq_id: str, dealer: str) -> Dict:
+        w = self.world(world_id)
+        t = w.execute_rfq(portfolio_id, rfq_id, dealer)
+        return jsonable({"trade_id": t.id, "product": t.product, "counterparty": t.counterparty, "mtm": t.mtm, "description": w.otc.describe(t)})
+
+    def otc_terminate(self, world_id: str, portfolio_id: str, trade_id: str) -> Dict:
+        w = self.world(world_id)
+        amt = w.terminate_otc(portfolio_id, trade_id)
+        return jsonable({"trade_id": trade_id, "settlement": amt})
+
+    def counterparties(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        ex = w.otc.exposure(pf)
+        return jsonable({**ex, "csas": [asdict(c) for c in pf.csas.values()], "calls": [c for c in pf.collateral_calls.values() if c.source == "OTC"],
+                         "dealers": self.otc_dealers(world_id)["dealers"]})
+
+    def credit_event(self, world_id: str, reference: str, recovery: Optional[float] = None) -> Dict:
+        w = self.world(world_id)
+        ev = w.credit_event(reference, recovery)
+        return {"event_id": ev.id, "reference": reference}
+
+    def default_counterparty(self, world_id: str, dealer: str, recovery: float = 0.4) -> Dict:
+        w = self.world(world_id)
+        ev = w.default_counterparty(dealer, recovery)
+        return {"event_id": ev.id, "dealer": dealer}
+
     def force_split(self, world_id: str, security_id: str, ratio: float) -> Dict:
         w = self.world(world_id)
         ev = w.force_split(security_id, float(ratio))
