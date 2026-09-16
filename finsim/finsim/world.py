@@ -58,6 +58,7 @@ class World:
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
+        from .engines import collateral, seclending, repo, prime, fx
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
@@ -65,6 +66,11 @@ class World:
         self.accruals = accruals.AccrualEngine(self)
         self.pnl = pnl.PnLEngine(self)
         self.futures = futures.FuturesEngine(self)
+        self.collateral = collateral.CollateralEngine(self)
+        self.seclending = seclending.SecLendingEngine(self)
+        self.repo = repo.RepoEngine(self)
+        self.prime = prime.PrimeEngine(self)
+        self.fx = fx.FXEngine(self)
         self.careers = careers.CareerEngine(self)
         self.briefing = briefing.BriefingEngine(self)
         self.simulation = simulation.SimulationEngine(self)
@@ -138,8 +144,14 @@ class World:
         self.accruals.register()
         self.pnl.register()
         self.futures.register()
+        self.collateral.register()
+        self.seclending.register()
+        self.repo.register()
+        self.prime.register()
+        self.fx.register()
         self.careers.register()
         self.briefing.register()
+        self.on(E.REGIME_FORCED, World._h_regime_forced)
 
     def _h_world_created(self, ev: Event) -> None:
         p = ev.payload
@@ -160,6 +172,12 @@ class World:
     def _h_day_started(self, ev: Event) -> None:
         self.current_date = date.fromisoformat(ev.payload["date"])
 
+    def _h_regime_forced(self, ev: Event) -> None:
+        r = ev.payload["regime"]
+        if self.market.state is not None:
+            self.market.state.regime = r
+            self.market.regime_history.append((ev.sim_date, r))
+
     def _h_portfolio_created(self, ev: Event) -> None:
         p = ev.payload
         pf = Portfolio(id=p["portfolio_id"], name=p["name"], portfolio_type=p["portfolio_type"], base_currency=p["base_currency"],
@@ -176,6 +194,7 @@ class World:
         amt = money(p["amount"])
         ca = pf.cash_account(p["currency"])
         ca.balance += amt
+        ca.base_value += amt
         pf.contributed_capital += amt
         pf.day_capital_flows += amt
         self.record_cash_movement(pf, p["currency"], amt, "CAPITAL", "Capital contribution", ev)
@@ -188,7 +207,7 @@ class World:
         if self.replaying:
             bars = {t: Bar(p["date"], D(b[0]), D(b[1]), D(b[2]), D(b[3]), int(b[4]), D(b[5]), D(b[6])) for t, b in p["bars"].items()}
             curve = YieldCurve(p["date"], p["curve"]["tenors"], p["curve"]["rates"], p["curve"]["ig"], p["curve"]["hy"], p["curve"]["policy"])
-            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"))
+            self.market.ingest_close(d, bars, curve, p["state"], p.get("commodities"), p.get("lending"), p.get("fx"))
         self.current_date = d
         self.day_count = int(p.get("day_index", self.day_count))
 
@@ -307,6 +326,66 @@ class World:
         o = self.trading.cancel(portfolio_id, order_id)
         self.flush()
         return o
+
+    # ------------------------------------------------------------------ phase 2 commands
+    def _cmd(self, fn, *args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            self.flush()
+
+    def request_locate(self, portfolio_id: str, security_id: str, quantity):
+        return self._cmd(self.seclending.request_locate, self.portfolio(portfolio_id), self.security(security_id), quantity)
+
+    def borrow_securities(self, portfolio_id: str, locate_id: str, quantity, collateral_type: str = "CASH"):
+        return self._cmd(self.seclending.borrow, self.portfolio(portfolio_id), locate_id, quantity, collateral_type)
+
+    def return_securities(self, portfolio_id: str, loan_id: str, quantity=None):
+        return self._cmd(self.seclending.return_loan, self.portfolio(portfolio_id), loan_id, quantity)
+
+    def repo_quote(self, side: str, security_id: str, quantity, term_type: str = "OVERNIGHT", term_days: int = 1):
+        return self.repo.quote(side.upper(), self.security(security_id), quantity, term_type.upper(), int(term_days))
+
+    def open_repo(self, portfolio_id: str, side: str, security_id: str, quantity, term_type: str = "OVERNIGHT", term_days: int = 1, auto_roll: bool = True):
+        return self._cmd(self.repo.open, self.portfolio(portfolio_id), side, self.security(security_id), quantity, term_type, int(term_days), auto_roll)
+
+    def close_repo(self, portfolio_id: str, repo_id: str):
+        return self._cmd(self.repo.close, self.portfolio(portfolio_id), repo_id)
+
+    def repo_post_collateral(self, portfolio_id: str, repo_id: str, security_id: str, quantity):
+        return self._cmd(self.repo.post_collateral, self.portfolio(portfolio_id), repo_id, self.security(security_id), quantity)
+
+    def repo_post_cash(self, portfolio_id: str, repo_id: str, amount):
+        return self._cmd(self.repo.post_cash, self.portfolio(portfolio_id), repo_id, amount)
+
+    def repo_reduce(self, portfolio_id: str, repo_id: str, amount):
+        return self._cmd(self.repo.reduce, self.portfolio(portfolio_id), repo_id, amount)
+
+    def repo_substitute(self, portfolio_id: str, repo_id: str, old_security_id: str, old_quantity, new_security_id: str, new_quantity):
+        return self._cmd(self.repo.substitute, self.portfolio(portfolio_id), repo_id, old_security_id, old_quantity, self.security(new_security_id), new_quantity)
+
+    def margin_draw(self, portfolio_id: str, amount):
+        return self._cmd(self.prime.draw, self.portfolio(portfolio_id), amount)
+
+    def margin_repay(self, portfolio_id: str, amount):
+        return self._cmd(self.prime.repay, self.portfolio(portfolio_id), amount)
+
+    def fx_spot(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount, amount_ccy: str = "BUY"):
+        return self._cmd(self.fx.spot, self.portfolio(portfolio_id), buy_ccy, sell_ccy, amount, amount_ccy)
+
+    def fx_forward(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount, maturity: str):
+        return self._cmd(self.fx.forward, self.portfolio(portfolio_id), buy_ccy, sell_ccy, buy_amount, maturity)
+
+    def force_regime(self, regime: str) -> Event:
+        """Scenario control for sandbox worlds: the next processed day starts in `regime`."""
+        from .engines.market import REGIMES
+        if self.clock.mode == "REAL_TIME":
+            raise CommandError("regimes cannot be forced in a career world")
+        if regime not in REGIMES:
+            raise CommandError(f"unknown regime {regime}")
+        ev = self.emit(E.REGIME_FORCED, {"regime": regime, "label": REGIMES[regime].label})
+        self.flush()
+        return ev
 
     def advance(self, days: int = 1, force: bool = False) -> List[str]:
         if self.clock.mode == "REAL_TIME" and not force:

@@ -76,7 +76,7 @@ class SettlementEngine:
                 if si.status == "PENDING":
                     self._fail(si, cause, "instruction unmatched at custodian on settlement date")
                     continue
-                reason = self._check(pf, si)
+                reason = self._check(pf, si, cause)
                 if reason:
                     self._fail(si, cause, reason)
                 else:
@@ -86,11 +86,14 @@ class SettlementEngine:
                                                     "contractual_settlement_date": si.settlement_date},
                            cause_id=cause.id, portfolio_id=pf.id)
 
-    def _check(self, pf: Portfolio, si: SettlementInstruction) -> Optional[str]:
+    def _check(self, pf: Portfolio, si: SettlementInstruction, cause: Optional[Event] = None) -> Optional[str]:
         if si.instruction_type == "RVP":
             bal = pf.cash_account(si.currency).balance
             if bal < si.cash_amount:
-                return f"insufficient settled {si.currency} cash: need {si.cash_amount:,.2f}, have {bal:,.2f}"
+                shortfall = si.cash_amount - bal
+                if si.currency == pf.base_currency and cause is not None and self.w.prime.fund_settlement(pf, shortfall, si.id, cause):
+                    return None
+                return f"insufficient settled {si.currency} cash: need {si.cash_amount:,.2f}, have {bal:,.2f}; prime broker would not finance the shortfall"
         else:
             pos = pf.position(si.security_id)
             if pos.settled_quantity < si.quantity:

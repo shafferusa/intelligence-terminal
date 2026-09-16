@@ -56,6 +56,12 @@ class Router:
                 return s.security(wid, sub[1], query.get("period", ["1Y"])[0])
             if sub == ["yield-curve"]:
                 return s.yield_curve(wid)
+            if sub == ["force-regime"] and method == "POST":
+                return s.force_regime(wid, body["regime"])
+            if sub[0] == "lending-history" and len(sub) == 2:
+                return s.lending_history(wid, sub[1])
+            if sub == ["repo-quote"] and method == "POST":
+                return s.repo_quote(wid, body["side"], body["security_id"], body["quantity"], body.get("term_type", "OVERNIGHT"), body.get("term_days", 1))
             if sub == ["commodities"]:
                 return s.commodities(wid)
             if sub[0] == "commodities" and len(sub) == 2:
@@ -89,6 +95,30 @@ class Router:
                     return s.orders(wid, pid)
                 if leaf == ["briefing"]:
                     return s.briefing(wid, pid, query.get("date", [None])[0])
+                if leaf == ["seclending"]:
+                    return s.seclending(wid, pid)
+                if leaf == ["locates"] and method == "POST":
+                    return s.request_locate(wid, pid, body["security_id"], body["quantity"])
+                if leaf == ["loans"] and method == "POST":
+                    return s.borrow(wid, pid, body["locate_id"], body["quantity"], body.get("collateral_type", "CASH"))
+                if leaf[:1] == ["loans"] and len(leaf) == 3 and leaf[2] == "return" and method == "POST":
+                    return s.return_loan(wid, pid, leaf[1], body.get("quantity"))
+                if leaf == ["repo"]:
+                    if method == "POST":
+                        return s.repo_open(wid, pid, body["side"], body["security_id"], body["quantity"], body.get("term_type", "OVERNIGHT"), body.get("term_days", 1), body.get("auto_roll", True))
+                    return s.repo_desk(wid, pid)
+                if leaf[:1] == ["repo"] and len(leaf) == 3 and method == "POST":
+                    return s.repo_action(wid, pid, leaf[1], leaf[2], body)
+                if leaf == ["collateral"]:
+                    return s.collateral(wid, pid)
+                if leaf == ["financing"]:
+                    return s.financing(wid, pid)
+                if leaf[:1] == ["margin"] and len(leaf) == 2 and method == "POST":
+                    return s.margin_action(wid, pid, leaf[1], body["amount"])
+                if leaf == ["fx", "spot"] and method == "POST":
+                    return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"))
+                if leaf == ["fx", "forward"] and method == "POST":
+                    return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"])
                 if leaf == ["career"]:
                     return s.career(wid, pid)
                 if leaf[:1] == ["orders"] and len(leaf) == 2:

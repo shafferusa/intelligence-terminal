@@ -70,13 +70,27 @@ funding, liquidity and risk over days and months.
 | **Audit** | Append-only sqlite event log; every event has a cause; state (including briefings, reviews, futures margin) is rebuilt by replay and tested to be identical. |
 | **UI** | Daily briefing (login screen), portfolio (positions, futures, exposures, NAV explain, P&L explain), trading (instructions blotter, trade lifecycle), markets, commodities desk, fixed income, settlements & custody, treasury, news, accounting, career, audit trail. New-save dialog picks job, clock mode, timezone and update time. |
 
+### Phase 2 — financing (built)
+
+| Desk | What exists |
+|---|---|
+| **Collateral engine** (`engines/collateral.py`) | One schedule of eligibility and haircuts by asset class and purpose (repo, lender collateral, prime-broker financing), scaled in stressed regimes; a pledge registry so a security in custody is either sellable or pledged, never both; cash collateral through an explicit posted-collateral account; one call object for every source with issue and due dates. Dashboard: available, encumbered, posted, received, calls. |
+| **Securities lending** (`engines/seclending.py`, `engines/lending_market.py`) | A lending market per stock (lendable supply, other borrowers, utilization, rate = base + utilization curve + volatility + stress + specials that arrive as news). Locate (partial availability, expires next session, creates no borrow) → borrow (shares into custody, 102% cash or Treasury collateral out, rebate on cash) → short sale delivers the borrowed shares (short lots at proceeds, `2600` at proceeds, `2610` MTM) → daily fee accrual, daily collateral marks, daily re-rating to the market → manufactured dividends over ex-dates (`5400`) → recalls with a 2-business-day deadline (replacement borrow, buy to cover, or return) → unmet recalls end in a lender buy-in with a penalty → covered borrows return automatically once the shares are back, fees settle. |
+| **Repo** (`engines/repo.py`) | Repo (cash in, securities encumbered, exposure retained) and reverse repo (cash out, collateral received). Overnight with auto-roll at the new rate, term, and open. Rates by collateral quality and regime; haircuts from the collateral engine; daily interest; daily marks against the haircut-adjusted requirement raise a call due next cycle; unmet calls are unwound by the counterparty. Post collateral, post cash, reduce, substitute (old released only when the replacement covers), close. |
+| **Prime brokerage** (`engines/prime.py`) | Base-currency cash never stays negative: shortfalls become an explicit margin loan at policy + 100bp, idle cash repays it. Financing value of unencumbered longs at financing haircuts plus cash, less loan and 30% of short market value = excess liquidity. Purchases, futures margin and cash collateral are financeable up to excess. Negative excess raises a call; a second unmet cycle liquidates futures then unencumbered longs through ordinary forced trades. |
+| **FX** (`engines/fx.py`, `engines/fx_market.py`) | USD, EUR, GBP, JPY, CHF, CAD, AUD cash ledgers held in local units with base-currency carrying values (`1010:CCY`); spot rates and a short rate per currency in the market; spot trades settle T+2 through FX receivable/payable, realising against carrying value; daily retranslation to unrealised FX; forwards priced by covered interest parity, marked daily and physically settled at maturity; foreign cash earns or pays its own rate. |
+| **Briefing & attention** | Financing (repo balance and average cost, borrow expense today, PB loan and cost, excess liquidity), Collateral (posted, received, available, calls due, Treasury encumbrance), Short book (market value, borrow cost, hard-to-borrow count, recalls, positions), FX (balances, net exposures, forwards). Attention items: margin/collateral calls, recalls, buy-ins, borrow-rate spikes, term repo maturing tomorrow, collateral concentration, negative foreign cash, margin loan drawn, forwards settling. |
+| **P&L explain** | Buckets: equities, commodities, rates, credit, fx, dividends, dividends paid in lieu, bond interest, cash interest, securities borrow (fees less rebates and buy-in penalties), repo financing, prime-broker financing, fees. Still reconciles exactly to the NAV change every day. |
+| **Scenario control** | Sandbox worlds can force the next day's regime (`POST /force-regime`), which is how the stress scenario and tests are made deterministic. |
+
+The definition-of-done scenario ($100MM → Treasuries → repo → equities → locate → borrow → short → proceeds settle → fees and marks → dividend while short → partial recall and replacement borrow → liquidity crisis → haircut up → collateral call → post collateral → cover → return → repay repo → replay) is `tests/test_financing.py::DefinitionOfDoneTest`, deterministic under seed 42.
+
 ### What is deliberately not built yet
 
 Listed in the navigation as *Not yet built* rather than as screens that do nothing:
-securities lending / shorting cash securities, repo, prime-brokerage margin loans, FX,
-options, OTC derivatives and ISDA/CSA collateral, a risk dashboard (VaR, stress), counterparties,
-AI institutions, physical-commodity mechanics, bank RFQ flow. They correspond to Phases 2–8 of the
-spec and plug into the same event/ledger/daily-cycle core.
+options, OTC derivatives and ISDA/CSA collateral, a risk dashboard (VaR, stress), counterparties
+with credit quality and default, AI institutions, physical-commodity mechanics, bank RFQ flow.
+They correspond to Phases 3–8 of the spec and plug into the same event/ledger/daily-cycle core.
 
 ## Architecture
 
@@ -94,7 +108,14 @@ finsim/
     commodities.py    commodity specs, fundamentals, spot, futures curves, contract expiry rules, news
     pricing.py        Instrument interface, BondPricer
     trading.py        order validation, once-per-day execution against the session, lots/FIFO, futures fills
-    futures.py        variation margin, initial-margin sweeps, margin calls, forced liquidation, expiry
+    futures.py        variation margin, initial-margin sweeps, expiry
+    collateral.py     haircuts, eligibility, pledges/encumbrance, cash collateral, calls
+    lending_market.py lendable supply, utilization, borrow rates, specials
+    seclending.py     locates, loans, fees, marks, recalls, buy-ins, returns
+    repo.py           repo / reverse repo, rolls, marks, calls, substitution
+    prime.py          margin loan, financing value, excess liquidity, calls, forced liquidation
+    fx_market.py      spot rates and short rates per currency
+    fx.py             multi-currency cash, spot, forwards, translation
     settlement.py     lifecycle states, DVP/RVP processing, fails, custody & cash movements
     corporate_actions.py  dividends, coupons, maturities
     accruals.py       bond and cash interest
@@ -136,6 +157,15 @@ POST /api/worlds/{w}/portfolios                   POST /api/worlds/{w}/portfolio
 GET  /api/worlds/{w}/portfolios/{p}/briefing?date= | career | dashboard | positions/{sec} | orders | orders/{id} (DELETE cancels)
      | trades | trades/{id} | settlements | custody | cash | ledger?account=&security_id=
      | balance-sheet | pnl-explain?date= | nav-explain
+GET  /api/worlds/{w}/portfolios/{p}/seclending | repo | collateral | financing
+POST /api/worlds/{w}/portfolios/{p}/locates {security_id, quantity}      POST .../loans {locate_id, quantity, collateral_type}
+POST /api/worlds/{w}/portfolios/{p}/loans/{id}/return {quantity}
+POST /api/worlds/{w}/repo-quote {side, security_id, quantity, term_type, term_days}
+POST /api/worlds/{w}/portfolios/{p}/repo {side, security_id, quantity, term_type, term_days, auto_roll}
+POST /api/worlds/{w}/portfolios/{p}/repo/{id}/close | collateral | cash | reduce | substitute
+POST /api/worlds/{w}/portfolios/{p}/margin/draw | repay {amount}
+POST /api/worlds/{w}/portfolios/{p}/fx/spot {buy_ccy, sell_ccy, amount, amount_ccy}   POST .../fx/forward {buy_ccy, sell_ccy, buy_amount, maturity}
+POST /api/worlds/{w}/force-regime {regime}   (sandbox)
 ```
 
 ## Environment note

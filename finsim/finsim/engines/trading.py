@@ -135,31 +135,36 @@ class TradingEngine:
         if job and job.allowed_classes and self._class_key(sec) not in job.allowed_classes:
             return f"{sec.id} ({self._class_key(sec)}) is outside this job's mandate ({', '.join(sorted(job.allowed_classes))})"
         if sec.is_future:
-            # margin check: initial margin for the resulting position must fit projected cash
+            # margin check: initial margin for the resulting position must be financeable
             im = self.w.futures.initial_margin_per_contract(sec) * q
-            avail = self.projected_cash(pf, sec.currency)
             pos = pf.positions.get(sec.id)
             reduces = pos is not None and ((pos.quantity > 0 and side == "SELL") or (pos.quantity < 0 and side == "BUY"))
-            if not reduces and im > avail:
-                return f"insufficient cash for initial margin: ~{im:,.0f} required, projected cash {avail:,.0f}"
+            if not reduces:
+                why = w.prime.affordable(pf, im, None)
+                if why:
+                    return f"initial margin not financeable: {why}"
             return None
         if side == "SELL":
             pos = pf.positions.get(sec.id)
-            held = pos.quantity if pos else ZERO
             open_sells = sum((o.quantity - o.filled_quantity for o in pf.orders.values()
                               if o.security_id == sec.id and o.side == "SELL" and o.status in ("WORKING", "PARTIALLY_FILLED")), ZERO)
-            if held - open_sells < q:
-                if held <= 0:
-                    return f"no long position in {sec.id}: short selling requires a securities borrow (securities-lending module, Phase 2)"
-                return f"sell quantity {q:,} exceeds available long position {held - open_sells:,} (net of working sell orders)"
+            deliverable = (w.collateral.available_quantity(pf, sec.id) + (pos.pending_receive if pos else ZERO)) - open_sells
+            if deliverable < q:
+                borrowed = pos.borrowed_quantity if pos else ZERO
+                pledged = pf.pledged_quantity(sec.id)
+                hint = (f"; {pledged:,} pledged as collateral cannot be sold" if pledged else "")
+                if deliverable <= 0 and borrowed == 0:
+                    return (f"nothing to deliver in {sec.id}: to sell short, request a locate and borrow the shares on the securities-lending desk first{hint}")
+                return f"sell quantity {q:,} exceeds deliverable shares {max(ZERO, deliverable):,} (custody incl. borrowed, net of pledges, pending deliveries and working sells){hint}"
         if side == "BUY":
             bar = w.market.last_bar(sec.id)
             px = limit if (order_type in ("LIMIT", "TAKE_PROFIT") and limit) else bar.ask
             est = self._estimate_cost(sec, q, px)
-            avail = self.projected_cash(pf, sec.currency)
-            if est > avail:
-                return (f"insufficient projected {sec.currency} cash: order needs ~{est:,.2f} but projected settled cash "
-                        f"(settled cash + receivables - payables - working buys - margin) is {avail:,.2f}")
+            pos = pf.positions.get(sec.id)
+            covering = pos is not None and pos.quantity < 0
+            why = w.prime.affordable(pf, est, w.collateral.haircut(sec, "PRIME") if not covering else 0.0)
+            if why:
+                return f"insufficient {sec.currency} cash or financing: order {why}"
         return None
 
     @staticmethod
@@ -486,45 +491,84 @@ class TradingEngine:
             return
 
         cost_acct = "1110" if sec.is_bond else "1100"
+        lines: List[Dict] = []
+        memo = f"{trade.side} {q:,} {sec.id} @ {px} (trade {trade.id})"
         if trade.side == "BUY":
-            lot = Lot(id=f"LOT-{ev.seq:06d}", trade_id=trade.id, open_date=trade.trade_date, quantity=q, original_quantity=q,
-                      cost_per_unit=px, cost_total=gross)
-            pos.lots.append(lot)
-            pos.quantity += q
-            pos.cost_basis += gross
-            pos.pending_receive += q
-            if sec.is_bond:
-                pos.accrued_interest += accrued
-            memo = f"BUY {q:,} {sec.id} @ {px} (trade {trade.id})"
-            lines = [dr(cost_acct, gross, sec.id, "cost of securities purchased"),
-                     dr("1220", accrued, sec.id, "accrued interest purchased") if sec.is_bond else None,
-                     dr("5000", commission, sec.id, "commission"),
-                     cr("2100", net, sec.id, f"payable to broker, settles {trade.settlement_date}")]
+            q_cover = min(q, max(ZERO, -pos.quantity))      # covering a short first
+            q_long = q - q_cover
+            if q_cover > 0:
+                frac = q_cover / q
+                gross_c, comm_c = money(gross * frac), money(commission * frac)
+                relieved, proceeds_relieved = self._relieve_fifo(pos, -q_cover, ev)     # negative lots: proceeds come back positive
+                realized = proceeds_relieved - gross_c
+                trade.realized_pnl += realized
+                trade.lots_relieved += relieved
+                pos.quantity += q_cover
+                pos.cost_basis += proceeds_relieved        # cost basis was -proceeds
+                pos.realized_pnl += realized
+                pos.pending_receive += q_cover
+                memo += f" cover realized {realized:,.2f}"
+                lines += [dr("2600", proceeds_relieved, sec.id, "short proceeds relieved (FIFO)"), dr("5000", comm_c, sec.id, "commission"),
+                          cr("2100", gross_c + comm_c, sec.id, f"payable to broker, settles {trade.settlement_date}"), cr("4000", realized, sec.id, "realized on short cover")]
+            if q_long > 0:
+                frac = q_long / q
+                gross_l, comm_l = gross - (money(gross * (q_cover / q)) if q_cover else ZERO), commission - (money(commission * (q_cover / q)) if q_cover else ZERO)
+                acc_l = accrued
+                lot = Lot(id=f"LOT-{ev.seq:06d}", trade_id=trade.id, open_date=trade.trade_date, quantity=q_long, original_quantity=q_long,
+                          cost_per_unit=px, cost_total=gross_l)
+                pos.lots.append(lot)
+                pos.quantity += q_long
+                pos.cost_basis += gross_l
+                pos.pending_receive += q_long
+                if sec.is_bond:
+                    pos.accrued_interest += acc_l
+                lines += [dr(cost_acct, gross_l, sec.id, "cost of securities purchased"),
+                          dr("1220", acc_l, sec.id, "accrued interest purchased") if sec.is_bond else None,
+                          dr("5000", comm_l, sec.id, "commission"),
+                          cr("2100", gross_l + acc_l + comm_l, sec.id, f"payable to broker, settles {trade.settlement_date}")]
         else:
-            trueup = ZERO
-            if sec.is_bond:
-                target = money(pos.quantity * BondPricer.accrued_per_100(sec, date.fromisoformat(trade.trade_date)) / 100)
-                trueup = target - pos.accrued_interest
-                pos.accrued_interest = target
-                pos.interest_income += trueup
-            relieved, cost_relieved = self._relieve_fifo(pos, q, ev)
-            realized = gross - cost_relieved
-            trade.realized_pnl = realized
-            trade.lots_relieved = relieved
-            pos.quantity -= q
-            pos.cost_basis -= cost_relieved
-            pos.realized_pnl += realized
-            pos.pending_deliver += q
-            if sec.is_bond:
-                pos.accrued_interest -= accrued
-            memo = f"SELL {q:,} {sec.id} @ {px} (trade {trade.id}) realized {realized:,.2f}"
-            lines = [dr("1220", trueup, sec.id, "accrual to trade date") if trueup else None,
-                     cr("4300", trueup, sec.id, "interest income to trade date") if trueup else None,
-                     dr("1200", net, sec.id, f"receivable from broker, settles {trade.settlement_date}"),
-                     dr("5000", commission, sec.id, "commission"),
-                     cr(cost_acct, cost_relieved, sec.id, "cost of securities sold (FIFO)"),
-                     cr("1220", accrued, sec.id, "accrued interest sold") if sec.is_bond else None,
-                     cr("4000", realized, sec.id, "realized gain/loss")]
+            q_long = min(q, max(ZERO, pos.quantity))        # selling long inventory first
+            q_short = q - q_long
+            if q_long > 0:
+                frac = q_long / q
+                gross_l, comm_l, acc_l = money(gross * frac), money(commission * frac), money(accrued * frac)
+                trueup = ZERO
+                if sec.is_bond:
+                    target = money(pos.quantity * BondPricer.accrued_per_100(sec, date.fromisoformat(trade.trade_date)) / 100)
+                    trueup = target - pos.accrued_interest
+                    pos.accrued_interest = target
+                    pos.interest_income += trueup
+                relieved, cost_relieved = self._relieve_fifo(pos, q_long, ev)
+                realized = gross_l - cost_relieved
+                trade.realized_pnl += realized
+                trade.lots_relieved += relieved
+                pos.quantity -= q_long
+                pos.cost_basis -= cost_relieved
+                pos.realized_pnl += realized
+                pos.pending_deliver += q_long
+                if sec.is_bond:
+                    pos.accrued_interest -= acc_l
+                memo += f" realized {realized:,.2f}"
+                lines += [dr("1220", trueup, sec.id, "accrual to trade date") if trueup else None,
+                          cr("4300", trueup, sec.id, "interest income to trade date") if trueup else None,
+                          dr("1200", gross_l + acc_l - comm_l, sec.id, f"receivable from broker, settles {trade.settlement_date}"),
+                          dr("5000", comm_l, sec.id, "commission"),
+                          cr(cost_acct, cost_relieved, sec.id, "cost of securities sold (FIFO)"),
+                          cr("1220", acc_l, sec.id, "accrued interest sold") if sec.is_bond else None,
+                          cr("4000", realized, sec.id, "realized gain/loss")]
+            if q_short > 0:
+                gross_s = gross - (money(gross * (q_long / q)) if q_long else ZERO)
+                comm_s = commission - (money(commission * (q_long / q)) if q_long else ZERO)
+                lot = Lot(id=f"LOT-{ev.seq:06d}S", trade_id=trade.id, open_date=trade.trade_date, quantity=-q_short, original_quantity=-q_short,
+                          cost_per_unit=px, cost_total=-gross_s)
+                pos.lots.append(lot)
+                pos.quantity -= q_short
+                pos.cost_basis -= gross_s
+                pos.pending_deliver += q_short
+                memo += f" short sale (delivering borrowed shares)"
+                lines += [dr("1200", gross_s - comm_s, sec.id, f"short-sale proceeds receivable, settles {trade.settlement_date}"),
+                          dr("5000", comm_s, sec.id, "commission"),
+                          cr("2600", gross_s, sec.id, "obligation to return borrowed shares, at proceeds")]
         lines = [l for l in lines if l]
         w.post(pf.id, memo, lines, ev, {"trade_id": trade.id, "order_id": order.id, "security_id": sec.id})
         w.derive(E.SETTLEMENT_INSTRUCTION_CREATED, {
@@ -565,24 +609,28 @@ class TradingEngine:
                ev, {"trade_id": trade.id, "order_id": trade.order_id, "security_id": sec.id})
 
     def _relieve_fifo(self, pos, q: Decimal, ev: Event) -> Tuple[List[Dict], Decimal]:
-        remaining = q
+        """Relieve |q| units FIFO. q > 0 relieves long lots and returns cost; q < 0 relieves short lots and returns proceeds."""
+        sign = 1 if q > 0 else -1
+        remaining = abs(q)
         relieved = []
         cost = ZERO
         for lot in pos.lots:
             if remaining <= 0:
                 break
-            if lot.quantity <= 0:
+            if (lot.quantity <= 0) if sign > 0 else (lot.quantity >= 0):
                 continue
-            take = min(lot.quantity, remaining)
-            lot_cost = money(lot.cost_total * take / lot.quantity) if take < lot.quantity else lot.cost_total
-            lot.quantity -= take
-            lot.cost_total -= lot_cost
+            lq = abs(lot.quantity)
+            take = min(lq, remaining)
+            lot_cost = money(abs(lot.cost_total) * take / lq) if take < lq else abs(lot.cost_total)
+            lot.quantity -= sign * take
+            lot.cost_total += -sign * lot_cost if sign > 0 else lot_cost
             remaining -= take
             cost += lot_cost
-            relieved.append({"lot_id": lot.id, "quantity": take, "cost": lot_cost, "cost_per_unit": lot.cost_per_unit, "open_date": lot.open_date})
+            relieved.append({"lot_id": lot.id, "quantity": take, "cost": lot_cost, "cost_per_unit": lot.cost_per_unit, "open_date": lot.open_date,
+                             "side": "LONG" if sign > 0 else "SHORT"})
         if remaining > 0:
             raise RuntimeError(f"FIFO relief short by {remaining} — validation should have prevented this")
-        pos.lots = [l for l in pos.lots if l.quantity > 0]
+        pos.lots = [l for l in pos.lots if l.quantity != 0]
         return relieved, cost
 
     def _h_trade_status(self, ev: Event) -> None:

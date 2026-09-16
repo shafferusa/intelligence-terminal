@@ -50,11 +50,21 @@ class AccrualEngine:
             for ca in pf.cash.values():
                 if ca.balance == 0:
                     continue
-                rate = policy + (DEPOSIT_SPREAD if ca.balance > 0 else OVERDRAFT_SPREAD)
-                amt = money(ca.balance * D(rate) * pf_days / 360)
-                if amt != 0:
-                    w.emit(E.INTEREST_ACCRUED, {"portfolio_id": pf.id, "kind": "CASH", "currency": ca.currency, "amount": amt, "rate": rate, "days": pf_days,
-                                                "balance": ca.balance}, cause_id=cause.id, portfolio_id=pf.id)
+                if ca.currency == pf.base_currency:
+                    if ca.balance < 0:
+                        continue          # base-currency shortfalls are prime-broker loans, charged there
+                    rate = policy + DEPOSIT_SPREAD
+                    amt = money(ca.balance * D(rate) * pf_days / 360)
+                    if amt != 0:
+                        w.emit(E.INTEREST_ACCRUED, {"portfolio_id": pf.id, "kind": "CASH", "currency": ca.currency, "amount": amt, "rate": rate, "days": pf_days,
+                                                    "balance": ca.balance}, cause_id=cause.id, portfolio_id=pf.id)
+                else:
+                    frate = w.market.fx.rate.get(ca.currency, policy)
+                    rate = frate + (DEPOSIT_SPREAD if ca.balance > 0 else OVERDRAFT_SPREAD)
+                    amt = money(ca.balance * D(rate) * pf_days / 360)
+                    if amt != 0:
+                        w.emit(E.INTEREST_ACCRUED, {"portfolio_id": pf.id, "kind": "FX_CASH", "currency": ca.currency, "amount": amt, "rate": rate, "days": pf_days,
+                                                    "balance": ca.balance, "base_amount": w.fx.to_base(ca.currency, amt)}, cause_id=cause.id, portfolio_id=pf.id)
             if today.month != prev_date.month:
                 for ca in pf.cash.values():
                     if ca.accrued_interest != 0:
@@ -73,6 +83,17 @@ class AccrualEngine:
             w.post(pf.id, f"Accrued interest {p['security_id']}: {amt:,.2f}",
                    [dr("1220", amt, p["security_id"], "accrued interest"), cr("4300", amt, p["security_id"], "interest income")], ev,
                    {"security_id": p["security_id"], "kind": "BOND"})
+        elif p["kind"] == "FX_CASH":
+            ca = pf.cash_account(p["currency"])
+            base = D(p["base_amount"])
+            ca.balance += amt
+            ca.base_value += base
+            w.record_cash_movement(pf, p["currency"], amt, "INTEREST", f"{p['currency']} cash interest @ {p['rate']*100:.3f}% (paid daily)", ev)
+            if base > 0:
+                lines = [dr(f"1010:{p['currency']}", base, None, "interest received"), cr("4300", base, None, f"{p['currency']} deposit interest")]
+            else:
+                lines = [dr("5100", -base, None, f"{p['currency']} overdraft interest"), cr(f"1010:{p['currency']}", -base, None, "interest paid")]
+            w.post(pf.id, f"{p['currency']} cash interest {amt:,.2f} ({p['days']}d)", lines, ev, {"kind": "FX_CASH", "currency": p["currency"]})
         else:
             ca = pf.cash_account(p["currency"])
             ca.accrued_interest += amt

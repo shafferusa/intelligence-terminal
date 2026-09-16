@@ -97,7 +97,6 @@ class FuturesEngine:
             if delta != 0:
                 w.emit(E.MARGIN_SWEPT, {"portfolio_id": pf.id, "required": required, "held_before": held, "amount": delta, "currency": pf.base_currency,
                                         "margin_multiplier": self.margin_multiplier()}, cause_id=cause.id, portfolio_id=pf.id)
-            self._check_margin_call(pf, cause)
 
     def _check_margin_call(self, pf: Portfolio, cause: Event) -> None:
         w = self.w
