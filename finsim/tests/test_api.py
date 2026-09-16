@@ -92,3 +92,44 @@ class ApiTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class OrderPreviewTest(unittest.TestCase):
+    def test_preview_prices_each_instrument_and_converts_an_amount_to_quantity(self):
+        from finsim.api.service import Service
+        from finsim.store import EventStore
+        from finsim.money import D
+        s = Service(EventStore(":memory:"), strict_replay=True)
+        r = s.create_world("p", 42, "2026-01-05", capital=10_000_000, job="SANDBOX", clock_mode="SANDBOX")
+        wid, pid = r["world_id"], r["portfolio_id"]
+        w = s.world(wid)
+        eq = s.order_preview(wid, pid, {"security_id": "NVRA", "side": "BUY", "quantity": 1000})
+        self.assertEqual(eq["kind"], "cash")
+        self.assertEqual(D(str(eq["gross"])), (D("1000") * D(str(eq["price"]))).quantize(D("0.01")))
+        self.assertEqual(D(str(eq["cash_needed"])), D(str(eq["gross"])) + D(str(eq["commission"])))
+        self.assertEqual(eq["price_source"], "ask")
+        sell = s.order_preview(wid, pid, {"security_id": "NVRA", "side": "SELL", "quantity": 1000})
+        self.assertLess(sell["cash_needed"], 0, "a sale brings cash in")
+        self.assertEqual(sell["price_source"], "bid")
+        by_amt = s.order_preview(wid, pid, {"security_id": "NVRA", "side": "BUY", "amount": 250_000})
+        self.assertLessEqual(by_amt["gross"], 250_000)
+        self.assertGreater(by_amt["gross"], 250_000 - 2 * float(by_amt["price"]))
+        bond = s.order_preview(wid, pid, {"security_id": "UST-10Y", "side": "BUY", "amount": 1_000_000})
+        self.assertEqual(bond["kind"], "bond")
+        self.assertEqual(int(bond["quantity"]) % 1000, 0, "bonds trade in 1,000 face")
+        self.assertLessEqual(bond["gross"] + bond["accrued_interest"], 1_000_000)
+        self.assertGreater(bond["accrued_interest"], 0)
+        fut = next(x for x in w.securities.values() if x.is_future and x.underlying == "CL" and not x.expired)
+        f = s.order_preview(wid, pid, {"security_id": fut.id, "side": "SELL", "quantity": 3})
+        self.assertEqual(f["kind"], "future")
+        self.assertGreater(f["initial_margin"], 0)
+        self.assertEqual(D(str(f["cash_needed"])), D(str(f["initial_margin"])) + D(str(f["commission"])))
+        opt = next(x for x in w.securities.values() if x.is_option and x.underlying == "NVRA")
+        o = s.order_preview(wid, pid, {"security_id": opt.id, "side": "BUY", "quantity": 2})
+        self.assertEqual(o["kind"], "option")
+        self.assertEqual(o["multiplier"], 100.0)
+        lim = s.order_preview(wid, pid, {"security_id": "NVRA", "side": "BUY", "quantity": 10, "limit_price": 100})
+        self.assertEqual((lim["price_source"], float(lim["price"])), ("limit", 100.0))
+        from finsim.api.service import NotFound
+        with self.assertRaises(NotFound):
+            s.order_preview(wid, pid, {"security_id": "NOPE", "side": "BUY", "quantity": 1})

@@ -294,6 +294,7 @@ GET  /api/worlds/{w}/commodities                  GET  /api/worlds/{w}/commoditi
 GET  /api/worlds/{w}/yield-curve | news | corporate-actions | events?type=&q= | events/{id}
 POST /api/worlds/{w}/portfolios                   POST /api/worlds/{w}/portfolios/{p}/orders
      {security_id, side, quantity, order_type, limit_price, stop_price, trail_pct, condition:{ref,op,value}, time_in_force}
+POST /api/worlds/{w}/portfolios/{p}/orders/preview {security_id, side, quantity | amount, limit_price}   (cash estimate; amount -> quantity)
 GET  /api/worlds/{w}/portfolios/{p}/briefing?date= | career | dashboard | positions/{sec} | orders | orders/{id} (DELETE cancels)
      | trades | trades/{id} | settlements | custody | cash | ledger?account=&security_id=
      | balance-sheet | pnl-explain?date= | nav-explain

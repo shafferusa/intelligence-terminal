@@ -644,7 +644,8 @@
 
   function ticketHtml(secId = '', isBond = false, isFuture = false) {
     return `<div class="form" id="ticket"><label>Security</label><input id="tSec" value="${secId}" placeholder="ticker, bond id or contract e.g. NVRA, UST-10Y, CLZ26" ${secId ? 'readonly' : ''}><label>Side</label><select id="tSide"><option>BUY</option><option>SELL</option></select>
-      <label>Quantity</label><input id="tQty" type="number" value="${isFuture ? 10 : isBond ? 1000000 : 10000}" step="${isBond ? 1000 : 1}"><label>Type</label><select id="tType"><option value="MARKET">MARKET — at next update's open</option><option value="LIMIT">LIMIT</option><option value="STOP">STOP</option><option value="STOP_LIMIT">STOP_LIMIT</option><option value="TAKE_PROFIT">TAKE_PROFIT</option><option value="TRAILING_STOP">TRAILING_STOP</option></select>
+      <label>Quantity</label><div class="row"><input id="tQty" type="number" value="${isFuture ? 10 : isBond ? 1000000 : 10000}" step="${isBond ? 1000 : 1}" style="width:140px"><span class="muted mono">or amount $</span><input id="tAmt" type="number" step="1000" placeholder="e.g. 250000" style="width:140px"></div>
+      <label></label><div id="tEst" class="hint" style="margin:0">enter a security and quantity to see the cash involved</div><label>Type</label><select id="tType"><option value="MARKET">MARKET — at next update's open</option><option value="LIMIT">LIMIT</option><option value="STOP">STOP</option><option value="STOP_LIMIT">STOP_LIMIT</option><option value="TAKE_PROFIT">TAKE_PROFIT</option><option value="TRAILING_STOP">TRAILING_STOP</option></select>
       <label>Limit</label><input id="tLimit" type="number" step="0.0001" placeholder="limit price"><label>Stop</label><input id="tStop" type="number" step="0.0001" placeholder="stop price"><label>Trail %</label><input id="tTrail" type="number" step="0.1" placeholder="e.g. 5 = 5% below best close">
       <label>Condition</label><div class="row"><span class="muted mono">only if</span><input id="tCondRef" placeholder="NVRA · CURVE:10Y · SPOT:CL" style="width:150px"><select id="tCondOp"><option>&lt;=</option><option>&gt;=</option></select><input id="tCondVal" type="number" step="any" placeholder="value" style="width:110px"></div>
       <label>TIF</label><select id="tTif"><option value="DAY">DAY — good for the next session</option><option value="GTC">GTC — until cancelled</option></select><label>Strategy tag</label><input id="tTag" placeholder="optional, e.g. crack-spread"></div>
@@ -652,8 +653,30 @@
   }
   function bindTicket() {
     const go = $('#tGo'); if (!go) return;
+    // live cash estimate: quantity -> cash, or cash amount -> quantity
+    let estTimer = null, fromAmount = false;
+    const estimate = async () => {
+      const sid = $('#tSec').value.trim().toUpperCase(); const est = $('#tEst'); if (!sid || !est) return;
+      const body = { security_id: sid, side: $('#tSide').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null };
+      if (fromAmount && $('#tAmt').value) body.amount = +$('#tAmt').value; else body.quantity = +$('#tQty').value;
+      try {
+        const p = await api(P() + '/orders/preview', { method: 'POST', body });
+        if (fromAmount && $('#tAmt').value) $('#tQty').value = p.quantity;
+        const unit = p.kind === 'bond' ? 'face' : p.kind === 'future' || p.kind === 'option' ? 'contract(s)' : 'share(s)';
+        const cash = Number(p.cash_needed);
+        const main = p.kind === 'future'
+          ? `${fmt.qty(p.quantity)} ${unit} × ${fmt.px(p.price)} × ${p.multiplier} = notional <b>${fmt.money(p.gross, 0)}</b> · initial margin <b>${fmt.money(p.initial_margin, 0)}</b> + commission ${fmt.money(p.commission)}`
+          : `${fmt.qty(p.quantity)} ${unit} × ${fmt.px(p.price)}${p.multiplier !== 1 ? ` × ${p.multiplier}` : ''}${p.kind === 'bond' ? ' / 100' : ''} = <b>${fmt.money(p.gross)}</b>${Number(p.accrued_interest) ? ` + accrued ${fmt.money(p.accrued_interest)}` : ''} ${p.side === 'BUY' ? '+' : '−'} commission ${fmt.money(p.commission)}`;
+        est.innerHTML = `${main} → <b class="${cash > 0 ? 'neg' : 'pos'}">${cash > 0 ? 'pay' : 'receive'} ${fmt.money(Math.abs(cash))}</b> at ${p.price_source} <span class="muted">· settled cash ${fmt.money(p.cash_settled, 0)}, projected ${fmt.money(p.cash_projected, 0)}${cash > Number(p.cash_projected) ? ' — exceeds projected cash (prime-broker financing or rejection)' : ''}</span>`;
+      } catch (e) { est.innerHTML = `<span class="muted">${esc(e.message)}</span>`; }
+    };
+    const arm = (viaAmount) => { fromAmount = viaAmount; clearTimeout(estTimer); estTimer = setTimeout(estimate, 250); };
+    ['tSec', 'tQty', 'tSide', 'tLimit'].forEach(id => { const el = $('#' + id); if (el) el.addEventListener('input', () => arm(false)); if (el) el.addEventListener('change', () => arm(false)); });
+    if ($('#tAmt')) $('#tAmt').addEventListener('input', () => arm(true));
+    if ($('#tSec').value) arm(false);
     go.addEventListener('click', async () => {
       const cond = $('#tCondRef').value.trim() ? { ref: $('#tCondRef').value.trim(), op: $('#tCondOp').value.replace('&lt;', '<').replace('&gt;', '>'), value: +$('#tCondVal').value } : null;
+      if ($('#tAmt').value && !(+$('#tQty').value)) { try { const p = await api(P() + '/orders/preview', { method: 'POST', body: { security_id: $('#tSec').value.trim().toUpperCase(), side: $('#tSide').value, amount: +$('#tAmt').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null } }); $('#tQty').value = p.quantity; } catch (e) {} }
       const body = { security_id: $('#tSec').value.trim().toUpperCase(), side: $('#tSide').value, quantity: +$('#tQty').value, order_type: $('#tType').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null, stop_price: $('#tStop').value ? +$('#tStop').value : null, time_in_force: $('#tTif').value, strategy_tag: $('#tTag').value || null, trail_pct: $('#tTrail').value ? +$('#tTrail').value / 100 : null, condition: cond };
       go.disabled = true; $('#tMsg').textContent = '';
       try { const r = await api(P() + '/orders', { method: 'POST', body }); const o = r.order; toast(`${o.status}: ${o.side} ${fmt.qty(o.quantity)} ${o.security_id} ${o.order_type} — executes at the next update`); render(); }

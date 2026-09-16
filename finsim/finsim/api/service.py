@@ -921,6 +921,50 @@ class Service:
         ev = w.force_regime(regime)
         return {"event_id": ev.id, "regime": regime}
 
+    def order_preview(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        """What an instruction is worth in cash before it is sent: price used, notional, accrued, commission, margin,
+        and the quantity a cash amount buys. Estimates only: the fill happens at the next session."""
+        from ..engines.pricing import BondPricer
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        sid = str(body.get("security_id", "")).strip().upper()
+        sec = w.securities.get(sid)
+        if sec is None:
+            raise NotFound(f"unknown security {sid}")
+        side = str(body.get("side", "BUY")).upper()
+        bar = w.trading._bar(sec)
+        if bar is None:
+            raise CommandError(f"{sid} has no session data yet")
+        limit = body.get("limit_price")
+        px = D(str(limit)) if limit not in (None, "") else (bar.ask if side == "BUY" else bar.bid)
+        unit = w.trading._unit(sec)
+        lot = D(sec.lot_size) if sec.lot_size > 1 else D(1)
+        acc100 = BondPricer.accrued_per_100(sec, w.current_date) if sec.is_bond else ZERO
+        per_unit_cash = (px + acc100) * unit                  # cash per one unit of quantity (per share / per 1 face incl. accrued / per contract)
+        amount = body.get("amount")
+        if amount not in (None, "") and D(str(amount)) > 0 and per_unit_cash > 0:
+            q = (D(str(amount)) / per_unit_cash).to_integral_value(rounding="ROUND_DOWN")
+            q = q - (q % lot)
+        else:
+            q = D(str(body.get("quantity") or 0)).to_integral_value(rounding="ROUND_DOWN")
+        q = max(D(0), q)
+        gross = money(q * px * unit)
+        accrued = money(q * BondPricer.accrued_per_100(sec, w.current_date) / 100) if sec.is_bond else ZERO
+        commission = w.trading._commission(sec, q) if q > 0 else ZERO
+        margin = money(w.futures.initial_margin_per_contract(sec) * q) if sec.is_future else ZERO
+        if sec.is_future:
+            cash_needed = margin + commission
+        elif side == "BUY":
+            cash_needed = gross + accrued + commission
+        else:
+            cash_needed = -(gross + accrued - commission)
+        ccy = pf.base_currency
+        return jsonable({"security_id": sid, "side": side, "quantity": q, "price": px, "price_source": "limit" if limit not in (None, "") else ("ask" if side == "BUY" else "bid"),
+                         "unit_cash": per_unit_cash, "gross": gross, "accrued_interest": accrued, "commission": commission, "initial_margin": margin,
+                         "cash_needed": cash_needed, "cash_settled": pf.cash_account(ccy).balance, "cash_projected": w.trading.projected_cash(pf, ccy),
+                         "kind": "future" if sec.is_future else "option" if sec.is_option else "bond" if sec.is_bond else "cash",
+                         "lot_size": lot, "multiplier": float(sec.multiplier) if (sec.is_future or sec.is_option) else 1.0, "currency": ccy})
+
     # ------------------------------------------------------------------ phase 9: commodity desk
     def place_spread(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
         w = self.world(world_id)
