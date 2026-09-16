@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>NASA Crashed a Vending Machine Into an Asteroid. The Math Said Seven Minutes — the Orbit Moved Thirty-Three. — Learning Brief, Wed, Sep 16, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-16",
+    "slot": "learn",
+    "title": "NASA Crashed a Vending Machine Into an Asteroid. The Math Said Seven Minutes — the Orbit Moved Thirty-Three.",
+    "path": "reports/2026/09/2026-09-16-learn.html",
+    "summary": "Day twenty-three of the 150-day curriculum: momentum, impulse, and the real difference between elastic and inelastic collisions, built from clean textbook numbers and then tested against NASA's 2022 DART asteroid impact, where a 579-kilogram spacecraft's own momentum predicted a seven-minute orbital shift and recoiling ejecta debris delivered thirty-three.",
+    "headlines": [
+      "Day 23 of 150 · Physics: momentum, impulse, elastic vs. inelastic collisions",
+      "A vending-machine-sized spacecraft hit an asteroid moonlet at 13,600 mph -- clean momentum transfer predicted a 7-minute orbital shift, the real number came in near five times higher",
+      "The gap is ejecta recoil, not new physics -- and it is measured with the same conservation law that solves a two-car collision"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-16T06:00:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>NASA Crashed a Vending Machine Into an Asteroid. The Math Said Seven Minutes &mdash; the Orbit Moved Thirty-Three.</h1>
+      <p class="paper-dateline">
+        Wednesday, September 16, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        In September 2022 a 579-kilogram NASA spacecraft slammed into an asteroid moonlet at 13,600 miles an hour, and the same conservation law that solves a two-car crash predicted its orbit would shift by about seven minutes &mdash; until the debris the impact itself kicked loose did nearly four times that much extra work, a gap this lesson closes by building momentum, impulse, and the real difference between an elastic and an inelastic collision from the ground up.
+      </p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Physics</p>
+      <span class="track-progress">Day 23 of 150 &middot; Physics 5 of 26 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A machine the size of a vending machine, aimed at a mountain</h3>
+
+      <p>At 7:14 PM Eastern on September 26, 2022, a NASA spacecraft called DART did something no human object had ever done on purpose: it altered the orbit of another world. DART weighed about 1,260 pounds &mdash; roughly 579 kilograms &mdash; and NASA&rsquo;s own engineers liked to describe its size the same blunt way most coverage did at the time: about the size of a vending machine, with a single camera as its only real instrument. Its target was Dimorphos, a rubble-pile moonlet roughly 150 meters across, orbiting a larger asteroid called Didymos once every 11 hours and 55 minutes. One planetary scientist working on the mission summed up the mismatch in mass more memorably than any press release: it was, he said, &ldquo;like running a golf cart into a Great Pyramid.&rdquo;</p>
+
+      <p>Nobody expected the golf cart to stop the pyramid, or even to visibly dent it. DART was a proof of concept for planetary defense &mdash; a test of whether humanity could nudge a hazardous asteroid off a collision course with Earth by simply hitting it hard enough, years or decades before any impact, so that a small change in velocity compounds into a large change in position over time. The mission team set a minimum bar for success: a shift of at least 73 seconds in Dimorphos&rsquo;s orbital period around Didymos, a number small enough to be clearly measurable from Earth-based telescopes but large enough to prove the concept actually works. If you multiplied DART&rsquo;s mass by its closing speed of roughly 6.1 kilometers per second, and assumed every bit of that momentum transferred cleanly into Dimorphos with nothing lost and nothing gained, the physics you are about to learn in this lesson predicts a shift of about seven minutes &mdash; comfortably above the 73-second bar, a clean, plannable success.</p>
+
+      <p>The actual shift, confirmed by telescopes and planetary radar around the world in the days and weeks after impact, was 32 minutes: Dimorphos&rsquo;s orbit around Didymos shortened from 11 hours 55 minutes to 11 hours 23 minutes. Follow-up analysis over the following months, combining optical photometry with additional radar passes, refined that figure to 33.0 minutes, and refined it again, later still, to 33.24 minutes. Every version of that number is roughly four to five times larger than the seven-minute prediction a clean, textbook application of momentum conservation would have given you going in. NASA did not get the physics wrong. Nothing about the conservation law this lesson is built on failed. What happened instead is one of the cleanest real-world illustrations available anywhere of a fact this lesson is about to make precise: a collision is never really over the instant of contact, and what happens in the microseconds after that instant can matter more than the collision itself.</p>
+
+      <h3>Momentum, before any notation at all</h3>
+
+      <p>Set the asteroid aside for a moment, because the idea underneath it is one you already use correctly every day without a name for it. A loaded freight train rolling at walking pace is far harder to stop than a thrown baseball moving twenty times faster, even though the baseball is &ldquo;going faster.&rdquo; A bowling ball rolled gently across a lane will still knock the pins flying in a way a marble rolled at the same gentle speed never could. In both cases, what matters for &ldquo;how hard is this to stop, and how much of a wallop does it deliver&rdquo; is not speed alone and not mass alone, but the two multiplied together. Physicists call that product <b>momentum</b>: how much motion an object has, weighted by how much stuff is moving. A gently rolling freight train and a screaming baseball can carry the same momentum despite wildly different speeds, because one makes up in mass what it lacks in velocity.</p>
+
+      <p>Momentum also has a direction, the same direction the object is moving in &mdash; a quantity with both a size and a direction is called a <b>vector</b>, the idea day six&rsquo;s lesson on vectors first introduced for position and velocity. This matters more than it might seem: two identical bowling balls rolling toward each other at the same speed carry momentum that points in opposite directions, and when you add those two momenta together &mdash; respecting the directions, not just the sizes &mdash; they can partly or entirely cancel, even though neither ball has slowed down on its own. Momentum is the single quantity every collision in this lesson will be tracked through, and the single fact that makes any of them solvable at all is this: in a system left alone by outside forces, the total momentum going in exactly equals the total momentum coming out. Objects can trade momentum back and forth in a collision &mdash; one slows while the other speeds up &mdash; but the sum across the whole system never changes. That is the entire idea. Everything else in this lesson is that one sentence, made precise enough to run the numbers on Apple&rsquo;s asteroid-sized cousin of a two-car crash.</p>
+
+      <h3>Making it precise: the conservation law</h3>
+
+      <p>Momentum, in symbols, is simply mass times velocity:</p>
+
+      <div class="formula">
+        <div class="expr">p&nbsp;=&nbsp;mv</div>
+        <dl>
+          <dt>p</dt><dd>momentum &mdash; a vector, pointing the same direction as the object&rsquo;s velocity, measured in kilogram-meters per second (kg&middot;m/s).</dd>
+          <dt>m</dt><dd>mass, in kilograms &mdash; how much matter the object contains, not to be confused with weight, which depends on gravity and momentum does not.</dd>
+          <dt>v</dt><dd>velocity &mdash; speed with a direction attached, in meters per second, the same vector quantity day five&rsquo;s kinematics lesson built from position and time.</dd>
+        </dl>
+      </div>
+
+      <p>For a system of two objects that interact with each other but nothing outside the system &mdash; no friction, no outside push, nothing but the two objects trading momentum between themselves &mdash; the conservation law says the total momentum measured before they interact equals the total momentum measured after:</p>
+
+      <div class="formula">
+        <div class="expr">m<sub>1</sub>v<sub>1i</sub>&nbsp;+&nbsp;m<sub>2</sub>v<sub>2i</sub>&nbsp;=&nbsp;m<sub>1</sub>v<sub>1f</sub>&nbsp;+&nbsp;m<sub>2</sub>v<sub>2f</sub></div>
+        <dl>
+          <dt>m<sub>1</sub>, m<sub>2</sub></dt><dd>the masses of the two objects, unchanged by the collision.</dd>
+          <dt>v<sub>1i</sub>, v<sub>2i</sub></dt><dd>their velocities immediately before the interaction (&ldquo;i&rdquo; for initial).</dd>
+          <dt>v<sub>1f</sub>, v<sub>2f</sub></dt><dd>their velocities immediately after (&ldquo;f&rdquo; for final).</dd>
+        </dl>
+      </div>
+
+      <p>Nothing here says anything at all about what kind of interaction happened &mdash; a bounce, a crash, a slow gravitational tug, an explosion pushing two pieces apart. The law does not care. It cares only that the system is isolated from outside forces during the interaction, and that every object involved is accounted for on both sides of the equal sign. That generality is exactly why it took over a century of careful, and occasionally furious, argument to nail down.</p>
+
+      <p>René Descartes proposed, in his 1644 <em>Principles of Philosophy</em>, that the universe conserves a fixed total &ldquo;quantity of motion&rdquo; &mdash; essentially mass times speed, added up over everything. It was a genuine insight, and it was also subtly wrong, because Descartes treated quantity of motion as a plain number rather than a vector with a direction: in his accounting, two identical balls approaching each other and colliding head-on could seem to violate the very law he proposed, because he had no way to let one ball&rsquo;s contribution subtract from the other&rsquo;s. The fix came from an unusually pointed episode in the early history of the Royal Society of London. In late 1668, two of its members, John Wallis and Christopher Wren, independently submitted rules for how objects behave in collisions &mdash; Wallis worked out the case where colliding bodies stick together, Wren the case where they bounce apart without losing any energy. The Society&rsquo;s secretary, Henry Oldenburg, then invited the Dutch physicist Christiaan Huygens to weigh in, and Huygens, who had already worked the problem out privately more than a decade earlier, sent back a solution that got the direction right: he treated velocity as signed, so that objects moving in opposite directions could partially cancel, and he showed that in a bounce that loses no energy, both momentum and a second quantity he called <em>vis viva</em> &mdash; what we would now call kinetic energy &mdash; are conserved together. All three papers were published side by side in the Royal Society&rsquo;s <em>Philosophical Transactions</em> in 1669, and between them they replaced Descartes&rsquo; scalar rule with the vector law you just read in the formula plate above &mdash; a law that has not needed correcting since, only extending, first by Newton and eventually into the relativistic and quantum regimes this curriculum has not yet reached.</p>
+
+      <h3>Impulse: how a shove becomes a change in motion</h3>
+
+      <p>Conservation tells you the totals must match before and after. It does not, by itself, tell you how a force acting on an object translates into a change in that object&rsquo;s momentum while the interaction is happening. That link has a name: <b>impulse</b>, and it turns out to be the more fundamental of the two ideas commonly taught as &ldquo;Newton&rsquo;s second law.&rdquo; Most introductions to physics present that law as F&nbsp;=&nbsp;ma, force equals mass times acceleration &mdash; and day ten&rsquo;s lesson on Newton&rsquo;s laws used exactly that form, correctly, for objects whose mass does not change during the interval in question. But that is a special case of a more general statement, and it is worth knowing which one Newton actually wrote down first. In the <em>Principia Mathematica</em> (1687), Newton&rsquo;s own Latin phrasing of his second law is usually translated as: the change in motion is proportional to the force impressed, and takes place in the direction of that force &mdash; where by &ldquo;motion,&rdquo; following the terminology of his era, Newton meant quantity of motion, the very thing this lesson has been calling momentum. Newton&rsquo;s original law is a statement about impulse and momentum, not about acceleration; the tidy algebraic form F&nbsp;=&nbsp;ma that appears in every introductory textbook, including day ten&rsquo;s, was given its familiar modern shape roughly sixty years later by the Swiss mathematician Leonhard Euler, and it is equivalent to Newton&rsquo;s version only when mass stays constant &mdash; which is most of the time, but conspicuously not for a rocket burning fuel, a raindrop gathering mist, or, as it happens, an asteroid that just absorbed a spacecraft and is now flinging part of its own surface into space.</p>
+
+      <p>The general, impulse-based version of the law says that force is the rate at which momentum changes over time, and integrating that rate over the duration of an interaction gives you the total change in momentum it produced:</p>
+
+      <div class="formula">
+        <div class="expr">J&nbsp;=&nbsp;&int;F&nbsp;dt&nbsp;=&nbsp;&Delta;p</div>
+        <dl>
+          <dt>J</dt><dd>impulse &mdash; the total effect of a force acting over some interval of time, measured in the same units as momentum (kg&middot;m/s), because it is nothing but the total change in momentum that force produced.</dd>
+          <dt>F</dt><dd>the net force acting on the object, which can vary from instant to instant during a real collision &mdash; rising sharply at the moment of contact, then falling back to zero.</dd>
+          <dt>dt</dt><dd>an infinitesimally small slice of time; integrating means summing the force&rsquo;s contribution over every such slice across the whole interaction.</dd>
+          <dt>&Delta;p</dt><dd>the resulting change in the object&rsquo;s momentum, final momentum minus initial momentum &mdash; the same p defined above.</dd>
+        </dl>
+      </div>
+
+      <p>When the force is roughly constant over the interval, or when you only care about its average value, the same relationship collapses to the simpler form most collision problems actually use in practice: J&nbsp;=&nbsp;F<sub>avg</sub>&Delta;t&nbsp;=&nbsp;&Delta;p, where F<sub>avg</sub> is the average force during the collision and &Delta;t is how long the collision lasted. That simplified form is the one this lesson will lean on for the worked examples ahead, and it is also the form that turns out to matter most once you start asking, later in this lesson, why airbags and crumple zones work at all.</p>
+
+      <h3>Two kinds of collision, and the number that tells them apart</h3>
+
+      <p>Momentum is conserved in every collision between objects free of outside forces &mdash; full stop, no exceptions, whether the objects bounce apart, crumple together, or explode apart from a spring released between them. What is <em>not</em> always conserved is kinetic energy, the energy of motion day nineteen&rsquo;s lesson defined as KE&nbsp;=&nbsp;&frac12;mv&sup2;. That distinction is how physicists sort every collision into one of two families.</p>
+
+      <p>A collision is called <b>elastic</b> if the total kinetic energy after the collision equals the total kinetic energy before it &mdash; none of the motion&rsquo;s energy gets converted into heat, sound, or permanent deformation of the colliding objects. Two hard steel ball bearings striking each other come close to this in practice; so, to an excellent approximation, do individual gas molecules bouncing off each other. A collision is called <b>inelastic</b> if kinetic energy is lost &mdash; converted into heat, sound, or the work of bending and crumpling metal, cloth, or asteroid rubble. The extreme case, where the colliding objects stick together afterward and move as one, is called <b>perfectly inelastic</b>: it is not the collision that loses the <em>most</em> momentum &mdash; momentum is never lost, in any of these cases &mdash; it is the collision that loses the <em>most possible</em> kinetic energy for the amount of momentum being conserved.</p>
+
+      <p>A single number captures where any real collision falls on that spectrum, called the <b>coefficient of restitution</b>:</p>
+
+      <div class="formula">
+        <div class="expr">e&nbsp;=&nbsp;&minus;(v<sub>2f</sub>&nbsp;&minus;&nbsp;v<sub>1f</sub>)&nbsp;/&nbsp;(v<sub>2i</sub>&nbsp;&minus;&nbsp;v<sub>1i</sub>)</div>
+        <dl>
+          <dt>e</dt><dd>the coefficient of restitution, a dimensionless number between 0 and 1 for any physically realistic collision.</dd>
+          <dt>v<sub>2i</sub>&nbsp;&minus;&nbsp;v<sub>1i</sub></dt><dd>the relative velocity of the two objects approaching each other, before the collision.</dd>
+          <dt>v<sub>2f</sub>&nbsp;&minus;&nbsp;v<sub>1f</sub></dt><dd>the relative velocity of the two objects separating from each other, after the collision.</dd>
+        </dl>
+      </div>
+
+      <p>e&nbsp;=&nbsp;1 describes a perfectly elastic collision: the objects separate from each other exactly as fast as they approached, just as day-to-day intuition about a &ldquo;perfect bounce&rdquo; suggests. e&nbsp;=&nbsp;0 describes a perfectly inelastic collision: the objects have zero relative velocity afterward, because they are now moving together as a single combined object and are not separating at all. Everything real sits somewhere in between &mdash; a dropped basketball has an e around 0.7 to 0.8 against a hard floor; a dropped ball of wet clay has an e close to 0.</p>
+
+      <p>For the special, cleanly solvable case of a perfectly elastic, head-on, one-dimensional collision, combining the conservation-of-momentum equation with e&nbsp;=&nbsp;1 lets you solve directly for both final velocities without needing to know anything about the force involved:</p>
+
+      <div class="formula">
+        <div class="expr">v<sub>1f</sub>&nbsp;=&nbsp;[(m<sub>1</sub>&minus;m<sub>2</sub>)&nbsp;/&nbsp;(m<sub>1</sub>+m<sub>2</sub>)]&nbsp;v<sub>1i</sub>&nbsp;+&nbsp;[2m<sub>2</sub>&nbsp;/&nbsp;(m<sub>1</sub>+m<sub>2</sub>)]&nbsp;v<sub>2i</sub></div>
+        <div class="expr">v<sub>2f</sub>&nbsp;=&nbsp;[2m<sub>1</sub>&nbsp;/&nbsp;(m<sub>1</sub>+m<sub>2</sub>)]&nbsp;v<sub>1i</sub>&nbsp;+&nbsp;[(m<sub>2</sub>&minus;m<sub>1</sub>)&nbsp;/&nbsp;(m<sub>1</sub>+m<sub>2</sub>)]&nbsp;v<sub>2i</sub></div>
+        <dl>
+          <dt>v<sub>1f</sub>, v<sub>2f</sub></dt><dd>the two objects&rsquo; velocities after a perfectly elastic collision, derived (not assumed) from the two equations above &mdash; conservation of momentum and e&nbsp;=&nbsp;1 &mdash; solved together.</dd>
+          <dt>m<sub>1</sub>, m<sub>2</sub>, v<sub>1i</sub>, v<sub>2i</sub></dt><dd>the same masses and initial velocities defined earlier.</dd>
+        </dl>
+      </div>
+
+      <p>These formulas are worth deriving once and then setting aside, because their value here is not memorization &mdash; it is a check on the worked example that follows, and a way of seeing, in the special case where m<sub>1</sub> equals m<sub>2</sub> exactly, a fact billiards players rely on instinctively: the two velocities simply swap.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; two railcars, perfectly inelastic</b>
+        <p>A 24,000-kilogram freight railcar rolls at 2.5 meters per second toward a stationary 36,000-kilogram railcar and couples with it on contact, so the two move off together as one 60,000-kilogram unit.</p>
+        <ol>
+          <li>Momentum before the collision belongs entirely to the moving car, since the second car starts at rest: p<sub>before</sub> = m<sub>1</sub>v<sub>1i</sub> = 24,000&nbsp;kg &times; 2.5&nbsp;m/s = 60,000&nbsp;kg&middot;m/s.</li>
+          <li>After coupling, both cars move at the same final velocity v<sub>f</sub>, so conservation of momentum gives: 60,000&nbsp;kg&middot;m/s = (24,000&nbsp;kg + 36,000&nbsp;kg) &times; v<sub>f</sub> = 60,000&nbsp;kg &times; v<sub>f</sub>.</li>
+          <li>Solve: v<sub>f</sub> = 60,000&nbsp;/&nbsp;60,000 = <strong>1.0 meter per second</strong> &mdash; a clean number, and no coincidence: it falls straight out of the arithmetic, not because the problem was rigged.</li>
+          <li>Now check kinetic energy, which conservation of momentum never promised to protect. Before: KE<sub>before</sub> = &frac12;(24,000)(2.5)&sup2; = 75,000 joules. After: KE<sub>after</sub> = &frac12;(60,000)(1.0)&sup2; = 30,000 joules.</li>
+          <li>45,000 joules &mdash; a full 60 percent of the kinetic energy the moving car started with &mdash; is gone, converted into the bang, heat, and permanent deformation of the coupling mechanism. Momentum was conserved exactly (60,000&nbsp;kg&middot;m/s in, 60,000&nbsp;kg&middot;m/s out); kinetic energy was not, by design, because this collision is perfectly inelastic. Notice, too, that the fraction lost, 60 percent, exactly equals the stationary car&rsquo;s share of the combined mass, 36,000&nbsp;/&nbsp;60,000 &mdash; a general result for any perfectly inelastic collision into a stationary target, not a coincidence specific to these numbers.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; two carts, perfectly elastic</b>
+        <p>On a low-friction track, a 2.0-kilogram cart moving at 4.0 meters per second strikes a stationary 6.0-kilogram cart. Assume the collision is perfectly elastic (e&nbsp;=&nbsp;1), a reasonable approximation for carts with magnetic bumpers that repel rather than touch.</p>
+        <ol>
+          <li>Apply the elastic-collision formulas from the plate above, with m<sub>1</sub>&nbsp;=&nbsp;2.0&nbsp;kg, v<sub>1i</sub>&nbsp;=&nbsp;4.0&nbsp;m/s, m<sub>2</sub>&nbsp;=&nbsp;6.0&nbsp;kg, v<sub>2i</sub>&nbsp;=&nbsp;0.</li>
+          <li>v<sub>1f</sub> = [(2.0&minus;6.0)/(2.0+6.0)]&nbsp;&times;&nbsp;4.0 = (&minus;4.0/8.0)&nbsp;&times;&nbsp;4.0 = <strong>&minus;2.0 meters per second</strong> &mdash; the lighter cart bounces straight back.</li>
+          <li>v<sub>2f</sub> = [2(2.0)/(2.0+6.0)]&nbsp;&times;&nbsp;4.0 = (4.0/8.0)&nbsp;&times;&nbsp;4.0 = <strong>+2.0 meters per second</strong> &mdash; the heavier cart moves off in the direction the lighter one came from.</li>
+          <li>Check momentum: before, p = (2.0)(4.0) = 8.0&nbsp;kg&middot;m/s. After, p = (2.0)(&minus;2.0) + (6.0)(2.0) = &minus;4.0 + 12.0 = 8.0&nbsp;kg&middot;m/s. Conserved exactly.</li>
+          <li>Check kinetic energy: before, KE = &frac12;(2.0)(4.0)&sup2; = 16.0&nbsp;joules. After, KE = &frac12;(2.0)(2.0)&sup2; + &frac12;(6.0)(2.0)&sup2; = 4.0 + 12.0 = 16.0&nbsp;joules. Also conserved exactly &mdash; the signature of a genuinely elastic collision, and the reason this worked example needed the elastic-collision formulas at all rather than the inelastic shortcut above.</li>
+        </ol>
+      </div>
+
+      <h3>Back to the asteroid</h3>
+
+      <p>Return now to DART with the actual machinery in hand, because the mission is, at bottom, an inelastic collision problem &mdash; with one twist this lesson has been building toward the whole time. Treat the simplest possible version first, the same idealization worked example 1 used: DART, mass m&nbsp;=&nbsp;579&nbsp;kilograms, strikes Dimorphos, mass M&nbsp;=&nbsp;4.3&times;10&sup9;&nbsp;kilograms &mdash; a figure derived after the mission from Dimorphos&rsquo;s measured size and an estimated bulk density of 2,400&nbsp;kg/m&sup3;, roughly that of loosely packed rock &mdash; head-on, at a closing speed of 6.1&nbsp;kilometers per second, or 6,100&nbsp;meters per second. Because Dimorphos&rsquo;s mass so overwhelmingly exceeds DART&rsquo;s &mdash; by a factor of about 7.4 million, close enough to the &ldquo;golf cart into a Great Pyramid&rdquo; comparison to make the metaphor almost literal &mdash; the perfectly-inelastic-collision approximation from worked example 1 lets you treat essentially all of DART&rsquo;s own momentum as transferring into a small nudge to Dimorphos&rsquo;s velocity, with the asteroid&rsquo;s own velocity change afterward standing in for the combined final velocity.</p>
+
+      <div class="worked">
+        <b>Worked example 3 &mdash; DART&rsquo;s momentum, and the number that didn&rsquo;t match</b>
+        <ol>
+          <li>DART&rsquo;s momentum at impact: p<sub>DART</sub> = mv = 579&nbsp;kg &times; 6,100&nbsp;m/s = <strong>3,531,900&nbsp;kg&middot;m/s</strong>, or about 3.53&times;10&sup6;&nbsp;kg&middot;m/s.</li>
+          <li>If every bit of that momentum transferred cleanly into Dimorphos, with nothing lost and nothing added &mdash; exactly the idealization worked example 1 used for the two railcars &mdash; Dimorphos&rsquo;s velocity change would be &Delta;v<sub>naive</sub> = p<sub>DART</sub>/M = 3,531,900&nbsp;/&nbsp;4.3&times;10&sup9; = <strong>0.00082&nbsp;meters per second</strong>, about 0.82 millimeters per second &mdash; an almost unimaginably small nudge, but one applied continuously to an object orbiting on an 11-hour, 55-minute cycle, which is exactly the kind of small-cause, large-effect arithmetic that makes a kinetic-impactor mission plausible in the first place. That naive figure is the calculation behind the roughly seven-minute period-change prediction from this lesson&rsquo;s opening: momentum transferred with perfect, ejecta-free efficiency.</li>
+          <li>The actual, measured instantaneous change in Dimorphos&rsquo;s velocity along its orbital direction, reported by the DART investigation team from Earth-based observations in the weeks after impact, was <strong>2.70&nbsp;&plusmn;&nbsp;0.10&nbsp;millimeters per second</strong> &mdash; the number underneath the 32-to-33-minute period change this lesson opened with.</li>
+          <li>2.70&nbsp;millimeters per second is roughly 3.3 times larger than the 0.82&nbsp;millimeters per second the simple, ejecta-free momentum transfer predicted. Momentum was still conserved &mdash; it always is, in an isolated system &mdash; but the system was not just &ldquo;DART plus Dimorphos.&rdquo; The impact blasted a plume of rock and dust off Dimorphos&rsquo;s surface, and that ejecta carried its own momentum away, predominantly in the same direction DART was already traveling. By Newton&rsquo;s third law &mdash; day ten&rsquo;s lesson, still fully in force here &mdash; every bit of forward momentum the escaping ejecta carried had an equal and opposite reaction pushing back on the rest of Dimorphos, adding a second shove on top of DART&rsquo;s own.</li>
+        </ol>
+      </div>
+
+      <p>Researchers who study kinetic-impactor deflection give that extra shove a name and a number of its own, the <b>momentum enhancement factor</b>, usually written &beta;:</p>
+
+      <div class="formula">
+        <div class="expr">&beta;&nbsp;=&nbsp;(M&nbsp;&Delta;v)&nbsp;/&nbsp;(mv)</div>
+        <dl>
+          <dt>&beta;</dt><dd>the momentum enhancement factor: the ratio of the total momentum actually delivered to the target to the momentum the impactor alone carried in. &beta;&nbsp;=&nbsp;1 means clean, ejecta-free transfer, exactly worked example 1&rsquo;s idealization; &beta;&nbsp;&gt;&nbsp;1 means recoiling ejecta added momentum beyond what the impactor itself supplied.</dd>
+          <dt>M&nbsp;&Delta;v</dt><dd>the target&rsquo;s mass times its measured velocity change &mdash; the actual momentum change delivered, in this simplified head-on treatment. (The full published analysis accounts for the fact that DART did not strike exactly along Dimorphos&rsquo;s direction of travel and that the ejecta plume was not perfectly symmetric; this plate keeps the one-dimensional version this lesson has built toward.)</dd>
+          <dt>mv</dt><dd>the impactor&rsquo;s own momentum &mdash; p<sub>DART</sub> from the worked example above.</dd>
+        </dl>
+      </div>
+
+      <p>Plugging in this lesson&rsquo;s own numbers gives &beta;&nbsp;&asymp;&nbsp;2.70&nbsp;/&nbsp;0.82&nbsp;&asymp;&nbsp;3.3. The DART investigation team&rsquo;s own published figure, using the full geometric treatment rather than this lesson&rsquo;s simplified head-on version, is &beta;&nbsp;=&nbsp;3.61, assuming Dimorphos and Didymos share the same bulk density of 2,400&nbsp;kg/m&sup3; &mdash; with a plausible range of roughly 2.2 to 4.9 depending on exactly what that density actually is, since Dimorphos&rsquo;s mass has never been measured directly and is inferred from its size and an assumed density. This lesson&rsquo;s back-of-the-envelope 3.3 and the mission team&rsquo;s carefully modeled 3.61 are close enough to confirm the same physical story from two different levels of rigor, and the gap between them is itself an honest lesson: the simplified, one-dimensional version of momentum conservation this lesson teaches gets you remarkably close to the truth, but the last mile &mdash; the exact impact angle, the true shape of the ejecta plume, the asteroid&rsquo;s actual internal structure &mdash; needed the full three-dimensional treatment a research team, not an introductory physics lesson, is built to do.</p>
+
+      <p>One gap is worth naming honestly rather than papering over: the ratio between the measured and naive orbital-period changes in this lesson&rsquo;s opening (roughly 32&ndash;33 minutes against a 7-minute prediction, a factor of about 4.5 to 5) is not identical to the &beta;&nbsp;&asymp;&nbsp;3.3&ndash;3.6 velocity-based ratio just computed, even though both numbers are describing the same underlying enhancement from the same impact. That is not an error in either figure. Converting a velocity kick into a period change requires the mechanics of orbital motion &mdash; how a small push to a body&rsquo;s speed reshapes the ellipse it travels and, through Kepler&rsquo;s laws, the time it takes to complete one lap &mdash; and that conversion is not simply proportional. Day 26&rsquo;s lesson on gravitation will build the tools to do that conversion properly; for today, treat the velocity-based &beta; and the period-based comparison as two independently measured confirmations of the same event, arrived at by two different observational methods, rather than one derived from the other.</p>
+
+      <h3>Where it shows up: the airbag is an impulse machine</h3>
+
+      <p>You do not need an asteroid to see the impulse-momentum theorem at work; you need only a car. Suppose a 70-kilogram passenger traveling at 15 meters per second &mdash; about 34 miles per hour &mdash; comes to a complete stop in a collision. The impulse-momentum theorem from earlier in this lesson, J&nbsp;=&nbsp;F<sub>avg</sub>&Delta;t&nbsp;=&nbsp;&Delta;p, says the total change in that passenger&rsquo;s momentum is fixed the moment the initial speed and the &ldquo;stop completely&rdquo; outcome are fixed: &Delta;p&nbsp;=&nbsp;(70&nbsp;kg)(15&nbsp;m/s)&nbsp;=&nbsp;1,050&nbsp;kg&middot;m/s, full stop, no way around it. What is <em>not</em> fixed is how that same 1,050&nbsp;kg&middot;m/s of impulse gets delivered, because the equation has two knobs on the right-hand side, force and time, and their product is what is pinned down &mdash; not either one alone. An unrestrained passenger hitting a rigid steering column might stop in roughly 5 milliseconds (0.005&nbsp;seconds), which demands an average force of F<sub>avg</sub>&nbsp;=&nbsp;&Delta;p/&Delta;t&nbsp;=&nbsp;1,050/0.005&nbsp;=&nbsp;210,000&nbsp;newtons &mdash; comparable to the weight of several loaded pickup trucks, applied to one human chest. An airbag and a crumple zone attack exactly one variable in that equation: they stretch the stopping time from milliseconds to tens of milliseconds. Extending the same 5-millisecond stop to 50 milliseconds &mdash; a factor of ten, well within what a properly deployed airbag and seatbelt combination achieves &mdash; cuts the average force by the same factor of ten, down to about 21,000&nbsp;newtons. The total impulse delivered to the passenger&rsquo;s body is identical either way, because the momentum change is identical either way; nothing about airbags reduces how much the passenger&rsquo;s velocity has to change. What they change is how gently that unavoidable change gets delivered, which is precisely what the impulse-momentum theorem says you are free to do.</p>
+
+      <p>The same principle, run in reverse, is what makes a kinetic-impactor asteroid mission plausible in the first place: rather than trying to destroy or capture a hazardous asteroid, an approach that would require an enormous force delivered in an instant, planetary defense engineers instead apply a comparatively tiny force over the vast timescale of years of orbital travel afterward, letting a barely-perceptible velocity nudge &mdash; DART&rsquo;s measured 2.70&nbsp;millimeters per second, smaller than a snail&rsquo;s crawl &mdash; compound, orbit after orbit, into a position shift large enough to turn a collision course into a clean miss, provided the nudge arrives years ahead of an actual predicted impact rather than in the mission&rsquo;s hypothetical last days. DART itself was a target-practice test, not a real defense &mdash; Dimorphos posed no threat to Earth before or after the mission &mdash; but the arithmetic scales the same way a real deflection would.</p>
+
+      <h3>The misconception</h3>
+
+      <p>The single most persistent misunderstanding about collisions, showing up again and again in physics-education research on how students actually reason about mechanics, is the belief that momentum is conserved only in elastic collisions, and that something called momentum simply &ldquo;gets lost&rdquo; along with the kinetic energy whenever a collision is inelastic. It is an intuitive mistake, because inelastic collisions genuinely feel like something disappears &mdash; the loud crunch of worked example 1&rsquo;s railcars, the flattened hood of a real car crash, the visible, dramatic loss of motion when two objects collide and stick. But look back at that worked example: the coupled railcars conserved momentum exactly, to the last kilogram-meter-per-second, even while losing 60 percent of their kinetic energy to sound, heat, and bent metal. Momentum and kinetic energy are not the same currency, and only one of them is protected by an unconditional conservation law. Momentum is conserved whenever a system is free of outside forces, full stop, regardless of how elastic or inelastic the interaction inside that system happens to be. Kinetic energy is conserved only in the special, idealized case of a perfectly elastic collision, and real-world collisions almost always fall short of that ideal by at least a little.</p>
+
+      <p>The DART mission is itself a sharp illustration of exactly this distinction, in a place that is easy to miss on a first pass. The escaping ejecta plume did not just add extra <em>momentum</em> to Dimorphos beyond what a clean transfer would have delivered &mdash; it also carried away a substantial share of the collision&rsquo;s kinetic energy as debris flying off into space, energy that never went into moving Dimorphos itself and would not have counted in a simple two-body inelastic-collision calculation at all. The mission&rsquo;s success actually depended on the collision being thoroughly, dramatically inelastic in exactly this energy-losing sense, at the very same time as it depended on momentum, the quantity that never stops being conserved no matter how violent or messy the collision gets, doing the one job momentum always does: setting the hard, unbreakable budget that every piece of debris, and Dimorphos itself, had to divide up between them.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day eighteen&rsquo;s lesson built the Fundamental Theorem of Calculus around a single relationship: if you know a quantity&rsquo;s rate of change at every instant, integrating that rate over an interval hands you back the total change in the quantity itself, exactly recovering the difference between its value at the end and its value at the start. That lesson&rsquo;s examples were mostly about position and velocity &mdash; integrate velocity, the rate at which position changes, and you recover the net displacement. This lesson&rsquo;s impulse-momentum theorem, J&nbsp;=&nbsp;&int;F&nbsp;dt&nbsp;=&nbsp;&Delta;p, is that identical piece of machinery wearing different clothes: force is nothing but the rate at which momentum changes, in Newton&rsquo;s own original formulation of his second law, and integrating that rate over the duration of a collision hands back exactly the net change in momentum the collision produced &mdash; the same stock-and-flow relationship, with force standing in for velocity and momentum standing in for position. It is also, notably, running in the direction a working physicist or a mission engineer often needs least: not &ldquo;given a known rate, predict the total,&rdquo; the direction day eighteen&rsquo;s worked examples mostly pointed, but &ldquo;given an outcome you can actually measure &mdash; Dimorphos&rsquo;s velocity before and after &mdash; back out how much impulse must have been delivered,&rdquo; without ever needing to know the messy, spiky, hard-to-model force curve of an asteroid impact at all. That is the real reason conservation laws are as useful as they are: they let you skip straight from one clean measurement to another, without ever having to integrate the ugly function connecting them.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state and apply conservation of momentum to a two-object system, and you know it holds unconditionally for an isolated system &mdash; whatever the collision looks like, however elastic or inelastic it turns out to be.</li>
+          <li>You can tell an elastic collision from an inelastic one using the coefficient of restitution, solve a perfectly elastic collision directly for both final velocities, and solve a perfectly inelastic one by treating the two objects as a single combined mass.</li>
+          <li>You can use the impulse-momentum theorem to see why the same unavoidable change in momentum can be delivered as a bone-breaking spike or a survivable shove, depending only on how much time it is spread across &mdash; and you have applied that same idea, run in reverse, to see why nudging an asteroid years in advance is a plausible defense and nudging one days in advance is not.</li>
+          <li>You have watched a real spacecraft impact confirm this lesson&rsquo;s central equation to within the honest uncertainty of an asteroid whose mass has never been directly measured &mdash; and you know precisely which part of that story (the conservation law) is unconditional and which part (the size of &beta;) is still an open research question, which sets up day 26&rsquo;s lesson on gravitation to finish the job of turning a velocity kick into an orbital period.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> DART spacecraft mass, closing velocity, mission timeline and the minimum 73-second success threshold are drawn from NASA and Johns Hopkins Applied Physics Laboratory mission materials. Dimorphos&rsquo;s pre-impact orbital period, the initial 32-minute period-change announcement, and the mission&rsquo;s planetary-defense rationale were checked against NASA&rsquo;s October 2022 mission-result announcement. The refined 33.0 &plusmn; 1.0 minute and 33.24 &plusmn; 0.024 minute period-change figures, the 2.70 &plusmn; 0.10 mm/s measured velocity change, and the momentum enhancement factor &beta; = 3.61 (range 2.2&ndash;4.9) are drawn from the DART investigation team&rsquo;s peer-reviewed momentum-transfer analysis (Cheng et al., <em>Nature</em>, 2023) and the companion orbital-period study (Scheirich et al., <em>Nature</em>, 2023), both checked via web search against the published papers and corroborating summaries. Dimorphos&rsquo;s mass (4.3&times;10&sup9; kg) and assumed bulk density (2,400 kg/m&sup3;) are drawn from post-impact physical-characterization work (Daly et al., <em>Nature Astronomy</em>, 2024). The 1668&ndash;1669 Wallis-Wren-Huygens collision-rules episode and Newton&rsquo;s original momentum-based formulation of his second law were checked against standard histories of classical mechanics. All arithmetic in the worked examples, including the DART back-of-envelope momentum and &beta; calculations, was computed directly for this report; the railcar, cart, and airbag examples are hypotheticals built for this report, not measurements of real events.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day five&rsquo;s kinematics lesson, day six&rsquo;s lesson on vectors, day ten&rsquo;s lesson on Newton&rsquo;s laws, day eighteen&rsquo;s lesson on integrals and the Fundamental Theorem of Calculus, and day nineteen&rsquo;s lesson on work, energy and power. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-15-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
