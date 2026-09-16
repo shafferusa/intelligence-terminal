@@ -114,6 +114,15 @@ class BusinessCalendar:
                 n += 1
         return n
 
+    def roll_back(self, d: date) -> date:
+        """Latest business day on or before `d`."""
+        while not self.is_business_day(d):
+            d -= timedelta(days=1)
+        return d
+
+    def is_month_end(self, d: date) -> bool:
+        return self.next_business_day(d).month != d.month
+
     def roll(self, d: date) -> date:
         """Move to the next business day if `d` is not one (following convention)."""
         while not self.is_business_day(d):
@@ -132,6 +141,7 @@ class SettlementConfig:
         "EU_EQUITY": 2,
         "JP_EQUITY": 2,
         "FX_SPOT": 2,
+        "FUTURES": 0,          # cleared: margined daily, no DVP settlement
     })
     calendars: Dict[str, str] = field(default_factory=lambda: {"default": "US"})
 

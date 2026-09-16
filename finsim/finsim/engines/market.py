@@ -26,6 +26,7 @@ from typing import Dict, List, Optional, Tuple
 from ..calendar import BusinessCalendar
 from ..domain.models import Bar, Security, YieldCurve
 from ..money import D, money, price as qprice
+from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel
 
 TENORS = [0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 20.0, 30.0]
 TRADING_DAYS = 252.0
@@ -52,19 +53,20 @@ class Regime:
     hy_spread_target: float
     spread_vol: float         # daily bp vol of IG spread
     description: str
+    growth: float = 0.0        # macro growth proxy used by commodity demand (-1.5 .. +0.5)
 
 
 REGIMES: Dict[str, Regime] = {
     "NORMAL_GROWTH": Regime("NORMAL_GROWTH", "Normal growth", 0.08, 0.14, 1.0, 1.0, 1.0, 0.0, 4.0, 0.25, 0.0, 105, 360, 1.2,
-                            "Steady expansion; moderate volatility; rates range-bound."),
+                            "Steady expansion; moderate volatility; rates range-bound.", 0.3),
     "RATE_HIKING": Regime("RATE_HIKING", "Rate-hiking cycle", 0.02, 0.18, 1.1, 1.2, 0.9, 180.0, 6.0, -0.35, -60.0, 130, 430, 1.8,
-                          "Central bank tightening; curve bear-flattens; growth stocks under pressure."),
+                          "Central bank tightening; curve bear-flattens; growth stocks under pressure.", 0.1),
     "RECESSION": Regime("RECESSION", "Recession", -0.18, 0.26, 1.25, 1.8, 0.6, -220.0, 8.0, 0.45, 80.0, 190, 650, 3.5,
-                        "Contraction; earnings fall; flight to quality lowers yields; spreads widen."),
+                        "Contraction; earnings fall; flight to quality lowers yields; spreads widen.", -1.0),
     "LIQUIDITY_STRESS": Regime("LIQUIDITY_STRESS", "Liquidity crisis", -0.45, 0.48, 2.0, 4.0, 0.3, -300.0, 14.0, 0.15, 40.0, 280, 950, 7.0,
-                               "Funding stress; depth disappears; correlations go to one; margin rises."),
+                               "Funding stress; depth disappears; correlations go to one; margin rises.", -1.5),
     "RATE_CUTTING": Regime("RATE_CUTTING", "Rate-cutting cycle", 0.12, 0.16, 1.0, 1.0, 1.1, -150.0, 6.0, 0.30, 60.0, 115, 390, 1.5,
-                           "Easing cycle; curve bull-steepens; risk assets recover."),
+                           "Easing cycle; curve bull-steepens; risk assets recover.", 0.5),
 }
 
 # Monthly transition probabilities (row = from).
@@ -227,6 +229,10 @@ class MarketEngine:
         self.regime_history: List[Tuple[str, str]] = []   # (date, regime)
         self.state: Optional[MarketState] = None
         self._dividend_cache: Dict[Tuple[str, int], List[date]] = {}
+        self.commodities = CommodityModel(seed, calendar)
+        self.vol_index_history: List[Tuple[str, float]] = []
+        self._contract_seq = 1000
+        self.day_news: List[Dict] = []
 
     # ---------------- dividends (pure function of seed) ----------------
     def dividend_ex_dates(self, sec: Security, year: int) -> List[date]:
@@ -270,6 +276,40 @@ class MarketEngine:
                 return name
         return prev
 
+    # ---------------- futures listings ----------------
+    def ensure_listings(self, d: date) -> List[Security]:
+        """List new contract months and flag expired ones. Deterministic, safe to call in replay."""
+        added = []
+        for spec in COMMODITY_SPECS:
+            for (y, m) in self.commodities.listed_months(spec, d):
+                from .commodities import contract_id
+                cid = contract_id(spec.code, y, m)
+                if cid not in self.securities:
+                    self._contract_seq += 1
+                    sec = self.commodities.make_contract(spec, y, m, self._contract_seq)
+                    self.securities[cid] = sec
+                    self.history[cid] = []
+                    added.append(sec)
+        for sec in self.securities.values():
+            if sec.is_future and not sec.expired and sec.expiry and date.fromisoformat(sec.expiry) < d:
+                sec.expired = True
+        return added
+
+    def front_contract(self, code: str) -> Optional[Security]:
+        cands = [s for s in self.securities.values() if s.is_future and s.underlying == code and not s.expired]
+        return min(cands, key=lambda s: s.contract_month) if cands else None
+
+    def spot(self, code: str) -> float:
+        h = self.commodities.spot_history.get(code)
+        return h[-1][1] if h else 0.0
+
+    def curve_for(self, code: str) -> Dict[str, float]:
+        h = self.commodities.curve_history.get(code)
+        return h[-1][1] if h else {}
+
+    def vol_index(self) -> float:
+        return self.vol_index_history[-1][1] if self.vol_index_history else 0.0
+
     # ---------------- generation ----------------
     def _initial_state(self) -> MarketState:
         d0 = self.cal.add_business_days(self.start, -self.prehistory_days - 1)
@@ -281,7 +321,7 @@ class MarketEngine:
         d = date.fromisoformat(st.date)
         prev_close: Dict[str, Decimal] = {}
         for t, sec in self.securities.items():
-            if not sec.is_bond:
+            if not sec.is_bond and not sec.is_future:
                 prev_close[t] = D([e for e in EQUITY_SEED if e[0] == t][0][6])
         # Bonds start at the price implied by the initial curve.
         self.state = st
@@ -338,7 +378,9 @@ class MarketEngine:
 
         bars: Dict[str, Bar] = {}
         from .pricing import BondPricer  # local import to avoid cycle
-        for t, sec in self.securities.items():
+        for t, sec in list(self.securities.items()):
+            if sec.is_future:
+                continue
             if sec.is_bond:
                 clean = BondPricer.clean_price_from_curve(sec, curve, d)
                 spread_bps = sec.spread_bps * R.spread_mult
@@ -374,23 +416,51 @@ class MarketEngine:
                           qprice(max(0.01, close_f - half)), qprice(close_f + half))
             self._prev_close[t] = close
 
+        # commodities & financial futures
+        self.ensure_listings(d)
+        prev_bd = date.fromisoformat(prev.date)
+        spx = bars["SPXE"]
+        ust = bars["UST-10Y"]
+        cpayload, cnews = self.commodities.step(d, prev_bd, R.growth, mkt, level, level - prev.level, float(spx.close),
+                                                self.securities["SPXE"].dividend_yield, float(ust.close), self.securities["UST-10Y"].coupon,
+                                                R.depth_mult, R.spread_mult)
+        spot_shapes = {}
+        for code in cpayload:
+            rr = random.Random(f"{self.seed}|shape|{code}|{d.isoformat()}")
+            ret = cpayload[code].get("ret", 0.0)
+            gap = rr.gauss(0, 0.3) * abs(ret) + 0.2 * ret
+            rng_range = abs(ret) * rr.uniform(0.3, 0.9) + 0.004
+            spot_shapes[code] = (math.exp(gap), 1 + rng_range * rr.uniform(0.2, 1.0), 1 - rng_range * rr.uniform(0.2, 1.0))
+        fbars = self.commodities.bars_for_contracts(d, cpayload, self.securities, self._prev_close, spot_shapes, R.depth_mult, R.spread_mult)
+        for cid, b in fbars.items():
+            bars[cid] = b
+            self._prev_close[cid] = b.close
+        self.day_news = cnews
+        self._commodity_payload = cpayload
         self.state = MarketState(d.isoformat(), regime, level, slope, curv, ig, hy, mkt, sectors)
         for t, b in bars.items():
             self.history[t].append(b)
         self.curves.append(curve)
+        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPXE"))
+        self.vol_index_history.append((d.isoformat(), round(vix, 2)))
         if regime_change or not self.regime_history:
             self.regime_history.append((d.isoformat(), regime))
         return bars, curve, regime_change
 
     # ---------------- ingest (replay) ----------------
-    def ingest_close(self, d: date, bars: Dict[str, Bar], curve: YieldCurve, state: Dict) -> None:
+    def ingest_close(self, d: date, bars: Dict[str, Bar], curve: YieldCurve, state: Dict, commodities: Optional[Dict] = None) -> None:
         """Used on replay: adopt stored bars instead of regenerating them."""
+        self.ensure_listings(d)
         for t, b in bars.items():
-            self.history[t].append(b)
+            self.history.setdefault(t, []).append(b)
             self._prev_close[t] = b.close
         self.curves.append(curve)
         self.state = MarketState(d.isoformat(), state["regime"], state["level"], state["slope"], state["curv"],
                                  state["ig"], state["hy"], state.get("mkt", 0.0), {})
+        if commodities:
+            self.commodities.ingest(d, commodities)
+            self._commodity_payload = commodities
+        self.vol_index_history.append((d.isoformat(), state.get("vol_index", 0.0)))
         if not self.regime_history or self.regime_history[-1][1] != state["regime"]:
             self.regime_history.append((d.isoformat(), state["regime"]))
 
@@ -418,4 +488,8 @@ class MarketEngine:
 
     def state_dict(self) -> Dict:
         s = self.state
-        return {"regime": s.regime, "level": s.level, "slope": s.slope, "curv": s.curv, "ig": s.ig_spread, "hy": s.hy_spread, "mkt": s.mkt_factor}
+        return {"regime": s.regime, "level": s.level, "slope": s.slope, "curv": s.curv, "ig": s.ig_spread, "hy": s.hy_spread, "mkt": s.mkt_factor,
+                "vol_index": self.vol_index()}
+
+    def commodity_payload(self) -> Dict:
+        return getattr(self, "_commodity_payload", {})

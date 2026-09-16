@@ -12,10 +12,13 @@ from datetime import date
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
+from ..careers import JOBS
+from ..clock import ClockConfig, next_update, now_utc, target_sim_date
 from ..domain.events import E
+from ..engines.commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, MONTH_CODES
 from ..engines.ledger import CHART, account_name, account_type
 from ..engines.market import REGIMES
-from ..engines.pricing import BondPricer, Instrument
+from ..engines.pricing import BondPricer, Instrument, interp_rate
 from ..money import D, money, ZERO
 from ..store import EventStore
 from ..world import CommandError, World
@@ -48,25 +51,50 @@ class Service:
     def list_worlds(self) -> List[Dict]:
         return self.store.list_worlds()
 
-    def create_world(self, name: str, seed: int, start_date: str, capital: float = 10_000_000, portfolio_name: str = "Main Portfolio",
+    def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
-                     benchmark: Optional[str] = "SPXE") -> Dict:
+                     benchmark: Optional[str] = "SPXE", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
+                     update_time: str = "09:00") -> Dict:
+        """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
+        themselves at the update time; sandbox saves start wherever you like and advance on demand."""
         if initial_regime not in REGIMES:
             raise CommandError(f"unknown regime {initial_regime}")
+        if job not in JOBS:
+            raise CommandError(f"unknown job {job}")
+        if JOBS[job].status != "PLAYABLE":
+            raise CommandError(f"{JOBS[job].title} is not playable yet: {JOBS[job].status}")
+        clock = ClockConfig(clock_mode.upper(), timezone, update_time)
+        cal = World("tmp").calendar
+        if clock.mode == "REAL_TIME":
+            cal_sd = target_sim_date(clock, cal)
+        else:
+            cal_sd = cal.roll(date.fromisoformat(start_date) if start_date else target_sim_date(ClockConfig("SANDBOX", timezone, update_time), cal))
         wid = "W-" + uuid.uuid4().hex[:8]
-        sd = date.fromisoformat(start_date)
-        cal_sd = World(wid).calendar.roll(sd)
-        w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime)
+        w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime, clock=clock)
         self.worlds[wid] = w
-        pf = w.create_portfolio(portfolio_name, portfolio_type, D(str(capital)), "USD", benchmark, realism, mode)
-        return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat()}
+        cap = D(str(capital)) if (capital and job == "SANDBOX") else JOBS[job].capital
+        bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
+        pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
+        return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode}
+
+    def catch_up_all(self) -> Dict[str, List[str]]:
+        """Process due days for every career world (called by the scheduler and on access)."""
+        out = {}
+        for info in self.store.list_worlds():
+            w = self.world(info["id"])
+            closed = w.catch_up()
+            if closed:
+                out[w.id] = closed
+        return out
 
     def world(self, world_id: str) -> World:
         if world_id not in self.worlds:
             if not any(x["id"] == world_id for x in self.store.list_worlds()):
                 raise NotFound(f"world {world_id} not found")
             self.worlds[world_id] = World.load(self.store, world_id)
-        return self.worlds[world_id]
+        w = self.worlds[world_id]
+        w.catch_up()
+        return w
 
     def delete_world(self, world_id: str) -> None:
         self.worlds.pop(world_id, None)
@@ -75,16 +103,32 @@ class Service:
     def world_info(self, world_id: str) -> Dict:
         w = self.world(world_id)
         r = w.market.regime()
+        nu = w.next_update_at()
         return jsonable({"id": w.id, "name": w.name, "seed": w.seed, "start_date": w.start_date, "current_date": w.current_date,
                          "day_index": w.day_count, "events": len(w.events), "regime": {"name": r.name, "label": r.label, "description": r.description},
-                         "portfolios": [{"id": p.id, "name": p.name, "type": p.portfolio_type, "realism": p.realism, "mode": p.mode, "benchmark": p.benchmark}
+                         "portfolios": [{"id": p.id, "name": p.name, "type": p.portfolio_type, "realism": p.realism, "mode": p.mode, "benchmark": p.benchmark,
+                                         "job": p.job, "job_title": JOBS[p.job].title if p.job in JOBS else p.job, "level_title": w.careers.level_title(p)}
                                         for p in w.portfolios.values()],
-                         "settlement_cycles": w.settlement_config.cycles, "policy_rate": w.market.curve().policy_rate})
+                         "settlement_cycles": w.settlement_config.cycles, "policy_rate": w.market.curve().policy_rate,
+                         "clock": {"mode": w.clock.mode, "timezone": w.clock.timezone, "update_time": w.clock.update_time,
+                                   "next_update": nu.isoformat() if nu else None, "now": now_utc().isoformat(),
+                                   "weekday": w.current_date.strftime("%A")},
+                         "vol_index": w.market.vol_index()})
+
+    def jobs(self) -> List[Dict]:
+        return [{"key": j.key, "title": j.title, "description": j.description, "capital": float(j.capital), "benchmark": j.benchmark,
+                 "allowed_classes": sorted(j.allowed_classes), "max_gross_leverage": j.max_gross_leverage, "max_position_pct": j.max_position_pct,
+                 "max_drawdown": j.max_drawdown, "ladder": list(j.ladder), "status": j.status} for j in JOBS.values()]
 
     # ------------------------------------------------------------------ commands
-    def create_portfolio(self, world_id: str, name: str, portfolio_type: str, capital: float, realism: str, mode: str, benchmark: Optional[str]) -> Dict:
+    def create_portfolio(self, world_id: str, name: str, portfolio_type: str, capital: float, realism: str, mode: str, benchmark: Optional[str],
+                         job: str = "SANDBOX") -> Dict:
         w = self.world(world_id)
-        pf = w.create_portfolio(name, portfolio_type, D(str(capital)), "USD", benchmark, realism, mode)
+        if job not in JOBS:
+            raise CommandError(f"unknown job {job}")
+        cap = D(str(capital)) if job == "SANDBOX" else JOBS[job].capital
+        bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
+        pf = w.create_portfolio(name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
         return {"portfolio_id": pf.id}
 
     def contribute(self, world_id: str, portfolio_id: str, amount: float, currency: str = "USD") -> Dict:
@@ -93,12 +137,14 @@ class Service:
         return {"event_id": ev.id}
 
     def place_order(self, world_id: str, portfolio_id: str, security_id: str, side: str, quantity: float, order_type: str = "MARKET",
-                    limit_price: Optional[float] = None, stop_price: Optional[float] = None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None) -> Dict:
+                    limit_price: Optional[float] = None, stop_price: Optional[float] = None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None,
+                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None) -> Dict:
         w = self.world(world_id)
         try:
             o = w.place_order(portfolio_id, security_id, side, D(str(quantity)), order_type,
                               D(str(limit_price)) if limit_price is not None else None,
-                              D(str(stop_price)) if stop_price is not None else None, time_in_force, strategy_tag)
+                              D(str(stop_price)) if stop_price is not None else None, time_in_force, strategy_tag,
+                              float(trail_pct) if trail_pct else None, condition)
         finally:
             w.flush()
         return self.order(world_id, portfolio_id, o.id)
@@ -118,6 +164,8 @@ class Service:
         w = self.world(world_id)
         out = []
         for sec in w.securities.values():
+            if sec.is_future and (sec.expired or not w.market.history.get(sec.id)):
+                continue
             bar = w.market.last_bar(sec.id)
             h = w.market.history[sec.id]
             prev = h[-2].close if len(h) > 1 else bar.close
@@ -128,7 +176,12 @@ class Service:
                    "adv": sec.adv, "liquidity_tier": sec.liquidity_tier, "beta": sec.beta, "realized_vol": w.market.realized_vol(sec.id),
                    "dividend_yield": sec.dividend_yield, "dividend_per_share": sec.dividend_per_share, "lot_size": sec.lot_size,
                    "market_cap": (float(bar.close) * sec.shares_outstanding) if sec.shares_outstanding else None, "rating": sec.rating,
-                   "coupon": sec.coupon, "maturity": sec.maturity}
+                   "coupon": sec.coupon, "maturity": sec.maturity, "is_future": sec.is_future, "underlying": sec.underlying,
+                   "underlying_class": sec.underlying_class, "contract_month": sec.contract_month, "multiplier": sec.multiplier, "tick_size": sec.tick_size,
+                   "expiry": sec.expiry, "unit": sec.unit}
+            if sec.is_future:
+                row["initial_margin"] = w.futures.initial_margin_per_contract(sec)
+                row["notional_per_contract"] = float(bar.close) * sec.multiplier
             if sec.is_bond:
                 row.update({k: v for k, v in BondPricer.risk_metrics(sec, w.current_date, float(bar.close), w.market.curve()).items()})
             out.append(row)
@@ -139,7 +192,9 @@ class Service:
         if security_id not in w.securities:
             raise NotFound(f"security {security_id} not found")
         sec = w.securities[security_id]
-        h = w.market.history[sec.id]
+        h = w.market.history.get(sec.id) or []
+        if not h:
+            raise NotFound(f"no market data for {security_id}")
         n = {"1D": 2, "5D": 6, "1M": 22, "3M": 64, "YTD": None, "1Y": 252, "5Y": 1260, "MAX": len(h)}.get(period, 252)
         if period == "YTD":
             bars = [b for b in h if b.date >= f"{w.current_date.year}-01-01"]
@@ -153,6 +208,14 @@ class Service:
         out["analytics"] = inst.risk_metrics(D(100) if not sec.is_bond else D(1_000_000))
         out["cash_flows"] = inst.cash_flows()[:12]
         out["next_events"] = inst.next_events()
+        if sec.is_future:
+            spec = SPEC_BY_CODE[sec.underlying]
+            out["futures"] = {"spec": {"code": spec.code, "name": spec.name, "group": spec.group, "unit": spec.unit, "multiplier": spec.multiplier,
+                                       "tick": spec.tick, "tick_value": spec.tick * spec.multiplier, "margin_pct": spec.margin_pct},
+                              "initial_margin": w.futures.initial_margin_per_contract(sec), "margin_multiplier": w.futures.margin_multiplier(),
+                              "notional_per_contract": float(bar.close) * sec.multiplier, "expiry": sec.expiry, "contract_month": sec.contract_month,
+                              "days_to_expiry": w.calendar.business_days_between(w.current_date, date.fromisoformat(sec.expiry)),
+                              "spot": w.market.spot(sec.underlying), "curve": w.market.curve_for(sec.underlying)}
         if sec.shares_outstanding and sec.fundamentals:
             f = sec.fundamentals
             px = float(bar.close)
@@ -192,6 +255,126 @@ class Service:
                          "history": [{"date": x.date, "2y": x.rates[3], "10y": x.rates[7], "30y": x.rates[9], "ig": x.ig_spread_bps, "hy": x.hy_spread_bps} for x in hist[-260:]],
                          "regime_history": w.market.regime_history})
 
+    def commodities(self, world_id: str) -> List[Dict]:
+        w = self.world(world_id)
+        out = []
+        for spec in COMMODITY_SPECS:
+            sh = w.market.commodities.spot_history.get(spec.code) or []
+            if not sh:
+                continue
+            spot, prev = sh[-1][1], (sh[-2][1] if len(sh) > 1 else sh[-1][1])
+            curve = w.market.curve_for(spec.code)
+            months = list(curve.keys())
+            front = w.market.front_contract(spec.code)
+            st = w.market.commodities.state.get(spec.code)
+            shape = "flat"
+            if len(months) >= 2:
+                shape = "backwardation" if curve[months[-1]] < curve[months[0]] * 0.995 else "contango" if curve[months[-1]] > curve[months[0]] * 1.005 else "flat"
+            wk = sh[-6][1] if len(sh) > 6 else sh[0][1]
+            mo = sh[-22][1] if len(sh) > 22 else sh[0][1]
+            out.append({"code": spec.code, "name": spec.name, "group": spec.group, "unit": spec.unit, "spot": spot, "change_pct": (spot / prev - 1) if prev else 0.0,
+                        "week_pct": (spot / wk - 1) if wk else 0.0, "month_pct": (spot / mo - 1) if mo else 0.0,
+                        "front": front.id if front else None, "front_price": curve.get(front.contract_month) if front else None,
+                        "curve_shape": shape, "curve_slope_pct": (curve[months[-1]] / curve[months[0]] - 1) if len(months) >= 2 else 0.0,
+                        "inventory_z": st.inventory_z if st else None, "demand_z": st.demand_z if st else None, "supply_shock": st.supply_shock if st else None,
+                        "conv_yield": st.conv_yield if st else None, "report": spec.report_name or None, "multiplier": spec.multiplier,
+                        "listed": len(months), "vol": spec.vol})
+        return jsonable(out)
+
+    def commodity(self, world_id: str, code: str) -> Dict:
+        w = self.world(world_id)
+        if code not in SPEC_BY_CODE:
+            raise NotFound(f"unknown commodity {code}")
+        spec = SPEC_BY_CODE[code]
+        sh = w.market.commodities.spot_history.get(code) or []
+        ch = w.market.commodities.curve_history.get(code) or []
+        cur = ch[-1][1] if ch else {}
+        prev5 = ch[-6][1] if len(ch) > 6 else cur
+        prev22 = ch[-23][1] if len(ch) > 23 else cur
+        contracts = []
+        for sec in sorted((s for s in w.securities.values() if s.underlying == code and not s.expired and w.market.history.get(s.id)), key=lambda s: s.contract_month):
+            bar = w.market.last_bar(sec.id)
+            h = w.market.history[sec.id]
+            pc = h[-2].close if len(h) > 1 else bar.close
+            contracts.append({"id": sec.id, "contract_month": sec.contract_month, "expiry": sec.expiry, "last": bar.close, "change": bar.close - pc,
+                              "bid": bar.bid, "ask": bar.ask, "volume": bar.volume, "initial_margin": w.futures.initial_margin_per_contract(sec),
+                              "notional": float(bar.close) * sec.multiplier,
+                              "days_to_expiry": w.calendar.business_days_between(w.current_date, date.fromisoformat(sec.expiry))})
+        st = w.market.commodities.state.get(code)
+        fundamentals = None
+        if st:
+            fundamentals = {"inventory_z": st.inventory_z, "demand_z": st.demand_z, "supply_shock": st.supply_shock, "conv_yield": st.conv_yield,
+                            "storage_cost": spec.storage, "seasonal_amp": spec.season_amp, "seasonal_peak_month": spec.season_peak_month,
+                            "demand_beta": spec.demand_beta, "market_beta": spec.mkt_beta, "event_probability_daily": spec.event_p, "report": spec.report_name or None,
+                            "regime_growth": w.market.regime().growth,
+                            "narrative": self._commodity_narrative(spec, st)}
+        return jsonable({"spec": {"code": spec.code, "name": spec.name, "group": spec.group, "unit": spec.unit, "multiplier": spec.multiplier, "tick": spec.tick,
+                                  "tick_value": spec.tick * spec.multiplier, "margin_pct": spec.margin_pct, "months": spec.months, "expiry_rule": spec.expiry_rule},
+                         "spot": sh[-1][1] if sh else None, "spot_history": sh[-260:], "curve": cur, "curve_5d_ago": prev5, "curve_1m_ago": prev22,
+                         "contracts": contracts, "fundamentals": fundamentals,
+                         "curve_history": [{"date": d, "front": list(c.values())[0] if c else None, "back": list(c.values())[-1] if c else None} for d, c in ch[-260:]],
+                         "news": [jsonable(asdict(n)) for n in w.news if code in n.refs][-15:], "margin_multiplier": w.futures.margin_multiplier()})
+
+    def _commodity_narrative(self, spec, st) -> str:
+        inv = "tight" if st.inventory_z < -0.7 else "ample" if st.inventory_z > 0.7 else "near normal"
+        dem = "strong" if st.demand_z > 0.3 else "weak" if st.demand_z < -0.3 else "steady"
+        sup = "constrained" if st.supply_shock > 0.5 else "abundant" if st.supply_shock < -0.5 else "unremarkable"
+        curve = "backwardated" if st.conv_yield > spec.storage + 0.04 else "in contango" if st.conv_yield < spec.storage else "roughly flat"
+        return f"Inventories are {inv} ({st.inventory_z:+.2f}σ), demand is {dem}, supply is {sup}; the curve is {curve} (convenience yield {st.conv_yield:.1%})."
+
+    def briefing(self, world_id: str, portfolio_id: str, day: Optional[str] = None) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        if not pf.briefings:
+            return {"available": False}
+        b = pf.briefings[-1] if not day else next((x for x in pf.briefings if x["date"] == day), None)
+        if b is None:
+            raise NotFound(f"no briefing for {day}")
+        s = w.pnl.compute_summary(pf)
+        nu = w.next_update_at()
+        return jsonable({"available": True, **b, "weekday": date.fromisoformat(b["date"]).strftime("%A"), "dates": [x["date"] for x in pf.briefings],
+                         "live_nav": s["nav"], "next_update": nu.isoformat() if nu else None, "clock_mode": w.clock.mode,
+                         "positions_count": sum(1 for p in pf.positions.values() if p.quantity), "level_title": w.careers.level_title(pf),
+                         "job": JOBS[pf.job].title if pf.job in JOBS else pf.job})
+
+    def career(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        job = JOBS.get(pf.job)
+        s = w.pnl.compute_summary(pf)
+        nav = s["nav"]
+        peak = max(pf.peak_nav, nav)
+        # live metrics since inception
+        rets = []
+        prev = None
+        for snap in pf.nav_history:
+            if prev:
+                rets.append(float(snap.day_pnl / prev))
+            prev = snap.nav
+        import math as _m
+        mean = sum(rets) / len(rets) if rets else 0.0
+        sd = _m.sqrt(sum((r - mean) ** 2 for r in rets) / max(1, len(rets) - 1)) if len(rets) > 1 else 0.0
+        sharpe = ((mean - w.market.curve().policy_rate / 252) / sd * _m.sqrt(252)) if sd > 0 else 0.0
+        dd_peak, max_dd = D(0), 0.0
+        for snap in pf.nav_history:
+            dd_peak = max(dd_peak, snap.nav)
+            max_dd = max(max_dd, float((dd_peak - snap.nav) / dd_peak) if dd_peak else 0.0)
+        bench = w.careers._benchmark_return(pf, pf.created, w.current_date.isoformat()) if pf.nav_history else None
+        ret = float((nav - pf.contributed_capital) / pf.contributed_capital) if pf.contributed_capital else 0.0
+        return jsonable({"job": {"key": job.key, "title": job.title, "description": job.description, "benchmark": job.benchmark, "allowed_classes": sorted(job.allowed_classes),
+                                 "max_gross_leverage": job.max_gross_leverage, "max_position_pct": job.max_position_pct, "max_drawdown": job.max_drawdown,
+                                 "ladder": list(job.ladder)} if job else None,
+                         "level": pf.level, "level_title": w.careers.level_title(pf), "contributed_capital": pf.contributed_capital,
+                         "metrics": {"return_since_inception": ret, "benchmark_return": bench, "alpha": (ret - bench) if bench is not None else None,
+                                     "sharpe": sharpe, "max_drawdown": max_dd, "current_drawdown": float((peak - nav) / peak) if peak else 0.0,
+                                     "gross_leverage": float(s["leverage"]), "days": len(pf.nav_history), "volatility": sd * _m.sqrt(252)},
+                         "limits_status": {"gross_leverage": {"value": float(s["leverage"]), "limit": job.max_gross_leverage if job else None},
+                                           "max_position": {"value": max([float(abs(p.notional if p.is_future else p.market_value) / nav) for p in pf.positions.values()] or [0.0]) if nav else 0.0,
+                                                            "limit": job.max_position_pct if job else None},
+                                           "drawdown": {"value": float((peak - nav) / peak) if peak else 0.0, "limit": job.max_drawdown if job else None}},
+                         "reviews": list(reversed(pf.reviews)), "breaches": list(reversed(pf.breaches[-50:])), "career_log": list(reversed(pf.career_log)),
+                         "margin_calls": [asdict(m) for m in reversed(pf.margin_calls)]})
+
     def news(self, world_id: str) -> List[Dict]:
         w = self.world(world_id)
         return jsonable([asdict(n) for n in reversed(w.news[-100:])])
@@ -206,7 +389,9 @@ class Service:
         pf = w.portfolio(portfolio_id)
         s = w.pnl.compute_summary(pf)
         last = pf.nav_history[-1] if pf.nav_history else None
-        day_pnl_live = s["nav"] - (last.nav if last else pf.contributed_capital) - pf.day_capital_flows
+        # Once-per-day world: "today" is the last processed session, plus anything that moved NAV since its snapshot.
+        live_delta = s["nav"] - (last.nav if last else pf.contributed_capital) - pf.day_capital_flows
+        day_pnl_live = (last.day_pnl if last else ZERO) + live_delta
         positions = self._positions(w, pf)
         largest = max(positions, key=lambda p: abs(p["market_value"]), default=None)
         upcoming_settle = [jsonable(asdict(si)) for si in pf.settlements.values() if si.status in ("PENDING", "MATCHED", "FAILED")]
@@ -216,8 +401,8 @@ class Service:
         if pf.nav_history:
             y = w.current_date.year
             m = w.current_date.month
-            ytd = sum((x.day_pnl for x in pf.nav_history if x.date >= f"{y}-01-01"), ZERO) + day_pnl_live
-            mtd = sum((x.day_pnl for x in pf.nav_history if x.date >= f"{y}-{m:02d}-01"), ZERO) + day_pnl_live
+            ytd = sum((x.day_pnl for x in pf.nav_history if x.date >= f"{y}-01-01"), ZERO) + live_delta
+            mtd = sum((x.day_pnl for x in pf.nav_history if x.date >= f"{y}-{m:02d}-01"), ZERO) + live_delta
         led = w.ledgers[pf.id]
         # benchmark
         bench = None
@@ -236,8 +421,10 @@ class Service:
             "unrealized": s["unrealized"], "realized": s["realized"], "income": {
                 "dividends": led.balance("4200"), "interest": led.balance("4300"), "commissions": led.balance("5000"), "interest_expense": led.balance("5100")},
             "gross_exposure": s["gross_exposure"], "net_exposure": s["net_exposure"], "long_exposure": s["long_exposure"], "short_exposure": s["short_exposure"],
-            "leverage": s["leverage"], "margin_used": ZERO, "available_liquidity": w.trading.projected_cash(pf, pf.base_currency),
-            "collateral_posted": ZERO, "collateral_received": ZERO, "margin_calls": [],
+            "leverage": s["leverage"], "margin_used": s["margin_deposits"], "available_liquidity": w.trading.projected_cash(pf, pf.base_currency),
+            "collateral_posted": s["margin_deposits"], "collateral_received": ZERO,
+            "margin_calls": [asdict(m) for m in pf.margin_calls if m.status == "OPEN"], "futures_long": s["futures_long"], "futures_short": s["futures_short"],
+            "job": pf.job, "level_title": w.careers.level_title(pf), "clock_mode": w.clock.mode,
             "largest_risk": largest, "upcoming_settlements": upcoming_settle[:10], "upcoming_cash_flows": cashflows[:10],
             "positions": positions, "working_orders": [jsonable(asdict(o)) for o in pf.orders.values() if o.status in ("WORKING", "PARTIALLY_FILLED")],
             "exposure_by_asset_class": self._group(positions, "asset_class"), "exposure_by_sector": self._group(positions, "sector"),
@@ -249,7 +436,8 @@ class Service:
     def _group(self, positions, key):
         g: Dict[str, float] = {}
         for p in positions:
-            g[p[key]] = g.get(p[key], 0.0) + float(p["market_value"])
+            k = p.get(key) or "—"
+            g[k] = g.get(k, 0.0) + float(p["notional"]) * (1 if p["quantity"] >= 0 else -1)
         return g
 
     def _upcoming_cash_flows(self, w: World, pf) -> List[Dict]:
@@ -276,24 +464,38 @@ class Service:
 
     def _positions(self, w: World, pf) -> List[Dict]:
         rows = []
+        nav = w.pnl.compute_summary(pf)["nav"]
+        last_snap = pf.nav_history[-1] if pf.nav_history else None
         for pos in pf.positions.values():
             if pos.quantity == 0 and pos.settled_quantity == 0 and pos.pending_deliver == 0 and pos.pending_receive == 0 and not pos.trade_ids:
                 continue
             sec = w.securities[pos.security_id]
+            day_row = last_snap.by_position.get(sec.id, {}) if last_snap else {}
+            if pos.is_future:
+                bar = w.market.last_bar(sec.id) if w.market.history.get(sec.id) else None
+                rows.append({"security_id": sec.id, "name": sec.name, "asset_class": "FUTURE", "sector": sec.sector, "currency": sec.currency, "country": sec.country,
+                             "underlying": sec.underlying, "underlying_class": sec.underlying_class, "contract_month": sec.contract_month, "expiry": sec.expiry,
+                             "quantity": pos.quantity, "settled_quantity": pos.quantity, "pending_receive": ZERO, "pending_deliver": ZERO,
+                             "average_cost": pos.average_cost_future, "cost_basis": ZERO, "mark": pos.settlement_price, "market_value": ZERO, "notional": pos.notional,
+                             "unrealized_pnl": ZERO, "realized_pnl": pos.variation_margin_total, "day_variation_margin": day_row.get("realized", ZERO),
+                             "dividend_income": ZERO, "interest_income": ZERO, "commissions": pos.commissions, "accrued_interest": ZERO,
+                             "weight": float(pos.notional / nav) if nav else 0.0, "beta": sec.beta, "risk": {"delta": 1.0, "notional": pos.notional,
+                             "initial_margin": pos.initial_margin, "days_to_expiry": w.calendar.business_days_between(w.current_date, date.fromisoformat(sec.expiry)) if sec.expiry else None},
+                             "lots": 0, "borrow_status": "n/a (cleared)", "collateral_status": f"initial margin {pos.initial_margin:,.0f} at clearing member",
+                             "financing": "variation margin daily", "is_future": True, "multiplier": sec.multiplier})
+                continue
             inst = Instrument(sec, pos.mark, w.current_date, w.market.curve())
             rm = inst.risk_metrics(pos.quantity) if pos.quantity else {}
             avg_cost = pos.average_cost * (100 if sec.is_bond else 1)   # bonds: price per 100 face
             rows.append({"security_id": sec.id, "name": sec.name, "asset_class": sec.asset_class, "sector": sec.sector, "currency": sec.currency,
                          "country": sec.country, "quantity": pos.quantity, "settled_quantity": pos.settled_quantity, "pending_receive": pos.pending_receive,
                          "pending_deliver": pos.pending_deliver, "average_cost": avg_cost, "cost_basis": pos.cost_basis, "mark": pos.mark,
-                         "market_value": pos.market_value, "unrealized_pnl": pos.unrealized_pnl, "realized_pnl": pos.realized_pnl,
+                         "market_value": pos.market_value, "notional": pos.market_value, "unrealized_pnl": pos.unrealized_pnl, "realized_pnl": pos.realized_pnl,
+                         "day_pnl": day_row.get("total", ZERO),
                          "dividend_income": pos.dividend_income, "interest_income": pos.interest_income, "commissions": pos.commissions,
-                         "accrued_interest": pos.accrued_interest, "weight": 0.0, "beta": sec.beta, "risk": rm, "lots": len(pos.lots),
-                         "borrow_status": "n/a (long)", "collateral_status": "unencumbered", "financing": "none"})
-        nav = w.pnl.compute_summary(pf)["nav"]
-        for r in rows:
-            r["weight"] = float(r["market_value"] / nav) if nav else 0.0
-        rows.sort(key=lambda r: -abs(float(r["market_value"])))
+                         "accrued_interest": pos.accrued_interest, "weight": float(pos.market_value / nav) if nav else 0.0, "beta": sec.beta, "risk": rm, "lots": len(pos.lots),
+                         "borrow_status": "n/a (long)", "collateral_status": "unencumbered", "financing": "none", "is_future": False})
+        rows.sort(key=lambda r: -abs(float(r["notional"])))
         return jsonable(rows)
 
     def position(self, world_id: str, portfolio_id: str, security_id: str) -> Dict:
@@ -313,7 +515,12 @@ class Service:
         custody = [jsonable(asdict(c)) for c in pf.custody_movements if c.security_id == security_id]
         pnl_days = [{"date": s.date, **{k: v for k, v in s.by_position.get(security_id, {}).items() if not k.startswith("_")}}
                     for s in pf.nav_history if security_id in s.by_position]
-        relationships = [{"kind": "MARKET_EXPOSURE", "description": f"Long {pos.quantity:,} {sec.id}: beta-adjusted exposure {float(pos.market_value) * sec.beta:,.0f}"}]
+        if pos.is_future:
+            relationships = [{"kind": "MARKET_EXPOSURE", "description": f"{'Long' if pos.quantity > 0 else 'Short'} {abs(pos.quantity):,} {sec.id}: notional {pos.notional:,.0f} ({sec.underlying} {sec.contract_month})"},
+                             {"kind": "MARGIN", "description": f"Initial margin {pos.initial_margin:,.0f} posted at the clearing member; variation margin settles daily in cash"},
+                             {"kind": "EXPIRY", "description": f"Last trade date {sec.expiry}: auto-closed at settlement unless rolled to a later month"}]
+        else:
+            relationships = [{"kind": "MARKET_EXPOSURE", "description": f"Long {pos.quantity:,} {sec.id}: beta-adjusted exposure {float(pos.market_value) * sec.beta:,.0f}"}]
         if sec.is_bond:
             relationships.append({"kind": "INTEREST_RATE_RISK", "description": f"DV01 {row['risk'].get('position_dv01', 0):,.2f} per bp (unhedged)"})
             if sec.spread_bps_credit:
@@ -451,10 +658,10 @@ class Service:
         led = w.ledgers[pf.id]
         last = pf.nav_history[-1] if pf.nav_history else None
         prev_bal = last.explain.get("_balances", {}) if last else {}
-        deltas = {a: led.balance(a) - D(prev_bal.get(a, 0)) for a in ["4000", "4100", "4200", "4300", "5000", "5100"]}
+        deltas = {a: led.balance(a) - D(prev_bal.get(a, 0)) for a in ["4000", "4100", "4200", "4300", "4400", "5000", "5100"]}
         rows = [{"account": a, "name": account_name(a), "change": (v if account_type(a) == "INCOME" else -v)} for a, v in deltas.items()]
         entries_since = [self._entry(e) for e in led.entries if (last is None or int(e.event_id[3:]) > int(last.event_id[3:]))
-                         and any(l.account in ("4000", "4100", "4200", "4300", "5000", "5100") for l in e.lines)]
+                         and any(l.account in ("4000", "4100", "4200", "4300", "4400", "5000", "5100") for l in e.lines)]
         s = w.pnl.compute_summary(pf)
         return jsonable({"nav": s["nav"], "since": last.date if last else None, "prev_nav": last.nav if last else pf.contributed_capital,
                          "capital_flows": pf.day_capital_flows, "components": rows, "entries": entries_since[-100:],

@@ -47,10 +47,24 @@ class Security:
     spread_bps_credit: float = 0.0       # credit spread over govt curve (bps)
     recovery_rate: float = 0.4
     lot_size: int = 1
+    # futures-style fields
+    underlying: Optional[str] = None       # commodity/index code, e.g. CL, ES, ZN
+    underlying_class: Optional[str] = None # COMMODITY_ENERGY | COMMODITY_METAL | COMMODITY_AG | COMMODITY_LIVESTOCK | EQUITY_INDEX | RATES
+    contract_month: Optional[str] = None   # YYYY-MM
+    multiplier: float = 1.0
+    tick_size: float = 0.01
+    expiry: Optional[str] = None           # last trade date ISO
+    margin_pct: float = 0.0                # initial margin as fraction of notional (before regime multiplier)
+    unit: str = ""
+    expired: bool = False
 
     @property
     def is_bond(self) -> bool:
         return self.asset_class in ("GOVT_BOND", "CORP_BOND")
+
+    @property
+    def is_future(self) -> bool:
+        return self.asset_class == "FUTURE"
 
 
 @dataclass
@@ -109,6 +123,15 @@ class Position:
     mark: Decimal = ZERO
     market_value: Decimal = ZERO
     trade_ids: List[str] = field(default_factory=list)
+    # futures
+    is_future: bool = False
+    settlement_price: Decimal = ZERO      # last daily settlement price used for VM
+    variation_margin_total: Decimal = ZERO
+    initial_margin: Decimal = ZERO        # cash held at the clearing broker for this position
+    notional: Decimal = ZERO
+    day_variation_margin: Decimal = ZERO
+    average_cost_future: Decimal = ZERO
+    day_fills: List[Dict] = field(default_factory=list)
 
     @property
     def unrealized_pnl(self) -> Decimal:
@@ -146,6 +169,11 @@ class Order:
     reason: Optional[str] = None
     triggered: bool = False
     strategy_tag: Optional[str] = None
+    trail_pct: Optional[float] = None         # TRAILING_STOP: distance from the best close, as fraction
+    trail_level: Optional[Decimal] = None     # current trailing stop level
+    condition: Optional[Dict] = None          # {"ref": "NVRA"|"CURVE:10Y"|"SPOT:CL", "op": "<="|">=", "value": float}
+    condition_met_date: Optional[str] = None
+    history: List[Dict] = field(default_factory=list)
 
 
 TRADE_STATES = ["EXECUTED", "CAPTURED", "MATCHED", "AFFIRMED", "CLEARED", "SETTLEMENT_PENDING", "SETTLED", "FAILED", "CANCELLED"]
@@ -267,6 +295,18 @@ class NAVSnapshot:
 
 
 @dataclass
+class MarginCall:
+    id: str
+    portfolio_id: str
+    date: str
+    amount: Decimal
+    reason: str
+    status: str                 # OPEN | MET | FORCED
+    days_open: int = 0
+    resolved_date: Optional[str] = None
+
+
+@dataclass
 class Portfolio:
     id: str
     name: str
@@ -277,6 +317,14 @@ class Portfolio:
     realism: str = "PROFESSIONAL"
     mode: str = "SANDBOX"
     custody_account: str = ""
+    job: str = "SANDBOX"
+    level: int = 0
+    reviews: List[Dict] = field(default_factory=list)
+    breaches: List[Dict] = field(default_factory=list)
+    margin_calls: List[MarginCall] = field(default_factory=list)
+    briefings: List[Dict] = field(default_factory=list)
+    career_log: List[Dict] = field(default_factory=list)
+    peak_nav: Decimal = ZERO
     cash: Dict[str, CashAccount] = field(default_factory=dict)
     positions: Dict[str, Position] = field(default_factory=dict)
     orders: Dict[str, Order] = field(default_factory=dict)

@@ -20,12 +20,17 @@ class VerticalSliceTest(unittest.TestCase):
         ca = sorted((c for c in w.corporate_actions.values() if c.status == "DECLARED"), key=lambda c: c.ex_date)[0]
         tkr = ca.security_id
         bar = w.market.last_bar(tkr)
-        # 3-4. buy 10,000 shares; trade executes at a price >= ask (spread + impact)
+        # 3-4. buy 10,000 shares: the instruction waits for the next daily update, then fills at the open
         o = w.place_order(pf.id, tkr, "BUY", 10000)
+        self.assertEqual(o.status, "WORKING")
+        self.assertEqual(pf.trades, {})
+        w.advance(1)
         self.assertEqual(o.status, "FILLED")
         t = pf.trades[o.trade_ids[0]]
-        self.assertEqual(t.status, "EXECUTED")
-        self.assertGreaterEqual(t.price, bar.ask)
+        self.assertEqual(t.trade_date, w.current_date.isoformat())
+        bar = w.market.last_bar(tkr)
+        self.assertGreaterEqual(t.price, bar.open)
+        self.assertGreater(t.execution_detail["impact_bps"], 0)
         self.assertEqual(t.gross_amount, D(10000) * t.price)
         self.assertEqual(t.net_amount, t.gross_amount + t.commission)
         # ledger: Dr investments, Dr commission, Cr payable
@@ -33,6 +38,7 @@ class VerticalSliceTest(unittest.TestCase):
         self.assertEqual(led.balance("2100"), t.net_amount)
         self.assertEqual(led.balance("5000"), t.commission)
         self.assertEqual(pf.cash["USD"].balance, D("10000000.00"), "cash does not move on trade date")
+        self.assertIn(t.status, ("SETTLEMENT_PENDING", "CAPTURED"), "post-trade lifecycle runs the same day (CAPTURED only on a seeded match break)")
         # 5. settlement obligation
         si = pf.settlements[t.settlement_instruction_id]
         self.assertEqual(si.status, "PENDING")
@@ -47,10 +53,15 @@ class VerticalSliceTest(unittest.TestCase):
         # 6-9. advance: settle into custody, cash leaves, position appears in custody
         w.advance(1)
         self.assertEqual(w.current_date.isoformat(), si.settlement_date)
-        w.advance(1)
+        for _ in range(2):                       # a seeded match break settles one day late
+            if t.status == "SETTLED":
+                break
+            w.advance(1)
         self.assertEqual(t.status, "SETTLED")
-        self.assertEqual([h["status"] for h in t.status_history],
-                         ["EXECUTED", "CAPTURED", "MATCHED", "AFFIRMED", "CLEARED", "SETTLEMENT_PENDING", "SETTLED"])
+        seen = [h["status"] for h in t.status_history]
+        chain = ["EXECUTED", "CAPTURED", "MATCHED", "AFFIRMED", "CLEARED", "SETTLEMENT_PENDING", "SETTLED"]
+        it = iter(seen)
+        self.assertTrue(all(any(x == c for x in it) for c in chain), f"lifecycle {seen} must pass through {chain} in order")
         self.assertEqual(si.status, "SETTLED")
         self.assertEqual(pos.settled_quantity, D(10000))
         self.assertEqual(pos.pending_receive, D(0))
@@ -81,8 +92,9 @@ class VerticalSliceTest(unittest.TestCase):
         self.assertEqual(divs[0].amount, ent["amount"])
         self.assertEqual(divs[0].date, ca.pay_date)
         # 14-15. sell part: realized P&L via FIFO
-        cash_before = pf.cash["USD"].balance
         o2 = w.place_order(pf.id, tkr, "SELL", 4000)
+        w.advance(1)
+        cash_before = pf.cash["USD"].balance
         t2 = pf.trades[o2.trade_ids[0]]
         self.assertEqual(t2.realized_pnl, t2.gross_amount - D(4000) * t.price)
         self.assertEqual(pos.quantity, D(6000))
@@ -94,7 +106,7 @@ class VerticalSliceTest(unittest.TestCase):
         for e in led.entries:
             self.assertIn(e.event_id, w.events_by_id)
             self.assertIn(e.cause_id, w.events_by_id)
-        w.advance(2)
+        w.advance(1)
         self.assertEqual(t2.status, "SETTLED")
         self.assertEqual(pf.cash["USD"].balance, cash_before + t2.net_amount)
         self.assertEqual(pos.settled_quantity, D(6000))
@@ -102,7 +114,8 @@ class VerticalSliceTest(unittest.TestCase):
         # 17. audit trail
         ev = next(e for e in w.events if e.type == E.TRADE_EXECUTED and e.payload["trade_id"] == t.id)
         chain = w.audit_chain(ev.id)
-        self.assertEqual([a.type for a in chain["ancestors"]], [E.ORDER_ENTERED])
+        self.assertEqual([a.type for a in chain["ancestors"]], [E.DAY_STARTED, E.MARKET_CLOSE])
+        self.assertEqual(ev.payload["order_id"], o.id)
         child_types = [c["event"].type for c in chain["tree"]["children"]]
         self.assertEqual(child_types, [E.LEDGER_POSTED, E.SETTLEMENT_INSTRUCTION_CREATED, E.VALUATION_MARKED])
         # NAV explain reconciles every day
@@ -110,7 +123,10 @@ class VerticalSliceTest(unittest.TestCase):
             comps = sum((v for k, v in s.explain.items() if not k.startswith("_")), D(0))
             self.assertEqual(comps, s.day_pnl)
         total_pnl = sum((s.day_pnl for s in pf.nav_history), D(0))
-        self.assertEqual(pf.nav_history[-1].nav, pf.contributed_capital + total_pnl + (led.nav() - pf.nav_history[-1].nav) - (led.nav() - pf.nav_history[-1].nav))
+        self.assertEqual(pf.nav_history[-1].nav, pf.contributed_capital + total_pnl)
+        # a briefing exists for every processed day and reports the same P&L
+        self.assertEqual(pf.briefings[-1]["day_pnl"], pf.nav_history[-1].day_pnl)
+        self.assertTrue(any(f["trade_id"] == t2.id for b in pf.briefings for f in b["orders_summary"]["filled_today"]))
         # replay from the store reproduces the state exactly
         w2 = World.load(store, "t")
         pf2 = w2.portfolios[pf.id]
