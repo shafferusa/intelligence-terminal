@@ -135,6 +135,10 @@ class Router:
                     return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"))
                 if leaf == ["fx", "forward"] and method == "POST":
                     return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"])
+                if leaf == ["risk"]:
+                    return s.risk(wid, pid)
+                if leaf == ["risk", "stress"] and method == "POST":
+                    return s.risk_stress(wid, pid, body)
                 if leaf == ["otc"]:
                     return s.otc_book(wid, pid)
                 if leaf == ["otc", "rfq"] and method == "POST":

@@ -76,6 +76,7 @@ class SimulationEngine:
         # J — results
         w.careers.check_limits(closing)
         w.pnl.snapshot(closing)
+        w.risk.process_day(closing)
         w.trading.expire_day_orders(closing)
         w.careers.maybe_review(closing)
         # K — briefing

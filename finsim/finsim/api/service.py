@@ -1048,6 +1048,22 @@ class Service:
         ev = w.default_counterparty(dealer, recovery)
         return {"event_id": ev.id, "dealer": dealer}
 
+    # ------------------------------------------------------------------ risk (phase 5)
+    def risk(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        rep = w.risk.report(pf)
+        return jsonable({**rep, "history": pf.risk_history[-120:]})
+
+    def risk_stress(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        custom = {k: float(v) for k, v in body.items() if k in ("equity", "rates_bp", "spreads_bp", "vol_pts", "commodity", "fx") and v is not None}
+        if body.get("commodity_by_code"):
+            custom["commodity_by_code"] = {k.upper(): float(v) for k, v in body["commodity_by_code"].items()}
+        custom["label"] = body.get("label", "Custom")
+        return jsonable(w.risk.stress(pf, custom=custom))
+
     def force_split(self, world_id: str, security_id: str, ratio: float) -> Dict:
         w = self.world(world_id)
         ev = w.force_split(security_id, float(ratio))

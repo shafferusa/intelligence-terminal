@@ -41,7 +41,7 @@ class VerticalSliceTest(unittest.TestCase):
         self.assertIn(t.status, ("SETTLEMENT_PENDING", "CAPTURED"), "post-trade lifecycle runs the same day (CAPTURED only on a seeded match break)")
         # 5. settlement obligation
         si = pf.settlements[t.settlement_instruction_id]
-        self.assertEqual(si.status, "PENDING")
+        self.assertIn(si.status, ("PENDING", "MATCHED"), "instruction generated on trade date; matched at the custodian once the trade clears (same day unless a match break)")
         self.assertEqual(si.instruction_type, "RVP")
         self.assertEqual(si.cash_amount, t.net_amount)
         self.assertEqual(si.settlement_date, w.calendar.add_business_days(w.current_date, 1).isoformat())

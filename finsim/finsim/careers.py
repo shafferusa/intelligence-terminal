@@ -253,7 +253,8 @@ class CareerEngine:
     # ------------------------------------------------------------------ handlers
     def _h_breach(self, ev: Event) -> None:
         p = ev.payload
-        self.w.portfolios[p["portfolio_id"]].breaches.append({"date": ev.sim_date, "kind": p["kind"], "text": p["text"], "value": p["value"], "event_id": ev.id})
+        self.w.portfolios[p["portfolio_id"]].breaches.append({"date": ev.sim_date, "kind": p["kind"], "text": p["text"], "value": p["value"], "event_id": ev.id,
+                                                              "severity": p.get("severity", "HARD")})
 
     def _h_review(self, ev: Event) -> None:
         p = dict(ev.payload)

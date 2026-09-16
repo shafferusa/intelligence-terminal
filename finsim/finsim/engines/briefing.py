@@ -34,7 +34,7 @@ class BriefingEngine:
                        "market": self._market_summary(), "news": self._news_today(), "attention": self._attention(pf, snap),
                        "movers": self._movers(snap), "regime": w.market.regime().label, "job_title": w.careers.level_title(pf),
                        "orders_summary": self._orders_summary(pf), "financing": self._financing(pf, snap), "collateral": self._collateral(pf),
-                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf), "derivatives": self._derivatives(pf, snap), "otc": self._otc(pf, snap)}
+                       "short_book": self._short_book(pf, snap), "fx": self._fx(pf), "derivatives": self._derivatives(pf, snap), "otc": self._otc(pf, snap), "risk": self._risk(pf)}
             w.emit(E.DAILY_BRIEFING, payload, cause_id=cause.id, portfolio_id=pf.id)
 
     # ------------------------------------------------------------------ pieces
@@ -145,6 +145,17 @@ class BriefingEngine:
                 "expiring": expiring, "strategies": strategies, "options_pnl_today": snap.explain.get("options", ZERO),
                 "greek_attribution": {k: v for k, v in snap.greek_attribution.items() if k != "rows"}}
 
+    def _risk(self, pf) -> Dict:
+        h = pf.risk_history[-1] if pf.risk_history else None
+        if not h:
+            return {}
+        stress = h.get("stress", {})
+        worst = h.get("worst_stress")
+        return {"var95": h.get("var95"), "var99": h.get("var99"), "es975": h.get("es975"), "nav": h.get("nav"), "worst_stress": worst,
+                "worst_stress_pnl": stress.get(worst) if worst else None, "dv01": h.get("factors", {}).get("dv01"), "beta_dollar": h.get("factors", {}).get("beta_dollar"),
+                "vega": h.get("factors", {}).get("vega"), "illiquid_pct_nav": h.get("illiquid_pct_nav"), "counterparty_exposure": h.get("counterparty_exposure"),
+                "limits": [l for l in h.get("limits", []) if l["status"] != "OK"], "limits_all": h.get("limits", [])}
+
     def _otc(self, pf, snap) -> Dict:
         w = self.w
         today = w.current_date.isoformat()
@@ -215,7 +226,7 @@ class BriefingEngine:
             add("HIGH", f"{len(failed)} settlement(s) failed: " + "; ".join(f"{si.id} {si.security_id} — {si.fail_reason}" for si in failed[:3]), "#/settlements")
         for b in pf.breaches:
             if b["date"] == today.isoformat():
-                add("MEDIUM", f"Risk limit breach ({b['kind']}): {b['text']}", "#/career")
+                add("HIGH" if b.get("severity") == "HARD" else "MEDIUM", f"Risk limit breach ({b['kind']}, {'HARD' if b.get('severity') == 'HARD' else 'soft'}): {b['text']}", "#/risk/limits")
         # expiring futures
         for pos in pf.positions.values():
             if pos.is_future and pos.quantity != 0:

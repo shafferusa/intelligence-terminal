@@ -138,6 +138,9 @@ class TradingEngine:
         job = w.careers.job_for(pf)
         if job and job.allowed_classes and self._class_key(sec) not in job.allowed_classes:
             return f"{sec.id} ({self._class_key(sec)}) is outside this job's mandate ({', '.join(sorted(job.allowed_classes))})"
+        blocked = w.risk.blocks_order(pf, sec, side)
+        if blocked:
+            return blocked
         if sec.is_option:
             return self._validate_option(pf, sec, side, order_type, q, limit, strategy_tag)
         if sec.is_future:
