@@ -58,7 +58,7 @@ class World:
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
-        from .engines import collateral, seclending, repo, prime, fx, options, otc
+        from .engines import collateral, seclending, repo, prime, fx, options, otc, risk
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
@@ -73,6 +73,7 @@ class World:
         self.fx = fx.FXEngine(self)
         self.options = options.OptionsEngine(self)
         self.otc = otc.OTCEngine(self)
+        self.risk = risk.RiskEngine(self)
         self.careers = careers.CareerEngine(self)
         self.briefing = briefing.BriefingEngine(self)
         self.simulation = simulation.SimulationEngine(self)
@@ -153,6 +154,7 @@ class World:
         self.fx.register()
         self.options.register()
         self.otc.register()
+        self.risk.register()
         self.careers.register()
         self.briefing.register()
         self.on(E.REGIME_FORCED, World._h_regime_forced)
@@ -308,6 +310,7 @@ class World:
         pf.peak_nav = D(capital)
         # a fresh portfolio gets a briefing for the current day immediately
         self.pnl.snapshot(self.events[-1])
+        self.risk.process_day(self.events[-1])
         self.briefing.build(self.events[-1])
         self.flush()
         return pf

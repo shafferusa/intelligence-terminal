@@ -508,6 +508,7 @@ class Portfolio:
     otc_trades: Dict[str, Any] = field(default_factory=dict)     # OTCTrade (domain.otc_models)
     rfqs: Dict[str, Any] = field(default_factory=dict)           # RFQ
     csas: Dict[str, Any] = field(default_factory=dict)           # dealer -> CSA
+    risk_history: List[Dict] = field(default_factory=list)      # daily RISK_SNAPSHOT payloads
     options_margin: Decimal = ZERO
     options_margin_detail: List[Dict] = field(default_factory=list)
     cash: Dict[str, CashAccount] = field(default_factory=dict)

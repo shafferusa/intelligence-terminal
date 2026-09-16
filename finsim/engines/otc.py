@@ -319,6 +319,9 @@ class OTCEngine:
         job = w.careers.job_for(pf)
         if job and job.allowed_classes and not ("OTC" in job.allowed_classes or ("OTC_RATES" in job.allowed_classes and p in RATES_PRODUCTS)):
             raise CommandError(f"OTC {p} is outside this job's mandate")
+        hard = w.risk.hard_breaches(pf)
+        if hard:
+            raise CommandError(f"hard risk limit breached ({'; '.join(hard)}): no new OTC trades until the book is back within limits (terminations are allowed)")
         params = self._norm_params(p, params)
         fair = self.fair(p, params)
         regime = w.market.state.regime

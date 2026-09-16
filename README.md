@@ -103,12 +103,35 @@ The definition-of-done scenario ($100MM → Treasuries → repo → equities →
 
 The deterministic options scenario (shares → covered call → protective put → index iron condor → naked put → early exercise → 2-for-1 split → recession → expirations → replay) is `tests/test_options.py::OptionsDefinitionOfDoneTest`.
 
+### Phase 4 — OTC derivatives, dealers, ISDA/CSA (built)
+
+| Piece | What exists |
+|---|---|
+| **Dealers** (`engines/counterparties.py`) | Six fictional dealers with rating, CDS spread, capital, product coverage, quoting width (per product), lean and style. Credit state moves daily with the credit cycle and seeded shocks (news, downgrades), stored in the market close. |
+| **RFQ** (`engines/otc.py`) | Request-for-quote per product: the engine's fair mid (par rate, forward, premium, basis, financing spread, market CDS spread, strip average) and each dealer's bid/ask from its width × regime × funding stress, with the player's executable level and cost vs mid; stressed dealers decline. Quotes expire at the next update. Executing books the trade under that dealer's ISDA/CSA if initial margin and any upfront are financeable. |
+| **Products** (`engines/otc_pricing.py`) | Interest-rate swaps (fixed 30/360 vs 3M term rate ACT/360, schedules rolled to business days, fixings, coupons, par rate, DV01), FRAs (fixing, discounted settlement), caps/floors (Black-76 caplets on a regime-driven rate vol, periodic payoffs), European swaptions (Black-76 on the forward par rate; physical exercise into a booked swap or cash settlement; expiry), cross-currency swaps (initial/final notional exchange in both cash ledgers, quarterly interest in each currency, valued against the market basis), equity total return swaps (monthly resets of price change + dividends less financing at policy + spread), single-name CDS (running 100/500 with upfront, quarterly premium, accrual, CS01, protection at recovery on a credit event), commodity swaps (period average of spot vs fixed, priced off the futures strip). |
+| **Accounting** | Dirty PV as derivative asset (`1800`) or liability (`2800`) with daily MTM (`4900`); every cash flow realised (`4910`); P&L on a payment day nets to the accrual already recognised. Buckets: rates, FX, equities, credit, commodities. |
+| **ISDA / CSA** | One netting set per dealer: threshold, minimum transfer amount, independent amounts by product. Daily variation margin either way in cash (posted → `1400` ref `CSA:<dealer>`; received → cash + liability `2450`), initial margin posted and segregated (`1400` ref `IM:<dealer>`), the dealer's IM segregated at a third party (memo). Unfundable margin raises a CSA call; one unmet cycle and the dealer closes the netting set out at mid less unwind costs. |
+| **Counterparty risk** | Per dealer: gross/net MTM, netting benefit, VM/IM, current exposure (net MTM − VM held + VM posted), PFE (current + notional × product add-on × √T scaled by net-to-gross), 1y PD from the dealer's CDS, expected loss; concentration attention item above 5% of NAV. Counterparty default (sandbox `POST /default-counterparty`, and the hook for the macro engine): early termination at mid, collateral applied, unsecured claims recover at the recovery rate, IM returned. Credit events on issuers (`POST /credit-event`) settle CDS. |
+| **UI** | OTC page: RFQ (product forms, quotes ranked by cost vs mid, dealer table), blotter with per-trade drill-down (analytics, terms, cash flows, schedule, ledger entries, unwind), risk (DV01, vega, CS01, deltas), counterparties (exposure table, dealer CDS history), ISDA/CSA (terms, balances, calls, collateral movements), upcoming events. Briefing section and attention items (CSA calls, close-outs, concentration, dealer credit news, expiries and exchanges). |
+
+Simplifications, stated: single zero curve for all discounting and forwards (no OIS/term basis); foreign legs discounted at a flat foreign short rate plus the market basis; flat hazard rates; lognormal rate vol from a regime table; dealer IM received is off balance sheet; no compression, novation or clearing of OTC trades.
+
+### Phase 5 — risk (built)
+
+| Piece | What exists |
+|---|---|
+| **Exposures** (`engines/risk.py`) | Every position, OTC trade, FX balance and forward reduced to linear sensitivities: equity dollars per security (and beta dollars), DV01, CS01 (IG at half the HY index shock), option vega and gamma dollars, rate vega, commodity dollars by code, FX dollars by currency. |
+| **VaR / ES** | 1-day historical simulation: the last 250 sessions of factor changes (each security's return, 5Y rate, IG/HY spreads, commodity spots, FX spots, ATM implied vols) replayed through the sensitivities. VaR 95/99, expected shortfall 97.5, parametric VaR from the same series, 10-day scaling, worst/best historical day, component VaR (Euler), the P&L series. The method is printed with the numbers. |
+| **Stress** | Eleven named scenarios (equity crash, rates ±100, credit +200, vol spike, commodity sell-off, oil spike, strong dollar, 2008-style, 2020-style, stagflation) plus custom shocks, with worst contributors per scenario. Not full revaluation; stated. |
+| **Liquidity** | Days to liquidate every position at 20% of ADV (regime depth applied), buckets ≤1/≤5/≤20/>20 days, illiquid share of NAV, and a 20-session cash ladder of known flows (settlements, dividends, coupons, fixed OTC coupons and CDS premia). |
+| **Limits** | Per job, soft and hard: VaR 99%/NAV, ES/NAV, largest counterparty exposure/NAV, illiquid share, plus the job's leverage and drawdown. Soft breaches warn; a hard breach accepts only risk-reducing orders and no new OTC trades until the next close is back within limits. Daily `RISK_SNAPSHOT` in the log (history on the page), `RISK_BREACH` events with severity. |
+| **UI** | RISK page: overview (VaR tiles, factor exposures, component VaR, historical P&L series, exposure rows), stress (table, chart, custom scenario), liquidity (position ladder, cash ladder), limits (utilisation bars), history. Briefing risk section and breach attention items. |
+
 ### What is deliberately not built yet
 
-Listed in the navigation as *Not yet built* rather than as screens that do nothing:
-OTC derivatives and ISDA/CSA collateral, a risk dashboard (VaR, stress), counterparties
-with credit quality and default, AI institutions, physical-commodity mechanics, bank RFQ flow.
-They correspond to Phases 4–8 of the spec and plug into the same event/ledger/daily-cycle core.
+AI institutions, physical-commodity mechanics and bank RFQ flow (the player as dealer) are not
+built; they correspond to Phases 6–8 of the spec and plug into the same event/ledger/daily-cycle core.
 
 ## Architecture
 
@@ -137,6 +160,10 @@ finsim/
     vol.py            implied-vol surfaces per underlying (ATM, skew, curvature, term; regime dynamics)
     options_pricing.py  BSM, CRR tree with control variate, Greeks, bounds, implied vol
     options.py        listings, chains, quotes, synthetic bars, margin, exercise/assignment/expiry, strategies, splits
+    counterparties.py dealers, credit state, quoting widths, ISDA/CSA terms
+    otc_pricing.py    curve utilities, swaps, FRAs, Black-76 caps/swaptions, CDS, TRS, commodity swaps
+    otc.py            RFQ, trade lifecycle (fixings, payments, resets, exercise), marks, CSA margining, exposure, close-outs
+    risk.py           exposures, historical VaR/ES, stress, component VaR, liquidity ladders, limits
     settlement.py     lifecycle states, DVP/RVP processing, fails, custody & cash movements
     corporate_actions.py  dividends, coupons, maturities
     accruals.py       bond and cash interest
@@ -192,6 +219,10 @@ GET  /api/worlds/{w}/portfolios/{p}/options       POST .../options/exercise {con
 POST /api/worlds/{w}/portfolios/{p}/strategies {strategy_type, underlying, expiry, strikes[], quantity, net_limit, expiry2, time_in_force}
 POST /api/worlds/{w}/portfolios/{p}/strategies/preview   GET .../strategies | strategies/{id}
 POST /api/worlds/{w}/force-split {security_id, ratio}   (sandbox)
+GET  /api/worlds/{w}/otc/dealers                  GET  /api/worlds/{w}/portfolios/{p}/otc | otc/{trade} | counterparties
+POST /api/worlds/{w}/portfolios/{p}/otc/rfq {product, params}   POST .../otc/rfq/{id}/execute {dealer}   POST .../otc/{trade}/terminate
+POST /api/worlds/{w}/credit-event {reference}     POST /api/worlds/{w}/default-counterparty {dealer}   (sandbox)
+GET  /api/worlds/{w}/portfolios/{p}/risk          POST .../risk/stress {equity, rates_bp, spreads_bp, vol_pts, commodity, fx, commodity_by_code}
 ```
 
 ## Environment note
