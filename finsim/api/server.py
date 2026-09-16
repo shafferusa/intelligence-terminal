@@ -116,6 +116,8 @@ class Router:
                     return s.dashboard(wid, pid)["positions"]
                 if leaf[:1] == ["positions"] and len(leaf) == 2:
                     return s.position(wid, pid, leaf[1])
+                if leaf == ["orders", "preview"] and method == "POST":
+                    return s.order_preview(wid, pid, body)
                 if leaf == ["orders"]:
                     if method == "POST":
                         return s.place_order(wid, pid, body["security_id"], body["side"], body["quantity"], body.get("order_type", "MARKET"),
