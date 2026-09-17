@@ -133,3 +133,37 @@ class OrderPreviewTest(unittest.TestCase):
         from finsim.api.service import NotFound
         with self.assertRaises(NotFound):
             s.order_preview(wid, pid, {"security_id": "NOPE", "side": "BUY", "quantity": 1})
+
+
+class AccessKeyTest(unittest.TestCase):
+    """The phone mode: clients that are not this machine must present the key. Loopback trust is switched off here
+    so the check can be exercised from 127.0.0.1."""
+    @classmethod
+    def setUpClass(cls):
+        cls.httpd = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(Router(Service(EventStore(":memory:"))), access_key="s3cret-key", trust_loopback=False))
+        cls.port = cls.httpd.server_address[1]
+        threading.Thread(target=cls.httpd.serve_forever, daemon=True).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.httpd.shutdown()
+
+    def get(self, path, headers=None):
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}{path}", headers=headers or {})
+        try:
+            with urllib.request.urlopen(req) as r:
+                return r.status, r.read()
+        except urllib.error.HTTPError as e:
+            return e.code, e.read()
+
+    def test_api_needs_the_key_but_the_page_does_not(self):
+        self.assertEqual(self.get("/")[0], 200, "the page and its assets load without a key (they hold no data)")
+        self.assertEqual(self.get("/manifest.webmanifest")[0], 200)
+        st, body = self.get("/api/health")
+        self.assertEqual(st, 401)
+        self.assertIn(b"access key required", body)
+        self.assertEqual(self.get("/api/health", {"X-FinSim-Key": "wrong"})[0], 401)
+        self.assertEqual(self.get("/api/health?key=wrong")[0], 401)
+        self.assertEqual(self.get("/api/health", {"X-FinSim-Key": "s3cret-key"})[0], 200, "header")
+        self.assertEqual(self.get("/api/health?key=s3cret-key")[0], 200, "query string, as the phone link carries it")
+        self.assertEqual(self.get("/api/worlds", {"X-FinSim-Key": "s3cret-key"})[0], 200)

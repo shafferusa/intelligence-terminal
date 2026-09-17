@@ -78,7 +78,82 @@ def python_exe(windowless: bool = False) -> str:
 
 
 def serve_argv(p: Optional[int] = None) -> List[str]:
-    return [python_exe(windowless=True), "-m", "finsim", "serve", "--db", db_path(), "--host", "127.0.0.1", "--port", str(p or port())]
+    # no --host: the server reads the phone setting when it starts, so `finsim phone on|off` needs no reinstall
+    return [python_exe(windowless=True), "-m", "finsim", "serve", "--db", db_path(), "--port", str(p or port())]
+
+
+# ------------------------------------------------------------------ settings, access key, reach
+LOCAL_HOSTS = ("127.0.0.1", "localhost", "::1")
+
+
+def config() -> Dict:
+    try:
+        with open(os.path.join(home(), "config.json"), "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def save_config(cfg: Dict) -> None:
+    os.makedirs(home(), exist_ok=True)
+    with open(os.path.join(home(), "config.json"), "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+
+
+def phone_enabled() -> bool:
+    return bool(config().get("phone"))
+
+
+def resolve_host() -> str:
+    """Where the server listens: this machine only, or every interface once `finsim phone on` was run."""
+    return "0.0.0.0" if phone_enabled() else "127.0.0.1"
+
+
+def access_key() -> str:
+    """The secret a phone (any client that is not this machine) must present. Generated once, kept in FINSIM_HOME
+    with owner-only permissions; the phone link carries it, so it is typed at most once."""
+    fp = os.path.join(home(), "access-key")
+    try:
+        with open(fp, "r", encoding="utf-8") as f:
+            k = f.read().strip()
+            if k:
+                return k
+    except OSError:
+        pass
+    import secrets
+    k = secrets.token_urlsafe(15)
+    os.makedirs(home(), exist_ok=True)
+    fd = os.open(fp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(k + "\n")
+    return k
+
+
+def lan_addresses() -> List[Dict[str, str]]:
+    """Addresses a phone can use: the Wi-Fi/LAN address of this machine (a UDP socket 'connected' to a public
+    address reveals the outbound interface; nothing is sent) and, when Tailscale is installed, its address."""
+    import socket
+    out: List[Dict[str, str]] = []
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 53))
+        ip = s.getsockname()[0]
+        s.close()
+        if not ip.startswith("127."):
+            out.append({"kind": "same Wi-Fi / LAN", "ip": ip})
+    except OSError:
+        pass
+    ts = shutil.which("tailscale") or ("/Applications/Tailscale.app/Contents/MacOS/Tailscale" if platform() == "mac" else None)
+    if ts and os.path.exists(ts):
+        r = _run([ts, "ip", "-4"])
+        if not r.returncode and r.stdout.strip():
+            out.append({"kind": "anywhere (Tailscale)", "ip": r.stdout.strip().splitlines()[0]})
+    return out
+
+
+def phone_links() -> List[str]:
+    key = access_key()
+    return [f"http://{a['ip']}:{port()}/?key={key}   ({a['kind']})" for a in lan_addresses()]
 
 
 # ------------------------------------------------------------------ server control
@@ -367,6 +442,10 @@ def cmd_status() -> int:
     plat = platform()
     reg = {"mac": launch_agent_path(), "linux": systemd_unit_path(), "windows": os.path.join(home(), "finsim-server.vbs")}[plat]
     print(f"login service: {'installed' if os.path.exists(reg) else 'not installed'} ({reg})")
+    if phone_enabled():
+        print("phone: on — " + ("; ".join(phone_links()) or "no network address found"))
+    else:
+        print("phone: off (python3 -m finsim phone on)")
     return 0 if h else 1
 
 
@@ -411,6 +490,42 @@ def cmd_uninstall(keep_data: bool = True) -> int:
     if not keep_data and os.path.exists(db_path()):
         os.remove(db_path())
         print("  removed", db_path())
+    return 0
+
+
+def cmd_phone(state: str = "on") -> int:
+    """`on`: the server answers on the network behind the access key and the phone link is printed; `off`: back to
+    this machine only. Either way the running server is restarted so the setting takes effect now."""
+    cfg = config()
+    if state in ("on", "off"):
+        cfg["phone"] = state == "on"
+        save_config(cfg)
+        was_up = health() is not None
+        _stop_server()
+        for _ in range(40):
+            if health() is None:
+                break
+            time.sleep(0.25)
+        if was_up or state == "on":
+            try:
+                start_background()
+            except RuntimeError as e:
+                print(e, file=sys.stderr)
+                return 1
+    if not phone_enabled():
+        print(f"{APP_NAME}: this machine only (127.0.0.1). `python3 -m finsim phone on` to reach it from your phone.")
+        return 0
+    links = phone_links()
+    print(f"{APP_NAME} answers on your network, access key required. On the phone, open:")
+    for l in links:
+        print("   " + l)
+    if not links:
+        print("   (no network address found; is this machine on Wi-Fi?)")
+    print("Then use the browser's share / menu → Add to Home Screen: the link keeps the key, so it opens like an app from then on.")
+    print("Same Wi-Fi only, and the computer must be awake. For anywhere: install Tailscale on both devices and use the Tailscale link.")
+    if platform() == "mac":
+        print("macOS may ask to allow incoming connections for python: allow it (it is the firewall prompt for this port).")
+    print("`python3 -m finsim phone off` closes it again; the key lives in " + os.path.join(home(), "access-key"))
     return 0
 
 
