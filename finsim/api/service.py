@@ -94,11 +94,17 @@ class Service:
         """Process due days for every career world (called by the scheduler and on access). `at` injects the clock."""
         out = {}
         for info in self.store.list_worlds():
-            w = self.world(info["id"], at, catch_up=False)
-            closed = w.catch_up(at)
+            closed = self.catch_up_one(info["id"], at)
             if closed:
-                out[w.id] = closed
+                out[info["id"]] = closed
         return out
+
+    def catch_up_one(self, world_id: str, at=None) -> List[str]:
+        """Load one save if needed and process its due days; the scheduler calls this per save so the lock is short."""
+        if not any(x["id"] == world_id for x in self.store.list_worlds()):
+            return []
+        w = self.world(world_id, at, catch_up=False)
+        return w.catch_up(at)
 
     def world(self, world_id: str, at=None, catch_up: bool = True) -> World:
         if world_id not in self.worlds:
@@ -120,7 +126,7 @@ class Service:
         from ..version import ENGINE_VERSION, SAVE_VERSION
         loaded = list(self.worlds.values())
         return jsonable({"status": "ok" if not any(w.replay_errors for w in loaded) else "degraded", "engine_version": ENGINE_VERSION, "save_version": SAVE_VERSION,
-                         "uptime_s": round(_time.time() - self.started_utc, 1), "worlds_stored": len(self.store.list_worlds()), "worlds_loaded": len(loaded),
+                         "uptime_s": round(_time.time() - self.started_utc, 1), "worlds_stored": len(self.store.list_worlds()), "worlds_loaded": len(loaded), "loading": self.scheduler_state.get("busy"),
                          "strict_replay": self.strict_replay, "scheduler": self.scheduler_state,
                          "worlds": [{"id": w.id, "current_date": w.current_date, "clock_mode": w.clock.mode, "events": len(w.events), "replay_errors": len(w.replay_errors),
                                      "integrity_ok": w.integrity.get("ok", True), "save_version": w.save_version, "migrated": w.migration.get("migrated", False),

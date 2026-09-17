@@ -188,8 +188,9 @@ def adopt_legacy_db() -> Optional[str]:
     return src
 
 
-def start_background(p: Optional[int] = None, wait: float = 15.0) -> Dict:
-    """Spawn the server detached from this process and wait until it answers. Returns its health."""
+def start_background(p: Optional[int] = None, wait: float = 120.0) -> Dict:
+    """Spawn the server detached from this process and wait until it answers. Returns its health. Loading big
+    saves can take a while, so the wait is long; a child that exits is reported at once with the log's tail."""
     os.makedirs(home(), exist_ok=True)
     if (h := health(p)):
         return h
@@ -201,13 +202,30 @@ def start_background(p: Optional[int] = None, wait: float = 15.0) -> Dict:
         kw["creationflags"] = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(subprocess, "CREATE_NO_WINDOW", 0)
     else:
         kw["start_new_session"] = True
-    subprocess.Popen(serve_argv(p), **kw)
+    proc = subprocess.Popen(serve_argv(p), **kw)
     deadline = time.time() + wait
+    t0 = time.time()
+    told = False
     while time.time() < deadline:
         time.sleep(0.25)
         if (h := health(p)):
             return h
-    raise RuntimeError(f"the server did not come up on {url(p)} within {wait:.0f}s; see {log_path()}")
+        if proc.poll() is not None:
+            raise RuntimeError(f"the server exited with code {proc.returncode} while starting; the end of {log_path()} says:\n{_log_tail()}")
+        if not told and time.time() - t0 > 6:
+            print("starting the server (loading your saves)…", flush=True)
+            told = True
+    raise RuntimeError(f"the server did not answer on {url(p)} within {wait:.0f}s; it may still be loading — try `python3 -m finsim status` in a minute, or see {log_path()}")
+
+
+def _log_tail(lines: int = 15) -> str:
+    try:
+        with open(log_path(), "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 8000))
+            return "\n".join(f.read().decode("utf-8", "replace").splitlines()[-lines:])
+    except OSError:
+        return "(no log yet)"
 
 
 def _env() -> Dict[str, str]:

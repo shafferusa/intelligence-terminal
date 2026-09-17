@@ -291,8 +291,11 @@ def make_handler(router: Router, access_key: str = None, trust_loopback: bool = 
             t0 = time.perf_counter()
             code = 200
             try:
-                with router.lock:
-                    out = router.dispatch(method, u.path, parse_qs(u.query), body)
+                if u.path == "/api/health" and method == "GET":
+                    out = router.s.health()          # read-only, never waits behind a save being loaded
+                else:
+                    with router.lock:
+                        out = router.dispatch(method, u.path, parse_qs(u.query), body)
                 self._send(200, out)
             except NotFound as e:
                 code = 404
@@ -344,9 +347,22 @@ class Scheduler:
 
     def tick(self, at=None) -> Dict[str, List[str]]:
         at = at or (self.clock() if self.clock else None)
-        with self.router.lock:
-            done = self.router.s.catch_up_all(at)
-        st = self.router.s.scheduler_state
+        s = self.router.s
+        st = s.scheduler_state
+        done: Dict[str, List[str]] = {}
+        # one save at a time under the lock: loading a big save must not stall every request (and the launcher's
+        # health probe) behind the whole catch-up
+        for info in s.store.list_worlds():
+            st["busy"] = info["id"]
+            try:
+                with self.router.lock:
+                    closed = s.catch_up_one(info["id"], at)
+            except Exception:  # pragma: no cover
+                log.exception("scheduler: world %s failed to catch up", info["id"])
+                continue
+            if closed:
+                done[info["id"]] = closed
+        st["busy"] = None
         st["ticks"] += 1
         st["last_tick"] = (at.isoformat() if at else datetime.now(timezone.utc).isoformat())
         st["last_result"] = done
