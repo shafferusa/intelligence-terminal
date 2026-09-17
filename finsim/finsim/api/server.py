@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import secrets
 import os
 import threading
 import time
@@ -237,7 +238,13 @@ class Router:
         raise NotFound(f"no route for {method} {path}")
 
 
-def make_handler(router: Router):
+LOOPBACK = ("127.0.0.1", "::1", "::ffff:127.0.0.1")
+
+
+def make_handler(router: Router, access_key: str = None, trust_loopback: bool = True):
+    """`access_key`: when set, every /api call from a non-loopback client must carry it (header X-FinSim-Key or
+    ?key=); the page and its assets are served to anyone who can reach the port, the data is not. The desktop
+    launcher on the same machine is exempt (`trust_loopback`); /api/shutdown is loopback-only regardless."""
     class Handler(BaseHTTPRequestHandler):
         def _send(self, code: int, payload, ctype: str = "application/json"):
             data = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
@@ -258,10 +265,22 @@ def make_handler(router: Router):
             with open(fp, "rb") as f:
                 self._send(200, f.read(), ctype)
 
+        def _authorised(self, u) -> bool:
+            local = self.client_address[0] in LOOPBACK
+            if u.path == "/api/shutdown":
+                return local
+            if not access_key or (local and trust_loopback):
+                return True
+            supplied = self.headers.get("X-FinSim-Key") or (parse_qs(u.query).get("key") or [""])[0]
+            return bool(supplied) and secrets.compare_digest(supplied, access_key)
+
         def _handle(self, method: str):
             u = urlparse(self.path)
             if not u.path.startswith("/api/"):
                 return self._static(u.path)
+            if not self._authorised(u):
+                log.warning("%s %s from %s refused: access key missing or wrong", method, u.path, self.client_address[0])
+                return self._send(401, {"error": "access key required: open the link printed by `python3 -m finsim phone`, or enter the key"})
             body = {}
             n = int(self.headers.get("Content-Length") or 0)
             if n:
@@ -354,16 +373,20 @@ def start_scheduler(router: Router, interval: int = 60) -> threading.Thread:
     return Scheduler(router, interval).start()
 
 
-def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000):
+def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000, access_key: str = None):
     from ..store import EventStore
     get_logger("finsim", level=os.environ.get("FINSIM_LOG_LEVEL", "INFO"))   # the server logs at INFO by default; libraries stay quiet
+    local_only = host in LOOPBACK + ("localhost",)
+    if not local_only and not access_key:
+        raise SystemExit("refusing to listen beyond this machine without an access key (use `python3 -m finsim phone`, or pass --key)")
     service = Service(EventStore(db_path))
     router = Router(service)
     start_scheduler(router)
-    httpd = ThreadingHTTPServer((host, port), make_handler(router))
+    httpd = ThreadingHTTPServer((host, port), make_handler(router, access_key))
     router.shutdown = lambda: threading.Thread(target=httpd.shutdown, daemon=True).start()
-    log.info("finsim terminal: http://%s:%s/  (db: %s) — career worlds update daily at their configured time", host, port, db_path)
-    print(f"finsim terminal: http://{host}:{port}/  (db: {db_path}) — career worlds update daily at their configured time")
+    reach = "this machine only" if local_only else "your network, access key required"
+    log.info("finsim terminal: http://%s:%s/  (db: %s; %s) — career worlds update daily at their configured time", host, port, db_path, reach)
+    print(f"finsim terminal: http://{host}:{port}/  (db: {db_path}; {reach}) — career worlds update daily at their configured time")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -17,8 +17,21 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const statusBadge = s => { const cls = { SETTLED: 'green', FILLED: 'green', FAILED: 'red', REJECTED: 'red', CANCELLED: 'red', EXPIRED: 'red', PENDING: 'amber', MATCHED: 'blue', WORKING: 'amber', PARTIALLY_FILLED: 'amber', SETTLEMENT_PENDING: 'blue', DECLARED: 'blue', EX: 'amber', PAID: 'green' }[s] || ''; return `<span class="badge ${cls}">${esc(s)}</span>`; };
 
-  async function api(path, opts = {}) {
-    const r = await fetch('/api' + path, { headers: { 'Content-Type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  // Access key: only needed when the page is opened from another device (`python3 -m finsim phone`). The link
+  // carries it as ?key=; it is kept in localStorage and sent as a header. The link is left untouched so that
+  // "Add to Home Screen" saves a working one. A 401 asks for the key once and retries.
+  const keyStore = { get: () => { try { return new URLSearchParams(location.search).get('key') || localStorage.getItem('finsim.key') || ''; } catch (e) { return ''; } },
+                     set: k => { try { localStorage.setItem('finsim.key', k); } catch (e) { /* private mode */ } } };
+  if (new URLSearchParams(location.search).get('key')) keyStore.set(new URLSearchParams(location.search).get('key'));
+  async function api(path, opts = {}, retried = false) {
+    const headers = { 'Content-Type': 'application/json' };
+    const key = keyStore.get();
+    if (key) headers['X-FinSim-Key'] = key;
+    const r = await fetch('/api' + path, { headers, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
+    if (r.status === 401 && !retried) {
+      const k = window.prompt('Access key for this FinSim server (printed by `python3 -m finsim phone` on the computer):', '');
+      if (k) { keyStore.set(k.trim()); return api(path, opts, true); }
+    }
     const j = await r.json().catch(() => ({ error: 'bad response' }));
     if (!r.ok) throw new Error(j.error || r.statusText);
     return j;

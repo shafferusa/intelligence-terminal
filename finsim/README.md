@@ -49,6 +49,22 @@ default 8765). `python3 -m finsim status` shows what is running and where; `pyth
 removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
 repository checkout, so keep it where it is or run `install` again after moving it.
 
+### On your phone
+
+The game keeps running on the computer; the phone is a second screen for it. `python3 -m finsim phone` opens
+the server to your network behind an access key and prints a link like `http://192.168.1.20:8765/?key=…`.
+Open it on the phone while it is on the same Wi-Fi, then *Add to Home Screen* from the browser's share or menu:
+the link keeps the key, so from then on it opens like an app (the page has a phone layout, a manifest and
+home-screen icons). Every API call from another device must carry the key (header `X-FinSim-Key` or `?key=`);
+without it the server answers 401 and the page asks for the key once. The page and its assets are served to
+anyone who can reach the port, the data is not. The desktop launcher on the same machine needs no key.
+
+The computer must be awake, and the phone on the same network. For anywhere-access install
+[Tailscale](https://tailscale.com) on both devices: `finsim phone` also prints the Tailscale link, and nothing
+is opened to the public internet. `python3 -m finsim phone off` goes back to this machine only; the key lives
+in `~/.finsim/access-key` (delete it to rotate). Running `serve` by hand with a non-local `--host` refuses to
+start without `--key`.
+
 ## The daily cycle
 
 A save is a job. Career saves run in **real time**: one calendar day is one
