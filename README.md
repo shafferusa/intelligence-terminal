@@ -53,6 +53,15 @@ update can be undone by stopping the server and copying a snapshot back over `fi
 removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
 repository checkout, so keep it where it is or run `install` again after moving it.
 
+### The book
+
+**Book** (in the nav, next to Portfolio) is the one page with everything open, grouped by the name it is on:
+SPY shares, SPY and SPX options and ES futures sit together under SPY; a borrowed-and-shorted name sits with
+its loan and any option on it; a bond with its repo and any CDS on it; rates swaps under one "rates" group,
+each currency's forwards and cross-currency swaps under the currency. Only names with something open appear.
+Click a name (or open `#/book/SPY`) for that name's page alone; every row links to its desk. The instructions
+blotter hides cancelled, expired and rejected instructions behind a toggle.
+
 ### Settings, glossary, saves
 
 **Settings** (in the nav) sets how every page opens: the options page's default underlying, expiry tenor (e.g.
