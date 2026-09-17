@@ -13,9 +13,9 @@ from finsim.world import CommandError, World
 class OrderTypesTest(unittest.TestCase):
     def test_conditional_order_waits_for_condition(self):
         w, pf, _ = make_world()
-        last = float(w.market.last_bar("NVRA").close)
-        o = w.place_order(pf.id, "NVRA", "BUY", 100, time_in_force="GTC", condition={"ref": "NVRA", "op": "<=", "value": last * 0.90})
-        far = w.place_order(pf.id, "MRDN", "BUY", 100, time_in_force="GTC", condition={"ref": "CURVE:10Y", "op": ">=", "value": 99.0})
+        last = float(w.market.last_bar("NVDA").close)
+        o = w.place_order(pf.id, "NVDA", "BUY", 100, time_in_force="GTC", condition={"ref": "NVDA", "op": "<=", "value": last * 0.90})
+        far = w.place_order(pf.id, "JPM", "BUY", 100, time_in_force="GTC", condition={"ref": "CURVE:10Y", "op": ">=", "value": 99.0})
         for _ in range(60):
             w.advance(1)
             if o.status == "FILLED":
@@ -24,15 +24,15 @@ class OrderTypesTest(unittest.TestCase):
         if o.status == "FILLED":
             t = pf.trades[o.trade_ids[0]]
             self.assertIsNotNone(o.condition_met_date)
-            self.assertLessEqual(float(w.market.history["NVRA"][[b.date for b in w.market.history["NVRA"]].index(t.trade_date)].close), last * 0.90 + 1e-6)
+            self.assertLessEqual(float(w.market.history["NVDA"][[b.date for b in w.market.history["NVDA"]].index(t.trade_date)].close), last * 0.90 + 1e-6)
             self.assertEqual(t.execution_detail["session"], "CLOSE")
         self.assertTrue(any("condition not met" in h["note"] for h in o.history))
 
     def test_trailing_stop_ratchets_and_triggers(self):
         w, pf, _ = make_world()
-        w.place_order(pf.id, "QNTM", "BUY", 1000)
+        w.place_order(pf.id, "AMD", "BUY", 1000)
         w.advance(1)
-        o = w.place_order(pf.id, "QNTM", "SELL", 1000, order_type="TRAILING_STOP", trail_pct=0.03, time_in_force="GTC")
+        o = w.place_order(pf.id, "AMD", "SELL", 1000, order_type="TRAILING_STOP", trail_pct=0.03, time_in_force="GTC")
         level0 = o.trail_level
         self.assertIsNotNone(level0)
         levels = [level0]
@@ -48,10 +48,10 @@ class OrderTypesTest(unittest.TestCase):
 
     def test_take_profit_fills_only_when_reached(self):
         w, pf, _ = make_world()
-        w.place_order(pf.id, "HLXB", "BUY", 500)
+        w.place_order(pf.id, "LLY", "BUY", 500)
         w.advance(1)
-        px = w.market.last_bar("HLXB").close
-        o = w.place_order(pf.id, "HLXB", "SELL", 500, order_type="TAKE_PROFIT", limit_price=px * D("1.04"), time_in_force="GTC")
+        px = w.market.last_bar("LLY").close
+        o = w.place_order(pf.id, "LLY", "SELL", 500, order_type="TAKE_PROFIT", limit_price=px * D("1.04"), time_in_force="GTC")
         for _ in range(120):
             w.advance(1)
             if o.status == "FILLED":
@@ -101,12 +101,12 @@ class FuturesTest(unittest.TestCase):
         """Variation margin and initial margin that overdraw cash become an explicit margin loan; cash never stays negative."""
         w, pf, _ = make_world(capital=3_000_000)
         cl = [s for s in w.securities.values() if s.underlying == "CL" and not s.expired][1]
-        w.place_order(pf.id, "SPXE", "BUY", 5000)
+        w.place_order(pf.id, "SPY", "BUY", 2000)
         w.place_order(pf.id, cl.id, "BUY", 25)
         w.advance(2)
         avail = w.trading.projected_cash(pf, "USD")
-        px = w.market.last_bar("BRWN").ask
-        w.place_order(pf.id, "BRWN", "BUY", int(avail / px * D("0.98")))
+        px = w.market.last_bar("PG").ask
+        w.place_order(pf.id, "PG", "BUY", int(avail / px * D("0.98")))
         drew = False
         for _ in range(40):
             w.advance(1)
@@ -152,7 +152,7 @@ class CareerTest(unittest.TestCase):
         w, pf, store = make_world(start="2026-03-02")
         fund = w.create_portfolio("Commodity book", "FUND", D(100_000_000), job="COMMODITY_TRADER")
         with self.assertRaises(CommandError):
-            w.place_order(fund.id, "NVRA", "BUY", 100)        # equities outside the mandate
+            w.place_order(fund.id, "NVDA", "BUY", 100)        # equities outside the mandate
         with self.assertRaises(CommandError):
             w.create_portfolio("AI", "FUND", D(1), job="AI_MOMENTUM")   # AI desks are created by the risk manager's world, never directly
         cl = [s for s in w.securities.values() if s.underlying == "CL" and not s.expired][2]

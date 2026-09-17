@@ -40,7 +40,48 @@ def migrate_1_to_2(events: List[Event]) -> Tuple[List[Event], List[str]]:
     return out, notes
 
 
-MIGRATIONS: Dict[int, Callable[[List[Event]], Tuple[List[Event], List[str]]]] = {1: migrate_1_to_2}
+# v2 -> v3: the fictional universe became real companies and institutions. Old saves keep their stored prices and
+# history; only identifiers and names are rewritten so the save still opens under the new universe.
+RENAME_IDS = [("MRDN-29", "JPM-29"), ("PTRX-32", "F-32"), ("NGSL-30", "AAL-28"), ("ATLS-P", "BAC-PL"), ("SPXE", "SPY"), ("SPXI", "SPX"), ("SHRT", "SHV"),
+              ("NVRA", "NVDA"), ("QNTM", "AMD"), ("CLDX", "ORCL"), ("MRDN", "JPM"), ("ATLS", "GS"), ("HLXB", "LLY"), ("VTRA", "UNH"), ("PTRX", "F"), ("NGSL", "AAL"),
+              ("ORCH", "WMT"), ("BRWN", "PG"), ("LUXA", "NKE"), ("TITN", "CAT"), ("AERO", "BA"), ("GRDP", "NEE"), ("URBN", "PLD"), ("CPRX", "FCX"), ("TLNK", "VZ"),
+              ("ZYNQ", "BYND"), ("PLSR", "RIVN"), ("KOBE", "TM"), ("NORDBANK", "BARCLAYS"), ("MERIDIAN-CUST", "BNYM-CUST"), ("MERIDIAN", "JPMORGAN"),
+              ("HARBOR", "MORGAN_STANLEY"), ("KESTREL", "CITI"), ("VANTAGE", "DEUTSCHE"), ("ATLAS", "GOLDMAN")]
+RENAME_NAMES = [("Meridian Custody Services", "BNY Mellon Asset Servicing"), ("Harbor Prime Brokerage", "Goldman Sachs Prime Brokerage"), ("Harbor Securities FX", "Citi FX"),
+                ("Harbor Options Exchange", "Cboe Options Exchange"), ("Harbor Commodity Options", "CME (NYMEX/COMEX options)"), ("Harbor Securities", "Goldman Sachs"),
+                ("Atlas Capital Markets", "Goldman Sachs"), ("Meridian Bank Derivatives", "J.P. Morgan"), ("Harbor Securities Swaps", "Morgan Stanley"),
+                ("Kestrel Global Markets", "Citigroup"), ("Nordbank International", "Barclays"), ("Vantage Commodities & Credit", "Deutsche Bank"),
+                ("Meridian Bancorp", "JPMorgan Chase"), ("Petrox Energy", "Ford Motor Credit"), ("Northgate Solar", "American Airlines"),
+                ("Novara Systems", "NVIDIA Corporation"), ("Broad Market Equity ETF", "SPDR S&P 500 ETF Trust"), ("Short-Term Treasury ETF", "iShares Short Treasury Bond ETF")]
+
+
+def migrate_2_to_3(events: List[Event]) -> Tuple[List[Event], List[str]]:
+    import json as _json
+    import re as _re
+    # a ticker stands alone (NVRA), prefixes an option id (NVRA260220C300) or a bond/preferred id (handled by the longer keys first)
+    pats = [(_re.compile(r"(?<![A-Za-z0-9_])" + _re.escape(a) + r"(?=\d{6}[CP]\d|(?![A-Za-z0-9_]))"), b) for a, b in RENAME_IDS]
+    out, n = [], 0
+    for ev in events:
+        txt = _json.dumps(ev.payload, separators=(",", ":"), default=str)
+        new = txt
+        for a, b in RENAME_NAMES:
+            new = new.replace(a, b)
+        for pat, b in pats:
+            new = pat.sub(b, new)
+        if ev.type == E.WORLD_CREATED:
+            p = _json.loads(new)
+            p["save_version"] = 3
+            out.append(_rebuild(ev, p))
+            n += 1
+        elif new != txt:
+            out.append(_rebuild(ev, _json.loads(new)))
+            n += 1
+        else:
+            out.append(ev)
+    return out, [f"universe renamed to real companies and institutions on {n} events (prices and history unchanged)"]
+
+
+MIGRATIONS: Dict[int, Callable[[List[Event]], Tuple[List[Event], List[str]]]] = {1: migrate_1_to_2, 2: migrate_2_to_3}
 
 
 def save_version_of(events: List[Event]) -> int:

@@ -381,7 +381,7 @@ class World:
         return w
 
     def create_portfolio(self, name: str, portfolio_type: str = "PERSONAL", capital: Decimal = D(10_000_000), currency: str = "USD",
-                         benchmark: Optional[str] = "SPXE", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", job: str = "SANDBOX",
+                         benchmark: Optional[str] = "SPY", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", job: str = "SANDBOX",
                          _ai_desk: bool = False) -> Portfolio:
         from .careers import JOBS
         if not name.strip():
@@ -393,7 +393,7 @@ class World:
         pid = self.new_id("PF")
         self.emit(E.PORTFOLIO_CREATED, {"portfolio_id": pid, "name": name.strip(), "portfolio_type": portfolio_type, "base_currency": currency,
                                         "benchmark": benchmark, "realism": realism, "mode": mode, "job": job,
-                                        "custody_account": f"MERIDIAN-CUST-{pid[-6:]}"}, portfolio_id=pid)
+                                        "custody_account": f"BNYM-CUST-{pid[-6:]}"}, portfolio_id=pid)
         if D(capital) > 0:
             self.contribute_capital(pid, currency, D(capital))
         pf = self.portfolios[pid]

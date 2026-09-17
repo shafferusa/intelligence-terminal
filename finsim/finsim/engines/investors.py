@@ -23,8 +23,8 @@ from ..money import D, money, ZERO
 
 MGMT_FEE = 0.015
 PERF_FEE = 0.15
-INVESTOR_NAMES = ["Harbor Endowment", "Kestrel Pension Trust", "Atlas Family Office", "Meridian Fund of Funds", "Nordic Sovereign Reserve",
-                  "Vantage Multi-Strategy", "Lakeshore Foundation", "Orchard Insurance General Account"]
+INVESTOR_NAMES = ["Yale Endowment", "CalPERS", "Walton Family Office", "Blackstone Alternative Asset Management", "GIC (Singapore)",
+                  "Ontario Teachers' Pension Plan", "Ford Foundation", "MetLife General Account"]
 
 
 class IE:

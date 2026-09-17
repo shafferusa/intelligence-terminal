@@ -16,7 +16,9 @@ function of the seed: replays and pre-history regeneration are exact.
 """
 from __future__ import annotations
 
+import json
 import math
+import os
 import random
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -96,45 +98,84 @@ SECTOR_VOL = {
 }
 
 # ticker, name, asset_class, sector, country, ccy, price, beta, idio vol, ADV, spread bps, tier, div yield, shares (mm)
-EQUITY_SEED = [
-    ("NVRA", "Novara Systems", "EQUITY", "Technology", "US", "USD", 412.50, 1.35, 0.30, 4_200_000, 2, "LARGE", 0.004, 2450),
-    ("QNTM", "Quantum Lattice", "EQUITY", "Technology", "US", "USD", 88.20, 1.55, 0.42, 6_500_000, 4, "LARGE", 0.0, 1320),
-    ("CLDX", "Cloudex Infrastructure", "EQUITY", "Technology", "US", "USD", 167.40, 1.25, 0.28, 2_900_000, 3, "LARGE", 0.006, 980),
-    ("MRDN", "Meridian Bancorp", "EQUITY", "Financials", "US", "USD", 54.10, 1.10, 0.22, 8_100_000, 3, "LARGE", 0.032, 3100),
-    ("ATLS", "Atlas Capital Group", "EQUITY", "Financials", "US", "USD", 236.80, 1.20, 0.24, 1_700_000, 4, "LARGE", 0.018, 410),
-    ("HLXB", "Helix Biosciences", "EQUITY", "Healthcare", "US", "USD", 142.30, 0.75, 0.20, 3_300_000, 3, "LARGE", 0.028, 1750),
-    ("VTRA", "Vitra Health", "EQUITY", "Healthcare", "US", "USD", 61.75, 0.85, 0.23, 4_800_000, 4, "LARGE", 0.022, 2200),
-    ("PTRX", "Petrox Energy", "EQUITY", "Energy", "US", "USD", 98.60, 0.95, 0.27, 5_600_000, 3, "LARGE", 0.038, 1600),
-    ("NGSL", "Northgate Solar", "EQUITY", "Energy", "US", "USD", 27.35, 1.60, 0.48, 7_200_000, 8, "MID", 0.0, 540),
-    ("ORCH", "Orchard Retail", "EQUITY", "Consumer", "US", "USD", 176.90, 0.90, 0.19, 2_400_000, 3, "LARGE", 0.016, 1100),
-    ("BRWN", "Brewton Foods", "EQUITY", "Consumer", "US", "USD", 68.40, 0.55, 0.15, 3_900_000, 3, "LARGE", 0.034, 1900),
-    ("LUXA", "Luxa Brands", "EQUITY", "Consumer", "US", "USD", 312.20, 1.05, 0.26, 900_000, 6, "MID", 0.012, 190),
-    ("TITN", "Titan Machinery", "EQUITY", "Industrials", "US", "USD", 219.50, 1.15, 0.24, 2_100_000, 4, "LARGE", 0.020, 480),
-    ("AERO", "Aerion Dynamics", "EQUITY", "Industrials", "US", "USD", 384.10, 0.80, 0.21, 1_300_000, 4, "LARGE", 0.024, 260),
-    ("GRDP", "Grid Power Holdings", "EQUITY", "Utilities", "US", "USD", 74.85, 0.45, 0.14, 2_600_000, 4, "LARGE", 0.042, 1250),
-    ("URBN", "Urban Core REIT", "REIT", "Real Estate", "US", "USD", 41.20, 0.85, 0.22, 3_100_000, 6, "MID", 0.056, 670),
-    ("CPRX", "Cuprex Mining", "EQUITY", "Materials", "US", "USD", 33.70, 1.30, 0.34, 6_900_000, 6, "MID", 0.026, 1450),
-    ("TLNK", "Telelink Communications", "EQUITY", "Communications", "US", "USD", 22.90, 0.60, 0.17, 12_000_000, 4, "LARGE", 0.061, 4300),
-    ("ZYNQ", "Zynqa Robotics", "EQUITY", "Technology", "US", "USD", 14.60, 1.70, 0.62, 380_000, 45, "SMALL", 0.0, 62),
-    ("PLSR", "Pulsar Biotech", "EQUITY", "Healthcare", "US", "USD", 8.95, 1.40, 0.75, 650_000, 60, "SMALL", 0.0, 140),
-    ("KOBE", "Kobayashi Motors ADR", "ADR", "Consumer", "JP", "USD", 19.40, 0.90, 0.24, 1_900_000, 8, "MID", 0.030, 3000),
-    ("ATLS-P", "Atlas Capital 6.25% Pfd", "PREFERRED", "Financials", "US", "USD", 24.60, 0.35, 0.09, 220_000, 20, "SMALL", 0.0635, 40),
-    ("SPXE", "Broad Market Equity ETF", "ETF", "Index", "US", "USD", 512.30, 1.00, 0.005, 9_500_000, 1, "LARGE", 0.013, 900),
-    ("SHRT", "Short-Term Treasury ETF", "ETF", "Government", "US", "USD", 100.15, 0.00, 0.003, 4_000_000, 1, "LARGE", 0.043, 500),
-]
+# The universe is a snapshot of real listed companies, ETFs and representative bonds (finsim/data/universe.json, refreshed
+# with tools/refresh_universe.py from Yahoo Finance prices and SEC EDGAR fundamentals). The game starts from that snapshot
+# and simulates from there; nothing here is a live feed.
+_UNIVERSE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "universe.json")
+with open(_UNIVERSE_PATH) as _f:
+    UNIVERSE = json.load(_f)
+UNIVERSE_AS_OF = UNIVERSE.get("as_of", "")
+
+
+# Shares that EDGAR's dei tag does not give directly (multi-class issuers report per class; funds and foreign filers
+# do not file it): approximate share counts, in millions, as of the snapshot. Used only for market-cap tiers and
+# per-share fundamentals.
+SHARES_FALLBACK_M = {"GOOGL": 12_100.0, "META": 2_520.0, "RIVN": 1_210.0, "BRK-B": 2_160.0, "TSM": 5_190.0, "TM": 1_300.0,
+                     "SPY": 900.0, "QQQ": 600.0, "TLT": 400.0, "HYG": 250.0, "SHV": 300.0}
+
+
+def _adjusted_beta(raw: float) -> float:
+    """One-year realized beta, shrunk toward 1 (Blume): the factor model wants a forward-looking loading, and a
+    defensive name's negative twelve-month beta is noise, not a sign that it falls when the market rises."""
+    return round(max(0.1, 0.67 * raw + 0.33), 3)
+
+
+def _tier(rec: Dict) -> str:
+    cap = float(rec.get("price", 0)) * float(rec.get("shares_outstanding", 0) or 0)
+    if rec["asset_class"] == "ETF":
+        return "LARGE"
+    if rec["asset_class"] == "PREFERRED":
+        return "SMALL"
+    if cap >= 30e9:
+        return "LARGE"
+    if cap >= 5e9:
+        return "MID"
+    return "SMALL"
+
+
+def _spread_bps(rec: Dict, tier: str) -> float:
+    if rec["asset_class"] == "ETF":
+        return 1.0
+    if rec["asset_class"] == "PREFERRED":
+        return 20.0
+    return {"LARGE": 2.0, "MID": 6.0, "SMALL": 30.0}[tier]
+
+
+# (ticker, name, asset_class, sector, country, ccy, price, beta, sigma, adv, spread_bps, tier, dividend_yield, shares in millions)
+EQUITY_SEED = []
+for _r in UNIVERSE["equities"]:
+    _shares = SHARES_FALLBACK_M.get(_r["ticker"]) or float(_r.get("shares_outstanding") or 0) / 1e6 or 300.0
+    _r = dict(_r, shares_outstanding=_shares * 1e6)
+    if _r["country"] != "US":            # foreign filers report in their home currency: keep prices, drop EDGAR statement lines
+        _r = {k: v for k, v in _r.items() if k not in ("revenue", "net_income", "eps", "total_debt", "cash", "equity", "cfo", "capex")}
+    _t = _tier(_r)
+    EQUITY_SEED.append((_r["ticker"], _r["name"], _r["asset_class"], _r["sector"], _r["country"], "USD", float(_r["price"]), _adjusted_beta(float(_r["beta"])),
+                        max(0.03, float(_r["sigma_annual"])), int(_r["adv"]), _spread_bps(_r, _t), _t, float(_r.get("dividend_yield", 0.0)), _shares))
+REAL_FUNDAMENTALS = {r["ticker"]: r for r in UNIVERSE["equities"] if r["country"] == "US"}
+from .commodities import apply_snapshot as _apply_commodity_snapshot      # noqa: E402
+from .fx_market import apply_snapshot as _apply_fx_snapshot               # noqa: E402
+_apply_commodity_snapshot(UNIVERSE.get("commodities", {}))
+_apply_fx_snapshot(UNIVERSE.get("fx", {}))
+_RATES = UNIVERSE.get("rates", {})
+INITIAL_POLICY_RATE = float(_RATES.get("bill_13w", 0.0435))
+INITIAL_LONG_RATE = float(_RATES.get("y30", 0.0475))
+INITIAL_10Y = float(_RATES.get("y10", 0.0425))
+
+
+def _coupon(y: float) -> float:
+    """On-the-run coupons: the yield rounded to the nearest eighth of a percent so new Treasuries start near par."""
+    return round(y * 800) / 800 if y else 0.0
+
 
 # id, name, asset_class, issuer, coupon, years to maturity from start, rating, spread bps, ADV face, sector
 BOND_SEED = [
-    ("UST-2Y", "US Treasury 4.125% 2Y", "GOVT_BOND", "United States Treasury", 0.04125, 2.0, "AAA", 0.0, 400_000_000, "Government"),
-    ("UST-5Y", "US Treasury 4.00% 5Y", "GOVT_BOND", "United States Treasury", 0.04, 5.0, "AAA", 0.0, 300_000_000, "Government"),
-    ("UST-10Y", "US Treasury 4.25% 10Y", "GOVT_BOND", "United States Treasury", 0.0425, 10.0, "AAA", 0.0, 250_000_000, "Government"),
-    ("UST-30Y", "US Treasury 4.50% 30Y", "GOVT_BOND", "United States Treasury", 0.045, 30.0, "AAA", 0.0, 120_000_000, "Government"),
-    ("MRDN-29", "Meridian Bancorp 5.40% 2029", "CORP_BOND", "Meridian Bancorp", 0.054, 3.0, "A-", 95.0, 25_000_000, "Financials"),
-    ("PTRX-32", "Petrox Energy 5.85% 2032", "CORP_BOND", "Petrox Energy", 0.0585, 6.0, "BBB", 140.0, 18_000_000, "Energy"),
-    ("NGSL-30", "Northgate Solar 8.25% 2030", "CORP_BOND", "Northgate Solar", 0.0825, 4.0, "B+", 420.0, 8_000_000, "Energy"),
-]
+    ("UST-2Y", f"US Treasury {_coupon(float(_RATES.get('y5', 0.04)) - 0.00125) * 100:.3f}% 2Y", "GOVT_BOND", "United States Treasury", _coupon(float(_RATES.get("y5", 0.04)) - 0.00125), 2.0, "AAA", 0.0, 400_000_000, "Government"),
+    ("UST-5Y", f"US Treasury {_coupon(float(_RATES.get('y5', 0.04))) * 100:.3f}% 5Y", "GOVT_BOND", "United States Treasury", _coupon(float(_RATES.get("y5", 0.04))), 5.0, "AAA", 0.0, 300_000_000, "Government"),
+    ("UST-10Y", f"US Treasury {_coupon(INITIAL_10Y) * 100:.3f}% 10Y", "GOVT_BOND", "United States Treasury", _coupon(INITIAL_10Y), 10.0, "AAA", 0.0, 250_000_000, "Government"),
+    ("UST-30Y", f"US Treasury {_coupon(INITIAL_LONG_RATE) * 100:.3f}% 30Y", "GOVT_BOND", "United States Treasury", _coupon(INITIAL_LONG_RATE), 30.0, "AAA", 0.0, 120_000_000, "Government"),
+] + [(b["id"], b["name"], "CORP_BOND", b["issuer"], float(b["coupon"]), float(b["years"]), b["rating"], float(b["spread_bps"]), int(b["adv"]), b["sector"]) for b in UNIVERSE["bonds"]]
 
-BOND_ISSUER_TICKER = {"MRDN-29": "MRDN", "PTRX-32": "PTRX", "NGSL-30": "NGSL"}
+BOND_ISSUER_TICKER = {b["id"]: b["issuer_ticker"] for b in UNIVERSE["bonds"]}
 
 
 def _add_months(d: date, months: int) -> date:
@@ -172,6 +213,18 @@ def build_universe(start: date, seed: int) -> Dict[str, Security]:
             "book_value_per_share": round(px / rng.uniform(1.2, 8.0), 2),
             "free_cash_flow": round(eps * shares * 1e6 * rng.uniform(0.6, 1.3), 0),
         }
+        real = REAL_FUNDAMENTALS.get(t, {})
+        if real.get("revenue") and shares:
+            so = shares * 1e6
+            fundamentals = {
+                "revenue": float(real["revenue"]), "net_income": float(real.get("net_income", 0.0) or 0.0),
+                "eps": float(real.get("eps") if real.get("eps") is not None else (float(real.get("net_income", 0.0) or 0.0) / so)),
+                "ebitda": round(float(real.get("net_income", 0.0) or 0.0) * 1.6 + float(real["revenue"]) * 0.04, 0),
+                "total_debt": float(real.get("total_debt", 0.0) or 0.0), "cash": float(real.get("cash", 0.0) or 0.0),
+                "book_value_per_share": round(float(real.get("equity", 0.0) or 0.0) / so, 2) if real.get("equity") else round(px / 3.0, 2),
+                "free_cash_flow": float(real.get("cfo", 0.0) or 0.0) - float(real.get("capex", 0.0) or 0.0) if real.get("cfo") is not None else round(eps * so, 0),
+                "fiscal_year_end": real.get("fiscal_year_end"), "as_of": UNIVERSE_AS_OF, "source": "SEC EDGAR company facts",
+            }
         if ac in ("ETF",):
             fundamentals = {}
         secs[t] = Security(
@@ -337,7 +390,8 @@ class MarketEngine:
     # ---------------- generation ----------------
     def _initial_state(self) -> MarketState:
         d0 = self.cal.add_business_days(self.start, -self.prehistory_days - 1)
-        return MarketState(d0.isoformat(), "NORMAL_GROWTH", 0.0435, -0.006, 0.004, 105.0, 360.0, 0.0, {})
+        # the initial curve is the real one at the snapshot date: long end from the 30-year, slope from bills to bonds
+        return MarketState(d0.isoformat(), "NORMAL_GROWTH", INITIAL_LONG_RATE, min(0.03, max(-0.03, INITIAL_POLICY_RATE - INITIAL_LONG_RATE)), 0.004, 105.0, 360.0, 0.0, {})
 
     def bootstrap(self) -> None:
         """Generate pre-history up to (but not including) the start date."""
@@ -355,6 +409,164 @@ class MarketEngine:
             if d >= self.start:
                 break
             self.generate_day(d)
+        self._anchor_to_snapshot()
+
+    def _rescale_history(self, sid: str, factor: Decimal) -> None:
+        if factor == 1 or not self.history.get(sid):
+            return
+        self.history[sid] = [Bar(b.date, qprice(b.open * factor), qprice(b.high * factor), qprice(b.low * factor), qprice(b.close * factor), b.volume,
+                                 qprice(b.bid * factor), qprice(b.ask * factor)) for b in self.history[sid]]
+        if sid in self._prev_close:
+            self._prev_close[sid] = qprice(self._prev_close[sid] * factor)
+
+    def _anchor_start_day(self, d: date, bars: Dict[str, Bar], curve: YieldCurve, cpayload: Dict, level: float, slope: float, curv: float,
+                          ig: float, hy: float, R) -> Tuple[Dict[str, Bar], YieldCurve, float, float]:
+        """Pin the start date's closes to the snapshot (the prehistory already ends there, so the first session is flat)."""
+        from .pricing import BondPricer
+        def scaled(b: Bar, f: Decimal) -> Bar:
+            return Bar(b.date, qprice(b.open * f), qprice(b.high * f), qprice(b.low * f), qprice(b.close * f), b.volume, qprice(b.bid * f), qprice(b.ask * f))
+        pin: Dict[str, Decimal] = {}
+        for (t, _n, _ac, _s, _c, _ccy, px, *_rest) in EQUITY_SEED:
+            b = bars.get(t)
+            if b and b.close:
+                pin[t] = D(repr(px)) / b.close
+                bars[t] = scaled(b, pin[t])
+                self._prev_close[t] = bars[t].close
+        for code, target in UNIVERSE.get("commodities", {}).items():
+            st = self.commodities.state.get(code)
+            if st is None or not st.spot or not target or code not in cpayload:
+                continue
+            f = float(target) / st.spot
+            st.spot = float(target)
+            cpayload[code]["spot"] = float(target)
+            if isinstance(cpayload[code].get("curve"), dict):
+                cpayload[code]["curve"] = {k: v * f for k, v in cpayload[code]["curve"].items()}
+            if self.commodities.spot_history[code]:
+                self.commodities.spot_history[code][-1] = (d.isoformat(), float(target))
+            if self.commodities.curve_history[code]:
+                dd, cv = self.commodities.curve_history[code][-1]
+                self.commodities.curve_history[code][-1] = (dd, {k: v * f for k, v in cv.items()})
+            fD = D(repr(f))
+            for sid, sec in self.securities.items():
+                if (sec.is_future and sec.underlying == code or sec.asset_class == "PHYSICAL" and sec.underlying == code) and sid in bars:
+                    bars[sid] = scaled(bars[sid], fD)
+                    self._prev_close[sid] = bars[sid].close
+        for ccy, target in UNIVERSE.get("fx", {}).items():
+            if self.fx.spot.get(ccy) and target:
+                self.fx.spot[ccy] = float(target)
+                if ccy in self._fx_payload:
+                    self._fx_payload[ccy]["spot"] = float(target)
+                if self.fx.history.get(ccy):
+                    dd, _s, r_ = self.fx.history[ccy][-1]
+                    self.fx.history[ccy][-1] = (dd, float(target), r_)
+        rates = UNIVERSE.get("rates", {})
+        if rates.get("y30") and rates.get("bill_13w"):
+            level = float(rates["y30"])
+            slope = min(0.03, max(-0.03, float(rates["bill_13w"]) - level))
+            curve = YieldCurve(d.isoformat(), TENORS, [nelson_siegel(level, slope, curv, 2.0, t) for t in TENORS], ig_spread_bps=round(ig, 2),
+                               hy_spread_bps=round(hy, 2), policy_rate=round(nelson_siegel(level, slope, curv, 2.0, 0.08), 5))
+            for sid, sec in self.securities.items():
+                if sec.is_bond and sid in bars and not sec.defaulted:
+                    clean = qprice(BondPricer.clean_price_from_curve(sec, curve, d))
+                    half = clean * D(str(sec.spread_bps * R.spread_mult / 2 / 1e4))
+                    pc = self.history[sid][-1].close if self.history.get(sid) else clean
+                    if bars[sid].close:
+                        pin[sid] = clean / bars[sid].close
+                    bars[sid] = Bar(d.isoformat(), qprice(pc), qprice(max(pc, clean)), qprice(min(pc, clean)), clean, bars[sid].volume, qprice(clean - half), qprice(clean + half))
+                    self._prev_close[sid] = clean
+        # financial futures were stepped off the unpinned SPY close and 10-year price: move them with their source
+        for code, src in (("ES", "SPY"), ("ZN", "UST-10Y")):
+            fD = pin.get(src)
+            if fD is None or fD == 1 or code not in cpayload:
+                continue
+            f = float(fD)
+            cpayload[code]["spot"] = cpayload[code]["spot"] * f
+            if isinstance(cpayload[code].get("curve"), dict):
+                cpayload[code]["curve"] = {k: v * f for k, v in cpayload[code]["curve"].items()}
+            if self.commodities.spot_history.get(code):
+                dd, v = self.commodities.spot_history[code][-1]
+                self.commodities.spot_history[code][-1] = (dd, v * f)
+            if self.commodities.curve_history.get(code):
+                dd, cv = self.commodities.curve_history[code][-1]
+                self.commodities.curve_history[code][-1] = (dd, {k: v * f for k, v in cv.items()})
+            for sid, sec in self.securities.items():
+                if sec.is_future and sec.underlying == code and sid in bars:
+                    bars[sid] = scaled(bars[sid], fD)
+                    self._prev_close[sid] = bars[sid].close
+        return bars, curve, level, slope
+
+    def _anchor_to_snapshot(self) -> None:
+        """The seeded prehistory is a random path; the world must nevertheless START at the snapshot: today's prices,
+        commodity spots, FX rates and yield curve. Every history is rescaled by a constant so its last close equals
+        the snapshot value (returns and shapes are untouched), the curve state is set to the snapshot yields and bonds
+        are rescaled to the price that curve implies. Deterministic, so replay rebuilds the same prehistory."""
+        if not self.history:
+            return
+        # equities, ETFs, preferred, ADRs: back to the snapshot price
+        factors: Dict[str, Decimal] = {}
+        for (t, _n, _ac, _s, _c, _ccy, px, *_rest) in EQUITY_SEED:
+            h = self.history.get(t)
+            if h and h[-1].close:
+                factors[t] = D(repr(px)) / h[-1].close
+                self._rescale_history(t, factors[t])
+        # commodities: spot, curves and every listed contract
+        for code, target in UNIVERSE.get("commodities", {}).items():
+            st = self.commodities.state.get(code)
+            if st is None or not st.spot or not target:
+                continue
+            f = float(target) / st.spot
+            st.spot = float(target)
+            self.commodities.spot_history[code] = [(d_, v * f) for d_, v in self.commodities.spot_history[code]]
+            self.commodities.curve_history[code] = [(d_, {k: v * f for k, v in cv.items()}) for d_, cv in self.commodities.curve_history[code]]
+            fD = D(repr(f))
+            for sid, sec in self.securities.items():
+                if sec.is_future and sec.underlying == code:
+                    self._rescale_history(sid, fD)
+        # FX: spot in USD per unit of foreign currency
+        for ccy, target in UNIVERSE.get("fx", {}).items():
+            cur = self.fx.spot.get(ccy)
+            if cur and target:
+                f = float(target) / cur
+                self.fx.spot[ccy] = float(target)
+                self.fx.history[ccy] = [(d_, s_ * f, r_) for d_, s_, r_ in self.fx.history[ccy]]
+        # the curve: long end and short end from the snapshot; bonds to the price that curve implies
+        rates = UNIVERSE.get("rates", {})
+        if rates.get("y30") and rates.get("bill_13w") and self.curves:
+            from .pricing import BondPricer  # local import to avoid a cycle
+            s = self.state
+            level = float(rates["y30"])
+            slope = min(0.03, max(-0.03, float(rates["bill_13w"]) - level))
+            self.state = MarketState(s.date, s.regime, level, slope, s.curv, s.ig_spread, s.hy_spread, s.mkt_factor, s.sector_factors)
+            old = self.curves[-1]
+            curve = YieldCurve(old.date, TENORS, [nelson_siegel(level, slope, s.curv, 2.0, t) for t in TENORS], ig_spread_bps=old.ig_spread_bps,
+                               hy_spread_bps=old.hy_spread_bps, policy_rate=round(nelson_siegel(level, slope, s.curv, 2.0, 0.08), 5))
+            self.curves[-1] = curve
+            asof = date.fromisoformat(old.date)
+            # issuers: the prehistory's credit migration is a random path; the world starts at the snapshot's rating and spread
+            seed_spread = {bid: spr for (bid, _n, _ac, _i, _c, _y, _r, spr, _a, _s) in BOND_SEED}
+            for ref, ist in self.macro.issuers.items():
+                sec = self.securities.get(ref)
+                if sec is None or ist.defaulted:
+                    continue
+                ist.rating, ist.watch = ist.base_rating, "STABLE"
+                ist.spread_bps = float(seed_spread.get(ref, ist.spread_bps))
+                sec.rating, sec.spread_bps_credit = ist.rating, ist.spread_bps
+            for sid, sec in self.securities.items():
+                if sec.is_bond and self.history.get(sid) and self.history[sid][-1].close:
+                    clean = BondPricer.clean_price_from_curve(sec, curve, asof)
+                    factors[sid] = qprice(clean) / self.history[sid][-1].close
+                    self._rescale_history(sid, factors[sid])
+        # financial futures ride their source: ES on the SPY level, ZN on the 10-year note's clean price
+        for code, src in (("ES", "SPY"), ("ZN", "UST-10Y")):
+            fD = factors.get(src)
+            if fD is None or fD == 1 or code not in self.commodities.spot_history:
+                continue
+            f = float(fD)
+            self.commodities.spot_history[code] = [(d_, v * f) for d_, v in self.commodities.spot_history[code]]
+            self.commodities.curve_history[code] = [(d_, {k: v * f for k, v in cv.items()}) for d_, cv in self.commodities.curve_history[code]]
+            for sid, sec in self.securities.items():
+                if sec.is_future and sec.underlying == code:
+                    self._rescale_history(sid, fD)
 
     def generate_day(self, d: date) -> Tuple[Dict[str, Bar], YieldCurve, Optional[str]]:
         """Generate one business day's market. Returns (bars, curve, regime_change)."""
@@ -479,10 +691,10 @@ class MarketEngine:
         # commodities & financial futures
         self.ensure_listings(d)
         prev_bd = date.fromisoformat(prev.date)
-        spx = bars["SPXE"]
+        spx = bars["SPY"]
         ust = bars["UST-10Y"]
         cpayload, cnews = self.commodities.step(d, prev_bd, R.growth, mkt, level, level - prev.level, float(spx.close),
-                                                self.securities["SPXE"].dividend_yield, float(ust.close), self.securities["UST-10Y"].coupon,
+                                                self.securities["SPY"].dividend_yield, float(ust.close), self.securities["UST-10Y"].coupon,
                                                 R.depth_mult, R.spread_mult)
         spot_shapes = {}
         for code in cpayload:
@@ -508,13 +720,16 @@ class MarketEngine:
         self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
         self._dealer_payload, dnews = self.dealers.step(d, regime, hy, mkt)
         self.day_news = cnews + lnews + dnews + macro_out["news"] + cnews_corp
+        if d == self.start:
+            # the first session closes exactly at the snapshot: today's prices, spots, FX and curve are the starting point
+            bars, curve, level, slope = self._anchor_start_day(d, bars, curve, cpayload, level, slope, curv, ig, hy, R)
         self._commodity_payload = cpayload
         self.state = MarketState(d.isoformat(), regime, level, slope, curv, ig, hy, mkt, sectors)
         for t, b in bars.items():
             self.history[t].append(b)
         self.curves.append(curve)
         prev_vix = self.vol_index()
-        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPXE")) * (1 + macro_out["vol_bump"])
+        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPY")) * (1 + macro_out["vol_bump"])
         self.vol_index_history.append((d.isoformat(), round(vix, 2)))
         vchg = (vix / prev_vix - 1) if prev_vix else 0.0
         self._vol_payload = {}

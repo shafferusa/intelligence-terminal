@@ -16,7 +16,7 @@ class VerticalSliceTest(unittest.TestCase):
         self.assertEqual(led.balance("3000"), D("10000000.00"))
         # 2. simulated market exists
         self.assertGreater(len(w.securities), 25)
-        self.assertGreater(len(w.market.history["NVRA"]), 250)
+        self.assertGreater(len(w.market.history["NVDA"]), 250)
         ca = sorted((c for c in w.corporate_actions.values() if c.status == "DECLARED"), key=lambda c: c.ex_date)[0]
         tkr = ca.security_id
         bar = w.market.last_bar(tkr)

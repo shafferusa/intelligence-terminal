@@ -61,7 +61,7 @@ def run_demo(seed: int = 42, start: str = "2026-01-05") -> World:
     cas = sorted((ca for ca in w.corporate_actions.values() if ca.status == "DECLARED"), key=lambda c: c.ex_date)
     ca = cas[0]
     tkr = ca.security_id
-    for t in [tkr, "SPXE", "UST-10Y"]:
+    for t in [tkr, "SPY", "UST-10Y"]:
         b = w.market.last_bar(t)
         print(f"  {t:<8} last {b.close:>10}  bid {b.bid:>10}  ask {b.ask:>10}  vol {b.volume:>12,}")
     front = w.market.front_contract("CL")
@@ -73,7 +73,7 @@ def run_demo(seed: int = 42, start: str = "2026-01-05") -> World:
     _p(f"3. Evening instructions: buy 10,000 {tkr}; buy 20 {cl.id}; a limit and a conditional")
     o = w.place_order(pid, tkr, "BUY", 10000)
     of = w.place_order(pid, cl.id, "BUY", 20, time_in_force="GTC")
-    lim = w.place_order(pid, "SPXE", "BUY", 1000, order_type="LIMIT", limit_price=w.market.last_bar("SPXE").bid * D("0.97"), time_in_force="GTC")
+    lim = w.place_order(pid, "SPY", "BUY", 1000, order_type="LIMIT", limit_price=w.market.last_bar("SPY").bid * D("0.97"), time_in_force="GTC")
     cond = w.place_order(pid, "UST-10Y", "BUY", 1_000_000, time_in_force="GTC", condition={"ref": "CURVE:10Y", "op": ">=", "value": 99})
     for x in (o, of, lim, cond):
         print(f"  {x.id} {x.side} {x.quantity:,} {x.security_id} {x.order_type} {x.time_in_force} -> {x.status}")

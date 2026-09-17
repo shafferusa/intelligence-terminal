@@ -35,11 +35,12 @@ def df(curve, t: float, shift_bp: float = 0.0) -> float:
 
 
 def fwd_rate(curve, t1: float, t2: float, shift_bp: float = 0.0) -> float:
-    """Simple (money-market) forward rate between t1 and t2."""
+    """Simple (money-market) forward rate between t1 and t2 (years, ACT/365), quoted on the ACT/360 basis the floating
+    legs accrue on: r × τ(ACT/360) = df(t1)/df(t2) − 1, so a floating leg valued off this curve prices to par."""
     if t2 <= t1:
         return interp_rate(curve, max(t1, 0.02)) + shift_bp / 1e4
     d1, d2 = df(curve, t1, shift_bp), df(curve, t2, shift_bp)
-    return (d1 / d2 - 1) / (t2 - t1)
+    return (d1 / d2 - 1) / ((t2 - t1) * 365.0 / 360.0)
 
 
 def yearfrac(d1: date, d2: date, basis: str) -> float:
@@ -55,11 +56,15 @@ def yearfrac(d1: date, d2: date, basis: str) -> float:
 
 def schedule(start: date, end: date, months: int, roll: Callable[[date], date]) -> List[Tuple[date, date, date]]:
     """(accrual start, accrual end, payment date) periods from start to end, stepping `months`, rolled to business days."""
+    if months < 1:
+        raise ValueError("period length must be at least one month")
     out = []
     i = 0
     cur = start
     while cur < end:
         nxt = min(end, _add_months(start, months * (i + 1)))
+        if nxt < end and roll(nxt) >= end:      # the rolled maturity is this period's payment date: no sliver stub after it
+            nxt = end
         out.append((cur, nxt, roll(nxt)))
         cur = nxt
         i += 1

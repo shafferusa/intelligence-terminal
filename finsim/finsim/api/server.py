@@ -43,7 +43,7 @@ class Router:
                     return s.create_world(body.get("name", "New world"), body.get("seed", 42), body.get("start_date"),
                                           body.get("capital"), body.get("portfolio_name", "Main Portfolio"), body.get("portfolio_type", "PERSONAL"),
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
-                                          body.get("benchmark", "SPXE"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
+                                          body.get("benchmark", "SPY"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
                                           body.get("timezone", "America/New_York"), body.get("update_time", "09:00"), body.get("scenario", "NONE"))
             if parts[2:] == ["jobs"] if len(parts) > 2 else False:
                 return s.jobs()
@@ -106,7 +106,7 @@ class Router:
                 return s.event(wid, sub[1])
             if sub == ["portfolios"] and method == "POST":
                 return s.create_portfolio(wid, body.get("name", "Portfolio"), body.get("portfolio_type", "PERSONAL"), body.get("capital", 10_000_000),
-                                          body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("benchmark", "SPXE"), body.get("job", "SANDBOX"))
+                                          body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("benchmark", "SPY"), body.get("job", "SANDBOX"))
             if sub[0] == "portfolios" and len(sub) >= 2:
                 pid = sub[1]
                 leaf = sub[2:]

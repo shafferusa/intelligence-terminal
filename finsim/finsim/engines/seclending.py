@@ -471,7 +471,7 @@ class LE:
 LEND_COLLATERAL = 1.02
 MIN_LEND_SESSIONS = 5              # borrowers keep a loan at least this long before a random early return
 EARLY_RETURN_P = 0.015             # daily probability of an early return after that
-BORROWERS = ["Kestrel Macro Fund", "Vantage Multi-Strategy", "Harbor Securities Swaps", "Atlas Capital Markets", "Meridian Bank Derivatives"]
+BORROWERS = ["Citadel", "Millennium Management", "Morgan Stanley Institutional Securities", "Goldman Sachs", "J.P. Morgan"]
 
 
 class LendDeskEngine:

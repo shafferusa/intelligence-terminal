@@ -17,7 +17,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..domain.models import Security
 
-LENDERS = ["Northgate Agency Lending", "Meridian Custody Lending", "Harbor Prime Securities Lending"]
+LENDERS = ["State Street Agency Lending", "BNY Mellon Securities Lending", "J.P. Morgan Agency Lending"]
 
 
 @dataclass

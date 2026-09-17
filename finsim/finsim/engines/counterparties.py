@@ -41,17 +41,17 @@ class DealerSpec:
 
 
 DEALERS: Dict[str, DealerSpec] = {
-    "ATLAS": DealerSpec("ATLAS", "Atlas Capital Markets", "A+", 55, 0.10, 24.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP"), 0.9, 0.0,
+    "GOLDMAN": DealerSpec("GOLDMAN", "Goldman Sachs", "BBB+", 60, 0.10, 24.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP"), 0.9, 0.0,
                         "Bulge bracket: tight in rates and credit, shows everything.", (("TRS", 1.15), ("COMMODITY_SWAP", 1.3), ("XCCY", 1.1))),
-    "MERIDIAN": DealerSpec("MERIDIAN", "Meridian Bank Derivatives", "A", 70, 0.12, 16.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS"), 1.0, -0.1,
+    "JPMORGAN": DealerSpec("JPMORGAN", "J.P. Morgan", "A", 45, 0.12, 16.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS"), 1.0, -0.1,
                            "Relationship bank: slightly wider, leans to win.", (("XCCY", 0.8), ("CAP", 0.85), ("FLOOR", 0.85))),
-    "HARBOR": DealerSpec("HARBOR", "Harbor Securities Swaps", "A-", 85, 0.15, 9.0, ("IRS", "FRA", "SWAPTION", "TRS", "CDS", "COMMODITY_SWAP"), 1.1, 0.1,
+    "MORGAN_STANLEY": DealerSpec("MORGAN_STANLEY", "Morgan Stanley", "A-", 55, 0.15, 9.0, ("IRS", "FRA", "SWAPTION", "TRS", "CDS", "COMMODITY_SWAP"), 1.1, 0.1,
                          "Broker-dealer: competitive in equity swaps and commodities, wider in rates.", (("TRS", 0.7), ("COMMODITY_SWAP", 0.85))),
-    "KESTREL": DealerSpec("KESTREL", "Kestrel Global Markets", "BBB+", 120, 0.25, 5.0, ("IRS", "CAP", "FLOOR", "XCCY", "TRS", "COMMODITY_SWAP"), 1.25, -0.2,
+    "CITI": DealerSpec("CITI", "Citigroup", "BBB+", 70, 0.25, 5.0, ("IRS", "CAP", "FLOOR", "XCCY", "TRS", "COMMODITY_SWAP"), 1.25, -0.2,
                           "Aggressive mid-tier: cheapest when calm, first to widen and to decline in stress.", (("XCCY", 0.7), ("IRS", 0.95))),
-    "NORDBANK": DealerSpec("NORDBANK", "Nordbank International", "AA-", 40, 0.08, 30.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "CDS"), 1.05, 0.15,
+    "BARCLAYS": DealerSpec("BARCLAYS", "Barclays", "A-", 65, 0.08, 30.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "CDS"), 1.05, 0.15,
                            "Conservative universal bank: never the tightest, always there."),
-    "VANTAGE": DealerSpec("VANTAGE", "Vantage Commodities & Credit", "BBB", 160, 0.35, 3.0, ("COMMODITY_SWAP", "CDS", "TRS"), 1.15, -0.15,
+    "DEUTSCHE": DealerSpec("DEUTSCHE", "Deutsche Bank", "BBB+", 95, 0.35, 3.0, ("COMMODITY_SWAP", "CDS", "TRS"), 1.15, -0.15,
                           "Specialist: sharp in commodities and credit, fragile balance sheet."),
 }
 RATING_ORDER = ["AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-", "BB+", "BB", "BB-", "B+", "B", "B-", "CCC", "D"]
@@ -64,12 +64,12 @@ REGIME_WIDTH = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.1, "RATE_HIKING": 1.3, "
 
 # CSA terms by dealer: threshold and MTA in base currency, IM by product (fraction of notional)
 CSA_TERMS = {
-    "ATLAS": {"threshold": 250_000, "mta": 100_000, "im": {"IRS": 0.010, "FRA": 0.003, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.030, "TRS": 0.100, "CDS": 0.040, "COMMODITY_SWAP": 0.080}},
-    "MERIDIAN": {"threshold": 500_000, "mta": 100_000, "im": {"IRS": 0.012, "FRA": 0.004, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.035, "TRS": 0.120, "CDS": 0.050, "COMMODITY_SWAP": 0.100}},
-    "HARBOR": {"threshold": 0, "mta": 50_000, "im": {"IRS": 0.015, "FRA": 0.005, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.040, "TRS": 0.150, "CDS": 0.060, "COMMODITY_SWAP": 0.120}},
-    "KESTREL": {"threshold": 0, "mta": 50_000, "im": {"IRS": 0.020, "FRA": 0.006, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.050, "TRS": 0.200, "CDS": 0.080, "COMMODITY_SWAP": 0.150}},
-    "NORDBANK": {"threshold": 1_000_000, "mta": 250_000, "im": {"IRS": 0.008, "FRA": 0.003, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.025, "TRS": 0.100, "CDS": 0.040, "COMMODITY_SWAP": 0.080}},
-    "VANTAGE": {"threshold": 0, "mta": 25_000, "im": {"IRS": 0.020, "FRA": 0.006, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.050, "TRS": 0.200, "CDS": 0.100, "COMMODITY_SWAP": 0.150}},
+    "GOLDMAN": {"threshold": 250_000, "mta": 100_000, "im": {"IRS": 0.010, "FRA": 0.003, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.030, "TRS": 0.100, "CDS": 0.040, "COMMODITY_SWAP": 0.080}},
+    "JPMORGAN": {"threshold": 500_000, "mta": 100_000, "im": {"IRS": 0.012, "FRA": 0.004, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.035, "TRS": 0.120, "CDS": 0.050, "COMMODITY_SWAP": 0.100}},
+    "MORGAN_STANLEY": {"threshold": 0, "mta": 50_000, "im": {"IRS": 0.015, "FRA": 0.005, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.040, "TRS": 0.150, "CDS": 0.060, "COMMODITY_SWAP": 0.120}},
+    "CITI": {"threshold": 0, "mta": 50_000, "im": {"IRS": 0.020, "FRA": 0.006, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.050, "TRS": 0.200, "CDS": 0.080, "COMMODITY_SWAP": 0.150}},
+    "BARCLAYS": {"threshold": 1_000_000, "mta": 250_000, "im": {"IRS": 0.008, "FRA": 0.003, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.025, "TRS": 0.100, "CDS": 0.040, "COMMODITY_SWAP": 0.080}},
+    "DEUTSCHE": {"threshold": 0, "mta": 25_000, "im": {"IRS": 0.020, "FRA": 0.006, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.050, "TRS": 0.200, "CDS": 0.100, "COMMODITY_SWAP": 0.150}},
 }
 
 
@@ -152,12 +152,12 @@ def dealers_for(product: str) -> List[str]:
 
 # ---------------------------------------------------------------- clients (the desk's customers when the player is the dealer)
 CLIENT_SPECS: Dict[str, Dict] = {
-    "PENSION_A": {"name": "Lakeshore Teachers' Pension", "rating": "AA", "cds": 35.0},
-    "INSURER_B": {"name": "Orchard Life Insurance", "rating": "A+", "cds": 60.0},
-    "HF_C": {"name": "Kestrel Macro Fund", "rating": "BBB", "cds": 220.0},
-    "CORP_D": {"name": "Titan Machinery Treasury", "rating": "A-", "cds": 95.0},
-    "AM_E": {"name": "Meridian Asset Management", "rating": "A", "cds": 70.0},
-    "SOV_F": {"name": "Nordic Sovereign Reserve", "rating": "AAA", "cds": 20.0},
+    "PENSION_A": {"name": "Ontario Teachers' Pension Plan", "rating": "AA", "cds": 35.0},
+    "INSURER_B": {"name": "MetLife", "rating": "A+", "cds": 60.0},
+    "HF_C": {"name": "Citadel", "rating": "BBB", "cds": 220.0},
+    "CORP_D": {"name": "Caterpillar Treasury", "rating": "A-", "cds": 95.0},
+    "AM_E": {"name": "PIMCO", "rating": "A", "cds": 70.0},
+    "SOV_F": {"name": "GIC (Singapore)", "rating": "AAA", "cds": 20.0},
 }
 CLIENT_CSA = {"threshold": 1_000_000, "mta": 250_000, "im": {p: 0.0 for p in HALF_WIDTH}}
 

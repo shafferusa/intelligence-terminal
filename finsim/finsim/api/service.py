@@ -62,7 +62,7 @@ class Service:
 
     def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
-                     benchmark: Optional[str] = "SPXE", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
+                     benchmark: Optional[str] = "SPY", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
                      update_time: str = "09:00", scenario: str = "NONE", at=None) -> Dict:
         """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
         themselves at the update time; sandbox saves start wherever you like and advance on demand."""
@@ -709,7 +709,7 @@ class Service:
                      "reserved_for_calls": w.options.covered_shares_needed(pf, p.security_id), "available": w.collateral.available_quantity(pf, p.security_id),
                      "failing": sum((si.quantity for si in pf.settlements.values() if si.security_id == p.security_id and si.status == "FAILED"), ZERO)}
                     for p in pf.positions.values() if p.settled_quantity or p.pending_receive or p.pending_deliver or p.quantity]
-        return jsonable({"custodian": "Meridian Custody Services", "account": pf.custody_account, "holdings": holdings,
+        return jsonable({"custodian": "BNY Mellon Asset Servicing", "account": pf.custody_account, "holdings": holdings,
                          "movements": [asdict(c) for c in reversed(pf.custody_movements)]})
 
     def cash(self, world_id: str, portfolio_id: str) -> Dict:
@@ -996,14 +996,14 @@ class Service:
         w = self.world(world_id)
         out = []
         for under in w.options.optionable():
-            src = w.securities["SPXE"] if under == "SPXI" else w.securities[under]
+            src = w.securities["SPY"] if under == "SPX" else w.securities[under]
             st = w.market.vol.state.get(under)
             if st is None or not w.market.history.get(src.id):
                 continue
             rank = w.market.vol.iv_rank(under)
-            out.append({"underlying": under, "name": "Broad Market Index (10x SPXE, cash-settled European)" if under == "SPXI" else src.name, "level": w.options.underlying_level(under),
+            out.append({"underlying": under, "name": "Broad Market Index (10x SPY, cash-settled European)" if under == "SPX" else src.name, "level": w.options.underlying_level(under),
                         "atm_iv": st.atm, "skew": st.skew, "term": st.term, "realized_20d": w.market.realized_vol(src.id), "iv_rank": rank["iv_rank"] if rank else None,
-                        "style": "EUROPEAN/CASH" if under == "SPXI" else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
+                        "style": "EUROPEAN/CASH" if under == "SPX" else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
                         "contracts": sum(1 for s in w.securities.values() if s.is_option and s.underlying == under and not s.expired)})
         return jsonable(out)
 
@@ -1156,7 +1156,16 @@ class Service:
             sched = [{"leg": "FIXED", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat()} for s, e, p in w.otc.periods(t.start, t.maturity, T["fixed_months"])] + \
                     [{"leg": "FLOAT", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat(), "fixing": t.fixings.get(s.isoformat())} for s, e, p in w.otc.periods(t.start, t.maturity, T["float_months"])]
         elif t.product in ("CAP", "FLOOR", "XCCY", "COMMODITY_SWAP"):
-            sched = [{"leg": t.product, "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat(), "fixing": t.fixings.get(s.isoformat())} for s, e, p in w.otc.periods(t.start, t.maturity, T["months"])]
+            def _fix(s_):
+                k = s_.isoformat()
+                if t.product == "XCCY":
+                    u, f_ = t.fixings.get("USD:" + k), t.fixings.get(T["ccy"] + ":" + k)
+                    return None if u is None and f_ is None else f"USD {u:.4%} / {T['ccy']} {f_:.4%}" if (u is not None and f_ is not None) else (u if u is not None else f_)
+                if t.product == "COMMODITY_SWAP":
+                    return (t.state or {}).get("realised", {}).get(k)
+                return t.fixings.get(k)
+        elif t.product in ("CAP", "FLOOR", "XCCY", "COMMODITY_SWAP"):
+            sched = [{"leg": t.product, "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat(), "fixing": _fix(s)} for s, e, p in w.otc.periods(t.start, t.maturity, T["months"])]
         elif t.product == "CDS":
             sched = [{"leg": "PREMIUM", "start": s.isoformat(), "end": e.isoformat(), "pay": p.isoformat()} for s, e, p in w.otc.periods(t.start, t.maturity, 3)]
         elif t.product == "TRS":

@@ -89,7 +89,7 @@ class BriefingEngine:
         vi = w.market.vol_index_history
         vchg = (vi[-1][1] / vi[-2][1] - 1) if len(vi) > 1 and vi[-2][1] else 0.0
         rows = [
-            {"label": "Broad equity index (SPXE)", "value": self._pct("SPXE"), "fmt": "pct"},
+            {"label": "Broad equity index (SPY)", "value": self._pct("SPY"), "fmt": "pct"},
             {"label": "WTI crude (spot)", "value": self._front_pct("CL"), "fmt": "pct", "extra": f"${w.market.spot('CL'):.2f}"},
             {"label": "Brent crude", "value": self._front_pct("BRN"), "fmt": "pct"},
             {"label": "Natural gas", "value": self._front_pct("NG"), "fmt": "pct"},

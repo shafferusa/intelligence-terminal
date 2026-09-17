@@ -91,7 +91,7 @@ class RiskEngine:
                 elif uc == "RATES":
                     row["dv01"] = -notional * ZN_DURATION * 1e-4
                 else:
-                    row["equity"]["SPXE"] = notional
+                    row["equity"]["SPY"] = notional
                 row["market_value"] = notional
             elif sec.is_option:
                 g = pos.greeks or {}

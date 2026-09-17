@@ -23,7 +23,7 @@ from ..money import D, money, ZERO
 PB_SPREAD = 0.010
 SHORT_MARGIN = 0.30
 CALL_GRACE_CYCLES = 1
-PRIME_BROKER = "Harbor Prime Brokerage"
+PRIME_BROKER = "Goldman Sachs Prime Brokerage"
 
 
 class PrimeEngine:

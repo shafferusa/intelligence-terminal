@@ -27,10 +27,10 @@ class MarketTest(unittest.TestCase):
         w1, _, _ = make_world(seed=7)
         w2, _, _ = make_world(seed=7)
         w3, _, _ = make_world(seed=8)
-        self.assertEqual([b.close for b in w1.market.history["NVRA"]], [b.close for b in w2.market.history["NVRA"]])
-        self.assertNotEqual([b.close for b in w1.market.history["NVRA"]], [b.close for b in w3.market.history["NVRA"]])
+        self.assertEqual([b.close for b in w1.market.history["NVDA"]], [b.close for b in w2.market.history["NVDA"]])
+        self.assertNotEqual([b.close for b in w1.market.history["NVDA"]], [b.close for b in w3.market.history["NVDA"]])
         w1.advance(5); w2.advance(5)
-        self.assertEqual(w1.market.last_bar("PTRX").close, w2.market.last_bar("PTRX").close)
+        self.assertEqual(w1.market.last_bar("F").close, w2.market.last_bar("F").close)
 
     def test_correlation_structure(self):
         """Stocks share a market factor: cross-sectional correlation is clearly positive."""
@@ -40,7 +40,7 @@ class MarketTest(unittest.TestCase):
         def rets(t):
             c = [float(b.close) for b in h[t]]
             return [math.log(c[i] / c[i - 1]) for i in range(1, len(c))]
-        a, b = rets("NVRA"), rets("SPXE")
+        a, b = rets("NVDA"), rets("SPY")
         ma, mb = sum(a) / len(a), sum(b) / len(b)
         cov = sum((x - ma) * (y - mb) for x, y in zip(a, b))
         va = sum((x - ma) ** 2 for x in a); vb = sum((y - mb) ** 2 for y in b)
@@ -48,8 +48,8 @@ class MarketTest(unittest.TestCase):
 
     def test_ex_dividend_drop_and_spread_widening(self):
         w, _, _ = make_world(seed=11, regime="LIQUIDITY_STRESS")
-        sec = w.securities["MRDN"]
-        bar = w.market.last_bar("MRDN")
+        sec = w.securities["JPM"]
+        bar = w.market.last_bar("JPM")
         self.assertGreater(float((bar.ask - bar.bid) / bar.close) * 1e4, sec.spread_bps * 2)
 
 
@@ -84,7 +84,7 @@ class BondPricingTest(unittest.TestCase):
 
     def test_credit_spread_lowers_price(self):
         flat = YieldCurve(self.start.isoformat(), TENORS, [0.04] * len(TENORS))
-        g = self.secs["UST-5Y"]; c = self.secs["PTRX-32"]
+        g = self.secs["UST-5Y"]; c = self.secs["F-32"]
         self.assertGreater(BondPricer.yield_to_maturity(c, self.start, float(BondPricer.clean_price_from_curve(c, flat, self.start))),
                            BondPricer.yield_to_maturity(g, self.start, float(BondPricer.clean_price_from_curve(g, flat, self.start))))
 
@@ -92,7 +92,7 @@ class BondPricingTest(unittest.TestCase):
 class ExecutionTest(unittest.TestCase):
     def test_large_order_partially_fills_and_pays_impact(self):
         w, pf, _ = make_world(capital=1_000_000_000)
-        o = w.place_order(pf.id, "ZYNQ", "BUY", 500_000, time_in_force="GTC")   # small cap, ADV 380k
+        o = w.place_order(pf.id, "BYND", "BUY", 500_000, time_in_force="GTC")   # small cap, ADV 380k
         w.advance(1)
         self.assertEqual(o.status, "PARTIALLY_FILLED")
         t = pf.trades[o.trade_ids[0]]
@@ -106,17 +106,17 @@ class ExecutionTest(unittest.TestCase):
 
     def test_day_order_expires(self):
         w, pf, _ = make_world()
-        bar = w.market.last_bar("NVRA")
-        o = w.place_order(pf.id, "NVRA", "BUY", 100, order_type="LIMIT", limit_price=bar.bid * D("0.5"))
+        bar = w.market.last_bar("NVDA")
+        o = w.place_order(pf.id, "NVDA", "BUY", 100, order_type="LIMIT", limit_price=bar.bid * D("0.5"))
         self.assertEqual(o.status, "WORKING")
         w.advance(1)
         self.assertEqual(o.status, "EXPIRED", "good-for-day = good for the next session")
 
     def test_limit_fills_only_when_marketable(self):
         w, pf, _ = make_world()
-        bar = w.market.last_bar("HLXB")
-        o = w.place_order(pf.id, "HLXB", "BUY", 100, order_type="LIMIT", limit_price=bar.ask * D("1.05"), time_in_force="GTC")
-        o2 = w.place_order(pf.id, "HLXB", "BUY", 100, order_type="LIMIT", limit_price=bar.bid * D("0.7"), time_in_force="GTC")
+        bar = w.market.last_bar("LLY")
+        o = w.place_order(pf.id, "LLY", "BUY", 100, order_type="LIMIT", limit_price=bar.ask * D("1.05"), time_in_force="GTC")
+        o2 = w.place_order(pf.id, "LLY", "BUY", 100, order_type="LIMIT", limit_price=bar.bid * D("0.7"), time_in_force="GTC")
         w.advance(1)
         self.assertEqual(o.status, "FILLED")
         self.assertLessEqual(pf.trades[o.trade_ids[0]].price, bar.ask * D("1.05"))
@@ -127,10 +127,10 @@ class ExecutionTest(unittest.TestCase):
 
     def test_stop_order_triggers(self):
         w, pf, _ = make_world()
-        bar = w.market.last_bar("PTRX")
-        w.place_order(pf.id, "PTRX", "BUY", 1000)
+        bar = w.market.last_bar("F")
+        w.place_order(pf.id, "F", "BUY", 1000)
         w.advance(1)
-        o = w.place_order(pf.id, "PTRX", "SELL", 1000, order_type="STOP", stop_price=bar.close * D("0.97"), time_in_force="GTC")
+        o = w.place_order(pf.id, "F", "SELL", 1000, order_type="STOP", stop_price=bar.close * D("0.97"), time_in_force="GTC")
         self.assertEqual(o.status, "WORKING")
         for _ in range(40):
             w.advance(1)
@@ -142,17 +142,17 @@ class ExecutionTest(unittest.TestCase):
     def test_rejections(self):
         w, pf, _ = make_world(capital=100_000)
         with self.assertRaises(CommandError):
-            w.place_order(pf.id, "NVRA", "SELL", 100)          # no short selling in phase 1
+            w.place_order(pf.id, "NVDA", "SELL", 100)          # no short selling in phase 1
         with self.assertRaises(CommandError):
-            w.place_order(pf.id, "NVRA", "BUY", 100_000)       # insufficient projected cash
+            w.place_order(pf.id, "NVDA", "BUY", 100_000)       # insufficient projected cash
         with self.assertRaises(CommandError):
             w.place_order(pf.id, "UST-10Y", "BUY", 1500)       # lot size
         with self.assertRaises(CommandError):
             w.place_order(pf.id, "NOPE", "BUY", 1)
         with self.assertRaises(CommandError):
-            w.place_order(pf.id, "NVRA", "BUY", 10, order_type="TRAILING_STOP")     # needs trail pct
+            w.place_order(pf.id, "NVDA", "BUY", 10, order_type="TRAILING_STOP")     # needs trail pct
         with self.assertRaises(CommandError):
-            w.place_order(pf.id, "NVRA", "BUY", 10, condition={"ref": "NOPE", "op": "<=", "value": 1})
+            w.place_order(pf.id, "NVDA", "BUY", 10, condition={"ref": "NOPE", "op": "<=", "value": 1})
         self.assertTrue(any(o.status == "REJECTED" for o in pf.orders.values()))
         assert_ledger_invariants(self, w, pf)
 
@@ -160,14 +160,14 @@ class ExecutionTest(unittest.TestCase):
 class SettlementTest(unittest.TestCase):
     def test_buy_fails_for_insufficient_settled_cash_and_retries(self):
         w, pf, _ = make_world(capital=10_000_000)
-        # D0 evening: buy NVRA. D1: fills (settles D2). D2 evening: sell NVRA and buy HLXB with the projected
-        # proceeds. D3: both fill, both settle D4. D4: RVP (HLXB) is processed first and fails — the NVRA
-        # proceeds are not yet settled cash — then the NVRA DVP settles. D5: the retry succeeds, late.
-        w.place_order(pf.id, "NVRA", "BUY", 20000)
+        # D0 evening: buy NVDA. D1: fills (settles D2). D2 evening: sell NVDA and buy LLY with the projected
+        # proceeds. D3: both fill, both settle D4. D4: RVP (LLY) is processed first and fails — the NVDA
+        # proceeds are not yet settled cash — then the NVDA DVP settles. D5: the retry succeeds, late.
+        w.place_order(pf.id, "NVDA", "BUY", 38000)
         w.advance(2)
         self.assertTrue(all(t.status == "SETTLED" for t in pf.trades.values()))
-        o2 = w.place_order(pf.id, "NVRA", "SELL", 20000)
-        o3 = w.place_order(pf.id, "HLXB", "BUY", 60000)
+        o2 = w.place_order(pf.id, "NVDA", "SELL", 38000)
+        o3 = w.place_order(pf.id, "LLY", "BUY", 7500)
         w.advance(1)
         t2, t3 = pf.trades[o2.trade_ids[0]], pf.trades[o3.trade_ids[0]]
         self.assertEqual(t3.status, "SETTLEMENT_PENDING")
@@ -236,10 +236,10 @@ class MultiPortfolioAndInterestTest(unittest.TestCase):
     def test_multiple_portfolios_are_independent(self):
         w, pf, _ = make_world()
         pf2 = w.create_portfolio("Fund II", "LONG_SHORT_EQUITY", D(1_000_000))
-        w.place_order(pf.id, "NVRA", "BUY", 100)
+        w.place_order(pf.id, "NVDA", "BUY", 100)
         w.advance(2)
-        self.assertEqual(pf.positions["NVRA"].settled_quantity, D(100))
-        self.assertNotIn("NVRA", pf2.positions)
+        self.assertEqual(pf.positions["NVDA"].settled_quantity, D(100))
+        self.assertNotIn("NVDA", pf2.positions)
         self.assertEqual(w.ledgers[pf2.id].balance("1100"), D(0))
         assert_ledger_invariants(self, w, pf)
         assert_ledger_invariants(self, w, pf2)

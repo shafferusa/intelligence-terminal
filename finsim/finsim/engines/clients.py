@@ -22,12 +22,12 @@ from ..engines.counterparties import HALF_WIDTH, quote_half_width
 from ..money import D, money, qty as qqty, ZERO
 
 CLIENTS = [
-    ("PENSION_A", "Lakeshore Teachers' Pension", ("IRS", "SWAPTION", "UST"), 0.6),
-    ("INSURER_B", "Orchard Life Insurance", ("IRS", "CDS", "CORP"), 0.5),
-    ("HF_C", "Kestrel Macro Fund", ("IRS", "XCCY", "TRS", "EQUITY"), 0.9),
-    ("CORP_D", "Titan Machinery Treasury", ("IRS", "XCCY", "FRA"), 0.4),
-    ("AM_E", "Meridian Asset Management", ("EQUITY", "TRS", "CORP", "UST"), 0.7),
-    ("SOV_F", "Nordic Sovereign Reserve", ("UST", "IRS", "XCCY"), 0.3),
+    ("PENSION_A", "Ontario Teachers' Pension Plan", ("IRS", "SWAPTION", "UST"), 0.6),
+    ("INSURER_B", "MetLife", ("IRS", "CDS", "CORP"), 0.5),
+    ("HF_C", "Citadel", ("IRS", "XCCY", "TRS", "EQUITY"), 0.9),
+    ("CORP_D", "Caterpillar Treasury", ("IRS", "XCCY", "FRA"), 0.4),
+    ("AM_E", "PIMCO", ("EQUITY", "TRS", "CORP", "UST"), 0.7),
+    ("SOV_F", "GIC (Singapore)", ("UST", "IRS", "XCCY"), 0.3),
 ]
 CLIENT_JOBS = ("BANK_TRADER", "DERIVATIVES_TRADER")
 
@@ -83,7 +83,7 @@ class ClientEngine:
             sid = rng.choice(["UST-2Y", "UST-5Y", "UST-10Y", "UST-30Y"])
             req.update({"security_id": sid, "quantity": rng.choice([5, 10, 25, 50]) * 1_000_000, "unit": "price per 100", "mid": float(w.market.last_bar(sid).close)})
         elif product == "CORP":
-            sid = rng.choice(["MRDN-29", "PTRX-32", "NGSL-30"])
+            sid = rng.choice(["JPM-29", "F-32", "AAL-28"])
             req.update({"security_id": sid, "quantity": rng.choice([2, 5, 10]) * 1_000_000, "unit": "price per 100", "mid": float(w.market.last_bar(sid).close)})
         elif product == "EQUITY":
             sid = rng.choice([s.id for s in w.securities.values() if s.asset_class == "EQUITY" and s.liquidity_tier in ("LARGE", "MID") and not s.delisted])
@@ -93,8 +93,8 @@ class ClientEngine:
             params = {"IRS": {"notional": rng.choice([10, 25, 50, 100]) * 1_000_000, "tenor_years": rng.choice([2, 5, 10]), "pay_fixed": side == "BUY"},
                       "FRA": {"notional": rng.choice([25, 50]) * 1_000_000, "start_months": rng.choice([1, 3, 6]), "length_months": 3, "pay_fixed": side == "BUY"},
                       "SWAPTION": {"notional": rng.choice([25, 50]) * 1_000_000, "expiry_months": rng.choice([3, 6, 12]), "swap_years": rng.choice([2, 5]), "payer": side == "BUY", "buyer": True},
-                      "CDS": {"reference": rng.choice(["MRDN-29", "PTRX-32", "NGSL-30"]), "notional": rng.choice([5, 10, 25]) * 1_000_000, "tenor_years": 5, "buyer": side == "BUY"},
-                      "TRS": {"security_id": rng.choice(["NVRA", "MRDN", "SPXE", "PTRX"]), "units": rng.choice([10_000, 25_000, 50_000]), "tenor_years": 1, "receiver": side == "BUY"},
+                      "CDS": {"reference": rng.choice(["JPM-29", "F-32", "AAL-28"]), "notional": rng.choice([5, 10, 25]) * 1_000_000, "tenor_years": 5, "buyer": side == "BUY"},
+                      "TRS": {"security_id": rng.choice(["NVDA", "JPM", "SPY", "F"]), "units": rng.choice([10_000, 25_000, 50_000]), "tenor_years": 1, "receiver": side == "BUY"},
                       "XCCY": {"usd_notional": rng.choice([10, 25, 50]) * 1_000_000, "ccy": rng.choice(["EUR", "GBP", "JPY"]), "tenor_years": rng.choice([1, 2, 5]), "direction": "BORROW_FOREIGN" if side == "BUY" else "LEND_FOREIGN"}}[product]
             fair = w.otc.fair(product, w.otc._norm_params(product, params))
             req.update({"params": params, "unit": fair["unit"], "mid": fair["mid"], "fair": {k: v for k, v in fair.items() if k != "strip"}})
@@ -109,7 +109,7 @@ class ClientEngine:
         if product in ("UST", "CORP", "EQUITY"):
             sec = w.securities[req["security_id"]]
             return float(req["mid"]) * (sec.spread_bps * w.market.regime().spread_mult / 2 / 1e4) * (1.5 if product == "CORP" else 1.0)
-        return quote_half_width(product, "ATLAS", regime, 0.0) * (float(req["mid"]) if product in ("CAP", "FLOOR", "SWAPTION") else 1.0)
+        return quote_half_width(product, "GOLDMAN", regime, 0.0) * (float(req["mid"]) if product in ("CAP", "FLOOR", "SWAPTION") else 1.0)
 
     # ------------------------------------------------------------------ player command
     def quote(self, pf, rfq_id: str, level: Optional[float], pass_: bool = False) -> Dict:
