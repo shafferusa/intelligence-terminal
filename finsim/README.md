@@ -62,6 +62,13 @@ each currency's forwards and cross-currency swaps under the currency. Only names
 Click a name (or open `#/book/SPY`) for that name's page alone; every row links to its desk. The instructions
 blotter hides cancelled, expired and rejected instructions behind a toggle.
 
+### Trades, spreadsheet style
+
+**Trades** (in the nav) lists every fill, instruction, option strategy, OTC trade, securities loan, repo, FX
+spot and FX forward of the book in bordered, selectable grids. Each table has **Copy** (tab-separated: paste
+into Excel or Sheets and every value lands in its own cell, numbers unformatted, dates as YYYY-MM-DD) and
+**CSV**; *Copy everything* and *Download all* take the whole page; a filter box narrows every table at once.
+
 ### Settings, glossary, saves
 
 **Settings** (in the nav) sets how every page opens: the options page's default underlying, expiry tenor (e.g.
