@@ -150,3 +150,18 @@ table.xl th, table.xl td { border: 1px solid var(--line); padding: 3px 7px; font
 table.xl th { background: var(--bg3); position: sticky; top: 0; z-index: 1; }
 table.xl tr:nth-child(even) td { background: rgba(255, 255, 255, 0.02); }
 table.xl td.l { max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
+
+/* header ticker search */
+header .search { position: relative; }
+header .search input { width: 190px; }
+#tickerDD { position: absolute; top: 30px; left: 0; min-width: 520px; max-width: 90vw; background: var(--bg2); border: 1px solid var(--line); border-radius: 4px; z-index: 40; box-shadow: 0 8px 24px rgba(0,0,0,.5); max-height: 60vh; overflow-y: auto; }
+#tickerDD .hit { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid var(--line); white-space: normal; }
+#tickerDD .hit:last-child { border-bottom: 0; }
+#tickerDD .hit.sel, #tickerDD .hit:hover { background: var(--bg3); }
+#tickerDD .hit b { font-family: var(--mono); color: var(--accent); min-width: 64px; }
+#tickerDD .hit .nm { flex: 1; color: var(--fg); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#tickerDD .hit .px { font-family: var(--mono); font-size: 11px; }
+#tickerDD .hit .go { font-size: 10px; color: var(--fg3); font-family: var(--mono); }
+#tickerDD .hit .go a { margin-left: 6px; }
+#tickerDD .none { padding: 8px 10px; color: var(--fg3); font-family: var(--mono); font-size: 11px; }
+@media (max-width: 760px) { header .search input { width: 120px; } #tickerDD { left: auto; right: 0; min-width: 280px; } }

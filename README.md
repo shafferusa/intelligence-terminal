@@ -53,6 +53,12 @@ update can be undone by stopping the server and copying a snapshot back over `fi
 removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
 repository checkout, so keep it where it is or run `install` again after moving it.
 
+### Finding a name
+
+The search box in the header (press `/` from anywhere) matches tickers, company names, bonds, futures
+contracts and commodities as you type; Enter opens the top match's page, and each match offers its Book and
+Options views.
+
 ### The book
 
 **Book** (in the nav, next to Portfolio) is the one page with everything open, grouped by the name it is on:
