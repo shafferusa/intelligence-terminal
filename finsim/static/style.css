@@ -143,3 +143,10 @@ a.gl:hover { color: var(--accent); border-bottom-color: var(--accent); }
 table.chain th.strike, table.chain tr > th:nth-child(5) { background: var(--bg3); }
 table.chain td.optq:hover { background: var(--bg3); color: var(--accent); }
 .form label[title] { cursor: help; }
+
+/* spreadsheet-style tables: bordered cells, zebra rows, selectable */
+table.xl { border: 1px solid var(--line); border-collapse: collapse; user-select: text; }
+table.xl th, table.xl td { border: 1px solid var(--line); padding: 3px 7px; font-size: 11.5px; }
+table.xl th { background: var(--bg3); position: sticky; top: 0; z-index: 1; }
+table.xl tr:nth-child(even) td { background: rgba(255, 255, 255, 0.02); }
+table.xl td.l { max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
