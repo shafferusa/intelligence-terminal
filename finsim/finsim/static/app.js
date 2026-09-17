@@ -107,6 +107,7 @@
   async function loadWorld() {
     localStorage.setItem('finsim.world', state.worldId);
     state.world = await api(W());
+    tickerIndex.load();
     const pfs = state.world.portfolios; $('#pfSel').innerHTML = pfs.map(p => `<option value="${p.id}">${esc(p.name)} · ${p.type}</option>`).join('');
     if (!pfs.find(p => p.id === state.pfId)) state.pfId = pfs[0]?.id; $('#pfSel').value = state.pfId; localStorage.setItem('finsim.pf', state.pfId);
     $('#simDate').textContent = `${state.world.clock.weekday.slice(0, 3)} ${state.world.current_date}`; const rg = state.world.regime; $('#regimeBadge').textContent = rg.label; $('#regimeBadge').title = rg.description;
@@ -167,6 +168,50 @@
       <div class="row" style="margin-top:10px"><button class="btn primary" id="npGo">Create</button><span class="error" id="npErr"></span></div>`);
     $('#npGo', m).addEventListener('click', async () => { try { const r = await api(W() + '/portfolios', { method: 'POST', body: { name: $('#npName', m).value, job: $('#npJob', m).value, capital: +$('#npCap', m).value, realism: $('#npReal', m).value } }); state.pfId = r.portfolio_id; closeModal(); await loadWorld(); } catch (e) { $('#npErr', m).textContent = e.message; } });
   }
+
+  // ---------------------------------------------------------------- ticker search (header, every page)
+  const tickerIndex = {
+    items: [], world: null,
+    async load() {
+      if (this.world === state.worldId) return;
+      this.world = state.worldId;
+      try {
+        const [secs, cs] = await Promise.all([api(W() + '/securities'), api(W() + '/commodities').catch(() => [])]);
+        const items = secs.map(s => ({ id: s.id, name: s.name, kind: s.is_future ? 'FUTURE' : s.asset_class, last: s.last, chg: s.change_pct, sec: true, opt: ['EQUITY', 'ETF', 'ADR', 'REIT'].includes(s.asset_class) && ['LARGE', 'MID'].includes(s.liquidity_tier), fut: s.is_future ? s.underlying : null }));
+        cs.forEach(c => items.push({ id: c.code, name: c.name + ' (commodity)', kind: 'COMMODITY', last: c.spot, chg: c.change_pct, commodity: true }));
+        items.push({ id: 'SPX', name: 'S&P 500 index options (10× SPY)', kind: 'INDEX', opt: true, index: true });
+        this.items = items;
+      } catch (e) { this.items = []; }
+    },
+    find(q) {
+      q = q.trim().toUpperCase(); if (!q) return [];
+      const score = it => { const id = it.id.toUpperCase(), nm = (it.name || '').toUpperCase(); if (id === q) return 0; if (id.startsWith(q)) return 1; if (nm.startsWith(q)) return 2; if (id.includes(q)) return 3; if (nm.includes(q)) return 4; return 9; };
+      return this.items.map(it => [score(it), it]).filter(x => x[0] < 9).sort((a, b) => a[0] - b[0] || a[1].id.length - b[1].id.length || a[1].id.localeCompare(b[1].id)).slice(0, 10).map(x => x[1]);
+    },
+    target(it) { return it.commodity ? `#/commodity/${it.id}` : it.index ? '#/options/SPX' : `#/security/${it.id}`; },
+  };
+  (() => {
+    const inp = $('#tickerQ'), dd = $('#tickerDD'); let hits = [], sel = 0;
+    const close = () => { dd.style.display = 'none'; hits = []; };
+    const go = (it, where) => { location.hash = where || tickerIndex.target(it); inp.value = ''; close(); inp.blur(); };
+    const draw = () => {
+      if (!inp.value.trim()) return close();
+      hits = tickerIndex.find(inp.value); sel = Math.min(sel, Math.max(0, hits.length - 1));
+      dd.innerHTML = hits.length ? hits.map((it, i) => `<div class="hit ${i === sel ? 'sel' : ''}" data-i="${i}"><b>${esc(it.id)}</b><span class="nm">${esc(it.name || '')} <span class="muted">${it.kind}</span></span>${it.last != null ? `<span class="px">${fmt.px(it.last)} <span class="${it.chg >= 0 ? 'pos' : 'neg'}">${fmt.pct(it.chg)}</span></span>` : ''}<span class="go">${it.commodity ? '' : it.index ? '' : `<a data-go="#/book/${encodeURIComponent(it.fut ? (it.fut === 'ES' ? 'SPY' : it.fut === 'ZN' ? 'UST-10Y' : it.fut) : it.id)}">book</a>`}${it.opt ? `<a data-go="#/options/${it.index ? 'SPX' : it.id}">options</a>` : ''}${it.commodity ? `<a data-go="#/book/${it.id}">book</a>` : ''}</span></div>`).join('') : `<div class="none">no match for “${esc(inp.value)}” — tickers, bonds (UST-10Y, F-32), contracts (CLZ26), commodities (CL)</div>`;
+      dd.style.display = '';
+      dd.querySelectorAll('.hit').forEach(h => { h.addEventListener('mousedown', e => { const a = e.target.closest('[data-go]'); go(hits[+h.dataset.i], a ? a.dataset.go : null); e.preventDefault(); }); });
+    };
+    inp.addEventListener('input', () => { sel = 0; tickerIndex.load().then(draw); draw(); });
+    inp.addEventListener('focus', () => { tickerIndex.load(); if (inp.value.trim()) draw(); });
+    inp.addEventListener('blur', () => setTimeout(close, 150));
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { sel = Math.min(sel + 1, hits.length - 1); draw(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { sel = Math.max(sel - 1, 0); draw(); e.preventDefault(); }
+      else if (e.key === 'Enter') { if (hits[sel]) go(hits[sel]); else { const t = inp.value.trim().toUpperCase(); if (t) go({ id: t }); } e.preventDefault(); }
+      else if (e.key === 'Escape') { inp.value = ''; close(); inp.blur(); }
+    });
+    document.addEventListener('keydown', e => { if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target.tagName || '').toUpperCase())) { e.preventDefault(); inp.focus(); inp.select(); } });
+  })();
 
   // ---------------------------------------------------------------- pages
   const pages = {};
