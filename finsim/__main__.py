@@ -16,6 +16,12 @@ def main(argv=None):
     d = sub.add_parser("demo", help="run the vertical-slice walkthrough and print the audit trail")
     d.add_argument("--seed", type=int, default=42)
     d.add_argument("--start", default="2026-01-05")
+    i = sub.add_parser("install", help="install FinSim as a local app: background service at login + a launcher (this user only)")
+    i.add_argument("--no-open", action="store_true", help="do not open the window after installing")
+    sub.add_parser("open", help="start the local server if needed and open the terminal in its own window")
+    sub.add_parser("status", help="is the local server running, where is the data, is the login service installed")
+    u = sub.add_parser("uninstall", help="remove the login service and launcher (saves are kept unless --purge)")
+    u.add_argument("--purge", action="store_true", help="also delete the save database")
     args = ap.parse_args(argv)
     if args.cmd == "serve":
         from .api.server import serve
@@ -23,6 +29,18 @@ def main(argv=None):
     elif args.cmd == "demo":
         from .demo import run_demo
         run_demo(args.seed, args.start)
+    elif args.cmd == "install":
+        from .app import cmd_install
+        sys.exit(cmd_install(open_after=not args.no_open))
+    elif args.cmd == "open":
+        from .app import cmd_open
+        sys.exit(cmd_open())
+    elif args.cmd == "status":
+        from .app import cmd_status
+        sys.exit(cmd_status())
+    elif args.cmd == "uninstall":
+        from .app import cmd_uninstall
+        sys.exit(cmd_uninstall(keep_data=not args.purge))
 
 
 if __name__ == "__main__":

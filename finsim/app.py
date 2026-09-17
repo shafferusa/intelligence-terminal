@@ -1,0 +1,431 @@
+"""FinSim as a local desktop app.
+
+`python3 -m finsim install` registers the server as a per-user background service that starts at login and
+puts a "FinSim" launcher in the Applications folder / Start Menu / desktop. The launcher runs `finsim open`,
+which makes sure the server is up and opens the terminal in its own window (Chrome, Edge, Chromium or Brave
+in app mode, otherwise the default browser). Everything binds to 127.0.0.1: nothing leaves the machine and
+nobody else on the network can reach it.
+
+    python3 -m finsim install      # once; starts the service and opens the window
+    python3 -m finsim open         # what the launcher runs
+    python3 -m finsim status
+    python3 -m finsim uninstall
+
+Files live under FINSIM_HOME (default ~/.finsim): finsim.db, server.log, the launcher scripts and icons.
+Standard library only; the platform hooks are launchd (macOS), systemd --user (Linux) and Task Scheduler
+plus a Startup-folder fallback (Windows).
+"""
+from __future__ import annotations
+
+import json
+import os
+import plistlib
+import shutil
+import struct
+import subprocess
+import sys
+import time
+import urllib.request
+import webbrowser
+from typing import Dict, List, Optional
+
+from .version import ENGINE_VERSION
+
+APP_NAME = "FinSim"
+BUNDLE_ID = "io.finsim.terminal"
+DEFAULT_PORT = 8765
+STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+PACKAGE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))     # the directory that holds the `finsim` package
+
+
+# ------------------------------------------------------------------ paths and platform
+def home() -> str:
+    return os.environ.get("FINSIM_HOME") or os.path.join(os.path.expanduser("~"), ".finsim")
+
+
+def db_path() -> str:
+    return os.environ.get("FINSIM_DB") or os.path.join(home(), "finsim.db")
+
+
+def log_path() -> str:
+    return os.path.join(home(), "server.log")
+
+
+def port() -> int:
+    return int(os.environ.get("FINSIM_PORT") or DEFAULT_PORT)
+
+
+def url(p: Optional[int] = None) -> str:
+    return f"http://127.0.0.1:{p or port()}/"
+
+
+def platform() -> str:
+    if sys.platform == "darwin":
+        return "mac"
+    if sys.platform.startswith("win"):
+        return "windows"
+    return "linux"
+
+
+def python_exe(windowless: bool = False) -> str:
+    """The interpreter running us; on Windows prefer pythonw.exe for anything that must not open a console."""
+    exe = sys.executable
+    if windowless and platform() == "windows":
+        w = os.path.join(os.path.dirname(exe), "pythonw.exe")
+        if os.path.exists(w):
+            return w
+    return exe
+
+
+def serve_argv(p: Optional[int] = None) -> List[str]:
+    return [python_exe(windowless=True), "-m", "finsim", "serve", "--db", db_path(), "--host", "127.0.0.1", "--port", str(p or port())]
+
+
+# ------------------------------------------------------------------ server control
+def health(p: Optional[int] = None, timeout: float = 1.0) -> Optional[Dict]:
+    """The running server's /api/health, or None when nothing answers on the port."""
+    try:
+        with urllib.request.urlopen(url(p) + "api/health", timeout=timeout) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except Exception:
+        return None
+
+
+def start_background(p: Optional[int] = None, wait: float = 15.0) -> Dict:
+    """Spawn the server detached from this process and wait until it answers. Returns its health."""
+    os.makedirs(home(), exist_ok=True)
+    if (h := health(p)):
+        return h
+    log = open(log_path(), "ab")
+    kw: Dict = {"stdin": subprocess.DEVNULL, "stdout": log, "stderr": subprocess.STDOUT, "cwd": PACKAGE_ROOT, "env": _env()}
+    if platform() == "windows":
+        kw["creationflags"] = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+    else:
+        kw["start_new_session"] = True
+    subprocess.Popen(serve_argv(p), **kw)
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        time.sleep(0.25)
+        if (h := health(p)):
+            return h
+    raise RuntimeError(f"the server did not come up on {url(p)} within {wait:.0f}s; see {log_path()}")
+
+
+def _env() -> Dict[str, str]:
+    env = dict(os.environ)
+    env["PYTHONPATH"] = PACKAGE_ROOT + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    env.setdefault("PYTHONUNBUFFERED", "1")
+    return env
+
+
+# ------------------------------------------------------------------ the window
+def _browser_candidates() -> List[str]:
+    plat = platform()
+    if plat == "mac":
+        apps = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+                "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser", "/Applications/Chromium.app/Contents/MacOS/Chromium"]
+        return [a for a in apps] + [os.path.expanduser("~") + a for a in apps]
+    if plat == "windows":
+        roots = [os.environ.get("PROGRAMFILES", r"C:\Program Files"), os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
+                 os.environ.get("LOCALAPPDATA", "")]
+        rel = [r"Google\Chrome\Application\chrome.exe", r"Microsoft\Edge\Application\msedge.exe", r"BraveSoftware\Brave-Browser\Application\brave.exe",
+               r"Chromium\Application\chrome.exe"]
+        return [os.path.join(r, x) for r in roots if r for x in rel]
+    names = ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge", "brave-browser"]
+    return [p for n in names if (p := shutil.which(n))]
+
+
+def open_window(target: Optional[str] = None) -> str:
+    """Open the terminal in its own window. Chromium-family browsers get `--app` (no tabs, no address bar) with a
+    profile of its own under FINSIM_HOME so it never mixes with ordinary browsing; anything else opens a tab."""
+    target = target or url()
+    profile = os.path.join(home(), "window-profile")
+    for exe in _browser_candidates():
+        if os.path.exists(exe):
+            os.makedirs(profile, exist_ok=True)
+            try:
+                subprocess.Popen([exe, f"--app={target}", f"--user-data-dir={profile}", "--no-first-run", "--no-default-browser-check",
+                                  f"--window-size=1440,900"], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                 start_new_session=(platform() != "windows"))
+                return f"app window ({os.path.basename(exe)})"
+            except OSError:
+                continue
+    webbrowser.open(target)
+    return "default browser"
+
+
+# ------------------------------------------------------------------ launcher artifacts (pure: path -> content)
+def _ico_from_png(png: bytes, size: int) -> bytes:
+    """A single-image .ico that embeds the PNG as-is (Vista and later read PNG-compressed icons)."""
+    w = h = 0 if size >= 256 else size
+    header = struct.pack("<HHH", 0, 1, 1)
+    entry = struct.pack("<BBBBHHII", w, h, 0, 0, 1, 32, len(png), 6 + 16)
+    return header + entry + png
+
+
+def launcher_files(plat: Optional[str] = None, base: Optional[str] = None) -> Dict[str, object]:
+    """Every file `install` writes for the platform, as {absolute path: text or bytes}. Pure, so it can be inspected
+    and tested without touching the OS."""
+    plat = plat or platform()
+    base = base or home()
+    py = python_exe(windowless=True)
+    p = port()
+    files: Dict[str, object] = {}
+    with open(os.path.join(STATIC_DIR, "icon-256.png"), "rb") as f:
+        png256 = f.read()
+    with open(os.path.join(STATIC_DIR, "icon-512.png"), "rb") as f:
+        png512 = f.read()
+    files[os.path.join(base, "icon.png")] = png512
+    if plat == "mac":
+        plist = {"Label": BUNDLE_ID, "ProgramArguments": serve_argv(p), "RunAtLoad": True, "KeepAlive": True, "WorkingDirectory": PACKAGE_ROOT,
+                 "EnvironmentVariables": {"PYTHONPATH": PACKAGE_ROOT, "PYTHONUNBUFFERED": "1", "FINSIM_HOME": base},
+                 "StandardOutPath": os.path.join(base, "server.log"), "StandardErrorPath": os.path.join(base, "server.log"), "ProcessType": "Background"}
+        files[launch_agent_path()] = plistlib.dumps(plist)
+        app = app_bundle_path()
+        files[os.path.join(app, "Contents", "Info.plist")] = plistlib.dumps({
+            "CFBundleName": APP_NAME, "CFBundleDisplayName": APP_NAME, "CFBundleIdentifier": BUNDLE_ID + ".launcher", "CFBundleVersion": ENGINE_VERSION,
+            "CFBundleShortVersionString": ENGINE_VERSION, "CFBundlePackageType": "APPL", "CFBundleExecutable": "FinSim", "CFBundleIconFile": "FinSim",
+            "LSMinimumSystemVersion": "11.0", "NSHighResolutionCapable": True})
+        files[os.path.join(app, "Contents", "MacOS", "FinSim")] = (
+            "#!/bin/sh\n"
+            f"export PYTHONPATH={_sh(PACKAGE_ROOT)}\nexport FINSIM_HOME={_sh(base)}\n"
+            f"exec {_sh(py)} -m finsim open >> {_sh(os.path.join(base, 'launcher.log'))} 2>&1\n")
+    elif plat == "linux":
+        files[systemd_unit_path()] = (
+            "[Unit]\nDescription=FinSim terminal (local finance simulation)\nAfter=network.target\n\n"
+            f"[Service]\nType=simple\nWorkingDirectory={PACKAGE_ROOT}\nEnvironment=PYTHONPATH={PACKAGE_ROOT}\nEnvironment=PYTHONUNBUFFERED=1\n"
+            f"Environment=FINSIM_HOME={base}\nExecStart={' '.join(_sh(a) for a in serve_argv(p))}\nRestart=on-failure\nRestartSec=3\n\n"
+            "[Install]\nWantedBy=default.target\n")
+        files[desktop_entry_path()] = (
+            "[Desktop Entry]\nType=Application\nName=FinSim\nComment=Institutional finance simulation (local)\n"
+            f"Exec={_sh(py)} -m finsim open\nPath={PACKAGE_ROOT}\nIcon={os.path.join(base, 'icon.png')}\nTerminal=false\n"
+            "Categories=Game;Finance;\nStartupWMClass=finsim\n")
+    else:
+        files[os.path.join(base, "finsim.ico")] = _ico_from_png(png256, 256)
+        # the service: pythonw, no console, from the Startup folder (Task Scheduler is tried first at install time)
+        files[os.path.join(base, "finsim-server.vbs")] = (
+            'Set sh = CreateObject("WScript.Shell")\n'
+            f'sh.Environment("Process")("PYTHONPATH") = "{_vb(PACKAGE_ROOT)}"\n'
+            f'sh.Environment("Process")("FINSIM_HOME") = "{_vb(base)}"\n'
+            f'sh.CurrentDirectory = "{_vb(PACKAGE_ROOT)}"\n'
+            f'sh.Run """{_vb(py)}"" -m finsim serve --db ""{_vb(db_path())}"" --host 127.0.0.1 --port {p}", 0, False\n')
+        files[os.path.join(base, "finsim-open.vbs")] = (
+            'Set sh = CreateObject("WScript.Shell")\n'
+            f'sh.Environment("Process")("PYTHONPATH") = "{_vb(PACKAGE_ROOT)}"\n'
+            f'sh.Environment("Process")("FINSIM_HOME") = "{_vb(base)}"\n'
+            f'sh.CurrentDirectory = "{_vb(PACKAGE_ROOT)}"\n'
+            f'sh.Run """{_vb(py)}"" -m finsim open", 0, False\n')
+        # a shortcut can only be written through the shell object: this script does it (run once at install)
+        files[os.path.join(base, "make-shortcuts.vbs")] = (
+            'Set sh = CreateObject("WScript.Shell")\n'
+            'For Each folder In Array(sh.SpecialFolders("Desktop"), sh.SpecialFolders("Programs"))\n'
+            f'  Set lnk = sh.CreateShortcut(folder & "\\{APP_NAME}.lnk")\n'
+            f'  lnk.TargetPath = "wscript.exe"\n'
+            f'  lnk.Arguments = """{_vb(os.path.join(base, "finsim-open.vbs"))}"""\n'
+            f'  lnk.WorkingDirectory = "{_vb(PACKAGE_ROOT)}"\n'
+            f'  lnk.IconLocation = "{_vb(os.path.join(base, "finsim.ico"))}"\n'
+            '  lnk.Description = "FinSim — local finance simulation"\n'
+            '  lnk.Save\n'
+            'Next\n')
+    return files
+
+
+def _sh(s: str) -> str:
+    return "'" + s.replace("'", "'\\''") + "'" if any(c in s for c in " '\"$`\\") else s
+
+
+def _vb(s: str) -> str:
+    return s.replace('"', '""')
+
+
+def launch_agent_path() -> str:
+    return os.path.join(os.path.expanduser("~"), "Library", "LaunchAgents", BUNDLE_ID + ".plist")
+
+
+def app_bundle_path() -> str:
+    return os.path.join(os.path.expanduser("~"), "Applications", APP_NAME + ".app")
+
+
+def systemd_unit_path() -> str:
+    return os.path.join(os.path.expanduser("~"), ".config", "systemd", "user", "finsim.service")
+
+
+def desktop_entry_path() -> str:
+    return os.path.join(os.path.expanduser("~"), ".local", "share", "applications", "finsim.desktop")
+
+
+def _write_all(files: Dict[str, object]) -> List[str]:
+    out = []
+    for path, content in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as f:
+            f.write(content if isinstance(content, bytes) else content.encode("utf-8"))
+        if path.endswith(os.path.join("MacOS", "FinSim")) or path.endswith(".sh"):
+            os.chmod(path, 0o755)
+        out.append(path)
+    return out
+
+
+def _run(cmd: List[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, text=True)
+
+
+# ------------------------------------------------------------------ commands
+def cmd_install(open_after: bool = True) -> int:
+    plat = platform()
+    os.makedirs(home(), exist_ok=True)
+    written = _write_all(launcher_files(plat))
+    notes: List[str] = []
+    if plat == "mac":
+        icns = os.path.join(app_bundle_path(), "Contents", "Resources", "FinSim.icns")
+        notes.append(_make_icns(icns))
+        uid = os.getuid()
+        _run(["launchctl", "bootout", f"gui/{uid}", launch_agent_path()])
+        r = _run(["launchctl", "bootstrap", f"gui/{uid}", launch_agent_path()])
+        if r.returncode:
+            r = _run(["launchctl", "load", "-w", launch_agent_path()])
+        notes.append("background service: registered with launchd (starts at login)" if not r.returncode else f"launchd refused the service: {r.stderr.strip()}")
+    elif plat == "linux":
+        if shutil.which("systemctl"):
+            _run(["systemctl", "--user", "daemon-reload"])
+            r = _run(["systemctl", "--user", "enable", "--now", "finsim.service"])
+            notes.append("background service: enabled with systemd --user (starts at login)" if not r.returncode
+                         else f"systemd could not enable the service ({r.stderr.strip()}); the launcher starts the server on demand instead")
+        else:
+            notes.append("systemd not found: the launcher starts the server on demand instead")
+        if shutil.which("update-desktop-database"):
+            _run(["update-desktop-database", os.path.dirname(desktop_entry_path())])
+    else:
+        r = _run(["schtasks", "/Create", "/F", "/SC", "ONLOGON", "/TN", APP_NAME + " Server", "/TR", f'wscript.exe "{os.path.join(home(), "finsim-server.vbs")}"'])
+        if r.returncode:
+            startup = os.path.join(os.environ.get("APPDATA", ""), "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "FinSim Server.vbs")
+            shutil.copyfile(os.path.join(home(), "finsim-server.vbs"), startup)
+            notes.append(f"background service: Startup-folder entry ({startup})")
+        else:
+            notes.append("background service: scheduled task at logon")
+        r = _run(["wscript.exe", os.path.join(home(), "make-shortcuts.vbs")])
+        notes.append("launcher: FinSim shortcut on the desktop and in the Start Menu" if not r.returncode else f"shortcut creation failed: {r.stderr.strip()}")
+    try:
+        h = start_background()
+        notes.append(f"server: up at {url()} (engine {h.get('engine_version')}, {h.get('worlds_stored', 0)} saves) — data in {db_path()}")
+    except RuntimeError as e:
+        notes.append(str(e))
+    if open_after:
+        notes.append(f"opened in {open_window()}")
+    print(f"{APP_NAME} installed for this user only (127.0.0.1, nothing is exposed to the network).")
+    for w in written:
+        print("  wrote", w)
+    for n in notes:
+        print("  " + n)
+    print(_launcher_hint(plat))
+    return 0
+
+
+def _launcher_hint(plat: str) -> str:
+    if plat == "mac":
+        return f"Open it from ~/Applications/{APP_NAME}.app (drag it to the Dock). To remove: python3 -m finsim uninstall"
+    if plat == "linux":
+        return "Open it from your app menu (FinSim) or the desktop entry. To remove: python3 -m finsim uninstall"
+    return "Open it from the FinSim shortcut on the desktop or Start Menu. To remove: python -m finsim uninstall"
+
+
+def _make_icns(icns_path: str) -> str:
+    """macOS: build an .icns from the PNGs with iconutil if it is available (cosmetic; the app works without it)."""
+    if not shutil.which("iconutil") or not shutil.which("sips"):
+        return "icon: iconutil/sips not found, the launcher keeps the generic icon"
+    iconset = os.path.join(home(), "FinSim.iconset")
+    os.makedirs(iconset, exist_ok=True)
+    src = os.path.join(STATIC_DIR, "icon-512.png")
+    for size, name in ((16, "icon_16x16"), (32, "icon_16x16@2x"), (32, "icon_32x32"), (64, "icon_32x32@2x"), (128, "icon_128x128"), (256, "icon_128x128@2x"),
+                       (256, "icon_256x256"), (512, "icon_256x256@2x"), (512, "icon_512x512")):
+        _run(["sips", "-z", str(size), str(size), src, "--out", os.path.join(iconset, name + ".png")])
+    os.makedirs(os.path.dirname(icns_path), exist_ok=True)
+    r = _run(["iconutil", "-c", "icns", iconset, "-o", icns_path])
+    shutil.rmtree(iconset, ignore_errors=True)
+    return "icon: FinSim.icns built" if not r.returncode else f"icon: iconutil failed ({r.stderr.strip()})"
+
+
+def cmd_open() -> int:
+    try:
+        start_background()
+    except RuntimeError as e:
+        print(e, file=sys.stderr)
+        return 1
+    print(f"{url()} → {open_window()}")
+    return 0
+
+
+def cmd_status() -> int:
+    h = health()
+    print(f"{APP_NAME} {ENGINE_VERSION} — home {home()} — db {db_path()} — {url()}")
+    if h:
+        print(f"server: running (engine {h.get('engine_version')}, save format {h.get('save_version')}, {h.get('worlds_stored', 0)} saves, up {h.get('uptime_s', 0):.0f}s)")
+        for w in h.get("worlds", []):
+            print(f"  {w['id']}: {w.get('current_date')} {w.get('clock_mode')} events={w.get('events')} integrity={'ok' if w.get('integrity_ok') else 'FAILED'}")
+    else:
+        print("server: not running (python3 -m finsim open starts it)")
+    plat = platform()
+    reg = {"mac": launch_agent_path(), "linux": systemd_unit_path(), "windows": os.path.join(home(), "finsim-server.vbs")}[plat]
+    print(f"login service: {'installed' if os.path.exists(reg) else 'not installed'} ({reg})")
+    return 0 if h else 1
+
+
+def cmd_uninstall(keep_data: bool = True) -> int:
+    plat = platform()
+    removed: List[str] = []
+    if plat == "mac":
+        _run(["launchctl", "bootout", f"gui/{os.getuid()}", launch_agent_path()])
+        for p in (launch_agent_path(),):
+            if os.path.exists(p):
+                os.remove(p)
+                removed.append(p)
+        if os.path.isdir(app_bundle_path()):
+            shutil.rmtree(app_bundle_path())
+            removed.append(app_bundle_path())
+    elif plat == "linux":
+        if shutil.which("systemctl"):
+            _run(["systemctl", "--user", "disable", "--now", "finsim.service"])
+        for p in (systemd_unit_path(), desktop_entry_path()):
+            if os.path.exists(p):
+                os.remove(p)
+                removed.append(p)
+        if shutil.which("systemctl"):
+            _run(["systemctl", "--user", "daemon-reload"])
+    else:
+        _run(["schtasks", "/Delete", "/F", "/TN", APP_NAME + " Server"])
+        startup = os.path.join(os.environ.get("APPDATA", ""), "Microsoft", "Windows", "Start Menu", "Programs", "Startup", "FinSim Server.vbs")
+        for p in [startup] + [os.path.join(d, APP_NAME + ".lnk") for d in (_win_special("Desktop"), _win_special("Programs")) if d]:
+            if os.path.exists(p):
+                os.remove(p)
+                removed.append(p)
+    _stop_server()
+    for name in ("finsim-server.vbs", "finsim-open.vbs", "make-shortcuts.vbs", "finsim.ico", "icon.png"):
+        p = os.path.join(home(), name)
+        if os.path.exists(p):
+            os.remove(p)
+            removed.append(p)
+    shutil.rmtree(os.path.join(home(), "window-profile"), ignore_errors=True)
+    print(f"{APP_NAME} uninstalled." + (f" Your saves stay in {db_path()}." if keep_data else ""))
+    for r in removed:
+        print("  removed", r)
+    if not keep_data and os.path.exists(db_path()):
+        os.remove(db_path())
+        print("  removed", db_path())
+    return 0
+
+
+def _win_special(name: str) -> str:
+    if platform() != "windows":
+        return ""
+    if name == "Desktop":
+        return os.path.join(os.environ.get("USERPROFILE", ""), "Desktop")
+    return os.path.join(os.environ.get("APPDATA", ""), "Microsoft", "Windows", "Start Menu", "Programs")
+
+
+def _stop_server() -> None:
+    """Ask the running server to exit (it only listens on localhost, so a local request is the whole protocol)."""
+    try:
+        req = urllib.request.Request(url() + "api/shutdown", method="POST", data=b"{}", headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=3).read()
+    except Exception:
+        pass

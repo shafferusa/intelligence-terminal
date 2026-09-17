@@ -26,12 +26,28 @@ rewritten to their real successors and their stored prices are kept, so such a s
 to play from today's real prices.
 
 ```
-python3 -m finsim serve         # http://127.0.0.1:8000  (terminal UI + JSON API + daily scheduler)
+python3 -m finsim install       # once: FinSim as a local app (see below); opens the window
+python3 -m finsim serve         # or run it by hand: http://127.0.0.1:8000  (terminal UI + JSON API + daily scheduler)
 python3 -m finsim demo          # a scripted week: instructions, fills, settlement, dividend, futures, audit
 python3 -m unittest discover -s tests
 ```
 
 No third-party packages are required (see *Environment note* below).
+
+### As a local app
+
+`python3 -m finsim install` turns the simulator into an app for the current user only. It registers the server as
+a background service that starts at login (launchd on macOS, `systemd --user` on Linux, Task Scheduler with a
+Startup-folder fallback on Windows) and adds a **FinSim** launcher: `~/Applications/FinSim.app` on macOS, an
+app-menu entry on Linux, a desktop and Start Menu shortcut on Windows. The launcher runs `finsim open`, which
+starts the server if it is not already up and opens the terminal in its own window (Chrome, Edge, Brave or
+Chromium in app mode with a profile of its own; otherwise the default browser). The browser's own *Install app*
+works too, from the web manifest. The server listens on 127.0.0.1 only: nothing is exposed to the network.
+
+Saves live in `~/.finsim/finsim.db` (override with `FINSIM_HOME` or `FINSIM_DB`; the port with `FINSIM_PORT`,
+default 8765). `python3 -m finsim status` shows what is running and where; `python3 -m finsim uninstall`
+removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
+repository checkout, so keep it where it is or run `install` again after moving it.
 
 ## The daily cycle
 
@@ -278,8 +294,10 @@ finsim/
     simulation.py     the daily process
   api/service.py      framework-agnostic API (dicts in/out)
   api/server.py       stdlib HTTP adapter + static UI
-  static/             index.html, app.js, style.css (no build step, no CDN)
+  static/             index.html, app.js, style.css, web manifest and icons (no build step, no CDN)
+  app.py              the local app: install / open / status / uninstall (launchd, systemd --user, Task Scheduler)
   demo.py             the §46 walkthrough
+tools/                refresh_universe.py (the real-universe snapshot), make_icons.py (the app icon)
 tests/                unittest suites (engine, lifecycle, API over HTTP, replay)
 ```
 
