@@ -345,6 +345,11 @@ class OptionsEngine:
         contracts = [s for s in w.securities.values() if s.is_option and s.underlying == under and not s.expired]
         exps = sorted({s.expiry for s in contracts})
         exp = expiry or (exps[0] if exps else None)
+        if exp and exps and exp not in exps:
+            # a date that is not listed (the player's preferred tenor, or an expiry from another underlying) snaps to
+            # the nearest listed expiry, so a preference like "three months out" always lands on a real contract
+            want = date.fromisoformat(exp)
+            exp = min(exps, key=lambda e: (abs((date.fromisoformat(e) - want).days), e))
         rows: Dict[float, Dict] = {}
         for s in contracts:
             if s.expiry != exp:
