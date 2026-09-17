@@ -45,7 +45,11 @@ Chromium in app mode with a profile of its own; otherwise the default browser). 
 works too, from the web manifest. The server listens on 127.0.0.1 only: nothing is exposed to the network.
 
 Saves live in `~/.finsim/finsim.db` (override with `FINSIM_HOME` or `FINSIM_DB`; the port with `FINSIM_PORT`,
-default 8765). `python3 -m finsim status` shows what is running and where; `python3 -m finsim uninstall`
+default 8765). The first time the app starts it carries over a `data/finsim.db` left by `serve`, so careers
+begun before the app continue. Code updates never touch the saves: a `git pull` changes only the code, the
+database is an append-only event log, and older save formats are migrated on load. Before opening the
+database the server takes a consistent snapshot into `~/.finsim/backups/` (the newest ten are kept), so any
+update can be undone by stopping the server and copying a snapshot back over `finsim.db`. `python3 -m finsim status` shows what is running and where; `python3 -m finsim uninstall`
 removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
 repository checkout, so keep it where it is or run `install` again after moving it.
 

@@ -379,6 +379,9 @@ def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000, access_key: s
     local_only = host in LOOPBACK + ("localhost",)
     if not local_only and not access_key:
         raise SystemExit("refusing to listen beyond this machine without an access key (use `python3 -m finsim phone`, or pass --key)")
+    snap = EventStore.snapshot(db_path, os.path.join(os.path.dirname(os.path.abspath(db_path)), "backups"))
+    if snap:
+        log.info("saves backed up to %s before opening (the newest ten are kept)", snap)
     service = Service(EventStore(db_path))
     router = Router(service)
     start_scheduler(router)

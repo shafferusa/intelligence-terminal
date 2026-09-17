@@ -75,6 +75,32 @@ class PhoneSettingTest(unittest.TestCase):
                 self.assertEqual(app.resolve_host(), "127.0.0.1")
 
 
+class SavesSurviveTest(unittest.TestCase):
+    def test_legacy_saves_are_adopted_and_backed_up(self):
+        from finsim.store import EventStore
+        with tempfile.TemporaryDirectory() as home, tempfile.TemporaryDirectory() as legacy_dir:
+            legacy = os.path.join(legacy_dir, "finsim.db")
+            st = EventStore(legacy)
+            st.create_world("W-old", "my career")
+            st.close()
+            with mock.patch.dict(os.environ, {"FINSIM_HOME": home, "FINSIM_DB": ""}), mock.patch.object(app, "legacy_db_path", lambda: legacy):
+                self.assertEqual(app.adopt_legacy_db(), legacy, "first run copies the old database")
+                self.assertEqual([w["name"] for w in EventStore(app.db_path()).list_worlds()], ["my career"])
+                self.assertTrue(os.path.exists(legacy), "the original is left where it was")
+                self.assertIsNone(app.adopt_legacy_db(), "never overwrites an existing app database")
+            # the server-start snapshot: a consistent copy, newest ten kept
+            bdir = os.path.join(home, "backups")
+            snaps = [EventStore.snapshot(os.path.join(home, "finsim.db"), bdir, keep=2) for _ in range(1)]
+            self.assertTrue(snaps[0] and os.path.exists(snaps[0]))
+            self.assertEqual([w["name"] for w in EventStore(snaps[0]).list_worlds()], ["my career"])
+            for i in range(3):
+                os.rename(snaps[0] if i == 0 else extra, extra := os.path.join(bdir, f"finsim-2000010{i}-000000.db"))
+            EventStore.snapshot(os.path.join(home, "finsim.db"), bdir, keep=2)
+            kept = sorted(f for f in os.listdir(bdir) if f.endswith(".db"))
+            self.assertEqual(len(kept), 2, "older snapshots are pruned")
+            self.assertIsNone(EventStore.snapshot(":memory:", bdir))
+
+
 class RoundTripTest(unittest.TestCase):
     def test_open_starts_the_server_once_and_shutdown_stops_it(self):
         port = free_port()

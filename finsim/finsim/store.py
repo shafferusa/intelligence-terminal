@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import sqlite3
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .domain.events import Event
 
@@ -30,6 +30,33 @@ class EventStore:
         if "save_version" not in cols:       # schema upgrade for databases created before save versioning
             self.conn.execute("ALTER TABLE worlds ADD COLUMN save_version INTEGER NOT NULL DEFAULT 1")
         self.conn.commit()
+
+    @staticmethod
+    def snapshot(src_path: str, dest_dir: str, keep: int = 10) -> Optional[str]:
+        """Copy a database consistently (SQLite's online backup, so a live writer and its WAL are included) into
+        dest_dir as finsim-YYYYmmdd-HHMMSS.db, keeping the newest `keep`. Returns the copy's path, or None when
+        there is nothing to copy. Runs before the server opens a save, so any migration or engine change can be
+        undone by putting a snapshot back."""
+        if src_path == ":memory:" or not os.path.exists(src_path):
+            return None
+        os.makedirs(dest_dir, exist_ok=True)
+        dest = os.path.join(dest_dir, "finsim-" + datetime.now().strftime("%Y%m%d-%H%M%S") + ".db")
+        if os.path.exists(dest):
+            return dest
+        src = sqlite3.connect(src_path)
+        dst = sqlite3.connect(dest)
+        try:
+            src.backup(dst)
+        finally:
+            dst.close()
+            src.close()
+        old = sorted(f for f in os.listdir(dest_dir) if f.startswith("finsim-") and f.endswith(".db"))
+        for f in old[:-keep]:
+            try:
+                os.remove(os.path.join(dest_dir, f))
+            except OSError:
+                pass
+        return dest
 
     def create_world(self, world_id: str, name: str, save_version: int = None) -> None:
         from .version import SAVE_VERSION
