@@ -19,12 +19,14 @@ from ..world import CommandError
 log = get_logger("server")
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 
 class Router:
     def __init__(self, service: Service):
         self.s = service
         self.lock = threading.Lock()
+        self.shutdown = None          # set by serve(): stops the HTTP server (the desktop app's uninstall/stop uses it)
 
     def dispatch(self, method: str, path: str, query: dict, body: dict):
         s = self.s
@@ -33,6 +35,10 @@ class Router:
             return s.jobs()
         if parts == ["api", "health"]:
             return s.health()
+        if parts == ["api", "shutdown"] and method == "POST":
+            if self.shutdown:
+                self.shutdown()
+            return {"shutting_down": bool(self.shutdown)}
         # /api/worlds ...
         if parts[:2] == ["api", "worlds"]:
             rest = parts[2:]
@@ -355,6 +361,7 @@ def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000):
     router = Router(service)
     start_scheduler(router)
     httpd = ThreadingHTTPServer((host, port), make_handler(router))
+    router.shutdown = lambda: threading.Thread(target=httpd.shutdown, daemon=True).start()
     log.info("finsim terminal: http://%s:%s/  (db: %s) — career worlds update daily at their configured time", host, port, db_path)
     print(f"finsim terminal: http://{host}:{port}/  (db: {db_path}) — career worlds update daily at their configured time")
     try:
