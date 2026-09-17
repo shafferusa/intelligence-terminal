@@ -95,13 +95,13 @@ class ChainTest(unittest.TestCase):
             tf = third_friday(e.year, e.month)
             self.assertLessEqual((tf - e).days, 3)
             self.assertTrue(w.calendar.is_business_day(e))
-        ch = w.options.chain("NVRA")
+        ch = w.options.chain("NVDA")
         self.assertEqual(len(ch["rows"]), 17)
         self.assertTrue(all("C" in r and "P" in r for r in ch["rows"]))
         self.assertEqual(ch["style"], "AMERICAN/PHYSICAL")
-        idx = w.options.chain("SPXI")
+        idx = w.options.chain("SPX")
         self.assertEqual(idx["style"], "EUROPEAN/CASH")
-        self.assertAlmostEqual(idx["level"], float(w.market.last_bar("SPXE").close) * 10, places=6)
+        self.assertAlmostEqual(idx["level"], float(w.market.last_bar("SPY").close) * 10, places=6)
         n = sum(1 for s in w.securities.values() if s.is_option)
         self.assertEqual(w.options.ensure_listings(w.current_date), 0)
         self.assertEqual(n, sum(1 for s in w.securities.values() if s.is_option))
@@ -116,9 +116,9 @@ class ChainTest(unittest.TestCase):
         self.assertGreater(low["P"]["iv"], high["C"]["iv"])
         # same seed -> same chain and quotes
         w2, _, _ = make_world()
-        ch2 = w2.options.chain("NVRA")
+        ch2 = w2.options.chain("NVDA")
         self.assertEqual([r["C"]["bid"] for r in ch["rows"]], [r["C"]["bid"] for r in ch2["rows"]])
-        self.assertNotIn("ZYNQ", w.options.optionable())   # small caps have no listed options
+        self.assertNotIn("BAC-PL", w.options.optionable())   # preferreds and small caps have no listed options
         with self.assertRaises(CommandError):
             w.request_locate(pf.id, ch["rows"][0]["C"]["id"], 1)
 
@@ -126,7 +126,7 @@ class ChainTest(unittest.TestCase):
 class TradingTest(unittest.TestCase):
     def test_long_call_premium_settlement_mark_and_close(self):
         w, pf, store = make_world()
-        cid = atm_contract(w, "NVRA", "C", 1)
+        cid = atm_contract(w, "NVDA", "C", 1)
         sec = w.securities[cid]
         w.place_order(pf.id, cid, "BUY", 10)
         w.advance(1)
@@ -161,7 +161,7 @@ class TradingTest(unittest.TestCase):
 
     def test_short_put_margin_close_and_release(self):
         w, pf, store = make_world(capital=2_000_000)
-        pid_ = atm_contract(w, "NVRA", "P", 1)
+        pid_ = atm_contract(w, "NVDA", "P", 1)
         w.place_order(pf.id, pid_, "SELL", 5)
         w.advance(1)
         pos = pf.positions[pid_]
@@ -196,8 +196,8 @@ class TradingTest(unittest.TestCase):
 
     def test_covered_call_reserves_shares_and_has_no_margin(self):
         w, pf, store = make_world()
-        cid = atm_contract(w, "MRDN", "C", 1, offset=2)
-        w.place_order(pf.id, "MRDN", "BUY", 1000)
+        cid = atm_contract(w, "JPM", "C", 1, offset=2)
+        w.place_order(pf.id, "JPM", "BUY", 1000)
         w.advance(1)
         w.place_order(pf.id, cid, "SELL", 10)
         w.advance(1)
@@ -205,31 +205,31 @@ class TradingTest(unittest.TestCase):
         self.assertEqual(pf.options_margin, D(0))
         self.assertEqual(pf.options_margin_detail[0]["kind"], "COVERED_CALL")
         self.assertEqual(pf.positions[cid].covered_by_shares, D(10))
-        self.assertEqual(w.options.covered_shares_needed(pf, "MRDN"), D(1000))
+        self.assertEqual(w.options.covered_shares_needed(pf, "JPM"), D(1000))
         with self.assertRaises(CommandError) as cm:
-            w.place_order(pf.id, "MRDN", "SELL", 1000)
+            w.place_order(pf.id, "JPM", "SELL", 1000)
         self.assertIn("reserved to cover written calls", str(cm.exception))
         assert_ledger_invariants(self, w, pf)
         # buying the calls back frees the shares
         w.place_order(pf.id, cid, "BUY", 10)
         w.advance(1)
         self.assertEqual(pf.positions[cid].quantity, D(0))
-        self.assertEqual(w.options.covered_shares_needed(pf, "MRDN"), D(0))
-        w.place_order(pf.id, "MRDN", "SELL", 1000)
+        self.assertEqual(w.options.covered_shares_needed(pf, "JPM"), D(0))
+        w.place_order(pf.id, "JPM", "SELL", 1000)
         w.advance(2)
-        self.assertEqual(pf.positions["MRDN"].quantity, D(0))
+        self.assertEqual(pf.positions["JPM"].quantity, D(0))
         assert_ledger_invariants(self, w, pf)
 
     def test_vertical_spread_margin_is_the_width(self):
         w, pf, store = make_world(capital=1_000_000)
-        ch, ks = strikes_of(w, "NVRA")
+        ch, ks = strikes_of(w, "NVDA")
         i = min(range(len(ks)), key=lambda j: abs(ks[j] - ch["level"]))
-        short_call, long_call = ch["rows"][i + 1]["C"]["id"], ch["rows"][i + 2]["C"]["id"]
+        short_call, long_call = ch["rows"][i + 3]["C"]["id"], ch["rows"][i + 4]["C"]["id"]   # far enough out of the money not to be assigned in the first days
         w.place_order(pf.id, long_call, "BUY", 5)
         w.advance(1)
         w.place_order(pf.id, short_call, "SELL", 5)
         w.advance(1)
-        width = D(repr(ks[i + 2] - ks[i + 1]))
+        width = D(repr(ks[i + 4] - ks[i + 3]))
         self.assertEqual([d["kind"] for d in pf.options_margin_detail], ["CALL_SPREAD"])
         self.assertEqual(pf.options_margin, (width * 5 * 100).quantize(D("0.01")))
         assert_ledger_invariants(self, w, pf)
@@ -243,7 +243,7 @@ class TradingTest(unittest.TestCase):
 
     def test_validation_rules(self):
         w, pf, store = make_world(capital=50_000)
-        cid = atm_contract(w, "NVRA", "C", 1)
+        cid = atm_contract(w, "NVDA", "C", 1)
         with self.assertRaises(CommandError):
             w.place_order(pf.id, cid, "BUY", 500)            # premium not affordable
         with self.assertRaises(CommandError):
@@ -253,7 +253,7 @@ class TradingTest(unittest.TestCase):
             w.place_order(fi.id, cid, "BUY", 1)
         self.assertIn("mandate", str(cm.exception))
         # an order on a contract that expires today is refused; a GTC order on a contract that expires is cancelled
-        near = atm_contract(w, "NVRA", "C", 0)
+        near = atm_contract(w, "NVDA", "C", 0)
         exp = date.fromisoformat(w.securities[near].expiry)
         w.place_order(pf.id, near, "SELL", 1, "LIMIT", 99999, None, "GTC")
         while w.current_date < exp:
@@ -267,7 +267,7 @@ class TradingTest(unittest.TestCase):
 
     def test_liquidity_caps_fills(self):
         w, pf, store = make_world(capital=500_000_000)
-        ch = w.options.chain("LUXA")
+        ch = w.options.chain("NKE")
         far = ch["rows"][-1]["C"]        # far OTM on a mid cap: thin
         w.place_order(pf.id, far["id"], "BUY", 100_000, time_in_force="GTC")
         w.advance(1)
@@ -282,7 +282,7 @@ class TradingTest(unittest.TestCase):
 class ExerciseAssignmentExpiryTest(unittest.TestCase):
     def test_exercise_long_call_delivers_shares_at_strike(self):
         w, pf, store = make_world()
-        ch, ks = strikes_of(w, "NVRA")
+        ch, ks = strikes_of(w, "NVDA")
         cid = ch["rows"][0]["C"]["id"]          # deep ITM
         sec = w.securities[cid]
         w.place_order(pf.id, cid, "BUY", 4)
@@ -293,7 +293,7 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
         self.assertEqual(ev.type, "OPTION_EXERCISED")
         kids = [w.events_by_id[k] for k in w.children[ev.id]]
         self.assertEqual([k.type for k in kids].count("ORDER_ENTERED"), 2, "delivery order + contract close-out derive from the exercise")
-        stock = pf.positions["NVRA"]
+        stock = pf.positions["NVDA"]
         self.assertEqual(stock.quantity, D(400))
         t = pf.trades[stock.trade_ids[0]]
         self.assertEqual(t.price, D(repr(sec.strike)).quantize(D("0.0001")))
@@ -310,12 +310,12 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
         w2 = World.load(store, "t")
         self.assertEqual(len(w2.events), len(w.events))
         self.assertEqual(w2.ledgers[pf.id].nav(), w.ledgers[pf.id].nav())
-        self.assertEqual(w2.portfolios[pf.id].positions["NVRA"].quantity, D(400))
+        self.assertEqual(w2.portfolios[pf.id].positions["NVDA"].quantity, D(400))
         assert_ledger_invariants(self, w2, w2.portfolios[pf.id])
 
     def test_european_index_option_cannot_be_exercised_early(self):
         w, pf, store = make_world()
-        cid = atm_contract(w, "SPXI", "C", 1)
+        cid = atm_contract(w, "SPX", "C", 1)
         w.place_order(pf.id, cid, "BUY", 2)
         w.advance(1)
         with self.assertRaises(CommandError) as cm:
@@ -328,7 +328,7 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
         today = w.current_date
         cands = []
         for under in w.options.optionable():
-            if under == "SPXI":
+            if under == "SPX":
                 continue
             sec = w.securities[under]
             if sec.dividend_yield < 0.02:
@@ -377,9 +377,9 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
 
     def test_expiration_worthless_itm_and_index_cash(self):
         w, pf, store = make_world(capital=50_000_000)
-        ch, ks = strikes_of(w, "NVRA")
+        ch, ks = strikes_of(w, "NVDA")
         otm_call, itm_call = ch["rows"][-1]["C"]["id"], ch["rows"][0]["C"]["id"]
-        idx = w.options.chain("SPXI")
+        idx = w.options.chain("SPX")
         idx_call = idx["rows"][0]["C"]["id"]
         exp = date.fromisoformat(w.securities[otm_call].expiry)
         w.place_order(pf.id, otm_call, "BUY", 3)
@@ -397,22 +397,22 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
         while w.current_date < exp:
             w.advance(1)
         expired = {e.payload["security_id"]: e.payload for e in w.events if e.type == "OPTION_EXPIRED" and e.sim_date == exp.isoformat()}
-        S = float(w.market.last_bar("NVRA").close)
+        S = float(w.market.last_bar("NVDA").close)
         if S < w.securities[otm_call].strike:
             self.assertEqual(expired[otm_call]["outcome"], "WORTHLESS")
             self.assertEqual(pf.positions[otm_call].realized_pnl, -prem_otm)
         if S > w.securities[itm_call].strike:
             self.assertEqual(expired[itm_call]["outcome"], "AUTO_EXERCISED")
-            self.assertEqual(pf.positions["NVRA"].quantity, D(200))
+            self.assertEqual(pf.positions["NVDA"].quantity, D(200))
         self.assertEqual(pf.positions[itm_call].quantity, D(0))
         self.assertEqual(pf.positions[otm_call].quantity, D(0))
-        level = float(w.market.last_bar("SPXE").close) * 10
+        level = float(w.market.last_bar("SPY").close) * 10
         if level > w.securities[idx_call].strike:
             self.assertEqual(expired[idx_call]["outcome"], "CASH_SETTLED")
             amount = D(expired[idx_call]["amount"])
             self.assertEqual(amount, (D(repr(level - w.securities[idx_call].strike)) * 100).quantize(D("0.01")))
             self.assertEqual(pf.positions[idx_call].realized_pnl, amount - prem_idx)
-            self.assertNotIn("SPXE", [s for s, p in pf.positions.items() if p.quantity])
+            self.assertNotIn("SPY", [s for s, p in pf.positions.items() if p.quantity])
         assert_ledger_invariants(self, w, pf)
         w.advance(2)
         assert_ledger_invariants(self, w, pf)
@@ -423,7 +423,7 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
 
     def test_short_put_assigned_at_expiry_buys_stock(self):
         w, pf, store = make_world(capital=5_000_000)
-        ch, ks = strikes_of(w, "MRDN")
+        ch, ks = strikes_of(w, "JPM")
         deep_put = ch["rows"][-1]["P"]["id"]
         exp = date.fromisoformat(w.securities[deep_put].expiry)
         w.place_order(pf.id, deep_put, "SELL", 3)
@@ -431,9 +431,9 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
         prem = -pf.positions[deep_put].cost_basis
         while w.current_date < exp:
             w.advance(1)
-        S = float(w.market.last_bar("MRDN").close)
+        S = float(w.market.last_bar("JPM").close)
         if S < w.securities[deep_put].strike:
-            self.assertEqual(pf.positions["MRDN"].quantity, D(300))
+            self.assertEqual(pf.positions["JPM"].quantity, D(300))
             self.assertEqual(pf.positions[deep_put].realized_pnl, prem, "premium kept; stock bought at the strike")
             self.assertEqual(pf.options_margin, D(0))
         assert_ledger_invariants(self, w, pf)
@@ -444,10 +444,10 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
 class StrategyTest(unittest.TestCase):
     def test_vertical_all_or_none_and_analytics(self):
         w, pf, store = make_world()
-        ch, ks = strikes_of(w, "NVRA")
+        ch, ks = strikes_of(w, "NVDA")
         i = min(range(len(ks)), key=lambda j: abs(ks[j] - ch["level"]))
         exp = ch["expiry"]
-        st = w.place_strategy(pf.id, "BULL_CALL_SPREAD", "NVRA", exp, [ks[i], ks[i + 2]], 5, net_limit=D("0.01"))
+        st = w.place_strategy(pf.id, "BULL_CALL_SPREAD", "NVDA", exp, [ks[i], ks[i + 2]], 5, net_limit=D("0.01"))
         self.assertEqual(st.status, "WORKING")
         self.assertEqual(len(st.legs), 2)
         self.assertTrue(all(l["order_id"] for l in st.legs), "legs linked to orders")
@@ -457,7 +457,7 @@ class StrategyTest(unittest.TestCase):
         self.assertTrue(any("all-or-none" in h["note"] for h in pf.orders[st.legs[0]["order_id"]].history))
         w.advance(1)
         self.assertEqual(st.status, "EXPIRED")
-        st2 = w.place_strategy(pf.id, "BULL_CALL_SPREAD", "NVRA", exp, [ks[i], ks[i + 2]], 5, net_limit=D(5000))
+        st2 = w.place_strategy(pf.id, "BULL_CALL_SPREAD", "NVDA", exp, [ks[i], ks[i + 2]], 5, net_limit=D(5000))
         w.advance(1)
         self.assertEqual(st2.status, "FILLED")
         self.assertGreater(st2.net_premium, 0)
@@ -478,16 +478,16 @@ class StrategyTest(unittest.TestCase):
 
     def test_iron_condor_straddle_and_covered_call_tickets(self):
         w, pf, store = make_world()
-        ch, ks = strikes_of(w, "SPXI")
+        ch, ks = strikes_of(w, "SPX")
         i = min(range(len(ks)), key=lambda j: abs(ks[j] - ch["level"]))
         exp = ch["expiries"][1]
-        ch, ks = strikes_of(w, "SPXI", exp)
-        ic = w.place_strategy(pf.id, "IRON_CONDOR", "SPXI", exp, [ks[i - 4], ks[i - 2], ks[i + 2], ks[i + 4]], 2)
-        sd = w.place_strategy(pf.id, "LONG_STRADDLE", "NVRA", w.options.chain("NVRA")["expiries"][1], [atm_strike(w, "NVRA")], 3)
+        ch, ks = strikes_of(w, "SPX", exp)
+        ic = w.place_strategy(pf.id, "IRON_CONDOR", "SPX", exp, [ks[i - 4], ks[i - 2], ks[i + 2], ks[i + 4]], 2)
+        sd = w.place_strategy(pf.id, "LONG_STRADDLE", "NVDA", w.options.chain("NVDA")["expiries"][1], [atm_strike(w, "NVDA")], 3)
         with self.assertRaises(CommandError):
-            w.place_strategy(pf.id, "COVERED_CALL", "NVRA", w.options.chain("NVRA")["expiries"][1], [atm_strike(w, "NVRA")], 1)   # no shares
+            w.place_strategy(pf.id, "COVERED_CALL", "NVDA", w.options.chain("NVDA")["expiries"][1], [atm_strike(w, "NVDA")], 1)   # no shares
         with self.assertRaises(CommandError):
-            w.place_strategy(pf.id, "NOT_A_STRATEGY", "NVRA", exp, [1], 1)
+            w.place_strategy(pf.id, "NOT_A_STRATEGY", "NVDA", exp, [1], 1)
         w.advance(1)
         self.assertEqual(ic.status, "FILLED")
         self.assertEqual(sd.status, "FILLED")
@@ -516,10 +516,10 @@ def atm_strike(w, under):
 class MarginCallTest(unittest.TestCase):
     def test_stress_margin_call_and_forced_liquidation(self):
         w, pf, store = make_world(capital=100_000)
-        pid_ = atm_contract(w, "NVRA", "P", 1)
-        w.place_order(pf.id, pid_, "SELL", 8)
+        pid_ = atm_contract(w, "NVDA", "P", 1)
+        w.place_order(pf.id, pid_, "SELL", 18)
         w.advance(2)
-        self.assertEqual(pf.positions[pid_].quantity, D(-8))
+        self.assertEqual(pf.positions[pid_].quantity, D(-18))
         m0 = pf.options_margin
         w.force_regime("LIQUIDITY_STRESS")
         w.advance(1)
@@ -544,16 +544,16 @@ class MarginCallTest(unittest.TestCase):
 class SplitTest(unittest.TestCase):
     def test_split_adjusts_positions_and_contracts(self):
         w, pf, store = make_world()
-        cid = atm_contract(w, "NVRA", "C", 2)
-        w.place_order(pf.id, "NVRA", "BUY", 100)
+        cid = atm_contract(w, "NVDA", "C", 2)
+        w.place_order(pf.id, "NVDA", "BUY", 100)
         w.place_order(pf.id, cid, "BUY", 1)
         w.advance(2)
         k0, mv0 = w.securities[cid].strike, pf.positions[cid].market_value
         nav0 = w.ledgers[pf.id].nav()
-        n_contracts = sum(1 for s in w.securities.values() if s.is_option and s.underlying == "NVRA")
-        w.force_split("NVRA", 2.0)
-        self.assertEqual(pf.positions["NVRA"].quantity, D(200))
-        self.assertEqual(pf.positions["NVRA"].settled_quantity, D(200))
+        n_contracts = sum(1 for s in w.securities.values() if s.is_option and s.underlying == "NVDA")
+        w.force_split("NVDA", 2.0)
+        self.assertEqual(pf.positions["NVDA"].quantity, D(200))
+        self.assertEqual(pf.positions["NVDA"].settled_quantity, D(200))
         self.assertEqual(pf.positions[cid].quantity, D(2))
         self.assertEqual(w.securities[cid].strike, k0 / 2)
         self.assertEqual(w.securities[cid].deliverable["quantity"], 100)
@@ -564,10 +564,10 @@ class SplitTest(unittest.TestCase):
         self.assertAlmostEqual(float(pf.positions[cid].market_value), float(mv0), delta=float(mv0) * 0.5)
         assert_ledger_invariants(self, w, pf)
         # non-whole ratio: deliverable changes instead of the contract count
-        cid2 = atm_contract(w, "MRDN", "C", 2)
+        cid2 = atm_contract(w, "JPM", "C", 2)
         w.place_order(pf.id, cid2, "BUY", 1)
         w.advance(2)
-        w.force_split("MRDN", 1.5)
+        w.force_split("JPM", 1.5)
         self.assertEqual(pf.positions[cid2].quantity, D(1))
         self.assertEqual(w.securities[cid2].deliverable["quantity"], 150)
         self.assertEqual(w.securities[cid2].multiplier, 150.0)
@@ -575,16 +575,16 @@ class SplitTest(unittest.TestCase):
         assert_ledger_invariants(self, w, pf)
         w2 = World.load(store, "t")
         self.assertEqual(w2.securities[cid].strike, k0 / 2)
-        self.assertEqual(w2.portfolios[pf.id].positions["NVRA"].quantity, D(200))
+        self.assertEqual(w2.portfolios[pf.id].positions["NVDA"].quantity, D(200))
         self.assertEqual(w2.ledgers[pf.id].nav(), w.ledgers[pf.id].nav())
-        self.assertEqual([b.close for b in w2.market.history["NVRA"][-5:]], [b.close for b in w.market.history["NVRA"][-5:]])
+        self.assertEqual([b.close for b in w2.market.history["NVDA"][-5:]], [b.close for b in w.market.history["NVDA"][-5:]])
 
 
 class OptionPnLTest(unittest.TestCase):
     def test_options_bucket_and_greek_attribution(self):
         w, pf, store = make_world()
-        cid = atm_contract(w, "NVRA", "C", 2)
-        pid_ = atm_contract(w, "SPXI", "P", 2)
+        cid = atm_contract(w, "NVDA", "C", 2)
+        pid_ = atm_contract(w, "SPX", "P", 2)
         w.place_order(pf.id, cid, "BUY", 20)
         w.place_order(pf.id, pid_, "SELL", 2)
         w.advance(3)
@@ -616,20 +616,20 @@ class OptionsDefinitionOfDoneTest(unittest.TestCase):
     def run_scenario(self):
         w, pf, store = make_world(seed=11, capital=20_000_000)
         log = []
-        ch, ks = strikes_of(w, "NVRA")
+        ch, ks = strikes_of(w, "NVDA")
         i = min(range(len(ks)), key=lambda j: abs(ks[j] - ch["level"]))
         exp1 = ch["expiries"][1]
-        ch1, ks1 = strikes_of(w, "NVRA", exp1)
+        ch1, ks1 = strikes_of(w, "NVDA", exp1)
         i1 = min(range(len(ks1)), key=lambda j: abs(ks1[j] - ch1["level"]))
         # 1 shares + covered call, 2 long put protection, 3 index condor, 4 naked put
-        w.place_order(pf.id, "NVRA", "BUY", 2000)
+        w.place_order(pf.id, "NVDA", "BUY", 2000)
         w.advance(1)
-        w.place_strategy(pf.id, "COVERED_CALL", "NVRA", exp1, [ks1[i1 + 2]], 10)
-        w.place_strategy(pf.id, "PROTECTIVE_PUT", "NVRA", exp1, [ks1[i1 - 2]], 10)
-        idx, iks = strikes_of(w, "SPXI", w.options.chain("SPXI")["expiries"][1])
+        w.place_strategy(pf.id, "COVERED_CALL", "NVDA", exp1, [ks1[i1 + 2]], 10)
+        w.place_strategy(pf.id, "PROTECTIVE_PUT", "NVDA", exp1, [ks1[i1 - 2]], 10)
+        idx, iks = strikes_of(w, "SPX", w.options.chain("SPX")["expiries"][1])
         j = min(range(len(iks)), key=lambda k: abs(iks[k] - idx["level"]))
-        w.place_strategy(pf.id, "IRON_CONDOR", "SPXI", idx["expiry"], [iks[j - 5], iks[j - 3], iks[j + 3], iks[j + 5]], 3)
-        w.place_order(pf.id, atm_contract(w, "MRDN", "P", 1, offset=-1), "SELL", 5)
+        w.place_strategy(pf.id, "IRON_CONDOR", "SPX", idx["expiry"], [iks[j - 5], iks[j - 3], iks[j + 3], iks[j + 5]], 3)
+        w.place_order(pf.id, atm_contract(w, "JPM", "P", 1, offset=-1), "SELL", 5)
         w.advance(2)
         assert_ledger_invariants(self, w, pf)
         for st in pf.strategies.values():
@@ -640,7 +640,7 @@ class OptionsDefinitionOfDoneTest(unittest.TestCase):
         w.exercise_option(pf.id, put_id, 2)
         w.advance(1)
         assert_ledger_invariants(self, w, pf)
-        w.force_split("NVRA", 2.0)
+        w.force_split("NVDA", 2.0)
         assert_ledger_invariants(self, w, pf)
         w.force_regime("RECESSION")
         w.advance(3)

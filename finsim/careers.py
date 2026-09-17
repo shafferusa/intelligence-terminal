@@ -36,10 +36,10 @@ class Job:
 
 
 JOBS: Dict[str, Job] = {
-    "SANDBOX": Job("SANDBOX", "Sandbox", "Unlimited experimentation. Any instrument, no limits, no reviews.", D(1_000_000_000), "SPXE",
+    "SANDBOX": Job("SANDBOX", "Sandbox", "Unlimited experimentation. Any instrument, no limits, no reviews.", D(1_000_000_000), "SPY",
                    frozenset(ALL_CLASSES), 99.0, 9.0, 1.0, ("Sandbox",)),
     "PORTFOLIO_MANAGER": Job("PORTFOLIO_MANAGER", "Portfolio Manager", "Run a $100MM multi-asset fund against an equity benchmark. Equities, bonds, ETFs and "
-                             "listed futures. Judged on alpha, Sharpe and drawdown.", D(100_000_000), "SPXE", frozenset(ALL_CLASSES), 1.5, 0.15, 0.15,
+                             "listed futures. Judged on alpha, Sharpe and drawdown.", D(100_000_000), "SPY", frozenset(ALL_CLASSES), 1.5, 0.15, 0.15,
                              ("Analyst", "Associate PM", "Portfolio Manager", "Senior PM", "CIO")),
     "GLOBAL_MACRO": Job("GLOBAL_MACRO", "Global Macro Trader", "Rates, equity indices and commodities via futures and government bonds. Absolute return; "
                         "leverage allowed but drawdowns are watched closely.", D(250_000_000), None,
@@ -75,7 +75,7 @@ JOBS: Dict[str, Job] = {
                         "their large orders, force reductions. Judged on the firm's breaches and losses, not on trading.", D(0), None, frozenset(), 99.0, 9.0, 1.0,
                         ("Risk Analyst", "Risk Manager", "Senior Risk Manager", "Head of Risk", "CRO")),
     # AI desks (not selectable): created for the risk manager to oversee
-    "AI_MOMENTUM": Job("AI_MOMENTUM", "AI desk — Equity momentum", "Rule-based equity momentum desk.", D(100_000_000), "SPXE", frozenset({"EQUITY"}), 2.0, 0.25, 0.20, ("Desk",), status="AI"),
+    "AI_MOMENTUM": Job("AI_MOMENTUM", "AI desk — Equity momentum", "Rule-based equity momentum desk.", D(100_000_000), "SPY", frozenset({"EQUITY"}), 2.0, 0.25, 0.20, ("Desk",), status="AI"),
     "AI_CARRY": Job("AI_CARRY", "AI desk — Rates carry", "Rule-based Treasury and credit carry desk.", D(200_000_000), "UST-5Y", frozenset({"GOVT_BOND", "CORP_BOND"}), 3.0, 0.5, 0.10, ("Desk",), status="AI"),
     "AI_VOL": Job("AI_VOL", "AI desk — Volatility", "Rule-based index vol seller with delta hedging.", D(100_000_000), None, frozenset({"OPTION", "EQUITY_INDEX"}), 4.0, 0.5, 0.25, ("Desk",), status="AI"),
     "AI_COMMODITY": Job("AI_COMMODITY", "AI desk — Commodity trend", "Rule-based commodity trend follower.", D(100_000_000), None,
@@ -295,8 +295,8 @@ class ME:
 # The save's creation day is index 0 (the player sees a calm first briefing); the script starts on the first advance.
 CRISIS_SCRIPT = [
     {"day": 1, "regime": "LIQUIDITY_STRESS", "rates_bp": 35, "note": "Funding markets seize: haircuts double, spreads gap, dealers widen, Treasuries sell off in a dash for cash."},
-    {"day": 5, "issuer_default": "NGSL-30", "recovery": 0.25, "note": "The weakest high-yield issuer fails."},
-    {"day": 10, "dealer_default": "VANTAGE", "note": "A specialist dealer collapses; its netting sets are closed out."},
+    {"day": 5, "issuer_default": "AAL-28", "recovery": 0.25, "note": "The weakest high-yield issuer fails."},
+    {"day": 10, "dealer_default": "DEUTSCHE", "note": "A specialist dealer collapses; its netting sets are closed out."},
     {"day": 31, "regime": "RECESSION", "note": "The acute phase passes into recession."},
     {"day": 96, "regime": "RATE_CUTTING", "note": "The central bank eases; recovery begins."},
 ]

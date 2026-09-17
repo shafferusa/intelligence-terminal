@@ -93,7 +93,7 @@ class SaveVersioningTest(unittest.TestCase):
     def test_new_saves_carry_the_version_and_old_saves_are_migrated_on_load(self):
         store = EventStore(":memory:")
         w, pf, _ = make_world(store=store, capital=5_000_000)
-        w.place_order(pf.id, "SPXE", "BUY", 100)
+        w.place_order(pf.id, "SPY", "BUY", 100)
         w.advance(2)
         nav = w.ledgers[pf.id].nav()
         self.assertEqual(w.save_version, SAVE_VERSION)
@@ -151,7 +151,7 @@ class ResilientReplayTest(unittest.TestCase):
     def test_strict_load_raises_and_resilient_load_reports(self):
         store = EventStore(":memory:")
         w, pf, _ = make_world(store=store, capital=5_000_000)
-        w.place_order(pf.id, "SPXE", "BUY", 100)
+        w.place_order(pf.id, "SPY", "BUY", 100)
         w.advance(3)
         last = w.current_date
         seq = self._damage(store, "t")
@@ -225,3 +225,37 @@ class LoggingAndHealthTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class UniverseSnapshotTest(unittest.TestCase):
+    def test_world_starts_at_the_snapshot_and_v2_saves_are_renamed(self):
+        from finsim.engines.market import UNIVERSE, EQUITY_SEED
+        from finsim.migrations import migrate_2_to_3
+        w, pf, store = make_world(capital=5_000_000)
+        # every listed name closes at its snapshot price on the start date; spots, FX and the curve match too
+        for (t, _n, _ac, _s, _c, _ccy, px, *_rest) in EQUITY_SEED:
+            self.assertEqual(float(w.market.last_bar(t).close), round(px, 4), t)
+        for code, target in UNIVERSE["commodities"].items():
+            self.assertAlmostEqual(w.market.commodities.state[code].spot, float(target), places=6)
+        for ccy, target in UNIVERSE["fx"].items():
+            self.assertAlmostEqual(w.market.fx.spot[ccy], float(target), places=6)
+        c = w.market.curve()
+        self.assertAlmostEqual(c.rates[-1], float(UNIVERSE["rates"]["y30"]), delta=0.001)
+        self.assertLess(abs(float(w.market.last_bar("UST-10Y").close) - 100), 6, "on-the-run coupons keep new Treasuries near par")
+        self.assertTrue(all(s.sector for s in w.securities.values() if s.asset_class == "EQUITY"))
+        self.assertGreaterEqual(len({s.sector for s in w.securities.values() if s.asset_class in ("EQUITY", "REIT")}), 11, "every GICS sector is represented")
+        # a version-2 save (fictional names) is rewritten to the real universe on load: ids, dealers, custodian
+        w.place_order(pf.id, "NVDA", "BUY", 100)
+        w.advance(1)
+        old = []
+        for ev in store.load_events("t"):
+            txt = ev.to_json().replace("NVDA", "NVRA").replace("GOLDMAN", "ATLAS").replace("BNYM-CUST", "MERIDIAN-CUST").replace("Goldman Sachs", "Atlas Capital Markets")
+            e2 = Event.from_json(txt)
+            if e2.type == E.WORLD_CREATED:
+                e2 = Event(e2.seq, e2.id, e2.type, e2.sim_date, {**e2.payload, "save_version": 2}, e2.cause_id, e2.portfolio_id)
+            old.append(e2)
+        new, notes = migrate_2_to_3(old)
+        self.assertTrue(notes and "renamed" in notes[0])
+        self.assertEqual(next(e for e in new if e.type == E.WORLD_CREATED).payload["save_version"], 3)
+        self.assertFalse(any("NVRA" in e.to_json() or "ATLAS" in e.to_json() or "MERIDIAN-CUST" in e.to_json() for e in new))
+        self.assertTrue(any("NVDA" in e.to_json() for e in new if e.type == E.ORDER_ENTERED))

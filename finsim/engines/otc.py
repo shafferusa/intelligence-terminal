@@ -199,6 +199,8 @@ class OTCEngine:
         per = self.periods(t.start, t.maturity, T["months"])
         n_usd, n_ccy = _f(T["usd_notional"]), _f(T["ccy_notional"])
         pv_usd = pv_ccy = 0.0
+        d_ccy = 1.0            # cumulative simple-rate discount factor on the foreign leg's own accrual periods
+        first = True
         for (s, e, p) in per:
             if p <= asof:
                 continue
@@ -207,10 +209,13 @@ class OTCEngine:
             r_usd = t.fixings.get("USD:" + k, px.fwd_rate(c, px.years(asof, s), px.years(asof, e)))
             r_c = t.fixings.get(ccy + ":" + k, r_ccy_flat)
             pv_usd += n_usd * r_usd * tau * px.df(c, px.years(asof, p))
-            pv_ccy += n_ccy * (r_c + T["basis_bps"] / 1e4) * tau / (1 + r_ccy_disc) ** px.years(asof, p)
+            tau_d = px.yearfrac(max(s, asof), e, "ACT/360") if first else tau
+            first = False
+            d_ccy /= (1 + r_ccy_disc * tau_d)
+            pv_ccy += n_ccy * (r_c + T["basis_bps"] / 1e4) * tau * d_ccy
         Tm = px.years(asof, date.fromisoformat(t.maturity))
         pv_usd += n_usd * px.df(c, Tm)
-        pv_ccy += n_ccy / (1 + r_ccy_disc) ** Tm
+        pv_ccy += n_ccy * d_ccy
         pv_ccy_base = pv_ccy * spot
         pv = (pv_usd - pv_ccy_base) if T["direction"] == "BORROW_FOREIGN" else (pv_ccy_base - pv_usd)
         fx_delta = (-pv_ccy if T["direction"] == "BORROW_FOREIGN" else pv_ccy) * spot * 0.01   # per 1% move in the foreign currency
@@ -372,6 +377,11 @@ class OTCEngine:
             key = "usd_notional" if p == "XCCY" else "notional"
             if _f(q.get(key, 0)) <= 0:
                 raise CommandError("notional must be positive")
+        for key in ("fixed_months", "float_months", "months", "reset_months"):
+            if key in q and int(_f(q[key])) < 1:
+                raise CommandError(f"{key} must be at least 1")
+        if "tenor_years" in q and _f(q["tenor_years"]) <= 0:
+            raise CommandError("tenor_years must be positive")
         if p == "IRS":
             q.setdefault("pay_fixed", True)
             q.setdefault("fixed_months", 6)
@@ -409,7 +419,7 @@ class OTCEngine:
         if p == "CDS":
             sec = w.securities.get(q.get("reference", ""))
             if sec is None or sec.asset_class != "CORP_BOND":
-                raise CommandError("CDS reference must be a corporate bond issuer (e.g. MRDN-29, PTRX-32, NGSL-30)")
+                raise CommandError("CDS reference must be a corporate bond issuer (e.g. JPM-29, F-32, AAL-28)")
             q.setdefault("buyer", True)
         if p == "COMMODITY_SWAP":
             if q.get("code", "").upper() not in w.market.commodities.state:
@@ -480,10 +490,10 @@ class OTCEngine:
         if why:
             raise CommandError(f"initial margin {im:,.0f} plus upfront {max(ZERO, upfront):,.0f} not financeable: {why}")
         tid = w.new_id("OTC")
-        ev = w.emit(OE.RFQ_EXECUTED, {"portfolio_id": pf.id, "rfq_id": r.id, "dealer": dealer, "trade_id": tid, "level": q["level"]}, portfolio_id=pf.id)
-        w.emit(OE.OTC_TRADE_OPENED, {"portfolio_id": pf.id, "trade_id": tid, "product": r.product, "counterparty": dealer, "notional": notional, "currency": ccy,
-                                     "start": start, "maturity": maturity, "terms": terms, "initial_cashflows": initial, "rfq_id": r.id,
-                                     "dealer_level": q["level"], "mid": r.mid.get("mid"), "cost_vs_mid": q.get("cost_vs_mid", 0.0)}, cause_id=ev.id, portfolio_id=pf.id)
+        ev = w.emit(OE.OTC_TRADE_OPENED, {"portfolio_id": pf.id, "trade_id": tid, "product": r.product, "counterparty": dealer, "notional": notional, "currency": ccy,
+                                          "start": start, "maturity": maturity, "terms": terms, "initial_cashflows": initial, "rfq_id": r.id,
+                                          "dealer_level": q["level"], "mid": r.mid.get("mid"), "cost_vs_mid": q.get("cost_vs_mid", 0.0)}, portfolio_id=pf.id)
+        w.emit(OE.RFQ_EXECUTED, {"portfolio_id": pf.id, "rfq_id": r.id, "dealer": dealer, "trade_id": tid, "level": q["level"]}, cause_id=ev.id, portfolio_id=pf.id)
         return pf.otc_trades[tid]
 
     def _build_terms(self, r: RFQ, q: Dict):
@@ -566,7 +576,7 @@ class OTCEngine:
     def unwind_cost(self, t: OTCTrade) -> Decimal:
         w = self.w
         dst = self.cp_state(t.counterparty)
-        hw = quote_half_width(t.product, t.counterparty if t.counterparty in DEALERS else "ATLAS", w.market.state.regime, dst.stress)
+        hw = quote_half_width(t.product, t.counterparty if t.counterparty in DEALERS else "GOLDMAN", w.market.state.regime, dst.stress)
         an = t.analytics
         if t.product in ("IRS", "FRA"):
             c = hw * abs(an.get("dv01", 0.0))
@@ -783,7 +793,7 @@ class OTCEngine:
                 st["reset_date"] = t.start
             fin_rate = self.curve().policy_rate + T["spread_bps"] / 1e4
             if t.trade_date != iso:
-                st["financing"] = _f(st.get("financing", 0)) + _f(t.notional) * fin_rate * days / 360.0
+                st["financing"] = _f(st.get("financing", 0)) + _f(st.get("notional", t.notional)) * fin_rate * days / 360.0
             for ca in w.corporate_actions.values():
                 if ca.security_id == sid and ca.ex_date == iso and ca.action_type == "CASH_DIVIDEND":
                     st["dividends"] = _f(st.get("dividends", 0)) + _f(ca.amount_per_unit) * _f(T["units"])
@@ -942,13 +952,13 @@ class OTCEngine:
             vm_recv = csa.vm_received if csa else ZERO
             vm_post = csa.vm_posted if csa else ZERO
             im_post = csa.im_posted if csa else ZERO
-            current = max(ZERO, net - vm_recv) + vm_post
+            current = max(ZERO, net - vm_recv + vm_post)      # the unsecured claim if the dealer failed today, as the default settlement computes it
             addon = ZERO
             for t in trades:
                 T_ = max(0.25, px.years(w.current_date, date.fromisoformat(t.maturity)))
                 addon += money(D(repr(PFE_ADDON[t.product] * math.sqrt(T_))) * t.notional)
             ngr = float(max(ZERO, net) / pos) if pos > 0 else 0.0
-            pfe = max(ZERO, net - vm_recv) + money(addon * D(repr(0.4 + 0.6 * ngr)))
+            pfe = current + money(addon * D(repr(0.4 + 0.6 * ngr)))
             pd1 = min(0.99, (dst.cds / 1e4) / (1 - DEFAULT_RECOVERY))
             rows.append({"dealer": dealer, "name": self.cp_name(dealer), "rating": dst.rating, "cds_bps": dst.cds, "stress": dst.stress, "defaulted": dst.defaulted,
                          "trades": len(trades), "gross_positive": pos, "gross_negative": neg, "net_mtm": net, "vm_received": vm_recv, "vm_posted": vm_post,
@@ -958,7 +968,7 @@ class OTCEngine:
                          "mta": csa.mta if csa else D(csa_terms_for(dealer)["mta"]), "csa_status": csa.status if csa else "NONE", "is_client": dealer not in DEALERS,
                          "call": w.collateral.open_call(pf, "OTC", dealer)})
         return {"rows": rows, "total_current_exposure": sum((r["current_exposure"] for r in rows), ZERO), "total_pfe": sum((r["pfe"] for r in rows), ZERO),
-                "method": "current exposure = max(0, net MTM − VM received) + VM posted; PFE = current + add-on (notional × product factor × √T) × (0.4 + 0.6 × net/gross); "
+                "method": "current exposure = max(0, net MTM − VM received + VM posted); PFE = current + add-on (notional × product factor × √T) × (0.4 + 0.6 × net/gross); "
                           "expected loss = PFE × 1y PD (from the dealer's CDS) × (1 − 40% recovery). Simplified current-exposure method, documented as such."}
 
     def upcoming(self, pf: Portfolio, horizon_bd: int = 5) -> List[Dict]:
@@ -1033,7 +1043,7 @@ class OTCEngine:
                "liabilities": -sum((r["mtm"] for r in rows if r["status"] == "OPEN" and r["mtm"] < 0), ZERO),
                "open": sum(1 for r in rows if r["status"] == "OPEN")}
         csas = [{"dealer": c.counterparty, "threshold": c.threshold, "mta": c.mta, "im_pct": c.im_pct, "vm_posted": c.vm_posted, "vm_received": c.vm_received,
-                 "im_posted": c.im_posted, "im_received": c.im_received, "status": c.status} for c in pf.csas.values()]
+                 "im_posted": c.im_posted, "im_received": c.im_received, "status": c.status, "history": list(c.history[-60:])} for c in pf.csas.values()]
         rfqs = [{"id": r.id, "product": r.product, "params": r.params, "quotes": r.quotes, "mid": r.mid, "status": r.status, "date": r.date, "expires": r.expires,
                  "executed_with": r.executed_with, "trade_id": r.trade_id} for r in pf.rfqs.values()]
         return {"trades": rows, "aggregate": agg, "csas": csas, "rfqs": rfqs, "exposure": self.exposure(pf), "rate_vol": self.rate_vol(), "upcoming": self.upcoming(pf),
@@ -1087,7 +1097,8 @@ class OTCEngine:
         for cf in p.get("initial_cashflows", []):
             legs = cf.get("legs") or [{"currency": cf["currency"], "amount": money(cf["amount"])}]
             self._cashflow(pf, t, cf["kind"], ZERO, "", cf.get("note", ""), ev, legs=[{"currency": l["currency"], "amount": money(l["amount"])} for l in legs], derived=True)
-        self.mark(pf, t, ev, derived=True)
+        if not w.replaying:          # the inception mark is in the log; re-pricing on load would only risk a spurious replay error
+            self.mark(pf, t, ev, derived=True)
 
     def _h_marked(self, ev: Event) -> None:
         w = self.w
@@ -1208,20 +1219,26 @@ class OTCEngine:
         p = ev.payload
         dealer = p["dealer"]
         w.market.dealers.mark_defaulted(dealer, date.fromisoformat(ev.sim_date))
-        if w.replaying:
-            return
-        rec = D(repr(_f(p["recovery"])))
+        live = not w.replaying          # on replay the derived events (terminations, cashflows, postings) are already in the log;
+        rec = D(repr(_f(p["recovery"])))  # only the CSA's own state is updated here so the projection matches the live run
         for pf in w.portfolios.values():
             trades = [t for t in pf.otc_trades.values() if t.is_open and t.counterparty == dealer]
             csa = pf.csas.get(dealer)
             if not trades and csa is None:
                 continue
             net = sum((t.mtm for t in trades), ZERO)
-            for t in trades:
-                self._status(pf, t, "TERMINATED", ev, f"counterparty default of {self.cp_name(dealer)}: early termination at mid")
+            if live:
+                for t in trades:
+                    self._status(pf, t, "TERMINATED", ev, f"counterparty default of {self.cp_name(dealer)}: early termination at mid")
             if csa is None:
                 continue
             vm_recv, vm_post, im_post = csa.vm_received, csa.vm_posted, csa.im_posted
+            if not live:
+                csa.vm_received = ZERO
+                csa.vm_posted = ZERO
+                pf.cash_collateral.pop(f"CSA:{dealer}", None)
+                csa.status = "TERMINATED"
+                continue
             # settle: what we are owed net of collateral held is an unsecured claim (recovers at `rec`); what we owe net of collateral posted is paid in full
             claim = net - vm_recv + vm_post          # positive: they owe us (unsecured part)
             if im_post:

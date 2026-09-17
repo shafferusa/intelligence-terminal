@@ -10,12 +10,14 @@ from finsim.world import CommandError, World
 class ExposureAndVaRTest(unittest.TestCase):
     def test_equity_var_is_linear_and_hedging_reduces_it(self):
         w, pf, store = make_world(capital=50_000_000)
-        w.place_order(pf.id, "NVRA", "BUY", 10_000)
+        # a diversified holding: its risk is mostly the market factor, so an index hedge should remove most of it
+        # (a single name like NVDA keeps most of its variance as idiosyncratic risk no index hedge can touch)
+        w.place_order(pf.id, "SPY", "BUY", 10_000)
         w.advance(1)
         rep = w.risk.report(pf)
-        mv = float(pf.positions["NVRA"].market_value)
+        mv = float(pf.positions["SPY"].market_value)
         self.assertAlmostEqual(rep["factors"]["equity_dollar"], mv, places=2)
-        self.assertAlmostEqual(rep["factors"]["beta_dollar"], mv * w.securities["NVRA"].beta, places=2)
+        self.assertAlmostEqual(rep["factors"]["beta_dollar"], mv * w.securities["SPY"].beta, places=2)
         v = rep["var"]
         self.assertTrue(v["available"])
         self.assertEqual(v["days"], 250)
@@ -23,7 +25,7 @@ class ExposureAndVaRTest(unittest.TestCase):
         self.assertGreater(v["var95"], 0)
         self.assertGreater(v["es975"], v["var95"])
         self.assertAlmostEqual(sum(v["component_var99"].values()), v["var99"], delta=v["var99"] * 0.02, msg="Euler components add up")
-        w.place_order(pf.id, "NVRA", "BUY", 10_000)
+        w.place_order(pf.id, "SPY", "BUY", 10_000)
         w.advance(1)
         v2 = w.risk.var(pf)
         ratio = v2["var99"] / v["var99"]
@@ -43,10 +45,10 @@ class ExposureAndVaRTest(unittest.TestCase):
 
     def test_stress_matches_sensitivities(self):
         w, pf, store = make_world(capital=100_000_000)
-        w.place_order(pf.id, "NVRA", "BUY", 10_000)
-        w.place_order(pf.id, "MRDN", "BUY", 50_000)
+        w.place_order(pf.id, "NVDA", "BUY", 100_000)
+        w.place_order(pf.id, "JPM", "BUY", 50_000)
         w.place_order(pf.id, "UST-10Y", "BUY", 10_000_000)
-        w.place_order(pf.id, "PTRX-32", "BUY", 5_000_000)
+        w.place_order(pf.id, "F-32", "BUY", 5_000_000)
         w.advance(1)
         rep = w.risk.report(pf)
         f = rep["factors"]
@@ -62,11 +64,11 @@ class ExposureAndVaRTest(unittest.TestCase):
         self.assertLess(st["GFC_2008"]["pnl"], st["RATES_DOWN_100"]["pnl"])
         self.assertEqual(set(st), set(STRESS_SCENARIOS))
         worst = st["EQUITY_CRASH_20"]["worst_contributors"][0]
-        self.assertEqual(worst[0], "NVRA")
+        self.assertEqual(worst[0], "NVDA")
 
     def test_option_gamma_and_vega_in_stress(self):
         w, pf, store = make_world(capital=20_000_000)
-        ch = w.options.chain("NVRA", w.options.chain("NVRA")["expiries"][1])
+        ch = w.options.chain("NVDA", w.options.chain("NVDA")["expiries"][1])
         atm = min(ch["rows"], key=lambda r: abs(r["strike"] - ch["level"]))
         w.place_order(pf.id, atm["C"]["id"], "BUY", 50)
         w.place_order(pf.id, atm["P"]["id"], "BUY", 50)      # long straddle: little delta, positive gamma and vega
@@ -75,7 +77,7 @@ class ExposureAndVaRTest(unittest.TestCase):
         f = rep["factors"]
         self.assertGreater(f["gamma_usd"], 0)
         self.assertGreater(f["vega"], 0)
-        self.assertLess(abs(f["equity_dollar"]), 0.4 * 100 * 100 * float(w.market.last_bar("NVRA").close))
+        self.assertLess(abs(f["equity_dollar"]), 0.4 * 100 * 100 * float(w.market.last_bar("NVDA").close))
         vol_up = w.risk.stress(pf, custom={"vol_pts": 10})["CUSTOM"]["pnl"]
         self.assertAlmostEqual(vol_up, f["vega"] * 10, delta=1.0)
         crash = w.risk.stress(pf, custom={"equity": -0.2})["CUSTOM"]["pnl"]
@@ -99,12 +101,12 @@ class ExposureAndVaRTest(unittest.TestCase):
 class LiquidityAndLimitsTest(unittest.TestCase):
     def test_liquidity_ladder(self):
         w, pf, store = make_world(capital=100_000_000)
-        w.place_order(pf.id, "PLSR", "BUY", 300_000, time_in_force="GTC")
+        w.place_order(pf.id, "RIVN", "BUY", 300_000, time_in_force="GTC")
         w.place_order(pf.id, "UST-2Y", "BUY", 20_000_000)
         w.advance(1)
         liq = w.risk.liquidity(pf)
-        row = next(r for r in liq["positions"] if r["id"] == "PLSR")
-        sec = w.securities["PLSR"]
+        row = next(r for r in liq["positions"] if r["id"] == "RIVN")
+        sec = w.securities["RIVN"]
         self.assertAlmostEqual(row["days_to_liquidate"], row["quantity"] / (sec.adv * w.market.regime().depth_mult * 0.2), places=6)
         self.assertEqual(liq["buckets"]["1d"] + liq["buckets"]["5d"] + liq["buckets"]["20d"] + liq["buckets"]["over"],
                          sum(r["market_value"] for r in liq["positions"]))
@@ -117,19 +119,19 @@ class LiquidityAndLimitsTest(unittest.TestCase):
     def test_hard_var_limit_blocks_risk_increasing_orders(self):
         w, pf0, store = make_world(capital=1_000_000)
         pf = w.create_portfolio("PM", "PERSONAL", D(100_000_000), job="PORTFOLIO_MANAGER")
-        px = w.market.last_bar("NVRA").ask
-        w.place_order(pf.id, "NVRA", "BUY", int(D(80_000_000) / px))
+        px = w.market.last_bar("NVDA").ask
+        w.place_order(pf.id, "NVDA", "BUY", int(D(80_000_000) / px))
         w.advance(1)
         snap = pf.risk_history[-1]
         var_limit = next(l for l in snap["limits"] if l["name"].startswith("VaR 99%"))
         self.assertEqual(var_limit["status"], "HARD", f"80% of NAV in a high-beta stock breaches the PM's 3.5% VaR limit ({var_limit['value']:.2%})")
         self.assertTrue(any(b["kind"] == "VAR" and b.get("severity") == "HARD" for b in pf.breaches))
         with self.assertRaises(CommandError) as cm:
-            w.place_order(pf.id, "MRDN", "BUY", 1000)
+            w.place_order(pf.id, "JPM", "BUY", 1000)
         self.assertIn("hard risk limit", str(cm.exception))
         with self.assertRaises(CommandError):
             w.request_quote(pf.id, "IRS", {"notional": 1_000_000})
-        w.place_order(pf.id, "NVRA", "SELL", 1000)     # reducing risk is allowed
+        w.place_order(pf.id, "NVDA", "SELL", 1000)     # reducing risk is allowed
         att = " ".join(a["text"] for a in pf.briefings[-1]["attention"])
         self.assertIn("VaR", att)
         self.assertIn("risk", pf.briefings[-1])
@@ -139,7 +141,7 @@ class LiquidityAndLimitsTest(unittest.TestCase):
 
     def test_risk_snapshots_replay(self):
         w, pf, store = make_world(capital=20_000_000)
-        w.place_order(pf.id, "SPXE", "BUY", 5_000)
+        w.place_order(pf.id, "SPY", "BUY", 5_000)
         w.advance(3)
         self.assertEqual(len(pf.risk_history), 4)
         w2 = World.load(store, "t")

@@ -89,7 +89,7 @@ class Script:
         r = w.request_quote(pf.id, "IRS", {"notional": 25_000_000, "tenor_years": 5, "pay_fixed": True})
         best = min((q for q in r.quotes if not q.get("declined")), key=lambda q: q["cost_vs_mid"])
         irs = w.execute_rfq(pf.id, r.id, best["dealer"])
-        r2 = w.request_quote(pf.id, "CDS", {"reference": "NGSL-30", "notional": 5_000_000, "tenor_years": 5, "buyer": True})
+        r2 = w.request_quote(pf.id, "CDS", {"reference": "AAL-28", "notional": 5_000_000, "tenor_years": 5, "buyer": True})
         best2 = min((q for q in r2.quotes if not q.get("declined")), key=lambda q: q["cost_vs_mid"])
         cds = w.execute_rfq(pf.id, r2.id, best2["dealer"])
         # 10 — FX: buy EUR spot, sell EUR forward
@@ -148,7 +148,7 @@ class Script:
         eff = w.calendar.add_business_days(w.current_date, 4)
         px = float(w.market.last_bar(names[2]).close)
         tev = w.force_corporate_event(names[2], "TENDER_OFFER", {"offer_price": round(px * 1.2, 2), "max_pct": 0.5, "deadline": w.calendar.add_business_days(w.current_date, 2).isoformat(),
-                                                                "bidder": "Atlas Capital Group"}, eff.isoformat())
+                                                                "bidder": "KKR"}, eff.isoformat())
         tender_id = tev.payload["id"]
         self.adv(1)
         r_el = w.elect(pf.id, tender_id, 2_000)
@@ -169,9 +169,9 @@ class Script:
         self.check(19, "macro releases, tender settled")
         # 20 — credit event on the CDS reference: protection pays, bonds mark at recovery, equity collapses
         nav_before = w.ledgers[pf.id].nav()
-        w.credit_event("NGSL-30", 0.3)
+        w.credit_event("AAL-28", 0.3)
         tc.assertEqual(cds.status, "SETTLED_DEFAULT")
-        tc.assertTrue(w.securities["NGSL-30"].defaulted)
+        tc.assertTrue(w.securities["AAL-28"].defaulted)
         tc.assertTrue(any(cf["kind"] == "PROTECTION" for cf in cds.cashflows), "protection bought pays (1 − recovery)")
         self.adv(1)
         self.check(20, "credit event")

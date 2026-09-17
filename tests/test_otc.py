@@ -71,23 +71,23 @@ class RFQTest(unittest.TestCase):
         w2, pf2, _ = make_world(capital=50_000_000)
         r2 = w2.request_quote(pf2.id, "IRS", {"notional": 10_000_000, "tenor_years": 5, "pay_fixed": True})
         self.assertEqual([q["level"] for q in r1.quotes], [q["level"] for q in r2.quotes])
-        calm = quote_half_width("IRS", "ATLAS", "NORMAL_GROWTH", 0.0)
-        self.assertGreater(quote_half_width("IRS", "ATLAS", "LIQUIDITY_STRESS", 0.0), 2 * calm)
-        self.assertGreater(quote_half_width("IRS", "KESTREL", "NORMAL_GROWTH", 0.5), quote_half_width("IRS", "KESTREL", "NORMAL_GROWTH", 0.0))
+        calm = quote_half_width("IRS", "GOLDMAN", "NORMAL_GROWTH", 0.0)
+        self.assertGreater(quote_half_width("IRS", "GOLDMAN", "LIQUIDITY_STRESS", 0.0), 2 * calm)
+        self.assertGreater(quote_half_width("IRS", "CITI", "NORMAL_GROWTH", 0.5), quote_half_width("IRS", "CITI", "NORMAL_GROWTH", 0.0))
         with self.assertRaises(CommandError):
-            w.request_quote(pf.id, "CDS", {"reference": "NVRA", "notional": 1})
+            w.request_quote(pf.id, "CDS", {"reference": "NVDA", "notional": 1})
         with self.assertRaises(CommandError):
             w.request_quote(pf.id, "TRS", {"security_id": "UST-10Y", "units": 100})
         with self.assertRaises(CommandError):
-            w.execute_rfq(pf.id, r1.id, "VANTAGE")          # does not quote rates
+            w.execute_rfq(pf.id, r1.id, "DEUTSCHE")          # does not quote rates
         w.advance(1)
         self.assertEqual(pf.rfqs[r1.id].status, "EXPIRED")
         with self.assertRaises(CommandError):
-            w.execute_rfq(pf.id, r1.id, "ATLAS")
+            w.execute_rfq(pf.id, r1.id, "GOLDMAN")
         fi = w.create_portfolio("FI", "PERSONAL", D(20_000_000), job="FIXED_INCOME_PM")
         w.request_quote(fi.id, "IRS", {"notional": 1_000_000, "tenor_years": 2})
         with self.assertRaises(CommandError):
-            w.request_quote(fi.id, "TRS", {"security_id": "NVRA", "units": 100})
+            w.request_quote(fi.id, "TRS", {"security_id": "NVDA", "units": 100})
         cm = w.create_portfolio("CM", "PERSONAL", D(20_000_000), job="COMMODITY_TRADER")
         with self.assertRaises(CommandError):
             w.request_quote(cm.id, "IRS", {"notional": 1_000_000})
@@ -204,6 +204,12 @@ class FXEquityCreditCommodityTest(unittest.TestCase):
         self.assertEqual(eur.balance, t.terms["ccy_notional"])
         self.assertEqual(pf.cash_account("USD").balance, D(40_000_000))
         self.assertLess(abs(t.mtm), t.notional * D("0.002"), "a swap dealt near the market basis starts near par")
+        # the foreign leg is par at the market basis whatever the tenor, currency or direction: inception PV is the dealer's cost, nothing else
+        w3, pf3, _ = make_world(capital=50_000_000)
+        for ccy, yrs, direction in (("GBP", 5, "LEND_FOREIGN"), ("EUR", 5, "BORROW_FOREIGN"), ("JPY", 2, "BORROW_FOREIGN")):
+            t2, r2 = deal(w3, pf3, "XCCY", usd_notional=10_000_000, ccy=ccy, tenor_years=yrs, direction=direction)
+            q2 = next(q for q in r2.quotes if q["dealer"] == t2.counterparty)
+            self.assertLess(abs(float(t2.mtm) + float(q2["cost_vs_mid"])), 0.0005 * float(t2.notional), f"{ccy} {yrs}y {direction}: PV {t2.mtm} vs cost {q2['cost_vs_mid']}")
         self.assertLess(t.mtm, 0, "the dealer's basis costs a little")
         assert_ledger_invariants(self, w, pf)
         per = w.otc.periods(t.start, t.maturity, 3)
@@ -233,7 +239,7 @@ class FXEquityCreditCommodityTest(unittest.TestCase):
 
     def test_total_return_swap_reset(self):
         w, pf, store = make_world(capital=50_000_000)
-        t, r = deal(w, pf, "TRS", security_id="MRDN", units=100_000, tenor_years=1, receiver=True)
+        t, r = deal(w, pf, "TRS", security_id="JPM", units=100_000, tenor_years=1, receiver=True)
         self.assertEqual(t.mtm, D(0))
         p0 = t.terms["initial_price"]
         assert_ledger_invariants(self, w, pf)
@@ -243,7 +249,7 @@ class FXEquityCreditCommodityTest(unittest.TestCase):
             assert_ledger_invariants(self, w, pf)
         resets = [c for c in t.cashflows if c["kind"] == "TRS_RESET"]
         self.assertEqual(len(resets), 1)
-        price = float(w.market.last_bar("MRDN").close)
+        price = float(w.market.last_bar("JPM").close)
         divs = sum(d["amount"] for d in t.state.get("dividend_log", []))
         fin = 0.0
         # reconstruct financing from the daily accrual: rate x notional x days/360 across the month
@@ -259,8 +265,8 @@ class FXEquityCreditCommodityTest(unittest.TestCase):
 
     def test_cds_premium_and_credit_event(self):
         w, pf, store = make_world(capital=50_000_000)
-        buy, r = deal(w, pf, "CDS", reference="NGSL-30", notional=10_000_000, tenor_years=5, buyer=True)
-        sell, _ = deal(w, pf, "CDS", reference="MRDN-29", notional=10_000_000, tenor_years=3, buyer=False, dealer="NORDBANK")
+        buy, r = deal(w, pf, "CDS", reference="AAL-28", notional=10_000_000, tenor_years=5, buyer=True)
+        sell, _ = deal(w, pf, "CDS", reference="JPM-29", notional=10_000_000, tenor_years=3, buyer=False, dealer="BARCLAYS")
         led = w.ledgers[pf.id]
         self.assertEqual(buy.terms["running_bps"], 500, "high-yield names trade 500 running")
         self.assertEqual(sell.terms["running_bps"], 100)
@@ -276,17 +282,17 @@ class FXEquityCreditCommodityTest(unittest.TestCase):
         self.assertGreater(buy.analytics["cs01"], 0)
         self.assertLess(sell.analytics["cs01"], 0)
         nav0 = led.nav()
-        w.credit_event("NGSL-30")
+        w.credit_event("AAL-28")
         self.assertEqual(buy.status, "SETTLED_DEFAULT")
         prot = [c for c in buy.cashflows if c["kind"] == "PROTECTION"][0]
         accrued = buy.state.get("accrued", 0)
-        self.assertEqual(prot["base"], D(repr(10_000_000 * (1 - w.securities["NGSL-30"].recovery_rate) - accrued)).quantize(D("0.01")))
+        self.assertEqual(prot["base"], D(repr(10_000_000 * (1 - w.securities["AAL-28"].recovery_rate) - accrued)).quantize(D("0.01")))
         self.assertGreater(led.nav(), nav0, "protection buyer gains on the credit event")
         self.assertEqual(sell.status, "OPEN")
         self.assertEqual(led.security_balance(buy.id, "1800"), D(0))
         assert_ledger_invariants(self, w, pf)
         with self.assertRaises(CommandError):
-            w.credit_event("NVRA")
+            w.credit_event("NVDA")
         w2 = World.load(store, "t")
         self.assertEqual(w2.ledgers[pf.id].nav(), led.nav())
         self.assertEqual(w2.portfolios[pf.id].otc_trades[buy.id].status, "SETTLED_DEFAULT")
@@ -312,8 +318,8 @@ class FXEquityCreditCommodityTest(unittest.TestCase):
 class CSATest(unittest.TestCase):
     def test_variation_and_initial_margin_follow_the_csa(self):
         w, pf, store = make_world(capital=100_000_000)
-        pay, _ = deal(w, pf, "IRS", notional=200_000_000, tenor_years=10, pay_fixed=True, dealer="HARBOR")     # threshold 0, MTA 50k
-        csa = pf.csas["HARBOR"]
+        pay, _ = deal(w, pf, "IRS", notional=200_000_000, tenor_years=10, pay_fixed=True, dealer="MORGAN_STANLEY")     # threshold 0, MTA 50k
+        csa = pf.csas["MORGAN_STANLEY"]
         for _ in range(6):
             w.advance(1)
             assert_ledger_invariants(self, w, pf)
@@ -331,12 +337,12 @@ class CSATest(unittest.TestCase):
                 self.assertLessEqual(abs(csa.vm_posted + net), csa.mta)
             self.assertEqual(w.ledgers[pf.id].balance("2450"), csa.vm_received)
         ex = w.otc.exposure(pf)
-        row = next(r for r in ex["rows"] if r["dealer"] == "HARBOR")
-        self.assertEqual(row["current_exposure"], max(D(0), pay.mtm - csa.vm_received) + csa.vm_posted)
+        row = next(r for r in ex["rows"] if r["dealer"] == "MORGAN_STANLEY")
+        self.assertEqual(row["current_exposure"], max(D(0), pay.mtm - csa.vm_received + csa.vm_posted))
         self.assertGreaterEqual(row["pfe"], max(D(0), pay.mtm - csa.vm_received))
         self.assertGreater(row["expected_loss_1y"], D(0))
         w2 = World.load(store, "t")
-        c2 = w2.portfolios[pf.id].csas["HARBOR"]
+        c2 = w2.portfolios[pf.id].csas["MORGAN_STANLEY"]
         self.assertEqual((c2.vm_posted, c2.vm_received, c2.im_posted), (csa.vm_posted, csa.vm_received, csa.im_posted))
 
     def test_unmet_csa_call_closes_out_the_netting_set(self):
@@ -344,8 +350,8 @@ class CSATest(unittest.TestCase):
         found = None
         for seed in (42, 7, 99, 3):
             w, pf, store = make_world(seed=seed, capital=2_700_000)
-            a, _ = deal(w, pf, "IRS", notional=100_000_000, tenor_years=10, pay_fixed=True, dealer="HARBOR")     # IM 1.5%, threshold 0, MTA 50k
-            b, _ = deal(w, pf, "IRS", notional=50_000_000, tenor_years=10, pay_fixed=True, dealer="KESTREL")    # IM 2.0%, threshold 0, MTA 50k
+            a, _ = deal(w, pf, "IRS", notional=100_000_000, tenor_years=10, pay_fixed=True, dealer="MORGAN_STANLEY")     # IM 1.5%, threshold 0, MTA 50k
+            b, _ = deal(w, pf, "IRS", notional=50_000_000, tenor_years=10, pay_fixed=True, dealer="CITI")    # IM 2.0%, threshold 0, MTA 50k
             calls = lambda: [c for c in pf.collateral_calls.values() if c.source == "OTC"]
             for _ in range(20):
                 w.advance(1)
@@ -378,43 +384,76 @@ class CSATest(unittest.TestCase):
 class DefaultAndExposureTest(unittest.TestCase):
     def test_counterparty_default_settles_at_recovery(self):
         w, pf, store = make_world(capital=50_000_000)
-        a, _ = deal(w, pf, "IRS", notional=50_000_000, tenor_years=7, pay_fixed=True, dealer="KESTREL")
-        b, _ = deal(w, pf, "CAP", notional=50_000_000, strike=0.02, tenor_years=3, buyer=True, dealer="KESTREL")   # deep in the money: big positive PV
-        c, _ = deal(w, pf, "IRS", notional=20_000_000, tenor_years=5, pay_fixed=True, dealer="ATLAS")
+        a, _ = deal(w, pf, "IRS", notional=50_000_000, tenor_years=7, pay_fixed=True, dealer="CITI")
+        b, _ = deal(w, pf, "CAP", notional=50_000_000, strike=0.02, tenor_years=3, buyer=True, dealer="CITI")   # deep in the money: big positive PV
+        c, _ = deal(w, pf, "IRS", notional=20_000_000, tenor_years=5, pay_fixed=True, dealer="GOLDMAN")
         w.advance(2)
         led = w.ledgers[pf.id]
-        csa = pf.csas["KESTREL"]
+        csa = pf.csas["CITI"]
         net = a.mtm + b.mtm
         self.assertGreater(net, 0)
         claim = net - csa.vm_received + csa.vm_posted
         nav0 = led.nav()
         im0 = csa.im_posted
-        w.default_counterparty("KESTREL", recovery=0.4)
-        self.assertTrue(w.market.dealers.state["KESTREL"].defaulted)
+        w.default_counterparty("CITI", recovery=0.4)
+        self.assertTrue(w.market.dealers.state["CITI"].defaulted)
         self.assertEqual(a.status, "TERMINATED")
         self.assertEqual(b.status, "TERMINATED")
         self.assertEqual(c.status, "OPEN")
         self.assertEqual(csa.status, "TERMINATED")
         self.assertEqual((csa.vm_received, csa.vm_posted, csa.im_posted), (D(0), D(0), D(0)))
-        self.assertNotIn("IM:KESTREL", pf.cash_collateral)
+        self.assertNotIn("IM:CITI", pf.cash_collateral)
         expected_loss = (claim * D("0.6")).quantize(D("0.01"))
         self.assertAlmostEqual(float(nav0 - led.nav()), float(expected_loss), delta=0.05, msg="unsecured claim loses (1 − recovery)")
         assert_ledger_invariants(self, w, pf)
         with self.assertRaises(CommandError):
-            w.request_quote(pf.id, "IRS", {"notional": 1_000_000}) and w.execute_rfq(pf.id, list(pf.rfqs)[-1], "KESTREL")
+            w.request_quote(pf.id, "IRS", {"notional": 1_000_000}) and w.execute_rfq(pf.id, list(pf.rfqs)[-1], "CITI")
         w.advance(1)
         assert_ledger_invariants(self, w, pf)
         w2 = World.load(store, "t")
-        self.assertTrue(w2.market.dealers.state["KESTREL"].defaulted)
+        self.assertTrue(w2.market.dealers.state["CITI"].defaulted)
         self.assertEqual(w2.ledgers[pf.id].nav(), led.nav())
         self.assertEqual(len(w2.events), len(w.events))
+        # the CSA's own state is part of the projection: terminated, flat, and no stale cash-collateral entry after a reload
+        c2 = w2.portfolios[pf.id].csas["CITI"]
+        self.assertEqual((c2.status, c2.vm_received, c2.vm_posted, c2.im_posted), ("TERMINATED", D(0), D(0), D(0)))
+        self.assertNotIn("CSA:CITI", w2.portfolios[pf.id].cash_collateral)
+        assert_ledger_invariants(self, w2, w2.portfolios[pf.id])
+        w2.advance(2)
+        assert_ledger_invariants(self, w2, w2.portfolios[pf.id])
+        self.assertEqual(w2.portfolios[pf.id].csas["CITI"].status, "TERMINATED", "a terminated netting set never re-margins")
+
+    def test_degenerate_periods_are_rejected(self):
+        w, pf, store = make_world(capital=20_000_000)
+        for params in ({"notional": 10_000_000, "tenor_years": 5, "fixed_months": 0}, {"notional": 10_000_000, "tenor_years": 5, "float_months": 0},
+                       {"notional": 10_000_000, "tenor_years": 0}):
+            with self.assertRaises(CommandError):
+                w.request_quote(pf.id, "IRS", params)
+        with self.assertRaises(CommandError):
+            w.request_quote(pf.id, "COMMODITY_SWAP", {"code": "CL", "quantity": 1000, "tenor_years": 1, "months": 0})
+        with self.assertRaises(CommandError):
+            w.request_quote(pf.id, "TRS", {"security_id": "NVDA", "units": 1000, "tenor_years": 1, "reset_months": 0})
+        # a five-year swap has exactly ten semi-annual fixed periods even when the maturity rolls to the next business day
+        t, _ = deal(w, pf, "IRS", notional=10_000_000, tenor_years=5, pay_fixed=True)
+        self.assertEqual(len(w.otc.periods(t.start, t.maturity, 6)), 10)
+        self.assertEqual(len(w.otc.periods(t.start, t.maturity, 3)), 20)
+
+    def test_exposure_matches_the_close_out_claim(self):
+        w, pf, store = make_world(capital=50_000_000)
+        t, _ = deal(w, pf, "IRS", notional=100_000_000, tenor_years=10, pay_fixed=True, dealer="MORGAN_STANLEY")
+        w.advance(3)
+        csa = pf.csas["MORGAN_STANLEY"]
+        row = next(r for r in w.otc.exposure(pf)["rows"] if r["dealer"] == "MORGAN_STANLEY")
+        claim = t.mtm - csa.vm_received + csa.vm_posted
+        self.assertEqual(row["current_exposure"], max(D(0), claim))
+        self.assertGreaterEqual(row["pfe"], row["current_exposure"])
 
     def test_netting_reduces_exposure(self):
         w, pf, store = make_world(capital=50_000_000)
-        deal(w, pf, "IRS", notional=50_000_000, tenor_years=5, pay_fixed=True, dealer="ATLAS")
-        deal(w, pf, "IRS", notional=50_000_000, tenor_years=5, pay_fixed=False, dealer="ATLAS")
+        deal(w, pf, "IRS", notional=50_000_000, tenor_years=5, pay_fixed=True, dealer="GOLDMAN")
+        deal(w, pf, "IRS", notional=50_000_000, tenor_years=5, pay_fixed=False, dealer="GOLDMAN")
         w.advance(3)
-        row = next(r for r in w.otc.exposure(pf)["rows"] if r["dealer"] == "ATLAS")
+        row = next(r for r in w.otc.exposure(pf)["rows"] if r["dealer"] == "GOLDMAN")
         self.assertEqual(row["trades"], 2)
         self.assertLess(abs(row["net_mtm"]), row["gross_positive"] + abs(row["gross_negative"]) + D(1))
         self.assertGreaterEqual(row["netting_benefit"], D(0))
@@ -433,8 +472,8 @@ class OTCDefinitionOfDoneTest(unittest.TestCase):
         deal(w, pf, "CAP", notional=20_000_000, strike=0.04, tenor_years=2)
         deal(w, pf, "SWAPTION", notional=20_000_000, expiry_months=1, swap_years=3, payer=False)
         deal(w, pf, "XCCY", usd_notional=10_000_000, ccy="JPY", tenor_years=1, direction="LEND_FOREIGN")
-        deal(w, pf, "TRS", security_id="NVRA", units=20_000, tenor_years=1, receiver=False)
-        deal(w, pf, "CDS", reference="PTRX-32", notional=20_000_000, tenor_years=5, buyer=True)
+        deal(w, pf, "TRS", security_id="NVDA", units=20_000, tenor_years=1, receiver=False)
+        deal(w, pf, "CDS", reference="F-32", notional=20_000_000, tenor_years=5, buyer=True)
         deal(w, pf, "COMMODITY_SWAP", code="GC", quantity=1_000, tenor_years=1, pay_fixed=False)
         assert_ledger_invariants(self, w, pf)
         for _ in range(8):
@@ -446,7 +485,7 @@ class OTCDefinitionOfDoneTest(unittest.TestCase):
             assert_ledger_invariants(self, w, pf)
         irs = next(t for t in pf.otc_trades.values() if t.product == "IRS")
         w.terminate_otc(pf.id, irs.id)
-        w.credit_event("PTRX-32")
+        w.credit_event("F-32")
         assert_ledger_invariants(self, w, pf)
         for _ in range(12):
             w.advance(1)

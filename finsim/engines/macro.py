@@ -35,7 +35,7 @@ class MacroState:
     growth: float = 2.2            # real GDP growth, % annualised
     inflation: float = 2.4         # CPI YoY %
     unemployment: float = 4.1      # %
-    policy_rate: float = 0.0435
+    policy_rate: float = 0.0435       # overwritten by the curve's short rate at go-live
     next_meeting: str = ""
     last_decision: str = ""
     cycle_hikes: int = 0

@@ -3,7 +3,7 @@ expiration, strategies and analytics.
 
 Contracts are Securities (asset_class OPTION) with a deliverable abstraction:
 equity/ETF options deliver 100 shares (American, physical); index options on
-the SPXI level (10x the SPXE ETF) are European and cash-settled. Chains are
+the SPX level (10x the SPY ETF) are European and cash-settled. Chains are
 listed deterministically (monthly third Fridays plus two quarterlies, strikes
 around spot) and re-listed as spot moves and months expire.
 
@@ -35,8 +35,8 @@ from ..engines.pricing import interp_rate
 from ..money import D, money, price as qprice, qty as qqty, ZERO
 
 MULTIPLIER = 100
-INDEX_ID = "SPXI"
-INDEX_SOURCE = "SPXE"
+INDEX_ID = "SPX"
+INDEX_SOURCE = "SPY"
 INDEX_FACTOR = 10.0
 STRIKE_RANGE = 8
 OPTION_COMMISSION = D("0.65")
@@ -250,7 +250,7 @@ class OptionsEngine:
                             underlying_class="OPTION", multiplier=multiplier, tick_size=(fsec.tick_size if fut else 0.01), expiry=exp.isoformat(), option_type=ot, strike=float(k),
                             exercise_style="EUROPEAN" if european else "AMERICAN", settlement_style="CASH" if european else "PHYSICAL",
                             deliverable=deliverable,
-                            exchange="Harbor Commodity Options" if fut else "Harbor Options Exchange", listed=d.isoformat(), index_level_source=INDEX_SOURCE if european else None,
+                            exchange="CME (NYMEX/COMEX options)" if fut else "Cboe Options Exchange", listed=d.isoformat(), index_level_source=INDEX_SOURCE if european else None,
                             index_factor=INDEX_FACTOR if european else 1.0, lot_size=1, beta=0.0, sigma_annual=0.0)
                         added += 1
         for sec in w.securities.values():
@@ -671,6 +671,14 @@ class OptionsEngine:
             self._deliver(pf, sec, n, "SELL" if sec.option_type == "C" else "BUY", ev, f"assignment at expiry of {sec.id}")
         self._close_option(pf, sec, n, ZERO, ev, f"{outcome.lower().replace('_', ' ')} ({sec.id})")
 
+    @staticmethod
+    def _scale_open_settlements(pf: Portfolio, sid: str, ratio: Decimal) -> None:
+        """A whole-ratio split multiplies the units still in transit (the cash owed does not change), so the custody
+        box (settled + pending receive − pending deliver) keeps matching the position after the instructions settle."""
+        for si in pf.settlements.values():
+            if si.security_id == sid and si.status in ("PENDING", "MATCHED", "FAILED"):
+                si.quantity = qqty(si.quantity * ratio)
+
     def _maybe_assign(self, pf: Portfolio, sec: Security, pos, cause: Event) -> None:
         w = self.w
         q = self.quote(sec)
@@ -924,6 +932,7 @@ class OptionsEngine:
                     lot.quantity = qqty(lot.quantity * ratio)
                     lot.original_quantity = qqty(lot.original_quantity * ratio)
                     lot.cost_per_unit = qprice(lot.cost_per_unit / ratio)
+            self._scale_open_settlements(pf, sid, ratio)
             for l in pf.loans.values():
                 if l.security_id == sid and l.status == "OPEN":
                     l.quantity = qqty(l.quantity * ratio)
@@ -949,11 +958,14 @@ class OptionsEngine:
                         if pos:
                             pos.quantity = qqty(pos.quantity * ratio)
                             pos.settled_quantity = qqty(pos.settled_quantity * ratio)
+                            pos.pending_receive = qqty(pos.pending_receive * ratio)
+                            pos.pending_deliver = qqty(pos.pending_deliver * ratio)
                             pos.mark = qprice(pos.mark / ratio)
                             for lot in pos.lots:
                                 lot.quantity = qqty(lot.quantity * ratio)
                                 lot.original_quantity = qqty(lot.original_quantity * ratio)
                                 lot.cost_per_unit = qprice(lot.cost_per_unit / ratio)
+                        self._scale_open_settlements(pf, c.id, ratio)
                 else:
                     c.deliverable = {**c.deliverable, "quantity": int(MULTIPLIER * float(ratio))}
                     c.multiplier = float(MULTIPLIER * float(ratio))

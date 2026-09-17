@@ -98,8 +98,8 @@ class VolSurfaceModel:
 
 
 OPTIONABLE_CLASSES = ("EQUITY", "ETF", "REIT", "ADR")
-INDEX_ID = "SPXI"
-INDEX_SOURCE = "SPXE"
+INDEX_ID = "SPX"
+INDEX_SOURCE = "SPY"
 
 
 def optionable_underlyings(securities: Dict) -> List[str]:

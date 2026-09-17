@@ -29,7 +29,7 @@ ANNUAL_PROB = {"STOCK_DIVIDEND": 0.06, "SPECIAL_DIVIDEND": 0.08, "TENDER_OFFER":
 FAIL_CHARGE_RATE = 0.03            # annual, on the cash amount of a failed delivery (TMPG-style)
 BUY_IN_AFTER_FAILS = 5             # failed business days before the receiving party buys in
 BUY_IN_PENALTY = 0.02
-CALLABLE = {"NGSL-30": {"call_price": 102.0, "first_call_years": 2.0}, "PTRX-32": {"call_price": 101.0, "first_call_years": 3.0}}
+CALLABLE = {"AAL-28": {"call_price": 102.0, "first_call_years": 2.0}, "F-32": {"call_price": 101.0, "first_call_years": 3.0}}
 
 
 class CorporateEventModel:
@@ -86,7 +86,7 @@ class CorporateEventModel:
             elif kind == "TENDER_OFFER":
                 prem = rng.uniform(0.15, 0.35)
                 offer = round(px * (1 + prem), 2)
-                ev["terms"] = {"offer_price": offer, "max_pct": rng.choice([0.15, 0.25, 0.35]), "deadline": self.cal.add_business_days(eff, -2).isoformat(), "bidder": rng.choice(["Atlas Capital Group", "Kestrel Partners", "Meridian Holdings"])}
+                ev["terms"] = {"offer_price": offer, "max_pct": rng.choice([0.15, 0.25, 0.35]), "deadline": self.cal.add_business_days(eff, -2).isoformat(), "bidder": rng.choice(["KKR", "Blackstone", "Apollo Global Management", "a strategic acquirer"])}
                 shocks[sid] = prem * 0.7
                 news.append({"code": sid, "headline": f"{ev['terms']['bidder']} launches a cash tender for up to {ev['terms']['max_pct']:.0%} of {sec.name} at ${offer:.2f}", "category": "CORPORATE_ACTION",
                              "body": f"Holders may tender shares until {ev['terms']['deadline']}; tendered shares are bought at ${offer:.2f} on {eff.isoformat()}. Shares jump toward the offer."})
@@ -100,7 +100,7 @@ class CorporateEventModel:
             elif kind == "CASH_MERGER":
                 prem = rng.uniform(0.20, 0.45)
                 deal = round(px * (1 + prem), 2)
-                ev["terms"] = {"deal_price": deal, "acquirer": rng.choice(["Atlas Capital Group", "Titan Machinery", "Orchard Retail", "a private consortium"])}
+                ev["terms"] = {"deal_price": deal, "acquirer": rng.choice(["KKR", "Blackstone", "Berkshire Hathaway", "a private consortium"])}
                 shocks[sid] = prem * 0.85
                 news.append({"code": sid, "headline": f"{sec.name} agrees to be acquired for ${deal:.2f} a share in cash", "category": "CORPORATE_ACTION",
                              "body": f"{ev['terms']['acquirer']} will pay ${deal:.2f} per share; the deal closes on {eff.isoformat()}, when all shares are exchanged for cash and the stock is delisted. "

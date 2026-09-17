@@ -81,7 +81,7 @@ class HedgeFundTest(unittest.TestCase):
         self.assertEqual(led.balance("2360"), D(inv["mgmt_accrued"]))
         assert_ledger_invariants(self, w, pf)
         # a concentrated loss and a recession: investors redeem at the next dealing day
-        sid = "NVRA"
+        sid = "NVDA"
         w.place_order(pf.id, sid, "BUY", 400_000)
         w.advance(2)
         w.force_regime("RECESSION")
@@ -117,9 +117,9 @@ class HedgeFundTest(unittest.TestCase):
         w.advance(1)
         inv = pf.investors
         # manufacture a profit above the high-water mark, then close the year
-        w.place_order(pf.id, "SPXE", "BUY", 20_000)
+        w.place_order(pf.id, "SPY", "BUY", 20_000)
         w.advance(2)
-        w.market.force_return("SPXE", 0.5)
+        w.market.force_return("SPY", 0.5)
         while w.current_date.month == 12:
             w.advance(1)
         self.assertGreater(inv["fees_paid"], 0)
@@ -294,9 +294,9 @@ class CrisisScenarioTest(unittest.TestCase):
         self.assertEqual(w.market.state.regime, "LIQUIDITY_STRESS")
         self.assertTrue(any(e.type == E.RATES_SHOCK_FORCED for e in w.events))
         w.advance(4)
-        self.assertTrue(w.securities["NGSL-30"].defaulted, "the weakest issuer fails on day 5")
+        self.assertTrue(w.securities["AAL-28"].defaulted, "the weakest issuer fails on day 5")
         w.advance(5)
-        self.assertTrue(w.market.dealers.state["VANTAGE"].defaulted, "a dealer fails on day 10")
+        self.assertTrue(w.market.dealers.state["DEUTSCHE"].defaulted, "a dealer fails on day 10")
         self.assertEqual([x["day"] for x in w.scenario_log], [1, 5, 10])
         check_all(self, w)
         w2 = World.load(store, "t")

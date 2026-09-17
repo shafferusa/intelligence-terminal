@@ -15,7 +15,7 @@ from ..engines.collateral import asset_key
 from ..engines.ledger import dr, cr
 from ..money import D, money, qty as qqty, ZERO
 
-COUNTERPARTIES = ["Atlas Capital Repo Desk", "Meridian Bancorp Treasury", "Harbor Securities Funding"]
+COUNTERPARTIES = ["Goldman Sachs Repo Desk", "J.P. Morgan Treasury Financing", "Citigroup Global Markets Funding"]
 REPO_SPREAD = {"GOVT_BOND": 0.0005, "CORP_BOND_IG": 0.0045, "CORP_BOND_HY": 0.012, "ETF": 0.010, "EQUITY_LARGE": 0.010, "EQUITY_MID": 0.015}
 STRESS_SPREAD = {"NORMAL_GROWTH": 0.0, "RATE_CUTTING": 0.0, "RATE_HIKING": 0.0005, "RECESSION": 0.002, "LIQUIDITY_STRESS": 0.008}
 CALL_THRESHOLD_PCT = 0.005

@@ -20,7 +20,7 @@ from ..engines.fx_market import CURRENCIES, SPECS
 from ..engines.ledger import dr, cr
 from ..money import D, money, ZERO
 
-FX_DEALER = "Harbor Securities FX"
+FX_DEALER = "Citi FX"
 
 
 class FXEngine:
@@ -96,7 +96,7 @@ class FXEngine:
         fid = w.new_id("FWD")
         w.emit(E.FX_FORWARD_OPENED, {"portfolio_id": pf.id, "forward_id": fid, "buy_ccy": buy, "sell_ccy": sell, "buy_amount": amt,
                                      "sell_amount": money(amt * D(repr(fwd))), "forward_rate": fwd, "maturity": mat.isoformat(), "spot": m.cross(buy, sell),
-                                     "counterparty": "Atlas Capital FX Derivatives"}, portfolio_id=pf.id)
+                                     "counterparty": "Citi FX Derivatives"}, portfolio_id=pf.id)
         return pf.fx_forwards[fid]
 
     # ------------------------------------------------------------------ valuation

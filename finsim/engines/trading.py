@@ -596,12 +596,12 @@ class TradingEngine:
                       currency=p["currency"], trade_date=p["trade_date"], settlement_date=p["settlement_date"], status="EXECUTED",
                       execution_detail={k: (D(v) if isinstance(v, str) and _looks_decimal(v) else v) for k, v in p["execution_detail"].items()})
         trade.status_history.append({"status": "EXECUTED", "date": ev.sim_date, "event_id": ev.id,
-                                     "note": "filled by clearing broker" if sec.is_future else ("filled on Harbor Options Exchange; cleared via the options clearinghouse"
+                                     "note": "filled by clearing broker" if sec.is_future else ("filled on Cboe Options Exchange; cleared via the options clearinghouse"
                                                                                                  if sec.is_option else "filled by executing broker")})
         if sec.is_future:
-            trade.broker = "Harbor Securities (futures clearing member)"
+            trade.broker = "Goldman Sachs (futures clearing member)"
         if sec.is_option:
-            trade.broker = "Harbor Securities (options clearing member)"
+            trade.broker = "OCC (Options Clearing Corporation)"
         pf.trades[trade.id] = trade
         pf.day_trade_ids.append(trade.id)
         pos = pf.position(sec.id)
@@ -709,7 +709,7 @@ class TradingEngine:
             "currency": sec.currency, "trade_date": trade.trade_date, "settlement_date": trade.settlement_date,
             "delivering_party": trade.broker if trade.side == "BUY" else pf.custody_account,
             "receiving_party": pf.custody_account if trade.side == "BUY" else trade.broker,
-            "custodian": "Harbor Securities (options clearing member)" if sec.is_option else "Meridian Custody Services"}, ev, portfolio_id=pf.id)
+            "custodian": "OCC (Options Clearing Corporation)" if sec.is_option else "BNY Mellon Asset Servicing"}, ev, portfolio_id=pf.id)
         w.pnl.mark_position(pf, sec.id, ev)
 
     def _apply_futures_trade(self, pf: Portfolio, pos, sec: Security, trade: Trade, ev: Event) -> None:

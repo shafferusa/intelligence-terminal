@@ -34,6 +34,14 @@ SPECS = {
 }
 
 
+def apply_snapshot(spots: Dict[str, float]) -> None:
+    """Re-anchor each currency's long-run spot to the snapshot."""
+    import dataclasses
+    for c, v in spots.items():
+        if c in SPECS and v:
+            SPECS[c] = dataclasses.replace(SPECS[c], spot0=float(v))
+
+
 class FXModel:
     def __init__(self, seed: int):
         self.seed = seed

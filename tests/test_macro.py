@@ -71,45 +71,45 @@ class MacroWorldTest(unittest.TestCase):
         w2 = World.load(store, "t")
         self.assertEqual(w2.market.macro.state.policy_rate, m.state.policy_rate)
         self.assertEqual(w2.market.macro.releases, m.releases)
-        self.assertEqual(w2.securities["NVRA"].fundamentals, w.securities["NVRA"].fundamentals)
+        self.assertEqual(w2.securities["NVDA"].fundamentals, w.securities["NVDA"].fundamentals)
 
     def test_issuer_default_hits_bonds_cds_and_equity(self):
         w, pf, store = make_world(capital=50_000_000)
-        w.place_order(pf.id, "NGSL-30", "BUY", 1_000_000)
-        w.place_order(pf.id, "NGSL", "BUY", 20_000)
-        r = w.request_quote(pf.id, "CDS", {"reference": "NGSL-30", "notional": 5_000_000, "tenor_years": 3, "buyer": True})
+        w.place_order(pf.id, "AAL-28", "BUY", 1_000_000)
+        w.place_order(pf.id, "AAL", "BUY", 20_000)
+        r = w.request_quote(pf.id, "CDS", {"reference": "AAL-28", "notional": 5_000_000, "tenor_years": 3, "buyer": True})
         w.execute_rfq(pf.id, r.id, min((q for q in r.quotes if not q.get("declined")), key=lambda q: q["cost_vs_mid"])["dealer"])
         w.advance(2)
         assert_ledger_invariants(self, w, pf)
         nav0 = w.ledgers[pf.id].nav()
-        bond_mv0 = pf.positions["NGSL-30"].market_value
-        face = float(pf.positions["NGSL-30"].quantity)
+        bond_mv0 = pf.positions["AAL-28"].market_value
+        face = float(pf.positions["AAL-28"].quantity)
         self.assertEqual(face, 1_000_000.0)
-        w.credit_event("NGSL-30")
-        sec = w.securities["NGSL-30"]
+        w.credit_event("AAL-28")
+        sec = w.securities["AAL-28"]
         self.assertTrue(sec.defaulted)
-        self.assertEqual(w.market.macro.issuers["NGSL-30"].rating, "D")
+        self.assertEqual(w.market.macro.issuers["AAL-28"].rating, "D")
         cds = [t for t in pf.otc_trades.values() if t.product == "CDS"][0]
         self.assertEqual(cds.status, "SETTLED_DEFAULT")
-        pos = pf.positions["NGSL-30"]
+        pos = pf.positions["AAL-28"]
         self.assertAlmostEqual(float(pos.market_value), face * sec.recovery_rate, delta=1.0, msg="bond marked at recovery")
         self.assertEqual(pos.accrued_interest, D(0), "accrued interest written off")
         self.assertLess(pos.market_value, bond_mv0)
         assert_ledger_invariants(self, w, pf)
         w.advance(1)
-        self.assertLess(float(w.market.last_bar("NGSL").close / w.market.history["NGSL"][-2].close), 0.5, "the equity collapses")
+        self.assertLess(float(w.market.last_bar("AAL").close / w.market.history["AAL"][-2].close), 0.5, "the equity collapses")
         self.assertAlmostEqual(float(pos.market_value), face * sec.recovery_rate, delta=1.0, msg="stays at recovery")
-        self.assertEqual([m for m in pf.cash_movements if m.kind == "COUPON" and "NGSL" in m.reference], [m for m in pf.cash_movements if m.kind == "COUPON" and "NGSL" in m.reference])
+        self.assertEqual([m for m in pf.cash_movements if m.kind == "COUPON" and "AAL" in m.reference], [m for m in pf.cash_movements if m.kind == "COUPON" and "AAL" in m.reference])
         while pos.quantity > 0 and w.current_date < date.fromisoformat(sec.maturity):
             w.advance(1)
             if w.current_date.isoformat() > sec.recovery_date:
                 break
         self.assertEqual(pos.quantity, D(0), "recovery paid and the position closed")
-        red = [m for m in pf.cash_movements if m.kind == "MATURITY" and "NGSL-30" in m.reference]
+        red = [m for m in pf.cash_movements if m.kind == "MATURITY" and "AAL-28" in m.reference]
         self.assertEqual(red[-1].amount, (D(int(face)) * D(repr(sec.recovery_rate))).quantize(D("0.01")))
         assert_ledger_invariants(self, w, pf)
         w2 = World.load(store, "t")
-        self.assertTrue(w2.securities["NGSL-30"].defaulted)
+        self.assertTrue(w2.securities["AAL-28"].defaulted)
         self.assertEqual(w2.ledgers[pf.id].nav(), w.ledgers[pf.id].nav())
         self.assertEqual(len(w2.events), len(w.events))
 

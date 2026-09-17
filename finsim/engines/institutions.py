@@ -137,7 +137,7 @@ class InstitutionEngine:
             return
         nav = w.pnl.compute_summary(pf)["nav"]
         mult = D(str(pf.desk_limits.get("gross_mult", 1.0)))
-        book = {"UST-5Y": D("0.35"), "UST-10Y": D("0.35"), "MRDN-29": D("0.15"), "PTRX-32": D("0.15")}
+        book = {"UST-5Y": D("0.35"), "UST-10Y": D("0.35"), "JPM-29": D("0.15"), "F-32": D("0.15")}
         for sid, wgt in book.items():
             sec = w.securities[sid]
             if sec.defaulted or sec.delisted:
@@ -153,9 +153,9 @@ class InstitutionEngine:
         # write a strangle on the index in the first week of each month, one expiry out
         opts = [p for p in pf.positions.values() if p.is_option and p.quantity < 0]
         if not opts and today.day <= 7:
-            ch = w.options.chain("SPXI")
+            ch = w.options.chain("SPX")
             if len(ch["expiries"]) >= 2:
-                ch = w.options.chain("SPXI", ch["expiries"][1])
+                ch = w.options.chain("SPX", ch["expiries"][1])
                 rows = ch["rows"]
                 i = min(range(len(rows)), key=lambda j: abs(rows[j]["strike"] - ch["level"]))
                 nav = w.pnl.compute_summary(pf)["nav"]
@@ -169,7 +169,7 @@ class InstitutionEngine:
             es = w.market.front_contract("ES")
             if es and g["delta"]:
                 per_contract = float(w.market.last_bar(es.id).close) * es.multiplier
-                shares_delta = g["delta"] * float(w.market.last_bar("SPXE").close)
+                shares_delta = g["delta"] * float(w.market.last_bar("SPY").close)
                 target = -int(round(shares_delta / per_contract))
                 self._target(pf, es.id, D(target), cause, "delta hedge")
 

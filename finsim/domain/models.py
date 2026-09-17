@@ -295,7 +295,7 @@ class FXTrade:
     trade_date: str
     settlement_date: str
     status: str                         # PENDING | SETTLED
-    counterparty: str = "Harbor Securities FX"
+    counterparty: str = "Citi FX"
     usd_value: Decimal = ZERO
     realized_fx: Decimal = ZERO
 
@@ -339,7 +339,7 @@ class Order:
     strategy_tag: Optional[str] = None
     trail_pct: Optional[float] = None         # TRAILING_STOP: distance from the best close, as fraction
     trail_level: Optional[Decimal] = None     # current trailing stop level
-    condition: Optional[Dict] = None          # {"ref": "NVRA"|"CURVE:10Y"|"SPOT:CL", "op": "<="|">=", "value": float}
+    condition: Optional[Dict] = None          # {"ref": "NVDA"|"CURVE:10Y"|"SPOT:CL", "op": "<="|">=", "value": float}
     condition_met_date: Optional[str] = None
     history: List[Dict] = field(default_factory=list)
 
@@ -369,7 +369,7 @@ class Trade:
     realized_pnl: Decimal = ZERO
     lots_relieved: List[Dict] = field(default_factory=list)
     settlement_instruction_id: Optional[str] = None
-    broker: str = "Harbor Securities (executing broker)"
+    broker: str = "Goldman Sachs (executing broker)"
 
 
 @dataclass

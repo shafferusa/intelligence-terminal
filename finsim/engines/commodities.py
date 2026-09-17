@@ -91,10 +91,22 @@ SPECS: List[CommoditySpec] = [
     CommoditySpec("GF", "Feeder Cattle", "COMMODITY_LIVESTOCK", "lb", 2.55, 0.18, 0.08, 0.04, 0.08, 0.4, 0.10, 0.05, 4, "FHJKQUVX", 6, 50_000, 0.00025, 0.07, 15_000, "PRIOR_MONTH_END", 0.02, None, "", 4),
     CommoditySpec("HE", "Lean Hogs", "COMMODITY_LIVESTOCK", "lb", 0.92, 0.28, 0.10, 0.05, 0.10, 0.4, 0.10, 0.10, 6, "GJKMNQVZ", 6, 40_000, 0.00025, 0.08, 40_000, "PRIOR_MONTH_END", 0.025, None, "", 4),
     # financial
-    CommoditySpec("ES", "Equity Index (SPXE) Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.06, 1_500_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("ES", "Equity Index (SPY) Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.06, 1_500_000, "THIRD_FRIDAY", 0.0, None, "", 2),
     CommoditySpec("ZN", "10-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.015625, 0.02, 1_800_000, "PRIOR_MONTH_25", 0.0, None, "", 4),
 ]
 SPEC_BY_CODE = {s.code: s for s in SPECS}
+
+
+def apply_snapshot(spots: Dict[str, float]) -> None:
+    """Re-anchor each commodity's marginal-cost level to the snapshot spot so the long-run pull matches today's market."""
+    import dataclasses
+    new = []
+    for s in SPECS:
+        v = spots.get(s.code)
+        new.append(dataclasses.replace(s, spot0=float(v)) if v else s)
+    SPECS[:] = new
+    SPEC_BY_CODE.clear()
+    SPEC_BY_CODE.update({s.code: s for s in SPECS})
 
 EVENT_TEMPLATES = {
     "COMMODITY_ENERGY": {
