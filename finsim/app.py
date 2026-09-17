@@ -166,11 +166,35 @@ def health(p: Optional[int] = None, timeout: float = 1.0) -> Optional[Dict]:
         return None
 
 
+def legacy_db_path() -> str:
+    """Where `python3 -m finsim serve` kept saves before the app existed: data/finsim.db in the checkout."""
+    return os.path.join(PACKAGE_ROOT, "data", "finsim.db")
+
+
+def adopt_legacy_db() -> Optional[str]:
+    """First run of the app on a machine that played with `serve`: carry the saves over (a consistent copy; the
+    original stays where it was) rather than start with an empty world list. Returns the source when copied."""
+    src, dst = legacy_db_path(), db_path()
+    if os.path.exists(dst) or not os.path.exists(src) or os.path.abspath(src) == os.path.abspath(dst):
+        return None
+    import sqlite3
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    s, d = sqlite3.connect(src), sqlite3.connect(dst)
+    try:
+        s.backup(d)
+    finally:
+        d.close()
+        s.close()
+    return src
+
+
 def start_background(p: Optional[int] = None, wait: float = 15.0) -> Dict:
     """Spawn the server detached from this process and wait until it answers. Returns its health."""
     os.makedirs(home(), exist_ok=True)
     if (h := health(p)):
         return h
+    if (src := adopt_legacy_db()):
+        print(f"carried your saves over from {src} to {db_path()} (the original is untouched)")
     log = open(log_path(), "ab")
     kw: Dict = {"stdin": subprocess.DEVNULL, "stdout": log, "stderr": subprocess.STDOUT, "cwd": PACKAGE_ROOT, "env": _env()}
     if platform() == "windows":
@@ -446,6 +470,9 @@ def cmd_status() -> int:
         print("phone: on — " + ("; ".join(phone_links()) or "no network address found"))
     else:
         print("phone: off (python3 -m finsim phone on)")
+    bdir = os.path.join(os.path.dirname(os.path.abspath(db_path())), "backups")
+    snaps = sorted(f for f in os.listdir(bdir) if f.endswith(".db")) if os.path.isdir(bdir) else []
+    print(f"backups: {len(snaps)} in {bdir}" + (f" (newest {snaps[-1]})" if snaps else " (one is taken every time the server starts)"))
     return 0 if h else 1
 
 
