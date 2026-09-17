@@ -53,6 +53,18 @@ update can be undone by stopping the server and copying a snapshot back over `fi
 removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
 repository checkout, so keep it where it is or run `install` again after moving it.
 
+### Settings, glossary, saves
+
+**Settings** (in the nav) sets how every page opens: the options page's default underlying, expiry tenor (e.g.
+three months out, snapped to the nearest listed expiry), contracts, order type and tab; the OTC page's default
+product, tenor and notional; the trading ticket's sizes and order type; the chart period; the home page. Two
+modes: always start from the presets, or remember where you were while the app is open. Changing an option's
+underlying never changes the expiry (the same date is kept and snapped to that name's listings) and trades
+re-render the same chain. Settings live in the browser, so each device keeps its own. **Glossary** defines every
+instrument you can trade and every term the screens use, with how the simulator handles it; dotted-underlined
+words on the pages link into it. **Saves** (header button) lists the worlds and deletes one after you type its
+name; a database snapshot is taken every time the server starts.
+
 ### On your phone
 
 The game keeps running on the computer; the phone is a second screen for it. `python3 -m finsim phone` opens

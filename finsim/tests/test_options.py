@@ -119,6 +119,13 @@ class ChainTest(unittest.TestCase):
         ch2 = w2.options.chain("NVDA")
         self.assertEqual([r["C"]["bid"] for r in ch["rows"]], [r["C"]["bid"] for r in ch2["rows"]])
         self.assertNotIn("BAC-PL", w.options.optionable())   # preferreds and small caps have no listed options
+        # a date that is not listed snaps to the nearest listed expiry (the Settings tenor preset, or another name's expiry)
+        exps = ch["expiries"]
+        self.assertEqual(w.options.chain("NVDA", "2099-01-01")["expiry"], exps[-1])
+        self.assertEqual(w.options.chain("NVDA", "2000-01-01")["expiry"], exps[0])
+        mid = date.fromisoformat(exps[1]) + (date.fromisoformat(exps[2]) - date.fromisoformat(exps[1])) / 3
+        self.assertEqual(w.options.chain("NVDA", mid.isoformat())["expiry"], exps[1])
+        self.assertTrue(w.options.chain("NVDA", mid.isoformat())["rows"], "the snapped chain has strikes")
         with self.assertRaises(CommandError):
             w.request_locate(pf.id, ch["rows"][0]["C"]["id"], 1)
 
