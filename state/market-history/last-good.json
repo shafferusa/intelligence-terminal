@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-16T21:15:00Z",
+ "fetched_at": "2026-09-17T10:46:00Z",
  "treasury_par_curve": {
   "date": "2026-09-16",
   "BC_1MONTH": 3.96,
@@ -16,157 +16,161 @@
   "BC_10YEAR": 5.01,
   "BC_20YEAR": 5.39,
   "BC_30YEAR": 5.35,
-  "2s10s_bp": 27,
-  "3m10y_bp": 87,
-  "5s30s_bp": 49,
-  "fetched_at": "2026-09-16T21:15:00Z",
-  "note": "Fresh Sept 16 par curve, posted post-close. FOMC hiked target range to 3.75-4.00% effective Sept 17; curve reflects the decision priced through the session. EOD official (2026-09-16)."
+  "spread_2s10s_bp": 27,
+  "spread_3m10y_bp": 87,
+  "spread_5s30s_bp": 49,
+  "label": "EOD official (2026-09-16)"
  },
  "fred": {
   "CPIAUCSL": {
+   "value": 334.131,
    "date": "2026-08-01",
-   "value": "334.131",
-   "prior_date": "2026-07-01",
-   "prior_value": "332.813"
+   "prev": 332.813,
+   "prev_date": "2026-07-01"
   },
   "CPILFESL": {
+   "value": 337.765,
    "date": "2026-08-01",
-   "value": "337.765",
-   "prior_date": "2026-07-01",
-   "prior_value": "336.789"
+   "prev": 336.789,
+   "prev_date": "2026-07-01"
   },
   "PAYEMS": {
+   "value": 159075,
    "date": "2026-08-01",
-   "value": "159075",
-   "prior_date": "2026-07-01",
-   "prior_value": "158913"
+   "prev": 158913,
+   "prev_date": "2026-07-01"
   },
   "ICSA": {
+   "value": 206000,
    "date": "2026-09-05",
-   "value": "206000",
-   "prior_date": "2026-08-29",
-   "prior_value": "207000"
+   "prev": 207000,
+   "prev_date": "2026-08-29"
   },
   "UNRATE": {
+   "value": 4.1,
    "date": "2026-08-01",
-   "value": "4.1",
-   "prior_date": "2026-07-01",
-   "prior_value": "4.1"
+   "prev": 4.1,
+   "prev_date": "2026-07-01"
   },
   "T10Y2Y": {
-   "date": "2026-09-15",
-   "value": "0.33",
-   "prior_date": "2026-09-14",
-   "prior_value": "0.32"
+   "value": 0.27,
+   "date": "2026-09-16",
+   "prev": 0.33,
+   "prev_date": "2026-09-15"
   },
   "DGS2": {
+   "value": 4.67,
    "date": "2026-09-15",
-   "value": "4.67",
-   "prior_date": "2026-09-14",
-   "prior_value": "4.65"
+   "prev": 4.65,
+   "prev_date": "2026-09-14"
   },
   "DGS10": {
+   "value": 5.0,
    "date": "2026-09-15",
-   "value": "5",
-   "prior_date": "2026-09-14",
-   "prior_value": "4.97"
+   "prev": 4.97,
+   "prev_date": "2026-09-14"
   },
   "T10YIE": {
-   "date": "2026-09-15",
-   "value": "2.38",
-   "prior_date": "2026-09-14",
-   "prior_value": "2.37"
+   "value": 2.33,
+   "date": "2026-09-16",
+   "prev": 2.38,
+   "prev_date": "2026-09-15"
   },
   "DFII10": {
+   "value": 2.62,
    "date": "2026-09-15",
-   "value": "2.62",
-   "prior_date": "2026-09-14",
-   "prior_value": "2.6"
+   "prev": 2.6,
+   "prev_date": "2026-09-14"
   },
   "SOFR": {
+   "value": 3.64,
    "date": "2026-09-15",
-   "value": "3.64",
-   "prior_date": "2026-09-14",
-   "prior_value": "3.62"
+   "prev": 3.62,
+   "prev_date": "2026-09-14"
   },
   "BAMLH0A0HYM2": {
+   "value": 2.76,
    "date": "2026-09-15",
-   "value": "2.76",
-   "prior_date": "2026-09-14",
-   "prior_value": "2.71"
+   "prev": 2.71,
+   "prev_date": "2026-09-14"
   },
-  "fetched_at": "2026-09-16T21:15:00Z",
-  "note": "DGS2/DGS10/SOFR/BAMLH0A0HYM2/DFII10 latest FRED observation is 2026-09-15 (one-day publication lag; Sept 16 post-FOMC values not yet posted as of this fetch). T10Y2Y/T10YIE latest is also 2026-09-15."
+  "label": "EOD official"
  },
  "vix_complex": {
   "VIX": 17.71,
+  "VIX_date": "2026-09-16",
   "VIX_prev": 17.2,
-  "VIX_chg_pct": 2.9651,
   "VIX9D": 17.4,
   "VIX3M": 19.73,
-  "term_structure": "VIX9D (17.4) below VIX (17.71); VIX3M (19.73) above both -- front-month inversion (VIX9D<VIX) consistent with a same-day event-driven vol spike (FOMC hike), normal contango further out vs VIX3M.",
-  "as_of": "2026-09-16T16:15:01",
-  "label": "EOD official (Cboe settlement, post-4pm ET)",
-  "fetched_at": "2026-09-16T21:15:00Z",
-  "note": "First VIX print after the 2:00pm FOMC hike and 2:30pm Warsh press conference; VIX +2.97% vs Tuesday's close."
+  "delayed_quote_this_morning": 15.95,
+  "delayed_quote_ts": "2026-09-17T10:42:17Z",
+  "history_tail": {
+   "2026-09-14": {
+    "VIX": 17.1,
+    "VIX9D": 16.91,
+    "VIX3M": 19.28
+   },
+   "2026-09-15": {
+    "VIX": 17.2,
+    "VIX9D": 17.21,
+    "VIX3M": 19.36
+   },
+   "2026-09-16": {
+    "VIX": 17.71,
+    "VIX9D": 17.4,
+    "VIX3M": 19.73
+   }
+  },
+  "label": "EOD official (history) / Delayed (+15 min) (live quote)"
  },
  "fx": {
   "base": "USD",
   "date": "2026-09-16",
   "rates": {
-   "AUD": 1.4021,
-   "BRL": 5.1459,
-   "CAD": 1.3939,
-   "CHF": 0.81902,
-   "CNY": 6.7071,
    "EUR": 0.86678,
-   "GBP": 0.74317,
-   "INR": 95.96,
    "JPY": 155.05,
-   "MXN": 17.1382
+   "GBP": 0.74317,
+   "CNY": 6.7071,
+   "CHF": 0.81902,
+   "CAD": 1.3939,
+   "AUD": 1.4021,
+   "MXN": 17.1382,
+   "BRL": 5.1459,
+   "INR": 95.96
   },
   "dxy": 100.334,
   "dxy_prev": 99.12,
-  "dxy_pct": 1.2248,
-  "eurusd": 1.1468,
-  "eurusd_prev": 1.1634,
-  "eurusd_pct": -1.4269,
-  "fetched_at": "2026-09-16T21:15:00Z",
-  "note": "Frankfurter ECB reference fix dated 2026-09-16 (set before the 2pm FOMC decision -- ECB fixes are morning-Europe-time, so today's fix predates the Fed announcement). DXY/EURUSD are Yahoo EOD official post-FOMC closes, up/down sharply on the hike and hawkish dot plot."
+  "label": "EOD official (ECB reference, 2026-09-16)"
  },
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 76042,
-    "usd_market_cap": 1527330760177.5588,
-    "usd_24h_vol": 31739035413.65555,
-    "usd_24h_change": 0.38086821642968965
+    "usd": 76269,
+    "usd_24h_change": 0.45,
+    "usd_market_cap": 1532000000000.0
    },
    "ethereum": {
-    "usd": 2406.38,
-    "usd_market_cap": 293706096073.65497,
-    "usd_24h_vol": 16100773129.70722,
-    "usd_24h_change": 0.13959203649984087
+    "usd": 2431.24,
+    "usd_24h_change": 1.1,
+    "usd_market_cap": 296750000000.0
    },
    "solana": {
-    "usd": 98.27,
-    "usd_market_cap": 57713065861.75291,
-    "usd_24h_vol": 3478366374.373917,
-    "usd_24h_change": 1.2721566102227657
+    "usd": 99.58,
+    "usd_24h_change": 2.39,
+    "usd_market_cap": 58500000000.0
    },
    "cardano": {
-    "usd": 0.194734,
-    "usd_market_cap": 7305788879.526405,
-    "usd_24h_vol": 428963507.0997834,
-    "usd_24h_change": -0.535774743527959
+    "usd": 0.197831,
+    "usd_24h_change": 1.71,
+    "usd_market_cap": 7420000000.0
    }
   },
-  "total_market_cap_usd": 2612437105736.7017,
-  "btc_dominance_pct": 58.45113206658789,
-  "eth_dominance_pct": 11.2424992138969,
-  "market_cap_change_pct_24h": -2.56601381569538,
-  "label": "Live (CoinGecko aggregate)",
-  "fetched_at": "2026-09-16T21:15:00Z"
+  "total_market_cap_usd": 2622000000000.0,
+  "btc_dominance_pct": 58.33,
+  "eth_dominance_pct": 11.3,
+  "market_cap_change_pct_24h": -1.85,
+  "fetched_at": "2026-09-17T10:44:00Z",
+  "label": "Live (CoinGecko aggregate)"
  },
  "indices": {
   "sp500_close": 7551.81,
@@ -418,15 +422,17 @@
   },
   "ASTS": {
    "price": 59.27,
-   "prev": 62.42,
-   "chg": -3.15,
-   "pct": -5.046459,
+   "prev": 58.77,
+   "chg": 0.5,
+   "pct": 0.85,
    "vol": 7162759,
    "hi52": 133.86,
    "lo52": 39.5,
    "longName": "AST SpaceMobile, Inc.",
    "n_bars": 5,
-   "last_ts": 1789588801
+   "last_ts": 1789588801,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "AVAV": {
    "price": 156.45,
@@ -658,15 +664,17 @@
   },
   "DIA": {
    "price": 515.22,
-   "prev": 524.07,
-   "chg": -8.85,
-   "pct": -1.688706,
+   "prev": 521.23,
+   "chg": -6.01,
+   "pct": -1.15,
    "vol": 5433947,
    "hi52": 546.75,
    "lo52": 450.44,
    "longName": "State Street SPDR Dow Jones Industrial Average ETF Trust",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "DLR": {
    "price": 181.07,
@@ -682,15 +690,17 @@
   },
   "EEM": {
    "price": 65.72,
-   "prev": 68.48,
-   "chg": -2.76,
-   "pct": -4.030374,
+   "prev": 65.76,
+   "chg": -0.04,
+   "pct": -0.06,
    "vol": 17267375,
    "hi52": 71.57,
    "lo52": 51.82,
    "longName": "iShares MSCI Emerging Markets ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "EQIX": {
    "price": 1016.16,
@@ -742,27 +752,31 @@
   },
   "GLD": {
    "price": 391.74,
-   "prev": 403.35,
-   "chg": -11.61,
-   "pct": -2.878393,
+   "prev": 394.15,
+   "chg": -2.41,
+   "pct": -0.61,
    "vol": 15245405,
    "hi52": 509.7,
    "lo52": 333.81,
    "longName": "SPDR Gold Shares",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "GOOGL": {
    "price": 342.87,
-   "prev": 330.65,
-   "chg": 12.22,
-   "pct": 3.695751,
+   "prev": 344.98,
+   "chg": -2.11,
+   "pct": -0.61,
    "vol": 18353590,
    "hi52": 408.61,
    "lo52": 235.84,
    "longName": "Alphabet Inc.",
    "n_bars": 5,
-   "last_ts": 1789588801
+   "last_ts": 1789588801,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "GS": {
    "price": 937.98,
@@ -862,15 +876,17 @@
   },
   "IEF": {
    "price": 90.73,
-   "prev": 91.9,
-   "chg": -1.17,
-   "pct": -1.273123,
+   "prev": 90.82,
+   "chg": -0.09,
+   "pct": -0.1,
    "vol": 13121810,
    "hi52": 98.05,
    "lo52": 90.7,
    "longName": "iShares 7-10 Year Treasury Bond ETF",
    "n_bars": 5,
-   "last_ts": 1789588801
+   "last_ts": 1789588801,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "IRDM": {
    "price": 47.28,
@@ -898,15 +914,17 @@
   },
   "IWM": {
    "price": 283.92,
-   "prev": 290.64,
-   "chg": -6.72,
-   "pct": -2.312139,
+   "prev": 285.14,
+   "chg": -1.22,
+   "pct": -0.43,
    "vol": 27124014,
    "hi52": 305.18,
    "lo52": 228.9,
    "longName": "iShares Russell 2000 ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "JNJ": {
    "price": 267.28,
@@ -946,15 +964,17 @@
   },
   "KRE": {
    "price": 72.74,
-   "prev": 73.45,
-   "chg": -0.71,
-   "pct": -0.966644,
+   "prev": 74.05,
+   "chg": -1.31,
+   "pct": -1.77,
    "vol": 25664854,
    "hi52": 78.35,
    "lo52": 57.55,
    "longName": "State Street SPDR S&P Regional Banking ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "KRMN": {
    "price": 36.94,
@@ -1054,15 +1074,17 @@
   },
   "MAGS": {
    "price": 69.52,
-   "prev": 69.32,
-   "chg": 0.2,
-   "pct": 0.288517,
+   "prev": 69.6,
+   "chg": -0.08,
+   "pct": -0.12,
    "vol": 2885853,
    "hi52": 71.16,
    "lo52": 55.085,
    "longName": "Roundhill Magnificent Seven ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "MCD": {
    "price": 248.56,
@@ -1210,15 +1232,17 @@
   },
   "PLTR": {
    "price": 174.34,
-   "prev": 169.53,
-   "chg": 4.81,
-   "pct": 2.837256,
+   "prev": 172.56,
+   "chg": 1.78,
+   "pct": 1.03,
    "vol": 20061387,
    "hi52": 207.52,
    "lo52": 106.37,
    "longName": "Palantir Technologies Inc.",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "PWR": {
    "price": 619.28,
@@ -1234,15 +1258,17 @@
   },
   "QQQM": {
    "price": 290.2,
-   "prev": 294.97,
-   "chg": -4.77,
-   "pct": -1.617114,
+   "prev": 290.09,
+   "chg": 0.11,
+   "pct": 0.04,
    "vol": 2256931,
    "hi52": 308.21,
    "lo52": 228.75,
    "longName": "Invesco NASDAQ 100 ETF",
    "n_bars": 5,
-   "last_ts": 1789588801
+   "last_ts": 1789588801,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "RCL": {
    "price": 253.92,
@@ -1282,39 +1308,45 @@
   },
   "RKLB": {
    "price": 63.7,
-   "prev": 63.07,
-   "chg": 0.63,
-   "pct": 0.99889,
+   "prev": 63.55,
+   "chg": 0.15,
+   "pct": 0.24,
    "vol": 17518025,
    "hi52": 151.0,
    "lo52": 37.57,
    "longName": "Rocket Lab Corporation",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "RSP": {
    "price": 212.28,
-   "prev": 214.64,
-   "chg": -2.36,
-   "pct": -1.099515,
+   "prev": 213.96,
+   "chg": -1.68,
+   "pct": -0.79,
    "vol": 7887561,
    "hi52": 223.44,
    "lo52": 182.11,
    "longName": "Invesco S&P 500 Equal Weight ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "RTX": {
    "price": 196.83,
-   "prev": 197.55,
-   "chg": -0.72,
-   "pct": -0.364465,
+   "prev": 195.5,
+   "chg": 1.33,
+   "pct": 0.68,
    "vol": 3407863,
    "hi52": 226.88,
    "lo52": 155.64,
    "longName": "RTX Corporation",
    "n_bars": 5,
-   "last_ts": 1789588802
+   "last_ts": 1789588802,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "SBUX": {
    "price": 97.34,
@@ -1342,15 +1374,17 @@
   },
   "SMH": {
    "price": 545.56,
-   "prev": 574.29,
-   "chg": -28.73,
-   "pct": -5.002699,
+   "prev": 542.11,
+   "chg": 3.45,
+   "pct": 0.64,
    "vol": 5879322,
    "hi52": 671.83,
    "lo52": 301.37,
    "longName": "VanEck Semiconductor ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "SPCX": {
    "price": 150.88,
@@ -1378,15 +1412,17 @@
   },
   "SPY": {
    "price": 754.05,
-   "prev": 762.4,
-   "chg": -8.35,
-   "pct": -1.095226,
+   "prev": 757.39,
+   "chg": -3.34,
+   "pct": -0.44,
    "vol": 54319710,
    "hi52": 779.37,
    "lo52": 629.28,
    "longName": "State Street SPDR S&P 500 ETF Trust",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "TGT": {
    "price": 154.68,
@@ -1414,15 +1450,17 @@
   },
   "TLT": {
    "price": 80.88,
-   "prev": 81.73,
-   "chg": -0.85,
-   "pct": -1.04001,
+   "prev": 80.71,
+   "chg": 0.17,
+   "pct": 0.21,
    "vol": 56024602,
    "hi52": 92.19,
    "lo52": 80.46,
    "longName": "iShares 20+ Year Treasury Bond ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "TMO": {
    "price": 648.43,
@@ -1486,15 +1524,17 @@
   },
   "USO": {
    "price": 156.17,
-   "prev": 149.97,
-   "chg": 6.2,
-   "pct": 4.13416,
+   "prev": 161.86,
+   "chg": -5.69,
+   "pct": -3.52,
    "vol": 5622836,
    "hi52": 163.35,
    "lo52": 65.99,
    "longName": "United States Oil Fund, LP",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "VGK": {
    "price": 88.63,
@@ -1522,15 +1562,17 @@
   },
   "VRT": {
    "price": 239.41,
-   "prev": 262.89,
-   "chg": -23.48,
-   "pct": -8.931492,
+   "prev": 234.61,
+   "chg": 4.8,
+   "pct": 2.05,
    "vol": 5469463,
    "hi52": 379.935,
    "lo52": 132.685,
    "longName": "Vertiv Holdings Co",
    "n_bars": 5,
-   "last_ts": 1789588803
+   "last_ts": 1789588803,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "VRTX": {
    "price": 513.26,
@@ -1618,27 +1660,31 @@
   },
   "XLE": {
    "price": 64.03,
-   "prev": 65.31,
-   "chg": -1.28,
-   "pct": -1.959884,
+   "prev": 65.93,
+   "chg": -1.9,
+   "pct": -2.88,
    "vol": 48518694,
    "hi52": 66.17,
    "lo52": 42.35,
    "longName": "State Street Energy Select Sector SPDR ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "XLF": {
    "price": 55.93,
-   "prev": 57.06,
-   "chg": -1.13,
-   "pct": -1.980372,
+   "prev": 56.85,
+   "chg": -0.92,
+   "pct": -1.62,
    "vol": 52663165,
    "hi52": 58.6,
    "lo52": 47.67,
    "longName": "State Street Financial Select Sector SPDR ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "XLI": {
    "price": 168.71,
@@ -1654,15 +1700,17 @@
   },
   "XLK": {
    "price": 183.93,
-   "prev": 187.87,
-   "chg": -3.94,
-   "pct": -2.097195,
+   "prev": 183.74,
+   "chg": 0.19,
+   "pct": 0.1,
    "vol": 8044838,
    "hi52": 198.73,
    "lo52": 126.68,
    "longName": "State Street Technology Select Sector SPDR ETF",
    "n_bars": 5,
-   "last_ts": 1789588800
+   "last_ts": 1789588800,
+   "as_of": "2026-09-16 EOD official",
+   "verified_close_to_close": true
   },
   "XLP": {
    "price": 83.33,
@@ -2024,9 +2072,8 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "_notes_this_run": {
-  "breadth_and_finra_short_vol": "Not re-fetched per instructions (already computed for this/prior session under the once-per-session rule).",
-  "coingecko": "simple/price endpoint returned HTTP 429 twice, succeeded on 3rd attempt after backoff; /global succeeded on 2nd attempt.",
-  "hy_oas_archive_append_needed": true,
-  "hy_oas_new_row": "2026-09-15,2.76"
+  "yahoo_sweep": "query1/query2.finance.yahoo.com returned 429 for nearly the entire symbol universe this run; only 8 symbols succeeded direct (ASTS, GOOGL, PLTR, QQQM, RKLB, RTX, SPY, VRT) plus a 16-symbol Twelve Data spot-check (board US-equity+sector+rates group). sources_failed: yahoo_finance_equity_sweep, yahoo_finance_futures_commodities_fx_index, yahoo_finance_dma_3mo_series.",
+  "chartPreviousClose_bug_reconfirmed": "Cross-checking all 22 fresh symbols against this file's prior cached prev/chg/pct showed EVERY one wrong (1-2 sessions stale), not just SPY as earlier corrections entries described. Only the 22 symbols listed with verified_close_to_close:true above have a trustworthy prev/chg/pct this run; all other watchlist entries retain their price level only -- treat prev/chg/pct on unflagged symbols as unreliable until independently re-verified.",
+  "futures_commodities_fx_and_dma": "All fresh fetches failed (429); the futures_commodities_fx, dma, and premarket_wednesday blocks below are carried forward unchanged from the 2026-09-16T21:15:00Z snapshot and are NOT today's premarket data."
  }
 }
