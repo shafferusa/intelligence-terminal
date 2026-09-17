@@ -3,28 +3,33 @@
   {
    "id": "un-mission-iran-war-crimes-sep17",
    "headline": "UN mission finds reasonable grounds for war crimes by both the US and Iran",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-17-am",
-   "verification": "Confirmed-primary (UN Human Rights Council-mandated body's own report)",
-   "one_line": "The UN's Independent Fact-Finding Mission on Iran found reasonable grounds US forces committed a war crime in the Feb 28 strike on the Shajareh Tayyebeh school in Minab (150+ dead, ~120 schoolchildren), and separately found Iran's own crackdown on last year's protests amounted to crimes against humanity (mass killings across all 31 provinces, torture, arbitrary detention, at least 221 children killed, 29 men executed since March). Neither government has formally responded.",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple for the government statements; Unverified for Trump's claim of direct contact",
+   "one_line": "Following Tuesday's UN fact-finding report, the White House called the council 'unserious nonsense' and said only Iran has committed war crimes; the Pentagon said its own Minab investigation 'remains ongoing.' Separately, Trump said he has been in 'direct' contact with Iran and hopes the war is 'nearing the end'; Iran's SNSC secretary Rezaei publicly rejected the framing within hours.",
    "score_note": "A UN body naming a likely war crime by the country still prosecuting the war, alongside crimes-against-humanity findings against the other side, in a single report.",
    "sources": [
     "OHCHR (primary)",
     "Amnesty International",
     "Iran International",
-    "TBS News"
+    "TBS News",
+    "White House (Anna Kelly, primary)",
+    "Pentagon statement (primary)",
+    "NPR",
+    "The Hill",
+    "CNBC"
    ],
    "watch": true
   },
   {
    "id": "kennedy-center-court-collision-sep17",
-   "headline": "Kennedy Center closure collides with a standing court order; DOJ deadline today",
+   "headline": "Kennedy Center standoff escalates: hearing denied, but a new 30-day demolition-notice order follows an Air Force One photo",
    "status": "Materially changed",
    "first_seen": "2026-09-15-am",
-   "last_updated": "2026-09-17-am",
-   "verification": "Confirmed-multiple",
-   "one_line": "Rep. Joyce Beatty, a board member and plaintiff in the underlying name lawsuit, filed an emergency motion saying the board's Tuesday closure vote violates a standing order requiring the building stay open while her suit proceeds. Judge Cooper ordered the administration to answer by 10 a.m. ET Thursday Sept 17, with a hearing possible depending on the response; DOJ has said it will separately appeal the stay-open order by Friday.",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple (court filings via secondary reporting; direct docket access blocked this run)",
+   "one_line": "DOJ filed its response by the 10 a.m. deadline, arguing the closure addresses safety risks, not a violation of the standing order. Judge Cooper denied Beatty's emergency-hearing request but ordered a sworn status report due Sept 23, and separately ordered 30 days' notice before any major building change (including demolition) after an AFP photo showed Trump aboard Air Force One viewing a 'Kennedy Center DEMOLISHED' poster; the Center calls the demolition language hypothetical.",
    "score_note": "Escalates the already-tracked Kennedy Center/naming dispute into a live compliance deadline during this edition's publication window.",
    "sources": [
     "Judge Cooper's court filings (primary)",
@@ -56,11 +61,11 @@
   {
    "id": "brennan-grand-jury-subpoena-sep17",
    "headline": "Brennan subpoenaed to a grand jury; prosecutor who sought it resigns",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-17-am",
+   "last_updated": "2026-09-17-pm",
    "verification": "Confirmed-multiple for the subpoena; Disputed for diGenova's exact resignation date/sequence",
-   "one_line": "Former CIA Director John Brennan was subpoenaed to a federal grand jury in Fort Pierce, FL, for Oct 15, per a court filing by his attorney Ken Wainstein, who alleged 'judge-shopping.' The subpoena is part of a DOJ probe into whether officials investigating Trump over Russia (2016) and Mar-a-Lago documents conspired to deprive him of civil rights. Joseph diGenova, who led the effort, has resigned; outlets disagree on the exact date/sequence.",
+   "one_line": "Brennan's attorney Ken Wainstein pressed the judge-shopping argument today before US District Judge Jia Cobb, noting DOJ still has not named a replacement for prosecutor Joseph diGenova, who resigned last week. diGenova pushed back today on any suggestion the resignation reflected pressure, saying (per one outlet) 'if you want indictments where there's no evidence, you have an ethical problem.' The Oct 15 subpoena stands; the resignation's exact motive remains disputed.",
    "score_note": "A former CIA director subpoenaed to a grand jury, with the prosecutor who sought it resigning amid allegations of judge-shopping.",
    "sources": [
     "Court filing via Ken Wainstein (primary)",
@@ -74,12 +79,12 @@
   },
   {
    "id": "saudi-mecca-drone-claim-sep17",
-   "headline": "Saudi Arabia says it downed a drone bound for Mecca; Houthis call it a lie",
-   "status": "New",
+   "headline": "The Saudi-Houthi war widens: new casualties, a disputed arms-shortage report, and new Hormuz incidents",
+   "status": "Materially changed",
    "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-17-am",
-   "verification": "Disputed (Saudi coalition claim vs. flat Houthi denial, no independent corroboration)",
-   "one_line": "Saudi-led coalition says air defenses intercepted a hostile drone before it entered Mecca's restricted airspace -- the kingdom's first security alert there since 2017. Houthis flatly deny any threat directed at Mecca. Separately, less disputed: Houthi missiles/drones struck Khamis Mushait, Abha and Taif, wounding 13 and damaging property; coalition says it will respond 'firmly.'",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Mixed: Confirmed-multiple that escalation is occurring; several individual claims remain Single-reliable-source, Disputed, or Unverified",
+   "one_line": "Beyond the disputed Mecca-drone claim: casualties reported on both sides today (one Yemeni killed by intercepted-drone debris in Saudi Arabia; Houthi media claim 3 children killed in Taiz, Yemen -- both single-sourced). AP reports Saudi Arabia asked France, the UK, Pakistan and Egypt for air-defense help after running low on interceptors; Turkish and Pakistani officials deny receiving such a request (disputed). Houthis claim downing a Saudi jet over Marib (unconfirmed). UKMTO reported a new security incident off Khasab, Oman; a separate Fox News report of a drone-and-missile strike on a US-contracted vessel near Hormuz remains single-sourced and unconfirmed by any government.",
    "score_note": "A disputed escalation claim around Islam's holiest city, alongside a less-contested wave of Houthi strikes on Saudi cities.",
    "sources": [
     "Saudi-led coalition statement (primary, disputed)",
@@ -109,11 +114,11 @@
   {
    "id": "senate-ai-killswitch-blocked-sep17",
    "headline": "Senate blocks Kennedy's AI kill-switch bill; Casar-Sanders push a superintelligence ban",
-   "status": "New",
+   "status": "Continuing",
    "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-17-am",
+   "last_updated": "2026-09-17-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Sen. Rand Paul blocked Sen. John Kennedy's AI Emergency Button Act (company-controlled kill switch) from unanimous-consent passage, sending it back to committee with no vote timeline. Separately, Rep. Casar and Sen. Sanders are pushing the Ban Artificial Superintelligence Act (permanent ASI development ban, pause pending federal safety rules, cabinet-level AI agency, 20-year criminal penalties); a single cited poll puts public support near 70%.",
+   "one_line": "No floor action on either bill: the House adjourned Wednesday until after the November midterms without taking up the AI Emergency Button Act or the Ban Artificial Superintelligence Act. Speaker Johnson: 'It's time for our members to go home to their districts.' Casar's push for Johnson to compel OpenAI/Anthropic CEO testimony remains unanswered.",
    "score_note": "Two competing congressional AI-safety approaches -- a narrow kill-switch mandate blocked, a sweeping ban introduced -- surface the same week.",
    "sources": [
     "Sen. Kennedy's office (primary)",
@@ -127,11 +132,11 @@
   {
    "id": "eu-canada-associate-member-sep17",
    "headline": "EU proposes Canada as its first-ever 'associate member'",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-17-am",
-   "verification": "Confirmed-primary (von der Leyen's own address) for the proposal; Unverified/System inference for what it concretely means",
-   "one_line": "European Commission President von der Leyen proposed in her State of the Union address that Canada become the EU's first 'associate member,' with PM Carney as her special guest -- a status EU treaties don't currently define (the concept was first floated for Ukraine by Germany's Merz). Would go beyond CETA to integrate defense industries and deepen tech/energy/Arctic cooperation.",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Single-reliable-source-leaning on the exact \"hostile act\" quote",
+   "one_line": "Trump called the EU's 'associate member' proposal for Canada a possible 'hostile act' today and threatened additional tariffs on Europe if it proceeds -- an escalation from Tuesday's open, undefined proposal. The exact quote appears in fewer outlets than typical for a presidential statement; treated cautiously pending broader confirmation.",
    "score_note": "A novel, legally undefined EU membership tier proposed for a G7 country amid Canada's ongoing trade war with the US.",
    "sources": [
     "Von der Leyen's address (primary, via wire)",
@@ -1384,6 +1389,105 @@
     "KDKA"
    ],
    "watch": true
+  },
+  {
+   "id": "cisco-ise-zeroday-sep17",
+   "headline": "Maximum-severity Cisco ISE flaw under active exploitation, CISA deadline Saturday",
+   "status": "New",
+   "first_seen": "2026-09-17-pm",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "CVE-2026-76460 (CVSS 10.0), an authentication-bypass bug in Cisco Identity Services Engine/ISE-PIC giving unauthenticated root access, was disclosed Sept 16 with exploitation already confirmed; CISA added it to its KEV catalog the same day with a Sept 19 federal remediation deadline. Part of a larger 20+-CVE September Cisco hardening release (ISE, Secure FMC, Nexus Dashboard, ASA/FTD); no threat actor named.",
+   "score_note": "Zero gap between disclosure and confirmed in-the-wild exploitation of a maximum-severity, root-level flaw in identity infrastructure.",
+   "sources": [
+    "Cisco security advisory (primary)",
+    "CISA KEV catalog (primary)",
+    "The Hacker News",
+    "SecurityWeek",
+    "Infosecurity Magazine"
+   ],
+   "watch": true
+  },
+  {
+   "id": "starship-flight14-delay-sep17",
+   "headline": "Starship Flight 14 slips six days to September 28",
+   "status": "Materially changed",
+   "first_seen": "2026-09-16-pm",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "SpaceX's FCC filing pushes the V3 Starship debut to no earlier than Sept 28, six days past the Sept 22 date this morning's edition had reported as confirmed 'Go.' No public explanation given; mission objectives (first V3 orbital-trajectory attempt, ~20-26 Starlink V3 sats, offshore booster landing, Pacific splashdown) unchanged.",
+   "score_note": "Corrects/updates a launch date this outlet reported as settled just hours earlier.",
+   "sources": [
+    "SpaceX FCC filing (primary-adjacent)",
+    "Space.com",
+    "TeslaNorth"
+   ],
+   "watch": true
+  },
+  {
+   "id": "meeks-israel-arms-hold-sep17",
+   "headline": "Rep. Meeks holds up $2.8B Israel arms sale over Gaza/Lebanon concerns",
+   "status": "New",
+   "first_seen": "2026-09-17-pm",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "House Foreign Affairs ranking member Gregory Meeks is withholding informal clearance for a $2.8B arms package (reportedly incl. 40,000 2,000-lb bombs), citing 'grave, unresolved concerns' about US-law and civilian-protection compliance in Gaza/Lebanon. Framed as an accountability demand, not a withdrawal of support. No State Dept/Israel response found yet.",
+   "score_note": "A congressional hold with real leverage over a large pending arms sale to a US ally amid a live civilian-protection dispute.",
+   "sources": [
+    "JTA",
+    "Haaretz",
+    "Boston Globe",
+    "TheGrio"
+   ],
+   "watch": true
+  },
+  {
+   "id": "lennar-guidance-cut-sep17",
+   "headline": "Lennar cuts full-year delivery guidance as August housing data comes in mixed",
+   "status": "New",
+   "first_seen": "2026-09-17-pm",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Lennar's Q3 call confirmed deliveries -3% y/y (20,840 homes, $6.3B backlog) and cut FY guidance to 80-81K homes from 82-83K prior; shares -2.1%. Same day, August building permits missed (-2.7% m/m to 1.394M, below 1.41M est.) while single-family starts rose 7.6% to 918K even as completions fell 11.9%.",
+   "score_note": "A watchlist-adjacent guidance cut landing the same day as mixed national housing data.",
+   "sources": [
+    "Lennar investor relations (primary)",
+    "Census.gov housing release (primary)",
+    "TipRanks",
+    "TradingEconomics"
+   ],
+   "watch": false
+  },
+  {
+   "id": "allegheny-parental-leave-scaleback-sep16",
+   "headline": "Allegheny County Board of Health scales back paid parental-leave mandate",
+   "status": "New",
+   "first_seen": "2026-09-17-pm",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The county Board of Health voted Wed Sept 16 to cut roughly six weeks off its proposed paid-parental-leave mandate for county employers and exempt smaller businesses. A further recommendation vote to County Council is expected Sept 28; final action stays with Council after that. Revised bill text not yet public.",
+   "score_note": "Live, in-progress change to what would have been one of the most generous local paid-leave mandates in the country.",
+   "sources": [
+    "Pittsburgh Post-Gazette",
+    "WESA"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pa07-tupone-ballot-removed-sep17",
+   "headline": "PA Supreme Court removes spoiler candidate from PA-07 ballot",
+   "status": "Resolved",
+   "first_seen": "2026-09-17-pm",
+   "last_updated": "2026-09-17-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The state Supreme Court affirmed the Commonwealth Court ruling that Andrew Tupone -- a former registered Republican who filed as a Green Party candidate without the party's knowledge -- cannot appear on the PA-07 November ballot. Sets a two-way race: Republican incumbent Ryan Mackenzie vs. Democrat Bob Brooks.",
+   "score_note": "A court ruling that directly sets the ballot for a competitive US House race.",
+   "sources": [
+    "PoliticsPA",
+    "Pennsylvania Capital-Star",
+    "Washington Examiner"
+   ],
+   "watch": false
   }
  ]
 }
