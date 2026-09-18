@@ -185,7 +185,7 @@ class TradingEngine:
             est = self._estimate_cost(sec, q, px)
             pos = pf.positions.get(sec.id)
             covering = pos is not None and pos.quantity < 0
-            why = w.prime.affordable(pf, est, w.collateral.haircut(sec, "PRIME") if not covering else 0.0)
+            why = w.prime.affordable(pf, est, w.collateral.haircut(sec, "PRIME") if not covering else 0.0, sec.currency)
             if why:
                 return f"insufficient {sec.currency} cash or financing: order {why}"
         return None

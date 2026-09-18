@@ -98,6 +98,7 @@ class SimulationEngine:
         closing = w.emit(E.DAY_CLOSING, {"date": d.isoformat()}, cause_id=start.id)
         w.settlement.process_lifecycle(closing)
         w.settlement.process_due(closing)
+        w.treasury_cover_overdrafts(closing)
         w.cevents.process_fails(closing)
         # I — corporate actions
         w.corporate.process_day(closing)
@@ -118,6 +119,7 @@ class SimulationEngine:
         w.options.process_day(closing)
         w.pnl.mark_all(closing)
         w.futures.sweep_margin(closing)
+        w.treasury_cover_overdrafts(closing)
         w.prime.process_day(closing, prev)
         w.accruals.process_day(closing, prev)
         w.cdesk.process_day(closing, prev)

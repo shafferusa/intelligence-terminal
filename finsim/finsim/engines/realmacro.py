@@ -36,6 +36,9 @@ POLICY_SERIES = {"EUR": "ECBDFR", "GBP": "IRSTCI01GBM156N", "JPY": "IRSTCI01JPM1
                  "HUF": "IRSTCI01HUM156N", "TRY": "IRSTCI01TRM156N"}
 PEGGED = {"HKD": ("USD", 0.0050), "SAR": ("USD", 0.0025)}      # the HKMA base rate and SAMA's repo rate sit just above the Fed's
 SERIES.update({f"policy_{c}": sid for c, sid in POLICY_SERIES.items()})
+# ten-year government yields by country (OECD long-term rates, monthly): the anchor for the Bund, Gilt, JGB, OAT and BTP curves
+YIELD10_SERIES = {"DE": "IRLTLT01DEM156N", "GB": "IRLTLT01GBM156N", "JP": "IRLTLT01JPM156N", "FR": "IRLTLT01FRM156N", "IT": "IRLTLT01ITM156N"}
+SERIES.update({f"yield10_{c}": sid for c, sid in YIELD10_SERIES.items()})
 UA = "FinSim/1.0 (local simulator; standard library)"
 # published FOMC decision days (second day of each meeting); other years fall back to the third Wednesday of the meeting months
 FOMC = {2025: ["2025-01-29", "2025-03-19", "2025-05-07", "2025-06-18", "2025-07-30", "2025-09-17", "2025-10-29", "2025-12-10"],
@@ -290,6 +293,18 @@ def policy_rates_as_of(series: Dict[str, Dict[str, float]], asof: date) -> Dict[
     for c, (anchor, add) in PEGGED.items():
         if anchor in out:
             out[c] = {"rate": round(out[anchor]["rate"] + add, 5), "asof": out[anchor]["asof"], "source": f"{anchor} + {add * 1e4:.0f}bp (peg)"}
+    return out
+
+
+def yield_anchors_as_of(series: Dict[str, Dict[str, float]], asof: date) -> Dict[str, Dict]:
+    """Each country's ten-year yield as last published on or before `asof`: {country: {rate, asof, source}}."""
+    out: Dict[str, Dict] = {}
+    iso = asof.isoformat()
+    for c, sid in YIELD10_SERIES.items():
+        s = {d: v for d, v in series.get(f"yield10_{c}", {}).items() if d <= iso}
+        if s:
+            last = max(s)
+            out[c] = {"rate": round(s[last] / 100, 5), "asof": last, "source": f"FRED {sid}"}
     return out
 
 

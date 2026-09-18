@@ -91,6 +91,8 @@ class SettlementEngine:
             bal = pf.cash_account(si.currency).balance
             if bal < si.cash_amount:
                 shortfall = si.cash_amount - bal
+                if cause is not None and self.w.treasury_backstop(pf, si.currency, shortfall, cause, f"backstop: the Treasury covered settlement {si.id} in {pf.name}"):
+                    return None
                 if si.currency == pf.base_currency and cause is not None and self.w.prime.fund_settlement(pf, shortfall, si.id, cause):
                     return None
                 return f"insufficient settled {si.currency} cash: need {si.cash_amount:,.2f}, have {bal:,.2f}; prime broker would not finance the shortfall"

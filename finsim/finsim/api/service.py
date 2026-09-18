@@ -334,7 +334,7 @@ class Service:
         if from_treasury and ptype != World.TREASURY_TYPE:
             tb = w.treasury_book()
             have = w.spare_cash(tb, "USD") if tb else ZERO
-            cap = min(_capital(capital, job), have) if capital not in (None, "") else min(_capital(None, job), have)
+            cap = D(0) if capital == 0 else (min(_capital(capital, job), have) if capital not in (None, "") else min(_capital(None, job), have))   # an explicit zero is an empty book
             pf = w.create_portfolio(name, ptype, D(0), "USD", bench, realism, mode, job)
             if cap > 0:
                 w.allocate_from_treasury(pf.id, "USD", cap)

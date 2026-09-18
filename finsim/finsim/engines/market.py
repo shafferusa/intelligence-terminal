@@ -1140,11 +1140,37 @@ class MarketEngine:
         return self.curves[-1]
 
     def curve_for_ccy(self, ccy: str, base: Optional[YieldCurve] = None, country: str = "") -> YieldCurve:
-        """A currency's zero curve (see global_rates): derived from the dollar curve and the currency's policy rate."""
+        """A currency's zero curve (see global_rates): derived from the dollar curve and the currency's policy rate. In a save
+        that tracks the real market the ten-year point is anchored to the country's last published yield (FRED, monthly),
+        moved since by the dollar ten-year's change; the front end stays on the (real) policy rate."""
         usd = base or self.curve()
         if ccy == "USD" and not country:
             return usd
-        return foreign_curve(ccy, usd, float(self.fx.rate.get(ccy, usd.policy_rate)), usd.policy_rate, country)
+        curve = foreign_curve(ccy, usd, float(self.fx.rate.get(ccy, usd.policy_rate)), usd.policy_rate, country)
+        if self.real_history is None:
+            return curve
+        home = country or {"EUR": "DE", "GBP": "GB", "JPY": "JP"}.get(ccy, "")
+        anchor = self.yield_anchor(home, usd.date) if home else None
+        if anchor is None:
+            return curve
+        target, at = anchor
+        usd10_then = next((c.rates[7] for c in reversed(self.curves) if c.date <= at), None)
+        target += 0.6 * (usd.rates[7] - usd10_then) if usd10_then is not None else 0.0
+        shift = target - curve.rates[7]
+        rates = [r + shift * (0.35 + 0.65 * min(t, 10.0) / 10.0) for t, r in zip(curve.tenors, curve.rates)]
+        return YieldCurve(curve.date, list(curve.tenors), rates, ig_spread_bps=curve.ig_spread_bps, hy_spread_bps=curve.hy_spread_bps, policy_rate=curve.policy_rate)
+
+    def yield_anchor(self, country: str, iso: str) -> Optional[Tuple[float, str]]:
+        """The country's last published ten-year yield on or before `iso` (a tracking save with the FRED series), as (rate, mid-month date)."""
+        from .realmacro import yield_anchors_as_of
+        series = self.real_macro_series()
+        if not series:
+            return None
+        a = yield_anchors_as_of(series, date.fromisoformat(iso)).get(country)
+        if a is None:
+            return None
+        obs = date.fromisoformat(a["asof"])
+        return float(a["rate"]), date(obs.year, obs.month, 15).isoformat()      # a monthly average sits mid-month
 
     def curve_for_security(self, sec: Security, base: Optional[YieldCurve] = None) -> YieldCurve:
         """The curve a bond prices off: the dollar curve, or its currency's curve with its country's spread (OATs, BTPs)."""

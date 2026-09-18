@@ -436,6 +436,34 @@ class World:
         """Settled cash a book can give up after everything pending."""
         return max(ZERO, min(pf.cash_account(ccy).balance, self.trading.projected_cash(pf, ccy)))
 
+    def treasury_spare_for(self, pf: Portfolio, ccy: str) -> Decimal:
+        """What the Treasury could put into `pf` in `ccy` right now (zero for the Treasury itself or a save without one)."""
+        tb = self.treasury_book()
+        if tb is None or pf.id == tb.id:
+            return ZERO
+        return self.spare_cash(tb, ccy)
+
+    def treasury_backstop(self, pf: Portfolio, ccy: str, amount: Decimal, cause: Event, note: str = "") -> bool:
+        """The Treasury covers a book's shortfall when it can: capital moves into the book as an allocation, recorded against `cause`."""
+        amt = money(amount)
+        if amt <= 0:
+            return True
+        tb = self.treasury_book()
+        if tb is None or pf.id == tb.id or self.spare_cash(tb, ccy) < amt:
+            return False
+        self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "direction": "TO_BOOK",
+                                         "note": note or f"backstop: the Treasury covered a {ccy} shortfall in {pf.name}"}, cause_id=cause.id, portfolio_id=pf.id)
+        return True
+
+    def treasury_cover_overdrafts(self, cause: Event) -> None:
+        """Any book overdrawn in any currency after the day's cash flows is topped up from the Treasury while it has the spare cash."""
+        for pf in list(self.portfolios.values()):
+            if pf.portfolio_type == self.TREASURY_TYPE:
+                continue
+            for ccy, ca in list(pf.cash.items()):
+                if ca.balance < 0:
+                    self.treasury_backstop(pf, ccy, -ca.balance, cause, f"backstop: the Treasury covered {pf.name}'s {ccy} overdraft")
+
     def allocate_from_treasury(self, portfolio_id: str, currency: str, amount) -> Event:
         """Move capital from the Treasury book into another book."""
         tb = self._treasury_or_raise()

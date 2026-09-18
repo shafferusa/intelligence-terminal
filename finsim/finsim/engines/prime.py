@@ -67,19 +67,24 @@ class PrimeEngine:
                 "collateral_value": cv, "cash_component": max(ZERO, cash), "short_market_value": short_mv, "short_requirement": short_req,
                 "requirement": requirement, "excess_liquidity": excess, "rows": rows, "call": w.collateral.open_call(pf, "PRIME", "PRIME")}
 
-    def affordable(self, pf: Portfolio, cost: Decimal, haircut) -> Optional[str]:
-        """Can the book pay `cost`? Settled/projected cash first; otherwise the prime broker finances it if excess
-        liquidity survives the purchase (a purchase of X at haircut h consumes X*h of excess; cash collateral or
-        ineligible assets consume the full amount). Returns a rejection reason or None."""
-        cash = self.w.trading.projected_cash(pf, pf.base_currency)
+    def affordable(self, pf: Portfolio, cost: Decimal, haircut, ccy: Optional[str] = None) -> Optional[str]:
+        """Can the book pay `cost` (in `ccy`, the base currency by default)? Settled/projected cash plus what the Treasury book can
+        spare first; otherwise, in the base currency, the prime broker finances it if excess liquidity survives the purchase (a
+        purchase of X at haircut h consumes X*h of excess; cash collateral or ineligible assets consume the full amount).
+        Returns a rejection reason or None."""
+        ccy = ccy or pf.base_currency
+        treasury = self.w.treasury_spare_for(pf, ccy)
+        cash = self.w.trading.projected_cash(pf, ccy) + treasury
         if cost <= cash:
             return None
+        if ccy != pf.base_currency:
+            return f"needs ~{ccy} {cost:,.0f}: projected {ccy} cash {cash - treasury:,.0f}" + (f" and the Treasury can spare {treasury:,.0f}" if treasury else "") + f" (deal an FX spot into {ccy}, or pay with another currency on the ticket)"
         fin = self.financing(pf)
         h = D(str(haircut)) if haircut is not None else D(1)
         consumed = money(cost * h)
         if fin["excess_liquidity"] - consumed >= 0 and cost <= cash + fin["excess_liquidity"]:
             return None
-        return (f"needs ~{cost:,.0f}: projected cash {cash:,.0f} and prime-broker excess liquidity {fin['excess_liquidity']:,.0f} "
+        return (f"needs ~{cost:,.0f}: projected cash {cash - treasury:,.0f}" + (f", the Treasury's spare {treasury:,.0f}" if treasury else "") + f" and prime-broker excess liquidity {fin['excess_liquidity']:,.0f} "
                 f"(financing this would consume {consumed:,.0f} of excess)")
 
     # ------------------------------------------------------------------ commands
