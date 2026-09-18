@@ -315,7 +315,7 @@ STOCKS = [
     ("BX", "Blackstone Inc.", "EQUITY", "Financials", "US"),
     ("PNC", "The PNC Financial Services Group, Inc.", "EQUITY", "Financials", "US"),
     ("TFC", "Truist Financial Corporation", "EQUITY", "Financials", "US"),
-    ("BK", "The Bank of New York Mellon Corporation", "EQUITY", "Financials", "US"),
+    ("BNY", "The Bank of New York Mellon Corporation", "EQUITY", "Financials", "US"),
     ("STT", "State Street Corporation", "EQUITY", "Financials", "US"),
     ("NTRS", "Northern Trust Corporation", "EQUITY", "Financials", "US"),
     ("AIG", "American International Group, Inc.", "EQUITY", "Financials", "US"),
