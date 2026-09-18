@@ -19,6 +19,7 @@ class E:
     """Event type constants."""
     WORLD_CREATED = "WORLD_CREATED"
     PORTFOLIO_CREATED = "PORTFOLIO_CREATED"
+    PORTFOLIO_DELETED = "PORTFOLIO_DELETED"         # a flat book closed by the player (nothing open, nothing owed)
     CAPITAL_CONTRIBUTED = "CAPITAL_CONTRIBUTED"
     MARKET_CLOSE = "MARKET_CLOSE"
     REAL_HISTORY_LOADED = "REAL_HISTORY_LOADED"     # a world that tracks the market: the real closes it started from

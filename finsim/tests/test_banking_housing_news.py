@@ -182,3 +182,33 @@ class InvestmentBankingTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AllBooksTest(unittest.TestCase):
+    def test_overall_view_adds_the_books_up_and_flat_books_can_be_deleted(self):
+        s = Service(EventStore(":memory:"))
+        r = s.create_world("many", 42, start_date="2026-01-05", capital=10_000_000)
+        w = s.worlds[r["world_id"]]
+        b2 = s.create_portfolio(w.id, "Bonds", "PERSONAL", 5_000_000, "PROFESSIONAL", "SANDBOX", None)
+        b3 = s.create_portfolio(w.id, "Equity - Short", "PERSONAL", 3_000_000, "PROFESSIONAL", "SANDBOX", None)
+        p1, p2, p3 = r["portfolio_id"], b2["portfolio_id"], b3["portfolio_id"]
+        s.place_order(w.id, p1, "AAPL", "BUY", 1000)
+        s.place_order(w.id, p2, "UST-10Y", "BUY", 1_000_000)
+        s.place_order(w.id, p2, "AAPL", "BUY", 500)
+        w.advance(3)
+        o = s.overall(w.id)
+        self.assertEqual(o["world"]["name"], "many"); self.assertEqual(len(o["books"]), 3)
+        self.assertAlmostEqual(float(o["totals"]["nav"]), sum(float(b["nav"]) for b in o["books"]), places=2)
+        self.assertAlmostEqual(float(o["totals"]["day_pnl"]), sum(float(b["day_pnl"]) for b in o["books"]), places=2)
+        aapl = next(p for p in o["positions"] if p["security_id"] == "AAPL")
+        self.assertEqual(float(aapl["quantity"]), 1500.0); self.assertEqual(sorted(b["book"] for b in aapl["books"]), ["Bonds", "Main Portfolio"])
+        self.assertIn("USD", o["cash"]); self.assertTrue(o["explain"])
+        # a book with positions cannot be deleted; an empty one can; the last one never
+        with self.assertRaises(CommandError):
+            w.delete_portfolio(p2)
+        d = s.delete_portfolio(w.id, p3)
+        self.assertEqual(d["deleted"], p3); self.assertNotIn(p3, w.portfolios); self.assertEqual(len(s.overall(w.id)["books"]), 2)
+        w2 = World.load(w.store, w.id)
+        self.assertEqual(w2.replay_errors, []); self.assertNotIn(p3, w2.portfolios); self.assertIn(p2, w2.portfolios)
+        with self.assertRaises(CommandError):
+            w.delete_portfolio(p1)                           # not flat: it holds AAPL

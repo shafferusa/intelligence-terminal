@@ -654,6 +654,59 @@ class Service:
         return jsonable(sorted([asdict(c) for c in w.corporate_actions.values()], key=lambda x: x["ex_date"]))
 
     # ------------------------------------------------------------------ portfolio
+    def delete_portfolio(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        name = pf.name
+        w.delete_portfolio(portfolio_id)
+        self.log.info("world %s: book %s (%s) deleted", world_id, portfolio_id, name)
+        return {"deleted": portfolio_id, "name": name, "portfolios": [{"id": p.id, "name": p.name} for p in w.portfolios.values()]}
+
+    def overall(self, world_id: str) -> Dict:
+        """The whole save as one big book: every book's NAV and P&L side by side, positions added up across books
+        (with the split by book), cash by currency, and the day's P&L by bucket summed."""
+        w = self.world(world_id)
+        books, positions, cash, explain = [], {}, {}, {}
+        tot = {"nav": ZERO, "day_pnl": ZERO, "mtd_pnl": ZERO, "ytd_pnl": ZERO, "since_inception_pnl": ZERO, "contributed": ZERO, "gross_exposure": ZERO, "net_exposure": ZERO,
+               "long_exposure": ZERO, "short_exposure": ZERO, "unrealized": ZERO, "realized": ZERO, "cash_base": ZERO}
+        for pf in w.portfolios.values():
+            d = self.dashboard(world_id, pf.id)
+            s = w.pnl.compute_summary(pf)
+            row = {"id": pf.id, "name": pf.name, "type": pf.portfolio_type, "job": pf.job, "level_title": d["level_title"], "benchmark": pf.benchmark, "created": pf.created,
+                   "nav": d["nav"], "day_pnl": d["day_pnl"], "mtd_pnl": d["mtd_pnl"], "ytd_pnl": d["ytd_pnl"], "since_inception_pnl": d["since_inception_pnl"],
+                   "return_since_inception": d["return_since_inception"], "contributed": pf.contributed_capital, "cash_base": s["cash_base"], "gross_exposure": d["gross_exposure"],
+                   "net_exposure": d["net_exposure"], "long_exposure": d["long_exposure"], "short_exposure": d["short_exposure"], "leverage": d["leverage"],
+                   "unrealized": d["unrealized"], "realized": d["realized"], "positions": len(d["positions"]), "working_orders": len(d["working_orders"]),
+                   "margin_calls": len(d["margin_calls"]), "private_credit": s.get("private_credit", ZERO), "private_equity": s.get("private_equity", ZERO)}
+            books.append(row)
+            for k in ("nav", "day_pnl", "mtd_pnl", "ytd_pnl", "since_inception_pnl", "gross_exposure", "net_exposure", "long_exposure", "short_exposure", "unrealized", "realized", "cash_base"):
+                tot[k] += D(str(row[k]))
+            tot["contributed"] += pf.contributed_capital
+            for p in d["positions"]:
+                sid = p["security_id"]
+                agg = positions.setdefault(sid, {"security_id": sid, "name": p.get("name"), "asset_class": p.get("asset_class"), "sector": p.get("sector"), "quantity": ZERO,
+                                                 "market_value": ZERO, "unrealized": ZERO, "day_pnl": ZERO, "books": []})
+                q, mv, ur, dp = D(str(p.get("quantity", 0))), D(str(p.get("market_value", 0))), D(str(p.get("unrealized_pnl", p.get("unrealized", 0)) or 0)), D(str(p.get("day_pnl", 0) or 0))
+                agg["quantity"] += q; agg["market_value"] += mv; agg["unrealized"] += ur; agg["day_pnl"] += dp
+                agg["books"].append({"book": pf.name, "portfolio_id": pf.id, "quantity": q, "market_value": mv, "unrealized": ur})
+                if p.get("mark") is not None:
+                    agg["mark"] = p["mark"]
+            for c, a in pf.cash.items():
+                cash.setdefault(c, {"settled": ZERO, "base_value": ZERO})
+                cash[c]["settled"] += a.balance; cash[c]["base_value"] += a.base_value
+            if pf.nav_history:
+                for k, v in (pf.nav_history[-1].explain or {}).items():
+                    if not k.startswith("_"):
+                        explain[k] = explain.get(k, ZERO) + D(str(v))
+        rows = sorted(positions.values(), key=lambda r: -abs(float(r["market_value"])))
+        by_class: Dict[str, Dict] = {}
+        for r in rows:
+            g = by_class.setdefault(r["asset_class"] or "OTHER", {"market_value": ZERO, "count": 0})
+            g["market_value"] += r["market_value"]; g["count"] += 1
+        tot["return_since_inception"] = float(tot["nav"] / tot["contributed"] - 1) if tot["contributed"] else 0.0
+        return jsonable({"world": {"id": w.id, "name": w.name, "date": w.current_date, "market_source": getattr(w, "market_source", "SIMULATED")}, "totals": tot, "books": books,
+                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class})
+
     def dashboard(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)
         pf = w.portfolio(portfolio_id)

@@ -206,6 +206,7 @@ class World:
         self.on(E.REAL_MACRO_LOADED, World._h_real_macro)
         self.on(E.CLOCK_CHANGED, World._h_clock_changed)
         self.on(E.PORTFOLIO_CREATED, World._h_portfolio_created)
+        self.on(E.PORTFOLIO_DELETED, World._h_portfolio_deleted)
         self.on(E.CAPITAL_CONTRIBUTED, World._h_capital)
         self.on(E.MARKET_CLOSE, World._h_market_close)
         self.on(E.LEDGER_POSTED, World._h_ledger_posted)
@@ -355,6 +356,59 @@ class World:
         pf.cash_account(pf.base_currency)
         self.portfolios[pf.id] = pf
         self.ledgers[pf.id] = Ledger(pf.id)
+
+    def _h_portfolio_deleted(self, ev: Event) -> None:
+        pid = ev.payload["portfolio_id"]
+        self.portfolios.pop(pid, None)
+        self.ledgers.pop(pid, None)
+
+    def open_items(self, pf: Portfolio) -> List[str]:
+        """What stands in the way of closing a book: anything held, working or owed."""
+        out = []
+        n = sum(1 for p in pf.positions.values() if p.quantity != 0)
+        if n:
+            out.append(f"{n} open position(s)")
+        n = sum(1 for o in pf.orders.values() if o.status in ("WORKING", "PARTIALLY_FILLED", "ENTERED"))
+        if n:
+            out.append(f"{n} working instruction(s)")
+        n = sum(1 for t in pf.otc_trades.values() if t.status == "OPEN")
+        if n:
+            out.append(f"{n} open OTC trade(s)")
+        n = sum(1 for l in pf.loans.values() if l.status == "OPEN") + sum(1 for r in pf.repos.values() if r.status == "OPEN")
+        if n:
+            out.append(f"{n} open borrow(s) / repo(s)")
+        n = sum(1 for l in pf.private_loans.values() if l.status in ("OPEN", "DEFAULTED"))
+        if n:
+            out.append(f"{n} private credit loan(s)")
+        n = sum(1 for c in getattr(pf, "pe_companies", {}).values() if c.status not in ("SOLD", "IPO_COMPLETE", "RESTRUCTURED", "FAILED"))
+        if n:
+            out.append(f"{n} portfolio compan{'y' if n == 1 else 'ies'}")
+        n = sum(1 for e in getattr(pf, "ib_engagements", {}).values() if e.status in ("ACTIVE", "DECISION"))
+        if n:
+            out.append(f"{n} live banking engagement(s)")
+        n = sum(1 for f in pf.fx_forwards.values() if f.status == "OPEN")
+        if n:
+            out.append(f"{n} open FX forward(s)")
+        if sum(1 for c in pf.collateral_calls.values() if c.status == "OPEN"):
+            out.append("an open collateral call")
+        if pf.margin_loan > 0:
+            out.append(f"a prime-broker loan of {pf.margin_loan:,.0f}")
+        pend = sum(1 for si in pf.settlements.values() if si.status in ("PENDING", "MATCHED", "FAILED"))
+        if pend:
+            out.append(f"{pend} unsettled trade(s)")
+        return out
+
+    def delete_portfolio(self, portfolio_id: str) -> Event:
+        """Close a book: only a flat one (nothing held, working or owed), never the last one. The event stays in the log."""
+        pf = self.portfolio(portfolio_id)
+        if len(self.portfolios) <= 1:
+            raise CommandError("a save keeps at least one book")
+        items = self.open_items(pf)
+        if items:
+            raise CommandError(f"{pf.name} is not flat: {', '.join(items)}. Close everything and let it settle, then delete the book")
+        ev = self.emit(E.PORTFOLIO_DELETED, {"portfolio_id": pf.id, "name": pf.name, "nav": self.ledgers[pf.id].nav()}, portfolio_id=pf.id)
+        self.flush()
+        return ev
 
     def _h_capital(self, ev: Event) -> None:
         from .engines.ledger import dr, cr

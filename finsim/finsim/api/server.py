@@ -93,6 +93,8 @@ class Router:
                 return s.fx_market(wid)
             if sub == ["housing"]:
                 return s.housing(wid)
+            if sub == ["overall"]:
+                return s.overall(wid)
             if sub == ["clock"] and method == "POST":
                 return s.set_clock(wid, body.get("update_time"), body.get("timezone"), body.get("lock_session"))
             if sub == ["live"]:
@@ -131,6 +133,8 @@ class Router:
             if sub[0] == "portfolios" and len(sub) >= 2:
                 pid = sub[1]
                 leaf = sub[2:]
+                if not leaf and method == "DELETE":
+                    return s.delete_portfolio(wid, pid)
                 if leaf == ["dashboard"]:
                     return s.dashboard(wid, pid)
                 if leaf == ["positions"] and len(leaf) == 1:
