@@ -200,6 +200,7 @@ class World:
     def _register_core(self) -> None:
         self.on(E.WORLD_CREATED, World._h_world_created)
         self.on(E.REAL_HISTORY_LOADED, World._h_real_history)
+        self.on(E.MARKET_SOURCE_CHANGED, World._h_market_source_changed)
         self.on(E.REAL_MACRO_LOADED, World._h_real_macro)
         self.on(E.CLOCK_CHANGED, World._h_clock_changed)
         self.on(E.PORTFOLIO_CREATED, World._h_portfolio_created)
@@ -260,12 +261,40 @@ class World:
         self.market_source = p.get("market_source", "SIMULATED")
         self.market.bootstrap()
         if self.market_source == "REAL":
-            from .engines.realfeed import RealFeed, equity_symbols_for
-            from .engines.realmacro import RealMacro
-            from .engines.realnews import RealNews
-            self.market.real_feed = RealFeed(equity_symbols_for(self.securities))
-            self.market.real_macro_feed = RealMacro()
-            self.real_news = RealNews()
+            self._setup_real_feeds()
+
+    def _setup_real_feeds(self) -> None:
+        from .engines.realfeed import RealFeed, equity_symbols_for
+        from .engines.realmacro import RealMacro
+        from .engines.realnews import RealNews
+        self.market.real_feed = RealFeed(equity_symbols_for(self.securities))
+        self.market.real_macro_feed = RealMacro()
+        self.real_news = RealNews()
+
+    def _h_market_source_changed(self, ev: Event) -> None:
+        self.market_source = ev.payload.get("market_source", "REAL")
+        if self.market_source == "REAL" and getattr(self.market, "real_feed", None) is None:
+            self._setup_real_feeds()
+
+    def switch_to_real(self, real_history: Dict, real_macro: Optional[Dict] = None) -> Event:
+        """Make a simulated save track the real market from now on: its price history is overlaid with the real closes
+        (positions are re-marked at real prices at the next update; past fills keep their prices), real closes drive every
+        day from here, and live quotes, live tickets and the 15-minute quote updates come on. Stored as events, so replay
+        needs no network."""
+        if getattr(self, "market_source", "SIMULATED") == "REAL":
+            raise CommandError("this save already tracks the real market")
+        spy = (real_history or {}).get("equities", {}).get("SPY") or {}
+        if not spy:
+            raise CommandError("no real market data could be fetched (is the machine online?)")
+        cur = self.current_date.isoformat()
+        if cur not in spy:
+            raise CommandError(f"the real market has no close for this save's current date {cur}: a save can switch only while its date is a real session (a career save always is)")
+        ev = self.emit(E.MARKET_SOURCE_CHANGED, {"market_source": "REAL", "from": "SIMULATED"})
+        self.emit(E.REAL_HISTORY_LOADED, {"history": real_history}, cause_id=ev.id)
+        if real_macro:
+            self.emit(E.REAL_MACRO_LOADED, {"series": real_macro}, cause_id=ev.id)
+        self.flush()
+        return ev
 
     def _h_real_history(self, ev: Event) -> None:
         h = ev.payload["history"]
@@ -536,7 +565,11 @@ class World:
 
     def quote_updates(self, at=None) -> Dict:
         if not self.quote_ticks_active():
-            return {"active": False}
+            if getattr(self, "market_source", "SIMULATED") != "REAL":
+                why = "this save is simulated (a sandbox, or a career created before saves tracked the real market): instructions execute at the daily update; a new Career save trades on live quotes"
+            else:
+                why = "the live quote feed is not set up for this save: instructions execute at the daily update"
+            return {"active": False, "reason": why}
         return {"active": True, "schedule": "every 15 minutes from 09:45 to 16:15 New York (the quote is up to 15 minutes delayed)",
                 "last": latest_quote_tick(self.calendar, at).isoformat(), "next": next_quote_tick(self.calendar, at).isoformat(),
                 "last_worked": self.live.last_tick}

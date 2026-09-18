@@ -262,6 +262,39 @@ class LiveTicketTest(unittest.TestCase):
         self.assertEqual([f["order_id"] for f in live["worked"]["filled"]], [r["order"]["id"]])
         LIVE_MULT.clear()
 
+    def test_a_simulated_career_save_switches_to_the_real_market(self):
+        """A career created before saves tracked the market (simulated prices, no live quotes) switches in place: real
+        closes overlay its history, live quotes and the 15-minute quote updates come on, replay needs no feed."""
+        from finsim.clock import ClockConfig
+        feed, dates = _stub_feed(40)
+        start = date.fromisoformat(dates[30])
+        h = feed.history(start - timedelta(days=45), date.fromisoformat(dates[-1]))
+        store = EventStore(":memory:")
+        w = World.create("s", "old career", 5, start, store=store, initial_regime="NORMAL_GROWTH", clock=ClockConfig("REAL_TIME", "America/New_York", "17:00"))
+        pf = w.create_portfolio("Main", "PERSONAL", D(10_000_000))
+        self.assertEqual(w.market_source, "SIMULATED"); self.assertFalse(w.live.available()); self.assertFalse(w.quote_ticks_active())
+        self.assertIn("simulated", w.quote_updates()["reason"])
+        o_old = w.place_order(pf.id, "AAPL", "BUY", D(100), time_in_force="GTC")          # an instruction from before the switch
+        self.assertIsNone(o_old.executes_at)
+        w.switch_to_real(h, _stub_series())
+        feed._fetch_live = _live_fetch
+        w.market.real_feed = feed; w.market.real_macro_feed = None
+        self.assertEqual(w.market_source, "REAL"); self.assertTrue(w.live.available()); self.assertTrue(w.quote_ticks_active())
+        self.assertAlmostEqual(float(w.market.last_bar("SPY").close), h["equities"]["SPY"][start.isoformat()], places=2)
+        with self.assertRaises(CommandError):
+            w.switch_to_real(h)
+        o = w.place_order(pf.id, "MSFT", "BUY", D(10))
+        self.assertIsNotNone(o.executes_at)
+        # the old instruction is worked at the first sweep (its update has long passed), the new one waits for its update
+        r = w.work_live(max_age_s=0)
+        self.assertEqual([f["order_id"] for f in r["filled"]], [o_old.id]); self.assertEqual(o_old.status, "FILLED")
+        self.assertEqual(pf.trades[o_old.trade_ids[-1]].execution_detail["session"], "QUOTE_UPDATE")
+        w2 = World.load(store, "s"); w2.market.real_feed = None
+        self.assertEqual(w2.replay_errors, []); self.assertEqual(w2.market_source, "REAL")
+        self.assertEqual(float(w2.market.last_bar("SPY").close), float(w.market.last_bar("SPY").close))
+        self.assertEqual(w2.portfolio(pf.id).orders[o_old.id].status, "FILLED")
+        assert_ledger_invariants(self, w, pf)
+
     def test_simulated_saves_have_no_live_market(self):
         w, pf, _ = make_world()
         self.assertFalse(w.live.available())

@@ -17,7 +17,11 @@ the quote stream and fills when a refresh finds the quote has reached it), an **
 **quote update** — every 15 minutes from 09:45 to 16:15 New York, the delayed quote's own cadence, so 09:45 carries
 the open and 16:15 the close — at that quote, so a print you could already see is never yours; a limit or stop is
 checked at every update until it fills, and the daily update after the close is only a safety net for a session the
-terminal slept through. The strict overnight-only rule (no tickets from 09:30 New York until the
+terminal slept through. A career created before saves tracked the real market (simulated prices, no live quotes)
+can be switched in place from Live Trades or Settings ("Switch this save to the real market"): its history is overlaid
+with the real closes, positions are re-marked at real prices at the next update, and live quotes and the quote updates
+come on. The header shows the running engine version (`v0.11.0`); `python3 -m finsim status` prints it too, and
+`python3 -m finsim phone off` (or `on`) restarts the server after a `git pull`. The strict overnight-only rule (no tickets from 09:30 New York until the
 update) is a switch in Settings, off by default. A **sandbox** save is a world generated from a seed that you
 advance yourself. Nothing is ever sent to a broker or an exchange; the market data is read, never traded
 against (see *Where the data comes from*).
@@ -496,6 +500,7 @@ POST /api/worlds/{w}/clock {update_time, timezone, lock_session}      (career sa
 GET  /api/worlds/{w}/live?ids=SPY,NVDA,CLZ26                 (latest real quotes next to the save's last close; without ids: the index ETFs and everything held)
 POST .../orders {..., settle_ccy, execution: LIVE|NEXT_UPDATE}   (LIVE fills now at the latest quote and returns the trade; the FX spot for another settlement currency is dealt alongside, live too)
      a LIVE limit / stop / stop-limit / take-profit / trailing stop the quote has not reached rests: GET .../live sweeps the resting book before answering (`worked` says what filled), the scheduler sweeps every loaded save once a minute
+POST /api/worlds/{w}/track-real                               (switch a simulated save to the real market: MARKET_SOURCE_CHANGED + REAL_HISTORY_LOADED events; needs the network once)
 POST /api/worlds/{w}/live/work                                (sweep now → {checked, instructions, quoted, filled, triggered, ratcheted, tick, next_tick}; instructions are worked once per 15-minute quote update, 09:45–16:15 NY)
 POST .../fx/spot {..., execution: LIVE}                       (a spot deal at the pair's live quote)
      with the session lock on, career saves refuse trading and dealing commands from 09:30 New York until the update (409 with the reason); cancels are always accepted

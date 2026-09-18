@@ -98,6 +98,8 @@ class Router:
                 return s.live(wid, ids or None)
             if sub == ["live", "work"] and method == "POST":
                 return s.work_live(wid)
+            if sub == ["track-real"] and method == "POST":
+                return s.switch_to_real(wid)
             if sub == ["force-corporate-event"] and method == "POST":
                 return s.force_corporate_event(wid, body)
             if sub == ["otc", "dealers"]:

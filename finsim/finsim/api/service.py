@@ -185,6 +185,30 @@ class Service:
             out["error"] = f"could not reach the quote feed ({e.__class__.__name__})"
         return jsonable(out)
 
+    def switch_to_real(self, world_id: str) -> Dict:
+        """Switch a simulated save to the real market (real closes, live quotes, live tickets, 15-minute quote updates)."""
+        from ..engines.realfeed import RealFeed, equity_symbols_for
+        from ..engines.realmacro import RealMacro
+        w = self.world(world_id)
+        if getattr(w, "market_source", "SIMULATED") == "REAL":
+            raise CommandError("this save already tracks the real market")
+        feed = RealFeed(equity_symbols_for(w.securities))
+        feed.refresh("1y", force=True)
+        latest = feed.latest_date()
+        if not latest:
+            raise CommandError("no real market data could be fetched: check the internet connection and try again")
+        end = min(w.current_date, date.fromisoformat(latest))
+        history = feed.history(w.current_date - timedelta(days=420), end)
+        rm = RealMacro()
+        try:
+            rm.refresh()
+        except Exception:
+            pass
+        macro = rm.snapshot(w.current_date - timedelta(days=800)) if rm.data else None
+        w.switch_to_real(history, macro)
+        self.log.info("world %s now tracks the real market (closes through %s)", world_id, end.isoformat())
+        return self.world_info(world_id)
+
     def work_live(self, world_id: str) -> Dict:
         """Check the resting live orders of one save against the latest real quotes now."""
         w = self.world(world_id)
@@ -261,7 +285,7 @@ class Service:
         w = self.world(world_id)
         r = w.market.regime()
         nu = w.next_update_at()
-        return jsonable({"id": w.id, "name": w.name, "seed": w.seed, "start_date": w.start_date, "current_date": w.current_date,
+        return jsonable({"id": w.id, "name": w.name, "seed": w.seed, "start_date": w.start_date, "current_date": w.current_date, "engine_version": ENGINE_VERSION,
                          "day_index": w.day_count, "events": len(w.events), "regime": {"name": r.name, "label": r.label, "description": r.description},
                          "scenario": w.scenario, "scenario_log": w.scenario_log, "market_source": getattr(w, "market_source", "SIMULATED"),
                          "trading_window": w.trading_window(self.now() if self.now else None),

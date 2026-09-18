@@ -24,6 +24,7 @@ class E:
     REAL_HISTORY_LOADED = "REAL_HISTORY_LOADED"     # a world that tracks the market: the real closes it started from
     REAL_MACRO_LOADED = "REAL_MACRO_LOADED"         # a career world: the real economic series it started from
     CLOCK_CHANGED = "CLOCK_CHANGED"                 # update time / timezone changed from the settings page
+    MARKET_SOURCE_CHANGED = "MARKET_SOURCE_CHANGED"   # a simulated save switched to tracking the real market (followed by REAL_HISTORY_LOADED)
     LIVE_SWEEP = "LIVE_SWEEP"                       # resting live orders checked against the latest real quotes (the cause of what they did)
     REGIME_CHANGED = "REGIME_CHANGED"
     NEWS_PUBLISHED = "NEWS_PUBLISHED"
