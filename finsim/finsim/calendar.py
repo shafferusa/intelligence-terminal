@@ -149,11 +149,16 @@ class SettlementConfig:
         "FUTURES": 0,          # cleared: margined daily, no DVP settlement
         "US_OPTIONS": 1,       # listed option premium settles T+1 through the clearinghouse
         "PHYSICAL": 2,         # physical commodity inventory: title and cash two sessions after the deal
+        "CRYPTO": 0,           # coins settle on chain the same day
+        "INDEX": 0,
     })
     calendars: Dict[str, str] = field(default_factory=lambda: {"default": "US"})
 
     def cycle_for(self, market: str) -> int:
         if market not in self.cycles:
+            default = SettlementConfig().cycles
+            if market in default:                      # a save made before this market existed
+                return default[market]
             raise KeyError(f"No settlement cycle configured for market {market!r}")
         return self.cycles[market]
 

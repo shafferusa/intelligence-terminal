@@ -9,12 +9,15 @@ In the evening you read the briefing, review the book, and leave instructions
 for the next day.
 
 **Two ways to play.** A **career** save plays the real market day by day: one real day is one session,
-processed after the close (17:00 New York by default, never before 16:15) with that day's real closes for
-stocks, ETFs, Treasury yields, commodities and FX, the real CPI, jobs, GDP and Fed decisions, and real
-headlines. You enter instructions overnight — from the update until 09:29 New York — and they execute at the
-next close, so nothing is ever entered with the session's prices on the screen. A **sandbox** save is a world
-generated from a seed that you advance yourself. Nothing is ever sent to a broker or an exchange; the market
-data is read, never traded against (see *Where the data comes from*).
+processed after the 16:00 New York close (17:00 by default) with that day's real closes for stocks, ETFs,
+Treasury yields, commodities and FX, the real CPI, jobs, GDP and Fed decisions, and real headlines. Between
+updates the screens show the latest real quotes (Yahoo Finance, up to 15 minutes delayed) and you can trade
+at any hour: a **live ticket** fills immediately at that quote, an **instruction** waits for the next update
+and executes at the next session's open — or at its close if the session was already running, so an open you
+could already see is never yours. The strict overnight-only rule (no tickets from 09:30 New York until the
+update) is a switch in Settings, off by default. A **sandbox** save is a world generated from a seed that you
+advance yourself. Nothing is ever sent to a broker or an exchange; the market data is read, never traded
+against (see *Where the data comes from*).
 
 **This is a simulation.** It never connects to a broker or exchange while you play. The universe
 is a snapshot of real listed companies, ETFs, representative bonds of real issuers and real institutions as
@@ -73,14 +76,16 @@ The nav is one entry per thing you do, each page with tabs; older links (`#/home
 | **Open Positions** | everything open in every book as spreadsheet grids: securities, futures, listed options, OTC trades, securities borrowed, repo, FX forwards, private-credit loans, commodity inventory; a **History** toggle brings back every fill, instruction, strategy and FX deal; Copy/CSV per table or for the page |
 | **Live Trades** | today: working instructions (cancel here), option packages working all-or-none, fills, OTC dealt today, open RFQs, settlements due or failing, calls to meet, a quick ticket |
 | **Groupings** | everything open grouped by the name it is on — SPY shares with SPY/SPX options and ES futures, a short with its loan and its calls, a bond with its repo and CDS, rates swaps together, each currency's forwards and swaps |
-| **Market Place** | where you trade, with the ticket beside the tables: **equities & ETFs** (sort by gainers/losers/volume/yield/vol, filter by sector and class; a row loads the ticket, *chart* opens the quick look), **bonds & rates** (curve, history, spreads, the bond universe), **foreign exchange** (see below), **commodities** (spot, curve shape, inventories, reports; the front month loads the ticket). Sandbox saves force the regime here. |
+| **Market Place** | where you trade, with the ticket beside the tables. Six tabs: **equities & ETFs** (500+ stocks, 127 ETFs, 79 ADRs, REITs, preferreds), **bonds & rates** (the Treasury ladder from 3-month bills to the 30-year and STRIPS, 130 corporates, 20 USD sovereigns, munis, agencies), **FX** (18 currencies and the dollar index), **commodities**, **crypto** (28 coins and stablecoins, crypto futures, live 24/7) and **indices & vol** (SPX/NDX/RUT/DJIA levels, the VIX and DXY, every futures term structure). Equities: sort by gainers/losers/volume/yield/vol, filter by sector and class; a row loads the ticket, *chart* opens the quick look), **bonds & rates** (curve, history, spreads, the bond universe), **foreign exchange** (see below), **commodities** (spot, curve shape, inventories, reports; the front month loads the ticket). Sandbox saves force the regime here. |
 | **Options** | the chain and ticket, strategies, positions & Greeks, expirations, exercise, vol surface, margin; a ticker box jumps to any underlying's chain |
-| **Futures** | every listed contract on every underlying (index, note, 21 commodities) with notional, margin and expiry; your futures with variation margin; the ticket; calendar spreads; physical delivery, inventory and deliveries |
-| **OTC Derivatives** | RFQ to six dealers: swaps, FRAs, caps/floors, swaptions, cross-currency, TRS, CDS, commodity swaps, and — new — **OTC equity options** (any strike/expiry on any name or SPX), **FX options**, **equity forwards**, **commodity forwards** and dealer **FX forwards**; a product finder (“fx option”, “forward”) picks the product; blotter, risk, counterparties, ISDA/CSA, upcoming |
+| **Futures** | every listed contract on every underlying (ES/NQ/RTY/YM, ZT/ZF/ZN/ZB/SR3, VX, DX, BTC/ETH, 21 commodities) with notional, margin and expiry; your futures with variation margin; the ticket; calendar spreads; physical delivery, inventory and deliveries |
+| **OTC Derivatives** | RFQ to seven dealers, 28 products: swaps, OIS, FRAs, caps/floors, swaptions, inflation swaps, cross-currency, FX forwards, NDFs, FX swaps, FX options, TRS, dividend/variance/volatility swaps, barrier and digital options, CDS on 150+ issuers and sovereigns plus CDX/iTraxx indices, commodity swaps, forwards and Asian options, crypto perpetuals, and three structured notes (principal-protected, reverse convertible, autocallable); every request takes a #tag — **OTC equity options** (any strike/expiry on any name or SPX), **FX options**, **equity forwards**, **commodity forwards** and dealer **FX forwards**; a product finder (“fx option”, “forward”) picks the product; blotter, risk, counterparties, ISDA/CSA, upcoming |
 | **Security & Credit Lending** | securities lending (locate → borrow → short), repo, collateral & prime brokerage, and **private credit**: a monthly pipeline of loans to sponsor-backed private companies (first lien, unitranche, second lien, mezzanine; OID, spread, covenants, leverage), commit from $1m, quarterly floating coupons, daily marks off a loan-market spread, rating migration, covenant amendments, defaults and workouts, secondary sales at a bid |
 | **Risk** | VaR, expected shortfall, stress, liquidity, limits, history |
 | **Accounting** | general ledger and balance sheet, settlements & custody, cash & treasury (cash ledgers, liquidity projection, movements), audit trail |
 | **Calculations** | the strategy playbook: 60 ready-made packages, each with what you are trading in one sentence, why, when it fits and the risk in words (protective puts at several strikes, tail hedge, collars incl. zero-cost, put-spread hedge, protected shorts, short collar, call-spread hedge, covered and partial covered calls, cash-secured put, bull/bear call and put spreads, straddles, strangles, iron condor, synthetic long/short/protected TRS, core-plus-overlay, delta-neutral TRS, long/short/protected futures, relative value long/short and protected). Pick one, set underlying, units, tenor and per-leg strikes, **preview** every leg off today's quotes with Greeks, margin, max gain/loss, breakevens and the payoff chart, then **execute** the whole package in one click |
+| **Groupings** (by #tag) | a second tab: every fill, working instruction, OTC trade and FX deal that carries the same #tag, with its P&L — the tag is typed on any ticket, FX deal, OTC request; playbook strategies tag their legs |
+| **What you can trade** | the master checklist, item by item: built, partial (with the simplification named) or not built |
 | **Settings, Glossary** | presets per page: the ticket's settlement currency, the calculations defaults, the Market Place tab and sort, dark or light theme, and — for a career — this save's update time and timezone; every term the screens use |
 
 **Every ticket has a currency.** *Settle in* names the currency that pays for a buy or receives a sale;
@@ -144,6 +149,10 @@ start without `--key`.
 | Daily closes: stocks, ETFs, ADRs, REITs, preferreds | Yahoo Finance's public quote endpoints (`query2.finance.yahoo.com`, the `spark` and `chart` JSON; no key, browser-style user agent) | career saves: every session; the universe snapshot: `tools/refresh_universe.py` |
 | Treasury yields (13-week bill, 5, 10 and 30 years) | Yahoo (`^IRX`, `^FVX`, `^TNX`, `^TYX`) | every session |
 | Commodity front months, FX | Yahoo (`CL=F`, `GC=F`, `ZC=F` …; `EURUSD=X`, `JPY=X` …) | every session |
+| Live quotes (the live view, live tickets, live FX deals) | the same Yahoo `spark` endpoint's metadata: regular-session price and time, up to 15 minutes delayed on most exchanges; cached one minute in memory, never written to disk | career saves: whenever a page or ticket asks |
+| Crypto spot (28 coins, stablecoins) | Yahoo (`BTC-USD`, `ETH-USD` …); circulating supply is an approximate table for market-cap tiers | career saves: every session, and live around the clock |
+| The dollar index and the VIX | Yahoo `DX-Y.NYB` and `^VIX` | every session (DX and VX futures ride them) |
+| 18 currencies | Yahoo (`SEK=X`, `MXN=X`, `BRL=X`, `CNH=X`, `KRW=X`, `INR=X` …) | every session |
 | Shares outstanding, fundamentals, sector | SEC EDGAR company facts (`data.sec.gov`, with the required user agent) | the universe snapshot only |
 | CPI, core CPI, unemployment, payrolls, GDP, retail sales, core PCE, the Fed's target range | FRED, the St. Louis Fed's public CSV endpoint (`fred.stlouisfed.org/graph/fredgraph.csv`; no key) | career saves: stored when the save is made, refreshed every six hours |
 | Headlines | Yahoo Finance news search for the market and the names in your books; the Federal Reserve's press-release feed | career saves: fetched when each session is processed, stored in the save |
@@ -476,10 +485,15 @@ POST /api/worlds/{w}/portfolios/{p}/fx/spot {buy_ccy, sell_ccy, amount, amount_c
 GET  /api/worlds/{w}/fx                           (every currency vs USD: quote, carry, vol, forward points, today's drivers, history, cross rates)
 GET  /api/worlds/{w}/portfolios/{p}/playbook      POST .../playbook/preview | execute {key, params:{underlying, other, units, tenor_months, strikes:{legIndex: pct|strike}}}
 GET  /api/worlds/{w}/portfolios/{p}/private-credit   POST .../private-credit/commit {deal_id, amount}   POST .../private-credit/sell {loan_id, amount}
-POST /api/worlds {..., market_source: SIMULATED|REAL}      GET /api/worlds/{w} → market_source, real_market {latest_close, next_session, waiting}, trading_window {open, opens_at|closes_at, reason}
-POST /api/worlds/{w}/clock {update_time, timezone}         (career saves; a real-market save must update at 16:15 New York or later)
-POST .../orders {..., settle_ccy}                           (pay for a buy with, or receive a sale in, another currency: the FX spot is dealt alongside)
-     career saves refuse trading and dealing commands from 09:30 New York until the update (409 with the reason); cancels are always accepted
+POST /api/worlds {..., capital}                                (any amount up to 1e12 for any job; blank = the job's standard)
+GET  /api/worlds/{w}/portfolios/{p}/tags                      (every #tag: fills, working instructions, OTC trades, FX deals, P&L)
+POST .../orders {..., tag} · .../fx/spot {..., tag} · .../fx/forward {..., tag} · .../otc/rfq {product, params:{..., tag}}
+POST /api/worlds {..., market_source: SIMULATED|REAL, lock_session}   GET /api/worlds/{w} → market_source, real_market {latest_close, next_session, waiting}, trading_window {open, lock, session_running, reason}, live {available, instruction_session}
+POST /api/worlds/{w}/clock {update_time, timezone, lock_session}      (career saves; a real-market save must update at 16:00 New York or later)
+GET  /api/worlds/{w}/live?ids=SPY,NVDA,CLZ26                 (latest real quotes next to the save's last close; without ids: the index ETFs and everything held)
+POST .../orders {..., settle_ccy, execution: LIVE|NEXT_UPDATE}   (LIVE fills now at the latest quote and returns the trade; the FX spot for another settlement currency is dealt alongside, live too)
+POST .../fx/spot {..., execution: LIVE}                       (a spot deal at the pair's live quote)
+     with the session lock on, career saves refuse trading and dealing commands from 09:30 New York until the update (409 with the reason); cancels are always accepted
 POST /api/worlds/{w}/force-regime {regime}   (sandbox)
 GET  /api/worlds/{w}/options                      GET  /api/worlds/{w}/options/{underlying}/chain?expiry= | surface   GET .../options/{contract}/contract
 GET  /api/worlds/{w}/portfolios/{p}/options       POST .../options/exercise {contract_id, quantity}

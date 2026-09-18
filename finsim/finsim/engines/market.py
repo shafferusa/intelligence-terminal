@@ -28,7 +28,9 @@ from typing import Dict, List, Optional, Tuple
 from ..calendar import BusinessCalendar
 from ..domain.models import Bar, Security, YieldCurve
 from ..money import D, money, price as qprice
-from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel
+from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel, FINANCIAL_SOURCES
+from .fx_market import dollar_index
+from .vol import is_index as _opt_is_index, index_source as _opt_index_source
 from .lending_market import LendingMarket
 from .fx_market import FXModel
 from .counterparties import DealerModel
@@ -95,6 +97,10 @@ SECTOR_VOL = {
     "Technology": 0.010, "Financials": 0.008, "Healthcare": 0.007, "Energy": 0.012,
     "Consumer": 0.006, "Industrials": 0.007, "Utilities": 0.005, "Real Estate": 0.008,
     "Materials": 0.009, "Communications": 0.006, "Index": 0.0, "Government": 0.0,
+    # GICS names as the snapshot spells them, and the ETF / crypto groups
+    "Information Technology": 0.010, "Health Care": 0.007, "Consumer Discretionary": 0.007, "Consumer Staples": 0.005,
+    "Communication Services": 0.007, "Crypto": 0.022, "International": 0.006, "Thematic": 0.010, "Factor": 0.003,
+    "Credit": 0.002, "Commodity": 0.008, "Leveraged": 0.0, "Volatility": 0.0, "Currency": 0.0,
 }
 
 # ticker, name, asset_class, sector, country, ccy, price, beta, idio vol, ADV, spread bps, tier, div yield, shares (mm)
@@ -115,7 +121,12 @@ SHARES_FALLBACK_M = {"GOOGL": 12_100.0, "META": 2_520.0, "RIVN": 1_210.0, "BRK-B
                      # expansion: foreign filers (no XBRL company facts) and ETFs, approximate units outstanding
                      "ASML": 393.0, "NVO": 4_460.0, "BABA": 2_390.0, "SAP": 1_170.0, "SHEL": 3_000.0, "SHOP": 1_300.0, "SPOT": 200.0, "ETN": 395.0, "CB": 400.0,
                      "IWM": 300.0, "DIA": 200.0, "XLF": 1_500.0, "XLE": 300.0, "XLK": 400.0, "GLD": 300.0, "SLV": 500.0, "USO": 80.0, "VNQ": 400.0,
-                     "EEM": 600.0, "EFA": 2_000.0, "LQD": 1_000.0, "IEF": 300.0, "BND": 2_000.0}
+                     "EEM": 600.0, "EFA": 2_000.0, "LQD": 1_000.0, "IEF": 300.0, "BND": 2_000.0,
+                     # multi-class filers and foreign issuers without a dei share count in EDGAR
+                     "PLTR": 2_350.0, "SHOP": 1_300.0, "DDOG": 350.0, "NET": 345.0, "TEAM": 262.0, "DELL": 700.0, "OKTA": 175.0, "PATH": 550.0, "APP": 340.0,
+                     "MSTR": 280.0, "XYZ": 620.0, "CRWV": 490.0, "ASTS": 350.0, "RDDT": 180.0, "GOOG": 5_500.0, "EA": 250.0, "RBLX": 680.0, "SNAP": 1_700.0,
+                     "PINS": 680.0, "NWSA": 570.0, "TKO": 170.0, "ROKU": 145.0, "DUOL": 45.0, "ABNB": 630.0, "LEN": 260.0, "EXPE": 125.0, "DASH": 425.0,
+                     "RL": 62.0, "CVNA": 215.0, "W": 125.0, "CHWY": 410.0, "GRAB": 4_000.0, "CPNG": 1_800.0, "PTON": 390.0, "STZ": 175.0, "TAP": 200.0, "HRL": 550.0}
 
 
 def _adjusted_beta(raw: float) -> float:
@@ -142,19 +153,42 @@ def _spread_bps(rec: Dict, tier: str) -> float:
         return 1.0
     if rec["asset_class"] == "PREFERRED":
         return 20.0
+    if rec["asset_class"] == "CRYPTO":
+        return {"LARGE": 4.0, "MID": 12.0, "SMALL": 40.0}[tier]
+    if rec["asset_class"] == "INDEX":
+        return 0.0
     return {"LARGE": 2.0, "MID": 6.0, "SMALL": 30.0}[tier]
 
 
-# (ticker, name, asset_class, sector, country, ccy, price, beta, sigma, adv, spread_bps, tier, dividend_yield, shares in millions)
+def _index_rows(equities: List[Dict], fx: Dict[str, float], indices: Optional[Dict] = None) -> List[Dict]:
+    """The cash indices the futures ride (the dollar index, the VIX): the snapshot's levels when it carries them, else derived."""
+    have = {r["ticker"] for r in equities}
+    idx = indices or {}
+    out = []
+    if "DXY" not in have:
+        lvl = (idx.get("DXY") or {}).get("price") or dollar_index({**fx, "SEK": fx.get("SEK") or 1 / 9.5}) or 100.0
+        out.append({"ticker": "DXY", "name": "U.S. Dollar Index", "asset_class": "INDEX", "sector": "Index", "country": "US", "price": round(lvl, 3),
+                    "beta": -0.2, "sigma_annual": (idx.get("DXY") or {}).get("sigma_annual") or 0.07, "adv": 0, "dividend_yield": 0.0, "shares_outstanding": 0, "yahoo": "DX-Y.NYB"})
+    if "VIX" not in have:
+        out.append({"ticker": "VIX", "name": "Cboe Volatility Index", "asset_class": "INDEX", "sector": "Index", "country": "US", "price": (idx.get("VIX") or {}).get("price") or 18.0,
+                    "beta": -3.0, "sigma_annual": (idx.get("VIX") or {}).get("sigma_annual") or 0.9, "adv": 0, "dividend_yield": 0.0, "shares_outstanding": 0, "yahoo": "^VIX"})
+    return out
+
+
+# (ticker, name, asset_class, sector, country, ccy, price, beta, sigma, adv, spread_bps, tier, dividend_yield, shares in millions, yahoo symbol)
 EQUITY_SEED = []
-for _r in UNIVERSE["equities"]:
+for _r in UNIVERSE["equities"] + _index_rows(UNIVERSE["equities"], UNIVERSE.get("fx", {}), UNIVERSE.get("indices")):
+    if float(_r.get("price") or 0) < 0.01:
+        continue                                    # prices are kept to four decimals: sub-cent coins (SHIB, PEPE) cannot be quoted
     _shares = SHARES_FALLBACK_M.get(_r["ticker"]) or float(_r.get("shares_outstanding") or 0) / 1e6 or 300.0
     _r = dict(_r, shares_outstanding=_shares * 1e6)
     if _r["country"] != "US":            # foreign filers report in their home currency: keep prices, drop EDGAR statement lines
         _r = {k: v for k, v in _r.items() if k not in ("revenue", "net_income", "eps", "total_debt", "cash", "equity", "cfo", "capex")}
     _t = _tier(_r)
-    EQUITY_SEED.append((_r["ticker"], _r["name"], _r["asset_class"], _r["sector"], _r["country"], "USD", float(_r["price"]), _adjusted_beta(float(_r["beta"])),
-                        max(0.03, float(_r["sigma_annual"])), int(_r["adv"]), _spread_bps(_r, _t), _t, float(_r.get("dividend_yield", 0.0)), _shares))
+    EQUITY_SEED.append((_r["ticker"], _r["name"], _r["asset_class"], _r["sector"], _r["country"], "USD", float(_r["price"]),
+                        _adjusted_beta(float(_r["beta"])) if _r["asset_class"] not in ("INDEX", "CRYPTO") else float(_r["beta"]),
+                        max(0.002 if _r.get("sector") == "Stablecoin" else 0.03, float(_r["sigma_annual"])), int(_r["adv"]), _spread_bps(_r, _t), _t,
+                        float(_r.get("dividend_yield", 0.0)), _shares, _r.get("yahoo")))
 REAL_FUNDAMENTALS = {r["ticker"]: r for r in UNIVERSE["equities"] if r["country"] == "US"}
 from .commodities import apply_snapshot as _apply_commodity_snapshot      # noqa: E402
 from .fx_market import apply_snapshot as _apply_fx_snapshot               # noqa: E402
@@ -172,7 +206,17 @@ def _coupon(y: float) -> float:
 
 
 # id, name, asset_class, issuer, coupon, years to maturity from start, rating, spread bps, ADV face, sector
+def _ust(id_: str, yrs: float, y: float, adv: int, label: str = "") -> tuple:
+    c = 0.0 if yrs < 1.5 and label == "bill" else (0.0 if label == "strip" else _coupon(y))
+    kind = "US Treasury bill" if label == "bill" else "US Treasury STRIPS (zero coupon)" if label == "strip" else f"US Treasury {c * 100:.3f}%"
+    return (id_, f"{kind} {yrs:g}Y" if yrs >= 1 else f"{kind} {int(round(yrs * 12))}M", "GOVT_BOND", "United States Treasury", c, yrs, "AAA", 0.0, adv, "Government")
+
+
+_Y5, _Y10, _Y30, _BILL = float(_RATES.get("y5", 0.04)), INITIAL_10Y, INITIAL_LONG_RATE, INITIAL_POLICY_RATE
 BOND_SEED = [
+    _ust("UST-3M", 0.25, _BILL, 8_000_000_000, "bill"), _ust("UST-6M", 0.5, _BILL, 6_000_000_000, "bill"), _ust("UST-1Y", 1.0, _BILL, 4_000_000_000, "bill"),
+    _ust("UST-3Y", 3.0, _Y5 - 0.0005, 3_500_000_000), _ust("UST-7Y", 7.0, (_Y5 + _Y10) / 2, 2_500_000_000), _ust("UST-20Y", 20.0, (_Y10 + _Y30) / 2, 1_000_000_000),
+    _ust("STRIP-10Y", 10.0, _Y10, 400_000_000, "strip"), _ust("STRIP-30Y", 30.0, _Y30, 200_000_000, "strip"),
     ("UST-2Y", f"US Treasury {_coupon(float(_RATES.get('y5', 0.04)) - 0.00125) * 100:.3f}% 2Y", "GOVT_BOND", "United States Treasury", _coupon(float(_RATES.get("y5", 0.04)) - 0.00125), 2.0, "AAA", 0.0, 4_000_000_000, "Government"),
     ("UST-5Y", f"US Treasury {_coupon(float(_RATES.get('y5', 0.04))) * 100:.3f}% 5Y", "GOVT_BOND", "United States Treasury", _coupon(float(_RATES.get("y5", 0.04))), 5.0, "AAA", 0.0, 3_000_000_000, "Government"),
     ("UST-10Y", f"US Treasury {_coupon(INITIAL_10Y) * 100:.3f}% 10Y", "GOVT_BOND", "United States Treasury", _coupon(INITIAL_10Y), 10.0, "AAA", 0.0, 2_500_000_000, "Government"),
@@ -200,7 +244,7 @@ def build_universe(start: date, seed: int) -> Dict[str, Security]:
     rng = random.Random(f"{seed}|universe")
     secs: Dict[str, Security] = {}
     n = 100
-    for (t, name, ac, sector, country, ccy, px, beta, sig, adv, spr, tier, dy, shares) in EQUITY_SEED:
+    for (t, name, ac, sector, country, ccy, px, beta, sig, adv, spr, tier, dy, shares, yahoo) in EQUITY_SEED:
         n += 1
         dps = money(D(px) * D(dy) / 4) if dy > 0 else D("0")
         # Simple fundamentals so the security page can show real ratios.
@@ -229,20 +273,26 @@ def build_universe(start: date, seed: int) -> Dict[str, Security]:
                 "free_cash_flow": float(real.get("cfo", 0.0) or 0.0) - float(real.get("capex", 0.0) or 0.0) if real.get("cfo") is not None else round(eps * so, 0),
                 "fiscal_year_end": real.get("fiscal_year_end"), "as_of": UNIVERSE_AS_OF, "source": "SEC EDGAR company facts",
             }
-        if ac in ("ETF",):
+        if ac in ("ETF", "CRYPTO", "INDEX"):
             fundamentals = {}
         secs[t] = Security(
-            id=t, name=name, asset_class=ac, market="US_EQUITY", currency=ccy, country=country, sector=sector,
-            isin=_isin(n), cusip=_cusip(n * 7919), shares_outstanding=int(shares * 1e6), dividend_yield=dy,
+            id=t, name=name, asset_class=ac, market={"CRYPTO": "CRYPTO", "INDEX": "INDEX"}.get(ac, "US_EQUITY"), currency=ccy, country=country, sector=sector,
+            isin=_isin(n), cusip=_cusip(n * 7919), shares_outstanding=int(shares * 1e6) if ac != "INDEX" else None, dividend_yield=dy,
             dividend_per_share=dps, div_anchor_month=rng.randint(0, 2), div_day_bd=rng.randint(3, 15), beta=beta,
-            sigma_annual=sig, adv=adv, spread_bps=spr, liquidity_tier=tier, fundamentals=fundamentals,
+            sigma_annual=sig, adv=adv, spread_bps=spr, liquidity_tier=tier, fundamentals=fundamentals, yahoo=yahoo,
+            qty_step=Decimal("0.0001") if ac == "CRYPTO" else Decimal("1"), unit="coin" if ac == "CRYPTO" else "",
         )
     for (bid, name, ac, issuer, cpn, yrs, rating, spr, adv, sector) in BOND_SEED:
         n += 1
         # Seasoned issues: issued four months before the world starts (on the 15th), so accrued
         # interest exists on day one and the first coupon arrives about two months in.
-        issue = _add_months(date(start.year, start.month, 15), -4)
-        mat = date(issue.year + int(round(yrs)), issue.month, issue.day)
+        if yrs < 1.5:
+            # bills and short notes: issued on the 15th of the start month, maturing `yrs` later
+            issue = date(start.year, start.month, 15)
+            mat = _add_months(issue, max(1, int(round(yrs * 12))))
+        else:
+            issue = _add_months(date(start.year, start.month, 15), -4)
+            mat = date(issue.year + int(round(yrs)), issue.month, issue.day)
         secs[bid] = Security(
             id=bid, name=name, asset_class=ac, market="US_TREASURY" if ac == "GOVT_BOND" else "US_CORP_BOND",
             currency="USD", country="US", sector=sector, isin=_isin(n), cusip=_cusip(n * 7919),
@@ -303,7 +353,7 @@ class MarketEngine:
         self.fx = FXModel(seed)
         self.vol = VolSurfaceModel(seed)
         for under in optionable_underlyings(securities):
-            self.vol.init_underlying(under, structural_vol(securities, under), is_index=(under == OPT_INDEX_ID))
+            self.vol.init_underlying(under, structural_vol(securities, under), is_index=_opt_is_index(under))
         self._vol_payload: Dict[str, Dict] = {}
         self.dealers = DealerModel(seed)
         self._dealer_payload: Dict[str, Dict] = {}
@@ -366,6 +416,9 @@ class MarketEngine:
         """List new contract months and flag expired ones. Deterministic, safe to call in replay."""
         added = []
         for spec in COMMODITY_SPECS:
+            src = FINANCIAL_SOURCES.get(spec.code, (None, None))[0]
+            if spec.code in FINANCIAL_SOURCES and src and src not in self.securities:
+                continue                                   # a contract whose source this universe lacks (an older snapshot) is not listed
             for (y, m) in self.commodities.listed_months(spec, d):
                 from .commodities import contract_id
                 cid = contract_id(spec.code, y, m)
@@ -501,9 +554,9 @@ class MarketEngine:
                         pin[sid] = clean / bars[sid].close
                     bars[sid] = Bar(d.isoformat(), qprice(pc), qprice(max(pc, clean)), qprice(min(pc, clean)), clean, bars[sid].volume, qprice(clean - half), qprice(clean + half))
                     self._prev_close[sid] = clean
-        # financial futures were stepped off the unpinned SPY close and 10-year price: move them with their source
-        for code, src in (("ES", "SPY"), ("ZN", "UST-10Y")):
-            fD = pin.get(src)
+        # financial futures were stepped off their unpinned sources: move them with the source
+        for code, (src, _kind) in FINANCIAL_SOURCES.items():
+            fD = pin.get(src) if src else None
             if fD is None or fD == 1 or code not in cpayload:
                 continue
             f = float(fD)
@@ -650,8 +703,8 @@ class MarketEngine:
             level, slope, curv = self._curve_params({k: carry(v, last.date) for k, v in rates.items()}, s.curv)
             self.state = MarketState(s.date, s.regime, level, slope, curv, s.ig_spread, s.hy_spread, s.mkt_factor, s.sector_factors)
         # financial futures ride their sources, date by date
-        for code, src in (("ES", "SPY"), ("ZN", "UST-10Y")):
-            fmap = factors.get(src)
+        for code, (src, _kind) in FINANCIAL_SOURCES.items():
+            fmap = factors.get(src) if src else None
             if not fmap or code not in self.commodities.spot_history:
                 continue
             self.commodities.spot_history[code] = [(dd, v * float(fmap.get(dd, 1))) for dd, v in self.commodities.spot_history[code]]
@@ -724,9 +777,9 @@ class MarketEngine:
                     clean = BondPricer.clean_price_from_curve(sec, curve, asof)
                     factors[sid] = qprice(clean) / self.history[sid][-1].close
                     self._rescale_history(sid, factors[sid])
-        # financial futures ride their source: ES on the SPY level, ZN on the 10-year note's clean price
-        for code, src in (("ES", "SPY"), ("ZN", "UST-10Y")):
-            fD = factors.get(src)
+        # financial futures ride their source (ES on SPY, ZN on the 10-year note, BTC on the coin, VX on the VIX ...)
+        for code, (src, _kind) in FINANCIAL_SOURCES.items():
+            fD = factors.get(src) if src else None
             if fD is None or fD == 1 or code not in self.commodities.spot_history:
                 continue
             f = float(fD)
@@ -816,8 +869,9 @@ class MarketEngine:
 
         bars: Dict[str, Bar] = {}
         from .pricing import BondPricer  # local import to avoid cycle
+        weekend_days = max(1, (d - prev_bd).days)
         for t, sec in list(self.securities.items()):
-            if sec.is_future or sec.is_option or sec.delisted or sec.asset_class == "PHYSICAL":
+            if sec.is_future or sec.is_option or sec.delisted or sec.asset_class in ("PHYSICAL", "INDEX"):
                 continue
             if sec.is_bond and sec.defaulted:
                 rp = qprice(D(repr(sec.recovery_rate * 100)))
@@ -835,9 +889,13 @@ class MarketEngine:
                 self._prev_close[t] = qprice(clean)
                 continue
             pc = self._prev_close[t]
-            idio = sec.sigma_annual * R.idio_mult * math.sqrt(dt) * rng.gauss(0, 1)
-            sect = sectors.get(sec.sector, 0.0)
+            dt_s = dt * (weekend_days if sec.asset_class == "CRYPTO" else 1)        # coins trade every calendar day: Monday carries the weekend
+            idio = sec.sigma_annual * R.idio_mult * math.sqrt(dt_s) * rng.gauss(0, 1)
+            sect = sectors.get(sec.sector, 0.0) * (math.sqrt(weekend_days) if sec.asset_class == "CRYPTO" else 1.0)
             r = sec.beta * mkt + sect + idio
+            if sec.sector == "Stablecoin":
+                # dollar-pegged tokens: pulled hard back to par with a few basis points of noise
+                r = 0.5 * math.log(1.0 / max(1e-6, float(pc))) + 0.0004 * rng.gauss(0, 1)
             if sec.asset_class == "ETF" and sec.sector == "Government":
                 # Short treasury ETF: tiny duration, carries at the short rate.
                 r = curve.rates[1] * dt - 0.4 * (level - prev.level) + idio
@@ -859,14 +917,34 @@ class MarketEngine:
                           qprice(max(0.01, close_f - half)), qprice(close_f + half))
             self._prev_close[t] = close
 
-        # commodities & financial futures
+        # FX, then the cash indices that ride it (the dollar index) and the vol index, then commodities & financial futures
         self.ensure_listings(d)
         prev_bd = date.fromisoformat(prev.date)
-        spx = bars["SPY"]
-        ust = bars["UST-10Y"]
-        cpayload, cnews = self.commodities.step(d, prev_bd, R.growth, mkt, level, level - prev.level, float(spx.close),
-                                                self.securities["SPY"].dividend_yield, float(ust.close), self.securities["UST-10Y"].coupon,
-                                                R.depth_mult, R.spread_mult)
+        self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
+        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPY")) * (1 + macro_out["vol_bump"])
+        for idx, lvl in (("DXY", dollar_index(self.fx.spot)), ("VIX", vix)):
+            if idx in self.securities and lvl:
+                pc = self._prev_close.get(idx, D(repr(lvl)))
+                lv = qprice(D(repr(lvl)))
+                bars[idx] = Bar(d.isoformat(), qprice(pc), qprice(max(pc, lv)), qprice(min(pc, lv)), lv, 0, lv, lv)
+                self._prev_close[idx] = lv
+        from .pricing import interp_rate as _ir
+        def _fwd(t1: float, t2: float) -> float:
+            z1, z2 = _ir(curve, max(t1, 0.02)), _ir(curve, max(t2, 0.04))
+            return ((1 + z2) ** t2 / (1 + z1) ** t1) ** (1.0 / max(t2 - t1, 0.01)) - 1
+        financials: Dict[str, Dict] = {}
+        for code, (src, kind) in FINANCIAL_SOURCES.items():
+            if kind == "rate":
+                financials[code] = {"S": 100.0 - 100.0 * _fwd(0.0, 0.25), "q": 0.0, "fwd": _fwd}
+            elif src in bars:
+                sb = bars[src]
+                ssec = self.securities[src]
+                q = (ssec.coupon or 0.0) / max(0.5, float(sb.close) / 100) if ssec.is_bond else float(ssec.dividend_yield or 0.0)
+                if code == "DX":                                  # the dollar index carries the basket's rates against the dollar's
+                    from .fx_market import DXY_WEIGHTS
+                    q = sum(abs(wgt) * float(self.fx.rate.get(c, 0.0)) for c, wgt in DXY_WEIGHTS.items())
+                financials[code] = {"S": float(sb.close), "q": q}
+        cpayload, cnews = self.commodities.step(d, prev_bd, R.growth, mkt, level, level - prev.level, financials, R.depth_mult, R.spread_mult)
         spot_shapes = {}
         for code in cpayload:
             rr = random.Random(f"{self.seed}|shape|{code}|{d.isoformat()}")
@@ -888,7 +966,6 @@ class MarketEngine:
             self._prev_close[cid] = b.close
         lpayload, lnews = self.lending.step(d, self.securities, regime, self.realized_vol, self.player_on_loan, max(1, (d - prev_bd).days))
         self._lending_payload = lpayload
-        self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
         self._dealer_payload, dnews = self.dealers.step(d, regime, hy, mkt)
         self.day_news = (cnews + lnews + dnews + macro_out["news"] + cnews_corp) if not real_mode else macro_out["news"]   # real headlines come from the wire
         real = self.real_targets(d) if self.real_history is not None else None
@@ -904,14 +981,15 @@ class MarketEngine:
             self.history[t].append(b)
         self.curves.append(curve)
         prev_vix = self.vol_index()
-        vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPY")) * (1 + macro_out["vol_bump"])
+        if "VIX" in bars:                                   # a pinned session (real ^VIX) is the vol index everyone sees
+            vix = float(bars["VIX"].close)
         self.vol_index_history.append((d.isoformat(), round(vix, 2)))
         vchg = (vix / prev_vix - 1) if prev_vix else 0.0
         self._vol_payload = {}
         for under in list(self.vol.state):
-            src = OPT_INDEX_SOURCE if under == OPT_INDEX_ID else under
+            src = _opt_index_source(under)
             self._vol_payload[under] = self.vol.step(d, under, structural_vol(self.securities, under), self.realized_vol(src), vix, vchg, regime,
-                                                     is_index=(under == OPT_INDEX_ID))
+                                                     is_index=_opt_is_index(under))
         if regime_change or not self.regime_history:
             self.regime_history.append((d.isoformat(), regime))
         return bars, curve, regime_change

@@ -75,6 +75,8 @@ class MacroModel:
         self.history: List[Dict] = []
         self.releases: List[Dict] = []          # {date, kind, consensus, actual, surprise, note}
         self.went_live = False                  # set on the first live step (or on ingest of a live close)
+        self.cpi_index = 100.0                  # a price index compounding the model's inflation daily (inflation swaps settle on it)
+        self._cpi_date = None
         self.neutral = NEUTRAL_RATE             # real neutral rate r*; calibrated at go-live (see step)
         self.earnings: List[Dict] = []          # {date, security_id, eps_consensus, eps_actual, surprise, revenue_growth, dividend_change}
         self.issuers: Dict[str, IssuerState] = {}
@@ -335,6 +337,10 @@ class MacroModel:
     # ------------------------------------------------------------------ apply / ingest
     def _apply_payload(self, d: date, payload: Dict) -> None:
         st = payload["state"]
+        if self._cpi_date:
+            days = max(0, (d - date.fromisoformat(self._cpi_date)).days)
+            self.cpi_index *= (1 + float(st.get("inflation", self.state.inflation)) / 100.0) ** (days / 365.0)
+        self._cpi_date = d.isoformat()
         self.history.append({"date": d.isoformat(), **{k: v for k, v in st.items() if k not in ("issuers",)}})
         for r in payload["releases"]:
             self.releases.append(r)

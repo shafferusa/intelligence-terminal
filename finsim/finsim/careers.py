@@ -16,7 +16,8 @@ from typing import Dict, List, Optional
 from .domain.events import E, Event
 from .money import D, money, ZERO
 
-ALL_CLASSES = {"EQUITY", "GOVT_BOND", "CORP_BOND", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "EQUITY_INDEX", "RATES", "OPTION", "OTC", "PHYSICAL"}
+ALL_CLASSES = {"EQUITY", "GOVT_BOND", "CORP_BOND", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "EQUITY_INDEX", "RATES", "OPTION", "OTC", "PHYSICAL",
+               "CRYPTO", "FX_INDEX", "VOLATILITY"}
 
 
 @dataclass(frozen=True)
@@ -43,7 +44,7 @@ JOBS: Dict[str, Job] = {
                              ("Analyst", "Associate PM", "Portfolio Manager", "Senior PM", "CIO")),
     "GLOBAL_MACRO": Job("GLOBAL_MACRO", "Global Macro Trader", "Rates, equity indices and commodities via futures and government bonds. Absolute return; "
                         "leverage allowed but drawdowns are watched closely.", D(250_000_000), None,
-                        frozenset({"GOVT_BOND", "EQUITY_INDEX", "RATES", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "OPTION", "OTC"}),
+                        frozenset({"GOVT_BOND", "EQUITY_INDEX", "RATES", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "OPTION", "OTC", "FX_INDEX", "VOLATILITY", "CRYPTO"}),
                         3.0, 0.30, 0.12, ("Junior Trader", "Trader", "Senior Trader", "Desk Head", "CIO")),
     "COMMODITY_TRADER": Job("COMMODITY_TRADER", "Commodity Trader", "Energy, metals, agriculture and livestock futures. Read inventories, curves and weather; "
                             "trade outrights, calendar and cross-commodity spreads.", D(100_000_000), None,

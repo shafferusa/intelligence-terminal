@@ -1,9 +1,12 @@
 """Trade engine for a once-per-day world.
 
-Orders entered by the player never execute immediately: they are instructions
-for the *next* daily update ("market-on-next-update"). During the update every
-working order is evaluated against that day's session bar (open/high/low/close,
-volume) with realistic liquidity:
+Orders entered by the player are instructions for the *next* daily update
+("market-on-next-update") — except a LIVE ticket in a save that tracks the real
+market, which fills immediately at the latest quote (engines/live.py) through the
+same fill logic. During the update every working order is evaluated against that
+day's session bar (open/high/low/close, volume) with realistic liquidity. An
+instruction entered while the session was already running (`execute_at` CLOSE)
+executes against the close instead of an open that had already printed:
 
   MARKET          fills at the open, crossing the spread and paying square-root
                   market impact scaled by volatility and participation
@@ -65,13 +68,14 @@ class TradingEngine:
 
     # ------------------------------------------------------------------ commands
     def enter_order(self, portfolio_id: str, security_id: str, side: str, quantity, order_type: str, limit_price, stop_price,
-                    time_in_force: str, strategy_tag: Optional[str], trail_pct: Optional[float] = None, condition: Optional[Dict] = None) -> Order:
+                    time_in_force: str, strategy_tag: Optional[str], trail_pct: Optional[float] = None, condition: Optional[Dict] = None,
+                    execute_at: str = "OPEN", execution: str = "NEXT_UPDATE") -> Order:
         from ..world import CommandError
         w = self.w
         pf = w.portfolio(portfolio_id)
         sec = w.security(security_id)
         side, order_type, tif = side.upper(), order_type.upper(), time_in_force.upper()
-        q = qqty(quantity)
+        q = D(str(quantity)).quantize(sec.qty_step) if sec.qty_step != 1 else qqty(quantity)
         lb = self._bar(sec)
         last = lb.close if lb else ZERO
         trail_level = None
@@ -80,7 +84,8 @@ class TradingEngine:
         base = {"portfolio_id": pf.id, "security_id": sec.id, "side": side, "order_type": order_type, "quantity": q,
                 "limit_price": qprice(limit_price) if limit_price is not None else None,
                 "stop_price": qprice(stop_price) if stop_price is not None else None, "time_in_force": tif, "strategy_tag": strategy_tag,
-                "trail_pct": float(trail_pct) if trail_pct else None, "trail_level": trail_level, "condition": self._norm_condition(condition)}
+                "trail_pct": float(trail_pct) if trail_pct else None, "trail_level": trail_level, "condition": self._norm_condition(condition),
+                "execute_at": "CLOSE" if str(execute_at).upper() == "CLOSE" else "OPEN", "execution": "LIVE" if str(execution).upper() == "LIVE" else "NEXT_UPDATE"}
         reason = self._validate(pf, sec, side, order_type, q, base["limit_price"], base["stop_price"], tif, base["trail_pct"], base["condition"], strategy_tag)
         if reason:
             w.emit(E.ORDER_REJECTED, {**base, "order_id": w.new_id("ORD"), "reason": reason}, portfolio_id=pf.id)
@@ -116,6 +121,8 @@ class TradingEngine:
             return "time in force must be DAY (good for the next session) or GTC"
         if q <= 0:
             return "quantity must be positive"
+        if sec.asset_class == "INDEX":
+            return f"{sec.id} is an index, not a security: trade its futures, options or an ETF that tracks it"
         if sec.lot_size > 1 and q % sec.lot_size != 0:
             return f"{sec.id} trades in multiples of {sec.lot_size:,} face"
         if order_type in ("LIMIT", "STOP_LIMIT", "TAKE_PROFIT") and (limit is None or limit <= 0):
@@ -237,6 +244,8 @@ class TradingEngine:
             return sec.asset_class
         if sec.asset_class == "PHYSICAL":
             return "PHYSICAL"
+        if sec.asset_class == "CRYPTO":
+            return "CRYPTO"
         return "EQUITY"
 
     @staticmethod
@@ -367,7 +376,7 @@ class TradingEngine:
         if remaining <= 0:
             return
         half = (bar.ask - bar.bid) / 2
-        session = "OPEN"
+        session = "CLOSE" if order.execute_at == "CLOSE" else "OPEN"     # entered mid-session: the open had already printed
         base: Optional[Decimal] = None
 
         # condition gate: evaluated at the close, executed at the close
@@ -386,9 +395,10 @@ class TradingEngine:
             session = "CLOSE"
 
         otype = order.order_type
+        ref_lo, ref_hi = (bar.close, bar.close) if session == "CLOSE" else (bar.low, bar.high)   # at the close only the close counts
         if otype == "TRAILING_STOP":
             level = order.trail_level
-            hit = (bar.low <= level) if order.side == "SELL" else (bar.high >= level)
+            hit = (ref_lo <= level) if order.side == "SELL" else (ref_hi >= level)
             if not hit:
                 new_level = qprice(bar.close * D(1 - order.trail_pct)) if order.side == "SELL" else qprice(bar.close * D(1 + order.trail_pct))
                 better = (new_level > level) if order.side == "SELL" else (new_level < level)
@@ -396,25 +406,27 @@ class TradingEngine:
                     w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "trail_level": new_level,
                                                     "note": f"trailing stop ratchets to {new_level}"}, cause_id=cause.id, portfolio_id=pf.id)
                 return
-            gapped = (bar.open <= level) if order.side == "SELL" else (bar.open >= level)
-            base = bar.open if gapped else level
+            ref_open = bar.close if session == "CLOSE" else bar.open
+            gapped = (ref_open <= level) if order.side == "SELL" else (ref_open >= level)
+            base = ref_open if gapped else level
             if not order.triggered:
                 w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "triggered": True,
                                                 "note": f"trailing stop {level} triggered"}, cause_id=cause.id, portfolio_id=pf.id)
         elif otype in ("STOP", "STOP_LIMIT"):
+            ref_open = bar.close if session == "CLOSE" else bar.open
             if not order.triggered:
-                hit = (bar.high >= order.stop_price) if order.side == "BUY" else (bar.low <= order.stop_price)
+                hit = (ref_hi >= order.stop_price) if order.side == "BUY" else (ref_lo <= order.stop_price)
                 if not hit:
                     return
                 w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "triggered": True,
                                                 "note": f"stop {order.stop_price} triggered"}, cause_id=cause.id, portfolio_id=pf.id)
-                gapped = (bar.open >= order.stop_price) if order.side == "BUY" else (bar.open <= order.stop_price)
-                base = bar.open if gapped else order.stop_price
+                gapped = (ref_open >= order.stop_price) if order.side == "BUY" else (ref_open <= order.stop_price)
+                base = ref_open if gapped else order.stop_price
             else:
-                base = bar.open
+                base = ref_open
             if otype == "STOP_LIMIT":
                 lim = order.limit_price
-                tradable = (bar.low <= lim) if order.side == "BUY" else (bar.high >= lim)
+                tradable = (ref_lo <= lim) if order.side == "BUY" else (ref_hi >= lim)
                 if not tradable or ((base > lim) if order.side == "BUY" else (base < lim)):
                     self._note(order, cause, "stop triggered but limit not reached")
                     return
@@ -438,17 +450,18 @@ class TradingEngine:
         self._fill(order, sec, bar, base, half, session, cause)
 
     def _fill(self, order: Order, sec: Security, bar: Bar, base: Decimal, half: Decimal, session: str, cause: Event,
-              forced: bool = False, note: str = "", fixed_price: Optional[Decimal] = None, commission_free: bool = False) -> Optional[Trade]:
+              forced: bool = False, note: str = "", fixed_price: Optional[Decimal] = None, commission_free: bool = False,
+              extra_detail: Optional[Dict] = None) -> Optional[Trade]:
         w = self.w
         pf = w.portfolios[order.portfolio_id]
         remaining = order.quantity - order.filled_quantity
         rng = random.Random(f"{w.seed}|exec|{order.id}|{w.current_date.isoformat()}")
         regime = w.market.regime()
         session_volume = max(1, int(bar.volume))
-        cap = qqty(D(session_volume) * D(PARTICIPATION_CAP))
+        cap = (D(session_volume) * D(PARTICIPATION_CAP)).quantize(sec.qty_step) if sec.qty_step != 1 else qqty(D(session_volume) * D(PARTICIPATION_CAP))
         if sec.lot_size > 1:
             cap = max(D(sec.lot_size), cap - (cap % sec.lot_size))
-        cap = max(D(1), cap)
+        cap = max(sec.qty_step, cap)
         fill_qty = min(remaining, cap) if not (forced or fixed_price is not None) else remaining
         if sec.is_bond:
             sigma_daily = 0.003
@@ -505,7 +518,7 @@ class TradingEngine:
                                  "reference_close": bar.close, "base_price": base, "spread_cost": spread_cost, "impact_cost": impact_cost,
                                  "impact_bps": round(impact_frac * 1e4, 2), "participation_of_adv": round(participation, 4),
                                  "session_volume": session_volume, "partial": bool(fill_qty < remaining), "regime": regime.name,
-                                 "forced": forced, "note": note, "contractual": fixed_price is not None},
+                                 "forced": forced, "note": note, "contractual": fixed_price is not None, **(extra_detail or {})},
         }
         ev = w.emit(E.TRADE_EXECUTED, payload, cause_id=cause.id, portfolio_id=pf.id)
         return pf.trades[tid]
@@ -549,8 +562,11 @@ class TradingEngine:
                   stop_price=D(p["stop_price"]) if p.get("stop_price") is not None else None, time_in_force=p["time_in_force"],
                   status=status, entered_date=ev.sim_date, strategy_tag=p.get("strategy_tag"), reason=p.get("reason") or p.get("system_reason"),
                   trail_pct=p.get("trail_pct"), trail_level=D(p["trail_level"]) if p.get("trail_level") is not None else None,
-                  condition=p.get("condition"))
-        o.history.append({"date": ev.sim_date, "note": "entered — executes at the next daily update" if status == "WORKING" else p.get("reason", "")})
+                  condition=p.get("condition"), execute_at=p.get("execute_at", "OPEN"), execution=p.get("execution", "NEXT_UPDATE"))
+        first = ("entered — executes now at the live quote" if o.execution == "LIVE"
+                 else "entered while the session runs — executes at its close at the next daily update" if o.execute_at == "CLOSE"
+                 else "entered — executes at the next daily update")
+        o.history.append({"date": ev.sim_date, "note": first if status == "WORKING" else p.get("reason", "")})
         return o
 
     def _h_order_entered(self, ev: Event) -> None:

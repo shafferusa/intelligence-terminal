@@ -6,7 +6,8 @@ it advances into is pinned to that day's real closes for equities, ETFs, ADRs, T
 months and FX. Everything the simulator derives from prices — bonds off the curve, options off the vol surface,
 futures off spot, OTC valuations, P&L — follows. Days the market has not closed yet cannot be advanced into.
 
-Source: Yahoo's spark endpoint (many symbols per request, daily closes), browser-style User-Agent as the project
+Source: Yahoo's spark endpoint (many symbols per request, daily closes; the same endpoint's metadata carries the
+latest quote, up to 15 minutes delayed, for the live view and live tickets), browser-style User-Agent as the project
 runbook allows for Yahoo. Standard library only. Results are cached under FINSIM_HOME so repeated advances and
 several saves share one fetch.
 """
@@ -28,7 +29,10 @@ RATE_SYMBOLS = {"bill_13w": "^IRX", "y5": "^FVX", "y10": "^TNX", "y30": "^TYX"}
 COMMODITY_SYMBOLS = {"CL": "CL=F", "BRN": "BZ=F", "NG": "NG=F", "RB": "RB=F", "HO": "HO=F", "GC": "GC=F", "SI": "SI=F", "HG": "HG=F", "PL": "PL=F", "PA": "PA=F",
                      "ALI": "ALI=F", "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "KC": "KC=F", "SB": "SB=F", "CT": "CT=F", "CC": "CC=F", "LE": "LE=F", "GF": "GF=F", "HE": "HE=F"}
 CENTS_QUOTED = {"ZC", "ZW", "ZS", "KC", "SB", "CT", "LE", "GF", "HE"}
-FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("JPY=X", True), "CHF": ("CHF=X", True), "CAD": ("CAD=X", True), "AUD": ("AUDUSD=X", False)}
+FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("JPY=X", True), "CHF": ("CHF=X", True), "CAD": ("CAD=X", True), "AUD": ("AUDUSD=X", False),
+              "NZD": ("NZDUSD=X", False), "SEK": ("SEK=X", True), "NOK": ("NOK=X", True), "MXN": ("MXN=X", True), "BRL": ("BRL=X", True), "CNH": ("CNH=X", True),
+              "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True)}
+INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX"}
 
 
 def _home() -> str:
@@ -38,12 +42,14 @@ def _home() -> str:
 class RealFeed:
     """Daily closes by symbol and date, with a disk cache. `equity_symbols` maps security id -> Yahoo symbol."""
 
-    def __init__(self, equity_symbols: Dict[str, str], cache_path: Optional[str] = None, fetch=None):
+    def __init__(self, equity_symbols: Dict[str, str], cache_path: Optional[str] = None, fetch=None, fetch_live=None):
         self.equities = dict(equity_symbols)
         self.cache_path = cache_path or os.path.join(_home(), "realfeed-cache.json")
         self.data: Dict[str, Dict[str, float]] = {}        # symbol -> {date: close}
         self.fetched_at: Dict[str, float] = {}             # symbol -> epoch of the last fetch
+        self.live_cache: Dict[str, Dict] = {}              # symbol -> latest quote (+ "fetched" epoch), memory only
         self._fetch = fetch or self._spark
+        self._fetch_live = fetch_live or self._spark_live
         self._load_cache()
 
     # ------------------------------------------------------------------ cache
@@ -66,11 +72,12 @@ class RealFeed:
 
     # ------------------------------------------------------------------ fetching
     @staticmethod
-    def _spark(symbols: List[str], rng: str) -> Dict[str, Dict[str, float]]:
-        out: Dict[str, Dict[str, float]] = {}
+    def _spark_results(symbols: List[str], rng: str, interval: str) -> List[Dict]:
+        """Raw spark results for `symbols` (split on a bad symbol so the good ones survive; retried on transient errors)."""
+        out: List[Dict] = []
         for i in range(0, len(symbols), BATCH):
             chunk = symbols[i:i + BATCH]
-            url = f"{SPARK}?symbols={urllib.parse.quote(','.join(chunk))}&range={rng}&interval=1d"
+            url = f"{SPARK}?symbols={urllib.parse.quote(','.join(chunk))}&range={rng}&interval={interval}"
             req = urllib.request.Request(url, headers={"User-Agent": YAHOO_UA})
             j = None
             for attempt in range(4):
@@ -82,8 +89,8 @@ class RealFeed:
                     if e.code in (400, 404) and len(chunk) > 1:
                         # one bad symbol fails the whole batch: split and keep the good ones
                         half = len(chunk) // 2
-                        out.update(RealFeed._spark(chunk[:half], rng))
-                        out.update(RealFeed._spark(chunk[half:], rng))
+                        out.extend(RealFeed._spark_results(chunk[:half], rng, interval))
+                        out.extend(RealFeed._spark_results(chunk[half:], rng, interval))
                         j = {}
                         break
                     if e.code in (400, 404):
@@ -98,22 +105,59 @@ class RealFeed:
                     time.sleep(2.0 * (attempt + 1))
             if not j:
                 continue
-            for res in j.get("spark", {}).get("result", []):
-                sym = res.get("symbol")
-                resp = (res.get("response") or [{}])[0]
-                ts = resp.get("timestamp") or []
-                closes = ((resp.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
-                off = (resp.get("meta") or {}).get("gmtoffset", 0) or 0
-                series: Dict[str, float] = {}
-                for t, c in zip(ts, closes):
-                    if c is None:
-                        continue
-                    d = datetime.fromtimestamp(t + off, tz=timezone.utc).date().isoformat()
-                    series[d] = float(c)
-                if series:
-                    out[sym] = series
-            time.sleep(0.5)
+            out.extend(j.get("spark", {}).get("result", []))
+            if i + BATCH < len(symbols):
+                time.sleep(0.5 if interval == "1d" and rng != "1d" else 0.2)
         return out
+
+    @staticmethod
+    def _spark(symbols: List[str], rng: str) -> Dict[str, Dict[str, float]]:
+        out: Dict[str, Dict[str, float]] = {}
+        for res in RealFeed._spark_results(symbols, rng, "1d"):
+            sym = res.get("symbol")
+            resp = (res.get("response") or [{}])[0]
+            ts = resp.get("timestamp") or []
+            closes = ((resp.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
+            off = (resp.get("meta") or {}).get("gmtoffset", 0) or 0
+            series: Dict[str, float] = {}
+            for t, c in zip(ts, closes):
+                if c is None:
+                    continue
+                d = datetime.fromtimestamp(t + off, tz=timezone.utc).date().isoformat()
+                series[d] = float(c)
+            if series:
+                out[sym] = series
+        return out
+
+    @staticmethod
+    def _spark_live(symbols: List[str]) -> Dict[str, Dict]:
+        """The latest quote per symbol from the day's spark metadata: regular-session price and time (Yahoo delays most
+        exchanges by up to 15 minutes), the previous close, the day's range and volume."""
+        out: Dict[str, Dict] = {}
+        for res in RealFeed._spark_results(symbols, "1d", "1d"):
+            sym = res.get("symbol")
+            m = ((res.get("response") or [{}])[0].get("meta") or {})
+            px = m.get("regularMarketPrice")
+            if px is None or not sym:
+                continue
+            out[sym] = {"price": float(px), "time": int(m.get("regularMarketTime") or 0), "prev_close": m.get("chartPreviousClose"),
+                        "high": m.get("regularMarketDayHigh"), "low": m.get("regularMarketDayLow"), "volume": m.get("regularMarketVolume"),
+                        "currency": m.get("currency"), "exchange": m.get("exchangeName")}
+        return out
+
+    def live(self, symbols: List[str], max_age_s: float = 60.0) -> Dict[str, Dict]:
+        """Latest quotes by symbol, refetched when older than `max_age_s` (in memory only: a quote is never cached to disk)."""
+        now = time.time()
+        symbols = list(dict.fromkeys(symbols))
+        need = [s for s in symbols if s not in self.live_cache or now - self.live_cache[s]["fetched"] > max_age_s]
+        if need:
+            got = self._fetch_live(need)
+            for s, q in got.items():
+                self.live_cache[s] = {**q, "fetched": now}
+            for s in need:                                  # a symbol Yahoo does not quote is not retried every call
+                if s not in got:
+                    self.live_cache[s] = {"price": None, "fetched": now}
+        return {s: self.live_cache[s] for s in symbols if s in self.live_cache and self.live_cache[s].get("price") is not None}
 
     def all_symbols(self) -> List[str]:
         return sorted(set(list(self.equities.values()) + list(RATE_SYMBOLS.values()) + list(COMMODITY_SYMBOLS.values()) + [s for s, _ in FX_SYMBOLS.values()]))
@@ -202,9 +246,11 @@ class RealFeed:
 
 
 def equity_symbols_for(securities: Dict) -> Dict[str, str]:
-    """Yahoo symbols for the cash equities, ETFs, ADRs, REITs and preferreds in a universe."""
+    """Yahoo symbols for the cash equities, ETFs, ADRs, REITs, preferreds, coins and indices in a universe."""
     out = {}
     for sid, sec in securities.items():
-        if sec.asset_class in ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED"):
-            out[sid] = sid          # tickers match Yahoo's (BRK-B, BAC-PL use the same hyphen form)
+        if sec.asset_class in ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED", "CRYPTO"):
+            out[sid] = getattr(sec, "yahoo", None) or (f"{sid}-USD" if sec.asset_class == "CRYPTO" else sid)   # tickers match Yahoo's (BRK-B, BAC-PL use the same hyphen form)
+        elif sec.asset_class == "INDEX":
+            out[sid] = getattr(sec, "yahoo", None) or INDEX_SYMBOLS.get(sid, sid)
     return out

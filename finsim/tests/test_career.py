@@ -13,7 +13,7 @@ except ImportError:
     from tests.test_expansion import _stub_feed
 
 from finsim.api.service import Service
-from finsim.clock import ClockConfig, trading_window, session_closed
+from finsim.clock import ClockConfig, trading_window, session_closed, instruction_session
 from finsim.calendar import BusinessCalendar
 from finsim.engines.realmacro import state_as_of, releases_on, upcoming, fomc_dates
 from finsim.engines.realnews import RealNews
@@ -29,9 +29,24 @@ def ny(y, m, d, hh, mm):
 
 
 class TradingWindowTest(unittest.TestCase):
-    def test_window_opens_after_the_close_and_shuts_at_the_open(self):
+    def test_window_is_always_open_unless_the_session_lock_is_on(self):
         cal = BusinessCalendar()
-        cfg = ClockConfig("REAL_TIME", "America/New_York", "17:00")
+        cfg = ClockConfig("REAL_TIME", "America/New_York", "17:00")            # default: no lock, trade at any hour
+        for hh in (8, 11, 16, 18):
+            w = trading_window(cfg, cal, ny(2026, 9, 17, hh, 0))
+            self.assertTrue(w["open"]); self.assertFalse(w["lock"])
+        self.assertTrue(trading_window(cfg, cal, ny(2026, 9, 17, 11, 0))["session_running"])
+        self.assertFalse(trading_window(cfg, cal, ny(2026, 9, 17, 18, 0))["session_running"])
+        # an instruction entered while the session runs executes at its close, otherwise at the next open
+        self.assertEqual(instruction_session(cfg, cal, date(2026, 9, 16), ny(2026, 9, 17, 11, 0)), "CLOSE")
+        self.assertEqual(instruction_session(cfg, cal, date(2026, 9, 16), ny(2026, 9, 17, 8, 0)), "OPEN")
+        self.assertEqual(instruction_session(cfg, cal, date(2026, 9, 16), ny(2026, 9, 16, 18, 0)), "OPEN")
+        self.assertEqual(instruction_session(cfg, cal, date(2026, 9, 15), ny(2026, 9, 17, 8, 0)), "CLOSE", "a session already behind the world is history")
+        self.assertEqual(instruction_session(ClockConfig("SANDBOX"), cal, date(2026, 9, 16), ny(2026, 9, 17, 11, 0)), "OPEN")
+
+    def test_window_with_the_lock_opens_after_the_close_and_shuts_at_the_open(self):
+        cal = BusinessCalendar()
+        cfg = ClockConfig("REAL_TIME", "America/New_York", "17:00", lock_session=True)
         self.assertTrue(trading_window(cfg, cal, ny(2026, 9, 17, 8, 0))["open"])
         self.assertTrue(trading_window(cfg, cal, ny(2026, 9, 17, 9, 29))["open"])
         self.assertFalse(trading_window(cfg, cal, ny(2026, 9, 17, 9, 30))["open"])
@@ -40,10 +55,10 @@ class TradingWindowTest(unittest.TestCase):
         self.assertTrue(trading_window(cfg, cal, ny(2026, 9, 19, 12, 0))["open"], "weekends are open")
         self.assertTrue(trading_window(ClockConfig("SANDBOX"), cal, ny(2026, 9, 17, 12, 0))["open"])
         # a Chicago player at 16:00 local is 17:00 New York
-        w = trading_window(ClockConfig("REAL_TIME", "America/Chicago", "16:00"), cal, ny(2026, 9, 17, 16, 59))
+        w = trading_window(ClockConfig("REAL_TIME", "America/Chicago", "16:00", lock_session=True), cal, ny(2026, 9, 17, 16, 59))
         self.assertFalse(w["open"]); self.assertTrue(w["opens_at"].startswith("2026-09-17T17:00"))
-        self.assertFalse(session_closed(date(2026, 9, 17), ny(2026, 9, 17, 16, 0)))
-        self.assertTrue(session_closed(date(2026, 9, 17), ny(2026, 9, 17, 16, 15)))
+        self.assertFalse(session_closed(date(2026, 9, 17), ny(2026, 9, 17, 15, 59)))
+        self.assertTrue(session_closed(date(2026, 9, 17), ny(2026, 9, 17, 16, 0)))
         self.assertTrue(session_closed(date(2026, 9, 16), ny(2026, 9, 17, 8, 0)))
 
     def test_service_refuses_instructions_while_the_session_runs(self):
@@ -51,9 +66,9 @@ class TradingWindowTest(unittest.TestCase):
         s = Service(store)
         now = [ny(2026, 1, 9, 18, 0)]
         s.now = lambda: now[0]
-        r = s.create_world("career", 42, job="PORTFOLIO_MANAGER", clock_mode="REAL_TIME", timezone="America/New_York", at=now[0], market_source="SIMULATED")
+        r = s.create_world("career", 42, job="PORTFOLIO_MANAGER", clock_mode="REAL_TIME", timezone="America/New_York", at=now[0], market_source="SIMULATED", lock_session=True)
         w = s.worlds[r["world_id"]]
-        self.assertEqual(w.clock.update_time, "17:00")
+        self.assertEqual(w.clock.update_time, "17:00"); self.assertTrue(w.clock.lock_session)
         wid, pid = r["world_id"], r["portfolio_id"]
         self.assertTrue(s.world_info(wid)["trading_window"]["open"])
         s.place_order(wid, pid, "SPY", "BUY", 100)
@@ -75,7 +90,17 @@ class TradingWindowTest(unittest.TestCase):
         s.set_clock(wid, "18:30", "America/Chicago")
         self.assertEqual((w.clock.update_time, w.clock.timezone), ("18:30", "America/Chicago"))
         w2 = World.load(store, wid)
-        self.assertEqual((w2.clock.update_time, w2.clock.timezone), ("18:30", "America/Chicago"))
+        self.assertEqual((w2.clock.update_time, w2.clock.timezone, w2.clock.lock_session), ("18:30", "America/Chicago", True))
+        # the lock is a setting: off, the same moment takes instructions (at the close) and the header pill says so
+        now[0] = ny(2026, 1, 13, 11, 0)
+        self.assertFalse(s.world_info(wid)["trading_window"]["open"])
+        s.set_clock(wid, lock_session=False)
+        tw = s.world_info(wid)["trading_window"]
+        self.assertTrue(tw["open"]); self.assertFalse(tw["lock"]); self.assertTrue(tw["session_running"])
+        self.assertEqual(s.world_info(wid)["live"]["instruction_session"], "CLOSE")
+        o = s.place_order(wid, pid, "SPY", "BUY", 100)
+        self.assertEqual(o["order"]["execute_at"], "CLOSE")
+        self.assertFalse(World.load(store, wid).clock.lock_session)
 
 
 def _stub_series():

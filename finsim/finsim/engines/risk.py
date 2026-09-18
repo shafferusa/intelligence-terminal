@@ -131,7 +131,8 @@ class RiskEngine:
             elif t.product == "COMMODITY_SWAP":
                 row["commodity"][t.terms["code"]] = an.get("delta_units", 0.0) * an.get("spot", 0.0)
             elif t.product == "CDS":
-                row["rating"] = w.securities[t.terms["reference"]].rating
+                ref = t.terms["reference"]
+                row["rating"] = w.securities[ref].rating if ref in w.securities else ("BB" if ref.endswith(("_HY", "_XOVER")) else "BBB")
             rows.append(row)
         for ccy, ca in pf.cash.items():
             if ccy != pf.base_currency and ca.balance != 0:

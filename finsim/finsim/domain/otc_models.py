@@ -26,10 +26,14 @@ class OE:
     COUNTERPARTY_EXPOSURE = "COUNTERPARTY_EXPOSURE"
 
 
-PRODUCTS = ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP", "EQUITY_OPTION", "FX_OPTION", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD")
-BUCKET_BY_PRODUCT = {"IRS": "rates", "FRA": "rates", "CAP": "rates", "FLOOR": "rates", "SWAPTION": "rates", "XCCY": "fx", "TRS": "equities",
+PRODUCTS = ("IRS", "OIS", "FRA", "CAP", "FLOOR", "SWAPTION", "INFLATION_SWAP", "XCCY", "FX_FORWARD", "NDF", "FX_SWAP", "FX_OPTION", "TRS", "EQUITY_OPTION", "EQUITY_FORWARD",
+            "VARIANCE_SWAP", "VOL_SWAP", "DIVIDEND_SWAP", "BARRIER_OPTION", "DIGITAL_OPTION", "CDS", "COMMODITY_SWAP", "COMMODITY_FORWARD", "ASIAN_OPTION",
+            "CRYPTO_PERP", "PPN", "REVERSE_CONVERTIBLE", "AUTOCALLABLE")
+BUCKET_BY_PRODUCT = {"IRS": "rates", "OIS": "rates", "FRA": "rates", "CAP": "rates", "FLOOR": "rates", "SWAPTION": "rates", "INFLATION_SWAP": "rates", "XCCY": "fx", "TRS": "equities",
                      "CDS": "credit", "COMMODITY_SWAP": "commodities", "EQUITY_OPTION": "equities", "FX_OPTION": "fx", "EQUITY_FORWARD": "equities",
-                     "COMMODITY_FORWARD": "commodities", "FX_FORWARD": "fx"}
+                     "COMMODITY_FORWARD": "commodities", "FX_FORWARD": "fx", "NDF": "fx", "FX_SWAP": "fx", "VARIANCE_SWAP": "options", "VOL_SWAP": "options",
+                     "DIVIDEND_SWAP": "equities", "BARRIER_OPTION": "options", "DIGITAL_OPTION": "options", "ASIAN_OPTION": "commodities", "CRYPTO_PERP": "crypto",
+                     "PPN": "equities", "REVERSE_CONVERTIBLE": "equities", "AUTOCALLABLE": "equities"}
 
 
 @dataclass

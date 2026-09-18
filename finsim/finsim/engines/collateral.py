@@ -38,6 +38,8 @@ HAIRCUTS = {
     "ETF": {"REPO": 0.20, "SECLOAN": None, "PRIME": 0.20, "LENT": 0.0},
     "FUTURE": {"REPO": None, "SECLOAN": None, "PRIME": None},
     "PHYSICAL": {"REPO": None, "SECLOAN": None, "PRIME": None, "LENT": None},
+    "CRYPTO": {"REPO": None, "SECLOAN": None, "PRIME": 0.50, "LENT": 0.0},
+    "INDEX": {"REPO": None, "SECLOAN": None, "PRIME": None, "LENT": None},
 }
 REGIME_HAIRCUT_MULT = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.0, "RATE_HIKING": 1.1, "RECESSION": 1.5, "LIQUIDITY_STRESS": 2.5}
 IG_RATINGS = {"AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-"}
@@ -52,7 +54,7 @@ def asset_key(sec: Security) -> str:
         return "GOVT_BOND"
     if sec.asset_class == "CORP_BOND":
         return "CORP_BOND_IG" if (sec.rating or "") in IG_RATINGS else "CORP_BOND_HY"
-    if sec.asset_class in ("PREFERRED", "ADR", "ETF"):
+    if sec.asset_class in ("PREFERRED", "ADR", "ETF", "CRYPTO", "INDEX"):
         return sec.asset_class
     return {"LARGE": "EQUITY_LARGE", "MID": "EQUITY_MID", "SMALL": "EQUITY_SMALL"}.get(sec.liquidity_tier, "EQUITY_MID")
 

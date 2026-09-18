@@ -18,7 +18,7 @@ from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
 
 from .calendar import BusinessCalendar, SettlementConfig
-from .clock import ClockConfig, next_update, target_sim_date, trading_window, session_closed
+from .clock import ClockConfig, next_update, target_sim_date, trading_window, session_closed, instruction_session
 from .domain.events import E, Event
 from .version import SAVE_VERSION, ENGINE_VERSION
 from .log import get_logger
@@ -70,9 +70,10 @@ class World:
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
         from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
-        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit
+        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, live
         from . import careers
         self.trading = trading.TradingEngine(self)
+        self.live = live.LiveDesk(self)
         self.settlement = settlement.SettlementEngine(self)
         self.corporate = corporate_actions.CorporateActionEngine(self)
         self.accruals = accruals.AccrualEngine(self)
@@ -245,7 +246,8 @@ class World:
         self.start_date = date.fromisoformat(p["start_date"])
         self.current_date = self.start_date
         self.base_currency = p.get("base_currency", "USD")
-        self.clock = ClockConfig(p.get("clock_mode", "SANDBOX"), p.get("timezone", "America/New_York"), p.get("update_time", "09:00"))
+        self.clock = ClockConfig(p.get("clock_mode", "SANDBOX"), p.get("timezone", "America/New_York"), p.get("update_time", "09:00"),
+                                 bool(p.get("lock_session", False)))
         self.scenario = p.get("scenario", "NONE")
         self.save_version = int(p.get("save_version", 1))
         if p.get("settlement_cycles"):
@@ -279,7 +281,7 @@ class World:
         if getattr(self, "market_source", "SIMULATED") != "REAL":
             return None
         if not session_closed(d, at):
-            return f"the {d.isoformat()} session has not closed yet (closes are final after 16:15 New York); the world waits for it"
+            return f"the {d.isoformat()} session has not closed yet (the market closes at 16:00 New York); the world waits for it"
         if self.market.real_targets(d) is not None:
             return None
         feed = self.market.real_feed
@@ -408,7 +410,7 @@ class World:
         w.emit(E.WORLD_CREATED, {"name": name, "seed": seed, "start_date": start_date.isoformat(), "base_currency": base_currency,
                                  "prehistory_days": prehistory_days, "initial_regime": initial_regime,
                                  "settlement_cycles": SettlementConfig().cycles, "clock_mode": clock.mode, "timezone": clock.timezone,
-                                 "update_time": clock.update_time, "scenario": scenario, "save_version": SAVE_VERSION, "engine_version": ENGINE_VERSION,
+                                 "update_time": clock.update_time, "lock_session": bool(clock.lock_session), "scenario": scenario, "save_version": SAVE_VERSION, "engine_version": ENGINE_VERSION,
                                  "market_source": market_source},
                 sim_date=start_date.isoformat())
         if market_source == "REAL":
@@ -499,11 +501,24 @@ class World:
 
     def place_order(self, portfolio_id: str, security_id: str, side: str, quantity, order_type: str = "MARKET",
                     limit_price=None, stop_price=None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None,
-                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None):
-        order = self.trading.enter_order(portfolio_id, security_id, side, quantity, order_type, limit_price, stop_price, time_in_force,
-                                         strategy_tag, trail_pct, condition)
-        self.flush()
+                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None, execution: str = "NEXT_UPDATE", at=None):
+        """An instruction for the next update (against the next session's open, or its close when that session is already
+        running), or with execution LIVE an immediate fill at the latest real quote (saves that track the market only)."""
+        execution = (execution or "NEXT_UPDATE").upper()
+        if execution == "LIVE" and not self.live.available():
+            raise CommandError("live execution needs a save that tracks the real market; this save is simulated — send an instruction instead")
+        try:
+            order = self.trading.enter_order(portfolio_id, security_id, side, quantity, order_type, limit_price, stop_price, time_in_force,
+                                             strategy_tag, trail_pct, condition, execute_at=self.instruction_session(at), execution=execution)
+            if execution == "LIVE":
+                self.live.fill(order, self.events[-1])
+        finally:
+            self.flush()
         return order
+
+    def instruction_session(self, at=None) -> str:
+        """Which print of the next session an instruction entered now executes against: OPEN, or CLOSE once it has opened."""
+        return instruction_session(self.clock, self.calendar, self.current_date, at)
 
     def cancel_order(self, portfolio_id: str, order_id: str):
         o = self.trading.cancel(portfolio_id, order_id)
@@ -559,11 +574,11 @@ class World:
     def margin_repay(self, portfolio_id: str, amount):
         return self._cmd(self.prime.repay, self.portfolio(portfolio_id), amount)
 
-    def fx_spot(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount, amount_ccy: str = "BUY"):
-        return self._cmd(self.fx.spot, self.portfolio(portfolio_id), buy_ccy, sell_ccy, amount, amount_ccy)
+    def fx_spot(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount, amount_ccy: str = "BUY", execution: str = "NEXT_UPDATE", tag: Optional[str] = None):
+        return self._cmd(self.fx.spot, self.portfolio(portfolio_id), buy_ccy, sell_ccy, amount, amount_ccy, execution, tag)
 
-    def fx_forward(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount, maturity: str):
-        return self._cmd(self.fx.forward, self.portfolio(portfolio_id), buy_ccy, sell_ccy, buy_amount, maturity)
+    def fx_forward(self, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount, maturity: str, tag: Optional[str] = None):
+        return self._cmd(self.fx.forward, self.portfolio(portfolio_id), buy_ccy, sell_ccy, buy_amount, maturity, tag)
 
     # ------------------------------------------------------------------ phase 3 commands (listed options)
     def exercise_option(self, portfolio_id: str, contract_id: str, quantity=None):
@@ -767,8 +782,9 @@ class World:
     def trading_window(self, at=None) -> Dict:
         return trading_window(self.clock, self.calendar, at)
 
-    def set_clock(self, update_time: Optional[str] = None, timezone: Optional[str] = None) -> Event:
-        """Change when a career save processes its day (the settings page). Real-market saves must update after the close."""
+    def set_clock(self, update_time: Optional[str] = None, timezone: Optional[str] = None, lock_session: Optional[bool] = None) -> Event:
+        """Change when a career save processes its day and whether instructions lock while the session runs (the settings
+        page). Real-market saves must update after the close."""
         from zoneinfo import ZoneInfo
         from datetime import datetime as _dt, time as _time
         from .clock import MARKET_TZ, SESSION_FINAL
@@ -785,14 +801,16 @@ class World:
         if getattr(self, "market_source", "SIMULATED") == "REAL":
             ny = _dt.combine(date(2026, 1, 5), _time(int(h), int(m)), tzinfo=ZoneInfo(tz)).astimezone(MARKET_TZ).time()
             if ny < SESSION_FINAL:
-                raise CommandError(f"a save that tracks the real market must update after the close: {ut} {tz} is {ny.strftime('%H:%M')} New York, before 16:15")
-        ev = self.emit(E.CLOCK_CHANGED, {"update_time": ut, "timezone": tz, "mode": self.clock.mode})
+                raise CommandError(f"a save that tracks the real market must update after the close: {ut} {tz} is {ny.strftime('%H:%M')} New York, before 16:00")
+        lock = self.clock.lock_session if lock_session is None else bool(lock_session)
+        ev = self.emit(E.CLOCK_CHANGED, {"update_time": ut, "timezone": tz, "mode": self.clock.mode, "lock_session": lock})
         self.flush()
         return ev
 
     def _h_clock_changed(self, ev: Event) -> None:
         p = ev.payload
-        self.clock = ClockConfig(p.get("mode", self.clock.mode), p.get("timezone", self.clock.timezone), p.get("update_time", self.clock.update_time))
+        self.clock = ClockConfig(p.get("mode", self.clock.mode), p.get("timezone", self.clock.timezone), p.get("update_time", self.clock.update_time),
+                                 bool(p.get("lock_session", self.clock.lock_session)))
 
     # ------------------------------------------------------------------ audit
     def audit_chain(self, event_id: str) -> Dict:

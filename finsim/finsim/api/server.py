@@ -52,7 +52,7 @@ class Router:
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
                                           body.get("benchmark", "SPY"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
                                           body.get("timezone", "America/New_York"), body.get("update_time"), body.get("scenario", "NONE"),
-                                          market_source=body.get("market_source"))
+                                          market_source=body.get("market_source"), lock_session=bool(body.get("lock_session", False)))
             if parts[2:] == ["jobs"] if len(parts) > 2 else False:
                 return s.jobs()
             wid = rest[0]
@@ -92,7 +92,10 @@ class Router:
             if sub == ["fx"]:
                 return s.fx_market(wid)
             if sub == ["clock"] and method == "POST":
-                return s.set_clock(wid, body.get("update_time"), body.get("timezone"))
+                return s.set_clock(wid, body.get("update_time"), body.get("timezone"), body.get("lock_session"))
+            if sub == ["live"]:
+                ids = [x for x in (query.get("ids", [""])[0] or "").split(",") if x]
+                return s.live(wid, ids or None)
             if sub == ["force-corporate-event"] and method == "POST":
                 return s.force_corporate_event(wid, body)
             if sub == ["otc", "dealers"]:
@@ -133,8 +136,8 @@ class Router:
                 if leaf == ["orders"]:
                     if method == "POST":
                         return s.place_order(wid, pid, body["security_id"], body["side"], body["quantity"], body.get("order_type", "MARKET"),
-                                             body.get("limit_price"), body.get("stop_price"), body.get("time_in_force", "DAY"), body.get("strategy_tag"),
-                                             body.get("trail_pct"), body.get("condition"), body.get("settle_ccy"))
+                                             body.get("limit_price"), body.get("stop_price"), body.get("time_in_force", "DAY"), body.get("strategy_tag") or body.get("tag"),
+                                             body.get("trail_pct"), body.get("condition"), body.get("settle_ccy"), body.get("execution"))
                     return s.orders(wid, pid)
                 if leaf == ["briefing"]:
                     return s.briefing(wid, pid, query.get("date", [None])[0])
@@ -171,9 +174,11 @@ class Router:
                 if leaf[:1] == ["margin"] and len(leaf) == 2 and method == "POST":
                     return s.margin_action(wid, pid, leaf[1], body["amount"])
                 if leaf == ["fx", "spot"] and method == "POST":
-                    return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"))
+                    return s.fx_spot(wid, pid, body["buy_ccy"], body["sell_ccy"], body["amount"], body.get("amount_ccy", "BUY"), body.get("execution"), body.get("tag"))
                 if leaf == ["fx", "forward"] and method == "POST":
-                    return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"])
+                    return s.fx_forward(wid, pid, body["buy_ccy"], body["sell_ccy"], body["buy_amount"], body["maturity"], body.get("tag"))
+                if leaf == ["tags"]:
+                    return s.tags(wid, pid)
                 if leaf == ["corporate-actions"]:
                     return s.corporate_actions_for(wid, pid)
                 if leaf == ["elections"] and method == "POST":

@@ -26,16 +26,28 @@ from typing import Callable, Dict, List, Optional, Tuple
 from ..domain.events import Event
 from ..domain.models import Portfolio
 from ..domain.otc_models import BUCKET_BY_PRODUCT, CSA, OE, OTCTrade, PRODUCTS, RFQ
+from .otc_extra import ExtraProducts, EXTRA_PRODUCTS, FAMILY as EXTRA_FAMILY, NDF_CURRENCIES
 from ..engines import otc_pricing as px
 from ..engines.counterparties import CLIENT_SPECS, CSA_TERMS, DEALERS, HALF_WIDTH, UNIT, counterparty_name, csa_terms_for, dealers_for, quote_half_width
 from ..engines.ledger import dr, cr
 from ..engines.pricing import interp_rate
 from ..money import D, money, ZERO
 
-RATES_PRODUCTS = ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION")
+RATES_PRODUCTS = ("IRS", "OIS", "FRA", "CAP", "FLOOR", "SWAPTION", "INFLATION_SWAP")
+# CDS indices: (name, which cash spread they track, the fraction of it they trade at, recovery)
+CDS_INDICES = {"CDX_IG": ("CDX North America Investment Grade", "ig", 0.55, 0.40), "CDX_HY": ("CDX North America High Yield", "hy", 0.90, 0.30),
+               "ITRAXX_MAIN": ("iTraxx Europe Main", "ig", 0.60, 0.40), "ITRAXX_XOVER": ("iTraxx Europe Crossover", "hy", 0.95, 0.30)}
+
+
+def _core(p: str) -> str:
+    """Products that are another product with different conventions: an OIS is a swap on the overnight rate, an NDF a cash-settled forward."""
+    return {"OIS": "IRS", "NDF": "FX_FORWARD"}.get(p, p)
 PFE_ADDON = {"IRS": 0.006, "FRA": 0.002, "CAP": 0.004, "FLOOR": 0.004, "SWAPTION": 0.004, "XCCY": 0.030, "TRS": 0.120, "CDS": 0.050, "COMMODITY_SWAP": 0.100,
-             "EQUITY_OPTION": 0.080, "FX_OPTION": 0.050, "EQUITY_FORWARD": 0.100, "COMMODITY_FORWARD": 0.100, "FX_FORWARD": 0.030}
-FX_VOL = {"EUR": 0.075, "GBP": 0.085, "JPY": 0.095, "CHF": 0.080, "CAD": 0.065, "AUD": 0.105}          # annualised, normal regime
+             "EQUITY_OPTION": 0.080, "FX_OPTION": 0.050, "EQUITY_FORWARD": 0.100, "COMMODITY_FORWARD": 0.100, "FX_FORWARD": 0.030,
+             "OIS": 0.005, "INFLATION_SWAP": 0.015, "NDF": 0.040, "FX_SWAP": 0.030, "VARIANCE_SWAP": 0.150, "VOL_SWAP": 0.120, "DIVIDEND_SWAP": 0.060,
+             "BARRIER_OPTION": 0.080, "DIGITAL_OPTION": 0.060, "ASIAN_OPTION": 0.080, "CRYPTO_PERP": 0.250, "PPN": 0.060, "REVERSE_CONVERTIBLE": 0.100, "AUTOCALLABLE": 0.120}
+FX_VOL = {"EUR": 0.075, "GBP": 0.085, "JPY": 0.095, "CHF": 0.080, "CAD": 0.065, "AUD": 0.105, "NZD": 0.11, "SEK": 0.10, "NOK": 0.11, "MXN": 0.13, "BRL": 0.16,
+          "CNH": 0.05, "HKD": 0.01, "SGD": 0.05, "KRW": 0.09, "INR": 0.05, "ZAR": 0.15, "PLN": 0.10}          # annualised, normal regime
 FX_VOL_REGIME = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.0, "RATE_HIKING": 1.2, "RECESSION": 1.5, "LIQUIDITY_STRESS": 2.2}
 TRS_BASE_SPREAD_BPS = {"NORMAL_GROWTH": 45.0, "RATE_CUTTING": 40.0, "RATE_HIKING": 60.0, "RECESSION": 90.0, "LIQUIDITY_STRESS": 180.0}
 CSA_CALL_GRACE_CYCLES = 1
@@ -49,6 +61,7 @@ def _f(x) -> float:
 class OTCEngine:
     def __init__(self, world):
         self.w = world
+        self.extra = ExtraProducts(self)
 
     def register(self) -> None:
         w = self.w
@@ -86,8 +99,11 @@ class OTCEngine:
     def reference_spread_bps(self, reference: str) -> float:
         """Market CDS spread for a reference entity: the issuer's bond spread scaled by where the credit index trades now."""
         w = self.w
-        sec = w.securities[reference]
         cur = w.market.curve()
+        if reference in CDS_INDICES:
+            _name, which, frac, _rec = CDS_INDICES[reference]
+            return max(5.0, (cur.ig_spread_bps if which == "ig" else cur.hy_spread_bps) * frac)
+        sec = w.securities[reference]
         first = w.market.curves[0]
         if (sec.rating or "BBB") in ("AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-"):
             scale = cur.ig_spread_bps / max(1.0, first.ig_spread_bps)
@@ -129,10 +145,13 @@ class OTCEngine:
         c = self.curve()
         T = t.terms
         N = _f(t.notional)
-        p = t.product
+        p = _core(t.product)
         st = dict(t.state)
         an: Dict = {}
         pv = 0.0
+        if t.product in EXTRA_PRODUCTS:
+            pv, an, st = self.extra.value(pf, t, asof, st)
+            return money(D(repr(pv))), an, st
         if p == "IRS":
             fp = self.periods(t.start, t.maturity, T["fixed_months"])
             fl = self.periods(t.start, t.maturity, T["float_months"])
@@ -193,10 +212,11 @@ class OTCEngine:
     def _eq_inputs(self, sid: str, T: float) -> Tuple[float, float, float]:
         """(spot, risk-free rate, dividend yield) for an equity-style underlying, SPX included."""
         w = self.w
-        S = w.options.underlying_level(sid) if hasattr(w, "options") and (sid == "SPX" or sid in w.securities) else _f(w.market.last_bar(sid).close)
+        from .vol import is_index, index_source
+        S = w.options.underlying_level(sid) if hasattr(w, "options") and (is_index(sid) or sid in w.securities) else _f(w.market.last_bar(sid).close)
         c = self.curve()
         r = -math.log(max(1e-9, px.df(c, max(T, 1 / 365)))) / max(T, 1 / 365)
-        src = "SPY" if sid == "SPX" else sid
+        src = index_source(sid)
         q = float(w.securities[src].dividend_yield or 0.0)
         return S, r, q
 
@@ -205,7 +225,8 @@ class OTCEngine:
         vs = getattr(w.market, "vol", None)
         if vs is not None and sid in getattr(vs, "state", {}):
             return vs.iv(sid, K, S * math.exp((r - q) * T), T)
-        src = "SPY" if sid == "SPX" else sid
+        from .vol import index_source
+        src = index_source(sid)
         return max(0.08, float(w.securities[src].sigma_annual or 0.25))
 
     def _equity_option_value(self, t: OTCTrade, asof: date) -> Tuple[float, Dict]:
@@ -359,6 +380,9 @@ class OTCEngine:
         """Engine mid for a product: quote unit, mid level and PV (base) of the trade at mid."""
         w = self.w
         p = product.upper()
+        if p in EXTRA_PRODUCTS:
+            return self.extra.fair(p, params)
+        p = _core(p)
         c = self.curve()
         asof = w.current_date
         today = asof.isoformat()
@@ -402,13 +426,13 @@ class OTCEngine:
         if p == "CDS":
             mat = self._maturity(params, default_years=5)
             ref = params["reference"]
-            sec = w.securities[ref]
+            recovery, issuer = (CDS_INDICES[ref][3], CDS_INDICES[ref][0]) if ref in CDS_INDICES else (w.securities[ref].recovery_rate, w.securities[ref].issuer)
             mkt = self.reference_spread_bps(ref)
             per = self.periods(today, mat, 3)
             running = _f(params.get("running_bps", 100 if mkt < 300 else 500))
-            h = px.hazard_from_spread(mkt, sec.recovery_rate)
-            upfront = px.cds_pv(c, asof, _f(params["notional"]), running, h, sec.recovery_rate, per, True)   # buyer pays positive upfront
-            return {"unit": UNIT[p], "mid": mkt, "pv": upfront, "maturity": mat, "running_bps": running, "recovery": sec.recovery_rate, "issuer": sec.issuer}
+            h = px.hazard_from_spread(mkt, recovery)
+            upfront = px.cds_pv(c, asof, _f(params["notional"]), running, h, recovery, per, True)   # buyer pays positive upfront
+            return {"unit": UNIT[p], "mid": mkt, "pv": upfront, "maturity": mat, "running_bps": running, "recovery": recovery, "issuer": issuer}
         if p == "COMMODITY_SWAP":
             mat = self._maturity(params, default_years=1)
             code = params["code"].upper()
@@ -489,9 +513,10 @@ class OTCEngine:
                 quotes.append({"dealer": dk, "name": spec.name, "declined": True, "note": "declined to quote (funding stress)"})
                 continue
             lean = spec.skew * 0.3 * hw
-            if p in ("CAP", "FLOOR", "SWAPTION", "EQUITY_OPTION", "FX_OPTION"):
+            fam = EXTRA_FAMILY.get(p)
+            if p in ("CAP", "FLOOR", "SWAPTION", "EQUITY_OPTION", "FX_OPTION") or fam == "premium":
                 bid, ask = fair["pv"] * (1 - hw) + lean * fair["pv"], fair["pv"] * (1 + hw) + lean * fair["pv"]
-            elif p in ("COMMODITY_SWAP", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            elif p in ("COMMODITY_SWAP", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD", "NDF") or fam == "price":
                 bid, ask = fair["mid"] * (1 - hw) + lean * fair["mid"], fair["mid"] * (1 + hw) + lean * fair["mid"]
             else:
                 bid, ask = fair["mid"] - hw + lean, fair["mid"] + hw + lean
@@ -508,6 +533,16 @@ class OTCEngine:
         from ..world import CommandError
         w = self.w
         q = {k: v for k, v in params.items() if v is not None}
+        if p in EXTRA_PRODUCTS:
+            return self.extra.norm(p, q)
+        if p == "OIS":
+            q.setdefault("pay_fixed", True)
+            q["fixed_months"], q["float_months"] = 12, 12          # annual payments on the compounded overnight rate
+            p = "IRS"
+        if p == "NDF":
+            if str(q.get("ccy", "")).upper() not in NDF_CURRENCIES:
+                raise CommandError(f"an NDF is for a non-deliverable currency: {', '.join(NDF_CURRENCIES)} (deliverable currencies use FX_FORWARD)")
+            p = "FX_FORWARD"
         if p in ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "CDS"):
             key = "usd_notional" if p == "XCCY" else "notional"
             if _f(q.get(key, 0)) <= 0:
@@ -552,9 +587,11 @@ class OTCEngine:
             q.setdefault("receiver", True)
             q.setdefault("reset_months", 1)
         if p == "CDS":
-            sec = w.securities.get(q.get("reference", ""))
-            if sec is None or sec.asset_class != "CORP_BOND":
-                raise CommandError("CDS reference must be a corporate bond issuer (e.g. JPM-29, F-32, AAL-28)")
+            ref = str(q.get("reference", "")).upper()
+            sec = w.securities.get(ref)
+            if ref not in CDS_INDICES and (sec is None or sec.asset_class != "CORP_BOND"):
+                raise CommandError("CDS reference must be a corporate or sovereign bond issuer (e.g. JPM-29, F-32, SOV-US-MX-34) or an index (CDX_IG, CDX_HY, ITRAXX_MAIN, ITRAXX_XOVER)")
+            q["reference"] = ref
             q.setdefault("buyer", True)
         if p == "COMMODITY_SWAP":
             if q.get("code", "").upper() not in w.market.commodities.state:
@@ -567,8 +604,9 @@ class OTCEngine:
         if p in ("EQUITY_OPTION", "EQUITY_FORWARD"):
             sid = str(q.get("security_id", "")).upper()
             sec = w.securities.get(sid)
-            if sid != "SPX" and (sec is None or sec.is_bond or sec.is_future or sec.is_option):
-                raise CommandError("reference must be an equity, ETF, ADR, REIT or SPX")
+            from .vol import is_index
+            if not is_index(sid) and (sec is None or sec.is_bond or sec.is_future or sec.is_option or sec.asset_class == "INDEX"):
+                raise CommandError("reference must be an equity, ETF, ADR, REIT, coin or an index (SPX, NDX, RUT)")
             q["security_id"] = sid
             if _f(q.get("units", 0)) <= 0:
                 raise CommandError("units must be positive")
@@ -607,6 +645,9 @@ class OTCEngine:
 
     def _player_level(self, p: str, params: Dict, fair: Dict, bid: float, ask: float) -> Tuple[float, float]:
         """The level the player would deal at with this dealer and its cost vs mid in base currency."""
+        if p in EXTRA_PRODUCTS:
+            return self.extra.player_level(p, params, fair, bid, ask)
+        p = _core(p)
         N = _f(params.get("notional", params.get("usd_notional", 0)))
         if p == "IRS":
             level = ask if params["pay_fixed"] else bid
@@ -657,6 +698,8 @@ class OTCEngine:
         if w.market.dealers.state[dealer].defaulted:
             raise CommandError(f"{dealer} is in default")
         terms, notional, ccy, start, maturity, initial = self._build_terms(r, q)
+        if r.params.get("tag"):
+            terms["tag"] = str(r.params["tag"]).strip().lstrip("#") or None
         # independent amount + upfront must be financeable
         csa = self.csa(pf, dealer)
         im = money(D(repr(csa.im_pct.get(r.product, 0.0))) * notional)
@@ -678,14 +721,16 @@ class OTCEngine:
 
     def _build_terms(self, r: RFQ, q: Dict):
         w = self.w
-        p, P, M = r.product, r.params, r.mid
+        if r.product in EXTRA_PRODUCTS:
+            return self.extra.build_terms(r, q)
+        p, P, M = _core(r.product), r.params, r.mid
         today = w.current_date.isoformat()
         level = q["level"]
         base = w.base_currency
         initial: List[Dict] = []
         if p == "IRS":
             N = money(P["notional"])
-            terms = {"pay_fixed": bool(P["pay_fixed"]), "fixed_rate": level / 1e4, "fixed_months": int(P["fixed_months"]), "float_months": int(P["float_months"]), "index": f"TERM{int(P['float_months'])}M"}
+            terms = {"pay_fixed": bool(P["pay_fixed"]), "fixed_rate": level / 1e4, "fixed_months": int(P["fixed_months"]), "float_months": int(P["float_months"]), "index": "SOFR OIS (compounded overnight)" if r.product == "OIS" else f"TERM{int(P['float_months'])}M"}
             return terms, N, base, today, M["maturity"], initial
         if p == "FRA":
             N = money(P["notional"])
@@ -719,7 +764,9 @@ class OTCEngine:
             return terms, N, base, today, M["maturity"], initial
         if p == "CDS":
             N = money(P["notional"])
-            sec = w.securities[P["reference"]]
+            sec = w.securities.get(P["reference"])
+            if sec is None:                                   # an index
+                sec = type("Idx", (), {"issuer": CDS_INDICES[P["reference"]][0]})()
             per = self.periods(today, M["maturity"], 3)
             h = px.hazard_from_spread(level, M["recovery"])
             upfront = px.cds_pv(self.curve(), w.current_date, _f(N), M["running_bps"], h, M["recovery"], per, True)   # buyer's view at the dealt spread
@@ -793,6 +840,9 @@ class OTCEngine:
             c = hw * 1e-4 * _f(t.notional) * px.years(w.current_date, date.fromisoformat(t.maturity))
         elif t.product == "TRS":
             c = hw * 1e-4 * _f(t.notional) * max(0.1, px.years(w.current_date, date.fromisoformat(t.maturity)))
+        elif t.product in EXTRA_PRODUCTS:
+            fam = EXTRA_FAMILY.get(t.product)
+            c = hw * abs(_f(t.mtm)) if fam == "premium" else hw * _f(t.notional) if fam == "price" else hw * abs(an.get("vega", an.get("inflation_dv01", _f(t.notional) * 1e-4)))
         else:
             c = hw * abs(an.get("delta_units", 0.0)) * an.get("spot", 0.0)
         return money(D(repr(max(c, 0.0))))
@@ -884,9 +934,12 @@ class OTCEngine:
         iso = today.isoformat()
         T = t.terms
         N = _f(t.notional)
-        p = t.product
+        p = _core(t.product)
         paid = set(t.state.get("paid", []))
         days = max(1, (today - prev).days)
+        if t.product in EXTRA_PRODUCTS:
+            self.extra.lifecycle(pf, t, cause, prev, paid, days)
+            return
         if p == "IRS":
             fl = self.periods(t.start, t.maturity, T["float_months"])
             fp = self.periods(t.start, t.maturity, T["fixed_months"])
@@ -1221,7 +1274,10 @@ class OTCEngine:
             T = t.terms
             paid = set(t.state.get("paid", []))
             mat = date.fromisoformat(t.maturity)
-            if t.product == "IRS":
+            if t.product in EXTRA_PRODUCTS:
+                self.extra.upcoming(t, add, paid, mat)
+                continue
+            if t.product in ("IRS", "OIS"):
                 for (s, e, pd_) in self.periods(t.start, t.maturity, T["fixed_months"]):
                     if "FIXED:" + pd_.isoformat() not in paid:
                         add(t, pd_, "FIXED_COUPON", f"fixed {T['fixed_rate']:.4%} x {px.yearfrac(s, e, '30/360'):.3f}y")
@@ -1257,7 +1313,7 @@ class OTCEngine:
                         add(t, pd_, "COMMODITY_SETTLEMENT", "period average vs fixed settles")
             if t.product in ("EQUITY_OPTION", "FX_OPTION"):
                 add(t, mat, "EXPIRY", f"cash settlement if in the money vs strike {_f(T['strike']):,.4f}")
-            elif t.product in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            elif t.product in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD", "NDF"):
                 add(t, mat, "FORWARD_SETTLEMENT", f"cash settlement vs forward {_f(T['forward_price']):,.4f}")
             elif t.product not in ("FRA", "SWAPTION"):
                 add(t, mat, "MATURITY", "trade matures")
@@ -1291,7 +1347,11 @@ class OTCEngine:
 
     def describe(self, t: OTCTrade) -> str:
         T = t.terms
-        if t.product == "IRS":
+        if t.product in EXTRA_PRODUCTS:
+            return self.extra.describe(t)
+        if t.product == "NDF":
+            return f"{'Buy' if T['long'] else 'Sell'} {T['ccy']} {_f(T['units']):,.0f} NDF at {_f(T['forward_price']):.4f} USD, cash-settled {t.maturity}"
+        if t.product in ("IRS", "OIS"):
             return f"{'Pay' if T['pay_fixed'] else 'Receive'} fixed {T['fixed_rate']:.4%} vs {T['index']} on {t.notional:,.0f} to {t.maturity}"
         if t.product == "FRA":
             return f"{'Pay' if T['pay_fixed'] else 'Receive'} {T['rate']:.4%} FRA {T['fra_start']}→{T['fra_end']} on {t.notional:,.0f}"

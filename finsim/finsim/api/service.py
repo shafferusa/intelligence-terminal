@@ -20,7 +20,7 @@ from ..engines.ledger import CHART, account_name, account_type
 from ..engines.market import REGIMES
 from ..engines.options import REGIME_MARGIN_MULT, STRATEGY_TEMPLATES
 from ..engines.pricing import BondPricer, Instrument, interp_rate
-from ..money import D, money, ZERO
+from ..money import D, money, ZERO, price as qprice
 from ..store import EventStore
 from ..log import get_logger
 from ..version import ENGINE_VERSION
@@ -45,6 +45,24 @@ def jsonable(o: Any) -> Any:
     return o
 
 
+MAX_CAPITAL = D(1_000_000_000_000)          # one trillion: the most any book can start with
+
+
+def _capital(capital, job: str) -> Decimal:
+    """Any starting amount for any job, capped at a trillion; blank means the job's standard capital."""
+    try:
+        c = D(str(capital)) if capital not in (None, "", 0, "0") else None
+    except Exception:
+        raise CommandError("capital must be a number")
+    if c is None:
+        return JOBS[job].capital
+    if c <= 0:
+        raise CommandError("capital must be positive")
+    if c > MAX_CAPITAL:
+        raise CommandError("capital is capped at $1 trillion")
+    return money(c)
+
+
 class Service:
     def __init__(self, store: EventStore, strict_replay: Optional[bool] = None):
         import os as _os
@@ -64,7 +82,8 @@ class Service:
     def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
                      benchmark: Optional[str] = "SPY", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
-                     update_time: Optional[str] = None, scenario: str = "NONE", at=None, market_source: Optional[str] = None) -> Dict:
+                     update_time: Optional[str] = None, scenario: str = "NONE", at=None, market_source: Optional[str] = None,
+                     lock_session: bool = False) -> Dict:
         """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
         themselves at the update time; sandbox saves start wherever you like and advance on demand. market_source
         REAL makes the world track the actual market: real prehistory, real closes for every session it enters."""
@@ -83,13 +102,13 @@ class Service:
         if market_source not in ("SIMULATED", "REAL"):
             raise CommandError("market_source must be SIMULATED or REAL")
         update_time = update_time or ("17:00" if clock_mode == "REAL_TIME" else "09:00")
-        clock = ClockConfig(clock_mode, timezone, update_time)
+        clock = ClockConfig(clock_mode, timezone, update_time, bool(lock_session))
         if clock_mode == "REAL_TIME" and market_source == "REAL":
             from ..clock import MARKET_TZ, SESSION_FINAL
             from datetime import datetime as _dt
             ny = _dt.combine(date(2026, 1, 5), clock.update_t(), tzinfo=clock.tz()).astimezone(MARKET_TZ).time()
             if ny < SESSION_FINAL:
-                raise CommandError(f"a career save updates after the real close: {update_time} {timezone} is {ny.strftime('%H:%M')} New York, before 16:15")
+                raise CommandError(f"a career save updates after the real close: {update_time} {timezone} is {ny.strftime('%H:%M')} New York, before 16:00")
         cal = World("tmp").calendar
         real_history = None
         real_macro = None
@@ -124,23 +143,42 @@ class Service:
                          market_source=market_source, real_history=real_history, real_macro=real_macro)
         self.log.info("created world %s (%s, job %s, clock %s, seed %s, scenario %s)", wid, name, job, clock.mode, seed, scenario)
         self.worlds[wid] = w
-        cap = D(str(capital)) if (capital and job == "SANDBOX") else JOBS[job].capital
+        cap = _capital(capital, job)
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
         pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
         return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode}
 
     def _open_for_instructions(self, w: World, at=None) -> None:
-        """Career saves take instructions only while the market is shut (from the update until 09:29 New York)."""
+        """With the session lock on, a career save takes instructions only while the market is shut (update → 09:29 New York)."""
         if at is None and self.now is not None:
             at = self.now()
         tw = w.trading_window(at)
         if not tw["open"]:
             raise CommandError(f"instructions are locked while the session runs: {tw['reason']}")
 
-    def set_clock(self, world_id: str, update_time: Optional[str] = None, timezone: Optional[str] = None) -> Dict:
+    def set_clock(self, world_id: str, update_time: Optional[str] = None, timezone: Optional[str] = None, lock_session: Optional[bool] = None) -> Dict:
         w = self.world(world_id)
-        w.set_clock(update_time, timezone)
+        w.set_clock(update_time, timezone, lock_session)
         return self.world_info(world_id)
+
+    def live(self, world_id: str, ids: Optional[List[str]] = None) -> Dict:
+        """Latest real quotes for securities in a save that tracks the market (Yahoo, up to 15 minutes delayed), next to
+        the save's last close. Without ids: the index ETFs plus everything held in the save's books."""
+        w = self.world(world_id)
+        avail = w.live.available()
+        out = {"available": avail, "source": "Yahoo Finance (up to 15 minutes delayed)" if avail else None, "last_close_date": w.current_date.isoformat(),
+               "asof": now_utc().isoformat(), "quotes": {}}
+        if not avail:
+            out["note"] = "a simulated save has no live market: prices move when the day is processed"
+            return jsonable(out)
+        if not ids:
+            ids = ["SPY", "QQQ", "IWM"] + sorted({p.security_id for pf in w.portfolios.values() for p in pf.positions.values() if p.quantity != 0})
+        ids = [str(i).strip().upper() for i in ids if str(i).strip()][:250]
+        try:
+            out["quotes"] = w.live.quotes(ids)
+        except Exception as e:  # offline: the page still renders on the last close
+            out["error"] = f"could not reach the quote feed ({e.__class__.__name__})"
+        return jsonable(out)
 
     def catch_up_all(self, at=None) -> Dict[str, List[str]]:
         """Process due days for every career world (called by the scheduler and on access). `at` injects the clock."""
@@ -159,6 +197,8 @@ class Service:
         return w.catch_up(at)
 
     def world(self, world_id: str, at=None, catch_up: bool = True) -> World:
+        if at is None and self.now is not None:
+            at = self.now()                      # an injected clock (tests) drives the catch-up too
         if world_id not in self.worlds:
             if not any(x["id"] == world_id for x in self.store.list_worlds()):
                 raise NotFound(f"world {world_id} not found")
@@ -196,6 +236,8 @@ class Service:
                          "day_index": w.day_count, "events": len(w.events), "regime": {"name": r.name, "label": r.label, "description": r.description},
                          "scenario": w.scenario, "scenario_log": w.scenario_log, "market_source": getattr(w, "market_source", "SIMULATED"),
                          "trading_window": w.trading_window(self.now() if self.now else None),
+                         "live": {"available": w.live.available(), "source": "Yahoo Finance (up to 15 minutes delayed)" if w.live.available() else None,
+                                  "instruction_session": w.instruction_session(self.now() if self.now else None)},
                          "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
                                           "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
                                           "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),
@@ -205,7 +247,7 @@ class Service:
                                          "job": p.job, "job_title": JOBS[p.job].title if p.job in JOBS else p.job, "level_title": w.careers.level_title(p)}
                                         for p in w.portfolios.values()],
                          "settlement_cycles": w.settlement_config.cycles, "policy_rate": w.market.curve().policy_rate,
-                         "clock": {"mode": w.clock.mode, "timezone": w.clock.timezone, "update_time": w.clock.update_time,
+                         "clock": {"mode": w.clock.mode, "timezone": w.clock.timezone, "update_time": w.clock.update_time, "lock_session": w.clock.lock_session,
                                    "next_update": nu.isoformat() if nu else None, "now": now_utc().isoformat(),
                                    "weekday": w.current_date.strftime("%A")},
                          "vol_index": w.market.vol_index()})
@@ -221,7 +263,7 @@ class Service:
         w = self.world(world_id)
         if job not in JOBS:
             raise CommandError(f"unknown job {job}")
-        cap = D(str(capital)) if job == "SANDBOX" else JOBS[job].capital
+        cap = _capital(capital, job)
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
         pf = w.create_portfolio(name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
         return {"portfolio_id": pf.id}
@@ -233,35 +275,44 @@ class Service:
 
     def place_order(self, world_id: str, portfolio_id: str, security_id: str, side: str, quantity: float, order_type: str = "MARKET",
                     limit_price: Optional[float] = None, stop_price: Optional[float] = None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None,
-                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None, settle_ccy: Optional[str] = None) -> Dict:
-        """An instruction; with `settle_ccy` another currency pays for it (a buy) or receives its proceeds (a sell): the spot
-        conversion is dealt now at the pair's rate and settles T+2, so the cash is there when the trade settles."""
+                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None, settle_ccy: Optional[str] = None,
+                    execution: Optional[str] = None) -> Dict:
+        """An instruction for the next update, or with execution LIVE an immediate fill at the latest real quote. With
+        `settle_ccy` another currency pays for it (a buy) or receives its proceeds (a sell): the spot conversion is dealt
+        alongside (at the live rate for a live ticket) and settles T+2, so the cash is there when the trade settles."""
         w = self.world(world_id)
         self._open_for_instructions(w)
         pf = w.portfolio(portfolio_id)
         sec = w.security(security_id)
+        execution = (execution or "NEXT_UPDATE").upper()
         fx_trade = None
         settle = (settle_ccy or "").upper() or None
+        at = self.now() if self.now else None
         try:
             if settle and settle != (sec.currency or pf.base_currency):
-                pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle})
+                pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle, "execution": execution})
                 fx = pv.get("fx")
                 need = D(str(pv["cash_needed"]))
                 if fx and need > 0:                               # a buy paid with another currency: buy the security's currency first
-                    fx_trade = w.fx_spot(portfolio_id, sec.currency, settle, need, "BUY")
+                    fx_trade = w.fx_spot(portfolio_id, sec.currency, settle, need, "BUY", execution)
             o = w.place_order(portfolio_id, security_id, side, D(str(quantity)), order_type,
                               D(str(limit_price)) if limit_price is not None else None,
                               D(str(stop_price)) if stop_price is not None else None, time_in_force, strategy_tag,
-                              float(trail_pct) if trail_pct else None, condition)
+                              float(trail_pct) if trail_pct else None, condition, execution, at)
             if settle and settle != (sec.currency or pf.base_currency) and fx_trade is None:
-                pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle})
-                need = D(str(pv["cash_needed"]))
+                if o.filled_quantity > 0:                          # a live sale: convert what it actually raised
+                    need = -(o.avg_fill_price * o.filled_quantity * w.trading._unit(sec))
+                else:
+                    pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle, "execution": execution})
+                    need = D(str(pv["cash_needed"]))
                 if need < 0:                                      # a sale whose proceeds go into another currency: sell them forward into it at spot
-                    fx_trade = w.fx_spot(portfolio_id, settle, sec.currency, -need, "SELL")
+                    fx_trade = w.fx_spot(portfolio_id, settle, sec.currency, -need, "SELL", execution)
         finally:
             w.flush()
         out = self.order(world_id, portfolio_id, o.id)
         out["fx"] = jsonable(asdict(fx_trade)) if fx_trade is not None else None
+        out["execution"] = execution
+        out["trade"] = jsonable(asdict(pf.trades[o.trade_ids[-1]])) if o.trade_ids else None
         return out
 
     def cancel_order(self, world_id: str, portfolio_id: str, order_id: str) -> Dict:
@@ -291,7 +342,8 @@ class Service:
                    "adv": sec.adv, "liquidity_tier": sec.liquidity_tier, "beta": sec.beta, "realized_vol": w.market.realized_vol(sec.id),
                    "dividend_yield": sec.dividend_yield, "dividend_per_share": sec.dividend_per_share, "lot_size": sec.lot_size,
                    "market_cap": (float(bar.close) * sec.shares_outstanding) if sec.shares_outstanding else None, "rating": sec.rating,
-                   "coupon": sec.coupon, "maturity": sec.maturity, "is_future": sec.is_future, "underlying": sec.underlying,
+                   "coupon": sec.coupon, "maturity": sec.maturity, "is_future": sec.is_future, "underlying": sec.underlying, "issuer": sec.issuer,
+                   "is_index": sec.asset_class == "INDEX", "qty_step": sec.qty_step, "yahoo": sec.yahoo,
                    "underlying_class": sec.underlying_class, "contract_month": sec.contract_month, "multiplier": sec.multiplier, "tick_size": sec.tick_size,
                    "expiry": sec.expiry, "unit": sec.unit}
             if sec.is_future:
@@ -640,7 +692,7 @@ class Service:
                 rows.append({"security_id": sec.id, "name": sec.name, "asset_class": "FUTURE", "sector": sec.sector, "currency": sec.currency, "country": sec.country,
                              "underlying": sec.underlying, "underlying_class": sec.underlying_class, "contract_month": sec.contract_month, "expiry": sec.expiry,
                              "quantity": pos.quantity, "settled_quantity": pos.quantity, "pending_receive": ZERO, "pending_deliver": ZERO,
-                             "average_cost": pos.average_cost_future, "cost_basis": ZERO, "mark": pos.settlement_price, "market_value": ZERO, "notional": pos.notional,
+                             "average_cost": pos.average_cost_future, "cost_basis": ZERO, "mark": pos.settlement_price, "market_value": ZERO, "notional": pos.notional, "multiplier": sec.multiplier,
                              "unrealized_pnl": ZERO, "realized_pnl": pos.variation_margin_total, "day_variation_margin": day_row.get("realized", ZERO),
                              "dividend_income": ZERO, "interest_income": ZERO, "commissions": pos.commissions, "accrued_interest": ZERO,
                              "weight": float(pos.notional / nav) if nav else 0.0, "beta": sec.beta, "risk": {"delta": 1.0, "notional": pos.notional,
@@ -1078,15 +1130,74 @@ class Service:
             raise NotFound(f"unknown margin action {action}")
         return self.financing(world_id, portfolio_id)["prime"]
 
-    def fx_spot(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount: float, amount_ccy: str = "BUY") -> Dict:
+    def fx_spot(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount: float, amount_ccy: str = "BUY", execution: Optional[str] = None,
+                tag: Optional[str] = None) -> Dict:
         w = self.world(world_id)
         self._open_for_instructions(w)
-        return jsonable(asdict(w.fx_spot(portfolio_id, buy_ccy, sell_ccy, D(str(amount)), amount_ccy)))
+        return jsonable(asdict(w.fx_spot(portfolio_id, buy_ccy, sell_ccy, D(str(amount)), amount_ccy, execution or "NEXT_UPDATE", tag)))
 
-    def fx_forward(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount: float, maturity: str) -> Dict:
+    def fx_forward(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount: float, maturity: str, tag: Optional[str] = None) -> Dict:
         w = self.world(world_id)
         self._open_for_instructions(w)
-        return jsonable(asdict(w.fx_forward(portfolio_id, buy_ccy, sell_ccy, D(str(buy_amount)), maturity)))
+        return jsonable(asdict(w.fx_forward(portfolio_id, buy_ccy, sell_ccy, D(str(buy_amount)), maturity, tag)))
+
+    def tags(self, world_id: str, portfolio_id: str) -> Dict:
+        """Every #tag in the book: the fills, working instructions, OTC trades and FX deals that carry it, with net quantities,
+        realised and unrealised P&L. Tags come from the ticket's strategy tag, the playbook (its strategy key), FX deals and OTC RFQs."""
+        w = self.world(world_id)
+        pf = w.portfolio(portfolio_id)
+        out: Dict[str, Dict] = {}
+
+        def bucket(tag: str) -> Dict:
+            t = (tag or "").strip().lstrip("#")
+            if not t:
+                return None
+            return out.setdefault(t, {"tag": t, "fills": [], "orders": [], "otc": [], "fx": [], "net": {}, "realized": ZERO, "unrealized": ZERO, "mtm": ZERO, "cash": ZERO})
+        tag_of_order = {o.id: o.strategy_tag for o in pf.orders.values() if o.strategy_tag and o.strategy_tag != "SYSTEM"}
+        for o in pf.orders.values():
+            b = bucket(tag_of_order.get(o.id))
+            if b is not None and o.status in ("WORKING", "PARTIALLY_FILLED"):
+                b["orders"].append(asdict(o))
+        for t in pf.trades.values():
+            b = bucket(tag_of_order.get(t.order_id))
+            if b is None:
+                continue
+            b["fills"].append(asdict(t))
+            sec = w.securities[t.security_id]
+            signed = t.quantity if t.side == "BUY" else -t.quantity
+            n = b["net"].setdefault(t.security_id, {"security_id": t.security_id, "name": sec.name, "quantity": ZERO, "cost": ZERO, "realized": ZERO})
+            n["quantity"] += signed
+            n["cost"] += (t.net_amount if t.side == "BUY" else -t.net_amount) if not sec.is_future else ZERO
+            n["realized"] += t.realized_pnl or ZERO
+            b["realized"] += t.realized_pnl or ZERO
+        for b in out.values():
+            for n in b["net"].values():
+                sec = w.securities[n["security_id"]]
+                if n["quantity"] != 0 and w.market.history.get(n["security_id"]) or (sec.is_option and w.trading._bar(sec)):
+                    bar = w.trading._bar(sec)
+                    unit = w.trading._unit(sec)
+                    mark = money(n["quantity"] * bar.close * unit / (100 if sec.is_bond else 1)) if not sec.is_future else ZERO
+                    n["mark_value"] = mark
+                    n["unrealized"] = mark - n["cost"] if not sec.is_future else ZERO
+                    b["unrealized"] += n["unrealized"]
+            b["net"] = [n for n in b["net"].values()]
+        for t in pf.otc_trades.values():
+            b = bucket((t.terms or {}).get("tag"))
+            if b is not None:
+                b["otc"].append({"id": t.id, "product": t.product, "counterparty": t.counterparty, "description": w.otc.describe(t), "status": t.status, "mtm": t.mtm, "realized": t.realized,
+                                 "notional": t.notional, "maturity": t.maturity})
+                if t.is_open:
+                    b["mtm"] += t.mtm
+                b["cash"] += t.realized
+        for f in list(pf.fx_trades.values()) + list(pf.fx_forwards.values()):
+            b = bucket(getattr(f, "tag", None))
+            if b is not None:
+                b["fx"].append(asdict(f))
+                b["mtm"] += getattr(f, "mtm", ZERO) if getattr(f, "status", "") == "OPEN" else ZERO
+        rows = sorted(out.values(), key=lambda b: b["tag"])
+        for b in rows:
+            b["total"] = b["realized"] + b["unrealized"] + b["mtm"] + b["cash"]
+        return jsonable({"tags": rows, "count": len(rows)})
 
     def force_regime(self, world_id: str, regime: str) -> Dict:
         w = self.world(world_id)
@@ -1108,17 +1219,33 @@ class Service:
         if bar is None:
             raise CommandError(f"{sid} has no session data yet")
         limit = body.get("limit_price")
-        px = D(str(limit)) if limit not in (None, "") else (bar.ask if side == "BUY" else bar.bid)
+        live = None
+        if str(body.get("execution") or "").upper() == "LIVE" and w.live.available():
+            try:
+                live = w.live.quote(sec)
+            except Exception:
+                live = None
+        if live:
+            lp = D(str(live["price"]))
+            if sec.is_option:
+                lbid, lask = D(str(live["bid"])), D(str(live["ask"]))
+            else:
+                rel = (bar.ask - bar.bid) / 2 / bar.close if bar.close else ZERO
+                lbid, lask = qprice(lp - lp * rel), qprice(lp + lp * rel)
+            px = D(str(limit)) if limit not in (None, "") else (lask if side == "BUY" else lbid)
+        else:
+            px = D(str(limit)) if limit not in (None, "") else (bar.ask if side == "BUY" else bar.bid)
         unit = w.trading._unit(sec)
         lot = D(sec.lot_size) if sec.lot_size > 1 else D(1)
         acc100 = BondPricer.accrued_per_100(sec, w.current_date) if sec.is_bond else ZERO
         per_unit_cash = (px + acc100) * unit                  # cash per one unit of quantity (per share / per 1 face incl. accrued / per contract)
         amount = body.get("amount")
+        step = sec.qty_step if sec.qty_step != 1 else D(1)
         if amount not in (None, "") and D(str(amount)) > 0 and per_unit_cash > 0:
-            q = (D(str(amount)) / per_unit_cash).to_integral_value(rounding="ROUND_DOWN")
+            q = (D(str(amount)) / per_unit_cash).quantize(step, rounding="ROUND_DOWN")
             q = q - (q % lot)
         else:
-            q = D(str(body.get("quantity") or 0)).to_integral_value(rounding="ROUND_DOWN")
+            q = D(str(body.get("quantity") or 0)).quantize(step, rounding="ROUND_DOWN")
         q = max(D(0), q)
         gross = money(q * px * unit)
         accrued = money(q * BondPricer.accrued_per_100(sec, w.current_date) / 100) if sec.is_bond else ZERO
@@ -1140,10 +1267,12 @@ class Service:
             fx = {**q_fx, "direction": "pay" if cash_needed > 0 else "receive",
                   "settle_amount": q_fx["sell_amount"] if cash_needed > 0 else q_fx["buy_amount"],
                   "settle_balance": pf.cash_account(settle).balance, "settle_projected": w.trading.projected_cash(pf, settle)}
-        return jsonable({"security_id": sid, "side": side, "quantity": q, "price": px, "price_source": "limit" if limit not in (None, "") else ("ask" if side == "BUY" else "bid"),
+        return jsonable({"security_id": sid, "side": side, "quantity": q, "price": px,
+                         "price_source": "limit" if limit not in (None, "") else (("live ask" if side == "BUY" else "live bid") if live else ("ask" if side == "BUY" else "bid")),
+                         "live": live, "execution": "LIVE" if live else "NEXT_UPDATE",
                          "unit_cash": per_unit_cash, "gross": gross, "accrued_interest": accrued, "commission": commission, "initial_margin": margin,
                          "cash_needed": cash_needed, "cash_settled": pf.cash_account(ccy).balance, "cash_projected": w.trading.projected_cash(pf, ccy),
-                         "kind": "future" if sec.is_future else "option" if sec.is_option else "bond" if sec.is_bond else "cash",
+                         "kind": "future" if sec.is_future else "option" if sec.is_option else "bond" if sec.is_bond else "crypto" if sec.asset_class == "CRYPTO" else "cash",
                          "lot_size": lot, "multiplier": float(sec.multiplier) if (sec.is_future or sec.is_option) else 1.0, "currency": ccy,
                          "settle_ccy": settle, "fx": fx, "cash_by_currency": {c: {"settled": a.balance, "base_value": a.base_value} for c, a in pf.cash.items()}})
 

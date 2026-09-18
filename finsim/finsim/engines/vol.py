@@ -97,19 +97,34 @@ class VolSurfaceModel:
         return {"iv_rank": rank, "iv_percentile": pct, "low": lo, "high": hi, "current": cur, "days": len(atms)}
 
 
-OPTIONABLE_CLASSES = ("EQUITY", "ETF", "REIT", "ADR")
+OPTIONABLE_CLASSES = ("EQUITY", "ETF", "REIT", "ADR", "CRYPTO")
 INDEX_ID = "SPX"
 INDEX_SOURCE = "SPY"
+# cash-settled European index options: index -> (the ETF whose price × factor is the index level, factor)
+INDICES = {"SPX": ("SPY", 10.0), "NDX": ("QQQ", 41.3), "RUT": ("IWM", 10.35)}
+
+
+def is_index(under) -> bool:
+    return under in INDICES
+
+
+def index_source(under: str) -> str:
+    return INDICES[under][0] if under in INDICES else under
+
+
+def index_factor(under: str) -> float:
+    return INDICES[under][1] if under in INDICES else 1.0
 
 
 def optionable_underlyings(securities: Dict) -> List[str]:
     """Underlyings that carry a listed option chain and a vol surface (large/mid caps plus the cash index)."""
-    out = [s.id for s in securities.values() if s.asset_class in OPTIONABLE_CLASSES and s.liquidity_tier in ("LARGE", "MID") and s.shares_outstanding]
-    return sorted(out) + [INDEX_ID]
+    out = [s.id for s in securities.values() if s.asset_class in OPTIONABLE_CLASSES and s.liquidity_tier == "LARGE" and s.shares_outstanding
+           and (s.asset_class != "ETF" or s.adv >= 500_000)]
+    return sorted(out) + [i for i in INDICES if INDICES[i][0] in securities]
 
 
 def structural_vol(securities: Dict, under: str) -> float:
-    if under == INDEX_ID:
-        return 0.16
+    if under in INDICES:
+        return {"SPX": 0.16, "NDX": 0.21, "RUT": 0.22}.get(under, 0.16)
     sec = securities[under]
     return math.sqrt((sec.beta * 0.16) ** 2 + sec.sigma_annual ** 2)

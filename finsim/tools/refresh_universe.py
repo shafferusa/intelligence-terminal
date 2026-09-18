@@ -26,219 +26,9 @@ from datetime import date
 YAHOO_UA = "Mozilla/5.0"
 SEC_UA = "LoganTerminal/1.0 (loganshaffer87@gmail.com)"
 
-# ticker, name, asset class, GICS sector, country, yahoo symbol (if different), EDGAR ticker (if different)
-UNIVERSE = [
-    # Information Technology
-    ("AAPL", "Apple Inc.", "EQUITY", "Information Technology", "US"),
-    ("MSFT", "Microsoft Corporation", "EQUITY", "Information Technology", "US"),
-    ("NVDA", "NVIDIA Corporation", "EQUITY", "Information Technology", "US"),
-    ("AVGO", "Broadcom Inc.", "EQUITY", "Information Technology", "US"),
-    ("ORCL", "Oracle Corporation", "EQUITY", "Information Technology", "US"),
-    ("CRM", "Salesforce, Inc.", "EQUITY", "Information Technology", "US"),
-    ("AMD", "Advanced Micro Devices, Inc.", "EQUITY", "Information Technology", "US"),
-    ("INTC", "Intel Corporation", "EQUITY", "Information Technology", "US"),
-    # Communication Services
-    ("GOOGL", "Alphabet Inc.", "EQUITY", "Communication Services", "US"),
-    ("META", "Meta Platforms, Inc.", "EQUITY", "Communication Services", "US"),
-    ("NFLX", "Netflix, Inc.", "EQUITY", "Communication Services", "US"),
-    ("DIS", "The Walt Disney Company", "EQUITY", "Communication Services", "US"),
-    ("VZ", "Verizon Communications Inc.", "EQUITY", "Communication Services", "US"),
-    ("T", "AT&T Inc.", "EQUITY", "Communication Services", "US"),
-    # Consumer Discretionary
-    ("AMZN", "Amazon.com, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("TSLA", "Tesla, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("HD", "The Home Depot, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("MCD", "McDonald's Corporation", "EQUITY", "Consumer Discretionary", "US"),
-    ("NKE", "NIKE, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("F", "Ford Motor Company", "EQUITY", "Consumer Discretionary", "US"),
-    ("RIVN", "Rivian Automotive, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    # Consumer Staples
-    ("PG", "The Procter & Gamble Company", "EQUITY", "Consumer Staples", "US"),
-    ("KO", "The Coca-Cola Company", "EQUITY", "Consumer Staples", "US"),
-    ("PEP", "PepsiCo, Inc.", "EQUITY", "Consumer Staples", "US"),
-    ("WMT", "Walmart Inc.", "EQUITY", "Consumer Staples", "US"),
-    ("COST", "Costco Wholesale Corporation", "EQUITY", "Consumer Staples", "US"),
-    ("BYND", "Beyond Meat, Inc.", "EQUITY", "Consumer Staples", "US"),
-    # Health Care
-    ("LLY", "Eli Lilly and Company", "EQUITY", "Health Care", "US"),
-    ("UNH", "UnitedHealth Group Incorporated", "EQUITY", "Health Care", "US"),
-    ("JNJ", "Johnson & Johnson", "EQUITY", "Health Care", "US"),
-    ("PFE", "Pfizer Inc.", "EQUITY", "Health Care", "US"),
-    ("MRK", "Merck & Co., Inc.", "EQUITY", "Health Care", "US"),
-    # Financials
-    ("JPM", "JPMorgan Chase & Co.", "EQUITY", "Financials", "US"),
-    ("GS", "The Goldman Sachs Group, Inc.", "EQUITY", "Financials", "US"),
-    ("BAC", "Bank of America Corporation", "EQUITY", "Financials", "US"),
-    ("MS", "Morgan Stanley", "EQUITY", "Financials", "US"),
-    ("BRK-B", "Berkshire Hathaway Inc. (Class B)", "EQUITY", "Financials", "US"),
-    ("V", "Visa Inc.", "EQUITY", "Financials", "US"),
-    ("BLK", "BlackRock, Inc.", "EQUITY", "Financials", "US"),
-    # Industrials
-    ("CAT", "Caterpillar Inc.", "EQUITY", "Industrials", "US"),
-    ("GE", "GE Aerospace", "EQUITY", "Industrials", "US"),
-    ("UNP", "Union Pacific Corporation", "EQUITY", "Industrials", "US"),
-    ("BA", "The Boeing Company", "EQUITY", "Industrials", "US"),
-    ("RTX", "RTX Corporation", "EQUITY", "Industrials", "US"),
-    ("UPS", "United Parcel Service, Inc.", "EQUITY", "Industrials", "US"),
-    ("AAL", "American Airlines Group Inc.", "EQUITY", "Industrials", "US"),
-    # Energy
-    ("XOM", "Exxon Mobil Corporation", "EQUITY", "Energy", "US"),
-    ("CVX", "Chevron Corporation", "EQUITY", "Energy", "US"),
-    ("COP", "ConocoPhillips", "EQUITY", "Energy", "US"),
-    ("SLB", "Schlumberger Limited", "EQUITY", "Energy", "US"),
-    ("OXY", "Occidental Petroleum Corporation", "EQUITY", "Energy", "US"),
-    # Materials
-    ("LIN", "Linde plc", "EQUITY", "Materials", "US"),
-    ("FCX", "Freeport-McMoRan Inc.", "EQUITY", "Materials", "US"),
-    ("NEM", "Newmont Corporation", "EQUITY", "Materials", "US"),
-    ("NUE", "Nucor Corporation", "EQUITY", "Materials", "US"),
-    # Utilities
-    ("NEE", "NextEra Energy, Inc.", "EQUITY", "Utilities", "US"),
-    ("DUK", "Duke Energy Corporation", "EQUITY", "Utilities", "US"),
-    ("SO", "The Southern Company", "EQUITY", "Utilities", "US"),
-    # Real Estate
-    ("PLD", "Prologis, Inc.", "REIT", "Real Estate", "US"),
-    ("AMT", "American Tower Corporation", "REIT", "Real Estate", "US"),
-    ("O", "Realty Income Corporation", "REIT", "Real Estate", "US"),
-    # ADRs
-    ("TSM", "Taiwan Semiconductor Manufacturing (ADR)", "ADR", "Information Technology", "TW"),
-    ("TM", "Toyota Motor Corporation (ADR)", "ADR", "Consumer Discretionary", "JP"),
-    # Preferred
-    ("BAC-PL", "Bank of America 7.25% Series L Preferred", "PREFERRED", "Financials", "US"),
-    # ETFs
-    ("SPY", "SPDR S&P 500 ETF Trust", "ETF", "Index", "US"),
-    ("QQQ", "Invesco QQQ Trust", "ETF", "Index", "US"),
-    ("TLT", "iShares 20+ Year Treasury Bond ETF", "ETF", "Government", "US"),
-    ("HYG", "iShares iBoxx $ High Yield Corporate Bond ETF", "ETF", "Credit", "US"),
-    ("SHV", "iShares Short Treasury Bond ETF", "ETF", "Government", "US"),
-    # ---- expansion (2026-09): more of each sector, more ETFs and ADRs
-    ("ADBE", "Adobe Inc.", "EQUITY", "Information Technology", "US"),
-    ("CSCO", "Cisco Systems, Inc.", "EQUITY", "Information Technology", "US"),
-    ("IBM", "International Business Machines Corporation", "EQUITY", "Information Technology", "US"),
-    ("QCOM", "QUALCOMM Incorporated", "EQUITY", "Information Technology", "US"),
-    ("TXN", "Texas Instruments Incorporated", "EQUITY", "Information Technology", "US"),
-    ("AMAT", "Applied Materials, Inc.", "EQUITY", "Information Technology", "US"),
-    ("MU", "Micron Technology, Inc.", "EQUITY", "Information Technology", "US"),
-    ("NOW", "ServiceNow, Inc.", "EQUITY", "Information Technology", "US"),
-    ("INTU", "Intuit Inc.", "EQUITY", "Information Technology", "US"),
-    ("PANW", "Palo Alto Networks, Inc.", "EQUITY", "Information Technology", "US"),
-    ("ANET", "Arista Networks, Inc.", "EQUITY", "Information Technology", "US"),
-    ("PLTR", "Palantir Technologies Inc.", "EQUITY", "Information Technology", "US"),
-    ("SNOW", "Snowflake Inc.", "EQUITY", "Information Technology", "US"),
-    ("SHOP", "Shopify Inc.", "EQUITY", "Information Technology", "CA"),
-    ("TMUS", "T-Mobile US, Inc.", "EQUITY", "Communication Services", "US"),
-    ("CMCSA", "Comcast Corporation", "EQUITY", "Communication Services", "US"),
-    ("SPOT", "Spotify Technology S.A.", "EQUITY", "Communication Services", "LU"),
-    ("WBD", "Warner Bros. Discovery, Inc.", "EQUITY", "Communication Services", "US"),
-    ("UBER", "Uber Technologies, Inc.", "EQUITY", "Industrials", "US"),
-    ("SBUX", "Starbucks Corporation", "EQUITY", "Consumer Discretionary", "US"),
-    ("LOW", "Lowe's Companies, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("TJX", "The TJX Companies, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("BKNG", "Booking Holdings Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("ABNB", "Airbnb, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("GM", "General Motors Company", "EQUITY", "Consumer Discretionary", "US"),
-    ("LULU", "Lululemon Athletica Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("CMG", "Chipotle Mexican Grill, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("MAR", "Marriott International, Inc.", "EQUITY", "Consumer Discretionary", "US"),
-    ("RCL", "Royal Caribbean Cruises Ltd.", "EQUITY", "Consumer Discretionary", "US"),
-    ("CCL", "Carnival Corporation", "EQUITY", "Consumer Discretionary", "US"),
-    ("PM", "Philip Morris International Inc.", "EQUITY", "Consumer Staples", "US"),
-    ("MO", "Altria Group, Inc.", "EQUITY", "Consumer Staples", "US"),
-    ("MDLZ", "Mondelez International, Inc.", "EQUITY", "Consumer Staples", "US"),
-    ("CL", "Colgate-Palmolive Company", "EQUITY", "Consumer Staples", "US"),
-    ("KHC", "The Kraft Heinz Company", "EQUITY", "Consumer Staples", "US"),
-    ("TGT", "Target Corporation", "EQUITY", "Consumer Staples", "US"),
-    ("KR", "The Kroger Co.", "EQUITY", "Consumer Staples", "US"),
-    ("ABBV", "AbbVie Inc.", "EQUITY", "Health Care", "US"),
-    ("TMO", "Thermo Fisher Scientific Inc.", "EQUITY", "Health Care", "US"),
-    ("ABT", "Abbott Laboratories", "EQUITY", "Health Care", "US"),
-    ("AMGN", "Amgen Inc.", "EQUITY", "Health Care", "US"),
-    ("GILD", "Gilead Sciences, Inc.", "EQUITY", "Health Care", "US"),
-    ("ISRG", "Intuitive Surgical, Inc.", "EQUITY", "Health Care", "US"),
-    ("CVS", "CVS Health Corporation", "EQUITY", "Health Care", "US"),
-    ("MRNA", "Moderna, Inc.", "EQUITY", "Health Care", "US"),
-    ("REGN", "Regeneron Pharmaceuticals, Inc.", "EQUITY", "Health Care", "US"),
-    ("VRTX", "Vertex Pharmaceuticals Incorporated", "EQUITY", "Health Care", "US"),
-    ("WFC", "Wells Fargo & Company", "EQUITY", "Financials", "US"),
-    ("C", "Citigroup Inc.", "EQUITY", "Financials", "US"),
-    ("AXP", "American Express Company", "EQUITY", "Financials", "US"),
-    ("SCHW", "The Charles Schwab Corporation", "EQUITY", "Financials", "US"),
-    ("MA", "Mastercard Incorporated", "EQUITY", "Financials", "US"),
-    ("PYPL", "PayPal Holdings, Inc.", "EQUITY", "Financials", "US"),
-    ("COF", "Capital One Financial Corporation", "EQUITY", "Financials", "US"),
-    ("USB", "U.S. Bancorp", "EQUITY", "Financials", "US"),
-    ("PGR", "The Progressive Corporation", "EQUITY", "Financials", "US"),
-    ("CB", "Chubb Limited", "EQUITY", "Financials", "US"),
-    ("MET", "MetLife, Inc.", "EQUITY", "Financials", "US"),
-    ("KKR", "KKR & Co. Inc.", "EQUITY", "Financials", "US"),
-    ("BX", "Blackstone Inc.", "EQUITY", "Financials", "US"),
-    ("EOG", "EOG Resources, Inc.", "EQUITY", "Energy", "US"),
-    ("MPC", "Marathon Petroleum Corporation", "EQUITY", "Energy", "US"),
-    ("PSX", "Phillips 66", "EQUITY", "Energy", "US"),
-    ("KMI", "Kinder Morgan, Inc.", "EQUITY", "Energy", "US"),
-    ("DVN", "Devon Energy Corporation", "EQUITY", "Energy", "US"),
-    ("HON", "Honeywell International Inc.", "EQUITY", "Industrials", "US"),
-    ("LMT", "Lockheed Martin Corporation", "EQUITY", "Industrials", "US"),
-    ("SPCX", "Space Exploration Technologies Corp.", "EQUITY", "Industrials", "US"),
-    ("DE", "Deere & Company", "EQUITY", "Industrials", "US"),
-    ("GD", "General Dynamics Corporation", "EQUITY", "Industrials", "US"),
-    ("NOC", "Northrop Grumman Corporation", "EQUITY", "Industrials", "US"),
-    ("FDX", "FedEx Corporation", "EQUITY", "Industrials", "US"),
-    ("ETN", "Eaton Corporation plc", "EQUITY", "Industrials", "IE"),
-    ("WM", "Waste Management, Inc.", "EQUITY", "Industrials", "US"),
-    ("DAL", "Delta Air Lines, Inc.", "EQUITY", "Industrials", "US"),
-    ("DOW", "Dow Inc.", "EQUITY", "Materials", "US"),
-    ("SHW", "The Sherwin-Williams Company", "EQUITY", "Materials", "US"),
-    ("APD", "Air Products and Chemicals, Inc.", "EQUITY", "Materials", "US"),
-    ("D", "Dominion Energy, Inc.", "EQUITY", "Utilities", "US"),
-    ("AEP", "American Electric Power Company, Inc.", "EQUITY", "Utilities", "US"),
-    ("EXC", "Exelon Corporation", "EQUITY", "Utilities", "US"),
-    ("SPG", "Simon Property Group, Inc.", "REIT", "Real Estate", "US"),
-    ("EQIX", "Equinix, Inc.", "REIT", "Real Estate", "US"),
-    ("PSA", "Public Storage", "REIT", "Real Estate", "US"),
-    ("ASML", "ASML Holding N.V. (ADR)", "ADR", "Information Technology", "NL"),
-    ("NVO", "Novo Nordisk A/S (ADR)", "ADR", "Health Care", "DK"),
-    ("BABA", "Alibaba Group Holding Limited (ADR)", "ADR", "Consumer Discretionary", "CN"),
-    ("SAP", "SAP SE (ADR)", "ADR", "Information Technology", "DE"),
-    ("SHEL", "Shell plc (ADR)", "ADR", "Energy", "GB"),
-    ("IWM", "iShares Russell 2000 ETF", "ETF", "Index", "US"),
-    ("DIA", "SPDR Dow Jones Industrial Average ETF Trust", "ETF", "Index", "US"),
-    ("XLF", "Financial Select Sector SPDR Fund", "ETF", "Financials", "US"),
-    ("XLE", "Energy Select Sector SPDR Fund", "ETF", "Energy", "US"),
-    ("XLK", "Technology Select Sector SPDR Fund", "ETF", "Information Technology", "US"),
-    ("GLD", "SPDR Gold Shares", "ETF", "Commodity", "US"),
-    ("SLV", "iShares Silver Trust", "ETF", "Commodity", "US"),
-    ("USO", "United States Oil Fund", "ETF", "Commodity", "US"),
-    ("VNQ", "Vanguard Real Estate ETF", "ETF", "Real Estate", "US"),
-    ("EEM", "iShares MSCI Emerging Markets ETF", "ETF", "Index", "US"),
-    ("EFA", "iShares MSCI EAFE ETF", "ETF", "Index", "US"),
-    ("LQD", "iShares iBoxx $ Investment Grade Corporate Bond ETF", "ETF", "Credit", "US"),
-    ("IEF", "iShares 7-10 Year Treasury Bond ETF", "ETF", "Government", "US"),
-    ("BND", "Vanguard Total Bond Market ETF", "ETF", "Government", "US"),
-]
-
-# representative senior unsecured issues of real issuers (coupon, years to maturity, S&P-style rating, spread bps, ADV face)
-BONDS = [
-    ("JPM-29", "JPMorgan Chase 4.85% 2029", "JPMorgan Chase & Co.", "JPM", 0.0485, 3.0, "A", 80.0, 25_000_000, "Financials"),
-    ("F-32", "Ford Motor Credit 6.10% 2032", "Ford Motor Credit Company", "F", 0.061, 6.0, "BBB-", 190.0, 18_000_000, "Consumer Discretionary"),
-    ("AAL-28", "American Airlines 7.25% 2028", "American Airlines Group Inc.", "AAL", 0.0725, 2.5, "B+", 420.0, 8_000_000, "Industrials"),
-    ("MSFT-27", "Microsoft 3.30% 2027", "Microsoft Corporation", "MSFT", 0.033, 1.0, "AAA", 35.0, 30_000_000, "Information Technology"),
-    ("AAPL-46", "Apple 4.65% 2046", "Apple Inc.", "AAPL", 0.0465, 20.0, "AA+", 70.0, 20_000_000, "Information Technology"),
-    ("XOM-51", "Exxon Mobil 3.45% 2051", "Exxon Mobil Corporation", "XOM", 0.0345, 25.0, "AA-", 85.0, 15_000_000, "Energy"),
-    ("T-30", "AT&T 4.30% 2030", "AT&T Inc.", "T", 0.043, 4.0, "BBB", 120.0, 25_000_000, "Communication Services"),
-    ("VZ-34", "Verizon 4.40% 2034", "Verizon Communications Inc.", "VZ", 0.044, 8.0, "BBB+", 115.0, 20_000_000, "Communication Services"),
-    ("BA-30", "Boeing 5.15% 2030", "The Boeing Company", "BA", 0.0515, 4.0, "BBB-", 165.0, 15_000_000, "Industrials"),
-    ("GM-29", "General Motors Financial 5.40% 2029", "General Motors Financial Company", "GM", 0.054, 3.0, "BBB", 140.0, 15_000_000, "Consumer Discretionary"),
-    ("WFC-31", "Wells Fargo 4.90% 2031", "Wells Fargo & Company", "WFC", 0.049, 5.0, "BBB+", 95.0, 20_000_000, "Financials"),
-    ("CCL-30", "Carnival 5.75% 2030", "Carnival Corporation", "CCL", 0.0575, 4.0, "BB+", 260.0, 10_000_000, "Consumer Discretionary"),
-    ("RCL-30", "Royal Caribbean 5.625% 2031", "Royal Caribbean Cruises Ltd.", "RCL", 0.05625, 5.0, "BB+", 240.0, 8_000_000, "Consumer Discretionary"),
-    ("WBD-32", "Warner Bros. Discovery 4.28% 2032", "Warner Bros. Discovery, Inc.", "WBD", 0.0428, 6.0, "BB+", 330.0, 12_000_000, "Communication Services"),
-    ("CVS-33", "CVS Health 5.25% 2033", "CVS Health Corporation", "CVS", 0.0525, 7.0, "BBB", 150.0, 15_000_000, "Health Care"),
-    ("DAL-29", "Delta Air Lines 7.00% 2029", "Delta Air Lines, Inc.", "DAL", 0.07, 3.0, "BB+", 280.0, 8_000_000, "Industrials"),
-    ("OXY-31", "Occidental Petroleum 6.125% 2031", "Occidental Petroleum Corporation", "OXY", 0.06125, 5.0, "BB+", 230.0, 10_000_000, "Energy"),
-    ("KHC-30", "Kraft Heinz 3.875% 2030", "The Kraft Heinz Company", "KHC", 0.03875, 4.0, "BBB", 145.0, 10_000_000, "Consumer Staples"),
-    ("MRNA-29", "Moderna 5.50% 2029 (convertible-style, unsecured)", "Moderna, Inc.", "MRNA", 0.055, 3.0, "B", 600.0, 5_000_000, "Health Care"),
-]
+# the names: tools/universe_seed.py (stocks, ETFs, crypto, bonds)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from universe_seed import UNIVERSE, BONDS, CRYPTO_SUPPLY_M   # noqa: E402
 
 RATE_SYMBOLS = {"bill_13w": "^IRX", "y5": "^FVX", "y10": "^TNX", "y30": "^TYX"}
 # front-month futures as the spot anchor for each simulated commodity (Yahoo continuous symbols)
@@ -246,7 +36,9 @@ COMMODITY_SYMBOLS = {"CL": "CL=F", "BRN": "BZ=F", "NG": "NG=F", "RB": "RB=F", "H
                      "ALI": "ALI=F", "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "KC": "KC=F", "SB": "SB=F", "CT": "CT=F", "CC": "CC=F", "LE": "LE=F", "GF": "GF=F", "HE": "HE=F"}
 CENTS_QUOTED = {"ZC", "ZW", "ZS", "KC", "SB", "CT", "LE", "GF", "HE"}     # Yahoo quotes these in cents; the simulator uses dollars per unit
 # spot in USD per unit of foreign currency
-FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("JPY=X", True), "CHF": ("CHF=X", True), "CAD": ("CAD=X", True), "AUD": ("AUDUSD=X", False)}
+FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("JPY=X", True), "CHF": ("CHF=X", True), "CAD": ("CAD=X", True), "AUD": ("AUDUSD=X", False),
+              "NZD": ("NZDUSD=X", False), "SEK": ("SEK=X", True), "NOK": ("NOK=X", True), "MXN": ("MXN=X", True), "BRL": ("BRL=X", True), "CNH": ("CNH=X", True),
+              "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True)}
 
 
 _last_yahoo = [0.0]
@@ -256,7 +48,7 @@ def get_json(url: str, ua: str, retries: int = 5):
     for i in range(retries):
         try:
             if "yahoo.com" in url:                      # polite pacing: Yahoo rate-limits bursts
-                wait = 2.0 - (time.time() - _last_yahoo[0])
+                wait = 0.8 - (time.time() - _last_yahoo[0])
                 if wait > 0:
                     time.sleep(wait)
                 _last_yahoo[0] = time.time()
@@ -368,6 +160,9 @@ def edgar_facts(cik: int):
     return out
 
 
+INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX"}
+
+
 def fetch_extras():
     rates = {}
     for k, sym in RATE_SYMBOLS.items():
@@ -385,7 +180,13 @@ def fetch_extras():
         if ch and ch["price"] is not None:
             v = float(ch["price"])
             fx[ccy] = round((1.0 / v) if inverse else v, 6)
-    return {"rates": rates, "commodities": commodities, "fx": fx}
+    indices = {}
+    for code, sym in INDEX_SYMBOLS.items():
+        ch = yahoo_chart(sym, "1y")
+        if ch and ch["price"] is not None:
+            r = log_returns(ch["closes"])
+            indices[code] = {"price": round(float(ch["price"]), 4), "sigma_annual": round(statistics.pstdev(r) * math.sqrt(252), 4) if len(r) > 20 else 0.1}
+    return {"rates": rates, "commodities": commodities, "fx": fx, "indices": indices}
 
 
 def main():
@@ -410,8 +211,9 @@ def main():
     equities = []
     for row in UNIVERSE:
         t, name, ac, sector, country = row[:5]
-        print(f"{t:8s} {name}")
-        ch = yahoo_chart(t)
+        ysym = row[5] if len(row) > 5 and row[5] else t
+        print(f"{t:8s} {name}", flush=True)
+        ch = yahoo_chart(ysym)
         if not ch or not ch["closes"]:
             print("  ! no price data, skipped", file=sys.stderr)
             continue
@@ -432,13 +234,18 @@ def main():
         rec = {"ticker": t, "name": name, "asset_class": ac, "sector": sector, "country": country, "price": round(px, 4), "beta": round(beta, 3),
                "sigma_annual": round(sigma, 4), "adv": adv, "dividend_yield": round(dy, 5), "trailing_dividends": round(divs, 4),
                "high_52w": ch["high52"], "low_52w": ch["low52"]}
+        if ysym != t:
+            rec["yahoo"] = ysym
+        if ac == "CRYPTO":
+            rec["dividend_yield"], rec["trailing_dividends"] = 0.0, 0.0
+            rec["shares_outstanding"] = int(CRYPTO_SUPPLY_M.get(t, 100.0) * 1e6)          # circulating supply, approximate
         if ac in ("EQUITY", "REIT", "ADR"):
             cik = cik_by_ticker.get(t.replace("-", ""))
             if cik:
                 rec["cik"] = cik
                 rec.update(edgar_facts(cik))
         if ac == "PREFERRED":
-            rec["shares_outstanding"] = 6_900_000            # BAC Series L: ~6.9M depositary shares (prospectus)
+            rec["shares_outstanding"] = {"BAC-PL": 6_900_000, "WFC-PL": 4_025_000}.get(t, 20_000_000)   # depositary shares (prospectuses; approximate for the rest)
         equities.append(rec)
     out = {"as_of": date.today().isoformat(), "sources": {"prices": "Yahoo Finance chart API (last price, 1y closes, 3m volume, trailing dividends)",
                                                           "fundamentals": "SEC EDGAR XBRL company facts (latest annual income statement, latest quarterly balance sheet, shares outstanding)",

@@ -18,7 +18,7 @@ from ..money import ZERO
 class Security:
     id: str                    # ticker / internal id
     name: str
-    asset_class: str           # EQUITY | ETF | PREFERRED | ADR | REIT | GOVT_BOND | CORP_BOND
+    asset_class: str           # EQUITY | ETF | PREFERRED | ADR | REIT | CRYPTO | INDEX | GOVT_BOND | CORP_BOND | FUTURE | OPTION | PHYSICAL
     market: str                # settlement market code, e.g. US_EQUITY
     currency: str
     country: str
@@ -70,6 +70,9 @@ class Security:
     listed: Optional[str] = None
     index_level_source: Optional[str] = None  # for cash-settled index options: security whose price * factor is the index level
     index_factor: float = 1.0
+    yahoo: Optional[str] = None             # quote symbol when it differs from the id (BTC → BTC-USD, DXY → DX-Y.NYB)
+    qty_step: Decimal = Decimal("1")        # smallest tradable quantity (coins trade in ten-thousandths)
+    floating: bool = False                  # floating-rate note: the coupon resets to the short rate plus the issue spread
 
     @property
     def is_bond(self) -> bool:
@@ -298,6 +301,7 @@ class FXTrade:
     counterparty: str = "Citi FX"
     usd_value: Decimal = ZERO
     realized_fx: Decimal = ZERO
+    tag: Optional[str] = None           # the player's #tag (groups trades across desks)
 
 
 @dataclass
@@ -314,6 +318,7 @@ class FXForward:
     maturity: str
     mtm: Decimal = ZERO                 # base-currency mark
     status: str = "OPEN"                # OPEN | SETTLED
+    tag: Optional[str] = None
     spot_at_trade: float = 0.0
     history: List[Dict] = field(default_factory=list)
 
@@ -341,6 +346,8 @@ class Order:
     trail_level: Optional[Decimal] = None     # current trailing stop level
     condition: Optional[Dict] = None          # {"ref": "NVDA"|"CURVE:10Y"|"SPOT:CL", "op": "<="|">=", "value": float}
     condition_met_date: Optional[str] = None
+    execute_at: str = "OPEN"                  # OPEN | CLOSE: which print of the next session an instruction executes against
+    execution: str = "NEXT_UPDATE"            # NEXT_UPDATE | LIVE (filled immediately at the latest real quote)
     history: List[Dict] = field(default_factory=list)
 
 

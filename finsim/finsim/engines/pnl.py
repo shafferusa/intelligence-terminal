@@ -115,9 +115,15 @@ class PnLEngine:
                 return "commodities"
             if uc == "RATES":
                 return "rates"
+            if uc == "CRYPTO":
+                return "crypto"
+            if uc == "FX_INDEX":
+                return "fx"
             return "equities"
         if sec.asset_class == "PHYSICAL":
             return "commodities"
+        if sec.asset_class == "CRYPTO":
+            return "crypto"
         if sec.asset_class == "GOVT_BOND":
             return "rates"
         if sec.asset_class == "CORP_BOND":
@@ -184,7 +190,7 @@ class PnLEngine:
             d = {a: balances[a] - D(prev_bal.get(a, 0)) for a in PNL_ACCOUNTS}
             # per-security
             by_pos: Dict[str, Dict[str, Decimal]] = {}
-            buckets = {"equities": ZERO, "commodities": ZERO, "rates": ZERO, "credit": ZERO, "options": ZERO, "fx": ZERO}
+            buckets = {"equities": ZERO, "commodities": ZERO, "rates": ZERO, "credit": ZERO, "options": ZERO, "fx": ZERO, "crypto": ZERO}
             bond_int = ZERO
             for sid in set(list(led.security_balances) + list(prev_sec)):
                 cur = {a: led.security_balance(sid, a) for a in PNL_ACCOUNTS}

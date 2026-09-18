@@ -41,7 +41,7 @@ class LendingMarket:
     def init_security(self, sec: Security) -> None:
         if sec.shares_outstanding and sec.id not in self.state:
             rng = random.Random(f"{self.seed}|lend0|{sec.id}")
-            supply = int(sec.shares_outstanding * rng.uniform(0.04, 0.15))
+            supply = max(1_000, int(sec.shares_outstanding * rng.uniform(0.04, 0.15)))
             util = {"LARGE": rng.uniform(0.05, 0.3), "MID": rng.uniform(0.15, 0.5), "SMALL": rng.uniform(0.3, 0.8)}.get(sec.liquidity_tier, 0.3)
             self.state[sec.id] = LendingState(supply=supply, on_loan_other=int(supply * util))
             self.history[sec.id] = []
@@ -56,6 +56,8 @@ class LendingMarket:
             # other borrowers' demand random walk, mean-reverting
             st.demand_z = 0.97 * st.demand_z + 0.12 * rng.gauss(0, 1)
             base_util = min(0.98, max(0.01, (st.on_loan_other / st.supply) if st.supply else 0.0))
+            if not st.supply:
+                continue
             target = min(0.98, max(0.02, base_util + 0.05 * st.demand_z))
             st.on_loan_other = int(st.supply * target)
             # specials

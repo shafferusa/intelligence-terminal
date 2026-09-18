@@ -136,10 +136,10 @@ class CorporateEventsTest(unittest.TestCase):
 
     def test_bond_call_redeems_at_the_call_price(self):
         w, pf, store = make_world(capital=30_000_000)
-        w.place_order(pf.id, "AAL-28", "BUY", 1_000_000)
+        w.place_order(pf.id, "AAL-28", "BUY", 250_000)
         w.advance(2)
         held = pf.positions["AAL-28"].quantity
-        self.assertEqual(held, D(1_000_000))
+        self.assertEqual(held, D(250_000))
         ev = announce(w, "AAL-28", "BOND_CALL", {"call_price": 102.0}, 3)
         w.advance(3)
         pos = pf.positions["AAL-28"]

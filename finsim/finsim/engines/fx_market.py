@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Dict, List, Tuple
 
-CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"]
+CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "SEK", "NOK", "MXN", "BRL", "CNH", "HKD", "SGD", "KRW", "INR", "ZAR", "PLN"]
 
 
 @dataclass(frozen=True)
@@ -31,7 +31,34 @@ SPECS = {
     "CHF": CcySpec("CHF", 1.12, 0.010, 0.08, -0.25, 2.5, False),
     "CAD": CcySpec("CAD", 0.73, 0.035, 0.07, 0.30, 2.5, False),
     "AUD": CcySpec("AUD", 0.66, 0.040, 0.11, 0.45, 3.0, False),
+    "NZD": CcySpec("NZD", 0.60, 0.035, 0.11, 0.45, 4.0, False),
+    "SEK": CcySpec("SEK", 1 / 9.5, 0.020, 0.10, 0.30, 4.0, True),
+    "NOK": CcySpec("NOK", 1 / 10.0, 0.045, 0.11, 0.35, 5.0, True),
+    "MXN": CcySpec("MXN", 1 / 18.5, 0.080, 0.13, 0.50, 6.0, True),
+    "BRL": CcySpec("BRL", 1 / 5.4, 0.140, 0.16, 0.50, 10.0, True),
+    "CNH": CcySpec("CNH", 1 / 7.15, 0.015, 0.05, 0.10, 4.0, True),
+    "HKD": CcySpec("HKD", 1 / 7.8, 0.040, 0.005, 0.0, 2.0, True),
+    "SGD": CcySpec("SGD", 1 / 1.30, 0.025, 0.05, 0.20, 3.0, True),
+    "KRW": CcySpec("KRW", 1 / 1390.0, 0.025, 0.09, 0.35, 6.0, True),
+    "INR": CcySpec("INR", 1 / 88.0, 0.060, 0.05, 0.10, 8.0, True),
+    "ZAR": CcySpec("ZAR", 1 / 17.5, 0.075, 0.15, 0.50, 8.0, True),
+    "PLN": CcySpec("PLN", 1 / 3.8, 0.050, 0.10, 0.35, 6.0, True),
 }
+# the ICE dollar index: a geometric basket of six currencies (weights EUR 57.6, JPY 13.6, GBP 11.9, CAD 9.1, SEK 4.2, CHF 3.6)
+DXY_WEIGHTS = {"EUR": -0.576, "JPY": 0.136, "GBP": -0.119, "CAD": 0.091, "SEK": 0.042, "CHF": 0.036}
+DXY_SCALE = 50.14348112
+
+
+def dollar_index(spot_usd_per_unit: Dict[str, float]) -> float:
+    """DXY from USD-per-unit spots: 50.14348112 × EURUSD^−0.576 × USDJPY^0.136 × GBPUSD^−0.119 × USDCAD^0.091 × USDSEK^0.042 × USDCHF^0.036."""
+    import math as _m
+    level = DXY_SCALE
+    for c, wgt in DXY_WEIGHTS.items():
+        s_ = spot_usd_per_unit.get(c)
+        if not s_:
+            return 0.0
+        level *= (1.0 / s_) ** abs(wgt)               # every leg as foreign units per dollar: EURUSD^-w is (1/EURUSD)^w
+    return level
 
 
 def apply_snapshot(spots: Dict[str, float]) -> None:

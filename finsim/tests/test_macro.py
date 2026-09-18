@@ -75,7 +75,7 @@ class MacroWorldTest(unittest.TestCase):
 
     def test_issuer_default_hits_bonds_cds_and_equity(self):
         w, pf, store = make_world(capital=50_000_000)
-        w.place_order(pf.id, "AAL-28", "BUY", 1_000_000)
+        w.place_order(pf.id, "AAL-28", "BUY", 250_000)
         w.place_order(pf.id, "AAL", "BUY", 20_000)
         r = w.request_quote(pf.id, "CDS", {"reference": "AAL-28", "notional": 5_000_000, "tenor_years": 3, "buyer": True})
         w.execute_rfq(pf.id, r.id, min((q for q in r.quotes if not q.get("declined")), key=lambda q: q["cost_vs_mid"])["dealer"])
@@ -84,7 +84,7 @@ class MacroWorldTest(unittest.TestCase):
         nav0 = w.ledgers[pf.id].nav()
         bond_mv0 = pf.positions["AAL-28"].market_value
         face = float(pf.positions["AAL-28"].quantity)
-        self.assertEqual(face, 1_000_000.0)
+        self.assertEqual(face, 250_000.0)
         w.credit_event("AAL-28")
         sec = w.securities["AAL-28"]
         self.assertTrue(sec.defaulted)

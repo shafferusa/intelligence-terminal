@@ -57,7 +57,7 @@ class CommoditySpec:
     tick: float
     margin_pct: float
     adv: int                   # front-month ADV in contracts
-    expiry_rule: str           # PRIOR_MONTH_END | THIRD_FRIDAY | PRIOR_MONTH_25
+    expiry_rule: str           # PRIOR_MONTH_END | THIRD_FRIDAY | PRIOR_MONTH_25 | THIRD_WEDNESDAY | LAST_FRIDAY
     event_p: float             # daily probability of a supply/demand event
     report: Optional[str]      # WEEKLY_WED | MONTHLY_10 | None
     report_name: str
@@ -91,8 +91,20 @@ SPECS: List[CommoditySpec] = [
     CommoditySpec("GF", "Feeder Cattle", "COMMODITY_LIVESTOCK", "lb", 2.55, 0.18, 0.08, 0.04, 0.08, 0.4, 0.10, 0.05, 4, "FHJKQUVX", 6, 50_000, 0.00025, 0.07, 15_000, "PRIOR_MONTH_END", 0.02, None, "", 4),
     CommoditySpec("HE", "Lean Hogs", "COMMODITY_LIVESTOCK", "lb", 0.92, 0.28, 0.10, 0.05, 0.10, 0.4, 0.10, 0.10, 6, "GJKMNQVZ", 6, 40_000, 0.00025, 0.08, 40_000, "PRIOR_MONTH_END", 0.025, None, "", 4),
     # financial
-    CommoditySpec("ES", "Equity Index (SPY) Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.06, 1_500_000, "THIRD_FRIDAY", 0.0, None, "", 2),
-    CommoditySpec("ZN", "10-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.015625, 0.02, 1_800_000, "PRIOR_MONTH_25", 0.0, None, "", 4),
+    # financial futures: priced off a source (an ETF, a Treasury, a coin, an index) with cost of carry; no supply/demand model
+    CommoditySpec("ES", "E-mini S&P 500 Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.06, 1_500_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("NQ", "E-mini Nasdaq-100 Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.2, 0.0, 1, "HMUZ", 4, 20, 0.25, 0.07, 600_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("RTY", "E-mini Russell 2000 Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.1, 0.0, 1, "HMUZ", 4, 50, 0.10, 0.07, 200_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("YM", "E-mini Dow Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.9, 0.0, 1, "HMUZ", 4, 5, 1.0, 0.06, 150_000, "THIRD_FRIDAY", 0.0, None, "", 0),
+    CommoditySpec("ZT", "2-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 2000, 0.0078125, 0.012, 600_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("ZF", "5-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.0078125, 0.015, 1_200_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("ZN", "10-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.015625, 0.02, 1_800_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("ZB", "30-Year Treasury Bond Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.03125, 0.04, 400_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("SR3", "3-Month SOFR Future", "RATES", "100 − rate", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 8, 2500, 0.0025, 0.003, 2_500_000, "THIRD_WEDNESDAY", 0.0, None, "", 4),
+    CommoditySpec("BTC", "Bitcoin Future (CME)", "CRYPTO", "BTC", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 0.0, 1, "FGHJKMNQUVXZ", 6, 5, 5.0, 0.35, 12_000, "LAST_FRIDAY", 0.0, None, "", 0),
+    CommoditySpec("ETH", "Ether Future (CME)", "CRYPTO", "ETH", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.6, 0.0, 1, "FGHJKMNQUVXZ", 6, 50, 0.25, 0.40, 8_000, "LAST_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("DX", "U.S. Dollar Index Future", "FX_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, 0.0, 1, "HMUZ", 4, 1000, 0.005, 0.03, 30_000, "THIRD_WEDNESDAY", 0.0, None, "", 3),
+    CommoditySpec("VX", "Cboe VIX Future", "VOLATILITY", "vol pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.0, 0.0, 1, "FGHJKMNQUVXZ", 8, 1000, 0.05, 0.25, 250_000, "THIRD_WEDNESDAY", 0.0, None, "", 2),
 ]
 SPEC_BY_CODE = {s.code: s for s in SPECS}
 
@@ -162,11 +174,40 @@ def _third_friday(year: int, month: int) -> date:
     return d
 
 
+def _third_wednesday(year: int, month: int) -> date:
+    d = date(year, month, 15)
+    while d.weekday() != 2:
+        d += timedelta(days=1)
+    return d
+
+
+def _last_friday(year: int, month: int) -> date:
+    d = date(year + (month == 12), (month % 12) + 1, 1) - timedelta(days=1)
+    while d.weekday() != 4:
+        d -= timedelta(days=1)
+    return d
+
+
+FINANCIAL_GROUPS = ("EQUITY_INDEX", "RATES", "CRYPTO", "FX_INDEX", "VOLATILITY")
+# financial futures ride a source: (security id whose close is the spot, how the curve is built)
+#   carry: F = S·e^{(r−q)T}; vol: mean-reverting term structure; rate: 100 − forward rate
+FINANCIAL_SOURCES: Dict[str, Tuple[Optional[str], str]] = {
+    "ES": ("SPY", "carry"), "NQ": ("QQQ", "carry"), "RTY": ("IWM", "carry"), "YM": ("DIA", "carry"),
+    "ZT": ("UST-2Y", "carry"), "ZF": ("UST-5Y", "carry"), "ZN": ("UST-10Y", "carry"), "ZB": ("UST-30Y", "carry"),
+    "SR3": (None, "rate"), "BTC": ("BTC", "carry"), "ETH": ("ETH", "carry"), "DX": ("DXY", "carry"), "VX": ("VIX", "vol"),
+}
+VIX_LONG_RUN, VIX_KAPPA = 19.5, 3.0
+
+
 def expiry_for(spec: CommoditySpec, cal: BusinessCalendar, year: int, month: int) -> date:
     """Last trade date; positions are auto-closed on this date to avoid delivery."""
     first = date(year, month, 1)
     if spec.expiry_rule == "THIRD_FRIDAY":
         return cal.roll_back(_third_friday(year, month))
+    if spec.expiry_rule == "THIRD_WEDNESDAY":
+        return cal.roll_back(_third_wednesday(year, month))
+    if spec.expiry_rule == "LAST_FRIDAY":
+        return cal.roll_back(_last_friday(year, month))
     if spec.expiry_rule == "PRIOR_MONTH_25":
         d = date(year if month > 1 else year - 1, month - 1 if month > 1 else 12, 25)
         return cal.add_business_days(cal.roll_back(d), -3)
@@ -210,15 +251,15 @@ class CommodityModel:
         return spec.season_amp * math.cos(2 * math.pi * (month - spec.season_peak_month) / 12.0)
 
     def step(self, d: date, prev_bd: date, regime_growth: float, mkt_factor: float, rate_level: float, rate_change: float,
-             spxe_close: float, spxe_div_yield: float, ust10_clean: float, ust10_coupon: float, depth_mult: float,
-             spread_mult: float) -> Tuple[Dict[str, Dict], List[Dict]]:
-        """Advance all commodities one business day. Returns (per-commodity dict for the event payload, news items)."""
+             financials: Dict[str, Dict], depth_mult: float, spread_mult: float) -> Tuple[Dict[str, Dict], List[Dict]]:
+        """Advance all commodities one business day. Returns (per-commodity dict for the event payload, news items).
+        `financials` carries the financial futures' sources: {code: {"S": spot level, "q": yield, "fwd": callable(T1, T2) for rate futures}}."""
         dt = 1.0 / 252.0
         weekend_days = (d - prev_bd).days
         out: Dict[str, Dict] = {}
         news: List[Dict] = []
         for spec in SPECS:
-            if spec.group in ("EQUITY_INDEX", "RATES"):
+            if spec.group in FINANCIAL_GROUPS:
                 continue
             st = self.state[spec.code]
             rng = random.Random(f"{self.seed}|cmd|{spec.code}|{d.isoformat()}")
@@ -263,13 +304,22 @@ class CommodityModel:
             out[spec.code] = {"spot": st.spot, "demand_z": st.demand_z, "supply_shock": st.supply_shock, "inventory_z": st.inventory_z,
                               "conv_yield": st.conv_yield, "curve": curve, "ret": r}
         # financial futures
-        for code, S, q in (("ES", spxe_close, spxe_div_yield), ("ZN", ust10_clean, ust10_coupon / max(0.5, ust10_clean / 100))):
+        for code, (src, kind) in FINANCIAL_SOURCES.items():
+            fin = financials.get(code)
+            if fin is None or code not in SPEC_BY_CODE:
+                continue
             spec = SPEC_BY_CODE[code]
+            S, q = float(fin.get("S", 0.0)), float(fin.get("q", 0.0))
             curve = {}
             for (y, m) in self.listed_months(spec, d):
                 exp = expiry_for(spec, self.cal, y, m)
                 T = max(0.0, (exp - d).days / 365.25)
-                curve[f"{y}-{m:02d}"] = round(S * math.exp((rate_level - q) * T), spec.prec)
+                if kind == "rate":                        # 100 − the 3-month rate starting at expiry
+                    curve[f"{y}-{m:02d}"] = round(100.0 - 100.0 * float(fin["fwd"](T, T + 0.25)), spec.prec)
+                elif kind == "vol":                       # VIX futures: the level pulled toward its long run over the contract's life
+                    curve[f"{y}-{m:02d}"] = round(S + (VIX_LONG_RUN - S) * (1 - math.exp(-VIX_KAPPA * T)), spec.prec)
+                else:
+                    curve[f"{y}-{m:02d}"] = round(S * math.exp((rate_level - q) * T), spec.prec)
             self.spot_history[code].append((d.isoformat(), S))
             self.curve_history[code].append((d.isoformat(), curve))
             out[code] = {"spot": S, "curve": curve}

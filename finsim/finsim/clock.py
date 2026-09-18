@@ -3,9 +3,13 @@
 Career worlds run in REAL_TIME: one real calendar day is one simulated business
 day, and the simulated day is processed at the world's update time (default
 17:00 New York, after the real close) whether or not the player logs in.
-Instructions are taken only while the market is shut — from the update until
-09:29 New York the next session — so nothing is entered with the session's
-prices already on the screen. The
+Instructions may be entered at any hour. One entered while a session is
+running executes at that session's close (never at an open that has already
+printed); one entered while the market is shut executes at the next open. A
+save that tracks the real market can also fill a ticket immediately at the
+latest quote (see engines/live.py). The optional session lock (`lock_session`)
+restores the stricter rule: no instructions from 09:30 New York until the
+update. The
 "target" simulated date at any real moment is the latest business day whose
 update time has already passed. A world that is behind its target (server was
 off, player away for a week) catches up by running each missed day in order.
@@ -27,6 +31,7 @@ class ClockConfig:
     mode: str = "SANDBOX"                 # REAL_TIME | SANDBOX
     timezone: str = "America/New_York"
     update_time: str = "17:00"            # HH:MM local
+    lock_session: bool = False            # refuse instructions from 09:30 New York until the update (off: trade at any hour)
 
     def tz(self) -> ZoneInfo:
         try:
@@ -65,7 +70,7 @@ def next_update(cfg: ClockConfig, cal: BusinessCalendar, at: Optional[datetime] 
 
 MARKET_TZ = ZoneInfo("America/New_York")
 MARKET_OPEN = time(9, 30)
-SESSION_FINAL = time(16, 15)          # the official closes are final a little after the 16:00 bell
+SESSION_FINAL = time(16, 0)           # the session closes at the 16:00 bell
 
 
 def market_now(at: Optional[datetime] = None) -> datetime:
@@ -73,7 +78,7 @@ def market_now(at: Optional[datetime] = None) -> datetime:
 
 
 def session_closed(d: date, at: Optional[datetime] = None) -> bool:
-    """Has the real session of business day `d` closed (New York time)? Earlier days: yes; today: after 16:15; later: no."""
+    """Has the real session of business day `d` closed (New York time)? Earlier days: yes; today: from 16:00; later: no."""
     ny = market_now(at)
     if d < ny.date():
         return True
@@ -85,21 +90,40 @@ def session_closed(d: date, at: Optional[datetime] = None) -> bool:
 def trading_window(cfg: ClockConfig, cal: BusinessCalendar, at: Optional[datetime] = None) -> dict:
     """When instructions may be entered in a career world.
 
-    Open from the day's update (or the close, whichever is later) until 09:29 New York on the next business day;
-    locked while a session is running, from 09:30 until the update that processes it. Sandbox worlds are always open.
+    Default: always — a live ticket fills now at the latest quote, an instruction executes at the next update (at the
+    session's close if it is already running, at the open otherwise). With the session lock on: open from the day's
+    update (or the close, whichever is later) until 09:29 New York on the next business day, locked while a session
+    runs. Sandbox worlds are always open.
     """
     if cfg.mode != "REAL_TIME":
-        return {"open": True, "mode": "SANDBOX", "reason": "sandbox: instructions execute when you advance the day"}
+        return {"open": True, "mode": "SANDBOX", "lock": False, "reason": "sandbox: instructions execute when you advance the day"}
     ny = market_now(at)
+    business = cal.is_business_day(ny.date())
     upd_local = datetime.combine(ny.date(), cfg.update_t(), tzinfo=cfg.tz()).astimezone(MARKET_TZ)
     lock_end = max(upd_local.time(), SESSION_FINAL)
-    business = cal.is_business_day(ny.date())
-    if business and MARKET_OPEN <= ny.time() < lock_end:
+    running = business and MARKET_OPEN <= ny.time() < lock_end
+    if not cfg.lock_session:
+        return {"open": True, "mode": "REAL_TIME", "lock": False, "session_running": running,
+                "reason": ("the session is running: a live ticket fills now at the latest quote (up to 15 minutes delayed); an instruction executes at today's close"
+                           if running else "the market is shut: a live ticket fills now at the latest quote (up to 15 minutes delayed); an instruction executes at the next open")}
+    if running:
         opens = datetime.combine(ny.date(), lock_end, tzinfo=MARKET_TZ)
-        return {"open": False, "mode": "REAL_TIME", "opens_at": opens.isoformat(),
+        return {"open": False, "mode": "REAL_TIME", "lock": True, "session_running": True, "opens_at": opens.isoformat(),
                 "reason": f"the session is running: instructions reopen at {opens.strftime('%H:%M')} New York, once today's close is in"}
     # open now: until 09:30 New York on the next business day (today, if it has not opened yet)
     nxt = ny.date() if (business and ny.time() < MARKET_OPEN) else cal.next_business_day(ny.date())
     closes = datetime.combine(nxt, MARKET_OPEN, tzinfo=MARKET_TZ)
-    return {"open": True, "mode": "REAL_TIME", "closes_at": closes.isoformat(),
+    return {"open": True, "mode": "REAL_TIME", "lock": True, "session_running": False, "closes_at": closes.isoformat(),
             "reason": f"instructions are taken until {closes.strftime('%a %H:%M')} New York; they execute at the next update against that session"}
+
+
+def instruction_session(cfg: ClockConfig, cal: BusinessCalendar, current: date, at: Optional[datetime] = None) -> str:
+    """Where an instruction entered now executes at the next update: "OPEN" of the next session, or its "CLOSE" when that
+    session has already opened (its open has printed and can be seen, so the fill waits for the close). Sandbox: OPEN."""
+    if cfg.mode != "REAL_TIME":
+        return "OPEN"
+    ny = market_now(at)
+    nxt = cal.next_business_day(current)
+    if ny.date() > nxt or (ny.date() == nxt and ny.time() >= MARKET_OPEN):
+        return "CLOSE"
+    return "OPEN"

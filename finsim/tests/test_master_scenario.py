@@ -230,8 +230,11 @@ class Script:
         self.check(25, "physical delivery, storage, spot sale")
         # 26 — recall the lent shares; 27 — return the borrow after covering the short
         w.recall_lent(pf.id, lend["id"])
-        cover = w.place_order(pf.id, ca.security_id, "BUY", short_qty)
-        self.adv(1)
+        cover = w.place_order(pf.id, ca.security_id, "BUY", short_qty, time_in_force="GTC")
+        for _ in range(4):                       # a thin session can cap the cover; it keeps working
+            self.adv(1)
+            if pf.positions[ca.security_id].quantity == ZERO:
+                break
         tc.assertEqual(pf.positions[ca.security_id].quantity, ZERO)
         self.adv(2)
         if loan.status == "OPEN":            # borrowed shares no longer needed for a short are otherwise returned automatically
