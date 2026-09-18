@@ -33,6 +33,7 @@ FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("J
               "NZD": ("NZDUSD=X", False), "SEK": ("SEK=X", True), "NOK": ("NOK=X", True), "MXN": ("MXN=X", True), "BRL": ("BRL=X", True), "CNH": ("CNH=X", True),
               "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True)}
 INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX"}
+YIELD_SYMBOLS = {0.25: "^IRX", 5.0: "^FVX", 10.0: "^TNX", 30.0: "^TYX"}     # Treasury yields Yahoo quotes live, in percent: the live curve for bond quotes
 
 
 def _home() -> str:

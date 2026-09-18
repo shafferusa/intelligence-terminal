@@ -214,7 +214,7 @@ def _ust(id_: str, yrs: float, y: float, adv: int, label: str = "") -> tuple:
 
 _Y5, _Y10, _Y30, _BILL = float(_RATES.get("y5", 0.04)), INITIAL_10Y, INITIAL_LONG_RATE, INITIAL_POLICY_RATE
 BOND_SEED = [
-    _ust("UST-3M", 0.25, _BILL, 8_000_000_000, "bill"), _ust("UST-6M", 0.5, _BILL, 6_000_000_000, "bill"), _ust("UST-1Y", 1.0, _BILL, 4_000_000_000, "bill"),
+    _ust("UST-1M", 1 / 12, _BILL, 10_000_000_000, "bill"), _ust("UST-3M", 0.25, _BILL, 8_000_000_000, "bill"), _ust("UST-6M", 0.5, _BILL, 6_000_000_000, "bill"), _ust("UST-1Y", 1.0, _BILL, 4_000_000_000, "bill"),
     _ust("UST-3Y", 3.0, _Y5 - 0.0005, 3_500_000_000), _ust("UST-7Y", 7.0, (_Y5 + _Y10) / 2, 2_500_000_000), _ust("UST-20Y", 20.0, (_Y10 + _Y30) / 2, 1_000_000_000),
     _ust("STRIP-10Y", 10.0, _Y10, 400_000_000, "strip"), _ust("STRIP-30Y", 30.0, _Y30, 200_000_000, "strip"),
     ("UST-2Y", f"US Treasury {_coupon(float(_RATES.get('y5', 0.04)) - 0.00125) * 100:.3f}% 2Y", "GOVT_BOND", "United States Treasury", _coupon(float(_RATES.get("y5", 0.04)) - 0.00125), 2.0, "AAA", 0.0, 4_000_000_000, "Government"),

@@ -82,9 +82,16 @@ class LiveTicketTest(unittest.TestCase):
         self.assertAlmostEqual(float(t3.execution_detail["quote_ref_price"]) / w.market.spot("CL"), float(t3.execution_detail["base_price"]) / float(w.market.last_bar(fut.id).close), places=3)
         self.assertGreater(w.futures.required_margin(pf), 0)
         assert_ledger_invariants(self, w, pf)
-        # bonds have no live quote: the last close, said so
+        # bonds are repriced off the live Treasury curve (the stub quotes every ^ symbol at 4.04%): a live fill carries the method
+        qb = w.live.quote(w.securities["UST-10Y"])
+        self.assertEqual(qb["method"], "curve"); self.assertIn("shift_bps", qb); self.assertNotEqual(qb["price"], qb["last_close"])
         o4 = w.place_order(pf.id, "UST-10Y", "BUY", D(1_000_000), execution="LIVE")
-        self.assertEqual(o4.status, "FILLED"); self.assertEqual(pf.trades[o4.trade_ids[-1]].execution_detail["quote_method"], "last_close")
+        self.assertEqual(o4.status, "FILLED"); self.assertEqual(pf.trades[o4.trade_ids[-1]].execution_detail["quote_method"], "curve")
+        # every bill is a bond, the dollar index and the VIX quote directly, a commodity spot rides its front month
+        self.assertTrue(all(w.securities[i].is_bond for i in ("UST-1M", "UST-3M", "UST-6M")))
+        qs2 = w.live.quotes(["DXY", "VIX", "SPOT:CL", "UST-1M", "AGY-FNMA-31"])
+        self.assertEqual(set(qs2), {"DXY", "VIX", "SPOT:CL", "UST-1M", "AGY-FNMA-31"})
+        self.assertEqual(qs2["DXY"]["method"], "direct"); self.assertEqual(qs2["SPOT:CL"]["method"], "front_month"); self.assertEqual(qs2["UST-1M"]["method"], "curve")
         # a limit away from the market rests against the live quote (and the next update); a conditional order is refused live
         o5 = w.place_order(pf.id, "AAPL", "BUY", D(100), "LIMIT", D(1), execution="LIVE")
         self.assertEqual(o5.status, "WORKING"); self.assertIn("not marketable at the live quote", o5.reason); self.assertIn("rests against the live quote", o5.reason)

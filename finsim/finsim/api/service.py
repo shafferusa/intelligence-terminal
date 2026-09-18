@@ -413,7 +413,7 @@ class Service:
                    "adv": sec.adv, "liquidity_tier": sec.liquidity_tier, "beta": sec.beta, "realized_vol": w.market.realized_vol(sec.id),
                    "dividend_yield": sec.dividend_yield, "dividend_per_share": sec.dividend_per_share, "lot_size": sec.lot_size,
                    "market_cap": (float(bar.close) * sec.shares_outstanding) if sec.shares_outstanding else None, "rating": sec.rating,
-                   "coupon": sec.coupon, "maturity": sec.maturity, "is_future": sec.is_future, "underlying": sec.underlying, "issuer": sec.issuer,
+                   "coupon": sec.coupon, "maturity": sec.maturity, "is_bond": bool(sec.is_bond), "is_future": sec.is_future, "underlying": sec.underlying, "issuer": sec.issuer,
                    "is_index": sec.asset_class == "INDEX", "qty_step": sec.qty_step, "yahoo": sec.yahoo,
                    "underlying_class": sec.underlying_class, "contract_month": sec.contract_month, "multiplier": sec.multiplier, "tick_size": sec.tick_size,
                    "expiry": sec.expiry, "unit": sec.unit}

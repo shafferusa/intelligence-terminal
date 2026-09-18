@@ -14,13 +14,17 @@ How each instrument is quoted:
   listed options                           the model surface repriced at the underlying's live price
   futures                                  the contract's last close moved with its underlying (front-month continuous
                                            quote for commodities, SPY for ES, ZN=F for ZN)
-  bonds                                    the last close — cash bonds have no public live quote — labelled as such
+  bonds                                    repriced off the live Treasury curve: Yahoo's 13-week, 5-, 10- and 30-year yields shift the
+                                           save's curve tenor by tenor and every bond (Treasuries, corporates, munis, agencies) moves
+                                           by what that shift does to its price — its credit spread stays where the last close put it
+  indices (DXY, VIX)                       directly (the dollar index and the VIX quote live)
+  commodity spot (SPOT:CL …)               the front-month continuous contract's live quote
   FX                                       the pair's live quote (spot deals with execution LIVE)
 """
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Dict, List, Optional
 
@@ -72,8 +76,12 @@ class LiveDesk:
     def _symbols_for(self, sec: Security) -> List[str]:
         """Yahoo symbols a quote for `sec` needs."""
         from .vol import index_source
-        from .realfeed import COMMODITY_SYMBOLS
+        from .realfeed import COMMODITY_SYMBOLS, INDEX_SYMBOLS, YIELD_SYMBOLS
         feed = self.w.market.real_feed
+        if sec.is_bond:
+            return list(YIELD_SYMBOLS.values())
+        if sec.asset_class == "INDEX":
+            return [INDEX_SYMBOLS[sec.id]] if sec.id in INDEX_SYMBOLS else []
         if sec.is_option:
             src = sec.index_level_source or index_source(sec.underlying)
             return [feed.equities.get(src, src)]
@@ -88,20 +96,61 @@ class LiveDesk:
         return []
 
     def quotes(self, ids: List[str], max_age_s: float = 60.0) -> Dict[str, Dict]:
-        """Live quotes for several securities in one fetch: {id: quote}. Securities without one are left out."""
+        """Live quotes for several ids in one fetch: {id: quote}. Ids are securities, or SPOT:<code> for a commodity's spot
+        (the front-month continuous contract). Anything without a quote is left out."""
+        from .realfeed import COMMODITY_SYMBOLS, CENTS_QUOTED
         feed = self._feed()
         w = self.w
         secs = [w.securities[i] for i in ids if i in w.securities]
+        spots = [i[5:] for i in ids if i.startswith("SPOT:") and i[5:] in COMMODITY_SYMBOLS]
         syms: List[str] = []
         for sec in secs:
             syms.extend(self._symbols_for(sec))
-        raw = feed.live(syms, max_age_s) if syms else {}
+        syms.extend(COMMODITY_SYMBOLS[c] for c in spots)
+        raw = feed.live(list(dict.fromkeys(syms)), max_age_s) if syms else {}
         out = {}
         for sec in secs:
             q = self._quote_from(sec, raw)
             if q is not None:
                 out[sec.id] = q
+        now = time.time()
+        for code in spots:
+            q = raw.get(COMMODITY_SYMBOLS[code])
+            ref = w.market.spot(code)
+            if not q or not ref:
+                continue
+            live = float(q["price"]) / (100.0 if code in CENTS_QUOTED else 1.0)
+            t = int(q.get("time") or 0)
+            out[f"SPOT:{code}"] = {"id": f"SPOT:{code}", "price": live, "last_close": ref, "last_close_date": w.current_date.isoformat(), "source": SOURCE, "time": t, "time_ny": _ny(t),
+                                   "age_s": max(0, int(now - t)) if t else None, "change_pct": live / ref - 1.0, "method": "front_month", "ref": COMMODITY_SYMBOLS[code], "ref_price": float(q["price"])}
         return out
+
+    def live_curve(self, raw: Dict[str, Dict]):
+        """The save's curve shifted tenor by tenor to the live Treasury yields (linear between the quoted tenors)."""
+        from .realfeed import YIELD_SYMBOLS
+        from .pricing import interp_rate
+        from ..domain.models import YieldCurve
+        w = self.w
+        base = w.market.curve()
+        pts = []
+        for t, sym in sorted(YIELD_SYMBOLS.items()):
+            q = raw.get(sym)
+            if q and q.get("price") is not None:
+                pts.append((t, float(q["price"]) / 100.0 - interp_rate(base, t)))
+        if not pts:
+            return None, {}
+        def shift(t: float) -> float:
+            if t <= pts[0][0]:
+                return pts[0][1]
+            if t >= pts[-1][0]:
+                return pts[-1][1]
+            for (t0, s0), (t1, s1) in zip(pts, pts[1:]):
+                if t0 <= t <= t1:
+                    return s0 + (s1 - s0) * (t - t0) / (t1 - t0)
+            return pts[-1][1]
+        rates = [r + shift(t) for t, r in zip(base.tenors, base.rates)]
+        live = YieldCurve(base.date, list(base.tenors), rates, base.ig_spread_bps, base.hy_spread_bps, base.policy_rate) if hasattr(base, "hy_spread_bps") else YieldCurve(base.date, list(base.tenors), rates)
+        return live, {t: s for t, s in pts}
 
     def quote(self, sec: Security, max_age_s: float = 60.0) -> Optional[Dict]:
         feed = self._feed()
@@ -127,8 +176,29 @@ class LiveDesk:
                     "change_pct": (price / last - 1.0) if last else 0.0, "method": method, "ref": ref, "ref_price": ref_price, **(extra or {})}
 
         if sec.is_bond:
-            return {**base, "price": last, "time": None, "time_ny": "", "age_s": None, "change_pct": 0.0, "method": "last_close", "ref": sec.id, "ref_price": last,
-                    "note": "cash bonds have no public live quote: the last close is used"}
+            from .pricing import BondPricer
+            from .realfeed import YIELD_SYMBOLS
+            live_curve, shifts = self.live_curve(raw)
+            if live_curve is None:
+                return {**base, "price": last, "time": None, "time_ny": "", "age_s": None, "change_pct": 0.0, "method": "last_close", "ref": sec.id, "ref_price": last,
+                        "note": "no live Treasury yields right now: the last close is used"}
+            try:
+                p_live = float(BondPricer.clean_price_from_curve(sec, live_curve, w.current_date))
+                p_base = float(BondPricer.clean_price_from_curve(sec, w.market.curve(), w.current_date))
+            except Exception:
+                return None
+            px = round(last + (p_live - p_base), 4)
+            yrs = max(0.05, (date.fromisoformat(sec.maturity) - w.current_date).days / 365.0) if sec.maturity else 10.0
+            near = min(YIELD_SYMBOLS, key=lambda t: abs(t - yrs))
+            q = raw.get(YIELD_SYMBOLS[near]) or next(iter(v for v in raw.values() if v), {})
+            return done(px, q, "curve", YIELD_SYMBOLS[near], float(q.get("price", 0.0)),
+                        {"shift_bps": round(shifts.get(near, 0.0) * 1e4, 1), "note": f"repriced off the live Treasury curve ({YIELD_SYMBOLS[near]} {float(q.get('price', 0.0)):.2f}%)"})
+        if sec.asset_class == "INDEX":
+            from .realfeed import INDEX_SYMBOLS
+            q = raw.get(INDEX_SYMBOLS.get(sec.id, ""))
+            if not q:
+                return None
+            return done(float(q["price"]), q, "direct", INDEX_SYMBOLS[sec.id], float(q["price"]))
         if sec.is_option:
             src = sec.index_level_source or index_source(sec.underlying)
             sym = w.market.real_feed.equities.get(src, src)
