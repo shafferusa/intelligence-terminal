@@ -179,6 +179,7 @@ UNIVERSE = [
     ("DVN", "Devon Energy Corporation", "EQUITY", "Energy", "US"),
     ("HON", "Honeywell International Inc.", "EQUITY", "Industrials", "US"),
     ("LMT", "Lockheed Martin Corporation", "EQUITY", "Industrials", "US"),
+    ("SPCX", "Space Exploration Technologies Corp.", "EQUITY", "Industrials", "US"),
     ("DE", "Deere & Company", "EQUITY", "Industrials", "US"),
     ("GD", "General Dynamics Corporation", "EQUITY", "Industrials", "US"),
     ("NOC", "Northrop Grumman Corporation", "EQUITY", "Industrials", "US"),
