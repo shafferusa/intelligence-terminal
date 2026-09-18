@@ -288,6 +288,8 @@ class MarketEngine:
         self.prehistory_days = prehistory_days
         self.real_history: Optional[Dict] = None       # a world that tracks the market: stored real closes (prehistory + sessions seen)
         self.real_feed = None                            # live RealFeed for sessions not yet in real_history
+        self.real_macro: Optional[Dict] = None         # a career world: stored FRED series (REAL_MACRO_LOADED)
+        self.real_macro_feed = None                      # live RealMacro for observations published after the save was made
         self.initial_regime = initial_regime
         self.history: Dict[str, List[Bar]] = {s: [] for s in securities}
         self.curves: List[YieldCurve] = []
@@ -761,13 +763,16 @@ class MarketEngine:
         macro_out = self.macro.step(d, prev_bd, regime, oil20, prev.hy_spread, 0.0, allow_defaults=(d >= self.start), live=(d >= self.start),
                                     short_rate=nelson_siegel(prev.level, prev.slope, prev.curv, 0.25, 0.08))
         self._macro_payload = macro_out
+        real_mode = self.real_history is not None
+        if real_mode and d >= self.start:
+            self._pin_real_macro(d, macro_out)
         extra_ret: Dict[str, float] = {}
-        if d >= self.start:
+        if d >= self.start and not real_mode:
             prices_now = {t: float(c) for t, c in self._prev_close.items()}
             cev, cnews_corp, cshocks = self.cevents.step(d, self.securities, regime, prices_now, prev.level)
             extra_ret.update(cshocks)
         else:
-            cev, cnews_corp = [], []
+            cev, cnews_corp = [], []                       # a career world: no invented takeovers, splits or tenders
         self._cevent_payload = cev
         for e in macro_out["earnings"]:
             extra_ret[e["security_id"]] = extra_ret.get(e["security_id"], 0.0) + e["jump"]
@@ -885,7 +890,7 @@ class MarketEngine:
         self._lending_payload = lpayload
         self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
         self._dealer_payload, dnews = self.dealers.step(d, regime, hy, mkt)
-        self.day_news = cnews + lnews + dnews + macro_out["news"] + cnews_corp
+        self.day_news = (cnews + lnews + dnews + macro_out["news"] + cnews_corp) if not real_mode else macro_out["news"]   # real headlines come from the wire
         real = self.real_targets(d) if self.real_history is not None else None
         if real is not None:
             # a world that tracks the market: this session closes at the real closes
@@ -940,6 +945,8 @@ class MarketEngine:
             self.dealers.ingest(d, dealers)
             self._dealer_payload = dealers
         if macro:
+            if self.real_history is not None and self.macro.real_series is None:
+                self.macro.real_series = self.real_macro_series()
             self.macro.ingest(d, macro)
             self._macro_payload = macro
         if cevents is not None:
@@ -995,6 +1002,48 @@ class MarketEngine:
 
     def macro_payload(self) -> Dict:
         return getattr(self, "_macro_payload", {})
+
+    # ---------------- a career world: the real economy
+    def real_macro_series(self) -> Optional[Dict]:
+        """Stored series merged with anything the live feed has fetched since (live wins for newer observations)."""
+        if self.real_macro is None and self.real_macro_feed is None:
+            return None
+        out = {k: dict(v) for k, v in (self.real_macro or {}).items()}
+        if self.real_macro_feed is not None:
+            for k, v in self.real_macro_feed.data.items():
+                out.setdefault(k, {}).update(v)
+        return out or None
+
+    def _pin_real_macro(self, d: date, macro_out: Dict) -> None:
+        """Replace the seeded macro day with the real one: state as known on `d`, the day's real releases, no invented shocks or news."""
+        from .realmacro import state_as_of, releases_on
+        series = self.real_macro_series()
+        if not series:
+            return
+        self.macro.real_series = series
+        st = state_as_of(series, d, self.cal.roll)
+        ms = self.macro.state
+        for k in ("growth", "inflation", "unemployment"):
+            if k in st:
+                setattr(ms, k, float(st[k]))
+        if "policy_rate" in st:
+            ms.policy_rate = float(st["policy_rate"])
+        rel = releases_on(series, d, self.cal.roll)
+        iso = d.isoformat()
+        self.macro.releases = [r for r in self.macro.releases if r["date"] != iso] + rel
+        fomc = [r for r in rel if r["kind"] == "FOMC"]
+        if fomc:
+            ms.last_decision = fomc[-1]["headline"]
+        macro_out["releases"] = rel
+        macro_out["rate_shock_bp"], macro_out["equity_shock"], macro_out["vol_bump"] = 0.0, 0.0, 0.0
+        macro_out["news"] = [{"code": "FOMC", "headline": r["headline"], "category": "MACRO", "body": r["note"]} for r in fomc]
+        state = macro_out["state"]
+        state.update({"growth": round(ms.growth, 3), "inflation": round(ms.inflation, 3), "unemployment": round(ms.unemployment, 3), "policy_rate": round(ms.policy_rate, 5),
+                      "policy_target": round(self.macro.policy_target(), 5), "next_meeting": st.get("next_meeting", state.get("next_meeting")), "last_decision": ms.last_decision,
+                      "real": {k: v for k, v in st.items() if k not in ("growth", "inflation", "unemployment", "policy_rate")}})
+        self.macro.last_real = dict(state["real"])
+        if self.macro.history and self.macro.history[-1].get("date") == iso:
+            self.macro.history[-1].update({k: v for k, v in state.items() if k not in ("issuers", "real")})
 
     def corporate_events_payload(self) -> List[Dict]:
         return getattr(self, "_cevent_payload", [])

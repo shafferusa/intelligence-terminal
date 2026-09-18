@@ -31,7 +31,7 @@ class FakeClockSchedulerTest(unittest.TestCase):
         router = Router(s)
         now = [at(2026, 1, 9, 10, 0)]                 # Friday 10:00 ET, after the 09:00 update
         sched = Scheduler(router, interval=60, clock=lambda: now[0], sleep=lambda _: None)
-        r = s.create_world("career", 42, job="PORTFOLIO_MANAGER", clock_mode="REAL_TIME", timezone="America/New_York", update_time="09:00", at=now[0])
+        r = s.create_world("career", 42, job="PORTFOLIO_MANAGER", clock_mode="REAL_TIME", timezone="America/New_York", update_time="09:00", at=now[0], market_source="SIMULATED")
         w = s.world(r["world_id"], at=now[0])
         self.assertEqual(w.current_date, date(2026, 1, 9))
         self.assertEqual(sched.tick(), {}, "nothing due on the day the save was created")

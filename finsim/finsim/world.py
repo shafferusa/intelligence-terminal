@@ -18,7 +18,7 @@ from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
 
 from .calendar import BusinessCalendar, SettlementConfig
-from .clock import ClockConfig, next_update, target_sim_date
+from .clock import ClockConfig, next_update, target_sim_date, trading_window, session_closed
 from .domain.events import E, Event
 from .version import SAVE_VERSION, ENGINE_VERSION
 from .log import get_logger
@@ -65,6 +65,7 @@ class World:
         self.day_count = 0
         self._pending: List[Event] = []
         self.clock = ClockConfig()
+        self.real_news = None                    # a career world: the headline fetcher (stubbed in tests)
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
@@ -198,6 +199,8 @@ class World:
     def _register_core(self) -> None:
         self.on(E.WORLD_CREATED, World._h_world_created)
         self.on(E.REAL_HISTORY_LOADED, World._h_real_history)
+        self.on(E.REAL_MACRO_LOADED, World._h_real_macro)
+        self.on(E.CLOCK_CHANGED, World._h_clock_changed)
         self.on(E.PORTFOLIO_CREATED, World._h_portfolio_created)
         self.on(E.CAPITAL_CONTRIBUTED, World._h_capital)
         self.on(E.MARKET_CLOSE, World._h_market_close)
@@ -256,17 +259,27 @@ class World:
         self.market.bootstrap()
         if self.market_source == "REAL":
             from .engines.realfeed import RealFeed, equity_symbols_for
+            from .engines.realmacro import RealMacro
+            from .engines.realnews import RealNews
             self.market.real_feed = RealFeed(equity_symbols_for(self.securities))
+            self.market.real_macro_feed = RealMacro()
+            self.real_news = RealNews()
 
     def _h_real_history(self, ev: Event) -> None:
         h = ev.payload["history"]
         self.market.real_history = h
         self.market.apply_real_history(h)
 
-    def real_market_ready(self, d: date) -> Optional[str]:
+    def _h_real_macro(self, ev: Event) -> None:
+        self.market.real_macro = ev.payload.get("series") or {}
+        self.market.macro.real_series = self.market.real_macro_series()
+
+    def real_market_ready(self, d: date, at=None) -> Optional[str]:
         """For a world that tracks the market: None when `d` can be processed, else why not (no close published yet)."""
         if getattr(self, "market_source", "SIMULATED") != "REAL":
             return None
+        if not session_closed(d, at):
+            return f"the {d.isoformat()} session has not closed yet (closes are final after 16:15 New York); the world waits for it"
         if self.market.real_targets(d) is not None:
             return None
         feed = self.market.real_feed
@@ -275,6 +288,11 @@ class World:
                 feed.refresh("1mo")
             except Exception as e:  # offline: say so, keep the log untouched
                 return f"could not reach the market data feed ({e.__class__.__name__}); the session for {d.isoformat()} waits until it can"
+            if self.market.real_macro_feed is not None:
+                try:
+                    self.market.real_macro_feed.refresh()        # cached six hours; a failure just keeps yesterday's series
+                except Exception:
+                    pass
             if feed.targets_for(d) is not None:
                 return None
         return f"the real market has not closed for {d.isoformat()} yet (closes are published after the session); the world waits for it"
@@ -336,7 +354,8 @@ class World:
     def _h_news(self, ev: Event) -> None:
         p = ev.payload
         self.news.append(NewsItem(id=f"NEWS-{ev.seq:06d}", date=ev.sim_date, headline=p["headline"], body=p["body"],
-                                  category=p["category"], refs=p.get("refs", []), event_id=ev.id))
+                                  category=p["category"], refs=p.get("refs", []), event_id=ev.id,
+                                  publisher=p.get("publisher", ""), link=p.get("link", ""), time=p.get("time", "")))
 
     def _h_day_closed(self, ev: Event) -> None:
         for pf in self.portfolios.values():
@@ -381,7 +400,7 @@ class World:
     @classmethod
     def create(cls, world_id: str, name: str, seed: int, start_date: date, store=None, base_currency: str = "USD",
                prehistory_days: int = 260, initial_regime: str = "NORMAL_GROWTH", clock: Optional[ClockConfig] = None,
-               scenario: str = "NONE", market_source: str = "SIMULATED", real_history: Optional[Dict] = None) -> "World":
+               scenario: str = "NONE", market_source: str = "SIMULATED", real_history: Optional[Dict] = None, real_macro: Optional[Dict] = None) -> "World":
         w = cls(world_id, store)
         clock = clock or ClockConfig()
         if store is not None:
@@ -394,6 +413,7 @@ class World:
                 sim_date=start_date.isoformat())
         if market_source == "REAL":
             # the real closes the world starts from, stored once so replay never needs the network
+            fetch_here = real_history is None          # a caller that brings its own history (the service, tests) brings the economy too
             if real_history is None:
                 from .engines.realfeed import RealFeed, equity_symbols_for
                 feed = RealFeed(equity_symbols_for(w.securities))
@@ -404,6 +424,18 @@ class World:
             if start_date.isoformat() not in real_history["equities"]["SPY"]:
                 raise CommandError(f"the real market has no close for {start_date.isoformat()}: pick a past session, or today after the close")
             w.emit(E.REAL_HISTORY_LOADED, {"history": real_history}, sim_date=start_date.isoformat())
+            if real_macro is None and fetch_here:
+                from .engines.realmacro import RealMacro
+                rm = RealMacro()
+                try:
+                    rm.refresh()
+                except Exception:
+                    pass
+                real_macro = rm.snapshot(start_date - timedelta(days=800)) if rm.data else {}
+            if real_macro:
+                w.emit(E.REAL_MACRO_LOADED, {"series": real_macro}, sim_date=start_date.isoformat())
+            else:
+                get_logger("world").warning("world %s: no real economic series could be fetched; the macro screens stay simulated until a later refresh", world_id)
         # The start date is the first processed day: the world opens with a briefing already waiting.
         w.current_date = w.calendar.prev_business_day(start_date)
         w.simulation.run_daily_process(start_date)
@@ -719,7 +751,7 @@ class World:
         closed = []
         import time as _time
         while self.current_date < target:
-            if self.real_market_ready(self.calendar.next_business_day(self.current_date)):
+            if self.real_market_ready(self.calendar.next_business_day(self.current_date), at):
                 break            # a world that tracks the market waits for the real close
             _t0, _n0 = _time.perf_counter(), len(self.events)
             closed.append(self.simulation.advance_one_day())
@@ -731,6 +763,36 @@ class World:
 
     def next_update_at(self, at=None):
         return next_update(self.clock, self.calendar, at) if self.clock.mode == "REAL_TIME" else None
+
+    def trading_window(self, at=None) -> Dict:
+        return trading_window(self.clock, self.calendar, at)
+
+    def set_clock(self, update_time: Optional[str] = None, timezone: Optional[str] = None) -> Event:
+        """Change when a career save processes its day (the settings page). Real-market saves must update after the close."""
+        from zoneinfo import ZoneInfo
+        from datetime import datetime as _dt, time as _time
+        from .clock import MARKET_TZ, SESSION_FINAL
+        tz = timezone or self.clock.timezone
+        try:
+            ZoneInfo(tz)
+        except Exception:
+            raise CommandError(f"unknown timezone {tz}")
+        ut = update_time or self.clock.update_time
+        try:
+            h, m = ut.split(":"); _time(int(h), int(m))
+        except Exception:
+            raise CommandError("update_time must be HH:MM")
+        if getattr(self, "market_source", "SIMULATED") == "REAL":
+            ny = _dt.combine(date(2026, 1, 5), _time(int(h), int(m)), tzinfo=ZoneInfo(tz)).astimezone(MARKET_TZ).time()
+            if ny < SESSION_FINAL:
+                raise CommandError(f"a save that tracks the real market must update after the close: {ut} {tz} is {ny.strftime('%H:%M')} New York, before 16:15")
+        ev = self.emit(E.CLOCK_CHANGED, {"update_time": ut, "timezone": tz, "mode": self.clock.mode})
+        self.flush()
+        return ev
+
+    def _h_clock_changed(self, ev: Event) -> None:
+        p = ev.payload
+        self.clock = ClockConfig(p.get("mode", self.clock.mode), p.get("timezone", self.clock.timezone), p.get("update_time", self.clock.update_time))
 
     # ------------------------------------------------------------------ audit
     def audit_chain(self, event_id: str) -> Dict:
