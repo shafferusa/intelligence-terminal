@@ -171,9 +171,9 @@ class Service:
         if not avail:
             out["note"] = "a simulated save has no live market: prices move when the day is processed"
             return jsonable(out)
-        if w.live.resting():                                   # every quote refresh works the resting live book first (same cached fetch)
+        if w.live.pending():                                   # every quote refresh works the live book first (same cached fetch)
             try:
-                out["worked"] = w.work_live()
+                out["worked"] = w.work_live(at=self.now() if self.now else None)
             except Exception as e:
                 out["work_error"] = f"could not check the resting live orders ({e.__class__.__name__})"
         if not ids:
@@ -190,17 +190,17 @@ class Service:
         w = self.world(world_id)
         if not w.live.available():
             return {"available": False, "checked": 0, "filled": [], "triggered": [], "ratcheted": [], "note": "a simulated save has no live market"}
-        return jsonable({"available": True, **w.work_live()})
+        return jsonable({"available": True, **w.work_live(at=self.now() if self.now else None)})
 
     def work_live_loaded(self) -> Dict[str, Dict]:
         """The server's minute tick: work the resting live book of every loaded save that has one (a save nobody has opened
         this run is not loaded just for this; opening it, or its own daily update, brings it in). Network trouble is logged, not raised."""
         out = {}
         for w in list(self.worlds.values()):
-            if not w.live.available() or not w.live.resting():
+            if not w.live.available() or not w.live.pending():
                 continue
             try:
-                r = w.work_live()
+                r = w.work_live(at=self.now() if self.now else None)
             except Exception as e:
                 self.log.warning("world %s: resting live orders not checked (%s)", w.id, e.__class__.__name__)
                 continue
@@ -267,6 +267,7 @@ class Service:
                          "trading_window": w.trading_window(self.now() if self.now else None),
                          "live": {"available": w.live.available(), "source": "Yahoo Finance (up to 15 minutes delayed)" if w.live.available() else None,
                                   "instruction_session": w.instruction_session(self.now() if self.now else None)},
+                         "quote_updates": w.quote_updates(self.now() if self.now else None),
                          "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
                                           "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
                                           "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),

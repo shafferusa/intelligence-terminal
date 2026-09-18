@@ -69,7 +69,7 @@ class TradingEngine:
     # ------------------------------------------------------------------ commands
     def enter_order(self, portfolio_id: str, security_id: str, side: str, quantity, order_type: str, limit_price, stop_price,
                     time_in_force: str, strategy_tag: Optional[str], trail_pct: Optional[float] = None, condition: Optional[Dict] = None,
-                    execute_at: str = "OPEN", execution: str = "NEXT_UPDATE") -> Order:
+                    execute_at: str = "OPEN", execution: str = "NEXT_UPDATE", executes_at: Optional[str] = None) -> Order:
         from ..world import CommandError
         w = self.w
         pf = w.portfolio(portfolio_id)
@@ -85,7 +85,8 @@ class TradingEngine:
                 "limit_price": qprice(limit_price) if limit_price is not None else None,
                 "stop_price": qprice(stop_price) if stop_price is not None else None, "time_in_force": tif, "strategy_tag": strategy_tag,
                 "trail_pct": float(trail_pct) if trail_pct else None, "trail_level": trail_level, "condition": self._norm_condition(condition),
-                "execute_at": "CLOSE" if str(execute_at).upper() == "CLOSE" else "OPEN", "execution": "LIVE" if str(execution).upper() == "LIVE" else "NEXT_UPDATE"}
+                "execute_at": "CLOSE" if str(execute_at).upper() == "CLOSE" else "OPEN", "execution": "LIVE" if str(execution).upper() == "LIVE" else "NEXT_UPDATE",
+                "executes_at": executes_at}
         reason = self._validate(pf, sec, side, order_type, q, base["limit_price"], base["stop_price"], tif, base["trail_pct"], base["condition"], strategy_tag)
         if reason:
             w.emit(E.ORDER_REJECTED, {**base, "order_id": w.new_id("ORD"), "reason": reason}, portfolio_id=pf.id)
@@ -377,6 +378,13 @@ class TradingEngine:
             return
         half = (bar.ask - bar.bid) / 2
         session = "CLOSE" if order.execute_at == "CLOSE" else "OPEN"     # entered mid-session: the open had already printed
+        if w.quote_ticks_active():
+            # a career save with live quotes works instructions at the 15-minute quote updates; the daily update is only a
+            # safety net (the terminal slept through the session): the close counts, never a range the updates never showed,
+            # and nothing entered after the session's last quote update (it waits for tomorrow's 09:45)
+            if order.executes_at and order.executes_at[:10] > today:
+                return
+            session = "CLOSE"
         base: Optional[Decimal] = None
 
         # condition gate: evaluated at the close, executed at the close
@@ -536,7 +544,11 @@ class TradingEngine:
         today = self.w.current_date.isoformat()
         for pf in self.w.portfolios.values():
             for o in list(pf.orders.values()):
-                if o.time_in_force == "DAY" and o.status in ("WORKING", "PARTIALLY_FILLED", "ENTERED") and o.entered_date < today:
+                if o.time_in_force != "DAY" or o.status not in ("WORKING", "PARTIALLY_FILLED", "ENTERED"):
+                    continue
+                # good for the session it executes in: the session of its first quote update (career saves), else the next after entry
+                done = (o.executes_at[:10] <= today) if o.executes_at else (o.entered_date < today)
+                if done:
                     self._set_status(o, "EXPIRED", cause, "good-for-day order expired unfilled" if o.filled_quantity == 0 else "day order expired after partial fill")
 
     def system_order(self, pf: Portfolio, sec: Security, side: str, qty: Decimal, cause: Event, reason: str, forced: bool,
@@ -562,8 +574,10 @@ class TradingEngine:
                   stop_price=D(p["stop_price"]) if p.get("stop_price") is not None else None, time_in_force=p["time_in_force"],
                   status=status, entered_date=ev.sim_date, strategy_tag=p.get("strategy_tag"), reason=p.get("reason") or p.get("system_reason"),
                   trail_pct=p.get("trail_pct"), trail_level=D(p["trail_level"]) if p.get("trail_level") is not None else None,
-                  condition=p.get("condition"), execute_at=p.get("execute_at", "OPEN"), execution=p.get("execution", "NEXT_UPDATE"))
+                  condition=p.get("condition"), execute_at=p.get("execute_at", "OPEN"), execution=p.get("execution", "NEXT_UPDATE"),
+                  executes_at=p.get("executes_at"))
         first = ("entered — executes now at the live quote" if o.execution == "LIVE"
+                 else f"entered — executes at the {o.executes_at[11:16]} quote update on {o.executes_at[:10]} (New York)" if o.executes_at
                  else "entered while the session runs — executes at its close at the next daily update" if o.execute_at == "CLOSE"
                  else "entered — executes at the next daily update")
         o.history.append({"date": ev.sim_date, "note": first if status == "WORKING" else p.get("reason", "")})

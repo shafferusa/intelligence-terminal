@@ -348,6 +348,8 @@ class Order:
     condition_met_date: Optional[str] = None
     execute_at: str = "OPEN"                  # OPEN | CLOSE: which print of the next session an instruction executes against
     execution: str = "NEXT_UPDATE"            # NEXT_UPDATE | LIVE (filled immediately at the latest real quote)
+    executes_at: Optional[str] = None         # career saves: the quote update (New York, ISO) an instruction first executes at
+    last_tick: Optional[str] = None           # the last quote update that worked this instruction (memory only)
     history: List[Dict] = field(default_factory=list)
 
 

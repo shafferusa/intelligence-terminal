@@ -1,7 +1,8 @@
 """Live quotes and live tickets in a save that tracks the real market (quotes stubbed: no network in tests)."""
 import time
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 try:
     from helpers import make_world, assert_ledger_invariants
@@ -191,6 +192,74 @@ class LiveTicketTest(unittest.TestCase):
         self.assertIn(w.id, s.scheduler_state["last_live"])
         self.assertEqual(s.work_live(w.id)["checked"], 0)
         assert_ledger_invariants(self, w, pf)
+        LIVE_MULT.clear()
+
+    def test_instructions_execute_at_the_15_minute_quote_updates(self):
+        """A career save with live quotes works instructions at 09:45, 10:00 … 16:15 New York (the delayed quote's own
+        cadence), once per update, at that quote; nothing entered after 16:15 executes before the next morning; the daily
+        update only counts the close as a safety net."""
+        from finsim.clock import next_quote_tick, latest_quote_tick, quote_ticks
+        NY = ZoneInfo("America/New_York")
+        LIVE_MULT.clear()
+        store = EventStore(":memory:")
+        w, pf, _ = career_world(store)
+        cal = w.calendar
+        d = date(2026, 9, 18)                                                   # a Friday
+        T = lambda h, m, dd=d: datetime(dd.year, dd.month, dd.day, h, m, tzinfo=NY)
+        self.assertTrue(w.quote_ticks_active())
+        self.assertEqual(len(quote_ticks(d)), 27)
+        self.assertEqual(next_quote_tick(cal, T(10, 3)), T(10, 15)); self.assertEqual(latest_quote_tick(cal, T(10, 3)), T(10, 0))
+        self.assertEqual(next_quote_tick(cal, T(8, 0)), T(9, 45)); self.assertEqual(latest_quote_tick(cal, T(8, 0)), T(16, 15, date(2026, 9, 17)))
+        self.assertEqual(next_quote_tick(cal, T(16, 15)), T(9, 45, date(2026, 9, 21))); self.assertEqual(latest_quote_tick(cal, T(16, 15)), T(16, 15))
+        self.assertEqual(next_quote_tick(cal, T(12, 0, date(2026, 9, 19))), T(9, 45, date(2026, 9, 21)))     # Saturday → Monday
+        aapl = float(w.live.quote(w.securities["AAPL"])["price"]); nvda = float(w.live.quote(w.securities["NVDA"])["price"])
+        # entered at 10:03: executes at the 10:15 update, not before
+        mkt = w.place_order(pf.id, "AAPL", "BUY", D(100), at=T(10, 3))
+        self.assertEqual(mkt.executes_at, T(10, 15).isoformat()); self.assertIn("10:15 quote update", mkt.history[0]["note"])
+        lim = w.place_order(pf.id, "NVDA", "BUY", D(100), "LIMIT", D(str(round(nvda * 0.98, 2))), time_in_force="GTC", at=T(10, 3))
+        cond = w.place_order(pf.id, "AAPL", "BUY", D(10), time_in_force="GTC", condition={"ref": "NVDA", "op": "<=", "value": round(nvda * 0.99, 2)}, at=T(10, 3))
+        r = w.work_live(max_age_s=0, at=T(10, 5))
+        self.assertEqual((r["instructions"], r["filled"], r["tick"]), (0, [], T(10, 0).isoformat())); self.assertEqual(mkt.status, "WORKING")
+        r = w.work_live(max_age_s=0, at=T(10, 16))
+        self.assertEqual(r["tick"], T(10, 15).isoformat()); self.assertEqual(r["instructions"], 3)
+        self.assertEqual([f["order_id"] for f in r["filled"]], [mkt.id]); self.assertEqual(mkt.status, "FILLED")
+        t = pf.trades[mkt.trade_ids[-1]]
+        self.assertEqual(t.execution_detail["session"], "QUOTE_UPDATE"); self.assertEqual(t.execution_detail["quote_update"], T(10, 15).isoformat())
+        self.assertEqual(lim.status, "WORKING"); self.assertIn("10:15 quote update", lim.reason); self.assertEqual(lim.last_tick, T(10, 15).isoformat())
+        self.assertIn("condition not met", cond.reason)
+        # the same update is never worked twice; the next one is
+        r = w.work_live(max_age_s=0, at=T(10, 20))
+        self.assertEqual(r["instructions"], 0)
+        LIVE_MULT["NVDA"] = LIVE_UP * 0.975
+        r = w.work_live(max_age_s=0, at=T(10, 31))
+        self.assertEqual(r["instructions"], 2); self.assertEqual({f["order_id"] for f in r["filled"]}, {lim.id, cond.id})
+        self.assertEqual(lim.status, "FILLED"); self.assertEqual(cond.status, "FILLED"); self.assertIsNotNone(cond.condition_met_date)
+        # entered after the last update of the day: waits for Monday 09:45, and the daily update does not touch it
+        late = w.place_order(pf.id, "AAPL", "BUY", D(100), at=T(16, 30))
+        self.assertEqual(late.executes_at, T(9, 45, date(2026, 9, 21)).isoformat())
+        r = w.work_live(max_age_s=0, at=T(16, 40))
+        self.assertEqual(r["instructions"], 0)
+        w.advance(1)
+        self.assertEqual(late.status, "WORKING", "the daily update leaves an instruction entered after 16:15 for the next morning's 09:45")
+        r = w.work_live(max_age_s=0, at=T(9, 46, date(2026, 9, 21)))
+        self.assertEqual([f["order_id"] for f in r["filled"]], [late.id])
+        # replay: every fill and the condition come back without a feed
+        w2 = World.load(store, "c"); w2.market.real_feed = None
+        self.assertEqual(w2.replay_errors, [])
+        p2 = w2.portfolio(pf.id)
+        for o in (mkt, lim, cond, late):
+            self.assertEqual(p2.orders[o.id].status, "FILLED"); self.assertEqual(p2.orders[o.id].executes_at, o.executes_at)
+        assert_ledger_invariants(self, w, pf)
+        # the service reports the schedule and works the book with its own clock
+        s = Service(store); s.worlds[w.id] = w
+        s.now = lambda: T(11, 2, date(2026, 9, 21))
+        info = s.world_info(w.id)
+        self.assertTrue(info["quote_updates"]["active"]); self.assertEqual(info["quote_updates"]["next"], T(11, 15, date(2026, 9, 21)).isoformat())
+        r = s.place_order(w.id, pf.id, "AAPL", "SELL", 50)
+        self.assertEqual(r["order"]["executes_at"], T(11, 15, date(2026, 9, 21)).isoformat())
+        s.now = lambda: T(11, 15, date(2026, 9, 21))
+        live = s.live(w.id, ["AAPL"])
+        self.assertEqual([f["order_id"] for f in live["worked"]["filled"]], [r["order"]["id"]])
         LIVE_MULT.clear()
 
     def test_simulated_saves_have_no_live_market(self):

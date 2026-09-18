@@ -18,7 +18,7 @@ from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
 
 from .calendar import BusinessCalendar, SettlementConfig
-from .clock import ClockConfig, next_update, target_sim_date, trading_window, session_closed, instruction_session
+from .clock import ClockConfig, next_update, target_sim_date, trading_window, session_closed, instruction_session, next_quote_tick, latest_quote_tick
 from .domain.events import E, Event
 from .version import SAVE_VERSION, ENGINE_VERSION
 from .log import get_logger
@@ -509,21 +509,37 @@ class World:
             raise CommandError("live execution needs a save that tracks the real market; this save is simulated — send an instruction instead")
         if execution == "LIVE" and condition and condition.get("ref"):
             raise CommandError("a conditional order is an instruction for the daily update (its reference is evaluated at the close); send it as NEXT UPDATE")
+        executes_at = None
+        if execution != "LIVE" and self.quote_ticks_active():
+            executes_at = next_quote_tick(self.calendar, at).isoformat()
         try:
             order = self.trading.enter_order(portfolio_id, security_id, side, quantity, order_type, limit_price, stop_price, time_in_force,
-                                             strategy_tag, trail_pct, condition, execute_at=self.instruction_session(at), execution=execution)
+                                             strategy_tag, trail_pct, condition, execute_at=self.instruction_session(at), execution=execution,
+                                             executes_at=executes_at)
             if execution == "LIVE":
                 self.live.fill(order, self.events[-1])
         finally:
             self.flush()
         return order
 
-    def work_live(self, max_age_s: float = 60.0) -> Dict:
-        """Sweep the resting live book against the latest real quotes (every quote refresh and the server's minute tick call this)."""
+    def work_live(self, max_age_s: float = 60.0, at=None) -> Dict:
+        """Sweep the live book against the latest real quotes: resting live orders at every call, instructions at the
+        15-minute quote updates (every quote refresh and the server's minute tick call this)."""
         try:
-            return self.live.work(max_age_s)
+            return self.live.work(max_age_s, at)
         finally:
             self.flush()
+
+    def quote_ticks_active(self) -> bool:
+        """Career saves with live quotes work instructions at the quote updates (09:45 to 16:15 New York, every 15 minutes)."""
+        return getattr(self, "market_source", "SIMULATED") == "REAL" and self.live.available()
+
+    def quote_updates(self, at=None) -> Dict:
+        if not self.quote_ticks_active():
+            return {"active": False}
+        return {"active": True, "schedule": "every 15 minutes from 09:45 to 16:15 New York (the quote is up to 15 minutes delayed)",
+                "last": latest_quote_tick(self.calendar, at).isoformat(), "next": next_quote_tick(self.calendar, at).isoformat(),
+                "last_worked": self.live.last_tick}
 
     def instruction_session(self, at=None) -> str:
         """Which print of the next session an instruction entered now executes against: OPEN, or CLOSE once it has opened."""

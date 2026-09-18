@@ -13,9 +13,11 @@ processed after the 16:00 New York close (17:00 by default) with that day's real
 Treasury yields, commodities and FX, the real CPI, jobs, GDP and Fed decisions, and real headlines. Between
 updates the screens show the latest real quotes (Yahoo Finance, up to 15 minutes delayed) and you can trade
 at any hour: a **live ticket** fills immediately at that quote (a live limit, stop or trailing stop rests against
-the quote stream and fills when a refresh finds the quote has reached it), an **instruction** waits for the next update
-and executes at the next session's open — or at its close if the session was already running, so an open you
-could already see is never yours. The strict overnight-only rule (no tickets from 09:30 New York until the
+the quote stream and fills when a refresh finds the quote has reached it), an **instruction** executes at the next
+**quote update** — every 15 minutes from 09:45 to 16:15 New York, the delayed quote's own cadence, so 09:45 carries
+the open and 16:15 the close — at that quote, so a print you could already see is never yours; a limit or stop is
+checked at every update until it fills, and the daily update after the close is only a safety net for a session the
+terminal slept through. The strict overnight-only rule (no tickets from 09:30 New York until the
 update) is a switch in Settings, off by default. A **sandbox** save is a world generated from a seed that you
 advance yourself. Nothing is ever sent to a broker or an exchange; the market data is read, never traded
 against (see *Where the data comes from*).
@@ -494,7 +496,7 @@ POST /api/worlds/{w}/clock {update_time, timezone, lock_session}      (career sa
 GET  /api/worlds/{w}/live?ids=SPY,NVDA,CLZ26                 (latest real quotes next to the save's last close; without ids: the index ETFs and everything held)
 POST .../orders {..., settle_ccy, execution: LIVE|NEXT_UPDATE}   (LIVE fills now at the latest quote and returns the trade; the FX spot for another settlement currency is dealt alongside, live too)
      a LIVE limit / stop / stop-limit / take-profit / trailing stop the quote has not reached rests: GET .../live sweeps the resting book before answering (`worked` says what filled), the scheduler sweeps every loaded save once a minute
-POST /api/worlds/{w}/live/work                                (sweep the resting live book now → {checked, quoted, filled, triggered, ratcheted})
+POST /api/worlds/{w}/live/work                                (sweep now → {checked, instructions, quoted, filled, triggered, ratcheted, tick, next_tick}; instructions are worked once per 15-minute quote update, 09:45–16:15 NY)
 POST .../fx/spot {..., execution: LIVE}                       (a spot deal at the pair's live quote)
      with the session lock on, career saves refuse trading and dealing commands from 09:30 New York until the update (409 with the reason); cancels are always accepted
 POST /api/worlds/{w}/force-regime {regime}   (sandbox)

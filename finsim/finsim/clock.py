@@ -87,6 +87,44 @@ def session_closed(d: date, at: Optional[datetime] = None) -> bool:
     return ny.time() >= SESSION_FINAL
 
 
+QUOTE_FIRST = time(9, 45)             # the first quote update of a session: the 09:30 open, seen 15 minutes late
+QUOTE_LAST = time(16, 15)             # the last: the 16:00 close, seen 15 minutes late
+QUOTE_STEP = timedelta(minutes=15)
+
+
+def quote_ticks(d: date) -> list:
+    """The quote updates of business day `d` (New York): every 15 minutes from 09:45 to 16:15, 27 in all."""
+    t = datetime.combine(d, QUOTE_FIRST, tzinfo=MARKET_TZ)
+    end = datetime.combine(d, QUOTE_LAST, tzinfo=MARKET_TZ)
+    out = []
+    while t <= end:
+        out.append(t)
+        t += QUOTE_STEP
+    return out
+
+
+def next_quote_tick(cal: BusinessCalendar, at: Optional[datetime] = None) -> datetime:
+    """The next quote update strictly after `at`: later today if the session still has one, else 09:45 on the next business day."""
+    ny = market_now(at)
+    d = ny.date()
+    if cal.is_business_day(d):
+        for t in quote_ticks(d):
+            if t > ny:
+                return t
+    return quote_ticks(cal.next_business_day(d))[0]
+
+
+def latest_quote_tick(cal: BusinessCalendar, at: Optional[datetime] = None) -> datetime:
+    """The most recent quote update at or before `at`: today's last one that has passed, else 16:15 on the previous business day."""
+    ny = market_now(at)
+    d = ny.date()
+    if cal.is_business_day(d):
+        passed = [t for t in quote_ticks(d) if t <= ny]
+        if passed:
+            return passed[-1]
+    return quote_ticks(cal.prev_business_day(d))[-1]
+
+
 def trading_window(cfg: ClockConfig, cal: BusinessCalendar, at: Optional[datetime] = None) -> dict:
     """When instructions may be entered in a career world.
 
@@ -104,8 +142,8 @@ def trading_window(cfg: ClockConfig, cal: BusinessCalendar, at: Optional[datetim
     running = business and MARKET_OPEN <= ny.time() < lock_end
     if not cfg.lock_session:
         return {"open": True, "mode": "REAL_TIME", "lock": False, "session_running": running,
-                "reason": ("the session is running: a live ticket fills now at the latest quote (up to 15 minutes delayed); an instruction executes at today's close"
-                           if running else "the market is shut: a live ticket fills now at the latest quote (up to 15 minutes delayed); an instruction executes at the next open")}
+                "reason": ("the session is running: a live ticket fills now at the latest quote (up to 15 minutes delayed); an instruction executes at the next quote update (every 15 minutes, 09:45 to 16:15 New York)"
+                           if running else "the market is shut: a live ticket fills now at the latest quote (up to 15 minutes delayed); an instruction executes at the next session's first quote update, 09:45 New York")}
     if running:
         opens = datetime.combine(ny.date(), lock_end, tzinfo=MARKET_TZ)
         return {"open": False, "mode": "REAL_TIME", "lock": True, "session_running": True, "opens_at": opens.isoformat(),
