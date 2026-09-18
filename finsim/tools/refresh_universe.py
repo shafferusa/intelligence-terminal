@@ -33,12 +33,14 @@ from universe_seed import UNIVERSE, BONDS, CRYPTO_SUPPLY_M   # noqa: E402
 RATE_SYMBOLS = {"bill_13w": "^IRX", "y5": "^FVX", "y10": "^TNX", "y30": "^TYX"}
 # front-month futures as the spot anchor for each simulated commodity (Yahoo continuous symbols)
 COMMODITY_SYMBOLS = {"CL": "CL=F", "BRN": "BZ=F", "NG": "NG=F", "RB": "RB=F", "HO": "HO=F", "GC": "GC=F", "SI": "SI=F", "HG": "HG=F", "PL": "PL=F", "PA": "PA=F",
-                     "ALI": "ALI=F", "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "KC": "KC=F", "SB": "SB=F", "CT": "CT=F", "CC": "CC=F", "LE": "LE=F", "GF": "GF=F", "HE": "HE=F"}
+                     "ALI": "ALI=F", "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "KC": "KC=F", "SB": "SB=F", "CT": "CT=F", "CC": "CC=F", "LE": "LE=F", "GF": "GF=F", "HE": "HE=F",
+                     "TTF": "TTF=F", "TIO": "TIO=F"}
 CENTS_QUOTED = {"ZC", "ZW", "ZS", "KC", "SB", "CT", "LE", "GF", "HE"}     # Yahoo quotes these in cents; the simulator uses dollars per unit
 # spot in USD per unit of foreign currency
 FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("JPY=X", True), "CHF": ("CHF=X", True), "CAD": ("CAD=X", True), "AUD": ("AUDUSD=X", False),
               "NZD": ("NZDUSD=X", False), "SEK": ("SEK=X", True), "NOK": ("NOK=X", True), "MXN": ("MXN=X", True), "BRL": ("BRL=X", True), "CNH": ("CNH=X", True),
-              "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True)}
+              "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True),
+              "TRY": ("TRY=X", True), "TWD": ("TWD=X", True), "IDR": ("IDR=X", True), "THB": ("THB=X", True), "CZK": ("CZK=X", True), "HUF": ("HUF=X", True), "SAR": ("SAR=X", True)}
 
 
 _last_yahoo = [0.0]
@@ -160,7 +162,7 @@ def edgar_facts(cik: int):
     return out
 
 
-INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX"}
+INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX", "SX5E": "^STOXX50E", "DAX": "^GDAXI", "UKX": "^FTSE", "NKY": "^N225", "HSI": "^HSI"}
 
 
 def fetch_extras():
@@ -246,6 +248,8 @@ def main():
                "high_52w": ch["high52"], "low_52w": ch["low52"]}
         if ysym != t:
             rec["yahoo"] = ysym
+        if len(row) > 6 and row[6] and row[6] != "USD":
+            rec["currency"] = row[6]                 # a native listing: the price is in the home currency
         if ac == "CRYPTO":
             rec["dividend_yield"], rec["trailing_dividends"] = 0.0, 0.0
             rec["shares_outstanding"] = int(CRYPTO_SUPPLY_M.get(t, 100.0) * 1e6)          # circulating supply, approximate

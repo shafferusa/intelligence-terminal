@@ -73,10 +73,20 @@ class Security:
     yahoo: Optional[str] = None             # quote symbol when it differs from the id (BTC → BTC-USD, DXY → DX-Y.NYB)
     qty_step: Decimal = Decimal("1")        # smallest tradable quantity (coins trade in ten-thousandths)
     floating: bool = False                  # floating-rate note: the coupon resets to the short rate plus the issue spread
+    float_spread: float = 0.0               # a floater's spread over the 3-month rate
+    deal_type: Optional[str] = None         # structured credit: CLO | CMBS | RMBS | ABS
+    inflation_linked: bool = False          # TIPS: principal and coupon indexed to the CPI
+    real_coupon: float = 0.0                # TIPS: the coupon on the real (unindexed) principal
+    index_ratio: float = 1.0                # TIPS: CPI now over CPI at the model's start
+    tranche: Optional[str] = None           # structured credit: the class within the deal
 
     @property
     def is_bond(self) -> bool:
-        return self.asset_class in ("GOVT_BOND", "CORP_BOND")
+        return self.asset_class in ("GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED")
+
+    @property
+    def is_mbs(self) -> bool:
+        return self.asset_class == "MBS_TBA"
 
     @property
     def is_future(self) -> bool:

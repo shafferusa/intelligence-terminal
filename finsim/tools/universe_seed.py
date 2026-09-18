@@ -682,6 +682,8 @@ ETFS = [
     ("MCHI", "iShares MSCI China ETF", "ETF", "International", "US"),
     ("KWEB", "KraneShares CSI China Internet ETF", "ETF", "International", "US"),
     ("EWJ", "iShares MSCI Japan ETF", "ETF", "International", "US"),
+    ("FEZ", "SPDR Euro Stoxx 50 ETF", "ETF", "International", "US"),
+    ("EWH", "iShares MSCI Hong Kong ETF", "ETF", "International", "US"),
     ("EWZ", "iShares MSCI Brazil ETF", "ETF", "International", "US"),
     ("EWY", "iShares MSCI South Korea ETF", "ETF", "International", "US"),
     ("EWT", "iShares MSCI Taiwan ETF", "ETF", "International", "US"),
@@ -755,6 +757,11 @@ ETFS = [
     ("BND", "Vanguard Total Bond Market ETF", "ETF", "Government", "US"),
     ("BNDX", "Vanguard Total International Bond ETF", "ETF", "Government", "US"),
     ("TIP", "iShares TIPS Bond ETF", "ETF", "Government", "US"),
+    ("MBB", "iShares MBS ETF", "ETF", "Mortgage", "US"),
+    ("VMBS", "Vanguard Mortgage-Backed Securities ETF", "ETF", "Mortgage", "US"),
+    ("JAAA", "Janus Henderson AAA CLO ETF", "ETF", "Structured Credit", "US"),
+    ("CLOA", "iShares AAA CLO Active ETF", "ETF", "Structured Credit", "US"),
+    ("CMBS", "iShares CMBS ETF", "ETF", "Structured Credit", "US"),
     ("MUB", "iShares National Muni Bond ETF", "ETF", "Government", "US"),
     ("LQD", "iShares iBoxx $ Investment Grade Corporate Bond ETF", "ETF", "Credit", "US"),
     ("VCIT", "Vanguard Intermediate-Term Corporate Bond ETF", "ETF", "Credit", "US"),
@@ -833,7 +840,40 @@ CRYPTO = [
     ("DAI", "Dai", "CRYPTO", "Stablecoin", "XX", "DAI-USD"),
 ]
 
-UNIVERSE = STOCKS + ETFS + CRYPTO
+# Native listings: the id is the ticker with the exchange suffix (Yahoo's symbol with a dash), the price is quoted and settled in
+# the home currency, so the book carries them at the local price times spot.
+# id, name, asset class, sector, country, Yahoo symbol, currency
+NATIVE = [
+    ("0700-HK", "Tencent Holdings Ltd.", "EQUITY", "Communication Services", "HK", "0700.HK", "HKD"),
+    ("9988-HK", "Alibaba Group Holding Ltd. (Hong Kong)", "EQUITY", "Consumer Discretionary", "HK", "9988.HK", "HKD"),
+    ("1299-HK", "AIA Group Ltd.", "EQUITY", "Financials", "HK", "1299.HK", "HKD"),
+    ("0941-HK", "China Mobile Ltd.", "EQUITY", "Communication Services", "HK", "0941.HK", "HKD"),
+    ("005930-KS", "Samsung Electronics Co., Ltd.", "EQUITY", "Information Technology", "KR", "005930.KS", "KRW"),
+    ("000660-KS", "SK hynix Inc.", "EQUITY", "Information Technology", "KR", "000660.KS", "KRW"),
+    ("005380-KS", "Hyundai Motor Company", "EQUITY", "Consumer Discretionary", "KR", "005380.KS", "KRW"),
+    ("2330-TW", "Taiwan Semiconductor Manufacturing Co. (Taipei)", "EQUITY", "Information Technology", "TW", "2330.TW", "TWD"),
+    ("2222-SR", "Saudi Arabian Oil Company (Saudi Aramco)", "EQUITY", "Energy", "SA", "2222.SR", "SAR"),
+    ("1120-SR", "Al Rajhi Bank", "EQUITY", "Financials", "SA", "1120.SR", "SAR"),
+    ("MC-PA", "LVMH Moët Hennessy Louis Vuitton SE", "EQUITY", "Consumer Discretionary", "FR", "MC.PA", "EUR"),
+    ("OR-PA", "L'Oréal S.A.", "EQUITY", "Consumer Staples", "FR", "OR.PA", "EUR"),
+    ("TTE-PA", "TotalEnergies SE", "EQUITY", "Energy", "FR", "TTE.PA", "EUR"),
+    ("AIR-PA", "Airbus SE", "EQUITY", "Industrials", "FR", "AIR.PA", "EUR"),
+    ("SAP-DE", "SAP SE (Frankfurt)", "EQUITY", "Information Technology", "DE", "SAP.DE", "EUR"),
+    ("SIE-DE", "Siemens AG", "EQUITY", "Industrials", "DE", "SIE.DE", "EUR"),
+    ("ALV-DE", "Allianz SE", "EQUITY", "Financials", "DE", "ALV.DE", "EUR"),
+    ("ASML-AS", "ASML Holding N.V. (Amsterdam)", "EQUITY", "Information Technology", "NL", "ASML.AS", "EUR"),
+    ("NESN-SW", "Nestlé S.A.", "EQUITY", "Consumer Staples", "CH", "NESN.SW", "CHF"),
+    ("ROG-SW", "Roche Holding AG", "EQUITY", "Health Care", "CH", "ROG.SW", "CHF"),
+    ("NOVN-SW", "Novartis AG (Zurich)", "EQUITY", "Health Care", "CH", "NOVN.SW", "CHF"),
+    ("7203-T", "Toyota Motor Corporation (Tokyo)", "EQUITY", "Consumer Discretionary", "JP", "7203.T", "JPY"),
+    ("6758-T", "Sony Group Corporation (Tokyo)", "EQUITY", "Consumer Discretionary", "JP", "6758.T", "JPY"),
+    ("8306-T", "Mitsubishi UFJ Financial Group (Tokyo)", "EQUITY", "Financials", "JP", "8306.T", "JPY"),
+    ("RELIANCE-NS", "Reliance Industries Ltd.", "EQUITY", "Energy", "IN", "RELIANCE.NS", "INR"),
+    ("CBA-AX", "Commonwealth Bank of Australia", "EQUITY", "Financials", "AU", "CBA.AX", "AUD"),
+    ("BHP-AX", "BHP Group Ltd. (Sydney)", "EQUITY", "Materials", "AU", "BHP.AX", "AUD"),
+]
+
+UNIVERSE = STOCKS + ETFS + CRYPTO + NATIVE
 
 # id, name, issuer, issuer ticker (None for sovereigns), coupon, years to maturity, rating, spread bps, ADV face, sector
 BONDS = [

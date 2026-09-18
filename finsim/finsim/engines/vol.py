@@ -45,7 +45,7 @@ class VolSurfaceModel:
         if sid in self.state:
             return
         base_skew = -0.35 if is_index else -0.22
-        self.state[sid] = VolState(atm=max(0.08, structural_vol * 1.05), skew=base_skew, curv=0.12 if not is_index else 0.06, term=0.08)
+        self.state[sid] = VolState(atm=max(min(0.08, structural_vol * 0.8), structural_vol * 1.05), skew=base_skew, curv=0.12 if not is_index else 0.06, term=0.08)
         self.history[sid] = []
 
     def step(self, d: date, sid: str, structural_vol: float, realized_20d: float, vol_index: float, vol_index_change: float, regime: str,
@@ -53,9 +53,9 @@ class VolSurfaceModel:
         st = self.state[sid]
         rng = random.Random(f"{self.seed}|iv|{sid}|{d.isoformat()}")
         target = 0.45 * structural_vol + 0.30 * realized_20d + 0.25 * (vol_index / 100.0) * (structural_vol / 0.18) + REGIME_IV[regime] * (structural_vol / 0.18) * 0.5
-        target = max(0.06, min(1.5, target))
+        target = max(min(0.06, structural_vol * 0.75), min(1.5, target))
         st.atm = st.atm + 0.08 * (target - st.atm) + 0.35 * st.atm * vol_index_change + 0.012 * st.atm * rng.gauss(0, 1)
-        st.atm = max(0.05, min(2.0, st.atm))
+        st.atm = max(min(0.05, structural_vol * 0.6), min(2.0, st.atm))
         base_skew = -0.35 if is_index else -0.22
         st.skew = st.skew + 0.15 * (base_skew * REGIME_SKEW[regime] - st.skew) + 0.01 * rng.gauss(0, 1)
         st.term = st.term + 0.15 * (REGIME_TERM[regime] - st.term) + 0.004 * rng.gauss(0, 1)
@@ -75,7 +75,7 @@ class VolSurfaceModel:
     def atm_for_tenor(self, sid: str, T: float) -> float:
         st = self.state[sid]
         T = max(1 / 365, T)
-        return max(0.03, st.atm * (1 + st.term * (math.sqrt(T) - math.sqrt(BASE_T))))
+        return max(min(0.03, st.atm * 0.5), st.atm * (1 + st.term * (math.sqrt(T) - math.sqrt(BASE_T))))
 
     def iv(self, sid: str, strike: float, forward: float, T: float) -> float:
         st = self.state[sid]
@@ -83,7 +83,7 @@ class VolSurfaceModel:
         m = math.log(max(1e-9, strike) / max(1e-9, forward))
         skew_T = st.skew * (BASE_T / T) ** 0.3
         v = self.atm_for_tenor(sid, T) * math.exp(skew_T * m + st.curv * m * m)
-        return max(0.03, min(3.0, v))
+        return max(min(0.03, st.atm * 0.5), min(3.0, v))          # the floor scales with the underlying: a rate future is not an equity
 
     def iv_rank(self, sid: str, window: int = 252) -> Optional[Dict]:
         h = self.history.get(sid, [])[-window:]
@@ -118,7 +118,7 @@ def index_factor(under: str) -> float:
 
 def optionable_underlyings(securities: Dict) -> List[str]:
     """Underlyings that carry a listed option chain and a vol surface (large/mid caps plus the cash index)."""
-    out = [s.id for s in securities.values() if s.asset_class in OPTIONABLE_CLASSES and s.liquidity_tier == "LARGE" and s.shares_outstanding
+    out = [s.id for s in securities.values() if s.asset_class in OPTIONABLE_CLASSES and s.liquidity_tier == "LARGE" and s.shares_outstanding and s.currency == "USD"
            and (s.asset_class != "ETF" or s.adv >= 500_000)]
     return sorted(out) + [i for i in INDICES if INDICES[i][0] in securities]
 

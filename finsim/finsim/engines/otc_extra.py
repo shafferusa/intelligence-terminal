@@ -35,7 +35,7 @@ EXTRA_PRODUCTS = ("VARIANCE_SWAP", "VOL_SWAP", "DIVIDEND_SWAP", "INFLATION_SWAP"
 FAMILY = {"VARIANCE_SWAP": "level", "VOL_SWAP": "level", "DIVIDEND_SWAP": "price", "INFLATION_SWAP": "level", "FX_SWAP": "price",
           "BARRIER_OPTION": "premium", "DIGITAL_OPTION": "premium", "ASIAN_OPTION": "premium", "CRYPTO_PERP": "price",
           "PPN": "price", "REVERSE_CONVERTIBLE": "price", "AUTOCALLABLE": "price"}
-NDF_CURRENCIES = ("MXN", "BRL", "CNH", "KRW", "INR", "PLN")
+NDF_CURRENCIES = ("MXN", "BRL", "CNH", "KRW", "INR", "PLN", "TWD", "IDR")
 PERP_FUNDING_DAILY = 0.0003          # 0.01% per 8 hours, the exchanges' norm when the perp trades above the index
 
 

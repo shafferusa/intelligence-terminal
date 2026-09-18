@@ -124,7 +124,7 @@ class CommodityDeskEngine:
         inv_id = inventory_id(code)
         if inv_id not in w.securities:
             w.emit(E.PHYSICAL_LISTED, {"security_id": inv_id, "code": code, "name": f"{spec.name} (physical, {spec.unit})", "unit": spec.unit, "group": spec.group,
-                                       "price": w.market.commodities.state[code].spot, "adv": int(spec.adv * spec.multiplier * 0.1)}, cause_id=cause.id)
+                                       "price": w.market.commodities.state[code].spot, "adv": int(spec.adv * spec.multiplier * 0.1), "currency": spec.currency}, cause_id=cause.id)
         inv = w.securities[inv_id]
         held = w.collateral.available_quantity(pf, inv_id) if inv_id in pf.positions else ZERO
         mult = D(str(sec.multiplier))
@@ -197,7 +197,7 @@ class CommodityDeskEngine:
         p = ev.payload
         if p["security_id"] in w.securities:
             return
-        sec = Security(id=p["security_id"], name=p["name"], asset_class="PHYSICAL", market="PHYSICAL", currency="USD", country="US", sector=p["group"],
+        sec = Security(id=p["security_id"], name=p["name"], asset_class="PHYSICAL", market="PHYSICAL", currency=p.get("currency", "USD"), country="US", sector=p["group"],
                        isin=f"XP{ev.seq:010d}", cusip=f"P{ev.seq:08d}", adv=int(p["adv"]), spread_bps=PHYSICAL_SPREAD_BPS, liquidity_tier="LARGE", underlying=p["code"],
                        underlying_class="PHYSICAL", multiplier=1.0, unit=p["unit"], beta=0.0, sigma_annual=0.0, lot_size=1)
         w.securities[sec.id] = sec

@@ -25,9 +25,9 @@ from finsim.engines.investment_banking import KINDS as IB_KINDS  # noqa: E402
 from finsim.engines.playbook import GROUPS as PB_GROUPS, STRATEGIES as PB_STRATEGIES  # noqa: E402
 from finsim.domain.otc_models import PRODUCTS, BUCKET_BY_PRODUCT  # noqa: E402
 
-CCY_NAME = {"EUR": "Euro", "GBP": "British pound", "JPY": "Japanese yen", "CHF": "Swiss franc", "CAD": "Canadian dollar", "AUD": "Australian dollar", "NZD": "New Zealand dollar", "SEK": "Swedish krona", "NOK": "Norwegian krone", "MXN": "Mexican peso", "BRL": "Brazilian real", "CNH": "Chinese yuan (offshore)", "HKD": "Hong Kong dollar", "SGD": "Singapore dollar", "KRW": "Korean won", "INR": "Indian rupee", "ZAR": "South African rand", "PLN": "Polish zloty"}
+CCY_NAME = {"EUR": "Euro", "GBP": "British pound", "JPY": "Japanese yen", "CHF": "Swiss franc", "CAD": "Canadian dollar", "AUD": "Australian dollar", "NZD": "New Zealand dollar", "SEK": "Swedish krona", "NOK": "Norwegian krone", "MXN": "Mexican peso", "BRL": "Brazilian real", "CNH": "Chinese yuan (offshore)", "HKD": "Hong Kong dollar", "SGD": "Singapore dollar", "KRW": "Korean won", "INR": "Indian rupee", "ZAR": "South African rand", "PLN": "Polish zloty", "TRY": "Turkish lira", "TWD": "Taiwan dollar", "IDR": "Indonesian rupiah", "THB": "Thai baht", "CZK": "Czech koruna", "HUF": "Hungarian forint", "SAR": "Saudi riyal (pegged)"}
 CLASS_LABEL = {"EQUITY": "Stock", "ADR": "ADR (foreign stock)", "REIT": "REIT", "PREFERRED": "Preferred stock", "ETF": "ETF", "CRYPTO": "Crypto (spot coin)",
-               "INDEX": "Index (options only)", "GOVT_BOND": "US Treasury", "CORP_BOND": "Corporate / sovereign bond", "FUTURE": "Future"}
+               "INDEX": "Index (futures / options only)", "GOVT_BOND": "US Treasury", "CORP_BOND": "Corporate / sovereign bond", "FUTURE": "Future", "MBS_TBA": "Agency MBS (TBA / pool)", "STRUCTURED": "Structured credit (CLO / CMBS / RMBS / ABS)"}
 OTC = {  # product -> (title, family, what you trade, quoted as, on what)
     "IRS": ("Interest rate swap", "Rates", "fixed vs floating (TERM3M) for 1–30y, no principal", "fixed rate", "USD"),
     "OIS": ("Overnight index swap", "Rates", "fixed vs compounded policy rate", "fixed rate", "USD"),
@@ -113,9 +113,11 @@ def main():
 
     # ---- Bonds
     bond_rows = []
-    for cls in ("GOVT_BOND", "CORP_BOND"):
+    for cls in ("GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED"):
         for s in sorted(by_class.get(cls, []), key=lambda x: (x.get("maturity") or "", x["id"])):
             kind = "US Treasury bill" if cls == "GOVT_BOND" and (s.get("coupon") in (0, 0.0, None) or s.get("is_bill")) else CLASS_LABEL[cls]
+            if cls == "GOVT_BOND" and s.get("currency") not in (None, "USD"):
+                kind = f"Government bond ({s.get('currency')}, {s.get('country')})"
             if cls == "CORP_BOND" and str(s["id"]).startswith("SOV-"):
                 kind = "Sovereign bond (USD)"
             bond_rows.append([s["id"], s.get("name"), kind, s.get("issuer"), s.get("sector"), s.get("rating"), n(s.get("coupon")), s.get("maturity"), n(s.get("years_to_maturity")), n(s.get("last")), n(s.get("ytm")), n(s.get("spread_to_curve_bps") or s.get("credit_spread_bps")), n(s.get("modified_duration")), n(s.get("dv01_per_100")), s.get("underlying") or "", "yes", "yes" if cls == "CORP_BOND" else "no (Treasuries carry no CDS)", "yes"])

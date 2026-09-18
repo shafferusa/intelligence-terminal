@@ -86,14 +86,16 @@ class CorporateActionEngine:
                                                 "principal": money(pos.quantity * D(repr(sec.recovery_rate))), "currency": sec.currency, "recovery": True},
                                cause_id=cause.id, portfolio_id=pf.id)
                     continue
-                cds = [d.isoformat() for d in BondPricer.coupon_dates(sec)]
+                roll = lambda x: x if w.calendar.is_business_day(x) else w.calendar.next_business_day(x)   # a coupon due on a weekend pays the next business day
+                cds = [roll(d).isoformat() for d in BondPricer.coupon_dates(sec)]
                 if today in cds:
                     cpn = money(pos.quantity * D(sec.coupon) / sec.freq)
-                    w.emit(E.COUPON_PAID, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "amount": cpn, "currency": sec.currency},
-                           cause_id=cause.id, portfolio_id=pf.id)
-                if sec.maturity == today:
-                    w.emit(E.BOND_MATURED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "principal": money(pos.quantity),
-                                            "currency": sec.currency}, cause_id=cause.id, portfolio_id=pf.id)
+                    w.emit(E.COUPON_PAID, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "amount": cpn, "currency": sec.currency,
+                                           "base_amount": money(cpn * w.fx.k(sec.currency))}, cause_id=cause.id, portfolio_id=pf.id)
+                if roll(date.fromisoformat(sec.maturity)).isoformat() == today:
+                    principal = money(pos.quantity * D(repr(max(1.0, sec.index_ratio)))) if sec.inflation_linked else money(pos.quantity)
+                    w.emit(E.BOND_MATURED, {"portfolio_id": pf.id, "security_id": sec.id, "quantity": pos.quantity, "principal": principal,
+                                            "currency": sec.currency, "base_principal": money(principal * w.fx.k(sec.currency))}, cause_id=cause.id, portfolio_id=pf.id)
 
     def entitle_today(self, ca, cause: Event) -> None:
         """Ex-date processing for a cash dividend: holders are entitled, shorts owe a manufactured dividend."""
@@ -105,11 +107,13 @@ class CorporateActionEngine:
                     if q > 0:
                         amt = money(q * ca.amount_per_unit)
                         w.emit(E.DIVIDEND_ENTITLED, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": q,
-                                                     "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
+                                                     "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date, "base_amount": money(amt * w.fx.k(ca.currency))},
+                               cause_id=cause.id, portfolio_id=pf.id)
                     elif q < 0:
                         amt = money(-q * ca.amount_per_unit)
                         w.emit(E.DIVIDEND_OBLIGATION, {"ca_id": ca.id, "portfolio_id": pf.id, "security_id": ca.security_id, "quantity": -q,
-                                                       "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date}, cause_id=cause.id, portfolio_id=pf.id)
+                                                       "amount": amt, "currency": ca.currency, "pay_date": ca.pay_date, "base_amount": money(amt * w.fx.k(ca.currency))},
+                               cause_id=cause.id, portfolio_id=pf.id)
                 # mark EX even if nobody held it
                 ca.status = "EX"
 
@@ -176,12 +180,13 @@ class CorporateActionEngine:
         ca = w.corporate_actions[p["ca_id"]]
         pf = w.portfolios[p["portfolio_id"]]
         amt = D(p["amount"])
-        ca.entitlements[pf.id] = {"quantity": D(p["quantity"]), "amount": amt, "paid": False}
+        base = D(p.get("base_amount", p["amount"]))
+        ca.entitlements[pf.id] = {"quantity": D(p["quantity"]), "amount": amt, "paid": False, "base_amount": base}
         ca.status = "EX"
         pos = pf.position(p["security_id"])
-        pos.dividend_income += amt
+        pos.dividend_income += base
         w.post(pf.id, f"Dividend entitlement {p['security_id']}: {D(p['quantity']):,} x {ca.amount_per_unit} = {amt:,.2f}, payable {p['pay_date']}",
-               [dr("1210", amt, p["security_id"], "dividend receivable"), cr("4200", amt, p["security_id"], "dividend income")], ev,
+               [dr("1210", base, p["security_id"], "dividend receivable"), cr("4200", base, p["security_id"], "dividend income")], ev,
                {"ca_id": ca.id, "security_id": p["security_id"]})
 
     def _h_paid(self, ev: Event) -> None:
@@ -190,11 +195,18 @@ class CorporateActionEngine:
         ca = w.corporate_actions[p["ca_id"]]
         pf = w.portfolios[p["portfolio_id"]]
         amt = D(p["amount"])
-        ca.entitlements[pf.id]["paid"] = True
-        pf.cash_account(p["currency"]).balance += amt
-        w.record_cash_movement(pf, p["currency"], amt, "DIVIDEND", f"Dividend {ca.id} on {p['security_id']}", ev)
+        ent = ca.entitlements[pf.id]
+        ent["paid"] = True
+        booked = D(ent.get("base_amount", amt))
+        if p["currency"] != pf.base_currency:
+            received = w.fx._adjust_cash(pf, p["currency"], amt, ev, "DIVIDEND", f"Dividend {ca.id} on {p['security_id']}")
+        else:
+            received = amt
+            pf.cash_account(p["currency"]).balance += amt
+            w.record_cash_movement(pf, p["currency"], amt, "DIVIDEND", f"Dividend {ca.id} on {p['security_id']}", ev)
         w.post(pf.id, f"Dividend paid {p['security_id']} {ca.id}: {amt:,.2f}",
-               [dr(f"1010:{p['currency']}", amt, p["security_id"], "dividend cash received"), cr("1210", amt, p["security_id"], "receivable extinguished")], ev,
+               [dr(f"1010:{p['currency']}", received, p["security_id"], "dividend cash received"), cr("1210", booked, p["security_id"], "receivable extinguished"),
+                cr("4650", received - booked, p["security_id"], "realised FX on the dividend") if received != booked else None], ev,
                {"ca_id": ca.id, "security_id": p["security_id"]})
 
     def _h_obligation(self, ev: Event) -> None:
@@ -204,13 +216,14 @@ class CorporateActionEngine:
         ca = w.corporate_actions[p["ca_id"]]
         pf = w.portfolios[p["portfolio_id"]]
         amt = D(p["amount"])
-        ca.entitlements[pf.id] = {"quantity": -D(p["quantity"]), "amount": amt, "paid": False, "obligation": True}
+        base = D(p.get("base_amount", p["amount"]))
+        ca.entitlements[pf.id] = {"quantity": -D(p["quantity"]), "amount": amt, "paid": False, "obligation": True, "base_amount": base}
         ca.status = "EX"
         pos = pf.position(p["security_id"])
-        pos.manufactured_dividends += amt
-        pf.manufactured_payable += amt
+        pos.manufactured_dividends += base
+        pf.manufactured_payable += base
         w.post(pf.id, f"Manufactured dividend {p['security_id']}: short {D(p['quantity']):,} x {ca.amount_per_unit} = {amt:,.2f} owed to lender, payable {p['pay_date']}",
-               [dr("5400", amt, p["security_id"], "payment in lieu of dividend"), cr("2320", amt, p["security_id"], "manufactured dividend payable")], ev,
+               [dr("5400", base, p["security_id"], "payment in lieu of dividend"), cr("2320", base, p["security_id"], "manufactured dividend payable")], ev,
                {"ca_id": ca.id, "security_id": p["security_id"], "kind": "MANUFACTURED_DIVIDEND"})
 
     def _h_obligation_paid(self, ev: Event) -> None:
@@ -219,14 +232,21 @@ class CorporateActionEngine:
         ca = w.corporate_actions[p["ca_id"]]
         pf = w.portfolios[p["portfolio_id"]]
         amt = D(p["amount"])
-        ca.entitlements[pf.id]["paid"] = True
-        pf.manufactured_payable -= amt
-        ca_ = pf.cash_account(p["currency"])
-        ca_.balance -= amt
-        ca_.base_value -= amt
-        w.record_cash_movement(pf, p["currency"], -amt, "MANUFACTURED_DIVIDEND", f"Payment in lieu {ca.id} on {p['security_id']} to lender", ev)
+        ent = ca.entitlements[pf.id]
+        ent["paid"] = True
+        booked = D(ent.get("base_amount", amt))
+        pf.manufactured_payable -= booked
+        if p["currency"] != pf.base_currency:
+            paid = -w.fx._adjust_cash(pf, p["currency"], -amt, ev, "MANUFACTURED_DIVIDEND", f"Payment in lieu {ca.id} on {p['security_id']} to lender")
+        else:
+            paid = amt
+            ca_ = pf.cash_account(p["currency"])
+            ca_.balance -= amt
+            ca_.base_value -= amt
+            w.record_cash_movement(pf, p["currency"], -amt, "MANUFACTURED_DIVIDEND", f"Payment in lieu {ca.id} on {p['security_id']} to lender", ev)
         w.post(pf.id, f"Manufactured dividend paid {p['security_id']} {ca.id}: {amt:,.2f}",
-               [dr("2320", amt, p["security_id"], "payable settled"), cr(f"1010:{p['currency']}", amt, p["security_id"], "cash paid to lender")], ev,
+               [dr("2320", booked, p["security_id"], "payable settled"), cr(f"1010:{p['currency']}", paid, p["security_id"], "cash paid to lender"),
+                cr("4650", booked - paid, p["security_id"], "realised FX on the payment in lieu") if paid != booked else None], ev,
                {"ca_id": ca.id, "security_id": p["security_id"]})
 
     def _h_coupon(self, ev: Event) -> None:
@@ -234,7 +254,8 @@ class CorporateActionEngine:
         p = ev.payload
         pf = w.portfolios[p["portfolio_id"]]
         pos = pf.position(p["security_id"])
-        amt = D(p["amount"])
+        local = D(p["amount"])
+        amt = D(p.get("base_amount", p["amount"]))
         # true-up accrual to the full coupon, then pay it
         delta = amt - pos.accrued_interest
         lines = []
@@ -243,9 +264,15 @@ class CorporateActionEngine:
             lines.append(dr("1220", delta, p["security_id"], "final accrual to coupon date"))
             lines.append(cr("4300", delta, p["security_id"], "interest income"))
         pos.accrued_interest = ZERO
-        pf.cash_account(p["currency"]).balance += amt
-        w.record_cash_movement(pf, p["currency"], amt, "COUPON", f"Coupon on {p['security_id']}", ev)
-        lines += [dr(f"1010:{p['currency']}", amt, p["security_id"], "coupon received"), cr("1220", amt, p["security_id"], "accrued interest collected")]
+        if p["currency"] != pf.base_currency:
+            received = w.fx._adjust_cash(pf, p["currency"], local, ev, "COUPON", f"Coupon on {p['security_id']}")
+        else:
+            received = amt
+            pf.cash_account(p["currency"]).balance += amt
+            w.record_cash_movement(pf, p["currency"], amt, "COUPON", f"Coupon on {p['security_id']}", ev)
+        lines += [dr(f"1010:{p['currency']}", received, p["security_id"], "coupon received"), cr("1220", amt, p["security_id"], "accrued interest collected")]
+        if received != amt:
+            lines.append(cr("4650", received - amt, p["security_id"], "realised FX on the coupon"))
         w.post(pf.id, f"Coupon {p['security_id']}: {D(p['quantity']):,} face -> {amt:,.2f}", lines, ev, {"security_id": p["security_id"]})
 
     def _h_matured(self, ev: Event) -> None:
@@ -254,8 +281,9 @@ class CorporateActionEngine:
         pf = w.portfolios[p["portfolio_id"]]
         pos = pf.position(p["security_id"])
         principal = D(p["principal"])
+        base_principal = D(p.get("base_principal", p["principal"]))
         cost = pos.cost_basis
-        realized = principal - cost
+        realized = base_principal - cost
         pos.realized_pnl += realized
         pos.quantity = ZERO
         pos.settled_quantity = ZERO
@@ -264,10 +292,14 @@ class CorporateActionEngine:
         pos.market_value = ZERO
         adj = pos.valuation_adjustment
         pos.valuation_adjustment = ZERO
-        pf.cash_account(p["currency"]).balance += principal
-        w.record_cash_movement(pf, p["currency"], principal, "MATURITY", f"Principal redemption {p['security_id']}", ev)
+        if p["currency"] != pf.base_currency:
+            base_principal = w.fx._adjust_cash(pf, p["currency"], principal, ev, "MATURITY", f"Principal redemption {p['security_id']}")
+            realized = base_principal - cost
+        else:
+            pf.cash_account(p["currency"]).balance += principal
+            w.record_cash_movement(pf, p["currency"], principal, "MATURITY", f"Principal redemption {p['security_id']}", ev)
         w.record_custody_movement(pf, p["security_id"], -D(p["quantity"]), "REDEMPTION", "matured", ev)
-        lines = [dr(f"1010:{p['currency']}", principal, p["security_id"], "principal received"),
+        lines = [dr(f"1010:{p['currency']}", base_principal, p["security_id"], "principal received"),
                  cr("1110", cost, p["security_id"], "cost basis removed"), cr("4000", realized, p["security_id"], "realized on redemption"),
                  cr("1150", adj, p["security_id"], "valuation adjustment reversed"), dr("4100", adj, p["security_id"], "unrealized reversed")]
         w.post(pf.id, f"Maturity {p['security_id']}: principal {principal:,.2f}", lines, ev, {"security_id": p["security_id"]})

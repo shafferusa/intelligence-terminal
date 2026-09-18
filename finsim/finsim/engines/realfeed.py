@@ -27,12 +27,13 @@ SPARK = "https://query2.finance.yahoo.com/v7/finance/spark"
 BATCH = 20          # Yahoo answers 400 to bigger spark batches
 RATE_SYMBOLS = {"bill_13w": "^IRX", "y5": "^FVX", "y10": "^TNX", "y30": "^TYX"}
 COMMODITY_SYMBOLS = {"CL": "CL=F", "BRN": "BZ=F", "NG": "NG=F", "RB": "RB=F", "HO": "HO=F", "GC": "GC=F", "SI": "SI=F", "HG": "HG=F", "PL": "PL=F", "PA": "PA=F",
-                     "ALI": "ALI=F", "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "KC": "KC=F", "SB": "SB=F", "CT": "CT=F", "CC": "CC=F", "LE": "LE=F", "GF": "GF=F", "HE": "HE=F"}
+                     "ALI": "ALI=F", "ZC": "ZC=F", "ZW": "ZW=F", "ZS": "ZS=F", "KC": "KC=F", "SB": "SB=F", "CT": "CT=F", "CC": "CC=F", "LE": "LE=F", "GF": "GF=F", "HE": "HE=F", "TTF": "TTF=F", "TIO": "TIO=F"}
 CENTS_QUOTED = {"ZC", "ZW", "ZS", "KC", "SB", "CT", "LE", "GF", "HE"}
 FX_SYMBOLS = {"EUR": ("EURUSD=X", False), "GBP": ("GBPUSD=X", False), "JPY": ("JPY=X", True), "CHF": ("CHF=X", True), "CAD": ("CAD=X", True), "AUD": ("AUDUSD=X", False),
               "NZD": ("NZDUSD=X", False), "SEK": ("SEK=X", True), "NOK": ("NOK=X", True), "MXN": ("MXN=X", True), "BRL": ("BRL=X", True), "CNH": ("CNH=X", True),
-              "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True)}
-INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX"}
+              "HKD": ("HKD=X", True), "SGD": ("SGD=X", True), "KRW": ("KRW=X", True), "INR": ("INR=X", True), "ZAR": ("ZAR=X", True), "PLN": ("PLN=X", True),
+              "TRY": ("TRY=X", True), "TWD": ("TWD=X", True), "IDR": ("IDR=X", True), "THB": ("THB=X", True), "CZK": ("CZK=X", True), "HUF": ("HUF=X", True), "SAR": ("SAR=X", True)}
+INDEX_SYMBOLS = {"DXY": "DX-Y.NYB", "VIX": "^VIX", "SX5E": "^STOXX50E", "DAX": "^GDAXI", "UKX": "^FTSE", "NKY": "^N225", "HSI": "^HSI"}
 YIELD_SYMBOLS = {0.25: "^IRX", 5.0: "^FVX", 10.0: "^TNX", 30.0: "^TYX"}     # Treasury yields Yahoo quotes live, in percent: the live curve for bond quotes
 
 
@@ -252,6 +253,6 @@ def equity_symbols_for(securities: Dict) -> Dict[str, str]:
     for sid, sec in securities.items():
         if sec.asset_class in ("EQUITY", "ETF", "ADR", "REIT", "PREFERRED", "CRYPTO"):
             out[sid] = getattr(sec, "yahoo", None) or (f"{sid}-USD" if sec.asset_class == "CRYPTO" else sid)   # tickers match Yahoo's (BRK-B, BAC-PL use the same hyphen form)
-        elif sec.asset_class == "INDEX":
-            out[sid] = getattr(sec, "yahoo", None) or INDEX_SYMBOLS.get(sid, sid)
+        elif sec.asset_class == "INDEX" and (getattr(sec, "yahoo", None) or sid in INDEX_SYMBOLS):
+            out[sid] = getattr(sec, "yahoo", None) or INDEX_SYMBOLS[sid]           # an index without a real symbol (MSCI EM / EAFE) rides its ETF
     return out

@@ -10,7 +10,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Dict, List, Tuple
 
-CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "SEK", "NOK", "MXN", "BRL", "CNH", "HKD", "SGD", "KRW", "INR", "ZAR", "PLN"]
+CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "SEK", "NOK", "MXN", "BRL", "CNH", "HKD", "SGD", "KRW", "INR", "ZAR", "PLN",
+              "TRY", "TWD", "IDR", "THB", "CZK", "HUF", "SAR"]
 
 
 @dataclass(frozen=True)
@@ -43,6 +44,13 @@ SPECS = {
     "INR": CcySpec("INR", 1 / 88.0, 0.060, 0.05, 0.10, 8.0, True),
     "ZAR": CcySpec("ZAR", 1 / 17.5, 0.075, 0.15, 0.50, 8.0, True),
     "PLN": CcySpec("PLN", 1 / 3.8, 0.050, 0.10, 0.35, 6.0, True),
+    "TRY": CcySpec("TRY", 1 / 41.0, 0.400, 0.22, 0.30, 25.0, True),      # the lira: a 40% policy rate and a steady slide
+    "TWD": CcySpec("TWD", 1 / 30.5, 0.020, 0.05, 0.25, 4.0, True),
+    "IDR": CcySpec("IDR", 1 / 16400.0, 0.055, 0.07, 0.35, 8.0, True),
+    "THB": CcySpec("THB", 1 / 32.5, 0.020, 0.07, 0.30, 5.0, True),
+    "CZK": CcySpec("CZK", 1 / 21.0, 0.035, 0.09, 0.30, 5.0, True),
+    "HUF": CcySpec("HUF", 1 / 340.0, 0.065, 0.11, 0.35, 8.0, True),
+    "SAR": CcySpec("SAR", 1 / 3.75, 0.050, 0.002, 0.0, 2.0, True),        # pegged at 3.75
 }
 # the ICE dollar index: a geometric basket of six currencies (weights EUR 57.6, JPY 13.6, GBP 11.9, CAD 9.1, SEK 4.2, CHF 3.6)
 DXY_WEIGHTS = {"EUR": -0.576, "JPY": 0.136, "GBP": -0.119, "CAD": 0.091, "SEK": 0.042, "CHF": 0.036}
@@ -83,7 +91,7 @@ class FXModel:
         for c, s in SPECS.items():
             rng = random.Random(f"{self.seed}|fx|{c}|{d.isoformat()}")
             # foreign rate follows the USD rate with a lag and its own noise
-            self.rate[c] = max(-0.01, min(0.15, self.rate[c] + 0.5 * usd_rate_change + 0.03 * (s.rate0 - self.rate[c]) * dt * 12 + 0.0003 * rng.gauss(0, 1)))
+            self.rate[c] = max(-0.01, min(0.60, self.rate[c] + 0.5 * usd_rate_change + 0.03 * (s.rate0 - self.rate[c]) * dt * 12 + 0.0003 * rng.gauss(0, 1)))
             carry = (usd_rate - self.rate[c]) * dt          # higher USD rates support USD (foreign spot drifts down slightly)
             r = -0.3 * carry + s.mkt_beta * mkt_factor + s.vol * math.sqrt(dt) * rng.gauss(0, 1) + 0.002 * math.log(s.spot0 / self.spot[c]) * dt * 252 / 20
             self.spot[c] = self.spot[c] * math.exp(max(-0.08, min(0.08, r)))

@@ -163,7 +163,9 @@ class TradingEngine:
                 if why:
                     return f"initial margin not financeable: {why}"
             return None
-        if side == "SELL":
+        if side == "SELL" and sec.is_mbs and not w.market.mbs.delivered(sec, w.current_date):
+            pass                                                     # selling a TBA forward is how the market shorts mortgages: no borrow, but cover or roll before delivery
+        elif side == "SELL":
             pos = pf.positions.get(sec.id)
             open_sells = sum((o.quantity - o.filled_quantity for o in pf.orders.values()
                               if o.security_id == sec.id and o.side == "SELL" and o.status in ("WORKING", "PARTIALLY_FILLED")), ZERO)
@@ -517,12 +519,15 @@ class TradingEngine:
         else:
             net = gross + accrued + commission if order.side == "BUY" else gross + accrued - commission
         sd = settlement_date(w.calendar, w.settlement_config, sec.market, w.current_date)
+        if sec.is_mbs:
+            sd = max(sd, date.fromisoformat(sec.issue_date))       # a TBA is a forward: cash and pool move on the delivery day
         tid = w.new_id("TRD")
         payload = {
             "trade_id": tid, "order_id": order.id, "portfolio_id": pf.id, "security_id": sec.id, "side": order.side,
             "quantity": fill_qty, "price": px, "gross_amount": gross, "accrued_interest": accrued, "commission": commission,
             "net_amount": net, "currency": sec.currency, "trade_date": w.current_date.isoformat(), "settlement_date": sd.isoformat(),
-            "execution_detail": {"session": session, "reference_open": bar.open, "reference_high": bar.high, "reference_low": bar.low,
+            "fx_rate": w.fx.k(sec.currency),
+            "execution_detail": {"session": session, "fx_rate": w.fx.k(sec.currency), "reference_open": bar.open, "reference_high": bar.high, "reference_low": bar.low,
                                  "reference_close": bar.close, "base_price": base, "spread_cost": spread_cost, "impact_cost": impact_cost,
                                  "impact_bps": round(impact_frac * 1e4, 2), "participation_of_adv": round(participation, 4),
                                  "session_volume": session_volume, "partial": bool(fill_qty < remaining), "regime": regime.name,
@@ -636,6 +641,9 @@ class TradingEngine:
         pf.day_trade_ids.append(trade.id)
         pos = pf.position(sec.id)
         pos.trade_ids.append(trade.id)
+        k = D(str(p.get("fx_rate", 1)))
+        if k != 1:                                   # a security in another currency: the book, the ledger and the lots carry base-currency amounts
+            gross, accrued, commission = money(gross * k), money(accrued * k), money(commission * k)
         pos.commissions += commission
         order = pf.orders[trade.order_id]
         prev_filled = order.filled_quantity
@@ -696,7 +704,7 @@ class TradingEngine:
                 gross_l, comm_l, acc_l = money(gross * frac), money(commission * frac), money(accrued * frac)
                 trueup = ZERO
                 if sec.is_bond:
-                    target = money(pos.quantity * BondPricer.accrued_per_100(sec, date.fromisoformat(trade.trade_date)) / 100)
+                    target = money(pos.quantity * BondPricer.accrued_per_100(sec, date.fromisoformat(trade.trade_date)) / 100 * D(str(p.get("fx_rate", 1))))
                     trueup = target - pos.accrued_interest
                     pos.accrued_interest = target
                     pos.interest_income += trueup
@@ -764,10 +772,14 @@ class TradingEngine:
         pos.day_fills.append({"quantity": signed, "price": trade.price, "trade_id": trade.id})
         trade.status = "CLEARED"
         trade.status_history.append({"status": "CLEARED", "date": ev.sim_date, "event_id": ev.id, "note": "cleared through the futures clearing member; margined daily"})
-        pf.cash_account(sec.currency).balance -= trade.commission
-        w.record_cash_movement(pf, sec.currency, -trade.commission, "COMMISSION", f"Futures commission {trade.id} {sec.id}", ev)
+        if sec.currency != pf.base_currency:
+            paid = -w.fx._adjust_cash(pf, sec.currency, -trade.commission, ev, "COMMISSION", f"Futures commission {trade.id} {sec.id}")
+        else:
+            paid = trade.commission
+            pf.cash_account(sec.currency).balance -= trade.commission
+            w.record_cash_movement(pf, sec.currency, -trade.commission, "COMMISSION", f"Futures commission {trade.id} {sec.id}", ev)
         w.post(pf.id, f"{trade.side} {trade.quantity:,} {sec.id} @ {trade.price} (trade {trade.id}, cleared)",
-               [dr("5000", trade.commission, sec.id, "futures commission"), cr(f"1010:{sec.currency}", trade.commission, sec.id, "paid to clearing broker")],
+               [dr("5000", paid, sec.id, "futures commission"), cr(f"1010:{sec.currency}", paid, sec.id, "paid to clearing broker")],
                ev, {"trade_id": trade.id, "order_id": trade.order_id, "security_id": sec.id})
 
     def _relieve_fifo(self, pos, q: Decimal, ev: Event) -> Tuple[List[Dict], Decimal]:

@@ -20,6 +20,7 @@ from ..engines.ledger import CHART, account_name, account_type
 from ..engines.market import REGIMES
 from ..engines.options import REGIME_MARGIN_MULT, STRATEGY_TEMPLATES
 from ..engines.pricing import BondPricer, Instrument, interp_rate
+from ..calendar import SettlementConfig
 from ..money import D, money, ZERO, price as qprice
 from ..store import EventStore
 from ..log import get_logger
@@ -307,7 +308,7 @@ class Service:
                          "portfolios": [{"id": p.id, "name": p.name, "type": p.portfolio_type, "realism": p.realism, "mode": p.mode, "benchmark": p.benchmark,
                                          "job": p.job, "job_title": JOBS[p.job].title if p.job in JOBS else p.job, "level_title": w.careers.level_title(p)}
                                         for p in w.portfolios.values()],
-                         "settlement_cycles": w.settlement_config.cycles, "policy_rate": w.market.curve().policy_rate,
+                         "settlement_cycles": {**SettlementConfig().cycles, **w.settlement_config.cycles}, "policy_rate": w.market.curve().policy_rate,
                          "clock": {"mode": w.clock.mode, "timezone": w.clock.timezone, "update_time": w.clock.update_time, "lock_session": w.clock.lock_session,
                                    "next_update": nu.isoformat() if nu else None, "now": now_utc().isoformat(),
                                    "weekday": w.current_date.strftime("%A")},
@@ -404,7 +405,7 @@ class Service:
         w = self.world(world_id)
         out = []
         for sec in w.securities.values():
-            if sec.is_option or (sec.is_future and (sec.expired or not w.market.history.get(sec.id))):
+            if sec.is_option or sec.delisted or (sec.is_future and (sec.expired or not w.market.history.get(sec.id))) or not w.market.history.get(sec.id):
                 continue
             bar = w.market.last_bar(sec.id)
             h = w.market.history[sec.id]
@@ -417,16 +418,38 @@ class Service:
                    "dividend_yield": sec.dividend_yield, "dividend_per_share": sec.dividend_per_share, "lot_size": sec.lot_size,
                    "market_cap": (float(bar.close) * sec.shares_outstanding) if sec.shares_outstanding else None, "rating": sec.rating,
                    "coupon": sec.coupon, "maturity": sec.maturity, "is_bond": bool(sec.is_bond), "is_future": sec.is_future, "underlying": sec.underlying, "issuer": sec.issuer,
-                   "is_index": sec.asset_class == "INDEX", "qty_step": sec.qty_step, "yahoo": sec.yahoo,
+                   "is_index": sec.asset_class == "INDEX", "qty_step": sec.qty_step, "yahoo": sec.yahoo, "floating": sec.floating, "float_spread": sec.float_spread,
+                   "deal_type": sec.deal_type, "tranche": sec.tranche, "recovery_rate": sec.recovery_rate, "inflation_linked": sec.inflation_linked, "index_ratio": sec.index_ratio,
+                   "index_level_source": sec.index_level_source,
                    "underlying_class": sec.underlying_class, "contract_month": sec.contract_month, "multiplier": sec.multiplier, "tick_size": sec.tick_size,
                    "expiry": sec.expiry, "unit": sec.unit}
             if sec.is_future:
                 row["initial_margin"] = w.futures.initial_margin_per_contract(sec)
                 row["notional_per_contract"] = float(bar.close) * sec.multiplier
-            if sec.is_bond:
-                row.update({k: v for k, v in BondPricer.risk_metrics(sec, w.current_date, float(bar.close), w.market.curve()).items()})
+            if sec.is_mbs:
+                row.update(w.market.mbs_metrics(sec))
+                row.update({"program": sec.underlying, "program_name": w.market.mbs.spec_of(sec).name, "settlement": sec.issue_date, "is_mbs": True})
+            elif sec.inflation_linked:
+                row.update(self._tips_metrics(w, sec, float(bar.close)))
+            elif sec.is_bond:
+                row.update({k: v for k, v in BondPricer.risk_metrics(sec, w.current_date, float(bar.close), w.market.curve_for_security(sec)).items()})
             out.append(row)
         return jsonable(out)
+
+    @staticmethod
+    def _tips_metrics(w, sec, clean: float) -> Dict:
+        """A TIPS' real yield and duration (the real-coupon bullet on the real curve), the breakeven and the index ratio."""
+        import dataclasses
+        real = dataclasses.replace(sec, coupon=sec.real_coupon)
+        rc = w.market.real_curve(w.market.curve())
+        m = BondPricer.risk_metrics(real, w.current_date, clean / max(1e-9, sec.index_ratio), rc)
+        t = m["years_to_maturity"]
+        be = w.market.breakeven(t)
+        nominal = BondPricer.yield_to_maturity(dataclasses.replace(sec, coupon=sec.real_coupon + be), w.current_date, clean / max(1e-9, sec.index_ratio))
+        m.update({"real_yield": m["ytm"], "ytm": m["ytm"] + be, "breakeven": be, "index_ratio": sec.index_ratio, "real_coupon": sec.real_coupon, "inflation_linked": True,
+                  "benchmark_yield": interp_rate(w.market.curve(), t), "spread_to_curve_bps": (m["ytm"] + be - interp_rate(w.market.curve(), t)) * 1e4,
+                  "accrued": m["accrued"] * sec.index_ratio, "dirty_price": clean + m["accrued"] * sec.index_ratio, "dv01_per_100": m["dv01_per_100"] * sec.index_ratio})
+        return m
 
     def security(self, world_id: str, security_id: str, period: str = "1Y") -> Dict:
         w = self.world(world_id)
@@ -447,10 +470,24 @@ class Service:
         out = {"security": jsonable(asdict(sec)), "last": bar.close, "bid": bar.bid, "ask": bar.ask, "volume": bar.volume,
                "bars": [[b.date, b.open, b.high, b.low, b.close, b.volume] for b in bars],
                "realized_vol_20d": w.market.realized_vol(sec.id), "spread_bps": float((bar.ask - bar.bid) / bar.close * 10000)}
-        inst = Instrument(sec, bar.close, w.current_date, w.market.curve())
+        inst = Instrument(sec, bar.close, w.current_date, w.market.curve_for_security(sec) if sec.is_bond else w.market.curve())
         out["analytics"] = inst.risk_metrics(D(100) if not sec.is_bond else D(1_000_000))
         out["cash_flows"] = inst.cash_flows()[:12]
         out["next_events"] = inst.next_events()
+        if sec.inflation_linked:
+            m = self._tips_metrics(w, sec, float(bar.close))
+            m["position_dv01"] = m["dv01_per_100"] * 10_000
+            out["analytics"] = m
+        if sec.is_mbs:
+            m = w.market.mbs_metrics(sec)
+            m["position_dv01"] = m["dv01_per_100"] * 10_000
+            out["analytics"] = m
+            out["cash_flows"] = w.market.mbs.projected_flows(sec, w.market.curve(), w.current_date)
+            spec = w.market.mbs.spec_of(sec)
+            same = sorted((s for s in w.securities.values() if s.is_mbs and s.underlying == sec.underlying and s.coupon == sec.coupon and not s.delisted and w.market.history.get(s.id)), key=lambda s: s.contract_month)
+            out["mbs"] = {"program": spec.name, "agency": spec.agency, "settle_class": spec.settle_class, "settlement": sec.issue_date, "delivered": m["delivered"],
+                          "months": [{"id": s.id, "month": s.contract_month, "price": w.market.last_bar(s.id).close, "settlement": s.issue_date} for s in same],
+                          "mortgage_rate_history": w.market.mbs.mortgage_rate_history[-260:]}
         if sec.is_future:
             spec = SPEC_BY_CODE[sec.underlying]
             out["futures"] = {"spec": {"code": spec.code, "name": spec.name, "group": spec.group, "unit": spec.unit, "multiplier": spec.multiplier,
@@ -488,15 +525,30 @@ class Service:
             levels.append({"bid": bar.bid - tick * i, "bid_size": size, "ask": bar.ask + tick * i, "ask_size": int(size * 1.05)})
         return {"levels": levels, "note": "synthetic depth implied by ADV, spread and regime liquidity"}
 
-    def yield_curve(self, world_id: str) -> Dict:
+    def yield_curve(self, world_id: str, ccy: Optional[str] = None) -> Dict:
         w = self.world(world_id)
         c = w.market.curve()
         hist = w.market.curves
         prev = hist[-2] if len(hist) > 1 else c
-        return jsonable({"date": c.date, "tenors": c.tenors, "rates": c.rates, "prev_rates": prev.rates, "ig_spread_bps": c.ig_spread_bps,
-                         "hy_spread_bps": c.hy_spread_bps, "policy_rate": c.policy_rate,
-                         "history": [{"date": x.date, "2y": x.rates[3], "10y": x.rates[7], "30y": x.rates[9], "ig": x.ig_spread_bps, "hy": x.hy_spread_bps} for x in hist[-260:]],
-                         "regime_history": w.market.regime_history})
+        out = {"date": c.date, "tenors": c.tenors, "rates": c.rates, "prev_rates": prev.rates, "ig_spread_bps": c.ig_spread_bps,
+               "hy_spread_bps": c.hy_spread_bps, "policy_rate": c.policy_rate,
+               "history": [{"date": x.date, "2y": x.rates[3], "10y": x.rates[7], "30y": x.rates[9], "ig": x.ig_spread_bps, "hy": x.hy_spread_bps} for x in hist[-260:]],
+               "regime_history": w.market.regime_history}
+        from ..engines.global_rates import CURVE_CURRENCIES, COUNTRY_SPREAD
+        curves = {}
+        for cc in CURVE_CURRENCIES:
+            k = w.market.curve_for_ccy(cc, c)
+            kp = w.market.curve_for_ccy(cc, prev)
+            curves[cc] = {"rates": k.rates, "prev_rates": kp.rates, "policy_rate": k.policy_rate}
+        for country, (cc, spr, name) in COUNTRY_SPREAD.items():
+            if spr:
+                k = w.market.curve_for_ccy(cc, c, country)
+                curves[country] = {"rates": k.rates, "prev_rates": w.market.curve_for_ccy(cc, prev, country).rates, "policy_rate": k.policy_rate, "currency": cc, "name": name}
+        out["curves"] = curves
+        if ccy and ccy.upper() in curves:
+            cc = ccy.upper()
+            out.update({"rates": curves[cc]["rates"], "prev_rates": curves[cc]["prev_rates"], "policy_rate": curves[cc]["policy_rate"], "currency": cc})
+        return jsonable(out)
 
     def commodities(self, world_id: str) -> List[Dict]:
         w = self.world(world_id)

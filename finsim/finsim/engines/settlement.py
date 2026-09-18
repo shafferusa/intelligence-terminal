@@ -147,20 +147,34 @@ class SettlementEngine:
         q, cash, ccy = D(p["quantity"]), D(p["cash_amount"]), p["currency"]
         pos = pf.position(p["security_id"])
         ca = pf.cash_account(ccy)
+        foreign = ccy != pf.base_currency
+        k = D(str((t.execution_detail or {}).get("fx_rate", 1)))
+        booked = money(cash * k) if foreign else cash
         if p["instruction_type"] == "RVP":
-            ca.balance -= cash
+            if foreign:
+                paid = -w.fx._adjust_cash(pf, ccy, -cash, ev, "SETTLEMENT", f"RVP {si.id} / trade {t.id}: paid for {q:,} {si.security_id}")
+            else:
+                paid = cash
+                ca.balance -= cash
+                w.record_cash_movement(pf, ccy, -cash, "SETTLEMENT", f"RVP {si.id} / trade {t.id}: paid for {q:,} {si.security_id}", ev)
             pos.settled_quantity += q
             pos.pending_receive -= q
-            w.record_cash_movement(pf, ccy, -cash, "SETTLEMENT", f"RVP {si.id} / trade {t.id}: paid for {q:,} {si.security_id}", ev)
             w.record_custody_movement(pf, si.security_id, q, "RECEIVE", f"RVP {si.id}: received vs payment", ev)
-            lines = [dr("2100", cash, si.security_id, "payable extinguished"), cr(f"1010:{ccy}", cash, si.security_id, "cash paid on settlement")]
+            lines = [dr("2100", booked, si.security_id, "payable extinguished"), cr(f"1010:{ccy}", paid, si.security_id, "cash paid on settlement"),
+                     cr("4650", booked - paid, si.security_id, f"realised FX on {ccy} settlement") if foreign else None]
         else:
-            ca.balance += cash
+            if foreign:
+                received = w.fx._adjust_cash(pf, ccy, cash, ev, "SETTLEMENT", f"DVP {si.id} / trade {t.id}: proceeds for {q:,} {si.security_id}")
+            else:
+                received = cash
+                ca.balance += cash
+                w.record_cash_movement(pf, ccy, cash, "SETTLEMENT", f"DVP {si.id} / trade {t.id}: proceeds for {q:,} {si.security_id}", ev)
             pos.settled_quantity -= q
             pos.pending_deliver -= q
-            w.record_cash_movement(pf, ccy, cash, "SETTLEMENT", f"DVP {si.id} / trade {t.id}: proceeds for {q:,} {si.security_id}", ev)
             w.record_custody_movement(pf, si.security_id, -q, "DELIVER", f"DVP {si.id}: delivered vs payment", ev)
-            lines = [dr(f"1010:{ccy}", cash, si.security_id, "cash received on settlement"), cr("1200", cash, si.security_id, "receivable extinguished")]
+            lines = [dr(f"1010:{ccy}", received, si.security_id, "cash received on settlement"), cr("1200", booked, si.security_id, "receivable extinguished"),
+                     cr("4650", received - booked, si.security_id, f"realised FX on {ccy} settlement") if foreign else None]
+        lines = [l for l in lines if l]
         si.status = "SETTLED"
         si.settled_date = ev.sim_date
         note = "settled DVP" + (" (late — after contractual settlement date)" if p.get("late") else "")

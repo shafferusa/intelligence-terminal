@@ -44,7 +44,7 @@ class FuturesEngine:
 
     def initial_margin_per_contract(self, sec: Security) -> Decimal:
         bar = self.w.market.last_bar(sec.id)
-        return money(bar.close * D(str(sec.multiplier)) * D(str(sec.margin_pct)) * D(str(self.margin_multiplier())))
+        return money(bar.close * D(str(sec.multiplier)) * D(str(sec.margin_pct)) * D(str(self.margin_multiplier())) * self.w.fx.k(sec.currency))
 
     def required_margin(self, pf: Portfolio) -> Decimal:
         """Outright initial margin, less the calendar-spread offset: a long and a short contract of the same commodity are
@@ -209,6 +209,15 @@ class FuturesEngine:
         pos.notional = D(p["notional"])
         pos.market_value = ZERO
         ccy = p["currency"]
+        if vm != 0 and ccy != pf.base_currency:
+            base = w.fx._adjust_cash(pf, ccy, vm, ev, "VARIATION_MARGIN", f"Daily settlement {p['security_id']} @ {pos.settlement_price}")
+            pos.realized_pnl += base - vm                      # the book keeps base-currency P&L
+            pos.variation_margin_total += base - vm
+            pos.day_variation_margin += base - vm
+            lines = [dr(f"1010:{ccy}", base, p["security_id"], f"variation margin received ({ccy})"), cr("4400", base, p["security_id"], "futures gain")] if base > 0 else \
+                    [dr("4400", -base, p["security_id"], "futures loss"), cr(f"1010:{ccy}", -base, p["security_id"], f"variation margin paid ({ccy})")]
+            w.post(pf.id, f"Variation margin {p['security_id']}: {ccy} {vm:,.2f} (settle {pos.settlement_price})", lines, ev, {"security_id": p["security_id"], "kind": "VM"})
+            return
         pf.cash_account(ccy).balance += vm
         if vm != 0:
             w.record_cash_movement(pf, ccy, vm, "VARIATION_MARGIN", f"Daily settlement {p['security_id']} @ {pos.settlement_price}", ev)

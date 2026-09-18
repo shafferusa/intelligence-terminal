@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 from .domain.events import E, Event
 from .money import D, money, ZERO
 
-ALL_CLASSES = {"EQUITY", "GOVT_BOND", "CORP_BOND", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "EQUITY_INDEX", "RATES", "OPTION", "OTC", "PHYSICAL",
+ALL_CLASSES = {"EQUITY", "GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "EQUITY_INDEX", "RATES", "OPTION", "OTC", "PHYSICAL",
                "CRYPTO", "FX_INDEX", "VOLATILITY", "PRIVATE_EQUITY", "INVESTMENT_BANKING"}
 
 
@@ -46,14 +46,14 @@ JOBS: Dict[str, Job] = {
                              ("Analyst", "Associate PM", "Portfolio Manager", "Senior PM", "CIO")),
     "GLOBAL_MACRO": Job("GLOBAL_MACRO", "Global Macro Trader", "Rates, equity indices, the dollar index, the VIX, crypto and commodities via futures and government "
                         "bonds; 18 currencies spot, forward, NDF and options; swaps and swaptions. Absolute return; leverage allowed but drawdowns are watched closely.", D(250_000_000), None,
-                        frozenset({"GOVT_BOND", "EQUITY_INDEX", "RATES", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "OPTION", "OTC", "FX_INDEX", "VOLATILITY", "CRYPTO"}),
+                        frozenset({"GOVT_BOND", "MBS_TBA", "STRUCTURED", "EQUITY_INDEX", "RATES", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "OPTION", "OTC", "FX_INDEX", "VOLATILITY", "CRYPTO"}),
                         3.0, 0.30, 0.12, ("Junior Trader", "Trader", "Senior Trader", "Desk Head", "CIO")),
     "COMMODITY_TRADER": Job("COMMODITY_TRADER", "Commodity Trader", "Energy, metals, agriculture and livestock futures. Read inventories, curves and weather; "
                             "trade outrights, calendar and cross-commodity spreads.", D(100_000_000), None,
                             frozenset({"COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "PHYSICAL", "OPTION"}), 4.0, 0.35, 0.15,
                             ("Junior Trader", "Trader", "Senior Trader", "Head of Commodities", "CIO")),
     "FIXED_INCOME_PM": Job("FIXED_INCOME_PM", "Fixed-Income Portfolio Manager", "Treasuries, corporates and Treasury futures against a 5Y Treasury benchmark. "
-                           "Manage duration, DV01, credit and curve exposure.", D(250_000_000), "UST-5Y", frozenset({"GOVT_BOND", "CORP_BOND", "RATES", "OTC_RATES"}),
+                           "Manage duration, DV01, credit and curve exposure.", D(250_000_000), "UST-5Y", frozenset({"GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED", "RATES", "OTC_RATES"}),
                            2.0, 0.40, 0.08, ("Analyst", "Associate PM", "Portfolio Manager", "Senior PM", "CIO")),
     "HEDGE_FUND": Job("HEDGE_FUND", "Hedge Fund Manager", "Run a $500MM multi-strategy fund for outside investors: shorts, leverage, repo, borrow, options and OTC, "
                       "crypto and its derivatives, private credit, and in a simulated save private equity. Investors subscribe and redeem on your numbers; "
@@ -71,20 +71,20 @@ JOBS: Dict[str, Job] = {
                              ("Analyst", "Associate", "Vice President", "Director", "Managing Director"), capital_step=0.4),
     "BANK_TRADER": Job("BANK_TRADER", "Bank Rates & Credit Trader", "Make prices for clients in swaps, bonds, CDS and blocks; run the resulting inventory, hedge it and fund it. "
                        "Judged on client flow won, spread captured and hedged risk.", D(50_000_000), None,
-                       frozenset({"GOVT_BOND", "CORP_BOND", "RATES", "EQUITY_INDEX", "EQUITY", "OPTION", "OTC"}), 12.0, 1.0, 0.20,
+                       frozenset({"GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED", "RATES", "EQUITY_INDEX", "EQUITY", "OPTION", "OTC"}), 12.0, 1.0, 0.20,
                        ("Associate", "Trader", "Senior Trader", "Desk Head", "Global Head"), capital_step=0.4),
     "DERIVATIVES_TRADER": Job("DERIVATIVES_TRADER", "Derivatives Trader", "Listed options and OTC swaps: quote client derivative requests, run a Greek-limited book, hedge with futures "
                               "and manage collateral.", D(50_000_000), None, frozenset({"OPTION", "OTC", "EQUITY", "EQUITY_INDEX", "RATES", "GOVT_BOND"}), 12.0, 1.0, 0.20,
                               ("Associate", "Trader", "Senior Trader", "Head of Derivatives", "Global Head"), capital_step=0.4),
     "SEC_LENDING": Job("SEC_LENDING", "Securities Lending Trader", "Build an inventory of stocks and Treasuries and lend it: earn fees on specials, reinvest cash collateral, "
-                       "pay rebates, manage recalls and returns.", D(100_000_000), None, frozenset({"EQUITY", "GOVT_BOND", "CORP_BOND"}), 2.0, 0.25, 0.10,
+                       "pay rebates, manage recalls and returns.", D(100_000_000), None, frozenset({"EQUITY", "GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED"}), 2.0, 0.25, 0.10,
                        ("Associate", "Trader", "Senior Trader", "Head of Lending", "Global Head")),
     "REPO_TRADER": Job("REPO_TRADER", "Repo / Funding Trader", "Run a matched book: finance Treasuries and corporates in repo, lend cash in reverse repo, manage haircuts, "
-                       "term structure and collateral calls through the cycle.", D(100_000_000), None, frozenset({"GOVT_BOND", "CORP_BOND", "RATES"}), 15.0, 3.0, 0.10,
+                       "term structure and collateral calls through the cycle.", D(100_000_000), None, frozenset({"GOVT_BOND", "CORP_BOND", "MBS_TBA", "STRUCTURED", "RATES"}), 15.0, 3.0, 0.10,
                        ("Associate", "Trader", "Senior Trader", "Head of Funding", "Treasurer")),
     "TREASURY_MANAGER": Job("TREASURY_MANAGER", "Corporate Treasurer", "A company's treasury: operating cash in four currencies, a debt stack with coupons and maturities, minimum "
                             "liquidity, FX receipts to hedge with forwards or cross-currency swaps, floating debt to swap.", D(120_000_000), None,
-                            frozenset({"GOVT_BOND", "OTC", "OTC_RATES"}), 2.0, 1.0, 0.15, ("Analyst", "Treasury Manager", "Assistant Treasurer", "Treasurer", "CFO")),
+                            frozenset({"GOVT_BOND", "MBS_TBA", "STRUCTURED", "OTC", "OTC_RATES"}), 2.0, 1.0, 0.15, ("Analyst", "Treasury Manager", "Assistant Treasurer", "Treasurer", "CFO")),
     "RISK_MANAGER": Job("RISK_MANAGER", "Risk Manager", "Oversee four AI desks (momentum, carry, vol selling, commodity trend): set their limits, approve or reject "
                         "their large orders, force reductions. Judged on the firm's breaches and losses, not on trading.", D(0), None, frozenset(), 99.0, 9.0, 1.0,
                         ("Risk Analyst", "Risk Manager", "Senior Risk Manager", "Head of Risk", "CRO")),

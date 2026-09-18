@@ -108,6 +108,12 @@ def cm(sec) -> int:
     return int(sec.multiplier)
 
 
+# strike spacing by contract: Treasuries in halves and points, SOFR in eighths, index futures in round levels
+FUT_STRIKE_STEP = {"SR3": 0.125, "ZT": 0.25, "ZF": 0.5, "ZN": 0.5, "TN": 0.5, "ZB": 1.0, "UB": 1.0, "ES": 25.0, "NQ": 100.0,
+                   "FGBS": 0.1, "FGBM": 0.25, "FGBL": 0.5, "FGBX": 1.0, "GLT": 0.5, "JGB": 0.25}
+FINANCIAL_OPTION_CODES = ("ZT", "ZF", "ZN", "TN", "ZB", "UB", "SR3", "ES", "NQ", "FGBL", "FGBM", "FGBS", "GLT", "JGB")
+
+
 def is_fut_opt(sec) -> bool:
     return bool(sec.is_option and (sec.deliverable or {}).get("future"))
 
@@ -138,17 +144,18 @@ class OptionsEngine:
 
     # ------------------------------------------------------------------ underlyings & listings
     def optionable(self) -> List[str]:
-        out = [s.id for s in self.w.securities.values() if s.asset_class in ("EQUITY", "ETF", "REIT", "ADR", "CRYPTO") and s.liquidity_tier == "LARGE"
+        out = [s.id for s in self.w.securities.values() if s.asset_class in ("EQUITY", "ETF", "REIT", "ADR", "CRYPTO") and s.liquidity_tier == "LARGE" and s.currency == "USD"
                and s.shares_outstanding and (s.asset_class != "ETF" or s.adv >= 500_000) and (s.asset_class != "CRYPTO" or s.adv * float(self.w.market.last_bar(s.id).close if self.w.market.history.get(s.id) else 0) >= 1e9)]
         return sorted(out) + [i for i in INDICES if INDICES[i][0] in self.w.securities] + self.optionable_futures()
 
     def optionable_futures(self) -> List[str]:
-        """Options on futures: the front two unexpired contracts of each physical commodity with at least 20 sessions left."""
+        """Options on futures: the front two unexpired contracts of each physical commodity, and of the Treasury, SOFR, Bund,
+        Gilt, JGB and E-mini index contracts, with at least 20 sessions left."""
         w = self.w
         d = w.current_date
         by_code: Dict[str, List] = {}
         for s in w.securities.values():
-            if s.is_future and (s.underlying_class or "").startswith("COMMODITY") and not s.expired and s.expiry and w.market.history.get(s.id):
+            if s.is_future and ((s.underlying_class or "").startswith("COMMODITY") or s.underlying in FINANCIAL_OPTION_CODES) and not s.expired and s.expiry and w.market.history.get(s.id):
                 if w.calendar.business_days_between(d, date.fromisoformat(s.expiry)) >= 20:
                     by_code.setdefault(s.underlying, []).append(s)
         out = []
@@ -217,7 +224,7 @@ class OptionsEngine:
                 continue
             level = self.underlying_level(under)
             fut = self.is_future_underlying(under)
-            step = strike_step_future(level) if fut else strike_step(level)
+            step = (FUT_STRIKE_STEP.get(w.securities[under].underlying) or strike_step_future(level)) if fut else strike_step(level)
             atm = round(level / step) * step
             if fut:
                 fsec = w.securities[under]

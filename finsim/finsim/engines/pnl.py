@@ -54,6 +54,8 @@ class PnLEngine:
             mark = w.market.last_bar(security_id).close
             inst = Instrument(sec, mark, w.current_date, w.market.curve())
             mv = inst.market_value(pos.quantity) if pos.quantity else ZERO
+            if sec.currency != pf.base_currency and mv:
+                mv = money(mv * w.fx.k(sec.currency))            # a foreign security is carried at its local price times today's spot
         target = mv - pos.cost_basis
         delta = target - pos.valuation_adjustment
         if delta == 0 and pos.mark == mark and pos.market_value == mv and (greeks is None or pos.greeks.get("date") == greeks["date"]):
@@ -160,7 +162,7 @@ class PnLEngine:
         for p in pf.positions.values():
             if p.is_future and p.quantity != 0:
                 sec = w.securities[p.security_id]
-                notional = money(abs(p.quantity) * w.market.last_bar(sec.id).close * D(str(sec.multiplier))) if w.market.history.get(sec.id) else p.notional
+                notional = money(abs(p.quantity) * w.market.last_bar(sec.id).close * D(str(sec.multiplier)) * w.fx.k(sec.currency)) if w.market.history.get(sec.id) else p.notional
                 p.notional = notional
                 if p.quantity > 0:
                     fut_long += notional

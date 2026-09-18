@@ -101,6 +101,7 @@ class SimulationEngine:
         w.cevents.process_fails(closing)
         # I — corporate actions
         w.corporate.process_day(closing)
+        w.mbsdesk.process_day(closing)
         w.cevents.process_day(closing)
         # F/G — futures, financing desks, accruals
         w.futures.expire_contracts(closing)

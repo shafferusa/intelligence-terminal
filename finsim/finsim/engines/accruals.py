@@ -38,7 +38,7 @@ class AccrualEngine:
                 sec = w.securities[pos.security_id]
                 if not sec.is_bond or pos.quantity <= 0 or sec.defaulted:
                     continue
-                target = money(pos.quantity * BondPricer.accrued_per_100(sec, today) / 100)
+                target = money(pos.quantity * BondPricer.accrued_per_100(sec, today) / 100 * w.fx.k(sec.currency))
                 delta = target - pos.accrued_interest
                 if delta != 0:
                     w.emit(E.INTEREST_ACCRUED, {"portfolio_id": pf.id, "kind": "BOND", "security_id": sec.id, "amount": delta, "currency": sec.currency,

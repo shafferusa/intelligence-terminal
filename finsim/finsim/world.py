@@ -72,7 +72,7 @@ class World:
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
         from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
-        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, investment_banking, live
+        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, investment_banking, live, mbs
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.live = live.LiveDesk(self)
@@ -99,6 +99,7 @@ class World:
         self.pcredit = private_credit.PrivateCreditEngine(self)
         self.pequity = private_equity.PrivateEquityEngine(self)
         self.ibank = investment_banking.InvestmentBankingEngine(self)
+        self.mbsdesk = mbs.MBSDesk(self)
         from .engines import playbook
         self.playbook = playbook.Playbook(self)
         self.scenario = "NONE"
@@ -240,6 +241,7 @@ class World:
         self.cdesk.register()
         self.pcredit.register()
         self.pequity.register()
+        self.mbsdesk.register()
         self.ibank.register()
         self.on(E.SCENARIO_EVENT, World._h_scenario_event)
         for et in (E.ECONOMIC_RELEASE, E.EARNINGS_REPORTED, E.RATING_CHANGED, E.ISSUER_DEFAULTED):
@@ -267,6 +269,7 @@ class World:
                                    prehistory_days=int(p.get("prehistory_days", 260)),
                                    initial_regime=p.get("initial_regime", "NORMAL_GROWTH"))
         self.market.bar_provider = lambda sid: self.options.option_bar(self.securities[sid])
+        self.market.mbs_holder = lambda sid: any(p.positions[sid].quantity != 0 for p in self.portfolios.values() if sid in p.positions)
         self.market_source = p.get("market_source", "SIMULATED")
         self.market.bootstrap()
         if self.market_source == "REAL":

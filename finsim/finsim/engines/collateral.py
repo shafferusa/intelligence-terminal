@@ -28,6 +28,7 @@ from ..money import D, money, ZERO
 # PRIME (financing value at the prime broker).
 HAIRCUTS = {
     "GOVT_BOND": {"REPO": 0.02, "SECLOAN": 0.02, "PRIME": 0.03, "LENT": 0.0},
+    "MBS": {"REPO": 0.03, "SECLOAN": 0.03, "PRIME": 0.05, "LENT": 0.0},
     "CORP_BOND_IG": {"REPO": 0.08, "SECLOAN": None, "PRIME": 0.12, "LENT": 0.0},
     "CORP_BOND_HY": {"REPO": 0.15, "SECLOAN": None, "PRIME": 0.25, "LENT": 0.0},
     "EQUITY_LARGE": {"REPO": 0.25, "SECLOAN": None, "PRIME": 0.25, "LENT": 0.0},
@@ -52,7 +53,9 @@ def asset_key(sec: Security) -> str:
         return "PHYSICAL"
     if sec.asset_class == "GOVT_BOND":
         return "GOVT_BOND"
-    if sec.asset_class == "CORP_BOND":
+    if sec.asset_class == "MBS_TBA":
+        return "MBS"
+    if sec.asset_class in ("CORP_BOND", "STRUCTURED"):
         return "CORP_BOND_IG" if (sec.rating or "") in IG_RATINGS else "CORP_BOND_HY"
     if sec.asset_class in ("PREFERRED", "ADR", "ETF", "CRYPTO", "INDEX"):
         return sec.asset_class

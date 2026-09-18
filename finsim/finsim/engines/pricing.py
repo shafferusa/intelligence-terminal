@@ -87,14 +87,29 @@ class BondPricer:
         return (cpn * frac).quantize(Decimal("0.000001"))
 
     @staticmethod
-    def cash_flows(sec: Security, asof: date) -> List[Tuple[date, float]]:
-        """Remaining cash flows per 100 face after `asof` (exclusive)."""
+    def forward_rate(curve: YieldCurve, t1: float, t2: float) -> float:
+        z1, z2 = interp_rate(curve, max(t1, 0.02)), interp_rate(curve, max(t2, 0.04))
+        return ((1 + z2) ** t2 / (1 + z1) ** t1) ** (1.0 / max(t2 - t1, 0.01)) - 1
+
+    @staticmethod
+    def cash_flows(sec: Security, asof: date, curve: Optional[YieldCurve] = None) -> List[Tuple[date, float]]:
+        """Remaining cash flows per 100 face after `asof` (exclusive). A floater's coupons are the current coupon for the
+        period already fixed, then the curve's forward 3-month rates plus the issue spread (the current coupon throughout
+        when no curve is given)."""
         cpn = sec.coupon * 100 / sec.freq
         mat = date.fromisoformat(sec.maturity)
         out = []
+        prev = None
         for cd in BondPricer.coupon_dates(sec):
             if cd > asof:
-                out.append((cd, cpn + (100.0 if cd == mat else 0.0)))
+                c = cpn
+                if sec.floating and curve is not None and prev is not None:
+                    t1, t2 = (prev - asof).days / 365.25, (cd - asof).days / 365.25
+                    c = (BondPricer.forward_rate(curve, t1, t2) + sec.float_spread) * 100 / sec.freq
+                out.append((cd, c + (100.0 if cd == mat else 0.0)))
+            prev = cd if cd > asof else prev
+            if cd <= asof:
+                prev = cd
         return out
 
     @staticmethod
@@ -111,7 +126,7 @@ class BondPricer:
         f = sec.freq
         spread = sec.spread_bps_credit / 1e4
         total = 0.0
-        for cd, cf in BondPricer.cash_flows(sec, asof):
+        for cd, cf in BondPricer.cash_flows(sec, asof, curve if sec.floating else None):
             t = (cd - asof).days / 365.25
             z = interp_rate(curve, t) + spread
             total += cf / (1 + z / f) ** (f * t)
@@ -158,6 +173,13 @@ class BondPricer:
             "dv01_per_100": dv01, "accrued": float(BondPricer.accrued_per_100(sec, asof)), "dirty_price": dirty,
             "years_to_maturity": (mat - asof).days / 365.25,
         }
+        if sec.floating:
+            # a floater's rate duration is the time to its next reset; the fixed-flow duration above is its spread duration
+            prev_cd, next_cd = BondPricer.period(sec, asof)
+            reset = max(0.003, (next_cd - asof).days / 365.25)
+            out.update({"spread_duration": mod, "modified_duration": min(mod, reset), "macaulay_duration": min(mac, reset),
+                        "dv01_per_100": min(mod, reset) * dirty / 1e4, "convexity": 0.0, "current_coupon": sec.coupon, "float_spread_bps": sec.float_spread * 1e4,
+                        "discount_margin_bps": sec.spread_bps_credit})
         if curve is not None:
             t = out["years_to_maturity"]
             bench = interp_rate(curve, t)

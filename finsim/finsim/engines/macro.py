@@ -49,6 +49,7 @@ class IssuerState:
     defaulted: bool = False
     default_date: Optional[str] = None
     watch: str = "STABLE"          # STABLE | NEGATIVE | POSITIVE
+    base_spread: Optional[float] = None   # the issue's own spread norm (structured tranches); None = the rating's corporate norm
 
 
 def third_wednesday(y: int, m: int) -> date:
@@ -82,8 +83,8 @@ class MacroModel:
         self.issuers: Dict[str, IssuerState] = {}
         self.rating_history: List[Dict] = []
         for s in securities.values():
-            if s.asset_class == "CORP_BOND":
-                self.issuers[s.id] = IssuerState(s.rating, s.rating, s.spread_bps_credit)
+            if s.asset_class in ("CORP_BOND", "STRUCTURED"):
+                self.issuers[s.id] = IssuerState(s.rating, s.rating, s.spread_bps_credit, base_spread=(s.spread_bps_credit if s.asset_class == "STRUCTURED" else None))
         self.earnings_dates: Dict[Tuple[str, int, int], date] = {}
         self._equity_ids = [s.id for s in securities.values() if s.asset_class in ("EQUITY", "ADR", "REIT") and s.fundamentals]
         self._securities = securities
@@ -242,13 +243,14 @@ class MacroModel:
                 continue
             sec = self._securities[ref]
             idx_scale = hy_bps / 360.0 if RATING_ORDER.index(st.rating) >= RATING_ORDER.index("BB+") else (1.0 + 0.4 * (hy_bps - 360.0) / 360.0)
-            target = RATING_SPREAD[st.rating] * max(0.5, idx_scale) * (1.0 + 0.6 * max(0.0, -s.growth) / 3.0)
+            norm = st.base_spread if st.base_spread else RATING_SPREAD[st.rating]
+            target = norm * max(0.5, idx_scale) * (1.0 + 0.6 * max(0.0, -s.growth) / 3.0)
             st.spread_bps += 0.1 * (target - st.spread_bps) + 0.01 * st.spread_bps * rng.gauss(0, 1)
             st.spread_bps = max(20.0, st.spread_bps)
             if d.month != prev_bd.month:
                 r2 = random.Random(f"{self.seed}|rating|{ref}|{d.year}-{d.month:02d}")
                 idx = RATING_ORDER.index(st.rating)
-                stress = (st.spread_bps / RATING_SPREAD[st.rating]) - 1.0
+                stress = (st.spread_bps / (st.base_spread if st.base_spread else RATING_SPREAD[st.rating])) - 1.0
                 if stress > 0.5 and idx < len(RATING_ORDER) - 2 and r2.random() < min(0.6, 0.25 + stress * 0.3):
                     st.rating = RATING_ORDER[idx + 1]
                     st.watch = "NEGATIVE"
@@ -376,7 +378,9 @@ class MacroModel:
         for ref, iss in st.get("issuers", {}).items():
             cur = self.issuers.get(ref)
             if cur is None:
-                cur = self.issuers[ref] = IssuerState(iss["rating"], iss["rating"], float(iss["spread_bps"]))
+                sec0 = self._securities.get(ref)
+                cur = self.issuers[ref] = IssuerState(iss["rating"], iss["rating"], float(iss["spread_bps"]),
+                                                      base_spread=(sec0.spread_bps_credit if sec0 is not None and sec0.asset_class == "STRUCTURED" else None))
             cur.rating, cur.spread_bps, cur.defaulted, cur.watch = iss["rating"], float(iss["spread_bps"]), bool(iss.get("defaulted")), iss.get("watch", "STABLE")
             if cur.defaulted and not cur.default_date:
                 cur.default_date = d.isoformat()

@@ -183,8 +183,12 @@ class LiveDesk:
                 return {**base, "price": last, "time": None, "time_ny": "", "age_s": None, "change_pct": 0.0, "method": "last_close", "ref": sec.id, "ref_price": last,
                         "note": "no live Treasury yields right now: the last close is used"}
             try:
-                p_live = float(BondPricer.clean_price_from_curve(sec, live_curve, w.current_date))
-                p_base = float(BondPricer.clean_price_from_curve(sec, w.market.curve(), w.current_date))
+                if sec.is_mbs or sec.inflation_linked:
+                    p_live = float(w.market.bond_clean_price(sec, live_curve, w.current_date))
+                    p_base = float(w.market.bond_clean_price(sec, w.market.curve(), w.current_date))
+                else:
+                    p_live = float(BondPricer.clean_price_from_curve(sec, w.market.curve_for_security(sec, live_curve), w.current_date))
+                    p_base = float(BondPricer.clean_price_from_curve(sec, w.market.curve_for_security(sec), w.current_date))
             except Exception:
                 return None
             px = round(last + (p_live - p_base), 4)

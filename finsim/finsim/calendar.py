@@ -141,9 +141,9 @@ class SettlementConfig:
     cycles: Dict[str, int] = field(default_factory=lambda: {
         "US_EQUITY": 1,       # T+1 since May 2024
         "US_TREASURY": 1,
-        "US_CORP_BOND": 1,
+        "US_CORP_BOND": 1, "US_MBS": 1, "EU_GOVT": 2, "UK_GOVT": 1, "JP_GOVT": 1,
         "US_MONEY_MARKET": 0,
-        "EU_EQUITY": 2,
+        "EU_EQUITY": 2, "UK_EQUITY": 2, "HK_EQUITY": 2, "KR_EQUITY": 2, "TW_EQUITY": 2, "SA_EQUITY": 2, "CH_EQUITY": 2, "IN_EQUITY": 1, "AU_EQUITY": 2,
         "JP_EQUITY": 2,
         "FX_SPOT": 2,
         "FUTURES": 0,          # cleared: margined daily, no DVP settlement

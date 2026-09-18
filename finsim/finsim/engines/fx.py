@@ -43,6 +43,10 @@ class FXEngine:
     def to_base(self, ccy: str, amount: Decimal) -> Decimal:
         return money(amount * self.usd(ccy))
 
+    def k(self, ccy: str) -> Decimal:
+        """Base-currency units per unit of `ccy` today (1 for the base currency): the factor a foreign amount is booked at."""
+        return D(1) if ccy == "USD" else self.usd(ccy)
+
     def quote(self, buy: str, sell: str, amount: Decimal, amount_ccy: str = "BUY", mid: Optional[float] = None) -> Dict:
         m = self.w.market.fx
         mid = m.cross(buy, sell) if mid is None else float(mid)

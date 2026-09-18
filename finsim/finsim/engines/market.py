@@ -28,7 +28,7 @@ from typing import Dict, List, Optional, Tuple
 from ..calendar import BusinessCalendar
 from ..domain.models import Bar, Security, YieldCurve
 from ..money import D, money, price as qprice
-from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel, FINANCIAL_SOURCES
+from .commodities import SPECS as COMMODITY_SPECS, SPEC_BY_CODE, CommodityModel, FINANCIAL_SOURCES, GLOBAL_INDICES
 from .fx_market import dollar_index
 from .vol import is_index as _opt_is_index, index_source as _opt_index_source
 from .lending_market import LendingMarket
@@ -36,6 +36,10 @@ from .fx_market import FXModel
 from .counterparties import DealerModel
 from .corporate_events import CorporateEventModel
 from .macro import MacroModel
+from .structured import STRUCTURED_SEED
+from .global_rates import SOVEREIGN_SPECS, COUNTRY_SPREAD, foreign_curve, par_coupon
+from .fx_market import SPECS as FX_SPECS
+from .mbs import MBSModel, PROGRAMS as MBS_PROGRAMS, listed_months as mbs_listed_months, make_tba, tba_id
 from .vol import VolSurfaceModel, optionable_underlyings, structural_vol, INDEX_ID as OPT_INDEX_ID, INDEX_SOURCE as OPT_INDEX_SOURCE
 
 TENORS = [0.25, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 20.0, 30.0]
@@ -172,9 +176,20 @@ def _index_rows(equities: List[Dict], fx: Dict[str, float], indices: Optional[Di
     if "VIX" not in have:
         out.append({"ticker": "VIX", "name": "Cboe Volatility Index", "asset_class": "INDEX", "sector": "Index", "country": "US", "price": (idx.get("VIX") or {}).get("price") or 18.0,
                     "beta": -3.0, "sigma_annual": (idx.get("VIX") or {}).get("sigma_annual") or 0.9, "adv": 0, "dividend_yield": 0.0, "shares_outstanding": 0, "yahoo": "^VIX"})
+    from .realfeed import INDEX_SYMBOLS as _IDX_SYMS
+    etfs = {r["ticker"]: r for r in equities}
+    for code, (etf, ccy, name, default_level) in GLOBAL_INDICES.items():
+        if code in have or etf not in etfs:
+            continue
+        lvl = (idx.get(code) or {}).get("price") or default_level
+        out.append({"ticker": code, "name": name, "asset_class": "INDEX", "sector": "Index", "country": {"EUR": "DE", "GBP": "GB", "JPY": "JP", "HKD": "HK"}.get(ccy, "US"), "price": round(float(lvl), 2),
+                    "beta": float(etfs[etf].get("beta", 1.0)), "sigma_annual": (idx.get(code) or {}).get("sigma_annual") or float(etfs[etf].get("sigma_annual", 0.18)), "adv": 0,
+                    "dividend_yield": float(etfs[etf].get("dividend_yield", 0.0) or 0.0), "shares_outstanding": 0, "yahoo": _IDX_SYMS.get(code), "index_source": etf, "index_ccy": ccy})
     return out
 
 
+MARKET_BY_COUNTRY = {"HK": "HK_EQUITY", "KR": "KR_EQUITY", "TW": "TW_EQUITY", "SA": "SA_EQUITY", "CH": "CH_EQUITY", "IN": "IN_EQUITY", "AU": "AU_EQUITY", "JP": "JP_EQUITY",
+                     "DE": "EU_EQUITY", "FR": "EU_EQUITY", "NL": "EU_EQUITY", "GB": "UK_EQUITY"}
 # (ticker, name, asset_class, sector, country, ccy, price, beta, sigma, adv, spread_bps, tier, dividend_yield, shares in millions, yahoo symbol)
 EQUITY_SEED = []
 for _r in UNIVERSE["equities"] + _index_rows(UNIVERSE["equities"], UNIVERSE.get("fx", {}), UNIVERSE.get("indices")):
@@ -185,7 +200,7 @@ for _r in UNIVERSE["equities"] + _index_rows(UNIVERSE["equities"], UNIVERSE.get(
     if _r["country"] != "US":            # foreign filers report in their home currency: keep prices, drop EDGAR statement lines
         _r = {k: v for k, v in _r.items() if k not in ("revenue", "net_income", "eps", "total_debt", "cash", "equity", "cfo", "capex")}
     _t = _tier(_r)
-    EQUITY_SEED.append((_r["ticker"], _r["name"], _r["asset_class"], _r["sector"], _r["country"], "USD", float(_r["price"]),
+    EQUITY_SEED.append((_r["ticker"], _r["name"], _r["asset_class"], _r["sector"], _r["country"], _r.get("currency", "USD"), float(_r["price"]),
                         _adjusted_beta(float(_r["beta"])) if _r["asset_class"] not in ("INDEX", "CRYPTO") else float(_r["beta"]),
                         max(0.002 if _r.get("sector") == "Stablecoin" else 0.03, float(_r["sigma_annual"])), int(_r["adv"]), _spread_bps(_r, _t), _t,
                         float(_r.get("dividend_yield", 0.0)), _shares, _r.get("yahoo")))
@@ -276,11 +291,59 @@ def build_universe(start: date, seed: int) -> Dict[str, Security]:
         if ac in ("ETF", "CRYPTO", "INDEX"):
             fundamentals = {}
         secs[t] = Security(
-            id=t, name=name, asset_class=ac, market={"CRYPTO": "CRYPTO", "INDEX": "INDEX"}.get(ac, "US_EQUITY"), currency=ccy, country=country, sector=sector,
+            id=t, name=name, asset_class=ac, market={"CRYPTO": "CRYPTO", "INDEX": "INDEX"}.get(ac, "US_EQUITY" if ccy == "USD" else MARKET_BY_COUNTRY.get(country, "EU_EQUITY")), currency=ccy, country=country, sector=sector,
             isin=_isin(n), cusip=_cusip(n * 7919), shares_outstanding=int(shares * 1e6) if ac != "INDEX" else None, dividend_yield=dy,
             dividend_per_share=dps, div_anchor_month=rng.randint(0, 2), div_day_bd=rng.randint(3, 15), beta=beta,
             sigma_annual=sig, adv=adv, spread_bps=spr, liquidity_tier=tier, fundamentals=fundamentals, yahoo=yahoo,
             qty_step=Decimal("0.0001") if ac == "CRYPTO" else Decimal("1"), unit="coin" if ac == "CRYPTO" else "",
+        )
+    # government bonds in euros, sterling and yen, issued four months ago at the coupon that priced them at par on their curve then
+    usd0 = YieldCurve(start.isoformat(), TENORS, [nelson_siegel(INITIAL_LONG_RATE, min(0.03, max(-0.03, INITIAL_POLICY_RATE - INITIAL_LONG_RATE)), 0.004, 2.0, t) for t in TENORS],
+                      policy_rate=INITIAL_POLICY_RATE)
+    for code, (etf, ccy, name, default_level) in GLOBAL_INDICES.items():
+        if code in secs and etf in secs:
+            secs[code].index_level_source = etf
+            secs[code].index_factor = float(next(e[6] for e in EQUITY_SEED if e[0] == code)) / float(next(e[6] for e in EQUITY_SEED if e[0] == etf))
+            secs[code].currency = ccy
+    # inflation-linked Treasuries and the floating-rate note
+    be0 = 0.0225
+    for (tid, yrs) in (("TIPS-5Y", 5.0), ("TIPS-10Y", 10.0), ("TIPS-30Y", 30.0)):
+        n += 1
+        nominal = {5.0: _Y5, 10.0: INITIAL_10Y, 30.0: INITIAL_LONG_RATE}[yrs]
+        rc = max(0.00125, round((nominal - be0) * 800) / 800)
+        issue = _add_months(date(start.year, start.month, 15), -4)
+        mat = date(issue.year + int(yrs), issue.month, issue.day)
+        secs[tid] = Security(id=tid, name=f"US Treasury Inflation-Protected {rc * 100:.3f}% {int(yrs)}Y (TIPS)", asset_class="GOVT_BOND", market="US_TREASURY", currency="USD", country="US",
+                             sector="Government", isin=_isin(n), cusip=_cusip(n * 7919), coupon=rc, maturity=mat.isoformat(), issue_date=issue.isoformat(), freq=2, rating="AAA",
+                             issuer="United States Treasury", spread_bps_credit=0.0, adv={5.0: 1_500_000_000, 10.0: 1_200_000_000, 30.0: 400_000_000}[yrs], spread_bps=2.0,
+                             liquidity_tier="LARGE", lot_size=1000, beta=0.0, sigma_annual=0.0, inflation_linked=True, real_coupon=rc, index_ratio=1.0)
+    n += 1
+    issue = _add_months(date(start.year, start.month, 15), -4)
+    secs["UST-FRN-2Y"] = Security(id="UST-FRN-2Y", name="US Treasury Floating Rate Note 2Y (13-week bill + 15bp)", asset_class="GOVT_BOND", market="US_TREASURY", currency="USD", country="US",
+                                  sector="Government", isin=_isin(n), cusip=_cusip(n * 7919), coupon=INITIAL_POLICY_RATE + 0.0015, maturity=date(issue.year + 2, issue.month, issue.day).isoformat(),
+                                  issue_date=issue.isoformat(), freq=4, rating="AAA", issuer="United States Treasury", spread_bps_credit=0.0, adv=2_000_000_000, spread_bps=1.0,
+                                  liquidity_tier="LARGE", lot_size=1000, beta=0.0, sigma_annual=0.0, floating=True, float_spread=0.0015)
+    for (sid, name, country, ccy, yrs, freq, adv, mkt, nick) in SOVEREIGN_SPECS:
+        n += 1
+        local = foreign_curve(ccy, usd0, FX_SPECS[ccy].rate0, INITIAL_POLICY_RATE, country)
+        cpn = par_coupon(local, yrs, freq)
+        issue = _add_months(date(start.year, start.month, 15), -4)
+        mat = date(issue.year + int(round(yrs)), issue.month, issue.day)
+        secs[sid] = Security(
+            id=sid, name=f"{name} {cpn * 100:.3f}%", asset_class="GOVT_BOND", market=mkt, currency=ccy, country=country, sector="Government",
+            isin=f"{country}{n:010d}", cusip=_cusip(n * 7919), coupon=cpn, maturity=mat.isoformat(), issue_date=issue.isoformat(), freq=freq,
+            rating={"DE": "AAA", "FR": "AA-", "IT": "BBB", "GB": "AA", "JP": "A+"}[country], issuer=COUNTRY_SPREAD[country][2] + " government",
+            spread_bps_credit=0.0, adv=adv, spread_bps=1.5 if country in ("DE", "GB", "JP") else 3.0, liquidity_tier="LARGE", lot_size=1000, beta=0.0, sigma_annual=0.0,
+        )
+    for (sid, name, deal, tranche, rating, cpn, floating, yrs, spr, rec, adv, sector) in STRUCTURED_SEED:
+        n += 1
+        issue = _add_months(date(start.year, start.month, 15), -4)
+        mat = _add_months(issue, int(round(yrs * 12)))
+        secs[sid] = Security(
+            id=sid, name=name, asset_class="STRUCTURED", market="US_CORP_BOND", currency="USD", country="US", sector=sector, isin=_isin(n), cusip=_cusip(n * 7919),
+            coupon=(INITIAL_POLICY_RATE + cpn) if floating else cpn, maturity=mat.isoformat(), issue_date=issue.isoformat(), freq=4 if floating else 12, rating=rating,
+            issuer=f"{deal} {tranche}", spread_bps_credit=spr, recovery_rate=rec, adv=adv, spread_bps=25.0 if rating in ("AAA", "AA") else 60.0, liquidity_tier="MID",
+            lot_size=1000, beta=0.0, sigma_annual=0.0, floating=floating, float_spread=cpn if floating else 0.0, deal_type=deal, tranche=tranche,
         )
     for (bid, name, ac, issuer, cpn, yrs, rating, spr, adv, sector) in BOND_SEED:
         n += 1
@@ -368,6 +431,9 @@ class MarketEngine:
         self.vol_index_history: List[Tuple[str, float]] = []
         self._contract_seq = 1000
         self.day_news: List[Dict] = []
+        self.mbs = MBSModel(calendar)                  # agency MBS: pool factors, prepayments, TBA pricing
+        self._tba_seq = 5000
+        self.mbs_holder = lambda sid: False            # set by the world: is anyone holding this security (keeps old pools listed)
 
     # ---------------- dividends (pure function of seed) ----------------
     def dividend_ex_dates(self, sec: Security, year: int) -> List[date]:
@@ -431,6 +497,19 @@ class MarketEngine:
         for sec in self.securities.values():
             if sec.is_future and not sec.expired and sec.expiry and date.fromisoformat(sec.expiry) < d:
                 sec.expired = True
+        for spec in MBS_PROGRAMS if d >= self.cal.add_business_days(self.start, -45) else []:     # TBAs carry two months of pre-history, not a year of stale pools
+            for (y, m) in mbs_listed_months(self.cal, spec, d):
+                for c in spec.coupons:
+                    cid = tba_id(spec.code, c, y, m)
+                    if cid not in self.securities:
+                        self._tba_seq += 1
+                        sec = make_tba(self.cal, spec, c, y, m, self._tba_seq, d.isoformat())
+                        self.securities[cid] = sec
+                        self.history[cid] = []
+                        added.append(sec)
+        for sec in self.securities.values():
+            if sec.is_mbs and not sec.delisted and (d - date.fromisoformat(sec.issue_date)).days > 400 and not self.mbs_holder(sec.id):
+                sec.delisted = True                    # a pool a year past delivery that nobody holds leaves the specified-pool list
         return added
 
     def front_contract(self, code: str) -> Optional[Security]:
@@ -532,6 +611,7 @@ class MarketEngine:
                 if (sec.is_future and sec.underlying == code or sec.asset_class == "PHYSICAL" and sec.underlying == code) and sid in bars:
                     bars[sid] = scaled(bars[sid], fD)
                     self._prev_close[sid] = bars[sid].close
+        self.derive_indices(d, bars, skip=set((targets.get("equities") or {}).keys()))
         for ccy, target in (targets.get("fx") or {}).items():
             if self.fx.spot.get(ccy) and target:
                 self.fx.spot[ccy] = float(target)
@@ -547,7 +627,7 @@ class MarketEngine:
                                hy_spread_bps=round(hy, 2), policy_rate=round(nelson_siegel(level, slope, curv, 2.0, 0.08), 5))
             for sid, sec in self.securities.items():
                 if sec.is_bond and sid in bars and not sec.defaulted:
-                    clean = qprice(BondPricer.clean_price_from_curve(sec, curve, d))
+                    clean = qprice(self.bond_clean_price(sec, curve, d))
                     half = clean * D(str(sec.spread_bps * R.spread_mult / 2 / 1e4))
                     pc = self.history[sid][-1].close if self.history.get(sid) else clean
                     if bars[sid].close:
@@ -679,7 +759,7 @@ class MarketEngine:
                 asof = date.fromisoformat(c.date)
                 for sid, sec in self.securities.items():
                     if sec.is_bond:
-                        bond_factors.setdefault(sid, {})[c.date] = qprice(BondPricer.clean_price_from_curve(sec, nc, asof))
+                        bond_factors.setdefault(sid, {})[c.date] = qprice(self.bond_clean_price(sec, nc, asof))
             self.curves = new_curves
             for sid, closes in bond_factors.items():
                 bars = self.history.get(sid)
@@ -774,7 +854,7 @@ class MarketEngine:
                 sec.rating, sec.spread_bps_credit = ist.rating, ist.spread_bps
             for sid, sec in self.securities.items():
                 if sec.is_bond and self.history.get(sid) and self.history[sid][-1].close:
-                    clean = BondPricer.clean_price_from_curve(sec, curve, asof)
+                    clean = self.bond_clean_price(sec, curve, asof)
                     factors[sid] = qprice(clean) / self.history[sid][-1].close
                     self._rescale_history(sid, factors[sid])
         # financial futures ride their source (ES on SPY, ZN on the 10-year note, BTC on the coin, VX on the VIX ...)
@@ -870,6 +950,7 @@ class MarketEngine:
         bars: Dict[str, Bar] = {}
         from .pricing import BondPricer  # local import to avoid cycle
         weekend_days = max(1, (d - prev_bd).days)
+        self.ensure_listings(d)
         for t, sec in list(self.securities.items()):
             if sec.is_future or sec.is_option or sec.delisted or sec.asset_class in ("PHYSICAL", "INDEX"):
                 continue
@@ -879,7 +960,7 @@ class MarketEngine:
                 self._prev_close[t] = rp
                 continue
             if sec.is_bond:
-                clean = BondPricer.clean_price_from_curve(sec, curve, d)
+                clean = self.bond_clean_price(sec, curve, d)
                 spread_bps = sec.spread_bps * R.spread_mult
                 half = clean * D(spread_bps / 2 / 1e4)
                 pc = self._prev_close.get(t, clean)
@@ -917,6 +998,7 @@ class MarketEngine:
                           qprice(max(0.01, close_f - half)), qprice(close_f + half))
             self._prev_close[t] = close
 
+        self.derive_indices(d, bars)
         # FX, then the cash indices that ride it (the dollar index) and the vol index, then commodities & financial futures
         self.ensure_listings(d)
         prev_bd = date.fromisoformat(prev.date)
@@ -940,6 +1022,9 @@ class MarketEngine:
                 sb = bars[src]
                 ssec = self.securities[src]
                 q = (ssec.coupon or 0.0) / max(0.5, float(sb.close) / 100) if ssec.is_bond else float(ssec.dividend_yield or 0.0)
+                if ssec.currency != "USD":
+                    financials[code] = {"S": float(sb.close), "q": q, "r": _ir(self.curve_for_ccy(ssec.currency, curve), 0.25)}
+                    continue
                 if code == "DX":                                  # the dollar index carries the basket's rates against the dollar's
                     from .fx_market import DXY_WEIGHTS
                     q = sum(abs(wgt) * float(self.fx.rate.get(c, 0.0)) for c, wgt in DXY_WEIGHTS.items())
@@ -975,6 +1060,10 @@ class MarketEngine:
         elif d == self.start:
             # the first session closes exactly at the snapshot: today's prices, spots, FX and curve are the starting point
             bars, curve, level, slope, curv = self._anchor_start_day(d, bars, curve, cpayload, level, slope, curv, ig, hy, R)
+        # the session's final curve (pinned to the real one in a tracking save) moves the pool factors and resets every floater;
+        # replay does the same from the stored curve, so the two paths agree
+        self.mbs.step(d, curve, self.securities)
+        self.reset_floaters(curve)
         self._commodity_payload = cpayload
         self.state = MarketState(d.isoformat(), regime, level, slope, curv, ig, hy, mkt, sectors)
         for t, b in bars.items():
@@ -1001,6 +1090,7 @@ class MarketEngine:
         """Used on replay: adopt stored bars instead of regenerating them."""
         self._forced_returns, self._forced_rate_bp = {}, 0.0   # queued shocks were consumed by the stored close
         self.ensure_listings(d)
+        self.mbs.step(d, curve, self.securities)
         for t, b in bars.items():
             self.history.setdefault(t, []).append(b)
             self._prev_close[t] = b.close
@@ -1030,6 +1120,7 @@ class MarketEngine:
         if cevents is not None:
             self.cevents.ingest(cevents)
             self._cevent_payload = cevents
+        self.reset_floaters(curve)
         self.vol_index_history.append((d.isoformat(), state.get("vol_index", 0.0)))
         if not self.regime_history or self.regime_history[-1][1] != state["regime"]:
             self.regime_history.append((d.isoformat(), state["regime"]))
@@ -1045,6 +1136,79 @@ class MarketEngine:
 
     def curve(self) -> YieldCurve:
         return self.curves[-1]
+
+    def curve_for_ccy(self, ccy: str, base: Optional[YieldCurve] = None, country: str = "") -> YieldCurve:
+        """A currency's zero curve (see global_rates): derived from the dollar curve and the currency's policy rate."""
+        usd = base or self.curve()
+        if ccy == "USD" and not country:
+            return usd
+        return foreign_curve(ccy, usd, float(self.fx.rate.get(ccy, usd.policy_rate)), usd.policy_rate, country)
+
+    def curve_for_security(self, sec: Security, base: Optional[YieldCurve] = None) -> YieldCurve:
+        """The curve a bond prices off: the dollar curve, or its currency's curve with its country's spread (OATs, BTPs)."""
+        if sec.currency == "USD":
+            return base or self.curve()
+        return self.curve_for_ccy(sec.currency, base, sec.country if sec.country in COUNTRY_SPREAD else "")
+
+    def reset_floaters(self, curve: YieldCurve) -> None:
+        """Every floating-rate issue's coupon is today's 3-month rate plus its spread (weekly and quarterly resets rolled into a
+        daily one); every inflation-linked issue's index ratio is the model's CPI over its level at the start, and its cash
+        coupon the real coupon times that ratio."""
+        from .pricing import interp_rate as _ir
+        r3 = _ir(curve, 0.25)
+        ratio = round(float(self.macro.cpi_index) / 100.0, 6)
+        for sec in self.securities.values():
+            if sec.floating and not sec.defaulted:
+                sec.coupon = round(max(0.0, r3 + sec.float_spread), 6)
+            elif sec.inflation_linked:
+                sec.index_ratio = ratio
+                sec.coupon = round(sec.real_coupon * ratio, 6)
+
+    def breakeven(self, t: float) -> float:
+        """Inflation compensation priced into TIPS at tenor t: anchored near target, leaning with the model's current inflation."""
+        infl = float(self.macro.state.inflation) if self.macro.state else 2.4
+        return (0.0225 + 0.35 * (infl - 2.4) / 100.0) * (0.9 + 0.1 * min(t, 10.0) / 10.0)
+
+    def real_curve(self, nominal: YieldCurve) -> YieldCurve:
+        return YieldCurve(nominal.date, list(nominal.tenors), [r - self.breakeven(t) for t, r in zip(nominal.tenors, nominal.rates)],
+                          ig_spread_bps=nominal.ig_spread_bps, hy_spread_bps=nominal.hy_spread_bps, policy_rate=nominal.policy_rate - self.breakeven(0.25))
+
+    def tips_clean_price(self, sec: Security, curve: YieldCurve, d: date) -> Decimal:
+        """A TIPS: the real-coupon bullet priced on the real curve, times the index ratio (the quoted price includes the accretion)."""
+        from .pricing import BondPricer
+        import dataclasses
+        real = dataclasses.replace(sec, coupon=sec.real_coupon)
+        return qprice(BondPricer.clean_price_from_curve(real, self.real_curve(curve), d) * D(repr(sec.index_ratio)))
+
+    def bond_clean_price(self, sec: Security, curve: YieldCurve, d: date) -> Decimal:
+        """Every bond's clean price on the right curve: TBAs and pools on the mortgage model, TIPS on the real curve, foreign
+        governments on their currency's curve, the rest on the dollar curve plus their spread."""
+        from .pricing import BondPricer
+        if sec.is_mbs:
+            return self.mbs.clean_price(sec, curve, d)
+        if sec.inflation_linked:
+            return self.tips_clean_price(sec, curve, d)
+        return BondPricer.clean_price_from_curve(sec, self.curve_for_security(sec, curve), d)
+
+    def derive_indices(self, d: date, bars: Dict[str, Bar], skip: Optional[set] = None) -> None:
+        """The global cash indices (Euro Stoxx 50, DAX, FTSE 100, Nikkei, Hang Seng, MSCI EM / EAFE) ride their ETFs: level = ETF close × factor."""
+        for sid, sec in self.securities.items():
+            if sec.asset_class != "INDEX" or not sec.index_level_source or (skip and sid in skip):
+                continue
+            src = bars.get(sec.index_level_source)
+            if src is None:
+                continue
+            f = D(repr(sec.index_factor))
+            pc = self._prev_close.get(sid, qprice(src.close * f))
+            lv = qprice(src.close * f)
+            bars[sid] = Bar(d.isoformat(), qprice(pc), qprice(max(pc, lv)), qprice(min(pc, lv)), lv, 0, lv, lv)
+            self._prev_close[sid] = lv
+
+    def mbs_metrics(self, sec: Security, curve: Optional[YieldCurve] = None) -> Dict[str, float]:
+        """Yield, effective duration/convexity, WAL, CPR, factor and OAS of a TBA or delivered pool at its last close."""
+        h = self.history.get(sec.id)
+        clean = float(h[-1].close) if h else None
+        return self.mbs.metrics(sec, curve or self.curve(), date.fromisoformat(self.state.date) if self.state else self.start, clean)
 
     def regime(self) -> Regime:
         return REGIMES[self.state.regime] if self.state else REGIMES[self.initial_regime]

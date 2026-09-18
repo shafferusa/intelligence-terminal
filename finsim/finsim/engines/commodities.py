@@ -62,6 +62,7 @@ class CommoditySpec:
     report: Optional[str]      # WEEKLY_WED | MONTHLY_10 | None
     report_name: str
     prec: int                  # price decimals
+    currency: str = "USD"      # the contract's currency: variation margin settles in it
 
 
 SPECS: List[CommoditySpec] = [
@@ -78,6 +79,14 @@ SPECS: List[CommoditySpec] = [
     CommoditySpec("PL", "Platinum", "COMMODITY_METAL", "oz", 980.0, 0.26, 0.006, 0.0, 0.03, 0.8, 0.30, 0.0, 1, "FJNV", 4, 50, 0.10, 0.08, 25_000, "PRIOR_MONTH_END", 0.015, None, "", 2),
     CommoditySpec("PA", "Palladium", "COMMODITY_METAL", "oz", 1050.0, 0.38, 0.006, 0.0, 0.04, 1.0, 0.30, 0.0, 1, "HMUZ", 4, 100, 0.10, 0.12, 8_000, "PRIOR_MONTH_END", 0.02, None, "", 2),
     CommoditySpec("ALI", "Aluminum", "COMMODITY_METAL", "MT", 2450.0, 0.22, 0.015, 0.02, 0.08, 1.2, 0.35, 0.0, 1, "FGHJKMNQUVXZ", 6, 25, 0.25, 0.08, 15_000, "PRIOR_MONTH_END", 0.015, "MONTHLY_10", "LME Aluminum Stocks Report", 2),
+    CommoditySpec("NI", "Nickel (LME)", "COMMODITY_METAL", "MT", 16000.0, 0.35, 0.02, 0.02, 0.10, 1.3, 0.35, 0.0, 1, "FGHJKMNQUVXZ", 6, 6, 5.0, 0.10, 12_000, "PRIOR_MONTH_END", 0.02, "MONTHLY_10", "LME stocks report", 0),
+    CommoditySpec("ZNC", "Zinc (LME)", "COMMODITY_METAL", "MT", 2800.0, 0.28, 0.015, 0.02, 0.10, 1.2, 0.35, 0.0, 1, "FGHJKMNQUVXZ", 6, 25, 0.5, 0.08, 15_000, "PRIOR_MONTH_END", 0.015, "MONTHLY_10", "LME stocks report", 1),
+    CommoditySpec("PB", "Lead (LME)", "COMMODITY_METAL", "MT", 2000.0, 0.25, 0.015, 0.02, 0.08, 1.0, 0.30, 0.0, 1, "FGHJKMNQUVXZ", 6, 25, 0.5, 0.08, 8_000, "PRIOR_MONTH_END", 0.015, "MONTHLY_10", "LME stocks report", 1),
+    CommoditySpec("SN", "Tin (LME)", "COMMODITY_METAL", "MT", 32000.0, 0.35, 0.02, 0.02, 0.12, 1.2, 0.35, 0.0, 1, "FGHJKMNQUVXZ", 6, 5, 5.0, 0.12, 3_000, "PRIOR_MONTH_END", 0.025, "MONTHLY_10", "LME stocks report", 0),
+    CommoditySpec("TIO", "Iron Ore 62% Fe CFR China (SGX)", "COMMODITY_METAL", "MT", 105.0, 0.30, 0.02, 0.02, 0.10, 1.5, 0.40, 0.0, 1, "FGHJKMNQUVXZ", 6, 100, 0.01, 0.10, 25_000, "PRIOR_MONTH_END", 0.03, "MONTHLY_10", "China steel output / port stocks", 2),
+    CommoditySpec("TTF", "Dutch TTF Natural Gas (ICE Endex)", "COMMODITY_ENERGY", "MWh", 35.0, 0.60, 0.10, 0.06, 0.20, 0.5, 0.10, 0.20, 1, "FGHJKMNQUVXZ", 6, 720, 0.005, 0.15, 40_000, "PRIOR_MONTH_END", 0.04, "WEEKLY_WED", "EU gas storage (AGSI)", 3, "EUR"),
+    CommoditySpec("JKM", "Japan-Korea Marker LNG (Platts)", "COMMODITY_ENERGY", "MMBtu", 12.0, 0.55, 0.10, 0.06, 0.20, 0.6, 0.10, 0.18, 1, "FGHJKMNQUVXZ", 6, 10_000, 0.001, 0.15, 5_000, "PRIOR_MONTH_END", 0.035, None, "", 3),
+    CommoditySpec("EUA", "EU Carbon Allowance (ICE)", "COMMODITY_ENERGY", "tCO2", 70.0, 0.40, 0.0, 0.0, 0.05, 0.8, 0.40, 0.0, 1, "HMUZ", 4, 1000, 0.01, 0.12, 30_000, "THIRD_FRIDAY", 0.02, None, "", 2, "EUR"),
     # agriculture
     CommoditySpec("ZC", "Corn", "COMMODITY_AG", "bu", 4.55, 0.24, 0.06, 0.03, 0.10, 0.2, 0.10, 0.10, 6, "HKNUZ", 5, 5000, 0.0025, 0.07, 300_000, "PRIOR_MONTH_END", 0.025, "MONTHLY_10", "USDA WASDE Report", 4),
     CommoditySpec("ZW", "Wheat", "COMMODITY_AG", "bu", 5.85, 0.30, 0.06, 0.03, 0.10, 0.2, 0.10, 0.08, 5, "HKNUZ", 5, 5000, 0.0025, 0.08, 120_000, "PRIOR_MONTH_END", 0.03, "MONTHLY_10", "USDA WASDE Report", 4),
@@ -92,19 +101,37 @@ SPECS: List[CommoditySpec] = [
     CommoditySpec("HE", "Lean Hogs", "COMMODITY_LIVESTOCK", "lb", 0.92, 0.28, 0.10, 0.05, 0.10, 0.4, 0.10, 0.10, 6, "GJKMNQVZ", 6, 40_000, 0.00025, 0.08, 40_000, "PRIOR_MONTH_END", 0.025, None, "", 4),
     # financial
     # financial futures: priced off a source (an ETF, a Treasury, a coin, an index) with cost of carry; no supply/demand model
-    CommoditySpec("ES", "E-mini S&P 500 Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.06, 1_500_000, "THIRD_FRIDAY", 0.0, None, "", 2),
-    CommoditySpec("NQ", "E-mini Nasdaq-100 Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.2, 0.0, 1, "HMUZ", 4, 20, 0.25, 0.07, 600_000, "THIRD_FRIDAY", 0.0, None, "", 2),
-    CommoditySpec("RTY", "E-mini Russell 2000 Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.1, 0.0, 1, "HMUZ", 4, 50, 0.10, 0.07, 200_000, "THIRD_FRIDAY", 0.0, None, "", 2),
-    CommoditySpec("YM", "E-mini Dow Future", "EQUITY_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.9, 0.0, 1, "HMUZ", 4, 5, 1.0, 0.06, 150_000, "THIRD_FRIDAY", 0.0, None, "", 0),
-    CommoditySpec("ZT", "2-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 2000, 0.0078125, 0.012, 600_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
-    CommoditySpec("ZF", "5-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.0078125, 0.015, 1_200_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
-    CommoditySpec("ZN", "10-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.015625, 0.02, 1_800_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
-    CommoditySpec("ZB", "30-Year Treasury Bond Future", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.03125, 0.04, 400_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
-    CommoditySpec("SR3", "3-Month SOFR Future", "RATES", "100 − rate", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 8, 2500, 0.0025, 0.003, 2_500_000, "THIRD_WEDNESDAY", 0.0, None, "", 4),
-    CommoditySpec("BTC", "Bitcoin Future (CME)", "CRYPTO", "BTC", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 0.0, 1, "FGHJKMNQUVXZ", 6, 5, 5.0, 0.35, 12_000, "LAST_FRIDAY", 0.0, None, "", 0),
-    CommoditySpec("ETH", "Ether Future (CME)", "CRYPTO", "ETH", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.6, 0.0, 1, "FGHJKMNQUVXZ", 6, 50, 0.25, 0.40, 8_000, "LAST_FRIDAY", 0.0, None, "", 2),
-    CommoditySpec("DX", "U.S. Dollar Index Future", "FX_INDEX", "index pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2, 0.0, 1, "HMUZ", 4, 1000, 0.005, 0.03, 30_000, "THIRD_WEDNESDAY", 0.0, None, "", 3),
-    CommoditySpec("VX", "Cboe VIX Future", "VOLATILITY", "vol pt", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -3.0, 0.0, 1, "FGHJKMNQUVXZ", 8, 1000, 0.05, 0.25, 250_000, "THIRD_WEDNESDAY", 0.0, None, "", 2),
+    # (the vol column of a financial contract is the price vol its options are marked from: the source's for equities, duration × rate vol for bonds)
+    CommoditySpec("ES", "E-mini S&P 500 Future", "EQUITY_INDEX", "index pt", 0.0, 0.16, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.06, 1_500_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("NQ", "E-mini Nasdaq-100 Future", "EQUITY_INDEX", "index pt", 0.0, 0.22, 0.0, 0.0, 0.0, 0.0, 1.2, 0.0, 1, "HMUZ", 4, 20, 0.25, 0.07, 600_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("RTY", "E-mini Russell 2000 Future", "EQUITY_INDEX", "index pt", 0.0, 0.22, 0.0, 0.0, 0.0, 0.0, 1.1, 0.0, 1, "HMUZ", 4, 50, 0.10, 0.07, 200_000, "THIRD_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("YM", "E-mini Dow Future", "EQUITY_INDEX", "index pt", 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.9, 0.0, 1, "HMUZ", 4, 5, 1.0, 0.06, 150_000, "THIRD_FRIDAY", 0.0, None, "", 0),
+    CommoditySpec("ZT", "2-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.015, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 2000, 0.0078125, 0.012, 600_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("ZF", "5-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.045, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.0078125, 0.015, 1_200_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("ZN", "10-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.07, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.015625, 0.02, 1_800_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("TN", "Ultra 10-Year Treasury Note Future", "RATES", "% of par", 0.0, 0.085, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.015625, 0.025, 700_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("ZB", "30-Year Treasury Bond Future", "RATES", "% of par", 0.0, 0.13, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.03125, 0.04, 400_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("UB", "Ultra Treasury Bond Future", "RATES", "% of par", 0.0, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.03125, 0.045, 300_000, "PRIOR_MONTH_END", 0.0, None, "", 4),
+    CommoditySpec("SR3", "3-Month SOFR Future", "RATES", "100 − rate", 0.0, 0.006, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 8, 2500, 0.0025, 0.003, 2_500_000, "THIRD_WEDNESDAY", 0.0, None, "", 4),
+    CommoditySpec("BTC", "Bitcoin Future (CME)", "CRYPTO", "BTC", 0.0, 0.55, 0.0, 0.0, 0.0, 0.0, 1.5, 0.0, 1, "FGHJKMNQUVXZ", 6, 5, 5.0, 0.35, 12_000, "LAST_FRIDAY", 0.0, None, "", 0),
+    CommoditySpec("ETH", "Ether Future (CME)", "CRYPTO", "ETH", 0.0, 0.65, 0.0, 0.0, 0.0, 0.0, 1.6, 0.0, 1, "FGHJKMNQUVXZ", 6, 50, 0.25, 0.40, 8_000, "LAST_FRIDAY", 0.0, None, "", 2),
+    CommoditySpec("DX", "U.S. Dollar Index Future", "FX_INDEX", "index pt", 0.0, 0.07, 0.0, 0.0, 0.0, 0.0, -0.2, 0.0, 1, "HMUZ", 4, 1000, 0.005, 0.03, 30_000, "THIRD_WEDNESDAY", 0.0, None, "", 3),
+    CommoditySpec("VX", "Cboe VIX Future", "VOLATILITY", "vol pt", 0.0, 0.90, 0.0, 0.0, 0.0, 0.0, -3.0, 0.0, 1, "FGHJKMNQUVXZ", 8, 1000, 0.05, 0.25, 250_000, "THIRD_WEDNESDAY", 0.0, None, "", 2),
+    # equity-index futures outside the S&P complex: Eurex, ICE, CME (Nikkei in dollars), HKEX, ICE MSCI
+    CommoditySpec("FESX", "Euro Stoxx 50 Future (Eurex)", "EQUITY_INDEX", "index pt", 0.0, 0.18, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 10, 1.0, 0.08, 1_200_000, "THIRD_FRIDAY", 0.0, None, "", 1, "EUR"),
+    CommoditySpec("FDAX", "DAX Future (Eurex)", "EQUITY_INDEX", "index pt", 0.0, 0.18, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "HMUZ", 4, 25, 0.5, 0.08, 120_000, "THIRD_FRIDAY", 0.0, None, "", 1, "EUR"),
+    CommoditySpec("FTSE", "FTSE 100 Future (ICE)", "EQUITY_INDEX", "index pt", 0.0, 0.14, 0.0, 0.0, 0.0, 0.0, 0.8, 0.0, 1, "HMUZ", 4, 10, 0.5, 0.07, 150_000, "THIRD_FRIDAY", 0.0, None, "", 1, "GBP"),
+    CommoditySpec("NKD", "Nikkei 225 Dollar Future (CME)", "EQUITY_INDEX", "index pt", 0.0, 0.20, 0.0, 0.0, 0.0, 0.0, 0.9, 0.0, 1, "HMUZ", 4, 5, 5.0, 0.07, 40_000, "THIRD_FRIDAY", 0.0, None, "", 0, "USD"),
+    CommoditySpec("HSIF", "Hang Seng Index Future (HKEX)", "EQUITY_INDEX", "index pt", 0.0, 0.24, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1, "FGHJKMNQUVXZ", 3, 50, 1.0, 0.08, 200_000, "MONTH_END_MINUS_2", 0.0, None, "", 0, "HKD"),
+    CommoditySpec("MME", "MSCI Emerging Markets Index Future (ICE)", "EQUITY_INDEX", "index pt", 0.0, 0.18, 0.0, 0.0, 0.0, 0.0, 1.1, 0.0, 1, "HMUZ", 4, 50, 0.25, 0.07, 80_000, "THIRD_FRIDAY", 0.0, None, "", 2, "USD"),
+    CommoditySpec("MFS", "MSCI EAFE Index Future (ICE)", "EQUITY_INDEX", "index pt", 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.9, 0.0, 1, "HMUZ", 4, 50, 0.1, 0.06, 40_000, "THIRD_FRIDAY", 0.0, None, "", 2, "USD"),
+    # government bond futures outside the dollar: Eurex (EUR), ICE (GBP), OSE (JPY); priced off the local 2/5/10/30-year with the local carry
+    CommoditySpec("FGBS", "Euro-Schatz Future (Eurex)", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.005, 0.006, 500_000, "DAY_8", 0.0, None, "", 3, "EUR"),
+    CommoditySpec("FGBM", "Euro-Bobl Future (Eurex)", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.01, 0.012, 600_000, "DAY_8", 0.0, None, "", 2, "EUR"),
+    CommoditySpec("FGBL", "Euro-Bund Future (Eurex)", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.01, 0.02, 800_000, "DAY_8", 0.0, None, "", 2, "EUR"),
+    CommoditySpec("FGBX", "Euro-Buxl Future (Eurex)", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.02, 0.04, 100_000, "DAY_8", 0.0, None, "", 2, "EUR"),
+    CommoditySpec("GLT", "Long Gilt Future (ICE)", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1000, 0.01, 0.02, 150_000, "MONTH_END_MINUS_2", 0.0, None, "", 2, "GBP"),
+    CommoditySpec("JGB", "10-Year JGB Future (OSE)", "RATES", "% of par", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, "HMUZ", 3, 1_000_000, 0.01, 0.012, 40_000, "DAY_20", 0.0, None, "", 2, "JPY"),
 ]
 SPEC_BY_CODE = {s.code: s for s in SPECS}
 
@@ -128,8 +155,17 @@ EVENT_TEMPLATES = {
         "NG": [(-1, "Cold snap forecast lifts heating demand across the Northeast"), (-1, "LNG export terminal returns to service, tightening domestic balance"), (1, "Mild weather outlook cuts heating-demand expectations"), (1, "Producers ramp associated-gas output; storage builds above normal")],
         "RB": [(-1, "Refinery fire knocks out {n} kb/d of gasoline capacity"), (1, "Refiners return from maintenance, product supply rises")],
         "HO": [(-1, "Diesel inventories at multi-year lows ahead of harvest season"), (1, "Distillate exports fall as overseas demand softens")],
+        "TTF": [(-1, "Norwegian gas field outage cuts flows to the Continent by {n} mcm/d"), (-1, "Cold snap across northwest Europe accelerates storage withdrawals"), (-1, "LNG cargoes diverted to Asia as JKM premium widens"),
+                (1, "EU storage fills ahead of schedule; injections outpace the five-year average"), (1, "Mild winter forecast trims European heating demand"), (1, "New LNG import capacity comes online in Germany")],
+        "JKM": [(-1, "Heat wave in Japan and Korea lifts power-sector gas burn"), (-1, "Australian LNG plant trips offline for unplanned maintenance"), (1, "Chinese buyers resell cargoes as domestic demand softens"), (1, "Qatar's expansion trains ramp up, adding {n} mtpa of supply")],
+        "EUA": [(-1, "Commission proposes tightening the annual cap reduction"), (-1, "Coal-to-gas switching stalls as gas prices rise, lifting power-sector emissions"), (1, "Industrial output slump cuts compliance demand for allowances"), (1, "Market Stability Reserve releases fewer allowances than feared")],
     },
     "COMMODITY_METAL": {
+        "NI": [(-1, "Indonesian export policy tightens ore supply"), (-1, "LME nickel stocks fall for a {n}th straight week"), (1, "Indonesian NPI output surge keeps the market in surplus"), (1, "Stainless mills cut production, trimming nickel demand")],
+        "ZNC": [(-1, "Smelter cuts in Europe on power costs tighten refined supply"), (-1, "Mine closure removes {n} kt of annual concentrate"), (1, "Treatment charges rise as concentrate supply improves"), (1, "Galvanised steel demand softens with construction")],
+        "PB": [(-1, "Battery replacement season lifts lead demand"), (1, "Secondary smelters lift output as scrap supply improves")],
+        "SN": [(-1, "Myanmar mining halt cuts concentrate exports"), (-1, "LME tin stocks near record lows"), (1, "Electronics demand slump eases solder consumption")],
+        "TIO": [(-1, "Cyclone disrupts Pilbara shipments; port stocks draw"), (-1, "Chinese steel output rises on infrastructure stimulus"), (1, "Beijing orders steel output cuts to meet emissions targets"), (1, "Simandou volumes ramp up, adding seaborne supply")],
         "GC": [(-1, "Central banks add to gold reserves for a {n}th straight month"), (1, "ETF outflows continue as real yields rise")],
         "SI": [(-1, "Solar manufacturers' silver demand forecast raised"), (1, "Mine restart adds supply in Mexico")],
         "HG": [(-1, "Strike at major Chilean copper mine cuts output"), (-1, "Grid-buildout demand estimates revised up"), (1, "Chinese smelter output rises; exchange inventories build"), (1, "Manufacturing PMI disappoints; metals demand seen slowing")],
@@ -195,7 +231,14 @@ FINANCIAL_SOURCES: Dict[str, Tuple[Optional[str], str]] = {
     "ES": ("SPY", "carry"), "NQ": ("QQQ", "carry"), "RTY": ("IWM", "carry"), "YM": ("DIA", "carry"),
     "ZT": ("UST-2Y", "carry"), "ZF": ("UST-5Y", "carry"), "ZN": ("UST-10Y", "carry"), "ZB": ("UST-30Y", "carry"),
     "SR3": (None, "rate"), "BTC": ("BTC", "carry"), "ETH": ("ETH", "carry"), "DX": ("DXY", "carry"), "VX": ("VIX", "vol"),
+    "FGBS": ("DE-2Y", "carry"), "FGBM": ("DE-5Y", "carry"), "FGBL": ("DE-10Y", "carry"), "FGBX": ("DE-30Y", "carry"), "GLT": ("GB-10Y", "carry"), "JGB": ("JP-10Y", "carry"),
+    "TN": ("UST-10Y", "carry"), "UB": ("UST-30Y", "carry"),
+    "FESX": ("SX5E", "carry"), "FDAX": ("DAX", "carry"), "FTSE": ("UKX", "carry"), "NKD": ("NKY", "carry"), "HSIF": ("HSI", "carry"), "MME": ("MXEF", "carry"), "MFS": ("MXEA", "carry"),
 }
+# the global cash indices the futures ride: index -> (ETF whose price × factor is the level, currency, name, level if the snapshot lacks it)
+GLOBAL_INDICES = {"SX5E": ("FEZ", "EUR", "Euro Stoxx 50", 5400.0), "DAX": ("EWG", "EUR", "DAX 40", 24000.0), "UKX": ("EWU", "GBP", "FTSE 100", 9200.0),
+                  "NKY": ("EWJ", "JPY", "Nikkei 225", 44000.0), "HSI": ("EWH", "HKD", "Hang Seng Index", 26000.0),
+                  "MXEF": ("EEM", "USD", "MSCI Emerging Markets", 1300.0), "MXEA": ("EFA", "USD", "MSCI EAFE", 2700.0)}
 VIX_LONG_RUN, VIX_KAPPA = 19.5, 3.0
 
 
@@ -211,6 +254,13 @@ def expiry_for(spec: CommoditySpec, cal: BusinessCalendar, year: int, month: int
     if spec.expiry_rule == "PRIOR_MONTH_25":
         d = date(year if month > 1 else year - 1, month - 1 if month > 1 else 12, 25)
         return cal.add_business_days(cal.roll_back(d), -3)
+    if spec.expiry_rule == "DAY_8":                       # Eurex: two exchange days before delivery on the 10th
+        return cal.roll_back(date(year, month, 8))
+    if spec.expiry_rule == "DAY_20":                      # OSE JGB: the 20th of the contract month
+        return cal.roll_back(date(year, month, 20))
+    if spec.expiry_rule == "MONTH_END_MINUS_2":           # ICE gilt: two business days before the last business day of the month
+        nxt = date(year + (month // 12), month % 12 + 1, 1)
+        return cal.add_business_days(cal.roll_back(nxt - timedelta(days=1)), -2)
     # PRIOR_MONTH_END: last business day of the month before the contract month
     return cal.roll_back(first - timedelta(days=1))
 
@@ -239,7 +289,7 @@ class CommodityModel:
         cid = contract_id(spec.code, y, m)
         exp = expiry_for(spec, self.cal, y, m)
         return Security(id=cid, name=f"{spec.name} {MONTH_CODES[m-1]}{y%100:02d} ({date(y, m, 1).strftime('%b %Y')})", asset_class="FUTURE",
-                        market="FUTURES", currency="USD", country="US", sector=spec.group, isin=f"XF{seq:09d}F", cusip=f"F{seq:08d}",
+                        market="FUTURES", currency=spec.currency, country={"EUR": "DE", "GBP": "GB", "JPY": "JP", "HKD": "HK"}.get(spec.currency, "US"), sector=spec.group, isin=f"XF{seq:09d}F", cusip=f"F{seq:08d}",
                         adv=spec.adv, spread_bps=0.0, liquidity_tier="LARGE", underlying=spec.code, underlying_class=spec.group,
                         contract_month=f"{y}-{m:02d}", multiplier=spec.multiplier, tick_size=spec.tick, expiry=exp.isoformat(),
                         margin_pct=spec.margin_pct, unit=spec.unit, sigma_annual=spec.vol, beta=spec.mkt_beta, lot_size=1)
@@ -319,7 +369,7 @@ class CommodityModel:
                 elif kind == "vol":                       # VIX futures: the level pulled toward its long run over the contract's life
                     curve[f"{y}-{m:02d}"] = round(S + (VIX_LONG_RUN - S) * (1 - math.exp(-VIX_KAPPA * T)), spec.prec)
                 else:
-                    curve[f"{y}-{m:02d}"] = round(S * math.exp((rate_level - q) * T), spec.prec)
+                    curve[f"{y}-{m:02d}"] = round(S * math.exp((float(fin.get("r", rate_level)) - q) * T), max(0, spec.prec))
             self.spot_history[code].append((d.isoformat(), S))
             self.curve_history[code].append((d.isoformat(), curve))
             out[code] = {"spot": S, "curve": curve}

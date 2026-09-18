@@ -47,6 +47,7 @@ class E:
     DIVIDEND_PAID = "DIVIDEND_PAID"
     COUPON_PAID = "COUPON_PAID"
     BOND_MATURED = "BOND_MATURED"
+    MBS_PAID_DOWN = "MBS_PAID_DOWN"              # a delivered pool returned principal (scheduled + prepayments)
     INTEREST_ACCRUED = "INTEREST_ACCRUED"
     INTEREST_SETTLED = "INTEREST_SETTLED"
     LEDGER_POSTED = "LEDGER_POSTED"
