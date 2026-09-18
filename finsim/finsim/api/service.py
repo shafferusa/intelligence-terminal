@@ -146,9 +146,8 @@ class Service:
         cap = _capital(capital, job)
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
         if treasury:
-            # the whole capital sits in the treasury; the first book starts empty and draws from it
-            w.fund_treasury("USD", cap, "starting capital")
-            pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, D(0), "USD", bench, realism, mode, job)
+            # the save's first and only book is the Treasury: it holds the whole capital and the books the player opens draw from it
+            pf = w.create_portfolio("Treasury", World.TREASURY_TYPE, cap, "USD", bench, realism, mode, job)
         else:
             pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
         return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode, "treasury": float(cap) if treasury else 0.0}
@@ -299,7 +298,7 @@ class Service:
                          "quote_updates": w.quote_updates(self.now() if self.now else None),
                          # invented desks (private equity deal flow, investment banking mandates) run only where the market itself is simulated
                          "made_up_desks": getattr(w, "market_source", "SIMULATED") != "REAL",
-                         "treasury": {"balances": dict(w.treasury_cash), "total_usd": w.treasury_cash.get("USD", ZERO)},
+                         "treasury": self._treasury_state(w),
                          "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
                                           "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
                                           "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),
@@ -328,15 +327,19 @@ class Service:
         if job not in JOBS:
             raise CommandError(f"unknown job {job}")
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
-        if from_treasury:
-            have = w.treasury_cash.get("USD", ZERO)
+        ptype = World.TREASURY_TYPE if str(portfolio_type).upper() == World.TREASURY_TYPE else (portfolio_type if job == "SANDBOX" else job)
+        if ptype == World.TREASURY_TYPE and w.treasury_book() is not None:
+            raise CommandError("this save already has a Treasury book")
+        if from_treasury and ptype != World.TREASURY_TYPE:
+            tb = w.treasury_book()
+            have = w.spare_cash(tb, "USD") if tb else ZERO
             cap = min(_capital(capital, job), have) if capital not in (None, "") else min(_capital(None, job), have)
-            pf = w.create_portfolio(name, portfolio_type if job == "SANDBOX" else job, D(0), "USD", bench, realism, mode, job)
+            pf = w.create_portfolio(name, ptype, D(0), "USD", bench, realism, mode, job)
             if cap > 0:
                 w.allocate_from_treasury(pf.id, "USD", cap)
             return {"portfolio_id": pf.id, "allocated": float(cap)}
-        cap = _capital(capital, job)
-        pf = w.create_portfolio(name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
+        cap = D(0) if capital == 0 else _capital(capital, job)                 # an explicit zero is an empty book (a Treasury to be funded later)
+        pf = w.create_portfolio(name, ptype, cap, "USD", bench, realism, mode, job)
         return {"portfolio_id": pf.id, "allocated": 0.0}
 
     def contribute(self, world_id: str, portfolio_id: str, amount: float, currency: str = "USD") -> Dict:
@@ -670,11 +673,17 @@ class Service:
 
     # ------------------------------------------------------------------ portfolio
     # ------------------------------------------------------------------ the treasury
+    def _treasury_state(self, w) -> Dict:
+        tb = w.treasury_book()
+        bal = {c: a.balance for c, a in tb.cash.items()} if tb else {}
+        for c, v in w.treasury_cash.items():                               # a legacy pool, if the save has one
+            bal[c] = bal.get(c, ZERO) + v
+        return {"book_id": tb.id if tb else None, "balances": bal, "total_usd": bal.get("USD", ZERO), "spare_usd": (w.spare_cash(tb, "USD") if tb else w.treasury_cash.get("USD", ZERO))}
+
     def treasury(self, world_id: str) -> Dict:
         w = self.world(world_id)
-        books = [{"id": p.id, "name": p.name, "cash": {c: a.balance for c, a in p.cash.items()}, "spare_usd": max(ZERO, min(p.cash_account("USD").balance, w.trading.projected_cash(p, "USD")))}
-                 for p in w.portfolios.values()]
-        return jsonable({"balances": dict(w.treasury_cash), "total_usd": w.treasury_cash.get("USD", ZERO), "books": books, "log": w.treasury_log[-40:]})
+        books = [{"id": p.id, "name": p.name, "type": p.portfolio_type, "cash": {c: a.balance for c, a in p.cash.items()}, "spare_usd": w.spare_cash(p, "USD")} for p in w.portfolios.values()]
+        return jsonable({**self._treasury_state(w), "books": books, "log": w.treasury_log[-40:]})
 
     def treasury_command(self, world_id: str, action: str, body: Dict) -> Dict:
         w = self.world(world_id)
@@ -696,7 +705,7 @@ class Service:
         name = pf.name
         w.delete_portfolio(portfolio_id)
         self.log.info("world %s: book %s (%s) deleted", world_id, portfolio_id, name)
-        return {"deleted": portfolio_id, "name": name, "portfolios": [{"id": p.id, "name": p.name} for p in w.portfolios.values()], "treasury": jsonable(dict(w.treasury_cash))}
+        return {"deleted": portfolio_id, "name": name, "portfolios": [{"id": p.id, "name": p.name} for p in w.portfolios.values()], "treasury": jsonable(self._treasury_state(w))}
 
     def overall(self, world_id: str) -> Dict:
         """The whole save as one big book: every book's NAV and P&L side by side, positions added up across books
@@ -739,13 +748,16 @@ class Service:
         for r in rows:
             g = by_class.setdefault(r["asset_class"] or "OTHER", {"market_value": ZERO, "count": 0})
             g["market_value"] += r["market_value"]; g["count"] += 1
-        treasury_total = sum((v for v in w.treasury_cash.values()), ZERO)
-        tot["treasury"] = treasury_total
-        tot["nav_with_treasury"] = tot["nav"] + treasury_total
-        capital_total = tot["contributed"] + treasury_total
+        ts = self._treasury_state(w)
+        legacy = sum((v for v in w.treasury_cash.values()), ZERO)
+        tot["treasury"] = ts["total_usd"]
+        tot["nav_with_treasury"] = tot["nav"] + legacy                     # the Treasury book is already one of the books
+        capital_total = tot["contributed"] + legacy
         tot["return_since_inception"] = float(tot["nav_with_treasury"] / capital_total - 1) if capital_total else 0.0
+        for b in books:
+            b["is_treasury"] = b["id"] == ts["book_id"]
         return jsonable({"world": {"id": w.id, "name": w.name, "date": w.current_date, "market_source": getattr(w, "market_source", "SIMULATED")}, "totals": tot, "books": books,
-                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class, "treasury": dict(w.treasury_cash)})
+                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class, "treasury": ts})
 
     def dashboard(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)

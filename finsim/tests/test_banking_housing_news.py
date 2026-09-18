@@ -215,37 +215,61 @@ class AllBooksTest(unittest.TestCase):
 
 
 class TreasuryTest(unittest.TestCase):
-    def test_capital_sits_in_the_treasury_and_books_draw_from_it(self):
+    def test_the_treasury_is_the_first_book_and_the_others_draw_from_it(self):
         s = Service(EventStore(":memory:"))
         r = s.create_world("firm", 42, start_date="2026-01-05", capital=50_000_000, treasury=True)
-        w = s.worlds[r["world_id"]]; p1 = r["portfolio_id"]
-        self.assertEqual(r["treasury"], 50_000_000.0)
-        self.assertEqual(w.treasury_cash["USD"], D(50_000_000)); self.assertEqual(w.portfolio(p1).cash_account("USD").balance, D(0))
-        self.assertEqual(s.world_info(w.id)["treasury"]["total_usd"], 50_000_000.0)
+        w = s.worlds[r["world_id"]]; tid = r["portfolio_id"]
+        tb = w.treasury_book()
+        self.assertIsNotNone(tb); self.assertEqual(tb.id, tid); self.assertEqual(tb.name, "Treasury"); self.assertEqual(tb.portfolio_type, "TREASURY")
+        self.assertEqual(len(w.portfolios), 1, "no other book at the start"); self.assertEqual(w.name, "firm")
+        self.assertEqual(tb.cash_account("USD").balance, D(50_000_000))
+        info = s.world_info(w.id)["treasury"]
+        self.assertEqual(info["book_id"], tid); self.assertEqual(info["total_usd"], 50_000_000.0); self.assertEqual(info["spare_usd"], 50_000_000.0)
         with self.assertRaises(CommandError):
-            w.allocate_from_treasury(p1, "USD", 60_000_000)                  # more than it holds
-        s.treasury_command(w.id, "allocate", {"portfolio_id": p1, "amount": 20_000_000})
-        pf1 = w.portfolio(p1)
-        self.assertEqual(pf1.cash_account("USD").balance, D(20_000_000)); self.assertEqual(pf1.contributed_capital, D(20_000_000)); self.assertEqual(w.treasury_cash["USD"], D(30_000_000))
-        # a second book draws its capital from the treasury; a third with fresh money leaves it alone
-        b2 = s.create_portfolio(w.id, "Bonds", "PERSONAL", 10_000_000, "PROFESSIONAL", "SANDBOX", None, from_treasury=True)
-        self.assertEqual(b2["allocated"], 10_000_000.0); self.assertEqual(w.treasury_cash["USD"], D(20_000_000))
-        b3 = s.create_portfolio(w.id, "Fresh", "PERSONAL", 5_000_000, "PROFESSIONAL", "SANDBOX", None)
-        self.assertEqual(w.treasury_cash["USD"], D(20_000_000)); self.assertEqual(w.portfolio(b3["portfolio_id"]).cash_account("USD").balance, D(5_000_000))
-        # a book can return only what it can spare; deleting a flat book sweeps its cash back
-        s.place_order(w.id, p1, "AAPL", "BUY", 1000)
+            w.delete_portfolio(tid)                                             # the treasury cannot be deleted
+        with self.assertRaises(CommandError):
+            w.allocate_from_treasury(tid, "USD", 1_000_000)                     # not into itself
+        # books draw their capital from the treasury
+        b2 = s.create_portfolio(w.id, "Equity - Long", "PERSONAL", 20_000_000, "PROFESSIONAL", "SANDBOX", None, from_treasury=True)
+        p2 = b2["portfolio_id"]; pf2 = w.portfolio(p2)
+        self.assertEqual(b2["allocated"], 20_000_000.0); self.assertEqual(pf2.cash_account("USD").balance, D(20_000_000)); self.assertEqual(pf2.contributed_capital, D(20_000_000))
+        self.assertEqual(tb.cash_account("USD").balance, D(30_000_000)); self.assertEqual(tb.contributed_capital, D(30_000_000))
+        with self.assertRaises(CommandError):
+            w.allocate_from_treasury(p2, "USD", 40_000_000)                     # more than it can spare
+        s.treasury_command(w.id, "allocate", {"portfolio_id": p2, "amount": 5_000_000})
+        self.assertEqual(tb.cash_account("USD").balance, D(25_000_000)); self.assertEqual(pf2.cash_account("USD").balance, D(25_000_000))
+        # fresh capital goes into the treasury; a second treasury is refused
+        s.treasury_command(w.id, "fund", {"amount": 10_000_000})
+        self.assertEqual(tb.cash_account("USD").balance, D(35_000_000))
+        with self.assertRaises(CommandError):
+            s.create_portfolio(w.id, "T2", "TREASURY", 1, "PROFESSIONAL", "SANDBOX", None)
+        # a book returns only what it can spare; a deleted flat book's cash comes back
+        s.place_order(w.id, p2, "AAPL", "BUY", 1000)
         w.advance(1)
         with self.assertRaises(CommandError):
-            w.return_to_treasury(p1, "USD", 20_000_000)
-        w.return_to_treasury(p1, "USD", 5_000_000)
-        self.assertEqual(w.treasury_cash["USD"], D(25_000_000)); self.assertEqual(pf1.contributed_capital, D(15_000_000))
+            w.return_to_treasury(p2, "USD", 25_000_000)
+        w.return_to_treasury(p2, "USD", 5_000_000)
+        self.assertEqual(tb.cash_account("USD").balance, D(40_000_000)); self.assertEqual(pf2.contributed_capital, D(20_000_000))
+        b3 = s.create_portfolio(w.id, "Bonds", "PERSONAL", 3_000_000, "PROFESSIONAL", "SANDBOX", None, from_treasury=True)
+        self.assertEqual(tb.cash_account("USD").balance, D(37_000_000))
         s.delete_portfolio(w.id, b3["portfolio_id"])
-        self.assertEqual(w.treasury_cash["USD"], D(30_000_000))
+        self.assertEqual(tb.cash_account("USD").balance, D(40_000_000)); self.assertNotIn(b3["portfolio_id"], w.portfolios)
         o = s.overall(w.id)
-        self.assertEqual(o["totals"]["treasury"], 30_000_000.0); self.assertAlmostEqual(o["totals"]["nav_with_treasury"], o["totals"]["nav"] + 30_000_000.0, places=2)
+        self.assertTrue(any(b["is_treasury"] for b in o["books"])); self.assertEqual(o["totals"]["treasury"], 40_000_000.0)
+        self.assertAlmostEqual(o["totals"]["nav_with_treasury"], o["totals"]["nav"], places=2, msg="the treasury is one of the books, counted once")
         t = s.treasury(w.id)
-        self.assertEqual(t["total_usd"], 30_000_000.0); self.assertTrue(any(l["kind"] == "TO_TREASURY" for l in t["log"]))
-        assert_ledger_invariants(self, w, pf1)
+        self.assertEqual(t["total_usd"], 40_000_000.0); self.assertTrue(any(l["kind"] == "TO_TREASURY" for l in t["log"]))
+        assert_ledger_invariants(self, w, pf2); assert_ledger_invariants(self, w, tb)
         w2 = World.load(w.store, w.id)
-        self.assertEqual(w2.replay_errors, []); self.assertEqual(w2.treasury_cash["USD"], D(30_000_000)); self.assertEqual(len(w2.treasury_log), len(w.treasury_log))
-        self.assertEqual(w2.ledgers[p1].nav(), w.ledgers[p1].nav())
+        self.assertEqual(w2.replay_errors, []); self.assertEqual(w2.treasury_book().cash_account("USD").balance, D(40_000_000))
+        self.assertEqual(w2.ledgers[p2].nav(), w.ledgers[p2].nav()); self.assertEqual(len(w2.treasury_log), len(w.treasury_log))
+        # a save without a treasury book: deleting a book with cash is refused until one exists
+        s2 = Service(EventStore(":memory:"))
+        r2 = s2.create_world("old", 42, start_date="2026-01-05", capital=10_000_000)
+        w3 = s2.worlds[r2["world_id"]]
+        b4 = s2.create_portfolio(w3.id, "Spare", "PERSONAL", 1_000_000, "PROFESSIONAL", "SANDBOX", None)
+        with self.assertRaises(CommandError):
+            w3.delete_portfolio(b4["portfolio_id"])
+        s2.create_portfolio(w3.id, "Treasury", "TREASURY", 0, "PROFESSIONAL", "SANDBOX", None)
+        s2.delete_portfolio(w3.id, b4["portfolio_id"])
+        self.assertEqual(w3.treasury_book().cash_account("USD").balance, D(1_000_000))
