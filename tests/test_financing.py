@@ -14,7 +14,9 @@ def explain_reconciles(pf):
 
 
 def nearest_dividend_payer(w):
-    cas = sorted((c for c in w.corporate_actions.values() if c.status == "DECLARED" and w.market.lending.state.get(c.security_id)), key=lambda c: c.ex_date)
+    # an instruction entered today fills at the next session, so the dividend must go ex after that session to be earned
+    first_fill = w.calendar.next_business_day(w.current_date).isoformat()
+    cas = sorted((c for c in w.corporate_actions.values() if c.status == "DECLARED" and c.ex_date > first_fill and w.market.lending.state.get(c.security_id)), key=lambda c: c.ex_date)
     return cas[0]
 
 
@@ -571,8 +573,8 @@ class DefinitionOfDoneTest(unittest.TestCase):
         self.assertTrue(all(s.explain["repo_financing"] < 0 for s in snaps), "repo interest every day")
         self.assertTrue(all(s.explain["borrow_fees"] != 0 for s in snaps))
         self.assertTrue(any(s.explain["equities"] < 0 or s.explain["rates"] != 0 for s in snaps))
-        # 20-21: close the short, shares returned
-        cover = w.place_order(pf.id, tkr, "BUY", short_qty)
+        # 20-21: close the short (whatever is still short: a lender recall may already have bought part of it in), shares returned
+        cover = w.place_order(pf.id, tkr, "BUY", -pf.positions[tkr].quantity)
         w.advance(1)
         self.assertEqual(pf.positions[tkr].quantity, D(0))
         self.assertNotEqual(pf.trades[cover.trade_ids[0]].realized_pnl, D(0))

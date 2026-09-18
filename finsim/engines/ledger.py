@@ -87,6 +87,14 @@ CHART = {
     "5910": ("Performance Fees (to the manager)", "EXPENSE"),
     "5950": ("Interest on Long-Term Debt", "EXPENSE"),
     "5320": ("Storage & Insurance (physical inventory)", "EXPENSE"),
+    # private credit
+    "1170": ("Private Credit Loans (par)", "ASSET"),
+    "1175": ("Private Credit Valuation Adjustment (discount & MTM)", "ASSET"),
+    "1225": ("Accrued Interest Receivable - Private Credit", "ASSET"),
+    "4320": ("Private Credit Interest Income", "INCOME"),
+    "4330": ("Private Credit Fees", "INCOME"),
+    "4340": ("Private Credit Mark-to-Market & Realised", "INCOME"),
+    "5350": ("Private Credit Losses", "EXPENSE"),
 }
 
 DEBIT_NORMAL = {"ASSET", "EXPENSE"}

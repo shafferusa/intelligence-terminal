@@ -509,6 +509,7 @@ class Portfolio:
     collateral_received: Dict[str, Dict] = field(default_factory=dict)  # reference -> {security_id, quantity, value}
     strategies: Dict[str, Strategy] = field(default_factory=dict)
     otc_trades: Dict[str, Any] = field(default_factory=dict)     # OTCTrade (domain.otc_models)
+    private_loans: Dict[str, Any] = field(default_factory=dict)  # PrivateLoan (engines.private_credit)
     rfqs: Dict[str, Any] = field(default_factory=dict)           # RFQ
     csas: Dict[str, Any] = field(default_factory=dict)           # dealer -> CSA
     risk_history: List[Dict] = field(default_factory=list)      # daily RISK_SNAPSHOT payloads

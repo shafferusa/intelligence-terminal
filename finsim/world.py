@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import math
 from dataclasses import asdict
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Callable, Dict, List, Optional
 
@@ -69,7 +69,7 @@ class World:
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
         from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
-        from .engines import investors, clients, treasury, institutions, commodity_desk
+        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.settlement = settlement.SettlementEngine(self)
@@ -92,6 +92,9 @@ class World:
         self.institutions = institutions.InstitutionEngine(self)
         self.lenddesk = seclending.LendDeskEngine(self)
         self.cdesk = commodity_desk.CommodityDeskEngine(self)
+        self.pcredit = private_credit.PrivateCreditEngine(self)
+        from .engines import playbook
+        self.playbook = playbook.Playbook(self)
         self.scenario = "NONE"
         self.scenario_log: List[Dict] = []
         self.save_version = SAVE_VERSION
@@ -194,6 +197,7 @@ class World:
     # ------------------------------------------------------------------ core handlers
     def _register_core(self) -> None:
         self.on(E.WORLD_CREATED, World._h_world_created)
+        self.on(E.REAL_HISTORY_LOADED, World._h_real_history)
         self.on(E.PORTFOLIO_CREATED, World._h_portfolio_created)
         self.on(E.CAPITAL_CONTRIBUTED, World._h_capital)
         self.on(E.MARKET_CLOSE, World._h_market_close)
@@ -222,6 +226,7 @@ class World:
         self.institutions.register()
         self.lenddesk.register()
         self.cdesk.register()
+        self.pcredit.register()
         self.on(E.SCENARIO_EVENT, World._h_scenario_event)
         for et in (E.ECONOMIC_RELEASE, E.EARNINGS_REPORTED, E.RATING_CHANGED, E.ISSUER_DEFAULTED):
             self.on(et, lambda world, ev: None)
@@ -247,7 +252,32 @@ class World:
                                    prehistory_days=int(p.get("prehistory_days", 260)),
                                    initial_regime=p.get("initial_regime", "NORMAL_GROWTH"))
         self.market.bar_provider = lambda sid: self.options.option_bar(self.securities[sid])
+        self.market_source = p.get("market_source", "SIMULATED")
         self.market.bootstrap()
+        if self.market_source == "REAL":
+            from .engines.realfeed import RealFeed, equity_symbols_for
+            self.market.real_feed = RealFeed(equity_symbols_for(self.securities))
+
+    def _h_real_history(self, ev: Event) -> None:
+        h = ev.payload["history"]
+        self.market.real_history = h
+        self.market.apply_real_history(h)
+
+    def real_market_ready(self, d: date) -> Optional[str]:
+        """For a world that tracks the market: None when `d` can be processed, else why not (no close published yet)."""
+        if getattr(self, "market_source", "SIMULATED") != "REAL":
+            return None
+        if self.market.real_targets(d) is not None:
+            return None
+        feed = self.market.real_feed
+        if feed is not None:
+            try:
+                feed.refresh("1mo")
+            except Exception as e:  # offline: say so, keep the log untouched
+                return f"could not reach the market data feed ({e.__class__.__name__}); the session for {d.isoformat()} waits until it can"
+            if feed.targets_for(d) is not None:
+                return None
+        return f"the real market has not closed for {d.isoformat()} yet (closes are published after the session); the world waits for it"
 
     def _h_day_started(self, ev: Event) -> None:
         self.current_date = date.fromisoformat(ev.payload["date"])
@@ -351,7 +381,7 @@ class World:
     @classmethod
     def create(cls, world_id: str, name: str, seed: int, start_date: date, store=None, base_currency: str = "USD",
                prehistory_days: int = 260, initial_regime: str = "NORMAL_GROWTH", clock: Optional[ClockConfig] = None,
-               scenario: str = "NONE") -> "World":
+               scenario: str = "NONE", market_source: str = "SIMULATED", real_history: Optional[Dict] = None) -> "World":
         w = cls(world_id, store)
         clock = clock or ClockConfig()
         if store is not None:
@@ -359,8 +389,21 @@ class World:
         w.emit(E.WORLD_CREATED, {"name": name, "seed": seed, "start_date": start_date.isoformat(), "base_currency": base_currency,
                                  "prehistory_days": prehistory_days, "initial_regime": initial_regime,
                                  "settlement_cycles": SettlementConfig().cycles, "clock_mode": clock.mode, "timezone": clock.timezone,
-                                 "update_time": clock.update_time, "scenario": scenario, "save_version": SAVE_VERSION, "engine_version": ENGINE_VERSION},
+                                 "update_time": clock.update_time, "scenario": scenario, "save_version": SAVE_VERSION, "engine_version": ENGINE_VERSION,
+                                 "market_source": market_source},
                 sim_date=start_date.isoformat())
+        if market_source == "REAL":
+            # the real closes the world starts from, stored once so replay never needs the network
+            if real_history is None:
+                from .engines.realfeed import RealFeed, equity_symbols_for
+                feed = RealFeed(equity_symbols_for(w.securities))
+                feed.refresh("1y", force=True)
+                real_history = feed.history(start_date - timedelta(days=420), date.fromisoformat(feed.latest_date() or start_date.isoformat()))
+            if not real_history.get("equities", {}).get("SPY"):
+                raise CommandError("no real market data could be fetched (is the machine online?)")
+            if start_date.isoformat() not in real_history["equities"]["SPY"]:
+                raise CommandError(f"the real market has no close for {start_date.isoformat()}: pick a past session, or today after the close")
+            w.emit(E.REAL_HISTORY_LOADED, {"history": real_history}, sim_date=start_date.isoformat())
         # The start date is the first processed day: the world opens with a briefing already waiting.
         w.current_date = w.calendar.prev_business_day(start_date)
         w.simulation.run_daily_process(start_date)
@@ -459,6 +502,12 @@ class World:
 
     def close_repo(self, portfolio_id: str, repo_id: str):
         return self._cmd(self.repo.close, self.portfolio(portfolio_id), repo_id)
+
+    def commit_private_credit(self, portfolio_id: str, deal_id: str, amount):
+        return self._cmd(self.pcredit.commit, self.portfolio(portfolio_id), deal_id, amount)
+
+    def sell_private_credit(self, portfolio_id: str, loan_id: str, amount):
+        return self._cmd(self.pcredit.sell, self.portfolio(portfolio_id), loan_id, amount)
 
     def repo_post_collateral(self, portfolio_id: str, repo_id: str, security_id: str, quantity):
         return self._cmd(self.repo.post_collateral, self.portfolio(portfolio_id), repo_id, self.security(security_id), quantity)
@@ -649,6 +698,11 @@ class World:
         closed = []
         import time as _time
         for _ in range(max(1, days)):
+            why = self.real_market_ready(self.calendar.next_business_day(self.current_date))
+            if why:
+                if closed:
+                    break
+                raise CommandError(why)
             _t0 = _time.perf_counter()
             _n0 = len(self.events)
             closed.append(self.simulation.advance_one_day())
@@ -665,6 +719,8 @@ class World:
         closed = []
         import time as _time
         while self.current_date < target:
+            if self.real_market_ready(self.calendar.next_business_day(self.current_date)):
+                break            # a world that tracks the market waits for the real close
             _t0, _n0 = _time.perf_counter(), len(self.events)
             closed.append(self.simulation.advance_one_day())
             self.run_log.append({"date": closed[-1], "events": len(self.events) - _n0, "ms": round((_time.perf_counter() - _t0) * 1000, 1)})

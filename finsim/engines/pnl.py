@@ -19,7 +19,7 @@ from ..engines.pricing import Instrument
 from ..money import D, money, ZERO
 
 PNL_ACCOUNTS = ["4000", "4100", "4200", "4300", "4350", "4400", "4500", "4600", "4650", "4700", "4800", "4900", "4910", "5000", "5100", "5300", "5400", "5500", "5600", "5700", "5800",
-                "4360", "4980", "5310", "5900", "5910", "5950", "5320"]
+                "4360", "4980", "5310", "5900", "5910", "5950", "5320", "4320", "4330", "4340", "5350"]
 
 
 class PnLEngine:
@@ -144,6 +144,7 @@ class PnLEngine:
         otc_assets = led.balance("1800")
         otc_liabilities = led.balance("2800")
         operating_assets = led.balance("1900")
+        private_credit = sum((money(l.par * D(repr(l.price))) + l.accrued_interest for l in getattr(pf, "private_loans", {}).values() if l.status in ("OPEN", "DEFAULTED")), ZERO)
         vm_received = led.balance("2450")
         long_exp = sum((p.market_value for p in pf.positions.values() if p.quantity > 0 and not p.is_future), ZERO)
         short_exp = sum((-p.market_value for p in pf.positions.values() if p.quantity < 0 and not p.is_future), ZERO)
@@ -157,14 +158,14 @@ class PnLEngine:
                     fut_long += notional
                 else:
                     fut_short += notional
-        nav = (cash_base + mv + recv + margin + collateral_posted + reverse_repo + fx_forwards + otc_assets + operating_assets
+        nav = (cash_base + mv + recv + margin + collateral_posted + reverse_repo + fx_forwards + otc_assets + operating_assets + private_credit
                - otc_liabilities - vm_received - pay - repo - margin_loan)
         unreal = sum((p.unrealized_pnl for p in pf.positions.values() if not p.is_future), ZERO)
         gross = long_exp + short_exp + fut_long + fut_short
         return {"nav": nav, "ledger_nav": led.nav(), "cash": cash, "cash_base": cash_base, "market_value": mv, "receivables": recv, "payables": pay,
                 "margin_deposits": margin, "collateral_posted": collateral_posted, "reverse_repo": reverse_repo, "fx_forwards": fx_forwards,
                 "repo_borrowing": repo, "margin_loan": margin_loan, "short_market_value": -short_exp, "otc_assets": otc_assets,
-                "otc_liabilities": otc_liabilities, "vm_received": vm_received, "operating_assets": operating_assets,
+                "otc_liabilities": otc_liabilities, "vm_received": vm_received, "operating_assets": operating_assets, "private_credit": private_credit,
                 "unrealized": unreal, "realized": led.balance("4000") + led.balance("4400"), "long_exposure": long_exp + fut_long,
                 "short_exposure": short_exp + fut_short, "futures_long": fut_long, "futures_short": fut_short,
                 "gross_exposure": gross, "net_exposure": long_exp + fut_long - short_exp - fut_short,
@@ -210,7 +211,8 @@ class PnLEngine:
                        "options": buckets["options"], "fx": fx,
                        "dividends": d["4200"], "manufactured_dividends": -d["5400"], "bond_interest": bond_int, "cash_interest": cash_int,
                        "borrow_fees": borrow, "repo_financing": repo_fin, "margin_financing": -d["5600"], "fees": -d["5000"] - d["5800"],
-                       "lending_income": d["4360"] - d["5310"], "fund_fees": -d["5900"] - d["5910"], "operating": d["4980"] - d["5950"], "storage": -d["5320"], "_balances": balances}
+                       "lending_income": d["4360"] - d["5310"], "fund_fees": -d["5900"] - d["5910"], "operating": d["4980"] - d["5950"], "storage": -d["5320"],
+                       "private_credit": d["4320"] + d["4330"] + d["4340"] - d["5350"], "_balances": balances}
             day_pnl = sum((v for k, v in explain.items() if not k.startswith("_")), ZERO)
             greek_attr = self.greek_attribution(pf, buckets["options"])
             prev_nav = prev.nav if prev else ZERO

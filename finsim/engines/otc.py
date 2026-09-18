@@ -33,7 +33,10 @@ from ..engines.pricing import interp_rate
 from ..money import D, money, ZERO
 
 RATES_PRODUCTS = ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION")
-PFE_ADDON = {"IRS": 0.006, "FRA": 0.002, "CAP": 0.004, "FLOOR": 0.004, "SWAPTION": 0.004, "XCCY": 0.030, "TRS": 0.120, "CDS": 0.050, "COMMODITY_SWAP": 0.100}
+PFE_ADDON = {"IRS": 0.006, "FRA": 0.002, "CAP": 0.004, "FLOOR": 0.004, "SWAPTION": 0.004, "XCCY": 0.030, "TRS": 0.120, "CDS": 0.050, "COMMODITY_SWAP": 0.100,
+             "EQUITY_OPTION": 0.080, "FX_OPTION": 0.050, "EQUITY_FORWARD": 0.100, "COMMODITY_FORWARD": 0.100, "FX_FORWARD": 0.030}
+FX_VOL = {"EUR": 0.075, "GBP": 0.085, "JPY": 0.095, "CHF": 0.080, "CAD": 0.065, "AUD": 0.105}          # annualised, normal regime
+FX_VOL_REGIME = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.0, "RATE_HIKING": 1.2, "RECESSION": 1.5, "LIQUIDITY_STRESS": 2.2}
 TRS_BASE_SPREAD_BPS = {"NORMAL_GROWTH": 45.0, "RATE_CUTTING": 40.0, "RATE_HIKING": 60.0, "RECESSION": 90.0, "LIQUIDITY_STRESS": 180.0}
 CSA_CALL_GRACE_CYCLES = 1
 DEFAULT_RECOVERY = 0.4
@@ -178,7 +181,107 @@ class OTCEngine:
                   "pd_1y": min(0.99, h)}
         elif p == "COMMODITY_SWAP":
             pv, an, st = self._commodity_value(t, asof, st)
+        elif p == "EQUITY_OPTION":
+            pv, an = self._equity_option_value(t, asof)
+        elif p == "FX_OPTION":
+            pv, an = self._fx_option_value(t, asof)
+        elif p in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            pv, an = self._forward_value(t, asof)
         return money(D(repr(pv))), an, st
+
+    # ------------------------------------------------------------------ OTC options and forwards
+    def _eq_inputs(self, sid: str, T: float) -> Tuple[float, float, float]:
+        """(spot, risk-free rate, dividend yield) for an equity-style underlying, SPX included."""
+        w = self.w
+        S = w.options.underlying_level(sid) if hasattr(w, "options") and (sid == "SPX" or sid in w.securities) else _f(w.market.last_bar(sid).close)
+        c = self.curve()
+        r = -math.log(max(1e-9, px.df(c, max(T, 1 / 365)))) / max(T, 1 / 365)
+        src = "SPY" if sid == "SPX" else sid
+        q = float(w.securities[src].dividend_yield or 0.0)
+        return S, r, q
+
+    def _eq_vol(self, sid: str, K: float, S: float, r: float, q: float, T: float) -> float:
+        w = self.w
+        vs = getattr(w.market, "vol", None)
+        if vs is not None and sid in getattr(vs, "state", {}):
+            return vs.iv(sid, K, S * math.exp((r - q) * T), T)
+        src = "SPY" if sid == "SPX" else sid
+        return max(0.08, float(w.securities[src].sigma_annual or 0.25))
+
+    def _equity_option_value(self, t: OTCTrade, asof: date) -> Tuple[float, Dict]:
+        from . import options_pricing as op
+        T_ = t.terms
+        Ty = px.years(asof, date.fromisoformat(t.maturity))
+        S, r, q = self._eq_inputs(T_["security_id"], Ty)
+        K, units = _f(T_["strike"]), _f(T_["units"])
+        sign = 1.0 if T_["buyer"] else -1.0
+        if Ty <= 0:
+            intrinsic = max(0.0, S - K) if T_["option_type"] == "C" else max(0.0, K - S)
+            return sign * units * intrinsic, {"price": S, "strike": K, "intrinsic": intrinsic, "delta_units": 0.0}
+        sigma = self._eq_vol(T_["security_id"], K, S, r, q, Ty)
+        prem = op.bsm(T_["option_type"], S, K, Ty, r, q, sigma)
+        g = op.bsm_greeks(T_["option_type"], S, K, Ty, r, q, sigma)
+        return sign * units * prem, {"price": S, "strike": K, "premium_per_unit": prem, "iv": sigma, "delta_units": sign * units * g["delta"],
+                                    "gamma_units": sign * units * g["gamma"], "vega": sign * units * g["vega"], "theta": sign * units * g["theta"],
+                                    "intrinsic": max(0.0, (S - K) if T_["option_type"] == "C" else (K - S)), "days_to_expiry": (date.fromisoformat(t.maturity) - asof).days}
+
+    def fx_vol(self, ccy: str) -> float:
+        return FX_VOL.get(ccy, 0.09) * FX_VOL_REGIME.get(self.w.market.state.regime, 1.0)
+
+    def _fx_option_value(self, t: OTCTrade, asof: date) -> Tuple[float, Dict]:
+        from . import options_pricing as op
+        w = self.w
+        T_ = t.terms
+        ccy = T_["ccy"]
+        Ty = px.years(asof, date.fromisoformat(t.maturity))
+        S = w.market.fx.spot[ccy]                                  # USD per unit of foreign
+        K, amount = _f(T_["strike"]), _f(T_["amount"])
+        sign = 1.0 if T_["buyer"] else -1.0
+        if Ty <= 0:
+            intrinsic = max(0.0, S - K) if T_["option_type"] == "C" else max(0.0, K - S)
+            return sign * amount * intrinsic, {"spot": S, "strike": K, "intrinsic": intrinsic}
+        c = self.curve()
+        r_d = -math.log(max(1e-9, px.df(c, Ty))) / Ty
+        r_f = w.market.fx.rate[ccy]
+        sigma = self.fx_vol(ccy)
+        prem = op.bsm(T_["option_type"], S, K, Ty, r_d, r_f, sigma)          # Garman–Kohlhagen: the foreign rate plays the dividend yield
+        g = op.bsm_greeks(T_["option_type"], S, K, Ty, r_d, r_f, sigma)
+        return sign * amount * prem, {"spot": S, "strike": K, "premium_per_unit": prem, "vol": sigma, "fx_delta_1pct": sign * amount * g["delta"] * S * 0.01,
+                                     "vega": sign * amount * g["vega"], "theta": sign * amount * g["theta"], "days_to_expiry": (date.fromisoformat(t.maturity) - asof).days}
+
+    def _forward_level(self, p: str, ref: str, maturity: date, asof: date) -> Tuple[float, float]:
+        """(today's fair forward for `ref` to `maturity`, the current spot)."""
+        w = self.w
+        Ty = px.years(asof, maturity)
+        if p == "EQUITY_FORWARD":
+            S, r, q = self._eq_inputs(ref, Ty)
+            return S * math.exp((r - q) * Ty), S
+        if p == "COMMODITY_FORWARD":
+            curve = w.market.curve_for(ref)
+            spot = w.market.spot(ref)
+            k = maturity.strftime("%Y-%m")
+            if k in curve:
+                return curve[k], spot
+            keys = sorted(curve)
+            later = [x for x in keys if x >= k]
+            return (curve[later[0]] if later else (curve[keys[-1]] if keys else spot)), spot
+        # FX_FORWARD: USD per unit of foreign, covered interest parity
+        return w.market.fx.forward(ref, "USD", asof, maturity), w.market.fx.spot[ref]
+
+    def _forward_value(self, t: OTCTrade, asof: date) -> Tuple[float, Dict]:
+        T_ = t.terms
+        p = t.product
+        ref = T_.get("security_id") or T_.get("code") or T_.get("ccy")
+        mat = date.fromisoformat(t.maturity)
+        F, S = self._forward_level(p, ref, mat, asof)
+        K, units = _f(T_["forward_price"]), _f(T_["units"])
+        sign = 1.0 if T_["long"] else -1.0
+        d = px.df(self.curve(), px.years(asof, mat))
+        pv = sign * units * (F - K) * d
+        an = {"forward": F, "spot": S, "forward_price": K, "delta_units": sign * units * d, "days_to_maturity": (mat - asof).days}
+        if p == "FX_FORWARD":
+            an["fx_delta_1pct"] = sign * units * S * 0.01 * d
+        return pv, an
 
     def market_basis(self, ccy: str) -> float:
         """Cross-currency basis (bp on the foreign leg) as the market quotes it today: structurally negative for the funding
@@ -318,6 +421,38 @@ class OTCEngine:
                 strip.append(curve.get(k, spot))
             fixed = sum(strip) / len(strip) if strip else spot
             return {"unit": UNIT[p], "mid": fixed, "pv": 0.0, "maturity": mat, "strip": strip, "spot": spot}
+        if p == "EQUITY_OPTION":
+            from . import options_pricing as op
+            mat = w.calendar.roll(px._add_months(asof, int(params.get("tenor_months", 3)))).isoformat()
+            Ty = px.years(asof, date.fromisoformat(mat))
+            S, r, q = self._eq_inputs(params["security_id"], Ty)
+            K = _f(params["strike"]) if params.get("strike") else round(S * math.exp((r - q) * Ty), 2)
+            sigma = self._eq_vol(params["security_id"], K, S, r, q, Ty)
+            units = _f(params["units"])
+            prem = op.bsm(params["option_type"], S, K, Ty, r, q, sigma)
+            g = op.bsm_greeks(params["option_type"], S, K, Ty, r, q, sigma)
+            return {"unit": UNIT[p], "mid": prem * units, "pv": prem * units, "maturity": mat, "strike": K, "price": S, "iv": sigma, "premium_per_unit": prem,
+                    "delta_units": units * g["delta"], "notional": units * S}
+        if p == "FX_OPTION":
+            from . import options_pricing as op
+            mat = w.calendar.roll(px._add_months(asof, int(params.get("tenor_months", 3)))).isoformat()
+            Ty = px.years(asof, date.fromisoformat(mat))
+            ccy = params["ccy"]
+            S = w.market.fx.spot[ccy]
+            r_d = -math.log(max(1e-9, px.df(c, max(Ty, 1 / 365)))) / max(Ty, 1 / 365)
+            r_f = w.market.fx.rate[ccy]
+            K = _f(params["strike"]) if params.get("strike") else round(w.market.fx.forward(ccy, "USD", asof, date.fromisoformat(mat)), 6)
+            sigma = self.fx_vol(ccy)
+            amount = _f(params["amount"])
+            prem = op.bsm(params["option_type"], S, K, Ty, r_d, r_f, sigma)
+            return {"unit": UNIT[p], "mid": prem * amount, "pv": prem * amount, "maturity": mat, "strike": K, "spot": S, "vol": sigma, "premium_per_unit": prem,
+                    "notional": amount * S}
+        if p in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            mat = w.calendar.roll(px._add_months(asof, int(params.get("tenor_months", 3)))).isoformat()
+            ref = params.get("security_id") or params.get("code") or params.get("ccy")
+            F, S = self._forward_level(p, ref, date.fromisoformat(mat), asof)
+            units = _f(params["units"])
+            return {"unit": UNIT[p], "mid": F, "pv": 0.0, "maturity": mat, "spot": S, "forward": F, "notional": units * F}
         raise ValueError(f"unknown product {product}")
 
     def _maturity(self, params: Dict, default_years: int = 5) -> str:
@@ -354,9 +489,9 @@ class OTCEngine:
                 quotes.append({"dealer": dk, "name": spec.name, "declined": True, "note": "declined to quote (funding stress)"})
                 continue
             lean = spec.skew * 0.3 * hw
-            if p in ("CAP", "FLOOR", "SWAPTION"):
+            if p in ("CAP", "FLOOR", "SWAPTION", "EQUITY_OPTION", "FX_OPTION"):
                 bid, ask = fair["pv"] * (1 - hw) + lean * fair["pv"], fair["pv"] * (1 + hw) + lean * fair["pv"]
-            elif p == "COMMODITY_SWAP":
+            elif p in ("COMMODITY_SWAP", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
                 bid, ask = fair["mid"] * (1 - hw) + lean * fair["mid"], fair["mid"] * (1 + hw) + lean * fair["mid"]
             else:
                 bid, ask = fair["mid"] - hw + lean, fair["mid"] + hw + lean
@@ -429,6 +564,45 @@ class OTCEngine:
                 raise CommandError("quantity per period must be positive")
             q.setdefault("pay_fixed", True)
             q.setdefault("months", 1)
+        if p in ("EQUITY_OPTION", "EQUITY_FORWARD"):
+            sid = str(q.get("security_id", "")).upper()
+            sec = w.securities.get(sid)
+            if sid != "SPX" and (sec is None or sec.is_bond or sec.is_future or sec.is_option):
+                raise CommandError("reference must be an equity, ETF, ADR, REIT or SPX")
+            q["security_id"] = sid
+            if _f(q.get("units", 0)) <= 0:
+                raise CommandError("units must be positive")
+            if int(_f(q.get("tenor_months", 3))) < 1:
+                raise CommandError("tenor_months must be at least 1")
+            q["tenor_months"] = int(_f(q.get("tenor_months", 3)))
+        if p in ("FX_OPTION", "FX_FORWARD"):
+            from ..engines.fx_market import CURRENCIES
+            ccy = str(q.get("ccy", "")).upper()
+            if ccy not in CURRENCIES or ccy == "USD":
+                raise CommandError("ccy must be a non-USD currency")
+            q["ccy"] = ccy
+            key = "amount" if p == "FX_OPTION" else "units"
+            if _f(q.get(key, 0)) <= 0:
+                raise CommandError(f"{key} (foreign currency amount) must be positive")
+            q["tenor_months"] = int(_f(q.get("tenor_months", 3)))
+            if q["tenor_months"] < 1:
+                raise CommandError("tenor_months must be at least 1")
+        if p == "COMMODITY_FORWARD":
+            if str(q.get("code", "")).upper() not in w.market.commodities.state:
+                raise CommandError("unknown commodity code")
+            q["code"] = q["code"].upper()
+            if _f(q.get("units", 0)) <= 0:
+                raise CommandError("units must be positive")
+            q["tenor_months"] = int(_f(q.get("tenor_months", 3)))
+        if p in ("EQUITY_OPTION", "FX_OPTION"):
+            q["option_type"] = str(q.get("option_type", "C")).upper()[:1]
+            if q["option_type"] not in ("C", "P"):
+                raise CommandError("option_type must be C or P")
+            q.setdefault("buyer", True)
+            if q.get("strike") not in (None, "") and _f(q["strike"]) <= 0:
+                raise CommandError("strike must be positive (blank = at the money)")
+        if p in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            q.setdefault("long", True)
         return q
 
     def _player_level(self, p: str, params: Dict, fair: Dict, bid: float, ask: float) -> Tuple[float, float]:
@@ -460,6 +634,12 @@ class OTCEngine:
             level = ask if params["pay_fixed"] else bid
             n_per = len(fair["strip"])
             return level, abs(level - fair["mid"]) * _f(params["quantity"]) * n_per
+        if p in ("EQUITY_OPTION", "FX_OPTION"):
+            level = ask if params["buyer"] else bid
+            return level, abs(level - fair["pv"])
+        if p in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            level = ask if params["long"] else bid
+            return level, abs(level - fair["mid"]) * _f(params["units"])
         return fair["mid"], 0.0
 
     def execute_rfq(self, pf: Portfolio, rfq_id: str, dealer: str) -> OTCTrade:
@@ -554,6 +734,31 @@ class OTCEngine:
             n_per = len(M["strip"])
             N = money(D(repr(level)) * qty * n_per)
             terms = {"code": P["code"], "quantity": qty, "fixed_price": level, "months": int(P["months"]), "pay_fixed": bool(P["pay_fixed"])}
+            return terms, N, base, today, M["maturity"], initial
+        if p == "EQUITY_OPTION":
+            units = money(P["units"])
+            N = money(D(repr(M["notional"])))
+            terms = {"security_id": P["security_id"], "option_type": P["option_type"], "strike": M["strike"], "units": units, "buyer": bool(P["buyer"]), "premium": level,
+                     "settlement": "CASH", "style": "EUROPEAN", "iv_at_trade": M["iv"]}
+            initial.append({"kind": "PREMIUM", "currency": base, "amount": -level if P["buyer"] else level, "note": f"OTC option premium {'paid' if P['buyer'] else 'received'}"})
+            return terms, N, base, today, M["maturity"], initial
+        if p == "FX_OPTION":
+            amount = money(P["amount"])
+            N = money(D(repr(M["notional"])))
+            terms = {"ccy": P["ccy"], "option_type": P["option_type"], "strike": M["strike"], "amount": amount, "buyer": bool(P["buyer"]), "premium": level, "settlement": "CASH",
+                     "vol_at_trade": M["vol"]}
+            initial.append({"kind": "PREMIUM", "currency": base, "amount": -level if P["buyer"] else level, "note": f"FX option premium {'paid' if P['buyer'] else 'received'}"})
+            return terms, N, base, today, M["maturity"], initial
+        if p in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            units = money(P["units"])
+            N = money(D(repr(M["notional"])))
+            terms = {"units": units, "forward_price": level, "long": bool(P["long"]), "spot_at_trade": M["spot"], "settlement": "CASH"}
+            if p == "EQUITY_FORWARD":
+                terms["security_id"] = P["security_id"]
+            elif p == "COMMODITY_FORWARD":
+                terms["code"] = P["code"]
+            else:
+                terms["ccy"] = P["ccy"]
             return terms, N, base, today, M["maturity"], initial
         raise ValueError(p)
 
@@ -858,6 +1063,35 @@ class OTCEngine:
             t.state = st
             if today >= date.fromisoformat(t.maturity):
                 self._status(pf, t, "MATURED", cause, "last period settled")
+        elif p in ("EQUITY_OPTION", "FX_OPTION"):
+            if today >= date.fromisoformat(t.maturity):
+                if p == "EQUITY_OPTION":
+                    S, _r, _q = self._eq_inputs(T["security_id"], 0.0)
+                    units, what = _f(T["units"]), T["security_id"]
+                else:
+                    S = w.market.fx.spot[T["ccy"]]
+                    units, what = _f(T["amount"]), T["ccy"] + "/USD"
+                K = _f(T["strike"])
+                intrinsic = max(0.0, S - K) if T["option_type"] == "C" else max(0.0, K - S)
+                if intrinsic > 0:
+                    value = units * intrinsic
+                    ev = w.emit(OE.OTC_TRADE_EXERCISED, {"portfolio_id": pf.id, "trade_id": t.id, "level": S, "strike": K, "value": value, "settlement": "CASH"},
+                                cause_id=cause.id, portfolio_id=pf.id)
+                    self._cashflow(pf, t, "EXERCISE_SETTLEMENT", D(repr(value if T["buyer"] else -value)), t.currency,
+                                   f"cash settlement at expiry: {what} {S:.4f} vs strike {K:.4f} x {units:,.0f}", ev)
+                    self._status(pf, t, "EXERCISED", cause, f"expired in the money ({what} {S:.4f} vs {K:.4f})")
+                else:
+                    self._status(pf, t, "EXPIRED", cause, f"expired out of the money ({what} {S:.4f} vs {K:.4f})")
+        elif p in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+            if today >= date.fromisoformat(t.maturity):
+                ref = T.get("security_id") or T.get("code") or T.get("ccy")
+                F, S = self._forward_level(p, ref, today, today)
+                settle = S if p != "COMMODITY_FORWARD" else F
+                units, K = _f(T["units"]), _f(T["forward_price"])
+                amt = units * (settle - K)
+                self._cashflow(pf, t, "FORWARD_SETTLEMENT", D(repr(amt if T["long"] else -amt)), t.currency,
+                               f"forward settled: {ref} {settle:.4f} vs {K:.4f} x {units:,.0f}", cause)
+                self._status(pf, t, "MATURED", cause, f"settled at {settle:.4f} vs forward {K:.4f}")
 
     # ------------------------------------------------------------------ CSA margining
     def netting_sets(self, pf: Portfolio) -> Dict[str, List[OTCTrade]]:
@@ -1021,7 +1255,11 @@ class OTCEngine:
                 for (s, e, pd_) in self.periods(t.start, t.maturity, T["months"]):
                     if "SETTLE:" + pd_.isoformat() not in paid:
                         add(t, pd_, "COMMODITY_SETTLEMENT", "period average vs fixed settles")
-            if t.product not in ("FRA", "SWAPTION"):
+            if t.product in ("EQUITY_OPTION", "FX_OPTION"):
+                add(t, mat, "EXPIRY", f"cash settlement if in the money vs strike {_f(T['strike']):,.4f}")
+            elif t.product in ("EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"):
+                add(t, mat, "FORWARD_SETTLEMENT", f"cash settlement vs forward {_f(T['forward_price']):,.4f}")
+            elif t.product not in ("FRA", "SWAPTION"):
                 add(t, mat, "MATURITY", "trade matures")
         out.sort(key=lambda r: (r["date"], r["trade_id"]))
         return out
@@ -1069,6 +1307,16 @@ class OTCEngine:
             return f"{'Buy' if T['buyer'] else 'Sell'} protection on {T['issuer']} ({T['reference']}) {t.notional:,.0f}, {T['running_bps']:.0f} running (dealt {T['dealt_spread_bps']:.0f}bp), to {t.maturity}"
         if t.product == "COMMODITY_SWAP":
             return f"{'Pay' if T['pay_fixed'] else 'Receive'} fixed {T['fixed_price']:.4f} vs {T['code']} monthly average x {T['quantity']:,.0f}, to {t.maturity}"
+        if t.product == "EQUITY_OPTION":
+            return f"{'Long' if T['buyer'] else 'Short'} OTC {'call' if T['option_type'] == 'C' else 'put'} on {_f(T['units']):,.0f} {T['security_id']} strike {_f(T['strike']):,.2f}, European cash-settled, expires {t.maturity}"
+        if t.product == "FX_OPTION":
+            return f"{'Long' if T['buyer'] else 'Short'} {T['ccy']} {'call' if T['option_type'] == 'C' else 'put'} on {_f(T['amount']):,.0f} {T['ccy']} strike {_f(T['strike']):.4f} USD, expires {t.maturity}"
+        if t.product == "EQUITY_FORWARD":
+            return f"{'Long' if T['long'] else 'Short'} forward on {_f(T['units']):,.0f} {T['security_id']} at {_f(T['forward_price']):,.2f}, cash-settled {t.maturity}"
+        if t.product == "COMMODITY_FORWARD":
+            return f"{'Long' if T['long'] else 'Short'} forward on {_f(T['units']):,.0f} {T['code']} at {_f(T['forward_price']):.4f}, cash-settled {t.maturity}"
+        if t.product == "FX_FORWARD":
+            return f"{'Buy' if T['long'] else 'Sell'} {T['ccy']} {_f(T['units']):,.0f} forward at {_f(T['forward_price']):.4f} USD, settles {t.maturity}"
         return t.product
 
     # ------------------------------------------------------------------ handlers
@@ -1274,7 +1522,7 @@ class OTCEngine:
 def _decimals(terms: Dict) -> Dict:
     out = {}
     for k, v in terms.items():
-        if k in ("units", "usd_notional", "ccy_notional", "quantity") and isinstance(v, str):
+        if k in ("units", "usd_notional", "ccy_notional", "quantity", "amount") and isinstance(v, str):
             out[k] = D(v)
         else:
             out[k] = v

@@ -387,12 +387,15 @@ class DefaultAndExposureTest(unittest.TestCase):
         a, _ = deal(w, pf, "IRS", notional=50_000_000, tenor_years=7, pay_fixed=True, dealer="CITI")
         b, _ = deal(w, pf, "CAP", notional=50_000_000, strike=0.02, tenor_years=3, buyer=True, dealer="CITI")   # deep in the money: big positive PV
         c, _ = deal(w, pf, "IRS", notional=20_000_000, tenor_years=5, pay_fixed=True, dealer="GOLDMAN")
-        w.advance(2)
         led = w.ledgers[pf.id]
         csa = pf.csas["CITI"]
-        net = a.mtm + b.mtm
+        for _ in range(12):                       # a day on which the netting set is owed more than the VM we hold (VM lags a day)
+            w.advance(1)
+            net = a.mtm + b.mtm
+            claim = net - csa.vm_received + csa.vm_posted
+            if net > 0 and claim > 0:
+                break
         self.assertGreater(net, 0)
-        claim = net - csa.vm_received + csa.vm_posted
         nav0 = led.nav()
         im0 = csa.im_posted
         w.default_counterparty("CITI", recovery=0.4)
@@ -403,7 +406,7 @@ class DefaultAndExposureTest(unittest.TestCase):
         self.assertEqual(csa.status, "TERMINATED")
         self.assertEqual((csa.vm_received, csa.vm_posted, csa.im_posted), (D(0), D(0), D(0)))
         self.assertNotIn("IM:CITI", pf.cash_collateral)
-        expected_loss = (claim * D("0.6")).quantize(D("0.01"))
+        expected_loss = (max(claim, D(0)) * D("0.6")).quantize(D("0.01"))      # excess VM we hold is simply returned: no unsecured exposure
         self.assertAlmostEqual(float(nav0 - led.nav()), float(expected_loss), delta=0.05, msg="unsecured claim loses (1 − recovery)")
         assert_ledger_invariants(self, w, pf)
         with self.assertRaises(CommandError):
@@ -462,6 +465,42 @@ class DefaultAndExposureTest(unittest.TestCase):
         self.assertLess(abs(b["aggregate"]["rates_dv01"]), 200.0, "offsetting swaps leave little DV01")
         self.assertTrue(pf.briefings[-1]["otc"]["open"] == 2)
         self.assertIn("rates", pf.briefings[-1]["pnl_buckets"])
+
+
+class OTCOptionsAndForwardsTest(unittest.TestCase):
+    def test_otc_options_and_forwards_quote_settle_and_replay(self):
+        w, pf, store = make_world(capital=50_000_000)
+        t1, r1 = deal(w, pf, "EQUITY_OPTION", security_id="SPY", option_type="P", units=1000, tenor_months=1, buyer=True)
+        t2, _ = deal(w, pf, "EQUITY_OPTION", security_id="SPX", option_type="C", strike=8000, units=10, tenor_months=2, buyer=False)
+        t3, _ = deal(w, pf, "FX_OPTION", ccy="EUR", option_type="C", amount=1_000_000, tenor_months=1, buyer=True)
+        t4, _ = deal(w, pf, "EQUITY_FORWARD", security_id="NVDA", units=2000, tenor_months=1, long=True)
+        t5, _ = deal(w, pf, "COMMODITY_FORWARD", code="CL", units=5000, tenor_months=1, long=False)
+        t6, _ = deal(w, pf, "FX_FORWARD", ccy="JPY", units=100_000_000, tenor_months=1, long=True)
+        q1 = next(q for q in r1.quotes if q["dealer"] == t1.counterparty)
+        self.assertGreater(t1.mtm, 0, "a bought option is an asset")
+        self.assertLess(t2.mtm, 0, "a written option is a liability")
+        self.assertEqual(t1.terms["strike"], r1.mid["strike"], "blank strike = at the money forward")
+        self.assertTrue(any(c["kind"] == "PREMIUM" and c["base"] < 0 for c in t1.cashflows), "premium paid at inception")
+        for t in (t4, t5, t6):
+            self.assertLess(abs(t.mtm), D("0.01") * t.notional, "a forward dealt near mid starts near zero")
+        assert_ledger_invariants(self, w, pf)
+        w.advance(3)
+        for t in (t1, t2, t3, t4, t5, t6):
+            self.assertEqual(t.status, "OPEN")
+        assert_ledger_invariants(self, w, pf)
+        while w.current_date < date.fromisoformat(t6.maturity):
+            w.advance(1)
+        w.advance(1)
+        self.assertIn(t1.status, ("EXERCISED", "EXPIRED"))
+        self.assertIn(t3.status, ("EXERCISED", "EXPIRED"))
+        for t in (t4, t5, t6):
+            self.assertEqual(t.status, "MATURED")
+            self.assertTrue(any(c["kind"] == "FORWARD_SETTLEMENT" for c in t.cashflows), f"{t.product} settles in cash at maturity")
+        self.assertEqual(t2.status, "OPEN", "the two-month option is still alive")
+        assert_ledger_invariants(self, w, pf)
+        w2 = World.load(store, "t")
+        self.assertEqual(w2.ledgers[pf.id].nav(), w.ledgers[pf.id].nav())
+        self.assertEqual(len(w2.replay_errors), 0)
 
 
 class OTCDefinitionOfDoneTest(unittest.TestCase):

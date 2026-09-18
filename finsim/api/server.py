@@ -51,7 +51,8 @@ class Router:
                                           body.get("capital"), body.get("portfolio_name", "Main Portfolio"), body.get("portfolio_type", "PERSONAL"),
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
                                           body.get("benchmark", "SPY"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
-                                          body.get("timezone", "America/New_York"), body.get("update_time", "09:00"), body.get("scenario", "NONE"))
+                                          body.get("timezone", "America/New_York"), body.get("update_time", "09:00"), body.get("scenario", "NONE"),
+                                          market_source=body.get("market_source", "SIMULATED"))
             if parts[2:] == ["jobs"] if len(parts) > 2 else False:
                 return s.jobs()
             wid = rest[0]
@@ -88,6 +89,8 @@ class Router:
                 return s.option_contract(wid, sub[1])
             if sub == ["macro"]:
                 return s.macro(wid)
+            if sub == ["fx"]:
+                return s.fx_market(wid)
             if sub == ["force-corporate-event"] and method == "POST":
                 return s.force_corporate_event(wid, body)
             if sub == ["otc", "dealers"]:
@@ -141,6 +144,18 @@ class Router:
                     return s.borrow(wid, pid, body["locate_id"], body["quantity"], body.get("collateral_type", "CASH"))
                 if leaf[:1] == ["loans"] and len(leaf) == 3 and leaf[2] == "return" and method == "POST":
                     return s.return_loan(wid, pid, leaf[1], body.get("quantity"))
+                if leaf == ["playbook"]:
+                    return s.playbook(wid, pid)
+                if leaf == ["playbook", "preview"] and method == "POST":
+                    return s.playbook_preview(wid, pid, body)
+                if leaf == ["playbook", "execute"] and method == "POST":
+                    return s.playbook_execute(wid, pid, body)
+                if leaf == ["private-credit"]:
+                    return s.private_credit(wid, pid)
+                if leaf == ["private-credit", "commit"] and method == "POST":
+                    return s.pc_commit(wid, pid, body["deal_id"], body["amount"])
+                if leaf == ["private-credit", "sell"] and method == "POST":
+                    return s.pc_sell(wid, pid, body["loan_id"], body["amount"])
                 if leaf == ["repo"]:
                     if method == "POST":
                         return s.repo_open(wid, pid, body["side"], body["security_id"], body["quantity"], body.get("term_type", "OVERNIGHT"), body.get("term_days", 1), body.get("auto_roll", True))
