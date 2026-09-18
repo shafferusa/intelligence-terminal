@@ -1076,6 +1076,40 @@ class Service:
         loan = w.sell_private_credit(portfolio_id, str(loan_id).upper(), D(str(amount)))
         return jsonable(asdict(loan))
 
+    # ------------------------------------------------------------------ private equity
+    def private_equity(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.pequity.book(w.portfolio(portfolio_id)))
+
+    def pe_structure(self, world_id: str, portfolio_id: str, deal_id: str, multiple: float, leverage: float) -> Dict:
+        w = self.world(world_id)
+        deal = w.pequity.deal(str(deal_id).upper(), portfolio_id)
+        if deal is None:
+            raise NotFound(f"deal {deal_id} not found")
+        return jsonable(w.pequity.structure(deal, float(multiple), float(leverage)))
+
+    def pe_command(self, world_id: str, portfolio_id: str, action: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        self._open_for_instructions(w)
+        if action == "diligence":
+            return jsonable(w.pe_diligence(portfolio_id, str(body["deal_id"]).upper()))
+        if action == "bid":
+            return jsonable(w.pe_bid(portfolio_id, str(body["deal_id"]).upper(), float(body["multiple"]), float(body.get("leverage", 0))))
+        cid = str(body.get("company_id", "")).upper()
+        if action == "initiative":
+            c = w.pe_initiative(portfolio_id, cid, body["kind"], body.get("size_pct"))
+        elif action == "recap":
+            c = w.pe_recap(portfolio_id, cid, float(body["target_leverage"]))
+        elif action == "cure":
+            c = w.pe_cure(portfolio_id, cid)
+        elif action == "exit":
+            c = w.pe_exit(portfolio_id, cid, body.get("route", "SALE"))
+        elif action == "selldown":
+            c = w.pe_selldown(portfolio_id, cid, float(body.get("fraction", 1.0)))
+        else:
+            raise NotFound(f"unknown private equity action {action}")
+        return jsonable(asdict(c))
+
     def repo_open(self, world_id: str, portfolio_id: str, side: str, security_id: str, quantity: float, term_type: str = "OVERNIGHT", term_days: int = 1, auto_roll: bool = True) -> Dict:
         w = self.world(world_id)
         self._open_for_instructions(w)

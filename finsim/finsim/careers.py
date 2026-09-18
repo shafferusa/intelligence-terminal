@@ -17,7 +17,7 @@ from .domain.events import E, Event
 from .money import D, money, ZERO
 
 ALL_CLASSES = {"EQUITY", "GOVT_BOND", "CORP_BOND", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "EQUITY_INDEX", "RATES", "OPTION", "OTC", "PHYSICAL",
-               "CRYPTO", "FX_INDEX", "VOLATILITY"}
+               "CRYPTO", "FX_INDEX", "VOLATILITY", "PRIVATE_EQUITY"}
 
 
 @dataclass(frozen=True)
@@ -56,6 +56,11 @@ JOBS: Dict[str, Job] = {
     "HEDGE_FUND": Job("HEDGE_FUND", "Hedge Fund Manager", "Run a $500MM multi-strategy fund for outside investors: shorts, leverage, repo, borrow, options and OTC. "
                       "Investors subscribe and redeem on your numbers; management and performance fees.", D(500_000_000), None, frozenset(ALL_CLASSES), 5.0, 0.30, 0.20,
                       ("Analyst", "Portfolio Manager", "Senior PM", "Partner", "Founder"), capital_step=0.3),
+    "PRIVATE_EQUITY": Job("PRIVATE_EQUITY", "Private Equity Partner", "Run a $2BN buyout fund: bid for founder-owned businesses, carve-outs and secondaries, put "
+                          "leverage on them, run them for four to six years — cost programmes, add-ons, recaps — and sell or list them. Public equities and "
+                          "bonds for the undrawn capital. Judged on TVPI, DPI and net IRR; the J-curve is real.", D(2_000_000_000), None,
+                          frozenset({"PRIVATE_EQUITY", "EQUITY", "GOVT_BOND", "CORP_BOND", "OTC_RATES"}), 1.2, 0.35, 0.30,
+                          ("Associate", "Vice President", "Principal", "Partner", "Managing Partner"), capital_step=0.5),
     "BANK_TRADER": Job("BANK_TRADER", "Bank Rates & Credit Trader", "Make prices for clients in swaps, bonds, CDS and blocks; run the resulting inventory, hedge it and fund it. "
                        "Judged on client flow won, spread captured and hedged risk.", D(50_000_000), None,
                        frozenset({"GOVT_BOND", "CORP_BOND", "RATES", "EQUITY_INDEX", "EQUITY", "OPTION", "OTC"}), 12.0, 1.0, 0.20,

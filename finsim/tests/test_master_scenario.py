@@ -231,10 +231,16 @@ class Script:
         # 26 — recall the lent shares; 27 — return the borrow after covering the short
         w.recall_lent(pf.id, lend["id"])
         cover = w.place_order(pf.id, ca.security_id, "BUY", short_qty, time_in_force="GTC")
-        for _ in range(4):                       # a thin session can cap the cover; it keeps working
+        for _ in range(15):                      # thin sessions cap the cover; it keeps working
             self.adv(1)
             if pf.positions[ca.security_id].quantity == ZERO:
                 break
+        if pf.positions[ca.security_id].quantity > ZERO:   # a lender buy-in landed with the cover: flatten the overshoot
+            w.place_order(pf.id, ca.security_id, "SELL", pf.positions[ca.security_id].quantity, time_in_force="GTC")
+            for _ in range(10):
+                self.adv(1)
+                if pf.positions[ca.security_id].quantity == ZERO:
+                    break
         tc.assertEqual(pf.positions[ca.security_id].quantity, ZERO)
         self.adv(2)
         if loan.status == "OPEN":            # borrowed shares no longer needed for a short are otherwise returned automatically

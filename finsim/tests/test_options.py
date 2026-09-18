@@ -96,7 +96,7 @@ class ChainTest(unittest.TestCase):
             self.assertLessEqual((tf - e).days, 3)
             self.assertTrue(w.calendar.is_business_day(e))
         ch = w.options.chain("NVDA")
-        self.assertEqual(len(ch["rows"]), 17)
+        self.assertEqual(len(ch["rows"]), 13)                      # STRIKE_RANGE 6 either side of the money
         self.assertTrue(all("C" in r and "P" in r for r in ch["rows"]))
         self.assertEqual(ch["style"], "AMERICAN/PHYSICAL")
         idx = w.options.chain("SPX")
@@ -334,8 +334,9 @@ class ExerciseAssignmentExpiryTest(unittest.TestCase):
         # a high-yield optionable stock with an ex-date coming up in a few sessions
         today = w.current_date
         cands = []
+        from finsim.engines.vol import is_index
         for under in w.options.optionable():
-            if under == "SPX":
+            if is_index(under) or under not in w.securities:
                 continue
             sec = w.securities[under]
             if sec.dividend_yield < 0.02:

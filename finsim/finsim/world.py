@@ -70,7 +70,7 @@ class World:
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
         from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
-        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, live
+        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, live
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.live = live.LiveDesk(self)
@@ -95,6 +95,7 @@ class World:
         self.lenddesk = seclending.LendDeskEngine(self)
         self.cdesk = commodity_desk.CommodityDeskEngine(self)
         self.pcredit = private_credit.PrivateCreditEngine(self)
+        self.pequity = private_equity.PrivateEquityEngine(self)
         from .engines import playbook
         self.playbook = playbook.Playbook(self)
         self.scenario = "NONE"
@@ -232,6 +233,7 @@ class World:
         self.lenddesk.register()
         self.cdesk.register()
         self.pcredit.register()
+        self.pequity.register()
         self.on(E.SCENARIO_EVENT, World._h_scenario_event)
         for et in (E.ECONOMIC_RELEASE, E.EARNINGS_REPORTED, E.RATING_CHANGED, E.ISSUER_DEFAULTED):
             self.on(et, lambda world, ev: None)
@@ -613,6 +615,28 @@ class World:
 
     def sell_private_credit(self, portfolio_id: str, loan_id: str, amount):
         return self._cmd(self.pcredit.sell, self.portfolio(portfolio_id), loan_id, amount)
+
+    # private equity
+    def pe_diligence(self, portfolio_id: str, deal_id: str):
+        return self._cmd(self.pequity.buy_diligence, self.portfolio(portfolio_id), deal_id)
+
+    def pe_bid(self, portfolio_id: str, deal_id: str, multiple: float, leverage: float):
+        return self._cmd(self.pequity.bid, self.portfolio(portfolio_id), deal_id, multiple, leverage)
+
+    def pe_initiative(self, portfolio_id: str, company_id: str, kind: str, size_pct=None):
+        return self._cmd(self.pequity.initiative, self.portfolio(portfolio_id), company_id, kind, size_pct)
+
+    def pe_recap(self, portfolio_id: str, company_id: str, target_leverage: float):
+        return self._cmd(self.pequity.recap, self.portfolio(portfolio_id), company_id, target_leverage)
+
+    def pe_cure(self, portfolio_id: str, company_id: str):
+        return self._cmd(self.pequity.cure, self.portfolio(portfolio_id), company_id)
+
+    def pe_exit(self, portfolio_id: str, company_id: str, route: str):
+        return self._cmd(self.pequity.start_exit, self.portfolio(portfolio_id), company_id, route)
+
+    def pe_selldown(self, portfolio_id: str, company_id: str, fraction: float):
+        return self._cmd(self.pequity.selldown, self.portfolio(portfolio_id), company_id, fraction)
 
     def repo_post_collateral(self, portfolio_id: str, repo_id: str, security_id: str, quantity):
         return self._cmd(self.repo.post_collateral, self.portfolio(portfolio_id), repo_id, self.security(security_id), quantity)

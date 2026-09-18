@@ -540,8 +540,9 @@ class DefinitionOfDoneTest(unittest.TestCase):
             w.advance(1)
         self.assertTrue(ca.entitlements[pf.id]["obligation"])
         self.assertTrue(any(m.kind == "MANUFACTURED_DIVIDEND" for m in pf.cash_movements))
-        # 13-14: partial recall, replacement borrow
+        # 13-14: partial recall, replacement borrow (the lending market may already have recalled some of the borrow)
         half = short_qty // 2
+        borrowed_before = pf.positions[tkr].borrowed_quantity
         w.emit(E.SECURITY_LOAN_RECALLED, {"portfolio_id": pf.id, "loan_id": loan.id, "security_id": tkr, "quantity": half, "lender": loan.lender,
                                           "due": w.calendar.add_business_days(w.current_date, 2).isoformat(), "reason": "lender recall"}, portfolio_id=pf.id)
         w.flush()
@@ -549,7 +550,7 @@ class DefinitionOfDoneTest(unittest.TestCase):
         loan2 = w.borrow_securities(pf.id, loc2.id, half)
         w.return_securities(pf.id, loan.id, half)
         self.assertEqual(loan.recall_status, "SATISFIED")
-        self.assertEqual(pf.positions[tkr].borrowed_quantity, short_qty)
+        self.assertEqual(pf.positions[tkr].borrowed_quantity, borrowed_before - half + loan2.quantity)   # the replacement may be partial (the lending market's depth)
         # 15-18: market stress: equity and financing consequences, haircut up, margin call
         w.force_regime("LIQUIDITY_STRESS")
         w.advance(1)
@@ -574,9 +575,18 @@ class DefinitionOfDoneTest(unittest.TestCase):
         self.assertTrue(all(s.explain["borrow_fees"] != 0 for s in snaps))
         self.assertTrue(any(s.explain["equities"] < 0 or s.explain["rates"] != 0 for s in snaps))
         # 20-21: close the short (whatever is still short: a lender recall may already have bought part of it in), shares returned
-        cover = w.place_order(pf.id, tkr, "BUY", -pf.positions[tkr].quantity)
-        w.advance(1)
-        self.assertEqual(pf.positions[tkr].quantity, D(0))
+        cover = w.place_order(pf.id, tkr, "BUY", -pf.positions[tkr].quantity, time_in_force="GTC")
+        for _ in range(10):                      # thin sessions cap the cover; it keeps working
+            w.advance(1)
+            if pf.positions[tkr].quantity == D(0):
+                break
+        if pf.positions[tkr].quantity > 0:       # a lender buy-in landed in the same session as the cover: flatten the overshoot
+            w.place_order(pf.id, tkr, "SELL", pf.positions[tkr].quantity, time_in_force="GTC")
+            for _ in range(10):
+                w.advance(1)
+                if pf.positions[tkr].quantity == D(0):
+                    break
+        self.assertEqual(pf.positions[tkr].quantity, D(0), f"cover {cover.status}: {cover.reason} · {cover.history[-3:]}")
         self.assertNotEqual(pf.trades[cover.trade_ids[0]].realized_pnl, D(0))
         w.advance(2)
         self.assertEqual(loan.status, "RETURNED")

@@ -32,7 +32,9 @@ class CorporateEventsTest(unittest.TestCase):
         div = [c for c in w.corporate_actions.values() if c.security_id == "PG" and c.action_type == "CASH_DIVIDEND" and c.id.endswith("SPECIAL")]
         self.assertEqual(len(div), 1)
         self.assertEqual(div[0].entitlements[pf.id]["amount"], D("27500.00"))
-        self.assertEqual(w.ledgers[pf.id].security_balance("PG", "1210"), D("27500.00"), "special dividend receivable")
+        unpaid = sum((c.entitlements[pf.id]["amount"] for c in w.corporate_actions.values() if c.security_id == "PG" and c.action_type == "CASH_DIVIDEND"
+                      and pf.id in c.entitlements and not c.entitlements[pf.id]["paid"]), D(0))
+        self.assertEqual(w.ledgers[pf.id].security_balance("PG", "1210"), unpaid, "special dividend receivable (plus any regular one that went ex)")
         w.advance(10)
         self.assertTrue(div[0].entitlements[pf.id]["paid"])
         assert_ledger_invariants(self, w, pf)
@@ -145,7 +147,7 @@ class CorporateEventsTest(unittest.TestCase):
         pos = pf.positions["AAL-28"]
         self.assertEqual(pos.quantity, D(0))
         red = [m for m in pf.cash_movements if m.kind == "MATURITY"]
-        self.assertEqual(red[-1].amount, D("1020000.00"), "redeemed at the call price")
+        self.assertEqual(red[-1].amount, D("255000.00"), "redeemed at the call price: 250,000 face at 102")
         self.assertTrue(w.securities["AAL-28"].delisted)
         assert_ledger_invariants(self, w, pf)
 

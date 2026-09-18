@@ -95,6 +95,12 @@ CHART = {
     "4330": ("Private Credit Fees", "INCOME"),
     "4340": ("Private Credit Mark-to-Market & Realised", "INCOME"),
     "5350": ("Private Credit Losses", "EXPENSE"),
+    # private equity
+    "1180": ("Private Equity Investments (cost)", "ASSET"),
+    "1185": ("Private Equity Valuation Adjustment", "ASSET"),
+    "4370": ("Private Equity Mark-to-Market & Realised", "INCOME"),
+    "4380": ("Private Equity Income (distributions, recaps)", "INCOME"),
+    "5360": ("Private Equity Deal Costs & Losses", "EXPENSE"),
 }
 
 DEBIT_NORMAL = {"ASSET", "EXPENSE"}

@@ -165,6 +165,12 @@ class Router:
                     return s.pc_commit(wid, pid, body["deal_id"], body["amount"])
                 if leaf == ["private-credit", "sell"] and method == "POST":
                     return s.pc_sell(wid, pid, body["loan_id"], body["amount"])
+                if leaf == ["private-equity"]:
+                    return s.private_equity(wid, pid)
+                if leaf == ["private-equity", "structure"] and method == "POST":
+                    return s.pe_structure(wid, pid, body["deal_id"], body["multiple"], body.get("leverage", 0))
+                if len(leaf) == 2 and leaf[0] == "private-equity" and method == "POST":
+                    return s.pe_command(wid, pid, leaf[1], body)
                 if leaf == ["repo"]:
                     if method == "POST":
                         return s.repo_open(wid, pid, body["side"], body["security_id"], body["quantity"], body.get("term_type", "OVERNIGHT"), body.get("term_days", 1), body.get("auto_roll", True))

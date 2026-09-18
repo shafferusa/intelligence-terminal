@@ -92,11 +92,12 @@ class BondPricingTest(unittest.TestCase):
 class ExecutionTest(unittest.TestCase):
     def test_large_order_partially_fills_and_pays_impact(self):
         w, pf, _ = make_world(capital=1_000_000_000)
-        o = w.place_order(pf.id, "BYND", "BUY", 500_000, time_in_force="GTC")   # small cap, ADV 380k
+        big = int(float(w.securities["BYND"].adv) * 3)                             # three days' volume in one order
+        o = w.place_order(pf.id, "BYND", "BUY", big, time_in_force="GTC")
         w.advance(1)
         self.assertEqual(o.status, "PARTIALLY_FILLED")
         t = pf.trades[o.trade_ids[0]]
-        self.assertLess(t.quantity, D(500_000))
+        self.assertLess(t.quantity, D(big))
         self.assertGreater(t.execution_detail["impact_bps"], 20)
         self.assertTrue(t.execution_detail["partial"])
         filled_before = o.filled_quantity
