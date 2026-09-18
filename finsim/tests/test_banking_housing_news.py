@@ -203,11 +203,15 @@ class AllBooksTest(unittest.TestCase):
         aapl = next(p for p in o["positions"] if p["security_id"] == "AAPL")
         self.assertEqual(float(aapl["quantity"]), 1500.0); self.assertEqual(sorted(b["book"] for b in aapl["books"]), ["Bonds", "Main Portfolio"])
         self.assertIn("USD", o["cash"]); self.assertTrue(o["explain"])
-        # a book with positions cannot be deleted; an empty one can; the last one never
+        # a book with positions cannot be deleted; a flat one can once a Treasury book exists to take its cash; the last one never
         with self.assertRaises(CommandError):
             w.delete_portfolio(p2)
+        with self.assertRaises(CommandError):
+            w.delete_portfolio(p3)                           # flat, but its cash has nowhere to go yet
+        s.create_portfolio(w.id, "Treasury", "TREASURY", 0, "PROFESSIONAL", "SANDBOX", None)
         d = s.delete_portfolio(w.id, p3)
-        self.assertEqual(d["deleted"], p3); self.assertNotIn(p3, w.portfolios); self.assertEqual(len(s.overall(w.id)["books"]), 2)
+        self.assertEqual(d["deleted"], p3); self.assertNotIn(p3, w.portfolios); self.assertEqual(len(s.overall(w.id)["books"]), 3)
+        self.assertEqual(w.treasury_book().cash_account("USD").balance, D(3_000_000))
         w2 = World.load(w.store, w.id)
         self.assertEqual(w2.replay_errors, []); self.assertNotIn(p3, w2.portfolios); self.assertIn(p2, w2.portfolios)
         with self.assertRaises(CommandError):
@@ -259,6 +263,21 @@ class TreasuryTest(unittest.TestCase):
         self.assertAlmostEqual(o["totals"]["nav_with_treasury"], o["totals"]["nav"], places=2, msg="the treasury is one of the books, counted once")
         t = s.treasury(w.id)
         self.assertEqual(t["total_usd"], 40_000_000.0); self.assertTrue(any(l["kind"] == "TO_TREASURY" for l in t["log"]))
+        # the treasury balance sheet: assets less liabilities is the NAV, per column; the draws by book tie to the log
+        bs = o["balance_sheet"]
+        self.assertEqual(bs[-1]["line"], "Net asset value"); self.assertEqual(bs[0]["group"], "Assets"); self.assertTrue(bs[0]["line"].startswith("Cash"))
+        for col in ("treasury", "all_books"):
+            assets = sum(r[col] for r in bs if r["group"] == "Assets"); liabs = sum(r[col] for r in bs if r["group"] == "Liabilities")
+            nav = next(r[col] for r in bs if r["line"] == "Net asset value")
+            self.assertAlmostEqual(assets - liabs, nav, places=2, msg=col)
+            self.assertAlmostEqual(next(r[col] for r in bs if r["line"] == "Contributed capital") + next(r[col] for r in bs if r["line"] == "Retained P&L"), nav, places=2, msg=col)
+        tb_row = next(b for b in o["books"] if b["is_treasury"])
+        self.assertAlmostEqual(next(r["treasury"] for r in bs if r["line"] == "Net asset value"), tb_row["nav"], places=2)
+        self.assertEqual(next(r["treasury"] for r in bs if r["line"] == "Cash USD"), 40_000_000.0)
+        self.assertAlmostEqual(next(r["all_books"] for r in bs if r["line"] == "Net asset value"), o["totals"]["nav"], places=2)
+        al = {a["book"]: a for a in o["allocated"]}
+        self.assertNotIn("Treasury", al); self.assertEqual(al[pf2.name]["net"], al[pf2.name]["drawn"] - al[pf2.name]["returned"]); self.assertEqual(al[pf2.name]["net"], 20_000_000.0)
+        self.assertTrue(o["treasury_log"])
         assert_ledger_invariants(self, w, pf2); assert_ledger_invariants(self, w, tb)
         w2 = World.load(w.store, w.id)
         self.assertEqual(w2.replay_errors, []); self.assertEqual(w2.treasury_book().cash_account("USD").balance, D(40_000_000))

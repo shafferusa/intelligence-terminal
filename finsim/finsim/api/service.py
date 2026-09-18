@@ -707,6 +707,40 @@ class Service:
         self.log.info("world %s: book %s (%s) deleted", world_id, portfolio_id, name)
         return {"deleted": portfolio_id, "name": name, "portfolios": [{"id": p.id, "name": p.name} for p in w.portfolios.values()], "treasury": jsonable(self._treasury_state(w))}
 
+    def balance_sheet_rows(self, w, pf) -> List[Dict]:
+        """A book's balance sheet from the ledger and the marks: assets, liabilities, equity, and the NAV that ties them."""
+        s = w.pnl.compute_summary(pf)
+        led = w.ledgers[pf.id]
+        rows = []
+        def add(group, line, amount, note=""):
+            v = money(D(str(amount)))
+            if v or line in ("Cash", "Contributed capital", "Net asset value"):
+                rows.append({"group": group, "line": line, "amount": v, "note": note})
+        for c, a in sorted(pf.cash.items()):
+            add("Assets", f"Cash {c}", a.base_value, f"{c} {a.balance:,.2f}" if c != pf.base_currency else "")
+        add("Assets", "Securities at market (long)", s["market_value"] - s.get("short_market_value", ZERO), "stocks, ETFs, bonds, coins, long options at the mark")
+        add("Assets", "Receivables", s["receivables"], "sales awaiting settlement, dividends and coupons due")
+        add("Assets", "Margin deposits", s["margin_deposits"], "initial margin at the clearing broker")
+        add("Assets", "Collateral posted", s["collateral_posted"], "cash margin against repo, borrows and OTC")
+        add("Assets", "Reverse repo", s["reverse_repo"], "cash lent against collateral")
+        add("Assets", "FX forwards (MTM)", s["fx_forwards"], "")
+        add("Assets", "OTC derivatives (positive PV)", s["otc_assets"], "")
+        add("Assets", "Private credit", s.get("private_credit", ZERO), "loans at the mark plus accrued interest")
+        add("Assets", "Private equity", s.get("private_equity", ZERO), "portfolio companies at the mark")
+        add("Assets", "Underwriting positions", s.get("underwriting", ZERO), "blocks held for resale")
+        add("Assets", "Operating assets", s.get("operating_assets", ZERO), "")
+        add("Liabilities", "Securities sold short (at market)", -s.get("short_market_value", ZERO), "shorts and written options at the mark")
+        add("Liabilities", "Payables", s["payables"], "purchases awaiting settlement, fees, rebates")
+        add("Liabilities", "Repo borrowing", s["repo_borrowing"], "")
+        add("Liabilities", "Prime-broker loan", s["margin_loan"], "")
+        add("Liabilities", "OTC derivatives (negative PV)", s["otc_liabilities"], "")
+        add("Liabilities", "Variation margin received", s.get("vm_received", ZERO), "")
+        add("Liabilities", "Collateral received", sum((D(str(r["value"])) for r in pf.collateral_received.values()), ZERO), "securities lent")
+        add("Equity", "Contributed capital", pf.contributed_capital, "capital put in, net of what went back to the Treasury")
+        add("Equity", "Retained P&L", s["nav"] - pf.contributed_capital, "realized and unrealized since inception")
+        add("Equity", "Net asset value", s["nav"], "assets less liabilities")
+        return rows
+
     def overall(self, world_id: str) -> Dict:
         """The whole save as one big book: every book's NAV and P&L side by side, positions added up across books
         (with the split by book), cash by currency, and the day's P&L by bucket summed."""
@@ -756,8 +790,27 @@ class Service:
         tot["return_since_inception"] = float(tot["nav_with_treasury"] / capital_total - 1) if capital_total else 0.0
         for b in books:
             b["is_treasury"] = b["id"] == ts["book_id"]
+        # the balance sheet: the Treasury book on its own, and every book consolidated, line by line
+        tb = w.treasury_book()
+        cons: Dict[str, Dict] = {}
+        for pf in w.portfolios.values():
+            for r in self.balance_sheet_rows(w, pf):
+                key = (r["group"], r["line"])
+                c = cons.setdefault(key, {"group": r["group"], "line": r["line"], "amount": ZERO, "note": r["note"]})
+                c["amount"] += r["amount"]
+        treasury_rows = {(r["group"], r["line"]): r for r in (self.balance_sheet_rows(w, tb) if tb else [])}
+        order = {"Assets": 0, "Liabilities": 1, "Equity": 2}
+        bs = []
+        for key, c in sorted(cons.items(), key=lambda kv: (order.get(kv[0][0], 9), kv[0][1] == "Net asset value", not kv[0][1].startswith("Cash"), kv[0][1])):
+            bs.append({"group": c["group"], "line": c["line"], "treasury": treasury_rows.get(key, {}).get("amount", ZERO), "all_books": c["amount"], "note": c["note"]})
+        allocated = []
+        for pf in w.portfolios.values():
+            if tb and pf.id != tb.id:
+                drawn = sum((l["amount"] for l in w.treasury_log if l.get("portfolio_id") == pf.id and l["kind"] == "TO_BOOK"), ZERO)
+                back = sum((l["amount"] for l in w.treasury_log if l.get("portfolio_id") == pf.id and l["kind"] == "TO_TREASURY"), ZERO)
+                allocated.append({"book": pf.name, "portfolio_id": pf.id, "drawn": drawn, "returned": back, "net": drawn - back, "nav": next((b["nav"] for b in books if b["id"] == pf.id), ZERO)})
         return jsonable({"world": {"id": w.id, "name": w.name, "date": w.current_date, "market_source": getattr(w, "market_source", "SIMULATED")}, "totals": tot, "books": books,
-                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class, "treasury": ts})
+                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class, "treasury": ts, "balance_sheet": bs, "allocated": allocated, "treasury_log": w.treasury_log[-40:]})
 
     def dashboard(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)
