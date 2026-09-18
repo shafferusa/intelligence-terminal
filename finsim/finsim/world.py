@@ -66,6 +66,8 @@ class World:
         self._pending: List[Event] = []
         self.clock = ClockConfig()
         self.real_news = None                    # a career world: the headline fetcher (stubbed in tests)
+        self.treasury_cash: Dict[str, Decimal] = {}   # the save's cash pool by currency: books draw from it and return to it
+        self.treasury_log: List[Dict] = []
         self.last_processed_utc: Optional[str] = None
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
@@ -207,6 +209,8 @@ class World:
         self.on(E.CLOCK_CHANGED, World._h_clock_changed)
         self.on(E.PORTFOLIO_CREATED, World._h_portfolio_created)
         self.on(E.PORTFOLIO_DELETED, World._h_portfolio_deleted)
+        self.on(E.TREASURY_FUNDED, World._h_treasury_funded)
+        self.on(E.TREASURY_ALLOCATED, World._h_treasury_allocated)
         self.on(E.CAPITAL_CONTRIBUTED, World._h_capital)
         self.on(E.MARKET_CLOSE, World._h_market_close)
         self.on(E.LEDGER_POSTED, World._h_ledger_posted)
@@ -362,6 +366,70 @@ class World:
         self.portfolios.pop(pid, None)
         self.ledgers.pop(pid, None)
 
+    # ------------------------------------------------------------------ the treasury
+    def _h_treasury_funded(self, ev: Event) -> None:
+        p = ev.payload
+        self.treasury_cash[p["currency"]] = self.treasury_cash.get(p["currency"], ZERO) + money(p["amount"])
+        self.treasury_log.append({"date": ev.sim_date, "kind": "FUNDED", "currency": p["currency"], "amount": money(p["amount"]), "note": p.get("note", "capital into the treasury")})
+
+    def _h_treasury_allocated(self, ev: Event) -> None:
+        from .engines.ledger import dr, cr
+        p = ev.payload
+        pf = self.portfolios[p["portfolio_id"]]
+        ccy, amt = p["currency"], money(p["amount"])
+        ca = pf.cash_account(ccy)
+        if p["direction"] == "TO_BOOK":
+            self.treasury_cash[ccy] = self.treasury_cash.get(ccy, ZERO) - amt
+            ca.balance += amt
+            ca.base_value += amt
+            pf.contributed_capital += amt
+            pf.day_capital_flows += amt
+            self.record_cash_movement(pf, ccy, amt, "TREASURY", f"drawn from the treasury", ev)
+            self.post(pf.id, f"Treasury allocation {ccy} {amt:,.2f}", [dr(f"1010:{ccy}", amt), cr("3000", amt)], ev, {"kind": "TREASURY"})
+        else:
+            self.treasury_cash[ccy] = self.treasury_cash.get(ccy, ZERO) + amt
+            ca.balance -= amt
+            ca.base_value -= amt
+            pf.contributed_capital -= amt
+            pf.day_capital_flows -= amt
+            self.record_cash_movement(pf, ccy, -amt, "TREASURY", f"returned to the treasury", ev)
+            self.post(pf.id, f"Return to treasury {ccy} {amt:,.2f}", [dr("3000", amt), cr(f"1010:{ccy}", amt)], ev, {"kind": "TREASURY"})
+        self.treasury_log.append({"date": ev.sim_date, "kind": p["direction"], "portfolio_id": pf.id, "book": pf.name, "currency": ccy, "amount": amt, "note": p.get("note", "")})
+
+    def fund_treasury(self, currency: str, amount, note: str = "capital into the treasury") -> Event:
+        amt = money(amount)
+        if amt <= 0:
+            raise CommandError("the amount must be positive")
+        ev = self.emit(E.TREASURY_FUNDED, {"currency": currency.upper(), "amount": amt, "note": note})
+        self.flush()
+        return ev
+
+    def allocate_from_treasury(self, portfolio_id: str, currency: str, amount) -> Event:
+        """Move cash from the treasury into a book (it counts as contributed capital of that book)."""
+        pf = self.portfolio(portfolio_id)
+        ccy, amt = currency.upper(), money(amount)
+        if amt <= 0:
+            raise CommandError("the amount must be positive")
+        have = self.treasury_cash.get(ccy, ZERO)
+        if amt > have:
+            raise CommandError(f"the treasury holds {ccy} {have:,.0f}; {amt:,.0f} asked")
+        ev = self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "currency": ccy, "amount": amt, "direction": "TO_BOOK"}, portfolio_id=pf.id)
+        self.flush()
+        return ev
+
+    def return_to_treasury(self, portfolio_id: str, currency: str, amount) -> Event:
+        """Move cash a book does not need back to the treasury: settled cash the book can spare after everything pending."""
+        pf = self.portfolio(portfolio_id)
+        ccy, amt = currency.upper(), money(amount)
+        if amt <= 0:
+            raise CommandError("the amount must be positive")
+        spare = min(pf.cash_account(ccy).balance, self.trading.projected_cash(pf, ccy))
+        if amt > spare:
+            raise CommandError(f"{pf.name} can spare {ccy} {max(ZERO, spare):,.0f} (settled cash after what is pending); {amt:,.0f} asked")
+        ev = self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "currency": ccy, "amount": amt, "direction": "TO_TREASURY"}, portfolio_id=pf.id)
+        self.flush()
+        return ev
+
     def open_items(self, pf: Portfolio) -> List[str]:
         """What stands in the way of closing a book: anything held, working or owed."""
         out = []
@@ -406,6 +474,11 @@ class World:
         items = self.open_items(pf)
         if items:
             raise CommandError(f"{pf.name} is not flat: {', '.join(items)}. Close everything and let it settle, then delete the book")
+        for ccy, ca in list(pf.cash.items()):
+            if ca.balance < 0:
+                raise CommandError(f"{pf.name} owes {ccy} {-ca.balance:,.0f}: cover it before deleting the book")
+            if ca.balance > 0:                                              # the book's cash goes back to the treasury
+                self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "currency": ccy, "amount": ca.balance, "direction": "TO_TREASURY", "note": "book closed"}, portfolio_id=pf.id)
         ev = self.emit(E.PORTFOLIO_DELETED, {"portfolio_id": pf.id, "name": pf.name, "nav": self.ledgers[pf.id].nav()}, portfolio_id=pf.id)
         self.flush()
         return ev

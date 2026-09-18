@@ -20,6 +20,8 @@ class E:
     WORLD_CREATED = "WORLD_CREATED"
     PORTFOLIO_CREATED = "PORTFOLIO_CREATED"
     PORTFOLIO_DELETED = "PORTFOLIO_DELETED"         # a flat book closed by the player (nothing open, nothing owed)
+    TREASURY_FUNDED = "TREASURY_FUNDED"             # capital put into the save's treasury (the pool the books draw from)
+    TREASURY_ALLOCATED = "TREASURY_ALLOCATED"       # cash moved between the treasury and a book (direction TO_BOOK | TO_TREASURY)
     CAPITAL_CONTRIBUTED = "CAPITAL_CONTRIBUTED"
     MARKET_CLOSE = "MARKET_CLOSE"
     REAL_HISTORY_LOADED = "REAL_HISTORY_LOADED"     # a world that tracks the market: the real closes it started from

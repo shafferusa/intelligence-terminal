@@ -82,7 +82,7 @@ class Service:
     def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
                      benchmark: Optional[str] = "SPY", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
-                     update_time: Optional[str] = None, scenario: str = "NONE", at=None, market_source: Optional[str] = None,
+                     update_time: Optional[str] = None, scenario: str = "NONE", at=None, market_source: Optional[str] = None, treasury: bool = False,
                      lock_session: bool = False) -> Dict:
         """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
         themselves at the update time; sandbox saves start wherever you like and advance on demand. market_source
@@ -145,8 +145,13 @@ class Service:
         self.worlds[wid] = w
         cap = _capital(capital, job)
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
-        pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
-        return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode}
+        if treasury:
+            # the whole capital sits in the treasury; the first book starts empty and draws from it
+            w.fund_treasury("USD", cap, "starting capital")
+            pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, D(0), "USD", bench, realism, mode, job)
+        else:
+            pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
+        return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode, "treasury": float(cap) if treasury else 0.0}
 
     def _open_for_instructions(self, w: World, at=None) -> None:
         """With the session lock on, a career save takes instructions only while the market is shut (update → 09:29 New York)."""
@@ -294,6 +299,7 @@ class Service:
                          "quote_updates": w.quote_updates(self.now() if self.now else None),
                          # invented desks (private equity deal flow, investment banking mandates) run only where the market itself is simulated
                          "made_up_desks": getattr(w, "market_source", "SIMULATED") != "REAL",
+                         "treasury": {"balances": dict(w.treasury_cash), "total_usd": w.treasury_cash.get("USD", ZERO)},
                          "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
                                           "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
                                           "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),
@@ -315,14 +321,23 @@ class Service:
 
     # ------------------------------------------------------------------ commands
     def create_portfolio(self, world_id: str, name: str, portfolio_type: str, capital: float, realism: str, mode: str, benchmark: Optional[str],
-                         job: str = "SANDBOX") -> Dict:
+                         job: str = "SANDBOX", from_treasury: bool = False) -> Dict:
+        """A new book. `from_treasury`: its capital is drawn from the treasury (blank capital = the job's standard, capped by what the
+        treasury holds; an empty treasury gives an empty book); otherwise the capital is fresh money contributed to the book."""
         w = self.world(world_id)
         if job not in JOBS:
             raise CommandError(f"unknown job {job}")
-        cap = _capital(capital, job)
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
+        if from_treasury:
+            have = w.treasury_cash.get("USD", ZERO)
+            cap = min(_capital(capital, job), have) if capital not in (None, "") else min(_capital(None, job), have)
+            pf = w.create_portfolio(name, portfolio_type if job == "SANDBOX" else job, D(0), "USD", bench, realism, mode, job)
+            if cap > 0:
+                w.allocate_from_treasury(pf.id, "USD", cap)
+            return {"portfolio_id": pf.id, "allocated": float(cap)}
+        cap = _capital(capital, job)
         pf = w.create_portfolio(name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
-        return {"portfolio_id": pf.id}
+        return {"portfolio_id": pf.id, "allocated": 0.0}
 
     def contribute(self, world_id: str, portfolio_id: str, amount: float, currency: str = "USD") -> Dict:
         w = self.world(world_id)
@@ -654,13 +669,34 @@ class Service:
         return jsonable(sorted([asdict(c) for c in w.corporate_actions.values()], key=lambda x: x["ex_date"]))
 
     # ------------------------------------------------------------------ portfolio
+    # ------------------------------------------------------------------ the treasury
+    def treasury(self, world_id: str) -> Dict:
+        w = self.world(world_id)
+        books = [{"id": p.id, "name": p.name, "cash": {c: a.balance for c, a in p.cash.items()}, "spare_usd": max(ZERO, min(p.cash_account("USD").balance, w.trading.projected_cash(p, "USD")))}
+                 for p in w.portfolios.values()]
+        return jsonable({"balances": dict(w.treasury_cash), "total_usd": w.treasury_cash.get("USD", ZERO), "books": books, "log": w.treasury_log[-40:]})
+
+    def treasury_command(self, world_id: str, action: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        ccy = str(body.get("currency", "USD")).upper()
+        amt = D(str(body["amount"]))
+        if action == "fund":
+            w.fund_treasury(ccy, amt, str(body.get("note", "capital into the treasury")))
+        elif action == "allocate":
+            w.allocate_from_treasury(body["portfolio_id"], ccy, amt)
+        elif action == "return":
+            w.return_to_treasury(body["portfolio_id"], ccy, amt)
+        else:
+            raise NotFound(f"unknown treasury action {action}")
+        return self.treasury(world_id)
+
     def delete_portfolio(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)
         pf = w.portfolio(portfolio_id)
         name = pf.name
         w.delete_portfolio(portfolio_id)
         self.log.info("world %s: book %s (%s) deleted", world_id, portfolio_id, name)
-        return {"deleted": portfolio_id, "name": name, "portfolios": [{"id": p.id, "name": p.name} for p in w.portfolios.values()]}
+        return {"deleted": portfolio_id, "name": name, "portfolios": [{"id": p.id, "name": p.name} for p in w.portfolios.values()], "treasury": jsonable(dict(w.treasury_cash))}
 
     def overall(self, world_id: str) -> Dict:
         """The whole save as one big book: every book's NAV and P&L side by side, positions added up across books
@@ -703,9 +739,13 @@ class Service:
         for r in rows:
             g = by_class.setdefault(r["asset_class"] or "OTHER", {"market_value": ZERO, "count": 0})
             g["market_value"] += r["market_value"]; g["count"] += 1
-        tot["return_since_inception"] = float(tot["nav"] / tot["contributed"] - 1) if tot["contributed"] else 0.0
+        treasury_total = sum((v for v in w.treasury_cash.values()), ZERO)
+        tot["treasury"] = treasury_total
+        tot["nav_with_treasury"] = tot["nav"] + treasury_total
+        capital_total = tot["contributed"] + treasury_total
+        tot["return_since_inception"] = float(tot["nav_with_treasury"] / capital_total - 1) if capital_total else 0.0
         return jsonable({"world": {"id": w.id, "name": w.name, "date": w.current_date, "market_source": getattr(w, "market_source", "SIMULATED")}, "totals": tot, "books": books,
-                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class})
+                         "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class, "treasury": dict(w.treasury_cash)})
 
     def dashboard(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)

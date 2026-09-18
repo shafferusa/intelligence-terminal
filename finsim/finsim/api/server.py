@@ -52,7 +52,7 @@ class Router:
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
                                           body.get("benchmark", "SPY"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
                                           body.get("timezone", "America/New_York"), body.get("update_time"), body.get("scenario", "NONE"),
-                                          market_source=body.get("market_source"), lock_session=bool(body.get("lock_session", False)))
+                                          market_source=body.get("market_source"), lock_session=bool(body.get("lock_session", False)), treasury=bool(body.get("treasury", False)))
             if parts[2:] == ["jobs"] if len(parts) > 2 else False:
                 return s.jobs()
             wid = rest[0]
@@ -129,7 +129,12 @@ class Router:
                 return s.event(wid, sub[1])
             if sub == ["portfolios"] and method == "POST":
                 return s.create_portfolio(wid, body.get("name", "Portfolio"), body.get("portfolio_type", "PERSONAL"), body.get("capital", 10_000_000),
-                                          body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("benchmark", "SPY"), body.get("job", "SANDBOX"))
+                                          body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("benchmark", "SPY"), body.get("job", "SANDBOX"),
+                                          from_treasury=bool(body.get("from_treasury", False)))
+            if sub == ["treasury"]:
+                return s.treasury(wid)
+            if len(sub) == 2 and sub[0] == "treasury" and method == "POST":
+                return s.treasury_command(wid, sub[1], body)
             if sub[0] == "portfolios" and len(sub) >= 2:
                 pid = sub[1]
                 leaf = sub[2:]
