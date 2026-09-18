@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-17T20:52:00Z",
+ "fetched_at": "2026-09-18T10:45:00Z",
  "treasury_par_curve": {
   "date": "2026-09-17",
   "BC_1MONTH": 3.97,
@@ -102,21 +102,10 @@
   "VIX_prev": 17.71,
   "VIX9D": 13.39,
   "VIX3M": 18.55,
-  "delayed_quote_this_morning": null,
-  "delayed_quote_ts": "2026-09-17T16:15:01",
-  "history_tail": {
-   "2026-09-15": {
-    "VIX": 17.2,
-    "VIX9D": 17.21,
-    "VIX3M": 19.36
-   },
-   "2026-09-16": {
-    "VIX": 17.71,
-    "VIX9D": 17.4,
-    "VIX3M": 19.73
-   }
-  },
-  "label": "EOD official (2026-09-17, close 16:15 ET, term structure normal contango: VIX9D<VIX<VIX3M)"
+  "delayed_quote_this_morning": 15.34,
+  "delayed_quote_ts": "2026-09-18T10:33:00Z",
+  "term_structure": "normal contango (VIX9D<VIX<VIX3M), no inversion",
+  "label": "EOD official (2026-09-17); premarket indicative Delayed (+15 min)"
  },
  "fx": {
   "base": "USD",
@@ -140,32 +129,33 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 76479,
-    "usd_24h_change": 0.5753178486059113,
-    "usd_market_cap": 1536713076494.367
+    "usd": 78201,
+    "usd_24h_change": 2.47,
+    "usd_market_cap": 1571000000000
    },
    "ethereum": {
-    "usd": 2448.88,
-    "usd_24h_change": 1.7543861179127127,
-    "usd_market_cap": 298985753796.09686
+    "usd": 2516.57,
+    "usd_24h_change": 3.46,
+    "usd_market_cap": 307160000000
    },
    "solana": {
-    "usd": 100.95,
-    "usd_24h_change": 2.706495414970701,
-    "usd_market_cap": 59295340414.92098
+    "usd": 106.49,
+    "usd_24h_change": 6.85,
+    "usd_market_cap": 62530000000
    },
    "cardano": {
-    "usd": 0.201819,
-    "usd_24h_change": 3.7449684072852296,
-    "usd_market_cap": 7582255734.558243
+    "usd": 0.21596,
+    "usd_24h_change": 9.08,
+    "usd_market_cap": 8100000000
    }
   },
-  "total_market_cap_usd": 2637070053487.7295,
-  "btc_dominance_pct": 58.178777659198865,
-  "eth_dominance_pct": 11.323579567368238,
-  "market_cap_change_pct_24h": -1.4170714593044387,
-  "fetched_at": "2026-09-17T20:52:00Z",
-  "label": "Live (CoinGecko aggregate)"
+  "total_market_cap_usd": 2695000000000,
+  "btc_dominance_pct": 58.1,
+  "eth_dominance_pct": 11.36,
+  "market_cap_change_pct_24h": -0.004,
+  "fetched_at": "2026-09-18T10:33:00Z",
+  "label": "Live (CoinGecko aggregate)",
+  "note": "24h mcap change ~flat despite all four majors up 2.5-9%; likely a /simple/price vs /global snapshot-timing mismatch on CoinGecko's side, not broad altcoin weakness -- flagged, not resolved"
  },
  "indices": {
   "sp500_close": 7637.759765625,
@@ -185,126 +175,85 @@
  },
  "futures_commodities_fx": {
   "CL_F": {
-   "price": 101.26,
-   "prev": 102.43,
-   "chg": -1.17,
-   "pct": -1.142242,
-   "n_bars": 4,
+   "price": null,
+   "prev": 101.91,
+   "note": "Yahoo CL=F reading (95.86, -5.94%) diverged sharply from multiple corroborating outlets and USO's own -0.55% Thu move; treated as unreliable this run per CNBC: WTI ~$100.05, -1.9%, briefly under $100",
    "symbol": "CL=F"
   },
   "DX-Y.NYB": {
-   "price": 100.22,
-   "prev": 100.31,
-   "chg": -0.09,
-   "pct": -0.089718,
-   "n_bars": 4,
-   "symbol": "DX-Y.NYB"
+   "price": 100.376,
+   "prev": 100.22,
+   "chg": 0.156,
+   "pct": 0.16,
+   "symbol": "DX-Y.NYB",
+   "label": "Delayed (+10 min)"
   },
   "ES_F": {
-   "price": 7701.75,
-   "prev": 7556.5,
-   "chg": 145.25,
-   "pct": 1.922186,
-   "n_bars": 4,
-   "symbol": "ES=F"
+   "price": 7721.75,
+   "prev": 7637.76,
+   "chg": 83.99,
+   "pct": 1.07,
+   "symbol": "ES=F",
+   "label": "Delayed (+10 min)"
   },
   "EURUSD_X": {
-   "price": 1.148,
-   "prev": 1.1538,
-   "chg": -0.0058,
-   "pct": -0.501671,
-   "n_bars": 5,
-   "symbol": "EURUSD=X"
+   "price": 1.1477,
+   "prev": 1.147,
+   "chg": 0.0007,
+   "pct": 0.06,
+   "symbol": "EURUSD=X",
+   "label": "Delayed (+10 min)"
   },
   "GC_F": {
-   "price": 4381.5,
-   "prev": 4387.5,
-   "chg": -6.0,
-   "pct": -0.136752,
-   "n_bars": 4,
-   "symbol": "GC=F"
+   "price": 4420.7,
+   "prev": 4399.7,
+   "chg": 21.0,
+   "pct": 0.48,
+   "symbol": "GC=F",
+   "label": "Delayed (+10 min)"
   },
   "HG_F": {
-   "price": 6.6135,
-   "prev": 6.4315,
-   "chg": 0.182,
-   "pct": 2.829824,
-   "n_bars": 4,
-   "symbol": "HG=F"
+   "price": 6.652,
+   "prev": 6.5865,
+   "chg": 0.0655,
+   "pct": 0.99,
+   "symbol": "HG=F",
+   "label": "Delayed (+10 min)"
   },
   "NG_F": {
-   "price": 2.872,
-   "prev": 2.891,
-   "chg": -0.019,
-   "pct": -0.657214,
-   "n_bars": 4,
-   "symbol": "NG=F"
+   "price": 2.85,
+   "prev": 2.901,
+   "chg": -0.051,
+   "pct": -1.76,
+   "symbol": "NG=F",
+   "label": "Delayed (+10 min)"
   },
   "NQ_F": {
-   "price": 29717.0,
-   "prev": 28963.5,
-   "chg": 753.5,
-   "pct": 2.60155,
-   "n_bars": 4,
-   "symbol": "NQ=F"
+   "price": 29886.25,
+   "prev": 29446.75,
+   "chg": 439.5,
+   "pct": 1.49,
+   "symbol": "NQ=F",
+   "label": "Delayed (+10 min)"
   },
   "RTY_F": {
-   "price": 2893.5,
-   "prev": 2861.7,
-   "chg": 31.8,
-   "pct": 1.111229,
-   "n_bars": 4,
-   "symbol": "RTY=F"
+   "price": 2895.3,
+   "prev": 2875.9,
+   "chg": 19.4,
+   "pct": 0.67,
+   "symbol": "RTY=F",
+   "label": "Delayed (+10 min)"
   },
   "YM_F": {
-   "price": 52200.0,
-   "prev": 51507.0,
-   "chg": 693.0,
-   "pct": 1.345448,
-   "n_bars": 4,
-   "symbol": "YM=F"
+   "price": 52250.0,
+   "prev": 51807.0,
+   "chg": 443.0,
+   "pct": 0.86,
+   "symbol": "YM=F",
+   "label": "Delayed (+10 min)"
   },
-  "xDJI": {
-   "price": 51778.0391,
-   "prev": 51461.8984,
-   "chg": 316.1406,
-   "pct": 0.61432,
-   "n_bars": 5,
-   "symbol": "^DJI"
-  },
-  "xGSPC": {
-   "price": 7637.7598,
-   "prev": 7551.8101,
-   "chg": 85.9497,
-   "pct": 1.138134,
-   "n_bars": 5,
-   "symbol": "^GSPC"
-  },
-  "xIXIC": {
-   "price": 26418.2988,
-   "prev": 25978.4297,
-   "chg": 439.8691,
-   "pct": 1.693209,
-   "n_bars": 5,
-   "symbol": "^IXIC"
-  },
-  "xRUT": {
-   "price": 2874.6296,
-   "prev": 2858.8101,
-   "chg": 15.8196,
-   "pct": 0.553362,
-   "n_bars": 5,
-   "symbol": "^RUT"
-  },
-  "xTNX": {
-   "price": 4.947,
-   "prev": 5.006,
-   "chg": -0.059,
-   "pct": -1.178586,
-   "n_bars": 5,
-   "symbol": "^TNX"
-  },
-  "fetched_at": "2026-09-17T20:52:00Z"
+  "fetched_at": "2026-09-18T10:33:00Z",
+  "label": "Delayed (+10 min), premarket Fri Sept 18; CL=F excluded, see note"
  },
  "watchlist": {
   "ABNB": {
@@ -2066,28 +2015,23 @@
   "fetched_at": "2026-09-16T10:50:00Z"
  },
  "finra_short_vol": {
-  "date": "2026-09-16",
-  "aggregate_pct": 52.01,
+  "date": "2026-09-17",
+  "aggregate_pct": 50.74,
   "watchlist_short_pct_top": {
-   "VOYG": 79.16,
-   "XLU": 74.91,
-   "XLRE": 73.55,
-   "ETN": 72.14,
-   "XLI": 71.3,
-   "BKSY": 69.13,
-   "XLC": 69.06,
-   "KRE": 68.58,
-   "SPIR": 67.21,
-   "CMG": 66.6,
-   "XLB": 66.47,
-   "VGK": 66.27,
-   "GLD": 66.04,
-   "DLR": 65.37,
-   "TLT": 64.86
+   "VOYG": 79.49,
+   "MAGS": 77.16,
+   "XLRE": 76.46,
+   "APO": 76.05,
+   "SPIR": 70.22,
+   "SBUX": 69.44,
+   "TIP": 68.56,
+   "XLC": 67.73,
+   "EQIX": 66.76,
+   "REGN": 66.59
   },
   "universe_note": "all-market CNMS short-volume file",
-  "label": "EOD official (2026-09-16)",
-  "fetched_at": "2026-09-17T20:52:00Z"
+  "label": "EOD official (2026-09-17)",
+  "fetched_at": "2026-09-18T10:33:00Z"
  },
  "sector_etfs_wk": {
   "XLK": {
@@ -2261,7 +2205,8 @@
   "chartPreviousClose_check": "meta.previousClose cross-checked against the close-to-close value computed from each symbol's own 5-day price series; zero discrepancies found this run (all matched to the cent) -- computed close-to-close values used throughout regardless.",
   "twelvedata_spotcheck": "Batch 1 of 8 board symbols (SPY, QQQM, DIA, IWM, MAGS, RSP, SMH, XLK) succeeded and cross-confirmed Yahoo's closes; batch 2 hit HTTP 429 and was not retried per SR 2.4 (not logged as a failed source).",
   "edgar": "89/90 per-company Atom feeds succeeded on first pass; SCHW succeeded on a single retry after one read-timeout. Zero new watchlist 8-Ks since this morning's run.",
-  "session_context": "Regular Thursday close after Wednesday's post-FOMC-hike selloff (Fed raised to 3.75-4.00% on 9/16, hawkish dot plot). Today was a broad risk-on rebound: S&P +1.14%, Nasdaq +1.69%, Dow +0.61%, Russell +0.55%; VIX collapsed -12.8% to 15.44. Space/small-cap-growth/semis led (RKLB +6.5%, AMD +6.4%, MU +5.5%, COIN +5.75%); defense and travel lagged (BA -2.46%, KRMN -4.58%)."
+  "session_context": "Regular Thursday close after Wednesday's post-FOMC-hike selloff (Fed raised to 3.75-4.00% on 9/16, hawkish dot plot). Today was a broad risk-on rebound: S&P +1.14%, Nasdaq +1.69%, Dow +0.61%, Russell +0.55%; VIX collapsed -12.8% to 15.44. Space/small-cap-growth/semis led (RKLB +6.5%, AMD +6.4%, MU +5.5%, COIN +5.75%); defense and travel lagged (BA -2.46%, KRMN -4.58%).",
+  "2026-09-18-am": "board/sector/watchlist/DMA data reused from prior run's Thu Sept 17 EOD snapshot (re-verified fresh by this morning's gather, matched to the cent); futures/VIX-premarket/crypto/FINRA refreshed fresh. CL=F (Yahoo WTI future) excluded from futures_commodities_fx: its -5.94% overnight read diverged from CNBC (-1.9%, ~$100.05) and USO's own modest Thu move, likely a contract-roll/bad-tick artifact; report used the CNBC-corroborated figure in prose. Breadth updated fresh for the Sept 17 session directly via Massive grouped-daily (3,059 adv / 2,337 decl / 84 unch of 5,521); hy-oas.csv already current (2026-09-16 row), no append needed. SEC EDGAR: zero new watchlist 8-Ks since 2026-09-17-pm cutoff across all 90 company feeds (6 tickers needed numeric-CIK fallback due to a ticker-lookup gap: FLY, LUNR, SPCX, VOYG, YSS, KRMN -- recommend the routine query by CIK going forward)."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
