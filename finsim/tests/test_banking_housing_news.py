@@ -58,7 +58,10 @@ class NewspaperTest(unittest.TestCase):
             self.assertEqual(len(items), 4)                      # two top stories, one economy paragraph, one markets story
             self.assertTrue(all("PM edition" in i["publisher"] for i in items))
             self.assertEqual(paper.headlines_for(date(2026, 9, 16)), [])
-            rn = RealNews(fetch_yahoo=lambda q, n: [{"title": f"wire {q}", "publisher": "Wire", "link": f"https://w/{q}", "time": 1789747200, "tickers": [q]}], fetch_fed=lambda: [], paper=paper)
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            noon = int(datetime(2026, 9, 15, 12, 0, tzinfo=ZoneInfo("America/New_York")).timestamp())
+            rn = RealNews(fetch_yahoo=lambda q, n: [{"title": f"wire {q}", "publisher": "Wire", "link": f"https://w/{q}", "time": noon, "tickers": [q]}], fetch_fed=lambda: [], paper=paper)
             out = rn.headlines_for(date(2026, 9, 15), ["NVDA"])
             self.assertTrue(out[0]["publisher"].startswith("Logan's Daily Newspaper"))
             self.assertEqual([o["refs"] for o in out if "NVDA leads" in o["headline"]], [["NVDA"]])
