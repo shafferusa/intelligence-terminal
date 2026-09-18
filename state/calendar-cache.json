@@ -508,12 +508,12 @@
    "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-09-18T14:37:00-04:00",
+   "ts_et": "2026-09-19T09:46:00-04:00",
    "type": "space",
-   "name": "Progress MS-35 docking at ISS Poisk module -- confirmed for today, Sept 18, 18:37 UTC",
+   "name": "Progress MS-35 docking at ISS Poisk module -- rescheduled to Saturday, Sept 19, ~9:46 AM ET",
    "importance": "Low",
-   "reason": "CORRECTED 2026-09-18: independently re-verified today's docking time (18:37 UTC / 2:37 PM ET) against NASASpaceFlight.com and cross-checked via Wikipedia -- a day sooner than the Sept 17 cache's Roscosmos-sourced Sept 19 estimate. Not logged as a formal correction: this reflects a routinely refined docking ETA (normal for rendezvous operations), not an error in what was accurately reported as TASS's own estimate at the time.",
-   "source": "NASASpaceFlight.com; Wikipedia cross-check -- Confirmed-multiple"
+   "reason": "CORRECTED 2026-09-18 (pm): this morning's cache and report stated docking was confirmed for today, Sept 18, at 18:37 UTC (2:37 PM ET), sourced to NASASpaceFlight.com and a Wikipedia cross-check. NASA's own ISS blog, posted today, instead schedules docking for tomorrow, Saturday Sept 19, at approximately 13:46 UTC (9:46 AM ET) at Poisk's space-facing port -- consistent with Roscosmos/TASS's original estimate this system had revised away from two days ago. No docking occurred at the previously reported time. Logged as a formal correction to ledgers/corrections.json and disclosed in the 2026-09-18-pm report's Science & Space section and colophon.",
+   "source": "NASA ISS blog (nasa.gov/blogs/spacestation), posted 2026-09-18 -- Confirmed-primary; TASS/Roscosmos -- Confirmed-multiple"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"

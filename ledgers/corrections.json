@@ -1,6 +1,24 @@
 {
  "corrections": [
   {
+   "found": "2026-09-18",
+   "report": "reports/2026/09/2026-09-18-am.html",
+   "original": "This morning's edition (and its underlying calendar-cache entry) reported the Progress MS-35 cargo craft's docking at the ISS Poisk module as confirmed for today, Sept 18, at 18:37 UTC (2:37 PM ET), sourced to NASASpaceFlight.com and a Wikipedia cross-check -- a day sooner than the Sept 17 cache's Roscosmos-sourced Sept 19 estimate.",
+   "corrected": "NASA's own ISS blog, posted today, schedules docking for tomorrow, Saturday Sept 19, at approximately 13:46 UTC (9:46 AM ET) at Poisk's space-facing port -- consistent with Roscosmos/TASS's original estimate this system had revised away from two days ago. No docking occurred this afternoon at the previously reported time; the mission itself (cargo resupply, vehicle, launch) is unaffected, only the docking date and time were wrong.",
+   "error_source": "This morning's run treated a single trade-press schedule (NASASpaceFlight.com), cross-checked only against Wikipedia, as more authoritative than NASA's own official schedule, without waiting for or checking NASA's own same-day blog post.",
+   "conclusions_changed": false,
+   "note": "Does not change the mission itself -- only the docking's actual date and time, now expected Saturday morning rather than Friday afternoon as this morning's edition stated. Corrected in today's report (2026-09-18-pm) Science & Space section and colophon; calendar-cache.json updated accordingly."
+  },
+  {
+   "found": "2026-09-18",
+   "report": "reports/2026/09/2026-09-18-am.html and 2026-09-17-pm.html",
+   "original": "Neither the Sept 17 closing edition nor this morning's edition covered the White House's Thursday withdrawal of Lance Schroyer's nomination to lead Immigration and Customs Enforcement, after Sen. Rand Paul held up the nomination in committee over questions about a Minnesota agent-involved shooting -- same-day, multi-outlet-covered news.",
+   "corrected": "Added to today's Closing Brief (2026-09-18-pm) Politics & Government section, one to two news cycles late, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research passes for the 2026-09-17-pm and 2026-09-18-am editions did not surface the story despite same-day reporting.",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as prior same-pattern entries in this ledger (e.g. 2026-07-31, 2026-08-14, 2026-09-02, 2026-09-04). No prior published sentence needed correcting."
+  },
+  {
    "found": "2026-09-14",
    "report": "reports/2026/09/2026-09-13-sun.html",
    "original": "Sunday's edition reported: \"An Iranian commercial vessel was struck near Qeshm Island... Iranian state media and the Qeshm governor blamed 'the US terrorist enemy'... President Trump, traveling in Ireland, told reporters 'Iran was probably to blame' -- a remark reading as skepticism of Iran's own account.\"",

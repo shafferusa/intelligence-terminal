@@ -479,16 +479,18 @@
   {
    "id": "indonesia-ferry-capsize-sep13",
    "headline": "A Java Sea ferry capsizes with 129 still missing",
-   "status": "Continuing",
+   "status": "Materially changed",
    "first_seen": "2026-09-14-pm",
-   "last_updated": "2026-09-16-am",
+   "last_updated": "2026-09-18-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Search enters its fourth day with the toll unchanged: six confirmed dead, 108 rescued, 129 still missing of 243 aboard the Virgo Transport 8. Rough seas continue to block the underwater search.",
+   "one_line": "Search enters its fourth day with the toll unchanged: six confirmed dead, 108 rescued, 129 still missing of 243 aboard the Virgo Transport 8. Rough seas continue to block the underwater search. Update (Sept 18): Indonesia's SAR agency began a salvage operation and divers entered the wreck for the first time, recovering three bodies -- bringing the confirmed toll to nine dead against roughly 126 still missing.",
    "score_note": "No material change in toll for a second straight edition; still an open search.",
    "sources": [
     "Indonesian search-and-rescue authorities (primary, via wire)",
     "NPR",
-    "Euronews"
+    "Euronews",
+    "Malay Mail",
+    "US News"
    ],
    "watch": true
   },
@@ -872,7 +874,7 @@
    "first_seen": "2026-09-09-pm",
    "last_updated": "2026-09-09-pm",
    "verification": "Confirmed-multiple (announcement and dispute); Unconfirmed (the mathematical claim itself)",
-   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alp\u00f6ge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
+   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alpöge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
    "score_note": "The mathematical claim is unverified; the authorship dispute is a new front in OpenAI-Anthropic researcher tension the same week as the Coxon resignation.",
    "sources": [
     "Axios",
@@ -1325,12 +1327,12 @@
   },
   {
    "id": "kosovo-thaci-conviction-sep16",
-   "headline": "Kosovo's former president Hashim Tha\u00e7i convicted of war crimes, sentenced to 25 years",
+   "headline": "Kosovo's former president Hashim Thaçi convicted of war crimes, sentenced to 25 years",
    "status": "New",
    "first_seen": "2026-09-16-pm",
    "last_updated": "2026-09-16-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Tha\u00e7i on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
+   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Thaçi on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
    "score_note": "Most senior former head of state this tribunal has convicted; closes a case that has hung over Kosovo's politics for years.",
    "sources": [
     "Kosovo Specialist Chambers ruling (primary, via wire)",
@@ -1492,11 +1494,11 @@
   {
    "id": "trump-iran-annihilate-decision-sep18",
    "headline": "Trump says he faces a 'big decision' on whether to 'annihilate' Iran's regime",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-18-am",
-   "last_updated": "2026-09-18-am",
+   "last_updated": "2026-09-18-pm",
    "verification": "Confirmed-multiple for the remark itself; Single-reliable-source for the AP targeting-error detail",
-   "one_line": "In a Thursday Axios interview, Trump: 'I have a big decision coming up. Do I want to go in and annihilate them or do I not?' Officials cited say a Gulf-leaders meeting around next week's UNGA is a likely moment of clarity. Sits in direct tension with his own claim of 'direct' contact with Iran and hope the war is 'nearing the end' -- Iran's SNSC secretary Rezaei rejected that framing as 'mixed signals.' Backdrop: Tuesday's UN war-crimes report (White House called it 'unserious nonsense' Thursday; Pentagon's own Minab probe 'remains ongoing,' with one unnamed AP official citing outdated DIA targeting data, unconfirmed).",
+   "one_line": "In a Thursday Axios interview, Trump: 'I have a big decision coming up. Do I want to go in and annihilate them or do I not?' Officials cited say a Gulf-leaders meeting around next week's UNGA is a likely moment of clarity. Sits in direct tension with his own claim of 'direct' contact with Iran and hope the war is 'nearing the end' -- Iran's SNSC secretary Rezaei rejected that framing as 'mixed signals.' Backdrop: Tuesday's UN war-crimes report (White House called it 'unserious nonsense' Thursday; Pentagon's own Minab probe 'remains ongoing,' with one unnamed AP official citing outdated DIA targeting data, unconfirmed). Update (Sept 18 pm): South Korean President Lee Jae Myung said at a Friday press conference South Korea 'will not' send troops for the Iran war or to the Strait of Hormuz, the clearest on-record response yet to Trump's repeated requests, leaving open only a narrower role protecting South Korea's own shipping. Separately, UKMTO reported a second Hormuz tanker incident Friday and Iran's IRGC claimed it struck and detained a Togo-flagged tanker (Trend) for an alleged unauthorized passage; neither the vessel identity nor the claim of authorship is independently confirmed.",
    "score_note": "A genuine, unresolved contradiction in the administration's own public Iran-war messaging within the same week.",
    "sources": [
     "Trump's Axios interview (primary, via wire)",
@@ -1504,7 +1506,12 @@
     "Rezaei's statement (primary)",
     "AP",
     "Times of Israel",
-    "Newsmax"
+    "Newsmax",
+    "President Lee's press conference (primary)",
+    "UKMTO statements (primary)",
+    "IRGC/Iranian state media (primary, single-party, disputed)",
+    "Korea Herald",
+    "Korea JoongAng Daily"
    ],
    "watch": true
   },
@@ -1581,18 +1588,21 @@
   {
    "id": "poland-tusk-hybrid-warning-sep18",
    "headline": "Poland's Tusk warns Russia may stage 'accidental' hybrid strikes on NATO allies",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-18-am",
-   "last_updated": "2026-09-18-am",
+   "last_updated": "2026-09-18-pm",
    "verification": "Confirmed-multiple for the warning itself; the underlying Russian-intent claim is Single-reliable-source/System inference (Polish government characterization)",
-   "one_line": "PM Tusk told parliament Thursday Russia is planning drone/rocket strikes on Poland and other NATO members supporting Ukraine, to be presented as 'accidental' to test Article 5 resolve; Russia's foreign ministry called it 'contrived.' Separately, Trump said 'major progress' is being made toward a permanent US Army base in Poland (sites near Powidz/Poznan visited by a Pentagon delegation), even as the Pentagon separately weighs broader European troop cuts.",
+   "one_line": "PM Tusk told parliament Thursday Russia is planning drone/rocket strikes on Poland and other NATO members supporting Ukraine, to be presented as 'accidental' to test Article 5 resolve; Russia's foreign ministry called it 'contrived.' Separately, Trump said 'major progress' is being made toward a permanent US Army base in Poland (sites near Powidz/Poznan visited by a Pentagon delegation), even as the Pentagon separately weighs broader European troop cuts. Update (Sept 18 pm): Polish Deputy Defense Minister Magdalena Sobkowiak-Czarnecka said any potential US Army base under discussion would 'definitely' be sited in western Poland -- the first concrete detail beyond Trump's Thursday 'great progress' post; no site, troop count or finalized agreement announced.",
    "score_note": "A NATO ally's head of government publicly warning of staged 'accidental' attacks is a notable escalation in alliance messaging.",
    "sources": [
     "PM Tusk's parliamentary remarks (primary)",
     "Russian foreign ministry statement (primary)",
     "Washington Post",
     "Bloomberg",
-    "Stars and Stripes"
+    "Stars and Stripes",
+    "Polish Deputy Defense Ministry statement (primary)",
+    "RFE/RL",
+    "TimesLive"
    ],
    "watch": true
   },
@@ -1663,6 +1673,177 @@
    "sources": [
     "Pittsburgh Post-Gazette",
     "WPXI"
+   ],
+   "watch": true
+  },
+  {
+   "id": "cnn-msnbc-politico-whitehouse-ban-sep18",
+   "headline": "Trump bars CNN, MSNBC and Politico from the White House",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-primary (Trump's own post); Confirmed-multiple (reporting)",
+   "one_line": "In a Friday Truth Social post, Trump said he is banning CNN, MS NOW (the rebranded MSNBC) and Politico from the White House effective immediately, calling their coverage 'FICTION and LIES' and warning other outlets 'would follow'; he cited MS NOW's rebrand and the roughly $8M the government pays for Politico Pro subscriptions. No confirmation the outlets' access was actually revoked in practice as of Friday afternoon; CNN said its staff remained in their workspace. Reporters Committee for Freedom of the Press president Bruce D. Brown called it 'flatly unconstitutional' and 'textbook viewpoint discrimination,' citing a prior court loss for the administration in a similar AP access case.",
+   "score_note": "A sitting president publicly announcing the exclusion of named news organizations from the White House on the stated basis of their coverage, with a live legal precedent already on the books.",
+   "sources": [
+    "Trump's Truth Social post (primary)",
+    "Reporters Committee for Freedom of the Press statement (primary)",
+    "CNBC",
+    "CNN",
+    "NBC News",
+    "Washington Post",
+    "Time",
+    "Al Jazeera",
+    "NPR"
+   ],
+   "watch": true
+  },
+  {
+   "id": "buffett-berkshire-chairman-steps-down-sep18",
+   "headline": "Buffett steps down as Berkshire Hathaway's chairman after six decades",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Berkshire Hathaway announced Friday that Warren Buffett, 96, is stepping down as chairman effective immediately, becoming chairman emeritus; his son Howard Buffett, a Berkshire director for 33 years, becomes chairman. Buffett had already handed the CEO role to Greg Abel in 2025; in his shareholder letter he wrote 'Father Time always wins' and said Abel had 'exceeded' his expectations. Berkshire's Class B shares fell roughly 1% on the news; the stock is up only about 1% year-to-date against the S&P 500's 11%-plus gain.",
+   "score_note": "Closes a 60-year chapter at one of the most closely watched companies in American finance.",
+   "sources": [
+    "Berkshire Hathaway shareholder letter (primary)",
+    "CNBC",
+    "CNN",
+    "NPR",
+    "Axios",
+    "Washington Post",
+    "NBC News"
+   ],
+   "watch": false
+  },
+  {
+   "id": "fed-bowman-svb-review-sep18",
+   "headline": "Fed's Bowman: the central bank's own supervisors missed the warning signs before SVB's collapse",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Fed Vice Chair for Supervision Michelle Bowman, speaking in London Friday, unveiled an independent review (Starling Advisory Group) finding Fed supervisory staff 'knew, or should have known' about Silicon Valley Bank's vulnerabilities as early as March 2022 but failed to act promptly, citing a 'long-standing culture of risk aversion.' The review found Trump-era regulatory tailoring played no role in the failure, clearing former Vice Chair Randal Quarles. Bowman separately said a revamped, less 'opaque' bank stress-testing framework will be finalized 'in the coming weeks.'",
+   "score_note": "A sitting Fed vice chair publicly faulting her own agency's supervisors, not deregulation, for a bank failure, while previewing a looser stress-test regime.",
+   "sources": [
+    "Fed Vice Chair Bowman's speech texts (primary, federalreserve.gov)",
+    "CNN",
+    "American Banker",
+    "ABA Banking Journal",
+    "Banking Dive"
+   ],
+   "watch": true
+  },
+  {
+   "id": "russia-duma-election-mobilization-fears-sep18",
+   "headline": "Russia opens a three-day election amid fears of a post-vote mobilization wave",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-primary (election itself); Disputed/Single-source (the 300,000-conscript figure, from one unnamed European official; Putin explicitly denies any mobilization plan)",
+   "one_line": "Russia's State Duma election runs Sept 18-20. Bloomberg and other outlets report growing fear inside Russia of a mass mobilization once the vote ends; one unnamed European security official cited a figure of up to 300,000 additional conscripts by year-end. Putin called the warnings 'complete nonsense'; Zelensky said he expects any call-up in late September or early October. Same day, Russia struck Zaporizhzhia with roughly 93 drones, destroying a shopping complex, and hit a Kherson hospital's grounds with a drone-dropped explosive (no casualties reported there).",
+   "score_note": "A specific, dated political trigger (the election's close) for a potential major escalation in Russian force generation, with the underlying figure explicitly disputed by the Kremlin.",
+   "sources": [
+    "Bloomberg",
+    "Moscow Times",
+    "Russia Matters",
+    "Ukraine General Staff statements (combatant-sourced)",
+    "Mezha.net",
+    "Ukrinform"
+   ],
+   "watch": true
+  },
+  {
+   "id": "naacp-polling-place-agents-lawsuit-sep18",
+   "headline": "Voting-rights coalition sues over armed federal agents at polling places as early voting opens",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-multiple (lawsuit itself); Single-reliable-source (NPR's second DHS-document report)",
+   "one_line": "A nine-organization coalition led by the NAACP (with AALDEF litigating) filed suit Friday in U.S. District Court for D.C., arguing administration suggestions that armed ICE officers could appear near polling sites amount to illegal voter intimidation under the Voting Rights Act. Separately, NPR reports obtaining an internal DHS email (dated last December) pairing a 78-page list of non-English-language voting jurisdictions with a DOJ prosecution 'checklist,' sent to officials leading the administration's noncitizen-voting review; DHS told NPR on the record it 'is not planning operations targeting polling locations.' Both land the day early voting opened in Virginia, South Dakota and Minnesota.",
+   "score_note": "Two distinct legal/reporting threads converging on the same question -- federal enforcement activity chilling turnout -- arriving as voting itself begins.",
+   "sources": [
+    "Coalition complaint via AALDEF (primary)",
+    "DHS statement to NPR (primary)",
+    "NPR (exclusive)",
+    "MS NOW"
+   ],
+   "watch": true
+  },
+  {
+   "id": "us-industrial-production-lei-cooling-sep18",
+   "headline": "US growth data cools: industrial output stalls, first manufacturing decline in seven months",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "August industrial production was flat (0.0%, missing a ~+0.2-0.3% consensus); manufacturing output fell 0.3%, its first decline after seven straight gains, though computer/electronic-products and electrical-equipment utilization both rose, consistent with continued AI-infrastructure capex. Capacity utilization held at 76.3%. Separately, the Conference Board's Leading Economic Index fell 0.1% to 99.5, its first decline since March; the Board still projects 1.9% 2026 GDP growth but trimmed 2027 to 1.8%.",
+   "score_note": "Two independent gauges turning down the same day is a modest but genuine cooling signal, two days after the Fed's hawkish hike.",
+   "sources": [
+    "Federal Reserve G.17 release (primary)",
+    "Conference Board release (primary)",
+    "FRED",
+    "Trading Economics"
+   ],
+   "watch": true
+  },
+  {
+   "id": "sudan-gold-mine-collapse-sep18",
+   "headline": "Sudan gold-mine collapse kills dozens in RSF-held territory",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Single-reliable-source with disputed toll",
+   "one_line": "The Sudanese Doctors Network reported at least 67 dead in a gold-mine collapse at Al-Zaraa, West Kordofan (RSF-controlled); an anonymous RSF source cited by AFP put the toll at least 82. Neither figure independently verifiable given the absence of independent access to the area, itself a consequence of Sudan's ongoing civil war, now in its fourth year amid famine conditions the WFP says affect 24.6 million people.",
+   "score_note": "A major casualty event in an active conflict zone with no independent access to verify either attributed toll.",
+   "sources": [
+    "Sudanese Doctors Network (primary, single-source)",
+    "anonymous RSF source via AFP (primary, single-source, disputed)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "ice-nominee-schroyer-withdrawn-sep18",
+   "headline": "White House withdraws ICE director nominee amid Rand Paul hold",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The White House withdrew Lance Schroyer's nomination to lead Immigration and Customs Enforcement on Thursday, after Sen. Rand Paul held up the nomination in committee over questions about a Minnesota agent-involved shooting. No successor nominee named. This report did not cover the withdrawal in Thursday's or Friday morning's edition despite same-day coverage; disclosed as a coverage gap, logged to the corrections ledger.",
+   "score_note": "A stalled Cabinet-adjacent nomination tied to an unresolved use-of-force question, disclosed here as a coverage gap.",
+   "sources": [
+    "Wire reporting (via multiple outlets)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "prt-board-bus-purchase-i79-crack-sealing-sep18",
+   "headline": "PennDOT adds nighttime I-79 lane restrictions to an already-busy fall of South Fayette road work",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "PennDOT will begin nighttime joint-and-crack sealing on I-79 in South Fayette Township starting Friday, Sept 26, 7 PM-6 AM lane restrictions between the PA Turnpike/PIT/Morganza Rd interchange and the Route 50/Bridgeville exit, through early November -- layering onto the already-underway Route 50 signal-upgrade project through late November.",
+   "score_note": "New road-work announcement directly affecting Bridgeville-area commutes.",
+   "sources": [
+    "PennDOT District 11 (primary)",
+    "WPXI"
+   ],
+   "watch": false
+  },
+  {
+   "id": "pa-puc-datacenter-grid-reliability-vote-sep18",
+   "headline": "PA PUC votes to rewrite emergency electric load-control rules as data centers strain the grid",
+   "status": "New",
+   "first_seen": "2026-09-18-pm",
+   "last_updated": "2026-09-18-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Pennsylvania's Public Utility Commission voted 5-0 to direct staff to draft updated regulations on when/how customers can be curtailed during grid emergencies, citing PJM's projected 6,831-MW reliability shortfall for 2028-29 tied partly to data-center demand. A technical conference on cost allocation is planned this fall; a tentative plan is due at the PUC's Oct 1 meeting.",
+   "score_note": "State-level regulatory response to data-center driven grid strain, relevant to Logan's home state.",
+   "sources": [
+    "Pennsylvania Public Utility Commission (primary)"
    ],
    "watch": true
   }

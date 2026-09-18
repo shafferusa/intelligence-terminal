@@ -1,6 +1,36 @@
 {
  "forecasts": [
   {
+   "id": "2026-09-18-pm-1",
+   "date": "2026-09-18",
+   "slot": "pm",
+   "forecast": "Trump publicly clarifies (via a speech, interview, or action) the 'big decision' on further Iran military action he described in Thursday's Axios interview, most likely around next week's UN General Assembly meetings with Gulf leaders.",
+   "horizon": "2026-10-02",
+   "probability": "45-60%",
+   "basis": "Officials cited by Axios named the UNGA-adjacent Gulf-leaders meeting as a likely moment of clarity; VP Vance separately said the war enters a 'fundamentally different phase' within a month or two, a similar timeframe.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-18-pm-2",
+   "date": "2026-09-18",
+   "slot": "pm",
+   "forecast": "Russia announces a new conscription/mobilization wave within two weeks of its Sept 18-20 Duma election concluding.",
+   "horizon": "2026-10-04",
+   "probability": "30-45%",
+   "basis": "An unnamed European security official cited a figure of up to 300,000 additional conscripts by year-end, and Zelensky has said he expects a call-up in late September or early October; the range's lower end reflects Putin's on-record, flat denial that any such plan exists, and the combatant/opposing-side origin of the underlying claims.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-18-pm-3",
+   "date": "2026-09-18",
+   "slot": "pm",
+   "forecast": "SOFR and other overnight funding-market benchmarks stay elevated (printing above recent norms) through month-end, consistent with quarter-end-adjacent repo/funding pressure rather than a one-day anomaly.",
+   "horizon": "2026-09-30",
+   "probability": "55-70%",
+   "basis": "FRED's Sept 17-dated SOFR reading jumped 23 basis points to 3.85% in a single day, a move this report could not attribute to any identified news event; quarter-end repo/funding pressure is a well-documented recurring seasonal pattern.",
+   "status": "open"
+  },
+  {
    "id": "2026-09-14-am-1",
    "date": "2026-09-14",
    "slot": "am",
