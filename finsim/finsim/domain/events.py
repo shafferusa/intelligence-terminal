@@ -122,6 +122,11 @@ class E:
     REPO_MARKED = "REPO_MARKED"
     REPO_ADJUSTED = "REPO_ADJUSTED"                    # collateral added / substituted / principal reduced
     REPO_CLOSED = "REPO_CLOSED"
+    CCY_LOAN_OPENED = "CCY_LOAN_OPENED"                # a loan drawn in another currency at its policy rate plus a spread
+    CCY_LOAN_ACCRUED = "CCY_LOAN_ACCRUED"
+    CCY_LOAN_TRANSLATED = "CCY_LOAN_TRANSLATED"
+    CCY_LOAN_REPAID = "CCY_LOAN_REPAID"
+    CCY_LOAN_ROLLED = "CCY_LOAN_ROLLED"
     # prime brokerage
     MARGIN_LOAN_CHANGED = "MARGIN_LOAN_CHANGED"        # draw (+) / repay (-)
     MARGIN_INTEREST_ACCRUED = "MARGIN_INTEREST_ACCRUED"

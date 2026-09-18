@@ -72,7 +72,7 @@ class World:
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
         from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
-        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, investment_banking, live, mbs
+        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, investment_banking, live, mbs, ccy_funding
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.live = live.LiveDesk(self)
@@ -100,6 +100,7 @@ class World:
         self.pequity = private_equity.PrivateEquityEngine(self)
         self.ibank = investment_banking.InvestmentBankingEngine(self)
         self.mbsdesk = mbs.MBSDesk(self)
+        self.funding = ccy_funding.CcyFundingEngine(self)
         from .engines import playbook
         self.playbook = playbook.Playbook(self)
         self.scenario = "NONE"
@@ -242,6 +243,7 @@ class World:
         self.pcredit.register()
         self.pequity.register()
         self.mbsdesk.register()
+        self.funding.register()
         self.ibank.register()
         self.on(E.SCENARIO_EVENT, World._h_scenario_event)
         for et in (E.ECONOMIC_RELEASE, E.EARNINGS_REPORTED, E.RATING_CHANGED, E.ISSUER_DEFAULTED):
@@ -756,6 +758,12 @@ class World:
         return o
 
     # ------------------------------------------------------------------ phase 2 commands
+    def ccy_borrow(self, portfolio_id: str, currency: str, amount, term_days: int = 0, tag=None):
+        return self.funding.borrow(self.portfolio(portfolio_id), currency, amount, term_days, tag)
+
+    def ccy_repay(self, portfolio_id: str, loan_id: str, amount=None):
+        return self.funding.repay(self.portfolio(portfolio_id), loan_id, amount)
+
     def _cmd(self, fn, *args, **kwargs):
         try:
             return fn(*args, **kwargs)

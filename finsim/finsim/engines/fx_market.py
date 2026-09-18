@@ -83,6 +83,7 @@ class FXModel:
         self.spot: Dict[str, float] = {"USD": 1.0, **{c: s.spot0 for c, s in SPECS.items()}}
         self.rate: Dict[str, float] = {"USD": 0.0425, **{c: s.rate0 for c, s in SPECS.items()}}
         self.history: Dict[str, List[Tuple[str, float, float]]] = {c: [] for c in CURRENCIES}   # (date, spot, rate)
+        self.rate_source: Dict[str, str] = {}      # currency -> where today's policy rate came from (a tracking save: FRED); empty = the model
 
     def step(self, d: date, mkt_factor: float, usd_rate: float, usd_rate_change: float) -> Dict[str, Dict]:
         dt = 1.0 / 252.0
@@ -103,6 +104,8 @@ class FXModel:
     def ingest(self, d: date, payload: Dict[str, Dict]) -> None:
         for c, p in payload.items():
             self.spot[c], self.rate[c] = float(p["spot"]), float(p["rate"])
+            if p.get("rate_source"):
+                self.rate_source[c] = p["rate_source"]
             self.history.setdefault(c, []).append((d.isoformat(), self.spot[c], self.rate[c]))
 
     def cross(self, buy: str, sell: str) -> float:

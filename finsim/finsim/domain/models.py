@@ -248,6 +248,31 @@ class SecurityLoan:
 
 
 @dataclass
+class CcyLoan:
+    """A loan drawn in another currency at that currency's policy rate plus a spread; the book carries it in the base currency."""
+    id: str
+    portfolio_id: str
+    currency: str
+    principal: Decimal                  # outstanding, local
+    rate: float                         # current all-in rate (fixed for a term loan; resets daily for an open one)
+    policy_rate: float
+    spread: float
+    start_date: str
+    maturity: Optional[str]             # None = open
+    term_days: int = 0
+    base_value: Decimal = ZERO          # principal at the last translation, base currency (ledger 2750)
+    accrued: Decimal = ZERO             # local
+    accrued_base: Decimal = ZERO        # base (ledger 2755)
+    interest_paid: Decimal = ZERO       # local
+    status: str = "OPEN"                # OPEN | REPAID
+    rolls: int = 0
+    lender: str = ""
+    tag: Optional[str] = None
+    closed_date: Optional[str] = None
+    history: List[Dict] = field(default_factory=list)
+
+
+@dataclass
 class RepoTrade:
     id: str
     portfolio_id: str
@@ -517,6 +542,7 @@ class Portfolio:
     locates: Dict[str, Locate] = field(default_factory=dict)
     loans: Dict[str, SecurityLoan] = field(default_factory=dict)
     repos: Dict[str, RepoTrade] = field(default_factory=dict)
+    ccy_loans: Dict[str, CcyLoan] = field(default_factory=dict)
     pledges: List[Pledge] = field(default_factory=list)
     collateral_calls: Dict[str, CollateralCall] = field(default_factory=dict)
     cash_collateral: Dict[str, Decimal] = field(default_factory=dict)   # reference -> cash posted (base ccy)

@@ -1003,6 +1003,8 @@ class MarketEngine:
         self.ensure_listings(d)
         prev_bd = date.fromisoformat(prev.date)
         self._fx_payload = self.fx.step(d, mkt, curve.policy_rate, level - prev.level)
+        if real_mode and d >= self.start:
+            self._pin_fx_rates(d)
         vix = 100 * (0.5 * R.mkt_vol + 0.5 * self.realized_vol("SPY")) * (1 + macro_out["vol_bump"])
         for idx, lvl in (("DXY", dollar_index(self.fx.spot)), ("VIX", vix)):
             if idx in self.securities and lvl:
@@ -1255,6 +1257,25 @@ class MarketEngine:
             for k, v in self.real_macro_feed.data.items():
                 out.setdefault(k, {}).update(v)
         return out or None
+
+    def _pin_fx_rates(self, d: date) -> None:
+        """A tracking save funds and carries every currency at its real policy rate: FRED's, as known on `d`, into the FX model
+        (forwards, deposit interest, currency loans and the local curves all read it); stored in the day's FX payload for replay."""
+        from .realmacro import policy_rates_as_of
+        series = self.real_macro_series()
+        if not series:
+            return
+        for c, r in policy_rates_as_of(series, d).items():
+            if c == "USD" or c not in self.fx.rate:
+                continue
+            self.fx.rate[c] = float(r["rate"])
+            self.fx.rate_source[c] = r["source"]
+            if c in self._fx_payload:
+                self._fx_payload[c]["rate"] = float(r["rate"])
+                self._fx_payload[c]["rate_source"] = r["source"]
+            if self.fx.history.get(c):
+                dd, s_, _r = self.fx.history[c][-1]
+                self.fx.history[c][-1] = (dd, s_, float(r["rate"]))
 
     def _pin_real_macro(self, d: date, macro_out: Dict) -> None:
         """Replace the seeded macro day with the real one: state as known on `d`, the day's real releases, no invented shocks or news."""

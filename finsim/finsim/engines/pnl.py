@@ -149,6 +149,7 @@ class PnLEngine:
                + led.balance("2360") + led.balance("2370") + led.balance("2380") + led.balance("2460"))
         repo = led.balance("2500")
         margin_loan = led.balance("2700")
+        ccy_loans = led.balance("2750") + led.balance("2755")
         otc_assets = led.balance("1800")
         otc_liabilities = led.balance("2800")
         operating_assets = led.balance("1900")
@@ -169,12 +170,12 @@ class PnLEngine:
                 else:
                     fut_short += notional
         nav = (cash_base + mv + recv + margin + collateral_posted + reverse_repo + fx_forwards + otc_assets + operating_assets + private_credit + private_equity + underwriting
-               - otc_liabilities - vm_received - pay - repo - margin_loan)
+               - otc_liabilities - vm_received - pay - repo - margin_loan - ccy_loans)
         unreal = sum((p.unrealized_pnl for p in pf.positions.values() if not p.is_future), ZERO)
         gross = long_exp + short_exp + fut_long + fut_short
         return {"nav": nav, "ledger_nav": led.nav(), "cash": cash, "cash_base": cash_base, "market_value": mv, "receivables": recv, "payables": pay,
                 "margin_deposits": margin, "collateral_posted": collateral_posted, "reverse_repo": reverse_repo, "fx_forwards": fx_forwards,
-                "repo_borrowing": repo, "margin_loan": margin_loan, "short_market_value": -short_exp, "otc_assets": otc_assets,
+                "repo_borrowing": repo, "margin_loan": margin_loan, "ccy_loans": ccy_loans, "short_market_value": -short_exp, "otc_assets": otc_assets,
                 "otc_liabilities": otc_liabilities, "vm_received": vm_received, "operating_assets": operating_assets, "private_credit": private_credit, "private_equity": private_equity, "underwriting": underwriting,
                 "unrealized": unreal, "realized": led.balance("4000") + led.balance("4400"), "long_exposure": long_exp + fut_long,
                 "short_exposure": short_exp + fut_short, "futures_long": fut_long, "futures_short": fut_short,

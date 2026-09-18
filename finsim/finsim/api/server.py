@@ -192,6 +192,12 @@ class Router:
                     return s.repo_desk(wid, pid)
                 if leaf[:1] == ["repo"] and len(leaf) == 3 and method == "POST":
                     return s.repo_action(wid, pid, leaf[1], leaf[2], body)
+                if leaf == ["ccy-loans"]:
+                    if method == "POST":
+                        return s.ccy_borrow(wid, pid, body["currency"], body["amount"], body.get("term_days", 0), body.get("tag"))
+                    return s.ccy_loans(wid, pid)
+                if leaf[:1] == ["ccy-loans"] and len(leaf) == 3 and leaf[2] == "repay" and method == "POST":
+                    return s.ccy_repay(wid, pid, leaf[1], body.get("amount"))
                 if leaf == ["collateral"]:
                     return s.collateral(wid, pid)
                 if leaf == ["financing"]:

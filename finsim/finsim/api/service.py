@@ -785,6 +785,7 @@ class Service:
         add("Liabilities", "Payables", s["payables"], "purchases awaiting settlement, fees, rebates")
         add("Liabilities", "Repo borrowing", s["repo_borrowing"], "")
         add("Liabilities", "Prime-broker loan", s["margin_loan"], "")
+        add("Liabilities", "Currency loans", s.get("ccy_loans", ZERO), "borrowed in other currencies at their policy rates, at spot")
         add("Liabilities", "OTC derivatives (negative PV)", s["otc_liabilities"], "")
         add("Liabilities", "Variation margin received", s.get("vm_received", ZERO), "")
         add("Liabilities", "Collateral received", sum((D(str(r["value"])) for r in pf.collateral_received.values()), ZERO), "securities lent")
@@ -1429,6 +1430,21 @@ class Service:
                          "trades": [asdict(t) for t in sorted(pf.fx_trades.values(), key=lambda t: t.trade_date, reverse=True)],
                          "forwards": [asdict(f) for f in sorted(pf.fx_forwards.values(), key=lambda f: f.trade_date, reverse=True)],
                          "history": {c: h[-120:] for c, h in fxm.history.items() if c != "USD"}}})
+
+    def ccy_loans(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.funding.book(w.portfolio(portfolio_id)))
+
+    def ccy_borrow(self, world_id: str, portfolio_id: str, currency: str, amount, term_days: int = 0, tag=None) -> Dict:
+        w = self.world(world_id)
+        self._open_for_instructions(w) if hasattr(self, "_open_for_instructions") else None
+        loan = w.ccy_borrow(portfolio_id, currency, amount, int(term_days or 0), tag)
+        return jsonable({"loan": asdict(loan), "book": w.funding.book(w.portfolio(portfolio_id))})
+
+    def ccy_repay(self, world_id: str, portfolio_id: str, loan_id: str, amount=None) -> Dict:
+        w = self.world(world_id)
+        loan = w.ccy_repay(portfolio_id, loan_id, amount)
+        return jsonable({"loan": asdict(loan), "book": w.funding.book(w.portfolio(portfolio_id))})
 
     def fx_market(self, world_id: str) -> Dict:
         """The FX market page: each currency against the dollar with its rate differential, forward points, realised vol,

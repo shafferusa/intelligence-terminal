@@ -109,6 +109,7 @@ class SimulationEngine:
         w.seclending.process_day(closing, prev)
         w.lenddesk.process_day(closing, prev)
         w.repo.process_day(closing, prev)
+        w.funding.process_day(closing, prev)
         w.pcredit.process_day(closing, prev)
         w.pequity.process_day(closing, prev)
         w.ibank.process_day(closing, prev)

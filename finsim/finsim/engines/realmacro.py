@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import urllib.error
 import urllib.request
 from datetime import date, timedelta
 from typing import Dict, List, Optional
@@ -27,6 +28,14 @@ SERIES = {"cpi": "CPIAUCSL", "core_cpi": "CPILFESL", "unemployment": "UNRATE", "
           # housing: the 30-year mortgage rate (weekly), starts and permits (thousands, annual rate), the Case-Shiller national index, existing-home sales
           "mortgage30": "MORTGAGE30US", "housing_starts": "HOUST", "permits": "PERMIT", "home_prices": "CSUSHPISA", "existing_sales": "EXHOSLUSM495S"}
 HOUSING_KEYS = ("mortgage30", "housing_starts", "permits", "home_prices", "existing_sales")
+# policy rates by currency: the ECB deposit facility rate (daily) and the OECD "immediate rates" (monthly) for the rest; a
+# series FRED does not carry is skipped and that currency keeps the model's rate
+POLICY_SERIES = {"EUR": "ECBDFR", "GBP": "IRSTCI01GBM156N", "JPY": "IRSTCI01JPM156N", "CHF": "IRSTCI01CHM156N", "CAD": "IRSTCI01CAM156N", "AUD": "IRSTCI01AUM156N",
+                 "NZD": "IRSTCI01NZM156N", "SEK": "IRSTCI01SEM156N", "NOK": "IRSTCI01NOM156N", "MXN": "IRSTCI01MXM156N", "BRL": "IRSTCI01BRM156N", "CNH": "IRSTCI01CNM156N",
+                 "KRW": "IRSTCI01KRM156N", "INR": "IRSTCI01INM156N", "IDR": "IRSTCI01IDM156N", "ZAR": "IRSTCI01ZAM156N", "PLN": "IRSTCI01PLM156N", "CZK": "IRSTCI01CZM156N",
+                 "HUF": "IRSTCI01HUM156N", "TRY": "IRSTCI01TRM156N"}
+PEGGED = {"HKD": ("USD", 0.0050), "SAR": ("USD", 0.0025)}      # the HKMA base rate and SAMA's repo rate sit just above the Fed's
+SERIES.update({f"policy_{c}": sid for c, sid in POLICY_SERIES.items()})
 UA = "FinSim/1.0 (local simulator; standard library)"
 # published FOMC decision days (second day of each meeting); other years fall back to the third Wednesday of the meeting months
 FOMC = {2025: ["2025-01-29", "2025-03-19", "2025-05-07", "2025-06-18", "2025-07-30", "2025-09-17", "2025-10-29", "2025-12-10"],
@@ -148,6 +157,9 @@ class RealMacro:
                 break
             try:
                 got = self._fetch(sid)
+            except urllib.error.HTTPError:
+                self.fetched_at[key] = now                    # FRED does not carry it: leave it alone for a while
+                continue
             except Exception:
                 self.last_failure = time.time()
                 break
@@ -259,6 +271,25 @@ def releases_on(series: Dict[str, Dict[str, float]], d: date, roll) -> List[Dict
                         "consensus": None, "surprise": 0.0, "z": 0.0, "rate_shock_bp": 0.0, "equity_shock": 0.0, "source": "FRED DFEDTARU",
                         "headline": f"Fed {what} the target range{'' if abs(step) < 1e-9 else f' by {abs(step) * 100:.0f}bp'}: upper bound {cur[last]:.2f}%",
                         "note": "the decision as published; the target range is FRED's DFEDTARL–DFEDTARU"})
+    return out
+
+
+def policy_rates_as_of(series: Dict[str, Dict[str, float]], asof: date) -> Dict[str, Dict]:
+    """Each currency's policy rate as last published on or before `asof`: {ccy: {rate, asof, source}}."""
+    out: Dict[str, Dict] = {}
+    iso = asof.isoformat()
+    upper = {d: v for d, v in series.get("fed_upper", {}).items() if d <= iso}
+    usd = round(upper[max(upper)] / 100, 5) if upper else None
+    if usd is not None:
+        out["USD"] = {"rate": usd, "asof": max(upper), "source": "FRED DFEDTARU"}
+    for c, sid in POLICY_SERIES.items():
+        s = {d: v for d, v in series.get(f"policy_{c}", {}).items() if d <= iso}
+        if s:
+            last = max(s)
+            out[c] = {"rate": round(s[last] / 100, 5), "asof": last, "source": f"FRED {sid}"}
+    for c, (anchor, add) in PEGGED.items():
+        if anchor in out:
+            out[c] = {"rate": round(out[anchor]["rate"] + add, 5), "asof": out[anchor]["asof"], "source": f"{anchor} + {add * 1e4:.0f}bp (peg)"}
     return out
 
 
