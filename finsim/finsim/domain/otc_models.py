@@ -26,9 +26,10 @@ class OE:
     COUNTERPARTY_EXPOSURE = "COUNTERPARTY_EXPOSURE"
 
 
-PRODUCTS = ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP")
+PRODUCTS = ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP", "EQUITY_OPTION", "FX_OPTION", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD")
 BUCKET_BY_PRODUCT = {"IRS": "rates", "FRA": "rates", "CAP": "rates", "FLOOR": "rates", "SWAPTION": "rates", "XCCY": "fx", "TRS": "equities",
-                     "CDS": "credit", "COMMODITY_SWAP": "commodities"}
+                     "CDS": "credit", "COMMODITY_SWAP": "commodities", "EQUITY_OPTION": "equities", "FX_OPTION": "fx", "EQUITY_FORWARD": "equities",
+                     "COMMODITY_FORWARD": "commodities", "FX_FORWARD": "fx"}
 
 
 @dataclass

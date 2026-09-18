@@ -41,25 +41,28 @@ class DealerSpec:
 
 
 DEALERS: Dict[str, DealerSpec] = {
-    "GOLDMAN": DealerSpec("GOLDMAN", "Goldman Sachs", "BBB+", 60, 0.10, 24.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP"), 0.9, 0.0,
+    "GOLDMAN": DealerSpec("GOLDMAN", "Goldman Sachs", "BBB+", 60, 0.10, 24.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "COMMODITY_SWAP", "EQUITY_OPTION", "FX_OPTION", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"), 0.9, 0.0,
                         "Bulge bracket: tight in rates and credit, shows everything.", (("TRS", 1.15), ("COMMODITY_SWAP", 1.3), ("XCCY", 1.1))),
-    "JPMORGAN": DealerSpec("JPMORGAN", "J.P. Morgan", "A", 45, 0.12, 16.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS"), 1.0, -0.1,
+    "JPMORGAN": DealerSpec("JPMORGAN", "J.P. Morgan", "A", 45, 0.12, 16.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "TRS", "CDS", "EQUITY_OPTION", "FX_OPTION", "EQUITY_FORWARD", "FX_FORWARD"), 1.0, -0.1,
                            "Relationship bank: slightly wider, leans to win.", (("XCCY", 0.8), ("CAP", 0.85), ("FLOOR", 0.85))),
-    "MORGAN_STANLEY": DealerSpec("MORGAN_STANLEY", "Morgan Stanley", "A-", 55, 0.15, 9.0, ("IRS", "FRA", "SWAPTION", "TRS", "CDS", "COMMODITY_SWAP"), 1.1, 0.1,
-                         "Broker-dealer: competitive in equity swaps and commodities, wider in rates.", (("TRS", 0.7), ("COMMODITY_SWAP", 0.85))),
-    "CITI": DealerSpec("CITI", "Citigroup", "BBB+", 70, 0.25, 5.0, ("IRS", "CAP", "FLOOR", "XCCY", "TRS", "COMMODITY_SWAP"), 1.25, -0.2,
+    "MORGAN_STANLEY": DealerSpec("MORGAN_STANLEY", "Morgan Stanley", "A-", 55, 0.15, 9.0, ("IRS", "FRA", "SWAPTION", "TRS", "CDS", "COMMODITY_SWAP", "EQUITY_OPTION", "EQUITY_FORWARD", "COMMODITY_FORWARD"), 1.1, 0.1,
+                         "Broker-dealer: competitive in equity swaps and commodities, wider in rates.", (("TRS", 0.7), ("COMMODITY_SWAP", 0.85), ("EQUITY_OPTION", 0.8), ("EQUITY_FORWARD", 0.8))),
+    "CITI": DealerSpec("CITI", "Citigroup", "BBB+", 70, 0.25, 5.0, ("IRS", "CAP", "FLOOR", "XCCY", "TRS", "COMMODITY_SWAP", "EQUITY_OPTION", "FX_OPTION", "EQUITY_FORWARD", "COMMODITY_FORWARD", "FX_FORWARD"), 1.25, -0.2,
                           "Aggressive mid-tier: cheapest when calm, first to widen and to decline in stress.", (("XCCY", 0.7), ("IRS", 0.95))),
-    "BARCLAYS": DealerSpec("BARCLAYS", "Barclays", "A-", 65, 0.08, 30.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "CDS"), 1.05, 0.15,
+    "BARCLAYS": DealerSpec("BARCLAYS", "Barclays", "A-", 65, 0.08, 30.0, ("IRS", "FRA", "CAP", "FLOOR", "SWAPTION", "XCCY", "CDS", "FX_OPTION", "FX_FORWARD"), 1.05, 0.15,
                            "Conservative universal bank: never the tightest, always there."),
-    "DEUTSCHE": DealerSpec("DEUTSCHE", "Deutsche Bank", "BBB+", 95, 0.35, 3.0, ("COMMODITY_SWAP", "CDS", "TRS"), 1.15, -0.15,
+    "DEUTSCHE": DealerSpec("DEUTSCHE", "Deutsche Bank", "BBB+", 95, 0.35, 3.0, ("COMMODITY_SWAP", "CDS", "TRS", "COMMODITY_FORWARD"), 1.15, -0.15,
                           "Specialist: sharp in commodities and credit, fragile balance sheet."),
 }
 RATING_ORDER = ["AAA", "AA+", "AA", "AA-", "A+", "A", "A-", "BBB+", "BBB", "BBB-", "BB+", "BB", "BB-", "B+", "B", "B-", "CCC", "D"]
 
 # standard bid/offer half-widths per product (in the product's quote unit) in a normal regime
-HALF_WIDTH = {"IRS": 0.75, "FRA": 1.0, "CAP": 0.03, "FLOOR": 0.03, "SWAPTION": 0.03, "XCCY": 2.0, "TRS": 7.5, "CDS": 3.0, "COMMODITY_SWAP": 0.004}
+HALF_WIDTH = {"IRS": 0.75, "FRA": 1.0, "CAP": 0.03, "FLOOR": 0.03, "SWAPTION": 0.03, "XCCY": 2.0, "TRS": 7.5, "CDS": 3.0, "COMMODITY_SWAP": 0.004,
+              "EQUITY_OPTION": 0.04, "FX_OPTION": 0.04, "EQUITY_FORWARD": 0.0015, "COMMODITY_FORWARD": 0.004, "FX_FORWARD": 0.0004}
 UNIT = {"IRS": "bp of fixed rate", "FRA": "bp of rate", "CAP": "fraction of premium", "FLOOR": "fraction of premium", "SWAPTION": "fraction of premium",
-        "XCCY": "bp of basis", "TRS": "bp of financing spread", "CDS": "bp of spread", "COMMODITY_SWAP": "fraction of fixed price"}
+        "XCCY": "bp of basis", "TRS": "bp of financing spread", "CDS": "bp of spread", "COMMODITY_SWAP": "fraction of fixed price",
+        "EQUITY_OPTION": "fraction of premium", "FX_OPTION": "fraction of premium", "EQUITY_FORWARD": "fraction of forward price",
+        "COMMODITY_FORWARD": "fraction of forward price", "FX_FORWARD": "fraction of forward rate"}
 REGIME_WIDTH = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.1, "RATE_HIKING": 1.3, "RECESSION": 1.8, "LIQUIDITY_STRESS": 3.0}
 
 # CSA terms by dealer: threshold and MTA in base currency, IM by product (fraction of notional)
@@ -71,6 +74,10 @@ CSA_TERMS = {
     "BARCLAYS": {"threshold": 1_000_000, "mta": 250_000, "im": {"IRS": 0.008, "FRA": 0.003, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.025, "TRS": 0.100, "CDS": 0.040, "COMMODITY_SWAP": 0.080}},
     "DEUTSCHE": {"threshold": 0, "mta": 25_000, "im": {"IRS": 0.020, "FRA": 0.006, "CAP": 0.0, "FLOOR": 0.0, "SWAPTION": 0.0, "XCCY": 0.050, "TRS": 0.200, "CDS": 0.100, "COMMODITY_SWAP": 0.150}},
 }
+_NEW_IM = {"EQUITY_OPTION": 0.0, "FX_OPTION": 0.0, "EQUITY_FORWARD": 0.10, "COMMODITY_FORWARD": 0.08, "FX_FORWARD": 0.02}   # options: premium paid in full
+for _k, _t in CSA_TERMS.items():
+    for _p, _im in _NEW_IM.items():
+        _t["im"].setdefault(_p, _im * (1.5 if _t["threshold"] == 0 else 1.0))
 
 
 @dataclass

@@ -86,6 +86,7 @@ class SimulationEngine:
         w.seclending.process_day(closing, prev)
         w.lenddesk.process_day(closing, prev)
         w.repo.process_day(closing, prev)
+        w.pcredit.process_day(closing, prev)
         w.fx.process_day(closing)
         w.otc.process_day(closing, prev)
         w.options.process_day(closing)

@@ -53,27 +53,48 @@ update can be undone by stopping the server and copying a snapshot back over `fi
 removes the service and launcher and keeps the saves (`--purge` deletes them). The service starts from the
 repository checkout, so keep it where it is or run `install` again after moving it.
 
-### Finding a name
+### The pages (2026-09 rebuild)
 
-The search box in the header (press `/` from anywhere) matches tickers, company names, bonds, futures
-contracts and commodities as you type; Enter opens the top match's page, and each match offers its Book and
-Options views.
+The nav is one entry per thing you do, each page with tabs; older links (`#/home`, `#/trading`, `#/book`,
+`#/treasury`, …) redirect to their new home.
 
-### The book
+| Page | What is there |
+|---|---|
+| **Daily News** | the briefing (the login screen), the news feed, macro & calendar |
+| **Portfolio** | overview (NAV, exposure, positions), P&L (today by source and by position, income statement), performance (total/annualised return, vol, Sharpe, Sortino, drawdown, hit rate, alpha/beta vs the benchmark, growth of 100, monthly table), career, my desk |
+| **Open Positions** | everything open in every book as spreadsheet grids: securities, futures, listed options, OTC trades, securities borrowed, repo, FX forwards, private-credit loans, commodity inventory; a **History** toggle brings back every fill, instruction, strategy and FX deal; Copy/CSV per table or for the page |
+| **Live Trades** | today: working instructions (cancel here), option packages working all-or-none, fills, OTC dealt today, open RFQs, settlements due or failing, calls to meet, a quick ticket |
+| **Groupings** | everything open grouped by the name it is on — SPY shares with SPY/SPX options and ES futures, a short with its loan and its calls, a bond with its repo and CDS, rates swaps together, each currency's forwards and swaps |
+| **Market Place** | where you trade, with the ticket beside the tables: **equities & ETFs** (sort by gainers/losers/volume/yield/vol, filter by sector and class; a row loads the ticket, *chart* opens the quick look), **bonds & rates** (curve, history, spreads, the bond universe), **foreign exchange** (see below), **commodities** (spot, curve shape, inventories, reports; the front month loads the ticket). Sandbox saves force the regime here. |
+| **Options** | the chain and ticket, strategies, positions & Greeks, expirations, exercise, vol surface, margin; a ticker box jumps to any underlying's chain |
+| **Futures** | every listed contract on every underlying (index, note, 21 commodities) with notional, margin and expiry; your futures with variation margin; the ticket; calendar spreads; physical delivery, inventory and deliveries |
+| **OTC Derivatives** | RFQ to six dealers: swaps, FRAs, caps/floors, swaptions, cross-currency, TRS, CDS, commodity swaps, and — new — **OTC equity options** (any strike/expiry on any name or SPX), **FX options**, **equity forwards**, **commodity forwards** and dealer **FX forwards**; a product finder (“fx option”, “forward”) picks the product; blotter, risk, counterparties, ISDA/CSA, upcoming |
+| **Security & Credit Lending** | securities lending (locate → borrow → short), repo, collateral & prime brokerage, and **private credit**: a monthly pipeline of loans to sponsor-backed private companies (first lien, unitranche, second lien, mezzanine; OID, spread, covenants, leverage), commit from $1m, quarterly floating coupons, daily marks off a loan-market spread, rating migration, covenant amendments, defaults and workouts, secondary sales at a bid |
+| **Risk** | VaR, expected shortfall, stress, liquidity, limits, history |
+| **Accounting** | general ledger and balance sheet, settlements & custody, cash & treasury (cash ledgers, liquidity projection, movements), audit trail |
+| **Calculations** | the strategy playbook: 38 ready-made packages (protective puts at several strikes, tail hedge, collars incl. zero-cost, put-spread hedge, protected shorts, short collar, call-spread hedge, covered and partial covered calls, cash-secured put, bull/bear call and put spreads, straddles, strangles, iron condor, synthetic long/short/protected TRS, core-plus-overlay, delta-neutral TRS, long/short/protected futures, relative value long/short and protected). Pick one, set underlying, units, tenor and per-leg strikes, **preview** every leg off today's quotes with Greeks, margin, max gain/loss, breakevens and the payoff chart, then **execute** the whole package in one click |
+| **Settings, Glossary** | presets per page; every term the screens use |
 
-**Book** (in the nav, next to Portfolio) is the one page with everything open, grouped by the name it is on:
-SPY shares, SPY and SPX options and ES futures sit together under SPY; a borrowed-and-shorted name sits with
-its loan and any option on it; a bond with its repo and any CDS on it; rates swaps under one "rates" group,
-each currency's forwards and cross-currency swaps under the currency. Only names with something open appear.
-Click a name (or open `#/book/SPY`) for that name's page alone; every row links to its desk. The instructions
-blotter hides cancelled, expired and rejected instructions behind a toggle.
+**Search on every page.** The header box (press `/`) matches tickers, names, bonds, contracts and commodities;
+Enter opens a **quick look** — candle chart with moving averages and a crosshair, the quote, a ticket, and
+links to the full page, grouping, options chain and calculations — without leaving the page. Each page has its
+own filter box for its tables, the options page a ticker box for chains, the OTC page a product finder.
 
-### Trades, spreadsheet style
+**Foreign exchange.** The FX tab shows each currency against the dollar the way the market quotes it (EUR/USD,
+USD/JPY), with day/week/month changes, the foreign short rate, carry versus the dollar, realised vol, the
+deviation from its long-run level, forward points at 1M/3M/6M/1Y (covered interest parity), and a
+decomposition of today's move into the model's drivers: carry drift, the currency's beta to the equity
+factor (AUD and CAD risk-on, JPY and CHF havens), mean reversion, and the residual flow. A chart per pair,
+the rate differential, the forward curve, a cross-rate matrix, your cash and exposure per currency, and
+spot and forward tickets beside it; currency options and margined forwards are on the OTC desk.
 
-**Trades** (in the nav) lists every fill, instruction, option strategy, OTC trade, securities loan, repo, FX
-spot and FX forward of the book in bordered, selectable grids. Each table has **Copy** (tab-separated: paste
-into Excel or Sheets and every value lands in its own cell, numbers unformatted, dates as YYYY-MM-DD) and
-**CSV**; *Copy everything* and *Download all* take the whole page; a filter box narrows every table at once.
+**Track the real market.** A new save can be created with market source *REAL*: the world fetches real daily
+closes (Yahoo Finance; stocks, ETFs, ADRs, Treasury yields, commodity front months, FX), stores a year of
+history in the save as one event (replay never touches the network), starts on the last close, and pins every
+session it advances into to that day's real closes — bonds off the real curve, options off the vol surface,
+futures off spot, OTC valuations and P&L all follow. It can only advance into sessions the market has already
+closed; the header badge says which close it is waiting for. Regime and scenario still drive news and vol.
+Simulated saves are unchanged.
 
 ### Settings, glossary, saves
 
@@ -146,13 +167,13 @@ funding, liquidity and risk over days and months.
 |---|---|
 | **Saves & careers** | Multiple independent saves. Jobs: Sandbox, Portfolio Manager ($100MM vs equity benchmark), Global Macro Trader ($250MM; rates, index and commodity futures, government bonds), Commodity Trader ($100MM; energy, metals, ags, livestock), Fixed-Income PM ($250MM; Treasuries, corporates, note futures vs a 5Y benchmark). Each job fixes capital, mandate (instrument classes enforced at order entry), risk limits (gross leverage, single-position %, drawdown), benchmark and a promotion ladder. Phase 8 adds the Hedge Fund Manager ($500MM, outside investors), Bank Rates & Credit Trader, Derivatives Trader, Securities Lending Trader, Repo/Funding Trader, Corporate Treasurer and Risk Manager (four AI desks), each with missions, plus crisis mode. |
 | **Reviews & progression** | Month, quarter and year-end reviews from the book's own history: return, benchmark, alpha, max drawdown, Sharpe, largest contributor/loss, P&L by bucket, risk breaches, settlement failures, margin calls missed, a rating and an evaluation. EXCEEDS at a quarter end promotes and allocates capital; two UNACCEPTABLE quarters demote. |
-| **Market engine** | ~70 real names: stocks across all eleven GICS sectors (Apple to Nucor), three REITs, two ADRs (TSM, Toyota), a bank preferred, five ETFs (SPY, QQQ, TLT, HYG, SHV) with real fundamentals and liquidity tiers; 4 on-the-run Treasuries and representative JPMorgan (A), Ford Motor Credit (BBB-) and American Airlines (B+) bonds. Factor-model returns (market + sector + idiosyncratic), Nelson–Siegel curve and IG/HY spreads shocked on the same factor, five Markov regimes, a volatility index, ex-dividend price drops. |
+| **Market engine** | 171 real names: 138 stocks across all eleven GICS sectors, REITs, ADRs (TSM, Toyota, ASML, Novo Nordisk, Alibaba, SAP, Shell), a bank preferred, 19 ETFs (SPY, QQQ, IWM, DIA, sector ETFs, GLD, SLV, USO, TLT, IEF, LQD, HYG, BND, SHV, VNQ, EEM, EFA) with real fundamentals and liquidity tiers; 4 on-the-run Treasuries and 15 representative corporate bonds from JPMorgan, Microsoft, Apple and Exxon (A/AA) through Ford, Boeing, GM, Wells Fargo, Verizon, AT&T, CVS, Kraft Heinz and Occidental (BBB) to American Airlines, Carnival, Royal Caribbean, Warner Bros. Discovery, Delta and Moderna (BB/B). Optionally the real market's closes (see *Track the real market*). Factor-model returns (market + sector + idiosyncratic), Nelson–Siegel curve and IG/HY spreads shocked on the same factor, five Markov regimes, a volatility index, ex-dividend price drops. |
 | **Commodities** | 21 commodities (WTI, Brent, natural gas, gasoline, heating oil; gold, silver, copper, platinum, palladium, aluminum; corn, wheat, soybeans, coffee, sugar, cotton, cocoa; live cattle, feeder cattle, lean hogs) each with a supply/demand state: cyclical demand, decaying supply shocks that arrive as news, inventories that accumulate the balance and jump on scheduled reports (EIA weekly, USDA/LME monthly). Prices respond to changes in the balance, the macro cycle and seasonality; the **futures curve** is cost-of-carry with a convenience yield that rises when inventories are tight, so shortages backwardate and gluts contango. A COMMODITIES desk page and a page per commodity show spot, curve (today / 5d / 1m ago), contracts, fundamentals and news. |
 | **Futures** | Real month codes (CLZ26), per-commodity listing cycles and expiry rules, contract multipliers, ticks, margins; equity-index (ES on SPX) and 10Y note (ZN) futures by carry. Long or short; commissions per contract; **daily variation margin** moves cash and posts to income; initial margin is swept to a clearing account at a regime-dependent rate; margin calls when cash is overdrawn; forced liquidation after three days; positions auto-close on the last trade date so nobody takes delivery. |
 | **Trading** | Market-on-next-update semantics; spread crossing and square-root impact; participation caps; trailing stops that ratchet; conditional orders evaluated at the close; FIFO lots; pre-trade cash, position, margin and mandate checks. |
 | **Ledger & operations** | Institutional chart of accounts with margin-deposit and futures-P&L accounts; trade-date accounting; balanced journal entries with a security dimension; trial balance and balance sheet. Trade lifecycle to settlement, RVP/DVP instructions, configurable settlement cycles, holiday calendar, fails with retry, separate cash and custody movements. Dividends, coupons, maturities, daily interest accruals. |
 | **Audit** | Append-only sqlite event log; every event has a cause; state (including briefings, reviews, futures margin) is rebuilt by replay and tested to be identical. |
-| **UI** | Daily briefing (login screen), portfolio (positions, futures, exposures, NAV explain, P&L explain), trading (instructions blotter, trade lifecycle), markets, commodities desk (spread tickets, physical delivery, inventory), fixed income, options, OTC derivatives, risk, macro, sec lending, repo, collateral, settlements & custody, treasury & FX, news, accounting, MY DESK (the job's own book), career (missions, scenario), audit trail. New-save dialog picks job, clock mode, timezone, update time, initial regime and scenario. |
+| **UI** | Fifteen pages with tabs (see *The pages* above): Daily News, Portfolio, Open Positions, Live Trades, Groupings, Market Place, Options, Futures, OTC Derivatives, Security & Credit Lending, Risk, Accounting, Calculations, Settings, Glossary; a quick-look chart and ticket from the search box on every page. New-save dialog picks job, clock mode, timezone, update time, market source (simulated or real closes), initial regime and scenario. |
 
 ### Phase 2 — financing (built)
 
@@ -283,6 +304,17 @@ breach on any desk for 20 sessions, decide eight requests in time.
 | **Logging** (`log.py`) | One `finsim` logger (level `FINSIM_LOG_LEVEL`, rotating file at `FINSIM_LOG`): world creation, days processed with event counts and timings (`run_log`), rejected commands, request outcomes, replay errors, migrations. |
 | **Master scenario** (`tests/test_master_scenario.py`) | A 45-step end-to-end walk through every subsystem in one world (trading, financing, derivatives, OTC, risk, operations, macro, careers, commodities, infrastructure) with the accounting invariants checked at every checkpoint, replay equality and a bit-for-bit determinism check against a second run. |
 
+### 2026-09 — expansion (built)
+
+| Piece | What exists |
+|---|---|
+| **Universe** (`tools/refresh_universe.py`, `data/universe.json`) | 171 equities/ETFs/ADRs and 19 bonds, refreshed from Yahoo Finance and EDGAR; ~37k securities once every option chain is listed. `make_world` stays under seven seconds, a day under half a second. |
+| **Real market** (`engines/realfeed.py`) | `RealFeed`: Yahoo spark closes for every symbol (batched, cached under `~/.finsim/realfeed-cache.json`, shared by every save), `history()` stored in the save as `REAL_HISTORY_LOADED`, `targets_for(date)` pinning a session's equities, commodity front months, FX and Treasury yields; `Market._pin_day` rescales the seeded session onto those closes so every derived price follows. `World.real_market_ready(d)` guards `advance` and the scheduler. |
+| **OTC options & forwards** (`engines/otc.py`) | `EQUITY_OPTION` (Black–Scholes–Merton on any name or SPX, any strike, cash-settled), `FX_OPTION` (Garman–Kohlhagen, per-currency vol table with a regime multiplier), `EQUITY_FORWARD` (F = S·e^{(r−q)T}), `COMMODITY_FORWARD` (off the curve), `FX_FORWARD` (CIP) — priced, quoted by the dealers with their widths and leans, valued daily, margined under the CSA, settled in cash at maturity, replayed exactly. |
+| **Private credit** (`engines/private_credit.py`) | Deterministic monthly pipeline of sponsor-backed deals; commitments (≥ $1m in $100k steps) fund at par less OID, accrue and pay quarterly floating coupons, accrete the discount, are marked daily off a loan-market spread (HY index × regime × borrower drift), migrate ratings monthly, breach and amend covenants, default with a workout and recovery, and sell in the secondary market at a bid. Accounts 1170/1175/1225 and 4320/4330/4340/5350; its own P&L bucket; inside the economic NAV and the ledger reconciliation. |
+| **Playbook** (`engines/playbook.py`) | 38 strategies as leg templates (stock, option with strike rules incl. zero-cost search, futures notional-matched, TRS); `preview` resolves every leg off today's chain/quotes with Greeks, margin and a payoff grid; `execute` places the package (locate + borrow + short for short legs, RFQ + best-dealer deal for swaps). |
+| **FX market view** (`Service.fx_market`) | Per currency: market-convention quote, changes, rate differential, carry, realised vol, forward points from CIP, and the decomposition of today's move into carry, equity-factor beta, mean reversion and residual flow, recomputed from the stored history (no new state). |
+
 ### Test map
 
 `python3 -m unittest discover -s tests` (stdlib only). By subsystem: Core (`test_engines`, `test_daily`, `test_api`,
@@ -392,6 +424,10 @@ POST /api/worlds/{w}/portfolios/{p}/repo {side, security_id, quantity, term_type
 POST /api/worlds/{w}/portfolios/{p}/repo/{id}/close | collateral | cash | reduce | substitute
 POST /api/worlds/{w}/portfolios/{p}/margin/draw | repay {amount}
 POST /api/worlds/{w}/portfolios/{p}/fx/spot {buy_ccy, sell_ccy, amount, amount_ccy}   POST .../fx/forward {buy_ccy, sell_ccy, buy_amount, maturity}
+GET  /api/worlds/{w}/fx                           (every currency vs USD: quote, carry, vol, forward points, today's drivers, history, cross rates)
+GET  /api/worlds/{w}/portfolios/{p}/playbook      POST .../playbook/preview | execute {key, params:{underlying, other, units, tenor_months, strikes:{legIndex: pct|strike}}}
+GET  /api/worlds/{w}/portfolios/{p}/private-credit   POST .../private-credit/commit {deal_id, amount}   POST .../private-credit/sell {loan_id, amount}
+POST /api/worlds {..., market_source: SIMULATED|REAL}      GET /api/worlds/{w} → market_source, real_market {latest_close, next_session, waiting}
 POST /api/worlds/{w}/force-regime {regime}   (sandbox)
 GET  /api/worlds/{w}/options                      GET  /api/worlds/{w}/options/{underlying}/chain?expiry= | surface   GET .../options/{contract}/contract
 GET  /api/worlds/{w}/portfolios/{p}/options       POST .../options/exercise {contract_id, quantity}
@@ -400,6 +436,7 @@ POST /api/worlds/{w}/portfolios/{p}/strategies/preview   GET .../strategies | st
 POST /api/worlds/{w}/force-split {security_id, ratio}   (sandbox)
 GET  /api/worlds/{w}/otc/dealers                  GET  /api/worlds/{w}/portfolios/{p}/otc | otc/{trade} | counterparties
 POST /api/worlds/{w}/portfolios/{p}/otc/rfq {product, params}   POST .../otc/rfq/{id}/execute {dealer}   POST .../otc/{trade}/terminate
+     products: IRS FRA CAP FLOOR SWAPTION XCCY TRS CDS COMMODITY_SWAP EQUITY_OPTION FX_OPTION EQUITY_FORWARD COMMODITY_FORWARD FX_FORWARD
 POST /api/worlds/{w}/credit-event {reference}     POST /api/worlds/{w}/default-counterparty {dealer}   (sandbox)
 GET  /api/worlds/{w}/portfolios/{p}/risk          POST .../risk/stress {equity, rates_bp, spreads_bp, vol_pts, commodity, fx, commodity_by_code}
 GET  /api/worlds/{w}/macro                        GET  /api/worlds/{w}/portfolios/{p}/corporate-actions   POST .../elections {ca_id, quantity}

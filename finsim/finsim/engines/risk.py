@@ -191,10 +191,10 @@ class RiskEngine:
             c0, c1 = curves[i - 1], curves[i]
             eq = {}
             for sid, h in eq_hist.items():
-                if d0 in h and d1 in h and h[d0] > 0:
+                if d0 in h and d1 in h and h[d0] > 0 and h[d1] > 0:      # a defaulted issue can print zero
                     eq[sid] = math.log(h[d1] / h[d0])
-            cm = {code: math.log(h[d1] / h[d0]) for code, h in comm.items() if d0 in h and d1 in h and h[d0] > 0}
-            fx = {c: math.log(h[d1] / h[d0]) for c, h in fxh.items() if c != "USD" and d0 in h and d1 in h and h[d0] > 0}
+            cm = {code: math.log(h[d1] / h[d0]) for code, h in comm.items() if d0 in h and d1 in h and h[d0] > 0 and h[d1] > 0}
+            fx = {c: math.log(h[d1] / h[d0]) for c, h in fxh.items() if c != "USD" and d0 in h and d1 in h and h[d0] > 0 and h[d1] > 0}
             vol = {u: (h[d1] - h[d0]) * 100.0 for u, h in volh.items() if d0 in h and d1 in h}
             out.append({"date": d1, "equity": eq, "rates_bp": (c1.rates[5] - c0.rates[5]) * 1e4, "spreads_ig_bp": c1.ig_spread_bps - c0.ig_spread_bps,
                         "spreads_hy_bp": c1.hy_spread_bps - c0.hy_spread_bps, "commodity": cm, "fx": fx, "vol": vol})

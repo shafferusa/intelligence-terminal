@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import asdict, is_dataclass
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
@@ -63,9 +63,10 @@ class Service:
     def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
                      benchmark: Optional[str] = "SPY", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
-                     update_time: str = "09:00", scenario: str = "NONE", at=None) -> Dict:
+                     update_time: str = "09:00", scenario: str = "NONE", at=None, market_source: str = "SIMULATED") -> Dict:
         """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
-        themselves at the update time; sandbox saves start wherever you like and advance on demand."""
+        themselves at the update time; sandbox saves start wherever you like and advance on demand. market_source
+        REAL makes the world track the actual market: real prehistory, real closes for every session it enters."""
         if initial_regime not in REGIMES:
             raise CommandError(f"unknown regime {initial_regime}")
         if job not in JOBS:
@@ -77,12 +78,32 @@ class Service:
             raise CommandError("scenario must be NONE or CRISIS")
         clock = ClockConfig(clock_mode.upper(), timezone, update_time)
         cal = World("tmp").calendar
-        if clock.mode == "REAL_TIME":
+        market_source = (market_source or "SIMULATED").upper()
+        if market_source not in ("SIMULATED", "REAL"):
+            raise CommandError("market_source must be SIMULATED or REAL")
+        real_history = None
+        if market_source == "REAL":
+            from ..engines.realfeed import RealFeed, equity_symbols_for
+            from ..engines.market import build_universe
+            feed = RealFeed(equity_symbols_for(build_universe(date.today(), int(seed))))
+            feed.refresh("1y", force=True)
+            latest = feed.latest_date()
+            if not latest:
+                raise CommandError("no real market data could be fetched: check the internet connection and try again")
+            if clock.mode == "REAL_TIME":
+                cal_sd = min(target_sim_date(clock, cal, at), date.fromisoformat(latest))
+            else:
+                cal_sd = date.fromisoformat(start_date) if start_date else date.fromisoformat(latest)
+                if not feed.has(cal_sd):
+                    cal_sd = date.fromisoformat(max(k for k in feed.data.get("SPY", {}) if k <= cal_sd.isoformat()) if any(k <= cal_sd.isoformat() for k in feed.data.get("SPY", {})) else latest)
+            real_history = feed.history(cal_sd - timedelta(days=420), date.fromisoformat(latest))
+        elif clock.mode == "REAL_TIME":
             cal_sd = target_sim_date(clock, cal, at)
         else:
             cal_sd = cal.roll(date.fromisoformat(start_date) if start_date else target_sim_date(ClockConfig("SANDBOX", timezone, update_time), cal, at))
         wid = "W-" + uuid.uuid4().hex[:8]
-        w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime, clock=clock, scenario=scenario)
+        w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime, clock=clock, scenario=scenario,
+                         market_source=market_source, real_history=real_history)
         self.log.info("created world %s (%s, job %s, clock %s, seed %s, scenario %s)", wid, name, job, clock.mode, seed, scenario)
         self.worlds[wid] = w
         cap = D(str(capital)) if (capital and job == "SANDBOX") else JOBS[job].capital
@@ -142,7 +163,10 @@ class Service:
         nu = w.next_update_at()
         return jsonable({"id": w.id, "name": w.name, "seed": w.seed, "start_date": w.start_date, "current_date": w.current_date,
                          "day_index": w.day_count, "events": len(w.events), "regime": {"name": r.name, "label": r.label, "description": r.description},
-                         "scenario": w.scenario, "scenario_log": w.scenario_log,
+                         "scenario": w.scenario, "scenario_log": w.scenario_log, "market_source": getattr(w, "market_source", "SIMULATED"),
+                         "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
+                                          "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
+                                          "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),
                          "save_version": w.save_version, "engine_version": ENGINE_VERSION, "migration": w.migration, "replay_errors": w.replay_errors,
                          "integrity": w.integrity,
                          "portfolios": [{"id": p.id, "name": p.name, "type": p.portfolio_type, "realism": p.realism, "mode": p.mode, "benchmark": p.benchmark,
@@ -862,6 +886,34 @@ class Service:
         w = self.world(world_id)
         return jsonable(w.repo_quote(side, security_id.upper(), D(str(quantity)), term_type, int(term_days)))
 
+    def playbook(self, world_id: str, portfolio_id: str) -> Dict:
+        return jsonable(self.world(world_id).playbook.catalogue())
+
+    def playbook_preview(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.playbook.preview(w.portfolio(portfolio_id), body.get("key", ""), body.get("params") or {}))
+
+    def playbook_execute(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        try:
+            return jsonable(w.playbook.execute(w.portfolio(portfolio_id), body.get("key", ""), body.get("params") or {}))
+        finally:
+            w.flush()
+
+    def private_credit(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.pcredit.book(w.portfolio(portfolio_id)))
+
+    def pc_commit(self, world_id: str, portfolio_id: str, deal_id: str, amount: float) -> Dict:
+        w = self.world(world_id)
+        loan = w.commit_private_credit(portfolio_id, str(deal_id).upper(), D(str(amount)))
+        return jsonable(asdict(loan))
+
+    def pc_sell(self, world_id: str, portfolio_id: str, loan_id: str, amount: float) -> Dict:
+        w = self.world(world_id)
+        loan = w.sell_private_credit(portfolio_id, str(loan_id).upper(), D(str(amount)))
+        return jsonable(asdict(loan))
+
     def repo_open(self, world_id: str, portfolio_id: str, side: str, security_id: str, quantity: float, term_type: str = "OVERNIGHT", term_days: int = 1, auto_roll: bool = True) -> Dict:
         w = self.world(world_id)
         r = w.open_repo(portfolio_id, side, security_id.upper(), D(str(quantity)), term_type, int(term_days), bool(auto_roll))
@@ -903,6 +955,61 @@ class Service:
                          "trades": [asdict(t) for t in sorted(pf.fx_trades.values(), key=lambda t: t.trade_date, reverse=True)],
                          "forwards": [asdict(f) for f in sorted(pf.fx_forwards.values(), key=lambda f: f.trade_date, reverse=True)],
                          "history": {c: h[-120:] for c, h in fxm.history.items() if c != "USD"}}})
+
+    def fx_market(self, world_id: str) -> Dict:
+        """The FX market page: each currency against the dollar with its rate differential, forward points, realised vol,
+        recent changes, and a decomposition of today's move into the model's drivers (carry, equity-factor beta, mean
+        reversion to the long-run level, and the residual flow), plus a cross-rate matrix and 120 sessions of history."""
+        import math
+        from ..engines.fx_market import SPECS, CURRENCIES
+        w = self.world(world_id)
+        fxm = w.market.fx
+        d = w.current_date
+        usd = float(fxm.rate.get("USD", 0.0))
+        spy = w.market.history.get("SPY") or []
+        spy_ret = float(spy[-1].close / spy[-2].close - 1) if len(spy) > 1 else 0.0
+        dt = 1.0 / 252.0
+        rows = []
+        for c, spec in SPECS.items():
+            h = fxm.history.get(c) or []
+            spots = [float(x[1]) for x in h]
+            cur = float(fxm.spot[c])
+            if not spots:
+                spots = [cur]
+            def chg(n):
+                return (cur / spots[-1 - n] - 1.0) if len(spots) > n and spots[-1 - n] else None
+            rets = [math.log(spots[i] / spots[i - 1]) for i in range(max(1, len(spots) - 20), len(spots)) if spots[i - 1] and spots[i]]
+            if len(rets) > 2:
+                m = sum(rets) / len(rets)
+                vol = math.sqrt(sum((x - m) ** 2 for x in rets) / (len(rets) - 1)) * math.sqrt(252)
+            else:
+                vol = spec.vol
+            r = float(fxm.rate[c])
+            carry_ann = usd - r
+            carry_d = -0.3 * carry_ann * dt
+            beta_d = spec.mkt_beta * spy_ret
+            rev_d = 0.002 * math.log(spec.spot0 / cur) * dt * 252 / 20 if cur > 0 else 0.0
+            total = math.log(cur / spots[-2]) if len(spots) > 1 and spots[-2] else 0.0
+            resid = total - carry_d - beta_d - rev_d
+            inv = spec.inverse_quote
+            disp = (1.0 / cur) if inv else cur
+            fwd = {}
+            for label, days in (("1M", 30), ("3M", 91), ("6M", 182), ("1Y", 365)):
+                F = fxm.forward(c, "USD", d, d + timedelta(days=days))
+                Fd = (1.0 / F) if inv else F
+                fwd[label] = {"rate": Fd, "points": (Fd - disp) * (100 if inv else 10000)}
+            rows.append({"ccy": c, "pair": f"USD/{c}" if inv else f"{c}/USD", "quote": disp, "spot_usd_per_unit": cur, "inverse": inv, "rate": r, "usd_rate": usd,
+                         "carry": carry_ann, "day_pct": chg(1), "week_pct": chg(5), "month_pct": chg(21), "realized_vol": vol, "model_vol": spec.vol, "beta": spec.mkt_beta,
+                         "spread_bps": spec.spread_bps, "long_run": spec.spot0, "deviation_from_long_run": cur / spec.spot0 - 1.0 if spec.spot0 else 0.0,
+                         "drivers": {"carry": carry_d, "equity_factor": beta_d, "mean_reversion": rev_d, "flow": resid, "total": total, "spy_return": spy_ret},
+                         "forwards": fwd, "history": [[x[0], (1.0 / float(x[1])) if inv else float(x[1]), float(x[2])] for x in h[-120:]]})
+        ccys = [c for c in CURRENCIES]
+        cross = {a: {b: (float(fxm.spot[a]) / float(fxm.spot[b])) for b in ccys} for a in ccys}
+        real = getattr(w, "market_source", "SIMULATED") == "REAL"
+        return jsonable({"date": d.isoformat(), "usd_rate": usd, "rows": rows, "cross": cross, "currencies": ccys, "spy_return": spy_ret,
+                         "source": "REAL" if real else "SIMULATED",
+                         "model": ("Spots are the real closes (Yahoo) for the sessions this save has advanced into; the drivers below are the model's decomposition of that move."
+                                   if real else "Each currency moves with the equity market factor (risk-on currencies AUD, CAD rise with stocks; JPY and CHF fall), drifts against its rate differential to the dollar (carry), pulls slowly toward its long-run level, and carries its own noise. Foreign short rates follow the US policy rate with a lag.")})
 
     def margin_action(self, world_id: str, portfolio_id: str, action: str, amount: float) -> Dict:
         w = self.world(world_id)
@@ -1001,6 +1108,10 @@ class Service:
     def options_underlyings(self, world_id: str) -> List[Dict]:
         w = self.world(world_id)
         out = []
+        counts: Dict[str, int] = {}
+        for s in w.securities.values():                      # one pass over the (large) option universe, not one per underlying
+            if s.is_option and not s.expired:
+                counts[s.underlying] = counts.get(s.underlying, 0) + 1
         for under in w.options.optionable():
             src = w.securities["SPY"] if under == "SPX" else w.securities[under]
             st = w.market.vol.state.get(under)
@@ -1010,7 +1121,7 @@ class Service:
             out.append({"underlying": under, "name": "Broad Market Index (10x SPY, cash-settled European)" if under == "SPX" else src.name, "level": w.options.underlying_level(under),
                         "atm_iv": st.atm, "skew": st.skew, "term": st.term, "realized_20d": w.market.realized_vol(src.id), "iv_rank": rank["iv_rank"] if rank else None,
                         "style": "EUROPEAN/CASH" if under == "SPX" else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
-                        "contracts": sum(1 for s in w.securities.values() if s.is_option and s.underlying == under and not s.expired)})
+                        "contracts": counts.get(under, 0)})
         return jsonable(out)
 
     def option_chain(self, world_id: str, underlying: str, expiry: Optional[str] = None) -> Dict:

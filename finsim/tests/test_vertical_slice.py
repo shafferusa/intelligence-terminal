@@ -17,7 +17,8 @@ class VerticalSliceTest(unittest.TestCase):
         # 2. simulated market exists
         self.assertGreater(len(w.securities), 25)
         self.assertGreater(len(w.market.history["NVDA"]), 250)
-        ca = sorted((c for c in w.corporate_actions.values() if c.status == "DECLARED"), key=lambda c: c.ex_date)[0]
+        first_fill = w.calendar.next_business_day(w.current_date).isoformat()          # the buy fills next session; ex must come after it
+        ca = sorted((c for c in w.corporate_actions.values() if c.status == "DECLARED" and c.ex_date > first_fill), key=lambda c: c.ex_date)[0]
         tkr = ca.security_id
         bar = w.market.last_bar(tkr)
         # 3-4. buy 10,000 shares: the instruction waits for the next daily update, then fills at the open
