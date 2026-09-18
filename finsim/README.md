@@ -12,7 +12,8 @@ for the next day.
 processed after the 16:00 New York close (17:00 by default) with that day's real closes for stocks, ETFs,
 Treasury yields, commodities and FX, the real CPI, jobs, GDP and Fed decisions, and real headlines. Between
 updates the screens show the latest real quotes (Yahoo Finance, up to 15 minutes delayed) and you can trade
-at any hour: a **live ticket** fills immediately at that quote, an **instruction** waits for the next update
+at any hour: a **live ticket** fills immediately at that quote (a live limit, stop or trailing stop rests against
+the quote stream and fills when a refresh finds the quote has reached it), an **instruction** waits for the next update
 and executes at the next session's open — or at its close if the session was already running, so an open you
 could already see is never yours. The strict overnight-only rule (no tickets from 09:30 New York until the
 update) is a switch in Settings, off by default. A **sandbox** save is a world generated from a seed that you
@@ -492,6 +493,8 @@ POST /api/worlds {..., market_source: SIMULATED|REAL, lock_session}   GET /api/w
 POST /api/worlds/{w}/clock {update_time, timezone, lock_session}      (career saves; a real-market save must update at 16:00 New York or later)
 GET  /api/worlds/{w}/live?ids=SPY,NVDA,CLZ26                 (latest real quotes next to the save's last close; without ids: the index ETFs and everything held)
 POST .../orders {..., settle_ccy, execution: LIVE|NEXT_UPDATE}   (LIVE fills now at the latest quote and returns the trade; the FX spot for another settlement currency is dealt alongside, live too)
+     a LIVE limit / stop / stop-limit / take-profit / trailing stop the quote has not reached rests: GET .../live sweeps the resting book before answering (`worked` says what filled), the scheduler sweeps every loaded save once a minute
+POST /api/worlds/{w}/live/work                                (sweep the resting live book now → {checked, quoted, filled, triggered, ratcheted})
 POST .../fx/spot {..., execution: LIVE}                       (a spot deal at the pair's live quote)
      with the session lock on, career saves refuse trading and dealing commands from 09:30 New York until the update (409 with the reason); cancels are always accepted
 POST /api/worlds/{w}/force-regime {regime}   (sandbox)

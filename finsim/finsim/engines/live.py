@@ -3,7 +3,10 @@
 The daily update still closes the day (settlement, marks, the briefing) at the update time. Between updates the
 latest real quote (Yahoo Finance, up to 15 minutes delayed on most exchanges) is shown next to the last close, and a
 LIVE ticket fills at it immediately through the ordinary fill logic — spread, impact, participation cap, commission —
-so the trade, its settlement and its ledger entries are the same as any other. What is stored is the fill itself
+so the trade, its settlement and its ledger entries are the same as any other. A live ticket that cannot fill at once — a
+limit away from the quote, a stop or trailing stop not yet touched — rests against the quote stream: every quote refresh
+(a page asking for live quotes, or the server's own minute tick while nobody is looking) sweeps the resting book with
+`work()` and fills whatever the latest quote has reached, and the daily update still evaluates it against the session. What is stored is the fill itself
 (TRADE_EXECUTED carries the quote, its time and source), never a network result, so replay is exact and offline.
 
 How each instrument is quoted:
@@ -22,8 +25,10 @@ from decimal import Decimal
 from typing import Dict, List, Optional
 
 from ..clock import MARKET_TZ
+from ..domain.events import E
 from ..domain.models import Bar, Order, Security, Trade
 from ..money import D, price as qprice, ZERO
+from .trading import ORDER_TYPES
 
 SOURCE = "Yahoo Finance (up to 15 minutes delayed)"
 # financial futures: the contract's last close moves with a live reference — the source security's quote where it has one
@@ -192,43 +197,126 @@ class LiveDesk:
         return {"mid": usd[buy] / usd[sell], "time": t, "time_ny": _ny(t), "source": SOURCE, "usd": usd}
 
     # ------------------------------------------------------------------ fills
-    def fill(self, order: Order, cause) -> Optional[Trade]:
-        """Fill a just-entered LIVE order at the latest quote. A limit that is not marketable keeps working for the next update."""
-        from ..world import CommandError
+    RESTING = ("WORKING", "PARTIALLY_FILLED")
+
+    def resting(self) -> List[Order]:
+        """Live orders still working: they are checked against every quote refresh."""
         w = self.w
-        pf = w.portfolios[order.portfolio_id]
-        sec = w.securities[order.security_id]
-        if order.order_type not in ("MARKET", "LIMIT"):
-            raise CommandError("a live ticket is MARKET or LIMIT; stops, trailing stops and conditions are instructions for the daily update")
+        out = []
+        for pf in w.portfolios.values():
+            for o in pf.orders.values():
+                if o.status in self.RESTING and o.execution == "LIVE" and not o.condition and o.strategy_tag not in pf.strategies:
+                    out.append(o)
+        return out
+
+    def fill(self, order: Order, cause) -> Optional[Trade]:
+        """Work a just-entered LIVE order against the latest quote: a market order fills now, anything else fills if the
+        quote has reached it and otherwise rests against the quote stream (and the daily update)."""
+        from ..world import CommandError
+        sec = self.w.securities[order.security_id]
+        if order.order_type not in ORDER_TYPES:
+            raise CommandError(f"unsupported order type {order.order_type}")
         q = self.quote(sec)
         if q is None:
             raise CommandError(f"no live quote for {sec.id} right now; send it as an instruction for the next update instead")
+        return self._work_one(order, q, cause)
+
+    def work(self, max_age_s: float = 60.0) -> Dict:
+        """Sweep the resting live book against the latest quotes. One batched fetch for every security involved; the
+        LIVE_SWEEP event (emitted only when something happens) is the cause of the fills, triggers and ratchets, so replay
+        needs no feed. Returns what happened."""
+        w = self.w
+        orders = self.resting()
+        out = {"checked": len(orders), "quoted": 0, "filled": [], "triggered": [], "ratcheted": [], "asof": None}
+        if not orders or not self.available():
+            return out
+        quotes = self.quotes(sorted({o.security_id for o in orders}), max_age_s)
+        out["quoted"] = len(quotes)
+        out["asof"] = max((int(q.get("time") or 0) for q in quotes.values()), default=None)
+        cause = [None]
+
+        def cause_ev():
+            if cause[0] is None:
+                cause[0] = w.emit(E.LIVE_SWEEP, {"orders": [o.id for o in orders],
+                                                 "quotes": {i: {"price": q["price"], "time": q.get("time"), "time_ny": q.get("time_ny")} for i, q in quotes.items()}})
+            return cause[0]
+
+        for o in orders:
+            q = quotes.get(o.security_id)
+            if q is None:
+                continue
+            before = (o.triggered, o.trail_level, o.filled_quantity)
+            trade = self._work_one(o, q, cause_ev)
+            if trade is not None:
+                out["filled"].append({"order_id": o.id, "trade_id": trade.id, "portfolio_id": o.portfolio_id, "security_id": o.security_id, "side": o.side,
+                                      "quantity": trade.quantity, "price": trade.price, "status": o.status, "quote_time_ny": q.get("time_ny")})
+            elif o.triggered and not before[0]:
+                out["triggered"].append(o.id)
+            elif o.trail_level != before[1]:
+                out["ratcheted"].append(o.id)
+        return out
+
+    def _work_one(self, order: Order, q: Dict, cause) -> Optional[Trade]:
+        """Evaluate one live order against quote `q`. `cause` is an Event or a callable that emits one on first use."""
+        w = self.w
+        pf = w.portfolios[order.portfolio_id]
+        sec = w.securities[order.security_id]
+        ev = (lambda: cause() if callable(cause) else cause)
         lb = w.trading._bar(sec)
         live = qprice(q["price"])
+        when = f"{q['time_ny']} New York" if q.get("time") else "the last close"
         if sec.is_option:
             bid, ask = qprice(q["bid"]), qprice(q["ask"])
             half = (ask - bid) / 2
-            volume = lb.volume
         else:
             rel = (lb.ask - lb.bid) / 2 / lb.close if lb.close else ZERO
             half = qprice(live * rel)
             bid, ask = live - half, live + half
-            volume = lb.volume
+        volume = lb.volume
+        otype, side = order.order_type, order.side
         base = live
-        if order.order_type == "LIMIT":
+        if otype == "TRAILING_STOP":
+            level = order.trail_level
+            hit = (live <= level) if side == "SELL" else (live >= level)
+            if not hit:
+                new_level = qprice(live * D(1 - order.trail_pct)) if side == "SELL" else qprice(live * D(1 + order.trail_pct))
+                better = (new_level > level) if side == "SELL" else (new_level < level)
+                if better:
+                    w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "trail_level": new_level,
+                                                    "note": f"trailing stop ratchets to {new_level} at the live quote {live} ({when})"}, cause_id=ev().id, portfolio_id=pf.id)
+                else:
+                    w.trading._note(order, None, f"trailing stop {level} not touched at the live quote {live} ({when}); rests against the live quote")
+                return None
+            if not order.triggered:
+                w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "triggered": True,
+                                                "note": f"trailing stop {level} triggered at the live quote {live} ({when})"}, cause_id=ev().id, portfolio_id=pf.id)
+        elif otype in ("STOP", "STOP_LIMIT"):
+            if not order.triggered:
+                hit = (live >= order.stop_price) if side == "BUY" else (live <= order.stop_price)
+                if not hit:
+                    w.trading._note(order, None, f"stop {order.stop_price} not touched at the live quote {live} ({when}); rests against the live quote")
+                    return None
+                w.emit(E.ORDER_STATUS_CHANGED, {"portfolio_id": pf.id, "order_id": order.id, "status": order.status, "triggered": True,
+                                                "note": f"stop {order.stop_price} triggered at the live quote {live} ({when})"}, cause_id=ev().id, portfolio_id=pf.id)
+            if otype == "STOP_LIMIT":
+                lim = order.limit_price
+                if (live > lim) if side == "BUY" else (live < lim):
+                    w.trading._note(order, None, f"stop triggered but limit {lim} not reached at the live quote {live} ({when}); rests against the live quote")
+                    return None
+        elif otype in ("LIMIT", "TAKE_PROFIT"):
             lim = order.limit_price
-            marketable = (base <= lim) if order.side == "BUY" else (base >= lim)
+            marketable = (live <= lim) if side == "BUY" else (live >= lim)
             if not marketable:
-                w.trading._note(order, cause, f"limit {lim} not marketable at the live quote {live} ({q['time_ny']} New York); works at the next update")
+                w.trading._note(order, None, f"limit {lim} not marketable at the live quote {live} ({when}); rests against the live quote")
                 return None
         bar = Bar(w.current_date.isoformat(), live, live, live, live, volume, bid, ask)
         detail = {"quote_time": q.get("time"), "quote_time_ny": q.get("time_ny"), "quote_age_s": q.get("age_s"), "quote_source": q["source"],
                   "quote_method": q["method"], "quote_ref": q.get("ref"), "quote_ref_price": q.get("ref_price"), "last_close": q["last_close"]}
-        note = f"live fill at {live} ({q['time_ny']} New York, {q['source']})" if q.get("time") else f"live fill at the last close {live} ({q.get('note', '')})"
-        trade = w.trading._fill(order, sec, bar, base, half, "LIVE", cause, note=note, extra_detail=detail)
+        note = f"live fill at {live} ({when}, {q['source']})" if q.get("time") else f"live fill at the last close {live} ({q.get('note', '')})"
+        trade = w.trading._fill(order, sec, bar, base, half, "LIVE", ev(), note=note, extra_detail=detail)
         if trade is not None and (sec.is_future or sec.is_option):
             # margined instruments: post (or release) initial margin now rather than at the update, as the clearing broker would
             if sec.is_option:
-                w.options.recompute_margin(pf, cause)
-            w.futures.sweep_margin(cause)
+                w.options.recompute_margin(pf, ev())
+            w.futures.sweep_margin(ev())
         return trade

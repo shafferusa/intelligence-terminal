@@ -507,6 +507,8 @@ class World:
         execution = (execution or "NEXT_UPDATE").upper()
         if execution == "LIVE" and not self.live.available():
             raise CommandError("live execution needs a save that tracks the real market; this save is simulated — send an instruction instead")
+        if execution == "LIVE" and condition and condition.get("ref"):
+            raise CommandError("a conditional order is an instruction for the daily update (its reference is evaluated at the close); send it as NEXT UPDATE")
         try:
             order = self.trading.enter_order(portfolio_id, security_id, side, quantity, order_type, limit_price, stop_price, time_in_force,
                                              strategy_tag, trail_pct, condition, execute_at=self.instruction_session(at), execution=execution)
@@ -515,6 +517,13 @@ class World:
         finally:
             self.flush()
         return order
+
+    def work_live(self, max_age_s: float = 60.0) -> Dict:
+        """Sweep the resting live book against the latest real quotes (every quote refresh and the server's minute tick call this)."""
+        try:
+            return self.live.work(max_age_s)
+        finally:
+            self.flush()
 
     def instruction_session(self, at=None) -> str:
         """Which print of the next session an instruction entered now executes against: OPEN, or CLOSE once it has opened."""

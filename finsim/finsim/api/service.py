@@ -171,6 +171,11 @@ class Service:
         if not avail:
             out["note"] = "a simulated save has no live market: prices move when the day is processed"
             return jsonable(out)
+        if w.live.resting():                                   # every quote refresh works the resting live book first (same cached fetch)
+            try:
+                out["worked"] = w.work_live()
+            except Exception as e:
+                out["work_error"] = f"could not check the resting live orders ({e.__class__.__name__})"
         if not ids:
             ids = ["SPY", "QQQ", "IWM"] + sorted({p.security_id for pf in w.portfolios.values() for p in pf.positions.values() if p.quantity != 0})
         ids = [str(i).strip().upper() for i in ids if str(i).strip()][:250]
@@ -179,6 +184,30 @@ class Service:
         except Exception as e:  # offline: the page still renders on the last close
             out["error"] = f"could not reach the quote feed ({e.__class__.__name__})"
         return jsonable(out)
+
+    def work_live(self, world_id: str) -> Dict:
+        """Check the resting live orders of one save against the latest real quotes now."""
+        w = self.world(world_id)
+        if not w.live.available():
+            return {"available": False, "checked": 0, "filled": [], "triggered": [], "ratcheted": [], "note": "a simulated save has no live market"}
+        return jsonable({"available": True, **w.work_live()})
+
+    def work_live_loaded(self) -> Dict[str, Dict]:
+        """The server's minute tick: work the resting live book of every loaded save that has one (a save nobody has opened
+        this run is not loaded just for this; opening it, or its own daily update, brings it in). Network trouble is logged, not raised."""
+        out = {}
+        for w in list(self.worlds.values()):
+            if not w.live.available() or not w.live.resting():
+                continue
+            try:
+                r = w.work_live()
+            except Exception as e:
+                self.log.warning("world %s: resting live orders not checked (%s)", w.id, e.__class__.__name__)
+                continue
+            if r["filled"] or r["triggered"] or r["ratcheted"]:
+                out[w.id] = r
+                self.log.info("world %s: live sweep filled %d, triggered %d, ratcheted %d", w.id, len(r["filled"]), len(r["triggered"]), len(r["ratcheted"]))
+        return out
 
     def catch_up_all(self, at=None) -> Dict[str, List[str]]:
         """Process due days for every career world (called by the scheduler and on access). `at` injects the clock."""
@@ -1311,16 +1340,19 @@ class Service:
         for s in w.securities.values():                      # one pass over the (large) option universe, not one per underlying
             if s.is_option and not s.expired:
                 counts[s.underlying] = counts.get(s.underlying, 0) + 1
+        from ..engines.vol import INDICES, is_index, index_source, index_factor
+        index_names = {"SPX": "S&P 500 index", "NDX": "Nasdaq-100 index", "RUT": "Russell 2000 index"}
         for under in w.options.optionable():
-            src = w.securities["SPY"] if under == "SPX" else w.securities[under]
+            src = w.securities.get(index_source(under))
             st = w.market.vol.state.get(under)
-            if st is None or not w.market.history.get(src.id):
+            if src is None or st is None or not w.market.history.get(src.id):
                 continue
             rank = w.market.vol.iv_rank(under)
-            out.append({"underlying": under, "name": "Broad Market Index (10x SPY, cash-settled European)" if under == "SPX" else src.name, "level": w.options.underlying_level(under),
+            name = f"{index_names.get(under, under)} ({index_factor(under):g}x {src.id}, cash-settled European)" if is_index(under) else src.name
+            out.append({"underlying": under, "name": name, "level": w.options.underlying_level(under),
                         "atm_iv": st.atm, "skew": st.skew, "term": st.term, "realized_20d": w.market.realized_vol(src.id), "iv_rank": rank["iv_rank"] if rank else None,
-                        "style": "EUROPEAN/CASH" if under == "SPX" else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
-                        "contracts": counts.get(under, 0)})
+                        "style": "EUROPEAN/CASH" if is_index(under) else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
+                        "contracts": counts.get(under, 0), "is_index": is_index(under), "source": src.id if is_index(under) else None})
         return jsonable(out)
 
     def option_chain(self, world_id: str, underlying: str, expiry: Optional[str] = None) -> Dict:

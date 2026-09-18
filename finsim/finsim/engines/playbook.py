@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..domain.models import Portfolio
 from ..money import D, money, ZERO
+from .vol import is_index
 
 # leg: kind (STOCK | OPTION | FUTURE | TRS), side, and rules
 # option rules: type C/P, strike "ATM" | "pct:<n>" (n% from spot, negative below) | "zero_cost" (call strike whose bid pays for the put)
@@ -295,7 +296,7 @@ class Playbook:
 
         def level(sym: str) -> float:
             if sym not in levels:
-                levels[sym] = w.options.underlying_level(sym) if (sym == "SPX" or sym in w.securities) else _f(w.market.last_bar(sym).close)
+                levels[sym] = w.options.underlying_level(sym) if (is_index(sym) or sym in w.securities) else _f(w.market.last_bar(sym).close)
             return levels[sym]
 
         def chain(sym: str, months: Optional[int] = None) -> Dict:

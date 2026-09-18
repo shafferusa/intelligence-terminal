@@ -96,6 +96,8 @@ class Router:
             if sub == ["live"]:
                 ids = [x for x in (query.get("ids", [""])[0] or "").split(",") if x]
                 return s.live(wid, ids or None)
+            if sub == ["live", "work"] and method == "POST":
+                return s.work_live(wid)
             if sub == ["force-corporate-event"] and method == "POST":
                 return s.force_corporate_event(wid, body)
             if sub == ["otc", "dealers"]:
@@ -385,6 +387,13 @@ class Scheduler:
             if closed:
                 done[info["id"]] = closed
         st["busy"] = None
+        # then the resting live book of every loaded career save: a limit, stop or trailing stop set to fill live is checked
+        # against the latest real quote once a minute whether or not a page is open
+        try:
+            with self.router.lock:
+                st["last_live"] = s.work_live_loaded()
+        except Exception:  # pragma: no cover
+            log.exception("scheduler: live sweep failed")
         st["ticks"] += 1
         st["last_tick"] = (at.isoformat() if at else datetime.now(timezone.utc).isoformat())
         st["last_result"] = done

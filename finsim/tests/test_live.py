@@ -20,6 +20,7 @@ from finsim.store import EventStore
 from finsim.world import World, CommandError
 
 LIVE_UP = 1.01           # the stub quotes every symbol 1% above its stubbed base
+LIVE_MULT = {}           # per-symbol override of that multiplier: tests move the "live" market with it
 
 
 def _live_fetch(symbols):
@@ -33,7 +34,7 @@ def _live_fetch(symbols):
             base = 150.0
         elif s.startswith("^"):
             base = 4.0
-        out[s] = {"price": round(base * LIVE_UP, 4), "time": now - 120, "prev_close": base, "high": base * 1.02, "low": base * 0.99, "volume": 1000, "currency": "USD"}
+        out[s] = {"price": round(base * LIVE_MULT.get(s, LIVE_UP), 4), "time": now - 120, "prev_close": base, "high": base * 1.02, "low": base * 0.99, "volume": 1000, "currency": "USD"}
     return out
 
 
@@ -83,11 +84,11 @@ class LiveTicketTest(unittest.TestCase):
         # bonds have no live quote: the last close, said so
         o4 = w.place_order(pf.id, "UST-10Y", "BUY", D(1_000_000), execution="LIVE")
         self.assertEqual(o4.status, "FILLED"); self.assertEqual(pf.trades[o4.trade_ids[-1]].execution_detail["quote_method"], "last_close")
-        # a limit away from the market keeps working for the next update; stops are refused live
+        # a limit away from the market rests against the live quote (and the next update); a conditional order is refused live
         o5 = w.place_order(pf.id, "AAPL", "BUY", D(100), "LIMIT", D(1), execution="LIVE")
-        self.assertEqual(o5.status, "WORKING"); self.assertIn("not marketable at the live quote", o5.reason)
+        self.assertEqual(o5.status, "WORKING"); self.assertIn("not marketable at the live quote", o5.reason); self.assertIn("rests against the live quote", o5.reason)
         with self.assertRaises(CommandError):
-            w.place_order(pf.id, "AAPL", "BUY", D(100), "STOP", None, D(500), execution="LIVE")
+            w.place_order(pf.id, "AAPL", "BUY", D(100), condition={"ref": "NVDA", "op": "<=", "value": 1}, execution="LIVE")
         # FX at the live rate
         fx = w.fx_spot(pf.id, "EUR", "USD", 1000, "BUY", "LIVE")
         self.assertAlmostEqual(fx.rate / (1 + w.market.fx.spread_bps("EUR", "USD") / 2e4), 1.1 * LIVE_UP, places=6)
@@ -103,6 +104,94 @@ class LiveTicketTest(unittest.TestCase):
         assert_ledger_invariants(self, w, pf)
         qs = w.live.quotes(["SPY", "NVDA", fut.id, "UST-10Y", opt.id, "NOPE"])
         self.assertEqual(set(qs), {"SPY", "NVDA", fut.id, "UST-10Y", opt.id})
+
+    def test_resting_live_orders_fill_when_the_quote_reaches_them(self):
+        """A live limit, stop, stop-limit and trailing stop rest against the quote stream: each sweep (a quote refresh, the
+        server's minute tick) fills what the latest quote has reached; replay needs no feed; the update still evaluates them."""
+        LIVE_MULT.clear()
+        store = EventStore(":memory:")
+        w, pf, _ = career_world(store)
+        aapl = float(w.live.quote(w.securities["AAPL"])["price"]); nvda = float(w.live.quote(w.securities["NVDA"])["price"])
+        w.place_order(pf.id, "NVDA", "BUY", D(100), execution="LIVE")                                   # something to trail out of
+        lim = w.place_order(pf.id, "AAPL", "BUY", D(100), "LIMIT", D(str(round(aapl * 0.98, 2))), time_in_force="GTC", execution="LIVE")
+        stp = w.place_order(pf.id, "AAPL", "BUY", D(50), "STOP", None, D(str(round(aapl * 1.03, 2))), time_in_force="GTC", execution="LIVE")
+        stl = w.place_order(pf.id, "AAPL", "BUY", D(50), "STOP_LIMIT", D(str(round(aapl * 1.031, 2))), D(str(round(aapl * 1.03, 2))), time_in_force="GTC", execution="LIVE")
+        trl = w.place_order(pf.id, "NVDA", "SELL", D(100), "TRAILING_STOP", None, None, time_in_force="GTC", trail_pct=0.05, execution="LIVE")
+        for o in (lim, stp, stl, trl):
+            self.assertEqual((o.status, o.execution), ("WORKING", "LIVE"))
+        self.assertEqual({o.id for o in w.live.resting()}, {lim.id, stp.id, stl.id, trl.id})
+        self.assertIn("rests against the live quote", lim.reason); self.assertIn("not touched", stp.reason)
+        first_level = trl.trail_level
+        # nothing moved: the sweep is quiet and emits nothing
+        n = len(w.events)
+        r = w.work_live(max_age_s=0)
+        self.assertEqual((r["checked"], r["filled"], r["triggered"], r["ratcheted"]), (4, [], [], []))
+        self.assertEqual(len(w.events), n)
+        # AAPL drops 3%: the limit fills at the quote (capped at its limit), the stops stay quiet
+        LIVE_MULT["AAPL"] = LIVE_UP * 0.97
+        r = w.work_live(max_age_s=0)
+        self.assertEqual([f["order_id"] for f in r["filled"]], [lim.id]); self.assertEqual(lim.status, "FILLED")
+        t = pf.trades[lim.trade_ids[-1]]
+        self.assertEqual(t.execution_detail["session"], "LIVE"); self.assertLessEqual(t.price, lim.limit_price)
+        sweep = next(e for e in w.events if e.type == "LIVE_SWEEP")
+        self.assertEqual(w.events[w.events.index(sweep) + 1].cause_id, sweep.id)
+        self.assertIn("AAPL", sweep.payload["quotes"])
+        # NVDA rises 4%: the trailing stop ratchets (an event, so replay knows) but does not fire
+        LIVE_MULT["NVDA"] = LIVE_UP * 1.04
+        r = w.work_live(max_age_s=0)
+        self.assertEqual(r["ratcheted"], [trl.id]); self.assertGreater(trl.trail_level, first_level); self.assertEqual(trl.status, "WORKING")
+        # AAPL jumps 5%: the stop triggers and fills at the live quote; the stop-limit triggers but its limit is below the quote, so it rests
+        LIVE_MULT["AAPL"] = LIVE_UP * 1.05
+        r = w.work_live(max_age_s=0)
+        self.assertEqual([f["order_id"] for f in r["filled"]], [stp.id]); self.assertEqual(stp.status, "FILLED"); self.assertTrue(stp.triggered)
+        self.assertEqual(stl.status, "WORKING"); self.assertTrue(stl.triggered); self.assertIn("limit", stl.reason)
+        self.assertGreater(pf.trades[stp.trade_ids[-1]].price, D(str(aapl)) * D("1.04"))
+        # NVDA falls 8% from its high: the trailing stop fires and the 100 shares go
+        LIVE_MULT["NVDA"] = LIVE_UP * 1.04 * 0.92
+        r = w.work_live(max_age_s=0)
+        self.assertEqual([f["order_id"] for f in r["filled"]], [trl.id]); self.assertEqual(trl.status, "FILLED")
+        self.assertEqual(pf.positions["NVDA"].quantity, D(0))
+        assert_ledger_invariants(self, w, pf)
+        # replay without a feed: every fill, trigger and ratchet comes back from the log
+        w2 = World.load(store, "c"); w2.market.real_feed = None
+        self.assertEqual(w2.replay_errors, [])
+        p2 = w2.portfolio(pf.id)
+        for o in (lim, stp, stl, trl):
+            self.assertEqual((p2.orders[o.id].status, p2.orders[o.id].triggered, p2.orders[o.id].trail_level), (o.status, o.triggered, o.trail_level))
+        self.assertEqual(len(p2.trades), len(pf.trades)); self.assertEqual(p2.positions["NVDA"].quantity, D(0))
+        # the daily update still evaluates the resting stop-limit against the session, and settles the live fills
+        w.advance(3)
+        self.assertIn(stl.status, ("WORKING", "FILLED", "PARTIALLY_FILLED"))
+        assert_ledger_invariants(self, w, pf)
+        LIVE_MULT.clear()
+
+    def test_quote_refresh_and_scheduler_work_the_resting_book(self):
+        from finsim.api.server import Router, Scheduler
+        LIVE_MULT.clear()
+        store = EventStore(":memory:")
+        w, pf, _ = career_world(store)
+        s = Service(store); s.worlds[w.id] = w
+        aapl = float(w.live.quote(w.securities["AAPL"])["price"])
+        r = s.place_order(w.id, pf.id, "AAPL", "BUY", 100, "LIMIT", round(aapl * 0.99, 2), execution="LIVE", time_in_force="GTC")
+        self.assertEqual(r["order"]["status"], "WORKING"); self.assertIsNone(r["trade"])
+        oid = r["order"]["id"]
+        # a quote refresh (what every page asks for once a minute) sweeps the book first
+        LIVE_MULT["AAPL"] = LIVE_UP * 0.98; w.market.real_feed.live_cache.clear()
+        live = s.live(w.id, ["AAPL"])
+        self.assertEqual([f["order_id"] for f in live["worked"]["filled"]], [oid])
+        self.assertEqual(s.order(w.id, pf.id, oid)["order"]["status"], "FILLED")
+        self.assertNotIn("worked", s.live(w.id, ["AAPL"]), "nothing resting: no sweep reported")
+        # the server's minute tick does the same for every loaded save while nobody is looking
+        r2 = s.place_order(w.id, pf.id, "AAPL", "SELL", 100, "STOP", stop_price=round(aapl * 0.9, 2), execution="LIVE", time_in_force="GTC")
+        self.assertEqual(r2["order"]["status"], "WORKING")
+        sched = Scheduler(Router(s), interval=60, clock=lambda: None, sleep=lambda _: None)
+        LIVE_MULT["AAPL"] = LIVE_UP * 0.85; w.market.real_feed.live_cache.clear()
+        sched.tick()
+        self.assertEqual(s.order(w.id, pf.id, r2["order"]["id"])["order"]["status"], "FILLED")
+        self.assertIn(w.id, s.scheduler_state["last_live"])
+        self.assertEqual(s.work_live(w.id)["checked"], 0)
+        assert_ledger_invariants(self, w, pf)
+        LIVE_MULT.clear()
 
     def test_simulated_saves_have_no_live_market(self):
         w, pf, _ = make_world()
