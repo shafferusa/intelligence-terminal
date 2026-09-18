@@ -582,3 +582,6 @@ class NewsItem:
     category: str
     refs: List[str]
     event_id: str
+    publisher: str = ""
+    link: str = ""
+    time: str = ""

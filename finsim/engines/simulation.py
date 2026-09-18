@@ -19,6 +19,8 @@ The player then reviews the briefing and enters instructions for the next day.
 """
 from __future__ import annotations
 
+from typing import Dict
+
 from datetime import date
 
 from ..domain.events import E, Event
@@ -52,6 +54,26 @@ class SimulationEngine:
                                       "liquidity, the stock/rates correlation, credit spreads and commodity demand.", "category": "MACRO", "refs": []}, cause_id=rc.id)
         for n in w.market.day_news:
             w.emit(E.NEWS_PUBLISHED, {"headline": n["headline"], "body": n["body"], "category": n["category"], "refs": [n["code"]]}, cause_id=mkt.id)
+        if w.real_news is not None:
+            # a career world: the day's real headlines (market, the names in the books, the Fed), stored so replay never fetches
+            tickers: Dict[str, float] = {}
+            for pf in w.portfolios.values():
+                for pos in pf.positions.values():
+                    if pos.quantity and not pos.is_option and not pos.is_future:
+                        tickers[pos.security_id] = tickers.get(pos.security_id, 0.0) + abs(float(pos.market_value or 0))
+                for o in pf.orders.values():
+                    if o.status in ("WORKING", "PARTIALLY_FILLED"):
+                        tickers.setdefault(o.security_id, 0.0)
+            names = [t for t, _ in sorted(tickers.items(), key=lambda kv: -kv[1]) if t in w.securities and not w.securities[t].is_option and not w.securities[t].is_future][:12]
+            known = {n.link for n in w.news if n.link}
+            try:
+                items = w.real_news.headlines_for(d, names, known)
+            except Exception:
+                items = []
+            for it in items:
+                w.emit(E.NEWS_PUBLISHED, {"headline": it["headline"], "body": f"{it['publisher']} · {it['time'][11:16]} New York" if it.get("publisher") else "",
+                                          "category": it["category"], "refs": [r for r in it["refs"] if r in w.securities], "publisher": it.get("publisher", ""),
+                                          "link": it.get("link", ""), "time": it.get("time", "")}, cause_id=mkt.id)
         # macro world and corporate events become auditable events; defaults ripple into bonds, CDS and dealers
         mp = w.market.macro_payload()
         for r in mp.get("releases", []):

@@ -51,8 +51,8 @@ class Router:
                                           body.get("capital"), body.get("portfolio_name", "Main Portfolio"), body.get("portfolio_type", "PERSONAL"),
                                           body.get("realism", "PROFESSIONAL"), body.get("mode", "SANDBOX"), body.get("initial_regime", "NORMAL_GROWTH"),
                                           body.get("benchmark", "SPY"), body.get("job", "SANDBOX"), body.get("clock_mode", "SANDBOX"),
-                                          body.get("timezone", "America/New_York"), body.get("update_time", "09:00"), body.get("scenario", "NONE"),
-                                          market_source=body.get("market_source", "SIMULATED"))
+                                          body.get("timezone", "America/New_York"), body.get("update_time"), body.get("scenario", "NONE"),
+                                          market_source=body.get("market_source"))
             if parts[2:] == ["jobs"] if len(parts) > 2 else False:
                 return s.jobs()
             wid = rest[0]
@@ -91,6 +91,8 @@ class Router:
                 return s.macro(wid)
             if sub == ["fx"]:
                 return s.fx_market(wid)
+            if sub == ["clock"] and method == "POST":
+                return s.set_clock(wid, body.get("update_time"), body.get("timezone"))
             if sub == ["force-corporate-event"] and method == "POST":
                 return s.force_corporate_event(wid, body)
             if sub == ["otc", "dealers"]:
@@ -132,7 +134,7 @@ class Router:
                     if method == "POST":
                         return s.place_order(wid, pid, body["security_id"], body["side"], body["quantity"], body.get("order_type", "MARKET"),
                                              body.get("limit_price"), body.get("stop_price"), body.get("time_in_force", "DAY"), body.get("strategy_tag"),
-                                             body.get("trail_pct"), body.get("condition"))
+                                             body.get("trail_pct"), body.get("condition"), body.get("settle_ccy"))
                     return s.orders(wid, pid)
                 if leaf == ["briefing"]:
                     return s.briefing(wid, pid, query.get("date", [None])[0])

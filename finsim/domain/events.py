@@ -22,6 +22,8 @@ class E:
     CAPITAL_CONTRIBUTED = "CAPITAL_CONTRIBUTED"
     MARKET_CLOSE = "MARKET_CLOSE"
     REAL_HISTORY_LOADED = "REAL_HISTORY_LOADED"     # a world that tracks the market: the real closes it started from
+    REAL_MACRO_LOADED = "REAL_MACRO_LOADED"         # a career world: the real economic series it started from
+    CLOCK_CHANGED = "CLOCK_CHANGED"                 # update time / timezone changed from the settings page
     REGIME_CHANGED = "REGIME_CHANGED"
     NEWS_PUBLISHED = "NEWS_PUBLISHED"
     ORDER_ENTERED = "ORDER_ENTERED"

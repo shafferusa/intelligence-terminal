@@ -49,6 +49,7 @@ class Service:
     def __init__(self, store: EventStore, strict_replay: Optional[bool] = None):
         import os as _os
         import time as _time
+        self.now = None                                  # injectable clock (tests): callable returning an aware datetime
         self.store = store
         self.worlds: Dict[str, World] = {}
         self.strict_replay = (_os.environ.get("FINSIM_STRICT_REPLAY") == "1") if strict_replay is None else bool(strict_replay)
@@ -63,7 +64,7 @@ class Service:
     def create_world(self, name: str, seed: int, start_date: Optional[str] = None, capital: Optional[float] = None, portfolio_name: str = "Main Portfolio",
                      portfolio_type: str = "PERSONAL", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", initial_regime: str = "NORMAL_GROWTH",
                      benchmark: Optional[str] = "SPY", job: str = "SANDBOX", clock_mode: str = "SANDBOX", timezone: str = "America/New_York",
-                     update_time: str = "09:00", scenario: str = "NONE", at=None, market_source: str = "SIMULATED") -> Dict:
+                     update_time: Optional[str] = None, scenario: str = "NONE", at=None, market_source: Optional[str] = None) -> Dict:
         """A save. Career saves (clock_mode REAL_TIME) start at the latest processed real date and advance by
         themselves at the update time; sandbox saves start wherever you like and advance on demand. market_source
         REAL makes the world track the actual market: real prehistory, real closes for every session it enters."""
@@ -76,12 +77,22 @@ class Service:
         scenario = (scenario or "NONE").upper()
         if scenario not in ("NONE", "CRISIS"):
             raise CommandError("scenario must be NONE or CRISIS")
-        clock = ClockConfig(clock_mode.upper(), timezone, update_time)
-        cal = World("tmp").calendar
-        market_source = (market_source or "SIMULATED").upper()
+        clock_mode = (clock_mode or "SANDBOX").upper()
+        # a career runs on the real market's day, processed after the close; a sandbox is generated from the seed unless asked otherwise
+        market_source = (market_source or ("REAL" if clock_mode == "REAL_TIME" else "SIMULATED")).upper()
         if market_source not in ("SIMULATED", "REAL"):
             raise CommandError("market_source must be SIMULATED or REAL")
+        update_time = update_time or ("17:00" if clock_mode == "REAL_TIME" else "09:00")
+        clock = ClockConfig(clock_mode, timezone, update_time)
+        if clock_mode == "REAL_TIME" and market_source == "REAL":
+            from ..clock import MARKET_TZ, SESSION_FINAL
+            from datetime import datetime as _dt
+            ny = _dt.combine(date(2026, 1, 5), clock.update_t(), tzinfo=clock.tz()).astimezone(MARKET_TZ).time()
+            if ny < SESSION_FINAL:
+                raise CommandError(f"a career save updates after the real close: {update_time} {timezone} is {ny.strftime('%H:%M')} New York, before 16:15")
+        cal = World("tmp").calendar
         real_history = None
+        real_macro = None
         if market_source == "REAL":
             from ..engines.realfeed import RealFeed, equity_symbols_for
             from ..engines.market import build_universe
@@ -97,19 +108,39 @@ class Service:
                 if not feed.has(cal_sd):
                     cal_sd = date.fromisoformat(max(k for k in feed.data.get("SPY", {}) if k <= cal_sd.isoformat()) if any(k <= cal_sd.isoformat() for k in feed.data.get("SPY", {})) else latest)
             real_history = feed.history(cal_sd - timedelta(days=420), date.fromisoformat(latest))
+            from ..engines.realmacro import RealMacro
+            rm = RealMacro()
+            try:
+                rm.refresh()
+            except Exception:
+                pass
+            real_macro = rm.snapshot(cal_sd - timedelta(days=800)) if rm.data else None
         elif clock.mode == "REAL_TIME":
             cal_sd = target_sim_date(clock, cal, at)
         else:
             cal_sd = cal.roll(date.fromisoformat(start_date) if start_date else target_sim_date(ClockConfig("SANDBOX", timezone, update_time), cal, at))
         wid = "W-" + uuid.uuid4().hex[:8]
         w = World.create(wid, name or "Untitled world", int(seed), cal_sd, store=self.store, initial_regime=initial_regime, clock=clock, scenario=scenario,
-                         market_source=market_source, real_history=real_history)
+                         market_source=market_source, real_history=real_history, real_macro=real_macro)
         self.log.info("created world %s (%s, job %s, clock %s, seed %s, scenario %s)", wid, name, job, clock.mode, seed, scenario)
         self.worlds[wid] = w
         cap = D(str(capital)) if (capital and job == "SANDBOX") else JOBS[job].capital
         bench = benchmark if job == "SANDBOX" else JOBS[job].benchmark
         pf = w.create_portfolio(portfolio_name, portfolio_type if job == "SANDBOX" else job, cap, "USD", bench, realism, mode, job)
         return {"world_id": wid, "portfolio_id": pf.id, "start_date": cal_sd.isoformat(), "clock_mode": clock.mode}
+
+    def _open_for_instructions(self, w: World, at=None) -> None:
+        """Career saves take instructions only while the market is shut (from the update until 09:29 New York)."""
+        if at is None and self.now is not None:
+            at = self.now()
+        tw = w.trading_window(at)
+        if not tw["open"]:
+            raise CommandError(f"instructions are locked while the session runs: {tw['reason']}")
+
+    def set_clock(self, world_id: str, update_time: Optional[str] = None, timezone: Optional[str] = None) -> Dict:
+        w = self.world(world_id)
+        w.set_clock(update_time, timezone)
+        return self.world_info(world_id)
 
     def catch_up_all(self, at=None) -> Dict[str, List[str]]:
         """Process due days for every career world (called by the scheduler and on access). `at` injects the clock."""
@@ -164,6 +195,7 @@ class Service:
         return jsonable({"id": w.id, "name": w.name, "seed": w.seed, "start_date": w.start_date, "current_date": w.current_date,
                          "day_index": w.day_count, "events": len(w.events), "regime": {"name": r.name, "label": r.label, "description": r.description},
                          "scenario": w.scenario, "scenario_log": w.scenario_log, "market_source": getattr(w, "market_source", "SIMULATED"),
+                         "trading_window": w.trading_window(self.now() if self.now else None),
                          "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
                                           "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
                                           "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),
@@ -201,16 +233,36 @@ class Service:
 
     def place_order(self, world_id: str, portfolio_id: str, security_id: str, side: str, quantity: float, order_type: str = "MARKET",
                     limit_price: Optional[float] = None, stop_price: Optional[float] = None, time_in_force: str = "DAY", strategy_tag: Optional[str] = None,
-                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None) -> Dict:
+                    trail_pct: Optional[float] = None, condition: Optional[Dict] = None, settle_ccy: Optional[str] = None) -> Dict:
+        """An instruction; with `settle_ccy` another currency pays for it (a buy) or receives its proceeds (a sell): the spot
+        conversion is dealt now at the pair's rate and settles T+2, so the cash is there when the trade settles."""
         w = self.world(world_id)
+        self._open_for_instructions(w)
+        pf = w.portfolio(portfolio_id)
+        sec = w.security(security_id)
+        fx_trade = None
+        settle = (settle_ccy or "").upper() or None
         try:
+            if settle and settle != (sec.currency or pf.base_currency):
+                pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle})
+                fx = pv.get("fx")
+                need = D(str(pv["cash_needed"]))
+                if fx and need > 0:                               # a buy paid with another currency: buy the security's currency first
+                    fx_trade = w.fx_spot(portfolio_id, sec.currency, settle, need, "BUY")
             o = w.place_order(portfolio_id, security_id, side, D(str(quantity)), order_type,
                               D(str(limit_price)) if limit_price is not None else None,
                               D(str(stop_price)) if stop_price is not None else None, time_in_force, strategy_tag,
                               float(trail_pct) if trail_pct else None, condition)
+            if settle and settle != (sec.currency or pf.base_currency) and fx_trade is None:
+                pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle})
+                need = D(str(pv["cash_needed"]))
+                if need < 0:                                      # a sale whose proceeds go into another currency: sell them forward into it at spot
+                    fx_trade = w.fx_spot(portfolio_id, settle, sec.currency, -need, "SELL")
         finally:
             w.flush()
-        return self.order(world_id, portfolio_id, o.id)
+        out = self.order(world_id, portfolio_id, o.id)
+        out["fx"] = jsonable(asdict(fx_trade)) if fx_trade is not None else None
+        return out
 
     def cancel_order(self, world_id: str, portfolio_id: str, order_id: str) -> Dict:
         w = self.world(world_id)
@@ -859,6 +911,7 @@ class Service:
 
     def borrow(self, world_id: str, portfolio_id: str, locate_id: str, quantity: float, collateral_type: str = "CASH") -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         loan = w.borrow_securities(portfolio_id, locate_id, D(str(quantity)), collateral_type)
         return jsonable(asdict(loan))
 
@@ -895,6 +948,7 @@ class Service:
 
     def playbook_execute(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         try:
             return jsonable(w.playbook.execute(w.portfolio(portfolio_id), body.get("key", ""), body.get("params") or {}))
         finally:
@@ -906,16 +960,19 @@ class Service:
 
     def pc_commit(self, world_id: str, portfolio_id: str, deal_id: str, amount: float) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         loan = w.commit_private_credit(portfolio_id, str(deal_id).upper(), D(str(amount)))
         return jsonable(asdict(loan))
 
     def pc_sell(self, world_id: str, portfolio_id: str, loan_id: str, amount: float) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         loan = w.sell_private_credit(portfolio_id, str(loan_id).upper(), D(str(amount)))
         return jsonable(asdict(loan))
 
     def repo_open(self, world_id: str, portfolio_id: str, side: str, security_id: str, quantity: float, term_type: str = "OVERNIGHT", term_days: int = 1, auto_roll: bool = True) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         r = w.open_repo(portfolio_id, side, security_id.upper(), D(str(quantity)), term_type, int(term_days), bool(auto_roll))
         return jsonable(asdict(r))
 
@@ -1023,10 +1080,12 @@ class Service:
 
     def fx_spot(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, amount: float, amount_ccy: str = "BUY") -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         return jsonable(asdict(w.fx_spot(portfolio_id, buy_ccy, sell_ccy, D(str(amount)), amount_ccy)))
 
     def fx_forward(self, world_id: str, portfolio_id: str, buy_ccy: str, sell_ccy: str, buy_amount: float, maturity: str) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         return jsonable(asdict(w.fx_forward(portfolio_id, buy_ccy, sell_ccy, D(str(buy_amount)), maturity)))
 
     def force_regime(self, world_id: str, regime: str) -> Dict:
@@ -1071,16 +1130,27 @@ class Service:
             cash_needed = gross + accrued + commission
         else:
             cash_needed = -(gross + accrued - commission)
-        ccy = pf.base_currency
+        ccy = sec.currency or pf.base_currency
+        settle = str(body.get("settle_ccy") or ccy).upper()
+        fx = None
+        if settle != ccy and cash_needed != 0:
+            # pay with (or receive in) another currency: the conversion is a spot deal at the pair's rate, settled T+2
+            need = abs(cash_needed)
+            q_fx = w.fx.quote(ccy, settle, need, "BUY") if cash_needed > 0 else w.fx.quote(settle, ccy, need, "SELL")
+            fx = {**q_fx, "direction": "pay" if cash_needed > 0 else "receive",
+                  "settle_amount": q_fx["sell_amount"] if cash_needed > 0 else q_fx["buy_amount"],
+                  "settle_balance": pf.cash_account(settle).balance, "settle_projected": w.trading.projected_cash(pf, settle)}
         return jsonable({"security_id": sid, "side": side, "quantity": q, "price": px, "price_source": "limit" if limit not in (None, "") else ("ask" if side == "BUY" else "bid"),
                          "unit_cash": per_unit_cash, "gross": gross, "accrued_interest": accrued, "commission": commission, "initial_margin": margin,
                          "cash_needed": cash_needed, "cash_settled": pf.cash_account(ccy).balance, "cash_projected": w.trading.projected_cash(pf, ccy),
                          "kind": "future" if sec.is_future else "option" if sec.is_option else "bond" if sec.is_bond else "cash",
-                         "lot_size": lot, "multiplier": float(sec.multiplier) if (sec.is_future or sec.is_option) else 1.0, "currency": ccy})
+                         "lot_size": lot, "multiplier": float(sec.multiplier) if (sec.is_future or sec.is_option) else 1.0, "currency": ccy,
+                         "settle_ccy": settle, "fx": fx, "cash_by_currency": {c: {"settled": a.balance, "base_value": a.base_value} for c, a in pf.cash.items()}})
 
     # ------------------------------------------------------------------ phase 9: commodity desk
     def place_spread(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         st = w.place_spread(portfolio_id, body["near"], body["far"], body.get("side", "BUY"), D(str(body["quantity"])),
                             None if body.get("limit_points") in (None, "") else float(body["limit_points"]), body.get("time_in_force", "DAY"))
         return jsonable({"strategy_id": st.id, "status": st.status, "legs": st.legs, "analytics": w.options.strategy_analytics(w.portfolio(portfolio_id), st)})
@@ -1224,6 +1294,7 @@ class Service:
 
     def place_strategy(self, world_id: str, portfolio_id: str, body: Dict) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         st = w.place_strategy(portfolio_id, body["strategy_type"], body["underlying"], body["expiry"], [float(k) for k in body["strikes"]], body.get("quantity", 1),
                               body.get("net_limit"), body.get("expiry2"), body.get("time_in_force", "DAY"))
         return jsonable({"strategy_id": st.id, "status": st.status, "legs": st.legs, "analytics": w.options.strategy_analytics(w.portfolio(portfolio_id), st)})
@@ -1298,6 +1369,7 @@ class Service:
 
     def otc_execute(self, world_id: str, portfolio_id: str, rfq_id: str, dealer: str) -> Dict:
         w = self.world(world_id)
+        self._open_for_instructions(w)
         t = w.execute_rfq(portfolio_id, rfq_id, dealer)
         return jsonable({"trade_id": t.id, "product": t.product, "counterparty": t.counterparty, "mtm": t.mtm, "description": w.otc.describe(t)})
 
@@ -1343,8 +1415,18 @@ class Service:
     def macro(self, world_id: str) -> Dict:
         w = self.world(world_id)
         cur = w.market.curve()
+        real_world = getattr(w, "market_source", "SIMULATED") == "REAL"
+        real = real_world and bool(w.market.macro.real_series)          # a career whose FRED series never arrived shows the simulation's macro, and says so
         return jsonable({**w.market.macro.dashboard(w.current_date), "regime": w.market.regime().label, "curve": asdict(cur),
-                         "corporate_events": w.market.cevents.announced[-60:], "date": w.current_date})
+                         "corporate_events": w.market.cevents.announced[-60:], "date": w.current_date, "source": "REAL" if real else ("REAL_PENDING" if real_world else "SIMULATED"),
+                         "real": w.market.macro.last_real if real else None,
+                         "note": ("Growth, inflation, unemployment and the target rate are the real figures as known on each date (FRED: CPIAUCSL, CPILFESL, UNRATE, PAYEMS, "
+                                  "A191RL1Q225SBEA, DFEDTARU); releases show the published number against the previous one (no consensus is fetched); "
+                                  "release dates follow the usual calendar; FOMC dates are the published meeting days. Earnings and ratings remain the simulation's." if real else
+                                  "The economic series (FRED) have not been fetched yet — the machine may be offline — so growth, inflation and the policy rate shown are the "
+                                  "simulation's; they switch to the real figures at the first session after the feed answers." if real_world else
+                                  "A seeded economy: growth, inflation and unemployment drift toward the regime's anchors, releases carry a consensus and a surprise, "
+                                  "and the central bank follows a reaction function.")})
 
     def corporate_actions_for(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)

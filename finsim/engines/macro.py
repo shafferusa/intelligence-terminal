@@ -68,6 +68,8 @@ def first_friday(y: int, m: int) -> date:
 class MacroModel:
     def __init__(self, seed: int, securities: Dict, cal):
         self.seed = seed
+        self.real_series: Optional[Dict] = None      # a career world: the real FRED series; meetings, releases and the calendar come from them
+        self.last_real: Dict = {}
         self.cal = cal
         self.state = MacroState()
         self.history: List[Dict] = []
@@ -86,6 +88,9 @@ class MacroModel:
 
     # ------------------------------------------------------------------ calendars (pure functions)
     def meeting_dates(self, year: int) -> List[date]:
+        if self.real_series is not None:
+            from .realmacro import fomc_dates
+            return fomc_dates(year)
         return [self.cal.roll(third_wednesday(year, m)) for m in MEETING_MONTHS]
 
     def next_meeting(self, d: date) -> date:
@@ -114,6 +119,9 @@ class MacroModel:
         return self.earnings_dates[key]
 
     def upcoming(self, d: date, days: int = 45) -> List[Dict]:
+        if self.real_series is not None:
+            from .realmacro import upcoming as real_upcoming
+            return real_upcoming(self.real_series, d, self.cal.roll, days)
         end = d + timedelta(days=days)
         out = []
         for (y, m) in sorted({(d.year, d.month), ((d + timedelta(days=32)).year, (d + timedelta(days=32)).month), ((d + timedelta(days=62)).year, (d + timedelta(days=62)).month)}):
@@ -352,6 +360,10 @@ class MacroModel:
         st = payload.get("state", {})
         s = self.state
         self.went_live = True
+        if st.get("real"):
+            self.last_real = dict(st["real"])
+        if "next_meeting" in st and self.real_series is not None:
+            pass
         self.neutral = float(st.get("neutral", self.neutral))
         s.growth, s.inflation, s.unemployment, s.policy_rate = float(st.get("growth", s.growth)), float(st.get("inflation", s.inflation)), float(st.get("unemployment", s.unemployment)), float(st.get("policy_rate", s.policy_rate))
         s.last_decision = st.get("last_decision", s.last_decision)

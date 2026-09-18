@@ -8,7 +8,15 @@ settlements progress, corporate actions pay, and a daily briefing is written.
 In the evening you read the briefing, review the book, and leave instructions
 for the next day.
 
-**This is a simulation.** It never connects to a broker, exchange or market-data feed while you play. The universe
+**Two ways to play.** A **career** save plays the real market day by day: one real day is one session,
+processed after the close (17:00 New York by default, never before 16:15) with that day's real closes for
+stocks, ETFs, Treasury yields, commodities and FX, the real CPI, jobs, GDP and Fed decisions, and real
+headlines. You enter instructions overnight — from the update until 09:29 New York — and they execute at the
+next close, so nothing is ever entered with the session's prices on the screen. A **sandbox** save is a world
+generated from a seed that you advance yourself. Nothing is ever sent to a broker or an exchange; the market
+data is read, never traded against (see *Where the data comes from*).
+
+**This is a simulation.** It never connects to a broker or exchange while you play. The universe
 is a snapshot of real listed companies, ETFs, representative bonds of real issuers and real institutions as
 counterparties (`finsim/data/universe.json`, dated inside the file): starting prices, volumes, volatilities,
 betas, dividend yields and fundamentals come from Yahoo Finance and SEC EDGAR at the snapshot date, and the
@@ -72,8 +80,13 @@ The nav is one entry per thing you do, each page with tabs; older links (`#/home
 | **Security & Credit Lending** | securities lending (locate → borrow → short), repo, collateral & prime brokerage, and **private credit**: a monthly pipeline of loans to sponsor-backed private companies (first lien, unitranche, second lien, mezzanine; OID, spread, covenants, leverage), commit from $1m, quarterly floating coupons, daily marks off a loan-market spread, rating migration, covenant amendments, defaults and workouts, secondary sales at a bid |
 | **Risk** | VaR, expected shortfall, stress, liquidity, limits, history |
 | **Accounting** | general ledger and balance sheet, settlements & custody, cash & treasury (cash ledgers, liquidity projection, movements), audit trail |
-| **Calculations** | the strategy playbook: 38 ready-made packages (protective puts at several strikes, tail hedge, collars incl. zero-cost, put-spread hedge, protected shorts, short collar, call-spread hedge, covered and partial covered calls, cash-secured put, bull/bear call and put spreads, straddles, strangles, iron condor, synthetic long/short/protected TRS, core-plus-overlay, delta-neutral TRS, long/short/protected futures, relative value long/short and protected). Pick one, set underlying, units, tenor and per-leg strikes, **preview** every leg off today's quotes with Greeks, margin, max gain/loss, breakevens and the payoff chart, then **execute** the whole package in one click |
-| **Settings, Glossary** | presets per page; every term the screens use |
+| **Calculations** | the strategy playbook: 60 ready-made packages, each with what you are trading in one sentence, why, when it fits and the risk in words (protective puts at several strikes, tail hedge, collars incl. zero-cost, put-spread hedge, protected shorts, short collar, call-spread hedge, covered and partial covered calls, cash-secured put, bull/bear call and put spreads, straddles, strangles, iron condor, synthetic long/short/protected TRS, core-plus-overlay, delta-neutral TRS, long/short/protected futures, relative value long/short and protected). Pick one, set underlying, units, tenor and per-leg strikes, **preview** every leg off today's quotes with Greeks, margin, max gain/loss, breakevens and the payoff chart, then **execute** the whole package in one click |
+| **Settings, Glossary** | presets per page: the ticket's settlement currency, the calculations defaults, the Market Place tab and sort, dark or light theme, and — for a career — this save's update time and timezone; every term the screens use |
+
+**Every ticket has a currency.** *Settle in* names the currency that pays for a buy or receives a sale;
+when it is not the security's currency the conversion is dealt at spot alongside the instruction and
+settles T+2, so euros or yen sitting in the book can buy dollar assets, and a sale can land in another
+currency. The estimate line shows both legs and the cash balances by currency.
 
 **Search on every page.** The header box (press `/`) matches tickers, names, bonds, contracts and commodities;
 Enter opens a **quick look** — candle chart with moving averages and a crosshair, the quote, a ticket, and
@@ -88,7 +101,7 @@ factor (AUD and CAD risk-on, JPY and CHF havens), mean reversion, and the residu
 the rate differential, the forward curve, a cross-rate matrix, your cash and exposure per currency, and
 spot and forward tickets beside it; currency options and margined forwards are on the OTC desk.
 
-**Track the real market.** A new save can be created with market source *REAL*: the world fetches real daily
+**Track the real market.** Career saves do this by default; a sandbox can too (market source *REAL*). The world fetches real daily
 closes (Yahoo Finance; stocks, ETFs, ADRs, Treasury yields, commodity front months, FX), stores a year of
 history in the save as one event (replay never touches the network), starts on the last close, and pins every
 session it advances into to that day's real closes — bonds off the real curve, options off the vol surface,
@@ -123,6 +136,42 @@ The computer must be awake, and the phone on the same network. For anywhere-acce
 is opened to the public internet. `python3 -m finsim phone off` goes back to this machine only; the key lives
 in `~/.finsim/access-key` (delete it to rotate). Running `serve` by hand with a non-local `--host` refuses to
 start without `--key`.
+
+### Where the data comes from
+
+| Data | Source | When |
+|---|---|---|
+| Daily closes: stocks, ETFs, ADRs, REITs, preferreds | Yahoo Finance's public quote endpoints (`query2.finance.yahoo.com`, the `spark` and `chart` JSON; no key, browser-style user agent) | career saves: every session; the universe snapshot: `tools/refresh_universe.py` |
+| Treasury yields (13-week bill, 5, 10 and 30 years) | Yahoo (`^IRX`, `^FVX`, `^TNX`, `^TYX`) | every session |
+| Commodity front months, FX | Yahoo (`CL=F`, `GC=F`, `ZC=F` …; `EURUSD=X`, `JPY=X` …) | every session |
+| Shares outstanding, fundamentals, sector | SEC EDGAR company facts (`data.sec.gov`, with the required user agent) | the universe snapshot only |
+| CPI, core CPI, unemployment, payrolls, GDP, retail sales, core PCE, the Fed's target range | FRED, the St. Louis Fed's public CSV endpoint (`fred.stlouisfed.org/graph/fredgraph.csv`; no key) | career saves: stored when the save is made, refreshed every six hours |
+| Headlines | Yahoo Finance news search for the market and the names in your books; the Federal Reserve's press-release feed | career saves: fetched when each session is processed, stored in the save |
+
+Everything fetched is stored in the save as events, so replaying a save never touches the network; the
+cache lives under `~/.finsim/`. Corporate bonds are representative issues priced off the real curve and
+the issuer's rating, not quoted bonds; options are priced by the simulator's vol surface off the real
+closes; the economic release dates follow the usual calendar (CPI around the 12th, jobs the first Friday,
+GDP near the end of the following month) rather than each agency's exact schedule, and no consensus
+figures are fetched. Earnings, ratings and counterparties remain the simulation's own.
+
+### Playing with a friend
+
+The game runs on your computer, so there are three ways to share it:
+
+1. **Same computer, different saves.** Every save is a separate world; a friend playing on your machine
+   makes their own save from the *+ Save* button (their instructions, their book, their briefing).
+2. **Your computer, their phone or laptop.** `python3 -m finsim phone` opens your server to the network
+   behind an access key and prints the link; on the same Wi-Fi they open it and pick or create their save.
+   For anywhere-access install [Tailscale](https://tailscale.com) on both machines and use the Tailscale
+   link it prints: nothing is exposed to the public internet, and the key is required for every call.
+   Your computer must be on for the daily update to run (it runs at 17:00 New York whether or not anyone
+   is logged in).
+3. **Their own copy.** They clone the repository and run `python3 -m finsim install`: the same game, their
+   own saves, no dependency on your machine. Careers on two machines see the same real market, so you can
+   compare books at the end of a month.
+
+The saves database (`~/.finsim/finsim.db`) can also be copied to hand a whole world to someone.
 
 ## The daily cycle
 
@@ -427,7 +476,10 @@ POST /api/worlds/{w}/portfolios/{p}/fx/spot {buy_ccy, sell_ccy, amount, amount_c
 GET  /api/worlds/{w}/fx                           (every currency vs USD: quote, carry, vol, forward points, today's drivers, history, cross rates)
 GET  /api/worlds/{w}/portfolios/{p}/playbook      POST .../playbook/preview | execute {key, params:{underlying, other, units, tenor_months, strikes:{legIndex: pct|strike}}}
 GET  /api/worlds/{w}/portfolios/{p}/private-credit   POST .../private-credit/commit {deal_id, amount}   POST .../private-credit/sell {loan_id, amount}
-POST /api/worlds {..., market_source: SIMULATED|REAL}      GET /api/worlds/{w} → market_source, real_market {latest_close, next_session, waiting}
+POST /api/worlds {..., market_source: SIMULATED|REAL}      GET /api/worlds/{w} → market_source, real_market {latest_close, next_session, waiting}, trading_window {open, opens_at|closes_at, reason}
+POST /api/worlds/{w}/clock {update_time, timezone}         (career saves; a real-market save must update at 16:15 New York or later)
+POST .../orders {..., settle_ccy}                           (pay for a buy with, or receive a sale in, another currency: the FX spot is dealt alongside)
+     career saves refuse trading and dealing commands from 09:30 New York until the update (409 with the reason); cancels are always accepted
 POST /api/worlds/{w}/force-regime {regime}   (sandbox)
 GET  /api/worlds/{w}/options                      GET  /api/worlds/{w}/options/{underlying}/chain?expiry= | surface   GET .../options/{contract}/contract
 GET  /api/worlds/{w}/portfolios/{p}/options       POST .../options/exercise {contract_id, quantity}

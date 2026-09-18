@@ -8,7 +8,8 @@
   const PREF_DEFAULTS = { mode: 'preset', home: '#/news',
     options: { under: 'SPX', tenor: '3M', qty: 10, type: 'MARKET', tif: 'DAY', tab: 'chain' },
     otc: { product: 'IRS', tenor_years: 5, notional: 10000000 },
-    trading: { qty: 10000, bond_qty: 1000000, fut_qty: 10, type: 'MARKET', tif: 'DAY' },
+    trading: { qty: 10000, bond_qty: 1000000, fut_qty: 10, type: 'MARKET', tif: 'DAY', ccy: 'USD' },
+    calc: { key: 'PROTECTIVE_PUT', units: 1000, tenor: 3 }, market: { tab: 'equities', sort: 'id' }, theme: 'dark',
     charts: { period: '3M' } };
   function deepMerge(a, b) { const o = JSON.parse(JSON.stringify(a)); for (const k in (b || {})) { if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k])) o[k] = deepMerge(a[k] || {}, b[k]); else if (b[k] !== undefined && b[k] !== null && b[k] !== '') o[k] = b[k]; } return o; }
   const prefs = (() => { try { return deepMerge(PREF_DEFAULTS, JSON.parse(localStorage.getItem('finsim.prefs') || '{}')); } catch (e) { return JSON.parse(JSON.stringify(PREF_DEFAULTS)); } })();
@@ -21,6 +22,7 @@
   const slug = t => String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const gl = (term, label) => `<a class="gl" href="#/glossary/${slug(term)}" title="glossary: ${esc(term)}">${label != null ? label : esc(term)}</a>`;
   if (!state.route) state.route = prefs.home || '#/news';
+  const applyTheme = () => { document.documentElement.dataset.theme = prefs.theme === 'light' ? 'light' : 'dark'; }; applyTheme();
   state.period = prefs.charts.period || state.period;
   // ---------------------------------------------------------------- helpers
   const fmt = {
@@ -138,16 +140,16 @@
       <div class="row" style="gap:10px;flex-wrap:wrap"><span class="mono" style="font-size:20px">${fmt.px(s.last)}</span><span class="mono ${s.change_pct >= 0 ? 'pos' : 'neg'}">${fmt.signed(s.change)} (${fmt.pct(s.change_pct)})</span><span class="muted mono">bid ${fmt.px(s.bid)} · ask ${fmt.px(s.ask)} · vol ${fmt.qty(s.volume)}${s.realized_vol != null ? ' · 20d vol ' + fmt.pct(s.realized_vol, 1) : ''}${s.beta != null ? ' · β ' + s.beta : ''}</span>
         <span class="periods" style="margin-left:auto">${['1M', '3M', '6M', '1Y'].map(p => `<a class="btn ${p === period ? 'primary' : ''}" data-ql-period="${p}">${p}</a>`).join('')}</span></div>
       <canvas id="qlChart" style="margin-top:8px"></canvas>
-      <div class="grid2" style="margin-top:10px"><div class="panel"><h2 style="margin-top:0">Trade</h2><div class="form"><label>Side</label><select id="qlSide"><option>BUY</option><option>SELL</option></select><label>Quantity</label><input id="qlQty" type="number" value="${sec.is_future ? prefs.trading.fut_qty : sec.coupon ? prefs.trading.bond_qty : prefs.trading.qty}"><label>Type</label><select id="qlType"><option value="MARKET">MARKET — next open</option><option value="LIMIT">LIMIT</option></select><label>Limit</label><input id="qlLimit" type="number" step="0.01" placeholder="only for LIMIT"></div>
+      <div class="grid2" style="margin-top:10px"><div class="panel"><h2 style="margin-top:0">Trade</h2><div class="form"><label>Side</label><select id="qlSide"><option>BUY</option><option>SELL</option></select><label>Quantity</label><input id="qlQty" type="number" value="${sec.is_future ? prefs.trading.fut_qty : sec.coupon ? prefs.trading.bond_qty : prefs.trading.qty}"><label>Type</label><select id="qlType"><option value="MARKET">MARKET — next open</option><option value="LIMIT">LIMIT</option></select><label>Limit</label><input id="qlLimit" type="number" step="0.01" placeholder="only for LIMIT"><label>Settle in</label><select id="qlCcy">${['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD'].map(c => `<option ${c === (prefs.trading.ccy || 'USD') ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
           <div class="row" style="margin-top:8px"><button class="btn primary" id="qlGo">Submit instruction</button><span id="qlGoErr" class="error"></span></div><div id="qlEst" class="hint"></div></div>
         <div class="panel"><h2 style="margin-top:0">Go to</h2><div class="row" style="flex-wrap:wrap;gap:6px"><a class="btn" href="#/security/${esc(sec.id)}">full page</a>${!isOpt && !sec.is_future ? `<a class="btn" href="#/groupings/${encodeURIComponent(sec.id)}">grouping</a>` : ''}${['EQUITY', 'ETF', 'ADR', 'REIT'].includes(sec.asset_class) ? `<a class="btn" href="#/options/${esc(sec.id)}">options chain</a><a class="btn" href="#/calc?under=${esc(sec.id)}">calculations</a>` : ''}${sec.is_future ? `<a class="btn" href="#/futures">futures desk</a>` : ''}${sec.coupon ? `<a class="btn" href="#/market/bonds">bonds</a>` : ''}</div>
           <div class="kv" style="margin-top:8px">${sec.coupon ? `<div>Coupon</div><div>${fmt.pct(sec.coupon, 3)}</div><div>Maturity</div><div>${sec.maturity}</div><div>Rating</div><div>${sec.rating}</div>` : ''}${sec.dividend_yield ? `<div>Dividend yield</div><div>${fmt.pct(sec.dividend_yield, 2)}</div>` : ''}${sec.market_cap ? `<div>Market cap</div><div>${fmt.big(sec.market_cap)}</div>` : ''}${sec.is_future ? `<div>Multiplier</div><div>${sec.multiplier}</div><div>Expiry</div><div>${sec.expiry}</div>` : ''}<div>Tier</div><div>${sec.liquidity_tier || ''}</div></div></div></div>`);
     const draw = () => { if (s.bars && s.bars.length) candleChartPro($('#qlChart', m), s.bars, { h: 280 }); };
     draw();
     m.querySelectorAll('[data-ql-period]').forEach(a => a.addEventListener('click', () => { closeModal(); quickLook(sid, a.dataset.qlPeriod); }));
-    const est = async () => { try { const r = await post(P() + '/orders/preview', { security_id: sec.id, side: $('#qlSide', m).value, quantity: +$('#qlQty', m).value, order_type: 'MARKET' }); $('#qlEst', m).textContent = r.summary || `${$('#qlSide', m).value} ${fmt.qty($('#qlQty', m).value)} ≈ ${fmt.money(r.notional || r.gross || 0)}${r.commission ? ' + commission ' + fmt.money(r.commission) : ''}`; } catch (e) { $('#qlEst', m).textContent = ''; } };
-    $('#qlQty', m).addEventListener('input', est); $('#qlSide', m).addEventListener('change', est); est();
-    $('#qlGo', m).addEventListener('click', async () => { try { const r = await post(P() + '/orders', { security_id: sec.id, side: $('#qlSide', m).value, quantity: +$('#qlQty', m).value, order_type: $('#qlType', m).value, limit_price: $('#qlLimit', m).value ? +$('#qlLimit', m).value : null, time_in_force: prefs.trading.tif }); toast(`${r.order.status}: ${r.order.side} ${fmt.qty(r.order.quantity)} ${r.order.security_id} — executes at the next update`); closeModal(); render(); } catch (e) { $('#qlGoErr', m).textContent = e.message; } });
+    const est = async () => { try { const r = await post(P() + '/orders/preview', { security_id: sec.id, side: $('#qlSide', m).value, quantity: +$('#qlQty', m).value, order_type: 'MARKET', settle_ccy: $('#qlCcy', m).value }); const cash = Number(r.cash_needed); $('#qlEst', m).innerHTML = `${$('#qlSide', m).value} ${fmt.qty(r.quantity)} ≈ <b>${cash > 0 ? 'pay' : 'receive'} ${r.currency} ${fmt.money(Math.abs(cash))}</b>${r.fx ? ` → ${r.fx.direction === 'pay' ? 'paid with' : 'received in'} <b>${r.settle_ccy} ${fmt.money(r.fx.settle_amount)}</b> at spot` : ''}${r.commission ? ` · commission ${fmt.money(r.commission)}` : ''}`; } catch (e) { $('#qlEst', m).textContent = ''; } };
+    $('#qlQty', m).addEventListener('input', est); $('#qlSide', m).addEventListener('change', est); $('#qlCcy', m).addEventListener('change', est); est();
+    $('#qlGo', m).addEventListener('click', async () => { try { const r = await post(P() + '/orders', { security_id: sec.id, side: $('#qlSide', m).value, quantity: +$('#qlQty', m).value, order_type: $('#qlType', m).value, limit_price: $('#qlLimit', m).value ? +$('#qlLimit', m).value : null, time_in_force: prefs.trading.tif, settle_ccy: $('#qlCcy', m).value }); toast(`${r.order.status}: ${r.order.side} ${fmt.qty(r.order.quantity)} ${r.order.security_id} — executes at the next update`); closeModal(); render(); } catch (e) { $('#qlGoErr', m).textContent = e.message; } });
   }
   // performance statistics from the NAV history (daily), optionally against a benchmark price series
   function perfStats(navHist, bench, policyRate) {
@@ -191,7 +193,8 @@
     if (!pfs.find(p => p.id === state.pfId)) state.pfId = pfs[0]?.id; $('#pfSel').value = state.pfId; localStorage.setItem('finsim.pf', state.pfId);
     $('#simDate').textContent = `${state.world.clock.weekday.slice(0, 3)} ${state.world.current_date}`; const rg = state.world.regime; $('#regimeBadge').textContent = rg.label; $('#regimeBadge').title = rg.description;
     const rt = state.world.clock.mode === 'REAL_TIME'; document.querySelectorAll('[data-adv]').forEach(b => b.style.display = rt ? 'none' : '');
-    const nu = $('#nextUpdate'); if (rt) { const d = new Date(state.world.clock.next_update); nu.style.display = ''; nu.innerHTML = `<span class="badge blue">CAREER</span> next update ${d.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: state.world.clock.timezone, timeZoneName: 'short' })}`; nu.title = `The market processes one business day at ${state.world.clock.update_time} ${state.world.clock.timezone}, whether or not you log in.`; } else { nu.style.display = ''; nu.innerHTML = '<span class="badge">SANDBOX</span>'; nu.title = 'Manual time: advance days yourself.'; }
+    const nu = $('#nextUpdate'); if (rt) { const d = new Date(state.world.clock.next_update); nu.style.display = ''; nu.innerHTML = `<span class="badge blue">CAREER</span> update ${d.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: state.world.clock.timezone, timeZoneName: 'short' })}`; nu.title = `The day is processed at ${state.world.clock.update_time} ${state.world.clock.timezone} with that session's real closes, whether or not you log in.`; } else { nu.style.display = ''; nu.innerHTML = '<span class="badge">SANDBOX</span>'; nu.title = 'Manual time: advance days yourself.'; }
+    windowPill.update();
     $('#regimeBadge').className = 'badge ' + ({ NORMAL_GROWTH: 'green', RATE_CUTTING: 'blue', RATE_HIKING: 'amber', RECESSION: 'red', LIQUIDITY_STRESS: 'red' }[rg.name] || '');
     const rm = state.world.real_market, rb = $('#realBadge'); const realW = state.world.market_source === 'REAL';
     if (rb) { rb.style.display = realW ? '' : 'none'; if (realW) { rb.textContent = rm && rm.waiting ? `REAL · waiting for the ${rm.next_session} close` : `REAL · closes through ${rm ? rm.latest_close : '—'}`; rb.className = 'badge ' + (rm && rm.waiting ? 'amber' : 'blue'); rb.title = rm && rm.waiting ? rm.waiting : 'this save tracks the real market'; } }
@@ -204,6 +207,12 @@
     if (bn.style.display !== 'none' && !bn.querySelector('.close')) { const x = document.createElement('a'); x.className = 'close'; x.title = 'dismiss'; x.textContent = '✕'; x.addEventListener('click', () => { bn.style.display = 'none'; }); bn.prepend(x); }
     render();
   }
+  // the instruction window: open from the update until 09:29 New York, locked while the session runs
+  const windowPill = (() => { let timer = null; const fmtLeft = ms => { const m = Math.max(0, Math.round(ms / 60000)); return m >= 120 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`; };
+    const draw = () => { const el = $('#windowPill'); const tw = (state.world || {}).trading_window; if (!el) return; if (!tw || tw.mode !== 'REAL_TIME') { el.style.display = 'none'; return; } el.style.display = '';
+      if (tw.open) { const t = tw.closes_at ? new Date(tw.closes_at) : null; el.className = 'badge green'; el.textContent = `INSTRUCTIONS OPEN${t ? ' · ' + fmtLeft(t - Date.now()) + ' left' : ''}`; el.title = tw.reason; if (t && t - Date.now() < 0) loadWorld(); }
+      else { const t = tw.opens_at ? new Date(tw.opens_at) : null; el.className = 'badge red'; el.textContent = `LOCKED · market open${t ? ' · reopens in ' + fmtLeft(t - Date.now()) : ''}`; el.title = tw.reason; if (t && t - Date.now() < 0) loadWorld(); } };
+    return { update() { draw(); clearInterval(timer); timer = setInterval(draw, 30000); } }; })();
   async function advance(days) {
     const btns = document.querySelectorAll('[data-adv]'); btns.forEach(b => b.disabled = true);
     try { const r = await api(W() + '/advance', { method: 'POST', body: { days } }); toast(`Closed ${r.closed_days.length} day(s) → now ${r.current_date}`); await loadWorld(); }
@@ -219,26 +228,29 @@
   async function openNewWorld() {
     const jobs = await api('/jobs');
     const m = modal(`<h1>New save <a onclick="document.getElementById('modalRoot').innerHTML=''">✕</a></h1>
-      <p class="hint">A save is a job. Career saves run on real time: one calendar day is one simulated business day, processed at your update time whether or not you log in. Sandbox saves advance when you say so.</p>
+      <p class="hint"><b>Career</b> plays the real market: one real day is one session, processed after the close with that day's real prices, rates and economic data; you enter instructions overnight (after the update until 09:29 New York) and they execute at the next close. <b>Sandbox</b> is a world generated from a seed that you advance yourself.</p>
       <div class="form">
         <label>Job</label><select id="nwJob">${jobs.map(j => `<option value="${j.key}" ${j.status !== 'PLAYABLE' ? 'disabled' : ''} ${j.key === 'PORTFOLIO_MANAGER' ? 'selected' : ''}>${esc(j.title)}${j.status !== 'PLAYABLE' ? ' — ' + esc(j.status) : ` — ${fmt.big(j.capital)}`}</option>`).join('')}</select>
         <label></label><div id="nwJobDesc" class="hint" style="margin:0"></div>
         <label>Save name</label><input id="nwName" value="My book">
-        <label>Clock</label><select id="nwClock"><option value="REAL_TIME">Career — real time, one business day per real day</option><option value="SANDBOX">Sandbox — advance manually</option></select>
+        <label>Mode</label><select id="nwClock"><option value="REAL_TIME">Career — the real market, one session per real day, processed at 17:00 New York</option><option value="SANDBOX">Sandbox — a seeded world you advance yourself</option></select>
         <label>Timezone</label><select id="nwTz">${['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Zurich', 'Asia/Tokyo', 'Asia/Singapore', 'Australia/Sydney'].map(t => `<option>${t}</option>`).join('')}</select>
-        <label>Update time</label><input id="nwTime" type="time" value="09:00">
+        <label id="nwTimeL">Update time</label><input id="nwTime" type="time" value="17:00">
+        <label id="nwTimeNoteL"></label><div id="nwTimeNote" class="hint" style="margin:0"></div>
         <label>Seed</label><input id="nwSeed" type="number" value="${Math.floor(Math.random() * 100000)}">
         <label id="nwStartL">Start date</label><input id="nwStart" type="date" value="${new Date().toISOString().slice(0, 10)}">
         <label id="nwCapL">Capital</label><select id="nwCap"><option value="100000">$100,000</option><option value="1000000">$1 million</option><option value="10000000" selected>$10 million</option><option value="100000000">$100 million</option><option value="1000000000">$1 billion</option></select>
         <label>Realism</label><select id="nwReal"><option>PROFESSIONAL</option><option>INTERMEDIATE</option><option>BEGINNER</option></select>
         <label>Initial regime</label><select id="nwReg"><option value="NORMAL_GROWTH">Normal growth</option><option value="RATE_HIKING">Rate-hiking cycle</option><option value="RECESSION">Recession</option><option value="LIQUIDITY_STRESS">Liquidity crisis</option><option value="RATE_CUTTING">Rate-cutting cycle</option></select>
-        <label>Market</label><select id="nwSrc"><option value="SIMULATED">Simulated — a seeded world with its own regimes, news and earnings</option><option value="REAL">Track the real market — real daily closes for stocks, ETFs, Treasuries, commodities and FX (internet needed)</option></select>
-        <label></label><div id="nwSrcNote" class="hint" style="margin:0"></div>
+        <label id="nwSrcL">Market</label><select id="nwSrc"><option value="SIMULATED">Simulated — a seeded world with its own regimes, news and earnings</option><option value="REAL">Replay the real market — real closes from your start date, one session at a time (internet needed)</option></select>
+        <label id="nwSrcNoteL"></label><div id="nwSrcNote" class="hint" style="margin:0"></div>
         <label>Scenario</label><select id="nwScn"><option value="NONE">None — the seeded world unfolds</option><option value="CRISIS">Crisis mode — a scripted funding crisis: stress on day 1, an issuer default on day 5, a dealer failure on day 10, recession from day 31, easing from day 96</option></select>
       </div>
       <div class="row" style="margin-top:10px"><button class="btn primary" id="nwGo">Create save</button><span id="nwErr" class="error"></span></div>`);
     const sync = () => { const j = jobs.find(x => x.key === $('#nwJob', m).value); $('#nwJobDesc', m).innerHTML = j ? `${esc(j.description)}<br>Capital ${fmt.big(j.capital)} · benchmark ${j.benchmark || 'absolute return'} · max leverage ${j.max_gross_leverage}x · max position ${fmt.pct(j.max_position_pct, 0)} · max drawdown ${fmt.pct(j.max_drawdown, 0)}<br>Ladder: ${j.ladder.join(' → ')}` : '';
-      const sandbox = $('#nwClock', m).value === 'SANDBOX'; $('#nwStart', m).style.display = $('#nwStartL', m).style.display = sandbox ? '' : 'none'; const realSrc = $('#nwSrc', m).value === 'REAL'; $('#nwSrcNote', m).textContent = realSrc ? 'Prices come from Yahoo Finance daily closes: the save starts on the last close (or your sandbox start date, snapped to a trading day), carries a year of real history, and can only advance into sessions the market has already closed — the same day cannot be played before ~6pm ET. Bonds, options, futures, OTC values and P&L are derived from those real closes. Regime and scenario still shape news and vol.' : 'Everything is generated from the seed: same seed, same world.'; $('#nwReg', m).disabled = false; const sb = $('#nwJob', m).value === 'SANDBOX'; $('#nwCap', m).style.display = $('#nwCapL', m).style.display = sb ? '' : 'none'; };
+      const sandbox = $('#nwClock', m).value === 'SANDBOX'; $('#nwStart', m).style.display = $('#nwStartL', m).style.display = sandbox ? '' : 'none'; const career = !sandbox; ['nwSrc', 'nwSrcL', 'nwSrcNote', 'nwSrcNoteL'].forEach(id => { $('#' + id, m).style.display = career ? 'none' : ''; }); ['nwTime', 'nwTimeL', 'nwTimeNote', 'nwTimeNoteL'].forEach(id => { $('#' + id, m).style.display = career ? '' : 'none'; });
+      const realSrc = career || $('#nwSrc', m).value === 'REAL'; $('#nwSrcNote', m).textContent = realSrc ? 'Real daily closes (Yahoo Finance) for stocks, ETFs, Treasuries, commodities and FX; real CPI, jobs, GDP and Fed decisions (FRED); real headlines. A year of real history is stored in the save; sessions are entered only after they close.' : 'Everything is generated from the seed: same seed, same world.';
+      $('#nwTimeNote', m).textContent = 'When the day is processed (your timezone). It must be after the close, 16:15 New York or later: the session\'s real prices are final by then, and instructions are locked from 09:30 New York until this time.'; const sb = $('#nwJob', m).value === 'SANDBOX'; $('#nwCap', m).style.display = $('#nwCapL', m).style.display = sb ? '' : 'none'; };
     $('#nwJob', m).addEventListener('change', sync); $('#nwClock', m).addEventListener('change', sync); $('#nwSrc', m).addEventListener('change', sync); sync();
     $('#nwGo', m).addEventListener('click', async () => {
       try { $('#nwGo', m).disabled = true; const r = await api('/worlds', { method: 'POST', body: { name: $('#nwName', m).value, seed: +$('#nwSeed', m).value, start_date: $('#nwStart', m).value, capital: +$('#nwCap', m).value, portfolio_name: $('#nwName', m).value, job: $('#nwJob', m).value, clock_mode: $('#nwClock', m).value, timezone: $('#nwTz', m).value, update_time: $('#nwTime', m).value, realism: $('#nwReal', m).value, initial_regime: $('#nwReg', m).value, scenario: $('#nwScn', m).value, market_source: $('#nwSrc', m).value } }); state.worldId = r.world_id; state.pfId = r.portfolio_id; closeModal(); location.hash = '#/news'; await loadWorlds(); }
@@ -303,9 +315,27 @@
     const route = state.route; let [_, page, arg] = route.split('/'); page = (page || '').split('?')[0];
     if (ALIAS[page]) { const rest = route.slice(('#/' + page).length); location.hash = ALIAS[page] + (page === 'book' || rest.startsWith('?') ? rest : ''); return; }
     renderNav(); if (!state.worldId || !state.pfId) return;
-    const fn = pages[page] || pages.news; $('#main').innerHTML = '<p class="muted mono">loading…</p>';
-    try { await fn(arg); } catch (e) { $('#main').innerHTML = `<p class="error">${esc(e.message)}</p>`; console.error(e); }
+    const fn = pages[page] || pages.news; const main = $('#main');
+    const samePage = state.lastRoute === route; const keepScroll = samePage ? main.scrollTop : 0; state.lastRoute = route;
+    const token = (state.renderToken = (state.renderToken || 0) + 1);
+    progress.start(); main.classList.add('busy');
+    try { await fn(arg); } catch (e) { main.innerHTML = `<p class="error">${esc(e.message)}</p>`; console.error(e); }
+    if (token !== state.renderToken) return;                       // a newer render replaced this one
+    progress.done(); main.classList.remove('busy'); main.classList.remove('fade-in'); void main.offsetWidth; main.classList.add('fade-in');
     document.querySelectorAll('#main table').forEach(t => { if (t.closest('.scroll, .panel, .tile, .kv')) return; const d = document.createElement('div'); d.className = 'scroll'; d.style.maxHeight = 'none'; t.replaceWith(d); d.appendChild(t); });
+    lockInstructions();
+    main.scrollTop = keepScroll;
+  }
+  // a thin bar at the top while a page loads: the previous page stays on screen, dimmed, instead of a blank "loading…"
+  const progress = (() => { let t = null; const el = () => $('#progress'); return {
+    start() { const p = el(); if (!p) return; clearTimeout(t); p.style.transition = 'none'; p.style.width = '0'; p.style.opacity = '1'; void p.offsetWidth; p.style.transition = 'width 1.2s cubic-bezier(.2,.6,.3,1)'; p.style.width = '70%'; },
+    done() { const p = el(); if (!p) return; p.style.transition = 'width .15s ease, opacity .3s ease .15s'; p.style.width = '100%'; p.style.opacity = '0'; t = setTimeout(() => { p.style.transition = 'none'; p.style.width = '0'; }, 500); } }; })();
+  // career saves take instructions only while the market is shut: tickets stay visible but cannot be sent
+  const LOCK_BTNS = '#tGo, #qlGo, #ocGo, #stGo, #ccGo, #ofGo, #fxGo, #fwGo, #spGo, .pcGo, .pcSellGo, #bwGo, #rpQuote, #rpOpen, [data-exec]';
+  function lockInstructions() {
+    const tw = (state.world || {}).trading_window; if (!tw || tw.open) return;
+    document.querySelectorAll(LOCK_BTNS).forEach(b => { b.disabled = true; b.title = tw.reason; });
+    const h1 = $('#main h1'); if (h1 && !$('#main .lockbar')) h1.insertAdjacentHTML('afterend', `<div class="lockbar">🔒 Instructions are locked while the session runs — ${esc(tw.reason)}. You can still cancel, read and prepare.</div>`);
   }
   const tile = (k, v, s = '', click = '') => `<div class="tile ${click ? 'click' : ''}" ${click ? `data-click="${click}"` : ''}><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
   const realism = () => (state.world.portfolios.find(p => p.id === state.pfId) || {}).realism || 'PROFESSIONAL';
@@ -718,6 +748,7 @@
   // ---------------------------------------------------------------- settings (presets applied when a page opens)
   pages.settings = async () => {
     const unders = await api(W() + '/options').catch(() => []);
+    if (!state.playbookKeys) { try { state.playbookKeys = (await api(P() + '/playbook')).strategies.map(s => s.key); } catch (e) { state.playbookKeys = null; } }
     const opt = (list, cur, lab) => list.map(v => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${lab ? lab(v) : v}</option>`).join('');
     const p = prefs;
     $('#main').innerHTML = `<h1>SETTINGS <small>how each page opens · stored in this browser (set them once per device)</small></h1>
@@ -740,7 +771,11 @@
         <div class="panel"><h2 style="margin-top:0">Trading ticket</h2><div class="form">
           <label>Shares / units</label><input id="pfTrQty" type="number" value="${p.trading.qty}"><label>Bond face ($)</label><input id="pfTrBond" type="number" value="${p.trading.bond_qty}" step="1000"><label>Futures contracts</label><input id="pfTrFut" type="number" value="${p.trading.fut_qty}">
           <label>Order type</label><select id="pfTrType">${opt(['MARKET', 'LIMIT', 'STOP', 'STOP_LIMIT', 'TAKE_PROFIT', 'TRAILING_STOP'], p.trading.type)}</select><label>Time in force</label><select id="pfTrTif">${opt(['DAY', 'GTC'], p.trading.tif)}</select></div></div>
-        <div class="panel"><h2 style="margin-top:0">Charts</h2><div class="form"><label>Price history</label><select id="pfPeriod">${opt(['1M', '3M', '6M', '1Y'], p.charts.period)}</select></div></div></div>
+        <div class="panel"><h2 style="margin-top:0">Charts &amp; look</h2><div class="form"><label>Price history</label><select id="pfPeriod">${opt(['1M', '3M', '6M', '1Y'], p.charts.period)}</select><label>Theme</label><select id="pfTheme">${opt(['dark', 'light'], p.theme || 'dark', v => v === 'dark' ? 'Dark terminal' : 'Light')}</select></div></div>
+        <div class="panel"><h2 style="margin-top:0">Ticket currency</h2><div class="form"><label>Settle in</label><select id="pfTrCcy">${opt(['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD'], p.trading.ccy || 'USD')}</select></div><p class="hint">The currency every ticket opens on: a buy is paid from it and a sale lands in it; when it is not the security's currency the conversion is dealt at spot alongside the instruction. Pick EUR or JPY to put idle foreign cash to work.</p></div>
+        <div class="panel"><h2 style="margin-top:0">Calculations</h2><div class="form"><label>Strategy</label><select id="pfCalcKey">${opt((state.playbookKeys || [p.calc.key]), p.calc.key)}</select><label>Units</label><input id="pfCalcUnits" type="number" value="${p.calc.units}" step="100"><label>Tenor (months)</label><select id="pfCalcTenor">${opt([1, 2, 3, 6, 9, 12], p.calc.tenor)}</select></div></div>
+        <div class="panel"><h2 style="margin-top:0">Market Place</h2><div class="form"><label>Open on tab</label><select id="pfMkTab">${opt(['equities', 'bonds', 'fx', 'commodities'], p.market.tab)}</select><label>Sort equities by</label><select id="pfMkSort">${opt(['id', 'cap', 'chg', 'loss', 'vol', 'yld', 'rv'], p.market.sort, v => ({ id: 'A → Z', cap: 'largest first', chg: 'top gainers', loss: 'top losers', vol: 'most traded', yld: 'highest yield', rv: 'most volatile' })[v])}</select></div></div>
+        ${state.world.clock.mode === 'REAL_TIME' ? `<div class="panel"><h2 style="margin-top:0">This save's clock <small>stored in the save, not the browser</small></h2><div class="form"><label>Update time</label><input id="pfClkTime" type="time" value="${state.world.clock.update_time}"><label>Timezone</label><select id="pfClkTz">${opt(['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Zurich', 'Asia/Tokyo', 'Asia/Singapore', 'Australia/Sydney'], state.world.clock.timezone)}</select></div><div class="row" style="margin-top:8px"><button class="btn" id="pfClkGo">Change the clock</button><span class="error" id="pfClkGoErr"></span></div><p class="hint">The day is processed at this time with the real closes; instructions are locked from 09:30 New York until then. A save that tracks the real market must update at 16:15 New York or later.</p></div>` : ''}</div>
       <div class="row" style="margin-top:12px"><button class="btn primary" id="pfSave">Save settings</button><button class="btn" id="pfReset">Reset to defaults</button><span id="pfSaveErr" class="error"></span></div>
       <p class="hint">Settings live in this browser's storage, so the phone and the desktop each keep their own. They never touch the save file.</p>`;
     const v = id => $('#' + id).value;
@@ -748,11 +783,13 @@
       prefs.mode = v('pfMode'); prefs.home = v('pfHome');
       prefs.options = { under: v('pfOptUnder'), tenor: v('pfOptTenor'), qty: Math.max(1, +v('pfOptQty') || 1), type: v('pfOptType'), tif: v('pfOptTif'), tab: v('pfOptTab') };
       prefs.otc = { product: v('pfOtcProduct'), tenor_years: Math.max(1, +v('pfOtcTenor') || 5), notional: Math.max(1, +v('pfOtcNotional') || 1e7) };
-      prefs.trading = { qty: Math.max(1, +v('pfTrQty') || 1), bond_qty: Math.max(1000, +v('pfTrBond') || 1e6), fut_qty: Math.max(1, +v('pfTrFut') || 1), type: v('pfTrType'), tif: v('pfTrTif') };
+      prefs.trading = { qty: Math.max(1, +v('pfTrQty') || 1), bond_qty: Math.max(1000, +v('pfTrBond') || 1e6), fut_qty: Math.max(1, +v('pfTrFut') || 1), type: v('pfTrType'), tif: v('pfTrTif'), ccy: v('pfTrCcy') };
+      prefs.calc = { key: v('pfCalcKey'), units: Math.max(1, +v('pfCalcUnits') || 1000), tenor: +v('pfCalcTenor') || 3 }; prefs.market = { tab: v('pfMkTab'), sort: v('pfMkSort') }; prefs.theme = v('pfTheme'); applyTheme(); state.calc = null; state.mk = null;
       prefs.charts = { period: v('pfPeriod') }; state.period = prefs.charts.period; state.optTab = null; state.otcProduct = null; Object.keys(remembered).forEach(k => delete remembered[k]);
       savePrefs(); toast('settings saved'); throw new Error('');
     });
-    bindAction('pfReset', async () => { Object.assign(prefs, JSON.parse(JSON.stringify(PREF_DEFAULTS))); savePrefs(); toast('defaults restored'); });
+    bindAction('pfReset', async () => { Object.assign(prefs, JSON.parse(JSON.stringify(PREF_DEFAULTS))); savePrefs(); applyTheme(); toast('defaults restored'); });
+    bindAction('pfClkGo', async () => { await post(W() + '/clock', { update_time: $('#pfClkTime').value, timezone: $('#pfClkTz').value }); toast('clock changed'); await loadWorld(); });
   };
 
   // ---------------------------------------------------------------- glossary
@@ -826,8 +863,11 @@
   // ---------------------------------------------------------------- macro world (phase 7)
   const pageMacro = async () => {
     const m = await api(W() + '/macro'); const s = m.state;
-    const fmtRel = r => r.kind === 'FOMC' ? `${r.actual.toFixed(2)}% (exp ${r.consensus.toFixed(2)}%)` : `${r.actual} vs ${r.consensus}`;
-    $('#main').innerHTML = `<h1>MACRO <small>growth, inflation, the central bank, releases, earnings, credit · regime ${esc(m.regime)}</small></h1>
+    const fmtRel = r => r.consensus == null ? `${r.kind === 'FOMC' ? fmt.pct(r.actual, 2) : (r.actual == null ? '—' : r.actual)}${r.unit ? ' ' + esc(r.unit) : ''}${r.previous != null ? ` (prev ${r.kind === 'FOMC' ? fmt.pct(r.previous, 2) : r.previous})` : ''}${r.payrolls_k != null ? ` · payrolls ${r.payrolls_k >= 0 ? '+' : ''}${r.payrolls_k}k` : ''}${r.period ? ` · ${esc(r.period)}` : ''}` : r.kind === 'FOMC' ? `${r.actual.toFixed(2)}% (exp ${r.consensus.toFixed(2)}%)` : `${r.actual} vs ${r.consensus}`;
+    const real = m.source === 'REAL'; const rx = m.real || {};
+    $('#main').innerHTML = `<h1>MACRO <small>${real ? 'the real economy as known on each date · FRED · ' : 'growth, inflation, the central bank, releases, earnings, credit · '}regime ${esc(m.regime)}</small></h1>
+      ${m.source === 'REAL_PENDING' ? `<div class="lockbar" style="border-color:var(--accent);color:var(--accent);background:rgba(240,180,41,.06)">${esc(m.note || '')}</div>` : ''}
+      ${real ? `<p class="hint">${esc(m.note || '')}</p><div class="tiles" style="margin-bottom:8px">${rx.core_inflation != null ? tile('Core CPI (YoY)', fmt.pct(rx.core_inflation / 100, 1), rx.inflation_period ? 'for ' + rx.inflation_period.slice(0, 7) : '') : ''}${rx.payrolls_change_k != null ? tile('Payrolls (last)', `${rx.payrolls_change_k >= 0 ? '+' : ''}${fmt.qty(rx.payrolls_change_k)}k`, rx.unemployment_period ? 'for ' + rx.unemployment_period.slice(0, 7) : '') : ''}${rx.policy_range ? tile('Fed target range', `${fmt.pct(rx.policy_range[0], 2)} – ${fmt.pct(rx.policy_range[1], 2)}`, `since ${rx.policy_rate_asof || ''}`) : ''}${rx.growth_period ? tile('GDP (latest quarter)', fmt.pct(s.growth / 100, 1), `${rx.growth_period.slice(0, 4)} Q${Math.floor((+rx.growth_period.slice(5, 7) - 1) / 3) + 1}, annualised`) : ''}</div>` : ''}
       <div class="tiles">${tile('Real GDP growth', fmt.pct(s.growth / 100, 1), 'annualised')}${tile('Inflation (CPI YoY)', fmt.pct(s.inflation / 100, 1), 'target 2.0%')}${tile('Unemployment', fmt.pct(s.unemployment / 100, 1))}${tile('Policy rate', fmt.pct(s.policy_rate, 2), `reaction-function target ${fmt.pct(s.policy_target, 2)}`)}${tile('Next meeting', s.next_meeting, esc(s.last_decision || ''))}${tile('Curve', `${fmt.pct(m.curve.policy_rate, 2)} / ${fmt.pct(m.curve.rates[7], 2)}`, 'short end / 10Y')}${tile('Credit indices', `${m.curve.ig_spread_bps.toFixed(0)} / ${m.curve.hy_spread_bps.toFixed(0)}bp`, 'IG / HY')}</div>
       <div class="grid2" style="margin-top:14px"><div class="panel"><h2 style="margin-top:0">Growth, inflation and the policy rate <span class="legend"><i style="background:${css('--green')}"></i>growth <i style="background:${css('--red')}"></i>inflation <i style="background:${css('--accent')}"></i>policy ×1</span></h2><canvas id="macroChart"></canvas>
           <h2>Upcoming calendar (30 days)</h2><div class="scroll" style="max-height:300px"><table><tr><th>Date</th><th>Event</th><th>Consensus</th></tr>${m.upcoming.map(u => `<tr><td>${u.date}</td><td class="l">${u.kind}${u.security_id ? ' ' + u.security_id : ''}</td><td>${u.consensus}</td></tr>`).join('') || '<tr><td class="muted">none</td></tr>'}</table></div></div>
@@ -973,7 +1013,8 @@
       <label></label><div id="tEst" class="hint" style="margin:0">enter a security and quantity to see the cash involved</div><label>Type</label><select id="tType"><option value="MARKET">MARKET — at next update's open</option><option value="LIMIT">LIMIT</option><option value="STOP">STOP</option><option value="STOP_LIMIT">STOP_LIMIT</option><option value="TAKE_PROFIT">TAKE_PROFIT</option><option value="TRAILING_STOP">TRAILING_STOP</option></select>
       <label>Limit</label><input id="tLimit" type="number" step="0.0001" placeholder="limit price"><label>Stop</label><input id="tStop" type="number" step="0.0001" placeholder="stop price"><label>Trail %</label><input id="tTrail" type="number" step="0.1" placeholder="e.g. 5 = 5% below best close">
       <label>Condition</label><div class="row"><span class="muted mono">only if</span><input id="tCondRef" placeholder="NVDA · CURVE:10Y · SPOT:CL" style="width:150px"><select id="tCondOp"><option>&lt;=</option><option>&gt;=</option></select><input id="tCondVal" type="number" step="any" placeholder="value" style="width:110px"></div>
-      <label>TIF</label><select id="tTif"><option value="DAY">DAY — good for the next session</option><option value="GTC">GTC — until cancelled</option></select><label>Strategy tag</label><input id="tTag" placeholder="optional, e.g. crack-spread"></div>
+      <label>TIF</label><select id="tTif"><option value="DAY">DAY — good for the next session</option><option value="GTC">GTC — until cancelled</option></select><label>Strategy tag</label><input id="tTag" placeholder="optional, e.g. crack-spread">
+      <label>Settle in</label><div class="row"><select id="tCcy">${['USD', 'EUR', 'GBP', 'JPY', 'CHF', 'CAD', 'AUD'].map(c => `<option ${c === (prefs.trading.ccy || 'USD') ? 'selected' : ''}>${c}</option>`).join('')}</select><span id="tCcyNote" class="muted mono" style="font-size:11px">the currency that pays for a buy or receives a sale; another currency is converted at spot (T+2)</span></div></div>
       <div class="row" style="margin-top:8px"><button class="btn primary" id="tGo">Submit instruction</button><span id="tMsg" class="mono"></span></div><p class="hint">Instructions execute at the next daily update against that session (open, high, low, close, volume). ${isFuture ? 'Futures: quantity is contracts; shorts allowed; initial margin is posted from cash and P&L settles daily as variation margin.' : isBond ? 'Bond quantity is face value (multiples of 1,000). Price is clean per 100; accrued interest is paid on top.' : 'Market orders cross the spread and pay impact. Orders above 20% of session volume fill partially and keep working (GTC) or expire (DAY).'} Conditions are checked at the close (yields in %, e.g. CURVE:10Y >= 5).</p>`;
   }
   function bindTicket() {
@@ -983,7 +1024,7 @@
     let estTimer = null, fromAmount = false;
     const estimate = async () => {
       const sid = $('#tSec').value.trim().toUpperCase(); const est = $('#tEst'); if (!sid || !est) return;
-      const body = { security_id: sid, side: $('#tSide').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null };
+      const body = { security_id: sid, side: $('#tSide').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null, settle_ccy: ($('#tCcy') || {}).value || undefined };
       if (fromAmount && $('#tAmt').value) body.amount = +$('#tAmt').value; else body.quantity = +$('#tQty').value;
       try {
         const p = await api(P() + '/orders/preview', { method: 'POST', body });
@@ -993,19 +1034,21 @@
         const main = p.kind === 'future'
           ? `${fmt.qty(p.quantity)} ${unit} × ${fmt.px(p.price)} × ${p.multiplier} = notional <b>${fmt.money(p.gross, 0)}</b> · initial margin <b>${fmt.money(p.initial_margin, 0)}</b> + commission ${fmt.money(p.commission)}`
           : `${fmt.qty(p.quantity)} ${unit} × ${fmt.px(p.price)}${p.multiplier !== 1 ? ` × ${p.multiplier}` : ''}${p.kind === 'bond' ? ' / 100' : ''} = <b>${fmt.money(p.gross)}</b>${Number(p.accrued_interest) ? ` + accrued ${fmt.money(p.accrued_interest)}` : ''} ${p.side === 'BUY' ? '+' : '−'} commission ${fmt.money(p.commission)}`;
-        est.innerHTML = `${main} → <b class="${cash > 0 ? 'neg' : 'pos'}">${cash > 0 ? 'pay' : 'receive'} ${fmt.money(Math.abs(cash))}</b> at ${p.price_source} <span class="muted">· settled cash ${fmt.money(p.cash_settled, 0)}, projected ${fmt.money(p.cash_projected, 0)}${cash > Number(p.cash_projected) ? ' — exceeds projected cash (prime-broker financing or rejection)' : ''}</span>`;
+        const fxLine = p.fx ? ` <span class="ccyline">→ ${p.fx.direction === 'pay' ? `paid with <b>${p.settle_ccy} ${fmt.money(p.fx.settle_amount)}</b> (spot ${Number(p.fx.rate) >= 20 ? Number(p.fx.rate).toFixed(2) : Number(p.fx.rate).toFixed(4)} + ${Number(p.fx.spread_bps).toFixed(1)}bp, dealt now, settles T+2; ${p.settle_ccy} balance ${fmt.money(p.fx.settle_balance, 0)})` : `received in <b>${p.settle_ccy} ${fmt.money(p.fx.settle_amount)}</b> (spot ${Number(p.fx.rate) >= 20 ? Number(p.fx.rate).toFixed(2) : Number(p.fx.rate).toFixed(4)}, dealt now against the proceeds)`}</span>` : '';
+        const cb = p.cash_by_currency || {}; const cn = $('#tCcyNote'); if (cn) cn.innerHTML = Object.entries(cb).filter(([c, a]) => Number(a.settled) !== 0 || c === 'USD').map(([c, a]) => `${c} ${fmt.money(a.settled, 0)}`).join(' · ') || 'cash balances by currency';
+        est.innerHTML = `${main} → <b class="${cash > 0 ? 'neg' : 'pos'}">${cash > 0 ? 'pay' : 'receive'} ${p.currency} ${fmt.money(Math.abs(cash))}</b> at ${p.price_source}${fxLine} <span class="muted">· settled ${p.currency} ${fmt.money(p.cash_settled, 0)}, projected ${fmt.money(p.cash_projected, 0)}${!p.fx && cash > Number(p.cash_projected) ? ' — exceeds projected cash (prime-broker financing or rejection)' : ''}</span>`;
       } catch (e) { est.innerHTML = `<span class="muted">${esc(e.message)}</span>`; }
     };
     const arm = (viaAmount) => { fromAmount = viaAmount; clearTimeout(estTimer); estTimer = setTimeout(estimate, 250); };
-    ['tSec', 'tQty', 'tSide', 'tLimit'].forEach(id => { const el = $('#' + id); if (el) el.addEventListener('input', () => arm(false)); if (el) el.addEventListener('change', () => arm(false)); });
+    ['tSec', 'tQty', 'tSide', 'tLimit', 'tCcy'].forEach(id => { const el = $('#' + id); if (el) el.addEventListener('input', () => arm(false)); if (el) el.addEventListener('change', () => arm(false)); });
     if ($('#tAmt')) $('#tAmt').addEventListener('input', () => arm(true));
     if ($('#tSec').value) arm(false);
     go.addEventListener('click', async () => {
       const cond = $('#tCondRef').value.trim() ? { ref: $('#tCondRef').value.trim(), op: $('#tCondOp').value.replace('&lt;', '<').replace('&gt;', '>'), value: +$('#tCondVal').value } : null;
       if ($('#tAmt').value && !(+$('#tQty').value)) { try { const p = await api(P() + '/orders/preview', { method: 'POST', body: { security_id: $('#tSec').value.trim().toUpperCase(), side: $('#tSide').value, amount: +$('#tAmt').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null } }); $('#tQty').value = p.quantity; } catch (e) {} }
-      const body = { security_id: $('#tSec').value.trim().toUpperCase(), side: $('#tSide').value, quantity: +$('#tQty').value, order_type: $('#tType').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null, stop_price: $('#tStop').value ? +$('#tStop').value : null, time_in_force: $('#tTif').value, strategy_tag: $('#tTag').value || null, trail_pct: $('#tTrail').value ? +$('#tTrail').value / 100 : null, condition: cond };
+      const body = { security_id: $('#tSec').value.trim().toUpperCase(), side: $('#tSide').value, quantity: +$('#tQty').value, order_type: $('#tType').value, limit_price: $('#tLimit').value ? +$('#tLimit').value : null, stop_price: $('#tStop').value ? +$('#tStop').value : null, time_in_force: $('#tTif').value, strategy_tag: $('#tTag').value || null, trail_pct: $('#tTrail').value ? +$('#tTrail').value / 100 : null, condition: cond, settle_ccy: ($('#tCcy') || {}).value || null };
       go.disabled = true; $('#tMsg').textContent = '';
-      try { const r = await api(P() + '/orders', { method: 'POST', body }); const o = r.order; toast(`${o.status}: ${o.side} ${fmt.qty(o.quantity)} ${o.security_id} ${o.order_type} — executes at the next update`); render(); }
+      try { const r = await api(P() + '/orders', { method: 'POST', body }); const o = r.order; toast(`${o.status}: ${o.side} ${fmt.qty(o.quantity)} ${o.security_id} ${o.order_type} — executes at the next update${r.fx ? ` · ${r.fx.id}: ${r.fx.buy_ccy} ${fmt.money(r.fx.buy_amount, 0)} bought with ${r.fx.sell_ccy} ${fmt.money(r.fx.sell_amount, 0)}` : ''}`); render(); }
       catch (e) { $('#tMsg').innerHTML = `<span class="error">${esc(e.message)}</span>`; } finally { go.disabled = false; }
     });
   }
@@ -1105,7 +1148,11 @@
 
   const pageNewsFeed = async () => {
     const [news, cas] = await Promise.all([api(W() + '/news'), api(W() + '/corporate-actions')]);
-    $('#main').innerHTML = `<h1>NEWS & EVENTS</h1><div class="grid2"><div class="panel">${news.map(n => `<div style="margin-bottom:10px"><div class="mono"><span class="muted">${n.date}</span> <span class="badge">${n.category}</span> <b>${esc(n.headline)}</b></div><div class="muted" style="margin-top:2px">${esc(n.body)} ${n.refs.filter(r => !r.startsWith('DIV-')).map(r => `<a href="#/security/${r}">${r}</a>`).join(' ')}</div></div>`).join('') || '<p class="muted mono">no news yet</p>'}</div>
+    const real = state.world.market_source === 'REAL'; const catCls = { MARKET: 'blue', COMPANY: 'green', FED: 'amber', MACRO: 'amber', CREDIT: 'red', EARNINGS: 'green' };
+    // a career world: the wire first (real headlines carry a publisher or a link); the simulation's own notices fold below
+    const wire = real ? news.filter(n => n.publisher || n.link) : news; const notices = real ? news.filter(n => !(n.publisher || n.link)) : [];
+    const item = n => `<div class="newsitem filterable"><div class="mono"><span class="muted">${n.date}${n.time ? ' ' + n.time.slice(11, 16) : ''}</span> <span class="badge ${catCls[n.category] || ''}">${n.category}</span> ${n.link ? `<a href="${esc(n.link)}" target="_blank" rel="noopener"><b>${esc(n.headline)}</b> ↗</a>` : `<b>${esc(n.headline)}</b>`}</div><div class="muted" style="margin-top:2px">${esc(n.body)} ${n.refs.filter(r => !r.startsWith('DIV-')).map(r => `<a href="#/security/${r}">${r}</a>`).join(' ')}</div></div>`;
+    $('#main').innerHTML = `<h1>NEWS & EVENTS <small>${real ? 'real headlines: Yahoo Finance for the market and the names in your books, the Federal Reserve\'s releases · fetched when each session is processed' : 'the seeded world\'s news'}</small></h1><div class="grid2"><div class="panel">${wire.map(item).join('') || (real ? '<p class="muted mono">no headlines stored yet — they arrive with each processed session (the machine must be online at the update)</p>' : '<p class="muted mono">no news yet</p>')}${notices.length ? `<details style="margin-top:10px"><summary class="muted mono">${notices.length} simulation notices (dividend declarations, regime changes)</summary>${notices.map(item).join('')}</details>` : ''}</div>
       <div class="panel"><h2 style="margin-top:0">Corporate action calendar</h2><div class="scroll"><table><tr><th>Security</th><th>Type</th><th>Ex</th><th>Pay</th><th>Amount</th><th>Status</th></tr>${cas.map(c => `<tr class="click" data-href="#/security/${c.security_id}"><td>${c.security_id}</td><td class="l">${c.action_type}</td><td>${c.ex_date}</td><td>${c.pay_date}</td><td>${c.amount_per_unit}</td><td>${statusBadge(c.status)}</td></tr>`).join('')}</table></div></div></div>`;
     bindRows();
   };
@@ -1330,14 +1377,14 @@
   const pickRow = (sid, extra = '') => `class="click" data-pick="${esc(sid)}" ${extra}`;
   const rowTools = (sid, opts = true) => `<td class="l" style="white-space:nowrap"><a class="btn" style="padding:1px 6px;font-size:10px" data-ql="${esc(sid)}" title="chart & quick trade">chart</a> <a class="btn" style="padding:1px 6px;font-size:10px" href="#/security/${esc(sid)}" title="full page">page</a>${opts ? ` <a class="btn" style="padding:1px 6px;font-size:10px" href="#/options/${esc(sid)}" title="options chain">opts</a>` : ''}</td>`;
   pages.market = async () => {
-    const tab = routeTab(MK_TABS, 'equities');
+    const tab = routeTab(MK_TABS, prefs.market.tab || 'equities');
     const secs = await api(W() + '/securities');
     const rm = state.world.real_market; const real = state.world.market_source === 'REAL';
     let left = '', right = '', after = () => {};
     if (tab === 'equities') {
       const eq = secs.filter(s => !s.coupon && !s.is_future);
       const sectors = [...new Set(eq.map(s => s.sector))].sort(); const classes = [...new Set(eq.map(s => s.asset_class))];
-      const f = state.mk || (state.mk = { sector: '', cls: '', sort: 'id' });
+      const f = state.mk || (state.mk = { sector: '', cls: '', sort: prefs.market.sort || 'id' });
       let rows = eq.filter(s => (!f.sector || s.sector === f.sector) && (!f.cls || s.asset_class === f.cls));
       const sorters = { id: (a, b) => a.id.localeCompare(b.id), cap: (a, b) => (b.market_cap || 0) - (a.market_cap || 0), chg: (a, b) => b.change_pct - a.change_pct, loss: (a, b) => a.change_pct - b.change_pct, vol: (a, b) => b.volume * b.last - a.volume * a.last, yld: (a, b) => (b.dividend_yield || 0) - (a.dividend_yield || 0), rv: (a, b) => (b.realized_vol || 0) - (a.realized_vol || 0) };
       rows = rows.slice().sort(sorters[f.sort] || sorters.id);
@@ -1496,7 +1543,7 @@
   pages.calc = async () => {
     const cat = await api(P() + '/playbook');
     const q = new URLSearchParams((location.hash.split('?')[1]) || '');
-    const c = state.calc || (state.calc = { key: 'PROTECTIVE_PUT', under: (prefs.options.under === 'SPX' ? 'SPY' : prefs.options.under) || 'SPY', other: 'QQQ', units: 1000, tenor: 3, strikes: {}, group: '' });
+    const c = state.calc || (state.calc = { key: prefs.calc.key || 'PROTECTIVE_PUT', under: (prefs.options.under === 'SPX' ? 'SPY' : prefs.options.under) || 'SPY', other: 'QQQ', units: prefs.calc.units || 1000, tenor: prefs.calc.tenor || 3, strikes: {}, group: '' });
     if (q.get('under')) { c.under = q.get('under').toUpperCase(); c.strikes = {}; }
     if (q.get('key')) c.key = q.get('key').toUpperCase();
     const strat = cat.strategies.find(s => s.key === c.key) || cat.strategies[0]; c.key = strat.key;
@@ -1506,8 +1553,8 @@
     const legLine = (l, i) => `${l.side === 'BUY' ? 'buy' : 'sell'} ${l.kind === 'OPTION' ? `${l.type === 'C' ? 'call' : 'put'} (${ruleText(l.strike)})` : CALC_KIND[l.kind]}${l.size && l.size !== 1 ? ` × ${l.size}` : ''}${l.other ? ' on the second name' : ''}`;
     $('#main').innerHTML = `<h1>CALCULATIONS <small>${cat.strategies.length} strategies · pick one, size it, preview every leg, execute the whole package in one click · ${gl('Strategy playbook', 'glossary')}</small></h1>
       <div class="grid-calc"><div class="panel"><h2 style="margin-top:0">1 · Strategy</h2><div class="row" style="gap:4px;flex-wrap:wrap;margin-bottom:6px"><a class="btn ${!grp ? 'primary' : ''}" data-grp="">All</a>${cat.groups.map(([k, l]) => `<a class="btn ${k === grp ? 'primary' : ''}" data-grp="${k}">${l}</a>`).join('')}</div>
-          <div class="catalogue">${shown.map(s => `<a class="btn ${s.key === strat.key ? 'primary' : ''}" data-key="${s.key}">${esc(s.title)}</a>`).join('')}</div></div>
-        <div><div class="panel"><h2 style="margin-top:0">${esc(strat.title)} <small>${(cat.groups.find(g => g[0] === strat.group) || ['', ''])[1]}</small></h2><p style="margin:4px 0">${esc(strat.thesis)}</p>${strat.notes ? `<p class="hint">${esc(strat.notes)}</p>` : ''}<div class="mono muted" style="font-size:11px">Legs: ${strat.legs.map(legLine).join(' · ')}</div>
+          <div class="catalogue">${shown.map(s => `<a class="btn ${s.key === strat.key ? 'primary' : ''}" data-key="${s.key}" title="${esc(s.simple || '')}">${esc(s.title)}</a>`).join('')}</div></div>
+        <div><div class="panel"><h2 style="margin-top:0">${esc(strat.title)} <small>${(cat.groups.find(g => g[0] === strat.group) || ['', ''])[1]}</small></h2><div class="explain"><div><span class="k">What you're trading</span>${esc(strat.simple || strat.thesis)}</div><div><span class="k">Why</span>${esc(strat.thesis)}</div>${strat.best_when ? `<div><span class="k">Best when</span>${esc(strat.best_when)}</div>` : ''}${strat.risk ? `<div><span class="k">Risk</span>${esc(strat.risk)}</div>` : ''}</div>${strat.notes ? `<p class="hint">${esc(strat.notes)}</p>` : ''}<div class="mono muted" style="font-size:11px">Legs: ${strat.legs.map(legLine).join(' · ')}</div>
           <h2>2 · Size it</h2><div class="form"><label>Underlying</label><div class="row"><input id="ccUnder" value="${esc(c.under)}" style="width:110px"><span class="muted mono">stock, ETF or SPY for the index</span></div>${hasOther ? `<label>Second name</label><div class="row"><input id="ccOther" value="${esc(c.other)}" style="width:110px"><span class="muted mono">the name traded against the underlying</span></div>` : ''}
             <label>Units</label><div class="row"><input id="ccUnits" type="number" value="${c.units}" step="100" style="width:110px"><span class="muted mono">shares of the underlying; options are units ÷ 100 contracts, futures are notional-matched</span></div>
             <label>Tenor</label><div class="row"><select id="ccTenor">${[1, 2, 3, 6, 9, 12].map(t => `<option value="${t}" ${t === +c.tenor ? 'selected' : ''}>${t} month${t > 1 ? 's' : ''}</option>`).join('')}</select><span class="muted mono">nearest listed expiry at or after</span></div>
