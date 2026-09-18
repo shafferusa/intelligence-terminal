@@ -193,7 +193,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "finsim", "data", "universe.json"))
     ap.add_argument("--extras-only", action="store_true", help="keep the equities in the existing file; refresh rates, commodities and FX only")
+    ap.add_argument("--add", action="store_true", help="keep the existing file; fetch only the seed names it does not have yet and merge them in")
     args = ap.parse_args()
+    existing = None
+    if args.add:
+        with open(args.out) as f:
+            existing = json.load(f)
+        have = {e["ticker"] for e in existing.get("equities", [])}
+        rows_to_fetch = [row for row in UNIVERSE if row[0] not in have]
+        print(f"adding {len(rows_to_fetch)} name(s): {', '.join(r[0] for r in rows_to_fetch)}")
+    else:
+        rows_to_fetch = UNIVERSE
     if args.extras_only:
         with open(args.out) as f:
             old = json.load(f)
@@ -209,7 +219,7 @@ def main():
     spy = yahoo_chart("SPY")
     spy_r = log_returns(spy["closes"]) if spy else []
     equities = []
-    for row in UNIVERSE:
+    for row in rows_to_fetch:
         t, name, ac, sector, country = row[:5]
         ysym = row[5] if len(row) > 5 and row[5] else t
         print(f"{t:8s} {name}", flush=True)
@@ -247,6 +257,13 @@ def main():
         if ac == "PREFERRED":
             rec["shares_outstanding"] = {"BAC-PL": 6_900_000, "WFC-PL": 4_025_000}.get(t, 20_000_000)   # depositary shares (prospectuses; approximate for the rest)
         equities.append(rec)
+    if existing is not None:
+        existing["equities"] = existing.get("equities", []) + equities
+        existing["bonds"] = [dict(zip(("id", "name", "issuer", "issuer_ticker", "coupon", "years", "rating", "spread_bps", "adv", "sector"), b)) for b in BONDS]
+        with open(args.out, "w") as f:
+            json.dump(existing, f, indent=1)
+        print(f"updated {args.out}: +{len(equities)} equities ({len(existing['equities'])} total)")
+        return
     out = {"as_of": date.today().isoformat(), "sources": {"prices": "Yahoo Finance chart API (last price, 1y closes, 3m volume, trailing dividends)",
                                                           "fundamentals": "SEC EDGAR XBRL company facts (latest annual income statement, latest quarterly balance sheet, shares outstanding)",
                                                           "rates": "Yahoo Finance ^IRX ^FVX ^TNX ^TYX", "commodities": "Yahoo Finance front-month continuous futures",

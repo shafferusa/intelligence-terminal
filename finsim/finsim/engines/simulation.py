@@ -71,7 +71,7 @@ class SimulationEngine:
             except Exception:
                 items = []
             for it in items:
-                w.emit(E.NEWS_PUBLISHED, {"headline": it["headline"], "body": f"{it['publisher']} · {it['time'][11:16]} New York" if it.get("publisher") else "",
+                w.emit(E.NEWS_PUBLISHED, {"headline": it["headline"], "body": (it["body"] if it.get("body") else f"{it['publisher']} · {it['time'][11:16]} New York" if it.get("publisher") else ""),
                                           "category": it["category"], "refs": [r for r in it["refs"] if r in w.securities], "publisher": it.get("publisher", ""),
                                           "link": it.get("link", ""), "time": it.get("time", "")}, cause_id=mkt.id)
         # macro world and corporate events become auditable events; defaults ripple into bonds, CDS and dealers
@@ -110,6 +110,7 @@ class SimulationEngine:
         w.repo.process_day(closing, prev)
         w.pcredit.process_day(closing, prev)
         w.pequity.process_day(closing, prev)
+        w.ibank.process_day(closing, prev)
         w.fx.process_day(closing)
         w.otc.process_day(closing, prev)
         w.options.process_day(closing)

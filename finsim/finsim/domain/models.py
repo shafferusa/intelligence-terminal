@@ -521,6 +521,9 @@ class Portfolio:
     private_loans: Dict[str, Any] = field(default_factory=dict)  # PrivateLoan (engines.private_credit)
     pe_companies: Dict[str, Any] = field(default_factory=dict)   # PortfolioCompany (engines.private_equity)
     pe_log: List[Dict] = field(default_factory=list)              # lost bids and other deal-flow notes
+    ib_engagements: Dict[str, Any] = field(default_factory=dict)  # Engagement (engines.investment_banking)
+    ib_log: List[Dict] = field(default_factory=list)
+    ib_stats: Dict[str, Any] = field(default_factory=dict)         # reputation, league-table year-to-date
     rfqs: Dict[str, Any] = field(default_factory=dict)           # RFQ
     csas: Dict[str, Any] = field(default_factory=dict)           # dealer -> CSA
     risk_history: List[Dict] = field(default_factory=list)      # daily RISK_SNAPSHOT payloads

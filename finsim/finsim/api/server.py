@@ -91,6 +91,8 @@ class Router:
                 return s.macro(wid)
             if sub == ["fx"]:
                 return s.fx_market(wid)
+            if sub == ["housing"]:
+                return s.housing(wid)
             if sub == ["clock"] and method == "POST":
                 return s.set_clock(wid, body.get("update_time"), body.get("timezone"), body.get("lock_session"))
             if sub == ["live"]:
@@ -165,6 +167,10 @@ class Router:
                     return s.pc_commit(wid, pid, body["deal_id"], body["amount"])
                 if leaf == ["private-credit", "sell"] and method == "POST":
                     return s.pc_sell(wid, pid, body["loan_id"], body["amount"])
+                if leaf == ["investment-banking"]:
+                    return s.investment_banking(wid, pid)
+                if len(leaf) == 2 and leaf[0] == "investment-banking" and method == "POST":
+                    return s.ib_command(wid, pid, leaf[1], body)
                 if leaf == ["private-equity"]:
                     return s.private_equity(wid, pid)
                 if leaf == ["private-equity", "structure"] and method == "POST":

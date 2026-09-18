@@ -70,7 +70,7 @@ class World:
         # engines
         from .engines import trading, settlement, corporate_actions, accruals, pnl, simulation, futures, briefing
         from .engines import collateral, seclending, repo, prime, fx, options, otc, risk, corporate_events
-        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, live
+        from .engines import investors, clients, treasury, institutions, commodity_desk, private_credit, private_equity, investment_banking, live
         from . import careers
         self.trading = trading.TradingEngine(self)
         self.live = live.LiveDesk(self)
@@ -96,6 +96,7 @@ class World:
         self.cdesk = commodity_desk.CommodityDeskEngine(self)
         self.pcredit = private_credit.PrivateCreditEngine(self)
         self.pequity = private_equity.PrivateEquityEngine(self)
+        self.ibank = investment_banking.InvestmentBankingEngine(self)
         from .engines import playbook
         self.playbook = playbook.Playbook(self)
         self.scenario = "NONE"
@@ -234,6 +235,7 @@ class World:
         self.cdesk.register()
         self.pcredit.register()
         self.pequity.register()
+        self.ibank.register()
         self.on(E.SCENARIO_EVENT, World._h_scenario_event)
         for et in (E.ECONOMIC_RELEASE, E.EARNINGS_REPORTED, E.RATING_CHANGED, E.ISSUER_DEFAULTED):
             self.on(et, lambda world, ev: None)
@@ -637,6 +639,13 @@ class World:
 
     def pe_selldown(self, portfolio_id: str, company_id: str, fraction: float):
         return self._cmd(self.pequity.selldown, self.portfolio(portfolio_id), company_id, fraction)
+
+    # investment banking
+    def ib_pitch(self, portfolio_id: str, mandate_id: str, fee_pct: float, promise: float):
+        return self._cmd(self.ibank.pitch, self.portfolio(portfolio_id), mandate_id, fee_pct, promise)
+
+    def ib_decide(self, portfolio_id: str, engagement_id: str, choice: str, value=None):
+        return self._cmd(self.ibank.decide, self.portfolio(portfolio_id), engagement_id, choice, value)
 
     def repo_post_collateral(self, portfolio_id: str, repo_id: str, security_id: str, quantity):
         return self._cmd(self.repo.post_collateral, self.portfolio(portfolio_id), repo_id, self.security(security_id), quantity)

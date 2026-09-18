@@ -292,6 +292,8 @@ class Service:
                          "live": {"available": w.live.available(), "source": "Yahoo Finance (up to 15 minutes delayed)" if w.live.available() else None,
                                   "instruction_session": w.instruction_session(self.now() if self.now else None)},
                          "quote_updates": w.quote_updates(self.now() if self.now else None),
+                         # invented desks (private equity deal flow, investment banking mandates) run only where the market itself is simulated
+                         "made_up_desks": getattr(w, "market_source", "SIMULATED") != "REAL",
                          "real_market": ({"latest_close": (w.market.real_feed.latest_date() if w.market.real_feed else None),
                                           "next_session": w.calendar.next_business_day(w.current_date).isoformat(),
                                           "waiting": w.real_market_ready(w.calendar.next_business_day(w.current_date))} if getattr(w, "market_source", "SIMULATED") == "REAL" else None),
@@ -1075,6 +1077,71 @@ class Service:
         self._open_for_instructions(w)
         loan = w.sell_private_credit(portfolio_id, str(loan_id).upper(), D(str(amount)))
         return jsonable(asdict(loan))
+
+    # ------------------------------------------------------------------ real estate & housing
+    def housing(self, world_id: str) -> Dict:
+        """The housing market: listed real estate grouped the way a property desk reads it, plus the housing indicators —
+        real (FRED, as known on the save's date) in a career save, derived from the curve and the cycle in a sandbox."""
+        from ..engines.realmacro import housing_as_of
+        w = self.world(world_id)
+        secs = self.securities(world_id)
+        by_id = {r["id"]: r for r in secs}
+        REIT_SUB = {"PLD": "Industrial", "AMT": "Towers", "CCI": "Towers", "SBAC": "Towers", "EQIX": "Data centres", "DLR": "Data centres", "O": "Net lease", "VICI": "Net lease",
+                    "SPG": "Retail", "KIM": "Retail", "REG": "Retail", "PSA": "Storage", "EXR": "Storage", "WELL": "Health care", "VTR": "Health care",
+                    "AVB": "Residential", "EQR": "Residential", "ESS": "Residential", "INVH": "Residential", "MAA": "Residential", "ARE": "Office & labs", "BXP": "Office & labs",
+                    "IRM": "Specialty", "WY": "Timber", "HST": "Hotels"}
+        HOMEBUILDERS = ["DHI", "LEN", "NVR", "PHM", "TOL", "KBH"]
+        BUILDING = ["HD", "LOW", "SHW", "MAS", "BLDR", "RKT"]
+        MORTGAGE_REITS = ["AGNC", "NLY", "STWD"]
+        ETFS = ["VNQ", "IYR", "REZ", "XHB", "ITB"]
+        def rows(ids):
+            return [by_id[i] for i in ids if i in by_id]
+        reits = [dict(r, subsector=REIT_SUB.get(r["id"], "Other")) for r in secs if r.get("asset_class") == "REIT"]
+        reits.sort(key=lambda r: (r["subsector"], r["id"]))
+        agency = [r for r in secs if str(r["id"]).startswith("AGY-")]
+        real = getattr(w, "market_source", "SIMULATED") == "REAL"
+        ind: Dict = {"source": "FRED (as known on the save's date)" if real else "derived from the save's curve and cycle"}
+        series = w.market.macro.real_series if real else None
+        if real and (not series or "mortgage30" not in series) and w.market.real_macro_feed is not None:
+            try:                                                        # a save from before the housing series existed: fetch them once (cached six hours)
+                w.market.real_macro_feed.refresh()
+                w.market.macro.real_series = series = w.market.real_macro_series()
+            except Exception:
+                pass
+        if series:
+            ind.update(housing_as_of(series, w.current_date, w.calendar.roll))
+        if "mortgage30" not in ind:
+            from ..engines.pricing import interp_rate
+            curve = w.market.curve()
+            ten = interp_rate(curve, 10.0) * 100.0
+            regime = w.market.regime().name
+            ind["mortgage30"] = round(ten + {"NORMAL_GROWTH": 1.7, "RATE_CUTTING": 1.6, "RATE_HIKING": 1.9, "RECESSION": 2.1, "LIQUIDITY_STRESS": 2.6}.get(regime, 1.8), 2)
+            ind["housing_starts"] = round(1350 * {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.06, "RATE_HIKING": 0.93, "RECESSION": 0.78, "LIQUIDITY_STRESS": 0.7}.get(regime, 1.0) * (1 - 0.06 * max(0.0, ind["mortgage30"] - 6.5)))
+            ind["permits"] = round(ind["housing_starts"] * 1.04)
+            ind["home_prices_yoy"] = round({"NORMAL_GROWTH": 3.5, "RATE_CUTTING": 5.0, "RATE_HIKING": 1.0, "RECESSION": -4.0, "LIQUIDITY_STRESS": -7.0}.get(regime, 2.0) - 0.8 * max(0.0, ind["mortgage30"] - 6.5), 1)
+            ind["existing_sales"] = round(4.1e6 * {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.08, "RATE_HIKING": 0.92, "RECESSION": 0.8, "LIQUIDITY_STRESS": 0.72}.get(regime, 1.0) * (1 - 0.05 * max(0.0, ind["mortgage30"] - 6.5)))
+            ind["simulated"] = True
+        return jsonable({"indicators": ind, "reits": reits, "homebuilders": rows(HOMEBUILDERS), "building_products": rows(BUILDING), "mortgage_reits": rows(MORTGAGE_REITS),
+                         "etfs": rows(ETFS), "agency_bonds": agency, "real": real,
+                         "notes": {"reits": "equity REITs by property type: rents, occupancy and cap rates against the 10-year yield",
+                                   "homebuilders": "new-home demand: mortgage rates, starts and permits drive orders and margins",
+                                   "mortgage_reits": "levered holders of agency MBS: earn the spread, live and die by rates volatility and funding",
+                                   "agency": "government-sponsored issuers whose guarantees stand behind the mortgage market"}})
+
+    # ------------------------------------------------------------------ investment banking
+    def investment_banking(self, world_id: str, portfolio_id: str) -> Dict:
+        w = self.world(world_id)
+        return jsonable(w.ibank.book(w.portfolio(portfolio_id)))
+
+    def ib_command(self, world_id: str, portfolio_id: str, action: str, body: Dict) -> Dict:
+        w = self.world(world_id)
+        self._open_for_instructions(w)
+        if action == "pitch":
+            return jsonable(w.ib_pitch(portfolio_id, str(body["mandate_id"]).upper(), float(body["fee_pct"]), float(body.get("promise", 0))))
+        if action == "decide":
+            e = w.ib_decide(portfolio_id, str(body["engagement_id"]).upper(), body["choice"], body.get("value"))
+            return jsonable(asdict(e))
+        raise NotFound(f"unknown investment banking action {action}")
 
     # ------------------------------------------------------------------ private equity
     def private_equity(self, world_id: str, portfolio_id: str) -> Dict:

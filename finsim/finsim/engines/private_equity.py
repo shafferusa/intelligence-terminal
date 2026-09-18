@@ -294,6 +294,8 @@ class PrivateEquityEngine:
     # ------------------------------------------------------------------ commands
     def _mandate(self, pf: Portfolio) -> None:
         from ..world import CommandError
+        if getattr(self.w, "market_source", "SIMULATED") == "REAL":
+            raise CommandError("this save tracks the real market: the private equity deal flow is invented and stays switched off here — play the Private Equity career (a simulated save)")
         job = self.w.careers.job_for(pf)
         if job and job.allowed_classes and "PRIVATE_EQUITY" not in job.allowed_classes:
             raise CommandError("private equity is outside this job's mandate")

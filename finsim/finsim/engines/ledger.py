@@ -101,6 +101,11 @@ CHART = {
     "4370": ("Private Equity Mark-to-Market & Realised", "INCOME"),
     "4380": ("Private Equity Income (distributions, recaps)", "INCOME"),
     "5360": ("Private Equity Deal Costs & Losses", "EXPENSE"),
+    # investment banking
+    "1190": ("Underwriting Positions (blocks held for resale)", "ASSET"),
+    "4390": ("Investment Banking Fees", "INCOME"),
+    "4395": ("Underwriting Gains", "INCOME"),
+    "5370": ("Underwriting Losses & Broken-Deal Costs", "EXPENSE"),
 }
 
 DEBIT_NORMAL = {"ASSET", "EXPENSE"}

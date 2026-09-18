@@ -17,7 +17,7 @@ from .domain.events import E, Event
 from .money import D, money, ZERO
 
 ALL_CLASSES = {"EQUITY", "GOVT_BOND", "CORP_BOND", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "EQUITY_INDEX", "RATES", "OPTION", "OTC", "PHYSICAL",
-               "CRYPTO", "FX_INDEX", "VOLATILITY", "PRIVATE_EQUITY"}
+               "CRYPTO", "FX_INDEX", "VOLATILITY", "PRIVATE_EQUITY", "INVESTMENT_BANKING"}
 
 
 @dataclass(frozen=True)
@@ -39,11 +39,13 @@ class Job:
 JOBS: Dict[str, Job] = {
     "SANDBOX": Job("SANDBOX", "Sandbox", "Unlimited experimentation. Any instrument, no limits, no reviews.", D(1_000_000_000), "SPY",
                    frozenset(ALL_CLASSES), 99.0, 9.0, 1.0, ("Sandbox",)),
-    "PORTFOLIO_MANAGER": Job("PORTFOLIO_MANAGER", "Portfolio Manager", "Run a $100MM multi-asset fund against an equity benchmark. Equities, bonds, ETFs and "
-                             "listed futures. Judged on alpha, Sharpe and drawdown.", D(100_000_000), "SPY", frozenset(ALL_CLASSES), 1.5, 0.15, 0.15,
+    "PORTFOLIO_MANAGER": Job("PORTFOLIO_MANAGER", "Portfolio Manager", "Run a $100MM multi-asset fund against an equity benchmark: 770 stocks, ETFs and ADRs, "
+                             "bonds and the Treasury ladder, listed futures and options, FX, crypto, real estate, OTC derivatives, private credit. As a career it "
+                             "plays the real market day by day with live quotes; the invented desks (private equity deal flow, investment banking) exist only in "
+                             "simulated saves. Judged on alpha, Sharpe and drawdown.", D(100_000_000), "SPY", frozenset(ALL_CLASSES), 1.5, 0.15, 0.15,
                              ("Analyst", "Associate PM", "Portfolio Manager", "Senior PM", "CIO")),
-    "GLOBAL_MACRO": Job("GLOBAL_MACRO", "Global Macro Trader", "Rates, equity indices and commodities via futures and government bonds. Absolute return; "
-                        "leverage allowed but drawdowns are watched closely.", D(250_000_000), None,
+    "GLOBAL_MACRO": Job("GLOBAL_MACRO", "Global Macro Trader", "Rates, equity indices, the dollar index, the VIX, crypto and commodities via futures and government "
+                        "bonds; 18 currencies spot, forward, NDF and options; swaps and swaptions. Absolute return; leverage allowed but drawdowns are watched closely.", D(250_000_000), None,
                         frozenset({"GOVT_BOND", "EQUITY_INDEX", "RATES", "COMMODITY_ENERGY", "COMMODITY_METAL", "COMMODITY_AG", "COMMODITY_LIVESTOCK", "OPTION", "OTC", "FX_INDEX", "VOLATILITY", "CRYPTO"}),
                         3.0, 0.30, 0.12, ("Junior Trader", "Trader", "Senior Trader", "Desk Head", "CIO")),
     "COMMODITY_TRADER": Job("COMMODITY_TRADER", "Commodity Trader", "Energy, metals, agriculture and livestock futures. Read inventories, curves and weather; "
@@ -53,14 +55,20 @@ JOBS: Dict[str, Job] = {
     "FIXED_INCOME_PM": Job("FIXED_INCOME_PM", "Fixed-Income Portfolio Manager", "Treasuries, corporates and Treasury futures against a 5Y Treasury benchmark. "
                            "Manage duration, DV01, credit and curve exposure.", D(250_000_000), "UST-5Y", frozenset({"GOVT_BOND", "CORP_BOND", "RATES", "OTC_RATES"}),
                            2.0, 0.40, 0.08, ("Analyst", "Associate PM", "Portfolio Manager", "Senior PM", "CIO")),
-    "HEDGE_FUND": Job("HEDGE_FUND", "Hedge Fund Manager", "Run a $500MM multi-strategy fund for outside investors: shorts, leverage, repo, borrow, options and OTC. "
-                      "Investors subscribe and redeem on your numbers; management and performance fees.", D(500_000_000), None, frozenset(ALL_CLASSES), 5.0, 0.30, 0.20,
+    "HEDGE_FUND": Job("HEDGE_FUND", "Hedge Fund Manager", "Run a $500MM multi-strategy fund for outside investors: shorts, leverage, repo, borrow, options and OTC, "
+                      "crypto and its derivatives, private credit, and in a simulated save private equity. Investors subscribe and redeem on your numbers; "
+                      "management and performance fees.", D(500_000_000), None, frozenset(ALL_CLASSES), 5.0, 0.30, 0.20,
                       ("Analyst", "Portfolio Manager", "Senior PM", "Partner", "Founder"), capital_step=0.3),
     "PRIVATE_EQUITY": Job("PRIVATE_EQUITY", "Private Equity Partner", "Run a $2BN buyout fund: bid for founder-owned businesses, carve-outs and secondaries, put "
                           "leverage on them, run them for four to six years — cost programmes, add-ons, recaps — and sell or list them. Public equities and "
                           "bonds for the undrawn capital. Judged on TVPI, DPI and net IRR; the J-curve is real.", D(2_000_000_000), None,
                           frozenset({"PRIVATE_EQUITY", "EQUITY", "GOVT_BOND", "CORP_BOND", "OTC_RATES"}), 1.2, 0.35, 0.30,
                           ("Associate", "Vice President", "Principal", "Partner", "Managing Partner"), capital_step=0.5),
+    "INVESTMENT_BANKER": Job("INVESTMENT_BANKER", "Investment Banker", "Win mandates against rival banks and execute them: sell-side and buy-side M&A, IPOs, block "
+                             "trades, bond issues and leveraged-loan underwriting — fees on closing, underwriting risk on the balance sheet, a league table and a "
+                             "reputation that every deal moves. Invented companies and deals: a simulation, its own career. Public equities and bonds for the bank's "
+                             "own book.", D(500_000_000), None, frozenset({"INVESTMENT_BANKING", "EQUITY", "GOVT_BOND", "CORP_BOND"}), 3.0, 0.5, 0.25,
+                             ("Analyst", "Associate", "Vice President", "Director", "Managing Director"), capital_step=0.4),
     "BANK_TRADER": Job("BANK_TRADER", "Bank Rates & Credit Trader", "Make prices for clients in swaps, bonds, CDS and blocks; run the resulting inventory, hedge it and fund it. "
                        "Judged on client flow won, spread captured and hedged risk.", D(50_000_000), None,
                        frozenset({"GOVT_BOND", "CORP_BOND", "RATES", "EQUITY_INDEX", "EQUITY", "OPTION", "OTC"}), 12.0, 1.0, 0.20,

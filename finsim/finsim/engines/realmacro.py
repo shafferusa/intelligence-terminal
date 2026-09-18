@@ -23,7 +23,10 @@ from typing import Dict, List, Optional
 
 FRED = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}"
 SERIES = {"cpi": "CPIAUCSL", "core_cpi": "CPILFESL", "unemployment": "UNRATE", "payrolls": "PAYEMS", "gdp": "A191RL1Q225SBEA",
-          "fed_upper": "DFEDTARU", "fed_lower": "DFEDTARL", "retail": "RSAFS", "core_pce": "PCEPILFE"}
+          "fed_upper": "DFEDTARU", "fed_lower": "DFEDTARL", "retail": "RSAFS", "core_pce": "PCEPILFE",
+          # housing: the 30-year mortgage rate (weekly), starts and permits (thousands, annual rate), the Case-Shiller national index, existing-home sales
+          "mortgage30": "MORTGAGE30US", "housing_starts": "HOUST", "permits": "PERMIT", "home_prices": "CSUSHPISA", "existing_sales": "EXHOSLUSM495S"}
+HOUSING_KEYS = ("mortgage30", "housing_starts", "permits", "home_prices", "existing_sales")
 UA = "FinSim/1.0 (local simulator; standard library)"
 # published FOMC decision days (second day of each meeting); other years fall back to the third Wednesday of the meeting months
 FOMC = {2025: ["2025-01-29", "2025-03-19", "2025-05-07", "2025-06-18", "2025-07-30", "2025-09-17", "2025-10-29", "2025-12-10"],
@@ -72,7 +75,13 @@ def release_date(kind: str, period: date, roll) -> date:
         return roll(_month_add(period, 1).replace(day=28))
     if kind == "gdp":                                  # advance estimate ~4 weeks after the quarter
         return roll(_month_add(period, 3).replace(day=28))
-    return period
+    if kind in ("housing_starts", "permits"):          # the Census release around the 17th of the next month
+        return roll(_month_add(period, 1).replace(day=17))
+    if kind == "existing_sales":                       # NAR, around the 22nd
+        return roll(_month_add(period, 1).replace(day=22))
+    if kind == "home_prices":                          # Case-Shiller runs two months behind, last Tuesday of the month
+        return roll(_month_add(period, 2).replace(day=26))
+    return period                                      # weekly series (the mortgage rate) are public on their date
 
 
 class RealMacro:
@@ -273,4 +282,28 @@ def upcoming(series: Dict[str, Dict[str, float]], d: date, roll, days: int = 45)
             if d < m <= end:
                 out.append({"date": m.isoformat(), "kind": "FOMC", "consensus": None})
     out.sort(key=lambda r: r["date"])
+    return out
+
+
+def housing_as_of(series: Dict[str, Dict[str, float]], asof: date, roll) -> Dict:
+    """The housing picture as known on `asof`: the mortgage rate, starts, permits, existing-home sales and the Case-Shiller
+    index with its year-on-year change, each with the period it refers to."""
+    out: Dict = {}
+    for k in ("mortgage30", "housing_starts", "permits", "existing_sales", "home_prices"):
+        known = _known(series.get(k, {}), k, asof, roll)
+        if not known:
+            continue
+        p, v = known[-1]
+        out[k] = v
+        out[k + "_period"] = p.isoformat()
+        if len(known) >= 2:
+            out[k + "_prev"] = known[-2][1]
+        if k == "home_prices":
+            yr = [x for x in known if x[0] <= p.replace(year=p.year - 1)]
+            if yr:
+                out["home_prices_yoy"] = round((v / yr[-1][1] - 1) * 100, 2)
+        if k == "mortgage30":
+            yr = [x for x in known if x[0] <= p - timedelta(days=364)]
+            if yr:
+                out["mortgage30_year_ago"] = yr[-1][1]
     return out
