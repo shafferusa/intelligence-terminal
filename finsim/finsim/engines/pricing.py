@@ -233,6 +233,8 @@ class Instrument:
 
     def next_events(self) -> List[Dict]:
         if self.sec.is_bond:
+            if not self.sec.coupon:                       # a bill or a STRIP: nothing until it is redeemed at 100
+                return [{"type": "MATURITY", "date": self.sec.maturity, "amount_per_100": 100.0}]
             prev, nxt = BondPricer.period(self.sec, self.asof)
             return [{"type": "COUPON", "date": nxt.isoformat(), "amount_per_100": self.sec.coupon * 100 / self.sec.freq}]
         return []

@@ -426,11 +426,17 @@ class Service:
             if sec.is_future:
                 row["initial_margin"] = w.futures.initial_margin_per_contract(sec)
                 row["notional_per_contract"] = float(bar.close) * sec.multiplier
+            if sec.is_bond and not sec.is_mbs and (sec.coupon or 0) == 0 and sec.maturity:
+                days = max(1, (date.fromisoformat(sec.maturity) - w.current_date).days)
+                row["is_bill"] = "bill" in (sec.name or "").lower()
+                row["is_strip"] = "strip" in (sec.name or "").lower()
+                row["discount_rate"] = (100.0 - float(bar.close)) / 100.0 * 360.0 / days       # the bank-discount quote a bill trades on
             if sec.is_mbs:
                 row.update(w.market.mbs_metrics(sec))
                 row.update({"program": sec.underlying, "program_name": w.market.mbs.spec_of(sec).name, "settlement": sec.issue_date, "is_mbs": True})
             elif sec.inflation_linked:
                 row.update(self._tips_metrics(w, sec, float(bar.close)))
+                row["real_coupon"] = sec.real_coupon
             elif sec.is_bond:
                 row.update({k: v for k, v in BondPricer.risk_metrics(sec, w.current_date, float(bar.close), w.market.curve_for_security(sec)).items()})
             out.append(row)
