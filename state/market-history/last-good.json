@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-18T20:50:00Z",
+ "fetched_at": "2026-09-19T13:15:00Z",
  "treasury_par_curve": {
   "date": "2026-09-18",
   "BC_1MONTH": 3.97,
@@ -128,33 +128,33 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 80986,
-    "usd_24h_change": 5.85,
-    "usd_market_cap": 1627000000000
+    "usd": 81236,
+    "usd_24h_change": 4.19,
+    "usd_market_cap": 1631875533059
    },
    "ethereum": {
-    "usd": 2628.07,
-    "usd_24h_change": 7.27,
-    "usd_market_cap": 320800000000
+    "usd": 2638.07,
+    "usd_24h_change": 5.64,
+    "usd_market_cap": 322080638236
    },
    "solana": {
-    "usd": 113.31,
-    "usd_24h_change": 12.21,
-    "usd_market_cap": 66500000000
+    "usd": 111.56,
+    "usd_24h_change": 5.7,
+    "usd_market_cap": 65529981686
    },
    "cardano": {
-    "usd": 0.2233,
-    "usd_24h_change": 10.48,
-    "usd_market_cap": 8380000000
+    "usd": 0.226783,
+    "usd_24h_change": 5.28,
+    "usd_market_cap": 8524497059
    }
   },
-  "total_market_cap_usd": 2780000000000,
-  "btc_dominance_pct": 58.35,
-  "eth_dominance_pct": 11.51,
-  "volume_24h_usd": 126800000000,
-  "market_cap_24h_change_pct": 2.69,
+  "total_market_cap_usd": 2795096817826,
+  "btc_dominance_pct": 58.26,
+  "eth_dominance_pct": null,
+  "volume_24h_usd": null,
+  "market_cap_24h_change_pct": 1.22,
   "label": "Live (CoinGecko aggregate)",
-  "fetched_at": "2026-09-18T20:47:00Z"
+  "fetched_at": "2026-09-19T13:10:00Z"
  },
  "indices": {
   "sp500_close": 7650.5,
@@ -1437,13 +1437,8 @@
   "fetched_at": "2026-09-18T20:50:00Z"
  },
  "_notes_this_run": {
-  "yahoo_sweep": "134 Yahoo symbols fetched with 0 fetch failures (board + 11 sector ETFs + all company watchlists + futures/commodities/FX/index set).",
-  "chartPreviousClose_check": "All % / $ changes computed from each instrument's own close-to-close series per the standing chartPreviousClose bug fix; chartPreviousClose itself was not used or trusted this run.",
-  "cl_f_anomaly": "CL=F (WTI futures) showed an implausible -6.46% move, inconsistent with USO's -0.96% move and outside reporting (~-1.6 to -1.9%); excluded from the report and from this file's wti field. Third consecutive run flagging this feed -- worth considering removing CL=F from the futures sweep in favor of a USO-derived oil narrative until Yahoo fixes it.",
-  "eurusd_gap": "Yahoo's EURUSD=X 5-day series is missing a close for 2026-09-17, making any Yahoo-derived EURUSD %chg a 2-day comparison with the wrong sign; used Frankfurter's ECB reference fix instead.",
-  "es_f_basis_note": "ES=F traded roughly 1% above today's cash ^GSPC close, a wide same-day futures/cash basis; plausibly real extended-hours continuation of the chip/AI rally (SMH, AVGO, MU, AMD, HOOD, COIN all up sharply) rather than a bad tick, but flagged for a spot-check next run.",
-  "sofr_note": "FRED's Sept 17-dated SOFR reading jumped 23bp to 3.85%, a large one-day move in an overnight funding benchmark; no confirmed cause identified, possibly quarter-end-adjacent repo/funding pressure.",
-  "breadth_finra_reuse": "Whole-market breadth and FINRA short volume both reused from the Sept 17 session per the once-per-session rule -- not refetched this run; next update is Monday morning."
+  "run": "2026-09-19-sat",
+  "note": "Weekend gather: markets closed since Friday 2026-09-18 close, so equities/rates/FX/commodities snapshot left as the Friday pm run's fetch (already current for the weekly close). Crypto refreshed live (CoinGecko). Weekly sector, watchlist, and index moves recomputed directly against this snapshot's data for the Weekly Review."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
