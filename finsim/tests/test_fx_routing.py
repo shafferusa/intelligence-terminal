@@ -18,29 +18,29 @@ class FXRoutingTest(unittest.TestCase):
         w.fx_spot(pf.id, "EUR", "USD", 3_000_000, "BUY")
         w.advance(3)
         n0 = len(pf.fx_trades)
-        t = w.fx_spot(pf.id, "JPY", "EUR", 100_000_000, "BUY")            # yen for euros: two legs
-        legs = [x for x in pf.fx_trades.values() if x.id not in {}][n0:]
-        self.assertEqual(len(pf.fx_trades) - n0, 2)
-        leg1, leg2 = sorted(list(pf.fx_trades.values())[n0:], key=lambda x: x.id)
-        self.assertEqual((leg1.buy_ccy, leg1.sell_ccy), ("USD", "EUR")); self.assertEqual((leg2.buy_ccy, leg2.sell_ccy), ("JPY", "USD"))
-        self.assertEqual(t.id, leg2.id); self.assertEqual(leg2.buy_amount, D(100_000_000)); self.assertAlmostEqual(float(leg1.buy_amount), float(leg2.sell_amount), delta=1.0)
-        self.assertIn("through the dollar", leg1.route); self.assertIn("leg 2", leg2.route)
+        t = w.fx_spot(pf.id, "JPY", "EUR", 100_000_000, "BUY")            # yen for euros: one deal, priced through the dollar
+        self.assertEqual(len(pf.fx_trades) - n0, 1, "a cross is one trade, not two")
+        self.assertEqual((t.buy_ccy, t.sell_ccy), ("JPY", "EUR")); self.assertEqual(t.buy_amount, D(100_000_000))
+        self.assertIn("crossed through the dollar", t.route)
+        m = w.market.fx
+        mid = m.cross("JPY", "EUR")
+        self.assertGreater(t.rate, mid, "the client pays the offer"); self.assertLess(t.rate / mid - 1.0, 0.002, "both dollar legs' spreads, no more")
+        self.assertAlmostEqual(float(t.sell_amount), float(t.buy_amount) * t.rate, delta=1.0)
         w.advance(3)
-        self.assertGreaterEqual(pf.cash_account("JPY").balance, D(100_000_000)); self.assertTrue(all(x.status == "SETTLED" for x in (leg1, leg2)))
+        self.assertGreaterEqual(pf.cash_account("JPY").balance, D(100_000_000)); self.assertEqual(t.status, "SETTLED")
         assert_ledger_invariants(self, w, pf)
-        # selling a known amount of the cross currency
+        # selling a known amount of the other currency: still one deal in the pair asked for
         t2 = w.fx_spot(pf.id, "CHF", "JPY", 50_000_000, "SELL")
-        self.assertEqual(t2.sell_ccy, "USD"); self.assertEqual(t2.buy_ccy, "CHF")
-        # EUR/GBP is dealt direct; a yen forward against euros is not a dealt pair
+        self.assertEqual((t2.buy_ccy, t2.sell_ccy), ("CHF", "JPY")); self.assertEqual(t2.sell_amount, D(50_000_000)); self.assertIn("through the dollar", t2.route)
+        # EUR/GBP is dealt direct; a cross forward is made through the dollar too (both legs' spreads)
         g = w.fx_spot(pf.id, "GBP", "EUR", 100_000, "BUY")
         self.assertEqual((g.buy_ccy, g.sell_ccy), ("GBP", "EUR")); self.assertIsNone(g.route)
-        with self.assertRaises(CommandError):
-            w.fx_forward(pf.id, "JPY", "EUR", 1_000_000, w.calendar.add_business_days(w.current_date, 60).isoformat())
-        w.fx_forward(pf.id, "EUR", "GBP", 100_000, w.calendar.add_business_days(w.current_date, 60).isoformat())
+        f = w.fx_forward(pf.id, "JPY", "EUR", 1_000_000, w.calendar.add_business_days(w.current_date, 60).isoformat())
+        self.assertGreater(f.forward_rate, m.forward("JPY", "EUR", w.current_date, __import__("datetime").date.fromisoformat(f.maturity)))
         w.advance(3)
         assert_ledger_invariants(self, w, pf)
         w2 = World.load(store, w.id)
-        self.assertEqual(w2.replay_errors, []); self.assertEqual(w2.portfolio(pf.id).fx_trades[leg2.id].route, leg2.route)
+        self.assertEqual(w2.replay_errors, []); self.assertEqual(w2.portfolio(pf.id).fx_trades[t.id].route, t.route)
 
     def test_london_quotes_in_pence_settle_in_pounds(self):
         w, pf, _ = make_world(capital=50_000_000)

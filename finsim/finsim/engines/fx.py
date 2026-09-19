@@ -66,10 +66,39 @@ class FXEngine:
         """The market deals every currency against the dollar; the one cross that trades on its own is sterling-euro."""
         return "USD" in (buy, sell) or {buy, sell} == {"EUR", "GBP"}
 
+    def cross_quote(self, buy: str, sell: str, amount: Decimal, amount_ccy: str, live: bool) -> Dict:
+        """A cross other than EUR/GBP, priced as the dealer prices it: through the dollar. The dollar legs carry their own
+        spreads (buy/USD at the offer, USD/sell at the offer) and the client sees one rate and one deal."""
+        from ..world import CommandError
+        w = self.w
+        mids = {}
+        if live:
+            for c in (buy, sell):
+                lq = w.live.fx_mid(c, "USD")
+                if lq is None:
+                    raise CommandError(f"no live quote for {c}/USD right now; deal at the day's rate instead")
+                mids[c] = lq
+        if amount_ccy == "BUY":
+            leg_buy = self.quote(buy, "USD", amount, "BUY", mid=mids[buy]["mid"] if live else None)           # dollars needed for the currency bought
+            leg_sell = self.quote("USD", sell, leg_buy["sell_amount"], "BUY", mid=(1.0 / mids[sell]["mid"]) if live else None)   # the currency sold to raise them
+            buy_amount, sell_amount = leg_buy["buy_amount"], leg_sell["sell_amount"]
+        else:
+            leg_sell = self.quote("USD", sell, amount, "SELL", mid=(1.0 / mids[sell]["mid"]) if live else None)
+            leg_buy = self.quote(buy, "USD", leg_sell["buy_amount"], "SELL", mid=mids[buy]["mid"] if live else None)
+            buy_amount, sell_amount = leg_buy["buy_amount"], leg_sell["sell_amount"]
+        rate = float(sell_amount / buy_amount) if buy_amount else 0.0
+        mid = w.market.fx.cross(buy, sell) if not live else mids[buy]["mid"] / mids[sell]["mid"]
+        legs = f"crossed through the dollar: {buy}/USD {leg_buy['rate']:.5f} · USD/{sell} {leg_sell['rate']:.5f}"
+        out = {"buy_ccy": buy, "sell_ccy": sell, "buy_amount": buy_amount, "sell_amount": sell_amount, "rate": rate, "mid": mid,
+               "spread_bps": (rate / mid - 1.0) * 1e4 if mid else 0.0, "route": legs}
+        if live:
+            out.update({"execution": "LIVE", "quote_time": min(mids[buy]["time"], mids[sell]["time"]), "quote_time_ny": mids[buy]["time_ny"], "quote_source": mids[buy]["source"]})
+        return out
+
     def spot(self, pf: Portfolio, buy: str, sell: str, amount, amount_ccy: str = "BUY", execution: str = "NEXT_UPDATE", tag: Optional[str] = None,
              _routed: bool = False, _leg: Optional[str] = None) -> FXTrade:
         """A spot deal at the day's rate; with execution LIVE (a save that tracks the market) at the pair's latest quote. A cross
-        other than EUR/GBP is dealt through the dollar as two legs: sell the one currency for dollars, buy the other with them."""
+        other than EUR/GBP is one deal whose rate is made through the dollar (both dollar legs' spreads), as a dealer makes it."""
         from ..world import CommandError
         w = self.w
         buy, sell = buy.upper(), sell.upper()
@@ -77,24 +106,19 @@ class FXEngine:
             raise CommandError(f"currencies must be two of {', '.join(CURRENCIES)}")
         if D(str(amount)) <= 0:
             raise CommandError("amount must be positive")
+        is_live = str(execution).upper() == "LIVE"
         if not self.direct_pair(buy, sell):
-            if amount_ccy.upper() == "BUY":                     # the dollars leg 2 needs decide what leg 1 sells
-                live_mid = (w.live.fx_mid(buy, "USD") or {}).get("mid") if str(execution).upper() == "LIVE" else None
-                usd = self.quote(buy, "USD", D(str(amount)), "BUY", mid=live_mid)["sell_amount"]
-                leg1 = self.spot(pf, "USD", sell, usd, "BUY", execution, tag, _leg=f"leg 1 of {sell}→{buy} through the dollar")
-                leg2 = self.spot(pf, buy, "USD", D(str(amount)), "BUY", execution, tag, _routed=True, _leg=f"leg 2 of {sell}→{buy} through the dollar")
-            else:
-                leg1 = self.spot(pf, "USD", sell, D(str(amount)), "SELL", execution, tag, _leg=f"leg 1 of {sell}→{buy} through the dollar")
-                leg2 = self.spot(pf, buy, "USD", leg1.buy_amount, "SELL", execution, tag, _routed=True, _leg=f"leg 2 of {sell}→{buy} through the dollar")
-            return leg2
-        live = None
-        if str(execution).upper() == "LIVE":
-            live = w.live.fx_mid(buy, sell)
-            if live is None:
-                raise CommandError(f"no live quote for {buy}/{sell} right now; deal at the day's rate instead")
-        q = self.quote(buy, sell, D(str(amount)), amount_ccy.upper(), mid=live["mid"] if live else None)
-        if live:
-            q = {**q, "execution": "LIVE", "quote_time": live["time"], "quote_time_ny": live["time_ny"], "quote_source": live["source"]}
+            q = self.cross_quote(buy, sell, D(str(amount)), amount_ccy.upper(), is_live)
+            _leg = q.pop("route")
+        else:
+            live = None
+            if is_live:
+                live = w.live.fx_mid(buy, sell)
+                if live is None:
+                    raise CommandError(f"no live quote for {buy}/{sell} right now; deal at the day's rate instead")
+            q = self.quote(buy, sell, D(str(amount)), amount_ccy.upper(), mid=live["mid"] if live else None)
+            if live:
+                q = {**q, "execution": "LIVE", "quote_time": live["time"], "quote_time_ny": live["time_ny"], "quote_source": live["source"]}
         avail = pf.cash_account(sell).balance
         pending_out = sum((t.sell_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.sell_ccy == sell), ZERO)
         if sell == pf.base_currency:
@@ -115,8 +139,6 @@ class FXEngine:
         buy, sell = buy.upper(), sell.upper()
         if buy not in CURRENCIES or sell not in CURRENCIES or buy == sell:
             raise CommandError(f"currencies must be two of {', '.join(CURRENCIES)}")
-        if not self.direct_pair(buy, sell):
-            raise CommandError(f"{buy}/{sell} is not a dealt pair: forwards trade against the dollar (or EUR/GBP); deal {sell}/USD and USD/{buy} forwards")
         mat = date.fromisoformat(maturity)
         if mat <= w.calendar.add_business_days(w.current_date, 2):
             raise CommandError("forward maturity must be beyond spot (T+2)")
@@ -125,7 +147,8 @@ class FXEngine:
         if amt <= 0:
             raise CommandError("amount must be positive")
         m = w.market.fx
-        fwd = m.forward(buy, sell, w.current_date, mat) * (1 + m.spread_bps(buy, sell) / 1e4)
+        cross_spread = m.spread_bps(buy, sell) if self.direct_pair(buy, sell) else (m.spread_bps(buy, "USD") + m.spread_bps("USD", sell))   # a cross pays both dollar legs
+        fwd = m.forward(buy, sell, w.current_date, mat) * (1 + cross_spread / 1e4)
         fid = w.new_id("FWD")
         w.emit(E.FX_FORWARD_OPENED, {"portfolio_id": pf.id, "forward_id": fid, "buy_ccy": buy, "sell_ccy": sell, "buy_amount": amt,
                                      "sell_amount": money(amt * D(repr(fwd))), "forward_rate": fwd, "maturity": mat.isoformat(), "spot": m.cross(buy, sell),
