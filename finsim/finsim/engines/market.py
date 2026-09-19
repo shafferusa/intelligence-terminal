@@ -203,7 +203,7 @@ for _r in UNIVERSE["equities"] + _index_rows(UNIVERSE["equities"], UNIVERSE.get(
     EQUITY_SEED.append((_r["ticker"], _r["name"], _r["asset_class"], _r["sector"], _r["country"], _r.get("currency", "USD"), float(_r["price"]),
                         _adjusted_beta(float(_r["beta"])) if _r["asset_class"] not in ("INDEX", "CRYPTO") else float(_r["beta"]),
                         max(0.002 if _r.get("sector") == "Stablecoin" else 0.03, float(_r["sigma_annual"])), int(_r["adv"]), _spread_bps(_r, _t), _t,
-                        float(_r.get("dividend_yield", 0.0)), _shares, _r.get("yahoo")))
+                        float(_r.get("dividend_yield", 0.0)), _shares, _r.get("yahoo"), float(_r.get("yahoo_scale", 1.0) or 1.0)))
 REAL_FUNDAMENTALS = {r["ticker"]: r for r in UNIVERSE["equities"] if r["country"] == "US"}
 from .commodities import apply_snapshot as _apply_commodity_snapshot      # noqa: E402
 from .fx_market import apply_snapshot as _apply_fx_snapshot               # noqa: E402
@@ -259,8 +259,9 @@ def build_universe(start: date, seed: int) -> Dict[str, Security]:
     rng = random.Random(f"{seed}|universe")
     secs: Dict[str, Security] = {}
     n = 100
-    for (t, name, ac, sector, country, ccy, px, beta, sig, adv, spr, tier, dy, shares, yahoo) in EQUITY_SEED:
+    for (t, name, ac, sector, country, ccy, px, beta, sig, adv, spr, tier, dy, shares, yahoo, *rest) in EQUITY_SEED:
         n += 1
+        yscale = float(rest[0]) if rest else 1.0
         dps = money(D(px) * D(dy) / 4) if dy > 0 else D("0")
         # Simple fundamentals so the security page can show real ratios.
         rev_per_share = px / rng.uniform(1.5, 6.0)
@@ -294,7 +295,7 @@ def build_universe(start: date, seed: int) -> Dict[str, Security]:
             id=t, name=name, asset_class=ac, market={"CRYPTO": "CRYPTO", "INDEX": "INDEX"}.get(ac, "US_EQUITY" if ccy == "USD" else MARKET_BY_COUNTRY.get(country, "EU_EQUITY")), currency=ccy, country=country, sector=sector,
             isin=_isin(n), cusip=_cusip(n * 7919), shares_outstanding=int(shares * 1e6) if ac != "INDEX" else None, dividend_yield=dy,
             dividend_per_share=dps, div_anchor_month=rng.randint(0, 2), div_day_bd=rng.randint(3, 15), beta=beta,
-            sigma_annual=sig, adv=adv, spread_bps=spr, liquidity_tier=tier, fundamentals=fundamentals, yahoo=yahoo,
+            sigma_annual=sig, adv=adv, spread_bps=spr, liquidity_tier=tier, fundamentals=fundamentals, yahoo=yahoo, yahoo_scale=yscale,
             qty_step=Decimal("0.0001") if ac == "CRYPTO" else Decimal("1"), unit="coin" if ac == "CRYPTO" else "",
         )
     # government bonds in euros, sterling and yen, issued four months ago at the coupon that priced them at par on their curve then

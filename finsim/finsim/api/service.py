@@ -114,7 +114,7 @@ class Service:
         real_history = None
         real_macro = None
         if market_source == "REAL":
-            from ..engines.realfeed import RealFeed, equity_symbols_for
+            from ..engines.realfeed import RealFeed, equity_symbols_for, equity_scales_for
             from ..engines.market import build_universe
             feed = RealFeed(equity_symbols_for(build_universe(date.today(), int(seed))))
             feed.refresh("1y", force=True)
@@ -192,12 +192,12 @@ class Service:
 
     def switch_to_real(self, world_id: str) -> Dict:
         """Switch a simulated save to the real market (real closes, live quotes, live tickets, 15-minute quote updates)."""
-        from ..engines.realfeed import RealFeed, equity_symbols_for
+        from ..engines.realfeed import RealFeed, equity_symbols_for, equity_scales_for
         from ..engines.realmacro import RealMacro
         w = self.world(world_id)
         if getattr(w, "market_source", "SIMULATED") == "REAL":
             raise CommandError("this save already tracks the real market")
-        feed = RealFeed(equity_symbols_for(w.securities))
+        feed = RealFeed(equity_symbols_for(w.securities), scales=equity_scales_for(w.securities))
         feed.refresh("1y", force=True)
         latest = feed.latest_date()
         if not latest:

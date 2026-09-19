@@ -247,7 +247,8 @@ class LiveDesk:
             q = raw.get(sym)
             if not q:
                 return None
-            return done(float(q["price"]), q, "direct", sym, float(q["price"]), {"day_high": q.get("high"), "day_low": q.get("low"), "day_volume": q.get("volume")})
+            k = float(getattr(sec, "yahoo_scale", 1.0) or 1.0)
+            return done(float(q["price"]) * k, q, "direct", sym, float(q["price"]) * k, {"day_high": (q.get("high") or 0) * k or None, "day_low": (q.get("low") or 0) * k or None, "day_volume": q.get("volume")})
         return None
 
     def fx_mid(self, buy: str, sell: str) -> Optional[Dict]:

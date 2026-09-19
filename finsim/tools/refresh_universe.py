@@ -240,8 +240,9 @@ def main():
             var = sum((y - mb) ** 2 for y in b) / n
             beta = cov / var if var else 0.0
         adv = int(sum(ch["volumes"][-63:]) / max(1, len(ch["volumes"][-63:]))) if ch["volumes"] else 0
-        divs = sum(ch["dividends"])
-        px = float(ch["price"])
+        scale = float(row[7]) if len(row) > 7 and row[7] else 1.0
+        divs = sum(ch["dividends"]) * scale
+        px = float(ch["price"]) * scale
         dy = divs / px if px else 0.0
         rec = {"ticker": t, "name": name, "asset_class": ac, "sector": sector, "country": country, "price": round(px, 4), "beta": round(beta, 3),
                "sigma_annual": round(sigma, 4), "adv": adv, "dividend_yield": round(dy, 5), "trailing_dividends": round(divs, 4),
@@ -250,6 +251,9 @@ def main():
             rec["yahoo"] = ysym
         if len(row) > 6 and row[6] and row[6] != "USD":
             rec["currency"] = row[6]                 # a native listing: the price is in the home currency
+        if scale != 1.0:
+            rec["yahoo_scale"] = scale               # London quotes in pence
+            rec["high_52w"], rec["low_52w"] = (ch["high52"] or 0) * scale, (ch["low52"] or 0) * scale
         if ac == "CRYPTO":
             rec["dividend_yield"], rec["trailing_dividends"] = 0.0, 0.0
             rec["shares_outstanding"] = int(CRYPTO_SUPPLY_M.get(t, 100.0) * 1e6)          # circulating supply, approximate

@@ -61,8 +61,15 @@ class FXEngine:
         return {"buy_ccy": buy, "sell_ccy": sell, "buy_amount": buy_amount, "sell_amount": sell_amount, "rate": rate, "mid": mid, "spread_bps": m.spread_bps(buy, sell)}
 
     # ------------------------------------------------------------------ commands
-    def spot(self, pf: Portfolio, buy: str, sell: str, amount, amount_ccy: str = "BUY", execution: str = "NEXT_UPDATE", tag: Optional[str] = None) -> FXTrade:
-        """A spot deal at the day's rate; with execution LIVE (a save that tracks the market) at the pair's latest quote."""
+    @staticmethod
+    def direct_pair(buy: str, sell: str) -> bool:
+        """The market deals every currency against the dollar; the one cross that trades on its own is sterling-euro."""
+        return "USD" in (buy, sell) or {buy, sell} == {"EUR", "GBP"}
+
+    def spot(self, pf: Portfolio, buy: str, sell: str, amount, amount_ccy: str = "BUY", execution: str = "NEXT_UPDATE", tag: Optional[str] = None,
+             _routed: bool = False, _leg: Optional[str] = None) -> FXTrade:
+        """A spot deal at the day's rate; with execution LIVE (a save that tracks the market) at the pair's latest quote. A cross
+        other than EUR/GBP is dealt through the dollar as two legs: sell the one currency for dollars, buy the other with them."""
         from ..world import CommandError
         w = self.w
         buy, sell = buy.upper(), sell.upper()
@@ -70,6 +77,16 @@ class FXEngine:
             raise CommandError(f"currencies must be two of {', '.join(CURRENCIES)}")
         if D(str(amount)) <= 0:
             raise CommandError("amount must be positive")
+        if not self.direct_pair(buy, sell):
+            if amount_ccy.upper() == "BUY":                     # the dollars leg 2 needs decide what leg 1 sells
+                live_mid = (w.live.fx_mid(buy, "USD") or {}).get("mid") if str(execution).upper() == "LIVE" else None
+                usd = self.quote(buy, "USD", D(str(amount)), "BUY", mid=live_mid)["sell_amount"]
+                leg1 = self.spot(pf, "USD", sell, usd, "BUY", execution, tag, _leg=f"leg 1 of {sell}→{buy} through the dollar")
+                leg2 = self.spot(pf, buy, "USD", D(str(amount)), "BUY", execution, tag, _routed=True, _leg=f"leg 2 of {sell}→{buy} through the dollar")
+            else:
+                leg1 = self.spot(pf, "USD", sell, D(str(amount)), "SELL", execution, tag, _leg=f"leg 1 of {sell}→{buy} through the dollar")
+                leg2 = self.spot(pf, buy, "USD", leg1.buy_amount, "SELL", execution, tag, _routed=True, _leg=f"leg 2 of {sell}→{buy} through the dollar")
+            return leg2
         live = None
         if str(execution).upper() == "LIVE":
             live = w.live.fx_mid(buy, sell)
@@ -82,12 +99,14 @@ class FXEngine:
         pending_out = sum((t.sell_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.sell_ccy == sell), ZERO)
         if sell == pf.base_currency:
             avail = w.trading.projected_cash(pf, sell)
+        if _routed:                                              # the dollars arrive from the other leg on the same day
+            avail += q["sell_amount"]
         if avail - pending_out < q["sell_amount"]:
             raise CommandError(f"insufficient {sell}: need {q['sell_amount']:,.2f}, available {avail - pending_out:,.2f}")
         sd = w.calendar.add_business_days(w.current_date, w.settlement_config.cycle_for("FX_SPOT")).isoformat()
         tid = w.new_id("FX")
         w.emit(E.FX_TRADE_EXECUTED, {"portfolio_id": pf.id, "fx_id": tid, **q, "settlement_date": sd, "usd_value": self.to_base(buy, q["buy_amount"]),
-                                     "counterparty": FX_DEALER, "tag": (str(tag).strip().lstrip("#") or None) if tag else None}, portfolio_id=pf.id)
+                                     "counterparty": FX_DEALER, "tag": (str(tag).strip().lstrip("#") or None) if tag else None, "routed": _leg}, portfolio_id=pf.id)
         return pf.fx_trades[tid]
 
     def forward(self, pf: Portfolio, buy: str, sell: str, buy_amount, maturity: str, tag: Optional[str] = None) -> FXForward:
@@ -96,6 +115,8 @@ class FXEngine:
         buy, sell = buy.upper(), sell.upper()
         if buy not in CURRENCIES or sell not in CURRENCIES or buy == sell:
             raise CommandError(f"currencies must be two of {', '.join(CURRENCIES)}")
+        if not self.direct_pair(buy, sell):
+            raise CommandError(f"{buy}/{sell} is not a dealt pair: forwards trade against the dollar (or EUR/GBP); deal {sell}/USD and USD/{buy} forwards")
         mat = date.fromisoformat(maturity)
         if mat <= w.calendar.add_business_days(w.current_date, 2):
             raise CommandError("forward maturity must be beyond spot (T+2)")
@@ -183,7 +204,7 @@ class FXEngine:
         p = ev.payload
         pf = w.portfolios[p["portfolio_id"]]
         t = FXTrade(id=p["fx_id"], portfolio_id=pf.id, buy_ccy=p["buy_ccy"], sell_ccy=p["sell_ccy"], buy_amount=D(p["buy_amount"]), sell_amount=D(p["sell_amount"]),
-                    rate=float(p["rate"]), trade_date=ev.sim_date, settlement_date=p["settlement_date"], status="PENDING", counterparty=p["counterparty"], usd_value=D(p["usd_value"]), tag=p.get("tag"))
+                    rate=float(p["rate"]), trade_date=ev.sim_date, settlement_date=p["settlement_date"], status="PENDING", counterparty=p["counterparty"], usd_value=D(p["usd_value"]), tag=p.get("tag"), route=p.get("routed") or None)
         pf.fx_trades[t.id] = t
         w.post(pf.id, f"FX spot {t.id}: buy {t.buy_ccy} {t.buy_amount:,.2f} / sell {t.sell_ccy} {t.sell_amount:,.2f} @ {t.rate:.5f}, settles {t.settlement_date}",
                [dr("1250", t.usd_value, None, f"{t.buy_ccy} receivable"), cr("2350", t.usd_value, None, f"{t.sell_ccy} payable")], ev, {"fx_id": t.id, "kind": "FX"})

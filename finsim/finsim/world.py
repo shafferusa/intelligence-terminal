@@ -278,10 +278,10 @@ class World:
             self._setup_real_feeds()
 
     def _setup_real_feeds(self) -> None:
-        from .engines.realfeed import RealFeed, equity_symbols_for
+        from .engines.realfeed import RealFeed, equity_symbols_for, equity_scales_for
         from .engines.realmacro import RealMacro
         from .engines.realnews import RealNews
-        self.market.real_feed = RealFeed(equity_symbols_for(self.securities))
+        self.market.real_feed = RealFeed(equity_symbols_for(self.securities), scales=equity_scales_for(self.securities))
         self.market.real_macro_feed = RealMacro()
         self.real_news = RealNews()
 
@@ -648,8 +648,8 @@ class World:
             # the real closes the world starts from, stored once so replay never needs the network
             fetch_here = real_history is None          # a caller that brings its own history (the service, tests) brings the economy too
             if real_history is None:
-                from .engines.realfeed import RealFeed, equity_symbols_for
-                feed = RealFeed(equity_symbols_for(w.securities))
+                from .engines.realfeed import RealFeed, equity_symbols_for, equity_scales_for
+                feed = RealFeed(equity_symbols_for(w.securities), scales=equity_scales_for(w.securities))
                 feed.refresh("1y", force=True)
                 real_history = feed.history(start_date - timedelta(days=420), date.fromisoformat(feed.latest_date() or start_date.isoformat()))
             if not real_history.get("equities", {}).get("SPY"):

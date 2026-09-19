@@ -870,6 +870,19 @@ NATIVE = [
     ("8306-T", "Mitsubishi UFJ Financial Group (Tokyo)", "EQUITY", "Financials", "JP", "8306.T", "JPY"),
     ("RELIANCE-NS", "Reliance Industries Ltd.", "EQUITY", "Energy", "IN", "RELIANCE.NS", "INR"),
     ("CBA-AX", "Commonwealth Bank of Australia", "EQUITY", "Financials", "AU", "CBA.AX", "AUD"),
+    # London quotes in pence: the eighth field scales Yahoo's price to pounds
+    ("SHEL-L", "Shell plc (London)", "EQUITY", "Energy", "GB", "SHEL.L", "GBP", 0.01),
+    ("AZN-L", "AstraZeneca PLC (London)", "EQUITY", "Health Care", "GB", "AZN.L", "GBP", 0.01),
+    ("HSBA-L", "HSBC Holdings plc (London)", "EQUITY", "Financials", "GB", "HSBA.L", "GBP", 0.01),
+    ("BP-L", "BP p.l.c. (London)", "EQUITY", "Energy", "GB", "BP.L", "GBP", 0.01),
+    ("ULVR-L", "Unilever PLC (London)", "EQUITY", "Consumer Staples", "GB", "ULVR.L", "GBP", 0.01),
+    ("RIO-L", "Rio Tinto Group (London)", "EQUITY", "Materials", "GB", "RIO.L", "GBP", 0.01),
+    ("GSK-L", "GSK plc (London)", "EQUITY", "Health Care", "GB", "GSK.L", "GBP", 0.01),
+    ("DGE-L", "Diageo plc", "EQUITY", "Consumer Staples", "GB", "DGE.L", "GBP", 0.01),
+    ("LSEG-L", "London Stock Exchange Group plc", "EQUITY", "Financials", "GB", "LSEG.L", "GBP", 0.01),
+    ("BARC-L", "Barclays PLC", "EQUITY", "Financials", "GB", "BARC.L", "GBP", 0.01),
+    ("REL-L", "RELX PLC (London)", "EQUITY", "Industrials", "GB", "REL.L", "GBP", 0.01),
+    ("BATS-L", "British American Tobacco p.l.c. (London)", "EQUITY", "Consumer Staples", "GB", "BATS.L", "GBP", 0.01),
     ("BHP-AX", "BHP Group Ltd. (Sydney)", "EQUITY", "Materials", "AU", "BHP.AX", "AUD"),
 ]
 

@@ -44,8 +44,9 @@ def _home() -> str:
 class RealFeed:
     """Daily closes by symbol and date, with a disk cache. `equity_symbols` maps security id -> Yahoo symbol."""
 
-    def __init__(self, equity_symbols: Dict[str, str], cache_path: Optional[str] = None, fetch=None, fetch_live=None):
+    def __init__(self, equity_symbols: Dict[str, str], cache_path: Optional[str] = None, fetch=None, fetch_live=None, scales: Optional[Dict[str, float]] = None):
         self.equities = dict(equity_symbols)
+        self.scales: Dict[str, float] = dict(scales or {})       # security -> quote scale (London's pence)
         self.cache_path = cache_path or os.path.join(_home(), "realfeed-cache.json")
         self.data: Dict[str, Dict[str, float]] = {}        # symbol -> {date: close}
         self.fetched_at: Dict[str, float] = {}             # symbol -> epoch of the last fetch
@@ -203,7 +204,7 @@ class RealFeed:
         iso = d.isoformat()
         if not self.has(d):
             return None
-        eq = {sid: v for sid, sym in self.equities.items() if (v := self._value(sym, iso)) is not None}
+        eq = {sid: v * self.scales.get(sid, 1.0) for sid, sym in self.equities.items() if (v := self._value(sym, iso)) is not None}
         cm = {}
         for code, sym in COMMODITY_SYMBOLS.items():
             v = self._value(sym, iso)
@@ -223,7 +224,7 @@ class RealFeed:
             s = self.data.get(sym, {})
             return {k: (transform(v) if transform else v) for k, v in s.items() if start.isoformat() <= k <= end.isoformat()}
         return {"start": start.isoformat(), "end": end.isoformat(),
-                "equities": {sid: sl(sym) for sid, sym in self.equities.items() if self.data.get(sym)},
+                "equities": {sid: sl(sym, (lambda v, k=self.scales.get(sid, 1.0): v * k) if self.scales.get(sid, 1.0) != 1.0 else None) for sid, sym in self.equities.items() if self.data.get(sym)},
                 "commodities": {code: sl(sym, (lambda v, c=code: v / 100.0 if c in CENTS_QUOTED else v)) for code, sym in COMMODITY_SYMBOLS.items() if self.data.get(sym)},
                 "fx": {ccy: sl(sym, (lambda v, inv=invert: (1.0 / v) if inv else v)) for ccy, (sym, invert) in FX_SYMBOLS.items() if self.data.get(sym)},
                 "rates": {k: sl(sym, lambda v: v / 100.0) for k, sym in RATE_SYMBOLS.items() if self.data.get(sym)}}
@@ -245,6 +246,11 @@ class RealFeed:
         for sec in ("equities", "commodities", "fx", "rates"):
             out[sec] = {k: v for k, s in h.get(sec, {}).items() if (v := pick(s)) is not None}
         return out
+
+
+def equity_scales_for(securities: Dict) -> Dict[str, float]:
+    """Quote scales by security (London's pence to pounds)."""
+    return {sid: float(sec.yahoo_scale) for sid, sec in securities.items() if float(getattr(sec, "yahoo_scale", 1.0) or 1.0) != 1.0}
 
 
 def equity_symbols_for(securities: Dict) -> Dict[str, str]:

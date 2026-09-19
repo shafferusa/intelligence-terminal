@@ -71,6 +71,7 @@ class Security:
     index_level_source: Optional[str] = None  # for cash-settled index options: security whose price * factor is the index level
     index_factor: float = 1.0
     yahoo: Optional[str] = None             # quote symbol when it differs from the id (BTC → BTC-USD, DXY → DX-Y.NYB)
+    yahoo_scale: float = 1.0                # what a Yahoo quote is multiplied by: 0.01 for London's pence
     qty_step: Decimal = Decimal("1")        # smallest tradable quantity (coins trade in ten-thousandths)
     floating: bool = False                  # floating-rate note: the coupon resets to the short rate plus the issue spread
     float_spread: float = 0.0               # a floater's spread over the 3-month rate
@@ -337,6 +338,7 @@ class FXTrade:
     usd_value: Decimal = ZERO
     realized_fx: Decimal = ZERO
     tag: Optional[str] = None           # the player's #tag (groups trades across desks)
+    route: Optional[str] = None         # a cross dealt through the dollar: the id of the other leg
 
 
 @dataclass
