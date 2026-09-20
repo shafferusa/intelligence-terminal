@@ -1,5 +1,5 @@
 """
-MARKET SIGNAL ENGINE -- scoring engine.
+ShafferFinEval -- scoring engine.
 
 Pure-stdlib quantitative scoring. This module deliberately has NO third-party
 dependencies (no requests / streamlit / plotly / pandas) so it can be dropped

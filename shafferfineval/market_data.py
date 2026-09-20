@@ -1,5 +1,5 @@
 """
-MARKET SIGNAL ENGINE -- data layer.
+ShafferFinEval -- data layer.
 
 Everything that touches the outside world lives here. The scoring engine
 (`scoring.py`) never imports this module, so the two can be moved apart.
@@ -212,7 +212,21 @@ TIMESERIES_TYPES = (
     "quarterlyTotalDebt",
     "annualTotalDebt",
     "trailingDilutedEPS",
+    # --- sector engine: ROE / ROA / explicit market cap ---
+    "trailingNetIncome",
+    "annualNetIncome",
+    "quarterlyStockholdersEquity",
+    "annualStockholdersEquity",
+    "quarterlyTotalAssets",
+    "annualTotalAssets",
+    "quarterlyOrdinarySharesNumber",
+    "annualOrdinarySharesNumber",
 )
+
+#: Yahoo does NOT publish returnOnEquity / returnOnAssets on these endpoints
+#: (they live behind the crumb-gated `financialData` module), so ROE and ROA
+#: are computed from the statement fields above. The "supplied" path is kept in
+#: sector_scoring so a future source can short-circuit the calculation.
 
 _session_lock = threading.Lock()
 _throttle_lock = threading.Lock()
@@ -407,6 +421,14 @@ def fetch_raw_info(ticker: str, with_price: bool = True) -> dict:
         "forwardPE": forward_pe,
         "forwardEps": forward_eps,
         "trailingPE": trailing_pe,
+        "netIncome": _pick(series, "trailingNetIncome", "annualNetIncome")[0],
+        "shareholdersEquity": _pick(
+            series, "quarterlyStockholdersEquity", "annualStockholdersEquity"
+        )[0],
+        "totalAssets": _pick(series, "quarterlyTotalAssets", "annualTotalAssets")[0],
+        "sharesOutstanding": _pick(
+            series, "quarterlyOrdinarySharesNumber", "annualOrdinarySharesNumber"
+        )[0],
         "revenueAsOf": revenue_as_of,
         "debtAsOf": debt_as_of,
         "forwardPeAsOf": forward_pe_as_of,
@@ -604,3 +626,153 @@ def build_sector_benchmark(company: SecurityData, peer_fetcher=None) -> SectorBe
         peers=rows,
         notes=notes,
     )
+
+
+# ==========================================================================
+# SECTOR ENGINE ADAPTER
+#
+# Retrieval only. Every calculation lives in sector_scoring.py, which receives
+# plain CompanyObservation records and knows nothing about Yahoo or HTTP.
+# ==========================================================================
+
+#: Total US market benchmark for the growth-acceleration factor.
+VTI_TICKER = "VTI"
+
+#: One year of daily bars comfortably covers the 127 needed for two 63-day windows.
+HISTORY_RANGE = "1y"
+
+#: Universe fetches are the heaviest thing the app does; bound them.
+MAX_UNIVERSE_COMPANIES = 400
+UNIVERSE_FETCH_WORKERS = 10
+
+
+def fetch_price_history(symbol: str) -> list[float]:
+    """Adjusted daily closes, oldest first. Empty list when unavailable.
+
+    Adjusted close is used consistently so splits and dividends cannot
+    masquerade as price performance.
+    """
+    payload = _get_json(
+        f"v8/finance/chart/{symbol}",
+        {"range": HISTORY_RANGE, "interval": "1d", "events": "div,split"},
+    )
+    if not payload:
+        return []
+    try:
+        result = payload["chart"]["result"][0]
+    except (KeyError, IndexError, TypeError):
+        return []
+
+    indicators = result.get("indicators") or {}
+    series = None
+    adjclose = indicators.get("adjclose")
+    if adjclose:
+        series = (adjclose[0] or {}).get("adjclose")
+    if not series:
+        quote = indicators.get("quote")
+        series = (quote[0] or {}).get("close") if quote else None
+    if not series:
+        return []
+
+    return [float(v) for v in series if _num(v) is not None and float(v) > 0]
+
+
+def get_vti_history() -> list[float]:
+    """Adjusted close history for VTI, the growth-acceleration benchmark."""
+    return fetch_price_history(VTI_TICKER)
+
+
+def fetch_company_observation(ticker: str, sector_hint: Optional[str] = None):
+    """Build one CompanyObservation, or None if the symbol is not an equity.
+
+    Yahoo's `quoteType` is the authoritative equity test -- a workbook's own
+    type column is only ever a cost-saving pre-filter.
+    """
+    from sector_scoring import CompanyObservation
+
+    symbol = (ticker or "").strip().upper()
+    if not symbol:
+        return None
+
+    try:
+        info = fetch_raw_info(symbol, with_price=True)
+    except Exception:
+        return None
+    if not info:
+        return None
+
+    if INSTRUMENT_TYPES.get(info.get("quoteType"), info.get("quoteType")) != EQUITY:
+        return None
+
+    sector = info.get("sector") or sector_hint
+    if not sector:
+        return None
+
+    prices = fetch_price_history(symbol)
+
+    return CompanyObservation(
+        ticker=symbol,
+        name=info.get("longName") or info.get("shortName") or symbol,
+        sector=sector,
+        prices=prices or None,
+        market_cap=_num(info.get("marketCap")),
+        total_debt=_num(info.get("totalDebt")),
+        net_income=_num(info.get("netIncome")),
+        shareholders_equity=_num(info.get("shareholdersEquity")),
+        total_assets=_num(info.get("totalAssets")),
+        price=_num(info.get("currentPrice")),
+        shares_outstanding=_num(info.get("sharesOutstanding")),
+    )
+
+
+def fallback_universe_rows() -> list[tuple[str, Optional[str]]]:
+    """The built-in list used ONLY when no universe workbook is present.
+
+    Deliberately the same curated names as the equity engine's peer universe.
+    It is a stand-in, not the source of truth, and the UI says so.
+    """
+    rows: list[tuple[str, Optional[str]]] = []
+    for sector, tickers in SECTOR_PEER_UNIVERSE.items():
+        for ticker in tickers:
+            rows.append((ticker, sector))
+    return rows
+
+
+def build_sector_observations(
+    universe_rows: list[tuple[str, Optional[str]]],
+    limit: int = MAX_UNIVERSE_COMPANIES,
+):
+    """Fetch the universe and group it by Yahoo sector.
+
+    Returns (companies_by_sector, stats). Symbols that fail, are not equities,
+    or carry no sector are counted in `stats` and dropped -- never invented.
+    """
+    trimmed = universe_rows[:limit]
+    stats = {
+        "requested": len(universe_rows),
+        "attempted": len(trimmed),
+        "resolved": 0,
+        "dropped_not_equity_or_no_data": 0,
+        "truncated": max(0, len(universe_rows) - len(trimmed)),
+    }
+
+    def one(row: tuple[str, Optional[str]]):
+        ticker, hint = row
+        try:
+            return fetch_company_observation(ticker, hint)
+        except Exception:
+            return None
+
+    with ThreadPoolExecutor(max_workers=UNIVERSE_FETCH_WORKERS) as pool:
+        observations = list(pool.map(one, trimmed))
+
+    by_sector: dict[str, list] = {}
+    for observation in observations:
+        if observation is None:
+            stats["dropped_not_equity_or_no_data"] += 1
+            continue
+        stats["resolved"] += 1
+        by_sector.setdefault(observation.sector, []).append(observation)
+
+    stats["sectors"] = len(by_sector)
+    return by_sector, stats

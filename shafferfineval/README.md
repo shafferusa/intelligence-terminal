@@ -1,8 +1,16 @@
-# MARKET SIGNAL ENGINE
+# SHAFFERFINEVAL
 
-A small, standalone quantitative equity scorer. Type a ticker, get a house
-score from **-100 to +100** and a **Bullish / Semi-Bullish / Semi-Bearish /
-Bearish** verdict, with every input and intermediate number shown.
+A small, standalone quantitative scorer. Type a ticker and get:
+
+1. a **sector score** (-100..+100) and the **company overlay** (-25..+25) it implies, and
+2. a **company house score** (-100..+100) with a Bullish / Semi-Bullish /
+   Semi-Bearish / Bearish verdict,
+
+with every input and intermediate number shown.
+
+The two are currently independent: the sector overlay is **calculated and
+displayed but not yet applied** to the company score. Wiring them together is
+the next step.
 
 Completely separate from the intelligence-terminal reporting routines — it
 shares no state, no config and no code with them.
@@ -10,7 +18,7 @@ shares no state, no config and no code with them.
 ## Run it
 
 ```bash
-cd market-signal-engine
+cd shafferfineval
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
@@ -19,10 +27,11 @@ streamlit run app.py
 Streamlit opens http://localhost:8501. Enter a ticker (e.g. `NVDA`) and press
 **ANALYZE**. No login, no API key, no database.
 
-Run the scoring tests (pure stdlib — no install needed):
+Run the tests (pure stdlib — no install needed):
 
 ```bash
-python3 test_scoring.py
+python3 test_scoring.py          # company model, 60 checks
+python3 test_sector_scoring.py   # sector model, 134 checks
 ```
 
 ## Files
@@ -30,15 +39,18 @@ python3 test_scoring.py
 | File | Role |
 |---|---|
 | `app.py` | Streamlit UI only. Layout, charts, formatting, caching. No math. |
-| `scoring.py` | The model. **Zero third-party imports** — copy it straight into another project. |
-| `market_data.py` | Yahoo access, normalisation, peer universe, sector medians. |
-| `test_scoring.py` | 60 offline checks on the model and its edge cases. |
+| `scoring.py` | Company model. **Zero third-party imports.** |
+| `sector_scoring.py` | Sector model. **Zero third-party imports**, and no market-data imports either — structured data in, structured data out. |
+| `universe.py` | Tradeable-universe workbook loader (stdlib `.xlsx` reader) and the non-equity pre-filter. |
+| `market_data.py` | Yahoo access and normalisation. Retrieval only. |
+| `test_scoring.py` | 60 offline checks on the company model. |
+| `test_sector_scoring.py` | 134 offline checks on the sector model. |
 | `requirements.txt` | Dependencies. |
 
 `scoring.py` never imports `market_data.py`, and neither imports `app.py`. To
 reuse the engine elsewhere, take `scoring.py` and feed it numbers.
 
-## The V1 model
+## The company model (V1, unchanged)
 
 Two factors, both measured **against sector peers** rather than in absolute
 terms. Lower leverage than the peer group is bullish; lower valuation than the
@@ -116,6 +128,114 @@ cache hit.
 Forward EPS is not published on these endpoints, so it is *derived* as
 `price / forward P/E` and labelled as derived wherever it appears.
 
+## The sector model
+
+Four factors, each normalised to [-100, +100] by **percentile rank across
+sectors** — never by raw magnitude, so one extreme observation cannot dominate.
+
+| Factor | Weight | Direction | Raw value |
+|---|---|---|---|
+| Growth acceleration vs VTI | 40% | higher better | market-cap-weighted sector acceleration − VTI acceleration |
+| Mean ROE | 21% | higher better | winsorized mean of net income / shareholders' equity |
+| Mean ROA | 14% | higher better | winsorized mean of net income / total assets |
+| Debt / Market Cap | 25% | **lower better** | winsorized mean of total debt / market cap |
+
+```
+ascending rank across sectors, average ranks for ties
+p = (rank - 1) / (N - 1)
+
+higher-is-better:  FactorScore = 200p - 100
+Debt/MarketCap:    FactorScore = 100 - 200p
+
+SectorRawScore = 0.40G + 0.21ROE + 0.14ROA + 0.25D    clamped [-100, +100]
+SectorOverlay  = SectorRawScore / 4                   clamped [ -25,  +25]
+```
+
+**Growth acceleration** is price performance, not revenue. Using ~3-month
+trading windows on adjusted closes:
+
+```
+recent   = P_t      / P_(t-63)  - 1
+previous = P_(t-63) / P_(t-126) - 1
+acceleration = recent - previous          (market-cap weighted per sector)
+GrowthAccelerationRaw = sector acceleration - VTI acceleration
+```
+
+Positive means the sector's price performance is accelerating relative to the
+total US market. Companies with fewer than 127 days of history are excluded and
+the sector's market-cap weights are renormalised over the remainder.
+
+### Winsorization — a deliberate deviation worth knowing about
+
+Company observations are winsorized at the 5th/95th percentile before the
+sector mean is taken. The implementation is **count-based** (the
+`scipy.stats.mstats.winsorize` convention): the k lowest and k highest
+observations are pulled in to the next value inward.
+
+An *interpolated* percentile would not have done the job. With n = 20 and a 95%
+bound, linear interpolation lands between the top two observations, so an
+outlier partly sets its own cap — in testing, a single 500× ROE still dragged a
+sector mean from 0.10 to 1.35. Count-based bounds are taken from observations
+strictly inside the tail, which removes that entirely.
+
+One further deviation: `floor(0.05 * n)` is **0 for every n < 20**, which would
+leave a 12-company sector with no outlier protection at all. `MIN_WINSOR_TRIM`
+forces at least one observation in from each tail once the sample can afford it.
+Both choices are in `sector_scoring.winsorize` with the reasoning inline.
+
+### Missing data
+
+Identical principle to the company model: **missing never becomes zero.** An
+unavailable factor is dropped and the remaining weights are renormalised
+proportionally. If ROA is unavailable, G/ROE/D are reweighted over 0.86, and the
+UI names the dropped factor.
+
+A sector is reported as *unscoreable* rather than guessed at when it has fewer
+than 3 eligible companies, or when fewer than 2 factors could be calculated.
+Individual factors need 5 usable observations.
+
+### Confidence
+
+HIGH / MEDIUM / LOW, from factor availability, per-factor coverage and eligible
+company count. It is **informational only and never modifies the directional
+score**, per spec.
+
+## The tradeable universe
+
+The sector model scores the companies in *your* tradeable universe, read from
+the asset workbook rather than a hardcoded list.
+
+Place it at `data/universe.xlsx` (also accepted: `universe.csv`,
+`tradeable-assets.xlsx`, `assets.xlsx`, `instruments.xlsx`, in `.`, `data/`, or
+`config/`), or point `$SHAFFERFINEVAL_UNIVERSE` at it. The loader finds the
+header row even under title rows, and matches `ticker`/`symbol`/`code`,
+`name`/`company`/`security`, `sector`, and `type`/`asset class` columns however
+they are spelled.
+
+`.xlsx` is parsed with stdlib `zipfile` + `xml.etree` — no openpyxl or pandas
+dependency.
+
+Filtering happens in two stages:
+
+1. **Cheap pre-filter** (`universe.py`) drops rows whose type column or symbol
+   shape marks them as ETFs, indices, bonds, preferreds, options, futures,
+   crypto, currencies, commodities or mutual funds. This exists only to avoid
+   spending HTTP requests on instruments that cannot qualify.
+2. **Authoritative filter** (`market_data.py`) keeps only symbols Yahoo reports
+   with `quoteType == "EQUITY"` and a real sector.
+
+Stage 1 is an optimisation. Stage 2 is the rule.
+
+**If no workbook is found**, the engine falls back to the built-in large-cap
+list so it still runs, and the UI shows a prominent PROVISIONAL warning naming
+every place it looked. The "Universe used for the sector model" panel always
+reports which universe produced the scores, how many rows were read and kept,
+what was excluded and why, and how many symbols resolved.
+
+Universe fetches are capped at `MAX_UNIVERSE_COMPANIES` (400) and cost 3
+requests per company, so a cold whole-market build takes roughly 50-60 seconds.
+It is cached for 6 hours.
+
 ## Sector peers
 
 Yahoo's free tier will not enumerate a whole sector, so V1 uses a **curated
@@ -143,6 +263,27 @@ Streamlit dependency.
 A cold analysis is roughly 2.5–3 seconds; re-analysing the same ticker, or a
 different one in the same sector, is effectively instant for the next hour.
 
+## Yahoo data limitations found while building this
+
+- **Yahoo does not publish ROE or ROA** on the public query endpoints. Those
+  live in the crumb-gated `financialData` module. Both are therefore computed
+  from statement fields: TTM net income over the latest reported quarter's
+  shareholders' equity / total assets. Spot-checked against JPM (ROE 17.4%,
+  ROA 1.30%) — correct for a large bank. `company_roe` / `company_roa` still
+  prefer a supplied value first, so a future source can short-circuit the
+  calculation.
+- **No forward-EPS field**, so forward EPS is derived as `price / forward P/E`
+  and labelled as derived.
+- **Total debt has no `trailing` variant**; the latest reported quarter is used,
+  falling back to the fiscal year. This matters: NVDA's annual figure is $11.0B
+  against $38.4B last quarter, which would have scored it roughly 30 points too
+  bullish on the company model.
+- **Negative or zero shareholders' equity** makes ROE meaningless (a negative
+  denominator flips the sign), so those companies are excluded from the factor
+  rather than contributing a misleading positive.
+- Sector and industry come from `v1/finance/search`, which is fuzzy — only an
+  exact symbol match is accepted.
+
 ## Known limits of V1
 
 - **Debt/Revenue is a poor leverage measure for banks.** Revenue is not a
@@ -157,6 +298,15 @@ different one in the same sector, is effectively instant for the next hour.
   support contract and their shapes can change without notice. Fields go
   missing; the app labels them rather than guessing.
 - Forward P/E is a consensus estimate, not a fact.
+
+## Build order
+
+This is step 1 of 4. The company formula has **not** been changed.
+
+1. **Sector score** — done. `SectorOverlay` is exposed and displayed.
+2. Individual-company score (expanded model).
+3. Sector overlay + company score combined.
+4. Hedge-selection engine.
 
 ## Planned expansion
 
