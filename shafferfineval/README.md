@@ -33,7 +33,7 @@ and opens a browser window once the server is actually answering.
 |---|---|
 | macOS | double-click **`run.command`**, or `./run.sh` in Terminal |
 | Linux | `./run.sh` |
-| Windows | double-click **`run.bat`** |
+| Windows | **`.\run.ps1`** in PowerShell, or double-click `run.bat` |
 
 ```bash
 ./run.sh              # start the app
@@ -65,29 +65,69 @@ Two dependencies, `streamlit` and `requests`. Everything else — the
 statistics, the ML models, the `.xlsx` reader — is written against the standard
 library, so there is no numpy/pandas/scikit-learn to install or keep compatible.
 
-### Save it as an app
+### Save it as an app — Windows
 
-Streamlit is a web server, so the way to get a real dock or taskbar icon is to
-install the page as an app. Start it first, then:
+`install-app.ps1` does the whole thing. In PowerShell, from this folder:
 
-- **Chrome / Edge** — open http://127.0.0.1:8501, then ⋮ menu →
-  *Cast, save and share* → **Install page as app** (Edge: *Apps → Install this
-  site as an app*). You get a standalone window with no browser chrome, and an
-  icon in the Dock, Start menu or taskbar.
-- **Safari** — *File → Add to Dock*.
+```powershell
+.\install-app.ps1 -Desktop -ScheduleRefresh
+```
 
-The installed icon only opens the window; it does not start the server. Launch
-`run.command` / `run.bat` first, or have it start automatically:
+That creates a Start menu entry (and a desktop icon) carrying
+`assets/shafferfineval.ico`, and registers the weekday refresh task. Clicking
+the icon starts the server hidden and opens a **chromeless Chrome/Edge app
+window** — no address bar, no tabs. Closing the window stops the server, so
+nothing lingers.
 
-- **macOS** — System Settings → General → Login Items → **+** → `run.command`.
-- **Windows** — press `Win+R`, run `shell:startup`, and put a shortcut to
-  `run.bat` in the folder that opens.
-- **Linux** — a systemd user unit running `run.sh`, or add it to your desktop
-  environment's startup applications.
+| Flag | Effect |
+|---|---|
+| `-Desktop` | also put an icon on the desktop |
+| `-StartWithWindows` | start the server at login |
+| `-ScheduleRefresh` | register the 16:30 weekday snapshot task |
+| `-RefreshTime 16:45` | move that task |
+| `-Uninstall` | remove the shortcuts, startup entry and task |
+
+Everything is per-user — nothing is written outside your profile and no
+administrator rights are needed. `-Uninstall` removes exactly what was created
+and leaves the code, the database and `.venv` alone.
+
+If PowerShell refuses to run the script, that is the execution policy, not a
+broken file. The shortcuts already pass `-ExecutionPolicy Bypass`; to run it by
+hand once:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install-app.ps1 -Desktop
+```
+
+The launcher takes the same flags: `.\run.ps1 -AppMode` opens the app window
+directly, `.\run.ps1 -Refresh` scores first, `.\run.ps1 -Port 8502` moves it
+off a busy port.
+
+The icon is generated rather than a checked-in mystery binary —
+`python make_icon.py` rebuilds `assets/shafferfineval.ico` with no imaging
+library, because nothing else in this project needs one either.
+
+### Save it as an app — macOS and Linux
+
+No installer script here; the browser does it in two clicks. Start the app,
+then:
+
+- **Chrome / Edge** — ⋮ menu → *Cast, save and share* → **Install page as app**
+- **Safari** — *File → Add to Dock*
+
+That icon only opens the window; it does not start the server. Launch
+`run.command` first, or have it start automatically:
+
+- **macOS** — System Settings → General → Login Items → **+** → `run.command`
+- **Linux** — a systemd user unit running `run.sh`, or your desktop
+  environment's startup applications
+
+### It is a local tool, not a service
 
 `.streamlit/config.toml` binds the server to `127.0.0.1` and keeps it there.
-This is a single-user local tool holding a personal trading book; nothing in it
-is built to face a network, so do not expose the port.
+This is a single-user tool holding a personal trading book; nothing in it —
+no authentication, no authorization, no audit trail — is built to face a
+network. Do not expose the port.
 
 ### Refresh the scores
 
@@ -186,6 +226,7 @@ python3 test_pipeline_growth.py   # short-horizon labels, trade grading, macro w
 | `refresh.py` | Daily refresh, change detection, score deltas, macro routing. |
 | `daily_job.py` | Cron entry point. |
 | `macro_data.py` | FRED + Yahoo macro adapter (15 FRED series, 14 Yahoo symbols). Retrieval only. |
+| `make_icon.py` | Regenerates the app icon. Pure stdlib; no imaging library. |
 | `macro_factors.py` | Turns the macro snapshot into rates/gold/vol/credit factor scores. |
 | `trade_research.py` | Entry-state freeze, closed-position grading, hedge-effectiveness dataset. |
 | `asset_models.py` | Shaffer v1 arithmetic for all 19 asset classes + derivative overlays. |
@@ -198,6 +239,10 @@ python3 test_pipeline_growth.py   # short-horizon labels, trade grading, macro w
 | `ml_lab.py` | Dataset, walk-forward validation, calibration, registry. |
 | `ml_job.py` | ML CLI: labels, training, promotion. |
 | `views/ml_page.py` | Page 3 — ML Lab. |
+
+**Launchers** — `run.sh` (macOS/Linux), `run.command` (double-click on macOS),
+`run.ps1` and `run.bat` (Windows), `install-app.ps1` (Windows Start menu /
+desktop / scheduled refresh), `.streamlit/config.toml`, `assets/`.
 
 **Tests** — `test_scoring.py`, `test_sector_scoring.py`, `test_company_scoring.py`,
 `test_hedging.py`, `test_terminal.py`, `test_prediction_ml.py`,

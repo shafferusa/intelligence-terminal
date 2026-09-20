@@ -409,6 +409,59 @@ config = open(os.path.join(_here, ".streamlit", "config.toml")).read()
 check("the server binds to localhost only", '127.0.0.1' in config)
 check("usage stats are off", "gatherUsageStats    = false" in config)
 
+print("== the Windows app installs, and the icon is a real icon ==")
+for script in ("run.ps1", "install-app.ps1"):
+    check(f"{script} exists", os.path.isfile(os.path.join(_here, script)))
+ps = open(os.path.join(_here, "run.ps1"), encoding="utf-8").read()
+check("the PowerShell launcher gates on Python 3.10",
+      "(3,10)" in ps)
+check("it waits for the health endpoint before opening a window",
+      "_stcore/health" in ps)
+check("the wait is bounded by wall clock, not loop count",
+      "$deadline" in ps and "AddSeconds" in ps)
+check("no [ref]$null, which PowerShell rejects", "[ref]$null" not in ps)
+check("app mode closes the server when the window closes",
+      "Wait-Process" in ps and "Stop-Process" in ps)
+check("a failed install does not launch a half-built app",
+      "deps-installed" in ps and "exit 1" in ps)
+installer = open(os.path.join(_here, "install-app.ps1"), encoding="utf-8").read()
+check("the installer can uninstall", "-Uninstall" in installer
+      and "Unregister-ScheduledTask" in installer)
+check("the installer is per-user, needing no admin rights",
+      "env:APPDATA" in installer and "RunAsAdministrator" not in installer)
+check("it says when nothing is scheduled",
+      "no snapshots will accumulate" in installer)
+check("a sleeping laptop still takes the snapshot on wake",
+      "-StartWhenAvailable" in installer)
+
+icon = os.path.join(_here, "assets", "shafferfineval.ico")
+check("the icon exists", os.path.isfile(icon))
+if os.path.isfile(icon):
+    import struct as _struct
+    blob = open(icon, "rb").read()
+    reserved, kind, count = _struct.unpack("<HHH", blob[:6])
+    check("icon header is a valid ICO", reserved == 0 and kind == 1)
+    check("icon carries several sizes", count >= 4, count)
+    sizes, sound = [], True
+    for i in range(count):
+        off = 6 + 16 * i
+        w, h, _c, _r, _p, _b, nbytes, imgoff = _struct.unpack(
+            "<BBBBHHII", blob[off:off + 16])
+        payload = blob[imgoff:imgoff + nbytes]
+        declared = w or 256
+        if payload[:8] != b"\x89PNG\r\n\x1a\x0a"[:8]:
+            sound = False
+        elif _struct.unpack(">II", payload[16:24]) != (declared, declared):
+            sound = False
+        if imgoff + nbytes > len(blob):
+            sound = False
+        sizes.append(declared)
+    check("every icon entry is a PNG of its declared size and in bounds", sound)
+    check("16px is present so the taskbar has something to draw", 16 in sizes)
+    check("256px is present for high-DPI", 256 in sizes, sizes)
+check("the icon can be regenerated from source",
+      os.path.isfile(os.path.join(_here, "make_icon.py")))
+
 print("== production arithmetic still untouched ==")
 import company_scoring as comp, hedging as H
 check("equity weights unchanged",
