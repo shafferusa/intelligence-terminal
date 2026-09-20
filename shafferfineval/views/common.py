@@ -98,9 +98,9 @@ def delta_text(delta) -> str:
 
 
 def open_asset(symbol: str) -> None:
-    """Navigate to the asset detail view."""
+    """Open the asset detail drill-down for a symbol."""
     st.session_state["selected_asset"] = symbol
-    st.session_state["view"] = "Asset Detail"
+    st.session_state["show_detail"] = True
 
 
 TERMINAL_CSS = """

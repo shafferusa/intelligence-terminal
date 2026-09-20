@@ -588,6 +588,48 @@ def fetch_price_history(symbol: str) -> list[float]:
     return [float(v) for v in series if _num(v) is not None and float(v) > 0]
 
 
+def fetch_price_history_dated(symbol: str, range_: str = "2y") -> list[tuple]:
+    """[(date, adjusted_close), ...] oldest first.
+
+    The ML Lab needs dates to align a snapshot with its realised forward price;
+    the sector engine only needs the series, so both forms exist.
+    """
+    payload = _get_json(
+        f"v8/finance/chart/{symbol}",
+        {"range": range_, "interval": "1d", "events": "div,split"},
+    )
+    if not payload:
+        return []
+    try:
+        result = payload["chart"]["result"][0]
+    except (KeyError, IndexError, TypeError):
+        return []
+
+    stamps = result.get("timestamp") or []
+    indicators = result.get("indicators") or {}
+    series = None
+    adjclose = indicators.get("adjclose")
+    if adjclose:
+        series = (adjclose[0] or {}).get("adjclose")
+    if not series:
+        quote = indicators.get("quote")
+        series = (quote[0] or {}).get("close") if quote else None
+    if not series or not stamps:
+        return []
+
+    out = []
+    for stamp, value in zip(stamps, series):
+        price = _num(value)
+        if price is None or price <= 0:
+            continue
+        try:
+            day = _dt.datetime.fromtimestamp(int(stamp), _dt.timezone.utc).date()
+        except (TypeError, ValueError, OSError):
+            continue
+        out.append((day, price))
+    return out
+
+
 def get_vti_history() -> list[float]:
     """Adjusted close history for VTI, the growth-acceleration benchmark."""
     return fetch_price_history(VTI_TICKER)

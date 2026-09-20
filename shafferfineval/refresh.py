@@ -22,6 +22,7 @@ from typing import Callable, Optional, Sequence
 import company_scoring as comp
 import hedging as hedge
 import market_data as md
+import prediction as pred
 import routers
 import sector_scoring as sect
 import storage
@@ -100,6 +101,8 @@ class AssetRefresh:
     score: Optional[float] = None
     previous_score: Optional[float] = None
     snapshot: str = ""
+    predicted_return_pct: Optional[float] = None
+    predicted_price: Optional[float] = None
     fundamental_changes: dict = field(default_factory=dict)
 
 
@@ -294,6 +297,11 @@ def refresh_daily_scores(
             previous = storage.get_previous_snapshot(conn, asset_id, today)
             outcome.previous_score = previous["shaffer_score"] if previous else None
 
+            # Shaffer Predicted Return: V1 score-to-return calibration.
+            forecast = pred.build_prediction(result.shaffer_score, result.price)
+            outcome.predicted_return_pct = forecast.predicted_return_pct
+            outcome.predicted_price = forecast.predicted_price
+
             storage.save_current_score(
                 conn, asset_id, price=result.price,
                 shaffer_score=result.shaffer_score,
@@ -307,6 +315,10 @@ def refresh_daily_scores(
                 factor_scores=result.factor_scores,
                 raw_inputs=result.raw_inputs,
                 model_version=result.model_version,
+                predicted_12m_return_pct=forecast.predicted_return_pct,
+                predicted_12m_price=forecast.predicted_price,
+                prediction_model=forecast.model,
+                prediction_model_version=forecast.model_version,
             )
 
             written = storage.save_score_snapshot(
@@ -320,6 +332,15 @@ def refresh_daily_scores(
                 raw_inputs=result.raw_inputs,
                 preferred_hedge=preferred_name,
             )
+            # A close snapshot keeps the prediction made that day, even if the
+            # calibration later changes.
+            storage.save_prediction_fields(
+                conn, asset_id, today, kind=snapshot_kind,
+                predicted_return_pct=forecast.predicted_return_pct,
+                predicted_price=forecast.predicted_price,
+                model=forecast.model, model_version=forecast.model_version,
+            )
+
             outcome.snapshot = written
             if written == "written":
                 summary.snapshots_written += 1

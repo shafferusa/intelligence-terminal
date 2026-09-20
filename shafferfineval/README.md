@@ -11,9 +11,10 @@ Tradeable Universe -> Market/Fundamental Data -> Asset Class Scoring Engine
 ShafferScore = CompanyScore (-75..+75) + SectorOverlay (-25..+25)
 ```
 
-Three views: **Market** (every asset in the workbook, searchable), **Watchlist
-& Positions** (exact hedge tickets for what you own), and **Asset Detail**
-(full score breakdown, hedge ranking, what changed, history).
+Three pages: **Market DB** (every asset in the workbook, searchable and
+sortable), **Watchlist** (watchlist plus positions with exact hedge tickets),
+and **ML Lab** (does any of this actually predict returns?). Opening an asset
+from either of the first two drills into **Asset Detail**.
 
 Scores are stored in SQLite with immutable daily snapshots, refreshed by a
 scheduled job after the close. Pages read the database, so the terminal stays
@@ -66,6 +67,7 @@ python3 test_sector_scoring.py    # sector model
 python3 test_company_scoring.py   # company model
 python3 test_hedging.py           # hedge engine + workbook strategy parsing
 python3 test_terminal.py          # universe, database, routing, refresh
+python3 test_prediction_ml.py     # predicted return + ML Lab
 ```
 
 ## Files
@@ -77,9 +79,9 @@ python3 test_terminal.py          # universe, database, routing, refresh
 | File | Role |
 |---|---|
 | `app.py` | Shell: navigation, global search, refresh controls. |
-| `views/market_page.py` | Page 1 — asset universe, filters, sorting. |
-| `views/watchlist_page.py` | Page 2 — watchlist, positions, exact tickets. |
-| `views/asset_detail_page.py` | Page 3 — score breakdown, hedge, what changed, history. |
+| `views/market_page.py` | Page 1 — Market DB: universe, search, filters, sorting. |
+| `views/watchlist_page.py` | Page 2 — Watchlist and positions with exact tickets. |
+| `views/asset_detail_page.py` | Asset Detail drill-down — score breakdown, hedge, forecast, what changed, history. |
 | `views/hedge_view.py` | Shared HedgeResult renderer. |
 | `views/common.py` | Formatting helpers and terminal CSS. |
 
@@ -106,8 +108,14 @@ python3 test_terminal.py          # universe, database, routing, refresh
 | `refresh.py` | Daily refresh, change detection, score deltas. |
 | `daily_job.py` | Cron entry point. |
 
+| `prediction.py` | Shaffer Predicted Return (score → 12M price return). |
+| `mllib.py` | Pure-stdlib ML models and metrics. |
+| `ml_lab.py` | Dataset, walk-forward validation, calibration, registry. |
+| `ml_job.py` | ML CLI: labels, training, promotion. |
+| `views/ml_page.py` | Page 3 — ML Lab. |
+
 **Tests** — `test_scoring.py`, `test_sector_scoring.py`, `test_company_scoring.py`,
-`test_hedging.py`, `test_terminal.py`. All pure stdlib.
+`test_hedging.py`, `test_terminal.py`, `test_prediction_ml.py`. All pure stdlib.
 
 > `views/` is deliberately not called `pages/`: Streamlit treats a top-level
 > `pages/` directory as an auto-multipage app and would run each module as its
@@ -217,6 +225,122 @@ rounding (55 contracts = 5,500 shares). **Initial delta coverage** is
 An adverse score at or below 15 produces a 0% hedge and the engine says **NO
 FUNDAMENTAL HEDGE REQUIRED** rather than manufacturing one. Optional insurance
 remains inspectable, clearly separated from the model requirement.
+
+## Shaffer Predicted Return
+
+```
+PredictedReturnPct = 0.20 x ShafferScore          (score in -100..+100)
+PredictedPrice     = CurrentPrice x (1 + PredictedReturnPct / 100)
+```
+
+So +100 → +20%, +50 → +10%, 0 → 0%, −50 → −10%, −100 → −20%. NVDA at $180 with
+a +60 score predicts +12.0% and a 12-month price of $201.60.
+
+This is an **absolute 12-month price return from today's market price**. It is
+deliberately none of the following, and is never relabelled as any of them:
+
+| Number | Question it answers |
+|---|---|
+| **Peer-implied value** | What does this company's valuation look like against its industry EBITDA cohort *today*? |
+| **Shaffer 12M price** | Where does the score-to-return mapping put the market price in *twelve months*? |
+| VTI excess return | Stored as a secondary research label only. |
+| Total return | Not modelled — this is price only, no dividends. |
+
+Asset Detail shows Current Price, Peer-Implied Value, Shaffer Score and Shaffer
+12M Forecast as four separate values.
+
+The 0.20 slope is a transparent placeholder, tagged `shaffer_score_linear` /
+`v1_0.20` on every snapshot it produces. Until enough realised outcomes exist
+to justify an interval, the prediction carries **MODEL ESTIMATE — UNCERTAINTY
+NOT YET CALIBRATED** rather than a fabricated range.
+
+## ML Lab
+
+A **research and challenger** system. It measures whether Shaffer Scores and
+their factors actually predict returns, learns alternative mappings, and
+compares challengers against the human-designed model.
+
+**It cannot change production.** The Shaffer Score, its factor weights, the
+classification bands, the hedge formula and the V1 calibration are untouched by
+anything in the Lab. A model reaches `PRODUCTION` only through an explicit
+`storage.set_model_status(...)` call that no training path invokes.
+
+```
+Collect -> Observe Outcomes -> Train -> Backtest -> Validate -> Compare -> Propose
+```
+
+### Models
+
+All pure stdlib — this environment has no numpy or scikit-learn, and the
+project stays dependency-light. Each is implemented directly and is
+deterministic.
+
+| Model | Purpose |
+|---|---|
+| **Shaffer V1 baseline** | `0.20 × score`. The benchmark every challenger must beat. |
+| Linear regression | Interpretable coefficients. |
+| Ridge | Stabilises correlated financial factors. |
+| Lasso / Elastic Net | Which factors carry no incremental signal. |
+| Gradient boosting | Nonlinear interactions (valuation past a threshold, debt when profitability is weak). |
+| Random forest | Comparison. |
+
+No neural networks — the dataset will be far too small to justify one for years.
+
+### Point-in-time rule
+
+Features come **only** from immutable stored snapshots, so every value is what
+was genuinely known that day. Revised fundamentals can never leak backwards.
+Outcome labels are future prices relative to a snapshot, which is what a label
+is — using today's price history for them is not leakage.
+
+### Walk-forward validation
+
+Expanding chronological windows: train on the past, test on the next period,
+repeat. **Never** a random split. The test asserts that every training window
+strictly precedes its test window.
+
+### Overlapping labels
+
+Daily snapshots produce nearly identical 12-month labels, which inflates the
+apparent sample. Long horizons default to **monthly** sampling, and the
+effective (non-overlapping) observation count is always shown next to the raw
+count. That count discounts *time* overlap; it does not discount
+cross-sectional correlation, so a single snapshot date is reported
+INSUFFICIENT however many names it carries — it cannot form walk-forward folds.
+
+### Status thresholds (deterministic)
+
+```
+INSUFFICIENT DATA     < 200 effective observations, or < 3 folds
+EXPERIMENTAL          trainable, not yet trustworthy
+VALIDATED CHALLENGER  >= 750 effective observations, >= 3 folds, positive
+                      out-of-sample Spearman beating the baseline by >= 0.02
+```
+
+Feature importance is labelled **predictive importance**, never a cause of
+returns. Tree importance is never converted into proposed formula weights.
+
+### Running it
+
+```bash
+python3 ml_job.py --status     # what data exists today
+python3 ml_job.py --labels     # grade aged snapshots against realised prices
+python3 ml_job.py --train      # walk-forward train + evaluate challengers
+python3 ml_job.py --train --horizon 3M
+python3 ml_job.py --promote 7  # explicit, manual, the only path to production
+```
+
+Training is deliberately separate from the daily refresh: `daily_job.py`
+collects prediction data, `ml_job.py` trains. The daily job never retrains.
+
+### Is there enough data yet?
+
+**No.** The database holds a single day of snapshots, so there are zero
+labelled 12-month outcomes and nothing can be trained. The Lab reports
+`INSUFFICIENT DATA FOR RELIABLE 12M ML TRAINING` and fabricates nothing. Real
+results need the daily job running for months — 12-month labels need twelve
+months. The infrastructure is built so that evidence accumulates honestly from
+here.
 
 ## The company model
 
@@ -525,7 +649,8 @@ different one in the same sector, is effectively instant for the next hour.
 2. **Individual-company score** — done.
 3. **Sector overlay + company score combined** — done.
 4. **Hedge-selection engine** — done.
-5. **Multi-asset terminal** (universe, database, three views, daily refresh) — done.
+5. **Multi-asset terminal** (universe, database, three pages, daily refresh) — done.
+6. **Shaffer Predicted Return + ML Lab** — done, and accumulating evidence.
 
 The V1 company model (forward P/E and Debt/Revenue vs sector peers) is
 **retired**. `scoring.py` now holds only the shared four-band classification;

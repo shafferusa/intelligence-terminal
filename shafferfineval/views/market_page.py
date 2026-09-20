@@ -20,6 +20,8 @@ ALL = "All"
 SORTS = {
     "Highest Shaffer Score": ("shaffer_score", True),
     "Lowest Shaffer Score": ("shaffer_score", False),
+    "Highest predicted 12M return": ("predicted_return", True),
+    "Lowest predicted 12M return": ("predicted_return", False),
     "Largest positive score change": ("delta", True),
     "Largest negative score change": ("delta", False),
     "Price": ("price", True),
@@ -30,7 +32,7 @@ SORTS = {
 
 
 def render(conn) -> None:
-    st.markdown("## MARKET")
+    st.markdown("## MARKET DB")
 
     rows = storage.market_rows(conn)
     if not rows:
@@ -58,6 +60,8 @@ def render(conn) -> None:
             "asset_class": row["asset_class"], "subclass": row["subclass"] or "",
             "sector": row["sector"] or "", "industry": row["industry"] or "",
             "price": row["price"], "shaffer_score": row["shaffer_score"],
+            "predicted_return": row["predicted_12m_return_pct"],
+            "predicted_price": row["predicted_12m_price"],
             "classification": row["classification"],
             "preferred_hedge": row["preferred_hedge"],
             "delta": delta, "updated_at": row["updated_at"],
@@ -89,6 +93,7 @@ def render(conn) -> None:
     records.sort(key=sort_key)
 
     st.caption(
+        "Click any column header to sort. "
         f"{len(records):,} of {len(rows):,} assets"
         + (f" matching '{query}'" if query else "")
         + f". {sum(1 for r in records if r['shaffer_score'] is not None):,} scored."
@@ -105,6 +110,11 @@ def render(conn) -> None:
                 fmt_score(r["shaffer_score"]) if r["shaffer_score"] is not None
                 else "model not implemented" for r in records
             ],
+            "Shaffer 12M Return": [
+                "--" if r["predicted_return"] is None
+                else f"{r['predicted_return']:+.1f}%" for r in records
+            ],
+            "Shaffer 12M Price": [fmt_price(r["predicted_price"]) for r in records],
             "View": [r["classification"] or "--" for r in records],
             "Shaffer Hedge": [r["preferred_hedge"] or "--" for r in records],
             "Score Δ": [delta_text(r["delta"]) for r in records],

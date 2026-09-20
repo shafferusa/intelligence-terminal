@@ -23,10 +23,13 @@ import storage
 import strategy_catalog as sc
 import universe as uni
 from refresh import SCHEDULES, next_scheduled_run, refresh_daily_scores
-from views import asset_detail_page, market_page, watchlist_page
+from views import asset_detail_page, market_page, ml_page, watchlist_page
 from views.common import TERMINAL_CSS, open_asset
 
-VIEWS = ["Market", "Watchlist & Positions", "Asset Detail"]
+#: The three primary pages. Asset Detail is a drill-down reached by opening
+#: an asset from Market DB or the Watchlist, not a top-level destination.
+VIEWS = ["Market DB", "Watchlist", "ML Lab"]
+DETAIL = "Asset Detail"
 
 
 @st.cache_resource
@@ -61,6 +64,13 @@ def sidebar(conn, catalog, catalog_notes) -> str:
     st.sidebar.caption("Shaffer Score · Shaffer Hedge")
 
     view = st.sidebar.radio("View", VIEWS, key="view", label_visibility="collapsed")
+    if st.session_state.get("selected_asset"):
+        if st.sidebar.button(
+            f"OPEN {st.session_state['selected_asset']} DETAIL",
+            use_container_width=True,
+        ):
+            st.session_state["show_detail"] = True
+            st.rerun()
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("**GLOBAL SEARCH**")
@@ -178,14 +188,22 @@ def main() -> None:
 
     view = sidebar(conn, catalog, catalog_notes)
 
-    if view == "Market":
-        market_page.render(conn)
-    elif view == "Watchlist & Positions":
-        watchlist_page.render(conn, catalog)
-    else:
+    if st.session_state.pop("show_detail", False) or st.session_state.get("view") == DETAIL:
+        st.session_state["view"] = DETAIL
+        if st.button("← BACK TO MARKET DB"):
+            st.session_state["view"] = VIEWS[0]
+            st.rerun()
         asset_detail_page.render(
             conn, st.session_state.get("selected_asset"), catalog, {}
         )
+        return
+
+    if view == "Market DB":
+        market_page.render(conn)
+    elif view == "Watchlist":
+        watchlist_page.render(conn, catalog)
+    else:
+        ml_page.render(conn)
 
 
 if __name__ == "__main__":

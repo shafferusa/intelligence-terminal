@@ -30,6 +30,14 @@ DEFAULT_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shaf
 EQUITY_MODEL_VERSION = "equity_model_v1"
 SECTOR_MODEL_VERSION = "sector_model_v1"
 HEDGE_MODEL_VERSION = "hedge_model_v1"
+RETURN_CALIBRATION_VERSION = "return_calibration_v1_0.20"
+
+#: ML model lifecycle. Only an explicit action moves a model to PRODUCTION.
+RESEARCH = "RESEARCH"
+CHALLENGER = "CHALLENGER"
+VALIDATED_CHALLENGER = "VALIDATED_CHALLENGER"
+PRODUCTION = "PRODUCTION"
+RETIRED = "RETIRED"
 
 CLOSE = "close"
 INTRADAY = "intraday"
@@ -137,6 +145,59 @@ CREATE TABLE IF NOT EXISTS fundamental_history (
 );
 CREATE INDEX IF NOT EXISTS idx_fundamental_asset ON fundamental_history(asset_id);
 
+CREATE TABLE IF NOT EXISTS outcome_labels (
+    label_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    asset_id        INTEGER NOT NULL REFERENCES assets(asset_id),
+    snapshot_date   TEXT NOT NULL,
+    horizon         TEXT NOT NULL,
+    base_price      REAL,
+    future_date     TEXT,
+    future_price    REAL,
+    forward_return  REAL,
+    vti_forward_return REAL,
+    excess_return   REAL,
+    computed_at     TEXT NOT NULL,
+    UNIQUE (asset_id, snapshot_date, horizon)
+);
+CREATE INDEX IF NOT EXISTS idx_labels_asset ON outcome_labels(asset_id, horizon);
+CREATE INDEX IF NOT EXISTS idx_labels_date ON outcome_labels(snapshot_date, horizon);
+
+CREATE TABLE IF NOT EXISTS ml_models (
+    model_id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_name           TEXT NOT NULL,
+    model_family         TEXT NOT NULL,
+    asset_class          TEXT NOT NULL,
+    target               TEXT NOT NULL,
+    horizon              TEXT NOT NULL,
+    feature_list_json    TEXT,
+    hyperparameters_json TEXT,
+    training_start       TEXT,
+    training_end         TEXT,
+    validation_method    TEXT,
+    training_observations INTEGER,
+    test_observations    INTEGER,
+    metrics_json         TEXT,
+    importance_json      TEXT,
+    coefficients_json    TEXT,
+    sampling             TEXT,
+    status               TEXT NOT NULL DEFAULT 'RESEARCH',
+    model_version        TEXT NOT NULL,
+    artifact_path        TEXT,
+    created_at           TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ml_status ON ml_models(status, horizon);
+
+CREATE TABLE IF NOT EXISTS ml_predictions (
+    prediction_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_id       INTEGER NOT NULL REFERENCES ml_models(model_id),
+    asset_id       INTEGER NOT NULL REFERENCES assets(asset_id),
+    snapshot_date  TEXT NOT NULL,
+    predicted_return_pct REAL,
+    predicted_price      REAL,
+    created_at     TEXT NOT NULL,
+    UNIQUE (model_id, asset_id, snapshot_date)
+);
+
 CREATE TABLE IF NOT EXISTS refresh_runs (
     run_id       INTEGER PRIMARY KEY AUTOINCREMENT,
     started_at   TEXT NOT NULL,
@@ -166,10 +227,35 @@ def connect(db_path: str = DEFAULT_DB_PATH) -> sqlite3.Connection:
     return conn
 
 
+#: Columns added after the first schema version. `init_db` adds any that are
+#: missing, so an existing database upgrades in place without losing history.
+MIGRATIONS = {
+    "current_scores": [
+        ("predicted_12m_return_pct", "REAL"),
+        ("predicted_12m_price", "REAL"),
+        ("prediction_model", "TEXT"),
+        ("prediction_model_version", "TEXT"),
+        ("prediction_timestamp", "TEXT"),
+    ],
+    "score_history": [
+        ("predicted_12m_return_pct", "REAL"),
+        ("predicted_12m_price", "REAL"),
+        ("prediction_model", "TEXT"),
+        ("prediction_model_version", "TEXT"),
+        ("prediction_timestamp", "TEXT"),
+    ],
+}
+
+
 def init_db(db_path: str = DEFAULT_DB_PATH) -> sqlite3.Connection:
     """Create the schema if absent and return a connection. Idempotent."""
     conn = connect(db_path)
     conn.executescript(SCHEMA)
+    for table, columns in MIGRATIONS.items():
+        existing = {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+        for name, sql_type in columns:
+            if name not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}")
     conn.commit()
     return conn
 
@@ -314,8 +400,10 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
             """INSERT INTO current_scores
                (asset_id, price, shaffer_score, classification, preferred_hedge,
                 sector_score, sector_overlay, company_score, score_confidence,
-                model_status, factor_scores_json, raw_inputs_json, model_version, updated_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                model_status, factor_scores_json, raw_inputs_json, model_version,
+                updated_at, predicted_12m_return_pct, predicted_12m_price,
+                prediction_model, prediction_model_version, prediction_timestamp)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                ON CONFLICT(asset_id) DO UPDATE SET
                  price=excluded.price, shaffer_score=excluded.shaffer_score,
                  classification=excluded.classification,
@@ -328,14 +416,23 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
                  factor_scores_json=excluded.factor_scores_json,
                  raw_inputs_json=excluded.raw_inputs_json,
                  model_version=excluded.model_version,
-                 updated_at=excluded.updated_at""",
+                 updated_at=excluded.updated_at,
+                 predicted_12m_return_pct=excluded.predicted_12m_return_pct,
+                 predicted_12m_price=excluded.predicted_12m_price,
+                 prediction_model=excluded.prediction_model,
+                 prediction_model_version=excluded.prediction_model_version,
+                 prediction_timestamp=excluded.prediction_timestamp""",
             (asset_id, fields.get("price"), fields.get("shaffer_score"),
              fields.get("classification"), fields.get("preferred_hedge"),
              fields.get("sector_score"), fields.get("sector_overlay"),
              fields.get("company_score"), fields.get("score_confidence"),
              fields.get("model_status"), _dumps(fields.get("factor_scores")),
              _dumps(fields.get("raw_inputs")),
-             fields.get("model_version", EQUITY_MODEL_VERSION), _now()),
+             fields.get("model_version", EQUITY_MODEL_VERSION), _now(),
+             fields.get("predicted_12m_return_pct"),
+             fields.get("predicted_12m_price"),
+             fields.get("prediction_model"),
+             fields.get("prediction_model_version"), _now()),
         )
 
 
@@ -407,6 +504,8 @@ def market_rows(conn) -> list[sqlite3.Row]:
                   a.subclass, a.sector, a.industry,
                   c.price, c.shaffer_score, c.classification, c.preferred_hedge,
                   c.score_confidence, c.model_status, c.updated_at,
+                  c.predicted_12m_return_pct, c.predicted_12m_price,
+                  c.prediction_model_version,
                   (SELECT h.shaffer_score FROM score_history h
                     WHERE h.asset_id=a.asset_id AND h.snapshot_kind='close'
                     ORDER BY h.snapshot_date DESC LIMIT 1 OFFSET 1) AS prev_score,
@@ -445,6 +544,7 @@ def list_watchlist(conn) -> list[sqlite3.Row]:
     return conn.execute(
         """SELECT a.*, c.price, c.shaffer_score, c.classification, c.preferred_hedge,
                   c.updated_at, c.model_status,
+                  c.predicted_12m_return_pct, c.predicted_12m_price,
                   (SELECT h.shaffer_score FROM score_history h
                     WHERE h.asset_id=a.asset_id AND h.snapshot_kind='close'
                     ORDER BY h.snapshot_date DESC LIMIT 1 OFFSET 1) AS prev_score
@@ -480,6 +580,7 @@ def list_positions(conn) -> list[sqlite3.Row]:
                   a.yahoo_symbol,
                   c.price, c.shaffer_score, c.classification, c.preferred_hedge,
                   c.updated_at, c.model_status,
+                  c.predicted_12m_return_pct, c.predicted_12m_price,
                   (SELECT h.shaffer_score FROM score_history h
                     WHERE h.asset_id=a.asset_id AND h.snapshot_kind='close'
                     ORDER BY h.snapshot_date DESC LIMIT 1 OFFSET 1) AS prev_score
@@ -585,3 +686,170 @@ def last_refresh_run(conn):
 
 loads = _loads
 dumps = _dumps
+
+
+# --------------------------------------------------------------------------
+# Predictions, outcome labels and the ML model registry
+# --------------------------------------------------------------------------
+
+def save_prediction_fields(conn, asset_id: int, snapshot_date: str,
+                           kind: str = CLOSE, **fields) -> str:
+    """Attach a prediction to an existing snapshot row.
+
+    A CLOSE row that already carries a prediction is NEVER rewritten: a
+    historical prediction must keep the model that produced it, so a later
+    calibration cannot retroactively change what the terminal said that day.
+    """
+    row = conn.execute(
+        """SELECT history_id, prediction_model_version FROM score_history
+           WHERE asset_id=? AND snapshot_date=? AND snapshot_kind=?""",
+        (asset_id, snapshot_date, kind),
+    ).fetchone()
+    if row is None:
+        return "missing"
+    if kind == CLOSE and row["prediction_model_version"]:
+        return "exists"
+
+    with transaction(conn):
+        conn.execute(
+            """UPDATE score_history SET predicted_12m_return_pct=?,
+               predicted_12m_price=?, prediction_model=?,
+               prediction_model_version=?, prediction_timestamp=?
+               WHERE history_id=?""",
+            (fields.get("predicted_return_pct"), fields.get("predicted_price"),
+             fields.get("model"), fields.get("model_version"), _now(),
+             row["history_id"]),
+        )
+    return "written"
+
+
+def save_outcome_label(conn, asset_id: int, snapshot_date: str, horizon: str,
+                       **fields) -> None:
+    """Realised forward return for one snapshot. Replaceable: it is an
+    observation of the future, refined as more price history arrives."""
+    with transaction(conn):
+        conn.execute(
+            """INSERT INTO outcome_labels
+               (asset_id, snapshot_date, horizon, base_price, future_date,
+                future_price, forward_return, vti_forward_return, excess_return,
+                computed_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(asset_id, snapshot_date, horizon) DO UPDATE SET
+                 base_price=excluded.base_price, future_date=excluded.future_date,
+                 future_price=excluded.future_price,
+                 forward_return=excluded.forward_return,
+                 vti_forward_return=excluded.vti_forward_return,
+                 excess_return=excluded.excess_return,
+                 computed_at=excluded.computed_at""",
+            (asset_id, snapshot_date, horizon, fields.get("base_price"),
+             fields.get("future_date"), fields.get("future_price"),
+             fields.get("forward_return"), fields.get("vti_forward_return"),
+             fields.get("excess_return"), _now()),
+        )
+
+
+def label_counts(conn) -> dict:
+    return {
+        row["horizon"]: row["n"]
+        for row in conn.execute(
+            "SELECT horizon, COUNT(*) AS n FROM outcome_labels "
+            "WHERE forward_return IS NOT NULL GROUP BY horizon")
+    }
+
+
+def dataset_rows(conn, horizon: str) -> list:
+    """Point-in-time feature rows joined to their realised outcome.
+
+    Only `score_history` is read for features, so every value is exactly what
+    was known on that date. Nothing is recomputed from today's fundamentals.
+    """
+    return conn.execute(
+        """SELECT h.asset_id, a.symbol, a.sector, a.industry,
+                  h.snapshot_date, h.price, h.shaffer_score, h.company_score,
+                  h.sector_overlay, h.factor_scores_json, h.raw_inputs_json,
+                  h.model_version, h.predicted_12m_return_pct,
+                  l.forward_return, l.vti_forward_return, l.excess_return,
+                  l.future_date
+           FROM score_history h
+           JOIN assets a ON a.asset_id = h.asset_id
+           JOIN outcome_labels l
+             ON l.asset_id = h.asset_id AND l.snapshot_date = h.snapshot_date
+            AND l.horizon = ?
+           WHERE h.snapshot_kind = 'close' AND l.forward_return IS NOT NULL
+           ORDER BY h.snapshot_date, a.symbol""",
+        (horizon,),
+    ).fetchall()
+
+
+def snapshot_stats(conn) -> dict:
+    row = conn.execute(
+        """SELECT COUNT(*) AS snapshots,
+                  COUNT(DISTINCT asset_id) AS assets,
+                  MIN(snapshot_date) AS earliest,
+                  MAX(snapshot_date) AS latest,
+                  COUNT(DISTINCT snapshot_date) AS dates
+           FROM score_history WHERE snapshot_kind='close'"""
+    ).fetchone()
+    return dict(row) if row else {}
+
+
+def register_model(conn, **fields) -> int:
+    """Persist a trained model's definition and metrics. Status defaults to
+    RESEARCH -- nothing reaches PRODUCTION without an explicit promotion."""
+    with transaction(conn):
+        cursor = conn.execute(
+            """INSERT INTO ml_models
+               (model_name, model_family, asset_class, target, horizon,
+                feature_list_json, hyperparameters_json, training_start,
+                training_end, validation_method, training_observations,
+                test_observations, metrics_json, importance_json,
+                coefficients_json, sampling, status, model_version,
+                artifact_path, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (fields.get("model_name"), fields.get("model_family"),
+             fields.get("asset_class", "Equity"), fields.get("target"),
+             fields.get("horizon"), _dumps(fields.get("features")),
+             _dumps(fields.get("hyperparameters")), fields.get("training_start"),
+             fields.get("training_end"), fields.get("validation_method"),
+             fields.get("training_observations"), fields.get("test_observations"),
+             _dumps(fields.get("metrics")), _dumps(fields.get("importance")),
+             _dumps(fields.get("coefficients")), fields.get("sampling"),
+             fields.get("status", RESEARCH), fields.get("model_version", "v1"),
+             fields.get("artifact_path"), _now()),
+        )
+        return cursor.lastrowid
+
+
+def list_models(conn, horizon: Optional[str] = None) -> list:
+    if horizon:
+        return conn.execute(
+            "SELECT * FROM ml_models WHERE horizon=? ORDER BY model_id DESC",
+            (horizon,)).fetchall()
+    return conn.execute("SELECT * FROM ml_models ORDER BY model_id DESC").fetchall()
+
+
+def get_model(conn, model_id: int):
+    return conn.execute("SELECT * FROM ml_models WHERE model_id=?",
+                        (model_id,)).fetchone()
+
+
+def set_model_status(conn, model_id: int, status: str) -> None:
+    """Change a model's lifecycle status.
+
+    Promotion to PRODUCTION is deliberately a separate, explicit call. Nothing
+    in the training pipeline invokes it.
+    """
+    with transaction(conn):
+        conn.execute("UPDATE ml_models SET status=? WHERE model_id=?",
+                     (status, model_id))
+
+
+def production_model(conn, horizon: str):
+    """The ML model currently in production for a horizon, if any.
+
+    Returns None in normal operation: the production score-to-return mapping is
+    the human V1 calibration until a model is explicitly promoted.
+    """
+    return conn.execute(
+        "SELECT * FROM ml_models WHERE horizon=? AND status=? ORDER BY model_id DESC LIMIT 1",
+        (horizon, PRODUCTION)).fetchone()

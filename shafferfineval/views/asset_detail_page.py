@@ -11,6 +11,7 @@ import streamlit as st
 
 import company_scoring as comp
 import hedging as hedge
+import prediction as pred
 import routers
 import scoring
 import storage
@@ -73,13 +74,40 @@ def render(conn, symbol, catalog, market) -> None:
         cells[1].metric("Company Score", fmt_score(current["company_score"]))
         cells[2].metric("Sector Overlay", fmt_score(current["sector_overlay"]))
         cells[3].metric("Score Δ", fmt_score(delta) if delta is not None else "--")
+
         st.caption(
             f"Shaffer Hedge: **{current['preferred_hedge'] or '--'}**  |  "
             f"Updated {fmt_age(current['updated_at'])}  |  "
             f"Model {current['model_version'] or '--'}"
         )
 
-    tabs = st.tabs(["SCORE BREAKDOWN", "HEDGE", "WHAT CHANGED", "HISTORY"])
+    # Four separate concepts, deliberately never merged.
+    raw = storage.loads(current["raw_inputs_json"]) or {}
+    quad = st.columns(4)
+    quad[0].metric("CURRENT PRICE", fmt_price(current["price"]))
+    quad[1].metric("PEER-IMPLIED VALUE", fmt_price(raw.get("implied_price")),
+                   help="Valuation factor: what the industry EBITDA cohort implies today")
+    quad[2].metric("SHAFFER SCORE", fmt_score(current["shaffer_score"]))
+    quad[3].metric(
+        "SHAFFER 12M FORECAST",
+        "--" if current["predicted_12m_return_pct"] is None
+        else f"{current['predicted_12m_return_pct']:+.1f}%",
+        help="Score-to-return mapping: absolute 12-month price return from today",
+    )
+    if current["predicted_12m_price"] is not None:
+        st.caption(
+            f"Shaffer 12M price: **{fmt_price(current['predicted_12m_price'])}** "
+            f"({current['prediction_model']} {current['prediction_model_version']}). "
+            f"{pred.UNCALIBRATED_NOTE}."
+        )
+    st.caption(
+        "Peer-implied value and the Shaffer 12M price answer different "
+        "questions and are never interchanged: the first is a valuation "
+        "comparison against industry peers today, the second is where the "
+        "score-to-return model puts the market price in twelve months."
+    )
+
+    tabs = st.tabs(["SCORE BREAKDOWN", "HEDGE", "FORECAST", "WHAT CHANGED", "HISTORY"])
 
     # ------------------------------------------------- score breakdown
     with tabs[0]:
@@ -93,12 +121,16 @@ def render(conn, symbol, catalog, market) -> None:
     with tabs[1]:
         _render_hedge_tab(conn, asset, current, catalog)
 
-    # ------------------------------------------------------ what changed
+    # -------------------------------------------------------- forecast
     with tabs[2]:
+        _render_forecast(conn, asset, current)
+
+    # ------------------------------------------------------ what changed
+    with tabs[3]:
         _render_what_changed(conn, asset, current, previous, delta)
 
     # ----------------------------------------------------------- history
-    with tabs[3]:
+    with tabs[4]:
         if not history:
             st.info("No saved snapshots yet.")
         else:
@@ -112,7 +144,11 @@ def render(conn, symbol, catalog, market) -> None:
                     "Company": [fmt_score(h["company_score"]) for h in history],
                     "Overlay": [fmt_score(h["sector_overlay"]) for h in history],
                     "Hedge": [h["preferred_hedge"] or "--" for h in history],
+                    "12M Return": [
+                        "--" if h["predicted_12m_return_pct"] is None
+                        else f"{h['predicted_12m_return_pct']:+.1f}%" for h in history],
                     "Model": [h["model_version"] for h in history],
+                    "Calibration": [h["prediction_model_version"] or "--" for h in history],
                 },
                 use_container_width=True, hide_index=True,
             )
@@ -325,3 +361,49 @@ def _render_what_changed(conn, asset, current, previous, delta) -> None:
             "New": [fmt_money(v.get("new")) for v in fields.values()],
         })
         st.caption("Reason: fundamental field changed in Yahoo data.")
+
+
+def _render_forecast(conn, asset, current) -> None:
+    """Shaffer Predicted Return, kept distinct from peer-implied value."""
+    st.markdown("### SHAFFER PREDICTED RETURN")
+    if current["predicted_12m_return_pct"] is None:
+        st.info("No prediction stored. Run a refresh.")
+        return
+
+    cells = st.columns(4)
+    cells[0].metric("Shaffer Score", fmt_score(current["shaffer_score"]))
+    cells[1].metric("Shaffer 12M Return",
+                    f"{current['predicted_12m_return_pct']:+.1f}%")
+    cells[2].metric("Shaffer 12M Price", fmt_price(current["predicted_12m_price"]))
+    cells[3].metric("Current Price", fmt_price(current["price"]))
+    st.caption(
+        f"Model: {current['prediction_model']} "
+        f"{current['prediction_model_version']} — **{pred.UNCALIBRATED_NOTE}**. "
+        "A prediction interval is only shown once enough realised outcomes "
+        "exist to justify one."
+    )
+
+    labels = conn.execute(
+        """SELECT horizon, forward_return, vti_forward_return, excess_return,
+                  future_date FROM outcome_labels
+           WHERE asset_id=? ORDER BY snapshot_date DESC, horizon""",
+        (asset["asset_id"],)).fetchall()
+    st.markdown("### REALISED OUTCOMES")
+    if not labels:
+        st.caption(
+            "No realised outcomes yet — snapshots must age past each horizon "
+            "before a prediction can be graded. Run `python3 ml_job.py --labels` "
+            "once they have."
+        )
+        return
+    st.table({
+        "Horizon": [l["horizon"] for l in labels],
+        "Future date": [l["future_date"] or "--" for l in labels],
+        "Actual return": [fmt_signed_pct(l["forward_return"]) for l in labels],
+        "VTI return": [fmt_signed_pct(l["vti_forward_return"]) for l in labels],
+        "Excess (research)": [fmt_signed_pct(l["excess_return"]) for l in labels],
+    })
+    st.caption(
+        "The official Shaffer Predicted Return is the ABSOLUTE price return. "
+        "The VTI-relative column is a secondary research label only."
+    )

@@ -57,6 +57,12 @@ def render(conn, catalog) -> None:
                     "Qty": [f"{r['row']['quantity']:,.0f}" for r in records],
                     "Market Value": [fmt_money(r["value"]) for r in records],
                     "Shaffer Score": [fmt_score(r["row"]["shaffer_score"]) for r in records],
+                    "12M Return": [
+                        "--" if r["row"]["predicted_12m_return_pct"] is None
+                        else f"{r['row']['predicted_12m_return_pct']:+.1f}%"
+                        for r in records],
+                    "12M Price": [fmt_price(r["row"]["predicted_12m_price"])
+                                  for r in records],
                     "View": [r["row"]["classification"] or "--" for r in records],
                     "Score Δ": [delta_text(r["delta"]) for r in records],
                     "Adverse": [f"{r['adverse']:.0f}" for r in records],
@@ -100,6 +106,10 @@ def render(conn, catalog) -> None:
                         fmt_score(r["shaffer_score"]) if r["shaffer_score"] is not None
                         else "model not implemented" for r in watched
                     ],
+                    "12M Return": [
+                        "--" if r["predicted_12m_return_pct"] is None
+                        else f"{r['predicted_12m_return_pct']:+.1f}%" for r in watched],
+                    "12M Price": [fmt_price(r["predicted_12m_price"]) for r in watched],
                     "View": [r["classification"] or "--" for r in watched],
                     "Score Δ": [
                         delta_text(score_delta(r["shaffer_score"], r["prev_score"]))
