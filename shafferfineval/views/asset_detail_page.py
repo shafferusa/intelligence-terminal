@@ -83,6 +83,10 @@ def render(conn, symbol, catalog, market) -> None:
 
     # Four separate concepts, deliberately never merged.
     raw = storage.loads(current["raw_inputs_json"]) or {}
+    if raw.get("caveat"):
+        # A macro-scored asset carries the limits of its own score, so the
+        # caveat is read next to the number rather than in a run log.
+        st.warning(raw["caveat"])
     quad = st.columns(4)
     quad[0].metric("CURRENT PRICE", fmt_price(current["price"]))
     quad[1].metric("PEER-IMPLIED VALUE", fmt_price(raw.get("implied_price")),

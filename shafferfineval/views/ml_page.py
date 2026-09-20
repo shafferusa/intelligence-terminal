@@ -40,7 +40,22 @@ def render(conn) -> None:
         "changed from this page."
     )
 
-    horizon = st.selectbox("Prediction horizon", list(pred.HORIZONS), index=3)
+    horizons = list(pred.HORIZONS)
+    horizon = st.selectbox(
+        "Prediction horizon", horizons,
+        index=horizons.index(pred.PRIMARY_HORIZON),
+        help="12M is the production horizon. The short ones exist so the "
+             "score can be checked in weeks instead of a year.",
+    )
+    if horizon in pred.EARLY_HORIZONS:
+        st.warning(
+            f"**{horizon} is an EARLY horizon.** It exists to show whether the "
+            f"score has any cross-sectional signal months before "
+            f"{pred.PRIMARY_HORIZON} can say anything. It is not evidence "
+            f"about the {pred.PRIMARY_HORIZON} calibration, and a good "
+            f"{horizon} model is not a reason to change the "
+            f"{pred.V1_SLOPE:.2f} slope."
+        )
     target_label = st.radio(
         "Target", ["Absolute price return", "VTI-relative excess return"],
         horizontal=True,
@@ -625,48 +640,196 @@ def _render_trade_research(conn) -> None:
             "Side": [t["side"] for t in trades],
             "Qty": [fmt_int(t["quantity"]) for t in trades],
             "Price": [fmt_price(t["price"]) for t in trades],
+            "Right": [_cell(t, "option_right") or "--" for t in trades],
+            "Strike": [fmt_price(_cell(t, "strike")) if _cell(t, "strike")
+                       else "--" for t in trades],
             "Group": [t["trade_group_id"] or "--" for t in trades],
             "Relationship": [t["hedge_relationship"] or "--" for t in trades],
         }, use_container_width=True, hide_index=True)
 
+        incomplete = [t for t in trades if _cell(t, "contract_note")]
+        if incomplete:
+            st.warning(
+                "**Cannot be replayed** (an option's payoff is not inferred): "
+                + "; ".join(f"{t['trade_id']} — {_cell(t, 'contract_note')}"
+                            for t in incomplete[:8])
+            )
+
     st.markdown("### IMPORT A BLOTTER")
+    st.caption(
+        "Import freezes each trade's entry state — score, factors, prediction, "
+        "hedge recommendation, GPI and model versions — write-once, so a later "
+        "rescore can never change what the decision was made on."
+    )
     path = st.text_input("Path to a FinSim export (.csv / .tsv / .xlsx / .db)",
                          key="blotter_path")
     if st.button("IMPORT BLOTTER") and path.strip():
         _import_blotter(conn, path.strip())
 
+    _render_closed_positions(conn)
+
+
+def _cell(row, name):
+    """Read a column that may be absent on an older stored row."""
+    try:
+        return row[name]
+    except (IndexError, KeyError):
+        return None
+
+
+def _render_closed_positions(conn) -> None:
+    """Grade a closed position and replay what else could have been traded."""
+    import trade_research as TR
+
+    st.markdown("### GRADE A CLOSED POSITION")
+    st.caption(
+        "The fast evidence path: a position held 18 days is graded on day 18. "
+        "No 12-month wait, and no fabricated backtest in the meantime."
+    )
+    groups = storage.list_trade_groups(conn)
+    if not groups:
+        st.info("No economic positions stored yet. Import a blotter first.")
+        return
+
+    keys = [g["group_key"] for g in groups]
+    chosen = st.selectbox("Position", keys, key="grade_group")
+    cells = st.columns(3)
+    exit_price = cells[0].number_input("Exit price", min_value=0.0, value=0.0,
+                                       step=0.01, key="grade_exit_price")
+    exit_date = cells[1].text_input("Exit date (YYYY-MM-DD)", key="grade_exit_date")
+    raw_path = cells[2].text_input(
+        "Price path (comma-separated, optional)", key="grade_path",
+        help="Needed for drawdown metrics. Without it they stay unavailable "
+             "rather than being guessed from the endpoints.")
+
+    if st.button("GRADE POSITION") and exit_price > 0:
+        path = []
+        for piece in raw_path.split(","):
+            piece = piece.strip()
+            if piece:
+                try:
+                    path.append(float(piece))
+                except ValueError:
+                    st.error(f"'{piece}' is not a price.")
+                    return
+        outcome = TR.evaluate_closed_position(
+            conn, chosen, exit_price=exit_price,
+            exit_date=exit_date.strip() or None, price_path=path or None)
+        st.session_state[f"graded_outcome_{chosen}"] = outcome
+
+    # Keyed by position: switching positions must not leave another
+    # position's grade on screen under the new name.
+    outcome = st.session_state.get(f"graded_outcome_{chosen}")
+    if outcome is None:
+        return
+    if outcome.net_pnl is None:
+        st.error(" ".join(outcome.notes) or "Position could not be graded.")
+        return
+
+    cells = st.columns(4)
+    cells[0].metric("Symbol", outcome.symbol or "--")
+    cells[1].metric("Held (days)", fmt_int(outcome.holding_days))
+    cells[2].metric("Net P&L", fmt_price(outcome.net_pnl))
+    cells[3].metric("Unhedged return", _pct(outcome.unhedged_return))
+
+    cells = st.columns(4)
+    cells[0].metric("Underlying P&L", fmt_price(outcome.underlying_pnl))
+    cells[1].metric("Hedge P&L", fmt_price(outcome.hedge_pnl))
+    cells[2].metric("Hedge cost",
+                    fmt_price(outcome.hedge_cost)
+                    if outcome.hedge_cost is not None else "UNAVAILABLE")
+    cells[3].metric("Hedge efficiency", _metric(outcome.hedge_efficiency, 2))
+
+    cells = st.columns(3)
+    cells[0].metric("Drawdown unhedged",
+                    fmt_price(outcome.max_drawdown_unhedged)
+                    if outcome.max_drawdown_unhedged is not None else "--")
+    cells[1].metric("Drawdown hedged",
+                    fmt_price(outcome.max_drawdown_hedged)
+                    if outcome.max_drawdown_hedged is not None else "UNAVAILABLE")
+    cells[2].metric("Prediction error (pp)", _metric(outcome.prediction_error, 2))
+
+    if outcome.score_agreed_with_direction is False:
+        st.warning(
+            f"The position was held {outcome.direction} against a Shaffer "
+            f"score of {fmt_score(outcome.entry_score)}. That disagreement is "
+            "recorded as behaviour data, not corrected after the fact."
+        )
+    for gap in outcome.missing:
+        st.caption(f"- unavailable: {gap}")
+    for note in outcome.notes:
+        st.caption(f"- {note}")
+
+    if outcome.alternatives:
+        st.markdown("#### WHAT ELSE COULD HAVE BEEN TRADED")
+        st.caption(
+            "Replayed from the strategies that were ELIGIBLE AT ENTRY, not "
+            "chosen with hindsight. ACTUAL was really traded; SIMULATED "
+            "COUNTERFACTUAL was scored but not traded."
+        )
+        ranked = CF.rank_outcomes(outcome.alternatives)
+        st.dataframe({
+            "Strategy": [a.strategy_name for a in ranked],
+            "Label": [a.label for a in ranked],
+            "Net P&L": [fmt_price(a.net_pnl) for a in ranked],
+            "Hedge P&L": [fmt_price(a.hedge_pnl) for a in ranked],
+            "Cost": [fmt_price(a.hedge_cost) if a.hedge_cost is not None
+                     else "--" for a in ranked],
+            "Efficiency": [_metric(a.hedge_efficiency, 2) for a in ranked],
+            "Drawdown cut": [fmt_price(a.drawdown_reduction)
+                             if a.drawdown_reduction is not None else "--"
+                             for a in ranked],
+        }, use_container_width=True, hide_index=True)
+
+    summary = TR.trade_performance_summary([outcome])
+    rows = TR.hedge_effectiveness_dataset(conn)
+    st.markdown("#### HEDGE-EFFECTIVENESS DATASET")
+    cells = st.columns(4)
+    cells[0].metric("Rows", fmt_int(len(rows)))
+    cells[1].metric("ACTUAL", fmt_int(sum(1 for r in rows
+                                          if r.get("label") == CF.ACTUAL)))
+    cells[2].metric("Counterfactual",
+                    fmt_int(sum(1 for r in rows if r.get("label") == CF.SIMULATED)))
+    cells[3].metric("Graded positions", fmt_int(summary.get("positions", 0)))
+    st.caption(
+        "This is the hedging/behaviour dataset. It is never merged with the "
+        "market dataset to train a general return model."
+    )
+
 
 def _import_blotter(conn, path: str) -> None:
-    import blotter
+    """Import, group, link AND freeze entry states in one step.
+
+    Freezing is part of importing rather than a separate button: a trade whose
+    entry state was never captured can never be graded honestly afterwards.
+    """
+    import trade_research as TR
 
     with st.spinner(f"Importing {path}..."):
-        result = blotter.import_finsim_blotter(conn, path)
-    if not result.trades:
-        st.error(" ".join(result.notes) or "Nothing imported.")
+        summary = TR.import_and_freeze(conn, path)
+    if not summary["rows_read"]:
+        st.error(" ".join(summary["notes"]) or "Nothing imported.")
         return
-    stats = storage.save_trades(conn, result.trades, path)
-    groups = blotter.group_trades(result.trades)
-    for group in groups:
-        storage.save_trade_group(
-            conn, group.group_key,
-            primary_trade=group.primary.trade_id if group.primary else None,
-            relationship=group.relationship, strategy_tag=group.strategy_tag,
-            hedge_ratio=blotter.hedge_ratio_for(group), note=group.note)
-        for leg in group.hedges:
-            storage.save_hedge_link(
-                conn, group.group_key,
-                group.primary.trade_id if group.primary else None,
-                leg.trade_id, relationship_type=group.relationship,
-                hedge_ratio=blotter.hedge_ratio_for(group))
     st.success(
-        f"{result.rows_read} rows read, {result.mapped} mapped, "
-        f"{stats['written']} new trades stored, {len(groups)} economic positions."
+        f"{summary['rows_read']} rows read, {summary['mapped']} mapped, "
+        f"{summary['stored']} new trades stored, {summary['groups']} economic "
+        f"positions, {summary['frozen']} entry states frozen."
     )
-    for note in result.notes:
+    if summary["already_frozen"]:
+        st.caption(
+            f"{summary['already_frozen']} trades were already frozen and were "
+            "left exactly as they were — an entry state is written once."
+        )
+    if summary["no_score"]:
+        st.caption(
+            f"{summary['no_score']} trades had no Shaffer score stored at "
+            "entry. The gap is recorded rather than filled in later."
+        )
+    for note in summary["notes"]:
         st.caption(note)
-    if result.unmapped:
+    if summary["unmapped"]:
         st.warning("Not in the Shaffer universe (kept, flagged): "
-                   + ", ".join(sorted(set(result.unmapped))[:20]))
+                   + ", ".join(summary["unmapped"][:20]))
 
 
 # --------------------------------------------------------------------------

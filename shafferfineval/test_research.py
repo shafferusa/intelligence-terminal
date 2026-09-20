@@ -300,8 +300,11 @@ check("equity primary target is absolute price return",
       ml_lab.TARGET_ABSOLUTE == "absolute_price_return")
 check("excess return is a separate secondary target",
       ml_lab.TARGET_EXCESS != ml_lab.TARGET_ABSOLUTE)
-check("horizons cover 1M/3M/6M/12M",
-      set(ml_lab.DEFAULT_SAMPLING) == {"1M", "3M", "6M", "12M"})
+check("horizons cover 1D/5D/1M/3M/6M/12M",
+      set(ml_lab.DEFAULT_SAMPLING) == {"1D", "5D", "1M", "3M", "6M", "12M"})
+check("the short horizons exist so evidence arrives in weeks, not a year",
+      {"1D", "5D"} <= set(ml_lab.DEFAULT_SAMPLING))
+check("short horizons sample daily", ml_lab.DEFAULT_SAMPLING["1D"] == ml_lab.DAILY)
 check("long horizons default to less overlap",
       ml_lab.DEFAULT_SAMPLING["12M"] == ml_lab.MONTHLY)
 

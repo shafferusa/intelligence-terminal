@@ -71,6 +71,10 @@ def leg_payoff(leg: dict, spot: float, terminal: float) -> Optional[float]:
         if not is_finite(strike) or not contracts:
             return None
         right = (leg.get("right") or "").upper()
+        if not right.startswith(("P", "C")):
+            # A call and a put pay off in opposite directions. With no right
+            # on the leg the payoff is unknown, not a call.
+            return None
         intrinsic = (max(float(strike) - terminal, 0.0) if right.startswith("P")
                      else max(terminal - float(strike), 0.0))
         return sign * contracts * CONTRACT_MULTIPLIER * intrinsic
@@ -89,6 +93,27 @@ def leg_payoff(leg: dict, spot: float, terminal: float) -> Optional[float]:
         return sign * float(notional) * move
 
     return None
+
+
+def _leg_gap(leg: dict) -> str:
+    """Name what is missing from a leg, so the gap is reported, not guessed."""
+    instrument = (leg.get("instrument") or "").lower()
+    gaps = []
+    if instrument == "option":
+        if not (leg.get("right") or "").upper().startswith(("P", "C")):
+            gaps.append("no put/call right")
+        if not is_finite(leg.get("strike") if leg.get("strike") is not None
+                         else leg.get("target_strike")):
+            gaps.append("no strike")
+        if not leg.get("contracts"):
+            gaps.append("no contract count")
+    elif instrument in ("stock", "trs"):
+        gaps.append("no share count")
+    elif instrument == "future":
+        gaps.append("no notional")
+    else:
+        gaps.append(f"unsupported instrument '{instrument or 'unknown'}'")
+    return ", ".join(gaps) or "missing sizing"
 
 
 def leg_cost(leg: dict) -> Optional[float]:
@@ -143,7 +168,7 @@ def simulate_hedge(
         if payoff is None:
             unknown = True
             outcome.missing.append(
-                f"{leg.get('instrument')} leg payoff (missing sizing or strike)")
+                f"{leg.get('instrument')} leg payoff ({_leg_gap(leg)})")
             continue
         hedge_pnl += payoff
         leg_expense = leg_cost(leg)
@@ -184,6 +209,12 @@ def simulate_hedge(
     if path and len(path) >= 2:
         outcome.max_drawdown_unhedged = _max_drawdown(
             [d * shares * (float(p) - float(entry_price)) for p in path])
+        if unknown:
+            # Some leg could not be replayed, so the "hedged" path would just
+            # be the unhedged one wearing a hedge's name. Leave it unavailable.
+            outcome.missing.append(
+                "hedged drawdown (a leg could not be replayed)")
+            return outcome
         hedged_path = []
         for p in path:
             leg_total = 0.0

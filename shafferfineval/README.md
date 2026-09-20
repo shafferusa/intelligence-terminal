@@ -70,12 +70,11 @@ python3 test_terminal.py          # universe, database, routing, refresh
 python3 test_prediction_ml.py     # predicted return + ML Lab
 python3 test_multi_asset.py       # asset-class equations, GPI, routing
 python3 test_research.py          # synthetic validation, blotter, counterfactuals
+python3 test_pipeline_growth.py   # short-horizon labels, trade grading, macro wiring
 ```
 
 ## Files
 
-| File | Role |
-|---|---|
 **UI** — no calculation lives here.
 
 | File | Role |
@@ -107,9 +106,11 @@ python3 test_research.py          # synthetic validation, blotter, counterfactua
 | `option_data.py` | Yahoo option chains (crumb handshake). Retrieval only. |
 | `storage.py` | SQLite schema and repositories. |
 | `routers.py` | Asset-class dispatch for scoring and hedging. |
-| `refresh.py` | Daily refresh, change detection, score deltas. |
+| `refresh.py` | Daily refresh, change detection, score deltas, macro routing. |
 | `daily_job.py` | Cron entry point. |
-
+| `macro_data.py` | FRED + Yahoo macro adapter (15 FRED series, 14 Yahoo symbols). Retrieval only. |
+| `macro_factors.py` | Turns the macro snapshot into rates/gold/vol/credit factor scores. |
+| `trade_research.py` | Entry-state freeze, closed-position grading, hedge-effectiveness dataset. |
 | `asset_models.py` | Shaffer v1 arithmetic for all 19 asset classes + derivative overlays. |
 | `political.py` | Geopolitical & Policy Impact (GPI v1). |
 | `prediction.py` | Shaffer Predicted Return (score → 12M price return). |
@@ -122,7 +123,9 @@ python3 test_research.py          # synthetic validation, blotter, counterfactua
 | `views/ml_page.py` | Page 3 — ML Lab. |
 
 **Tests** — `test_scoring.py`, `test_sector_scoring.py`, `test_company_scoring.py`,
-`test_hedging.py`, `test_terminal.py`, `test_prediction_ml.py`. All pure stdlib.
+`test_hedging.py`, `test_terminal.py`, `test_prediction_ml.py`,
+`test_multi_asset.py`, `test_research.py`, `test_pipeline_growth.py`. All pure
+stdlib; each is a script you run directly and each prints `FAILURES: 0`.
 
 > `views/` is deliberately not called `pages/`: Streamlit treats a top-level
 > `pages/` directory as an auto-multipage app and would run each module as its
@@ -191,25 +194,79 @@ confidence are tracked on every result.
 
 ### What has data, and what does not
 
-**Only equities are fed end to end.** Every other equation is implemented and
-tested but its inputs have no wired data source, so it returns a structured
-`awaiting_inputs` result naming exactly what is missing:
+Every equation is implemented and tested. What separates a live engine from a
+blocked one is whether its inputs have a wired feed — never whether the maths
+exists. A blocked engine returns a structured `awaiting_inputs` result naming
+exactly what is missing, and `macro_factors.BLOCKED_ENGINES` lists the reason
+for each one so the gap is visible in code rather than implied.
 
-| Engine | Needs |
+**Live end to end** (`macro_factors.LIVE_ENGINES`, fed by `macro_data.py` from
+FRED and Yahoo):
+
+| Engine | Factors filled | Source |
+|---|---|---|
+| `equity_shaffer_v1` | 4 of 4 + sector overlay | Yahoo fundamentals |
+| `sector_model_v1` | 4 of 4 | Yahoo fundamentals, peer-ranked |
+| `rates_shaffer_v1` | 5 of 6 (all but the policy leg) | FRED: fed funds, 2y, 10y, 10y breakeven, unemployment |
+| `gold_shaffer_v1` | 5 of 7 (no central-bank flows, no GPI) | FRED: 10y real yield, broad dollar, 10y breakeven; Yahoo: VIX, gold |
+| `vol_shaffer_v1` | 3 of 5 from the snapshot, 4 when an underlying series is passed | Yahoo: VIX, VIX3M |
+| `corp_credit_shaffer_v1` | spread + rates legs only | FRED: IG and HY OAS, plus the rates leg above |
+
+The volatility engine is fed but **not yet routed**: `refresh.MACRO_ROUTES`
+maps Treasuries and corporate bonds, and gold is routed by symbol, but no
+instrument in the universe currently dispatches to `vol_shaffer_v1`. Its
+factors are computable today — the routing is the missing piece, and saying so
+is more useful than a table row implying volatility scores are being written.
+
+Corporate credit deliberately scores only its market-level legs: issuer credit
+strength, cash-flow quality and technicals need per-issuer data that is not
+wired, and the engine reports those as missing rather than renormalising the
+weights onto two factors and calling it a full score.
+
+That has a consequence worth stating plainly: **every corporate bond currently
+scores the same.** An AAPL bond and an AAL bond get the same number because
+only the market-level spread and rates legs exist and the universe carries no
+credit rating, so investment grade and high yield cannot even be told apart per
+issuer. That is a data gap, not a view that those are equivalent credits, and
+the IG spread is applied to all of them rather than a high-yield spread being
+assigned to bonds nothing has established are high yield.
+
+Every macro-scored row therefore carries a **caveat string**
+(`refresh.MACRO_CAVEATS`) stored in its own `raw_inputs` and shown on the asset
+page above the score, so the limitation travels with the number instead of
+living in a run log. Treasuries carry a different one: they share a score *by
+design*, because the rates view is curve-wide and duration changes expected
+return rather than conviction.
+
+**Blocked, with the reason stated:**
+
+| Engine | Blocked on |
 |---|---|
-| Rates | central-bank path, inflation trajectory, curve valuation |
-| Corporate credit | issuer spreads vs rating/maturity cohort |
-| Agency MBS | option-adjusted spread, prepayment speeds, rate vol |
-| Structured credit | deal-level collateral, OC/IC tests, DSCR/LTV |
-| FX | real-rate differentials, policy paths, current account |
-| Oil / gas / metals / ag | inventories, OPEC output, HDD/CDD, PMI, mine supply |
-| Crypto | stablecoin liquidity, on-chain activity, funding/OI |
-| Volatility | implied vs realised surface, term structure |
-| ETF | constituent holdings and weights |
-| CDS / TRS | spreads by tenor, dealer financing |
+| `fx_shaffer_v1` | foreign real rates and policy paths; only US macro is wired |
+| `oil_shaffer_v1` | EIA inventories, OPEC output, refinery utilisation |
+| `natgas_shaffer_v1` | storage vs seasonal norm, HDD/CDD forecasts, LNG flows |
+| `industrial_metal_shaffer_v1` | PMI, exchange inventories, China demand |
+| `ag_shaffer_v1` | stocks-to-use, crop weather, export demand |
+| `livestock_shaffer_v1` | herd counts, slaughter rates, feed costs |
+| `crypto_shaffer_v1` | stablecoin liquidity, on-chain activity, funding/OI |
+| `etf_shaffer_v1` | constituent holdings; Yahoo's holdings module is crumb-gated |
+| `mbs_shaffer_v1` | option-adjusted spread and prepayment speeds |
+| `structured_shaffer_v1` | deal-level collateral, OC/IC tests, DSCR/LTV |
+| `preferred_shaffer_v1` | issuer credit, yield/spread, call schedules |
+| `reit_shaffer_v1` | AFFO, NAV, cap rates, occupancy |
 
-Supplying `factor_values` scores them immediately — the arithmetic is real and
-tested, only the feeds are absent.
+Supplying `factor_values` scores any of them immediately — the arithmetic is
+real and tested, only the feeds are absent.
+
+**Two routing rules that exist to stop a plausible-looking wrong answer:**
+
+- Only US instruments route to `rates_shaffer_v1`. A bund or a JGB is priced
+  off the ECB and the BoJ, so feeding it the US curve would produce a
+  confident score about the wrong economy. Non-US government bonds stay
+  unscored until foreign macro is wired.
+- Only gold routes to `gold_shaffer_v1`. Silver, platinum and palladium are
+  half industrial metals; they need their own subtype model and are listed as
+  needing one rather than inheriting gold's real-yield factors.
 
 ## Geopolitical & Policy Impact (GPI v1)
 
@@ -426,6 +483,44 @@ Expanding chronological windows: train on the past, test on the next period,
 repeat. **Never** a random split. The test asserts that every training window
 strictly precedes its test window.
 
+### Horizons — evidence in weeks, not a year
+
+The Shaffer Predicted Return is calibrated to 12 months, and that stays the
+primary horizon. But a 12M label needs a snapshot to be a year old before it
+can be graded, which means the first honest out-of-sample evidence about the
+score would arrive a year after the first snapshot. So every snapshot is
+labelled at **six** horizons:
+
+| Horizon | Trading days | Calendar days | Sampling |
+|---|---|---|---|
+| `1D` | 1 | 1 | daily |
+| `5D` | 5 | 7 | daily |
+| `1M` | 21 | 30 | weekly |
+| `3M` | 63 | 91 | monthly |
+| `6M` | 126 | 182 | monthly |
+| `12M` | 252 | 365 | monthly |
+
+`1D`/`5D`/`1M`/`3M` are the **early horizons** (`prediction.EARLY_HORIZONS`).
+Snapshots started today begin grading themselves tomorrow, and a January
+snapshot already has matured 1D, 5D, 1M and 3M labels by September while its
+12M label is still nine months from existing.
+
+What the short horizons are and are not:
+
+- They are a **read on whether the score has any cross-sectional signal at
+  all**, months before the primary horizon can say anything.
+- They are **not** a reason to re-calibrate the 0.20 slope. A 1-day label is
+  mostly noise and says nothing about a 12-month return. `PRIMARY_HORIZON`
+  stays `12M`, and nothing about promotion changes because a 1D model looks
+  good.
+- Short horizons sample daily precisely because they barely overlap; long ones
+  stay on monthly sampling for the reason below.
+
+A label is only written if a price exists close enough to the target date to
+justify the label's name: within 10% of the horizon, with a four-day floor for
+the weekend-and-holiday case. A three-week hole in a price series therefore
+produces no `1D` label rather than a `1D` label measured over three weeks.
+
 ### Overlapping labels
 
 Daily snapshots produce nearly identical 12-month labels, which inflates the
@@ -519,6 +614,53 @@ intrinsic-value arithmetic — it assumes no slippage or liquidity constraint.
 Research metrics: protection benefit, net protection benefit, hedge efficiency
 (`downside reduction / hedge cost`, undefined rather than infinite at zero
 cost), upside sacrificed, downside avoided, drawdown reduction.
+
+### Hedge-effectiveness learning from closed positions
+
+`trade_research.py` closes the loop between a hedge decision and what that
+hedge actually did. It is the one dataset that does not have to wait a year:
+a position held for three weeks grades itself three weeks later.
+
+**At entry** — `import_and_freeze()` imports the blotter and freezes, per
+trade, `Trade_t + Score_t + Prediction_t + HedgeRecommendation_t`: the traded
+price and size, the Shaffer score and its factors, the predicted return, the
+preferred hedge and its eligible alternatives, the GPI state, and every model
+version. The freeze is write-once — re-importing the same blotter reports
+`already_frozen` and a later rescore cannot reach back and change what the
+decision was made on.
+
+**At exit** — `evaluate_closed_position()` grades it:
+
+```
+underlying P&L      what the position did unhedged
+hedge P&L           what the hedge legs actually paid
+net P&L             the two together, minus hedge cost
+drawdown            peak-to-trough, with and without the hedge
+upside sacrificed / downside avoided / hedge efficiency
+prediction error    realised return - predicted return
+score agreement     did the score agree with how the position was held?
+```
+
+It then replays **every strategy that was eligible at entry** against the same
+realised path, so the question "would a different hedge have been better?" is
+answered from the frozen decision set rather than from hindsight. Those rows
+land in `hedge_effectiveness_dataset()` carrying their ACTUAL / SIMULATED
+COUNTERFACTUAL label.
+
+`trade_performance_summary()` aggregates the behavioural split the trade
+dataset exists for: mean P&L when the score agreed with the position versus
+when it did not, mean hedge cost, mean drawdown reduction.
+
+**An option is never inferred.** A call and a put are opposite trades, so the
+right, the strike and the expiry come only from data the blotter actually
+supplied — an explicit right column, a `Put`/`Call` asset class, or an OCC
+symbol (`NVDA  260116P00170000`), which carries all three. An option's traded
+`price` is its premium, never its strike. A trade that says only `Option` with
+no right is flagged at import (`cannot be replayed: no right (put or call)`),
+its leg returns an unknown payoff, and the hedged drawdown is left
+**unavailable** rather than reporting the unhedged path under a hedge's name.
+The alternative — defaulting to a call — would have invented the entire payoff
+of the position.
 
 ### Is there enough data yet?
 
@@ -615,8 +757,15 @@ always shown.
 
 ## Data source
 
-Yahoo Finance, exclusively. No API key, no account, no crumb/cookie handshake,
-and no scraping of the HTML site — just three public query endpoints:
+Equity fundamentals come from Yahoo Finance; macro comes from FRED. Those are
+the only two feeds, and each lives behind exactly one module —
+`market_data.py` and `macro_data.py` — so nothing downstream knows where a
+number came from.
+
+### Yahoo (equities, ETFs, prices)
+
+No API key, no account, no crumb/cookie handshake, and no scraping of the HTML
+site — just three public query endpoints:
 
 | Endpoint | Supplies |
 |---|---|
@@ -646,6 +795,30 @@ cache hit.
 
 Forward EPS is not published on these endpoints, so it is *derived* as
 `price / forward P/E` and labelled as derived wherever it appears.
+
+### FRED (macro)
+
+`macro_data.py` pulls 15 FRED series plus the Yahoo macro symbols into a single
+`MacroSnapshot`, which is what every macro engine scores from. It needs
+`FRED_API_KEY` in the environment — the key is never written to the repo, a
+config file, or a log. A failed request is scrubbed before its message is
+stored or displayed, because a `requests` exception carries the full request
+URL and that URL carries the key.
+
+| Group | FRED series |
+|---|---|
+| Policy and curve | `DFF` effective fed funds, `DTB3` 3m bill, `DGS2`, `DGS10`, `DGS30` |
+| Inflation | `CPIAUCSL` headline CPI, `PCEPILFE` core PCE, `T10YIE` 10y breakeven, `DFII10` 10y real yield |
+| Credit | `BAMLC0A0CM` IG OAS, `BAMLH0A0HYM2` HY OAS, `MORTGAGE30US` |
+| Growth and dollar | `UNRATE`, `PAYEMS`, `DTWEXBGS` broad dollar |
+
+FRED does not carry spot instruments, so 14 more come from Yahoo: `^VIX`,
+`^VIX3M`, `^TNX`, `^IRX`, `DX-Y.NYB`, and the front futures for WTI, Brent,
+natural gas, gold, silver, copper, corn, wheat and soybeans.
+
+A series that does not come back is reported as unavailable by name. It is
+never forward-filled past its own last observation, and never substituted with
+a related series that happens to be present.
 
 ## The sector model
 
@@ -852,6 +1025,23 @@ different one in the same sector, is effectively instant for the next hour.
 4. **Hedge-selection engine** — done.
 5. **Multi-asset terminal** (universe, database, three pages, daily refresh) — done.
 6. **Shaffer Predicted Return + ML Lab** — done, and accumulating evidence.
+7. **Multi-asset v1 arithmetic, GPI, synthetic validation, blotter,
+   counterfactuals** — done.
+8. **Daily snapshot accumulation at six horizons** — done. This is the thing
+   that has to run every day; nothing downstream exists without it.
+9. **FinSim blotter connected, entry states frozen, closed positions graded** —
+   done.
+10. **Non-equity classes, in order of what the data allows** — rates, gold,
+    volatility and the market-level credit legs are live off FRED. ETFs, FX,
+    oil, natural gas, the other metals and structured credit stay blocked and
+    say why; none of them is faked to look finished.
+
+**Not done, and deliberately so:** GPI stays manual. It takes structured event
+fields — type, severity components, exposure, half-life — not an LLM's opinion
+about whether a headline sounds bullish. And no historical fundamentals are
+backfilled: prices and returns can be reconstructed honestly, but if we do not
+know what revenue, EBITDA or debt were *known* to be on a past date, that row
+does not go into a training set pretending to be point-in-time.
 
 The V1 company model (forward P/E and Debt/Revenue vs sector peers) is
 **retired**. `scoring.py` now holds only the shared four-band classification;

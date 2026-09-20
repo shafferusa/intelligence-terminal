@@ -62,6 +62,11 @@ FIELD_ALIASES = {
     "linked_hedge_trade": ("linkedhedgetrade", "hedgetradeid", "linkedtrade",
                            "hedgeleg"),
     "trade_group_id": ("tradegroupid", "groupid", "group", "packageid"),
+    "option_right": ("right", "optionright", "putcall", "callput", "pc", "cp",
+                     "optiontype", "callorput"),
+    "strike": ("strike", "strikeprice", "exerciseprice"),
+    "expiry": ("expiry", "expiration", "expirationdate", "expirydate",
+               "maturity", "maturitydate"),
 }
 
 #: FinSim asset-class strings -> Shaffer universe classes.
@@ -109,6 +114,10 @@ class BlotterTrade:
     parent_trade: Optional[str] = None
     linked_hedge_trade: Optional[str] = None
     trade_group_id: Optional[str] = None
+    option_right: Optional[str] = None    # "P" | "C" -- never guessed
+    strike: Optional[float] = None
+    expiry: Optional[str] = None
+    contract_note: str = ""
     mapped_asset_id: Optional[int] = None
     mapped_symbol: Optional[str] = None
     mapping_note: str = ""
@@ -169,6 +178,86 @@ def map_columns(header: Iterable[str]) -> tuple[dict, list]:
     return mapping, unmapped
 
 
+#: OCC option symbol, e.g. "NVDA  260116P00170000" or "NVDA260116P00170000".
+OCC_SYMBOL = re.compile(
+    r"^(?P<root>[A-Z][A-Z0-9.\-]{0,5})\s*"
+    r"(?P<yy>\d{2})(?P<mm>\d{2})(?P<dd>\d{2})"
+    r"(?P<right>[PC])(?P<strike>\d{8})$"
+)
+
+#: Words a blotter may use for an option right. Anything else is not a right.
+RIGHT_WORDS = {
+    "p": "P", "put": "P", "puts": "P",
+    "c": "C", "call": "C", "calls": "C",
+}
+
+
+def parse_occ_symbol(symbol) -> Optional[dict]:
+    """Decode an OCC option symbol. Returns None when it is not one.
+
+    The OCC form carries the right, expiry and strike unambiguously, so it is
+    the one place a contract can be recovered without asking the blotter for
+    extra columns.
+    """
+    match = OCC_SYMBOL.match(str(symbol or "").strip().upper())
+    if match is None:
+        return None
+    return {
+        "root": match.group("root"),
+        "right": match.group("right"),
+        "expiry": f"20{match.group('yy')}-{match.group('mm')}-{match.group('dd')}",
+        "strike": int(match.group("strike")) / 1000.0,
+    }
+
+
+def is_option(trade: "BlotterTrade") -> bool:
+    return ASSET_CLASS_MAP.get(_normalise(trade.asset_class)) == "Option" or bool(
+        parse_occ_symbol(trade.symbol))
+
+
+def resolve_option_contract(trade: "BlotterTrade", declared_right=None) -> "BlotterTrade":
+    """Recover an option's right/strike/expiry from whatever the blotter gave.
+
+    Order of trust: an explicit right column, then the asset-class word
+    ("Put"/"Call"), then an OCC symbol. A generic "Option" with no right
+    anywhere leaves `option_right` None -- it is NEVER defaulted to a call,
+    because a call and a put are opposite trades and guessing one would
+    silently invent the position's entire payoff.
+
+    The traded `price` of an option is its premium, not its strike, so the
+    strike is only ever taken from a strike column or an OCC symbol.
+    """
+    occ = parse_occ_symbol(trade.symbol)
+    if occ:
+        trade.symbol = occ["root"]
+        if trade.strike is None:
+            trade.strike = occ["strike"]
+        if not trade.expiry:
+            trade.expiry = occ["expiry"]
+        if not trade.asset_class:
+            trade.asset_class = "Option"
+
+    right = RIGHT_WORDS.get(_normalise(declared_right))
+    if right is None:
+        right = RIGHT_WORDS.get(_normalise(trade.asset_class))
+    if right is None and occ:
+        right = occ["right"]
+    trade.option_right = right
+
+    if is_option(trade):
+        gaps = []
+        if trade.option_right is None:
+            gaps.append("right (put or call)")
+        if trade.strike is None:
+            gaps.append("strike")
+        if gaps:
+            trade.contract_note = (
+                "option contract incomplete: no " + " and no ".join(gaps)
+                + " on the trade record"
+            )
+    return trade
+
+
 def _row_to_trade(row: list, header: list, mapping: dict) -> BlotterTrade:
     def cell(name):
         index = mapping.get(name)
@@ -192,7 +281,10 @@ def _row_to_trade(row: list, header: list, mapping: dict) -> BlotterTrade:
         parent_trade=cell("parent_trade"),
         linked_hedge_trade=cell("linked_hedge_trade"),
         trade_group_id=cell("trade_group_id"),
+        strike=_num(cell("strike")),
+        expiry=(str(cell("expiry"))[:10] if cell("expiry") else None),
     )
+    resolve_option_contract(trade, cell("option_right"))
     used = set(mapping.values())
     trade.extra = {header[i]: row[i] for i in range(min(len(header), len(row)))
                    if i not in used and header[i]}
@@ -341,6 +433,15 @@ def import_finsim_blotter(
     if unmapped:
         result.notes.append(
             "Columns preserved but not mapped: " + ", ".join(unmapped[:12])
+        )
+    incomplete = [t for t in result.trades if t.contract_note]
+    if incomplete:
+        # Surfaced at import, not left to be discovered when a position is
+        # graded: an option with no right or strike cannot be replayed.
+        result.notes.append(
+            f"{len(incomplete)} option trade(s) cannot be replayed: "
+            + "; ".join(f"{t.trade_id or t.symbol}: {t.contract_note}"
+                        for t in incomplete[:5])
         )
     return result
 

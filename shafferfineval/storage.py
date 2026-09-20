@@ -353,13 +353,25 @@ def connect(db_path: str = DEFAULT_DB_PATH) -> sqlite3.Connection:
 #: missing, so an existing database upgrades in place without losing history.
 MIGRATIONS = {
     "current_scores": [
+        ("gpi_json", "TEXT"),
+        ("political_overlay", "REAL"),
         ("predicted_12m_return_pct", "REAL"),
         ("predicted_12m_price", "REAL"),
         ("prediction_model", "TEXT"),
         ("prediction_model_version", "TEXT"),
         ("prediction_timestamp", "TEXT"),
     ],
+    "trades": [
+        # A put and a call are opposite trades, so the right is stored
+        # explicitly rather than re-derived from a free-text asset class.
+        ("option_right", "TEXT"),
+        ("strike", "REAL"),
+        ("expiry", "TEXT"),
+        ("contract_note", "TEXT"),
+    ],
     "score_history": [
+        ("gpi_json", "TEXT"),
+        ("political_overlay", "REAL"),
         ("predicted_12m_return_pct", "REAL"),
         ("predicted_12m_price", "REAL"),
         ("prediction_model", "TEXT"),
@@ -524,8 +536,9 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
                 sector_score, sector_overlay, company_score, score_confidence,
                 model_status, factor_scores_json, raw_inputs_json, model_version,
                 updated_at, predicted_12m_return_pct, predicted_12m_price,
-                prediction_model, prediction_model_version, prediction_timestamp)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                prediction_model, prediction_model_version, prediction_timestamp,
+                gpi_json, political_overlay)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                ON CONFLICT(asset_id) DO UPDATE SET
                  price=excluded.price, shaffer_score=excluded.shaffer_score,
                  classification=excluded.classification,
@@ -543,7 +556,9 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
                  predicted_12m_price=excluded.predicted_12m_price,
                  prediction_model=excluded.prediction_model,
                  prediction_model_version=excluded.prediction_model_version,
-                 prediction_timestamp=excluded.prediction_timestamp""",
+                 prediction_timestamp=excluded.prediction_timestamp,
+                 gpi_json=excluded.gpi_json,
+                 political_overlay=excluded.political_overlay""",
             (asset_id, fields.get("price"), fields.get("shaffer_score"),
              fields.get("classification"), fields.get("preferred_hedge"),
              fields.get("sector_score"), fields.get("sector_overlay"),
@@ -554,7 +569,8 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
              fields.get("predicted_12m_return_pct"),
              fields.get("predicted_12m_price"),
              fields.get("prediction_model"),
-             fields.get("prediction_model_version"), _now()),
+             fields.get("prediction_model_version"), _now(),
+             _dumps(fields.get("gpi")), fields.get("political_overlay")),
         )
 
 
@@ -585,13 +601,15 @@ def save_score_snapshot(
             """INSERT INTO score_history
                (asset_id, snapshot_date, snapshot_kind, snapshot_timestamp, price,
                 shaffer_score, classification, sector_overlay, company_score,
-                factor_scores_json, raw_inputs_json, preferred_hedge, model_version)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                factor_scores_json, raw_inputs_json, preferred_hedge, model_version,
+                gpi_json, political_overlay)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (asset_id, snapshot_date, kind, _now(), fields.get("price"),
              fields.get("shaffer_score"), fields.get("classification"),
              fields.get("sector_overlay"), fields.get("company_score"),
              _dumps(fields.get("factor_scores")), _dumps(fields.get("raw_inputs")),
-             fields.get("preferred_hedge"), model_version),
+             fields.get("preferred_hedge"), model_version,
+             _dumps(fields.get("gpi")), fields.get("political_overlay")),
         )
     return "written"
 
@@ -889,6 +907,7 @@ def dataset_rows(conn, horizon: str) -> list:
         """SELECT h.asset_id, a.symbol, a.sector, a.industry,
                   h.snapshot_date, h.price, h.shaffer_score, h.company_score,
                   h.sector_overlay, h.factor_scores_json, h.raw_inputs_json,
+                  h.gpi_json, h.political_overlay,
                   h.model_version, h.predicted_12m_return_pct,
                   l.forward_return, l.vti_forward_return, l.excess_return,
                   l.future_date
@@ -1051,8 +1070,8 @@ def save_trades(conn, trades: Iterable, source: str) -> dict:
                         accrued, commission, net_cash, realized_pnl, status,
                         strategy_tag, trade_group_id, hedge_relationship,
                         parent_trade, linked_hedge_trade, extra_json, source,
-                        imported_at)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        imported_at, option_right, strike, expiry, contract_note)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                        ON CONFLICT(trade_id, source) DO NOTHING""",
                     (trade.trade_id, trade.order_id, trade.mapped_asset_id,
                      trade.symbol, trade.asset_class, trade.trade_date,
@@ -1061,7 +1080,11 @@ def save_trades(conn, trades: Iterable, source: str) -> dict:
                      trade.realized_pnl, trade.status, trade.strategy_tag,
                      trade.trade_group_id, trade.hedge_relationship,
                      trade.parent_trade, trade.linked_hedge_trade,
-                     _dumps(trade.extra), source, _now()),
+                     _dumps(trade.extra), source, _now(),
+                     getattr(trade, "option_right", None),
+                     getattr(trade, "strike", None),
+                     getattr(trade, "expiry", None),
+                     getattr(trade, "contract_note", "") or None),
                 )
                 # ON CONFLICT DO NOTHING raises nothing, so rowcount is the
                 # only honest signal that a row was actually inserted.

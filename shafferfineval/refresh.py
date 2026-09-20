@@ -19,8 +19,11 @@ import traceback
 from dataclasses import dataclass, field
 from typing import Callable, Optional, Sequence
 
+import asset_models as am
 import company_scoring as comp
 import hedging as hedge
+import macro_data
+import macro_factors
 import market_data as md
 import prediction as pred
 import routers
@@ -368,6 +371,157 @@ def refresh_daily_scores(
         conn, run_id, summary.attempted, summary.scored, summary.failed,
         summary.as_dict(),
     )
+    return summary
+
+
+#: Which live macro engine scores each workbook subclass. Only subclasses with
+#: a genuinely wired data source appear here; everything else stays unscored.
+#: ONLY US instruments. The wired macro series are Fed policy, US CPI, US
+#: unemployment and the US curve. A German or Japanese government bond is
+#: driven by the ECB and the BoJ, so giving it the US rates score would be a
+#: fabricated reading dressed as a real one. Non-US sovereigns stay unscored
+#: until their own macro is wired.
+MACRO_ROUTES = {
+    "US Treasury": ("rates_shaffer_v1", am.RATES),
+    "US Treasury bill": ("rates_shaffer_v1", am.RATES),
+    "Corporate / sovereign bond": ("corp_credit_shaffer_v1", am.CORP_CREDIT),
+}
+
+#: Gold only. The v1 gold equation is built on real yields, the dollar and
+#: safe-haven demand; silver, platinum and palladium are far more
+#: industrial-demand driven and need their own subtype model, so they are NOT
+#: silently scored with gold's factors.
+PRECIOUS = {"GC", "XAU"}
+
+#: Named so the gap is visible rather than implied.
+NEEDS_SUBTYPE_MODEL = {
+    "SI": "silver -- industrial demand dominates; needs its own subtype model",
+    "PL": "platinum -- autocatalyst demand; needs its own subtype model",
+    "PA": "palladium -- autocatalyst demand; needs its own subtype model",
+}
+
+
+#: Stated on every macro-scored row, so the caveat travels with the number
+#: instead of living only in a run log.
+MACRO_CAVEATS = {
+    "rates_shaffer_v1":
+        "Curve-wide conviction by design; duration changes expected return, "
+        "not the view.",
+    "corp_credit_shaffer_v1":
+        "MARKET-LEVEL ONLY: issuer credit, cash-flow quality and technicals "
+        "are not wired, and the universe carries no rating, so this is the "
+        "investment-grade spread view applied to the whole class -- not a "
+        "judgement about this issuer.",
+    "gold_shaffer_v1":
+        "No central-bank/ETF flow data and no geopolitical input; the score "
+        "is the real-yield, dollar, inflation and stress view only.",
+}
+
+
+def _macro_caveat(engine) -> str:
+    return MACRO_CAVEATS.get(getattr(engine, "version", ""), "")
+
+
+def refresh_macro_scores(conn, snapshot_kind: str = storage.CLOSE,
+                         snapshot_date: Optional[str] = None,
+                         macro: Optional[object] = None) -> dict:
+    """Score the non-equity classes that have a wired data source.
+
+    Today that is US Treasuries and bills, corporate/sovereign USD bonds, and
+    gold. Non-US sovereigns, the other precious metals and every class in
+    `macro_factors.BLOCKED_ENGINES` keep their arithmetic but have no feed,
+    and are deliberately left unscored rather than filled with estimates.
+    """
+    summary = {"scored": 0, "skipped": 0, "engines": {}, "notes": []}
+    today = snapshot_date or _dt.date.today().isoformat()
+
+    if macro is None:
+        macro = macro_data.fetch_macro_snapshot(
+            yahoo_keys=("vix", "vix_3m", "gold", "wti", "natgas", "copper"))
+    summary["macro_coverage"] = macro.coverage
+    if macro.coverage <= 0:
+        summary["notes"].append(
+            "No macro series available, so no non-equity asset could be scored.")
+        return summary
+
+    rates_values, rates_missing = macro_factors.rates_factors(macro)
+    gold_values, gold_missing = macro_factors.gold_factors(macro)
+    # The universe carries no credit rating, so IG and HY cannot be told
+    # apart per issuer. Every corporate row therefore gets the INVESTMENT
+    # GRADE market leg and says so, rather than a high-yield spread being
+    # assigned to bonds we have not established are high yield.
+    credit_values, credit_missing = macro_factors.corporate_credit_factors(
+        macro, high_yield=False)
+
+    for row in storage.list_assets(conn):
+        engine = None
+        values = None
+        if row["asset_class"] == uni.BOND and row["subclass"] in MACRO_ROUTES:
+            version, model = MACRO_ROUTES[row["subclass"]]
+            engine, values = model, (
+                rates_values if version == "rates_shaffer_v1" else credit_values)
+        elif row["asset_class"] == uni.COMMODITY and row["symbol"] in PRECIOUS:
+            engine, values = am.GOLD, gold_values
+        elif row["asset_class"] == uni.COMMODITY and row["symbol"] in NEEDS_SUBTYPE_MODEL:
+            summary["skipped"] += 1
+            summary.setdefault("needs_subtype", []).append(
+                NEEDS_SUBTYPE_MODEL[row["symbol"]])
+            continue
+
+        if engine is None or not values:
+            summary["skipped"] += 1
+            continue
+
+        try:
+            result = routers.score_asset(
+                row["asset_class"], row["symbol"], subclass=row["subclass"],
+                factor_values=values)
+            if not result.scored:
+                summary["skipped"] += 1
+                continue
+
+            storage.save_current_score(
+                conn, row["asset_id"], price=None,
+                shaffer_score=result.shaffer_score,
+                classification=result.classification,
+                preferred_hedge=None, score_confidence=result.confidence,
+                model_status=result.status, factor_scores=result.factor_scores,
+                raw_inputs={"direction": result.message,
+                            "macro_fetched_at": macro.fetched_at,
+                            "caveat": _macro_caveat(engine)},
+                model_version=result.model_version)
+            storage.save_score_snapshot(
+                conn, row["asset_id"], today, kind=snapshot_kind,
+                model_version=result.model_version,
+                shaffer_score=result.shaffer_score,
+                classification=result.classification,
+                factor_scores=result.factor_scores,
+                raw_inputs={"direction": result.message,
+                            "caveat": _macro_caveat(engine)})
+            summary["scored"] += 1
+            summary["engines"][engine.version] = summary["engines"].get(
+                engine.version, 0) + 1
+        except Exception as exc:
+            summary["skipped"] += 1
+            summary["notes"].append(f"{row['symbol']}: {exc}")
+
+    summary["notes"].append(
+        "Every US Treasury shares one macro conviction score by design: the "
+        "rates view is curve-wide. Duration differentiates expected RETURN "
+        "magnitude, not conviction -- see asset_models.bond_price_change.")
+    summary["notes"].append(
+        "Every corporate bond shares one score for a different and weaker "
+        "reason: only the MARKET-level spread and rates legs are wired, so "
+        "two issuers of very different quality currently score identically. "
+        "That is a data gap, not a view that they are equivalent credits.")
+    if rates_missing:
+        summary["notes"].append("Rates factors unavailable: " + ", ".join(rates_missing))
+    if gold_missing:
+        summary["notes"].append("Gold factors unavailable: " + ", ".join(gold_missing))
+    if credit_missing:
+        summary["notes"].append(
+            "Corporate credit factors unavailable: " + ", ".join(credit_missing))
+    summary["blocked_engines"] = dict(macro_factors.BLOCKED_ENGINES)
     return summary
 
 

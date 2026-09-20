@@ -32,7 +32,12 @@ TARGET_EXCESS = "vti_excess_return"
 #: Sampling cadences. Daily snapshots create heavily overlapping 12-month
 #: labels, so the default for long horizons is monthly.
 DAILY, WEEKLY, MONTHLY = "daily", "weekly", "monthly"
-DEFAULT_SAMPLING = {"1M": WEEKLY, "3M": MONTHLY, "6M": MONTHLY, "12M": MONTHLY}
+DEFAULT_SAMPLING = {
+    # Short horizons barely overlap, so daily rows are genuinely independent
+    # observations and are kept. Long horizons overlap almost completely.
+    "1D": DAILY, "5D": DAILY, "1M": WEEKLY,
+    "3M": MONTHLY, "6M": MONTHLY, "12M": MONTHLY,
+}
 
 #: Status thresholds, deterministic and documented.
 MIN_OBS_EXPERIMENTAL = 200
@@ -185,9 +190,11 @@ def refresh_outcome_labels(conn, price_history_fn, vti_history_fn=None) -> dict:
             continue
 
         base_date = _dt.date.fromisoformat(row["snapshot_date"])
-        for horizon, trading_days in pred.HORIZONS.items():
-            target_date = base_date + _dt.timedelta(days=int(trading_days * 365 / 252))
-            future = _nearest_on_or_after(series, target_date)
+        for horizon in pred.HORIZONS:
+            target_date = base_date + _dt.timedelta(
+                days=pred.HORIZON_CALENDAR_DAYS.get(horizon, 365))
+            future = _nearest_on_or_after(
+                series, target_date, tolerance_days=label_tolerance(horizon))
             if future is None:
                 summary["pending"] += 1
                 continue
@@ -196,7 +203,9 @@ def refresh_outcome_labels(conn, price_history_fn, vti_history_fn=None) -> dict:
             vti_forward = None
             if vti_series:
                 vti_base = _nearest_on_or_before(vti_series, base_date)
-                vti_future = _nearest_on_or_after(vti_series, target_date)
+                vti_future = _nearest_on_or_after(
+                    vti_series, target_date,
+                    tolerance_days=label_tolerance(horizon))
                 if vti_base and vti_future:
                     vti_forward = pred.forward_return(vti_base[1], vti_future[1])
             storage.save_outcome_label(
@@ -210,11 +219,29 @@ def refresh_outcome_labels(conn, price_history_fn, vti_history_fn=None) -> dict:
     return summary
 
 
-def _nearest_on_or_after(series: dict, target: _dt.date):
+def label_tolerance(horizon: str) -> int:
+    """How far past the target date a price may sit and still be that label.
+
+    A weekend or a holiday always pushes the match a few days out, so some
+    slack is required. But without a ceiling a gap in the series would let a
+    price three weeks late be stored as a "1D" outcome. The allowance is 10%
+    of the horizon with a four-day floor, so it scales with what the label
+    actually means.
+    """
+    span = pred.HORIZON_CALENDAR_DAYS.get(horizon, 365)
+    return max(4, int(round(span * 0.10)))
+
+
+def _nearest_on_or_after(series: dict, target: _dt.date,
+                         tolerance_days: Optional[int] = None):
     candidates = [d for d in series if d >= target]
     if not candidates:
         return None
     day = min(candidates)
+    if tolerance_days is not None and (day - target).days > tolerance_days:
+        # The series has a hole here. Report no label rather than a label
+        # whose name does not match the gap it was measured over.
+        return None
     return day, series[day]
 
 

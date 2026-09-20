@@ -19,7 +19,7 @@ import argparse
 import sys
 
 import storage
-from refresh import refresh_daily_scores
+from refresh import refresh_daily_scores, refresh_macro_scores
 
 
 def main() -> int:
@@ -29,6 +29,8 @@ def main() -> int:
     parser.add_argument("--symbols", help="comma-separated symbols to limit the run")
     parser.add_argument("--date", help="snapshot date (YYYY-MM-DD)")
     parser.add_argument("--db", default=storage.DEFAULT_DB_PATH)
+    parser.add_argument("--equities-only", action="store_true",
+                        help="skip the non-equity macro pass")
     args = parser.parse_args()
 
     conn = storage.init_db(args.db)
@@ -43,6 +45,20 @@ def main() -> int:
         conn, symbols=symbols, snapshot_kind=kind,
         snapshot_date=args.date, progress=progress,
     )
+
+    if not args.equities_only and not symbols:
+        print("\nScoring non-equity classes with wired data...", flush=True)
+        macro = refresh_macro_scores(conn, snapshot_kind=kind, snapshot_date=args.date)
+        print(f"  macro coverage {macro.get('macro_coverage', 0):.0%} | "
+              f"scored {macro['scored']} | skipped {macro['skipped']}")
+        for engine, count in sorted(macro.get("engines", {}).items()):
+            print(f"    {engine}: {count}")
+        for note in macro.get("notes", [])[:4]:
+            print(f"    note: {note[:110]}")
+        blocked = macro.get("blocked_engines") or {}
+        if blocked:
+            print(f"  {len(blocked)} engines have arithmetic but no wired feed "
+                  f"(see README)")
 
     print(
         f"\nattempted {summary.attempted} | scored {summary.scored} | "

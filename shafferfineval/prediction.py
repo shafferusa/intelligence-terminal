@@ -45,9 +45,20 @@ PREDICTION_MODEL = "shaffer_score_linear"
 PREDICTION_MODEL_VERSION = "v1_0.20"
 RETURN_CALIBRATION_VERSION = "return_calibration_v1_0.20"
 
-#: Horizons the app tracks. The primary target is 12 months.
-HORIZONS = {"1M": 21, "3M": 63, "6M": 126, "12M": 252}
+#: Horizons the app tracks, in trading days. 12M stays the primary equity
+#: target, but short horizons start producing genuine evidence within weeks
+#: instead of a year. 1D/5D are unlikely to be what a fundamental score is for;
+#: they are collected anyway so the Lab can SHOW that rather than assume it.
+HORIZONS = {"1D": 1, "5D": 5, "1M": 21, "3M": 63, "6M": 126, "12M": 252}
 PRIMARY_HORIZON = "12M"
+
+#: Horizons that mature fast enough to learn from early.
+EARLY_HORIZONS = ("1D", "5D", "1M", "3M")
+
+#: Roughly how long a snapshot must age before each horizon has an outcome.
+HORIZON_CALENDAR_DAYS = {
+    "1D": 1, "5D": 7, "1M": 30, "3M": 91, "6M": 182, "12M": 365,
+}
 
 UNCALIBRATED_NOTE = "MODEL ESTIMATE — UNCERTAINTY NOT YET CALIBRATED"
 
