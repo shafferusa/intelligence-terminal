@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-19T13:15:00Z",
+ "fetched_at": "2026-09-20T13:15:00Z",
  "treasury_par_curve": {
   "date": "2026-09-18",
   "BC_1MONTH": 3.97,
@@ -128,33 +128,34 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 81236,
-    "usd_24h_change": 4.19,
-    "usd_market_cap": 1631875533059
+    "usd": 80543,
+    "usd_24h_change": -0.82,
+    "usd_market_cap": 1618000000000
    },
    "ethereum": {
-    "usd": 2638.07,
-    "usd_24h_change": 5.64,
-    "usd_market_cap": 322080638236
+    "usd": 2581.27,
+    "usd_24h_change": -2.08,
+    "usd_market_cap": 315200000000
    },
    "solana": {
-    "usd": 111.56,
-    "usd_24h_change": 5.7,
-    "usd_market_cap": 65529981686
+    "usd": 108.3,
+    "usd_24h_change": -2.88,
+    "usd_market_cap": 63600000000
    },
    "cardano": {
-    "usd": 0.226783,
-    "usd_24h_change": 5.28,
-    "usd_market_cap": 8524497059
+    "usd": 0.221869,
+    "usd_24h_change": -2.08,
+    "usd_market_cap": 8330000000
    }
   },
-  "total_market_cap_usd": 2795096817826,
-  "btc_dominance_pct": 58.26,
-  "eth_dominance_pct": null,
+  "total_market_cap_usd": 2740000000000,
+  "btc_dominance_pct": 58.94,
+  "eth_dominance_pct": 11.48,
   "volume_24h_usd": null,
-  "market_cap_24h_change_pct": 1.22,
+  "market_cap_24h_change_pct": -4.77,
   "label": "Live (CoinGecko aggregate)",
-  "fetched_at": "2026-09-19T13:10:00Z"
+  "fetched_at": "2026-09-20T13:12:00Z",
+  "note": "Weekend pullback vs Friday 2026-09-19 13:10 UTC read (BTC $81,236, +4.19% 24h): BTC down ~$700 (-0.85%) since Friday, giving back most of Friday's rally; broader alts fell more (ETH/SOL/ADA each -2 to -3% 24h)."
  },
  "indices": {
   "sp500_close": 7650.5,
@@ -257,7 +258,8 @@
    "pct": 1.03,
    "note": "10yr yield x10; index-vendor lag vs Treasury's fresh 5.01% 9/18 print, similar to FRED's DGS10 lag",
    "symbol": "^TNX"
-  }
+  },
+  "sunday_evening_futures_note": "Checked 2026-09-20 ~13:14 UTC via Yahoo v8 (ES=F, NQ=F, YM=F, RTY=F, CL=F, GC=F, DX-Y.NYB): all still returning Friday 2026-09-18 20:59:58Z settlement (CME/ICE electronic session had not yet reopened, ~9 hours before the ~18:00 ET Sunday reopen). No Sunday-evening futures move to report -- Source unavailable, not zero."
  },
  "watchlist": {
   "SPY": {

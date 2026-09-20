@@ -1,7 +1,7 @@
 {
- "fetched": "2026-09-18T10:45:00-04:00",
- "earnings_fetched": "2026-09-17",
- "earnings_fetched_note": "Alpha Vantage 3-month calendar refreshed 2026-09-16 (76 watchlist-company matches over the next 3 months). No watchlist mega-cap/AI-infra/defense/financial/health/consumer name reports through Sept 23; nearest is COST on Sept 24. Non-watchlist same-day earnings: FedEx (FDX, before this run's cutoff not stated in AV/Finnhub 'hour' field) and Lennar (LEN, after close, call Thu Sept 17 11:00 AM ET) -- confirmed day-of via Finnhub.",
+ "fetched": "2026-09-20T10:30:00-04:00",
+ "earnings_fetched": "2026-09-20",
+ "earnings_fetched_note": "Alpha Vantage 3-month calendar + Finnhub date-ranged calendar cross-checked 2026-09-20 for the week of Sept 21-25. Costco (COST) is the only watchlist-company earnings report all week (Thu Sept 24, after close; Alpha Vantage est. EPS $6.48, Finnhub est. EPS $6.67 -- vendors diverge, report as a range). No other board/mega_cap_tech/ai_infra/defense_aero/space/financials/health/consumer ticker reports Sept 21-25; next watchlist date is Micron (MU) Sept 30. Non-watchlist bellwethers: AutoZone (Tue), Cintas/Paychex (Wed), Darden (Thu).",
  "events": [
   {
    "ts_et": "2026-09-07T00:00:00-04:00",
@@ -514,7 +514,203 @@
    "importance": "Low",
    "reason": "CORRECTED 2026-09-18 (pm): this morning's cache and report stated docking was confirmed for today, Sept 18, at 18:37 UTC (2:37 PM ET), sourced to NASASpaceFlight.com and a Wikipedia cross-check. NASA's own ISS blog, posted today, instead schedules docking for tomorrow, Saturday Sept 19, at approximately 13:46 UTC (9:46 AM ET) at Poisk's space-facing port -- consistent with Roscosmos/TASS's original estimate this system had revised away from two days ago. No docking occurred at the previously reported time. Logged as a formal correction to ledgers/corrections.json and disclosed in the 2026-09-18-pm report's Science & Space section and colophon.",
    "source": "NASA ISS blog (nasa.gov/blogs/spacestation), posted 2026-09-18 -- Confirmed-primary; TASS/Roscosmos -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-21T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Chicago Fed National Activity Index (Aug)",
+   "importance": "Low",
+   "reason": "Routine regional Fed composite release.",
+   "source": "Secondary aggregator (Nasdaq economic-events feed, offset-corrected) -- not independently confirmed against a primary Chicago Fed page this run"
+  },
+  {
+   "ts_et": "2026-09-21T06:30:00-04:00",
+   "type": "fed",
+   "name": "Chicago Fed President Austan Goolsbee speaks",
+   "importance": "Low",
+   "reason": "Unusually early hour for a US speech; low confidence on exact time, not confirmed against federalreserve.gov (its calendar/speech pages returned no machine-readable schedule this run).",
+   "source": "Secondary aggregator -- Unconfirmed against primary"
+  },
+  {
+   "ts_et": "2026-09-21T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions: 13-week ($92B) and 26-week ($79B)",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-22T00:00:00-04:00",
+   "type": "diplomatic",
+   "name": "UN General Assembly high-level week opens; Trump addresses the assembly",
+   "importance": "High",
+   "reason": "81st session, presided by Bangladesh's Khalilur Rahman. Trump arrives NYC Mon afternoon, speaks Tue, holds bilaterals reportedly including UK PM Andy Burnham and Japan PM Sanae Takaichi. A Trump-Zelensky sidelines meeting is reportedly under discussion but NOT on the released schedule as of Sept 20 -- do not report as confirmed.",
+   "source": "un.org High-Level Week page, UN News -- Confirmed-primary (the session itself); bilateral roster and any Zelensky meeting Unconfirmed"
+  },
+  {
+   "ts_et": "2026-09-22T10:05:00-04:00",
+   "type": "fed",
+   "name": "Fed speakers: NY Fed's John Williams (~10:05), Gov. Philip Jefferson (~10:20), Richmond Fed's Tom Barkin (~13:00)",
+   "importance": "Medium",
+   "reason": "Dense post-FOMC speaker slate testing the Sept 16 hawkish hike; times per secondary aggregator, not confirmed against federalreserve.gov's own schedule.",
+   "source": "Secondary aggregator -- Unconfirmed against primary"
+  },
+  {
+   "ts_et": "2026-09-22T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 6-week bill and 2-Year Note ($69B)",
+   "importance": "Low",
+   "reason": "Routine bill plus the 2-year note leg of the monthly cycle.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-22T00:00:00-04:00",
+   "type": "legislative",
+   "name": "Senate gavels in for business ~3:00 PM; reported cloture vote on Angela Colmenero's US District Judge (S.D. Tex.) nomination ~5:30 PM",
+   "importance": "Low",
+   "reason": "House remains in recess until after the midterms; Senate floor schedule per its own Democratic Caucus page, not yet cross-checked against congress.gov (CONGRESS_API_KEY not set this run).",
+   "source": "Senate Democratic Caucus floor schedule -- Single-reliable-source, Unconfirmed against congress.gov"
+  },
+  {
+   "ts_et": "2026-09-23T00:00:00-04:00",
+   "type": "legal",
+   "name": "Kennedy Center: Judge Cooper's deadline for the board's sworn, detailed status report on the building closure",
+   "importance": "High",
+   "reason": "Follow-up to the board's Sept 4-storm-triggered closure and the standing 30-day demolition-notice order.",
+   "source": "Judge Cooper's court order (primary, via reporting) -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-23T09:45:00-04:00",
+   "type": "econ_release",
+   "name": "S&P Global flash Manufacturing PMI (cons. 53.4) and Services PMI (cons. 56.0), Sept",
+   "importance": "High",
+   "reason": "First real post-FOMC test of whether incoming data justifies the hawkish dot plot.",
+   "source": "S&P Global PMI schedule -- Confirmed-primary (scheduled); consensus figures Estimated, secondary aggregator"
+  },
+  {
+   "ts_et": "2026-09-23T10:05:00-04:00",
+   "type": "fed",
+   "name": "Fed Vice Chair for Supervision Michael Barr speaks",
+   "importance": "Medium",
+   "reason": "Time per secondary aggregator, not confirmed against federalreserve.gov's own schedule.",
+   "source": "Secondary aggregator -- Unconfirmed against primary"
+  },
+  {
+   "ts_et": "2026-09-23T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 1-year-10-month Note reopening ($28B), 5-Year Note ($70B), 17-week bill",
+   "importance": "Low",
+   "reason": "Confirmed directly via TreasuryDirect TA_WS upcoming-securities API.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-23T09:30:00-04:00",
+   "type": "space",
+   "name": "Long March 8A (undisclosed payload, Wenchang) -- status Go for Launch",
+   "importance": "Low",
+   "reason": "Scheduled launch.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-24T00:00:00-04:00",
+   "type": "business",
+   "name": "Costco (COST) fiscal Q4 FY2026 earnings, after close",
+   "importance": "High",
+   "reason": "The week's only watchlist-company earnings report. Consensus EPS diverges by vendor: Alpha Vantage $6.48, Finnhub $6.67 -- report as a range. Revenue consensus ~$94.9B (+~10% y/y). At least one analyst (Oppenheimer's Rupesh Parikh) has flagged downside risk to core-business earnings once one-time US tariff-refund benefits, which inflated the headline beat last quarter, are excluded.",
+   "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings -- Confirmed-primary (report date); consensus figures Estimated"
+  },
+  {
+   "ts_et": "2026-09-24T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Initial jobless claims (cons. ~201K vs prior 196K); Current Account (Q2); New Home Sales (cons. 619K)",
+   "importance": "Medium",
+   "reason": "Standard Thursday cadence, one week after the hawkish FOMC hike.",
+   "source": "Standard BLS/Census schedule -- Confirmed-primary (scheduled); consensus figures Estimated, secondary aggregator"
+  },
+  {
+   "ts_et": "2026-09-24T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "BLS: Employee Tenure, Biennial 2026, and Job Flexibilities and Work Schedules 2024-2025",
+   "importance": "Low",
+   "reason": "Structural labor releases, not market-moving.",
+   "source": "www.bls.gov release schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-24T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 7-Year Note ($44B), 4-week and 8-week bills",
+   "importance": "Low",
+   "reason": "Confirmed directly via TreasuryDirect TA_WS upcoming-securities API. A full 2Y/5Y/7Y note slate this week is a genuine demand test one week after the 10-year pushed above 5%.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-24T04:45:00-04:00",
+   "type": "space",
+   "name": "Long March 6A (undisclosed payload) -- status Go for Launch",
+   "importance": "Low",
+   "reason": "Scheduled launch.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-25T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Durable Goods Orders (Aug), cons. -0.3% headline / +0.5% core",
+   "importance": "Medium",
+   "reason": "Standard Friday release; consensus Estimated, secondary aggregator.",
+   "source": "Census.gov schedule -- Confirmed-primary (scheduled); consensus Estimated"
+  },
+  {
+   "ts_et": "2026-09-25T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "University of Michigan Consumer Sentiment, final (Sept), cons. 47.8 unchanged from prelim",
+   "importance": "Medium",
+   "reason": "Final print of the month.",
+   "source": "University of Michigan schedule -- Confirmed-primary (scheduled); consensus Estimated"
+  },
+  {
+   "ts_et": "2026-09-25T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "BLS: Employee Benefits in the United States, March 2026",
+   "importance": "Low",
+   "reason": "Structural labor release, not market-moving.",
+   "source": "www.bls.gov release schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-25T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 4-week and 8-week bills",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-25T00:00:00-04:00",
+   "type": "local",
+   "name": "Pittsburgh Regional Transit board votes on a $94.1M, 102-bus order",
+   "importance": "Low",
+   "reason": "Local Pittsburgh/Allegheny County item; previously reported as scheduled in the 2026-09-19-sat Weekly Review.",
+   "source": "Pittsburgh Regional Transit board agenda -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-25T20:15:00-04:00",
+   "type": "space",
+   "name": "Rocket Lab Electron (\"Owlright\") -- status Go for Launch",
+   "importance": "Low",
+   "reason": "Scheduled launch; UTC-to-ET date-boundary note: Launch Library 2 lists 2026-09-26T00:15Z, which converts to Friday evening ET.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-28T08:15:00-04:00",
+   "type": "space",
+   "name": "SpaceX Starship Flight 14 (V3 debut) -- still targeting Sept 28, status To Be Confirmed, FAA license still the gating item",
+   "importance": "Medium",
+   "reason": "Just past this week's window; no further slip confirmed as of this pull.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-multiple, status To Be Confirmed"
   }
  ],
- "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast"
+ "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
+ "fomc_next": {
+  "note": "Next FOMC meeting Oct 27-28, 2026; Sept 15-16 minutes not yet posted and not due next week (pattern points to roughly Oct 7-8).",
+  "source": "federalreserve.gov FOMC calendar page -- Confirmed-primary"
+ }
 }
