@@ -2,7 +2,7 @@
 MARKET SIGNAL ENGINE -- scoring engine.
 
 Pure-stdlib quantitative scoring. This module deliberately has NO third-party
-dependencies (no pandas / numpy / streamlit / yfinance) so it can be dropped
+dependencies (no requests / streamlit / plotly / pandas) so it can be dropped
 straight into another project.
 
 V1 equity model

@@ -4,7 +4,7 @@ MARKET SIGNAL ENGINE -- Streamlit front end.
 Run with:   streamlit run app.py
 
 This file is presentation only. Every number shown here is produced by
-`scoring.py` (pure math) from data supplied by `market_data.py` (yfinance).
+`scoring.py` (pure math) from data supplied by `market_data.py` (Yahoo Finance).
 Nothing is calculated inline.
 """
 
@@ -277,7 +277,7 @@ def render_data_used(company: SecurityData, benchmark) -> None:
         ("Revenue (TTM)", fmt_money(company.revenue)),
         ("Total debt", fmt_money(company.total_debt)),
         ("Debt / Revenue", fmt_pct(company.debt_revenue)),
-        ("Forward EPS", fmt_price(company.forward_eps)),
+        ("Forward EPS (derived: price / fwd P/E)", fmt_price(company.forward_eps)),
         ("Forward P/E", fmt_x(company.forward_pe)),
         ("Trailing P/E", fmt_x(company.trailing_pe)),
         ("Sector", company.sector or "unavailable"),
@@ -288,8 +288,11 @@ def render_data_used(company: SecurityData, benchmark) -> None:
         ("Peers used (Debt/Revenue)", str(benchmark.debt_revenue_n)),
         ("Peers used (Forward P/E)", str(benchmark.forward_pe_n)),
         ("Benchmark confidence", "LOW" if benchmark.low_confidence else "OK"),
+        ("Revenue as of", company.revenue_as_of or "unavailable"),
+        ("Total debt as of", company.debt_as_of or "unavailable"),
+        ("Forward P/E as of", company.forward_pe_as_of or "unavailable"),
         ("Data retrieval time", fmt_time(company.retrieved_at)),
-        ("Source", "Yahoo Finance via yfinance"),
+        ("Source", "Yahoo Finance (public query endpoints)"),
     ]
     st.table({"Field": [r[0] for r in rows], "Value": [r[1] for r in rows]})
 

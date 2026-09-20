@@ -31,7 +31,7 @@ python3 test_scoring.py
 |---|---|
 | `app.py` | Streamlit UI only. Layout, charts, formatting, caching. No math. |
 | `scoring.py` | The model. **Zero third-party imports** — copy it straight into another project. |
-| `market_data.py` | yfinance access, normalisation, peer universe, sector medians. |
+| `market_data.py` | Yahoo access, normalisation, peer universe, sector medians. |
 | `test_scoring.py` | 60 offline checks on the model and its edge cases. |
 | `requirements.txt` | Dependencies. |
 
@@ -82,6 +82,40 @@ labelled on screen.
 Factor scores are clamped to `[-100, +100]` individually as well as in
 aggregate, since a logarithm of an extreme ratio is otherwise unbounded.
 
+## Data source
+
+Yahoo Finance, exclusively. No API key, no account, no crumb/cookie handshake,
+and no scraping of the HTML site — just three public query endpoints:
+
+| Endpoint | Supplies |
+|---|---|
+| `v8/finance/chart` | current price, currency, and the cleanest existence check (404 on a bad symbol) |
+| `v1/finance/search` | company name, `quoteType`, sector, industry |
+| `ws/fundamentals-timeseries` | revenue, total debt, forward P/E, market cap, trailing P/E, EPS |
+
+`fetch_raw_info` in `market_data.py` assembles those into one flat payload and
+is **the only function in the project that touches the network**. Point it
+somewhere else and nothing downstream changes.
+
+Yahoo's search is fuzzy, so only an *exact* symbol match is accepted —
+otherwise `ASDFXYZ` would silently resolve to whatever Yahoo suggests.
+
+Fundamentals are taken from the most current variant available: `trailing*`
+(rolling, as-of-today) for revenue and forward P/E, and the latest reported
+quarter for total debt, falling back to the fiscal year. Each of those carries
+its own **as-of date**, shown in the DATA USED panel — a figure's retrieval
+time is not the same as its reporting date, and the model shows both.
+
+Requests fail over between `query2` and `query1`, retry twice per host, back off
+on HTTP 429, and are throttled to roughly 16/second across all threads.
+
+One analysis costs 3 requests for the company plus 2 per peer (peers skip the
+price call), so about 40 requests — roughly 2.5–3 seconds cold, instant on a
+cache hit.
+
+Forward EPS is not published on these endpoints, so it is *derived* as
+`price / forward P/E` and labelled as derived wherever it appears.
+
 ## Sector peers
 
 Yahoo's free tier will not enumerate a whole sector, so V1 uses a **curated
@@ -106,6 +140,9 @@ analysing a second company in the same sector reuses the peer fetch. Keeping
 the cache decorators in `app.py` is what leaves `market_data.py` free of any
 Streamlit dependency.
 
+A cold analysis is roughly 2.5–3 seconds; re-analysing the same ticker, or a
+different one in the same sector, is effectively instant for the next hour.
+
 ## Known limits of V1
 
 - **Debt/Revenue is a poor leverage measure for banks.** Revenue is not a
@@ -116,8 +153,9 @@ Streamlit dependency.
   financials-specific branch land.
 - The peer universe is US large-cap. A small-cap or non-US listing is measured
   against large-cap peers in its sector.
-- `yfinance` is an unofficial Yahoo Finance scraper. Fields go missing without
-  warning; the app labels them rather than guessing.
+- These are public but *unofficial* Yahoo endpoints. They are not covered by a
+  support contract and their shapes can change without notice. Fields go
+  missing; the app labels them rather than guessing.
 - Forward P/E is a consensus estimate, not a fact.
 
 ## Planned expansion

@@ -4,8 +4,16 @@ MARKET SIGNAL ENGINE -- data layer.
 Everything that touches the outside world lives here. The scoring engine
 (`scoring.py`) never imports this module, so the two can be moved apart.
 
-Data source: yfinance (Yahoo Finance). All fundamentals come from a single
-`Ticker.info` payload per symbol.
+Data source: Yahoo Finance, via its public query endpoints (no API key, no
+crumb/cookie handshake, no scraping of the HTML site):
+
+  * v8/finance/chart              -> current price, currency
+  * v1/finance/search             -> name, quoteType, sector, industry
+  * ws/fundamentals-timeseries    -> revenue, total debt, forward P/E,
+                                     market cap, trailing P/E, EPS
+
+`fetch_raw_info` assembles those three responses into one flat dict, so the
+rest of this module sees a single payload per symbol.
 
 Improving peer selection later means editing SECTOR_PEER_UNIVERSE and/or
 `get_sector_peers` -- nothing above this line needs to change.
@@ -14,11 +22,13 @@ Improving peer selection later means editing SECTOR_PEER_UNIVERSE and/or
 from __future__ import annotations
 
 import datetime as _dt
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Optional
 
-import yfinance as yf
+import requests
 
 from scoring import (
     MIN_PEERS_FOR_CONFIDENCE,
@@ -38,7 +48,7 @@ from scoring import (
 
 EQUITY = "EQUITY"
 
-#: yfinance `quoteType` -> our internal instrument class.
+#: Yahoo `quoteType` -> our internal instrument class.
 INSTRUMENT_TYPES = {
     "EQUITY": EQUITY,
     "ETF": "ETF",
@@ -115,7 +125,7 @@ SECTOR_PEER_UNIVERSE: dict[str, list[str]] = {
     ],
 }
 
-#: How many peers to fetch per analysis. Each peer is one yfinance call.
+#: How many peers to fetch per analysis.
 PEER_FETCH_LIMIT = 20
 
 #: Narrow to the company's own industry only if at least this many peers match.
@@ -148,6 +158,9 @@ class SecurityData:
     forward_eps: Optional[float] = None
     trailing_pe: Optional[float] = None
     debt_revenue: Optional[float] = None
+    revenue_as_of: Optional[str] = None
+    debt_as_of: Optional[str] = None
+    forward_pe_as_of: Optional[str] = None
     retrieved_at: Optional[_dt.datetime] = None
     missing_fields: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
@@ -158,7 +171,7 @@ class SecurityData:
 
 
 # --------------------------------------------------------------------------
-# Raw fetch -- the single seam where yfinance is touched
+# Raw fetch -- the single seam where the network is touched
 # --------------------------------------------------------------------------
 
 def _num(value) -> Optional[float]:
@@ -174,16 +187,233 @@ def _num(value) -> Optional[float]:
     return out
 
 
-def fetch_raw_info(ticker: str) -> dict:
-    """Return yfinance's raw `.info` dict for a symbol.
+# Yahoo serves these from either host; we fail over between them.
+YAHOO_HOSTS = ("query2.finance.yahoo.com", "query1.finance.yahoo.com")
 
-    This is the only function in the project that calls yfinance directly.
-    Swap it (or monkeypatch it in tests) to change data providers.
+#: A browser-style User-Agent is acceptable for Yahoo Finance (and only Yahoo).
+BROWSER_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
+HTTP_TIMEOUT = 20      # seconds per request
+HTTP_RETRIES = 2       # per host
+MIN_REQUEST_INTERVAL = 0.06   # seconds; politeness throttle across all threads
+
+#: fundamentals-timeseries fields we ask for, most-current variants first.
+#: "trailing" is a rolling as-of-today figure; "quarterly" is the latest
+#: reported quarter; "annual" is the last fiscal year.
+TIMESERIES_TYPES = (
+    "trailingForwardPeRatio",
+    "trailingPeRatio",
+    "trailingMarketCap",
+    "trailingTotalRevenue",
+    "quarterlyTotalRevenue",
+    "quarterlyTotalDebt",
+    "annualTotalDebt",
+    "trailingDilutedEPS",
+)
+
+_session_lock = threading.Lock()
+_throttle_lock = threading.Lock()
+_last_request_at = [0.0]
+_session: Optional[requests.Session] = None
+
+
+def _get_session() -> requests.Session:
+    """One shared, thread-safe session so connections are reused."""
+    global _session
+    with _session_lock:
+        if _session is None:
+            _session = requests.Session()
+            _session.headers.update(
+                {
+                    "User-Agent": BROWSER_UA,
+                    "Accept": "application/json",
+                    "Accept-Language": "en-US,en;q=0.9",
+                }
+            )
+        return _session
+
+
+def _throttle() -> None:
+    """Space requests out a little. Yahoo's endpoints are free but unofficial."""
+    with _throttle_lock:
+        wait = MIN_REQUEST_INTERVAL - (time.monotonic() - _last_request_at[0])
+        if wait > 0:
+            time.sleep(wait)
+        _last_request_at[0] = time.monotonic()
+
+
+def _get_json(path: str, params: dict) -> Optional[dict]:
+    """GET a Yahoo query endpoint, failing over between hosts.
+
+    Returns the decoded JSON, or None if the resource does not exist (404) or
+    every attempt failed. Never raises for an ordinary miss.
     """
-    return dict(yf.Ticker(ticker).info or {})
+    last_error: Optional[Exception] = None
+    session = _get_session()
+
+    for host in YAHOO_HOSTS:
+        url = f"https://{host}/{path}"
+        for attempt in range(HTTP_RETRIES):
+            _throttle()
+            try:
+                response = session.get(url, params=params, timeout=HTTP_TIMEOUT)
+            except requests.RequestException as exc:
+                last_error = exc
+                continue
+            if response.status_code == 404:
+                return None           # symbol genuinely does not exist
+            if response.status_code == 200:
+                try:
+                    return response.json()
+                except ValueError as exc:
+                    last_error = exc
+                    continue
+            if response.status_code in (429, 999):
+                time.sleep(0.5 * (attempt + 1))   # backed off, then retried
+                last_error = RuntimeError(f"HTTP {response.status_code} from {host}")
+                continue
+            last_error = RuntimeError(f"HTTP {response.status_code} from {host}")
+
+    if last_error is not None:
+        raise RuntimeError(f"Yahoo request failed ({path}): {last_error}")
+    return None
 
 
-def get_security_data(ticker: str) -> SecurityData:
+def _fetch_chart(symbol: str) -> dict:
+    """Current price and currency. Also the cleanest existence check: 404."""
+    payload = _get_json(
+        f"v8/finance/chart/{symbol}", {"range": "1d", "interval": "1d"}
+    )
+    if not payload:
+        return {}
+    try:
+        return payload["chart"]["result"][0]["meta"] or {}
+    except (KeyError, IndexError, TypeError):
+        return {}
+
+
+def _fetch_search(symbol: str) -> dict:
+    """Name, quoteType, sector and industry.
+
+    Yahoo's search is fuzzy, so only an EXACT symbol match is accepted --
+    otherwise "ASDFXYZ" would silently resolve to whatever Yahoo suggests.
+    """
+    payload = _get_json(
+        "v1/finance/search",
+        {"q": symbol, "quotesCount": 8, "newsCount": 0, "listsCount": 0},
+    )
+    if not payload:
+        return {}
+    for quote in payload.get("quotes") or []:
+        if str(quote.get("symbol", "")).upper() == symbol.upper():
+            return quote
+    return {}
+
+
+def _fetch_timeseries(symbol: str) -> dict:
+    """Latest value and as-of date for each fundamentals field.
+
+    Returns {type: {"value": float, "as_of": "YYYY-MM-DD"}}.
+    """
+    now = int(time.time())
+    payload = _get_json(
+        f"ws/fundamentals-timeseries/v1/finance/timeseries/{symbol}",
+        {
+            "symbol": symbol,
+            "type": ",".join(TIMESERIES_TYPES),
+            "period1": now - 5 * 365 * 24 * 3600,
+            "period2": now + 24 * 3600,
+        },
+    )
+    out: dict[str, dict] = {}
+    if not payload:
+        return out
+
+    for result in (payload.get("timeseries") or {}).get("result") or []:
+        try:
+            field_name = result["meta"]["type"][0]
+        except (KeyError, IndexError, TypeError):
+            continue
+        points = [p for p in (result.get(field_name) or []) if p]
+        if not points:
+            continue
+        latest = points[-1]           # Yahoo returns these oldest-first
+        value = _num((latest.get("reportedValue") or {}).get("raw"))
+        if value is None:
+            continue
+        out[field_name] = {"value": value, "as_of": latest.get("asOfDate")}
+    return out
+
+
+def _pick(series: dict, *names: str) -> tuple[Optional[float], Optional[str]]:
+    """First available field from `names`, in preference order."""
+    for name in names:
+        entry = series.get(name)
+        if entry is not None:
+            return entry["value"], entry["as_of"]
+    return None, None
+
+
+def fetch_raw_info(ticker: str, with_price: bool = True) -> dict:
+    """Assemble one flat payload for a symbol from Yahoo's query endpoints.
+
+    This is the only function in the project that talks to the network. Swap it
+    (or monkeypatch it in tests) to change data providers.
+
+    `with_price=False` skips the chart call; peers do not need a quote, which
+    saves one HTTP request per peer.
+    """
+    symbol = ticker.upper()
+    meta = _fetch_chart(symbol) if with_price else {}
+    quote = _fetch_search(symbol)
+    series = _fetch_timeseries(symbol)
+
+    if not meta and not quote and not series:
+        return {}                     # caller raises TickerNotFound
+
+    revenue, revenue_as_of = _pick(
+        series, "trailingTotalRevenue", "quarterlyTotalRevenue"
+    )
+    # Most recent balance sheet first: the last quarter, then the fiscal year.
+    debt, debt_as_of = _pick(series, "quarterlyTotalDebt", "annualTotalDebt")
+    forward_pe, forward_pe_as_of = _pick(series, "trailingForwardPeRatio")
+    trailing_pe, _ = _pick(series, "trailingPeRatio")
+    market_cap, _ = _pick(series, "trailingMarketCap")
+
+    price = _num(meta.get("regularMarketPrice"))
+
+    # Yahoo publishes no forward-EPS field on these endpoints. Derive it only
+    # when both inputs are real, and label it as derived wherever it is shown.
+    forward_eps = None
+    if price is not None and forward_pe not in (None, 0):
+        forward_eps = price / forward_pe
+
+    return {
+        "symbol": symbol,
+        "longName": quote.get("longname") or meta.get("longName"),
+        "shortName": quote.get("shortname") or meta.get("shortName"),
+        "quoteType": quote.get("quoteType") or meta.get("instrumentType"),
+        "sector": quote.get("sector"),
+        "industry": quote.get("industry"),
+        "currency": meta.get("currency"),
+        "currentPrice": price,
+        "regularMarketPrice": price,
+        "marketCap": market_cap,
+        "totalRevenue": revenue,
+        "totalDebt": debt,
+        "forwardPE": forward_pe,
+        "forwardEps": forward_eps,
+        "trailingPE": trailing_pe,
+        "revenueAsOf": revenue_as_of,
+        "debtAsOf": debt_as_of,
+        "forwardPeAsOf": forward_pe_as_of,
+    }
+
+
+def get_security_data(ticker: str, with_price: bool = True) -> SecurityData:
     """Fetch and normalise one symbol.
 
     Raises TickerNotFound if the symbol does not resolve. Missing individual
@@ -194,11 +424,11 @@ def get_security_data(ticker: str) -> SecurityData:
         raise TickerNotFound("No ticker entered.")
 
     try:
-        info = fetch_raw_info(symbol)
-    except Exception as exc:  # network error, bad symbol, yfinance internals
+        info = fetch_raw_info(symbol, with_price=with_price)
+    except Exception as exc:  # network failure, malformed response
         raise TickerNotFound(f"Could not retrieve data for {symbol} ({exc}).") from exc
 
-    # yfinance returns a near-empty dict for symbols that do not exist.
+    # Yahoo yields nothing identifying for a symbol that does not exist.
     if not info or not (
         info.get("quoteType")
         or info.get("symbol")
@@ -226,6 +456,9 @@ def get_security_data(ticker: str) -> SecurityData:
         forward_pe=_num(info.get("forwardPE")),
         forward_eps=_num(info.get("forwardEps")),
         trailing_pe=_num(info.get("trailingPE")),
+        revenue_as_of=info.get("revenueAsOf"),
+        debt_as_of=info.get("debtAsOf"),
+        forward_pe_as_of=info.get("forwardPeAsOf"),
         retrieved_at=_dt.datetime.now(_dt.timezone.utc),
     )
 
@@ -234,7 +467,7 @@ def get_security_data(ticker: str) -> SecurityData:
     data.notes.extend(ratio_notes)
 
     for label, value in (
-        ("Price", data.price),
+        ("Price", data.price if with_price else 0),
         ("Market cap", data.market_cap),
         ("Revenue", data.revenue),
         ("Total debt", data.total_debt),
@@ -274,7 +507,7 @@ def fetch_peer_rows(tickers: list[str]) -> list[dict]:
 
     def one(symbol: str) -> Optional[dict]:
         try:
-            data = get_security_data(symbol)
+            data = get_security_data(symbol, with_price=False)
         except Exception:
             return None
         return {
