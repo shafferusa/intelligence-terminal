@@ -114,6 +114,37 @@ def _shared_strings(archive: zipfile.ZipFile) -> list[str]:
     return out
 
 
+def _all_sheet_paths(archive: zipfile.ZipFile) -> list[tuple[str, str]]:
+    """Every worksheet as (part name, display name), in workbook order."""
+    try:
+        workbook = ET.fromstring(archive.read("xl/workbook.xml"))
+        rels = ET.fromstring(archive.read("xl/_rels/workbook.xml.rels"))
+    except KeyError:
+        return [("xl/worksheets/sheet1.xml", "Sheet1")]
+
+    target_by_id = {
+        rel.get("Id"): rel.get("Target")
+        for rel in rels.findall(f"{RELS_NS}Relationship")
+    }
+    sheets = workbook.find(f"{SPREADSHEET_NS}sheets")
+    if sheets is None:
+        return [("xl/worksheets/sheet1.xml", "Sheet1")]
+
+    out = []
+    for sheet in sheets.findall(f"{SPREADSHEET_NS}sheet"):
+        rid = sheet.get(
+            "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"
+        )
+        target = target_by_id.get(rid)
+        if not target:
+            continue
+        target = target.lstrip("/")
+        if not target.startswith("xl/"):
+            target = "xl/" + target
+        out.append((target, sheet.get("name") or "Sheet"))
+    return out or [("xl/worksheets/sheet1.xml", "Sheet1")]
+
+
 def _first_sheet_path(archive: zipfile.ZipFile) -> tuple[str, Optional[str]]:
     """Resolve the first worksheet's part name and display name."""
     try:
@@ -145,16 +176,8 @@ def _first_sheet_path(archive: zipfile.ZipFile) -> tuple[str, Optional[str]]:
     return "xl/worksheets/sheet1.xml", None
 
 
-def read_xlsx(path: str) -> tuple[list[list[str]], Optional[str]]:
-    """Return (rows of cell strings, sheet name) for the first worksheet."""
-    with zipfile.ZipFile(path) as archive:
-        strings = _shared_strings(archive)
-        sheet_path, sheet_name = _first_sheet_path(archive)
-        try:
-            sheet_xml = archive.read(sheet_path)
-        except KeyError:
-            sheet_xml = archive.read("xl/worksheets/sheet1.xml")
-
+def _parse_sheet(sheet_xml: bytes, strings: list[str]) -> list[list[str]]:
+    """Rows of cell strings for one worksheet part."""
     root = ET.fromstring(sheet_xml)
     rows: list[list[str]] = []
     for row in root.iter(f"{SPREADSHEET_NS}row"):
@@ -167,7 +190,8 @@ def read_xlsx(path: str) -> tuple[list[list[str]], Optional[str]]:
             if cell_type == "inlineStr":
                 is_node = cell.find(f"{SPREADSHEET_NS}is")
                 value = "".join(
-                    t.text or "" for t in (is_node.iter(f"{SPREADSHEET_NS}t") if is_node is not None else [])
+                    t.text or ""
+                    for t in (is_node.iter(f"{SPREADSHEET_NS}t") if is_node is not None else [])
                 )
             else:
                 v_node = cell.find(f"{SPREADSHEET_NS}v")
@@ -182,7 +206,32 @@ def read_xlsx(path: str) -> tuple[list[list[str]], Optional[str]]:
                 cells.append("")
             cells.append(value.strip())
         rows.append(cells)
-    return rows, sheet_name
+    return rows
+
+
+def read_xlsx(path: str) -> tuple[list[list[str]], Optional[str]]:
+    """Return (rows of cell strings, sheet name) for the first worksheet."""
+    with zipfile.ZipFile(path) as archive:
+        strings = _shared_strings(archive)
+        sheet_path, sheet_name = _first_sheet_path(archive)
+        try:
+            sheet_xml = archive.read(sheet_path)
+        except KeyError:
+            sheet_xml = archive.read("xl/worksheets/sheet1.xml")
+    return _parse_sheet(sheet_xml, strings), sheet_name
+
+
+def read_xlsx_sheets(path: str) -> dict[str, list[list[str]]]:
+    """Every worksheet in the workbook, as {sheet name: rows of cell strings}."""
+    out: dict[str, list[list[str]]] = {}
+    with zipfile.ZipFile(path) as archive:
+        strings = _shared_strings(archive)
+        for part, name in _all_sheet_paths(archive):
+            try:
+                out[name] = _parse_sheet(archive.read(part), strings)
+            except KeyError:
+                continue
+    return out
 
 
 def read_delimited(path: str) -> list[list[str]]:
@@ -377,3 +426,296 @@ def load_universe(path: Optional[str] = None) -> tuple[list[UniverseRow], Univer
         return [], source
 
     return parse_universe_rows(rows, sheet=sheet, path=resolved)
+
+
+# ==========================================================================
+# MULTI-ASSET UNIVERSE
+#
+# The workbook is the source of truth for every tradeable asset, not just
+# equities. Each sheet maps to one or more asset classes.
+# ==========================================================================
+
+EQUITY = "Equity"
+ETF = "ETF"
+CRYPTO = "Crypto"
+INDEX = "Index"
+PREFERRED = "Preferred"
+BOND = "Bond"
+FUTURE = "Future"
+FX = "FX"
+COMMODITY = "Commodity"
+OTC = "OTC Derivative"
+CDS = "CDS"
+
+#: Asset classes that currently have a real Shaffer Score model.
+SCOREABLE_CLASSES = {EQUITY}
+
+#: Workbook "Category" values inside "Equities & funds" -> our asset class.
+#: Only Stock / ADR / REIT are operating-company equities.
+EQUITY_CATEGORY_MAP = {
+    "stock": EQUITY,
+    "adr (foreign stock)": EQUITY,
+    "reit": EQUITY,
+    "etf": ETF,
+    "crypto (spot coin)": CRYPTO,
+    "index (futures / options only)": INDEX,
+    "preferred stock": PREFERRED,
+}
+
+#: Exchange suffixes the workbook writes with a hyphen; Yahoo uses a dot.
+EXCHANGE_SUFFIXES = {
+    "KS", "KQ", "HK", "T", "TW", "TWO", "SR", "L", "PA", "DE", "F", "SW",
+    "TO", "V", "AX", "NZ", "SS", "SZ", "MI", "MC", "AS", "BR", "LS", "VI",
+    "HE", "ST", "OL", "CO", "IR", "SI", "KL", "BK", "JK", "NS", "BO", "SA",
+    "MX", "BA", "IS", "JO", "TA", "WA", "PR", "BD", "AT",
+}
+
+
+@dataclass
+class UniverseAsset:
+    """One tradeable asset from the workbook."""
+
+    symbol: str                          # workbook identifier, as written
+    name: Optional[str] = None
+    asset_class: str = EQUITY
+    subclass: Optional[str] = None       # the workbook's own Category value
+    sector: Optional[str] = None
+    industry: Optional[str] = None
+    currency: Optional[str] = None
+    country: Optional[str] = None
+    sheet: Optional[str] = None
+    yahoo_symbol: Optional[str] = None   # None when not quotable on Yahoo
+    extra: dict = field(default_factory=dict)
+
+    @property
+    def scoreable(self) -> bool:
+        return self.asset_class in SCOREABLE_CLASSES and bool(self.yahoo_symbol)
+
+    @property
+    def search_blob(self) -> str:
+        return " ".join(
+            str(x).lower() for x in
+            (self.symbol, self.name, self.asset_class, self.subclass,
+             self.sector, self.industry, self.country)
+            if x
+        )
+
+
+def to_yahoo_symbol(workbook_symbol: str, asset_class: str) -> Optional[str]:
+    """Translate a workbook identifier into a Yahoo ticker.
+
+    The workbook writes foreign listings as `0700-HK`; Yahoo wants `0700.HK`.
+    A trailing segment that is NOT a known exchange code is left alone, so
+    share classes such as `BRK-B` survive untouched.
+
+    Returns None for asset classes Yahoo does not quote by this identifier
+    (bonds, OTC products, CDS reference entities) -- guessing a ticker for
+    those would be fabrication.
+    """
+    symbol = (workbook_symbol or "").strip().upper()
+    if not symbol:
+        return None
+    if asset_class in (BOND, OTC, CDS):
+        return None
+
+    if "-" in symbol:
+        head, _, tail = symbol.rpartition("-")
+        if head and tail in EXCHANGE_SUFFIXES:
+            return f"{head}.{tail}"
+    return symbol
+
+
+def _sheet_assets(sheet: str, rows: list[list[str]]) -> list[UniverseAsset]:
+    """Turn one worksheet into assets. Unknown sheets yield nothing."""
+    if not rows or len(rows) < 2:
+        return []
+    header = [_normalise_header(h) for h in rows[0]]
+
+    def col(*aliases) -> Optional[int]:
+        for alias in aliases:
+            if alias in header:
+                return header.index(alias)
+        return None
+
+    def cell(row, index) -> str:
+        if index is None or index >= len(row):
+            return ""
+        return (row[index] or "").strip()
+
+    out: list[UniverseAsset] = []
+
+    if sheet == "Equities & funds":
+        c_id, c_name = col("ticker"), col("name")
+        c_cat, c_sector = col("category"), col("sector")
+        c_country, c_ccy = col("country"), col("ccy")
+        c_last, c_beta = col("last"), col("beta")
+        for row in rows[1:]:
+            symbol = cell(row, c_id).upper()
+            if not symbol:
+                continue
+            category = cell(row, c_cat)
+            asset_class = EQUITY_CATEGORY_MAP.get(category.lower(), EQUITY)
+            out.append(UniverseAsset(
+                symbol=symbol, name=cell(row, c_name) or None,
+                asset_class=asset_class, subclass=category or None,
+                sector=cell(row, c_sector) or None,
+                country=cell(row, c_country) or None,
+                currency=cell(row, c_ccy) or None, sheet=sheet,
+                yahoo_symbol=to_yahoo_symbol(symbol, asset_class),
+                extra={"workbook_last": cell(row, c_last),
+                       "workbook_beta": cell(row, c_beta)},
+            ))
+
+    elif sheet == "Bonds":
+        c_id, c_name, c_cat = col("id"), col("name"), col("category")
+        c_issuer, c_sector, c_rating = col("issuer"), col("sector"), col("rating")
+        c_mat, c_ytm = col("maturity"), col("ytm")
+        for row in rows[1:]:
+            symbol = cell(row, c_id).upper()
+            if not symbol:
+                continue
+            out.append(UniverseAsset(
+                symbol=symbol, name=cell(row, c_name) or None, asset_class=BOND,
+                subclass=cell(row, c_cat) or None,
+                sector=cell(row, c_sector) or None, sheet=sheet,
+                yahoo_symbol=None,
+                extra={"issuer": cell(row, c_issuer), "rating": cell(row, c_rating),
+                       "maturity": cell(row, c_mat), "ytm": cell(row, c_ytm)},
+            ))
+
+    elif sheet == "Futures":
+        c_id, c_name, c_cat = col("contract"), col("name"), col("category")
+        c_root, c_mult, c_exp = col("root"), col("multiplier"), col("expirylasttrade")
+        c_settle = col("settlement")
+        for row in rows[1:]:
+            symbol = cell(row, c_id).upper()
+            if not symbol:
+                continue
+            out.append(UniverseAsset(
+                symbol=symbol, name=cell(row, c_name) or None, asset_class=FUTURE,
+                subclass=cell(row, c_cat) or None, sheet=sheet, yahoo_symbol=None,
+                extra={"root": cell(row, c_root), "multiplier": cell(row, c_mult),
+                       "expiry": cell(row, c_exp), "settlement": cell(row, c_settle)},
+            ))
+
+    elif sheet == "Currencies":
+        c_id, c_name, c_cat = col("currency"), col("name"), col("category")
+        c_spot = col("spotusdperunitasofuniverse")
+        for row in rows[1:]:
+            symbol = cell(row, c_id).upper()
+            if not symbol:
+                continue
+            out.append(UniverseAsset(
+                symbol=symbol, name=cell(row, c_name) or None, asset_class=FX,
+                subclass=cell(row, c_cat) or None, sheet=sheet,
+                yahoo_symbol=None if symbol == "USD" else f"{symbol}USD=X",
+                extra={"workbook_spot": cell(row, c_spot)},
+            ))
+
+    elif sheet == "Commodities":
+        c_id, c_name, c_cat = col("code"), col("name"), col("category")
+        c_unit, c_spot, c_size = col("unit"), col("spotuniverse"), col("contractsize")
+        for row in rows[1:]:
+            symbol = cell(row, c_id).upper()
+            if not symbol:
+                continue
+            out.append(UniverseAsset(
+                symbol=symbol, name=cell(row, c_name) or None, asset_class=COMMODITY,
+                subclass=cell(row, c_cat) or None, sheet=sheet, yahoo_symbol=None,
+                extra={"unit": cell(row, c_unit), "workbook_spot": cell(row, c_spot),
+                       "contract_size": cell(row, c_size)},
+            ))
+
+    elif sheet == "OTC derivatives":
+        c_id, c_name, c_fam = col("product"), col("name"), col("family")
+        c_bucket, c_ref = col("pl bucket", "plbucket"), col("referenceuniverse")
+        for row in rows[1:]:
+            symbol = cell(row, c_id).upper()
+            if not symbol:
+                continue
+            out.append(UniverseAsset(
+                symbol=symbol, name=cell(row, c_name) or None, asset_class=OTC,
+                subclass=cell(row, c_fam) or None, sheet=sheet, yahoo_symbol=None,
+                extra={"bucket": cell(row, c_bucket), "reference": cell(row, c_ref)},
+            ))
+
+    elif sheet == "CDS names":
+        c_id, c_cat = col("referenceentity"), col("category")
+        c_sector, c_rating = col("sector"), col("rating")
+        for row in rows[1:]:
+            name = cell(row, c_id)
+            if not name:
+                continue
+            out.append(UniverseAsset(
+                symbol=f"CDS:{name}", name=name, asset_class=CDS,
+                subclass=cell(row, c_cat) or None,
+                sector=cell(row, c_sector) or None, sheet=sheet, yahoo_symbol=None,
+                extra={"rating": cell(row, c_rating)},
+            ))
+
+    return out
+
+
+def load_multi_asset_universe(
+    path: Optional[str] = None,
+) -> tuple[list[UniverseAsset], UniverseSource]:
+    """Load EVERY tradeable asset from the workbook, across all sheets."""
+    resolved = find_universe_file(path)
+    if not resolved:
+        source = UniverseSource(kind="fallback")
+        source.notes.append(
+            "No universe workbook found. Looked for "
+            + ", ".join(DEFAULT_SEARCH_NAMES) + " in "
+            + ", ".join(DEFAULT_SEARCH_DIRS) + ", and at $SHAFFERFINEVAL_UNIVERSE."
+        )
+        return [], source
+
+    source = UniverseSource(kind="workbook", path=resolved)
+    try:
+        sheets = read_xlsx_sheets(resolved)
+    except Exception as exc:
+        source.kind = "fallback"
+        source.notes.append(f"Could not read {os.path.basename(resolved)}: {exc}")
+        return [], source
+
+    assets: list[UniverseAsset] = []
+    seen: set[str] = set()
+    per_sheet: dict[str, int] = {}
+    for sheet, rows in sheets.items():
+        found = _sheet_assets(sheet, rows)
+        if not found:
+            continue
+        per_sheet[sheet] = len(found)
+        source.rows_read += len(found)
+        for asset in found:
+            key = f"{asset.asset_class}:{asset.symbol}"
+            if key in seen:
+                source.excluded["duplicate"] = source.excluded.get("duplicate", 0) + 1
+                continue
+            seen.add(key)
+            assets.append(asset)
+
+    source.rows_kept = len(assets)
+    source.sheet = ", ".join(per_sheet)
+    source.notes.append(
+        "Assets per sheet: "
+        + ", ".join(f"{k} {v}" for k, v in sorted(per_sheet.items()))
+    )
+    return assets, source
+
+
+def equity_universe_rows(
+    assets: list[UniverseAsset],
+) -> list[tuple[str, Optional[str]]]:
+    """(yahoo_symbol, sector hint) for the scoreable equities only.
+
+    The workbook's sector column is GICS ("Information Technology"); Yahoo uses
+    its own vocabulary ("Technology"). The hint is passed only as a fallback --
+    `market_data` prefers Yahoo's own classification, which is what the sector
+    model is built on.
+    """
+    return [
+        (a.yahoo_symbol, None)
+        for a in assets
+        if a.scoreable and a.yahoo_symbol
+    ]

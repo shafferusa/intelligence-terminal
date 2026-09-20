@@ -553,7 +553,7 @@ VTI_TICKER = "VTI"
 HISTORY_RANGE = "1y"
 
 #: Universe fetches are the heaviest thing the app does; bound them.
-MAX_UNIVERSE_COMPANIES = 400
+MAX_UNIVERSE_COMPANIES = 700
 UNIVERSE_FETCH_WORKERS = 10
 
 
