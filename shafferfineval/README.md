@@ -25,6 +25,35 @@ shares no state, no config and no code with them.
 
 ## Run it
 
+**The launcher does everything.** First run builds the virtual environment and
+installs the two dependencies; every run after that just starts the terminal
+and opens a browser window once the server is actually answering.
+
+| Platform | Do this |
+|---|---|
+| macOS | double-click **`run.command`**, or `./run.sh` in Terminal |
+| Linux | `./run.sh` |
+| Windows | double-click **`run.bat`** |
+
+```bash
+./run.sh              # start the app
+./run.sh --refresh    # score everything first, then start
+```
+
+It opens at http://127.0.0.1:8501. The workbook universe loads automatically
+and the database is created on first run. No login, no account, and no API key
+is needed to start — `FRED_API_KEY` only unlocks the macro engines.
+
+Set `SHAFFERFINEVAL_PORT` to move it off 8501. Set `PYTHON` if `python3` is not
+the interpreter you want (`PYTHON=python3.12 ./run.sh`).
+
+The launcher requires **Python 3.10+** and says so rather than failing later:
+the engines use `list[dict]` and `X | None` annotations that older versions
+reject at import. If the dependency install fails it stops there with the
+likely cause, and does not start a half-built app.
+
+### Doing it by hand
+
 ```bash
 cd shafferfineval
 python3 -m venv .venv && source .venv/bin/activate
@@ -32,8 +61,33 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Streamlit opens http://localhost:8501. The workbook universe loads
-automatically; the database is created on first run. No login, no API key.
+Two dependencies, `streamlit` and `requests`. Everything else — the
+statistics, the ML models, the `.xlsx` reader — is written against the standard
+library, so there is no numpy/pandas/scikit-learn to install or keep compatible.
+
+### Save it as an app
+
+Streamlit is a web server, so the way to get a real dock or taskbar icon is to
+install the page as an app. Start it first, then:
+
+- **Chrome / Edge** — open http://127.0.0.1:8501, then ⋮ menu →
+  *Cast, save and share* → **Install page as app** (Edge: *Apps → Install this
+  site as an app*). You get a standalone window with no browser chrome, and an
+  icon in the Dock, Start menu or taskbar.
+- **Safari** — *File → Add to Dock*.
+
+The installed icon only opens the window; it does not start the server. Launch
+`run.command` / `run.bat` first, or have it start automatically:
+
+- **macOS** — System Settings → General → Login Items → **+** → `run.command`.
+- **Windows** — press `Win+R`, run `shell:startup`, and put a shortcut to
+  `run.bat` in the folder that opens.
+- **Linux** — a systemd user unit running `run.sh`, or add it to your desktop
+  environment's startup applications.
+
+`.streamlit/config.toml` binds the server to `127.0.0.1` and keeps it there.
+This is a single-user local tool holding a personal trading book; nothing in it
+is built to face a network, so do not expose the port.
 
 ### Refresh the scores
 
@@ -46,12 +100,35 @@ python3 daily_job.py --symbols NVDA,AAPL
 python3 daily_job.py --date 2026-09-20
 ```
 
-Schedule it after the US close (the sidebar shows every class's schedule):
+**Scheduling this is the single thing that makes the rest of the project
+work.** Every ML status reads INSUFFICIENT DATA until snapshots accumulate,
+and a snapshot can only be taken on the day it describes — there is no way to
+reconstruct one later, because backfilling fundamentals that were not actually
+known on a past date is exactly what this project refuses to do. A month not
+scheduled is a month of evidence that cannot be recovered.
+
+Schedule it after the US close (the sidebar shows every class's schedule).
+
+**macOS / Linux** — `crontab -e`:
 
 ```cron
 CRON_TZ=America/New_York
-30 16 * * 1-5 cd /path/to/shafferfineval && /usr/bin/python3 daily_job.py
+30 16 * * 1-5 cd /path/to/shafferfineval && .venv/bin/python daily_job.py >> refresh.log 2>&1
 ```
+
+On macOS, cron needs Full Disk Access (System Settings → Privacy & Security)
+and the machine must be awake at 4:30pm ET. A laptop that is usually asleep is
+better served by `launchd` with `StartCalendarInterval`, which runs the job at
+next wake instead of skipping it.
+
+**Windows** — Task Scheduler, or from an admin prompt:
+
+```bat
+schtasks /create /tn ShafferFinEval /tr "C:\path\to\shafferfineval\.venv\Scripts\python.exe C:\path\to\shafferfineval\daily_job.py" /sc weekly /d MON,TUE,WED,THU,FRI /st 16:30
+```
+
+Use the venv's own `python`, not the system one — the system interpreter does
+not have `requests` installed.
 
 The sidebar also has **Refresh Asset / Refresh Watchlist / Refresh All** for
 manual runs. Note that every refresh sweeps the whole supported universe even

@@ -382,6 +382,33 @@ check("an unavailable hedged drawdown is shown as unavailable",
 check("the trade dataset is still walled off from the market dataset",
       "never merged with the " in page and "market dataset" in page)
 
+print("== the app can actually be launched ==")
+_here = os.path.dirname(os.path.abspath(__file__))
+reqs = open(os.path.join(_here, "requirements.txt")).read()
+check("requirements lists streamlit", "streamlit" in reqs)
+check("requirements lists requests", "requests" in reqs)
+check("no dependency is listed that nothing imports",
+      "plotly" not in reqs)
+sources = "".join(
+    open(os.path.join(_here, f)).read()
+    for f in os.listdir(_here) if f.endswith(".py"))
+sources += "".join(
+    open(os.path.join(_here, "views", f)).read()
+    for f in os.listdir(os.path.join(_here, "views")) if f.endswith(".py"))
+for package in ("numpy", "pandas", "sklearn", "scipy", "yfinance"):
+    check(f"nothing imports {package}", f"import {package}" not in sources)
+for launcher in ("run.sh", "run.command", "run.bat"):
+    check(f"{launcher} exists", os.path.isfile(os.path.join(_here, launcher)))
+launch = open(os.path.join(_here, "run.sh")).read()
+check("the launcher refuses Python below 3.10", "3,10" in launch)
+check("the launcher waits for the server before opening a browser",
+      "_stcore/health" in launch)
+check("a failed install does not start a half-built app",
+      "exit 1" in launch and "deps-installed" in launch)
+config = open(os.path.join(_here, ".streamlit", "config.toml")).read()
+check("the server binds to localhost only", '127.0.0.1' in config)
+check("usage stats are off", "gatherUsageStats    = false" in config)
+
 print("== production arithmetic still untouched ==")
 import company_scoring as comp, hedging as H
 check("equity weights unchanged",

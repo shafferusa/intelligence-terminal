@@ -1,3 +1,5 @@
+# ShafferFinEval needs two packages. Everything else -- the statistics, the
+# ML models, the .xlsx reader -- is written against the standard library, so
+# there is no numpy/pandas/scikit-learn to install or keep compatible.
 streamlit>=1.32
-plotly>=5.20
 requests>=2.31

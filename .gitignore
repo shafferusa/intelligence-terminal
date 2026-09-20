@@ -21,3 +21,6 @@ node_modules/
 shafferfineval/*.db
 shafferfineval/*.db-wal
 shafferfineval/*.db-shm
+
+# ShafferFinEval local virtual environment (created by run.sh / run.bat)
+shafferfineval/.venv/

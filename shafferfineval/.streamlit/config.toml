@@ -1,0 +1,25 @@
+# ShafferFinEval runs as a local single-user app, not a hosted service.
+
+[theme]
+base                = "dark"
+primaryColor        = "#7aa63c"
+backgroundColor     = "#0e1117"
+secondaryBackgroundColor = "#161b22"
+textColor           = "#c9d1d9"
+font                = "monospace"
+
+[server]
+# Local only. Nothing about this app is built to face a network.
+address             = "127.0.0.1"
+port                = 8501
+headless            = true
+fileWatcherType     = "auto"
+enableCORS          = true
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats    = false
+
+[client]
+toolbarMode         = "minimal"
+showErrorDetails    = true
