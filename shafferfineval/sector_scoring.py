@@ -28,6 +28,19 @@ import math
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, Sequence
 
+# Shared primitives. Re-exported so this module's public surface is unchanged.
+from statlib import (  # noqa: F401
+    MIN_WINSOR_TRIM,
+    WINSOR_LOWER,
+    WINSOR_UPPER,
+    average_ranks,
+    clamp,
+    is_finite as _finite,
+    percentile,
+    winsorize,
+    winsorized_mean,
+)
+
 # --------------------------------------------------------------------------
 # Constants
 # --------------------------------------------------------------------------
@@ -63,12 +76,8 @@ RECENT_WINDOW = 63
 LOOKBACK_WINDOW = 126
 MIN_PRICE_HISTORY = LOOKBACK_WINDOW + 1      # need t, t-63 and t-126
 
-#: Winsorization bounds for company-level observations.
-WINSOR_LOWER, WINSOR_UPPER = 0.05, 0.95
-
-#: Minimum observations pulled in from each tail. floor(0.05 * n) is 0 for
-#: every n < 20, which would leave small sectors with no outlier protection.
-MIN_WINSOR_TRIM = 1
+#: Winsorization bounds and tail-trim policy live in statlib (re-exported
+#: above) so the sector and company models clip identically.
 
 #: Minimum usable companies before a factor is trustworthy.
 MIN_COMPANIES_PER_FACTOR = 5
@@ -158,114 +167,8 @@ class SectorScore:
 
 
 # --------------------------------------------------------------------------
-# Small numeric helpers
+# Cross-sector normalisation
 # --------------------------------------------------------------------------
-
-def _finite(value) -> bool:
-    if value is None or isinstance(value, bool):
-        return False
-    if not isinstance(value, (int, float)):
-        return False
-    return math.isfinite(float(value))
-
-
-def clamp(value: float, low: float, high: float) -> float:
-    return max(low, min(high, value))
-
-
-def percentile(sorted_values: Sequence[float], q: float) -> Optional[float]:
-    """Linear-interpolation percentile of an already-sorted sequence.
-
-    q is a fraction in [0, 1]. Matches the common "inclusive" convention:
-    q=0 is the minimum, q=1 the maximum.
-    """
-    if not sorted_values:
-        return None
-    if len(sorted_values) == 1:
-        return float(sorted_values[0])
-    position = q * (len(sorted_values) - 1)
-    low = math.floor(position)
-    high = math.ceil(position)
-    if low == high:
-        return float(sorted_values[int(position)])
-    weight = position - low
-    return float(sorted_values[low]) * (1 - weight) + float(sorted_values[high]) * weight
-
-
-def winsorize(
-    values: Iterable[float],
-    lower: float = WINSOR_LOWER,
-    upper: float = WINSOR_UPPER,
-    min_trim: int = MIN_WINSOR_TRIM,
-) -> list[float]:
-    """Clamp observations to the 5th/95th percentile bounds.
-
-    Count-based (the scipy.stats.mstats.winsorize convention): the k lowest and
-    k highest observations are pulled in to the next value inward, where
-    k = floor(limit * n). Nothing is discarded -- extremes are pulled back to
-    the bound, so a single abnormal company cannot drag a sector mean around.
-
-    Why not an interpolated percentile: with n = 20 and a 95% bound, linear
-    interpolation lands *between* the top two observations, so the outlier
-    partly sets its own cap and still leaks into the mean. Count-based bounds
-    are taken from observations strictly inside the tail, which removes that.
-
-    `min_trim` guarantees at least one observation is pulled in from each tail
-    once the sample is large enough to allow it. Without it, floor(0.05 * n)
-    is 0 for every n < 20, and a sector of 8 companies would get no
-    outlier protection at all. It is reduced automatically if the sample is too
-    small to trim both tails and still leave a value untouched.
-    """
-    cleaned = sorted(float(v) for v in values if _finite(v))
-    n = len(cleaned)
-    if n == 0:
-        return []
-    if n < 3:
-        return cleaned                      # nothing meaningful to trim
-
-    k_low = max(int(math.floor(lower * n)), min_trim)
-    k_high = max(int(math.floor((1.0 - upper) * n)), min_trim)
-    # Always leave at least one untouched observation in the middle.
-    while k_low + k_high >= n and (k_low > 0 or k_high > 0):
-        if k_high >= k_low:
-            k_high -= 1
-        else:
-            k_low -= 1
-
-    low_bound = cleaned[k_low]
-    high_bound = cleaned[n - 1 - k_high]
-    if low_bound > high_bound:              # degenerate; leave the data alone
-        return cleaned
-    return [min(max(v, low_bound), high_bound) for v in cleaned]
-
-
-def winsorized_mean(
-    values: Iterable[float],
-    lower: float = WINSOR_LOWER,
-    upper: float = WINSOR_UPPER,
-) -> tuple[Optional[float], int]:
-    """Mean after winsorization. Returns (mean, n_used)."""
-    clipped = winsorize(values, lower, upper)
-    if not clipped:
-        return None, 0
-    return sum(clipped) / len(clipped), len(clipped)
-
-
-def average_ranks(values: Sequence[float]) -> list[float]:
-    """Ascending ranks, 1-based, with ties sharing the average rank."""
-    indexed = sorted(range(len(values)), key=lambda i: values[i])
-    ranks = [0.0] * len(values)
-    position = 0
-    while position < len(indexed):
-        end = position
-        while end + 1 < len(indexed) and values[indexed[end + 1]] == values[indexed[position]]:
-            end += 1
-        shared = (position + end) / 2 + 1        # average of the 1-based ranks
-        for k in range(position, end + 1):
-            ranks[indexed[k]] = shared
-        position = end + 1
-    return ranks
-
 
 def percentile_factor_scores(
     values: dict[str, float], higher_is_better: bool = True

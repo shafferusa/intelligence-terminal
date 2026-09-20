@@ -15,29 +15,24 @@ import datetime as _dt
 import plotly.graph_objects as go
 import streamlit as st
 
+import company_scoring as comp
 import scoring
 import sector_scoring as sect
 import universe as uni
+from company_scoring import COMPANY_MODEL_DETAILS, build_company_score
 from market_data import (
     EQUITY,
     MAX_UNIVERSE_COMPANIES,
     SUPPORTED_INSTRUMENTS,
     SecurityData,
     TickerNotFound,
-    build_sector_benchmark,
-    build_sector_observations,
+    build_universe_records,
     fallback_universe_rows,
-    fetch_peer_rows,
+    fetch_company_record as md_fetch_company_record,
     get_security_data,
     get_vti_history,
 )
-from scoring import (
-    MODEL_DETAILS,
-    build_equity_score,
-    calculate_leverage_score,
-    calculate_valuation_score,
-    explain_score,
-)
+from scoring import CLASSIFICATION_DETAILS, classify_score
 
 CACHE_TTL_SECONDS = 60 * 60          # fundamentals move slowly; one hour is plenty
 SECTOR_CACHE_TTL_SECONDS = 6 * 3600  # the whole-market sweep is expensive
@@ -58,27 +53,15 @@ def load_security(ticker: str) -> SecurityData:
     return get_security_data(ticker)
 
 
-@st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner=False)
-def load_peer_rows(tickers: tuple[str, ...]) -> list[dict]:
-    return fetch_peer_rows(list(tickers))
-
-
-@st.cache_data(ttl=CACHE_TTL_SECONDS, show_spinner=False)
-def load_benchmark(ticker: str, sector: str | None, industry: str | None):
-    stub = SecurityData(ticker=ticker, sector=sector, industry=industry)
-    return build_sector_benchmark(
-        stub, peer_fetcher=lambda tickers: load_peer_rows(tuple(tickers))
-    )
-
-
 @st.cache_data(ttl=SECTOR_CACHE_TTL_SECONDS, show_spinner=False)
-def load_sector_scores():
-    """Build every sector score from the tradeable universe.
+def load_market():
+    """One whole-universe sweep feeding BOTH engines.
 
-    Percentile ranks are cross-sector, so this is necessarily a whole-market
-    sweep. Cached hard because it costs hundreds of requests.
+    Sector percentile ranks are cross-sector and company percentile ranks are
+    cross-industry, so both need the whole universe. Fetching it once and
+    sharing it means the company model costs no extra requests.
 
-    Returns (scores, universe_source, fetch_stats).
+    Returns (sector_scores, company_financials, universe_source, fetch_stats).
     """
     rows, source = uni.load_universe()
     if rows:
@@ -92,10 +75,16 @@ def load_sector_scores():
             "the tradeable-asset workbook is supplied."
         )
 
-    by_sector, stats = build_sector_observations(universe_rows)
+    by_sector, financials, stats = build_universe_records(universe_rows)
     vti_prices = get_vti_history()
     stats["vti_points"] = len(vti_prices)
     scores = sect.build_all_sector_scores(by_sector, vti_prices)
+    return scores, financials, source, stats
+
+
+def load_sector_scores():
+    """Sector-only view, kept so the sector section reads unchanged."""
+    scores, _financials, source, stats = load_market()
     return scores, source, stats
 
 
@@ -241,124 +230,213 @@ def factor_bar(factors: list[scoring.FactorResult]) -> go.Figure:
 # Page sections
 # --------------------------------------------------------------------------
 
-def render_header(company: SecurityData, result: scoring.EquityScore) -> None:
-    st.markdown(f"## {company.ticker}")
+def render_final_score(
+    company: SecurityData, result: comp.CompanyScoreResult
+) -> None:
+    st.markdown("## FINAL SCORE")
+    st.markdown(f"### {company.ticker}")
     st.markdown(f"**{company.name}**")
-    sector_line = " / ".join(x for x in (company.sector, company.industry) if x)
-    if sector_line:
-        st.caption(sector_line)
+    st.caption(
+        " / ".join(x for x in (company.sector, company.industry) if x)
+        + f"  |  Price {fmt_price(company.price)}"
+    )
 
-    st.markdown("#### HOUSE SCORE")
-    if result.score is None:
-        st.error("Unavailable -- no factor could be scored from the retrieved data.")
+    if not result.scored:
+        st.error(
+            "No company score could be produced. "
+            + " ".join(result.notes)
+        )
         return
 
-    color = BAND_COLORS[result.label]
+    label = classify_score(result.final_score)
+    color = BAND_COLORS[label]
     st.markdown(
-        f"<div style='font-size:3.4rem;line-height:1.05;font-weight:700;"
-        f"font-family:monospace;color:{color};'>{result.score:+.1f}</div>"
+        f"<div style='font-size:3.6rem;line-height:1.05;font-weight:700;"
+        f"font-family:monospace;color:{color};'>{result.final_score:+.2f}</div>"
         f"<div style='font-size:1.3rem;letter-spacing:.18em;font-family:monospace;"
-        f"color:{color};'>{result.label}</div>",
+        f"color:{color};'>{label}</div>",
         unsafe_allow_html=True,
     )
-    st.plotly_chart(score_gauge(result.score, result.label), use_container_width=True)
+    st.plotly_chart(score_gauge(result.final_score, label), use_container_width=True)
 
-
-def render_factors(result: scoring.EquityScore, benchmark) -> None:
-    leverage = result.factors["leverage"]
-    valuation = result.factors["valuation"]
-
-    st.markdown("### LEVERAGE")
-    left, right = st.columns(2)
-    left.metric("Company Debt / Revenue", fmt_pct(leverage.company_value))
-    right.metric(
-        f"{benchmark.group_label} Median Debt / Revenue",
-        fmt_pct(benchmark.debt_revenue_median),
+    left, middle, right = st.columns(3)
+    left.metric("Company Score", f"{result.company_score:+.2f}", help="range -75..+75")
+    middle.metric(
+        "Sector Overlay",
+        "unavailable" if result.sector_overlay is None
+        else f"{result.sector_overlay:+.2f}",
+        help="range -25..+25",
     )
-    st.markdown(f"**Leverage Score: {fmt_score(leverage.score)}**")
-    for note in leverage.notes:
-        st.caption(f"- {note}")
-
-    st.markdown("### VALUATION")
-    left, right = st.columns(2)
-    left.metric("Company Forward P/E", fmt_x(valuation.company_value))
-    right.metric(
-        f"{benchmark.group_label} Median Forward P/E",
-        fmt_x(benchmark.forward_pe_median),
-    )
-    st.markdown(f"**Valuation Score: {fmt_score(valuation.score)}**")
-    for note in valuation.notes:
-        st.caption(f"- {note}")
-
-    st.markdown("### FACTOR SCORES")
-    st.plotly_chart(
-        factor_bar([leverage, valuation]), use_container_width=True
-    )
-
-
-def render_calculation(result: scoring.EquityScore) -> None:
-    st.markdown("### FINAL CALCULATION")
-    if result.calculation_text:
-        st.code(result.calculation_text, language=None)
+    right.metric("Final Equity Score", f"{result.final_score:+.2f}", help="range -100..+100")
+    st.caption(f"Benchmark Level: **{result.benchmark_level}**")
     for note in result.notes:
         st.caption(f"- {note}")
 
 
-def render_data_used(company: SecurityData, benchmark) -> None:
-    st.markdown("### DATA USED")
-    rows = [
-        ("Current price", fmt_price(company.price)),
-        ("Market cap", fmt_money(company.market_cap)),
-        ("Revenue (TTM)", fmt_money(company.revenue)),
-        ("Total debt", fmt_money(company.total_debt)),
-        ("Debt / Revenue", fmt_pct(company.debt_revenue)),
-        ("Forward EPS (derived: price / fwd P/E)", fmt_price(company.forward_eps)),
-        ("Forward P/E", fmt_x(company.forward_pe)),
-        ("Trailing P/E", fmt_x(company.trailing_pe)),
-        ("Sector", company.sector or "unavailable"),
-        ("Industry", company.industry or "unavailable"),
-        ("Benchmark group", f"{benchmark.group_label} ({benchmark.grouping})"),
-        ("Sector Debt/Revenue median", fmt_pct(benchmark.debt_revenue_median)),
-        ("Sector Forward P/E median", fmt_x(benchmark.forward_pe_median)),
-        ("Peers used (Debt/Revenue)", str(benchmark.debt_revenue_n)),
-        ("Peers used (Forward P/E)", str(benchmark.forward_pe_n)),
-        ("Benchmark confidence", "LOW" if benchmark.low_confidence else "OK"),
-        ("Revenue as of", company.revenue_as_of or "unavailable"),
-        ("Total debt as of", company.debt_as_of or "unavailable"),
-        ("Forward P/E as of", company.forward_pe_as_of or "unavailable"),
-        ("Data retrieval time", fmt_time(company.retrieved_at)),
-        ("Source", "Yahoo Finance (public query endpoints)"),
-    ]
-    st.table({"Field": [r[0] for r in rows], "Value": [r[1] for r in rows]})
+def render_valuation(detail: comp.ValuationDetail, factor: comp.FactorResult) -> None:
+    st.markdown("### VALUATION")
+    if detail.valuation_gap is not None:
+        stance = "DISCOUNT (undervalued)" if detail.valuation_gap > 0 else "PREMIUM (overvalued)"
+        st.markdown(f"**{fmt_signed_pct(detail.valuation_gap, 1)} {stance}** vs the benchmark cohort")
 
-    if company.missing_fields:
-        st.warning(
-            "Missing or unusable metrics: " + ", ".join(company.missing_fields)
-        )
-    for note in company.notes + list(benchmark.notes):
+    st.table(
+        {
+            "Field": [
+                "Current price", "Implied price", "Discount / Premium %",
+                "Company EBITDA", "Benchmark EV/EBITDA", "Implied EV",
+                "Debt", "Cash", "Implied equity value", "Shares outstanding",
+                "Benchmark level", "Cohort companies used", "Valuation score",
+            ],
+            "Value": [
+                fmt_price(detail.current_price),
+                fmt_price(detail.implied_price),
+                fmt_signed_pct(detail.valuation_gap, 2),
+                fmt_money(detail.company_ebitda),
+                fmt_x(detail.benchmark_ev_ebitda, 2),
+                fmt_money(detail.implied_ev),
+                fmt_money(detail.company_debt),
+                fmt_money(detail.company_cash),
+                fmt_money(detail.implied_equity_value),
+                f"{detail.shares_outstanding:,.0f}"
+                if detail.shares_outstanding else "unavailable",
+                detail.benchmark_level or "unavailable",
+                str(detail.n_valid_peers),
+                fmt_score(factor.score, 1),
+            ],
+        }
+    )
+    for note in list(detail.notes) + list(factor.notes):
         st.caption(f"- {note}")
 
-
-def render_peers(benchmark) -> None:
-    st.markdown("### PEERS USED")
-    if not benchmark.peers:
-        st.info("No peer data was retrieved.")
+    st.markdown("**BENCHMARK PEERS (50th-75th percentile by EBITDA)**")
+    if not detail.cohort:
+        st.info("No benchmark cohort could be built.")
         return
-    st.caption(
-        f"{len(benchmark.peers)} peers in the {benchmark.group_label} "
-        f"{benchmark.grouping} group. Medians above are taken from these rows; "
-        f"blanks were excluded."
-    )
     st.dataframe(
         {
-            "Ticker": [p["ticker"] for p in benchmark.peers],
-            "Company": [p["name"] for p in benchmark.peers],
-            "Debt / Revenue": [fmt_pct(p["debt_revenue"]) for p in benchmark.peers],
-            "Forward P/E": [fmt_x(p["forward_pe"]) for p in benchmark.peers],
+            "Ticker": [r.ticker for r in detail.cohort],
+            "Company": [r.name for r in detail.cohort],
+            "EBITDA": [fmt_money(r.ebitda) for r in detail.cohort],
+            "Market Cap": [fmt_money(r.market_cap) for r in detail.cohort],
+            "Debt": [fmt_money(r.total_debt) for r in detail.cohort],
+            "Cash": [fmt_money(r.cash) for r in detail.cohort],
+            "Enterprise Value": [fmt_money(r.enterprise_value) for r in detail.cohort],
+            "EV / EBITDA": [fmt_x(r.ev_ebitda, 2) for r in detail.cohort],
         },
         use_container_width=True,
         hide_index=True,
     )
+
+
+def _component_rows(factor: comp.FactorResult, formatter) -> dict:
+    names, raws, medians, percentiles, scores, weights, contributions = [], [], [], [], [], [], []
+    for key in factor.components:
+        part = factor.components[key]
+        names.append(comp.COMPONENT_LABELS[key])
+        raws.append(formatter(key, part.raw_value))
+        medians.append(formatter(key, part.peer_median))
+        percentiles.append(
+            "n/a" if part.percentile is None else f"{part.percentile * 100:.0f}th"
+        )
+        scores.append(fmt_score(part.score, 1))
+        weights.append(
+            "dropped" if key not in factor.weights_used
+            else f"{factor.weights_used[key] * 100:.1f}%"
+        )
+        contributions.append(
+            "--" if key not in factor.contributions
+            else f"{factor.contributions[key]:+.2f}"
+        )
+    return {
+        "Component": names,
+        "Company Value": raws,
+        "Industry Median": medians,
+        "Percentile": percentiles,
+        "Score": scores,
+        "Weight": weights,
+        "Contribution": contributions,
+    }
+
+
+def render_component_factor(
+    title: str, factor: comp.FactorResult, formatter
+) -> None:
+    st.markdown(f"### {title}")
+    st.table(_component_rows(factor, formatter))
+    st.markdown(f"**Combined {title.title()} Score: {fmt_score(factor.score, 1)}**")
+    for note in factor.notes:
+        st.caption(f"- {note}")
+    for part in factor.components.values():
+        for note in part.notes:
+            st.caption(f"- {note}")
+
+
+def _growth_fmt(key, value):
+    return fmt_signed_pct(value, 2)
+
+
+def _profit_fmt(key, value):
+    return fmt_pct(value, 2)
+
+
+def _debt_fmt(key, value):
+    if value is None:
+        return "unavailable"
+    if key == "net_debt_ebitda":
+        return f"{value:.2f}x"
+    return fmt_pct(value, 2)
+
+
+def render_contributions(result: comp.CompanyScoreResult) -> None:
+    st.markdown("### SCORE CONTRIBUTIONS")
+    names, scores, weights, contributions = [], [], [], []
+    for key in comp.MAJOR_WEIGHTS:
+        factor = result.factors.get(key)
+        names.append(comp.FACTOR_LABELS[key])
+        scores.append(fmt_score(factor.score if factor else None, 1))
+        weights.append(
+            "dropped" if key not in result.weights_used
+            else f"{result.weights_used[key] * 100:.1f}%"
+        )
+        contributions.append(
+            "--" if key not in result.contributions
+            else f"{result.contributions[key]:+.2f}"
+        )
+    st.table(
+        {
+            "Factor": names,
+            "Score": scores,
+            "Weight": weights,
+            "Contribution": contributions,
+        }
+    )
+    st.code(
+        f"Company Raw Score           {result.raw_score:+.2f}\n"
+        f"x 0.75 scaling              {result.company_score:+.2f}   (clamped to -75..+75)\n"
+        f"+ Sector Overlay            "
+        f"{'unavailable' if result.sector_overlay is None else format(result.sector_overlay, '+.2f')}"
+        f"   (clamped to -25..+25)\n"
+        f"= Final Equity Score        {result.final_score:+.2f}   "
+        f"{classify_score(result.final_score)}",
+        language=None,
+    )
+
+
+def render_company_section(
+    company: SecurityData, result: comp.CompanyScoreResult
+) -> None:
+    render_final_score(company, result)
+    if not result.scored:
+        return
+    st.divider()
+    render_valuation(result.valuation, result.factors["valuation"])
+    render_component_factor("GROWTH", result.factors["growth"], _growth_fmt)
+    render_component_factor("PROFITABILITY", result.factors["profitability"], _profit_fmt)
+    render_component_factor("DEBT", result.factors["debt"], _debt_fmt)
+    render_contributions(result)
+    with st.expander("How is the company score calculated?"):
+        st.markdown(COMPANY_MODEL_DETAILS)
+        st.markdown(CLASSIFICATION_DETAILS)
 
 
 # --------------------------------------------------------------------------
@@ -608,35 +686,66 @@ def render_sector_section(company: SecurityData) -> None:
 # --------------------------------------------------------------------------
 
 def analyze(ticker: str):
-    """Fetch -> score. Returns (company, benchmark, EquityScore)."""
+    """Fetch -> score. Returns (company, CompanyScoreResult, SectorScore|None).
+
+    All arithmetic lives in company_scoring / sector_scoring; this only wires
+    the data layer to them.
+    """
     company = load_security(ticker)
-    benchmark = load_benchmark(company.ticker, company.sector, company.industry)
-    leverage = calculate_leverage_score(
-        company.debt_revenue, benchmark.debt_revenue_median
+    sector_scores, financials, _source, _stats = load_market()
+
+    sector_score = sect.get_sector_score_for_ticker(
+        company.ticker, company.sector, sector_scores
     )
-    valuation = calculate_valuation_score(
-        company.forward_pe, benchmark.forward_pe_median
-    )
-    return company, benchmark, build_equity_score([leverage, valuation])
+    overlay = sector_score.overlay if sector_score else None
+
+    # The typed ticker may sit outside the tradeable universe; score it against
+    # the universe anyway, using its own freshly fetched financials.
+    target = next((c for c in financials if c.ticker == company.ticker), None)
+    if target is None:
+        record = md_fetch_company_record(company.ticker, company.sector)
+        if record is None:
+            raise TickerNotFound(
+                f"{company.ticker} could not be resolved as an operating-company equity."
+            )
+        target = record[1]
+        financials = list(financials) + [target]
+
+    result = build_company_score(target, financials, sector_overlay=overlay)
+    return company, result, sector_score
 
 
 def render_analysis(ticker: str) -> None:
+    # Resolve the symbol first, so a non-equity is reported as such rather
+    # than failing later as an unscoreable company.
     try:
-        with st.spinner(f"Retrieving {ticker.upper()} and its sector peers..."):
-            company, benchmark, result = analyze(ticker)
+        with st.spinner(f"Resolving {ticker.upper()}..."):
+            company = load_security(ticker)
     except TickerNotFound:
         st.error("Ticker not found.")
         return
-    except Exception as exc:  # never crash the page on a data-layer surprise
+    except Exception as exc:
         st.error(f"Could not complete the analysis: {exc}")
         return
 
     if company.instrument_type not in SUPPORTED_INSTRUMENTS:
         st.warning(
             f"{company.ticker} is a {company.instrument_type or 'unknown'} "
-            f"instrument. Version 1 scores equities only -- an "
+            f"instrument. ShafferFinEval scores equities only -- an "
             f"{company.instrument_type or 'unknown'} engine is not built yet."
         )
+        return
+
+    try:
+        with st.spinner(
+            f"Scoring {company.ticker} against its industry peers and the sector universe..."
+        ):
+            company, result, _sector_score = analyze(ticker)
+    except TickerNotFound:
+        st.error("Ticker not found.")
+        return
+    except Exception as exc:  # never crash the page on a data-layer surprise
+        st.error(f"Could not complete the analysis: {exc}")
         return
 
     if not company.sector:
@@ -645,24 +754,32 @@ def render_analysis(ticker: str) -> None:
             "so no peer benchmark could be built."
         )
 
+    render_company_section(company, result)
+    st.divider()
     render_sector_section(company)
     st.divider()
+    render_data_used(company)
 
-    st.markdown("## COMPANY")
-    render_header(company, result)
-    st.divider()
-    render_factors(result, benchmark)
-    render_calculation(result)
 
-    st.markdown("### EXPLANATION")
-    st.write(explain_score(company.ticker, result, benchmark.group_label, benchmark))
-
-    with st.expander("How is this calculated?"):
-        st.markdown(MODEL_DETAILS)
-
-    st.divider()
-    render_data_used(company, benchmark)
-    render_peers(benchmark)
+def render_data_used(company: SecurityData) -> None:
+    st.markdown("### DATA USED")
+    rows = [
+        ("Current price", fmt_price(company.price)),
+        ("Market cap", fmt_money(company.market_cap)),
+        ("Revenue (TTM)", fmt_money(company.revenue)),
+        ("Total debt", fmt_money(company.total_debt)),
+        ("Sector", company.sector or "unavailable"),
+        ("Industry", company.industry or "unavailable"),
+        ("Revenue as of", company.revenue_as_of or "unavailable"),
+        ("Total debt as of", company.debt_as_of or "unavailable"),
+        ("Data retrieval time", fmt_time(company.retrieved_at)),
+        ("Source", "Yahoo Finance (public query endpoints)"),
+    ]
+    st.table({"Field": [r[0] for r in rows], "Value": [r[1] for r in rows]})
+    if company.missing_fields:
+        st.warning("Missing or unusable metrics: " + ", ".join(company.missing_fields))
+    for note in company.notes:
+        st.caption(f"- {note}")
 
 
 def main() -> None:

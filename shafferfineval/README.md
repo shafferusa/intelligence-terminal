@@ -2,15 +2,17 @@
 
 A small, standalone quantitative scorer. Type a ticker and get:
 
-1. a **sector score** (-100..+100) and the **company overlay** (-25..+25) it implies, and
-2. a **company house score** (-100..+100) with a Bullish / Semi-Bullish /
+1. a **company score** (-75..+75) from valuation, growth, profitability and debt
+   measured against industry peers,
+2. a **sector overlay** (-25..+25) from the sector engine, and
+3. the **final equity score** (-100..+100) with a Bullish / Semi-Bullish /
    Semi-Bearish / Bearish verdict,
 
 with every input and intermediate number shown.
 
-The two are currently independent: the sector overlay is **calculated and
-displayed but not yet applied** to the company score. Wiring them together is
-the next step.
+```
+FinalEquityScore = CompanyScore + SectorOverlay
+```
 
 Completely separate from the intelligence-terminal reporting routines — it
 shares no state, no config and no code with them.
@@ -30,8 +32,9 @@ Streamlit opens http://localhost:8501. Enter a ticker (e.g. `NVDA`) and press
 Run the tests (pure stdlib — no install needed):
 
 ```bash
-python3 test_scoring.py          # company model, 60 checks
-python3 test_sector_scoring.py   # sector model, 134 checks
+python3 test_scoring.py           # classification + shared statistics
+python3 test_sector_scoring.py    # sector model
+python3 test_company_scoring.py   # company model
 ```
 
 ## Files
@@ -39,31 +42,74 @@ python3 test_sector_scoring.py   # sector model, 134 checks
 | File | Role |
 |---|---|
 | `app.py` | Streamlit UI only. Layout, charts, formatting, caching. No math. |
-| `scoring.py` | Company model. **Zero third-party imports.** |
-| `sector_scoring.py` | Sector model. **Zero third-party imports**, and no market-data imports either — structured data in, structured data out. |
+| `company_scoring.py` | Company model. **Zero third-party imports**, no market-data imports. |
+| `sector_scoring.py` | Sector model. Same contract. |
+| `statlib.py` | Shared statistics (winsorize, ranks, percentiles) so both engines normalise identically. |
+| `scoring.py` | Shared four-band classification. |
 | `universe.py` | Tradeable-universe workbook loader (stdlib `.xlsx` reader) and the non-equity pre-filter. |
 | `market_data.py` | Yahoo access and normalisation. Retrieval only. |
-| `test_scoring.py` | 60 offline checks on the company model. |
+| `test_scoring.py` | Offline checks on classification and `statlib`. |
 | `test_sector_scoring.py` | 134 offline checks on the sector model. |
+| `test_company_scoring.py` | 150 offline checks on the company model. |
 | `requirements.txt` | Dependencies. |
 
 `scoring.py` never imports `market_data.py`, and neither imports `app.py`. To
 reuse the engine elsewhere, take `scoring.py` and feed it numbers.
 
-## The company model (V1, unchanged)
+## The company model
 
-Two factors, both measured **against sector peers** rather than in absolute
-terms. Lower leverage than the peer group is bullish; lower valuation than the
-peer group is bullish.
+Four factors, weighted 40/25/20/15. Every component except valuation is
+percentile-ranked against companies in the **same industry**, falling back to
+the sector when the industry is too thin. The fallback is always labelled.
 
 ```
-DebtRevenue  = Total Debt / Annual Revenue
+CompanyRawScore = 0.40V + 0.25G + 0.20P + 0.15D
 
-L = -50 x ln( DebtRevenue_company / DebtRevenue_sector )
-V = -50 x ln( ForwardPE_company  / ForwardPE_sector  )
+    G = 0.45 RevenueGrowth + 0.35 RevenueAcceleration + 0.20 EBITDAGrowth
+    P = 0.65 EBITDAMargin  + 0.35 ROA
+    D = 0.60 NetDebt/EBITDA + 0.40 Debt/MarketCap     (both LOWER is better)
 
-EquityScore = 0.55L + 0.45V        clamped to [-100, +100]
+CompanyScore     = 0.75 x CompanyRawScore       clamped [-75, +75]
+FinalEquityScore = CompanyScore + SectorOverlay  clamped [-100, +100]
 ```
+
+Fully expanded:
+
+```
+CompanyRawScore = 0.40V + 0.1125RG + 0.0875RA + 0.05EG
+                + 0.13EM + 0.07ROA + 0.09ND + 0.06DM
+```
+
+### Valuation (40%)
+
+The only factor not scored by percentile rank. It asks what the share price
+*would* be if the company traded at its peer cohort's EV/EBITDA:
+
+```
+peers     = same Yahoo industry (sector fallback if thin)
+cohort    = peers whose EBITDA sits in the 50th-75th percentile
+EV_i      = MarketCap_i + TotalDebt_i - Cash_i
+Benchmark = winsorized mean of cohort EV_i / EBITDA_i
+
+ImpliedEV          = CompanyEBITDA x Benchmark
+ImpliedEquityValue = ImpliedEV - CompanyDebt + CompanyCash
+ImpliedSharePrice  = ImpliedEquityValue / SharesOutstanding
+ValuationGap       = (ImpliedSharePrice - CurrentPrice) / CurrentPrice
+
+V = 100 x tanh(2 x ValuationGap)
+```
+
+A positive gap means the company looks undervalued against the cohort. `tanh`
+saturates, so a wild gap cannot dominate: +25% scores about +46, +50% about
++76, and the curve never exceeds ±100.
+
+**The cohort is deliberately the 50th-75th percentile band, not the top
+quartile.** That band structurally holds only ~25% of the peer set, so a usable
+cohort needs roughly 12+ valid peers in the industry. Below that the engine
+widens to the sector and says so; below that again, valuation is reported
+unavailable and its 40% is renormalised across the other three factors.
+
+### Score classification
 
 | Score | Label |
 |---|---|
@@ -72,27 +118,13 @@ EquityScore = 0.55L + 0.45V        clamped to [-100, +100]
 | -40 to 0 | SEMI-BEARISH |
 | -100 to -40 | BEARISH |
 
-The `-50` scale means a company at `1/e` of the sector ratio scores `+50`, and
-one at `e` times the sector ratio scores `-50`.
+### Missing data
 
-## How messy data is handled
-
-Nothing is ever silently replaced with a made-up number. Every fallback is
-labelled on screen.
-
-| Situation | Behaviour |
-|---|---|
-| Total debt is zero | Treated as extreme low leverage, pinned to **+100**. No `ln(0)`. |
-| Revenue zero or missing | Debt/Revenue marked **unavailable**; leverage is dropped from the average and the remaining weight is renormalised. |
-| Forward P/E missing, zero, negative, infinite or absurd | Valuation scores a **disclosed -50** with the message *"Forward P/E unavailable/invalid due to negative or unavailable expected earnings."* |
-| Both factors unscoreable | No house score. The page says so. |
-| Peer with bad data | Excluded from the median but still shown in the peers table, so you can see the exclusion. |
-| Fewer than 5 usable peers | Benchmark flagged **LOW CONFIDENCE** in the output and in the written explanation. |
-| Ticker does not resolve | `Ticker not found.` — no traceback. |
-| Symbol is an ETF, index, currency, future | Identified and reported; **not** scored with the equity model. |
-
-Factor scores are clamped to `[-100, +100]` individually as well as in
-aggregate, since a logarithm of an extreme ratio is otherwise unbounded.
+Never a silent zero, at either level. A missing component is dropped and the
+remaining weights inside its category are renormalised; a missing major factor
+is dropped and V/G/P/D are renormalised across what is left. Everything dropped
+is named on screen, and the benchmark level (Industry or Sector Fallback) is
+always shown.
 
 ## Data source
 
@@ -236,22 +268,6 @@ Universe fetches are capped at `MAX_UNIVERSE_COMPANIES` (400) and cost 3
 requests per company, so a cold whole-market build takes roughly 50-60 seconds.
 It is cached for 6 hours.
 
-## Sector peers
-
-Yahoo's free tier will not enumerate a whole sector, so V1 uses a **curated
-peer universe**: roughly 20 large, liquid names per Yahoo sector, in
-`SECTOR_PEER_UNIVERSE` at the top of `market_data.py`. Edit that dict to change
-the benchmark — it is the single place peer selection lives.
-
-The group is then **narrowed to the company's own industry** when at least 5
-of those names share it. That is how NVDA is benchmarked against
-*Semiconductors* rather than all of *Technology*. Below that threshold it falls
-back to the full sector and says so.
-
-Medians, never means, so one extreme company cannot move the benchmark. The
-**PEERS USED** table at the bottom of the page lists every peer with its
-Debt/Revenue and forward P/E, so the sector number is never mysterious.
-
 ## Caching
 
 `app.py` wraps each network call in `@st.cache_data(ttl=3600)` — one hour,
@@ -283,52 +299,50 @@ different one in the same sector, is effectively instant for the next hour.
   rather than contributing a misleading positive.
 - Sector and industry come from `v1/finance/search`, which is fuzzy — only an
   exact symbol match is accepted.
-
-## Known limits of V1
-
-- **Debt/Revenue is a poor leverage measure for banks.** Revenue is not a
-  meaningful denominator for a balance-sheet business, so financials score
-  with very high ratios across the board. The comparison is still peer-relative
-  and therefore internally consistent, but treat the leverage leg for
-  Financial Services as weak evidence until Debt/EBITDA and a
-  financials-specific branch land.
-- The peer universe is US large-cap. A small-cap or non-US listing is measured
-  against large-cap peers in its sector.
-- These are public but *unofficial* Yahoo endpoints. They are not covered by a
-  support contract and their shapes can change without notice. Fields go
-  missing; the app labels them rather than guessing.
-- Forward P/E is a consensus estimate, not a fact.
+- **Yahoo publishes no EBITDA for banks.** In a live run, 0 of 7
+  bank-industry companies had an EBITDA figure. For a bank this removes
+  Valuation (40%), EBITDA margin (13% of the total) and Net Debt/EBITDA (9%) —
+  about 62% of the model — leaving ROA, revenue growth/acceleration and
+  Debt/Market Cap to carry the score after renormalisation. JPM scores this way
+  today. Treat bank scores as materially thinner evidence than industrials or
+  technology, and read the dropped-factor notes on screen.
+- **No ROE/ROA fields**, as noted above; both are computed from statements.
+- Enterprise value is computed explicitly as `MarketCap + TotalDebt - Cash`,
+  where cash prefers *cash and short-term investments*. That choice reproduces
+  Yahoo's own `trailingEnterpriseValue` exactly — NVDA reconciles to the dollar
+  (5,343,035,690,000), which is how the EV arithmetic is verified.
+- Growth uses the **annual** revenue and EBITDA series (3 and 2 points
+  respectively) rather than trailing figures, so the periods being compared are
+  genuinely comparable. Fiscal year-ends differ between companies; each
+  company's growth is measured against its own prior year.
 
 ## Build order
 
-This is step 1 of 4. The company formula has **not** been changed.
+Steps 1-3 are done.
 
-1. **Sector score** — done. `SectorOverlay` is exposed and displayed.
-2. Individual-company score (expanded model).
-3. Sector overlay + company score combined.
-4. Hedge-selection engine.
+1. **Sector score** — done.
+2. **Individual-company score** — done.
+3. **Sector overlay + company score combined** — done.
+   `FinalEquityScore = CompanyScore + SectorOverlay`.
+4. Hedge-selection engine — next.
 
-## Planned expansion
+The V1 company model (forward P/E and Debt/Revenue vs sector peers) is
+**retired**. `scoring.py` now holds only the shared four-band classification;
+the model that replaced it is `company_scoring.py`.
 
-`scoring.py` is already shaped for it. `build_equity_score` consumes an
-arbitrary list of `FactorResult` objects and renormalises weights over whatever
-is available, so adding a factor means appending one `FactorResult` and
-widening `FACTOR_WEIGHTS`. The target shape is in `FUTURE_FACTOR_WEIGHTS`:
+## Extending the model
 
-```
-EquityScore = 0.25 Valuation + 0.20 Leverage + 0.20 Growth
-            + 0.20 Quality   + 0.15 Momentum
-```
+Both engines blend an arbitrary set of scored parts and renormalise over
+whatever is available, so adding a factor means adding one entry to the weights
+dict and one `Component`/`FactorResult` — no restructuring.
 
-- **Valuation** — Forward P/E, EV/EBITDA, Price/Sales, FCF yield
-- **Leverage** — Debt/Revenue, Debt/EBITDA, Net Debt/EBITDA
-- **Growth** — revenue growth, EPS growth, forward earnings growth
-- **Quality** — ROIC, ROE, FCF margin, operating margin, interest coverage
-- **Momentum** — 1/3/6/12-month return, moving averages, estimate revisions
+There is deliberately **no technical momentum factor** in the company model.
+The design is Valuation + Growth + Profitability + Debt, with the sector
+environment supplied by the overlay.
 
 The instrument router in `market_data.py` (`INSTRUMENT_TYPES`,
-`SUPPORTED_INSTRUMENTS`) is where ETF, sector, bond, currency and commodity
-engines plug in. V1 recognises those instruments and declines to score them
+`SUPPORTED_INSTRUMENTS`) is where ETF, bond, currency and commodity engines
+plug in. Today the app recognises those instruments and declines to score them
 rather than applying an equity model that does not fit.
 
 ## Not investment advice

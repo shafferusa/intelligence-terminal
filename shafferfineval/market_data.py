@@ -30,14 +30,7 @@ from typing import Optional
 
 import requests
 
-from scoring import (
-    MIN_PEERS_FOR_CONFIDENCE,
-    SectorBenchmark,
-    calculate_debt_revenue,
-    is_valid_forward_pe,
-    median_forward_pe,
-    median_of,
-)
+from statlib import is_finite
 
 # --------------------------------------------------------------------------
 # Instrument routing
@@ -221,6 +214,14 @@ TIMESERIES_TYPES = (
     "annualTotalAssets",
     "quarterlyOrdinarySharesNumber",
     "annualOrdinarySharesNumber",
+    # --- company model: EV/EBITDA, growth series, cash ---
+    "trailingEBITDA",
+    "annualEBITDA",
+    "annualTotalRevenue",
+    "quarterlyCashCashEquivalentsAndShortTermInvestments",
+    "quarterlyCashAndCashEquivalents",
+    "annualCashCashEquivalentsAndShortTermInvestments",
+    "annualCashAndCashEquivalents",
 )
 
 #: Yahoo does NOT publish returnOnEquity / returnOnAssets on these endpoints
@@ -330,7 +331,9 @@ def _fetch_search(symbol: str) -> dict:
 def _fetch_timeseries(symbol: str) -> dict:
     """Latest value and as-of date for each fundamentals field.
 
-    Returns {type: {"value": float, "as_of": "YYYY-MM-DD"}}.
+    Returns {type: {"value": float, "as_of": "YYYY-MM-DD", "series": [floats]}},
+    where `series` is every reported point oldest-first (needed for growth and
+    acceleration, which compare consecutive fiscal periods).
     """
     now = int(time.time())
     payload = _get_json(
@@ -358,8 +361,26 @@ def _fetch_timeseries(symbol: str) -> dict:
         value = _num((latest.get("reportedValue") or {}).get("raw"))
         if value is None:
             continue
-        out[field_name] = {"value": value, "as_of": latest.get("asOfDate")}
+        series = [
+            v for v in (
+                _num((point.get("reportedValue") or {}).get("raw")) for point in points
+            ) if v is not None
+        ]
+        out[field_name] = {
+            "value": value,
+            "as_of": latest.get("asOfDate"),
+            "series": series,
+        }
     return out
+
+
+def _series(series: dict, *names: str) -> list[float]:
+    """First available multi-period series from `names`, oldest-first."""
+    for name in names:
+        entry = series.get(name)
+        if entry and entry.get("series"):
+            return list(entry["series"])
+    return []
 
 
 def _pick(series: dict, *names: str) -> tuple[Optional[float], Optional[str]]:
@@ -429,6 +450,16 @@ def fetch_raw_info(ticker: str, with_price: bool = True) -> dict:
         "sharesOutstanding": _pick(
             series, "quarterlyOrdinarySharesNumber", "annualOrdinarySharesNumber"
         )[0],
+        "ebitda": _pick(series, "trailingEBITDA", "annualEBITDA")[0],
+        "cash": _pick(
+            series,
+            "quarterlyCashCashEquivalentsAndShortTermInvestments",
+            "quarterlyCashAndCashEquivalents",
+            "annualCashCashEquivalentsAndShortTermInvestments",
+            "annualCashAndCashEquivalents",
+        )[0],
+        "revenueAnnual": _series(series, "annualTotalRevenue"),
+        "ebitdaAnnual": _series(series, "annualEBITDA"),
         "revenueAsOf": revenue_as_of,
         "debtAsOf": debt_as_of,
         "forwardPeAsOf": forward_pe_as_of,
@@ -484,9 +515,12 @@ def get_security_data(ticker: str, with_price: bool = True) -> SecurityData:
         retrieved_at=_dt.datetime.now(_dt.timezone.utc),
     )
 
-    ratio, ratio_notes = calculate_debt_revenue(data.total_debt, data.revenue)
-    data.debt_revenue = ratio
-    data.notes.extend(ratio_notes)
+    if is_finite(data.total_debt) and is_finite(data.revenue) and float(data.revenue) > 0:
+        data.debt_revenue = float(data.total_debt) / float(data.revenue)
+    else:
+        data.notes.append(
+            "Debt/Revenue unavailable (revenue or total debt missing or zero)."
+        )
 
     for label, value in (
         ("Price", data.price if with_price else 0),
@@ -499,133 +533,10 @@ def get_security_data(ticker: str, with_price: bool = True) -> SecurityData:
         if value is None:
             data.missing_fields.append(label)
 
-    if not is_valid_forward_pe(data.forward_pe):
+    if not is_finite(data.forward_pe) or float(data.forward_pe) <= 0:
         data.missing_fields.append("Forward P/E")
 
     return data
-
-
-# --------------------------------------------------------------------------
-# Peer selection
-# --------------------------------------------------------------------------
-
-def get_sector_peers(ticker: str, sector: Optional[str]) -> list[str]:
-    """The candidate peer list for a symbol: same Yahoo sector, minus itself.
-
-    MVP approach: a curated, representative peer universe per sector (see
-    SECTOR_PEER_UNIVERSE). Swap in a screener here when one is available.
-    """
-    if not sector:
-        return []
-    symbol = (ticker or "").strip().upper()
-    peers = [t for t in SECTOR_PEER_UNIVERSE.get(sector, []) if t != symbol]
-    return peers[:PEER_FETCH_LIMIT]
-
-
-def fetch_peer_rows(tickers: list[str]) -> list[dict]:
-    """Fetch the two model inputs for each peer. Failures are skipped, not faked."""
-    if not tickers:
-        return []
-
-    def one(symbol: str) -> Optional[dict]:
-        try:
-            data = get_security_data(symbol, with_price=False)
-        except Exception:
-            return None
-        return {
-            "ticker": data.ticker,
-            "name": data.name,
-            "industry": data.industry,
-            "debt_revenue": data.debt_revenue,
-            "forward_pe": data.forward_pe if is_valid_forward_pe(data.forward_pe) else None,
-        }
-
-    with ThreadPoolExecutor(max_workers=PEER_FETCH_WORKERS) as pool:
-        rows = list(pool.map(one, tickers))
-
-    return [row for row in rows if row is not None]
-
-
-def build_sector_benchmark(company: SecurityData, peer_fetcher=None) -> SectorBenchmark:
-    """Median Debt/Revenue and forward P/E for the company's peer group.
-
-    Prefers the company's own industry when at least MIN_INDUSTRY_PEERS of the
-    sector universe share it, otherwise falls back to the whole sector.
-
-    `peer_fetcher` accepts a list of tickers and returns peer rows. It exists so
-    the UI can wrap the network call in its own cache; it defaults to
-    `fetch_peer_rows`.
-    """
-    fetch = peer_fetcher or fetch_peer_rows
-    notes: list[str] = []
-    candidates = get_sector_peers(company.ticker, company.sector)
-
-    if not candidates:
-        notes.append(
-            f"No peer universe configured for sector '{company.sector}'. "
-            "Add one to SECTOR_PEER_UNIVERSE in market_data.py."
-            if company.sector
-            else "Sector unavailable for this symbol -- no peer group could be built."
-        )
-        return SectorBenchmark(
-            group_label=company.sector or "Unknown",
-            grouping="sector",
-            debt_revenue_median=None,
-            forward_pe_median=None,
-            debt_revenue_n=0,
-            forward_pe_n=0,
-            peers=[],
-            notes=notes,
-        )
-
-    rows = fetch(candidates)
-    failed = len(candidates) - len(rows)
-    if failed:
-        notes.append(f"{failed} of {len(candidates)} peers returned no data and were skipped.")
-
-    grouping = "sector"
-    group_label = company.sector or "Unknown"
-    if company.industry:
-        same_industry = [r for r in rows if r["industry"] == company.industry]
-        if len(same_industry) >= MIN_INDUSTRY_PEERS:
-            rows = same_industry
-            grouping = "industry"
-            group_label = company.industry
-            notes.append(
-                f"Peer group narrowed to the '{company.industry}' industry "
-                f"({len(rows)} peers) within the {company.sector} sector."
-            )
-        else:
-            notes.append(
-                f"Only {len(same_industry)} '{company.industry}' peers available "
-                f"(need {MIN_INDUSTRY_PEERS}) -- benchmarking against the whole "
-                f"{company.sector} sector instead."
-            )
-
-    debt_median, debt_n = median_of(r["debt_revenue"] for r in rows)
-    pe_median, pe_n = median_forward_pe(r["forward_pe"] for r in rows)
-
-    if debt_n < MIN_PEERS_FOR_CONFIDENCE:
-        notes.append(
-            f"LOW CONFIDENCE: only {debt_n} peers supplied a usable Debt/Revenue."
-        )
-    if pe_n < MIN_PEERS_FOR_CONFIDENCE:
-        notes.append(
-            f"LOW CONFIDENCE: only {pe_n} peers supplied a usable forward P/E."
-        )
-
-    rows.sort(key=lambda r: r["ticker"])
-
-    return SectorBenchmark(
-        group_label=group_label,
-        grouping=grouping,
-        debt_revenue_median=debt_median,
-        forward_pe_median=pe_median,
-        debt_revenue_n=debt_n,
-        forward_pe_n=pe_n,
-        peers=rows,
-        notes=notes,
-    )
 
 
 # ==========================================================================
@@ -682,12 +593,17 @@ def get_vti_history() -> list[float]:
     return fetch_price_history(VTI_TICKER)
 
 
-def fetch_company_observation(ticker: str, sector_hint: Optional[str] = None):
-    """Build one CompanyObservation, or None if the symbol is not an equity.
+def fetch_company_record(ticker: str, sector_hint: Optional[str] = None):
+    """Fetch one company once and build BOTH engines' input records.
+
+    Returns (CompanyObservation, CompanyFinancials) or None if the symbol is
+    not an operating-company equity. Both engines read the same three HTTP
+    responses, so adding the company model cost no extra requests.
 
     Yahoo's `quoteType` is the authoritative equity test -- a workbook's own
     type column is only ever a cost-saving pre-filter.
     """
+    from company_scoring import CompanyFinancials
     from sector_scoring import CompanyObservation
 
     symbol = (ticker or "").strip().upper()
@@ -708,21 +624,55 @@ def fetch_company_observation(ticker: str, sector_hint: Optional[str] = None):
     if not sector:
         return None
 
+    name = info.get("longName") or info.get("shortName") or symbol
+    industry = info.get("industry")
+    price = _num(info.get("currentPrice"))
+    market_cap = _num(info.get("marketCap"))
+    shares = _num(info.get("sharesOutstanding"))
+    total_debt = _num(info.get("totalDebt"))
+    net_income = _num(info.get("netIncome"))
+    total_assets = _num(info.get("totalAssets"))
+
     prices = fetch_price_history(symbol)
 
-    return CompanyObservation(
+    observation = CompanyObservation(
         ticker=symbol,
-        name=info.get("longName") or info.get("shortName") or symbol,
+        name=name,
         sector=sector,
         prices=prices or None,
-        market_cap=_num(info.get("marketCap")),
-        total_debt=_num(info.get("totalDebt")),
-        net_income=_num(info.get("netIncome")),
+        market_cap=market_cap,
+        total_debt=total_debt,
+        net_income=net_income,
         shareholders_equity=_num(info.get("shareholdersEquity")),
-        total_assets=_num(info.get("totalAssets")),
-        price=_num(info.get("currentPrice")),
-        shares_outstanding=_num(info.get("sharesOutstanding")),
+        total_assets=total_assets,
+        price=price,
+        shares_outstanding=shares,
     )
+
+    financials = CompanyFinancials(
+        ticker=symbol,
+        name=name,
+        sector=sector,
+        industry=industry,
+        price=price,
+        shares_outstanding=shares,
+        market_cap=market_cap,
+        total_debt=total_debt,
+        cash=_num(info.get("cash")),
+        ebitda=_num(info.get("ebitda")),
+        revenue=_num(info.get("totalRevenue")),
+        net_income=net_income,
+        total_assets=total_assets,
+        revenue_annual=list(info.get("revenueAnnual") or []),
+        ebitda_annual=list(info.get("ebitdaAnnual") or []),
+    )
+    return observation, financials
+
+
+def fetch_company_observation(ticker: str, sector_hint: Optional[str] = None):
+    """Sector-engine record only. Kept for callers that need just that."""
+    record = fetch_company_record(ticker, sector_hint)
+    return record[0] if record else None
 
 
 def fallback_universe_rows() -> list[tuple[str, Optional[str]]]:
@@ -738,14 +688,15 @@ def fallback_universe_rows() -> list[tuple[str, Optional[str]]]:
     return rows
 
 
-def build_sector_observations(
+def build_universe_records(
     universe_rows: list[tuple[str, Optional[str]]],
     limit: int = MAX_UNIVERSE_COMPANIES,
 ):
-    """Fetch the universe and group it by Yahoo sector.
+    """Fetch the whole tradeable universe once, for both scoring engines.
 
-    Returns (companies_by_sector, stats). Symbols that fail, are not equities,
-    or carry no sector are counted in `stats` and dropped -- never invented.
+    Returns (observations_by_sector, financials, stats). Symbols that fail, are
+    not equities, or carry no sector are counted in `stats` and dropped --
+    never invented.
     """
     trimmed = universe_rows[:limit]
     stats = {
@@ -759,20 +710,33 @@ def build_sector_observations(
     def one(row: tuple[str, Optional[str]]):
         ticker, hint = row
         try:
-            return fetch_company_observation(ticker, hint)
+            return fetch_company_record(ticker, hint)
         except Exception:
             return None
 
     with ThreadPoolExecutor(max_workers=UNIVERSE_FETCH_WORKERS) as pool:
-        observations = list(pool.map(one, trimmed))
+        records = list(pool.map(one, trimmed))
 
     by_sector: dict[str, list] = {}
-    for observation in observations:
-        if observation is None:
+    financials: list = []
+    for record in records:
+        if record is None:
             stats["dropped_not_equity_or_no_data"] += 1
             continue
+        observation, company = record
         stats["resolved"] += 1
         by_sector.setdefault(observation.sector, []).append(observation)
+        financials.append(company)
 
     stats["sectors"] = len(by_sector)
+    stats["industries"] = len({c.industry for c in financials if c.industry})
+    return by_sector, financials, stats
+
+
+def build_sector_observations(
+    universe_rows: list[tuple[str, Optional[str]]],
+    limit: int = MAX_UNIVERSE_COMPANIES,
+):
+    """Sector-engine view of the universe sweep."""
+    by_sector, _financials, stats = build_universe_records(universe_rows, limit)
     return by_sector, stats
