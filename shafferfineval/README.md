@@ -68,6 +68,8 @@ python3 test_company_scoring.py   # company model
 python3 test_hedging.py           # hedge engine + workbook strategy parsing
 python3 test_terminal.py          # universe, database, routing, refresh
 python3 test_prediction_ml.py     # predicted return + ML Lab
+python3 test_multi_asset.py       # asset-class equations, GPI, routing
+python3 test_research.py          # synthetic validation, blotter, counterfactuals
 ```
 
 ## Files
@@ -108,7 +110,12 @@ python3 test_prediction_ml.py     # predicted return + ML Lab
 | `refresh.py` | Daily refresh, change detection, score deltas. |
 | `daily_job.py` | Cron entry point. |
 
+| `asset_models.py` | Shaffer v1 arithmetic for all 19 asset classes + derivative overlays. |
+| `political.py` | Geopolitical & Policy Impact (GPI v1). |
 | `prediction.py` | Shaffer Predicted Return (score → 12M price return). |
+| `synthetic.py` | 11 synthetic ML validation tests. |
+| `blotter.py` | FinSim blotter import, trade grouping, hedge linking. |
+| `counterfactual.py` | Replay every eligible hedge against the realised path. |
 | `mllib.py` | Pure-stdlib ML models and metrics. |
 | `ml_lab.py` | Dataset, walk-forward validation, calibration, registry. |
 | `ml_job.py` | ML CLI: labels, training, promotion. |
@@ -123,6 +130,126 @@ python3 test_prediction_ml.py     # predicted return + ML Lab
 
 `scoring.py` never imports `market_data.py`, and neither imports `app.py`. To
 reuse the engine elsewhere, take `scoring.py` and feed it numbers.
+
+## Shaffer v1 — the production arithmetic
+
+**Shaffer v1 is the current production arithmetic. It is a starting hypothesis,
+not an assumed optimum.** The ML Lab's job is to find where it is wrong. It
+cannot change it: promotion is always explicit.
+
+19 asset-class equations, every one verified to sum to 1.0:
+
+| Class | Equation | Version |
+|---|---|---|
+| Common equity | `0.75 × (0.40V + 0.25G + 0.20P + 0.15D)` | `equity_shaffer_v1` |
+| REIT | `0.35V + 0.25G + 0.20Q + 0.20D` | `reit_shaffer_v1` |
+| Preferred | `0.35C + 0.30Y + 0.20R + 0.15Call` | `preferred_shaffer_v1` |
+| ETF / index | `0.80U + 0.20B` | `etf_shaffer_v1` |
+| Government bond | `0.27CB + 0.22INF + 0.18G + 0.13Y + 0.08Curve + 0.12Policy` | `rates_shaffer_v1` |
+| Corporate bond | `0.32C + 0.23S + 0.18R + 0.09CF + 0.08T + 0.10GPI` | `corp_credit_shaffer_v1` |
+| Agency MBS | `0.30OAS + 0.25Rates + 0.20Prep + 0.15Vol + 0.10Carry` | `mbs_shaffer_v1` |
+| Structured credit | `0.30Spread + 0.25Collateral + 0.20Coverage + 0.15Structure + 0.10Liquidity` | `structured_shaffer_v1` |
+| FX pair | `0.25RR + 0.20CB + 0.13G + 0.09CA + 0.08V + 0.08Carry + 0.17GPI` | `fx_shaffer_v1` |
+| Crude oil | `0.22Inv + 0.17Supply + 0.17Demand + 0.12Curve + 0.08Ref + 0.07USD + 0.17GPI` | `oil_shaffer_v1` |
+| Natural gas | `0.25Storage + 0.17Weather + 0.17Supply + 0.13LNG + 0.08Curve + 0.05Demand + 0.15GPI` | `natgas_shaffer_v1` |
+| Gold | `0.27RealYield + 0.18USD + 0.13Flows + 0.13Inflation + 0.09Risk + 0.08Mom + 0.12GPI` | `gold_shaffer_v1` |
+| Industrial metal | `0.23PMI + 0.18Inv + 0.17Supply + 0.13China + 0.09USD + 0.08Curve + 0.12GPI` | `industrial_metal_shaffer_v1` |
+| Agriculture | `0.27StocksUse + 0.22Weather + 0.18Prod + 0.13Exports + 0.08Curve + 0.12GPI` | `ag_shaffer_v1` |
+| Livestock | `0.25Herd + 0.20Feed + 0.20Slaughter + 0.15Demand + 0.10Curve + 0.10Seasonality` | `livestock_shaffer_v1` |
+| Crypto | `0.25Liq + 0.20Mom + 0.15Flows + 0.15Network + 0.15Leverage + 0.10Supply` | `crypto_shaffer_v1` |
+| Volatility | `0.30VV + 0.25Curve + 0.20Stress + 0.15VoV + 0.10Positioning` | `vol_shaffer_v1` |
+| Futures | `0.85Underlying + 0.10CarryCurve + 0.05Liquidity` | `futures_shaffer_v1` |
+| Listed option | `0.55D + 0.25VV + 0.10Theta + 0.10Liquidity` | `option_shaffer_v1` |
+
+Derivative overlays inherit their underlying rather than running a competing
+economic model, so a derivative can never contradict it:
+
+```
+BuyProtection  = -CreditStrength + CDSRelativeValue     cds_shaffer_v1
+ReceiveTRS     =  Underlying - CarryCost                trs_shaffer_v1
+PayTRS         = -Underlying - CarryCost
+ReceiveFixed  ~=  RatesScore                            irs_shaffer_v1
+PayFixed      ~= -RatesScore
+FXForward      =  0.85 FXScore + 0.15 ForwardValue      fx_forward_shaffer_v1
+```
+
+### Direction is never ambiguous
+
+Every model carries an explicit direction label, because a positive score means
+different things: bullish the asset, bullish bond *total return* (not yield),
+attractive to BUY protection, attractive to RECEIVE fixed, attractive to be
+LONG volatility.
+
+### Normalization
+
+Cross-sectional factors use percentile rank (`200p − 100`, or `100 − 200p` where
+lower is better, average rank for ties). Time-series factors use historical
+percentile or a tanh-squashed z-score. Raw units never enter a weighted
+equation. A missing factor is **dropped and the remaining weights
+renormalized** — never a silent zero — and coverage, missing factors and
+confidence are tracked on every result.
+
+### What has data, and what does not
+
+**Only equities are fed end to end.** Every other equation is implemented and
+tested but its inputs have no wired data source, so it returns a structured
+`awaiting_inputs` result naming exactly what is missing:
+
+| Engine | Needs |
+|---|---|
+| Rates | central-bank path, inflation trajectory, curve valuation |
+| Corporate credit | issuer spreads vs rating/maturity cohort |
+| Agency MBS | option-adjusted spread, prepayment speeds, rate vol |
+| Structured credit | deal-level collateral, OC/IC tests, DSCR/LTV |
+| FX | real-rate differentials, policy paths, current account |
+| Oil / gas / metals / ag | inventories, OPEC output, HDD/CDD, PMI, mine supply |
+| Crypto | stablecoin liquidity, on-chain activity, funding/OI |
+| Volatility | implied vs realised surface, term structure |
+| ETF | constituent holdings and weights |
+| CDS / TRS | spreads by tenor, dealer financing |
+
+Supplying `factor_values` scores them immediately — the arithmetic is real and
+tested, only the feeds are absent.
+
+## Geopolitical & Policy Impact (GPI v1)
+
+Two deliberately separate numbers:
+
+```
+PoliticalRiskLevel  [0, 100]     how significant is the EVENT
+PoliticalImpact     [-100, +100] what it does to a SPECIFIC asset
+
+GPI severity = 0.30 Conflict + 0.20 Sanctions + 0.20 Regulation
+             + 0.15 Fiscal + 0.10 CapitalControl + 0.05 Uncertainty
+
+PoliticalImpact = DecayedSeverity × AssetExposure × Confidence
+AssetExposure   = 0.35 Revenue + 0.25 SupplyChain
+                + 0.20 Production + 0.20 Regulatory      in [-1, +1]
+```
+
+One strait-disruption event at severity 50.5 scores **oil +25.9, airlines
+−20.4, gold +9.3, software −0.5**. Same severity; the sign comes from exposure.
+
+Impact decays as `exp(-ln2 · t / halflife)` by event class — a headline fades in
+days, a proposed regulation in months, an enacted law in years — and
+structurally active events (live sanctions, a running conflict) do not decay
+while active.
+
+For equities the overlay is a **separate layer**, capped at ±10 by default
+(±15 configurable):
+
+```
+FinalShafferEquityScore = CompanyScore + SectorOverlay + PoliticalOverlay
+```
+
+The company arithmetic is untouched. FX uses the relative difference
+`GPI_pair = GPI_base − GPI_quote`.
+
+Political raw features are stored individually, not just the final overlay, so
+the Lab can test *which* political input mattered. **There is no automated
+event feed** — events are entered explicitly, and nothing is inferred from news.
+The engine scores measurable economic consequences only; it does not score
+ideology, parties or voter preference.
 
 ## The hedge engine
 
@@ -333,14 +460,88 @@ python3 ml_job.py --promote 7  # explicit, manual, the only path to production
 Training is deliberately separate from the daily refresh: `daily_job.py`
 collects prediction data, `ml_job.py` trains. The daily job never retrains.
 
+### Synthetic validation
+
+Eleven tests generate data with a KNOWN built-in relationship and confirm the
+pipeline recovers it. **All 11 pass.**
+
+| Test | What it proves |
+|---|---|
+| Linear recovery | OLS/Ridge/ElasticNet recover signs and ranking (R²≈0.88) |
+| Nonlinear interaction | GBM beats linear on a `V>50 AND G>40` threshold |
+| Useless factor | Lasso zeroes pure noise; permutation ranks it last |
+| Wrong weight | Production over-weights Valuation; challenger finds Growth stronger |
+| Wrong sign | A factor assumed positive comes back negative |
+| Political interaction | `GPI × InventoryTightness` — trees beat linear |
+| Regime change | Walk-forward exposes instability a random split hides |
+| Leakage prevention | Timestamp guard rejects future features; leaked R²=1.00000 |
+| Hedge selection | Hedges cut the worst loss; upside ordering unhedged > put > TRS |
+| Proxy sizing | Beta-adjusted residual variance 55% below dollar-matched |
+| Option value | Model recovers the IV−RV edge (Spearman 0.99) |
+
+**These validate the SOFTWARE, not the investment model.** A green board means
+the machinery works. It says nothing about whether the Shaffer Score predicts
+real markets. Synthetic observations are never written to live tables and never
+mixed into production training.
+
+### FinSim blotter integration
+
+`blotter.py` imports trade history from CSV, TSV, Excel or SQLite. The adapter
+is field-tolerant — it maps whatever schema FinSim provides and preserves
+unknown columns rather than discarding them.
+
+- **Security mapping** resolves FinSim symbols onto the Shaffer universe.
+  Unmapped trades are kept and flagged, never dropped.
+- **Trade grouping** collapses several trades into ONE economic position:
+  long stock + protective puts is one hedged position; long and short the same
+  future is a calendar spread; stock + pay-TRS is an exposure hedge. Explicit
+  grouping (`trade_group_id`, `position_id`, parent/hedge chains) wins over
+  inference.
+- **Hedge links** record primary ↔ hedge with the implied hedge ratio.
+- **Entry snapshots** capture the contemporaneous Shaffer state — score,
+  factors, prediction, hedge, GPI, model versions — and are **immutable**, so a
+  decision is judged on what was known at the time, never on revised data.
+
+**My trades are not a random sample of the market.** The trade dataset is used
+for execution, hedging and behaviour analysis only — never to train a general
+asset-return model.
+
+### Counterfactual hedges
+
+Only the recommended hedge is ever traded, so `counterfactual.py` records what
+EVERY eligible strategy was at decision time and replays each against the
+realised path.
+
+Rows are labelled **ACTUAL** (really traded) or **SIMULATED COUNTERFACTUAL**
+(scored but not traded). The two are never blurred, and a simulated payoff is
+intrinsic-value arithmetic — it assumes no slippage or liquidity constraint.
+
+Research metrics: protection benefit, net protection benefit, hedge efficiency
+(`downside reduction / hedge cost`, undefined rather than infinite at zero
+cost), upside sacrificed, downside avoided, drawdown reduction.
+
 ### Is there enough data yet?
 
 **No.** The database holds a single day of snapshots, so there are zero
 labelled 12-month outcomes and nothing can be trained. The Lab reports
-`INSUFFICIENT DATA FOR RELIABLE 12M ML TRAINING` and fabricates nothing. Real
-results need the daily job running for months — 12-month labels need twelve
-months. The infrastructure is built so that evidence accumulates honestly from
-here.
+`INSUFFICIENT DATA FOR RELIABLE 12M ML TRAINING`, the Proposals tab returns
+nothing, and no backtest is fabricated. Real results need the daily job running
+for months — 12-month labels need twelve months.
+
+The synthetic suite proves the machinery is ready for that evidence. It is not
+a substitute for it.
+
+### The intended loop
+
+```
+Human finance logic -> Shaffer v1 -> Real predictions -> Real outcomes
+  -> ML evidence -> Better challenger -> HUMAN APPROVAL -> Shaffer v2
+```
+
+Never `Train -> Silently Rewrite`. A test asserts that training challengers and
+running the full synthetic suite leaves every production constant byte-identical:
+equity weights, the 0.75 scale, company weights, the 0.20 return calibration,
+the hedge ratio curve and the seven hedge strategy weights.
 
 ## The company model
 

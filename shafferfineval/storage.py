@@ -198,6 +198,128 @@ CREATE TABLE IF NOT EXISTS ml_predictions (
     UNIQUE (model_id, asset_id, snapshot_date)
 );
 
+CREATE TABLE IF NOT EXISTS political_events (
+    event_id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type               TEXT NOT NULL,
+    description              TEXT,
+    start_time               TEXT,
+    last_updated             TEXT,
+    end_time                 TEXT,
+    severity_components_json TEXT,
+    severity                 REAL,
+    confidence               REAL,
+    status                   TEXT NOT NULL DEFAULT 'active',
+    model_version            TEXT NOT NULL DEFAULT 'gpi_v1',
+    created_at               TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_events_status ON political_events(status);
+
+CREATE TABLE IF NOT EXISTS asset_political_exposure (
+    exposure_id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    asset_id                 INTEGER NOT NULL REFERENCES assets(asset_id),
+    event_id                 INTEGER NOT NULL REFERENCES political_events(event_id),
+    exposure_components_json TEXT,
+    net_exposure             REAL,
+    impact                   REAL,
+    decayed_severity         REAL,
+    updated_at               TEXT NOT NULL,
+    UNIQUE (asset_id, event_id)
+);
+CREATE INDEX IF NOT EXISTS idx_exposure_asset ON asset_political_exposure(asset_id);
+
+CREATE TABLE IF NOT EXISTS trades (
+    trade_row_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    trade_id           TEXT,
+    order_id           TEXT,
+    asset_id           INTEGER REFERENCES assets(asset_id),
+    source_symbol      TEXT,
+    asset_class        TEXT,
+    trade_date         TEXT,
+    settle_date        TEXT,
+    side               TEXT,
+    quantity           REAL,
+    price              REAL,
+    gross              REAL,
+    accrued            REAL,
+    commission         REAL,
+    net_cash           REAL,
+    realized_pnl       REAL,
+    status             TEXT,
+    strategy_tag       TEXT,
+    trade_group_id     TEXT,
+    hedge_relationship TEXT,
+    parent_trade       TEXT,
+    linked_hedge_trade TEXT,
+    extra_json         TEXT,
+    source             TEXT,
+    imported_at        TEXT NOT NULL,
+    UNIQUE (trade_id, source)
+);
+CREATE INDEX IF NOT EXISTS idx_trades_asset ON trades(asset_id);
+CREATE INDEX IF NOT EXISTS idx_trades_group ON trades(trade_group_id);
+
+CREATE TABLE IF NOT EXISTS trade_groups (
+    group_row_id  INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_key     TEXT NOT NULL UNIQUE,
+    primary_trade TEXT,
+    relationship  TEXT,
+    strategy_tag  TEXT,
+    hedge_ratio   REAL,
+    note          TEXT,
+    created_at    TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS hedge_links (
+    link_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_key         TEXT NOT NULL,
+    primary_trade_id  TEXT,
+    hedge_trade_id    TEXT,
+    hedge_strategy    TEXT,
+    relationship_type TEXT,
+    hedge_ratio       REAL,
+    created_at        TEXT NOT NULL,
+    closed_at         TEXT,
+    UNIQUE (group_key, primary_trade_id, hedge_trade_id)
+);
+
+CREATE TABLE IF NOT EXISTS trade_snapshots (
+    snapshot_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    trade_id          TEXT,
+    asset_id          INTEGER REFERENCES assets(asset_id),
+    stage             TEXT NOT NULL,
+    captured_at       TEXT NOT NULL,
+    price             REAL,
+    shaffer_score     REAL,
+    factor_scores_json TEXT,
+    raw_inputs_json   TEXT,
+    gpi_json          TEXT,
+    predicted_return  REAL,
+    preferred_hedge   TEXT,
+    hedge_json        TEXT,
+    model_versions_json TEXT,
+    UNIQUE (trade_id, stage)
+);
+CREATE INDEX IF NOT EXISTS idx_trade_snap_asset ON trade_snapshots(asset_id);
+
+CREATE TABLE IF NOT EXISTS hedge_counterfactuals (
+    cf_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    asset_id       INTEGER REFERENCES assets(asset_id),
+    group_key      TEXT,
+    snapshot_date  TEXT NOT NULL,
+    strategy_key   TEXT NOT NULL,
+    strategy_name  TEXT,
+    label          TEXT NOT NULL,
+    context_json   TEXT,
+    legs_json      TEXT,
+    outcome_json   TEXT,
+    net_pnl        REAL,
+    hedge_efficiency REAL,
+    model_version  TEXT NOT NULL DEFAULT 'hedge_model_v1',
+    created_at     TEXT NOT NULL,
+    UNIQUE (group_key, snapshot_date, strategy_key)
+);
+CREATE INDEX IF NOT EXISTS idx_cf_asset ON hedge_counterfactuals(asset_id, label);
+
 CREATE TABLE IF NOT EXISTS refresh_runs (
     run_id       INTEGER PRIMARY KEY AUTOINCREMENT,
     started_at   TEXT NOT NULL,
@@ -853,3 +975,225 @@ def production_model(conn, horizon: str):
     return conn.execute(
         "SELECT * FROM ml_models WHERE horizon=? AND status=? ORDER BY model_id DESC LIMIT 1",
         (horizon, PRODUCTION)).fetchone()
+
+
+# --------------------------------------------------------------------------
+# Political events and exposures
+# --------------------------------------------------------------------------
+
+def save_political_event(conn, **fields) -> int:
+    with transaction(conn):
+        cursor = conn.execute(
+            """INSERT INTO political_events
+               (event_type, description, start_time, last_updated, end_time,
+                severity_components_json, severity, confidence, status,
+                model_version, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (fields.get("event_type"), fields.get("description"),
+             fields.get("start_time"), _now(), fields.get("end_time"),
+             _dumps(fields.get("components")), fields.get("severity"),
+             fields.get("confidence"), fields.get("status", "active"),
+             fields.get("model_version", "gpi_v1"), _now()),
+        )
+        return cursor.lastrowid
+
+
+def list_political_events(conn, status: Optional[str] = None):
+    if status:
+        return conn.execute(
+            "SELECT * FROM political_events WHERE status=? ORDER BY start_time DESC",
+            (status,)).fetchall()
+    return conn.execute(
+        "SELECT * FROM political_events ORDER BY start_time DESC").fetchall()
+
+
+def save_political_exposure(conn, asset_id: int, event_id: int, **fields) -> None:
+    with transaction(conn):
+        conn.execute(
+            """INSERT INTO asset_political_exposure
+               (asset_id, event_id, exposure_components_json, net_exposure,
+                impact, decayed_severity, updated_at)
+               VALUES (?,?,?,?,?,?,?)
+               ON CONFLICT(asset_id, event_id) DO UPDATE SET
+                 exposure_components_json=excluded.exposure_components_json,
+                 net_exposure=excluded.net_exposure, impact=excluded.impact,
+                 decayed_severity=excluded.decayed_severity,
+                 updated_at=excluded.updated_at""",
+            (asset_id, event_id, _dumps(fields.get("components")),
+             fields.get("net_exposure"), fields.get("impact"),
+             fields.get("decayed_severity"), _now()),
+        )
+
+
+def asset_political_impacts(conn, asset_id: int):
+    return conn.execute(
+        """SELECT e.*, x.net_exposure, x.impact, x.exposure_components_json,
+                  x.decayed_severity
+           FROM asset_political_exposure x
+           JOIN political_events e ON e.event_id = x.event_id
+           WHERE x.asset_id = ? AND e.status = 'active'""", (asset_id,)).fetchall()
+
+
+# --------------------------------------------------------------------------
+# Trades, groups, hedge links, snapshots, counterfactuals
+# --------------------------------------------------------------------------
+
+def save_trades(conn, trades: Iterable, source: str) -> dict:
+    """Persist imported blotter trades. Idempotent on (trade_id, source)."""
+    stats = {"written": 0, "skipped": 0}
+    with transaction(conn):
+        for trade in trades:
+            try:
+                cursor = conn.execute(
+                    """INSERT INTO trades
+                       (trade_id, order_id, asset_id, source_symbol, asset_class,
+                        trade_date, settle_date, side, quantity, price, gross,
+                        accrued, commission, net_cash, realized_pnl, status,
+                        strategy_tag, trade_group_id, hedge_relationship,
+                        parent_trade, linked_hedge_trade, extra_json, source,
+                        imported_at)
+                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                       ON CONFLICT(trade_id, source) DO NOTHING""",
+                    (trade.trade_id, trade.order_id, trade.mapped_asset_id,
+                     trade.symbol, trade.asset_class, trade.trade_date,
+                     trade.settle_date, trade.side, trade.quantity, trade.price,
+                     trade.gross, trade.accrued, trade.commission, trade.net_cash,
+                     trade.realized_pnl, trade.status, trade.strategy_tag,
+                     trade.trade_group_id, trade.hedge_relationship,
+                     trade.parent_trade, trade.linked_hedge_trade,
+                     _dumps(trade.extra), source, _now()),
+                )
+                # ON CONFLICT DO NOTHING raises nothing, so rowcount is the
+                # only honest signal that a row was actually inserted.
+                if cursor.rowcount and cursor.rowcount > 0:
+                    stats["written"] += 1
+                else:
+                    stats["skipped"] += 1
+            except sqlite3.Error:
+                stats["skipped"] += 1
+    return stats
+
+
+def list_trades(conn, asset_id: Optional[int] = None):
+    if asset_id is not None:
+        return conn.execute(
+            """SELECT t.*, a.symbol AS universe_symbol FROM trades t
+               LEFT JOIN assets a ON a.asset_id=t.asset_id
+               WHERE t.asset_id=? ORDER BY t.trade_date DESC""",
+            (asset_id,)).fetchall()
+    return conn.execute(
+        """SELECT t.*, a.symbol AS universe_symbol FROM trades t
+           LEFT JOIN assets a ON a.asset_id=t.asset_id
+           ORDER BY t.trade_date DESC""").fetchall()
+
+
+def save_trade_group(conn, group_key: str, **fields) -> None:
+    with transaction(conn):
+        conn.execute(
+            """INSERT INTO trade_groups
+               (group_key, primary_trade, relationship, strategy_tag,
+                hedge_ratio, note, created_at)
+               VALUES (?,?,?,?,?,?,?)
+               ON CONFLICT(group_key) DO UPDATE SET
+                 primary_trade=excluded.primary_trade,
+                 relationship=excluded.relationship,
+                 strategy_tag=excluded.strategy_tag,
+                 hedge_ratio=excluded.hedge_ratio, note=excluded.note""",
+            (group_key, fields.get("primary_trade"), fields.get("relationship"),
+             fields.get("strategy_tag"), fields.get("hedge_ratio"),
+             fields.get("note"), _now()),
+        )
+
+
+def save_hedge_link(conn, group_key: str, primary_trade_id, hedge_trade_id,
+                    **fields) -> None:
+    with transaction(conn):
+        conn.execute(
+            """INSERT INTO hedge_links
+               (group_key, primary_trade_id, hedge_trade_id, hedge_strategy,
+                relationship_type, hedge_ratio, created_at, closed_at)
+               VALUES (?,?,?,?,?,?,?,?)
+               ON CONFLICT(group_key, primary_trade_id, hedge_trade_id)
+               DO UPDATE SET hedge_strategy=excluded.hedge_strategy,
+                 relationship_type=excluded.relationship_type,
+                 hedge_ratio=excluded.hedge_ratio, closed_at=excluded.closed_at""",
+            (group_key, primary_trade_id, hedge_trade_id,
+             fields.get("hedge_strategy"), fields.get("relationship_type"),
+             fields.get("hedge_ratio"), _now(), fields.get("closed_at")),
+        )
+
+
+def list_trade_groups(conn):
+    return conn.execute("SELECT * FROM trade_groups ORDER BY group_key").fetchall()
+
+
+def list_hedge_links(conn, group_key: Optional[str] = None):
+    if group_key:
+        return conn.execute(
+            "SELECT * FROM hedge_links WHERE group_key=?", (group_key,)).fetchall()
+    return conn.execute("SELECT * FROM hedge_links").fetchall()
+
+
+def save_trade_snapshot(conn, trade_id: str, stage: str, **fields) -> str:
+    """Contemporaneous Shaffer state at entry or exit.
+
+    Immutable: a snapshot already captured for a (trade, stage) is never
+    rewritten, so a decision can be judged on what was known at the time
+    rather than on revised data.
+    """
+    existing = conn.execute(
+        "SELECT snapshot_id FROM trade_snapshots WHERE trade_id=? AND stage=?",
+        (trade_id, stage)).fetchone()
+    if existing:
+        return "exists"
+    with transaction(conn):
+        conn.execute(
+            """INSERT INTO trade_snapshots
+               (trade_id, asset_id, stage, captured_at, price, shaffer_score,
+                factor_scores_json, raw_inputs_json, gpi_json, predicted_return,
+                preferred_hedge, hedge_json, model_versions_json)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (trade_id, fields.get("asset_id"), stage, _now(), fields.get("price"),
+             fields.get("shaffer_score"), _dumps(fields.get("factor_scores")),
+             _dumps(fields.get("raw_inputs")), _dumps(fields.get("gpi")),
+             fields.get("predicted_return"), fields.get("preferred_hedge"),
+             _dumps(fields.get("hedge")), _dumps(fields.get("model_versions"))),
+        )
+    return "written"
+
+
+def get_trade_snapshot(conn, trade_id: str, stage: str = "entry"):
+    return conn.execute(
+        "SELECT * FROM trade_snapshots WHERE trade_id=? AND stage=?",
+        (trade_id, stage)).fetchone()
+
+
+def save_counterfactual(conn, group_key: str, snapshot_date: str,
+                        strategy_key: str, **fields) -> None:
+    with transaction(conn):
+        conn.execute(
+            """INSERT INTO hedge_counterfactuals
+               (asset_id, group_key, snapshot_date, strategy_key, strategy_name,
+                label, context_json, legs_json, outcome_json, net_pnl,
+                hedge_efficiency, model_version, created_at)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+               ON CONFLICT(group_key, snapshot_date, strategy_key) DO UPDATE SET
+                 outcome_json=excluded.outcome_json, net_pnl=excluded.net_pnl,
+                 hedge_efficiency=excluded.hedge_efficiency,
+                 label=excluded.label""",
+            (fields.get("asset_id"), group_key, snapshot_date, strategy_key,
+             fields.get("strategy_name"), fields.get("label", "SIMULATED COUNTERFACTUAL"),
+             _dumps(fields.get("context")), _dumps(fields.get("legs")),
+             _dumps(fields.get("outcome")), fields.get("net_pnl"),
+             fields.get("hedge_efficiency"),
+             fields.get("model_version", HEDGE_MODEL_VERSION), _now()),
+        )
+
+
+def list_counterfactuals(conn, label: Optional[str] = None):
+    if label:
+        return conn.execute(
+            "SELECT * FROM hedge_counterfactuals WHERE label=? ORDER BY snapshot_date DESC",
+            (label,)).fetchall()
+    return conn.execute(
+        "SELECT * FROM hedge_counterfactuals ORDER BY snapshot_date DESC").fetchall()

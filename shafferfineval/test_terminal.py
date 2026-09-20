@@ -206,14 +206,26 @@ print("== 14-15. asset class routing ==")
 equity = routers.score_asset(uni.EQUITY, "NVDA", None)
 check("equity routes to the equity engine", equity.status == routers.NO_DATA)
 check("equity model version", equity.model_version == "equity_model_v1")
+# Every class now carries Shaffer v1 arithmetic. What differs is whether this
+# project has DATA to feed it, so an unfed class returns awaiting_inputs rather
+# than model_not_implemented -- and never a fabricated score.
 for asset_class in (uni.BOND, uni.FX, uni.COMMODITY, uni.FUTURE, uni.ETF,
                     uni.CRYPTO, uni.OTC, uni.CDS, uni.INDEX, uni.PREFERRED):
     result = routers.score_asset(asset_class, "X", None)
-    check(f"{asset_class} -> model_not_implemented",
-          result.status == routers.NOT_IMPLEMENTED)
+    check(f"{asset_class} -> not scored without inputs",
+          result.status in (routers.NOT_IMPLEMENTED, routers.AWAITING_DATA,
+                            routers.NO_DATA), result.status)
     check(f"{asset_class} invents no score", result.shaffer_score is None)
     check(f"{asset_class} explains itself", bool(result.message))
-check("only equities have a score engine", set(routers.SCORE_ENGINES) == {uni.EQUITY})
+check("equities are the only class fed end to end today",
+      routers.SCORE_ENGINES[uni.EQUITY] == "equity_model_v1")
+check("every other class has arithmetic but declares its missing inputs",
+      all(routers.score_asset(c, "X").status != routers.IMPLEMENTED
+          for c in (uni.BOND, uni.FX, uni.COMMODITY, uni.CRYPTO)))
+check("supplying inputs DOES produce a score",
+      routers.score_asset(uni.COMMODITY, "CL", subclass="Commodity Energy",
+                          factor_values={"inventories": 50, "supply": 10,
+                                         "demand": 20}).status == routers.IMPLEMENTED)
 check("only equities have a hedge engine", set(routers.HEDGE_ENGINES) == {uni.EQUITY})
 
 print("== 17-19. hedge routing, no-position vs position ==")

@@ -9,10 +9,13 @@ from __future__ import annotations
 
 import streamlit as st
 
+import counterfactual as CF
 import mllib
 import ml_lab
+import political
 import prediction as pred
 import storage
+import synthetic as SYN
 from views.common import fmt_int, fmt_price, fmt_score, fmt_signed_pct
 
 STATUS_COLOR = {
@@ -51,23 +54,37 @@ def render(conn) -> None:
     )
 
     tabs = st.tabs([
-        "DATA STATUS", "PRODUCTION VS CHALLENGERS", "SHAFFER CALIBRATION",
-        "FACTOR IMPORTANCE", "DECILES", "MODEL REGISTRY", "CURRENT PREDICTIONS",
+        "DATA STATUS", "SYNTHETIC VALIDATION", "PRODUCTION VS CHALLENGERS",
+        "SHAFFER CALIBRATION", "FACTOR IMPORTANCE", "DECILES", "REGIME",
+        "POLITICAL", "HEDGE RESEARCH", "TRADE RESEARCH", "PROPOSALS",
+        "MODEL REGISTRY", "CURRENT PREDICTIONS",
     ])
 
     with tabs[0]:
         _render_data_status(conn, horizon, target, sampling)
     with tabs[1]:
-        _render_models(conn, horizon, target, sampling)
+        _render_synthetic()
     with tabs[2]:
-        _render_calibration(conn, horizon, target, sampling)
+        _render_models(conn, horizon, target, sampling)
     with tabs[3]:
-        _render_importance(conn, horizon, target, sampling)
+        _render_calibration(conn, horizon, target, sampling)
     with tabs[4]:
-        _render_deciles(conn, horizon, target, sampling)
+        _render_importance(conn, horizon, target, sampling)
     with tabs[5]:
-        _render_registry(conn, horizon)
+        _render_deciles(conn, horizon, target, sampling)
     with tabs[6]:
+        _render_regime(conn, horizon, target, sampling)
+    with tabs[7]:
+        _render_political(conn)
+    with tabs[8]:
+        _render_hedge_research(conn)
+    with tabs[9]:
+        _render_trade_research(conn)
+    with tabs[10]:
+        _render_proposals(conn, horizon, target, sampling)
+    with tabs[11]:
+        _render_registry(conn, horizon)
+    with tabs[12]:
         _render_current_predictions(conn)
 
 
@@ -408,3 +425,313 @@ def _render_current_predictions(conn) -> None:
         "the Shaffer V1 prediction; a challenger prediction would be shown "
         "here, clearly labelled, and would not replace it."
     )
+
+
+# --------------------------------------------------------------------------
+# Synthetic validation
+# --------------------------------------------------------------------------
+
+def _render_synthetic() -> None:
+    st.markdown("### SYNTHETIC ML VALIDATION")
+    st.warning(
+        "**These tests validate the SOFTWARE, not the investment model.** "
+        "They confirm the ML machinery works on data with a known built-in "
+        "relationship. They say nothing about whether the Shaffer Score "
+        "predicts real markets."
+    )
+    if st.button("RUN SYNTHETIC VALIDATION", key="syn_run"):
+        with st.spinner("Running 11 synthetic tests..."):
+            st.session_state["synthetic_results"] = SYN.run_all()
+
+    results = st.session_state.get("synthetic_results")
+    if not results:
+        st.info("Press **Run Synthetic Validation** to exercise the ML pipeline.")
+        st.markdown(SYN.SYNTHETIC_DISCLAIMER)
+        return
+
+    passed = sum(1 for r in results if r.passed)
+    (st.success if passed == len(results) else st.error)(
+        f"{passed}/{len(results)} synthetic validation tests passing "
+        f"— {SYN.SYNTHETIC_LABEL}"
+    )
+    st.dataframe({
+        "Test": [r.name for r in results],
+        "Status": ["PASS" if r.passed else "FAIL" for r in results],
+        "Detail": [r.detail for r in results],
+        "Label": [r.note for r in results],
+    }, use_container_width=True, hide_index=True)
+    st.markdown(SYN.SYNTHETIC_DISCLAIMER)
+
+
+# --------------------------------------------------------------------------
+# Regime analysis
+# --------------------------------------------------------------------------
+
+def _render_regime(conn, horizon, target, sampling) -> None:
+    st.markdown("### REGIME ANALYSIS")
+    st.caption(
+        "Does a factor's relationship with returns hold up across periods, or "
+        "does it flip? Walk-forward folds are the evidence."
+    )
+    reports = st.session_state.get(f"ml_reports_{horizon}_{target}_{sampling}")
+    if not reports:
+        st.info("Train the challengers first (Production vs Challengers tab).")
+        return
+    chosen = st.selectbox("Model", [r.name for r in reports], key="regime_model")
+    report = next(r for r in reports if r.name == chosen)
+    if not report.folds:
+        st.info(report.note or "No folds available.")
+        return
+    spearmans = [f.metrics.get("spearman") for f in report.folds]
+    usable = [s for s in spearmans if s is not None]
+    st.dataframe({
+        "Period": [f"{f.test_start} → {f.test_end}" for f in report.folds],
+        "N": [f.n_test for f in report.folds],
+        "MAE": [_metric(f.metrics.get("mae")) for f in report.folds],
+        "Spearman": [_metric(s) for s in spearmans],
+        "Direction": [_metric(f.metrics.get("direction_accuracy")) for f in report.folds],
+    }, use_container_width=True, hide_index=True)
+    if len(usable) >= 2:
+        spread = max(usable) - min(usable)
+        sign_flip = min(usable) < 0 < max(usable)
+        if sign_flip:
+            st.error(
+                f"**Unstable across periods.** Rank correlation ranges "
+                f"{min(usable):+.3f} to {max(usable):+.3f} and changes sign — "
+                f"the relationship does not hold in every regime."
+            )
+        elif spread > 0.25:
+            st.warning(
+                f"Rank correlation varies by {spread:.2f} across periods. "
+                f"Treat a single-period result with caution."
+            )
+        else:
+            st.success(f"Stable: rank correlation varies by only {spread:.2f}.")
+
+
+# --------------------------------------------------------------------------
+# Political analysis
+# --------------------------------------------------------------------------
+
+def _render_political(conn) -> None:
+    st.markdown("### POLITICAL / GEOPOLITICAL ANALYSIS")
+    events = storage.list_political_events(conn)
+    if not events:
+        st.info(
+            "No political events recorded. The GPI engine is implemented and "
+            "tested, but there is no automated event feed wired in — events are "
+            "entered explicitly, and nothing is inferred from news."
+        )
+        st.markdown(political.GPI_DETAILS)
+        return
+
+    st.dataframe({
+        "ID": [e["event_id"] for e in events],
+        "Type": [e["event_type"] for e in events],
+        "Description": [(e["description"] or "")[:50] for e in events],
+        "Severity": [_metric(e["severity"], 1) for e in events],
+        "Confidence": [_metric(e["confidence"], 2) for e in events],
+        "Started": [(e["start_time"] or "")[:10] for e in events],
+        "Status": [e["status"] for e in events],
+    }, use_container_width=True, hide_index=True)
+    st.caption(
+        "Severity is a property of the EVENT. Impact is a property of the "
+        "event/asset pairing, and the same event can be bullish one asset and "
+        "bearish another."
+    )
+    st.markdown("### POLITICAL FEATURES AVAILABLE TO ML")
+    st.caption(
+        "Stored separately rather than only as the final overlay, so the Lab "
+        "can test WHICH political input mattered, for which asset class, and "
+        "at which horizon: "
+        + ", ".join(political.POLITICAL_FEATURES)
+    )
+    st.markdown(political.GPI_DETAILS)
+
+
+# --------------------------------------------------------------------------
+# Hedge research
+# --------------------------------------------------------------------------
+
+def _render_hedge_research(conn) -> None:
+    st.markdown("### HEDGE RESEARCH")
+    rows = storage.list_counterfactuals(conn)
+    if not rows:
+        st.info(
+            "No hedge outcomes recorded yet. Every eligible strategy is stored "
+            "at decision time, so once positions close the Lab can replay what "
+            "each one WOULD have done — without having traded them all."
+        )
+        st.caption(
+            "Research metrics: protection benefit, net protection benefit, "
+            "hedge efficiency, upside sacrificed, downside avoided, drawdown "
+            "reduction."
+        )
+        return
+
+    actual = [r for r in rows if r["label"] == CF.ACTUAL]
+    simulated = [r for r in rows if r["label"] == CF.SIMULATED]
+    cells = st.columns(3)
+    cells[0].metric("Hedge decisions recorded", fmt_int(len(rows)))
+    cells[1].metric("Actually traded", fmt_int(len(actual)))
+    cells[2].metric("Simulated counterfactuals", fmt_int(len(simulated)))
+    st.warning(
+        "**ACTUAL** rows were really traded. **SIMULATED COUNTERFACTUAL** rows "
+        "are intrinsic-value replays of strategies that were scored but not "
+        "traded — they assume no slippage or liquidity constraint."
+    )
+    st.dataframe({
+        "Group": [r["group_key"] for r in rows],
+        "Date": [r["snapshot_date"] for r in rows],
+        "Strategy": [r["strategy_name"] or r["strategy_key"] for r in rows],
+        "Label": [r["label"] for r in rows],
+        "Net P&L": [fmt_money(r["net_pnl"]) for r in rows],
+        "Hedge efficiency": [_metric(r["hedge_efficiency"], 2) for r in rows],
+    }, use_container_width=True, hide_index=True)
+
+
+# --------------------------------------------------------------------------
+# Trade research
+# --------------------------------------------------------------------------
+
+def _render_trade_research(conn) -> None:
+    st.markdown("### FINSIM TRADE RESEARCH")
+    st.error(
+        "**My trades are not a random sample of the market.** This dataset is "
+        "used for execution, hedging and behaviour analysis only — never to "
+        "train a general asset-return model. That is the MARKET dataset's job."
+    )
+    trades = storage.list_trades(conn)
+    if not trades:
+        st.info(
+            "No blotter imported. Use the importer below, or call "
+            "`blotter.import_finsim_blotter(conn, path)` with a CSV, TSV, "
+            "Excel or SQLite export."
+        )
+    else:
+        groups = storage.list_trade_groups(conn)
+        links = storage.list_hedge_links(conn)
+        cells = st.columns(4)
+        cells[0].metric("Trades", fmt_int(len(trades)))
+        cells[1].metric("Economic positions", fmt_int(len(groups)))
+        cells[2].metric("Hedge links", fmt_int(len(links)))
+        cells[3].metric("Mapped to universe",
+                        fmt_int(sum(1 for t in trades if t["asset_id"])))
+        st.dataframe({
+            "Trade": [t["trade_id"] for t in trades],
+            "Date": [(t["trade_date"] or "")[:10] for t in trades],
+            "Symbol": [t["source_symbol"] for t in trades],
+            "Universe": [t["universe_symbol"] or "UNMAPPED" for t in trades],
+            "Side": [t["side"] for t in trades],
+            "Qty": [fmt_int(t["quantity"]) for t in trades],
+            "Price": [fmt_price(t["price"]) for t in trades],
+            "Group": [t["trade_group_id"] or "--" for t in trades],
+            "Relationship": [t["hedge_relationship"] or "--" for t in trades],
+        }, use_container_width=True, hide_index=True)
+
+    st.markdown("### IMPORT A BLOTTER")
+    path = st.text_input("Path to a FinSim export (.csv / .tsv / .xlsx / .db)",
+                         key="blotter_path")
+    if st.button("IMPORT BLOTTER") and path.strip():
+        _import_blotter(conn, path.strip())
+
+
+def _import_blotter(conn, path: str) -> None:
+    import blotter
+
+    with st.spinner(f"Importing {path}..."):
+        result = blotter.import_finsim_blotter(conn, path)
+    if not result.trades:
+        st.error(" ".join(result.notes) or "Nothing imported.")
+        return
+    stats = storage.save_trades(conn, result.trades, path)
+    groups = blotter.group_trades(result.trades)
+    for group in groups:
+        storage.save_trade_group(
+            conn, group.group_key,
+            primary_trade=group.primary.trade_id if group.primary else None,
+            relationship=group.relationship, strategy_tag=group.strategy_tag,
+            hedge_ratio=blotter.hedge_ratio_for(group), note=group.note)
+        for leg in group.hedges:
+            storage.save_hedge_link(
+                conn, group.group_key,
+                group.primary.trade_id if group.primary else None,
+                leg.trade_id, relationship_type=group.relationship,
+                hedge_ratio=blotter.hedge_ratio_for(group))
+    st.success(
+        f"{result.rows_read} rows read, {result.mapped} mapped, "
+        f"{stats['written']} new trades stored, {len(groups)} economic positions."
+    )
+    for note in result.notes:
+        st.caption(note)
+    if result.unmapped:
+        st.warning("Not in the Shaffer universe (kept, flagged): "
+                   + ", ".join(sorted(set(result.unmapped))[:20]))
+
+
+# --------------------------------------------------------------------------
+# Improvement proposals
+# --------------------------------------------------------------------------
+
+def _render_proposals(conn, horizon, target, sampling) -> None:
+    st.markdown("### SHAFFER IMPROVEMENT PROPOSALS")
+    st.info(
+        "Proposals are **evidence, not changes**. Nothing here is applied "
+        "automatically; promoting anything is an explicit action."
+    )
+    reports = st.session_state.get(f"ml_reports_{horizon}_{target}_{sampling}")
+    calibration = st.session_state.get(f"ml_calib_{horizon}_{target}_{sampling}")
+    dataset = _dataset(conn, horizon, target, sampling)
+
+    proposals = build_proposals(dataset, reports, calibration)
+    if not proposals:
+        st.warning(
+            f"**No proposals.** With {dataset.effective_observations} effective "
+            f"observations there is not enough evidence to propose a change to "
+            f"any Shaffer v1 formula. That is the correct answer, not a gap."
+        )
+        return
+    for proposal in proposals:
+        st.markdown(f"- {proposal}")
+
+
+def build_proposals(dataset, reports, calibration) -> list:
+    """Deterministic, evidence-gated proposals. Empty when evidence is thin."""
+    if dataset is None or dataset.effective_observations < ml_lab.MIN_OBS_EXPERIMENTAL:
+        return []
+
+    proposals = []
+    if calibration is not None and calibration.beta is not None:
+        if abs(calibration.beta - pred.V1_SLOPE) > 0.05:
+            direction = "too high" if pred.V1_SLOPE > calibration.beta else "too low"
+            proposals.append(
+                f"**Score-to-return slope may be {direction}.** Production uses "
+                f"{pred.V1_SLOPE:.2f}; the realised fit is {calibration.beta:.3f} "
+                f"over {calibration.n} observations "
+                f"({calibration.training_start} → {calibration.training_end})."
+            )
+    if not reports:
+        return proposals
+
+    baseline = next((r for r in reports if r.family == "baseline"), None)
+    for report in reports:
+        if report.family == "baseline" or report.status == ml_lab.INSUFFICIENT:
+            continue
+        spearman = report.metrics.get("spearman")
+        base_spearman = baseline.metrics.get("spearman") if baseline else None
+        if (spearman is not None and base_spearman is not None
+                and spearman > base_spearman + ml_lab.MIN_SPEARMAN_EDGE):
+            proposals.append(
+                f"**{report.name} out-ranks the Shaffer baseline** "
+                f"({spearman:.3f} vs {base_spearman:.3f} Spearman, "
+                f"{len(report.folds)} walk-forward folds). Status: "
+                f"{report.status}."
+            )
+        if report.importance:
+            weakest = report.importance[-1]
+            if weakest[1] < 0.03:
+                proposals.append(
+                    f"**{weakest[0]} adds little incremental value** in "
+                    f"{report.name} ({weakest[1]:.1%} of predictive importance)."
+                )
+    return proposals
