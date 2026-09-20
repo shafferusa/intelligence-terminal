@@ -26,12 +26,22 @@
 .PARAMETER RefreshTime
     Time for that task, as HH:mm. Defaults to 16:30.
 
+.PARAMETER EquitiesOnly
+    Score equities only, skipping the non-equity macro pass. Use this when
+    FRED_API_KEY is not set: without it the macro engines have no data, and
+    the pass costs a minute to score almost nothing. Add the key later and
+    re-run this without the switch to turn the macro pass back on.
+
 .PARAMETER Uninstall
     Remove the shortcuts, the startup entry and the scheduled task.
 
 .EXAMPLE
     .\install-app.ps1 -Desktop -ScheduleRefresh
     The usual first-time setup.
+
+.EXAMPLE
+    .\install-app.ps1 -Desktop -ScheduleRefresh -EquitiesOnly
+    Same, but equities only -- no FRED key needed.
 
 .EXAMPLE
     .\install-app.ps1 -Uninstall
@@ -42,6 +52,7 @@ param(
     [switch] $Desktop,
     [switch] $StartWithWindows,
     [switch] $ScheduleRefresh,
+    [switch] $EquitiesOnly,
     [string] $RefreshTime = '16:30',
     [switch] $Uninstall
 )
@@ -180,8 +191,11 @@ if ($ScheduleRefresh) {
             exit 1
         }
 
+        $jobArguments = 'daily_job.py'
+        if ($EquitiesOnly) { $jobArguments = 'daily_job.py --equities-only' }
+
         $action = New-ScheduledTaskAction -Execute $venvPython `
-            -Argument 'daily_job.py' -WorkingDirectory $Root
+            -Argument $jobArguments -WorkingDirectory $Root
         $trigger = New-ScheduledTaskTrigger -Weekly `
             -DaysOfWeek Monday, Tuesday, Wednesday, Thursday, Friday `
             -At $parsed
@@ -200,11 +214,16 @@ if ($ScheduleRefresh) {
             -Trigger $trigger -Settings $settings `
             -Description 'Immutable daily Shaffer score snapshot' | Out-Null
         Write-Ok "scheduled '$TaskName' weekdays at $RefreshTime"
+        if ($EquitiesOnly) {
+            Write-Ok 'equities only -- the macro pass is skipped'
+        }
 
-        if (-not [Environment]::GetEnvironmentVariable('FRED_API_KEY', 'User')) {
+        if (-not $EquitiesOnly -and
+                -not [Environment]::GetEnvironmentVariable('FRED_API_KEY', 'User')) {
             Write-Warn 'FRED_API_KEY is not set for your user account, so the'
-            Write-Warn 'macro engines will stay dark in scheduled runs. Set it with:'
+            Write-Warn 'macro engines will stay dark in scheduled runs. Either set it:'
             Write-Warn '  [Environment]::SetEnvironmentVariable("FRED_API_KEY","<key>","User")'
+            Write-Warn 'or re-run this with -EquitiesOnly to skip the pass entirely.'
         }
     }
 }

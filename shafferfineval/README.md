@@ -84,6 +84,7 @@ nothing lingers.
 | `-Desktop` | also put an icon on the desktop |
 | `-StartWithWindows` | start the server at login |
 | `-ScheduleRefresh` | register the 16:30 weekday snapshot task |
+| `-EquitiesOnly` | skip the macro pass; no `FRED_API_KEY` needed |
 | `-RefreshTime 16:45` | move that task |
 | `-Uninstall` | remove the shortcuts, startup entry and task |
 
