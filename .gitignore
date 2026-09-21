@@ -16,3 +16,6 @@ node_modules/
 # Secrets / local env — credentials must NEVER be committed
 .env
 .env.*
+
+# Local agent tooling scratch (worktrees for background research agents, etc.)
+.claude/
