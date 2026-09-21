@@ -1,432 +1,379 @@
 {
- "fetched_at": "2026-09-21T10:52:00Z",
+ "fetched_at": "2026-09-21T20:52:00Z",
  "treasury_par_curve": {
-  "date": "2026-09-18",
-  "BC_1MONTH": 3.97,
-  "BC_1_5MONTH": 3.98,
-  "BC_2MONTH": 4.1,
-  "BC_3MONTH": 4.14,
-  "BC_4MONTH": 4.24,
-  "BC_6MONTH": 4.24,
-  "BC_1YEAR": 4.44,
-  "BC_2YEAR": 4.76,
-  "BC_3YEAR": 4.83,
-  "BC_5YEAR": 4.86,
-  "BC_7YEAR": 4.93,
-  "BC_10YEAR": 5.01,
-  "BC_20YEAR": 5.38,
-  "BC_30YEAR": 5.34,
-  "spread_2s10s_bp": 25,
-  "spread_3m10y_bp": 87,
-  "spread_5s30s_bp": 48,
-  "label": "EOD official (2026-09-18)"
+  "as_of": "2026-09-21 EOD official",
+  "curve": {
+   "1M": 3.96,
+   "1.5M": 4.02,
+   "2M": 4.1,
+   "3M": 4.17,
+   "4M": 4.26,
+   "6M": 4.27,
+   "1Y": 4.45,
+   "2Y": 4.76,
+   "3Y": 4.82,
+   "5Y": 4.83,
+   "7Y": 4.89,
+   "10Y": 4.96,
+   "20Y": 5.33,
+   "30Y": 5.29
+  },
+  "2s10s_bp": 20,
+  "3m10y_bp": 79,
+  "5s30s_bp": 46,
+  "note": "Curve flattened from Friday 9/18 (2s10s +25bp -> +20bp, 3m10y +87bp -> +79bp, 5s30s +48bp -> +46bp)."
  },
  "fred": {
-  "CPIAUCSL": {
-   "value": 334.131,
-   "date": "2026-08-01",
-   "prev": 332.813,
-   "prev_date": "2026-07-01"
-  },
-  "CPILFESL": {
-   "value": 337.765,
-   "date": "2026-08-01",
-   "prev": 336.789,
-   "prev_date": "2026-07-01"
-  },
-  "PAYEMS": {
-   "value": 159075.0,
-   "date": "2026-08-01",
-   "prev": 158913.0,
-   "prev_date": "2026-07-01"
-  },
-  "ICSA": {
-   "value": 196000.0,
-   "date": "2026-09-12",
-   "prev": 206000.0,
-   "prev_date": "2026-09-05"
-  },
-  "UNRATE": {
-   "value": 4.1,
-   "date": "2026-08-01",
-   "prev": 4.1,
-   "prev_date": "2026-07-01"
-  },
-  "T10Y2Y": {
-   "value": 0.25,
-   "date": "2026-09-18",
-   "prev": 0.27,
-   "prev_date": "2026-09-17"
-  },
-  "DGS2": {
-   "value": 4.67,
-   "date": "2026-09-17",
-   "prev": 4.74,
-   "prev_date": "2026-09-16"
-  },
-  "DGS10": {
-   "value": 4.94,
-   "date": "2026-09-17",
-   "prev": 5.01,
-   "prev_date": "2026-09-16"
-  },
-  "T10YIE": {
-   "value": 2.33,
-   "date": "2026-09-18",
-   "prev": 2.33,
-   "prev_date": "2026-09-17"
-  },
-  "DFII10": {
-   "value": 2.61,
-   "date": "2026-09-17",
-   "prev": 2.68,
-   "prev_date": "2026-09-16"
-  },
-  "SOFR": {
-   "value": 3.85,
-   "date": "2026-09-17",
-   "prev": 3.62,
-   "prev_date": "2026-09-16",
-   "note": "large +23bp one-day move, flagged, no confirmed cause -- possibly quarter-end-adjacent funding pressure"
-  },
-  "BAMLH0A0HYM2": {
-   "value": 2.7,
-   "date": "2026-09-17",
-   "prev": 2.7,
-   "prev_date": "2026-09-16"
-  },
-  "label": "EOD official"
- },
- "vix_complex": {
-  "VIX": 14.81,
-  "VIX_date": "2026-09-18",
-  "VIX_prev": 15.44,
-  "VIX9D": 12.27,
-  "VIX3M": 18.24,
-  "term_structure": "normal contango (VIX9D<VIX<VIX3M), no inversion",
-  "label": "EOD official (2026-09-18)"
- },
- "fx": {
-  "base": "USD",
-  "date": "2026-09-18",
-  "rates": {
-   "AUD": 1.4045,
-   "BRL": 5.1359,
-   "CAD": 1.401,
-   "CHF": 0.82565,
-   "CNY": 6.6976,
-   "EUR": 0.8726,
-   "GBP": 0.74939,
-   "INR": 95.88,
-   "JPY": 157.89,
-   "MXN": 17.1776
-  },
-  "dxy": 100.193,
-  "dxy_prev": 100.22,
-  "label": "EOD official (ECB reference, 2026-09-18)"
- },
- "crypto": {
-  "prices": {
-   "bitcoin": {
-    "usd": 84173,
-    "usd_24h_change": 4.8226,
-    "usd_market_cap": 1690815818958.97
+  "as_of": "latest observations through 2026-09-18 (FRED daily series post next business day; no fresher print available)",
+  "series": {
+   "CPIAUCSL": {
+    "value": 334.131,
+    "date": "2026-08-01"
    },
-   "ethereum": {
-    "usd": 2709.74,
-    "usd_24h_change": 5.3373,
-    "usd_market_cap": 331002465951.94
+   "CPILFESL": {
+    "value": 337.765,
+    "date": "2026-08-01"
    },
-   "solana": {
-    "usd": 115.56,
-    "usd_24h_change": 7.0526,
-    "usd_market_cap": 67892083878.47
+   "PAYEMS": {
+    "value": 159075,
+    "date": "2026-08-01"
    },
-   "cardano": {
-    "usd": 0.239925,
-    "usd_24h_change": 9.7745,
-    "usd_market_cap": 9011491957.93
+   "ICSA": {
+    "value": 196000,
+    "date": "2026-09-12"
+   },
+   "UNRATE": {
+    "value": 4.1,
+    "date": "2026-08-01"
+   },
+   "T10Y2Y": {
+    "value": 0.25,
+    "date": "2026-09-18"
+   },
+   "DGS2": {
+    "value": 4.76,
+    "date": "2026-09-18"
+   },
+   "DGS10": {
+    "value": 5.01,
+    "date": "2026-09-18"
+   },
+   "T10YIE": {
+    "value": 2.33,
+    "date": "2026-09-18"
+   },
+   "DFII10": {
+    "value": 2.68,
+    "date": "2026-09-18"
+   },
+   "SOFR": {
+    "value": 3.85,
+    "date": "2026-09-18"
+   },
+   "BAMLH0A0HYM2": {
+    "value": 2.68,
+    "date": "2026-09-18"
    }
   },
-  "total_market_cap_usd": 2851236734899.73,
-  "btc_dominance_pct": 59.07,
-  "eth_dominance_pct": 11.56,
-  "volume_24h_usd": 111443597681.16,
-  "market_cap_24h_change_pct": 1.73,
-  "label": "Live (CoinGecko aggregate)",
-  "fetched_at": "2026-09-21T10:37:23Z"
+  "hy_oas_csv_appended": "2026-09-18,2.68"
+ },
+ "vix_complex": {
+  "vix": 14.87,
+  "vix9d": 13.14,
+  "vix3m": 18.08,
+  "as_of": "2026-09-21 EOD official (last trade 16:15:01 ET)",
+  "term_structure": "normal contango, no inversion",
+  "note": "Put/call ratio retired 2026-08-16 (403 always); MOVE index and dealer gamma not tracked, no free source."
+ },
+ "fx": {
+  "as_of": "2026-09-21 EOD official (ECB reference)",
+  "source": "Frankfurter",
+  "rates": {
+   "EUR": 0.87032,
+   "JPY": 157.27,
+   "GBP": 0.74656,
+   "CNY": 6.6954,
+   "CHF": 0.82141,
+   "CAD": 1.4004,
+   "AUD": 1.401,
+   "MXN": 17.1917,
+   "BRL": 5.1279,
+   "INR": 95.82
+  }
+ },
+ "crypto": {
+  "as_of": "2026-09-21, live (CoinGecko aggregate)",
+  "btc": {
+   "usd": 86924,
+   "chg24h_pct": 7.16,
+   "mkt_cap": 1746000000000
+  },
+  "eth": {
+   "usd": 2787.33,
+   "chg24h_pct": 5.74,
+   "mkt_cap": 340240000000
+  },
+  "sol": {
+   "usd": 118.56,
+   "chg24h_pct": 7.41,
+   "mkt_cap": 69660000000
+  },
+  "ada": {
+   "usd": 0.245456,
+   "chg24h_pct": 7.78,
+   "mkt_cap": 9210000000
+  },
+  "total_mkt_cap": 2947000000000,
+  "btc_dominance_pct": 59.03,
+  "eth_dominance_pct": 11.5
  },
  "indices": {
-  "sp500_close": 7650.5,
-  "sp500_prev": 7637.76,
-  "sp500_pct": 0.17,
-  "nasdaq_close": 26522.55,
-  "nasdaq_prev": 26418.3,
-  "nasdaq_pct": 0.4,
-  "dow_close": 51682.64,
-  "dow_prev": 51778.04,
-  "dow_pct": -0.18,
-  "russell_close": 2860.4,
-  "russell_prev": 2874.63,
-  "russell_pct": -0.5,
-  "label": "EOD official (Fri Sept 18 close)",
-  "fetched_at": "2026-09-18T20:50:00Z"
+  "as_of": "2026-09-21 EOD official",
+  "sp500": {
+   "close": 7764.7,
+   "pct": 1.49
+  },
+  "nasdaq_composite": {
+   "close": 27122.09,
+   "pct": 2.26,
+   "note": "record close, first since June"
+  },
+  "dow": {
+   "close": 52048.83,
+   "pct": 0.71
+  },
+  "russell2000": {
+   "close": 2875.36,
+   "pct": 0.52
+  }
  },
  "futures_commodities_fx": {
-  "CL_F": {
-   "price": 92.93,
-   "prev": 100.3,
-   "chg": -7.37,
-   "pct": -7.35,
-   "symbol": "CL=F",
-   "note": "4th consecutive run flagging this feed unreliable; shortName now 'Crude Oil Nov 26' vs prior 'Oct 26' -- likely front-month contract roll inflating the apparent move, not confirmed by USO (no Monday print yet). Treat WTI as Source unavailable this run pending outside confirmation."
+  "as_of": "2026-09-21 ~16:32-16:42 ET (indices EOD official; futures delayed +10 min)",
+  "es_f": {
+   "pct": 2.24,
+   "level": 7829.0
   },
-  "DX-Y.NYB": {
-   "price": 100.31,
-   "prev": 100.22,
-   "chg": 0.09,
-   "pct": 0.09,
-   "symbol": "DX-Y.NYB",
-   "label": "Delayed (+10 min)"
+  "nq_f": {
+   "pct": 3.91,
+   "level": 30770.5
   },
-  "ES_F": {
-   "price": 7768.0,
-   "prev": 7657.35,
-   "chg": 110.65,
-   "pct": 1.45,
-   "symbol": "ES=F",
-   "label": "Delayed (+10 min)"
+  "ym_f": {
+   "pct": 1.35,
+   "level": 52459.0
   },
-  "NQ_F": {
-   "price": 30257.75,
-   "prev": 29613.68,
-   "chg": 644.07,
-   "pct": 2.17,
-   "symbol": "NQ=F",
-   "label": "Delayed (+10 min)"
+  "rty_f": {
+   "pct": 0.85,
+   "level": 2897.6
   },
-  "YM_F": {
-   "price": 52484.0,
-   "prev": 51761.0,
-   "chg": 723.0,
-   "pct": 1.4,
-   "symbol": "YM=F",
-   "label": "Delayed (+10 min)"
+  "tnx": {
+   "value": 4.963,
+   "scaling": "NOT x10 -- direct yield percentage, confirmed again this run"
   },
-  "RTY_F": {
-   "price": 2903.1,
-   "prev": 2873.23,
-   "chg": 29.87,
-   "pct": 1.04,
-   "symbol": "RTY=F",
-   "label": "Delayed (+10 min)"
+  "gc_f": {
+   "level": 4378.5,
+   "pct": -1.05
   },
-  "GC_F": {
-   "price": 4389.0,
-   "prev": 4424.9,
-   "chg": -35.9,
-   "pct": -0.81,
-   "symbol": "GC=F",
-   "label": "Delayed (+10 min)"
+  "ng_f": {
+   "level": 2.835,
+   "pct": -2.64
   },
-  "NG_F": {
-   "price": 2.869,
-   "prev": 2.912,
-   "chg": -0.043,
-   "pct": -1.48,
-   "symbol": "NG=F",
-   "label": "Delayed (+10 min)"
+  "hg_f": {
+   "level": 6.781,
+   "pct": 2.51
   },
-  "HG_F": {
-   "price": 6.785,
-   "prev": 6.615,
-   "chg": 0.17,
-   "pct": 2.57,
-   "symbol": "HG=F",
-   "label": "Delayed (+10 min)"
+  "eurusd": {
+   "level": 1.1469,
+   "pct": -0.09
   },
-  "EURUSD_X": {
-   "price": 1.1488,
-   "prev": 1.1476,
-   "chg": 0.0012,
-   "pct": 0.1,
-   "symbol": "EURUSD=X"
+  "dxy": {
+   "level": 100.419,
+   "pct": 0.2
   },
-  "TNX": {
-   "price": 4.998,
-   "prev": 4.947,
-   "chg": 0.051,
-   "pct": 1.03,
-   "symbol": "^TNX",
-   "note": "SCALING CHANGE: raw Yahoo value is now already the direct 10Y-yield percentage (4.998), not the x10 convention (49.98) prior snapshots recorded -- verify any downstream code that divides by 10."
-  },
-  "monday_premarket_note": "Checked 2026-09-21 ~10:45-10:52 UTC (06:45-06:52 ET) via Yahoo v8: futures already reflect the Sunday-evening CME/ICE reopen. ES/NQ/YM/RTY all higher (+1.0% to +2.2%) vs Friday's cash-adjacent settle; gold and nat-gas softer, copper firm. CL=F excluded from this narrative pending the contract-roll flag above."
+  "cl_f": {
+   "status": "excluded -- implausible -8.32% reading, same contract flagged unreliable in AM run, not a fresh roll",
+   "proxy": "USO -3.68%; outside reporting ~$93.93-$97.56, down ~2.7%"
+  }
  },
  "watchlist": {
   "SPY": {
-   "price": 761.69,
+   "price": 773.5,
    "prev": 762.6,
-   "chg": -0.91,
-   "pct": -0.12,
-   "vol": 63263196,
+   "chg": 11.81,
+   "pct": 1.55,
+   "vol": 49000000,
    "hi52": 779.37,
    "lo52": 629.28,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 54000000
   },
   "QQQM": {
-   "price": 296.91,
+   "price": 305.27,
    "prev": 295.2,
-   "chg": 1.71,
-   "pct": 0.58,
-   "vol": 2257843,
+   "chg": 8.36,
+   "pct": 2.82,
+   "vol": 2900000,
    "hi52": 308.21,
    "lo52": 228.75,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 2700000
   },
   "DIA": {
-   "price": 515.88,
+   "price": 519.78,
    "prev": 518.35,
-   "chg": -2.47,
-   "pct": -0.48,
-   "vol": 2615837,
+   "chg": 3.9,
+   "pct": 0.76,
+   "vol": 2900000,
    "hi52": 546.75,
    "lo52": 450.44,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 3700000
   },
   "IWM": {
-   "price": 284.1,
+   "price": 285.58,
    "prev": 285.43,
-   "chg": -1.33,
-   "pct": -0.47,
-   "vol": 30921237,
+   "chg": 1.48,
+   "pct": 0.52,
+   "vol": 19000000,
    "hi52": 305.18,
    "lo52": 228.9,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 25000000
   },
   "MAGS": {
-   "price": 70.46,
+   "price": 72.97,
    "prev": 70.78,
-   "chg": -0.32,
-   "pct": -0.45,
-   "vol": 3424357,
-   "hi52": 71.2,
-   "lo52": 55.09,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "chg": 2.51,
+   "pct": 3.56,
+   "vol": 10000000,
+   "hi52": 73.175,
+   "lo52": 55.085,
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 5000000
   },
   "RSP": {
-   "price": 212.29,
+   "price": 212.68,
    "prev": 213.31,
-   "chg": -1.02,
-   "pct": -0.48,
-   "vol": 5882819,
+   "chg": 0.39,
+   "pct": 0.18,
+   "vol": 5600000,
    "hi52": 223.44,
    "lo52": 182.11,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 6400000
   },
   "TLT": {
-   "price": 81.25,
+   "price": 81.8,
    "prev": 81.78,
-   "chg": -0.53,
-   "pct": -0.65,
-   "vol": 40003683,
+   "chg": 0.55,
+   "pct": 0.68,
+   "vol": 27000000,
    "hi52": 92.19,
    "lo52": 80.46,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 40000000
   },
   "IEF": {
-   "price": 90.8,
+   "price": 91.15,
    "prev": 91.25,
-   "chg": -0.45,
-   "pct": -0.49,
-   "vol": 6701094,
+   "chg": 0.35,
+   "pct": 0.39,
+   "vol": 8700000,
    "hi52": 98.05,
    "lo52": 90.7,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 9200000
   },
   "TIP": {
-   "price": 105.27,
+   "price": 105.68,
    "prev": 105.71,
-   "chg": -0.44,
-   "pct": -0.42,
-   "vol": 2122543,
+   "chg": 0.41,
+   "pct": 0.39,
+   "vol": 1700000,
    "hi52": 112.24,
    "lo52": 105.27,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 2000000
   },
   "LQD": {
-   "price": 104.7,
+   "price": 105.09,
    "prev": 105.16,
-   "chg": -0.46,
-   "pct": -0.44,
-   "vol": 29120117,
+   "chg": 0.39,
+   "pct": 0.37,
+   "vol": 23000000,
    "hi52": 112.93,
    "lo52": 104.05,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 30000000
   },
   "HYG": {
-   "price": 78.53,
+   "price": 78.68,
    "prev": 78.72,
-   "chg": -0.19,
-   "pct": -0.24,
-   "vol": 34359644,
+   "chg": 0.15,
+   "pct": 0.19,
+   "vol": 42000000,
    "hi52": 81.36,
    "lo52": 78.36,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 43000000
   },
   "GLD": {
-   "price": 401.17,
+   "price": 398.38,
    "prev": 398.36,
-   "chg": 2.81,
-   "pct": 0.71,
-   "vol": 9410518,
+   "chg": -2.79,
+   "pct": -0.7,
+   "vol": 6300000,
    "hi52": 509.7,
-   "lo52": 336.31,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "lo52": 341.84,
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 9200000
   },
   "USO": {
-   "price": 153.82,
+   "price": 148.16,
    "prev": 155.31,
-   "chg": -1.49,
-   "pct": -0.96,
-   "vol": 4320091,
+   "chg": -5.66,
+   "pct": -3.68,
+   "vol": 5500000,
    "hi52": 163.35,
    "lo52": 65.99,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 5400000
   },
   "EEM": {
-   "price": 67.03,
+   "price": 68.83,
    "prev": 66.91,
-   "chg": 0.12,
-   "pct": 0.18,
-   "vol": 19118622,
+   "chg": 1.8,
+   "pct": 2.69,
+   "vol": 19000000,
    "hi52": 71.57,
    "lo52": 51.82,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 18000000
   },
   "VGK": {
-   "price": 88.21,
+   "price": 89.24,
    "prev": 89.37,
-   "chg": -1.16,
-   "pct": -1.3,
-   "vol": 3706466,
+   "chg": 1.03,
+   "pct": 1.17,
+   "vol": 1500000,
    "hi52": 93.29,
    "lo52": 77.82,
-   "as_of": "2026-09-18 EOD official",
-   "verified_close_to_close": true
+   "as_of": "2026-09-21 EOD official",
+   "verified_close_to_close": true,
+   "avgvol5d": 2700000
   },
   "BTC_ETF_GRAYSCALE_MINI": {
    "price": 35.91,
@@ -505,11 +452,11 @@
    "verified_close_to_close": true
   },
   "AMD": {
-   "price": 559.82,
+   "price": 615.52,
    "prev": 545.09,
-   "chg": 14.73,
-   "pct": 2.7,
-   "as_of": "2026-09-18 EOD official",
+   "chg": null,
+   "pct": 9.95,
+   "as_of": "2026-09-21 EOD official",
    "verified_close_to_close": true
   },
   "AVGO": {
@@ -970,11 +917,11 @@
    "verified_close_to_close": true
   },
   "NVO": {
-   "price": 43.24,
+   "price": 39.8,
    "prev": 43.19,
-   "chg": 0.05,
-   "pct": 0.12,
-   "as_of": "2026-09-18 EOD official",
+   "chg": null,
+   "pct": -7.96,
+   "as_of": "2026-09-21 EOD official",
    "verified_close_to_close": true
   },
   "UNH": {
@@ -1160,83 +1107,131 @@
    "pct": -1.57,
    "as_of": "2026-09-18 EOD official",
    "verified_close_to_close": true
+  },
+  "SMH": {
+   "price": 596.03,
+   "chg": 23.03,
+   "pct": 4.02,
+   "as_of": "2026-09-21 EOD official",
+   "vol": 9600000,
+   "avgvol5d": 6800000,
+   "hi52": 671.83,
+   "lo52": 313.6
+  },
+  "XLK": {
+   "price": 194.85,
+   "chg": 5.25,
+   "pct": 2.77,
+   "as_of": "2026-09-21 EOD official",
+   "vol": 9000000,
+   "avgvol5d": 7500000,
+   "hi52": 198.73,
+   "lo52": 126.68
+  },
+  "XLF": {
+   "price": 55.9,
+   "chg": 0.04,
+   "pct": 0.07,
+   "as_of": "2026-09-21 EOD official",
+   "vol": 29000000,
+   "avgvol5d": 36000000,
+   "hi52": 58.6,
+   "lo52": 47.67
+  },
+  "KRE": {
+   "price": 71.99,
+   "chg": -0.76,
+   "pct": -1.04,
+   "as_of": "2026-09-21 EOD official",
+   "vol": 10000000,
+   "avgvol5d": 16000000,
+   "hi52": 78.35,
+   "lo52": 57.55
+  },
+  "XLE": {
+   "price": 62.46,
+   "chg": -1.85,
+   "pct": -2.88,
+   "as_of": "2026-09-21 EOD official",
+   "vol": 36000000,
+   "avgvol5d": 37000000,
+   "hi52": 66.17,
+   "lo52": 42.35
+  },
+  "BTC": {
+   "price": 38.25,
+   "chg": 2.34,
+   "pct": 6.52,
+   "as_of": "2026-09-21 EOD official",
+   "vol": 2600000,
+   "avgvol5d": 2600000,
+   "hi52": 55.96,
+   "lo52": 25.65
   }
  },
  "global_indices": {},
  "dma": {
-  "IWM": {
-   "n_sessions": 63,
-   "last_price": 285.42999267578125,
-   "hi52": 305.18,
-   "lo52": 228.9,
-   "dma20": 293.16650543212893,
-   "dma50": 295.40560241699217,
-   "dma200": null,
-   "dist20_pct": -2.6389,
-   "dist50_pct": -3.3769,
-   "dist200_pct": null
-  },
-  "QQQ": {
-   "n_sessions": 63,
-   "last_price": 716.9199829101562,
-   "hi52": 748.65,
-   "lo52": 555.6,
-   "dma20": 712.7094940185547,
-   "dma50": 709.9877978515625,
-   "dma200": null,
-   "dist20_pct": 0.5908,
-   "dist50_pct": 0.9764,
-   "dist200_pct": null
-  },
   "SPY": {
-   "n_sessions": 63,
-   "last_price": 762.5999755859375,
+   "n_sessions": 64,
+   "last_price": 773.5,
    "hi52": 779.37,
    "lo52": 629.28,
-   "dma20": 764.3489929199219,
-   "dma50": 759.5313989257812,
-   "dma200": null,
-   "dist20_pct": -0.2288,
-   "dist50_pct": 0.404,
-   "dist200_pct": null
+   "dist20_pct": 1.15,
+   "dist50_pct": 1.76,
+   "dist200_pct": null,
+   "pos52w_pct": 96.1
+  },
+  "QQQ": {
+   "n_sessions": 64,
+   "last_price": 741.47,
+   "hi52": null,
+   "lo52": null,
+   "dist20_pct": 3.75,
+   "dist50_pct": 4.39,
+   "dist200_pct": null,
+   "pos52w_pct": 96.3
+  },
+  "IWM": {
+   "n_sessions": 64,
+   "last_price": 285.58,
+   "hi52": 305.18,
+   "lo52": 228.9,
+   "dist20_pct": -2.12,
+   "dist50_pct": -3.17,
+   "dist200_pct": null,
+   "pos52w_pct": 74.3
   },
   "DIA": {
-   "n_sessions": 63,
-   "last_price": 518.3499755859375,
+   "n_sessions": 64,
+   "last_price": 519.78,
    "hi52": 546.75,
    "lo52": 450.44,
-   "dma20": 528.6004943847656,
-   "dma50": 528.5965979003906,
-   "dma200": null,
-   "dist20_pct": -1.9392,
-   "dist50_pct": -1.9385,
-   "dist200_pct": null
+   "dist20_pct": -1.44,
+   "dist50_pct": -1.61,
+   "dist200_pct": null,
+   "pos52w_pct": 72.0
   },
   "TLT": {
-   "n_sessions": 63,
-   "last_price": 81.77999877929688,
+   "n_sessions": 64,
+   "last_price": 81.8,
    "hi52": 92.19,
    "lo52": 80.46,
-   "dma20": 82.01149940490723,
-   "dma50": 82.6763996887207,
-   "dma200": null,
-   "dist20_pct": -0.2823,
-   "dist50_pct": -1.0842,
-   "dist200_pct": null
+   "dist20_pct": -0.18,
+   "dist50_pct": -0.92,
+   "dist200_pct": null,
+   "pos52w_pct": 11.4
   },
   "SPCX": {
-   "n_sessions": 63,
-   "last_price": 154.80999755859375,
-   "hi52": 225.64,
-   "lo52": 104.83,
-   "dma20": 144.3990005493164,
-   "dma50": 134.61739990234375,
-   "dma200": null,
-   "dist20_pct": 7.2099,
-   "dist50_pct": 15.0,
-   "dist200_pct": null
-  },
-  "fetched_at": "2026-09-17T20:52:00Z"
+   "n_sessions": 64,
+   "last_price": 151.85,
+   "hi52": null,
+   "lo52": null,
+   "dist20_pct": 3.95,
+   "dist50_pct": 12.68,
+   "dist200_pct": null,
+   "pos52w_pct": 38.9,
+   "note": "price history begins 2026-06-12, never backfill earlier"
+  }
  },
  "breadth_latest": {
   "date": "2026-09-18",
@@ -1248,27 +1243,13 @@
   "down_vol": 14298164640.53,
   "pct_above_e50": null,
   "pct_above_e200": null,
-  "note": "Cached last-good.json was stale at 2026-09-15; breadth.json already had 2026-09-18 recorded (no new fetch needed/performed this run per SR skip-if-present rule).",
-  "fetched_at": "2026-09-21T10:52:00Z"
+  "note": "Reused (once-per-session rule) -- 2026-09-18 remains the most recent NYSE session's breadth as of this pm run; 2026-09-21's own close not yet computed.",
+  "fetched_at": "2026-09-21T20:52:00Z"
  },
  "finra_short_vol": {
-  "date": "2026-09-18",
-  "aggregate_pct": 52.57,
-  "watchlist_short_pct_top": {
-   "TIP": 76.72,
-   "YSS": 76.65,
-   "SPY": 76.18,
-   "XLC": 75.13,
-   "ARES": 74.84,
-   "ETN": 73.8,
-   "LMT": 73.02,
-   "TGT": 72.98,
-   "XLV": 71.34,
-   "EEM": 71.09
-  },
-  "universe_note": "all-market CNMS short-volume file",
-  "label": "EOD official (2026-09-18)",
-  "fetched_at": "2026-09-21T10:52:00Z"
+  "session": "2026-09-18",
+  "aggregate_short_vol_ratio_pct": 52.57,
+  "note": "Re-fetched and recomputed independently this run; matched cached value exactly (no drift)."
  },
  "sector_etfs_wk": {
   "XLK": {
@@ -1428,20 +1409,17 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-21",
-  "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&count=100&output=atom",
-  "entries_checked": 100,
-  "watchlist_matches": [
-   "IRDM (same 9/18 16:14 ET filing already reported, not new)"
-  ],
+  "date": "2026-09-21-pm",
+  "cutoff": "2026-09-21T10:56:00Z (AM run)",
+  "entries_checked_market_wide": 100,
   "per_company_feeds_checked": 90,
-  "per_company_new_filings_since_last_run": 0,
-  "note": "Cutoff = 2026-09-20T14:35:00Z (latest of 2026-09-18-pm/2026-09-19-sat/2026-09-20-sun). No filings past cutoff across any of the 90 deduplicated company-watchlist tickers. Six tickers (FLY, KRMN, LUNR, SPCX, VOYG, YSS) required numeric-CIK lookup via company_tickers.json -- ticker-symbol CIK query returns an HTML 'no match' page for these.",
-  "fetched_at": "2026-09-21T10:52:00Z"
+  "new_filings_since_cutoff": [
+   "APO (Apollo Global Management) 8-K, filed 2026-09-21, Item 7.01 -- subsidiary Athene furnished a Sept 2026 asset-risk/stress-considerations investor presentation; routine, not obviously material."
+  ]
  },
  "_notes_this_run": {
-  "run": "2026-09-21-am",
-  "note": "Full sweep, markets not yet open; equities/rates/FX/vix reconfirmed identical to Friday 9/18 close cache. Futures show genuine overnight moves. FM (intl ETF) delisted from Yahoo. CL=F and ^TNX scaling flags carried/added."
+  "run": "2026-09-21-pm",
+  "note": "Full closing sweep. Board's 21 rows + AMD/NVO refreshed to tonight's EOD close; other company-watchlist tickers not individually refreshed in this cache beyond what's cited in tonight's report (winners/losers list). CL=F excluded again (3rd/4th consecutive flag); ^TNX confirmed still un-scaled. Breadth reused from Fri 9/18 per once-per-session rule."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
