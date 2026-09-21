@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-20T13:15:00Z",
+ "fetched_at": "2026-09-21T10:52:00Z",
  "treasury_par_curve": {
   "date": "2026-09-18",
   "BC_1MONTH": 3.97,
@@ -53,10 +53,10 @@
    "prev_date": "2026-07-01"
   },
   "T10Y2Y": {
-   "value": 0.27,
-   "date": "2026-09-17",
+   "value": 0.25,
+   "date": "2026-09-18",
    "prev": 0.27,
-   "prev_date": "2026-09-16"
+   "prev_date": "2026-09-17"
   },
   "DGS2": {
    "value": 4.67,
@@ -72,9 +72,9 @@
   },
   "T10YIE": {
    "value": 2.33,
-   "date": "2026-09-17",
+   "date": "2026-09-18",
    "prev": 2.33,
-   "prev_date": "2026-09-16"
+   "prev_date": "2026-09-17"
   },
   "DFII10": {
    "value": 2.61,
@@ -128,34 +128,33 @@
  "crypto": {
   "prices": {
    "bitcoin": {
-    "usd": 80543,
-    "usd_24h_change": -0.82,
-    "usd_market_cap": 1618000000000
+    "usd": 84173,
+    "usd_24h_change": 4.8226,
+    "usd_market_cap": 1690815818958.97
    },
    "ethereum": {
-    "usd": 2581.27,
-    "usd_24h_change": -2.08,
-    "usd_market_cap": 315200000000
+    "usd": 2709.74,
+    "usd_24h_change": 5.3373,
+    "usd_market_cap": 331002465951.94
    },
    "solana": {
-    "usd": 108.3,
-    "usd_24h_change": -2.88,
-    "usd_market_cap": 63600000000
+    "usd": 115.56,
+    "usd_24h_change": 7.0526,
+    "usd_market_cap": 67892083878.47
    },
    "cardano": {
-    "usd": 0.221869,
-    "usd_24h_change": -2.08,
-    "usd_market_cap": 8330000000
+    "usd": 0.239925,
+    "usd_24h_change": 9.7745,
+    "usd_market_cap": 9011491957.93
    }
   },
-  "total_market_cap_usd": 2740000000000,
-  "btc_dominance_pct": 58.94,
-  "eth_dominance_pct": 11.48,
-  "volume_24h_usd": null,
-  "market_cap_24h_change_pct": -4.77,
+  "total_market_cap_usd": 2851236734899.73,
+  "btc_dominance_pct": 59.07,
+  "eth_dominance_pct": 11.56,
+  "volume_24h_usd": 111443597681.16,
+  "market_cap_24h_change_pct": 1.73,
   "label": "Live (CoinGecko aggregate)",
-  "fetched_at": "2026-09-20T13:12:00Z",
-  "note": "Weekend pullback vs Friday 2026-09-19 13:10 UTC read (BTC $81,236, +4.19% 24h): BTC down ~$700 (-0.85%) since Friday, giving back most of Friday's rally; broader alts fell more (ETH/SOL/ADA each -2 to -3% 24h)."
+  "fetched_at": "2026-09-21T10:37:23Z"
  },
  "indices": {
   "sp500_close": 7650.5,
@@ -175,91 +174,93 @@
  },
  "futures_commodities_fx": {
   "CL_F": {
-   "price": null,
-   "prev": 101.91,
-   "note": "Yahoo CL=F reading (95.33, -6.46%) diverged sharply from USO's own -0.96% move and outside reporting (WTI ~$100.05-100.30, ~-1.6 to -1.9%); treated as unreliable this run, third consecutive run flagging this feed",
-   "symbol": "CL=F"
+   "price": 92.93,
+   "prev": 100.3,
+   "chg": -7.37,
+   "pct": -7.35,
+   "symbol": "CL=F",
+   "note": "4th consecutive run flagging this feed unreliable; shortName now 'Crude Oil Nov 26' vs prior 'Oct 26' -- likely front-month contract roll inflating the apparent move, not confirmed by USO (no Monday print yet). Treat WTI as Source unavailable this run pending outside confirmation."
   },
   "DX-Y.NYB": {
-   "price": 100.193,
+   "price": 100.31,
    "prev": 100.22,
-   "chg": -0.027,
-   "pct": -0.03,
+   "chg": 0.09,
+   "pct": 0.09,
    "symbol": "DX-Y.NYB",
-   "label": "EOD official"
+   "label": "Delayed (+10 min)"
   },
   "ES_F": {
-   "price": 7725.5,
-   "prev": 7640.0,
-   "chg": 85.5,
-   "pct": 1.12,
+   "price": 7768.0,
+   "prev": 7657.35,
+   "chg": 110.65,
+   "pct": 1.45,
    "symbol": "ES=F",
-   "label": "Delayed (+10 min)",
-   "note": "wide basis vs cash ^GSPC close (7650.50); plausibly extended-hours continuation of the chip/AI rally, not independently confirmed"
+   "label": "Delayed (+10 min)"
   },
   "NQ_F": {
-   "price": 29965.75,
-   "prev": 29446.75,
-   "chg": 519.0,
-   "pct": 1.76,
+   "price": 30257.75,
+   "prev": 29613.68,
+   "chg": 644.07,
+   "pct": 2.17,
    "symbol": "NQ=F",
    "label": "Delayed (+10 min)"
   },
   "YM_F": {
-   "price": 52147.0,
-   "prev": 51807.0,
-   "chg": 340.0,
-   "pct": 0.66,
+   "price": 52484.0,
+   "prev": 51761.0,
+   "chg": 723.0,
+   "pct": 1.4,
    "symbol": "YM=F",
    "label": "Delayed (+10 min)"
   },
   "RTY_F": {
-   "price": 2881.7,
-   "prev": 2875.9,
-   "chg": 5.8,
-   "pct": 0.2,
+   "price": 2903.1,
+   "prev": 2873.23,
+   "chg": 29.87,
+   "pct": 1.04,
    "symbol": "RTY=F",
    "label": "Delayed (+10 min)"
   },
   "GC_F": {
-   "price": 4419.3,
-   "prev": 4399.7,
-   "chg": 19.6,
-   "pct": 0.45,
+   "price": 4389.0,
+   "prev": 4424.9,
+   "chg": -35.9,
+   "pct": -0.81,
    "symbol": "GC=F",
    "label": "Delayed (+10 min)"
   },
   "NG_F": {
-   "price": 2.901,
-   "prev": 2.901,
-   "chg": 0.0,
-   "pct": 0.0,
+   "price": 2.869,
+   "prev": 2.912,
+   "chg": -0.043,
+   "pct": -1.48,
    "symbol": "NG=F",
    "label": "Delayed (+10 min)"
   },
   "HG_F": {
-   "price": 6.7225,
-   "prev": 6.5865,
-   "chg": 0.136,
-   "pct": 2.07,
+   "price": 6.785,
+   "prev": 6.615,
+   "chg": 0.17,
+   "pct": 2.57,
    "symbol": "HG=F",
    "label": "Delayed (+10 min)"
   },
   "EURUSD_X": {
-   "price": null,
-   "prev": null,
-   "note": "Yahoo's EURUSD=X series is missing a close for 2026-09-17 (gapped); used Frankfurter's ECB reference fix instead (see fx block) rather than a gapped 2-day Yahoo comparison",
+   "price": 1.1488,
+   "prev": 1.1476,
+   "chg": 0.0012,
+   "pct": 0.1,
    "symbol": "EURUSD=X"
   },
   "TNX": {
-   "price": 49.98,
-   "prev": 49.47,
-   "chg": 0.51,
+   "price": 4.998,
+   "prev": 4.947,
+   "chg": 0.051,
    "pct": 1.03,
-   "note": "10yr yield x10; index-vendor lag vs Treasury's fresh 5.01% 9/18 print, similar to FRED's DGS10 lag",
-   "symbol": "^TNX"
+   "symbol": "^TNX",
+   "note": "SCALING CHANGE: raw Yahoo value is now already the direct 10Y-yield percentage (4.998), not the x10 convention (49.98) prior snapshots recorded -- verify any downstream code that divides by 10."
   },
-  "sunday_evening_futures_note": "Checked 2026-09-20 ~13:14 UTC via Yahoo v8 (ES=F, NQ=F, YM=F, RTY=F, CL=F, GC=F, DX-Y.NYB): all still returning Friday 2026-09-18 20:59:58Z settlement (CME/ICE electronic session had not yet reopened, ~9 hours before the ~18:00 ET Sunday reopen). No Sunday-evening futures move to report -- Source unavailable, not zero."
+  "monday_premarket_note": "Checked 2026-09-21 ~10:45-10:52 UTC (06:45-06:52 ET) via Yahoo v8: futures already reflect the Sunday-evening CME/ICE reopen. ES/NQ/YM/RTY all higher (+1.0% to +2.2%) vs Friday's cash-adjacent settle; gold and nat-gas softer, copper firm. CL=F excluded from this narrative pending the contract-roll flag above."
  },
  "watchlist": {
   "SPY": {
@@ -1238,36 +1239,36 @@
   "fetched_at": "2026-09-17T20:52:00Z"
  },
  "breadth_latest": {
-  "date": "2026-09-15",
-  "advancers": 1566,
-  "decliners": 3882,
-  "unchanged": 184,
-  "universe": 5632,
-  "up_vol": 4643867158.438354,
-  "down_vol": 9585698987.501074,
+  "date": "2026-09-18",
+  "advancers": 1990,
+  "decliners": 3506,
+  "unchanged": 189,
+  "universe": 5685,
+  "up_vol": 8190284720.4,
+  "down_vol": 14298164640.53,
   "pct_above_e50": null,
   "pct_above_e200": null,
-  "note": "Fresh Massive grouped-daily fetch this run for prior NYSE session Sept 15 (breadth.json previously had no entry past Sept 14). EMA accumulation now at max n=37/200 sessions -- pct_above_e50/e200 remain not yet meaningful.",
-  "fetched_at": "2026-09-16T10:50:00Z"
+  "note": "Cached last-good.json was stale at 2026-09-15; breadth.json already had 2026-09-18 recorded (no new fetch needed/performed this run per SR skip-if-present rule).",
+  "fetched_at": "2026-09-21T10:52:00Z"
  },
  "finra_short_vol": {
-  "date": "2026-09-17",
-  "aggregate_pct": 50.74,
+  "date": "2026-09-18",
+  "aggregate_pct": 52.57,
   "watchlist_short_pct_top": {
-   "VOYG": 79.49,
-   "MAGS": 77.16,
-   "XLRE": 76.46,
-   "APO": 76.05,
-   "SPIR": 70.22,
-   "SBUX": 69.44,
-   "TIP": 68.56,
-   "XLC": 67.73,
-   "EQIX": 66.76,
-   "REGN": 66.59
+   "TIP": 76.72,
+   "YSS": 76.65,
+   "SPY": 76.18,
+   "XLC": 75.13,
+   "ARES": 74.84,
+   "ETN": 73.8,
+   "LMT": 73.02,
+   "TGT": 72.98,
+   "XLV": 71.34,
+   "EEM": 71.09
   },
   "universe_note": "all-market CNMS short-volume file",
-  "label": "EOD official (2026-09-17)",
-  "fetched_at": "2026-09-18T10:33:00Z"
+  "label": "EOD official (2026-09-18)",
+  "fetched_at": "2026-09-21T10:52:00Z"
  },
  "sector_etfs_wk": {
   "XLK": {
@@ -1329,25 +1330,25 @@
   "wti": {
    "price": null,
    "pct": null,
-   "label": "Source unavailable this run -- Yahoo CL=F reading unreliable (see futures_commodities_fx); outside reporting puts WTI near $100.05-100.30, roughly -1.6 to -1.9%, corroborated by USO's -0.96% move"
+   "label": "Source unavailable this run -- Yahoo CL=F reading unreliable (see futures_commodities_fx note); no USO Monday print yet to cross-check"
   },
   "gold": {
-   "price": 4419.3,
-   "pct": 0.45,
-   "label": "Delayed (+10 min, futures, Fri Sept 18)"
+   "price": 4389.0,
+   "pct": -0.81,
+   "label": "Delayed (+10 min, futures, Mon Sept 21 premarket)"
   },
   "natgas": {
-   "price": 2.901,
-   "pct": 0.0,
-   "label": "Delayed (+10 min, futures, Fri Sept 18)"
+   "price": 2.869,
+   "pct": -1.48,
+   "label": "Delayed (+10 min, futures, Mon Sept 21 premarket)"
   },
   "copper": {
-   "price": 6.7225,
-   "pct": 2.07,
-   "label": "Delayed (+10 min, futures, Fri Sept 18); outlier, no same-day catalyst identified"
+   "price": 6.785,
+   "pct": 2.57,
+   "label": "Delayed (+10 min, futures, Mon Sept 21 premarket)"
   },
   "label": "EOD official / Delayed as noted",
-  "fetched_at": "2026-09-18T20:50:00Z"
+  "fetched_at": "2026-09-21T10:52:00Z"
  },
  "premarket_wednesday": {
   "as_of": "2026-09-16T10:50:00Z",
@@ -1427,20 +1428,20 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-18",
+  "date": "2026-09-21",
   "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=8-K&company=&dateb=&owner=include&count=100&output=atom",
   "entries_checked": 100,
   "watchlist_matches": [
-   "IRDM"
+   "IRDM (same 9/18 16:14 ET filing already reported, not new)"
   ],
-  "per_company_feeds_checked": 95,
-  "per_company_new_filings_since_last_run": 1,
-  "note": "Iridium (IRDM) filed a Form 8-K (Item 8.01, Other Events) at 16:14 ET and a related Form 425 business-combination communication at 16:26 ET, part of an already-known, ongoing M&A process (425s also filed 9/3 and 9/15); content not reviewed in depth this run. Everything else newly dated today across the watchlist was routine: 424B2 structured-note prospectuses from several bank watchlist names, scattered Form 4/144/3 insider filings, one NPORT-P from DIA. A 'KKR' hit in the market-wide feed was KKR FS Income Trust / KKR FS Income Trust Select, separate affiliated non-traded BDCs, not the watchlist ticker.",
-  "fetched_at": "2026-09-18T20:50:00Z"
+  "per_company_feeds_checked": 90,
+  "per_company_new_filings_since_last_run": 0,
+  "note": "Cutoff = 2026-09-20T14:35:00Z (latest of 2026-09-18-pm/2026-09-19-sat/2026-09-20-sun). No filings past cutoff across any of the 90 deduplicated company-watchlist tickers. Six tickers (FLY, KRMN, LUNR, SPCX, VOYG, YSS) required numeric-CIK lookup via company_tickers.json -- ticker-symbol CIK query returns an HTML 'no match' page for these.",
+  "fetched_at": "2026-09-21T10:52:00Z"
  },
  "_notes_this_run": {
-  "run": "2026-09-19-sat",
-  "note": "Weekend gather: markets closed since Friday 2026-09-18 close, so equities/rates/FX/commodities snapshot left as the Friday pm run's fetch (already current for the weekly close). Crypto refreshed live (CoinGecko). Weekly sector, watchlist, and index moves recomputed directly against this snapshot's data for the Weekly Review."
+  "run": "2026-09-21-am",
+  "note": "Full sweep, markets not yet open; equities/rates/FX/vix reconfirmed identical to Friday 9/18 close cache. Futures show genuine overnight moves. FM (intl ETF) delisted from Yahoo. CL=F and ^TNX scaling flags carried/added."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
@@ -1453,8 +1454,8 @@
    "SMH",
    "XLK"
   ],
-  "batch2": "429 rate-limited, not retried (per SR 2.4 not a failure worth reporting)",
-  "cross_check": "batch1 previous_close values matched Yahoo close-to-close computation for all 8 board symbols checked (SPY, QQQM, DIA, IWM, MAGS, RSP, SMH, XLK)",
-  "fetched_at": "2026-09-17T20:52:00Z"
+  "batch2": "429 rate-limited, not retried (SR 2.4, not a failure)",
+  "cross_check": "all 8 batch1 close/previous_close values matched Yahoo close-to-close exactly",
+  "fetched_at": "2026-09-21T10:47:00Z"
  }
 }

@@ -1,8 +1,16 @@
 {
- "fetched": "2026-09-20T10:30:00-04:00",
+ "fetched": "2026-09-21T06:52:00-04:00",
  "earnings_fetched": "2026-09-20",
  "earnings_fetched_note": "Alpha Vantage 3-month calendar + Finnhub date-ranged calendar cross-checked 2026-09-20 for the week of Sept 21-25. Costco (COST) is the only watchlist-company earnings report all week (Thu Sept 24, after close; Alpha Vantage est. EPS $6.48, Finnhub est. EPS $6.67 -- vendors diverge, report as a range). No other board/mega_cap_tech/ai_infra/defense_aero/space/financials/health/consumer ticker reports Sept 21-25; next watchlist date is Micron (MU) Sept 30. Non-watchlist bellwethers: AutoZone (Tue), Cintas/Paychex (Wed), Darden (Thu).",
  "events": [
+  {
+   "ts_et": "2026-09-02T00:00:00-04:00",
+   "type": "legislative",
+   "name": "CORRECTED 2026-09-14: H.R. 6500 already signed into law -- not pending House action",
+   "importance": "Low",
+   "reason": "This cache and the 2026-09-13-sun report both incorrectly carried H.R. 6500 as coming before the House on Sept 14. Verified directly this run: the House passed it 370-48 on Sept 1, the Senate had already passed it 90-6, and the President signed it Sept 2 as Public Law No. 119-103, funding the government through Dec 11. No House floor action on this bill is pending. Logged to ledgers/corrections.json and corrected in the 2026-09-14-am report.",
+   "source": "whitehouse.gov signing statement, congress.gov/govtrack.us bill actions -- Confirmed-multiple"
+  },
   {
    "ts_et": "2026-09-07T00:00:00-04:00",
    "type": "market_holiday",
@@ -36,14 +44,6 @@
    "source": "Canada.ca Department of Finance official notice -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-09-09T16:00:00-04:00",
-   "type": "legal",
-   "name": "Mail-ballot SCOTUS emergency: states/voting-rights groups' response deadline (Justice Jackson's order)",
-   "importance": "High",
-   "reason": "CORRECTED 2026-09-08: this outlet previously carried a 10 AM Tuesday Sept 8 deadline forward from the withdrawn application; that date did not carry over. DOJ withdrew its original Sept 3 application and filed a new application (now docketed 26A305, not 26A297) seeking a stay of Judge Talwani's Sept 4 preliminary injunction against the USPS mail-ballot rule specifically. Justice Jackson set the response deadline at 4:00 PM EDT Wednesday Sept 9. North Carolina continues mailing absentee ballots under separate, related litigation. Logged to ledgers/corrections.json.",
-   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog, Axios, NBC News, PBS NewsHour -- Confirmed-multiple"
-  },
-  {
    "ts_et": "2026-09-08T00:00:00-04:00",
    "type": "treasury_auction",
    "name": "Treasury bill auctions (13-week $92B, 26-week $79B, 6-week $75B) and 3-year note ($58B)",
@@ -58,6 +58,14 @@
    "importance": "Low",
    "reason": "Routine session day.",
    "source": "palegis.us -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-08T00:00:00-04:00",
+   "type": "election",
+   "name": "New Hampshire state primary (open US Senate seat) -- RESULTS: Sununu (R), Pappas (D) advance",
+   "importance": "Medium",
+   "reason": "John E. Sununu defeated Scott Brown for the GOP nod; Chris Pappas defeated Karishma Manzur for the Democratic nod. Both advance to the Nov 3 general election for Sen. Jeanne Shaheen's open seat. Gov. Kelly Ayotte (R) also won her primary; faces Democrat Cinde Warmington (unopposed) in November.",
+   "source": "NHPR, NBC News, Washington Post, Fox News, Boston Globe -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-09T00:00:00-04:00",
@@ -84,12 +92,52 @@
    "source": "home.treasury.gov press release sb0607 -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-09-10T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Producer Price Index, August 2026, plus weekly jobless claims",
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "political",
+   "name": "GOP \"midterm convention\" opens, Dallas",
    "importance": "Medium",
-   "reason": "No clean economist-survey consensus found this cycle; only a prediction-market (Polymarket) signal leaning toward a hotter y/y print, labeled as trader positioning rather than a forecast.",
+   "reason": "First-ever Republican midterm convention; Trump, Vance and roughly 100 other speakers expected before ~20,000 attendees.",
+   "source": "Multiple wire reports -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T00:00:00-04:00",
+   "type": "political",
+   "name": "GOP 'midterm convention' opens, Dallas (American Airlines Center) -- Vance keynote tonight",
+   "importance": "Medium",
+   "reason": "First-ever Republican midterm convention; roughly 109 speakers, ~20,000 expected each night. Vance keynotes tonight; Trump speaks both nights with a closing address Thursday.",
+   "source": "Fox4, Axios, Texas Tribune, The Hill -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Employer Costs for Employee Compensation, 10:00 AM ET",
+   "importance": "Low",
+   "reason": "Routine BLS release.",
    "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-09T13:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 9-year-11-month note reopening ($39B) and 17-week bill ($72B)",
+   "importance": "Low",
+   "reason": "Refunding leg (10-year-equivalent reopening) plus routine bill auction.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-09T16:00:00-04:00",
+   "type": "legal",
+   "name": "Mail-ballot SCOTUS emergency: states/voting-rights groups' response deadline (Justice Jackson's order)",
+   "importance": "High",
+   "reason": "CORRECTED 2026-09-08: this outlet previously carried a 10 AM Tuesday Sept 8 deadline forward from the withdrawn application; that date did not carry over. DOJ withdrew its original Sept 3 application and filed a new application (now docketed 26A305, not 26A297) seeking a stay of Judge Talwani's Sept 4 preliminary injunction against the USPS mail-ballot rule specifically. Justice Jackson set the response deadline at 4:00 PM EDT Wednesday Sept 9. North Carolina continues mailing absentee ballots under separate, related litigation. Logged to ledgers/corrections.json.",
+   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog, Axios, NBC News, PBS NewsHour -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-09T16:00:00-04:00",
+   "type": "legal",
+   "name": "Mail-ballot SCOTUS emergency (USPS v. California, 26A305): states'/voting-rights groups' response deadline",
+   "importance": "Critical",
+   "reason": "Justice Jackson's deadline for the California-led coalition to respond to the government's stay application targeting Judge Talwani's Sept 4 preliminary injunction. No respondents' brief or Court order on the docket as of this morning.",
+   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-10T00:00:00-04:00",
@@ -108,116 +156,12 @@
    "source": "CISA KEV catalog, SC Media -- Confirmed-primary"
   },
   {
-   "ts_et": "2026-09-10T10:00:00-04:00",
-   "type": "regulatory",
-   "name": "Pennsylvania Public Utility Commission monthly public meeting",
-   "importance": "Low",
-   "reason": "No specific high-profile docket identified for this session.",
-   "source": "puc.pa.gov -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-09-11T00:00:00-04:00",
-   "type": "legal",
-   "name": "Deadline for both sides to submit proposals on remaining relief, 75-country visa-ban case (Judge Vargas)",
-   "importance": "Medium",
-   "reason": "Follow-up checkpoint to the Aug 21 ruling striking down the visa suspension.",
-   "source": "Fragomen, Boundless immigration-law trackers -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-10T15:37:00-04:00",
-   "type": "space",
-   "name": "Falcon 9 -- USSF-153 national security payload (Vandenberg SFB)",
-   "importance": "Low",
-   "reason": "Routine scheduled launch.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
-  },
-  {
-   "ts_et": "2026-09-11T16:00:00-04:00",
-   "type": "space",
-   "name": "Long March 8A (undisclosed payload, Wenchang) -- status To Be Confirmed",
-   "importance": "Low",
-   "reason": "Status unconfirmed as of this cycle's Launch Library 2 pull; could slip.",
-   "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
-  },
-  {
-   "ts_et": "2026-10-10T00:00:00-04:00",
-   "type": "legal",
-   "name": "Rep. McIver's en banc petition window closes (approx.), Third Circuit",
-   "importance": "Low",
-   "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
-   "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
-  },
-  {
-   "ts_et": "2026-09-08T00:00:00-04:00",
-   "type": "election",
-   "name": "New Hampshire state primary (open US Senate seat) -- RESULTS: Sununu (R), Pappas (D) advance",
-   "importance": "Medium",
-   "reason": "John E. Sununu defeated Scott Brown for the GOP nod; Chris Pappas defeated Karishma Manzur for the Democratic nod. Both advance to the Nov 3 general election for Sen. Jeanne Shaheen's open seat. Gov. Kelly Ayotte (R) also won her primary; faces Democrat Cinde Warmington (unopposed) in November.",
-   "source": "NHPR, NBC News, Washington Post, Fox News, Boston Globe -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-09T00:00:00-04:00",
-   "type": "political",
-   "name": "GOP \"midterm convention\" opens, Dallas",
-   "importance": "Medium",
-   "reason": "First-ever Republican midterm convention; Trump, Vance and roughly 100 other speakers expected before ~20,000 attendees.",
-   "source": "Multiple wire reports -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-09T10:00:00-04:00",
+   "ts_et": "2026-09-10T08:30:00-04:00",
    "type": "econ_release",
-   "name": "Employer Costs for Employee Compensation, 10:00 AM ET",
-   "importance": "Low",
-   "reason": "Routine BLS release.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-09T16:00:00-04:00",
-   "type": "legal",
-   "name": "Mail-ballot SCOTUS emergency (USPS v. California, 26A305): states'/voting-rights groups' response deadline",
-   "importance": "Critical",
-   "reason": "Justice Jackson's deadline for the California-led coalition to respond to the government's stay application targeting Judge Talwani's Sept 4 preliminary injunction. No respondents' brief or Court order on the docket as of this morning.",
-   "source": "Supreme Court docket 26A305 (primary); SCOTUSblog -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-09T00:00:00-04:00",
-   "type": "political",
-   "name": "GOP 'midterm convention' opens, Dallas (American Airlines Center) -- Vance keynote tonight",
+   "name": "Producer Price Index, August 2026, plus weekly jobless claims",
    "importance": "Medium",
-   "reason": "First-ever Republican midterm convention; roughly 109 speakers, ~20,000 expected each night. Vance keynotes tonight; Trump speaks both nights with a closing address Thursday.",
-   "source": "Fox4, Axios, Texas Tribune, The Hill -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-09T13:00:00-04:00",
-   "type": "treasury_auction",
-   "name": "Treasury auctions: 9-year-11-month note reopening ($39B) and 17-week bill ($72B)",
-   "importance": "Low",
-   "reason": "Refunding leg (10-year-equivalent reopening) plus routine bill auction.",
-   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-09-10T09:00:00-04:00",
-   "type": "space",
-   "name": "Long March 2D/YZ-3 (undisclosed payload, Jiuquan)",
-   "importance": "Low",
-   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for today (Sept 9); Launch Library 2's current schedule has it for Sept 10.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
-  },
-  {
-   "ts_et": "2026-09-16T09:33:53-04:00",
-   "type": "space",
-   "name": "Progress MS-35 cargo resupply to ISS (Soyuz-2.1b, Baikonur) -- launch time confirmed",
-   "importance": "Low",
-   "reason": "CONFIRMED 2026-09-16: Launch Library 2 now shows a firm liftoff time (13:33:53 UTC / 9:33:53 AM ET), status 'Go'. Previously listed exact time to be determined.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status Go"
-  },
-  {
-   "ts_et": "2026-09-10T11:00:00-04:00",
-   "type": "legal",
-   "name": "Missouri Supreme Court contempt hearing for Secretary of State Hoskins",
-   "importance": "High",
-   "reason": "Hoskins separately asked federal Judge Clark to block this hearing entirely; no ruling as of publication. Outcome unknown -- scheduled after this edition's cutoff.",
-   "source": "Missouri Independent, KCTV5, NBC News -- Confirmed-multiple"
+   "reason": "No clean economist-survey consensus found this cycle; only a prediction-market (Polymarket) signal leaning toward a hotter y/y print, labeled as trader positioning rather than a forecast.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
   },
   {
    "ts_et": "2026-09-10T08:30:00-04:00",
@@ -228,12 +172,28 @@
    "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
   },
   {
-   "ts_et": "2026-09-10T13:00:00-04:00",
-   "type": "treasury_auction",
-   "name": "Treasury auctions: 29-year-11-month bond reopening ($22B), 4-week bill ($90B), 8-week bill ($85B)",
+   "ts_et": "2026-09-10T09:00:00-04:00",
+   "type": "space",
+   "name": "Long March 2D/YZ-3 (undisclosed payload, Jiuquan)",
    "importance": "Low",
-   "reason": "Refunding leg (30-year-equivalent reopening) plus routine weekly bills.",
-   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+   "reason": "CORRECTED 2026-09-09: this outlet's cache previously carried this for today (Sept 9); Launch Library 2's current schedule has it for Sept 10.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-10T10:00:00-04:00",
+   "type": "regulatory",
+   "name": "Pennsylvania Public Utility Commission monthly public meeting",
+   "importance": "Low",
+   "reason": "No specific high-profile docket identified for this session.",
+   "source": "puc.pa.gov -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T11:00:00-04:00",
+   "type": "legal",
+   "name": "Missouri Supreme Court contempt hearing for Secretary of State Hoskins",
+   "importance": "High",
+   "reason": "Hoskins separately asked federal Judge Clark to block this hearing entirely; no ruling as of publication. Outcome unknown -- scheduled after this edition's cutoff.",
+   "source": "Missouri Independent, KCTV5, NBC News -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-10T11:37:00-04:00",
@@ -244,12 +204,28 @@
    "source": "Spaceflight Now, NASASpaceFlight.com launch schedules -- Confirmed-multiple"
   },
   {
-   "ts_et": "2026-09-11T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Consumer Price Index, August 2026, plus Real Earnings",
-   "importance": "Critical",
-   "reason": "Fed Governor Waller named this release as the decisive input for his own Sept 16 vote; lands during the Fed's pre-meeting blackout (Sept 5-17). Pre-release consensus estimates found this run were unusually dispersed across sources (roughly +2.9% to +3.4% y/y headline) -- treat any single figure as indicative only.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled); consensus figures Estimated, wide dispersion"
+   "ts_et": "2026-09-10T13:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 29-year-11-month bond reopening ($22B), 4-week bill ($90B), 8-week bill ($85B)",
+   "importance": "Low",
+   "reason": "Refunding leg (30-year-equivalent reopening) plus routine weekly bills.",
+   "source": "TreasuryDirect upcoming-securities API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-10T15:37:00-04:00",
+   "type": "space",
+   "name": "Falcon 9 -- USSF-153 national security payload (Vandenberg SFB)",
+   "importance": "Low",
+   "reason": "Routine scheduled launch.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-11T00:00:00-04:00",
+   "type": "legal",
+   "name": "Deadline for both sides to submit proposals on remaining relief, 75-country visa-ban case (Judge Vargas)",
+   "importance": "Medium",
+   "reason": "Follow-up checkpoint to the Aug 21 ruling striking down the visa suspension.",
+   "source": "Fragomen, Boundless immigration-law trackers -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-11T00:00:00-04:00",
@@ -260,14 +236,6 @@
    "source": "Boundless, Al Jazeera, PBS, NPR -- Confirmed-multiple on the ruling and deadline"
   },
   {
-   "ts_et": "2026-09-11T16:00:00-04:00",
-   "type": "space",
-   "name": "Long March 8A (undisclosed payload, Wenchang) -- status To Be Confirmed",
-   "importance": "Low",
-   "reason": "Status unconfirmed as of this cycle's Launch Library 2 pull; could slip.",
-   "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
-  },
-  {
    "ts_et": "2026-09-11T00:00:00-04:00",
    "type": "military",
    "name": "\"Freedom Edge\" trilateral naval/air exercise concludes (US, South Korea, Japan, off Jeju Island)",
@@ -276,20 +244,28 @@
    "source": "South Korea MND, NBC News, Korea Herald, Japan Times -- Confirmed-multiple"
   },
   {
-   "ts_et": "2026-09-02T00:00:00-04:00",
-   "type": "legislative",
-   "name": "CORRECTED 2026-09-14: H.R. 6500 already signed into law -- not pending House action",
-   "importance": "Low",
-   "reason": "This cache and the 2026-09-13-sun report both incorrectly carried H.R. 6500 as coming before the House on Sept 14. Verified directly this run: the House passed it 370-48 on Sept 1, the Senate had already passed it 90-6, and the President signed it Sept 2 as Public Law No. 119-103, funding the government through Dec 11. No House floor action on this bill is pending. Logged to ledgers/corrections.json and corrected in the 2026-09-14-am report.",
-   "source": "whitehouse.gov signing statement, congress.gov/govtrack.us bill actions -- Confirmed-multiple"
+   "ts_et": "2026-09-11T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Consumer Price Index, August 2026, plus Real Earnings",
+   "importance": "Critical",
+   "reason": "Fed Governor Waller named this release as the decisive input for his own Sept 16 vote; lands during the Fed's pre-meeting blackout (Sept 5-17). Pre-release consensus estimates found this run were unusually dispersed across sources (roughly +2.9% to +3.4% y/y headline) -- treat any single figure as indicative only.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled); consensus figures Estimated, wide dispersion"
   },
   {
-   "ts_et": "2026-09-15T00:00:00-04:00",
-   "type": "military",
-   "name": "Iran-GCC Salalah talks POSTPONED, not held -- no new date",
-   "importance": "Critical",
-   "reason": "CORRECTED 2026-09-14: the talks previously scheduled for Sept 14 in Salalah, Oman were postponed by joint Tehran-Muscat decision \"in the interest of consensus,\" per Omani FM Albusaidi, following Bahrain's boycott and Sunday's fatal strike on an Iranian vessel near Qeshm Island. No new date set.",
-   "source": "Omani foreign ministry (primary, via wire); Al Jazeera, France 24, Oman Observer -- Confirmed-multiple"
+   "ts_et": "2026-09-11T16:00:00-04:00",
+   "type": "space",
+   "name": "Long March 8A (undisclosed payload, Wenchang) -- status To Be Confirmed",
+   "importance": "Low",
+   "reason": "Status unconfirmed as of this cycle's Launch Library 2 pull; could slip.",
+   "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
+  },
+  {
+   "ts_et": "2026-09-11T16:00:00-04:00",
+   "type": "space",
+   "name": "Long March 8A (undisclosed payload, Wenchang) -- status To Be Confirmed",
+   "importance": "Low",
+   "reason": "Status unconfirmed as of this cycle's Launch Library 2 pull; could slip.",
+   "source": "Launch Library 2 (thespacedevs.com) -- status To Be Confirmed"
   },
   {
    "ts_et": "2026-09-14T00:00:00-04:00",
@@ -298,6 +274,30 @@
    "importance": "Low",
    "reason": "Routine weekly bill auctions. Confirmed directly via TreasuryDirect TA_WS upcoming-securities API.",
    "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-14T12:00:00-04:00",
+   "type": "space",
+   "name": "Djibouti signs the Artemis Accords, NASA HQ (72nd signatory nation)",
+   "importance": "Low",
+   "reason": "Routine accession, no material policy shift.",
+   "source": "NASA (primary) -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-14T20:00:00-04:00",
+   "type": "legal",
+   "name": "RESOLVED: Supreme Court denies government's stay application in USPS v. California, 26A305 -- mail-ballot rule stays blocked for 2026 midterms",
+   "importance": "Critical",
+   "reason": "The Court denied the stay Monday night, finding the government unlikely to succeed on the merits; Kavanaugh concurred separately (APA 'arbitrary and capricious' given election officials' compressed timeline), Alito dissented (joined by Thomas). Both underlying injunctions (Talwani, D. Mass.; Nichols, D.D.C.) remain in effect; the rule cannot be enforced for the 2026 elections. This closes out the emergency-relief stage of the case this outlet has tracked since late July; merits litigation presumably continues in the ordinary appellate courts.",
+   "source": "Supreme Court order, docket 26A305 (primary); CNBC, NPR, CNN, NBC News -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "military",
+   "name": "Iran-GCC Salalah talks POSTPONED, not held -- no new date",
+   "importance": "Critical",
+   "reason": "CORRECTED 2026-09-14: the talks previously scheduled for Sept 14 in Salalah, Oman were postponed by joint Tehran-Muscat decision \"in the interest of consensus,\" per Omani FM Albusaidi, following Bahrain's boycott and Sunday's fatal strike on an Iranian vessel near Qeshm Island. No new date set.",
+   "source": "Omani foreign ministry (primary, via wire); Al Jazeera, France 24, Oman Observer -- Confirmed-multiple"
   },
   {
    "ts_et": "2026-09-15T00:00:00-04:00",
@@ -332,12 +332,68 @@
    "source": "Al Jazeera, Dawn, Al-Monitor -- Confirmed-multiple"
   },
   {
+   "ts_et": "2026-09-15T00:00:00-04:00",
+   "type": "legal",
+   "name": "Kennedy Center special board meeting on possible building closure",
+   "importance": "Medium",
+   "reason": "An internal board packet reviewed by the Washington Post (reported Sept 13) projects a roughly $23M deficit and warns of inability to cover payroll or maintenance within weeks; separately, officials say the main building is unsafe for continued occupancy after a Sept 5 ceiling collapse. Board meets today to consider closing the building, possibly for up to two years. A spokesperson for former chairman Rubenstein disputes the financial framing.",
+   "source": "Washington Post (primary reporting on leaked document); NPR, CBS News -- Confirmed-multiple on the fact of the meeting, Single-reliable-source on the financial figures"
+  },
+  {
+   "ts_et": "2026-09-15T09:00:00-04:00",
+   "type": "legal",
+   "name": "FBI Director Kash Patel testifies before Senate Judiciary Committee",
+   "importance": "Medium",
+   "reason": "First testimony before the panel since clashing with lawmakers roughly four months ago over conduct/performance reports. Expected topics: FBI hiring-criteria changes and the 'Arctic Frost' investigation into 2020-election-overturning efforts.",
+   "source": "Senate Judiciary Committee hearing calendar -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-15T14:15:00-04:00",
+   "type": "legislative",
+   "name": "Senate cloture vote on motion to proceed to H.R. 3633 (CLARITY Act, digital-asset market structure)",
+   "importance": "Low",
+   "reason": "Needs 60 votes; Republicans hold 53 seats, so at least 7 Democratic/independent votes required. Passed the House 294-134 in July 2025. Cloture only opens formal Senate debate, not final passage.",
+   "source": "Senate floor schedule -- Confirmed-multiple"
+  },
+  {
+   "ts_et": "2026-09-16T00:00:00-04:00",
+   "type": "business",
+   "name": "Lennar (LEN) Q3 FY2026 earnings, after close; call Thu 11:00 AM ET",
+   "importance": "Low",
+   "reason": "Non-watchlist homebuilder; useful housing-sector context alongside NAHB/housing-starts data this week.",
+   "source": "StockTitan, company release -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-16T00:00:00-04:00",
+   "type": "business",
+   "name": "FedEx (FDX) Q1 FY2027 earnings",
+   "importance": "Low",
+   "reason": "Non-watchlist; useful freight/logistics read on consumer and industrial demand the same day as Retail Sales.",
+   "source": "Finnhub earnings calendar day-of confirmation -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-16T06:08:18-04:00",
+   "type": "business",
+   "name": "Karman Holdings (KRMN) files 8-K -- Item 7.01 Reg FD Disclosure and Item 9.01 Financial Statements/Exhibits",
+   "importance": "Medium",
+   "reason": "Filed this morning ahead of the open; SEC filing itself does not state the disclosure's content in the index summary (5 MB exhibit package). Space/defense-aero watchlist name -- primary filing not yet read in full this run; treat as a lead for the Business section pending exhibit review.",
+   "source": "SEC EDGAR (data.sec.gov / www.sec.gov), accession 0001193125-26-392480 -- Confirmed-primary (filing exists), content Unconfirmed pending exhibit review"
+  },
+  {
    "ts_et": "2026-09-16T08:30:00-04:00",
    "type": "econ_release",
    "name": "Retail Sales (Aug) and Import/Export Price Indexes (Aug)",
    "importance": "High",
    "reason": "Lands ahead of the 2:00 PM FOMC decision; a hot print would reinforce hike odds already near 85-90% per press accounts.",
    "source": "Census.gov, BLS release schedules -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-16T09:33:53-04:00",
+   "type": "space",
+   "name": "Progress MS-35 cargo resupply to ISS (Soyuz-2.1b, Baikonur) -- launch time confirmed",
+   "importance": "Low",
+   "reason": "CONFIRMED 2026-09-16: Launch Library 2 now shows a firm liftoff time (13:33:53 UTC / 9:33:53 AM ET), status 'Go'. Previously listed exact time to be determined.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status Go"
   },
   {
    "ts_et": "2026-09-16T10:00:00-04:00",
@@ -356,62 +412,6 @@
    "source": "federalreserve.gov FOMC calendar (primary, reconfirmed via direct fetch 2026-09-16) -- press odds Confirmed-multiple, Estimated"
   },
   {
-   "ts_et": "2026-09-15T09:00:00-04:00",
-   "type": "legal",
-   "name": "FBI Director Kash Patel testifies before Senate Judiciary Committee",
-   "importance": "Medium",
-   "reason": "First testimony before the panel since clashing with lawmakers roughly four months ago over conduct/performance reports. Expected topics: FBI hiring-criteria changes and the 'Arctic Frost' investigation into 2020-election-overturning efforts.",
-   "source": "Senate Judiciary Committee hearing calendar -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-15T00:00:00-04:00",
-   "type": "legal",
-   "name": "Kennedy Center special board meeting on possible building closure",
-   "importance": "Medium",
-   "reason": "An internal board packet reviewed by the Washington Post (reported Sept 13) projects a roughly $23M deficit and warns of inability to cover payroll or maintenance within weeks; separately, officials say the main building is unsafe for continued occupancy after a Sept 5 ceiling collapse. Board meets today to consider closing the building, possibly for up to two years. A spokesperson for former chairman Rubenstein disputes the financial framing.",
-   "source": "Washington Post (primary reporting on leaked document); NPR, CBS News -- Confirmed-multiple on the fact of the meeting, Single-reliable-source on the financial figures"
-  },
-  {
-   "ts_et": "2026-09-15T14:15:00-04:00",
-   "type": "legislative",
-   "name": "Senate cloture vote on motion to proceed to H.R. 3633 (CLARITY Act, digital-asset market structure)",
-   "importance": "Low",
-   "reason": "Needs 60 votes; Republicans hold 53 seats, so at least 7 Democratic/independent votes required. Passed the House 294-134 in July 2025. Cloture only opens formal Senate debate, not final passage.",
-   "source": "Senate floor schedule -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-14T20:00:00-04:00",
-   "type": "legal",
-   "name": "RESOLVED: Supreme Court denies government's stay application in USPS v. California, 26A305 -- mail-ballot rule stays blocked for 2026 midterms",
-   "importance": "Critical",
-   "reason": "The Court denied the stay Monday night, finding the government unlikely to succeed on the merits; Kavanaugh concurred separately (APA 'arbitrary and capricious' given election officials' compressed timeline), Alito dissented (joined by Thomas). Both underlying injunctions (Talwani, D. Mass.; Nichols, D.D.C.) remain in effect; the rule cannot be enforced for the 2026 elections. This closes out the emergency-relief stage of the case this outlet has tracked since late July; merits litigation presumably continues in the ordinary appellate courts.",
-   "source": "Supreme Court order, docket 26A305 (primary); CNBC, NPR, CNN, NBC News -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-28T08:15:00-04:00",
-   "type": "space",
-   "name": "SpaceX Starship Flight 14 (V3 debut) -- slipped to Sept 28, status reverted to To Be Confirmed",
-   "importance": "Medium",
-   "reason": "CORRECTED 2026-09-18: Launch Library 2's direct feed now shows the mission slipped six days from Sept 22 to Sept 28 (still 12:15 UTC/8:15 AM ET), with status reverted to 'To Be Confirmed' from 'Go' -- an FAA launch license is now the sole gating item, environmental review already cleared. No public explanation given for the slip.",
-   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-multiple, status To Be Confirmed"
-  },
-  {
-   "ts_et": "2026-09-16T00:00:00-04:00",
-   "type": "business",
-   "name": "Lennar (LEN) Q3 FY2026 earnings, after close; call Thu 11:00 AM ET",
-   "importance": "Low",
-   "reason": "Non-watchlist homebuilder; useful housing-sector context alongside NAHB/housing-starts data this week.",
-   "source": "StockTitan, company release -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-09-17T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Housing Starts / Building Permits (Aug) and weekly initial jobless claims",
-   "importance": "Medium",
-   "reason": "Standard Thursday releases.",
-   "source": "Census.gov, BLS release schedules -- Confirmed-primary (scheduled)"
-  },
-  {
    "ts_et": "2026-09-17T00:00:00-04:00",
    "type": "treasury_auction",
    "name": "Treasury auctions: 9-year-10-month note reopening ($19B, settles Sept 30) plus 4-week and 8-week bills",
@@ -428,52 +428,12 @@
    "source": "Secondary aggregator -- Unconfirmed"
   },
   {
-   "ts_et": "2026-09-18T09:15:00-04:00",
+   "ts_et": "2026-09-17T08:30:00-04:00",
    "type": "econ_release",
-   "name": "Industrial Production & Capacity Utilization (Aug)",
-   "importance": "Low",
-   "reason": "Routine Fed G.17 release.",
-   "source": "federalreserve.gov G.17 schedule -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-18T10:00:00-04:00",
-   "type": "econ_release",
-   "name": "Conference Board Leading Economic Index (Aug)",
-   "importance": "Low",
-   "reason": "Routine release.",
-   "source": "Conference Board schedule -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-14T12:00:00-04:00",
-   "type": "space",
-   "name": "Djibouti signs the Artemis Accords, NASA HQ (72nd signatory nation)",
-   "importance": "Low",
-   "reason": "Routine accession, no material policy shift.",
-   "source": "NASA (primary) -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-18T10:00:00-04:00",
-   "type": "econ_release",
-   "name": "State Employment and Unemployment (Monthly)",
-   "importance": "Low",
-   "reason": "Routine BLS regional release.",
-   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
-  },
-  {
-   "ts_et": "2026-09-16T00:00:00-04:00",
-   "type": "business",
-   "name": "FedEx (FDX) Q1 FY2027 earnings",
-   "importance": "Low",
-   "reason": "Non-watchlist; useful freight/logistics read on consumer and industrial demand the same day as Retail Sales.",
-   "source": "Finnhub earnings calendar day-of confirmation -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-09-16T06:08:18-04:00",
-   "type": "business",
-   "name": "Karman Holdings (KRMN) files 8-K -- Item 7.01 Reg FD Disclosure and Item 9.01 Financial Statements/Exhibits",
+   "name": "Housing Starts / Building Permits (Aug) and weekly initial jobless claims",
    "importance": "Medium",
-   "reason": "Filed this morning ahead of the open; SEC filing itself does not state the disclosure's content in the index summary (5 MB exhibit package). Space/defense-aero watchlist name -- primary filing not yet read in full this run; treat as a lead for the Business section pending exhibit review.",
-   "source": "SEC EDGAR (data.sec.gov / www.sec.gov), accession 0001193125-26-392480 -- Confirmed-primary (filing exists), content Unconfirmed pending exhibit review"
+   "reason": "Standard Thursday releases.",
+   "source": "Census.gov, BLS release schedules -- Confirmed-primary (scheduled)"
   },
   {
    "ts_et": "2026-09-17T08:30:00-04:00",
@@ -508,28 +468,36 @@
    "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
   },
   {
+   "ts_et": "2026-09-18T09:15:00-04:00",
+   "type": "econ_release",
+   "name": "Industrial Production & Capacity Utilization (Aug)",
+   "importance": "Low",
+   "reason": "Routine Fed G.17 release.",
+   "source": "federalreserve.gov G.17 schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-18T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "Conference Board Leading Economic Index (Aug)",
+   "importance": "Low",
+   "reason": "Routine release.",
+   "source": "Conference Board schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-18T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "State Employment and Unemployment (Monthly)",
+   "importance": "Low",
+   "reason": "Routine BLS regional release.",
+   "source": "BLS release schedule ICS -- Confirmed-primary (scheduled)"
+  },
+  {
    "ts_et": "2026-09-19T09:46:00-04:00",
    "type": "space",
    "name": "Progress MS-35 docking at ISS Poisk module -- rescheduled to Saturday, Sept 19, ~9:46 AM ET",
    "importance": "Low",
    "reason": "CORRECTED 2026-09-18 (pm): this morning's cache and report stated docking was confirmed for today, Sept 18, at 18:37 UTC (2:37 PM ET), sourced to NASASpaceFlight.com and a Wikipedia cross-check. NASA's own ISS blog, posted today, instead schedules docking for tomorrow, Saturday Sept 19, at approximately 13:46 UTC (9:46 AM ET) at Poisk's space-facing port -- consistent with Roscosmos/TASS's original estimate this system had revised away from two days ago. No docking occurred at the previously reported time. Logged as a formal correction to ledgers/corrections.json and disclosed in the 2026-09-18-pm report's Science & Space section and colophon.",
    "source": "NASA ISS blog (nasa.gov/blogs/spacestation), posted 2026-09-18 -- Confirmed-primary; TASS/Roscosmos -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-21T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Chicago Fed National Activity Index (Aug)",
-   "importance": "Low",
-   "reason": "Routine regional Fed composite release.",
-   "source": "Secondary aggregator (Nasdaq economic-events feed, offset-corrected) -- not independently confirmed against a primary Chicago Fed page this run"
-  },
-  {
-   "ts_et": "2026-09-21T06:30:00-04:00",
-   "type": "fed",
-   "name": "Chicago Fed President Austan Goolsbee speaks",
-   "importance": "Low",
-   "reason": "Unusually early hour for a US speech; low confidence on exact time, not confirmed against federalreserve.gov (its calendar/speech pages returned no machine-readable schedule this run).",
-   "source": "Secondary aggregator -- Unconfirmed against primary"
   },
   {
    "ts_et": "2026-09-21T00:00:00-04:00",
@@ -540,20 +508,68 @@
    "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
   },
   {
+   "ts_et": "2026-09-21T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions: 13-week ($92B, CUSIP 912797TC1) and 26-week ($79B, CUSIP 912797WL7)",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions; re-confirmed via a fresh TA_WS pull, amounts unchanged.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-21T00:00:00-04:00",
+   "type": "other",
+   "name": "Trump arrives NYC Monday afternoon ahead of UN General Assembly week; meets NYC Mayor Zohran Mamdani at Gracie Mansion (first such meeting)",
+   "importance": "High",
+   "reason": "Sets up Tuesday's UNGA address and is itself a discrete, newsworthy first meeting between Trump and Mamdani, per US UN Ambassador Mike Waltz. Coverage traces to a single wire story widely syndicated rather than independently reported by each outlet.",
+   "source": "AP/wire syndication (Al Arabiya English, The Business Standard, Korea Times, WHBL, KELO-AM, AOL) -- Confirmed-multiple (single wire origin, widely syndicated)"
+  },
+  {
+   "ts_et": "2026-09-21T06:30:00-04:00",
+   "type": "fed",
+   "name": "Chicago Fed President Austan Goolsbee speaks",
+   "importance": "Low",
+   "reason": "Unusually early hour for a US speech; low confidence on exact time, not confirmed against federalreserve.gov (its calendar/speech pages returned no machine-readable schedule this run).",
+   "source": "Secondary aggregator -- Unconfirmed against primary"
+  },
+  {
+   "ts_et": "2026-09-21T06:30:00-04:00",
+   "type": "fed_speech",
+   "name": "Chicago Fed President Austan Goolsbee speaks at OMFIF's \"Monetary Policy in an Uncertain World\" event, London",
+   "importance": "Medium",
+   "reason": "First post-FOMC Fed speaker of the week, testing messaging after the Sept 16 hawkish hike. Time corroborated by multiple secondary aggregators (Investing.com, FXStreet, XTB) citing chicagofed.org's own event page; chicagofed.org itself is not on the egress allowlist so the primary page was not fetched directly.",
+   "source": "Investing.com, FXStreet, XTB econ calendars citing chicagofed.org -- Confirmed-multiple, secondary-sourced"
+  },
+  {
+   "ts_et": "2026-09-21T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Chicago Fed National Activity Index (Aug)",
+   "importance": "Low",
+   "reason": "Routine regional Fed composite release.",
+   "source": "Secondary aggregator (Nasdaq economic-events feed, offset-corrected) -- not independently confirmed against a primary Chicago Fed page this run"
+  },
+  {
+   "ts_et": "2026-09-21T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Chicago Fed National Activity Index (Aug)",
+   "importance": "Low",
+   "reason": "Routine regional Fed composite release. Directly confirmed via FRED release calendar (release_id 219): release_dates array includes 2026-09-21 exactly.",
+   "source": "api.stlouisfed.org FRED release/dates (release_id 219) -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-21T10:30:00-04:00",
+   "type": "other",
+   "name": "House of Representatives meets in Pro Forma session",
+   "importance": "Low",
+   "reason": "Routine; House remains in recess until after the midterms. No hearings or votes scheduled in either chamber today.",
+   "source": "house.gov / periodicalpress.senate.gov schedule pages via WebSearch -- Confirmed-multiple"
+  },
+  {
    "ts_et": "2026-09-22T00:00:00-04:00",
    "type": "diplomatic",
    "name": "UN General Assembly high-level week opens; Trump addresses the assembly",
    "importance": "High",
    "reason": "81st session, presided by Bangladesh's Khalilur Rahman. Trump arrives NYC Mon afternoon, speaks Tue, holds bilaterals reportedly including UK PM Andy Burnham and Japan PM Sanae Takaichi. A Trump-Zelensky sidelines meeting is reportedly under discussion but NOT on the released schedule as of Sept 20 -- do not report as confirmed.",
    "source": "un.org High-Level Week page, UN News -- Confirmed-primary (the session itself); bilateral roster and any Zelensky meeting Unconfirmed"
-  },
-  {
-   "ts_et": "2026-09-22T10:05:00-04:00",
-   "type": "fed",
-   "name": "Fed speakers: NY Fed's John Williams (~10:05), Gov. Philip Jefferson (~10:20), Richmond Fed's Tom Barkin (~13:00)",
-   "importance": "Medium",
-   "reason": "Dense post-FOMC speaker slate testing the Sept 16 hawkish hike; times per secondary aggregator, not confirmed against federalreserve.gov's own schedule.",
-   "source": "Secondary aggregator -- Unconfirmed against primary"
   },
   {
    "ts_et": "2026-09-22T00:00:00-04:00",
@@ -572,28 +588,20 @@
    "source": "Senate Democratic Caucus floor schedule -- Single-reliable-source, Unconfirmed against congress.gov"
   },
   {
+   "ts_et": "2026-09-22T10:05:00-04:00",
+   "type": "fed",
+   "name": "Fed speakers: NY Fed's John Williams (~10:05), Gov. Philip Jefferson (~10:20), Richmond Fed's Tom Barkin (~13:00)",
+   "importance": "Medium",
+   "reason": "Dense post-FOMC speaker slate testing the Sept 16 hawkish hike; times per secondary aggregator, not confirmed against federalreserve.gov's own schedule.",
+   "source": "Secondary aggregator -- Unconfirmed against primary"
+  },
+  {
    "ts_et": "2026-09-23T00:00:00-04:00",
    "type": "legal",
    "name": "Kennedy Center: Judge Cooper's deadline for the board's sworn, detailed status report on the building closure",
    "importance": "High",
    "reason": "Follow-up to the board's Sept 4-storm-triggered closure and the standing 30-day demolition-notice order.",
    "source": "Judge Cooper's court order (primary, via reporting) -- Confirmed-multiple"
-  },
-  {
-   "ts_et": "2026-09-23T09:45:00-04:00",
-   "type": "econ_release",
-   "name": "S&P Global flash Manufacturing PMI (cons. 53.4) and Services PMI (cons. 56.0), Sept",
-   "importance": "High",
-   "reason": "First real post-FOMC test of whether incoming data justifies the hawkish dot plot.",
-   "source": "S&P Global PMI schedule -- Confirmed-primary (scheduled); consensus figures Estimated, secondary aggregator"
-  },
-  {
-   "ts_et": "2026-09-23T10:05:00-04:00",
-   "type": "fed",
-   "name": "Fed Vice Chair for Supervision Michael Barr speaks",
-   "importance": "Medium",
-   "reason": "Time per secondary aggregator, not confirmed against federalreserve.gov's own schedule.",
-   "source": "Secondary aggregator -- Unconfirmed against primary"
   },
   {
    "ts_et": "2026-09-23T00:00:00-04:00",
@@ -612,28 +620,28 @@
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   },
   {
+   "ts_et": "2026-09-23T09:45:00-04:00",
+   "type": "econ_release",
+   "name": "S&P Global flash Manufacturing PMI (cons. 53.4) and Services PMI (cons. 56.0), Sept",
+   "importance": "High",
+   "reason": "First real post-FOMC test of whether incoming data justifies the hawkish dot plot.",
+   "source": "S&P Global PMI schedule -- Confirmed-primary (scheduled); consensus figures Estimated, secondary aggregator"
+  },
+  {
+   "ts_et": "2026-09-23T10:05:00-04:00",
+   "type": "fed",
+   "name": "Fed Vice Chair for Supervision Michael Barr speaks",
+   "importance": "Medium",
+   "reason": "Time per secondary aggregator, not confirmed against federalreserve.gov's own schedule.",
+   "source": "Secondary aggregator -- Unconfirmed against primary"
+  },
+  {
    "ts_et": "2026-09-24T00:00:00-04:00",
    "type": "business",
    "name": "Costco (COST) fiscal Q4 FY2026 earnings, after close",
    "importance": "High",
    "reason": "The week's only watchlist-company earnings report. Consensus EPS diverges by vendor: Alpha Vantage $6.48, Finnhub $6.67 -- report as a range. Revenue consensus ~$94.9B (+~10% y/y). At least one analyst (Oppenheimer's Rupesh Parikh) has flagged downside risk to core-business earnings once one-time US tariff-refund benefits, which inflated the headline beat last quarter, are excluded.",
    "source": "Alpha Vantage EARNINGS_CALENDAR, Finnhub calendar/earnings -- Confirmed-primary (report date); consensus figures Estimated"
-  },
-  {
-   "ts_et": "2026-09-24T08:30:00-04:00",
-   "type": "econ_release",
-   "name": "Initial jobless claims (cons. ~201K vs prior 196K); Current Account (Q2); New Home Sales (cons. 619K)",
-   "importance": "Medium",
-   "reason": "Standard Thursday cadence, one week after the hawkish FOMC hike.",
-   "source": "Standard BLS/Census schedule -- Confirmed-primary (scheduled); consensus figures Estimated, secondary aggregator"
-  },
-  {
-   "ts_et": "2026-09-24T10:00:00-04:00",
-   "type": "econ_release",
-   "name": "BLS: Employee Tenure, Biennial 2026, and Job Flexibilities and Work Schedules 2024-2025",
-   "importance": "Low",
-   "reason": "Structural labor releases, not market-moving.",
-   "source": "www.bls.gov release schedule -- Confirmed-primary (scheduled)"
   },
   {
    "ts_et": "2026-09-24T00:00:00-04:00",
@@ -650,6 +658,46 @@
    "importance": "Low",
    "reason": "Scheduled launch.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-24T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "Initial jobless claims (cons. ~201K vs prior 196K); Current Account (Q2); New Home Sales (cons. 619K)",
+   "importance": "Medium",
+   "reason": "Standard Thursday cadence, one week after the hawkish FOMC hike.",
+   "source": "Standard BLS/Census schedule -- Confirmed-primary (scheduled); consensus figures Estimated, secondary aggregator"
+  },
+  {
+   "ts_et": "2026-09-24T08:30:00-04:00",
+   "type": "econ_release",
+   "name": "BEA: U.S. International Transactions and Investment Position (Q2 2026, current-account/NIIP)",
+   "importance": "Low",
+   "reason": "New item -- BEA RSS feed's NextReleaseDate field gives Sept 24, 2026; exact time not in the feed, estimated by pattern from BEA's other release timestamps.",
+   "source": "apps.bea.gov/rss/rss.xml -- Confirmed-primary (date), time Estimated by pattern"
+  },
+  {
+   "ts_et": "2026-09-24T10:00:00-04:00",
+   "type": "econ_release",
+   "name": "BLS: Employee Tenure, Biennial 2026, and Job Flexibilities and Work Schedules 2024-2025",
+   "importance": "Low",
+   "reason": "Structural labor releases, not market-moving.",
+   "source": "www.bls.gov release schedule -- Confirmed-primary (scheduled)"
+  },
+  {
+   "ts_et": "2026-09-25T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury auctions: 4-week and 8-week bills",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-25T00:00:00-04:00",
+   "type": "local",
+   "name": "Pittsburgh Regional Transit board votes on a $94.1M, 102-bus order",
+   "importance": "Low",
+   "reason": "Local Pittsburgh/Allegheny County item; previously reported as scheduled in the 2026-09-19-sat Weekly Review.",
+   "source": "Pittsburgh Regional Transit board agenda -- Confirmed-primary"
   },
   {
    "ts_et": "2026-09-25T08:30:00-04:00",
@@ -676,22 +724,6 @@
    "source": "www.bls.gov release schedule -- Confirmed-primary (scheduled)"
   },
   {
-   "ts_et": "2026-09-25T00:00:00-04:00",
-   "type": "treasury_auction",
-   "name": "Treasury auctions: 4-week and 8-week bills",
-   "importance": "Low",
-   "reason": "Routine weekly bill auctions.",
-   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
-  },
-  {
-   "ts_et": "2026-09-25T00:00:00-04:00",
-   "type": "local",
-   "name": "Pittsburgh Regional Transit board votes on a $94.1M, 102-bus order",
-   "importance": "Low",
-   "reason": "Local Pittsburgh/Allegheny County item; previously reported as scheduled in the 2026-09-19-sat Weekly Review.",
-   "source": "Pittsburgh Regional Transit board agenda -- Confirmed-primary"
-  },
-  {
    "ts_et": "2026-09-25T20:15:00-04:00",
    "type": "space",
    "name": "Rocket Lab Electron (\"Owlright\") -- status Go for Launch",
@@ -702,10 +734,26 @@
   {
    "ts_et": "2026-09-28T08:15:00-04:00",
    "type": "space",
+   "name": "SpaceX Starship Flight 14 (V3 debut) -- slipped to Sept 28, status reverted to To Be Confirmed",
+   "importance": "Medium",
+   "reason": "CORRECTED 2026-09-18: Launch Library 2's direct feed now shows the mission slipped six days from Sept 22 to Sept 28 (still 12:15 UTC/8:15 AM ET), with status reverted to 'To Be Confirmed' from 'Go' -- an FAA launch license is now the sole gating item, environmental review already cleared. No public explanation given for the slip.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-multiple, status To Be Confirmed"
+  },
+  {
+   "ts_et": "2026-09-28T08:15:00-04:00",
+   "type": "space",
    "name": "SpaceX Starship Flight 14 (V3 debut) -- still targeting Sept 28, status To Be Confirmed, FAA license still the gating item",
    "importance": "Medium",
    "reason": "Just past this week's window; no further slip confirmed as of this pull.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-multiple, status To Be Confirmed"
+  },
+  {
+   "ts_et": "2026-10-10T00:00:00-04:00",
+   "type": "legal",
+   "name": "Rep. McIver's en banc petition window closes (approx.), Third Circuit",
+   "importance": "Low",
+   "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
+   "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

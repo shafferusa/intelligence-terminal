@@ -3483,6 +3483,36 @@
    "probability": "55-65%",
    "basis": "The 10-year has held above 5% since the Sept. 16 hawkish hike and dot-plot repricing, with 16 of 18 FOMC officials projecting a further 2026 move; a soft flash-PMI or durable-goods surprise is the clearest path back below.",
    "status": "open"
+  },
+  {
+   "id": "2026-09-21-am-1",
+   "date": "2026-09-21",
+   "slot": "am",
+   "forecast": "Trump signs the pending $14B Taiwan arms package before Thursday's summit, and Beijing downgrades or shortens the Trump-Xi meeting in response.",
+   "horizon": "2026-09-24",
+   "probability": "15-25%",
+   "basis": "Beijing has explicitly warned it could cancel or curtail the visit over the package, weighed against Trump's own 'not made a decision' framing and the strong incentive on both sides to hold the summit.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-21-am-2",
+   "date": "2026-09-21",
+   "slot": "am",
+   "forecast": "The claimed Muscat/Oman stand-down holds and no confirmed US, Saudi or allied strike on Yemen occurs before Tuesday's Gulf-leaders meeting.",
+   "horizon": "2026-09-22",
+   "probability": "50-60%",
+   "basis": "Trump already pulled back from planned strikes once this weekend and a diplomatic channel is reportedly open, weighed against Saudi Arabia's own campaign continuing independently and MbS's earlier direct pressure for US action.",
+   "status": "open"
+  },
+  {
+   "id": "2026-09-21-am-3",
+   "date": "2026-09-21",
+   "slot": "am",
+   "forecast": "At least one more organization confirms compromise via the Plugin4Shell AI-agent flaw before Microsoft or Google ship a patch.",
+   "horizon": "2026-10-05",
+   "probability": "30-45%",
+   "basis": "Two of four affected tools (Copilot, Gemini CLI) remain unpatched, and early disclosures reporting 'no exploitation found' have historically undercounted incidents that surface within weeks.",
+   "status": "open"
   }
  ]
 }
