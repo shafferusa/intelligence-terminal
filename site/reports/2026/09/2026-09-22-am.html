@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Tue, Sep 22, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-22",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/09/2026-09-22-am.html",
+    "summary": "Trump and Zelensky meet in New York as Russia and Ukraine trade deadly overnight strikes, a G7 statement demands the Houthis stand down, and Paramount Skydance clears the last hurdle to its Warner Bros. Discovery merger.",
+    "headlines": [
+      "Trump meets Zelensky in NY, hours after Russia and Ukraine traded deadly strikes",
+      "G7 demands Houthi halt as Hormuz stays effectively shut and a tanker is hit again",
+      "Paramount Skydance settles with 12 states, clearing its $111B WBD merger",
+      "AMD tops $1T market cap on an AI-chip rally that partly reversed by Tuesday's open"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-22T07:20:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Trump and Zelensky Meet in New York as the Wars Underneath the Diplomacy Widen</h1>
+      <p class="paper-dateline">
+        Tuesday, September 22, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Trump sits down with Zelensky and addresses the UN today, hours after Russia and Ukraine traded strikes and a G7 statement demanded the Houthis stand down, while Wall Street digests Monday&rsquo;s rally ahead of Thursday&rsquo;s Trump-Xi summit.
+      </p>
+    </header>
+
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Trump meets Zelensky in New York today and addresses the UN General Assembly, hours after Russia and Ukraine traded deadly overnight strikes &mdash; Kyiv hit a refinery deep inside Russia, Moscow hit Zaporizhzhia. A G7 statement today demands the Houthis stop attacking shipping as the group pushes into new Yemeni territory and an unclaimed strike hits another tanker approaching the Strait of Hormuz.</li>
+          <li><b>Markets.</b> Futures are essentially flat after Monday&rsquo;s sharp rally (S&amp;P +1.49%, Nasdaq a record +2.26%); the 10-year yield sits near 5%, the 30-year hit an 18-year high overnight, and chipmakers gave back some of Monday&rsquo;s AI-driven gains before the open.</li>
+          <li><b>The thread.</b> A week of high-stakes diplomacy &mdash; Zelensky today, Xi on Thursday &mdash; is opening exactly as the wars each summit is meant to address keep escalating underneath it.</li>
+          <li><b>Biggest risk.</b> A second unclaimed strike on a tanker approaching Hormuz, still unattributed; a confirmed link to Iran or a proxy would move oil and risk sentiment fast, right as the Strait sits effectively closed to routine shipping.</li>
+          <li><b>Watch today.</b> Trump&rsquo;s UN address and the Zelensky meeting, timing unset as of publication; a dense Fed speaker slate (Williams, Jefferson, Barkin) and a $69B 2-year Treasury note auction test last week&rsquo;s hawkish hike.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Trump and Zelensky meet in New York as Russia and Ukraine trade deadly overnight strikes</h3>
+          <p class="story-deck">The two leaders sit down for the first time since Washington&rsquo;s new Russia sanctions law, hours after Kyiv struck a refinery deep inside Russia and Moscow hit Zaporizhzhia.</p>
+          <div class="story-body">
+            <p>Trump and Ukrainian President Volodymyr Zelensky agreed by phone Sunday to meet in New York today, where Trump is also expected to address the UN General Assembly. Zelensky, who arrived in the US on Sunday, said roughly twenty other meetings are planned around the sit-down; he described hoping to discuss &ldquo;ideas for de-escalation steps and for addressing fundamental security issues &mdash; energy security, food security, and the protection of human life.&rdquo; Trump&rsquo;s address is expected to touch the Iran war, AI, and the US role at the UN. Neither event had occurred as of this edition&rsquo;s publication.</p>
+            <p>The meeting comes after, not before, a fresh exchange of strikes. Russia hit at least four Ukrainian regions overnight with anti-ship, ballistic and cruise missiles plus more than 200 drones, killing four people, per Ukraine&rsquo;s air force. Ukraine says it struck the Kuibyshev oil refinery in Samara, deep inside Russia, with drones overnight, sparking a large fire. That follows Monday&rsquo;s Russian retaliatory strike on Zaporizhzhia &mdash; 172 drones across eight Ukrainian cities, destroying the city&rsquo;s oldest university &mdash; itself a response to Ukraine&rsquo;s own record barrage of more than 1,000 drones on Moscow a day earlier, timed to Russia&rsquo;s Duma election. That Moscow attack killed two people, damaged the Moscow Oil Refinery and a residential building, and cut power to more than 20,000 residents. Exact casualty counts from Zaporizhzhia diverge across wires &mdash; figures from one dead/31 wounded to two dead/five wounded have been reported &mdash; and should be read as preliminary pending an official Ukrainian tally.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is Trump&rsquo;s first sit-down with Zelensky since signing a sweeping new Russia sanctions law last Friday with an unusually critical signing statement &mdash; and it opens with both sides escalating, not de-escalating.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Any readout from the meeting and the text of Trump&rsquo;s UN address, both expected later today.
+            </div>
+          </div>
+          <p class="story-sourceline">Kyiv Independent &middot; Axios &middot; Euronews &middot; multiple wire reports (Confirmed-multiple on the meeting and the overnight strikes; casualty figures Preliminary).</p>
+        </article>
+
+        <article class="story">
+          <h3>G7 demands the Houthis stand down as the Yemen war widens and a tanker is hit again near Hormuz</h3>
+          <p class="story-deck">A joint statement today calls on the group to stop attacking shipping, as it pushes into new Yemeni territory and Trump reportedly called off US strikes at the last minute after Saudi pressure.</p>
+          <div class="story-body">
+            <p>Canada, France, Germany, Italy, Japan, the UK and the US issued a joint statement today calling on Houthi forces to &ldquo;immediately cease all military actions,&rdquo; end attacks and threats against civilian shipping, and return to the political process, while calling on Iran to end its support for the group as a violation of UN Security Council resolutions. It follows Saturday&rsquo;s Houthi ballistic-missile attempt on Riyadh &mdash; intercepted, but debris ignited a fire at an Aramco-owned fuel depot near King Khalid International Airport &mdash; and a claimed strike on an Aramco facility in Yanbu. A Yemeni resident in Saudi Arabia was killed by intercepted-drone debris, the first reported civilian death of this round of escalation.</p>
+            <p>Separately, five Yemeni military sources told Reuters the Houthis are now pushing to seize the Kahboub Mountains &mdash; heights in Taiz and Lahij provinces separating the Red Sea coast from the government-held south &mdash; with fighting centered near Al-Wazi&rsquo;iyah district and Ras al-Ara, following the group&rsquo;s earlier seizure of the Red Sea port of Mokha. <span class="flag">Single source</span> That account rests on one Reuters sourcing chain and has not been independently corroborated. On the US side, Trump reportedly called off planned airstrikes on the Houthis at the last minute &mdash; munitions already loaded onto fighter jets &mdash; after Saudi Crown Prince Mohammed bin Salman pressed him roughly ten days ago to strike; US officials instead met Houthi representatives at the embassy in Muscat, Oman, where the group reportedly agreed to stop targeting American vessels in the Bab el-Mandeb Strait. <span class="flag">Single source</span> That stand-down account, too, remains unconfirmed by a second reporting chain.</p>
+            <p>A tanker transiting into the Strait of Hormuz was struck by an unclaimed projectile yesterday, injuring two crew members; the vessel continued under its own power. UKMTO, which reported the strike, said it also learned of a separate, earlier hit on a gas tanker. No group has claimed either. It is the second such unattributed incident this month in a Strait that carries more than a fifth of global oil trade and is effectively closed to routine commercial shipping &mdash; roughly eight tanker transits on September 13 against a normal count near 85 a day. Meeting Macron in New York, Trump said the two &ldquo;decided to act together to ease tensions in the energy markets, by protecting critical infrastructure&rdquo; and safeguarding freedom of navigation in the Strait; Macron described it as a step toward diplomatic options rather than a resolved plan.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This sits on top of the still-unresolved US-Israel-Iran war that began in February: the June ceasefire framework collapsed by mid-August, and the Houthi campaign and the Hormuz strikes are downstream of that unresolved conflict, not a separate one.
+            </div>
+          </div>
+          <p class="story-sourceline">Al-Monitor &middot; Al Jazeera &middot; Irish Times &middot; NPR &middot; PBS &middot; UKMTO &middot; Reuters wire pickups (Confirmed-multiple on the G7 statement and Riyadh strike; Single-reliable-source on the Kahboub push and the Muscat stand-down).</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump prepares to host Xi as China calls a pending Taiwan arms sale a possible dealbreaker</h3>
+          <p class="story-deck">Xi&rsquo;s first White House visit in a decade opens Wednesday, days after Beijing objected to Trump&rsquo;s new Russia and Iran sanctions law.</p>
+          <div class="story-body">
+            <p>Xi Jinping&rsquo;s visit runs Wednesday through Thursday, with a White House state dinner Thursday &mdash; his second meeting with Trump this year after Trump&rsquo;s May trip to Beijing. Trade, AI and critical minerals lead the agenda, with Taiwan and the Iran war also expected to surface. China&rsquo;s foreign ministry has called its opposition to a Congress-authorized, still-unsigned $14 billion Taiwan arms package &ldquo;consistent, clear-cut and resolute,&rdquo; and has signaled the summit itself could be at risk if the package proceeds. <span class="flag">Single source</span> One South China Morning Post report, citing a single source, says Trump may hold off signing until year-end &mdash; treating it as a negotiating chip &mdash; a claim not yet corroborated elsewhere. Separately, China&rsquo;s foreign ministry dismissed as &ldquo;illicit&rdquo; the sweeping Russia and Iran sanctions law Trump signed last Friday, a fresh irritant days before the visit.</p>
+            <p>Treasury Secretary Bessent, in Sunday talks in New York with Chinese Vice Premier He Lifeng, proposed a new US-China AI dialogue &mdash; effectively an incident-notification channel &mdash; for the two leaders to consider at the summit. Beijing&rsquo;s official readout of the Bessent-He talks mentioned AI only briefly, giving no clear signal of its reception.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The US-China tariff truce is due to lapse November 10, and rare-earth shipments and AI chip export controls sit alongside Taiwan as the summit&rsquo;s hardest open questions.
+            </div>
+          </div>
+          <p class="story-sourceline">PBS NewsHour &middot; South China Morning Post &middot; CNBC &middot; CSIS (Confirmed-multiple on summit dates and agenda; Single-reliable-source on the December-delay speculation).</p>
+        </article>
+
+        <article class="story">
+          <h3>Russia&rsquo;s Duma election finalizes with a record majority amid fraud and hacking claims</h3>
+          <p class="story-deck">United Russia is projected to take roughly 355 of 450 seats as independent outlets report a hacker&rsquo;s claimed breach of the election system and an analysis suggesting the real vote share is far lower.</p>
+          <div class="story-body">
+            <p>With about 95% counted, United Russia holds 57.83&ndash;57.86% of the party-list vote and leads in 208 of 225 single-member districts, on pace for roughly 355 of 450 seats &mdash; a new record, surpassing its 343-seat result in 2016. Official results are not due until October 5. <span class="flag">Single source</span> Novaya Gazeta Europe&rsquo;s analysis, reported by the independent outlet Meduza, argues that without ballot-stuffing, United Russia would have won only about 34% of the vote &mdash; implying the official figure runs roughly 1.7 times an unmanipulated result. A separate, anonymous hacker group calling itself &ldquo;CikLeak&rdquo; claims to have breached the IT infrastructure of Russia&rsquo;s Central Election Commission and of contractors building &ldquo;Vybory 2.0,&rdquo; the state&rsquo;s automated election system, days before the vote, downloading server configurations and internal documents. Both claims rest on Meduza&rsquo;s reporting chain and have not been independently confirmed; the Central Election Commission has not responded publicly to either. Meduza also reports nearly 1,300 Communist Party and Yabloko observers were barred from polling stations in various regions, and that observers in some regions were offered inducements to stay away.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This is Russia&rsquo;s first wartime Duma election, and the fraud and hacking claims &mdash; unverified but from a consistent independent-media sourcing chain &mdash; are the first hard allegations to surface since the vote began Friday.
+            </div>
+          </div>
+          <p class="story-sourceline">Moscow Times &middot; Al Jazeera &middot; Euronews &middot; Time &middot; Meduza (Confirmed-multiple on the vote tally; Single-reliable-source on the fraud-scale estimate and hacking claim).</p>
+        </article>
+
+        <article class="story">
+          <h3>CNN, MS NOW and Politico sue over the White House press ban; the administration launches a 24/7 &ldquo;Trump TV&rdquo; stream</h3>
+          <p class="story-deck">A federal judge &mdash; a Trump appointee who once ruled for CNN on similar grounds &mdash; has ordered the administration&rsquo;s response today, as five networks suspend pool coverage in solidarity.</p>
+          <div class="story-body">
+            <p>Trump announced the ban on Truth Social Friday, citing &ldquo;FAKE NEWS&rdquo;; credentials were pulled Saturday. The three outlets sued Monday morning in US District Court for DC, alleging First Amendment viewpoint discrimination and due-process violations, and naming Trump, Communications Director Steven Cheung, Secret Service Director Sean Curran and Chief of Staff Susie Wiles as defendants. The case was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN&rsquo;s Jim Acosta on due-process grounds in 2018. Kelly ordered the administration&rsquo;s response to the outlets&rsquo; restraining-order request by today; a hearing has been widely reported for Wednesday afternoon, though that date should be treated as reported rather than docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended television press-pool coverage of presidential events in apparent solidarity. The White House responded with a statement titled &ldquo;White House Access Is a Privilege &mdash; Not a Right,&rdquo; citing Obama- and Biden-era press restrictions as precedent, and separately launched a 24/7 YouTube stream branded &ldquo;Trump TV&rdquo; Monday, opening with a rebroadcast of Trump&rsquo;s Mount Rushmore speech.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The administration&rsquo;s court filing today, and the reported Wednesday hearing on the restraining-order request.
+            </div>
+          </div>
+          <p class="story-sourceline">NBC News &middot; CNN &middot; CNBC &middot; Washington Post &middot; Time &middot; The Hill (Confirmed-multiple).</p>
+        </article>
+
+        <article class="story">
+          <h3>ICE officer shoots Venezuelan delivery driver in Austin, drawing protests and a federal investigation</h3>
+          <p class="story-deck">Hundreds rallied at the scene by Monday, demanding the release of body-camera footage after Sunday&rsquo;s shooting.</p>
+          <div class="story-body">
+            <p>An ICE officer shot and wounded Wilber Rafael Garc&eacute;s P&eacute;rez, 28, a Venezuelan national delivering for DoorDash, near Research Boulevard and Anderson Square in north Austin on Sunday afternoon, after a foot pursuit; Austin police were not involved in the shooting itself. Garc&eacute;s P&eacute;rez remains in federal custody at the Pearsall detention facility; DHS and ICE say they are leading the investigation &ldquo;with assistance from the FBI&rdquo; and describe him as in stable condition, held pending removal proceedings. <span class="flag">Single source</span> His attorney, Kate Lincoln-Goldfinch, alleges a bullet remains lodged near his spine and that he was denied pain medication and made to sleep on the floor &mdash; claims DHS has neither confirmed nor denied. The officer&rsquo;s identity has not been released, and no bodycam footage is public. Rep. Greg Casar has demanded release of body- and dash-camera footage and recorded agent communications; more than 100 protesters gathered at the scene Sunday, dispersed by police using chemical agents. LULAC, the NAACP and county commissioners held a joint news conference Monday calling for accountability.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The DHS/FBI investigation&rsquo;s outcome and whether bodycam footage is released.
+            </div>
+          </div>
+          <p class="story-sourceline">NBC News &middot; CNN &middot; CBS News &middot; NPR &middot; KXAN &middot; Austin American-Statesman (Confirmed-multiple on the shooting; Single-reliable-source on detention-conditions claims).</p>
+        </article>
+
+        <article class="story">
+          <h3>Paramount Skydance settles with 12 states, clearing the last hurdle to its $111B Warner Bros. Discovery merger</h3>
+          <p class="story-deck">A consent decree commits the merged studio to $1.5 billion in added US film production and protections for California studio jobs.</p>
+          <div class="story-body">
+            <p>Paramount Skydance (Nasdaq: PSKY &mdash; the post-merger ticker; earlier reporting citing the pre-merger &ldquo;PARA&rdquo; is stale) reached a settlement with California and eleven other state attorneys general, who had sued two months ago to block its acquisition of Warner Bros. Discovery. Under the consent decree, filed in the Northern District of California, the company commits to an additional $300 million a year in US film production &mdash; roughly $1.5 billion over five years &mdash; and a minimum release slate of 30 films a year for two years, rising to 32, or risks penalties including a possible forced divestiture of Miramax. It also commits, for five years, not to sell the Paramount or Warner Bros. studio lots in California, to negotiate cable-affiliate fees separately for each brand rather than sharing confidential rate data, and to honor existing union agreements and fund workforce training, under an independent monitoring trustee.</p>
+            <p>The deal, announced in February at $31.00 a share cash to WBD shareholders and already approved by shareholders in April, had targeted a third-quarter close; Paramount Skydance owes WBD shareholders a $7 million-a-day fee for every day past September 30 the deal remains open, which explains the settlement&rsquo;s timing.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Court approval of the consent decree and an actual closing-date announcement.
+            </div>
+          </div>
+          <p class="story-sourceline">Variety &middot; Hollywood Reporter &middot; NPR &middot; CNBC &middot; consent decree filing (Confirmed-multiple).</p>
+        </article>
+
+        <article class="story">
+          <h3>Fed&rsquo;s Bowman: supervisors missed SVB&rsquo;s warning signs by early 2022; a new stress-test framework is coming &ldquo;in the coming weeks&rdquo;</h3>
+          <p class="story-deck">An outside review found examiners should have flagged Silicon Valley Bank&rsquo;s vulnerabilities more than a year before its 2023 collapse &mdash; and that social media, contrary to earlier post-mortems, did not meaningfully fuel the run.</p>
+          <div class="story-body">
+            <p>In a September 18 speech, Fed Vice Chair for Supervision Michelle Bowman detailed an outside review, by Starling Advisory Group, of SVB&rsquo;s failure. Its findings: SVB collapsed from a &ldquo;confluence of vulnerabilities&rdquo; &mdash; unrealized securities losses exceeding capital, concentrated uninsured deposits, no discount-window readiness &mdash; that examiners should have flagged as early as March 2022; social media did not meaningfully fuel the run; and regulatory &ldquo;tailoring&rdquo; played no role. Bowman said a plausible recession scenario would have shown SVB&rsquo;s capital falling below minimums as early as the fourth quarter of 2021. She outlined stress-test reforms already in motion: disclosing the model equations, variables and assumptions behind the tests; averaging two years of results to roughly halve swings in required capital buffers; a fixed balance-sheet freeze date; two distinct global market-shock scenarios; and 2027 revisions to how noninterest income is modeled. The Board will &ldquo;consider final revisions&hellip;in the coming weeks,&rdquo; aiming to finalize the reforms before year-end.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This shapes how much capital banks must hold against future shocks, and lands the same week the Fed&rsquo;s post-hike messaging faces its own test &mdash; see today&rsquo;s calendar.
+            </div>
+          </div>
+          <p class="story-sourceline">Federal Reserve speech text (primary) &middot; Banking Dive &middot; American Banker &middot; ABA Banking Journal.</p>
+        </article>
+
+        <article class="story">
+          <h3>AMD crosses $1 trillion market value on an AI-chip rally that partly reversed before Tuesday&rsquo;s open</h3>
+          <p class="story-deck">A runaway app debut from Meta fed a broad chipmaker rally Monday; premarket Tuesday gave some of it back as long-end yields hit an 18-year high.</p>
+          <div class="story-body">
+            <p>AMD (Nasdaq: AMD) rose roughly 10% Monday to close at $615.52, crossing $1 trillion in market value for the first time &mdash; a five-day rally of about 24% &mdash; becoming the fourth US chipmaker over $1 trillion after Nvidia, Broadcom and Micron. The rally followed Meta&rsquo;s new &ldquo;Muse&rdquo; AI agent becoming the top free app on Apple&rsquo;s App Store, with roughly 730,000 downloads in five days, feeding a broader narrative that AI agents need more inference compute; Intel (Nasdaq: INTC) jumped about 12%, Arm (Nasdaq: ARM) about 17%, and Meta (Nasdaq: META) itself rose more than 11%. Nvidia, AMD, Intel and Marvell all pulled back in Tuesday premarket trading, a move that coincided with the 30-year Treasury yield climbing to roughly 5.33% &mdash; its highest since 2007 &mdash; and with fading hopes for a near-term US-Iran settlement keeping oil elevated. Several outlets describe the pullback as macro profit-taking rather than a reassessment of AI spending plans; that reading is a likely contributor, not a confirmed single cause.</p>
+          </div>
+          <p class="story-sourceline">CNBC &middot; Semafor &middot; Bloomberg &middot; Benzinga (Confirmed-multiple).</p>
+        </article>
+
+        <article class="story">
+          <h3>Pentagon&rsquo;s own review reportedly points to stale intelligence and AI-assisted targeting in the deadly Minab school strike</h3>
+          <p class="story-deck">Weeks after a UN mission found reasonable grounds that the strike was a war crime, US Central Command has reportedly completed an internal review Congress worries could be classified rather than released.</p>
+          <div class="story-body">
+            <p>A UN Independent International Fact-Finding Mission reported September 17 that it found reasonable grounds to believe US strikes on the Tree of Tayyiba Elementary School in Minab, Iran &mdash; which killed more than 150 people, including roughly 120 children &mdash; and on a sports complex in Lamerd constituted possible war crimes; the same mission found Iran committed crimes against humanity in its own protest crackdown. The White House rejected the findings, saying only Iran had committed war crimes; the Pentagon initially declined comment. <span class="flag">Single source</span> Anonymous-official accounts reported by NBC News and The Hill now say US Central Command has completed its own internal investigation into the Minab strike, describing findings of stale intelligence, staffing cuts and over-reliance on AI-assisted targeting as contributing factors &mdash; characterized by officials as &ldquo;a cascade of preventable failures&rdquo; rather than one decision. Those accounts also describe concern in Congress and within the Pentagon that the findings could be classified rather than made public. None of this has been confirmed by an on-record Pentagon statement.</p>
+          </div>
+          <p class="story-sourceline">OHCHR (primary, original findings) &middot; NBC News &middot; The Hill &middot; CNBC (Confirmed-multiple on the UN findings; Single-reliable-source on the internal Pentagon review).</p>
+        </article>
+
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>The night&rsquo;s biggest movements &mdash; the Russia-Ukraine strike exchange, the Houthi push and the Hormuz tanker hit, and Russia&rsquo;s finalizing election &mdash; are covered above. Two smaller items rounded out the overnight wire: the death toll from the Java Sea ferry disaster rose to 13, with 122 still missing, as divers recovered three more bodies Monday from the capsized Virgo Transport 8; the search enters its ninth day today with 34 divers deployed. And the Democratic Republic of Congo&rsquo;s Ebola outbreak climbed to 7,672 confirmed cases and 3,699 deaths as of the WHO&rsquo;s September 20 update, up roughly 200 cases and 90 deaths from the tally in Sunday&rsquo;s edition; Ituri province remains hardest hit.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>A federal judge ruled Monday that the EPA unlawfully terminated Solar for All, a $7 billion IRA-era grant program helping disadvantaged communities install solar power, finding Congress clearly intended the agency to keep administering already-obligated grants. It is the latest in a string of court losses for the administration this month.</p>
+        <p>Reps. Thomas Massie and Ro Khanna say they have secured the 218 signatures needed to force a House floor vote on a second Epstein Files Transparency Act, which would let state attorneys general, prosecutors and victims sue the Justice Department over withheld records and require unredacted document access for victims on request. A vote is expected when the House returns to session, reported for November, not this week. Separately, the Kennedy Center court standoff reaches its next deadline tomorrow: Judge Christopher Cooper ordered a sworn status report by Wednesday addressing whether the center&rsquo;s week-old &ldquo;temporary&rdquo; closure, following a storm-damage safety assessment, is what it claims to be or a pretext the plaintiffs call a plain step toward permanent shutdown.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-world">
+      <h2 id="s-world">The World</h2>
+      <div class="story-body">
+        <p>Iran&rsquo;s Revolutionary Guard marked the anniversary of the Iran-Iraq war today by saying the US and Israel &ldquo;must accept withdrawal&rdquo; from the region, rhetoric rather than a new event but notable timing during UN General Assembly week; President Masoud Pezeshkian is traveling to New York to air what he calls the grievances of the Iranian people over the still-unresolved war that began in February. None of this changes the underlying picture: the ceasefire framework collapsed in mid-August and has not been renewed.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Reporting on Anthropic&rsquo;s IPO timing has narrowed toward a mid-October marketing launch, not September, targeting a listing before the midterms at a reported valuation near $2 trillion, with Morgan Stanley, Goldman Sachs and JPMorgan as underwriters. Anthropic remains private; this system&rsquo;s own weekly EDGAR sweep has found no self-filing on public EDGAR as of last Saturday, and the reported figures above are press-sourced, not confirmed there.</p>
+        <p>The FDA approved zilganersen (brand name Zanvastro), from Ionis Pharmaceuticals (Nasdaq: IONS), as the first-ever treatment for Alexander disease, an ultra-rare and fatal neurological condition affecting the brain&rsquo;s support cells. Phase III data showed a statistically significant stabilization in gait speed; it is Ionis&rsquo;s first independently commercialized neurology drug, expected available in coming weeks.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tech">
+      <h2 id="s-tech">Technology &amp; AI</h2>
+      <div class="story-body">
+        <p>The &ldquo;Plugin4Shell&rdquo; zero-click flaw in AI coding agents, disclosed September 17, remains only partly patched: Anthropic&rsquo;s Claude Code and OpenAI&rsquo;s Codex fixed it weeks ago, but GitHub Copilot still has no patch, and Google is reportedly discontinuing the consumer Gemini CLI product entirely rather than fixing it (its enterprise Gemini Code Assist is unaffected). No exploitation in the wild has been confirmed. Separately, OpenAI published proposals Sunday urging US-led international technical standards for frontier AI systems, timed to this week&rsquo;s UN AI discussions &mdash; a policy statement, not a product or regulatory action.</p>
+        <p>Two cybersecurity items worth flagging: Gyazo, the Japanese image-hosting service, disclosed a breach exposing 23.6 million user records and 490 million image-metadata records after an attacker exploited its upload server on September 11; no payment data was affected, but users who reused passwords should change them. And Japan&rsquo;s National Police Agency joined the FBI and allied agencies in a September 18 advisory on &ldquo;WaterPlum,&rdquo; a long-running North Korea-linked campaign that poses as recruiters offering fake developer jobs to steal cryptocurrency &mdash; roughly 30,000 devices infected and $10.71 million stolen, suspected tied to North Korea&rsquo;s military intelligence.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>&mdash;</td><td class="txt">Trump-Zelensky meeting; Trump UN General Assembly address (time unset at publication)</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>10:05</td><td class="txt">Fed Gov. Williams remarks</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>10:20</td><td class="txt">Fed Vice Chair Jefferson remarks</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>11:30</td><td class="txt">6-week Treasury bill auction, $75B</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt"><strong>2-year Treasury note auction, $69B</strong></td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>13:00</td><td class="txt">Richmond Fed President Barkin remarks</td><td>&mdash;</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled market event &mdash; a demand test one week after the 10-year pushed above 5%, alongside a dense post-hike Fed speaker slate.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures sit essentially flat &mdash; ES +0.03%, NQ +0.06%, YM +0.19%, RTY +0.45% &mdash; after Monday&rsquo;s sharp rally (S&amp;P +1.49%, Nasdaq a record +2.26%, Dow +0.71%, Russell +0.52%): a market digesting Monday&rsquo;s move rather than extending it, futures are not a guaranteed open. The 10-year yield sits at 4.96%, the 2-year at 4.76%, a curve modestly flatter than Friday (2s10s +20bp versus +25bp) but still positive; the 30-year climbed overnight to roughly 5.33%, its highest since 2007. The dollar is little changed. VIX is unchanged at 14.87 in steep contango &mdash; low fear, though the gap between the collapsed VIX9D (13.14) and the still-elevated VIX3M (18.08) shows some residual medium-term hedging. Crude data is unusable this morning &mdash; the WTI futures contract has posted an implausible decline for a fifth consecutive session and is excluded; USO&rsquo;s &minus;3.68% Monday close is the more reliable real-world signal, and it sits against the backdrop of an effectively closed Strait of Hormuz. Gold is softer (&minus;0.36%), copper extends its recent gain (+2.35%), natural gas is the standout premarket mover (+5.68%), and bitcoin was last confirmed up 7.16% over 24 hours as of Sunday&rsquo;s data (CoinGecko rate-limited this morning&rsquo;s spot check; the aggregate $2.914 trillion crypto market cap is live).</p>
+        <p>Monday&rsquo;s breadth flipped sharply positive &mdash; 3,340 advancers against 2,063 decliners, reversing Friday&rsquo;s 1,990/3,506 &mdash; with tech, communication services and semiconductors leading (XLC +3.56%, SMH +4.02%, XLK +2.77%) while energy, utilities and staples lagged (XLE &minus;2.88%, XLU &minus;1.07%, XLP &minus;1.06%). Credit stayed calm, with the high-yield spread unchanged and tight. The most fragile assumption in this morning&rsquo;s pricing is that both the &ldquo;higher-for-longer&rdquo; rate path and contained oil prices hold: short volume remains elevated in several board names (MAGS 85.56%, XLK 76.45%) even after Monday&rsquo;s rally, and a confirmed attribution on either overnight tanker strike could move oil and volatility together before the open reprices it.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>A confirmed attribution on the Hormuz tanker strikes reprices oil and risk sentiment fast.</strong> Two unclaimed strikes on tankers approaching the Strait this month, still unattributed as of this morning. Probability 20&ndash;35% over the next two weeks, on the basis that prior unclaimed incidents in this conflict have eventually drawn an official attribution within weeks, not days. If it happens: a sharp move in Brent/WTI-proxy pricing and tanker-insurance premiums, pressure on risk assets broadly. Invalidated by continued silence past early October or a claim that clearly points away from Iran or its proxies.</p>
+        <p><strong>The Trump-Xi summit is downgraded or disrupted over the Taiwan arms package.</strong> China has repeatedly and explicitly warned the package could derail the visit; Trump has reportedly signaled a preference to delay signing as leverage rather than force the issue. Probability 15&ndash;25% that the summit is shortened, downgraded, or produces no agreed statement, on the basis of China&rsquo;s consistent public language this week weighed against both sides&rsquo; evident interest in the meeting proceeding. Invalidated by a joint statement or extended agenda emerging Wednesday.</p>
+        <p><strong>Today&rsquo;s Trump-Zelensky meeting produces no binding de-escalation step.</strong> Both sides escalated hours before sitting down. Probability 10&ndash;20% that a concrete, verifiable step (a partial energy-strike moratorium, a prisoner exchange, a set date for further talks) emerges from today&rsquo;s meeting specifically, on the basis that comparable high-profile sit-downs this year have produced statements of intent rather than binding steps. Invalidated by an announced, dated commitment from either side.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-desc">Chance of rain showers, mostly cloudy, wind E 10&ndash;16 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">63&deg;</span>
+            <span class="sky">Chance rain showers</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="lo">54&deg;</span>
+            <span class="sky">Rain showers likely, patchy fog</span>
+          </div>
+          <div class="weather-day">
+            <b>Wednesday</b>
+            <span class="hi">64&deg;</span>
+            <span class="sky">Chance rain showers, showers likely before 3 PM</span>
+          </div>
+        </div>
+        <p class="weather-alert">Flood Watch until 8:00 AM Wednesday &mdash; Allegheny County (heavy rain on saturated ground)</p>
+      </div>
+
+      <article class="local-item">
+        <p class="local-place">Bridgeville &middot; South Fayette</p>
+        <h3>PennDOT sets a firm start date for I-79 nighttime crack-sealing through South Fayette and Bridgeville</h3>
+        <div class="story-body">
+          <p>Nightly lane restrictions begin overnight this Friday into Saturday, 7 PM to 6 AM, both directions between the Turnpike/Morganza Road interchange and the Route 50/Bridgeville interchange, continuing through early November. Separately, the outcome of a proposed all-way-stop ordinance for Baldwin Street and Mill Street at McLaughlin Run Road &mdash; on the agenda at council&rsquo;s September 14 meeting &mdash; remains unconfirmed; no minutes or vote result have been posted publicly.</p>
+        </div>
+        <p class="story-sourceline">PennDOT District 11 (primary agency release).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>PRT board votes Friday on a $94.1M, 102-bus purchase</h3>
+        <div class="story-body">
+          <p>The order &mdash; 56 sixty-foot diesel buses, six sixty-foot electric buses and 40 thirty-five-foot diesel buses &mdash; would retire some of the fleet&rsquo;s oldest vehicles under an amendment to a 2022 contract capped at $184.8 million for 270 buses; new buses could be on the road by next summer if approved. Separately, the Board of Health meets September 28 to decide whether to recommend a revised paid-parental-leave mandate (12 weeks, exempting employers with fewer than 15 eligible employees, 100% wage replacement up to $4,200/week) to full County Council &mdash; which would make it a first-in-nation county mandate absent state law.</p>
+        </div>
+        <p class="story-sourceline">Post-Gazette &middot; WPXI &middot; WESA &middot; TribLive (secondary, consistent).</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Legislature returns September 28 facing two state Supreme Court deadlines</h3>
+        <div class="story-body">
+          <p>The court&rsquo;s March ruling striking down mandatory life-without-parole for felony murder gave lawmakers 120 days for a legislative fix; that window has lapsed with no fix passed, and the ruling is now in full effect, potentially triggering the state&rsquo;s largest resentencing effort, affecting more than 1,000 inmates. Separately, the court gave lawmakers until October 13 to act on unregulated skill-games machines before enforcement begins October 14; state police have already issued seizure guidance. Both loom directly over the legislature&rsquo;s return next week.</p>
+        </div>
+        <p class="story-sourceline">Pennsylvania Supreme Court rulings (primary) &middot; Spotlight PA &middot; Capital-Star (secondary, consistent).</p>
+      </article>
+    </section>
+
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, cautious</span> Supporting: Monday&rsquo;s breadth flip (3,340 advancers/2,063 decliners), a record Nasdaq close, tight and unchanged high-yield spreads, low VIX in steep contango. Contradicting: energy/utilities/staples lagged even on an up day; short volume remains near 50% market-wide and unusually high in AI-linked names (MAGS 85.56%, XLK 76.45%); the 10-year near 5% keeps the &ldquo;higher-for-longer&rdquo; narrative alive; crude data is unusable this week, masking a genuine geopolitical risk (Hormuz) that could reverse the tape quickly. Little changed from Monday&rsquo;s closing edition.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close (Mon 9/21 EOD) unless noted &middot; source: Yahoo Finance v8.</caption>
+              <thead><tr><th>Index/ETF</th><th>Level</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>S&amp;P 500</td><td>7,764.70</td><td class="up">+1.49%</td></tr>
+                <tr><td>Nasdaq Composite</td><td>27,122.09</td><td class="up">+2.26% (record close)</td></tr>
+                <tr><td>Dow Jones Industrial</td><td>52,048.83</td><td class="up">+0.71%</td></tr>
+                <tr><td>Russell 2000</td><td>2,875.36</td><td class="up">+0.52%</td></tr>
+                <tr><td>SPY DMA</td><td>20d +1.15% / 50d +1.76%</td><td>52wk position 96.1%</td></tr>
+                <tr><td>QQQ DMA</td><td>20d +3.75% / 50d +4.39%</td><td>52wk position 96.3%</td></tr>
+                <tr><td>SPCX (SpaceX)</td><td>20d +3.95% / 50d +12.68%</td><td>52wk position 69.6% (recomputed; Yahoo&rsquo;s stored range is contaminated by the unrelated pre-2026 Tuttle SPCX ETF)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p><b>EOD official (2026-09-21).</b> 3,340 advancers / 2,063 decliners / 154 unchanged of a 5,557-name universe; up-volume $10.05B vs. down-volume $4.63B &mdash; a sharp reversal from Friday&rsquo;s 1,990/3,506. Percent-above-50/200-day moving average remains <em>Estimated &mdash; EMA proxy, accumulating history (40/200 sessions)</em>; not yet reportable with full confidence.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close (Mon 9/21) &middot; all 11 SPDR sector ETFs.</caption>
+              <thead><tr><th>Sector</th><th>Chg</th></tr></thead>
+              <tbody>
+                <tr><td>Communication Services (XLC)</td><td class="up">+3.56%</td></tr>
+                <tr><td>Technology (XLK)</td><td class="up">+2.77%</td></tr>
+                <tr><td>Consumer Discretionary (XLY)</td><td class="up">+1.08%</td></tr>
+                <tr><td>Health Care (XLV)</td><td class="up">+0.37%</td></tr>
+                <tr><td>Industrials (XLI)</td><td class="up">+0.14%</td></tr>
+                <tr><td>Real Estate (XLRE)</td><td class="up">+0.14%</td></tr>
+                <tr><td>Financials (XLF)</td><td class="up">+0.07%</td></tr>
+                <tr><td>Materials (XLB)</td><td class="down">&minus;0.56%</td></tr>
+                <tr><td>Staples (XLP)</td><td class="down">&minus;1.06%</td></tr>
+                <tr><td>Utilities (XLU)</td><td class="down">&minus;1.07%</td></tr>
+                <tr><td>Energy (XLE)</td><td class="down">&minus;2.88%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Semiconductors (SMH, not a SPDR sector fund) led the tape at +4.02%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p>Board/appendix ETF rows, previous close (Mon 9/21): SPY $773.50 (+1.55%) &middot; QQQM $305.27 (+2.82%) &middot; DIA $519.78 (+0.76%) &middot; IWM $285.58 (+0.52%) &middot; RSP $212.68 (+0.18%) &middot; TLT $81.80 (+0.68%) &middot; IEF $91.15 (+0.39%) &middot; TIP $105.68 (+0.39%) &middot; LQD $105.09 (+0.37%) &middot; HYG $78.68 (+0.19%) &middot; GLD $398.38 (&minus;0.70%) &middot; USO $148.16 (&minus;3.68%) &middot; EEM $68.83 (+2.69%) &middot; VGK $89.24 (+1.17%) &middot; KRE $71.99 (&minus;1.04%) &middot; Grayscale Bitcoin Mini Trust $38.25 (+6.52%).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official 2026-09-21.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.96%</td></tr>
+                <tr><td>3M</td><td>4.17%</td></tr>
+                <tr><td>1Y</td><td>4.45%</td></tr>
+                <tr><td>2Y</td><td>4.76%</td></tr>
+                <tr><td>5Y</td><td>4.83%</td></tr>
+                <tr><td>10Y</td><td>4.96%</td></tr>
+                <tr><td>30Y</td><td>5.29%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +20bp &middot; 3m10y +79bp &middot; 5s30s +46bp. 2s10s flattened from +25bp Friday. FRED&rsquo;s daily-rate series (DGS2, DGS10, DFII10, SOFR, high-yield OAS) are still dated 2026-09-18 &mdash; normal one-business-day publication lag, not a fetch failure.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>ICE BofA High-Yield OAS: 2.68% (EOD official, 2026-09-18, unchanged from the prior print &mdash; no new FRED observation this run). FINRA aggregate short-volume ratio (2026-09-21, EOD official): 49.27%, down from 52.57% on 9/18. Watchlist standouts: MAGS 85.56%, XLK 76.45%, XLF 70.66%, DIA 69.85%. This is daily short volume, not short interest, which is settlement-dated and runs two to three weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 14.87 &middot; VIX9D 13.14 &middot; VIX3M 18.08 (EOD official, 2026-09-21, last trade 16:15 ET). Steep contango, no inversion; the front end (VIX9D) has collapsed fastest since last week&rsquo;s hike, while VIX3M has fallen more slowly, a curve steepening over the week. Put/call ratios remain retired from this appendix (the Cboe data source has returned 403 for weeks). MOVE index and dealer gamma: no legitimate free source, unavailable.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>EOD official, ECB reference fix, 2026-09-21 (Tuesday&rsquo;s fix not yet published): EUR 0.8703 &middot; JPY 157.27 &middot; GBP 0.7466 &middot; CNY 6.6954 &middot; CHF 0.8214 &middot; CAD 1.4004 &middot; AUD 1.401 &middot; MXN 17.1917 &middot; BRL 5.1279 &middot; INR 95.82 (all per USD). Dollar index (DXY, Delayed +10 min): 100.38, &minus;0.05% overnight.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Gold (Delayed +10 min): $4,368.20, &minus;0.36%. Natural gas: $2.997, +5.68%, this morning&rsquo;s standout mover, checked against its own bar sequence and not a roll artifact. Copper: $6.8435, +2.35%, extending Monday&rsquo;s gain. WTI crude (CL=F): <em>Source unavailable</em> &mdash; a fifth consecutive session of an implausible reading, excluded rather than published; USO&rsquo;s &minus;3.68% Monday close and outside reporting are the crude proxy in its place.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p>Total market cap $2.914T, BTC dominance 58.92%, ETH dominance 11.43% &mdash; Live (CoinGecko /global). Per-coin spot pricing (BTC, ETH, SOL, ADA) was rate-limited on every attempt this morning and falls back to Sunday&rsquo;s cache: BTC $86,924 (+7.16%/24h as of that cache) &middot; ETH $2,787.33 (+5.74%) &middot; SOL $118.56 (+7.41%) &middot; ADA $0.2455 (+7.78%) &mdash; Cached (as of 2026-09-21).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions</summary>
+          <p>Costco (COST) reports Thursday, September 24 after the close &mdash; the only watchlist company reporting this week. Today: a $75B 6-week bill auction and a $69B 2-year note auction, a demand test one week after the 10-year pushed above 5%.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> UN Independent International Fact-Finding Mission, UKMTO, the Federal Reserve, US Treasury, SEC EDGAR, the National Weather Service and PennDOT District 11 for primary material; Kyiv Independent, Al Jazeera, Al-Monitor, Reuters and NBC News among the wire and outlet reporting behind today&rsquo;s stories, named story by story above.</p>
+      <p><strong>Corrections.</strong> None in this edition; the correction ledger&rsquo;s past entries were already surfaced in the reports they concern. This edition also corrects the record on Paramount Skydance&rsquo;s ticker (PSKY, not the pre-merger &ldquo;PARA&rdquo;), added to the entity registry today.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-21-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>

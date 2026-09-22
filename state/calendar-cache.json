@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-21T06:52:00-04:00",
+ "fetched": "2026-09-22T06:52:00-04:00",
  "earnings_fetched": "2026-09-20",
  "earnings_fetched_note": "Alpha Vantage 3-month calendar + Finnhub date-ranged calendar cross-checked 2026-09-20 for the week of Sept 21-25. Costco (COST) is the only watchlist-company earnings report all week (Thu Sept 24, after close; Alpha Vantage est. EPS $6.48, Finnhub est. EPS $6.67 -- vendors diverge, report as a range). No other board/mega_cap_tech/ai_infra/defense_aero/space/financials/health/consumer ticker reports Sept 21-25; next watchlist date is Micron (MU) Sept 30. Non-watchlist bellwethers: AutoZone (Tue), Cintas/Paychex (Wed), Darden (Thu).",
  "events": [
@@ -616,7 +616,7 @@
    "type": "space",
    "name": "Long March 8A (undisclosed payload, Wenchang) -- status Go for Launch",
    "importance": "Low",
-   "reason": "Scheduled launch.",
+   "reason": "Scheduled launch. Re-confirmed 2026-09-22: Launch Library 2 now shows 13:30 UTC (9:30 AM ET), ~15 min earlier than the previously cached 9:45 AM ET estimate; still status Go for Launch.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   },
   {
@@ -754,6 +754,22 @@
    "importance": "Low",
    "reason": "CORRECTED 2026-09-08: this system's prior ~Sept 9 estimate used a 14-day window; the standard FRAP deadline for a rehearing/en banc petition when the US is a party is 45 days from the Third Circuit panel's Aug 26 ruling, which points to roughly Oct 10, not Sept 9. No filing confirmed as of this cycle. Date remains approximate, not a court-set deadline this system has directly verified. Not printed as a formal correction in a report since the earlier Sept 9 date was never published in report text, only held internally.",
    "source": "Roll Call, The Hill -- Confirmed-multiple on the underlying ruling; filing status unconfirmed"
+  },
+  {
+   "ts_et": "2026-09-22T06:24:00-04:00",
+   "type": "market_data",
+   "name": "Overnight/premarket futures essentially flat: ES +0.03%, NQ +0.06%, YM +0.19%, RTY +0.45% vs Monday's settle; natural gas +5.68% premarket the standout mover",
+   "importance": "Low",
+   "reason": "Routine premarket gather ahead of the AM edition, confirmed via fresh Yahoo Finance v8 pull.",
+   "source": "query1.finance.yahoo.com futures chart data -- Confirmed-primary (vendor quote)"
+  },
+  {
+   "ts_et": "2026-09-26T07:56:00-04:00",
+   "type": "launch",
+   "name": "SpaceX Falcon 9 / USSF-385, status Go for Launch",
+   "importance": "Low",
+   "reason": "New item on Launch Library 2's schedule not previously in this cache; national security payload.",
+   "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

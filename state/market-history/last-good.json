@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-21T20:52:00Z",
+ "fetched_at": "2026-09-22T10:45:00Z",
  "treasury_par_curve": {
   "as_of": "2026-09-21 EOD official",
   "curve": {
@@ -21,10 +21,10 @@
   "2s10s_bp": 20,
   "3m10y_bp": 79,
   "5s30s_bp": 46,
-  "note": "Curve flattened from Friday 9/18 (2s10s +25bp -> +20bp, 3m10y +87bp -> +79bp, 5s30s +48bp -> +46bp)."
+  "note": "Confirmed unchanged this AM run: no fresher curve entry available (Treasury's latest posted business day is still Monday 9/21; Tuesday 9/22 not yet posted pre-open, as expected). 2s10s +20bp, 3m10y +79bp, 5s30s +46bp."
  },
  "fred": {
-  "as_of": "latest observations through 2026-09-18 (FRED daily series post next business day; no fresher print available)",
+  "as_of": "T10Y2Y/T10YIE now show a 2026-09-21 observation; DGS2/DGS10/DFII10/SOFR/BAMLH0A0HYM2 still show 2026-09-18 as of this AM run -- no fresher print available (normal FRED lag)",
   "series": {
    "CPIAUCSL": {
     "value": 334.131,
@@ -47,8 +47,8 @@
     "date": "2026-08-01"
    },
    "T10Y2Y": {
-    "value": 0.25,
-    "date": "2026-09-18"
+    "value": 0.2,
+    "date": "2026-09-21"
    },
    "DGS2": {
     "value": 4.76,
@@ -59,8 +59,8 @@
     "date": "2026-09-18"
    },
    "T10YIE": {
-    "value": 2.33,
-    "date": "2026-09-18"
+    "value": 2.34,
+    "date": "2026-09-21"
    },
    "DFII10": {
     "value": 2.68,
@@ -75,18 +75,18 @@
     "date": "2026-09-18"
    }
   },
-  "hy_oas_csv_appended": "2026-09-18,2.68"
+  "hy_oas_csv_appended": "none this run -- newest BAMLH0A0HYM2 obs (2026-09-18) already the last row in hy-oas.csv"
  },
  "vix_complex": {
   "vix": 14.87,
   "vix9d": 13.14,
   "vix3m": 18.08,
-  "as_of": "2026-09-21 EOD official (last trade 16:15:01 ET)",
-  "term_structure": "normal contango, no inversion",
+  "as_of": "2026-09-21 EOD official (last trade 16:15:01 ET) -- this AM run's delayed-quote pull shows the identical last-trade record, market not yet open",
+  "term_structure": "steep contango (VIX9D 13.14 << VIX 14.87 << VIX3M 18.08), no inversion. Front-end vol fell fastest since the 9/16 FOMC spike (VIX9D 17.40 on 9/16 -> 13.14 on 9/21); VIX3M fell more slowly (19.73 -> 18.08), so the curve steepened into deeper contango over the week.",
   "note": "Put/call ratio retired 2026-08-16 (403 always); MOVE index and dealer gamma not tracked, no free source."
  },
  "fx": {
-  "as_of": "2026-09-21 EOD official (ECB reference)",
+  "as_of": "2026-09-21 EOD official (ECB reference) -- Tuesday's fix not yet published at gather time",
   "source": "Frankfurter",
   "rates": {
    "EUR": 0.87032,
@@ -102,7 +102,7 @@
   }
  },
  "crypto": {
-  "as_of": "2026-09-21, live (CoinGecko aggregate)",
+  "as_of": "btc/eth/sol/ada prices+24h data: Cached (as of 2026-09-21) -- CoinGecko simple/price 429 rate-limited on all 5 attempts this run; total_mkt_cap/dominance: Live (CoinGecko /global, fetched 2026-09-22T10:49:34Z)",
   "btc": {
    "usd": 86924,
    "chg24h_pct": 7.16,
@@ -123,12 +123,12 @@
    "chg24h_pct": 7.78,
    "mkt_cap": 9210000000
   },
-  "total_mkt_cap": 2947000000000,
-  "btc_dominance_pct": 59.03,
-  "eth_dominance_pct": 11.5
+  "total_mkt_cap": 2914174420742.78,
+  "btc_dominance_pct": 58.92,
+  "eth_dominance_pct": 11.43
  },
  "indices": {
-  "as_of": "2026-09-21 EOD official",
+  "as_of": "2026-09-21 EOD official (re-confirmed via fresh Yahoo pull this AM run; report label: Previous close, market not yet open)",
   "sp500": {
    "close": 7764.7,
    "pct": 1.49
@@ -148,50 +148,50 @@
   }
  },
  "futures_commodities_fx": {
-  "as_of": "2026-09-21 ~16:32-16:42 ET (indices EOD official; futures delayed +10 min)",
+  "as_of": "2026-09-22 ~06:24-06:34 ET (Delayed +10 min, Yahoo futures; % change computed close-to-close vs Monday 9/21 futures settle bar, per the corrected methodology -- never vs meta.chartPreviousClose)",
   "es_f": {
-   "pct": 2.24,
-   "level": 7829.0
+   "pct": 0.03,
+   "level": 7835.75
   },
   "nq_f": {
-   "pct": 3.91,
-   "level": 30770.5
+   "pct": 0.06,
+   "level": 30802.75
   },
   "ym_f": {
-   "pct": 1.35,
-   "level": 52459.0
+   "pct": 0.19,
+   "level": 52572.0
   },
   "rty_f": {
-   "pct": 0.85,
-   "level": 2897.6
+   "pct": 0.45,
+   "level": 2910.4
   },
   "tnx": {
    "value": 4.963,
-   "scaling": "NOT x10 -- direct yield percentage, confirmed again this run"
+   "scaling": "NOT x10 -- direct yield percentage, confirmed again this run; matches Treasury par 10Y (4.96%)"
   },
   "gc_f": {
-   "level": 4378.5,
-   "pct": -1.05
+   "level": 4368.2,
+   "pct": -0.36
   },
   "ng_f": {
-   "level": 2.835,
-   "pct": -2.64
+   "level": 2.997,
+   "pct": 5.68
   },
   "hg_f": {
-   "level": 6.781,
-   "pct": 2.51
+   "level": 6.8435,
+   "pct": 2.35
   },
   "eurusd": {
-   "level": 1.1469,
-   "pct": -0.09
+   "level": 1.1468,
+   "pct": -0.1
   },
   "dxy": {
-   "level": 100.419,
-   "pct": 0.2
+   "level": 100.38,
+   "pct": -0.05
   },
   "cl_f": {
-   "status": "excluded -- implausible -8.32% reading, same contract flagged unreliable in AM run, not a fresh roll",
-   "proxy": "USO -3.68%; outside reporting ~$93.93-$97.56, down ~2.7%"
+   "status": "excluded again -- implausible reading persists (contract now shows a 4th straight ~5-6%/session decline, 101.91 on 9/17 to 89.95 now, ~-12% cumulative, while USO/the physical proxy moved far less; not a fresh contract roll; same artifact flagged every run since at least 9/18-pm)",
+   "proxy": "USO -3.68% Monday's close (last verified session close); no fresh USO premarket print available pre-open"
   }
  },
  "watchlist": {
@@ -1113,7 +1113,7 @@
    "chg": 23.03,
    "pct": 4.02,
    "as_of": "2026-09-21 EOD official",
-   "vol": 9600000,
+   "vol": 9785000,
    "avgvol5d": 6800000,
    "hi52": 671.83,
    "lo52": 313.6
@@ -1123,7 +1123,7 @@
    "chg": 5.25,
    "pct": 2.77,
    "as_of": "2026-09-21 EOD official",
-   "vol": 9000000,
+   "vol": 9038700,
    "avgvol5d": 7500000,
    "hi52": 198.73,
    "lo52": 126.68
@@ -1133,7 +1133,7 @@
    "chg": 0.04,
    "pct": 0.07,
    "as_of": "2026-09-21 EOD official",
-   "vol": 29000000,
+   "vol": 30584100,
    "avgvol5d": 36000000,
    "hi52": 58.6,
    "lo52": 47.67
@@ -1143,7 +1143,7 @@
    "chg": -0.76,
    "pct": -1.04,
    "as_of": "2026-09-21 EOD official",
-   "vol": 10000000,
+   "vol": 10767700,
    "avgvol5d": 16000000,
    "hi52": 78.35,
    "lo52": 57.55
@@ -1153,7 +1153,7 @@
    "chg": -1.85,
    "pct": -2.88,
    "as_of": "2026-09-21 EOD official",
-   "vol": 36000000,
+   "vol": 36410500,
    "avgvol5d": 37000000,
    "hi52": 66.17,
    "lo52": 42.35
@@ -1163,7 +1163,7 @@
    "chg": 2.34,
    "pct": 6.52,
    "as_of": "2026-09-21 EOD official",
-   "vol": 2600000,
+   "vol": 2633000,
    "avgvol5d": 2600000,
    "hi52": 55.96,
    "lo52": 25.65
@@ -1224,112 +1224,112 @@
   "SPCX": {
    "n_sessions": 64,
    "last_price": 151.85,
-   "hi52": null,
-   "lo52": null,
+   "hi52": 170.86,
+   "lo52": 108.27,
    "dist20_pct": 3.95,
    "dist50_pct": 12.68,
    "dist200_pct": null,
-   "pos52w_pct": 38.9,
-   "note": "price history begins 2026-06-12, never backfill earlier"
+   "pos52w_pct": 69.6,
+   "note": "price history begins 2026-06-12, never backfill earlier. hi52/lo52 recomputed this run from the post-6/12 window only (Yahoo's meta fiftyTwoWeekHigh/Low, 225.64/104.83, is contaminated by the unrelated pre-2026-06-12 Tuttle SPCX ETF and must not be used). The 3-month lookback only captures sessions from 2026-06-22 on, missing SPCX's first ~7 IPO-week trading days, so this range is a lower bound on the true high/low, not exact. Corrects the prior cached pos52w_pct of 38.9 (which had hi52/lo52 stored as null) -- that figure appears to have been a placeholder/bug."
   }
  },
  "breadth_latest": {
-  "date": "2026-09-18",
-  "advancers": 1990,
-  "decliners": 3506,
-  "unchanged": 189,
-  "universe": 5685,
-  "up_vol": 8190284720.4,
-  "down_vol": 14298164640.53,
+  "date": "2026-09-21",
+  "advancers": 3340,
+  "decliners": 2063,
+  "unchanged": 154,
+  "universe": 5557,
+  "up_vol": 10051533584.47,
+  "down_vol": 4630768531.2,
   "pct_above_e50": null,
   "pct_above_e200": null,
-  "note": "Reused (once-per-session rule) -- 2026-09-18 remains the most recent NYSE session's breadth as of this pm run; 2026-09-21's own close not yet computed.",
-  "fetched_at": "2026-09-21T20:52:00Z"
+  "note": "Freshly fetched this AM run via Massive grouped-daily for 2026-09-21; universe 5,557 names after filter (len<=5, no '.', close>=$1, vol>=100k). EMA history still accumulating (max n=40 across the tracked universe) -- pct_above_e50/e200 remain unavailable (need n>=50 / n>=200 respectively).",
+  "fetched_at": "2026-09-22T10:45:00Z"
  },
  "finra_short_vol": {
-  "session": "2026-09-18",
-  "aggregate_short_vol_ratio_pct": 52.57,
-  "note": "Re-fetched and recomputed independently this run; matched cached value exactly (no drift)."
+  "session": "2026-09-21",
+  "aggregate_short_vol_ratio_pct": 49.27,
+  "note": "Fresh pull this AM run, down from 52.57% on 9/18. Watchlist standouts: MAGS 85.56% (thin leveraged/thematic ETF, heavy AP/creation-redemption activity typical), XLK 76.45%, XLF 70.66%, DIA 69.85%. Daily short volume != short interest; short interest is settlement-dated and 2-3 weeks stale."
  },
  "sector_etfs_wk": {
   "XLK": {
-   "price": 189.6,
-   "pct": 0.82
+   "price": 194.85,
+   "pct": 2.77
   },
   "XLC": {
-   "price": 110.81,
-   "pct": -1.37
+   "price": 114.75,
+   "pct": 3.56
   },
   "XLY": {
-   "price": 111.03,
-   "pct": -0.32
+   "price": 112.23,
+   "pct": 1.08
   },
   "XLP": {
-   "price": 82.8,
-   "pct": -0.83
+   "price": 81.92,
+   "pct": -1.06
   },
   "XLF": {
-   "price": 55.86,
-   "pct": -0.04
+   "price": 55.9,
+   "pct": 0.07
   },
   "XLV": {
-   "price": 168.39,
-   "pct": -0.25
+   "price": 169.01,
+   "pct": 0.37
   },
   "XLI": {
-   "price": 169.75,
-   "pct": 0.44
+   "price": 169.98,
+   "pct": 0.14
   },
   "XLE": {
-   "price": 64.31,
-   "pct": -0.26
+   "price": 62.46,
+   "pct": -2.88
   },
   "XLB": {
-   "price": 49.99,
-   "pct": -1.42
+   "price": 49.71,
+   "pct": -0.56
   },
   "XLU": {
-   "price": 41.1,
-   "pct": -1.42
+   "price": 40.66,
+   "pct": -1.07
   },
   "XLRE": {
-   "price": 42.53,
-   "pct": -0.96
+   "price": 42.59,
+   "pct": 0.14
   },
   "SMH": {
-   "price": 573.0,
-   "pct": 2.21
+   "price": 596.03,
+   "pct": 4.02
   },
   "KRE": {
-   "price": 72.75,
-   "pct": 0.01
+   "price": 71.99,
+   "pct": -1.04
   },
-  "label": "EOD official (Fri Sept 18 close)",
-  "fetched_at": "2026-09-18T20:50:00Z"
+  "label": "EOD official (Mon Sept 21 close)",
+  "fetched_at": "2026-09-22T10:38:00Z"
  },
  "commodities": {
   "wti": {
    "price": null,
    "pct": null,
-   "label": "Source unavailable this run -- Yahoo CL=F reading unreliable (see futures_commodities_fx note); no USO Monday print yet to cross-check"
+   "label": "Source unavailable again this run -- CL=F reading unreliable on 5 consecutive fetches now (see futures_commodities_fx note); use USO -3.68% (Mon 9/21 EOD) as the crude proxy"
   },
   "gold": {
-   "price": 4389.0,
-   "pct": -0.81,
-   "label": "Delayed (+10 min, futures, Mon Sept 21 premarket)"
+   "price": 4368.2,
+   "pct": -0.36,
+   "label": "Delayed (+10 min, futures, Tue Sept 22 premarket ~06:24 ET)"
   },
   "natgas": {
-   "price": 2.869,
-   "pct": -1.48,
-   "label": "Delayed (+10 min, futures, Mon Sept 21 premarket)"
+   "price": 2.997,
+   "pct": 5.68,
+   "label": "Delayed (+10 min, futures, Tue Sept 22 premarket ~06:24 ET)"
   },
   "copper": {
-   "price": 6.785,
-   "pct": 2.57,
-   "label": "Delayed (+10 min, futures, Mon Sept 21 premarket)"
+   "price": 6.8435,
+   "pct": 2.35,
+   "label": "Delayed (+10 min, futures, Tue Sept 22 premarket ~06:24 ET)"
   },
   "label": "EOD official / Delayed as noted",
-  "fetched_at": "2026-09-21T10:52:00Z"
+  "fetched_at": "2026-09-22T10:24:00Z"
  },
  "premarket_wednesday": {
   "as_of": "2026-09-16T10:50:00Z",
@@ -1409,17 +1409,16 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-21-pm",
-  "cutoff": "2026-09-21T10:56:00Z (AM run)",
+  "date": "2026-09-22-am",
+  "cutoff": "2026-09-22T10:10:53Z (last_success: 2026-09-22-learn run)",
   "entries_checked_market_wide": 100,
   "per_company_feeds_checked": 90,
-  "new_filings_since_cutoff": [
-   "APO (Apollo Global Management) 8-K, filed 2026-09-21, Item 7.01 -- subsidiary Athene furnished a Sept 2026 asset-risk/stress-considerations investor presentation; routine, not obviously material."
-  ]
+  "new_filings_since_cutoff": [],
+  "note": "No watchlist-company 8-K filed since cutoff. Most recent watchlist filing overall remains APO's 2026-09-21 Item 7.01 (Athene investor presentation, routine, already noted)."
  },
  "_notes_this_run": {
-  "run": "2026-09-21-pm",
-  "note": "Full closing sweep. Board's 21 rows + AMD/NVO refreshed to tonight's EOD close; other company-watchlist tickers not individually refreshed in this cache beyond what's cited in tonight's report (winners/losers list). CL=F excluded again (3rd/4th consecutive flag); ^TNX confirmed still un-scaled. Breadth reused from Fri 9/18 per once-per-session rule."
+  "run": "2026-09-22-am",
+  "note": "AM gather. Market not yet open; all cash-index/board/sector figures are Monday 9/21's confirmed EOD close (Previous close label). Overnight/premarket futures essentially flat-to-fractionally-higher, natgas the standout mover. Fresh Sept-21 breadth (adv 3340/decl 2063, much more bullish than 9/18's 1990/3506) and FINRA short-volume computed this run. CL=F excluded again (5th straight flag). SPCX 52-week range recomputed correctly this run (prior cached pos52w_pct of 38.9 with null hi52/lo52 appears to have been wrong; corrected to 69.6% using a post-6/12-only window). CoinGecko simple/price rate-limited all 5 attempts -- per-coin BTC/ETH/SOL/ADA prices held at Sept 21 cache; /global succeeded fresh."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
@@ -1434,6 +1433,21 @@
   ],
   "batch2": "429 rate-limited, not retried (SR 2.4, not a failure)",
   "cross_check": "all 8 batch1 close/previous_close values matched Yahoo close-to-close exactly",
-  "fetched_at": "2026-09-21T10:47:00Z"
+  "fetched_at": "2026-09-22T10:35:00Z"
+ },
+ "premarket_tuesday": {
+  "as_of": "2026-09-22T10:24:00Z-10:34:00Z",
+  "label": "Delayed (+10 min), premarket, Yahoo Finance futures, close-to-close vs Monday Sept 21 futures/cash close",
+  "ES_F_pct": 0.03,
+  "NQ_F_pct": 0.06,
+  "YM_F_pct": 0.19,
+  "RTY_F_pct": 0.45,
+  "CL_F_pct": null,
+  "GC_F_pct": -0.36,
+  "NG_F_pct": 5.68,
+  "HG_F_pct": 2.35,
+  "EURUSD_pct": -0.1,
+  "DXY_pct": -0.05,
+  "note": "Futures essentially flat to fractionally higher overnight after Monday's big up day (S&P +1.49%, Nasdaq +2.26% record close, Dow +0.71%, Russell +0.52%); small-caps (RTY) lead the modest premarket tilt higher. Natural gas +5.68% premarket is the standout mover; copper extends Monday's gain. Gold and the dollar both flat-to-softer. CL=F excluded (see futures_commodities_fx)."
  }
 }
