@@ -42,7 +42,14 @@ def _authenticated_session() -> tuple[Optional[requests.Session], Optional[str],
         session = requests.Session()
         session.headers.update({
             "User-Agent": BROWSER_UA,
-            "Accept": "application/json",
+            # `*/*`, NOT `application/json`. Measured 2026-09-20: the crumb
+            # endpoint answers HTTP 406 "Not Acceptable" to an
+            # `Accept: application/json` request and HTTP 200 with a crumb to
+            # the same request with `*/*`. With the narrower header the
+            # handshake never completes, so every chain is reported
+            # unavailable -- a content-negotiation failure that looks exactly
+            # like Yahoo having no data.
+            "Accept": "*/*",
             "Accept-Language": "en-US,en;q=0.9",
         })
 

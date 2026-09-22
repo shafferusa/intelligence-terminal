@@ -17,6 +17,7 @@ explicit `storage.set_model_status` call that no training path invokes.
 from __future__ import annotations
 
 import datetime as _dt
+import warnings
 from dataclasses import dataclass, field
 from typing import Optional, Sequence
 
@@ -28,6 +29,35 @@ from statlib import is_finite
 ASSET_CLASS = "Equity"
 TARGET_ABSOLUTE = "absolute_price_return"
 TARGET_EXCESS = "vti_excess_return"
+
+#: Where a dataset's rows came from. This is the fence between the live
+#: snapshot path, which the ML Lab page has always used, and the point-in-time
+#: research store, which may not be validated with the code in this module.
+#:
+#: SOURCE_LIVE_SNAPSHOT   rows from `storage.dataset_rows` -- the terminal's
+#:                        own immutable close snapshots, a few months deep.
+#: SOURCE_POINT_IN_TIME   rows from the `pit_*` tables -- a reconstructed
+#:                        history spanning years, carrying overlapping labels
+#:                        the unpurged splitter below cannot handle honestly.
+SOURCE_LIVE_SNAPSHOT = "live_snapshot"
+SOURCE_POINT_IN_TIME = "point_in_time"
+
+#: Named once so the warning and the error cannot drift apart, and so the
+#: replacement is searchable before it exists.
+PURGED_SPLITTER = (
+    "the purged, embargoed splitter for point-in-time data (records "
+    "purge_days / embargo_days / embargo_rule per fold in pit_store.ml_fold)")
+
+
+class LeakageGuardError(RuntimeError):
+    """A validation routine was handed data it cannot honestly validate.
+
+    Deliberately not a ValueError: nothing is wrong with the value passed in.
+    The refusal is that this module's walk-forward splitter has no purge and no
+    embargo, so applying it to point-in-time data yields an optimistic result
+    that looks perfectly well-formed. Failing loudly is the entire point.
+    """
+
 
 #: Sampling cadences. Daily snapshots create heavily overlapping 12-month
 #: labels, so the default for long horizons is monthly.
@@ -64,7 +94,11 @@ RAW_FEATURES = ["valuation_gap", "benchmark_ev_ebitda"]
 
 @dataclass
 class Dataset:
-    """A point-in-time training set."""
+    """A training set whose features were all known at their snapshot date.
+
+    `source` says WHICH store those snapshots came from, and is not decorative:
+    it decides whether `walk_forward_splits` will accept the set at all.
+    """
 
     horizon: str
     target: str = TARGET_ABSOLUTE
@@ -78,6 +112,10 @@ class Dataset:
     total_rows: int = 0
     dropped_incomplete: int = 0
     notes: list[str] = field(default_factory=list)
+    #: Which store the rows came from. Carried on the dataset rather than
+    #: passed around by hand so a point-in-time set cannot reach the unpurged
+    #: splitter simply because a caller forgot to mention where it came from.
+    source: str = SOURCE_LIVE_SNAPSHOT
 
     @property
     def n(self) -> int:
@@ -274,9 +312,16 @@ def _sample_dates(dates: Sequence[str], sampling: str) -> set:
 
 def build_dataset(conn, horizon: str = "12M", target: str = TARGET_ABSOLUTE,
                   sampling: Optional[str] = None) -> Dataset:
-    """Assemble features and labels strictly from immutable stored snapshots."""
+    """Assemble features and labels strictly from immutable stored snapshots.
+
+    Reads `storage.dataset_rows`, which is the LIVE snapshot path, so the
+    dataset is stamped SOURCE_LIVE_SNAPSHOT explicitly rather than by default.
+    `dataset_rows` also excludes relabelled rows, so a backfill written with
+    `daily_job.py --date ... --allow-relabel` can never enter training here.
+    """
     sampling = sampling or DEFAULT_SAMPLING.get(horizon, MONTHLY)
-    dataset = Dataset(horizon=horizon, target=target, sampling=sampling)
+    dataset = Dataset(horizon=horizon, target=target, sampling=sampling,
+                      source=SOURCE_LIVE_SNAPSHOT)
 
     rows = storage.dataset_rows(conn, horizon)
     dataset.total_rows = len(rows)
@@ -338,13 +383,70 @@ def build_dataset(conn, horizon: str = "12M", target: str = TARGET_ABSOLUTE,
 # Walk-forward validation
 # --------------------------------------------------------------------------
 
-def walk_forward_splits(dates: Sequence[str], n_folds: int = 4,
-                        min_train: int = 40) -> list[tuple[list[int], list[int]]]:
-    """Expanding-window chronological splits. Past trains, future tests.
+def walk_forward_splits(
+    dates: Sequence[str], n_folds: int = 4, min_train: int = 40, *,
+    source: str = SOURCE_LIVE_SNAPSHOT,
+    purge_days: int = 0, embargo_days: int = 0,
+) -> list[tuple[list[int], list[int]]]:
+    """DEPRECATED. Expanding-window chronological splits, UNPURGED.
 
-    Never a random split: an observation may never be trained on information
-    that occurs after its own prediction target.
+    Past trains, future tests. Never a random split: an observation is never
+    trained on information that occurs after its own prediction target.
+
+    WHY IT IS DEPRECATED, precisely. The cut between train and test is a single
+    instant, and a label is not. A 12M label attached to the LAST training date
+    is realised 365 days INSIDE the test window, so the model is scored on a
+    period it was partly trained on. The correct fix is a purge (drop training
+    rows whose label window overlaps the test window) plus an embargo (skip a
+    further buffer after the cut for serial correlation). Neither exists here,
+    and adding them to this function would silently change every result the ML
+    Lab page has ever shown. So it is fenced instead of edited.
+
+    WHY IT STILL RUNS. The live-snapshot path is honest enough to keep: those
+    datasets are a few months of close snapshots, every fold is already
+    reported INSUFFICIENT DATA, and nothing is promoted on their evidence. The
+    damage would be a multi-year point-in-time history evaluated as though the
+    overlap did not exist -- so that is what is refused, hard.
+
+    Refuses, with `LeakageGuardError`:
+      * `source=SOURCE_POINT_IN_TIME` -- point-in-time data, in any shape;
+      * any non-zero `purge_days` or `embargo_days` -- the caller has declared
+        a requirement this function cannot meet, and quietly ignoring it would
+        be worse than not offering the argument at all.
+
+    Both paths point at the replacement rather than just saying no.
     """
+    if source not in (SOURCE_LIVE_SNAPSHOT, SOURCE_POINT_IN_TIME):
+        raise LeakageGuardError(
+            f"unknown dataset source {source!r}; expected "
+            f"{SOURCE_LIVE_SNAPSHOT!r} or {SOURCE_POINT_IN_TIME!r}. A splitter "
+            f"must know which store its rows came from.")
+
+    if source == SOURCE_POINT_IN_TIME:
+        raise LeakageGuardError(
+            "REFUSED: walk_forward_splits has NO PURGE and NO EMBARGO, and "
+            "must never be used on point-in-time data. Its train/test cut is "
+            "an instant, but a label is a window: a 12M label on the last "
+            "training date is realised 365 days inside the test window, so "
+            "the model is graded on a period it trained on. On a multi-year "
+            "PIT history that produces a confidently optimistic, entirely "
+            f"fictitious out-of-sample score. Use {PURGED_SPLITTER}.")
+
+    if purge_days or embargo_days:
+        raise LeakageGuardError(
+            f"REFUSED: purge_days={purge_days}, embargo_days={embargo_days} "
+            "were requested, and walk_forward_splits implements neither. It "
+            "accepts the arguments only so that asking for them fails loudly "
+            f"instead of being ignored. Use {PURGED_SPLITTER}.")
+
+    warnings.warn(
+        "ml_lab.walk_forward_splits is deprecated: it has no purge and no "
+        "embargo, so overlapping labels cross the train/test cut. It is "
+        "retained only for the live-snapshot path. New work should use "
+        f"{PURGED_SPLITTER}.",
+        DeprecationWarning, stacklevel=2,
+    )
+
     unique = sorted(set(dates))
     if len(unique) < 2:
         return []
@@ -429,7 +531,9 @@ def evaluate_model(dataset: Dataset, model, name: str, family: str,
     report.training_start = min(dataset.dates)
     report.training_end = max(dataset.dates)
 
-    splits = walk_forward_splits(dataset.dates, n_folds)
+    # `dataset.source` is passed, never assumed. A point-in-time dataset
+    # reaching this function is refused here rather than quietly evaluated.
+    splits = walk_forward_splits(dataset.dates, n_folds, source=dataset.source)
     if not splits:
         report.note = (
             "Not enough distinct snapshot dates for a walk-forward split. "

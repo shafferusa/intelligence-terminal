@@ -42,6 +42,26 @@ RETIRED = "RETIRED"
 CLOSE = "close"
 INTRADAY = "intraday"
 
+#: How a row came by its `snapshot_date` -- which is NOT the same question as
+#: whether it is a close.
+#:
+#:   LIVE_CLOSE   the date is the day the data was actually fetched. The only
+#:                provenance a genuine historical observation may carry.
+#:   REPLAY       rebuilt from point-in-time sources. Reserved: the replay
+#:                writes to `pit_store`, never here, so nothing in this module
+#:                produces it today. It exists so the vocabulary is complete.
+#:   RELABELLED   TODAY'S live fetch, deliberately stamped with another date.
+#:
+#: RELABELLED exists because `daily_job.py --date 2020-01-01` only LABELS a row
+#: -- it changes nothing about what is fetched. Such a row is not history; it is
+#: today's data wearing a 2020 costume, and a backtest that trains on it is
+#: reading the answer sheet. Stamping it permanently is what lets every dataset
+#: exclude it (see `dataset_rows`).
+LIVE_CLOSE = "live_close"
+REPLAY = "replay"
+RELABELLED = "relabelled"
+SNAPSHOT_PROVENANCE = (LIVE_CLOSE, REPLAY, RELABELLED)
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS assets (
     asset_id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -360,6 +380,11 @@ MIGRATIONS = {
         ("prediction_model", "TEXT"),
         ("prediction_model_version", "TEXT"),
         ("prediction_timestamp", "TEXT"),
+        # Mutable latest state always holds a live fetch, so this is never
+        # anything but 'live_close' for the VALUES. What it records is the
+        # KIND OF RUN that last wrote the row: a relabel run overwrites live
+        # current state as a side effect, and that should be visible.
+        ("snapshot_provenance", "TEXT NOT NULL DEFAULT 'live_close'"),
     ],
     "trades": [
         # A put and a call are opposite trades, so the right is stored
@@ -377,6 +402,13 @@ MIGRATIONS = {
         ("prediction_model", "TEXT"),
         ("prediction_model_version", "TEXT"),
         ("prediction_timestamp", "TEXT"),
+        # Nothing on this table previously distinguished a genuine same-day
+        # close from a backfill relabelled with an old date. The DEFAULT
+        # marks every pre-existing row 'live_close', which is an ASSUMPTION,
+        # not a measurement: rows written before this column existed carry no
+        # evidence either way. It is the only available default, and it is
+        # recorded here so nobody later mistakes it for a verified fact.
+        ("snapshot_provenance", "TEXT NOT NULL DEFAULT 'live_close'"),
     ],
 }
 
@@ -528,7 +560,18 @@ def search_assets(conn, query: str, limit: int = 50) -> list[sqlite3.Row]:
 # --------------------------------------------------------------------------
 
 def save_current_score(conn, asset_id: int, **fields) -> None:
-    """Mutable latest state. Safe to overwrite as often as you refresh."""
+    """Mutable latest state. Safe to overwrite as often as you refresh.
+
+    `snapshot_provenance` records the kind of run that last wrote the row, not
+    the age of the values -- the values are always a live fetch. A relabel run
+    clobbers live current state as a side effect of writing a relabelled
+    history row, and that is worth being able to see.
+    """
+    provenance = fields.get("snapshot_provenance", LIVE_CLOSE)
+    if provenance not in SNAPSHOT_PROVENANCE:
+        raise ValueError(
+            f"unknown snapshot_provenance {provenance!r}; "
+            f"expected one of {SNAPSHOT_PROVENANCE}")
     with transaction(conn):
         conn.execute(
             """INSERT INTO current_scores
@@ -537,9 +580,10 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
                 model_status, factor_scores_json, raw_inputs_json, model_version,
                 updated_at, predicted_12m_return_pct, predicted_12m_price,
                 prediction_model, prediction_model_version, prediction_timestamp,
-                gpi_json, political_overlay)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                gpi_json, political_overlay, snapshot_provenance)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                ON CONFLICT(asset_id) DO UPDATE SET
+                 snapshot_provenance=excluded.snapshot_provenance,
                  price=excluded.price, shaffer_score=excluded.shaffer_score,
                  classification=excluded.classification,
                  preferred_hedge=excluded.preferred_hedge,
@@ -570,20 +614,32 @@ def save_current_score(conn, asset_id: int, **fields) -> None:
              fields.get("predicted_12m_price"),
              fields.get("prediction_model"),
              fields.get("prediction_model_version"), _now(),
-             _dumps(fields.get("gpi")), fields.get("political_overlay")),
+             _dumps(fields.get("gpi")), fields.get("political_overlay"),
+             provenance),
         )
 
 
 def save_score_snapshot(
     conn, asset_id: int, snapshot_date: str, kind: str = CLOSE,
-    model_version: str = EQUITY_MODEL_VERSION, **fields
+    model_version: str = EQUITY_MODEL_VERSION,
+    provenance: str = LIVE_CLOSE, **fields
 ) -> str:
     """Append an immutable history row.
 
     Returns "written" or "exists". A CLOSE snapshot that already exists is NEVER
     rewritten -- that is the guarantee the backtest rests on. Intraday rows are
     replaced, since they are explicitly a working state.
+
+    `provenance` is how a reader tells a genuine close from a relabelled
+    backfill. It is NOT part of the UNIQUE key, and deliberately so: a real
+    close already stored for a date wins over a later relabel attempt, which
+    returns "exists" and writes nothing. The weaker row can never displace the
+    stronger one.
     """
+    if provenance not in SNAPSHOT_PROVENANCE:
+        raise ValueError(
+            f"unknown provenance {provenance!r}; expected one of "
+            f"{SNAPSHOT_PROVENANCE}. A history row must say how it got its date.")
     existing = conn.execute(
         """SELECT history_id FROM score_history
            WHERE asset_id=? AND snapshot_date=? AND snapshot_kind=? AND model_version=?""",
@@ -602,14 +658,15 @@ def save_score_snapshot(
                (asset_id, snapshot_date, snapshot_kind, snapshot_timestamp, price,
                 shaffer_score, classification, sector_overlay, company_score,
                 factor_scores_json, raw_inputs_json, preferred_hedge, model_version,
-                gpi_json, political_overlay)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                gpi_json, political_overlay, snapshot_provenance)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (asset_id, snapshot_date, kind, _now(), fields.get("price"),
              fields.get("shaffer_score"), fields.get("classification"),
              fields.get("sector_overlay"), fields.get("company_score"),
              _dumps(fields.get("factor_scores")), _dumps(fields.get("raw_inputs")),
              fields.get("preferred_hedge"), model_version,
-             _dumps(fields.get("gpi")), fields.get("political_overlay")),
+             _dumps(fields.get("gpi")), fields.get("political_overlay"),
+             provenance),
         )
     return "written"
 
@@ -902,12 +959,18 @@ def dataset_rows(conn, horizon: str) -> list:
 
     Only `score_history` is read for features, so every value is exactly what
     was known on that date. Nothing is recomputed from today's fundamentals.
+
+    Relabelled rows are EXCLUDED, not merely flagged. A row stamped
+    RELABELLED holds today's fetched fundamentals under an old date, so
+    training on it means fitting a 2020 label to 2026 information -- the exact
+    look-ahead this dataset exists to avoid. A caller who genuinely wants them
+    queries `score_history` directly and says so.
     """
     return conn.execute(
         """SELECT h.asset_id, a.symbol, a.sector, a.industry,
                   h.snapshot_date, h.price, h.shaffer_score, h.company_score,
                   h.sector_overlay, h.factor_scores_json, h.raw_inputs_json,
-                  h.gpi_json, h.political_overlay,
+                  h.gpi_json, h.political_overlay, h.snapshot_provenance,
                   h.model_version, h.predicted_12m_return_pct,
                   l.forward_return, l.vti_forward_return, l.excess_return,
                   l.future_date
@@ -917,21 +980,38 @@ def dataset_rows(conn, horizon: str) -> list:
              ON l.asset_id = h.asset_id AND l.snapshot_date = h.snapshot_date
             AND l.horizon = ?
            WHERE h.snapshot_kind = 'close' AND l.forward_return IS NOT NULL
+             AND h.snapshot_provenance = ?
            ORDER BY h.snapshot_date, a.symbol""",
-        (horizon,),
+        (horizon, LIVE_CLOSE),
     ).fetchall()
 
 
 def snapshot_stats(conn) -> dict:
+    """How much genuine close history exists, and how much is relabelled.
+
+    The headline figures count LIVE_CLOSE rows only. A relabelled backfill
+    would otherwise push `earliest` years into the past and let the ML Lab
+    report a depth of history it does not have. The relabelled count is
+    returned beside them so the gap is visible rather than quietly dropped.
+    """
     row = conn.execute(
         """SELECT COUNT(*) AS snapshots,
                   COUNT(DISTINCT asset_id) AS assets,
                   MIN(snapshot_date) AS earliest,
                   MAX(snapshot_date) AS latest,
                   COUNT(DISTINCT snapshot_date) AS dates
-           FROM score_history WHERE snapshot_kind='close'"""
+           FROM score_history
+           WHERE snapshot_kind='close' AND snapshot_provenance=?""",
+        (LIVE_CLOSE,),
     ).fetchone()
-    return dict(row) if row else {}
+    stats = dict(row) if row else {}
+    excluded = conn.execute(
+        """SELECT COUNT(*) AS n FROM score_history
+           WHERE snapshot_kind='close' AND snapshot_provenance<>?""",
+        (LIVE_CLOSE,),
+    ).fetchone()
+    stats["relabelled_excluded"] = excluded["n"] if excluded else 0
+    return stats
 
 
 def register_model(conn, **fields) -> int:

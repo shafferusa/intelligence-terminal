@@ -1,0 +1,286 @@
+{
+ "artifact": "pilot_sizing_derived.json",
+ "purpose": "Derived sizing numbers for the SURVIVOR_ONLY_DIAGNOSTIC replay sizing pilot. Every figure here is either MEASURED (and says where from) or explicitly UNKNOWN. Nothing is estimated silently.",
+ "companion_artifacts": {
+  "pristine_manifest": "pilot_pristine_manifest.json",
+  "raw_instrumented_report": "pilot_sizing_report.json",
+  "run_log": "pilot_sizing_run.log",
+  "pilot_database": "shafferfineval_pilot.db"
+ },
+ "freeze": {
+  "spec_freeze_version": "spec_freeze_v3",
+  "digest": "2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764",
+  "n_components": 38,
+  "intact_before": true,
+  "intact_after": true,
+  "digest_unchanged": true,
+  "can_execute_replay": [true, []],
+  "model_version": "equity_shaffer_v2_pit_SURVIVOR_ONLY_DIAGNOSTIC",
+  "code_revision": "c9b405049c2707bb1ae22a5dca98b73f6a0a1400"
+ },
+ "outcome": {
+  "dates_requested": ["2014-06-30", "2019-06-28", "2022-06-30", "2026-06-30"],
+  "dates_completed": ["2014-06-30", "2019-06-28"],
+  "dates_aborted": ["2022-06-30"],
+  "dates_never_started": ["2026-06-30"],
+  "aborted": true,
+  "abort_reason": "FREE_SPACE_FLOOR: free fell to 4.118 GiB, below the 7.0 GiB floor, during the 2022-06-30 assemble stage. The guard fired at the 'write' tick, BEFORE any 2022 row was inserted.",
+  "abort_cause_measured": "NOT the database. The pilot DB was 171,016,192 B with a 0-byte WAL and no temp files at the moment of the breach. C:\\pagefile.sys was last written 20:05:08 (inside the 2022 assemble window) and stands at 16,500,293,632 B. 5,923,065,856 B (5.516 GiB) of the free-space consumption is non-database.",
+  "entity_dates_completed": 15234,
+  "entity_dates_planned": 30308,
+  "pilot_coverage_of_grid_pct": 1.2299
+ },
+ "per_date": {
+  "2014-06-30": {
+   "regime": "early regime, pre-2015 coverage",
+   "entity_dates": 8132,
+   "n_universe": 8132,
+   "n_entities_indexed": 8132,
+   "elapsed_s": 380.97,
+   "rows": {"pit_feature": 105716, "pit_pillar_score": 32528, "pit_score": 2873},
+   "rows_per_entity_date": {"pit_feature": 13.0, "pit_pillar_score": 4.0, "pit_score": 0.35329},
+   "bytes_written": {
+    "pit_feature": 60932096,
+    "pit_pillar_score": 24092672,
+    "pit_score": 4898816,
+    "method": "PAGE_COUNT_DELTA_SERIALIZED (dbstat is not compiled into this sqlite3 3.50.4); every scope reported exclusive=true",
+    "sum_of_scopes": 89923584,
+    "residual_vs_db_growth": 24576,
+    "residual_note": "6 pages: the pit_replay_run row and sqlite internals, outside the three table scopes"
+   },
+   "bytes_per_row": {"pit_feature": 576.4, "pit_pillar_score": 740.7, "pit_score": 1705.1},
+   "db_growth": {
+    "file_bytes_before": 2117632,
+    "file_bytes_after": 92065792,
+    "file_growth_bytes": 89948160,
+    "page_count_before": 517,
+    "page_count_after": 22477,
+    "page_count_delta": 21960,
+    "page_size": 4096
+   },
+   "wal": {"peak_bytes": 61350952, "peak_is_lower_bound": true, "bytes_before_checkpoint": 61350952, "bytes_after_checkpoint": 0, "bytes_per_entity_date": 7544.4},
+   "checkpoint": {"mode": "TRUNCATE", "busy": 0, "log_pages": 0, "checkpointed": 0, "return_read": true, "busy_refusal": false, "fully_checkpointed": true, "elapsed_s": 0.0062},
+   "free_space": {"low_water_bytes": 10380140544, "low_water_gib": 9.6673, "at_mark_bytes": 10441547776},
+   "temp": {"etilqs_peak_bytes": 0, "rollback_journal_peak_bytes": 0, "peak_is_lower_bound": true, "scan_rate_hz": 1.25},
+   "shm_peak_bytes": 131072,
+   "scores": {
+    "scored": 2873,
+    "no_score_below_MIN_BLOCK_WEIGHT": 5259,
+    "no_peer_set": 0,
+    "signatures": {"EG": 2873},
+    "pillar_masks": {"E=1,V=0,G=1,Q=0": 2873},
+    "partial_score_marker": {"PARTIAL_SHAFFER_SCORE_NOT_DIRECTLY_COMPARABLE": 2873},
+    "block_weight_decomposition": {
+     "E+G_w_0.50_scored": 2873,
+     "E_only_w_0.35_refused": 467,
+     "G_only_w_0.15_refused": 1823,
+     "neither_w_0.00_refused": 2969
+    }
+   },
+   "block_availability": {
+    "ebitda_strength": {"resolved": 3340, "unavailable": 4792},
+    "valuation": {"resolved": 0, "unavailable": 8132},
+    "real_growth": {"resolved": 4696, "unavailable": 3436},
+    "financial_quality": {"resolved": 0, "unavailable": 8132}
+   },
+   "feature_availability_complete": {
+    "ebitda_growth": 3158, "ebitda_efficiency": 2917, "ebitda_acceleration": 2834,
+    "ebitda_benchmark": 0, "ebitda_scale_CHALLENGER": 3398, "real_revenue_growth": 4696,
+    "pe_absolute": 0, "pe_relative": 0, "ev_ebitda_supplement": 0,
+    "fcf_conversion": 0, "interest_coverage": 0, "net_debt_ebitda": 0, "debt_market_cap": 0
+   },
+   "feature_unavailable_reasons": {
+    "no_v2_normalization_declared": 40660, "no_ebitda_period": 18704,
+    "primitive_genuinely_unavailable": 16264, "benchmark_definition_ambiguous": 8132,
+    "no_revenue_period": 2987, "no_revenue_at_ebitda_period": 464,
+    "cohort_too_small_for_dispersion": 462, "non_positive_real_revenue_base": 283,
+    "no_ebitda_lag2_period": 201, "no_revenue_lag1_period": 166,
+    "no_assets_at_lag2": 115, "cohort_too_small_to_rank": 110,
+    "no_ebitda_lag1_period": 108, "insufficient_peers": 50, "no_assets_at_lag1": 7
+   },
+   "challenger_rows_ebitda_scale": 8132,
+   "bytes_per_entity_date": 11061.013
+  },
+  "2019-06-28": {
+   "regime": "mid regime, the coverage trough",
+   "entity_dates": 7102,
+   "n_universe": 7102,
+   "n_entities_indexed": 7102,
+   "elapsed_s": 409.26,
+   "rows": {"pit_feature": 92326, "pit_pillar_score": 28408, "pit_score": 2709},
+   "rows_per_entity_date": {"pit_feature": 13.0, "pit_pillar_score": 4.0, "pit_score": 0.38138},
+   "bytes_written": {
+    "pit_feature": 53211136,
+    "pit_pillar_score": 21102592,
+    "pit_score": 4636672,
+    "method": "PAGE_COUNT_DELTA_SERIALIZED; every scope reported exclusive=true",
+    "sum_of_scopes": 78950400,
+    "residual_vs_db_growth": 0
+   },
+   "bytes_per_row": {"pit_feature": 576.3, "pit_pillar_score": 742.8, "pit_score": 1711.6},
+   "db_growth": {
+    "file_bytes_before": 92065792,
+    "file_bytes_after": 171016192,
+    "file_growth_bytes": 78950400,
+    "page_count_before": 22477,
+    "page_count_after": 41752,
+    "page_count_delta": 19275,
+    "page_size": 4096
+   },
+   "wal": {"peak_bytes": 69281952, "peak_is_lower_bound": true, "bytes_before_checkpoint": 69281952, "bytes_after_checkpoint": 0, "bytes_per_entity_date": 9755.3},
+   "checkpoint": {"mode": "TRUNCATE", "busy": 0, "log_pages": 0, "checkpointed": 0, "return_read": true, "busy_refusal": false, "fully_checkpointed": true, "elapsed_s": 0.0069},
+   "free_space": {"low_water_bytes": 10290544640, "low_water_gib": 9.5839, "at_mark_bytes": 10359881728},
+   "temp": {"etilqs_peak_bytes": 0, "rollback_journal_peak_bytes": 0, "peak_is_lower_bound": true, "scan_rate_hz": 1.25},
+   "shm_peak_bytes": 163840,
+   "scores": {
+    "scored": 2709,
+    "no_score_below_MIN_BLOCK_WEIGHT": 4393,
+    "no_peer_set": 0,
+    "signatures": {"EG": 2709},
+    "pillar_masks": {"E=1,V=0,G=1,Q=0": 2709},
+    "partial_score_marker": {"PARTIAL_SHAFFER_SCORE_NOT_DIRECTLY_COMPARABLE": 2709},
+    "block_weight_decomposition": {
+     "E+G_w_0.50_scored": 2709,
+     "E_only_w_0.35_refused": 281,
+     "G_only_w_0.15_refused": 1635,
+     "neither_w_0.00_refused": 2477
+    }
+   },
+   "block_availability": {
+    "ebitda_strength": {"resolved": 2990, "unavailable": 4112},
+    "valuation": {"resolved": 0, "unavailable": 7102},
+    "real_growth": {"resolved": 4344, "unavailable": 2758},
+    "financial_quality": {"resolved": 0, "unavailable": 7102}
+   },
+   "feature_availability_complete": {
+    "ebitda_growth": 2779, "ebitda_efficiency": 2800, "ebitda_acceleration": 2473,
+    "ebitda_benchmark": 0, "ebitda_scale_CHALLENGER": 3023, "real_revenue_growth": 4344,
+    "pe_absolute": 0, "pe_relative": 0, "ev_ebitda_supplement": 0,
+    "fcf_conversion": 0, "interest_coverage": 0, "net_debt_ebitda": 0, "debt_market_cap": 0
+   },
+   "feature_unavailable_reasons": {
+    "no_v2_normalization_declared": 35510, "no_ebitda_period": 16188,
+    "primitive_genuinely_unavailable": 14204, "benchmark_definition_ambiguous": 7102,
+    "no_revenue_period": 2372, "cohort_too_small_for_dispersion": 445,
+    "no_revenue_lag1_period": 221, "no_revenue_at_ebitda_period": 213,
+    "no_ebitda_lag2_period": 182, "non_positive_real_revenue_base": 165,
+    "no_ebitda_lag1_period": 116, "no_assets_at_lag2": 79,
+    "insufficient_peers": 62, "cohort_too_small_to_rank": 45, "no_assets_at_lag1": 3
+   },
+   "challenger_rows_ebitda_scale": 7102,
+   "bytes_per_entity_date": 11116.643
+  },
+  "2022-06-30": {
+   "regime": "post-2020 regime",
+   "status": "ABORTED before its first insert",
+   "entity_dates_processed": 0,
+   "entity_dates_assembled_in_memory": 8033,
+   "elapsed_s_before_abort": 571.83,
+   "rows": {"pit_feature": 0, "pit_pillar_score": 0, "pit_score": 0},
+   "bytes_written": {"pit_feature": 0, "pit_pillar_score": 0, "pit_score": 0},
+   "db_growth": {"file_bytes_before": 171016192, "file_bytes_after": 171016192, "file_growth_bytes": 0},
+   "wal": {"peak_bytes": 0, "bytes_after_checkpoint": "UNKNOWN - no checkpoint ran on this date"},
+   "checkpoint": "UNKNOWN - the date aborted before its checkpoint",
+   "free_space": {"low_water_bytes": 4421623808, "low_water_gib": 4.1180},
+   "temp": {"etilqs_peak_bytes": 0, "rollback_journal_peak_bytes": 0},
+   "scores": "UNKNOWN - nothing was scored or written",
+   "bytes_per_entity_date": "UNKNOWN"
+  },
+  "2026-06-30": {
+   "regime": "current regime, nearest the grid end",
+   "status": "NEVER STARTED",
+   "everything": "UNKNOWN"
+  }
+ },
+ "seed": {
+  "option": "SEED_PARENTS_THEN_REBASELINE",
+  "pit_entity_rows": 16890,
+  "pit_peer_set_rows": 946,
+  "seed_bytes": 1683456,
+  "excluded_from_bytes_per_entity_date": true,
+  "checkpoint_after_seed": {"busy": 0, "log_pages": 0, "checkpointed": 0, "return_read": true}
+ },
+ "derived": {
+  "bytes_per_entity_date_by_date": {
+   "2014-06-30": 11061.013,
+   "2019-06-28": 11116.643,
+   "2022-06-30": "UNKNOWN",
+   "2026-06-30": "UNKNOWN"
+  },
+  "bytes_per_entity_date_pooled": 11086.947617172114,
+  "pooled_arithmetic": "168898560 B retained growth / 15234 entity-dates = 11086.947617 B",
+  "worst_case_bytes_per_entity_date": 11116.643199098845,
+  "worst_case_date": "2019-06-28",
+  "spread_between_measured_regimes_pct": 0.503,
+  "variance_caveat": "Only 2 of 4 coverage regimes were measured, and they are the two ADJACENT ones (2014 early, 2019 trough). The 2014-vs-2026 comparison the pilot was designed to make is UNMEASURED. The 0.50% spread observed is NOT evidence that the post-2020 and current regimes cost the same per entity-date.",
+  "projected_retained_growth_pooled_bytes": 13732991796,
+  "projected_retained_growth_worst_bytes": 13769774615,
+  "projection_arithmetic": "11116.643199 B/entity-date x 1238663 entity-dates = 13769774615 B = 12.824 GiB",
+  "projected_rows_full_grid": {
+   "pit_feature": 16102619,
+   "pit_pillar_score": 4954652,
+   "pit_score": 453867,
+   "pit_score_basis": "measured scored share 0.36643 of entity-dates"
+  },
+  "measured_peak_wal_bytes": 69281952,
+  "measured_peak_wal_caveat": "LOWER BOUND, and measured against a 92-171 MB database. pit_feature carries idx_pit_feature_entity (entity_id, feature_key, as_of_date), which is NOT insert-ordered across a date-major replay: each new date scatters ~100k index entries across the whole entity keyspace. WAL/entity-date ALREADY rose 29.3% from date 1 (7544 B, empty table) to date 2 (9755 B, 105k-row table). Extrapolating 69 MB to a 13 GB / 16M-row table is NOT supported by this pilot.",
+  "wal_growth_trend_measured": {"date_1_wal_per_entity_date": 7544.4, "date_2_wal_per_entity_date": 9755.3, "increase_pct": 29.3, "n_observations": 2},
+  "measured_peak_temp_bytes": 0,
+  "measured_peak_temp_caveat": "etilqs scan ran at 1.25 Hz; a short-lived sorter spill between scans is invisible. temp_store=FILE and the temp directory is on the SAME volume as the database.",
+  "measured_non_database_transient_bytes": 5923065856,
+  "measured_non_database_transient_note": "pagefile expansion under commit pressure. This machine has 7.45 GiB RAM and a system-managed pagefile on C:. The replay process holds a whole cross-section of assembled rows in memory; by the third date the commit charge forced C:\\pagefile.sys to grow, and the space was NOT returned when the process exited."
+ },
+ "budget": {
+  "formula": "RequiredSpace = ProjectedRetainedGrowth + PeakWAL + PeakTemp + SafetyReserve",
+  "components_gib": {
+   "ProjectedRetainedGrowth_worst": 12.824,
+   "MeasuredPeakWAL": 0.065,
+   "MeasuredPeakTemp": 0.0,
+   "MeasuredNonDatabaseTransient_pagefile": 5.516,
+   "SafetyReserve": 5.0
+  },
+  "required_space_gib_as_specified": 17.889,
+  "required_space_gib_including_measured_pagefile_term": 23.405,
+  "gate_formula": "FreeSpace_start > 2 x ProjectedRetainedGrowth + MeasuredPeakWAL + MeasuredPeakTemp + 5 GiB reserve",
+  "gate_threshold_gib": 30.713,
+  "gate_threshold_including_pagefile_term_gib": 36.229,
+  "free_space_at_pilot_start_gib": 9.807,
+  "free_space_now_gib": 4.132,
+  "gate_verdict": "FAIL by a wide margin. The full 165-date replay must not start on this volume.",
+  "further_pilot_verdict": "Free space is 4.132 GiB, below the 7.0 GiB per-date floor. No further pilot date may start on this volume either, until space is recovered."
+ },
+ "main_store": {
+  "path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pit.db",
+  "bytes_before": 9632415744,
+  "bytes_after": 9632415744,
+  "mtime_before": "2026-09-21T16:07:48.366421",
+  "mtime_after": "2026-09-21T16:07:48.3664206-04:00",
+  "wal_bytes_after": 0,
+  "untouched": true,
+  "how": "opened only as sqlite3.connect('file:...?mode=ro', uri=True) with PRAGMA query_only=1; never attached, never indexed, never vacuumed"
+ },
+ "pilot_db": {
+  "path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pilot.db",
+  "final_bytes": 171016192,
+  "wal_bytes": 0,
+  "shm_bytes": 32768,
+  "page_count": 41752,
+  "page_size": 4096,
+  "freelist_count": 0,
+  "row_counts": {
+   "pit_feature": 198042,
+   "pit_pillar_score": 60936,
+   "pit_score": 5582,
+   "pit_replay_run": 1,
+   "pit_entity": 16890,
+   "pit_peer_set": 946
+  },
+  "left_in_place": true
+ },
+ "known_defects_found_by_this_run": [
+  "pit_replay.run_pilot() updates the pit_replay_run row only on the success path. The abort left run_id 1 at status='running', finished_at=NULL, n_entities=NULL, n_dates=4 while it in fact covers 2 dates and 15234 entity-dates. The row was deliberately NOT corrected here: correcting it means opening a writer at 4.132 GiB free. Move that UPDATE into a finally block.",
+  "pit_replay.run_pilot() builds its report dict locally, so an exception inside the date loop discards every per-date stats dict (refusal tallies, signature tallies, block tallies). Those were reconstructed from the pilot database instead. Accumulate the report outside the try, or write each date's stats as it completes.",
+  "pit_replay_meter.Meter double-counts rows: both mark(rows=...) and table_scope increment _rows_written, so meter.report()['work']['rows_written_by_table'] reads 396084/121872/11164 against a true 198042/60936/5582. The byte measurements are unaffected.",
+  "The engine assembles an entire cross-section into Python lists before its first insert. On a 7.45 GiB-RAM machine this is what actually consumed the disk, via pagefile expansion, not the WAL. Streaming the inserts in chunks would remove the largest transient this pilot measured."
+ ]
+}

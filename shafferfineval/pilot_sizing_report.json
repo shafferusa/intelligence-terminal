@@ -1,0 +1,601 @@
+{
+ "driver": "run_sizing_pilot.py",
+ "generated_at": "2026-09-22T00:12:26+00:00",
+ "dates_requested": [
+  "2014-06-30",
+  "2019-06-28",
+  "2022-06-30",
+  "2026-06-30"
+ ],
+ "free_floor_bytes": 7516192768,
+ "free_bytes_before_run": 10532679680,
+ "elapsed_s": 1362.27,
+ "error": {
+  "type": "MidDateFreeSpaceAbort",
+  "message": "free 4.132 GiB fell below the 7.000 GiB floor mid-date at stage 'write' on 2022-06-30",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\run_sizing_pilot.py\", line 239, in main\n    report = pit_replay.run_pilot(\n        DATES, PILOT_DB,\n    ...<5 lines>...\n        sample_hz=5.0,\n        progress=make_progress())\n  File \"C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\pit_replay.py\", line 1474, in run_pilot\n    stats = run_date(store_conn, pilot_conn, day, run_id,\n                     entity_limit=entity_limit, entity_ids=entity_ids,\n                     meter=meter, per_table_scopes=per_table_scopes,\n                     freeze_digest=digest, progress=progress)\n  File \"C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\pit_replay.py\", line 1280, in run_date\n    tick(\"write\", n_features=len(feature_rows), n_pillars=len(pillar_rows),\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n         n_scores=len(score_rows))\n         ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\pit_replay.py\", line 1018, in tick\n    progress(dict({\"as_of\": day, \"stage\": stage,\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                   \"elapsed_s\": round(time.monotonic() - t0, 1)},\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                  **extra))\n                  ^^^^^^^^^\n  File \"C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\run_sizing_pilot.py\", line 80, in progress\n    raise MidDateFreeSpaceAbort(\n    ...<2 lines>...\n                   info.get(\"as_of\")))\nMidDateFreeSpaceAbort: free 4.132 GiB fell below the 7.000 GiB floor mid-date at stage 'write' on 2022-06-30\n"
+ },
+ "replay_report": null,
+ "per_date_measurements": {
+  "2014-06-30": {
+   "n_samples": 1854,
+   "wal_peak_bytes": 61350952,
+   "wal_peak_is_lower_bound": true,
+   "wal_bytes_before_checkpoint": 61350952,
+   "wal_bytes_after_checkpoint": 0,
+   "shm_peak_bytes": 131072,
+   "temp_etilqs_peak_bytes": 0,
+   "rollback_journal_peak_bytes": 0,
+   "free_low_water_bytes": 10380140544,
+   "free_bytes_at_mark": 10441547776,
+   "db_file_bytes_before": 2117632,
+   "db_file_bytes_after": 92065792,
+   "db_file_growth_bytes": 89948160,
+   "page_count_before": 517,
+   "page_count_after": 22477,
+   "page_count_delta": 21960,
+   "page_size": 4096,
+   "page_growth_bytes": 89948160,
+   "checkpoints": [
+    {
+     "mode": "TRUNCATE",
+     "at": "2026-09-21T23:56:04+00:00",
+     "mark": "2014-06-30",
+     "wal_bytes_before": 61350952,
+     "wal_bytes_before_reason": null,
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "error": null,
+     "fully_checkpointed": true,
+     "elapsed_s": 0.0062,
+     "wal_bytes_after": 0,
+     "wal_bytes_after_reason": null,
+     "db_file_bytes_after": 92065792,
+     "db_file_bytes_after_reason": null,
+     "page_count_after": 22477,
+     "page_bytes_after": 92065792,
+     "return_semantics": "SQLite returns (busy, log_pages, checkpointed). In TRUNCATE and RESTART modes a SUCCESSFUL checkpoint resets the log, so (0, 0, 0) means 'done and the WAL was reset', NOT 'nothing happened' -- read wal_bytes_before/after to see the work. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature: a reader is holding the checkpointer off and the WAL will keep growing."
+    }
+   ],
+   "per_table": {
+    "pit_feature": {
+     "bytes_page_delta": 60932096,
+     "pages_delta": 14876,
+     "n_scopes": 1,
+     "rows_delta": 105716,
+     "exclusive": true,
+     "wal_bytes_delta": 61313840,
+     "elapsed_s": 1.488,
+     "bytes_unknown_reason": null,
+     "dbstat_bytes_cumulative_after": null
+    },
+    "pit_pillar_score": {
+     "bytes_page_delta": 24092672,
+     "pages_delta": 5882,
+     "n_scopes": 1,
+     "rows_delta": 32528,
+     "exclusive": true,
+     "wal_bytes_delta": 0,
+     "elapsed_s": 0.494,
+     "bytes_unknown_reason": null,
+     "dbstat_bytes_cumulative_after": null
+    },
+    "pit_score": {
+     "bytes_page_delta": 4898816,
+     "pages_delta": 1196,
+     "n_scopes": 1,
+     "rows_delta": 2873,
+     "exclusive": true,
+     "wal_bytes_delta": 0,
+     "elapsed_s": 0.079,
+     "bytes_unknown_reason": null,
+     "dbstat_bytes_cumulative_after": null
+    }
+   }
+  },
+  "2019-06-28": {
+   "n_samples": 1993,
+   "wal_peak_bytes": 69281952,
+   "wal_peak_is_lower_bound": true,
+   "wal_bytes_before_checkpoint": 69281952,
+   "wal_bytes_after_checkpoint": 0,
+   "shm_peak_bytes": 163840,
+   "temp_etilqs_peak_bytes": 0,
+   "rollback_journal_peak_bytes": 0,
+   "free_low_water_bytes": 10290544640,
+   "free_bytes_at_mark": 10359881728,
+   "db_file_bytes_before": 92065792,
+   "db_file_bytes_after": 171016192,
+   "db_file_growth_bytes": 78950400,
+   "page_count_before": 22477,
+   "page_count_after": 41752,
+   "page_count_delta": 19275,
+   "page_size": 4096,
+   "page_growth_bytes": 78950400,
+   "checkpoints": [
+    {
+     "mode": "TRUNCATE",
+     "at": "2026-09-22T00:02:54+00:00",
+     "mark": "2019-06-28",
+     "wal_bytes_before": 69281952,
+     "wal_bytes_before_reason": null,
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "error": null,
+     "fully_checkpointed": true,
+     "elapsed_s": 0.0069,
+     "wal_bytes_after": 0,
+     "wal_bytes_after_reason": null,
+     "db_file_bytes_after": 171016192,
+     "db_file_bytes_after_reason": null,
+     "page_count_after": 41752,
+     "page_bytes_after": 171016192,
+     "return_semantics": "SQLite returns (busy, log_pages, checkpointed). In TRUNCATE and RESTART modes a SUCCESSFUL checkpoint resets the log, so (0, 0, 0) means 'done and the WAL was reset', NOT 'nothing happened' -- read wal_bytes_before/after to see the work. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature: a reader is holding the checkpointer off and the WAL will keep growing."
+    }
+   ],
+   "per_table": {
+    "pit_feature": {
+     "bytes_page_delta": 53211136,
+     "pages_delta": 12991,
+     "n_scopes": 1,
+     "rows_delta": 92326,
+     "exclusive": true,
+     "wal_bytes_delta": 69281952,
+     "elapsed_s": 2.023,
+     "bytes_unknown_reason": null,
+     "dbstat_bytes_cumulative_after": null
+    },
+    "pit_pillar_score": {
+     "bytes_page_delta": 21102592,
+     "pages_delta": 5152,
+     "n_scopes": 1,
+     "rows_delta": 28408,
+     "exclusive": true,
+     "wal_bytes_delta": 0,
+     "elapsed_s": 0.609,
+     "bytes_unknown_reason": null,
+     "dbstat_bytes_cumulative_after": null
+    },
+    "pit_score": {
+     "bytes_page_delta": 4636672,
+     "pages_delta": 1132,
+     "n_scopes": 1,
+     "rows_delta": 2709,
+     "exclusive": true,
+     "wal_bytes_delta": 0,
+     "elapsed_s": 0.087,
+     "bytes_unknown_reason": null,
+     "dbstat_bytes_cumulative_after": null
+    }
+   }
+  },
+  "2022-06-30": {
+   "n_samples": 2775,
+   "wal_peak_bytes": 0,
+   "wal_peak_is_lower_bound": true,
+   "wal_bytes_before_checkpoint": null,
+   "wal_bytes_after_checkpoint": null,
+   "shm_peak_bytes": 163840,
+   "temp_etilqs_peak_bytes": 0,
+   "rollback_journal_peak_bytes": 0,
+   "free_low_water_bytes": 4421623808,
+   "free_bytes_at_mark": null,
+   "db_file_bytes_before": 171016192,
+   "db_file_bytes_after": null,
+   "db_file_growth_bytes": null,
+   "page_count_before": 41752,
+   "page_count_after": null,
+   "page_count_delta": null,
+   "page_size": 4096,
+   "page_growth_bytes": null,
+   "checkpoints": [],
+   "per_table": {}
+  }
+ },
+ "meter_report_after_abort": {
+  "meter_version": "pit_replay_meter/1.0",
+  "label": "pit_replay pilot",
+  "generated_at": "2026-09-22T00:12:26+00:00",
+  "db_path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pilot.db",
+  "volume": "C:",
+  "protected_store": false,
+  "model_version": "equity_shaffer_v2_pit_SURVIVOR_ONLY_DIAGNOSTIC",
+  "method": {
+   "per_table_bytes": "PAGE_COUNT_DELTA_SERIALIZED",
+   "dbstat_available": false,
+   "dbstat_reason": "OperationalError: no such table: dbstat",
+   "dbstat_compile_option_present": false,
+   "sqlite_version": "3.50.4",
+   "python_version": "3.14.5",
+   "fallback_note": "dbstat is NOT compiled into this sqlite3. Per-table bytes come from page_count deltas taken around a scope in which one table is written, and are only as exact as that serialisation. Each scope reports whether attribution was exclusive."
+  },
+  "db": {
+   "page_size": 4096,
+   "file_bytes_before": 2117632,
+   "file_bytes_after": 171016192,
+   "file_growth_bytes": 168898560,
+   "page_count_before": 517,
+   "page_count_after": 41752,
+   "page_bytes_before": 2117632,
+   "page_bytes_after": 171016192,
+   "page_growth_bytes": 168898560,
+   "freelist_count_before": 0,
+   "freelist_count_after": 0,
+   "freelist_bytes_after": 0,
+   "retained_bytes_after_checkpoint": 171016192,
+   "retained_growth_bytes": 168898560,
+   "retained_reason": null,
+   "rebaselines": [
+    {
+     "reason": "parents seeded (16890 pit_entity, 946 pit_peer_set) and checkpointed; the seed is a one-time cost and is excluded from BytesPerEntityDate",
+     "at": "2026-09-21T23:49:44+00:00",
+     "previous_file_bytes": 434176,
+     "new_baseline_file_bytes": 2117632,
+     "seed_bytes": 1683456,
+     "seed_bytes_reason": null
+    }
+   ],
+   "seed_bytes_excluded": 1683456,
+   "growth_basis": "measured from the last rebaseline, so seeded parent rows are NOT counted as replay growth"
+  },
+  "wal": {
+   "peak_bytes": 69281952,
+   "peak_is_lower_bound": true,
+   "peak_caveat": "the maximum over every observation the meter made -- background samples plus scope, checkpoint and mark boundaries. Nothing is observed BETWEEN observations, so the true peak is >= this. Budget with the safety reserve, not with this number alone.",
+   "peak_source": "sampler",
+   "peak_bytes_background_sampler_only": 69281952,
+   "peak_at_elapsed_s": 789.12,
+   "peak_under_mark": "2019-06-28",
+   "final_bytes": 0,
+   "bytes_after_last_checkpoint": 0,
+   "n_checkpoints": 3,
+   "busy_refusals": 0,
+   "checkpoints": [
+    {
+     "mode": "TRUNCATE",
+     "at": "2026-09-21T23:49:44+00:00",
+     "mark": "seed",
+     "wal_bytes_before": 1718072,
+     "wal_bytes_before_reason": null,
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "error": null,
+     "fully_checkpointed": true,
+     "elapsed_s": 0.0092,
+     "wal_bytes_after": 0,
+     "wal_bytes_after_reason": null,
+     "db_file_bytes_after": 2117632,
+     "db_file_bytes_after_reason": null,
+     "page_count_after": 517,
+     "page_bytes_after": 2117632,
+     "return_semantics": "SQLite returns (busy, log_pages, checkpointed). In TRUNCATE and RESTART modes a SUCCESSFUL checkpoint resets the log, so (0, 0, 0) means 'done and the WAL was reset', NOT 'nothing happened' -- read wal_bytes_before/after to see the work. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature: a reader is holding the checkpointer off and the WAL will keep growing."
+    },
+    {
+     "mode": "TRUNCATE",
+     "at": "2026-09-21T23:56:04+00:00",
+     "mark": "2014-06-30",
+     "wal_bytes_before": 61350952,
+     "wal_bytes_before_reason": null,
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "error": null,
+     "fully_checkpointed": true,
+     "elapsed_s": 0.0062,
+     "wal_bytes_after": 0,
+     "wal_bytes_after_reason": null,
+     "db_file_bytes_after": 92065792,
+     "db_file_bytes_after_reason": null,
+     "page_count_after": 22477,
+     "page_bytes_after": 92065792,
+     "return_semantics": "SQLite returns (busy, log_pages, checkpointed). In TRUNCATE and RESTART modes a SUCCESSFUL checkpoint resets the log, so (0, 0, 0) means 'done and the WAL was reset', NOT 'nothing happened' -- read wal_bytes_before/after to see the work. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature: a reader is holding the checkpointer off and the WAL will keep growing."
+    },
+    {
+     "mode": "TRUNCATE",
+     "at": "2026-09-22T00:02:54+00:00",
+     "mark": "2019-06-28",
+     "wal_bytes_before": 69281952,
+     "wal_bytes_before_reason": null,
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "error": null,
+     "fully_checkpointed": true,
+     "elapsed_s": 0.0069,
+     "wal_bytes_after": 0,
+     "wal_bytes_after_reason": null,
+     "db_file_bytes_after": 171016192,
+     "db_file_bytes_after_reason": null,
+     "page_count_after": 41752,
+     "page_bytes_after": 171016192,
+     "return_semantics": "SQLite returns (busy, log_pages, checkpointed). In TRUNCATE and RESTART modes a SUCCESSFUL checkpoint resets the log, so (0, 0, 0) means 'done and the WAL was reset', NOT 'nothing happened' -- read wal_bytes_before/after to see the work. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature: a reader is holding the checkpointer off and the WAL will keep growing."
+    }
+   ]
+  },
+  "shm": {
+   "peak_bytes": 163840,
+   "final_bytes": 163840
+  },
+  "temp": {
+   "dir": "C:\\Users\\logan\\AppData\\Local\\Temp",
+   "same_volume_as_db": true,
+   "scanned": true,
+   "etilqs_peak_bytes": 0,
+   "etilqs_peak_files": [],
+   "rollback_journal_peak_bytes": 0,
+   "peak_bytes": 0,
+   "scan_every_n_samples": 4,
+   "peak_is_lower_bound": true,
+   "peak_caveat": "etilqs_* scratch files are created and unlinked between scans; a short-lived sorter spill can be invisible at this scan rate. Treat the number as a floor, and note that this temp directory is on the SAME volume as the database when same_volume_as_db is true -- temp space and retained growth then compete."
+  },
+  "free_space": {
+   "floor_bytes": 7516192768,
+   "before_bytes": 10530529280,
+   "after_bytes": 4436881408,
+   "low_water_bytes": 4421623808,
+   "low_water_at_elapsed_s": 1175.247,
+   "low_water_under_mark": "2022-06-30",
+   "consumed_bytes": 6093647872,
+   "floor_breached": true,
+   "floor_breached_at": "2026-09-22T00:05:08+00:00"
+  },
+  "timing": {
+   "started_at": "2026-09-21T23:49:44+00:00",
+   "ended_at": "2026-09-22T00:12:26+00:00",
+   "elapsed_s": 1362.059
+  },
+  "work": {
+   "entity_dates": 15234,
+   "entity_dates_reason": null,
+   "rows_written_by_table": {
+    "pit_feature": 396084,
+    "pit_pillar_score": 121872,
+    "pit_score": 11164
+   },
+   "marks": [
+    {
+     "label": "2014-06-30",
+     "at": "2026-09-21T23:56:04+00:00",
+     "elapsed_s": 380.973,
+     "entity_dates_this_mark": 8132,
+     "entity_dates_cumulative": 8132,
+     "db_file_bytes": 92065792,
+     "db_page_bytes": 92065792,
+     "wal_bytes": 0,
+     "free_bytes": 10441547776,
+     "wal_peak_bytes_so_far": 61350952,
+     "free_low_water_so_far": 10380140544
+    },
+    {
+     "label": "2019-06-28",
+     "at": "2026-09-22T00:02:54+00:00",
+     "elapsed_s": 790.23,
+     "entity_dates_this_mark": 7102,
+     "entity_dates_cumulative": 15234,
+     "db_file_bytes": 171016192,
+     "db_page_bytes": 171016192,
+     "wal_bytes": 0,
+     "free_bytes": 10359881728,
+     "wal_peak_bytes_so_far": 69281952,
+     "free_low_water_so_far": 10290544640
+    }
+   ],
+   "entity_dates_per_second": 11.185
+  },
+  "per_table_bytes": {
+   "method": "PAGE_COUNT_DELTA_SERIALIZED",
+   "dbstat_available": false,
+   "dbstat_reason": "OperationalError: no such table: dbstat",
+   "tables": {
+    "pit_feature": {
+     "method": "PAGE_COUNT_DELTA_SERIALIZED",
+     "page_delta_bytes": 114143232,
+     "scopes": 2,
+     "exclusive": true,
+     "rows": 198042,
+     "bytes": 114143232,
+     "bytes_per_row": 576.3587117884085
+    },
+    "pit_pillar_score": {
+     "method": "PAGE_COUNT_DELTA_SERIALIZED",
+     "page_delta_bytes": 45195264,
+     "scopes": 2,
+     "exclusive": true,
+     "rows": 60936,
+     "bytes": 45195264,
+     "bytes_per_row": 741.684127609295
+    },
+    "pit_score": {
+     "method": "PAGE_COUNT_DELTA_SERIALIZED",
+     "page_delta_bytes": 9535488,
+     "scopes": 2,
+     "exclusive": true,
+     "rows": 5582,
+     "bytes": 9535488,
+     "bytes_per_row": 1708.2565388749551
+    }
+   }
+  },
+  "table_scopes": [
+   {
+    "table": "pit_feature",
+    "method": "PAGE_COUNT_DELTA_SERIALIZED",
+    "mark": "2014-06-30",
+    "page_count_before": 523,
+    "page_count_before_reason": null,
+    "page_count_after": 15399,
+    "page_count_after_reason": null,
+    "elapsed_s": 1.4882,
+    "wal_bytes_delta": 61313840,
+    "pages_delta": 14876,
+    "bytes": 60932096,
+    "freelist_delta": 0,
+    "rows_delta": 105716,
+    "other_tables_changed": {},
+    "exclusive": true,
+    "bytes_per_row": 576.3753452646714
+   },
+   {
+    "table": "pit_pillar_score",
+    "method": "PAGE_COUNT_DELTA_SERIALIZED",
+    "mark": "2014-06-30",
+    "page_count_before": 15399,
+    "page_count_before_reason": null,
+    "page_count_after": 21281,
+    "page_count_after_reason": null,
+    "elapsed_s": 0.4938,
+    "wal_bytes_delta": 0,
+    "pages_delta": 5882,
+    "bytes": 24092672,
+    "freelist_delta": 0,
+    "rows_delta": 32528,
+    "other_tables_changed": {},
+    "exclusive": true,
+    "bytes_per_row": 740.6748647319233
+   },
+   {
+    "table": "pit_score",
+    "method": "PAGE_COUNT_DELTA_SERIALIZED",
+    "mark": "2014-06-30",
+    "page_count_before": 21281,
+    "page_count_before_reason": null,
+    "page_count_after": 22477,
+    "page_count_after_reason": null,
+    "elapsed_s": 0.0789,
+    "wal_bytes_delta": 0,
+    "pages_delta": 1196,
+    "bytes": 4898816,
+    "freelist_delta": 0,
+    "rows_delta": 2873,
+    "other_tables_changed": {},
+    "exclusive": true,
+    "bytes_per_row": 1705.1221719457014
+   },
+   {
+    "table": "pit_feature",
+    "method": "PAGE_COUNT_DELTA_SERIALIZED",
+    "mark": "2019-06-28",
+    "page_count_before": 22477,
+    "page_count_before_reason": null,
+    "page_count_after": 35468,
+    "page_count_after_reason": null,
+    "elapsed_s": 2.0235,
+    "wal_bytes_delta": 69281952,
+    "pages_delta": 12991,
+    "bytes": 53211136,
+    "freelist_delta": 0,
+    "rows_delta": 92326,
+    "other_tables_changed": {},
+    "exclusive": true,
+    "bytes_per_row": 576.33966596625
+   },
+   {
+    "table": "pit_pillar_score",
+    "method": "PAGE_COUNT_DELTA_SERIALIZED",
+    "mark": "2019-06-28",
+    "page_count_before": 35468,
+    "page_count_before_reason": null,
+    "page_count_after": 40620,
+    "page_count_after_reason": null,
+    "elapsed_s": 0.6089,
+    "wal_bytes_delta": 0,
+    "pages_delta": 5152,
+    "bytes": 21102592,
+    "freelist_delta": 0,
+    "rows_delta": 28408,
+    "other_tables_changed": {},
+    "exclusive": true,
+    "bytes_per_row": 742.8397634469163
+   },
+   {
+    "table": "pit_score",
+    "method": "PAGE_COUNT_DELTA_SERIALIZED",
+    "mark": "2019-06-28",
+    "page_count_before": 40620,
+    "page_count_before_reason": null,
+    "page_count_after": 41752,
+    "page_count_after_reason": null,
+    "elapsed_s": 0.0872,
+    "wal_bytes_delta": 0,
+    "pages_delta": 1132,
+    "bytes": 4636672,
+    "freelist_delta": 0,
+    "rows_delta": 2709,
+    "other_tables_changed": {},
+    "exclusive": true,
+    "bytes_per_row": 1711.5806570690293
+   }
+  ],
+  "derived": {
+   "bytes_per_entity_date": 11086.947617172114,
+   "bytes_per_entity_date_basis": "retained DB growth after the last clean TRUNCATE checkpoint, divided by entity-dates processed"
+  },
+  "samples": {
+   "requested_hz": 5.0,
+   "interval_s": 0.2,
+   "n_samples": 6628,
+   "errors": null,
+   "n_thread_samples": 6605,
+   "n_boundary_samples": 23,
+   "achieved_mean_interval_s": 0.2062,
+   "max_gap_s": 0.2992,
+   "gaps_over_2x_interval": 0
+  },
+  "notes": [
+   "rebaselined at 2026-09-21T23:49:44+00:00: parents seeded (16890 pit_entity, 946 pit_peer_set) and checkpointed; the seed is a one-time cost and is excluded from BytesPerEntityDate (seed cost 1683456 B); growth and bytes-per-entity-date are measured from HERE, so the seed is excluded from the replay's per-row cost"
+  ],
+  "unknown": {}
+ },
+ "pilot_db_final": {
+  "path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pilot.db",
+  "file_bytes": 171016192,
+  "wal_bytes": 0,
+  "shm_bytes": 32768,
+  "row_counts": {
+   "pit_feature": 198042,
+   "pit_pillar_score": 60936,
+   "pit_score": 5582,
+   "pit_replay_run": 1,
+   "pit_entity": 16890,
+   "pit_peer_set": 946
+  },
+  "rows_by_as_of_date": {
+   "pit_feature": {
+    "2014-06-30": 105716,
+    "2019-06-28": 92326
+   },
+   "pit_pillar_score": {
+    "2014-06-30": 32528,
+    "2019-06-28": 28408
+   },
+   "pit_score": {
+    "2014-06-30": 2873,
+    "2019-06-28": 2709
+   }
+  }
+ },
+ "free_bytes_after_run": 4437012480,
+ "freeze_after": {
+  "intact": true,
+  "digest": "2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764",
+  "unchanged": true
+ },
+ "main_store": {
+  "path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pit.db",
+  "file_bytes": 9632415744,
+  "wal_bytes": 0
+ }
+}

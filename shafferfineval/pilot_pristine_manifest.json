@@ -1,0 +1,494 @@
+{
+  "cheap_mode": false,
+  "code": {
+    "branch": "claude/market-signal-engine-328vyy",
+    "committed_at": "2026-09-20T19:58:55Z",
+    "dirty": true,
+    "dirty_sample": [
+      "M shafferfineval/daily_job.py",
+      " M shafferfineval/ml_lab.py",
+      " M shafferfineval/option_data.py",
+      " M shafferfineval/refresh.py",
+      " M shafferfineval/storage.py",
+      " M shafferfineval/test_pipeline_growth.py",
+      "?? shafferfineval/docs/",
+      "?? shafferfineval/pit_archive/",
+      "?? shafferfineval/pit_benchmark.py",
+      "?? shafferfineval/pit_beta_study.py",
+      "?? shafferfineval/pit_cohort_eps.py",
+      "?? shafferfineval/pit_cohort_measure.py"
+    ],
+    "n_dirty_paths": 99,
+    "reading": "dirty=True means HEAD does NOT describe the code that ran. The revision is recorded as a pointer, not as a reproduction guarantee.",
+    "revision": "c9b405049c2707bb1ae22a5dca98b73f6a0a1400",
+    "short": "c9b405049c27"
+  },
+  "db": {
+    "data_version": 2,
+    "data_version_reading": "PRAGMA data_version is a per-CONNECTION change counter, not a content identity. It is comparable only against a later read on THE SAME connection, where a change means another process committed to the store. Two different connections may report different values over identical content; do not compare across processes.",
+    "exists": true,
+    "freelist_bytes": 187138048,
+    "freelist_count": 45688,
+    "journal_mode": "wal",
+    "n_schema_objects": 120,
+    "page_count": 2351664,
+    "page_size": 4096,
+    "pages_bytes": 9632415744,
+    "path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pit.db",
+    "pit_pillar_score_present": false,
+    "schema_sha256": "fc9446f0194129b7f9a99ed5002fc43ea3f11e3767eafdf904f923829151ef7f",
+    "schema_sha256_covers": "sqlite_master (type, name, tbl_name, sql) for every table, index, trigger and view -- the SCHEMA, not one byte of the data",
+    "shm_file_bytes": 32768,
+    "size_bytes": 9632415744,
+    "size_gib": 8.9709,
+    "wal_file_bytes": 0
+  },
+  "disk": {
+    "floor_basis": "CONVENTION, not a measurement. 7.5 GiB gate / 7.0 GiB per-date abort. The measurement that should replace them -- bytes per entity-date, peak WAL, peak temp -- is what the sizing pilot is for.",
+    "free_bytes": 10533462016,
+    "free_gib": 9.81,
+    "gate_floor_bytes": 8053063680,
+    "gate_floor_gib": 7.5,
+    "per_date_abort_floor_bytes": 7516192768,
+    "per_date_abort_floor_gib": 7.0,
+    "total_bytes": 254945894400,
+    "total_gib": 237.437,
+    "used_bytes": 244412432384,
+    "used_pct": 95.9,
+    "volume": "C:"
+  },
+  "elapsed_seconds": 8.27,
+  "fingerprint": {
+    "caveat": "FINGERPRINT, NOT A HASH OF CONTENTS. (row count, MIN(rowid), MAX(rowid)) per table detects inserts and deletes. It does NOT detect an in-place UPDATE that leaves the count and the rowid range unchanged. Any claim that the source store was unchanged is supported only to this strength.",
+    "cheap_mode": false,
+    "elapsed_seconds": 5.35,
+    "is_a_hash_of_contents": false,
+    "tables": {
+      "pit_calendar": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 8467,
+        "min_rowid": 1,
+        "n_rows": 8467
+      },
+      "pit_corporate_action": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 70151,
+        "min_rowid": 1,
+        "n_rows": 70151
+      },
+      "pit_curve_obs": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 99558,
+        "min_rowid": 1,
+        "n_rows": 99558
+      },
+      "pit_entity": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 386925,
+        "min_rowid": 1,
+        "n_rows": 16890
+      },
+      "pit_entity_exit": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 9,
+        "min_rowid": 1,
+        "n_rows": 7
+      },
+      "pit_entity_name": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 15,
+        "min_rowid": 1,
+        "n_rows": 15
+      },
+      "pit_entity_sic": {
+        "count_seconds": 0.01,
+        "heavy": false,
+        "max_rowid": 410402,
+        "min_rowid": 1,
+        "n_rows": 410402
+      },
+      "pit_eps_obs": {
+        "count_seconds": 0.05,
+        "heavy": false,
+        "max_rowid": 888648,
+        "min_rowid": 1,
+        "n_rows": 888486
+      },
+      "pit_eps_ttm": {
+        "count_seconds": 0.01,
+        "heavy": false,
+        "max_rowid": 147914,
+        "min_rowid": 1,
+        "n_rows": 147914
+      },
+      "pit_fact": {
+        "count_seconds": 0.62,
+        "heavy": true,
+        "max_rowid": 14112938,
+        "min_rowid": 1,
+        "n_rows": 14072934
+      },
+      "pit_listing": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 2607,
+        "min_rowid": 1,
+        "n_rows": 2576
+      },
+      "pit_listing_status": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 247938,
+        "min_rowid": 2,
+        "n_rows": 3932
+      },
+      "pit_macro_obs": {
+        "count_seconds": 0.01,
+        "heavy": false,
+        "max_rowid": 248934,
+        "min_rowid": 1,
+        "n_rows": 248934
+      },
+      "pit_peer_member": {
+        "count_seconds": 0.04,
+        "heavy": true,
+        "max_rowid": 3069260,
+        "min_rowid": 1,
+        "n_rows": 3069260
+      },
+      "pit_peer_set": {
+        "count_seconds": 0.0,
+        "heavy": false,
+        "max_rowid": 39038,
+        "min_rowid": 1,
+        "n_rows": 39038
+      },
+      "pit_price_bar": {
+        "count_seconds": 0.21,
+        "heavy": true,
+        "max_rowid": 9313319,
+        "min_rowid": 1,
+        "n_rows": 9313319
+      }
+    }
+  },
+  "freeze": {
+    "can_execute_reasons": [],
+    "can_execute_replay": true,
+    "current_digest": "2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764",
+    "drifted": [],
+    "freeze_version": "spec_freeze_v3",
+    "frozen_at": "2026-09-21",
+    "frozen_digest": "2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764",
+    "intact": true,
+    "lineage": [
+      {
+        "digest": "7a844dca245cfb37ea6722d8e34a9d9407f82e2210ec17f62605aa8ab40f7843",
+        "freeze_version": "spec_freeze_v1",
+        "frozen_at": "2026-09-21",
+        "n_components": 27,
+        "rows_it_ever_produced": 0,
+        "status": "FROZEN_BUT_NONEXECUTABLE",
+        "status_reason": "PILLAR_WEIGHT_SEMANTIC_CONFLICT",
+        "superseded_by": "spec_freeze_v2"
+      },
+      {
+        "digest": "5219bdd5902a220bbce6fc4b3bb68aeac17ee34928d340103be24ef85fd31462",
+        "freeze_version": "spec_freeze_v2",
+        "frozen_at": "2026-09-21",
+        "n_components": 32,
+        "rows_it_ever_produced": 0,
+        "status": "FROZEN_BUT_NONEXECUTABLE",
+        "status_reason": "MISSING_WITHIN_BLOCK_WEIGHTS",
+        "superseded_by": "spec_freeze_v3"
+      },
+      {
+        "digest": "2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764",
+        "freeze_version": "spec_freeze_v3",
+        "frozen_at": "2026-09-21",
+        "n_components": 38,
+        "rows_it_ever_produced": 0,
+        "rows_measured_at": "2026-09-21T23:47:09Z",
+        "status": "FROZEN_AND_EXECUTABLE",
+        "status_reason": "",
+        "superseded_by": null
+      }
+    ],
+    "lineage_note": "A lineage that keeps only its survivors is a marketing document. FREEZE_V1 and FREEZE_V2 are kept with the defects that made them non-executable, and both produced 0 rows.",
+    "missing_components": [],
+    "model_version": "equity_shaffer_v2_pit_SURVIVOR_ONLY_DIAGNOSTIC",
+    "n_components": 38,
+    "sample_scope": "SURVIVOR_ONLY_DIAGNOSTIC"
+  },
+  "frozen_model_version": "equity_shaffer_v2_pit_SURVIVOR_ONLY_DIAGNOSTIC",
+  "full_replay_gate": {
+    "passed": false,
+    "reasons": [
+      "projected_retained_growth_bytes is UNKNOWN -- the sizing pilot has not measured it yet, so no required-space total may be formed",
+      "measured_peak_wal_bytes is UNKNOWN -- the sizing pilot has not measured it yet, so no required-space total may be formed",
+      "measured_peak_temp_bytes is UNKNOWN -- the sizing pilot has not measured it yet, so no required-space total may be formed"
+    ]
+  },
+  "gate": {
+    "contract": "THE REPLAY ENGINE MUST CALL gate() AND REFUSE BEFORE OPENING A WRITE TRANSACTION IF IT RETURNS False. Not after opening one and rolling back: a rolled-back transaction has already allocated a WAL, and a WAL is the failure mode this volume has already suffered once.",
+    "passed": true,
+    "reasons": []
+  },
+  "grid": {
+    "agrees_with_record": true,
+    "measured": {
+      "entity_dates": 1238663,
+      "entity_dates_seconds": 2.31,
+      "first": "2013-01-31",
+      "last": "2026-09-18",
+      "n_dates": 165
+    },
+    "recorded": {
+      "definition": "month-end trading sessions from pit_calendar (is_month_end=1); entity-dates = COUNT(DISTINCT pit_peer_set.as_of_date, pit_peer_member.entity_id)",
+      "entity_dates": 1238663,
+      "first": "2013-01-31",
+      "last": "2026-09-18",
+      "market": "XNYS",
+      "n_dates": 165,
+      "source": "measured 2026-09-21 against shafferfineval_pit.db"
+    }
+  },
+  "manifest_version": "replay_manifest_v1",
+  "model_shape": {
+    "block_map_version": "factor_block_map_v1",
+    "blocks": [
+      {
+        "block": "ebitda_strength",
+        "letter": "E",
+        "weight": 0.35
+      },
+      {
+        "block": "valuation",
+        "letter": "V",
+        "weight": 0.25
+      },
+      {
+        "block": "real_growth",
+        "letter": "G",
+        "weight": 0.15
+      },
+      {
+        "block": "financial_quality",
+        "letter": "Q",
+        "weight": 0.1
+      }
+    ],
+    "clamp_max": 85.0,
+    "clamp_min": -85.0,
+    "min_block_weight": 0.4,
+    "policy_weights_status": "NOT_EMPIRICALLY_OPTIMIZED",
+    "policy_weights_version": "POLICY_WEIGHTS_V1",
+    "renormalisation": "within-block: ALLOWED. cross-block: FORBIDDEN. Below MIN_BLOCK_WEIGHT emit NO score and record PARTIAL_SCORE_INSUFFICIENT_BLOCK_COVERAGE.",
+    "scale": 0.85,
+    "signature_version": "score_signature_v1",
+    "zero_weight_challengers": [
+      "ebitda_scale"
+    ]
+  },
+  "pilot": {
+    "dates": [
+      {
+        "agrees": true,
+        "as_of_date": "2014-06-30",
+        "measured_entities": 8132,
+        "on_the_grid": true,
+        "regime": "early regime, pre-2015 coverage",
+        "seconds": 0.01,
+        "stated_entities": 8132
+      },
+      {
+        "agrees": true,
+        "as_of_date": "2019-06-28",
+        "measured_entities": 7102,
+        "on_the_grid": true,
+        "regime": "mid regime, the coverage trough",
+        "seconds": 0.0,
+        "stated_entities": 7102
+      },
+      {
+        "agrees": true,
+        "as_of_date": "2022-06-30",
+        "measured_entities": 8033,
+        "on_the_grid": true,
+        "regime": "post-2020 regime",
+        "seconds": 0.01,
+        "stated_entities": 8033
+      },
+      {
+        "agrees": true,
+        "as_of_date": "2026-06-30",
+        "measured_entities": 7041,
+        "on_the_grid": true,
+        "regime": "current regime, nearest the grid end",
+        "seconds": 0.01,
+        "stated_entities": 7041
+      }
+    ],
+    "extrapolation_rule": "BytesPerEntityDate = DeltaDB / N_entity_dates, extrapolated over the 1238663 entity-date grid. NOT 'n dates x 55' -- the cross-sections differ in size by 15% and the grid is not a multiple of any one of them.",
+    "measured_entity_dates": 30308,
+    "n_dates": 4,
+    "pilot_share_of_grid_pct": 2.447,
+    "share_basis": "measured",
+    "stated_entity_dates": 30308
+  },
+  "pilot_db_exists": false,
+  "pilot_db_path": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pilot.db",
+  "purpose": "pristine-state snapshot for the SURVIVOR_ONLY_DIAGNOSTIC replay sizing pilot -- taken BEFORE the first replay row exists",
+  "read_only_promise": "the main store was opened mode=ro with PRAGMA query_only=1 and was never attached, indexed or vacuumed",
+  "replay_engine": {
+    "attribute": "ENGINE_VERSION",
+    "module": "pit_replay",
+    "version": "pit_replay/1.0"
+  },
+  "replay_tables": {
+    "adjacent_note": "Adjacent tables are REPORTED, never gated. Blocking a replay because an unrelated pipeline holds rows would be a refusal the replay could neither fix nor explain.",
+    "adjacent_tables": {
+      "pit_benchmark": {
+        "gated": false,
+        "n_rows": 2,
+        "proven_empty": false,
+        "state": "NONEMPTY"
+      },
+      "pit_label": {
+        "gated": false,
+        "n_rows": 2334978,
+        "proven_empty": false,
+        "state": "NONEMPTY"
+      },
+      "pit_label_run": {
+        "gated": false,
+        "n_rows": 3,
+        "proven_empty": false,
+        "state": "NONEMPTY"
+      },
+      "pit_label_set": {
+        "gated": false,
+        "n_rows": 1,
+        "proven_empty": false,
+        "state": "NONEMPTY"
+      },
+      "pit_model_lineage": {
+        "gated": false,
+        "n_rows": 29,
+        "proven_empty": false,
+        "state": "NONEMPTY"
+      },
+      "pit_path": {
+        "gated": false,
+        "n_rows": 499548,
+        "proven_empty": false,
+        "state": "NONEMPTY"
+      },
+      "pit_prediction": {
+        "gated": false,
+        "n_rows": 0,
+        "proven_empty": true,
+        "state": "EMPTY"
+      },
+      "pit_promotion": {
+        "gated": false,
+        "n_rows": 0,
+        "proven_empty": true,
+        "state": "EMPTY"
+      },
+      "pit_proposal": {
+        "gated": false,
+        "n_rows": 0,
+        "proven_empty": true,
+        "state": "EMPTY"
+      },
+      "pit_regime": {
+        "gated": false,
+        "n_rows": 0,
+        "proven_empty": true,
+        "state": "EMPTY"
+      },
+      "pit_sector_score": {
+        "gated": false,
+        "n_rows": 0,
+        "proven_empty": true,
+        "state": "EMPTY"
+      }
+    },
+    "all_replay_tables_at_zero": true,
+    "claim_expires": "This is the ONLY moment this claim can be made. It stops being true the instant the pilot writes its first row, which is why it is recorded before the engine exists rather than inferred afterwards.",
+    "not_proven_empty": [],
+    "tables": {
+      "pit_cohort_stat": {
+        "gated": true,
+        "n_rows": 0,
+        "note": "the table does not exist, so it holds no rows",
+        "proven_empty": true,
+        "role": "one row per peer set per as-of",
+        "state": "ABSENT"
+      },
+      "pit_company_intermediate": {
+        "gated": true,
+        "n_rows": 0,
+        "note": "the table does not exist, so it holds no rows",
+        "proven_empty": true,
+        "role": "one row per entity-date of per-company state",
+        "state": "ABSENT"
+      },
+      "pit_feature": {
+        "gated": true,
+        "n_rows": 0,
+        "proven_empty": true,
+        "role": "one row per entity-date-factor, with availability",
+        "state": "EMPTY"
+      },
+      "pit_hedge_snapshot": {
+        "gated": true,
+        "n_rows": 0,
+        "note": "the table does not exist, so it holds no rows",
+        "proven_empty": true,
+        "role": "hedge recommendation snapshots",
+        "state": "ABSENT"
+      },
+      "pit_pillar_score": {
+        "gated": true,
+        "n_rows": 0,
+        "note": "the table does not exist, so it holds no rows",
+        "proven_empty": true,
+        "role": "one row per entity-date-block (E/V/G/Q)",
+        "state": "ABSENT"
+      },
+      "pit_replay_run": {
+        "gated": true,
+        "n_rows": 0,
+        "proven_empty": true,
+        "role": "the run header: one row per replay",
+        "state": "EMPTY"
+      },
+      "pit_score": {
+        "gated": true,
+        "n_rows": 0,
+        "proven_empty": true,
+        "role": "one row per entity-date: the Shaffer Score",
+        "state": "EMPTY"
+      },
+      "pit_score_prediction": {
+        "gated": true,
+        "n_rows": 0,
+        "proven_empty": true,
+        "role": "the separately-versioned calibration",
+        "state": "EMPTY"
+      }
+    }
+  },
+  "sample_scope": "SURVIVOR_ONLY_DIAGNOSTIC",
+  "taken_at": "2026-09-21T23:47:09Z",
+  "taken_by": "pit_replay_manifest"
+}
+}

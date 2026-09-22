@@ -1,0 +1,2415 @@
+{
+  "candidate_verdicts": {
+    "effective_sic4_count": {
+      "better": "lower",
+      "median_by_rung": {
+        "office": 18.006,
+        "sic2": 3.365,
+        "sic3": 1.882,
+        "sic4": 1.0
+      },
+      "monotone_along_ladder": true,
+      "office_worse_than_sic2": true,
+      "size_matched_rows": [
+        {
+          "bucket": "542+",
+          "office": 18.006,
+          "office_worse": true,
+          "sic2": 3.285
+        }
+      ],
+      "survives_size_matched_control": true,
+      "verdict": "ADOPTED",
+      "why": "separates office from sic2 and KEEPS separating them at equal member count"
+    },
+    "log10_ebitda_span": {
+      "better": "lower",
+      "median_by_rung": {
+        "office": 2.471,
+        "sic2": 2.247,
+        "sic3": 2.286,
+        "sic4": 2.068
+      },
+      "monotone_along_ladder": false,
+      "office_worse_than_sic2": true,
+      "size_matched_rows": [
+        {
+          "bucket": "542+",
+          "office": 2.471,
+          "office_worse": false,
+          "sic2": 2.672
+        }
+      ],
+      "survives_size_matched_control": false,
+      "verdict": "REJECTED",
+      "why": "fails the size-matched control: inside at least one member-count bucket the office cohorts are NOT worse than the sic2 cohorts, so what looked like coherence was the member count"
+    },
+    "margin_iqr": {
+      "better": "lower",
+      "median_by_rung": {
+        "office": 0.342,
+        "sic2": 0.163,
+        "sic3": 0.207,
+        "sic4": 0.351
+      },
+      "monotone_along_ladder": false,
+      "office_worse_than_sic2": true,
+      "size_matched_rows": [
+        {
+          "bucket": "542+",
+          "office": 0.342,
+          "office_worse": false,
+          "sic2": 1.427
+        }
+      ],
+      "survives_size_matched_control": false,
+      "verdict": "REJECTED",
+      "why": "fails the size-matched control: inside at least one member-count bucket the office cohorts are NOT worse than the sic2 cohorts, so what looked like coherence was the member count"
+    },
+    "top_sic4_share": {
+      "better": "higher",
+      "median_by_rung": {
+        "office": 0.157,
+        "sic2": 0.436,
+        "sic3": 0.667,
+        "sic4": 1.0
+      },
+      "monotone_along_ladder": true,
+      "office_worse_than_sic2": true,
+      "size_matched_rows": [
+        {
+          "bucket": "542+",
+          "office": 0.157,
+          "office_worse": true,
+          "sic2": 0.438
+        }
+      ],
+      "survives_size_matched_control": true,
+      "verdict": "ADOPTED",
+      "why": "separates office from sic2 and KEEPS separating them at equal member count"
+    }
+  },
+  "coherence_adopted": [
+    "effective_sic4_count",
+    "top_sic4_share"
+  ],
+  "coherence_adopted_declared": [
+    "effective_sic4_count",
+    "top_sic4_share"
+  ],
+  "coherence_by_rung": {
+    "office": {
+      "effective_sic4_count": {
+        "max": 48.821,
+        "mean": 24.458,
+        "median": 18.006,
+        "min": 3.128,
+        "n": 676,
+        "p10": 10.714,
+        "p25": 13.426,
+        "p50": 18.006,
+        "p75": 36.512,
+        "p90": 40.974
+      },
+      "log10_ebitda_span": {
+        "max": 2.957,
+        "mean": 2.466,
+        "median": 2.471,
+        "min": 1.961,
+        "n": 676,
+        "p10": 2.133,
+        "p25": 2.283,
+        "p50": 2.471,
+        "p75": 2.659,
+        "p90": 2.747
+      },
+      "margin_iqr": {
+        "max": 1.144,
+        "mean": 0.377,
+        "median": 0.342,
+        "min": 0.107,
+        "n": 676,
+        "p10": 0.128,
+        "p25": 0.171,
+        "p50": 0.342,
+        "p75": 0.517,
+        "p90": 0.655
+      },
+      "margin_p10_p90": {
+        "max": 9.64,
+        "mean": 2.248,
+        "median": 1.048,
+        "min": 0.358,
+        "n": 676,
+        "p10": 0.564,
+        "p25": 0.748,
+        "p50": 1.048,
+        "p75": 3.358,
+        "p90": 5.649
+      },
+      "n_members": {
+        "max": 1310.0,
+        "mean": 910.117,
+        "median": 908.5,
+        "min": 542.0,
+        "n": 676,
+        "p10": 706.0,
+        "p25": 769.5,
+        "p50": 908.5,
+        "p75": 1008.25,
+        "p90": 1193.0
+      },
+      "top_sic4_share": {
+        "max": 0.542,
+        "mean": 0.17,
+        "median": 0.157,
+        "min": 0.056,
+        "n": 676,
+        "p10": 0.068,
+        "p25": 0.112,
+        "p50": 0.157,
+        "p75": 0.212,
+        "p90": 0.238
+      }
+    },
+    "sic2": {
+      "effective_sic4_count": {
+        "max": 18.705,
+        "mean": 4.493,
+        "median": 3.365,
+        "min": 1.038,
+        "n": 7317,
+        "p10": 1.6,
+        "p25": 2.13,
+        "p50": 3.365,
+        "p75": 5.717,
+        "p90": 8.631
+      },
+      "log10_ebitda_span": {
+        "max": 3.598,
+        "mean": 2.194,
+        "median": 2.247,
+        "min": 0.621,
+        "n": 4754,
+        "p10": 1.42,
+        "p25": 1.722,
+        "p50": 2.247,
+        "p75": 2.65,
+        "p90": 2.902
+      },
+      "margin_iqr": {
+        "max": 10.239,
+        "mean": 0.474,
+        "median": 0.163,
+        "min": 0.023,
+        "n": 5483,
+        "p10": 0.068,
+        "p25": 0.093,
+        "p50": 0.163,
+        "p75": 0.329,
+        "p90": 0.775
+      },
+      "margin_p10_p90": {
+        "max": 167.708,
+        "mean": 3.244,
+        "median": 0.593,
+        "min": 0.044,
+        "n": 5483,
+        "p10": 0.154,
+        "p25": 0.235,
+        "p50": 0.593,
+        "p75": 1.792,
+        "p90": 5.912
+      },
+      "n_members": {
+        "max": 1227.0,
+        "mean": 129.798,
+        "median": 49.0,
+        "min": 12.0,
+        "n": 7317,
+        "p10": 18.0,
+        "p25": 25.0,
+        "p50": 49.0,
+        "p75": 132.0,
+        "p90": 348.0
+      },
+      "top_sic4_share": {
+        "max": 0.981,
+        "mean": 0.453,
+        "median": 0.436,
+        "min": 0.09,
+        "n": 7317,
+        "p10": 0.195,
+        "p25": 0.304,
+        "p50": 0.436,
+        "p75": 0.581,
+        "p90": 0.759
+      }
+    },
+    "sic3": {
+      "effective_sic4_count": {
+        "max": 5.475,
+        "mean": 2.054,
+        "median": 1.882,
+        "min": 1.067,
+        "n": 8652,
+        "p10": 1.28,
+        "p25": 1.471,
+        "p50": 1.882,
+        "p75": 2.253,
+        "p90": 3.176
+      },
+      "log10_ebitda_span": {
+        "max": 4.006,
+        "mean": 2.265,
+        "median": 2.286,
+        "min": 0.834,
+        "n": 3423,
+        "p10": 1.372,
+        "p25": 1.708,
+        "p50": 2.286,
+        "p75": 2.77,
+        "p90": 3.121
+      },
+      "margin_iqr": {
+        "max": 40.218,
+        "mean": 0.539,
+        "median": 0.207,
+        "min": 0.023,
+        "n": 4757,
+        "p10": 0.072,
+        "p25": 0.114,
+        "p50": 0.207,
+        "p75": 0.401,
+        "p90": 0.999
+      },
+      "margin_p10_p90": {
+        "max": 295.116,
+        "mean": 5.55,
+        "median": 0.733,
+        "min": 0.049,
+        "n": 4757,
+        "p10": 0.177,
+        "p25": 0.297,
+        "p50": 0.733,
+        "p75": 2.109,
+        "p90": 7.266
+      },
+      "n_members": {
+        "max": 691.0,
+        "mean": 55.74,
+        "median": 25.0,
+        "min": 12.0,
+        "n": 8652,
+        "p10": 13.0,
+        "p25": 17.0,
+        "p50": 25.0,
+        "p75": 40.0,
+        "p90": 112.0
+      },
+      "top_sic4_share": {
+        "max": 0.968,
+        "mean": 0.658,
+        "median": 0.667,
+        "min": 0.239,
+        "n": 8652,
+        "p10": 0.429,
+        "p25": 0.538,
+        "p50": 0.667,
+        "p75": 0.8,
+        "p90": 0.878
+      }
+    },
+    "sic4": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 22393,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 4.158,
+        "mean": 2.037,
+        "median": 2.068,
+        "min": 0.415,
+        "n": 5196,
+        "p10": 1.188,
+        "p25": 1.487,
+        "p50": 2.068,
+        "p75": 2.497,
+        "p90": 2.842
+      },
+      "margin_iqr": {
+        "max": 118.406,
+        "mean": 1.296,
+        "median": 0.351,
+        "min": 0.019,
+        "n": 9549,
+        "p10": 0.097,
+        "p25": 0.169,
+        "p50": 0.351,
+        "p75": 0.754,
+        "p90": 2.647
+      },
+      "margin_p10_p90": {
+        "max": 2948.158,
+        "mean": 11.762,
+        "median": 1.195,
+        "min": 0.066,
+        "n": 9549,
+        "p10": 0.254,
+        "p25": 0.523,
+        "p50": 1.195,
+        "p75": 4.539,
+        "p90": 17.503
+      },
+      "n_members": {
+        "max": 760.0,
+        "mean": 45.64,
+        "median": 23.0,
+        "min": 12.0,
+        "n": 22393,
+        "p10": 13.0,
+        "p25": 15.0,
+        "p50": 23.0,
+        "p75": 42.0,
+        "p90": 93.0
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 22393,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    }
+  },
+  "coherence_measures": {
+    "effective_sic4_count": {
+      "better": "lower",
+      "definition": "1 / SUM(share_i^2) over the distinct SIC4 codes inside the cohort -- the inverse Herfindahl of its industry composition, i.e. the effective number of DIFFERENT four-digit industries the cohort is made of.",
+      "degenerate_at": "sic4, where it is 1.00 by construction -- every member shares the code. That is a definitional value and is reported as such; the informative comparison is sic2 against office, where neither value is fixed.",
+      "unit": "industries",
+      "verdict": "ADOPTED",
+      "why": "A peer group built of 140 effective industries is not a peer group. This is a COMPOSITION statistic: it is scale-free and does not move with the member count on its own -- doubling a cohort by adding more of the same industry leaves it unchanged."
+    },
+    "log10_ebitda_span": {
+      "better": "lower",
+      "definition": "p90 - p10 of log10(EBITDA) over cohort members with a positive EBITDA -- the cohort's size spread, in DECADES.",
+      "degenerate_at": "nothing",
+      "unit": "orders of magnitude",
+      "verdict": "REJECTED for the same reason, and by a narrower margin: 2.471 decades at office against 2.672 at sic2 among cohorts of the same size. Size dispersion inside ONE four-digit industry is already two decades, so there is little room left for a wider rung to add.",
+      "why": "Dispersion of the quantity actually being benchmarked. `ebitda_benchmark` asks what a RIGHT-SIZED peer earns, and a cohort spanning five decades of EBITDA has no right-sized peer to speak of. Logs because EBITDA is heavy-tailed across four orders of magnitude even inside one industry."
+    },
+    "margin_iqr": {
+      "better": "lower",
+      "definition": "p75 - p25 of the EBITDA margin (EBITDA / revenue) across cohort members whose EBITDA and revenue both resolve at a MATCHED period.",
+      "degenerate_at": "nothing -- it is a sample quantile spread at every rung",
+      "unit": "margin (ratio, not percent)",
+      "verdict": "REJECTED -- it separates the rungs over all peer sets and STOPS separating them at equal member count. At 542+ members the office cohorts' median IQR is 0.342 against sic2's 1.427: the office cohort is TIGHTER, because pooling twenty industries pulls the quartiles toward the aggregate centre. A dispersion statistic measures a population's variance, not whether it is one population.",
+      "why": "The owner's own test: 'a cohort whose EBITDA margins span three orders of magnitude is not a peer group'. An interquartile spread is a consistent estimator of the population spread, so unlike a range it does not grow with the member count. Whether it SEPARATES the rungs is an empirical question, and `pit_peer_coherence.py` answers it."
+    },
+    "top_sic4_share": {
+      "better": "higher",
+      "definition": "the share of the cohort's classified members contributed by its single largest SIC4 subgroup.",
+      "degenerate_at": "sic4, where it is 1.00 by construction",
+      "unit": "share of members",
+      "verdict": "ADOPTED",
+      "why": "The same composition fact read the other way round, and the one a person can check by eye: 'the biggest single industry in this 800-member peer group is 4% of it' is an argument nobody needs a statistic to follow."
+    }
+  },
+  "cost_of_the_ban": {
+    "already_unavailable_everywhere": 166837,
+    "assigned_office": 10156,
+    "by_division": {
+      "A Agriculture, Forestry & Fishing": {
+        "already_unavailable_everywhere": 0,
+        "assigned_office": 2582,
+        "kept": 2455,
+        "lost_admissible_set_too_thin": 2253,
+        "lost_no_admissible_peer_set": 2582,
+        "lost_pct_of_entity_dates": 66.32,
+        "lost_pct_of_office_served": 66.32,
+        "lost_total": 4835,
+        "n_entity_dates": 7290,
+        "office_would_have_served": 7290
+      },
+      "B Mining": {
+        "already_unavailable_everywhere": 0,
+        "assigned_office": 309,
+        "kept": 70674,
+        "lost_admissible_set_too_thin": 15003,
+        "lost_no_admissible_peer_set": 309,
+        "lost_pct_of_entity_dates": 17.81,
+        "lost_pct_of_office_served": 17.81,
+        "lost_total": 15312,
+        "n_entity_dates": 85986,
+        "office_would_have_served": 85986
+      },
+      "C Construction": {
+        "already_unavailable_everywhere": 8384,
+        "assigned_office": 0,
+        "kept": 1220,
+        "lost_admissible_set_too_thin": 2571,
+        "lost_no_admissible_peer_set": 0,
+        "lost_pct_of_entity_dates": 21.12,
+        "lost_pct_of_office_served": 84.18,
+        "lost_total": 2571,
+        "n_entity_dates": 12175,
+        "office_would_have_served": 3054
+      },
+      "D Manufacturing": {
+        "already_unavailable_everywhere": 1596,
+        "assigned_office": 2915,
+        "kept": 416238,
+        "lost_admissible_set_too_thin": 8663,
+        "lost_no_admissible_peer_set": 2915,
+        "lost_pct_of_entity_dates": 2.7,
+        "lost_pct_of_office_served": 4.8,
+        "lost_total": 11578,
+        "n_entity_dates": 429412,
+        "office_would_have_served": 241122
+      },
+      "E Transport, Comms & Utilities": {
+        "already_unavailable_everywhere": 0,
+        "assigned_office": 1705,
+        "kept": 85056,
+        "lost_admissible_set_too_thin": 5545,
+        "lost_no_admissible_peer_set": 1705,
+        "lost_pct_of_entity_dates": 7.85,
+        "lost_pct_of_office_served": 10.89,
+        "lost_total": 7250,
+        "n_entity_dates": 92306,
+        "office_would_have_served": 66600
+      },
+      "F Wholesale Trade": {
+        "already_unavailable_everywhere": 0,
+        "assigned_office": 0,
+        "kept": 28902,
+        "lost_admissible_set_too_thin": 0,
+        "lost_no_admissible_peer_set": 0,
+        "lost_pct_of_entity_dates": 0.0,
+        "lost_pct_of_office_served": 0.0,
+        "lost_total": 0,
+        "n_entity_dates": 28902,
+        "office_would_have_served": 28902
+      },
+      "G Retail Trade": {
+        "already_unavailable_everywhere": 0,
+        "assigned_office": 0,
+        "kept": 45468,
+        "lost_admissible_set_too_thin": 11675,
+        "lost_no_admissible_peer_set": 0,
+        "lost_pct_of_entity_dates": 20.43,
+        "lost_pct_of_office_served": 20.43,
+        "lost_total": 11675,
+        "n_entity_dates": 57143,
+        "office_would_have_served": 57143
+      },
+      "H Finance, Insurance & Real Estate": {
+        "already_unavailable_everywhere": 156095,
+        "assigned_office": 0,
+        "kept": 140118,
+        "lost_admissible_set_too_thin": 0,
+        "lost_no_admissible_peer_set": 0,
+        "lost_pct_of_entity_dates": 0.0,
+        "lost_pct_of_office_served": 0.0,
+        "lost_total": 0,
+        "n_entity_dates": 296213,
+        "office_would_have_served": 23121
+      },
+      "I Services": {
+        "already_unavailable_everywhere": 0,
+        "assigned_office": 2378,
+        "kept": 224417,
+        "lost_admissible_set_too_thin": 1412,
+        "lost_no_admissible_peer_set": 2378,
+        "lost_pct_of_entity_dates": 1.66,
+        "lost_pct_of_office_served": 3.72,
+        "lost_total": 3790,
+        "n_entity_dates": 228207,
+        "office_would_have_served": 101754
+      },
+      "J Public Administration": {
+        "already_unavailable_everywhere": 762,
+        "assigned_office": 267,
+        "kept": 0,
+        "lost_admissible_set_too_thin": 0,
+        "lost_no_admissible_peer_set": 267,
+        "lost_pct_of_entity_dates": 25.95,
+        "lost_pct_of_office_served": 100.0,
+        "lost_total": 267,
+        "n_entity_dates": 1029,
+        "office_would_have_served": 267
+      }
+    },
+    "by_year": {
+      "2013": {
+        "already_unavailable_everywhere": 11835,
+        "assigned_office": 506,
+        "kept": 84579,
+        "lost_admissible_set_too_thin": 3839,
+        "lost_no_admissible_peer_set": 506,
+        "lost_pct_of_entity_dates": 4.31,
+        "lost_pct_of_office_served": 8.01,
+        "lost_total": 4345,
+        "n_entity_dates": 100759,
+        "office_would_have_served": 54241
+      },
+      "2014": {
+        "already_unavailable_everywhere": 11288,
+        "assigned_office": 502,
+        "kept": 83282,
+        "lost_admissible_set_too_thin": 2592,
+        "lost_no_admissible_peer_set": 502,
+        "lost_pct_of_entity_dates": 3.17,
+        "lost_pct_of_office_served": 6.18,
+        "lost_total": 3094,
+        "n_entity_dates": 97664,
+        "office_would_have_served": 50041
+      },
+      "2015": {
+        "already_unavailable_everywhere": 12177,
+        "assigned_office": 416,
+        "kept": 80235,
+        "lost_admissible_set_too_thin": 2671,
+        "lost_no_admissible_peer_set": 416,
+        "lost_pct_of_entity_dates": 3.23,
+        "lost_pct_of_office_served": 7.46,
+        "lost_total": 3087,
+        "n_entity_dates": 95499,
+        "office_would_have_served": 41363
+      },
+      "2016": {
+        "already_unavailable_everywhere": 10406,
+        "assigned_office": 631,
+        "kept": 76633,
+        "lost_admissible_set_too_thin": 3148,
+        "lost_no_admissible_peer_set": 631,
+        "lost_pct_of_entity_dates": 4.16,
+        "lost_pct_of_office_served": 8.71,
+        "lost_total": 3779,
+        "n_entity_dates": 90818,
+        "office_would_have_served": 43402
+      },
+      "2017": {
+        "already_unavailable_everywhere": 9774,
+        "assigned_office": 688,
+        "kept": 71579,
+        "lost_admissible_set_too_thin": 3026,
+        "lost_no_admissible_peer_set": 688,
+        "lost_pct_of_entity_dates": 4.37,
+        "lost_pct_of_office_served": 7.67,
+        "lost_total": 3714,
+        "n_entity_dates": 85067,
+        "office_would_have_served": 48395
+      },
+      "2018": {
+        "already_unavailable_everywhere": 9277,
+        "assigned_office": 791,
+        "kept": 72687,
+        "lost_admissible_set_too_thin": 3018,
+        "lost_no_admissible_peer_set": 791,
+        "lost_pct_of_entity_dates": 4.44,
+        "lost_pct_of_office_served": 8.08,
+        "lost_total": 3809,
+        "n_entity_dates": 85773,
+        "office_would_have_served": 47142
+      },
+      "2019": {
+        "already_unavailable_everywhere": 9458,
+        "assigned_office": 832,
+        "kept": 71270,
+        "lost_admissible_set_too_thin": 3705,
+        "lost_no_admissible_peer_set": 832,
+        "lost_pct_of_entity_dates": 5.32,
+        "lost_pct_of_office_served": 10.42,
+        "lost_total": 4537,
+        "n_entity_dates": 85265,
+        "office_would_have_served": 43561
+      },
+      "2020": {
+        "already_unavailable_everywhere": 10991,
+        "assigned_office": 896,
+        "kept": 68821,
+        "lost_admissible_set_too_thin": 2571,
+        "lost_no_admissible_peer_set": 896,
+        "lost_pct_of_entity_dates": 4.16,
+        "lost_pct_of_office_served": 8.32,
+        "lost_total": 3467,
+        "n_entity_dates": 83279,
+        "office_would_have_served": 41678
+      },
+      "2021": {
+        "already_unavailable_everywhere": 14986,
+        "assigned_office": 933,
+        "kept": 69579,
+        "lost_admissible_set_too_thin": 3110,
+        "lost_no_admissible_peer_set": 933,
+        "lost_pct_of_entity_dates": 4.56,
+        "lost_pct_of_office_served": 8.8,
+        "lost_total": 4043,
+        "n_entity_dates": 88608,
+        "office_would_have_served": 45969
+      },
+      "2022": {
+        "already_unavailable_everywhere": 16982,
+        "assigned_office": 922,
+        "kept": 75207,
+        "lost_admissible_set_too_thin": 2663,
+        "lost_no_admissible_peer_set": 922,
+        "lost_pct_of_entity_dates": 3.74,
+        "lost_pct_of_office_served": 7.75,
+        "lost_total": 3585,
+        "n_entity_dates": 95774,
+        "office_would_have_served": 46265
+      },
+      "2023": {
+        "already_unavailable_everywhere": 16051,
+        "assigned_office": 753,
+        "kept": 73076,
+        "lost_admissible_set_too_thin": 4372,
+        "lost_no_admissible_peer_set": 753,
+        "lost_pct_of_entity_dates": 5.44,
+        "lost_pct_of_office_served": 11.99,
+        "lost_total": 5125,
+        "n_entity_dates": 94252,
+        "office_would_have_served": 42736
+      },
+      "2024": {
+        "already_unavailable_everywhere": 12699,
+        "assigned_office": 915,
+        "kept": 70455,
+        "lost_admissible_set_too_thin": 4286,
+        "lost_no_admissible_peer_set": 915,
+        "lost_pct_of_entity_dates": 5.89,
+        "lost_pct_of_office_served": 12.53,
+        "lost_total": 5201,
+        "n_entity_dates": 88355,
+        "office_would_have_served": 41519
+      },
+      "2025": {
+        "already_unavailable_everywhere": 11462,
+        "assigned_office": 834,
+        "kept": 68094,
+        "lost_admissible_set_too_thin": 4086,
+        "lost_no_admissible_peer_set": 834,
+        "lost_pct_of_entity_dates": 5.82,
+        "lost_pct_of_office_served": 12.32,
+        "lost_total": 4920,
+        "n_entity_dates": 84476,
+        "office_would_have_served": 39949
+      },
+      "2026": {
+        "already_unavailable_everywhere": 9451,
+        "assigned_office": 537,
+        "kept": 49051,
+        "lost_admissible_set_too_thin": 4035,
+        "lost_no_admissible_peer_set": 537,
+        "lost_pct_of_entity_dates": 7.25,
+        "lost_pct_of_office_served": 15.78,
+        "lost_total": 4572,
+        "n_entity_dates": 63074,
+        "office_would_have_served": 28978
+      }
+    },
+    "kept": 1014548,
+    "lost_admissible_set_too_thin": 47122,
+    "lost_no_admissible_peer_set": 10156,
+    "lost_pct_of_entity_dates": 4.62,
+    "lost_pct_of_office_served": 9.31,
+    "lost_total": 57278,
+    "n_entity_dates": 1238663,
+    "office_would_have_served": 615239
+  },
+  "db": "C:\\Users\\logan\\shafferfineval-app\\shafferfineval\\shafferfineval_pit.db",
+  "full_grid": true,
+  "grid": {
+    "first": "2013-01-31",
+    "last": "2026-09-18",
+    "n_dates": 165
+  },
+  "index_validation": {
+    "dates": [
+      "2013-01-31",
+      "2026-09-18"
+    ],
+    "disagreements": [],
+    "n_compared": 6477,
+    "n_disagreements": 0,
+    "seconds": 54.7
+  },
+  "ladder_version": "concept_ladder_v2",
+  "measured_at": "2026-09-21T19:57:17+00:00",
+  "min_margin_members": 12,
+  "model_version": "equity_shaffer_v1_pit",
+  "n_peer_sets": 39038,
+  "peer_set_version": "peer_set_v1_sic",
+  "problems": [],
+  "resources": {
+    "free_bytes_end": 10515677184,
+    "free_bytes_min_observed": 10515677184,
+    "free_bytes_start": 10557288448,
+    "free_delta_bytes": -41611264,
+    "free_gib_min_observed": 9.79,
+    "peak_working_set_bytes": 313462784,
+    "peak_working_set_mib": 298.9,
+    "samples": 21,
+    "seconds": 116.5,
+    "wal_bytes_end": 3085912,
+    "wal_bytes_peak_observed": 4906952,
+    "wal_bytes_start": 3963472,
+    "wal_grew_during_run": true,
+    "wal_growth_note": "This module holds a mode=ro connection and CANNOT write. A WAL that grows during the run is ANOTHER process writing to the same store -- expected on this machine, and reported rather than attributed to this reader."
+  },
+  "sample_scope": "FULL_REPORTING_UNIVERSE",
+  "size_matched_control": {
+    "office|542+": {
+      "effective_sic4_count": {
+        "max": 48.821,
+        "mean": 24.458,
+        "median": 18.006,
+        "min": 3.128,
+        "n": 676,
+        "p10": 10.714,
+        "p25": 13.426,
+        "p50": 18.006,
+        "p75": 36.512,
+        "p90": 40.974
+      },
+      "log10_ebitda_span": {
+        "max": 2.957,
+        "mean": 2.466,
+        "median": 2.471,
+        "min": 1.961,
+        "n": 676,
+        "p10": 2.133,
+        "p25": 2.283,
+        "p50": 2.471,
+        "p75": 2.659,
+        "p90": 2.747
+      },
+      "margin_iqr": {
+        "max": 1.144,
+        "mean": 0.377,
+        "median": 0.342,
+        "min": 0.107,
+        "n": 676,
+        "p10": 0.128,
+        "p25": 0.171,
+        "p50": 0.342,
+        "p75": 0.517,
+        "p90": 0.655
+      },
+      "margin_p10_p90": {
+        "max": 9.64,
+        "mean": 2.248,
+        "median": 1.048,
+        "min": 0.358,
+        "n": 676,
+        "p10": 0.564,
+        "p25": 0.748,
+        "p50": 1.048,
+        "p75": 3.358,
+        "p90": 5.649
+      },
+      "n_members": {
+        "max": 1310.0,
+        "mean": 910.117,
+        "median": 908.5,
+        "min": 542.0,
+        "n": 676,
+        "p10": 706.0,
+        "p25": 769.5,
+        "p50": 908.5,
+        "p75": 1008.25,
+        "p90": 1193.0
+      },
+      "top_sic4_share": {
+        "max": 0.542,
+        "mean": 0.17,
+        "median": 0.157,
+        "min": 0.056,
+        "n": 676,
+        "p10": 0.068,
+        "p25": 0.112,
+        "p50": 0.157,
+        "p75": 0.212,
+        "p90": 0.238
+      }
+    },
+    "sic2|100-199": {
+      "effective_sic4_count": {
+        "max": 18.705,
+        "mean": 6.148,
+        "median": 5.073,
+        "min": 1.987,
+        "n": 1512,
+        "p10": 2.857,
+        "p25": 3.15,
+        "p50": 5.073,
+        "p75": 6.537,
+        "p90": 12.227
+      },
+      "log10_ebitda_span": {
+        "max": 3.598,
+        "mean": 2.486,
+        "median": 2.501,
+        "min": 0.762,
+        "n": 1298,
+        "p10": 1.97,
+        "p25": 2.207,
+        "p50": 2.501,
+        "p75": 2.741,
+        "p90": 2.997
+      },
+      "margin_iqr": {
+        "max": 8.701,
+        "mean": 0.438,
+        "median": 0.253,
+        "min": 0.058,
+        "n": 1456,
+        "p10": 0.094,
+        "p25": 0.145,
+        "p50": 0.253,
+        "p75": 0.42,
+        "p90": 0.83
+      },
+      "margin_p10_p90": {
+        "max": 167.708,
+        "mean": 3.773,
+        "median": 1.068,
+        "min": 0.097,
+        "n": 1456,
+        "p10": 0.289,
+        "p25": 0.552,
+        "p50": 1.068,
+        "p75": 2.862,
+        "p90": 8.019
+      },
+      "n_members": {
+        "max": 199.0,
+        "mean": 141.121,
+        "median": 132.0,
+        "min": 100.0,
+        "n": 1512,
+        "p10": 109.1,
+        "p25": 121.0,
+        "p50": 132.0,
+        "p75": 159.0,
+        "p90": 186.9
+      },
+      "top_sic4_share": {
+        "max": 0.628,
+        "mean": 0.354,
+        "median": 0.337,
+        "min": 0.09,
+        "n": 1512,
+        "p10": 0.167,
+        "p25": 0.241,
+        "p50": 0.337,
+        "p75": 0.479,
+        "p90": 0.538
+      }
+    },
+    "sic2|12-24": {
+      "effective_sic4_count": {
+        "max": 7.247,
+        "mean": 2.575,
+        "median": 1.993,
+        "min": 1.18,
+        "n": 1746,
+        "p10": 1.498,
+        "p25": 1.8,
+        "p50": 1.993,
+        "p75": 3.503,
+        "p90": 4.261
+      },
+      "log10_ebitda_span": {
+        "max": 2.765,
+        "mean": 1.675,
+        "median": 1.628,
+        "min": 1.022,
+        "n": 248,
+        "p10": 1.292,
+        "p25": 1.521,
+        "p50": 1.628,
+        "p75": 1.783,
+        "p90": 2.127
+      },
+      "margin_iqr": {
+        "max": 0.32,
+        "mean": 0.075,
+        "median": 0.067,
+        "min": 0.023,
+        "n": 472,
+        "p10": 0.034,
+        "p25": 0.046,
+        "p50": 0.067,
+        "p75": 0.097,
+        "p90": 0.122
+      },
+      "margin_p10_p90": {
+        "max": 14.919,
+        "mean": 0.324,
+        "median": 0.15,
+        "min": 0.044,
+        "n": 472,
+        "p10": 0.066,
+        "p25": 0.083,
+        "p50": 0.15,
+        "p75": 0.235,
+        "p90": 0.331
+      },
+      "n_members": {
+        "max": 24.0,
+        "mean": 18.334,
+        "median": 19.0,
+        "min": 12.0,
+        "n": 1746,
+        "p10": 14.0,
+        "p25": 15.0,
+        "p50": 19.0,
+        "p75": 21.0,
+        "p90": 23.0
+      },
+      "top_sic4_share": {
+        "max": 0.917,
+        "mean": 0.563,
+        "median": 0.579,
+        "min": 0.217,
+        "n": 1746,
+        "p10": 0.308,
+        "p25": 0.429,
+        "p50": 0.579,
+        "p75": 0.684,
+        "p90": 0.789
+      }
+    },
+    "sic2|200-399": {
+      "effective_sic4_count": {
+        "max": 18.456,
+        "mean": 7.147,
+        "median": 5.783,
+        "min": 1.903,
+        "n": 527,
+        "p10": 4.254,
+        "p25": 4.747,
+        "p50": 5.783,
+        "p75": 6.625,
+        "p90": 17.18
+      },
+      "log10_ebitda_span": {
+        "max": 3.47,
+        "mean": 2.601,
+        "median": 2.712,
+        "min": 1.816,
+        "n": 501,
+        "p10": 1.948,
+        "p25": 2.187,
+        "p50": 2.712,
+        "p75": 2.906,
+        "p90": 3.061
+      },
+      "margin_iqr": {
+        "max": 10.239,
+        "mean": 0.734,
+        "median": 0.35,
+        "min": 0.153,
+        "n": 527,
+        "p10": 0.219,
+        "p25": 0.238,
+        "p50": 0.35,
+        "p75": 0.813,
+        "p90": 1.021
+      },
+      "margin_p10_p90": {
+        "max": 152.713,
+        "mean": 4.501,
+        "median": 1.457,
+        "min": 0.381,
+        "n": 527,
+        "p10": 0.525,
+        "p25": 0.788,
+        "p50": 1.457,
+        "p75": 5.205,
+        "p90": 6.707
+      },
+      "n_members": {
+        "max": 397.0,
+        "mean": 297.97,
+        "median": 326.0,
+        "min": 200.0,
+        "n": 527,
+        "p10": 208.0,
+        "p25": 232.0,
+        "p50": 326.0,
+        "p75": 359.0,
+        "p90": 373.0
+      },
+      "top_sic4_share": {
+        "max": 0.655,
+        "mean": 0.337,
+        "median": 0.335,
+        "min": 0.09,
+        "n": 527,
+        "p10": 0.112,
+        "p25": 0.319,
+        "p50": 0.335,
+        "p75": 0.403,
+        "p90": 0.445
+      }
+    },
+    "sic2|25-49": {
+      "effective_sic4_count": {
+        "max": 8.667,
+        "mean": 3.101,
+        "median": 2.843,
+        "min": 1.042,
+        "n": 1935,
+        "p10": 1.305,
+        "p25": 1.67,
+        "p50": 2.843,
+        "p75": 3.777,
+        "p90": 5.408
+      },
+      "log10_ebitda_span": {
+        "max": 3.283,
+        "mean": 1.799,
+        "median": 1.71,
+        "min": 0.621,
+        "n": 1324,
+        "p10": 1.199,
+        "p25": 1.437,
+        "p50": 1.71,
+        "p75": 2.079,
+        "p90": 2.52
+      },
+      "margin_iqr": {
+        "max": 2.337,
+        "mean": 0.177,
+        "median": 0.113,
+        "min": 0.036,
+        "n": 1617,
+        "p10": 0.064,
+        "p25": 0.084,
+        "p50": 0.113,
+        "p75": 0.178,
+        "p90": 0.297
+      },
+      "margin_p10_p90": {
+        "max": 34.404,
+        "mean": 1.098,
+        "median": 0.302,
+        "min": 0.062,
+        "n": 1617,
+        "p10": 0.139,
+        "p25": 0.193,
+        "p50": 0.302,
+        "p75": 0.734,
+        "p90": 1.849
+      },
+      "n_members": {
+        "max": 49.0,
+        "mean": 33.935,
+        "median": 32.0,
+        "min": 25.0,
+        "n": 1935,
+        "p10": 26.0,
+        "p25": 28.0,
+        "p50": 32.0,
+        "p75": 39.0,
+        "p90": 44.0
+      },
+      "top_sic4_share": {
+        "max": 0.98,
+        "mean": 0.543,
+        "median": 0.521,
+        "min": 0.148,
+        "n": 1935,
+        "p10": 0.28,
+        "p25": 0.37,
+        "p50": 0.521,
+        "p75": 0.732,
+        "p90": 0.865
+      }
+    },
+    "sic2|400-541": {
+      "effective_sic4_count": {
+        "max": 7.07,
+        "mean": 4.186,
+        "median": 3.283,
+        "min": 2.92,
+        "n": 175,
+        "p10": 3.031,
+        "p25": 3.175,
+        "p50": 3.283,
+        "p75": 6.489,
+        "p90": 6.918
+      },
+      "log10_ebitda_span": {
+        "max": 2.774,
+        "mean": 2.586,
+        "median": 2.62,
+        "min": 2.304,
+        "n": 52,
+        "p10": 2.344,
+        "p25": 2.555,
+        "p50": 2.62,
+        "p75": 2.68,
+        "p90": 2.717
+      },
+      "margin_iqr": {
+        "max": 1.268,
+        "mean": 0.304,
+        "median": 0.218,
+        "min": 0.177,
+        "n": 52,
+        "p10": 0.187,
+        "p25": 0.202,
+        "p50": 0.218,
+        "p75": 0.236,
+        "p90": 0.246
+      },
+      "margin_p10_p90": {
+        "max": 9.759,
+        "mean": 1.915,
+        "median": 1.115,
+        "min": 0.817,
+        "n": 52,
+        "p10": 0.891,
+        "p25": 0.95,
+        "p50": 1.115,
+        "p75": 1.203,
+        "p90": 1.653
+      },
+      "n_members": {
+        "max": 540.0,
+        "mean": 466.217,
+        "median": 465.0,
+        "min": 400.0,
+        "n": 175,
+        "p10": 418.4,
+        "p25": 432.0,
+        "p50": 465.0,
+        "p75": 503.0,
+        "p90": 516.0
+      },
+      "top_sic4_share": {
+        "max": 0.493,
+        "mean": 0.434,
+        "median": 0.469,
+        "min": 0.314,
+        "n": 175,
+        "p10": 0.321,
+        "p25": 0.336,
+        "p50": 0.469,
+        "p75": 0.479,
+        "p90": 0.484
+      }
+    },
+    "sic2|50-99": {
+      "effective_sic4_count": {
+        "max": 14.356,
+        "mean": 6.67,
+        "median": 6.712,
+        "min": 1.038,
+        "n": 1050,
+        "p10": 2.557,
+        "p25": 3.424,
+        "p50": 6.712,
+        "p75": 9.222,
+        "p90": 9.858
+      },
+      "log10_ebitda_span": {
+        "max": 3.525,
+        "mean": 2.078,
+        "median": 2.072,
+        "min": 0.762,
+        "n": 1001,
+        "p10": 1.421,
+        "p25": 1.668,
+        "p50": 2.072,
+        "p75": 2.476,
+        "p90": 2.741
+      },
+      "margin_iqr": {
+        "max": 2.376,
+        "mean": 0.221,
+        "median": 0.126,
+        "min": 0.04,
+        "n": 1029,
+        "p10": 0.074,
+        "p25": 0.087,
+        "p50": 0.126,
+        "p75": 0.19,
+        "p90": 0.497
+      },
+      "margin_p10_p90": {
+        "max": 18.688,
+        "mean": 1.259,
+        "median": 0.435,
+        "min": 0.118,
+        "n": 1029,
+        "p10": 0.178,
+        "p25": 0.235,
+        "p50": 0.435,
+        "p75": 1.106,
+        "p90": 3.662
+      },
+      "n_members": {
+        "max": 99.0,
+        "mean": 68.686,
+        "median": 65.0,
+        "min": 50.0,
+        "n": 1050,
+        "p10": 52.0,
+        "p25": 56.0,
+        "p50": 65.0,
+        "p75": 77.0,
+        "p90": 95.0
+      },
+      "top_sic4_share": {
+        "max": 0.981,
+        "mean": 0.312,
+        "median": 0.259,
+        "min": 0.127,
+        "n": 1050,
+        "p10": 0.167,
+        "p25": 0.182,
+        "p50": 0.259,
+        "p75": 0.418,
+        "p90": 0.464
+      }
+    },
+    "sic2|542+": {
+      "effective_sic4_count": {
+        "max": 6.752,
+        "mean": 4.243,
+        "median": 3.285,
+        "min": 2.408,
+        "n": 372,
+        "p10": 2.445,
+        "p25": 2.523,
+        "p50": 3.285,
+        "p75": 6.104,
+        "p90": 6.462
+      },
+      "log10_ebitda_span": {
+        "max": 3.243,
+        "mean": 2.693,
+        "median": 2.672,
+        "min": 2.411,
+        "n": 330,
+        "p10": 2.545,
+        "p25": 2.601,
+        "p50": 2.672,
+        "p75": 2.754,
+        "p90": 2.904
+      },
+      "margin_iqr": {
+        "max": 9.476,
+        "mean": 3.065,
+        "median": 1.427,
+        "min": 0.26,
+        "n": 330,
+        "p10": 0.322,
+        "p25": 0.393,
+        "p50": 1.427,
+        "p75": 6.333,
+        "p90": 7.094
+      },
+      "margin_p10_p90": {
+        "max": 88.622,
+        "mean": 19.997,
+        "median": 9.598,
+        "min": 0.757,
+        "n": 330,
+        "p10": 1.477,
+        "p25": 1.713,
+        "p50": 9.598,
+        "p75": 33.175,
+        "p90": 47.791
+      },
+      "n_members": {
+        "max": 1227.0,
+        "mean": 881.57,
+        "median": 886.5,
+        "min": 543.0,
+        "n": 372,
+        "p10": 654.0,
+        "p25": 768.75,
+        "p50": 886.5,
+        "p75": 986.0,
+        "p90": 1120.9
+      },
+      "top_sic4_share": {
+        "max": 0.622,
+        "mean": 0.445,
+        "median": 0.438,
+        "min": 0.252,
+        "n": 372,
+        "p10": 0.27,
+        "p25": 0.306,
+        "p50": 0.438,
+        "p75": 0.601,
+        "p90": 0.61
+      }
+    },
+    "sic3|100-199": {
+      "effective_sic4_count": {
+        "max": 5.475,
+        "mean": 2.46,
+        "median": 1.919,
+        "min": 1.225,
+        "n": 323,
+        "p10": 1.263,
+        "p25": 1.329,
+        "p50": 1.919,
+        "p75": 2.36,
+        "p90": 5.219
+      },
+      "log10_ebitda_span": {
+        "max": 3.607,
+        "mean": 2.636,
+        "median": 2.632,
+        "min": 1.408,
+        "n": 323,
+        "p10": 2.316,
+        "p25": 2.477,
+        "p50": 2.632,
+        "p75": 2.822,
+        "p90": 3.028
+      },
+      "margin_iqr": {
+        "max": 7.344,
+        "mean": 0.592,
+        "median": 0.331,
+        "min": 0.177,
+        "n": 323,
+        "p10": 0.229,
+        "p25": 0.276,
+        "p50": 0.331,
+        "p75": 0.447,
+        "p90": 0.575
+      },
+      "margin_p10_p90": {
+        "max": 151.695,
+        "mean": 3.706,
+        "median": 1.726,
+        "min": 0.469,
+        "n": 323,
+        "p10": 0.753,
+        "p25": 1.058,
+        "p50": 1.726,
+        "p75": 2.467,
+        "p90": 3.065
+      },
+      "n_members": {
+        "max": 198.0,
+        "mean": 156.467,
+        "median": 166.0,
+        "min": 100.0,
+        "n": 323,
+        "p10": 102.2,
+        "p25": 125.0,
+        "p50": 166.0,
+        "p75": 179.0,
+        "p90": 188.0
+      },
+      "top_sic4_share": {
+        "max": 0.9,
+        "mean": 0.652,
+        "median": 0.704,
+        "min": 0.245,
+        "n": 323,
+        "p10": 0.255,
+        "p25": 0.505,
+        "p50": 0.704,
+        "p75": 0.861,
+        "p90": 0.885
+      }
+    },
+    "sic3|12-24": {
+      "effective_sic4_count": {
+        "max": 3.879,
+        "mean": 1.838,
+        "median": 1.8,
+        "min": 1.087,
+        "n": 4231,
+        "p10": 1.262,
+        "p25": 1.508,
+        "p50": 1.8,
+        "p75": 1.991,
+        "p90": 2.373
+      },
+      "log10_ebitda_span": {
+        "max": 3.114,
+        "mean": 1.781,
+        "median": 1.551,
+        "min": 0.834,
+        "n": 469,
+        "p10": 1.168,
+        "p25": 1.363,
+        "p50": 1.551,
+        "p75": 2.158,
+        "p90": 2.749
+      },
+      "margin_iqr": {
+        "max": 17.257,
+        "mean": 0.429,
+        "median": 0.099,
+        "min": 0.023,
+        "n": 890,
+        "p10": 0.055,
+        "p25": 0.072,
+        "p50": 0.099,
+        "p75": 0.173,
+        "p90": 1.285
+      },
+      "margin_p10_p90": {
+        "max": 169.871,
+        "mean": 4.209,
+        "median": 0.247,
+        "min": 0.049,
+        "n": 890,
+        "p10": 0.134,
+        "p25": 0.184,
+        "p50": 0.247,
+        "p75": 0.645,
+        "p90": 8.95
+      },
+      "n_members": {
+        "max": 24.0,
+        "mean": 17.396,
+        "median": 17.0,
+        "min": 12.0,
+        "n": 4231,
+        "p10": 12.0,
+        "p25": 14.0,
+        "p50": 17.0,
+        "p75": 21.0,
+        "p90": 23.0
+      },
+      "top_sic4_share": {
+        "max": 0.958,
+        "mean": 0.672,
+        "median": 0.667,
+        "min": 0.333,
+        "n": 4231,
+        "p10": 0.5,
+        "p25": 0.556,
+        "p50": 0.667,
+        "p75": 0.786,
+        "p90": 0.882
+      }
+    },
+    "sic3|200-399": {
+      "effective_sic4_count": {
+        "max": 2.618,
+        "mean": 1.776,
+        "median": 1.887,
+        "min": 1.2,
+        "n": 427,
+        "p10": 1.241,
+        "p25": 1.283,
+        "p50": 1.887,
+        "p75": 2.167,
+        "p90": 2.489
+      },
+      "log10_ebitda_span": {
+        "max": 3.382,
+        "mean": 2.54,
+        "median": 2.498,
+        "min": 1.656,
+        "n": 404,
+        "p10": 2.025,
+        "p25": 2.165,
+        "p50": 2.498,
+        "p75": 2.885,
+        "p90": 3.105
+      },
+      "margin_iqr": {
+        "max": 2.575,
+        "mean": 0.756,
+        "median": 0.451,
+        "min": 0.137,
+        "n": 404,
+        "p10": 0.249,
+        "p25": 0.375,
+        "p50": 0.451,
+        "p75": 1.21,
+        "p90": 1.543
+      },
+      "margin_p10_p90": {
+        "max": 25.657,
+        "mean": 5.179,
+        "median": 4.117,
+        "min": 0.421,
+        "n": 404,
+        "p10": 0.653,
+        "p25": 0.88,
+        "p50": 4.117,
+        "p75": 7.719,
+        "p90": 11.699
+      },
+      "n_members": {
+        "max": 399.0,
+        "mean": 282.93,
+        "median": 261.0,
+        "min": 200.0,
+        "n": 427,
+        "p10": 218.0,
+        "p25": 230.0,
+        "p50": 261.0,
+        "p75": 327.0,
+        "p90": 385.0
+      },
+      "top_sic4_share": {
+        "max": 0.911,
+        "mean": 0.745,
+        "median": 0.692,
+        "min": 0.542,
+        "n": 427,
+        "p10": 0.566,
+        "p25": 0.641,
+        "p50": 0.692,
+        "p75": 0.878,
+        "p90": 0.895
+      }
+    },
+    "sic3|25-49": {
+      "effective_sic4_count": {
+        "max": 4.662,
+        "mean": 2.144,
+        "median": 1.944,
+        "min": 1.067,
+        "n": 2620,
+        "p10": 1.268,
+        "p25": 1.456,
+        "p50": 1.944,
+        "p75": 2.502,
+        "p90": 3.323
+      },
+      "log10_ebitda_span": {
+        "max": 4.006,
+        "mean": 2.203,
+        "median": 2.074,
+        "min": 1.013,
+        "n": 1285,
+        "p10": 1.376,
+        "p25": 1.649,
+        "p50": 2.074,
+        "p75": 2.749,
+        "p90": 3.239
+      },
+      "margin_iqr": {
+        "max": 40.218,
+        "mean": 0.538,
+        "median": 0.172,
+        "min": 0.031,
+        "n": 2169,
+        "p10": 0.07,
+        "p25": 0.104,
+        "p50": 0.172,
+        "p75": 0.289,
+        "p90": 0.681
+      },
+      "margin_p10_p90": {
+        "max": 295.116,
+        "mean": 6.487,
+        "median": 0.586,
+        "min": 0.085,
+        "n": 2169,
+        "p10": 0.167,
+        "p25": 0.28,
+        "p50": 0.586,
+        "p75": 1.707,
+        "p90": 6.153
+      },
+      "n_members": {
+        "max": 49.0,
+        "mean": 33.051,
+        "median": 32.0,
+        "min": 25.0,
+        "n": 2620,
+        "p10": 26.0,
+        "p25": 28.0,
+        "p50": 32.0,
+        "p75": 37.0,
+        "p90": 42.0
+      },
+      "top_sic4_share": {
+        "max": 0.968,
+        "mean": 0.651,
+        "median": 0.667,
+        "min": 0.242,
+        "n": 2620,
+        "p10": 0.387,
+        "p25": 0.518,
+        "p50": 0.667,
+        "p75": 0.806,
+        "p90": 0.88
+      }
+    },
+    "sic3|400-541": {
+      "effective_sic4_count": {
+        "max": 3.392,
+        "mean": 2.488,
+        "median": 1.97,
+        "min": 1.339,
+        "n": 110,
+        "p10": 1.361,
+        "p25": 1.93,
+        "p50": 1.97,
+        "p75": 3.28,
+        "p90": 3.328
+      },
+      "log10_ebitda_span": {
+        "max": 2.869,
+        "mean": 2.458,
+        "median": 2.503,
+        "min": 1.934,
+        "n": 71,
+        "p10": 2.174,
+        "p25": 2.211,
+        "p50": 2.503,
+        "p75": 2.56,
+        "p90": 2.851
+      },
+      "margin_iqr": {
+        "max": 0.501,
+        "mean": 0.398,
+        "median": 0.41,
+        "min": 0.249,
+        "n": 71,
+        "p10": 0.308,
+        "p25": 0.382,
+        "p50": 0.41,
+        "p75": 0.433,
+        "p90": 0.47
+      },
+      "margin_p10_p90": {
+        "max": 3.749,
+        "mean": 2.016,
+        "median": 1.858,
+        "min": 0.824,
+        "n": 71,
+        "p10": 1.303,
+        "p25": 1.535,
+        "p50": 1.858,
+        "p75": 2.36,
+        "p90": 3.087
+      },
+      "n_members": {
+        "max": 540.0,
+        "mean": 466.918,
+        "median": 481.5,
+        "min": 400.0,
+        "n": 110,
+        "p10": 402.0,
+        "p25": 409.25,
+        "p50": 481.5,
+        "p75": 521.0,
+        "p90": 525.2
+      },
+      "top_sic4_share": {
+        "max": 0.859,
+        "mean": 0.594,
+        "median": 0.608,
+        "min": 0.469,
+        "n": 110,
+        "p10": 0.478,
+        "p25": 0.485,
+        "p50": 0.608,
+        "p75": 0.629,
+        "p90": 0.852
+      }
+    },
+    "sic3|50-99": {
+      "effective_sic4_count": {
+        "max": 5.275,
+        "mean": 2.679,
+        "median": 2.147,
+        "min": 1.249,
+        "n": 886,
+        "p10": 1.377,
+        "p25": 1.486,
+        "p50": 2.147,
+        "p75": 4.447,
+        "p90": 4.799
+      },
+      "log10_ebitda_span": {
+        "max": 4.006,
+        "mean": 2.324,
+        "median": 2.416,
+        "min": 1.049,
+        "n": 816,
+        "p10": 1.358,
+        "p25": 1.71,
+        "p50": 2.416,
+        "p75": 2.924,
+        "p90": 3.204
+      },
+      "margin_iqr": {
+        "max": 8.405,
+        "mean": 0.548,
+        "median": 0.249,
+        "min": 0.063,
+        "n": 845,
+        "p10": 0.103,
+        "p25": 0.169,
+        "p50": 0.249,
+        "p75": 0.386,
+        "p90": 0.649
+      },
+      "margin_p10_p90": {
+        "max": 196.125,
+        "mean": 5.946,
+        "median": 0.754,
+        "min": 0.24,
+        "n": 845,
+        "p10": 0.368,
+        "p25": 0.487,
+        "p50": 0.754,
+        "p75": 2.046,
+        "p90": 5.053
+      },
+      "n_members": {
+        "max": 99.0,
+        "mean": 72.405,
+        "median": 72.0,
+        "min": 50.0,
+        "n": 886,
+        "p10": 52.0,
+        "p25": 58.0,
+        "p50": 72.0,
+        "p75": 84.0,
+        "p90": 94.0
+      },
+      "top_sic4_share": {
+        "max": 0.888,
+        "mean": 0.59,
+        "median": 0.618,
+        "min": 0.239,
+        "n": 886,
+        "p10": 0.296,
+        "p25": 0.359,
+        "p50": 0.618,
+        "p75": 0.8,
+        "p90": 0.839
+      }
+    },
+    "sic3|542+": {
+      "effective_sic4_count": {
+        "max": 3.32,
+        "mean": 3.162,
+        "median": 3.159,
+        "min": 3.065,
+        "n": 55,
+        "p10": 3.085,
+        "p25": 3.11,
+        "p50": 3.159,
+        "p75": 3.194,
+        "p90": 3.258
+      },
+      "log10_ebitda_span": {
+        "max": 2.782,
+        "mean": 2.501,
+        "median": 2.507,
+        "min": 2.304,
+        "n": 55,
+        "p10": 2.367,
+        "p25": 2.414,
+        "p50": 2.507,
+        "p75": 2.579,
+        "p90": 2.622
+      },
+      "margin_iqr": {
+        "max": 0.607,
+        "mean": 0.509,
+        "median": 0.502,
+        "min": 0.437,
+        "n": 55,
+        "p10": 0.463,
+        "p25": 0.478,
+        "p50": 0.502,
+        "p75": 0.526,
+        "p90": 0.568
+      },
+      "margin_p10_p90": {
+        "max": 3.433,
+        "mean": 2.342,
+        "median": 2.189,
+        "min": 1.735,
+        "n": 55,
+        "p10": 1.925,
+        "p25": 2.008,
+        "p50": 2.189,
+        "p75": 2.61,
+        "p90": 3.07
+      },
+      "n_members": {
+        "max": 691.0,
+        "mean": 640.127,
+        "median": 630.0,
+        "min": 603.0,
+        "n": 55,
+        "p10": 606.0,
+        "p25": 612.0,
+        "p50": 630.0,
+        "p75": 667.0,
+        "p90": 683.0
+      },
+      "top_sic4_share": {
+        "max": 0.509,
+        "mean": 0.495,
+        "median": 0.495,
+        "min": 0.477,
+        "n": 55,
+        "p10": 0.483,
+        "p25": 0.49,
+        "p50": 0.495,
+        "p75": 0.502,
+        "p90": 0.506
+      }
+    },
+    "sic4|100-199": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 1147,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 3.579,
+        "mean": 2.516,
+        "median": 2.485,
+        "min": 1.416,
+        "n": 712,
+        "p10": 1.98,
+        "p25": 2.289,
+        "p50": 2.485,
+        "p75": 2.754,
+        "p90": 2.99
+      },
+      "margin_iqr": {
+        "max": 45.956,
+        "mean": 1.731,
+        "median": 0.644,
+        "min": 0.152,
+        "n": 778,
+        "p10": 0.253,
+        "p25": 0.316,
+        "p50": 0.644,
+        "p75": 1.294,
+        "p90": 2.97
+      },
+      "margin_p10_p90": {
+        "max": 170.23,
+        "mean": 9.608,
+        "median": 2.917,
+        "min": 0.396,
+        "n": 778,
+        "p10": 0.765,
+        "p25": 1.073,
+        "p50": 2.917,
+        "p75": 10.253,
+        "p90": 18.609
+      },
+      "n_members": {
+        "max": 199.0,
+        "mean": 137.329,
+        "median": 135.0,
+        "min": 100.0,
+        "n": 1147,
+        "p10": 106.0,
+        "p25": 116.0,
+        "p50": 135.0,
+        "p75": 156.0,
+        "p90": 175.4
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 1147,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    },
+    "sic4|12-24": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 11962,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 3.265,
+        "mean": 1.478,
+        "median": 1.29,
+        "min": 0.415,
+        "n": 607,
+        "p10": 0.908,
+        "p25": 1.109,
+        "p50": 1.29,
+        "p75": 1.77,
+        "p90": 2.383
+      },
+      "margin_iqr": {
+        "max": 27.262,
+        "mean": 0.678,
+        "median": 0.181,
+        "min": 0.019,
+        "n": 2093,
+        "p10": 0.07,
+        "p25": 0.107,
+        "p50": 0.181,
+        "p75": 0.315,
+        "p90": 1.036
+      },
+      "margin_p10_p90": {
+        "max": 163.069,
+        "mean": 3.291,
+        "median": 0.495,
+        "min": 0.066,
+        "n": 2093,
+        "p10": 0.169,
+        "p25": 0.258,
+        "p50": 0.495,
+        "p75": 1.101,
+        "p90": 5.591
+      },
+      "n_members": {
+        "max": 24.0,
+        "mean": 16.556,
+        "median": 16.0,
+        "min": 12.0,
+        "n": 11962,
+        "p10": 12.0,
+        "p25": 13.0,
+        "p50": 16.0,
+        "p75": 19.0,
+        "p90": 22.0
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 11962,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    },
+    "sic4|200-399": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 723,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 3.55,
+        "mean": 2.46,
+        "median": 2.44,
+        "min": 1.707,
+        "n": 491,
+        "p10": 1.989,
+        "p25": 2.159,
+        "p50": 2.44,
+        "p75": 2.721,
+        "p90": 3.014
+      },
+      "margin_iqr": {
+        "max": 32.105,
+        "mean": 1.678,
+        "median": 0.441,
+        "min": 0.276,
+        "n": 524,
+        "p10": 0.344,
+        "p25": 0.368,
+        "p50": 0.441,
+        "p75": 0.61,
+        "p90": 6.294
+      },
+      "margin_p10_p90": {
+        "max": 137.89,
+        "mean": 10.607,
+        "median": 1.823,
+        "min": 0.544,
+        "n": 524,
+        "p10": 0.665,
+        "p25": 0.907,
+        "p50": 1.823,
+        "p75": 3.513,
+        "p90": 39.184
+      },
+      "n_members": {
+        "max": 397.0,
+        "mean": 268.591,
+        "median": 258.0,
+        "min": 200.0,
+        "n": 723,
+        "p10": 217.0,
+        "p25": 239.0,
+        "p50": 258.0,
+        "p75": 297.0,
+        "p90": 332.0
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 723,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    },
+    "sic4|25-49": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 5924,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 4.158,
+        "mean": 1.794,
+        "median": 1.677,
+        "min": 0.722,
+        "n": 1762,
+        "p10": 1.166,
+        "p25": 1.365,
+        "p50": 1.677,
+        "p75": 2.134,
+        "p90": 2.622
+      },
+      "margin_iqr": {
+        "max": 118.406,
+        "mean": 1.429,
+        "median": 0.394,
+        "min": 0.031,
+        "n": 4253,
+        "p10": 0.096,
+        "p25": 0.182,
+        "p50": 0.394,
+        "p75": 1.013,
+        "p90": 3.078
+      },
+      "margin_p10_p90": {
+        "max": 2948.158,
+        "mean": 16.367,
+        "median": 1.571,
+        "min": 0.087,
+        "n": 4253,
+        "p10": 0.262,
+        "p25": 0.59,
+        "p50": 1.571,
+        "p75": 5.631,
+        "p90": 19.005
+      },
+      "n_members": {
+        "max": 49.0,
+        "mean": 33.687,
+        "median": 32.0,
+        "min": 25.0,
+        "n": 5924,
+        "p10": 26.0,
+        "p25": 28.0,
+        "p50": 32.0,
+        "p75": 39.0,
+        "p90": 45.0
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 5924,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    },
+    "sic4|400-541": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 53,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 2.777,
+        "mean": 2.486,
+        "median": 2.533,
+        "min": 2.152,
+        "n": 47,
+        "p10": 2.246,
+        "p25": 2.304,
+        "p50": 2.533,
+        "p75": 2.625,
+        "p90": 2.702
+      },
+      "margin_iqr": {
+        "max": 13.74,
+        "mean": 8.156,
+        "median": 7.409,
+        "min": 3.917,
+        "n": 47,
+        "p10": 4.455,
+        "p25": 5.421,
+        "p50": 7.409,
+        "p75": 10.976,
+        "p90": 12.375
+      },
+      "margin_p10_p90": {
+        "max": 121.577,
+        "mean": 63.833,
+        "median": 52.636,
+        "min": 35.027,
+        "n": 47,
+        "p10": 40.2,
+        "p25": 42.365,
+        "p50": 52.636,
+        "p75": 78.167,
+        "p90": 114.756
+      },
+      "n_members": {
+        "max": 540.0,
+        "mean": 445.491,
+        "median": 435.0,
+        "min": 403.0,
+        "n": 53,
+        "p10": 407.0,
+        "p25": 422.0,
+        "p50": 435.0,
+        "p75": 454.0,
+        "p90": 512.2
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 53,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    },
+    "sic4|50-99": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 2459,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 3.792,
+        "mean": 2.13,
+        "median": 2.198,
+        "min": 0.941,
+        "n": 1481,
+        "p10": 1.285,
+        "p25": 1.735,
+        "p50": 2.198,
+        "p75": 2.501,
+        "p90": 2.862
+      },
+      "margin_iqr": {
+        "max": 16.269,
+        "mean": 0.721,
+        "median": 0.32,
+        "min": 0.059,
+        "n": 1758,
+        "p10": 0.116,
+        "p25": 0.179,
+        "p50": 0.32,
+        "p75": 0.529,
+        "p90": 1.045
+      },
+      "margin_p10_p90": {
+        "max": 2220.823,
+        "mean": 7.602,
+        "median": 1.208,
+        "min": 0.151,
+        "n": 1758,
+        "p10": 0.322,
+        "p25": 0.551,
+        "p50": 1.208,
+        "p75": 3.267,
+        "p90": 12.88
+      },
+      "n_members": {
+        "max": 99.0,
+        "mean": 67.988,
+        "median": 65.0,
+        "min": 50.0,
+        "n": 2459,
+        "p10": 52.0,
+        "p25": 56.0,
+        "p50": 65.0,
+        "p75": 77.0,
+        "p90": 92.0
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 2459,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    },
+    "sic4|542+": {
+      "effective_sic4_count": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 125,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      },
+      "log10_ebitda_span": {
+        "max": 3.407,
+        "mean": 2.649,
+        "median": 2.691,
+        "min": 1.893,
+        "n": 96,
+        "p10": 1.996,
+        "p25": 2.551,
+        "p50": 2.691,
+        "p75": 2.782,
+        "p90": 3.061
+      },
+      "margin_iqr": {
+        "max": 13.638,
+        "mean": 10.465,
+        "median": 10.044,
+        "min": 7.814,
+        "n": 96,
+        "p10": 8.437,
+        "p25": 9.419,
+        "p50": 10.044,
+        "p75": 11.47,
+        "p90": 12.741
+      },
+      "margin_p10_p90": {
+        "max": 196.413,
+        "mean": 66.832,
+        "median": 53.749,
+        "min": 25.734,
+        "n": 96,
+        "p10": 31.087,
+        "p25": 38.756,
+        "p50": 53.749,
+        "p75": 76.528,
+        "p90": 137.113
+      },
+      "n_members": {
+        "max": 760.0,
+        "mean": 655.328,
+        "median": 661.0,
+        "min": 544.0,
+        "n": 125,
+        "p10": 576.0,
+        "p25": 601.0,
+        "p50": 661.0,
+        "p75": 714.0,
+        "p90": 729.6
+      },
+      "top_sic4_share": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 125,
+        "p10": 1.0,
+        "p25": 1.0,
+        "p50": 1.0,
+        "p75": 1.0,
+        "p90": 1.0
+      }
+    }
+  },
+  "spec_version": "factor_spec_v2",
+  "valuation_min_n": 12,
+  "value_index": {
+    "n_entities": 7697,
+    "n_matched_periods": 54436,
+    "n_rows_scanned": 621453,
+    "seconds": 60.4
+  }
+}

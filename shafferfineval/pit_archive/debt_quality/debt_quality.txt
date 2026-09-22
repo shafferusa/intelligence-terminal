@@ -1,0 +1,93 @@
+==============================================================================
+DEBT-RUNG QUALITY: is the EV/EBITDA coverage recovery real?
+==============================================================================
+  the ordering survives nearly intact -- every rung with enough co-tagged
+  priced issuers to measure keeps 97.7% to 98.3% of pairwise EV/EBITDA
+  ordering against the exact total -- but the CHEAPEST DECILE, which is the
+  part a decision is taken on, churns 14.1% to 22.6%. The recovery is real
+  enough to keep and not clean enough to pool: EV/EBITDA needs a debt
+  data-quality factor, not a bigger denominator.
+
+ladder concept_ladder_v2   staleness fact_kind_staleness_v2
+reference rung: SUM(LongTermDebtNoncurrent+LongTermDebtCurrent+ShortTermBorrowings)
+coverage on 3 dates (census), ranking on 165 dates (grid)
+397.9s, 0 rows written to the store
+
+------------------------------------------------------------------------------
+COVERAGE AND PROVENANCE  [FULL_REPORTING_UNIVERSE]
+------------------------------------------------------------------------------
+2015-06-30   base 7,793   any rung 3,076 (39.47%)
+  rung                                             %base   %marg  val/ref    (n)
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent    2.41    2.41      ref      0  exact
+  DebtLongtermAndShorttermCombinedAmount            0.30    0.28    0.819      1  exact
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent   17.68   15.26    0.927    151  lower_bound
+  LongTermDebt                                      7.31    6.61    0.900      4  lower_bound
+  LongTermDebtAndCapitalLeaseObligations            8.26    7.08        -      0  lower_bound
+  LongTermDebtNoncurrent                           26.56    7.83    0.850    135  lower_bound
+
+2019-06-28   base 6,489   any rung 2,841 (43.78%)
+  rung                                             %base   %marg  val/ref    (n)
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent    2.53    2.53      ref      0  exact
+  DebtLongtermAndShorttermCombinedAmount            0.57    0.57        -      0  exact
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent   19.14   16.61    0.931    133  lower_bound
+  LongTermDebt                                      8.48    7.66    0.986      1  lower_bound
+  LongTermDebtAndCapitalLeaseObligations            8.75    7.51        -      0  lower_bound
+  LongTermDebtNoncurrent                           29.10    8.91    0.876    114  lower_bound
+
+2024-06-28   base 6,632   any rung 2,594 (39.11%)
+  rung                                             %base   %marg  val/ref    (n)
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent    2.49    2.49      ref      0  exact
+  DebtLongtermAndShorttermCombinedAmount            0.69    0.69        -      0  exact
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent   16.99   14.48    0.914    133  lower_bound
+  LongTermDebt                                      6.60    5.79        -      0  lower_bound
+  LongTermDebtAndCapitalLeaseObligations            6.65    5.96    0.671      1  lower_bound
+  LongTermDebtNoncurrent                           27.49    9.71    0.817    117  lower_bound
+
+------------------------------------------------------------------------------
+RANK AGREEMENT AGAINST THE EXACT TOTAL  [SURVIVOR_PRICED_DIAGNOSTIC]
+------------------------------------------------------------------------------
+  rung                                       n    pairs     rho   exact    near   churn
+  SUM(LongTermDebtNoncurrent+LongTermDeb     (the reference: it ranks against itself)
+  DebtLongtermAndShorttermCombinedAmount    23        0       -       -       -       -
+  SUM(LongTermDebtNoncurrent+LongTermDeb 3,657   43,408  0.9734  0.9613  0.9827  0.1413
+  LongTermDebt                             224      149       -  0.9329  0.9866  0.0595
+  LongTermDebtAndCapitalLeaseObligations   189      113       -  0.9646  0.9735  0.0952
+  LongTermDebtNoncurrent                 3,647   43,181  0.9662  0.9511  0.9771  0.2255
+
+  near tolerance: pairs within 5% of each other under the reference are forgiven
+  sample mix (the exact rung needs ShortTermBorrowings): E 46.81%; D 26.36%; G 13.4%; I 4.59%; B 3.88%
+  direction of that bias: UNKNOWN
+
+------------------------------------------------------------------------------
+VERDICT AND PROPOSED Q  (debt dimension only)
+------------------------------------------------------------------------------
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent+Short  Q=1.0
+      REFERENCE: the definition every other rung is measured against; it ranks against itself by construction
+  DebtLongtermAndShorttermCombinedAmount                Q=UNKNOWN
+      UNDETERMINED: only 23 paired issuer-dates carry both this rung and the reference with a market cap, EBITDA and cash; 200 is the floor for a verdict. Reported as undetermined, not as harmless.
+  SUM(LongTermDebtNoncurrent+LongTermDebtCurrent)       Q=0.983
+      PROMOTE_WITH_QUALITY_FACTOR: ordering survives (98.3% near agreement, 14.1% decile churn) but not cleanly enough to be pooled with the exact rung as an equal: admissible only with a data-quality factor that says which rung it is
+  LongTermDebt                                          Q=UNKNOWN
+      UNDETERMINED: 224 issuer-dates yielded only 149 WITHIN-DATE pairs (1,000 is the floor), so this rung meets the reference one or two names at a time and its agreement rate and decile churn have no cross-section behind them. Undetermined, not harmless.
+  LongTermDebtAndCapitalLeaseObligations                Q=UNKNOWN
+      UNDETERMINED: only 189 paired issuer-dates carry both this rung and the reference with a market cap, EBITDA and cash; 200 is the floor for a verdict. Reported as undetermined, not as harmless.
+  LongTermDebtNoncurrent                                Q=0.977
+      PROMOTE_WITH_QUALITY_FACTOR: ordering survives (97.7% near agreement, 22.6% decile churn) but not cleanly enough to be pooled with the exact rung as an equal: admissible only with a data-quality factor that says which rung it is
+
+------------------------------------------------------------------------------
+SURVIVOR RETURN DIAGNOSTIC  [SURVIVOR_ONLY_DIAGNOSTIC]  MAY NOT PROMOTE A RUNG
+------------------------------------------------------------------------------
+  labels matched: 3,411 of 3,660 issuer-dates, horizon 12M
+  DebtLongtermAndShorttermCombinedAmount   in n=0    med=       -   out n=0    med=       -
+  SUM(LongTermDebtNoncurrent+LongTermDebtC in n=49   med= -0.0950   out n=49   med= -0.0460
+  LongTermDebt                             in n=0    med=       -   out n=0    med=       -
+  LongTermDebtAndCapitalLeaseObligations   in n=0    med=       -   out n=0    med=       -
+  LongTermDebtNoncurrent                   in n=79   med= -0.0620   out n=79   med=  0.0260
+
+------------------------------------------------------------------------------
+RESOURCES
+------------------------------------------------------------------------------
+  free space min observed 9.67 GiB (floor 2 GiB)
+  WAL peak observed 0 bytes (start 0)
+  peak working set 375.6 MiB
+  PRAGMA wal_checkpoint was NOT run: this connection is mode=ro and cannot checkpoint.

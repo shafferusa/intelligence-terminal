@@ -1,0 +1,28 @@
+{
+ "free_at_start": 4442476544,
+ "complete": {
+  "label": "complete",
+  "where": "availability='complete'",
+  "rows": 17003,
+  "bytes": 10715136,
+  "bytes_per_row": 630.19,
+  "wal_bytes": 10802672
+ },
+ "unavailable": {
+  "label": "unavailable",
+  "where": "availability='unavailable'",
+  "rows": 88713,
+  "bytes": 50126848,
+  "bytes_per_row": 565.05,
+  "wal_bytes": 50445312
+ },
+ "all": {
+  "label": "all",
+  "where": "1=1",
+  "rows": 105716,
+  "bytes": 60932096,
+  "bytes_per_row": 576.38,
+  "wal_bytes": 61313872
+ },
+ "free_at_end": 4442476544
+}

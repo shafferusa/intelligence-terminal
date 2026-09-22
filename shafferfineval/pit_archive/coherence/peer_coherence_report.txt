@@ -1,0 +1,166 @@
+PEER-SET COHERENCE: sufficient N is not enough
+==============================================================================
+scope FULL_REPORTING_UNIVERSE   spec factor_spec_v2   ladder concept_ladder_v2
+39,038 peer sets over 165 as-of dates 2013-01-31 .. 2026-09-18
+
+(1) COHERENCE BY RUNG -- a number, not a rung name
+------------------------------------------------------------------------------
+  effective_sic4_count: 1 / SUM(share_i^2) over the distinct SIC4 codes inside the cohort -- the inverse Herfindahl of its industry composition, i.e. the effective number of DIFFERENT four-digit industries the cohort is made of.
+      better = lower; degenerate at sic4, where it is 1.00 by construction -- every member shares the code. That is a definitional value and is reported as such; the informative comparison is sic2 against office, where neither value is fixed.
+  top_sic4_share: the share of the cohort's classified members contributed by its single largest SIC4 subgroup.
+      better = higher; degenerate at sic4, where it is 1.00 by construction
+  margin_iqr: p75 - p25 of the EBITDA margin (EBITDA / revenue) across cohort members whose EBITDA and revenue both resolve at a MATCHED period.
+      better = lower; degenerate at nothing -- it is a sample quantile spread at every rung
+  log10_ebitda_span: p90 - p10 of log10(EBITDA) over cohort members with a positive EBITDA -- the cohort's size spread, in DECADES.
+      better = lower; degenerate at nothing
+
+  rung sic4
+  statistic                     n      p10      p25   median      p75      p90     mean
+  n_members                 22393    13.00    15.00    23.00    42.00    93.00    45.64
+  effective_sic4_count      22393     1.00     1.00     1.00     1.00     1.00     1.00
+  top_sic4_share            22393     1.00     1.00     1.00     1.00     1.00     1.00
+  margin_iqr                 9549     0.10     0.17     0.35     0.75     2.65     1.30
+  margin_p10_p90             9549     0.25     0.52     1.20     4.54    17.50    11.76
+  log10_ebitda_span          5196     1.19     1.49     2.07     2.50     2.84     2.04
+
+  rung sic3
+  statistic                     n      p10      p25   median      p75      p90     mean
+  n_members                  8652    13.00    17.00    25.00    40.00   112.00    55.74
+  effective_sic4_count       8652     1.28     1.47     1.88     2.25     3.18     2.05
+  top_sic4_share             8652     0.43     0.54     0.67     0.80     0.88     0.66
+  margin_iqr                 4757     0.07     0.11     0.21     0.40     1.00     0.54
+  margin_p10_p90             4757     0.18     0.30     0.73     2.11     7.27     5.55
+  log10_ebitda_span          3423     1.37     1.71     2.29     2.77     3.12     2.27
+
+  rung sic2
+  statistic                     n      p10      p25   median      p75      p90     mean
+  n_members                  7317    18.00    25.00    49.00   132.00   348.00   129.80
+  effective_sic4_count       7317     1.60     2.13     3.37     5.72     8.63     4.49
+  top_sic4_share             7317     0.20     0.30     0.44     0.58     0.76     0.45
+  margin_iqr                 5483     0.07     0.09     0.16     0.33     0.78     0.47
+  margin_p10_p90             5483     0.15     0.23     0.59     1.79     5.91     3.24
+  log10_ebitda_span          4754     1.42     1.72     2.25     2.65     2.90     2.19
+
+  rung office
+  statistic                     n      p10      p25   median      p75      p90     mean
+  n_members                   676   706.00   769.50   908.50  1008.25  1193.00   910.12
+  effective_sic4_count        676    10.71    13.43    18.01    36.51    40.97    24.46
+  top_sic4_share              676     0.07     0.11     0.16     0.21     0.24     0.17
+  margin_iqr                  676     0.13     0.17     0.34     0.52     0.66     0.38
+  margin_p10_p90              676     0.56     0.75     1.05     3.36     5.65     2.25
+  log10_ebitda_span           676     2.13     2.28     2.47     2.66     2.75     2.47
+
+(2) THE SIZE-MATCHED CONTROL -- is it composition, or is it N?
+------------------------------------------------------------------------------
+  Office cohorts hold 542-1,310 members and sic2 cohorts reach
+  1,227, so the ranges OVERLAP and the two can be compared at
+  equal size. A measure that still separates them there is
+  measuring composition; one that does not is restating N.
+
+  members 100-199
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4         1147        135.00           1.00           0.644
+  sic3          323        166.00           1.92           0.331
+  sic2         1512        132.00           5.07           0.253
+
+  members 12-24
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4        11962         16.00           1.00           0.181
+  sic3         4231         17.00           1.80           0.099
+  sic2         1746         19.00           1.99           0.067
+
+  members 200-399
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4          723        258.00           1.00           0.441
+  sic3          427        261.00           1.89           0.451
+  sic2          527        326.00           5.78           0.350
+
+  members 25-49
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4         5924         32.00           1.00           0.394
+  sic3         2620         32.00           1.94           0.172
+  sic2         1935         32.00           2.84           0.113
+
+  members 400-541
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4           53        435.00           1.00           7.409
+  sic3          110        481.50           1.97           0.410
+  sic2          175        465.00           3.28           0.218
+
+  members 50-99
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4         2459         65.00           1.00           0.320
+  sic3          886         72.00           2.15           0.249
+  sic2         1050         65.00           6.71           0.126
+
+  members 542+
+  rung         sets   members med   eff SIC4 med  margin IQR med
+  sic4          125        661.00           1.00          10.044
+  sic3           55        630.00           3.16           0.502
+  sic2          372        886.50           3.29           1.427
+  office        676        908.50          18.01           0.342
+
+(2b) THE VERDICT -- which candidates may be quoted as coherence
+------------------------------------------------------------------------------
+  statistic                 better     sic4     sic3     sic2   office   verdict
+  effective_sic4_count       lower    1.000    1.882    3.365   18.006   ADOPTED
+  top_sic4_share            higher    1.000    0.667    0.436    0.157   ADOPTED
+  margin_iqr                 lower    0.351    0.207    0.163    0.342   REJECTED
+  log10_ebitda_span          lower    2.068    2.286    2.247    2.471   REJECTED
+
+  effective_sic4_count: ADOPTED -- separates office from sic2 and KEEPS separating them at equal member count
+      at     542+ members: office 18.006 vs sic2 3.285   office worse: True
+  top_sic4_share: ADOPTED -- separates office from sic2 and KEEPS separating them at equal member count
+      at     542+ members: office 0.157 vs sic2 0.438   office worse: True
+  margin_iqr: REJECTED -- fails the size-matched control: inside at least one member-count bucket the office cohorts are NOT worse than the sic2 cohorts, so what looked like coherence was the member count
+      at     542+ members: office 0.342 vs sic2 1.427   office worse: False
+  log10_ebitda_span: REJECTED -- fails the size-matched control: inside at least one member-count bucket the office cohorts are NOT worse than the sic2 cohorts, so what looked like coherence was the member count
+      at     542+ members: office 2.471 vs sic2 2.672   office worse: False
+
+  ADOPTED: ['effective_sic4_count', 'top_sic4_share']
+
+(3) THE COST OF THE BAN -- the price of the rule, before it locks
+------------------------------------------------------------------------------
+  entity-dates in the peer universe           1,238,663
+  assigned the office rung (no narrower set)     10,156
+  valuation cohort kept at sic4/sic3/sic2     1,014,548
+  LOST: no admissible peer set at all            10,156
+  LOST: admissible set too thin, office had enough 47,122
+  LOST TOTAL                                     57,278   (4.62% of entity-dates)
+  already unavailable everywhere                166,837
+
+  year        entity-dates      lost    lost %
+  2013             100,759     4,345     4.31%
+  2014              97,664     3,094     3.17%
+  2015              95,499     3,087     3.23%
+  2016              90,818     3,779     4.16%
+  2017              85,067     3,714     4.37%
+  2018              85,773     3,809     4.44%
+  2019              85,265     4,537     5.32%
+  2020              83,279     3,467     4.16%
+  2021              88,608     4,043     4.56%
+  2022              95,774     3,585     3.74%
+  2023              94,252     5,125     5.44%
+  2024              88,355     5,201     5.89%
+  2025              84,476     4,920     5.82%
+  2026              63,074     4,572     7.25%
+
+  SIC division                            entity-dates      lost    lost %
+  A Agriculture, Forestry & Fishing              7,290     4,835    66.32%
+  B Mining                                      85,986    15,312    17.81%
+  C Construction                                12,175     2,571    21.12%
+  D Manufacturing                              429,412    11,578     2.70%
+  E Transport, Comms & Utilities                92,306     7,250     7.85%
+  F Wholesale Trade                             28,902         0     0.00%
+  G Retail Trade                                57,143    11,675    20.43%
+  H Finance, Insurance & Real Estate           296,213         0     0.00%
+  I Services                                   228,207     3,790     1.66%
+  J Public Administration                        1,029       267    25.95%
+
+(4) WHAT THE RUN COST -- measured, never estimated
+------------------------------------------------------------------------------
+  seconds                  116.5
+  free space, minimum seen 9.79 GiB (10,515,677,184 bytes)
+  free space delta         -41,611,264 bytes
+  WAL peak observed        4,906,952 bytes   (another process is writing; this reader is mode=ro)
+  peak working set         298.9 MiB (313462784)

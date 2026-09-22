@@ -1,0 +1,28 @@
+19:49:43  ==============================================================================
+19:49:43  SIZING PILOT -- 2026-09-21T19:49:43
+19:49:43  dates: 2014-06-30, 2019-06-28, 2022-06-30, 2026-06-30
+19:49:43  freeze intact=True digest=2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764 n_components=38 can_execute=True []
+19:49:43  free before: 9.809 GiB (10532679680 bytes)
+19:49:44      [2014-06-30] universe    {'elapsed_s': 0.0} free=9.807GiB
+19:49:45      [2014-06-30] cohorts     {'elapsed_s': 1.5, 'n_targets': 8132} free=9.807GiB
+19:49:45      [2014-06-30] fact_index  {'elapsed_s': 1.6, 'n_entities': 8132} free=9.807GiB
+19:50:41      [2014-06-30] primitives  {'elapsed_s': 57.7, 'n_entities': 8132} free=9.808GiB
+19:50:42      [2014-06-30] assemble    {'elapsed_s': 58.2, 'n_targets': 8132} free=9.808GiB
+19:56:02      [2014-06-30] write       {'elapsed_s': 378.6, 'n_features': 105716, 'n_pillars': 32528, 'n_scores': 2873} free=9.808GiB
+19:56:04      [2014-06-30] checkpoint  {'elapsed_s': 380.7} free=9.667GiB
+19:56:04      [2019-06-28] universe    {'elapsed_s': 0.0} free=9.724GiB
+19:56:06      [2019-06-28] cohorts     {'elapsed_s': 1.8, 'n_targets': 7102} free=9.724GiB
+19:56:06      [2019-06-28] fact_index  {'elapsed_s': 1.9, 'n_entities': 7102} free=9.724GiB
+19:57:01      [2019-06-28] primitives  {'elapsed_s': 56.2, 'n_entities': 7102} free=9.724GiB
+19:57:01      [2019-06-28] assemble    {'elapsed_s': 56.7, 'n_targets': 7102} free=9.724GiB
+20:02:51      [2019-06-28] write       {'elapsed_s': 406.5, 'n_features': 92326, 'n_pillars': 28408, 'n_scores': 2709} free=9.722GiB
+20:02:54      [2019-06-28] checkpoint  {'elapsed_s': 409.2} free=9.584GiB
+20:02:54      [2022-06-30] universe    {'elapsed_s': 0.0} free=9.648GiB
+20:02:56      [2022-06-30] cohorts     {'elapsed_s': 1.8, 'n_targets': 8033} free=9.648GiB
+20:02:56      [2022-06-30] fact_index  {'elapsed_s': 2.0, 'n_entities': 8033} free=9.648GiB
+20:03:52      [2022-06-30] primitives  {'elapsed_s': 58.5, 'n_entities': 8033} free=9.648GiB
+20:03:53      [2022-06-30] assemble    {'elapsed_s': 58.9, 'n_targets': 8033} free=9.648GiB
+20:12:26  ABORTED: MidDateFreeSpaceAbort: free 4.132 GiB fell below the 7.000 GiB floor mid-date at stage 'write' on 2022-06-30
+20:12:27  wrote C:\Users\logan\shafferfineval-app\shafferfineval\pilot_sizing_report.json (21824 bytes)
+20:12:27  pilot db rows: {"pit_feature": 198042, "pit_pillar_score": 60936, "pit_score": 5582, "pit_replay_run": 1, "pit_entity": 16890, "pit_peer_set": 946}
+20:12:27  DONE in 1362.3 s

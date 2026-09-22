@@ -169,6 +169,84 @@ def _fundamental_snapshot(financials: comp.CompanyFinancials) -> dict:
     return {key: getattr(financials, key, None) for key in FUNDAMENTAL_FIELDS}
 
 
+# --------------------------------------------------------------------------
+# The snapshot-date fence
+# --------------------------------------------------------------------------
+
+class SnapshotDateError(ValueError):
+    """A `snapshot_date` was asked for that the refresh cannot honestly produce.
+
+    Its own type so `daily_job.py` can report it as a usage mistake rather than
+    a crash, and so a test can assert this fence specifically instead of
+    catching whatever ValueError happens to pass by.
+    """
+
+
+def resolve_snapshot_date(snapshot_date: Optional[str], allow_relabel: bool,
+                          today: Optional[str] = None) -> tuple[str, str]:
+    """Decide a run's snapshot date and its provenance, or refuse.
+
+    THE POINT OF THIS FUNCTION. A refresh always fetches LIVE data -- current
+    prices, current fundamentals, the current macro snapshot. `snapshot_date`
+    only chooses the LABEL on the resulting row; it changes nothing about what
+    is retrieved. So `--date 2020-01-01` does not reconstruct 2020. It writes
+    today's data under a 2020 date, and an ML run that trains on that row fits
+    a 2020 outcome to information from years later. That is the leak.
+
+    Rules, in order:
+
+      no date       -> today, LIVE_CLOSE. The normal scheduled path.
+      today's date  -> today, LIVE_CLOSE. Explicit, and harmless.
+      FUTURE date   -> always refused. No override exists, because no reading
+                       of it is honest: the data is not from the future either.
+      PAST date     -> refused unless `allow_relabel`, and then stamped
+                       RELABELLED so the row is permanently marked and every
+                       dataset can drop it.
+
+    Returns (date, provenance). Raises SnapshotDateError otherwise.
+
+    Genuine historical scores are not produced here at all. They come from the
+    point-in-time replay, which reads facts by their filing dates and writes
+    `pit_score` -- never `score_history`.
+    """
+    today = today or _dt.date.today().isoformat()
+    if not snapshot_date:
+        return today, storage.LIVE_CLOSE
+
+    requested = str(snapshot_date).strip()
+    try:
+        _dt.date.fromisoformat(requested)
+    except (ValueError, TypeError):
+        raise SnapshotDateError(
+            f"snapshot_date {snapshot_date!r} is not a YYYY-MM-DD date."
+        ) from None
+
+    if requested == today:
+        return today, storage.LIVE_CLOSE
+
+    if requested > today:
+        raise SnapshotDateError(
+            f"REFUSED: snapshot_date {requested} is in the future (today is "
+            f"{today}). A refresh fetches live data and can only ever describe "
+            f"today. There is no override for a future date."
+        )
+
+    if not allow_relabel:
+        raise SnapshotDateError(
+            f"REFUSED: snapshot_date {requested} is in the past (today is "
+            f"{today}). This does NOT fetch historical data. The refresh would "
+            f"fetch TODAY'S prices and fundamentals and store them stamped "
+            f"{requested} -- look-ahead bias written straight into "
+            f"score_history, indistinguishable from a real close. For genuine "
+            f"historical scores use the point-in-time replay (pit_store / "
+            f"pit_score). To write the relabelled row anyway, permanently "
+            f"marked '{storage.RELABELLED}' so every dataset excludes it, pass "
+            f"allow_relabel=True (daily_job.py --allow-relabel)."
+        )
+
+    return requested, storage.RELABELLED
+
+
 def refresh_daily_scores(
     conn,
     symbols: Optional[Sequence[str]] = None,
@@ -176,6 +254,7 @@ def refresh_daily_scores(
     snapshot_date: Optional[str] = None,
     progress: Optional[Callable[[str, int, int], None]] = None,
     catalog: Optional[Sequence] = None,
+    allow_relabel: bool = False,
 ) -> RefreshSummary:
     """Refresh market data, rescore, and append today's snapshot.
 
@@ -183,13 +262,21 @@ def refresh_daily_scores(
     `snapshot_kind` CLOSE writes the official immutable daily row; INTRADAY
     writes a replaceable working row so repeated manual refreshes on the same
     day cannot disturb the close.
+
+    `snapshot_date` labels the row and NOTHING ELSE -- the fetch is always
+    live. A past date is therefore refused unless `allow_relabel` is set, and
+    such a row is stamped RELABELLED. See `resolve_snapshot_date`.
+
+    The fence runs before the universe sweep on purpose: a refusable run should
+    cost zero HTTP requests and leave no refresh_runs row behind.
     """
+    today, provenance = resolve_snapshot_date(snapshot_date, allow_relabel)
+
     summary = RefreshSummary(
         started_at=_dt.datetime.now(_dt.timezone.utc),
         scope=",".join(symbols) if symbols else "all supported",
         snapshot_kind=snapshot_kind,
     )
-    today = snapshot_date or _dt.date.today().isoformat()
     run_id = storage.start_refresh_run(conn, summary.scope, snapshot_kind)
 
     if catalog is None:
@@ -206,7 +293,12 @@ def refresh_daily_scores(
         assets, _source = uni.load_multi_asset_universe()
         storage.upsert_assets(conn, assets)
         equity_rows = uni.equity_universe_rows(assets)
-        by_sector, financials, stats = _sweep(equity_rows, today)
+        # The sweep cache is keyed by the REAL calendar day, not by `today`,
+        # which under a relabel run is a date in the past. The fetch is live
+        # either way, so a relabel run should reuse the live sweep rather than
+        # repeat ~2,000 HTTP requests under a different cache key.
+        by_sector, financials, stats = _sweep(
+            equity_rows, _dt.date.today().isoformat())
         vti = md.get_vti_history()
         sector_scores = sect.build_all_sector_scores(by_sector, vti)
     except Exception as exc:
@@ -322,11 +414,13 @@ def refresh_daily_scores(
                 predicted_12m_price=forecast.predicted_price,
                 prediction_model=forecast.model,
                 prediction_model_version=forecast.model_version,
+                snapshot_provenance=provenance,
             )
 
             written = storage.save_score_snapshot(
                 conn, asset_id, today, kind=snapshot_kind,
                 model_version=result.model_version or storage.EQUITY_MODEL_VERSION,
+                provenance=provenance,
                 price=result.price, shaffer_score=result.shaffer_score,
                 classification=result.classification,
                 sector_overlay=result.sector_overlay,
@@ -424,16 +518,22 @@ def _macro_caveat(engine) -> str:
 
 def refresh_macro_scores(conn, snapshot_kind: str = storage.CLOSE,
                          snapshot_date: Optional[str] = None,
-                         macro: Optional[object] = None) -> dict:
+                         macro: Optional[object] = None,
+                         allow_relabel: bool = False) -> dict:
     """Score the non-equity classes that have a wired data source.
 
     Today that is US Treasuries and bills, corporate/sovereign USD bonds, and
     gold. Non-US sovereigns, the other precious metals and every class in
     `macro_factors.BLOCKED_ENGINES` keep their arithmetic but have no feed,
     and are deliberately left unscored rather than filled with estimates.
+
+    The macro snapshot is fetched live, so `snapshot_date` here carries exactly
+    the same hazard as it does for equities and is fenced identically: the FRED
+    series come back at today's vintage whatever date the row is labelled with.
+    See `resolve_snapshot_date`.
     """
+    today, provenance = resolve_snapshot_date(snapshot_date, allow_relabel)
     summary = {"scored": 0, "skipped": 0, "engines": {}, "notes": []}
-    today = snapshot_date or _dt.date.today().isoformat()
 
     if macro is None:
         macro = macro_data.fetch_macro_snapshot(
@@ -489,10 +589,12 @@ def refresh_macro_scores(conn, snapshot_kind: str = storage.CLOSE,
                 raw_inputs={"direction": result.message,
                             "macro_fetched_at": macro.fetched_at,
                             "caveat": _macro_caveat(engine)},
-                model_version=result.model_version)
+                model_version=result.model_version,
+                snapshot_provenance=provenance)
             storage.save_score_snapshot(
                 conn, row["asset_id"], today, kind=snapshot_kind,
                 model_version=result.model_version,
+                provenance=provenance,
                 shaffer_score=result.shaffer_score,
                 classification=result.classification,
                 factor_scores=result.factor_scores,

@@ -322,12 +322,13 @@ check("the corporate caveat says no rating is available",
 check("the rates caveat distinguishes conviction from return",
       "duration changes expected return" in R.MACRO_CAVEATS["rates_shaffer_v1"])
 detail = open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                           "views/asset_detail_page.py")).read()
+                           "views/asset_detail_page.py"), encoding="utf-8").read()
 check("the caveat is shown next to the score, not just logged",
       'raw.get("caveat")' in detail and 'st.warning(raw["caveat"])' in detail)
 check("a high-yield spread is never assigned to an unrated bond",
       "hy_values" not in open(os.path.join(
-          os.path.dirname(os.path.abspath(__file__)), "refresh.py")).read())
+          os.path.dirname(os.path.abspath(__file__)), "refresh.py"),
+          encoding="utf-8").read())
 
 print("== every factor an engine asks for is actually fetched ==")
 import macro_data as MD
@@ -364,7 +365,7 @@ check("conviction score is curve-wide by design",
 
 print("== the ML Lab page reflects the new horizons and the trade loop ==")
 page = open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         "views/ml_page.py")).read()
+                         "views/ml_page.py"), encoding="utf-8").read()
 check("horizon defaults to the primary horizon, not a hardcoded index",
       "horizons.index(pred.PRIMARY_HORIZON)" in page and "index=3" not in page)
 check("early horizons are marked as early, not as calibration evidence",
@@ -384,28 +385,33 @@ check("the trade dataset is still walled off from the market dataset",
 
 print("== the app can actually be launched ==")
 _here = os.path.dirname(os.path.abspath(__file__))
-reqs = open(os.path.join(_here, "requirements.txt")).read()
+reqs = open(os.path.join(_here, "requirements.txt"), encoding="utf-8").read()
 check("requirements lists streamlit", "streamlit" in reqs)
 check("requirements lists requests", "requests" in reqs)
 check("no dependency is listed that nothing imports",
       "plotly" not in reqs)
+# encoding="utf-8" is not decoration. Without it these reads take the
+# platform default -- cp1252 on Windows -- and app.py's twelve non-ASCII bytes
+# (the middot, em dash and left arrow it prints) raise UnicodeDecodeError at
+# byte 0x90, so this suite aborted here on every Windows run it ever had. The
+# repository is UTF-8; say so rather than let the OS guess.
 sources = "".join(
-    open(os.path.join(_here, f)).read()
+    open(os.path.join(_here, f), encoding="utf-8").read()
     for f in os.listdir(_here) if f.endswith(".py"))
 sources += "".join(
-    open(os.path.join(_here, "views", f)).read()
+    open(os.path.join(_here, "views", f), encoding="utf-8").read()
     for f in os.listdir(os.path.join(_here, "views")) if f.endswith(".py"))
 for package in ("numpy", "pandas", "sklearn", "scipy", "yfinance"):
     check(f"nothing imports {package}", f"import {package}" not in sources)
 for launcher in ("run.sh", "run.command", "run.bat"):
     check(f"{launcher} exists", os.path.isfile(os.path.join(_here, launcher)))
-launch = open(os.path.join(_here, "run.sh")).read()
+launch = open(os.path.join(_here, "run.sh"), encoding="utf-8").read()
 check("the launcher refuses Python below 3.10", "3,10" in launch)
 check("the launcher waits for the server before opening a browser",
       "_stcore/health" in launch)
 check("a failed install does not start a half-built app",
       "exit 1" in launch and "deps-installed" in launch)
-config = open(os.path.join(_here, ".streamlit", "config.toml")).read()
+config = open(os.path.join(_here, ".streamlit", "config.toml"), encoding="utf-8").read()
 check("the server binds to localhost only", '127.0.0.1' in config)
 check("usage stats are off", "gatherUsageStats    = false" in config)
 

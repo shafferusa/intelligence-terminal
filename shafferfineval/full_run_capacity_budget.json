@@ -1,0 +1,310 @@
+{
+ "empty_db_understatement_measured": {
+  "pit_feature": {
+   "pilot_bytes_per_row_empty_db": 576.4,
+   "exp_first_batch_bytes_per_row": 575.41,
+   "exp_mean_last20_bytes_per_row": 575.99,
+   "exp_max_bytes_per_row": 623.46,
+   "retained_correction_factor_last20_over_first": 1.00101,
+   "retained_correction_factor_vs_pilot": 0.99929,
+   "wal_bytes_per_row_first_batch": 582.46,
+   "wal_bytes_per_row_at_date_165": 6513.45,
+   "wal_bytes_per_row_max": 6533.03,
+   "wal_growth_multiple_first_to_last": 11.183,
+   "rows_per_entity_date": 13.0
+  },
+  "pit_pillar_score": {
+   "pilot_bytes_per_row_empty_db": 740.7,
+   "exp_first_batch_bytes_per_row": 752.0,
+   "exp_mean_last20_bytes_per_row": 756.25,
+   "exp_max_bytes_per_row": 839.0,
+   "retained_correction_factor_last20_over_first": 1.00565,
+   "retained_correction_factor_vs_pilot": 1.02099,
+   "wal_bytes_per_row_first_batch": 761.44,
+   "wal_bytes_per_row_at_date_165": 8084.1,
+   "wal_bytes_per_row_max": 8229.95,
+   "wal_growth_multiple_first_to_last": 10.617,
+   "rows_per_entity_date": 4.0
+  },
+  "pit_score": {
+   "pilot_bytes_per_row_empty_db": 1705.1,
+   "exp_first_batch_bytes_per_row": 1699.47,
+   "exp_mean_last20_bytes_per_row": 1716.32,
+   "exp_max_bytes_per_row": 1780.12,
+   "retained_correction_factor_last20_over_first": 1.00991,
+   "retained_correction_factor_vs_pilot": 1.00658,
+   "wal_bytes_per_row_first_batch": 1726.83,
+   "wal_bytes_per_row_at_date_165": 8135.72,
+   "wal_bytes_per_row_max": 8376.2,
+   "wal_growth_multiple_first_to_last": 4.711,
+   "rows_per_entity_date": 0.36643
+  }
+ },
+ "blended_retained_correction_factor": 1.00551,
+ "projected_retained_growth": {
+  "basis": "worst measured bytes/entity-date (2019-06-28) x 1,238,663 measured entity-dates",
+  "worst_bytes_per_entity_date": 11116.643,
+  "worst_date": "2019-06-28",
+  "pooled_bytes_per_entity_date": 11086.948,
+  "grid_entity_dates": 1238663,
+  "prg_worst_bytes": 13769774615,
+  "prg_worst_gib": 12.824,
+  "prg_pooled_bytes": 13732991796,
+  "prg_pooled_gib": 12.79,
+  "prg_depth_corrected_bytes": 13845634230,
+  "prg_depth_corrected_gib": 12.895
+ },
+ "regime_mix_upper_bound": {
+  "why": "2022 and 2026 were never measured. If the valuation and financial_quality blocks resolve in the post-2020 regimes, every entity-date gains complete feature rows (630.19 B/row vs 565.05 B/row) and a pit_score row (1705.1 B).",
+  "bytes_per_row_complete": 630.19,
+  "bytes_per_row_unavailable": 565.05,
+  "extra_bytes_per_entity_date_if_all_features_complete": 708.2,
+  "extra_bytes_per_entity_date_if_all_entity_dates_score": 1080.3,
+  "upper_bound_bytes": 16073168962,
+  "upper_bound_gib": 14.969,
+  "uplift_pct_over_depth_corrected": 16.1
+ },
+ "peak_wal": {
+  "pilot_measured_peak_bytes_at_date_2_of_165": 69281952,
+  "pilot_measured_peak_gib": 0.0645,
+  "pilot_wal_bytes_per_entity_date": 9755.3,
+  "measured_saturated_wal_bytes_per_row": {
+   "pit_feature": 6513.45,
+   "pit_pillar_score": 8084.1,
+   "pit_score": 8135.72
+  },
+  "saturated_wal_bytes_per_entity_date": 119992.4,
+  "largest_measured_cross_section_entities": 8132,
+  "peak_wal_at_grid_end_bytes": 975778375,
+  "peak_wal_at_grid_end_gib": 0.909,
+  "multiple_over_pilot_measurement": 14.08,
+  "method": "165-date replay of a thinned cross-section into each real table with its real indexes, PRAGMA wal_checkpoint(TRUNCATE) after every date, WAL file sized at commit. WAL/row is a dirty-page count, so it transfers back to a full cross-section by row count.",
+  "assumption": "ONE transaction per as-of date, which is what the engine does today."
+ },
+ "peak_temp": {
+  "measured_bytes": 0,
+  "measured_in": "pilot (etilqs scan at 1.25 Hz) and all four controlled experiments",
+  "caveat": "LOWER BOUND. A sorter spill shorter than 0.8 s is invisible to a 1.25 Hz scan. temp_store is FILE and the temp directory is on the SAME volume."
+ },
+ "non_database_transient_pagefile": {
+  "measured_bytes": 5923065856,
+  "measured_gib": 5.516,
+  "note": "Not in the owner's formula, but it is what actually aborted the pilot. Measured, not inferred: C:\\pagefile.sys grew during the 2022 assemble window and the space was not returned at process exit."
+ },
+ "budgets": [
+  {
+   "label": "A. owner's formula with the pilot's own numbers (date-2 WAL)",
+   "ProjectedRetainedGrowth_bytes": 13769774615,
+   "ProjectedRetainedGrowth_gib": 12.824,
+   "PeakWAL_bytes": 69281952,
+   "PeakWAL_gib": 0.065,
+   "PeakTemp_bytes": 0,
+   "PeakTemp_gib": 0.0,
+   "SafetyReserve_bytes": 5368709120,
+   "SafetyReserve_gib": 5.0,
+   "RequiredSpace_bytes": 19207765687,
+   "RequiredSpace_gib": 17.889,
+   "GateThreshold_bytes": 32977540302,
+   "GateThreshold_gib": 30.713
+  },
+  {
+   "label": "B. depth-corrected, measured saturated WAL",
+   "ProjectedRetainedGrowth_bytes": 13845634230,
+   "ProjectedRetainedGrowth_gib": 12.895,
+   "PeakWAL_bytes": 975778375,
+   "PeakWAL_gib": 0.909,
+   "PeakTemp_bytes": 0,
+   "PeakTemp_gib": 0.0,
+   "SafetyReserve_bytes": 5368709120,
+   "SafetyReserve_gib": 5.0,
+   "RequiredSpace_bytes": 20190121725,
+   "RequiredSpace_gib": 18.804,
+   "GateThreshold_bytes": 34035755955,
+   "GateThreshold_gib": 31.698
+  },
+  {
+   "label": "C. B plus the measured pagefile transient in the PeakTemp slot",
+   "ProjectedRetainedGrowth_bytes": 13845634230,
+   "ProjectedRetainedGrowth_gib": 12.895,
+   "PeakWAL_bytes": 975778375,
+   "PeakWAL_gib": 0.909,
+   "PeakTemp_bytes": 5923065856,
+   "PeakTemp_gib": 5.516,
+   "SafetyReserve_bytes": 5368709120,
+   "SafetyReserve_gib": 5.0,
+   "RequiredSpace_bytes": 26113187581,
+   "RequiredSpace_gib": 24.32,
+   "GateThreshold_bytes": 39958821811,
+   "GateThreshold_gib": 37.215
+  },
+  {
+   "label": "D. C at the regime-mix upper bound (2022/2026 unmeasured)",
+   "ProjectedRetainedGrowth_bytes": 16073168962,
+   "ProjectedRetainedGrowth_gib": 14.969,
+   "PeakWAL_bytes": 975778375,
+   "PeakWAL_gib": 0.909,
+   "PeakTemp_bytes": 5923065856,
+   "PeakTemp_gib": 5.516,
+   "SafetyReserve_bytes": 5368709120,
+   "SafetyReserve_gib": 5.0,
+   "RequiredSpace_bytes": 28340722313,
+   "RequiredSpace_gib": 26.394,
+   "GateThreshold_bytes": 44413891275,
+   "GateThreshold_gib": 41.364
+  }
+ ],
+ "recommended_budget": "C",
+ "verdict": {
+  "free_space_now_bytes": 4441710592,
+  "free_space_now_gib": 4.137,
+  "free_space_at_pilot_start_gib": 9.807,
+  "required_space_gib": 24.32,
+  "gate_threshold_gib": 37.215,
+  "gate_passes": false,
+  "shortfall_vs_gate_bytes": 35517111219,
+  "shortfall_vs_gate_gib": 33.078,
+  "shortfall_vs_gate_from_pilot_start_gib": 27.408
+ },
+ "levers": {
+  "lever_1_do_not_retain_unavailable_pit_feature_rows": {
+   "measured_on": "2014-06-30 cross-section, replayed into a fresh DB three ways",
+   "rows_all": 105716,
+   "bytes_all": 60932096,
+   "rows_complete": 17003,
+   "bytes_complete": 10715136,
+   "bytes_per_row_complete": 630.19,
+   "rows_unavailable": 88713,
+   "bytes_unavailable": 50126848,
+   "bytes_per_row_unavailable": 565.05,
+   "method_check": "the 'all' arm reproduced the pilot's measured 60,932,096 B for pit_feature on 2014-06-30 EXACTLY",
+   "unavailable_share_of_pit_feature_rows_pct": 83.63,
+   "unavailable_share_of_pit_feature_bytes_pct": 82.27,
+   "pit_feature_share_of_retained_growth_pct": 67.59,
+   "full_grid_saving_bytes": 7698826808,
+   "full_grid_saving_gib": 7.17,
+   "saving_share_of_prg_pct": 55.6,
+   "peak_wal_after_lever_bytes": 399931144,
+   "peak_wal_after_lever_gib": 0.372,
+   "wal_reduction_pct": 59.0,
+   "eight_feature_keys_100pct_unavailable_in_both_measured_dates": [
+    "debt_market_cap",
+    "ebitda_benchmark",
+    "ev_ebitda_supplement",
+    "fcf_conversion",
+    "interest_coverage",
+    "net_debt_ebitda",
+    "pe_absolute",
+    "pe_relative"
+   ],
+   "rows_those_8_keys_cost": 9909304
+  },
+  "lever_2_do_not_retain_unavailable_pit_pillar_score_rows": {
+   "unavailable_pillar_rows_pilot": 45566,
+   "pillar_rows_pilot": 60936,
+   "unavailable_share_pct": 74.78,
+   "full_grid_saving_bytes": 2770830733,
+   "full_grid_saving_gib": 2.581,
+   "caveat": "apportioned by ROW share, not measured by byte scope"
+  },
+  "lever_3_chunked_commits": {
+   "what": "commit + wal_checkpoint(TRUNCATE) every K entities instead of once per date",
+   "effect": "PeakWAL becomes K/N_xsec of the per-date figure; at K=1000 that is 119992421 B instead of 975778374 B",
+   "retained_growth_effect": "none"
+  },
+  "lever_4_stream_the_assemble_stage": {
+   "what": "the engine builds an entire cross-section in Python lists before its first insert; on 7.45 GiB RAM this is what forced the pagefile to grow",
+   "measured_transient_removed_bytes": 5923065856,
+   "measured_transient_removed_gib": 5.516
+  }
+ },
+ "non_space": {
+  "elapsed": {
+   "completed_dates_entity_dates_per_s": 19.278,
+   "pooled_incl_aborted_date_entity_dates_per_s": 11.185,
+   "full_grid_hours_at_completed_rate": 17.85,
+   "full_grid_hours_at_pooled_rate": 30.76,
+   "per_date_elapsed_measured_s": {
+    "2014-06-30": 380.97,
+    "2019-06-28": 409.26,
+    "2022-06-30": "571.83 and still in assemble"
+   },
+   "insert_slowdown_measured": "at 1/16 scale the per-date insert rose from 0.15 s (date 1) to 1.25 s (date 165), 8.3x; at full scale the 9-batch run rose 1.39 s -> 6.94 s over 8 dates",
+   "note": "per-date time is dominated by the assemble stage (reads from the main store), not the insert; the 2022 date was the slowest measured and never finished"
+  },
+  "signature_distribution": {
+   "EG": 5582,
+   "distinct_signatures": 1,
+   "share_pct": {
+    "EG": 100.0
+   }
+  },
+  "pillar_mask_distribution": {
+   "E=1,V=0,G=1,Q=0": 5582
+  },
+  "partial_score_marker": {
+   "PARTIAL_SHAFFER_SCORE_NOT_DIRECTLY_COMPARABLE": 5582
+  },
+  "refusal_mix_entity_dates": {
+   "scored_E+G_w_0.50": 5582,
+   "refused_E_only_w_0.35": 748,
+   "refused_G_only_w_0.15": 3458,
+   "refused_neither_w_0.00": 5446,
+   "total": 15234
+  },
+  "block_availability_entity_dates": {
+   "ebitda_strength": {
+    "resolved": 6330,
+    "pct": 41.55
+   },
+   "valuation": {
+    "resolved": 0,
+    "pct": 0.0
+   },
+   "real_growth": {
+    "resolved": 9040,
+    "pct": 59.34
+   },
+   "financial_quality": {
+    "resolved": 0,
+    "pct": 0.0
+   }
+  },
+  "no_score_at_all": {
+   "entity_dates": 9652,
+   "of": 15234,
+   "pct": 63.36,
+   "coverage_pct": 36.64
+  },
+  "challenger": {
+   "ebitda_scale_rows_written": 15234,
+   "rows_reaching_a_score": 0
+  },
+  "checkpoints": {
+   "run": 3,
+   "busy_refusals": 0,
+   "all_returns_read": true,
+   "signature": "(0,0,0) every time"
+  }
+ },
+ "evidence_files": {
+  "lever_experiment": "exp_lever.json",
+  "depth_9_batch_full_scale": "exp_depth.json",
+  "saturation_pit_feature_165_dates": "exp_walsat_idx.json",
+  "saturation_pit_pillar_score_165_dates": "exp_sat_pit_pillar_score.json",
+  "saturation_pit_score_165_dates": "exp_sat_pit_score.json"
+ },
+ "provenance": {
+  "spec_freeze_version": "spec_freeze_v3",
+  "digest": "2f9bba3136ac45f4bdc37c5197e646acf645410f1c36ded698fbdd368f86e764",
+  "n_components": 38,
+  "verify_intact": true,
+  "can_execute_replay": [
+   true,
+   []
+  ],
+  "main_store_bytes_after": 9632415744,
+  "main_store_untouched": true,
+  "main_store_mtime": "2026-09-21T16:07:48.366421",
+  "model_version": "equity_shaffer_v2_pit_SURVIVOR_ONLY_DIAGNOSTIC"
+ }
+}
