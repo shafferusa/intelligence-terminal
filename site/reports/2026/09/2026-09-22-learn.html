@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>A Falling Cat Starts With Zero Angular Momentum — Learning Brief, Tue, Sep 22, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-22",
+    "slot": "learn",
+    "title": "A Falling Cat Starts With Zero Angular Momentum. It Still Lands on Its Feet.",
+    "path": "reports/2026/09/2026-09-22-learn.html",
+    "summary": "Day 27 of the 150-day curriculum: center of mass, torque and moment of inertia, built around a falling cat's zero-angular-momentum turn, a torque wrench, a spinning skater, and the reaction-wheel failures that stalled NASA's Kepler space telescope.",
+    "headlines": [
+      "Day 27 of 150 · Physics",
+      "How a cat rotates with zero angular momentum",
+      "Torque, moment of inertia and why Kepler lost its prime mission"
+    ],
+    "reading_minutes": 27,
+    "generated_at": "2026-09-22T06:10:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>A Falling Cat Starts With Zero Angular Momentum. It Still Lands on Its Feet.</h1>
+      <p class="paper-dateline">
+        Tuesday, September 22, 2026 <span class="sep">&middot;</span> 27 min read
+      </p>
+      <p class="paper-standfirst">
+        Center of mass, torque and moment of inertia are the three ideas that let a wrench turn a bolt, let a skater spin more than twice as fast just by pulling in her arms, stalled a NASA space telescope when two of its four reaction wheels failed, and let a cat reorient itself in midair without ever breaking the conservation law that says, on paper, it shouldn&rsquo;t be able to.</p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Physics</p>
+      <span class="track-progress">Day 27 of 150 &middot; Physics 6 of 26 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A cat with nothing to push against</h3>
+
+      <p>Hold a cat upside down, release it, and it lands on its feet. Everyone has seen this, or a video of it, and almost nobody stops to notice how strange it actually is. At the instant of release the cat is not spinning &mdash; it has, in the language this lesson is about to build carefully, zero angular momentum around any axis through its own body. There is nothing for its paws to push against: no wall, no floor, no rope. And a body with zero angular momentum and nothing to push against, every physics student is taught almost immediately, cannot start spinning on its own. Angular momentum is conserved. Zero stays zero. And yet the cat rotates a full half-turn in well under a second and comes down the right way up, every time, and high-speed film going back to 1894 shows it happening.</p>
+
+      <p>This is not a trick question with a cheap resolution, and it was not solved cheaply. The physicist James Clerk Maxwell, already famous for unifying electricity and magnetism, was fascinated enough by the problem to drop cats himself to watch what they did. In 1894 the French physiologist &Eacute;tienne-Jules Marey, a pioneer of high-speed sequential photography, rigged a camera at his research station in Paris&rsquo;s Bois de Boulogne to shoot a falling cat at twelve frames a second &mdash; thirty-six frames capturing a white cat dropped upside down from three or four feet, turning itself over and landing square on all four paws on a cushioned surface. The photographs are unambiguous: the cat rotates continuously through the fall, not in one instantaneous flip at the moment of release. And still, for most of the next seventy years, a good number of physicists who saw those very photographs kept reaching for the same wrong explanation &mdash; that the cat must be pushing off the experimenter&rsquo;s hand at the instant it is let go, borrowing a little angular momentum from an external push before the conservation law closes back over it. It is a natural thing to assume, because the alternative &mdash; that a floppy, deformable body can rotate itself with no outside help and no violation of any conservation law &mdash; sounds like it ought to be impossible. It took until 1969, in a paper funded by NASA and written by the engineers Thomas Kane and M. P. Scher, for anyone to show, with an actual working mathematical model, exactly how a cat does it. This lesson is going to get you to the same place Kane and Scher got to, by way of three ordinary ideas &mdash; where an object&rsquo;s mass effectively lives, what a twisting force actually does, and how &ldquo;rotational mass&rdquo; depends on more than just how much mass there is.</p>
+
+      <h3>Three ideas, none of them requiring notation yet</h3>
+
+      <p>The first idea is the <b>center of mass</b>: the single point where, for the purposes of anything involving the object&rsquo;s overall motion through space, you can pretend the entire mass of the object is concentrated. Throw a wrench end over end across a room and its motion looks chaotic &mdash; the handle whips around, the head tumbles &mdash; but one point on that wrench, close to its geometric middle, traces a perfectly smooth parabola from your hand to wherever it lands, exactly the arc a single thrown ball would trace. Every other point on the wrench is doing something complicated: translating along that same parabola <em>and</em> rotating around it at the same time. The center of mass is what is left over once you have mentally subtracted the rotation, and it is why a diver&rsquo;s body can tumble through two and a half somersaults and a twist while their center of mass still just falls, unremarkably, in the same arc gravity would put a stone through if you threw it off the platform. And that center of mass does not have to sit on any actual material of the object at all &mdash; a thin ring, a horseshoe magnet, or a boomerang all have their center of mass hovering in the empty space at the middle, because &ldquo;center of mass&rdquo; is a statement about how the mass that exists is distributed, not a claim that something has to physically occupy the answer.</p>
+
+      <p>The second idea is <b>torque</b>, which day six of this curriculum already introduced as one of two physical quantities built on the vector cross product: torque is what a force becomes when you care not just about how hard it pushes but about how far from a pivot it pushes, and at what angle. A firm push straight at a hinge does not open a door no matter how hard you push, because it has no leverage; the same push applied at the doorknob, perpendicular to the door, swings it open with ease. Torque is the formal name for &ldquo;how much twisting effect a force actually has,&rdquo; and it depends on three things at once &mdash; the size of the force, the distance from the pivot to where it is applied, and the angle between the force and that lever arm &mdash; multiplied together in exactly the way the cross product already taught you to combine two vectors that care about their mutual angle.</p>
+
+      <p>The third idea is the one this lesson spends the most time on, because it is the one with no everyday word for it: <b>moment of inertia</b>, the rotational stand-in for mass. Ordinary mass measures how hard it is to change an object&rsquo;s straight-line velocity &mdash; push equally hard on a bowling ball and a basketball and the bowling ball, having more mass, accelerates less. Moment of inertia measures how hard it is to change an object&rsquo;s <em>rotational</em> velocity, and the twist is that it depends not just on how much mass an object has but on <em>where that mass sits relative to the axis it is spinning around</em>. A figure skater with her arms pulled tight against her chest and the same skater with her arms flung straight out to the sides have exactly the same mass. They do not have remotely the same moment of inertia, because moment of inertia weights each bit of mass by the square of its distance from the spin axis, and a hand two feet from the spine counts for vastly more than the same hand tucked in at six inches. This is the idea that makes the cat problem solvable, the idea that makes a skater speed up by pulling her arms in, and the idea a spacecraft engineer has to get exactly right or a mission-critical component sits idle in orbit doing nothing useful at all.</p>
+
+      <h3>The formalism, built up one piece at a time</h3>
+
+      <p>Start with the center of mass, because everything downstream is measured relative to it. For a collection of point masses m<sub>1</sub>, m<sub>2</sub>, m<sub>3</sub> and so on, sitting at positions <strong>r</strong><sub>1</sub>, <strong>r</strong><sub>2</sub>, <strong>r</strong><sub>3</sub>, the center of mass is the mass-weighted average of all those positions.</p>
+
+      <div class="formula">
+        <p class="expr"><strong>R</strong><sub>cm</sub> = (1/M) &Sigma; m<sub>i</sub><strong>r</strong><sub>i</sub> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; M = &Sigma; m<sub>i</sub></p>
+        <dl>
+          <dt><strong>R</strong><sub>cm</sub></dt><dd>the position of the center of mass &mdash; a single point in space, the mass-weighted average of every particle&rsquo;s position.</dd>
+          <dt>m<sub>i</sub></dt><dd>the mass of the i-th particle making up the object (or, for a continuous object, an infinitesimally small chunk of it).</dd>
+          <dt><strong>r</strong><sub>i</sub></dt><dd>the position of that i-th particle, measured from any fixed origin you choose &mdash; the answer for <strong>R</strong><sub>cm</sub> does not depend on which origin you pick.</dd>
+          <dt>M</dt><dd>the total mass of the object, the sum of every m<sub>i</sub>.</dd>
+        </dl>
+      </div>
+
+      <p>For a continuous solid object rather than a handful of discrete point masses, the sum becomes an integral, <strong>R</strong><sub>cm</sub> = (1/M)&int;<strong>r</strong> dm, but the meaning is identical: chop the object into infinitely many infinitesimal pieces, weight each piece&rsquo;s position by how much mass it carries, and average. Here is the fact that actually makes the diver&rsquo;s tumbling parabola true, and it is worth seeing once rather than just taking on faith: sum Newton&rsquo;s second law, force equals mass times acceleration, over every particle in an object where only external forces (gravity, a normal force, air resistance) are acting, and the internal forces holding the object together always cancel out in equal-and-opposite pairs. What falls out the other side is M times the acceleration of the center of mass equals the total external force. The center of mass moves exactly as if all the mass and all the external force were concentrated at that one point, no matter how wildly every other point on the object is rotating or deforming around it.</p>
+
+      <p>Now torque, already previewed on day six: for a force <strong>F</strong> applied at a point located a distance <strong>r</strong> from a chosen pivot, the torque that force produces about that pivot is the cross product of the two.</p>
+
+      <div class="formula">
+        <p class="expr"><strong>&tau;</strong> = <strong>r</strong> &times; <strong>F</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; |<strong>&tau;</strong>| = rF sin&theta;</p>
+        <dl>
+          <dt><strong>&tau;</strong></dt><dd>torque, a vector (by the right-hand rule, perpendicular to the plane containing <strong>r</strong> and <strong>F</strong>) whose magnitude measures the twisting effect of the force about the chosen pivot.</dd>
+          <dt><strong>r</strong></dt><dd>the position vector from the pivot to the exact point where the force is applied &mdash; the &ldquo;lever arm,&rdquo; with magnitude r.</dd>
+          <dt><strong>F</strong></dt><dd>the applied force, with magnitude F.</dd>
+          <dt>&theta;</dt><dd>the angle between <strong>r</strong> and <strong>F</strong> &mdash; torque is maximal when the force is applied perpendicular to the lever arm (&theta; = 90&deg;, sin&theta; = 1) and exactly zero when the force is applied straight along the lever arm, toward or away from the pivot (&theta; = 0&deg; or 180&deg;).</dd>
+        </dl>
+      </div>
+
+      <p>Every single point mass in a rigid, spinning object is, at every instant, moving in a small circle around the rotation axis, and Newton&rsquo;s second law applies to each one of those points individually. Add up the torques on every one of those points from whatever forces are acting, and a genuinely useful pattern falls out: for a point mass a distance r from the axis, moving in a circle, the tangential force needed to give it an angular acceleration &alpha; (the rate at which angular velocity itself is changing) is F = ma<sub>tangential</sub> = m(r&alpha;), and the torque that force produces about the axis is &tau; = rF = r(mr&alpha;) = (mr&sup2;)&alpha;. The quantity in parentheses, mr&sup2;, is that point mass&rsquo;s individual contribution to the object&rsquo;s moment of inertia, and summing it over every particle in the object gives the object&rsquo;s total moment of inertia about that axis.</p>
+
+      <div class="formula">
+        <p class="expr">I = &Sigma; m<sub>i</sub>r<sub>i</sub>&sup2; &nbsp;&nbsp;(discrete) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I = &int;r&sup2; dm &nbsp;&nbsp;(continuous)</p>
+        <dl>
+          <dt>I</dt><dd>the moment of inertia of the object about a specific, chosen rotation axis &mdash; not a fixed property of the object alone, but of the object <em>and</em> the axis together, in kg&middot;m&sup2;.</dd>
+          <dt>m<sub>i</sub></dt><dd>the mass of the i-th particle (or infinitesimal mass element dm for a continuous body).</dd>
+          <dt>r<sub>i</sub></dt><dd>the perpendicular distance from that particle to the rotation axis &mdash; not the distance to the center of mass, and not the distance to any other reference point; specifically to the axis being used right now.</dd>
+        </dl>
+      </div>
+
+      <p>That r&sup2; is the entire reason moment of inertia behaves so differently from ordinary mass: doubling a chunk of mass&rsquo;s distance from the axis quadruples its contribution to I, which is exactly why a skater&rsquo;s outstretched arms count so disproportionately. Summing mr&sup2;&alpha; over every particle in the whole object gives the rotational analogue of Newton&rsquo;s second law directly, alongside the two other rotational quantities that complete the analogy with ordinary linear motion.</p>
+
+      <div class="formula">
+        <p class="expr">&tau;<sub>net</sub> = I&alpha; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; L = I&omega; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; KE<sub>rot</sub> = &frac12;I&omega;&sup2;</p>
+        <dl>
+          <dt>&tau;<sub>net</sub></dt><dd>the net external torque acting on the object about the axis in question.</dd>
+          <dt>I</dt><dd>moment of inertia about that same axis, as defined above.</dd>
+          <dt>&alpha;</dt><dd>angular acceleration, the rate of change of angular velocity, in radians per second squared &mdash; the rotational stand-in for ordinary linear acceleration.</dd>
+          <dt>L</dt><dd>angular momentum about the axis, in kg&middot;m&sup2;/s &mdash; for a rigid body rotating as a whole, exactly I&omega;; for a single point mass, day six&rsquo;s <strong>L</strong> = <strong>r</strong>&times;<strong>p</strong> reduces to this same form once you rewrite it out.</dd>
+          <dt>&omega;</dt><dd>angular velocity, in radians per second &mdash; the rotational stand-in for ordinary linear velocity.</dd>
+          <dt>KE<sub>rot</sub></dt><dd>rotational kinetic energy, in joules &mdash; the energy stored in the object&rsquo;s rotation, entirely separate from any kinetic energy it has from moving through space.</dd>
+        </dl>
+      </div>
+
+      <p>Line these up against the linear versions you already know without having to be told they are related: force becomes torque, mass becomes moment of inertia, linear acceleration becomes angular acceleration, ordinary momentum p = mv becomes L = I&omega;, and &frac12;mv&sup2; becomes &frac12;I&omega;&sup2;. Every piece of rotational dynamics in this lesson, and in every lesson on rotation this curriculum will ever run, is the exact same equation you already learned for straight-line motion, with the substitutions made once and then reused forever.</p>
+
+      <p>Because I depends on how mass is distributed relative to the axis, not just on total mass, different shapes spinning about their own natural center have genuinely different formulas, all derivable from the same integral above but tedious enough to derive from scratch every time that it is worth simply knowing the standard results.</p>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Moment of inertia for common rigid shapes, about the stated axis through the object&rsquo;s own center of mass. M is total mass, R is radius, L is length.</caption>
+          <thead><tr><th>Shape</th><th>Axis</th><th>I</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Point mass, distance r from axis</td><td class="txt">&mdash;</td><td>Mr&sup2;</td></tr>
+            <tr><td class="txt">Thin hoop or ring</td><td class="txt">central, perpendicular to plane</td><td>MR&sup2;</td></tr>
+            <tr><td class="txt">Solid disk or cylinder</td><td class="txt">central, perpendicular to plane</td><td>&frac12;MR&sup2;</td></tr>
+            <tr><td class="txt">Solid sphere</td><td class="txt">through center, any diameter</td><td>(2/5)MR&sup2;</td></tr>
+            <tr><td class="txt">Thin spherical shell</td><td class="txt">through center, any diameter</td><td>(2/3)MR&sup2;</td></tr>
+            <tr><td class="txt">Thin rod</td><td class="txt">perpendicular, through center</td><td>(1/12)ML&sup2;</td></tr>
+            <tr><td class="txt">Thin rod</td><td class="txt">perpendicular, through one end</td><td>(1/3)ML&sup2;</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Notice the hoop and the solid disk: same mass, same radius, and the hoop&rsquo;s moment of inertia is exactly double the disk&rsquo;s, because every bit of the hoop&rsquo;s mass sits at the maximum possible distance R from the axis, while the disk has mass spread all the way in to the center, where it barely counts at all. A hoop and a disk of identical mass and radius, released together from the top of the same ramp, do not reach the bottom at the same time &mdash; the disk wins, because less of its gravitational potential energy has to go into spinning up a large moment of inertia and more of it is free to become plain forward speed. Nothing about total mass explains that race. Only the distribution does.</p>
+
+      <p>Last, one more tool, because almost nothing you ever need to spin is conveniently pivoted through its own center of mass. Moving the rotation axis away from the center of mass, while keeping it parallel to where it was, does not require redoing the whole integral from scratch. The seventeenth-century physicist Christiaan Huygens, studying pendulums, first worked out the relationship, and the nineteenth-century Swiss mathematician Jakob Steiner later gave it the clean, general proof still used today, which is why it carries both their names.</p>
+
+      <div class="formula">
+        <p class="expr">I = I<sub>cm</sub> + Md&sup2;</p>
+        <dl>
+          <dt>I</dt><dd>moment of inertia about the new axis, parallel to the original but shifted away from the center of mass.</dd>
+          <dt>I<sub>cm</sub></dt><dd>moment of inertia about the parallel axis that does pass through the center of mass &mdash; always the smallest moment of inertia of any axis in that same direction.</dd>
+          <dt>M</dt><dd>total mass of the object.</dd>
+          <dt>d</dt><dd>the perpendicular distance between the two parallel axes.</dd>
+        </dl>
+      </div>
+
+      <p>The Huygens&ndash;Steiner (parallel-axis) theorem says that shifting the axis always adds mass times distance-squared, never subtracts &mdash; which means the center-of-mass axis is always, for any object and any direction, the easiest possible axis to spin the object around. This is not a coincidence and it is not a separate fact to memorize; it falls directly out of the definition of the center of mass itself, and the first worked example below proves it by brute-force arithmetic rather than asking you to take it on faith.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; a dumbbell, two axes, and the theorem that connects them</b>
+        <p>A hypothetical barbell is built from two point masses of 2 kg each, mounted on the ends of a rigid, effectively massless rod 1.0 meter long, so each mass sits exactly 0.5 m from the rod&rsquo;s midpoint. Find the moment of inertia about an axis through the rod&rsquo;s center, perpendicular to the rod; then find it about a parallel axis through one end instead, two different ways.</p>
+        <ol>
+          <li>About the center: each mass sits r = 0.5 m from this axis. I<sub>cm</sub> = &Sigma;m<sub>i</sub>r<sub>i</sub>&sup2; = (2)(0.5)&sup2; + (2)(0.5)&sup2; = 0.5 + 0.5 = 1.0 kg&middot;m&sup2;.</li>
+          <li>About one end, computed directly: the mass sitting right at that end is now r = 0 m from the axis and contributes nothing; the far mass is now r = 1.0 m away. I<sub>end</sub> = (2)(0)&sup2; + (2)(1.0)&sup2; = 0 + 2.0 = 2.0 kg&middot;m&sup2;.</li>
+          <li>About one end, computed instead from the parallel-axis theorem: the two axes (center and end) are d = 0.5 m apart, and the total mass is M = 4 kg. I<sub>end</sub> = I<sub>cm</sub> + Md&sup2; = 1.0 + (4)(0.5)&sup2; = 1.0 + 1.0 = 2.0 kg&middot;m&sup2;.</li>
+          <li>Both routes agree exactly: 2.0 kg&middot;m&sup2;. The direct sum and the theorem are not two different facts about this dumbbell &mdash; the theorem is a shortcut that reproduces the direct sum every time, for any object, once you already know I<sub>cm</sub>.</li>
+          <li>The physical payoff: spinning this dumbbell about its own center takes half the torque, for the same angular acceleration, as spinning it about one end. Using &tau; = I&alpha; with a target &alpha; = 2 rad/s&sup2;: about the center, &tau; = (1.0)(2) = 2.0 N&middot;m; about the end, &tau; = (2.0)(2) = 4.0 N&middot;m. Nothing about the dumbbell&rsquo;s mass changed between those two numbers &mdash; only where the axis sits relative to where the mass actually is.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; a torque wrench, a spec, and an angle that costs you more than it looks like</b>
+        <p>A hypothetical bolt&rsquo;s spec sheet calls for exactly 90 N&middot;m of torque, tightened with a wrench whose effective lever arm is 0.40 m. Find the force needed when the wrench is pulled perpendicular to its handle, then find what actually happens if a tight wheel well only allows the mechanic to pull at 60&deg; instead of 90&deg; &mdash; and what it takes to correct for that.</p>
+        <ol>
+          <li>Pulled perpendicular (&theta; = 90&deg;, sin&theta; = 1): solve &tau; = rF sin&theta; for F. 90 = (0.40)(F)(1), so F = 225 N &mdash; about 51 pounds of force, a firm two-handed pull.</li>
+          <li>Now suppose the same 225 N is applied, but the cramped space only allows a 60&deg; angle between the wrench and the force (sin 60&deg; &asymp; 0.866). The actual torque delivered: &tau; = (0.40)(225)(0.866) &asymp; 77.9 N&middot;m &mdash; about 13% short of the 90 N&middot;m spec, purely from the angle, with the exact same physical effort applied.</li>
+          <li>To hit 90 N&middot;m at that same constrained 60&deg; angle, solve for the force actually required: F = 90 / [(0.40)(0.866)] &asymp; 259.8 N &mdash; roughly 15% more force just to buy back what the bad angle cost.</li>
+          <li>Alternatively, keep the same 225 N of force but lengthen the wrench to compensate: r&prime; = 90 / [(225)(0.866)] &asymp; 0.462 m &mdash; about 6 cm longer than the original 0.40 m wrench, restoring the full spec torque at the awkward angle without any extra force at all.</li>
+          <li>The lesson underneath the arithmetic: torque trades three quantities &mdash; force, lever arm, and angle &mdash; against each other continuously, and a mechanic who only tracks how hard they are pulling, while ignoring the angle, can under-torque a bolt by a meaningful, unsafe margin without ever feeling like they did anything differently.</li>
+        </ol>
+      </div>
+
+      <div class="worked">
+        <b>Worked example 3 &mdash; a spinning skater, and where the extra energy actually comes from</b>
+        <p>A hypothetical skater spins with her arms extended, giving her body an effective moment of inertia of I<sub>1</sub> = 2.5 kg&middot;m&sup2; about her own vertical axis, at an angular velocity &omega;<sub>1</sub> = 3.0 rad/s (a little under one full turn every two seconds). She pulls her arms in tight, reducing her effective moment of inertia to I<sub>2</sub> = 1.0 kg&middot;m&sup2;. Find her new angular velocity, and find what happens to her rotational kinetic energy.</p>
+        <ol>
+          <li>Ice friction under a skater&rsquo;s blade is small enough, over the second or two this takes, that the net external torque about her spin axis is essentially zero &mdash; nothing is pushing her spin faster or slower from outside. With no external torque, angular momentum is conserved: L is constant, so I<sub>1</sub>&omega;<sub>1</sub> = I<sub>2</sub>&omega;<sub>2</sub>.</li>
+          <li>Solve for &omega;<sub>2</sub>: &omega;<sub>2</sub> = I<sub>1</sub>&omega;<sub>1</sub> / I<sub>2</sub> = (2.5)(3.0) / 1.0 = 7.5 rad/s &mdash; two and a half times faster than she started, purely from rearranging her own body.</li>
+          <li>Rotational kinetic energy before: KE<sub>1</sub> = &frac12;I<sub>1</sub>&omega;<sub>1</sub>&sup2; = (0.5)(2.5)(3.0)&sup2; = (0.5)(2.5)(9) = 11.25 J.</li>
+          <li>Rotational kinetic energy after: KE<sub>2</sub> = &frac12;I<sub>2</sub>&omega;<sub>2</sub>&sup2; = (0.5)(1.0)(7.5)&sup2; = (0.5)(1.0)(56.25) = 28.125 J.</li>
+          <li>Her kinetic energy grew two and a half times over &mdash; up by almost 17 joules &mdash; while her angular momentum stayed exactly fixed the entire time. Angular momentum conservation guarantees the first result; it says nothing at all about energy, which is free to change, and did.</li>
+        </ol>
+      </div>
+
+      <h3>Where it shows up: a satellite is just a skater with a motor instead of arms</h3>
+
+      <p>Kane and Scher&rsquo;s 1969 falling-cat paper was not funded out of pure curiosity; NASA paid for it because the agency needed exactly this physics for a completely practical problem &mdash; how an astronaut floating untethered in zero gravity, with nothing to push against, could still reorient their own body on purpose, the same problem the cat solves by instinct on every drop. The cat&rsquo;s actual technique, worked out from Kane and Scher&rsquo;s model and confirmed against Marey&rsquo;s photographs, bends the animal at the waist into two roughly independent halves. The cat tucks the legs of whichever half it wants to rotate faster, shrinking that half&rsquo;s moment of inertia, while extending the legs of the other half, growing its moment of inertia, then rotates the two halves in opposite directions by different amounts &mdash; a large angle for the low-I half, a small angle for the high-I half &mdash; so that the two contributions to total angular momentum cancel exactly and the grand total genuinely never leaves zero. Then it reverses which half is tucked and which is extended and repeats the trick, and the net result of the two phases together is close to a full half-turn of the whole animal, achieved with zero angular momentum preserved at every single instant along the way. It is, precisely, worked example 3&rsquo;s skater trick, run twice, on two ends of one deformable body, with the two halves&rsquo; angular momenta canceling each other instead of a single body&rsquo;s angular momentum simply staying fixed.</p>
+
+      <p>Divers and gymnasts run a simpler version of the same trick worked example 3 already computed exactly. A diver leaving the platform already has whatever angular momentum they generated by pushing off &mdash; unlike the cat, they do get an external torque to work with, from their own feet against the board &mdash; and that angular momentum is fixed the instant their feet leave it, with no more torque available until they hit the water. Everything that happens in between is pure moment-of-inertia management: tucking into a ball shrinks I and speeds up the rotation, exactly as pulling the arms in did for the skater, which is why a tuck produces fast somersaults and a layout (body fully extended) produces slow, showy ones from the same initial push. A diver who misjudges the tuck and opens up too early is not fighting some new force; they are simply increasing I back toward its layout value and watching &omega; fall in lockstep, because L = I&omega; never stopped being true for even one instant of the dive.</p>
+
+      <p>A real spacecraft cannot bend at the waist, so engineers gave it the equivalent of an internal skater&rsquo;s arms: a <b>reaction wheel</b>, a flywheel mounted inside the spacecraft and spun up or down by an electric motor. Spin the wheel one way and, because the total angular momentum of the wheel-plus-spacecraft system has no external torque acting on it and must stay conserved, the spacecraft body itself rotates very slightly the other way &mdash; the identical zero-sum trick the cat runs with two halves of its own body, run instead between a satellite&rsquo;s structure and a metal disk bolted inside it. Three such wheels, mounted on perpendicular axes, let a spacecraft point itself in any direction in three-dimensional space without firing a single thruster or spending a gram of propellant, which is exactly why observatories that need to hold extraordinarily steady, precise pointing for months or years at a stretch &mdash; Hubble, the James Webb Space Telescope, and dozens of Earth-observation and communications satellites besides &mdash; are all built around some number of them.</p>
+
+      <p>NASA&rsquo;s Kepler space telescope, launched in 2009 to hunt for Earth-sized planets by watching for the almost imperceptible dimming a planet causes as it crosses in front of its star, needed that kind of pointing stability to a genuinely extreme degree &mdash; the spacecraft carried four reaction wheels, three of which had to be working simultaneously at all times to hold its three-axis lock on a single patch of sky steady enough to detect brightness dips of a few dozen parts per million. One of the four wheels failed on July 16, 2012. A second failed on May 14, 2013, leaving only two working wheels &mdash; enough to control two axes, not the three the original mission design required &mdash; and on August 15, 2013, NASA formally announced it had exhausted efforts to recover either failed wheel and the spacecraft could no longer perform its original mission. Kepler was not destroyed and its instruments were not damaged; two perfectly good reaction wheels sat uselessly idle because a spacecraft, exactly like the dumbbell of worked example 1, needs the right number of independent axes under active torque control to hold an arbitrary orientation, and losing even one of the three it needed broke that requirement completely. NASA&rsquo;s engineers eventually found a workaround, repurposing the surviving two wheels together with the gentle, steady push of sunlight on the spacecraft&rsquo;s solar panels &mdash; itself a genuine external torque, precisely balanced &mdash; to substitute for the missing third axis, and approved the resulting K2 mission in May 2014. It went on to find hundreds more planets. But for nearly a year, the entire story of what a $600 million space telescope could and could not do came down to how many independently controllable reaction wheels &mdash; how many separate axes of I and &alpha; &mdash; it still had.</p>
+
+      <h3>The misconception: a conservation law tells you what can&rsquo;t change. It never tells you nothing can happen.</h3>
+
+      <p>The mistake underneath nearly seventy years of physicists misreading Marey&rsquo;s own photographs, and underneath almost every first reaction to worked example 3&rsquo;s skater, is the same mistake wearing two different outfits. The first outfit: people hear &ldquo;a body with zero angular momentum and no external torque cannot start rotating&rdquo; and quietly generalize it to &ldquo;a body with zero angular momentum cannot rotate <em>at all</em>, ever, in any part of itself.&rdquo; That generalization is false, and the falling cat is the counterexample that breaks it cleanly: the cat&rsquo;s <em>total</em> angular momentum genuinely never leaves zero for one instant of the fall, exactly as the conservation law demands, while individual halves of the cat&rsquo;s own body are rotating substantially, in opposite directions, the entire time. A conservation law constrains a specific, well-defined total quantity. It places no restriction whatsoever on how that total gets divided up and redistributed among the parts of a system that is free to deform, so long as the pieces&rsquo; contributions keep summing back to the same fixed total. Rigid bodies &mdash; a spinning coin, a thrown wrench &mdash; cannot pull this trick, because a rigid body has no internal parts free to counter-rotate against each other; every particle in a truly rigid object is locked to every other one, so the whole thing has exactly one angular velocity at any instant, and if that single &omega; has to keep the total L at zero, it has to be zero itself. A cat, a skater, and a spacecraft with a wheel bolted inside it are all, for this purpose, really systems of at least two parts loosely connected enough to exchange angular momentum internally while the grand total holds still &mdash; the cat&rsquo;s front half and back half, the skater&rsquo;s torso and arms, the spacecraft&rsquo;s hull and its flywheel. Rigidity is not an incidental detail of the wrong 1890s explanation; it is exactly the assumption that explanation was smuggling in without saying so, and exactly the assumption a deformable animal never has to satisfy.</p>
+
+      <p>The second outfit is worked example 3&rsquo;s own aftermath: watching a skater&rsquo;s rotational kinetic energy climb from 11.25 J to 28.125 J while her angular momentum sits frozen, and concluding something has gone wrong, or that she has gotten energy for free. She has not. Angular momentum conservation and energy conservation are two entirely separate bookkeeping systems, tracking two entirely different quantities, and nothing requires them to move together. The skater&rsquo;s arms, as they swing inward, are moving against what feels like an outward pull &mdash; the inertial tendency of any rotating mass to keep moving in a straight line unless something redirects it, which her own muscles are doing continuously as they haul her arms toward her spine. That is real mechanical work, in the strict physics sense of a force acting through a distance, and it is where the extra 16.875 joules actually came from: converted directly from the chemical energy stored in her muscle tissue, the same energy source powering every other motion she makes on the ice. Nothing about angular momentum staying fixed says total energy has to stay fixed too &mdash; it only ever promised to hold L constant, and it kept that promise exactly, while an entirely different, entirely legitimate energy transaction happened alongside it, completely unremarked by the conservation law that governs L.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day six of this curriculum, on vectors, is where torque and angular momentum first appeared at all &mdash; <strong>&tau;</strong> = <strong>r</strong>&times;<strong>F</strong> and <strong>L</strong> = <strong>r</strong>&times;<strong>p</strong>, defined there for a single point mass at a single instant, illustrated with a wrench turning a bolt at three different angles to show exactly how the cross product&rsquo;s sin&theta; dependence controls how much of a push actually turns something. Today took that single-particle definition and asked the next obvious question: what happens when you have not one point mass but an entire rigid object made of countless point masses, all pivoting around the same axis together? Summing mr&sup2;&alpha; over every one of those particles is what produced moment of inertia in the first place, and &tau;<sub>net</sub> = I&alpha; is nothing more than day six&rsquo;s single-particle torque law, added up over a whole body instead of asked about one point. The wrench in day six&rsquo;s own worked example, turning a single bolt with a single applied force, is the same wrench this lesson used in worked example 2 &mdash; only today&rsquo;s version also has to reckon with the fact that a real wrench, and a real bolt, and a real skater, and a real cat, are none of them single points. They are extended bodies whose mass is spread out in space, and moment of inertia is the price, and the payoff, of taking that fact seriously.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can locate a center of mass, explain why it &mdash; and only it &mdash; moves in a clean, predictable path under external forces no matter how the rest of an object tumbles around it, and you know that point does not have to sit anywhere the object&rsquo;s actual material does.</li>
+          <li>You can compute a moment of inertia for a simple system of point masses, apply the Huygens&ndash;Steiner parallel-axis theorem to shift it to a new axis, and explain in plain terms why the same object is easier to spin about its center of mass than about any other axis.</li>
+          <li>You can use &tau;<sub>net</sub> = I&alpha; and L = I&omega; the way you already use F = ma and p = mv, and you have used both to solve a real torque-wrench problem and a real conservation-of-angular-momentum problem with actual numbers.</li>
+          <li>You know why a cat with zero angular momentum can still turn itself over, why NASA paid to have that question answered rigorously, and why a $600 million space telescope&rsquo;s entire scientific mission once came down to exactly how many reaction wheels &mdash; how many independently controllable I&alpha; axes &mdash; it still had. Day thirty-two of this curriculum returns to angular momentum directly for the fuller conservation-law treatment across an orbit; today built the rigid-body machinery that lesson will assume you already have.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> The falling-cat history draws on &Eacute;tienne-Jules Marey&rsquo;s 1894 chronophotographic sequence (Station Physiologique, Bois de Boulogne, Paris; 36 frames at 12 fps), on published histories noting James Clerk Maxwell&rsquo;s own early interest in the problem, and on Thomas Kane and M. P. Scher&rsquo;s 1969 paper &ldquo;A Dynamical Explanation of the Falling Cat Phenomenon,&rdquo; International Journal of Solids and Structures, volume 5, funded by NASA for zero-gravity astronaut-reorientation research. The Kepler space telescope reaction-wheel timeline (wheel failures of July 16, 2012 and May 14, 2013; NASA&rsquo;s August 15, 2013 announcement; the K2 mission&rsquo;s May 2014 approval) is drawn from NASA Science&rsquo;s own Kepler/K2 mission pages and contemporaneous science reporting. The Huygens&ndash;Steiner parallel-axis theorem&rsquo;s history &mdash; Christiaan Huygens&rsquo; pendulum work and Jakob Steiner&rsquo;s later general proof &mdash; and the standard moment-of-inertia formulas for common shapes were checked against standard references. The dumbbell, torque-wrench and skater figures in the three worked examples are hypotheticals built for this lesson, with all arithmetic computed directly for this report.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day six&rsquo;s lesson on vectors, the dot product and the cross product. Missing data is declared missing, never estimated; a hypothetical figure is labeled as such rather than presented as measured. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-21-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
