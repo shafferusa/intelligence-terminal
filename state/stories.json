@@ -1,13 +1,121 @@
 {
  "stories": [
   {
+   "id": "greenland-denmark-arctic-pact-sep22",
+   "headline": "Trump signs a Greenland-Denmark Arctic security pact, short of annexation",
+   "status": "New",
+   "first_seen": "2026-09-22-pm",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Trump signed a trilateral agreement with Danish PM Frederiksen and Greenland Premier Nielsen on the UNGA sidelines, expanding US military access to Greenland including plans for two new bases, with no expiration date and a bar on non-NATO basing without all three parties' agreement. Greenland remains Danish territory; the deal would survive Greenland becoming independent of Denmark. Follows months of Trump floating outright US ownership of the territory.",
+   "score_note": "A concrete security agreement resolving months of annexation-threat tension, without Trump getting the outright ownership he floated.",
+   "sources": [
+    "Signing ceremony (primary, via wire)",
+    "AP",
+    "Washington Post",
+    "CBS News",
+    "Al Jazeera",
+    "CNBC"
+   ],
+   "watch": true
+  },
+  {
+   "id": "eu-russia-sanctions-extension-sep22",
+   "headline": "EU extends Russia sanctions through 2029 but delists two oligarchs; Kyiv calls it 'shameful'",
+   "status": "New",
+   "first_seen": "2026-09-22-pm",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Confirmed-multiple for the extension and delisting; Confirmed-primary for Sybiha's statement",
+   "one_line": "EU ambassadors extended sanctions on roughly 3,000 remaining individuals/entities for a full three years (an unusually long renewal versus the normal 6-12 month cycle), while removing Mikhail Fridman and Alisher Usmanov from the list. Ukrainian FM Sybiha publicly called the delistings 'shameful and unjustifiable,' saying they hand Moscow a propaganda win and show EU division.",
+   "score_note": "A rare multi-year sanctions renewal paired with a delisting that drew on-record criticism from the country the sanctions are meant to support.",
+   "sources": [
+    "EU Council decision (primary, via wire)",
+    "Sybiha's statement (primary)",
+    "Kyiv Post",
+    "Reuters/Yahoo"
+   ],
+   "watch": true
+  },
+  {
+   "id": "trump-macron-hormuz-pledge-sep22",
+   "headline": "Trump and Macron pledge joint action on Hormuz shipping and energy-infrastructure strikes",
+   "status": "New",
+   "first_seen": "2026-09-22-pm",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Single-reliable-source (wire syndication only; no Tier-1 AP/Reuters original located this run)",
+   "one_line": "Macron said after meeting Trump in New York that the two 'decided to act together' to ease energy-market tensions, protect Middle East critical infrastructure and safeguard freedom of navigation through the Strait of Hormuz, plus push a moratorium on energy-infrastructure strikes tied to the Ukraine war. Coverage traces mainly to wire-syndication (ANI-style) outlets rather than an original Reuters/AP report this outlet could independently locate.",
+   "score_note": "A concrete-sounding joint pledge on two live crises (Hormuz, Ukraine energy strikes) that this outlet could only confirm via secondary wire syndication.",
+   "sources": [
+    "Macron's remarks (primary, via wire syndication)",
+    "Tribune India (ANI)",
+    "TAG24"
+   ],
+   "watch": true
+  },
+  {
+   "id": "alibaba-ai-chip-trump-xi-sep22",
+   "headline": "Alibaba unveils a new AI chip two days before the Trump-Xi summit",
+   "status": "New",
+   "first_seen": "2026-09-22-pm",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Alibaba announced what it calls China's most powerful AI chip plus new large-model plans, timed just ahead of Xi's Washington state visit (Sept 23-25: arrival/Joint Base Andrews reception Wed, main bilateral meeting/Rose Garden ceremony/state dinner Thu). Lands days after Anthropic's Amodei and other US AI executives renewed warnings about China's AI trajectory. China has separately signaled the summit could be disrupted over a pending $14B Taiwan arms package.",
+   "score_note": "A timed show of Chinese AI-hardware capability directly ahead of the highest-profile US-China meeting of the year.",
+   "sources": [
+    "Alibaba (primary)",
+    "AP/ABC News",
+    "CNBC",
+    "CSIS summit tracker"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pittsburgh-da-warrant-gainey-sep22",
+   "headline": "Unsealed warrant alleges pay-to-play no-bid contracts under former Pittsburgh Mayor Gainey",
+   "status": "New",
+   "first_seen": "2026-09-22-pm",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Confirmed-multiple (via secondary reporting on the unsealed primary court record)",
+   "one_line": "A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the Allegheny County DA's office is investigating whether the Gainey administration steered roughly $2M in 'Stop the Violence' grants and other no-bid contracts to organizations (including SEIU and the Working Families Party) that supported Gainey's campaigns, and that the city's no-bid contract rate roughly doubled (10% to 20%) under his administration. Information reportedly came in part from Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges filed.",
+   "score_note": "A local corruption investigation into a recent former mayor, via an unsealed court record -- material for Pittsburgh/Allegheny readers.",
+   "sources": [
+    "Unsealed court warrant (primary record, via secondary reporting)",
+    "CBS Pittsburgh",
+    "WPXI",
+    "KDKA",
+    "Patch"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pa-ballot-and-kings-bench-sep22",
+   "headline": "PA Supreme Court keeps a Green candidate off the PA-07 ballot; four lifers file King's Bench petitions on felony-murder resentencing",
+   "status": "New",
+   "first_seen": "2026-09-22-pm",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "The state Supreme Court affirmed a Commonwealth Court ruling that Andrew Tupone cannot appear on the November PA-07 ballot, holding nominating rights belong to the Green Party organization, not an individual signature-gatherer, regardless of signature count. Separately, four people serving mandatory life for felony (second-degree) murder filed King's Bench petitions asking the court to bypass lower courts and open a resentencing path, after the legislature missed its July 24 deadline to rewrite the underlying statute; roughly 1,100 people statewide serve these sentences and the court has granted only a handful of ~288 such petitions since 2021.",
+   "score_note": "Two distinct state Supreme Court threads with direct statewide electoral and criminal-justice consequence.",
+   "sources": [
+    "State Supreme Court order (primary, via reporting)",
+    "King's Bench petitions (primary record, via reporting)",
+    "PoliticsPA",
+    "Ballot Access News",
+    "City & State PA",
+    "Philadelphia Inquirer",
+    "Spotlight PA",
+    "Pennsylvania Capital-Star"
+   ],
+   "watch": true
+  },
+  {
    "id": "un-mission-iran-war-crimes-sep17",
    "headline": "UN mission finds reasonable grounds for war crimes by both the US and Iran",
    "status": "Materially changed",
    "first_seen": "2026-09-17-am",
-   "last_updated": "2026-09-22-am",
+   "last_updated": "2026-09-22-pm",
    "verification": "Confirmed-multiple for the government statements; Unverified for Trump's claim of direct contact; Single-reliable-source/Preliminary for the internal CENTCOM review findings",
-   "one_line": "Following Tuesday's UN fact-finding report, the White House called the council 'unserious nonsense' and said only Iran has committed war crimes; the Pentagon said its own Minab investigation 'remains ongoing.' Separately, Trump said he has been in 'direct' contact with Iran and hopes the war is 'nearing the end'; Iran's SNSC secretary Rezaei publicly rejected the framing within hours. Saturday's Weekly Review flags this story as undercovered relative to its gravity -- two days of prominent coverage, then dropped from the top-story rotation with no reported congressional reaction found. Update (Sept 22): anonymous-official accounts (NBC, The Hill) say US Central Command has completed its own internal investigation into the Minab school strike, describing stale intelligence, staffing cuts and over-reliance on AI-assisted targeting as contributing factors -- 'a cascade of preventable failures.' Reported concern in Congress/Pentagon that findings could be classified rather than released. No on-record Pentagon confirmation.",
+   "one_line": "Following Tuesday's UN fact-finding report, the White House called the council 'unserious nonsense' and said only Iran has committed war crimes; the Pentagon said its own Minab investigation 'remains ongoing.' Separately, Trump said he has been in 'direct' contact with Iran and hopes the war is 'nearing the end'; Iran's SNSC secretary Rezaei publicly rejected the framing within hours. Saturday's Weekly Review flags this story as undercovered relative to its gravity -- two days of prominent coverage, then dropped from the top-story rotation with no reported congressional reaction found. Update (Sept 22): anonymous-official accounts (NBC, The Hill) say US Central Command has completed its own internal investigation into the Minab school strike, describing stale intelligence, staffing cuts and over-reliance on AI-assisted targeting as contributing factors -- 'a cascade of preventable failures.' Reported concern in Congress/Pentagon that findings could be classified rather than released. No on-record Pentagon confirmation. Update (Sept 22 pm, single-reliable-source): Bloomberg reports CENTCOM's own account of what its internal Minab review changed -- refreshed target-vetting procedures, new open-source feeds to track civilian movement, and 'dozens of upgrades' to the Maven Smart System AI-targeting tool. This is CENTCOM characterizing its own fix, not the review itself, which remains unreleased.",
    "score_note": "A UN body naming a likely war crime by the country still prosecuting the war, alongside crimes-against-humanity findings against the other side, in a single report.",
    "sources": [
     "OHCHR (primary)",
@@ -18,7 +126,8 @@
     "Pentagon statement (primary)",
     "NPR",
     "The Hill",
-    "CNBC"
+    "CNBC",
+    "Bloomberg (single outlet)"
    ],
    "watch": true
   },
@@ -875,7 +984,7 @@
    "first_seen": "2026-09-09-pm",
    "last_updated": "2026-09-09-pm",
    "verification": "Confirmed-multiple (announcement and dispute); Unconfirmed (the mathematical claim itself)",
-   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alpöge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
+   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alp\u00f6ge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
    "score_note": "The mathematical claim is unverified; the authorship dispute is a new front in OpenAI-Anthropic researcher tension the same week as the Coxon resignation.",
    "sources": [
     "Axios",
@@ -1328,12 +1437,12 @@
   },
   {
    "id": "kosovo-thaci-conviction-sep16",
-   "headline": "Kosovo's former president Hashim Thaçi convicted of war crimes, sentenced to 25 years",
+   "headline": "Kosovo's former president Hashim Tha\u00e7i convicted of war crimes, sentenced to 25 years",
    "status": "New",
    "first_seen": "2026-09-16-pm",
    "last_updated": "2026-09-16-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Thaçi on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
+   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Tha\u00e7i on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
    "score_note": "Most senior former head of state this tribunal has convicted; closes a case that has hung over Kosovo's politics for years.",
    "sources": [
     "Kosovo Specialist Chambers ruling (primary, via wire)",
@@ -1681,9 +1790,9 @@
    "headline": "CNN, MS NOW and Politico sue over White House press ban; judge orders response today, hearing set this week",
    "status": "Materially changed",
    "first_seen": "2026-09-18-pm",
-   "last_updated": "2026-09-22-am",
+   "last_updated": "2026-09-22-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday.",
+   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday. Update (Sept 22 pm): the Wednesday-afternoon hearing before Judge Kelly, reported this morning as not yet docket-confirmed, is now confirmed. No ruling issued.",
    "score_note": "A press-freedom lawsuit with a Trump-appointed judge who has already ruled against the administration on nearly identical facts once before.",
    "sources": [
     "NBC News",
@@ -1938,7 +2047,7 @@
    "status": "Continuing",
    "first_seen": "2026-09-21-am",
    "last_updated": "2026-09-22-am",
-   "one_line": "DHS/ICE say the investigation is being led 'with assistance from the FBI'; Garcés Pérez remains in federal custody at Pearsall, described as stable. His attorney's allegations (bullet near spine, denied pain medication, made to sleep on floor) remain unconfirmed by DHS. Officer's identity and bodycam footage still not public. Rep. Casar demanding footage release; LULAC/NAACP/county commissioners held a joint Monday news conference.",
+   "one_line": "DHS/ICE say the investigation is being led 'with assistance from the FBI'; Garc\u00e9s P\u00e9rez remains in federal custody at Pearsall, described as stable. His attorney's allegations (bullet near spine, denied pain medication, made to sleep on floor) remain unconfirmed by DHS. Officer's identity and bodycam footage still not public. Rep. Casar demanding footage release; LULAC/NAACP/county commissioners held a joint Monday news conference.",
    "score_note": "An ICE shooting of a civilian with no confirmed dashcam/bodycam release yet, drawing sustained local protest and federal-oversight demands.",
    "sources": [
     "NBC News",
@@ -2021,15 +2130,19 @@
    "headline": "Trump and Zelensky meet in New York today as Russia and Ukraine trade deadly overnight strikes",
    "status": "Materially changed",
    "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-22-am",
-   "verification": "Confirmed-multiple on the meeting and overnight strikes; Preliminary on exact Zaporizhzhia casualty figures",
-   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election.",
+   "last_updated": "2026-09-22-pm",
+   "verification": "Confirmed-multiple for the meeting and Truth Social post; Single-reliable-source for the 'Russia lost control of diesel' official characterization",
+   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election. Update (Sept 22): the meeting took place; both sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Trump's own Truth Social post afterward went well beyond that narrower agenda, saying Ukraine 'with the support of the European Union' can 'fight and WIN all of Ukraine back in its original form' -- a reversal of his prior position that a settlement would require ceding territory. No Russian response yet to either the meeting or the post.",
    "score_note": "First Trump-Zelensky meeting since the new Russia sanctions law, opening with both sides escalating rather than de-escalating.",
    "sources": [
     "Kyiv Independent",
     "Axios",
     "Euronews",
-    "multiple wires"
+    "multiple wires",
+    "White House readout (primary)",
+    "NBC News",
+    "PBS NewsHour",
+    "National Review"
    ],
    "watch": true
   },

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Closing Brief — Tue, Sep 22, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-22",
+    "slot": "pm",
+    "title": "Closing Brief",
+    "path": "reports/2026/09/2026-09-22-pm.html",
+    "summary": "Trump meets Zelensky and reverses course on Ukraine's territory, tells the UN he'll deal with Iran or \"annihilate\" it while US officials talk to Tehran anyway, and signs an Arctic security pact with Greenland and Denmark, all on one UN General Assembly day that also saw a bank selloff, a chip-stock rally and oil's sharpest drop in weeks.",
+    "headlines": [
+      "Trump reverses on Ukraine's territory after meeting Zelensky; both sides pursue an energy-strike truce",
+      "Trump tells the UN he'll cut a deal with Iran or \"annihilate\" it, then Kushner and Witkoff meet Iranian officials anyway",
+      "Trump signs a Greenland-Denmark Arctic security pact; EU extends Russia sanctions but drops two oligarchs",
+      "Banks slide as chipmakers rally and oil drops on Iran-talk optimism"
+    ],
+    "reading_minutes": 22,
+    "generated_at": "2026-09-22T16:55:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="pm">
+<!--REPORT:START-->
+
+    <!-- ================= MASTHEAD ================= -->
+    <header class="paper-head">
+      <p class="paper-edition">Closing Edition</p>
+      <h1>Trump Reverses on Ukraine, Tells the UN He&rsquo;ll Deal With Iran or &ldquo;Annihilate&rdquo; It &mdash; Then Talks to Tehran Anyway</h1>
+      <p class="paper-dateline">
+        Tuesday, September 22, 2026 <span class="sep">&middot;</span> 22 min read
+      </p>
+      <p class="paper-standfirst">
+        On one UN General Assembly day, Trump met Zelensky and said Ukraine could win back all its territory, threatened Iran from the podium and then let Kushner and Witkoff talk to its officials anyway, signed an Arctic pact with Greenland and Denmark, and watched bank stocks slide as chipmakers rallied and oil fell on the same diplomatic optimism.
+      </p>
+    </header>
+
+    <!-- ================= THE BRIEF ================= -->
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Trump met Zelensky in New York and reversed his own prior position, saying Ukraine can win back all its territory; the two sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Hours earlier at the UN podium, Trump told Iran he would either cut a deal or &ldquo;annihilate&rdquo; it &mdash; then US officials met Iranian counterparts anyway.</li>
+          <li><b>Markets.</b> Chipmakers pushed the Nasdaq toward a record on Micron and Nvidia strength; banks sold off on flat-curve margin worries; oil fell hardest in weeks, loosely coinciding with the Trump-Iran meeting; the 10-year Treasury sits at 4.96%.</li>
+          <li><b>The thread.</b> A single UN General Assembly day produced three separate diplomatic moves &mdash; on Ukraine, Iran and Greenland &mdash; each cutting in a different direction, with markets reading the Iran contact as the most tradeable signal.</li>
+          <li><b>Biggest risk.</b> Trump&rsquo;s rhetorical shift on Ukraine&rsquo;s territory could complicate the narrower energy-truce he and Zelensky just agreed to pursue, if Moscow reads it as the US abandoning any settlement built on current lines; no Russian reaction yet.</li>
+          <li><b>Watch tomorrow.</b> Xi arrives in Washington for a state visit running through Thursday, and a federal judge hears CNN, MS NOW and Politico&rsquo;s press-ban suit by videoconference.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= WATCHLIST BOARD =================
+         CLOSING BRIEF ONLY (slot pm). Fixed 25-row board from
+         config/watchlists.yml -> `board` list, in that file's order, grouped.
+         Omitted entirely from am / sat / sun / learn editions.
+         --pos on .range-bar is the 52-week position, 0 = low, 100 = high:
+             pos = round(100 * (price - low52) / (high52 - low52))
+         Clamp to 0-100; if either 52-week bound is missing, render the cell
+         as an em dash and omit the bar rather than guessing. -->
+    <section class="paper-section" aria-labelledby="s-board">
+      <h2 id="s-board">The Board</h2>
+      <div class="board">
+        <div class="board-head">
+          <h3>Watchlist &mdash; official closes</h3>
+          <span class="board-asof">4:00 PM ET &middot; Sep 22, 2026</span>
+        </div>
+        <div class="board-scroll">
+          <table class="board-table">
+            <caption class="visually-hidden">Watchlist closing levels, changes, 52-week position and volume, Sep 22, 2026.</caption>
+            <thead>
+              <tr>
+                <th class="sym">Symbol</th>
+                <th>Price</th><th>Chg</th><th>%Chg</th>
+                <th>52-week range</th><th>Volume</th><th>Avg vol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="group"><th colspan="7">US equity</th></tr>
+              <tr>
+                <td class="sym">SPY<small>SPDR S&amp;P 500 ETF Trust</small></td>
+                <td>773.38</td><td class="down">&minus;0.12</td><td class="down">&minus;0.02%</td>
+                <td class="range-cell"><span class="range-nums">629.28 &ndash; 779.37</span><span class="range-bar" style="--pos:96"><i></i></span></td>
+                <td>34M</td><td>47M</td>
+              </tr>
+              <tr>
+                <td class="sym">QQQM<small>Invesco NASDAQ 100 ETF</small></td>
+                <td>307.78</td><td class="up">+2.51</td><td class="up">+0.82%</td>
+                <td class="range-cell"><span class="range-nums">228.75 &ndash; 308.21</span><span class="range-bar" style="--pos:99"><i></i></span></td>
+                <td>3.9M</td><td>2.8M</td>
+              </tr>
+              <tr>
+                <td class="sym">DIA<small>SPDR Dow Jones Industrial Average ETF</small></td>
+                <td>518.00</td><td class="down">&minus;1.78</td><td class="down">&minus;0.34%</td>
+                <td class="range-cell"><span class="range-nums">450.44 &ndash; 546.75</span><span class="range-bar" style="--pos:70"><i></i></span></td>
+                <td>3.3M</td><td>3.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">IWM<small>iShares Russell 2000 ETF</small></td>
+                <td>287.21</td><td class="up">+1.63</td><td class="up">+0.57%</td>
+                <td class="range-cell"><span class="range-nums">228.90 &ndash; 305.18</span><span class="range-bar" style="--pos:76"><i></i></span></td>
+                <td>25M</td><td>25M</td>
+              </tr>
+              <tr>
+                <td class="sym">MAGS<small>Roundhill Magnificent Seven ETF</small></td>
+                <td>72.57</td><td class="down">&minus;0.40</td><td class="down">&minus;0.55%</td>
+                <td class="range-cell"><span class="range-nums">55.09 &ndash; 73.46</span><span class="range-bar" style="--pos:95"><i></i></span></td>
+                <td>6.7M</td><td>4.4M</td>
+              </tr>
+              <tr>
+                <td class="sym">RSP<small>Invesco S&amp;P 500 Equal Weight ETF</small></td>
+                <td>212.80</td><td class="up">+0.12</td><td class="up">+0.06%</td>
+                <td class="range-cell"><span class="range-nums">182.11 &ndash; 223.44</span><span class="range-bar" style="--pos:74"><i></i></span></td>
+                <td>6.5M</td><td>6.6M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Sectors</th></tr>
+              <tr>
+                <td class="sym">SMH<small>VanEck Semiconductor ETF</small></td>
+                <td>607.46</td><td class="up">+11.43</td><td class="up">+1.92%</td>
+                <td class="range-cell"><span class="range-nums">313.60 &ndash; 671.83</span><span class="range-bar" style="--pos:82"><i></i></span></td>
+                <td>6.5M</td><td>6.7M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLK<small>Technology Select Sector SPDR</small></td>
+                <td>196.27</td><td class="up">+1.42</td><td class="up">+0.73%</td>
+                <td class="range-cell"><span class="range-nums">126.68 &ndash; 198.73</span><span class="range-bar" style="--pos:97"><i></i></span></td>
+                <td>8.5M</td><td>7.3M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLF<small>Financial Select Sector SPDR</small></td>
+                <td>54.80</td><td class="down">&minus;1.10</td><td class="down">&minus;1.97%</td>
+                <td class="range-cell"><span class="range-nums">47.67 &ndash; 58.60</span><span class="range-bar" style="--pos:65"><i></i></span></td>
+                <td>69M</td><td>37M</td>
+              </tr>
+              <tr>
+                <td class="sym">KRE<small>SPDR S&amp;P Regional Banking ETF</small></td>
+                <td>71.19</td><td class="down">&minus;0.80</td><td class="down">&minus;1.11%</td>
+                <td class="range-cell"><span class="range-nums">57.55 &ndash; 78.35</span><span class="range-bar" style="--pos:66"><i></i></span></td>
+                <td>16M</td><td>14M</td>
+              </tr>
+              <tr>
+                <td class="sym">XLE<small>Energy Select Sector SPDR</small></td>
+                <td>61.78</td><td class="down">&minus;0.68</td><td class="down">&minus;1.09%</td>
+                <td class="range-cell"><span class="range-nums">42.35 &ndash; 66.17</span><span class="range-bar" style="--pos:82"><i></i></span></td>
+                <td>38M</td><td>36M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Rates &amp; credit</th></tr>
+              <tr>
+                <td class="sym">US 3M<small>U.S. 3-month Treasury bill</small></td>
+                <td>4.16%</td><td class="down">&minus;1bp</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">US 10Y<small>10-year Treasury note</small></td>
+                <td>4.96%</td><td class="flat">&mdash;</td><td class="flat">&mdash;</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">TLT<small>iShares 20+ Year Treasury Bond ETF</small></td>
+                <td>81.75</td><td class="down">&minus;0.05</td><td class="down">&minus;0.06%</td>
+                <td class="range-cell"><span class="range-nums">80.46 &ndash; 92.19</span><span class="range-bar" style="--pos:11"><i></i></span></td>
+                <td>22M</td><td>39M</td>
+              </tr>
+              <tr>
+                <td class="sym">IEF<small>iShares 7-10 Year Treasury Bond ETF</small></td>
+                <td>91.16</td><td class="up">+0.01</td><td class="up">+0.01%</td>
+                <td class="range-cell"><span class="range-nums">90.70 &ndash; 98.05</span><span class="range-bar" style="--pos:6"><i></i></span></td>
+                <td>8.9M</td><td>8.8M</td>
+              </tr>
+              <tr>
+                <td class="sym">TIP<small>iShares TIPS Bond ETF</small></td>
+                <td>105.56</td><td class="down">&minus;0.12</td><td class="down">&minus;0.11%</td>
+                <td class="range-cell"><span class="range-nums">105.27 &ndash; 112.24</span><span class="range-bar" style="--pos:4"><i></i></span></td>
+                <td>1.7M</td><td>2.1M</td>
+              </tr>
+              <tr>
+                <td class="sym">LQD<small>iShares iBoxx $ IG Corporate Bond ETF</small></td>
+                <td>105.09</td><td class="flat">0.00</td><td class="flat">0.00%</td>
+                <td class="range-cell"><span class="range-nums">104.05 &ndash; 112.93</span><span class="range-bar" style="--pos:12"><i></i></span></td>
+                <td>24M</td><td>30M</td>
+              </tr>
+              <tr>
+                <td class="sym">HYG<small>iShares iBoxx $ HY Corporate Bond ETF</small></td>
+                <td>78.67</td><td class="down">&minus;0.01</td><td class="down">&minus;0.01%</td>
+                <td class="range-cell"><span class="range-nums">78.36 &ndash; 81.36</span><span class="range-bar" style="--pos:10"><i></i></span></td>
+                <td>30M</td><td>41M</td>
+              </tr>
+              <tr class="group"><th colspan="7">Commodities, FX &amp; volatility</th></tr>
+              <tr>
+                <td class="sym">GLD<small>SPDR Gold Shares</small></td>
+                <td>400.07</td><td class="up">+1.69</td><td class="up">+0.42%</td>
+                <td class="range-cell"><span class="range-nums">342.14 &ndash; 509.70</span><span class="range-bar" style="--pos:35"><i></i></span></td>
+                <td>6.1M</td><td>8.9M</td>
+              </tr>
+              <tr>
+                <td class="sym">USO<small>United States Oil Fund</small></td>
+                <td>144.08</td><td class="down">&minus;4.08</td><td class="down">&minus;2.75%</td>
+                <td class="range-cell"><span class="range-nums">65.99 &ndash; 163.35</span><span class="range-bar" style="--pos:80"><i></i></span></td>
+                <td>8.4M</td><td>6.5M</td>
+              </tr>
+              <tr>
+                <td class="sym">DXY<small>U.S. Dollar Index</small></td>
+                <td>100.54</td><td class="up">+0.11</td><td class="up">+0.11%</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr>
+                <td class="sym">VIX<small>Cboe Volatility Index</small></td>
+                <td>14.21</td><td class="down">&minus;0.66</td><td class="down">&minus;4.44%</td>
+                <td class="range-cell"><span class="range-nums">&mdash;</span></td>
+                <td>&mdash;</td><td>&mdash;</td>
+              </tr>
+              <tr class="group"><th colspan="7">International &amp; crypto</th></tr>
+              <tr>
+                <td class="sym">EEM<small>iShares MSCI Emerging Markets ETF</small></td>
+                <td>69.10</td><td class="up">+0.27</td><td class="up">+0.39%</td>
+                <td class="range-cell"><span class="range-nums">51.82 &ndash; 71.57</span><span class="range-bar" style="--pos:87"><i></i></span></td>
+                <td>19M</td><td>20M</td>
+              </tr>
+              <tr>
+                <td class="sym">VGK<small>Vanguard FTSE Europe ETF</small></td>
+                <td>89.43</td><td class="up">+0.19</td><td class="up">+0.21%</td>
+                <td class="range-cell"><span class="range-nums">77.82 &ndash; 93.29</span><span class="range-bar" style="--pos:75"><i></i></span></td>
+                <td>2.0M</td><td>2.2M</td>
+              </tr>
+              <tr>
+                <td class="sym">BTC<small>Grayscale Bitcoin Mini Trust ETF</small></td>
+                <td>38.11</td><td class="down">&minus;0.14</td><td class="down">&minus;0.37%</td>
+                <td class="range-cell"><span class="range-nums">25.65 &ndash; 55.96</span><span class="range-bar" style="--pos:41"><i></i></span></td>
+                <td>1.4M</td><td>2.1M</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="small muted">Official closes. Yields from the Treasury par-yield curve (Sep 22 EOD); index levels are not tradeable instruments. US 3M change shown in basis points.</p>
+    </section>
+
+    <!-- ================= TOP STORIES =================
+         8-12 stories. The first carries .story--lead (bigger headline,
+         drop cap). Each story: headline, deck, body prose, and at most two
+         .story-note blocks (Why it matters / What's next). The old seven
+         labelled subheads are gone - write it as prose.
+         .flag appears ONLY on a genuinely shaky claim.
+         Expanded analysis stays in a collapsed <details>. -->
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Trump reverses on Ukraine&rsquo;s territory after meeting Zelensky; both sides pursue an energy-strike truce</h3>
+          <p class="story-deck">&ldquo;Ukraine, with the support of the European Union, is in a position to fight and WIN all of Ukraine back,&rdquo; Trump posted after the two met in New York &mdash; a public about-face from his prior line that Kyiv would need to cede territory.</p>
+          <div class="story-body">
+            <p>Trump and Zelensky met Tuesday on the sidelines of the UN General Assembly, their first sit-down since the new Russia sanctions law Trump signed last week. The stated agenda was narrower than Trump&rsquo;s post-meeting rhetoric: a possible truce limited to energy-infrastructure strikes, after weeks of Ukrainian attacks on Russian refineries and diesel production that a US official told CNBC have left Russia having &ldquo;lost control&rdquo; of parts of its oil-processing capacity &mdash; an official characterization, not an independently verified figure. A White House readout says the two leaders agreed to pursue that partial ceasefire, with technical teams from both sides due to meet in Saudi Arabia in the coming days.</p>
+            <p>Zelensky called the meeting &ldquo;positive and productive,&rdquo; said the two discussed &ldquo;potential de-escalatory steps,&rdquo; and told reporters he is &ldquo;ready anytime&rdquo; for a three-way meeting with Trump and Putin. Trump&rsquo;s Truth Social post afterward went well beyond an energy truce, framing Ukraine as capable of retaking all its territory &ldquo;in its original form&rdquo; &mdash; a reversal of his own repeated prior position that a settlement would require Kyiv to give up land. An administration official described the intent as applying &ldquo;maximum public pressure&rdquo; on Moscow. Russia has not yet responded to either the meeting or the post.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A truce covering only energy infrastructure is a narrower, more achievable step than a ceasefire on the front line, and both sides have incentive to protect infrastructure through the winter. But Trump&rsquo;s rhetorical shift on territory sits awkwardly next to it: if Moscow reads the post as Washington abandoning any settlement built on the current line of contact, it could harden Russia&rsquo;s position on the narrower energy talks before they start.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Technical-level talks in Saudi Arabia, no date yet confirmed. Watch for a Kremlin response to both the meeting and Trump&rsquo;s territorial framing.
+            </div>
+          </div>
+          <p class="story-sourceline">White House readout (primary) &middot; Trump&rsquo;s Truth Social post (primary) &middot; Zelensky&rsquo;s remarks (primary, via wire) &middot; NBC News, PBS NewsHour, CNBC, National Review.</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump tells the UN he&rsquo;ll deal with Iran or &ldquo;annihilate&rdquo; it &mdash; then Kushner and Witkoff meet Iranian officials anyway</h3>
+          <p class="story-deck">Iran&rsquo;s delegation walked out roughly ten minutes into the speech; hours later, Trump told reporters US and Iranian officials had just held a three-hour meeting he called &ldquo;very good.&rdquo;</p>
+          <div class="story-body">
+            <p>Addressing the UN General Assembly&rsquo;s 81st session, Trump said he faces a &ldquo;big decision&rdquo; on Iran &mdash; a deal, or he will &ldquo;annihilate the Islamic Republic&rdquo; and &ldquo;drive them into hell with no chance of survival.&rdquo; He predicted any deal is unlikely before the November midterms but &ldquo;right after,&rdquo; and separately said the US would &ldquo;encourage&rdquo; AI development rather than &ldquo;rein it in.&rdquo; Iranian President Pezeshkian and most of his delegation left the chamber within minutes of the speech starting; Iran&rsquo;s foreign ministry separately protested US visa denials to members of the delegation as &ldquo;unprecedented and hostile.&rdquo;</p>
+            <p><span class="flag">Single-reliable-source</span> Despite the walkout, Trump told reporters afterward that senior aides Jared Kushner and Steve Witkoff held a roughly three-hour meeting with Iranian officials at UN headquarters, which he called &ldquo;a very good meeting.&rdquo; That characterization is his own; no Iranian official has confirmed the meeting or its content on the record. World-leader reaction to the speech itself was muted: French President Macron, in his final UNGA address, urged the world not to &ldquo;yield&rdquo; to war, division, climate change and AI, without naming Trump.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A public ultimatum and a private meeting on the same day is a familiar pattern in this administration&rsquo;s Iran diplomacy, but the gap between Trump&rsquo;s framing of the meeting and any independent confirmation is exactly the kind of claim this outlet flags rather than adopts.
+            </div>
+          </div>
+          <p class="story-sourceline">Trump&rsquo;s UNGA remarks and post-speech comments (primary, via wire) &middot; Iran&rsquo;s foreign ministry statement (primary) &middot; CNN, ABC News, CBS News, NBC News, Axios, OPB, Iran International.</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump signs a Greenland-Denmark Arctic security pact</h3>
+          <p class="story-deck">The agreement expands US military access and plans for &ldquo;two very major&rdquo; new bases, but stops short of the annexation Trump has floated in the past &mdash; Greenland stays Danish.</p>
+          <div class="story-body">
+            <p>Trump signed a trilateral agreement with Danish Prime Minister Mette Frederiksen and Greenland Premier Jens-Frederik Nielsen on the UNGA sidelines Tuesday, expanding US military access to Greenland. The deal has no expiration date, bars non-NATO countries from basing there without all three parties&rsquo; agreement, and would survive Greenland becoming independent of Denmark. Frederiksen called it a deal that can &ldquo;last forever&rdquo;; Nielsen called it &ldquo;win-win-win.&rdquo; It follows months of tension after Trump repeatedly suggested the US should own the territory outright.</p>
+          </div>
+          <p class="story-sourceline">Signing ceremony (primary, via wire) &middot; AP, Washington Post, CBS News, Al Jazeera, CNBC.</p>
+        </article>
+
+        <article class="story">
+          <h3>EU extends Russia sanctions through 2029 but drops two oligarchs; Kyiv calls it &ldquo;shameful&rdquo;</h3>
+          <p class="story-deck">A three-year renewal &mdash; unusually long &mdash; came paired with the delisting of Mikhail Fridman and Alisher Usmanov, and Ukraine&rsquo;s foreign minister said it hands Moscow a propaganda win.</p>
+          <div class="story-body">
+            <p>EU ambassadors reached a compromise Tuesday extending sanctions on roughly 3,000 remaining individuals and entities for a full three years, rather than the usual six-to-twelve-month renewal cycle, while removing Fridman and Usmanov from the sanctions list. Ukrainian Foreign Minister Andrii Sybiha publicly criticized the delistings as &ldquo;shameful and unjustifiable,&rdquo; arguing they show EU division and hand Russia a public-relations win in the same week Trump is publicly pressuring Moscow.</p>
+          </div>
+          <p class="story-sourceline">EU Council decision (primary, via wire) &middot; Sybiha&rsquo;s statement (primary) &middot; Kyiv Post, Reuters/Yahoo.</p>
+        </article>
+
+        <article class="story">
+          <h3>Trump and Macron pledge joint action on Hormuz and energy-infrastructure strikes</h3>
+          <p class="story-deck">Meeting separately in New York, the two leaders said they would work together to protect Hormuz shipping and push a moratorium on energy-infrastructure strikes tied to the Ukraine war.</p>
+          <div class="story-body">
+            <p><span class="flag">Single-reliable-source</span> Macron said after meeting Trump that the two &ldquo;decided to act together&rdquo; to ease energy-market tensions, protect Middle East critical infrastructure, and safeguard freedom of navigation through the Strait of Hormuz, alongside a push for a moratorium on energy-infrastructure strikes in the Ukraine war. Trump credited Macron with helping &ldquo;settle seven wars.&rdquo; Most coverage of this meeting traces to wire-service re-syndication rather than an original Reuters or AP report this outlet could independently locate; treat the specifics as reported but not yet cross-confirmed by a Tier-1 wire.</p>
+          </div>
+          <p class="story-sourceline">Macron&rsquo;s remarks (primary, via wire syndication) &middot; Tribune India (ANI), TAG24.</p>
+        </article>
+
+        <article class="story">
+          <h3>The Pentagon&rsquo;s own fix for the Minab strike becomes public, without the full review</h3>
+          <p class="story-deck">Bloomberg reports CENTCOM has made &ldquo;dozens of upgrades&rdquo; to its AI-assisted targeting system after the strike on an Iranian school; the internal report Congress worries may stay classified is still not out.</p>
+          <div class="story-body">
+            <p><span class="flag">Single-reliable-source</span> Bloomberg reported Tuesday that CENTCOM has changed its lethal-targeting workflow following the Minab, Iran school strike this outlet has tracked since last week: refined procedures for refreshing and vetting planned targets, new open-source feeds to better track civilian movement near target sites, and what CENTCOM describes as dozens of upgrades to the Maven Smart System, the military&rsquo;s AI-assisted targeting tool. This is the first public detail on what the internal review actually changed, though it comes from CENTCOM&rsquo;s own characterization via a single outlet, not the review itself, which remains unreleased amid reported concern in Congress and the Pentagon that its findings could be classified.</p>
+          </div>
+          <p class="story-sourceline">CENTCOM (via Bloomberg, single outlet) &middot; this outlet&rsquo;s prior reporting on the internal review.</p>
+        </article>
+
+        <article class="story">
+          <h3>Alibaba unveils a new AI chip two days before the Trump-Xi summit</h3>
+          <p class="story-deck">Xi arrives in Washington Wednesday for a state visit running through Thursday; Alibaba timed what it calls China&rsquo;s most powerful AI chip to land just ahead of it.</p>
+          <div class="story-body">
+            <p>Alibaba announced Tuesday what it describes as China&rsquo;s most powerful AI chip, alongside new large-model plans, days after Anthropic CEO Dario Amodei and other US AI executives renewed warnings about China&rsquo;s AI trajectory. The announcement lands just ahead of Xi&rsquo;s state visit to Washington, which runs Wednesday through Thursday &mdash; arrival and a Joint Base Andrews reception Wednesday, the main bilateral meeting, a Rose Garden ceremony and a state dinner Thursday. Tech CEOs including Bezos, Pichai, Altman, Cook and Huang are expected at the dinner. China has separately signaled the summit could be disrupted over a pending $14 billion Taiwan arms package.</p>
+          </div>
+          <p class="story-sourceline">Alibaba (primary) &middot; AP/ABC News, CNBC, CSIS summit tracker.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ================= DOMAIN SECTIONS =================
+         Politics · Geopolitics · Economy · Business · Technology ·
+         Science & Space (Science and Space are ONE section now).
+         Write each as prose under the .story-body class. A section with
+         nothing material to say is OMITTED - never padded to fill the slot. -->
+    <section class="paper-section" aria-labelledby="s-changed">
+      <h2 id="s-changed">What Changed Today</h2>
+      <div class="story-body">
+        <p><b>CENTCOM&rsquo;s Minab review, from single-sourced and internal to partly public.</b> This morning&rsquo;s edition carried anonymous-official accounts that CENTCOM had completed an internal investigation into the Minab school strike, with Congress and the Pentagon reportedly worried its findings would be classified rather than released. This afternoon, Bloomberg reported CENTCOM&rsquo;s own account of what it changed &mdash; refreshed target-vetting procedures, new open-source tracking of civilian movement, and dozens of upgrades to the Maven Smart System targeting tool. That is CENTCOM describing its own fix, not the review itself, which still has not been released. Confidence: Single-reliable-source, unchanged from this morning, now with more specific claims attached.</p>
+        <p><b>CNN/MS NOW/Politico press-ban suit: Wednesday hearing now docket-confirmed.</b> This morning&rsquo;s edition reported a hearing was &ldquo;widely reported for Wednesday afternoon but not yet docket-confirmed.&rdquo; It is now confirmed: a videoconference hearing is set for Wednesday afternoon before Judge Timothy J. Kelly, the same judge who ruled for CNN&rsquo;s Jim Acosta on due-process grounds in 2018. No ruling has been issued. Confidence: Confirmed-multiple.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>The Senate gaveled in around 3:00 PM with a cloture vote on Angela Colmenero&rsquo;s nomination to the federal bench in the Southern District of Texas scheduled for roughly 5:30 PM &mdash; after this edition&rsquo;s publication. Colmenero, recommended by Sens. Cornyn and Cruz, cleared the Judiciary Committee 11-10 in July; Democrats have opposed her over her record as a state lawyer defending Texas&rsquo;s voter-ID law, redistricting maps and immigration, abortion and LGBTQ-related policy. No outcome has been confirmed as of publication; this report will not print an unverified tally.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Viking Therapeutics jumped roughly 30% after announcing positive topline results from a maintenance-phase study of its GLP-1/GIP agonist VK2735: patients retained up to 90% of induction-phase weight loss on monthly dosing and up to 97% on every-other-week dosing, with tolerability during maintenance similar to placebo. The 21-week induction phase itself had produced roughly 16&ndash;19% weight loss versus essentially none on placebo. The company says the results support starting a Phase III trial by year-end; broader obesity-drug peers did not follow the move.</p>
+        <p>AutoZone beat on profit and missed on revenue in its fiscal fourth quarter: EPS of $56.05 against a $54.54 consensus, but revenue of $6.59 billion fell short of the roughly $6.69 billion Street estimate. Same-store sales rose 2.7% (domestic +1.6%, international +10.7%); full-year profit was $2.57 billion on $20.34 billion revenue. Results included a 145-basis-point tariff-refund benefit and a 105-basis-point non-cash LIFO benefit, both one-time in nature. Shares gained on the call as management framed the results around market-share gains.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-moved">
+      <h2 id="s-moved">What Moved Markets</h2>
+      <div class="story-body">
+        <p>Futures were essentially flat overnight before chip names took over the tape. Semiconductors led from the open &mdash; Micron and Nvidia strength pushed the SMH sector ETF up 1.92% and the Nasdaq 100 toward its first record close since June &mdash; while bank shares sold off through the session on renewed flat-curve, margin-pressure worries (the 2s10s spread sits at a thin +25bp): JPMorgan fell 3.42%, Bank of America 3.04%, Goldman Sachs 1.03%, dragging XLF down 1.97%, the worst-performing sector. <span class="chip chip--info">Market narrative</span> Coverage widely tied the midday leg of the chip rally, and a matching drop in crude, to Trump&rsquo;s post-UNGA description of the US-Iran sideline meeting as &ldquo;very good&rdquo; &mdash; the two coincided in time, but no outlet has documented a mechanical transmission from that remark to either move, so treat it as a narrative investors reached for, not a confirmed catalyst.</p>
+        <p>Crude fell sharply &mdash; USO closed down 2.75% and outside reporting puts WTI in the low $90s, down roughly 4-5% from Monday&rsquo;s $95.59 close. Yahoo&rsquo;s CL=F futures contract showed an implausible &minus;6.17% for a sixth consecutive session, a pattern this outlet has flagged repeatedly as a likely contract-roll artifact rather than a real price; USO and outside reporting are used as the crude proxy instead. <span class="chip chip--warn">Unexplained</span> Natural gas was the day&rsquo;s standout mover in the other direction, up 11.6% to $3.165, continuing a rise that was already visible in this morning&rsquo;s premarket data (+5.68%); this outlet found no single confirmed catalyst, though cold-weather demand and a below-average storage build reported last week are plausible contributors, not confirmed drivers.</p>
+        <p>The 10-year Treasury closed at 4.96%, essentially unchanged on the day; the 2-year fell to 4.71%, steepening 2s10s to +25bp from Monday&rsquo;s +20bp. Gold rose 0.42% and the dollar index firmed slightly to 100.54. The VIX fell 4.44% to 14.21, an EOD close, with the term structure still in normal contango (VIX9D 12.13, VIX3M 17.61) &mdash; a market pricing calm despite the day&rsquo;s geopolitical volume.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-winners">
+      <h2 id="s-winners">Winners &amp; Losers</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>Close-to-close, watchlist names. EOD official, Sep 22, 2026.</caption>
+          <thead><tr><th>Symbol</th><th>%Chg</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">MU</td><td class="up">+5.00%</td><td class="txt">Chip-rally leader, not a board name</td></tr>
+            <tr><td class="txt">RKLB</td><td class="up">+2.99%</td><td class="txt">Space watchlist</td></tr>
+            <tr><td class="txt">WMT</td><td class="up">+2.49%</td><td class="txt">Consumer watchlist</td></tr>
+            <tr><td class="txt">ASML</td><td class="up">+2.14%</td><td class="txt">AI-infra watchlist</td></tr>
+            <tr><td class="txt">SPCX</td><td class="up">+1.89%</td><td class="txt">52-week high territory</td></tr>
+            <tr><td class="txt">JPM</td><td class="down">&minus;3.42%</td><td class="txt">Financials watchlist, curve-driven</td></tr>
+            <tr><td class="txt">BAC</td><td class="down">&minus;3.04%</td><td class="txt">Financials watchlist</td></tr>
+            <tr><td class="txt">AMZN</td><td class="down">&minus;1.34%</td><td class="txt">Mega-cap tech / consumer</td></tr>
+            <tr><td class="txt">GOOGL</td><td class="down">&minus;1.07%</td><td class="txt">Mega-cap tech</td></tr>
+            <tr><td class="txt">GS</td><td class="down">&minus;1.03%</td><td class="txt">Financials watchlist</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Sector leaders: XLB +1.65%, XLP +0.99%. Sector laggards: XLF &minus;1.97%, XLE &minus;1.09%, XLC &minus;1.06%.</p>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-tomorrow">
+      <h2 id="s-tomorrow">Tomorrow</h2>
+      <div class="story-body">
+        <p>Xi arrives in Washington for a state visit running through Thursday &mdash; a Joint Base Andrews reception Wednesday, the main bilateral meeting, a Rose Garden ceremony and state dinner Thursday. CNN, MS NOW and Politico&rsquo;s press-ban suit gets a videoconference hearing before Judge Kelly Wednesday afternoon. The Kennedy Center board&rsquo;s sworn, detailed status report on the building closure is due to Judge Cooper. S&amp;P Global&rsquo;s flash September PMIs land at 9:45 AM (consensus: manufacturing 53.4, services 56.0) &mdash; the first real post-FOMC test of whether incoming data supports the Fed&rsquo;s hawkish dot plot. Fed Vice Chair for Supervision Michael Barr speaks at 10:05 AM. The Treasury auctions a 1-year-10-month note reopening ($28B) and a 5-year note ($70B).</p>
+      </div>
+    </section>
+
+    <!-- ================= LOCAL NEWS =================
+         THREE beats, each covered in its own right, in this order:
+           1. Bridgeville / South Fayette / South Hills
+           2. Pittsburgh & Allegheny County
+           3. Pennsylvania
+         Up to two items per beat, each with a .local-place label naming which
+         beat it belongs to. Quality-gated, never padded: a beat with nothing
+         worth reporting is simply absent that day, and some days only one of
+         the three appears. Crime blotter, event listings and weather chatter
+         are not news.
+
+         The weather strip is MORNING EDITION ONLY, from the National Weather
+         Service gridpoint for Bridgeville, PA. It leads this section. -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <article class="local-item">
+        <p class="local-place">Pittsburgh &middot; Allegheny County</p>
+        <h3>Unsealed warrant alleges pay-to-play no-bid contracts under former Mayor Gainey</h3>
+        <div class="story-body">
+          <p>A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the DA&rsquo;s office is investigating whether the Gainey administration steered roughly $2 million in &ldquo;Stop the Violence&rdquo; grants and other no-bid contracts to organizations, including SEIU and the Working Families Party, that supported Gainey&rsquo;s campaigns &mdash; and that the city&rsquo;s no-bid contract rate roughly doubled, from about 10% to about 20%, under his administration. Information in the warrant reportedly came in part from current Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges have been filed.</p>
+        </div>
+        <p class="story-sourceline">Unsealed court warrant (primary record, via secondary reporting) &middot; CBS Pittsburgh, WPXI, KDKA, Patch.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>State Supreme Court keeps a Green Party candidate off the PA-07 ballot</h3>
+        <div class="story-body">
+          <p>The court affirmed a Commonwealth Court ruling that Andrew Tupone, who submitted signatures for the Lehigh Valley congressional seat without the Green Party&rsquo;s own endorsement, cannot appear on the November ballot &mdash; holding that nominating rights belong to the party organization, not an individual signature-gatherer, regardless of signature count (Tupone submitted 10,586 against a 4,074 requirement).</p>
+        </div>
+        <p class="story-sourceline">State Supreme Court order (primary, via reporting) &middot; PoliticsPA, Ballot Access News, City &amp; State PA.</p>
+      </article>
+
+      <article class="local-item">
+        <p class="local-place">Pennsylvania</p>
+        <h3>Four lifers ask the state Supreme Court to bypass lower courts on felony-murder resentencing</h3>
+        <div class="story-body">
+          <p>Four people serving mandatory life for second-degree (felony) murder, including one tied to the Allegheny County case that triggered a March ruling opening a path to resentencing, have filed King&rsquo;s Bench petitions asking the court to act directly after the legislature missed its July 24 deadline to rewrite the underlying statute. Roughly 1,100 people statewide serve these sentences; the court has granted only a handful of the roughly 288 King&rsquo;s Bench petitions filed since 2021, and there is no mandated timeline for it to act.</p>
+        </div>
+        <p class="story-sourceline">King&rsquo;s Bench petitions (primary record, via reporting) &middot; Philadelphia Inquirer, Spotlight PA, Pennsylvania Capital-Star.</p>
+      </article>
+    </section>
+
+    <!-- ================= MARKET APPENDIX =================
+         Unchanged and still collapsed: the full SPEC section-22 walkthrough.
+         It costs the reader nothing while closed, and it is where every
+         number with a delay label now lives. -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--ok">Risk-on, narrow</span> Supporting: SPY sits 7.83% above its 200-day average and QQQ 12.6% above its own, both intact uptrends; the Nasdaq pushed toward a record close on chip-sector strength; VIX at 14.21 and in normal contango signals low priced fear. Contradicting: leadership is narrow and rotating &mdash; today it was semiconductors and staples (XLB +1.65%, XLP +0.99%) against a bank/rate-sensitive selloff (XLF &minus;1.97%) and small/mid-caps (IWM, DIA) both sit below their own 20- and 50-day averages even while still above their 200-day. Credit is not confirming stress: HYG and LQD both closed effectively flat and HY OAS held at 2.68% (Sept 18 print, unchanged). Confidence: moderate. Change from Monday: little &mdash; the curve steepened 5bp (2s10s +20bp &rarr; +25bp) and the equity/bank divergence is new today, not yet a regime change.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>EOD official, Sep 22, 2026. DMA distance = (price&minus;average)/average.</caption>
+              <thead><tr><th>Fund</th><th>Price</th><th>%Chg</th><th>vs 20-DMA</th><th>vs 50-DMA</th><th>vs 200-DMA</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>773.38</td><td class="down">&minus;0.02%</td><td class="up">+1.07%</td><td class="up">+1.68%</td><td class="up">+7.83%</td></tr>
+                <tr><td>QQQ</td><td>747.46</td><td class="up">+0.45% (^IXIC)</td><td class="up">+4.29%</td><td class="up">+5.13%</td><td class="up">+12.6%</td></tr>
+                <tr><td>IWM</td><td>287.21</td><td class="up">+0.57%</td><td class="down">&minus;1.38%</td><td class="down">&minus;2.58%</td><td class="up">+4.36%</td></tr>
+                <tr><td>DIA</td><td>518.00</td><td class="down">&minus;0.34%</td><td class="down">&minus;1.64%</td><td class="down">&minus;1.93%</td><td class="up">+3.29%</td></tr>
+                <tr><td>TLT</td><td>81.75</td><td class="down">&minus;0.06%</td><td class="down">&minus;0.19%</td><td class="down">&minus;0.93%</td><td class="down">&minus;4.72%</td></tr>
+                <tr><td>SPCX</td><td>154.72</td><td class="up">+1.89%</td><td class="up">+5.21%</td><td class="up">+14.55%</td><td>&mdash; (70 sessions of history)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Large caps (SPY, QQQ) remain firmly extended above their 200-day averages; small and mid caps (IWM, DIA) sit closer to their short-term averages despite today&rsquo;s gains, the clearest sign leadership has narrowed back to mega-cap tech and semis. TLT&rsquo;s persistent gap below its 200-day tracks the 10-year holding near 5%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p><span class="chip chip--warn">Reused, one-session lag</span> Whole-market breadth is computed once per NYSE session per the once-per-session rule; today&rsquo;s own close has not yet been computed at publication. The last fresh reading (Monday Sept 21 close, fetched this morning) showed a sharp positive reversal: 3,340 advancers vs 2,063 decliners across the filtered universe. This afternoon&rsquo;s session, with banks down and chips up, plausibly narrows that read, but this outlet is not estimating today&rsquo;s breadth from a partial sample.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>All 11 SPDR sectors, EOD official, Sep 22, 2026.</caption>
+              <thead><tr><th>Sector</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>XLB (Materials)</td><td class="up">+1.65%</td></tr>
+                <tr><td>XLP (Staples)</td><td class="up">+0.99%</td></tr>
+                <tr><td>XLK (Technology)</td><td class="up">+0.73%</td></tr>
+                <tr><td>XLV (Health Care)</td><td class="up">+0.52%</td></tr>
+                <tr><td>XLI (Industrials)</td><td class="up">+0.17%</td></tr>
+                <tr><td>XLY (Discretionary)</td><td class="up">+0.09%</td></tr>
+                <tr><td>XLRE (Real Estate)</td><td class="down">&minus;0.21%</td></tr>
+                <tr><td>XLU (Utilities)</td><td class="down">&minus;0.32%</td></tr>
+                <tr><td>XLC (Communications)</td><td class="down">&minus;1.06%</td></tr>
+                <tr><td>XLE (Energy)</td><td class="down">&minus;1.09%</td></tr>
+                <tr><td>XLF (Financials)</td><td class="down">&minus;1.97%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Financials was the day&rsquo;s clear laggard on flat-curve margin worries; materials led on the natural-gas and copper moves (HG=F +3.24%) feeding into industrial-input names. Communications lagged behind its own mega-cap tech peers, a genuine divergence within the growth complex.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <p>AI infrastructure: MU +5.00% led the group; ASML +2.14%, TSM +1.54%, AMD +1.34%, NVDA +0.66%, AVGO +0.52% all gained. Space: RKLB +2.99%, SPCX +1.89% both advanced, SPCX still building its own 52-week history since its June IPO. Financials: broad-based decline led by JPM &minus;3.42% and BAC &minus;3.04%, both closing well off their 52-week highs (65% and lower on the board&rsquo;s position bar). Consumer: WMT +2.49% the standout; AMZN &minus;1.34% the laggard. Mega-cap tech split: TSLA +0.96%, AAPL +0.23% gained; META &minus;0.63%, MSFT &minus;0.72%, GOOGL &minus;1.07% fell.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official Sep 22, 2026.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.97%</td></tr>
+                <tr><td>3M</td><td>4.16%</td></tr>
+                <tr><td>6M</td><td>4.26%</td></tr>
+                <tr><td>1Y</td><td>4.43%</td></tr>
+                <tr><td>2Y</td><td>4.71%</td></tr>
+                <tr><td>5Y</td><td>4.83%</td></tr>
+                <tr><td>10Y</td><td>4.96%</td></tr>
+                <tr><td>20Y</td><td>5.33%</td></tr>
+                <tr><td>30Y</td><td>5.29%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>2s10s +25bp, 3m10y +80bp, 5s30s +46bp &mdash; the curve steepened modestly from Monday (2s10s +20bp) as the 2-year fell faster than the 10-year. SOFR 3.85% and the 10-year TIPS real yield (DFII10) 2.62%, both Sept 21 prints (Sept 22&rsquo;s daily-rate series was not yet posted at gather time, the normal one-business-day FRED lag). 10-year breakeven inflation (T10YIE) 2.34%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield OAS held at 2.68% (Sept 18 print, unchanged from Monday&rsquo;s edition &mdash; FRED&rsquo;s BAMLH0A0HYM2 series had not posted a fresher observation at gather time). HYG closed effectively flat (&minus;0.01%) and LQD closed unchanged; neither is confirming the equity-side bank stress. HYG sits just 10% up its 52-week range, near the bottom.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p>VIX 14.21 (EOD official, &minus;4.44% on the day), VIX9D 12.13, VIX3M 17.61 &mdash; normal contango across the curve, consistent with a market pricing near-term calm even on a UN General Assembly news day. Put/call ratios remain unavailable (Cboe&rsquo;s market-statistics endpoint has returned 403 for weeks and is not fetched). Dealer gamma is not tracked; no legitimate free source exists.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>ECB reference rates, Sep 22, 2026 &middot; EOD official.</caption>
+              <thead><tr><th>Pair</th><th>Rate</th></tr></thead>
+              <tbody>
+                <tr><td>EUR/USD</td><td>1.145 (&minus;0.11% intraday, Yahoo)</td></tr>
+                <tr><td>USD/JPY</td><td>157.18</td></tr>
+                <tr><td>GBP/USD</td><td>1.336</td></tr>
+                <tr><td>USD/CNY</td><td>6.70</td></tr>
+                <tr><td>USD/CHF</td><td>0.819</td></tr>
+                <tr><td>USD/CAD</td><td>1.404</td></tr>
+                <tr><td>AUD/USD</td><td>0.711</td></tr>
+                <tr><td>USD/MXN</td><td>17.25</td></tr>
+                <tr><td>USD/BRL</td><td>5.12</td></tr>
+                <tr><td>USD/INR</td><td>95.59</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>DXY (ICE dollar index) closed 100.54, +0.11%. No allowlisted free source exists for DXY&rsquo;s own constituent weighting beyond the index level itself; EURUSD and the ECB reference basket above provide the underlying color.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p><span class="chip chip--warn">CL=F unreliable, 6th consecutive session</span> Yahoo&rsquo;s WTI front-month contract showed &minus;6.17%, a reading this outlet has excluded for six straight sessions as an apparent contract-roll artifact. USO closed &minus;2.75% and outside reporting puts WTI around $91&ndash;92, down roughly 4&ndash;5% from Monday&rsquo;s $95.59 close &mdash; a genuine decline, loosely coinciding with (not confirmed caused by) the reported US-Iran sideline contact. Gold (GC=F) +0.33% to $4,398; GLD +0.42%. Natural gas (NG=F) +11.6% to $3.165, the day&rsquo;s largest single-instrument move, continuing from this morning&rsquo;s premarket gain; no single confirmed catalyst, cold-weather demand and last week&rsquo;s below-average storage build are plausible but unconfirmed contributors. Copper (HG=F) +3.24%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p><span class="chip chip--ok">Live</span> Bitcoin $86,301, &minus;0.83% (24h); Ethereum $2,755.24, &minus;1.32%; Solana $118.31, &minus;0.31%; Cardano $0.2527, +2.88%. Total crypto market cap roughly $2.94 trillion. The board&rsquo;s BTC row (Grayscale Bitcoin Mini Trust ETF, ticker BTC) closed $38.11, &minus;0.37%, tracking a fraction of spot bitcoin rather than a 1:1 exposure.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>Stocks and bonds diverged from the bank sector specifically: broad equities rose on chip strength even as bank stocks fell on the same curve dynamics (2s10s +25bp) that would normally read as a steepener benefiting bank net-interest margins over time, not hurting them same-day &mdash; a genuine, unresolved divergence this report is not forcing into one narrative. Oil fell while gold and copper both rose, a mixed commodity-complex signal rather than a single macro read. Credit (HYG, LQD both flat) is not confirming the equity-side bank stress, worth watching if it persists into Wednesday.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings &amp; auctions</summary>
+          <p>AutoZone reported before this edition&rsquo;s data gather (fiscal Q4, see Business); no other watchlist-company earnings today. Costco reports fiscal Q4 after Thursday&rsquo;s close, the week&rsquo;s only other watchlist name. Treasury auctioned a 6-week bill and a $69 billion 2-year note today, both routine; a 5-year note and a 1-year-10-month note reopening follow tomorrow.</p>
+        </details>
+
+      </details>
+    </section>
+
+    <!-- ================= COLOPHON =================
+         Replaces both the old "Sources & Corrections" section and the
+         per-run system-health footer. Short, plain, at the very bottom. -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> White House and Trump's own statements; Zelensky's remarks; the EU Council's sanctions decision; CENTCOM via Bloomberg; court filings and dockets; company earnings releases (AutoZone, Viking Therapeutics); Treasury's par-yield curve; FRED; Cboe; Yahoo Finance market data; CoinGecko; Frankfurter/ECB reference rates; SEC EDGAR; wire and beat reporting from CNN, NBC News, CBS News, ABC News, CNBC, AP, PBS NewsHour, Bloomberg, Kyiv Post, and local coverage from CBS Pittsburgh, WPXI, KDKA, Philadelphia Inquirer and Spotlight PA, named story by story above.</p>
+      <p><strong>Corrections.</strong> None in this edition. All open items in the correction ledger have already been surfaced in the reports that follow them.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing or unreliable data is declared, never estimated or invented &mdash; today's WTI futures contract (Yahoo's CL=F, unreliable for six consecutive sessions) is one example. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION ================= -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-22-am.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
