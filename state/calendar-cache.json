@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-22T06:52:00-04:00",
+ "fetched": "2026-09-23T16:50:00-04:00",
  "earnings_fetched": "2026-09-20",
  "earnings_fetched_note": "Alpha Vantage 3-month calendar + Finnhub date-ranged calendar cross-checked 2026-09-20 for the week of Sept 21-25. Costco (COST) is the only watchlist-company earnings report all week (Thu Sept 24, after close; Alpha Vantage est. EPS $6.48, Finnhub est. EPS $6.67 -- vendors diverge, report as a range). No other board/mega_cap_tech/ai_infra/defense_aero/space/financials/health/consumer ticker reports Sept 21-25; next watchlist date is Micron (MU) Sept 30. Non-watchlist bellwethers: AutoZone (Tue), Cintas/Paychex (Wed), Darden (Thu).",
  "events": [
@@ -770,6 +770,22 @@
    "importance": "Low",
    "reason": "New item on Launch Library 2's schedule not previously in this cache; national security payload.",
    "source": "Launch Library 2 (thespacedevs.com) -- Confirmed-primary, status subject to change"
+  },
+  {
+   "ts_et": "2026-09-23T09:45:00-04:00",
+   "type": "econ_release",
+   "name": "S&P Global flash PMI (Sept): Composite 58.4 (actual, up from 56.0), Manufacturing 57.0, Services 58.7 -- all well above consensus (53.4/56.0)",
+   "importance": "Critical",
+   "reason": "Fastest growth in over five years; combined with Fed Governor Barr's same-morning hawkish remarks and a weak 5-year Treasury auction to send the 10-year yield to its highest since 2007. Covered in depth in the 2026-09-23-pm Closing Brief lead story.",
+   "source": "S&P Global PMI press release (primary) -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-23T13:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "5-Year Treasury Note auction (0B): 5.033% high yield, 2.212 bid-to-cover (weakest since Dec 2018), 3.1bp tail, indirects 54.3% (lowest since March 2020)",
+   "importance": "Critical",
+   "reason": "One of the weakest 5-year auctions on record by several metrics; reinforced the day's yield-spike narrative alongside the flash PMI and Governor Barr's remarks.",
+   "source": "TreasuryDirect auction results (primary) -- Confirmed-primary"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",

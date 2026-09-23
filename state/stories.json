@@ -1,13 +1,76 @@
 {
  "stories": [
   {
+   "id": "yield-spike-pmi-auction-sep23",
+   "headline": "10-year Treasury yield hits highest since 2007 as hot PMI, hawkish Barr and a weak 5-year auction combine",
+   "status": "New",
+   "first_seen": "2026-09-23-pm",
+   "last_updated": "2026-09-23-pm",
+   "verification": "Confirmed-primary (PMI release, Fed speech text, Treasury auction results)",
+   "one_line": "S&P Global's flash September composite PMI jumped to 58.4 from 56.0 (manufacturing 57.0, services 58.7), the fastest growth in five-plus years with intensifying price pressure. Fed Governor Michael Barr said further hikes are 'likely to be needed.' The Treasury's $70B five-year note auction priced at 5.033% with a 2.212 bid-to-cover (weakest since Dec 2018) and a 3.1bp tail (one of the largest on record for the tenor), indirects at 54.3% (lowest since March 2020). The 10-year yield closed at 5.11% on the official par curve (intraday reports as high as 5.135%), highest since July 2007 and the biggest one-day move since April 2025. S&P 500 -0.75%, Nasdaq -1.13%, Dow -0.68%; small caps and rate-sensitive sectors led the decline. Oil (USO +3.30%) moved opposite the rest of the risk-off tape, unexplained.",
+   "score_note": "First session since the Sept 16 hawkish hike where hard data, a Fed governor and an actual Treasury auction all confirmed the same hawkish direction at once.",
+   "sources": [
+    "S&P Global PMI release (primary)",
+    "Federal Reserve, Governor Barr's remarks (primary)",
+    "TreasuryDirect auction results (primary)",
+    "Treasury par-yield curve",
+    "CNBC",
+    "Yahoo Finance",
+    "TheStreet"
+   ],
+   "watch": true
+  },
+  {
+   "id": "spcx-shotwell-sale-lockup-sep23",
+   "headline": "SpaceX shares slide on an insider stock-sale disclosure ahead of Thursday's lockup expiration",
+   "status": "New",
+   "first_seen": "2026-09-23-pm",
+   "last_updated": "2026-09-23-pm",
+   "verification": "Single-reliable-source (trade coverage, not independently verified against EDGAR this run)",
+   "one_line": "SPCX closed at $148.36, down 4.11% and underperforming the broad market's risk-off move. Trade coverage (TradingKey) attributes the decline to a disclosed stock-sale filing by President/COO Gwynne Shotwell, compounded by a lockup expiration Thursday Sept 24 (up to ~328.4M additional shares eligible to trade, first since the June 12 IPO). Not verified directly against SEC EDGAR this run; appears to be a supply-driven move, unrelated to launch cadence, Starlink or Starship.",
+   "score_note": "First insider-sale-driven move in SPCX since the IPO; the lockup expiration is a genuine, dated catalyst.",
+   "sources": [
+    "TradingKey (single outlet)",
+    "registry/entities.json (SpaceX status, EDGAR-verified separately)"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pittsburgh-budget-reopen-sep23",
+   "headline": "Pittsburgh Mayor O'Connor asks council to reopen the budget, outlines cuts",
+   "status": "New",
+   "first_seen": "2026-09-23-pm",
+   "last_updated": "2026-09-23-pm",
+   "verification": "Confirmed-multiple",
+   "one_line": "Mayor Corey O'Connor petitioned city council Tuesday to reopen the current-year budget and outlined millions of dollars in cuts; specific line items and the reason for the mid-year reopening not yet located.",
+   "score_note": "New, unexplained mid-year budget action from a first-year mayor; worth a follow-up once council takes it up.",
+   "sources": [
+    "CBS Pittsburgh"
+   ],
+   "watch": true
+  },
+  {
+   "id": "pa-doa-audit-elder-abuse-sep23",
+   "headline": "PA Auditor General finds weaknesses in elder-abuse oversight at the Department of Aging",
+   "status": "New",
+   "first_seen": "2026-09-23-pm",
+   "last_updated": "2026-09-23-pm",
+   "verification": "Confirmed-primary",
+   "one_line": "Auditor General Timothy DeFoor's performance audit found weaknesses in how the PA Department of Aging monitors elder-abuse investigations carried out by the state's 52 Area Agencies on Aging, and gaps in front-line staff training. Routine oversight product, not tied to a specific incident; the department has not yet publicly responded.",
+   "score_note": "Statewide oversight finding with a direct constituent-protection angle.",
+   "sources": [
+    "Pennsylvania Department of the Auditor General (primary)"
+   ],
+   "watch": true
+  },
+  {
    "id": "trump-xi-summit-arrival-sep23",
    "headline": "Xi arrives in Washington today, first visit in over a decade, as China presses Trump on Taiwan arms",
-   "status": "New",
+   "status": "Materially changed",
    "first_seen": "2026-09-23-am",
-   "last_updated": "2026-09-23-am",
+   "last_updated": "2026-09-23-pm",
    "verification": "Confirmed-multiple on the visit/itinerary; Disputed on a reported cancellation threat over the Taiwan arms package",
-   "one_line": "Xi's three-day state visit (his first to Washington since 2015) opens today with arrival at Joint Base Andrews ~4pm ET; Rose Garden ceremony and state dinner Thursday, National Archives Friday. Reuters: Xi expected to press Trump to freeze a pending $14B Taiwan arms package citing the 1982 US-China communique; China's MFA calls adherence to the three communiques a 'necessary precondition.' A White House official says Trump will decide on the package 'in a fairly short time' and has approved more Taiwan sales this term than the prior administration's full four years. A separate report of a Chinese threat to cancel the summit was disputed by a senior US official. Timed two days ahead, Alibaba unveiled the 'Zhenwu V900' chip (claimed 3x its predecessor's performance) plus plans for a 5-10 trillion-parameter model, framed by Bloomberg/SCMP as a self-sufficiency signal ahead of the summit.",
+   "one_line": "Xi's three-day state visit (his first to Washington since 2015) opens today with arrival at Joint Base Andrews ~4pm ET; Rose Garden ceremony and state dinner Thursday, National Archives Friday. Reuters: Xi expected to press Trump to freeze a pending $14B Taiwan arms package citing the 1982 US-China communique; China's MFA calls adherence to the three communiques a 'necessary precondition.' A White House official says Trump will decide on the package 'in a fairly short time' and has approved more Taiwan sales this term than the prior administration's full four years. A separate report of a Chinese threat to cancel the summit was disputed by a senior US official. Timed two days ahead, Alibaba unveiled the 'Zhenwu V900' chip (claimed 3x its predecessor's performance) plus plans for a 5-10 trillion-parameter model, framed by Bloomberg/SCMP as a self-sufficiency signal ahead of the summit. Update (Sept 23 pm): Xi's plane landed at Joint Base Andrews this afternoon; Trump greeted him personally on the tarmac, a gesture outlets describe as rare. The three-day visit has formally opened; Thursday brings the main bilateral meeting, Rose Garden ceremony and state dinner. Nothing new reported on the Taiwan arms package specifically. Taiwan itself said today it remains confident US arms sales will continue.",
    "score_note": "First Xi visit to Washington in 11 years, opening under an explicit Chinese arms-sales objection and a timed AI-hardware show of strength.",
    "sources": [
     "China MFA statements (primary)",
@@ -110,9 +173,9 @@
    "headline": "Councilman denies allegations in unsealed Gainey-era corruption warrant",
    "status": "Materially changed",
    "first_seen": "2026-09-22-pm",
-   "last_updated": "2026-09-23-am",
+   "last_updated": "2026-09-23-pm",
    "verification": "Confirmed-multiple (via secondary reporting on the unsealed primary court record)",
-   "one_line": "A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the Allegheny County DA's office is investigating whether the Gainey administration steered roughly $2M in 'Stop the Violence' grants and other no-bid contracts to organizations (including SEIU and the Working Families Party) that supported Gainey's campaigns, and that the city's no-bid contract rate roughly doubled (10% to 20%) under his administration. Information reportedly came in part from Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges filed. Update (Sept 23 am): a named city councilman has publicly denied the allegations made against him in the warrant.",
+   "one_line": "A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the Allegheny County DA's office is investigating whether the Gainey administration steered roughly $2M in 'Stop the Violence' grants and other no-bid contracts to organizations (including SEIU and the Working Families Party) that supported Gainey's campaigns, and that the city's no-bid contract rate roughly doubled (10% to 20%) under his administration. Information reportedly came in part from Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges filed. Update (Sept 23 am): a named city councilman has publicly denied the allegations made against him in the warrant. Update (Sept 23 pm): DA Zappala told WPXI's 11 Investigates he expects criminal charges to be filed; he separately dismissed Gainey's campaign-trail accusation that the probe is racially motivated ('I'm a public figure so you can lie about me'). The councilman who denied allegations this morning is now named: Khari Mosley, who told WPXI 'there's no connection between me and the insinuations and inaccuracies that are in the document.' No charges filed as of this writing.",
    "score_note": "A local corruption investigation into a recent former mayor, via an unsealed court record -- material for Pittsburgh/Allegheny readers.",
    "sources": [
     "Unsealed court warrant (primary record, via secondary reporting)",
@@ -170,11 +233,11 @@
   {
    "id": "kennedy-center-court-collision-sep17",
    "headline": "Kennedy Center's court-ordered sworn status report is due today; contents not yet public",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-09-15-am",
-   "last_updated": "2026-09-23-am",
+   "last_updated": "2026-09-23-pm",
    "verification": "Confirmed-multiple (court filings via secondary reporting; direct docket access blocked this run)",
-   "one_line": "DOJ filed its response by the 10 a.m. deadline, arguing the closure addresses safety risks, not a violation of the standing order. Judge Cooper denied Beatty's emergency-hearing request but ordered a sworn status report due Sept 23, and separately ordered 30 days' notice before any major building change (including demolition) after an AFP photo showed Trump aboard Air Force One viewing a 'Kennedy Center DEMOLISHED' poster; the Center calls the demolition language hypothetical. Update (Sept 18): no material change -- DOJ's Thursday filing (sworn declaration from ED Matt Floca citing 'acute risks to public safety') and Beatty's demolition-violation argument are consistent with what this report already carries; the Sept 23 sworn-status-report deadline stands. No weekend movement found; the Sept. 23 sworn status report remains the next deadline. Update (Sept 23 am): today is the deadline; no filing or wire report describing the report's actual contents had surfaced as of this edition's publication. Will cover in the Closing Brief.",
+   "one_line": "DOJ filed its response by the 10 a.m. deadline, arguing the closure addresses safety risks, not a violation of the standing order. Judge Cooper denied Beatty's emergency-hearing request but ordered a sworn status report due Sept 23, and separately ordered 30 days' notice before any major building change (including demolition) after an AFP photo showed Trump aboard Air Force One viewing a 'Kennedy Center DEMOLISHED' poster; the Center calls the demolition language hypothetical. Update (Sept 18): no material change -- DOJ's Thursday filing (sworn declaration from ED Matt Floca citing 'acute risks to public safety') and Beatty's demolition-violation argument are consistent with what this report already carries; the Sept 23 sworn-status-report deadline stands. No weekend movement found; the Sept. 23 sworn status report remains the next deadline. Update (Sept 23 am): today is the deadline; no filing or wire report describing the report's actual contents had surfaced as of this edition's publication. Will cover in the Closing Brief. Update (Sept 23 pm): the sworn-status-report deadline has passed; no wire or docket summary located this run describes the filing's actual contents. Government lawyers previously told the court the closure was expected to last roughly seven days from its Sept 16-17 start, which would put a reopening decision around now -- but nothing has been reported confirming one either way.",
    "score_note": "Escalates the already-tracked Kennedy Center/naming dispute into a live compliance deadline during this edition's publication window.",
    "sources": [
     "Judge Cooper's court filings (primary)",
@@ -470,9 +533,9 @@
    "headline": "Houthi forces complete control of the Bab el-Mandeb corridor as the UN reports nearly 2,900 war casualties since August",
    "status": "Materially changed",
    "first_seen": "2026-09-11-pm",
-   "last_updated": "2026-09-17-am",
+   "last_updated": "2026-09-23-pm",
    "verification": "Confirmed-multiple (territorial changes, casualty/displacement figures via secondary wire citation of UN session); Single-reliable-source-cluster (Yemeni government's claimed Taiz counter-advance)",
-   "one_line": "A September offensive gave Houthi forces the port of Mokha (~Sept 10), Perim Island (Sept 11), and the Greater and Lesser Hanish islands (Sept 14) -- completing effective Yemeni-side control of Bab el-Mandeb and ending a four-year truce. UN Special Envoy Hans Grundberg told the Security Council (France-requested emergency session, Tuesday) Yemen faces 'a new and more dangerous phase of war.' WHO: 2,883 casualties since Aug 6; IOM: 93,864 newly displaced. Separately, Saudi Arabia says it intercepted a Houthi drone aimed at Mecca Tuesday evening -- Houthis call the claim 'a worn-out lie.' CENTCOM also disputed an Iranian mine claim on the tanker El Gaia (says a drone hit it, not a mine) and said US forces destroyed two Iranian boats that tried to seize a Navy Saildrone in the Strait of Hormuz. Update (Sept 17): a disputed Saudi claim of intercepting a drone aimed at Mecca, and separate less-disputed Houthi strikes wounding 13 in three Saudi cities, tracked as a new story (saudi-mecca-drone-claim-sep17).",
+   "one_line": "A September offensive gave Houthi forces the port of Mokha (~Sept 10), Perim Island (Sept 11), and the Greater and Lesser Hanish islands (Sept 14) -- completing effective Yemeni-side control of Bab el-Mandeb and ending a four-year truce. UN Special Envoy Hans Grundberg told the Security Council (France-requested emergency session, Tuesday) Yemen faces 'a new and more dangerous phase of war.' WHO: 2,883 casualties since Aug 6; IOM: 93,864 newly displaced. Separately, Saudi Arabia says it intercepted a Houthi drone aimed at Mecca Tuesday evening -- Houthis call the claim 'a worn-out lie.' CENTCOM also disputed an Iranian mine claim on the tanker El Gaia (says a drone hit it, not a mine) and said US forces destroyed two Iranian boats that tried to seize a Navy Saildrone in the Strait of Hormuz. Update (Sept 17): a disputed Saudi claim of intercepting a drone aimed at Mecca, and separate less-disputed Houthi strikes wounding 13 in three Saudi cities, tracked as a new story (saudi-mecca-drone-claim-sep17). Update (Sept 23 pm): Houthi fighters have reached Perim Island, the feature dividing Bab el-Mandeb into its two shipping lanes, after government forces withdrew -- commentary (The Week and others) frames the combined Houthi hold on the strait alongside Iran's pressure on Hormuz as placing roughly a third of global shipping near one faction's control or another. An adviser to Iran's supreme leader publicly congratulated the Houthis on the advance.",
    "score_note": "Reframes an intermittent strike-and-response cycle into a completed territorial outcome with new, disputed escalation on top (Mecca claim, Hormuz incidents).",
    "sources": [
     "Houthi military spokesman Yahya Saree (primary, single-party)",
@@ -1020,7 +1083,7 @@
    "first_seen": "2026-09-09-pm",
    "last_updated": "2026-09-09-pm",
    "verification": "Confirmed-multiple (announcement and dispute); Unconfirmed (the mathematical claim itself)",
-   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alp\u00f6ge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
+   "one_line": "OpenAI said an internal, unreleased multi-agent system (~10,000 agents, ~3 million messages, 130 billion output tokens over 88 hours) produced a proposed solution to the Navier-Stokes existence-and-smoothness problem, announced Sept 8. NYU mathematician Tristan Buckmaster alleges OpenAI pressured him to exclude Anthropic researcher Levent Alpöge from authorship after learning of their related prior work; OpenAI denies accessing their private research. The Clay Institute has not verified the proof and OpenAI says it won't seek the $1M prize.",
    "score_note": "The mathematical claim is unverified; the authorship dispute is a new front in OpenAI-Anthropic researcher tension the same week as the Coxon resignation.",
    "sources": [
     "Axios",
@@ -1454,12 +1517,12 @@
   },
   {
    "id": "kosovo-thaci-conviction-sep16",
-   "headline": "Kosovo's former president Hashim Tha\u00e7i convicted of war crimes, sentenced to 25 years",
+   "headline": "Kosovo's former president Hashim Thaçi convicted of war crimes, sentenced to 25 years",
    "status": "New",
    "first_seen": "2026-09-16-pm",
    "last_updated": "2026-09-16-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Tha\u00e7i on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
+   "one_line": "The Kosovo Specialist Chambers (EU-backed, The Hague) convicted former Kosovo President and KLA wartime commander Hashim Thaçi on four counts of war crimes (murder, torture, illegal detention) tied to the killing of 96 political opponents/perceived collaborators during the 1998-99 war. Sentenced to 25 years; two co-defendants got 25 and 18 years, a third 13 years. All four were acquitted of six crimes-against-humanity counts for insufficient proof of a widespread/systematic attack on civilians.",
    "score_note": "Most senior former head of state this tribunal has convicted; closes a case that has hung over Kosovo's politics for years.",
    "sources": [
     "Kosovo Specialist Chambers ruling (primary, via wire)",
@@ -1807,9 +1870,9 @@
    "headline": "Judge Kelly to hear CNN/MS NOW/Politico's press-ban TRO request at 3:30 PM today",
    "status": "Materially changed",
    "first_seen": "2026-09-18-pm",
-   "last_updated": "2026-09-23-am",
+   "last_updated": "2026-09-23-pm",
    "verification": "Confirmed-multiple",
-   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday. Update (Sept 22 pm): the Wednesday-afternoon hearing before Judge Kelly, reported this morning as not yet docket-confirmed, is now confirmed. No ruling issued. Update (Sept 23 am): DOJ's late-Tuesday filing argues press access is 'a privilege, not a right' revocable 'at the president's will,' citing national-security concerns tied to Iran-war and ballroom-construction coverage. Hearing set for 3:30 PM today; Trump himself predicted on Truth Social that Kelly will rule against him given the Acosta precedent and that he'll have to appeal.",
+   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday. Update (Sept 22 pm): the Wednesday-afternoon hearing before Judge Kelly, reported this morning as not yet docket-confirmed, is now confirmed. No ruling issued. Update (Sept 23 am): DOJ's late-Tuesday filing argues press access is 'a privilege, not a right' revocable 'at the president's will,' citing national-security concerns tied to Iran-war and ballroom-construction coverage. Hearing set for 3:30 PM today; Trump himself predicted on Truth Social that Kelly will rule against him given the Acosta precedent and that he'll have to appeal. Update (Sept 23 pm): Judge Kelly held the scheduled 3:30 PM hearing -- attorney Ted Boutrous argued for the outlets that the ban's national-security rationale contradicts core First Amendment protections, DOJ maintained access is a revocable privilege -- and reserved his ruling rather than deciding from the bench. No decision as of this edition. This outlet's morning forecast (55-70% odds of at least a partial TRO within days, based on Kelly's 2018 Acosta precedent) remains open, ungraded.",
    "score_note": "A press-freedom lawsuit with a Trump-appointed judge who has already ruled against the administration on nearly identical facts once before.",
    "sources": [
     "NBC News",
@@ -2064,7 +2127,7 @@
    "status": "Continuing",
    "first_seen": "2026-09-21-am",
    "last_updated": "2026-09-22-am",
-   "one_line": "DHS/ICE say the investigation is being led 'with assistance from the FBI'; Garc\u00e9s P\u00e9rez remains in federal custody at Pearsall, described as stable. His attorney's allegations (bullet near spine, denied pain medication, made to sleep on floor) remain unconfirmed by DHS. Officer's identity and bodycam footage still not public. Rep. Casar demanding footage release; LULAC/NAACP/county commissioners held a joint Monday news conference.",
+   "one_line": "DHS/ICE say the investigation is being led 'with assistance from the FBI'; Garcés Pérez remains in federal custody at Pearsall, described as stable. His attorney's allegations (bullet near spine, denied pain medication, made to sleep on floor) remain unconfirmed by DHS. Officer's identity and bodycam footage still not public. Rep. Casar demanding footage release; LULAC/NAACP/county commissioners held a joint Monday news conference.",
    "score_note": "An ICE shooting of a civilian with no confirmed dashcam/bodycam release yet, drawing sustained local protest and federal-oversight demands.",
    "sources": [
     "NBC News",
@@ -2099,8 +2162,8 @@
    "headline": "Anthropic's IPO marketing reportedly slips again, now to November",
    "status": "Materially changed",
    "first_seen": "2026-09-21-am",
-   "last_updated": "2026-09-23-am",
-   "one_line": "Anthropic remains private ($965B post-money Series H, May 28; confidential S-1 reported ~June 1). This outlet's weekly EDGAR sweep (last run Sept 19) found no self-filing yet on public EDGAR. New Reuters/CNBC reporting says the IPO launch has shifted toward mid-October, conflicting with earlier September-target reports. Update (Sept 22): press reporting (Japan Times/Reuters, CNBC/Reuters, Fortune) has narrowed toward a mid-October marketing launch (not September), targeting a listing before the midterms at a reported ~$2T valuation; still no self-filing found on public EDGAR as of last Saturday's registry sweep. Update (Sept 23 am, single-reliable-source): Bloomberg reports the roadshow has shifted again, now to November, to fold in Q3 results; Goldman Sachs, JPMorgan and Morgan Stanley reportedly preparing a listing near a $2T valuation and $100B raise backed by a $15B credit facility, Nvidia among reported interested strategic investors. Two unrelated issuers (Holtec Nuclear, Bamboo Insurance) postponed their own listings this week citing market conditions -- cited by Bloomberg as a caution flag ahead of Anthropic's debut.",
+   "last_updated": "2026-09-23-pm",
+   "one_line": "Anthropic remains private ($965B post-money Series H, May 28; confidential S-1 reported ~June 1). This outlet's weekly EDGAR sweep (last run Sept 19) found no self-filing yet on public EDGAR. New Reuters/CNBC reporting says the IPO launch has shifted toward mid-October, conflicting with earlier September-target reports. Update (Sept 22): press reporting (Japan Times/Reuters, CNBC/Reuters, Fortune) has narrowed toward a mid-October marketing launch (not September), targeting a listing before the midterms at a reported ~$2T valuation; still no self-filing found on public EDGAR as of last Saturday's registry sweep. Update (Sept 23 am, single-reliable-source): Bloomberg reports the roadshow has shifted again, now to November, to fold in Q3 results; Goldman Sachs, JPMorgan and Morgan Stanley reportedly preparing a listing near a $2T valuation and $100B raise backed by a $15B credit facility, Nvidia among reported interested strategic investors. Two unrelated issuers (Holtec Nuclear, Bamboo Insurance) postponed their own listings this week citing market conditions -- cited by Bloomberg as a caution flag ahead of Anthropic's debut. Update (Sept 23 pm): additional outlets (Forbes, Empower) independently confirm the roadshow has slipped to November so it can include Q3 results, corroborating Tuesday's single-sourced Bloomberg report; reports continue to put the ask near a $2T valuation with as much as $100B raised on a reported Nasdaq listing. Still no self-filing on SEC EDGAR.",
    "score_note": "A closely watched AI-lab IPO; genuine timing disagreement between outlets, not just phrasing.",
    "sources": [
     "registry/entities.json (EDGAR-verified)",
@@ -2147,9 +2210,9 @@
    "headline": "Kremlin dismisses Trump's Ukraine territorial reversal as both sides strike each other's energy grids overnight",
    "status": "Materially changed",
    "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-23-am",
+   "last_updated": "2026-09-23-pm",
    "verification": "Confirmed-multiple for the meeting and Truth Social post; Single-reliable-source for the 'Russia lost control of diesel' official characterization",
-   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election. Update (Sept 22): the meeting took place; both sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Trump's own Truth Social post afterward went well beyond that narrower agenda, saying Ukraine 'with the support of the European Union' can 'fight and WIN all of Ukraine back in its original form' -- a reversal of his prior position that a settlement would require ceding territory. No Russian response yet to either the meeting or the post. Update (Sept 23 am): Kremlin spokesman Peskov dismissed the territorial claim, saying Trump had simply absorbed 'Ukraine's perspective' and that Russia is 'a real bear,' not 'a paper bear.' Zelensky separately said Ukraine is 'ready' for a mutual energy-strike halt but no deal was reached for Kyiv to stand down unilaterally; overnight, Ukraine struck two Russian oil refineries and Russia hit an oil-and-gas facility in southern Ukraine officials call damaged beyond repair -- no ceasefire is yet operative on either side. No confirmation located of the Saudi Arabia technical talks reported to follow Monday's meeting.",
+   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election. Update (Sept 22): the meeting took place; both sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Trump's own Truth Social post afterward went well beyond that narrower agenda, saying Ukraine 'with the support of the European Union' can 'fight and WIN all of Ukraine back in its original form' -- a reversal of his prior position that a settlement would require ceding territory. No Russian response yet to either the meeting or the post. Update (Sept 23 am): Kremlin spokesman Peskov dismissed the territorial claim, saying Trump had simply absorbed 'Ukraine's perspective' and that Russia is 'a real bear,' not 'a paper bear.' Zelensky separately said Ukraine is 'ready' for a mutual energy-strike halt but no deal was reached for Kyiv to stand down unilaterally; overnight, Ukraine struck two Russian oil refineries and Russia hit an oil-and-gas facility in southern Ukraine officials call damaged beyond repair -- no ceasefire is yet operative on either side. No confirmation located of the Saudi Arabia technical talks reported to follow Monday's meeting. Update (Sept 23 pm): Zelensky said Ukraine is ready for an energy ceasefire if Russia reciprocates, and called on Trump to organize a trilateral meeting with Putin. He said no agreement was reached to unilaterally halt Ukraine's strikes on Russian oil. Despite the diplomacy, Russia and Ukraine traded fresh strikes on each other's energy infrastructure overnight; at least six were killed in Kyiv and Donetsk region strikes, and Russia's defense ministry says it is planning further 'massive strikes' on Ukraine's grid.",
    "score_note": "First Trump-Zelensky meeting since the new Russia sanctions law, opening with both sides escalating rather than de-escalating.",
    "sources": [
     "Kyiv Independent",
