@@ -225,6 +225,10 @@ __all__ = [
     "TRANSFORM_FLOOR_MULTIPLE", "TRANSFORM_FLOOR", "TRANSFORM_PARAMS_V1",
     "solve_b", "valuation_score",
     "valuation_score_detail", "PINNED_CURVE",
+    # the v6 scorers (owner rulings R13, R15, R17 of 2026-09-23)
+    "EV_TRANSFORM_VERSION", "EV_TRANSFORM_PARAMS_V1", "ev_ebitda_score_detail",
+    "pe_relative_anchor", "pe_relative_score_detail",
+    "REASON_NO_ANCHOR_POPULATION",
     # earnings sign crossing
     "EARNINGS_SIGN_CROSS", "TRANSITION_BOTH_POSITIVE",
     "TRANSITION_BOTH_NEGATIVE", "TRANSITION_LOSS_TO_PROFIT",
@@ -355,6 +359,12 @@ class Subfactor:
     sample_scope: str
     why: str
     factor_spec_key: str = ""
+    #: v6 (owner rulings R15, R17): WHICH transform turns the multiple into a
+    #: score. `normalization_type` says what the anchor IS (a bar); this says
+    #: the curve around it -- the convex extreme-valuation transform for both
+    #: P/E legs, the benchmark-anchored tanh for the supplement. Stated on the
+    #: body so an engine cannot pick a curve by itself.
+    transform: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -367,6 +377,7 @@ class Subfactor:
             "requires_cohort": self.requires_cohort,
             "normalization_type": self.normalization_type,
             "anchor_source": self.anchor_source,
+            "transform": self.transform,
             "quality_components": list(self.quality_components),
             "depends_on": self.depends_on,
             "can_stand_alone": self.can_stand_alone,
@@ -417,6 +428,7 @@ SUBFACTORS: dict[str, Subfactor] = {
         can_stand_alone=True,
         sample_scope=SURVIVOR_ONLY,
         factor_spec_key="pe_ratio",
+        transform=TRANSFORM_VERSION,
         why=("TWO LEAVES, NO COHORT. The share division is already inside the "
              "filed EPS, so this leg does not touch the defensible share count "
              "-- the binding leaf of the whole valuation chain (leave-one-out: "
@@ -442,6 +454,7 @@ SUBFACTORS: dict[str, Subfactor] = {
         can_stand_alone=False,
         sample_scope=SURVIVOR_ONLY,
         factor_spec_key="pe_ratio",
+        transform=TRANSFORM_VERSION,
         why=("The SAME multiple, asked a DIFFERENT question: not 'is this "
              "expensive' but 'is this expensive FOR ITS INDUSTRY'. Structurally "
              "dependent -- it ranks the number the absolute leg computes, so it "
@@ -469,6 +482,7 @@ SUBFACTORS: dict[str, Subfactor] = {
         can_stand_alone=True,
         sample_scope=SURVIVOR_ONLY,
         factor_spec_key="ev_ebitda",
+        transform=pit_normalization.BENCHMARK_ANCHORED,
         why=("Capital-structure-neutral, and the ONE leg that survives a loss. "
              "FY2014, n=2,756: NI <= 0 for 49.2%, EBITDA <= 0 for 37.8%, both "
              "for 36.5% -- so 12.7% of the cross-section has an EV/EBITDA and "
@@ -985,6 +999,117 @@ def valuation_score(multiple: Optional[float],
                     anchor: float = PE_ABSOLUTE_ANCHOR) -> Optional[float]:
     """Just the number. See `valuation_score_detail`."""
     return valuation_score_detail(multiple, anchor)["score"]
+
+
+# ==========================================================================
+# (4b) THE TWO COHORT-ANCHORED SCORERS -- owner rulings R15 and R17 of
+# 2026-09-23. These are the FROZEN subfactor scorers the replay engine calls
+# (R13: "V via pit_valuation_spec frozen subfactor scorers, no hidden engine
+# normalisation"). Both anchor on the median of the coherent cohort with the
+# TARGET INCLUDED, so the anchor is one number per peer set.
+# ==========================================================================
+
+EV_TRANSFORM_VERSION = "ev_ebitda_benchmark_anchored_tanh_v1"
+
+#: R15: EV/EBITDA is BENCHMARK_ANCHORED at the cohort median through a tanh,
+#: LOWER is better, and the scale is the cohort IQR over the WHOLE eligible
+#: vector of multiples (R8's rule applied to V). There is NO fixed fallback
+#: scale: a fallback would be an invented constant in multiple units, so a
+#: cohort too small or too flat to carry a dispersion REFUSES by name
+#: (pit_normalization's own reasons). A NEGATIVE multiple (negative
+#: enterprise value, R15) is VALID and saturates the cheap side.
+EV_TRANSFORM_PARAMS_V1: dict[str, Any] = {
+    "transform_version": EV_TRANSFORM_VERSION,
+    "normalization_type": pit_normalization.BENCHMARK_ANCHORED,
+    "anchor_source": ANCHOR_COHORT_MEDIAN,
+    "anchor_population": "the coherent cohort's EV/EBITDA multiples, target INCLUDED",
+    "formula": "S = 100 * tanh((median - ev_ebitda) / k)",
+    "direction": "LOWER_IS_BETTER, carried by the sign inside the formula",
+    "scale_source": pit_normalization.SCALE_COHORT_IQR,
+    "scale_population": "the whole eligible vector of multiples, target INCLUDED",
+    "scale_min_cohort": pit_normalization.MIN_DISPERSION_COHORT,
+    "fixed_fallback": None,
+    "negative_multiple": "VALID (negative enterprise value): saturates toward +100",
+    "saturation": "+/-100",
+}
+
+#: The refusal when there is nothing to take a median over.
+REASON_NO_ANCHOR_POPULATION = "no_anchor_population"
+
+
+def ev_ebitda_score_detail(multiple: Optional[float],
+                           cohort_multiples: Sequence[Any],
+                           anchor: Optional[float] = None) -> dict[str, Any]:
+    """EV/EBITDA -> score, R15. Every intermediate kept.
+
+    `cohort_multiples` is the eligible cohort's vector (target INCLUDED);
+    `anchor` defaults to its median. The scale is the vector's IQR through
+    `pit_normalization.resolve_scale`, so the refusal reasons are that
+    module's own (`cohort_too_small_for_dispersion`, `zero_cohort_dispersion`).
+    """
+    record: dict[str, Any] = {
+        "score": None, "multiple": multiple, "anchor": anchor,
+        "anchor_source": ANCHOR_COHORT_MEDIAN, "scale": None,
+        "scale_source": None, "n_cohort": None, "reason": None,
+        "transform_version": EV_TRANSFORM_VERSION,
+    }
+    if multiple is None or not math.isfinite(float(multiple)):
+        record["reason"] = "no_multiple"
+        return record
+    values = [float(v) for v in cohort_multiples
+              if v is not None and math.isfinite(float(v))]
+    record["n_cohort"] = len(values)
+    if anchor is None:
+        anchor = pit_normalization.median(values) if values else None
+    if anchor is None or not math.isfinite(float(anchor)):
+        record["reason"] = REASON_NO_ANCHOR_POPULATION
+        return record
+    record["anchor"] = float(anchor)
+    resolution = pit_normalization.resolve_scale(
+        pit_normalization.cohort_scale(
+            multiplier=1.0, source=pit_normalization.SCALE_COHORT_IQR), values)
+    record["scale_source"] = resolution.source
+    if not resolution.ok:
+        record["reason"] = resolution.reason or pit_normalization.REASON_NON_FINITE_SCALE
+        return record
+    k = float(resolution.value)
+    record["scale"] = k
+    excess = float(anchor) - float(multiple)          # LOWER is better
+    record["score"] = pit_normalization.clamp(100.0 * math.tanh(excess / k),
+                                              -100.0, 100.0)
+    return record
+
+
+def pe_relative_anchor(cohort_pes: Sequence[Any]) -> Optional[float]:
+    """The median P/E of the coherent cohort, target INCLUDED (R17).
+
+    The caller hands the population ALREADY filtered under PE_DOMAIN_V1
+    (loss-making, zero and near-zero-positive EPS excluded); this function
+    takes a median and nothing else.
+    """
+    values = [float(v) for v in cohort_pes
+              if v is not None and math.isfinite(float(v)) and float(v) > 0.0]
+    return pit_normalization.median(values) if values else None
+
+
+def pe_relative_score_detail(multiple: Optional[float],
+                             cohort_pes: Sequence[Any],
+                             anchor: Optional[float] = None) -> dict[str, Any]:
+    """P/E relative context -> score, R17: the CONVEX transform around the
+    cohort median, not a tanh. Same curve as the absolute leg, different bar."""
+    values = [float(v) for v in cohort_pes
+              if v is not None and math.isfinite(float(v)) and float(v) > 0.0]
+    if anchor is None:
+        anchor = pe_relative_anchor(values)
+    if anchor is None:
+        return {"score": None, "multiple": multiple, "anchor": None,
+                "anchor_source": ANCHOR_COHORT_MEDIAN, "n_cohort": len(values),
+                "reason": REASON_NO_ANCHOR_POPULATION,
+                "transform_version": TRANSFORM_VERSION}
+    record = valuation_score_detail(multiple, float(anchor))
+    record["anchor_source"] = ANCHOR_COHORT_MEDIAN
+    record["n_cohort"] = len(values)
+    return record
 
 
 #: The published calibration, pinned. `validate()` recomputes every one of
@@ -2812,6 +2937,47 @@ def validate() -> list[str]:
         prev = s
     if valuation_score(5.0) > TRANSFORM_C or valuation_score(0.001) > TRANSFORM_C:
         problems.append("the cheap branch must saturate at +C")
+
+    # -- the v6 cohort-anchored scorers (R15, R17) --------------------------
+    if SUBFACTORS[SUBFACTOR_PE_ABSOLUTE].transform != TRANSFORM_VERSION or \
+            SUBFACTORS[SUBFACTOR_PE_RELATIVE].transform != TRANSFORM_VERSION:
+        problems.append("both P/E legs must declare the convex transform (R17)")
+    if SUBFACTORS[SUBFACTOR_EV_EBITDA].transform != pit_normalization.BENCHMARK_ANCHORED:
+        problems.append("the supplement must declare the benchmark-anchored tanh (R15)")
+    cohort_ev = [4.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 14.0, 20.0]
+    at_median = ev_ebitda_score_detail(9.5, cohort_ev)
+    if at_median["score"] is None or abs(at_median["score"]) > 1e-9:
+        problems.append("an EV/EBITDA AT the cohort median must score exactly zero")
+    cheap = ev_ebitda_score_detail(5.0, cohort_ev)["score"]
+    rich = ev_ebitda_score_detail(18.0, cohort_ev)["score"]
+    if cheap is None or rich is None or not (cheap > 0.0 > rich):
+        problems.append("EV/EBITDA is LOWER is better: below the median positive, above negative")
+    negative = ev_ebitda_score_detail(-3.0, cohort_ev)["score"]
+    if negative is None or negative < cheap:
+        problems.append("a negative EV/EBITDA is VALID and sits on the cheap side (R15)")
+    if at_median["scale_source"] != pit_normalization.SCALE_COHORT_IQR:
+        problems.append("the EV scale must be the cohort IQR (R8 applied to V)")
+    thin = ev_ebitda_score_detail(9.0, cohort_ev[:3])
+    if thin["score"] is not None or thin["reason"] != pit_normalization.REASON_COHORT_TOO_SMALL_SCALE:
+        problems.append("an EV cohort too small for a dispersion must REFUSE, not fall back")
+    flat = ev_ebitda_score_detail(9.0, [9.0] * 12)
+    if flat["score"] is not None or flat["reason"] != pit_normalization.REASON_ZERO_DISPERSION:
+        problems.append("a flat EV cohort must REFUSE, not invent a scale")
+    if EV_TRANSFORM_PARAMS_V1["fixed_fallback"] is not None:
+        problems.append("the EV transform declares NO fixed fallback scale")
+    cohort_pe = [10.0, 15.0, 20.0, 28.0, 30.0, 45.0, 60.0]
+    rel_at = pe_relative_score_detail(28.0, cohort_pe)
+    if rel_at["score"] is None or abs(rel_at["score"]) > 1e-12 or rel_at["anchor"] != 28.0:
+        problems.append("a P/E AT the cohort median must score exactly zero on the relative leg")
+    rel_rich = pe_relative_score_detail(100.0, cohort_pe)
+    if rel_rich["score"] is None or abs(rel_rich["score"] - valuation_score(100.0, 28.0)) > 1e-12:
+        problems.append("the relative leg is the CONVEX transform around the median (R17)")
+    if rel_rich["branch"] != "rich" or valuation_score(100.0, 28.0) >= valuation_score(56.0, 28.0):
+        problems.append("the relative leg must charge MORE for the far move, like the absolute leg")
+    if pe_relative_score_detail(20.0, [])["reason"] != REASON_NO_ANCHOR_POPULATION:
+        problems.append("an empty anchor population must refuse by name")
+    if pe_relative_anchor([-5.0, 0.0, 20.0, 30.0]) != 25.0:
+        problems.append("the relative anchor takes only POSITIVE multiples")
 
     # -- earnings sign crossing ---------------------------------------------
     cross = eps_transition(-0.10, 0.10, same_share_basis=True)

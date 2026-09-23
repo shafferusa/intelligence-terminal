@@ -153,6 +153,13 @@ __all__ = [
     "OPERATING_INCOME_AND_INTEREST_MATCHED_V2",
     "FORMULAS_VERSION_V1", "FORMULAS_V1", "FORMULA_GOLDEN_V1",
     "EBITDA_GROWTH_BASE_POLICY_V1", "INTEREST_COVERAGE_DOMAIN_V1",
+    "FACTOR_SPEC_VERSION_V5", "SPECS_V5", "BY_KEY_V5",
+    "DEBT_CASH_EBITDA_MATCHED_V2", "FCF_AND_EBITDA_MATCHED_V2",
+    "DEBT_AND_MARKET_CAP_MATCHED_V2", "EV_EBITDA_SIX_V2",
+    "FORMULAS_VERSION_V2", "FORMULAS_V2", "FORMULA_GOLDEN_V2",
+    "EBITDA_GROWTH_BASE_POLICY_V2", "INTEREST_COVERAGE_DOMAIN_V2",
+    "LEVERAGE_DOMAIN_V1", "FCF_DOMAIN_V1", "MARKET_CAP_DOMAIN_V1",
+    "EV_EBITDA_DOMAIN_V1", "PE_DOMAIN_V1", "DEBT_RUNG_GATE_V1", "PEER_FLOOR_V1",
     "FACTOR_SPEC_V2_KNOWN_LIMITATION",
     "FACTOR_SPEC_V1_KNOWN_LIMITATION",
     "RUNG_RANK", "RUNG_OFFICE", "VALUATION_FACTORS", "VALUATION_MAX_RUNG",
@@ -204,6 +211,12 @@ FACTOR_SPEC_VERSION_V3 = "factor_spec_v3"
 #: coverage = operating income over interest) as a SUCCESSOR set. See
 #: `SPECS_V4` for what changed and why.
 FACTOR_SPEC_VERSION_V4 = "factor_spec_v4"
+
+#: factor_spec_v5, 2026-09-23 -- the owner's V/Q rulings (R10-R12, R15, R16)
+#: as a SUCCESSOR set: the four Q/V factors whose balance-sheet and cash-flow
+#: primitives are now valued AT the EBITDA period get matched-period
+#: eligibility rules, the v4 precedent for the same gap. See `SPECS_V5`.
+FACTOR_SPEC_VERSION_V5 = "factor_spec_v5"
 
 #: What a caller that passes no version gets. Deliberately v1: adding v2 must
 #: not silently change what an un-updated caller resolves -- the same rule
@@ -633,12 +646,99 @@ FCF_AND_EBITDA = PeerEligibility(
          "of base against operating cash flow's 94.2/96.1/97.3%."),
 )
 
+#: factor_spec_v5 -- OWNER RULINGS OF 2026-09-23 (R10, R11, R12, R15, R16).
+#: The v1 rules above are PRESERVED VERBATIM (shared by reference into the
+#: digested SPECS_V3 / SPECS_V4); these are their successors. The pattern is
+#: OPERATING_INCOME_AND_INTEREST_MATCHED_V2's: a ratio is one period's
+#: numbers, so every balance-sheet instant and every cash-flow duration the
+#: factor consumes is required AT the EBITDA period (R12: "no period
+#: mixing"), and the value screens the engine executes are declared on the
+#: rule. Like the v4 rule these count AVAILABILITY only -- an UPPER BOUND on
+#: the valued cohort; n_eligible - n_values on the cohort record is the gap.
+DEBT_CASH_EBITDA_MATCHED_V2 = PeerEligibility(
+    rule_id="net_debt_over_ebitda_matched_v2",
+    primitives=("total_debt", "cash", "operating_income",
+                "depreciation_amortisation"),
+    matched_period=("total_debt", "cash", "operating_income",
+                    "depreciation_amortisation"),
+    positive_screen="ebitda > 0",
+    why=("Leverage against earning power, with debt and cash taken AS OF the "
+         "EBITDA period end (owner ruling R12, 2026-09-23) rather than at "
+         "whatever balance sheet happened to be newest. EBITDA > 0 is required "
+         "BY THE v1 PRECEDENT (R11 reached fcf_conversion; applying it here is "
+         "an INTERPRETATION recorded in docs/MODEL-LINEAGE.md): a debt multiple "
+         "of a loss is not a large number, it is an undefined one. The "
+         "total_debt rung is gated by DEBT_RUNG_EVEBITDA_V1 "
+         "(R10, DEBT_RUNG_GATE_V1) -- a lower-bound rung the measurement "
+         "rejected may not enter a scored leverage ratio, for the same reason "
+         "it may not enter an enterprise value. Price-free."),
+)
+
+FCF_AND_EBITDA_MATCHED_V2 = PeerEligibility(
+    rule_id="fcf_over_ebitda_matched_v2",
+    primitives=("operating_cash_flow", "capex", "operating_income",
+                "depreciation_amortisation"),
+    matched_period=("operating_cash_flow", "capex", "operating_income",
+                    "depreciation_amortisation"),
+    positive_screen="ebitda > 0",
+    why=("How much of the accounting earnings turns into spendable cash, with "
+         "operating cash flow and capex taken from the SAME flow period as "
+         "the EBITDA (R12). EBITDA > 0 is required (R11): free cash flow over "
+         "a loss is not a conversion rate. Price-free. capex enters as the "
+         "filed positive outflow (pit_policy)."),
+)
+
+DEBT_AND_MARKET_CAP_MATCHED_V2 = PeerEligibility(
+    rule_id="debt_over_market_cap_matched_v2",
+    primitives=("total_debt", "operating_income", "depreciation_amortisation",
+                "price_adjusted", "shares_outstanding"),
+    matched_period=("total_debt", "operating_income",
+                    "depreciation_amortisation"),
+    requires_price=True,
+    requires_defensible_shares=True,
+    positive_screen="market_cap > 0",
+    why=("Leverage against MARKET value. The market cap is at the as-of date; "
+         "the debt is the balance-sheet instant AT the EBITDA period end, so "
+         "one row carries ONE balance-sheet date across every Q factor (R12, "
+         "no period mixing -- the EBITDA period is the anchor even though "
+         "this ratio has no EBITDA in it; INTERPRETATION recorded in "
+         "docs/MODEL-LINEAGE.md). The debt rung is gated by "
+         "DEBT_RUNG_EVEBITDA_V1 (R10). SURVIVOR_ONLY by construction; the "
+         "price basis is PRICE_ROLE_REQUIRED_BASIS[valuation] through "
+         "pit_price_basis.PRICE_BASIS_TRANSLATION_V1 (R20)."),
+)
+
+EV_EBITDA_SIX_V2 = PeerEligibility(
+    rule_id="ev_ebitda_six_primitives_matched_v2",
+    primitives=("price_adjusted", "shares_outstanding", "total_debt", "cash",
+                "operating_income", "depreciation_amortisation"),
+    matched_period=("total_debt", "cash", "operating_income",
+                    "depreciation_amortisation"),
+    requires_price=True,
+    requires_defensible_shares=True,
+    positive_screen="ebitda > 0",
+    value_band=("ev_ebitda", None, 300.0),
+    why=("A resolvable point-in-time price, a DEFENSIBLE share count, and "
+         "total_debt, cash and EBITDA all AT the EBITDA period end (R12, "
+         "R16). EBITDA > 0 is required (R15). Enterprise value may be "
+         "NEGATIVE and is VALID (owner ruling R15, 2026-09-23): a negative "
+         "multiple saturates the cheap side of the anchored transform, so "
+         "v1's lower bound of 0.1 is withdrawn; the upper bound of 300 stands "
+         "where the ruling did not reach (INTERPRETATION recorded in "
+         "docs/MODEL-LINEAGE.md). The debt walk is STRICT: the first rung "
+         "carrying a value at the period decides through "
+         "DEBT_RUNG_EVEBITDA_V1 and lower rungs are not consulted, for peers "
+         "and target alike (R16)."),
+)
+
 ELIGIBILITY_RULES: tuple[PeerEligibility, ...] = (
     EBITDA_ONLY, EBITDA_AND_REVENUE, EBITDA_TWO_OBSERVATIONS,
     EBITDA_THREE_OBSERVATIONS, REVENUE_HISTORY_AND_CPI, EV_EBITDA_SIX,
     PRICED_EPS, DEBT_CASH_EBITDA, DEBT_AND_MARKET_CAP, NET_INCOME_AND_ASSETS,
     NET_INCOME_AND_EQUITY, OPERATING_INCOME_AND_INTEREST, FCF_AND_EBITDA,
     OPERATING_INCOME_AND_INTEREST_MATCHED_V2,
+    DEBT_CASH_EBITDA_MATCHED_V2, FCF_AND_EBITDA_MATCHED_V2,
+    DEBT_AND_MARKET_CAP_MATCHED_V2, EV_EBITDA_SIX_V2,
 )
 
 
@@ -1249,6 +1349,12 @@ REPLACED_BY_VERSION: dict[str, frozenset] = {
     # v4 inherits v3's two replacements before adding the three D3 keys.
     FACTOR_SPEC_VERSION_V4: frozenset({"ebitda_benchmark", "pe_ratio", "ebitda_growth",
                                        "ebitda_acceleration", "interest_coverage"}),
+    # CUMULATIVE again: v5 inherits v4's five and adds the four Q/V keys whose
+    # eligibility rules moved to matched-period successors (R10-R12, R15, R16).
+    FACTOR_SPEC_VERSION_V5: frozenset({"ebitda_benchmark", "pe_ratio", "ebitda_growth",
+                                       "ebitda_acceleration", "interest_coverage",
+                                       "net_debt_ebitda", "fcf_conversion",
+                                       "debt_market_cap", "ev_ebitda"}),
 }
 
 SPECS_V3: tuple[FactorSpec, ...] = tuple(_to_v3(s) for s in SPECS_V2)
@@ -1392,6 +1498,223 @@ INTEREST_COVERAGE_DOMAIN_V1: dict[str, str] = {
     "direction": "HIGHER_IS_BETTER applied AFTER this rule (pit_factor_blocks: orientation only)",
 }
 
+# ==========================================================================
+# THE OWNER'S RULINGS OF 2026-09-23 (spec_freeze_v6). Every V1 body above is
+# PRESERVED VERBATIM -- it is digested inside the sealed spec_freeze_v5 record
+# and a sealed body is never repaired in place. The successors carry the
+# owner's confirmations and the new states; the engine executes the
+# successors, and pit_replay.validate() cross-checks every "REFUSED:<code>"
+# below against its own reason constants.
+# ==========================================================================
+
+#: R1 (max_abs_rate = 10.0 inclusive, a modelling-domain guard, challenger-
+#: eligible later) and R3 (the refusal is renamed: it names a RATE BAND, not a
+#: base near zero). Same numbers as V1; the status and one code moved.
+EBITDA_GROWTH_BASE_POLICY_V2: dict[str, Any] = {
+    "policy_version": "ebitda_growth_base_policy_v2",
+    "supersedes": "ebitda_growth_base_policy_v1",
+    "status": "OWNER_CONFIRMED_2026_09_23 (R1: band approved as a modelling-domain guard, "
+              "challenger-eligible later; R3: refusal renamed)",
+    "denominator": "abs(ebitda_t-1)",
+    "zero_base": "REFUSED:ebitda_growth_base_zero",
+    "max_abs_rate": 10.0,
+    "beyond_max_abs_rate": "REFUSED:ebitda_growth_rate_beyond_band",
+    "renamed_from": {"ebitda_growth_base_near_zero": "ebitda_growth_rate_beyond_band"},
+    "band_semantics": ("the band is on the RATE, not on the base's absolute size: an "
+                       "11x rise from a healthy base is refused as well, under the "
+                       "same name; |rate| == max_abs_rate exactly is COMPUTED (strict >); "
+                       "an acceleration refused because the LAG-1 rate failed carries "
+                       "the same code"),
+    "sign_transition": ("COMPUTED: (E_t - E_t-1)/|E_t-1| is positive for loss->profit; "
+                        "base sign recorded on the row ('bs')"),
+    "both_negative": "COMPUTED with abs(): a loss shrinking from -100 to -50 is +0.5",
+    "applies_to": ("ebitda_growth", "ebitda_acceleration"),
+    "rationale": ("a dollar floor is not scale-free and a revenue/asset floor needs a "
+                  "primitive the cohort rule does not charge for; the rate band refuses "
+                  "only order-of-magnitude base swings, keeps them out of the cohort "
+                  "IQR sample, and the score is tanh-bounded anyway"),
+}
+
+#: R2 (matched period, first valid rung at the period, never mixing rungs),
+#: R4 (PERCENTILE_RANK over POSITIVE-operating-income observations only) and
+#: R5 (operating income <= 0 is the factor's FLOOR STATE: scored at the rank
+#: floor, excluded from the rank population; zero / negative / missing
+#: interest keep their named refusals). The v5 KNOWN LIMITATION -- an
+#: inverted ordering among negative-OI rows -- is CLOSED by the floor state:
+#: no two negative-OI rows are ordered against each other any more.
+INTEREST_COVERAGE_DOMAIN_V2: dict[str, str] = {
+    "policy_version": "interest_coverage_domain_v2",
+    "supersedes": "interest_coverage_domain_v1",
+    "status": "OWNER_CONFIRMED_2026_09_23 (R2 rung rule; R4 rank population; R5 floor state)",
+    "ordinary": "interest_expense > 0 AND operating_income > 0 at the operating_income period",
+    "rung_rule": ("the FIRST interest_expense ladder rung carrying a value AT the "
+                  "operating-income period is used; a tagged zero on that rung is "
+                  "interest_expense_zero and lower rungs are not consulted"),
+    "zero": "REFUSED:interest_expense_zero",
+    "negative": "REFUSED:interest_expense_negative",
+    "missing": "REFUSED:no_interest_expense_at_operating_income_period",
+    "no_numerator": "REFUSED:no_operating_income_period",
+    "non_positive_operating_income": ("FLOOR_STATE:interest_coverage_floor_state -- operating_income "
+                                      "<= 0 with interest_expense > 0 is SCORED at the "
+                                      "PERCENTILE_RANK floor (-100), the raw coverage "
+                                      "(<= 0) is written on the row, and the row is EXCLUDED "
+                                      "from the rank population (R5)"),
+    "rank_population": ("positive-coverage observations only: operating_income > 0 and "
+                        "interest_expense > 0 (R4); the target ranks among positive peers "
+                        "and floor-state peers are not in the denominator"),
+    "direction": "HIGHER_IS_BETTER applied AFTER this rule (pit_factor_blocks: orientation only)",
+}
+
+#: R10 and R16 -- the strict debt-rung gate, stated once for the three
+#: factors that consume total_debt. The rung that decides is the FIRST rung of
+#: the concept_ladder_v2 total_debt ladder carrying a value AT the EBITDA
+#: period end (all components for a SUM rung); its DEBT_RUNG_EVEBITDA_V1
+#: status is the verdict and lower rungs are NOT consulted -- the interest-
+#: coverage rung rule, applied to debt. Peers and target are gated alike,
+#: because every member's value is formed by the same resolver.
+DEBT_RUNG_GATE_V1: dict[str, Any] = {
+    "policy_version": "debt_rung_gate_v1",
+    "status": "OWNER_RULING_2026_09_23 (R10 strict gate for net_debt_ebitda and "
+              "debt_market_cap; R16 strict first-rung walk for EV)",
+    "applies_to": ("net_debt_ebitda", "debt_market_cap", "ev_ebitda_supplement"),
+    "ladder": "concept_ladder_v2 total_debt",
+    "rung_rule": ("the FIRST rung carrying a value AT the EBITDA period end decides "
+                  "(every component for a SUM rung); lower rungs are not consulted. "
+                  "'Non-stale' is the EBITDA period's own bound: an instant anchored at "
+                  "P is as fresh as P (15-month annual budget), and the 6-month "
+                  "quarterly budget for free-floating instants does not apply "
+                  "(INTERPRETATION, docs/MODEL-LINEAGE.md)"),
+    "eligible": "pit_valuation_spec.DEBT_ELIGIBLE -> the value enters the factor",
+    "rejected_measured": "REFUSED:debt_rung_rejected_measured",
+    "undetermined": "REFUSED:debt_rung_undetermined",
+    "no_rung_at_period": "REFUSED:no_total_debt_at_ebitda_period",
+    "same_gate_for_peers": True,
+    "bound_on_the_row": ("the rung key is the row's source_tag and its quantity bound "
+                         "('exact' / 'lower_bound') travels in resolved_inputs_json "
+                         "('db'); an ELIGIBLE lower-bound rung is scored WITH that label"),
+}
+
+#: R11, R12 -- net_debt_ebitda.
+LEVERAGE_DOMAIN_V1: dict[str, str] = {
+    "policy_version": "leverage_domain_v1",
+    "status": "OWNER_RULING_2026_09_23 (R10, R11 per v1 precedent, R12)",
+    "applies_to": "net_debt_ebitda",
+    "ordinary": "ebitda > 0; net_debt = total_debt - cash, both AT the EBITDA period end",
+    "non_positive_ebitda": "REFUSED:ebitda_non_positive",
+    "missing_debt": "REFUSED:no_total_debt_at_ebitda_period",
+    "missing_cash": "REFUSED:no_cash_at_ebitda_period",
+    "debt_rung": "DEBT_RUNG_GATE_V1",
+    "negative_net_debt": "COMPUTED and scored: net cash is financially strong (v1 precedent)",
+    "period_rule": "debt and cash AT the EBITDA period end (R12); no period mixing",
+    "direction": "LOWER_IS_BETTER applied AFTER this rule (pit_factor_blocks: orientation only)",
+}
+
+#: R11, R12 -- fcf_conversion.
+FCF_DOMAIN_V1: dict[str, str] = {
+    "policy_version": "fcf_domain_v1",
+    "status": "OWNER_RULING_2026_09_23 (R11, R12)",
+    "applies_to": "fcf_conversion",
+    "ordinary": "ebitda > 0; free_cash_flow = operating_cash_flow - capex, both from the EBITDA flow period",
+    "non_positive_ebitda": "REFUSED:ebitda_non_positive",
+    "missing_operating_cash_flow": "REFUSED:no_operating_cash_flow_at_ebitda_period",
+    "missing_capex": "REFUSED:no_capex_at_ebitda_period",
+    "capex_sign": "the filed POSITIVE outflow is subtracted (pit_policy capex ladder)",
+    "negative_free_cash_flow": "COMPUTED and scored: a negative conversion is a real state",
+    "period_rule": "operating cash flow and capex from the SAME flow period as the EBITDA (R12)",
+    "direction": "HIGHER_IS_BETTER applied AFTER this rule (pit_factor_blocks: orientation only)",
+}
+
+#: R10, R12, R19, R20 -- debt_market_cap, and the market cap every V leg shares.
+MARKET_CAP_DOMAIN_V1: dict[str, str] = {
+    "policy_version": "market_cap_domain_v1",
+    "status": "OWNER_RULING_2026_09_23 (R10, R12, R19, R20)",
+    "applies_to": "debt_market_cap; market_cap is shared with ev_ebitda_supplement",
+    "ordinary": "market_cap = raw as-traded price x defensible share count > 0; total_debt AT the EBITDA period end",
+    "price": ("pit_price_basis.VALUATION_PRICE_POLICY_V1: exact score-date raw close, else "
+              "the latest prior valid raw close within 10 calendar days, valid trade "
+              "required, same listing, price_age_days on the row (R19)"),
+    "price_basis": "PRICE_ROLE_REQUIRED_BASIS[valuation] through PRICE_BASIS_TRANSLATION_V1 (R20)",
+    "shares": "pit_rawprice strict share-class policy; a count that cannot be shown to cover the issuer is REFUSED",
+    "listing": "REFUSED:no_scored_listing | REFUSED:listing_ambiguous -- no share-class switching (R19)",
+    "no_price": "REFUSED:no_valuation_price_within_window",
+    "no_market_cap": "REFUSED:market_cap_unavailable (the pit_rawprice reason travels in 'mr')",
+    "non_positive_market_cap": "REFUSED:market_cap_non_positive",
+    "missing_debt": "REFUSED:no_total_debt_at_ebitda_period",
+    "debt_rung": "DEBT_RUNG_GATE_V1",
+    "period_rule": "debt AT the EBITDA period end (R12, INTERPRETATION: one balance-sheet date per row)",
+    "direction": "LOWER_IS_BETTER applied AFTER this rule (pit_factor_blocks: orientation only)",
+}
+
+#: R15, R16 -- ev_ebitda_supplement.
+EV_EBITDA_DOMAIN_V1: dict[str, str] = {
+    "policy_version": "ev_ebitda_domain_v1",
+    "status": "OWNER_RULING_2026_09_23 (R15, R16)",
+    "applies_to": "ev_ebitda_supplement",
+    "ordinary": "ebitda > 0; enterprise_value = market_cap + total_debt - cash, debt and cash AT the EBITDA period end",
+    "non_positive_ebitda": "REFUSED:ebitda_non_positive",
+    "negative_enterprise_value": "VALID -- a negative multiple saturates the CHEAP side of the transform (R15)",
+    "above_band": "REFUSED:ev_ebitda_above_band -- multiple > 300 (v1's upper bound stands; the lower bound is withdrawn)",
+    "debt_rung": "DEBT_RUNG_GATE_V1 (R16: first non-stale rung at the period, its status, same gate for peers)",
+    "missing_debt": "REFUSED:no_total_debt_at_ebitda_period",
+    "missing_cash": "REFUSED:no_cash_at_ebitda_period",
+    "no_market_cap": "REFUSED:market_cap_unavailable",
+    "anchor": "the median multiple of the coherent cohort, target INCLUDED (R15)",
+    "transform": ("pit_valuation_spec.EV_TRANSFORM_PARAMS_V1: 100 * tanh((median - ev_ebitda) / k), "
+                  "k = cohort IQR over the whole eligible vector; LOWER is better; saturates "
+                  "at +/-100"),
+    "direction": "LOWER_IS_BETTER, carried by the transform's sign (pit_factor_blocks: orientation only)",
+}
+
+#: R17, R19, R21 -- pe_absolute and pe_relative.
+PE_DOMAIN_V1: dict[str, str] = {
+    "policy_version": "pe_domain_v1",
+    "status": "OWNER_RULING_2026_09_23 (R17, R19, R21)",
+    "applies_to": "pe_absolute, pe_relative",
+    "ordinary": "pe = raw as-traded price / TTM EPS carried to the score-date share basis; EPS > EPS_NEAR_ZERO_ABS",
+    "eps_source": ("pit_eps_ttm through pit_eps_cohort.EntityTtm.select (mirrors "
+                   "pit_eps.ttm_eps_as_of_detail); concept_key and method travel on the row "
+                   "('ek', 'em') because cohorts may mix TTM methods and EPS rungs (R21)"),
+    "no_eps": "REFUSED:no_ttm_eps (the pit_eps reason travels in 'er')",
+    "loss": "REFUSED:unavailable_loss_making",
+    "zero": "REFUSED:unavailable_eps_zero_undefined",
+    "near_zero_positive": ("REFUSED:eps_near_zero_positive -- 0 < EPS <= EPS_NEAR_ZERO_ABS is excluded "
+                           "from BOTH legs and from the pe_relative median population (R17)"),
+    "share_basis": ("pit_price_basis.normalised_pe under pit_safe_corporate_action_gate_v2: "
+                    "REFUSED:share_basis_unresolved (gate status in 'gs')"),
+    "price": "as MARKET_CAP_DOMAIN_V1 (one valuation price resolver, R19, R20)",
+    "absolute_transform": "extreme_valuation_transform_v1 around PE_ABSOLUTE_ANCHOR_V1 (fixed 20.0)",
+    "relative_anchor": "the median pe of the coherent cohort, target INCLUDED, near-zero members excluded (R17)",
+    "relative_transform": "extreme_valuation_transform_v1 around the cohort median -- the CONVEX transform, not a tanh (R17)",
+    "dependency": "REFUSED:pe_relative_needs_absolute -- the context leg cannot exist without the anchor leg",
+    "direction": "EMBEDDED_IN_TRANSFORM (a signed transform is not oriented again)",
+}
+
+#: R14 -- ONE frozen factor-specific floor on the number of VALUED cohort
+#: members (n_values), enforced once in the engine's cohort cache with ONE
+#: distinct refusal, cohort_values_below_floor. Distinct from eligible_peers'
+#: insufficient_peers (which counts AVAILABILITY, an upper bound) and from
+#: the normaliser's own floors (which it still applies, redundantly by
+#: construction because every value here is >= them). The numbers are the
+#: maxima of the spec's min_peer_count and the transform's requirement:
+#: a rank needs MIN_RANK_PEERS (4) peers plus the target; a cohort-derived
+#: dispersion needs MIN_DISPERSION_COHORT (8); the 50-75 band needs the
+#: spec's 12-member vector; the V legs keep their spec floors (pe_ratio 3,
+#: ev_ebitda 12). pit_replay.validate() proves each entry against those
+#: sources rather than trusting the literal.
+PEER_FLOOR_V1: dict[str, int] = {
+    "ebitda_benchmark": 12,
+    "ebitda_growth": 8,
+    "ebitda_efficiency": 5,
+    "ebitda_acceleration": 8,
+    "ebitda_scale": 5,
+    "interest_coverage": 5,
+    "fcf_conversion": 5,
+    "net_debt_ebitda": 5,
+    "debt_market_cap": 5,
+    "pe_relative": 3,
+    "ev_ebitda_supplement": 12,
+}
+
 #: Witnesses for FORMULAS_V1; pit_replay.validate() evaluates each through the
 #: engine's own resolve_primitives on a synthetic index (no database).
 #: 'ebitda' triples are (E_t, E_t-1, E_t-2); a refusal is named, never a number.
@@ -1426,6 +1749,152 @@ FORMULA_GOLDEN_V1: tuple[dict[str, Any], ...] = (
      "expect": "REFUSED:no_interest_expense_at_operating_income_period"},
 )
 
+FORMULAS_VERSION_V2 = "formulas_v2"
+
+#: THE EXECUTABLE DEFINITION under spec_freeze_v6. FORMULAS_V1 is PRESERVED
+#: VERBATIM above (it is digested inside the sealed v5 record); V2 restates
+#: every key, and where a pit_derive node exists the string still BEGINS with
+#: that node's formula (validate() checks it). The owner's rulings of
+#: 2026-09-23 are the only differences: the rate-band rename (R3), EBITDA > 0
+#: for the two EBITDA-denominator Q ratios (R11), one balance-sheet date per
+#: row (R12), the floor state for coverage (R5), the EV transform (R15), the
+#: convex pe_relative transform around the cohort median (R17) and the
+#: benchmark cohort rules (R7-R9).
+FORMULAS_V2: dict[str, str] = {
+    "ebitda_benchmark": ("margin_excess = ebitda_margin - cohort_mean_margin; cohort = peers with "
+        "p50 <= ebitda_i <= p75 of cohort EBITDA (pit_normalization.BENCHMARK_BAND_V1), "
+        "target INCLUDED in the vector and the band (R7), ONE cohort-constant M_s per peer set; "
+        "|band| >= BENCHMARK_MIN_COHORT_V1 = 3 or benchmark_band_too_thin, never widened (R9); "
+        "|vector| >= PEER_FLOOR_V1 or cohort_values_below_floor (R14); BENCHMARK_ANCHORED with "
+        "k = cohort IQR over the WHOLE eligible margin vector (R8)"),
+    "ebitda_growth": ("ebitda_growth = (ebitda_t - ebitda_t-1) / abs(ebitda_t-1); "
+        "base policy EBITDA_GROWTH_BASE_POLICY_V2 (ebitda_growth_base_zero / "
+        "ebitda_growth_rate_beyond_band); ZERO_ANCHORED"),
+    "ebitda_efficiency": ("ebitda_margin = ebitda / revenue; revenue AT the EBITDA period "
+        "(pit_replay.R_NO_REVENUE_AT_P otherwise); PERCENTILE_RANK"),
+    "ebitda_acceleration": ("ebitda_acceleration = ebitda_growth_t - ebitda_growth_t-1; "
+        "ebitda_growth_t-1 = (ebitda_t-1 - ebitda_t-2) / abs(ebitda_t-2), same base policy "
+        "(EBITDA_GROWTH_BASE_POLICY_V2); NOT a second difference over assets; ZERO_ANCHORED"),
+    "ebitda_scale": ("ebitda_scale = ebitda (raw dollars, PERCENTILE_RANK); DIVERGES from "
+        "pit_derive's ebitda / sector_ebitda_p50 -- rank-identical only when p50 > 0"),
+    "pe_absolute": ("pe = price_raw_as_traded / earnings_per_share_pit, one share basis "
+        "(pit_price_basis.PAIR_PATHS, pit_safe_corporate_action_gate_v2), EPS > EPS_NEAR_ZERO_ABS "
+        "(PE_DOMAIN_V1: loss, zero and near-zero-positive EPS are named refusals, R17); price under "
+        "VALUATION_PRICE_POLICY_V1 (R19) and PRICE_BASIS_TRANSLATION_V1 (R20); S = "
+        "extreme_valuation_transform_v1(pe, PE_ABSOLUTE_ANCHOR_V1); DIVERGES from pit_derive's "
+        "market_cap / net_income (SPECS_V3['pe_ratio'].graph_divergence)"),
+    "pe_relative": ("pe as pe_absolute; anchor = median pe of the coherent cohort, target INCLUDED, "
+        "near-zero-positive members EXCLUDED (R17); S = extreme_valuation_transform_v1(pe, median) "
+        "-- the CONVEX transform around the cohort median, NOT a tanh (owner ruling R17 "
+        "2026-09-23; supersedes FORMULAS_V1's BENCHMARK_ANCHORED wording); requires pe_absolute "
+        "(pe_relative_needs_absolute otherwise)"),
+    "ev_ebitda_supplement": ("ev_ebitda = enterprise_value / ebitda; enterprise_value = market_cap + "
+        "total_debt - cash, debt and cash AT the EBITDA period end (R12); market_cap on "
+        "price_raw_as_traded (PRICE_ROLE_REQUIRED_BASIS, PRICE_BASIS_TRANSLATION_V1); debt rung "
+        "DEBT_ELIGIBLE under DEBT_RUNG_GATE_V1 (R16); ebitda > 0 (ebitda_non_positive); negative "
+        "enterprise_value VALID (R15); ev_ebitda > 300 refused (ev_ebitda_above_band); anchor = "
+        "cohort median (target INCLUDED); S = 100 * tanh((median - ev_ebitda) / k), k = cohort IQR "
+        "over the whole eligible vector (EV_TRANSFORM_PARAMS_V1); LOWER is better"),
+    "real_revenue_growth": ("real_revenue_growth = (1 + revenue_growth) / (1 + inflation) - 1 == "
+        "(revenue_t / cpi_t) / (revenue_t-1 / cpi_t-1) - 1 for a positive deflated base "
+        "(pit_replay.R_NON_POSITIVE_BASE otherwise); one revenue rung, CPI over the window; ZERO_ANCHORED"),
+    "fcf_conversion": ("fcf_conversion = free_cash_flow / ebitda; free_cash_flow = operating_cash_flow - "
+        "capex, both AT the EBITDA flow period (FCF_DOMAIN_V1, R12); ebitda > 0 (ebitda_non_positive, "
+        "R11); PERCENTILE_RANK"),
+    "interest_coverage": ("interest_coverage = operating_income / interest_expense; both AT ONE "
+        "(period_end, qtrs=4); domain INTEREST_COVERAGE_DOMAIN_V2: operating_income <= 0 is the "
+        "FLOOR STATE (scored -100, excluded from the rank population, R5); PERCENTILE_RANK over "
+        "positive-coverage peers (R4)"),
+    "net_debt_ebitda": ("net_debt_ebitda = net_debt / ebitda; net_debt = total_debt - cash, both AT "
+        "the EBITDA period end (LEVERAGE_DOMAIN_V1, R12); ebitda > 0 (ebitda_non_positive, R11 per "
+        "the v1 precedent); debt rung under DEBT_RUNG_GATE_V1 (R10); PERCENTILE_RANK, LOWER is better"),
+    "debt_market_cap": ("debt_market_cap = total_debt / market_cap; market_cap = price * shares in ONE "
+        "share basis (PRICE_ROLE_REQUIRED_BASIS, PRICE_BASIS_TRANSLATION_V1, R19, R20); total_debt AT "
+        "the EBITDA period end under DEBT_RUNG_GATE_V1 (MARKET_CAP_DOMAIN_V1, R10, R12); "
+        "PERCENTILE_RANK, LOWER is better"),
+}
+
+#: Witnesses for FORMULAS_V2. Two shapes, dispatched on 'kind' by
+#: pit_replay.validate(): a PRIMITIVE witness (default) runs through
+#: resolve_primitives on a synthetic index and compares one Primitives
+#: attribute or one named refusal; a BENCHMARK witness (kind='benchmark')
+#: hands (ebitda, margin) pairs to the engine's benchmark anchor and compares
+#: the anchor and the band size. Instants are planted at qtrs=0 and
+#: durations at qtrs=4 under the exact tags named, because the tag chosen
+#: sets the debt rung and the rung decides the gate.
+FORMULA_GOLDEN_V2: tuple[dict[str, Any], ...] = FORMULA_GOLDEN_V1[:4] + (
+    {"factor": "ebitda_growth", "ebitda": (1000.0, 1.0, 50.0),
+     "expect": "REFUSED:ebitda_growth_rate_beyond_band"},
+) + FORMULA_GOLDEN_V1[5:9] + (
+    {"factor": "ebitda_acceleration", "ebitda": (1000.0, 750.0, 0.0),
+     "expect": "REFUSED:ebitda_growth_base_zero"},
+    {"factor": "ebitda_acceleration", "ebitda": (1000.0, 750.0, 1.0),
+     "expect": "REFUSED:ebitda_growth_rate_beyond_band"},
+    {"factor": "ebitda_growth", "ebitda": (1100.0, 100.0, 50.0), "expect": 10.0},
+    {"factor": "ebitda_growth", "ebitda": (-900.0, 100.0, 50.0), "expect": -10.0},
+    {"factor": "ebitda_growth", "ebitda": (1200.0, 100.0, 50.0),
+     "expect": "REFUSED:ebitda_growth_rate_beyond_band"},
+) + FORMULA_GOLDEN_V1[14:] + (
+    # R5: operating income <= 0 with a positive interest bill is the FLOOR STATE,
+    # not a refusal: the raw coverage is computed and the state is flagged.
+    {"factor": "interest_coverage", "operating_income": -200.0, "interest_expense": 100.0,
+     "expect": -2.0, "expect_floor_state": True},
+    {"factor": "interest_coverage", "operating_income": 0.0, "interest_expense": 100.0,
+     "expect": 0.0, "expect_floor_state": True},
+    {"factor": "interest_coverage", "operating_income": 500.0, "interest_expense": 100.0,
+     "expect": 5.0, "expect_floor_state": False},
+    # Q: total_debt on the ELIGIBLE three-way SUM rung, cash, OCF and capex AT P.
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {"LongTermDebtNoncurrent": 700.0, "LongTermDebtCurrent": 200.0,
+                    "ShortTermBorrowings": 100.0},
+     "cash": 200.0, "expect": 2.0},
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {"LongTermDebtNoncurrent": 700.0, "LongTermDebtCurrent": 200.0,
+                    "ShortTermBorrowings": 100.0},
+     "cash": 1300.0, "expect": -0.75},
+    {"factor": "net_debt_ebitda", "ebitda": (0.0, 300.0, 200.0),
+     "total_debt": {"LongTermDebtNoncurrent": 700.0, "LongTermDebtCurrent": 200.0,
+                    "ShortTermBorrowings": 100.0},
+     "cash": 200.0, "expect": "REFUSED:ebitda_non_positive"},
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {"LongTermDebtNoncurrent": 700.0},
+     "cash": 200.0, "expect": "REFUSED:debt_rung_rejected_measured"},
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {"LongTermDebt": 900.0},
+     "cash": 200.0, "expect": "REFUSED:debt_rung_undetermined"},
+    # THE STRICT WALK, witnessed where it bites: rung 2 (the single combined tag,
+    # UNDETERMINED) is present at P beside rung 3 (the two-way SUM, ELIGIBLE). A
+    # first-rung walk refuses; a fall-through walk would score on rung 3.
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {"DebtLongtermAndShorttermCombinedAmount": 950.0,
+                    "LongTermDebtNoncurrent": 700.0, "LongTermDebtCurrent": 200.0},
+     "cash": 200.0, "expect": "REFUSED:debt_rung_undetermined"},
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {"LongTermDebtNoncurrent": 700.0, "LongTermDebtCurrent": 200.0,
+                    "ShortTermBorrowings": 100.0},
+     "cash": None, "expect": "REFUSED:no_cash_at_ebitda_period"},
+    {"factor": "net_debt_ebitda", "ebitda": (400.0, 300.0, 200.0),
+     "total_debt": {}, "cash": 200.0, "expect": "REFUSED:no_total_debt_at_ebitda_period"},
+    {"factor": "fcf_conversion", "ebitda": (400.0, 300.0, 200.0),
+     "operating_cash_flow": 500.0, "capex": 200.0, "expect": 0.75},
+    {"factor": "fcf_conversion", "ebitda": (400.0, 300.0, 200.0),
+     "operating_cash_flow": 100.0, "capex": 300.0, "expect": -0.5},
+    {"factor": "fcf_conversion", "ebitda": (-400.0, 300.0, 200.0),
+     "operating_cash_flow": 500.0, "capex": 200.0, "expect": "REFUSED:ebitda_non_positive"},
+    {"factor": "fcf_conversion", "ebitda": (400.0, 300.0, 200.0),
+     "operating_cash_flow": 500.0, "capex": None, "expect": "REFUSED:no_capex_at_ebitda_period"},
+    {"factor": "fcf_conversion", "ebitda": (400.0, 300.0, 200.0),
+     "operating_cash_flow": None, "capex": 200.0,
+     "expect": "REFUSED:no_operating_cash_flow_at_ebitda_period"},
+    # R7-R9: the 12-pair benchmark fixture; target INCLUDED, one M_s per set.
+    {"kind": "benchmark", "factor": "ebitda_benchmark",
+     "pairs": tuple((100.0 * i, round(0.09 + 0.01 * i, 4)) for i in range(1, 13)),
+     "expect": {"anchor": 0.17, "n_band": 3, "n_vector": 12}},
+    {"kind": "benchmark", "factor": "ebitda_benchmark",
+     "pairs": ((100.0, 0.10), (200.0, 0.20)),
+     "expect": "REFUSED:benchmark_band_too_thin"},
+)
+
 _V4_GROWTH_NOTE = ("factor_spec_v4: EXECUTABLE DEFINITION (E_t - E_t-1) / abs(E_t-1) under "
                    "EBITDA_GROWTH_BASE_POLICY_V1; no asset base. Owner decision 2026-09-22 (D3, A).")
 _V4_ACCEL_NOTE = ("factor_spec_v4: EXECUTABLE DEFINITION growth_t - growth_t-1, each an A-rate under "
@@ -1451,6 +1920,66 @@ SPECS_V4: tuple[FactorSpec, ...] = tuple(_to_v4(s) for s in SPECS_V3)
 
 BY_KEY_V4: dict[str, FactorSpec] = {s.key: s for s in SPECS_V4}
 
+# ==========================================================================
+# factor_spec_v5 -- OWNER RULINGS OF 2026-09-23 (V/Q wiring), as a successor set
+#
+# Four keys move; every other spec is the v4 object BY REFERENCE. What moves
+# is the ELIGIBILITY RULE (matched at the EBITDA period, value screens
+# declared) and, for debt_market_cap, the primitive list -- its debt is now
+# anchored at the EBITDA period end, so operating_income and D&A become
+# required primitives of a ratio that carries no EBITDA. That is the owner's
+# "no period mixing" made literal, and it is recorded as an INTERPRETATION
+# in docs/MODEL-LINEAGE.md rather than presented as a free engine choice.
+# ==========================================================================
+
+_V5_NDE_NOTE = ("factor_spec_v5: eligibility DEBT_CASH_EBITDA_MATCHED_V2 -- debt and cash AT the "
+                "EBITDA period end, EBITDA > 0, debt rung gated by DEBT_RUNG_EVEBITDA_V1 "
+                "(owner rulings R10, R11, R12, 2026-09-23); domain LEVERAGE_DOMAIN_V1.")
+_V5_FCF_NOTE = ("factor_spec_v5: eligibility FCF_AND_EBITDA_MATCHED_V2 -- OCF and capex from the "
+                "EBITDA flow period, EBITDA > 0 (R11, R12); domain FCF_DOMAIN_V1.")
+_V5_DMC_NOTE = ("factor_spec_v5: eligibility DEBT_AND_MARKET_CAP_MATCHED_V2 -- debt AT the EBITDA "
+                "period end (R12, INTERPRETATION: one balance-sheet date per row), rung gated "
+                "(R10), market cap on the raw as-traded price (R19, R20); domain "
+                "MARKET_CAP_DOMAIN_V1.")
+_V5_EV_NOTE = ("factor_spec_v5: eligibility EV_EBITDA_SIX_V2 -- debt, cash and EBITDA AT one "
+               "period, EBITDA > 0, negative enterprise value VALID, strict first-rung debt "
+               "walk (R15, R16); the transform is a benchmark-anchored tanh around the "
+               "coherent cohort median, lower is better (pit_valuation_spec."
+               "EV_TRANSFORM_PARAMS_V1); domain EV_EBITDA_DOMAIN_V1.")
+
+
+def _to_v5(s: FactorSpec) -> FactorSpec:
+    if s.key == "net_debt_ebitda":
+        return _dc_replace(s, peer_eligibility=DEBT_CASH_EBITDA_MATCHED_V2,
+                           note=(s.note + " " if s.note else "") + _V5_NDE_NOTE)
+    if s.key == "fcf_conversion":
+        return _dc_replace(s, peer_eligibility=FCF_AND_EBITDA_MATCHED_V2,
+                           note=(s.note + " " if s.note else "") + _V5_FCF_NOTE)
+    if s.key == "debt_market_cap":
+        return _dc_replace(
+            s,
+            required_primitives=("total_debt", "operating_income",
+                                 "depreciation_amortisation", "price_adjusted",
+                                 "shares_outstanding"),
+            peer_eligibility=DEBT_AND_MARKET_CAP_MATCHED_V2,
+            graph_divergence=(
+                "pit_derive's debt_market_cap node reads total_debt at its own "
+                "newest period; this spec anchors the debt instant AT the EBITDA "
+                "period end (owner ruling R12, 2026-09-23, no period mixing), so "
+                "operating_income and depreciation_amortisation are required "
+                "primitives of a ratio that has no EBITDA in it. Declared, not "
+                "inferred: the graph's leaf set is three, the spec's is five."),
+            note=(s.note + " " if s.note else "") + _V5_DMC_NOTE)
+    if s.key == "ev_ebitda":
+        return _dc_replace(s, peer_eligibility=EV_EBITDA_SIX_V2,
+                           note=(s.note + " " if s.note else "") + _V5_EV_NOTE)
+    return s
+
+
+SPECS_V5: tuple[FactorSpec, ...] = tuple(_to_v5(s) for s in SPECS_V4)
+
+BY_KEY_V5: dict[str, FactorSpec] = {s.key: s for s in SPECS_V5}
+
 #: Every spec set that has ever been named, keyed by the id a row would carry.
 #: v1 and v2 are FROZEN: they are read, never edited.
 SPEC_SETS: dict[str, dict[str, FactorSpec]] = {
@@ -1458,13 +1987,14 @@ SPEC_SETS: dict[str, dict[str, FactorSpec]] = {
     FACTOR_SPEC_VERSION_V2: BY_KEY_V2,
     FACTOR_SPEC_VERSION_V3: BY_KEY_V3,
     FACTOR_SPEC_VERSION_V4: BY_KEY_V4,
+    FACTOR_SPEC_VERSION_V5: BY_KEY_V5,
 }
 
 
 def spec_versions() -> tuple[str, ...]:
     """Every selectable spec version, oldest first."""
     return (FACTOR_SPEC_VERSION, FACTOR_SPEC_VERSION_V2, FACTOR_SPEC_VERSION_V3,
-            FACTOR_SPEC_VERSION_V4)
+            FACTOR_SPEC_VERSION_V4, FACTOR_SPEC_VERSION_V5)
 
 
 def spec_set(version: Optional[str] = None) -> dict[str, FactorSpec]:
@@ -3409,6 +3939,70 @@ def validate() -> list[str]:
     for case in FORMULA_GOLDEN_V1:
         if case["factor"] not in FORMULAS_V1:
             problems.append("a golden witness names a factor FORMULAS_V1 does not")
+
+    # (i4) factor_spec_v5: the owner's V/Q rulings of 2026-09-23, and only those.
+    for key, rule in (("net_debt_ebitda", DEBT_CASH_EBITDA_MATCHED_V2),
+                      ("fcf_conversion", FCF_AND_EBITDA_MATCHED_V2),
+                      ("debt_market_cap", DEBT_AND_MARKET_CAP_MATCHED_V2),
+                      ("ev_ebitda", EV_EBITDA_SIX_V2)):
+        if BY_KEY_V5[key].peer_eligibility is not rule:
+            problems.append(f"factor_spec_v5/{key} eligibility must be {rule.rule_id} by reference")
+        if BY_KEY_V4[key].peer_eligibility is BY_KEY_V5[key].peer_eligibility:
+            problems.append(f"factor_spec_v4/{key} must be PRESERVED verbatim")
+        extra = sorted(set(rule.primitives) - set(BY_KEY_V5[key].required_primitives))
+        if extra:
+            problems.append(f"factor_spec_v5/{key}: eligibility requires {extra}, which the "
+                            "v5 spec does not declare as a required primitive")
+        if not rule.matched_period:
+            problems.append(f"factor_spec_v5/{key}: the successor rule must match periods (R12)")
+    if sum(1 for a, b in zip(SPECS_V4, SPECS_V5) if a is b) != 10:
+        problems.append("factor_spec_v5 must replace exactly four specs")
+    if EV_EBITDA_SIX_V2.value_band is None or EV_EBITDA_SIX_V2.value_band[1] is not None:
+        problems.append("factor_spec_v5/ev_ebitda: negative enterprise value is VALID (R15); "
+                        "the lower bound must be withdrawn")
+    if not REPLACED_BY_VERSION[FACTOR_SPEC_VERSION_V5] >= REPLACED_BY_VERSION[FACTOR_SPEC_VERSION_V4]:
+        problems.append("REPLACED_BY_VERSION must be cumulative for v5")
+    if "graph_divergence" and not BY_KEY_V5["debt_market_cap"].graph_divergence:
+        problems.append("factor_spec_v5/debt_market_cap must DECLARE its period-anchored leaf set")
+    if set(FORMULAS_V2) != set(FORMULAS_V1):
+        problems.append("FORMULAS_V2 must name exactly the keys FORMULAS_V1 names")
+    for key, node in _FORMULA_NODE.items():
+        if not FORMULAS_V2[key].startswith(pit_derive.NODES[node].formula):
+            problems.append(f"{key}: FORMULAS_V2 no longer restates "
+                            f"pit_derive.NODES[{node!r}].formula verbatim")
+    if "CONVEX" not in FORMULAS_V2["pe_relative"] or "tanh" not in FORMULAS_V2["ev_ebitda_supplement"]:
+        problems.append("FORMULAS_V2 must state the convex pe_relative (R17) and the tanh EV (R15)")
+    for case in FORMULA_GOLDEN_V2:
+        if case["factor"] not in FORMULAS_V2 or "expect" not in case:
+            problems.append("a v2 golden witness names an unknown factor or carries no 'expect'")
+    if (EBITDA_GROWTH_BASE_POLICY_V2["max_abs_rate"] != EBITDA_GROWTH_BASE_POLICY_V1["max_abs_rate"]
+            or EBITDA_GROWTH_BASE_POLICY_V2["beyond_max_abs_rate"]
+            != "REFUSED:ebitda_growth_rate_beyond_band"
+            or EBITDA_GROWTH_BASE_POLICY_V2["renamed_from"]
+            != {"ebitda_growth_base_near_zero": "ebitda_growth_rate_beyond_band"}):
+        problems.append("EBITDA_GROWTH_BASE_POLICY_V2 must keep V1's band and rename ONE code (R1, R3)")
+    if EBITDA_GROWTH_BASE_POLICY_V1["beyond_max_abs_rate"] != "REFUSED:ebitda_growth_base_near_zero":
+        problems.append("EBITDA_GROWTH_BASE_POLICY_V1 is sealed history and must keep its old name")
+    if not INTEREST_COVERAGE_DOMAIN_V2["non_positive_operating_income"].startswith("FLOOR_STATE:"):
+        problems.append("INTEREST_COVERAGE_DOMAIN_V2 must make OI <= 0 the FLOOR STATE (R5)")
+    for body, name in ((LEVERAGE_DOMAIN_V1, "LEVERAGE_DOMAIN_V1"), (FCF_DOMAIN_V1, "FCF_DOMAIN_V1"),
+                       (MARKET_CAP_DOMAIN_V1, "MARKET_CAP_DOMAIN_V1"),
+                       (EV_EBITDA_DOMAIN_V1, "EV_EBITDA_DOMAIN_V1"), (PE_DOMAIN_V1, "PE_DOMAIN_V1"),
+                       (INTEREST_COVERAGE_DOMAIN_V2, "INTEREST_COVERAGE_DOMAIN_V2"),
+                       (DEBT_RUNG_GATE_V1, "DEBT_RUNG_GATE_V1")):
+        if "direction" not in body and name != "DEBT_RUNG_GATE_V1":
+            problems.append(f"{name} must state when direction applies")
+        if not any(str(v).startswith("REFUSED:") for v in body.values()):
+            problems.append(f"{name} must name at least one REFUSED state")
+    for key, floor in PEER_FLOOR_V1.items():
+        spec_key = {"pe_relative": "pe_ratio", "ev_ebitda_supplement": "ev_ebitda"}.get(key, key)
+        if floor < BY_KEY_V5[spec_key].min_peer_count:
+            problems.append(f"PEER_FLOOR_V1[{key}] is below the spec's min_peer_count")
+    if set(PEER_FLOOR_V1) != {"ebitda_benchmark", "ebitda_growth", "ebitda_efficiency",
+                              "ebitda_acceleration", "ebitda_scale", "interest_coverage",
+                              "fcf_conversion", "net_debt_ebitda", "debt_market_cap",
+                              "pe_relative", "ev_ebitda_supplement"}:
+        problems.append("PEER_FLOOR_V1 must name every cohort-using replay key and no other")
 
     # (j1) COHERENCE IS A NUMBER, and the number must be one the data kept.
     # A statistic may be quoted as coherence only if it survived the

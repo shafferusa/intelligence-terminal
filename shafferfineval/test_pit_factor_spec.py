@@ -642,7 +642,7 @@ def section_9_v4() -> None:
                         "ebitda_acceleration", "interest_coverage"})
           and FS.REPLACED_BY_VERSION[FS.FACTOR_SPEC_VERSION_V3]
           == frozenset({"ebitda_benchmark", "pe_ratio"}))
-    check("spec_versions() ends with v4", FS.spec_versions()[-1] == FS.FACTOR_SPEC_VERSION_V4)
+    check("spec_versions() ends with v5", FS.spec_versions()[-1] == FS.FACTOR_SPEC_VERSION_V5)
     check("11 of 14 v4 specs are the v3 objects by reference",
           sum(1 for a, b in zip(FS.SPECS_V3, FS.SPECS_V4) if a is b) == 11)
     check("FORMULAS_V1 restates pit_derive where a node exists",
@@ -665,6 +665,84 @@ def section_9_v4() -> None:
     check("validate() is clean under v4", FS.validate() == [], FS.validate())
 
 
+def section_10_v5() -> None:
+    print("\n== 10. factor_spec_v5: the owner's V/Q rulings of 2026-09-23, and only those ==")
+    check("the four moved keys carry their successor rules BY REFERENCE",
+          FS.BY_KEY_V5["net_debt_ebitda"].peer_eligibility is FS.DEBT_CASH_EBITDA_MATCHED_V2
+          and FS.BY_KEY_V5["fcf_conversion"].peer_eligibility is FS.FCF_AND_EBITDA_MATCHED_V2
+          and FS.BY_KEY_V5["debt_market_cap"].peer_eligibility is FS.DEBT_AND_MARKET_CAP_MATCHED_V2
+          and FS.BY_KEY_V5["ev_ebitda"].peer_eligibility is FS.EV_EBITDA_SIX_V2)
+    check("v4 is PRESERVED: the same four keys still carry the v1 rules there",
+          FS.BY_KEY_V4["net_debt_ebitda"].peer_eligibility is FS.DEBT_CASH_EBITDA
+          and FS.BY_KEY_V4["ev_ebitda"].peer_eligibility is FS.EV_EBITDA_SIX)
+    check("10 of 14 v5 specs are the v4 objects by reference",
+          sum(1 for a, b in zip(FS.SPECS_V4, FS.SPECS_V5) if a is b) == 10)
+    check("every successor rule matches periods (R12) and the two EBITDA-denominator "
+          "ratios screen EBITDA > 0 (R11)",
+          all(r.matched_period for r in (FS.DEBT_CASH_EBITDA_MATCHED_V2,
+                                         FS.FCF_AND_EBITDA_MATCHED_V2,
+                                         FS.DEBT_AND_MARKET_CAP_MATCHED_V2,
+                                         FS.EV_EBITDA_SIX_V2))
+          and FS.DEBT_CASH_EBITDA_MATCHED_V2.positive_screen == "ebitda > 0"
+          and FS.FCF_AND_EBITDA_MATCHED_V2.positive_screen == "ebitda > 0")
+    check("R15: negative enterprise value is VALID -- the EV band has no lower bound "
+          "and keeps v1's upper bound",
+          FS.EV_EBITDA_SIX_V2.value_band == ("ev_ebitda", None, 300.0))
+    check("debt_market_cap DECLARES its period-anchored leaf set (R12 interpretation)",
+          "operating_income" in FS.BY_KEY_V5["debt_market_cap"].required_primitives
+          and "EBITDA period end" in FS.BY_KEY_V5["debt_market_cap"].graph_divergence)
+    check("REPLACED_BY_VERSION is cumulative for v5",
+          FS.REPLACED_BY_VERSION[FS.FACTOR_SPEC_VERSION_V5]
+          >= FS.REPLACED_BY_VERSION[FS.FACTOR_SPEC_VERSION_V4]
+          and {"net_debt_ebitda", "fcf_conversion", "debt_market_cap", "ev_ebitda"}
+          <= FS.REPLACED_BY_VERSION[FS.FACTOR_SPEC_VERSION_V5])
+    check("FORMULAS_V1 is preserved verbatim and FORMULAS_V2 restates every key",
+          FS.FORMULAS_V1["pe_relative"].endswith("BENCHMARK_ANCHORED")
+          and set(FS.FORMULAS_V2) == set(FS.FORMULAS_V1)
+          and "CONVEX" in FS.FORMULAS_V2["pe_relative"]
+          and "tanh" in FS.FORMULAS_V2["ev_ebitda_supplement"])
+    check("...and where a pit_derive node exists, V2 still begins with its formula",
+          all(FS.FORMULAS_V2[k].startswith(pit_derive.NODES[n].formula)
+              for k, n in FS._FORMULA_NODE.items()))
+    check("R1/R3: the base policy keeps the band and renames ONE code; V1 keeps the old",
+          FS.EBITDA_GROWTH_BASE_POLICY_V2["max_abs_rate"] == 10.0
+          and FS.EBITDA_GROWTH_BASE_POLICY_V2["beyond_max_abs_rate"]
+          == "REFUSED:ebitda_growth_rate_beyond_band"
+          and FS.EBITDA_GROWTH_BASE_POLICY_V1["beyond_max_abs_rate"]
+          == "REFUSED:ebitda_growth_base_near_zero"
+          and "OWNER_CONFIRMED" in FS.EBITDA_GROWTH_BASE_POLICY_V2["status"])
+    check("R4/R5: the coverage domain V2 names the floor state and the positive-OI "
+          "rank population",
+          FS.INTEREST_COVERAGE_DOMAIN_V2["non_positive_operating_income"].startswith("FLOOR_STATE:")
+          and "positive" in FS.INTEREST_COVERAGE_DOMAIN_V2["rank_population"]
+          and FS.INTEREST_COVERAGE_DOMAIN_V1["negative_operating_income"].startswith("LEGITIMATE"))
+    check("the five new domain bodies and the gate each name REFUSED states and say "
+          "when direction applies",
+          all(any(str(v).startswith("REFUSED:") for v in body.values())
+              for body in (FS.LEVERAGE_DOMAIN_V1, FS.FCF_DOMAIN_V1,
+                           FS.MARKET_CAP_DOMAIN_V1, FS.EV_EBITDA_DOMAIN_V1,
+                           FS.PE_DOMAIN_V1, FS.DEBT_RUNG_GATE_V1))
+          and all("direction" in body for body in (FS.LEVERAGE_DOMAIN_V1, FS.FCF_DOMAIN_V1,
+                                                    FS.MARKET_CAP_DOMAIN_V1,
+                                                    FS.EV_EBITDA_DOMAIN_V1, FS.PE_DOMAIN_V1)))
+    _spec_of = {"pe_relative": "pe_ratio", "ev_ebitda_supplement": "ev_ebitda"}
+    check("R14: PEER_FLOOR_V1 names eleven cohort keys, none below its spec floor",
+          len(FS.PEER_FLOOR_V1) == 11 and FS.PEER_FLOOR_V1["ebitda_benchmark"] == 12
+          and FS.PEER_FLOOR_V1["ev_ebitda_supplement"] == 12
+          and FS.PEER_FLOOR_V1["pe_relative"] == 3
+          and all(FS.PEER_FLOOR_V1[k]
+                  >= FS.spec(_spec_of.get(k, k), FS.FACTOR_SPEC_VERSION_V5).min_peer_count
+                  for k in FS.PEER_FLOOR_V1))
+    check("the golden witnesses of V2 cover the Q ratios, the floor state and the "
+          "benchmark, and every one carries an 'expect'",
+          {c["factor"] for c in FS.FORMULA_GOLDEN_V2}
+          >= {"net_debt_ebitda", "fcf_conversion", "interest_coverage", "ebitda_benchmark"}
+          and all("expect" in c for c in FS.FORMULA_GOLDEN_V2)
+          and any(c.get("kind") == "benchmark" for c in FS.FORMULA_GOLDEN_V2)
+          and any(c.get("expect_floor_state") for c in FS.FORMULA_GOLDEN_V2))
+    check("validate() is clean under v5", FS.validate() == [], FS.validate())
+
+
 def main() -> int:
     started = time.time()
     section_1_price_free()
@@ -677,6 +755,7 @@ def main() -> int:
     section_7_measured()
     section_8_store()
     section_9_v4()
+    section_10_v5()
     print()
     if skips:
         print(f"{len(skips)} skipped:")

@@ -1,0 +1,106 @@
+﻿{
+    "taken_at":  "2026-09-23T11:22:16Z",
+    "note":  "controlled-measurement baseline: Mikhail serve_local.py, maia2_worker.py and the FinSim server paused (owner-authorised 2026-09-23, local copies only, no tunnel); Chrome/Steam left running; no harness or replay process running",
+    "total_RAM_GiB":  7.452,
+    "free_RAM_GiB":  1.727,
+    "committed_GB":  8.557,
+    "commit_limit_GB":  14.905,
+    "pagefile_MB_current":  211,
+    "pagefile_MB_peak_since_boot":  1545,
+    "free_disk_GiB":  13.655,
+    "python_processes":  [
+
+                         ],
+    "top15_by_private_commit":  [
+                                    {
+                                        "name":  "claude",
+                                        "pid":  15196,
+                                        "private_MiB":  766.6,
+                                        "ws_MiB":  653.1
+                                    },
+                                    {
+                                        "name":  "steamwebhelper",
+                                        "pid":  17992,
+                                        "private_MiB":  456.1,
+                                        "ws_MiB":  95.3
+                                    },
+                                    {
+                                        "name":  "chrome",
+                                        "pid":  4416,
+                                        "private_MiB":  440.7,
+                                        "ws_MiB":  419.2
+                                    },
+                                    {
+                                        "name":  "MsMpEng",
+                                        "pid":  5976,
+                                        "private_MiB":  420.9,
+                                        "ws_MiB":  382.2
+                                    },
+                                    {
+                                        "name":  "explorer",
+                                        "pid":  10896,
+                                        "private_MiB":  313.2,
+                                        "ws_MiB":  185.2
+                                    },
+                                    {
+                                        "name":  "chrome",
+                                        "pid":  16456,
+                                        "private_MiB":  139.5,
+                                        "ws_MiB":  167.3
+                                    },
+                                    {
+                                        "name":  "MicrosoftSecurityApp",
+                                        "pid":  3952,
+                                        "private_MiB":  126.1,
+                                        "ws_MiB":  86.2
+                                    },
+                                    {
+                                        "name":  "steamwebhelper",
+                                        "pid":  15828,
+                                        "private_MiB":  101.3,
+                                        "ws_MiB":  39.8
+                                    },
+                                    {
+                                        "name":  "dwm",
+                                        "pid":  2004,
+                                        "private_MiB":  100.6,
+                                        "ws_MiB":  47.1
+                                    },
+                                    {
+                                        "name":  "Malwarebytes",
+                                        "pid":  11088,
+                                        "private_MiB":  98.6,
+                                        "ws_MiB":  154.2
+                                    },
+                                    {
+                                        "name":  "steam",
+                                        "pid":  4408,
+                                        "private_MiB":  97.9,
+                                        "ws_MiB":  54.8
+                                    },
+                                    {
+                                        "name":  "chrome",
+                                        "pid":  16688,
+                                        "private_MiB":  96.9,
+                                        "ws_MiB":  63.9
+                                    },
+                                    {
+                                        "name":  "steamwebhelper",
+                                        "pid":  4124,
+                                        "private_MiB":  92.2,
+                                        "ws_MiB":  48.7
+                                    },
+                                    {
+                                        "name":  "msedge",
+                                        "pid":  17552,
+                                        "private_MiB":  87.9,
+                                        "ws_MiB":  76.9
+                                    },
+                                    {
+                                        "name":  "msedge",
+                                        "pid":  9348,
+                                        "private_MiB":  82.5,
+                                        "ws_MiB":  125.4
+                                    }
+                                ]
+}

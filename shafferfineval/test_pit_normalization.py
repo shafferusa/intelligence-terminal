@@ -515,11 +515,24 @@ def main() -> int:
 
     print("== 12. the registry refuses what it should refuse ==")
     registry = N.candidate_v2_registry()
-    check("the v2 EBITDA family is seeded",
+    check("the v2 EBITDA family and the three Q ranks are seeded (R13)",
           set(registry) == {"EBITDAMarginRank", "EBITDAExcessLevel", "EBITDAGrowth",
                             "EBITDAAcceleration", "EBITDAScale", "RealRevenueGrowth",
-                            "InterestCoverageRank"},
+                            "InterestCoverageRank", "FCFConversionRank",
+                            "NetDebtEBITDARank", "DebtMarketCapRank"},
           sorted(registry))
+    check("the three Q ranks carry the owner's directions and name their domain policies",
+          registry["FCFConversionRank"].higher_is_better is True
+          and registry["NetDebtEBITDARank"].higher_is_better is False
+          and registry["DebtMarketCapRank"].higher_is_better is False
+          and all(registry[k].normalization_type == N.PERCENTILE_RANK
+                  for k in ("FCFConversionRank", "NetDebtEBITDARank", "DebtMarketCapRank"))
+          and "FCF_DOMAIN_V1" in " ".join(registry["FCFConversionRank"].notes)
+          and "LEVERAGE_DOMAIN_V1" in " ".join(registry["NetDebtEBITDARank"].notes)
+          and "MARKET_CAP_DOMAIN_V1" in " ".join(registry["DebtMarketCapRank"].notes))
+    check("InterestCoverageRank states the floor state and the positive-OI population (R4, R5)",
+          "FLOOR STATE" in " ".join(registry["InterestCoverageRank"].notes)
+          and "positive-coverage" in " ".join(registry["InterestCoverageRank"].notes))
     check("InterestCoverageRank is a rank, higher is better, and states its "
           "domain policy",
           registry["InterestCoverageRank"].normalization_type == N.PERCENTILE_RANK
@@ -559,7 +572,7 @@ def main() -> int:
     check("nothing is registered as production",
           all(s.feature_role == N.ROLE_RESEARCH for s in registry.values()))
     check("the seed is a fresh copy, so a caller cannot mutate the policy",
-          (registry.clear() or True) and len(N.candidate_v2_registry()) == 7)
+          (registry.clear() or True) and len(N.candidate_v2_registry()) == 10)
 
     registry = N.candidate_v2_registry()
     check("a factor with NO normalization_type is refused",
@@ -599,6 +612,15 @@ def main() -> int:
     # by position. register_factor derives the comparison set from the registry
     # and refuses a panel that covers only the factor the caller happens to
     # worry about -- so the panel below is the contract, not a convenience.
+    # The three Q ranks registered under spec_freeze_v6 (R13) each need a
+    # column too: fixed, distinct, non-monotone against LEVERAGE within either
+    # cohort, so the candidate below is judged against real variation.
+    fcf_col = [0.35, 0.72, 0.18, 0.91, 0.44, 0.63, 0.27, 0.58,
+               0.81, 0.12, 0.49, 0.66, 0.23, 0.95, 0.38, 0.54]
+    nde_col = [2.1, 0.4, 3.6, 1.2, 4.8, 0.9, 2.7, 1.5,
+               3.3, 0.2, 5.1, 1.8, 2.4, 0.7, 4.2, 1.1]
+    dmc_col = [0.15, 0.62, 0.08, 0.33, 0.47, 0.21, 0.74, 0.29,
+               0.11, 0.56, 0.38, 0.03, 0.69, 0.25, 0.42, 0.17]
     panel = {
         "EBITDAMarginRank": margins,
         "EBITDAExcessLevel": excess,
@@ -607,6 +629,9 @@ def main() -> int:
         "EBITDAScale": A_EBITDA + B_EBITDA,
         "RealRevenueGrowth": REAL_COL,
         "InterestCoverageRank": COVERAGE_COL,
+        "FCFConversionRank": fcf_col,
+        "NetDebtEBITDARank": nde_col,
+        "DebtMarketCapRank": dmc_col,
     }
     check("registering with NO samples is now refused, not silently skipped",
           _raises(lambda: N.register_factor(registry, N.FactorSpec(

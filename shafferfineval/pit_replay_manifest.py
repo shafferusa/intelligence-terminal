@@ -1275,7 +1275,8 @@ def validate() -> list[str]:
         # never a particular version literal, so a successor freeze does not
         # silently invalidate every manifest.
         chain = [getattr(pit_frozen_spec, n)
-                 for n in ("FREEZE_V1", "FREEZE_V2", "FREEZE_V3", "FREEZE_V4")
+                 for n in ("FREEZE_V1", "FREEZE_V2", "FREEZE_V3", "FREEZE_V4",
+                           "FREEZE_V5")
                  if hasattr(pit_frozen_spec, n)]
         for a, b in zip(chain, chain[1:]):
             if a["superseded_by"] != b["freeze_version"]:

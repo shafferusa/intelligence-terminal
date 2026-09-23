@@ -1,0 +1,367 @@
+{
+ "harness": "pit_replay_rss/1.1",
+ "generated_at": "2026-09-23T11:37:47+00:00",
+ "engine": "pit_replay/1.1",
+ "freeze": {
+  "version": "spec_freeze_v5",
+  "digest": "58722f4c00b676fee76bcc10ba341f44ce18c540a2fbc90625570a51786a5b59",
+  "intact": true,
+  "can_execute": true,
+  "why_not": []
+ },
+ "dates": [
+  "2019-06-28"
+ ],
+ "limits": [
+  4000
+ ],
+ "batch_size": 500,
+ "modes": [
+  "legacy"
+ ],
+ "free_floor_bytes": 7516192768,
+ "guards": {
+  "min_avail_phys_bytes": 314572800,
+  "min_avail_commit_bytes": 1073741824
+ },
+ "measure": false,
+ "cache_kib_override": null,
+ "diagnostic_note": null,
+ "scratch": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_v1q8s9xi",
+ "machine_at_start": {
+  "total_phys": 8002048000,
+  "avail_phys": 2086608896,
+  "total_commit": 16004096000,
+  "avail_commit": 6851985408,
+  "used_commit": 9152110592,
+  "memory_load_pct": 73
+ },
+ "free_bytes_at_start": 14661390336,
+ "runs": [
+  {
+   "dates": [
+    "2019-06-28"
+   ],
+   "limit": 4000,
+   "batch_size": null,
+   "mode": "legacy",
+   "diagnostic": null,
+   "measure": false,
+   "started_at": "2026-09-23T11:37:47+00:00",
+   "elapsed_s": 323.5,
+   "returncode": 0,
+   "child_pid_expected": 10544,
+   "child_pid_reported": 10544,
+   "child_executable": "C:\\Users\\logan\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+   "parent_measures_engine": true,
+   "guard_abort": null,
+   "peak_commit_bytes": 256745472,
+   "peak_commit_mib": 244.9,
+   "peak_ws_bytes": 265916416,
+   "peak_ws_mib": 253.6,
+   "peak_commit_parent_polled_mib": 244.9,
+   "peak_commit_child_reported_mib": 244.9,
+   "peak_reached_at_commit": "write_batch@2019-06-28",
+   "peak_reached_at_ws": "write_batch@2019-06-28",
+   "fixed_cost_commit_mib": 190.1,
+   "fixed_cost_commit_bytes": 199323648,
+   "write_side_peak_commit_mib": 4.4,
+   "write_side_peak_commit_bytes": 4616192,
+   "write_side_peak_ws_mib": 3.9,
+   "per_batch_growth_commit_mib": [
+    4.4
+   ],
+   "per_batch_growth_max_over_median": 1.0,
+   "per_date": {
+    "2019-06-28": {
+     "commit": {
+      "at_tick_mib": {
+       "universe": 39.2,
+       "cohorts": 41.0,
+       "fact_index": 44.5,
+       "primitives": 195.1,
+       "assemble": 190.1,
+       "write": 194.5,
+       "checkpoint": 244.9
+      },
+      "index_resident_mib": 150.6,
+      "primitives_net_mib": -5.0,
+      "fixed_cost_mib": 190.1,
+      "fixed_cost_bytes": 199323648,
+      "write_side_peak_mib": 4.4,
+      "write_side_peak_bytes": 4616192,
+      "batch_full_mib": [
+       194.5
+      ],
+      "write_batch_mib": [
+       244.9
+      ],
+      "per_batch_growth_mib": [
+       4.4
+      ],
+      "per_batch_growth_max_over_median": 1.0
+     },
+     "ws": {
+      "at_tick_mib": {
+       "universe": 49.3,
+       "cohorts": 51.6,
+       "fact_index": 54.2,
+       "primitives": 205.5,
+       "assemble": 200.5,
+       "write": 204.4,
+       "checkpoint": 253.6
+      },
+      "index_resident_mib": 151.3,
+      "primitives_net_mib": -5.0,
+      "fixed_cost_mib": 200.5,
+      "fixed_cost_bytes": 210223104,
+      "write_side_peak_mib": 3.9,
+      "write_side_peak_bytes": 4063232,
+      "batch_full_mib": [
+       204.4
+      ],
+      "write_batch_mib": [
+       253.6
+      ],
+      "per_batch_growth_mib": [
+       3.9
+      ],
+      "per_batch_growth_max_over_median": 1.0
+     }
+    }
+   },
+   "universe_commit_mib_by_date": {
+    "2019-06-28": 39.2
+   },
+   "cross_date_growth_mib": null,
+   "attribution_note": "fixed_cost is the process commit at the 'assemble' tick: fact index loaded, primitives resolved, index cleared, nothing assembled. write_side_peak = max(commit at batch_full ticks, commit at 'write') - fixed_cost. The index is cleared before 'assemble' but Python need not return its pages to the OS, so fixed_cost is an upper bound on the once-per-date cost and write_side_peak attributes only what assembly and writing added on top of it.",
+   "child_start": {
+    "child": "start",
+    "pid": 10544,
+    "executable": "C:\\Users\\logan\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+    "dates": [
+     "2019-06-28"
+    ],
+    "limit": 4000,
+    "batch_size": null,
+    "db": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_v1q8s9xi\\rss_legacy_4000.db",
+    "measure": false,
+    "diagnostic": null,
+    "ws": 43429888,
+    "peak_ws": 43429888,
+    "commit": 33959936,
+    "peak_commit": 33959936
+   },
+   "child_done": {
+    "child": "done",
+    "elapsed_s": 322.74,
+    "error": null,
+    "aborted": null,
+    "dates": [
+     {
+      "as_of": "2019-06-28",
+      "rows": {
+       "pit_feature": 52000,
+       "pit_pillar_score": 16000,
+       "pit_score": 1851
+      },
+      "n_targets": 4000,
+      "n_targets_written": 4000,
+      "n_entities_indexed": 7102,
+      "n_batches": 1,
+      "batch_size": null,
+      "n_scored": 1851,
+      "signatures": {
+       "G": 650,
+       "GQ": 325,
+       "NONE": 1050,
+       "EGQ": 1100,
+       "EG": 686,
+       "EQ": 65,
+       "Q": 78,
+       "E": 46
+      },
+      "checkpoint": {
+       "mode": "TRUNCATE",
+       "busy": 0,
+       "log_pages": 0,
+       "checkpointed": 0,
+       "return_read": true,
+       "busy_refusal": false,
+       "return_semantics": "a SUCCESSFUL TRUNCATE returns (0, 0, 0) because the log is reset; that is not a no-op. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature."
+      },
+      "wal_peak_bytes_observed": 47079272,
+      "wal_peak_batch": 1,
+      "elapsed_s": 320.73
+     }
+    ],
+    "freeze_unchanged": true,
+    "ws": 131203072,
+    "peak_ws": 265916416,
+    "commit": 121933824,
+    "peak_commit": 256745472
+   },
+   "n_ticks": 9,
+   "ticks": [
+    {
+     "tick": "universe",
+     "as_of": "2019-06-28",
+     "elapsed_s": 1.98,
+     "ws": 51732480,
+     "peak_ws": 57696256,
+     "commit": 41119744,
+     "peak_commit": 47398912
+    },
+    {
+     "tick": "cohorts",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.65,
+     "n_targets": 4000,
+     "ws": 54140928,
+     "peak_ws": 57696256,
+     "commit": 43016192,
+     "peak_commit": 47398912
+    },
+    {
+     "tick": "fact_index",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.71,
+     "n_entities": 7102,
+     "ws": 56848384,
+     "peak_ws": 57696256,
+     "commit": 46694400,
+     "peak_commit": 47398912
+    },
+    {
+     "tick": "primitives",
+     "as_of": "2019-06-28",
+     "elapsed_s": 60.13,
+     "n_entities": 7102,
+     "ws": 215449600,
+     "peak_ws": 224915456,
+     "commit": 204582912,
+     "peak_commit": 214122496
+    },
+    {
+     "tick": "assemble",
+     "as_of": "2019-06-28",
+     "elapsed_s": 60.49,
+     "n_targets": 4000,
+     "ws": 210223104,
+     "peak_ws": 224915456,
+     "commit": 199323648,
+     "peak_commit": 214122496
+    },
+    {
+     "tick": "write",
+     "as_of": "2019-06-28",
+     "elapsed_s": 321.79,
+     "n_features": 52000,
+     "n_pillars": 16000,
+     "n_scores": 1851,
+     "n_batches": 1,
+     "batch_size": null,
+     "ws": 214286336,
+     "peak_ws": 224915456,
+     "commit": 203939840,
+     "peak_commit": 214122496
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 321.79,
+     "batch": 1,
+     "n_targets": 4000,
+     "n_features": 52000,
+     "n_pillars": 16000,
+     "n_scores": 1851,
+     "ws": 214286336,
+     "peak_ws": 224915456,
+     "commit": 203939840,
+     "peak_commit": 214122496
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 322.7,
+     "batch": 1,
+     "n_targets": 4000,
+     "n_features": 52000,
+     "n_pillars": 16000,
+     "n_scores": 1851,
+     "wal_bytes": 47079272,
+     "ws": 265916416,
+     "peak_ws": 265916416,
+     "commit": 256745472,
+     "peak_commit": 256745472
+    },
+    {
+     "tick": "checkpoint",
+     "as_of": "2019-06-28",
+     "elapsed_s": 322.7,
+     "ws": 265916416,
+     "peak_ws": 265916416,
+     "commit": 256745472,
+     "peak_commit": 256745472
+    }
+   ],
+   "stderr_tail": [],
+   "other_stdout_lines": [],
+   "machine_before": {
+    "total_phys": 8002048000,
+    "avail_phys": 2086588416,
+    "total_commit": 16004096000,
+    "avail_commit": 6851985408,
+    "used_commit": 9152110592,
+    "memory_load_pct": 73
+   },
+   "machine_after": {
+    "total_phys": 8002048000,
+    "avail_phys": 2070630400,
+    "total_commit": 16004096000,
+    "avail_commit": 6845087744,
+    "used_commit": 9159008256,
+    "memory_load_pct": 74
+   },
+   "machine_low_water": {
+    "avail_phys": 1679622144,
+    "avail_commit": 6432497664
+   },
+   "system_commit_delta_mib": 6.6
+  }
+ ],
+ "verdict": {
+  "table": {
+   "legacy": {
+    "limits": [
+     4000
+    ],
+    "peak_commit_mib": [
+     244.9
+    ],
+    "fixed_cost_commit_mib": [
+     190.1
+    ],
+    "write_side_peak_commit_mib": [
+     4.4
+    ],
+    "write_side_peak_ws_mib": [
+     3.9
+    ],
+    "peak_reached_at": [
+     "write_batch@2019-06-28"
+    ]
+   }
+  },
+  "how_to_read": "For the invariant 'write-side memory = O(batch)' to hold, stream.write_side_ratio_hi_over_lo should be near 1.0 while target_ratio_hi_over_lo is the entity ratio (e.g. 4.0), and stream per_batch_growth should be ~constant across batches. legacy.write_side_ratio_hi_over_lo near the target ratio shows the unbatched path really was O(cross-section). fixed_cost_commit_mib is the once-per-date fact-index / primitives cost and is NOT expected to be flat. peak_reached_at says which stage set the process peak; if that is primitives/assemble in both modes, the peak is the fact index and streaming cannot lower it."
+ },
+ "machine_at_end": {
+  "total_phys": 8002048000,
+  "avail_phys": 2070683648,
+  "total_commit": 16004096000,
+  "avail_commit": 6845149184,
+  "used_commit": 9158946816,
+  "memory_load_pct": 74
+ },
+ "free_bytes_at_end": 14656143360
+}

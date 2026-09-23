@@ -134,17 +134,44 @@ class EntityTtm:
     __slots__ = ("by_concept",)
 
     def __init__(self, rows: Sequence[tuple[Any, ...]]) -> None:
-        # concept -> period_end -> list[(available_date, ttm_eps, pe_leg, sign)]
-        table: dict[str, dict[str, list[tuple[str, float, str, str]]]] = {}
-        for concept, period_end, ttm, avail, leg, sign in rows:
+        # concept -> period_end -> list[(available_date, ttm_eps, pe_leg, sign,
+        #                                 method, sign_crossing)]
+        # v6 (owner ruling R21, 2026-09-23): method and sign_crossing ride
+        # along so a replay row can say WHICH TTM assembly and whether the
+        # earnings crossed zero, without a second read per entity-date.
+        table: dict[str, dict[str, list[tuple[Any, ...]]]] = {}
+        for concept, period_end, ttm, avail, leg, sign, method, crossing in rows:
             table.setdefault(concept, {}).setdefault(period_end, []).append(
-                (avail, float(ttm), leg, sign))
-        self.by_concept: dict[str, list[tuple[str, list[tuple[str, float, str, str]]]]] = {}
+                (avail, float(ttm), leg, sign, method, int(crossing or 0)))
+        self.by_concept: dict[str, list[tuple[str, list[tuple[Any, ...]]]]] = {}
         for concept, periods in table.items():
             ordered = sorted(periods.items(), reverse=True)     # newest first
             for _period, vintages in ordered:
                 vintages.sort()                                  # by available_date
             self.by_concept[concept] = ordered
+
+    def reason(self, as_of: str,
+               ladder: Sequence[str] = pit_eps.EPS_LADDER) -> str:
+        """Why select() returned None: stale, not yet filed, or never filed.
+
+        Mirrors pit_eps.ttm_eps_as_of_detail's precedence (stale_seen before
+        future_seen) so the replay row's 'er' code reads like the selector's.
+        """
+        stale_seen = future_seen = False
+        for concept in ladder:
+            for period_end, vintages in self.by_concept.get(concept) or ():
+                if period_end > as_of:
+                    future_seen = True
+                    continue
+                if any(v[0] <= as_of for v in vintages):
+                    stale_seen = True          # knowable, so only staleness refused it
+                else:
+                    future_seen = True
+        if stale_seen:
+            return pit_eps.REASON_STALE
+        if future_seen:
+            return pit_eps.REASON_NOT_YET_FILED
+        return pit_eps.REASON_NEVER_FILED
 
     def select(self, as_of: str,
                ladder: Sequence[str] = pit_eps.EPS_LADDER) -> Optional[dict[str, Any]]:
@@ -164,9 +191,9 @@ class EntityTtm:
                 if period_end > as_of:
                     continue
                 newest = None
-                for avail, ttm, leg, sign in vintages:
-                    if avail <= as_of:
-                        newest = (avail, ttm, leg, sign)
+                for vintage in vintages:
+                    if vintage[0] <= as_of:
+                        newest = vintage
                     else:
                         break
                 if newest is None:
@@ -176,7 +203,8 @@ class EntityTtm:
                     break                       # rung fails; next concept
                 return {"concept_key": concept, "period_end": period_end,
                         "available_date": newest[0], "ttm_eps": newest[1],
-                        "pe_leg": newest[2], "sign_case": newest[3]}
+                        "pe_leg": newest[2], "sign_case": newest[3],
+                        "method": newest[4], "sign_crossing": newest[5]}
         return None
 
 
@@ -200,12 +228,13 @@ def load_ttm(conn: sqlite3.Connection) -> dict[int, EntityTtm]:
         return got
 
     buckets: dict[int, list[tuple[Any, ...]]] = {}
-    for entity_id, concept, period_end, ttm, avail, leg, sign in conn.execute(
+    for (entity_id, concept, period_end, ttm, avail, leg, sign, method,
+         crossing) in conn.execute(
             "SELECT entity_id, concept_key, period_end, ttm_eps, available_date, "
-            "pe_leg, sign_case FROM pit_eps_ttm"):
+            "pe_leg, sign_case, method, sign_crossing FROM pit_eps_ttm"):
         buckets.setdefault(int(entity_id), []).append(
             (intern(concept), intern(period_end), ttm, intern(avail),
-             intern(leg), intern(sign)))
+             intern(leg), intern(sign), intern(str(method)), int(crossing or 0)))
     return {e: EntityTtm(rows) for e, rows in buckets.items()}
 
 
@@ -238,7 +267,9 @@ def validate_against_selector(conn: sqlite3.Connection,
                 or (mine is not None and theirs["available"]
                     and mine["concept_key"] == theirs["concept_key"]
                     and mine["period_end"] == theirs["period_end"]
-                    and abs(mine["ttm_eps"] - theirs["ttm_eps"]) < 1e-9))
+                    and abs(mine["ttm_eps"] - theirs["ttm_eps"]) < 1e-9
+                    and str(mine["method"]) == str(theirs["method"])
+                    and int(mine["sign_crossing"]) == int(theirs["sign_crossing"])))
         if same:
             agreed += 1
         elif len(disagreements) < 20:

@@ -63,12 +63,13 @@ def test_the_freeze_is_intact() -> None:
           v["recorded"] and F.FROZEN_DIGEST != "PENDING")
     check("every component resolved -- nothing is MISSING",
           not v["missing_components"])
-    check("61 components make up spec_freeze_v5 -- v4's 47 plus fourteen: "
-          "FACTOR_SPEC_VERSION_V4 and SPECS_V4, FORMULAS_VERSION_V1, "
-          "FORMULAS_V1 and its golden witnesses, the D3 base and domain "
-          "policies, the benchmark band and floor, V2_BLOCKS, the transform "
-          "parameters, PINNED_CURVE, PAIR_PATHS and the engine coupling",
-          v["n_components"] == len(F.COMPONENTS) == 61)
+    check("82 components make up spec_freeze_v6 -- v5's 61 plus twenty-one: "
+          "factor_spec_v5 and SPECS_V5, FORMULAS_V2 with its witnesses, the "
+          "successor base and coverage policies, the five Q/V domain "
+          "policies, the debt-rung gate, the peer and within-block floors, "
+          "the EV transform, gate-v2 semantics, the price-basis translation "
+          "and the valuation price policy",
+          v["n_components"] == len(F.COMPONENTS) == 82)
 
     check("the superseded freeze is preserved VERBATIM, never repaired",
           F.FREEZE_V1["digest"]
@@ -98,12 +99,13 @@ def test_the_freeze_is_intact() -> None:
     check("three freezes, three distinct digests",
           len({F.FREEZE_V1["digest"], F.FREEZE_V2["digest"],
                F.FROZEN_DIGEST}) == 3)
-    check("the chain is linked in all four sealed records",
+    check("the chain is linked in all five sealed records",
           F.FREEZE_V1["superseded_by"] == "spec_freeze_v2"
           and F.FREEZE_V2["superseded_by"] == "spec_freeze_v3"
           and F.FREEZE_V3["superseded_by"] == "spec_freeze_v4"
           and F.FREEZE_V4["superseded_by"] == "spec_freeze_v5"
-          and F.SPEC_FREEZE_VERSION == "spec_freeze_v5")
+          and F.FREEZE_V5["superseded_by"] == "spec_freeze_v6"
+          and F.SPEC_FREEZE_VERSION == "spec_freeze_v6")
 
     check("spec_freeze_v3 is preserved VERBATIM -- digest 2f9bba31..., 38 "
           "components, sealed rather than widened",
@@ -138,10 +140,23 @@ def test_the_freeze_is_intact() -> None:
     check("...and records its incident narrative as REJECTED_BY_MEASUREMENT",
           F.FREEZE_V4["incident_narrative_it_carried"]["status"]
           == "REJECTED_BY_MEASUREMENT")
-    check("five freezes, five distinct digests",
+    check("spec_freeze_v5 is preserved VERBATIM -- digest 58722f4c..., 61 "
+          "components, sealed",
+          F.FREEZE_V5["digest"]
+          == "58722f4c00b676fee76bcc10ba341f44ce18c540a2fbc90625570a51786a5b59"
+          and F.FREEZE_V5["n_components"] == 61)
+    check("...superseded because its engine computed SIX of thirteen keys, 0 "
+          "main-store rows, may not execute the replay",
+          F.FREEZE_V5["status"] == F.STATUS_SUPERSEDED
+          and F.FREEZE_V5["status_reason"] == F.REASON_ENGINE_LACKED_VQ_PATHS
+          and F.FREEZE_V5["rows_it_ever_produced_in_main_store"] == 0
+          and F.FREEZE_V5["may_execute_replay"] is False)
+    check("...and names the six content defects the owner ruled on",
+          len(F.FREEZE_V5["content_defects_found_under_it"]) == 6)
+    check("six freezes, six distinct digests",
           len({F.FREEZE_V1["digest"], F.FREEZE_V2["digest"],
                F.FREEZE_V3["digest"], F.FREEZE_V4["digest"],
-               F.FROZEN_DIGEST}) == 5)
+               F.FREEZE_V5["digest"], F.FROZEN_DIGEST}) == 6)
 
     check("the weight-semantic invariant refuses the exact defect",
           _raises_value(lambda: F.assert_weight_semantics(
@@ -307,6 +322,63 @@ def test_the_freeze_detects_its_own_violation() -> None:
     finally:
         V.TRANSFORM_PARAMS_V1["b_solved"] = saved_b
     check("all v5 probes restored", F.verify()["intact"])
+
+    # THE REASON v6 EXISTS: the owner's rulings are BODIES, each located.
+    orig5 = FS.SPECS_V5
+    try:
+        FS.SPECS_V5 = tuple(
+            dataclasses.replace(s, peer_eligibility=FS.DEBT_CASH_EBITDA)
+            if s.key == "net_debt_ebitda" else s for s in orig5)
+        v = F.verify()
+        check("reverting net_debt_ebitda's v5 eligibility BODY breaks the "
+              "freeze -- FACTOR_SPEC_VERSION_V5 untouched",
+              not v["intact"]
+              and [d["component"] for d in v["drifted"]]
+              == ["pit_factor_spec:SPECS_V5"])
+    finally:
+        FS.SPECS_V5 = orig5
+    saved_floor = FS.PEER_FLOOR_V1["ebitda_benchmark"]
+    try:
+        FS.PEER_FLOOR_V1["ebitda_benchmark"] = saved_floor - 1
+        v = F.verify()
+        check("lowering ONE peer floor breaks the freeze, located",
+              not v["intact"]
+              and [d["component"] for d in v["drifted"]]
+              == ["pit_factor_spec:PEER_FLOOR_V1"])
+    finally:
+        FS.PEER_FLOOR_V1["ebitda_benchmark"] = saved_floor
+    saved_q = B.WITHIN_BLOCK_FLOOR_V1[B.BLOCK_Q]
+    try:
+        B.WITHIN_BLOCK_FLOOR_V1[B.BLOCK_Q] = 0.25
+        v = F.verify()
+        check("relaxing Q's within-block floor breaks the freeze, located",
+              not v["intact"]
+              and [d["component"] for d in v["drifted"]]
+              == ["pit_factor_blocks:WITHIN_BLOCK_FLOOR_V1"])
+    finally:
+        B.WITHIN_BLOCK_FLOOR_V1[B.BLOCK_Q] = saved_q
+    saved_pe = FS.FORMULAS_V2["pe_relative"]
+    try:
+        FS.FORMULAS_V2["pe_relative"] = saved_pe.replace("CONVEX", "tanh")
+        v = F.verify()
+        check("changing the pe_relative curve in FORMULAS_V2 breaks the freeze, located",
+              not v["intact"]
+              and [d["component"] for d in v["drifted"]]
+              == ["pit_factor_spec:FORMULAS_V2"])
+    finally:
+        FS.FORMULAS_V2["pe_relative"] = saved_pe
+    import pit_price_basis as PB
+    saved_roll = PB.VALUATION_PRICE_POLICY_V1["roll_back_days"]
+    try:
+        PB.VALUATION_PRICE_POLICY_V1["roll_back_days"] = 30
+        v = F.verify()
+        check("widening the valuation price window breaks the freeze, located",
+              not v["intact"]
+              and [d["component"] for d in v["drifted"]]
+              == ["pit_price_basis:VALUATION_PRICE_POLICY_V1"])
+    finally:
+        PB.VALUATION_PRICE_POLICY_V1["roll_back_days"] = saved_roll
+    check("all v6 probes restored", F.verify()["intact"])
 
 
 def test_what_the_freeze_claims() -> None:
@@ -590,15 +662,25 @@ def test_factor_block_map() -> None:
           "AWAITING_OWNER_CONFIRMATION" in FS.EBITDA_GROWTH_BASE_POLICY_V1["status"]
           and "AWAITING_OWNER_CONFIRMATION" in FS.INTEREST_COVERAGE_DOMAIN_V1["status"])
     import pit_replay as _engine
-    check("the ENGINE derives from the version the freeze digests",
+    check("the ENGINE derives from the version the freeze digests (factor_spec_v5)",
           _engine.FACTOR_SPEC_VERSION == F.ENGINE_MUST_DERIVE_FROM
-          == FS.FACTOR_SPEC_VERSION_V4)
+          == FS.FACTOR_SPEC_VERSION_V5)
     check("the live freeze carries the name the last sealed record names, never a "
           "sealed name",
-          F.SPEC_FREEZE_VERSION == F.FREEZE_V4["superseded_by"]
+          F.SPEC_FREEZE_VERSION == F.FREEZE_V5["superseded_by"]
           and F.SPEC_FREEZE_VERSION not in {f["freeze_version"] for f in
                                             (F.FREEZE_V1, F.FREEZE_V2,
-                                             F.FREEZE_V3, F.FREEZE_V4)})
+                                             F.FREEZE_V3, F.FREEZE_V4,
+                                             F.FREEZE_V5)})
+    rulings = F.SCORE_ASSEMBLY_GAP["owner_rulings_2026_09_23"]
+    check("the six pending-v5 items each carry the owner's disposition, and the "
+          "v5 record of them is kept verbatim",
+          rulings["status"].startswith("DECIDED")
+          and len(rulings["pending_v5_dispositions"]) == 6
+          and "owner_confirmation_pending_v5" in F.SCORE_ASSEMBLY_GAP)
+    check("the interpretations the session made are REPORTED on the record, "
+          "not hidden as glue",
+          len(rulings["interpretations_reported_not_chosen"]) >= 4)
     check("the pagefile-incident cause is recorded as REJECTED_BY_MEASUREMENT",
           "REJECTED_BY_MEASUREMENT" in F.STILL_BLOCKED["the_2026_09_21_pagefile_incident"])
 

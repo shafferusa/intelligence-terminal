@@ -401,3 +401,24 @@ registry-versus-spec question the V/Q wiring will settle.)*
 - The three autostarted services were left running; they are the owner's.
   Every further memory measurement on this machine is only meaningful with a
   recorded per-process commit baseline taken immediately before it.
+## 10. spec_freeze_v6 — the V/Q engine wired under the owner's rulings (2026-09-23)
+
+The owner ruled on all twenty-one V/Q items (R1–R21) and on the six
+pending-v5 proposals on 2026-09-23. One cut: `spec_freeze_v6`, digest
+1afaca0c17c38657ddb131f03dad59e8d07aa1bceecf9bc9f336d8d09ee6fd85, 82 components; v5 sealed as `FREEZE_V5`. Engine `pit_replay/1.2`
+under `factor_spec_v5`: all thirteen keys computable (census 13/0/0, reachable
+weight 0.85), the coverage floor state, `PEER_FLOOR_V1`, `WITHIN_BLOCK_FLOOR_V1`
+(the single-factor Q path is closed), the V legs through `pit_valuation_spec`'s
+frozen scorers, one valuation price resolver under `VALUATION_PRICE_POLICY_V1`,
+one basis translation, corporate-action gate v2. The full ruling-by-ruling
+record, the six interpretations the session reported rather than chose, and
+the new row provenance are in `docs/MODEL-LINEAGE.md`, `spec_freeze_v6` section.
+
+Verification at the cut: `pit_frozen_spec.validate()` 0 problems;
+`pit_replay.validate()` []; twelve fast suites green; `test_pit_replay --slow`
+(the real 5-entity slice and the 50-target streaming oracle) on a disposable
+pilot DB — see the commit message for the counts. The digest was cut from ONE
+`python -B` manifest run with `sqlite3.connect` blocked. The 1.2 engine's
+memory is not yet measured; `pit_replay_rss` runs one child at a time before
+any sizing pilot. No replay authorisation exists; the three local services stay
+paused only for the measurement window and are the owner's to resume.

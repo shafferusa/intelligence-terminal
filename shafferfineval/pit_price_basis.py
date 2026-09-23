@@ -136,10 +136,12 @@ __all__ = [
     "EPS_GROWTH_MIN_POSITIVE_BASE_V1", "MIN_POSITIVE_BASE_RATIONALE",
     "PAIR_SAME_FILING", "PAIR_CROSS_FILING_HARMONISED", "PAIR_REFUSED",
     "REFUSED_SHARE_BASIS_UNKNOWN", "PAIR_PATHS", "PAIR_PATH_COVERAGE",
-    "APPLE_SPLIT_CASE", "ACTION_GATE_VERSION",
+    "APPLE_SPLIT_CASE", "ACTION_GATE_VERSION", "ACTION_GATE_SEMANTICS_V2",
     "GATE_OK", "GATE_NO_EVENTS", "GATE_UNCHECKED", "GATE_FUTURE_ACTION_REFUSED",
-    "GATE_INCOMPLETE_RATIO",
+    "GATE_INCOMPLETE_RATIO", "COVERAGE_ESTABLISHED", "COVERAGE_UNKNOWN",
     "ActionGate", "pit_safe_split_factor",
+    "PRICE_BASIS_TRANSLATION_V1", "translate_price_basis",
+    "VALUATION_PRICE_POLICY_V1",
     "EpsPair", "same_filing_pair", "harmonise_pair", "resolve_eps_pair",
     "NormalisedPE", "normalised_pe", "policy_record", "validate",
 ]
@@ -190,6 +192,71 @@ PRICE_ROLE_WHY: dict[str, str] = {
         "price is the wrong one -- which is exactly why the two concepts must "
         "not share a name."),
 }
+
+
+#: GAP 7 CLOSED (owner ruling R20, 2026-09-23): ONE digested translation from
+#: the two other spellings of "the as-traded price" to the valuation role's
+#: required basis, consumed by ONE resolver (pit_replay.valuation_price).
+#:   'price_adjusted'              the pit_factor_spec / pit_derive primitive
+#:                                 vocabulary, whose name predates decision 2
+#:                                 and means the price a valuation is taken on;
+#:   'raw_as_printed_unadjusted'   pit_shares / pit_rawprice's spelling on the
+#:                                 record raw_close_as_of returns.
+#: Both mean PRICE_RAW_AS_TRADED for a valuation and nothing else; an
+#: 'price_action_adjusted' record has NO entry here, so translating it raises
+#: through assert_price_basis rather than being waved through.
+PRICE_BASIS_TRANSLATION_V1: dict[str, str] = {
+    "price_adjusted": PRICE_RAW_AS_TRADED,
+    pit_shares.PRICE_BASIS_RAW: PRICE_RAW_AS_TRADED,
+    PRICE_RAW_AS_TRADED: PRICE_RAW_AS_TRADED,
+}
+
+
+#: Owner ruling R19 (2026-09-23): the price every valuation leg uses. Exact
+#: score-date raw close, else the latest PRIOR valid raw close within ten
+#: CALENDAR days, on the SAME listing, a real trade (volume > 0), with the
+#: age of the price written on the row. No share-class switching: an entity
+#: with more than one scored listing on the date is REFUSED, never guessed.
+VALUATION_PRICE_POLICY_V1: dict[str, Any] = {
+    "policy_version": "valuation_price_policy_v1",
+    "status": "OWNER_RULING_2026_09_23 (R19)",
+    "basis": PRICE_RAW_AS_TRADED,
+    "translation": "PRICE_BASIS_TRANSLATION_V1",
+    "selection": "the exact score-date raw close, else the latest prior valid raw close",
+    "roll_back_days": 10,
+    "roll_back_unit": "calendar days",
+    "require_traded": True,
+    "same_listing": True,
+    "listing_rule": ("exactly ONE scored listing for the entity on the date "
+                     "(pit_identity.scored_universe_as_of); zero -> no_scored_listing; "
+                     "more than one -> listing_ambiguous -- no share-class switching"),
+    "record": "price_age_days (bar_date to score date) and bar_date on the row",
+    "invalid_bar_rule": ("a NULL, non-positive or zero-volume print inside the window is "
+                         "SKIPPED and the next earlier bar is tried, newest first; the "
+                         "ten-day floor is never widened; the skipped bars travel on the "
+                         "row ('sk')"),
+    "straddle_rule": ("a rolled-back price is REFUSED (price_straddles_corporate_action) "
+                      "when a share-applicable corporate action falls in (bar_date, "
+                      "score date]: the price and the score-date share basis would "
+                      "straddle the split"),
+    "shared_by": ("pe_absolute", "pe_relative", "ev_ebitda_supplement", "debt_market_cap"),
+}
+
+
+def translate_price_basis(basis: str) -> str:
+    """The valuation-role basis a record's own spelling stands for.
+
+    Raises PriceBasisError for a spelling with no entry: an adjusted price
+    has no translation to a valuation basis, and neither does a typo.
+    """
+    try:
+        return PRICE_BASIS_TRANSLATION_V1[str(basis)]
+    except KeyError:
+        raise PriceBasisError(
+            "price basis %r has no translation to a valuation basis; "
+            "PRICE_BASIS_TRANSLATION_V1 admits %s. %s"
+            % (basis, sorted(PRICE_BASIS_TRANSLATION_V1),
+               PRICE_ROLE_WHY[PRICE_ROLE_VALUATION])) from None
 
 
 class PriceBasisError(TypeError):
@@ -320,11 +387,44 @@ APPLE_SPLIT_CASE: dict[str, Any] = {
 # THE POINT-IN-TIME ACTION GATE
 # ==========================================================================
 
-ACTION_GATE_VERSION = "pit_safe_corporate_action_gate_v1"
+#: v2, owner ruling R18 (2026-09-23): LISTING-LEVEL COMPLETENESS SEMANTICS.
+#: v1 read an empty window as `no_events_recorded` and refused it, because an
+#: empty window was ambiguous between "no split happened" and "splits were
+#: never ingested for this listing". v2 asks the listing, not the window:
+#:   coverage ESTABLISHED  the listing carries ANY corporate-action row, so
+#:                         an empty window means no action -> factor 1.0,
+#:                         GATE_OK (the identity is a resolved answer);
+#:   coverage UNKNOWN      the listing carries NO row at all (673 of 2,576
+#:                         listings) -> GATE_NO_EVENTS, NOT usable, as before.
+#: The version string moves because a version string is what the freeze
+#: digests for this gate; the semantics body below is digested beside it.
+ACTION_GATE_VERSION = "pit_safe_corporate_action_gate_v2"
 
 GATE_OK = "resolved"
 GATE_NO_EVENTS = "no_events_recorded"
 GATE_UNCHECKED = "unchecked"
+
+COVERAGE_ESTABLISHED = "coverage_established"
+COVERAGE_UNKNOWN = "coverage_unknown"
+
+ACTION_GATE_SEMANTICS_V2: dict[str, str] = {
+    "gate_version": ACTION_GATE_VERSION,
+    "supersedes": "pit_safe_corporate_action_gate_v1",
+    "status": "OWNER_RULING_2026_09_23 (R18)",
+    "window": "events with after < event_date <= through, through <= as_of (a later window RAISES)",
+    "coverage_established": ("the listing carries at least one corporate-action row dated "
+                             "on or before as_of (the probe is POINT-IN-TIME bounded): an "
+                             "empty window is 'no action happened' -> factor 1.0, status "
+                             "resolved, usable"),
+    "coverage_unknown": ("the listing carries no corporate-action row dated on or before "
+                         "as_of: an empty window is ambiguous -> status "
+                         "no_events_recorded, NOT usable"),
+    "future_action": "an event needed by the window but dated after as_of -> future_action_refused",
+    "incomplete_ratio": "a share-applicable row without a usable ratio -> incomplete_ratio",
+    "price_only_events": "rows with applies_to_shares = 0 (spin-offs) are ignored as share divisors",
+    "v1_difference": ("v1 refused every empty window; v2 refuses only the empty window of a "
+                      "listing with no coverage"),
+}
 
 #: An action needed by the window is not yet effective at `as_of`.
 #:
@@ -357,16 +457,20 @@ class ActionGate:
     events_applied: tuple[dict[str, Any], ...] = ()
     events_refused_as_future: tuple[dict[str, Any], ...] = ()
     events_unusable: tuple[dict[str, Any], ...] = ()
+    #: v2: whether the LISTING has any corporate-action coverage at all. An
+    #: empty window is a resolved identity only when this is established.
+    coverage: str = ""
 
     @property
     def usable(self) -> bool:
         """True only when a factor may be applied to a per-share figure.
 
-        `no_events_recorded` is NOT usable. It is genuinely ambiguous between
-        "no splits happened" and "splits were never ingested for this listing",
-        and `pit_shares` already refuses to round that down. 1,903 of 2,576
-        listings carry any corporate action at all, so the ambiguous case is
-        common, not a corner.
+        `no_events_recorded` is NOT usable. Under v2 it is reached only for a
+        listing with NO corporate-action row at all, where an empty window is
+        genuinely ambiguous between "no splits happened" and "splits were
+        never ingested" -- 673 of 2,576 listings. A listing WITH coverage and
+        an empty window resolves to the identity factor 1.0 (owner ruling
+        R18, 2026-09-23).
         """
         return self.status == GATE_OK and self.factor is not None
 
@@ -376,6 +480,7 @@ class ActionGate:
             "factor": self.factor,
             "status": self.status,
             "usable": self.usable,
+            "coverage": self.coverage,
             "as_of": self.as_of,
             "window": [self.window_after, self.window_through],
             "events_applied": list(self.events_applied),
@@ -412,6 +517,13 @@ def pit_safe_split_factor(conn: sqlite3.Connection, listing_id: Optional[int],
             WHERE listing_id = ? AND event_date > ? AND event_date <= ?
             ORDER BY event_date""",
         (listing_id, after, through)).fetchall()
+    # v2 (R18): coverage is a property of the LISTING, asked once, and asked
+    # POINT-IN-TIME: only rows dated on or before as_of are evidence at as_of.
+    covered = conn.execute(
+        "SELECT 1 FROM pit_corporate_action WHERE listing_id = ? "
+        "AND event_date <= ? LIMIT 1",
+        (listing_id, as_of)).fetchone() is not None
+    coverage = COVERAGE_ESTABLISHED if covered else COVERAGE_UNKNOWN
 
     applied: list[dict[str, Any]] = []
     refused: list[dict[str, Any]] = []
@@ -438,19 +550,24 @@ def pit_safe_split_factor(conn: sqlite3.Connection, listing_id: Optional[int],
                           as_of=as_of, window_after=after,
                           window_through=through,
                           events_applied=tuple(applied),
-                          events_refused_as_future=tuple(refused))
+                          events_refused_as_future=tuple(refused),
+                          coverage=coverage)
     if unusable:
         return ActionGate(factor=None, status=GATE_INCOMPLETE_RATIO,
                           as_of=as_of, window_after=after,
                           window_through=through,
                           events_applied=tuple(applied),
-                          events_unusable=tuple(unusable))
-    if not rows:
+                          events_unusable=tuple(unusable),
+                          coverage=coverage)
+    if not rows and not covered:
         return ActionGate(factor=None, status=GATE_NO_EVENTS, as_of=as_of,
-                          window_after=after, window_through=through)
-    return ActionGate(factor=factor, status=GATE_OK, as_of=as_of,
-                      window_after=after, window_through=through,
-                      events_applied=tuple(applied))
+                          window_after=after, window_through=through,
+                          coverage=coverage)
+    # Coverage established and nothing in the window (or only price-only
+    # rows): the identity is a RESOLVED answer under v2.
+    return ActionGate(factor=factor, status=GATE_OK,
+                      as_of=as_of, window_after=after, window_through=through,
+                      events_applied=tuple(applied), coverage=coverage)
 
 
 # ==========================================================================
@@ -723,6 +840,9 @@ def policy_record() -> dict[str, Any]:
         "price_basis_policy_version": PRICE_BASIS_POLICY_VERSION,
         "eps_pair_policy_version": EPS_PAIR_POLICY_VERSION,
         "action_gate_version": ACTION_GATE_VERSION,
+        "action_gate_semantics": dict(ACTION_GATE_SEMANTICS_V2),
+        "price_basis_translation": dict(PRICE_BASIS_TRANSLATION_V1),
+        "valuation_price_policy": json.loads(json.dumps(VALUATION_PRICE_POLICY_V1)),
         "price_roles": dict(PRICE_ROLE_REQUIRED_BASIS),
         "price_role_why": dict(PRICE_ROLE_WHY),
         "pair_paths": list(PAIR_PATHS),
@@ -831,6 +951,55 @@ def validate() -> list[str]:
                                           "raw_as_printed_unadjusted"):
         problems.append("pit_shares' raw-price spelling moved; reconcile rather "
                         "than adding a third name")
+
+    # GAP 7 (R20): every admitted spelling translates to the valuation basis,
+    # and the adjusted price has NO way in.
+    if set(PRICE_BASIS_TRANSLATION_V1.values()) != {PRICE_RAW_AS_TRADED}:
+        problems.append("PRICE_BASIS_TRANSLATION_V1 may only ever land on the "
+                        "valuation role's required basis")
+    if pit_shares.PRICE_BASIS_RAW not in PRICE_BASIS_TRANSLATION_V1 or \
+            "price_adjusted" not in PRICE_BASIS_TRANSLATION_V1:
+        problems.append("the translation must admit pit_shares' spelling and the "
+                        "spec vocabulary's 'price_adjusted'")
+    if PRICE_ACTION_ADJUSTED in PRICE_BASIS_TRANSLATION_V1:
+        problems.append("an action-adjusted price must have NO translation to a "
+                        "valuation basis")
+    try:
+        translate_price_basis(PRICE_ACTION_ADJUSTED)
+    except PriceBasisError:
+        pass
+    else:
+        problems.append("translate_price_basis must REFUSE the adjusted price")
+    if assert_price_basis(PRICE_ROLE_VALUATION,
+                          translate_price_basis(pit_shares.PRICE_BASIS_RAW)) \
+            != PRICE_RAW_AS_TRADED:
+        problems.append("a translated raw record must pass the valuation role")
+
+    # R19: the valuation price policy is what the engine's one resolver reads.
+    if (VALUATION_PRICE_POLICY_V1["roll_back_days"] != 10
+            or VALUATION_PRICE_POLICY_V1["require_traded"] is not True
+            or VALUATION_PRICE_POLICY_V1["basis"] != PRICE_RAW_AS_TRADED
+            or not VALUATION_PRICE_POLICY_V1["same_listing"]):
+        problems.append("VALUATION_PRICE_POLICY_V1 must read: 10 calendar days back, "
+                        "traded, raw basis, same listing (owner ruling R19)")
+
+    # R18: gate v2 -- the version moved with the semantics, and the semantics
+    # body names both coverage states.
+    if not ACTION_GATE_VERSION.endswith("_v2"):
+        problems.append("the action gate's version must move with its semantics")
+    if (ACTION_GATE_SEMANTICS_V2["gate_version"] != ACTION_GATE_VERSION
+            or "coverage_established" not in ACTION_GATE_SEMANTICS_V2
+            or "coverage_unknown" not in ACTION_GATE_SEMANTICS_V2):
+        problems.append("ACTION_GATE_SEMANTICS_V2 must name the version and both "
+                        "coverage states")
+    if ActionGate(factor=1.0, status=GATE_OK, as_of="2020-01-01",
+                  window_after="2019-01-01", window_through="2020-01-01",
+                  coverage=COVERAGE_ESTABLISHED).usable is not True:
+        problems.append("an established-coverage identity gate must be usable")
+    if ActionGate(factor=None, status=GATE_NO_EVENTS, as_of="2020-01-01",
+                  window_after="2019-01-01", window_through="2020-01-01",
+                  coverage=COVERAGE_UNKNOWN).usable:
+        problems.append("an unknown-coverage empty window must stay unusable")
     return problems
 
 

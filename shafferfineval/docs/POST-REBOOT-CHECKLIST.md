@@ -71,7 +71,7 @@ Preserve: two completed dates, the guard breach, no third-date writes.
 ## Never
 
 - No 165-date replay without explicit owner authorisation.
-- No edits to spec_freeze_v1/v2/v3/v4 in place — a change is a v5.
+- No edits to spec_freeze_v1..v6 in place — a change is a v7.
 - No writes to the main store.
 
 ---
@@ -104,3 +104,16 @@ for freezes: no edits to spec_freeze_v1..v5 in place -- a change is a v6.
 The freeze's negative test is the file-level mutation procedure of the v4
 audit (fresh interpreter, `__pycache__` removed, `python -B`) plus the
 in-process drift probes in `test_pit_frozen_spec.py` section 2.
+## Status after spec_freeze_v6 — 2026-09-23
+
+The owner ruled R1–R21 and closed the six pending-v5 items; the paused-service
+measurement chain ran (baseline, 1k and 4k streamed / unbatched, the 2 MiB
+cache attribution, the direct HEAD oracle arms — `docs/POST-REBOOT-REPORT-2026-09-22.md`
+§5b). `spec_freeze_v5` is sealed (`FREEZE_V5`); the live freeze is
+`spec_freeze_v6`, digest 1afaca0c17c38657ddb131f03dad59e8d07aa1bceecf9bc9f336d8d09ee6fd85, 82 components. Engine `pit_replay/1.2`
+under `factor_spec_v5` computes 13 of 13 keys; GAP 5 (`PEER_FLOOR_V1`) and GAP 7
+(`PRICE_BASIS_TRANSLATION_V1`) are closed. Rule for freezes: no edits to
+spec_freeze_v1..v6 in place — a change is a v7. Next, in order: measure the
+1.2 engine with `pit_replay_rss` one child at a time (1k, 4k, then 8k if the
+headroom stays obvious), rerun the four-date pilot on a disposable DB on the
+owner's word, resume the three local services after the window.

@@ -1794,7 +1794,8 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
                        again (margin - M_s is a cohort-constant shift), so the
                        anchored form is not a preference -- it is the only form
                        in which the benchmark exists. k comes from the cohort
-                       IQR, with 6 margin points as a declared fallback.
+                       IQR over the WHOLE eligible vector and from nothing else
+                       (R8); a flat or thin vector refuses.
 
     EBITDAGrowth       ZERO_ANCHORED. Growth has a true zero: shrinking and
                        growing are different states, and in a cohort where
@@ -1820,8 +1821,31 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
                        whose ORDERING within the sector is the information; a
                        rank is also indifferent to the long right tail a tanh
                        scale would have to clamp. Its domain policy
-                       (pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V1) runs
-                       upstream: only interest_expense > 0 reaches this rank.
+                       (pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V2) runs
+                       upstream: only interest_expense > 0 reaches this rank,
+                       and only operating_income > 0 enters the RANK
+                       POPULATION -- a non-positive operating income is the
+                       factor's FLOOR STATE, scored at -100 outside the rank
+                       (owner rulings R4, R5, 2026-09-23).
+
+    FCFConversionRank  PERCENTILE_RANK, higher is better. free_cash_flow /
+                       ebitda is a conversion RATE whose ordering within the
+                       sector is the information; capital intensity differs
+                       so much across sectors that a fixed bar would be a
+                       different bar in every industry. Domain FCF_DOMAIN_V1
+                       (EBITDA > 0) runs upstream (R11, R13).
+
+    NetDebtEBITDARank  PERCENTILE_RANK, LOWER is better. net_debt / ebitda in
+                       years; the frozen v1 core ranked it the same way and
+                       the owner's FACTOR_DIRECTION_V1 pins the sign. Domain
+                       LEVERAGE_DOMAIN_V1 and the strict debt-rung gate run
+                       upstream (R10, R11, R13); a net-cash company ranks best.
+
+    DebtMarketCapRank  PERCENTILE_RANK, LOWER is better. total_debt /
+                       market_cap; the v1 core's direction, pinned by the
+                       owner. Domain MARKET_CAP_DOMAIN_V1 (strict share-class
+                       policy, raw as-traded price, debt AT the EBITDA period)
+                       runs upstream (R10, R12, R13, R19, R20).
 
     EBITDAScale        PERCENTILE_RANK on RAW EBITDA DOLLARS. Genuine economic
                        scale, and the rank is honest about what it can say.
@@ -1855,10 +1879,15 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
                        "contributes nothing. Anchored, M_s sets where zero is, which "
                        "is the only way the bar survives into the score."),
             anchor_source=ANCHOR_COHORT_50_75_MEAN_MARGIN,
-            scale=cohort_scale(multiplier=1.0,
-                               fallback_fixed=DEFAULT_EXCESS_MARGIN_SCALE_K),
+            scale=cohort_scale(multiplier=1.0),
             notes=("one cohort IQR clear of the bar scores +76.2; two IQRs +96.4.",
-                   "measured collapse: rank(margin - M_s) == rank(margin), exactly.",),
+                   "measured collapse: rank(margin - M_s) == rank(margin), exactly.",
+                   "NO fixed fallback scale (owner ruling R8, 2026-09-23: the scale "
+                   "statistic is over the whole eligible vector): a vector too small or "
+                   "too flat to carry a dispersion refuses by name rather than scoring "
+                   "against 6 margin points nobody measured. The v5 entry's "
+                   "fallback_fixed = 0.06 is recorded in "
+                   "pit_frozen_spec.FREEZE_V5['superseded_definitions_it_digested'].",),
         ),
         FactorSpec(
             feature_key="EBITDAGrowth",
@@ -1941,11 +1970,63 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
                    "value (interest_expense_negative) and an untagged one "
                    "(no_interest_expense_at_operating_income_period) never reach this "
                    "rank, so a debt-free firm is UNAVAILABLE here and Q renormalises.",
-                   "negative operating income is a NEGATIVE coverage and ranks below "
-                   "every positively covered peer. KNOWN LIMITATION: among negative-OI "
-                   "rows the rank ORDERING IS INVERTED relative to interest burden "
-                   "(OI=-100 / interest=1 ranks below OI=-100 / interest=100); accepted "
-                   "pending owner ruling.",),
+                   "operating_income <= 0 with interest_expense > 0 is the FLOOR STATE "
+                   "(INTEREST_COVERAGE_DOMAIN_V2, owner ruling R5 2026-09-23): the row is "
+                   "scored at the rank floor (-100) with its raw coverage written, and it "
+                   "is EXCLUDED from the rank population, so the rank runs over "
+                   "positive-coverage peers only (R4). The v5 KNOWN LIMITATION -- an "
+                   "inverted ordering among negative-OI rows -- is closed by that state: "
+                   "no two negative-OI rows are ordered against each other.",),
+        ),
+        FactorSpec(
+            feature_key="FCFConversionRank",
+            normalization_type=PERCENTILE_RANK,
+            economic_question="how much of the accounting earnings becomes spendable cash, versus peers?",
+            rationale=("free_cash_flow / ebitda is a conversion RATE whose ORDERING within "
+                       "the sector is the information: capital intensity differs so much "
+                       "across industries that a fixed bar would mean a different thing in "
+                       "software than in steel. Direction HIGHER_IS_BETTER per "
+                       "FACTOR_DIRECTION_V1 (owner 2026-09-22); registered under owner "
+                       "ruling R13 (2026-09-23) as a DIGESTED body, not an engine choice."),
+            anchor_source=ANCHOR_COHORT_RANK,
+            higher_is_better=True,
+            notes=("DOMAIN POLICY pit_factor_spec.FCF_DOMAIN_V1, executed upstream in "
+                   "pit_replay.resolve_primitives: EBITDA > 0 (ebitda_non_positive "
+                   "otherwise); operating cash flow and capex from the EBITDA flow period; "
+                   "a negative conversion is computed and ranks below every positive peer.",),
+        ),
+        FactorSpec(
+            feature_key="NetDebtEBITDARank",
+            normalization_type=PERCENTILE_RANK,
+            economic_question="how many years of earnings would clear the debt, versus peers?",
+            rationale=("net_debt / ebitda in YEARS; the frozen v1 core ranked it exactly "
+                       "this way and FACTOR_DIRECTION_V1 pins LOWER_IS_BETTER (owner "
+                       "2026-09-22). A rank is indifferent to the long right tail of "
+                       "leverage that a tanh scale would have to clamp. Registered under "
+                       "owner ruling R13 (2026-09-23)."),
+            anchor_source=ANCHOR_COHORT_RANK,
+            higher_is_better=False,
+            notes=("DOMAIN POLICY pit_factor_spec.LEVERAGE_DOMAIN_V1 and DEBT_RUNG_GATE_V1, "
+                   "executed upstream: EBITDA > 0; debt and cash AT the EBITDA period end; "
+                   "the total_debt rung is the row's source_tag and its bound travels in "
+                   "'db' (pit_policy v2 consumer rule); a REJECTED or UNDETERMINED rung "
+                   "refuses by name. Net cash (negative net debt) is scored and ranks best.",),
+        ),
+        FactorSpec(
+            feature_key="DebtMarketCapRank",
+            normalization_type=PERCENTILE_RANK,
+            economic_question="how much leverage sits under each dollar of equity value, versus peers?",
+            rationale=("total_debt / market_cap; the v1 core's direction, LOWER_IS_BETTER, "
+                       "pinned by FACTOR_DIRECTION_V1 (owner 2026-09-22). It imports market "
+                       "price into a balance-sheet block by construction, which is why it "
+                       "carries the smallest Q weight; the rank asks only where the burden "
+                       "sits versus peers. Registered under owner ruling R13 (2026-09-23)."),
+            anchor_source=ANCHOR_COHORT_RANK,
+            higher_is_better=False,
+            notes=("DOMAIN POLICY pit_factor_spec.MARKET_CAP_DOMAIN_V1: market cap on the raw "
+                   "as-traded price (VALUATION_PRICE_POLICY_V1, PRICE_BASIS_TRANSLATION_V1) "
+                   "times a DEFENSIBLE share count; debt AT the EBITDA period end under "
+                   "DEBT_RUNG_GATE_V1. SURVIVOR_ONLY by construction.",),
         ),
     )
     return {spec.feature_key: spec for spec in specs}

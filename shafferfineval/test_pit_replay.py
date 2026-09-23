@@ -64,6 +64,8 @@ import pit_factor_spec
 import pit_frozen_spec
 import pit_normalization
 import pit_policy
+import pit_price_basis
+import pit_rawprice
 import pit_replay
 import pit_replay_manifest
 import pit_score_signature
@@ -155,10 +157,33 @@ def test_validate() -> None:
     counts: Dict[str, int] = {}
     for plan in pit_replay.FACTOR_PLAN.values():
         counts[plan.verdict] = counts.get(plan.verdict, 0) + 1
-    check("verdicts are 6 COMPUTABLE / 1 REFUSED_AMBIGUOUS / 6 NOT_COMPUTABLE",
-          counts.get(pit_replay.VERDICT_COMPUTABLE) == 6
-          and counts.get(pit_replay.VERDICT_REFUSED_AMBIGUOUS) == 1
-          and counts.get(pit_replay.VERDICT_NOT_COMPUTABLE) == 6, counts)
+    check("verdicts are 13 COMPUTABLE / 0 REFUSED_AMBIGUOUS / 0 NOT_COMPUTABLE "
+          "(spec_freeze_v6)",
+          counts.get(pit_replay.VERDICT_COMPUTABLE) == 13
+          and not counts.get(pit_replay.VERDICT_REFUSED_AMBIGUOUS)
+          and not counts.get(pit_replay.VERDICT_NOT_COMPUTABLE), counts)
+    check("the three V legs are scored by pit_valuation_spec, not by a registry key",
+          all(pit_replay.FACTOR_PLAN[k].scorer.startswith("pit_valuation_spec.")
+              and pit_replay.FACTOR_PLAN[k].norm_key is None
+              for k in ("pe_absolute", "pe_relative", "ev_ebitda_supplement")))
+    check("the three Q ratios are ranked through the digested registry",
+          all(pit_replay.FACTOR_PLAN[k].scorer == "registry"
+              and pit_replay.FACTOR_PLAN[k].cohort_use == pit_replay.COHORT_RANK
+              for k in ("fcf_conversion", "net_debt_ebitda", "debt_market_cap")))
+    check("the benchmark uses the pairs cohort and the two median legs the "
+          "median-anchor cohort",
+          pit_replay.FACTOR_PLAN["ebitda_benchmark"].cohort_use == pit_replay.COHORT_BENCHMARK
+          and pit_replay.FACTOR_PLAN["pe_relative"].cohort_use == pit_replay.COHORT_MEDIAN_ANCHOR
+          and pit_replay.FACTOR_PLAN["ev_ebitda_supplement"].cohort_use
+          == pit_replay.COHORT_MEDIAN_ANCHOR)
+    check("every cohort plan carries its PEER_FLOOR_V1 floor; the two cohort-free "
+          "keys carry none",
+          all((p.peer_floor is not None) == p.needs_cohort
+              for p in pit_replay.FACTOR_PLAN.values()))
+    check("no live path emits a retired code: the rate band is the RENAMED code",
+          pit_replay._rate(1000.0, 1.0)[1] == pit_replay.R_EBITDA_RATE_BEYOND_BAND
+          and pit_replay.R_EBITDA_BASE_NEAR_ZERO in pit_replay.RETIRED_REASONS
+          and pit_replay.R_EBITDA_BASE_NEAR_ZERO in pit_replay.ENGINE_REASONS)
     check("interest_coverage is the first computable Q factor, ranked",
           pit_replay.FACTOR_PLAN["interest_coverage"].computable
           and pit_replay.FACTOR_PLAN["interest_coverage"].norm_key
@@ -208,9 +233,9 @@ def test_validate() -> None:
     # every computable factor's declared transform really is registered
     registry = pit_normalization.candidate_v2_registry()
     bad = [k for k, p in pit_replay.FACTOR_PLAN.items()
-           if p.computable and p.norm_key not in registry]
-    check("every COMPUTABLE factor's norm_key is in candidate_v2_registry()",
-          not bad, bad)
+           if p.computable and p.scorer == "registry" and p.norm_key not in registry]
+    check("every registry-scored COMPUTABLE factor's norm_key is in "
+          "candidate_v2_registry()", not bad, bad)
 
     # every refusal reason has a recorded sentence, and the sentence is long
     # enough to be an explanation rather than a label
@@ -219,9 +244,9 @@ def test_validate() -> None:
     check("every engine reason carries a recorded why", not thin, thin)
 
     reachable = pit_replay.plan_record()["reachable_block_weight"]
-    check("reachable block weight is E+G+Q = 0.60", close(reachable, 0.60),
-          reachable)
-    check("0.60 clears MIN_BLOCK_WEIGHT 0.40",
+    check("reachable block weight is the whole model, E+V+G+Q = 0.85",
+          close(reachable, 0.85), reachable)
+    check("0.85 clears MIN_BLOCK_WEIGHT 0.40",
           reachable >= pit_factor_blocks.MIN_BLOCK_WEIGHT,
           pit_factor_blocks.MIN_BLOCK_WEIGHT)
 
@@ -240,9 +265,12 @@ def test_plan_record_is_serialisable() -> None:
           back["n_feature_keys"] == 13
           and back["model_version"] == pit_replay.MODEL_VERSION,
           "%d bytes" % len(blob))
-    check("the ambiguity is recorded in the plan, not only in a docstring",
-          "indistinguishable from ebitda_scale"
-          in back["factors"]["ebitda_benchmark"]["refusal_why"])
+    check("the benchmark is COMPUTABLE in the plan, with its floor on the record",
+          back["factors"]["ebitda_benchmark"]["verdict"] == "COMPUTABLE"
+          and back["factors"]["ebitda_benchmark"]["peer_floor"] == 12
+          and back["factors"]["ebitda_benchmark"]["refusal_reason"] is None)
+    check("the plan record carries the within-block floor policy",
+          back["block_policy"]["within_block_floor_version"] == "WITHIN_BLOCK_FLOOR_V1")
     check("known limitations travel with the run",
           len(back["known_limitations"]) >= 6,
           len(back["known_limitations"]))
@@ -642,7 +670,7 @@ def test_primitives_arithmetic() -> None:
     n = _oi(800.0, -149.0, 500.0)                 # E_{t-1} = 1 -> rate 999
     check("a base too small to carry a rate is refused by name",
           n.growth is None
-          and n.why.get("growth") == pit_replay.R_EBITDA_BASE_NEAR_ZERO, n.why)
+          and n.why.get("growth") == pit_replay.R_EBITDA_RATE_BEYOND_BAND, n.why)
     band = float(pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1["max_abs_rate"])
     at_band = _oi(100.0 * (1 + band) - 200.0, -50.0, 500.0)   # E_{t-1} = 100, rate == band
     check("|rate| == max_abs_rate exactly is COMPUTED (the band is strict)",
@@ -652,11 +680,11 @@ def test_primitives_arithmetic() -> None:
           neg_band.growth)
     over = _oi(100.0 * (1 + band) - 200.0 + 0.01, -50.0, 500.0)
     check("one cent beyond the band is refused",
-          over.why.get("growth") == pit_replay.R_EBITDA_BASE_NEAR_ZERO, over.why)
+          over.why.get("growth") == pit_replay.R_EBITDA_RATE_BEYOND_BAND, over.why)
     healthy = _oi(1000.0, -50.0, 500.0)           # E_{t-1} = 100, E_t = 1200, rate 11
     check("the band is on the RATE, not the base: an 11x rise from a healthy base "
           "is refused under the same name (owner to confirm)",
-          healthy.why.get("growth") == pit_replay.R_EBITDA_BASE_NEAR_ZERO)
+          healthy.why.get("growth") == pit_replay.R_EBITDA_RATE_BEYOND_BAND)
     q = _oi(800.0, 600.0, -100.0)                 # E_{t-2} = -100 + 100 = 0
     check("only the LAG-1 rate refused: growth stands, acceleration refused by name",
           close(q.growth, 1.0 / 3.0) and q.growth_lag1 is None
@@ -666,7 +694,7 @@ def test_primitives_arithmetic() -> None:
     q2 = _oi(800.0, 600.0, -99.0)                 # E_{t-2} = 1 -> lag-1 rate 749
     check("a lag-1 rate beyond the band refuses the acceleration only",
           close(q2.growth, 1.0 / 3.0)
-          and q2.why.get("acceleration") == pit_replay.R_EBITDA_BASE_NEAR_ZERO, q2.why)
+          and q2.why.get("acceleration") == pit_replay.R_EBITDA_RATE_BEYOND_BAND, q2.why)
     c = _oi(800.0, -400.0, 500.0)                 # E_{t-1} = -250
     check("loss -> profit: (1000 + 250) / |-250| = +5.0, computed, base sign "
           "recorded", close(c.growth, 5.0) and c.growth_base_sign == "neg",
@@ -777,6 +805,145 @@ def test_primitives_arithmetic() -> None:
                                           lambda d: None)
     check("a stale EBITDA period is refused by pit_policy.is_stale",
           prim4.ebitda is None, prim4.why.get("ebitda"))
+
+    # ---- spec_freeze_v6: the floor state, the Q ratios AT P, the debt gate
+    floor = pit_replay.resolve_primitives(loss, eid, as_of, ladders,
+                                          lambda d: cpi_values.get(d))
+    check("R5: negative operating income with a real interest bill is the FLOOR "
+          "STATE -- coverage computed (-4.0) and the state flagged",
+          close(floor.coverage, -4.0) and floor.coverage_floor_state is True)
+    check("...and a positive operating income is NOT the floor state",
+          k.coverage_floor_state is False)
+    p = "2018-12-31"
+    q = dict(cov)
+    q[(eid, "LongTermDebtNoncurrent", 0)] = {p: 700.0}
+    q[(eid, "LongTermDebtCurrent", 0)] = {p: 200.0}
+    q[(eid, "ShortTermBorrowings", 0)] = {p: 100.0}
+    q[(eid, "CashAndCashEquivalentsAtCarryingValue", 0)] = {p: 200.0}
+    q[(eid, "NetCashProvidedByUsedInOperatingActivities", 4)] = {p: 500.0}
+    q[(eid, "PaymentsToAcquirePropertyPlantAndEquipment", 4)] = {p: 200.0}
+    full = pit_replay.resolve_primitives(q, eid, as_of, ladders,
+                                         lambda d: cpi_values.get(d))
+    check("the three-way SUM rung resolves total debt 1000 AT P, exact bound, "
+          "gate ELIGIBLE",
+          close(full.total_debt, 1000.0)
+          and full.total_debt_rung
+          == "SUM(LongTermDebtNoncurrent+LongTermDebtCurrent+ShortTermBorrowings)"
+          and full.total_debt_bound == "exact" and full.debt_gate_reason is None,
+          (full.total_debt_rung, full.total_debt_bound, full.debt_gate_reason))
+    check("net_debt_ebitda = (1000 - 200) / 1000 = 0.8", close(full.net_debt_ebitda, 0.8),
+          (full.net_debt_ebitda, full.why.get("net_debt_ebitda")))
+    check("fcf_conversion = (500 - 200) / 1000 = 0.3", close(full.fcf_conversion, 0.3),
+          (full.fcf_conversion, full.why.get("fcf_conversion")))
+    rejected = dict(q)
+    del rejected[(eid, "LongTermDebtCurrent", 0)]
+    del rejected[(eid, "ShortTermBorrowings", 0)]
+    rj = pit_replay.resolve_primitives(rejected, eid, as_of, ladders,
+                                       lambda d: cpi_values.get(d))
+    check("R10: LongTermDebtNoncurrent alone at P -> REJECTED by measurement, "
+          "net_debt_ebitda refused by name",
+          rj.total_debt_rung == "LongTermDebtNoncurrent"
+          and rj.why.get("net_debt_ebitda") == pit_replay.R_DEBT_RUNG_REJECTED
+          and rj.net_debt_ebitda is None, rj.why.get("net_debt_ebitda"))
+    strict = dict(q)
+    del strict[(eid, "ShortTermBorrowings", 0)]
+    strict[(eid, "DebtLongtermAndShorttermCombinedAmount", 0)] = {p: 950.0}
+    st = pit_replay.resolve_primitives(strict, eid, as_of, ladders,
+                                       lambda d: cpi_values.get(d))
+    check("R16: the walk is STRICT where it bites -- rung 2 (UNDETERMINED) present "
+          "beside an ELIGIBLE rung 3 refuses; a fall-through walk would have scored",
+          st.total_debt_rung == "DebtLongtermAndShorttermCombinedAmount"
+          and st.why.get("net_debt_ebitda") == pit_replay.R_DEBT_RUNG_UNDETERMINED
+          and st.net_debt_ebitda is None, (st.total_debt_rung, st.why.get("net_debt_ebitda")))
+    lower_only = dict(q)
+    del lower_only[(eid, "ShortTermBorrowings", 0)]
+    lo = pit_replay.resolve_primitives(lower_only, eid, as_of, ladders,
+                                       lambda d: cpi_values.get(d))
+    check("without ShortTermBorrowings the two-way SUM rung answers: ELIGIBLE, "
+          "lower_bound on the row",
+          lo.total_debt_rung == "SUM(LongTermDebtNoncurrent+LongTermDebtCurrent)"
+          and lo.total_debt_bound == "lower_bound" and lo.debt_gate_reason is None
+          and close(lo.net_debt_ebitda, 0.7), (lo.total_debt_rung, lo.total_debt_bound))
+    other_period = dict(q)
+    other_period[(eid, "CashAndCashEquivalentsAtCarryingValue", 0)] = {"2017-12-31": 200.0}
+    op = pit_replay.resolve_primitives(other_period, eid, as_of, ladders,
+                                       lambda d: cpi_values.get(d))
+    check("R12: cash at a DIFFERENT balance-sheet date is not cash at P -> refused by name",
+          op.cash is None and op.why.get("net_debt_ebitda") == pit_replay.R_NO_CASH_AT_P)
+    negative_ebitda = dict(q)
+    negative_ebitda[(eid, "OperatingIncomeLoss", 4)] = {"2018-12-31": -900.0,
+                                                        "2017-12-31": 600.0,
+                                                        "2016-12-31": 500.0}
+    ne = pit_replay.resolve_primitives(negative_ebitda, eid, as_of, ladders,
+                                       lambda d: cpi_values.get(d))
+    check("R11: EBITDA <= 0 refuses BOTH EBITDA-denominator Q ratios by name",
+          ne.why.get("net_debt_ebitda") == pit_replay.R_EBITDA_NON_POSITIVE
+          and ne.why.get("fcf_conversion") == pit_replay.R_EBITDA_NON_POSITIVE)
+    check("the price-dependent keys are refused for the fundamental reason until "
+          "the market side is attached; the context leg for DEPENDENCY (one rule)",
+          all(full.why.get(k) == pit_replay.R_NO_SCORED_LISTING
+              for k in ("pe_absolute", "debt_market_cap", "ev_ebitda_supplement"))
+          and full.why.get("pe_relative") == pit_replay.R_PE_RELATIVE_NEEDS_ABSOLUTE)
+
+    # ---- R7-R9: the benchmark anchor on the 12-pair fixture ----------------
+    eb = {i: (100.0 * i, round(0.09 + 0.01 * i, 4)) for i in range(1, 13)}
+    m_s, n_band, n_vector, why = pit_replay.benchmark_anchor(eb)
+    check("M_s is the mean margin of the 3-peer 50-75 band of the 12-pair vector",
+          close(m_s, 0.17) and n_band == 3 and n_vector == 12 and why is None,
+          (m_s, n_band, n_vector, why))
+    thin_m, thin_b, thin_v, thin_why = pit_replay.benchmark_anchor(
+        {1: (100.0, 0.10), 2: (200.0, 0.20)})
+    check("a two-pair vector has no band -> benchmark_band_too_thin, never widened",
+          thin_m is None and thin_why == pit_replay.R_BENCHMARK_BAND_TOO_THIN)
+    res = pit_replay.normalise("ebitda_benchmark", 0.30, {k: v[1] for k, v in eb.items()},
+                               1, as_of, benchmark=m_s)
+    check("the excess over the bar is scored with the cohort IQR of the WHOLE vector",
+          close(res.score, 98.24541388014812, 1e-9) and close(res.scale, 0.055)
+          and res.scale_source == "cohort_iqr" and res.n_cohort == 12
+          and close(res.anchor, 0.17),
+          (res.score, res.scale, res.scale_source, res.n_cohort))
+
+    # ---- R13/R15/R17: the V legs through pit_valuation_spec's scorers --------
+    pe_abs = pit_replay.normalise("pe_absolute", 100.0, {}, 1, as_of)
+    check("pe_absolute is the convex transform at 20x: 100x -> -53.99",
+          close(pe_abs.score, -53.99049042384845, 1e-9)
+          and pe_abs.normalization_type == pit_valuation_spec.TRANSFORM_VERSION
+          and close(pe_abs.anchor, 20.0), (pe_abs.score, pe_abs.normalization_type))
+    cohort_pe = {i: v for i, v in enumerate([10.0, 15.0, 20.0, 28.0, 30.0, 45.0, 60.0], 1)}
+    pe_rel = pit_replay.normalise("pe_relative", 100.0, cohort_pe, 9, as_of)
+    check("pe_relative is the SAME convex curve around the cohort median (28x)",
+          close(pe_rel.score, -37.33175842435203, 1e-9) and close(pe_rel.anchor, 28.0)
+          and pe_rel.n_cohort == 7, (pe_rel.score, pe_rel.anchor))
+    cohort_ev = {i: v for i, v in enumerate(
+        [4.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 14.0, 20.0], 1)}
+    ev_cheap = pit_replay.normalise("ev_ebitda_supplement", 5.0, cohort_ev, 11, as_of)
+    ev_rich = pit_replay.normalise("ev_ebitda_supplement", 18.0, cohort_ev, 11, as_of)
+    ev_neg = pit_replay.normalise("ev_ebitda_supplement", -3.0, cohort_ev, 11, as_of)
+    check("EV/EBITDA: below the median positive, above negative, a negative multiple "
+          "VALID on the cheap side, scale = cohort IQR",
+          ev_cheap.score > 0.0 > ev_rich.score and ev_neg.score >= ev_cheap.score
+          and ev_cheap.scale_source == "cohort_iqr"
+          and ev_cheap.normalization_type == pit_valuation_spec.EV_TRANSFORM_VERSION,
+          (ev_cheap.score, ev_rich.score, ev_neg.score))
+    ev_thin = pit_replay.normalise("ev_ebitda_supplement", 9.0,
+                                   {1: 8.0, 2: 9.0, 3: 10.0}, 1, as_of)
+    check("an EV cohort too thin for a dispersion REFUSES by the normaliser's reason",
+          ev_thin.score is None
+          and ev_thin.reason == pit_normalization.REASON_COHORT_TOO_SMALL_SCALE)
+
+    # ---- R6: the within-block floor closes the single-factor Q path ----------
+    q_alone = pit_factor_blocks.block_score(pit_factor_blocks.BLOCK_Q,
+                                            {"interest_coverage": 40.0})
+    check("Q on interest_coverage ALONE is UNAVAILABLE under WITHIN_BLOCK_FLOOR_V1",
+          not q_alone["available"]
+          and q_alone["unavailable_reason"] == pit_factor_blocks.INSUFFICIENT_WITHIN_BLOCK
+          and close(q_alone["within_block_coverage"], 0.30))
+    assembled = pit_factor_blocks.assemble(
+        {pit_factor_blocks.BLOCK_E: -28.9, pit_factor_blocks.BLOCK_V: None,
+         pit_factor_blocks.BLOCK_G: None, pit_factor_blocks.BLOCK_Q: q_alone["score"]})
+    check("...so E + a one-factor Q no longer scores (0.35 < 0.40)",
+          assembled["company_score"] is None
+          and assembled["refused"] == pit_factor_blocks.INSUFFICIENT_BLOCK_COVERAGE)
 
 
 def test_normalise_uses_the_declared_transform() -> None:
@@ -939,7 +1106,8 @@ def _run_row(conn: sqlite3.Connection) -> int:
 
 
 def _feature_tuple(entity_id: int, key: str, run_id: int,
-                   score: Optional[float] = None) -> tuple:
+                   score: Optional[float] = None,
+                   reason: Optional[str] = None) -> tuple:
     plan = pit_replay.FACTOR_PLAN[key]
     return (entity_id, None, "2019-06-28", key, plan.role, "[]", None,
             pit_replay.LADDER_VERSION, 0, 180, "2019-06-28",
@@ -947,7 +1115,7 @@ def _feature_tuple(entity_id: int, key: str, run_id: int,
             pit_store.AVAIL_COMPLETE if score is not None
             else pit_store.AVAIL_UNAVAILABLE,
             1 if score is not None else 0,
-            None if score is not None else plan.refusal_reason,
+            None if score is not None else (reason or plan.refusal_reason),
             pit_replay.MODEL_VERSION, run_id, "2026-09-21T00:00:00+00:00", "{}")
 
 
@@ -1079,14 +1247,30 @@ def test_unavailable_rows_are_rows() -> None:
         conn.commit()
         refused = [k for k, p in pit_replay.FACTOR_PLAN.items()
                    if not p.computable]
+        check("NO plan is refused by declaration under spec_freeze_v6",
+              refused == [], refused)
+        # A refusal is still a row: every DOMAIN refusal the v6 engine can
+        # emit is written as one and read back through the schema.
+        fixture = [
+            ("net_debt_ebitda", pit_replay.R_DEBT_RUNG_REJECTED),
+            ("fcf_conversion", pit_replay.R_EBITDA_NON_POSITIVE),
+            ("debt_market_cap", pit_replay.R_LISTING_AMBIGUOUS),
+            ("ev_ebitda_supplement", pit_replay.R_EV_ABOVE_BAND),
+            ("pe_absolute", pit_replay.R_EPS_NEAR_ZERO),
+            ("pe_relative", pit_replay.R_PE_RELATIVE_NEEDS_ABSOLUTE),
+            ("ebitda_benchmark", pit_replay.R_BENCHMARK_BAND_TOO_THIN),
+            ("ebitda_growth", pit_replay.R_EBITDA_RATE_BEYOND_BAND),
+            ("interest_coverage", pit_replay.R_COHORT_VALUES_BELOW_FLOOR),
+        ]
         conn.executemany(pit_replay.FEATURE_SQL,
-                         [_feature_tuple(7, k, run_id) for k in refused])
+                         [_feature_tuple(7, k, run_id, reason=why)
+                          for k, why in fixture])
         conn.commit()
         rows = conn.execute(
             "SELECT feature_key, raw_value, normalized_value, availability, "
             "available_flag, unavailable_reason FROM pit_feature").fetchall()
-        check("every NOT_COMPUTABLE / REFUSED factor produced a row",
-              len(rows) == len(refused) == 7, len(rows))
+        check("every domain refusal produced a row",
+              len(rows) == len(fixture), len(rows))
         check("every one is availability='unavailable'",
               all(r[3] == pit_store.AVAIL_UNAVAILABLE for r in rows))
         check("every one has normalized_value NULL -- never 0.0",
@@ -1097,20 +1281,81 @@ def test_unavailable_rows_are_rows() -> None:
         check("every reason is in the declared vocabulary",
               all(r[5] in vocabulary for r in rows),
               sorted({r[5] for r in rows}))
-        by_key = {r[0]: r[5] for r in rows}
-        check("ebitda_benchmark is refused for AMBIGUITY, not for missing data",
-              by_key["ebitda_benchmark"] == pit_replay.R_BENCHMARK_AMBIGUOUS,
-              by_key["ebitda_benchmark"])
-        check("pe_absolute and pe_relative name the UNBUILT chain, not an absent "
-              "primitive -- EPS is in the store",
-              by_key["pe_absolute"] == by_key["pe_relative"]
-              == pit_replay.R_PE_CHAIN_NOT_BUILT)
-        check("the three remaining Q factors and EV/EBITDA name the missing transform",
-              all(by_key[k] == pit_replay.R_NO_V2_NORMALIZATION
-                  for k in ("fcf_conversion", "net_debt_ebitda",
-                            "debt_market_cap", "ev_ebitda_supplement")))
-        check("interest_coverage produced NO refused row: it is computable",
-              "interest_coverage" not in by_key)
+        check("the four codes the 1.1 engine emitted for keys it could not compute "
+              "stay READABLE and are RETIRED",
+              all(c in vocabulary and c in pit_replay.RETIRED_REASONS
+                  for c in (pit_replay.R_BENCHMARK_AMBIGUOUS,
+                            pit_replay.R_NO_V2_NORMALIZATION,
+                            pit_replay.R_PE_CHAIN_NOT_BUILT,
+                            pit_replay.R_EBITDA_BASE_NEAR_ZERO)))
+        named = set()
+        for body in (pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V2,
+                     pit_factor_spec.LEVERAGE_DOMAIN_V1, pit_factor_spec.FCF_DOMAIN_V1,
+                     pit_factor_spec.MARKET_CAP_DOMAIN_V1, pit_factor_spec.EV_EBITDA_DOMAIN_V1,
+                     pit_factor_spec.PE_DOMAIN_V1, pit_factor_spec.DEBT_RUNG_GATE_V1,
+                     pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V2):
+            for value in body.values():
+                for part in str(value).replace("|", " ").split():
+                    if part.startswith("REFUSED:"):
+                        named.add(part.split(":", 1)[1].rstrip(",.;)"))
+        check("every REFUSED:<code> the eight v6 domain bodies name is an engine reason "
+              "(%d codes)" % len(named),
+              named and named <= vocabulary, sorted(named - vocabulary))
+    finally:
+        conn.close()
+
+
+def test_valuation_price_steps_back() -> None:
+    section("(7d) THE VALUATION PRICE -- the latest prior VALID trade, never the "
+            "newest print (R19)")
+    path = _pilot_path("price.db")
+    pit_replay.ensure_pilot_db(path, overwrite=True)
+    conn = pit_replay.open_pilot(path)
+    try:
+        conn.execute("INSERT INTO pit_entity (entity_id, cik, entity_kind, created_at) "
+                     "VALUES (?,?,?,?)", (9, "0000000009", "issuer", "2026-09-21"))
+        conn.execute("INSERT INTO pit_listing (listing_id, entity_id, symbol, valid_from, "
+                     "confidence, source, created_at) VALUES (?,?,?,?,?,?,?)",
+                     (90, 9, "NINE", "2010-01-01", "proved", "fixture", "2026-09-21"))
+        ingest = pit_store.start_ingest(conn, "fixture", "fixture")
+        conn.execute("UPDATE pit_ingest_run SET finished_at = ?, status = 'complete' "
+                     "WHERE ingest_id = ?", ("2026-09-21", ingest))
+        bars = [("2019-06-25", 10.0, 500.0), ("2019-06-26", 11.0, 700.0),
+                ("2019-06-27", 12.0, 0.0), ("2019-06-28", 12.5, 0.0)]
+        conn.executemany(
+            "INSERT INTO pit_price_bar (listing_id, bar_date, close, volume, "
+            "source_symbol, ingest_id) VALUES (?,?,?,?,?,?)",
+            [(90, d, c, v, "NINE", ingest) for d, c, v in bars])
+        conn.commit()
+        px = pit_replay.valuation_price(conn, 90, "2019-06-28")
+        check("two zero-volume prints on T and T-1 are SKIPPED and T-2's real trade "
+              "is the valuation price",
+              px.get("available") and close(px["raw_close"], 11.0)
+              and str(px["bar_date"])[:10] == "2019-06-26",
+              (px.get("reason"), px.get("bar_date"), px.get("raw_close")))
+        check("price_age_days is measured from the chosen bar to the score date",
+              px.get("price_age_days") == 2, px.get("price_age_days"))
+        check("the skipped bars travel on the record, newest first",
+              [s[0] for s in px["skipped_bars"]] == ["2019-06-28", "2019-06-27"]
+              and all(s[1] == pit_rawprice.REASON_ZERO_VOLUME_PRINT
+                      for s in px["skipped_bars"]), px["skipped_bars"])
+        check("the basis was translated and asserted for the valuation role",
+              px.get("valuation_basis") == pit_price_basis.PRICE_RAW_AS_TRADED)
+        far = pit_replay.valuation_price(conn, 90, "2019-07-15")
+        check("beyond the ten-day floor nothing is taken: refused, floor never widened",
+              not far.get("available"), far.get("reason"))
+        conn.execute(
+            "INSERT INTO pit_corporate_action (listing_id, event_date, event_type, "
+            "ratio_num, ratio_den, applies_to_price, applies_to_shares, confidence, "
+            "source) VALUES (?,?,?,?,?,?,?,?,?)",
+            (90, "2019-06-27", "split", 2.0, 1.0, 1, 1, "proved", "fixture"))
+        conn.commit()
+        straddled = pit_replay.valuation_price(conn, 90, "2019-06-28")
+        check("a rolled-back price that straddles a share-applicable action is REFUSED "
+              "by name (straddle_rule)",
+              not straddled.get("available")
+              and straddled.get("reason") == pit_replay.R_PRICE_STRADDLES_ACTION,
+              straddled.get("reason"))
     finally:
         conn.close()
 
@@ -1183,6 +1428,9 @@ def test_real_slice() -> None:
           "%d + %d vs %d" % (stats["n_scored"],
                              stats["n_refused_insufficient_block_coverage"],
                              stats["n_targets"]))
+    check("n_scored is the pit_score row count -- a cross-table invariant",
+          stats["n_scored"] == stats["rows"]["pit_score"],
+          (stats["n_scored"], stats["rows"]["pit_score"]))
     check("the checkpoint return value was read",
           stats["checkpoint"].get("return_read") is True, stats["checkpoint"])
 
@@ -1278,7 +1526,9 @@ def test_streaming_equals_legacy() -> None:
     for key in ("rows", "n_targets", "n_entities_indexed", "n_scored",
                 "n_refused_insufficient_block_coverage", "n_no_peer_set",
                 "n_challenger_rows", "blocks_resolved", "signatures",
-                "availability", "reasons", "n_eligible_peer_calls"):
+                "availability", "reasons", "n_eligible_peer_calls",
+                "block_refusals", "valuation_presence", "debt_bounds_scored",
+                "n_floor_state", "n_priced", "n_listed", "n_listing_ambiguous"):
         check("per-date statistic %r is identical" % key, ls[key] == ss[key],
               "" if ls[key] == ss[key] else (ls[key], ss[key]))
     for table, order in (("pit_feature", "entity_id, as_of_date, feature_key"),
@@ -1346,6 +1596,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         run(test_columns_match_the_schema)
         run(test_write_constraints_bite)
         run(test_unavailable_rows_are_rows)
+        run(test_valuation_price_steps_back)
         run(test_checkpoint_return_is_read)
         run(test_batching_is_declared)
         if slow:

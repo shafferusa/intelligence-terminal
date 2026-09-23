@@ -188,6 +188,34 @@ def test_action_gate() -> None:
               g.status == pb.GATE_NO_EVENTS and not g.usable
               and g.factor is None)
 
+    # v2 (owner ruling R18): a listing WITH coverage and an EMPTY window is the
+    # identity, resolved and usable; the empty-coverage listing above stays refused.
+    # Coverage is POINT-IN-TIME: the probe counts only rows dated on or before
+    # as_of, so the window sits after Apple's earlier dividends and splits.
+    covered_empty = pb.pit_safe_split_factor(conn, lid, "2019-09-28", "2019-10-10",
+                                             as_of="2019-10-10")
+    check("gate v2: an empty window on a listing WITH action coverage at as_of is "
+          "the identity factor 1.0, resolved and usable",
+          covered_empty.usable and abs(covered_empty.factor - 1.0) < 1e-12
+          and covered_empty.coverage == pb.COVERAGE_ESTABLISHED)
+    early = pb.pit_safe_split_factor(conn, lid, "2000-01-01", "2000-01-02",
+                                     as_of="2000-01-02")
+    check("...and a window before ANY recorded action is coverage UNKNOWN at that "
+          "as_of, not usable (the probe is point-in-time bounded)",
+          not early.usable and early.coverage == pb.COVERAGE_UNKNOWN)
+    check("gate v2 carries the semantics body and a v2 version string",
+          pb.ACTION_GATE_VERSION.endswith("_v2")
+          and pb.ACTION_GATE_SEMANTICS_V2["gate_version"] == pb.ACTION_GATE_VERSION)
+    check("R20: the two other spellings of the as-traded price translate to the "
+          "valuation basis, and the adjusted price does not",
+          pb.translate_price_basis("raw_as_printed_unadjusted") == pb.PRICE_RAW_AS_TRADED
+          and pb.translate_price_basis("price_adjusted") == pb.PRICE_RAW_AS_TRADED
+          and raises(lambda: pb.translate_price_basis(pb.PRICE_ACTION_ADJUSTED),
+                     pb.PriceBasisError))
+    check("R19: the valuation price policy is ten calendar days back, traded, same listing",
+          pb.VALUATION_PRICE_POLICY_V1["roll_back_days"] == 10
+          and pb.VALUATION_PRICE_POLICY_V1["require_traded"] is True
+          and pb.VALUATION_PRICE_POLICY_V1["same_listing"] is True)
     check("a spin-off is not a share divisor -- 0 spin-offs apply to shares",
           conn.execute("""SELECT COUNT(*) FROM pit_corporate_action
                            WHERE event_type='spinoff'

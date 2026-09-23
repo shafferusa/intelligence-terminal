@@ -96,6 +96,8 @@ __all__ = [
     "WITHIN_BLOCK_WEIGHTS", "WITHIN_BLOCK_REASON", "within_block_weights",
     "is_scoring", "effective_company_weight", "block_score",
     "V_FACTOR_SUBFACTORS",
+    "WITHIN_BLOCK_FLOOR_VERSION", "WITHIN_BLOCK_FLOOR_V1", "V_PRESENCE_RULE",
+    "INSUFFICIENT_WITHIN_BLOCK", "V_ABSENT", "within_block_floor",
     "DIRECTION_POLICY_VERSION", "HIGHER_IS_BETTER", "LOWER_IS_BETTER",
     "EMBEDDED_IN_TRANSFORM", "UNDECLARED", "DIRECTION_IS_ORIENTATION_ONLY",
     "FACTOR_DIRECTION_V1", "SUBFACTOR_DIRECTION_V1", "DIRECTION_SOURCE",
@@ -336,12 +338,16 @@ def block_mask(available: Iterable[str]) -> str:
                     for b in BLOCKS)
 
 
-def assemble(block_scores: Mapping[str, Optional[float]]) -> dict[str, Any]:
+def assemble(block_scores: Mapping[str, Optional[float]],
+             reasons: Optional[Mapping[str, str]] = None) -> dict[str, Any]:
     """The company score, or a refusal. NO RENORMALISATION, ever.
 
     Returns a record carrying the score, the mask, the coverage and -- when the
     floor is not met -- the refusal reason and NO score. An absence is never a
-    zero.
+    zero. `reasons` maps an ABSENT block to the reason that removed it and is
+    handed through to pit_score_signature.score_v2, so a partial score says
+    WHY (the owner's first-class VALUATION_PEER_SET_INSUFFICIENT outcome is
+    readable off the row rather than re-derived).
     """
     unknown = set(block_scores) - set(BLOCKS)
     if unknown:
@@ -364,13 +370,16 @@ def assemble(block_scores: Mapping[str, Optional[float]]) -> dict[str, Any]:
             "available_block_weight": carried,
             "block_coverage": coverage,
             "refused": INSUFFICIENT_BLOCK_COVERAGE,
+            "block_reasons": {b: str(r) for b, r in (reasons or {}).items()
+                              if block_scores.get(b) is None and r},
             "why": ("%.2f of declared weight carries information; the floor is "
                     "%.2f. %s" % (carried, MIN_BLOCK_WEIGHT,
                                   MIN_BLOCK_WEIGHT_WHY)),
         }
 
     scored = pit_score_signature.score_v2(
-        {b: block_scores.get(b) for b in BLOCKS})
+        {b: block_scores.get(b) for b in BLOCKS},
+        reasons={b: str(r) for b, r in (reasons or {}).items() if r})
     return {
         "policy_version": BLOCK_MAP_VERSION,
         "company_score": scored.company_score,
@@ -381,6 +390,7 @@ def assemble(block_scores: Mapping[str, Optional[float]]) -> dict[str, Any]:
         "block_coverage": coverage,
         "effective_weights": dict(scored.effective_weights),
         "partial_score_marker": scored.partial_score_marker,
+        "block_reasons": dict(scored.unavailable_reasons),
         "refused": None,
         "renormalised": False,
     }
@@ -539,6 +549,52 @@ def effective_company_weight(factor_key: str) -> float:
     return block_weight(block) * weights[factor_key]
 
 
+# ==========================================================================
+# THE WITHIN-BLOCK COMPLETENESS FLOOR -- 'WITHIN_BLOCK_FLOOR_V1', owner
+# ruling R6 of 2026-09-23
+#
+# Within-block renormalisation stands in for a missing SIBLING measurement;
+# it was never meant to let ONE factor carrying 0.30 of a block speak for the
+# whole block. Under spec_freeze_v5 that is exactly what happened: Q was
+# available on interest_coverage alone, and E + Q = 0.45 cleared
+# MIN_BLOCK_WEIGHT for companies with no G. The owner's rule is
+# BLOCK-SPECIFIC: E and Q count toward MIN_BLOCK_WEIGHT only when at least
+# HALF of their scoring weight is present; G is one factor and needs all of
+# it; V keeps the presence rule it already had -- an OR over standalone legs
+# with the dependency of the context leg on the anchor leg
+# (pit_valuation_spec.presence, valuation_presence_rule_v1). The cross-block
+# floor MIN_BLOCK_WEIGHT = 0.40 is UNCHANGED.
+# ==========================================================================
+
+WITHIN_BLOCK_FLOOR_VERSION = "WITHIN_BLOCK_FLOOR_V1"
+
+#: V's entry is a RULE NAME, not a number: the presence rule decides.
+V_PRESENCE_RULE = "valuation_presence_rule_v1"
+
+WITHIN_BLOCK_FLOOR_V1: dict[str, Any] = {
+    BLOCK_E: 0.50,
+    BLOCK_Q: 0.50,
+    BLOCK_G: 1.00,
+    BLOCK_V: V_PRESENCE_RULE,
+}
+
+#: The refusal a block earns when its present scoring weight sits below the
+#: floor. Distinct from "no scoring factor available": the block HAD
+#: information and the rule says it was not enough of it.
+INSUFFICIENT_WITHIN_BLOCK = "within_block_coverage_below_floor"
+
+#: The refusal V earns from its own presence rule (no standalone leg present,
+#: or only the context leg, which cannot exist without the anchor leg).
+V_ABSENT = "valuation_presence_absent"
+
+
+def within_block_floor(block: str) -> Any:
+    """The floor for a block: a weight fraction, or V_PRESENCE_RULE for V."""
+    if block not in BLOCKS:
+        raise FactorMapError("%r is not a v2 block" % (block,))
+    return WITHIN_BLOCK_FLOOR_V1[block]
+
+
 def block_score(block: str,
                 factor_scores: Mapping[str, Optional[float]]
                 ) -> dict[str, Any]:
@@ -553,6 +609,14 @@ def block_score(block: str,
     A zero-weight challenger contributes nothing: not to the score, not to
     availability, and not to the denominator. It is reported separately so its
     value is still observable for research.
+
+    WITHIN_BLOCK_FLOOR_V1 (owner ruling R6, 2026-09-23) decides whether what
+    is present is ENOUGH: E and Q need at least half their scoring weight, G
+    needs its one factor, and V is decided by pit_valuation_spec.presence()
+    -- the OR over standalone legs with the context leg's dependency. Below
+    the floor the block is UNAVAILABLE with a named reason, its within-block
+    coverage is still reported (so a thin block is visible on the row), and
+    it does not count toward MIN_BLOCK_WEIGHT.
     """
     weights = within_block_weights(block)
     unknown = set(factor_scores) - set(WITHIN_BLOCK_WEIGHTS.get(block, {}))         - set(weights)
@@ -571,16 +635,46 @@ def block_score(block: str,
                 "n_scoring_declared": len(weights),
                 "within_block_coverage": 0.0,
                 "renormalised_over": 0.0,
+                "floor": within_block_floor(block),
                 "challengers_observed": challengers,
                 "unavailable_reason": "no scoring factor available"}
 
     carried = sum(weights[k] for k in present)
+    floor = within_block_floor(block)
+    if block == BLOCK_V:
+        import pit_valuation_spec
+        pres = pit_valuation_spec.presence({k: True for k in present})
+        if not pres.is_present:
+            return {"block": block, "score": None, "available": False,
+                    "n_scoring_present": len(present),
+                    "n_scoring_declared": len(weights),
+                    "within_block_coverage": carried,
+                    "renormalised_over": 0.0,
+                    "floor": floor,
+                    "presence_state": pres.state,
+                    "refused_for_dependency": list(pres.refused_for_dependency),
+                    "challengers_observed": challengers,
+                    "unavailable_reason": V_ABSENT}
+        # The context leg is dropped when the anchor is absent: presence()
+        # already refused it, and it must not reach the denominator either.
+        present = {k: v for k, v in present.items() if k in pres.present}
+        carried = sum(weights[k] for k in present)
+    elif carried + 1e-12 < float(floor):
+        return {"block": block, "score": None, "available": False,
+                "n_scoring_present": len(present),
+                "n_scoring_declared": len(weights),
+                "within_block_coverage": carried,
+                "renormalised_over": 0.0,
+                "floor": floor,
+                "challengers_observed": challengers,
+                "unavailable_reason": INSUFFICIENT_WITHIN_BLOCK}
     score = sum(weights[k] * present[k] for k in present) / carried
     return {"block": block, "score": score, "available": True,
             "n_scoring_present": len(present),
             "n_scoring_declared": len(weights),
             "within_block_coverage": carried,
             "renormalised_over": carried,
+            "floor": floor,
             "challengers_observed": challengers,
             "unavailable_reason": None}
 
@@ -742,6 +836,16 @@ def policy_record() -> dict[str, Any]:
         "min_block_weight": MIN_BLOCK_WEIGHT,
         "min_block_weight_why": MIN_BLOCK_WEIGHT_WHY,
         "insufficient_reason": INSUFFICIENT_BLOCK_COVERAGE,
+        "within_block_floor_version": WITHIN_BLOCK_FLOOR_VERSION,
+        "within_block_floor": dict(WITHIN_BLOCK_FLOOR_V1),
+        "within_block_insufficient_reason": INSUFFICIENT_WITHIN_BLOCK,
+        "valuation_absent_reason": V_ABSENT,
+        "within_block_floor_why": (
+            "owner ruling R6 (2026-09-23): E and Q count toward MIN_BLOCK_WEIGHT "
+            "only with at least half their scoring weight present, G needs its "
+            "one factor, V keeps the OR-over-standalone-legs presence rule. A "
+            "block below its floor is UNAVAILABLE with a named reason and its "
+            "within-block coverage still on the row."),
         "no_renormalisation": (
             "Missing V, the score is exactly 0.35E + 0.15G + 0.10Q and NOT "
             "that quantity over 0.60. Coverage 0.60/0.85 = 70.59% and the "
@@ -925,14 +1029,63 @@ def validate() -> list[str]:
         problems.append("debt_market_cap must be the smallest weight in Q: it "
                         "imports price movement into a balance-sheet block")
 
-    # ---- within-block renormalisation IS allowed -------------------------
-    one_of_four = block_score(BLOCK_Q, {"fcf_conversion": 40.0})
-    if one_of_four["score"] is None or abs(one_of_four["score"] - 40.0) > 1e-12:
+    # ---- within-block renormalisation IS allowed, ABOVE the floor ---------
+    two_of_four = block_score(BLOCK_Q, {"fcf_conversion": 40.0,
+                                        "interest_coverage": 10.0})
+    want = (0.35 * 40.0 + 0.30 * 10.0) / 0.65
+    if two_of_four["score"] is None or abs(two_of_four["score"] - want) > 1e-12:
         problems.append("within-block renormalisation must stand in for a "
                         "missing sibling measurement")
-    if abs(one_of_four["within_block_coverage"] - 0.35) > 1e-12:
+    if abs(two_of_four["within_block_coverage"] - 0.65) > 1e-12:
         problems.append("the within-block coverage must be reported so a thin "
                         "block is distinguishable from a full one")
+
+    # ---- WITHIN_BLOCK_FLOOR_V1 (owner ruling R6, 2026-09-23) -------------
+    if set(WITHIN_BLOCK_FLOOR_V1) != set(BLOCKS):
+        problems.append("WITHIN_BLOCK_FLOOR_V1 must name every block once")
+    if (WITHIN_BLOCK_FLOOR_V1[BLOCK_E] != 0.50 or WITHIN_BLOCK_FLOOR_V1[BLOCK_Q] != 0.50
+            or WITHIN_BLOCK_FLOOR_V1[BLOCK_G] != 1.00
+            or WITHIN_BLOCK_FLOOR_V1[BLOCK_V] != V_PRESENCE_RULE):
+        problems.append("WITHIN_BLOCK_FLOOR_V1 must read E 0.50, Q 0.50, G 1.00, "
+                        "V presence rule -- the owner's R6")
+    one_of_four = block_score(BLOCK_Q, {"interest_coverage": 40.0})
+    if one_of_four["available"] or one_of_four["score"] is not None:
+        problems.append("Q on interest_coverage ALONE (0.30) is below the 0.50 floor "
+                        "and must be UNAVAILABLE -- the v5 single-factor Q path is closed")
+    if one_of_four["unavailable_reason"] != INSUFFICIENT_WITHIN_BLOCK:
+        problems.append("a block below its floor must name INSUFFICIENT_WITHIN_BLOCK")
+    if abs(one_of_four["within_block_coverage"] - 0.30) > 1e-12:
+        problems.append("a refused block must still report its within-block coverage")
+    if block_score(BLOCK_Q, {"net_debt_ebitda": 1.0, "debt_market_cap": 1.0})["available"]:
+        problems.append("Q on the two leverage factors (0.35) is below the floor")
+    if not block_score(BLOCK_Q, {"fcf_conversion": 1.0, "net_debt_ebitda": 1.0})["available"]:
+        problems.append("Q on fcf + net-debt (0.60) clears the floor")
+    if block_score(BLOCK_E, {"ebitda_growth": 1.0, "ebitda_efficiency": 1.0})["available"]:
+        problems.append("E on growth + efficiency (0.45) is below the floor")
+    if not block_score(BLOCK_E, {"ebitda_benchmark": 1.0, "ebitda_growth": 1.0})["available"]:
+        problems.append("E on benchmark + growth (0.60) clears the floor")
+    if block_score(BLOCK_E, {"ebitda_benchmark": 1.0})["available"]:
+        problems.append("E on the benchmark alone (0.35) is below the floor")
+    v_orphan = block_score(BLOCK_V, {"pe_relative": 10.0})
+    if v_orphan["available"] or v_orphan["unavailable_reason"] != V_ABSENT:
+        problems.append("V on the context leg alone must be ABSENT under the "
+                        "presence rule, never a 10.0")
+    v_supp = block_score(BLOCK_V, {"ev_ebitda_supplement": 10.0})
+    if not v_supp["available"] or abs(v_supp["score"] - 10.0) > 1e-12:
+        problems.append("V on the supplement alone must be PRESENT (it stands alone)")
+    v_two = block_score(BLOCK_V, {"pe_absolute": 10.0, "pe_relative": 20.0})
+    if not v_two["available"] or abs(v_two["score"] - (0.5 * 10.0 + 0.3 * 20.0) / 0.8) > 1e-12:
+        problems.append("V on both P/E legs renormalises over 0.80")
+    v_drop = block_score(BLOCK_V, {"pe_relative": 20.0, "ev_ebitda_supplement": 10.0})
+    if not v_drop["available"] or abs(v_drop["score"] - 10.0) > 1e-12:
+        problems.append("a context leg without its anchor must be DROPPED from the "
+                        "denominator, not merely reported")
+    if MIN_BLOCK_WEIGHT != 0.40:
+        problems.append("MIN_BLOCK_WEIGHT is UNCHANGED at 0.40 under R6")
+    with_reason = assemble({BLOCK_E: 10.0, BLOCK_V: None, BLOCK_G: 10.0, BLOCK_Q: 10.0},
+                           reasons={BLOCK_V: "VALUATION_PEER_SET_INSUFFICIENT"})
+    if with_reason.get("block_reasons", {}).get(BLOCK_V) != "VALUATION_PEER_SET_INSUFFICIENT":
+        problems.append("assemble() must carry an absent block's reason through to the row")
 
     # ---- G's single-point dependency is real and declared ----------------
     if len(within_block_weights(BLOCK_G)) != 1:

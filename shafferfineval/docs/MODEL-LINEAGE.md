@@ -1300,3 +1300,173 @@ refused because the MARGIN path is not built in the engine; the P/E chain not
 built; four factors without a registered transform), reachable weight
 E+G+Q = 0.60. Pilot rows will differ from `pit_replay/1.0` rows by design.
 No replay authorisation exists.
+---
+
+# spec_freeze_v6 — the owner's V/Q rulings of 2026-09-23, executed (2026-09-23)
+
+`FROZEN_DIGEST = 1afaca0c17c38657ddb131f03dad59e8d07aa1bceecf9bc9f336d8d09ee6fd85`, 82 components. v5 is sealed as
+`FREEZE_V5` (digest 58722f4c…, 61 components, `FROZEN_SUPERSEDED`, reason
+`ENGINE_COMPUTED_SIX_OF_THIRTEEN_KEYS`, may not execute the replay, 0
+main-store rows). The engine is `pit_replay/1.2`; it derives eligibility from
+`factor_spec_v5` (`ENGINE_MUST_DERIVE_FROM`, enforced by `pit_replay.validate()`
+and `require_gate()`). Census 13 / 0 / 0; reachable weight E+V+G+Q = 0.85.
+1.1 rows differ from 1.2 rows by design. **No replay authorisation exists.**
+
+## The rulings, verbatim in substance, and where each one lives
+
+| ruling | decision | digested body / engine path |
+|---|---|---|
+| R1 | `max_abs_rate = 10.0` inclusive, approved as a modelling-domain guard, challenger-eligible later | `EBITDA_GROWTH_BASE_POLICY_V2` (V1 kept verbatim) |
+| R2 | period matching approved; the first valid concept rung for the period; never mixing rungs | `INTEREST_COVERAGE_DOMAIN_V2`; `factor_spec_v5` matched rules; `pit_replay._level_at` |
+| R3 | `ebitda_growth_base_near_zero` → `ebitda_growth_rate_beyond_band`; the old name preserved in lineage | `R_EBITDA_RATE_BEYOND_BAND`; the old code stays in `ENGINE_REASONS` and `RETIRED_REASONS` |
+| R4 | `PERCENTILE_RANK` for coverage over positive-operating-income observations only | `CohortCache.get` drops floor-state members from the rank population |
+| R5 | operating income ≤ 0 is the coverage factor's worst/floor state, excluded from the rank; zero / negative / missing interest keep their named refusals | `Primitives.coverage_floor_state`; the row scores −100, `resolved_inputs_json.fs`, raw coverage kept |
+| R6 | within-block completeness is block-specific: E ≥ 0.50, Q ≥ 0.50 of scoring weight, G 1.00, V keeps the OR rule; `MIN_BLOCK_WEIGHT = 0.40` unchanged | `pit_factor_blocks.WITHIN_BLOCK_FLOOR_V1`; `block_score` refuses with `within_block_coverage_below_floor`; V through `pit_valuation_spec.presence` |
+| R7 | the benchmark INCLUDES the target in the vector and the band; one cohort-constant benchmark per peer set | `COHORT_BENCHMARK`; `benchmark_anchor` memoised per peer set |
+| R8 | the scale statistic over the whole eligible vector | `normalise(..., benchmark=)` passes every eligible margin as `cohort_values` |
+| R9 | band floor 3 with a named refusal, never widened | `BENCHMARK_MIN_COHORT_V1`; `benchmark_band_too_thin` |
+| R10 | the strict `DEBT_RUNG_EVEBITDA_V1` gate applies to `net_debt_ebitda` and `debt_market_cap` | `DEBT_RUNG_GATE_V1`; `Primitives.debt_gate_reason` |
+| R11 | `fcf_conversion` requires EBITDA > 0 (named refusal); `net_debt_ebitda` treated the same per the v1 precedent, **flagged as interpretation** | `ebitda_non_positive`; `FCF_DOMAIN_V1`, `LEVERAGE_DOMAIN_V1` |
+| R12 | debt / cash as of the EBITDA period end; cash flow / capex from the same flow period; no period mixing | `_level_at(..., period=P)`; `factor_spec_v5` successor rules |
+| R13 | Q normalisation in the digested registry; V via `pit_valuation_spec`'s frozen subfactor scorers; no hidden engine normalisation | `FCFConversionRank`, `NetDebtEBITDARank`, `DebtMarketCapRank`; `FactorPlan.scorer`; `_valuation_result` |
+| R14 | one frozen factor-specific peer floor, one distinct refusal | `PEER_FLOOR_V1`; `cohort_values_below_floor` |
+| R15 | EV/EBITDA benchmark-anchored tanh around the coherent cohort median, lower better, positive EBITDA required, negative EV valid (saturates the cheap side) | `EV_TRANSFORM_PARAMS_V1`, `ev_ebitda_score_detail` |
+| R16 | the EV debt walk is strict: first non-stale rung at the period, its eligibility status, the same gate for peers | `_level_at` + `debt_gate`; cohort members formed by the same resolver |
+| R17 | P/E relative = the convex transform around the peer median; target INCLUDED; near-zero positive EPS excluded from both legs | `pe_relative_score_detail`; `PE_DOMAIN_V1`; `eps_near_zero_positive` |
+| R18 | corporate-action gate: listing-level completeness semantics (coverage established + no actions → identity; coverage unknown → refuse) | `pit_safe_corporate_action_gate_v2`, `ACTION_GATE_SEMANTICS_V2` |
+| R19 | valuation price: the exact score-date raw price, else the latest prior valid raw close within 10 calendar days, same listing, valid trade, `price_age_days` recorded, no share-class switching, ambiguous listing refused | `VALUATION_PRICE_POLICY_V1`; `pit_replay.valuation_price`, `resolve_listings` |
+| R20 | one digested price-basis translation constant, consumed by one resolver | `PRICE_BASIS_TRANSLATION_V1`, `translate_price_basis` |
+| R21 | historical refusal codes kept; cohort-aware golden witnesses; cohorts may mix TTM / EPS rungs with provenance on the row | `ENGINE_REASONS` history; `FORMULA_GOLDEN_V2` (`kind: benchmark`, floor-state and Q witnesses); `pit_eps_cohort` carries `method` and `sign_crossing`; `ek` / `em` on the row |
+
+The six items v5 left awaiting the owner's word are each closed above (R1, R2,
+R3, R4, R5, R6) and their dispositions are recorded in
+`pit_frozen_spec.SCORE_ASSEMBLY_GAP["owner_rulings_2026_09_23"]`; the v5 record
+of them is kept verbatim.
+
+## Interpretations — reported, not chosen silently
+
+Each of these is a point the rulings left open. The choice taken is stated with
+its alternative, and each is a v7 body change if the owner rules otherwise.
+
+1. **`debt_market_cap`'s debt is anchored at the EBITDA period end** like every
+   other balance-sheet instant (R12 read literally: one balance-sheet date per
+   row, no mixing across the Q block). Its v5 spec therefore requires
+   `operating_income` and `depreciation_amortisation` for a ratio that has no
+   EBITDA in it, declared in `graph_divergence`. Alternative: its own newest
+   non-stale balance sheet, which would let two Q factors on one row read two
+   balance-sheet dates.
+2. **EV/EBITDA keeps v1's upper bound of 300** (`ev_ebitda_above_band`) while
+   the lower bound is withdrawn under R15. The ruling reached the negative
+   side only; the spec stands where it did not reach.
+3. **The EV transform has no fixed fallback scale.** `k` is the cohort IQR over
+   the whole eligible vector; a cohort with fewer than 8 valued multiples or
+   zero dispersion refuses by `pit_normalization`'s own reason. A fallback
+   constant in multiple units would have been an invented number.
+4. **`earnings_discontinuity_state`** is `EARNINGS_SIGN_CROSS` only where the
+   selected TTM row's own `sign_crossing` flag is set. No pair classification
+   runs in the engine.
+5. **`market_cap_as_of_detail` runs without `require_split_check`**; the
+   split-check status travels on the row (`sc`).
+6. **The coverage floor state still requires a real cohort**: a floor-state
+   row is scored −100 only when its peer set is eligible and clears the peer
+   floor on positive-coverage members; otherwise it carries the cohort refusal.
+   A "worst among nobody" is not a score.
+8. **The valuation price steps back past invalid prints.** R19 says "the
+   latest prior valid raw close within 10 calendar days"; the resolver tries
+   bars newest first and skips a NULL, non-positive or zero-volume print
+   (`sk` on the row), never widening the ten-day floor. A rolled-back price
+   is refused (`price_straddles_corporate_action`) when a share-applicable
+   action falls between its bar and the score date.
+9. **Gate v2's coverage probe is point-in-time bounded** (rows dated on or
+   before the score date establish coverage).
+10. **"Non-stale rung at the period"** (R16) is the EBITDA period's own
+    15-month bound; the 6-month quarterly budget for free-floating instants
+    does not apply to debt and cash anchored at P.
+11. **The benchmark scale has no fixed fallback either** (R8 read literally):
+    the registry's `EBITDAExcessLevel` dropped its `fallback_fixed = 0.06`
+    under v6; a flat or thin margin vector refuses by name. The v5 value is
+    recorded in `FREEZE_V5`.
+12. **V feature rows carry the transform version in `norm_method`**
+    (`extreme_valuation_transform_v1`, `ev_ebitda_benchmark_anchored_tanh_v1`)
+    rather than a `pit_normalization` taxonomy constant, because the
+    taxonomy's tanh label would misdescribe the convex legs.
+13. **The context leg has one refusal rule:** `pe_relative_needs_absolute`
+    whenever the anchor leg is refused for any reason; the anchor row and the
+    pillar row's `r` carry the underlying cause.
+7. **A recorded inconsistency inside the frozen specification, not repaired:**
+   the sealed `pe_ratio` FactorSpec (v1, carried verbatim through
+   `SPECS_V3..V5`) declares `normalization_type = percentile_rank_v1`, while
+   the digested `SUBFACTORS` and `PE_DOMAIN_V1` score both P/E legs through
+   the convex transform. The engine never consumes a V-leg spec's
+   `normalization_type` (`FactorPlan.scorer` names the `pit_valuation_spec`
+   scorer instead); recording the divergence in the spec's own note is a v7
+   body change.
+
+## What a 200-target smoke of the 1.2 engine wrote (2026-09-23, disposable DB)
+
+Read-only on the store, one date (2019-06-28), 200 targets, 6,336 entities
+indexed, 2,211 of them priced, 396 s (most of it the market side: one price
+read, one share audit, one TTM ladder walk and one split-gate read per priced
+entity). 121 scored, 79 refused for block coverage. Availability (complete /
+200): ebitda_benchmark 65, ebitda_growth 84, ebitda_efficiency 97,
+ebitda_acceleration 76, pe_absolute 85, pe_relative 78, ev_ebitda_supplement
+**0**, real_revenue_growth 167, fcf_conversion 65, interest_coverage 83 (13
+of them floor-state rows), net_debt_ebitda 7, debt_market_cap 1. V presence:
+85 PRESENT_DEGRADED (78 with both P/E legs), 115 ABSENT. Signatures scored:
+EVGQ 20, EG 28, VG 37, EGQ 18, EVG 11, VGQ 7, GQ 3, and 43 G-only / 21 NONE /
+10 V-only / 2 E-only refused by the block floor.
+
+**Why EV/EBITDA is zero and the leverage ratios are rare** — the rulings'
+funnel, not a defect: of 200 targets, 76 have no scored listing, 68 have a
+price but NO market cap under the strict share policy (34 only a period
+average, 16 a stale count, 14 never filed a count), 23 have no EBITDA period,
+12 fail the sic2 valuation peer-set gate, 8 + 4 + 3 fail the strict debt-rung
+walk (rejected / undetermined / no rung at P), 5 have EBITDA ≤ 0, 1 is
+ambiguous. `net_debt_ebitda` loses 44 of its 101 EBITDA-bearing targets to the
+debt-rung gate and 20 to EBITDA ≤ 0. These are the owner's rules doing what
+they say; the numbers are here so the cost is visible before any pilot.
+
+## What v6 digests that v5 did not
+
+`FACTOR_SPEC_VERSION_V5` / `SPECS_V5` (four successor eligibility rules matched
+at the EBITDA period), `FORMULAS_VERSION_V2` / `FORMULAS_V2` / `FORMULA_GOLDEN_V2`
+(V1 and its witnesses kept verbatim), `EBITDA_GROWTH_BASE_POLICY_V2`,
+`INTEREST_COVERAGE_DOMAIN_V2`, `LEVERAGE_DOMAIN_V1`, `FCF_DOMAIN_V1`,
+`MARKET_CAP_DOMAIN_V1`, `EV_EBITDA_DOMAIN_V1`, `PE_DOMAIN_V1`, `DEBT_RUNG_GATE_V1`,
+`PEER_FLOOR_V1`, `WITHIN_BLOCK_FLOOR_VERSION` / `WITHIN_BLOCK_FLOOR_V1`,
+`EV_TRANSFORM_VERSION` / `EV_TRANSFORM_PARAMS_V1`, `ACTION_GATE_SEMANTICS_V2`,
+`PRICE_BASIS_TRANSLATION_V1`, `VALUATION_PRICE_POLICY_V1`. Proven by perturbation
+(`test_pit_frozen_spec`, section 2): reverting `net_debt_ebitda`'s v5 rule,
+lowering one peer floor, relaxing Q's within-block floor, changing the
+`pe_relative` curve in `FORMULAS_V2` and widening the valuation price window
+each break the freeze with no version string touched, and each is located to
+its component.
+
+## What the engine now writes that it did not
+
+`listing_id` on the four price-dependent feature rows and on the score row;
+`pit_listing` seeded in the pilot so the FK is real. `resolved_inputs_json`
+codes: `bm` / `as` (the anchor and its source), `nb` (band size), `nf`
+(floor-state members excluded), `fs` (the floor state), `db` (the debt rung's
+bound), `cr` / `cx` (cash and capex rungs), `pa` (price age in days), `pr` /
+`mr` (price and market-cap refusals), `sc` (split check), `ek` / `em` / `pl`
+(EPS concept, method, leg), `gs` / `bf` (gate status, basis factor), `tr`
+(the transform's branch and `u`), `evv` (enterprise value). The pillar row's
+`subfactors_json` carries each leg's reason (`r`) and the block's floor or V's
+presence state. The score row fills `valuation_presence_state`,
+`valuation_quality_rule` (`UNDECIDED`), `valuation_subfactors_json`,
+`earnings_discontinuity_state` and `valuation_benchmark_level`; `notes_json`
+carries `block_reasons`, `price_age_days` and `debt_bound`. Per-date statistics
+gain `block_refusals`, `valuation_presence`, `debt_bounds_scored`,
+`n_floor_state`, `n_priced`, `n_listing_ambiguous`.
+
+## Executability
+
+v6 is executable only while `pit_replay.FACTOR_SPEC_VERSION ==
+ENGINE_MUST_DERIVE_FROM` (`factor_spec_v5`). Census 13 / 0 / 0, reachable
+weight 0.85. A company scored under 1.1 on E plus a single-factor Q is refused
+under 1.2 by `WITHIN_BLOCK_FLOOR_V1`, by design. The 1.2 engine's memory is
+NOT yet measured (`Primitives` grew; the per-entity price, share-audit and TTM
+reads entered the per-date cost): `pit_replay_rss` runs one child at a time
+before any sizing pilot. The four-date pilot rerun and the 165-date replay
+need the owner's word. No replay authorisation exists.
