@@ -71,3 +71,18 @@ Preserve: two completed dates, the guard breach, no third-date writes.
 - No 165-date replay without explicit owner authorisation.
 - No edits to spec_freeze_v1/v2/v3/v4 in place — a change is a v5.
 - No writes to the main store.
+
+---
+
+## Status after the reboot — 2026-09-22 (post-reboot session)
+
+Executed in order: §1 re-measured (free disk 13.85 GiB, pagefile 7.45 GiB
+system-managed, untouched); §2 confirmed (v4 intact, digest 912268b3…, store
+byte-identical); §3 done (run row 1 → `ABORTED_RESOURCE_GUARD`, UTC timestamps
+from the meter report — the SQL above wrote local time with a Z suffix); Phase 2
+implemented and measured; D3 reported, not changed; Phase 3, 5, 6/7 NOT started.
+The full account, the measurements and every contradiction found are in
+`docs/POST-REBOOT-REPORT-2026-09-22.md`; the D3 evidence in
+`docs/D3-EVIDENCE-2026-09-22.md`; the v4 audit in
+`docs/V4-GOVERNANCE-AUDIT-2026-09-22.md`; the streaming design record in
+`docs/STREAMING-REPLAY-DESIGN-2026-09-22.md`.

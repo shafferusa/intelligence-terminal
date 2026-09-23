@@ -134,7 +134,7 @@ import pit_valuation_spec
 
 __all__ = [
     "ENGINE_VERSION", "MODEL_VERSION", "SAMPLE_SCOPE", "AS_OF_GRID",
-    "ReplayRefused", "FreeSpaceAbort",
+    "ReplayRefused", "FreeSpaceAbort", "DEFAULT_BATCH_SIZE",
     "VERDICT_COMPUTABLE", "VERDICT_REFUSED_AMBIGUOUS", "VERDICT_NOT_COMPUTABLE",
     "FactorPlan", "FACTOR_PLAN", "REPLAY_FEATURE_KEYS", "BLOCK_KEYS",
     "REASON_WHY", "ENGINE_REASONS", "KNOWN_LIMITATIONS", "plan_record",
@@ -171,8 +171,20 @@ FACTOR_SPEC_VERSION = "factor_spec_v2"
 GIB = 1024 ** 3
 
 #: The per-date abort floor. Checked with `shutil.disk_usage` BEFORE every
-#: date, never after. CONVENTION, not measurement.
+#: date, and -- since the write side was streamed -- after every committed
+#: batch inside a date. CONVENTION, not measurement.
 FREE_FLOOR_BYTES = int(7.0 * GIB)
+
+#: THE WRITE SIDE IS STREAMED. `run_date` flushes its three row lists to the
+#: pilot DB every this-many targets (compute -> write -> commit -> clear), so
+#: the write-side memory is bounded by the batch rather than by the
+#: cross-section. `None` (or 0) means one batch = the whole cross-section,
+#: which is the pre-2026-09-22 behaviour, kept for the equality oracle.
+#:
+#: This bounds ONLY the write side. The fact index and the primitives are a
+#: once-per-date, O(cross-section) cost that this constant does not touch.
+#: Whether the bound holds is a MEASUREMENT (pit_replay_rss.py), not a claim.
+DEFAULT_BATCH_SIZE = 500
 
 #: Writer pragmas, recorded on the run so a byte measurement can be read
 #: alongside the settings that produced it.
@@ -977,14 +989,20 @@ def _mask(block: str, present: Mapping[str, Any]) -> str:
                     for k in scoring)
 
 
-def _db_dir(conn: sqlite3.Connection) -> str:
-    """The directory of the connection's main database file."""
+def _db_file(conn: sqlite3.Connection) -> Optional[str]:
+    """The connection's main database file, or None for an in-memory DB."""
     for row in conn.execute("PRAGMA database_list").fetchall():
         if (row[1] if not isinstance(row, sqlite3.Row) else row["name"]) == "main":
             path = row[2] if not isinstance(row, sqlite3.Row) else row["file"]
             if path:
-                return os.path.dirname(os.path.abspath(path)) or "."
-    return "."
+                return os.path.abspath(path)
+    return None
+
+
+def _db_dir(conn: sqlite3.Connection) -> str:
+    """The directory of the connection's main database file."""
+    path = _db_file(conn)
+    return (os.path.dirname(path) or ".") if path else "."
 
 
 # ==========================================================================
@@ -998,20 +1016,34 @@ def run_date(main_conn_ro: sqlite3.Connection, pilot_conn: sqlite3.Connection,
              meter: Any = None,
              per_table_scopes: bool = False,
              freeze_digest: str = "",
-             progress: Optional[Any] = None) -> Dict[str, Any]:
+             progress: Optional[Any] = None,
+             batch_size: Optional[int] = DEFAULT_BATCH_SIZE,
+             free_floor_bytes: Optional[int] = None) -> Dict[str, Any]:
     """One complete cross-section: resolve, normalise, assemble, write.
 
     `main_conn_ro` MUST be a read-only handle on the store -- pass
     `open_store()`. `pilot_conn` is a writer on the isolated pilot DB. The two
     are never the same file, and this function opens neither.
 
+    The write side is STREAMED: every `batch_size` targets the accumulated
+    feature / pillar / score rows are written, committed and cleared, so the
+    rows held in memory are bounded by the batch. `batch_size=None` keeps the
+    whole cross-section in memory and writes once (the original behaviour).
+    The per-entity arithmetic is identical either way; the equality oracle in
+    test_pit_replay proves it row for row. When `free_floor_bytes` is given,
+    free space is checked after every committed batch and a breach raises
+    `FreeSpaceAbort` carrying a `.detail` dict that says exactly what was
+    committed before it -- the batches already written are NOT rolled back.
+
     Returns per-date statistics: row counts by table, refusal and signature
-    counts, elapsed seconds, the checkpoint return value, and the availability
-    tally per feature key.
+    counts, elapsed seconds, the checkpoint return value, the availability
+    tally per feature key, and the batch count.
     """
     day = str(as_of)[:10]
     t0 = time.monotonic()
     created = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+    if batch_size is not None and int(batch_size) <= 0:
+        batch_size = None
 
     def tick(stage: str, **extra: Any) -> None:
         if progress is not None:
@@ -1070,6 +1102,105 @@ def run_date(main_conn_ro: sqlite3.Connection, pilot_conn: sqlite3.Connection,
     feature_rows: List[Tuple[Any, ...]] = []
     pillar_rows: List[Tuple[Any, ...]] = []
     score_rows: List[Tuple[Any, ...]] = []
+
+    # ---- the write side, STREAMED ----------------------------------------
+    # The three lists above are flushed every `batch_size` targets. What is
+    # in memory at any moment is one batch of rows, not the cross-section.
+    # The `primitives` dict and the cohort cache above are NOT bounded by
+    # this: they are the once-per-date fixed cost, measured separately.
+    written: Dict[str, int] = {"pit_feature": 0, "pit_pillar_score": 0,
+                               "pit_score": 0}
+    n_batches_written = 0
+    n_in_batch = 0
+    n_targets_written = 0
+    pilot_dir = _db_dir(pilot_conn)
+    pilot_file = _db_file(pilot_conn)
+    wal_path = (pilot_file + "-wal") if pilot_file else None
+    wal_peak_observed = 0
+    wal_peak_batch = 0
+    tables = (("pit_feature", FEATURE_SQL, feature_rows),
+              ("pit_pillar_score", PILLAR_SQL, pillar_rows),
+              ("pit_score", SCORE_SQL, score_rows))
+
+    def _flush(final: bool) -> None:
+        """Guard free space, then write, commit and CLEAR the pending rows."""
+        nonlocal n_batches_written, n_in_batch, n_targets_written
+        nonlocal wal_peak_observed, wal_peak_batch
+        pending = bool(feature_rows or pillar_rows or score_rows)
+        if not pending and (not final or n_batches_written > 0):
+            return                          # nothing to write, nothing to count
+        batch_no = n_batches_written + 1
+        # The floor is checked BEFORE the write, so it PREVENTS a write below
+        # the floor rather than reporting one. It also runs before any tick:
+        # a driver-side guard raising inside the progress callback would
+        # otherwise pre-empt this path, and its exception carries no record
+        # of what was committed.
+        if free_floor_bytes is not None:
+            free = shutil.disk_usage(pilot_dir).free
+            if free < int(free_floor_bytes):
+                exc = FreeSpaceAbort(
+                    "free %.3f GiB is below the %.3f GiB floor mid-date on %s "
+                    "before batch %d; that batch was NOT written; %d targets "
+                    "and rows %s from earlier batches are COMMITTED and stay "
+                    "in the pilot DB"
+                    % (free / GIB, int(free_floor_bytes) / GIB, day, batch_no,
+                       n_targets_written, written))
+                exc.detail = {                                  # type: ignore
+                    "as_of": day, "stage": "batch_full",
+                    "batch_refused": batch_no, "batch_size": batch_size,
+                    "n_targets_written": n_targets_written,
+                    "n_targets_pending_not_written": n_in_batch,
+                    "n_targets": len(targets),
+                    "rows_written": dict(written),
+                    "free_bytes": free, "floor_bytes": int(free_floor_bytes),
+                }
+                raise exc
+        # The batch is at its memory PEAK here -- assembled, not yet written.
+        # An observer (the RSS harness) that wants to see the write side at
+        # its largest sees it through this tick, before a row leaves.
+        tick("batch_full", batch=batch_no, n_targets=n_in_batch,
+             n_features=len(feature_rows), n_pillars=len(pillar_rows),
+             n_scores=len(score_rows))
+        n_batches_written = batch_no
+        if per_table_scopes and meter is not None:
+            # MEASUREMENT MODE: one commit per table, inside the meter's
+            # scope, because a scope attributes only COMMITTED pages.
+            # Exclusivity is verified on the first batch of the date only:
+            # it is a property of the code path, not of the batch, and each
+            # check costs a count(*) on every exclusivity table twice over.
+            for table, sql, rows in tables:
+                if rows or final:
+                    with meter.table_scope(table,
+                                           expect_exclusive=(batch_no == 1)):
+                        pilot_conn.executemany(sql, rows)
+                        pilot_conn.commit()
+                written[table] += len(rows)
+        else:
+            # PRODUCTION MODE: ONE transaction per batch, so a batch is atomic
+            # across the three tables -- a target never has its feature rows
+            # committed without its pillar rows.
+            for table, sql, rows in tables:
+                pilot_conn.executemany(sql, rows)
+                written[table] += len(rows)
+            pilot_conn.commit()
+        for _, _, rows in tables:
+            rows.clear()                    # the point of the exercise
+        n_targets_written += n_in_batch
+        n_in_batch = 0
+        wal_now = 0
+        if wal_path:
+            try:
+                wal_now = os.path.getsize(wal_path)
+            except OSError:
+                wal_now = 0
+        if wal_now > wal_peak_observed:
+            wal_peak_observed, wal_peak_batch = wal_now, batch_no
+        tick("write_batch", batch=batch_no,
+             n_targets=n_targets_written,
+             n_features=written["pit_feature"],
+             n_pillars=written["pit_pillar_score"],
+             n_scores=written["pit_score"],
+             wal_bytes=wal_now)
 
     availability_tally: Dict[str, Dict[str, int]] = {
         k: {"complete": 0, "unavailable": 0} for k in REPLAY_FEATURE_KEYS}
@@ -1276,22 +1407,39 @@ def run_date(main_conn_ro: sqlite3.Connection, pilot_conn: sqlite3.Connection,
                 None, None, None, None, None,
             ))
 
-    # ---- write ------------------------------------------------------------
-    tick("write", n_features=len(feature_rows), n_pillars=len(pillar_rows),
-         n_scores=len(score_rows))
-    written: Dict[str, int] = {}
-    batches = (("pit_feature", FEATURE_SQL, feature_rows),
-               ("pit_pillar_score", PILLAR_SQL, pillar_rows),
-               ("pit_score", SCORE_SQL, score_rows))
-    for table, sql, rows in batches:
-        if per_table_scopes and meter is not None:
-            with meter.table_scope(table):
-                pilot_conn.executemany(sql, rows)
-                pilot_conn.commit()
-        else:
-            pilot_conn.executemany(sql, rows)
-            pilot_conn.commit()
-        written[table] = len(rows)
+        # ---- STREAMING: flush the write side every `batch_size` targets ---
+        n_in_batch += 1
+        if batch_size is not None and n_in_batch >= int(batch_size):
+            _flush(final=False)
+
+    # ---- write: whatever is still pending (everything, when unbatched) ----
+    pending_final = bool(feature_rows or pillar_rows or score_rows)
+    tick("write", n_features=written["pit_feature"] + len(feature_rows),
+         n_pillars=written["pit_pillar_score"] + len(pillar_rows),
+         n_scores=written["pit_score"] + len(score_rows),
+         n_batches=(n_batches_written
+                    + (1 if (pending_final or n_batches_written == 0) else 0)),
+         batch_size=batch_size)
+    _flush(final=True)
+
+    # ---- the accounting must close, batched or not ------------------------
+    # 13 feature rows and 4 pillar rows per target, at most one score row,
+    # and every target written. A miscount here is an engine defect, and an
+    # engine defect stops the run rather than leaving a plausible table.
+    expected = {
+        "pit_feature": len(REPLAY_FEATURE_KEYS) * n_targets_written,
+        "pit_pillar_score": len(pit_factor_blocks.BLOCKS) * n_targets_written,
+    }
+    if (n_targets_written != len(targets)
+            or written["pit_feature"] != expected["pit_feature"]
+            or written["pit_pillar_score"] != expected["pit_pillar_score"]
+            or written["pit_score"] > n_targets_written):
+        raise RuntimeError(
+            "row accounting did not close on %s: targets %d written %d, rows "
+            "%s, expected features %d pillars %d scores <= %d"
+            % (day, len(targets), n_targets_written, written,
+               expected["pit_feature"], expected["pit_pillar_score"],
+               n_targets_written))
 
     # ---- checkpoint, WITH THE RETURN VALUE READ ---------------------------
     tick("checkpoint")
@@ -1332,6 +1480,15 @@ def run_date(main_conn_ro: sqlite3.Connection, pilot_conn: sqlite3.Connection,
         "n_eligible_peer_calls": cohort_cache.n_eligible_calls,
         "checkpoint": checkpoint,
         "free_bytes_after": free_after,
+        "batch_size": batch_size,
+        "n_batches": n_batches_written,
+        "n_targets_written": n_targets_written,
+        "wal_peak_bytes_observed": wal_peak_observed,
+        "wal_peak_batch": wal_peak_batch,
+        "wal_peak_note": (
+            "largest -wal size seen right after a batch commit; a lower "
+            "bound (SQLite's auto-checkpoint can run inside a commit), and "
+            "with batching the WAL no longer holds a whole date"),
         "elapsed_s": round(time.monotonic() - t0, 2),
     }
 
@@ -1349,13 +1506,21 @@ def run_pilot(dates: Sequence[str], pilot_db_path: str, *,
               measure: bool = True,
               per_table_scopes: bool = True,
               sample_hz: float = 5.0,
-              progress: Optional[Any] = None) -> Dict[str, Any]:
+              progress: Optional[Any] = None,
+              batch_size: Optional[int] = DEFAULT_BATCH_SIZE) -> Dict[str, Any]:
     """The whole pilot: gate, build, seed, replay each date, report.
 
     ORDER IS THE CONTRACT. The gate is evaluated while the only open handle is
     read-only; only after it passes does a writable connection exist at all.
-    Free space is checked BEFORE every date, and a breach stops the run and
-    reports how far it got rather than discovering the floor experimentally.
+    Free space is checked BEFORE every date and after every committed batch
+    within a date; a breach stops the run and reports how far it got rather
+    than discovering the floor experimentally.
+
+    THE RUN ROW TELLS THE TRUTH. Whatever ends the run -- completion, a
+    free-space breach before or inside a date, or any other exception -- the
+    `pit_replay_run` row is finalised with a status that says so. The first
+    sizing pilot was aborted by a driver-side guard and its row read
+    'running' for a day; that cannot happen again from this function.
     """
     started = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
     t0 = time.monotonic()
@@ -1389,6 +1554,7 @@ def run_pilot(dates: Sequence[str], pilot_db_path: str, *,
         "store_path": os.path.abspath(store_path),
         "free_floor_bytes": free_floor_bytes,
         "free_bytes_at_start": usage.free,
+        "batch_size": batch_size,
         "plan": plan_record(),
         "dates": [],
         "aborted": None,
@@ -1456,44 +1622,110 @@ def run_pilot(dates: Sequence[str], pilot_db_path: str, *,
         totals: Dict[str, int] = {"pit_feature": 0, "pit_pillar_score": 0,
                                   "pit_score": 0}
         entity_dates = 0
-        for day in days:
-            # ---- FREE-SPACE GUARD, before the date, every date ------------
-            usage = shutil.disk_usage(pilot_dir)
-            if usage.free < free_floor_bytes:
-                report["aborted"] = {
-                    "at_date": day,
-                    "reason": "FREE_SPACE_FLOOR",
-                    "free_bytes": usage.free,
-                    "floor_bytes": free_floor_bytes,
-                    "dates_completed": [d["as_of"] for d in report["dates"]],
-                    "entity_dates_completed": entity_dates,
-                }
-                break
-            if meter is not None:
-                meter.begin(day)
-            stats = run_date(store_conn, pilot_conn, day, run_id,
-                             entity_limit=entity_limit, entity_ids=entity_ids,
-                             meter=meter, per_table_scopes=per_table_scopes,
-                             freeze_digest=digest, progress=progress)
-            report["dates"].append(stats)
-            for table, n in stats["rows"].items():
-                totals[table] = totals.get(table, 0) + n
-            entity_dates += stats["entity_dates"]
-            if meter is not None:
-                meter.mark(day, entity_dates=stats["entity_dates"],
-                           rows=stats["rows"])
+        day: Optional[str] = None
+
+        def _utc_now() -> str:
+            return _dt.datetime.now(_dt.timezone.utc).isoformat(
+                timespec="seconds")
+
+        try:
+            for day in days:
+                # ---- FREE-SPACE GUARD, before the date, every date --------
+                usage = shutil.disk_usage(pilot_dir)
+                if usage.free < free_floor_bytes:
+                    report["aborted"] = {
+                        "at_date": day,
+                        "reason": "FREE_SPACE_FLOOR",
+                        "free_bytes": usage.free,
+                        "floor_bytes": free_floor_bytes,
+                        "dates_completed": [d["as_of"] for d in report["dates"]],
+                        "entity_dates_completed": entity_dates,
+                    }
+                    break
+                if meter is not None:
+                    meter.begin(day)
+                stats = run_date(store_conn, pilot_conn, day, run_id,
+                                 entity_limit=entity_limit, entity_ids=entity_ids,
+                                 meter=meter, per_table_scopes=per_table_scopes,
+                                 freeze_digest=digest, progress=progress,
+                                 batch_size=batch_size,
+                                 free_floor_bytes=free_floor_bytes)
+                report["dates"].append(stats)
+                for table, n in stats["rows"].items():
+                    totals[table] = totals.get(table, 0) + n
+                entity_dates += stats["entity_dates"]
+                if meter is not None:
+                    # With per-table scopes on, each scope has already added
+                    # its committed row delta to the meter; passing the rows
+                    # again here double-counted them in the first pilot
+                    # (396,084 reported against 198,042 in the DB).
+                    meter.mark(day, entity_dates=stats["entity_dates"],
+                               rows=(None if per_table_scopes
+                                     else stats["rows"]))
+        except FreeSpaceAbort as exc:
+            # A MID-DATE breach, raised by run_date after a COMMITTED batch.
+            # The batches already written stay; the row says exactly which.
+            detail = dict(getattr(exc, "detail", None) or {})
+            report["aborted"] = {
+                "at_date": day,
+                "reason": "FREE_SPACE_FLOOR_MID_DATE",
+                "free_bytes": detail.get("free_bytes"),
+                "floor_bytes": free_floor_bytes,
+                "dates_completed": [d["as_of"] for d in report["dates"]],
+                "entity_dates_completed": entity_dates,
+                "partial_date": detail,
+                "message": str(exc),
+            }
+        except BaseException as exc:
+            # ANY other way out -- a driver-side guard, a crash, Ctrl-C --
+            # must not leave the run row claiming it is still running.
+            try:
+                pilot_conn.rollback()
+                pilot_conn.execute(
+                    "UPDATE pit_replay_run SET finished_at = ?, status = ?, "
+                    "n_entities = ?, invalidated_reason = ?, summary_json = ? "
+                    "WHERE run_id = ?",
+                    (_utc_now(), "aborted_exception", entity_dates,
+                     "%s: %s" % (exc.__class__.__name__, exc),
+                     json.dumps({"plan": plan_record(), "totals": totals,
+                                 "entity_dates": entity_dates,
+                                 "dates_completed": [d["as_of"]
+                                                     for d in report["dates"]],
+                                 # the per-date statistics survive the
+                                 # exception here, not only in the caller's
+                                 # discarded report
+                                 "dates": report["dates"],
+                                 "at_date": day, "batch_size": batch_size,
+                                 "exception": {
+                                     "type": exc.__class__.__name__,
+                                     "message": str(exc)}},
+                                separators=(",", ":")),
+                     run_id))
+                pilot_conn.commit()
+            except Exception:                 # never mask the original failure
+                pass
+            raise
 
         report["totals"] = totals
         report["entity_dates"] = entity_dates
+        aborted = report["aborted"]
         pilot_conn.execute(
             "UPDATE pit_replay_run SET finished_at = ?, status = ?, "
-            "n_entities = ?, summary_json = ? WHERE run_id = ?",
-            (_dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
-             "aborted_free_space" if report["aborted"] else "complete",
+            "n_entities = ?, invalidated_reason = ?, summary_json = ? "
+            "WHERE run_id = ?",
+            (_utc_now(),
+             "aborted_free_space" if aborted else "complete",
              entity_dates,
+             ("%s at %s: %s" % (aborted["reason"], aborted.get("at_date"),
+                                aborted.get("message") or "free space floor")
+              if aborted else None),
              json.dumps({"plan": plan_record(), "totals": totals,
                          "entity_dates": entity_dates,
-                         "aborted": report["aborted"]},
+                         "dates_completed": [d["as_of"]
+                                             for d in report["dates"]],
+                         "dates": report["dates"],
+                         "batch_size": batch_size,
+                         "aborted": aborted},
                         separators=(",", ":")),
              run_id))
         pilot_conn.commit()
@@ -1648,6 +1880,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--smoke", metavar="DATE",
                         help="run one date into a throwaway pilot DB")
     parser.add_argument("--limit", type=int, default=50)
+    parser.add_argument("--batch", type=int, default=DEFAULT_BATCH_SIZE,
+                        help="targets per write batch; 0 = the whole "
+                             "cross-section in one write (legacy)")
     parser.add_argument("--pilot", default=pit_replay_manifest.PILOT_DB_PATH)
     args = parser.parse_args(argv)
 
@@ -1666,7 +1901,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         for reason in reasons:
             print("  -", reason)
     if args.smoke:
-        report = run_pilot([args.smoke], args.pilot, entity_limit=args.limit)
+        report = run_pilot([args.smoke], args.pilot, entity_limit=args.limit,
+                           batch_size=(args.batch or None))
         print(render(report))
     return 0
 

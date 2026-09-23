@@ -1,0 +1,464 @@
+{
+ "harness": "pit_replay_rss/1.0",
+ "generated_at": "2026-09-22T23:40:22+00:00",
+ "engine": "pit_replay/1.0",
+ "freeze": {
+  "version": "spec_freeze_v4",
+  "digest": "912268b3ec11bfc641fcac78078a0fb288cc51ce5432f8c27f931a532d1faae9",
+  "intact": true,
+  "can_execute": true,
+  "why_not": []
+ },
+ "date": "2019-06-28",
+ "limits": [
+  1000
+ ],
+ "batch_size": 500,
+ "modes": [
+  "stream",
+  "legacy"
+ ],
+ "free_floor_bytes": 7516192768,
+ "scratch": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_cj_3dp16",
+ "machine_at_start": {
+  "total_phys": 8002048000,
+  "avail_phys": 1827045376,
+  "total_commit": 16004096000,
+  "avail_commit": 1984253952,
+  "memory_load_pct": 77
+ },
+ "free_bytes_at_start": 14726508544,
+ "runs": [
+  {
+   "date": "2019-06-28",
+   "limit": 1000,
+   "batch_size": 500,
+   "mode": "stream",
+   "started_at": "2026-09-22T23:40:22+00:00",
+   "elapsed_s": 280.1,
+   "returncode": 0,
+   "child_pid": 14444,
+   "peak_ws_bytes": 216748032,
+   "peak_ws_mib": 206.7,
+   "peak_ws_parent_polled_bytes": 4468736,
+   "peak_ws_child_reported_bytes": 216748032,
+   "peak_pagefile_bytes": 913408,
+   "peak_pagefile_mib": 0.9,
+   "ws_at_tick_mib": {
+    "universe": 46.9,
+    "cohorts": 48.9,
+    "fact_index": 51.6,
+    "primitives": 196.9,
+    "assemble": 194.4,
+    "write": 206.7,
+    "checkpoint": 206.7
+   },
+   "fixed_cost_ws_bytes": 203862016,
+   "fixed_cost_ws_mib": 194.4,
+   "write_side_delta_bytes": 12886016,
+   "write_side_delta_mib": 12.3,
+   "write_batch_ws_mib_min_max": [
+    201.3,
+    206.7
+   ],
+   "n_write_batch_ticks": 2,
+   "attribution_note": "fixed_cost_ws is the working set at the 'assemble' tick: fact index loaded, primitives resolved, index cleared, nothing assembled. write_side_delta = peak - fixed_cost_ws. The index is cleared before 'assemble' but Python need not return its pages to the OS, so fixed_cost_ws is an upper bound on what the write side had to share the machine with, and write_side_delta a lower-bound-free attribution of what assembly and writing added.",
+   "child_start": {
+    "child": "start",
+    "pid": 12632,
+    "date": "2019-06-28",
+    "limit": 1000,
+    "batch_size": 500,
+    "db": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_cj_3dp16\\rss_stream_1000.db",
+    "ws": 40960000,
+    "peak_ws": 40960000,
+    "pagefile": 33288192,
+    "peak_pagefile": 33288192
+   },
+   "child_done": {
+    "child": "done",
+    "elapsed_s": 279.46,
+    "error": null,
+    "aborted": null,
+    "rows": {
+     "pit_feature": 13000,
+     "pit_pillar_score": 4000,
+     "pit_score": 461
+    },
+    "n_targets": 1000,
+    "n_entities_indexed": 6926,
+    "n_batches": 2,
+    "batch_size": 500,
+    "n_scored": 461,
+    "signatures": {
+     "G": 313,
+     "NONE": 204,
+     "EG": 461,
+     "E": 22
+    },
+    "checkpoint": {
+     "mode": "TRUNCATE",
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "return_semantics": "a SUCCESSFUL TRUNCATE returns (0, 0, 0) because the log is reset; that is not a no-op. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature."
+    },
+    "freeze_unchanged": true,
+    "ws": 197619712,
+    "peak_ws": 216748032,
+    "pagefile": 191266816,
+    "peak_pagefile": 209108992
+   },
+   "n_ticks": 9,
+   "ticks": [
+    {
+     "tick": "universe",
+     "as_of": "2019-06-28",
+     "elapsed_s": 1.97,
+     "ws": 49168384,
+     "peak_ws": 55144448,
+     "pagefile": 40542208,
+     "peak_pagefile": 46821376
+    },
+    {
+     "tick": "cohorts",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.62,
+     "n_targets": 1000,
+     "ws": 51326976,
+     "peak_ws": 55144448,
+     "pagefile": 42168320,
+     "peak_pagefile": 46821376
+    },
+    {
+     "tick": "fact_index",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.65,
+     "n_entities": 6926,
+     "ws": 54120448,
+     "peak_ws": 55144448,
+     "pagefile": 45846528,
+     "peak_pagefile": 46821376
+    },
+    {
+     "tick": "primitives",
+     "as_of": "2019-06-28",
+     "elapsed_s": 60.27,
+     "n_entities": 6926,
+     "ws": 206475264,
+     "peak_ws": 211996672,
+     "pagefile": 197877760,
+     "peak_pagefile": 203423744
+    },
+    {
+     "tick": "assemble",
+     "as_of": "2019-06-28",
+     "elapsed_s": 60.69,
+     "n_targets": 1000,
+     "ws": 203862016,
+     "peak_ws": 211996672,
+     "pagefile": 195244032,
+     "peak_pagefile": 203423744
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 234.91,
+     "batch": 1,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 246,
+     "ws": 211070976,
+     "peak_ws": 211996672,
+     "pagefile": 202334208,
+     "peak_pagefile": 203423744
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 279.43,
+     "batch": 2,
+     "n_targets": 1000,
+     "n_features": 13000,
+     "n_pillars": 4000,
+     "n_scores": 461,
+     "ws": 216748032,
+     "peak_ws": 216748032,
+     "pagefile": 209108992,
+     "peak_pagefile": 209108992
+    },
+    {
+     "tick": "write",
+     "as_of": "2019-06-28",
+     "elapsed_s": 279.43,
+     "n_features": 13000,
+     "n_pillars": 4000,
+     "n_scores": 461,
+     "n_batches": 2,
+     "batch_size": 500,
+     "ws": 216748032,
+     "peak_ws": 216748032,
+     "pagefile": 209108992,
+     "peak_pagefile": 209108992
+    },
+    {
+     "tick": "checkpoint",
+     "as_of": "2019-06-28",
+     "elapsed_s": 279.43,
+     "ws": 216748032,
+     "peak_ws": 216748032,
+     "pagefile": 209108992,
+     "peak_pagefile": 209108992
+    }
+   ],
+   "stderr_tail": [],
+   "other_stdout_lines": [],
+   "machine_before": {
+    "total_phys": 8002048000,
+    "avail_phys": 1827028992,
+    "total_commit": 16004096000,
+    "avail_commit": 1984253952,
+    "memory_load_pct": 77
+   },
+   "machine_after": {
+    "total_phys": 8002048000,
+    "avail_phys": 1857830912,
+    "total_commit": 16004096000,
+    "avail_commit": 2013298688,
+    "memory_load_pct": 76
+   }
+  },
+  {
+   "date": "2019-06-28",
+   "limit": 1000,
+   "batch_size": null,
+   "mode": "legacy",
+   "started_at": "2026-09-22T23:45:02+00:00",
+   "elapsed_s": 313.5,
+   "returncode": 0,
+   "child_pid": 17932,
+   "peak_ws_bytes": 218906624,
+   "peak_ws_mib": 208.8,
+   "peak_ws_parent_polled_bytes": 4734976,
+   "peak_ws_child_reported_bytes": 218906624,
+   "peak_pagefile_bytes": 954368,
+   "peak_pagefile_mib": 0.9,
+   "ws_at_tick_mib": {
+    "universe": 47.8,
+    "cohorts": 49.8,
+    "fact_index": 52.3,
+    "primitives": 196.4,
+    "assemble": 194.4,
+    "write": 196.4,
+    "checkpoint": 208.8
+   },
+   "fixed_cost_ws_bytes": 203890688,
+   "fixed_cost_ws_mib": 194.4,
+   "write_side_delta_bytes": 15015936,
+   "write_side_delta_mib": 14.3,
+   "write_batch_ws_mib_min_max": [
+    208.8,
+    208.8
+   ],
+   "n_write_batch_ticks": 1,
+   "attribution_note": "fixed_cost_ws is the working set at the 'assemble' tick: fact index loaded, primitives resolved, index cleared, nothing assembled. write_side_delta = peak - fixed_cost_ws. The index is cleared before 'assemble' but Python need not return its pages to the OS, so fixed_cost_ws is an upper bound on what the write side had to share the machine with, and write_side_delta a lower-bound-free attribution of what assembly and writing added.",
+   "child_start": {
+    "child": "start",
+    "pid": 7984,
+    "date": "2019-06-28",
+    "limit": 1000,
+    "batch_size": null,
+    "db": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_cj_3dp16\\rss_legacy_1000.db",
+    "ws": 40980480,
+    "peak_ws": 40980480,
+    "pagefile": 33304576,
+    "peak_pagefile": 33304576
+   },
+   "child_done": {
+    "child": "done",
+    "elapsed_s": 312.71,
+    "error": null,
+    "aborted": null,
+    "rows": {
+     "pit_feature": 13000,
+     "pit_pillar_score": 4000,
+     "pit_score": 461
+    },
+    "n_targets": 1000,
+    "n_entities_indexed": 6926,
+    "n_batches": 1,
+    "batch_size": null,
+    "n_scored": 461,
+    "signatures": {
+     "G": 313,
+     "NONE": 204,
+     "EG": 461,
+     "E": 22
+    },
+    "checkpoint": {
+     "mode": "TRUNCATE",
+     "busy": 0,
+     "log_pages": 0,
+     "checkpointed": 0,
+     "return_read": true,
+     "busy_refusal": false,
+     "return_semantics": "a SUCCESSFUL TRUNCATE returns (0, 0, 0) because the log is reset; that is not a no-op. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature."
+    },
+    "freeze_unchanged": true,
+    "ws": 198201344,
+    "peak_ws": 218906624,
+    "pagefile": 189239296,
+    "peak_pagefile": 210427904
+   },
+   "n_ticks": 8,
+   "ticks": [
+    {
+     "tick": "universe",
+     "as_of": "2019-06-28",
+     "elapsed_s": 1.93,
+     "ws": 50094080,
+     "peak_ws": 56074240,
+     "pagefile": 41308160,
+     "peak_pagefile": 47587328
+    },
+    {
+     "tick": "cohorts",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.62,
+     "n_targets": 1000,
+     "ws": 52166656,
+     "peak_ws": 56074240,
+     "pagefile": 42934272,
+     "peak_pagefile": 47587328
+    },
+    {
+     "tick": "fact_index",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.65,
+     "n_entities": 6926,
+     "ws": 54837248,
+     "peak_ws": 56074240,
+     "pagefile": 46616576,
+     "peak_pagefile": 47587328
+    },
+    {
+     "tick": "primitives",
+     "as_of": "2019-06-28",
+     "elapsed_s": 62.08,
+     "n_entities": 6926,
+     "ws": 205922304,
+     "peak_ws": 212602880,
+     "pagefile": 197120000,
+     "peak_pagefile": 203886592
+    },
+    {
+     "tick": "assemble",
+     "as_of": "2019-06-28",
+     "elapsed_s": 62.39,
+     "n_targets": 1000,
+     "ws": 203890688,
+     "peak_ws": 212602880,
+     "pagefile": 195596288,
+     "peak_pagefile": 203886592
+    },
+    {
+     "tick": "write",
+     "as_of": "2019-06-28",
+     "elapsed_s": 312.47,
+     "n_features": 13000,
+     "n_pillars": 4000,
+     "n_scores": 461,
+     "n_batches": 1,
+     "batch_size": null,
+     "ws": 205918208,
+     "peak_ws": 212602880,
+     "pagefile": 196956160,
+     "peak_pagefile": 203886592
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 312.68,
+     "batch": 1,
+     "n_targets": 1000,
+     "n_features": 13000,
+     "n_pillars": 4000,
+     "n_scores": 461,
+     "ws": 218906624,
+     "peak_ws": 218906624,
+     "pagefile": 210427904,
+     "peak_pagefile": 210427904
+    },
+    {
+     "tick": "checkpoint",
+     "as_of": "2019-06-28",
+     "elapsed_s": 312.68,
+     "ws": 218906624,
+     "peak_ws": 218906624,
+     "pagefile": 210427904,
+     "peak_pagefile": 210427904
+    }
+   ],
+   "stderr_tail": [],
+   "other_stdout_lines": [],
+   "machine_before": {
+    "total_phys": 8002048000,
+    "avail_phys": 1855221760,
+    "total_commit": 16004096000,
+    "avail_commit": 2009137152,
+    "memory_load_pct": 76
+   },
+   "machine_after": {
+    "total_phys": 8002048000,
+    "avail_phys": 1754914816,
+    "total_commit": 16004096000,
+    "avail_commit": 1962405888,
+    "memory_load_pct": 78
+   }
+  }
+ ],
+ "verdict": {
+  "table": {
+   "stream": {
+    "limits": [
+     1000
+    ],
+    "peak_ws_mib": [
+     206.7
+    ],
+    "fixed_cost_ws_mib": [
+     194.4
+    ],
+    "write_side_delta_mib": [
+     12.3
+    ]
+   },
+   "legacy": {
+    "limits": [
+     1000
+    ],
+    "peak_ws_mib": [
+     208.8
+    ],
+    "fixed_cost_ws_mib": [
+     194.4
+    ],
+    "write_side_delta_mib": [
+     14.3
+    ]
+   }
+  },
+  "how_to_read": "For the invariant 'write-side memory = O(batch)' to hold, stream.write_side_ratio_hi_over_lo should be near 1.0 while target_ratio_hi_over_lo is the entity ratio (e.g. 4.0). legacy.write_side_ratio_hi_over_lo near the target ratio shows the unbatched path really was O(cross-section). fixed_cost_ws_mib is the once-per-date fact-index / primitives cost and is NOT expected to be flat."
+ },
+ "machine_at_end": {
+  "total_phys": 8002048000,
+  "avail_phys": 1755000832,
+  "total_commit": 16004096000,
+  "avail_commit": 1962467328,
+  "memory_load_pct": 78
+ },
+ "free_bytes_at_end": 14715396096
+}

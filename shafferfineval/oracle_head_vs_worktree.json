@@ -1,0 +1,370 @@
+{
+ "arms": {
+  "H": {
+   "aborted": null,
+   "freeze_unchanged": true,
+   "n_batches": null,
+   "rows": {
+    "pit_feature": 650,
+    "pit_pillar_score": 200,
+    "pit_score": 25
+   },
+   "n_scored": 25,
+   "elapsed_s": 100.7,
+   "stats": {
+    "rows": {
+     "pit_feature": 650,
+     "pit_pillar_score": 200,
+     "pit_score": 25
+    },
+    "n_targets": 50,
+    "n_entities_indexed": 3728,
+    "n_scored": 25,
+    "n_refused_insufficient_block_coverage": 25,
+    "n_no_peer_set": 0,
+    "n_challenger_rows": 50,
+    "blocks_resolved": {
+     "ebitda_strength": 25,
+     "valuation": 0,
+     "real_growth": 45,
+     "financial_quality": 0
+    },
+    "signatures": {
+     "G": 20,
+     "NONE": 5,
+     "EG": 25
+    },
+    "availability": {
+     "ebitda_benchmark": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "ebitda_growth": {
+      "complete": 22,
+      "unavailable": 28
+     },
+     "ebitda_efficiency": {
+      "complete": 25,
+      "unavailable": 25
+     },
+     "ebitda_acceleration": {
+      "complete": 21,
+      "unavailable": 29
+     },
+     "ebitda_scale": {
+      "complete": 25,
+      "unavailable": 25
+     },
+     "pe_absolute": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "pe_relative": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "ev_ebitda_supplement": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "real_revenue_growth": {
+      "complete": 45,
+      "unavailable": 5
+     },
+     "fcf_conversion": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "interest_coverage": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "net_debt_ebitda": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "debt_market_cap": {
+      "complete": 0,
+      "unavailable": 50
+     }
+    },
+    "reasons": {
+     "benchmark_definition_ambiguous": 50,
+     "no_ebitda_period": 96,
+     "primitive_genuinely_unavailable": 100,
+     "no_v2_normalization_declared": 250,
+     "no_revenue_period": 5,
+     "cohort_too_small_for_dispersion": 7,
+     "insufficient_peers": 4
+    },
+    "n_eligible_peer_calls": 88
+   },
+   "checkpoint_return_read": true,
+   "head_source_sha256_16": "30058bf87aa40bf6"
+  },
+  "L": {
+   "aborted": null,
+   "freeze_unchanged": true,
+   "n_batches": 1,
+   "rows": {
+    "pit_feature": 650,
+    "pit_pillar_score": 200,
+    "pit_score": 25
+   },
+   "n_scored": 25,
+   "elapsed_s": 92.5,
+   "stats": {
+    "rows": {
+     "pit_feature": 650,
+     "pit_pillar_score": 200,
+     "pit_score": 25
+    },
+    "n_targets": 50,
+    "n_entities_indexed": 3728,
+    "n_scored": 25,
+    "n_refused_insufficient_block_coverage": 25,
+    "n_no_peer_set": 0,
+    "n_challenger_rows": 50,
+    "blocks_resolved": {
+     "ebitda_strength": 25,
+     "valuation": 0,
+     "real_growth": 45,
+     "financial_quality": 0
+    },
+    "signatures": {
+     "G": 20,
+     "NONE": 5,
+     "EG": 25
+    },
+    "availability": {
+     "ebitda_benchmark": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "ebitda_growth": {
+      "complete": 22,
+      "unavailable": 28
+     },
+     "ebitda_efficiency": {
+      "complete": 25,
+      "unavailable": 25
+     },
+     "ebitda_acceleration": {
+      "complete": 21,
+      "unavailable": 29
+     },
+     "ebitda_scale": {
+      "complete": 25,
+      "unavailable": 25
+     },
+     "pe_absolute": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "pe_relative": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "ev_ebitda_supplement": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "real_revenue_growth": {
+      "complete": 45,
+      "unavailable": 5
+     },
+     "fcf_conversion": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "interest_coverage": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "net_debt_ebitda": {
+      "complete": 0,
+      "unavailable": 50
+     },
+     "debt_market_cap": {
+      "complete": 0,
+      "unavailable": 50
+     }
+    },
+    "reasons": {
+     "benchmark_definition_ambiguous": 50,
+     "no_ebitda_period": 96,
+     "primitive_genuinely_unavailable": 100,
+     "no_v2_normalization_declared": 250,
+     "no_revenue_period": 5,
+     "cohort_too_small_for_dispersion": 7,
+     "insufficient_peers": 4
+    },
+    "n_eligible_peer_calls": 88
+   },
+   "checkpoint_return_read": true
+  }
+ },
+ "pairs": [
+  {
+   "pair": "H vs L",
+   "checks": [
+    {
+     "check": "pit_feature: same comparable columns",
+     "ok": true,
+     "detail": "(22, 22)"
+    },
+    {
+     "check": "pit_feature: row counts equal",
+     "ok": true,
+     "detail": "(650, 650)"
+    },
+    {
+     "check": "pit_feature: symmetric difference is empty",
+     "ok": true,
+     "detail": "0 differing rows; first: None"
+    },
+    {
+     "check": "pit_feature: key-level presence identical",
+     "ok": true,
+     "detail": "(0, 0)"
+    },
+    {
+     "check": "pit_feature: ordered-content sha256 equal",
+     "ok": true,
+     "detail": "342db85bf9a6 vs 342db85bf9a6"
+    },
+    {
+     "check": "pit_pillar_score: same comparable columns",
+     "ok": true,
+     "detail": "(19, 19)"
+    },
+    {
+     "check": "pit_pillar_score: row counts equal",
+     "ok": true,
+     "detail": "(200, 200)"
+    },
+    {
+     "check": "pit_pillar_score: symmetric difference is empty",
+     "ok": true,
+     "detail": "0 differing rows; first: None"
+    },
+    {
+     "check": "pit_pillar_score: key-level presence identical",
+     "ok": true,
+     "detail": "(0, 0)"
+    },
+    {
+     "check": "pit_pillar_score: ordered-content sha256 equal",
+     "ok": true,
+     "detail": "62aa5a6da063 vs 62aa5a6da063"
+    },
+    {
+     "check": "pit_score: same comparable columns",
+     "ok": true,
+     "detail": "(36, 36)"
+    },
+    {
+     "check": "pit_score: row counts equal",
+     "ok": true,
+     "detail": "(25, 25)"
+    },
+    {
+     "check": "pit_score: symmetric difference is empty",
+     "ok": true,
+     "detail": "0 differing rows; first: None"
+    },
+    {
+     "check": "pit_score: key-level presence identical",
+     "ok": true,
+     "detail": "(0, 0)"
+    },
+    {
+     "check": "pit_score: ordered-content sha256 equal",
+     "ok": true,
+     "detail": "06a645f976b4 vs 06a645f976b4"
+    },
+    {
+     "check": "run row: status / n_entities / n_dates / totals / entity_dates equal",
+     "ok": true,
+     "detail": "[]"
+    },
+    {
+     "check": "streamed arm: one created_at per date",
+     "ok": true,
+     "detail": "[('2019-06-28', 1)]"
+    },
+    {
+     "check": "streamed arm: feature_id == rowid",
+     "ok": true,
+     "detail": "0"
+    },
+    {
+     "check": "streamed arm: every row under run 1",
+     "ok": true,
+     "detail": "0"
+    },
+    {
+     "check": "stats[rows] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_targets] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_entities_indexed] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_scored] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_refused_insufficient_block_coverage] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_no_peer_set] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_challenger_rows] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[blocks_resolved] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[signatures] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[availability] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[reasons] identical",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "check": "stats[n_eligible_peer_calls] identical",
+     "ok": true,
+     "detail": ""
+    }
+   ]
+  }
+ ],
+ "note": "S7/S25/SM arms not run: the session's background commands were stopped by the host for system-wide low memory (2026-09-22 ~20:15 local); rerun on request."
+}

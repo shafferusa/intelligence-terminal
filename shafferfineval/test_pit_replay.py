@@ -49,6 +49,7 @@ WHAT IS ACTUALLY BEING TESTED, and why each one exists
 
 from __future__ import annotations
 
+import inspect
 import json
 import os
 import shutil
@@ -1048,6 +1049,99 @@ def test_real_slice() -> None:
 
 
 # ==========================================================================
+# (10) THE STREAMED WRITE SIDE
+# ==========================================================================
+
+def test_batching_is_declared() -> None:
+    section("(10a) STREAMING -- declared, bounded, and switchable off")
+    check("DEFAULT_BATCH_SIZE is a positive integer",
+          isinstance(pit_replay.DEFAULT_BATCH_SIZE, int)
+          and pit_replay.DEFAULT_BATCH_SIZE > 0, pit_replay.DEFAULT_BATCH_SIZE)
+    params = inspect.signature(pit_replay.run_date).parameters
+    check("run_date takes batch_size, defaulting to DEFAULT_BATCH_SIZE",
+          "batch_size" in params
+          and params["batch_size"].default == pit_replay.DEFAULT_BATCH_SIZE)
+    check("run_date takes free_floor_bytes for the per-batch guard",
+          "free_floor_bytes" in params)
+    run_params = inspect.signature(pit_replay.run_pilot).parameters
+    check("run_pilot takes batch_size and passes it down",
+          "batch_size" in run_params
+          and run_params["batch_size"].default == pit_replay.DEFAULT_BATCH_SIZE)
+    check("FreeSpaceAbort is the engine's own abort",
+          issubclass(pit_replay.FreeSpaceAbort, RuntimeError))
+
+
+def _table_rows(path: str, table: str, order_by: str) -> List[tuple]:
+    """Every column except the autoincrement id and created_at, in key order."""
+    conn = sqlite3.connect(path)
+    try:
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(%s)" % table)
+                if not (r[5] == 1 and str(r[2]).upper() == "INTEGER")
+                and r[1] != "created_at"]
+        return [tuple(r) for r in conn.execute(
+            "SELECT %s FROM %s ORDER BY %s"
+            % (", ".join(cols), table, order_by))]
+    finally:
+        conn.close()
+
+
+def test_streaming_equals_legacy() -> None:
+    section("(10b) THE EQUALITY ORACLE -- same slice, batched vs one write")
+    if not os.path.exists(pit_store.DEFAULT_PIT_DB_PATH):
+        skip("streaming oracle", "store not present")
+        return
+    legacy_path = _pilot_path("oracle_legacy.db")
+    stream_path = _pilot_path("oracle_stream.db")
+    n, batch = 50, 7                  # 50 targets in 8 batches, the last short
+    legacy = pit_replay.run_pilot(["2019-06-28"], legacy_path, entity_limit=n,
+                                  measure=False, batch_size=None)
+    stream = pit_replay.run_pilot(["2019-06-28"], stream_path, entity_limit=n,
+                                  measure=False, batch_size=batch)
+    check("both runs completed without an abort",
+          not legacy["aborted"] and not stream["aborted"],
+          (legacy["aborted"], stream["aborted"]))
+    ls, ss = legacy["dates"][0], stream["dates"][0]
+    check("the unbatched run wrote in ONE batch", ls["n_batches"] == 1,
+          ls["n_batches"])
+    check("the streamed run wrote in ceil(50/7) = 8 batches",
+          ss["n_batches"] == 8, ss["n_batches"])
+    for key in ("rows", "n_targets", "n_entities_indexed", "n_scored",
+                "n_refused_insufficient_block_coverage", "n_no_peer_set",
+                "n_challenger_rows", "blocks_resolved", "signatures",
+                "availability", "reasons", "n_eligible_peer_calls"):
+        check("per-date statistic %r is identical" % key, ls[key] == ss[key],
+              "" if ls[key] == ss[key] else (ls[key], ss[key]))
+    for table, order in (("pit_feature", "entity_id, as_of_date, feature_key"),
+                         ("pit_pillar_score", "entity_id, as_of_date, pillar"),
+                         ("pit_score", "entity_id, as_of_date")):
+        a = _table_rows(legacy_path, table, order)
+        b = _table_rows(stream_path, table, order)
+        same = a == b
+        detail: Any = "%d rows" % len(a)
+        if not same:
+            detail = next(
+                ("row %d differs: %r vs %r" % (i, x, y)
+                 for i, (x, y) in enumerate(zip(a, b)) if x != y),
+                "row counts differ: %d vs %d" % (len(a), len(b)))
+        check("%s rows are IDENTICAL (ids and created_at excluded)" % table,
+              same, detail)
+    check("both checkpoints read their return value",
+          ls["checkpoint"].get("return_read") is True
+          and ss["checkpoint"].get("return_read") is True)
+    check("the freeze is unchanged by both runs",
+          legacy["freeze_unchanged"] and stream["freeze_unchanged"])
+    for path in (legacy_path, stream_path):
+        conn = sqlite3.connect(path)
+        try:
+            status = conn.execute(
+                "SELECT status FROM pit_replay_run").fetchone()[0]
+            check("%s: the run row says complete" % os.path.basename(path),
+                  status == "complete", status)
+        finally:
+            conn.close()
+
+
+# ==========================================================================
 # MAIN
 # ==========================================================================
 
@@ -1055,6 +1149,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     global TMPDIR
     argv = list(sys.argv[1:] if argv is None else argv)
     slow = "--slow" in argv
+    oracle = "--oracle" in argv
 
     print("=" * 78)
     print("test_pit_replay -- %s" % pit_replay.ENGINE_VERSION)
@@ -1082,10 +1177,16 @@ def main(argv: Optional[List[str]] = None) -> int:
         run(test_write_constraints_bite)
         run(test_unavailable_rows_are_rows)
         run(test_checkpoint_return_is_read)
+        run(test_batching_is_declared)
         if slow:
             run(test_real_slice)
         else:
             skip("(9) a real slice", "pass --slow to run it (~2 minutes)")
+        if slow or oracle:
+            run(test_streaming_equals_legacy)
+        else:
+            skip("(10b) the equality oracle",
+                 "pass --slow or --oracle to run it (~4 minutes)")
     finally:
         if TMPDIR and os.path.isdir(TMPDIR):
             shutil.rmtree(TMPDIR, ignore_errors=True)
