@@ -268,6 +268,83 @@ machine), leave Chrome and Steam, record per-process commit before and after,
 then rerun the 1k/4k pairs, the 2 MiB-cache attribution, the two-date
 meter-on run including 2022-06-30, and the remaining oracle arms.
 
+## 5b. Controlled measurements with the three local services PAUSED (2026-09-23)
+
+Owner authorisation of 2026-09-23. The three LOCAL Python services (Mikhail
+`serve_local.py`, `maia2_worker.py`, the FinSim server) were identified by PID
+and command line and stopped for the window; the remote Mikhail.Live
+deployment was not touched. Baseline immediately after the pause
+(`rss_baseline_paused_2026-09-23.json`, 11:22:16Z): **8.557 GB committed of a
+14.905 GB limit, 1.727 GiB free RAM of 7.452 GiB, 13.655 GiB free disk,
+pagefile 211 MB in use against a 1,545 MB peak since boot, and ZERO python
+processes on the box.** (That artefact is written with a UTF-8 BOM, so a
+strict `json.load(open(...))` needs `encoding="utf-8-sig"`.)
+
+**READ THE ENGINE LABEL BEFORE USING ANY NUMBER BELOW.** Every run in this
+section is `pit_replay/1.1` under `spec_freeze_v5` (digest 58722f4c…), the
+freeze now sealed as `FREEZE_V5` with `may_execute_replay = False`. That
+engine computed six of thirteen keys and had **no market side at all**: no
+listing resolution, no price read, no share audit, no TTM ladder, no P/E, no
+EV/EBITDA, no leverage ratio. The numbers are therefore a floor for
+`pit_replay/1.2`, not an estimate of it. See the closing paragraph.
+
+One child at a time, one date (2019-06-28), commit measured as the child's
+private commit charge.
+
+| run | peak | fixed (assemble) | write side | batches | per batch | WAL peak | score rows | elapsed |
+|---|---|---|---|---|---|---|---|---|
+| 1k streamed (500) | 200.4 MiB | 187.2 | 13.2 | 2 | 0.55 MiB | 7.4 MB | 475 | 276 s |
+| 1k unbatched | 200.8 | 187.5 | 0.7 | 1 | 0.70 | 13.0 MB | 475 | 270 s |
+| 4k streamed (500) | 241.6 | 189.9 | 51.7 | 8 | 0.20 | 12.5 MB | 1,851 | 310 s |
+| 4k unbatched | 244.9 | 190.1 | 4.4 | 1 | 4.40 | 47.1 MB | 1,851 | 321 s |
+| 4k streamed, 2 MiB page cache (diagnostic) | 204.2 | 189.7 | 2.2 | 8 | 0.24 | 12.5 MB | 1,851 | 317 s |
+
+Reports: `rss_report_paused_1k_stream.json`, `…_1k_legacy.json`,
+`…_4k_stream.json`, `…_4k_legacy.json`, `…_4k_diag_cache2m.json`. The
+resident fact index is 144–150 MiB of the ~190 MiB fixed cost.
+
+**Attribution — what the 4k streamed "write side" of 51.7 MiB actually is.**
+Capping the pilot writer's SQLite page cache at 2 MiB drops the same run's
+write side to **2.2 MiB** and flattens its per-batch growth to
+`[0.7, 0.4, 0.3, 0.4, 0.0, 0.1, 0.0, 0.0]`. So roughly 49.5 MiB of the 51.7
+is the writer's 64 MiB page cache filling toward its pragma, not rows held in
+memory. The cache-capped run is labelled `diagnostic_note` in its own report
+and is an ATTRIBUTION arm, not evidence about the configuration that ships.
+
+**The row-side cost, stated correctly.** It is about **0.2–0.25 MiB per
+500-target batch and 2.2 MiB for a whole 4,000-target date** — not ~2 MiB per
+batch. Unbatched, the same date holds 4.4 MiB of rows in one transaction,
+twice the streamed figure, which is what a 4,000-target batch against a
+500-target batch should look like. Streaming's real benefit here is the
+**WAL**, 12.5 MB against 47.1 MB, a 3.8× reduction; on commit the two shapes
+are within ~4 MiB of each other once the page cache is accounted for.
+Streaming remains good engineering and still must not be credited with the
+2026-09-21 incident (§5a).
+
+**The direct HEAD oracle arms** (`oracle_head_1_1.json`; fresh scratch DBs, 50
+targets at 2019-06-28): the committed engine loaded from `git show`
+(source sha256 `9940aea4862f7c75`) against the working tree unbatched (L),
+batched in 7 (S7), batched in 25 (S25) and batched in 7 under measurement
+mode (SM) — **132 checks, 0 failed**, every arm 25 score rows, 115–118 s each.
+This closes the "direct H arm never run" note of §9 **for engine 1.1**. Arm H's
+own availability tally shows `ebitda_benchmark`, `pe_absolute`, `pe_relative`,
+`ev_ebitda_supplement`, `fcf_conversion`, `net_debt_ebitda` and
+`debt_market_cap` at 0 of 50 complete: the arms could not and did not exercise
+a single V or Q path. The artefact carries no engine version or freeze digest
+of its own, so its provenance is this paragraph.
+
+**What this section does NOT establish, and what is therefore still owed.**
+Nothing here measures `pit_replay/1.2`. Under v6 the engine gained a per-date
+market side that runs over every entity in `needed` — listing resolution, one
+valuation price read with a step-back loop, one strict share-class audit, one
+TTM ladder walk and one corporate-action gate read per priced entity — plus
+four more cohort factors. A 200-target smoke of 1.2 took 396 s where the 1.1
+harness did 1,000 targets in 276 s, so the shape of the per-date cost changed,
+not merely its size. Before any sizing pilot the 1.2 engine must be measured
+with `pit_replay_rss` one child at a time at 1k and 4k (8k only if the
+headroom is then obviously safe), and the owner-ordered two-date meter-on arm
+including 2022-06-30 (§5) has still never been run.
+
 ## 6. D3 — reported; decided by the owner on 2026-09-22 (growth A, acceleration A, coverage OI/interest; see the `spec_freeze_v5` section of docs/MODEL-LINEAGE.md)
 
 Full record: `D3-EVIDENCE-2026-09-22.md` (20 claims, 20/20 citations confirmed;

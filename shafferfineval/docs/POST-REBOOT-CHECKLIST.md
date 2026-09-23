@@ -113,7 +113,15 @@ cache attribution, the direct HEAD oracle arms — `docs/POST-REBOOT-REPORT-2026
 `spec_freeze_v6`, digest 1afaca0c17c38657ddb131f03dad59e8d07aa1bceecf9bc9f336d8d09ee6fd85, 82 components. Engine `pit_replay/1.2`
 under `factor_spec_v5` computes 13 of 13 keys; GAP 5 (`PEER_FLOOR_V1`) and GAP 7
 (`PRICE_BASIS_TRANSLATION_V1`) are closed. Rule for freezes: no edits to
-spec_freeze_v1..v6 in place — a change is a v7. Next, in order: measure the
-1.2 engine with `pit_replay_rss` one child at a time (1k, 4k, then 8k if the
-headroom stays obvious), rerun the four-date pilot on a disposable DB on the
+spec_freeze_v1..v6 in place — a change is a v7.
+
+The post-fix store-backed `--slow` suite was re-run on 2026-09-23 and PASSED
+(235 PASS / 0 FAIL / 0 SKIP, freeze intact at 1afaca0c… after the run), so
+that owed item is closed. `pit_frozen_spec.STILL_BLOCKED` names the two
+preconditions that remain before the diagnostic replay: a MEASUREMENT (the
+1.2 engine's memory, never yet taken — every committed RSS artefact is
+`pit_replay/1.1` under the sealed `spec_freeze_v5`) and an AUTHORISATION
+(the owner's; none exists). Next, in order: measure the 1.2 engine with
+`pit_replay_rss` one child at a time (1k, 4k, then 8k only if the headroom is
+then obviously safe), run the four-date pilot on a disposable DB on the
 owner's word, resume the three local services after the window.
