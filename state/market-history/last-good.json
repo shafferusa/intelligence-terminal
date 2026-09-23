@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-22T20:50:00Z",
+ "fetched_at": "2026-09-23T10:35:00Z",
  "treasury_par_curve": {
   "as_of": "2026-09-22 EOD official",
   "curve": {
@@ -24,7 +24,7 @@
   "note": "Fresh Sept 22 EOD curve (posted intraday, this run's first fetch of it); 2s10s widened to +25bp from Monday's +20bp as the 2Y fell faster than the 10Y."
  },
  "fred": {
-  "as_of": "T10Y2Y/DGS2/DGS10/T10YIE/DFII10/SOFR now show a 2026-09-21 observation (fresh vs this morning's Sept 18/21 mix); BAMLH0A0HYM2 still Sept 18",
+  "as_of": "2026-09-23 AM run: T10Y2Y and T10YIE rolled to a fresh 2026-09-22 observation; BAMLH0A0HYM2 rolled to 2026-09-21 (tightened to 2.66 from 2.68); DGS2/DGS10/DFII10/SOFR still show 2026-09-21, no fresher obs posted yet",
   "series": {
    "CPIAUCSL": {
     "value": 334.131,
@@ -47,8 +47,8 @@
     "date": "2026-08-01"
    },
    "T10Y2Y": {
-    "value": 0.2,
-    "date": "2026-09-21"
+    "value": 0.25,
+    "date": "2026-09-22"
    },
    "DGS2": {
     "value": 4.76,
@@ -59,8 +59,8 @@
     "date": "2026-09-21"
    },
    "T10YIE": {
-    "value": 2.34,
-    "date": "2026-09-21"
+    "value": 2.33,
+    "date": "2026-09-22"
    },
    "DFII10": {
     "value": 2.62,
@@ -71,11 +71,11 @@
     "date": "2026-09-21"
    },
    "BAMLH0A0HYM2": {
-    "value": 2.68,
-    "date": "2026-09-18"
+    "value": 2.66,
+    "date": "2026-09-21"
    }
   },
-  "hy_oas_csv_appended": "none this run -- newest BAMLH0A0HYM2 obs (2026-09-18) already the last row in hy-oas.csv"
+  "hy_oas_csv_appended": "2026-09-21,2.66 appended this run"
  },
  "vix_complex": {
   "vix": 14.21,
@@ -102,14 +102,14 @@
   }
  },
  "crypto": {
-  "as_of": "2026-09-22 live (CoinGecko)",
-  "btc": 86301,
-  "eth": 2755.24,
-  "sol": 118.31,
-  "ada": 0.252737,
-  "total_mkt_cap": 2939016261057.22,
-  "btc_dominance_pct": null,
-  "eth_dominance_pct": null
+  "as_of": "2026-09-23 live (CoinGecko)",
+  "btc": 85774,
+  "eth": 2732.02,
+  "sol": 117.21,
+  "ada": 0.2526,
+  "total_mkt_cap": 2930000000000.0,
+  "btc_dominance_pct": 58.69,
+  "eth_dominance_pct": 11.36
  },
  "indices": {
   "as_of": "2026-09-22 EOD official",
@@ -653,16 +653,19 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-22",
-  "cutoff": "2026-09-22T11:00:03Z (this morning's am run)",
+  "date": "2026-09-23",
+  "cutoff": "2026-09-23T06:35:00-04:00 (this morning's am run)",
   "entries_checked_market_wide": 100,
-  "per_company_feeds_checked": "spot-checked against market-wide getcurrent feed only this run (100 most recent 8-Ks market-wide); no watchlist-company match found",
-  "new_filings_since_cutoff": [],
-  "note": "Time-boxed to the market-wide feed rather than a full 90-ticker per-company sweep this run; no watchlist company appeared among the 100 most recent market-wide 8-K filers."
+  "per_company_feeds_checked": "spot-checked against market-wide getcurrent feed only this run (100 most recent 8-Ks market-wide); full 90-ticker per-company sweep not repeated",
+  "new_filings_since_cutoff": [
+   {"ticker": "RCL", "watchlist": "consumer", "filed": "2026-09-23T06:01:00-04:00", "items": "8.01, 9.01", "reviewed": false},
+   {"ticker": "BX", "watchlist": "financials", "filed": "2026-09-22T17:00:00-04:00", "items": "7.01, 9.01", "reviewed": false}
+  ],
+  "note": "Two watchlist-company 8-Ks found (RCL, BX); content not reviewed in time for the am edition -- flagged as leads for the Closing Brief. Excluded a false-positive match: 'Goldman Sachs Private Credit Corp.' is a separate BDC entity, not Goldman Sachs Group (GS)."
  },
  "_notes_this_run": {
-  "run": "2026-09-22-pm",
-  "note": "Full board + sector + watchlist + futures/commodities/FX sweep via Yahoo v8 (close-to-close method). Breadth and FINRA short volume reused from this morning's fetch (once/twice-per-session and prior-session-only rules respectively; no re-fetch needed, D still Sept 21). hy-oas.csv: no append, newest BAMLH0A0HYM2 obs still Sept 18."
+  "run": "2026-09-23-am",
+  "note": "Premarket/overnight refresh: futures (ES/NQ/YM/RTY/TNX/CL/GC/NG/HG/EURUSD/DXY), board-adjacent ETF sweep (previous close, unchanged from Sept 22 EOD since market not yet open), Treasury curve (Sept 22 EOD, no fresher curve posted), Cboe VIX (previous close, no live pre-open print), 7 FRED series (T10Y2Y and T10YIE rolled to Sept 22, BAMLH0A0HYM2 rolled to Sept 21 and appended to hy-oas.csv), Frankfurter FX (unchanged, one ECB fix per business day), CoinGecko (live, dominance now populated), SEC EDGAR market-wide sweep (RCL, BX leads). Breadth and FINRA short volume correctly reused, not re-fetched (once-per-session / prior-session-only rules)."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
@@ -678,6 +681,21 @@
   "batch2": "429 rate-limited, not retried (SR 2.4, not a failure)",
   "cross_check": "all 8 batch1 close/previous_close values matched Yahoo close-to-close exactly",
   "fetched_at": "2026-09-22T10:35:00Z"
+ },
+ "premarket_20260923": {
+  "as_of": "2026-09-23T06:22:00-04:00 to 06:32:00-04:00",
+  "label": "Delayed (+10 min), premarket, Yahoo Finance futures, close-to-close vs Tue Sept 22 settle",
+  "ES_F_pct": 0.08,
+  "NQ_F_pct": 0.0,
+  "YM_F_pct": 0.06,
+  "RTY_F_pct": -0.31,
+  "CL_F_pct": null,
+  "GC_F_pct": -0.54,
+  "NG_F_pct": 7.52,
+  "HG_F_pct": 0.9,
+  "EURUSD_pct": -0.46,
+  "DXY_pct": 0.44,
+  "note": "Futures essentially flat. Natural gas +7.52% overnight extends Monday's +11.6% surge, still no single confirmed catalyst (heat demand, falling production, tightening storage surplus, rising LNG exports all cited). CL=F excluded a 7th consecutive session on an apparent contract-roll artifact; USO fell 2.75% Tuesday and outside price checks put WTI in the high $80s."
  },
  "premarket_tuesday": {
   "as_of": "2026-09-22T10:24:00Z-10:34:00Z",

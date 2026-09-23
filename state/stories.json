@@ -1,6 +1,42 @@
 {
  "stories": [
   {
+   "id": "trump-xi-summit-arrival-sep23",
+   "headline": "Xi arrives in Washington today, first visit in over a decade, as China presses Trump on Taiwan arms",
+   "status": "New",
+   "first_seen": "2026-09-23-am",
+   "last_updated": "2026-09-23-am",
+   "verification": "Confirmed-multiple on the visit/itinerary; Disputed on a reported cancellation threat over the Taiwan arms package",
+   "one_line": "Xi's three-day state visit (his first to Washington since 2015) opens today with arrival at Joint Base Andrews ~4pm ET; Rose Garden ceremony and state dinner Thursday, National Archives Friday. Reuters: Xi expected to press Trump to freeze a pending $14B Taiwan arms package citing the 1982 US-China communique; China's MFA calls adherence to the three communiques a 'necessary precondition.' A White House official says Trump will decide on the package 'in a fairly short time' and has approved more Taiwan sales this term than the prior administration's full four years. A separate report of a Chinese threat to cancel the summit was disputed by a senior US official. Timed two days ahead, Alibaba unveiled the 'Zhenwu V900' chip (claimed 3x its predecessor's performance) plus plans for a 5-10 trillion-parameter model, framed by Bloomberg/SCMP as a self-sufficiency signal ahead of the summit.",
+   "score_note": "First Xi visit to Washington in 11 years, opening under an explicit Chinese arms-sales objection and a timed AI-hardware show of strength.",
+   "sources": [
+    "China MFA statements (primary)",
+    "Reuters",
+    "South China Morning Post",
+    "Bloomberg",
+    "Taipei Times",
+    "White House officials, via wire"
+   ],
+   "watch": true
+  },
+  {
+   "id": "f5-bigip-zeroday-sep23",
+   "headline": "Critical F5 BIG-IP zero-day added to CISA's exploited-vulnerabilities catalog, Friday deadline",
+   "status": "New",
+   "first_seen": "2026-09-23-am",
+   "last_updated": "2026-09-23-am",
+   "verification": "Confirmed-multiple",
+   "one_line": "CVE-2026-94127 (CVSS 9.8), a heap-based buffer overflow in BIG-IP Access Policy Manager enabling unauthenticated RCE when APM is configured as an OAuth authorization server, was disclosed and hotfixed by F5 on Sept 22; CISA added it to its KEV catalog the same day with a Sept 25 federal remediation deadline, alongside three lower-profile additions (two Check Point flaws, one Arista VeloCloud Orchestrator bug). Affects BIG-IP APM 21.1.0 and 17.1.x-17.5.x.",
+   "score_note": "Zero gap between disclosure and confirmed active exploitation on network-perimeter infrastructure.",
+   "sources": [
+    "CISA KEV catalog (primary)",
+    "F5 security advisory (primary)",
+    "SecurityWeek",
+    "The Hacker News"
+   ],
+   "watch": true
+  },
+  {
    "id": "greenland-denmark-arctic-pact-sep22",
    "headline": "Trump signs a Greenland-Denmark Arctic security pact, short of annexation",
    "status": "New",
@@ -71,12 +107,12 @@
   },
   {
    "id": "pittsburgh-da-warrant-gainey-sep22",
-   "headline": "Unsealed warrant alleges pay-to-play no-bid contracts under former Pittsburgh Mayor Gainey",
-   "status": "New",
+   "headline": "Councilman denies allegations in unsealed Gainey-era corruption warrant",
+   "status": "Materially changed",
    "first_seen": "2026-09-22-pm",
-   "last_updated": "2026-09-22-pm",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple (via secondary reporting on the unsealed primary court record)",
-   "one_line": "A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the Allegheny County DA's office is investigating whether the Gainey administration steered roughly $2M in 'Stop the Violence' grants and other no-bid contracts to organizations (including SEIU and the Working Families Party) that supported Gainey's campaigns, and that the city's no-bid contract rate roughly doubled (10% to 20%) under his administration. Information reportedly came in part from Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges filed.",
+   "one_line": "A search warrant served on the City of Pittsburgh was unsealed Monday. It alleges the Allegheny County DA's office is investigating whether the Gainey administration steered roughly $2M in 'Stop the Violence' grants and other no-bid contracts to organizations (including SEIU and the Working Families Party) that supported Gainey's campaigns, and that the city's no-bid contract rate roughly doubled (10% to 20%) under his administration. Information reportedly came in part from Councilman Anthony Coghill, former Councilwoman Theresa Kail-Smith and a former council solicitor. No charges filed. Update (Sept 23 am): a named city councilman has publicly denied the allegations made against him in the warrant.",
    "score_note": "A local corruption investigation into a recent former mayor, via an unsealed court record -- material for Pittsburgh/Allegheny readers.",
    "sources": [
     "Unsealed court warrant (primary record, via secondary reporting)",
@@ -133,12 +169,12 @@
   },
   {
    "id": "kennedy-center-court-collision-sep17",
-   "headline": "Kennedy Center standoff escalates: hearing denied, but a new 30-day demolition-notice order follows an Air Force One photo",
+   "headline": "Kennedy Center's court-ordered sworn status report is due today; contents not yet public",
    "status": "Materially changed",
    "first_seen": "2026-09-15-am",
-   "last_updated": "2026-09-19-sat",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple (court filings via secondary reporting; direct docket access blocked this run)",
-   "one_line": "DOJ filed its response by the 10 a.m. deadline, arguing the closure addresses safety risks, not a violation of the standing order. Judge Cooper denied Beatty's emergency-hearing request but ordered a sworn status report due Sept 23, and separately ordered 30 days' notice before any major building change (including demolition) after an AFP photo showed Trump aboard Air Force One viewing a 'Kennedy Center DEMOLISHED' poster; the Center calls the demolition language hypothetical. Update (Sept 18): no material change -- DOJ's Thursday filing (sworn declaration from ED Matt Floca citing 'acute risks to public safety') and Beatty's demolition-violation argument are consistent with what this report already carries; the Sept 23 sworn-status-report deadline stands. No weekend movement found; the Sept. 23 sworn status report remains the next deadline.",
+   "one_line": "DOJ filed its response by the 10 a.m. deadline, arguing the closure addresses safety risks, not a violation of the standing order. Judge Cooper denied Beatty's emergency-hearing request but ordered a sworn status report due Sept 23, and separately ordered 30 days' notice before any major building change (including demolition) after an AFP photo showed Trump aboard Air Force One viewing a 'Kennedy Center DEMOLISHED' poster; the Center calls the demolition language hypothetical. Update (Sept 18): no material change -- DOJ's Thursday filing (sworn declaration from ED Matt Floca citing 'acute risks to public safety') and Beatty's demolition-violation argument are consistent with what this report already carries; the Sept 23 sworn-status-report deadline stands. No weekend movement found; the Sept. 23 sworn status report remains the next deadline. Update (Sept 23 am): today is the deadline; no filing or wire report describing the report's actual contents had surfaced as of this edition's publication. Will cover in the Closing Brief.",
    "score_note": "Escalates the already-tracked Kennedy Center/naming dispute into a live compliance deadline during this edition's publication window.",
    "sources": [
     "Judge Cooper's court filings (primary)",
@@ -697,12 +733,12 @@
   },
   {
    "id": "pa-measles-coroner-dispute-aug31",
-   "headline": "Pennsylvania records its first adult, and third overall, measles death",
+   "headline": "PA measles case count climbs to 792 as the Shapiro-CDC dispute hardens",
    "status": "Continuing",
    "first_seen": "2026-08-29-sat",
-   "last_updated": "2026-09-18-am",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple (death count, lab confirmation); Disputed (federal vs. state tally, unresolved)",
-   "one_line": "Pennsylvania confirmed two more measles-associated deaths Monday: postmortem testing now confirms an active measles infection in the previously 'probable' Jefferson County case, and an 18-year-old Mifflin County resident died of acute disseminated encephalomyelitis, a rare measles complication. State total now four deaths in 2026 -- the most in the US since 1992 -- against roughly 700 cases across 38 counties. The CDC's national tally, now relying solely on NCHS cause-of-death coding rather than state case reports, still shows zero 2026 measles deaths. Update (Sept 17): case count now 731 (up from ~700), death toll holds at 4; CDC still does not count any of the four nationally. Update (Sept 18): case count now 731 across 38 counties, 141 hospitalizations, death toll holds at 4. Gov. Shapiro's administration formally requested CDC emergency assistance but conditioned it on the CDC recognizing the four deaths in its national tally; HHS Secretary RFK Jr. has directed CDC not to count them, citing an unresolved 'measles-associated' vs. 'measles-caused' classification dispute. Shapiro says he won't accept non-recognition of 'the pain and suffering of these four families.'",
+   "one_line": "Pennsylvania confirmed two more measles-associated deaths Monday: postmortem testing now confirms an active measles infection in the previously 'probable' Jefferson County case, and an 18-year-old Mifflin County resident died of acute disseminated encephalomyelitis, a rare measles complication. State total now four deaths in 2026 -- the most in the US since 1992 -- against roughly 700 cases across 38 counties. The CDC's national tally, now relying solely on NCHS cause-of-death coding rather than state case reports, still shows zero 2026 measles deaths. Update (Sept 17): case count now 731 (up from ~700), death toll holds at 4; CDC still does not count any of the four nationally. Update (Sept 18): case count now 731 across 38 counties, 141 hospitalizations, death toll holds at 4. Gov. Shapiro's administration formally requested CDC emergency assistance but conditioned it on the CDC recognizing the four deaths in its national tally; HHS Secretary RFK Jr. has directed CDC not to count them, citing an unresolved 'measles-associated' vs. 'measles-caused' classification dispute. Shapiro says he won't accept non-recognition of 'the pain and suffering of these four families.' Update (Sept 23 am): case count now 792 across 39 counties (up from 731/38), hospitalizations up from 141 to 155; death toll still 4, still not counted by CDC.",
    "score_note": "Death toll and lab confirmation both advanced since last report; federal-state dispute persists.",
    "sources": [
     "Lancaster County Coroner's office (primary)",
@@ -1082,25 +1118,6 @@
     "The Hacker News"
    ],
    "watch": true
-  },
-  {
-   "id": "magento-stylesmuggler-sep7",
-   "headline": "CISA adds Magento 'StyleSmuggler' and three more flaws to its exploited-vulnerabilities catalog",
-   "status": "Materially changed",
-   "first_seen": "2026-09-08-am",
-   "last_updated": "2026-09-08-pm",
-   "verification": "Confirmed-primary",
-   "one_line": "CISA added CVE-2026-75650 (StyleSmuggler, CVSS 10.0) to its KEV catalog today, alongside CVE-2026-81963 (Windows Link Following), CVE-2026-85880 (Windows Heap Overflow) and CVE-2026-86218 (N-able N-central Static Code Injection), triggering federal remediation deadlines. Confirmed victim count remains small (2+ breached Magento stores per Disrex Group forensics); broader exposure estimates (100,000+ stores) remain a theoretical ceiling, not a confirmed compromise count.",
-   "score_note": "Government KEV listing follows four days after private-sector telemetry confirmed active exploitation.",
-   "sources": [
-    "CISA KEV catalog",
-    "Sansec",
-    "Disrex Group",
-    "BleepingComputer",
-    "The Hacker News",
-    "TechTimes"
-   ],
-   "watch": false
   },
   {
    "id": "nepal-tibet-flood-toll-aug31",
@@ -1787,12 +1804,12 @@
   },
   {
    "id": "cnn-msnbc-politico-whitehouse-ban-sep18",
-   "headline": "CNN, MS NOW and Politico sue over White House press ban; judge orders response today, hearing set this week",
+   "headline": "Judge Kelly to hear CNN/MS NOW/Politico's press-ban TRO request at 3:30 PM today",
    "status": "Materially changed",
    "first_seen": "2026-09-18-pm",
-   "last_updated": "2026-09-22-pm",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday. Update (Sept 22 pm): the Wednesday-afternoon hearing before Judge Kelly, reported this morning as not yet docket-confirmed, is now confirmed. No ruling issued.",
+   "one_line": "Suit filed Monday morning in US District Court for DC (First Amendment/due-process claims; Trump, Cheung, Curran, Wiles named) was assigned to Judge Timothy Kelly, a Trump appointee who ruled for CNN's Jim Acosta on due-process grounds in 2018. Kelly ordered the administration's TRO response by today, Sept 22; a hearing has been widely reported for Wednesday afternoon but is not yet docket-confirmed. ABC, CBS, CNN, Fox News and NBC suspended TV press-pool coverage in apparent solidarity. The White House responded with a 'privilege, not a right' statement citing Obama/Biden-era precedent, and separately launched a 24/7 'Trump TV' YouTube stream Monday. Update (Sept 22 pm): the Wednesday-afternoon hearing before Judge Kelly, reported this morning as not yet docket-confirmed, is now confirmed. No ruling issued. Update (Sept 23 am): DOJ's late-Tuesday filing argues press access is 'a privilege, not a right' revocable 'at the president's will,' citing national-security concerns tied to Iran-war and ballroom-construction coverage. Hearing set for 3:30 PM today; Trump himself predicted on Truth Social that Kelly will rule against him given the Acosta precedent and that he'll have to appeal.",
    "score_note": "A press-freedom lawsuit with a Trump-appointed judge who has already ruled against the administration on nearly identical facts once before.",
    "sources": [
     "NBC News",
@@ -2079,11 +2096,11 @@
   },
   {
    "id": "anthropic-ipo-timing-dispute-sep21",
-   "headline": "Anthropic's IPO timing disputed as reports diverge on September vs. mid-October",
-   "status": "Continuing",
+   "headline": "Anthropic's IPO marketing reportedly slips again, now to November",
+   "status": "Materially changed",
    "first_seen": "2026-09-21-am",
-   "last_updated": "2026-09-22-am",
-   "one_line": "Anthropic remains private ($965B post-money Series H, May 28; confidential S-1 reported ~June 1). This outlet's weekly EDGAR sweep (last run Sept 19) found no self-filing yet on public EDGAR. New Reuters/CNBC reporting says the IPO launch has shifted toward mid-October, conflicting with earlier September-target reports. Update (Sept 22): press reporting (Japan Times/Reuters, CNBC/Reuters, Fortune) has narrowed toward a mid-October marketing launch (not September), targeting a listing before the midterms at a reported ~$2T valuation; still no self-filing found on public EDGAR as of last Saturday's registry sweep.",
+   "last_updated": "2026-09-23-am",
+   "one_line": "Anthropic remains private ($965B post-money Series H, May 28; confidential S-1 reported ~June 1). This outlet's weekly EDGAR sweep (last run Sept 19) found no self-filing yet on public EDGAR. New Reuters/CNBC reporting says the IPO launch has shifted toward mid-October, conflicting with earlier September-target reports. Update (Sept 22): press reporting (Japan Times/Reuters, CNBC/Reuters, Fortune) has narrowed toward a mid-October marketing launch (not September), targeting a listing before the midterms at a reported ~$2T valuation; still no self-filing found on public EDGAR as of last Saturday's registry sweep. Update (Sept 23 am, single-reliable-source): Bloomberg reports the roadshow has shifted again, now to November, to fold in Q3 results; Goldman Sachs, JPMorgan and Morgan Stanley reportedly preparing a listing near a $2T valuation and $100B raise backed by a $15B credit facility, Nvidia among reported interested strategic investors. Two unrelated issuers (Holtec Nuclear, Bamboo Insurance) postponed their own listings this week citing market conditions -- cited by Bloomberg as a caution flag ahead of Anthropic's debut.",
    "score_note": "A closely watched AI-lab IPO; genuine timing disagreement between outlets, not just phrasing.",
    "sources": [
     "registry/entities.json (EDGAR-verified)",
@@ -2109,12 +2126,12 @@
   },
   {
    "id": "paramount-wbd-merger-settlement-sep21",
-   "headline": "Paramount Skydance settles with 12 states, clearing the last hurdle to its $111B Warner Bros. Discovery merger",
+   "headline": "Paramount Skydance expects to close its $111B WBD merger within two weeks",
    "status": "Continuing",
    "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-22-am",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple",
-   "one_line": "Consent decree terms (N.D. Cal.): $300M/year additional US film production (~$1.5B over 5 years); minimum release slate (30 films/year rising to 32) or risk penalties incl. possible forced Miramax divestiture; 5-year no-sale commitment on CA studio lots; separate cable-affiliate-fee negotiations; union-agreement and workforce-training commitments under an independent monitor. Ticker corrected to PSKY (post-merger; not pre-merger 'PARA') in the entity registry this run. $7M/day late fee to WBD shareholders past Sept 30 explains the settlement's timing.",
+   "one_line": "Consent decree terms (N.D. Cal.): $300M/year additional US film production (~$1.5B over 5 years); minimum release slate (30 films/year rising to 32) or risk penalties incl. possible forced Miramax divestiture; 5-year no-sale commitment on CA studio lots; separate cable-affiliate-fee negotiations; union-agreement and workforce-training commitments under an independent monitor. Ticker corrected to PSKY (post-merger; not pre-merger 'PARA') in the entity registry this run. $7M/day late fee to WBD shareholders past Sept 30 explains the settlement's timing. Update (Sept 23 am): CEO David Ellison told employees he expects closing within roughly two weeks; Paramount Skydance shares rose about 4% on the settlement, WBD little changed.",
    "score_note": "Removes the last state-level legal obstacle to a $111B media merger already shareholder-approved.",
    "sources": [
     "Variety",
@@ -2127,12 +2144,12 @@
   },
   {
    "id": "trump-zelensky-ny-meeting-sep21",
-   "headline": "Trump and Zelensky meet in New York today as Russia and Ukraine trade deadly overnight strikes",
+   "headline": "Kremlin dismisses Trump's Ukraine territorial reversal as both sides strike each other's energy grids overnight",
    "status": "Materially changed",
    "first_seen": "2026-09-21-pm",
-   "last_updated": "2026-09-22-pm",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple for the meeting and Truth Social post; Single-reliable-source for the 'Russia lost control of diesel' official characterization",
-   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election. Update (Sept 22): the meeting took place; both sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Trump's own Truth Social post afterward went well beyond that narrower agenda, saying Ukraine 'with the support of the European Union' can 'fight and WIN all of Ukraine back in its original form' -- a reversal of his prior position that a settlement would require ceding territory. No Russian response yet to either the meeting or the post.",
+   "one_line": "Meeting and Trump's UNGA address had not yet occurred as of this morning's publication. Overnight: Russia struck 4+ Ukrainian regions (200+ drones, missiles, 4 killed); Ukraine struck the Kuibyshev refinery in Samara. Follows Monday's Russian strike on Zaporizhzhia (172 drones, 8 cities, casualty counts diverge 1-2 dead across wires) which itself followed Ukraine's record 1,000+-drone barrage on Moscow during the Duma election. Update (Sept 22): the meeting took place; both sides agreed to pursue a truce limited to energy-infrastructure strikes, with technical talks to follow in Saudi Arabia. Trump's own Truth Social post afterward went well beyond that narrower agenda, saying Ukraine 'with the support of the European Union' can 'fight and WIN all of Ukraine back in its original form' -- a reversal of his prior position that a settlement would require ceding territory. No Russian response yet to either the meeting or the post. Update (Sept 23 am): Kremlin spokesman Peskov dismissed the territorial claim, saying Trump had simply absorbed 'Ukraine's perspective' and that Russia is 'a real bear,' not 'a paper bear.' Zelensky separately said Ukraine is 'ready' for a mutual energy-strike halt but no deal was reached for Kyiv to stand down unilaterally; overnight, Ukraine struck two Russian oil refineries and Russia hit an oil-and-gas facility in southern Ukraine officials call damaged beyond repair -- no ceasefire is yet operative on either side. No confirmation located of the Saudi Arabia technical talks reported to follow Monday's meeting.",
    "score_note": "First Trump-Zelensky meeting since the new Russia sanctions law, opening with both sides escalating rather than de-escalating.",
    "sources": [
     "Kyiv Independent",
@@ -2194,12 +2211,12 @@
   },
   {
    "id": "amd-1trillion-chip-rally-sep22",
-   "headline": "AMD crosses $1 trillion market value on an AI-chip rally that partly reversed before Tuesday's open",
-   "status": "New",
+   "headline": "AMD's trillion-dollar milestone holds -- Tuesday's dip was profit-taking, not a reversal",
+   "status": "Materially changed",
    "first_seen": "2026-09-22-am",
-   "last_updated": "2026-09-22-am",
+   "last_updated": "2026-09-23-am",
    "verification": "Confirmed-multiple",
-   "one_line": "AMD rose ~10% Monday to close $615.52, crossing $1T market cap for the first time (5-day rally ~24%), the 4th US chipmaker over $1T after Nvidia, Broadcom, Micron. Rally followed Meta's 'Muse' AI agent becoming Apple's #1 free app (~730K downloads in 5 days); Intel +~12%, Arm +~17%, Meta +11%+. Tuesday premarket: NVDA/AMD/INTC/MRVL all pulled back, coinciding with the 30-year Treasury yield hitting ~5.33% (highest since 2007) and fading US-Iran settlement hopes keeping oil elevated -- described as profit-taking, a likely contributor not a confirmed cause.",
+   "one_line": "AMD rose ~10% Monday to close $615.52, crossing $1T market cap for the first time (5-day rally ~24%), the 4th US chipmaker over $1T after Nvidia, Broadcom, Micron. Rally followed Meta's 'Muse' AI agent becoming Apple's #1 free app (~730K downloads in 5 days); Intel +~12%, Arm +~17%, Meta +11%+. Tuesday premarket: NVDA/AMD/INTC/MRVL all pulled back, coinciding with the 30-year Treasury yield hitting ~5.33% (highest since 2007) and fading US-Iran settlement hopes keeping oil elevated -- described as profit-taking, a likely contributor not a confirmed cause. Update (Sept 23 am): confirmed as profit-taking, not a reversal -- AMD closed Tuesday at $623.77, above Monday's close, holding the $1T milestone.",
    "score_note": "A chipmaker crossing $1T market cap and giving back a chunk of the move within 24 hours is a genuine, fast-moving market story.",
    "sources": [
     "CNBC",
