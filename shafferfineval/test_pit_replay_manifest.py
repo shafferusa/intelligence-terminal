@@ -567,9 +567,9 @@ def test_real_snapshot() -> None:
         check("the snapshot carries %s" % key, key in snap, sorted(snap))
 
     lineage = snap["freeze"]["lineage"]
-    check("the lineage carries every sealed freeze plus the live one -- four "
-          "as of spec_freeze_v4, and never fewer than the sealed records",
-          len(lineage) == 4
+    check("the lineage carries every sealed freeze plus the live one -- five "
+          "as of spec_freeze_v5, and never fewer than the sealed records",
+          len(lineage) == 5
           and lineage[-1]["freeze_version"] == pit_frozen_spec.SPEC_FREEZE_VERSION,
           [r["freeze_version"] for r in lineage])
     check("v1 is on record as non-executable",
@@ -584,6 +584,12 @@ def test_real_snapshot() -> None:
           and lineage[2]["rows_it_ever_produced"] == 0
           and lineage[2]["superseded_by"] == "spec_freeze_v4",
           lineage[2])
+    check("v4 is SEALED and superseded, kept with its D3 defect",
+          lineage[3]["freeze_version"] == "spec_freeze_v4"
+          and lineage[3]["status"] == pit_frozen_spec.STATUS_SUPERSEDED
+          and lineage[3]["rows_it_ever_produced"] == 0
+          and lineage[3]["superseded_by"] == "spec_freeze_v5",
+          lineage[3])
     check("the LAST lineage entry is the live, executable freeze",
           lineage[-1]["freeze_version"] == pit_frozen_spec.SPEC_FREEZE_VERSION
           and lineage[-1]["status"] == pit_frozen_spec.STATUS_EXECUTABLE,

@@ -2206,7 +2206,8 @@ def validate(verbose: bool = False) -> Dict[str, Any]:
               r2["db"]["growth_basis"])
 
         check("preflight records the frozen spec digest",
-              (man["frozen_spec"].get("current_digest") or "").startswith("2f9bba31"),
+              (man["frozen_spec"].get("current_digest") or "")
+              == pit_frozen_spec.FROZEN_DIGEST,
               {k: man["frozen_spec"].get(k)
                for k in ("freeze_version", "intact", "n_components")})
     finally:

@@ -149,6 +149,10 @@ __all__ = [
     "FACTOR_SPEC_VERSION", "FACTOR_SPEC_VERSION_V2", "DEFAULT_SPEC_VERSION",
     "SPECS_V2", "BY_KEY_V2", "SPEC_SETS", "spec_versions", "spec_set",
     "FACTOR_SPEC_VERSION_V3", "SPECS_V3", "BY_KEY_V3", "PRICED_EPS_V2",
+    "FACTOR_SPEC_VERSION_V4", "SPECS_V4", "BY_KEY_V4",
+    "OPERATING_INCOME_AND_INTEREST_MATCHED_V2",
+    "FORMULAS_VERSION_V1", "FORMULAS_V1", "FORMULA_GOLDEN_V1",
+    "EBITDA_GROWTH_BASE_POLICY_V1", "INTEREST_COVERAGE_DOMAIN_V1",
     "FACTOR_SPEC_V2_KNOWN_LIMITATION",
     "FACTOR_SPEC_V1_KNOWN_LIMITATION",
     "RUNG_RANK", "RUNG_OFFICE", "VALUATION_FACTORS", "VALUATION_MAX_RUNG",
@@ -195,6 +199,11 @@ FACTOR_SPEC_VERSION_V2 = "factor_spec_v2"
 #: factor_spec_v3, 2026-09-22 -- two corrections, both OWNER DECISIONS, both
 #: applied as a SUCCESSOR set. See `SPECS_V3` for what changed and why.
 FACTOR_SPEC_VERSION_V3 = "factor_spec_v3"
+
+#: factor_spec_v4, 2026-09-22 -- the D3 decisions (growth A, acceleration A,
+#: coverage = operating income over interest) as a SUCCESSOR set. See
+#: `SPECS_V4` for what changed and why.
+FACTOR_SPEC_VERSION_V4 = "factor_spec_v4"
 
 #: What a caller that passes no version gets. Deliberately v1: adding v2 must
 #: not silently change what an un-updated caller resolves -- the same rule
@@ -592,6 +601,28 @@ OPERATING_INCOME_AND_INTEREST = PeerEligibility(
          "marginal, 63.8/60.7/55.8% of base."),
 )
 
+#: factor_spec_v4 -- the v1/v2/v3 rule above is PRESERVED VERBATIM (it is
+#: shared by reference into the digested SPECS_V3); this is its successor.
+OPERATING_INCOME_AND_INTEREST_MATCHED_V2 = PeerEligibility(
+    rule_id="operating_income_and_interest_matched_v2",
+    primitives=("operating_income", "interest_expense"),
+    matched_period=("operating_income", "interest_expense"),
+    positive_screen="interest_expense > 0",
+    why=("Interest cover = operating_income / interest_expense, owner decision "
+         "2026-09-22. Both at ONE (period_end, qtrs=4): a ratio of one period's "
+         "numbers. DOMAIN (INTEREST_COVERAGE_DOMAIN_V1, executed in "
+         "pit_replay.resolve_primitives; this rule counts availability only): "
+         "interest_expense > 0 is the ordinary case; a tagged zero is "
+         "interest_expense_zero, a negative value interest_expense_negative, an "
+         "untagged one no_interest_expense_at_operating_income_period -- never a "
+         "large 'excellent' ratio. Negative operating income is a legitimate "
+         "NEGATIVE coverage and is scored. Ladder still AUTHORED, NOT MEASURED; "
+         "only the measured marginal 63.8/60.7/55.8% of base may be quoted. "
+         "UPPER BOUND: this rule accepts any non-stale shared period; the engine "
+         "values only the newest operating-income period, so n_eligible - "
+         "n_values on the cohort record measures the gap."),
+)
+
 FCF_AND_EBITDA = PeerEligibility(
     rule_id="fcf_over_ebitda_v1",
     primitives=("operating_cash_flow", "capex", "operating_income",
@@ -607,6 +638,7 @@ ELIGIBILITY_RULES: tuple[PeerEligibility, ...] = (
     EBITDA_THREE_OBSERVATIONS, REVENUE_HISTORY_AND_CPI, EV_EBITDA_SIX,
     PRICED_EPS, DEBT_CASH_EBITDA, DEBT_AND_MARKET_CAP, NET_INCOME_AND_ASSETS,
     NET_INCOME_AND_EQUITY, OPERATING_INCOME_AND_INTEREST, FCF_AND_EBITDA,
+    OPERATING_INCOME_AND_INTEREST_MATCHED_V2,
 )
 
 
@@ -1213,11 +1245,211 @@ def _to_v3(s: FactorSpec) -> FactorSpec:
 #: listed must be the v1 object by reference, and validate() enforces that.
 REPLACED_BY_VERSION: dict[str, frozenset] = {
     FACTOR_SPEC_VERSION_V3: frozenset({"ebitda_benchmark", "pe_ratio"}),
+    # CUMULATIVE: validate() compares every version against the v1 objects, and
+    # v4 inherits v3's two replacements before adding the three D3 keys.
+    FACTOR_SPEC_VERSION_V4: frozenset({"ebitda_benchmark", "pe_ratio", "ebitda_growth",
+                                       "ebitda_acceleration", "interest_coverage"}),
 }
 
 SPECS_V3: tuple[FactorSpec, ...] = tuple(_to_v3(s) for s in SPECS_V2)
 
 BY_KEY_V3: dict[str, FactorSpec] = {s.key: s for s in SPECS_V3}
+
+# ==========================================================================
+# factor_spec_v4 -- OWNER DECISIONS OF 2026-09-22 (D3), as a successor set
+#
+# v4 differs from v3 in THREE factors; the other eleven are the v3 objects by
+# reference. What changed:
+#
+#   ebitda_growth        the executable definition is the RATE
+#                        (E_t - E_t-1) / abs(E_t-1) under
+#                        EBITDA_GROWTH_BASE_POLICY_V1 -- alternative A of the
+#                        D3 record. The engine had computed an amount over
+#                        lagged assets (alternative B); that reading is on
+#                        record in pit_frozen_spec.FREEZE_V4 and nowhere else.
+#   ebitda_acceleration  growth_t - growth_t-1, the difference of two A-rates:
+#                        three EBITDA observations, no asset base, NOT a
+#                        second difference over assets.
+#   interest_coverage    numerator OPERATING INCOME, denominator interest
+#                        expense at the SAME period, under
+#                        INTEREST_COVERAGE_DOMAIN_V1; eligibility is the
+#                        matched-period rule below.
+#
+# The executable definitions themselves are now DATA (FORMULAS_V1), digested
+# by the freeze and witnessed through the engine (FORMULA_GOLDEN_V1): the v4
+# governance audit showed that a freeze over names and prose lets the
+# arithmetic move with the digest intact.
+# ==========================================================================
+
+FORMULAS_VERSION_V1 = "formulas_v1"
+
+#: THE EXECUTABLE DEFINITION of every scored key, as DATA, digested by the
+#: freeze. A FactorSpec says WHAT is scored; this says HOW. Where pit_derive
+#: has a 1:1 node the string BEGINS with that node's formula verbatim
+#: (validate() checks it). Owner decisions 2026-09-22 (D3): growth A,
+#: acceleration A, coverage OI/interest.
+FORMULAS_V1: dict[str, str] = {
+    "ebitda_benchmark": ("margin_excess = ebitda_margin - cohort_mean_margin; cohort = peers with "
+        "p50 <= ebitda_i <= p75 of cohort EBITDA (pit_normalization.BENCHMARK_BAND_V1), "
+        "|band| >= BENCHMARK_MIN_COHORT_V1 (benchmark_margin_50_75); BENCHMARK_ANCHORED"),
+    "ebitda_growth": ("ebitda_growth = (ebitda_t - ebitda_t-1) / abs(ebitda_t-1); "
+        "base policy EBITDA_GROWTH_BASE_POLICY_V1; ZERO_ANCHORED"),
+    "ebitda_efficiency": ("ebitda_margin = ebitda / revenue; revenue AT the EBITDA period "
+        "(pit_replay.R_NO_REVENUE_AT_P otherwise); PERCENTILE_RANK"),
+    "ebitda_acceleration": ("ebitda_acceleration = ebitda_growth_t - ebitda_growth_t-1; "
+        "ebitda_growth_t-1 = (ebitda_t-1 - ebitda_t-2) / abs(ebitda_t-2), same base policy; "
+        "NOT a second difference over assets; ZERO_ANCHORED"),
+    "ebitda_scale": ("ebitda_scale = ebitda (raw dollars, PERCENTILE_RANK); DIVERGES from "
+        "pit_derive's ebitda / sector_ebitda_p50 -- rank-identical only when p50 > 0"),
+    "pe_absolute": ("pe = price_raw_as_traded / earnings_per_share_pit, one share basis "
+        "(pit_price_basis.PAIR_PATHS), EPS > 0 (PRICED_EPS_V2); S = extreme_valuation_transform_v1(pe, "
+        "PE_ABSOLUTE_ANCHOR_V1); DIVERGES from pit_derive's market_cap / net_income "
+        "(SPECS_V3['pe_ratio'].graph_divergence)"),
+    "pe_relative": "pe as pe_absolute; anchor = cohort median pe (ANCHOR_COHORT_MEDIAN); BENCHMARK_ANCHORED",
+    "ev_ebitda_supplement": ("ev_ebitda = enterprise_value / ebitda; enterprise_value = market_cap + "
+        "total_debt - cash; market_cap on price_raw_as_traded (PRICE_ROLE_REQUIRED_BASIS); debt rung "
+        "DEBT_ELIGIBLE under DEBT_RUNG_EVEBITDA_V1; anchor = cohort median"),
+    "real_revenue_growth": ("real_revenue_growth = (1 + revenue_growth) / (1 + inflation) - 1 == "
+        "(revenue_t / cpi_t) / (revenue_t-1 / cpi_t-1) - 1 for a positive deflated base "
+        "(pit_replay.R_NON_POSITIVE_BASE otherwise); one revenue rung, CPI over the window; ZERO_ANCHORED"),
+    "fcf_conversion": "fcf_conversion = free_cash_flow / ebitda; free_cash_flow = operating_cash_flow - capex; PERCENTILE_RANK",
+    "interest_coverage": ("interest_coverage = operating_income / interest_expense; both AT ONE "
+        "(period_end, qtrs=4); domain INTEREST_COVERAGE_DOMAIN_V1; PERCENTILE_RANK"),
+    "net_debt_ebitda": "net_debt_ebitda = net_debt / ebitda; net_debt = total_debt - cash; PERCENTILE_RANK",
+    "debt_market_cap": ("debt_market_cap = total_debt / market_cap; market_cap = price * shares in ONE "
+        "share basis (PRICE_ROLE_REQUIRED_BASIS); PERCENTILE_RANK"),
+}
+
+#: key -> the pit_derive node whose `formula` the string must BEGIN with.
+_FORMULA_NODE: dict[str, str] = {
+    "ebitda_benchmark": "margin_excess", "ebitda_growth": "ebitda_growth",
+    "ebitda_efficiency": "ebitda_margin", "ebitda_acceleration": "ebitda_acceleration",
+    "real_revenue_growth": "real_revenue_growth", "fcf_conversion": "fcf_conversion",
+    "interest_coverage": "interest_coverage", "net_debt_ebitda": "net_debt_ebitda",
+    "debt_market_cap": "debt_market_cap", "ev_ebitda_supplement": "ev_ebitda",
+}
+
+#: D3 growth base policy. The owner asked that the near-zero / sign-transition
+#: policy be defined explicitly before v5 froze, so a base near zero cannot
+#: explode. Scale-free; needs no primitive the eligibility rule does not
+#: already charge for; a base-policy refusal is an ELIGIBLE row with NO VALUE
+#: and shows up as n_eligible - n_values on the cohort record.
+#:
+#: max_abs_rate IS A CONVENTION, proposed 2026-09-22 with these precedents and
+#: awaiting the owner's confirmation: company_scoring._growth returns None on a
+#: zero base; pit_replay refuses a non-positive real-revenue base
+#: (R_NON_POSITIVE_BASE) because "a rate on a non-positive base is not a large
+#: number, it is an undefined one"; pit_price_basis floors the EPS-growth base
+#: at $0.01 because a ratio whose denominator is one reporting quantum is a
+#: statement about the quantum. Under ZERO_ANCHORED with a cohort IQR scale a
+#: row beyond the band would sit at the +/-100 clamp anyway, so the economic
+#: loss of refusing it is the row, not the score. The alternatives considered
+#: (refuse the exact zero only; refuse every non-positive base; a dollar floor)
+#: are recorded in docs/MODEL-LINEAGE.md under spec_freeze_v5.
+EBITDA_GROWTH_BASE_POLICY_V1: dict[str, Any] = {
+    "policy_version": "ebitda_growth_base_policy_v1",
+    "status": "CONVENTION_PROPOSED_2026_09_22_AWAITING_OWNER_CONFIRMATION",
+    "denominator": "abs(ebitda_t-1)",
+    "zero_base": "REFUSED:ebitda_growth_base_zero",
+    "max_abs_rate": 10.0,
+    "beyond_max_abs_rate": "REFUSED:ebitda_growth_base_near_zero",
+    "band_semantics": ("the band is on the RATE, not on the base's absolute size: an "
+                       "11x rise from a healthy base is refused as well, under the "
+                       "same name; |rate| == max_abs_rate exactly is COMPUTED (strict >); "
+                       "an acceleration refused because the LAG-1 rate failed carries "
+                       "the same code"),
+    "sign_transition": ("COMPUTED: (E_t - E_t-1)/|E_t-1| is positive for loss->profit; "
+                        "base sign recorded on the row ('bs')"),
+    "both_negative": "COMPUTED with abs(): a loss shrinking from -100 to -50 is +0.5",
+    "applies_to": ("ebitda_growth", "ebitda_acceleration"),
+    "rationale": ("a dollar floor is not scale-free and a revenue/asset floor needs a "
+                  "primitive the cohort rule does not charge for; the rate band refuses "
+                  "only order-of-magnitude base swings, keeps them out of the cohort "
+                  "IQR sample, and the score is tanh-bounded anyway"),
+}
+
+#: D3 coverage domain policy, the owner's words of 2026-09-22 made executable:
+#: interest_expense > 0 for ordinary calculation; zero / negative / missing
+#: interest expense is a NAMED refusal, never an arbitrarily enormous
+#: "excellent" ratio; negative operating income remains a legitimate NEGATIVE
+#: coverage value. The refusal vocabulary is the session's proposal.
+INTEREST_COVERAGE_DOMAIN_V1: dict[str, str] = {
+    "policy_version": "interest_coverage_domain_v1",
+    "status": "OWNER_RULE_2026_09_22; vocabulary, rung rule and transform PROPOSED, AWAITING_OWNER_CONFIRMATION",
+    "ordinary": "interest_expense > 0 at the operating_income period",
+    "rung_rule": ("the FIRST interest_expense ladder rung carrying a value AT the "
+                  "operating-income period is used; a tagged zero on that rung is "
+                  "interest_expense_zero and lower rungs are not consulted"),
+    "zero": "REFUSED:interest_expense_zero",
+    "negative": "REFUSED:interest_expense_negative",
+    "missing": "REFUSED:no_interest_expense_at_operating_income_period",
+    "no_numerator": "REFUSED:no_operating_income_period",
+    "negative_operating_income": ("LEGITIMATE_NEGATIVE_COVERAGE -- scored, ranks below every "
+                                  "positive peer. KNOWN LIMITATION under PERCENTILE_RANK: "
+                                  "the ORDERING AMONG NEGATIVE-OI ROWS IS INVERTED relative "
+                                  "to interest burden (OI=-100 / interest=1 ranks below "
+                                  "OI=-100 / interest=100); accepted pending owner ruling"),
+    "direction": "HIGHER_IS_BETTER applied AFTER this rule (pit_factor_blocks: orientation only)",
+}
+
+#: Witnesses for FORMULAS_V1; pit_replay.validate() evaluates each through the
+#: engine's own resolve_primitives on a synthetic index (no database).
+#: 'ebitda' triples are (E_t, E_t-1, E_t-2); a refusal is named, never a number.
+FORMULA_GOLDEN_V1: tuple[dict[str, Any], ...] = (
+    {"factor": "ebitda_growth", "ebitda": (1000.0, 750.0, 600.0), "expect": 1.0 / 3.0},
+    {"factor": "ebitda_growth", "ebitda": (-50.0, -100.0, -100.0), "expect": 0.5},
+    {"factor": "ebitda_growth", "ebitda": (1000.0, -250.0, 600.0), "expect": 5.0},
+    {"factor": "ebitda_growth", "ebitda": (100.0, 0.0, 50.0), "expect": "REFUSED:ebitda_growth_base_zero"},
+    {"factor": "ebitda_growth", "ebitda": (1000.0, 1.0, 50.0), "expect": "REFUSED:ebitda_growth_base_near_zero"},
+    {"factor": "ebitda_acceleration", "ebitda": (1000.0, 750.0, 600.0), "expect": 1.0 / 3.0 - 0.25},
+    {"factor": "ebitda_acceleration", "ebitda": (100.0, 100.0, 100.0), "expect": 0.0},
+    {"factor": "ebitda_acceleration", "ebitda": (-50.0, -100.0, -200.0), "expect": 0.0},
+    {"factor": "ebitda_acceleration", "ebitda": (801_300_000.0, 724_500_000.0, 675_000_000.0),
+     "expect": 0.03267080745341615},
+    {"factor": "ebitda_acceleration", "ebitda": (1000.0, 750.0, 0.0),
+     "expect": "REFUSED:ebitda_growth_base_zero"},
+    {"factor": "ebitda_acceleration", "ebitda": (1000.0, 750.0, 1.0),
+     "expect": "REFUSED:ebitda_growth_base_near_zero"},
+    {"factor": "ebitda_growth", "ebitda": (1100.0, 100.0, 50.0), "expect": 10.0},
+    {"factor": "ebitda_growth", "ebitda": (-900.0, 100.0, 50.0), "expect": -10.0},
+    {"factor": "ebitda_growth", "ebitda": (1200.0, 100.0, 50.0),
+     "expect": "REFUSED:ebitda_growth_base_near_zero"},
+    {"factor": "interest_coverage", "operating_income": 500.0, "interest_expense": 100.0, "expect": 5.0},
+    {"factor": "interest_coverage", "operating_income": -200.0, "interest_expense": 100.0, "expect": -2.0},
+    {"factor": "interest_coverage", "operating_income": 612_400_000.0, "interest_expense": 71_800_000.0,
+     "expect": 8.529247910863509},
+    {"factor": "interest_coverage", "operating_income": 500.0, "interest_expense": 0.0,
+     "expect": "REFUSED:interest_expense_zero"},
+    {"factor": "interest_coverage", "operating_income": 500.0, "interest_expense": -10.0,
+     "expect": "REFUSED:interest_expense_negative"},
+    {"factor": "interest_coverage", "operating_income": 500.0, "interest_expense": None,
+     "expect": "REFUSED:no_interest_expense_at_operating_income_period"},
+)
+
+_V4_GROWTH_NOTE = ("factor_spec_v4: EXECUTABLE DEFINITION (E_t - E_t-1) / abs(E_t-1) under "
+                   "EBITDA_GROWTH_BASE_POLICY_V1; no asset base. Owner decision 2026-09-22 (D3, A).")
+_V4_ACCEL_NOTE = ("factor_spec_v4: EXECUTABLE DEFINITION growth_t - growth_t-1, each an A-rate under "
+                  "EBITDA_GROWTH_BASE_POLICY_V1; three EBITDA observations, no asset base. "
+                  "Owner decision 2026-09-22.")
+_V4_COVERAGE_NOTE = ("factor_spec_v4: numerator OPERATING INCOME (owner decision 2026-09-22, D3 A); "
+                     "eligibility OPERATING_INCOME_AND_INTEREST_MATCHED_V2; domain "
+                     "INTEREST_COVERAGE_DOMAIN_V1.")
+
+
+def _to_v4(s: FactorSpec) -> FactorSpec:
+    if s.key == "ebitda_growth":
+        return _dc_replace(s, note=(s.note + " " if s.note else "") + _V4_GROWTH_NOTE)
+    if s.key == "ebitda_acceleration":
+        return _dc_replace(s, note=(s.note + " " if s.note else "") + _V4_ACCEL_NOTE)
+    if s.key == "interest_coverage":
+        return _dc_replace(s, peer_eligibility=OPERATING_INCOME_AND_INTEREST_MATCHED_V2,
+                           note=(s.note + " " if s.note else "") + _V4_COVERAGE_NOTE)
+    return s
+
+
+SPECS_V4: tuple[FactorSpec, ...] = tuple(_to_v4(s) for s in SPECS_V3)
+
+BY_KEY_V4: dict[str, FactorSpec] = {s.key: s for s in SPECS_V4}
 
 #: Every spec set that has ever been named, keyed by the id a row would carry.
 #: v1 and v2 are FROZEN: they are read, never edited.
@@ -1225,12 +1457,14 @@ SPEC_SETS: dict[str, dict[str, FactorSpec]] = {
     FACTOR_SPEC_VERSION: BY_KEY,
     FACTOR_SPEC_VERSION_V2: BY_KEY_V2,
     FACTOR_SPEC_VERSION_V3: BY_KEY_V3,
+    FACTOR_SPEC_VERSION_V4: BY_KEY_V4,
 }
 
 
 def spec_versions() -> tuple[str, ...]:
     """Every selectable spec version, oldest first."""
-    return (FACTOR_SPEC_VERSION, FACTOR_SPEC_VERSION_V2, FACTOR_SPEC_VERSION_V3)
+    return (FACTOR_SPEC_VERSION, FACTOR_SPEC_VERSION_V2, FACTOR_SPEC_VERSION_V3,
+            FACTOR_SPEC_VERSION_V4)
 
 
 def spec_set(version: Optional[str] = None) -> dict[str, FactorSpec]:
@@ -2474,6 +2708,8 @@ MEASURED_COHORT: dict[str, dict[str, Any]] = {
     "net_income_and_equity_v1": {"measured": "UNKNOWN", "scope": FULL_UNIVERSE},
     "operating_income_and_interest_v1": {"measured": "UNKNOWN",
                                          "scope": FULL_UNIVERSE},
+    "operating_income_and_interest_matched_v2": {"measured": "UNKNOWN",
+                                                 "scope": FULL_UNIVERSE},
     "fcf_over_ebitda_v1": {"measured": "UNKNOWN", "scope": FULL_UNIVERSE},
 }
 
@@ -3134,6 +3370,45 @@ def validate() -> list[str]:
             "earnings_per_share_pit",):
         problems.append("factor_spec_v2/pe_ratio's stale declaration must be "
                         "PRESERVED, not repaired in place")
+
+    # (i3) factor_spec_v4: the D3 decisions, and only those, and the executable
+    # definitions restate pit_derive wherever a node exists.
+    v4c = BY_KEY_V4["interest_coverage"]
+    if v4c.peer_eligibility is not OPERATING_INCOME_AND_INTEREST_MATCHED_V2:
+        problems.append("factor_spec_v4/interest_coverage eligibility must be the "
+                        "matched v2 rule by reference")
+    if (v4c.peer_eligibility.matched_period != ("operating_income", "interest_expense")
+            or not v4c.peer_eligibility.is_price_free):
+        problems.append("factor_spec_v4/interest_coverage must match OI and interest "
+                        "at ONE period and stay price-free")
+    if BY_KEY_V3["interest_coverage"].peer_eligibility is not OPERATING_INCOME_AND_INTEREST:
+        problems.append("factor_spec_v3/interest_coverage must be PRESERVED verbatim")
+    for k in ("ebitda_growth", "ebitda_acceleration"):
+        if (BY_KEY_V4[k].peer_eligibility is not BY_KEY[k].peer_eligibility
+                or "BASE_POLICY_V1" not in BY_KEY_V4[k].note):
+            problems.append(f"factor_spec_v4/{k}: eligibility unchanged by reference "
+                            "and the note must name the base policy")
+    if sum(1 for a, b in zip(SPECS_V3, SPECS_V4) if a is b) != 11:
+        problems.append("factor_spec_v4 must replace exactly three specs")
+    if set(FORMULAS_V1) != {s.key for s in SPECS} - {"pe_ratio", "ev_ebitda", "roa", "roe"} | {
+            "pe_absolute", "pe_relative", "ev_ebitda_supplement"}:
+        problems.append("FORMULAS_V1 must name exactly the thirteen replayed keys")
+    for key, node in _FORMULA_NODE.items():
+        if not FORMULAS_V1[key].startswith(pit_derive.NODES[node].formula):
+            problems.append(f"{key}: FORMULAS_V1 no longer restates "
+                            f"pit_derive.NODES[{node!r}].formula verbatim")
+    for key in ("ebitda_scale", "pe_absolute"):
+        if "DIVERGES" not in FORMULAS_V1[key]:
+            problems.append(f"{key}: differs from its pit_derive node and must say so")
+    for code_key, code in (("zero_base", "ebitda_growth_base_zero"),
+                           ("beyond_max_abs_rate", "ebitda_growth_base_near_zero")):
+        if EBITDA_GROWTH_BASE_POLICY_V1[code_key] != "REFUSED:" + code:
+            problems.append("EBITDA_GROWTH_BASE_POLICY_V1 refusal names drifted")
+    if not (0.0 < float(EBITDA_GROWTH_BASE_POLICY_V1["max_abs_rate"]) < math.inf):
+        problems.append("max_abs_rate must be a finite positive band")
+    for case in FORMULA_GOLDEN_V1:
+        if case["factor"] not in FORMULAS_V1:
+            problems.append("a golden witness names a factor FORMULAS_V1 does not")
 
     # (j1) COHERENCE IS A NUMBER, and the number must be one the data kept.
     # A statistic may be quoted as coherence only if it survived the

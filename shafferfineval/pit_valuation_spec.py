@@ -222,7 +222,8 @@ __all__ = [
     "PRICE_RAW_AS_TRADED", "PRICE_ACTION_ADJUSTED",
     # the convex transform
     "TRANSFORM_A", "TRANSFORM_THETA", "TRANSFORM_C", "TRANSFORM_B",
-    "TRANSFORM_FLOOR_MULTIPLE", "TRANSFORM_FLOOR", "solve_b", "valuation_score",
+    "TRANSFORM_FLOOR_MULTIPLE", "TRANSFORM_FLOOR", "TRANSFORM_PARAMS_V1",
+    "solve_b", "valuation_score",
     "valuation_score_detail", "PINNED_CURVE",
     # earnings sign crossing
     "EARNINGS_SIGN_CROSS", "TRANSITION_BOTH_POSITIVE",
@@ -913,6 +914,21 @@ def solve_b(a: float = TRANSFORM_A, theta: float = TRANSFORM_THETA,
 
 
 TRANSFORM_B = solve_b()
+
+#: The transform's parameters as ONE body for the freeze (v4 governance audit,
+#: R4). PINNED_CURVE pins what the curve PRODUCES; this pins what it is MADE OF
+#: -- C, the cheap-side ceiling, is not recoverable from PINNED_CURVE at all.
+#: theta and B are computed floats, recorded to 12 dp so a last-ulp libm
+#: difference can never read as drift. solve_b itself is NOT digested: a
+#: function renders as its name, and a name is not a body.
+TRANSFORM_PARAMS_V1: dict[str, float] = {
+    "a": TRANSFORM_A,
+    "theta_ln2": round(TRANSFORM_THETA, 12),
+    "c": TRANSFORM_C,
+    "floor_multiple": TRANSFORM_FLOOR_MULTIPLE,
+    "floor": TRANSFORM_FLOOR,
+    "b_solved": round(TRANSFORM_B, 12),
+}
 
 
 def valuation_score_detail(multiple: Optional[float],

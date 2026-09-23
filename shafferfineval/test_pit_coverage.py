@@ -289,6 +289,12 @@ def main() -> int:
     check("every feature declares a block and a note",
           set(V.FEATURE_KEYS) == set(V.FEATURE_BLOCK)
           and set(V.FEATURE_KEYS) == set(V.FEATURE_NOTE))
+    check("the coverage note names OPERATING INCOME, not EBITDA; growth notes "
+          "carry no asset base",
+          "operating income" in V.FEATURE_NOTE["quality_interest_coverage"]
+          and "EBITDA" not in V.FEATURE_NOTE["quality_interest_coverage"]
+          and "Assets" not in (V.FEATURE_NOTE["ebitda_growth"]
+                               + V.FEATURE_NOTE["ebitda_acceleration"]))
     check("the three measured dates are the project's three",
           V.MEASURED_DATES == ("2015-06-30", "2019-06-28", "2024-06-28"))
     check("the survivor label comes from pit_store, never redeclared",

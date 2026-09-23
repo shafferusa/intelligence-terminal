@@ -89,6 +89,8 @@ ACCEL_COL = [-0.05, 0.12, 0.03, -0.18, 0.21, 0.07, -0.01, 0.16,
              0.09, -0.11, 0.25, 0.04, -0.07, 0.14, 0.02, -0.15]
 REAL_COL = [0.04, 0.22, -0.06, 0.17, -0.13, 0.09, 0.28, -0.02,
             0.12, 0.31, 0.05, -0.09, 0.20, 0.07, -0.04, 0.25]
+COVERAGE_COL = [8.5, 2.1, -1.4, 12.0, 4.4, 0.6, 21.0, 3.3,
+                6.8, -0.2, 9.9, 1.7, 15.5, 5.1, 2.9, 7.4]
 
 
 def main() -> int:
@@ -185,6 +187,16 @@ def main() -> int:
     thin, _, _ = N.benchmark_margin_50_75([1.0, 2.0], [0.1, 0.2])
     check("a band too thin gives no benchmark rather than a made-up one",
           thin is None)
+    orig_band = N.BENCHMARK_BAND_V1
+    try:
+        N.BENCHMARK_BAND_V1 = (0.0, 1.0)
+        _, n_all, _ = N.benchmark_margin_50_75(A_EBITDA, A_MARGIN)
+        check("the band is READ from the digested constant, not from a literal",
+              n_all == len(A_EBITDA))
+    finally:
+        N.BENCHMARK_BAND_V1 = orig_band
+    check("the band and floor values did not move when they were lifted out",
+          N.BENCHMARK_BAND_V1 == (0.50, 0.75) and N.BENCHMARK_MIN_COHORT_V1 == 3)
 
     print("== 4. the scale parameters, and every degenerate case ==")
     fixed = N.resolve_scale(N.fixed_scale(0.06))
@@ -505,8 +517,22 @@ def main() -> int:
     registry = N.candidate_v2_registry()
     check("the v2 EBITDA family is seeded",
           set(registry) == {"EBITDAMarginRank", "EBITDAExcessLevel", "EBITDAGrowth",
-                            "EBITDAAcceleration", "EBITDAScale", "RealRevenueGrowth"},
+                            "EBITDAAcceleration", "EBITDAScale", "RealRevenueGrowth",
+                            "InterestCoverageRank"},
           sorted(registry))
+    check("InterestCoverageRank is a rank, higher is better, and states its "
+          "domain policy",
+          registry["InterestCoverageRank"].normalization_type == N.PERCENTILE_RANK
+          and registry["InterestCoverageRank"].higher_is_better is True
+          and "interest_expense_zero" in " ".join(registry["InterestCoverageRank"].notes))
+    check("a negative coverage ranks below every positive peer",
+          N.percentile_rank_score(-4.0, [1.5, 3.0, 8.0, 12.0]).score == -100.0)
+    check("growth and acceleration are RATES now: no asset base in their text, "
+          "and both name the base policy",
+          all("Assets" not in (r.rationale + " ".join(r.notes))
+              for r in (registry["EBITDAGrowth"], registry["EBITDAAcceleration"]))
+          and all("EBITDA_GROWTH_BASE_POLICY_V1" in " ".join(registry[k].notes)
+                  for k in ("EBITDAGrowth", "EBITDAAcceleration")))
     check("EBITDAMarginRank is a rank", registry["EBITDAMarginRank"].normalization_type
           == N.PERCENTILE_RANK)
     check("EBITDAExcessLevel is benchmark-anchored on M_s",
@@ -533,7 +559,7 @@ def main() -> int:
     check("nothing is registered as production",
           all(s.feature_role == N.ROLE_RESEARCH for s in registry.values()))
     check("the seed is a fresh copy, so a caller cannot mutate the policy",
-          (registry.clear() or True) and len(N.candidate_v2_registry()) == 6)
+          (registry.clear() or True) and len(N.candidate_v2_registry()) == 7)
 
     registry = N.candidate_v2_registry()
     check("a factor with NO normalization_type is refused",
@@ -580,6 +606,7 @@ def main() -> int:
         "EBITDAAcceleration": ACCEL_COL,
         "EBITDAScale": A_EBITDA + B_EBITDA,
         "RealRevenueGrowth": REAL_COL,
+        "InterestCoverageRank": COVERAGE_COL,
     }
     check("registering with NO samples is now refused, not silently skipped",
           _raises(lambda: N.register_factor(registry, N.FactorSpec(

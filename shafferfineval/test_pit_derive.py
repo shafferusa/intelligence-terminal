@@ -376,6 +376,9 @@ def main() -> int:
     check("ebitda_acceleration = growth_t - growth_t-1",
           _close(f["ebitda_acceleration"],
                  f["ebitda_growth"] - f["ebitda_growth@t-1y"]))
+    check("interest_coverage = operating_income / interest_expense",
+          _close(f["interest_coverage"],
+                 f["operating_income"] / f["interest_expense"]))
     check("real_revenue_growth deflates rather than subtracts",
           _close(f["real_revenue_growth"],
                  (1 + f["revenue_growth"]) / (1 + f["inflation"]) - 1))

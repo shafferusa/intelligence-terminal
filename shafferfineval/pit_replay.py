@@ -5,7 +5,8 @@ pit_replay -- THE REPLAY ENGINE for the Shaffer v2 survivor-only diagnostic
 
 WHAT THIS IS
 
-    The executable half of `spec_freeze_v3`. `pit_frozen_spec` says what the
+    The executable half of the LIVE freeze (`pit_frozen_spec.SPEC_FREEZE_VERSION`,
+    spec_freeze_v5 at this writing). `pit_frozen_spec` says what the
     model is; `pit_replay_manifest` says whether it may run; `pit_replay_meter`
     says what it cost. This module is the thing that actually walks a cross-
     section, resolves every factor, normalises it, assembles the blocks, and
@@ -30,7 +31,7 @@ THE THREE RULES IT WAS BUILT AROUND
        missing declaration. It does not pick a reading, and it does not write
        0.0 for "unknown".
 
-THE FACTOR PLAN, AND WHY FIVE OF THIRTEEN ARE COMPUTED
+THE FACTOR PLAN, AND WHY SIX OF THIRTEEN ARE COMPUTED
 
     Thirteen feature keys are written per entity-date: the ten company factors
     of `pit_factor_blocks.FACTOR_BLOCK` that are not V, plus V's three
@@ -38,47 +39,65 @@ THE FACTOR PLAN, AND WHY FIVE OF THIRTEEN ARE COMPUTED
     declares its weights at subfactor granularity and a feature row at factor
     granularity could not carry a weight.
 
-    FIVE are COMPUTABLE, and they are exactly the five for which
-    `pit_normalization.candidate_v2_registry()` declares a transform:
+    SIX are COMPUTABLE: six of the seven keys for which
+    `pit_normalization.candidate_v2_registry()` declares a transform (the
+    seventh, EBITDAExcessLevel, is the benchmark whose MARGIN path is not
+    built):
 
-        ebitda_growth        EBITDAGrowth        ZERO_ANCHORED, cohort scale
-        ebitda_efficiency    EBITDAMarginRank    PERCENTILE_RANK
-        ebitda_acceleration  EBITDAAcceleration  ZERO_ANCHORED, cohort scale
-        ebitda_scale         EBITDAScale         PERCENTILE_RANK   (challenger)
-        real_revenue_growth  RealRevenueGrowth   ZERO_ANCHORED, fixed g = 0.10
+        ebitda_growth        EBITDAGrowth          ZERO_ANCHORED, cohort scale
+        ebitda_efficiency    EBITDAMarginRank      PERCENTILE_RANK
+        ebitda_acceleration  EBITDAAcceleration    ZERO_ANCHORED, cohort scale
+        ebitda_scale         EBITDAScale           PERCENTILE_RANK   (challenger)
+        real_revenue_growth  RealRevenueGrowth     ZERO_ANCHORED, fixed g = 0.10
+        interest_coverage    InterestCoverageRank  PERCENTILE_RANK
 
-    ONE is REFUSED for ambiguity: `ebitda_benchmark`. The codebase holds two
-    incompatible definitions of its benchmark -- `pit_factor_spec.
-    ebitda_benchmark_cohort` gives the mean EBITDA in DOLLARS of the 50-75
-    band, `pit_normalization`'s registered EBITDAExcessLevel anchors a MARGIN
-    against `benchmark_margin_50_75`'s mean margin of the same band -- and no
-    code picks between them. Measured on CTSH at 2019-06-28 the two are
-    12,378,765 dollars against 0.1036 margin; under the dollar reading every
-    large company saturates at the clamp and the factor becomes
-    indistinguishable from `ebitda_scale`, the factor deliberately given zero
-    weight. This is 0.1225 of the company score, the largest single factor
-    weight in the model. Picking one silently is the one thing that must not
-    happen, so the engine writes UNAVAILABLE with
-    `benchmark_definition_ambiguous` on every row until an owner decides.
+    Their arithmetic is DECLARED, not implied: `pit_factor_spec.FORMULAS_V1`
+    states each executable definition, `FORMULA_GOLDEN_V1` witnesses it, and
+    `validate()` runs every witness through `resolve_primitives`. The D3
+    decisions of 2026-09-22 are executed here: growth is the RATE
+    (E_t - E_t-1) / |E_t-1| under EBITDA_GROWTH_BASE_POLICY_V1, acceleration
+    is growth_t - growth_t-1, and coverage is operating income over interest
+    expense at ONE period under INTEREST_COVERAGE_DOMAIN_V1. The engine derives
+    eligibility from `pit_frozen_spec.ENGINE_MUST_DERIVE_FROM` and refuses to
+    run from any other version.
 
-    SEVEN are NOT_COMPUTABLE, each with the missing declaration named:
+    ONE is REFUSED: `ebitda_benchmark`. factor_spec_v2 held two incompatible
+    definitions of its benchmark (the mean EBITDA in DOLLARS of the 50-75
+    band, or the cohort's mean MARGIN); factor_spec_v3 decided MARGIN (owner
+    decision 2026-09-22, D1). This engine has NOT built that path -- it needs
+    the cohort's (EBITDA, margin) pairs through `benchmark_margin_50_75` and a
+    `benchmark=` anchor into `normalize()` -- and it does not pick a reading
+    by itself, so it writes UNAVAILABLE with `benchmark_definition_ambiguous`
+    on every row until the path is built. That is 0.1225 of the company
+    score, the largest single factor weight in the model, and it is engine
+    work recorded in `pit_frozen_spec.STILL_BLOCKED`.
 
-        pe_absolute, pe_relative        earnings_per_share_pit is
-                                        GENUINELY_UNAVAILABLE in this store --
-                                        `pit_factor_spec` says so itself, in
-                                        pe_ratio's `unavailable_primitives`.
+    SIX are NOT_COMPUTABLE, each with the missing piece named:
+
+        pe_absolute, pe_relative        the P/E chain is NOT BUILT in this
+                                        engine (the pit_eps TTM join,
+                                        pit_price_basis.PAIR_PATHS, the
+                                        raw-price basis). EPS itself IS in
+                                        the store: PRICED_EPS_V2 says so.
         ev_ebitda_supplement,           no v2 normalisation is declared:
-        fcf_conversion,                 `candidate_v2_registry()` holds six
-        interest_coverage,              specs and none of them is these. The
-        net_debt_ebitda,                ratio is arithmetic; the TRANSFORM is a
-        debt_market_cap                 modelling decision nobody has recorded.
+        fcf_conversion,                 `candidate_v2_registry()` holds seven
+        net_debt_ebitda,                specs and none of them is these. The
+        debt_market_cap                 ratio is arithmetic; the TRANSFORM is a
+                                        modelling decision nobody has recorded.
 
-    The consequence is stated rather than hidden: with V and Q unavailable the
-    reachable weight is E 0.35 + G 0.15 = 0.50, which clears
-    MIN_BLOCK_WEIGHT = 0.40, so companies that resolve both blocks get a score
-    and companies that resolve only one get the
+    The consequence is stated rather than hidden: with V unavailable and Q
+    carrying one of its four factors, the reachable weight is
+    E 0.35 + G 0.15 + Q 0.10 = 0.60, which clears MIN_BLOCK_WEIGHT = 0.40, so
+    companies that resolve enough blocks get a score and the rest get the
     PARTIAL_SCORE_INSUFFICIENT_BLOCK_COVERAGE refusal. No block is ever
-    renormalised against another.
+    renormalised against another. A NEW PATH OPENS with the sixth factor: Q
+    is available on interest_coverage ALONE (0.30 of its within-block weight,
+    renormalised to the whole 0.10 block by pit_factor_blocks.block_score),
+    and E + Q = 0.45 also clears the floor, so a company with no G is scored
+    under 1.1 where 1.0 refused it. The pillar row carries
+    n_subfactors_resolved and subfactor_mask, so a single-factor Q is
+    visible on every row; whether a block needs a within-block coverage
+    floor before it counts toward MIN_BLOCK_WEIGHT is put to the owner.
 
 THE ZERO-WEIGHT CHALLENGER
 
@@ -147,7 +166,9 @@ __all__ = [
 # IDENTITY
 # ==========================================================================
 
-ENGINE_VERSION = "pit_replay/1.0"
+#: 1.1 on 2026-09-22: growth A, acceleration A and interest coverage computed;
+#: eligibility from factor_spec_v4. 1.0 rows differ from 1.1 rows BY DESIGN.
+ENGINE_VERSION = "pit_replay/1.1"
 
 #: On EVERY row this engine writes. Not a default, not a parameter with a
 #: default -- a constant, because a row whose model version came from an
@@ -166,7 +187,10 @@ PEER_SET_MODEL_VERSION = pit_store.EQUITY_PIT_MODEL_VERSION
 PEER_SET_VERSION = pit_store.PEER_SET_VERSION
 LADDER_VERSION = pit_store.LADDER_VERSION_V2
 LATENCY_POLICY_VERSION = pit_store.LATENCY_POLICY_VERSION
-FACTOR_SPEC_VERSION = "factor_spec_v2"
+#: Must equal pit_frozen_spec.ENGINE_MUST_DERIVE_FROM; validate() and
+#: require_gate() refuse otherwise, so the engine cannot stamp a freeze it does
+#: not derive from.
+FACTOR_SPEC_VERSION = "factor_spec_v4"
 
 GIB = 1024 ** 3
 
@@ -224,8 +248,17 @@ R_NO_PEER_SET = "no_peer_set"
 R_NO_EBITDA = "no_ebitda_period"
 R_NO_LAG1 = "no_ebitda_lag1_period"
 R_NO_LAG2 = "no_ebitda_lag2_period"
-R_NO_ASSETS_LAG1 = "no_assets_at_lag1"
-R_NO_ASSETS_LAG2 = "no_assets_at_lag2"
+R_EBITDA_BASE_ZERO = "ebitda_growth_base_zero"
+R_EBITDA_BASE_NEAR_ZERO = "ebitda_growth_base_near_zero"
+R_NO_OPERATING_INCOME = "no_operating_income_period"
+R_NO_INTEREST_AT_P = "no_interest_expense_at_operating_income_period"
+R_INTEREST_ZERO = "interest_expense_zero"
+R_INTEREST_NEGATIVE = "interest_expense_negative"
+R_PE_CHAIN_NOT_BUILT = "pe_chain_not_built_in_engine"
+
+#: RETIRED with the D3 decision of 2026-09-22 (growth = A: no asset base).
+#: Rows in the disposable pilot DB carry them; no live plan may emit them.
+RETIRED_REASONS: Tuple[str, ...] = ("no_assets_at_lag1", "no_assets_at_lag2")
 R_NO_REVENUE_AT_P = "no_revenue_at_ebitda_period"
 R_NO_REVENUE = "no_revenue_period"
 R_NO_REVENUE_LAG1 = "no_revenue_lag1_period"
@@ -238,14 +271,21 @@ R_NON_POSITIVE_BASE = "non_positive_real_revenue_base"
 #: because a reason that has been translated has been edited.
 ENGINE_REASONS: Tuple[str, ...] = (
     R_BENCHMARK_AMBIGUOUS, R_NO_V2_NORMALIZATION, R_PRIMITIVE_UNAVAILABLE,
-    R_NO_PEER_SET, R_NO_EBITDA, R_NO_LAG1, R_NO_LAG2, R_NO_ASSETS_LAG1,
-    R_NO_ASSETS_LAG2, R_NO_REVENUE_AT_P, R_NO_REVENUE, R_NO_REVENUE_LAG1,
-    R_NO_CPI, R_NON_POSITIVE_BASE,
+    R_PE_CHAIN_NOT_BUILT,
+    R_NO_PEER_SET, R_NO_EBITDA, R_NO_LAG1, R_NO_LAG2, R_EBITDA_BASE_ZERO,
+    R_EBITDA_BASE_NEAR_ZERO, R_NO_REVENUE_AT_P, R_NO_REVENUE, R_NO_REVENUE_LAG1,
+    R_NO_CPI, R_NON_POSITIVE_BASE, R_NO_OPERATING_INCOME, R_NO_INTEREST_AT_P,
+    R_INTEREST_ZERO, R_INTEREST_NEGATIVE,
 )
 
 REASON_WHY: Dict[str, str] = {
     R_BENCHMARK_AMBIGUOUS: (
-        "TWO INCOMPATIBLE DEFINITIONS, NOT MISSING DATA. "
+        "THE MARGIN PATH IS NOT BUILT IN THIS ENGINE. factor_spec_v2 held two "
+        "incompatible definitions and factor_spec_v3 decided the MARGIN reading "
+        "(owner, 2026-09-22, D1); this engine has not built the cohort (EBITDA, "
+        "margin) pairs through benchmark_margin_50_75 nor the benchmark= anchor "
+        "into normalize(), and it does not pick a reading by itself. The code is "
+        "kept so rows stay comparable with the pilot; the history it names: "
         "pit_factor_spec.ebitda_benchmark_cohort -> benchmark_band returns the "
         "MEAN EBITDA IN DOLLARS of the 50-75 band, which is consistent with "
         "ebitda_benchmark's required_primitives (operating_income, "
@@ -264,21 +304,30 @@ REASON_WHY: Dict[str, str] = {
         "largest single factor weight in the model. The engine REFUSES rather "
         "than choosing; an owner decides, and the decision is a spec change."),
     R_NO_V2_NORMALIZATION: (
-        "pit_normalization.candidate_v2_registry() declares six specs -- "
+        "pit_normalization.candidate_v2_registry() declares seven specs -- "
         "EBITDAMarginRank, EBITDAExcessLevel, EBITDAGrowth, "
-        "EBITDAAcceleration, EBITDAScale, RealRevenueGrowth -- and this key is "
-        "not among them. pit_factor_spec declares the factor's PRIMITIVES and "
-        "its PEER ELIGIBILITY but sets `normalization` to None on every spec, "
-        "so there is no transform to apply. The ratio is arithmetic; the "
-        "transform is a modelling decision, and inventing one at run time is "
+        "EBITDAAcceleration, EBITDAScale, RealRevenueGrowth, "
+        "InterestCoverageRank -- and this key is not among them. pit_factor_spec "
+        "declares the factor's PRIMITIVES, its PEER ELIGIBILITY and a "
+        "normalization_type, but a type is not a registered transform with its "
+        "anchor and scale, so there is nothing to apply. The ratio is arithmetic; "
+        "the transform is a modelling decision, and inventing one at run time is "
         "exactly the undefended assignment this project refuses elsewhere."),
     R_PRIMITIVE_UNAVAILABLE: (
-        "pit_factor_spec.spec('pe_ratio').peer_eligibility names "
-        "earnings_per_share_pit in `unavailable_primitives`: EPS IS NOT IN "
-        "THIS STORE. pit_dera.TAG_FILTER is built from the concept ladders and "
-        "no ladder names EarningsPerShareDiluted or EarningsPerShareBasic, so "
-        "every EPS row in 72 DERA quarters was read and dropped at ingest. "
-        "The store's own declaration, not an inference from an empty query."),
+        "The factor's eligibility rule names a primitive in "
+        "`unavailable_primitives`: the store's own declaration that the input "
+        "does not exist, not an inference from an empty query. NO live plan "
+        "carries this reason under factor_spec_v4 (PRICED_EPS_V2 withdrew the "
+        "EPS declaration); it stays in the vocabulary because rows stamped "
+        "under v2/v3 carry it, and validate() refuses a plan that uses it "
+        "without a declaring spec."),
+    R_PE_CHAIN_NOT_BUILT: (
+        "PRICED_EPS_V2 (factor_spec_v3 and later) declares point-in-time EPS "
+        "AVAILABLE -- pit_eps_obs holds 888,486 rows -- so the older 'primitive "
+        "genuinely unavailable' reason is false. This engine has not wired the "
+        "pit_eps TTM join, pit_price_basis.PAIR_PATHS or the raw-price basis, "
+        "so the P/E legs are refused for an UNBUILT CHAIN, never for an absent "
+        "primitive. Engine work, recorded in pit_frozen_spec.STILL_BLOCKED."),
     R_NO_PEER_SET: (
         "pit_coverage.stored_cohorts found no stored peer set containing this "
         "entity at this date with at least pit_coverage.MIN_COHORT_N = 12 "
@@ -289,15 +338,37 @@ REASON_WHY: Dict[str, str] = {
         "pit_policy.is_stale(period, as_of, 4, 'operating_income')."),
     R_NO_LAG1: "pit_coverage.nearest_period found no EBITDA period one year before P.",
     R_NO_LAG2: "pit_coverage.nearest_period found no EBITDA period two years before P.",
-    R_NO_ASSETS_LAG1: (
-        "No non-zero Assets instant (qtrs=0) within tolerance of the lag-1 "
-        "period. EBITDAGrowth's declared input divides by Assets_{t-4q}, so "
-        "without it there is no input, only a numerator."),
-    R_NO_ASSETS_LAG2: (
-        "No non-zero Assets instant within tolerance of the lag-2 period. "
-        "EBITDAAcceleration divides by Assets_{t-8q} -- ONE common base, "
-        "because two different bases give any asset-growing company a "
-        "systematic negative acceleration."),
+    R_EBITDA_BASE_ZERO: (
+        "EBITDA at the base end of the growth window is exactly zero, so the rate "
+        "has no denominator. A reported zero is a value, not an absence; the rate "
+        "on it is undefined, never a large number (company_scoring._growth "
+        "precedent). Declared in pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1."),
+    R_EBITDA_BASE_NEAR_ZERO: (
+        "|(E_now - E_base) / |E_base|| exceeds EBITDA_GROWTH_BASE_POLICY_V1."
+        "max_abs_rate. The band is on the RATE, not on the base's size: a base "
+        "that is a rounding of the business is the usual cause, but an 11x rise "
+        "from a healthy base is refused under this name too (EPS base-floor "
+        "precedent). Refused so it cannot enter the cohort dispersion sample."),
+    R_NO_OPERATING_INCOME: (
+        "pit_coverage.resolve_concept found no OperatingIncomeLoss (qtrs=4) period "
+        "that survives pit_policy.is_stale(period, as_of, 4, 'operating_income'). "
+        "Coverage has no numerator; banks and insurers largely never tag it."),
+    R_NO_INTEREST_AT_P: (
+        "No interest_expense ladder rung (InterestExpense, InterestExpenseDebt, "
+        "InterestAndDebtExpense, InterestExpenseNonoperating; qtrs=4) carries a "
+        "value AT the resolved operating-income period. UNTAGGED is not ZERO: "
+        "this store cannot tell a debt-free filer from an untagged amount "
+        "(pit_policy.absence_limits), so the row is unavailable, never +inf."),
+    R_INTEREST_ZERO: (
+        "Owner domain policy 2026-09-22 (INTEREST_COVERAGE_DOMAIN_V1): coverage is "
+        "defined for interest_expense > 0. A tagged ZERO has no denominator, so "
+        "this is a NAMED state rather than an enormous 'excellent' ratio. "
+        "Negative operating income is NOT refused."),
+    R_INTEREST_NEGATIVE: (
+        "Owner domain policy 2026-09-22 (INTEREST_COVERAGE_DOMAIN_V1): a NEGATIVE "
+        "interest expense is a net figure (or a sign the ladder did not "
+        "anticipate) and would invert the ratio's meaning, so it is this NAMED "
+        "state, never a coverage value."),
     R_NO_REVENUE_AT_P: (
         "The revenue ladder resolves no non-zero value AT the EBITDA period. "
         "A margin is a ratio of one period's numbers; revenue from a "
@@ -383,7 +454,8 @@ FACTOR_PLAN: Dict[str, FactorPlan] = {
         verdict=VERDICT_COMPUTABLE, norm_key="EBITDAGrowth",
         spec_key="ebitda_growth", needs_cohort=True,
         cohort_use=COHORT_DISPERSION, mask_code="GROW",
-        note="input (E_t - E_{t-4q}) / Assets_{t-4q}, declared by the registry"),
+        note=("input (E_t - E_t-1) / |E_t-1| under EBITDA_GROWTH_BASE_POLICY_V1, "
+              "declared by pit_factor_spec.FORMULAS_V1 and the registry (D3: A)")),
     "ebitda_efficiency": FactorPlan(
         key="ebitda_efficiency", block=_B.BLOCK_E, role=_B.ROLE_SCORING,
         verdict=VERDICT_COMPUTABLE, norm_key="EBITDAMarginRank",
@@ -397,7 +469,8 @@ FACTOR_PLAN: Dict[str, FactorPlan] = {
         verdict=VERDICT_COMPUTABLE, norm_key="EBITDAAcceleration",
         spec_key="ebitda_acceleration", needs_cohort=True,
         cohort_use=COHORT_DISPERSION, mask_code="ACC",
-        note="input (E_t - 2E_{t-4q} + E_{t-8q}) / Assets_{t-8q}, ONE base"),
+        note=("input growth_t - growth_t-1, two A-rates, THREE EBITDA "
+              "observations, no asset base (D3: A)")),
     "ebitda_scale": FactorPlan(
         key="ebitda_scale", block=_B.BLOCK_E,
         role=_B.ROLE_ZERO_WEIGHT_CHALLENGER,
@@ -413,11 +486,11 @@ FACTOR_PLAN: Dict[str, FactorPlan] = {
     "pe_absolute": FactorPlan(
         key="pe_absolute", block=_B.BLOCK_V, role=_B.ROLE_SCORING,
         verdict=VERDICT_NOT_COMPUTABLE, spec_key="pe_ratio",
-        refusal_reason=R_PRIMITIVE_UNAVAILABLE, mask_code="PE"),
+        refusal_reason=R_PE_CHAIN_NOT_BUILT, mask_code="PE"),
     "pe_relative": FactorPlan(
         key="pe_relative", block=_B.BLOCK_V, role=_B.ROLE_SCORING,
         verdict=VERDICT_NOT_COMPUTABLE, spec_key="pe_ratio",
-        refusal_reason=R_PRIMITIVE_UNAVAILABLE, mask_code="PEPeer"),
+        refusal_reason=R_PE_CHAIN_NOT_BUILT, mask_code="PEPeer"),
     "ev_ebitda_supplement": FactorPlan(
         key="ev_ebitda_supplement", block=_B.BLOCK_V, role=_B.ROLE_SCORING,
         verdict=VERDICT_NOT_COMPUTABLE, spec_key="ev_ebitda",
@@ -445,8 +518,12 @@ FACTOR_PLAN: Dict[str, FactorPlan] = {
         refusal_reason=R_NO_V2_NORMALIZATION, mask_code="FCF"),
     "interest_coverage": FactorPlan(
         key="interest_coverage", block=_B.BLOCK_Q, role=_B.ROLE_SCORING,
-        verdict=VERDICT_NOT_COMPUTABLE, spec_key="interest_coverage",
-        refusal_reason=R_NO_V2_NORMALIZATION, mask_code="ICOV"),
+        verdict=VERDICT_COMPUTABLE, norm_key="InterestCoverageRank",
+        spec_key="interest_coverage", needs_cohort=True,
+        cohort_use=COHORT_RANK, mask_code="ICOV",
+        note=("input operating_income / interest_expense AT the same period; "
+              "interest_expense > 0 or a NAMED refusal (INTEREST_COVERAGE_DOMAIN_V1). "
+              "First computable Q factor; reachable E+G+Q = 0.60.")),
     "net_debt_ebitda": FactorPlan(
         key="net_debt_ebitda", block=_B.BLOCK_Q, role=_B.ROLE_SCORING,
         verdict=VERDICT_NOT_COMPUTABLE, spec_key="net_debt_ebitda",
@@ -492,9 +569,17 @@ KNOWN_LIMITATIONS: Tuple[str, ...] = (
     "be an invention.",
     "fact_max_age_days is (as_of - newest source period_end) in days, which is "
     "the age of the FISCAL PERIOD, not of the filing.",
-    "Eight of thirteen feature keys are UNAVAILABLE by construction on every "
-    "row: one refused for ambiguity, seven for a missing declaration. The "
-    "reachable block weight is therefore E 0.35 + G 0.15 = 0.50.",
+    "Seven of thirteen feature keys are UNAVAILABLE by construction on every "
+    "row: ebitda_benchmark refused because the MARGIN path is not built, "
+    "pe_absolute and pe_relative for the unbuilt P/E chain, and "
+    "ev_ebitda_supplement, fcf_conversion, net_debt_ebitda and debt_market_cap "
+    "for a missing registered transform. The reachable block weight is "
+    "therefore E 0.35 + G 0.15 + Q 0.10 = 0.60. Q is available on ONE of its "
+    "four factors (interest_coverage, 0.30 of the within-block weight, "
+    "renormalised to the full 0.10 by pit_factor_blocks.block_score), and "
+    "E + Q = 0.45 clears MIN_BLOCK_WEIGHT, so companies without G are scored "
+    "under pit_replay/1.1 that were refused under 1.0; the pillar row's "
+    "n_subfactors_resolved shows the single-factor Q.",
     "The peer sets read from pit_peer_set carry model_version "
     "'equity_shaffer_v1_pit'. That is the COHORT's lineage, not the score's; "
     "no v2 peer set exists and building one would be a model change.",
@@ -556,6 +641,12 @@ def require_gate(snap: Optional[Dict[str, Any]] = None) -> List[str]:
     failure mode this volume has suffered. So the gate is evaluated while the
     only open handle is read-only, and a refusal raises before a writer exists.
     """
+    if FACTOR_SPEC_VERSION != pit_frozen_spec.ENGINE_MUST_DERIVE_FROM:
+        raise ReplayRefused(
+            "REPLAY REFUSED -- the engine derives eligibility from %s but the live "
+            "freeze (%s) requires %s; no write transaction was opened"
+            % (FACTOR_SPEC_VERSION, pit_frozen_spec.SPEC_FREEZE_VERSION,
+               pit_frozen_spec.ENGINE_MUST_DERIVE_FROM))
     ok, reasons = pit_replay_manifest.gate(snap)
     if not ok:
         raise ReplayRefused(
@@ -642,7 +733,7 @@ def seed_parents(pilot_conn: sqlite3.Connection, store_conn: sqlite3.Connection,
 
 @dataclass
 class Primitives:
-    """Everything the five computable factors need, resolved once per entity."""
+    """Everything the six computable factors need, resolved once per entity."""
 
     entity_id: int
     ebitda_period: Optional[str] = None
@@ -651,10 +742,12 @@ class Primitives:
     ebitda_lag1: Optional[float] = None
     lag2_period: Optional[str] = None
     ebitda_lag2: Optional[float] = None
-    assets_lag1_period: Optional[str] = None
-    assets_lag1: Optional[float] = None
-    assets_lag2_period: Optional[str] = None
-    assets_lag2: Optional[float] = None
+    growth_lag1: Optional[float] = None       # (E_t-1 - E_t-2) / |E_t-2|
+    growth_base_sign: Optional[str] = None    # "neg" when E_t-1 < 0 (sign transition, on the row)
+    operating_income_period: Optional[str] = None
+    operating_income: Optional[float] = None
+    interest_rung: Optional[str] = None
+    interest_expense: Optional[float] = None  # a LEVEL at operating_income_period
     revenue_at_ebitda_period: Optional[float] = None
     revenue_rung: Optional[str] = None
     revenue_period: Optional[str] = None
@@ -669,10 +762,27 @@ class Primitives:
     growth: Optional[float] = None
     acceleration: Optional[float] = None
     real_revenue_growth: Optional[float] = None
+    coverage: Optional[float] = None          # operating_income / interest_expense
 
     #: derived key -> the short code saying which ingredient failed. Never a
     #: zero: "no value" and "a value of zero" are different facts.
     why: Dict[str, str] = field(default_factory=dict)
+
+
+def _rate(now: float, base: float) -> Tuple[Optional[float], Optional[str]]:
+    """EBITDA_GROWTH_BASE_POLICY_V1: (now - base) / |base|, or a NAMED refusal.
+
+    A zero base has no rate. A base so small that the rate exceeds the
+    policy's band is a statement about the base, not about growth, and is
+    refused rather than allowed into the cohort dispersion sample. A negative
+    base is computed: a loss shrinking from -100 to -50 is +0.5.
+    """
+    if base == 0.0:
+        return None, R_EBITDA_BASE_ZERO
+    rate = (now - base) / abs(base)
+    if abs(rate) > float(pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1["max_abs_rate"]):
+        return None, R_EBITDA_BASE_NEAR_ZERO
+    return rate, None
 
 
 def _finite(value: Any) -> bool:
@@ -686,7 +796,7 @@ def resolve_primitives(index: Mapping[Tuple[int, str, int], Mapping[str, float]]
                        entity_id: int, as_of: str,
                        ladders: Mapping[str, Any],
                        cpi: Any) -> Primitives:
-    """One entity's facts and the four derived inputs.
+    """One entity's facts and the five derived inputs.
 
     NO DATABASE ACCESS except the CPI lookup, which `cpi` memoises by reference
     date. Everything else is answered from the in-memory fact index.
@@ -721,18 +831,6 @@ def resolve_primitives(index: Mapping[Tuple[int, str, int], Mapping[str, float]]
         out.ebitda_lag2 = (periods.get(out.lag2_period)
                            if out.lag2_period else None)
 
-        assets_map = index.get((entity_id, "Assets", 0)) or {}
-        if out.lag1_period:
-            out.assets_lag1_period = pit_coverage.nearest_period(
-                assets_map, out.lag1_period, 0)
-            out.assets_lag1 = (assets_map.get(out.assets_lag1_period)
-                               if out.assets_lag1_period else None)
-        if out.lag2_period:
-            out.assets_lag2_period = pit_coverage.nearest_period(
-                assets_map, out.lag2_period, 0)
-            out.assets_lag2 = (assets_map.get(out.assets_lag2_period)
-                               if out.assets_lag2_period else None)
-
         # A LEVEL: the best rung available for THAT year.
         revenue_tags = [r.tags[0] for r in ladders["revenue"].rungs
                         if r.eligible(day)]
@@ -749,7 +847,7 @@ def resolve_primitives(index: Mapping[Tuple[int, str, int], Mapping[str, float]]
         out.revenue_lag1 = (revenue_map.get(out.revenue_lag1_period)
                             if out.revenue_lag1_period else None)
 
-    # ---- the four derived inputs, each with its own refusal ---------------
+    # ---- the five derived inputs, each with its own refusal ---------------
 
     # margin = EBITDA / revenue AT THE SAME PERIOD
     if out.ebitda is None:
@@ -759,29 +857,34 @@ def resolve_primitives(index: Mapping[Tuple[int, str, int], Mapping[str, float]]
     else:
         out.margin = float(out.ebitda) / float(out.revenue_at_ebitda_period)
 
-    # growth = (E_t - E_{t-4q}) / Assets_{t-4q}
+    # growth = (E_t - E_{t-1}) / |E_{t-1}|            (D3: A, owner 2026-09-22)
     if out.ebitda is None:
         out.why["growth"] = R_NO_EBITDA
     elif out.ebitda_lag1 is None:
         out.why["growth"] = R_NO_LAG1
-    elif not out.assets_lag1:
-        out.why["growth"] = R_NO_ASSETS_LAG1
     else:
-        out.growth = ((float(out.ebitda) - float(out.ebitda_lag1))
-                      / float(out.assets_lag1))
+        out.growth, why = _rate(float(out.ebitda), float(out.ebitda_lag1))
+        if why:
+            out.why["growth"] = why
+        elif float(out.ebitda_lag1) < 0.0:
+            out.growth_base_sign = "neg"
 
-    # acceleration = (E_t - 2E_{t-4q} + E_{t-8q}) / Assets_{t-8q}
+    # acceleration = growth_t - growth_{t-1}   (D3: A; NOT a second difference
+    # over assets). Either rate refused under the base policy refuses this.
     if out.ebitda is None:
         out.why["acceleration"] = R_NO_EBITDA
     elif out.ebitda_lag1 is None:
         out.why["acceleration"] = R_NO_LAG1
     elif out.ebitda_lag2 is None:
         out.why["acceleration"] = R_NO_LAG2
-    elif not out.assets_lag2:
-        out.why["acceleration"] = R_NO_ASSETS_LAG2
+    elif out.growth is None:
+        out.why["acceleration"] = out.why["growth"]
     else:
-        out.acceleration = ((float(out.ebitda) - 2.0 * float(out.ebitda_lag1)
-                             + float(out.ebitda_lag2)) / float(out.assets_lag2))
+        out.growth_lag1, why = _rate(float(out.ebitda_lag1), float(out.ebitda_lag2))
+        if why:
+            out.why["acceleration"] = why
+        else:
+            out.acceleration = out.growth - out.growth_lag1
 
     # real revenue growth, deflated OVER THE WINDOW
     if out.revenue_period is None:
@@ -800,6 +903,35 @@ def resolve_primitives(index: Mapping[Tuple[int, str, int], Mapping[str, float]]
             else:
                 now = float(out.revenue) / float(out.cpi_t)
                 out.real_revenue_growth = now / base - 1.0
+
+    # interest coverage = operating_income / interest_expense AT THE SAME PERIOD
+    # (D3: operating income, owner 2026-09-22; INTEREST_COVERAGE_DOMAIN_V1).
+    # Operating income resolves like any concept (newest non-stale annual
+    # period); interest expense is a LEVEL at that period, walking its ladder
+    # in rung order -- the revenue@P pattern, because a ratio is one period's
+    # numbers. The domain rule runs BEFORE any direction is applied.
+    _oi_rung, oi_period, oi_value = pit_coverage.resolve_concept(
+        index, entity_id, "operating_income", day, ladders)
+    out.operating_income_period, out.operating_income = oi_period, oi_value
+    if oi_period is None or oi_value is None:
+        out.why["coverage"] = R_NO_OPERATING_INCOME
+    else:
+        for rung in ladders["interest_expense"].rungs:
+            if not rung.eligible(day):
+                continue
+            found = index.get((entity_id, rung.tags[0], 4)) or {}
+            if oi_period in found:
+                out.interest_rung = rung.key
+                out.interest_expense = float(found[oi_period])
+                break
+        if out.interest_expense is None:
+            out.why["coverage"] = R_NO_INTEREST_AT_P
+        elif out.interest_expense == 0.0:
+            out.why["coverage"] = R_INTEREST_ZERO
+        elif out.interest_expense < 0.0:
+            out.why["coverage"] = R_INTEREST_NEGATIVE
+        else:
+            out.coverage = float(out.operating_income) / out.interest_expense
     return out
 
 
@@ -813,6 +945,7 @@ RAW_FIELD: Dict[str, Tuple[str, str]] = {
     "ebitda_growth": ("growth", "growth"),
     "ebitda_acceleration": ("acceleration", "acceleration"),
     "real_revenue_growth": ("real_revenue_growth", "real_revenue_growth"),
+    "interest_coverage": ("coverage", "coverage"),
 }
 
 #: factor key -> the primitives it consumed, for `sources_json`. COMPACT on
@@ -822,9 +955,10 @@ SOURCE_CONCEPTS: Dict[str, Tuple[str, ...]] = {
     "ebitda_scale": ("oi", "da"),
     "ebitda_benchmark": ("oi", "da"),
     "ebitda_efficiency": ("oi", "da", "rev@P"),
-    "ebitda_growth": ("oi", "da", "assets"),
-    "ebitda_acceleration": ("oi", "da", "assets"),
+    "ebitda_growth": ("oi", "da"),
+    "ebitda_acceleration": ("oi", "da"),
     "real_revenue_growth": ("rev", "cpi"),
+    "interest_coverage": ("oi", "int@P"),
 }
 
 
@@ -1288,9 +1422,14 @@ def run_date(main_conn_ro: sqlite3.Connection, pilot_conn: sqlite3.Connection,
                 challenger_rows += 1
 
             source_period = (prim.revenue_period if key == "real_revenue_growth"
+                             else prim.operating_income_period
+                             if key == "interest_coverage"
                              else prim.ebitda_period)
             source_tag = (prim.revenue_rung if key == "real_revenue_growth"
+                          else prim.interest_rung if key == "interest_coverage"
                           else None)
+            if key == "ebitda_growth" and prim.growth_base_sign:
+                resolved["bs"] = prim.growth_base_sign
             resolved["scope"] = SAMPLE_SCOPE
             resolved["fd"] = freeze_digest[:12]
             resolved["ev"] = ENGINE_VERSION
@@ -1755,6 +1894,30 @@ def run_pilot(dates: Sequence[str], pilot_db_path: str, *,
 # (9) SELF-CHECK
 # ==========================================================================
 
+def _golden_eval(case: Mapping[str, Any], ladders: Mapping[str, Any]
+                 ) -> Tuple[Optional[float], Optional[str]]:
+    """One FORMULA_GOLDEN_V1 case through resolve_primitives on a synthetic
+    index. READS NOTHING. D&A is 0.0 at every period, so EBITDA == OI."""
+    eid, day = 1, "2019-06-28"
+    oi = {"2018-12-31": 0.0, "2017-12-31": 0.0, "2016-12-31": 0.0}
+    da = dict(oi)
+    index: Dict[Tuple[int, str, int], Dict[str, float]] = {
+        (eid, "OperatingIncomeLoss", 4): oi,
+        (eid, "DepreciationDepletionAndAmortization", 4): da}
+    if "ebitda" in case:
+        for period, value in zip(("2018-12-31", "2017-12-31", "2016-12-31"),
+                                 case["ebitda"]):
+            oi[period] = float(value)
+    else:
+        oi["2018-12-31"] = float(case["operating_income"])
+        if case["interest_expense"] is not None:
+            index[(eid, "InterestExpense", 4)] = {
+                "2018-12-31": float(case["interest_expense"])}
+    prim = resolve_primitives(index, eid, day, ladders, lambda d: None)
+    attr, why_key = RAW_FIELD[case["factor"]]
+    return getattr(prim, attr), prim.why.get(why_key)
+
+
 def validate() -> List[str]:
     """Structural self-check. Returns problems; empty means PASS. READS NOTHING."""
     problems: List[str] = []
@@ -1806,6 +1969,67 @@ def validate() -> List[str]:
             if key in RAW_FIELD and plan.verdict == VERDICT_NOT_COMPUTABLE:
                 problems.append(
                     "%s is NOT_COMPUTABLE but declares a raw field" % key)
+
+    # THE ENGINE DERIVES FROM THE VERSION THE FREEZE DIGESTS, or it refuses
+    if FACTOR_SPEC_VERSION != pit_frozen_spec.ENGINE_MUST_DERIVE_FROM:
+        problems.append(
+            "engine derives eligibility from %s but the live freeze digests %s"
+            % (FACTOR_SPEC_VERSION, pit_frozen_spec.ENGINE_MUST_DERIVE_FROM))
+    if set(pit_factor_spec.FORMULAS_V1) != set(REPLAY_FEATURE_KEYS):
+        problems.append("FORMULAS_V1 and REPLAY_FEATURE_KEYS name different factors")
+    dom = pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V1
+    for k, code in (("zero", R_INTEREST_ZERO), ("negative", R_INTEREST_NEGATIVE),
+                    ("missing", R_NO_INTEREST_AT_P),
+                    ("no_numerator", R_NO_OPERATING_INCOME)):
+        if dom[k] != "REFUSED:" + code:
+            problems.append("INTEREST_COVERAGE_DOMAIN_V1[%s] and the engine's "
+                            "reason code disagree" % k)
+    bp = pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1
+    if (bp["zero_base"] != "REFUSED:" + R_EBITDA_BASE_ZERO
+            or bp["beyond_max_abs_rate"] != "REFUSED:" + R_EBITDA_BASE_NEAR_ZERO):
+        problems.append("EBITDA_GROWTH_BASE_POLICY_V1 and the engine's reason "
+                        "codes disagree")
+    # a plan may claim an UNAVAILABLE primitive only when its spec declares one
+    for key, plan in FACTOR_PLAN.items():
+        if plan.refusal_reason == R_PRIMITIVE_UNAVAILABLE:
+            rule = pit_factor_spec.spec(plan.spec_key or key,
+                                        FACTOR_SPEC_VERSION).peer_eligibility
+            if not rule.unavailable_primitives:
+                problems.append("%s claims an unavailable primitive that %s does "
+                                "not declare" % (key, FACTOR_SPEC_VERSION))
+        if plan.refusal_reason in RETIRED_REASONS:
+            problems.append("%s uses a RETIRED reason" % key)
+    # registry direction and the frozen direction table must agree for ranks
+    for key, plan in FACTOR_PLAN.items():
+        if not plan.computable or plan.norm_key not in _REGISTRY:
+            continue
+        rspec = _REGISTRY[plan.norm_key]
+        if rspec.normalization_type != pit_normalization.PERCENTILE_RANK:
+            continue
+        want = (pit_factor_blocks.HIGHER_IS_BETTER if rspec.higher_is_better
+                else pit_factor_blocks.LOWER_IS_BETTER)
+        if pit_factor_blocks.FACTOR_DIRECTION_V1.get(plan.spec_key or key) != want:
+            problems.append("%s: registry direction and FACTOR_DIRECTION_V1 "
+                            "disagree" % key)
+    # the production fact index must carry every tag the coverage path reads
+    ladders = pit_policy.ladder_set(LADDER_VERSION)
+    census = set(pit_coverage.census_tags(LADDER_VERSION))
+    for tag in ["OperatingIncomeLoss"] + [r.tags[0] for r in
+                                          ladders["interest_expense"].rungs]:
+        if tag not in census:
+            problems.append("the fact index does not load %s, which coverage "
+                            "reads" % tag)
+    # the golden witnesses, through the engine's own arithmetic
+    for case in pit_factor_spec.FORMULA_GOLDEN_V1:
+        got, why = _golden_eval(case, ladders)
+        want = case["expect"]
+        if isinstance(want, str):
+            ok = got is None and why == want.split(":", 1)[1]
+        else:
+            ok = got is not None and abs(got - float(want)) < 1e-9
+        if not ok:
+            problems.append("%s: engine gives %r / %r, FORMULA_GOLDEN_V1 says %r"
+                            % (case["factor"], got, why, want))
 
     # the model version string is the frozen one
     if MODEL_VERSION != pit_frozen_spec.FROZEN_MODEL_VERSION:

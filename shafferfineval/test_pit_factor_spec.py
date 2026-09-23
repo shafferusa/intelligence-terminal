@@ -626,6 +626,45 @@ def section_8_store() -> None:
     conn.close()
 
 
+def section_9_v4() -> None:
+    print("\n== 9. factor_spec_v4: the D3 decisions, and only those ==")
+    import pit_derive
+    check("v4 interest_coverage requires OI and interest at ONE period, price-free",
+          FS.BY_KEY_V4["interest_coverage"].peer_eligibility.matched_period
+          == ("operating_income", "interest_expense")
+          and FS.BY_KEY_V4["interest_coverage"].peer_eligibility.is_price_free)
+    check("v3 interest_coverage is PRESERVED",
+          FS.BY_KEY_V3["interest_coverage"].peer_eligibility
+          is FS.OPERATING_INCOME_AND_INTEREST)
+    check("REPLACED_BY_VERSION is cumulative for v4 and unchanged for v3",
+          FS.REPLACED_BY_VERSION[FS.FACTOR_SPEC_VERSION_V4]
+          == frozenset({"ebitda_benchmark", "pe_ratio", "ebitda_growth",
+                        "ebitda_acceleration", "interest_coverage"})
+          and FS.REPLACED_BY_VERSION[FS.FACTOR_SPEC_VERSION_V3]
+          == frozenset({"ebitda_benchmark", "pe_ratio"}))
+    check("spec_versions() ends with v4", FS.spec_versions()[-1] == FS.FACTOR_SPEC_VERSION_V4)
+    check("11 of 14 v4 specs are the v3 objects by reference",
+          sum(1 for a, b in zip(FS.SPECS_V3, FS.SPECS_V4) if a is b) == 11)
+    check("FORMULAS_V1 restates pit_derive where a node exists",
+          all(FS.FORMULAS_V1[k].startswith(pit_derive.NODES[n].formula)
+              for k, n in FS._FORMULA_NODE.items()))
+    check("the base policy names its refusals and a finite band",
+          FS.EBITDA_GROWTH_BASE_POLICY_V1["zero_base"] == "REFUSED:ebitda_growth_base_zero"
+          and FS.EBITDA_GROWTH_BASE_POLICY_V1["max_abs_rate"] == 10.0)
+    check("the coverage domain policy names every state the owner listed",
+          all(k in FS.INTEREST_COVERAGE_DOMAIN_V1
+              for k in ("ordinary", "zero", "negative", "missing", "no_numerator",
+                        "negative_operating_income", "rung_rule")))
+    dom = FS.INTEREST_COVERAGE_DOMAIN_V1
+    check("...and their VALUES say what the owner said: negative OI is LEGITIMATE, "
+          "interest > 0 is ordinary, the four bad denominators are REFUSED",
+          dom["negative_operating_income"].startswith("LEGITIMATE")
+          and dom["ordinary"].startswith("interest_expense > 0")
+          and all(dom[k].startswith("REFUSED:")
+                  for k in ("zero", "negative", "missing", "no_numerator")))
+    check("validate() is clean under v4", FS.validate() == [], FS.validate())
+
+
 def main() -> int:
     started = time.time()
     section_1_price_free()
@@ -637,6 +676,7 @@ def main() -> int:
     section_6_band()
     section_7_measured()
     section_8_store()
+    section_9_v4()
     print()
     if skips:
         print(f"{len(skips)} skipped:")

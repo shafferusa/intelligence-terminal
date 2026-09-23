@@ -599,7 +599,10 @@ def block_score(block: str,
 # THE OWNER'S RULE, verbatim in spirit: direction is ORIENTATION ONLY, applied
 # AFTER domain-validity and refusal checks. It does not override invalid-input
 # handling. A nonsensical interest-coverage denominator is REFUSED, never
-# rewarded because the direction happens to be "higher".
+# rewarded because the direction happens to be "higher" -- IMPLEMENTED in
+# pit_replay.resolve_primitives (interest_expense_zero / interest_expense_
+# negative / no_interest_expense_at_operating_income_period) and DECLARED
+# in pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V1 (2026-09-22).
 # ==========================================================================
 
 DIRECTION_POLICY_VERSION = "FACTOR_DIRECTION_V1"

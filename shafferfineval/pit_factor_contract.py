@@ -329,7 +329,9 @@ BY_KEY = {c.key: c for c in CONTRACTS}
 LEAF_ARITHMETIC: dict[str, dict[str, Any]] = {
     "ebitda": {"observations": 2, "why": "operating_income and D&A at one period"},
     "ebitda_growth": {"observations": 4,
-                      "why": "E_t and E_t-1, each two primitives"},
+                      "why": ("E_t and E_t-1, each two primitives; the "
+                              "denominator is abs(E_t-1), so no asset "
+                              "observation is charged (D3, 2026-09-22)")},
     "ebitda_acceleration": {
         "observations": 6,
         "distinct_ebitda_observations": 3,

@@ -1110,11 +1110,11 @@ covered `pit_factor_spec` and `pit_normalization` by **version string only**.
 the same blind spot that let the v1 weight-semantic defect through, one level
 down. Sealed, never widened.
 
-# FREEZE — `spec_freeze_v4`, 2026-09-22
+# FREEZE — `spec_freeze_v4`, 2026-09-22 — SUPERSEDED the same day by `spec_freeze_v5`, see below
 
 ```
 digest      912268b3ec11bfc641fcac78078a0fb288cc51ce5432f8c27f931a532d1faae9
-components  47   (v3's 38 + nine BODIES)
+components  47   (v3's 38 + 9: seven BODIES and two version strings -- corrected 2026-09-22, V4-GOVERNANCE-AUDIT v4-03; the line originally read "nine BODIES")
 ```
 
 ## What v4 digests that v3 did not
@@ -1182,3 +1182,121 @@ an undeclared factor; nothing defaults to "higher".
 
 Historical evidence: design record open question 6 supports growth-B; none
 measured for interest coverage. Owner instruction: report, do not infer.
+*(2026-09-22, later: DECIDED by the owner as A for both -- see the
+`spec_freeze_v5` section below. This record is kept as written.)*
+
+
+# SUPERSEDED — `spec_freeze_v4`, `FROZEN_SUPERSEDED` (2026-09-22, same day)
+
+```
+digest  912268b3ec11bfc641fcac78078a0fb288cc51ce5432f8c27f931a532d1faae9
+reason  FROZE_UNRESOLVED_SEMANTIC_CHOICES_D3
+main-store rows produced          0
+isolated scratch rows stamped     650 / 200 / 25, 13,000 / 4,000 / 461 and 52,000 / 16,000 / 1,786
+                                  per arm on 2019-06-28 (RSS harness and oracle DBs, disposable)
+```
+
+Superseded because it froze two semantic choices it had not made (D3: the
+growth/acceleration denominator and the coverage numerator) and digested no
+executable factor definition, so an engine with altered arithmetic passed its
+gate (V4-GOVERNANCE-AUDIT, hole B) while the bar for the largest factor weight
+sat outside the digest (hole A). It also carried an incident cause now
+**REJECTED_BY_MEASUREMENT**: the engine's private commit measures ~245 MiB at
+4,000 targets with the full 7,102-entity index resident, and ~4.5 GiB of commit
+sat in three autostarted Python services with no replay running
+(POST-REBOOT-REPORT §1 and §5; owner ruling §5a). The measurement artefacts that
+state the old cause are left as written. Sealed, never widened.
+
+# FREEZE — `spec_freeze_v5`, 2026-09-22
+
+```
+digest      58722f4c00b676fee76bcc10ba341f44ce18c540a2fbc90625570a51786a5b59
+components  61   (v4's 47 + 14)
+```
+
+## What v5 digests that v4 did not
+
+`SPECS_V4` / `FACTOR_SPEC_VERSION_V4` (the D3 bodies), `FORMULAS_VERSION_V1` /
+`FORMULAS_V1` + `FORMULA_GOLDEN_V1` (the executable definition of each of the 13 replayed keys,
+witnessed through `pit_replay.resolve_primitives` by `pit_replay.validate()`),
+`EBITDA_GROWTH_BASE_POLICY_V1`, `INTEREST_COVERAGE_DOMAIN_V1`,
+`BENCHMARK_BAND_V1` / `BENCHMARK_MIN_COHORT_V1` (lifted out of
+`benchmark_margin_50_75`), `V2_BLOCKS`, `TRANSFORM_PARAMS_V1`, `PINNED_CURVE`,
+`PAIR_PATHS`, `ENGINE_MUST_DERIVE_FROM`. `validate()` now also rejects a
+`callable:` inside a body and proves `digest(_FROZEN_MANIFEST) == FROZEN_DIGEST`.
+
+Proven, not asserted — each of these breaks the freeze with **no version
+string touched** (`test_pit_frozen_spec`, section 2):
+
+```
+revert interest_coverage's v4 eligibility body   → drifted: pit_factor_spec:SPECS_V4
+edit one FORMULAS_V1 string                      → drifted: pit_factor_spec:FORMULAS_V1
+move max_abs_rate in the base policy             → drifted: pit_factor_spec:EBITDA_GROWTH_BASE_POLICY_V1
+widen the benchmark band                         → drifted: pit_normalization:BENCHMARK_BAND_V1
+plant a function in TRANSFORM_PARAMS_V1          → validate(): names the callable
+```
+
+## D3 — DECIDED (owner, 2026-09-22)
+
+| | decision | engine (`pit_replay/1.1`, `factor_spec_v4`) |
+|---|---|---|
+| ebitda_growth | `(E_t − E_t−1) / abs(E_t−1)` under `EBITDA_GROWTH_BASE_POLICY_V1` | A; `ebitda_growth_base_zero` / `ebitda_growth_base_near_zero` are named refusals |
+| ebitda_acceleration | `growth_t − growth_t−1` (NOT a second difference over assets) | A; three EBITDA observations, no asset base |
+| interest_coverage | `operating_income / interest_expense`, interest > 0 | `InterestCoverageRank` (PERCENTILE_RANK); zero / negative / missing are named states; negative operating income is scored |
+
+The owner's reasons, on the record: the factor is called growth and B is an
+asset-scaled change in EBITDA, an efficiency-like concept E already carries;
+A has the stronger lineage (pit_derive, the v1 core, the coverage contract,
+acceleration as a change in rates); operating income over interest is the
+conventional EBIT-style coverage and is supported by four authored artefacts
+against one feature note.
+
+**Base policy (`EBITDA_GROWTH_BASE_POLICY_V1`)**: denominator `abs(E_t−1)`; a
+zero base is refused by name; `|rate| > max_abs_rate = 10.0` is refused by name
+(a base too small to carry a rate, kept out of the cohort dispersion sample);
+a sign transition (loss → profit) is computed as a positive rate with the base
+sign written on the row (`bs`); both-negative is computed with `abs()` so a
+shrinking loss is an improvement. **`max_abs_rate = 10.0` is a CONVENTION
+awaiting the owner's confirmation** (a change is a v6). Alternatives
+considered and not adopted: refuse the exact zero only (v1 semantics; leaves a
++201.0 rate in the cohort sample); refuse every non-positive base (would refuse
+roughly a third of growth rows and contradicts the authored "shrinking loss is
+an improvement" rationale); a dollar floor (not scale-free). The expected
+refusal share under the adopted band is not estimable from the repository; a
+bounded read-only count of `E_t / E_t−1 > 11 or E_t / E_t−1 < −9`
+(equivalently `|E_t − E_t−1| > 10·|E_t−1|`) among growth-eligible pairs on
+one census date would size it. The band is on the RATE, not on the base's
+size: an 11x rise from a healthy base is refused under the same name, and
+`|rate| == 10` exactly is computed.
+
+**Coverage domain (`INTEREST_COVERAGE_DOMAIN_V1`)**, the owner's words made
+executable: `interest_expense > 0` is the ordinary case; a tagged zero, a
+negative value and an untagged value at the operating-income period are the
+named states `interest_expense_zero`, `interest_expense_negative`,
+`no_interest_expense_at_operating_income_period`; no operating-income period is
+`no_operating_income_period`; negative operating income is a legitimate negative
+coverage; the FIRST ladder rung carrying a value at the operating-income period
+is used. The matched-period eligibility rule
+(`OPERATING_INCOME_AND_INTEREST_MATCHED_V2`), the refusal vocabulary and the
+PERCENTILE_RANK transform are the session's proposals, also awaiting
+confirmation, as are two consequences the review surfaced: under a rank the
+ordering among negative-OI rows is inverted relative to interest burden
+(OI −100 / interest 1 ranks below OI −100 / interest 100), and Q is now
+available on interest_coverage alone so E + Q = 0.45 clears MIN_BLOCK_WEIGHT
+and companies without G are scored. All six are listed in
+`pit_frozen_spec.SCORE_ASSEMBLY_GAP["owner_confirmation_pending_v5"]`.
+
+Evidence note: 37.8% EBITDA ≤ 0 is the FY2014 n=2,756 valuation-leg
+measurement; the design record's 34% is unsourced; the −$50k → +$10m example is
+illustrative. Neither form was measured against the other. The v4 record was
+silent on acceleration.
+
+## Executability
+
+v5 is executable only while `pit_replay.FACTOR_SPEC_VERSION ==
+ENGINE_MUST_DERIVE_FROM` (`factor_spec_v4`); `pit_replay.validate()` and
+`require_gate()` refuse otherwise. Census 6 / 1 / 6 (ebitda_benchmark still
+refused because the MARGIN path is not built in the engine; the P/E chain not
+built; four factors without a registered transform), reachable weight
+E+G+Q = 0.60. Pilot rows will differ from `pit_replay/1.0` rows by design.
+No replay authorisation exists.

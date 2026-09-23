@@ -60,6 +60,7 @@ import traceback
 from typing import Any, Callable, Dict, List, Optional
 
 import pit_factor_blocks
+import pit_factor_spec
 import pit_frozen_spec
 import pit_normalization
 import pit_policy
@@ -154,10 +155,55 @@ def test_validate() -> None:
     counts: Dict[str, int] = {}
     for plan in pit_replay.FACTOR_PLAN.values():
         counts[plan.verdict] = counts.get(plan.verdict, 0) + 1
-    check("verdicts are 5 COMPUTABLE / 1 REFUSED_AMBIGUOUS / 7 NOT_COMPUTABLE",
-          counts.get(pit_replay.VERDICT_COMPUTABLE) == 5
+    check("verdicts are 6 COMPUTABLE / 1 REFUSED_AMBIGUOUS / 6 NOT_COMPUTABLE",
+          counts.get(pit_replay.VERDICT_COMPUTABLE) == 6
           and counts.get(pit_replay.VERDICT_REFUSED_AMBIGUOUS) == 1
-          and counts.get(pit_replay.VERDICT_NOT_COMPUTABLE) == 7, counts)
+          and counts.get(pit_replay.VERDICT_NOT_COMPUTABLE) == 6, counts)
+    check("interest_coverage is the first computable Q factor, ranked",
+          pit_replay.FACTOR_PLAN["interest_coverage"].computable
+          and pit_replay.FACTOR_PLAN["interest_coverage"].norm_key
+          == "InterestCoverageRank")
+    check("no live plan carries a RETIRED reason or an undeclared "
+          "unavailable-primitive claim",
+          not any(p.refusal_reason in pit_replay.RETIRED_REASONS
+                  or p.refusal_reason == pit_replay.R_PRIMITIVE_UNAVAILABLE
+                  for p in pit_replay.FACTOR_PLAN.values()))
+    check("the engine derives from the version the live freeze digests",
+          pit_replay.FACTOR_SPEC_VERSION == pit_frozen_spec.ENGINE_MUST_DERIVE_FROM)
+    saved = pit_replay.FACTOR_SPEC_VERSION
+    try:
+        pit_replay.FACTOR_SPEC_VERSION = "factor_spec_v3"
+        check("validate() names an engine that derives from the wrong spec version",
+              any("derives eligibility from" in p for p in pit_replay.validate()))
+        real_gate = pit_replay_manifest.gate
+
+        def _sentinel(snap: Any = None) -> Any:
+            raise AssertionError("manifest gate consulted")
+        message = ""
+        try:
+            pit_replay_manifest.gate = _sentinel        # type: ignore
+            try:
+                pit_replay.require_gate({})
+            except pit_replay.ReplayRefused as exc:
+                message = str(exc)
+            except AssertionError as exc:
+                message = "GATE CONSULTED: %s" % exc
+        finally:
+            pit_replay_manifest.gate = real_gate        # type: ignore
+        check("require_gate() refuses on the spec version BEFORE consulting the "
+              "manifest gate", "derives eligibility from" in message, message)
+    finally:
+        pit_replay.FACTOR_SPEC_VERSION = saved
+    case = pit_factor_spec.FORMULA_GOLDEN_V1[0]
+    want = case["expect"]
+    try:
+        case["expect"] = 0.5
+        check("a golden witness that disagrees with the engine is NAMED",
+              any("ebitda_growth" in p for p in pit_replay.validate()))
+    finally:
+        case["expect"] = want
+    check("validate() is clean once the witness is restored",
+          pit_replay.validate() == [], pit_replay.validate())
 
     # every computable factor's declared transform really is registered
     registry = pit_normalization.candidate_v2_registry()
@@ -173,9 +219,9 @@ def test_validate() -> None:
     check("every engine reason carries a recorded why", not thin, thin)
 
     reachable = pit_replay.plan_record()["reachable_block_weight"]
-    check("reachable block weight is E+G = 0.50", close(reachable, 0.50),
+    check("reachable block weight is E+G+Q = 0.60", close(reachable, 0.60),
           reachable)
-    check("0.50 clears MIN_BLOCK_WEIGHT 0.40",
+    check("0.60 clears MIN_BLOCK_WEIGHT 0.40",
           reachable >= pit_factor_blocks.MIN_BLOCK_WEIGHT,
           pit_factor_blocks.MIN_BLOCK_WEIGHT)
 
@@ -555,10 +601,12 @@ def test_primitives_arithmetic() -> None:
           prim.ebitda_lag1)
     check("EBITDA_{t-2} = 500 + 100 = 600", close(prim.ebitda_lag2, 600.0),
           prim.ebitda_lag2)
-    check("growth = (1000 - 750) / 5000 = 0.05", close(prim.growth, 0.05),
+    check("growth = (1000 - 750) / |750| = 1/3", close(prim.growth, 1.0 / 3.0),
           prim.growth)
-    check("acceleration = (1000 - 2*750 + 600) / 4000 = 0.025",
-          close(prim.acceleration, 0.025), prim.acceleration)
+    check("growth_{t-1} = (750 - 600) / |600| = 0.25",
+          close(prim.growth_lag1, 0.25), prim.growth_lag1)
+    check("acceleration = 1/3 - 0.25 = 1/12",
+          close(prim.acceleration, 1.0 / 12.0), prim.acceleration)
     check("margin = 1000 / 4000 = 0.25", close(prim.margin, 0.25), prim.margin)
     real = (4000.0 / 110.0) / (3600.0 / 100.0) - 1.0
     check("real revenue growth deflates OVER THE WINDOW, not by trailing CPI",
@@ -567,25 +615,142 @@ def test_primitives_arithmetic() -> None:
                                        4000.0 / 3600.0 - 1.0))
     check("the deflator actually bit: real < nominal",
           prim.real_revenue_growth < (4000.0 / 3600.0 - 1.0))
-    check("acceleration uses ONE base (Assets_{t-8q}), not two",
-          close(prim.acceleration,
-                (1000.0 - 2 * 750.0 + 600.0) / 4000.0))
+    check("acceleration is the difference of two RATES, not a second "
+          "difference over assets",
+          close(prim.acceleration, prim.growth - prim.growth_lag1))
 
-    # ---- and the refusals, each with its own reason ----------------------
-    thin = dict(index)
-    del thin[(eid, "Assets", 0)]
-    prim2 = pit_replay.resolve_primitives(thin, eid, as_of, ladders,
-                                          lambda d: cpi_values.get(d))
-    check("no assets -> growth refused with no_assets_at_lag1",
-          prim2.growth is None
-          and prim2.why.get("growth") == pit_replay.R_NO_ASSETS_LAG1,
-          prim2.why.get("growth"))
-    check("no assets -> acceleration refused with no_assets_at_lag2",
-          prim2.acceleration is None
-          and prim2.why.get("acceleration") == pit_replay.R_NO_ASSETS_LAG2,
-          prim2.why.get("acceleration"))
+    # ---- the base policy and the refusals, each with its own reason -------
+    no_assets = {k: v for k, v in index.items() if k[1] != "Assets"}
+    p = pit_replay.resolve_primitives(no_assets, eid, as_of, ladders,
+                                      lambda d: cpi_values.get(d))
+    check("Assets are not read: growth and acceleration unchanged without them",
+          close(p.growth, 1.0 / 3.0) and close(p.acceleration, 1.0 / 12.0))
+
+    def _oi(t: float, t1: float, t2: float) -> Any:
+        ix = dict(index)
+        ix[(eid, "OperatingIncomeLoss", 4)] = {"2018-12-31": t, "2017-12-31": t1,
+                                              "2016-12-31": t2}
+        return pit_replay.resolve_primitives(ix, eid, as_of, ladders,
+                                             lambda d: cpi_values.get(d))
+    z = _oi(800.0, -150.0, 500.0)                 # E_{t-1} = -150 + 150 = 0
+    check("E_{t-1} == 0 -> growth refused with ebitda_growth_base_zero, never a "
+          "huge number, and acceleration inherits the refusal",
+          z.growth is None and z.why.get("growth") == pit_replay.R_EBITDA_BASE_ZERO
+          and z.acceleration is None
+          and z.why.get("acceleration") == pit_replay.R_EBITDA_BASE_ZERO,
+          z.why)
+    n = _oi(800.0, -149.0, 500.0)                 # E_{t-1} = 1 -> rate 999
+    check("a base too small to carry a rate is refused by name",
+          n.growth is None
+          and n.why.get("growth") == pit_replay.R_EBITDA_BASE_NEAR_ZERO, n.why)
+    band = float(pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1["max_abs_rate"])
+    at_band = _oi(100.0 * (1 + band) - 200.0, -50.0, 500.0)   # E_{t-1} = 100, rate == band
+    check("|rate| == max_abs_rate exactly is COMPUTED (the band is strict)",
+          close(at_band.growth, band), at_band.growth)
+    neg_band = _oi(-100.0 * (band - 1) - 200.0, -50.0, 500.0)  # rate == -band
+    check("-max_abs_rate exactly is computed too", close(neg_band.growth, -band),
+          neg_band.growth)
+    over = _oi(100.0 * (1 + band) - 200.0 + 0.01, -50.0, 500.0)
+    check("one cent beyond the band is refused",
+          over.why.get("growth") == pit_replay.R_EBITDA_BASE_NEAR_ZERO, over.why)
+    healthy = _oi(1000.0, -50.0, 500.0)           # E_{t-1} = 100, E_t = 1200, rate 11
+    check("the band is on the RATE, not the base: an 11x rise from a healthy base "
+          "is refused under the same name (owner to confirm)",
+          healthy.why.get("growth") == pit_replay.R_EBITDA_BASE_NEAR_ZERO)
+    q = _oi(800.0, 600.0, -100.0)                 # E_{t-2} = -100 + 100 = 0
+    check("only the LAG-1 rate refused: growth stands, acceleration refused by name",
+          close(q.growth, 1.0 / 3.0) and q.growth_lag1 is None
+          and q.acceleration is None
+          and q.why.get("acceleration") == pit_replay.R_EBITDA_BASE_ZERO
+          and "growth" not in q.why, q.why)
+    q2 = _oi(800.0, 600.0, -99.0)                 # E_{t-2} = 1 -> lag-1 rate 749
+    check("a lag-1 rate beyond the band refuses the acceleration only",
+          close(q2.growth, 1.0 / 3.0)
+          and q2.why.get("acceleration") == pit_replay.R_EBITDA_BASE_NEAR_ZERO, q2.why)
+    c = _oi(800.0, -400.0, 500.0)                 # E_{t-1} = -250
+    check("loss -> profit: (1000 + 250) / |-250| = +5.0, computed, base sign "
+          "recorded", close(c.growth, 5.0) and c.growth_base_sign == "neg",
+          (c.growth, c.growth_base_sign))
+    b = _oi(-300.0, -400.0, 500.0)                # E_t = -100, E_{t-1} = -250
+    check("a shrinking loss is an improvement: (-100 + 250) / 250 = +0.6",
+          close(b.growth, 0.6), b.growth)
+    lag2less = {k: ({p_: v for p_, v in m.items() if p_ != "2016-12-31"}
+                    if k[1] not in ("Revenues", "Assets") else m)
+                for k, m in index.items()}
+    l = pit_replay.resolve_primitives(lag2less, eid, as_of, ladders,
+                                      lambda d: cpi_values.get(d))
+    check("no lag-2 EBITDA -> acceleration refused with no_ebitda_lag2_period "
+          "while growth stands",
+          l.acceleration is None
+          and l.why.get("acceleration") == pit_replay.R_NO_LAG2
+          and close(l.growth, 1.0 / 3.0), l.why)
     check("a missing ingredient NEVER becomes 0.0",
-          prim2.growth is None and prim2.acceleration is None)
+          l.acceleration is None and z.growth is None)
+
+    # ---- coverage: OI / interest AT the same period, under the domain policy
+    check("untagged interest is unavailable, never zero",
+          prim.coverage is None
+          and prim.why.get("coverage") == pit_replay.R_NO_INTEREST_AT_P,
+          prim.why.get("coverage"))
+    cov = dict(index)
+    cov[(eid, "InterestExpense", 4)] = {"2018-12-31": 50.0, "2017-12-31": 40.0}
+    k = pit_replay.resolve_primitives(cov, eid, as_of, ladders,
+                                      lambda d: cpi_values.get(d))
+    check("coverage = OI 800 / interest 50 = 16.0 at the OI period",
+          close(k.coverage, 16.0) and k.operating_income_period == "2018-12-31"
+          and k.interest_rung == "InterestExpense",
+          (k.coverage, k.operating_income_period, k.interest_rung))
+
+    def _int(m: Dict[str, float]) -> Any:
+        ix = dict(index)
+        ix[(eid, "InterestExpense", 4)] = m
+        return pit_replay.resolve_primitives(ix, eid, as_of, ladders,
+                                             lambda d: cpi_values.get(d))
+    check("a tagged ZERO is the named state, not +inf",
+          _int({"2018-12-31": 0.0}).why.get("coverage")
+          == pit_replay.R_INTEREST_ZERO)
+    check("a NEGATIVE denominator is refused by name",
+          _int({"2018-12-31": -50.0}).why.get("coverage")
+          == pit_replay.R_INTEREST_NEGATIVE)
+    check("interest at a DIFFERENT period is not coverage",
+          _int({"2017-12-31": 40.0}).why.get("coverage")
+          == pit_replay.R_NO_INTEREST_AT_P)
+    loss = dict(cov)
+    loss[(eid, "OperatingIncomeLoss", 4)] = {"2018-12-31": -200.0,
+                                            "2017-12-31": 600.0,
+                                            "2016-12-31": 500.0}
+    check("negative operating income is a LEGITIMATE negative coverage: "
+          "-200 / 50 = -4.0",
+          close(pit_replay.resolve_primitives(
+              loss, eid, as_of, ladders, lambda d: cpi_values.get(d)).coverage,
+              -4.0))
+    rung2 = dict(index)
+    rung2[(eid, "InterestExpenseDebt", 4)] = {"2018-12-31": 25.0}
+    check("the second ladder rung serves when the first is absent: 800 / 25 = 32.0",
+          close(pit_replay.resolve_primitives(
+              rung2, eid, as_of, ladders, lambda d: cpi_values.get(d)).coverage,
+              32.0))
+    rung2b = dict(rung2)
+    rung2b[(eid, "InterestExpense", 4)] = {"2017-12-31": 40.0}
+    r2b = pit_replay.resolve_primitives(rung2b, eid, as_of, ladders,
+                                        lambda d: cpi_values.get(d))
+    check("rung 1 at a DIFFERENT period does not block rung 2 at the OI period",
+          close(r2b.coverage, 32.0) and r2b.interest_rung == "InterestExpenseDebt",
+          (r2b.coverage, r2b.interest_rung))
+    rung1zero = dict(rung2)
+    rung1zero[(eid, "InterestExpense", 4)] = {"2018-12-31": 0.0}
+    r1z = pit_replay.resolve_primitives(rung1zero, eid, as_of, ladders,
+                                        lambda d: cpi_values.get(d))
+    check("the FIRST rung at the period wins: a tagged zero there is refused and "
+          "lower rungs are not consulted (INTEREST_COVERAGE_DOMAIN_V1 rung_rule)",
+          r1z.coverage is None and r1z.why.get("coverage") == pit_replay.R_INTEREST_ZERO,
+          r1z.why)
+    rank = pit_replay.normalise("interest_coverage", -4.0,
+                                {1: 1.5, 2: 3.0, 3: 8.0, 4: 12.0}, 9, as_of)
+    top = pit_replay.normalise("interest_coverage", 20.0,
+                               {1: 1.5, 2: 3.0, 3: 8.0, 4: 12.0}, 9, as_of)
+    check("a negative coverage ranks below every positive peer; a high one above",
+          rank.score == -100.0 and top.score == 100.0, (rank.score, top.score))
 
     no_da = {k: v for k, v in index.items()
              if k[1] != "DepreciationDepletionAndAmortization"}
@@ -674,6 +839,9 @@ def test_masks() -> None:
           v_mask == pit_valuation_spec.MASK_NONE, v_mask)
     q_mask = pit_replay._mask(pit_factor_blocks.BLOCK_Q, {})
     check("Q names all four", q_mask == "FCF=0,ICOV=0,NDE=0,DMC=0", q_mask)
+    check("Q mask shows ICOV present",
+          pit_replay._mask(pit_factor_blocks.BLOCK_Q, {"interest_coverage": 12.0})
+          == "FCF=0,ICOV=1,NDE=0,DMC=0")
 
 
 # ==========================================================================
@@ -918,7 +1086,7 @@ def test_unavailable_rows_are_rows() -> None:
             "SELECT feature_key, raw_value, normalized_value, availability, "
             "available_flag, unavailable_reason FROM pit_feature").fetchall()
         check("every NOT_COMPUTABLE / REFUSED factor produced a row",
-              len(rows) == len(refused) == 8, len(rows))
+              len(rows) == len(refused) == 7, len(rows))
         check("every one is availability='unavailable'",
               all(r[3] == pit_store.AVAIL_UNAVAILABLE for r in rows))
         check("every one has normalized_value NULL -- never 0.0",
@@ -933,14 +1101,16 @@ def test_unavailable_rows_are_rows() -> None:
         check("ebitda_benchmark is refused for AMBIGUITY, not for missing data",
               by_key["ebitda_benchmark"] == pit_replay.R_BENCHMARK_AMBIGUOUS,
               by_key["ebitda_benchmark"])
-        check("pe_absolute and pe_relative name the genuinely absent primitive",
+        check("pe_absolute and pe_relative name the UNBUILT chain, not an absent "
+              "primitive -- EPS is in the store",
               by_key["pe_absolute"] == by_key["pe_relative"]
-              == pit_replay.R_PRIMITIVE_UNAVAILABLE)
-        check("the four Q factors and EV/EBITDA name the missing transform",
+              == pit_replay.R_PE_CHAIN_NOT_BUILT)
+        check("the three remaining Q factors and EV/EBITDA name the missing transform",
               all(by_key[k] == pit_replay.R_NO_V2_NORMALIZATION
-                  for k in ("fcf_conversion", "interest_coverage",
-                            "net_debt_ebitda", "debt_market_cap",
-                            "ev_ebitda_supplement")))
+                  for k in ("fcf_conversion", "net_debt_ebitda",
+                            "debt_market_cap", "ev_ebitda_supplement")))
+        check("interest_coverage produced NO refused row: it is computable",
+              "interest_coverage" not in by_key)
     finally:
         conn.close()
 

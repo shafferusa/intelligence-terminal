@@ -2,7 +2,9 @@
 
 **Scope.** What the post-reboot session found, changed and measured, in the
 order the owner's handoff prescribed. Facts carry their source. Recommendations
-are labelled. Nothing here is a decision on D3, on a v5 freeze, or on any replay.
+are labelled. Nothing here is a decision on any replay. D3 and the v5 freeze
+were decided by the owner later the same evening and are recorded in 5a, 6
+and 9; sections 1 to 8 otherwise describe the state before that decision.
 
 Companion records written the same day:
 `D3-EVIDENCE-2026-09-22.md`, `V4-GOVERNANCE-AUDIT-2026-09-22.md`,
@@ -58,7 +60,12 @@ was stopped or changed.
 
 ## 2. Contradictions between the handoff and the repository
 
-Reported, not resolved, per the working rule.
+Reported, not resolved, per the working rule. *State as of the first cut
+(~20:15 local). Superseded the same evening: `spec_freeze_v5` is live, the
+engine derives from `factor_spec_v4`, computes 6 of 13, and `validate()`
+checks `FACTOR_DIRECTION_V1` against the registry; see 5a and 9. Items 1 and
+2 are kept as written because they are the evidence of what the handoff
+got wrong.*
 
 1. **v4 already existed.** The handoff asked for a successor freeze v4. The
    repository has `spec_freeze_v4` live (`pit_frozen_spec.py`, digest
@@ -235,7 +242,33 @@ otherwise; never triggered). 8k was not run: on these numbers an 8k streamed
 child would be ~300 MiB and the measurement is low-risk, but a full date is the
 scale of the four-date pilot, which the handoff withholds. Owner's call.
 
-## 6. D3 — reported, not decided
+## 5a. Incident record — 2026-09-21 pagefile exhaustion (owner ruling, 2026-09-22)
+
+**Previous explanation: REJECTED_BY_MEASUREMENT.** The explanation recorded in
+`pit_frozen_spec.STILL_BLOCKED`, `full_run_capacity_budget.json` (lever 4) and
+`pilot_sizing_derived.json` (known defect 4) — that the engine's whole-cross-
+section row lists forced the pagefile to grow by 5.9 GB — is withdrawn. The
+engine measures at ~245 MiB of commit at 4,000 targets with the full index
+resident, and its row lists at ~1 KB per target. The machine was operating
+near its commit ceiling because of resident services (§1: ~4.5 GiB in three
+autostarted Python processes, ~1.8 GiB in Steam and Chrome, 13.1 of 14.9 GB
+committed with nothing of ours running). The replay was at most the marginal
+trigger. The measurement artefacts are left as written (they are evidence of
+what was believed and why); the live narrative in the freeze module is
+corrected with the v5 cut, and `docs/MODEL-LINEAGE.md` carries the ruling.
+
+The streaming patch stays as engineering: its equality proofs are strong and
+it bounds the row lists and the WAL. It is not credited with fixing the
+incident, because it did not cause it.
+
+Controlled measurement plan (owner's order): pause the three local Python
+services (all bind 127.0.0.1; the Cloudflare tunnel and watchdog tasks are
+disabled and no tunnel process exists, so no public site is served from this
+machine), leave Chrome and Steam, record per-process commit before and after,
+then rerun the 1k/4k pairs, the 2 MiB-cache attribution, the two-date
+meter-on run including 2022-06-30, and the remaining oracle arms.
+
+## 6. D3 — reported; decided by the owner on 2026-09-22 (growth A, acceleration A, coverage OI/interest; see the `spec_freeze_v5` section of docs/MODEL-LINEAGE.md)
 
 Full record: `D3-EVIDENCE-2026-09-22.md` (20 claims, 20/20 citations confirmed;
 the refuter refuted only the diff-size particulars of one housekeeping claim).
@@ -308,7 +341,11 @@ the P/E convex transform parameters (only `TRANSFORM_VERSION`), the EPS pair
 hierarchy body, `V2_BLOCKS` order. A latent seal-check gap: `validate()`
 rejects `unrenderable:` but not `callable:`. `_FROZEN_MANIFEST` re-digests to
 `FROZEN_DIGEST` today, but no test asserts it. Recommendations R1–R8 in the
-audit are all "as a v5, never in place".
+audit are all "as a v5, never in place". *(Closed the same evening in
+`spec_freeze_v5`: `validate()` names a `callable:` body and proves
+`digest(_FROZEN_MANIFEST) == FROZEN_DIGEST`; R1, R4, R5, R6, R7 and R8
+landed; R3 landed as `FORMULAS_V1` with golden witnesses; R2 is the
+registry-versus-spec question the V/Q wiring will settle.)*
 
 ## 8. Defects found in artefacts (not fixed unless stated)
 
@@ -328,16 +365,39 @@ audit are all "as a v5, never in place".
   computes (design record R-note); the pilot's `c9b4050` did not describe the
   code that ran.
 
-## 9. Not done, and why
+## 9. Not done, and why (as of the first report; updated the same evening)
 
-- Phase 3 (engine derives from `factor_spec_v3`, margin benchmark, five Q/V
-  factors, direction wiring, GAP 5/7/8): not started — it flips verdicts and
-  is engine work the handoff sequences after the memory proof.
-- D3: untouched.
+- **Later the same evening:** the owner decided D3 (growth A, acceleration A,
+  coverage = operating income over interest) and `spec_freeze_v5` was cut
+  (digest 58722f4c…, 61 components; v4 sealed as `FREEZE_V4`, may not execute
+  the replay). The engine now derives eligibility from `factor_spec_v4`,
+  computes growth A under `EBITDA_GROWTH_BASE_POLICY_V1`, acceleration A and
+  interest coverage under `INTEREST_COVERAGE_DOMAIN_V1` (census 6/1/6,
+  reachable weight 0.60), and `ENGINE_VERSION` is `pit_replay/1.1`. Full
+  record: `docs/MODEL-LINEAGE.md`, `spec_freeze_v5` section. Six items in v5
+  await the owner's word and are named in
+  `pit_frozen_spec.SCORE_ASSEMBLY_GAP["owner_confirmation_pending_v5"]`: the
+  rate band (10.0), the matched-period coverage rule, the refusal vocabulary,
+  the PERCENTILE_RANK transform for coverage, the inverted ordering among
+  negative-OI rows under that rank, and the single-factor Q availability path
+  (E + Q = 0.45 clears the floor).
+- Still not built in the engine: the MARGIN benchmark path (D1 decided in the
+  spec), the P/E chain, and registered transforms for EV/EBITDA, fcf_conversion,
+  net_debt_ebitda and debt_market_cap. That is the "wire full V/Q engine" step.
+  GAP 5 (peer floor = max(spec, normaliser)) and GAP 7 (price-basis translation
+  constant) remain NOT FIXED (audit v4-16, v4-17); GAP 8 is closed by
+  `ENGINE_MUST_DERIVE_FROM`; `FACTOR_DIRECTION_V1` is enforced only as a
+  validate-time consistency check against the registry, not read in the
+  scoring path.
+- The controlled memory measurements wait on the service pause (§5a).
 - Four-date pilot rerun, full replay, 8k measurement: not run.
-- `ENGINE_VERSION` left at `pit_replay/1.0`: the HEAD-arm oracle passed only
-  transitively (H = L in full, L = S7 in the suite); a bump belongs in its own
-  commit once the direct H = S7 / S25 / SM arms have run.
+- `ENGINE_VERSION` was left at `pit_replay/1.0` in the first cut (the HEAD-arm
+  oracle passed only transitively: H = L in full, L = S7 in the suite) and
+  bumped to `pit_replay/1.1` with the v5 cut because the arithmetic changed
+  (growth A, acceleration A, coverage OI/interest); 1.0 rows differ from 1.1
+  rows by design. The direct H = S7 / S25 / SM arms were never run and are
+  moot against 1.1; the in-suite oracle (unbatched = batched, same code)
+  passes under 1.1 (176 checks).
 - The three autostarted services were left running; they are the owner's.
   Every further memory measurement on this machine is only meaningful with a
   recorded per-process commit baseline taken immediately before it.

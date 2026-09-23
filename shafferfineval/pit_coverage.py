@@ -563,8 +563,11 @@ FEATURE_NOTE: dict[str, str] = {
                     "to ebitda_level by construction, listed so the block's "
                     "sub-factor count is not quietly one short",
     "ebitda_margin": "ebitda / revenue, revenue required at the SAME period end",
-    "ebitda_growth": "(E_t - E_t-1y) / Assets_t-1y, one common base",
-    "ebitda_acceleration": "(E_t - 2E_t-1y + E_t-2y) / Assets_t-2y",
+    "ebitda_growth": "(E_t - E_t-1y) / |E_t-1y|, base policy "
+                     "pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1 (availability "
+                     "counts the two observations, not the base test)",
+    "ebitda_acceleration": "growth_t - growth_t-1y: three EBITDA observations, "
+                           "no asset base",
     "cohort_benchmark_50_75": f"a stored cohort with >= {MIN_EBITDA_COHORT} "
                               "members carrying both EBITDA and revenue",
     "excess_efficiency_level": "own margin AND the cohort benchmark; the "
@@ -575,7 +578,10 @@ FEATURE_NOTE: dict[str, str] = {
                            "the CPI vintage readable on the as-of date",
     "quality_roa": "net income / total assets",
     "quality_fcf_conversion": "(operating cash flow - capex) / EBITDA",
-    "quality_interest_coverage": "EBITDA / interest expense",
+    "quality_interest_coverage": "operating income / interest expense at the "
+                                 "SAME (period_end, qtrs); interest expense > 0 "
+                                 "(owner policy 2026-09-22); negative operating "
+                                 "income allowed",
     "quality_leverage_v2": "total debt (concept_ladder_v2) / total assets -- "
                            "see total_debt_bound_mix: most of v2's recovery is "
                            "a LOWER_BOUND rung, which is coverage of a "
@@ -773,9 +779,6 @@ def measure_as_of(conn: sqlite3.Connection, as_of: str, *,
         current = record["ebitda_period"]
         lag1 = nearest_period(periods, current, 1) if current else None
         lag2 = nearest_period(periods, current, 2) if current else None
-        assets_map = index.get((entity_id, "Assets", 0)) or {}
-        assets_lag1 = (nearest_period(assets_map, lag1, 0) if lag1 else None)
-        assets_lag2 = (nearest_period(assets_map, lag2, 0) if lag2 else None)
         # A GROWTH RATE: the SAME rung in both years. The resolved rung's own
         # tag map, not the ladder merged per period -- a filer who moved from
         # SalesRevenueNet to Revenues has a discontinuity, and a discontinuity
@@ -794,10 +797,8 @@ def measure_as_of(conn: sqlite3.Connection, as_of: str, *,
             "ebitda_level": record["ebitda"] is not None,
             "ebitda_scale": record["ebitda"] is not None,
             "ebitda_margin": margin is not None,
-            "ebitda_growth": bool(current and lag1 and assets_lag1
-                                  and assets_map.get(assets_lag1)),
-            "ebitda_acceleration": bool(current and lag1 and lag2 and assets_lag2
-                                        and assets_map.get(assets_lag2)),
+            "ebitda_growth": bool(current and lag1),
+            "ebitda_acceleration": bool(current and lag1 and lag2),
             "cohort_benchmark_50_75": benchmark_ok,
             "excess_efficiency_level": bool(benchmark_ok and margin is not None),
             "revenue_growth_nominal": bool(revenue_period and revenue_lag1
@@ -808,8 +809,14 @@ def measure_as_of(conn: sqlite3.Connection, as_of: str, *,
             "quality_fcf_conversion": bool(record["operating_cash_flow"] is not None
                                            and record["capex"] is not None
                                            and record["ebitda"]),
-            "quality_interest_coverage": bool(record["interest_expense"]
-                                              and record["ebitda"] is not None),
+            # the census approximates the engine's rule (a LEVEL at the OI
+            # period across rungs) with the resolved rung's newest period
+            "quality_interest_coverage": bool(
+                record["operating_income"] is not None
+                and record["interest_expense"] is not None
+                and record["interest_expense"] > 0.0
+                and record["interest_expense_period"]
+                == record["operating_income_period"]),
             "quality_leverage_v2": bool(record["total_debt"] is not None
                                         and record["total_assets"]),
         }

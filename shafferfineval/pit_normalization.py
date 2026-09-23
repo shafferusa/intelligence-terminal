@@ -93,6 +93,7 @@ __all__ = [
     "historical_z_score", "ml_calibrated_score", "normalize",
     "resolve_scale", "fixed_scale", "cohort_scale", "iqr", "mad",
     "cohort_as_of", "benchmark_margin_50_75",
+    "BENCHMARK_BAND_V1", "BENCHMARK_MIN_COHORT_V1",
     "spearman_rho", "rank_equivalence", "redundancy_check",
     "candidate_v2_registry", "register_factor", "registry_spec",
     "VERDICT_REDUNDANT", "VERDICT_CORRELATED", "VERDICT_INDEPENDENT",
@@ -898,9 +899,20 @@ def normalize(spec: "FactorSpec", value: Any, *,
 # The one anchor this module computes itself
 # --------------------------------------------------------------------------
 
+#: LIFTED OUT of benchmark_margin_50_75 on 2026-09-22 (v4 governance audit,
+#: hole A): a literal inside a function body is invisible to pit_frozen_spec,
+#: so the bar for the model's largest single factor weight could move with the
+#: digest intact. Values UNCHANGED. Equal in value to pit_coverage.
+#: MIN_EBITDA_COHORT and deliberately NOT an alias of it: the benchmark's floor
+#: is this factor's own policy, digested under its own name.
+BENCHMARK_BAND_V1: tuple[float, float] = (0.50, 0.75)
+BENCHMARK_MIN_COHORT_V1: int = 3
+
+
 def benchmark_margin_50_75(ebitda_values: Sequence[Any],
                            margin_values: Sequence[Any],
-                           min_cohort: int = 3) -> tuple[Optional[float], int, str]:
+                           min_cohort: Optional[int] = None
+                           ) -> tuple[Optional[float], int, str]:
     """M_s -- the mean margin of the cohort in the 50th-75th EBITDA percentile.
 
     The owner's benchmark, restated as a free function over plain sequences.
@@ -914,14 +926,16 @@ def benchmark_margin_50_75(ebitda_values: Sequence[Any],
     the anchored transform turns into `benchmark_unavailable` rather than into a
     zero -- an excess against an unknown bar is not a small number.
     """
+    floor = BENCHMARK_MIN_COHORT_V1 if min_cohort is None else int(min_cohort)
     pairs = [(float(e), float(m)) for e, m in zip(ebitda_values, margin_values)
              if is_finite(e) and is_finite(m)]
-    if len(pairs) < min_cohort:
+    if len(pairs) < floor:
         return None, 0, (f"only {len(pairs)} peers carried both an EBITDA and a "
-                         f"margin; need {min_cohort}")
+                         f"margin; need {floor}")
     ordered = sorted(e for e, _ in pairs)          # statlib.percentile needs sorted
-    p50 = percentile(ordered, 0.50)
-    p75 = percentile(ordered, 0.75)
+    lo, hi = BENCHMARK_BAND_V1
+    p50 = percentile(ordered, lo)
+    p75 = percentile(ordered, hi)
     band = [m for e, m in pairs if p50 <= e <= p75]
     if not band:
         return None, 0, "no peer fell inside the 50-75 EBITDA band"
@@ -1785,20 +1799,29 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
     EBITDAGrowth       ZERO_ANCHORED. Growth has a true zero: shrinking and
                        growing are different states, and in a cohort where
                        everyone shrank a rank still hands out +100s. The input
-                       is deliberately an AMOUNT over a common base --
-                       (E_t - E_{t-4q}) / Assets_{t-4q} -- not a rate, because
-                       37.8% of the universe has EBITDA <= 0 and a rate on that
-                       base turns -$50k -> +$10m into +20,100%.
+                       is a RATE, (E_t - E_{t-1}) / |E_{t-1}|, under
+                       pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1 (owner
+                       decision 2026-09-22, D3 growth = A): a zero base and a
+                       base too small to carry a rate are refused BY NAME, so
+                       neither can enter the cohort scale. The earlier
+                       amount-over-assets reading is on record in FREEZE_V4.
 
     EBITDAAcceleration ZERO_ANCHORED, with a COHORT-DERIVED scale rather than a
                        fixed one. Zero means "growth held steady", which is a
-                       real economic state and must score 0. The second
-                       difference (E_t - 2E_{t-4q} + E_{t-8q}) / Assets_{t-8q}
-                       shares a term with opposite signs across its two
-                       differences, so its variance is 3x a single difference's
-                       -- sd 1.73x -- and a g borrowed from growth would
-                       saturate it. An IQR-derived scale absorbs that
-                       automatically, which is the point of deriving it.
+                       real economic state and must score 0. The input is the
+                       difference of two consecutive A-rates, growth_t -
+                       growth_{t-1}, each under the same base policy: three
+                       EBITDA observations and no asset base. A rate
+                       difference has its own dispersion, so the scale is
+                       derived from the cohort rather than borrowed.
+
+    InterestCoverageRank PERCENTILE_RANK. operating_income / interest_expense
+                       (owner decision 2026-09-22) is a times-covered multiple
+                       whose ORDERING within the sector is the information; a
+                       rank is also indifferent to the long right tail a tanh
+                       scale would have to clamp. Its domain policy
+                       (pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V1) runs
+                       upstream: only interest_expense > 0 reaches this rank.
 
     EBITDAScale        PERCENTILE_RANK on RAW EBITDA DOLLARS. Genuine economic
                        scale, and the rank is honest about what it can say.
@@ -1843,25 +1866,36 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
             economic_question="is the business generating more EBITDA than a year ago?",
             rationale=("Growth has a true zero and a meaningful sign; a rank would "
                        "hand out +100s in a cohort where every company shrank. The "
-                       "input is an amount over a common asset base, not a rate, "
-                       "because a rate is meaningless on the 37.8% with EBITDA <= 0."),
+                       "input is a RATE over the absolute prior EBITDA under "
+                       "pit_factor_spec.EBITDA_GROWTH_BASE_POLICY_V1: a loss "
+                       "shrinking is positive, a zero base is refused by name, and a "
+                       "base too small to carry a rate is refused rather than allowed "
+                       "to explode into the cohort scale. Owner decision 2026-09-22 "
+                       "(D3, growth = A)."),
             anchor_source=ANCHOR_ZERO,
             scale=cohort_scale(multiplier=1.0),
-            notes=("input: (E_t - E_{t-4q}) / Assets_{t-4q}",),
+            notes=("input: (E_t - E_t-1) / |E_t-1|, base policy EBITDA_GROWTH_BASE_POLICY_V1",
+                   "the cohort IQR is a dispersion of RATES: one IQR of spread scores "
+                   "+76.2, two +96.4",),
         ),
         FactorSpec(
             feature_key="EBITDAAcceleration",
             normalization_type=ZERO_ANCHORED,
             economic_question="is EBITDA growth speeding up or slowing down?",
             rationale=("Zero means growth held steady -- a real state that must score "
-                       "0. The scale is cohort-derived because the second difference "
-                       "carries 1.73x the sd of a single difference, so a fixed g "
-                       "borrowed from growth would saturate it."),
+                       "0. The input is the difference of two consecutive A-rates, "
+                       "each under EBITDA_GROWTH_BASE_POLICY_V1, so it needs three "
+                       "EBITDA observations and no asset base. The scale is "
+                       "cohort-derived because a rate difference has its own "
+                       "dispersion and a g borrowed from growth would be a guess. "
+                       "Owner decision 2026-09-22 (D3, acceleration = A)."),
             anchor_source=ANCHOR_ZERO,
             scale=cohort_scale(multiplier=1.0),
-            notes=("input: (E_t - 2E_{t-4q} + E_{t-8q}) / Assets_{t-8q}, one common "
-                   "base -- two different bases give any asset-growing company a "
-                   "systematic negative acceleration.",),
+            notes=("input: growth_t - growth_t-1 = (E_t - E_t-1)/|E_t-1| - "
+                   "(E_t-1 - E_t-2)/|E_t-2|, base policy EBITDA_GROWTH_BASE_POLICY_V1 "
+                   "on both rates",
+                   "either rate refused under the base policy refuses the "
+                   "acceleration",),
         ),
         FactorSpec(
             feature_key="EBITDAScale",
@@ -1888,6 +1922,30 @@ def candidate_v2_registry() -> dict[str, FactorSpec]:
             notes=("deflate over the GROWTH WINDOW, not by trailing CPI at the "
                    "as-of: the error is correlated with fiscal calendar and "
                    "mis-scores the 28% of the universe that is not a December filer.",),
+        ),
+        FactorSpec(
+            feature_key="InterestCoverageRank",
+            normalization_type=PERCENTILE_RANK,
+            economic_question="how many times over is the interest bill covered, versus peers?",
+            rationale=("operating_income / interest_expense (owner decision 2026-09-22) "
+                       "is a times-covered multiple whose ORDERING within the sector "
+                       "is the information: 3x against a cohort at 8x means "
+                       "something, 3x alone does not. A rank is also indifferent to "
+                       "the long right tail a tanh scale would have to clamp. "
+                       "Direction HIGHER_IS_BETTER per FACTOR_DIRECTION_V1."),
+            anchor_source=ANCHOR_COHORT_RANK,
+            higher_is_better=True,
+            notes=("DOMAIN POLICY pit_factor_spec.INTEREST_COVERAGE_DOMAIN_V1, executed "
+                   "upstream in pit_replay.resolve_primitives: only interest_expense > 0 "
+                   "produces a value; a tagged zero (interest_expense_zero), a negative "
+                   "value (interest_expense_negative) and an untagged one "
+                   "(no_interest_expense_at_operating_income_period) never reach this "
+                   "rank, so a debt-free firm is UNAVAILABLE here and Q renormalises.",
+                   "negative operating income is a NEGATIVE coverage and ranks below "
+                   "every positively covered peer. KNOWN LIMITATION: among negative-OI "
+                   "rows the rank ORDERING IS INVERTED relative to interest burden "
+                   "(OI=-100 / interest=1 ranks below OI=-100 / interest=100); accepted "
+                   "pending owner ruling.",),
         ),
     )
     return {spec.feature_key: spec for spec in specs}

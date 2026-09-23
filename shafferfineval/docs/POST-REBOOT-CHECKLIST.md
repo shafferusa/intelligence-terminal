@@ -33,7 +33,9 @@ Do NOT change pagefile settings without explicit owner approval (§21).
 ## 2. Confirm nothing moved
 
 ```
-python pit_frozen_spec.py                  intact=True, digest 912268b3…
+python pit_frozen_spec.py                  intact=True, digest 912268b3… (as of the reboot;
+                                           from the v5 cut expect the digest in the status
+                                           paragraph below, 61 components)
 python test_pit_replay.py                  expected to PASS once free space > 7.5 GiB
                                            (it failed pre-reboot ONLY because the disk gate
                                             refused at 4.2 GiB — correct behaviour, not a bug)
@@ -86,3 +88,19 @@ The full account, the measurements and every contradiction found are in
 `docs/D3-EVIDENCE-2026-09-22.md`; the v4 audit in
 `docs/V4-GOVERNANCE-AUDIT-2026-09-22.md`; the streaming design record in
 `docs/STREAMING-REPLAY-DESIGN-2026-09-22.md`.
+
+## Status after spec_freeze_v5 — 2026-09-22 (later the same evening)
+
+The owner decided D3 (growth A, acceleration A, coverage = operating income
+over interest) and ruled the 2026-09-21 incident cause REJECTED_BY_MEASUREMENT.
+spec_freeze_v4 is sealed (`FREEZE_V4`, may not execute the replay); the live
+freeze is `spec_freeze_v5`, digest 58722f4c00b676fee76bcc10ba341f44ce18c540a2fbc90625570a51786a5b59, 61 components. Phase 3
+above now reads: the engine derives eligibility from `factor_spec_v4`
+(`ENGINE_MUST_DERIVE_FROM`, enforced), computes 6 of 13 factors, and still
+owes the MARGIN benchmark path, the P/E chain and the EV/EBITDA, fcf,
+net-debt and debt/market-cap transforms; GAP 5 and GAP 7 remain NOT FIXED and
+FACTOR_DIRECTION_V1 is enforced only at validate time. The D3 line above is closed. Rule
+for freezes: no edits to spec_freeze_v1..v5 in place -- a change is a v6.
+The freeze's negative test is the file-level mutation procedure of the v4
+audit (fresh interpreter, `__pycache__` removed, `python -B`) plus the
+in-process drift probes in `test_pit_frozen_spec.py` section 2.
