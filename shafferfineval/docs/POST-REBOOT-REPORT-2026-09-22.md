@@ -345,6 +345,100 @@ with `pit_replay_rss` one child at a time at 1k and 4k (8k only if the
 headroom is then obviously safe), and the owner-ordered two-date meter-on arm
 including 2022-06-30 (§5) has still never been run.
 
+## 5c. `pit_replay/1.2` controlled measurements (2026-09-23, owner option 2)
+
+The engine under `spec_freeze_v6` had never been measured; every figure in §5b is
+`pit_replay/1.1` under the sealed `spec_freeze_v5`. The owner chose to free
+desktop memory rather than disable Claude Code's background pressure reaper, on
+the grounds that the reaper is a safety mechanism on a genuinely
+memory-constrained 8 GB box and disabling it would risk the pagefile problem of
+2026-09-21. Two background runs had already been killed by it at 0.5–1.7 GiB
+free RAM, one of them the post-fix `--slow` suite.
+
+**Opening the window.** Chrome was closed completely (14 processes, 1,229 MiB)
+and Steam exited through its own `-shutdown` (8 processes, 327 MiB). Edge had no
+normal window open — every `msedge` process had a null main-window handle — so
+nothing was closed there, and its background processes, all six
+`msedgewebview2` processes and every system process were deliberately left
+alone. The FinSim server had **restarted on its own** at 20:09:29 local, after
+being stopped that morning, holding 1,622 MiB by itself as
+`pythonw.exe -m finsim serve --db ...\.finsim\finsim.db --port 8765`; it is one
+of the three services this window requires paused, so it was stopped again. It
+runs under `pythonw.exe`, not `python.exe`, which is why a check for the latter
+alone misses it.
+
+Baseline, `rss_baseline_v12_2026-09-23.json` (written without a BOM, unlike
+§5b's): free RAM **0.55 → 2.63 GiB**, commit **10.07 → 6.86 GB** of a
+14.90 GB limit, pagefile 396 → 207 MB in use against an unchanged 1,545 MB peak
+since boot, free disk 12.82 GiB. That is 2.08 GiB of physical memory released.
+The reaper stayed ENABLED for every arm.
+
+One child at a time, one date (2019-06-28), the same protocol and the same
+attribution as §5b: the fixed cost is the commit at `assemble`, and the write
+side is `max(batch_full, write) - fixed`.
+
+| arm | engine | peak commit | fixed (assemble) | write side | batches | WAL peak | score rows | elapsed |
+|---|---|---|---|---|---|---|---|---|
+| 1k streamed (500) | 1.1 | 200.4 MiB | 187.2 | 13.2 | 2 | 7.4 MB | 475 | 276 s |
+| 1k streamed (500) | **1.2** | **257.8** | **239.1** | **18.7** | 2 | 9.2 MB | **563** | **624 s** |
+| 1k unbatched | 1.1 | 200.8 | 187.5 | 0.7 | 1 | 13.0 MB | 475 | 270 s |
+| 1k unbatched | **1.2** | **258.8** | **239.2** | **4.1** | 1 | 16.2 MB | **563** | **612 s** |
+| 4k streamed (500) | 1.1 | 241.6 | 189.9 | 51.7 | 8 | 12.5 MB | 1,851 | 310 s |
+| 4k streamed (500) | **1.2** | **307.0** | **243.6** | **63.4** | 8 | 13.5 MB | **1,927** | **852 s** |
+| 4k unbatched | 1.1 | 244.9 | 190.1 | 4.4 | 1 | 47.1 MB | 1,851 | 321 s |
+| 4k unbatched | **1.2** | **314.7** | **243.2** | **10.4** | 1 | 56.7 MB | **1,927** | **839 s** |
+
+Reports: `rss_report_v12_1k_stream.json`, `rss_report_v12_1k_legacy.json`,
+`rss_report_v12_4k_stream.json`, `rss_report_v12_4k_legacy.json`. Per-stage
+commit at 4k streamed: universe 96.5, cohorts 95.9, fact_index 97.1, primitives
+236.7, assemble 243.6, write 307.0, checkpoint 307.0; resident fact index
+139.6 MiB.
+
+**Memory is not the constraint.** 1.2 costs **+57 MiB peak and +52 MiB fixed at
+1k (+28%)**, and **+65 MiB peak at 4k**, from the TTM ladder table and the wider
+`Primitives` record. Peak commit is 307 MiB at 4,000 targets against 2.7 GiB of
+free RAM. Per-batch row growth at 4k streamed is
+`[2.3, 0.5, -0.1, 0.0, 0.0, 0.0, 0.1, 0.0]` MiB — the climb from 246 to
+300 MiB across the batch ticks is the writer's 64 MiB page cache filling, the
+same attribution §5b established, not rows retained in memory.
+
+**Streaming equality holds on real cross-sections, not only in the oracle.** At
+both limits the streamed and unbatched arms write the same row counts (4k:
+52,000 feature / 16,000 pillar / 1,927 score), the same score count and the same
+signature distribution.
+
+**Keep batching, for the WAL.** Streaming costs nothing in time (852 s against
+839 s at 4k) and holds the WAL to **13.5 MB against 56.7 MB**, a 4.2x reduction
+that widens with the cross-section (1.8x at 1k). The WAL is what threatens the
+free-space floor during a pilot; commit is not.
+
+**Time is the constraint, and it is per-date, not per-target.** At 1,000 targets
+the engine already indexes 6,926 of the date's 7,102-entity universe, because the
+indexed set is the targets plus every one of their cohort members, and
+`attach_market` runs over all of them: one listing resolution, one valuation
+price read, one strict share audit, one TTM ladder walk and one corporate-action
+gate read per priced entity. At 4,000 targets it indexes all 7,102. So 97.5% of
+the market work is already paid at 1k. Fitting the two streamed arms:
+
+    runtime  =  548 s  +  0.076 s per target
+
+which projects full-universe dates of ~19.4 min (2014-06-30, 8,132 targets),
+~18.1 min (2019-06-28, 7,102), ~19.3 min (2022-06-30, 8,033) and ~18.1 min
+(2026-06-30, 7,041) — a **four-date pilot of roughly 75–90 minutes** over
+30,308 entity-dates. That is well past the ten-minute foreground cap, so the
+pilot needs a watched background run or the reaper disabled for its window.
+Storage projects to ~340 MB at the v3-era pilot's 11.2 KB per entity-date, with a
+streamed WAL peak near 14 MB, against 12.8 GiB free and a 7.0 GiB per-date abort
+floor.
+
+**The machine was never pushed.** The pagefile peak since boot stayed at
+**1,545 MB through every arm**, exactly its value before the window opened. Free
+RAM held between 2.72 and 2.76 GiB and commit between 6.84 and 6.88 GB across all
+four runs. The closing reading is free RAM 2.75 GiB, commit 6.86 GB, pagefile
+200 MB in use, free disk 12.81 GiB, no Python process running and no harness
+scratch left behind. **8k was NOT run**: the owner's instruction was not to, and
+the four arms are sufficient to size the pilot.
+
 ## 6. D3 — reported; decided by the owner on 2026-09-22 (growth A, acceleration A, coverage OI/interest; see the `spec_freeze_v5` section of docs/MODEL-LINEAGE.md)
 
 Full record: `D3-EVIDENCE-2026-09-22.md` (20 claims, 20/20 citations confirmed;

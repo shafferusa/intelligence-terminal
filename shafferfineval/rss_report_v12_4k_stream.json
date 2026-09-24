@@ -1,0 +1,637 @@
+{
+ "harness": "pit_replay_rss/1.1",
+ "generated_at": "2026-09-24T00:39:21+00:00",
+ "engine": "pit_replay/1.2",
+ "freeze": {
+  "version": "spec_freeze_v6",
+  "digest": "1afaca0c17c38657ddb131f03dad59e8d07aa1bceecf9bc9f336d8d09ee6fd85",
+  "intact": true,
+  "can_execute": true,
+  "why_not": []
+ },
+ "dates": [
+  "2019-06-28"
+ ],
+ "limits": [
+  4000
+ ],
+ "batch_size": 500,
+ "modes": [
+  "stream"
+ ],
+ "free_floor_bytes": 7516192768,
+ "guards": {
+  "min_avail_phys_bytes": 314572800,
+  "min_avail_commit_bytes": 1073741824
+ },
+ "measure": false,
+ "cache_kib_override": null,
+ "diagnostic_note": null,
+ "scratch": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_2iz2cyyy",
+ "machine_at_start": {
+  "total_phys": 8002048000,
+  "avail_phys": 2950733824,
+  "total_commit": 16004096000,
+  "avail_commit": 8653836288,
+  "used_commit": 7350259712,
+  "memory_load_pct": 63
+ },
+ "free_bytes_at_start": 13762457600,
+ "runs": [
+  {
+   "dates": [
+    "2019-06-28"
+   ],
+   "limit": 4000,
+   "batch_size": 500,
+   "mode": "stream",
+   "diagnostic": null,
+   "measure": false,
+   "started_at": "2026-09-24T00:39:21+00:00",
+   "elapsed_s": 855.1,
+   "returncode": 0,
+   "child_pid_expected": 13488,
+   "child_pid_reported": 13488,
+   "child_executable": "C:\\Users\\logan\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+   "parent_measures_engine": true,
+   "guard_abort": null,
+   "peak_commit_bytes": 321937408,
+   "peak_commit_mib": 307.0,
+   "peak_ws_bytes": 329936896,
+   "peak_ws_mib": 314.7,
+   "peak_commit_parent_polled_mib": 307.0,
+   "peak_commit_child_reported_mib": 307.0,
+   "peak_reached_at_commit": "write_batch@2019-06-28",
+   "peak_reached_at_ws": "write_batch@2019-06-28",
+   "fixed_cost_commit_mib": 243.6,
+   "fixed_cost_commit_bytes": 255434752,
+   "write_side_peak_commit_mib": 63.4,
+   "write_side_peak_commit_bytes": 66502656,
+   "write_side_peak_ws_mib": 61.8,
+   "per_batch_growth_commit_mib": [
+    2.3,
+    0.5,
+    -0.1,
+    0.0,
+    0.0,
+    0.0,
+    0.1,
+    0.0
+   ],
+   "per_batch_growth_max_over_median": "UNKNOWN",
+   "per_date": {
+    "2019-06-28": {
+     "commit": {
+      "at_tick_mib": {
+       "universe": 96.5,
+       "cohorts": 95.9,
+       "fact_index": 97.1,
+       "primitives": 236.7,
+       "assemble": 243.6,
+       "write": 307.0,
+       "checkpoint": 307.0
+      },
+      "index_resident_mib": 139.6,
+      "primitives_net_mib": 6.9,
+      "fixed_cost_mib": 243.6,
+      "fixed_cost_bytes": 255434752,
+      "write_side_peak_mib": 63.4,
+      "write_side_peak_bytes": 66502656,
+      "batch_full_mib": [
+       245.9,
+       254.5,
+       262.0,
+       269.9,
+       277.5,
+       285.1,
+       292.3,
+       299.7
+      ],
+      "write_batch_mib": [
+       254.0,
+       262.1,
+       269.9,
+       277.5,
+       285.1,
+       292.2,
+       299.7,
+       307.0
+      ],
+      "per_batch_growth_mib": [
+       2.3,
+       0.5,
+       -0.1,
+       0.0,
+       0.0,
+       0.0,
+       0.1,
+       0.0
+      ],
+      "per_batch_growth_max_over_median": "UNKNOWN"
+     },
+     "ws": {
+      "at_tick_mib": {
+       "universe": 106.7,
+       "cohorts": 106.3,
+       "fact_index": 107.3,
+       "primitives": 246.2,
+       "assemble": 252.9,
+       "write": 314.7,
+       "checkpoint": 314.7
+      },
+      "index_resident_mib": 138.9,
+      "primitives_net_mib": 6.7,
+      "fixed_cost_mib": 252.9,
+      "fixed_cost_bytes": 265146368,
+      "write_side_peak_mib": 61.8,
+      "write_side_peak_bytes": 64790528,
+      "batch_full_mib": [
+       254.6,
+       263.1,
+       270.6,
+       278.3,
+       285.8,
+       293.3,
+       300.4,
+       307.6
+      ],
+      "write_batch_mib": [
+       262.4,
+       270.5,
+       278.2,
+       285.7,
+       293.2,
+       300.1,
+       307.5,
+       314.7
+      ],
+      "per_batch_growth_mib": [
+       1.7,
+       0.7,
+       0.1,
+       0.1,
+       0.1,
+       0.1,
+       0.3,
+       0.1
+      ],
+      "per_batch_growth_max_over_median": 11.474
+     }
+    }
+   },
+   "universe_commit_mib_by_date": {
+    "2019-06-28": 96.5
+   },
+   "cross_date_growth_mib": null,
+   "attribution_note": "fixed_cost is the process commit at the 'assemble' tick: fact index loaded, primitives resolved, index cleared, nothing assembled. write_side_peak = max(commit at batch_full ticks, commit at 'write') - fixed_cost. The index is cleared before 'assemble' but Python need not return its pages to the OS, so fixed_cost is an upper bound on the once-per-date cost and write_side_peak attributes only what assembly and writing added on top of it.",
+   "child_start": {
+    "child": "start",
+    "pid": 13488,
+    "executable": "C:\\Users\\logan\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
+    "dates": [
+     "2019-06-28"
+    ],
+    "limit": 4000,
+    "batch_size": 500,
+    "db": "C:\\Users\\logan\\AppData\\Local\\Temp\\pit_replay_rss_2iz2cyyy\\rss_stream_4000.db",
+    "measure": false,
+    "diagnostic": null,
+    "ws": 44855296,
+    "peak_ws": 44855296,
+    "commit": 34975744,
+    "peak_commit": 34975744
+   },
+   "child_done": {
+    "child": "done",
+    "elapsed_s": 854.49,
+    "error": null,
+    "aborted": null,
+    "dates": [
+     {
+      "as_of": "2019-06-28",
+      "rows": {
+       "pit_feature": 52000,
+       "pit_pillar_score": 16000,
+       "pit_score": 1927
+      },
+      "n_targets": 4000,
+      "n_targets_written": 4000,
+      "n_entities_indexed": 7102,
+      "n_batches": 8,
+      "batch_size": 500,
+      "n_scored": 1927,
+      "signatures": {
+       "G": 811,
+       "NONE": 1042,
+       "VG": 325,
+       "EGQ": 455,
+       "EG": 767,
+       "VGQ": 16,
+       "EVG": 144,
+       "GQ": 31,
+       "V": 160,
+       "EVGQ": 212,
+       "E": 19,
+       "VQ": 6,
+       "EQ": 5,
+       "EV": 2,
+       "Q": 4,
+       "EVQ": 1
+      },
+      "checkpoint": {
+       "mode": "TRUNCATE",
+       "busy": 0,
+       "log_pages": 0,
+       "checkpointed": 0,
+       "return_read": true,
+       "busy_refusal": false,
+       "return_semantics": "a SUCCESSFUL TRUNCATE returns (0, 0, 0) because the log is reset; that is not a no-op. busy=1 with log_pages>0 and checkpointed=0 is the busy-refusal signature."
+      },
+      "wal_peak_bytes_observed": 13517752,
+      "wal_peak_batch": 8,
+      "elapsed_s": 851.89
+     }
+    ],
+    "freeze_unchanged": true,
+    "ws": 127348736,
+    "peak_ws": 329936896,
+    "commit": 118775808,
+    "peak_commit": 321937408
+   },
+   "n_ticks": 24,
+   "ticks": [
+    {
+     "tick": "universe",
+     "as_of": "2019-06-28",
+     "elapsed_s": 2.55,
+     "ws": 111890432,
+     "peak_ws": 111910912,
+     "commit": 101138432,
+     "peak_commit": 101257216
+    },
+    {
+     "tick": "cohorts",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.91,
+     "n_targets": 4000,
+     "ws": 111505408,
+     "peak_ws": 114774016,
+     "commit": 100536320,
+     "peak_commit": 105107456
+    },
+    {
+     "tick": "fact_index",
+     "as_of": "2019-06-28",
+     "elapsed_s": 3.98,
+     "n_entities": 7102,
+     "ws": 112504832,
+     "peak_ws": 114774016,
+     "commit": 101777408,
+     "peak_commit": 105107456
+    },
+    {
+     "tick": "primitives",
+     "as_of": "2019-06-28",
+     "elapsed_s": 56.84,
+     "n_entities": 7102,
+     "ws": 258109440,
+     "peak_ws": 268627968,
+     "commit": 248205312,
+     "peak_commit": 258850816
+    },
+    {
+     "tick": "market",
+     "as_of": "2019-06-28",
+     "elapsed_s": 57.42,
+     "n_entities": 7102,
+     "ws": 264732672,
+     "peak_ws": 269979648,
+     "commit": 255254528,
+     "peak_commit": 260509696
+    },
+    {
+     "tick": "assemble",
+     "as_of": "2019-06-28",
+     "elapsed_s": 66.66,
+     "n_targets": 4000,
+     "ws": 265146368,
+     "peak_ws": 269979648,
+     "commit": 255434752,
+     "peak_commit": 260509696
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 445.31,
+     "batch": 1,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 306,
+     "ws": 266932224,
+     "peak_ws": 269979648,
+     "commit": 257798144,
+     "peak_commit": 260509696
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 445.45,
+     "batch": 1,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 306,
+     "wal_bytes": 9237072,
+     "ws": 275193856,
+     "peak_ws": 275193856,
+     "commit": 266321920,
+     "peak_commit": 266321920
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 628.28,
+     "batch": 2,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 257,
+     "ws": 275931136,
+     "peak_ws": 275931136,
+     "commit": 266854400,
+     "peak_commit": 266854400
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 628.46,
+     "batch": 2,
+     "n_targets": 1000,
+     "n_features": 13000,
+     "n_pillars": 4000,
+     "n_scores": 563,
+     "wal_bytes": 9237072,
+     "ws": 283688960,
+     "peak_ws": 283688960,
+     "commit": 274833408,
+     "peak_commit": 274833408
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 699.88,
+     "batch": 3,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 254,
+     "ws": 283766784,
+     "peak_ws": 283766784,
+     "commit": 274771968,
+     "peak_commit": 274833408
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 700.04,
+     "batch": 3,
+     "n_targets": 1500,
+     "n_features": 19500,
+     "n_pillars": 6000,
+     "n_scores": 817,
+     "wal_bytes": 9579032,
+     "ws": 291741696,
+     "peak_ws": 291741696,
+     "commit": 283021312,
+     "peak_commit": 283021312
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 738.8,
+     "batch": 4,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 260,
+     "ws": 291856384,
+     "peak_ws": 291856384,
+     "commit": 283021312,
+     "peak_commit": 283021312
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 738.98,
+     "batch": 4,
+     "n_targets": 2000,
+     "n_features": 26000,
+     "n_pillars": 8000,
+     "n_scores": 1077,
+     "wal_bytes": 10810912,
+     "ws": 299565056,
+     "peak_ws": 299565056,
+     "commit": 290996224,
+     "peak_commit": 290996224
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 790.03,
+     "batch": 5,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 244,
+     "ws": 299720704,
+     "peak_ws": 299720704,
+     "commit": 290996224,
+     "peak_commit": 290996224
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 790.23,
+     "batch": 5,
+     "n_targets": 2500,
+     "n_features": 32500,
+     "n_pillars": 10000,
+     "n_scores": 1321,
+     "wal_bytes": 11750272,
+     "ws": 307429376,
+     "peak_ws": 307429376,
+     "commit": 298971136,
+     "peak_commit": 298971136
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 815.11,
+     "batch": 6,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 201,
+     "ws": 307544064,
+     "peak_ws": 307544064,
+     "commit": 298971136,
+     "peak_commit": 298971136
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 815.31,
+     "batch": 6,
+     "n_targets": 3000,
+     "n_features": 39000,
+     "n_pillars": 12000,
+     "n_scores": 1522,
+     "wal_bytes": 12207592,
+     "ws": 314679296,
+     "peak_ws": 314679296,
+     "commit": 306401280,
+     "peak_commit": 306401280
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 830.34,
+     "batch": 7,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 198,
+     "ws": 314994688,
+     "peak_ws": 314994688,
+     "commit": 306536448,
+     "peak_commit": 306536448
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 830.56,
+     "batch": 7,
+     "n_targets": 3500,
+     "n_features": 45500,
+     "n_pillars": 14000,
+     "n_scores": 1720,
+     "wal_bytes": 12949192,
+     "ws": 322461696,
+     "peak_ws": 322461696,
+     "commit": 314236928,
+     "peak_commit": 314236928
+    },
+    {
+     "tick": "batch_full",
+     "as_of": "2019-06-28",
+     "elapsed_s": 854.21,
+     "batch": 8,
+     "n_targets": 500,
+     "n_features": 6500,
+     "n_pillars": 2000,
+     "n_scores": 207,
+     "ws": 322564096,
+     "peak_ws": 322564096,
+     "commit": 314236928,
+     "peak_commit": 314236928
+    },
+    {
+     "tick": "write_batch",
+     "as_of": "2019-06-28",
+     "elapsed_s": 854.44,
+     "batch": 8,
+     "n_targets": 4000,
+     "n_features": 52000,
+     "n_pillars": 16000,
+     "n_scores": 1927,
+     "wal_bytes": 13517752,
+     "ws": 329936896,
+     "peak_ws": 329936896,
+     "commit": 321937408,
+     "peak_commit": 321937408
+    },
+    {
+     "tick": "write",
+     "as_of": "2019-06-28",
+     "elapsed_s": 854.44,
+     "n_features": 52000,
+     "n_pillars": 16000,
+     "n_scores": 1927,
+     "n_batches": 8,
+     "batch_size": 500,
+     "ws": 329936896,
+     "peak_ws": 329936896,
+     "commit": 321937408,
+     "peak_commit": 321937408
+    },
+    {
+     "tick": "checkpoint",
+     "as_of": "2019-06-28",
+     "elapsed_s": 854.44,
+     "ws": 329936896,
+     "peak_ws": 329936896,
+     "commit": 321937408,
+     "peak_commit": 321937408
+    }
+   ],
+   "stderr_tail": [],
+   "other_stdout_lines": [],
+   "machine_before": {
+    "total_phys": 8002048000,
+    "avail_phys": 2950709248,
+    "total_commit": 16004096000,
+    "avail_commit": 8653836288,
+    "used_commit": 7350259712,
+    "memory_load_pct": 63
+   },
+   "machine_after": {
+    "total_phys": 8002048000,
+    "avail_phys": 2951753728,
+    "total_commit": 16004096000,
+    "avail_commit": 8693841920,
+    "used_commit": 7310254080,
+    "memory_load_pct": 63
+   },
+   "machine_low_water": {
+    "avail_phys": 2568470528,
+    "avail_commit": 8312823808
+   },
+   "system_commit_delta_mib": -38.2
+  }
+ ],
+ "verdict": {
+  "table": {
+   "stream": {
+    "limits": [
+     4000
+    ],
+    "peak_commit_mib": [
+     307.0
+    ],
+    "fixed_cost_commit_mib": [
+     243.6
+    ],
+    "write_side_peak_commit_mib": [
+     63.4
+    ],
+    "write_side_peak_ws_mib": [
+     61.8
+    ],
+    "peak_reached_at": [
+     "write_batch@2019-06-28"
+    ]
+   }
+  },
+  "how_to_read": "For the invariant 'write-side memory = O(batch)' to hold, stream.write_side_ratio_hi_over_lo should be near 1.0 while target_ratio_hi_over_lo is the entity ratio (e.g. 4.0), and stream per_batch_growth should be ~constant across batches. legacy.write_side_ratio_hi_over_lo near the target ratio shows the unbatched path really was O(cross-section). fixed_cost_commit_mib is the once-per-date fact-index / primitives cost and is NOT expected to be flat. peak_reached_at says which stage set the process peak; if that is primitives/assemble in both modes, the peak is the fact index and streaming cannot lower it."
+ },
+ "machine_at_end": {
+  "total_phys": 8002048000,
+  "avail_phys": 2935517184,
+  "total_commit": 16004096000,
+  "avail_commit": 8693919744,
+  "used_commit": 7310176256,
+  "memory_load_pct": 63
+ },
+ "free_bytes_at_end": 13761196032
+}

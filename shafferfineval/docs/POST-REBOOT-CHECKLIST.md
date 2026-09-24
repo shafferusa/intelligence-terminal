@@ -118,10 +118,18 @@ spec_freeze_v1..v6 in place — a change is a v7.
 The post-fix store-backed `--slow` suite was re-run on 2026-09-23 and PASSED
 (235 PASS / 0 FAIL / 0 SKIP, freeze intact at 1afaca0c… after the run), so
 that owed item is closed. `pit_frozen_spec.STILL_BLOCKED` names the two
-preconditions that remain before the diagnostic replay: a MEASUREMENT (the
-1.2 engine's memory, never yet taken — every committed RSS artefact is
-`pit_replay/1.1` under the sealed `spec_freeze_v5`) and an AUTHORISATION
-(the owner's; none exists). Next, in order: measure the 1.2 engine with
-`pit_replay_rss` one child at a time (1k, 4k, then 8k only if the headroom is
-then obviously safe), run the four-date pilot on a disposable DB on the
-owner's word, resume the three local services after the window.
+preconditions before the diagnostic replay: a MEASUREMENT and an
+AUTHORISATION. **The measurement is now done** (2026-09-23, report §5c): the
+1.2 engine was measured at 1k and 4k, streamed and unbatched, one child at a
+time with the three local services paused and the reaper left enabled. Peak
+commit 307 MiB at 4,000 targets, fixed cost ~243 MiB, streamed WAL 13.5 MB
+against 56.7 MB unbatched with identical rows, scores and signatures either way,
+and a fitted per-date cost of 548 s + 0.076 s per target projecting a four-date
+pilot of 75–90 minutes and ~340 MB. The pagefile peak since boot never moved.
+8k was not run, by instruction. **Only the AUTHORISATION remains.** Next, in
+order: run the four-date pilot on a disposable DB on the owner's word — never
+at `pit_replay_manifest.PILOT_DB_PATH`, which is the protected v3-era pilot, and
+the runner refuses that path — then `pilot_report.py` for the availability,
+signature and refusal-funnel deliverables, then resume the three local services
+(`Start-ScheduledTask -TaskName 'Mikhail Live App'` and the FinSim startup
+shortcut; note FinSim restarts itself and runs under `pythonw.exe`).
