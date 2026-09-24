@@ -40,3 +40,27 @@ class CurrencyVisibility(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ForeignCapitalAtItsDollarValue(unittest.TestCase):
+    """Euros put into the Treasury (or drawn by a book) are booked at their dollar value, so NAV rises by the dollar
+    value at once and no currency gain appears the next day."""
+
+    def test_euro_capital_booked_at_spot(self):
+        svc = Service(EventStore(":memory:"))
+        r = svc.create_world(name="eur", seed=3, start_date="2025-03-03", capital=10_000_000, treasury=True, market_source="SIMULATED")
+        wid = r["world_id"]
+        w = svc.world(wid)
+        tb = w.treasury_book()
+        k = float(w.fx.k("EUR"))
+        nav0 = float(w.pnl.compute_summary(tb)["nav"])
+        svc.treasury_command(wid, "fund", {"currency": "EUR", "amount": 2_000_000})
+        s = w.pnl.compute_summary(tb)
+        self.assertAlmostEqual(float(s["nav"]) - nav0, 2_000_000 * k, delta=1.0)
+        self.assertAlmostEqual(float(s["nav"]), float(s["ledger_nav"]), delta=0.01)
+        self.assertAlmostEqual(float(tb.contributed_capital), 10_000_000 + 2_000_000 * k, delta=1.0)
+        p = svc.create_portfolio(wid, "Book", "PERSONAL", 0, "PROFESSIONAL", "MANUAL", None, from_treasury=True)
+        svc.treasury_command(wid, "allocate", {"currency": "EUR", "amount": 500_000, "portfolio_id": p["portfolio_id"]})
+        book = w.portfolios[p["portfolio_id"]]
+        self.assertAlmostEqual(float(book.cash_account("EUR").base_value), 500_000 * k, delta=1.0)
+        self.assertTrue(w.check_integrity()["ok"])

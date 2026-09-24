@@ -880,8 +880,8 @@ class Service:
         allocated = []
         for pf in w.portfolios.values():
             if tb and pf.id != tb.id:
-                drawn = sum((l["amount"] for l in w.treasury_log if l.get("portfolio_id") == pf.id and l["kind"] == "TO_BOOK"), ZERO)
-                back = sum((l["amount"] for l in w.treasury_log if l.get("portfolio_id") == pf.id and l["kind"] == "TO_TREASURY"), ZERO)
+                drawn = sum((l.get("base_amount", l["amount"]) for l in w.treasury_log if l.get("portfolio_id") == pf.id and l["kind"] == "TO_BOOK"), ZERO)
+                back = sum((l.get("base_amount", l["amount"]) for l in w.treasury_log if l.get("portfolio_id") == pf.id and l["kind"] == "TO_TREASURY"), ZERO)
                 allocated.append({"book": pf.name, "portfolio_id": pf.id, "drawn": drawn, "returned": back, "net": drawn - back, "nav": next((b["nav"] for b in books if b["id"] == pf.id), ZERO)})
         return jsonable({"world": {"id": w.id, "name": w.name, "date": w.current_date, "market_source": getattr(w, "market_source", "SIMULATED")}, "totals": tot, "books": books,
                          "positions": rows, "cash": cash, "explain": explain, "by_asset_class": by_class, "treasury": ts, "balance_sheet": bs, "allocated": allocated, "treasury_log": w.treasury_log[-40:]})

@@ -403,27 +403,33 @@ class World:
         self.treasury_cash[p["currency"]] = self.treasury_cash.get(p["currency"], ZERO) + money(p["amount"])
         self.treasury_log.append({"date": ev.sim_date, "kind": "FUNDED", "currency": p["currency"], "amount": money(p["amount"]), "note": p.get("note", "capital into the treasury")})
 
-    def _move_capital(self, src: Optional[Portfolio], dst: Optional[Portfolio], ccy: str, amt: Decimal, ev: Event, memo: str) -> None:
-        """Capital leaves `src` (its cash and contributed capital fall) and enters `dst`; None on either side is the legacy pool."""
+    def _base_of(self, ccy: str, amt: Decimal) -> Decimal:
+        """Dollars (base) for a local amount at today's rate: what capital moved in another currency is booked at."""
+        return money(amt * self.fx.k(ccy)) if ccy != "USD" else money(amt)
+
+    def _move_capital(self, src: Optional[Portfolio], dst: Optional[Portfolio], ccy: str, amt: Decimal, ev: Event, memo: str, base: Optional[Decimal] = None) -> None:
+        """Capital leaves `src` (its cash and contributed capital fall) and enters `dst`; None on either side is the legacy pool.
+        `base`: the dollar value (saves before 2026-09-24 carried none and booked a foreign amount one-for-one)."""
         from .engines.ledger import dr, cr
+        b = amt if base is None else money(base)
         if src is not None:
             ca = src.cash_account(ccy)
             ca.balance -= amt
-            ca.base_value -= amt
-            src.contributed_capital -= amt
-            src.day_capital_flows -= amt
+            ca.base_value -= b
+            src.contributed_capital -= b
+            src.day_capital_flows -= b
             self.record_cash_movement(src, ccy, -amt, "TREASURY", memo, ev)
-            self.post(src.id, f"Capital out {ccy} {amt:,.2f}: {memo}", [dr("3000", amt), cr(f"1010:{ccy}", amt)], ev, {"kind": "TREASURY"})
+            self.post(src.id, f"Capital out {ccy} {amt:,.2f}: {memo}", [dr("3000", b), cr(f"1010:{ccy}", b)], ev, {"kind": "TREASURY"})
         else:
             self.treasury_cash[ccy] = self.treasury_cash.get(ccy, ZERO) - amt
         if dst is not None:
             ca = dst.cash_account(ccy)
             ca.balance += amt
-            ca.base_value += amt
-            dst.contributed_capital += amt
-            dst.day_capital_flows += amt
+            ca.base_value += b
+            dst.contributed_capital += b
+            dst.day_capital_flows += b
             self.record_cash_movement(dst, ccy, amt, "TREASURY", memo, ev)
-            self.post(dst.id, f"Capital in {ccy} {amt:,.2f}: {memo}", [dr(f"1010:{ccy}", amt), cr("3000", amt)], ev, {"kind": "TREASURY"})
+            self.post(dst.id, f"Capital in {ccy} {amt:,.2f}: {memo}", [dr(f"1010:{ccy}", b), cr("3000", b)], ev, {"kind": "TREASURY"})
         else:
             self.treasury_cash[ccy] = self.treasury_cash.get(ccy, ZERO) + amt
 
@@ -432,11 +438,13 @@ class World:
         pf = self.portfolios[p["portfolio_id"]]
         ccy, amt = p["currency"], money(p["amount"])
         tb = self.portfolios.get(p["treasury_id"]) if p.get("treasury_id") else None      # None: the legacy pool
+        base = D(str(p["base_amount"])) if p.get("base_amount") is not None else None
         if p["direction"] == "TO_BOOK":
-            self._move_capital(tb, pf, ccy, amt, ev, f"drawn from the Treasury into {pf.name}")
+            self._move_capital(tb, pf, ccy, amt, ev, f"drawn from the Treasury into {pf.name}", base)
         else:
-            self._move_capital(pf, tb, ccy, amt, ev, f"returned from {pf.name} to the Treasury")
-        self.treasury_log.append({"date": ev.sim_date, "kind": p["direction"], "portfolio_id": pf.id, "book": pf.name, "currency": ccy, "amount": amt, "note": p.get("note", "")})
+            self._move_capital(pf, tb, ccy, amt, ev, f"returned from {pf.name} to the Treasury", base)
+        self.treasury_log.append({"date": ev.sim_date, "kind": p["direction"], "portfolio_id": pf.id, "book": pf.name, "currency": ccy, "amount": amt,
+                                  "base_amount": base if base is not None else amt, "note": p.get("note", "")})
 
     def _treasury_or_raise(self) -> Portfolio:
         tb = self.treasury_book()
@@ -471,7 +479,7 @@ class World:
         tb = self.treasury_book()
         if tb is None or pf.id == tb.id or self.spare_cash(tb, ccy) < amt:
             return False
-        self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "direction": "TO_BOOK",
+        self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "base_amount": self._base_of(ccy, amt), "direction": "TO_BOOK",
                                          "note": note or f"backstop: the Treasury covered a {ccy} shortfall in {pf.name}"}, cause_id=cause.id, portfolio_id=pf.id)
         return True
 
@@ -496,7 +504,7 @@ class World:
         have = self.spare_cash(tb, ccy)
         if amt > have:
             raise CommandError(f"the Treasury can spare {ccy} {have:,.0f}; {amt:,.0f} asked")
-        ev = self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "direction": "TO_BOOK"}, portfolio_id=pf.id)
+        ev = self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "base_amount": self._base_of(ccy, amt), "direction": "TO_BOOK"}, portfolio_id=pf.id)
         self.flush()
         return ev
 
@@ -512,7 +520,7 @@ class World:
         spare = self.spare_cash(pf, ccy)
         if amt > spare:
             raise CommandError(f"{pf.name} can spare {ccy} {spare:,.0f} (settled cash after what is pending); {amt:,.0f} asked")
-        ev = self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "direction": "TO_TREASURY", "note": note}, portfolio_id=pf.id)
+        ev = self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": amt, "base_amount": self._base_of(ccy, amt), "direction": "TO_TREASURY", "note": note}, portfolio_id=pf.id)
         self.flush()
         return ev
 
@@ -569,7 +577,7 @@ class World:
             if ca.balance > 0:                                              # the book's cash goes back to the Treasury
                 if tb is None:
                     raise CommandError(f"{pf.name} still holds {ccy} {ca.balance:,.0f} and this save has no Treasury book to return it to: create one (+ Book → Treasury) first")
-                self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": ca.balance, "direction": "TO_TREASURY", "note": "book closed"}, portfolio_id=pf.id)
+                self.emit(E.TREASURY_ALLOCATED, {"portfolio_id": pf.id, "treasury_id": tb.id, "currency": ccy, "amount": ca.balance, "base_amount": ca.base_value, "direction": "TO_TREASURY", "note": "book closed"}, portfolio_id=pf.id)
         ev = self.emit(E.PORTFOLIO_DELETED, {"portfolio_id": pf.id, "name": pf.name, "nav": self.ledgers[pf.id].nav()}, portfolio_id=pf.id)
         self.flush()
         return ev
@@ -579,14 +587,15 @@ class World:
         p = ev.payload
         pf = self.portfolios[p["portfolio_id"]]
         amt = money(p["amount"])
+        base = money(D(str(p["base_amount"]))) if p.get("base_amount") is not None else amt     # older saves: one-for-one
         ca = pf.cash_account(p["currency"])
         ca.balance += amt
-        ca.base_value += amt
-        pf.contributed_capital += amt
-        pf.day_capital_flows += amt
+        ca.base_value += base
+        pf.contributed_capital += base
+        pf.day_capital_flows += base
         self.record_cash_movement(pf, p["currency"], amt, "CAPITAL", "Capital contribution", ev)
         self.post(pf.id, f"Capital contribution {p['currency']} {amt:,.2f}",
-                  [dr(f"1010:{p['currency']}", amt), cr("3000", amt)], ev, {"kind": "CAPITAL"})
+                  [dr(f"1010:{p['currency']}", base), cr("3000", base)], ev, {"kind": "CAPITAL"})
 
     def _h_market_close(self, ev: Event) -> None:
         p = ev.payload
@@ -758,7 +767,8 @@ class World:
         self.portfolio(portfolio_id)
         if money(amount) <= 0:
             raise CommandError("Contribution must be positive")
-        ev = self.emit(E.CAPITAL_CONTRIBUTED, {"portfolio_id": portfolio_id, "currency": currency, "amount": money(amount)}, portfolio_id=portfolio_id)
+        ev = self.emit(E.CAPITAL_CONTRIBUTED, {"portfolio_id": portfolio_id, "currency": currency, "amount": money(amount),
+                                               "base_amount": self._base_of(currency, money(amount))}, portfolio_id=portfolio_id)
         self.flush()
         return ev
 
