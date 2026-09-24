@@ -58,7 +58,8 @@ finsim2/
 
 **Calendar.** All series are aligned to one business-day calendar: the dates on which SPY traded (from the store),
 extended with weekdays for dates after SPY's last bar. A series is forward-filled onto the calendar at most 5
-business days (then missing). Crypto weekend moves roll into Monday.
+business days (then missing). Crypto weekend moves roll into Monday. A non-positive price (WTI on 2020-04-20) has no log
+return and is treated as missing by every analytic; the store and the ledger keep the real quote.
 
 **Prices.** `adj_close` (split- and dividend-adjusted) drives returns; `close` is the quote shown to the user.
 Missing values are `None`, never NaN, in anything returned by an API.

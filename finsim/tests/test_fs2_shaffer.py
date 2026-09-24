@@ -152,3 +152,22 @@ class Ledger(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NonPositivePrices(unittest.TestCase):
+    def test_a_negative_close_is_missing_for_analytics_and_features_still_compute(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            st = build_store(os.path.join(tmp, "r.db"), n=900)
+            rows = st.prices("GOLD")
+            bad = rows[500]["date"]
+            st.upsert_prices("GOLD", [dict(rows[500], close=-37.63, adj_close=-37.63)])
+            r = Research(st)
+            cal = r.panel().calendar()
+            s = r.panel().series("GOLD")
+            self.assertTrue(all(v is None or v > 0 for v in s))
+            self.assertEqual(s[cal.index(bad)], s[cal.index(bad) - 1])        # the previous close carries, as for any gap
+            self.assertTrue(r.features("GOLD"))
+            st.close()
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)

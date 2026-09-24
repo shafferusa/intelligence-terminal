@@ -31,6 +31,8 @@ def _iso_add(iso: str, days: int) -> str:
     return (date.fromisoformat(iso) + timedelta(days=days)).isoformat()
 
 
+PRICE_FIELDS = ("adj_close", "close", "open", "high", "low")
+
 class Panel:
     """Aligned access to the research store. Cheap to create; caches aligned series per instance."""
 
@@ -76,6 +78,8 @@ class Panel:
         rows = self._price_rows(asset_id)
         dates = [r["date"] for r in rows]
         vals = [r.get(field) if r.get(field) is not None else (r.get("close") if field == "adj_close" else None) for r in rows]
+        if field in PRICE_FIELDS:       # a non-positive price (WTI on 2020-04-20) has no log return: treated as missing
+            vals = [v if v is None or v > 0 else None for v in vals]
         out: List[Optional[float]] = [None] * len(cal)
         j = -1
         last_i = -10 ** 9
