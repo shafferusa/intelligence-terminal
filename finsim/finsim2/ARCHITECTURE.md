@@ -22,7 +22,7 @@ Market data (Yahoo daily history, FRED macro, SEC fundamentals)  ->  SQLite rese
 
 ```
 finsim2/
-  __main__.py            CLI: serve | open | status | stop | phone | refresh | research | audit
+  __main__.py            CLI: serve | open | status | stop | phone | refresh | research | audit | hedge-audit
   server.py              HTTP routes (/api/fs2/...), background jobs, static UI
   shaffer_score.py       Shaffer Score v2 configuration: formula, constants, 15 families, priors, A and H tables
   data/
@@ -50,6 +50,8 @@ finsim2/
     tracking.py          prediction log, realised scoring, model decay, correlation decay
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
+  hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
+                         history, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI
 ```
@@ -171,6 +173,23 @@ full refresh; it forecasts every day and retrains monthly.
 α·SS + (1 − α)·ML is evaluated only in the audit: α is chosen on the first half of the common out-of-sample period
 and tested on the second. It is never shown as a primary score.
 
+## Ledger (engine/portfolio.py)
+
+One replay (`Ledger._replay`) values every position type on every date and validates every change:
+- **Spot:** BUY/SELL long; SHORT/COVER short, with the proceeds held as collateral, a daily general-collateral borrow fee
+  and dividends debited.
+- **Futures and forwards** (`FUT:<root>:<code>`, `FWD:<pair>:<date>`): value = quantity × contract size × (model price −
+  average entry); P&L is realised on reduction and at expiry.
+- **Options** (`OPT:<und>:<C|P>:<strike>:<expiry>`): bought only, marked to model, settled at intrinsic value.
+
+Model marks come from `hedge/series.py`, with the same functions as the live quote. Buying power = cash − 150% × shorts
+− futures/forward margin, and it must stay ≥ 0 after every trade. `trade_package` validates several legs together and
+stores them with `Store.add_transactions` in one SQLite transaction. `analytics()` measures risk on economic exposure:
+- futures notional → tracking ETF;
+- Treasury futures → IEF-duration dollars;
+- FX → currency trusts;
+- options → delta-dollars.
+
 ## Store schema (SQLite, ~/.finsim2/research.db, WAL)
 
 ```
@@ -189,7 +208,9 @@ model_runs(id INTEGER PRIMARY KEY, level, key, horizon, model, version, train_st
            test_end, features TEXT, params TEXT, metrics TEXT, created_at)
 backtests(id INTEGER PRIMARY KEY, spec TEXT, result TEXT, created_at)
 portfolios(id TEXT PRIMARY KEY, name, base_currency, created)
-transactions(id INTEGER PRIMARY KEY, portfolio_id, date, kind, asset_id, quantity, price, fee, currency, note)
+transactions(id INTEGER PRIMARY KEY, portfolio_id, date, kind, asset_id, quantity, price, fee, currency, note, basis_date,
+             created_at, voided_at, package_id)        -- kind: DEPOSIT WITHDRAW BUY SELL SHORT COVER; asset_id may be FUT:/OPT:/FWD:
+hedge_recommendations(...)                            -- append-only Shaffer Hedge proposals, graded once (see SHAFFER_HEDGE.md §7)
 snapshots(portfolio_id, date, nav, detail TEXT, PRIMARY KEY(portfolio_id, date))
 watchlist(asset_id PRIMARY KEY, added, note)
 ```

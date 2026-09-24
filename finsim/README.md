@@ -67,6 +67,7 @@ python3 -m finsim2 open               # starts its server (port 8865) if needed 
 python3 -m finsim2 refresh [--full]   # download / update the market history in this terminal (2–4 min the first time)
 python3 -m finsim2 research NVDA SPY --ml   # compute the evidence (and train the ML models) from the terminal
 python3 -m finsim2 audit [--workers 3]      # replay the Shaffer Score and ML over the universe -> finsim2/SHAFFER_AUDIT.md
+python3 -m finsim2 hedge-audit              # walk-forward Shaffer Hedge evaluation + ML-adjustment training -> finsim2/HEDGE_AUDIT.md
 python3 -m finsim2 serve | status | stop | phone on
 ```
 
@@ -177,6 +178,48 @@ and ML against baselines.
 Its constants and tables are at the top of `finsim2/shaffer_score.py`. A file at `~/.finsim2/shaffer_score.py`
 (or `FINSIM2_SHAFFER`) can add a custom live-only score. It is shown beside the canonical one, never instead of it
 and never in the history.
+
+**Shaffer Hedge.** Risk first, product second (design: `finsim2/SHAFFER_HEDGE.md`, products: `finsim2/PRODUCT_REGISTRY.md`).
+- The portfolio (or a position, or a proposed trade) becomes a risk vector with each risk in its own unit:
+  - beta-dollars for the market, sector, industry and style spreads;
+  - DV01 by key rate (2/5/10/30Y) and real DV01;
+  - CS01 (IG/HY);
+  - currency, commodity and crypto dollars;
+  - vega, and the Greeks of any options;
+  - single-name residual.
+- Hedge products are sized in their own unit:
+  - shares by price × β;
+  - futures by F × multiplier × β, never by margin;
+  - options by delta-adjusted notional, never by premium;
+  - Treasury futures by DV01;
+  - credit funds by CS01;
+  - forwards by currency notional.
+- An optimiser meets the target on each chosen risk while minimising cost, basis risk (the hedges' own residuals and side
+  exposures) and market impact. It picks up to 2–3 legs in whole contracts/shares.
+- Each candidate gets a Shaffer Hedge Score, 100·tanh(E·Q·L·R·B·T). Its terms are effectiveness from a walk-forward record,
+  cost efficiency, liquidity, regime suitability, basis-match quality and tail convexity.
+- Products FinSim2 cannot price faithfully are shown as PRODUCT NOT ELIGIBLE FOR SHAFFER HEDGE, with the reason.
+- The ML adjustment is separate. It is at most ±15% of the raw hedge and applies only where it beat the static rule and the
+  minimum-variance hedge out of sample; otherwise it is 0 and the page says why.
+- Scenarios (±5/10/20%, a VIX spike, rates, curve, credit, the dollar, oil, crypto) re-price options fully.
+
+Where it appears:
+- The **Shaffer Hedge** page shows the whole book.
+- **Analyze hedge** is on every position.
+- The **trade ticket** (from Markets, Asset Research or Portfolio → Trade…) shows:
+  - the Shaffer Score and the long/short scores net of costs;
+  - the risk the trade adds and the hedge (25/50/75/100% or custom, or an alternate product);
+  - **Trade only** or **Trade + Shaffer Hedge**. The trade and its hedge are validated together and recorded in one
+    transaction: all legs or none.
+
+Every proposal is kept in an append-only hedge ledger and graded when its horizon has passed.
+
+**Ledger.** It supports:
+- long and short positions: SHORT/COVER with 150% collateral, a daily borrow fee and dividends owed;
+- equity-index, Treasury and currency futures, and FX forwards, marked daily to model, margined and settled at expiry;
+- bought index/ETF/stock options, marked to model and settled at intrinsic value.
+
+Buying power is re-checked on every date of the replay.
 
 The standard-library equation library it evaluates lives in `finsim/quant/`:
 - returns and statistics (1–20), regression (21–33), time series (34–43), volatility incl. GARCH (44–50);

@@ -27,8 +27,13 @@ fixed:
 | EPS | SEC per-share figures split-adjusted by splits after filing | `d74cebf` |
 | Scores | Shaffer Score v2: one point-in-time routine for history and live; calibration only from earlier out-of-sample scores; prediction ledger | `d74cebf` |
 | ML | ML v2: holdout, baselines, NO VERIFIED ML EDGE, separate direction / volatility / drawdown models, daily learning loop | `03657f8` |
+| Short selling / margin | SHORT/COVER with 150% collateral, borrow fee, dividends owed; buying power checked on every date | `ac3d57f` |
+| Derivatives in the ledger | Futures, forwards and long options marked to model, margined, settled at expiry | `ac3d57f` |
+| Atomic multi-leg trades | `trade_package`: all legs validated together, one SQLite transaction | `ac3d57f` |
+| Hedging | Shaffer Hedge (risk vector, product registry, per-product sizing, optimiser, walk-forward, capped ML, hedge ledger, UI) | `08f7477`, `67bb0e6`, `273b437` |
+| WTI negative price | Non-positive prices are missing for analytics | `d0c7e6b` |
 
-The full evaluation is in `SHAFFER_AUDIT.md`.
+The full evaluations are in `SHAFFER_AUDIT.md` (scores and ML) and `HEDGE_AUDIT.md` (hedging).
 
 ---
 
