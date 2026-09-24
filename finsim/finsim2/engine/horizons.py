@@ -218,6 +218,38 @@ def evaluate(signal: Series, target: Series, h: int, regimes: Optional[Dict[str,
     return rec
 
 
+def expanding_direction(signal: Series, target: Series, h: int, min_obs: int = MIN_OBS, t_min: float = 1.0,
+                        step: Optional[int] = None) -> List[int]:
+    """Point-in-time direction of a signal for a backtest: for each index t, +1 / -1 is the sign of the Pearson
+    correlation between signal[i] and target[i] (the h-session forward return) over the rows i with i + h < t only,
+    i.e. rows whose outcome was already known at t. Rows are sampled every `step` = max(1, h // 4) sessions. The
+    direction is 0 until `min_obs` sampled rows exist, and whenever |t| < `t_min`, with t computed on
+    n_eff = n_rows * step / h. O(n): running sums, one row added per date."""
+    n = len(signal)
+    step = max(1, h // 4) if step is None else max(1, int(step))
+    out = [0] * n
+    cnt = 0
+    sx = sy = sxx = syy = sxy = 0.0
+    for t in range(n):
+        i = t - h - 1                               # the newest row whose target window closed strictly before t
+        if i >= 0 and i % step == 0 and i < len(target):
+            x, y = signal[i], target[i]
+            if x is not None and y is not None:
+                cnt += 1
+                sx += x; sy += y; sxx += x * x; syy += y * y; sxy += x * y
+        if cnt < max(3, min_obs):
+            continue
+        mx, my = sx / cnt, sy / cnt
+        vx, vy = sxx / cnt - mx * mx, syy / cnt - my * my
+        if vx <= 1e-15 or vy <= 1e-15:
+            continue
+        r = max(-1.0, min(1.0, (sxy / cnt - mx * my) / math.sqrt(vx * vy)))
+        tstat = evidence(r, max(1.0, cnt * step / h))["t"]
+        if r != 0 and tstat is not None and abs(tstat) >= t_min:
+            out[t] = 1 if r > 0 else -1
+    return out
+
+
 def matrix(signals: Dict[str, Series], price: Series, regimes: Optional[Dict[str, List[Optional[str]]]] = None,
            horizons=HORIZONS, cutoff: Optional[int] = None) -> Dict[str, Dict[str, dict]]:
     """The signal-horizon matrix for one asset: {signal: {horizon label: record}}."""

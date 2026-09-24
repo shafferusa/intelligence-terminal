@@ -321,22 +321,29 @@ class Router:
         asset_id = b["asset"]
         panel = research.panel()
         sig = b.get("signal", "mom_12_1")
-        if sig == "quant_score":
-            series = research.composite_series(asset_id, b.get("horizon", "3M"))
-            direction = 1
-        elif sig.startswith("ml:"):
-            series = research.ml_oos_series(asset_id, b.get("horizon", "3M"))
-            direction = 1
-        else:
-            series = research.zscores(asset_id).get(sig)
-            if series is None:
-                raise NotFound(f"no signal {sig}")
-            rec = (research.matrix(asset_id).get(sig) or {}).get(b.get("horizon", "3M")) or {}
-            direction = rec.get("direction", 1)
         from .data.universe import horizon_days
+        if sig == "quant_score":
+            series = research.composite_series(asset_id, b.get("horizon", "3M"))       # already point in time and signed
+            direction = "forecast (signed)"
+        elif sig.startswith("ml:"):
+            series = research.ml_oos_series(asset_id, b.get("horizon", "3M"))         # walk-forward, expanding z-scores
+            direction = "forecast (signed)"
+        else:
+            z = research.zscores(asset_id).get(sig)
+            if z is None:
+                raise NotFound(f"no signal {sig}")
+            # point the signal the way its history said AT EACH DATE (outcomes known by then), not the full-sample sign
+            from .engine.features import targets
+            from .engine.horizons import expanding_direction
+            h = horizon_days(b.get("horizon", "3M")) or 63
+            dirs = expanding_direction(z, targets(panel.series(asset_id), h), h)
+            series = [v * d if v is not None else None for v, d in zip(z, dirs)]
+            direction = "point in time (expanding)"
+        lag = int(_num(b.get("lag"), 1.0))
         spec = {"entry": _num(b.get("entry"), 1.0), "exit": _num(b.get("exit"), 0.0), "mode": b.get("mode", "long"),
                 "min_hold": int(b.get("min_hold") or horizon_days(b.get("horizon", "1M")) or 1), "start": b.get("start"), "end": b.get("end"),
-                "cost_bps": _num(b.get("cost_bps"), 5.0), "invert": bool(b.get("invert")), "direction_sign": direction,
+                "cost_bps": _num(b.get("cost_bps"), 5.0), "invert": bool(b.get("invert")), "direction": direction,
+                "lag": max(0, min(21, lag)),
                 "regime": b.get("regime"), "signal": sig, "asset": asset_id, "horizon": b.get("horizon", "3M")}
         res = run(panel.calendar(), panel.series(asset_id), series, spec, research.regimes(), panel.series("SPY"))
         self.s.store.add_backtest(spec, {"metrics": res["metrics"]})

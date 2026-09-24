@@ -112,7 +112,8 @@ python3 -m finsim2 serve | status | stop | phone on
   - ML Lab.
   - Risk: VaR and ES, factor drivers, scenarios in which unset factors move with the ones you set, and Monte Carlo
     with a percentile cone.
-  - Backtests: any signal, the quant score or the ML ensemble, with costs.
+  - Backtests: any signal, the quant score or the ML ensemble, with costs (net per trade), a one-session execution
+    lag by default, and each signal pointed the way its history said at each date, not over the whole sample.
   - Portfolio: a transaction ledger, positions with every score, NAV history, optimiser (frontier, minimum
     variance, maximum Sharpe, risk parity) and drivers.
   - Settings.

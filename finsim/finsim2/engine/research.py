@@ -279,7 +279,11 @@ class Research:
             idx = [i for i in range(end - 756, end - h, step) if z[i] is not None and tgt[i] is not None]
             if len(idx) >= 40:
                 roll.append({"date": cal[end], "ic": pearson_idx(sr, tr, idx)})
-        bt = run_bt(cal, p, z, {"entry": 1.0, "exit": 0.0, "min_hold": h, "direction_sign": rec.get("direction", 1)}, self.regimes(), panel.series("SPY"))
+        # the backtest points the signal the way its history said AT EACH DATE (not the full-sample direction above)
+        dirs = hz.expanding_direction(z, tgt, h)
+        directed = [v * d if v is not None else None for v, d in zip(z, dirs)]
+        bt = run_bt(cal, p, directed, {"entry": 1.0, "exit": 0.0, "min_hold": h, "lag": 1, "direction": "point in time (expanding)"},
+                    self.regimes(), panel.series("SPY"))
         return clean({"asset_id": asset_id, "signal": signal, "label": label(signal), "family": family(signal), "horizon": horizon, "record": rec,
                       "quintiles": q, "rolling_ic": roll, "backtest": bt, "regime_labels": rg.STATE_LABEL})
 
@@ -348,21 +352,20 @@ class Research:
         return self.score_history(asset_id, horizon)["composite"]
 
     def ml_oos_series(self, asset_id: str, horizon: str) -> list:
-        """Walk-forward (out-of-sample) ensemble forecasts on the calendar, standardised, carried forward between rows."""
+        """Walk-forward (out-of-sample) ensemble forecasts on the calendar, each standardised with the mean and SD of
+        the forecasts made before it only (expanding_standardize), carried forward between rows."""
         ml = self.ml_result(asset_id) or {}
         oos = ((ml.get("horizons") or {}).get(horizon) or {}).get("oos") or []
         n = len(self.panel().calendar())
         out = [None] * n
         if not oos:
             raise LookupError(f"no ML model for {asset_id} at {horizon}: train it on the ML Lab first")
-        preds = [p for _, p, _ in oos]
-        mu = sum(preds) / len(preds)
-        sd = (sum((x - mu) ** 2 for x in preds) / max(1, len(preds) - 1)) ** 0.5 or 1.0
         rows = sorted(oos)
-        for k, (i, pr, _) in enumerate(rows):
+        zs = expanding_standardize([i for i, _, _ in rows], [pr for _, pr, _ in rows])
+        for k, (i, _pr, _) in enumerate(rows):
             end = rows[k + 1][0] if k + 1 < len(rows) else min(n, i + 21)
             for t in range(i, min(n, end)):
-                out[t] = (pr - mu) / sd
+                out[t] = zs[k]
         return out
 
     # ------------------------------------------------------------------ equations tab
@@ -426,6 +429,30 @@ class Research:
         out["computed_in"] = round(time.time() - t0, 2)
         self.store.kv_set(key, out)
         return out
+
+
+def expanding_standardize(rows: List[int], values: List[float], min_prior: int = 20) -> List[Optional[float]]:
+    """z-score of each value against the values at strictly earlier rows only (expanding mean and sample SD; rows
+    ascending). None until `min_prior` earlier values exist, or when their SD is zero. A later value never changes an
+    earlier z-score, so thresholding the result carries no look-ahead."""
+    out: List[Optional[float]] = [None] * len(values)
+    cnt, mean, m2 = 0, 0.0, 0.0
+    pending: List[float] = []                   # values at the current row: they join the statistics once the row is past
+    prev_row = None
+    for k, (r, v) in enumerate(zip(rows, values)):
+        if r != prev_row:
+            for x in pending:
+                cnt += 1
+                d = x - mean
+                mean += d / cnt
+                m2 += d * (x - mean)
+            pending, prev_row = [], r
+        if v is None:
+            continue
+        if cnt >= max(2, min_prior) and m2 > 0:
+            out[k] = (v - mean) / math.sqrt(m2 / (cnt - 1))
+        pending.append(v)
+    return out
 
 
 def Ledger_holdings(research: "Research") -> Dict[str, float]:

@@ -42,7 +42,7 @@ finsim2/
     ml.py                datasets, walk-forward, leaderboard, importance, ensemble, prediction
     scores.py            quant score, ML score, confidence, explanation, "what matters"
     equations.py         the equations tab: every catalogue equation evaluated on an asset
-    backtest.py          signal backtests
+    backtest.py          signal backtests (execution lag, net-of-cost trades)
     portfolio.py         ledger + analytics
     optimize.py          frontier, min-variance, max-Sharpe, risk parity
     montecarlo.py        block bootstrap / GBM simulations
@@ -77,7 +77,21 @@ not n. `usefulness = IC · min(1, |t| / 2)`.
 
 **Point in time.** `evaluate(..., cutoff=c)` uses only rows whose target window closed before `c`, and ranks
 within those rows only (ranks over the whole history would carry later data in). The quant score's history refits
-its weights every 63 sessions this way; its out-of-sample IC feeds the confidence and the backtester.
+its weights every 63 sessions this way; its out-of-sample IC feeds the confidence and the backtester. The
+full-sample signal record below (its `direction`, IC, usefulness) describes the whole history: it is evidence for
+today, not something a backtest may use on past dates.
+
+**Backtests (engine/backtest.py).** Three rules keep them free of look-ahead. (1) *Execution lag*: a signal observed
+at the close of day t is traded `lag` sessions later (default 1), so it first earns the close t+1 -> t+2 return;
+`lag = 0` (trade at the close that produced the signal) is kept for comparison and labelled optimistic. (2)
+*Point-in-time direction*: a feature is pointed the way its history said at each date by
+`horizons.expanding_direction`, the sign of the running correlation with the h-day forward return over rows
+i + h < t only (every max(1, h//4) sessions; 0 until 60 such rows and while |t| < 1 on n_eff = n/h), never by the
+full-sample sign; the user's "invert" still applies on top. The quant score history and the ML forecasts are
+already signed forecasts. (3) *Expanding ML standardisation*: each walk-forward ML forecast is z-scored with the
+mean/SD of the forecasts made before it only (`research.expanding_standardize`, at least 20). Daily and per-trade
+returns are net of costs; metrics include Calmar (CAGR / |max drawdown|), `buy_hold_*` (the same asset held over the
+same window; `benchmark_*` are the old names) and alpha/beta against SPY.
 
 **Signal record** (horizon engine output, one per signal per horizon):
 ```

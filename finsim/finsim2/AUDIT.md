@@ -239,9 +239,9 @@ README (currently it is only implied).
 | Hyperparameter selection does not see test data | DONE | fixed hyperparameters, no tuning | — | — |
 | Regime identification without future information | PARTIAL | all trailing windows and fixed thresholds (regimes.py:57-86) | inherits the FRED revision leak (NFCI, UNRATE, CPI) | P0 (via revisions) |
 | Score histories are point-in-time | PARTIAL | weights refitted every 63 sessions using only outcomes known then; local ranks; persistence from pre-start data (R:263-321) | the history **omits the live score's regime blend**, so the OOS accuracy is measured on a different score from the one displayed → same weighting function for both | P0 |
-| (extra) Backtest signal direction | **LEAK** | `direction_sign` from the full-sample matrix IC (S:323-324; R:258 cell drawer) | the backtest knows which way the signal worked over the whole history → point-in-time direction (expanding IC sign) | P0 |
-| (extra) ML backtest normalisation | **LEAK** | OOS forecasts z-scored with the mean/sd of all OOS forecasts (R:334-336) | → expanding mean/sd | P0 |
-| (extra) Same-close execution | **LEAK-ish** | decision on signal[t] earns the t→t+1 return (BT:61-90) | trades at the close whose data produced the signal → default 1-session execution lag | P0 |
+| (extra) Backtest signal direction | FIXED (was **LEAK**) | `direction_sign` from the full-sample matrix IC (S:323-324; R:258 cell drawer) | the backtest knows which way the signal worked over the whole history → point-in-time direction (expanding IC sign) | P0 |
+| (extra) ML backtest normalisation | FIXED (was **LEAK**) | OOS forecasts z-scored with the mean/sd of all OOS forecasts (R:334-336) | → expanding mean/sd | P0 |
+| (extra) Same-close execution | FIXED (was **LEAK-ish**) | decision on signal[t] earns the t→t+1 return (BT:61-90) | trades at the close whose data produced the signal → default 1-session execution lag | P0 |
 | (extra) Ensemble weights | minor leak | block k weights use block k−1 ICs whose targets end after block k starts (ML:165) | → purge the last h/step rows of the previous block | P1 |
 | (extra) Quant expected return | in-sample | today's full-sample weights applied to all history, then an OLS (SC:90-131) | shown as a forecast "± typical error" → map from the point-in-time composite; out-of-sample RMSE | P0 |
 
@@ -306,7 +306,7 @@ income, stockholders' equity, shares outstanding. **Equity and shares are fetche
 | Skewness / kurtosis | A DONE, P MISSING | — | add P | P3 |
 | Tail risk | PARTIAL | VaR99/ES99, kurtosis | — | P3 |
 | Upside / downside capture | MISSING | — | add | P2 |
-| Calmar | MISSING | — (not in backtests either) | add | P2 |
+| Calmar | PARTIAL | backtests only (`calmar`) | add | P2 |
 
 ## 12. Portfolio risk
 | Item | Status | Implementation | Limitation → Recommendation | P |

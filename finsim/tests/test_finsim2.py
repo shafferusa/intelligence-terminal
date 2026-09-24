@@ -198,6 +198,126 @@ class Engines(unittest.TestCase):
         self.assertLess(free["metrics"]["exposure"], 0.7)
 
 
+class BacktestLookahead(unittest.TestCase):
+    """The backtester must not know the future: execution lag, point-in-time direction, expanding ML z-scores."""
+
+    @staticmethod
+    def iid_prices(n=2000, seed=11, vol=0.01):
+        rnd = random.Random(seed)
+        p = [100.0]
+        for _ in range(n - 1):
+            p.append(p[-1] * math.exp(rnd.gauss(0.0, vol)))
+        return p
+
+    def test_perfect_foresight_needs_the_lag(self):
+        n = 5000                                                        # 20 years: the CAGR's noise is ~2.5%
+        days = business_days("2000-01-03", n)
+        price = self.iid_prices(n)
+        # signal[t] = the sign of the NEXT day's return: perfect foresight, usable only by trading at the same close
+        sig = [(2.0 if price[t + 1] > price[t] else -2.0) for t in range(n - 1)] + [None]
+        spec = {"entry": 1.0, "exit": 0.0, "mode": "long", "min_hold": 1, "cost_bps": 0.0}
+        same_close = run_backtest(days, price, sig, {**spec, "lag": 0})["metrics"]
+        lagged = run_backtest(days, price, sig, {**spec, "lag": 1})["metrics"]
+        self.assertGreater(same_close["cagr"], 1.0)                     # > 100% a year from peeking
+        self.assertLess(abs(lagged["cagr"]), 0.06)                      # about nothing once the trade waits a session
+        self.assertLess(abs(lagged["cagr"] - lagged["buy_hold_cagr"]), 0.06)
+        default = run_backtest(days, price, sig, spec)["metrics"]
+        self.assertEqual(default["lag"], 1)
+        self.assertAlmostEqual(default["cagr"], lagged["cagr"], places=12)
+
+    @staticmethod
+    def pipeline(price, days, h=21):
+        from finsim2.engine.backtest import simulate
+        from finsim2.engine.features import targets
+        mom = [None] * 20 + [math.log(price[t] / price[t - 20]) for t in range(20, len(price))]
+        z = standardize(mom)
+        dirs = hz.expanding_direction(z, targets(price, h), h, min_obs=20, t_min=0.0)
+        directed = [v * d if v is not None else None for v, d in zip(z, dirs)]
+        spec = {"entry": 0.5, "exit": 0.0, "mode": "long_short", "min_hold": 3, "cost_bps": 10.0}
+        return simulate(days, price, directed, spec), dirs
+
+    def test_future_prices_do_not_move_past_positions(self):
+        n, T = 1600, 1100
+        days = business_days("2012-01-02", n)
+        price = self.iid_prices(n, seed=3)
+        rnd = random.Random(99)
+        tampered = price[:T + 1] + [price[T] * math.exp(0.005 * i + rnd.gauss(0, 0.03)) for i in range(1, n - T)]
+        a, da = self.pipeline(price, days)
+        b, db = self.pipeline(tampered, days)
+        self.assertEqual(da[:T + 1], db[:T + 1])
+        cut = [k for k, d in enumerate(a["dates"]) if d <= days[T]]
+        self.assertTrue(cut and any(a["positions"][k] != 0 for k in cut))
+        self.assertEqual([a["positions"][k] for k in cut], [b["positions"][k] for k in cut])
+        self.assertEqual([a["daily"][k] for k in cut], [b["daily"][k] for k in cut])
+        self.assertNotEqual(a["daily"], b["daily"])                     # the tampering did reach the later part
+
+    def test_expanding_direction_ignores_later_outcomes(self):
+        rnd = random.Random(5)
+        n, h = 1500, 5
+        sig = [rnd.gauss(0, 1) for _ in range(n)]
+        tgt = [0.4 * sig[i] + rnd.gauss(0, 1) for i in range(n - h)] + [None] * h
+        d1 = hz.expanding_direction(sig, tgt, h)
+        flip_from = 400
+        flipped = tgt[:flip_from] + [-y if y is not None else None for y in tgt[flip_from:]]
+        d2 = hz.expanding_direction(sig, flipped, h)
+        known = flip_from + h + 1                                       # the first t allowed to see row flip_from
+        self.assertEqual(d1[:known], d2[:known])
+        self.assertTrue(all(d == 0 for d in d1[:hz.MIN_OBS + h]))       # no direction before min_obs known rows
+        self.assertEqual(d1[known - 1], 1)
+        self.assertEqual(d1[-1], 1)
+        self.assertNotEqual(d1[known:], d2[known:])                     # later, the flipped outcomes do count
+        # a relation without enough evidence (|t| below t_min) gives no direction
+        noise = [rnd.gauss(0, 1) for _ in range(n)]
+        self.assertLess(sum(1 for d in hz.expanding_direction(noise, tgt, h, t_min=3.0) if d != 0), n // 10)
+
+    def test_expanding_standardize_uses_earlier_forecasts_only(self):
+        from finsim2.engine.research import expanding_standardize
+        rnd = random.Random(8)
+        rows = list(range(0, 2000, 10))
+        vals = [rnd.gauss(0.01, 0.02) for _ in rows]
+        z1 = expanding_standardize(rows, vals)
+        later = vals[:120] + [v * 50 + 1 for v in vals[120:]]
+        z2 = expanding_standardize(rows, later)
+        self.assertEqual(z1[:120], z2[:120])
+        self.assertNotEqual(z1[120:], z2[120:])
+        self.assertTrue(all(z is None for z in z1[:20]))
+        self.assertIsNotNone(z1[20])
+        prev = vals[:57]
+        mu = sum(prev) / len(prev)
+        sd = math.sqrt(sum((x - mu) ** 2 for x in prev) / (len(prev) - 1))
+        self.assertAlmostEqual(z1[57], (vals[57] - mu) / sd, places=9)
+
+    def test_costs_lower_win_rate_and_profit_factor(self):
+        n = 1500
+        days = business_days("2014-01-01", n)
+        price = self.iid_prices(n, seed=21)
+        rnd = random.Random(4)
+        sig, v = [], 2.0
+        for _ in range(n):
+            if rnd.random() < 0.25:
+                v = -v
+            sig.append(v)
+        spec = {"entry": 1.0, "exit": 0.0, "mode": "long_short", "min_hold": 1}
+        free = run_backtest(days, price, sig, {**spec, "cost_bps": 0.0})["metrics"]
+        costly = run_backtest(days, price, sig, {**spec, "cost_bps": 30.0})["metrics"]
+        self.assertEqual(free["trades"], costly["trades"])
+        self.assertLess(costly["win_rate"], free["win_rate"])
+        self.assertLess(costly["profit_factor"], free["profit_factor"])
+        self.assertLess(costly["avg_gain"], free["avg_gain"])
+
+    def test_calmar_and_buy_hold_keys(self):
+        n = 1200
+        days = business_days("2015-01-01", n)
+        price = self.iid_prices(n, seed=2)
+        sig = [2.0 if (i // 40) % 2 == 0 else -2.0 for i in range(n)]
+        m = run_backtest(days, price, sig, {"entry": 1.0, "exit": 0.0, "mode": "long", "cost_bps": 5.0})["metrics"]
+        self.assertIn("calmar", m)
+        self.assertLess(m["max_drawdown"], 0)
+        self.assertAlmostEqual(m["calmar"], m["cagr"] / abs(m["max_drawdown"]), places=12)
+        for k in ("return", "cagr", "sharpe"):
+            self.assertEqual(m[f"buy_hold_{k}"], m[f"benchmark_{k}"])
+
+
 class Routes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -336,6 +456,14 @@ class Routes(unittest.TestCase):
     def test_backtest_route_and_watchlist(self):
         bt = self.post("backtest", {"asset": "SPY", "signal": "mom_12_1", "horizon": "1M"})
         self.assertIn("metrics", bt)
+        m = bt["metrics"]
+        self.assertEqual(m["lag"], 1)                                   # a one-session execution lag by default
+        self.assertEqual(bt["spec"]["direction"], "point in time (expanding)")
+        self.assertEqual(m["buy_hold_cagr"], m["benchmark_cagr"])
+        self.assertIn("calmar", m)
+        same_close = self.post("backtest", {"asset": "SPY", "signal": "mom_12_1", "horizon": "1M", "lag": 0})
+        self.assertEqual(same_close["metrics"]["lag"], 0)
+        self.assertIn("optimistic", same_close["execution"])
         self.assertTrue(self.get("backtests"))
         self.post("watchlist", {"asset_id": "QQQ"})
         self.assertIn("QQQ", [w["asset_id"] for w in self.get("watchlist")])
