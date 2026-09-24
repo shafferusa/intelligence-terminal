@@ -1,0 +1,282 @@
+"""The Shaffer Hedge walk-forward audit: `python -m finsim2 hedge-audit` → finsim2/HEDGE_AUDIT.md.
+
+Every case is a book (today's dollar holding) and one hedge product for one risk, evaluated from month-starts over
+up to 15 years with the sizing information available at each start (see history.Evaluator). The same windows
+train and test the ML adjustment walk-forward; the verified models are stored in kv `hedgeml:<VERSION>` and are the
+only ones the live engine may use."""
+from __future__ import annotations
+
+import math
+import time
+from typing import Dict, List, Optional
+
+from . import products as P
+from .engine import ml_group
+from .history import ADJ_CAP, ALPHA, VERSION, Evaluator, ml_layer
+from .market import SHORT_RATE
+
+MV = 500_000.0
+HORIZONS = [("1W", 5), ("1M", 21), ("3M", 63)]
+
+
+def _opt(und, right="P", mny=0.95, days=91, vol=None):
+    return {"kind": "option", "underlying": und, "right": right, "moneyness": mny, "tenor_days": days, "vol_underlying": vol or und}
+
+
+def cases() -> List[dict]:
+    eq_books = ["SPY", "QQQ", "IWM", "NVDA", "AAPL", "MSFT", "JPM", "XOM", "XLK", "EFA", "EEM", "AMZN"]
+    out = []
+    for b in eq_books:
+        out.append({"book": b, "objective": "equity", "leg": {"kind": "spot", "asset": "SPY"}, "label": "SPY short", "product": "ETF short"})
+        out.append({"book": b, "objective": "equity", "leg": {"kind": "equity_future", "index": "SPX", "proxy": "SPY"}, "label": "ES future",
+                    "product": "Equity index future"})
+        out.append({"book": b, "objective": "equity", "leg": {"kind": "spot", "asset": "SH"}, "label": "SH (inverse ETF) long",
+                    "product": "Inverse ETF"})
+        out.append({"book": b, "objective": "equity", "leg": _opt("SPY", mny=0.95), "label": "SPY 5% OTM put (3M)", "product": "Index/ETF put"})
+        out.append({"book": b, "objective": "equity", "leg": _opt("SPY", mny=1.0), "label": "SPY ATM put (3M)", "product": "Index/ETF put"})
+    for b in ("QQQ", "NVDA", "AAPL", "MSFT", "XLK", "AMZN"):
+        out.append({"book": b, "objective": "equity", "leg": {"kind": "equity_future", "index": "NDX", "proxy": "QQQ"}, "label": "NQ future",
+                    "product": "Equity index future"})
+        out.append({"book": b, "objective": "equity", "leg": _opt("QQQ", mny=0.95), "label": "QQQ 5% OTM put (3M)", "product": "Index/ETF put"})
+    for b, s in (("NVDA", "SMH"), ("AAPL", "XLK"), ("MSFT", "XLK"), ("JPM", "XLF"), ("XOM", "XLE")):
+        out.append({"book": b, "objective": "equity", "leg": {"kind": "spot", "asset": s}, "label": f"{s} short", "product": "Sector ETF short"})
+    for b in ("AAPL", "AMZN", "GOOGL"):
+        out.append({"book": b, "objective": "name", "leg": _opt(b, mny=0.95), "label": f"{b} 5% OTM put (3M)", "product": "Single-stock put"})
+        out.append({"book": b, "objective": "name", "leg": {"kind": "spot", "asset": b}, "label": f"{b} short (itself)", "product": "Stock short"})
+    for b in ("TLT", "IEF", "LQD", "AGG"):
+        for root in ("ZN", "ZB", "UB"):
+            out.append({"book": b, "objective": "rates", "leg": {"kind": "treasury_future", "spec": P.FUTURES[root]}, "label": f"{root} future",
+                        "product": "Treasury future"})
+        out.append({"book": b, "objective": "rates", "leg": {"kind": "spot", "asset": "IEF"}, "label": "IEF short", "product": "Treasury ETF short"})
+    for b, legs in (("HYG", ["JNK", "BKLN"]), ("JNK", ["HYG"]), ("LQD", ["VCIT"])):
+        for L in legs:
+            out.append({"book": b, "objective": "credit", "leg": {"kind": "spot", "asset": L}, "label": f"{L} short", "product": "Credit ETF short"})
+    for b, ccy in (("EWJ", "JPY"), ("EWG", "EUR"), ("EWU", "GBP")):
+        out.append({"book": b, "objective": f"fx:{ccy}", "leg": {"kind": "forward", "ccy": ccy, "foreign_rate": SHORT_RATE.get(ccy)},
+                    "label": f"{ccy} forward (rolled)", "product": "FX forward"})
+    out.append({"book": "GLD", "objective": "commodity:CMD:GOLD", "leg": _opt("GLD", mny=0.95), "label": "GLD 5% OTM put (3M)", "product": "Commodity ETF put"})
+    out.append({"book": "USO", "objective": "commodity:CMD:OIL", "leg": _opt("USO", mny=0.95), "label": "USO 5% OTM put (3M)", "product": "Commodity ETF put"})
+    out.append({"book": "BTC", "objective": "crypto", "leg": {"kind": "spot", "asset": "BITO"}, "label": "BITO short", "product": "Crypto ETF short"})
+    out.append({"book": "BTC", "objective": "crypto", "leg": {"kind": "spot", "asset": "IBIT"}, "label": "IBIT short", "product": "Crypto ETF short"})
+    return out
+
+
+def _book(research, asset: str, objective: str) -> List[dict]:
+    b = {"asset": asset, "mv": MV}
+    if objective != "equity" and not objective.startswith(("sector", "name")):
+        from .market import Market
+        from .risk import RiskModel
+        from .engine import _group_exposure
+        rk = research._memo("hedgeaudit:rk", lambda: RiskModel(Market(research)))
+        b["structural"] = _group_exposure(rk.unit_exposures(asset)["exposures"], objective)
+    return [b]
+
+
+def _leg(research, leg: dict, objective: str) -> dict:
+    leg = dict(leg)
+    if leg["kind"] == "spot" and objective != "equity" and not objective.startswith(("sector", "name")):
+        from .market import Market
+        from .risk import RiskModel
+        from .engine import _group_exposure
+        rk = research._memo("hedgeaudit:rk", lambda: RiskModel(Market(research)))
+        ue = _group_exposure(rk.unit_exposures(leg["asset"])["exposures"], objective)
+        if ue:
+            leg["unit_exposure"] = ue
+    if leg["kind"] == "forward":
+        leg["unit_exposure"] = 1.0
+    return leg
+
+
+def run(research, progress=print, ratio: float = 1.0) -> dict:
+    t0 = time.time()
+    out = {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "asof": research.panel().calendar()[-1], "ratio": ratio, "cases": []}
+    groups: Dict[str, List[dict]] = {}
+    cs = cases()
+    for n, c in enumerate(cs):
+        for lab, h in HORIZONS:
+            if c["leg"]["kind"] == "option" and h > 63:
+                continue
+            try:
+                ev = Evaluator(research, _book(research, c["book"], c["objective"]), c["objective"], _leg(research, c["leg"], c["objective"]), h,
+                               ratio=ratio)
+                res = ev.run()
+            except Exception as e:  # noqa: BLE001
+                out["cases"].append({**c, "horizon": lab, "h": h, "error": f"{type(e).__name__}: {e}"})
+                continue
+            rows = res.pop("rows", [])
+            g = ml_group(c["objective"], c["leg"]["kind"], h)
+            if c["leg"]["kind"] in ("spot", "equity_future", "forward"):
+                groups.setdefault(g, []).extend(rows)
+            out["cases"].append({**{k: v for k, v in c.items() if k != "leg"}, "leg_kind": c["leg"]["kind"], "horizon": lab, "h": h, "result": res,
+                                 "regimes": _regime_rows(rows)})
+        if progress:
+            progress(f"[{n + 1}/{len(cs)}] {c['book']} ← {c['label']}")
+    models = ml_layer(groups)
+    out["ml"] = {g: {k: v for k, v in m.items() if k != "model"} for g, m in models.items()}
+    research.store.kv_set(f"hedgeml:{VERSION}", {"groups": models, "trained": out["started"], "asof": out["asof"], "alpha": ALPHA, "cap": ADJ_CAP})
+    out["seconds"] = round(time.time() - t0, 1)
+    return out
+
+
+def _regime_rows(rows: List[dict]) -> Dict[str, dict]:
+    agg: Dict[str, dict] = {}
+    for r in rows:
+        for dim in ("market", "volatility", "rates", "inflation", "growth", "liquidity"):
+            s = (r.get("regime") or {}).get(dim)
+            if not s:
+                continue
+            a = agg.setdefault(s, {"var_u": 0.0, "var_h": 0.0, "n": 0})
+            a["var_u"] += r["var_u"]; a["var_h"] += r["var_h"]; a["n"] += 1
+    return agg
+
+
+# ------------------------------------------------------------------ the report
+def _f(x, d=2, pct=False):
+    if x is None:
+        return "—"
+    return f"{x:+.{d}%}" if pct else f"{x:,.{d}f}"
+
+
+def markdown(a: dict) -> str:
+    from . import engine as E
+    from .risk import LABELS, UNITS
+    L = []
+    w = L.append
+    ok = [c for c in a["cases"] if c.get("result", {}).get("n")]
+    w("# Shaffer Hedge: the audit")
+    w("")
+    w(f"Generated {a['started']} from the real research store (data to {a['asof']}); {len(ok)} case-horizons with history, "
+      f"run time {a['seconds'] / 60:.1f} minutes. Every result is walk-forward: the hedge is sized at each month-start with information "
+      f"available then (trailing-year betas, structural DV01/CS01/currency exposure, the option's delta from that day's Cboe volatility "
+      f"index) for {a['ratio']:.0%} of the exposure, and judged on what happened over the following horizon. A $500,000 holding is the book.")
+    w("")
+    w("## 1–3. Risk factors, instruments and their sizing units")
+    w("")
+    w("| Factor | Unit |")
+    w("|---|---|")
+    for k, u in UNITS.items():
+        w(f"| {k} | {u} |")
+    w("")
+    w("| Product type | Status | Risk unit | Sizing rule | Reason / limitation |")
+    w("|---|---|---|---|---|")
+    for p in P.PRODUCT_TYPES:
+        w(f"| {p['name']} | {p['status']} | {p['risk_units']} | {p['sizing']} | {p['reason'] or ''} |")
+    w("")
+    w("## 4. Exact hedge math")
+    w("")
+    w("```")
+    w(E.__doc__.strip())
+    w("```")
+    w("")
+    w("## 21–25. Walk-forward results")
+    w("")
+    w("Realised reduction = 1 − Σ(hedged daily P&L)² ÷ Σ(unhedged daily P&L)² over every window. Effectiveness = realised ÷ the reduction "
+      "expected from the trailing year at each start (linear hedges). Tail = the worst 10% of windows for the unhedged book.")
+    w("")
+
+    def table(key_fn, title):
+        agg: Dict[str, dict] = {}
+        for c in ok:
+            k = key_fn(c)
+            r = c["result"]
+            b = agg.setdefault(k, {"n": 0, "red": [], "eff": [], "tail": [], "pnl": [], "ups": [], "neff": 0.0})
+            b["n"] += 1
+            b["neff"] += r.get("n_eff") or 0
+            for fld, src in (("red", "realized_reduction"), ("eff", "effectiveness"), ("pnl", "hedge_pnl_mean"), ("ups", "upside_sacrificed")):
+                if r.get(src) is not None:
+                    b[fld].append(r[src])
+            if (r.get("tail") or {}).get("reduction") is not None:
+                b["tail"].append(r["tail"]["reduction"])
+        w(f"**{title}**")
+        w("")
+        w("| Group | Cases | Indep. windows | Median realised variance reduction | Median effectiveness | Median tail-loss reduction | Mean hedge P&L per window | Mean upside given up |")
+        w("|---|---|---|---|---|---|---|---|")
+        med = lambda xs: sorted(xs)[len(xs) // 2] if xs else None
+        for k, b in sorted(agg.items(), key=lambda kv: -(med(kv[1]["red"]) or -9)):
+            w(f"| {k} | {b['n']} | {b['neff']:.0f} | {_f(med(b['red']), 1, True)} | {_f(med(b['eff']), 2)} | {_f(med(b['tail']), 1, True)} | "
+              f"{_f(sum(b['pnl']) / len(b['pnl']) if b['pnl'] else None, 0)} | {_f(sum(b['ups']) / len(b['ups']) if b['ups'] else None, 0)} |")
+        w("")
+    table(lambda c: c["product"], "22. By hedge product")
+    table(lambda c: {"equity": "Equity beta", "name": "Single name", "rates": "Rates (DV01)", "credit": "Credit (CS01)", "crypto": "Crypto"}.get(
+        c["objective"], "Currency" if c["objective"].startswith("fx:") else "Commodity" if c["objective"].startswith("commodity") else c["objective"]),
+        "23. By risk")
+    table(lambda c: c["horizon"], "25. By horizon")
+    # by regime
+    reg: Dict[str, dict] = {}
+    for c in ok:
+        for s, b in (c.get("regimes") or {}).items():
+            a2 = reg.setdefault(s, {"var_u": 0.0, "var_h": 0.0, "n": 0})
+            a2["var_u"] += b["var_u"]; a2["var_h"] += b["var_h"]; a2["n"] += b["n"]
+    w("**24. By regime at the start of the window** (all cases pooled; variance-weighted)")
+    w("")
+    w("| Regime | Windows | Realised variance reduction |")
+    w("|---|---|---|")
+    from ..engine.regimes import STATE_LABEL
+    for s, b in sorted(reg.items(), key=lambda kv: -kv[1]["n"]):
+        w(f"| {STATE_LABEL.get(s, s)} | {b['n']} | {_f(1 - b['var_h'] / b['var_u'] if b['var_u'] else None, 1, True)} |")
+    w("")
+    w("## 20, 26. Baselines and cost against risk reduction")
+    w("")
+    w("Per case: realised variance reduction of the static rule (the Raw Shaffer Hedge ratio) against fixed 25% / 50% hedges and the "
+      "trailing minimum-variance ratio, on the same windows (linear hedges).")
+    w("")
+    w("| Book | Hedge | Horizon | Static rule | Fixed 25% | Fixed 50% | Min-variance | Mean hedge P&L | Residual $/day | Unhedged $/day |")
+    w("|---|---|---|---|---|---|---|---|---|---|")
+    for c in ok:
+        r = c["result"]
+        b = r.get("baselines") or {}
+        if c["leg_kind"] not in ("spot", "equity_future", "forward"):
+            continue
+        w(f"| {c['book']} | {c['label']} | {c['horizon']} | {_f(b.get('static_rule'), 1, True)} | {_f(b.get('fixed_25'), 1, True)} | "
+          f"{_f(b.get('fixed_50'), 1, True)} | {_f(b.get('min_variance'), 1, True)} | {_f(r.get('hedge_pnl_mean'), 0)} | "
+          f"{_f(r.get('residual_daily'), 0)} | {_f(r.get('unhedged_daily'), 0)} |")
+    w("")
+    w("## 27–28. Where it worked and where it failed")
+    w("")
+    best, worst = [], []
+    for c in ok:
+        for e in c["result"].get("best") or []:
+            best.append((e["hedged"] - e["position"], c, e))
+        for e in c["result"].get("worst") or []:
+            worst.append((e["hedged"] - e["position"], c, e))
+    best.sort(key=lambda x: -x[0])
+    worst.sort(key=lambda x: x[0])
+    w("**Largest gains from hedging (hedge P&L in the window):**")
+    w("")
+    for g, c, e in best[:10]:
+        w(f"- {c['book']} hedged with {c['label']} ({c['horizon']}), {e['date']} → {e['end']}: book {e['position']:+,.0f}, hedged {e['hedged']:+,.0f}")
+    w("")
+    w("**Largest losses from hedging:**")
+    w("")
+    for g, c, e in worst[:10]:
+        w(f"- {c['book']} hedged with {c['label']} ({c['horizon']}), {e['date']} → {e['end']}: book {e['position']:+,.0f}, hedged {e['hedged']:+,.0f}")
+    w("")
+    fails = [c for c in ok if (c["result"].get("realized_reduction") or 0) < 0]
+    if fails:
+        w("**Hedges that increased variance overall** (realised reduction below zero):")
+        w("")
+        for c in fails:
+            w(f"- {c['book']} ← {c['label']} ({c['horizon']}): realised {_f(c['result']['realized_reduction'], 1, True)}")
+        w("")
+    w("## 18–19. The ML adjustment")
+    w("")
+    w(f"FinalHedge = RawHedge × (1 + {ALPHA} × MLAdjustment), |MLAdjustment| ≤ {ADJ_CAP} → at most ±{ALPHA * ADJ_CAP:.0%} of the raw hedge. "
+      "A ridge model per (risk, hedge kind, horizon) learns log(ex-post minimum-variance ratio ÷ raw ratio) from the VIX, the trailing "
+      "1-year and 3-month correlation, the change in beta, the 3-month market return and the bill rate, trained only on windows that "
+      "ended before each prediction. It is used only when it beats the static rule AND the minimum-variance ratio out of sample "
+      "(paired t ≥ 2 on n_eff ≥ 30) and has not decayed in the latest third.")
+    w("")
+    w("| Group | OOS windows | n_eff | t vs static rule | t vs min-variance | Verified | Reasons |")
+    w("|---|---|---|---|---|---|---|")
+    for g, m in sorted(a["ml"].items()):
+        w(f"| {g} | {m.get('n', 0)} | {_f(m.get('n_eff'), 0)} | {_f(m.get('t_vs_static'), 1)} | {_f(m.get('t_vs_min_variance'), 1)} | "
+          f"{'yes' if m.get('verified') else 'no'} | {'; '.join(m.get('reasons') or []) or '—'} |")
+    w("")
+    errs = [c for c in a["cases"] if c.get("error") or not c.get("result", {}).get("n")]
+    if errs:
+        w("## Cases without history")
+        w("")
+        for c in errs:
+            w(f"- {c['book']} ← {c['label']} ({c['horizon']}): {c.get('error') or c.get('result', {}).get('reason')}")
+        w("")
+    return "\n".join(L)

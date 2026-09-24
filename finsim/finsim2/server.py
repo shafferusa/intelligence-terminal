@@ -87,6 +87,11 @@ class App:
         out = {"graded": 0, "shaffer": [], "ml_forecasts": [], "retrained": [], "errors": []}
         try:
             out["graded"] = tracking.score_matured(self.store, self.research.panel())
+            try:                                        # hedge recommendations whose horizon has passed
+                from .hedge.service import grade as grade_hedges
+                out["hedges_graded"] = grade_hedges(self)
+            except Exception as e:  # noqa: BLE001
+                out["errors"].append(f"hedge grading: {e}")
         except Exception as e:
             out["errors"].append(f"grading: {e}")
         month = self.research.panel().calendar()[-1][:7]
@@ -226,6 +231,11 @@ class Router:
             return app.start_scan(ids).view()
         if len(r) >= 2 and r[0] == "asset":
             return self.asset_routes(method, r[1], r[2:], q, b)
+        # ---------------- Shaffer Hedge
+        if r and r[0] == "hedge":
+            return self.hedge_routes(method, r[1:], q, b)
+        if r == ["markets", "net"]:
+            return self.markets_net(q.get("h", "3M"))
         # ---------------- portfolio
         if r and r[0] == "portfolio":
             return self.portfolio_routes(method, r[1:], q, b)
@@ -349,6 +359,9 @@ class Router:
             from .engine.research import downsample
             out["history"] = {lab: {**h, "chart": downsample(h.get("dates") or [], h.get("raw") or [], 700)} for lab, h in (full.get("history") or {}).items()}
             return out
+        if rest == ["net-scores"]:
+            from .hedge.scoring import net_scores
+            return net_scores(research, asset_id)
         if rest == ["montecarlo"] and method == "POST":
             from .engine.montecarlo import HORIZON_DAYS, simulate
             from .engine.portfolio import aligned_returns
@@ -360,6 +373,75 @@ class Router:
             others = [x for x in (q.get("with") or "SPY,QQQ,TLT,GOLD,DXY").split(",") if x and x != asset_id and store.asset(x)]
             return [correlation_decay(research.panel(), asset_id, o) for o in others]
         raise NotFound("no such asset route")
+
+    def markets_net(self, lab: str) -> Dict[str, dict]:
+        """Net long / short Shaffer Scores at one horizon for every researched asset (cached per data version)."""
+        from .hedge.scoring import net_scores
+        from .hedge.market import Market
+        research, store = self.s.research, self.s.store
+        key = f"netscores:{research.version()}:{lab}"
+        cached = store.kv_get(key)
+        if cached is not None:
+            return cached
+        from .hedge.engine import HORIZON
+        from .data.universe import HORIZONS as UH
+        h = HORIZON.get(lab) or dict(UH).get(lab, 63)
+        m = Market(research)
+        out = {}
+        for a in store.assets():
+            if not research.is_cached(a["id"]):
+                continue
+            try:
+                ns = net_scores(research, a["id"], [(lab, h)], m)
+                hz = (ns.get("horizons") or {}).get(lab) or {}
+                out[a["id"]] = {"long": hz.get("long"), "short": hz.get("short"), "source": hz.get("expected_source"), "short_note": hz.get("short_note")}
+            except Exception as e:  # noqa: BLE001
+                out[a["id"]] = {"error": str(e)[:120]}
+        store.kv_set(key, out)
+        return out
+
+    def hedge_routes(self, method, rest, q, b):
+        from .hedge import engine as E
+        from .hedge import products as P
+        from .hedge import service as SV
+        app, store, research = self.s, self.s.store, self.s.research
+        if rest == ["registry"]:
+            from .hedge.risk import UNITS
+            return {"products": P.registry_table(), "objectives": E.OBJECTIVES, "factor_units": UNITS,
+                    "futures": {k: {kk: v for kk, v in spec.items() if kk != "tick"} for k, spec in P.FUTURES.items()}}
+        if rest == ["analyze"] and method == "POST":
+            led = app.ledger()
+            positions = b.get("positions") or led.positions_for_hedge()
+            if not positions:
+                raise ValueError("the portfolio holds nothing to hedge")
+            nav = _num(b.get("nav")) or SV.nav_now(led)
+            return E.analyze(research, positions, b.get("objective") or "auto", b.get("params") or {}, nav=nav, history=b.get("history", True))
+        if rest == ["preview"] and method == "POST":
+            qty = _num(b.get("quantity"))
+            if qty is None and _num(b.get("amount")):
+                from .hedge.market import Market
+                from .hedge.risk import RiskModel
+                m = Market(research)
+                pr = P.Priced(P.parse(b["asset_id"], store), m, RiskModel(m))
+                per = pr.unit_notional() if pr.inst.type != "SPOT" else pr.unit_value()
+                if not per:
+                    raise ValueError(f"no price for {b['asset_id']}")
+                qty = _num(b["amount"]) / per
+                qty = round(qty) if pr.inst.type in ("FUTURE", "OPTION") else qty
+            if not qty:
+                raise ValueError("enter a quantity or an amount")
+            return SV.trade_preview(app, b["asset_id"], b.get("side", "BUY"), qty, b.get("objective"), b.get("params") or {})
+        if rest == ["execute"] and method == "POST":
+            return SV.execute(app, b.get("primary"), b.get("legs") or [], b.get("proposal"), b.get("mode", "trade_hedge"))
+        if rest == ["history"]:
+            return store.hedges(int(q.get("limit", 200)))
+        if rest == ["audit"]:
+            from .hedge.history import VERSION
+            m = store.kv_get(f"hedgeml:{VERSION}") or {}
+            return {"trained": m.get("trained"), "asof": m.get("asof"), "groups": {g: {k: v for k, v in x.items() if k != "model"} for g, x in (m.get("groups") or {}).items()}}
+        if rest == ["grade"] and method == "POST":
+            return {"graded": SV.grade(app)}
+        raise NotFound("no such hedge route")
 
     def backtest(self, b: dict) -> dict:
         from .engine.backtest import run

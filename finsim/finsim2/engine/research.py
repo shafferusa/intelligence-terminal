@@ -220,7 +220,7 @@ class Research:
         hs = b["horizons"]
         return {"asset_id": asset_id, "name": b["asset"]["name"], "asset_class": b["asset"]["asset_class"], "price": b["price"], "as_of": b["as_of"],
                 "change": b["change"], "scores": {k: v.get("score") for k, v in hs.items()}, "calibrated": {k: v.get("calibrated") for k, v in hs.items()},
-                "ml": {k: v.get("ml_score") for k, v in hs.items()},
+                "ml": {k: v.get("ml_score") for k, v in hs.items()}, "agreement": {k: v.get("agreement") for k, v in hs.items()},
                 "confidence": {k: (v.get("confidence") or {}).get("value") for k, v in hs.items()},
                 "expected": {k: v.get("expected") for k, v in hs.items()},
                 "primary_horizon": b["primary_horizon"], "regime": b["regime"]["description"],

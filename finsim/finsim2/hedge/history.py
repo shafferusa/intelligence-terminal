@@ -342,7 +342,9 @@ class Evaluator:
                 sc = rr / self.ratio if self.ratio else 0.0
                 base[lab] = sum((a + sc * b) ** 2 for a, b in zip(u, hp))
             mv_ratio = self._minvar_ratio(k0, pos, target)
-            base["min_variance"] = sum((a + mv_ratio * b) ** 2 for a, b in zip(u, hp)) if mv_ratio is not None else None
+            # the minimum-variance hedge for the SAME target fraction: the full min-variance multiple × the target share
+            mv_mult = (mv_ratio * self.ratio) if mv_ratio is not None else None
+            base["min_variance"] = sum((a + mv_mult * b) ** 2 for a, b in zip(u, hp)) if mv_mult is not None else None
             var_u = sum(a * a for a in u)
             var_h = sum(a * a for a in hedged)
 
@@ -352,7 +354,7 @@ class Evaluator:
                     eq += x; peak = max(peak, eq); dd = min(dd, eq - peak)
                 return dd
             st = {dim: (s[k0] if s else None) for dim, s in regimes.items()}
-            rows.append({"k0": k0, "date": self.cal[k0], "end": self.cal[k1], "h": self.h, "var_u": var_u, "var_h": var_h, "U": sum(u), "H": sum(hp),
+            rows.append({"k0": k0, "date": self.cal[k0], "end": self.cal[k1], "h": self.h, "ratio": self.ratio, "var_u": var_u, "var_h": var_h, "U": sum(u), "H": sum(hp),
                          "var_leg": sum(b * b for b in hp), "cov_uh": sum(a * b for a, b in zip(u, hp)),
                          "dd_u": mdd(u), "dd_h": mdd(hedged), "expected_reduction": exp_red, "baselines": base,
                          "regime": st, "exposure": expo, "sizing": {k: v for k, v in leg.items() if k != "pnl"},
@@ -471,7 +473,9 @@ def ml_layer(rows_by_group: Dict[str, List[dict]], alpha: float = ALPHA, cap: fl
         rows = sorted([r for r in rows if r.get("realized_opt_ratio") is not None and r["realized_opt_ratio"] > -5], key=lambda r: r["date"])
         h = rows[0]["h"] if rows else 21
         X = [[(r["features"].get(k) if r["features"].get(k) is not None else 0.0) for k in feats] for r in rows]
-        y = [max(-1.0, min(1.0, math.log(max(0.05, r["realized_opt_ratio"])))) for r in rows]
+        # learn the error in the hedge's BETA, not the target: the ex-post full-hedge multiple × the target share is 1
+        # when the sizing was exactly right
+        y = [max(-1.0, min(1.0, math.log(max(0.05, r["realized_opt_ratio"] * r.get("ratio", 1.0))))) for r in rows]
         preds = [None] * len(rows)
         start = max(MIN_WINDOWS, len(rows) // 3)
         for j in range(start, len(rows)):

@@ -742,7 +742,8 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                   "cost_pct_nav": ctot / nav if nav else None, "efficiency": (value / ctot) if ctot > 0 else None, "liquidity": liq,
                   "participation": part, "score": sh, "components": {"E": E_used, "Q": Q, "L": L, "R": Rg, "B": B, "T": T,
                   "E_source": "walk-forward realised ÷ expected" if E is not None else "expected (no history)"},
-                  "history": _hist_view(hist), "greeks": pr.greeks_per_unit(), "inputs": pr.inputs, "notes": pr.notes,
+                  "history": _hist_view(hist), "_features": (hist or {}).get("features_today"), "greeks": pr.greeks_per_unit(),
+                  "inputs": pr.inputs, "notes": pr.notes,
                   "hedge_pct": {f: (-(ql * H.get(f, 0.0)) / R[f]) if R.get(f) else None for f in S},
                   "exposure_added": {f: ql * v for f, v in H.items() if f not in S and abs(ql * v) > 1e-6}})
     eligible = [c for c in cands if c.get("status") == "ELIGIBLE"]
@@ -1067,7 +1068,9 @@ def walk_forward(research, priced, objective, S, prim, inst, pr, h, params, rk=N
     if cached is not None:
         return cached
     try:
-        res = Evaluator(research, book, ho, tmpl, h, ratio=ratio).run()
+        ev = Evaluator(research, book, ho, tmpl, h, ratio=ratio)
+        res = ev.run()
+        res["features_today"] = ev._features(ev.n - 1, ev.book_pnl())       # conditions now, for the ML adjustment
     except Exception as e:  # noqa: BLE001 - one product's history must not break the analysis
         return {"n": 0, "reason": f"history failed: {type(e).__name__}: {e}"}
     research._mem[key] = res
@@ -1090,7 +1093,7 @@ def _ml(research, hobj, package, cands, h, models) -> dict:
         tmpl = leg_template(c["inst"], c["priced"], research.store) or {}
         group = ml_group(hobj, tmpl.get("kind"), h)
         mdl = (models.get("groups") or {}).get(group)
-        feats = (models.get("today") or {}).get(group) or {}
+        feats = c.get("_features") or {}
         adj = ml_adjustment(mdl, feats)
         adj["group"] = group
         out["by_leg"][L["id"]] = adj | {"applied": adj.get("applied", 0.0) if adj.get("verified") else 0.0}

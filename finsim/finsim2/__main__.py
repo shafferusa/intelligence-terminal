@@ -51,6 +51,8 @@ def main(argv=None) -> int:
     au.add_argument("assets", nargs="*", help="asset ids (default: every asset with six years of prices)")
     au.add_argument("--workers", type=int, default=3)
     au.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_AUDIT.md"))
+    ha = sub.add_parser("hedge-audit", help="walk-forward Shaffer Hedge evaluation and ML-adjustment training → HEDGE_AUDIT.md")
+    ha.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "HEDGE_AUDIT.md"))
     args = ap.parse_args(argv)
     if args.cmd == "serve":
         from .server import serve
@@ -80,6 +82,15 @@ def main(argv=None) -> int:
         u = audit.run_universe(app.db_path(), assets=args.assets or None, workers=args.workers, progress=print)
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(audit.markdown(u, audit.aggregates(u)))
+        print("wrote", args.out)
+        return 0
+    if args.cmd == "hedge-audit":
+        from .data.store import Store
+        from .engine.research import Research
+        from .hedge import audit as haudit
+        res = haudit.run(Research(Store(app.db_path())), progress=print)
+        with open(args.out, "w", encoding="utf-8") as f:
+            f.write(haudit.markdown(res))
         print("wrote", args.out)
         return 0
     if args.cmd == "open":
