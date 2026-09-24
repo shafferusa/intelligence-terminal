@@ -99,14 +99,18 @@ class Research:
         return m
 
     # ------------------------------------------------------------------ bundles
+    def _bkey(self, asset_id: str) -> str:
+        from .. import shaffer_score as shs
+        return f"bundle:{asset_id}:{self.version()}:{BUNDLE_VERSION}:ss{shs.VERSION}"
+
     def is_cached(self, asset_id: str) -> bool:
-        return self.store.kv_get(f"bundle:{asset_id}:{self.version()}:{BUNDLE_VERSION}") is not None
+        return self.store.kv_get(self._bkey(asset_id)) is not None
 
     def ml_result(self, asset_id: str) -> Optional[dict]:
         return self.store.kv_get(f"ml:{asset_id}")
 
     def bundle(self, asset_id: str) -> dict:
-        key = f"bundle:{asset_id}:{self.version()}:{BUNDLE_VERSION}"
+        key = self._bkey(asset_id)
         cached = self.store.kv_get(key)
         if cached is None:
             cached = self._memo(key, lambda: self._build(asset_id))
@@ -180,6 +184,8 @@ class Research:
             "price_history": downsample(dates, close[first:last + 1]),
             "features_available": sum(1 for c in current if c["value"] is not None), "computed_in": None,
         }
+        from .. import shaffer_score as shs
+        out["shaffer"] = shs.score_asset(self.shaffer_inputs(out, mat, z, state))   # the built-in; an override file is applied per request
         out["computed_in"] = round(time.time() - t0, 2)
         return clean(out)
 
@@ -194,16 +200,34 @@ class Research:
                 "change": b["change"], "scores": {k: v.get("score") for k, v in hs.items()}, "ml": {k: v.get("ml_score") for k, v in hs.items()},
                 "confidence": {k: (v.get("confidence") or {}).get("value") for k, v in hs.items()},
                 "expected": {k: ((v.get("expected") or {}).get("expected")) for k, v in hs.items()},
-                "primary_horizon": b["primary_horizon"], "regime": b["regime"]["description"]}
+                "primary_horizon": b["primary_horizon"], "regime": b["regime"]["description"],
+                "shaffer": {k: v.get("score") for k, v in ((self.shaffer(asset_id, b) or {}).get("horizons") or {}).items()}}
 
-    def shaffer(self, asset_id: str, bundle: Optional[dict] = None) -> Optional[float]:
-        """The Shaffer Score for an asset, or None while it is in development (not cached: the algorithm can change
-        without a code change). Its inputs are the research bundle's latest features and evidence."""
+    def shaffer_inputs(self, b: dict, mat: Optional[dict] = None, z: Optional[dict] = None, state: Optional[dict] = None) -> dict:
+        """The documented inputs of the Shaffer Score (see finsim2/shaffer_score.py): today's z-score and raw value of
+        every signal, its evidence at every horizon, and the current regime."""
+        asset_id = b["asset"]["id"]
+        mat = mat if mat is not None else self.matrix(asset_id)
+        if z is None:
+            z = self.zscores(asset_id)
+        z_today = {k: next((x for x in reversed(v[-5:]) if x is not None), None) for k, v in z.items()}
+        raw = {c["feature"]: c["value"] for c in b.get("current") or []}
+        signals = {name: {"family": family(name), "label": label(name), "value": raw.get(name), "z": z_today.get(name), "evidence": row}
+                   for name, row in mat.items()}
+        return {"asset": {**b["asset"], "price": b.get("price"), "as_of": b.get("as_of")}, "regime": state if state is not None else b["regime"]["state"],
+                "horizons": [lab for lab, _ in HORIZONS], "signals": signals}
+
+    def shaffer(self, asset_id: str, bundle: Optional[dict] = None) -> Optional[dict]:
+        """The Shaffer Score by horizon with its breakdown. The built-in is computed with the bundle (cached); an
+        override file (~/.finsim2/shaffer_score.py) is run on each request, since it can change without a code change."""
         from .. import shaffer_score as shs
-        version, fn, _ = shs.load()
-        if version is None:
-            return None
         b = bundle or self.bundle(asset_id)
+        if not shs.is_override():
+            res = b.get("shaffer")
+            if res is None:
+                return None
+            _, kind, _, source = shs.load()
+            return {**res, "source": source, "kind": kind}
         metrics = {c["feature"]: c["value"] for c in b["current"]}
         metrics["z"] = {c["feature"]: c["z"] for c in b["current"]}
         metrics["quant_score"] = {k: v.get("score") for k, v in b["horizons"].items()}
@@ -211,7 +235,7 @@ class Research:
         metrics["confidence"] = {k: (v.get("confidence") or {}).get("value") for k, v in b["horizons"].items()}
         metrics["regime"] = b["regime"]["state"]
         asset = {**b["asset"], "price": b["price"], "as_of": b["as_of"]}
-        return shs.safe_score(fn, metrics, asset)
+        return shs.evaluate(self.shaffer_inputs(b), metrics, asset)
 
     def signal_series(self, asset_id: str, name: str) -> dict:
         """One feature and its standardised signal over time (charts and backtests)."""

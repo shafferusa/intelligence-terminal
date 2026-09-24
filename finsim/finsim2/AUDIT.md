@@ -426,21 +426,21 @@ evidence (about 2 independent windows).
 | Realized subsequent performance | PARTIAL | out-of-sample IC of the composite | quant forecasts are never written to the prediction ledger → record and grade them like ML | P1 |
 
 ## 19. Shaffer Score
+*Updated after the built-in formula landed (v1.0).* The score is SS = 100·tanh(Σ_f W·[Σ w·s·c·r·d]·A·H / K), per
+asset and horizon (see `finsim2/shaffer_score.py`).
 | Item | Status | Implementation | Limitation → Recommendation | P |
 |---|---|---|---|---|
-| Loaded safely | PARTIAL | importlib; a failed load gives version None | runs arbitrary local code (acceptable: the user's own file); re-imported on every call, once per asset in Markets → cache by file mtime | P2 |
-| Failure doesn't crash the app | DONE | `safe_score` returns None | no logging; RANGE not enforced → log to fetch_log, clamp | P2 |
-| Available inputs documented | DONE | docstring | lists "Hurst", which is not a feature → fix | P3 |
-| Output schema documented | PARTIAL | single float | — | P1 |
-| Horizon-specific score | MISSING | — | → accept `{horizon: value}` or a float | P1 |
-| Explanation | MISSING | — | → accept `{"score", "confidence", "explain": [...]}` | P1 |
-| Confidence | MISSING | — | same | P1 |
-| Appears in Asset Research | DONE | when live | — | — |
-| Appears in Markets | DONE | when live and researched | — | — |
-| Appears in Watchlist | MISSING | — | add | P1 |
-| Appears in Portfolio | MISSING | — | add | P1 |
-| Historical Shaffer Score can be backtested | MISSING | no history | → `score_history(metrics_at_t)` using point-in-time bundle rows; backtest option | P1 |
-| Comparison with Quant/ML | MISSING | side by side only | → agreement + out-of-sample IC table | P2 |
+| Loaded safely | DONE | built-in; an override file is imported per request; a failed load falls back to the built-in and the source says so | override re-imported every call → cache by mtime | P3 |
+| Failure doesn't crash the app | DONE | `evaluate` catches everything, clamps to ±100 | — | — |
+| Available inputs documented | DONE | `score_asset` docstring | — | — |
+| Output schema documented | DONE | horizons → score, numerator, K, families → signals | — | — |
+| Horizon-specific score | DONE | 9 horizons | — | — |
+| Explanation | DONE | family and signal terms (s, w, c, r, d, W, A, H) on the Analytics tab | — | — |
+| Confidence | PARTIAL | c per signal, W per family; no single confidence number | → summarise Σ W·A·H / Σ A·H as coverage | P2 |
+| Appears in Asset Research / Analytics / Markets / Watchlist / Portfolio | DONE | tile, header, strip, tab, columns | — | — |
+| Historical Shaffer Score / backtest | MISSING | → compute with the point-in-time evidence at each refit, like the Quant Score history | P1 |
+| Comparison with Quant/ML | PARTIAL | side by side on the tab and strip | → agreement + out-of-sample IC | P2 |
+| Calibration (K) | PARTIAL | KAPPA = 0.04 from 10 years of weekly readings of 5 assets, applying today's evidence to past readings (scale only, in-sample) | → recalibrate on the whole researched universe with point-in-time evidence | P1 |
 
 ## 20. ML features (64 features, 12 families)
 Families: **Returns** (ret_1d…ret_12m, excess_3m), **Momentum** (mom_12_1, rel_strength_6m, ma_cross),

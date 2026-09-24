@@ -120,12 +120,31 @@ python3 -m finsim2 serve | status | stop | phone on
 It never presents a simulated or fitted result as a forecast. Numbers come with their sample size, and weak
 evidence is labelled weak.
 
-**Shaffer Score.** A slot for a quantitative score being developed separately.
-- `finsim2/shaffer_score.py` defines `score(metrics, asset) -> float | None` and `VERSION`. While `VERSION` is
-  `None`, the pages say *in development*.
-- To make it live without a code change, drop a file with the same two names at `~/.finsim2/shaffer_score.py` (or
-  set `FINSIM2_SHAFFER`). The score then appears on every researched asset and in the Markets table. Its inputs
-  are the asset's latest features, z-scores, scores and regime.
+**Shaffer Score.** A second, family-based score per asset and horizon, from −100 to +100:
+
+    SS(a,h,t) = 100 · tanh( Σ_f W_f · [ Σ_{i∈f} w_i · s_i · c_i · r_i · d_i ] · A_{f,a} · H_{f,h} / K )
+
+The terms, all built from the same point-in-time evidence as the Quant Score:
+- s: the signal's bullish/bearish reading (capped z ÷ 2, turned by its historical direction).
+- w: its predictive strength as a share of its family.
+- c: confidence, from its t-statistic, independent sample size and stability.
+- r: regime adjustment.
+- d: decay (does the recent third of history still agree?).
+- W: family evidence weight.
+- A, H: asset-class and horizon applicability tables.
+- K: a calibration constant (10 years of weekly readings of SPY, TLT, GOLD, BTC and NVDA; median |score| ≈ 7,
+  one in twenty above ≈ 75).
+
+Where it appears:
+- Every asset's Analytics page has a **Shaffer Score** tab. It shows the formula, the score at every horizon next to
+  the Quant Score, and each family's W, A, H, bracket and contribution. Click a family for its signals' s, w, c, r,
+  d and IC, t, q, n_eff.
+- It is also on Asset Research, in the evidence strip, and in the Markets, Watchlist and Positions tables.
+
+The applicability tables and constants are at the top of `finsim2/shaffer_score.py`. To replace the algorithm
+without a code change, drop a file at `~/.finsim2/shaffer_score.py` (or set `FINSIM2_SHAFFER`) that defines
+`VERSION` and either `score_asset(inputs)` (same inputs and output as the built-in) or the older
+`score(metrics, asset) -> float`. A file that fails to load falls back to the built-in, and the page says so.
 
 The standard-library equation library it evaluates lives in `finsim/quant/`:
 - returns and statistics (1–20), regression (21–33), time series (34–43), volatility incl. GARCH (44–50);

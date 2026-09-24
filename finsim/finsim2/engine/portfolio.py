@@ -387,7 +387,7 @@ def analytics(store, panel: Panel, ledger: Ledger, scores: Optional[Dict[str, di
         else:
             r["beta"] = None
         sc = (scores or {}).get(r["asset_id"]) or {}
-        r.update({"quant_score": sc.get("quant"), "ml_score": sc.get("ml"), "expected_return": sc.get("expected"),
+        r.update({"quant_score": sc.get("quant"), "ml_score": sc.get("ml"), "shaffer_score": sc.get("shaffer"), "expected_return": sc.get("expected"),
                   "signal_confidence": sc.get("confidence"), "primary_horizon": sc.get("horizon")})
     long_ = sum(r["market_value"] for r in held if r["market_value"] > 0)
     short_ = -sum(r["market_value"] for r in held if r["market_value"] < 0)

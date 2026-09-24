@@ -240,7 +240,6 @@ class Router:
 
     def markets(self, cls: Optional[str]) -> List[dict]:
         research = self.s.research
-        live = shaffer_score.status()["enabled"]
         rows = []
         for a in self.s.store.assets(cls):
             qd = self.quote(a["id"])
@@ -248,7 +247,7 @@ class Router:
             rows.append({"id": a["id"], "name": a["name"], "asset_class": a["asset_class"], "sector": a.get("sector"), "currency": a.get("currency"),
                          **qd, "scores": (lt or {}).get("scores"), "ml": (lt or {}).get("ml"), "confidence": (lt or {}).get("confidence"),
                          "primary_horizon": (lt or {}).get("primary_horizon"), "researched": lt is not None,
-                         "shaffer": research.shaffer(a["id"]) if lt is not None and live else None})
+                         "shaffer": (lt or {}).get("shaffer")})
         return rows
 
     def asset_routes(self, method, asset_id, rest, q, b):
@@ -342,7 +341,8 @@ class Router:
                     bd = research.bundle(a)
                     ph = bd.get("primary_horizon")
                     hs = bd["horizons"].get(ph or "3M") or {}
-                    scores[a] = {"quant": hs.get("score"), "ml": hs.get("ml_score"), "expected": (hs.get("expected") or {}).get("expected"),
+                    ssh = ((research.shaffer(a, bd) or {}).get("horizons") or {}).get(ph or "3M") or {}
+                    scores[a] = {"quant": hs.get("score"), "ml": hs.get("ml_score"), "shaffer": ssh.get("score"), "expected": (hs.get("expected") or {}).get("expected"),
                                  "confidence": (hs.get("confidence") or {}).get("value"), "horizon": ph}
             return pf.analytics(store, research.panel(), led, scores)
         if rest == ["transactions"]:
