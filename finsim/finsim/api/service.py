@@ -736,11 +736,20 @@ class Service:
         bal = {c: a.balance for c, a in tb.cash.items()} if tb else {}
         for c, v in w.treasury_cash.items():                               # a legacy pool, if the save has one
             bal[c] = bal.get(c, ZERO) + v
-        return {"book_id": tb.id if tb else None, "balances": bal, "total_usd": bal.get("USD", ZERO), "spare_usd": (w.spare_cash(tb, "USD") if tb else w.treasury_cash.get("USD", ZERO))}
+        # every currency the Treasury holds: settled, what it can spare after pending flows, the rate and the dollar value
+        currencies = []
+        for c in sorted(bal, key=lambda x: (x != "USD", x)):
+            spare = w.spare_cash(tb, c) if tb and c in tb.cash else w.treasury_cash.get(c, ZERO)
+            rate = w.fx.k(c) if c in w.market.fx.spot or c == "USD" else D(1)
+            currencies.append({"currency": c, "settled": bal[c], "spare": spare, "rate": rate, "base_value": money(bal[c] * rate), "spare_base": money(spare * rate)})
+        total_base = sum((x["base_value"] for x in currencies), ZERO)
+        return {"book_id": tb.id if tb else None, "balances": bal, "currencies": currencies, "total_usd": bal.get("USD", ZERO), "total_base": total_base,
+                "spare_usd": (w.spare_cash(tb, "USD") if tb else w.treasury_cash.get("USD", ZERO)), "held": [x["currency"] for x in currencies if x["settled"] != 0]}
 
     def treasury(self, world_id: str) -> Dict:
         w = self.world(world_id)
-        books = [{"id": p.id, "name": p.name, "type": p.portfolio_type, "cash": {c: a.balance for c, a in p.cash.items()}, "spare_usd": w.spare_cash(p, "USD")} for p in w.portfolios.values()]
+        books = [{"id": p.id, "name": p.name, "type": p.portfolio_type, "cash": {c: a.balance for c, a in p.cash.items()}, "spare": {c: w.spare_cash(p, c) for c in p.cash},
+                  "spare_usd": w.spare_cash(p, "USD")} for p in w.portfolios.values()]
         return jsonable({**self._treasury_state(w), "books": books, "log": w.treasury_log[-40:]})
 
     def treasury_command(self, world_id: str, action: str, body: Dict) -> Dict:
@@ -904,6 +913,7 @@ class Service:
             "date": w.current_date, "nav": s["nav"], "ledger_nav": s["ledger_nav"], "day_pnl": day_pnl_live, "mtd_pnl": mtd, "ytd_pnl": ytd,
             "since_inception_pnl": s["nav"] - pf.contributed_capital, "return_since_inception": pf_return, "benchmark": bench,
             "cash": s["cash"], "projected_cash": {c: w.trading.projected_cash(pf, c) for c in pf.cash},
+            "cash_accounts": self._cash_accounts(w, pf),
             "market_value": s["market_value"], "receivables": s["receivables"], "payables": s["payables"],
             "unrealized": s["unrealized"], "realized": s["realized"], "income": {
                 "dividends": led.balance("4200"), "interest": led.balance("4300"), "commissions": led.balance("5000"), "interest_expense": led.balance("5100")},
@@ -1119,12 +1129,24 @@ class Service:
         return jsonable({"custodian": "BNY Mellon Asset Servicing", "account": pf.custody_account, "holdings": holdings,
                          "movements": [asdict(c) for c in reversed(pf.custody_movements)]})
 
+    def _cash_accounts(self, w: World, pf) -> List[Dict]:
+        """One row per currency the book holds: settled, projected after pending flows, today's rate and the dollar value at it."""
+        rows = []
+        for c in sorted(pf.cash, key=lambda x: (x != pf.base_currency, x)):
+            a = pf.cash[c]
+            rate = w.fx.k(c) if c in w.market.fx.spot or c == "USD" else D(1)
+            pol = w.market.fx.rate.get(c, w.market.curve().policy_rate) if c != "USD" else w.market.curve().policy_rate
+            rows.append({"currency": c, "settled": a.balance, "projected": w.trading.projected_cash(pf, c), "rate": rate, "base_value": money(a.balance * rate),
+                         "accrued_interest": a.accrued_interest, "policy_rate": pol, "is_base": c == pf.base_currency})
+        return rows
+
     def cash(self, world_id: str, portfolio_id: str) -> Dict:
         w = self.world(world_id)
         pf = w.portfolio(portfolio_id)
         policy = w.market.curve().policy_rate
         accounts = [{"currency": c.currency, "settled_balance": c.balance, "accrued_interest": c.accrued_interest, "projected": w.trading.projected_cash(pf, c.currency),
-                     "base_value": c.base_value, "deposit_rate": policy - 0.0025, "overdraft_rate": policy + 0.015} for c in pf.cash.values()]
+                     "base_value": c.base_value, "deposit_rate": policy - 0.0025, "overdraft_rate": policy + 0.015, "rate": (w.fx.k(c.currency) if c.currency in w.market.fx.spot or c.currency == "USD" else D(1)),
+                     "base_now": money(c.balance * (w.fx.k(c.currency) if c.currency in w.market.fx.spot or c.currency == "USD" else D(1)))} for c in pf.cash.values()]
         proj = self._liquidity_projection(w, pf)
         return jsonable({"accounts": accounts, "movements": [asdict(m) for m in reversed(pf.cash_movements)], "upcoming": self._upcoming_cash_flows(w, pf),
                          "projection": proj, "policy_rate": policy})
