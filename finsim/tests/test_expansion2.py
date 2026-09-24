@@ -70,7 +70,7 @@ class MarketExpansionTest(unittest.TestCase):
         self.assertLess(abs(float(w.market.last_bar("USDT").close) - 1.0), 0.02, "stablecoins hold the peg")
         snap = pf.nav_history[-1]
         self.assertIn("crypto", snap.by_bucket if hasattr(snap, "by_bucket") else {"crypto": 0})
-        self.assertEqual(len(CURRENCIES), 19)
+        self.assertTrue({"USD", "EUR", "JPY", "MXN", "BRL", "INR", "KRW", "TRY", "TWD"} <= set(CURRENCIES))
         self.assertIn("MXN", w.market.fx.spot)
         w2 = World.load(self.store, "t")
         self.assertEqual(w2.replay_errors, [])

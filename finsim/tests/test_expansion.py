@@ -116,7 +116,7 @@ class FXMarketViewTest(unittest.TestCase):
         r = svc.fx_market("t")
         self.assertEqual(r["source"], "SIMULATED")
         ccys = {row["ccy"] for row in r["rows"]}
-        self.assertTrue({"EUR", "GBP", "JPY", "CHF", "CAD", "AUD"} <= ccys); self.assertEqual(len(ccys), 18)
+        self.assertTrue({"EUR", "GBP", "JPY", "CHF", "CAD", "AUD"} <= ccys); from finsim.engines.fx_market import SPECS; self.assertEqual(ccys, set(SPECS))   # every modelled currency, none missing
         for row in r["rows"]:
             d = row["drivers"]
             self.assertAlmostEqual(d["carry"] + d["equity_factor"] + d["mean_reversion"] + d["flow"], d["total"], places=9)
