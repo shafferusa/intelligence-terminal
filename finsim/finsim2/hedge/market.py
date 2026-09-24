@@ -113,16 +113,9 @@ class Market:
 
     # ------------------------------------------------------------------ dividends, volatility, liquidity
     def div_yield(self, asset_id: str) -> float:
-        """Trailing 12-month cash dividends / price (0 when none were paid or none are recorded)."""
-        a = DIVIDEND_PROXY.get(asset_id, asset_id)
-        def build():
-            p = self.price(a)
-            if not p:
-                return 0.0
-            lo = self.cal[max(0, self.i - 252)]
-            tot = sum(ev["value"] for ev in self.store.actions(a, "DIVIDEND") if lo < ev["date"] <= self.asof)
-            return tot / p
-        return self._m(("dy", a), build)
+        """Trailing 12-month cash dividends / price (0 when none are recorded) — the same series the ledger marks with."""
+        from .series import _div_yield
+        return _div_yield(self.panel, self.store, asset_id)[self.i]
 
     def implied_vol(self, underlying: str, T: float) -> Tuple[Optional[float], Optional[str], Optional[str]]:
         """(σ, source, date) from the Cboe volatility index(es) for this underlying, interpolated in total variance
@@ -136,7 +129,7 @@ class Market:
             if v is not None:
                 pts.append((mat, v / 100.0)); dates.append(d); srcs.append(sid)
         if not pts:
-            return None, f"{'/'.join(s for _, s in spec)} not current", None
+            return None, f"no current implied-volatility index for {underlying} ({'/'.join(s for _, s in spec)} missing or stale)", None
         return px.interp_var_time(max(T, 1 / 365), pts), "+".join(srcs), min(dates)
 
     def vol_index_series(self, underlying: str) -> Optional[List[Optional[float]]]:

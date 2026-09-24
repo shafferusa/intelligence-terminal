@@ -53,10 +53,15 @@ CREATE TABLE IF NOT EXISTS store_meta(key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS corporate_actions(asset_id TEXT NOT NULL, date TEXT NOT NULL, kind TEXT NOT NULL, value REAL,
     PRIMARY KEY(asset_id, date, kind));
 CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY, at TEXT, action TEXT, entity TEXT, detail TEXT);
+CREATE TABLE IF NOT EXISTS hedge_recommendations(id INTEGER PRIMARY KEY, created_at TEXT, made_on TEXT, source TEXT, status TEXT,
+    portfolio_id TEXT, package_id TEXT, objective TEXT, risk_factor TEXT, exposure REAL, target REAL, horizon TEXT, horizon_days INTEGER,
+    eval_date TEXT, candidates TEXT, selected TEXT, raw_ratio REAL, ml_adjustment REAL, final_ratio REAL, expected_cost REAL,
+    expected_reduction REAL, expected_basis REAL, regime TEXT, score REAL, ml_confidence REAL, detail TEXT,
+    realized_reduction REAL, hedge_pnl REAL, upside_sacrificed REAL, basis_error REAL, effectiveness REAL, graded_on TEXT);
 """
 # columns added after the first release; `_migrate` adds them to older databases
 MIGRATIONS = {"macro": [("published", "TEXT")],
-              "transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT")],
+              "transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT"), ("package_id", "TEXT")],
               "predictions": [("source", "TEXT"), ("raw", "REAL"), ("calibrated", "REAL"), ("range_lo", "REAL"), ("range_hi", "REAL"),
                               ("regime", "TEXT"), ("correct", "INTEGER"), ("created_at", "TEXT")]}
 
@@ -68,7 +73,11 @@ PRED_COLS = ["asset_id", "horizon", "model", "model_version", "made_on", "target
              "regime", "correct", "created_at"]
 RUN_COLS = ["level", "key", "horizon", "model", "version", "train_start", "train_end", "test_start", "test_end",
             "features", "params", "metrics", "created_at"]
-TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee", "currency", "note", "basis_date", "created_at"]
+TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee", "currency", "note", "basis_date", "created_at", "package_id"]
+HEDGE_COLS = ["created_at", "made_on", "source", "status", "portfolio_id", "package_id", "objective", "risk_factor", "exposure", "target",
+              "horizon", "horizon_days", "eval_date", "candidates", "selected", "raw_ratio", "ml_adjustment", "final_ratio", "expected_cost",
+              "expected_reduction", "expected_basis", "regime", "score", "ml_confidence", "detail"]
+HEDGE_GRADE_COLS = ["realized_reduction", "hedge_pnl", "upside_sacrificed", "basis_error", "effectiveness"]
 MACRO_KINDS = ("first_release", "latest_vintage")
 
 
@@ -583,6 +592,65 @@ class Store:
         cur, _ = self._write(lambda conn: conn.execute(
             "INSERT INTO transactions(" + ",".join(TX_COLS) + ") VALUES(" + ",".join("?" * len(TX_COLS)) + ")", vals))
         return cur.lastrowid
+
+    def add_transactions(self, txs: list) -> list:
+        """Insert several transactions in ONE database transaction (all or none); returns their ids."""
+        rows = []
+        for tx in txs:
+            tx = {**tx, "created_at": tx.get("created_at") or _now()}
+            vals = [tx.get(c) for c in TX_COLS]
+            vals[1] = _d(vals[1])
+            vals[9] = _d(vals[9]) if vals[9] else vals[1]
+            for i in (4, 5, 6):
+                vals[i] = num(vals[i])
+            if vals[6] is None:
+                vals[6] = 0.0
+            rows.append(vals)
+
+        def fn(conn):
+            ids = []
+            for vals in rows:
+                cur = conn.execute("INSERT INTO transactions(" + ",".join(TX_COLS) + ") VALUES(" + ",".join("?" * len(TX_COLS)) + ")", vals)
+                ids.append(cur.lastrowid)
+            return ids
+        ids, _ = self._write(fn)
+        return ids
+
+    # ------------------------------------------------------------------ the hedge ledger (append-only)
+    def add_hedge(self, rec: dict) -> int:
+        vals = []
+        for c in HEDGE_COLS:
+            v = rec.get(c)
+            if c == "created_at":
+                v = v or _now()
+            if isinstance(v, (dict, list)):
+                v = _dumps(v)
+            vals.append(v)
+        cur, _ = self._write(lambda conn: conn.execute(
+            "INSERT INTO hedge_recommendations(" + ",".join(HEDGE_COLS) + ") VALUES(" + ",".join("?" * len(HEDGE_COLS)) + ")", vals))
+        return cur.lastrowid
+
+    def hedges(self, limit: int = 200, source: str | None = None, ungraded_before: str | None = None) -> list[dict]:
+        sql, args = "SELECT * FROM hedge_recommendations WHERE 1=1", []
+        if source:
+            sql += " AND source = ?"; args.append(source)
+        if ungraded_before:
+            sql += " AND graded_on IS NULL AND eval_date <= ?"; args.append(ungraded_before)
+        rows = [dict(r) for r in self._q(sql + " ORDER BY id DESC LIMIT ?", args + [int(limit)])]
+        for r in rows:
+            for k in ("candidates", "selected", "detail"):
+                r[k] = _loads(r.get(k), None)
+        return rows
+
+    def grade_hedge(self, hedge_id: int, fields: dict) -> bool:
+        """Record the realised outcome ONCE (only while ungraded); the recommendation itself is never rewritten."""
+        sets = [c for c in HEDGE_GRADE_COLS if c in fields]
+        if not sets:
+            return False
+        vals = [num(fields[c]) for c in sets] + [_now(), int(hedge_id)]
+        _, n = self._write(lambda conn: conn.execute(
+            "UPDATE hedge_recommendations SET " + ",".join(f"{c} = ?" for c in sets) + ", graded_on = ? WHERE id = ? AND graded_on IS NULL", vals))
+        return n > 0
 
     def transactions(self, portfolio_id: str, include_voided: bool = False) -> list[dict]:
         sql = "SELECT * FROM transactions WHERE portfolio_id = ?" + ("" if include_voided else " AND voided_at IS NULL")
