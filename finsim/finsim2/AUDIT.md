@@ -13,6 +13,23 @@ BT = `finsim2/engine/backtest.py`, EQ = `finsim2/engine/equations.py`, U = `fins
 Status: **DONE / PARTIAL / MISSING / N/A**. Priority: **P0** (must fix before serious use) … **P3** (polish).
 Each row reads: Item | Status | Current implementation (file) | Limitation → Recommended change | Priority.
 
+**Fixed since this audit.** The rows below still describe the code as audited. These P0 items have since been
+fixed:
+
+| Area | Fix | Commit |
+|---|---|---|
+| Ledger | One validated replay (`Ledger._replay`): overdraft and oversell are rejected at any date, back-dated rows are re-validated, deletes are voided and audited | `be2af0f` |
+| Splits and dividends | Split and dividend events are stored; quantities follow splits after the trade's basis date; dividends are credited on the ex-date | `be2af0f` |
+| FX | USD-base pairs are valued as financed positions | `be2af0f` |
+| Performance | TWR, XIRR and benchmark tracking error / information ratio | `be2af0f` |
+| Backtests | 1-session execution lag, point-in-time direction, expanding ML standardisation, net-of-cost trades | `2686ef2` |
+| Macro | FRED first releases on their publication dates; NFCI dropped without vintages | `ae4b0f3` |
+| EPS | SEC per-share figures split-adjusted by splits after filing | `d74cebf` |
+| Scores | Shaffer Score v2: one point-in-time routine for history and live; calibration only from earlier out-of-sample scores; prediction ledger | `d74cebf` |
+| ML | ML v2: holdout, baselines, NO VERIFIED ML EDGE, separate direction / volatility / drawdown models, daily learning loop | `03657f8` |
+
+The full evaluation is in `SHAFFER_AUDIT.md`.
+
 ---
 
 ## 1. Portfolio accounting

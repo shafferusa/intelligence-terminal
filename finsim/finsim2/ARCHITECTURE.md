@@ -22,9 +22,9 @@ Market data (Yahoo daily history, FRED macro, SEC fundamentals)  ->  SQLite rese
 
 ```
 finsim2/
-  __main__.py            CLI: serve | open | status | stop | phone | refresh | research
+  __main__.py            CLI: serve | open | status | stop | phone | refresh | research | audit
   server.py              HTTP routes (/api/fs2/...), background jobs, static UI
-  shaffer_score.py       the Shaffer Score slot (unchanged contract)
+  shaffer_score.py       Shaffer Score v2 configuration: formula, constants, 15 families, priors, A and H tables
   data/
     universe.py          the research universe (UNIVERSE list of dicts), FRED_SERIES, horizons
     store.py             Store: SQLite (prices, macro, fundamentals, kv cache, predictions, model runs, portfolio)
@@ -48,6 +48,8 @@ finsim2/
     montecarlo.py        block bootstrap / GBM simulations
     scenario.py          factor-shock scenarios, historical analogues
     tracking.py          prediction log, realised scoring, model decay, correlation decay
+    shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
+    audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI
 ```
@@ -119,6 +121,54 @@ same window; `benchmark_*` are the old names) and alpha/beta against SPY.
  "interpretation": "Elevated near-term volatility", "history": {"dates": [...], "values": [...]},
  "applies": true, "note": "..."}
 ```
+
+## Shaffer Score v2 (engine/shaffer.py)
+
+`ShafferRun(research, asset).run(until)` is one forward sweep over the calendar.
+- An observation dated t (z-scores at t, the vol-scaled forward return t→t+h) joins the running sums at t + h + 1.
+- At the first session of each month, the evidence per signal is recomputed from those sums: PS, stability,
+  confidence, regime ratios, decay, direction, BH q-values and the family correlation matrix.
+- Scores are computed weekly and on the last session by `score_at`, the only scoring routine.
+- Matured scores feed the family validation V and the isotonic calibration from the next refit.
+- `compute_shaffer_score(asset, h, as_of)` is `run(until=as_of)`'s last record. The live score is the same call on
+  the latest session.
+
+Hierarchy:
+- A full run stores the per-signal evidence sums at each January in kv `shaffer_cp:{asset}:{VERSION}`
+  (horizons ≤ 12M).
+- `load_priors` sums every *other* asset's checkpoints by class and globally.
+- At a refit in year Y the asset uses the latest checkpoint year ≤ Y. The class IC is shrunk toward the global
+  (N0 = 50), and the asset PS toward the class (N0 = 20).
+
+The research bundle carries the result of `shaffer_full` (cached in kv by data version). `research.shaffer_series`
+gives the point-in-time score history used by backtests and as an ML baseline.
+
+## ML v2 (engine/ml.py)
+
+`train_horizon`:
+- Runs purged walk-forward on the first 85% of rows (development). Ensemble weights are the mean positive fold IC.
+- Scores the last 15% (holdout) once, with models trained on development rows that matured before it.
+- Compares every baseline with the ensemble on the same rows.
+
+The verified-edge rule has four conditions:
+- t ≥ 2 on n_eff;
+- the ensemble's IC beats each non-constant baseline by 0.01;
+- holdout IC > 0;
+- block-permutation p < 0.05.
+
+If any condition fails, the score is 0 and the message is `NO VERIFIED ML EDGE: <reasons>`.
+
+The direction, volatility and drawdown models are fitted separately (`_simple_wf`) against, respectively:
+- the expanding base rate (Brier);
+- current and EWMA volatility (RMSE);
+- the expanding drawdown frequency (Brier).
+
+Final models go to kv `mlmodels:{asset}`. `forecast_today` uses them. `server.App.daily_learning` runs after each
+full refresh; it forecasts every day and retrains monthly.
+
+`scores.agreement` compares Shaffer with ML, but only when the ML edge is verified. The combined score
+α·SS + (1 − α)·ML is evaluated only in the audit: α is chosen on the first half of the common out-of-sample period
+and tested on the second. It is never shown as a primary score.
 
 ## Store schema (SQLite, ~/.finsim2/research.db, WAL)
 

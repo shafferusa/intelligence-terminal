@@ -329,8 +329,10 @@ def aggregates(u: dict) -> dict:
                 beats[k] = {"cases": len(pairs), "ensemble_wins": sum(1 for e, b in pairs if e > b + 0.01), "mean_baseline_ic": (sum(b for _, b in pairs) / len(pairs)) if pairs else None,
                             "mean_ensemble_ic": (sum(e for e, _ in pairs) / len(pairs)) if pairs else None}
             ens = [x["ensemble"].get("ic") for _, x in mls if x["ensemble"].get("ic") is not None]
+            r2 = [x["ensemble"].get("r2_vs_mean") for _, x in mls if x["ensemble"].get("r2_vs_mean") is not None]
             agg["ml"][lab] = {"assets": len(mls), "verified": [a for a, x in mls if x.get("verified")], "mean_ensemble_ic": (sum(ens) / len(ens)) if ens else None,
-                              "baselines": beats,
+                              "baselines": {k: v for k, v in beats.items() if v["cases"]},
+                              "r2_vs_mean": r2, "r2_positive": sum(1 for v in r2 if v > 0),
                               "direction_verified": sum(1 for _, x in mls if (x.get("direction") or {}).get("verified")),
                               "vol_verified": sum(1 for _, x in mls if (x.get("volatility") or {}).get("verified")),
                               "vol_cases": sum(1 for _, x in mls if x.get("volatility")),
@@ -524,14 +526,17 @@ def markdown(u: dict, agg: dict) -> str:
         w("")
     w("## 24. ML against each baseline")
     w("")
-    w("Cases = assets where both had out-of-sample forecasts on the same rows; wins = ensemble rank IC above the baseline's by more than 0.01.")
+    w("Cases = assets where both had out-of-sample forecasts on the same rows; wins = ensemble rank IC above the baseline's by more than 0.01. "
+      "A constant forecast (zero) has no rank IC, so the zero and historical-mean baselines are also judged by squared error: "
+      "R² vs mean > 0 means the ensemble's out-of-sample errors were smaller than the expanding historical mean's.")
     w("")
     for lab in labs:
         m = agg["ml"].get(lab)
         if not m:
             continue
         w(f"**{lab}** — {m['assets']} assets; verified ML edge: {', '.join(m['verified']) or 'none'}; mean ensemble IC {_fmt(m['mean_ensemble_ic'])}; "
-          f"direction model verified in {m['direction_verified']}; volatility model verified in {m['vol_verified']}/{m['vol_cases']}; drawdown model verified in {m['dd_verified']}/{m['dd_cases']}")
+          f"direction model verified in {m['direction_verified']}; volatility model verified in {m['vol_verified']}/{m['vol_cases']}; drawdown model verified in {m['dd_verified']}/{m['dd_cases']}; "
+          f"R² vs mean > 0 in {m['r2_positive']}/{len(m['r2_vs_mean'])} (median {_fmt(sorted(m['r2_vs_mean'])[len(m['r2_vs_mean']) // 2]) if m['r2_vs_mean'] else '—'})")
         w("")
         w("| Baseline | Cases | Ensemble wins | Mean baseline IC | Mean ensemble IC (same rows) |")
         w("|---|---|---|---|---|")

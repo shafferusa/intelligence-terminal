@@ -66,6 +66,7 @@ holdings. You decide what to buy or sell. Design notes: `finsim2/ARCHITECTURE.md
 python3 -m finsim2 open               # starts its server (port 8865) if needed and opens the window
 python3 -m finsim2 refresh [--full]   # download / update the market history in this terminal (2–4 min the first time)
 python3 -m finsim2 research NVDA SPY --ml   # compute the evidence (and train the ML models) from the terminal
+python3 -m finsim2 audit [--workers 3]      # replay the Shaffer Score and ML over the universe -> finsim2/SHAFFER_AUDIT.md
 python3 -m finsim2 serve | status | stop | phone on
 ```
 
@@ -80,7 +81,9 @@ python3 -m finsim2 serve | status | stop | phone on
   after a fixed lag, and NFCI (re-estimated weekly) is left out; each research bundle's `data_notes` says which.
 - Point-in-time fundamentals come from SEC companyfacts, dated by filing date. The .gov user agent is the one in
   `CLAUDE.md`.
-- After the US close the server refreshes whatever is stale.
+- After the US close the server refreshes whatever is stale, then runs the daily learning loop: grade matured
+  forecasts, rescore the tracked assets (holdings, watchlist, core ETFs), forecast from the saved ML models and
+  retrain them monthly.
 
 **Method.** Every step is point in time; nothing uses data that was not known on the date it describes.
 - *Features.* About 60 per asset, grouped as returns, momentum, statistics, risk, volatility (incl. GARCH refitted
@@ -100,11 +103,16 @@ python3 -m finsim2 serve | status | stop | phone on
     agreement with the ML score;
   - a point-in-time history (weights refitted quarterly from outcomes known at the time) whose out-of-sample IC is
     reported and can be backtested.
-- *ML Lab.* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient boosting, all in pure Python.
-  They are trained walk-forward with purged folds and ranked by stable out-of-sample IC, not the best fold. The ML
-  score is an ensemble whose weights come only from earlier folds; it is zero when no model has beaten noise. The
-  lab also shows permutation importance by family and per-prediction explanations, fits pooled models at the
-  asset-class and global level, and logs every prediction, scoring it when it matures (model decay).
+- *ML Lab (v2).* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient boosting, all in pure
+  Python.
+  - Training is walk-forward with purged folds, and the last 15% of rows are held out untouched.
+  - The return ensemble must beat every baseline on the same rows: zero, historical mean, previous return,
+    momentum, mean reversion and the point-in-time Shaffer Score. It must also be significant, hold up on the
+    holdout and beat block-shuffled copies of itself.
+  - Otherwise the ML score is 0 and the lab says "NO VERIFIED ML EDGE" with the reasons.
+  - Direction (probability of a rise), future volatility and drawdown probability are separate problems, each
+    tested against its own baseline.
+  - Models are saved, forecast daily and retrained monthly. Every forecast is logged and graded when it matures.
 - *Pages.*
   - Dashboard, Markets and Watchlist.
   - Asset Research: the one-page answer for an asset.
@@ -123,31 +131,52 @@ python3 -m finsim2 serve | status | stop | phone on
 It never presents a simulated or fitted result as a forecast. Numbers come with their sample size, and weak
 evidence is labelled weak.
 
-**Shaffer Score.** A second, family-based score per asset and horizon, from −100 to +100:
+**Shaffer Score (v2).** The central, transparent score per asset and horizon, from −100 to +100:
 
-    SS(a,h,t) = 100 · tanh( Σ_f W_f · [ Σ_{i∈f} w_i · s_i · c_i · r_i · d_i ] · A_{f,a} · H_{f,h} / K )
+    SS(a,h,t) = 100 · tanh( Σ_f W_f,a,h,t · A_f,a · H_f,h · [ Σ_{i∈f} ω_i · s_i · c_i · r_i · d_i ] / K_a,h )
 
-The terms, all built from the same point-in-time evidence as the Quant Score:
-- s: the signal's bullish/bearish reading (capped z ÷ 2, turned by its historical direction).
-- w: its predictive strength as a share of its family.
-- c: confidence, from its t-statistic, independent sample size and stability.
-- r: regime adjustment.
-- d: decay (does the recent third of history still agree?).
-- W: family evidence weight.
-- A, H: asset-class and horizon applicability tables.
-- K: a calibration constant (10 years of weekly readings of SPY, TLT, GOLD, BTC and NVDA; median |score| ≈ 7,
-  one in twenty above ≈ 75).
+- Families: 15 of them, from Momentum to Relative Value, including composites such as risk-adjusted momentum,
+  trend quality, mean-reversion opportunity, rate duration and the credit signal. Each signal has an economic prior
+  direction (+, − or "learn from evidence").
+- s: the signal's reading, clip(z ÷ 2, −1, 1), turned by its direction.
+- w: predictive strength before t, the median of the IC, the IC implied by the hit rate and the IC implied by the
+  conditional-return spread, × stability. Small samples are shrunk toward the asset-class and global evidence.
+  That evidence comes from other assets' January checkpoints, known at the time.
+- c: confidence, min(1, √(n_eff/100)) × CI strength × (1 − ½q) × data quality.
+- r: the regime adjustment, shrunk for small samples.
+- d: decay (HEALTHY / WEAKENING / DECAYING / INSUFFICIENT DATA). It reduces a signal's weight gradually and never
+  flips its sign.
+- ω: a within-family correlation penalty, so duplicate signals count once.
+- W: family evidence × out-of-sample validation V.
+- A, H: asset-class and horizon applicability.
+- K: 0.10 × Σ A·H.
+
+A signal is reversed only on strong, stable evidence (|t| ≥ 3, n_eff ≥ 60), never on a tiny sample.
+
+There is one scoring routine, `engine/shaffer.compute_shaffer_score(asset, horizon, as_of)`. The 25-year history
+and today's score both come from it. Evidence is refitted monthly from outcomes known at the time, and nothing is
+retrofitted. The tests check that:
+- a past date scored directly equals its record;
+- later prices do not change it.
+
+A calibrated score maps the raw score to realised forward returns with an isotonic curve, learned only from earlier
+out-of-sample scores. An expected return is shown only when that calibration is significant. Every live score is
+written to the append-only prediction ledger and graded once when it matures.
 
 Where it appears:
-- Every asset's Analytics page has a **Shaffer Score** tab. It shows the formula, the score at every horizon next to
-  the Quant Score, and each family's W, A, H, bracket and contribution. Click a family for its signals' s, w, c, r,
-  d and IC, t, q, n_eff.
-- It is also on Asset Research, in the evidence strip, and in the Markets, Watchlist and Positions tables.
+- Every asset's Analytics page has a **Shaffer Score** tab. It shows the horizon table, family points, the
+  strongest and the contradicting signals, the calibration table, the historical record, results by regime,
+  family validation and definitions.
+- It is also on Asset Research, in the evidence strip (with the Shaffer vs ML agreement), and in the Markets,
+  Watchlist and Positions tables.
 
-The applicability tables and constants are at the top of `finsim2/shaffer_score.py`. To replace the algorithm
-without a code change, drop a file at `~/.finsim2/shaffer_score.py` (or set `FINSIM2_SHAFFER`) that defines
-`VERSION` and either `score_asset(inputs)` (same inputs and output as the built-in) or the older
-`score(metrics, asset) -> float`. A file that fails to load falls back to the built-in, and the page says so.
+`python -m finsim2 audit` replays it over the whole universe and writes `finsim2/SHAFFER_AUDIT.md`. That report
+covers IC and hit rate by horizon, returns by score band, results by asset class and regime, family value, decay,
+and ML against baselines.
+
+Its constants and tables are at the top of `finsim2/shaffer_score.py`. A file at `~/.finsim2/shaffer_score.py`
+(or `FINSIM2_SHAFFER`) can add a custom live-only score. It is shown beside the canonical one, never instead of it
+and never in the history.
 
 The standard-library equation library it evaluates lives in `finsim/quant/`:
 - returns and statistics (1–20), regression (21–33), time series (34–43), volatility incl. GARCH (44–50);
