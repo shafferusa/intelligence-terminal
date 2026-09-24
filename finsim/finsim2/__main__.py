@@ -1,4 +1,5 @@
-"""CLI: `python -m finsim2 open` (start the server if needed and open the window), `serve`, `status`, `stop`, `phone`."""
+"""CLI: `python -m finsim2 open` (start the server if needed and open the window), `serve`, `status`, `stop`, `phone`,
+`refresh` (download the market history) and `research` (compute evidence, optionally train ML models)."""
 from __future__ import annotations
 
 import argparse
@@ -16,7 +17,7 @@ def configure() -> None:
     home = os.environ.get("FINSIM2_HOME") or os.path.join(os.path.expanduser("~"), ".finsim2")
     os.environ["FINSIM_HOME"] = home
     os.environ["FINSIM_PORT"] = os.environ.get("FINSIM2_PORT") or str(DEFAULT_PORT)
-    os.environ["FINSIM_DB"] = os.environ.get("FINSIM2_DB") or os.path.join(home, "finsim2.db")
+    os.environ["FINSIM_DB"] = os.environ.get("FINSIM2_RESEARCH_DB") or os.environ.get("FINSIM2_DB") or os.path.join(home, "research.db")
     from finsim import app
     app.APP_NAME = APP_NAME
 
@@ -41,13 +42,34 @@ def main(argv=None) -> int:
     sub.add_parser("stop", help="stop the FinSim2 server")
     ph = sub.add_parser("phone", help="reach FinSim2 from your phone (behind an access key)")
     ph.add_argument("state", nargs="?", choices=["on", "off", "show"], default="on")
+    rf = sub.add_parser("refresh", help="download / update the market history in this terminal")
+    rf.add_argument("--full", action="store_true", help="re-download every asset's full history")
+    rs = sub.add_parser("research", help="compute the evidence for assets (and optionally train their ML models)")
+    rs.add_argument("assets", nargs="*", help="asset ids (default: SPY QQQ TLT GOLD)")
+    rs.add_argument("--ml", action="store_true", help="also train the walk-forward ML models")
     args = ap.parse_args(argv)
     if args.cmd == "serve":
-        from finsim.api.server import serve
-        from .server import Router2
+        from .server import serve
         host = args.host or app.resolve_host()
-        serve(args.db, host, args.port, args.key or (None if host in app.LOCAL_HOSTS else app.access_key()), static_dir=STATIC_DIR,
-              router_cls=Router2, name="finsim2")
+        serve(args.db, host, args.port, args.key or (None if host in app.LOCAL_HOSTS else app.access_key()))
+        return 0
+    if args.cmd == "refresh":
+        from .data.refresh import refresh
+        from .data.store import Store
+        st = Store(app.db_path())
+        res = refresh(st, full=args.full, progress=lambda d, n, m: print(f"[{d}/{n}] {m}", flush=True))
+        print(f"done in {res.get('seconds')}s; errors: {res.get('errors') or 'none'}")
+        return 0
+    if args.cmd == "research":
+        from .data.store import Store
+        from .engine.research import Research
+        from .engine import ml
+        r = Research(Store(app.db_path()))
+        for a in args.assets or ["SPY", "QQQ", "TLT", "GOLD"]:
+            b = r.bundle(a)
+            print(a, b["regime"]["description"], {k: (round(v["score"]) if v.get("score") is not None else None) for k, v in b["horizons"].items()})
+            if args.ml:
+                ml.train_asset(r, a, progress=lambda d, n, m: print("  ", m, flush=True))
         return 0
     if args.cmd == "open":
         return app.cmd_open()

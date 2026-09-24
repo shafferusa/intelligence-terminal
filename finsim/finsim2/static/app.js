@@ -1,4 +1,4 @@
-/* FinSim2 — the portfolio-manager edition. One book, one amount, a clean interface on FinSim's engine. */
+/* FinSim2 — a quantitative evidence engine for portfolio management. The user decides; the page shows the evidence. */
 (() => {
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
@@ -43,25 +43,6 @@
   function drawer(html) { const d = $('#drawer'); d.innerHTML = `<div class="row" style="justify-content:flex-end"><button class="ghost" id="drawerX">✕ Close</button></div>${html}`; d.classList.add('open'); $('#drawerX').onclick = closeDrawer; return d; }
   const closeDrawer = () => $('#drawer').classList.remove('open');
   const busy = async (btn, fn) => { if (btn) btn.disabled = true; try { return await fn(); } catch (e) { toast(e.message, true); } finally { if (btn) btn.disabled = false; } };
-
-  // ---------------------------------------------------------------- state
-  const S = { worlds: [], wid: pref.get('wid', null), world: null, pid: null, dash: null, secs: null, secsFor: null };
-  const W = () => `/worlds/${S.wid}`;
-  const P = () => `/worlds/${S.wid}/portfolios/${S.pid}`;
-  const isLive = () => S.world && S.world.clock && S.world.clock.mode === 'REAL_TIME';
-  async function loadWorlds() { S.worlds = await api('/worlds'); if (!S.worlds.find(w => w.id === S.wid)) S.wid = S.worlds.length ? S.worlds[S.worlds.length - 1].id : null; pref.set('wid', S.wid); }
-  async function loadWorld() {
-    if (!S.wid) { S.world = null; S.pid = null; S.dash = null; return; }
-    const world = await api(W());
-    const pid = (world.portfolios.find(p => p.job === 'PORTFOLIO_MANAGER') || world.portfolios[0] || {}).id;
-    const dash = await api(`/worlds/${S.wid}/portfolios/${pid}/dashboard`);
-    S.world = world; S.pid = pid; S.dash = dash;
-  }
-  async function securities(force = false) {
-    const key = S.wid + '|' + (S.world && S.world.current_date);
-    if (!S.secs || S.secsFor !== key || force) { S.secs = await api(W() + '/securities'); S.secsFor = key; }
-    return S.secs;
-  }
 
   // ---------------------------------------------------------------- charts (inline SVG, themed by tokens)
   const PALETTE = ['--accent', '--teal', '--violet', '--orange', '--pink', '--warn', '--pos', '--neg'];
@@ -125,44 +106,130 @@
     render();
   }
 
-  // ---------------------------------------------------------------- navigation
-  const ICON = {
-    overview: '<path d="M3 13h8V3H3zm10 8h8V11h-8zM3 21h8v-6H3zm10-18v6h8V3z"/>',
-    trade: '<path d="M7 17l10-10M17 7h-7M17 7v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    positions: '<path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    markets: '<path d="M3 17l5-6 4 3 6-8 3 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>',
-    fx: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-    risk: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
-    performance: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    activity: '<path d="M3 12h4l3 8 4-16 3 8h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>',
-    analytics: '<path d="M5 4v16h15" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15c2-5 4-7 6-4s3 1 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-    shaffer: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
-    settings: '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
-  };
-  const NAV = [['', 'Fund'], ['overview', 'Overview'], ['trade', 'Trade'], ['positions', 'Positions'], ['fx', 'Cash & FX'], ['', 'Markets & research'], ['markets', 'Markets'], ['analytics', 'Analytics'], ['shaffer', 'Shaffer Score'], ['', 'Oversight'], ['risk', 'Risk'], ['performance', 'Performance'], ['activity', 'Activity'], ['settings', 'Settings']];
-  const TITLES = { overview: 'Overview', trade: 'Trade', positions: 'Positions', fx: 'Cash & FX', markets: 'Markets', analytics: 'Analytics', shaffer: 'Shaffer Score', risk: 'Risk', performance: 'Performance', activity: 'Activity', settings: 'Settings', asset: 'Asset', welcome: 'Start a fund' };
-  function renderNav(active) {
-    $('#nav').innerHTML = NAV.map(([k, label]) => !k ? `<div class="sec">${label}</div>` : `<a href="#/${k}" class="${active === k ? 'on' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${ICON[k]}</svg>${label}${k === 'shaffer' ? '<span class="pill warn">soon</span>' : ''}</a>`).join('');
-    $$('#nav a').forEach(a => a.onclick = () => $('#side').classList.remove('open'));
+
+  // ---------------------------------------------------------------- state
+  const S = { status: null, assets: null, current: pref.get('asset', 'SPY'), features: null, jobsSeen: {} };
+  const HZ = ['1D', '1W', '1M', '3M', '6M', '12M', '3Y', '5Y', '10Y'];
+  async function assets() { if (!S.assets) S.assets = await api('/fs2/assets'); return S.assets; }
+  async function featureMeta() { if (!S.features) S.features = await api('/fs2/features'); return S.features; }
+  const assetName = id => ((S.assets || []).find(a => a.id === id) || {}).name || id;
+  const CLS = { EQUITY: 'Stocks', ETF: 'ETFs', INDEX: 'Indices', TREASURY: 'Treasuries', CORP_BOND: 'Corporate bonds', COMMODITY: 'Commodities', FUTURE: 'Futures', FX: 'Currencies', CRYPTO: 'Crypto', Cash: 'Cash' };
+  const clsName = k => CLS[k] || String(k || 'Other').replace(/_/g, ' ');
+  const kpi = (k, v, s = '') => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  const pct0 = v => N(v) == null ? '—' : Math.round(N(v) * 100) + '%';
+
+  // ---------------------------------------------------------------- more charts
+  const divColor = (v, max = 1) => { if (v == null) return 'transparent'; const t = Math.max(-1, Math.min(1, v / max)); const c = t >= 0 ? css('--pos') : css('--neg'); return `color-mix(in srgb, ${c} ${Math.round(Math.abs(t) * 85)}%, var(--surface))`; };
+  function heatmap(el, rows, cols, cell, o = {}) {
+    // rows: [{key,label,sub}], cols: [{key,label}], cell(row,col) -> {v, text, title}
+    el.innerHTML = `<div class="tbl-wrap" style="max-height:${o.maxH || 720}px"><table class="heat"><thead><tr><th class="l">${esc(o.corner || '')}</th>${cols.map(c => `<th style="text-align:center">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr><td class="l"><b>${esc(r.label)}</b>${r.sub ? `<span class="sub">${esc(r.sub)}</span>` : ''}</td>${cols.map(c => { const x = cell(r, c) || {}; return `<td class="hc ${x.v != null && o.onCell ? 'click' : ''}" data-r="${esc(r.key)}" data-c="${esc(c.key)}" title="${esc(x.title || '')}" style="background:${divColor(x.v, o.max || 1)};text-align:center">${x.text != null ? x.text : ''}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+    if (o.onCell) $$('td.hc.click', el).forEach(td => td.onclick = () => o.onCell(td.dataset.r, td.dataset.c));
+  }
+  function hbars(el, items, o = {}) {
+    // items: [{label, value, sub}] horizontal bars, 0..max (or signed)
+    if (!items.length) { el.innerHTML = `<div class="empty">${esc(o.empty || 'Nothing to show')}</div>`; return; }
+    const max = Math.max(...items.map(i => Math.abs(i.value))) || 1; const f = o.fmt || (v => fmt.pct(v, 0));
+    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:7px">${items.map((i, k) => `<div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 70px;gap:10px;align-items:center;font-size:12.5px"><span title="${esc(i.sub || '')}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.label)}</span><div style="height:12px;background:var(--surface-2);border-radius:4px;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:${Math.abs(i.value) / max * 100}%;background:${i.value < 0 ? css('--neg') : (o.color || col(k))};border-radius:4px;opacity:.85"></div></div><b class="num" style="text-align:right">${esc(f(i.value))}</b></div>`).join('')}</div>`;
+  }
+  function scatter(el, pts, o = {}) {
+    // pts: [{x, y, label, color, r, line}] ; o.line: [{x,y}] drawn as a curve
+    const w = el.clientWidth || 600, h = o.h || 300, pl = 56, pr = 14, pt = 12, pb = 34;
+    const all = pts.concat(o.line || []);
+    if (!all.length) { el.innerHTML = '<div class="empty">Nothing to plot</div>'; return; }
+    let x0 = Math.min(...all.map(p => p.x)), x1 = Math.max(...all.map(p => p.x)), y0 = Math.min(...all.map(p => p.y)), y1 = Math.max(...all.map(p => p.y));
+    const px = (x1 - x0) * 0.08 || 0.01, py = (y1 - y0) * 0.1 || 0.01; x0 -= px; x1 += px; y0 -= py; y1 += py;
+    const X = v => pl + (v - x0) * (w - pl - pr) / (x1 - x0), Y = v => pt + (y1 - v) * (h - pt - pb) / (y1 - y0);
+    const fx = o.fmtX || (v => fmt.pct(v, 0)), fy = o.fmtY || (v => fmt.pct(v, 0));
+    let g = niceTicks(y0, y1).map(v => `<line class="grid-line" x1="${pl}" x2="${w - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${pl - 8}" y="${Y(v) + 4}" text-anchor="end">${esc(fy(v))}</text>`).join('');
+    g += niceTicks(x0, x1, 5).map(v => `<text x="${X(v)}" y="${h - 14}" text-anchor="middle">${esc(fx(v))}</text>`).join('');
+    g += `<text x="${w / 2}" y="${h - 1}" text-anchor="middle">${esc(o.xLabel || '')}</text>`;
+    if (o.line && o.line.length) g += `<path d="${o.line.map((p, i) => (i ? 'L' : 'M') + X(p.x).toFixed(1) + ' ' + Y(p.y).toFixed(1)).join('')}" fill="none" stroke="${css('--accent')}" stroke-width="2"/>`;
+    g += pts.map(p => `<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="${p.r || 5}" fill="${p.color || css('--faint')}" opacity=".9"><title>${esc(p.label || '')}: ${esc(fx(p.x))}, ${esc(fy(p.y))}</title></circle>${p.text ? `<text x="${X(p.x) + 7}" y="${Y(p.y) - 6}" style="fill:var(--text);font-weight:600">${esc(p.text)}</text>` : ''}`).join('');
+    el.innerHTML = `<svg class="chart" viewBox="0 0 ${w} ${h}" width="100%" height="${h}">${g}</svg>`;
+  }
+  function histogram(el, bins, counts, o = {}) {
+    const w = el.clientWidth || 500, h = o.h || 170, pl = 10, pr = 10, pt = 8, pb = 22;
+    if (!counts || !counts.length) { el.innerHTML = '<div class="empty">No distribution</div>'; return; }
+    const m = Math.max(...counts) || 1; const bw = (w - pl - pr) / counts.length;
+    const marks = (o.mark != null && bins.length) ? (() => { const lo = bins[0], hi = bins[bins.length - 1]; const x = pl + (o.mark - lo) / ((hi - lo) || 1) * (w - pl - pr); return `<line x1="${x}" x2="${x}" y1="${pt}" y2="${h - pb}" stroke="${css('--warn')}" stroke-width="2"/>`; })() : '';
+    el.innerHTML = `<svg class="chart" viewBox="0 0 ${w} ${h}" width="100%" height="${h}">${counts.map((c, i) => `<rect x="${pl + i * bw + 1}" y="${pt + (h - pt - pb) * (1 - c / m)}" width="${Math.max(1, bw - 2)}" height="${(h - pt - pb) * c / m}" fill="${(bins[i] || 0) < 0 ? css('--neg') : css('--accent')}" opacity=".75"/>`).join('')}${marks}<text x="${pl}" y="${h - 6}">${esc((o.fmt || (v => fmt.pct(v, 1)))(bins[0]))}</text><text x="${w - pr}" y="${h - 6}" text-anchor="end">${esc((o.fmt || (v => fmt.pct(v, 1)))(bins[bins.length - 1]))}</text></svg>`;
+  }
+  function cone(el, band, start, o = {}) {
+    const w = el.clientWidth || 600, h = o.h || 280, pl = 70, pr = 12, pt = 10, pb = 24;
+    if (!band || !band.length) { el.innerHTML = ''; return; }
+    const days = [0, ...band.map(b => b.day)];
+    const get = k => [start, ...band.map(b => b[k])];
+    const hi = Math.max(...get('p95')), lo = Math.min(...get('p5'));
+    const X = d => pl + d / days[days.length - 1] * (w - pl - pr), Y = v => pt + (hi - v) / ((hi - lo) || 1) * (h - pt - pb);
+    const area = (a, b, c, op) => `<path d="${days.map((d, i) => (i ? 'L' : 'M') + X(d) + ' ' + Y(get(a)[i])).join('')} ${days.slice().reverse().map((d, i) => 'L' + X(d) + ' ' + Y(get(b)[days.length - 1 - i])).join('')} Z" fill="${c}" opacity="${op}"/>`;
+    const line = (k, c, wd) => `<path d="${days.map((d, i) => (i ? 'L' : 'M') + X(d) + ' ' + Y(get(k)[i])).join('')}" fill="none" stroke="${c}" stroke-width="${wd}"/>`;
+    const g = niceTicks(lo, hi).map(v => `<line class="grid-line" x1="${pl}" x2="${w - pr}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${pl - 8}" y="${Y(v) + 4}" text-anchor="end">${esc(fmt.big(v))}</text>`).join('');
+    el.innerHTML = `<svg class="chart" viewBox="0 0 ${w} ${h}" width="100%" height="${h}">${g}${area('p95', 'p5', css('--accent'), .12)}${area('p75', 'p25', css('--accent'), .22)}${line('p50', css('--accent'), 2.2)}<line x1="${pl}" x2="${w - pr}" y1="${Y(start)}" y2="${Y(start)}" stroke="${css('--faint')}" stroke-dasharray="4 4"/><text x="${w - pr}" y="${h - 6}" text-anchor="end">${esc(o.label || (days[days.length - 1] + ' sessions'))}</text></svg><div class="legend"><span><i style="background:${css('--accent')};opacity:.35"></i>25–75th percentile</span><span><i style="background:${css('--accent')};opacity:.15"></i>5–95th percentile</span><span><i style="background:${css('--accent')}"></i>median</span></div>`;
   }
 
-  function renderShell() {
-    const fb = $('#fundBox');
-    if (!S.world || !S.dash) { fb.innerHTML = '<span class="muted">No fund yet</span>'; $('#topKpis').innerHTML = ''; $('#clockBox').innerHTML = ''; return; }
-    const d = S.dash;
-    fb.innerHTML = `<div class="row" style="justify-content:space-between"><b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(S.world.name)}</b><span class="pill ${isLive() ? 'pos' : 'acc'}"><span class="dot"></span>${isLive() ? 'Live' : 'Practice'}</span></div>
-      <div class="muted" style="margin-top:4px">${esc(d.level_title || 'Portfolio manager')} · ${fmt.date(S.world.current_date)}</div>
-      ${S.worlds.length > 1 ? `<select id="fundSel">${S.worlds.map(w => `<option value="${w.id}" ${w.id === S.wid ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}</select>` : ''}`;
-    const fs = $('#fundSel'); if (fs) fs.onchange = async () => { S.wid = fs.value; pref.set('wid', S.wid); S.secs = null; await loadWorld(); renderShell(); route(); };
-    const cashTot = (d.cash_accounts || []).reduce((a, c) => a + Number(c.base_value || 0), 0);
-    $('#topKpis').innerHTML = `<div class="k"><span>NAV</span><b>${fmt.money(d.nav)}</b></div><div class="k"><span>Today</span><b class="${sign(d.day_pnl)}">${fmt.signed(d.day_pnl)}</b></div>
-      <div class="k hide-sm"><span>Since start</span><b class="${sign(d.return_since_inception)}">${fmt.spct(d.return_since_inception)}</b></div><div class="k hide-md"><span>Cash</span><b>${fmt.big(cashTot)}</b></div>`;
-    const tw = S.world.trading_window || {};
-    $('#clockBox').innerHTML = isLive()
-      ? `<span class="pill ${tw.open ? 'pos' : 'warn'}" title="${esc(tw.reason || '')}"><span class="dot"></span>${tw.session_running ? 'Market open' : 'After hours'} · next update ${S.world.clock.next_update ? new Date(S.world.clock.next_update).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</span>`
-      : `<button class="primary small" id="advBtn" title="process the next trading day">Next day ▸</button>`;
-    const ab = $('#advBtn'); if (ab) ab.onclick = () => busy(ab, async () => { const r = await post(W() + '/advance', { days: 1 }); await loadWorld(); renderShell(); route(); toast(`Moved to ${fmt.date(S.world.current_date)}`); });
+  // ---------------------------------------------------------------- shared evidence components
+  const scoreCls = s => N(s) == null ? '' : s >= 15 ? 'pos' : s <= -15 ? 'neg' : '';
+  const scoreTxt = s => N(s) == null ? '—' : (s > 0 ? '+' : s < 0 ? '−' : '') + Math.abs(Math.round(s));
+  const confPill = c => !c ? '' : `<span class="pill ${c.label === 'High' ? 'pos' : c.label === 'Medium' ? 'warn' : ''}" title="evidence ${pct0((c.parts || {}).evidence)} · sample ${pct0((c.parts || {}).sample_size)} · stability ${pct0((c.parts || {}).stability)} · out-of-sample accuracy ${pct0((c.parts || {}).accuracy)}">${pct0(c.value)} ${esc(c.label)}</span>`;
+  const sigPill = s => !s ? '<span class="faint">—</span>' : `<span class="pill ${/Bullish/.test(s) ? 'pos' : /Bearish/.test(s) ? 'neg' : ''}">${esc(s)}</span>`;
+  function scoreStrip(hs, o = {}) {
+    // one column per horizon: quant score, ML score, confidence, expected return ± error
+    return `<div class="tbl-wrap"><table class="strip"><thead><tr><th class="l"></th>${HZ.map(h => `<th style="text-align:center">${h}</th>`).join('')}</tr></thead><tbody>
+      <tr><td class="l"><b>Quant score</b><span class="sub">equation-driven, −100..100</span></td>${HZ.map(h => { const r = hs[h] || {}; return `<td style="text-align:center;background:${divColor(r.score, 100)}" title="${esc(r.reason || r.label || '')}"><b class="num">${scoreTxt(r.score)}</b></td>`; }).join('')}</tr>
+      <tr><td class="l"><b>ML score</b><span class="sub">walk-forward ensemble</span></td>${HZ.map(h => { const r = hs[h] || {}; return `<td style="text-align:center;background:${divColor(r.ml_score, 100)}"><span class="num">${scoreTxt(r.ml_score)}</span></td>`; }).join('')}</tr>
+      <tr><td class="l">Agreement</td>${HZ.map(h => { const a = (hs[h] || {}).agreement; return `<td style="text-align:center">${a ? `<span class="pill ${a === 'HIGH' ? 'pos' : a === 'LOW' ? 'neg' : 'warn'}">${a}</span>` : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
+      <tr><td class="l">Confidence</td>${HZ.map(h => `<td style="text-align:center">${(hs[h] || {}).score != null ? confPill((hs[h] || {}).confidence) : '<span class="faint">—</span>'}</td>`).join('')}</tr>
+      <tr><td class="l">Expected return<span class="sub">± typical historical error</span></td>${HZ.map(h => { const e = (hs[h] || {}).expected; return `<td style="text-align:center;font-size:12px">${e ? `<b class="${sign(e.expected)}">${fmt.spct(e.expected, 1)}</b><span class="sub">± ${fmt.pct(e.error, 1)}</span>` : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
+      <tr><td class="l">Out-of-sample IC<span class="sub">point-in-time score</span></td>${HZ.map(h => { const x = ((hs[h] || {}).oos || {}); return `<td style="text-align:center;font-size:12px" title="p = ${x.p != null ? fmt.num(x.p, 3) : '—'}, ${x.n || 0} rows">${x.ic != null ? fmt.num(x.ic, 2) : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
+    </tbody></table></div>`;
   }
+  function matters(list) {
+    return (list || []).slice(0, 6).map((m, i) => `<div class="row" style="padding:5px 0;border-top:1px solid var(--border);flex-wrap:nowrap"><span class="faint" style="width:18px">${i + 1}</span><b style="flex:1">${esc(m.family)}</b><span class="cell-bar bar" style="width:90px"><i style="width:${Math.round(m.share * 100 / ((list[0] || {}).share || 1))}%"></i></span><span class="pill ${m.importance === 'HIGH' ? 'acc' : m.importance === 'MEDIUM' ? 'warn' : ''}">${m.importance}</span></div>`).join('') || '<div class="empty">Not enough evidence</div>';
+  }
+  function explainBlock(ex) {
+    if (!ex) return '<div class="empty">No explanation yet</div>';
+    const li = (xs, c) => (xs || []).map(x => `<div class="row" style="flex-wrap:nowrap;padding:3px 0"><span style="flex:1">${esc(x.label)} <span class="faint">${esc(x.family)}</span></span><b class="num ${c}">${x.contribution > 0 ? '+' : ''}${fmt.num(x.contribution, 3)}</b></div>`).join('') || '<div class="faint">none</div>';
+    return `<div class="stack" style="gap:10px"><div><div class="pos" style="font-weight:650;margin-bottom:2px">Bullish</div>${li(ex.bullish, 'pos')}</div><div><div class="neg" style="font-weight:650;margin-bottom:2px">Bearish</div>${li(ex.bearish, 'neg')}</div><div><div class="muted" style="font-weight:650;margin-bottom:2px">Neutral</div>${li(ex.neutral, '')}</div></div>`;
+  }
+  const varTxt = v => { if (v == null) return '—'; if (typeof v === 'number') return fmt.num(v, Math.abs(v) < 1 ? 4 : 2); if (Array.isArray(v)) return v.length > 4 ? `${v.length} values` : v.map(varTxt).join(', '); if (typeof v === 'object') { const e = Object.entries(v); return e.slice(0, 3).map(([k, x]) => `${k} ${varTxt(x)}`).join(', ') + (e.length > 3 ? ' …' : ''); } return String(v); };
+  function analyticCard(r) {
+    // the standardised output: value, percentile, direction, signal, usefulness, confidence, best horizon, hit rate, IC, sample
+    const hist = r.history && r.history.values && r.history.values.length > 3 ? spark(r.history.values, 120, 30) : '';
+    return `<div class="acard ${r.applies === false ? 'na' : ''}"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><div><div class="faint" style="font-size:11px">${esc(r.id || '')} ${esc(r.family || '')}</div><b>${esc(r.name)}</b></div>${sigPill(r.signal)}</div>
+      <div class="row" style="align-items:flex-end;justify-content:space-between;margin-top:6px"><div class="av">${esc(r.display != null ? r.display : (r.value == null ? '—' : fmt.num(r.value, 3)))}</div>${hist}</div>
+      <div class="meta">${r.percentile != null ? `<span>${Math.round(r.percentile * 100)}th pct</span>` : ''}${r.direction ? `<span>${esc(r.direction)}</span>` : ''}${r.best_horizon ? `<span>best ${esc(r.best_horizon)}</span>` : ''}${r.usefulness != null ? `<span title="evidence-weighted IC">use ${fmt.num(r.usefulness, 2)}</span>` : ''}${r.hit_rate != null ? `<span>hit ${fmt.pct(r.hit_rate, 0)}</span>` : ''}${r.ic != null ? `<span>IC ${fmt.num(r.ic, 2)}</span>` : ''}${r.n_eff != null ? `<span title="independent observations">n_eff ${fmt.num(r.n_eff, 0)}</span>` : ''}</div>
+      ${r.interpretation ? `<div class="interp">${esc(r.interpretation)}</div>` : ''}${r.note ? `<div class="faint" style="font-size:11.5px">${esc(r.note)}</div>` : ''}</div>`;
+  }
+
+  // ---------------------------------------------------------------- navigation
+  const ICON = {
+    dashboard: '<path d="M3 13h8V3H3zm10 8h8V11h-8zM3 21h8v-6H3zm10-18v6h8V3z"/>',
+    portfolio: '<path d="M4 7h16v12H4zM9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+    markets: '<path d="M3 17l5-6 4 3 6-8 3 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>',
+    asset: '<circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    analytics: '<path d="M5 4v16h15" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15c2-5 4-7 6-4s3 1 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    quant: '<path d="M4 6h16M4 12h10M4 18h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="16" r="3" fill="none" stroke="currentColor" stroke-width="2"/>',
+    ml: '<circle cx="6" cy="6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="18" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="12" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 7l8 4M8 17l8-4" stroke="currentColor" stroke-width="1.6"/>',
+    risk: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+    backtests: '<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    watchlist: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+    settings: '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  };
+  const NAV = [['', 'Portfolio'], ['dashboard', 'Dashboard'], ['portfolio', 'Portfolio'], ['risk', 'Risk'], ['watchlist', 'Watchlist'], ['', 'Research'], ['markets', 'Markets'], ['asset', 'Asset Research'], ['analytics', 'Analytics'], ['quant', 'Quant Lab'], ['ml', 'ML Lab'], ['backtests', 'Backtests'], ['', ''], ['settings', 'Settings']];
+  const TITLES = { dashboard: 'Dashboard', portfolio: 'Portfolio', risk: 'Risk', watchlist: 'Watchlist', markets: 'Markets', asset: 'Asset Research', analytics: 'Analytics', quant: 'Quant Lab', ml: 'ML Lab', backtests: 'Backtests', settings: 'Settings', setup: 'Getting started' };
+  function renderNav(active) {
+    $('#nav').innerHTML = NAV.map(([k, label]) => !k ? (label ? `<div class="sec">${label}</div>` : '<div style="height:8px"></div>') : `<a href="#/${k}${['asset', 'analytics', 'quant', 'ml'].includes(k) ? '/' + encodeURIComponent(S.current) : ''}" class="${active === k ? 'on' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${ICON[k]}</svg>${label}</a>`).join('');
+    $$('#nav a').forEach(a => a.onclick = () => $('#side').classList.remove('open'));
+  }
+  function renderShell() {
+    const st = S.status || {};
+    const jobs = st.jobs || [];
+    $('#fundBox').innerHTML = `<div class="row" style="justify-content:space-between"><b>Data</b>${st.data_ready ? `<span class="pill pos"><span class="dot"></span>${esc(st.last_price_date || '')}</span>` : '<span class="pill warn">not loaded</span>'}</div>
+      <div class="muted" style="margin-top:4px">${st.assets || 0} assets · ${st.spy_rows ? Math.round(st.spy_rows / 252) + ' years' : '—'}</div>
+      ${jobs.length ? jobs.map(j => `<div style="margin-top:8px"><div class="row" style="justify-content:space-between;font-size:12px"><span>${esc(j.kind)} ${esc(j.key)}</span><span class="faint">${j.total ? Math.round(j.done / j.total * 100) + '%' : '…'}</span></div><div class="bar"><i style="width:${j.total ? j.done / j.total * 100 : 5}%"></i></div><div class="faint" style="font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(j.message || '')}</div></div>`).join('') : `<button class="small" id="refreshBtn" style="margin-top:8px;width:100%;justify-content:center">Refresh data</button>`}`;
+    const rb = $('#refreshBtn'); if (rb) rb.onclick = () => busy(rb, async () => { await post('/fs2/refresh', {}); toast('Refreshing prices, macro and fundamentals'); await loadStatus(); });
+  }
+  async function loadStatus() { try { S.status = await api('/fs2/status'); } catch (e) { S.status = null; } renderShell(); }
 
   // ---------------------------------------------------------------- router
   const pages = {};
@@ -170,401 +237,157 @@
   async function route() {
     const seq = ++routeSeq;
     const parts = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
-    let page = parts[0] || 'overview';
-    if (!S.wid) page = 'welcome';
-    if (!pages[page]) page = 'overview';
-    renderNav(page === 'asset' ? 'markets' : page);
+    let page = parts[0] || 'dashboard';
+    if (S.status && !S.status.data_ready) page = 'setup';
+    if (!pages[page]) page = 'dashboard';
+    if (['asset', 'analytics', 'quant', 'ml'].includes(page) && parts[1]) { S.current = parts[1]; pref.set('asset', S.current); }
+    renderNav(page);
     $('#pageTitle').textContent = TITLES[page] || 'FinSim2';
     const main = $('#main');
     main.innerHTML = '<div class="skeleton"></div>';
     try { await pages[page](main, parts.slice(1), () => seq === routeSeq); }
-    catch (e) { if (seq === routeSeq) main.innerHTML = `<div class="card"><h2>Something went wrong</h2><p class="muted">${esc(e.message)}</p></div>`; }
+    catch (e) { if (seq === routeSeq) main.innerHTML = `<div class="card"><h2>Could not load this page</h2><p class="muted">${esc(e.message)}</p></div>`; }
   }
   window.addEventListener('hashchange', route);
-
-  // ---------------------------------------------------------------- start a fund
-  pages.welcome = async (main) => {
-    let amount = 100e6, mode = 'LIVE';
-    const presets = [[1e6, '$1M', 'a small book'], [10e6, '$10M', 'a sleeve'], [100e6, '$100M', 'a typical fund'], [1e9, '$1B', 'a flagship fund']];
-    main.innerHTML = `<div class="welcome">
-      <h1>Run a fund.</h1><p class="muted" style="font-size:15px;margin:0 0 26px">You are the portfolio manager. Pick how much you run; everything else is the market: stocks worldwide, bonds, futures, options, currencies, crypto and OTC, with real accounting and risk.</p>
-      <div class="card stack">
-        <label class="f">Fund name<input id="wName" value="My Fund" maxlength="60"></label>
-        <div><div class="muted" style="font-size:12px;font-weight:500;margin-bottom:6px">Amount</div>
-          <div class="amounts">${presets.map(([v, l, s]) => `<button data-v="${v}" class="${v === amount ? 'on' : ''}"><b>${l}</b><small>${s}</small></button>`).join('')}</div>
-          <label class="f" style="margin-top:10px">Or any amount (USD, up to $1 trillion)<input id="wAmt" type="number" min="1" step="1000000" placeholder="e.g. 250000000"></label></div>
-        <div><div class="muted" style="font-size:12px;font-weight:500;margin-bottom:6px">Market</div>
-          <div class="modes"><button data-m="LIVE" class="on"><b>Live market</b><span class="muted">Real prices. The fund moves one real trading day at a time, updated after each close, with delayed live quotes in the session.</span></button>
-          <button data-m="PRACTICE"><b>Practice</b><span class="muted">A simulated market you advance yourself, a day at a time. Works offline.</span></button></div></div>
-        <div class="row"><span class="muted" id="wSum"></span><span class="spacer"></span><button class="primary" id="wGo">Start fund</button></div>
-        <div id="wErr" class="neg"></div>
-      </div>
-      ${S.worlds.length ? `<div class="card" style="margin-top:16px"><h2>Your funds</h2>${S.worlds.map(w => `<div class="row" style="padding:6px 0;border-top:1px solid var(--border)"><b>${esc(w.name)}</b><span class="muted">${esc(w.id)}</span><span class="spacer"></span><button class="small" data-open="${w.id}">Open</button></div>`).join('')}</div>` : ''}
-    </div>`;
-    const sum = () => { $('#wSum').textContent = `${fmt.money(amount)} · ${mode === 'LIVE' ? 'live market' : 'practice market'}`; };
-    $$('.amounts button').forEach(b => b.onclick = () => { amount = +b.dataset.v; $('#wAmt').value = ''; $$('.amounts button').forEach(x => x.classList.toggle('on', x === b)); sum(); });
-    $('#wAmt').oninput = e => { const v = +e.target.value; if (v > 0) { amount = v; $$('.amounts button').forEach(x => x.classList.remove('on')); } sum(); };
-    $$('.modes button').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('.modes button').forEach(x => x.classList.toggle('on', x === b)); sum(); });
-    $$('[data-open]').forEach(b => b.onclick = async () => { S.wid = b.dataset.open; pref.set('wid', S.wid); await loadWorld(); renderShell(); location.hash = '#/overview'; route(); });
-    sum();
-    $('#wGo').onclick = () => busy($('#wGo'), async () => {
-      $('#wGo').textContent = mode === 'LIVE' ? 'Loading the real market…' : 'Building the market…'; $('#wErr').textContent = '';
-      try { const r = await post('/fs2/worlds', { name: $('#wName').value, amount, mode }); S.wid = r.world_id; pref.set('wid', S.wid); await loadWorlds(); await loadWorld(); renderShell(); toast(`${r.name} is open with ${fmt.money(r.amount)}`); location.hash = '#/overview'; route(); }
-      catch (e) { $('#wErr').textContent = e.message + (mode === 'LIVE' ? ' · try Practice if you are offline' : ''); $('#wGo').textContent = 'Start fund'; }
-    });
-  };
-
-  // ---------------------------------------------------------------- overview
-  const CLASS = { EQUITY: 'Stocks', ETF: 'ETFs', REIT: 'REITs', ADR: 'ADRs', GOVT_BOND: 'Government bonds', CORP_BOND: 'Corporate bonds', MBS_TBA: 'Agency MBS', STRUCTURED: 'Structured credit', CRYPTO: 'Crypto', OPTION: 'Options', FX: 'Currencies', CASH: 'Cash' };
-  const clsName = k => CLASS[k] || String(k || 'Other').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
-  const kpi = (k, v, s = '') => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
-  pages.overview = async (main, _, alive) => {
-    await loadWorld(); renderShell(); if (!alive()) return;
-    const d = S.dash; const [career, news] = await Promise.all([api(P() + '/career').catch(() => null), api(W() + '/news').catch(() => [])]); if (!alive()) return;
-    const cashTot = (d.cash_accounts || []).reduce((a, c) => a + Number(c.base_value || 0), 0);
-    const m = (career && career.metrics) || {};
-    main.innerHTML = `<div class="page-head"><div><h1>${esc(S.world.name)}</h1><p>${esc(d.level_title || '')} · benchmark ${esc(d.portfolio.benchmark || 'SPY')} · ${S.world.market_source === 'REAL' ? 'real market' : 'simulated market'} · ${fmt.date(S.world.current_date)}</p></div><div class="row"><a class="btn" href="#/trade">Trade</a><a class="btn" href="#/analytics">Analytics</a></div></div>
-      <div class="tiles">
-        ${kpi('Net asset value', fmt.money(d.nav), `started with ${fmt.money(career ? career.contributed_capital : null)}`)}
-        ${kpi('Today', `<span class="${sign(d.day_pnl)}">${fmt.signed(d.day_pnl)}</span>`, `month ${fmt.signed(d.mtd_pnl)} · year ${fmt.signed(d.ytd_pnl)}`)}
-        ${kpi('Return since start', `<span class="${sign(d.return_since_inception)}">${fmt.spct(d.return_since_inception)}</span>`, d.benchmark ? `${esc(d.benchmark.id)} ${fmt.spct(d.benchmark.return)} · alpha <span class="${sign(d.return_since_inception - d.benchmark.return)}">${fmt.spct(d.return_since_inception - d.benchmark.return)}</span>` : '')}
-        ${kpi('Cash, all currencies', fmt.money(cashTot), (d.cash_accounts || []).filter(c => Number(c.settled)).map(c => c.currency).join(' · ') || 'USD')}
-        ${kpi('Gross / net exposure', `${fmt.big(d.gross_exposure)} <span class="muted" style="font-size:15px">/ ${fmt.big(d.net_exposure)}</span>`, `leverage ${fmt.num(d.leverage, 2)}x`)}
-        ${kpi('Sharpe · max drawdown', `${m.sharpe != null && (m.days || 0) >= 20 ? fmt.num(m.sharpe, 2) : '—'} <span class="muted" style="font-size:15px">· ${fmt.pct(m.max_drawdown, 1)}</span>`, `volatility ${fmt.pct(m.volatility, 1)} · ${m.days || 0} days`)}
-      </div>
-      <div class="grid g-main">
-        <div class="stack">
-          <div class="card"><h2>Fund vs ${esc(d.portfolio.benchmark || 'SPY')} <small>growth of the NAV and the benchmark since the start</small></h2><div id="navChart"></div></div>
-          <div class="card flush"><h2>Largest positions <a class="right" href="#/positions" style="font-size:12.5px;font-weight:500">All positions →</a></h2><div id="topPos"></div></div>
-        </div>
-        <div class="stack">
-          <div class="card"><h2>Allocation <small>by asset class</small></h2><div id="alloc"></div></div>
-          <div class="card flush"><h2>Cash by currency <a class="right" href="#/fx" style="font-size:12.5px;font-weight:500">Cash & FX →</a></h2><div id="ccy"></div></div>
-          ${career ? `<div class="card"><h2>Mandate limits</h2>${Object.entries(career.limits_status || {}).map(([k, v]) => { const u = v.limit ? Math.abs(v.value) / v.limit : 0; return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between;font-size:12.5px"><span>${esc(k.replace(/_/g, ' '))}</span><span class="num">${k === 'gross_leverage' ? fmt.num(v.value, 2) + 'x / ' + fmt.num(v.limit, 2) + 'x' : fmt.pct(v.value, 1) + ' / ' + fmt.pct(v.limit, 0)}</span></div><div class="bar ${u > 0.9 ? 'bad' : u > 0.7 ? 'warn' : 'good'}"><i style="width:${Math.min(100, u * 100)}%"></i></div></div>`; }).join('')}</div>` : ''}
-          <div class="card"><h2>Headlines</h2>${(news || []).slice(0, 6).map(n => `<div style="padding:7px 0;border-top:1px solid var(--border)"><div style="font-weight:550">${n.link ? `<a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.headline)}</a>` : esc(n.headline)}</div><div class="muted" style="font-size:12px">${esc(n.publisher || n.category || '')} · ${fmt.date(n.date)}</div></div>`).join('') || '<div class="empty">No news yet</div>'}</div>
-        </div>
-      </div>`;
-    const hist = d.nav_history || [];
-    let bench = null;
-    if (d.portfolio.benchmark && hist.length > 1) { try { const b = await api(W() + `/securities/${encodeURIComponent(d.portfolio.benchmark)}?period=MAX`); const map = {}; (b.bars || []).forEach(x => { map[x[0]] = x[4]; }); let last = null; const ser = hist.map(h => { if (map[h.date] != null) last = map[h.date]; return last; }); const first = ser.find(v => v != null); if (first) bench = ser.map(v => v == null ? null : v / first * 100); } catch (e) { } }
-    if (!alive()) return;
-    const nav0 = hist.length ? hist[0].nav : 1;
-    lineChart($('#navChart'), [{ name: 'Fund', data: hist.map(h => h.nav / nav0 * 100), area: true }, ...(bench ? [{ name: d.portfolio.benchmark, data: bench, color: css('--faint'), width: 1.5 }] : [])], { labels: hist.map(h => fmt.date(h.date).replace(/, \d{4}$/, '')), fmtY: v => v.toFixed(1), h: 240 });
-    positionsTable($('#topPos'), d.positions.slice().sort((a, b) => Math.abs(b.market_value) - Math.abs(a.market_value)).slice(0, 8), d.nav, { compact: true });
-    donut($('#alloc'), Object.entries(d.exposure_by_asset_class || {}).filter(([, v]) => Number(v)).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).map(([k, v]) => ({ label: clsName(k), value: Number(v) })));
-    ccyTable($('#ccy'), d.cash_accounts || []);
-  };
-  function ccyTable(el, rows) {
-    const tot = rows.reduce((a, r) => a + Number(r.base_value || 0), 0);
-    table(el, rows, [
-      { k: 'currency', label: 'Currency', l: 1, f: r => `<b>${esc(r.currency)}</b>${r.is_base ? ' <span class="pill acc">base</span>' : ''}` },
-      { k: 'settled', label: 'Balance', f: r => `<span class="${Number(r.settled) < 0 ? 'neg' : ''}">${fmt.num(r.settled, 0)}</span>` },
-      { k: 'base_value', label: 'In USD', f: r => fmt.money(r.base_value) },
-      { k: 'share', label: 'Share', v: r => Number(r.base_value) / (tot || 1), f: r => tot ? fmt.pct(Number(r.base_value) / tot, 1) : '—' },
-    ], { sortKey: 'base_value', empty: 'No cash', total: { currency: '<b>Total</b>', base_value: fmt.money(tot) } });
+  const go = h => { if (location.hash === h) route(); else location.hash = h; };
+  function assetPicker(id, current, onPick) {
+    return `<div class="search" style="flex:0 1 320px;position:relative"><input id="${id}" value="${esc(current || '')}" placeholder="Asset (SPY, NVDA, GOLD, EURUSD…)" autocomplete="off"><div class="dd" id="${id}dd"></div></div>`;
   }
-  function positionsTable(el, rows, nav, o = {}) {
-    const cols = [
-      { k: 'security_id', label: 'Position', l: 1, f: r => `<b>${esc(r.security_id)}</b><span class="sub">${esc(r.name || '')}</span>` },
-      ...(o.compact ? [] : [{ k: 'asset_class', label: 'Class', l: 1, f: r => `<span class="pill">${esc(clsName(r.asset_class))}</span>` }, { k: 'currency', label: 'Ccy', l: 1 }]),
-      { k: 'quantity', label: 'Quantity', f: r => fmt.qty(r.quantity) },
-      ...(o.compact ? [] : [{ k: 'average_cost', label: 'Avg cost', f: r => fmt.px(r.average_cost) }, { k: 'mark', label: 'Price', f: r => fmt.px(r.mark) }]),
-      { k: 'market_value', label: 'Value (USD)', f: r => fmt.money(r.market_value) },
-      { k: 'unrealized_pnl', label: 'Unrealized', cls: r => sign(r.unrealized_pnl), f: r => fmt.signed(r.unrealized_pnl) },
-      { k: 'day_pnl', label: 'Today', cls: r => sign(r.day_pnl), f: r => fmt.signed(r.day_pnl) },
-      { k: 'weight', label: 'Weight', v: r => Math.abs(Number(r.market_value)) / (nav || 1), f: r => `${fmt.pct(Number(r.market_value) / (nav || 1), 1)}<span class="cell-bar bar"><i style="width:${Math.min(100, Math.abs(Number(r.market_value)) / (nav || 1) * 400)}%"></i></span>` },
-    ];
-    table(el, rows, cols, { sortKey: o.sortKey || 'weight', onRow: r => { location.hash = '#/asset/' + encodeURIComponent(r.security_id); }, empty: 'No positions yet · open Trade to buy something', maxH: o.maxH });
+  function bindPicker(id, onPick) {
+    const q = $('#' + id), dd = $('#' + id + 'dd'); if (!q) return;
+    q.addEventListener('focus', () => q.select());
+    q.addEventListener('input', async () => { const v = q.value.trim().toUpperCase(); const list = await assets(); const hits = list.filter(a => a.id.toUpperCase().startsWith(v) || a.name.toUpperCase().includes(v)).slice(0, 12);
+      dd.innerHTML = hits.map(h => `<div class="hit" data-id="${esc(h.id)}"><b>${esc(h.id)}</b><span>${esc(h.name)} <small>${esc(clsName(h.asset_class))}</small></span><span></span></div>`).join('') || '<div class="hit"><span class="muted">No match</span></div>'; dd.style.display = 'block';
+      $$('.hit[data-id]', dd).forEach(el => el.onmousedown = () => { dd.style.display = 'none'; onPick(el.dataset.id); }); });
+    q.addEventListener('keydown', e => { if (e.key === 'Enter') { const f = $('.hit[data-id]', dd); if (f) { dd.style.display = 'none'; onPick(f.dataset.id); } } });
+    q.addEventListener('blur', () => setTimeout(() => { dd.style.display = 'none'; }, 150));
   }
-
-  // ---------------------------------------------------------------- trade: one ticket for everything listed, plus option chains
-  const unitOf = s => !s ? 'units' : s.is_bond ? 'face' : s.is_future ? 'contracts' : s.asset_class === 'CRYPTO' ? 'coins' : s.asset_class === 'OPTION' ? 'contracts' : 'shares';
-  const unitPrice = s => { const p = N(s.last) || 0; if (s.is_bond) return p / 100; return p * (N(s.multiplier) || 1); };
-  pages.trade = async (main, args, alive) => {
-    const secs = await securities(); if (!alive()) return;
-    const tab = args[0] === 'options' ? 'options' : 'ticket';
-    main.innerHTML = `<div class="page-head"><div><h1>Trade</h1><p>Search anything listed: stocks worldwide, ETFs, bonds, futures, crypto. Option chains are on the second tab. Currencies convert on <a href="#/fx">Cash & FX</a>.</p></div>
-      <div class="seg"><button data-t="ticket" class="${tab === 'ticket' ? 'on' : ''}">Order ticket</button><button data-t="options" class="${tab === 'options' ? 'on' : ''}">Options</button></div></div><div id="tradeBody"></div>`;
-    $$('.page-head .seg button').forEach(b => b.onclick = () => { location.hash = b.dataset.t === 'options' ? '#/trade/options' : '#/trade'; });
-    if (tab === 'options') return optionsPage($('#tradeBody'), args.slice(1), alive);
-    const sid = args[0] || pref.get('lastTicket', 'SPY');
-    const listed = secs.find(s => s.id === sid);
-    if (!listed && args[0]) {                     // an option contract (chains are not in the listing): load it on its own
-      const c = await api(W() + `/securities/${encodeURIComponent(sid)}?period=1M`).catch(() => null); if (!alive()) return;
-      if (c && c.security) { const sec = { ...c.security, last: c.last, bid: c.bid, ask: c.ask, change_pct: null, is_bond: false, is_future: !!c.security.is_future }; return ticketPage($('#tradeBody'), sec, alive, sec); }
+  async function pollJob(id, onDone, el) {
+    for (;;) {
+      const j = await api('/fs2/jobs/' + id);
+      if (el) el.innerHTML = `<div class="row" style="justify-content:space-between;font-size:12.5px"><span>${esc(j.message || j.status)}</span><span class="faint">${j.elapsed}s</span></div><div class="bar"><i style="width:${j.total ? j.done / j.total * 100 : 8}%"></i></div>`;
+      if (j.status === 'done' || j.status === 'failed') { await loadStatus(); if (j.status === 'failed') toast(j.error || 'the job failed', true); if (onDone) onDone(j); return j; }
+      await new Promise(r => setTimeout(r, 1500));
     }
-    ticketPage($('#tradeBody'), listed || secs.find(s => s.id === 'SPY') || secs[0], alive);
-  };
-  async function ticketPage(el, sec, alive, optionSec) {
-    el.innerHTML = `<div class="grid g-ticket"><div class="stack"><div class="card" id="qCard"></div><div class="card flush"><h2>Working orders</h2><div id="working"></div></div></div><div class="card" id="ticket"></div></div>`;
-    let s = optionSec || sec; pref.set('lastTicket', sec.id);
-    const detail = optionSec ? null : await api(W() + `/securities/${encodeURIComponent(sec.id)}?period=6M`).catch(() => null); if (!alive()) return;
-    const held = (S.dash.positions || []).find(p => p.security_id === s.id);
-    $('#qCard').innerHTML = `<div class="row" style="justify-content:space-between"><div><div class="muted" style="font-size:12.5px">${esc(clsName(s.asset_class))} · ${esc(s.currency)}${s.sector ? ' · ' + esc(s.sector) : ''}${s.country ? ' · ' + esc(s.country) : ''}</div><h2 style="font-size:19px;margin:2px 0 0">${esc(s.id)} <small>${esc(s.name)}</small></h2></div><a class="btn small" href="#/asset/${encodeURIComponent(s.id)}">Research →</a></div>
-      <div class="quote-head" style="margin-top:8px"><span class="px">${fmt.px(s.last)}</span>${s.change_pct != null ? `<span class="pill ${sign(s.change_pct)}">${fmt.spct(s.change_pct)}</span>` : ''}<span class="muted">bid ${fmt.px(s.bid)} · ask ${fmt.px(s.ask)}</span></div>
-      <div id="qChart" style="margin-top:8px"></div>
-      <div class="kv" style="margin-top:10px">${s.is_bond ? `<span>Coupon</span><span>${s.coupon ? fmt.pct(s.coupon, 3) : 'none (bill)'}</span><span>Maturity</span><span>${fmt.date(s.maturity)}</span><span>Rating</span><span>${esc(s.rating || '—')}</span>` : ''}${s.is_future ? `<span>Contract size</span><span>${fmt.qty(s.multiplier)} ${esc(s.unit || '')}</span><span>Expiry</span><span>${fmt.date(s.expiry)}</span>` : ''}${s.market_cap ? `<span>Market cap</span><span>${fmt.big(s.market_cap, s.currency)}</span>` : ''}${s.beta != null && !s.is_bond ? `<span>Beta</span><span>${fmt.num(s.beta, 2)}</span>` : ''}${s.dividend_yield ? `<span>Dividend yield</span><span>${fmt.pct(s.dividend_yield, 2)}</span>` : ''}<span>Average daily volume</span><span>${fmt.big(s.adv, '')}</span>${held ? `<span>You hold</span><span><b>${fmt.qty(held.quantity)}</b> · ${fmt.money(held.market_value)} · <span class="${sign(held.unrealized_pnl)}">${fmt.signed(held.unrealized_pnl)}</span></span>` : ''}</div>`;
-    if (detail && detail.bars && detail.bars.length) lineChart($('#qChart'), [{ name: s.id, data: detail.bars.map(b => b[4]), area: true }], { labels: detail.bars.map(b => fmt.date(b[0]).replace(/, \d{4}$/, '')), fmtY: v => fmt.px(v), h: 170 });
-    else $('#qChart').innerHTML = '';
-    const heldCcys = (S.dash.cash_accounts || []).filter(c => Number(c.settled) > 0).map(c => c.currency);
-    const payWith = [...new Set([s.currency, ...heldCcys, 'USD'])];
-    const payDefault = heldCcys.includes(s.currency) ? s.currency : 'USD';
-    const amountMode = !s.is_future && s.asset_class !== 'OPTION';
-    $('#ticket').innerHTML = `<h2>Order</h2>
-      <div class="seg" style="width:100%;margin-bottom:12px"><button class="on buy" data-side="BUY" style="flex:1">Buy</button><button data-side="SELL" style="flex:1">Sell</button></div>
-      <div class="form" style="grid-template-columns:1fr 1fr">
-        <label class="f">Size in<select id="tUnit"><option value="qty">${unitOf(s)}</option>${amountMode ? '<option value="amt">amount ($)</option>' : ''}</select></label>
-        <label class="f">${'Quantity'}<input id="tQty" type="number" min="0" step="${s.is_bond ? 1000 : 1}" value="${s.is_bond ? 100000 : s.is_future || s.asset_class === 'OPTION' ? 1 : 100}"></label>
-        <label class="f">Order type<select id="tType"><option value="MARKET">Market</option><option value="LIMIT">Limit</option><option value="STOP">Stop</option></select></label>
-        <label class="f" id="tLimitL" style="visibility:hidden">Price<input id="tLimit" type="number" step="0.01" value="${N(s.last) ? N(s.last).toFixed(2) : ''}"></label>
-        <label class="f">Good for<select id="tTif"><option value="DAY">Today</option><option value="GTC">Until cancelled</option></select></label>
-        <label class="f">Pay / receive in<select id="tCcy">${payWith.map(c => `<option ${c === payDefault ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
-      </div>
-      <div class="preview" id="tPrev">Enter a size to see the cost.</div>
-      <button class="primary" id="tGo" style="width:100%;margin-top:12px;justify-content:center">Place buy order</button>
-      <p class="hint">${isLive() ? 'Live fund: market orders fill at the next price update (every 15 minutes in the session, or at the open).' : 'Practice fund: orders fill when you move to the next day.'} ${s.currency !== 'USD' ? `This trades in ${esc(s.currency)}; paying in another currency converts at the dealer's rate in the same deal.` : ''}</p>`;
-    let side = 'BUY';
-    const qtyOf = () => { const v = N($('#tQty').value) || 0; if ($('#tUnit').value === 'amt') { const up = unitPrice(s); return up > 0 ? Math.floor(v / up) : 0; } return v; };
-    let pt = null;
-    const preview = () => { clearTimeout(pt); pt = setTimeout(async () => {
-      const q = qtyOf(); if (!(q > 0)) { $('#tPrev').innerHTML = 'Enter a size to see the cost.'; return; }
-      try { const type = $('#tType').value; const r = await post(P() + '/orders/preview', { security_id: s.id, side, quantity: q, order_type: type, limit_price: type === 'MARKET' ? null : N($('#tLimit').value), settle_ccy: $('#tCcy').value });
-        const cash = N(r.cash_needed);
-        $('#tPrev').innerHTML = `<div class="kv"><span>Quantity</span><span>${fmt.qty(r.quantity)} ${unitOf(s)}</span><span>Price (${esc(r.price_source)})</span><span>${fmt.px(r.price)} ${esc(r.currency)}</span><span>Gross</span><span>${fmt.num(r.gross, 2)} ${esc(r.currency)}</span>${N(r.accrued_interest) ? `<span>Accrued interest</span><span>${fmt.num(r.accrued_interest, 2)}</span>` : ''}${N(r.initial_margin) ? `<span>Initial margin</span><span>${fmt.num(r.initial_margin, 2)}</span>` : ''}<span>Commission</span><span>${fmt.num(r.commission, 2)}</span>
-          <span><b>${cash > 0 ? 'You pay' : 'You receive'}</b></span><span><b class="${cash > 0 ? 'neg' : 'pos'}">${fmt.num(Math.abs(cash), 2)} ${esc(r.currency)}</b></span>${r.fx ? `<span>${r.fx.direction === 'pay' ? 'Paid with' : 'Received in'}</span><span>${esc(r.settle_ccy)} ${fmt.num(r.fx.settle_amount, 2)} at ${fmt.num(r.fx.rate, 4)}</span><span>${esc(r.settle_ccy)} after</span><span>${fmt.num(N(r.fx.settle_balance) + (r.fx.direction === 'pay' ? -1 : 1) * N(r.fx.settle_amount), 0)}</span>` : `<span>${esc(r.currency)} after</span><span>${fmt.num(N(r.cash_projected) - cash, 0)}</span>`}</div>`;
-      } catch (e) { $('#tPrev').innerHTML = `<span class="neg">${esc(e.message)}</span>`; } }, 250); };
-    $$('#ticket .seg button').forEach(b => b.onclick = () => { side = b.dataset.side; $$('#ticket .seg button').forEach(x => { x.classList.toggle('on', x === b); x.classList.toggle('buy', x === b && side === 'BUY'); x.classList.toggle('sell', x === b && side === 'SELL'); }); const g = $('#tGo'); g.textContent = `Place ${side === 'BUY' ? 'buy' : 'sell'} order`; g.className = side === 'BUY' ? 'primary' : 'sell'; g.style.cssText = 'width:100%;margin-top:12px;justify-content:center'; preview(); });
-    $('#tType').onchange = () => { $('#tLimitL').style.visibility = $('#tType').value === 'MARKET' ? 'hidden' : 'visible'; preview(); };
-    ['tQty', 'tUnit', 'tLimit', 'tCcy'].forEach(id => $('#' + id).addEventListener('input', preview));
-    $('#tUnit').onchange = () => { $('#tQty').value = $('#tUnit').value === 'amt' ? 100000 : (s.is_bond ? 100000 : 100); preview(); };
-    $('#tGo').onclick = () => busy($('#tGo'), async () => {
-      const q = qtyOf(); if (!(q > 0)) throw new Error('enter a size');
-      const type = $('#tType').value;
-      const o = await post(P() + '/orders', { security_id: s.id, side, quantity: q, order_type: type, limit_price: type === 'LIMIT' ? N($('#tLimit').value) : null, stop_price: type === 'STOP' ? N($('#tLimit').value) : null, time_in_force: $('#tTif').value, settle_ccy: $('#tCcy').value });
-      const st = (o.order && o.order.status) || o.status || 'sent';
-      toast(`${side === 'BUY' ? 'Buy' : 'Sell'} ${fmt.qty(q)} ${s.id}: ${String(st).toLowerCase()}${o.fx ? ` · ${o.fx.buy_ccy} ${fmt.num(o.fx.buy_amount, 0)} bought with ${o.fx.sell_ccy}` : ''}`, st === 'REJECTED');
-      if (o.fx_note) toast(o.fx_note, true); await loadWorld(); renderShell(); working();
-    });
-    const working = async () => { const os = await api(P() + '/orders'); const w = os.filter(o => ['NEW', 'WORKING', 'PARTIALLY_FILLED', 'PENDING', 'ACCEPTED'].includes(o.status));
-      table($('#working'), w, [{ k: 'security_id', label: 'Order', l: 1, f: o => `<b>${esc(o.side)} ${esc(o.security_id)}</b><span class="sub">${esc(o.order_type)}${o.limit_price ? ' @ ' + fmt.px(o.limit_price) : ''} · ${esc(o.time_in_force)}</span>` }, { k: 'quantity', label: 'Qty', f: o => fmt.qty(o.quantity) }, { k: 'filled_quantity', label: 'Filled', f: o => fmt.qty(o.filled_quantity) }, { k: 'status', label: 'Status', f: o => `<span class="pill acc">${esc(o.status)}</span>` }, { k: 'x', label: '', nosort: 1, f: o => `<button class="small" data-cancel="${o.id}">Cancel</button>` }], { empty: 'No working orders' });
-      $$('[data-cancel]').forEach(b => b.onclick = () => busy(b, async () => { await api(P() + '/orders/' + b.dataset.cancel, { method: 'DELETE' }); toast('Order cancelled'); working(); })); };
-    working(); preview();
-  }
-  async function optionsPage(el, args, alive) {
-    const unders = await api(W() + '/options'); if (!alive()) return;
-    const under = args[0] && unders.find(u => u.underlying === args[0]) ? args[0] : (unders.find(u => u.underlying === pref.get('optUnder', 'SPX')) || unders[0] || {}).underlying;
-    if (!under) { el.innerHTML = '<div class="card empty">No listed options today</div>'; return; }
-    pref.set('optUnder', under);
-    const ch = await api(W() + `/options/${encodeURIComponent(under)}/chain${args[1] ? '?expiry=' + args[1] : ''}`); if (!alive()) return;
-    const u = unders.find(x => x.underlying === under) || {};
-    const groups = {}; unders.forEach(x => { const g = x.is_index ? 'Indices' : x.underlying.includes('-') && /\d{2}$/.test(x.underlying.split('-').pop() || '') && x.contract_size === 1 ? 'Futures' : x.currency && x.currency !== 'USD' ? 'International stocks' : x.contract_size === 1 ? 'Futures' : 'US stocks & ETFs'; (groups[g] = groups[g] || []).push(x); });
-    el.innerHTML = `<div class="card"><div class="row"><label class="f" style="min-width:320px;flex:1">Underlying<select id="oUnder">${Object.entries(groups).map(([g, xs]) => `<optgroup label="${g}">${xs.map(x => `<option value="${esc(x.underlying)}" ${x.underlying === under ? 'selected' : ''}>${esc(x.underlying)} — ${esc(x.name)}${x.currency && x.currency !== 'USD' ? ' (' + x.currency + ')' : ''}</option>`).join('')}</optgroup>`).join('')}</select></label>
-      <div class="kv" style="min-width:260px"><span>Level</span><span>${fmt.px(ch.level)} ${esc(u.currency || '')}</span><span>ATM implied vol</span><span>${fmt.pct(u.atm_iv, 1)}</span><span>Contract</span><span>${fmt.qty(u.contract_size || 100)} per contract · ${esc(u.exchange || '')}</span><span>Style</span><span>${esc(ch.style)}</span></div></div>
-      <div class="chips" style="margin-top:12px">${ch.expiries.map(e => `<button class="chip ${e === ch.expiry ? 'on' : ''}" data-exp="${e}">${fmt.date(e).replace(/, \d{4}$/, '')}</button>`).join('')}</div></div>
-      <div class="card flush" style="margin-top:16px"><h2>Chain <small>${fmt.date(ch.expiry)} · ${ch.days_to_expiry} days · click a bid or ask to trade it</small></h2><div class="tbl-wrap chain"><table><thead><tr><th colspan="4" style="text-align:center;color:var(--pos)">Calls</th><th></th><th colspan="4" style="text-align:center;color:var(--neg)">Puts</th></tr><tr><th>Δ</th><th>IV</th><th>Bid</th><th>Ask</th><th style="text-align:center">Strike</th><th>Bid</th><th>Ask</th><th>IV</th><th>Δ</th></tr></thead><tbody>${ch.rows.map(r => { const atm = Math.abs(r.strike - ch.level) === Math.min(...ch.rows.map(x => Math.abs(x.strike - ch.level)));
-        const c = r.C || {}, p = r.P || {}; return `<tr class="${atm ? 'atm' : ''}"><td class="muted">${fmt.num(c.delta, 2)}</td><td class="muted">${fmt.pct(c.iv, 1)}</td><td class="c" data-o="${esc(c.id || '')}" data-s="SELL">${fmt.num(c.bid, 2)}</td><td class="c" data-o="${esc(c.id || '')}" data-s="BUY">${fmt.num(c.ask, 2)}</td><td class="k">${fmt.num(r.strike, r.strike % 1 ? 2 : 0)}</td><td class="c" data-o="${esc(p.id || '')}" data-s="SELL">${fmt.num(p.bid, 2)}</td><td class="c" data-o="${esc(p.id || '')}" data-s="BUY">${fmt.num(p.ask, 2)}</td><td class="muted">${fmt.pct(p.iv, 1)}</td><td class="muted">${fmt.num(p.delta, 2)}</td></tr>`; }).join('')}</tbody></table></div></div>
-      <div id="optTicket" style="margin-top:16px"></div>`;
-    $('#oUnder').onchange = () => { location.hash = '#/trade/options/' + encodeURIComponent($('#oUnder').value); };
-    $$('[data-exp]').forEach(b => b.onclick = () => { location.hash = `#/trade/options/${encodeURIComponent(under)}/${b.dataset.exp}`; });
-    $$('td.c[data-o]').forEach(td => td.onclick = async () => { if (!td.dataset.o) return; const c = await api(W() + `/securities/${encodeURIComponent(td.dataset.o)}?period=1M`).catch(() => null);
-      const sec = c ? { ...c.security, last: c.last, bid: c.bid, ask: c.ask, change_pct: null, is_bond: false, is_future: false } : null; if (!sec) return;
-      await ticketPage($('#optTicket'), sec, alive, sec); if (td.dataset.s === 'SELL') { const b = $$('#ticket .seg button')[1]; if (b) b.click(); } $('#optTicket').scrollIntoView({ behavior: 'smooth' }); });
   }
 
-  // ---------------------------------------------------------------- positions
-  pages.positions = async (main, _, alive) => {
-    await loadWorld(); renderShell(); if (!alive()) return; const d = S.dash;
-    const byCls = {}; d.positions.forEach(p => { const k = clsName(p.asset_class); byCls[k] = (byCls[k] || 0) + 1; });
-    const unreal = d.positions.reduce((a, p) => a + Number(p.unrealized_pnl || 0), 0);
-    main.innerHTML = `<div class="page-head"><div><h1>Positions</h1><p>${d.positions.length} open · values in US dollars at today's marks · click a row for research and to trade it.</p></div></div>
-      <div class="tiles">${kpi('Long exposure', fmt.money(d.long_exposure))}${kpi('Short exposure', fmt.money(d.short_exposure))}${kpi('Unrealized P&L', `<span class="${sign(unreal)}">${fmt.signed(unreal)}</span>`)}${kpi('Realized P&L', `<span class="${sign(d.realized)}">${fmt.signed(d.realized)}</span>`, 'since the start')}</div>
-      <div class="card"><div class="chips" id="pf"><button class="chip on" data-c="">All ${d.positions.length}</button>${Object.entries(byCls).map(([k, n]) => `<button class="chip" data-c="${esc(k)}">${esc(k)} ${n}</button>`).join('')}</div></div>
-      <div class="card flush" style="margin-top:16px"><div id="posT"></div></div>`;
-    const show = c => positionsTable($('#posT'), d.positions.filter(p => !c || clsName(p.asset_class) === c), d.nav, { maxH: 720 });
-    $$('#pf .chip').forEach(b => b.onclick = () => { $$('#pf .chip').forEach(x => x.classList.toggle('on', x === b)); show(b.dataset.c); });
-    show('');
+  // ---------------------------------------------------------------- first run: download the history
+  pages.setup = async (main) => {
+    main.innerHTML = `<div class="welcome"><h1>Load the market history.</h1>
+      <p class="muted" style="font-size:15px">FinSim2 works from real history: daily prices for about 130 assets (stocks, ETFs, indices, Treasuries, credit, commodities, currencies, crypto) back to the 1990s where they exist, macro series from FRED and company fundamentals from SEC filings. The first download takes two to four minutes; after that it updates itself after each close.</p>
+      <div class="card"><div id="setupJob"></div><button class="primary" id="setupGo" style="margin-top:12px">Download history</button></div></div>`;
+    const running = (S.status && S.status.jobs || []).find(j => j.kind === 'refresh');
+    const done = () => { S.assets = null; toast('History loaded'); go('#/dashboard'); };
+    if (running) { $('#setupGo').disabled = true; pollJob(running.id, done, $('#setupJob')); }
+    $('#setupGo').onclick = () => busy($('#setupGo'), async () => { const j = await post('/fs2/refresh', {}); $('#setupGo').disabled = true; pollJob(j.id, done, $('#setupJob')); });
+  };
+
+  // ---------------------------------------------------------------- dashboard
+  const CORE = ['SPY', 'QQQ', 'IWM', 'EFA', 'UST10Y', 'TLT', 'HYG', 'GOLD', 'WTI', 'DXY', 'EURUSD', 'BTC'];
+  pages.dashboard = async (main, _, alive) => {
+    const [port, mk, preds] = await Promise.all([api('/fs2/portfolio').catch(() => null), api('/fs2/markets').catch(() => []), api('/fs2/predictions').catch(() => ({}))]);
+    if (!alive()) return;
+    const byId = Object.fromEntries(mk.map(r => [r.id, r]));
+    const held = port ? port.positions.filter(p => Math.abs(p.quantity) > 1e-12) : [];
+    let spyB = null; try { spyB = await api('/fs2/asset/SPY'); } catch (e) { }
+    if (!alive()) return;
+    const reg = spyB ? spyB.regime : null;
+    main.innerHTML = `<div class="page-head"><div><h1>Dashboard</h1><p>The evidence behind your portfolio and the market, as of ${esc(S.status && S.status.last_price_date || '')}. Scores are −100 (strongly bearish evidence) to +100 (strongly bullish); every number carries its confidence.</p></div>
+      <div class="row"><button id="scanBtn">Research portfolio & core markets</button></div></div>
+      <div id="scanJob"></div>
+      <div class="tiles">${port ? kpi('Net asset value', fmt.money(port.nav), `P&L ${fmt.signed(port.pnl)} since funding`) + kpi('Cash', fmt.money(port.cash), fmt.pct(port.cash / (port.nav || 1), 0) + ' of NAV') + kpi('Volatility (1-day VaR 95%)', fmt.pct((port.risk || {}).vol, 1), `VaR ${fmt.pct((port.risk || {}).var95, 2)} · ES ${fmt.pct((port.risk || {}).es95, 2)}`) + kpi('Beta to S&P 500', fmt.num(port.beta, 2), `duration ${fmt.num(port.duration, 1)} years`) : kpi('Portfolio', '—', '')}
+        ${kpi('Market regime', `<span style="font-size:16px">${esc(reg ? reg.description : '—')}</span>`, reg ? Object.values(reg.labels).slice(3).join(' · ') : '')}
+        ${kpi('Forecast record', preds.scored ? fmt.pct(preds.hit_rate, 0) + ' hit rate' : '—', `${preds.scored || 0} scored · ${preds.pending || 0} pending`)}</div>
+      <div class="grid g-main"><div class="stack">
+        <div class="card flush"><h2>Your holdings — evidence by horizon <a class="right" href="#/portfolio" style="font-size:12.5px;font-weight:500">Portfolio →</a></h2><div id="holdEv"></div></div>
+        <div class="card flush"><h2>Core markets <small>quant score by horizon · click for the full research</small></h2><div id="coreEv"></div></div>
+      </div><div class="stack">
+        <div class="card"><h2>Regime <small>point-in-time labels</small></h2><div id="regBox"></div></div>
+        <div class="card"><h2>What matters for the S&P 500 now</h2>${spyB ? matters(spyB.what_matters_now) : '<div class="empty">Research SPY first</div>'}</div>
+        <div class="card"><h2>How to read this</h2><p class="muted" style="margin:0;font-size:13px">A score combines standardised signals weighted by how well each has predicted this asset at this horizon (information coefficient, shrunk when the evidence is thin, adjusted for the current regime). Confidence falls when the history holds few independent windows, when signals were unstable, or when the score has not worked out of sample. Nothing here is a forecast you should rely on without judgement.</p></div>
+      </div></div>`;
+    const evRows = (ids) => ids.map(id => ({ id, name: (byId[id] || {}).name || assetName(id), r: byId[id] || {} }));
+    const evCols = [{ k: 'id', label: 'Asset', l: 1, f: x => `<b>${esc(x.id)}</b><span class="sub">${esc(x.name)}</span>` }, { k: 'price', label: 'Price', v: x => x.r.price, f: x => fmt.px(x.r.price) },
+      { k: 'm1', label: '1M', v: x => x.r.m1, cls: x => sign(x.r.m1), f: x => fmt.spct(x.r.m1, 1) },
+      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 's' + hh, label: 'Score ' + hh, v: x => (x.r.scores || {})[hh], f: x => `<span class="${scoreCls((x.r.scores || {})[hh])}"><b>${scoreTxt((x.r.scores || {})[hh])}</b></span>`, cls: () => '' })),
+      { k: 'ph', label: 'Best horizon', l: 1, v: x => x.r.primary_horizon, f: x => x.r.researched ? esc(x.r.primary_horizon || '—') : '<span class="faint">not researched</span>' }];
+    table($('#holdEv'), evRows(held.map(p => p.asset_id)), evCols, { onRow: x => go('#/asset/' + encodeURIComponent(x.id)), empty: 'No holdings yet: add positions on the Portfolio page' });
+    table($('#coreEv'), evRows(CORE.filter(id => byId[id])), evCols, { onRow: x => go('#/asset/' + encodeURIComponent(x.id)) });
+    if (reg) $('#regBox').innerHTML = Object.entries(reg.labels).map(([d, l]) => `<div class="row" style="justify-content:space-between;padding:5px 0;border-top:1px solid var(--border)"><span class="muted">${esc(d)}</span><b>${esc(l)}</b></div>`).join('');
+    $('#scanBtn').onclick = () => busy($('#scanBtn'), async () => { const ids = [...new Set([...held.map(p => p.asset_id), ...CORE])]; const j = await post('/fs2/scan', { assets: ids }); pollJob(j.id, () => route(), $('#scanJob')); });
   };
 
   // ---------------------------------------------------------------- markets
-  const MARKET_TABS = [['stocks', 'Stocks', s => ['EQUITY', 'ADR', 'REIT'].includes(s.asset_class)], ['etfs', 'ETFs', s => s.asset_class === 'ETF'], ['bonds', 'Bonds', s => s.is_bond],
-    ['futures', 'Futures', s => s.is_future], ['crypto', 'Crypto', s => s.asset_class === 'CRYPTO'], ['world', 'International', s => s.currency !== 'USD' && !s.is_future && !s.is_bond]];
   pages.markets = async (main, args, alive) => {
-    const secs = await securities(); if (!alive()) return;
-    const tab = MARKET_TABS.find(t => t[0] === args[0]) ? args[0] : 'stocks';
-    const [, , pred] = MARKET_TABS.find(t => t[0] === tab);
-    const rows = secs.filter(pred);
-    main.innerHTML = `<div class="page-head"><div><h1>Markets</h1><p>${secs.length.toLocaleString()} listed instruments · ${fmt.date(S.world.current_date)} close${S.world.market_source === 'REAL' ? ' (real market)' : ''}. Currencies are on <a href="#/fx">Cash & FX</a>, option chains on <a href="#/trade/options">Trade</a>.</p></div></div>
-      <div class="card"><div class="row"><div class="seg">${MARKET_TABS.map(([k, l, p]) => `<button data-t="${k}" class="${k === tab ? 'on' : ''}">${l} <span class="muted">${secs.filter(p).length}</span></button>`).join('')}</div><span class="spacer"></span><input id="mq" placeholder="Filter" style="width:220px"></div></div>
-      <div class="card flush" style="margin-top:16px"><div id="mt"></div></div>`;
-    $$('.seg button', main).forEach(b => b.onclick = () => { location.hash = '#/markets/' + b.dataset.t; });
-    const cols = tab === 'bonds' ? [
-      { k: 'id', label: 'Bond', l: 1, f: s => `<b>${esc(s.id)}</b><span class="sub">${esc(s.name)}</span>` }, { k: 'rating', label: 'Rating', l: 1, f: s => esc(s.rating || '—') }, { k: 'currency', label: 'Ccy', l: 1 },
-      { k: 'coupon', label: 'Coupon', f: s => s.coupon ? fmt.pct(s.coupon, 3) : '<span class="muted">bill</span>' }, { k: 'maturity', label: 'Maturity', f: s => fmt.date(s.maturity) }, { k: 'last', label: 'Price', f: s => fmt.px(s.last) }, { k: 'change_pct', label: 'Day', cls: s => sign(s.change_pct), f: s => fmt.spct(s.change_pct) }]
-      : tab === 'futures' ? [
-      { k: 'id', label: 'Contract', l: 1, f: s => `<b>${esc(s.id)}</b><span class="sub">${esc(s.name)}</span>` }, { k: 'currency', label: 'Ccy', l: 1 }, { k: 'expiry', label: 'Expiry', f: s => fmt.date(s.expiry) }, { k: 'multiplier', label: 'Size', f: s => fmt.qty(s.multiplier) + ' ' + esc(s.unit || '') },
-      { k: 'last', label: 'Price', f: s => fmt.px(s.last) }, { k: 'change_pct', label: 'Day', cls: s => sign(s.change_pct), f: s => fmt.spct(s.change_pct) }, { k: 'volume', label: 'Volume', f: s => fmt.big(s.volume, '') }]
-      : [{ k: 'id', label: 'Name', l: 1, f: s => `<b>${esc(s.id)}</b><span class="sub">${esc(s.name)}</span>` }, { k: 'sector', label: 'Sector', l: 1, f: s => `<span class="muted">${esc(s.sector || '')}</span>` }, { k: 'currency', label: 'Ccy', l: 1 },
-      { k: 'last', label: 'Price', f: s => fmt.px(s.last) }, { k: 'change_pct', label: 'Day', cls: s => sign(s.change_pct), f: s => fmt.spct(s.change_pct) }, { k: 'market_cap', label: 'Market cap', f: s => s.market_cap ? fmt.big(s.market_cap, s.currency) : '—' },
-      { k: 'realized_vol', label: 'Volatility', f: s => fmt.pct(s.realized_vol, 1) }, { k: 'dividend_yield', label: 'Yield', f: s => s.dividend_yield ? fmt.pct(s.dividend_yield, 2) : '—' }, { k: 'volume', label: 'Volume', f: s => fmt.big(s.volume, '') }];
-    const show = q => { const qq = (q || '').trim().toUpperCase(); table($('#mt'), qq ? rows.filter(s => s.id.toUpperCase().includes(qq) || String(s.name).toUpperCase().includes(qq)) : rows, cols, { sortKey: tab === 'bonds' ? 'maturity' : tab === 'futures' ? 'expiry' : 'market_cap', sortDir: tab === 'bonds' || tab === 'futures' ? 1 : -1, maxH: 720, onRow: s => { location.hash = '#/asset/' + encodeURIComponent(s.id); } }); };
-    $('#mq').oninput = e => show(e.target.value); show('');
+    const cls = args[0] || pref.get('mkCls', 'ALL');
+    const rows = await api('/fs2/markets' + (cls !== 'ALL' ? '?class=' + cls : '')); if (!alive()) return;
+    const all = await assets();
+    const classes = [...new Set(all.map(a => a.asset_class))];
+    main.innerHTML = `<div class="page-head"><div><h1>Markets</h1><p>${all.length} assets with daily history. Scores appear once an asset has been researched (open it, or research a whole class).</p></div>
+      <div class="row"><button id="mkScan">Research ${cls === 'ALL' ? 'all' : esc(clsName(cls))}</button><button id="mkAdd">Add a symbol</button></div></div><div id="mkJob"></div>
+      <div class="card"><div class="chips">${['ALL', ...classes].map(c => `<button class="chip ${c === cls ? 'on' : ''}" data-c="${c}">${c === 'ALL' ? 'All' : esc(clsName(c))}</button>`).join('')}</div></div>
+      <div class="card flush" style="margin-top:16px"><div id="mkT"></div></div>`;
+    $$('.chips .chip', main).forEach(b => b.onclick = () => { pref.set('mkCls', b.dataset.c); go('#/markets/' + b.dataset.c); });
+    table($('#mkT'), rows, [
+      { k: 'id', label: 'Asset', l: 1, f: r => `<b>${esc(r.id)}</b><span class="sub">${esc(r.name)}</span>` }, { k: 'asset_class', label: 'Class', l: 1, f: r => `<span class="pill">${esc(clsName(r.asset_class))}</span>` },
+      { k: 'price', label: 'Price', f: r => fmt.px(r.price) }, { k: 'd1', label: '1D', cls: r => sign(r.d1), f: r => fmt.spct(r.d1, 1) }, { k: 'm1', label: '1M', cls: r => sign(r.m1), f: r => fmt.spct(r.m1, 1) }, { k: 'y1', label: '1Y', cls: r => sign(r.y1), f: r => fmt.spct(r.y1, 1) },
+      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 'q' + hh, label: 'Quant ' + hh, v: r => (r.scores || {})[hh], f: r => `<b class="${scoreCls((r.scores || {})[hh])}">${scoreTxt((r.scores || {})[hh])}</b>` })),
+      { k: 'conf', label: 'Conf 3M', v: r => (r.confidence || {})['3M'], f: r => pct0((r.confidence || {})['3M']) },
+      { k: 'primary_horizon', label: 'Best', l: 1, f: r => r.researched ? esc(r.primary_horizon || '—') : '<span class="faint">—</span>' },
+      ...(rows.some(r => r.shaffer != null) ? [{ k: 'shaffer', label: 'Shaffer', f: r => r.shaffer != null ? `<b>${fmt.num(r.shaffer, 1)}</b>` : '<span class="faint">—</span>' }] : []),
+    ], { sortKey: 'id', sortDir: 1, maxH: 760, onRow: r => go('#/asset/' + encodeURIComponent(r.id)) });
+    $('#mkScan').onclick = () => busy($('#mkScan'), async () => { const j = await post('/fs2/scan', { assets: rows.map(r => r.id) }); pollJob(j.id, () => route(), $('#mkJob')); });
+    $('#mkAdd').onclick = () => { const m = modal(`<h2 style="margin-top:0">Add a symbol</h2><p class="muted">Any Yahoo Finance symbol: a stock (ASML, 7203.T), an ETF, an index (^VIX), a future (HG=F), a currency pair (USDSEK=X) or a coin (ADA-USD). Its full daily history is downloaded.</p><input id="symIn" placeholder="e.g. ASML" style="width:100%"><div class="row" style="margin-top:14px"><span class="spacer"></span><button onclick="document.getElementById('modal').innerHTML=''">Cancel</button><button class="primary" id="symGo">Add</button></div><div id="symErr" class="neg"></div>`);
+      $('#symGo', m).onclick = () => busy($('#symGo', m), async () => { try { const a = await post('/fs2/assets', { symbol: $('#symIn', m).value }); S.assets = null; closeModal(); toast(`${a.id} added`); go('#/asset/' + encodeURIComponent(a.id)); } catch (e) { $('#symErr', m).textContent = e.message; } }); };
   };
 
-  // ---------------------------------------------------------------- one asset: price, statistics from the equation library, trade
+  // ---------------------------------------------------------------- watchlist
+  pages.watchlist = async (main, _, alive) => {
+    const rows = await api('/fs2/watchlist'); if (!alive()) return;
+    main.innerHTML = `<div class="page-head"><div><h1>Watchlist</h1><p>Assets you follow. Add from any asset's research page, or here.</p></div><div class="row">${assetPicker('wlPick', '')}</div></div><div class="card flush"><div id="wlT"></div></div>`;
+    bindPicker('wlPick', id => busy(null, async () => { await post('/fs2/watchlist', { asset_id: id }); toast(`${id} added to the watchlist`); route(); }));
+    table($('#wlT'), rows, [{ k: 'asset_id', label: 'Asset', l: 1, f: r => `<b>${esc(r.asset_id)}</b><span class="sub">${esc((r.asset || {}).name || '')}</span>` }, { k: 'p', label: 'Price', v: r => r.quote.price, f: r => fmt.px(r.quote.price) },
+      { k: 'd1', label: '1D', v: r => r.quote.d1, cls: r => sign(r.quote.d1), f: r => fmt.spct(r.quote.d1, 1) }, { k: 'm1', label: '1M', v: r => r.quote.m1, cls: r => sign(r.quote.m1), f: r => fmt.spct(r.quote.m1, 1) },
+      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 'q' + hh, label: 'Quant ' + hh, v: r => ((r.light || {}).scores || {})[hh], f: r => `<b class="${scoreCls(((r.light || {}).scores || {})[hh])}">${scoreTxt(((r.light || {}).scores || {})[hh])}</b>` })),
+      { k: 'x', label: '', nosort: 1, f: r => `<button class="small ghost" data-un="${esc(r.asset_id)}">Remove</button>` }], { onRow: r => go('#/asset/' + encodeURIComponent(r.asset_id)), empty: 'Nothing on the watchlist yet' });
+    $$('[data-un]').forEach(b => b.onclick = () => busy(b, async () => { await api('/fs2/watchlist/' + encodeURIComponent(b.dataset.un), { method: 'DELETE' }); route(); }));
+  };
+
+  // ---------------------------------------------------------------- asset research: the one-page answer for an asset
   pages.asset = async (main, args, alive) => {
-    const sid = args[0]; if (!sid) { location.hash = '#/markets'; return; }
-    const [a, detail] = await Promise.all([api(`/fs2/worlds/${S.wid}/analytics/${encodeURIComponent(sid)}`), sid.startsWith('FX:') ? null : api(W() + `/securities/${encodeURIComponent(sid)}?period=1Y`).catch(() => null)]); if (!alive()) return;
-    const x = a.asset, m = a.metrics, info = a.metric_info;
-    const held = (S.dash.positions || []).find(p => p.security_id === sid);
-    const group = (title, keys) => `<div class="card"><h2>${title}</h2><div class="kv">${keys.filter(k => info[k]).map(k => `<span title="equation ${esc((info[k].equations || []).join(', '))}">${esc(info[k].label)}</span><span class="${['ret_1d', 'ret_1m', 'ret_3m', 'ret_1y', 'ann_return', 'alpha_ann', 'mom_12_1', 'sharpe', 'sortino'].includes(k) ? sign(m[k]) : ''}">${mfmt(m[k], info[k].fmt)}</span>`).join('')}</div></div>`;
-    main.innerHTML = `<div class="page-head"><div><div class="muted">${esc(x.class_label)} · ${esc(x.currency)}${x.sector ? ' · ' + esc(x.sector) : ''}${x.country ? ' · ' + esc(x.country) : ''}</div><h1>${esc(x.id)} <span class="muted" style="font-weight:500;font-size:18px">${esc(x.name)}</span></h1></div>
-      <div class="row">${sid.startsWith('FX:') ? `<a class="btn primary" href="#/fx">Convert currency</a>` : `<a class="btn primary" href="#/trade/${encodeURIComponent(sid)}">Trade</a>`}<a class="btn" href="#/analytics/equations/${encodeURIComponent(sid)}">Equations on this asset</a></div></div>
-      <div class="tiles">${kpi('Last', fmt.px(x.last) + ' <span class="muted" style="font-size:14px">' + esc(x.currency) + '</span>', `${fmt.spct(m.ret_1d)} today`)}${kpi('1 year', `<span class="${sign(m.ret_1y)}">${fmt.spct(m.ret_1y)}</span>`, `annualised ${fmt.spct(m.ann_return)}`)}${kpi('Volatility', fmt.pct(m.vol_ann, 1), `GARCH ${fmt.pct(m.garch_vol, 1)} · EWMA ${fmt.pct(m.ewma_vol, 1)}`)}${kpi('Sharpe', fmt.num(m.sharpe, 2), `Sortino ${fmt.num(m.sortino, 2)}`)}${kpi('Beta to ' + esc(a.market), fmt.num(m.beta, 2), `alpha ${fmt.spct(m.alpha_ann)} a year`)}${kpi('Shaffer Score', x.shaffer != null ? fmt.num(x.shaffer, 1) : '<span class="muted" style="font-size:16px">in development</span>', a.shaffer.enabled ? 'version ' + esc(a.shaffer.version) : '<a href="#/shaffer">what it will be →</a>')}</div>
-      ${held ? `<div class="card" style="margin-bottom:16px"><div class="row"><b>You hold ${fmt.qty(held.quantity)}</b><span class="muted">worth ${fmt.money(held.market_value)} · cost ${fmt.px(held.average_cost)}</span><span class="${sign(held.unrealized_pnl)}">${fmt.signed(held.unrealized_pnl)} unrealized</span><span class="muted">${fmt.pct(held.weight, 1)} of NAV</span></div></div>` : ''}
-      <div class="card"><h2>Price <small>${a.series.closes.length} sessions</small></h2><div id="aChart"></div></div>
+    const id = args[0] || S.current;
+    main.innerHTML = `<div class="page-head"><div class="row">${assetPicker('arPick', id)}</div></div><div class="loading">Researching ${esc(id)}: computing ~60 signals, testing them at nine horizons, and scoring… (a few seconds the first time)</div>`;
+    bindPicker('arPick', x => go('#/asset/' + encodeURIComponent(x)));
+    const b = await api('/fs2/asset/' + encodeURIComponent(id)); if (!alive()) return;
+    const a = b.asset; const hs = b.horizons; const ph = b.primary_horizon; const p = hs[ph] || {};
+    const pos = b.position && Math.abs(b.position.quantity) > 1e-12 ? b.position : null;
+    main.innerHTML = `<div class="page-head"><div><div class="muted">${esc(clsName(a.asset_class))} · ${esc(a.currency || '')}${a.sector ? ' · ' + esc(a.sector) : ''} · history since ${esc(b.history_start)} (${Math.round(b.sessions / 252)} years)</div>
+        <h1>${esc(a.id)} <span class="muted" style="font-weight:500;font-size:18px">${esc(a.name)}</span></h1></div>
+        <div class="row">${assetPicker('arPick', a.id)}<button id="watchBtn">${b.watched ? '★ Watching' : '☆ Watch'}</button><a class="btn" href="#/analytics/${encodeURIComponent(a.id)}">Analytics</a><a class="btn" href="#/ml/${encodeURIComponent(a.id)}">ML Lab</a></div></div>
+      <div class="tiles">${kpi('Price', `${fmt.px(b.price)} <span class="muted" style="font-size:13px">${esc(a.currency || '')}</span>`, `1D ${fmt.spct(b.change['1D'], 1)} · 1M ${fmt.spct(b.change['1M'], 1)} · 1Y ${fmt.spct(b.change['1Y'], 1)}`)}
+        ${kpi('Strongest evidence', ph ? `<span class="${scoreCls(p.score)}">${scoreTxt(p.score)}</span> <span class="muted" style="font-size:14px">at ${ph}</span>` : '—', ph ? `${esc(p.label || '')} · confidence ${pct0((p.confidence || {}).value)}` : 'no horizon has enough evidence')}
+        ${kpi('Regime', `<span style="font-size:15px">${esc(b.regime.description)}</span>`, Object.values(b.regime.labels).slice(3).join(' · '))}
+        ${kpi('Your exposure', pos ? fmt.qty(pos.quantity) : 'none', pos ? `cost ${fmt.money(pos.cost)} · realised ${fmt.signed(pos.realized)}` : '<a href="#/portfolio/transactions">add a position →</a>')}
+        ${b.shaffer != null ? kpi('Shaffer Score', `<b>${fmt.num(b.shaffer, 1)}</b>`, '<a href="#/quant/' + encodeURIComponent(a.id) + '/shaffer">about the score →</a>') : ''}
+        ${kpi('ML models', b.ml ? `<span style="font-size:15px">trained</span>` : '<span style="font-size:15px">not trained</span>', b.ml ? `${esc(b.ml.trained_at || '')}` : `<a href="#/ml/${encodeURIComponent(a.id)}">train them →</a>`)}</div>
+      <div class="card flush"><h2>Evidence by horizon <small>the same asset can be bearish short term and bullish long term</small></h2>${scoreStrip(hs)}</div>
       <div class="grid g3" style="margin-top:16px">
-        ${group('Returns', ['ret_1d', 'ret_1m', 'ret_3m', 'ret_1y', 'ann_return', 'geo_mean', 'mom_12_1', 'cum_log_1y', 't_mean'])}
-        ${group('Risk', ['vol_ann', 'ewma_vol', 'garch_vol', 'garch_persistence', 'max_drawdown', 'var_95', 'es_95', 'skew', 'kurt'])}
-        ${group('Market & behaviour', ['beta', 'corr_mkt', 'r2_mkt', 'alpha_ann', 'capm_er', 'sharpe', 'sortino', 'ar1_phi', 'half_life', 'adf_t', 'adf_stationary', 'acf1', 'zscore_50', 'n'])}
+        <div class="card"><h2>What matters right now <small>1D–1M</small></h2>${matters(b.what_matters_now)}</div>
+        <div class="card"><h2>What matters long term <small>12M+</small></h2>${matters(b.what_matters_long)}</div>
+        <div class="card"><h2>Why: ${esc(ph || '3M')} score <small>largest contributions</small></h2>${explainBlock((hs[ph || '3M'] || {}).explain)}</div>
       </div>
-      ${detail && detail.security && detail.security.fundamentals ? `<div class="card" style="margin-top:16px"><h2>Fundamentals <small>${esc(detail.security.fundamentals.source || '')} ${esc(detail.security.fundamentals.as_of || '')}</small></h2><div class="kv" style="max-width:520px">${['revenue', 'net_income', 'ebitda', 'free_cash_flow', 'total_debt', 'cash'].map(k => `<span>${k.replace(/_/g, ' ')}</span><span>${fmt.big(detail.security.fundamentals[k], x.currency)}</span>`).join('')}<span>EPS</span><span>${fmt.num(detail.security.fundamentals.eps, 2)}</span></div></div>` : ''}`;
-    lineChart($('#aChart'), [{ name: x.id, data: a.series.closes, area: true }], { labels: a.series.dates.map(d => fmt.date(d)), fmtY: v => fmt.px(v), h: 260 });
+      <div class="grid g-main" style="margin-top:16px"><div class="card"><h2>Price <small>daily close</small></h2><div id="arChart"></div></div>
+        <div class="card flush"><h2>Signals today <small>standardised value · best horizon · evidence</small></h2><div id="arSig"></div></div></div>`;
+    bindPicker('arPick', x => go('#/asset/' + encodeURIComponent(x)));
+    lineChart($('#arChart'), [{ name: a.id, data: b.price_history.values, area: true }], { labels: b.price_history.dates.map(d => fmt.date(d)), fmtY: v => fmt.px(v), h: 280 });
+    table($('#arSig'), b.current.filter(c => c.value != null), [
+      { k: 'label', label: 'Signal', l: 1, f: c => `<b>${esc(c.label)}</b><span class="sub">${esc(c.family)}</span>` }, { k: 'z', label: 'z', f: c => fmt.num(c.z, 2) },
+      { k: 'signal', label: 'Reads', l: 1, v: c => c.signal, f: c => sigPill(c.signal) }, { k: 'best_horizon', label: 'Best', l: 1 },
+      { k: 'usefulness', label: 'Usefulness', v: c => c.usefulness == null ? null : Math.abs(c.usefulness), f: c => fmt.num(c.usefulness, 2) }, { k: 'hit_rate', label: 'Hit', f: c => fmt.pct(c.hit_rate, 0) }], { sortKey: 'usefulness', maxH: 360, onRow: c => go(`#/analytics/${encodeURIComponent(a.id)}/overview`) });
+    $('#watchBtn').onclick = () => busy($('#watchBtn'), async () => { if (b.watched) await api('/fs2/watchlist/' + encodeURIComponent(a.id), { method: 'DELETE' }); else await post('/fs2/watchlist', { asset_id: a.id }); route(); });
   };
 
-  // ---------------------------------------------------------------- cash & FX
-  pages.fx = async (main, _, alive) => {
-    await loadWorld(); renderShell(); if (!alive()) return;
-    const [fx, loans, cash] = await Promise.all([api(W() + '/fx'), api(P() + '/ccy-loans').catch(() => ({ rates: [], loans: [], capacity: 0, outstanding_base: 0 })), api(P() + '/cash')]); if (!alive()) return;
-    const d = S.dash; const accts = (d.cash_accounts || []).filter(c => c.is_base || Number(c.settled) || Number(c.projected)); const tot = accts.reduce((a, c) => a + Number(c.base_value || 0), 0);
-    const ccys = ['USD', ...fx.rows.map(r => r.ccy).filter(c => c !== 'USD')];
-    main.innerHTML = `<div class="page-head"><div><h1>Cash & FX</h1><p>Every currency the fund holds, valued in dollars at today's rates. Convert in one deal (crosses are priced through the dollar, as dealers do), or borrow a currency at its own interest rate.</p></div></div>
-      <div class="tiles">${kpi('Cash, all currencies', fmt.money(tot), `${accts.filter(c => Number(c.settled)).length} currencies held`)}${accts.filter(c => Number(c.settled)).slice(0, 4).map(c => kpi(`${esc(c.currency)} balance`, fmt.num(c.settled, 0), `${fmt.money(c.base_value)} · rate ${fmt.pct(c.policy_rate, 2)}`)).join('')}${kpi('Currency loans', fmt.money(loans.outstanding_base), `room ${fmt.big(loans.capacity)}`)}</div>
-      <div class="grid g-main">
-        <div class="stack">
-          <div class="card flush"><h2>Balances by currency</h2><div id="bal"></div></div>
-          <div class="card flush"><h2>Exchange rates <small>${fmt.date(fx.date)} · per US dollar unless marked · policy rates drive the carry</small></h2><div id="rates"></div></div>
-        </div>
-        <div class="stack">
-          <div class="card"><h2>Convert</h2><div class="form" style="grid-template-columns:1fr 1fr">
-            <label class="f">Buy<select id="cBuy">${ccys.map(c => `<option ${c === 'EUR' ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
-            <label class="f">Sell<select id="cSell">${ccys.map(c => `<option ${c === 'USD' ? 'selected' : ''}>${c}</option>`).join('')}</select></label>
-            <label class="f">Amount<input id="cAmt" type="number" min="0" value="1000000"></label>
-            <label class="f">Amount is in<select id="cIn"><option value="BUY">the currency I buy</option><option value="SELL">the currency I sell</option></select></label></div>
-            <div class="preview" id="cPrev"></div><button class="primary" id="cGo" style="width:100%;margin-top:12px;justify-content:center">Convert</button>
-            <p class="hint">Spot settles in two business days; the balance shows as projected until then.</p></div>
-          <div class="card"><h2>Borrow a currency <small>at its policy rate plus a spread</small></h2><div class="form" style="grid-template-columns:1fr 1fr">
-            <label class="f">Currency<select id="lCcy">${(loans.rates || []).map(r => `<option value="${r.currency}">${r.currency} · ${fmt.pct(r.borrow_rate, 2)}</option>`).join('')}</select></label>
-            <label class="f">Amount<input id="lAmt" type="number" min="0" value="1000000"></label>
-            <label class="f">Term<select id="lTerm"><option value="0">Open (rate resets daily)</option><option value="30">1 month fixed</option><option value="90">3 months fixed</option><option value="180">6 months fixed</option><option value="365">1 year fixed</option></select></label>
-            <div><button id="lGo" style="width:100%;justify-content:center">Borrow</button></div></div>
-            <p class="hint">Borrow a low-rate currency (yen, Swiss franc) and hold a high-rate one to earn the carry; the risk is the exchange rate.</p>
-            <div id="loans" style="margin-top:10px"></div></div>
-        </div>
-      </div>
-      <div class="card flush" style="margin-top:16px"><h2>Cash movements</h2><div id="moves"></div></div>`;
-    table($('#bal'), accts, [
-      { k: 'currency', label: 'Currency', l: 1, f: r => `<b>${esc(r.currency)}</b>${r.is_base ? ' <span class="pill acc">base</span>' : ''}` },
-      { k: 'settled', label: 'Settled', cls: r => Number(r.settled) < 0 ? 'neg' : '', f: r => fmt.num(r.settled, 2) },
-      { k: 'projected', label: 'After pending', f: r => fmt.num(r.projected, 2) },
-      { k: 'rate', label: 'USD per unit', f: r => Number(r.rate) >= 0.1 ? fmt.num(r.rate, 4) : Number(r.rate).toPrecision(4) },
-      { k: 'base_value', label: 'In USD', f: r => fmt.money(r.base_value) },
-      { k: 'share', label: 'Share', v: r => Number(r.base_value) / (tot || 1), f: r => `${fmt.pct(Number(r.base_value) / (tot || 1), 1)}<span class="cell-bar bar"><i style="width:${Math.min(100, Math.abs(Number(r.base_value)) / (tot || 1) * 100)}%"></i></span>` },
-    ], { sortKey: 'base_value', total: { currency: '<b>Total</b>', base_value: fmt.money(tot) } });
-    table($('#rates'), fx.rows, [
-      { k: 'pair', label: 'Pair', l: 1, f: r => `<b>${esc(r.pair)}</b>` }, { k: 'quote', label: 'Rate', f: r => fmt.num(r.quote, r.quote >= 20 ? 2 : 4) },
-      { k: 'day_pct', label: 'Day', cls: r => sign(r.day_pct), f: r => fmt.spct(r.day_pct) }, { k: 'month_pct', label: 'Month', cls: r => sign(r.month_pct), f: r => fmt.spct(r.month_pct) },
-      { k: 'rate', label: 'Policy rate', f: r => fmt.pct(r.rate, 2) }, { k: 'carry', label: 'Carry vs USD', cls: r => sign(r.carry), f: r => fmt.spct(r.carry) },
-      { k: 'realized_vol', label: 'Volatility', f: r => fmt.pct(r.realized_vol, 1) },
-      { k: 'h', label: '3 months', nosort: 1, f: r => spark((r.history || []).slice(-63).map(h => Array.isArray(h) ? h[1] : (h.spot != null ? h.spot : h.quote))) },
-    ], { sortKey: 'pair', sortDir: 1, onRow: r => { location.hash = '#/asset/FX:' + r.ccy; } });
-    const moves = (cash.movements || []).slice(0, 300);
-    table($('#moves'), moves, [{ k: 'date', label: 'Date', l: 1, f: m => fmt.date(m.date) }, { k: 'currency', label: 'Ccy', l: 1 }, { k: 'kind', label: 'Kind', l: 1, f: m => `<span class="pill">${esc(String(m.kind).replace(/_/g, ' ').toLowerCase())}</span>` }, { k: 'amount', label: 'Amount', cls: m => sign(m.amount), f: m => fmt.num(m.amount, 2) }, { k: 'balance_after', label: 'Balance', f: m => fmt.num(m.balance_after, 2) }, { k: 'reference', label: 'Reference', l: 1, f: m => `<span class="muted">${esc(m.reference)}</span>` }], { empty: 'No cash movements yet', maxH: 420 });
-    const renderLoans = () => { const open = (loans.loans || []).filter(l => l.status === 'OPEN');
-      $('#loans').innerHTML = open.length ? open.map(l => `<div class="row" style="padding:8px 0;border-top:1px solid var(--border)"><b>${esc(l.currency)} ${fmt.num(l.principal, 0)}</b><span class="muted">${fmt.pct(l.rate, 2)} · ${l.maturity ? 'due ' + fmt.date(l.maturity) : 'open'}</span><span class="spacer"></span><button class="small" data-repay="${l.id}">Repay</button></div>`).join('') : '<div class="muted">No currency loans.</div>';
-      $$('[data-repay]').forEach(b => b.onclick = () => busy(b, async () => { await post(P() + `/ccy-loans/${b.dataset.repay}/repay`, {}); toast('Loan repaid'); route(); })); };
-    renderLoans();
-    let t = null; const prev = () => { clearTimeout(t); t = setTimeout(() => { const b = $('#cBuy').value, s = $('#cSell').value, a = N($('#cAmt').value) || 0; if (b === s) { $('#cPrev').textContent = 'Pick two different currencies.'; return; }
-      const cross = fx.cross && fx.cross[b] && fx.cross[b][s]; const inBuy = $('#cIn').value === 'BUY';
-      $('#cPrev').innerHTML = cross ? `<div class="kv"><span>Mid rate</span><span>1 ${b} = ${fmt.num(cross, cross >= 20 ? 2 : 5)} ${s}</span><span>${inBuy ? 'You pay about' : 'You get about'}</span><span><b>${inBuy ? fmt.num(a * cross, 2) + ' ' + s : fmt.num(a / cross, 2) + ' ' + b}</b></span><span>Route</span><span>${b !== 'USD' && s !== 'USD' && !([b, s].sort().join() === 'EUR,GBP') ? `one deal, priced through USD` : 'direct'}</span></div>` : ''; }, 150); };
-    ['cBuy', 'cSell', 'cAmt', 'cIn'].forEach(id => $('#' + id).addEventListener('input', prev)); prev();
-    $('#cGo').onclick = () => busy($('#cGo'), async () => { const r = await post(P() + '/fx/spot', { buy_ccy: $('#cBuy').value, sell_ccy: $('#cSell').value, amount: N($('#cAmt').value), amount_ccy: $('#cIn').value }); toast(`Bought ${$('#cBuy').value}, settles ${fmt.date(r.settlement_date || r.value_date)}`); route(); });
-    $('#lGo').onclick = () => busy($('#lGo'), async () => { await post(P() + '/ccy-loans', { currency: $('#lCcy').value, amount: N($('#lAmt').value), term_days: +$('#lTerm').value }); toast(`Borrowed ${$('#lCcy').value}`); route(); });
-  };
-
-  // ---------------------------------------------------------------- risk
-  pages.risk = async (main, _, alive) => {
-    const r = await api(P() + '/risk'); if (!alive()) return; const d = S.dash; const v = r.var || {}; const f = r.factors || {};
-    main.innerHTML = `<div class="page-head"><div><h1>Risk</h1><p>One-day value at risk from ${v.days || 0} days of history, stress scenarios, sensitivities and limits.</p></div></div>
-      <div class="tiles">${kpi('VaR 95%, one day', fmt.money(v.var95), fmt.pct(N(v.var95) / (d.nav || 1), 2) + ' of NAV')}${kpi('VaR 99%, one day', fmt.money(v.var99), `ten days ${fmt.money(v.var99_10d)}`)}${kpi('Expected shortfall 97.5%', fmt.money(v.es975))}${kpi('Rate sensitivity (DV01)', fmt.money(f.dv01), 'per basis point')}${kpi('Credit sensitivity (CS01)', fmt.money(f.cs01))}${kpi('Vega', fmt.money(f.vega), 'per vol point')}</div>
-      <div class="grid g2"><div class="card"><h2>Stress scenarios <small>P&L if it happened today</small></h2><div id="stress"></div></div>
-      <div class="card"><h2>Limits</h2>${(r.limits || []).map(l => `<div style="margin-bottom:11px"><div class="row" style="justify-content:space-between;font-size:12.5px"><span>${esc(l.name)}</span><span class="num">${fmt.num(l.value, 2)}${esc(l.unit || '')} <span class="muted">/ ${fmt.num(l.hard, 2)}</span></span></div><div class="bar ${l.status === 'BREACH' || l.utilization > 1 ? 'bad' : l.utilization > 0.8 ? 'warn' : 'good'}"><i style="width:${Math.min(100, (l.utilization || 0) * 100)}%"></i></div></div>`).join('') || '<div class="empty">No limits</div>'}</div></div>
-      <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Daily P&L history <small>the series VaR is drawn from</small></h2><div id="varS"></div></div>
-      <div class="card flush"><h2>Liquidity <small>days to sell at a fifth of daily volume</small></h2><div id="liq"></div></div></div>`;
-    barChart($('#stress'), Object.values(r.stress || {}).map(s => ({ label: s.label, value: Number(s.pnl) })).sort((a, b) => a.value - b.value));
-    lineChart($('#varS'), [{ name: 'P&L', data: (v.series || []).map(s => s.pnl), color: css('--accent') }], { labels: (v.series || []).map(s => fmt.date(s.date)), zero: true, fmtY: x => fmt.big(x), h: 200 });
-    table($('#liq'), (r.liquidity && r.liquidity.positions) || [], [{ k: 'id', label: 'Position', l: 1, f: p => `<b>${esc(p.id)}</b>` }, { k: 'market_value', label: 'Value', f: p => fmt.money(p.market_value) }, { k: 'days_to_liquidate', label: 'Days', f: p => fmt.num(p.days_to_liquidate, 1) }, { k: 'bucket', label: 'Bucket', f: p => `<span class="pill">${esc(p.bucket)}</span>` }], { sortKey: 'days_to_liquidate', maxH: 320, empty: 'No positions' });
-  };
-
-  // ---------------------------------------------------------------- performance
-  pages.performance = async (main, _, alive) => {
-    const [x, career] = await Promise.all([api(P() + '/pnl-explain').catch(() => ({ available: false })), api(P() + '/career').catch(() => null)]); if (!alive()) return;
-    const d = S.dash; const m = (career && career.metrics) || {}; const hist = d.nav_history || [];
-    const inc = d.income || {};
-    main.innerHTML = `<div class="page-head"><div><h1>Performance</h1><p>How the fund has done, where today's P&L came from, and the income statement.</p></div></div>
-      <div class="tiles">${kpi('Return since start', `<span class="${sign(m.return_since_inception)}">${fmt.spct(m.return_since_inception)}</span>`, `benchmark ${fmt.spct(m.benchmark_return)}`)}${kpi('Alpha', `<span class="${sign(m.alpha)}">${fmt.spct(m.alpha)}</span>`, 'return above the benchmark')}${kpi('Sharpe ratio', m.sharpe != null && (m.days || 0) >= 20 ? fmt.num(m.sharpe, 2) : '—', `volatility ${fmt.pct(m.volatility, 1)}`)}${kpi('Max drawdown', fmt.pct(m.max_drawdown, 1), `now ${fmt.pct(m.current_drawdown, 1)}`)}</div>
-      <div class="grid g-main"><div class="card"><h2>Net asset value</h2><div id="navH"></div></div><div class="card"><h2>Today by source <small>${x.available ? fmt.date(x.date) : 'no closed day yet'}</small></h2><div id="expl"></div></div></div>
-      <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Daily P&L</h2><div id="dpl"></div></div>
-      <div class="card"><h2>Income statement <small>since the start</small></h2><div class="kv"><span>Realized P&L</span><span class="${sign(d.realized)}">${fmt.signed(d.realized)}</span><span>Unrealized P&L</span><span class="${sign(d.unrealized)}">${fmt.signed(d.unrealized)}</span><span>Dividends</span><span>${fmt.signed(Math.abs(inc.dividends || 0))}</span><span>Interest earned</span><span>${fmt.signed(Math.abs(inc.interest || 0))}</span><span>Interest paid</span><span class="neg">${fmt.signed(-Math.abs(inc.interest_expense || 0))}</span><span>Commissions</span><span class="neg">${fmt.signed(-Math.abs(inc.commissions || 0))}</span><span><b>Total P&L</b></span><span><b class="${sign(d.since_inception_pnl)}">${fmt.signed(d.since_inception_pnl)}</b></span></div></div></div>`;
-    lineChart($('#navH'), [{ name: 'NAV', data: hist.map(h => h.nav), area: true }], { labels: hist.map(h => fmt.date(h.date)), fmtY: v => fmt.big(v), h: 240 });
-    barChart($('#expl'), x.available ? Object.entries(x.explain).filter(([, v]) => Number(v)).map(([k, v]) => ({ label: k.replace(/_/g, ' '), value: Number(v) })).sort((a, b) => Math.abs(b.value) - Math.abs(a.value)) : []);
-    lineChart($('#dpl'), [{ name: 'Day P&L', data: hist.map(h => h.day_pnl), color: css('--violet') }], { labels: hist.map(h => fmt.date(h.date)), zero: true, fmtY: v => fmt.big(v), h: 200 });
-  };
-
-  // ---------------------------------------------------------------- activity
-  pages.activity = async (main, args, alive) => {
-    const tab = args[0] || 'trades';
-    const [trades, orders, news] = await Promise.all([api(P() + '/trades'), api(P() + '/orders'), api(W() + '/news').catch(() => [])]); if (!alive()) return;
-    main.innerHTML = `<div class="page-head"><div><h1>Activity</h1><p>Every fill, every order and the news tape.</p></div><div class="seg">${[['trades', `Trades ${trades.length}`], ['orders', `Orders ${orders.length}`], ['news', 'News']].map(([k, l]) => `<button data-t="${k}" class="${k === tab ? 'on' : ''}">${l}</button>`).join('')}</div></div><div class="card flush"><div id="act"></div></div>`;
-    $$('.seg button', main).forEach(b => b.onclick = () => { location.hash = '#/activity/' + b.dataset.t; });
-    if (tab === 'trades') table($('#act'), trades.slice().reverse(), [{ k: 'trade_date', label: 'Date', l: 1, f: t => fmt.date(t.trade_date) }, { k: 'security_id', label: 'Trade', l: 1, f: t => `<b class="${t.side === 'BUY' ? 'pos' : 'neg'}">${esc(t.side)}</b> <b>${esc(t.security_id)}</b>` }, { k: 'quantity', label: 'Qty', f: t => fmt.qty(t.quantity) }, { k: 'price', label: 'Price', f: t => fmt.px(t.price) }, { k: 'currency', label: 'Ccy', l: 1 }, { k: 'net_amount', label: 'Net amount', f: t => fmt.num(t.net_amount, 2) }, { k: 'realized_pnl', label: 'Realized', cls: t => sign(t.realized_pnl), f: t => Number(t.realized_pnl) ? fmt.signed(t.realized_pnl) : '' }, { k: 'status', label: 'Settlement', f: t => `<span class="pill ${t.status === 'SETTLED' ? 'pos' : 'acc'}">${esc(t.status.toLowerCase())}</span><span class="sub">${fmt.date(t.settlement_date)}</span>` }], { maxH: 760, empty: 'No trades yet' });
-    else if (tab === 'orders') table($('#act'), orders.slice().reverse(), [{ k: 'entered_date', label: 'Entered', l: 1, f: o => fmt.date(o.entered_date) }, { k: 'security_id', label: 'Order', l: 1, f: o => `<b>${esc(o.side)} ${esc(o.security_id)}</b><span class="sub">${esc(o.order_type)}${o.limit_price ? ' @ ' + fmt.px(o.limit_price) : ''}</span>` }, { k: 'quantity', label: 'Qty', f: o => fmt.qty(o.quantity) }, { k: 'filled_quantity', label: 'Filled', f: o => fmt.qty(o.filled_quantity) }, { k: 'avg_fill_price', label: 'Avg price', f: o => fmt.px(o.avg_fill_price) }, { k: 'status', label: 'Status', f: o => `<span class="pill ${o.status === 'FILLED' ? 'pos' : o.status === 'REJECTED' ? 'neg' : 'acc'}">${esc(o.status.toLowerCase())}</span>${o.reason ? `<span class="sub">${esc(o.reason)}</span>` : ''}` }], { maxH: 760, empty: 'No orders yet' });
-    else $('#act').innerHTML = `<div style="padding:6px 18px">${news.slice(0, 120).map(n => `<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-weight:600">${n.link ? `<a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.headline)}</a>` : esc(n.headline)}</div><div class="muted" style="font-size:12.5px">${esc(n.publisher || String(n.category || '').replace(/_/g, ' ').toLowerCase())} · ${fmt.date(n.date)}${(n.refs || []).length ? ' · ' + n.refs.slice(0, 4).map(r => `<a href="#/asset/${encodeURIComponent(r)}">${esc(r)}</a>`).join(' ') : ''}</div>${n.body ? `<div style="margin-top:4px;font-size:13px">${esc(String(n.body).slice(0, 280))}</div>` : ''}</div>`).join('') || '<div class="empty">No news yet</div>'}</div>`;
-  };
-
-  // ---------------------------------------------------------------- analytics: scoreboard · equation library
-  const SCORE_SETS = {
-    overview: ['ret_1m', 'ret_1y', 'vol_ann', 'sharpe', 'beta', 'alpha_ann', 'max_drawdown'],
-    risk: ['vol_ann', 'ewma_vol', 'garch_vol', 'garch_persistence', 'var_95', 'es_95', 'skew', 'kurt', 'max_drawdown'],
-    behaviour: ['ar1_phi', 'half_life', 'adf_t', 'adf_stationary', 'acf1', 'zscore_50', 'mom_12_1', 't_mean'],
-    market: ['beta', 'corr_mkt', 'r2_mkt', 'alpha_ann', 'capm_er', 'sharpe', 'sortino'],
-  };
-  const SCORE_CLASSES = [['all', 'All', () => true], ['stocks', 'Stocks', r => ['EQUITY', 'ADR', 'REIT'].includes(r.asset_class)], ['etfs', 'ETFs', r => r.asset_class === 'ETF'],
-    ['bonds', 'Bonds', r => /BOND|MBS|STRUCTURED/.test(r.asset_class)], ['futures', 'Futures', r => r.asset_class === 'FUTURE'], ['crypto', 'Crypto', r => r.asset_class === 'CRYPTO'], ['fx', 'Currencies', r => r.asset_class === 'FX']];
-  pages.analytics = async (main, args, alive) => {
-    const tab = args[0] === 'equations' ? 'equations' : 'scores';
-    main.innerHTML = `<div class="page-head"><div><h1>Analytics</h1><p>${tab === 'scores' ? 'Every tradeable asset scored with the equation library: returns, risk, market sensitivity and time-series behaviour from its price history, against the S&P 500 and the dollar policy rate.' : 'The equation library: every formula, the code that implements it, and its value on any asset.'}</p></div>
-      <div class="seg"><button data-t="scores" class="${tab === 'scores' ? 'on' : ''}">Scoreboard</button><button data-t="equations" class="${tab === 'equations' ? 'on' : ''}">Equation library</button></div></div><div id="an"><div class="loading">Scoring every asset…</div></div>`;
-    $$('.page-head .seg button').forEach(b => b.onclick = () => { location.hash = '#/analytics/' + b.dataset.t; });
-    return tab === 'scores' ? scoreboard($('#an'), alive) : equations($('#an'), args[1], alive);
-  };
-  async function scoreboard(el, alive) {
-    const sb = await api(`/fs2/worlds/${S.wid}/scores`); if (!alive()) return;
-    const info = sb.metric_info; let cls = pref.get('scoreCls', 'all'), set = pref.get('scoreSet', 'overview'), q = '';
-    el.innerHTML = `<div class="card"><div class="row"><div class="chips" id="scC">${SCORE_CLASSES.map(([k, l, p]) => `<button class="chip ${k === cls ? 'on' : ''}" data-c="${k}">${l} <span class="muted">${sb.rows.filter(p).length}</span></button>`).join('')}</div><span class="spacer"></span>
-      <div class="seg" id="scS">${Object.keys(SCORE_SETS).map(k => `<button data-s="${k}" class="${k === set ? 'on' : ''}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div><input id="scQ" placeholder="Filter" style="width:180px"></div>
-      <p class="hint">${sb.count.toLocaleString()} assets · ${fmt.date(sb.date)} · market ${esc(sb.market)} · risk-free ${fmt.pct(sb.rf, 2)} · Shaffer Score ${sb.shaffer.enabled ? `live (version ${esc(sb.shaffer.version)}, ${sb.shaffer.scored} scored)` : '<b>in development</b> (<a href="#/shaffer">about</a>)'} · hover a column for its equations</p></div>
-      <div class="card flush" style="margin-top:16px"><div id="scT"></div></div>`;
-    const show = () => { const pred = SCORE_CLASSES.find(c => c[0] === cls)[2]; const qq = q.trim().toUpperCase();
-      const rows = sb.rows.filter(pred).filter(r => !qq || r.id.toUpperCase().includes(qq) || String(r.name).toUpperCase().includes(qq));
-      const cols = [{ k: 'id', label: 'Asset', l: 1, f: r => `<b>${esc(r.id)}</b><span class="sub">${esc(r.name)}</span>` }, { k: 'class_label', label: 'Class', l: 1, f: r => `<span class="pill">${esc(r.class_label)}</span>` }, { k: 'currency', label: 'Ccy', l: 1 }, { k: 'last', label: 'Last', f: r => fmt.px(r.last) },
-        ...SCORE_SETS[set].filter(k => info[k]).map(k => ({ k, label: SHORT[k] || info[k].label, title: `${info[k].label}: equation ${(info[k].equations || []).join(', ') || 'n/a'}`, cls: r => ['ret_1m', 'ret_1y', 'alpha_ann', 'mom_12_1', 'sharpe', 'sortino', 'zscore_50'].includes(k) ? sign(r[k]) : k === 'max_drawdown' && r[k] < -0.25 ? 'neg' : '', f: r => mfmt(r[k], info[k].fmt), v: r => typeof r[k] === 'boolean' ? (r[k] ? 1 : 0) : r[k] })),
-        { k: 'shaffer', label: 'Shaffer', title: 'Shaffer Score', f: r => r.shaffer == null ? '<span class="faint">—</span>' : `<b>${fmt.num(r.shaffer, 1)}</b>` }];
-      table($('#scT'), rows, cols, { sortKey: sb.shaffer.enabled ? 'shaffer' : (set === 'risk' ? 'vol_ann' : set === 'behaviour' ? 'half_life' : 'sharpe'), sortDir: set === 'behaviour' ? 1 : -1, maxH: 760, onRow: r => { location.hash = '#/asset/' + encodeURIComponent(r.id); } }); };
-    $$('#scC .chip').forEach(b => b.onclick = () => { cls = b.dataset.c; pref.set('scoreCls', cls); $$('#scC .chip').forEach(x => x.classList.toggle('on', x === b)); show(); });
-    $$('#scS button').forEach(b => b.onclick = () => { set = b.dataset.s; pref.set('scoreSet', set); $$('#scS button').forEach(x => x.classList.toggle('on', x === b)); show(); });
-    $('#scQ').oninput = e => { q = e.target.value; show(); };
-    show();
-  }
+  // ---------------------------------------------------------------- maths rendering (KaTeX when online, readable symbols offline)
   const GREEK = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', varepsilon: 'ε', zeta: 'ζ', eta: 'η', theta: 'θ', kappa: 'κ', lambda: 'λ', mu: 'μ', nu: 'ν', xi: 'ξ', pi: 'π', rho: 'ρ', sigma: 'σ', tau: 'τ', phi: 'φ', varphi: 'φ', chi: 'χ', psi: 'ψ', omega: 'ω', Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Sigma: 'Σ', Phi: 'Φ', Omega: 'Ω', Pi: 'Π',
     sum: 'Σ', prod: '∏', int: '∫', partial: '∂', nabla: '∇', infty: '∞', le: '≤', leq: '≤', ge: '≥', geq: '≥', approx: '≈', neq: '≠', cdot: '·', times: '×', odot: '⊙', sim: '∼', mid: '|', top: 'ᵀ', to: '→', in: '∈', pm: '±', quad: ' ', qquad: '  ', ldots: '…', dots: '…', ',': ' ', ';': ' ', '!': '', max: 'max', min: 'min', ln: 'ln', exp: 'exp', log: 'log', Var: 'Var', Cov: 'Cov' };
   function texLite(t) {
@@ -586,103 +409,404 @@
   }
   const texFallback = root => root && $$('.tex[data-tex]', root).forEach(el => { if (!el.dataset.lite) { el.innerHTML = `<span style="font-family:'Cambria Math','STIX Two Math','Times New Roman',serif;font-size:16px">${texLite(el.dataset.tex)}</span>`; el.dataset.lite = 1; } });
   const renderTex = root => { if (!root || !document.body.contains(root)) return true; if (!window.katex) { texFallback(root); return false; } $$('.tex[data-tex]', root).forEach(el => { try { katex.render(el.dataset.tex, el, { displayMode: true, throwOnError: false }); } catch (e) { } }); return true; };
-  async function equations(el, sid, alive) {
-    const [cat, a] = await Promise.all([api('/fs2/equations'), sid ? api(`/fs2/worlds/${S.wid}/analytics/${encodeURIComponent(sid)}`).catch(() => null) : null]); if (!alive()) return;
-    const vals = {}; if (a) (a.applied || []).forEach(x => { vals[x.id] = x; });
-    const info = a ? a.metric_info : {};
-    el.innerHTML = `<div class="card"><div class="row"><label class="f" style="flex:1;min-width:240px">Apply to an asset<input id="eqAsset" list="eqAssets" placeholder="ticker, e.g. SPY, AAPL, SAP-DE, FX:EUR" value="${esc(sid || '')}"><datalist id="eqAssets">${(S.secs || []).slice(0, 3000).map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}</datalist></label>
-      <label class="f" style="flex:1;min-width:200px">Search the library<input id="eqQ" placeholder="e.g. GARCH, duration, Sharpe"></label></div>
-      ${a ? `<p class="hint">Showing values for <b>${esc(a.asset.id)}</b> (${esc(a.asset.name)}) from ${a.series.closes.length} closes. Equations without a value describe instruments or models rather than a single price series.</p>` : '<p class="hint">Pick an asset to see each equation evaluated on its price history.</p>'}
-      <div class="toc" style="margin-top:10px">${cat.sections.map(s => `<a class="chip" href="javascript:void 0" data-sec="${s.key}">${esc(s.title)}</a>`).join('')}</div></div>
-      <div id="eqList"></div>`;
-    const draw = q => { const qq = (q || '').toLowerCase();
-      $('#eqList').innerHTML = cat.sections.map(s => { const eqs = cat.equations.filter(e => e.section === s.key && (!qq || (e.name + ' ' + e.note + ' ' + e.id).toLowerCase().includes(qq))); if (!eqs.length) return '';
-        return `<div class="sec-title" id="sec-${s.key}">${esc(s.title)}</div><div class="eq-list">${eqs.map(e => { const v = vals[e.id]; const mi = e.metric && info[e.metric];
-          return `<div class="eq"><div class="id">${esc(e.id)}</div><div class="nm">${esc(e.name)}</div><div class="val">${v && v.value != null ? `<span title="${esc(mi ? mi.label : e.metric)}">${esc(mi ? mi.label : e.metric)}: ${mfmt(v.value, mi ? mi.fmt : 'num')}</span>` : e.metric ? `<span class="pill">${esc(e.metric)}</span>` : ''}</div>
-            <div class="tex" data-tex="${esc(e.latex)}">${esc(e.latex)}</div><div class="note">${esc(e.note)}</div><div class="fn"><button class="small ghost" data-src="${esc(e.id)}"><code>${esc(e.fn)}</code> · view code</button></div></div>`; }).join('')}</div>`; }).join('') || '<div class="card empty" style="margin-top:16px">No equation matches</div>';
-      if (!renderTex($('#eqList'))) { let tries = 0; const iv = setInterval(() => { if (renderTex($('#eqList')) || ++tries > 20) clearInterval(iv); }, 300); }
-      $$('[data-src]').forEach(b => b.onclick = async () => { const e = cat.equations.find(x => x.id === b.dataset.src); const r = await api(`/fs2/equations/${encodeURIComponent(e.id)}/source`).catch(err => ({ source: err.message }));
-        drawer(`<div class="muted">Equation ${esc(e.id)}</div><h2 style="margin:2px 0 8px">${esc(e.name)}</h2><div class="tex" data-tex="${esc(e.latex)}" style="overflow-x:auto">${esc(e.latex)}</div><p class="muted">${esc(e.note)}</p><div class="muted" style="margin:10px 0 6px"><code>${esc(e.fn)}</code></div><pre style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;overflow:auto;font-size:12px;line-height:1.5"><code style="background:none;padding:0">${esc(r.source || '')}</code></pre>`); renderTex($('#drawer')); }); };
-    draw('');
-    $('#eqQ').oninput = e => draw(e.target.value);
-    $('#eqAsset').onchange = e => { const v = e.target.value.trim().toUpperCase(); location.hash = '#/analytics/equations' + (v ? '/' + encodeURIComponent(v) : ''); };
-    $$('[data-sec]').forEach(c => c.onclick = () => { const t = $('#sec-' + c.dataset.sec); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  const texWhenReady = root => { if (!renderTex(root)) { let tries = 0; const iv = setInterval(() => { if (renderTex(root) || ++tries > 20) clearInterval(iv); }, 300); } };
+
+  // ---------------------------------------------------------------- the signal-horizon matrix (shared by Analytics and Quant Lab)
+  const FAM_ORDER = ['Returns', 'Momentum', 'Statistics', 'Risk', 'Volatility', 'Technical', 'TimeSeries', 'Valuation', 'Fundamentals', 'Rates', 'Credit', 'Macro'];
+  function matrixView(el, asset, mx, o = {}) {
+    const metric = o.metric || 'normalized';
+    let maxU = 0; Object.values(mx.matrix).forEach(r => Object.values(r).forEach(x => { if (x.usefulness != null) maxU = Math.max(maxU, Math.abs(x.usefulness)); }));
+    const rows = Object.keys(mx.matrix).map(k => ({ key: k, label: (mx.features[k] || {}).label || k, sub: (mx.features[k] || {}).family, fam: (mx.features[k] || {}).family }))
+      .sort((a, b) => (FAM_ORDER.indexOf(a.fam) - FAM_ORDER.indexOf(b.fam)) || a.label.localeCompare(b.label));
+    heatmap(el, rows, HZ.map(h => ({ key: h, label: h })), (r, c) => { const rec = (mx.matrix[r.key] || {})[c.key]; if (!rec) return { v: null, text: '<span class="faint">·</span>', title: 'insufficient evidence' };
+      const v = metric === 'normalized' ? (rec.usefulness == null ? null : rec.usefulness / (maxU || 1)) : rec[metric]; const sig = rec.q != null && rec.q < 0.1;
+      return { v, text: v == null ? '<span class="faint">n/a</span>' : `${fmt.num(v, 2)}${sig ? '<sup>*</sup>' : ''}`, title: `IC ${fmt.num(rec.ic, 3)} · hit ${fmt.pct(rec.hit_rate, 0)} · p ${fmt.num(rec.p, 3)} · q ${fmt.num(rec.q, 3)} · n_eff ${fmt.num(rec.n_eff, 0)}` }; },
+      { max: metric === 'ic' ? 0.3 : metric === 'hit_rate' ? 1 : metric === 'normalized' ? 1 : 0.2, corner: 'Signal', maxH: o.maxH || 760, onCell: (sig, h) => cellDrawer(asset, sig, h) });
+  }
+  async function cellDrawer(asset, sig, h) {
+    const d = drawer('<div class="loading">Loading the evidence…</div>');
+    const c = await api(`/fs2/asset/${encodeURIComponent(asset)}/cell/${encodeURIComponent(sig)}/${h}`);
+    const r = c.record; const m = c.backtest.metrics;
+    d.innerHTML = `<div class="row" style="justify-content:flex-end"><button class="ghost" id="drawerX">✕ Close</button></div><div class="muted">${esc(c.family)} · ${esc(asset)} · ${esc(h)} horizon</div><h2 style="margin:2px 0 12px">${esc(c.label)}</h2>
+      <div class="kv"><span>Information coefficient (rank)</span><span><b>${fmt.num(r.ic, 3)}</b> <span class="faint">recent third ${fmt.num(r.ic_recent, 3)}</span></span><span>Usefulness (IC shrunk by evidence)</span><span>${fmt.num(r.usefulness, 3)}</span>
+        <span>Hit rate when the signal leans</span><span>${fmt.pct(r.hit_rate, 1)}</span><span>t-statistic · p-value</span><span>${fmt.num(r.t, 2)} · ${fmt.num(r.p, 4)}</span><span>False-discovery q-value</span><span>${fmt.num(r.q, 4)} <span class="faint">(${(r.q != null && r.q < 0.1) ? 'survives testing ~60 signals' : 'may be luck among many tests'})</span></span>
+        <span>Observations · independent</span><span>${fmt.qty(r.n)} · ${fmt.num(r.n_eff, 0)} <span class="faint">(signal persistence ${fmt.num(r.persistence, 0)} sessions)</span></span><span>Direction</span><span>${r.direction > 0 ? 'higher signal → higher return' : 'higher signal → lower return'}</span>
+        <span>Stability (thirds agreeing)</span><span>${fmt.pct(r.stability, 0)} · ${(r.ic_thirds || []).map(x => fmt.num(x, 2)).join(' / ')}</span></div>
+      <h3>Forward ${esc(h)} return by signal quintile</h3><div id="cQ"></div>
+      <h3>Rolling 3-year IC</h3><div id="cR"></div>
+      <h3>By regime</h3><div id="cRg"></div>
+      <h3>Threshold backtest <small class="muted">long when z ≥ 1 in the signal's direction, exit at 0, hold ≥ ${esc(h)}, 5bp costs</small></h3>
+      <div class="kv"><span>CAGR vs buy & hold</span><span>${fmt.pct(m.cagr, 1)} vs ${fmt.pct(m.benchmark_cagr, 1)}</span><span>Sharpe · max drawdown</span><span>${fmt.num(m.sharpe, 2)} · ${fmt.pct(m.max_drawdown, 1)}</span><span>Trades · win rate · exposure</span><span>${m.trades} · ${fmt.pct(m.win_rate, 0)} · ${fmt.pct(m.exposure, 0)}</span></div><div id="cB"></div>`;
+    $('#drawerX').onclick = closeDrawer;
+    hbars($('#cQ'), (c.quintiles || []).map(q => ({ label: `Q${q.quintile} ${q.quintile === 1 ? '(lowest)' : q.quintile === 5 ? '(highest)' : ''}`, value: q.mean, sub: `hit ${fmt.pct(q.hit, 0)}` })), { fmt: v => fmt.spct(v, 2) });
+    lineChart($('#cR'), [{ name: 'IC', data: c.rolling_ic.map(x => x.ic), color: css('--accent') }], { labels: c.rolling_ic.map(x => fmt.date(x.date)), zero: true, fmtY: v => fmt.num(v, 2), h: 150 });
+    const by = r.by_regime || {};
+    $('#cRg').innerHTML = Object.keys(by).length ? `<table><thead><tr><th class="l">Regime</th><th>IC</th><th>Usefulness</th><th>n_eff</th></tr></thead><tbody><tr><td class="l"><b>All periods</b></td><td>${fmt.num(r.ic, 3)}</td><td>${fmt.num(r.usefulness, 3)}</td><td>${fmt.num(r.n_eff, 0)}</td></tr>${Object.entries(by).sort().map(([k, v]) => `<tr><td class="l">${esc(c.regime_labels[k] || k)}</td><td style="background:${divColor(v.ic, 0.3)}">${fmt.num(v.ic, 3)}</td><td>${fmt.num(v.usefulness, 3)}</td><td>${fmt.num(v.n_eff, 0)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">Regime splits are computed for horizons up to 12 months</div>';
+    lineChart($('#cB'), [{ name: 'Strategy', data: c.backtest.curve.strategy, color: css('--accent') }, { name: 'Buy & hold', data: c.backtest.curve.buy_hold, color: css('--faint'), width: 1.4 }], { labels: c.backtest.curve.dates.map(d => fmt.date(d)), fmtY: v => fmt.num(v, 2), h: 170 });
   }
 
-  // ---------------------------------------------------------------- the Shaffer Score
-  pages.shaffer = async (main, _, alive) => {
-    const st = await api('/fs2/shaffer'); let sb = null; if (st.enabled) sb = await api(`/fs2/worlds/${S.wid}/scores`).catch(() => null); if (!alive()) return;
-    const cat = await api('/fs2/equations').catch(() => null); if (!alive()) return;
-    const ranked = sb ? sb.rows.filter(r => r.shaffer != null).sort((a, b) => b.shaffer - a.shaffer) : [];
-    const [lo, hi] = st.range || [0, 100];
-    main.innerHTML = `<div class="page-head"><div><h1>Shaffer Score</h1><p>A single quantitative score for every tradeable asset, from an algorithm in development. This is where it will live: ranked across the whole market, on every asset page and as a column on the Analytics scoreboard.</p></div><span class="pill ${st.enabled ? 'pos' : 'warn'}" style="font-size:13px;padding:5px 12px"><span class="dot"></span>${st.enabled ? 'Live · version ' + esc(st.version) : 'In development'}</span></div>
-      ${st.enabled ? `<div class="grid g-main"><div class="card flush"><h2>Ranking <small>${ranked.length} assets scored · ${fmt.date(sb.date)}</small></h2><div id="shT"></div></div><div class="card"><h2>Distribution</h2><div id="shD"></div></div></div>` : `
-      <div class="grid g2">
-        <div class="card"><h2>What will appear here</h2><div class="stack" style="gap:10px">
-          <div class="row" style="align-items:flex-start;flex-wrap:nowrap"><span class="pill acc">1</span><div><b>A ranking of every asset</b><div class="muted">Stocks worldwide, ETFs, bonds, futures, crypto and currencies, sorted by score, filterable by class.</div></div></div>
-          <div class="row" style="align-items:flex-start;flex-wrap:nowrap"><span class="pill acc">2</span><div><b>The score on each asset page</b><div class="muted">Next to the statistics it is built from, so a score can always be traced back to its inputs.</div></div></div>
-          <div class="row" style="align-items:flex-start;flex-wrap:nowrap"><span class="pill acc">3</span><div><b>A column on the scoreboard</b><div class="muted">Sort the whole market by it alongside Sharpe, volatility, beta and the rest.</div></div></div>
-          <div class="row" style="align-items:flex-start;flex-wrap:nowrap"><span class="pill acc">4</span><div><b>Your holdings, scored</b><div class="muted">How the fund's positions rank, once the score is live.</div></div></div></div></div>
-        <div class="card"><h2>How it plugs in</h2><p class="muted" style="margin-top:0">The score is one Python function. FinSim2 calls it for every asset with that asset's statistics and details, and shows what it returns (higher is better; ${lo} to ${hi} is the scale the bars use).</p>
-          <pre style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:12px;overflow:auto;font-size:12px;line-height:1.5"><code style="background:none;padding:0">VERSION = "1.0"
+  // ---------------------------------------------------------------- analytics
+  const A_TABS = [['overview', 'Overview'], ['Returns', 'Returns'], ['Risk', 'Risk'], ['Statistics', 'Statistics'], ['Regression', 'Regression'], ['Time Series', 'Time series'], ['Volatility', 'Volatility'], ['factors', 'Factors & regimes'], ['Valuation', 'Valuation'], ['Stochastic', 'Stochastic'], ['Fixed Income', 'Fixed income'], ['Portfolio', 'Portfolio theory'], ['ml', 'Machine learning'], ['backtests', 'Backtests'], ['equations', 'Equations']];
+  pages.analytics = async (main, args, alive) => {
+    const id = args[0] || S.current; const tab = args[1] || 'overview';
+    main.innerHTML = `<div class="loading">Loading the analytics for ${esc(id)}…</div>`;
+    const b = await api('/fs2/asset/' + encodeURIComponent(id)); if (!alive()) return;
+    const ph = b.primary_horizon; const p = b.horizons[ph] || {}; const ml = b.ml && b.ml.horizons ? b.ml.horizons[ph] || {} : {};
+    main.innerHTML = `<div class="card" style="margin-bottom:14px"><div class="row" style="gap:18px">${assetPicker('anPick', id)}
+        <div class="hdrk"><span>Date</span><b>${esc(b.as_of)}</b></div><div class="hdrk"><span>Price</span><b>${fmt.px(b.price)}</b></div>
+        <div class="hdrk"><span>Quant score (${esc(ph || '—')})</span><b class="${scoreCls(p.score)}">${scoreTxt(p.score)}</b></div><div class="hdrk"><span>ML score</span><b class="${scoreCls(p.ml_score)}">${scoreTxt(p.ml_score)}</b></div>
+        <div class="hdrk"><span>Confidence</span><b>${pct0((p.confidence || {}).value)}</b></div><div class="hdrk"><span>Regime</span><b>${esc(b.regime.description)}</b></div>
+        <div class="hdrk"><span>Best model</span><b>${esc(ml.best_model || (b.ml ? 'none beats noise' : 'not trained'))}</b></div><div class="hdrk"><span>Best horizon</span><b>${esc(ph || '—')}</b></div></div></div>
+      <div class="tabs">${A_TABS.map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/analytics/${encodeURIComponent(id)}/${encodeURIComponent(k)}">${l}</a>`).join('')}</div><div id="anBody" style="margin-top:14px"><div class="loading">Computing…</div></div>`;
+    bindPicker('anPick', x => go(`#/analytics/${encodeURIComponent(x)}/${encodeURIComponent(tab)}`));
+    const body = $('#anBody');
+    if (tab === 'overview') {
+      const mx = await api(`/fs2/asset/${encodeURIComponent(id)}/matrix`); if (!alive()) return;
+      body.innerHTML = `<div class="card"><h2>Signal-horizon matrix <small>rows = signals, columns = horizons · normalised predictive usefulness (rank IC shrunk by its evidence, 1.0 = this asset's strongest) · green = higher signal, higher returns · * survives false-discovery control · click a cell</small><span class="right seg" id="mxM"><button data-m="normalized" class="on">Normalised</button><button data-m="usefulness">Usefulness</button><button data-m="ic">IC</button></span></h2><div id="mx"></div></div>
+        <div class="card flush" style="margin-top:16px"><h2>Evidence by horizon</h2>${scoreStrip(b.horizons)}</div>`;
+      const draw = m => matrixView($('#mx'), id, mx, { metric: m });
+      draw('normalized');
+      $$('#mxM button').forEach(bt => bt.onclick = () => { $$('#mxM button').forEach(x => x.classList.toggle('on', x === bt)); draw(bt.dataset.m); });
+      return;
+    }
+    if (tab === 'factors') {
+      const mx = await api(`/fs2/asset/${encodeURIComponent(id)}/matrix`); if (!alive()) return;
+      const hsel = pref.get('regH', '3M');
+      body.innerHTML = `<div class="card"><h2>Regime analysis <small>usefulness of each signal inside each regime at the chosen horizon · the same signal can work in bull markets and fail in bear markets</small><span class="right"><select id="regH">${HZ.slice(0, 6).map(h => `<option ${h === hsel ? 'selected' : ''}>${h}</option>`).join('')}</select></span></h2><div id="rg"></div></div>
+        <div class="grid g2" style="margin-top:16px"><div class="card"><h2>What matters now</h2>${matters(b.what_matters_now)}</div><div class="card"><h2>What matters long term</h2>${matters(b.what_matters_long)}</div></div>`;
+      const draw = h => { const states = Object.keys(mx.regimes); const rows = Object.keys(mx.matrix).filter(k => (mx.matrix[k][h] || {}).by_regime).map(k => ({ key: k, label: (mx.features[k] || {}).label || k, sub: (mx.features[k] || {}).family }));
+        const cols = [{ key: '_all', label: 'All' }, ...states.map(s => ({ key: s, label: mx.regimes[s] }))];
+        heatmap($('#rg'), rows, cols, (r, c) => { const rec = mx.matrix[r.key][h]; const v = c.key === '_all' ? rec.usefulness : ((rec.by_regime || {})[c.key] || {}).usefulness; return { v, text: v == null ? '' : fmt.num(v, 2), title: c.key === '_all' ? '' : `n_eff ${fmt.num(((rec.by_regime || {})[c.key] || {}).n_eff, 0)}` }; }, { max: 0.2, corner: 'Signal', onCell: (sig) => cellDrawer(id, sig, h) }); };
+      draw(hsel); $('#regH').onchange = e => { pref.set('regH', e.target.value); draw(e.target.value); };
+      return;
+    }
+    if (tab === 'ml') {
+      body.innerHTML = b.ml ? `<div class="card flush"><h2>ML score by horizon <a class="right btn small" href="#/ml/${encodeURIComponent(id)}">Open the ML Lab →</a></h2><div id="mlT"></div></div>` : `<div class="card"><h2>No models trained for ${esc(id)} yet</h2><p class="muted">Training runs a purged walk-forward test of seven models at each horizon (about half a minute).</p><a class="btn primary" href="#/ml/${encodeURIComponent(id)}">Go to the ML Lab</a></div>`;
+      if (b.ml) table($('#mlT'), HZ.map(h => ({ h, r: b.ml.horizons[h] || {} })), [{ k: 'h', label: 'Horizon', l: 1 }, { k: 's', label: 'ML score', v: x => x.r.score, f: x => `<b class="${scoreCls(x.r.score)}">${scoreTxt(x.r.score)}</b>` }, { k: 'e', label: 'Expected', v: x => x.r.expected, f: x => x.r.expected == null ? '—' : `${fmt.spct(x.r.expected, 1)} <span class="faint">± ${fmt.pct(x.r.error, 1)}</span>` }, { k: 'ic', label: 'Out-of-sample IC', v: x => (x.r.ensemble || {}).ic, f: x => fmt.num((x.r.ensemble || {}).ic, 3) }, { k: 'pu', label: 'P(rise)', v: x => x.r.prob_up, f: x => fmt.pct(x.r.prob_up, 0) }, { k: 'b', label: 'Best model', l: 1, v: x => x.r.best_model, f: x => esc(x.r.best_model || x.r.message || x.r.reason || '—') }], { sortKey: null });
+      return;
+    }
+    if (tab === 'backtests') {
+      const mx = await api(`/fs2/asset/${encodeURIComponent(id)}/leaderboard?horizon=${ph || '3M'}&top=6`); if (!alive()) return;
+      body.innerHTML = `<div class="card"><h2>The ${esc(ph || '3M')} leaders, backtested <small>threshold strategy on each of the strongest signals · <a href="#/backtests">build your own →</a></small></h2><div id="btL"></div></div>`;
+      const rows = [];
+      for (const r of mx) { try { const c = await api(`/fs2/asset/${encodeURIComponent(id)}/cell/${encodeURIComponent(r.signal)}/${ph || '3M'}`); rows.push({ ...r, m: c.backtest.metrics }); } catch (e) { } if (!alive()) return; }
+      table($('#btL'), rows, [{ k: 'signal', label: 'Signal', l: 1 }, { k: 'u', label: 'Usefulness', v: r => r.usefulness, f: r => fmt.num(r.usefulness, 3) }, { k: 'cagr', label: 'CAGR', v: r => r.m.cagr, f: r => fmt.pct(r.m.cagr, 1) }, { k: 'bh', label: 'Buy & hold', v: r => r.m.benchmark_cagr, f: r => fmt.pct(r.m.benchmark_cagr, 1) }, { k: 'sh', label: 'Sharpe', v: r => r.m.sharpe, f: r => fmt.num(r.m.sharpe, 2) }, { k: 'dd', label: 'Max DD', v: r => r.m.max_drawdown, f: r => fmt.pct(r.m.max_drawdown, 1) }, { k: 'tr', label: 'Trades', v: r => r.m.trades, f: r => r.m.trades }, { k: 'wr', label: 'Win rate', v: r => r.m.win_rate, f: r => fmt.pct(r.m.win_rate, 0) }], { onRow: r => cellDrawer(id, r.signal, ph || '3M') });
+      return;
+    }
+    body.innerHTML = '<div class="loading">Evaluating every equation on this asset… (up to ten seconds the first time)</div>';
+    const eq = await api(`/fs2/asset/${encodeURIComponent(id)}/equations`); if (!alive()) return;
+    if (tab === 'equations') {
+      const fams = [...new Set(eq.catalog.map(r => r.family))];
+      body.innerHTML = `<div class="card"><div class="row"><input id="eqQ" placeholder="Search equations" style="width:260px"><div class="chips" id="eqF"><button class="chip on" data-f="">All ${eq.catalog.length}</button>${fams.map(f => `<button class="chip" data-f="${esc(f)}">${esc(f)}</button>`).join('')}</div></div><p class="hint">Every equation of the library calculated on ${esc(id)}'s data. "Usefulness", "best horizon", "hit rate" and IC come from the signal the equation feeds, tested at each horizon. Computed in ${eq.computed_in}s.</p></div><div id="eqL" class="eqgrid" style="margin-top:14px"></div>`;
+      let fam = '', q = '';
+      const draw = () => { const rows = eq.catalog.filter(r => (!fam || r.family === fam) && (!q || (r.name + ' ' + (r.interpretation || '')).toLowerCase().includes(q)));
+        $('#eqL').innerHTML = rows.map(r => `<div class="eqc"><div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><div><span class="eqid">${esc(r.id)}</span> <b>${esc(r.name)}</b> <span class="faint">${esc(r.family)}</span></div>${sigPill(r.signal)}</div>
+          <div class="tex" data-tex="${esc(r.formula || '')}">${esc(r.formula || '')}</div>
+          <div class="row" style="justify-content:space-between;align-items:flex-end"><div class="av">${esc(r.display != null ? r.display : '—')}</div>${r.history && r.history.values && r.history.values.length > 3 ? spark(r.history.values, 140, 32) : ''}</div>
+          <div class="meta">${r.percentile != null ? `<span>${Math.round(r.percentile * 100)}th pct</span>` : ''}${r.direction ? `<span>${esc(r.direction)}</span>` : ''}${r.best_horizon ? `<span>best ${esc(r.best_horizon)}</span>` : ''}${r.usefulness != null ? `<span>use ${fmt.num(r.usefulness, 2)}</span>` : ''}${r.hit_rate != null ? `<span>hit ${fmt.pct(r.hit_rate, 0)}</span>` : ''}${r.applies === false ? '<span class="warn">proxy</span>' : ''}</div>
+          ${r.variables && Object.keys(r.variables).length ? `<div class="vars">${Object.entries(r.variables).slice(0, 8).map(([k, v]) => `<span><i>${esc(k)}</i> ${esc(varTxt(v))}</span>`).join('')}</div>` : ''}
+          ${r.interpretation ? `<div class="interp">${esc(r.interpretation)}</div>` : ''}${r.note ? `<div class="faint" style="font-size:11.5px">${esc(r.note)}</div>` : ''}
+          <button class="small ghost" data-src="${esc(r.id)}" style="margin-top:4px">view code</button></div>`).join('') || '<div class="empty">No equation matches</div>';
+        texWhenReady($('#eqL'));
+        $$('[data-src]').forEach(bt => bt.onclick = async () => { const r = eq.catalog.find(x => x.id === bt.dataset.src); const s = await api(`/fs2/equations/${encodeURIComponent(r.id)}/source`).catch(e => ({ source: e.message })); drawer(`<div class="muted">Equation ${esc(r.id)}</div><h2 style="margin:2px 0 8px">${esc(r.name)}</h2><div class="tex" data-tex="${esc(r.formula || '')}">${esc(r.formula || '')}</div><div class="muted" style="margin:10px 0 6px"><code>${esc(s.fn || '')}</code></div><pre class="code">${esc(s.source || '')}</pre>`); texWhenReady($('#drawer')); }); };
+      draw();
+      $('#eqQ').oninput = e => { q = e.target.value.toLowerCase(); draw(); };
+      $$('#eqF .chip').forEach(c => c.onclick = () => { fam = c.dataset.f; $$('#eqF .chip').forEach(x => x.classList.toggle('on', x === c)); draw(); });
+      return;
+    }
+    const items = eq.tabs[tab] || [];
+    body.innerHTML = `<div class="acards">${items.map(analyticCard).join('') || '<div class="empty">Nothing in this family for this asset</div>'}</div>`;
+    $$('.acard', body).forEach((el, i) => { const r = items[i]; if (r && r.history && r.history.bins) { const h = document.createElement('div'); el.appendChild(h); histogram(h, r.history.bins, r.history.counts, { mark: r.value }); } });
+  };
 
-def score(metrics, asset):
-    # metrics: the scoreboard statistics (sharpe, vol_ann,
-    #   garch_vol, beta, alpha_ann, half_life, adf_t, ...)
-    # asset: id, name, asset_class, currency, last, ...
-    return 50.0   # a float, or None to leave it unscored</code></pre>
-          <p class="muted">Put it in <code>finsim2/shaffer_score.py</code>, or drop a file at <code>${esc(st.override_path)}</code> and it is picked up without touching the code. Now reading: <code>${esc(st.source)}</code>.</p></div>
-      </div>
-      <div class="card" style="margin-top:16px"><h2>Inputs it will receive <small>every statistic on the scoreboard, per asset</small></h2><div id="shIn"></div></div>`}`;
-    if (st.enabled && sb) {
-      table($('#shT'), ranked, [{ k: 'rank', label: '#', v: r => ranked.indexOf(r), f: r => ranked.indexOf(r) + 1, l: 1 }, { k: 'id', label: 'Asset', l: 1, f: r => `<b>${esc(r.id)}</b><span class="sub">${esc(r.name)}</span>` }, { k: 'class_label', label: 'Class', l: 1, f: r => `<span class="pill">${esc(r.class_label)}</span>` }, { k: 'shaffer', label: 'Score', f: r => `<b>${fmt.num(r.shaffer, 1)}</b><span class="cell-bar bar"><i style="width:${Math.max(0, Math.min(100, (r.shaffer - lo) / ((hi - lo) || 1) * 100))}%"></i></span>` }, { k: 'held', label: 'Held', v: r => (S.dash.positions || []).some(p => p.security_id === r.id) ? 1 : 0, f: r => (S.dash.positions || []).some(p => p.security_id === r.id) ? '<span class="pill pos">held</span>' : '' }], { sortKey: 'shaffer', maxH: 760, onRow: r => { location.hash = '#/asset/' + encodeURIComponent(r.id); } });
-      const bins = new Array(10).fill(0); ranked.forEach(r => { bins[Math.max(0, Math.min(9, Math.floor((r.shaffer - lo) / ((hi - lo) || 1) * 10)))]++; });
-      $('#shD').innerHTML = `<div style="display:flex;align-items:flex-end;gap:4px;height:180px">${bins.map((b, i) => `<div title="${b}" style="flex:1;background:var(--accent);opacity:.8;border-radius:4px 4px 0 0;height:${b / (Math.max(...bins) || 1) * 100}%"></div>`).join('')}</div><div class="row" style="justify-content:space-between" class="muted"><span class="muted">${lo}</span><span class="muted">${hi}</span></div>`;
-    } else {
-      const mi = (sb && sb.metric_info) || (await api(`/fs2/worlds/${S.wid}/analytics/SPY`).catch(() => ({ metric_info: {} }))).metric_info || {};
-      if (!alive()) return;
-      $('#shIn').innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px 18px;font-size:13px">${Object.entries(mi).map(([k, v]) => `<div class="row" style="justify-content:space-between;flex-wrap:nowrap;border-bottom:1px solid var(--border);padding:5px 0"><span>${esc(v.label)}</span><code>${esc(k)}</code></div>`).join('')}</div>`;
+  // ---------------------------------------------------------------- quant lab
+  pages.quant = async (main, args, alive) => {
+    const id = args[0] || S.current; const tab = args[1] || 'leaderboard'; const h = pref.get('qlH', '3M');
+    main.innerHTML = `<div class="page-head"><div><h1>Quant Lab</h1><p>Which equations have actually predicted ${esc(id)}, at which horizon, how reliably, and whether the combined score has worked out of sample.</p></div><div class="row">${assetPicker('qlPick', id)}<select id="qlH">${HZ.map(x => `<option ${x === h ? 'selected' : ''}>${x}</option>`).join('')}</select></div></div>
+      <div class="tabs">${[['leaderboard', 'Equation leaderboard'], ['matrix', 'Signal-horizon matrix'], ['history', 'Score history (point in time)'], ['shaffer', 'Shaffer Score']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/quant/${encodeURIComponent(id)}/${k}">${l}</a>`).join('')}</div><div id="qlB" style="margin-top:14px"><div class="loading">Loading…</div></div>`;
+    bindPicker('qlPick', x => go(`#/quant/${encodeURIComponent(x)}/${tab}`));
+    $('#qlH').onchange = e => { pref.set('qlH', e.target.value); route(); };
+    const body = $('#qlB');
+    if (tab === 'leaderboard') {
+      const lb = await api(`/fs2/asset/${encodeURIComponent(id)}/leaderboard?horizon=${h}&top=40`); if (!alive()) return;
+      body.innerHTML = `<div class="card flush"><h2>${esc(id)} — ${esc(h)} horizon <small>ranked by usefulness (rank IC × evidence); nothing is hard-coded · regime sensitivity = spread of usefulness across regimes</small></h2><div id="lbT"></div></div>`;
+      const fm = await featureMeta();
+      table($('#lbT'), lb.map((r, i) => ({ ...r, rank: i + 1, lab: (fm[r.signal] || {}).label || r.signal, fam: (fm[r.signal] || {}).family, sens: (() => { const v = Object.values(r.by_regime || {}).map(x => x.usefulness).filter(x => x != null); return v.length ? Math.max(...v) - Math.min(...v) : null; })() })), [
+        { k: 'rank', label: '#', l: 1 }, { k: 'lab', label: 'Signal', l: 1, f: r => `<b>${esc(r.lab)}</b><span class="sub">${esc(r.fam)}</span>` }, { k: 'usefulness', label: 'Predictive score', f: r => `<b class="${sign(r.usefulness)}">${fmt.num(r.usefulness, 3)}</b>` },
+        { k: 'ic', label: 'IC', f: r => fmt.num(r.ic, 3) }, { k: 'ic_recent', label: 'IC recent', f: r => fmt.num(r.ic_recent, 3) }, { k: 'hit_rate', label: 'Hit rate', f: r => fmt.pct(r.hit_rate, 1) }, { k: 'p', label: 'p-value', f: r => fmt.num(r.p, 4) }, { k: 'q', label: 'q (FDR)', f: r => `<span class="${r.q != null && r.q < 0.1 ? 'pos' : ''}">${fmt.num(r.q, 3)}</span>` },
+        { k: 'n', label: 'Sample', f: r => fmt.qty(r.n) }, { k: 'n_eff', label: 'Independent', f: r => fmt.num(r.n_eff, 0) }, { k: 'stability', label: 'Stability', f: r => fmt.pct(r.stability, 0) }, { k: 'sens', label: 'Regime sensitivity', f: r => fmt.num(r.sens, 2) }],
+        { sortKey: null, onRow: r => cellDrawer(id, r.signal, h) });
+      return;
+    }
+    if (tab === 'matrix') {
+      const mx = await api(`/fs2/asset/${encodeURIComponent(id)}/matrix`); if (!alive()) return;
+      body.innerHTML = `<div class="card"><h2>Signal-horizon matrix <small>normalised usefulness (1.0 = strongest) · * = q &lt; 0.10 · click a cell</small></h2><div id="mx"></div></div>`;
+      matrixView($('#mx'), id, mx, { metric: 'normalized', maxH: 2000 });
+      return;
+    }
+    if (tab === 'history') {
+      const sh = await api(`/fs2/asset/${encodeURIComponent(id)}/score-history?horizon=${h}`); if (!alive()) return;
+      body.innerHTML = `<div class="tiles">${kpi('Out-of-sample IC of the score', fmt.num(sh.oos_ic, 3), `p ${fmt.num(sh.oos_p, 3)} · ${sh.oos_n} rows`)}${kpi('Re-estimation', 'every ' + sh.every + ' sessions', 'weights from outcomes known at the time')}</div>
+        <div class="card"><h2>${esc(id)} quant score, ${esc(h)} horizon, as it would have read each day</h2><div id="shC"></div><p class="hint">${esc(sh.note)}</p></div>
+        <div class="card flush" style="margin-top:16px"><h2>Recent re-estimates <small>top weights at each refit</small></h2><div id="shR"></div></div>`;
+      lineChart($('#shC'), [{ name: 'Quant score', data: sh.series.values, color: css('--accent') }], { labels: sh.series.dates.map(d => fmt.date(d)), zero: true, fmtY: v => fmt.num(v, 0), h: 260 });
+      table($('#shR'), sh.refits.slice().reverse(), [{ k: 'date', label: 'Date', l: 1, f: r => fmt.date(r.date) }, { k: 'n_signals', label: 'Signals' }, { k: 'top', label: 'Largest weights', l: 1, nosort: 1, f: r => r.top.map(([s, w]) => `<span class="pill ${w > 0 ? 'pos' : 'neg'}">${esc(s)} ${fmt.num(w, 2)}</span>`).join(' ') }], { sortKey: null });
+      return;
+    }
+    if (tab === 'shaffer') {
+      const st = await api('/fs2/shaffer'); if (!alive()) return;
+      body.innerHTML = `<div class="card"><h2>Shaffer Score <span class="pill ${st.enabled ? 'pos' : 'warn'}">${st.enabled ? 'live · ' + esc(st.version) : 'in development'}</span></h2>
+        <p class="muted">A quantitative score being developed separately. When it is ready it appears here, next to the Quant and ML scores on every asset and in the Markets table. It plugs in as one function, <code>score(metrics, asset)</code>, in <code>finsim2/shaffer_score.py</code> or a file at <code>${esc(st.override_path)}</code>. Its inputs will be the same signals, horizons and evidence the rest of FinSim2 uses.</p></div>`;
     }
   };
 
+  // ---------------------------------------------------------------- ML lab
+  pages.ml = async (main, args, alive) => {
+    const id = args[0] || S.current; const h = pref.get('mlH', '1M');
+    const [res, pooled, runs, preds] = await Promise.all([api(`/fs2/asset/${encodeURIComponent(id)}/ml`), api('/fs2/ml/pooled').catch(() => ({})), api(`/fs2/model-runs?key=${encodeURIComponent(id)}&limit=60`).catch(() => []), api(`/fs2/predictions?asset=${encodeURIComponent(id)}`).catch(() => ({}))]);
+    if (!alive()) return;
+    const r = (res.horizons || {})[h] || {};
+    main.innerHTML = `<div class="page-head"><div><h1>ML Lab</h1><p>Which variables matter for ${esc(id)}, at which horizon, tested walk-forward: models are trained only on data whose outcomes were known before each test block, and ranked by stable out-of-sample performance, not in-sample fit.</p></div>
+      <div class="row">${assetPicker('mlPick', id)}<select id="mlH">${HZ.map(x => `<option ${x === h ? 'selected' : ''}>${x}</option>`).join('')}</select><button class="primary" id="mlTrain">${res.horizons ? 'Retrain' : 'Train models'}</button></div></div>
+      <div id="mlJob"></div>
+      ${!res.horizons ? `<div class="card"><h2>No models trained for ${esc(id)} yet</h2><p class="muted">Training builds a dataset of ~60 standardised signals against forward returns for each of nine horizons, and runs a purged walk-forward test of OLS, ridge, LASSO, elastic net, random forest, gradient boosting (XGBoost-style) and logistic regression. It takes about half a minute.</p></div>` : `
+      <div class="tiles">${kpi('ML score', `<span class="${scoreCls(r.score)}">${scoreTxt(r.score)}</span>`, r.message || `ensemble, ${esc(h)}`)}${kpi('Expected return', r.expected == null ? '—' : fmt.spct(r.expected, 1), r.error != null ? `historical error ± ${fmt.pct(r.error, 1)}` : '')}${kpi('Probability of a rise', fmt.pct(r.prob_up, 0), 'logistic regression')}${kpi('Out-of-sample IC', fmt.num((r.ensemble || {}).ic, 3), `${fmt.pct((r.ensemble || {}).positive_folds, 0)} of folds positive · ${fmt.num((r.ensemble || {}).n_eff, 0)} independent`)}${kpi('Confidence', pct0((r.confidence || {}).value), (r.confidence || {}).label || '')}${kpi('Decay', (r.decay || {}).flag ? '<span class="neg">detected</span>' : 'none', Object.entries((r.decay || {}).windows || {}).map(([k, v]) => `${k} ${fmt.num(v.ic, 2)}`).join(' · '))}</div>
+      <div class="grid g-main"><div class="stack">
+        <div class="card flush"><h2>Model leaderboard <small>${esc(id)} · ${esc(h)} · ${r.folds || 0} walk-forward blocks · ranked by mean fold IC − ½ its dispersion</small></h2><div id="lbT"></div></div>
+        <div class="card"><h2>Why today's forecast <small>feature contributions, weighted across the ensemble</small></h2>${explainBlock(r.explain)}</div>
+        <div class="card"><h2>Out-of-sample forecasts vs what happened</h2><div id="oosC"></div></div>
+      </div><div class="stack">
+        <div class="card"><h2>Feature importance <small>permutation, held-out block</small></h2><div id="fiC"></div></div>
+        <div class="card"><h2>By family</h2><div id="ffC"></div></div>
+        <div class="card"><h2>All horizons</h2><div id="allH"></div></div>
+      </div></div>`}
+      <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Global and asset-class models <small>stacked across assets, volatility-scaled returns</small><button class="small right" id="poolBtn">Train global</button></h2><div id="poolC"></div></div>
+        <div class="card flush"><h2>Forecast record for ${esc(id)} <small>every stored prediction, scored when its horizon passes</small></h2><div id="prT"></div></div></div>
+      <div class="card flush" style="margin-top:16px"><h2>Model versions <small>each training run is recorded with its dates, features, parameters and test results</small></h2><div id="runT"></div></div>`;
+    bindPicker('mlPick', x => go('#/ml/' + encodeURIComponent(x)));
+    $('#mlH').onchange = e => { pref.set('mlH', e.target.value); route(); };
+    $('#mlTrain').onclick = () => busy($('#mlTrain'), async () => { const j = await post(`/fs2/asset/${encodeURIComponent(id)}/ml`, {}); pollJob(j.id, () => route(), $('#mlJob')); });
+    if (res.horizons && r.status === 'ok') {
+      table($('#lbT'), r.leaderboard, [{ k: 'label', label: 'Model', l: 1 }, { k: 'ic', label: 'IC', f: x => fmt.num(x.ic, 3) }, { k: 'accuracy', label: 'Direction', f: x => fmt.pct(x.accuracy, 1) }, { k: 'sharpe', label: 'Sharpe', f: x => fmt.num(x.sharpe, 2) }, { k: 'rmse', label: 'RMSE', f: x => x.rmse == null ? '—' : fmt.pct(x.rmse, 2) }, { k: 'positive_folds', label: '+ folds', f: x => fmt.pct(x.positive_folds, 0) }, { k: 'stability', label: 'Stability', l: 1, f: x => x.stability ? `<span class="pill ${x.stability === 'High' ? 'pos' : x.stability === 'Medium' ? 'warn' : ''}">${x.stability}</span>` : '—' }, { k: 'w', label: 'Ensemble weight', v: x => ((r.ensemble || {}).weights || {})[x.model], f: x => fmt.pct(((r.ensemble || {}).weights || {})[x.model], 0) }], { sortKey: null });
+      const fm = await featureMeta();
+      hbars($('#fiC'), Object.entries(r.importance || {}).slice(0, 14).map(([k, v]) => ({ label: (fm[k] || {}).label || k, value: v, sub: (fm[k] || {}).family })), { empty: 'No feature helped out of sample' });
+      hbars($('#ffC'), Object.entries(r.family_importance || {}).map(([k, v]) => ({ label: k, value: v })), { empty: 'No family helped out of sample' });
+      const oos = r.oos || [];
+      lineChart($('#oosC'), [{ name: 'Forecast', data: oos.map(x => x[1]), color: css('--accent') }, { name: 'Realised', data: oos.map(x => x[2]), color: css('--faint'), width: 1 }], { labels: oos.map((x, i) => String(i)), zero: true, fmtY: v => fmt.pct(v, 1), h: 200 });
+    } else if (res.horizons) { $('#lbT') && ($('#lbT').innerHTML = `<div class="empty">${esc(r.reason || r.message || 'No results at this horizon')}</div>`); }
+    if (res.horizons) table($('#allH'), HZ.map(x => ({ h: x, r: res.horizons[x] || {} })), [{ k: 'h', label: 'Horizon', l: 1 }, { k: 's', label: 'Score', v: x => x.r.score, f: x => `<b class="${scoreCls(x.r.score)}">${scoreTxt(x.r.score)}</b>` }, { k: 'ic', label: 'OOS IC', v: x => (x.r.ensemble || {}).ic, f: x => fmt.num((x.r.ensemble || {}).ic, 2) }, { k: 'b', label: 'Best', l: 1, v: x => x.r.best_model, f: x => esc(x.r.best_model || '—') }], { sortKey: null, onRow: x => { pref.set('mlH', x.h); route(); } });
+    const pk = Object.keys(pooled);
+    $('#poolC').innerHTML = pk.length ? pk.map(k => { const p = pooled[k]; return `<div style="margin-bottom:12px"><b>${esc(p.level)} ${esc(p.key)}</b> <span class="faint">${p.assets} assets · ${esc(p.trained_at)}</span>${Object.entries(p.horizons || {}).map(([hh, v]) => `<div class="row" style="padding:4px 0;border-top:1px solid var(--border)"><span style="width:40px">${hh}</span><span class="faint">IC ${fmt.num(v.ensemble_ic, 3)}</span><span style="flex:1;font-size:12px">${Object.entries(v.family_importance || {}).slice(0, 4).map(([f, x]) => `${esc(f)} ${fmt.pct(x, 0)}`).join(' · ')}</span></div>`).join('')}</div>`; }).join('') : '<div class="empty">Not trained yet: what works across the whole market, and within each asset class</div>';
+    $('#poolBtn').onclick = () => busy($('#poolBtn'), async () => { const j = await post('/fs2/ml/pooled', { level: 'global', key: 'all' }); pollJob(j.id, () => route(), $('#mlJob')); });
+    table($('#prT'), (preds.recent || []).slice().reverse(), [{ k: 'made_on', label: 'Made', l: 1 }, { k: 'horizon', label: 'H', l: 1 }, { k: 'model', label: 'Model', l: 1 }, { k: 'predicted', label: 'Forecast', f: x => fmt.spct(x.predicted, 1) }, { k: 'realized', label: 'Actual', f: x => x.realized == null ? `<span class="faint">due ${esc(x.target_date)}</span>` : fmt.spct(x.realized, 1) }, { k: 'error', label: 'Error', f: x => x.error == null ? '' : fmt.spct(x.error, 1) }], { sortKey: null, maxH: 320, empty: 'No forecasts stored yet' });
+    table($('#runT'), runs, [{ k: 'created_at', label: 'Run', l: 1 }, { k: 'horizon', label: 'H', l: 1 }, { k: 'model', label: 'Model', l: 1 }, { k: 'version', label: 'Version', l: 1 }, { k: 'train_start', label: 'Train from', l: 1 }, { k: 'test_start', label: 'Test', l: 1, f: x => `${esc(x.test_start || '')} → ${esc(x.test_end || '')}` }, { k: 'ic', label: 'IC', v: x => (x.metrics || {}).ic, f: x => fmt.num((x.metrics || {}).ic, 3) }], { sortKey: null, maxH: 300, empty: 'No runs recorded' });
+  };
+
+  // ---------------------------------------------------------------- risk: VaR, contributions, correlations, scenarios, Monte Carlo
+  pages.risk = async (main, args, alive) => {
+    const tab = args[0] || 'risk';
+    main.innerHTML = `<div class="page-head"><div><h1>Risk</h1><p>How much the portfolio can lose, what drives it, how its relationships are changing, and what would happen in a scenario. Simulations are ranges of outcomes, not predictions.</p></div></div>
+      <div class="tabs">${[['risk', 'Risk & drivers'], ['scenario', 'Scenario analysis'], ['montecarlo', 'Monte Carlo']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/risk/${k}">${l}</a>`).join('')}</div><div id="rkB" style="margin-top:14px"><div class="loading">Computing…</div></div>`;
+    const body = $('#rkB');
+    if (tab === 'risk') {
+      const [an, dr] = await Promise.all([api('/fs2/portfolio'), api('/fs2/portfolio/drivers').catch(() => null)]); if (!alive()) return;
+      const rk = an.risk || {};
+      const held = an.positions.filter(p => Math.abs(p.quantity) > 1e-12);
+      body.innerHTML = `<div class="tiles">${kpi('Volatility (annual)', fmt.pct(rk.vol, 1), 'today\'s holdings over 3 years')}${kpi('VaR 95% · 99% (1 day)', `${fmt.pct(rk.var95, 2)} · ${fmt.pct(rk.var99, 2)}`, fmt.money((rk.var95 || 0) * an.nav) + ' at 95%')}${kpi('Expected shortfall 95%', fmt.pct(rk.es95, 2), fmt.money((rk.es95 || 0) * an.nav))}${kpi('Max drawdown', fmt.pct(rk.max_drawdown, 1), 'historical simulation')}${kpi('Sharpe · Sortino', `${fmt.num(rk.sharpe, 2)} · ${fmt.num(rk.sortino, 2)}`)}${kpi('Beta · duration', `${fmt.num(an.beta, 2)} · ${fmt.num(an.duration, 1)}`)}</div>
+        <div class="grid g2"><div class="card"><h2>What drives the portfolio <small>share of explained variance, weekly factor regression over 3 years</small></h2><div id="fdC"></div><p class="hint">${an.factors && an.factors.r2 != null ? `The factors explain ${fmt.pct(an.factors.r2, 0)} of the portfolio's weekly moves.` : 'Add positions to see the factor decomposition.'}</p></div>
+          <div class="card flush"><h2>Risk contribution by position</h2><div id="rcT"></div></div></div>
+        <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Correlation matrix <small>1-year daily, USD</small></h2><div id="cmC"></div></div>
+          <div class="card flush"><h2>Correlation decay <small>5-year vs 1-year vs 3-month · flagged when the relationship has moved by 0.25 or more</small></h2><div id="cdT"></div></div></div>`;
+      const f = an.factors || {};
+      hbars($('#fdC'), Object.entries(f.shares || {}).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).map(([k, v]) => ({ label: k, value: v, sub: `beta ${fmt.num((f.betas || {})[k], 2)}, t ${fmt.num((f.t || {})[k], 1)}` })), { fmt: v => fmt.pct(v, 0), empty: 'No holdings' });
+      table($('#rcT'), held, [{ k: 'asset_id', label: 'Position', l: 1, f: p => `<b>${esc(p.asset_id)}</b>` }, { k: 'weight', label: 'Weight', f: p => fmt.pct(p.weight, 1) }, { k: 'volatility', label: 'Vol', f: p => fmt.pct(p.volatility, 1) }, { k: 'risk_contribution', label: 'Risk share', f: p => `${fmt.pct(p.risk_contribution, 1)}<span class="cell-bar bar"><i style="width:${Math.min(100, Math.abs(p.risk_contribution || 0) * 100)}%"></i></span>` }, { k: 'marginal_risk', label: 'Marginal', f: p => fmt.pct(p.marginal_risk, 1) }], { sortKey: 'risk_contribution', empty: 'No holdings' });
+      const cm = an.correlation || {};
+      heatmap($('#cmC'), (cm.assets || []).map(a => ({ key: a, label: a })), (cm.assets || []).map(a => ({ key: a, label: a })), (r, c) => { const i = cm.assets.indexOf(r.key), j = cm.assets.indexOf(c.key); const v = (cm.matrix[i] || [])[j]; return { v, text: v == null ? '' : fmt.num(v, 2) }; }, { max: 1, corner: '' });
+      table($('#cdT'), (dr && dr.pairs) || [], [{ k: 'pair', label: 'Pair', l: 1, f: x => x.pair.join(' / ') }, ...['5Y', '1Y', '3M'].map(w => ({ k: w, label: w, v: x => x.windows[w], f: x => fmt.num(x.windows[w], 2) })), { k: 'shift', label: 'Shift', f: x => `<span class="${x.flag ? 'warn' : ''}">${fmt.num(x.shift, 2)}${x.flag ? ' ⚑' : ''}</span>` }], { sortKey: 'shift', empty: 'Needs two or more holdings' });
+      return;
+    }
+    if (tab === 'scenario') {
+      body.innerHTML = `<div class="card"><h2>Define a scenario <small>leave a box blank and that factor moves with the ones you set, as it has historically</small></h2><div class="form">
+        <label class="f">10-year yield (bp)<input id="s_y10" type="number" placeholder="+100"></label><label class="f">Nasdaq-100 (%)<input id="s_ndx" type="number" placeholder="-15"></label><label class="f">Oil (%)<input id="s_oil" type="number" placeholder="+25"></label>
+        <label class="f">US dollar (%)<input id="s_usd" type="number" placeholder="+10"></label><label class="f">VIX to (level)<input id="s_vix" type="number" placeholder="40"></label><label class="f">Credit spreads (bp)<input id="s_cr" type="number" placeholder="+200"></label></div>
+        <div class="row" style="margin-top:12px"><div class="chips">${[['Rate shock', { y10: 100 }], ['Tech sell-off', { ndx: -15, vix: 35 }], ['Oil spike', { oil: 25 }], ['Strong dollar', { usd: 10 }], ['Credit crunch', { cr: 200, vix: 40, ndx: -20 }], ['2022-style', { y10: 150, ndx: -25, usd: 8 }]].map(([l, v]) => `<button class="chip" data-p='${JSON.stringify(v)}'>${l}</button>`).join('')}</div><span class="spacer"></span><button class="primary" id="scnGo">Run scenario</button></div></div><div id="scnR" style="margin-top:16px"></div>`;
+      $$('[data-p]').forEach(c => c.onclick = () => { const v = JSON.parse(c.dataset.p); ['y10', 'ndx', 'oil', 'usd', 'vix', 'cr'].forEach(k => { $('#s_' + k).value = v[k] != null ? v[k] : ''; }); });
+      $('#scnGo').onclick = () => busy($('#scnGo'), async () => {
+        const g = k => $('#s_' + k).value === '' ? null : +$('#s_' + k).value;
+        const r = await post('/fs2/portfolio/scenario', { shock: { y10_bp: g('y10'), nasdaq_pct: g('ndx'), oil_pct: g('oil'), usd_pct: g('usd'), vix_level: g('vix'), credit_bp: g('cr') } });
+        $('#scnR').innerHTML = `<div class="tiles">${kpi('Estimated portfolio impact', `<span class="${sign(r.pnl)}">${fmt.signed(r.pnl)}</span>`, fmt.spct(r.pnl_pct, 2) + ' of NAV')}${Object.entries(r.completed).map(([k, v]) => kpi(esc(r.labels[k]), fmt.num(v, 1), v == null ? 'no data: left out' : r.shock[k] != null ? 'set' : 'implied by the others')).join('')}</div>
+          <div class="grid g2"><div class="card flush"><h2>By position</h2><div id="scnP"></div></div><div class="card flush"><h2>Historical analogues <small>21-session windows most like this scenario, and what today's holdings did</small></h2><div id="scnA"></div></div></div><p class="hint">${esc(r.note)}</p>`;
+        table($('#scnP'), r.positions, [{ k: 'asset_id', label: 'Position', l: 1 }, { k: 'market_value', label: 'Value', f: x => fmt.money(x.market_value) }, { k: 'move', label: 'Move', cls: x => sign(x.move), f: x => fmt.spct(x.move, 1) }, { k: 'pnl', label: 'P&L', cls: x => sign(x.pnl), f: x => fmt.signed(x.pnl) }, { k: 'r2', label: 'Fit R²', f: x => fmt.num(x.r2, 2) }], { sortKey: 'pnl', sortDir: 1 });
+        table($('#scnA'), r.analogues, [{ k: 'start', label: 'Window', l: 1, f: x => `${fmt.date(x.start)} → ${fmt.date(x.end)}` }, { k: 'portfolio_return', label: 'Portfolio', cls: x => sign(x.portfolio_return), f: x => fmt.spct(x.portfolio_return, 1) }, { k: 'moves', label: 'Moves then', l: 1, nosort: 1, f: x => Object.entries(x.moves).map(([k, v]) => `${esc(r.labels[k].split(' (')[0])} ${fmt.num(v, 1)}`).join(' · ') }], { sortKey: null, empty: 'Set at least one factor' });
+      });
+      return;
+    }
+    body.innerHTML = `<div class="card"><div class="form"><label class="f">Horizon<select id="mcH">${['1M', '3M', '6M', '1Y', '5Y', '10Y'].map(x => `<option ${x === '1Y' ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+      <label class="f">Method<select id="mcM"><option value="bootstrap">Block bootstrap of history</option><option value="gbm">Geometric Brownian motion</option></select></label><label class="f">Paths<input id="mcP" type="number" value="2000"></label><label class="f">Drawdown threshold (%)<input id="mcD" type="number" value="20"></label>
+      <label class="f">Simulate<select id="mcW"><option value="portfolio">my portfolio</option><option value="asset">one asset…</option></select></label><div id="mcAW"></div><div><button class="primary" id="mcGo" style="width:100%;justify-content:center">Simulate</button></div></div></div><div id="mcR" style="margin-top:16px"></div>`;
+    $('#mcW').onchange = () => { $('#mcAW').innerHTML = $('#mcW').value === 'asset' ? assetPicker('mcA', S.current) : ''; if ($('#mcA')) bindPicker('mcA', x => { $('#mcA').value = x; }); };
+    $('#mcGo').onclick = () => busy($('#mcGo'), async () => {
+      const bd = { horizon: $('#mcH').value, method: $('#mcM').value, paths: +$('#mcP').value, dd: +$('#mcD').value / 100 };
+      const r = $('#mcW').value === 'asset' ? await post(`/fs2/asset/${encodeURIComponent($('#mcA').value.trim().toUpperCase())}/montecarlo`, bd) : await post('/fs2/portfolio/montecarlo', bd);
+      $('#mcR').innerHTML = `<div class="tiles">${kpi('Median ending value', fmt.money(r.median), fmt.spct(r.median / r.start_value - 1, 1))}${kpi('Mean', fmt.money(r.mean))}${kpi('5th · 95th percentile', `${fmt.big(r.p5)} · ${fmt.big(r.p95)}`, `25th ${fmt.big(r.p25)} · 75th ${fmt.big(r.p75)}`)}${kpi('Probability of a loss', fmt.pct(r.prob_loss, 0))}${kpi('Probability of > +10%', fmt.pct(r.prob_gain_10, 0))}${kpi(`Drawdown beyond ${fmt.pct(r.dd_threshold, 0)}`, fmt.pct(r.prob_drawdown, 0), 'at some point on the path')}</div>
+        <div class="card"><h2>Monte Carlo cone <small>${r.paths} paths · ${esc(r.method)} · from ${Math.round(r.hist_days / 252)} years of history (vol ${fmt.pct(r.hist_vol_ann, 1)})</small></h2><div id="mcC"></div><p class="hint">${esc(r.note)}</p></div>`;
+      cone($('#mcC'), r.cone, r.start_value, { label: `${r.days} sessions` });
+    });
+  };
+
+  // ---------------------------------------------------------------- backtests
+  pages.backtests = async (main, args, alive) => {
+    const fm = await featureMeta(); const hist = await api('/fs2/backtests').catch(() => []); if (!alive()) return;
+    const id = S.current;
+    main.innerHTML = `<div class="page-head"><div><h1>Backtests</h1><p>Test any signal, the point-in-time quant score, or the ML ensemble's out-of-sample forecasts on any asset, horizon, period and regime. The position is set at each close from what was known then and earns the next day's return.</p></div></div>
+      <div class="card"><div class="form">
+        <label class="f">Asset${assetPicker('btA', id)}</label>
+        <label class="f">Signal<select id="btS"><option value="quant_score">Quant score (point in time)</option><option value="ml:ensemble">ML ensemble (out of sample)</option>${Object.entries(fm).map(([k, v]) => `<option value="${k}">${esc(v.label)} — ${esc(v.family)}</option>`).join('')}</select></label>
+        <label class="f">Horizon<select id="btH">${HZ.slice(0, 6).map(x => `<option ${x === '3M' ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <label class="f">Mode<select id="btM"><option value="long">Long / flat</option><option value="long_short">Long / short</option></select></label>
+        <label class="f">Entry (z)<input id="btE" type="number" step="0.25" value="1"></label><label class="f">Exit (z)<input id="btX" type="number" step="0.25" value="0"></label>
+        <label class="f">From<input id="btF" type="date"></label><label class="f">To<input id="btT" type="date"></label>
+        <label class="f">Only in regime<select id="btR"><option value="">any</option>${[['market', 'bull', 'Bull market'], ['market', 'bear', 'Bear market'], ['volatility', 'high_vol', 'High volatility'], ['volatility', 'low_vol', 'Low volatility'], ['rates', 'rising_rates', 'Rising rates'], ['rates', 'falling_rates', 'Falling rates'], ['inflation', 'high_inflation', 'High inflation'], ['growth', 'recession', 'Recession'], ['growth', 'expansion', 'Expansion'], ['dollar', 'strong_dollar', 'Strong dollar'], ['dollar', 'weak_dollar', 'Weak dollar']].map(([d, s, l]) => `<option value="${d}|${s}">${l}</option>`).join('')}</select></label>
+        <label class="f">Costs (bp per side)<input id="btC" type="number" value="5"></label><label class="f"><span><input type="checkbox" id="btI"> invert the signal</span></label>
+        <div><button class="primary" id="btGo" style="width:100%;justify-content:center">Run backtest</button></div></div></div><div id="btR2" style="margin-top:16px"></div>
+      <div class="card flush" style="margin-top:16px"><h2>Recent backtests</h2><div id="btHist"></div></div>`;
+    bindPicker('btA', x => { $('#btA').value = x; });
+    $('#btGo').onclick = () => busy($('#btGo'), async () => {
+      const rg = $('#btR').value ? $('#btR').value.split('|') : null;
+      const r = await post('/fs2/backtest', { asset: $('#btA').value.trim().toUpperCase(), signal: $('#btS').value, horizon: $('#btH').value, mode: $('#btM').value, entry: +$('#btE').value, exit: +$('#btX').value, start: $('#btF').value || null, end: $('#btT').value || null, regime: rg, cost_bps: +$('#btC').value, invert: $('#btI').checked });
+      const m = r.metrics;
+      $('#btR2').innerHTML = `<div class="tiles">${kpi('CAGR', fmt.pct(m.cagr, 1), `buy & hold ${fmt.pct(m.benchmark_cagr, 1)}`)}${kpi('Total return', fmt.pct(m.total_return, 0), `benchmark ${fmt.pct(m.benchmark_return, 0)}`)}${kpi('Volatility', fmt.pct(m.vol, 1))}${kpi('Sharpe · Sortino', `${fmt.num(m.sharpe, 2)} · ${fmt.num(m.sortino, 2)}`, `buy & hold Sharpe ${fmt.num(m.benchmark_sharpe, 2)}`)}${kpi('Max drawdown', fmt.pct(m.max_drawdown, 1))}${kpi('Trades · win rate', `${m.trades} · ${fmt.pct(m.win_rate, 0)}`, `avg gain ${fmt.pct(m.avg_gain, 1)} · avg loss ${fmt.pct(m.avg_loss, 1)}`)}${kpi('Profit factor', fmt.num(m.profit_factor, 2))}${kpi('Exposure · turnover', `${fmt.pct(m.exposure, 0)} · ${fmt.num(m.turnover, 1)}/yr`)}${kpi('Alpha · beta vs SPY', `${fmt.pct(m.alpha, 1)} · ${fmt.num(m.beta, 2)}`)}</div>
+        <div class="card"><h2>Equity curve <small>growth of $1 · ${m.days} sessions</small></h2><div id="btC2"></div></div><div class="card flush" style="margin-top:16px"><h2>Trades</h2><div id="btTr"></div></div>`;
+      lineChart($('#btC2'), [{ name: 'Strategy', data: r.curve.strategy, color: css('--accent'), area: true }, { name: 'Buy & hold', data: r.curve.buy_hold, color: css('--faint'), width: 1.4 }], { labels: r.curve.dates.map(d => fmt.date(d)), fmtY: v => fmt.num(v, 2), h: 280 });
+      table($('#btTr'), r.trades.slice().reverse(), [{ k: 'entry', label: 'Entry', l: 1 }, { k: 'exit', label: 'Exit', l: 1, f: t => esc(t.exit || 'open') }, { k: 'side', label: 'Side', l: 1 }, { k: 'return', label: 'Return', cls: t => sign(t.return), f: t => fmt.spct(t.return, 1) }], { sortKey: null, maxH: 360, empty: 'No trades: the signal never reached the entry level' });
+    });
+    table($('#btHist'), hist, [{ k: 'created_at', label: 'When', l: 1 }, { k: 'a', label: 'Asset · signal', l: 1, f: x => `${esc(x.spec.asset)} · ${esc(x.spec.signal)} · ${esc(x.spec.horizon)}` }, { k: 'c', label: 'CAGR', v: x => x.result.metrics.cagr, f: x => fmt.pct(x.result.metrics.cagr, 1) }, { k: 's', label: 'Sharpe', v: x => x.result.metrics.sharpe, f: x => fmt.num(x.result.metrics.sharpe, 2) }], { sortKey: null, empty: 'No backtests yet' });
+  };
+
+  // ---------------------------------------------------------------- portfolio
+  pages.portfolio = async (main, args, alive) => {
+    const tab = args[0] || 'overview';
+    const an = await api('/fs2/portfolio'); if (!alive()) return;
+    const held = an.positions.filter(p => Math.abs(p.quantity) > 1e-12);
+    const rk = an.risk || {};
+    main.innerHTML = `<div class="page-head"><div><h1>Portfolio</h1><p>Your holdings, valued in US dollars at the latest close. Record deposits, buys and sells (at any past date: the close of that day is used unless you give a price). Risk figures apply today's weights to their recent history.</p></div>
+      <div class="row"><button class="primary" id="pfAdd">+ Transaction</button></div></div>
+      <div class="tiles">${kpi('NAV', fmt.money(an.nav), `contributed ${fmt.money(an.contributed)} · P&L <span class="${sign(an.pnl)}">${fmt.signed(an.pnl)}</span>`)}${kpi('Cash', fmt.money(an.cash), fmt.pct(an.cash / (an.nav || 1), 0) + ' of NAV')}${kpi('Gross · net', `${fmt.big(an.gross)} · ${fmt.big(an.net)}`, `long ${fmt.big(an.long)} · short ${fmt.big(an.short)}`)}${kpi('Beta · duration', `${fmt.num(an.beta, 2)} · ${fmt.num(an.duration, 1)}y`)}${kpi('Volatility · Sharpe', `${fmt.pct(rk.vol, 1)} · ${fmt.num(rk.sharpe, 2)}`, `Sortino ${fmt.num(rk.sortino, 2)}`)}${kpi('Max drawdown', fmt.pct(rk.max_drawdown, 1))}${kpi('VaR · ES (95%, 1 day)', `${fmt.pct(rk.var95, 2)} · ${fmt.pct(rk.es95, 2)}`)}</div>
+      <div class="tabs">${[['overview', 'Overview'], ['positions', 'Positions'], ['transactions', 'Transactions'], ['construct', 'Construct / optimise'], ['drivers', 'Drivers']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/portfolio/${k}">${l}</a>`).join('')}</div><div id="pfB" style="margin-top:14px"></div>`;
+    $('#pfAdd').onclick = () => txModal();
+    const body = $('#pfB');
+    if (tab === 'overview') {
+      body.innerHTML = `<div class="grid g-main"><div class="stack"><div class="card"><h2>Net asset value</h2><div id="navC"></div></div><div class="card flush"><h2>Positions</h2><div id="posT"></div></div></div>
+        <div class="stack"><div class="card"><h2>Asset allocation</h2><div id="alC"></div></div><div class="card"><h2>Sector</h2><div id="seC"></div></div><div class="card"><h2>Country</h2><div id="coC"></div></div><div class="card"><h2>Currency</h2><div id="cuC"></div></div></div></div>`;
+      lineChart($('#navC'), [{ name: 'NAV', data: an.history.nav, area: true }], { labels: an.history.dates.map(d => fmt.date(d)), fmtY: v => fmt.big(v), h: 240 });
+      posTable($('#posT'), an, true);
+      const dn = (el, g) => donut(el, Object.entries(g).filter(([, v]) => Math.abs(v) > 0).map(([k, v]) => ({ label: clsName(k), value: v })));
+      dn($('#alC'), an.allocation); dn($('#seC'), an.sector); dn($('#coC'), an.country); dn($('#cuC'), an.currency);
+      return;
+    }
+    if (tab === 'positions') { body.innerHTML = '<div class="card flush"><div id="posT"></div></div>'; posTable($('#posT'), an, false); return; }
+    if (tab === 'transactions') {
+      const tx = await api('/fs2/portfolio/transactions'); if (!alive()) return;
+      body.innerHTML = '<div class="card flush"><div id="txT"></div></div>';
+      table($('#txT'), tx, [{ k: 'date', label: 'Date', l: 1 }, { k: 'kind', label: 'Type', l: 1, f: t => `<span class="pill ${t.kind === 'BUY' || t.kind === 'DEPOSIT' ? 'pos' : 'neg'}">${esc(t.kind)}</span>` }, { k: 'asset_id', label: 'Asset', l: 1, f: t => esc(t.asset_id || '') }, { k: 'quantity', label: 'Quantity', f: t => t.quantity == null ? '' : fmt.qty(t.quantity) }, { k: 'price', label: 'Price / amount', f: t => fmt.num(t.price, 2) + ' ' + esc(t.currency || '') }, { k: 'note', label: 'Note', l: 1 }, { k: 'x', label: '', nosort: 1, f: t => `<button class="small ghost" data-del="${t.id}">Delete</button>` }], { sortKey: null, empty: 'No transactions yet: start with a deposit' });
+      $$('[data-del]').forEach(b => b.onclick = () => { if (!confirm('Delete this transaction?')) return; busy(b, async () => { await api('/fs2/portfolio/transactions/' + b.dataset.del, { method: 'DELETE' }); route(); }); });
+      return;
+    }
+    if (tab === 'construct') {
+      body.innerHTML = `<div class="card"><div class="form"><label class="f">Assets (comma separated)<input id="opA" value="${esc(held.map(p => p.asset_id).join(', ') || 'SPY, TLT, GOLD, EFA, HYG')}"></label>
+        <label class="f">Expected returns from<select id="opS"><option value="historical">history (shrunk toward 6%)</option><option value="quant">the 12-month quant score</option><option value="ml">the 12-month ML ensemble</option></select></label>
+        <label class="f">Max weight per asset<input id="opC" type="number" step="0.05" value="0.4"></label><label class="f">Years of history<input id="opY" type="number" value="5"></label><div><button class="primary" id="opGo" style="width:100%;justify-content:center">Optimise</button></div></div>
+        <p class="hint">Long-only, fully invested. Mean-variance optimisation is very sensitive to expected returns; treat the output as a comparison of trade-offs, not an answer.</p></div><div id="opR" style="margin-top:16px"></div>`;
+      $('#opGo').onclick = () => busy($('#opGo'), async () => {
+        const r = await post('/fs2/portfolio/optimize', { assets: $('#opA').value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean), returns: $('#opS').value, cap: +$('#opC').value, years: +$('#opY').value });
+        const colors = { 'Current': css('--warn'), 'Minimum variance': css('--teal'), 'Maximum Sharpe': css('--pos'), 'Risk parity': css('--violet'), 'Equal weight': css('--pink') };
+        $('#opR').innerHTML = `<div class="grid g-main"><div class="card"><h2>Efficient frontier <small>expected return vs volatility · dots are single assets</small></h2><div id="opF"></div><div class="legend">${r.portfolios.map(p => `<span><i style="background:${colors[p.name]}"></i>${esc(p.name)}</span>`).join('')}</div></div>
+          <div class="card flush"><h2>Portfolios</h2><div id="opP"></div></div></div><div class="card flush" style="margin-top:16px"><h2>Weights and risk contributions</h2><div id="opW"></div></div>`;
+        scatter($('#opF'), [...r.assets_points.map(p => ({ x: p.vol, y: p.ret, label: p.asset, text: p.asset, r: 4 })), ...r.portfolios.map(p => ({ x: p.vol, y: p.ret, label: p.name, color: colors[p.name], r: 7 }))], { line: r.frontier.map(p => ({ x: p.vol, y: p.ret })), xLabel: 'volatility', h: 320 });
+        table($('#opP'), r.portfolios, [{ k: 'name', label: 'Portfolio', l: 1, f: p => `<b>${esc(p.name)}</b>` }, { k: 'ret', label: 'E[return]', f: p => fmt.pct(p.ret, 1) }, { k: 'vol', label: 'Vol', f: p => fmt.pct(p.vol, 1) }, { k: 'sharpe', label: 'Sharpe', f: p => fmt.num(p.sharpe, 2) }, { k: 'diversification_ratio', label: 'Diversification', f: p => fmt.num(p.diversification_ratio, 2) }], { sortKey: null });
+        const rowsW = r.assets.map(a => ({ a, ...Object.fromEntries(r.portfolios.map(p => [p.name, p.weights[a]])), ...Object.fromEntries(r.portfolios.map(p => ['rc:' + p.name, p.risk_contributions[a]])) }));
+        table($('#opW'), rowsW, [{ k: 'a', label: 'Asset', l: 1 }, ...r.portfolios.map(p => ({ k: p.name, label: p.name, f: x => `${fmt.pct(x[p.name], 0)} <span class="faint">(${fmt.pct(x['rc:' + p.name], 0)} risk)</span>` }))], { sortKey: null });
+      });
+      return;
+    }
+    if (tab === 'drivers') {
+      const dr = await api('/fs2/portfolio/drivers'); if (!alive()) return;
+      let mc = null; try { mc = held.length ? await post('/fs2/portfolio/montecarlo', { horizon: '1Y', paths: 1000 }) : null; } catch (e) { }
+      if (!alive()) return;
+      const f = dr.factors || {};
+      const top = Object.values(f.shares || {}).map(Math.abs).sort((a, b) => b - a);
+      const conc = top.length ? top[0] / (top.reduce((a, b) => a + b, 0) || 1) : null;
+      const expRet = held.reduce((a, p) => a + (p.expected_return != null ? p.expected_return * p.weight : 0), 0);
+      body.innerHTML = `<div class="tiles">${kpi('Expected 12-month return', held.some(p => p.expected_return != null) ? fmt.spct(expRet, 1) : '—', 'weighted from each holding\'s primary-horizon evidence')}${kpi('Expected volatility', fmt.pct((dr.risk || {}).vol, 1))}${kpi('Probability of a loss over 1 year', mc ? fmt.pct(mc.prob_loss, 0) : '—', mc ? `drawdown beyond 20%: ${fmt.pct(mc.prob_drawdown, 0)}` : '')}${kpi('Factor concentration', conc == null ? '—' : fmt.pct(conc, 0), 'share of explained risk in the largest factor')}${kpi('Explained by factors', fmt.pct(f.r2, 0), 'weekly regression R²')}</div>
+        <div class="grid g2"><div class="card"><h2>What currently drives my portfolio</h2><div id="drF"></div></div><div class="card flush"><h2>Factor betas</h2><div id="drB"></div></div></div>`;
+      hbars($('#drF'), Object.entries(f.shares || {}).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).map(([k, v]) => ({ label: k, value: v })), { empty: 'Add positions first' });
+      table($('#drB'), Object.keys(f.betas || {}).map(k => ({ k, b: f.betas[k], t: (f.t || {})[k] })), [{ k: 'k', label: 'Factor', l: 1 }, { k: 'b', label: 'Beta', f: x => fmt.num(x.b, 3) }, { k: 't', label: 't-stat', f: x => `<span class="${Math.abs(x.t || 0) > 2 ? 'pos' : 'faint'}">${fmt.num(x.t, 1)}</span>` }], { sortKey: 't' });
+    }
+  };
+  function posTable(el, an, compact) {
+    const held = an.positions.filter(p => Math.abs(p.quantity) > 1e-12 || p.realized);
+    const cols = [{ k: 'asset_id', label: 'Ticker', l: 1, f: p => `<b>${esc(p.asset_id)}</b><span class="sub">${esc(p.name || '')}</span>` }, ...(compact ? [] : [{ k: 'asset_class', label: 'Class', l: 1, f: p => `<span class="pill">${esc(clsName(p.asset_class))}</span>` }]),
+      { k: 'quantity', label: 'Quantity', f: p => fmt.qty(p.quantity) }, { k: 'price', label: 'Price', f: p => fmt.px(p.price) }, { k: 'market_value', label: 'Value', f: p => fmt.money(p.market_value) },
+      ...(compact ? [] : [{ k: 'cost_basis', label: 'Cost', f: p => fmt.money(p.cost_basis) }]), { k: 'unrealized', label: 'Unrealised', cls: p => sign(p.unrealized), f: p => fmt.signed(p.unrealized) },
+      ...(compact ? [] : [{ k: 'realized', label: 'Realised', cls: p => sign(p.realized), f: p => fmt.signed(p.realized) }]), { k: 'weight', label: 'Weight', f: p => fmt.pct(p.weight, 1) },
+      ...(compact ? [] : [{ k: 'beta', label: 'Beta', f: p => fmt.num(p.beta, 2) }, { k: 'volatility', label: 'Vol', f: p => fmt.pct(p.volatility, 1) }, { k: 'sharpe', label: 'Sharpe', f: p => fmt.num(p.sharpe, 2) }]),
+      { k: 'quant_score', label: 'Quant', f: p => `<b class="${scoreCls(p.quant_score)}">${scoreTxt(p.quant_score)}</b>` }, { k: 'ml_score', label: 'ML', f: p => `<span class="${scoreCls(p.ml_score)}">${scoreTxt(p.ml_score)}</span>` },
+      ...(compact ? [] : [{ k: 'expected_return', label: 'E[return]', f: p => fmt.spct(p.expected_return, 1) }, { k: 'risk_contribution', label: 'Risk share', f: p => fmt.pct(p.risk_contribution, 1) }, { k: 'signal_confidence', label: 'Confidence', f: p => pct0(p.signal_confidence) }]),
+      { k: 'primary_horizon', label: 'Horizon', l: 1, f: p => esc(p.primary_horizon || (p.quant_score == null ? 'not researched' : '—')) }];
+    table(el, held, cols, { sortKey: 'market_value', maxH: 640, onRow: p => go('#/asset/' + encodeURIComponent(p.asset_id)), empty: 'No positions: use + Transaction to deposit cash and buy' });
+  }
+  function txModal() {
+    const today = (S.status && S.status.last_price_date) || new Date().toISOString().slice(0, 10);
+    const m = modal(`<h2 style="margin-top:0">New transaction</h2><div class="seg" id="txK" style="margin-bottom:12px"><button class="on" data-k="BUY">Buy</button><button data-k="SELL">Sell</button><button data-k="DEPOSIT">Deposit</button><button data-k="WITHDRAW">Withdraw</button></div>
+      <div class="form" style="grid-template-columns:1fr 1fr"><div id="txAW"><label class="f">Asset${assetPicker('txA', S.current)}</label></div><label class="f">Date<input id="txD" type="date" value="${today}"></label>
+        <label class="f" id="txQL">Quantity<input id="txQ" type="number" min="0" placeholder="units"></label><label class="f" id="txML">…or amount (USD)<input id="txM" type="number" min="0" placeholder="e.g. 100000"></label>
+        <label class="f" id="txPL">Price (optional)<input id="txP" type="number" min="0" placeholder="close of that date"></label><label class="f">Note<input id="txN"></label></div>
+      <div class="row" style="margin-top:14px"><span class="spacer"></span><button onclick="document.getElementById('modal').innerHTML=''">Cancel</button><button class="primary" id="txGo">Record</button></div><div id="txErr" class="neg"></div>`);
+    let kind = 'BUY';
+    bindPicker('txA', x => { $('#txA').value = x; });
+    const sync = () => { const cash = kind === 'DEPOSIT' || kind === 'WITHDRAW'; ['#txAW', '#txQL', '#txPL'].forEach(s => { $(s, m).style.display = cash ? 'none' : ''; }); $('#txML', m).firstChild.textContent = cash ? 'Amount (USD)' : '…or amount (USD)'; };
+    $$('#txK button', m).forEach(b => b.onclick = () => { kind = b.dataset.k; $$('#txK button', m).forEach(x => x.classList.toggle('on', x === b)); sync(); });
+    $('#txGo', m).onclick = () => busy($('#txGo', m), async () => {
+      try {
+        const d = $('#txD', m).value || null; const amt = N($('#txM', m).value); const q = N($('#txQ', m).value);
+        if (kind === 'DEPOSIT' || kind === 'WITHDRAW') await post('/fs2/portfolio/' + kind.toLowerCase(), { amount: amt, date: d, note: $('#txN', m).value });
+        else await post('/fs2/portfolio/trade', { asset_id: $('#txA', m).value.trim().toUpperCase(), side: kind, quantity: q, amount: q ? null : amt, price: N($('#txP', m).value), date: d, note: $('#txN', m).value });
+        closeModal(); toast('Recorded'); route();
+      } catch (e) { $('#txErr', m).textContent = e.message; }
+    });
+  }
+
   // ---------------------------------------------------------------- settings
   pages.settings = async (main, _, alive) => {
-    const w = S.world;
-    main.innerHTML = `<div class="page-head"><div><h1>Settings</h1><p>Your funds, the clock and the display.</p></div><button class="primary" id="newFund">New fund</button></div>
-      <div class="grid g2"><div class="card"><h2>This fund</h2><div class="kv"><span>Name</span><span>${esc(w.name)}</span><span>Save</span><span>${esc(w.id)}</span><span>Market</span><span>${w.market_source === 'REAL' ? 'real market' : 'simulated'}</span><span>Clock</span><span>${isLive() ? `live, updates ${esc(w.clock.update_time)} ${esc(w.clock.timezone)}` : 'practice: you advance it'}</span><span>Date</span><span>${fmt.date(w.current_date)} (${esc(w.clock.weekday)})</span><span>Engine</span><span>${esc(w.engine_version)} · save format ${esc(w.save_version)}</span><span>Integrity</span><span>${w.integrity && w.integrity.ok === false ? '<span class="neg">problems found</span>' : '<span class="pos">ok</span>'}</span></div>
-        ${!isLive() ? `<div class="row" style="margin-top:14px"><button id="adv5">Advance 5 days</button><button id="adv21">Advance a month</button></div>` : ''}</div>
-      <div class="card"><h2>All funds</h2>${S.worlds.map(x => `<div class="row" style="padding:8px 0;border-top:1px solid var(--border)"><b>${esc(x.name)}</b><span class="muted">${esc(x.id)}</span><span class="spacer"></span>${x.id === S.wid ? '<span class="pill acc">open</span>' : `<button class="small" data-open="${x.id}">Open</button>`}<button class="small ghost" data-del="${x.id}" data-name="${esc(x.name)}">Delete</button></div>`).join('')}</div></div>
-      <div class="card" style="margin-top:16px"><h2>Display</h2><div class="seg" id="thSeg">${['system', 'dark', 'light'].map(t => `<button data-th="${t}" class="${pref.get('theme', 'system') === t ? 'on' : ''}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div>`;
-    $('#newFund').onclick = () => { location.hash = '#/welcome'; S.wid = null; route(); };
-    $$('[data-open]').forEach(b => b.onclick = async () => { S.wid = b.dataset.open; pref.set('wid', S.wid); S.secs = null; await loadWorld(); renderShell(); location.hash = '#/overview'; });
-    $$('[data-del]').forEach(b => b.onclick = () => { if (!confirm(`Delete the fund "${b.dataset.name}" and its whole history? This cannot be undone.`)) return; busy(b, async () => { await api('/worlds/' + b.dataset.del, { method: 'DELETE' }); await loadWorlds(); await loadWorld(); renderShell(); toast('Fund deleted'); route(); }); });
-    [['adv5', 5], ['adv21', 21]].forEach(([id, n]) => { const b = $('#' + id); if (b) b.onclick = () => busy(b, async () => { await post(W() + '/advance', { days: n }); await loadWorld(); renderShell(); toast(`Now ${fmt.date(S.world.current_date)}`); route(); }); });
+    const st = await api('/fs2/status'); if (!alive()) return;
+    main.innerHTML = `<div class="page-head"><div><h1>Settings</h1><p>Data, methods and display.</p></div></div>
+      <div class="grid g2"><div class="card"><h2>Data</h2><div class="kv"><span>Latest close</span><span>${esc(st.last_price_date || '—')}</span><span>Assets</span><span>${st.assets}</span><span>S&P 500 history</span><span>${st.spy_rows} sessions</span><span>Data version</span><span>${esc(st.data_version)}</span><span>Last automatic check</span><span>${esc((st.scheduler || {}).last_check || '—')}</span></div>
+        <div class="row" style="margin-top:12px"><button id="rf1">Refresh now</button><button id="rf2">Re-download everything</button></div><div id="rfJ"></div>
+        <p class="hint">Prices from Yahoo Finance (daily, adjusted for splits and dividends), macro series from FRED (each used only from its publication date), fundamentals from SEC filings (each used only from its filing date). The data refreshes by itself after each US close while FinSim2 runs.</p></div>
+        <div class="card"><h2>Methods</h2><ul class="muted" style="margin:0;padding-left:18px;font-size:13px;line-height:1.6"><li>Signals are standardised with expanding statistics (no future normalisation) and capped at ±3.</li><li>Evidence per signal and horizon: rank IC, hit rate, t-stat and p-value on the effective sample (overlap and signal persistence removed), Benjamini–Hochberg q-values across the ~60 signals.</li><li>Quant score weights = usefulness (IC shrunk by evidence), blended toward the IC in the current regime.</li><li>ML: purged walk-forward, models ranked by stable out-of-sample IC, ensemble weights from earlier blocks only.</li><li>Every forecast is stored and scored when its horizon passes.</li></ul></div></div>
+      <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Display</h2><div class="seg" id="thSeg">${['system', 'dark', 'light'].map(t => `<button data-th="${t}" class="${pref.get('theme', 'system') === t ? 'on' : ''}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div>
+        <div class="card flush"><h2>Fetch log</h2><div id="flT"></div></div></div>`;
     $$('#thSeg button').forEach(b => b.onclick = () => { pref.set('theme', b.dataset.th); applyTheme(); $$('#thSeg button').forEach(x => x.classList.toggle('on', x === b)); });
+    const rf = full => busy(null, async () => { const j = await post('/fs2/refresh', { full }); pollJob(j.id, () => route(), $('#rfJ')); });
+    $('#rf1').onclick = () => rf(false); $('#rf2').onclick = () => { if (confirm('Re-download the full history of every asset? A few minutes.')) rf(true); };
+    table($('#flT'), st.fetch_log || [], [{ k: 'fetched_at', label: 'When', l: 1 }, { k: 'source', label: 'Source', l: 1 }, { k: 'key', label: 'Item', l: 1 }, { k: 'status', label: 'Status', l: 1 }], { sortKey: null, maxH: 300 });
   };
 
   // ---------------------------------------------------------------- search, theme, startup
   function applyTheme() { const t = pref.get('theme', 'system'); if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
   function bindSearch() {
-    const q = $('#q'), dd = $('#qdd'); let hits = [], sel = 0;
-    const close = () => { dd.style.display = 'none'; };
-    const go = h => { q.value = ''; close(); q.blur(); location.hash = '#/asset/' + encodeURIComponent(h.id); };
-    q.addEventListener('input', async () => { const v = q.value.trim().toUpperCase(); if (!v || !S.wid) { close(); return; } const secs = await securities();
-      hits = secs.filter(s => s.id.toUpperCase().startsWith(v)).concat(secs.filter(s => !s.id.toUpperCase().startsWith(v) && String(s.name).toUpperCase().includes(v))).slice(0, 12); sel = 0;
-      dd.innerHTML = hits.map((h, i) => `<div class="hit ${i === sel ? 'sel' : ''}" data-i="${i}"><b>${esc(h.id)}</b><span>${esc(h.name)} <small>${esc(clsName(h.asset_class))} · ${esc(h.currency)}</small></span><span class="num ${sign(h.change_pct)}">${fmt.px(h.last)}</span></div>`).join('') || '<div class="hit"><span class="muted">No match</span></div>';
-      dd.style.display = 'block'; $$('.hit[data-i]', dd).forEach(el => el.onmousedown = () => go(hits[+el.dataset.i])); });
-    q.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { sel = Math.max(0, Math.min(hits.length - 1, sel + (e.key === 'ArrowDown' ? 1 : -1))); $$('.hit', dd).forEach((el, i) => el.classList.toggle('sel', i === sel)); e.preventDefault(); } else if (e.key === 'Enter' && hits[sel]) go(hits[sel]); else if (e.key === 'Escape') { close(); q.blur(); } });
-    q.addEventListener('blur', () => setTimeout(close, 150));
-    document.addEventListener('keydown', e => { if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); q.focus(); } if (e.key === 'Escape') closeDrawer(); });
+    bindPicker('q', id => { $('#q').value = ''; go('#/asset/' + encodeURIComponent(id)); });
+    document.addEventListener('keydown', e => { if (e.key === '/' && !/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); $('#q').focus(); } if (e.key === 'Escape') closeDrawer(); });
   }
   async function boot() {
     applyTheme();
     $('#themeBtn').onclick = () => { const cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'); pref.set('theme', cur === 'light' ? 'dark' : 'light'); applyTheme(); route(); };
     $('#menuBtn').onclick = () => $('#side').classList.toggle('open');
     bindSearch();
-    try { await loadWorlds(); await loadWorld(); } catch (e) { toast(e.message, true); S.wid = null; }
-    renderShell(); route();
-    // live funds: refresh the header every minute (the server processes the day by itself after the close)
-    setInterval(async () => { if (!S.wid || document.hidden) return; try { const before = S.world && S.world.current_date; await loadWorld(); renderShell(); if (S.world.current_date !== before) route(); } catch (e) { } }, 60000);
+    await loadStatus();
+    if (S.status && S.status.data_ready) assets().catch(() => { });
+    route();
+    setInterval(async () => { if (document.hidden) return; const before = S.status && S.status.data_version; const hadJobs = S.status && (S.status.jobs || []).length; await loadStatus(); if (S.status && (S.status.data_version !== before) && !hadJobs) { S.assets = null; } }, 20000);
   }
   boot();
 })();

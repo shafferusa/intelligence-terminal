@@ -1,18 +1,18 @@
 """The Shaffer Score: one quantitative score per tradeable asset, from an algorithm being developed separately.
 
-This module is its slot. FinSim2 calls `score(metrics, asset)` for every asset on the Analytics scoreboard and shows
-the result in the Shaffer Score column, ranks by it on the Shaffer Score page, and hands it the same inputs the rest of
-the scoreboard uses. Until the algorithm lands `score` returns None and the pages say it is in development.
+This module is its slot. When a score is live, FinSim2 shows it on every researched asset's page and as a column in
+the Markets table, and the Quant Lab's Shaffer Score tab says which version is running. Until the algorithm lands
+`score` returns None and the pages say it is in development.
 
 To plug the algorithm in, either edit `score` below (and set VERSION), or drop a file with the same two names
 (`VERSION` and `score`) at ~/.finsim2/shaffer_score.py (or the path in FINSIM2_SHAFFER); that file wins when present.
 
-Inputs, per asset:
-  metrics: the scoreboard's statistics (see finsim.quant.asset_metrics.METRIC_INFO for every key): returns over
-           several horizons, annualised return and volatility, EWMA and GARCH volatility, Sharpe, Sortino, beta,
-           Jensen's alpha, skew, kurtosis, AR(1) coefficient and half-life, the ADF statistic, z-score, momentum,
-           drawdown, VaR and expected shortfall. A value is None when the history is too short to compute it.
-  asset:   id, name, asset class, sector, country, currency, last price, and for bonds yield, duration and rating.
+Inputs, per asset (from its research bundle, point in time as of the latest close):
+  metrics: every feature's latest value by name (see finsim2.engine.features.FEATURES: returns, momentum, volatility
+           incl. GARCH, drawdown, beta, skew, RSI, Hurst, ADF, half-life, valuation, fundamentals, rates, credit,
+           macro), plus "z" (each feature's capped expanding z-score), "quant_score", "ml_score" and "confidence"
+           (each by horizon, 1D .. 10Y) and "regime" (the current regime labels). A value is None when unavailable.
+  asset:   id, name, asset class, sector, currency, price and as-of date.
 Output: a float (higher = better), or None to leave the asset unscored.
 """
 from __future__ import annotations

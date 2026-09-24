@@ -55,39 +55,85 @@ python3 -m unittest discover -s tests
 
 No third-party packages are required (see *Environment note* below).
 
-### FinSim2 — the portfolio-manager edition
+### FinSim2 — portfolio & quant analytics
 
-`finsim2/` is a second app on the same engine: one job (portfolio manager), one choice at the start (how much you
-run: $1M, $10M, $100M, $1B or any amount up to $1 trillion; live real market or a practice market you advance
-yourself) and a new interface: a left rail (Overview, Trade, Positions, Cash & FX, Markets, Analytics, Shaffer
-Score, Risk, Performance, Activity, Settings), a header with NAV, day P&L, return and cash, one order ticket for
-everything listed (size in units or in dollars, pay with any currency you hold), option chains by underlying,
-every currency the fund holds valued in dollars, and light and dark themes.
+`finsim2/` is a separate app: a quantitative evidence engine for managing a real portfolio. It is not a trading
+simulator. It keeps real daily market history and runs the equation library on it. It tests which signals have
+predicted which assets at which horizons, trains simple models walk-forward, and shows that evidence next to your
+holdings. You decide what to buy or sell. Design notes: `finsim2/ARCHITECTURE.md`.
 
 ```
-python3 -m finsim2 open      # starts its server (port 8865) if needed and opens the window
-python3 -m finsim2 serve     # or in this terminal
-python3 -m finsim2 status | stop | phone on
+python3 -m finsim2 open               # starts its server (port 8865) if needed and opens the window
+python3 -m finsim2 refresh [--full]   # download / update the market history in this terminal (2–4 min the first time)
+python3 -m finsim2 research NVDA SPY --ml   # compute the evidence (and train the ML models) from the terminal
+python3 -m finsim2 serve | status | stop | phone on
 ```
 
-Its saves live in `~/.finsim2/finsim2.db` (`FINSIM2_HOME`, `FINSIM2_DB`, `FINSIM2_PORT` override), apart from
-FinSim's. Its own routes sit under `/api/fs2/` (`finsim2/server.py`); everything else is FinSim's API.
+**Data.**
+- Research store: `~/.finsim2/research.db` (SQLite; `FINSIM2_HOME`, `FINSIM2_DB`, `FINSIM2_PORT` override).
+- Asset list: about 130 assets across equities, ETFs, indices, Treasuries, corporate credit, commodities, futures,
+  FX and crypto. Any Yahoo symbol can be added.
+- Daily history comes from Yahoo Finance and covers each asset's full history (SPY from 1993).
+- 19 macro series come from FRED (no key needed; `FRED_API_KEY` is used if set). Each value is used only after
+  its publication lag.
+- Point-in-time fundamentals come from SEC companyfacts, dated by filing date. The .gov user agent is the one in
+  `CLAUDE.md`.
+- After the US close the server refreshes whatever is stale.
 
-**Analytics.** `finsim/quant/` is a standard-library implementation of the equation library: returns and statistics
-(1–20), regression (21–33), time series incl. ARIMA and the augmented Dickey-Fuller test (34–43), volatility incl.
-EWMA and fitted GARCH(1,1) (44–50), stochastic processes incl. OU, Vasicek, CIR and Heston (51–62), machine
-learning incl. ridge, LASSO, elastic net, trees, random forest, boosting, k-means and PCA (63–83), neural networks
-with backpropagation and Adam (84–100), portfolio theory, CAPM, VaR and expected shortfall (101–110), fixed income
-(111–118), forwards and futures, Black–Scholes–Merton with Greeks and implied vol, swaps and total return swaps,
-and credit and CDS. `finsim/quant/catalog.py` holds each equation's LaTeX, a note and the function that implements
-it; `asset_metrics.py` turns a price history into the scoreboard's statistics. The Analytics page scores every
-tradeable asset (stocks, ETFs, bonds, futures, crypto, currencies) against the S&P 500 and the policy rate, shows
-the equation library with each equation's value on any asset and its Python source.
+**Method.** Every step is point in time; nothing uses data that was not known on the date it describes.
+- *Features.* About 60 per asset, grouped as returns, momentum, statistics, risk, volatility (incl. GARCH refitted
+  yearly), technical, time series (ADF, half-life, Hurst), valuation, fundamentals, rates, credit and macro.
+  Signals are expanding z-scores capped at ±3.
+- *Horizon engine.* Tests every signal at 1D, 1W, 1M, 3M, 6M, 12M, 3Y, 5Y and 10Y, reporting:
+  - rank IC and hit rate;
+  - a Student-t p-value on the *effective* sample (overlapping windows and slow signals are not counted as
+    independent), plus a Benjamini–Hochberg q-value across all signals;
+  - stability across thirds of the history, and results by regime.
+  When a horizon lacks the data (10Y has about 2 independent windows), it says so rather than showing a number.
+- *Regimes.* Bull or bear, volatility, rates, inflation, recession, dollar, liquidity.
+- *Quant score.* Runs from −100 to +100 at each horizon. Signals are weighted by their evidence, blended toward
+  the current regime, and the score is damped when the evidence is weak. The score comes with:
+  - an expected return and its error;
+  - a confidence built from significance, out-of-sample accuracy, stability, regime similarity, data quality and
+    agreement with the ML score;
+  - a point-in-time history (weights refitted quarterly from outcomes known at the time) whose out-of-sample IC is
+    reported and can be backtested.
+- *ML Lab.* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient boosting, all in pure Python.
+  They are trained walk-forward with purged folds and ranked by stable out-of-sample IC, not the best fold. The ML
+  score is an ensemble whose weights come only from earlier folds; it is zero when no model has beaten noise. The
+  lab also shows permutation importance by family and per-prediction explanations, fits pooled models at the
+  asset-class and global level, and logs every prediction, scoring it when it matures (model decay).
+- *Pages.*
+  - Dashboard, Markets and Watchlist.
+  - Asset Research: the one-page answer for an asset.
+  - Analytics: the equation library evaluated on the asset, by family, each with value, percentile, direction and
+    evidence.
+  - Quant Lab: equation leaderboard, a clickable signal-horizon matrix, and score history.
+  - ML Lab.
+  - Risk: VaR and ES, factor drivers, scenarios in which unset factors move with the ones you set, and Monte Carlo
+    with a percentile cone.
+  - Backtests: any signal, the quant score or the ML ensemble, with costs.
+  - Portfolio: a transaction ledger, positions with every score, NAV history, optimiser (frontier, minimum
+    variance, maximum Sharpe, risk parity) and drivers.
+  - Settings.
 
-**Shaffer Score.** A slot for a quantitative score being developed separately. `finsim2/shaffer_score.py` defines
-`score(metrics, asset) -> float | None` and `VERSION`; while `VERSION` is `None` the pages say *in development*.
-Drop a file with the same two names at `~/.finsim2/shaffer_score.py` (or `FINSIM2_SHAFFER`) and it is used without a
-code change: a Shaffer Score column on the scoreboard, a ranking page and the score on every asset page.
+It never presents a simulated or fitted result as a forecast. Numbers come with their sample size, and weak
+evidence is labelled weak.
+
+**Shaffer Score.** A slot for a quantitative score being developed separately.
+- `finsim2/shaffer_score.py` defines `score(metrics, asset) -> float | None` and `VERSION`. While `VERSION` is
+  `None`, the pages say *in development*.
+- To make it live without a code change, drop a file with the same two names at `~/.finsim2/shaffer_score.py` (or
+  set `FINSIM2_SHAFFER`). The score then appears on every researched asset and in the Markets table. Its inputs
+  are the asset's latest features, z-scores, scores and regime.
+
+The standard-library equation library it evaluates lives in `finsim/quant/`:
+- returns and statistics (1–20), regression (21–33), time series (34–43), volatility incl. GARCH (44–50);
+- stochastic processes (51–62), machine learning (63–83), neural networks (84–100);
+- portfolio theory, VaR and ES (101–110), fixed income (111–118);
+- derivatives, swaps and credit.
+
+`finsim/quant/catalog.py` holds each equation's LaTeX, a note and its implementation.
 
 ### As a local app
 
@@ -439,7 +485,7 @@ breach on any desk for 20 sessions, decide eight requests in time.
 `test_vertical_slice`), Financing (`test_financing`), Options (`test_options`), OTC (`test_otc`), Risk (`test_risk`),
 Operations (`test_operations`), Macro (`test_macro`), Game/Careers (`test_careers`, `test_institutions`),
 Commodities (`test_commodities`), Infrastructure (`test_infrastructure`, `test_master_scenario`), Quant library
-(`test_quant`), FinSim2 (`test_finsim2`), global options (`test_options_global`), currencies (`test_ccy_visibility`,
+(`test_quant`), FinSim2 (`test_finsim2`, `test_fs2_data`, `test_fs2_models`, `test_fs2_equations`), global options (`test_options_global`), currencies (`test_ccy_visibility`,
 `test_fx_routing`, `test_ccy_funding`, `test_backstop`).
 
 ### What is deliberately not built yet
