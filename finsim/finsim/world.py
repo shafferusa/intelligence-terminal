@@ -629,7 +629,7 @@ class World:
     # ------------------------------------------------------------------ helpers used by engines
     def post(self, portfolio_id: str, memo: str, lines: List[Dict], cause: Event, reference: Optional[Dict] = None) -> Optional[Event]:
         """Derive a LEDGER_POSTED event from `cause`."""
-        lines = [l for l in lines if D(l.get("debit", 0)) != 0 or D(l.get("credit", 0)) != 0]
+        lines = [l for l in lines if l is not None and (D(l.get("debit", 0)) != 0 or D(l.get("credit", 0)) != 0)]
         if not lines:
             return None
         return self.derive(E.LEDGER_POSTED, {"portfolio_id": portfolio_id, "entry_id": f"JE-{self.next_seq():06d}", "memo": memo,
