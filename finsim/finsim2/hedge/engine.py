@@ -9,7 +9,7 @@ unit, optimise the package, score it, then (only if verified) apply a capped ML 
     Factors the objective does not target keep R*_f = R_f, so a hedge that adds sector or currency exposure is penalised.
     Turnover: existing hedges enter R, so the optimiser only adds what is missing.
 
-    SH_j = 100·tanh(E_j·Q_j·L_j·R_j·B_j·T_j / 0.5)
+    SH_j = 100·tanh(E_j·Q_j·L_j·R_j·B_j·T_j / 1.0)
     E: realised ÷ expected variance reduction in the walk-forward history (−1…1.25); expected reduction if no history
     Q: value of the risk removed ÷ (value + expected cost); value = (γh/2)·ΔVar
     L: 1 / (1 + participation/10%) with participation = hedge notional ÷ average daily traded value
@@ -29,13 +29,15 @@ from .history import ALPHA, ADJ_CAP, Evaluator, ml_adjustment
 from .market import SHORT_RATE, Market
 from .risk import RiskModel, label as flabel, unit as funit
 
-K_H = 0.5
+K_H = 1.0
 RISK_AVERSION = 2.0
 TARGET_WEIGHT = 1.0e4     # continuous sizing: the user's target is effectively binding
 SELECT_WEIGHT = 50.0      # choosing products and whole lots: a lot-granularity miss must not outweigh large cost differences
 VARIANCE_OBJECTIVES = {"min_variance", "var", "es", "drawdown", "target_vol"}
+FACTOR_BY_FACTOR = {"systematic", "sector", "name", "fx", "commodity", "credit"}
 HORIZON = {"1D": 1, "1W": 5, "1M": 21, "3M": 63, "6M": 126, "12M": 252}
 OBJECTIVES = {
+    "systematic": "Hedge the systematic risk (every factor except single-name residual)",
     "beta": "Reduce market beta", "neutral": "Neutralize market beta", "sector": "Reduce sector / industry exposure",
     "name": "Hedge a specific position (single-name risk)", "duration": "Reduce duration (rates)", "curve": "Hedge the yield curve key rate by key rate",
     "credit": "Reduce credit-spread risk", "fx": "Reduce currency exposure", "commodity": "Reduce commodity exposure",
@@ -153,6 +155,10 @@ def targeted(objective: str, R: Dict[str, float], params: dict, priced: Optional
     fs = [f for f in R if abs(R[f]) > 1e-9]
     if objective in ("beta", "neutral", "crash"):
         return ["MKT"]
+    if objective == "systematic":
+        # style tilts (size, value) are secondary and noisily estimated: they stay in the "keep small" part of the
+        # objective instead of being pinned, so a style hedge never outweighs the trade itself
+        return [f for f in fs if not f.startswith(("IDIO:", "STY:"))]
     if objective == "sector":
         want = params.get("factor")
         return [want] if want else [f for f in fs if f.startswith(("SEC:", "IND:"))]
@@ -311,14 +317,15 @@ def _wblock(C, S, curve=False, w_s: Optional[float] = None) -> Dict[tuple, float
     w_s = TARGET_WEIGHT if w_s is None else w_s
     """The objective's weight matrix: the covariance within the targeted factors and within the others, none across,
     so targeted exposures are pinned at their targets while every other exposure is kept as small as possible.
-    `curve`: key rates matched one by one (no cross-covariance between them)."""
+    `curve`: targeted factors matched one by one (no cross-covariance between them) — key rates for the curve
+    objective, and market / sector / industry / currency / commodity / credit factors for multi-factor objectives."""
     Sset = set(S)
     out = {}
     for (a, b), v in C.items():
         if (a in Sset) != (b in Sset):
             continue
-        if curve and a != b and a.startswith("RATE:") and b.startswith("RATE:"):
-            continue
+        if curve and a != b and a in Sset and b in Sset:
+            continue                              # targeted factors matched one by one (key rates, sector and market, …)
         out[(a, b)] = v * (w_s if a in Sset else 1.0)
     return out
 
@@ -663,7 +670,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
             continue
         # the product's own risk unit: the quantity whose exposure best matches the required change on the targeted
         # factors (a covariance-weighted projection; with one factor it is Δexposure ÷ exposure per unit)
-        WS = _wblock(C, S, objective == "curve")
+        WS = _wblock(C, S, objective == "curve" or (objective in FACTOR_BY_FACTOR and len(S) > 1))
         num = sum(HS.get(a, 0.0) * WS.get((a, b), 0.0) * dR.get(b, 0.0) for a in S for b in S)
         den = sum(HS.get(a, 0.0) * WS.get((a, b), 0.0) * HS.get(b, 0.0) for a in S for b in S)
         if den <= 0:
@@ -757,8 +764,10 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
         chosen, q = (pool[:1], [pool[0]["unit_quantity"]]) if pool else ([], [])
     else:
         var_obj = objective in VARIANCE_OBJECTIVES
-        chosen, q = select_package(R, Rstar, pool, legs_all, C, gamma_h, max_legs if not var_obj else max(3, max_legs),
-                                   curve=(objective == "curve"), exact=exact, S=S,
+        one_by_one = objective == "curve" or (objective in FACTOR_BY_FACTOR and len(S) > 1)
+        legs_n = max(3, max_legs) if (var_obj or objective in ("systematic", "name")) and "max_legs" not in params else max_legs
+        chosen, q = select_package(R, Rstar, pool, legs_all, C, gamma_h, legs_n,
+                                   curve=one_by_one, exact=exact, S=S,
                                    w_opt=1.0 if var_obj else None, w_sel=1.0 if var_obj else None, must_hedge=not var_obj)
     package = [_leg_view(c, ql, R, S, h, nav) for c, ql in zip(chosen, q) if ql]
     raw_after = _apply(R, package, cands)

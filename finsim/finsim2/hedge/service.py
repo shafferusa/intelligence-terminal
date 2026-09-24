@@ -32,6 +32,12 @@ def signed_quantity(side: str, q: float) -> float:
 
 
 def trade_objective(research, asset_id: str, q: float) -> str:
+    """A trade's default hedge objective: its systematic risk (every factor but its own residual, which only the
+    asset itself could hedge). Kept as a function so a product-specific default can be added."""
+    return "systematic"
+
+
+def dominant_objective(research, asset_id: str, q: float) -> str:
     """The risk a trade mostly adds (ignoring its single-name residual, which only the asset itself can hedge)."""
     m = Market(research)
     rk = RiskModel(m)

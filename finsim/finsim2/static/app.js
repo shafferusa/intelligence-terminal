@@ -918,7 +918,7 @@
   }
 
   // ---------------------------------------------------------------- Shaffer Hedge: shared renderers
-  const OBJECTIVES = [['auto', 'Automatic (largest risk)'], ['beta', 'Reduce market beta'], ['neutral', 'Neutralize market beta'], ['sector', 'Sector / industry exposure'],
+  const OBJECTIVES = [['auto', 'Automatic'], ['systematic', 'Systematic risk (all but single-name)'], ['beta', 'Reduce market beta'], ['neutral', 'Neutralize market beta'], ['sector', 'Sector / industry exposure'],
     ['name', 'A specific position'], ['duration', 'Duration (rates)'], ['curve', 'Yield curve, key rate by key rate'], ['credit', 'Credit spread (CS01)'], ['fx', 'Currency exposure'],
     ['commodity', 'Commodity exposure'], ['crypto', 'Crypto exposure'], ['volatility', 'Volatility (vega)'], ['crash', 'Crash protection'], ['var', 'Value at Risk'],
     ['es', 'Expected Shortfall'], ['drawdown', 'Drawdown'], ['min_variance', 'Minimum variance'], ['target_vol', 'Target volatility']];
@@ -947,15 +947,15 @@
     if (L.option) {
       const o = L.option;
       const path = (o.hedge_ratio_scenarios || []).map(p => `<td>${fmt.pct(p.hedge_ratio, 0)}</td>`).join('');
-      return `<div class="kv" style="margin-top:6px;font-size:12.5px"><b>Option</b>: ${o.right === 'P' ? 'put' : 'call'} ${fmt.px(o.strike)} expiring ${fmt.date(o.expiry)} (${esc(o.style)}) · premium ${fmt.money(o.premium_per_contract, 0)} per contract, ${fmt.money(o.premium_total, 0)} total (${fmt.pct(o.premium_total / (L.nav || 1), 2)} of NAV) · Δ ${fmt.num(o.delta, 3)} · Γ ${fmt.num(o.gamma, 5)} · vega ${fmt.money(o.vega_usd, 0)}/vol pt · theta ${fmt.money(o.theta_usd, 0)}/day · implied vol ${fmt.pct(o.iv, 1)}<br>
+      return `<div style="margin-top:6px;font-size:12.5px;line-height:1.6"><b>Option</b>: ${o.right === 'P' ? 'put' : 'call'} ${fmt.px(o.strike)} expiring ${fmt.date(o.expiry)} (${esc(o.style)}) · premium ${fmt.money(o.premium_per_contract, 0)} per contract, ${fmt.money(o.premium_total, 0)} total (${fmt.pct(o.premium_total / (L.nav || 1), 2)} of NAV) · Δ ${fmt.num(o.delta, 3)} · Γ ${fmt.num(o.gamma, 5)} · vega ${fmt.money(o.vega_usd, 0)}/vol pt · theta ${fmt.money(o.theta_usd, 0)}/day · implied vol ${fmt.pct(o.iv, 1)}<br>
         <b>Delta-adjusted notional ${fmt.money(o.delta_adjusted_notional, 0)}</b> (contracts × 100 × underlying × Δ): the hedge exposure. The premium is its cost.</div>
         <div class="tbl-wrap" style="margin-top:6px"><table><thead><tr><th class="l">Market move</th>${(o.hedge_ratio_scenarios || []).map(p => `<th>${fmt.spct(p.market_move, 0)}</th>`).join('')}</tr></thead><tbody><tr><td class="l">Hedge ratio (delta re-computed)</td>${path}</tr><tr><td class="l">Option value</td>${(o.hedge_ratio_scenarios || []).map(p => `<td>${fmt.money(p.option_value, 0)}</td>`).join('')}</tr></tbody></table></div>`;
     }
     if (L.type === 'FUTURE') {
-      return `<div class="kv" style="margin-top:6px;font-size:12.5px"><b>Future</b>: price ${fmt.px(L.price)} × multiplier ${fmt.num(L.multiplier, L.multiplier < 1 ? 1 : 0)} = contract notional ${fmt.money(L.unit_notional, 0)} · ${fmt.num(Math.abs(L.quantity), 0)} contracts = <b>${fmt.money(L.notional, 0)} notional</b> ·
+      return `<div style="margin-top:6px;font-size:12.5px;line-height:1.6"><b>Future</b>: price ${fmt.px(L.price)} × multiplier ${fmt.num(L.multiplier, L.multiplier < 1 ? 1 : 0)} = contract notional ${fmt.money(L.unit_notional, 0)} · ${fmt.num(Math.abs(L.quantity), 0)} contracts = <b>${fmt.money(L.notional, 0)} notional</b> ·
         ${L.dv01_per_contract != null ? `DV01 ${fmt.money(L.dv01_per_contract, 2)} per contract · ` : L.beta != null ? `β ${fmt.num(L.beta, 2)} · ` : ''}margin (estimate) ${fmt.money(L.margin_estimate, 0)} — collateral, not exposure · expires ${fmt.date(L.expiry)}, roll by ${fmt.date(L.roll)}${(L.cost || {}).rolls ? ` (${L.cost.rolls} roll(s) inside the horizon)` : ''}</div>`;
     }
-    if (L.type === 'FORWARD') return `<div class="kv" style="margin-top:6px;font-size:12.5px"><b>FX forward</b>: ${fmt.num(Math.abs(L.quantity), 0)} units of the base currency at ${fmt.px(L.price)} value ${fmt.date(L.expiry)}; forward points ${fmt.signed(((L.cost || {}).info || {}).forward_points, 0)} over the horizon.</div>`;
+    if (L.type === 'FORWARD') return `<div style="margin-top:6px;font-size:12.5px;line-height:1.6"><b>FX forward</b>: ${fmt.num(Math.abs(L.quantity), 0)} units of the base currency at ${fmt.px(L.price)} value ${fmt.date(L.expiry)}; forward points ${fmt.signed(((L.cost || {}).info || {}).forward_points, 0)} over the horizon.</div>`;
     return '';
   }
   function packageTable(pkg, nav) {
@@ -964,7 +964,7 @@
       ${pkg.map(L => `<tr><td class="l"><b>${esc(L.id)}</b><span class="sub">${esc(L.name)}</span></td><td><span class="pill ${L.side === 'BUY' ? 'pos' : 'neg'}">${L.side}</span></td>
         <td>${fmt.qty(Math.abs(L.quantity))} ${esc(L.units)}${L.raw_quantity != null && L.raw_quantity !== L.quantity ? `<span class="sub">raw ${fmt.qty(Math.abs(L.raw_quantity))}</span>` : ''}</td>
         <td class="l" style="font-size:12px">${esc(L.risk_unit)}<span class="sub">${esc(L.sizing_rule)}</span></td><td>${fmt.money(L.notional, 0)}</td><td>${fmt.money((L.cost || {}).total, 0)}</td><td>${fmt.pct(L.cost_pct_nav, 2)}</td>
-        <td class="l" style="font-size:12.5px;max-width:360px">${esc(L.why)}${legDetail({ ...L, nav })}</td></tr>`).join('')}</tbody></table></div>`;
+        <td class="l" style="font-size:12.5px;max-width:360px">${esc(L.why)}</td></tr>${legDetail({ ...L, nav }) ? `<tr><td colspan="8" class="l" style="background:var(--surface-2)">${legDetail({ ...L, nav })}</td></tr>` : ''}`).join('')}</tbody></table></div>`;
   }
   function hedgePanel(el, ana, o = {}) {
     const S0 = ana.targeted || [];
@@ -1108,14 +1108,14 @@
           ${t.eligible ? '' : `<div class="pill warn" style="white-space:normal;margin-top:8px">${esc(t.reasons.join('; '))}</div>`}
           <h3 style="margin:14px 0 6px">Shaffer Score</h3>
           ${sh.horizons ? `<div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(hs).filter(([k]) => ['1D', '1W', '1M', '3M', '6M', '12M', '3Y', '5Y'].includes(k)).map(([k, v]) => `<span class="pill ${k === hz ? 'on' : ''}" title="calibrated ${scoreTxt(v.calibrated)}">${k} <b class="${scoreCls(v.score)}">${scoreTxt(v.score)}</b></span>`).join('')}</div>
-          <div class="kv" style="margin-top:8px">${hz}: Shaffer <b class="${scoreCls(cur.score)}">${scoreTxt(cur.score)}</b> · calibrated ${scoreTxt(cur.calibrated)} · ML <b class="${scoreCls(cur.ml)}">${scoreTxt(cur.ml)}</b> · <span class="pill">${esc(cur.agreement || '—')}</span> · confidence ${pct0(cur.confidence)}${cur.expected != null ? ` · expected ${fmt.spct(cur.expected, 1)}` : ''}</div>
+          <div style="margin-top:8px">${hz}: Shaffer <b class="${scoreCls(cur.score)}">${scoreTxt(cur.score)}</b> · calibrated ${scoreTxt(cur.calibrated)} · ML <b class="${scoreCls(cur.ml)}">${scoreTxt(cur.ml)}</b> · <span class="pill">${esc(cur.agreement || '—')}</span> · confidence ${pct0(cur.confidence)}${cur.expected != null ? ` · expected ${fmt.spct(cur.expected, 1)}` : ''}</div>
           <div style="margin-top:8px;font-size:12.5px"><b>Driving it</b>: ${(sh.contributors || []).map(c => esc(c.label || c.signal || c.family || '')).join(', ') || '—'}<br><b>Against it</b>: ${(sh.contradicting || []).map(c => esc(c.label || c.signal || c.family || '')).join(', ') || '—'}</div>` : '<p class="muted">No Shaffer Score for this product yet (research the underlying first).</p>'}
-          <div class="kv" style="margin-top:8px">Net of costs at ${esc(st.horizon)}: long <b class="${scoreCls(ns.long)}">${scoreTxt(ns.long)}</b> · short <b class="${scoreCls(ns.short)}">${ns.short == null ? 'n/a' : scoreTxt(ns.short)}</b> <span class="faint" style="font-size:12px">(${esc(ns.expected_source || '')}${ns.short_note ? '; ' + esc(ns.short_note) : ''})</span></div>
+          <div style="margin-top:8px">Net of costs at ${esc(st.horizon)}: long <b class="${scoreCls(ns.long)}">${scoreTxt(ns.long)}</b> · short <b class="${scoreCls(ns.short)}">${ns.short == null ? 'n/a' : scoreTxt(ns.short)}</b> <span class="faint" style="font-size:12px">(${esc(ns.expected_source || '')}${ns.short_note ? '; ' + esc(ns.short_note) : ''})</span></div>
           <p class="faint" style="font-size:12px;margin-top:6px">Scores read from the long side: −100 strongly bearish, 0 no measurable edge, +100 strongly bullish. The short score is not simply the negative: it pays borrow and earns no interest on the proceeds.</p>
         </div>
         <div class="card"><h3 style="margin:0 0 6px">What this trade adds</h3>${riskCompare(p.portfolio, { before_trade: 'Before', after_trade: 'After trade', after_hedge: 'After trade + hedge' })}</div></div>
         <div class="card" style="margin-top:14px"><h2 style="margin-top:0">Shaffer Hedge for this trade</h2><div id="tkHedge"></div></div>`;
-      hedgePanel($('#tkHedge', m), p.hedge, { onPick: cid => { st.use = cid; load(); }, scenBefore: 'Trade alone' });
+      hedgePanel($('#tkHedge', m), p.hedge, { onPick: cid => { st.use = cid; load(); }, scenBefore: 'Trade alone', bookLabels: { before: 'Trade alone', raw: 'Trade + raw hedge', final: 'Trade + final hedge' } });
       $('#tkGo', m).disabled = false;
     }
     $$('#tkSide button', m).forEach(b => b.onclick = () => { st.side = b.dataset.s; $$('#tkSide button', m).forEach(x => x.classList.toggle('on', x === b)); refresh(); });
