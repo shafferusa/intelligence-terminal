@@ -183,6 +183,7 @@ class Research:
             "what_matters_now": sc.what_matters(mat, sc.SHORT, imp_short), "what_matters_long": sc.what_matters(mat, sc.LONG, imp_long),
             "price_history": downsample(dates, close[first:last + 1]),
             "features_available": sum(1 for c in current if c["value"] is not None), "computed_in": None,
+            "data_notes": panel.data_notes(),
         }
         from .. import shaffer_score as shs
         out["shaffer"] = shs.score_asset(self.shaffer_inputs(out, mat, z, state))   # the built-in; an override file is applied per request

@@ -4,6 +4,9 @@
 * Every method returns plain Python types; dates are ISO strings ("YYYY-MM-DD"); missing values are None.
 * Tables follow the schema in ``finsim2/ARCHITECTURE.md``; one extra internal table ``store_meta`` holds the
   data-version counter behind :meth:`Store.data_version`.
+* ``macro.published`` (nullable) is the date a value was first published (first-release vintages); databases
+  created before it existed get the column added on open (:meth:`Store._migrate`). ``kv`` key
+  ``macro_kind:{series}`` records whether a series holds "first_release" or "latest_vintage" values.
 """
 from __future__ import annotations
 
@@ -23,7 +26,8 @@ CREATE TABLE IF NOT EXISTS assets(id TEXT PRIMARY KEY, name TEXT, asset_class TE
     currency TEXT, yahoo TEXT, cik INTEGER, duration REAL, convexity REAL, fred TEXT, meta TEXT);
 CREATE TABLE IF NOT EXISTS prices(asset_id TEXT NOT NULL, date TEXT NOT NULL, open REAL, high REAL, low REAL,
     close REAL, adj_close REAL, volume REAL, PRIMARY KEY(asset_id, date));
-CREATE TABLE IF NOT EXISTS macro(series TEXT NOT NULL, date TEXT NOT NULL, value REAL, PRIMARY KEY(series, date));
+CREATE TABLE IF NOT EXISTS macro(series TEXT NOT NULL, date TEXT NOT NULL, value REAL, published TEXT,
+    PRIMARY KEY(series, date));
 CREATE TABLE IF NOT EXISTS fundamentals(asset_id TEXT NOT NULL, concept TEXT NOT NULL, period_end TEXT NOT NULL,
     filed TEXT NOT NULL, value REAL, form TEXT, fp TEXT, PRIMARY KEY(asset_id, concept, period_end, filed));
 CREATE TABLE IF NOT EXISTS kv(key TEXT PRIMARY KEY, value TEXT, updated_at TEXT);
@@ -51,7 +55,7 @@ CREATE TABLE IF NOT EXISTS corporate_actions(asset_id TEXT NOT NULL, date TEXT N
 CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY, at TEXT, action TEXT, entity TEXT, detail TEXT);
 """
 # columns added after the first release; `_migrate` adds them to older databases
-MIGRATIONS = {"transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT")]}
+MIGRATIONS = {"macro": [("published", "TEXT")], "transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT")]}
 
 ASSET_COLS = ["id", "name", "asset_class", "sector", "country", "currency", "yahoo", "cik", "duration", "convexity",
               "fred", "meta"]
@@ -61,6 +65,7 @@ PRED_COLS = ["asset_id", "horizon", "model", "model_version", "made_on", "target
 RUN_COLS = ["level", "key", "horizon", "model", "version", "train_start", "train_end", "test_start", "test_end",
             "features", "params", "metrics", "created_at"]
 TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee", "currency", "note", "basis_date", "created_at"]
+MACRO_KINDS = ("first_release", "latest_vintage")
 
 
 def default_path() -> str:
@@ -128,15 +133,23 @@ class Store:
 
     @staticmethod
     def _migrate(conn):
+        """Bring an older database up to the current schema (additive, idempotent, safe across processes)."""
         for table, cols in MIGRATIONS.items():
             have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
             for name, typ in cols:
-                if name not in have:
+                if name in have:
+                    continue
+                try:
                     conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {typ}")
-                    if table == "transactions" and name == "basis_date":
-                        # rows entered before share-basis tracking used FinSim2's own (split-adjusted) prices, i.e. the
-                        # share basis of the day they were entered; no split can have happened since, so today's date
-                        conn.execute("UPDATE transactions SET basis_date = ? WHERE basis_date IS NULL", (_dt.date.today().isoformat(),))
+                except sqlite3.OperationalError:          # another process added it first
+                    if name not in {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}:
+                        raise
+                    continue
+                if table == "transactions" and name == "basis_date":
+                    # rows entered before share-basis tracking used FinSim2's own (split-adjusted) prices, i.e. the
+                    # share basis of the day they were entered; no split can have happened since, so today's date
+                    conn.execute("UPDATE transactions SET basis_date = ? WHERE basis_date IS NULL", (_dt.date.today().isoformat(),))
+        conn.commit()
 
     # ------------------------------------------------------------------ plumbing
     def _conn(self) -> sqlite3.Connection:
@@ -309,24 +322,85 @@ class Store:
         return self._q("SELECT count(*) AS n FROM prices WHERE asset_id = ?", (asset_id,))[0]["n"]
 
     # ------------------------------------------------------------------ macro
-    def upsert_macro(self, series: str, rows) -> int:
-        tuples = []
-        for d, v in rows:
-            tuples.append((series, _d(d), num(v)))
+    _MACRO_UPSERT = ("INSERT INTO macro(series, date, value, published) VALUES(?,?,?,?) ON CONFLICT(series, date) "
+                     "DO UPDATE SET value=excluded.value, published=excluded.published "
+                     "WHERE macro.value IS NOT excluded.value OR macro.published IS NOT excluded.published")
 
-        sql = ("INSERT INTO macro(series, date, value) VALUES(?,?,?) ON CONFLICT(series, date) "
-               "DO UPDATE SET value=excluded.value WHERE macro.value IS NOT excluded.value")
-        return self._write(lambda conn: self._changed(conn, sql, tuples))[0]
+    @staticmethod
+    def _macro_tuples(series, rows):
+        """Rows are ``(date, value)`` or ``(date, value, published)``; published None = unknown."""
+        out = []
+        for r in rows:
+            if len(r) == 2:
+                d, v = r
+                pub = None
+            elif len(r) == 3:
+                d, v, pub = r
+            else:
+                raise ValueError("macro rows are (date, value) or (date, value, published)")
+            out.append((series, _d(d), num(v), _d(pub)))
+        return out
+
+    def upsert_macro(self, series: str, rows) -> int:
+        """Insert or update observations; returns the number of rows that actually changed."""
+        tuples = self._macro_tuples(series, rows)
+        return self._write(lambda conn: self._changed(conn, self._MACRO_UPSERT, tuples))[0]
+
+    def replace_macro(self, series: str, rows, kind: str | None = None) -> int:
+        """Delete every stored observation of ``series`` and insert ``rows`` (used when the kind of data changes,
+        so values of the old kind cannot linger); optionally records ``kind`` in the same transaction."""
+        tuples = self._macro_tuples(series, rows)
+        if kind is not None and kind not in MACRO_KINDS:
+            raise ValueError(f"unknown macro kind {kind!r}")
+
+        def fn(conn):
+            conn.execute("DELETE FROM macro WHERE series = ?", (series,))
+            conn.executemany(self._MACRO_UPSERT, tuples)
+            if kind is not None:
+                self._set_kind(conn, series, kind)
+            self._bump(conn)
+        self._write(fn)
+        return len(tuples)
 
     def macro(self, series: str, start=None, end=None) -> list[tuple]:
-        sql, args = "SELECT date, value FROM macro WHERE series = ?", [series]
+        """``[(date, value)]`` ordered by date (see :meth:`macro_rows` for publication dates)."""
+        return [(d, v) for d, v, _p in self.macro_rows(series, start, end)]
+
+    def macro_rows(self, series: str, start=None, end=None) -> list[tuple]:
+        """``[(date, value, published)]`` ordered by date; ``published`` is None when unknown (latest vintage)."""
+        sql, args = "SELECT date, value, published FROM macro WHERE series = ?", [series]
         if start is not None:
             sql += " AND date >= ?"
             args.append(_d(start))
         if end is not None:
             sql += " AND date <= ?"
             args.append(_d(end))
-        return [(r["date"], r["value"]) for r in self._q(sql + " ORDER BY date", args)]
+        return [(r["date"], r["value"], r["published"]) for r in self._q(sql + " ORDER BY date", args)]
+
+    def macro_kind(self, series: str) -> str | None:
+        """"first_release", "latest_vintage", or None (unknown: stored before kinds were recorded)."""
+        k = self.kv_get(f"macro_kind:{series}")
+        return k if k in MACRO_KINDS else None
+
+    def _set_kind(self, conn, series, kind) -> bool:
+        key = f"macro_kind:{series}"
+        row = conn.execute("SELECT value FROM kv WHERE key = ?", (key,)).fetchone()
+        payload = _dumps(kind)
+        if row is not None and row[0] == payload:
+            return False
+        conn.execute("INSERT INTO kv(key, value, updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET "
+                     "value=excluded.value, updated_at=excluded.updated_at", (key, payload, _now()))
+        return True
+
+    def set_macro_kind(self, series: str, kind: str):
+        """Record which kind of values ``series`` holds; a change bumps the data version (cached results use it)."""
+        if kind not in MACRO_KINDS:
+            raise ValueError(f"unknown macro kind {kind!r}")
+
+        def fn(conn):
+            if self._set_kind(conn, series, kind):
+                self._bump(conn)
+        self._write(fn)
 
     def last_macro_date(self, series: str) -> str | None:
         return self._q("SELECT max(date) AS d FROM macro WHERE series = ?", (series,))[0]["d"]

@@ -29,7 +29,7 @@ finsim2/
     universe.py          the research universe (UNIVERSE list of dicts), FRED_SERIES, horizons
     store.py             Store: SQLite (prices, macro, fundamentals, kv cache, predictions, model runs, portfolio)
     yahoo.py             daily history (period1=0 .. now), incremental updates
-    fred.py              fredgraph.csv (no key) or the API with FRED_API_KEY; publication lags
+    fred.py              first-release vintages + publication dates (API, FRED_API_KEY); fredgraph.csv fallback
     sec.py               EDGAR companyfacts -> point-in-time fundamentals (by filing date)
     refresh.py           refresh(store, progress) -> downloads everything that is stale
   engine/
@@ -66,8 +66,16 @@ Missing values are `None`, never NaN, in anything returned by an API.
 
 **Targets.** `fwd_h[t] = ln(P[t+h] / P[t])` using adj_close; `None` when t+h is beyond the data.
 
-**Point in time.** A feature at date t uses data dated <= t only. Macro series are shifted by their publication
-lag. Fundamentals are keyed by SEC filing date. Standardisation uses expanding (or trailing) statistics only.
+**Point in time.** A feature at date t uses data dated <= t only. Macro: with `FRED_API_KEY` the revised
+(non-daily) series - CPIAUCSL, UNRATE, INDPRO, M2SL, NFCI, WALCL - are stored as first-release values (FRED API,
+`output_type=4`) with the date each was first published, and a value is visible from the first calendar date on or
+after that date (US data is released before the close); later revisions never reach the past. FRED returns first
+releases only from each series' vintage coverage (UNRATE 1960, CPI 1972, M2 1980, NFCI and WALCL 2011), so
+history starts there. Without a key (or for daily market series, which are not revised in practice) the latest
+vintage is stored and shifted by the fixed `lag_days`; NFCI, re-estimated weekly, is then not used at all (`nfci`
+and the liquidity regime are None). Transforms (year on year, Sahm gap, 26-week growth) are shown only once every
+observation they read is visible. The research bundle's `data_notes` says which case applies. Fundamentals are
+keyed by SEC filing date. Standardisation uses expanding (or trailing) statistics only.
 Model training for a prediction at t only uses rows whose target window ended before t (row date + h < t).
 
 **Effective sample size.** Overlapping h-day targets and slow-moving signals are not independent:
@@ -118,7 +126,9 @@ same window; `benchmark_*` are the old names) and alpha/beta against SPY.
 assets(id TEXT PRIMARY KEY, name, asset_class, sector, country, currency, yahoo, cik, duration REAL,
        convexity REAL, fred TEXT, meta TEXT)                    -- meta: JSON
 prices(asset_id, date, open, high, low, close, adj_close, volume, PRIMARY KEY(asset_id, date))
-macro(series, date, value, PRIMARY KEY(series, date))          -- date = observation date (lag applied on read)
+macro(series, date, value, published, PRIMARY KEY(series, date))  -- date = observation date; published = first
+                                                                  -- publication (first release) or NULL (lag on read)
+                                                                  -- kv macro_kind:{series} = first_release | latest_vintage
 fundamentals(asset_id, concept, period_end, filed, value, form, fp, PRIMARY KEY(asset_id, concept, period_end, filed))
 kv(key PRIMARY KEY, value TEXT, updated_at)                     -- JSON caches of computed analytics
 fetch_log(source, key, fetched_at, status, note)

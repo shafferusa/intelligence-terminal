@@ -2,7 +2,10 @@
 
 The calendar is the set of dates on which the benchmark (SPY) traded. Price series are forward-filled onto it for at
 most `MAX_FILL` sessions (a holiday abroad, a weekend for crypto) and are missing beyond that. Macro observations are
-placed on the date they became public (observation date + publication lag) and carried forward until the next one.
+placed on the date they became public and carried forward until the next one: the real publication date for
+first-release vintages (US data is released before the close, so it is usable that day), otherwise observation
+date + the series' fixed publication lag. Series that are re-estimated wholesale (NFCI) are unusable without
+vintages and read as missing.
 """
 from __future__ import annotations
 
@@ -14,6 +17,14 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 MAX_FILL = 5
 BENCHMARK = "SPY"
+# Re-estimated over their whole history every release: latest-vintage values are pure look-ahead, so these series
+# are used only when stored as first-release vintages.
+VINTAGE_ONLY = frozenset({"NFCI"})
+# Guard: should FRED return the earliest vintage it has for observations older than its vintage coverage (all
+# "published" on the first vintage date; the series here return nothing before coverage instead), such an observation
+# (published on that date, more than lag + this many days after its observation date) falls back to the fixed lag,
+# except for VINTAGE_ONLY series (visible only from the vintage date).
+PRE_VINTAGE_MARGIN_DAYS = 60
 
 
 def _iso_add(iso: str, days: int) -> str:
@@ -86,30 +97,102 @@ class Panel:
         return next((i for i, v in enumerate(s) if v is not None), None)
 
     # ------------------------------------------------------------------ macro (point in time)
+    def macro_kind(self, series_id: str) -> Optional[str]:
+        """"first_release", "latest_vintage" or None (unknown) - what the store holds for `series_id`."""
+        key = ("kind", series_id)
+        with self._lock:
+            if key in self._cache:
+                return self._cache[key]
+        getter = getattr(self.store, "macro_kind", None)
+        kind = getter(series_id) if getter else None
+        with self._lock:
+            self._cache[key] = kind
+        return kind
+
+    def macro_usable(self, series_id: str) -> bool:
+        """False for a VINTAGE_ONLY series (NFCI) that is not stored as first-release vintages."""
+        return series_id not in VINTAGE_ONLY or self.macro_kind(series_id) == "first_release"
+
+    def _macro_rows(self, series_id: str) -> List[Tuple[str, float, Optional[str]]]:
+        rows_fn = getattr(self.store, "macro_rows", None)
+        rows = rows_fn(series_id) if rows_fn else [(d, v, None) for d, v in self.store.macro(series_id)]
+        return sorted((d, float(v), p) for d, v, p in rows if v is not None)
+
     def macro(self, series_id: str, lag_days: Optional[int] = None, transform=None, max_age_days: int = 400) -> List[Optional[float]]:
-        """A FRED series on the calendar as it was known on each date: an observation dated d is usable from
-        d + lag. `transform(obs_list) -> obs_list` runs on the observation dates first (e.g. year-on-year)."""
+        """A FRED series on the calendar as it was known on each date.
+
+        An observation becomes visible on the first calendar date >= its publication date when the store has one
+        (first-release vintages), else on observation date + lag. Visibility is cumulative in observation order (an
+        observation counts as visible only once every earlier one is), so `transform(obs_list) -> obs_list`, which
+        runs on the observation sequence (e.g. year-on-year) and only looks back, uses only observations visible on
+        the date its output is shown. A VINTAGE_ONLY series without vintages is all None."""
         from ..data.universe import FRED_SERIES
         lag = lag_days if lag_days is not None else int((FRED_SERIES.get(series_id) or {}).get("lag_days", 1))
         key = ("macro", series_id, lag, getattr(transform, "__name__", None), max_age_days)
         with self._lock:
             if key in self._cache:
                 return self._cache[key]
-        obs = [(d, float(v)) for d, v in self.store.macro(series_id) if v is not None]
-        if transform is not None:
-            obs = transform(obs)
-        avail = sorted((_iso_add(d, lag), v, d) for d, v in obs if v is not None)
         cal = self.calendar()
         out: List[Optional[float]] = [None] * len(cal)
+        if not self.macro_usable(series_id):
+            with self._lock:
+                self._cache[key] = out
+            return out
+        rows = self._macro_rows(series_id)
+        first_vintage = min((p for _d, _v, p in rows if p), default=None)
+        visible: Dict[str, str] = {}
+        run = None
+        for d, _v, p in rows:
+            if p is None or (series_id not in VINTAGE_ONLY and p == first_vintage
+                             and (date.fromisoformat(p) - date.fromisoformat(d)).days > lag + PRE_VINTAGE_MARGIN_DAYS):
+                when = _iso_add(d, lag)
+            else:
+                when = p
+            run = when if run is None or when > run else run
+            visible[d] = run
+        obs = [(d, v) for d, v, _p in rows]
+        if transform is not None:
+            obs = transform(obs)
+        avail = sorted((visible[d], d, v) for d, v in obs if v is not None and d in visible)
         j = -1
+        best = None  # (observation date, value) of the latest observation visible so far
         for i, d in enumerate(cal):
             while j + 1 < len(avail) and avail[j + 1][0] <= d:
                 j += 1
-            if j >= 0 and (date.fromisoformat(d) - date.fromisoformat(avail[j][2])).days <= max_age_days:
-                out[i] = avail[j][1]
+                if best is None or avail[j][1] >= best[0]:
+                    best = (avail[j][1], avail[j][2])
+            if best is not None and (date.fromisoformat(d) - date.fromisoformat(best[0])).days <= max_age_days:
+                out[i] = best[1]
         with self._lock:
             self._cache[key] = out
         return out
+
+    def data_notes(self) -> List[str]:
+        """Plain-language statements of what kind of macro data the evidence rests on (for the research bundle)."""
+        from ..data.universe import FRED_SERIES
+        revised = [s for s, info in FRED_SERIES.items() if info.get("freq") != "daily"]
+        getter = getattr(self.store, "last_macro_date", None)
+        stored = [s for s in revised if getter is None or getter(s)]
+        first = [s for s in stored if self.macro_kind(s) == "first_release"]
+        latest = [s for s in stored if s not in first]
+        notes = []
+        if first:
+            since = []
+            for sid in first:
+                rows = self._macro_rows(sid)
+                since.append(f"{sid} (from {rows[0][0][:7]})" if rows else sid)
+            notes.append("Macro " + ", ".join(since) + ": first-release values (FRED/ALFRED vintages), each used from "
+                         "its actual publication date, so later revisions never reach the past. History starts where "
+                         "FRED's vintage coverage starts; earlier dates have no value.")
+        if latest:
+            notes.append("Macro " + ", ".join(latest) + ": latest revised values (no FRED_API_KEY, so no vintages), "
+                         "used after a fixed publication lag - later revisions leak into history.")
+        if not self.macro_usable("NFCI"):
+            notes.append("NFCI is excluded without first-release vintages (it is re-estimated weekly): the financial "
+                         "conditions feature and the liquidity regime are unavailable.")
+        notes.append("Daily market series (Treasury yields, spreads, breakevens, VIX, dollar) are not revised in "
+                     "practice and are used from the day after each observation.")
+        return notes
 
 
 # ------------------------------------------------------------------ transforms on observation lists

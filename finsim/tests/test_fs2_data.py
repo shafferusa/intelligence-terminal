@@ -144,6 +144,7 @@ class TestStore(TmpStoreCase):
         v0 = self.store.data_version()
         self.store.upsert_macro("DGS10", [("2024-01-03", 4.0), (dt.date(2024, 1, 2), 3.9)])
         self.assertEqual(self.store.macro("DGS10"), [("2024-01-02", 3.9), ("2024-01-03", 4.0)])
+        self.assertEqual(self.store.macro_rows("DGS10"), [("2024-01-02", 3.9, None), ("2024-01-03", 4.0, None)])
         self.assertEqual(self.store.last_macro_date("DGS10"), "2024-01-03")
         self.assertIsNone(self.store.last_macro_date("NOPE"))
         self.assertNotEqual(self.store.data_version(), v0)
@@ -583,10 +584,14 @@ class TestRefresh(TmpStoreCase):
             return companyfacts()
         self.patches = [mock.patch.object(yahoo, "fetch_history", self.fake_y),
                         mock.patch.object(fred, "fetch_series", fake_fred),
+                        mock.patch.object(fred, "fetch_first_release",
+                                          mock.Mock(side_effect=AssertionError("no key in these tests"))),
                         mock.patch.object(sec, "fetch_companyfacts", fake_cf),
-                        mock.patch.object(refresh, "_sleep", lambda s: None)]
+                        mock.patch.object(refresh, "_sleep", lambda s: None),
+                        mock.patch.dict(os.environ, {}, clear=False)]
         for p in self.patches:
             p.start()
+        os.environ.pop("FRED_API_KEY", None)  # latest-vintage mode; first releases are tested in test_fs2_vintages
 
     def tearDown(self):
         for p in reversed(self.patches):
@@ -652,6 +657,7 @@ class TestRefresh(TmpStoreCase):
                 mock.patch.object(refresh, "refresh_sec", return_value=0):
             s = refresh.refresh(self.store)
         self.assertEqual(set(s["macro"]), set(universe.FRED_SERIES))
+        self.assertEqual({self.store.macro_kind(k) for k in universe.FRED_SERIES}, {"latest_vintage"})
         self.assertEqual(set(s["synthetic"]), {"UST2Y", "UST5Y", "UST10Y", "UST30Y", "CORP_BAA"})
         self.assertEqual(len(s["fundamentals"]), 45)
         self.assertEqual(len(s["prices"]), len([a for a in universe.UNIVERSE if a["yahoo"]]))

@@ -74,8 +74,10 @@ python3 -m finsim2 serve | status | stop | phone on
 - Asset list: about 130 assets across equities, ETFs, indices, Treasuries, corporate credit, commodities, futures,
   FX and crypto. Any Yahoo symbol can be added.
 - Daily history comes from Yahoo Finance and covers each asset's full history (SPY from 1993).
-- 19 macro series come from FRED (no key needed; `FRED_API_KEY` is used if set). Each value is used only after
-  its publication lag.
+- 19 macro series come from FRED. With `FRED_API_KEY` set, the revised monthly/weekly series (CPI, unemployment,
+  industrial production, M2, NFCI, the Fed balance sheet) are first-release values used from their actual
+  publication dates, so revisions never leak into history. Without a key they are today's revised values used
+  after a fixed lag, and NFCI (re-estimated weekly) is left out; each research bundle's `data_notes` says which.
 - Point-in-time fundamentals come from SEC companyfacts, dated by filing date. The .gov user agent is the one in
   `CLAUDE.md`.
 - After the US close the server refreshes whatever is stale.

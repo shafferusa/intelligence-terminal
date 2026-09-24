@@ -7,8 +7,14 @@ the summary, never raised):
    last stored bar so the overlap can be compared with what is stored: if Yahoo has re-adjusted history since
    (split, or a dividend that rescales ``adj_close``), the whole history is re-downloaded and replaced, so returns
    never jump at the seam. No stored history -> full history.
-2. FRED series (all of ``FRED_SERIES`` plus every synthetic asset's yield series) - incremental with a 30-day
-   overlap for revisions.
+2. FRED series (all of ``FRED_SERIES`` plus every synthetic asset's yield series). Revised (non-daily) series -
+   CPI, unemployment, industrial production, M2, NFCI, the Fed balance sheet - are stored as **first releases with
+   their publication dates** when ``FRED_API_KEY`` is set: the whole series is re-downloaded when it switches kind
+   (so revised values cannot linger), incrementally afterwards (first releases never change). Without a key, and
+   for daily market series (not revised in practice), the latest vintage is used - incremental with a 30-day
+   overlap. A series already stored as first releases is left untouched when the key disappears rather than
+   mixing revised values into it (reported under ``skipped``). The kind is recorded per series
+   (``Store.macro_kind``).
 3. Synthetic TREASURY / CORP_BOND total-return indices rebuilt from their stored FRED yield.
 4. SEC companyfacts for EQUITY assets with a CIK, at most once every 7 days per asset.
 """
@@ -149,7 +155,30 @@ def refresh_yahoo(store, asset: dict, full: bool = False) -> dict:
 
 
 # ----------------------------------------------------------------------------------------------- fred / sec
+class KeptFirstRelease(Exception):
+    """A first-release series was not refreshed because FRED_API_KEY is not set (its point-in-time data is kept)."""
+
+
+def first_release_series(series: str) -> bool:
+    """True for FRED_SERIES that are revised after publication (every non-daily one)."""
+    info = FRED_SERIES.get(series)
+    return bool(info) and info.get("freq") != "daily"
+
+
 def refresh_fred(store, series: str, full: bool = False) -> int:
+    """Refresh one FRED series; returns rows changed. See the module docstring for which kind is stored."""
+    stored_kind = store.macro_kind(series)
+    if first_release_series(series) and fred.has_api_key():
+        last = None if full or stored_kind != "first_release" else store.last_macro_date(series)
+        if last is None:  # first download, --full, or switching from latest-vintage: replace everything
+            rows = fred.fetch_first_release(series)
+            if not rows:
+                raise ValueError("no first-release observations returned")
+            return store.replace_macro(series, rows, kind="first_release")
+        start = (_dt.date.fromisoformat(last) - _dt.timedelta(days=FRED_OVERLAP_DAYS)).isoformat()
+        return store.upsert_macro(series, fred.fetch_first_release(series, start))
+    if stored_kind == "first_release":
+        raise KeptFirstRelease("FRED_API_KEY not set: kept the stored first-release values")
     last = None if full else store.last_macro_date(series)
     start = None
     if last:
@@ -157,7 +186,9 @@ def refresh_fred(store, series: str, full: bool = False) -> int:
     rows = fred.fetch_series(series, start)
     if not rows and last is None:
         raise ValueError("no observations returned")
-    return store.upsert_macro(series, rows)
+    n = store.upsert_macro(series, rows)
+    store.set_macro_kind(series, "latest_vintage")
+    return n
 
 
 def _sec_recent(store, asset_id: str, today: _dt.date) -> bool:
@@ -256,7 +287,9 @@ def refresh(store, assets=None, progress=None, full: bool = False, macro=None, f
         try:
             n = refresh_fred(store, s, full=full)
             summary["macro"][s] = n
-            store.log_fetch("fred", s, "ok", f"{n} changed")
+            store.log_fetch("fred", s, "ok", f"{store.macro_kind(s)} {n} changed")
+        except KeptFirstRelease as exc:
+            summary["skipped"].append({"source": "fred", "key": s, "reason": str(exc)})
         except Exception as exc:  # noqa: BLE001
             fail("fred", s, exc)
         done += 1
@@ -359,4 +392,4 @@ def add_symbol(store, yahoo_symbol: str, asset_class: str | None = None, lookup_
 
 
 __all__ = ["refresh", "stale", "add_symbol", "total_return_index", "build_synthetic", "refresh_yahoo",
-           "refresh_fred", "refresh_sec", "last_business_day"]
+           "refresh_fred", "refresh_sec", "last_business_day", "first_release_series", "KeptFirstRelease"]

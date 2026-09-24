@@ -7,7 +7,8 @@ Each dimension has two states, decided only from data known on the date:
   inflation  high / low           CPI year on year above 3% (as published)
   growth     recession / expansion  Sahm-style unemployment gap at or above 0.5 point
   dollar     strong / weak        dollar index above its 200-day average
-  liquidity  expansion / contraction  Chicago Fed financial conditions looser than average (NFCI < 0)
+  liquidity  expansion / contraction  Chicago Fed financial conditions looser than average (NFCI < 0); only with
+                                      first-release NFCI vintages (unavailable, None, without FRED_API_KEY)
 """
 from __future__ import annotations
 

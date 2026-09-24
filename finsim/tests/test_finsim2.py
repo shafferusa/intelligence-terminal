@@ -350,6 +350,9 @@ class Routes(unittest.TestCase):
 
     def test_asset_bundle_has_the_standard_output(self):
         b = self.get("asset/SPY")
+        notes = b["data_notes"]                                  # latest-vintage macro, stated as such
+        self.assertTrue(any("latest revised values" in n for n in notes))
+        self.assertTrue(any("NFCI is excluded" in n for n in notes))
         self.assertEqual(set(b["horizons"]) >= {"1D", "1W", "1M", "3M", "6M", "12M"}, True)
         for hs in b["horizons"].values():
             if hs.get("score") is not None:
