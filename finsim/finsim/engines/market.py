@@ -1095,6 +1095,14 @@ class MarketEngine:
         self.ensure_listings(d)
         self.mbs.step(d, curve, self.securities)
         for t, b in bars.items():
+            sec = self.securities.get(t)
+            k = float(getattr(sec, "yahoo_scale", 1.0) or 1.0) if sec is not None else 1.0
+            prev = self._prev_close.get(t)
+            if k != 1.0 and prev and b.close and float(b.close) > float(prev) / (k * 5):
+                # a close stored in pence by a save made before 2026-09-24 (see World._fix_quote_scale): bring it to pounds
+                kk = Decimal(repr(k))
+                b = Bar(b.date, qprice(b.open * kk), qprice(b.high * kk), qprice(b.low * kk), qprice(b.close * kk), b.volume,
+                        qprice(b.bid * kk) if b.bid is not None else b.bid, qprice(b.ask * kk) if b.ask is not None else b.ask)
             self.history.setdefault(t, []).append(b)
             self._prev_close[t] = b.close
         self.curves.append(curve)

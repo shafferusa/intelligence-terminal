@@ -116,7 +116,8 @@ class Service:
         if market_source == "REAL":
             from ..engines.realfeed import RealFeed, equity_symbols_for, equity_scales_for
             from ..engines.market import build_universe
-            feed = RealFeed(equity_symbols_for(build_universe(date.today(), int(seed))))
+            uni = build_universe(date.today(), int(seed))
+            feed = RealFeed(equity_symbols_for(uni), scales=equity_scales_for(uni))      # London quotes in pence, stored in pounds
             feed.refresh("1y", force=True)
             latest = feed.latest_date()
             if not latest:
@@ -361,6 +362,7 @@ class Service:
         sec = w.security(security_id)
         execution = (execution or "NEXT_UPDATE").upper()
         fx_trade = None
+        fx_note = None
         settle = (settle_ccy or "").upper() or None
         at = self.now() if self.now else None
         try:
@@ -381,11 +383,15 @@ class Service:
                     pv = self.order_preview(world_id, portfolio_id, {"security_id": security_id, "side": side, "quantity": quantity, "limit_price": limit_price, "settle_ccy": settle, "execution": execution})
                     need = D(str(pv["cash_needed"]))
                 if need < 0:                                      # a sale whose proceeds go into another currency: sell them forward into it at spot
-                    fx_trade = w.fx_spot(portfolio_id, settle, sec.currency, -need, "SELL", execution)
+                    try:
+                        fx_trade = w.fx_spot(portfolio_id, settle, sec.currency, -need, "SELL", execution)
+                    except CommandError as e:                      # the sale stands; its proceeds stay in their own currency
+                        fx_note = f"the sale is placed; its {sec.currency} proceeds could not be converted yet ({e}); convert them once it fills"
         finally:
             w.flush()
         out = self.order(world_id, portfolio_id, o.id)
         out["fx"] = jsonable(asdict(fx_trade)) if fx_trade is not None else None
+        out["fx_note"] = fx_note
         out["execution"] = execution
         out["trade"] = jsonable(asdict(pf.trades[o.trade_ids[-1]])) if o.trade_ids else None
         return out
@@ -1720,7 +1726,7 @@ class Service:
         for s in w.securities.values():                      # one pass over the (large) option universe, not one per underlying
             if s.is_option and not s.expired:
                 counts[s.underlying] = counts.get(s.underlying, 0) + 1
-        from ..engines.vol import INDICES, is_index, index_source, index_factor
+        from ..engines.vol import INDICES, is_index, index_source, index_factor, option_multiplier, option_venue
         index_names = {"SPX": "S&P 500 index", "NDX": "Nasdaq-100 index", "RUT": "Russell 2000 index"}
         for under in w.options.optionable():
             src = w.securities.get(index_source(under))
@@ -1732,7 +1738,9 @@ class Service:
             out.append({"underlying": under, "name": name, "level": w.options.underlying_level(under),
                         "atm_iv": st.atm, "skew": st.skew, "term": st.term, "realized_20d": w.market.realized_vol(src.id), "iv_rank": rank["iv_rank"] if rank else None,
                         "style": "EUROPEAN/CASH" if is_index(under) else "AMERICAN/PHYSICAL", "dividend_yield": src.dividend_yield,
-                        "contracts": counts.get(under, 0), "is_index": is_index(under), "source": src.id if is_index(under) else None})
+                        "contracts": counts.get(under, 0), "is_index": is_index(under), "source": src.id if is_index(under) else None,
+                        "currency": src.currency, "contract_size": (1 if src.is_future else (100 if is_index(under) else option_multiplier(src))),
+                        "exchange": ("Cboe Options Exchange" if is_index(under) else (f"{src.exchange or 'CME'} options" if src.is_future else option_venue(src)))})
         return jsonable(out)
 
     def option_chain(self, world_id: str, underlying: str, expiry: Optional[str] = None) -> Dict:

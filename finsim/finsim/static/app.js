@@ -551,7 +551,7 @@
     const u = unders.find(x => x.underlying === under) || {};
     const dte = e => Math.round((new Date(e + 'T00:00:00Z') - new Date(state.world.current_date + 'T00:00:00Z')) / 86400000);
     const expLabel = e => `${new Date(e + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })} · ${dte(e)}d`;
-    const underSel = (id) => `<select id="${id}">${unders.map(x => `<option value="${x.underlying}" ${x.underlying === under ? 'selected' : ''}>${x.underlying} — ${esc(x.name)}</option>`).join('')}</select><input class="opQ" placeholder="ticker ↵" style="width:96px" title="jump to another underlying's chain (Enter)">`;
+    const underSel = (id) => `<select id="${id}">${unders.map(x => `<option value="${x.underlying}" ${x.underlying === under ? 'selected' : ''}>${x.underlying} — ${esc(x.name)}${x.currency && x.currency !== 'USD' ? ` · ${x.currency}, ${x.contract_size} per contract, ${esc(x.exchange || '')}` : ''}</option>`).join('')}</select><input class="opQ" placeholder="ticker ↵" style="width:96px" title="jump to another underlying's chain (Enter)">`;
     const expPills = ch ? `<div class="row" style="gap:4px;flex-wrap:wrap">${ch.expiries.map(e => `<a class="btn ${e === ch.expiry ? 'primary' : ''}" data-exp="${e}" title="${e}">${expLabel(e)}</a>`).join('')}</div>` : '';
     const posOf = q => q && q.position ? Object.values(q.position).reduce((a, b) => a + Number(b), 0) : 0;
     let body = '';

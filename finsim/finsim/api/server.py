@@ -294,10 +294,13 @@ class Router:
 LOOPBACK = ("127.0.0.1", "::1", "::ffff:127.0.0.1")
 
 
-def make_handler(router: Router, access_key: str = None, trust_loopback: bool = True):
+def make_handler(router: Router, access_key: str = None, trust_loopback: bool = True, static_dir: str = None):
     """`access_key`: when set, every /api call from a non-loopback client must carry it (header X-FinSim-Key or
     ?key=); the page and its assets are served to anyone who can reach the port, the data is not. The desktop
-    launcher on the same machine is exempt (`trust_loopback`); /api/shutdown is loopback-only regardless."""
+    launcher on the same machine is exempt (`trust_loopback`); /api/shutdown is loopback-only regardless.
+    `static_dir`: where the page and its assets come from (FinSim2 serves its own UI on the same API)."""
+    root = os.path.abspath(static_dir or STATIC_DIR)
+
     class Handler(BaseHTTPRequestHandler):
         def _send(self, code: int, payload, ctype: str = "application/json"):
             data = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
@@ -311,9 +314,9 @@ def make_handler(router: Router, access_key: str = None, trust_loopback: bool = 
         def _static(self, path: str):
             if path in ("/", ""):
                 path = "/index.html"
-            fp = os.path.normpath(os.path.join(STATIC_DIR, path.lstrip("/")))
-            if not fp.startswith(STATIC_DIR) or not os.path.isfile(fp):
-                fp = os.path.join(STATIC_DIR, "index.html")
+            fp = os.path.normpath(os.path.join(root, path.lstrip("/")))
+            if not fp.startswith(root) or not os.path.isfile(fp):
+                fp = os.path.join(root, "index.html")
             ctype = mimetypes.guess_type(fp)[0] or "application/octet-stream"
             with open(fp, "rb") as f:
                 self._send(200, f.read(), ctype)
@@ -449,7 +452,7 @@ def start_scheduler(router: Router, interval: int = 60) -> threading.Thread:
     return Scheduler(router, interval).start()
 
 
-def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000, access_key: str = None):
+def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000, access_key: str = None, static_dir: str = None, router_cls=None, name: str = "finsim terminal"):
     from ..store import EventStore
     get_logger("finsim", level=os.environ.get("FINSIM_LOG_LEVEL", "INFO"))   # the server logs at INFO by default; libraries stay quiet
     local_only = host in LOOPBACK + ("localhost",)
@@ -459,13 +462,13 @@ def serve(db_path: str, host: str = "127.0.0.1", port: int = 8000, access_key: s
     if snap:
         log.info("saves backed up to %s before opening (the newest ten are kept)", snap)
     service = Service(EventStore(db_path))
-    router = Router(service)
+    router = (router_cls or Router)(service)
     start_scheduler(router)
-    httpd = ThreadingHTTPServer((host, port), make_handler(router, access_key))
+    httpd = ThreadingHTTPServer((host, port), make_handler(router, access_key, static_dir=static_dir))
     router.shutdown = lambda: threading.Thread(target=httpd.shutdown, daemon=True).start()
     reach = "this machine only" if local_only else "your network, access key required"
-    log.info("finsim terminal: http://%s:%s/  (db: %s; %s) — career worlds update daily at their configured time", host, port, db_path, reach)
-    print(f"finsim terminal: http://{host}:{port}/  (db: {db_path}; {reach}) — career worlds update daily at their configured time")
+    log.info("%s: http://%s:%s/  (db: %s; %s) — career worlds update daily at their configured time", name, host, port, db_path, reach)
+    print(f"{name}: http://{host}:{port}/  (db: {db_path}; {reach}) — career worlds update daily at their configured time")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

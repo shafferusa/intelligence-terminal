@@ -297,7 +297,11 @@ class TradingEngine:
                     px = o.limit_price if o.order_type in ("LIMIT", "TAKE_PROFIT") and o.limit_price else (bar.bid if bar else ZERO)
                     rem = o.quantity - o.filled_quantity
                     working -= money(rem * px * self._unit(sec)) - self._commission(sec, rem)
-        return cash + recv - pay - working
+        # spot FX already dealt and settling: the currency bought arrives, the currency sold leaves (a ticket paid in
+        # another currency deals the conversion first, and the purchase counts on it)
+        fx_in = sum((t.buy_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.buy_ccy == ccy), ZERO)
+        fx_out = sum((t.sell_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.sell_ccy == ccy), ZERO)
+        return cash + recv - pay - working + fx_in - fx_out
 
     # ------------------------------------------------------------------ execution during the daily update
     def _commission(self, sec: Security, q: Decimal) -> Decimal:

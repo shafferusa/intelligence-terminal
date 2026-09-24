@@ -95,6 +95,11 @@ class SettlementEngine:
                     return None
                 if si.currency == pf.base_currency and cause is not None and self.w.prime.fund_settlement(pf, shortfall, si.id, cause):
                     return None
+                if si.currency != pf.base_currency and cause is not None:
+                    # the custodian's overdraft in that currency, when the book's own base cash covers it (a conversion sized
+                    # at the ticket price falls a little short of the fill); it accrues overdraft interest until covered
+                    if self.w.trading.projected_cash(pf, pf.base_currency) >= shortfall * self.w.fx.k(si.currency):
+                        return None
                 return f"insufficient settled {si.currency} cash: need {si.cash_amount:,.2f}, have {bal:,.2f}; prime broker would not finance the shortfall"
         else:
             pos = pf.position(si.security_id)

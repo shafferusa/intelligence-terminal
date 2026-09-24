@@ -311,9 +311,29 @@ class World:
         return ev
 
     def _h_real_history(self, ev: Event) -> None:
-        h = ev.payload["history"]
+        h = self._fix_quote_scale(ev.payload["history"])
         self.market.real_history = h
         self.market.apply_real_history(h)
+
+    def _fix_quote_scale(self, h: Dict) -> Dict:
+        """Saves made before 2026-09-24 stored London closes in pence (the feed that built them had no quote scales).
+        A series sitting far above the save's own generated prehistory (which is in pounds) is brought to pounds;
+        deterministic, so replay gives the same prices."""
+        eq = h.get("equities") or {}
+        out = None
+        for sid, series in eq.items():
+            sec = self.securities.get(sid)
+            k = float(getattr(sec, "yahoo_scale", 1.0) or 1.0) if sec is not None else 1.0
+            bars = self.market.history.get(sid)
+            if k == 1.0 or not series or not bars:
+                continue
+            vals = sorted(series.values())
+            mid = vals[len(vals) // 2]
+            gen = float(bars[len(bars) // 2].close)
+            if gen > 0 and mid > gen / (k * 5):            # pence (100x) rather than pounds: the gap is far beyond any move
+                out = out or {**h, "equities": dict(eq)}
+                out["equities"][sid] = {d: v * k for d, v in series.items()}
+        return out or h
 
     def _h_real_macro(self, ev: Event) -> None:
         self.market.real_macro = ev.payload.get("series") or {}
@@ -684,9 +704,21 @@ class World:
         if report["migrated"]:
             get_logger("world").info("world %s: migrated save v%s -> v%s (%s)", world_id, report["from"], report["to"], "; ".join(report["notes"]))
         w.replay(events, strict=strict)
+        w._relist_orphans()
         w.save_version = report["to"]
         w.check_integrity()
         return w
+
+    def _relist_orphans(self) -> None:
+        """Option contracts an order, trade or position refers to but today's chains do not list (a chain relisted
+        around a repaired price) are listed again from their ids, so every book still resolves what it holds."""
+        refs = set()
+        for pf in self.portfolios.values():
+            refs.update(o.security_id for o in pf.orders.values())
+            refs.update(t.security_id for t in pf.trades.values())
+            refs.update(pf.positions)
+        for sid in sorted(refs - set(self.securities)):
+            self.options.list_contract(sid)
 
     def create_portfolio(self, name: str, portfolio_type: str = "PERSONAL", capital: Decimal = D(10_000_000), currency: str = "USD",
                          benchmark: Optional[str] = "SPY", realism: str = "PROFESSIONAL", mode: str = "SANDBOX", job: str = "SANDBOX",
@@ -922,7 +954,8 @@ class World:
     def issuer_default(self, reference: str, recovery: float, cause: Optional[Event], forced: bool = False) -> Event:
         ev = self.emit(E.ISSUER_DEFAULTED, {"reference": reference, "issuer": self.securities[reference].issuer, "recovery": recovery, "forced": forced},
                        cause_id=cause.id if cause else None)
-        self.otc.credit_event(reference, ev, recovery)
+        if self.securities[reference].asset_class == "CORP_BOND":     # single-name CDS reference corporates; a structured tranche just writes down
+            self.otc.credit_event(reference, ev, recovery)
         self.corporate.default_bond(reference, recovery, ev)
         if forced:
             from .engines.market import BOND_ISSUER_TICKER

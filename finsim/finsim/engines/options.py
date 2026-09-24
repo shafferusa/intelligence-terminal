@@ -22,6 +22,8 @@ trades in the underlying at the strike that settle through custody and cash.
 from __future__ import annotations
 
 import math
+import re
+import zlib
 import random
 from datetime import date, timedelta
 from decimal import Decimal
@@ -38,9 +40,10 @@ MULTIPLIER = 100
 INDEX_ID = "SPX"
 INDEX_SOURCE = "SPY"
 INDEX_FACTOR = 10.0
-from .vol import INDICES, is_index, index_source, index_factor  # noqa: E402
+from .vol import INDICES, is_index, index_source, index_factor, has_listed_options, option_multiplier, option_venue, is_core_optionable  # noqa: E402
 CRYPTO_MULTIPLIER = 1
 STRIKE_RANGE = 6
+LITE_STRIKE_RANGE = 4        # mid and small caps, and foreign names: nine strikes
 OPTION_COMMISSION = D("0.65")
 REGIME_MARGIN_MULT = {"NORMAL_GROWTH": 1.0, "RATE_CUTTING": 1.0, "RATE_HIKING": 1.1, "RECESSION": 1.25, "LIQUIDITY_STRESS": 1.5}
 SPREAD_BY_TIER = {"LARGE": 0.03, "MID": 0.06, "SMALL": 0.12}
@@ -72,7 +75,12 @@ def third_friday(year: int, month: int) -> date:
     return d
 
 
-def strike_step(level: float) -> float:
+def strike_step(level: float, ccy: str = "USD") -> float:
+    if ccy != "USD" and level >= 5000:        # yen, won, rupee and Taiwan-dollar share prices: strikes about 1-2% apart
+        for top, step in ((10_000, 100.0), (50_000, 500.0), (100_000, 1000.0), (500_000, 5000.0)):
+            if level < top:
+                return step
+        return 10_000.0
     if level < 25:
         return 1.0
     if level < 100:
@@ -144,8 +152,9 @@ class OptionsEngine:
 
     # ------------------------------------------------------------------ underlyings & listings
     def optionable(self) -> List[str]:
-        out = [s.id for s in self.w.securities.values() if s.asset_class in ("EQUITY", "ETF", "REIT", "ADR", "CRYPTO") and s.liquidity_tier == "LARGE" and s.currency == "USD"
-               and s.shares_outstanding and (s.asset_class != "ETF" or s.adv >= 500_000) and (s.asset_class != "CRYPTO" or s.adv * float(self.w.market.last_bar(s.id).close if self.w.market.history.get(s.id) else 0) >= 1e9)]
+        out = [s.id for s in self.w.securities.values() if has_listed_options(s)
+               or (s.asset_class == "CRYPTO" and s.liquidity_tier == "LARGE" and s.currency == "USD" and s.shares_outstanding
+                   and s.adv * float(self.w.market.last_bar(s.id).close if self.w.market.history.get(s.id) else 0) >= 1e9)]
         return sorted(out) + [i for i in INDICES if INDICES[i][0] in self.w.securities] + self.optionable_futures()
 
     def optionable_futures(self) -> List[str]:
@@ -224,8 +233,12 @@ class OptionsEngine:
                 continue
             level = self.underlying_level(under)
             fut = self.is_future_underlying(under)
-            step = (FUT_STRIKE_STEP.get(w.securities[under].underlying) or strike_step_future(level)) if fut else strike_step(level)
+            src_sec = w.securities[index_source(under)]
+            ccy = src_sec.currency
+            step = (FUT_STRIKE_STEP.get(w.securities[under].underlying) or strike_step_future(level)) if fut else strike_step(level, ccy)
             atm = round(level / step) * step
+            core = fut or is_index(under) or src_sec.asset_class == "CRYPTO" or is_core_optionable(src_sec)
+            srange = STRIKE_RANGE if core else LITE_STRIKE_RANGE
             if fut:
                 fsec = w.securities[under]
                 exps = [self.future_option_expiry(under)]
@@ -234,9 +247,11 @@ class OptionsEngine:
                 if under not in w.market.vol.state:
                     w.market.vol.init_underlying(under, fsec.sigma_annual)
             else:
-                exps = self.expiries(d)
+                exps = self.expiries(d) if core else self.expiries(d)[:3]
+                if under not in w.market.vol.state:
+                    w.market.vol.init_underlying(under, self.structural_vol(under), is_index=is_index(under))
             for exp in exps:
-                for i in range(-STRIKE_RANGE, STRIKE_RANGE + 1):
+                for i in range(-srange, srange + 1):
                     k = atm + i * step
                     if k <= 0:
                         continue
@@ -245,25 +260,7 @@ class OptionsEngine:
                         if cid in w.securities:
                             continue
                         self._seq += 1
-                        european = is_index(under)
-                        crypto = (not fut and not european and w.securities[under].asset_class == "CRYPTO")
-                        if fut:
-                            deliverable = {"security_id": under, "quantity": 1, "future": True}
-                            multiplier = fsec.multiplier
-                        else:
-                            deliverable = ({"cash": True, "index": under, "source": index_source(under), "factor": index_factor(under)} if european
-                                           else {"security_id": under, "quantity": CRYPTO_MULTIPLIER if crypto else MULTIPLIER})
-                            multiplier = CRYPTO_MULTIPLIER if crypto else MULTIPLIER
-                        w.securities[cid] = Security(
-                            id=cid, name=f"{under} {exp.isoformat()} {k:g} {'Call' if ot == 'C' else 'Put'}", asset_class="OPTION", market="US_OPTIONS",
-                            currency="USD", country="US", sector="Options", isin=f"XO{self._seq:09d}O", cusip=f"O{self._seq:08d}", adv=self._listing_volume(under, k, level, exp, d),
-                            spread_bps=0.0, liquidity_tier=w.securities[index_source(under)].liquidity_tier, underlying=under,
-                            underlying_class="OPTION", multiplier=multiplier, tick_size=(fsec.tick_size if fut else 0.01), expiry=exp.isoformat(), option_type=ot, strike=float(k),
-                            exercise_style="EUROPEAN" if european else "AMERICAN", settlement_style="CASH" if european else "PHYSICAL",
-                            deliverable=deliverable,
-                            exchange="CME (NYMEX/COMEX options)" if fut else ("Deribit-style crypto options" if crypto else "Cboe Options Exchange"), listed=d.isoformat(),
-                            index_level_source=index_source(under) if european else None,
-                            index_factor=index_factor(under) if european else 1.0, lot_size=1, beta=0.0, sigma_annual=0.0)
+                        w.securities[cid] = self._contract(under, exp, ot, k, d, level, f"XO{self._seq:09d}O", f"O{self._seq:08d}")
                         added += 1
         for sec in w.securities.values():
             if sec.is_option and not sec.expired and sec.expiry and date.fromisoformat(sec.expiry) < d:
@@ -271,6 +268,58 @@ class OptionsEngine:
         self._bar_cache.clear()
         self._quote_cache.clear()
         return added
+
+    def _contract(self, under: str, exp: date, ot: str, k: float, d: date, level: float, isin: str, cusip: str) -> Security:
+        """One listed contract on `under` (a stock, fund, index, coin or future), in the underlying's currency."""
+        w = self.w
+        fut = self.is_future_underlying(under)
+        fsec = w.securities[under] if fut else None
+        src_sec = w.securities[index_source(under)]
+        ccy = src_sec.currency
+        european = is_index(under)
+        crypto = (not fut and not european and w.securities[under].asset_class == "CRYPTO")
+        if fut:
+            deliverable = {"security_id": under, "quantity": 1, "future": True}
+            multiplier = fsec.multiplier
+        else:
+            multiplier = CRYPTO_MULTIPLIER if crypto else (MULTIPLIER if european else option_multiplier(src_sec))
+            deliverable = ({"cash": True, "index": under, "source": index_source(under), "factor": index_factor(under)} if european
+                           else {"security_id": under, "quantity": multiplier})
+        return Security(
+            id=contract_id(under, exp, ot, k), name=f"{under} {exp.isoformat()} {k:g} {'Call' if ot == 'C' else 'Put'}", asset_class="OPTION", market="US_OPTIONS",
+            currency=ccy, country=("US" if ccy == "USD" else src_sec.country), sector="Options", isin=isin, cusip=cusip, adv=self._listing_volume(under, k, level, exp, d),
+            spread_bps=0.0, liquidity_tier=src_sec.liquidity_tier, underlying=under,
+            underlying_class="OPTION", multiplier=multiplier, tick_size=(fsec.tick_size if fut else 0.01), expiry=exp.isoformat(), option_type=ot, strike=float(k),
+            exercise_style="EUROPEAN" if european else "AMERICAN", settlement_style="CASH" if european else "PHYSICAL",
+            deliverable=deliverable,
+            exchange=(fsec.exchange or "CME") + " options" if fut else ("Deribit-style crypto options" if crypto else ("Cboe Options Exchange" if european else option_venue(src_sec))), listed=d.isoformat(),
+            index_level_source=index_source(under) if european else None,
+            index_factor=index_factor(under) if european else 1.0, lot_size=1, beta=0.0, sigma_annual=0.0)
+
+    CONTRACT_RE = re.compile(r"^(?P<under>.+?)(?P<exp>\d{6})(?P<ot>[CP])(?P<k>\d+(?:_\d+)?)$")
+
+    def list_contract(self, cid: str) -> Optional[Security]:
+        """List a contract from its id alone (an order or position that refers to one the chain no longer carries, e.g.
+        after a save's prices were repaired). None when the id is not an option on something listed."""
+        w = self.w
+        if cid in w.securities:
+            return w.securities[cid]
+        m = self.CONTRACT_RE.match(cid)
+        if not m or m.group("under") not in w.securities and not is_index(m.group("under")):
+            return None
+        under = m.group("under")
+        try:
+            exp = date(2000 + int(m.group("exp")[:2]), int(m.group("exp")[2:4]), int(m.group("exp")[4:]))
+        except ValueError:
+            return None
+        k = float(m.group("k").replace("_", "."))
+        level = self.underlying_level(under) if w.market.history.get(index_source(under)) else k
+        sec = self._contract(under, exp, m.group("ot"), k, w.current_date, level or k, f"XR{zlib.crc32(cid.encode()) % 10**9:09d}R", f"R{zlib.crc32(cid.encode()) % 10**8:08d}")
+        sec.expired = exp < w.current_date
+        w.securities[cid] = sec
+        if under not in w.market.vol.state:
+            w.market.vol.init_underlying(under, self.structural_vol(under), is_index=is_index(under))
+        return sec
 
     def _listing_volume(self, under: str, k: float, level: float, exp: date, d: date) -> int:
         rng = random.Random(f"{self.w.seed}|ovol|{under}|{exp}|{k}")
@@ -285,14 +334,16 @@ class OptionsEngine:
         return max(5, int(base * math.exp(-8 * dist) * near * rng.uniform(0.6, 1.4)))
 
     # ------------------------------------------------------------------ quotes
-    def curve_rate(self, T: float) -> float:
-        return interp_rate(self.w.market.curve(), max(0.02, T))
+    def curve_rate(self, T: float, ccy: str = "USD") -> float:
+        """The discount rate for tenor T in the option's currency (a euro option discounts on the euro curve)."""
+        curve = self.w.market.curve() if ccy == "USD" else self.w.market.curve_for_ccy(ccy)
+        return interp_rate(curve, max(0.02, T))
 
     def model_inputs(self, sec: Security, S: Optional[float] = None) -> Tuple[float, float, float, float, float]:
         w = self.w
         S = S if S is not None else self.underlying_level(sec.underlying)
         T = max(0.0, (date.fromisoformat(sec.expiry) - w.current_date).days / 365.0)
-        r = self.curve_rate(T)
+        r = self.curve_rate(T, sec.currency)
         q = r if is_fut_opt(sec) else self.underlying_yield(sec.underlying)
         F = S * math.exp((r - q) * T)
         sigma = w.market.vol.iv(sec.underlying, sec.strike, F, T) if T > 0 else w.market.vol.state[sec.underlying].atm
@@ -392,7 +443,7 @@ class OptionsEngine:
         grid = []
         for e in exps[:4]:
             T = max(1 / 365, (e - w.current_date).days / 365)
-            r = self.curve_rate(T)
+            r = self.curve_rate(T, w.securities[index_source(under)].currency)
             F = S * math.exp((r - self.underlying_yield(under)) * T)
             row = {"expiry": e.isoformat(), "points": []}
             for mny in (0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2):
@@ -458,9 +509,15 @@ class OptionsEngine:
         detail: List[Dict] = []
         for under, items in by_under.items():
             S = D(repr(self.underlying_level(under)))
+            ccy = items[0][0].currency
+            kx = w.fx.k(ccy) if ccy != "USD" else D(1)      # requirements are worked out in the contract's currency and held in dollars
+            n_detail = len(detail)
             if self.is_future_underlying(under):
-                total += self._futures_option_margin(pf, under, items, S, mult, detail)
+                total += money(self._futures_option_margin(pf, under, items, S, mult, detail) * kx)
+                for row in detail[n_detail:]:
+                    row["currency"] = ccy
                 continue
+            local_start = total
             shares = ZERO
             if not is_index(under) and under in pf.positions:
                 shares = max(ZERO, pf.positions[under].settled_quantity + pf.positions[under].pending_receive - pf.positions[under].pending_deliver
@@ -518,8 +575,12 @@ class OptionsEngine:
                     req_unit = max(prem + S * D("0.20") - otm, prem + K * D("0.10"))
                     req = money(req_unit * items_left * cm(sec) * D(str(mult)))
                     detail.append({"underlying": under, "kind": "NAKED_PUT", "contract": sec.id, "contracts": items_left, "requirement": req,
-                                   "note": f"premium + 20% underlying − OTM (floor 10% of strike), × regime {mult}; cash-secured if cash ≥ strike × 100"})
+                                   "note": f"premium + 20% underlying − OTM (floor 10% of strike), × regime {mult}; cash-secured if cash ≥ strike × {cm(sec)}"})
                     total += req
+            if ccy != "USD":
+                total = local_start + money((total - local_start) * kx)
+                for row in detail[n_detail:]:
+                    row["currency"] = ccy
         return total, detail
 
     def _futures_option_margin(self, pf: Portfolio, under: str, items, S: Decimal, mult: float, detail: List[Dict]) -> Decimal:
@@ -755,7 +816,7 @@ class OptionsEngine:
             legs.append({"security_id": cid, "side": side, "ratio": ratio, "quantity": n * ratio})
         if needs_shares:
             have = pf.positions[underlying].quantity if underlying in pf.positions else ZERO
-            unit = 1 if self.is_future_underlying(underlying) else MULTIPLIER
+            unit = 1 if self.is_future_underlying(underlying) else (MULTIPLIER if is_index(underlying) else option_multiplier(w.securities[underlying]))
             if have < n * unit:
                 raise CommandError(f"{st} needs {n * unit:,} {'contracts' if unit == 1 else 'shares'} of {underlying} (have {have:,})")
         # margin/affordability check on the whole package
@@ -984,8 +1045,9 @@ class OptionsEngine:
                                 lot.cost_per_unit = qprice(lot.cost_per_unit / ratio)
                         self._scale_open_settlements(pf, c.id, ratio)
                 else:
-                    c.deliverable = {**c.deliverable, "quantity": int(MULTIPLIER * float(ratio))}
-                    c.multiplier = float(MULTIPLIER * float(ratio))
+                    lot = option_multiplier(w.securities[sid]) if sid in w.securities else MULTIPLIER
+                    c.deliverable = {**c.deliverable, "quantity": int(lot * float(ratio))}
+                    c.multiplier = float(lot * float(ratio))
                 w.derive(E.CONTRACT_ADJUSTED, {"security_id": c.id, "underlying": sid, "ratio": float(ratio), "old_strike": old_strike, "new_strike": c.strike,
                                                "deliverable": c.deliverable, "note": "contracts multiplied" if whole else "deliverable adjusted"}, ev)
         self._bar_cache.clear()

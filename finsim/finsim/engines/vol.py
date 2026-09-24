@@ -116,10 +116,43 @@ def index_factor(under: str) -> float:
     return INDICES[under][1] if under in INDICES else 1.0
 
 
+# single-stock options outside the US: country -> (exchange, shares per contract). Saudi names have no listed options.
+OPTION_VENUES = {"DE": ("Eurex", 100), "FR": ("Eurex", 100), "NL": ("Eurex", 100), "CH": ("Eurex", 100), "IT": ("Eurex", 100), "ES": ("Eurex", 100),
+                 "GB": ("ICE Futures Europe", 1000), "JP": ("Osaka Exchange", 100), "HK": ("HKEX", 100), "KR": ("KRX", 10),
+                 "TW": ("TAIFEX", 2000), "IN": ("NSE", 500), "AU": ("ASX", 100)}
+# Hong Kong contracts are one board lot, which differs by stock
+OPTION_LOT = {"9988-HK": 500, "1299-HK": 1000, "0941-HK": 500}
+
+
+def has_listed_options(s) -> bool:
+    """Whether the real market lists options on this stock or fund: every US-listed stock, REIT and ADR in the universe,
+    every US fund that trades at least 100,000 shares a day, and foreign stocks where their home exchange lists them."""
+    if s.asset_class not in ("EQUITY", "ETF", "REIT", "ADR") or not s.shares_outstanding:
+        return False
+    if s.currency == "USD":
+        return s.asset_class != "ETF" or s.adv >= 100_000
+    return s.country in OPTION_VENUES
+
+
+def option_multiplier(s) -> int:
+    """Shares per contract: 100 in the US, the home exchange's contract size abroad."""
+    if s.currency == "USD":
+        return 100
+    return OPTION_LOT.get(s.id, OPTION_VENUES.get(s.country, ("", 100))[1])
+
+
+def option_venue(s) -> str:
+    return "Cboe Options Exchange" if s.currency == "USD" else OPTION_VENUES.get(s.country, ("local exchange", 100))[0]
+
+
+def is_core_optionable(s) -> bool:
+    """The deep chains (six expiries, thirteen strikes): large US names. Everything else lists three monthlies, nine strikes."""
+    return s.currency == "USD" and s.liquidity_tier == "LARGE"
+
+
 def optionable_underlyings(securities: Dict) -> List[str]:
-    """Underlyings that carry a listed option chain and a vol surface (large/mid caps plus the cash index)."""
-    out = [s.id for s in securities.values() if s.asset_class in OPTIONABLE_CLASSES and s.liquidity_tier == "LARGE" and s.shares_outstanding and s.currency == "USD"
-           and (s.asset_class != "ETF" or s.adv >= 500_000)]
+    """Underlyings that carry a listed option chain and a vol surface (stocks and funds with listed options, plus the cash indices)."""
+    out = [s.id for s in securities.values() if has_listed_options(s)]
     return sorted(out) + [i for i in INDICES if INDICES[i][0] in securities]
 
 

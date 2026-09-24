@@ -122,7 +122,8 @@ class FXEngine:
         avail = pf.cash_account(sell).balance
         pending_out = sum((t.sell_amount for t in pf.fx_trades.values() if t.status == "PENDING" and t.sell_ccy == sell), ZERO)
         if sell == pf.base_currency:
-            avail = w.trading.projected_cash(pf, sell)
+            avail = w.trading.projected_cash(pf, sell)            # already net of spot deals still settling
+            pending_out = ZERO
         if _routed:                                              # the dollars arrive from the other leg on the same day
             avail += q["sell_amount"]
         if avail - pending_out < q["sell_amount"]:
