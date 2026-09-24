@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-23T20:55:00Z",
+ "fetched_at": "2026-09-24T10:55:00Z",
  "treasury_par_curve": {
   "as_of": "2026-09-23 EOD official",
   "curve": {
@@ -21,10 +21,10 @@
   "2s10s_bp": 26,
   "3m10y_bp": 92,
   "5s30s_bp": 41,
-  "note": "Fresh Sept 23 EOD curve. Broad parallel shift up: 10Y +15bp, 2Y +14bp to +16bp at the 5Y, following a hot flash PMI, hawkish Barr remarks and a weak 5-year auction (2.212 bid-to-cover, 3.1bp tail)."
+  "note": "Fresh Sept 23 EOD curve. Broad parallel shift up: 10Y +15bp, 2Y +14bp to +16bp at the 5Y, following a hot flash PMI, hawkish Barr remarks and a weak 5-year auction (2.212 bid-to-cover, 3.1bp tail). AM run (Sept 24): no fresher curve posted pre-open; Sept 23 EOD remains the latest."
  },
  "fred": {
-  "as_of": "2026-09-23 pm run: T10Y2Y/T10YIE rolled to fresh 2026-09-22 obs, BAMLH0A0HYM2 rolled to 2026-09-22 (widened to 2.68 from 2.66) and appended to hy-oas.csv; DGS2/DGS10/DFII10/SOFR still show 2026-09-22, no fresher obs posted intraday",
+  "as_of": "2026-09-24 am run: T10Y2Y and T10YIE rolled to fresh 2026-09-23 obs (0.26, 2.35); DGS2/DGS10/DFII10/SOFR/BAMLH0A0HYM2 still show 2026-09-22, no fresher obs posted yet; BAMLH0A0HYM2 unchanged at 2.68, already appended to hy-oas.csv by the prior run.",
   "series": {
    "CPIAUCSL": {
     "value": 334.131,
@@ -47,8 +47,8 @@
     "date": "2026-08-01"
    },
    "T10Y2Y": {
-    "value": 0.25,
-    "date": "2026-09-22"
+    "value": 0.26,
+    "date": "2026-09-23"
    },
    "DGS2": {
     "value": 4.71,
@@ -59,8 +59,8 @@
     "date": "2026-09-22"
    },
    "T10YIE": {
-    "value": 2.33,
-    "date": "2026-09-22"
+    "value": 2.35,
+    "date": "2026-09-23"
    },
    "DFII10": {
     "value": 2.63,
@@ -83,7 +83,7 @@
   "vix3m": 17.61,
   "as_of": "2026-09-22 EOD official (last trade 16:15:01 ET) -- Cboe's delayed-quote feed had not posted Sept 23's settlement at the time this run gathered data; carried forward as the most recent available value, per SR SS2 cached-fallback rule",
   "term_structure": "VIX9D < VIX < VIX3M -- normal contango (as of the last posted value)",
-  "note": "Stale by one session; today's equity decline and yield spike make a higher print likely once Cboe posts it, but no value is invented."
+  "note": "Stale for a SECOND consecutive session as of the Sept 24 am run -- Cboe's delayed-quote feed still shows the Sept 22 settlement (last_trade_time 2026-09-22T16:15:01). Yesterday's yield spike and equity decline make a materially higher print likely once Cboe posts Sept 23, but no value is invented."
  },
  "fx": {
   "as_of": "2026-09-23 EOD official (ECB reference)",
@@ -102,15 +102,15 @@
   }
  },
  "crypto": {
-  "as_of": "2026-09-23 live (CoinGecko)",
-  "btc": 84338,
-  "eth": 2672.37,
-  "sol": 114.2,
-  "ada": 0.2373,
-  "total_mkt_cap": null,
-  "btc_dominance_pct": null,
-  "eth_dominance_pct": null,
-  "note": "CoinGecko /global rate-limited on every attempt this run (no demo key configured); dominance/total-cap fields carried as unavailable rather than reusing this morning's stale figures in a 'live' field."
+  "as_of": "2026-09-24 live (CoinGecko)",
+  "btc": 83196,
+  "eth": 2635.52,
+  "sol": 112.91,
+  "ada": 0.233937,
+  "total_mkt_cap": 2812600000000,
+  "btc_dominance_pct": 59.24,
+  "eth_dominance_pct": 11.4,
+  "note": "Both /simple/price and /global succeeded this run (no rate-limit)."
  },
  "indices": {
   "as_of": "2026-09-23 EOD official",
@@ -132,52 +132,53 @@
   }
  },
  "futures_commodities_fx": {
-  "as_of": "2026-09-22 EOD official (close-to-close)",
+  "as_of": "2026-09-24 premarket (close-to-close vs Wed Sept 23 settle)",
   "es_f": {
-   "price": 7830.25,
-   "pct": -0.04
+   "price": 7724.75,
+   "pct": -0.614
   },
   "nq_f": {
-   "price": 31010.75,
-   "pct": 0.73
+   "price": 30433.25,
+   "pct": -1.078
   },
   "ym_f": {
-   "price": 52269.0,
-   "pct": -0.39
+   "price": 51704.0,
+   "pct": -0.326
   },
   "rty_f": {
-   "price": 2913.8,
-   "pct": 0.57
+   "price": 2846.9,
+   "pct": -0.465
   },
   "tnx": {
-   "price": 4.968,
-   "pct": 0.1
+   "price": 5.114,
+   "pct": null,
+   "note": "2026-09-23 dated print; ^TNX series had a 9/22 gap"
   },
   "cl_f": {
-   "price": 89.87,
-   "pct": -6.17,
-   "note": "UNRELIABLE 6th consecutive session, likely contract-roll artifact -- excluded, USO+outside reporting used instead"
+   "price": 93.17,
+   "pct": 1.096,
+   "note": "Smooth 4-day series this run, no roll-artifact jump; cross-checked vs USO +3.30% Sept 23 close, consistent direction"
   },
   "gc_f": {
-   "price": 4398.2,
-   "pct": 0.33
+   "price": 4282.3,
+   "pct": -0.836
   },
   "ng_f": {
-   "price": 3.165,
-   "pct": 11.6,
-   "note": "genuine move, day's standout; cross-checked vs day range 2.982-3.168"
+   "price": 3.197,
+   "pct": 5.756,
+   "note": "standout mover again"
   },
   "hg_f": {
-   "price": 6.903,
-   "pct": 3.24
+   "price": 6.745,
+   "pct": 1.003
   },
   "eurusd": {
-   "price": 1.145,
-   "pct": -0.11
+   "price": 1.1369,
+   "pct": -0.691
   },
   "dxy": {
-   "price": 100.54,
-   "pct": 0.11
+   "price": 101.297,
+   "pct": 0.195
   }
  },
  "watchlist": {
@@ -501,13 +502,13 @@
   "down_vol": null,
   "pct_above_e50": null,
   "pct_above_e200": null,
-  "note": "Freshly fetched this pm run via Massive grouped-daily for 2026-09-22 (the previous NYSE session); universe 5,637 names after filter. EMA history still accumulating (max n=41) -- pct_above_e50/e200 remain unavailable.",
+  "note": "Freshly fetched this pm run via Massive grouped-daily for 2026-09-22 (the previous NYSE session); universe 5,637 names after filter. EMA history still accumulating (max n=41) -- pct_above_e50/e200 remain unavailable. AM run (Sept 24) attempted a fresh Sept 23 pull via Massive grouped-daily but returned an unfiltered ~12.4K-symbol universe (vs this cache's documented ~5,637-name filtered universe) that could not be reconciled without the original per-symbol filter list; NOT applied to avoid corrupting the EMA history. Breadth narrative for today's report instead uses the RSP-vs-SPY / IWM-vs-SPY fallback per SR SS2.8. Flagged for reconciliation on a future run.",
   "fetched_at": "2026-09-23T20:40:00Z"
  },
  "finra_short_vol": {
-  "session": "2026-09-22",
-  "aggregate_short_vol_ratio_pct": 51.13,
-  "note": "Fresh pull this pm run, up from 49.27% on 9/21. Watchlist standouts: LQD 77.02%, KRE 75.47%, QQQM 75.62%, IWM 74.17%. Daily short volume != short interest; short interest is settlement-dated and 2-3 weeks stale."
+  "session": "2026-09-23",
+  "aggregate_short_vol_ratio_pct": 64.4,
+  "note": "Board/watchlist-subset aggregate (not the broader market-wide universe the prior run's 51.13% figure used -- not directly comparable). Standouts: KRE 81.36%, TLT 71.57%, IEF 69.87%, LQD 67.18%, HYG 66.05%. Daily short volume != short interest; short interest is settlement-dated and 2-3 weeks stale."
  },
  "sector_etfs_wk": {
   "XLK": {
@@ -656,8 +657,8 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-23",
-  "cutoff": "2026-09-23T06:35:00-04:00 (this morning's am run)",
+  "date": "2026-09-24",
+  "cutoff": "2026-09-24T06:40:00-04:00 (this morning's am run)",
   "entries_checked_market_wide": 100,
   "per_company_feeds_checked": "spot-checked against market-wide getcurrent feed only this run (100 most recent 8-Ks market-wide); full 90-ticker per-company sweep not repeated",
   "new_filings_since_cutoff": [
@@ -674,13 +675,20 @@
     "filed": "2026-09-22T17:00:00-04:00",
     "items": "7.01, 9.01",
     "reviewed": false
+   },
+   {
+    "ticker": "WFC",
+    "watchlist": "financials",
+    "filed": "2026-09-23T16:43:09-04:00",
+    "items": "5.02",
+    "reviewed": false
    }
   ],
-  "note": "Two watchlist-company 8-Ks found (RCL, BX); content not reviewed in time for the am edition -- flagged as leads for the Closing Brief. Excluded a false-positive match: 'Goldman Sachs Private Credit Corp.' is a separate BDC entity, not Goldman Sachs Group (GS)."
+  "note": "Two watchlist-company 8-Ks found (RCL, BX); content not reviewed in time for the am edition -- flagged as leads for the Closing Brief. Excluded a false-positive match: 'Goldman Sachs Private Credit Corp.' is a separate BDC entity, not Goldman Sachs Group (GS). New this run: WFC (Wells Fargo) 8-K, Item 5.02 (officer departure/appointment), filed Sept 23 16:43 ET, content not yet reviewed. Excluded two more false positives: 'KKR Private Equity Conglomerate LLC' and 'KKR Infrastructure Conglomerate LLC' are separate non-traded BDC vehicles, not KKR & Co. Inc. (ticker KKR)."
  },
  "_notes_this_run": {
-  "run": "2026-09-23-pm",
-  "note": "Full EOD sweep: Treasury curve, 12 FRED series (T10Y2Y/T10YIE/BAMLH0A0HYM2 rolled to Sept 22 obs, hy-oas.csv appended), Cboe VIX complex (stale, Cboe had not posted Sept 23 settlement at gather time -- carried Tuesday's close per SR SS2), full close-to-close Yahoo sweep (board 21 rows, 11 sector ETFs, ~15 company watchlist names), Frankfurter FX (fresh Sept 23 fix), CoinGecko crypto (live spot, /global rate-limited so dominance/total-cap unavailable), SEC EDGAR market-wide 8-K sweep (no new watchlist matches beyond this morning's RCL/BX leads). Breadth and FINRA short volume correctly reused from Monday's session (once-per-session / prior-session-only rules)."
+  "run": "2026-09-24-am",
+  "note": "Premarket AM gather: Treasury curve (still Sept 23 EOD, no fresher pre-open), 12 FRED series (T10Y2Y/T10YIE rolled to fresh Sept 23 obs), Cboe VIX complex (stale 2nd consecutive session), a close-to-close Yahoo sweep (board rows + sector ETFs + mega-cap tech + COST/SPCX, all matching Wednesday's EOD close already cached, cross-validated against an 11-symbol Yahoo date-label glitch), fresh premarket futures/commodities/FX, live CoinGecko (both endpoints succeeded), FINRA short volume for the Sept 23 session, and a SEC EDGAR market-wide 8-K sweep (WFC lead found). Breadth refresh attempted but not applied (universe mismatch, see breadth_latest note). Weather and calendar refreshed separately into state/calendar-cache.json."
  },
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
@@ -726,5 +734,20 @@
   "EURUSD_pct": -0.1,
   "DXY_pct": -0.05,
   "note": "Futures essentially flat to fractionally higher overnight after Monday's big up day (S&P +1.49%, Nasdaq +2.26% record close, Dow +0.71%, Russell +0.52%); small-caps (RTY) lead the modest premarket tilt higher. Natural gas +5.68% premarket is the standout mover; copper extends Monday's gain. Gold and the dollar both flat-to-softer. CL=F excluded (see futures_commodities_fx)."
+ },
+ "premarket_20260924": {
+  "as_of": "2026-09-24 ~06:30-06:45 ET",
+  "label": "Delayed premarket, Yahoo Finance futures, close-to-close vs Wed Sept 23 settle",
+  "ES_F_pct": -0.614,
+  "NQ_F_pct": -1.078,
+  "YM_F_pct": -0.326,
+  "RTY_F_pct": -0.465,
+  "CL_F_pct": 1.096,
+  "GC_F_pct": -0.836,
+  "NG_F_pct": 5.756,
+  "HG_F_pct": 1.003,
+  "EURUSD_pct": -0.691,
+  "DXY_pct": 0.195,
+  "note": "Futures broadly softer, extending Wednesday's PMI/auction-driven selloff; NY Fed's Williams flagged another hike as 'reasonable' by year-end pre-open. Natural gas the standout mover again. CL=F finally showing a clean, non-roll-artifact reading after many sessions of exclusion."
  }
 }

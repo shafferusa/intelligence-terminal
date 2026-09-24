@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Morning Brief — Thu, Sep 24, 2026 · Logan’s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-24",
+    "slot": "am",
+    "title": "Morning Brief",
+    "path": "reports/2026/09/2026-09-24-am.html",
+    "summary": "Trump and Xi hold their main summit meeting today after a trade-truce extension and a new AI-safety channel, a federal judge orders CNN, MS NOW and Politico's White House access restored, Russia hits Ukraine with one of its largest overnight barrages in weeks, and a second Fed official calls another rate hike likely as SpaceX's post-IPO lockup expires.",
+    "headlines": [
+      "Trump and Xi meet today after a trade-truce extension to January and a new AI-safety channel",
+      "Judge orders CNN, MS NOW and Politico's White House access restored; Russia hits Ukraine overnight",
+      "Fed's Williams calls another hike 'reasonable' as SpaceX's lockup expires and Costco reports tonight"
+    ],
+    "reading_minutes": 25,
+    "generated_at": "2026-09-24T06:58:00-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="am">
+<!--REPORT:START-->
+
+    <!-- ================= MASTHEAD =================
+         Edition eyebrow, headline, dateline, one-sentence standfirst.
+         Nothing else. No cutoff times, no version, no confidence rating,
+         no per-source freshness table. The audio bar is injected by
+         assets/report.js immediately after this header. -->
+    <header class="paper-head">
+      <p class="paper-edition">Morning Edition</p>
+      <h1>Morning Brief</h1>
+      <p class="paper-dateline">
+        Thursday, September 24, 2026 <span class="sep">&middot;</span> 25 min read
+      </p>
+      <p class="paper-standfirst">
+        Trump and Xi sit down today after an overnight trade-truce extension and a new AI-safety channel, a federal judge orders three news outlets' White House access restored, Russia hammers Ukraine in one of its largest barrages in weeks, and a second Fed official calls another rate hike likely as SpaceX's lockup opens and Costco reports tonight.
+      </p>
+    </header>
+
+    <!-- ================= THE BRIEF =================
+         The short read. Five to seven bullets, each a complete thought.
+         This replaces the old "Two-Minute Executive Brief" section block. -->
+    <section class="paper-section" aria-labelledby="s-brief">
+      <h2 id="s-brief">The Brief</h2>
+      <div class="brief">
+        <h3>If you read nothing else</h3>
+        <ul>
+          <li><b>The world.</b> Xi Jinping and Donald Trump hold their main bilateral meeting today, after an overnight deal to extend the US-China trade truce to January 10 and open a new AI-safety communications channel &mdash; but the $14 billion Taiwan arms package China wants shelved remains unresolved going in.</li>
+          <li><b>Washington.</b> A federal judge ruled overnight that the White House must restore CNN, MS NOW and Politico's press credentials for at least 14 days, finding the ban likely violated due process; separately, the Kennedy Center's court-ordered status report cites storm damage, not demolition, as the reason for its closure.</li>
+          <li><b>Markets.</b> Stocks fell again Wednesday as a hot flash PMI, a hawkish Fed governor and a weak five-year Treasury auction pushed the 10-year yield to its highest since 2007; NY Fed President Williams added to the hawkish tone this morning, and futures point modestly lower again.</li>
+          <li><b>The thread.</b> Rate-path conviction is hardening on both the data and the Fed's own voice at the same moment SpaceX's post-IPO lockup and Costco's earnings put two closely watched single-stock stories on the calendar.</li>
+          <li><b>Biggest risk.</b> A second consecutive weak Treasury auction (today's 7-year, $44B) would extend Wednesday's "duration selloff" into a pattern rather than a one-off, right as the Fed signals more tightening.</li>
+          <li><b>Watch today.</b> The Trump-Xi bilateral meeting and state dinner, and the 7-year Treasury auction at 1:00 PM ET.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= TOP STORIES =================
+         8-12 stories. The first carries .story--lead (bigger headline,
+         drop cap). Each story: headline, deck, body prose, and at most two
+         .story-note blocks (Why it matters / What's next). The old seven
+         labelled subheads are gone - write it as prose.
+         .flag appears ONLY on a genuinely shaky claim.
+         Expanded analysis stays in a collapsed <details>. -->
+    <section class="paper-section" aria-labelledby="s-top">
+      <h2 id="s-top">Top Stories</h2>
+      <div class="stories">
+
+        <article class="story story--lead">
+          <h3>Trump and Xi meet today after an overnight trade-truce extension and a new AI-safety channel</h3>
+          <p class="story-deck">The two leaders hold their main bilateral meeting, a Rose Garden ceremony and a state dinner this afternoon and evening; the $14 billion Taiwan arms package China wants shelved is still unresolved going in.</p>
+          <div class="story-body">
+            <p>Overnight, Treasury Secretary Scott Bessent announced that the US and China had agreed to extend their &ldquo;Busan Agreement&rdquo; trade truce &mdash; due to expire November 10 &mdash; through January 10, 2027, after an unscheduled meeting between Bessent and Chinese Vice Premier He Lifeng in Washington. The two sides also agreed to open a communications channel for discussing significant AI-safety incidents, the first concrete outcome of Xi&rsquo;s three-day state visit, his first to Washington in over a decade.</p>
+            <p>Today&rsquo;s schedule brings the substance of the visit: a South Lawn arrival ceremony, the two leaders&rsquo; main bilateral meeting, and an evening state dinner in the East Room, with tech executives including Jeff Bezos, Sundar Pichai, Sam Altman, Tim Cook, Elon Musk and Jensen Huang reportedly invited. The unresolved flashpoint is a pending $14 billion Taiwan arms package: Reuters reports Xi is expected to press Trump to shelve it, citing the 1982 US-China communiqu&eacute;&rsquo;s language on reducing arms sales to Taiwan over time, while the US side can point to the same year&rsquo;s declassified &ldquo;Six Assurances,&rdquo; which commit to no set end-date and no prior consultation with Beijing. Neither the trade-truce extension nor the AI-safety channel bears on that question, which remains open as this edition goes to press.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              First Xi visit to the White House in over a decade, and the third Trump-Xi meeting in eleven months; the trade-truce extension removes an immediate cliff, but the summit&rsquo;s central substance &mdash; Taiwan, chip export controls, rare earths &mdash; is still to come.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              The bilateral meeting, ceremony and dinner all happen today. Treat any claim about the Taiwan package&rsquo;s outcome as unverified until a joint statement or readout is issued.
+            </div>
+          </div>
+          <p class="story-sourceline">Treasury Secretary Bessent&rsquo;s statement (primary) &middot; White House visit schedule (primary) &middot; Reuters &middot; NBC News &middot; CNBC &middot; Al Jazeera.</p>
+          <details>
+            <summary>Go deeper</summary>
+            <p>Alibaba&rsquo;s Sept. 22 unveiling of its &ldquo;Zhenwu V900&rdquo; AI chip &mdash; claimed to triple its predecessor&rsquo;s compute and scale to 500,000-chip clusters, with a roadmap toward a 10-trillion-parameter model &mdash; is being read by CNBC and Tom&rsquo;s Hardware as a timed message of Chinese self-sufficiency ahead of today&rsquo;s meeting. Alibaba&rsquo;s US-listed shares rose roughly 4% and its Hong Kong shares 5.1% on the announcement; Nvidia was little moved, consistent with the read that Nvidia is already largely shut out of China&rsquo;s data-center market by existing export controls. None of this changes the Taiwan-arms calculus directly, but it is the backdrop China brings into today&rsquo;s new AI-safety channel.</p>
+          </details>
+        </article>
+
+        <article class="story">
+          <h3>Judge orders White House to restore CNN, MS NOW and Politico&rsquo;s access</h3>
+          <p class="story-deck">A 14-day restraining order finds the administration likely violated due process in revoking the outlets&rsquo; credentials without notice or a hearing.</p>
+          <div class="story-body">
+            <p>US District Judge Timothy Kelly ruled early Thursday, granting CNN, MS NOW and Politico a 14-day temporary restraining order requiring the White House to immediately restore their hard-pass credentials. Kelly &mdash; a Trump appointee who ruled for CNN&rsquo;s Jim Acosta on nearly identical due-process grounds in 2018 &mdash; found the outlets likely to succeed on the merits: credentials were revoked without notice, without an opportunity to be heard, and without pre-existing standards for revocation. He also found the administration&rsquo;s national-security justification, which cited coverage of the Iran war and White House ballroom construction, unsupported by the record before him.</p>
+            <p>The ruling is preliminary, not a final decision on the underlying constitutional claim; Judge Kelly set a schedule for further briefing over the 14-day window. It is not yet reported whether the administration will comply immediately or seek emergency appellate relief.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Compliance and any appeal are the first test; the due-process claim itself still has to be litigated on the merits.
+            </div>
+          </div>
+          <p class="story-sourceline">Judge Kelly&rsquo;s order (primary, via reporting) &middot; CNN &middot; NBC News &middot; CNBC &middot; CBS News &middot; The Hill.</p>
+        </article>
+
+        <article class="story">
+          <h3>Russia hits Ukraine with one of its largest barrages in weeks</h3>
+          <p class="story-deck">Overnight strikes killed at least six in the Kharkiv region, directly undercutting Zelensky&rsquo;s push for a Trump-brokered three-way meeting with Putin.</p>
+          <div class="story-body">
+            <p>Russia launched more than 280 drones plus ballistic and, Ukraine says, anti-ship Zircon missiles at Ukraine overnight into Thursday; Ukraine&rsquo;s military says it intercepted 227. A strike on an agricultural storage facility in Stara Hnylytsia, in the Kharkiv region, killed six people and wounded twelve. Kyiv itself was hit by ballistic missiles in three separate waves; Zelensky put the trailing 24-hour national toll at 16 dead and 59 injured, with residential buildings, a maternity hospital and energy infrastructure among the targets hit over the two most recent nights combined. <span class="flag">Single-sourced detail</span> The specific claim that Russia used anti-ship Zircon missiles against inland targets comes from Ukrainian military sources alone; Zircon is nominally an anti-ship, hypersonic system, which is reason enough to flag the detail rather than repeat it as settled. Casualty totals across the two nights have not been independently reconciled outside Ukraine&rsquo;s own reporting and should be read as approximate.</p>
+            <p>The barrage lands directly against Zelensky&rsquo;s own diplomacy: he has proposed a Trump-brokered trilateral meeting with Putin, which Kremlin spokesman Peskov dismissed Wednesday as a &ldquo;waste of time&rdquo; absent prior expert-level talks, while reaffirming that Putin still expects Zelensky to travel to Moscow instead. Separately, the Kremlin said it welcomes a US invitation for Putin to attend December&rsquo;s G20 summit in Miami &mdash; a lower-tier diplomatic thread, and not a confirmed attendance.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              The scale of the overnight barrage is hard to square with any near-term de-escalation track, even as diplomatic proposals keep circulating.
+            </div>
+          </div>
+          <p class="story-sourceline">Ukrainian military and Zelensky statements (primary, single-party) &middot; Kremlin spokesman Peskov (primary, single-party) &middot; Kyiv Independent &middot; RBC-Ukraine &middot; Ukrinform.</p>
+        </article>
+
+        <article class="story">
+          <h3>Kennedy Center&rsquo;s status report cites storm damage, not demolition, for its closure</h3>
+          <p class="story-deck">A court-ordered filing describes ceiling collapse, water intrusion and unsafe rigging as the reason the building is shut &mdash; a narrower rationale than the demolition talk that had driven the public fight.</p>
+          <div class="story-body">
+            <p>The Kennedy Center&rsquo;s court-ordered status report and a sworn declaration from executive director Matt Floca, filed Wednesday, describe specific storm-related life-safety hazards &mdash; a partial ceiling collapse, water intrusion into electrical transformers, and unsafe theater rigging and equipment &mdash; tied to a September 4 severe-weather event, as the actual basis for the building&rsquo;s closure. The filing contains no recommendation to demolish the building, a narrower rationale than the demolition framing that had driven weeks of public controversy after an AFP photo showed Trump aboard Air Force One viewing a &ldquo;Kennedy Center DEMOLISHED&rdquo; poster.</p>
+            <p>Separately, Judge Christopher Cooper declined a request from board member Rep. Joyce Beatty for an emergency hearing on the board&rsquo;s renewed push to add Trump&rsquo;s name to the building, but the standing order requiring 30 days&rsquo; written notice before any change to renovation plans &mdash; explicitly including demolition &mdash; remains in force. No reopening date has been given; the closure is being reassessed weekly. Beatty&rsquo;s counsel has said they will &ldquo;likely soon&rdquo; seek a receivership over the building.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Watch for a receivership filing, and for whether the weekly reassessment produces a reopening date.
+            </div>
+          </div>
+          <p class="story-sourceline">Court filing and sworn declaration (primary, via reporting) &middot; Judge Cooper&rsquo;s order (primary) &middot; Washington Sun &middot; Raw Story.</p>
+        </article>
+
+        <article class="story">
+          <h3>A second Fed official calls another hike likely, as the 10-year holds near a 19-year high</h3>
+          <p class="story-deck">NY Fed President Williams says a further rate increase by year-end is &ldquo;reasonable,&rdquo; echoing Governor Barr two days after a hot PMI and a weak Treasury auction sent yields to their highest since 2007.</p>
+          <div class="story-body">
+            <p>NY Fed President John Williams said Wednesday it would be &ldquo;reasonable&rdquo; to expect another rate hike by year-end, calling it &ldquo;likely&rdquo; appropriate &mdash; while stopping short of committing to an October move, saying the Committee needs more incoming data first. He separately said the era of explicit forward guidance is &ldquo;over,&rdquo; echoing an approach Fed Chair Kevin Warsh has taken since replacing Jerome Powell in May. Williams is the second Fed official in 48 hours to flag further tightening, after Governor Michael Barr said Tuesday that additional hikes are &ldquo;likely to be needed.&rdquo;</p>
+            <p>The comments land two sessions after Tuesday&rsquo;s flash PMI (composite 58.4, the fastest growth in five-plus years) and Wednesday&rsquo;s weak five-year Treasury auction (2.212 bid-to-cover, the weakest since December 2018, with a 3.1-basis-point tail) pushed the 10-year Treasury yield to 5.11% on the official par curve, its highest close since July 2007. The 2s10s spread has widened to +26 basis points and the 10-year TIPS yield, a proxy for real rates, sits near 2.63% &mdash; both consistent with a market pricing a more persistent tightening path rather than repricing a single data point.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              Two consecutive Fed officials naming another hike as likely, within 48 hours of each other, is a more consistent signal than either comment alone; this outlet is not citing new market-implied hike odds beyond what has already been reported, since a live pull of futures-implied pricing was not part of this run&rsquo;s gather.
+            </div>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Today&rsquo;s 7-year Treasury note auction ($44B, 1:00 PM ET) is the next demand test in a week that already produced the weakest 5-year auction since 2018.
+            </div>
+          </div>
+          <p class="story-sourceline">Fed officials&rsquo; own remarks (primary) &middot; Treasury par-yield curve (primary) &middot; CNBC &middot; Reuters/Investing.com.</p>
+        </article>
+
+        <article class="story">
+          <h3>SpaceX&rsquo;s post-IPO lockup opens today</h3>
+          <p class="story-deck">Up to 328 million more shares become eligible to trade for the first time since June&rsquo;s IPO, a day after an insider-sale disclosure sent the stock down more than 4%.</p>
+          <div class="story-body">
+            <p>Today is the lockup-expiration date itself for SpaceX (SPCX): up to roughly 328.4 million additional shares become eligible to trade for the first time since the company&rsquo;s June 12 IPO. The stock closed Wednesday at $148.36, down 4.11%, after President and COO Gwynne Shotwell disclosed a sale of 342,170 shares (about $52 million) under a pre-set trading plan adopted in June &mdash; her first insider sale in three months. Shares were reported modestly softer again in premarket trading Thursday. No new insider-sale filings have surfaced since Wednesday&rsquo;s disclosure; whatever selling pressure the unlock itself produces will only be observable once the regular session opens.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Watch today&rsquo;s regular session for the unlock&rsquo;s actual market impact.
+            </div>
+          </div>
+          <p class="story-sourceline">SEC Form 144 filing (primary) &middot; TipRanks &middot; CNBC &middot; this outlet&rsquo;s own Yahoo Finance data.</p>
+        </article>
+
+        <article class="story">
+          <h3>Anthropic&rsquo;s IPO marketing reportedly slips to November</h3>
+          <p class="story-deck">Multiple outlets now describe a listing target a month later than the October date reported in July, timed to post third-quarter results first.</p>
+          <div class="story-body">
+            <p>Multiple outlets &mdash; Calcalist/Ctech, Forbes, the-decoder and BigGo Finance &mdash; now report that Anthropic has pushed its IPO investor marketing to mid-October, with an actual listing targeted for November, a month later than the October target reported this summer. The delay is reportedly timed to let the company post third-quarter results before marketing begins, and would land the listing just ahead of the US midterm elections. Reported terms include a valuation as high as $2 trillion and a raise as large as $100 billion, with Morgan Stanley, Goldman Sachs, JPMorgan and Citi said to be underwriting.</p>
+            <p><span class="flag">Single-reliable-source on specifics</span> The general fact of a delay is now reported across independent outlets, but the specific November date, valuation and raise figures all appear to trace to the same underlying reporting chain rather than an Anthropic statement. There is no on-the-record confirmation or denial from the company, and no S-1 has surfaced on public EDGAR as of this outlet&rsquo;s weekly registry sweep.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              This would be one of the largest tech IPOs on the calendar, landing the same week as SpaceX&rsquo;s own post-IPO lockup expiration.
+            </div>
+          </div>
+          <p class="story-sourceline">Calcalistech &middot; Forbes &middot; the-decoder &middot; BigGo Finance &middot; this outlet&rsquo;s own entity registry (EDGAR sweep, no self-filing found).</p>
+        </article>
+
+        <article class="story">
+          <h3>Amazon blocks Meta&rsquo;s new AI agent from Amazon.com</h3>
+          <p class="story-deck">The move comes as Meta unveils a dedicated hardware device for Muse, its AI agent &mdash; a fresh flashpoint over who controls agentic AI&rsquo;s access to commerce.</p>
+          <div class="story-body">
+            <p>Meta unveiled a palm-sized &ldquo;Muse Charm&rdquo; hardware device for its Muse AI agent on Wednesday. <span class="flag">Single-sourced ranking claim</span> One widely cited figure &mdash; that Muse became the top free app on Apple&rsquo;s App Store, unseating ChatGPT &mdash; traces to a single ranking source and has not been independently corroborated. Separately, and apparently unrelated to the hardware launch, Amazon blocked Meta&rsquo;s Muse agent from accessing Amazon.com, saying in a statement that &ldquo;continued access by an unauthorized AI agent violates Amazon&rsquo;s Conditions of Service.&rdquo; Neither company has said more since.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A concrete access block between two of the largest AI and commerce platforms is a first-of-its-kind flashpoint in the fight over agentic AI&rsquo;s ability to browse and buy on a user&rsquo;s behalf, with no interoperability standard yet in place.
+            </div>
+          </div>
+          <p class="story-sourceline">Bloomberg &middot; TechCrunch &middot; Yahoo Finance.</p>
+        </article>
+
+        <article class="story">
+          <h3>Critical F5 zero-day&rsquo;s federal patch deadline lands tomorrow</h3>
+          <p class="story-deck">CISA&rsquo;s remediation order for the actively exploited BIG-IP flaw expires Friday; no named victims have surfaced yet.</p>
+          <div class="story-body">
+            <p>CVE-2026-94127, a critical (CVSS 9.8) heap-based buffer overflow in F5&rsquo;s BIG-IP Access Policy Manager that allows unauthenticated remote code execution when APM is configured as an OAuth authorization server, remains under active exploitation. F5 has shipped hotfixes for the affected 17.1.x, 17.5.x and 21.x branches, plus a temporary iRule-based mitigation, after CISA added the flaw to its Known Exploited Vulnerabilities catalog Tuesday with a Friday, September 25 federal remediation deadline. Security researchers are tracking more than 14,700 internet-facing hosts carrying a BIG-IP APM fingerprint, not all of them necessarily vulnerable or unpatched.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Tomorrow&rsquo;s federal deadline. No attacker has been named, and no source has disclosed a specific victim as of this edition.
+            </div>
+          </div>
+          <p class="story-sourceline">F5 security advisory (primary) &middot; CISA KEV catalog (primary) &middot; BleepingComputer &middot; The Hacker News &middot; CSO Online.</p>
+        </article>
+
+        <article class="story">
+          <h3>DRC&rsquo;s Ebola outbreak sends a mixed signal: down at its epicenter, up elsewhere</h3>
+          <p class="story-deck">WHO&rsquo;s latest count tops 7,700 cases, but new infections are falling in Ituri even as North Kivu&rsquo;s caseload climbs sharply.</p>
+          <div class="story-body">
+            <p>The World Health Organization&rsquo;s most recent figures, as of September 22, put the outbreak &mdash; still the fastest-growing Ebola epidemic on record &mdash; at 7,773 confirmed cases and 3,759 deaths, roughly 100 more cases and 60 more deaths than two days earlier. For the first time in this outlet&rsquo;s tracking of the outbreak, the trend is genuinely mixed rather than uniformly worsening: Ituri, the epicenter, has seen new cases fall 26% over the trailing 21 days, and Haut-U&eacute;l&eacute; is down 15% over the same window, while North Kivu&rsquo;s caseload has risen 73% in that period &mdash; suggesting the outbreak&rsquo;s center of gravity may be shifting north even as the original hot zone improves.</p>
+            <div class="story-note">
+              <b>Why it matters</b>
+              A declining epicenter alongside a sharply rising secondary province is a different, and in some ways more difficult, containment problem than uniform growth.
+            </div>
+          </div>
+          <p class="story-sourceline">World Health Organization Disease Outbreak News (primary) &middot; UN News.</p>
+        </article>
+
+        <article class="story">
+          <h3>Indonesia&rsquo;s ferry search toll rises to 28 dead, 107 still missing</h3>
+          <p class="story-deck">The search for the Virgo Transport 8, capsized eleven days ago in the Java Sea, has been extended through Sunday.</p>
+          <div class="story-body">
+            <p>The confirmed death toll from the September 13 capsizing of the ferry Virgo Transport 8 in the Java Sea has risen to 28, with 107 of the original 243 people aboard still missing; 108 have been rescued, a figure that has not changed in over a week. Indonesia&rsquo;s search-and-rescue agency, Basarnas, has extended the operation multiple times, most recently through September 27.</p>
+            <div class="story-note">
+              <b>What&rsquo;s next</b>
+              Sunday&rsquo;s extension deadline is the next decision point on whether to continue or close the search.
+            </div>
+          </div>
+          <p class="story-sourceline">Indonesia&rsquo;s national search-and-rescue agency (primary, via wire) &middot; Xinhua &middot; Japan Times &middot; gCaptain.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ================= OVERNIGHT ================= -->
+    <section class="paper-section" aria-labelledby="s-overnight">
+      <h2 id="s-overnight">Overnight</h2>
+      <div class="story-body">
+        <p>What changed since yesterday&rsquo;s close, in brief: Wednesday&rsquo;s yield-spike story picked up a second Fed voice overnight (Williams, after Barr), and futures are pointing modestly lower again rather than stabilizing &mdash; the previous understanding was a one-day shock from the PMI and the auction; the new information is that the Fed itself is now reinforcing it, which raises confidence that this is a genuine repricing of the hike path rather than a one-off. On the Trump-Xi summit, the previous understanding (as of last night) was that arrival had occurred but the substantive agenda was still ahead; the new information is a concrete deliverable (the trade-truce extension and AI-safety channel) landing before the actual meeting even starts, which is a mildly de-escalatory signal ahead of the harder Taiwan conversation still to come today. On Ukraine, the previous understanding was that Zelensky and the Kremlin were trading rhetorical positions on a possible trilateral meeting; the new information is that Russia answered with one of its larger barrages of the past several weeks, which lowers confidence that any near-term de-escalation is imminent regardless of what gets said diplomatically.</p>
+      </div>
+    </section>
+
+    <!-- ================= DOMAIN SECTIONS =================
+         Politics · Geopolitics · Economy · Business · Technology ·
+         Science & Space (Science and Space are ONE section now).
+         Write each as prose under the .story-body class. A section with
+         nothing material to say is OMITTED - never padded to fill the slot. -->
+    <section class="paper-section" aria-labelledby="s-politics">
+      <h2 id="s-politics">Politics &amp; Government</h2>
+      <div class="story-body">
+        <p>Sens. Bernie Sanders and Rep. Greg Casar formally introduced legislation Wednesday &mdash; the &ldquo;Ban Artificial Superintelligence Act&rdquo; &mdash; proposing a new Cabinet-level Department of Artificial Intelligence, a pause on developing AI systems capable of &ldquo;recursive self-improvement,&rdquo; and penalties of up to 20 years&rsquo; imprisonment plus corporate dissolution for violations. The bill faces long odds in the Republican-controlled Congress, which remains in recess until after the midterms, and no floor action is expected soon; it follows the same pair&rsquo;s earlier push, alongside Steve Bannon and Rep. Chip Roy, for a narrower AI kill-switch mandate that also has not received a vote.</p>
+        <p>In Pittsburgh, District Attorney Stephen Zappala&rsquo;s investigation into no-bid &ldquo;Stop the Violence&rdquo; grants under former Mayor Ed Gainey remains at the investigation stage; no charges have been filed against Councilman Khari Mosley or anyone else, despite Zappala&rsquo;s earlier public statement that he expects charges. Nothing has changed materially since Wednesday&rsquo;s edition.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-econ">
+      <h2 id="s-econ">The Economy</h2>
+      <div class="story-body">
+        <p>Initial jobless claims for the week ending September 19 are due at 8:30 AM ET, with consensus estimates clustered around 201,000 against a prior 196,000; New Home Sales for August follow at 10:00 AM (consensus around 619,000). The Bureau of Economic Analysis is also scheduled to release its international transactions and investment-position report this morning &mdash; this outlet&rsquo;s own calendar cache had described it as covering the second quarter of 2026, but a fresh pull of BEA&rsquo;s own release feed this morning shows the feed&rsquo;s title text reading &ldquo;1st Quarter 2026 and Annual Update&rdquo; for the item due today. That discrepancy is unresolved as of publication; the quarter it actually covers should be confirmed against BEA&rsquo;s own report once it is out rather than assumed from either label.</p>
+        <p>None of the FRED series checked this morning rolled to a fresher observation on the inflation or labor side: CPI (334.131, August), core CPI (337.765, August), nonfarm payrolls (159.075 million, August) and the unemployment rate (4.1%, August) are unchanged from Wednesday. Two market-implied series did roll forward: the 2s10s Treasury spread (T10Y2Y) widened to +0.26 percentage points as of Wednesday, from +0.25 the prior session, and 10-year breakeven inflation expectations (T10YIE) ticked up to 2.35% from 2.33% &mdash; both level moves, not yet firmly a trend, but both consistent with a market pricing somewhat more persistent inflation and a steeper curve after Wednesday&rsquo;s data.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-business">
+      <h2 id="s-business">Business</h2>
+      <div class="story-body">
+        <p>Costco reports fiscal fourth-quarter earnings after today&rsquo;s close, the only watchlist-company report this week. Consensus diverges by data vendor &mdash; Alpha Vantage estimates adjusted EPS of $6.48, Finnhub $6.67, on revenue estimated near $94.9 billion (roughly 10% above a year ago). At least one analyst, Oppenheimer&rsquo;s Rupesh Parikh, has flagged downside risk to the company&rsquo;s core margin once a one-time US tariff-refund benefit that inflated last quarter&rsquo;s headline beat is excluded; membership renewal rate and digitally-enabled comparable sales are likely to matter more to the read than the raw EPS beat or miss.</p>
+        <p>Wells Fargo filed an 8-K Wednesday evening disclosing an executive departure and appointment (Item 5.02); the filing&rsquo;s content has not yet been reviewed in full and no further detail is available as of this edition.</p>
+      </div>
+    </section>
+
+    <section class="paper-section" aria-labelledby="s-space">
+      <h2 id="s-space">Science &amp; Space</h2>
+      <div class="story-body">
+        <p>China carried out two successful launches in the past 24 hours: a Long March 8A lifted off from Wenchang Tuesday carrying the SatNet LEO Group 26 payload, part of China&rsquo;s low-Earth-orbit broadband constellation, and a Long March 6A launched overnight carrying the Yaogan 40 Group 04 payload, a series China describes as for electromagnetic environment detection. Both are confirmed successful on the launch provider&rsquo;s own tracking; neither carries a disclosed connection to the Trump-Xi summit underway in Washington.</p>
+      </div>
+    </section>
+
+    <!-- ================= CALENDAR ================= -->
+    <section class="paper-section" aria-labelledby="s-cal">
+      <h2 id="s-cal">Today&rsquo;s Calendar</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption>All times ET.</caption>
+          <thead>
+            <tr><th>Time</th><th>Event</th><th>Consensus</th><th>Previous</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>08:30</td><td class="txt">Initial jobless claims (w/e Sept 19)</td><td>~201K</td><td>196K</td></tr>
+            <tr><td>08:30</td><td class="txt">BEA international transactions &amp; investment position</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td>10:00</td><td class="txt">New home sales (Aug)</td><td>~619K</td><td>&mdash;</td></tr>
+            <tr><td>&mdash;</td><td class="txt">Trump-Xi bilateral meeting, Rose Garden ceremony &amp; state dinner</td><td>&mdash;</td><td>&mdash;</td></tr>
+            <tr><td><strong>13:00</strong></td><td class="txt"><strong>7-year Treasury note auction, $44B</strong> (plus 4-week &amp; 8-week bills)</td><td>&mdash;</td><td>5-yr tailed 3.1bp Wed.</td></tr>
+            <tr><td>After close</td><td class="txt">Costco (COST) fiscal Q4 earnings</td><td>EPS $6.48&ndash;$6.67</td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Bold marks the day&rsquo;s most consequential scheduled event, given this week&rsquo;s run of Treasury demand tests.</p>
+    </section>
+
+    <!-- ================= MARKET SETUP =================
+         am: "Before the Open"   pm: "What Moved Markets" + "Winners & Losers"
+         sat/sun: replaced by the weekly/forward sections. -->
+    <section class="paper-section" aria-labelledby="s-setup">
+      <h2 id="s-setup">Before the Open</h2>
+      <div class="story-body">
+        <p>Futures point modestly lower, extending Wednesday&rsquo;s selloff: S&amp;P futures down about 0.6%, Nasdaq futures down about 1.1%, Dow futures off 0.3%, small-cap futures down about 0.5% against Wednesday&rsquo;s settle. Gold is softer again (roughly &minus;0.8%), the dollar index is fractionally firmer, and oil is higher for a second session (WTI futures up about 1.1%), a combination that reads as duration-driven &mdash; higher real yields pressuring gold, energy holding up on its own separate supply dynamics &mdash; rather than a single cross-asset narrative. Natural gas is again the standout mover, up nearly 6% overnight, with no single confirmed catalyst identified. The Cboe volatility complex has not posted a fresh settlement in two consecutive sessions; whatever the actual VIX level is this morning, this outlet is not printing yesterday&rsquo;s stale 14.21 as if it were current.</p>
+        <p>The tape appears to be pricing continued Fed tightening without yet fully reflecting how hot Tuesday&rsquo;s PMI components actually were, or how weak Wednesday&rsquo;s five-year auction was on every metric that matters (bid-to-cover, tail, indirect share). The most fragile assumption behind a further selloff is that today&rsquo;s data cooperates: a soft jobless-claims print, or strong demand at today&rsquo;s 7-year auction, could interrupt the pattern rather than confirm it. Futures are not a guaranteed open, and today carries two live catalysts before the bell even matters much &mdash; the still-unfolding Trump-Xi summit and Costco&rsquo;s earnings after tonight&rsquo;s close.</p>
+      </div>
+    </section>
+
+    <!-- ================= RISKS ================= -->
+    <section class="paper-section" aria-labelledby="s-risk">
+      <h2 id="s-risk">Risks &amp; Scenarios</h2>
+      <div class="story-body">
+        <p><strong>Today&rsquo;s 7-year auction tails or shows soft indirect demand.</strong> Probability 20&ndash;30%, on the basis that Wednesday&rsquo;s 5-year auction was the weakest by bid-to-cover since December 2018, weighed against the 7-year tenor typically drawing steadier demand than the 5-year. If it happens: long-end yields push further into 19-year-high territory and rate-sensitive equities (regional banks, small caps, REITs) likely underperform again. Invalidated by a strong bid-to-cover and a stop-through.</p>
+        <p><strong>The Fed delivers a hike at the October 27&ndash;28 meeting rather than waiting.</strong> This outlet&rsquo;s open forecast on this question (logged Sept. 23, 55&ndash;70%) stands; today&rsquo;s Williams comment reinforces rather than changes it, so it is not re-logged as a new forecast. Watch for whether additional Fed speakers this week narrow or widen that range.</p>
+        <p><strong>Costco&rsquo;s earnings show a core-margin miss once one-time items are excluded.</strong> Probability 25&ndash;35%, on the basis that at least one analyst has already flagged downside risk to core-business earnings once last quarter&rsquo;s one-time tariff-refund benefit is stripped out, and that consensus EPS estimates already diverge by vendor rather than converging on a single figure.</p>
+        <p><strong>The Trump-Xi summit produces an outcome on the Taiwan arms package.</strong> Too uncertain to assign a probability range with any real basis; this is a binary outcome (the package proceeds, is further delayed, or some other resolution) that should be reported once a joint statement or readout is issued, not forecast in advance.</p>
+      </div>
+    </section>
+
+    <!-- ================= LOCAL NEWS =================
+         THREE beats, each covered in its own right, in this order:
+           1. Bridgeville / South Fayette / South Hills
+           2. Pittsburgh & Allegheny County
+           3. Pennsylvania
+         Up to two items per beat, each with a .local-place label naming which
+         beat it belongs to. Quality-gated, never padded: a beat with nothing
+         worth reporting is simply absent that day, and some days only one of
+         the three appears. Crime blotter, event listings and weather chatter
+         are not news.
+
+         The weather strip is MORNING EDITION ONLY, from the National Weather
+         Service gridpoint for Bridgeville, PA. It leads this section. -->
+    <section class="paper-section" aria-labelledby="s-local">
+      <h2 id="s-local">Local</h2>
+
+      <div class="weather">
+        <div class="weather-now">
+          <p class="weather-place">Bridgeville &middot; South Hills</p>
+          <p class="weather-temp">67&deg;<small>today&rsquo;s high</small></p>
+          <p class="weather-desc">Mostly sunny, wind E 8&ndash;12 mph</p>
+        </div>
+        <div class="weather-days">
+          <div class="weather-day">
+            <b>Today</b>
+            <span class="hi">67&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Mostly sunny</span>
+          </div>
+          <div class="weather-day">
+            <b>Tonight</b>
+            <span class="hi">&mdash;</span> <span class="lo">44&deg;</span>
+            <span class="sky">Mostly clear</span>
+          </div>
+          <div class="weather-day">
+            <b>Tomorrow</b>
+            <span class="hi">71&deg;</span> <span class="lo">&mdash;</span>
+            <span class="sky">Sunny</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="small muted">Nothing from the three local beats &mdash; Bridgeville/South Fayette, Pittsburgh/Allegheny County, or Pennsylvania &mdash; met this outlet&rsquo;s bar for a genuinely new or materially changed item since Wednesday&rsquo;s edition.</p>
+    </section>
+
+    <!-- ================= MARKET APPENDIX =================
+         Unchanged and still collapsed: the full SPEC section-22 walkthrough.
+         It costs the reader nothing while closed, and it is where every
+         number with a delay label now lives. -->
+    <section class="paper-section appendix" aria-labelledby="s-appendix">
+      <h2 id="s-appendix">Market Appendix</h2>
+      <details class="appendix-shell">
+        <summary>Open the full market &amp; economic analysis</summary>
+
+        <details class="appendix-block">
+          <summary>Market regime</summary>
+          <p><span class="chip chip--warn">Risk-off, moderate</span> Supporting: breadth was lopsided lower Wednesday, every board-listed equity ETF fell except two sector funds, small caps (IWM &minus;1.84%) underperformed the broad market badly, and Treasury yields pushed to a 19-year high on hawkish Fed commentary plus a weak auction. Contradicting: credit spreads widened only modestly (HY OAS +2bp to 2.68), technology (XLK +0.25%) and energy (XLE +0.96%) both closed higher, and oil (USO +3.30%) moved opposite the rest of the risk-off tape with no confirmed catalyst. Confidence: moderate. Change from Wednesday&rsquo;s report: essentially unchanged in direction, reinforced by an additional hawkish Fed comment (Williams) and a second day of softer futures overnight.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Broad equities</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Previous close, Sept 23, 2026 (market not yet open) &middot; close-to-close.</caption>
+              <thead><tr><th>Symbol</th><th>Close</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>SPY</td><td>767.81</td><td class="down">&minus;0.72%</td></tr>
+                <tr><td>QQQM</td><td>305.14</td><td class="down">&minus;0.86%</td></tr>
+                <tr><td>DIA</td><td>514.30</td><td class="down">&minus;1.05%</td></tr>
+                <tr><td>IWM</td><td>281.92</td><td class="down">&minus;1.84%</td></tr>
+                <tr><td>MAGS</td><td>72.08</td><td class="down">&minus;1.22%</td></tr>
+                <tr><td>RSP</td><td>211.31</td><td class="down">&minus;0.64%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">S&amp;P 500 index closed 7,706.03 (&minus;0.75%), Nasdaq Composite 26,936.04 (&minus;1.13%), Dow 51,511.59 (&minus;0.68%) Wednesday, EOD official.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Breadth</summary>
+          <p><span class="chip chip--warn">Estimated &mdash; proxy method, not the filtered breadth model</span> This run&rsquo;s attempted whole-market breadth refresh returned an unfiltered universe that could not be reconciled with this outlet&rsquo;s documented filtered methodology (symbol length, price and volume screens) and was not applied, to avoid corrupting the accumulating EMA history. Falling back to the documented proxy: equal-weight S&amp;P (RSP &minus;0.64%) modestly outperformed cap-weight (SPY &minus;0.72%), suggesting Wednesday&rsquo;s decline was not purely mega-cap-driven; small caps (IWM &minus;1.84%) badly underperformed both, consistent with rate-sensitive smaller companies bearing the brunt of the yield spike. Flagged for reconciliation on a future run.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Sectors</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Sept 23 close-to-close.</caption>
+              <thead><tr><th>Sector ETF</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>XLE (Energy)</td><td class="up">+0.96%</td></tr>
+                <tr><td>XLK (Technology)</td><td class="up">+0.25%</td></tr>
+                <tr><td>XLF (Financials)</td><td class="down">&minus;0.47%</td></tr>
+                <tr><td>KRE (Regional banks)</td><td class="down">&minus;1.14%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">Regional banks continue to lag large financials on flat-curve margin concerns, a thread running since mid-September; energy and tech were the only board-listed gainers.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Industries</summary>
+          <p>Semiconductors (SMH) fell 1.00%, in line with the broader tech-adjacent selloff rather than an AI-specific move; Alibaba&rsquo;s new AI chip announcement (see Top Stories) moved Alibaba&rsquo;s own shares but not Nvidia, consistent with the view that Nvidia is already largely excluded from China&rsquo;s data-center market by existing export controls.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Watchlists</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Sept 23 close-to-close, previous close (AM edition, market not yet open).</caption>
+              <thead><tr><th>Symbol</th><th>Close</th><th>%Chg</th></tr></thead>
+              <tbody>
+                <tr><td>AAPL</td><td>337.02</td><td class="down">&minus;0.80%</td></tr>
+                <tr><td>MSFT</td><td>500.59</td><td class="up">+0.52%</td></tr>
+                <tr><td>NVDA</td><td>225.51</td><td class="down">&minus;1.47%</td></tr>
+                <tr><td>SPCX</td><td>148.36</td><td class="down">&minus;4.11%</td></tr>
+                <tr><td>COST</td><td>904.70</td><td class="up">+0.69%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Rates &amp; curve</summary>
+          <div class="table-wrap">
+            <table class="data-table">
+              <caption>Treasury par-yield curve, EOD official, Sept 23, 2026.</caption>
+              <thead><tr><th>Tenor</th><th>Yield</th></tr></thead>
+              <tbody>
+                <tr><td>1M</td><td>3.99%</td></tr>
+                <tr><td>3M</td><td>4.19%</td></tr>
+                <tr><td>1Y</td><td>4.49%</td></tr>
+                <tr><td>2Y</td><td>4.85%</td></tr>
+                <tr><td>5Y</td><td>4.99%</td></tr>
+                <tr><td>7Y</td><td>5.05%</td></tr>
+                <tr><td>10Y</td><td>5.11%</td></tr>
+                <tr><td>20Y</td><td>5.45%</td></tr>
+                <tr><td>30Y</td><td>5.40%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="small muted">2s10s +26bp &middot; 3m10y +92bp &middot; 5s30s +41bp. No fresher curve posted pre-open; this is still Wednesday&rsquo;s official close, the highest 10-year print since July 2007.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Credit</summary>
+          <p>High-yield spread (BAMLH0A0HYM2) 2.68 as of Sept 22, EOD official, widened 2bp from 2.66 the prior session &mdash; a modest move, not a blowout, despite the equity selloff. LQD (investment-grade) fell 1.14% and HYG (high-yield) fell 0.74% Wednesday. FINRA short-volume ratios for Sept 23 show KRE at 81.36% and TLT at 71.57%, both standouts versus the board-subset aggregate of 64.4%; daily short volume is not short interest, and short interest itself is always settlement-dated and 2&ndash;3 weeks stale.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Volatility &amp; options</summary>
+          <p><span class="chip chip--warn">Feed lag, second session</span> Cboe&rsquo;s delayed-quote feed has not posted a fresh VIX settlement in two consecutive sessions; the complex still shows Sept 22&rsquo;s close (VIX 14.21, VIX9D 12.13, VIX3M 17.61, normal contango). Wednesday&rsquo;s yield spike and equity decline make a materially higher print likely once Cboe posts it, but no value is invented here. Put/call ratios remain unavailable (Cboe&rsquo;s free endpoint has returned 403 for weeks); the MOVE index and dealer gamma positioning have no allowlisted free source and are not tracked.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>FX</summary>
+          <p>The dollar index (DXY) sat at 101.297 in premarket trading, up 0.20% from Wednesday&rsquo;s close; EUR/USD was 1.1369 (&minus;0.69%). ECB reference rates as of Sept 23 EOD official: EUR 0.87635, JPY 157.92, GBP 0.75322, CNY 6.7074 (all per US dollar).</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Commodities</summary>
+          <p>Gold fell for a second session (GLD &minus;1.80% Wednesday close; GC=F &minus;0.84% in premarket trading), consistent with higher real yields. Oil rose for a second session (USO +3.30% Wednesday close; WTI futures +1.10% in premarket trading) &mdash; a clean, non-roll-artifact reading this run after many prior sessions flagged as unreliable. Natural gas futures were the standout mover again, up 5.76% in premarket trading, with no single confirmed catalyst identified. Copper futures were up 1.00%.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Crypto</summary>
+          <p><span class="chip chip--ok">Live, CoinGecko</span> Bitcoin $83,196 (&minus;2.99% 24h), Ethereum $2,635.52 (&minus;3.49% 24h), Solana $112.91 (&minus;3.62% 24h), Cardano $0.233937 (&minus;7.35% 24h). Bitcoin dominance 59.24%, Ethereum dominance 11.40%, total crypto market cap $2.81 trillion, down 6.62% over 24 hours &mdash; a broadly risk-off move consistent with the equity and rates picture.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Factors</summary>
+          <p>Mega-cap growth (MAGS &minus;1.22%) underperformed the broad market (SPY &minus;0.72%) Wednesday, consistent with higher-duration, higher-multiple names being more sensitive to rising real yields (10-year TIPS yield near 2.63%) than the market overall. No dedicated factor-fund data was gathered this run beyond this proxy.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Cross-asset</summary>
+          <p>The cross-asset picture is coherent with one exception: yields up, the dollar firm, gold down and crypto down all point the same direction (higher real rates, reduced risk appetite), while oil&rsquo;s second consecutive gain runs counter to that pattern and remains unexplained by any single confirmed catalyst &mdash; treat it as its own, separately driven story rather than folding it into the rates narrative.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Earnings</summary>
+          <p>Costco (COST) reports fiscal Q4 after today&rsquo;s close, the week&rsquo;s only watchlist-company report; see Business, above, for consensus detail and the tariff-refund caveat.</p>
+        </details>
+
+        <details class="appendix-block">
+          <summary>Auctions &amp; liquidity</summary>
+          <p>Today brings a 7-year Treasury note auction ($44B) plus 4-week and 8-week bills, one day after the weakest 5-year auction (by bid-to-cover) since December 2018. This week&rsquo;s full 2-, 5- and 7-year note slate is a genuine demand test one week after the 10-year first pushed above 5%.</p>
+        </details>
+      </details>
+    </section>
+
+    <!-- ================= COLOPHON =================
+         Replaces both the old "Sources & Corrections" section and the
+         per-run system-health footer. Short, plain, at the very bottom. -->
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Treasury Secretary Bessent&rsquo;s statement and the White House visit schedule; Judge Kelly&rsquo;s order; the Kennedy Center&rsquo;s court filing and Judge Cooper&rsquo;s order; the Treasury par-yield curve and FRED; the World Health Organization; F5&rsquo;s security advisory and the CISA KEV catalog; Yahoo Finance and CoinGecko market data; wire and outlet reporting including Reuters, CNBC, CNN, NBC News, the Kyiv Independent and Bloomberg, named throughout.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Free-tier quotes are single-venue and can differ slightly from official closes. Missing data is declared missing, never estimated. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <!-- ================= PREV / NEXT NAVIGATION =================
+         The routine fills the previous-report link with the actual prior
+         report's relative path (same month: ./2026-07-23-pm.html; across a
+         month boundary: ../06/2026-06-30-pm.html). The next link stays
+         disabled at publish time and is never backfilled. -->
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-23-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
