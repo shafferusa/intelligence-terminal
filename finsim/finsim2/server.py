@@ -67,15 +67,54 @@ class App:
             summary = refresh(self.store, assets=[self.store.asset(a) for a in ids] if ids else None,
                               progress=lambda d, n, m: job.progress(d, n, m), full=full)
             self.scheduler_state["last_refresh"] = datetime.now(timezone.utc).isoformat()
-            try:
-                from .engine import tracking
-                job.progress(1, 1, "scoring matured forecasts")
-                self.research.panel()
-                tracking.score_matured(self.store, self.research.panel())
-            except Exception:
-                pass
-            return {"seconds": summary.get("seconds"), "errors": summary.get("errors"), "data_version": summary.get("data_version")}
+            learned = self.daily_learning(job) if not ids else {}
+            return {"seconds": summary.get("seconds"), "errors": summary.get("errors"), "data_version": summary.get("data_version"), "learning": learned}
         return self.jobs.start("refresh", ",".join(assets or []) or "all", run)
+
+    CORE = ["SPY", "QQQ", "IWM", "EFA", "UST10Y", "TLT", "HYG", "GOLD", "WTI", "DXY", "EURUSD", "BTC"]
+
+    def tracked(self) -> List[str]:
+        """Assets the daily loop keeps current: holdings, the watchlist and the core markets."""
+        held = [a for a, p in self.ledger().holdings()["positions"].items() if abs(p["quantity"]) > 1e-12]
+        watched = [w["asset_id"] for w in self.store.watchlist()]
+        return [a for a in dict.fromkeys(held + watched + self.CORE) if self.store.asset(a) and self.store.price_count(a)]
+
+    def daily_learning(self, job=None) -> dict:
+        """After new data: grade matured forecasts (both engines), compute today's Shaffer Scores for tracked assets (they
+        enter the append-only ledger), make today's ML forecasts from the saved models, and retrain ML only on schedule
+        (once a month, or when an asset has none). Historical predictions are never rewritten."""
+        from .engine import ml, tracking
+        out = {"graded": 0, "shaffer": [], "ml_forecasts": [], "retrained": [], "errors": []}
+        try:
+            out["graded"] = tracking.score_matured(self.store, self.research.panel())
+        except Exception as e:
+            out["errors"].append(f"grading: {e}")
+        month = self.research.panel().calendar()[-1][:7]
+        ids = self.tracked()
+        for k, a in enumerate(ids):
+            if job:
+                job.progress(k, len(ids), f"learning: {a}")
+            try:
+                self.research.bundle(a)                        # today's Shaffer Score -> ledger
+                out["shaffer"].append(a)
+            except Exception as e:
+                out["errors"].append(f"{a} Shaffer: {e}")
+                continue
+            try:
+                saved = self.store.kv_get(f"mlmodels:{a}")
+                if saved is None or str(saved.get("trained_at", ""))[:7] != month or saved.get("version") != ml.VERSION:
+                    ml.train_asset(self.research, a)           # the schedule: monthly (records its own forecasts)
+                    out["retrained"].append(a)
+                else:
+                    ml.forecast_today(self.research, a)       # daily forecasts from the saved models
+                    out["ml_forecasts"].append(a)
+            except Exception as e:
+                out["errors"].append(f"{a} ML: {e}")
+        self.store.audit("learning.daily", month, {k: v for k, v in out.items()})
+        return out
+
+    def start_learning(self):
+        return self.jobs.start("learning", "daily", lambda job: self.daily_learning(job))
 
     def start_ml(self, asset_id: str):
         from .engine import ml
@@ -148,6 +187,8 @@ class Router:
         app, store, research = self.s, self.s.store, self.s.research
         if r == ["status"]:
             return app.status()
+        if r == ["learning"] and method == "POST":
+            return app.start_learning().view()
         if r == ["refresh"] and method == "POST":
             return app.start_refresh(bool(b.get("full")), b.get("assets")).view()
         if r == ["jobs"]:

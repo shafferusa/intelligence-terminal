@@ -1,0 +1,564 @@
+"""The Shaffer Score / ML audit: run the point-in-time engines over the universe and answer, from the out-of-sample
+record, whether they work. Two passes: (1) every asset's January evidence checkpoints (its own sums, independent of
+any prior), (2) the full point-in-time Shaffer sweep with the class/global priors those checkpoints give, cached for
+the UI; then ML v2 on a representative cross-asset set; then the aggregates behind the 26 audit questions.
+
+    python -m finsim2 audit [--workers 3] [--ml SPY,QQQ,...]
+"""
+from __future__ import annotations
+
+import math
+import os
+import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Dict, List, Optional
+
+from .. import shaffer_score as cfg
+
+ML_SET = ["SPY", "QQQ", "IWM", "EFA", "EEM", "TLT", "IEF", "LQD", "HYG", "GOLD", "WTI", "COPPER", "EURUSD", "USDJPY", "DXY",
+          "BTC", "AAPL", "NVDA", "JPM", "XOM", "JNJ"]
+BANDS = [(-100, -60), (-60, -40), (-40, -20), (-20, -5), (-5, 5), (5, 20), (20, 40), (40, 60), (60, 100)]
+
+
+def _spearman(a: List[float], b: List[float]) -> Optional[float]:
+    from .models import spearman
+    return spearman(a, b) if len(a) >= 10 and len(set(a)) > 1 else None
+
+
+def _pearson(a: List[float], b: List[float]) -> Optional[float]:
+    n = len(a)
+    if n < 3:
+        return None
+    ma, mb = sum(a) / n, sum(b) / n
+    va = sum((x - ma) ** 2 for x in a)
+    vb = sum((y - mb) ** 2 for y in b)
+    if va <= 1e-15 or vb <= 1e-15:
+        return None
+    return sum((x - ma) * (y - mb) for x, y in zip(a, b)) / math.sqrt(va * vb)
+
+
+def _partial(x: List[float], y: List[float], z: List[float]) -> Optional[float]:
+    """Correlation of x and y after removing their linear relation to z (the rest of the score)."""
+    rxy, rxz, ryz = _pearson(x, y), _pearson(x, z), _pearson(y, z)
+    if rxy is None:
+        return None
+    if rxz is None or ryz is None:
+        return rxy
+    den = math.sqrt(max(1e-12, (1 - rxz * rxz) * (1 - ryz * ryz)))
+    return (rxy - rxz * ryz) / den
+
+
+def _tstat(r, n_eff):
+    if r is None or n_eff <= 3:
+        return None
+    return r * math.sqrt(n_eff - 2) / math.sqrt(max(1e-12, 1 - r * r))
+
+
+# ------------------------------------------------------------------ worker functions (each in its own process: own Store and Research)
+def _open(db_path):
+    from ..data.store import Store
+    from .research import Research
+    st = Store(db_path)
+    return st, Research(st)
+
+
+def _checkpoint_worker(db_path: str, asset_id: str) -> tuple:
+    from .shaffer import ShafferRun
+    st, r = _open(db_path)
+    try:
+        t0 = time.time()
+        ShafferRun(r, asset_id, use_priors=False).run(checkpoints_only=True)
+        return asset_id, "ok", round(time.time() - t0, 1)
+    except Exception as e:
+        return asset_id, f"failed: {type(e).__name__}: {e}", 0.0
+    finally:
+        st.close()
+
+
+def _shaffer_worker(db_path: str, asset_id: str) -> dict:
+    """Full point-in-time run with priors; caches the summary for the UI; returns what the audit aggregates."""
+    from .research import BUNDLE_VERSION, clean
+    from .shaffer import ShafferRun, summarize
+    st, r = _open(db_path)
+    try:
+        t0 = time.time()
+        run = ShafferRun(r, asset_id)
+        res = run.run()
+        summ = clean(summarize(res, run))
+        st.kv_set(f"shaffer2:{asset_id}:{r.version()}:{cfg.VERSION}:{BUNDLE_VERSION}", summ)
+        out = {"asset_id": asset_id, "class": run.cls, "seconds": round(time.time() - t0, 1), "history_years": summ.get("history_years"),
+               "performance": summ["performance"], "calibration": {k: {kk: v.get(kk) for kk in ("ic", "t", "n_eff", "monotonicity", "usable")} if v else None
+                                                                   for k, v in summ["calibration"].items()},
+               "live": {k: {kk: v.get(kk) for kk in ("raw", "calibrated", "expected", "confidence", "evidence", "n_eff", "reason")} for k, v in summ["horizons"].items()},
+               "validation": summ["validation"], "records": {}, "fam": {}, "decay": {}, "status_counts": {}}
+        # per horizon: realised returns by score band, and each family's own and incremental out-of-sample IC
+        for lab, h in run.horizons:
+            realized = {p[3]: (p[2], p[1]) for p in res["oos"][lab]}
+            recs = [(tau, raw, fam, realized[tau]) for (tau, raw, _c, _e), (_, fam) in zip(res["history"][lab], run.fam_records[lab]) if tau in realized]
+            bands = {f"{lo}..{hi}": [] for lo, hi in BANDS}
+            for tau, raw, fam, (yr, yv) in recs:
+                for lo, hi in BANDS:
+                    if lo <= raw < hi or (hi == 100 and raw == 100):
+                        bands[f"{lo}..{hi}"].append(yr)
+                        break
+            out["records"][lab] = {"n": len(recs), "bands": bands}
+            fams = sorted({f for _, _, fam, _ in recs for f in fam})
+            fstats = {}
+            for f in fams:
+                xs = [fam[f][0] for _, _, fam, _ in recs if f in fam]
+                ys = [yv for _, _, fam, (yr, yv) in recs if f in fam]
+                others = [sum(c for g, (sc, c) in fam.items() if g != f) for _, _, fam, _ in recs if f in fam]
+                if len(xs) < 30 or len(set(xs)) < 3:
+                    continue
+                own = _pearson(xs, ys)
+                part = _partial(xs, ys, others)
+                n_eff = len(xs) * 5.0 / max(5.0, float(h))
+                fstats[f] = {"ic": own, "partial": part, "n_eff": n_eff, "t": _tstat(own, n_eff), "t_partial": _tstat(part, n_eff)}
+            out["fam"][lab] = fstats
+            ev = res["evidence"].get(lab) or {}
+            out["decay"][lab] = {sg: e.get("decay") for sg, e in ev.items() if e.get("decay") in ("DECAYING", "WEAKENING", "HEALTHY")}
+            cnt = {}
+            for e in ev.values():
+                cnt[e.get("status", "?")] = cnt.get(e.get("status", "?"), 0) + 1
+            out["status_counts"][lab] = cnt
+        first = next((i for i, v in enumerate(run.price) if v is not None), 0)
+        out["first_price"] = run.cal[first]
+        out["first_score"] = {lab: (run.cal[res["history"][lab][0][0]] if res["history"][lab] else None) for lab, _ in run.horizons}
+        return out
+    except Exception as e:
+        return {"asset_id": asset_id, "error": f"{type(e).__name__}: {e}"}
+    finally:
+        st.close()
+
+
+def _ml_worker(db_path: str, asset_id: str) -> dict:
+    from . import ml
+    st, r = _open(db_path)
+    try:
+        t0 = time.time()
+        res = ml.train_asset(r, asset_id)
+        hz = {}
+        for lab, o in res["horizons"].items():
+            if not o.get("baselines"):
+                continue
+            hz[lab] = {"status": o.get("status"), "verified": o.get("verified"), "reasons": o.get("edge_reasons") or ([o.get("reason")] if o.get("reason") else []),
+                       "ensemble": {k: (o.get("ensemble") or {}).get(k) for k in ("ic", "t", "n_eff", "permutation_p", "r2_vs_mean")},
+                       "holdout": ((o.get("ensemble") or {}).get("holdout") or {}).get("ic"),
+                       "baselines": {k: {"ic": v.get("ic"), "same": v.get("ensemble_ic_same_rows"), "n_eff": v.get("n_eff")} for k, v in o["baselines"].items()},
+                       "direction": {k: (o.get("direction") or {}).get(k) for k in ("auc", "brier", "baseline_brier", "verified", "accuracy")},
+                       "volatility": {"verified": (o.get("volatility") or {}).get("verified"), "rmse": ((o.get("volatility") or {}).get("model") or {}).get("rmse"),
+                                      "rmse_current": ((o.get("volatility") or {}).get("baseline_current_vol") or {}).get("rmse"),
+                                      "rmse_ewma": ((o.get("volatility") or {}).get("baseline_ewma") or {}).get("rmse")} if o.get("volatility") else None,
+                       "drawdown": {k: (o.get("drawdown") or {}).get(k) for k in ("brier", "baseline_brier", "verified", "auc", "threshold")} if o.get("drawdown") else None,
+                       "oos": o.get("oos") or []}
+        for lab, v in hz.items():
+            try:
+                ss = r.shaffer_series(asset_id, lab)
+            except Exception:
+                ss = None
+            v["combined"] = _combined(v.pop("oos"), ss) if ss else None
+        return {"asset_id": asset_id, "seconds": round(time.time() - t0, 1), "horizons": hz}
+    except Exception as e:
+        return {"asset_id": asset_id, "error": f"{type(e).__name__}: {e}"}
+    finally:
+        st.close()
+
+
+def _expanding_z(xs: List[float]) -> List[Optional[float]]:
+    out, s, ss = [], 0.0, 0.0
+    for k, x in enumerate(xs):
+        if k >= 20:
+            m = s / k
+            sd = math.sqrt(max(1e-12, ss / k - m * m))
+            out.append((x - m) / sd)
+        else:
+            out.append(None)
+        s += x; ss += x * x
+    return out
+
+
+def _combined(oos: List[tuple], ss: List[Optional[float]]) -> Optional[dict]:
+    """Combined = α·Shaffer + (1 − α)·ML on standardised (expanding, past-only) forecasts: α chosen on the first half of
+    the common out-of-sample period, then judged on the untouched second half against each alone."""
+    rows = [(i, p, y, ss[i]) for i, p, y in oos if i < len(ss) and ss[i] is not None]
+    if len(rows) < 80:
+        return None
+    zp = _expanding_z([r[1] for r in rows])
+    zs = _expanding_z([r[3] for r in rows])
+    rows = [(r[2], a, b) for r, a, b in zip(rows, zp, zs) if a is not None and b is not None]
+    half = len(rows) // 2
+    first, second = rows[:half], rows[half:]
+    grid = [k / 10 for k in range(11)]
+    best = max(grid, key=lambda al: _spearman([al * b + (1 - al) * a for _, a, b in first], [y for y, _, _ in first]) or -9)
+    ys = [y for y, _, _ in second]
+    return {"alpha": best, "n_test": len(second),
+            "ic_combined": _spearman([best * b + (1 - best) * a for _, a, b in second], ys),
+            "ic_shaffer": _spearman([b for _, _, b in second], ys), "ic_ml": _spearman([a for _, a, _ in second], ys)}
+
+
+# ------------------------------------------------------------------ orchestration
+def run_universe(db_path: str, assets: Optional[List[str]] = None, ml_assets: Optional[List[str]] = None, workers: int = 3,
+                 progress=None) -> dict:
+    from ..data.store import Store
+    st = Store(db_path)
+    ids = assets or [a["id"] for a in st.assets() if st.price_count(a["id"]) >= 252 * 6]
+    st.close()
+    say = progress or (lambda m: None)
+    t0 = time.time()
+    out = {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "assets": ids, "checkpoints": {}, "shaffer": {}, "ml": {}}
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(_checkpoint_worker, db_path, a) for a in ids]
+        for k, f in enumerate(as_completed(futs)):
+            a, status, secs = f.result()
+            out["checkpoints"][a] = status
+            say(f"[1/3 checkpoints {k + 1}/{len(ids)}] {a}: {status} ({secs}s)")
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(_shaffer_worker, db_path, a) for a in ids]
+        for k, f in enumerate(as_completed(futs)):
+            r = f.result()
+            out["shaffer"][r["asset_id"]] = r
+            say(f"[2/3 Shaffer {k + 1}/{len(ids)}] {r['asset_id']}: {r.get('error') or str(r.get('seconds')) + 's'}")
+    mls = [a for a in (ml_assets or ML_SET) if a in ids]
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        futs = [ex.submit(_ml_worker, db_path, a) for a in mls]
+        for k, f in enumerate(as_completed(futs)):
+            r = f.result()
+            out["ml"][r["asset_id"]] = r
+            say(f"[3/3 ML {k + 1}/{len(mls)}] {r['asset_id']}: {r.get('error') or str(r.get('seconds')) + 's'}")
+    out["seconds"] = round(time.time() - t0, 1)
+    return out
+
+
+
+# ------------------------------------------------------------------ the report
+def _fmt(x, d=3):
+    return "—" if x is None else (f"{x:+.{d}f}" if isinstance(x, float) and d and x != 0 else f"{x:.{d}f}" if isinstance(x, float) else str(x))
+
+
+def _pct(x, d=1):
+    return "—" if x is None else f"{100 * x:.{d}f}%"
+
+
+def _stouffer(ts: List[float]) -> Optional[float]:
+    ts = [t for t in ts if t is not None]
+    return sum(ts) / math.sqrt(len(ts)) if ts else None
+
+
+def aggregates(u: dict) -> dict:
+    S = {a: v for a, v in u["shaffer"].items() if not v.get("error")}
+    labs = [lab for lab, _ in cfg.HORIZONS]
+    hmap = dict(cfg.HORIZONS)
+    agg = {"n_assets": len(S), "errors": {a: v["error"] for a, v in u["shaffer"].items() if v.get("error")}, "by_horizon": {}, "by_class": {},
+           "by_regime": {}, "bands": {}, "families": {}, "decay": {}, "history": [], "ml": {}, "combined": {}, "status": {}}
+    for a, v in sorted(S.items()):
+        agg["history"].append({"asset": a, "class": v["class"], "first_price": v.get("first_price"), "years": v.get("history_years"),
+                               "first_score_3M": (v.get("first_score") or {}).get("3M"), "oos_years_3M": (v["performance"].get("3M") or {}).get("years")})
+    for lab in labs:
+        h = hmap[lab]
+        perf = [(a, v["class"], v["performance"].get(lab) or {}) for a, v in S.items()]
+        ok = [(a, c, p) for a, c, p in perf if p.get("ic") is not None]
+        if not ok:
+            agg["by_horizon"][lab] = {"assets": 0}
+            continue
+        w = [p["n_eff"] for _, _, p in ok]
+        ics = [p["ic"] for _, _, p in ok]
+        hits = [(p["hit"], p.get("n_lean") or 0) for _, _, p in ok if p.get("hit") is not None]
+        agg["by_horizon"][lab] = {"assets": len(ok), "ic_weighted": sum(i * n for i, n in zip(ics, w)) / sum(w), "ic_median": sorted(ics)[len(ics) // 2],
+                                  "share_positive": sum(1 for i in ics if i > 0) / len(ics), "t_combined": _stouffer([p.get("t") for _, _, p in ok]),
+                                  "hit": (sum(hh * n for hh, n in hits) / sum(n for _, n in hits)) if hits and sum(n for _, n in hits) else None,
+                                  "n_eff_total": sum(w), "n_eff_median": sorted(w)[len(w) // 2]}
+        cls = {}
+        for a, c, p in ok:
+            cls.setdefault(c, []).append(p)
+        agg["by_class"][lab] = {c: {"assets": len(ps), "ic": sum(p["ic"] * p["n_eff"] for p in ps) / sum(p["n_eff"] for p in ps),
+                                    "share_positive": sum(1 for p in ps if p["ic"] > 0) / len(ps),
+                                    "hit": (sum(p["hit"] for p in ps if p.get("hit") is not None) / max(1, sum(1 for p in ps if p.get("hit") is not None))) if any(p.get("hit") is not None for p in ps) else None}
+                                for c, ps in cls.items()}
+        reg = {}
+        for a, c, p in ok:
+            for st, r in (p.get("by_regime") or {}).items():
+                if r.get("ic") is not None:
+                    reg.setdefault(st, []).append((r["ic"], r["n_eff"], r.get("hit")))
+        agg["by_regime"][lab] = {st: {"assets": len(xs), "ic": sum(i * n for i, n, _ in xs) / sum(n for _, n, _ in xs),
+                                      "hit": (sum(hh for _, _, hh in xs if hh is not None) / max(1, sum(1 for _, _, hh in xs if hh is not None))) if any(hh is not None for _, _, hh in xs) else None}
+                                 for st, xs in reg.items()}
+        # score bands pooled across assets
+        bands = {}
+        for lo, hi in BANDS:
+            key = f"{lo}..{hi}"
+            ys = [y for v in S.values() for y in ((v["records"].get(lab) or {}).get("bands") or {}).get(key, [])]
+            if not ys:
+                bands[key] = {"n": 0}
+                continue
+            n = len(ys)
+            m = sum(ys) / n
+            sd = math.sqrt(sum((y - m) ** 2 for y in ys) / max(1, n - 1))
+            n_eff = n * 5.0 / max(5.0, float(h))
+            ys_sorted = sorted(ys)
+            bands[key] = {"n": n, "n_eff": n_eff, "mean": math.exp(m) - 1, "median": math.exp(ys_sorted[n // 2]) - 1, "hit": sum(1 for y in ys if y > 0) / n,
+                          "vol": sd, "ci": (math.exp(m - 1.96 * sd / math.sqrt(max(1.0, n_eff))) - 1, math.exp(m + 1.96 * sd / math.sqrt(max(1.0, n_eff))) - 1)}
+        agg["bands"][lab] = bands
+        # families pooled
+        fam = {}
+        for v in S.values():
+            for f, st in (v["fam"].get(lab) or {}).items():
+                fam.setdefault(f, []).append(st)
+        agg["families"][lab] = {f: {"assets": len(xs), "ic": sum((x["ic"] or 0) * x["n_eff"] for x in xs) / max(1e-9, sum(x["n_eff"] for x in xs)),
+                                    "partial": sum((x["partial"] or 0) * x["n_eff"] for x in xs) / max(1e-9, sum(x["n_eff"] for x in xs)),
+                                    "t": _stouffer([x["t"] for x in xs]), "t_partial": _stouffer([x["t_partial"] for x in xs])} for f, xs in fam.items()}
+        dec = {}
+        for v in S.values():
+            for sg, dc in (v["decay"].get(lab) or {}).items():
+                d = dec.setdefault(sg, {"DECAYING": 0, "WEAKENING": 0, "HEALTHY": 0})
+                d[dc] += 1
+        agg["decay"][lab] = dec
+        st = {}
+        for v in S.values():
+            for k, c in (v["status_counts"].get(lab) or {}).items():
+                st[k] = st.get(k, 0) + c
+        agg["status"][lab] = st
+        # ML v2
+        mls = [(a, (m.get("horizons") or {}).get(lab)) for a, m in u["ml"].items() if not m.get("error")]
+        mls = [(a, x) for a, x in mls if x]
+        if mls:
+            base_names = sorted({k for _, x in mls for k in x["baselines"]})
+            beats = {}
+            for k in base_names:
+                pairs = [(x["baselines"][k].get("same"), x["baselines"][k].get("ic")) for _, x in mls if k in x["baselines"]]
+                pairs = [(e, b) for e, b in pairs if e is not None and b is not None]
+                beats[k] = {"cases": len(pairs), "ensemble_wins": sum(1 for e, b in pairs if e > b + 0.01), "mean_baseline_ic": (sum(b for _, b in pairs) / len(pairs)) if pairs else None,
+                            "mean_ensemble_ic": (sum(e for e, _ in pairs) / len(pairs)) if pairs else None}
+            ens = [x["ensemble"].get("ic") for _, x in mls if x["ensemble"].get("ic") is not None]
+            agg["ml"][lab] = {"assets": len(mls), "verified": [a for a, x in mls if x.get("verified")], "mean_ensemble_ic": (sum(ens) / len(ens)) if ens else None,
+                              "baselines": beats,
+                              "direction_verified": sum(1 for _, x in mls if (x.get("direction") or {}).get("verified")),
+                              "vol_verified": sum(1 for _, x in mls if (x.get("volatility") or {}).get("verified")),
+                              "vol_cases": sum(1 for _, x in mls if x.get("volatility")),
+                              "dd_verified": sum(1 for _, x in mls if (x.get("drawdown") or {}).get("verified")),
+                              "dd_cases": sum(1 for _, x in mls if x.get("drawdown")),
+                              "reasons": {a: x.get("reasons") for a, x in mls}}
+            cb = [x["combined"] for _, x in mls if x.get("combined")]
+            if cb:
+                def mean(k):
+                    xs = [c[k] for c in cb if c.get(k) is not None]
+                    return sum(xs) / len(xs) if xs else None
+                agg["combined"][lab] = {"cases": len(cb), "ic_combined": mean("ic_combined"), "ic_shaffer": mean("ic_shaffer"), "ic_ml": mean("ic_ml"),
+                                        "alpha_mean": mean("alpha"),
+                                        "combined_beats_both": sum(1 for c in cb if None not in (c["ic_combined"], c["ic_shaffer"], c["ic_ml"]) and c["ic_combined"] > max(c["ic_shaffer"], c["ic_ml"]))}
+    return agg
+
+
+def markdown(u: dict, agg: dict) -> str:
+    from .features import FEATURES
+    L = []
+    w = L.append
+    labs = [lab for lab, _ in cfg.HORIZONS]
+    w("# Shaffer Score v2 and ML v2: the audit")
+    w("")
+    w(f"Generated {u.get('started')} from the real research store (prices up to the latest close). "
+      f"Universe: {agg['n_assets']} assets with at least six years of daily history; ML: {len(u['ml'])} representative assets. "
+      f"Run time {u.get('seconds', 0) / 60:.0f} minutes. Every number below is out of sample: each score was computed on its date "
+      "with only the information available then, and compared with what happened afterwards.")
+    if agg["errors"]:
+        w("")
+        w("Assets that failed: " + ", ".join(f"{a} ({e})" for a, e in agg["errors"].items()))
+    w("")
+    w("## 1. The exact formula")
+    w("")
+    w("```")
+    w("SS_raw(a,h,t) = 100 · tanh( Σ_f W_f,a,h,t · A_f,a · H_f,h · FamilyScore_f,a,h,t / K_a,h )")
+    w("FamilyScore_f = Σ_{i∈f} ω_i · s_i · c_i · r_i · d_i          ω = correlation-penalised weights, Σω = 1")
+    w("K_a,h = %.2f · Σ_f A_f,a · H_f,h over the families with data" % cfg.KAPPA)
+    w("SS_cal = 100 · tanh( g(SS_raw) / %.2f ),  g = isotonic map from raw score to forward return (vol units), out of sample only" % cfg.G_SCALE)
+    w("```")
+    w("")
+    w("## 2–3. Families and every signal (prior direction: + bullish when high, − bearish when high, 0 learned from evidence)")
+    w("")
+    for f, sigs in cfg.FAMILIES.items():
+        w(f"**{f}** — " + "; ".join(f"`{sg}` ({'+' if p > 0 else '−' if p < 0 else '0'}) {FEATURES.get(sg, ('', '', ''))[2]}" for sg, p in sigs))
+        w("")
+    w("## 4. Standardisation")
+    w("")
+    w(f"Each signal's z-score uses the mean and standard deviation of its values strictly before t (expanding, after 252 observations), capped at ±3. "
+      f"s = δ · clip(z / {cfg.S_SCALE:g}, −1, 1), δ = the direction the signal is used in.")
+    w("")
+    w("## 5. Predictive weight")
+    w("")
+    w("w = |PS| × (¼ + ¾ · stability). PS (predictive strength, correlation units) is the median of: the Pearson IC of the z-score with the vol-scaled "
+      "forward return; the IC implied by the directional hit rate (ρ = sin(π(hit − ½))); and the IC implied by the conditional-return spread "
+      "(E[y | z > ½] − E[y | z < −½] ÷ 2.28σ). Stability = share of the three thirds of the matured history whose IC has the same sign. "
+      f"Hierarchical evidence: PS is shrunk toward the asset-class IC (itself shrunk toward the global IC) with weight {20:g} ÷ (n_eff + 20), "
+      "from other assets' January checkpoints known at the time.")
+    w("")
+    w("## 6. Confidence")
+    w("")
+    w(f"c = min(1, √(n_eff / {cfg.N_FULL:g})) × |IC| / (|IC| + 1.96·SE) × (1 − ½·q) × data quality; SE = 1/√(n_eff − 3); q = Benjamini–Hochberg "
+      "across all signals at that horizon; data quality = share of the last year with a value. n_eff = rows × step ÷ max(h, persistence), persistence "
+      "= −21 / ln ρ₂₁ of the signal.")
+    w("")
+    w("## 7. Regime adjustment")
+    w("")
+    w(f"r = clip(1 + mean over regime dimensions of λ·(ratio − 1), {cfg.R_MIN}, {cfg.R_MAX}); ratio = δ·IC in today's state ÷ |PS| (clipped 0..2); "
+      f"λ = n_eff_state ÷ (n_eff_state + {cfg.N_REGIME:g}). Dimensions: market, volatility, rates, inflation, growth, dollar, liquidity. Up to 12M only.")
+    w("")
+    w("## 8. Decay")
+    w("")
+    w(f"trend = 0.6·(δ·IC₃ᵧ ÷ |IC|) + 0.4·(δ·IC₁ᵧ ÷ |IC|); HEALTHY ≥ 0.6, WEAKENING ≥ 0.2, else DECAYING; INSUFFICIENT DATA below 10 independent 3-year "
+      f"observations. d = 1 − λ(1 − clip(½ + ½·trend, {cfg.D_MIN}, 1)), λ = n_eff₃ᵧ ÷ (n_eff₃ᵧ + 30): gradual, never flips a sign.")
+    w("")
+    w("## 9. Correlated signals")
+    w("")
+    w("Within a family, ω_i = (w_i ÷ Σ_j ρ²_ij) normalised, ρ_ij the correlation of the two signals' z-scores up to the refit (the sum includes ρ_ii = 1). "
+      "Two identical signals therefore count as one; families (not signals) are then summed.")
+    w("")
+    w("## 10–11. Asset and horizon applicability")
+    w("")
+    w("| Family | " + " | ".join(cfg.CLASSES) + " |")
+    w("|---|" + "---|" * len(cfg.CLASSES))
+    for f in cfg.FAMILIES:
+        w(f"| {f} | " + " | ".join(f"{cfg.applicability(f, c):.2f}" for c in cfg.CLASSES) + " |")
+    w("")
+    w("| Family | " + " | ".join(labs) + " |")
+    w("|---|" + "---|" * len(labs))
+    for f in cfg.FAMILIES:
+        w(f"| {f} | " + " | ".join(f"{cfg.horizon_fit(f, l):.1f}" for l in labs) + " |")
+    w("")
+    w("H is an economic prior; the evidence-based family weight W (evidence × out-of-sample validation V) decides the rest.")
+    w("")
+    w("## 12. How the historical scores are generated")
+    w("")
+    w("One forward sweep over the calendar per asset. An observation dated t (signal z-scores at t, forward return t→t+h) enters the evidence only at "
+      "t + h + 1. Evidence is refitted at the first session of each month; scores are computed weekly and on the last session by the one scoring "
+      "routine, with that month's evidence, the signals on the day and the regime on the day. Matured scores feed the family validation "
+      "multipliers and the calibration from the next refit. `compute_shaffer_score(asset, horizon, as_of)` runs the sweep to `as_of`; the live score is "
+      "the same call on the latest session (tests prove a past date scored directly equals its record, and that later prices do not change it). "
+      f"Macro data are FRED first releases on their publication dates; fundamentals are dated by SEC filing; splits are applied to per-share data.")
+    w("")
+    w("## 13. History per asset")
+    w("")
+    w("| Asset | Class | Prices since | Years | First 3M score | 3M out-of-sample record (years) |")
+    w("|---|---|---|---|---|---|")
+    for r in agg["history"]:
+        w(f"| {r['asset']} | {r['class']} | {r['first_price']} | {r['years']} | {r['first_score_3M'] or '—'} | {_fmt(r['oos_years_3M'], 1) if r['oos_years_3M'] else '—'} |")
+    w("")
+    w("## 14. Effective sample by horizon")
+    w("")
+    w("| Horizon | Assets scored | Median independent observations per asset | Total |")
+    w("|---|---|---|---|")
+    for lab in labs:
+        b = agg["by_horizon"].get(lab) or {}
+        w(f"| {lab} | {b.get('assets', 0)} | {_fmt(b.get('n_eff_median'), 0) if b.get('n_eff_median') else '—'} | {_fmt(b.get('n_eff_total'), 0) if b.get('n_eff_total') else '—'} |")
+    w("")
+    w("## 15–16. Calibration: what each score band was followed by (all assets pooled)")
+    w("")
+    for lab in labs:
+        bands = agg["bands"].get(lab)
+        if not bands or not any(v.get("n") for v in bands.values()):
+            continue
+        w(f"**{lab}**")
+        w("")
+        w("| Raw score | Scores | Indep. obs. | Mean return | Median | Up share | Volatility (log) | 95% CI of the mean |")
+        w("|---|---|---|---|---|---|---|---|")
+        for k, v in bands.items():
+            if not v.get("n"):
+                w(f"| {k} | 0 | | | | | | |")
+                continue
+            w(f"| {k} | {v['n']} | {v['n_eff']:.0f} | {_pct(v['mean'])} | {_pct(v['median'])} | {_pct(v['hit'], 0)} | {v['vol']:.3f} | {_pct(v['ci'][0])} … {_pct(v['ci'][1])} |")
+        w("")
+    w("## 17–18. Out-of-sample IC and hit rate by horizon")
+    w("")
+    w("| Horizon | Assets | IC (weighted by n_eff) | Median IC | Share of assets with IC > 0 | Combined t (Stouffer) | Hit rate (|score| ≥ 5) |")
+    w("|---|---|---|---|---|---|---|")
+    for lab in labs:
+        b = agg["by_horizon"].get(lab) or {}
+        if not b.get("assets"):
+            w(f"| {lab} | 0 | | | | | |")
+            continue
+        w(f"| {lab} | {b['assets']} | {_fmt(b['ic_weighted'])} | {_fmt(b['ic_median'])} | {_pct(b['share_positive'], 0)} | {_fmt(b['t_combined'], 1)} | {_pct(b['hit'], 1)} |")
+    w("")
+    w("## 19. By asset class")
+    w("")
+    for lab in ("1W", "1M", "3M", "6M", "12M"):
+        bc = agg["by_class"].get(lab)
+        if not bc:
+            continue
+        w(f"**{lab}**: " + "; ".join(f"{c} IC {_fmt(v['ic'])} ({v['assets']} assets, {_pct(v['share_positive'], 0)} positive, hit {_pct(v['hit'], 0)})" for c, v in sorted(bc.items())))
+        w("")
+    w("## 20. By regime")
+    w("")
+    for lab in ("1W", "1M", "3M", "6M", "12M"):
+        br = agg["by_regime"].get(lab)
+        if not br:
+            continue
+        w(f"**{lab}**: " + "; ".join(f"{st.replace('_', ' ')} {_fmt(v['ic'])}" for st, v in sorted(br.items())))
+        w("")
+    w("## 21–22. Which families add independent information, and which look useless")
+    w("")
+    w("Own IC = the family score's out-of-sample IC; incremental IC = its partial correlation with the forward return after removing the rest of the score. "
+      "Pooled across assets (weighted by independent observations; t combined by Stouffer).")
+    w("")
+    for lab in ("1W", "1M", "3M", "6M", "12M"):
+        fm = agg["families"].get(lab)
+        if not fm:
+            continue
+        w(f"**{lab}**")
+        w("")
+        w("| Family | Assets | Own IC | t | Incremental IC | t | Verdict |")
+        w("|---|---|---|---|---|---|---|")
+        for f, v in sorted(fm.items(), key=lambda kv: -(kv[1]["t_partial"] or -99)):
+            tp, to = v["t_partial"] or 0, v["t"] or 0
+            verdict = "adds independent information" if tp >= 2 else "some evidence" if tp >= 1 else "negative record" if tp <= -2 else "no measurable value" if abs(to) < 1 and abs(tp) < 1 else "weak"
+            w(f"| {f} | {v['assets']} | {_fmt(v['ic'])} | {_fmt(v['t'], 1)} | {_fmt(v['partial'])} | {_fmt(v['t_partial'], 1)} | {verdict} |")
+        w("")
+    w("## 23. Decaying signals (at the latest refit)")
+    w("")
+    for lab in ("1W", "1M", "3M", "6M", "12M"):
+        dec = agg["decay"].get(lab)
+        if not dec:
+            continue
+        top = sorted(dec.items(), key=lambda kv: -(kv[1]["DECAYING"]))[:10]
+        w(f"**{lab}**: " + "; ".join(f"`{sg}` decaying in {d['DECAYING']} assets, weakening in {d['WEAKENING']}, healthy in {d['HEALTHY']}" for sg, d in top if d["DECAYING"]))
+        st = agg["status"].get(lab) or {}
+        w("")
+        w(f"Signal status across assets at {lab}: " + "; ".join(f"{k}: {v}" for k, v in sorted(st.items(), key=lambda kv: -kv[1])))
+        w("")
+    w("## 24. ML against each baseline")
+    w("")
+    w("Cases = assets where both had out-of-sample forecasts on the same rows; wins = ensemble rank IC above the baseline's by more than 0.01.")
+    w("")
+    for lab in labs:
+        m = agg["ml"].get(lab)
+        if not m:
+            continue
+        w(f"**{lab}** — {m['assets']} assets; verified ML edge: {', '.join(m['verified']) or 'none'}; mean ensemble IC {_fmt(m['mean_ensemble_ic'])}; "
+          f"direction model verified in {m['direction_verified']}; volatility model verified in {m['vol_verified']}/{m['vol_cases']}; drawdown model verified in {m['dd_verified']}/{m['dd_cases']}")
+        w("")
+        w("| Baseline | Cases | Ensemble wins | Mean baseline IC | Mean ensemble IC (same rows) |")
+        w("|---|---|---|---|---|")
+        for k, v in m["baselines"].items():
+            w(f"| {k.replace('_', ' ')} | {v['cases']} | {v['ensemble_wins']} | {_fmt(v['mean_baseline_ic'])} | {_fmt(v['mean_ensemble_ic'])} |")
+        w("")
+    w("## 25. Shaffer vs ML")
+    w("")
+    w("| Horizon | Cases | Mean Shaffer IC | Mean ML IC (same rows) | ML better in |")
+    w("|---|---|---|---|---|")
+    for lab in labs:
+        m = agg["ml"].get(lab)
+        if not m or "shaffer" not in m["baselines"]:
+            continue
+        v = m["baselines"]["shaffer"]
+        w(f"| {lab} | {v['cases']} | {_fmt(v['mean_baseline_ic'])} | {_fmt(v['mean_ensemble_ic'])} | {v['ensemble_wins']} |")
+    w("")
+    w("## 26. Does combining them help out of sample?")
+    w("")
+    w("α chosen on the first half of each asset's common out-of-sample period; ICs measured on the untouched second half.")
+    w("")
+    w("| Horizon | Cases | Mean α (weight on Shaffer) | IC combined | IC Shaffer | IC ML | Combined beats both in |")
+    w("|---|---|---|---|---|---|---|")
+    for lab in labs:
+        c = agg["combined"].get(lab)
+        if not c:
+            continue
+        w(f"| {lab} | {c['cases']} | {_fmt(c['alpha_mean'], 2)} | {_fmt(c['ic_combined'])} | {_fmt(c['ic_shaffer'])} | {_fmt(c['ic_ml'])} | {c['combined_beats_both']} |")
+    w("")
+    return "\n".join(L)

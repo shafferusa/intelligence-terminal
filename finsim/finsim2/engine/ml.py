@@ -26,7 +26,11 @@ from . import models as M
 from .features import FEATURES, compute_features, family, label, targets
 from .signals import standardize_all
 
-VERSION = "fs2-ml-1"
+VERSION = "fs2-ml-2"
+HOLDOUT_FRAC = 0.15          # the last 15% of rows: untouched by model selection and ensemble weights, scored once
+DD_THRESHOLD = {5: 0.05, 21: 0.075, 63: 0.10, 126: 0.15, 252: 0.20}   # drawdown-probability targets by horizon
+EDGE_MARGIN = 0.01           # the ensemble's IC must beat the best baseline's by at least this much
+EDGE_T = 2.0                 # and be significant on its effective sample
 STEP = {1: 5, 5: 5, 21: 5, 63: 10, 126: 21, 252: 21, 756: 21, 1260: 21, 2520: 21}
 REG_MODELS = ["ols", "ridge", "lasso", "elastic_net", "random_forest", "gradient_boosting"]
 TREE_MODELS = {"random_forest", "gradient_boosting"}
@@ -57,7 +61,37 @@ def asset_dataset(z: Dict[str, list], price: list, h: int, names: Optional[List[
     y = [tgt[t] for t in idx]
     last = max(i for i in range(n) if price[i] is not None)
     x_today = [z[k][last] if z[k][last] is not None else next((v for v in reversed(z[k][max(0, last - 5):last + 1]) if v is not None), None) for k in keep]
-    return {"names": keep, "idx": idx, "X": X, "y": y, "x_today": x_today, "last": last, "step": step}
+    # baseline inputs, all known at t: the previous h-session return, 12-1 momentum, minus the 20-day z-score
+    prev = [(math.log(price[t] / price[t - h]) if t - h >= 0 and price[t] and price[t - h] else None) for t in idx]
+    mom = [(z.get("mom_12_1") or [None] * n)[t] for t in idx]
+    mr = [(-(z.get("z_20") or [None] * n)[t]) if (z.get("z_20") or [None] * n)[t] is not None else None for t in idx]
+    # other targets: realised volatility over the next h sessions, and whether the drawdown inside the window exceeds X
+    lr = [None] + [math.log(price[i] / price[i - 1]) if price[i] and price[i - 1] else None for i in range(1, n)]
+    vol_t, dd_t, vol_now, ewma_now = [], [], [], []
+    thr = DD_THRESHOLD.get(h)
+    ew, ew_at = None, {}
+    for k in range(n):                                   # EWMA variance (λ = 0.94) of returns up to and including k
+        if lr[k] is not None:
+            ew = lr[k] * lr[k] if ew is None else 0.94 * ew + 0.06 * lr[k] * lr[k]
+        ew_at[k] = ew
+    for t in idx:
+        past = [lr[k] for k in range(max(1, t - 19), t + 1) if lr[k] is not None]
+        vol_now.append(math.sqrt(252.0 / len(past) * sum(r * r for r in past)) if len(past) >= 10 else None)
+        ewma_now.append(math.sqrt(252.0 * ew_at[t]) if ew_at.get(t) is not None else None)
+        rs = [lr[k] for k in range(t + 1, min(n, t + h + 1)) if lr[k] is not None]
+        vol_t.append(math.sqrt(252.0 / max(1, len(rs)) * sum(r * r for r in rs)) if len(rs) >= max(3, h // 2) else None)
+        if thr is not None and price[t]:
+            peak, worst = price[t], 0.0
+            for k in range(t + 1, min(n, t + h + 1)):
+                if price[k]:
+                    peak = max(peak, price[k])
+                    worst = min(worst, price[k] / peak - 1)
+            dd_t.append(1.0 if worst <= -thr else 0.0)
+        else:
+            dd_t.append(None)
+    return {"names": keep, "idx": idx, "X": X, "y": y, "x_today": x_today, "last": last, "step": step,
+            "prev": prev, "mom": mom, "mr": mr, "vol_target": vol_t, "dd_target": dd_t, "dd_threshold": thr,
+            "vol_now": vol_now, "ewma_now": ewma_now}
 
 
 # ------------------------------------------------------------------ walk-forward
@@ -215,23 +249,184 @@ def _pct_rank(values: List[float], x: float) -> float:
     return (sum(1 for v in values if v < x) + 0.5 * sum(1 for v in values if v == x)) / len(values)
 
 
-def train_horizon(ds: dict, h: int, lab: str, progress=None) -> dict:
-    X, y = ds["X"], ds["y"]
+# ------------------------------------------------------------------ evaluation helpers
+def _t_of(ic: Optional[float], n_eff: float) -> Optional[float]:
+    if ic is None or n_eff <= 3:
+        return None
+    return ic * math.sqrt(n_eff - 2) / math.sqrt(max(1e-12, 1 - ic * ic))
+
+
+def _reg_metrics(pred: List[Optional[float]], y: List[float], h: int, step: int) -> dict:
+    pairs = [(p, v) for p, v in zip(pred, y) if p is not None and v is not None]
+    if len(pairs) < 10:
+        return {"n": len(pairs)}
+    p, v = [a for a, _ in pairs], [b for _, b in pairs]
+    ic = M.spearman(p, v) if len(set(p)) > 1 else None
+    lean = [(a, b) for a, b in pairs if a != 0]
+    n_eff = len(pairs) * step / max(h, step)
+    return {"n": len(pairs), "n_eff": n_eff, "ic": ic, "t": _t_of(ic, n_eff), "pearson": M.pearson(p, v) if len(set(p)) > 1 else None,
+            "hit": (sum(1 for a, b in lean if (a > 0) == (b > 0)) / len(lean)) if lean else None,
+            "rmse": math.sqrt(sum((a - b) ** 2 for a, b in pairs) / len(pairs)), "mae": sum(abs(a - b) for a, b in pairs) / len(pairs),
+            "sharpe": _sharpe_of(p, v, h, step)}
+
+
+def _cls_metrics(prob: List[float], yb: List[float], base: Optional[List[float]] = None) -> dict:
+    pairs = [(p, v) for p, v in zip(prob, yb) if p is not None and v is not None]
+    if len(pairs) < 20:
+        return {"n": len(pairs)}
+    p, v = [a for a, _ in pairs], [b for _, b in pairs]
+    pos = sum(v)
+    neg = len(v) - pos
+    tp = sum(1 for a, b in pairs if a >= 0.5 and b == 1)
+    fp = sum(1 for a, b in pairs if a >= 0.5 and b == 0)
+    fn = sum(1 for a, b in pairs if a < 0.5 and b == 1)
+    tn = len(pairs) - tp - fp - fn
+    prec = tp / (tp + fp) if tp + fp else None
+    rec = tp / (tp + fn) if tp + fn else None
+    auc = None
+    if pos and neg:                                   # Mann-Whitney
+        r = M.rank(p)
+        auc = (sum(rk for rk, b in zip(r, v) if b == 1) - pos * (pos + 1) / 2) / (pos * neg)
+    out = {"n": len(pairs), "base_rate": pos / len(v), "accuracy": (tp + tn) / len(pairs),
+           "balanced_accuracy": 0.5 * ((tp / pos if pos else 0) + (tn / neg if neg else 0)), "precision": prec, "recall": rec,
+           "f1": (2 * prec * rec / (prec + rec)) if prec and rec else None, "auc": auc,
+           "brier": sum((a - b) ** 2 for a, b in pairs) / len(pairs)}
+    bins = []
+    for lo in (0.0, 0.2, 0.4, 0.6, 0.8):
+        sub = [(a, b) for a, b in pairs if lo <= a < lo + 0.2 or (lo == 0.8 and a == 1.0)]
+        if sub:
+            bins.append({"lo": lo, "hi": lo + 0.2, "n": len(sub), "mean_prob": sum(a for a, _ in sub) / len(sub), "freq": sum(b for _, b in sub) / len(sub)})
+    out["reliability"] = bins
+    if base is not None:
+        bp = [(a, b) for a, b in zip(base, yb) if a is not None and b is not None]
+        if bp:
+            out["baseline_brier"] = sum((a - b) ** 2 for a, b in bp) / len(bp)
+    return out
+
+
+def _expanding_mean(ds: dict, rows: List[int], h: int, series: List[Optional[float]]) -> List[Optional[float]]:
+    """For each row, the mean of `series` over earlier rows whose outcome was already known (idx + h < row idx)."""
+    idx = ds["idx"]
+    out, s, n, k = [], 0.0, 0, 0
+    order = sorted(range(len(idx)), key=lambda i: idx[i])
+    for r in rows:
+        while k < len(order) and idx[order[k]] + h < idx[r]:
+            v = series[order[k]]
+            if v is not None:
+                s += v; n += 1
+            k += 1
+        out.append(s / n if n >= 10 else None)
+    return out
+
+
+def _perm_pvalue(pred: List[float], y: List[float], block: int, reps: int = 200, seed: int = 7) -> Optional[float]:
+    """Random-signal baseline: how often a block-shuffled copy of the predictions (autocorrelation kept) scores at
+    least the same rank IC."""
+    import random
+    ic = M.spearman(pred, y)
+    if ic is None or len(pred) < 30:
+        return None
+    rnd = random.Random(seed)
+    blocks = [pred[i:i + block] for i in range(0, len(pred), max(1, block))]
+    hits = 0
+    for _ in range(reps):
+        rnd.shuffle(blocks)
+        sh = [x for b in blocks for x in b]
+        v = M.spearman(sh, y)
+        if v is not None and v >= ic:
+            hits += 1
+    return (hits + 1) / (reps + 1)
+
+
+def _split(ds: dict, h: int) -> Tuple[int, List[int]]:
+    """Development rows [0, H0) and the untouched holdout; training rows for the holdout are purged by h."""
+    N = len(ds["idx"])
+    H0 = int(N * (1 - HOLDOUT_FRAC))
+    return H0, list(range(H0, N))
+
+
+def _sub(ds: dict, rows: List[int]) -> dict:
+    return {**ds, "X": [ds["X"][i] for i in rows], "y": [ds["y"][i] for i in rows], "idx": [ds["idx"][i] for i in rows]}
+
+
+def _simple_wf(X, target, idx, h, dev_n, names_models, classifier=False):
+    """Walk-forward (purged, expanding) predictions of `target` on the development test blocks plus the holdout,
+    for the volatility and drawdown problems. Returns (rows, preds, final models)."""
+    rows_ok = [i for i in range(len(idx)) if target[i] is not None]
+    if len(rows_ok) < 120:
+        return [], [], {}
+    dev = [i for i in rows_ok if i < dev_n]
+    hold = [i for i in rows_ok if i >= dev_n]
+    folds = _folds([idx[i] for i in dev], h)
+    out_rows, out_pred = [], []
+    for tr_pos, te_pos in folds + ([] if not hold else [(None, None)]):
+        if tr_pos is None:
+            te = hold
+            tr = [i for i in dev if idx[i] + h < idx[hold[0]]]
+        else:
+            tr = [dev[k] for k in tr_pos]
+            te = [dev[k] for k in te_pos]
+        if len(tr) < 40 or not te:
+            continue
+        preds = []
+        for m in names_models:
+            try:
+                mod = M.make_model(m) if not classifier else (M.make_model(m) if m == "logistic" else M.make_model(m, loss="logistic"))
+                mod.fit([X[i] for i in tr], [target[i] for i in tr])
+                preds.append(mod.predict_proba([X[i] for i in te]) if classifier else mod.predict([X[i] for i in te]))
+            except Exception:
+                continue
+        if not preds:
+            continue
+        out_rows += te
+        out_pred += [sum(p[j] for p in preds) / len(preds) for j in range(len(te))]
+    finals = {}
+    for m in names_models:
+        try:
+            mod = M.make_model(m) if not classifier else (M.make_model(m) if m == "logistic" else M.make_model(m, loss="logistic"))
+            mod.fit([X[i] for i in rows_ok], [target[i] for i in rows_ok])
+            finals[m] = mod
+        except Exception:
+            pass
+    return out_rows, out_pred, finals
+
+
+def train_horizon(ds: dict, h: int, lab: str, progress=None, shaffer: Optional[List[Optional[float]]] = None) -> dict:
+    """Return model (ensemble), baselines, verified-edge test, holdout confirmation, and the separate direction,
+    volatility and drawdown problems for one asset and horizon."""
+    X, y, step = ds["X"], ds["y"], ds["step"]
     n_rows = len(X)
     use_trees = h <= 252 and n_rows >= 300
     models = [m for m in REG_MODELS if use_trees or m not in TREE_MODELS]
-    wf = walk_forward(ds, h, models, progress)
+    H0, hold = _split(ds, h)
+    dev = _sub(ds, list(range(H0)))
+    wf = walk_forward(dev, h, models, progress)
     if not wf.get("folds"):
         return {"horizon": lab, "status": "insufficient", "reason": f"only {n_rows} usable rows", "rows": n_rows}
     board = sorted(wf["board"], key=lambda r: -(r["robust"] if r["robust"] is not None else -9))
-    # final weights from all blocks; final models on all rows whose targets are known
     weights = {}
     for m in models:
         fic = [v for v in wf["per"][m]["fold_ic"] if v is not None]
         weights[m] = max(0.0, sum(fic) / len(fic)) if fic else 0.0
     wsum = sum(weights.values())
-    finals = {}
-    preds_today = {}
+    # holdout: models trained on development rows whose outcome was known before the holdout, weighted as chosen on dev
+    hold_pred = []
+    if hold and wsum > 0:
+        tr = [i for i in range(H0) if ds["idx"][i] + h < ds["idx"][hold[0]]]
+        parts = {}
+        for m in models:
+            if weights[m] <= 0:
+                continue
+            try:
+                _, p = _fit_predict(m, [X[i] for i in tr], [y[i] for i in tr], [X[i] for i in hold], len(tr))
+                parts[m] = p
+            except Exception:
+                pass
+        tot = sum(weights[m] for m in parts)
+        if tot > 0:
+            hold_pred = [sum(weights[m] * parts[m][j] for m in parts) / tot for j in range(len(hold))]
+    # final models on every row (today's forecast may use everything known today)
+    finals, preds_today = {}, {}
     for m in models:
         if weights[m] <= 0 and m not in ("ridge", "gradient_boosting"):
             continue
@@ -241,33 +436,119 @@ def train_horizon(ds: dict, h: int, lab: str, progress=None) -> dict:
             preds_today[m] = p[0]
         except Exception:
             pass
-    ens_today = (sum(weights[m] * preds_today[m] for m in preds_today if weights[m] > 0) / sum(weights[m] for m in preds_today if weights[m] > 0)) \
-        if any(weights[m] > 0 for m in preds_today) else None
-    try:
-        lg = M.make_model("logistic")
-        lg.fit(X, [1.0 if v > 0 else 0.0 for v in y])
-        prob_up = lg.predict_proba([ds["x_today"]])[0]
-    except Exception:
-        prob_up = None
-    ens_ic = wf["ens_ic"]
-    step = ds["step"]
-    n_oos = len(wf["test_rows"])
-    n_eff = max(1.0, n_oos * step / h)
-    quality = min(1.0, max(0.0, ens_ic or 0.0) / 0.10)
-    score = None
-    if ens_today is not None and wf["ens"]:
-        pct = _pct_rank(wf["ens"], ens_today)
-        score = (2 * pct - 1) * 100 * quality
+    live_w = {m: weights[m] for m in preds_today if weights[m] > 0}
+    ens_today = (sum(w * preds_today[m] for m, w in live_w.items()) / sum(live_w.values())) if live_w else None
+    # ---------- evaluation on genuinely out-of-sample rows: development test blocks and the holdout
+    dev_rows = wf["test_rows"]
+    oos_rows = dev_rows + (hold if hold_pred else [])
+    oos_pred = wf["ens"] + hold_pred
+    ys = [y[i] for i in oos_rows]
+    ens_dev = _reg_metrics(wf["ens"], [y[i] for i in dev_rows], h, step)
+    ens_hold = _reg_metrics(hold_pred, [y[i] for i in hold], h, step) if hold_pred else {"n": 0}
+    ens_all = _reg_metrics(oos_pred, ys, h, step)
+    hist_mean = _expanding_mean(ds, oos_rows, h, y)
+    base_preds = {"zero": [0.0] * len(oos_rows), "historical_mean": hist_mean, "previous_return": [ds["prev"][i] for i in oos_rows],
+                  "momentum": [ds["mom"][i] for i in oos_rows], "mean_reversion": [ds["mr"][i] for i in oos_rows]}
+    if shaffer is not None:
+        base_preds["shaffer"] = [shaffer[i] for i in oos_rows]
+    baselines = {k: _reg_metrics(v, ys, h, step) for k, v in base_preds.items()}
+    for k, v in baselines.items():                           # the ensemble on exactly the same rows, for a fair comparison
+        rows_k = [j for j, pv in enumerate(base_preds[k]) if pv is not None]
+        v["ensemble_ic_same_rows"] = M.spearman([oos_pred[j] for j in rows_k], [ys[j] for j in rows_k]) if len(rows_k) >= 10 else None
+    always_long = {"hit": sum(1 for v in ys if v > 0) / len(ys) if ys else None, "sharpe": _sharpe_of([1.0] * len(ys), ys, h, step)}
+    hm = [(p, v) for p, v in zip(hist_mean, ys) if p is not None]
+    r2 = None
+    if hm:
+        sse_m = sum((a - b) ** 2 for a, b in hm)
+        sse_e = sum((oos_pred[j] - ys[j]) ** 2 for j in range(len(ys)) if hist_mean[j] is not None)
+        r2 = 1 - sse_e / sse_m if sse_m > 0 else None
+    perm_p = _perm_pvalue(oos_pred, ys, max(1, h // step))
+    # ---------- the verified-edge rule
+    if (ens_all.get("n_eff") or 0) < 10:
+        return {"horizon": lab, "h": h, "status": "insufficient", "rows": n_rows,
+                "reason": f"about {ens_all.get('n_eff') or 0:.0f} independent out-of-sample observations: too few to judge any model",
+                "baselines": baselines, "message": "NO VERIFIED ML EDGE: too few independent observations at this horizon."}
+    rivals = {k: v for k, v in baselines.items() if k not in ("zero", "historical_mean")}
+    beaten = {k: (v.get("ensemble_ic_same_rows") or -1) > (v.get("ic") if v.get("ic") is not None else -1) + EDGE_MARGIN for k, v in rivals.items() if v.get("n", 0) >= 10}
+    reasons = []
+    if (ens_all.get("t") or 0) < EDGE_T:
+        reasons.append(f"out-of-sample IC {fmt(ens_all.get('ic'))} is not significant (t {fmt(ens_all.get('t'), 1)} < {EDGE_T:g})")
+    lost = [k for k, ok in beaten.items() if not ok]
+    if lost:
+        reasons.append("does not beat " + ", ".join(k.replace("_", " ") for k in lost))
+    if ens_hold.get("n", 0) >= 10 and (ens_hold.get("ic") or 0) <= 0:
+        reasons.append(f"the untouched holdout disagrees (IC {fmt(ens_hold.get('ic'))})")
+    if perm_p is not None and perm_p >= 0.05:
+        reasons.append(f"a shuffled copy does as well {perm_p:.0%} of the time")
+    verified = not reasons
+    quality = min(1.0, max(0.0, ens_all.get("ic") or 0.0) / 0.10)
+    score = 0.0
+    if verified and ens_today is not None and oos_pred:
+        score = (2 * _pct_rank(oos_pred, ens_today) - 1) * 100 * quality
     agree = None
-    if ens_today is not None and preds_today:
-        agree = sum(1 for m, p in preds_today.items() if weights.get(m, 0) > 0 and (p > 0) == (ens_today > 0)) / max(1, sum(1 for m in preds_today if weights.get(m, 0) > 0))
+    if ens_today is not None and live_w:
+        agree = sum(1 for m in live_w if (preds_today[m] > 0) == (ens_today > 0)) / len(live_w)
+    n_eff = ens_all.get("n_eff") or 1.0
     sample = min(1.0, math.log10(max(1.0, n_eff)) / 2.0)
     stab = wf["ens_positive_folds"] or 0.0
-    conf_v = sample * (0.45 * quality + 0.3 * stab + 0.25 * (agree if agree is not None else 0.5))
-    # importance on the last held-out block with the last fold's models
+    conf_v = sample * (0.45 * quality + 0.3 * stab + 0.25 * (agree if agree is not None else 0.5)) if verified else 0.0
+    # ---------- direction: probability of a rise (logistic walk-forward, calibration and Brier against the base rate)
+    ybin = [1.0 if v > 0 else 0.0 for v in y]
+    lg_rows = dev_rows
+    lg_prob = wf["logit"]["preds"]
+    if hold:
+        tr = [i for i in range(H0) if ds["idx"][i] + h < ds["idx"][hold[0]]]
+        try:
+            lg = M.make_model("logistic"); lg.fit([X[i] for i in tr], [ybin[i] for i in tr])
+            lg_rows = dev_rows + hold
+            lg_prob = lg_prob + lg.predict_proba([X[i] for i in hold])
+        except Exception:
+            pass
+    base_rate = _expanding_mean(ds, lg_rows, h, ybin)
+    direction = _cls_metrics(lg_prob, [ybin[i] for i in lg_rows], base_rate)
+    try:
+        lg = M.make_model("logistic"); lg.fit(X, ybin)
+        prob_up = lg.predict_proba([ds["x_today"]])[0]
+        lg_final = lg
+    except Exception:
+        prob_up, lg_final = None, None
+    direction["verified"] = bool(direction.get("auc") and direction["auc"] > 0.5 and direction.get("baseline_brier") is not None
+                                 and direction["brier"] < direction["baseline_brier"])
+    # ---------- volatility (future realised) and drawdown probability
+    vol_out, dd_out, vol_final, dd_final = None, None, {}, {}
+    if 5 <= h <= 252:
+        vt = ds["vol_target"]
+        rows_v, pv, vol_final = _simple_wf(X, vt, ds["idx"], h, H0, ["ridge"] + (["gradient_boosting"] if use_trees else []))
+        if rows_v:
+            yv = [vt[i] for i in rows_v]
+            vol_out = {"model": _reg_metrics(pv, yv, h, step),
+                       "baseline_current_vol": _reg_metrics([ds["vol_now"][i] for i in rows_v], yv, h, step),
+                       "baseline_ewma": _reg_metrics([ds["ewma_now"][i] for i in rows_v], yv, h, step)}
+            rm = vol_out["model"].get("rmse")
+            bs = [vol_out[k].get("rmse") for k in ("baseline_current_vol", "baseline_ewma") if vol_out[k].get("rmse") is not None]
+            vol_out["verified"] = bool(rm is not None and bs and rm < min(bs))
+        dt = ds["dd_target"]
+        rows_d, pd, dd_final = _simple_wf(X, dt, ds["idx"], h, H0, ["logistic"], classifier=True)
+        if rows_d:
+            freq = _expanding_mean(ds, rows_d, h, dt)
+            dd_out = _cls_metrics(pd, [dt[i] for i in rows_d], freq)
+            dd_out["threshold"] = ds["dd_threshold"]
+            dd_out["verified"] = bool(dd_out.get("baseline_brier") is not None and dd_out.get("brier") is not None and dd_out["brier"] < dd_out["baseline_brier"])
+    today_vol = today_dd = None
+    if vol_final:
+        try:
+            today_vol = sum(m.predict([ds["x_today"]])[0] for m in vol_final.values()) / len(vol_final)
+        except Exception:
+            pass
+    if dd_final:
+        try:
+            today_dd = sum(m.predict_proba([ds["x_today"]])[0] for m in dd_final.values()) / len(dd_final)
+        except Exception:
+            pass
+    # ---------- importance and explanation (as before; importance on the last development block)
     tr, te = wf["last_fold"]
-    imp = _importance(wf["last_fold_models"], weights, [X[i] for i in te], [y[i] for i in te], ds["names"])
-    # explanation: weighted contributions of today's features
+    dX, dy = dev["X"], dev["y"]
+    imp = _importance(wf["last_fold_models"], weights, [dX[i] for i in te], [dy[i] for i in te], ds["names"])
     contrib = {n: 0.0 for n in ds["names"]}
     cw = 0.0
     for m, mod in finals.items():
@@ -278,31 +559,89 @@ def train_horizon(ds: dict, h: int, lab: str, progress=None) -> dict:
             c = mod.contributions(ds["x_today"])
         except Exception:
             continue
-        for n, v in zip(ds["names"], c):
-            contrib[n] += w * v
+        for nme, v in zip(ds["names"], c):
+            contrib[nme] += w * v
         cw += w
     if cw > 0:
         contrib = {k: v / cw for k, v in contrib.items()}
     ranked = sorted(contrib.items(), key=lambda kv: -abs(kv[1]))
     thr = 0.05 * max((abs(v) for _, v in ranked), default=0.0)
-    explain = {"bullish": [{"feature": k, "label": label(k), "family": family(k), "contribution": v} for k, v in ranked if v > thr][:6],
-               "bearish": [{"feature": k, "label": label(k), "family": family(k), "contribution": v} for k, v in ranked if v < -thr][:6],
-               "neutral": [{"feature": k, "label": label(k), "family": family(k), "contribution": v} for k, v in ranked if abs(v) <= thr][:4]}
+    mk = lambda k, v: {"feature": k, "label": label(k), "family": family(k), "contribution": v}
+    explain = {"bullish": [mk(k, v) for k, v in ranked if v > thr][:6], "bearish": [mk(k, v) for k, v in ranked if v < -thr][:6],
+               "neutral": [mk(k, v) for k, v in ranked if abs(v) <= thr][:4]}
     from .tracking import decay
-    oos = [(ds["idx"][i], p, y[i]) for i, p in zip(wf["test_rows"], wf["ens"])]
+    oos = [(ds["idx"][i], p, y[i]) for i, p in zip(oos_rows, oos_pred)]
     best = board[0] if board else None
+    state = {"names": ds["names"], "weights": {m: w for m, w in live_w.items()}, "models": {m: M.get_state(finals[m]) for m in live_w if m in finals},
+             "logit": M.get_state(lg_final) if lg_final else None, "vol": {m: M.get_state(v) for m, v in vol_final.items()},
+             "dd": {m: M.get_state(v) for m, v in dd_final.items()}, "oos_pred": oos_pred[-600:], "verified": verified, "quality": quality}
     return {"horizon": lab, "h": h, "status": "ok", "rows": n_rows, "features": ds["names"], "folds": wf["folds"], "fold_bounds": wf["fold_bounds"],
+            "dev_rows": H0, "holdout_rows": len(hold),
             "leaderboard": [{k: v for k, v in r.items() if k != "fold_ic"} | {"fold_ic": r["fold_ic"]} for r in board],
             "best_model": best["model"] if best and (best.get("robust") or -1) > 0 else None,
-            "ensemble": {"weights": {m: (weights[m] / wsum if wsum > 0 else 0.0) for m in models}, "ic": ens_ic, "fold_ic": wf["ens_fold_ic"],
-                         "positive_folds": wf["ens_positive_folds"], "rmse": wf["ens_rmse"], "sharpe": wf["ens_sharpe"], "n_oos": n_oos, "n_eff": n_eff},
-            "prediction": ens_today, "expected": (math.exp(ens_today) - 1) if ens_today is not None else None, "error": wf["ens_rmse"],
-            "predictions": preds_today, "prob_up": prob_up, "score": score, "quality": quality,
+            "ensemble": {"weights": {m: (weights[m] / wsum if wsum > 0 else 0.0) for m in models}, "ic": ens_all.get("ic"), "fold_ic": wf["ens_fold_ic"],
+                         "positive_folds": wf["ens_positive_folds"], "rmse": ens_all.get("rmse"), "sharpe": ens_all.get("sharpe"),
+                         "n_oos": len(oos_rows), "n_eff": n_eff, "t": ens_all.get("t"), "r2_vs_mean": r2, "permutation_p": perm_p,
+                         "development": ens_dev, "holdout": ens_hold},
+            "baselines": baselines, "always_long": always_long, "verified": verified, "edge_reasons": reasons,
+            "prediction": ens_today, "expected": (math.exp(ens_today) - 1) if ens_today is not None else None, "error": ens_all.get("rmse"),
+            "predictions": preds_today, "prob_up": prob_up, "direction": direction, "volatility": vol_out, "drawdown": dd_out,
+            "vol_forecast": today_vol, "dd_probability": today_dd, "score": score, "quality": quality,
             "confidence": {"value": conf_v, "label": "High" if conf_v >= 0.65 else "Medium" if conf_v >= 0.4 else "Low",
                            "parts": {"out_of_sample_ic": quality, "stability": stab, "model_agreement": agree, "sample_size": sample}},
             "importance": dict(sorted(imp.items(), key=lambda kv: -kv[1])[:20]), "family_importance": _families(imp), "explain": explain,
-            "decay": decay(oos, h), "oos": oos[-600:],
-            "message": None if (ens_ic or 0) > 0 else "No model combination has beaten noise out of sample at this horizon; the ML score is set to zero."}
+            "decay": decay(oos, h), "oos": oos[-600:], "_state": state,
+            "message": None if verified else "NO VERIFIED ML EDGE: " + "; ".join(reasons) + ". The ML score is set to zero."}
+
+
+def _params_used(name: str, n_rows: int) -> dict:
+    """The parameters `_fit_predict` actually uses (defaults plus its row-count overrides)."""
+    kw = {}
+    if name == "random_forest":
+        kw = {"n_estimators": 30 if n_rows > 1500 else 40}
+    if name == "gradient_boosting":
+        kw = {"n_estimators": 80}
+    return dict(M.make_model(name, **kw).params) if name in M.MODEL_NAMES else {}
+
+
+def forecast_today(research, asset_id: str) -> Optional[dict]:
+    """Daily forecasts from the saved models (no retraining): each horizon's ensemble prediction, its ML score (0 without
+    a verified edge), P(rise), future volatility and drawdown probability, recorded in the prediction ledger."""
+    saved = research.store.kv_get(f"mlmodels:{asset_id}")
+    if not saved:
+        return None
+    panel = research.panel()
+    z = research.zscores(asset_id)
+    price = panel.series(asset_id)
+    cal = panel.calendar()
+    last = max(i for i in range(len(price)) if price[i] is not None)
+    out = {"as_of": cal[last], "horizons": {}}
+    from .tracking import record
+    for lab, st in (saved.get("horizons") or {}).items():
+        x = [next((v for v in reversed(z.get(k, [None])[max(0, last - 5):last + 1]) if v is not None), None) for k in st["names"]]
+        try:
+            preds = {m: M.from_state(s).predict([x])[0] for m, s in st["models"].items()}
+        except Exception:
+            continue
+        w = {m: st["weights"].get(m, 0.0) for m in preds}
+        if not preds or sum(w.values()) <= 0:
+            continue
+        ens = sum(w[m] * preds[m] for m in preds) / sum(w.values())
+        score = (2 * _pct_rank(st["oos_pred"], ens) - 1) * 100 * st["quality"] if st.get("verified") else 0.0
+        prob = M.from_state(st["logit"]).predict_proba([x])[0] if st.get("logit") else None
+        vol = (sum(M.from_state(s).predict([x])[0] for s in st["vol"].values()) / len(st["vol"])) if st.get("vol") else None
+        dd = (sum(M.from_state(s).predict_proba([x])[0] for s in st["dd"].values()) / len(st["dd"])) if st.get("dd") else None
+        h = dict(HORIZONS)[lab]
+        out["horizons"][lab] = {"prediction": ens, "expected": math.exp(ens) - 1, "score": score, "prob_up": prob, "vol_forecast": vol, "dd_probability": dd,
+                                "verified": st.get("verified")}
+        record(research.store, panel, asset_id, cal[last], "ml_ensemble", saved.get("version", VERSION), lab, h, math.exp(ens) - 1, None, None, score,
+               {"verified": st.get("verified"), "prob_up": prob, "vol_forecast": vol, "dd_probability": dd, "from_saved_models": saved.get("trained_at")},
+               source="live", raw=score)
+    return out
+
+
+def fmt(x, d=3):
+    return "—" if x is None else f"{x:.{d}f}"
 
 
 def train_asset(research, asset_id: str, progress: Optional[Callable] = None, horizons=HORIZONS) -> dict:
@@ -313,6 +652,7 @@ def train_asset(research, asset_id: str, progress: Optional[Callable] = None, ho
     cal = panel.calendar()
     res = {"asset_id": asset_id, "version": VERSION, "trained_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "data_version": research.version(),
            "as_of": cal[max(i for i in range(len(price)) if price[i] is not None)], "horizons": {}}
+    states: Dict[str, dict] = {}
     for k, (lab, h) in enumerate(horizons):
         _progress(progress, k, len(horizons), f"{lab}: building the dataset")
         ds = asset_dataset(z, price, h)
@@ -320,19 +660,36 @@ def train_asset(research, asset_id: str, progress: Optional[Callable] = None, ho
             res["horizons"][lab] = {"horizon": lab, "h": h, "status": "insufficient", "reason": "not enough history for this horizon"}
             continue
         _progress(progress, k, len(horizons), f"{lab}: walk-forward over {len(ds['X'])} rows")
-        out = train_horizon(ds, h, lab)
+        try:                                                     # the point-in-time Shaffer Score as a baseline to beat
+            ss = research.shaffer_series(asset_id, lab)
+            ss_rows = [ss[t] for t in ds["idx"]]
+        except Exception:
+            ss_rows = None
+        out = train_horizon(ds, h, lab, shaffer=ss_rows)
+        state = out.pop("_state", None)
+        if state is not None:
+            states[lab] = state
         res["horizons"][lab] = out
         if out.get("status") == "ok":
             fb = out["fold_bounds"]
+            H0 = out["dev_rows"]
+            import platform
             for r in out["leaderboard"]:
+                params = dict((state or {}).get("models", {}).get(r["model"], {}).get("params") or _params_used(r["model"], len(ds["X"])))
                 research.store.add_model_run({"level": "asset", "key": asset_id, "horizon": lab, "model": r["model"], "version": VERSION,
                                               "train_start": cal[ds["idx"][0]], "train_end": cal[fb[-1][0]] if fb else None,
                                               "test_start": cal[fb[0][0]] if fb else None, "test_end": cal[fb[-1][1]] if fb else None,
-                                              "features": ds["names"], "params": M.make_model(r["model"]).params if r["model"] in M.MODEL_NAMES else {},
-                                              "metrics": {k2: r.get(k2) for k2 in ("ic", "accuracy", "rmse", "sharpe", "robust", "fold_ic_mean", "fold_ic_sd", "positive_folds")}})
+                                              "features": ds["names"], "params": params,
+                                              "metrics": {**{k2: r.get(k2) for k2 in ("ic", "accuracy", "rmse", "sharpe", "robust", "fold_ic_mean", "fold_ic_sd", "positive_folds")},
+                                                          "data_version": research.version(), "dataset_cutoff": res["as_of"], "seed": params.get("seed"),
+                                                          "development": [cal[ds["idx"][0]], cal[ds["idx"][H0 - 1]]] if H0 else None,
+                                                          "holdout": [cal[ds["idx"][H0]], cal[ds["idx"][-1]]] if H0 < len(ds["idx"]) else None,
+                                                          "software": f"finsim2 {VERSION}; python {platform.python_version()}"}})
             from .tracking import record
             record(research.store, panel, asset_id, res["as_of"], "ml_ensemble", VERSION, lab, h, out.get("expected"), out.get("error"),
-                   out["confidence"]["value"], out.get("score"), {"weights": out["ensemble"]["weights"]})
+                   out["confidence"]["value"], out.get("score"),
+                   {"weights": out["ensemble"]["weights"], "verified": out.get("verified"), "prob_up": out.get("prob_up"),
+                    "vol_forecast": out.get("vol_forecast"), "dd_probability": out.get("dd_probability")}, source="live", raw=out.get("score"))
     fam_s: Dict[str, float] = {}
     fam_l: Dict[str, float] = {}
     for lab, r in res["horizons"].items():
@@ -346,6 +703,7 @@ def train_asset(research, asset_id: str, progress: Optional[Callable] = None, ho
     res["summary"] = {"asset_id": asset_id, "horizons_trained": list(ok), "seconds": round(time.time() - t0, 1),
                       "best": {k: v.get("best_model") for k, v in ok.items()}, "scores": {k: v.get("score") for k, v in ok.items()}}
     research.store.kv_set(f"ml:{asset_id}", res)
+    research.store.kv_set(f"mlmodels:{asset_id}", {"version": VERSION, "trained_at": res["trained_at"], "data_version": res["data_version"], "horizons": states})
     _progress(progress, len(horizons), len(horizons), "done")
     return res
 

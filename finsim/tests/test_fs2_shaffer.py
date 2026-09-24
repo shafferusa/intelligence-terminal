@@ -87,6 +87,17 @@ class Canonical(unittest.TestCase):
             self.assertAlmostEqual(sum(f["points"] for f in at["families"]), rec["raw"], places=9)
             self.assertAlmostEqual(sum(x["points"] for x in at["signals"]), rec["raw"], places=9)
 
+    def test_priors_come_from_other_assets_and_earlier_januaries(self):
+        self.assertTrue(self.store.kv_get(f"shaffer_cp:SPY:{cfg.VERSION}"))       # a full run saves its checkpoints
+        self.assertEqual(sh.load_priors(self.r, "SPY", self.srun.cls), {})         # never its own evidence
+        other = sh.load_priors(self.r, "ZZZ", self.srun.cls)
+        self.assertTrue(other)
+        run = sh.ShafferRun(self.r, "SPY", use_priors=False)
+        run.priors = {"2017": {21: "a"}, "2019": {21: "b"}}
+        tau = next(i for i, d in enumerate(run.cal) if d[:4] == "2018")
+        self.assertEqual(run._prior_at(tau, 21), "a")                              # the 2019 checkpoint is still in the future
+        self.assertIsNone(run._prior_at(tau, sh.PRIOR_MAX_H + 1))
+
 
 class Rules(unittest.TestCase):
     def test_isotonic_is_monotone_and_pools_violations(self):

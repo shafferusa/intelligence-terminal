@@ -29,6 +29,9 @@ from .horizons import t_pvalue
 
 Series = List[Optional[float]]
 REG_MAX_H = 252          # regime-conditional evidence only up to 12M (longer horizons have too few windows per state)
+PRIOR_N0 = 20.0          # hierarchical shrinkage: the class/global prior counts as this many independent observations
+PRIOR_CLASS_N0 = 50.0    # the class prior is itself shrunk toward the global one with this weight
+PRIOR_MAX_H = 252        # priors (yearly checkpoints) are kept for horizons up to 12M
 MIN_ROWS = 40            # sampled rows before a signal's evidence counts at all
 CORR_STEP = 5            # sampling of the co-movement sums used for the correlation penalty
 PERSIST_LAG = 21
@@ -121,7 +124,7 @@ def _window(a: tuple, b: tuple):
 class ShafferRun:
     """One asset's point-in-time Shaffer Score run. Build with the research object, then `run(until)`."""
 
-    def __init__(self, research, asset_id: str):
+    def __init__(self, research, asset_id: str, use_priors: bool = True):
         self.r = research
         self.asset_id = asset_id
         panel = research.panel()
@@ -153,6 +156,8 @@ class ShafferRun:
                         ys[t] = _clip(lr / (v * math.sqrt(h / 252.0)), -4.0, 4.0)
             self.y[h], self.yr[h] = ys, yrs
         self.refits = [i for i in range(max(1, first), self.n) if self.cal[i][:7] != self.cal[i - 1][:7]]
+        self.priors = load_priors(research, asset_id, self.cls) if use_priors else {}
+        self.yearly: Dict[str, dict] = {}
         self.present = {}
         for sgn in self.signals:                        # prefix count of sessions with a value (data quality)
             acc, c = [0] * (self.n + 1), 0
@@ -162,7 +167,7 @@ class ShafferRun:
             self.present[sgn] = acc
 
     # ------------------------------------------------------------------ the sweep
-    def run(self, until: Optional[int] = None, keep_history: bool = True) -> dict:
+    def run(self, until: Optional[int] = None, keep_history: bool = True, checkpoints_only: bool = False) -> dict:
         n = self.n if until is None else min(self.n, until + 1)
         z, sigs = self.z, self.signals
         refit_set = set(self.refits)
@@ -182,7 +187,8 @@ class ShafferRun:
         latest = {}
         dims = list(self.regimes)
         refit_k = -1
-        score_days = set(range(start_hist, n, 5)) | {n - 1}
+        score_days = set() if checkpoints_only else set(range(start_hist, n, 5)) | {n - 1}
+        self.fam_records = {lab: [] for lab, _ in self.horizons}
         for tau in range(n):
             # 1) matured score records feed the out-of-sample record (validation, calibration)
             for h, rec in pending.pop(tau, ()):
@@ -226,6 +232,12 @@ class ShafferRun:
                             rg = e.reg[st] = [0, 0.0, 0.0, 0.0, 0.0, 0.0]
                         rg[0] += 1; rg[1] += x; rg[2] += y; rg[3] += x * x; rg[4] += y * y; rg[5] += x * y
             # 3) signal persistence and co-movement (same-date values only)
+            if checkpoints_only:
+                if tau in refit_set and self.cal[tau][5:7] == "01":
+                    for lab, h in self.horizons:
+                        if h <= PRIOR_MAX_H:
+                            self.yearly.setdefault(self.cal[tau][:4], {})[h] = {s: S[h][s].base() for s in sigs}
+                continue
             if tau >= PERSIST_LAG:
                 for s in sigs:
                     a, b = z[s][tau], z[s][tau - PERSIST_LAG]
@@ -246,11 +258,15 @@ class ShafferRun:
                     rho = _corr(*p)
                     pers_now[s] = min(2520.0, -PERSIST_LAG / math.log(rho)) if rho is not None and 0.05 < rho < 1 else 1.0
                 corr_now = {f: {k: (_corr(*acc) or 0.0) for k, acc in pp.items()} for f, pp in pairs.items()}
+                year = self.cal[tau][:4]
+                january = self.cal[tau][5:7] == "01"
                 for lab, h in self.horizons:
                     for s in sigs:
                         S[h][s].cp.append(S[h][s].base())
                         S[h][s].cpn.append(S[h][s].n)
-                    ev[h] = self._evidence(S[h], h, tau, refit_k, pers_now)
+                    if january and h <= PRIOR_MAX_H:
+                        self.yearly.setdefault(year, {})[h] = {s: S[h][s].base() for s in sigs}
+                    ev[h] = self._evidence(S[h], h, tau, refit_k, pers_now, self._prior_at(tau, h))
                     vf[h] = self._validation(oos[h]["fam"], h)
                     calib[h] = self._calibration(oos[h]["pairs"], h)
             # 5) scores
@@ -267,15 +283,28 @@ class ShafferRun:
                         pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": {f["family"]: f["score"] for f in rec["families"]}}))
                     if keep_history:
                         history[lab].append((tau, rec["raw"], rec.get("calibrated"), rec.get("expected")))
+                        self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"]) for f in rec["families"]}))
                     if tau == n - 1:
                         latest[lab] = rec
+        if until is None:
+            save_checkpoints(self.r, self.asset_id, self.cls, self.yearly, sigs)
+        if checkpoints_only:
+            return {"asset_id": self.asset_id, "checkpoints": sorted(self.yearly)}
         return {"asset_id": self.asset_id, "as_of": self.cal[n - 1], "latest": latest, "history": history,
                 "evidence": {lab: ev.get(h) for lab, h in self.horizons}, "calibration": {lab: calib.get(h) for lab, h in self.horizons},
                 "validation": {lab: vf.get(h) for lab, h in self.horizons}, "oos": {lab: oos[h]["pairs"] for lab, h in self.horizons},
                 "n": n}
 
     # ------------------------------------------------------------------ evidence at a refit
-    def _evidence(self, sums: Dict[str, _Sig], h: int, tau: int, k: int, pers_now: Dict[str, float]) -> dict:
+    def _prior_at(self, tau: int, h: int) -> Optional[dict]:
+        """Class and global evidence sums from other assets' January checkpoints on or before this refit."""
+        if not self.priors or h > PRIOR_MAX_H:
+            return None
+        year = self.cal[tau][:4]
+        ys = [y for y in self.priors if y <= year]
+        return self.priors[max(ys)].get(h) if ys else None
+
+    def _evidence(self, sums: Dict[str, _Sig], h: int, tau: int, k: int, pers_now: Dict[str, float], hier: Optional[dict] = None) -> dict:
         step = _step(h)
         out, pv = {}, {}
         for s, e in sums.items():
@@ -300,7 +329,19 @@ class ShafferRun:
                 vy = e.syy / e.n - (e.sy / e.n) ** 2
                 if vy > 1e-12:
                     ests.append(_clip(spread / math.sqrt(vy) / 2.2826, -1.0, 1.0))   # E[x|x>½] − E[x|x<−½] = 2.2826 for N(0,1)
-            ps = _median(ests)
+            ps_own = _median(ests)
+            ps, ps_prior, prior_n = ps_own, None, 0.0
+            pr = (hier or {}).get(s)
+            if pr:
+                rc, rg = _corr(*pr[0]) if pr[0][0] >= 30 else None, _corr(*pr[1]) if pr[1][0] >= 30 else None
+                nc = pr[0][0] * step / max(h, 1)
+                if rc is not None or rg is not None:
+                    if rc is not None and rg is not None:
+                        ps_prior = (nc * rc + PRIOR_CLASS_N0 * rg) / (nc + PRIOR_CLASS_N0)
+                    else:
+                        ps_prior = rc if rc is not None else rg
+                    ps = (n_eff * ps_own + PRIOR_N0 * ps_prior) / (n_eff + PRIOR_N0)
+                    prior_n = PRIOR_N0
             # stability: the IC's sign in each third of the matured rows
             cps = e.cp
             ns = e.cpn
@@ -351,7 +392,7 @@ class ShafferRun:
                 dclass = "HEALTHY" if trend >= 0.6 else "WEAKENING" if trend >= 0.2 else "DECAYING"
             se = 1.0 / math.sqrt(max(1.0, n_eff - 3))
             ci_strength = abs(rho) / (abs(rho) + 1.96 * se)
-            rec = {"status": status, "delta": delta, "ps": ps, "ic": rho, "ic_hit": ests[1] if hit is not None else None,
+            rec = {"status": status, "delta": delta, "ps": ps, "ps_own": ps_own, "ps_prior": ps_prior, "ic": rho, "ic_hit": ests[1] if hit is not None else None,
                    "hit": hit, "spread": spread, "n": e.n, "n_eff": n_eff, "t": t, "p": p, "stability": stab, "quality": quality,
                    "windows": {k2_: v[0] for k2_, v in win.items()}, "decay": dclass, "d": d, "ci_strength": ci_strength}
             if h <= REG_MAX_H:
@@ -626,4 +667,74 @@ def summarize(res: dict, run: "ShafferRun") -> dict:
         out["performance"][lab] = perf
     first_px = next((i for i, v in enumerate(run.price) if v is not None), 0)
     out["history_years"] = round((len(cal) - first_px) / 252.0, 1)
+    return out
+
+
+# ------------------------------------------------------------------ hierarchical evidence: yearly checkpoints pooled by class and globally
+def _pack(values: List[float]) -> str:
+    import base64
+    import zlib
+    from array import array
+    return base64.b64encode(zlib.compress(array("f", values).tobytes(), 6)).decode("ascii")
+
+
+def _unpack(text: str) -> List[float]:
+    import base64
+    import zlib
+    from array import array
+    a = array("f")
+    a.frombytes(zlib.decompress(base64.b64decode(text)))
+    return list(a)
+
+
+def save_checkpoints(research, asset_id: str, cls: str, yearly: Dict[str, dict], sigs: List[str]) -> None:
+    """Store this asset's evidence sums at each January (horizons up to 12M) so other assets can use them as priors."""
+    years = sorted(yearly)
+    hs = sorted({h for y in years for h in yearly[y]})
+    flat = []
+    for y in years:
+        for h in hs:
+            row = yearly[y].get(h) or {}
+            for sg in sigs:
+                flat += list(row.get(sg) or (0, 0.0, 0.0, 0.0, 0.0, 0.0))
+    research.store.kv_set(f"shaffer_cp:{asset_id}:{cfg.VERSION}", {"asset_class": cls, "years": years, "horizons": hs, "signals": sigs, "data": _pack(flat)})
+    research._prior_cache = None
+
+
+def load_priors(research, asset_id: str, cls: str) -> Dict[str, dict]:
+    """{year: {h: {signal: (class sums, global sums)}}} from every OTHER asset's checkpoints (point in time: a
+    January checkpoint only holds outcomes known by that January)."""
+    cache = getattr(research, "_prior_cache", None)
+    keys = research.store.kv_keys("shaffer_cp:")
+    keys = [k for k in keys if k.endswith(":" + cfg.VERSION)]
+    if cache is None or cache.get("keys") != keys:
+        per = {}
+        for k in keys:
+            v = research.store.kv_get(k)
+            if not v:
+                continue
+            flat = _unpack(v["data"])
+            sigs, hs, years = v["signals"], v["horizons"], v["years"]
+            data, pos = {}, 0
+            for y in years:
+                for h in hs:
+                    for sg in sigs:
+                        data[(y, h, sg)] = tuple(flat[pos:pos + 6])
+                        pos += 6
+            per[k.split(":")[1]] = (v["asset_class"], data)
+        cache = {"keys": keys, "per": per}
+        research._prior_cache = cache
+    agg: Dict[tuple, list] = {}
+    for aid, (acls, data) in cache["per"].items():
+        if aid == asset_id:
+            continue
+        for key, sums in data.items():
+            slot = agg.setdefault(key, [[0.0] * 6, [0.0] * 6])
+            for j in range(6):
+                slot[1][j] += sums[j]
+                if acls == cls:
+                    slot[0][j] += sums[j]
+    out: Dict[str, dict] = {}
+    for (y, h, sg), (c, g) in agg.items():
+        out.setdefault(y, {}).setdefault(h, {})[sg] = (tuple(c), tuple(g))
     return out

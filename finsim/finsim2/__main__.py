@@ -47,6 +47,10 @@ def main(argv=None) -> int:
     rs = sub.add_parser("research", help="compute the evidence for assets (and optionally train their ML models)")
     rs.add_argument("assets", nargs="*", help="asset ids (default: SPY QQQ TLT GOLD)")
     rs.add_argument("--ml", action="store_true", help="also train the walk-forward ML models")
+    au = sub.add_parser("audit", help="replay the Shaffer Score and ML over the whole universe and write SHAFFER_AUDIT.md")
+    au.add_argument("assets", nargs="*", help="asset ids (default: every asset with six years of prices)")
+    au.add_argument("--workers", type=int, default=3)
+    au.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_AUDIT.md"))
     args = ap.parse_args(argv)
     if args.cmd == "serve":
         from .server import serve
@@ -70,6 +74,13 @@ def main(argv=None) -> int:
             print(a, b["regime"]["description"], {k: (round(v["score"]) if v.get("score") is not None else None) for k, v in b["horizons"].items()})
             if args.ml:
                 ml.train_asset(r, a, progress=lambda d, n, m: print("  ", m, flush=True))
+        return 0
+    if args.cmd == "audit":
+        from .engine import audit
+        u = audit.run_universe(app.db_path(), assets=args.assets or None, workers=args.workers, progress=print)
+        with open(args.out, "w", encoding="utf-8") as f:
+            f.write(audit.markdown(u, audit.aggregates(u)))
+        print("wrote", args.out)
         return 0
     if args.cmd == "open":
         return app.cmd_open()
