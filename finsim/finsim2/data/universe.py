@@ -115,6 +115,43 @@ for _sym, _name, _sector in [
 ]:
     _add(_asset(_sym, _name, "ETF", _sector, "United States", "USD", _sym))
 
+# ---------------------------------------------------------------- product-coverage funds (Shaffer Hedge / product registry)
+# leveraged and inverse ETFs: meta leverage = daily multiple of the underlying index, reset daily
+for _sym, _name, _lev, _und in [
+    ("SH", "ProShares Short S&P500", -1, "SPX"), ("SDS", "ProShares UltraShort S&P500", -2, "SPX"),
+    ("SSO", "ProShares Ultra S&P500", 2, "SPX"), ("PSQ", "ProShares Short QQQ", -1, "NDX"),
+    ("QLD", "ProShares Ultra QQQ", 2, "NDX"), ("TQQQ", "ProShares UltraPro QQQ", 3, "NDX"), ("SQQQ", "ProShares UltraPro Short QQQ", -3, "NDX"),
+]:
+    _add(_asset(_sym, _name, "ETF", "Leveraged / Inverse", "United States", "USD", _sym, leverage=_lev, underlying_index=_und,
+                product_type="inverse_etf" if _lev < 0 else "leveraged_etf"))
+for _sym, _name, _sector, _dur, _pt, _extra in [
+    ("VNQ", "Vanguard Real Estate ETF", "Real Estate", None, "reit", {}),
+    ("PFF", "iShares Preferred and Income Securities ETF", "Fixed Income", 5.0, "preferred", {}),
+    ("BKLN", "Invesco Senior Loan ETF", "Fixed Income", 0.3, "leveraged_loan", {"rate_duration": 0.2}),
+    ("FLOT", "iShares Floating Rate Bond ETF", "Fixed Income", 0.1, "frn", {"rate_duration": 0.1}),
+    ("MBB", "iShares MBS ETF", "Fixed Income", 5.8, "mbs", {"negative_convexity": True}),
+    ("CWB", "SPDR Bloomberg Convertible Securities ETF", "Convertibles", None, "convertible", {}),
+    ("BIL", "SPDR Bloomberg 1-3 Month T-Bill ETF", "Fixed Income", 0.1, "t_bill", {}),
+    ("SGOV", "iShares 0-3 Month Treasury Bond ETF", "Fixed Income", 0.1, "money_market", {}),
+    ("SCHP", "Schwab U.S. TIPS ETF", "Fixed Income", 6.5, "tips", {}),
+    ("JAAA", "Janus Henderson AAA CLO ETF", "Fixed Income", 0.2, "abs_clo", {"rate_duration": 0.1}),
+]:
+    _add(_asset(_sym, _name, "ETF", _sector, "United States", "USD", _sym, duration=_dur, convexity=(_cx(_dur) if _dur else None),
+                product_type=_pt, **_extra))
+for _sym, _name, _sector, _pt, _extra in [
+    ("VXX", "iPath Series B S&P 500 VIX Short-Term Futures ETN", "Volatility", "etn", {"issuer": "Barclays Bank PLC"}),
+    ("IBIT", "iShares Bitcoin Trust ETF", "Crypto", "crypto_etf", {}),
+    ("BITO", "ProShares Bitcoin Strategy ETF (futures)", "Crypto", "crypto_futures_etf", {}),
+    ("FXE", "Invesco CurrencyShares Euro Trust", "Currency", "currency_trust", {}),
+    ("FXY", "Invesco CurrencyShares Japanese Yen Trust", "Currency", "currency_trust", {}),
+    ("FXB", "Invesco CurrencyShares British Pound Trust", "Currency", "currency_trust", {}),
+    ("UUP", "Invesco DB US Dollar Index Bullish Fund", "Currency", "currency_fund", {}),
+    ("UNG", "United States Natural Gas Fund", "Energy", "commodity_etf", {}),
+    ("CPER", "United States Copper Index Fund", "Industrial Metals", "commodity_etf", {}),
+    ("DBA", "Invesco DB Agriculture Fund", "Agriculture", "commodity_etf", {}),
+]:
+    _add(_asset(_sym, _name, "ETF", _sector, "United States", "USD", _sym, product_type=_pt, **_extra))
+
 # ---------------------------------------------------------------- synthetic Treasury / corporate indices (FRED)
 for _id, _name, _series, _dur, _cvx in [
     ("UST2Y", "US Treasury 2Y constant-maturity (total-return index)", "DGS2", 1.9, 0.05),
@@ -241,6 +278,37 @@ FRED_SERIES: dict[str, dict] = {
     "M2SL": {"name": "M2 money stock ($bn, SA)", "lag_days": 45, "freq": "monthly"},
     "VIXCLS": {"name": "CBOE VIX (close)", "lag_days": 1, "freq": "daily"},
     "DTWEXBGS": {"name": "Nominal broad US dollar index", "lag_days": 1, "freq": "daily"},
+    # curve points, money-market rates and credit spreads (Shaffer Hedge pricing and risk)
+    "DGS1MO": {"name": "1-Month Treasury constant maturity (%)", "lag_days": 1, "freq": "daily"},
+    "DGS6MO": {"name": "6-Month Treasury constant maturity (%)", "lag_days": 1, "freq": "daily"},
+    "DGS1": {"name": "1-Year Treasury constant maturity (%)", "lag_days": 1, "freq": "daily"},
+    "DGS7": {"name": "7-Year Treasury constant maturity (%)", "lag_days": 1, "freq": "daily"},
+    "DGS20": {"name": "20-Year Treasury constant maturity (%)", "lag_days": 1, "freq": "daily"},
+    "SOFR": {"name": "Secured Overnight Financing Rate (%)", "lag_days": 1, "freq": "daily"},
+    "DFF": {"name": "Effective federal funds rate (%)", "lag_days": 1, "freq": "daily"},
+    "BAMLH0A0HYM2": {"name": "ICE BofA US High Yield option-adjusted spread (pp; FRED keeps 3 years)", "lag_days": 1, "freq": "daily"},
+    "BAMLC0A0CM": {"name": "ICE BofA US Corporate (IG) option-adjusted spread (pp; FRED keeps 3 years)", "lag_days": 1, "freq": "daily"},
+    # Cboe implied-volatility indices (option pricing for hedges; no option chains are available)
+    "VXVCLS": {"name": "Cboe S&P 500 3-Month Volatility Index", "lag_days": 1, "freq": "daily"},
+    "VXNCLS": {"name": "Cboe Nasdaq-100 Volatility Index", "lag_days": 1, "freq": "daily"},
+    "RVXCLS": {"name": "Cboe Russell 2000 Volatility Index", "lag_days": 1, "freq": "daily"},
+    "VXDCLS": {"name": "Cboe DJIA Volatility Index", "lag_days": 1, "freq": "daily"},
+    "GVZCLS": {"name": "Cboe Gold ETF Volatility Index", "lag_days": 1, "freq": "daily"},
+    "OVXCLS": {"name": "Cboe Crude Oil ETF Volatility Index", "lag_days": 1, "freq": "daily"},
+    "VXEEMCLS": {"name": "Cboe Emerging Markets ETF Volatility Index", "lag_days": 1, "freq": "daily"},
+    "VXEWZCLS": {"name": "Cboe Brazil ETF Volatility Index", "lag_days": 1, "freq": "daily"},
+    "VXAPLCLS": {"name": "Cboe Equity VIX on Apple", "lag_days": 1, "freq": "daily"},
+    "VXAZNCLS": {"name": "Cboe Equity VIX on Amazon", "lag_days": 1, "freq": "daily"},
+    "VXGOGCLS": {"name": "Cboe Equity VIX on Google", "lag_days": 1, "freq": "daily"},
+    "VXGSCLS": {"name": "Cboe Equity VIX on Goldman Sachs", "lag_days": 1, "freq": "daily"},
+    "VXIBMCLS": {"name": "Cboe Equity VIX on IBM", "lag_days": 1, "freq": "daily"},
+    # foreign short rates (FX forwards by covered interest parity)
+    "ECBDFR": {"name": "ECB deposit facility rate (%)", "lag_days": 1, "freq": "daily"},
+    "IUDSOIA": {"name": "Sterling overnight index average, SONIA (%)", "lag_days": 1, "freq": "daily"},
+    "IRSTCI01JPM156N": {"name": "Japan call money rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
+    "IRSTCI01CAM156N": {"name": "Canada overnight rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
+    "IRSTCI01CHM156N": {"name": "Switzerland call money rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
+    "IRSTCI01AUM156N": {"name": "Australia interbank overnight rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
 }
 
 _BY_ID = {a["id"]: a for a in UNIVERSE}

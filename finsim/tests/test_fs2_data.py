@@ -74,7 +74,7 @@ class TestUniverse(unittest.TestCase):
         self.assertEqual(universe.FRED_SERIES["CPIAUCSL"]["lag_days"], 45)
         self.assertEqual(universe.FRED_SERIES["NFCI"]["freq"], "weekly")
         self.assertEqual(universe.FRED_SERIES["DGS10"]["lag_days"], 1)
-        self.assertEqual(len(universe.FRED_SERIES), 19)
+        self.assertEqual(len(universe.FRED_SERIES), 47)
         self.assertIn("TREASURY", universe.asset_classes())
 
 
