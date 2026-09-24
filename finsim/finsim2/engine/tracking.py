@@ -33,19 +33,44 @@ def _add_bdays(panel: Panel, iso: str, h: int) -> str:
 
 
 def record(store, panel: Panel, asset_id: str, made_on: str, model: str, version: str, horizon: str, h: int,
-           expected: Optional[float], error_band: Optional[float], confidence: Optional[float], score: Optional[float], detail: Optional[dict] = None) -> Optional[int]:
-    """Store a forecast once per (asset, horizon, model, date)."""
-    if expected is None:
+           expected: Optional[float], error_band: Optional[float], confidence: Optional[float], score: Optional[float],
+           detail: Optional[dict] = None, **extra) -> Optional[int]:
+    """Store a forecast once per (asset, horizon, model, date). The ledger is append-only (never rewritten)."""
+    if expected is None and score is None and extra.get("raw") is None:
         return None
     for p in store.predictions(asset_id=asset_id, horizon=horizon):
         if p["model"] == model and p["made_on"] == made_on:
             return None
     return store.add_prediction({"asset_id": asset_id, "horizon": horizon, "model": model, "model_version": version, "made_on": made_on,
                                  "target_date": _add_bdays(panel, made_on, h), "predicted": expected, "error_band": error_band,
-                                 "confidence": confidence, "score": score, "detail": detail or {}})
+                                 "confidence": confidence, "score": score, "detail": detail or {}, **extra})
+
+
+def record_shaffer(store, panel: Panel, asset_id: str, full: dict) -> int:
+    """Put today's Shaffer Score for every horizon into the ledger (raw, calibrated, expected return, range,
+    confidence, regime and the family points), once per asset, horizon and date."""
+    from .. import shaffer_score as cfg
+    n = 0
+    hmap = dict(cfg.HORIZONS)
+    last = panel.calendar()[-1]
+    for lab, r in (full.get("horizons") or {}).items():
+        if r.get("raw") is None or r.get("date") != last:
+            continue
+        rng = r.get("range")
+        fams = {f["family"]: round(f["points"], 3) for f in r.get("families") or []}
+        pid = record(store, panel, asset_id, last, "shaffer", cfg.VERSION, lab, hmap[lab], r.get("expected"),
+                     ((rng[1] - rng[0]) / 2) if rng else None, r.get("confidence"),
+                     r.get("calibrated") if r.get("calibrated") is not None else r.get("raw"),
+                     {"families": fams, "evidence": r.get("evidence"), "n_eff": r.get("n_eff")},
+                     source="live", raw=r.get("raw"), calibrated=r.get("calibrated"),
+                     range_lo=rng[0] if rng else None, range_hi=rng[1] if rng else None, regime=r.get("regime"))
+        n += pid is not None
+    return n
 
 
 def score_matured(store, panel: Panel) -> int:
+    """Grade every forecast whose horizon has passed: realised return, error, and whether the direction was right
+    (the expected return's sign, else the score's)."""
     cal = panel.calendar()
     last = cal[-1]
     n = 0
@@ -57,7 +82,10 @@ def score_matured(store, panel: Panel) -> int:
         b = px[panel.index_of(p["target_date"])]
         if a and b:
             realized = b / a - 1
-            store.score_prediction(p["id"], realized, realized - p["predicted"], last)
+            ref = p["predicted"] if p.get("predicted") is not None else p.get("score")
+            err = (realized - p["predicted"]) if p.get("predicted") is not None else None
+            correct = None if ref is None or ref == 0 else (ref > 0) == (realized > 0)
+            store.score_prediction(p["id"], realized, err, last, correct)
             n += 1
     return n
 
@@ -67,13 +95,25 @@ def report(store, asset_id: Optional[str] = None) -> dict:
     scored = [p for p in preds if p.get("realized") is not None]
     out = {"total": len(preds), "scored": len(scored), "pending": len(preds) - len(scored), "recent": preds[-200:]}
     if scored:
-        hits = sum(1 for p in scored if (p["predicted"] > 0) == (p["realized"] > 0))
-        out["hit_rate"] = hits / len(scored)
-        out["mae"] = sum(abs(p["error"]) for p in scored) / len(scored)
-        if len(scored) >= 10:
-            a = [p["predicted"] for p in scored]
-            b = [p["realized"] for p in scored]
+        graded = [p for p in scored if p.get("correct") is not None]
+        out["hit_rate"] = (sum(1 for p in graded if p["correct"]) / len(graded)) if graded else None
+        errs = [abs(p["error"]) for p in scored if p.get("error") is not None]
+        out["mae"] = (sum(errs) / len(errs)) if errs else None
+        ref = [(p["predicted"] if p.get("predicted") is not None else p.get("score"), p["realized"]) for p in scored]
+        ref = [(a, b) for a, b in ref if a is not None]
+        if len(ref) >= 10:
+            a = [x for x, _ in ref]
+            b = [y for _, y in ref]
             out["ic"] = pearson_idx(ranks(a), ranks(b), list(range(len(a))))
+    by = {}
+    for p in scored:
+        k = p["model"]
+        g = by.setdefault(k, {"model": k, "scored": 0, "correct": 0})
+        g["scored"] += 1
+        g["correct"] += 1 if p.get("correct") else 0
+    for g in by.values():
+        g["hit_rate"] = g["correct"] / g["scored"] if g["scored"] else None
+    out["by_model"] = list(by.values())
     return out
 
 

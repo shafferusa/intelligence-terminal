@@ -172,17 +172,29 @@
   const scoreTxt = s => { if (N(s) == null) return '—'; const n = Math.round(s); return (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n); };
   const confPill = c => !c ? '' : `<span class="pill ${c.label === 'High' ? 'pos' : c.label === 'Medium' ? 'warn' : ''}" title="evidence ${pct0((c.parts || {}).evidence)} · sample ${pct0((c.parts || {}).sample_size)} · stability ${pct0((c.parts || {}).stability)} · out-of-sample accuracy ${pct0((c.parts || {}).accuracy)}">${pct0(c.value)} ${esc(c.label)}</span>`;
   const sigPill = s => !s ? '<span class="faint">—</span>' : `<span class="pill ${/Bullish/.test(s) ? 'pos' : /Bearish/.test(s) ? 'neg' : ''}">${esc(s)}</span>`;
+  const AGR = { 'STRONG AGREEMENT': 'pos', 'MODERATE AGREEMENT': 'acc', 'MIXED': 'warn', 'STRONG DISAGREEMENT': 'neg', 'NO VERIFIED ML EDGE': '' };
+  const agrPill = a => a ? `<span class="pill ${AGR[a] || ''}" style="font-size:10.5px">${esc(a === 'NO VERIFIED ML EDGE' ? 'no verified ML edge' : a.toLowerCase())}</span>` : '<span class="faint">—</span>';
   function scoreStrip(hs, o = {}) {
-    // one column per horizon: quant score, ML score, confidence, expected return ± error
+    // one column per horizon: the Shaffer Score (raw and calibrated), the ML score, their agreement, confidence, expected return and range, evidence
+    const td = (h, f) => `<td style="text-align:center">${f(hs[h] || {})}</td>`;
     return `<div class="tbl-wrap"><table class="strip"><thead><tr><th class="l"></th>${HZ.map(h => `<th style="text-align:center">${h}</th>`).join('')}</tr></thead><tbody>
-      <tr><td class="l"><b>Quant score</b><span class="sub">equation-driven, −100..100</span></td>${HZ.map(h => { const r = hs[h] || {}; return `<td style="text-align:center;background:${divColor(r.score, 100)}" title="${esc(r.reason || r.label || '')}"><b class="num">${scoreTxt(r.score)}</b></td>`; }).join('')}</tr>
-      ${o.shaffer ? `<tr><td class="l"><b>Shaffer score</b><span class="sub">family-weighted evidence, −100..100</span></td>${HZ.map(h => { const r = ((o.shaffer.horizons || {})[h]) || {}; return `<td style="text-align:center;background:${divColor(r.score, 100)}" title="${esc(r.reason || '')}"><span class="num">${scoreTxt(r.score)}</span></td>`; }).join('')}</tr>` : ''}
+      <tr><td class="l"><b>Shaffer Score</b><span class="sub">family-weighted evidence, −100..100</span></td>${HZ.map(h => { const r = hs[h] || {}; return `<td style="text-align:center;background:${divColor(r.score, 100)}" title="${esc(r.reason || '')}"><b class="num">${scoreTxt(r.score)}</b></td>`; }).join('')}</tr>
+      <tr><td class="l">Calibrated<span class="sub">what this score has meant out of sample</span></td>${HZ.map(h => td(h, r => r.calibrated == null ? '<span class="faint">—</span>' : `<span class="num ${scoreCls(r.calibrated)}">${scoreTxt(r.calibrated)}</span>`)).join('')}</tr>
       <tr><td class="l"><b>ML score</b><span class="sub">walk-forward ensemble</span></td>${HZ.map(h => { const r = hs[h] || {}; return `<td style="text-align:center;background:${divColor(r.ml_score, 100)}"><span class="num">${scoreTxt(r.ml_score)}</span></td>`; }).join('')}</tr>
-      <tr><td class="l">Agreement</td>${HZ.map(h => { const a = (hs[h] || {}).agreement; return `<td style="text-align:center">${a ? `<span class="pill ${a === 'HIGH' ? 'pos' : a === 'LOW' ? 'neg' : 'warn'}">${a}</span>` : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
-      <tr><td class="l">Confidence</td>${HZ.map(h => `<td style="text-align:center">${(hs[h] || {}).score != null ? confPill((hs[h] || {}).confidence) : '<span class="faint">—</span>'}</td>`).join('')}</tr>
-      <tr><td class="l">Expected return<span class="sub">± typical historical error</span></td>${HZ.map(h => { const e = (hs[h] || {}).expected; return `<td style="text-align:center;font-size:12px">${e ? `<b class="${sign(e.expected)}">${fmt.spct(e.expected, 1)}</b><span class="sub">± ${fmt.pct(e.error, 1)}</span>` : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
-      <tr><td class="l">Out-of-sample IC<span class="sub">point-in-time score</span></td>${HZ.map(h => { const x = ((hs[h] || {}).oos || {}); return `<td style="text-align:center;font-size:12px" title="p = ${x.p != null ? fmt.num(x.p, 3) : '—'}, ${x.n || 0} rows">${x.ic != null ? fmt.num(x.ic, 2) : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
+      <tr><td class="l">Shaffer vs ML</td>${HZ.map(h => td(h, r => agrPill(r.agreement))).join('')}</tr>
+      <tr><td class="l">Confidence</td>${HZ.map(h => td(h, r => r.score != null && r.confidence ? confPill(r.confidence) : '<span class="faint">—</span>')).join('')}</tr>
+      <tr><td class="l">Expected return<span class="sub">typical historical range</span></td>${HZ.map(h => td(h, r => r.expected != null ? `<b class="${sign(r.expected)}" style="font-size:12px">${fmt.spct(r.expected, 1)}</b>${r.range ? `<span class="sub">${fmt.spct(r.range[0], 0)} … ${fmt.spct(r.range[1], 0)}</span>` : ''}` : (r.range ? `<span class="sub">${fmt.spct(r.range[0], 0)} … ${fmt.spct(r.range[1], 0)}</span>` : '<span class="faint" title="not supported by the calibration yet">—</span>'))).join('')}</tr>
+      <tr><td class="l">Evidence<span class="sub">independent observations</span></td>${HZ.map(h => td(h, r => r.evidence ? `<span style="font-size:12px">${esc(r.evidence)}</span><span class="sub">${fmt.num(r.n_eff, 0)}</span>` : '<span class="faint">—</span>')).join('')}</tr>
+      <tr><td class="l">Out-of-sample IC<span class="sub">of the point-in-time score</span></td>${HZ.map(h => { const x = (hs[h] || {}).oos || {}; return `<td style="text-align:center;font-size:12px" title="t = ${fmt.num(x.t, 2)}, ${fmt.num(x.n_eff, 0)} independent observations">${x.ic != null ? fmt.num(x.ic, 2) : '<span class="faint">—</span>'}</td>`; }).join('')}</tr>
     </tbody></table></div>`;
+  }
+  function familyBlock(r) {
+    // the score split into family points (they add up to it), and the signals doing most of the work either way
+    if (!r || r.score == null) return `<div class="empty">${esc((r || {}).reason || 'No score at this horizon')}</div>`;
+    const fams = (r.families || []).filter(f => Math.abs(f.points) >= 0.05);
+    const li = (xs) => (xs || []).map(x => `<div class="row" style="flex-wrap:nowrap;padding:3px 0"><span style="flex:1">${esc(x.label || x.signal)} <span class="faint">${esc(x.family || '')}</span></span><b class="num ${sign(x.points)}">${x.points > 0 ? '+' : ''}${fmt.num(x.points, 1)}</b></div>`).join('') || '<div class="faint">none</div>';
+    return `<div class="stack" style="gap:10px"><div>${fams.map(f => `<div class="row" style="flex-wrap:nowrap;padding:3px 0"><b style="flex:1">${esc(f.family)}</b><b class="num ${sign(f.points)}">${f.points > 0 ? '+' : ''}${fmt.num(f.points, 1)}</b></div>`).join('') || '<div class="faint">no family has usable evidence</div>'}</div>
+      <div><div class="muted" style="font-weight:650;margin-bottom:2px">Strongest contributors</div>${li(r.contributors)}</div><div><div class="muted" style="font-weight:650;margin-bottom:2px">Contradicting</div>${li(r.contradicting)}</div></div>`;
   }
   function matters(list) {
     return (list || []).slice(0, 6).map((m, i) => `<div class="row" style="padding:5px 0;border-top:1px solid var(--border);flex-wrap:nowrap"><span class="faint" style="width:18px">${i + 1}</span><b style="flex:1">${esc(m.family)}</b><span class="cell-bar bar" style="width:90px"><i style="width:${Math.round(m.share * 100 / ((list[0] || {}).share || 1))}%"></i></span><span class="pill ${m.importance === 'HIGH' ? 'acc' : m.importance === 'MEDIUM' ? 'warn' : ''}">${m.importance}</span></div>`).join('') || '<div class="empty">Not enough evidence</div>';
@@ -301,7 +313,7 @@
         ${kpi('Forecast record', preds.scored ? fmt.pct(preds.hit_rate, 0) + ' hit rate' : '—', `${preds.scored || 0} scored · ${preds.pending || 0} pending`)}</div>
       <div class="grid g-main"><div class="stack">
         <div class="card flush"><h2>Your holdings — evidence by horizon <a class="right" href="#/portfolio" style="font-size:12.5px;font-weight:500">Portfolio →</a></h2><div id="holdEv"></div></div>
-        <div class="card flush"><h2>Core markets <small>quant score by horizon · click for the full research</small></h2><div id="coreEv"></div></div>
+        <div class="card flush"><h2>Core markets <small>Shaffer Score by horizon · click for the full research</small></h2><div id="coreEv"></div></div>
       </div><div class="stack">
         <div class="card"><h2>Regime <small>point-in-time labels</small></h2><div id="regBox"></div></div>
         <div class="card"><h2>What matters for the S&P 500 now</h2>${spyB ? matters(spyB.what_matters_now) : '<div class="empty">Research SPY first</div>'}</div>
@@ -310,7 +322,7 @@
     const evRows = (ids) => ids.map(id => ({ id, name: (byId[id] || {}).name || assetName(id), r: byId[id] || {} }));
     const evCols = [{ k: 'id', label: 'Asset', l: 1, f: x => `<b>${esc(x.id)}</b><span class="sub">${esc(x.name)}</span>` }, { k: 'price', label: 'Price', v: x => x.r.price, f: x => fmt.px(x.r.price) },
       { k: 'm1', label: '1M', v: x => x.r.m1, cls: x => sign(x.r.m1), f: x => fmt.spct(x.r.m1, 1) },
-      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 's' + hh, label: 'Score ' + hh, v: x => (x.r.scores || {})[hh], f: x => `<span class="${scoreCls((x.r.scores || {})[hh])}"><b>${scoreTxt((x.r.scores || {})[hh])}</b></span>`, cls: () => '' })),
+      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 's' + hh, label: 'Shaffer ' + hh, v: x => (x.r.scores || {})[hh], f: x => `<span class="${scoreCls((x.r.scores || {})[hh])}"><b>${scoreTxt((x.r.scores || {})[hh])}</b></span>`, cls: () => '' })),
       { k: 'ph', label: 'Best horizon', l: 1, v: x => x.r.primary_horizon, f: x => x.r.researched ? esc(x.r.primary_horizon || '—') : '<span class="faint">not researched</span>' }];
     table($('#holdEv'), evRows(held.map(p => p.asset_id)), evCols, { onRow: x => go('#/asset/' + encodeURIComponent(x.id)), empty: 'No holdings yet: add positions on the Portfolio page' });
     table($('#coreEv'), evRows(CORE.filter(id => byId[id])), evCols, { onRow: x => go('#/asset/' + encodeURIComponent(x.id)) });
@@ -332,10 +344,10 @@
     table($('#mkT'), rows, [
       { k: 'id', label: 'Asset', l: 1, f: r => `<b>${esc(r.id)}</b><span class="sub">${esc(r.name)}</span>` }, { k: 'asset_class', label: 'Class', l: 1, f: r => `<span class="pill">${esc(clsName(r.asset_class))}</span>` },
       { k: 'price', label: 'Price', f: r => fmt.px(r.price) }, { k: 'd1', label: '1D', cls: r => sign(r.d1), f: r => fmt.spct(r.d1, 1) }, { k: 'm1', label: '1M', cls: r => sign(r.m1), f: r => fmt.spct(r.m1, 1) }, { k: 'y1', label: '1Y', cls: r => sign(r.y1), f: r => fmt.spct(r.y1, 1) },
-      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 'q' + hh, label: 'Quant ' + hh, v: r => (r.scores || {})[hh], f: r => `<b class="${scoreCls((r.scores || {})[hh])}">${scoreTxt((r.scores || {})[hh])}</b>` })),
+      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 'q' + hh, label: 'Shaffer ' + hh, v: r => (r.scores || {})[hh], f: r => `<b class="${scoreCls((r.scores || {})[hh])}">${scoreTxt((r.scores || {})[hh])}</b>` })),
+      { k: 'ml3', label: 'ML 3M', v: r => (r.ml || {})['3M'], f: r => `<span class="${scoreCls((r.ml || {})['3M'])}">${scoreTxt((r.ml || {})['3M'])}</span>` },
       { k: 'conf', label: 'Conf 3M', v: r => (r.confidence || {})['3M'], f: r => pct0((r.confidence || {})['3M']) },
       { k: 'primary_horizon', label: 'Best', l: 1, f: r => r.researched ? esc(r.primary_horizon || '—') : '<span class="faint">—</span>' },
-      { k: 'shaffer', label: 'Shaffer 3M', v: r => (r.shaffer || {})['3M'], f: r => `<b class="${scoreCls((r.shaffer || {})['3M'])}">${scoreTxt((r.shaffer || {})['3M'])}</b>` },
     ], { sortKey: 'id', sortDir: 1, maxH: 760, onRow: r => go('#/asset/' + encodeURIComponent(r.id)) });
     $('#mkScan').onclick = () => busy($('#mkScan'), async () => { const j = await post('/fs2/scan', { assets: rows.map(r => r.id) }); pollJob(j.id, () => route(), $('#mkJob')); });
     $('#mkAdd').onclick = () => { const m = modal(`<h2 style="margin-top:0">Add a symbol</h2><p class="muted">Any Yahoo Finance symbol: a stock (ASML, 7203.T), an ETF, an index (^VIX), a future (HG=F), a currency pair (USDSEK=X) or a coin (ADA-USD). Its full daily history is downloaded.</p><input id="symIn" placeholder="e.g. ASML" style="width:100%"><div class="row" style="margin-top:14px"><span class="spacer"></span><button onclick="document.getElementById('modal').innerHTML=''">Cancel</button><button class="primary" id="symGo">Add</button></div><div id="symErr" class="neg"></div>`);
@@ -349,8 +361,7 @@
     bindPicker('wlPick', id => busy(null, async () => { await post('/fs2/watchlist', { asset_id: id }); toast(`${id} added to the watchlist`); route(); }));
     table($('#wlT'), rows, [{ k: 'asset_id', label: 'Asset', l: 1, f: r => `<b>${esc(r.asset_id)}</b><span class="sub">${esc((r.asset || {}).name || '')}</span>` }, { k: 'p', label: 'Price', v: r => r.quote.price, f: r => fmt.px(r.quote.price) },
       { k: 'd1', label: '1D', v: r => r.quote.d1, cls: r => sign(r.quote.d1), f: r => fmt.spct(r.quote.d1, 1) }, { k: 'm1', label: '1M', v: r => r.quote.m1, cls: r => sign(r.quote.m1), f: r => fmt.spct(r.quote.m1, 1) },
-      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 'q' + hh, label: 'Quant ' + hh, v: r => ((r.light || {}).scores || {})[hh], f: r => `<b class="${scoreCls(((r.light || {}).scores || {})[hh])}">${scoreTxt(((r.light || {}).scores || {})[hh])}</b>` })),
-      { k: 'ss', label: 'Shaffer 3M', v: r => ((r.light || {}).shaffer || {})['3M'], f: r => `<b class="${scoreCls(((r.light || {}).shaffer || {})['3M'])}">${scoreTxt(((r.light || {}).shaffer || {})['3M'])}</b>` },
+      ...['1W', '1M', '3M', '12M'].map(hh => ({ k: 'q' + hh, label: 'Shaffer ' + hh, v: r => ((r.light || {}).scores || {})[hh], f: r => `<b class="${scoreCls(((r.light || {}).scores || {})[hh])}">${scoreTxt(((r.light || {}).scores || {})[hh])}</b>` })),
       { k: 'x', label: '', nosort: 1, f: r => `<button class="small ghost" data-un="${esc(r.asset_id)}">Remove</button>` }], { onRow: r => go('#/asset/' + encodeURIComponent(r.asset_id)), empty: 'Nothing on the watchlist yet' });
     $$('[data-un]').forEach(b => b.onclick = () => busy(b, async () => { await api('/fs2/watchlist/' + encodeURIComponent(b.dataset.un), { method: 'DELETE' }); route(); }));
   };
@@ -367,16 +378,15 @@
         <h1>${esc(a.id)} <span class="muted" style="font-weight:500;font-size:18px">${esc(a.name)}</span></h1></div>
         <div class="row">${assetPicker('arPick', a.id)}<button id="watchBtn">${b.watched ? '★ Watching' : '☆ Watch'}</button><a class="btn" href="#/analytics/${encodeURIComponent(a.id)}">Analytics</a><a class="btn" href="#/ml/${encodeURIComponent(a.id)}">ML Lab</a></div></div>
       <div class="tiles">${kpi('Price', `${fmt.px(b.price)} <span class="muted" style="font-size:13px">${esc(a.currency || '')}</span>`, `1D ${fmt.spct(b.change['1D'], 1)} · 1M ${fmt.spct(b.change['1M'], 1)} · 1Y ${fmt.spct(b.change['1Y'], 1)}`)}
-        ${kpi('Strongest evidence', ph ? `<span class="${scoreCls(p.score)}">${scoreTxt(p.score)}</span> <span class="muted" style="font-size:14px">at ${ph}</span>` : '—', ph ? `${esc(p.label || '')} · confidence ${pct0((p.confidence || {}).value)}` : 'no horizon has enough evidence')}
+        ${kpi('Shaffer Score', ph ? `<span class="${scoreCls(p.score)}">${scoreTxt(p.score)}</span> <span class="muted" style="font-size:14px">at ${ph}</span>` : '—', ph ? `calibrated ${scoreTxt(p.calibrated)} · ${esc((p.confidence || {}).label || '')} confidence ${pct0((p.confidence || {}).value)}` : 'no horizon has enough evidence')}
         ${kpi('Regime', `<span style="font-size:15px">${esc(b.regime.description)}</span>`, Object.values(b.regime.labels).slice(3).join(' · '))}
         ${kpi('Your exposure', pos ? fmt.qty(pos.quantity) : 'none', pos ? `cost ${fmt.money(pos.cost)} · realised ${fmt.signed(pos.realized)}` : '<a href="#/portfolio/transactions">add a position →</a>')}
-        ${b.shaffer ? (() => { const sh = ((b.shaffer.horizons || {})[ph || '3M']) || {}; return kpi('Shaffer Score', `<span class="${scoreCls(sh.score)}">${scoreTxt(sh.score)}</span> <span class="muted" style="font-size:14px">at ${esc(ph || '3M')}</span>`, '<a href="#/analytics/' + encodeURIComponent(a.id) + '/shaffer">how it is built →</a>'); })() : ''}
         ${kpi('ML models', b.ml ? `<span style="font-size:15px">trained</span>` : '<span style="font-size:15px">not trained</span>', b.ml ? `${esc(b.ml.trained_at || '')}` : `<a href="#/ml/${encodeURIComponent(a.id)}">train them →</a>`)}</div>
-      <div class="card flush"><h2>Evidence by horizon <small>the same asset can be bearish short term and bullish long term</small></h2>${scoreStrip(hs, { shaffer: b.shaffer })}</div>
+      <div class="card flush"><h2>Evidence by horizon <small>the same asset can be bearish short term and bullish long term</small></h2>${scoreStrip(hs)}</div>
       <div class="grid g3" style="margin-top:16px">
         <div class="card"><h2>What matters right now <small>1D–1M</small></h2>${matters(b.what_matters_now)}</div>
         <div class="card"><h2>What matters long term <small>12M+</small></h2>${matters(b.what_matters_long)}</div>
-        <div class="card"><h2>Why: ${esc(ph || '3M')} score <small>largest contributions</small></h2>${explainBlock((hs[ph || '3M'] || {}).explain)}</div>
+        <div class="card"><h2>Why: ${esc(ph || '3M')} Shaffer Score <small>family points add up to the score · <a href="#/analytics/${encodeURIComponent(a.id)}/shaffer">full breakdown →</a></small></h2>${familyBlock(hs[ph || '3M'])}</div>
       </div>
       <div class="grid g-main" style="margin-top:16px"><div class="card"><h2>Price <small>daily close</small></h2><div id="arChart"></div></div>
         <div class="card flush"><h2>Signals today <small>standardised value · best horizon · evidence</small></h2><div id="arSig"></div></div></div>`;
@@ -450,50 +460,72 @@
   // ---------------------------------------------------------------- analytics
   const A_TABS = [['overview', 'Overview'], ['shaffer', 'Shaffer Score'], ['Returns', 'Returns'], ['Risk', 'Risk'], ['Statistics', 'Statistics'], ['Regression', 'Regression'], ['Time Series', 'Time series'], ['Volatility', 'Volatility'], ['factors', 'Factors & regimes'], ['Valuation', 'Valuation'], ['Stochastic', 'Stochastic'], ['Fixed Income', 'Fixed income'], ['Portfolio', 'Portfolio theory'], ['ml', 'Machine learning'], ['backtests', 'Backtests'], ['equations', 'Equations']];
   async function shafferTab(body, b, id, alive) {
-    // the Shaffer Score, built up term by term: family weights, applicability, and each signal's s · w · c · r · d
-    const sh = b.shaffer; const st = await api('/fs2/shaffer').catch(() => ({})); if (!alive()) return;
-    if (!sh) { body.innerHTML = '<div class="card"><div class="empty">No Shaffer Score for this asset yet</div></div>'; return; }
-    if (sh.error) { body.innerHTML = `<div class="card"><h2>Shaffer Score</h2><p class="neg">The score failed: ${esc(sh.error)}</p><p class="muted">Source: ${esc(sh.source || '')}</p></div>`; return; }
-    const hs = sh.horizons || {};
-    let h = pref.get('ssH', b.primary_horizon && hs[b.primary_horizon] ? b.primary_horizon : '3M'); if (!hs[h]) h = HZ.find(x => (hs[x] || {}).score != null) || '3M';
-    const cls = b.asset.asset_class; const A = st.applicability || {}; const H = st.horizon_fit || {};
-    const defs = [['s', 'standardised bullish/bearish reading, −1..+1: the capped z-score ÷ 2, turned toward bullish by the direction the signal has historically predicted'],
-      ['w', 'historical predictive strength: the signal\'s usefulness at this horizon (rank IC shrunk by its t-statistic) as a share of its family'],
-      ['c', 'confidence in that evidence: (1 − q) × min(1, n_eff ÷ 30) × (½ + ½ · stability)'],
-      ['r', 'regime adjustment, 0..1.5: how the signal has done in today\'s regimes relative to overall, trusted by the regimes\' sample size'],
-      ['d', 'decay, 0..1: 1 if the most recent third of history agrees with the whole, ½ if it shows nothing, 0 if it has reversed'],
-      ['W', 'family weight: min(1, mean of the family\'s three strongest w ÷ 0.08) × min(1, median n_eff ÷ 30)'],
-      ['A', `asset applicability for ${clsName(cls)} (editable table in finsim2/shaffer_score.py)`], ['H', 'horizon applicability of the family at this horizon'],
-      ['K', `normalisation: ${fmt.num((st.constants || {}).KAPPA, 2)} × Σ A·H over the families present`]];
-    body.innerHTML = `<div class="card"><h2>Shaffer Score <span class="pill pos">v${esc(sh.version || '')}</span> <small>${esc(sh.source || '')}</small></h2>
-        <div class="tex" data-tex="${esc(sh.formula || st.formula || '')}"></div>
-        <div class="tbl-wrap" style="margin-top:8px"><table class="strip"><thead><tr><th class="l"></th>${HZ.map(x => `<th style="text-align:center">${x}</th>`).join('')}</tr></thead><tbody>
-          <tr><td class="l"><b>Shaffer</b><span class="sub">click a horizon</span></td>${HZ.map(x => { const r = hs[x] || {}; return `<td data-h="${x}" style="cursor:pointer;text-align:center;background:${divColor(r.score, 100)};${x === h ? 'outline:2px solid var(--acc);outline-offset:-2px' : ''}" title="${esc(r.reason || '')}"><b class="num">${scoreTxt(r.score)}</b></td>`; }).join('')}</tr>
-          <tr><td class="l">Quant score<span class="sub">for comparison</span></td>${HZ.map(x => `<td style="text-align:center"><span class="num faint">${scoreTxt((b.horizons[x] || {}).score)}</span></td>`).join('')}</tr>
+    // Shaffer Score v2: one point-in-time function for every date; the live score is the last record of its history
+    body.innerHTML = '<div class="loading">Loading the Shaffer Score record…</div>';
+    const [sh, st] = await Promise.all([api(`/fs2/asset/${encodeURIComponent(id)}/shaffer`), api('/fs2/shaffer').catch(() => ({}))]); if (!alive()) return;
+    const hsv = sh.horizons || {}; const labs = HZ.filter(x => hsv[x]);
+    let h = pref.get('ssH', b.primary_horizon && (hsv[b.primary_horizon] || {}).raw != null ? b.primary_horizon : '3M'); if (!hsv[h] || hsv[h].raw == null) h = labs.find(x => hsv[x].raw != null) || '3M';
+    const perf = sh.performance || {};
+    const defs = [['s', 'standardised reading, −1..+1: δ · clip(z ÷ 2); z = the signal\'s expanding z-score (only past values), δ = the direction it is used in'],
+      ['w', 'historical weight = |predictive strength| × (¼ + ¾ · stability); predictive strength = the median of three IC estimates (Pearson IC, the IC implied by the hit rate, the IC implied by the conditional-return spread)'],
+      ['ω', 'w shared within the family after a correlation penalty (w ÷ Σ ρ² with the family\'s other active signals): the same idea said twice counts once'],
+      ['c', 'confidence = √(n_eff ÷ 100, ≤ 1) × CI strength × (1 − ½ q) × data quality'],
+      ['r', 'regime adjustment 0.5..1.5: how the signal has done in today\'s regimes, each shrunk by n ÷ (n + 50)'],
+      ['d', 'decay 0.1..1: the last 3 years\' and last year\'s IC against the full history; never flips a sign'],
+      ['W', 'family weight = family evidence × V, V = the family score\'s own out-of-sample record (1 until it has one)'],
+      ['A · H', 'applicability of the family to this asset class and to this horizon (economic priors)'],
+      ['K', `${fmt.num(((st.constants || {}).KAPPA), 2)} × Σ A·H over the families present: a fixed scale set before looking at results`]];
+    const fmtIC = (x, t) => x == null ? '—' : `${fmt.num(x, 3)}${t != null ? ` <span class="faint">t ${fmt.num(t, 1)}</span>` : ''}`;
+    body.innerHTML = `<div class="card"><h2>Shaffer Score <span class="pill pos">v${esc(sh.version || '')}</span> <small>point in time: every score, historical or today, is the same function using only data available on its date · ${fmt.num(sh.history_years, 0)} years of price history</small></h2>
+        <div class="tex" data-tex="${esc(sh.formula || '')}"></div>
+        <div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th class="l">Horizon</th><th>Shaffer</th><th>Calibrated</th><th>Expected</th><th>Typical range</th><th>Confidence</th><th>Evidence</th><th>Indep. obs.</th><th>OOS IC</th><th>Hit rate</th><th>Record since</th></tr></thead><tbody>
+          ${labs.map(x => { const r = hsv[x]; const pf = perf[x] || {}; return `<tr data-h="${x}" style="cursor:pointer;${x === h ? 'background:var(--surface-2)' : ''}"><td class="l"><b>${x}</b></td>
+            <td style="background:${divColor(r.raw, 100)}"><b>${scoreTxt(r.raw)}</b></td><td class="${scoreCls(r.calibrated)}">${scoreTxt(r.calibrated)}</td>
+            <td class="${sign(r.expected)}">${r.expected == null ? '<span class="faint" title="not supported by the calibration yet">—</span>' : fmt.spct(r.expected, 1)}</td>
+            <td>${r.range ? `${fmt.spct(r.range[0], 0)} … ${fmt.spct(r.range[1], 0)}` : '—'}</td><td>${r.confidence == null ? '—' : pct0(r.confidence) + ' ' + esc(r.confidence_label || '')}</td>
+            <td>${esc(r.evidence || '—')}</td><td>${fmt.num(r.n_eff, 0)}</td><td>${fmtIC(pf.ic, pf.t)}</td><td>${pf.hit == null ? '—' : fmt.pct(pf.hit, 0)}</td><td>${pf.first ? fmt.date(pf.first) : (r.reason ? `<span class="faint">${esc(r.reason)}</span>` : '—')}</td></tr>`; }).join('')}
         </tbody></table></div></div>
-      <div id="ssH" style="margin-top:16px"></div>
-      <div class="card" style="margin-top:16px"><h2>What the symbols mean</h2><div class="stack" style="gap:6px">${defs.map(([k, v]) => `<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><b style="width:28px;font-family:'Cambria Math',serif;font-size:16px">${k}</b><span class="muted" style="flex:1">${esc(v)}</span></div>`).join('')}</div>
-        <p class="hint">It uses the same point-in-time evidence as the Quant Score (the signal-horizon matrix, today's z-scores and regime) but adds confidence, regime, decay and applicability terms and aggregates by family, so a family with many signals does not outvote one with few. tanh keeps it within −100..+100. K is calibrated on ten years of weekly readings of SPY, TLT, GOLD, BTC and NVDA: the median |score| is about 7, one reading in ten exceeds about 60 and one in twenty about 75. Long horizons carry little evidence and stay near zero.</p></div>`;
+      <div id="ssH" style="margin-top:16px"></div>`;
     texWhenReady(body);
-    $$('[data-h]', body).forEach(td => td.onclick = () => { pref.set('ssH', td.dataset.h); shafferTab(body, b, id, alive); });
-    const r = hs[h] || {}; const el = $('#ssH');
-    if (r.score == null) { el.innerHTML = `<div class="card"><h2>${esc(h)}</h2><div class="empty">${esc(r.reason || 'No score at this horizon')}</div></div>`; return; }
-    const absN = (r.families || []).reduce((a, f) => a + Math.abs(f.contribution), 0) || 1;
-    el.innerHTML = `<div class="tiles">${kpi(`Shaffer score · ${esc(h)}`, `<span class="${scoreCls(r.score)}">${scoreTxt(r.score)}</span>`, r.score >= 15 ? 'bullish' : r.score <= -15 ? 'bearish' : 'neutral')}${kpi('Numerator Σ W·[…]·A·H', fmt.num(r.numerator, 4), `${r.families.length} families · ${r.n_signals} signals`)}${kpi('K', fmt.num(r.K, 3), 'normalisation')}${kpi('tanh argument', fmt.num(r.numerator / r.K, 3), `100 · tanh(${fmt.num(r.numerator / r.K, 3)}) = ${fmt.num(r.score, 1)}`)}</div>
-      <div class="card flush" style="margin-top:16px"><h2>Families at ${esc(h)} <small>click a family for its signals</small></h2><div id="ssF"></div></div>
-      <div class="card flush" style="margin-top:16px"><h2 id="ssSh">Signals</h2><div id="ssS"></div></div>`;
-    const showSignals = f => { $('#ssSh').innerHTML = `${esc(f.family)} signals at ${esc(h)} <small>bracket = Σ w · s · c · r · d = ${fmt.num(f.bracket, 4)}</small>`;
-      table($('#ssS'), f.signals, [{ k: 'label', label: 'Signal', l: 1, f: x => `<b>${esc(x.label)}</b><span class="sub">${esc(x.signal)}</span>` }, { k: 'z', label: 'z', f: x => fmt.num(x.z, 2) },
-        { k: 's', label: 's', cls: x => sign(x.s), f: x => fmt.num(x.s, 2) }, { k: 'w', label: 'w', f: x => fmt.num(x.w, 3) }, { k: 'c', label: 'c', f: x => fmt.num(x.c, 2) },
-        { k: 'r', label: 'r', f: x => fmt.num(x.r, 2) }, { k: 'd', label: 'd', f: x => fmt.num(x.d, 2) }, { k: 'term', label: 'w·s·c·r·d', cls: x => sign(x.term), v: x => Math.abs(x.term), f: x => `<b>${fmt.num(x.term, 4)}</b>` },
-        { k: 'ic', label: 'IC', f: x => fmt.num(x.ic, 3) }, { k: 'q', label: 'q', f: x => fmt.num(x.q, 3) }, { k: 'n_eff', label: 'n_eff', f: x => fmt.num(x.n_eff, 0) }],
-        { sortKey: 'term', sortDir: -1, onRow: x => cellDrawer(id, x.signal, h) }); };
-    table($('#ssF'), r.families, [{ k: 'family', label: 'Family', l: 1, f: f => `<b>${esc(f.family)}</b>` }, { k: 'W', label: 'W (weight)', f: f => fmt.num(f.W, 3) },
-      { k: 'A', label: 'A (asset)', f: f => fmt.num(f.A, 2) }, { k: 'H', label: 'H (horizon)', f: f => fmt.num(f.H, 2) }, { k: 'bracket', label: '[Σ w·s·c·r·d]', cls: f => sign(f.bracket), f: f => fmt.num(f.bracket, 4) },
-      { k: 'contribution', label: 'W·[…]·A·H', cls: f => sign(f.contribution), v: f => Math.abs(f.contribution), f: f => `<b>${fmt.num(f.contribution, 4)}</b>` },
-      { k: 'share', label: 'Share', v: f => Math.abs(f.contribution) / absN, f: f => `<span class="cell-bar bar" style="width:70px;display:inline-block"><i style="width:${Math.round(Math.abs(f.contribution) * 100 / absN)}%"></i></span> ${fmt.pct(Math.abs(f.contribution) / absN, 0)}` },
-      { k: 'n_signals', label: 'Signals' }], { sortKey: 'contribution', sortDir: -1, onRow: showSignals });
-    if (r.families.length) showSignals(r.families[0]);
+    $$('[data-h]', body).forEach(tr => tr.onclick = () => { pref.set('ssH', tr.dataset.h); shafferTab(body, b, id, alive); });
+    const r = hsv[h] || {}; const el = $('#ssH');
+    if (r.raw == null) { el.innerHTML = `<div class="card"><div class="empty">${esc(r.reason || 'No score at this horizon')}</div></div>`; return; }
+    const cal = (sh.calibration || {})[h] || {}; const pf = perf[h] || {}; const hist = (sh.history || {})[h] || {}; const ev = (sh.evidence || {})[h] || {}; const val = (sh.validation || {})[h] || {};
+    const regime = Object.values((b.regime || {}).labels || {}).join(' · ');
+    el.innerHTML = `<div class="tiles">${kpi(`Shaffer Score · ${esc(h)}`, `<span class="${scoreCls(r.raw)}">${scoreTxt(r.raw)}</span>`, `calibrated ${scoreTxt(r.calibrated)} · ${fmt.num(r.numerator, 4)} ÷ K ${fmt.num(r.K, 3)}`)}
+        ${kpi('Expected return', r.expected == null ? '—' : `<span class="${sign(r.expected)}">${fmt.spct(r.expected, 1)}</span>`, r.range ? `typical range ${fmt.spct(r.range[0], 1)} … ${fmt.spct(r.range[1], 1)}` : (r.expected == null ? 'the calibration does not support an estimate yet' : ''))}
+        ${kpi('Confidence', r.confidence == null ? '—' : pct0(r.confidence), `${esc(r.confidence_label || '')} · evidence ${esc(r.evidence || '—')} · ${fmt.num(r.n_eff, 0)} independent observations`)}
+        ${kpi('Current regime', `<span style="font-size:14px">${esc(regime || '—')}</span>`, 'as of ' + esc(r.date || ''))}</div>
+      <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Family breakdown <small>points add up to the score · click for the signals</small></h2><div id="ssFam"></div></div>
+        <div class="card"><h2>Signals doing the work</h2>${familyBlock({ score: r.raw, families: [], contributors: r.contributors, contradicting: r.contradicting })}</div></div>
+      <div class="card flush" style="margin-top:16px"><h2 id="ssSigH">Signals</h2><div id="ssSig"></div></div>
+      <div class="card" style="margin-top:16px"><h2>Calibration <small>what each score range has been followed by, out of sample (overlapping ${esc(h)} windows) · OOS IC ${fmtIC(cal.ic, cal.t)} · monotonicity ${fmt.num(cal.monotonicity, 2)} (1 = higher score, higher return)</small></h2><div id="ssCal"></div></div>
+      <div class="card" style="margin-top:16px"><h2>The record <small>the ${esc(h)} score as it read on each date (weekly), point in time</small></h2><div id="ssHist"></div></div>
+      <div class="grid g2" style="margin-top:16px"><div class="card flush"><h2>By regime <small>out-of-sample IC of the score when each regime held</small></h2><div id="ssReg"></div></div>
+        <div class="card flush"><h2>Family validation <small>each family score's own out-of-sample record → V</small></h2><div id="ssVal"></div></div></div>
+      <div class="card" style="margin-top:16px"><h2>What the symbols mean</h2><div class="stack" style="gap:6px">${defs.map(([k, v]) => `<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><b style="width:44px;font-family:'Cambria Math',serif;font-size:15px">${k}</b><span class="muted" style="flex:1">${esc(v)}</span></div>`).join('')}</div></div>
+      ${sh.custom ? `<div class="card" style="margin-top:16px"><h2>Custom score (live only) <small>${esc(sh.custom.source || '')}</small></h2>${sh.custom.error ? `<p class="neg">${esc(sh.custom.error)}</p>` : `<p>${HZ.map(x => `${x} <b>${scoreTxt((sh.custom.horizons || {})[x])}</b>`).join(' · ')}</p>`}</div>` : ''}`;
+    const fams = r.families || [];
+    hbars($('#ssFam'), fams.filter(f => Math.abs(f.points) >= 0.05).map(f => ({ label: f.family, value: f.points, sub: `W ${fmt.num(f.W, 2)} · V ${fmt.num(f.V, 2)} · A ${fmt.num(f.A, 2)} · H ${fmt.num(f.H, 2)} · ${f.n_active}/${f.n_signals} signals` })), { fmt: v => (v > 0 ? '+' : '') + fmt.num(v, 1), empty: 'No family has usable evidence' });
+    const sigRows = r.signals || [];
+    const showSigs = fam => { $('#ssSigH').innerHTML = `${esc(fam || 'All')} signals at ${esc(h)} <small>muted signals show why</small>`;
+      table($('#ssSig'), sigRows.filter(x => !fam || x.family === fam), [{ k: 'label', label: 'Signal', l: 1, f: x => `<b>${esc(x.label || x.signal)}</b><span class="sub">${esc(x.family)}</span>` },
+        { k: 'points', label: 'Points', cls: x => sign(x.points), v: x => Math.abs(x.points || 0), f: x => x.s == null ? '—' : `<b>${fmt.num(x.points, 2)}</b>` }, { k: 'z', label: 'z', f: x => fmt.num(x.z, 2) },
+        { k: 's', label: 's', f: x => fmt.num(x.s, 2) }, { k: 'omega', label: 'ω', f: x => fmt.num(x.omega, 2) }, { k: 'c', label: 'c', f: x => fmt.num(x.c, 2) }, { k: 'r', label: 'r', f: x => fmt.num(x.r, 2) }, { k: 'd', label: 'd', f: x => fmt.num(x.d, 2) },
+        { k: 'ic', label: 'IC', f: x => fmt.num(x.ic, 3) }, { k: 'q', label: 'q', f: x => fmt.num(x.q, 2) }, { k: 'n_eff', label: 'n_eff', f: x => fmt.num(x.n_eff, 0) },
+        { k: 'decay', label: 'Decay', l: 1, f: x => x.decay ? `<span class="pill ${x.decay === 'HEALTHY' ? 'pos' : x.decay === 'DECAYING' ? 'neg' : x.decay === 'WEAKENING' ? 'warn' : ''}">${esc(x.decay.toLowerCase())}</span>` : '' },
+        { k: 'status', label: 'Status', l: 1, f: x => `<span class="faint">${esc(x.status || '')}</span>` }], { sortKey: 'points', sortDir: -1, maxH: 520, onRow: x => cellDrawer(id, x.signal, h) }); };
+    showSigs(fams.length ? fams[0].family : null);
+    const shown = fams.filter(f => Math.abs(f.points) >= 0.05);
+    [...(($('#ssFam').firstElementChild || {}).children || [])].forEach((row, k) => { row.style.cursor = 'pointer'; row.onclick = () => showSigs(shown[k].family); });
+    table($('#ssCal'), cal.bins || [], [{ k: 'lo', label: 'Score range', l: 1, f: x => `${scoreTxt(x.lo)} … ${scoreTxt(x.hi)}` }, { k: 'n', label: 'Scores' }, { k: 'n_eff', label: 'Indep. obs.', f: x => fmt.num(x.n_eff, 0) },
+      { k: 'mean_ret', label: 'Average return', cls: x => sign(x.mean_ret), f: x => fmt.spct(Math.exp(x.mean_ret) - 1, 1) }, { k: 'median_ret', label: 'Median', f: x => fmt.spct(Math.exp(x.median_ret) - 1, 1) },
+      { k: 'hit', label: 'Up share', f: x => fmt.pct(x.hit, 0) }, { k: 'q10', label: '10% … 90%', f: x => `${fmt.spct(Math.exp(x.q10) - 1, 0)} … ${fmt.spct(Math.exp(x.q90) - 1, 0)}` },
+      { k: 'edge', label: 'Calibrated edge', cls: x => sign(x.edge), f: x => fmt.num(x.edge, 3) + ' σ' }], { sortKey: null, empty: cal.usable === false ? `Not enough matured history to calibrate yet (${fmt.num(cal.n_eff, 0)} independent observations)` : 'No calibration' });
+    if ((hist.chart || {}).dates) lineChart($('#ssHist'), [{ name: 'Shaffer Score', data: hist.chart.values, color: css('--accent') }], { labels: hist.chart.dates.map(d => fmt.date(d)), zero: true, fmtY: v => fmt.num(v, 0), h: 240 });
+    else $('#ssHist').innerHTML = '<div class="empty">No history yet</div>';
+    table($('#ssReg'), Object.entries(pf.by_regime || {}).map(([k, v]) => ({ k, ...v })), [{ k: 'k', label: 'Regime', l: 1, f: x => esc(x.k.replace(/_/g, ' ')) }, { k: 'ic', label: 'OOS IC', f: x => fmt.num(x.ic, 3) }, { k: 'hit', label: 'Hit rate', f: x => x.hit == null ? '—' : fmt.pct(x.hit, 0) }, { k: 'n_eff', label: 'Indep. obs.', f: x => fmt.num(x.n_eff, 0) }], { sortKey: null, empty: 'Not enough out-of-sample history' });
+    table($('#ssVal'), Object.entries(val).map(([k, v]) => ({ k, ...v })), [{ k: 'k', label: 'Family', l: 1 }, { k: 'V', label: 'V', f: x => fmt.num(x.V, 2) }, { k: 'ic', label: 'OOS IC', f: x => fmt.num(x.ic, 3) }, { k: 't', label: 't', f: x => fmt.num(x.t, 1) }, { k: 'state', label: 'State', l: 1, f: x => `<span class="faint">${esc(x.state || '')}</span>` }], { sortKey: 'V', sortDir: 1 });
   }
 
   pages.analytics = async (main, args, alive) => {
@@ -503,7 +535,7 @@
     const ph = b.primary_horizon; const p = b.horizons[ph] || {}; const ml = b.ml && b.ml.horizons ? b.ml.horizons[ph] || {} : {};
     main.innerHTML = `<div class="card" style="margin-bottom:14px"><div class="row" style="gap:18px">${assetPicker('anPick', id)}
         <div class="hdrk"><span>Date</span><b>${esc(b.as_of)}</b></div><div class="hdrk"><span>Price</span><b>${fmt.px(b.price)}</b></div>
-        <div class="hdrk"><span>Quant score (${esc(ph || '—')})</span><b class="${scoreCls(p.score)}">${scoreTxt(p.score)}</b></div><div class="hdrk"><span>ML score</span><b class="${scoreCls(p.ml_score)}">${scoreTxt(p.ml_score)}</b></div>${b.shaffer ? `<div class="hdrk"><span>Shaffer score (${esc(ph || '3M')})</span><b class="${scoreCls((((b.shaffer.horizons || {})[ph || '3M']) || {}).score)}">${scoreTxt((((b.shaffer.horizons || {})[ph || '3M']) || {}).score)}</b></div>` : ''}
+        <div class="hdrk"><span>Shaffer Score (${esc(ph || '—')})</span><b class="${scoreCls(p.score)}">${scoreTxt(p.score)}</b></div><div class="hdrk"><span>Calibrated</span><b class="${scoreCls(p.calibrated)}">${scoreTxt(p.calibrated)}</b></div><div class="hdrk"><span>ML score</span><b class="${scoreCls(p.ml_score)}">${scoreTxt(p.ml_score)}</b></div>
         <div class="hdrk"><span>Confidence</span><b>${pct0((p.confidence || {}).value)}</b></div><div class="hdrk"><span>Regime</span><b>${esc(b.regime.description)}</b></div>
         <div class="hdrk"><span>Best model</span><b>${esc(ml.best_model || (b.ml ? 'none beats noise' : 'not trained'))}</b></div><div class="hdrk"><span>Best horizon</span><b>${esc(ph || '—')}</b></div></div></div>
       <div class="tabs">${A_TABS.map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/analytics/${encodeURIComponent(id)}/${encodeURIComponent(k)}">${l}</a>`).join('')}</div><div id="anBody" style="margin-top:14px"><div class="loading">Computing…</div></div>`;
@@ -512,7 +544,7 @@
     if (tab === 'overview') {
       const mx = await api(`/fs2/asset/${encodeURIComponent(id)}/matrix`); if (!alive()) return;
       body.innerHTML = `<div class="card"><h2>Signal-horizon matrix <small>rows = signals, columns = horizons · normalised predictive usefulness (rank IC shrunk by its evidence, 1.0 = this asset's strongest) · green = higher signal, higher returns · * survives false-discovery control · click a cell</small><span class="right seg" id="mxM"><button data-m="normalized" class="on">Normalised</button><button data-m="usefulness">Usefulness</button><button data-m="ic">IC</button></span></h2><div id="mx"></div></div>
-        <div class="card flush" style="margin-top:16px"><h2>Evidence by horizon</h2>${scoreStrip(b.horizons, { shaffer: b.shaffer })}</div>`;
+        <div class="card flush" style="margin-top:16px"><h2>Evidence by horizon</h2>${scoreStrip(b.horizons)}</div>`;
       const draw = m => matrixView($('#mx'), id, mx, { metric: m });
       draw('normalized');
       $$('#mxM button').forEach(bt => bt.onclick = () => { $$('#mxM button').forEach(x => x.classList.toggle('on', x === bt)); draw(bt.dataset.m); });
@@ -595,12 +627,12 @@
       return;
     }
     if (tab === 'history') {
-      const sh = await api(`/fs2/asset/${encodeURIComponent(id)}/score-history?horizon=${h}`); if (!alive()) return;
-      body.innerHTML = `<div class="tiles">${kpi('Out-of-sample IC of the score', fmt.num(sh.oos_ic, 3), `p ${fmt.num(sh.oos_p, 3)} · ${sh.oos_n} rows`)}${kpi('Re-estimation', 'every ' + sh.every + ' sessions', 'weights from outcomes known at the time')}</div>
-        <div class="card"><h2>${esc(id)} quant score, ${esc(h)} horizon, as it would have read each day</h2><div id="shC"></div><p class="hint">${esc(sh.note)}</p></div>
-        <div class="card flush" style="margin-top:16px"><h2>Recent re-estimates <small>top weights at each refit</small></h2><div id="shR"></div></div>`;
-      lineChart($('#shC'), [{ name: 'Quant score', data: sh.series.values, color: css('--accent') }], { labels: sh.series.dates.map(d => fmt.date(d)), zero: true, fmtY: v => fmt.num(v, 0), h: 260 });
-      table($('#shR'), sh.refits.slice().reverse(), [{ k: 'date', label: 'Date', l: 1, f: r => fmt.date(r.date) }, { k: 'n_signals', label: 'Signals' }, { k: 'top', label: 'Largest weights', l: 1, nosort: 1, f: r => r.top.map(([s, w]) => `<span class="pill ${w > 0 ? 'pos' : 'neg'}">${esc(s)} ${fmt.num(w, 2)}</span>`).join(' ') }], { sortKey: null });
+      const sh = await api(`/fs2/asset/${encodeURIComponent(id)}/shaffer`); if (!alive()) return;
+      const hist = (sh.history || {})[h] || {}; const pf = (sh.performance || {})[h] || {};
+      body.innerHTML = `<div class="tiles">${kpi('Out-of-sample IC of the score', fmt.num(pf.ic, 3), `t ${fmt.num(pf.t, 1)} · ${fmt.num(pf.n_eff, 0)} independent observations`)}${kpi('Hit rate', pf.hit == null ? '—' : fmt.pct(pf.hit, 0), `when |score| ≥ 5 · ${pf.n_lean || 0} scores`)}${kpi('Record', pf.first ? 'since ' + fmt.date(pf.first) : '—', 'evidence refitted monthly from outcomes known at the time')}</div>
+        <div class="card"><h2>${esc(id)} Shaffer Score, ${esc(h)} horizon, as it read on each date</h2><div id="shC"></div><p class="hint">One function scores every date using only data available then; today's score is the last point. The full breakdown and calibration are on <a href="#/analytics/${encodeURIComponent(id)}/shaffer">Analytics → Shaffer Score</a>.</p></div>`;
+      if ((hist.chart || {}).dates) lineChart($('#shC'), [{ name: 'Shaffer Score', data: hist.chart.values, color: css('--accent') }], { labels: hist.chart.dates.map(d => fmt.date(d)), zero: true, fmtY: v => fmt.num(v, 0), h: 260 });
+      else $('#shC').innerHTML = `<div class="empty">${esc(((sh.horizons || {})[h] || {}).reason || 'No history at this horizon')}</div>`;
       return;
     }
     if (tab === 'shaffer') {
@@ -710,10 +742,10 @@
   pages.backtests = async (main, args, alive) => {
     const fm = await featureMeta(); const hist = await api('/fs2/backtests').catch(() => []); if (!alive()) return;
     const id = S.current;
-    main.innerHTML = `<div class="page-head"><div><h1>Backtests</h1><p>Test any signal, the point-in-time quant score, or the ML ensemble's out-of-sample forecasts on any asset, horizon, period and regime. The signal is read at each close; with an execution lag of 1 (the default) the trade is made at the next close, so a signal first earns the return from close t+1 to t+2. Lag 0 trades at the same close that produced the signal and is optimistic. Signals point the way their history said at each date (point in time), and trade returns are net of costs.</p></div></div>
+    main.innerHTML = `<div class="page-head"><div><h1>Backtests</h1><p>Test any signal, the point-in-time Shaffer Score (raw or calibrated), or the ML ensemble's out-of-sample forecasts on any asset, horizon, period and regime. The signal is read at each close; with an execution lag of 1 (the default) the trade is made at the next close, so a signal first earns the return from close t+1 to t+2. Lag 0 trades at the same close that produced the signal and is optimistic. Signals point the way their history said at each date (point in time), and trade returns are net of costs.</p></div></div>
       <div class="card"><div class="form">
         <label class="f">Asset${assetPicker('btA', id)}</label>
-        <label class="f">Signal<select id="btS"><option value="quant_score">Quant score (point in time)</option><option value="ml:ensemble">ML ensemble (out of sample)</option>${Object.entries(fm).map(([k, v]) => `<option value="${k}">${esc(v.label)} — ${esc(v.family)}</option>`).join('')}</select></label>
+        <label class="f">Signal<select id="btS"><option value="shaffer">Shaffer Score (point in time; ±50 = 1)</option><option value="shaffer_calibrated">Shaffer Score, calibrated (point in time)</option><option value="ml:ensemble">ML ensemble (out of sample)</option>${Object.entries(fm).map(([k, v]) => `<option value="${k}">${esc(v.label)} — ${esc(v.family)}</option>`).join('')}</select></label>
         <label class="f">Horizon<select id="btH">${HZ.slice(0, 6).map(x => `<option ${x === '3M' ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
         <label class="f">Mode<select id="btM"><option value="long">Long / flat</option><option value="long_short">Long / short</option></select></label>
         <label class="f">Entry (z)<input id="btE" type="number" step="0.25" value="1"></label><label class="f">Exit (z)<input id="btX" type="number" step="0.25" value="0"></label>
@@ -781,7 +813,7 @@
     }
     if (tab === 'construct') {
       body.innerHTML = `<div class="card"><div class="form"><label class="f">Assets (comma separated)<input id="opA" value="${esc(held.map(p => p.asset_id).join(', ') || 'SPY, TLT, GOLD, EFA, HYG')}"></label>
-        <label class="f">Expected returns from<select id="opS"><option value="historical">history (shrunk toward 6%)</option><option value="quant">the 12-month quant score</option><option value="ml">the 12-month ML ensemble</option></select></label>
+        <label class="f">Expected returns from<select id="opS"><option value="historical">history (shrunk toward 6%)</option><option value="shaffer">the 12-month Shaffer expected return (when calibration supports it)</option><option value="ml">the 12-month ML ensemble</option></select></label>
         <label class="f">Max weight per asset<input id="opC" type="number" step="0.05" value="0.4"></label><label class="f">Years of history<input id="opY" type="number" value="5"></label><div><button class="primary" id="opGo" style="width:100%;justify-content:center">Optimise</button></div></div>
         <p class="hint">Long-only, fully invested. Mean-variance optimisation is very sensitive to expected returns; treat the output as a comparison of trade-offs, not an answer.</p></div><div id="opR" style="margin-top:16px"></div>`;
       $('#opGo').onclick = () => busy($('#opGo'), async () => {
@@ -817,9 +849,9 @@
       ...(compact ? [] : [{ k: 'cost_basis', label: 'Cost', f: p => fmt.money(p.cost_basis) }]), { k: 'unrealized', label: 'Unrealised', cls: p => sign(p.unrealized), f: p => fmt.signed(p.unrealized) },
       ...(compact ? [] : [{ k: 'realized', label: 'Realised', cls: p => sign(p.realized), f: p => fmt.signed(p.realized) }]), { k: 'weight', label: 'Weight', f: p => fmt.pct(p.weight, 1) },
       ...(compact ? [] : [{ k: 'beta', label: 'Beta', f: p => fmt.num(p.beta, 2) }, { k: 'volatility', label: 'Vol', f: p => fmt.pct(p.volatility, 1) }, { k: 'sharpe', label: 'Sharpe', f: p => fmt.num(p.sharpe, 2) }]),
-      { k: 'quant_score', label: 'Quant', f: p => `<b class="${scoreCls(p.quant_score)}">${scoreTxt(p.quant_score)}</b>` }, { k: 'ml_score', label: 'ML', f: p => `<span class="${scoreCls(p.ml_score)}">${scoreTxt(p.ml_score)}</span>` }, { k: 'shaffer_score', label: 'Shaffer', f: p => `<span class="${scoreCls(p.shaffer_score)}">${scoreTxt(p.shaffer_score)}</span>` },
+      { k: 'shaffer_score', label: 'Shaffer', f: p => `<b class="${scoreCls(p.shaffer_score)}">${scoreTxt(p.shaffer_score)}</b>` }, { k: 'ml_score', label: 'ML', f: p => `<span class="${scoreCls(p.ml_score)}">${scoreTxt(p.ml_score)}</span>` }, 
       ...(compact ? [] : [{ k: 'expected_return', label: 'E[return]', f: p => fmt.spct(p.expected_return, 1) }, { k: 'risk_contribution', label: 'Risk share', f: p => fmt.pct(p.risk_contribution, 1) }, { k: 'signal_confidence', label: 'Confidence', f: p => pct0(p.signal_confidence) }]),
-      { k: 'primary_horizon', label: 'Horizon', l: 1, f: p => esc(p.primary_horizon || (p.quant_score == null ? 'not researched' : '—')) }];
+      { k: 'primary_horizon', label: 'Horizon', l: 1, f: p => esc(p.primary_horizon || (p.shaffer_score == null ? 'not researched' : '—')) }];
     table(el, held, cols, { sortKey: 'market_value', maxH: 640, onRow: p => go('#/asset/' + encodeURIComponent(p.asset_id)), empty: 'No positions: use + Transaction to deposit cash and buy' });
   }
   function txModal() {
@@ -851,7 +883,7 @@
       <div class="grid g2"><div class="card"><h2>Data</h2><div class="kv"><span>Latest close</span><span>${esc(st.last_price_date || '—')}</span><span>Assets</span><span>${st.assets}</span><span>S&P 500 history</span><span>${st.spy_rows} sessions</span><span>Data version</span><span>${esc(st.data_version)}</span><span>Last automatic check</span><span>${esc((st.scheduler || {}).last_check || '—')}</span></div>
         <div class="row" style="margin-top:12px"><button id="rf1">Refresh now</button><button id="rf2">Re-download everything</button></div><div id="rfJ"></div>
         <p class="hint">Prices from Yahoo Finance (daily, adjusted for splits and dividends), macro series from FRED (each used only from its publication date), fundamentals from SEC filings (each used only from its filing date). The data refreshes by itself after each US close while FinSim2 runs.</p></div>
-        <div class="card"><h2>Methods</h2><ul class="muted" style="margin:0;padding-left:18px;font-size:13px;line-height:1.6"><li>Signals are standardised with expanding statistics (no future normalisation) and capped at ±3.</li><li>Evidence per signal and horizon: rank IC, hit rate, t-stat and p-value on the effective sample (overlap and signal persistence removed), Benjamini–Hochberg q-values across the ~60 signals.</li><li>Quant score weights = usefulness (IC shrunk by evidence), blended toward the IC in the current regime.</li><li>ML: purged walk-forward, models ranked by stable out-of-sample IC, ensemble weights from earlier blocks only.</li><li>Every forecast is stored and scored when its horizon passes.</li></ul></div></div>
+        <div class="card"><h2>Methods</h2><ul class="muted" style="margin:0;padding-left:18px;font-size:13px;line-height:1.6"><li>Signals are standardised with expanding statistics (no future normalisation) and capped at ±3.</li><li>Evidence per signal and horizon: rank IC, hit rate, t-stat and p-value on the effective sample (overlap and signal persistence removed), Benjamini–Hochberg q-values across the ~60 signals.</li><li>The Shaffer Score aggregates 15 signal families: each signal's weight, confidence, regime and decay terms are estimated only from outcomes known at each date, and the same function scores every date (history and today). Raw scores are calibrated out of sample.</li><li>ML: purged walk-forward, models ranked by stable out-of-sample IC, ensemble weights from earlier blocks only.</li><li>Every forecast is stored and scored when its horizon passes.</li></ul></div></div>
       <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Portfolio benchmark</h2><div class="row">${assetPicker('bmPick', '')}<span class="muted" id="bmNow"></span></div><p class="hint">Performance is compared with this asset's total return (default SPY).</p></div>
         <div class="card flush"><h2>Audit log</h2><div id="auT"></div></div></div>
       <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Display</h2><div class="seg" id="thSeg">${['system', 'dark', 'light'].map(t => `<button data-th="${t}" class="${pref.get('theme', 'system') === t ? 'on' : ''}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div>

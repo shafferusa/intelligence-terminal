@@ -55,13 +55,17 @@ CREATE TABLE IF NOT EXISTS corporate_actions(asset_id TEXT NOT NULL, date TEXT N
 CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY, at TEXT, action TEXT, entity TEXT, detail TEXT);
 """
 # columns added after the first release; `_migrate` adds them to older databases
-MIGRATIONS = {"macro": [("published", "TEXT")], "transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT")]}
+MIGRATIONS = {"macro": [("published", "TEXT")],
+              "transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT")],
+              "predictions": [("source", "TEXT"), ("raw", "REAL"), ("calibrated", "REAL"), ("range_lo", "REAL"), ("range_hi", "REAL"),
+                              ("regime", "TEXT"), ("correct", "INTEGER"), ("created_at", "TEXT")]}
 
 ASSET_COLS = ["id", "name", "asset_class", "sector", "country", "currency", "yahoo", "cik", "duration", "convexity",
               "fred", "meta"]
 PRICE_COLS = ["date", "open", "high", "low", "close", "adj_close", "volume"]
 PRED_COLS = ["asset_id", "horizon", "model", "model_version", "made_on", "target_date", "predicted", "error_band",
-             "confidence", "score", "realized", "error", "scored_on", "detail"]
+             "confidence", "score", "realized", "error", "scored_on", "detail", "source", "raw", "calibrated", "range_lo", "range_hi",
+             "regime", "correct", "created_at"]
 RUN_COLS = ["level", "key", "horizon", "model", "version", "train_start", "train_end", "test_start", "test_end",
             "features", "params", "metrics", "created_at"]
 TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee", "currency", "note", "basis_date", "created_at"]
@@ -470,9 +474,15 @@ class Store:
     def _pred_row(r) -> dict:
         d = dict(r)
         d["detail"] = _loads(d.get("detail"), None)
+        if d.get("regime"):
+            d["regime"] = _loads(d["regime"], d["regime"])
         return d
 
     def add_prediction(self, p: dict) -> int:
+        """Append a forecast. The ledger is append-only: a forecast is never edited except for grading once."""
+        p = {**p, "created_at": p.get("created_at") or _now(), "source": p.get("source") or "live"}
+        if isinstance(p.get("regime"), dict):
+            p["regime"] = _dumps(p["regime"])
         vals = [p.get(c) for c in PRED_COLS]
         for i, c in enumerate(PRED_COLS):
             if c in ("made_on", "target_date", "scored_on") and vals[i] is not None:
@@ -495,10 +505,11 @@ class Store:
             sql += " AND scored_on IS NULL"
         return [self._pred_row(r) for r in self._q(sql + " ORDER BY made_on, id", args)]
 
-    def score_prediction(self, pred_id: int, realized, error, scored_on):
+    def score_prediction(self, pred_id: int, realized, error, scored_on, correct=None):
+        """Grade a forecast once: only rows not graded yet are touched."""
         self._write(lambda conn: conn.execute(
-            "UPDATE predictions SET realized = ?, error = ?, scored_on = ? WHERE id = ?",
-            (num(realized), num(error), _d(scored_on), int(pred_id))))
+            "UPDATE predictions SET realized = ?, error = ?, scored_on = ?, correct = ? WHERE id = ? AND realized IS NULL",
+            (num(realized), num(error), _d(scored_on), None if correct is None else int(bool(correct)), int(pred_id))))
 
     # ------------------------------------------------------------------ model runs / backtests
     def add_model_run(self, run: dict) -> int:

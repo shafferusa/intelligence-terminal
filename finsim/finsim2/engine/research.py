@@ -106,6 +106,26 @@ class Research:
     def is_cached(self, asset_id: str) -> bool:
         return self.store.kv_get(self._bkey(asset_id)) is not None
 
+    def shaffer_full(self, asset_id: str) -> dict:
+        """The Shaffer Score v2 run for an asset (live breakdown, reconstructed history, calibration, evidence,
+        performance), computed by the one point-in-time sweep in engine/shaffer.py and cached per data version."""
+        from .. import shaffer_score as shs
+        from .shaffer import ShafferRun, summarize
+        key = f"shaffer2:{asset_id}:{self.version()}:{shs.VERSION}:{BUNDLE_VERSION}"
+        cached = self.store.kv_get(key)
+        if cached is None:
+            def build():
+                run = ShafferRun(self, asset_id)
+                return clean(summarize(run.run(), run))
+            cached = self._memo(key, build)
+            self.store.kv_set(key, cached)
+            try:                                   # today's scores go into the append-only prediction ledger
+                from .tracking import record_shaffer
+                record_shaffer(self.store, self.panel(), asset_id, cached)
+            except Exception:
+                pass
+        return cached
+
     def ml_result(self, asset_id: str) -> Optional[dict]:
         return self.store.kv_get(f"ml:{asset_id}")
 
@@ -116,6 +136,7 @@ class Research:
             cached = self._memo(key, lambda: self._build(asset_id))
             self.store.kv_set(key, cached)
         out = dict(cached)
+        out["horizons"] = {k: dict(v) for k, v in cached["horizons"].items()}
         ml = self.ml_result(asset_id)
         if ml:
             out["ml"] = ml
@@ -123,7 +144,8 @@ class Research:
                 m = (ml.get("horizons") or {}).get(lab) or {}
                 hs["ml_score"] = m.get("score")
                 hs["ml_expected"] = m.get("expected")
-                hs["agreement"] = sc.agreement(hs.get("score"), m.get("score"))
+                hs["ml_verified"] = m.get("verified", (m.get("score") or 0) != 0)
+                hs["agreement"] = sc.agreement(hs.get("score"), m.get("score"), hs["ml_verified"], (hs.get("confidence") or {}).get("value"))
         return out
 
     def _build(self, asset_id: str) -> dict:
@@ -142,14 +164,17 @@ class Research:
         z = self.zscores(asset_id)
         reg = self.regimes()
         mat = self.matrix(asset_id)
-        oos = {}
+        ss = self.shaffer_full(asset_id)
+        hs = {}
         for lab, _h in HORIZONS:
-            try:
-                shh = self.score_history(asset_id, lab)
-                oos[lab] = {"ic": shh.get("oos_ic"), "p": shh.get("oos_p"), "n": shh.get("oos_n")}
-            except Exception:
-                pass
-        hs = sc.horizon_scores(z, mat, adj, reg, oos=oos)
+            r = ss["horizons"].get(lab) or {}
+            conf = r.get("confidence")
+            compact = lambda xs: [{k: x.get(k) for k in ("signal", "label", "family", "points", "z", "decay")} for x in (xs or [])[:5]]
+            hs[lab] = {"horizon": lab, "score": r.get("raw"), "calibrated": r.get("calibrated"), "expected": r.get("expected"), "range": r.get("range"),
+                       "confidence": {"value": conf, "label": r.get("confidence_label")} if conf is not None else None,
+                       "evidence": r.get("evidence"), "n_eff": r.get("n_eff"), "reason": r.get("reason"), "oos": r.get("oos"),
+                       "families": [{k: f.get(k) for k in ("family", "points", "W", "V", "n_active")} for f in (r.get("families") or [])],
+                       "contributors": compact(r.get("contributors")), "contradicting": compact(r.get("contradicting"))}
         state = rg.current(reg)
         last = len(cal) - 1
         while last > 0 and close[last] is None:
@@ -169,9 +194,6 @@ class Research:
                             "best_horizon": bh, "usefulness": rec.get("usefulness") if rec else None, "ic": rec.get("ic") if rec else None,
                             "hit_rate": rec.get("hit_rate") if rec else None, "p": rec.get("p") if rec else None, "n_eff": rec.get("n_eff") if rec else None,
                             "signal": strength_label(zz, rec.get("direction", 1)) if rec else None})
-        ml = self.ml_result(asset_id)
-        imp_short = (ml or {}).get("family_importance", {}).get("short")
-        imp_long = (ml or {}).get("family_importance", {}).get("long")
         prim = sc.primary_horizon(hs)
         chg = lambda k: (adj[last] / adj[last - k] - 1) if last - k >= 0 and adj[last] and adj[last - k] else None
         dates = cal[first:last + 1]
@@ -180,13 +202,12 @@ class Research:
             "history_start": cal[first], "sessions": last - first + 1,
             "regime": {"state": state, "labels": {d: rg.STATE_LABEL.get(s) for d, s in state.items() if s}, "description": rg.describe(state)},
             "horizons": hs, "primary_horizon": prim, "current": current,
-            "what_matters_now": sc.what_matters(mat, sc.SHORT, imp_short), "what_matters_long": sc.what_matters(mat, sc.LONG, imp_long),
+            "what_matters_now": sc.family_share(hs, ("1W", "1M")), "what_matters_long": sc.family_share(hs, ("6M", "12M", "3Y")),
+            "shaffer_version": ss.get("version"), "history_years": ss.get("history_years"),
             "price_history": downsample(dates, close[first:last + 1]),
             "features_available": sum(1 for c in current if c["value"] is not None), "computed_in": None,
             "data_notes": panel.data_notes(),
         }
-        from .. import shaffer_score as shs
-        out["shaffer"] = shs.score_asset(self.shaffer_inputs(out, mat, z, state))   # the built-in; an override file is applied per request
         out["computed_in"] = round(time.time() - t0, 2)
         return clean(out)
 
@@ -198,11 +219,12 @@ class Research:
             return None
         hs = b["horizons"]
         return {"asset_id": asset_id, "name": b["asset"]["name"], "asset_class": b["asset"]["asset_class"], "price": b["price"], "as_of": b["as_of"],
-                "change": b["change"], "scores": {k: v.get("score") for k, v in hs.items()}, "ml": {k: v.get("ml_score") for k, v in hs.items()},
+                "change": b["change"], "scores": {k: v.get("score") for k, v in hs.items()}, "calibrated": {k: v.get("calibrated") for k, v in hs.items()},
+                "ml": {k: v.get("ml_score") for k, v in hs.items()},
                 "confidence": {k: (v.get("confidence") or {}).get("value") for k, v in hs.items()},
-                "expected": {k: ((v.get("expected") or {}).get("expected")) for k, v in hs.items()},
+                "expected": {k: v.get("expected") for k, v in hs.items()},
                 "primary_horizon": b["primary_horizon"], "regime": b["regime"]["description"],
-                "shaffer": {k: v.get("score") for k, v in ((self.shaffer(asset_id, b) or {}).get("horizons") or {}).items()}}
+                "shaffer": {k: v.get("score") for k, v in hs.items()}}
 
     def shaffer_inputs(self, b: dict, mat: Optional[dict] = None, z: Optional[dict] = None, state: Optional[dict] = None) -> dict:
         """The documented inputs of the Shaffer Score (see finsim2/shaffer_score.py): today's z-score and raw value of
@@ -219,24 +241,13 @@ class Research:
                 "horizons": [lab for lab, _ in HORIZONS], "signals": signals}
 
     def shaffer(self, asset_id: str, bundle: Optional[dict] = None) -> Optional[dict]:
-        """The Shaffer Score by horizon with its breakdown. The built-in is computed with the bundle (cached); an
-        override file (~/.finsim2/shaffer_score.py) is run on each request, since it can change without a code change."""
+        """A live-only custom score from an override file (~/.finsim2/shaffer_score.py), shown alongside the built-in
+        Shaffer Score; None without an override."""
         from .. import shaffer_score as shs
-        b = bundle or self.bundle(asset_id)
         if not shs.is_override():
-            res = b.get("shaffer")
-            if res is None:
-                return None
-            _, kind, _, source = shs.load()
-            return {**res, "source": source, "kind": kind}
-        metrics = {c["feature"]: c["value"] for c in b["current"]}
-        metrics["z"] = {c["feature"]: c["z"] for c in b["current"]}
-        metrics["quant_score"] = {k: v.get("score") for k, v in b["horizons"].items()}
-        metrics["ml_score"] = {k: v.get("ml_score") for k, v in b["horizons"].items()}
-        metrics["confidence"] = {k: (v.get("confidence") or {}).get("value") for k, v in b["horizons"].items()}
-        metrics["regime"] = b["regime"]["state"]
-        asset = {**b["asset"], "price": b["price"], "as_of": b["as_of"]}
-        return shs.evaluate(self.shaffer_inputs(b), metrics, asset)
+            return None
+        b = bundle or self.bundle(asset_id)
+        return shs.custom_score(self.shaffer_inputs(b))
 
     def signal_series(self, asset_id: str, name: str) -> dict:
         """One feature and its standardised signal over time (charts and backtests)."""
@@ -350,7 +361,24 @@ class Research:
         return out
 
     def composite_series(self, asset_id: str, horizon: str) -> list:
-        return self.score_history(asset_id, horizon)["composite"]
+        """The point-in-time Shaffer Score (raw) on the calendar: each weekly score held until the next one."""
+        return self.shaffer_series(asset_id, horizon)
+
+    def shaffer_series(self, asset_id: str, horizon: str, calibrated: bool = False) -> list:
+        ss = self.shaffer_full(asset_id)
+        hist = (ss.get("history") or {}).get(horizon) or {}
+        cal = self.panel().calendar()
+        pos = {d: i for i, d in enumerate(cal)}
+        out = [None] * len(cal)
+        dates, vals = hist.get("dates") or [], hist.get("calibrated" if calibrated else "raw") or []
+        for k, d in enumerate(dates):
+            i = pos.get(d)
+            if i is None or vals[k] is None:
+                continue
+            end = pos.get(dates[k + 1], len(cal)) if k + 1 < len(dates) else min(len(cal), i + 5)
+            for t in range(i, end):
+                out[t] = vals[k] / 50.0            # ±50 -> ±1 so the backtest's thresholds read in "strong evidence" units
+        return out
 
     def ml_oos_series(self, asset_id: str, horizon: str) -> list:
         """Walk-forward (out-of-sample) ensemble forecasts on the calendar, each standardised with the mean and SD of

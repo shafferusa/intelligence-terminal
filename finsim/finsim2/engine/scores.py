@@ -216,24 +216,46 @@ def horizon_scores(z_series: Dict[str, list], mat: Dict[str, Dict[str, dict]], p
 
 
 def primary_horizon(hs: Dict[str, dict]) -> Optional[str]:
-    """The horizon where the evidence is strongest: |score| × confidence."""
+    """The horizon where the evidence is strongest: |score| × confidence (the calibrated score when it exists)."""
     best, val = None, 0.0
     for lab, r in hs.items():
-        if r.get("score") is None:
+        v = r.get("calibrated") if r.get("calibrated") is not None else r.get("score")
+        c = (r.get("confidence") or {}).get("value")
+        if v is None or not c:
             continue
-        v = abs(r["score"]) * r["confidence"]["value"]
-        if v > val:
-            best, val = lab, v
+        if abs(v) * c > val:
+            best, val = lab, abs(v) * c
     return best
 
 
-def agreement(q: Optional[float], m: Optional[float]) -> Optional[str]:
-    if q is None or m is None:
+def family_share(hs: Dict[str, dict], horizons) -> List[dict]:
+    """Which families move the Shaffer Score over these horizons: share of the absolute family points."""
+    tot: Dict[str, float] = {}
+    for lab in horizons:
+        for f in (hs.get(lab) or {}).get("families") or []:
+            tot[f["family"]] = tot.get(f["family"], 0.0) + abs(f.get("points") or 0.0)
+    s = sum(tot.values())
+    if s <= 0:
+        return []
+    rows = sorted(({"family": f, "share": v / s} for f, v in tot.items() if v > 0), key=lambda x: -x["share"])
+    for r in rows:
+        r["importance"] = "HIGH" if r["share"] >= 0.25 else "MEDIUM" if r["share"] >= 0.1 else "LOW"
+    return rows
+
+
+def agreement(ss: Optional[float], ml: Optional[float], ml_verified: bool = True, ss_conf: Optional[float] = None) -> Optional[str]:
+    """Shaffer vs ML at one horizon, from the signs, the magnitudes and the confidence behind them:
+    STRONG AGREEMENT / MODERATE AGREEMENT / MIXED / STRONG DISAGREEMENT, or NO VERIFIED ML EDGE."""
+    if ss is None or ml is None:
         return None
-    if abs(q) < 15 and abs(m) < 15:
-        return "HIGH"
-    if (q > 0) == (m > 0) and abs(q) >= 15 and abs(m) >= 15:
-        return "HIGH"
-    if (q > 0) != (m > 0) and abs(q) >= 20 and abs(m) >= 20:
-        return "LOW"
-    return "MEDIUM"
+    if not ml_verified or ml == 0:
+        return "NO VERIFIED ML EDGE"
+    if abs(ss) < 10 and abs(ml) < 10:
+        return "MODERATE AGREEMENT"          # both see little
+    same = (ss > 0) == (ml > 0)
+    sim = 1.0 - abs(abs(ss) - abs(ml)) / max(abs(ss) + abs(ml), 1e-9)
+    if same and abs(ss) >= 10 and abs(ml) >= 10:
+        return "STRONG AGREEMENT" if sim >= 0.5 and (ss_conf or 0) >= 0.3 else "MODERATE AGREEMENT"
+    if not same and abs(ss) >= 20 and abs(ml) >= 20:
+        return "STRONG DISAGREEMENT"
+    return "MIXED"

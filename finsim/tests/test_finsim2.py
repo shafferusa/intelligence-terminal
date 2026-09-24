@@ -111,59 +111,6 @@ class Evidence(unittest.TestCase):
         self.assertIsNone(scores.quant_score([]))
 
 
-def _sig(family, z, u, ic, t=1e6, n_eff=60.0, stability=1.0, ic_recent=None, by_regime=None, h="3M"):
-    rec = {"usefulness": u, "ic": ic, "t": t, "q": 0.5, "n_eff": n_eff, "stability": stability, "ic_recent": ic if ic_recent is None else ic_recent}
-    if by_regime:
-        rec["by_regime"] = by_regime
-    return {"family": family, "z": z, "evidence": {h: rec}}
-
-
-class ShafferFormula(unittest.TestCase):
-    """SS = 100 tanh( Σ_f W_f [Σ_i w s c r d] A H / K ) on hand-checkable inputs."""
-
-    def run_one(self, signals, cls="EQUITY", regime=None, h="3M"):
-        return shaffer_score.score_asset({"asset": {"asset_class": cls}, "regime": regime or {}, "horizons": [h], "signals": signals})["horizons"][h]
-
-    def test_full_evidence_single_family(self):
-        r = self.run_one({"mom_12_1": _sig("Momentum", 2.0, 0.08, 0.10)})
-        f = r["families"][0]
-        self.assertEqual((f["W"], f["A"], f["H"]), (1.0, 1.0, 1.0))
-        self.assertAlmostEqual(f["bracket"], 1.0, places=6)                   # s = 1, w = 1, c ≈ 1 (huge t), r = 1, d = 1
-        self.assertAlmostEqual(r["K"], shaffer_score.KAPPA)
-        self.assertAlmostEqual(r["score"], 100 * math.tanh(1.0 / shaffer_score.KAPPA), places=4)
-        half = self.run_one({"mom_12_1": _sig("Momentum", 2.0, 0.08, 0.10, t=2.0)})["families"][0]
-        self.assertAlmostEqual(half["signals"][0]["c"], 0.5)                   # t = 2 gives half confidence
-
-    def test_signal_that_predicts_lower_returns_reads_bearish_when_high(self):
-        r = self.run_one({"rsi_14": _sig("Technical", 2.0, -0.08, -0.10, h="1W")}, h="1W")
-        self.assertLess(r["score"], 0)
-        self.assertEqual(r["families"][0]["signals"][0]["s"], -1.0)
-
-    def test_decay_confidence_regime_and_applicability_can_each_silence_a_signal(self):
-        self.assertAlmostEqual(self.run_one({"m": _sig("Momentum", 2.0, 0.08, 0.10, ic_recent=-0.10)})["score"], 0.0)   # d = 0
-        self.assertAlmostEqual(self.run_one({"m": _sig("Momentum", 2.0, 0.08, 0.10, t=0.0)})["score"], 0.0)             # c = 0
-        bad_regime = {"bear": {"usefulness": -0.08, "n_eff": 200.0}}
-        self.assertAlmostEqual(self.run_one({"m": _sig("Momentum", 2.0, 0.08, 0.10, by_regime=bad_regime)}, regime={"market": "bear"})["score"], 0.0)  # r = 0
-        none = self.run_one({"e": _sig("Fundamentals", 2.0, 0.08, 0.10)}, cls="CRYPTO")                                  # A = 0
-        self.assertIsNone(none["score"])
-
-    def test_families_are_weighted_not_counted(self):
-        # five agreeing technical signals do not outvote one valuation signal of equal strength pointing the other way
-        many = {f"t{i}": _sig("Technical", 2.0, 0.08, 0.10, h="12M") for i in range(5)}
-        many["v"] = _sig("Valuation", -2.0, 0.08, 0.10, h="12M")
-        r = self.run_one(many, h="12M")
-        tech = next(f for f in r["families"] if f["family"] == "Technical")
-        val = next(f for f in r["families"] if f["family"] == "Valuation")
-        self.assertAlmostEqual(tech["bracket"], 1.0, places=6)
-        self.assertAlmostEqual(val["bracket"], -1.0, places=6)
-        self.assertLess(r["score"], 0)                                     # H(Technical, 12M) = 0.3 < H(Valuation, 12M) = 1
-
-    def test_weak_evidence_is_damped(self):
-        strong = self.run_one({"m": _sig("Momentum", 2.0, 0.08, 0.10)})["score"]
-        weak = self.run_one({"m": _sig("Momentum", 2.0, 0.02, 0.03, t=1.0, n_eff=10.0)})["score"]
-        self.assertLess(abs(weak), abs(strong) / 3)
-
-
 class Engines(unittest.TestCase):
     def test_optimiser_respects_the_simplex_and_cap(self):
         cov = [[0.04, 0.01, 0.0], [0.01, 0.09, 0.0], [0.0, 0.0, 0.01]]
@@ -369,53 +316,45 @@ class Routes(unittest.TestCase):
         eq = self.get("asset/SPY/equations")
         self.assertTrue(eq)
 
-    def test_shaffer_score_built_in_on_every_surface(self):
-        with unittest.mock.patch.dict(os.environ, {"FINSIM2_SHAFFER": os.path.join(self.tmp, "none.py")}):
-            b = self.get("asset/SPY")
-            sh = b["shaffer"]
-            self.assertEqual(sh["version"], shaffer_score.VERSION)
-            self.assertEqual(set(sh["horizons"]), {"1D", "1W", "1M", "3M", "6M", "12M", "3Y", "5Y", "10Y"})
-            scored = [r for r in sh["horizons"].values() if r["score"] is not None]
-            self.assertTrue(scored)
-            for r in scored:
-                self.assertTrue(-100 <= r["score"] <= 100)
-                self.assertAlmostEqual(r["score"], 100 * math.tanh(r["numerator"] / r["K"]), places=6)
-                self.assertAlmostEqual(r["numerator"], sum(f["W"] * f["bracket"] * f["A"] * f["H"] for f in r["families"]), places=9)
-                for f in r["families"]:
-                    self.assertAlmostEqual(sum(x["w"] for x in f["signals"]), 1.0, places=9)
-                    self.assertAlmostEqual(f["bracket"], sum(x["w"] * x["s"] * x["c"] * x["r"] * x["d"] for x in f["signals"]), places=9)
-            row = next(r for r in self.get("markets") if r["id"] == "SPY")
-            self.assertEqual(row["shaffer"]["3M"], sh["horizons"]["3M"]["score"])
-            self.post("watchlist", {"asset_id": "SPY"})
-            wl = next(w for w in self.get("watchlist") if w["asset_id"] == "SPY")
-            self.assertEqual(wl["light"]["shaffer"]["3M"], sh["horizons"]["3M"]["score"])
-            self.assertIn("formula", self.get("shaffer"))
+    def test_shaffer_score_on_every_surface(self):
+        b = self.get("asset/SPY")
+        self.assertEqual(b["shaffer_version"], shaffer_score.VERSION)
+        hs = b["horizons"]
+        scored = [h for h in hs.values() if h["score"] is not None]
+        self.assertTrue(scored)
+        for h in scored:
+            self.assertTrue(-100 <= h["score"] <= 100)
+            self.assertIn(h["confidence"]["label"], ("High", "Medium", "Low"))
+            self.assertAlmostEqual(sum(f["points"] for f in h["families"]), h["score"], places=6)   # family points add up
+        full = self.get("asset/SPY/shaffer")
+        lab = next(k for k, v in hs.items() if v["score"] is not None)
+        self.assertEqual(full["horizons"][lab]["raw"], hs[lab]["score"])
+        self.assertEqual(full["history"][lab]["dates"][-1], b["as_of"])                # the live score is the last record
+        self.assertEqual(full["history"][lab]["raw"][-1], hs[lab]["score"])
+        row = next(r for r in self.get("markets") if r["id"] == "SPY")
+        self.assertEqual(row["scores"]["3M"], hs["3M"]["score"])
+        st = self.get("shaffer")
+        self.assertEqual(st["version"], shaffer_score.VERSION)
+        self.assertEqual(len(st["families"]), 15)
+        preds = self.store.predictions(asset_id="SPY")
+        self.assertTrue(any(p["model"] == "shaffer" and p["source"] == "live" for p in preds))   # today's scores are in the ledger
 
-    def test_shaffer_score_can_be_replaced_without_a_code_change(self):
-        legacy = os.path.join(self.tmp, "legacy.py")
-        with open(legacy, "w") as f:
-            f.write("VERSION = 't1'\ndef score(metrics, asset):\n    return 50.0 + 10 * (metrics['z'].get('mom_12_1') or 0.0)\n")
+    def test_custom_override_is_shown_live_only_and_fails_safely(self):
         full = os.path.join(self.tmp, "full.py")
         with open(full, "w") as f:
             f.write("VERSION = 't2'\ndef score_asset(inputs):\n    return {'horizons': {h: {'score': 250.0 if h == '1D' else -7.0} for h in inputs['horizons']}}\n")
         broken = os.path.join(self.tmp, "broken.py")
         with open(broken, "w") as f:
             f.write("this is not python")
-        with unittest.mock.patch.dict(os.environ, {"FINSIM2_SHAFFER": legacy}):
-            sh = self.get("asset/SPY")["shaffer"]
-            self.assertEqual(sh["version"], "t1")
-            vals = {r["score"] for r in sh["horizons"].values()}
-            self.assertEqual(len(vals), 1)                                   # one value for every horizon
-            self.assertTrue(20.0 <= vals.pop() <= 80.0)
         with unittest.mock.patch.dict(os.environ, {"FINSIM2_SHAFFER": full}):
-            sh = self.get("asset/SPY")["shaffer"]
-            self.assertEqual(sh["horizons"]["1D"]["score"], 100.0)           # clamped to the range
-            self.assertEqual(sh["horizons"]["3M"]["score"], -7.0)
-            self.assertEqual(next(r for r in self.get("markets") if r["id"] == "SPY")["shaffer"]["3M"], -7.0)
+            c = self.get("asset/SPY/shaffer")["custom"]
+            self.assertEqual(c["version"], "t2")
+            self.assertEqual(c["horizons"]["1D"], 100.0)                                 # clamped
+            self.assertEqual(c["horizons"]["3M"], -7.0)
         with unittest.mock.patch.dict(os.environ, {"FINSIM2_SHAFFER": broken}):
-            st = self.get("shaffer")
-            self.assertIn("failed to load", st["source"])                     # falls back to the built-in, says so
-            self.assertIsNotNone(self.get("asset/SPY")["shaffer"]["horizons"]["3M"])
+            c = self.get("asset/SPY/shaffer")["custom"]
+            self.assertIn("failed to load", c["error"])
+            self.assertIsNotNone(self.get("asset/SPY")["horizons"]["3M"])              # the built-in is untouched
 
     def test_unknown_things_are_404_and_bad_input_is_400(self):
         with self.assertRaises(NotFound):

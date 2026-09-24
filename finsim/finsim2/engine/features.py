@@ -82,6 +82,18 @@ FEATURES: Dict[str, tuple] = {
     "nfci": ("Macro", "Financial conditions (NFCI)", "Chicago Fed; above zero = tighter than average"),
     "fed_bs_growth": ("Macro", "Fed balance sheet growth, 26 weeks", "liquidity"),
     "dollar_beta_252": ("Macro", "Dollar sensitivity", "beta of daily returns to the dollar index"),
+    # fundamentals from existing SEC concepts (share counts put into today's share basis)
+    "roe": ("Fundamentals", "Return on equity", "trailing 12-month net income / latest stockholders' equity"),
+    "book_to_price": ("Valuation", "Book to price", "stockholders' equity / (shares outstanding × price)"),
+    "sales_yield": ("Valuation", "Sales yield", "trailing 12-month revenue / (shares outstanding × price)"),
+    # composites: economically motivated combinations; each must earn its weight out of sample like any signal
+    "ram": ("Momentum", "Risk-adjusted momentum", "12-1 momentum / 60-day volatility"),
+    "trend_quality": ("Momentum", "Trend quality", "6-month return / volatility × R² of the 6-month log-price trend"),
+    "mr_opportunity": ("Statistics", "Mean-reversion opportunity", "−20-day z-score / (1 + half-life / 21 days)"),
+    "rel_value": ("Valuation", "Relative value vs SPY", "5-year price value minus the S&P 500's"),
+    "rate_duration": ("Rates", "Rate-duration signal", "−modified duration × 3-month yield change (rate beta × change without a duration)"),
+    "credit_signal": ("Credit", "Credit composite", "spread level minus twice its 3-month change"),
+    "fund_quality": ("Fundamentals", "Fundamental quality", "return on equity + net margin"),
 }
 FAMILIES = sorted({v[0] for v in FEATURES.values()})
 MACRO_FEATURES = [k for k, v in FEATURES.items() if v[0] in ("Rates", "Credit", "Macro") and k not in ("rate_beta_252", "dollar_beta_252")]
@@ -492,7 +504,39 @@ def compute_features(panel: Panel, asset_id: str, include_macro: bool = True) ->
             f[k] = mac.get(k) or [None] * n
         f["rate_beta_252"] = roll_regress(r, mac["_dy10"], 252)["slope"]
         f["dollar_beta_252"] = roll_regress(r, mac["_dollar_ret"], 252)["slope"]
+    f.update(composite_features(panel, asset_id, f, logp, mkt))
     return f
+
+
+def composite_features(panel: Panel, asset_id: str, f: Dict[str, Series], logp: Series, mkt: Series) -> Dict[str, Series]:
+    """Economically meaningful combinations of primitive features (all point in time: built from same-date values)."""
+    n = len(logp)
+    none = [None] * n
+    g = lambda k: f.get(k) or none
+    out: Dict[str, Series] = {}
+    mom, v60, r6 = g("mom_12_1"), g("vol_60"), g("ret_6m")
+    out["ram"] = [(mom[i] / v60[i]) if mom[i] is not None and v60[i] else None for i in range(n)]
+    tr = roll_regress(logp, [float(i) for i in range(n)], 126)["corr"]
+    out["trend_quality"] = [(r6[i] / v60[i]) * tr[i] * tr[i] if r6[i] is not None and v60[i] and tr[i] is not None else None for i in range(n)]
+    z20, hl = g("z_20"), g("half_life")
+    out["mr_opportunity"] = [(-z20[i] / (1.0 + hl[i] / 21.0)) if z20[i] is not None and hl[i] is not None and hl[i] >= 0 else None for i in range(n)]
+    lb = [math.log(v) if v is not None and v > 0 else None for v in mkt]
+    bm, bs = roll_mean(lb, 1260, minp=756), roll_std(lb, 1260, minp=756)
+    vb = [(-(lb[i] - bm[i]) / bs[i]) if lb[i] is not None and bm[i] is not None and bs[i] else None for i in range(n)]
+    va = g("value_5y")
+    same = asset_id == panel.benchmark
+    out["rel_value"] = none if same else [(va[i] - vb[i]) if va[i] is not None and vb[i] is not None else None for i in range(n)]
+    dy, rb = g("d_y10_3m"), g("rate_beta_252")
+    dur = (panel.store.asset(asset_id) or {}).get("duration")
+    if dur:
+        out["rate_duration"] = [(-dur * dy[i]) if dy[i] is not None else None for i in range(n)]
+    else:
+        out["rate_duration"] = [(rb[i] * dy[i]) if rb[i] is not None and dy[i] is not None else None for i in range(n)]
+    cs, dcs = g("credit_spread"), g("d_credit_3m")
+    out["credit_signal"] = [(cs[i] - 2.0 * dcs[i]) if cs[i] is not None and dcs[i] is not None else None for i in range(n)]
+    roe, nm = g("roe"), g("net_margin")
+    out["fund_quality"] = [(roe[i] + nm[i]) if roe[i] is not None and nm[i] is not None else None for i in range(n)]
+    return out
 
 
 PER_SHARE = {"eps": -1, "shares": +1}     # concept -> exponent of the split factor (EPS divides, share counts multiply)
@@ -521,7 +565,7 @@ def split_adjust(rows: List[dict], splits: List[dict]) -> List[dict]:
 def fundamental_features(panel: Panel, asset_id: str, p: Series) -> Dict[str, Series]:
     """Valuation and growth from SEC filings, each value usable only from its filing date."""
     n = len(p)
-    none = {k: [None] * n for k in ("earnings_yield", "pe_rel_5y", "eps_growth_yoy", "rev_growth_yoy", "net_margin")}
+    none = {k: [None] * n for k in ("earnings_yield", "pe_rel_5y", "eps_growth_yoy", "rev_growth_yoy", "net_margin", "roe", "book_to_price", "sales_yield")}
     try:
         rows = panel.store.fundamentals(asset_id)
     except Exception:
@@ -538,6 +582,8 @@ def fundamental_features(panel: Panel, asset_id: str, p: Series) -> Dict[str, Se
         eps = ttm_series(rows, "eps", cal)
         rev = ttm_series(rows, "revenue", cal)
         ni = ttm_series(rows, "net_income", cal)
+        eq = ttm_series(rows, "equity", cal)
+        sh = ttm_series(rows, "shares", cal)
     except Exception:
         return none
     e = [eps.get(d) for d in cal]
@@ -551,6 +597,12 @@ def fundamental_features(panel: Panel, asset_id: str, p: Series) -> Dict[str, Se
     out["eps_growth_yoy"] = [((e[i] - e[i - 252]) / abs(e[i - 252])) if i >= 252 and e[i] is not None and e[i - 252] else None for i in range(n)]
     out["rev_growth_yoy"] = [(rv[i] / rv[i - 252] - 1) if i >= 252 and rv[i] and rv[i - 252] else None for i in range(n)]
     out["net_margin"] = [(nn[i] / rv[i]) if nn[i] is not None and rv[i] else None for i in range(n)]
+    q = [eq.get(d) for d in cal]
+    so = [sh.get(d) for d in cal]
+    out["roe"] = [(nn[i] / q[i]) if nn[i] is not None and q[i] and q[i] > 0 else None for i in range(n)]
+    mcap = [(so[i] * p[i]) if so[i] and p[i] else None for i in range(n)]
+    out["book_to_price"] = [(q[i] / mcap[i]) if q[i] is not None and mcap[i] else None for i in range(n)]
+    out["sales_yield"] = [(rv[i] / mcap[i]) if rv[i] is not None and mcap[i] else None for i in range(n)]
     for k, s in out.items():                 # prices exist only where the asset traded
         out[k] = [v if p[i] is not None else None for i, v in enumerate(s)]
     return out

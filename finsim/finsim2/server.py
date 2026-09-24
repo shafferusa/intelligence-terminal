@@ -301,8 +301,13 @@ class Router:
         if rest == ["leaderboard"]:
             from .engine import horizons as hz
             return hz.leaderboard(research.matrix(asset_id), q.get("horizon", "3M"), int(q.get("top", 30)))
-        if rest == ["score-history"]:
-            return research.score_history(asset_id, q.get("horizon", "3M"))
+        if rest == ["score-history"] or rest == ["shaffer"]:
+            full = research.shaffer_full(asset_id)
+            out = dict(full)
+            out["custom"] = research.shaffer(asset_id)
+            from .engine.research import downsample
+            out["history"] = {lab: {**h, "chart": downsample(h.get("dates") or [], h.get("raw") or [], 700)} for lab, h in (full.get("history") or {}).items()}
+            return out
         if rest == ["montecarlo"] and method == "POST":
             from .engine.montecarlo import HORIZON_DAYS, simulate
             from .engine.portfolio import aligned_returns
@@ -322,8 +327,9 @@ class Router:
         panel = research.panel()
         sig = b.get("signal", "mom_12_1")
         from .data.universe import horizon_days
-        if sig == "quant_score":
-            series = research.composite_series(asset_id, b.get("horizon", "3M"))       # already point in time and signed
+        if sig in ("quant_score", "shaffer", "shaffer_calibrated"):
+            # the point-in-time Shaffer Score record (weekly, carried forward), in units of 50 points
+            series = research.shaffer_series(asset_id, b.get("horizon", "3M"), calibrated=sig == "shaffer_calibrated")
             direction = "forecast (signed)"
         elif sig.startswith("ml:"):
             series = research.ml_oos_series(asset_id, b.get("horizon", "3M"))         # walk-forward, expanding z-scores
@@ -360,8 +366,7 @@ class Router:
                     bd = research.bundle(a)
                     ph = bd.get("primary_horizon")
                     hs = bd["horizons"].get(ph or "3M") or {}
-                    ssh = ((research.shaffer(a, bd) or {}).get("horizons") or {}).get(ph or "3M") or {}
-                    scores[a] = {"quant": hs.get("score"), "ml": hs.get("ml_score"), "shaffer": ssh.get("score"), "expected": (hs.get("expected") or {}).get("expected"),
+                    scores[a] = {"quant": hs.get("score"), "ml": hs.get("ml_score"), "shaffer": hs.get("score"), "calibrated": hs.get("calibrated"), "expected": hs.get("expected"),
                                  "confidence": (hs.get("confidence") or {}).get("value"), "horizon": ph}
             return pf.analytics(store, research.panel(), led, scores)
         if rest == ["transactions"]:
@@ -439,11 +444,11 @@ class Router:
         for a in assets:
             xs = [x for x in rets[a] if x is not None]
             hist = (sum(xs) / len(xs) * 252) if xs else 0.0
-            if src == "quant" or src == "ml":
+            if src in ("quant", "shaffer", "ml"):
                 v = None
                 if research.is_cached(a):
                     hs = research.bundle(a)["horizons"].get("12M") or {}
-                    v = (hs.get("expected") or {}).get("expected") if src == "quant" else hs.get("ml_expected")
+                    v = hs.get("expected") if src in ("quant", "shaffer") else hs.get("ml_expected")
                 mu.append(v if v is not None else 0.5 * hist)
             else:
                 mu.append(0.5 * hist + 0.5 * 0.06)          # shrink history toward a 6% equity-like prior: raw means are noisy
