@@ -45,7 +45,8 @@ class UniverseExtraTest(unittest.TestCase):
         self.assertNotIn("USD", by_ccy)
         sec = by_ccy.get("HKD") or native[0]
         self.assertNotEqual(sec.market, "US_EQUITY"); self.assertEqual(w.settlement_config.cycle_for(sec.market), 2 if sec.country != "IN" else 1)
-        self.assertNotIn(sec.id, w.options.optionable(), "no listed options on a native listing")
+        from finsim.engines.vol import has_listed_options
+        self.assertEqual(sec.id in w.options.optionable(), has_listed_options(sec), "options only where the home exchange lists them")
         px = w.market.last_bar(sec.id).ask
         q = 10_000
         w.fx_spot(pf.id, sec.currency, "USD", money(D(q) * px * D("1.02")), "BUY")
