@@ -55,6 +55,40 @@ python3 -m unittest discover -s tests
 
 No third-party packages are required (see *Environment note* below).
 
+### FinSim2 — the portfolio-manager edition
+
+`finsim2/` is a second app on the same engine: one job (portfolio manager), one choice at the start (how much you
+run: $1M, $10M, $100M, $1B or any amount up to $1 trillion; live real market or a practice market you advance
+yourself) and a new interface: a left rail (Overview, Trade, Positions, Cash & FX, Markets, Analytics, Shaffer
+Score, Risk, Performance, Activity, Settings), a header with NAV, day P&L, return and cash, one order ticket for
+everything listed (size in units or in dollars, pay with any currency you hold), option chains by underlying,
+every currency the fund holds valued in dollars, and light and dark themes.
+
+```
+python3 -m finsim2 open      # starts its server (port 8865) if needed and opens the window
+python3 -m finsim2 serve     # or in this terminal
+python3 -m finsim2 status | stop | phone on
+```
+
+Its saves live in `~/.finsim2/finsim2.db` (`FINSIM2_HOME`, `FINSIM2_DB`, `FINSIM2_PORT` override), apart from
+FinSim's. Its own routes sit under `/api/fs2/` (`finsim2/server.py`); everything else is FinSim's API.
+
+**Analytics.** `finsim/quant/` is a standard-library implementation of the equation library: returns and statistics
+(1–20), regression (21–33), time series incl. ARIMA and the augmented Dickey-Fuller test (34–43), volatility incl.
+EWMA and fitted GARCH(1,1) (44–50), stochastic processes incl. OU, Vasicek, CIR and Heston (51–62), machine
+learning incl. ridge, LASSO, elastic net, trees, random forest, boosting, k-means and PCA (63–83), neural networks
+with backpropagation and Adam (84–100), portfolio theory, CAPM, VaR and expected shortfall (101–110), fixed income
+(111–118), forwards and futures, Black–Scholes–Merton with Greeks and implied vol, swaps and total return swaps,
+and credit and CDS. `finsim/quant/catalog.py` holds each equation's LaTeX, a note and the function that implements
+it; `asset_metrics.py` turns a price history into the scoreboard's statistics. The Analytics page scores every
+tradeable asset (stocks, ETFs, bonds, futures, crypto, currencies) against the S&P 500 and the policy rate, shows
+the equation library with each equation's value on any asset and its Python source.
+
+**Shaffer Score.** A slot for a quantitative score being developed separately. `finsim2/shaffer_score.py` defines
+`score(metrics, asset) -> float | None` and `VERSION`; while `VERSION` is `None` the pages say *in development*.
+Drop a file with the same two names at `~/.finsim2/shaffer_score.py` (or `FINSIM2_SHAFFER`) and it is used without a
+code change: a Shaffer Score column on the scoreboard, a ranking page and the score on every asset page.
+
 ### As a local app
 
 `python3 -m finsim install` turns the simulator into an app for the current user only. It registers the server as
@@ -275,7 +309,7 @@ The definition-of-done scenario ($100MM → Treasuries → repo → equities →
 
 | Piece | What exists |
 |---|---|
-| **Instruments** (`engines/options.py`) | Contracts are securities (`asset_class OPTION`) with a deliverable abstraction: equity/ETF/ADR/REIT options on large and mid caps deliver 100 shares (American, physical); index options on `SPX` (10× the SPY level) are European and cash-settled. Chains list deterministically: four monthlies plus two quarterlies on third Fridays (rolled to a business day), 17 strikes around spot at a price-dependent step, re-listed as spot moves; contracts expire in the log. |
+| **Instruments** (`engines/options.py`) | Contracts are securities (`asset_class OPTION`) with a deliverable abstraction. Single-stock options are listed where the real market lists them (`vol.has_listed_options`): every US stock, REIT and ADR in the universe, US funds trading 100,000+ shares a day, and foreign stocks on their home exchange in local currency with its contract size (Eurex 100 shares, ICE Futures Europe 1,000, Osaka 100, HKEX one board lot, KRX 10, TAIFEX 2,000, NSE 500, ASX 100; none on Tadawul); large US names carry six expiries and thirteen strikes, the rest three monthlies and nine strikes. Options on futures (every physical commodity and the rate and index contracts) trade in the future's currency; margin is worked out in the contract's currency and held in dollars. US equity/ETF/ADR/REIT contracts deliver 100 shares (American, physical); index options on `SPX` (10× the SPY level) are European and cash-settled. Chains list deterministically: four monthlies plus two quarterlies on third Fridays (rolled to a business day), 17 strikes around spot at a price-dependent step, re-listed as spot moves; contracts expire in the log. |
 | **Vol surface** (`engines/vol.py`) | Per underlying: 30-day ATM IV, skew, curvature and term slope. ATM mean-reverts toward structural vol, 20-day realized vol, the market volatility index and the regime, jumps with the vol index and is persistent; skew steepens and the term structure inverts in stress. Stored in the market close so replay is exact. |
 | **Pricing** (`engines/options_pricing.py`) | Black–Scholes–Merton for European contracts; Cox–Ross–Rubinstein tree with early exercise and a European control variate for American ones; Greeks (delta, gamma, vega per vol point, theta per day, rho per bp) analytic or read off the tree; intrinsic/extrinsic; no-arbitrage bounds; implied vol. Verified against put–call parity, finite differences and American ≥ European. |
 | **Quotes & liquidity** | Theoretical mid wrapped in a spread that widens with distance from the money, tenor, the underlying's tier and regime stress; seeded volume and open interest; synthetic session bars derived from the underlying's open/high/low/close, so option orders use the same order types, participation cap and impact model as everything else. |
@@ -404,7 +438,9 @@ breach on any desk for 20 sessions, decide eight requests in time.
 `python3 -m unittest discover -s tests` (stdlib only). By subsystem: Core (`test_engines`, `test_daily`, `test_api`,
 `test_vertical_slice`), Financing (`test_financing`), Options (`test_options`), OTC (`test_otc`), Risk (`test_risk`),
 Operations (`test_operations`), Macro (`test_macro`), Game/Careers (`test_careers`, `test_institutions`),
-Commodities (`test_commodities`), Infrastructure (`test_infrastructure`, `test_master_scenario`).
+Commodities (`test_commodities`), Infrastructure (`test_infrastructure`, `test_master_scenario`), Quant library
+(`test_quant`), FinSim2 (`test_finsim2`), global options (`test_options_global`), currencies (`test_ccy_visibility`,
+`test_fx_routing`, `test_ccy_funding`, `test_backstop`).
 
 ### What is deliberately not built yet
 

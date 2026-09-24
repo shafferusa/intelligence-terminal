@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FinSim2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FinSim2">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="/style.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+</head>
+<body>
+<div id="shell">
+  <aside id="side">
+    <div class="brand"><span class="mark">F2</span><div><b>FinSim2</b><small>Portfolio manager</small></div></div>
+    <div class="fund" id="fundBox"></div>
+    <nav id="nav"></nav>
+    <div class="side-foot"><button class="ghost" id="themeBtn" title="light / dark">◐ Theme</button></div>
+  </aside>
+  <div id="mainCol">
+    <header id="top">
+      <button class="ghost menu" id="menuBtn" aria-label="menu">☰</button>
+      <div class="title" id="pageTitle">FinSim2</div>
+      <div class="search"><input id="q" placeholder="Search ticker or name  /" autocomplete="off" spellcheck="false"><div id="qdd" class="dd"></div></div>
+      <div class="kpis" id="topKpis"></div>
+      <div id="clockBox"></div>
+    </header>
+    <main id="main"></main>
+  </div>
+</div>
+<div id="drawer"></div>
+<div id="modal"></div>
+<div id="toasts"></div>
+<script src="/app.js"></script>
+</body>
+</html>
