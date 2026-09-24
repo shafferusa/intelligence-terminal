@@ -46,7 +46,12 @@ CREATE TABLE IF NOT EXISTS snapshots(portfolio_id TEXT, date TEXT, nav REAL, det
     PRIMARY KEY(portfolio_id, date));
 CREATE TABLE IF NOT EXISTS watchlist(asset_id TEXT PRIMARY KEY, added TEXT, note TEXT);
 CREATE TABLE IF NOT EXISTS store_meta(key TEXT PRIMARY KEY, value TEXT);
+CREATE TABLE IF NOT EXISTS corporate_actions(asset_id TEXT NOT NULL, date TEXT NOT NULL, kind TEXT NOT NULL, value REAL,
+    PRIMARY KEY(asset_id, date, kind));
+CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY, at TEXT, action TEXT, entity TEXT, detail TEXT);
 """
+# columns added after the first release; `_migrate` adds them to older databases
+MIGRATIONS = {"transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT")]}
 
 ASSET_COLS = ["id", "name", "asset_class", "sector", "country", "currency", "yahoo", "cik", "duration", "convexity",
               "fred", "meta"]
@@ -55,7 +60,7 @@ PRED_COLS = ["asset_id", "horizon", "model", "model_version", "made_on", "target
              "confidence", "score", "realized", "error", "scored_on", "detail"]
 RUN_COLS = ["level", "key", "horizon", "model", "version", "train_start", "train_end", "test_start", "test_end",
             "features", "params", "metrics", "created_at"]
-TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee", "currency", "note"]
+TX_COLS = ["portfolio_id", "date", "kind", "asset_id", "quantity", "price", "fee", "currency", "note", "basis_date", "created_at"]
 
 
 def default_path() -> str:
@@ -117,8 +122,21 @@ class Store:
         conn = self._conn()  # keeps an in-memory DB alive for the Store's lifetime
         with self._wlock:
             conn.executescript(SCHEMA)
+            self._migrate(conn)
             conn.commit()
         self._seed_universe()
+
+    @staticmethod
+    def _migrate(conn):
+        for table, cols in MIGRATIONS.items():
+            have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+            for name, typ in cols:
+                if name not in have:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {typ}")
+                    if table == "transactions" and name == "basis_date":
+                        # rows entered before share-basis tracking used FinSim2's own (split-adjusted) prices, i.e. the
+                        # share basis of the day they were entered; no split can have happened since, so today's date
+                        conn.execute("UPDATE transactions SET basis_date = ? WHERE basis_date IS NULL", (_dt.date.today().isoformat(),))
 
     # ------------------------------------------------------------------ plumbing
     def _conn(self) -> sqlite3.Connection:
@@ -469,8 +487,10 @@ class Store:
         self._write(fn)
 
     def add_transaction(self, tx: dict) -> int:
+        tx = {**tx, "created_at": tx.get("created_at") or _now()}
         vals = [tx.get(c) for c in TX_COLS]
         vals[1] = _d(vals[1])
+        vals[9] = _d(vals[9]) if vals[9] else vals[1]
         for i in (4, 5, 6):  # quantity, price, fee
             vals[i] = num(vals[i])
         if vals[6] is None:
@@ -479,12 +499,43 @@ class Store:
             "INSERT INTO transactions(" + ",".join(TX_COLS) + ") VALUES(" + ",".join("?" * len(TX_COLS)) + ")", vals))
         return cur.lastrowid
 
-    def transactions(self, portfolio_id: str) -> list[dict]:
-        return [dict(r) for r in self._q("SELECT * FROM transactions WHERE portfolio_id = ? ORDER BY date, id",
-                                         (portfolio_id,))]
+    def transactions(self, portfolio_id: str, include_voided: bool = False) -> list[dict]:
+        sql = "SELECT * FROM transactions WHERE portfolio_id = ?" + ("" if include_voided else " AND voided_at IS NULL")
+        return [dict(r) for r in self._q(sql + " ORDER BY date, id", (portfolio_id,))]
+
+    def transaction(self, tx_id: int) -> dict | None:
+        r = self._q("SELECT * FROM transactions WHERE id = ?", (int(tx_id),))
+        return dict(r[0]) if r else None
+
+    def void_transaction(self, tx_id: int):
+        """Soft delete: the row stays (with the time it was voided) and the replay ignores it."""
+        self._write(lambda conn: conn.execute("UPDATE transactions SET voided_at = ? WHERE id = ? AND voided_at IS NULL", (_now(), int(tx_id))))
 
     def delete_transaction(self, tx_id: int):
         self._write(lambda conn: conn.execute("DELETE FROM transactions WHERE id = ?", (int(tx_id),)))
+
+    # ------------------------------------------------------------------ audit trail
+    def audit(self, action: str, entity: str, detail=None):
+        self._write(lambda conn: conn.execute("INSERT INTO audit_log(at, action, entity, detail) VALUES(?,?,?,?)",
+                                              (_now(), str(action), str(entity), _dumps(detail))))
+
+    def audit_log(self, limit: int = 200) -> list[dict]:
+        return [{**dict(r), "detail": _loads(r["detail"])} for r in self._q("SELECT * FROM audit_log ORDER BY id DESC LIMIT ?", (int(limit),))]
+
+    # ------------------------------------------------------------------ corporate actions (split ratios, cash dividends per share)
+    def upsert_actions(self, asset_id: str, rows) -> int:
+        """rows: [(date, kind, value)] with kind "SPLIT" (new shares per old share) or "DIVIDEND" (cash per share)."""
+        tuples = [(asset_id, _d(d), str(k), num(v)) for d, k, v in rows if num(v) is not None]
+        sql = ("INSERT INTO corporate_actions(asset_id, date, kind, value) VALUES(?,?,?,?) ON CONFLICT(asset_id, date, kind) "
+               "DO UPDATE SET value=excluded.value WHERE corporate_actions.value IS NOT excluded.value")
+        return self._write(lambda conn: self._changed(conn, sql, tuples))[0]
+
+    def actions(self, asset_id: str, kind: str | None = None) -> list[dict]:
+        sql, args = "SELECT date, kind, value FROM corporate_actions WHERE asset_id = ?", [asset_id]
+        if kind:
+            sql += " AND kind = ?"
+            args.append(kind)
+        return [dict(r) for r in self._q(sql + " ORDER BY date", args)]
 
     def save_snapshot(self, portfolio_id: str, date, nav, detail=None):
         self._write(lambda conn: conn.execute(

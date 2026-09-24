@@ -296,7 +296,7 @@
     main.innerHTML = `<div class="page-head"><div><h1>Dashboard</h1><p>The evidence behind your portfolio and the market, as of ${esc(S.status && S.status.last_price_date || '')}. Scores are −100 (strongly bearish evidence) to +100 (strongly bullish); every number carries its confidence.</p></div>
       <div class="row"><button id="scanBtn">Research portfolio & core markets</button></div></div>
       <div id="scanJob"></div>
-      <div class="tiles">${port ? kpi('Net asset value', fmt.money(port.nav), `P&L ${fmt.signed(port.pnl)} since funding`) + kpi('Cash', fmt.money(port.cash), fmt.pct(port.cash / (port.nav || 1), 0) + ' of NAV') + kpi('Volatility (1-day VaR 95%)', fmt.pct((port.risk || {}).vol, 1), `VaR ${fmt.pct((port.risk || {}).var95, 2)} · ES ${fmt.pct((port.risk || {}).es95, 2)}`) + kpi('Beta to S&P 500', fmt.num(port.beta, 2), `duration ${fmt.num(port.duration, 1)} years`) : kpi('Portfolio', '—', '')}
+      <div class="tiles">${port ? kpi('Net asset value', fmt.money(port.nav), `P&L ${fmt.signed(port.pnl)} since funding`) + kpi('Cash', fmt.money(port.cash), fmt.pct(port.cash / (port.nav || 1), 0) + ' of NAV') + kpi('Today', `<span class="${sign((port.performance || {}).daily_pnl)}">${fmt.signed((port.performance || {}).daily_pnl)}</span>`, `${fmt.spct((port.performance || {}).daily_return, 2)} · since start ${fmt.spct((port.performance || {}).twr, 1)} (time-weighted) vs ${esc(port.benchmark || 'SPY')} ${fmt.spct(((port.performance || {}).benchmark || {}).total, 1)}`) + kpi('Annual volatility', fmt.pct((port.risk || {}).vol, 1), `1-day VaR 95% ${fmt.pct((port.risk || {}).var95, 2)} · ES ${fmt.pct((port.risk || {}).es95, 2)}`) + kpi('Beta to S&P 500', fmt.num(port.beta, 2), `duration ${fmt.num(port.duration, 1)} years`) : kpi('Portfolio', '—', '')}
         ${kpi('Market regime', `<span style="font-size:16px">${esc(reg ? reg.description : '—')}</span>`, reg ? Object.values(reg.labels).slice(3).join(' · ') : '')}
         ${kpi('Forecast record', preds.scored ? fmt.pct(preds.hit_rate, 0) + ' hit rate' : '—', `${preds.scored || 0} scored · ${preds.pending || 0} pending`)}</div>
       <div class="grid g-main"><div class="stack">
@@ -736,6 +736,18 @@
   };
 
   // ---------------------------------------------------------------- portfolio
+  function perfBlock(an) {
+    // time-weighted (flows removed, chained daily) vs the benchmark over the same periods; money-weighted since the start
+    const pf = an.performance || {}; if (!pf.periods) return '';
+    const bp = (pf.benchmark || {}).periods || {}; const labs = ['1D', '1W', '1M', '3M', 'YTD', '1Y', '3Y', '5Y'].filter(k => pf.periods[k] != null);
+    return `<div class="card flush" style="margin-bottom:14px"><h2>Performance <small>time-weighted: deposits and withdrawals do not count as returns · dividends included · benchmark ${esc(an.benchmark)} (total return)</small></h2>
+      <div class="tbl-wrap"><table class="strip"><thead><tr><th class="l"></th>${labs.map(k => `<th style="text-align:center">${k}</th>`).join('')}<th style="text-align:center">Since start</th></tr></thead><tbody>
+        <tr><td class="l"><b>Portfolio</b></td>${labs.map(k => `<td style="text-align:center" class="${sign(pf.periods[k])}">${fmt.spct(pf.periods[k], 1)}</td>`).join('')}<td style="text-align:center" class="${sign(pf.twr)}"><b>${fmt.spct(pf.twr, 1)}</b></td></tr>
+        <tr><td class="l">${esc(an.benchmark)}</td>${labs.map(k => `<td style="text-align:center" class="faint">${fmt.spct(bp[k], 1)}</td>`).join('')}<td style="text-align:center" class="faint">${fmt.spct((pf.benchmark || {}).total, 1)}</td></tr>
+        <tr><td class="l">Difference</td>${labs.map(k => `<td style="text-align:center" class="${sign(pf.periods[k] - bp[k])}">${bp[k] == null ? '—' : fmt.spct(pf.periods[k] - bp[k], 1)}</td>`).join('')}<td style="text-align:center">${(pf.benchmark || {}).total == null ? '—' : fmt.spct(pf.twr - pf.benchmark.total, 1)}</td></tr>
+      </tbody></table></div>
+      <div class="row muted" style="padding:10px 16px;gap:18px;font-size:12.5px"><span>Today ${fmt.signed(pf.daily_pnl)} (${fmt.spct(pf.daily_return, 2)})</span><span>Annualised (time-weighted) ${fmt.spct(pf.twr_annual, 1)}</span><span>Money-weighted (IRR) ${fmt.spct(pf.mwr, 1)} a year</span><span>Tracking error ${fmt.pct((pf.benchmark || {}).tracking_error, 1)} · information ratio ${fmt.num((pf.benchmark || {}).information_ratio, 2)}</span><span>Dividends received ${fmt.money(an.income)} · fees ${fmt.money(an.fees)}</span></div></div>`;
+  }
   pages.portfolio = async (main, args, alive) => {
     const tab = args[0] || 'overview';
     const an = await api('/fs2/portfolio'); if (!alive()) return;
@@ -744,6 +756,8 @@
     main.innerHTML = `<div class="page-head"><div><h1>Portfolio</h1><p>Your holdings, valued in US dollars at the latest close. Record deposits, buys and sells (at any past date: the close of that day is used unless you give a price). Risk figures apply today's weights to their recent history.</p></div>
       <div class="row"><button class="primary" id="pfAdd">+ Transaction</button></div></div>
       <div class="tiles">${kpi('NAV', fmt.money(an.nav), `contributed ${fmt.money(an.contributed)} · P&L <span class="${sign(an.pnl)}">${fmt.signed(an.pnl)}</span>`)}${kpi('Cash', fmt.money(an.cash), fmt.pct(an.cash / (an.nav || 1), 0) + ' of NAV')}${kpi('Gross · net', `${fmt.big(an.gross)} · ${fmt.big(an.net)}`, `long ${fmt.big(an.long)} · short ${fmt.big(an.short)}`)}${kpi('Beta · duration', `${fmt.num(an.beta, 2)} · ${fmt.num(an.duration, 1)}y`)}${kpi('Volatility · Sharpe', `${fmt.pct(rk.vol, 1)} · ${fmt.num(rk.sharpe, 2)}`, `Sortino ${fmt.num(rk.sortino, 2)}`)}${kpi('Max drawdown', fmt.pct(rk.max_drawdown, 1))}${kpi('VaR · ES (95%, 1 day)', `${fmt.pct(rk.var95, 2)} · ${fmt.pct(rk.es95, 2)}`)}</div>
+      ${(an.warnings || []).length ? `<div class="card" style="margin-bottom:14px;border-color:var(--warn)"><b>Check these</b><ul class="muted" style="margin:6px 0 0;padding-left:18px">${an.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
+      ${perfBlock(an)}
       <div class="tabs">${[['overview', 'Overview'], ['positions', 'Positions'], ['transactions', 'Transactions'], ['construct', 'Construct / optimise'], ['drivers', 'Drivers']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/portfolio/${k}">${l}</a>`).join('')}</div><div id="pfB" style="margin-top:14px"></div>`;
     $('#pfAdd').onclick = () => txModal();
     const body = $('#pfB');
@@ -760,8 +774,8 @@
     if (tab === 'transactions') {
       const tx = await api('/fs2/portfolio/transactions'); if (!alive()) return;
       body.innerHTML = '<div class="card flush"><div id="txT"></div></div>';
-      table($('#txT'), tx, [{ k: 'date', label: 'Date', l: 1 }, { k: 'kind', label: 'Type', l: 1, f: t => `<span class="pill ${t.kind === 'BUY' || t.kind === 'DEPOSIT' ? 'pos' : 'neg'}">${esc(t.kind)}</span>` }, { k: 'asset_id', label: 'Asset', l: 1, f: t => esc(t.asset_id || '') }, { k: 'quantity', label: 'Quantity', f: t => t.quantity == null ? '' : fmt.qty(t.quantity) }, { k: 'price', label: 'Price / amount', f: t => fmt.num(t.price, 2) + ' ' + esc(t.currency || '') }, { k: 'note', label: 'Note', l: 1 }, { k: 'x', label: '', nosort: 1, f: t => `<button class="small ghost" data-del="${t.id}">Delete</button>` }], { sortKey: null, empty: 'No transactions yet: start with a deposit' });
-      $$('[data-del]').forEach(b => b.onclick = () => { if (!confirm('Delete this transaction?')) return; busy(b, async () => { await api('/fs2/portfolio/transactions/' + b.dataset.del, { method: 'DELETE' }); route(); }); });
+      table($('#txT'), tx, [{ k: 'date', label: 'Date', l: 1 }, { k: 'kind', label: 'Type', l: 1, f: t => `<span class="pill ${t.kind === 'BUY' || t.kind === 'DEPOSIT' ? 'pos' : 'neg'}">${esc(t.kind)}</span>` }, { k: 'asset_id', label: 'Asset', l: 1, f: t => esc(t.asset_id || '') }, { k: 'quantity', label: 'Quantity', f: t => t.quantity == null ? '' : fmt.qty(t.quantity) }, { k: 'price', label: 'Price / amount', f: t => fmt.num(t.price, 2) + ' ' + esc(t.currency || '') }, { k: 'note', label: 'Note', l: 1 }, { k: 'x', label: '', nosort: 1, f: t => `<button class="small ghost" data-del="${t.id}">Remove</button>` }], { sortKey: null, empty: 'No transactions yet: start with a deposit' });
+      $$('[data-del]').forEach(b => b.onclick = () => { if (!confirm('Remove this transaction? It is kept in the audit log, and refused if later transactions depend on it.')) return; busy(b, async () => { await api('/fs2/portfolio/transactions/' + b.dataset.del, { method: 'DELETE' }); route(); }); });
       return;
     }
     if (tab === 'construct') {
@@ -812,17 +826,18 @@
     const m = modal(`<h2 style="margin-top:0">New transaction</h2><div class="seg" id="txK" style="margin-bottom:12px"><button class="on" data-k="BUY">Buy</button><button data-k="SELL">Sell</button><button data-k="DEPOSIT">Deposit</button><button data-k="WITHDRAW">Withdraw</button></div>
       <div class="form" style="grid-template-columns:1fr 1fr"><div id="txAW"><label class="f">Asset${assetPicker('txA', S.current)}</label></div><label class="f">Date<input id="txD" type="date" value="${today}"></label>
         <label class="f" id="txQL">Quantity<input id="txQ" type="number" min="0" placeholder="units"></label><label class="f" id="txML">…or amount (USD)<input id="txM" type="number" min="0" placeholder="e.g. 100000"></label>
-        <label class="f" id="txPL">Price (optional)<input id="txP" type="number" min="0" placeholder="close of that date"></label><label class="f">Note<input id="txN"></label></div>
+        <label class="f" id="txPL">Price you paid (optional)<input id="txP" type="number" min="0" placeholder="blank: close of that date"></label><label class="f" id="txFL">Fee (USD)<input id="txF" type="number" min="0" value="0"></label><label class="f" style="grid-column:1/-1">Note<input id="txN"></label></div>
+      <p class="hint">A price you type is taken as the price actually paid that day, in that day's share basis: later splits are applied automatically. Buys cannot exceed the cash available at that date.</p>
       <div class="row" style="margin-top:14px"><span class="spacer"></span><button onclick="document.getElementById('modal').innerHTML=''">Cancel</button><button class="primary" id="txGo">Record</button></div><div id="txErr" class="neg"></div>`);
     let kind = 'BUY';
     bindPicker('txA', x => { $('#txA').value = x; });
-    const sync = () => { const cash = kind === 'DEPOSIT' || kind === 'WITHDRAW'; ['#txAW', '#txQL', '#txPL'].forEach(s => { $(s, m).style.display = cash ? 'none' : ''; }); $('#txML', m).firstChild.textContent = cash ? 'Amount (USD)' : '…or amount (USD)'; };
+    const sync = () => { const cash = kind === 'DEPOSIT' || kind === 'WITHDRAW'; ['#txAW', '#txQL', '#txPL', '#txFL'].forEach(s => { $(s, m).style.display = cash ? 'none' : ''; }); $('#txML', m).firstChild.textContent = cash ? 'Amount (USD)' : '…or amount (USD)'; };
     $$('#txK button', m).forEach(b => b.onclick = () => { kind = b.dataset.k; $$('#txK button', m).forEach(x => x.classList.toggle('on', x === b)); sync(); });
     $('#txGo', m).onclick = () => busy($('#txGo', m), async () => {
       try {
         const d = $('#txD', m).value || null; const amt = N($('#txM', m).value); const q = N($('#txQ', m).value);
         if (kind === 'DEPOSIT' || kind === 'WITHDRAW') await post('/fs2/portfolio/' + kind.toLowerCase(), { amount: amt, date: d, note: $('#txN', m).value });
-        else await post('/fs2/portfolio/trade', { asset_id: $('#txA', m).value.trim().toUpperCase(), side: kind, quantity: q, amount: q ? null : amt, price: N($('#txP', m).value), date: d, note: $('#txN', m).value });
+        else await post('/fs2/portfolio/trade', { asset_id: $('#txA', m).value.trim().toUpperCase(), side: kind, quantity: q, amount: q ? null : amt, price: N($('#txP', m).value), fee: N($('#txF', m).value) || 0, date: d, note: $('#txN', m).value });
         closeModal(); toast('Recorded'); route();
       } catch (e) { $('#txErr', m).textContent = e.message; }
     });
@@ -836,11 +851,16 @@
         <div class="row" style="margin-top:12px"><button id="rf1">Refresh now</button><button id="rf2">Re-download everything</button></div><div id="rfJ"></div>
         <p class="hint">Prices from Yahoo Finance (daily, adjusted for splits and dividends), macro series from FRED (each used only from its publication date), fundamentals from SEC filings (each used only from its filing date). The data refreshes by itself after each US close while FinSim2 runs.</p></div>
         <div class="card"><h2>Methods</h2><ul class="muted" style="margin:0;padding-left:18px;font-size:13px;line-height:1.6"><li>Signals are standardised with expanding statistics (no future normalisation) and capped at ±3.</li><li>Evidence per signal and horizon: rank IC, hit rate, t-stat and p-value on the effective sample (overlap and signal persistence removed), Benjamini–Hochberg q-values across the ~60 signals.</li><li>Quant score weights = usefulness (IC shrunk by evidence), blended toward the IC in the current regime.</li><li>ML: purged walk-forward, models ranked by stable out-of-sample IC, ensemble weights from earlier blocks only.</li><li>Every forecast is stored and scored when its horizon passes.</li></ul></div></div>
+      <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Portfolio benchmark</h2><div class="row">${assetPicker('bmPick', '')}<span class="muted" id="bmNow"></span></div><p class="hint">Performance is compared with this asset's total return (default SPY).</p></div>
+        <div class="card flush"><h2>Audit log</h2><div id="auT"></div></div></div>
       <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Display</h2><div class="seg" id="thSeg">${['system', 'dark', 'light'].map(t => `<button data-th="${t}" class="${pref.get('theme', 'system') === t ? 'on' : ''}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div>
         <div class="card flush"><h2>Fetch log</h2><div id="flT"></div></div></div>`;
     $$('#thSeg button').forEach(b => b.onclick = () => { pref.set('theme', b.dataset.th); applyTheme(); $$('#thSeg button').forEach(x => x.classList.toggle('on', x === b)); });
     const rf = full => busy(null, async () => { const j = await post('/fs2/refresh', { full }); pollJob(j.id, () => route(), $('#rfJ')); });
     $('#rf1').onclick = () => rf(false); $('#rf2').onclick = () => { if (confirm('Re-download the full history of every asset? A few minutes.')) rf(true); };
+    api('/fs2/settings').then(x => { $('#bmNow').textContent = 'now: ' + x.benchmark; }).catch(() => {});
+    bindPicker('bmPick', id => busy(null, async () => { await post('/fs2/settings', { benchmark: id }); toast('Benchmark: ' + id); route(); }));
+    api('/fs2/audit?limit=100').then(rows => table($('#auT'), rows, [{ k: 'at', label: 'When', l: 1 }, { k: 'action', label: 'Action', l: 1 }, { k: 'entity', label: 'Item', l: 1 }], { sortKey: null, maxH: 260, empty: 'Nothing yet' })).catch(() => {});
     table($('#flT'), st.fetch_log || [], [{ k: 'fetched_at', label: 'When', l: 1 }, { k: 'source', label: 'Source', l: 1 }, { k: 'key', label: 'Item', l: 1 }, { k: 'status', label: 'Status', l: 1 }], { sortKey: null, maxH: 300 });
   };
 

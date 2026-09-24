@@ -216,6 +216,18 @@ class Router:
         if r == ["predictions"]:
             from .engine import tracking
             return tracking.report(store, q.get("asset"))
+        if r == ["settings"] and method == "GET":
+            from .engine.portfolio import benchmark_id
+            return {"benchmark": benchmark_id(store)}
+        if r == ["settings"] and method == "POST":
+            if "benchmark" in b:
+                if not store.asset(str(b["benchmark"])):
+                    raise NotFound(f"unknown asset {b['benchmark']}")
+                store.kv_set("settings:benchmark", str(b["benchmark"]))
+                store.audit("settings.benchmark", "settings", {"benchmark": b["benchmark"]})
+            return {"ok": True}
+        if r == ["audit"]:
+            return store.audit_log(int(q.get("limit", 200)))
         if r == ["model-runs"]:
             return store.model_runs(q.get("key"), q.get("horizon"), int(q.get("limit", 200)))
         raise NotFound(f"no route for {method} /api/fs2/{'/'.join(r)}")
@@ -366,7 +378,7 @@ class Router:
                 qty = _num(b.get("amount")) / (px * rate)
             return {"id": led.trade(b["asset_id"], qty, b.get("side", "BUY"), _num(b.get("price")), b.get("date"), _num(b.get("fee"), 0.0), b.get("note", ""))}
         if len(rest) == 2 and rest[0] == "transactions" and method == "DELETE":
-            store.delete_transaction(int(rest[1]))
+            led.void(int(rest[1]))
             return {"ok": True}
         if rest == ["optimize"] and method == "POST":
             return self.optimize(b)

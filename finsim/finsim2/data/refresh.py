@@ -101,6 +101,16 @@ def _close_enough(a, b) -> bool:
     return abs(a - b) <= REL_TOL * max(abs(a), abs(b), 1e-12)
 
 
+def _store_actions(store, aid: str, rows, complete: bool) -> None:
+    """Keep the splits and dividends that came with a download; `complete` = it covered the whole history."""
+    events = getattr(rows, "events", None)
+    if events is None:
+        return
+    store.upsert_actions(aid, events)
+    if complete:
+        store.kv_set(f"actions_complete:{aid}", True)
+
+
 def refresh_yahoo(store, asset: dict, full: bool = False) -> dict:
     """Incremental (or full) Yahoo download for one asset. Returns {"rows", "changed", "mode"}."""
     aid, sym = asset["id"], asset["yahoo"]
@@ -110,9 +120,14 @@ def refresh_yahoo(store, asset: dict, full: bool = False) -> dict:
         if not rows:
             raise ValueError("no price history returned")
         changed = store.replace_prices(aid, rows) if full else store.upsert_prices(aid, rows)
+        _store_actions(store, aid, rows, True)
         return {"rows": len(rows), "changed": changed, "mode": "full"}
     start = _dt.date.fromisoformat(last) - _dt.timedelta(days=YAHOO_OVERLAP_DAYS)
     rows = yahoo.fetch_history(sym, yahoo.date_to_epoch(start))
+    if getattr(rows, "events", None) is not None and not store.kv_get(f"actions_complete:{aid}"):
+        # a store filled before corporate actions were kept: fetch the whole history once for its splits and dividends
+        _store_actions(store, aid, yahoo.fetch_history(sym, 0), True)
+    _store_actions(store, aid, rows, False)
     stored = {r["date"]: r for r in store.prices(aid, start=start)}
     readjusted = False
     for r in rows:
@@ -127,6 +142,7 @@ def refresh_yahoo(store, asset: dict, full: bool = False) -> dict:
         if not full_rows:
             raise ValueError("re-adjusted history could not be re-downloaded")
         store.replace_prices(aid, full_rows)
+        _store_actions(store, aid, full_rows, True)
         return {"rows": len(full_rows), "changed": len(full_rows), "mode": "readjusted"}
     changed = store.upsert_prices(aid, rows) if rows else 0
     return {"rows": len(rows), "changed": changed, "mode": "incremental"}

@@ -495,6 +495,29 @@ def compute_features(panel: Panel, asset_id: str, include_macro: bool = True) ->
     return f
 
 
+PER_SHARE = {"eps": -1, "shares": +1}     # concept -> exponent of the split factor (EPS divides, share counts multiply)
+
+
+def split_adjust(rows: List[dict], splits: List[dict]) -> List[dict]:
+    """Put per-share SEC figures into today's share basis, the basis of the (split-adjusted) price history.
+    A figure is in the share basis of its filing date, so every split after the filing date applies (a restatement
+    filed after a split is already in the new basis and is left alone)."""
+    if not splits:
+        return rows
+    out = []
+    for r in rows:
+        k = PER_SHARE.get(r.get("concept"))
+        if k is None or r.get("value") is None:
+            out.append(r)
+            continue
+        f = 1.0
+        for sp in splits:
+            if sp["date"] > str(r.get("filed"))[:10]:
+                f *= sp["value"]
+        out.append({**r, "value": r["value"] * (f ** k)})
+    return out
+
+
 def fundamental_features(panel: Panel, asset_id: str, p: Series) -> Dict[str, Series]:
     """Valuation and growth from SEC filings, each value usable only from its filing date."""
     n = len(p)
@@ -510,6 +533,7 @@ def fundamental_features(panel: Panel, asset_id: str, p: Series) -> Dict[str, Se
     except Exception:
         return none
     cal = panel.calendar()
+    rows = split_adjust(rows, panel.store.actions(asset_id, "SPLIT"))
     try:
         eps = ttm_series(rows, "eps", cal)
         rev = ttm_series(rows, "revenue", cal)

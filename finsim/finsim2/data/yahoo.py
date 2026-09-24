@@ -140,9 +140,49 @@ def parse_chart(result: dict) -> tuple[dict, list[dict]]:
     return meta, [by_date[d] for d in sorted(by_date)]
 
 
+class Bars(list):
+    """A list of daily bars that also carries the chart's corporate actions: ``events`` = [(date, kind, value)]."""
+    events = None
+
+
+def parse_events(result: dict) -> list[tuple]:
+    """Splits and cash dividends from ``chart.result[0].events`` as [(date, "SPLIT", new shares per old share) or
+    (date, "DIVIDEND", cash per share)]. Yahoo states dividends in today's (split-adjusted) share basis, like its closes."""
+    if not isinstance(result, dict):
+        return []
+    meta = result.get("meta") if isinstance(result.get("meta"), dict) else {}
+    off = meta.get("gmtoffset")
+    off = int(off) if isinstance(off, (int, float)) and not isinstance(off, bool) and abs(off) < 86400 else 0
+    ev = result.get("events") if isinstance(result.get("events"), dict) else {}
+    out = []
+
+    def day(t):
+        try:
+            return _dt.datetime.fromtimestamp(int(t) + off, _dt.timezone.utc).date().isoformat()
+        except (OverflowError, OSError, ValueError, TypeError):
+            return None
+    for e in (ev.get("splits") or {}).values() if isinstance(ev.get("splits"), dict) else []:
+        if not isinstance(e, dict):
+            continue
+        n, d, when = num(e.get("numerator")), num(e.get("denominator")), day(e.get("date"))
+        if n and d and when and n > 0 and d > 0:
+            out.append((when, "SPLIT", n / d))
+    for e in (ev.get("dividends") or {}).values() if isinstance(ev.get("dividends"), dict) else []:
+        if not isinstance(e, dict):
+            continue
+        a, when = num(e.get("amount")), day(e.get("date"))
+        if a is not None and a > 0 and when:
+            out.append((when, "DIVIDEND", a))
+    return sorted(out)
+
+
 def fetch_history(symbol: str, start_epoch: int = 0, end_epoch: int | None = None) -> list[dict]:
-    """Daily bars ``{date, open, high, low, close, adj_close, volume}`` from ``start_epoch`` to now."""
-    return parse_chart(fetch_chart(symbol, start_epoch, end_epoch))[1]
+    """Daily bars ``{date, open, high, low, close, adj_close, volume}`` from ``start_epoch`` to now (a :class:`Bars`
+    list whose ``events`` holds the splits and dividends in the same window)."""
+    result = fetch_chart(symbol, start_epoch, end_epoch)
+    bars = Bars(parse_chart(result)[1])
+    bars.events = parse_events(result)
+    return bars
 
 
 def fetch_history_meta(symbol: str, start_epoch: int = 0) -> tuple[dict, list[dict]]:
