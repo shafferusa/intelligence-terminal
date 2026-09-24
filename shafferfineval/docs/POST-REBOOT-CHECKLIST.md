@@ -126,10 +126,22 @@ commit 307 MiB at 4,000 targets, fixed cost ~243 MiB, streamed WAL 13.5 MB
 against 56.7 MB unbatched with identical rows, scores and signatures either way,
 and a fitted per-date cost of 548 s + 0.076 s per target projecting a four-date
 pilot of 75–90 minutes and ~340 MB. The pagefile peak since boot never moved.
-8k was not run, by instruction. **Only the AUTHORISATION remains.** Next, in
-order: run the four-date pilot on a disposable DB on the owner's word — never
-at `pit_replay_manifest.PILOT_DB_PATH`, which is the protected v3-era pilot, and
-the runner refuses that path — then `pilot_report.py` for the availability,
-signature and refusal-funnel deliverables, then resume the three local services
-(`Start-ScheduledTask -TaskName 'Mikhail Live App'` and the FinSim startup
-shortcut; note FinSim restarts itself and runs under `pythonw.exe`).
+8k was not run, by instruction.
+
+**The four-date pilot has also run** (2026-09-23, report §5d), as four per-date
+invocations into disposable databases outside the repository: 30,308 entity-dates
+in 61 minutes for 405 MB, WAL peak 15.4 MB, peak commit 318–333 MiB, free-space
+low-water 12.42 GiB, every checkpoint clean, the pagefile peak unmoved, the main
+store byte-identical and the freeze intact throughout. Its headline finding is
+that the binding constraint is **store coverage, not any model rule**:
+`pit_listing` covers 2,542 of 16,890 entities, so 65–75% of live filers have no
+listing at all, the 10-day price gate costs 0.4–0.7% and quarantine costs 0.0%.
+Score density is 38.5% and only 3.1% of entity-dates carry all four blocks.
+
+**What remains is the 165-date grid, on the owner's word only.** Next, in order:
+decompose `no_ebitda_period` (57.9% of entity-dates, the largest gap after
+listings) the way the listing gate was decomposed; decide whether the cohort
+starvation behind `ev_ebitda_supplement` (2 produced of 30,308) is a v7 question;
+resume the three local services (`Start-ScheduledTask -TaskName 'Mikhail Live App'`
+and the FinSim startup shortcut; note FinSim restarts itself and runs under
+`pythonw.exe`).

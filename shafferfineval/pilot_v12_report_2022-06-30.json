@@ -1,0 +1,359 @@
+{
+ "db": "C:\\Users\\logan\\AppData\\Local\\Temp\\claude\\C--Users-logan-intelligence-terminal\\5ec24671-4bcd-4017-aa06-4a972c7b76ec\\scratchpad\\v12\\pilot_v12_2022-06-30.db",
+ "db_bytes": 107171840,
+ "run": {
+  "status": "complete",
+  "totals": {
+   "pit_feature": 104429,
+   "pit_pillar_score": 32132,
+   "pit_score": 3107
+  },
+  "entity_dates": 8033
+ },
+ "per_date": [
+  {
+   "as_of": "2022-06-30",
+   "n_targets": 8033,
+   "n_entities_indexed": 8033,
+   "n_scored": 3107,
+   "n_refused_insufficient_block_coverage": 4926,
+   "n_no_peer_set": 0,
+   "n_priced": 2461,
+   "n_listed": 2461,
+   "n_listing_ambiguous": 13,
+   "n_floor_state": 1065,
+   "blocks_resolved": {
+    "ebitda_strength": 2703,
+    "valuation": 1151,
+    "real_growth": 4655,
+    "financial_quality": 910
+   },
+   "valuation_presence": {
+    "PRESENT_DEGRADED": 1150,
+    "ABSENT": 6882,
+    "PRESENT_FULL": 1
+   },
+   "debt_bounds_scored": {
+    "lower_bound": 226,
+    "exact": 33
+   },
+   "signatures": {
+    "VG": 459,
+    "G": 1518,
+    "NONE": 3078,
+    "EGQ": 599,
+    "VGQ": 16,
+    "EVG": 221,
+    "V": 209,
+    "EG": 1567,
+    "EVGQ": 241,
+    "GQ": 34,
+    "VQ": 5,
+    "Q": 11,
+    "E": 71,
+    "EQ": 4
+   },
+   "rows": {
+    "pit_feature": 104429,
+    "pit_pillar_score": 32132,
+    "pit_score": 3107
+   },
+   "elapsed_s": 970.3,
+   "wal_peak_bytes_observed": 13081032,
+   "n_batches": 17,
+   "n_eligible_peer_calls": 2056
+  }
+ ],
+ "entity_dates": 8033,
+ "bytes_per_entity_date": 13341.446533051165,
+ "availability": {
+  "real_revenue_growth": [
+   4655,
+   8033
+  ],
+  "ebitda_scale": [
+   3254,
+   8033
+  ],
+  "ebitda_efficiency": [
+   2988,
+   8033
+  ],
+  "ebitda_growth": [
+   2911,
+   8033
+  ],
+  "ebitda_acceleration": [
+   2520,
+   8033
+  ],
+  "ebitda_benchmark": [
+   2401,
+   8033
+  ],
+  "interest_coverage": [
+   2210,
+   8033
+  ],
+  "fcf_conversion": [
+   1481,
+   8033
+  ],
+  "pe_absolute": [
+   1151,
+   8033
+  ],
+  "pe_relative": [
+   1062,
+   8033
+  ],
+  "net_debt_ebitda": [
+   259,
+   8033
+  ],
+  "debt_market_cap": [
+   53,
+   8033
+  ],
+  "ev_ebitda_supplement": [
+   1,
+   8033
+  ]
+ },
+ "reasons": {
+  "no_ebitda_period": 34608,
+  "no_scored_listing": 16677,
+  "pe_relative_needs_absolute": 6882,
+  "ebitda_non_positive": 3132,
+  "no_revenue_period": 3076,
+  "no_operating_income_period": 2711,
+  "no_interest_expense_at_operating_income_period": 2567,
+  "market_cap_unavailable": 1822,
+  "cohort_values_below_floor": 1518,
+  "no_total_debt_at_ebitda_period": 1306,
+  "insufficient_peers": 714,
+  "debt_rung_undetermined": 580,
+  "no_revenue_at_ebitda_period": 534,
+  "debt_rung_rejected_measured": 527,
+  "no_ttm_eps": 503,
+  "unavailable_loss_making": 442,
+  "share_basis_unresolved": 338,
+  "ebitda_growth_rate_beyond_band": 300,
+  "no_ebitda_lag2_period": 277,
+  "no_capex_at_ebitda_period": 274,
+  "non_positive_real_revenue_base": 181,
+  "VALUATION_PEER_SET_INSUFFICIENT": 171,
+  "no_revenue_lag1_period": 121,
+  "no_ebitda_lag1_period": 100,
+  "listing_ambiguous": 39
+ },
+ "blocks": {
+  "ebitda_strength/resolved": 2703,
+  "ebitda_strength/unavailable": 5330,
+  "financial_quality/resolved": 910,
+  "financial_quality/unavailable": 7123,
+  "real_growth/resolved": 4655,
+  "real_growth/unavailable": 3378,
+  "valuation/resolved": 1151,
+  "valuation/unavailable": 6882
+ },
+ "signatures": {
+  "EG": 1567,
+  "EGQ": 599,
+  "VG": 459,
+  "EVGQ": 241,
+  "EVG": 221,
+  "VGQ": 16,
+  "EQ": 4
+ },
+ "score_density": 0.3867795344205154,
+ "funnels": {
+  "ev_ebitda_supplement": {
+   "key": "ev_ebitda_supplement",
+   "targets": 8033,
+   "stages": [
+    [
+     "no EBITDA period",
+     693,
+     7340
+    ],
+    [
+     "no scored listing",
+     5559,
+     1781
+    ],
+    [
+     "listing ambiguous",
+     13,
+     1768
+    ],
+    [
+     "no market cap (strict shares)",
+     911,
+     857
+    ],
+    [
+     "debt rung refused",
+     422,
+     435
+    ],
+    [
+     "no cash at P",
+     3,
+     432
+    ],
+    [
+     "EBITDA <= 0",
+     266,
+     166
+    ],
+    [
+     "multiple outside band",
+     2,
+     164
+    ],
+    [
+     "cohort refused",
+     163,
+     1
+    ]
+   ],
+   "produced": 1,
+   "unaccounted": 0,
+   "other_codes": []
+  },
+  "pe_absolute": {
+   "key": "pe_absolute",
+   "targets": 8033,
+   "stages": [
+    [
+     "no scored listing",
+     5559,
+     2474
+    ],
+    [
+     "listing ambiguous",
+     13,
+     2461
+    ],
+    [
+     "no TTM EPS",
+     503,
+     1958
+    ],
+    [
+     "loss-making",
+     442,
+     1516
+    ],
+    [
+     "EPS zero",
+     21,
+     1495
+    ],
+    [
+     "EPS near zero",
+     6,
+     1489
+    ],
+    [
+     "share basis unresolved",
+     338,
+     1151
+    ]
+   ],
+   "produced": 1151,
+   "unaccounted": 0,
+   "other_codes": []
+  },
+  "net_debt_ebitda": {
+   "key": "net_debt_ebitda",
+   "targets": 8033,
+   "stages": [
+    [
+     "no EBITDA period",
+     4746,
+     3287
+    ],
+    [
+     "EBITDA <= 0",
+     1433,
+     1854
+    ],
+    [
+     "debt rung refused",
+     1331,
+     523
+    ],
+    [
+     "no cash at P",
+     10,
+     513
+    ],
+    [
+     "cohort refused",
+     254,
+     259
+    ]
+   ],
+   "produced": 259,
+   "unaccounted": 0,
+   "other_codes": []
+  },
+  "fcf_conversion": {
+   "key": "fcf_conversion",
+   "targets": 8033,
+   "stages": [
+    [
+     "no EBITDA period",
+     4746,
+     3287
+    ],
+    [
+     "EBITDA <= 0",
+     1433,
+     1854
+    ],
+    [
+     "no OCF / capex at P",
+     275,
+     1579
+    ],
+    [
+     "cohort refused",
+     98,
+     1481
+    ]
+   ],
+   "produced": 1481,
+   "unaccounted": 0,
+   "other_codes": []
+  },
+  "ebitda_benchmark": {
+   "key": "ebitda_benchmark",
+   "targets": 8033,
+   "stages": [
+    [
+     "no EBITDA period",
+     4746,
+     3287
+    ],
+    [
+     "cohort refused",
+     619,
+     2668
+    ],
+    [
+     "other refusals",
+     267,
+     2401
+    ]
+   ],
+   "produced": 2401,
+   "unaccounted": 0,
+   "other_codes": [
+    "no_revenue_at_ebitda_period"
+   ]
+  }
+ }
+}

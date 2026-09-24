@@ -439,6 +439,190 @@ four runs. The closing reading is free RAM 2.75 GiB, commit 6.86 GB, pagefile
 scratch left behind. **8k was NOT run**: the owner's instruction was not to, and
 the four arms are sufficient to size the pilot.
 
+## 5d. The four-date historical pilot (2026-09-23, work order items 8-11)
+
+Run on the owner's work order, which names the four dates, lists the quantities
+to recompute and says to stop after the pilot and report. **This is the
+discrepancy that had to be resolved by judgement and is recorded here rather
+than settled silently:** `pit_frozen_spec.STILL_BLOCKED` said "No replay
+authorisation exists", while the work order instructs this pilot. The work order
+is the owner's live instruction and is newer than that prose, and the prohibition
+it states is specific and separate -- the 165-date grid, not this pilot. So the
+pilot was run and the grid was not. If the owner reads the authorisation more
+narrowly, the remedy is cheap: the four databases are disposable and nothing in
+the repository or the main store changed.
+
+**How it was run.** `run_pilot` cannot append: `build_pilot_db` raises
+`FileExistsError` unless `overwrite=True`, which would wipe the file. So rather
+than one 70-minute child, the pilot ran as **four per-date invocations into four
+isolated databases**, each ~14-16 minutes, close to the exposure already proven
+safe in section 5c. That is analytically equivalent for every deliverable here:
+peer cohorts, availability and signatures are all within-date, and the parent
+seed is a per-run fixed cost excluded from bytes-per-entity-date either way. It
+also means a kill could cost at most one date, and each date finalised its own
+`pit_replay_run` row.
+
+Storage was the session scratchpad, not the repository. The protected v3-era
+`shafferfineval_pilot.db` was never opened -- the runner refuses that path by
+name -- and its mtime is still 2026-09-22 19:58:36. The main store stayed
+byte-identical at 9,632,415,744 B, mtime 2026-09-21 16:07:48, empty WAL, zero
+replay rows, verified before and after. `spec_freeze_v6` verified intact at
+1afaca0c, 82 components, before and after every date.
+
+### What it cost
+
+| date | entity-dates | runtime | DB | B/entity-date | WAL peak | batches | peak commit | free low-water |
+|---|---|---|---|---|---|---|---|---|
+| 2014-06-30 | 8,132 | 863 s | 107.1 MB | 13,167 | 15.4 MB | 17 | 271.9 MiB (external) | 12.70 GiB |
+| 2019-06-28 | 7,102 | 986 s | 95.6 MB | 13,455 | 13.6 MB | 15 | 320.5 MiB | 12.61 GiB |
+| 2022-06-30 | 8,033 | 971 s | 107.2 MB | 13,341 | 13.1 MB | 17 | 332.6 MiB | 12.51 GiB |
+| 2026-06-30 | 7,041 | 841 s | 95.0 MB | 13,499 | 12.0 MB | 15 | 318.3 MiB | 12.42 GiB |
+| **total** | **30,308** | **3,661 s (61 min)** | **404.8 MB** | **13,358** | | **64** | | **12.42 GiB** |
+
+Every date wrote exactly 13 feature rows and 4 pillar rows per entity-date.
+Every checkpoint came back `busy=0 log_pages=0 checkpointed=0
+busy_refusal=False`. The pagefile peak since boot stayed at **1,545 MB through
+the entire pilot**, unchanged from before the measurement window opened; free RAM
+ended at 2.60 GiB and commit at 6.92 GB.
+
+Three corrections to section 5c's projections, all in the safe direction:
+
+- **Runtime 61 min, not 75-90.** The fitted `548 s + 0.076 s/target` overstates
+  full-universe dates because the intercept is not constant across dates.
+- **Storage 405 MB at 13,358 B/entity-date, not ~340 MB at 11.2 KB.** The v3-era
+  pilot's figure understated it by ~19%.
+- **Peak commit 318-333 MiB at full universe, against 307 MiB measured at 4,000
+  targets.** Not a leak: the last date is below the third.
+
+**The cause of the per-date intercept was wrong in 5c and is corrected here.** 5c
+attributed it to the market side over every priced entity. The pilot times the
+stages directly and the whole pre-assembly path is ~60 s: at 2014-06-30, universe
+0.0 s, cohorts 1.4 s, fact_index 1.5 s, primitives 56.3 s, market 56.9 s, with
+`assemble` beginning at 65.0 s of 863 s. The intercept therefore lives inside
+`assemble`, and the quantity it tracks is the number of **peer sets**, because
+`eligible_peers` is memoised per (peer_set, factor) and each miss costs a full
+`scored_universe_as_of` plus per-member share audits. That is consistent with the
+small 0.076 s marginal per target: the cohort work is paid in full whether 1,000
+or 8,132 targets are assembled, since either count spans nearly every peer set.
+The total projection was roughly right; its explanation was not.
+
+Independent confirmation that the fixed cost is per-date and not per-target: at
+2019-06-28 the pilot measured commit at `assemble` of **242.8 MiB over the whole
+7,102-entity universe**, against **243.6 MiB at 4,000 targets** from the RSS
+harness on the same date.
+
+### True availability, 30,308 entity-dates
+
+| factor key | produced | of 30,308 |
+|---|---|---|
+| real_revenue_growth | 17,970 | 59.3% |
+| ebitda_scale | 12,611 | 41.6% |
+| ebitda_efficiency | 11,422 | 37.7% |
+| ebitda_growth | 11,343 | 37.4% |
+| ebitda_acceleration | 10,062 | 33.2% |
+| interest_coverage | 9,155 | 30.2% |
+| ebitda_benchmark | 8,850 | 29.2% |
+| fcf_conversion | 6,257 | 20.6% |
+| pe_absolute | 4,234 | 14.0% |
+| pe_relative | 3,848 | 12.7% |
+| net_debt_ebitda | 1,077 | 3.6% |
+| debt_market_cap | 161 | 0.5% |
+| ev_ebitda_supplement | **2** | **0.0%** |
+
+Blocks resolved: real_growth 17,970 (59.3%), ebitda_strength 10,264 (33.9%),
+valuation 4,234 (14.0%), financial_quality 4,046 (13.3%).
+
+Scores: **11,677 of 30,308 entity-dates, a density of 38.5%**; the rest are
+refused by `MIN_BLOCK_WEIGHT`. Signatures, as a share of scored rows: EG 47.8%,
+EGQ 23.1%, VG 13.6%, EVGQ 8.1%, EVG 6.4%, VGQ 0.6%, EQ 0.3%, EVQ 0.1%, EV 0.1%.
+**Only 951 rows -- 8.1% of scored, 3.1% of the universe -- carry all four
+blocks.** Valuation presence is `PRESENT_DEGRADED` almost everywhere it appears;
+`PRESENT_FULL` occurs **twice in 30,308 entity-dates**.
+
+### The funnel, and the answer to the question the owner asked
+
+The work order asked whether the strict requirements are expensive-but-correct or
+whether an implementation gate is accidentally killing the model. **Neither, for
+the largest loss. It is store coverage, upstream of every model rule.**
+
+    ev_ebitda_supplement  -- 30,308 targets
+       -no EBITDA period                    2,522    27,786 remain
+       -no scored listing                  21,101     6,685
+       -listing ambiguous                      49     6,636
+       -no valid raw price                      1     6,635
+       -no market cap (strict shares)       3,460     3,175
+       -debt rung refused                   1,634     1,541
+       -no cash at P                           11     1,530
+       -EBITDA <= 0                           929       601
+       -multiple outside band                   4       597
+       -cohort refused                        595         2
+       => produced                                      2     0.0%
+
+`no_scored_listing` needs three things at once: a valid `pit_listing` with an
+acceptable confidence and a first trade date at or before the as-of date, a bar
+with volume > 0 inside the 10-day recency window, and no quarantine. Decomposing
+it against `pit_identity.scored_universe_as_of`'s own query -- and reconciling
+exactly with that function's entity count on all four dates -- gives:
+
+| date | universe | no listing row | listing, no recent bar | quarantined | scorable |
+|---|---|---|---|---|---|
+| 2014-06-30 | 8,132 | 6,135 (75.4%) | 57 (0.7%) | 0 | 1,940 (23.9%) |
+| 2019-06-28 | 7,102 | 4,643 (65.4%) | 36 (0.5%) | 0 | 2,423 (34.1%) |
+| 2022-06-30 | 8,033 | 5,521 (68.7%) | 38 (0.5%) | 0 | 2,474 (30.8%) |
+| 2026-06-30 | 7,041 | 4,644 (66.0%) | 27 (0.4%) | 0 | 2,370 (33.7%) |
+
+So the 10-day price recency gate costs 0.4-0.7% and quarantine costs 0.0%. The
+loss is that two thirds to three quarters of live filers **have no listing in the
+store at all**: `pit_entity` holds 16,890 entities and `pit_listing` covers
+**2,542** of them (2,576 listings, every one confidence `proved`, every one with
+bars; 9,313,319 bars spanning 2011-01-03 to 2026-09-18). Price-conditional
+availability is therefore capped near a quarter to a third of the live universe
+on every date, by ingestion, and **no change to the share-count policy can move
+it**. Of the entities that do have a listing, ~97% clear the scored-listing gate.
+
+Downstream of the listing the strict share audit is the expensive-but-correct
+part: 3,460 of 6,635 survivors (52%) are refused for want of a defensible
+point-in-time share count. That is `MARKET_CAP_DOMAIN_V1` doing what it says, and
+it is reported, not loosened.
+
+`ev_ebitda_supplement` producing 2 of 30,308 is a **composition** effect, not one
+broken rule. Each upstream requirement is individually defensible, and together
+they leave 597 candidates spread across ~230-270 peer sets per date, so the
+cohort gate refuses 595 of them for want of enough valued members to rank
+against. `debt_market_cap` at 0.5% and `net_debt_ebitda` at 3.6% fail the same
+way. Any remedy is an economics change and therefore a v7 question, not a v6
+patch.
+
+The other dominant gap is not price at all: **`no_ebitda_period` refuses 17,537
+of 30,308 (57.9%)** on the EBITDA-conditional keys, which is why
+`financial_quality` resolves for only 13.3%. That was not decomposed here and is
+the obvious next diagnostic.
+
+### Caveats on these numbers
+
+- Funnel stage magnitudes are counts of the reason **actually written on the
+  row**, so they follow the engine's own short-circuit order, not the chain order
+  printed. `no_ebitda_period` reads 2,522 on the EV chain and 17,537 on the
+  EBITDA chains for exactly this reason; they are not inconsistent set sizes.
+- 2019-06-28's 986 s carries slight contamination: read-only store queries for
+  the listing decomposition ran alongside it. 2022-06-30 and 2026-06-30 ran with
+  nothing beside them.
+- 2014-06-30 has no in-process memory trace. `_commit_and_ws` in the runner
+  silently returned None because `GetCurrentProcess` was left at ctypes' default
+  `c_int` restype, which truncates the pseudo-handle on x64 so
+  `GetProcessMemoryInfo` fails with a zeroed struct. Its peak was sampled
+  externally at 271.9 MiB instead; the helper was declared properly before date
+  two. The RSS arms in 5c are unaffected -- `pit_replay_rss.py` declares them
+  correctly.
+- `ebitda_benchmark` shows 1,159 "other refusals" whose codes are recorded in
+  `pilot_v12_fourdate_combined.json` rather than being folded into a named stage.
+
+Artefacts: `pilot_v12_run_<date>.json` (stage trace, WAL, checkpoint, memory,
+free-space low-water), `pilot_v12_report_<date>.json` (availability, blocks,
+signatures, refusals, funnels) and `pilot_v12_fourdate_combined.json`. The four
+databases are disposable and were left in the session scratchpad, not the
+repository.
+
 ## 6. D3 — reported; decided by the owner on 2026-09-22 (growth A, acceleration A, coverage OI/interest; see the `spec_freeze_v5` section of docs/MODEL-LINEAGE.md)
 
 Full record: `D3-EVIDENCE-2026-09-22.md` (20 claims, 20/20 citations confirmed;
