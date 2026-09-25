@@ -682,6 +682,13 @@ def run_dir(recs: List[Rec], h: int, model: str, depth: str = "global", prior: s
 PAIRS = [("alpha+prior@global", "prior:product"), ("alpha+prior@class", "prior:product"), ("alpha+prior@sector", "prior:product"),
          ("signal+prior@global", "prior:product"),
          ("prior:product", "prior:zero"), ("prior:frequency", "prior:zero")]
+# Why each comparison exists. Only comparisons declared before the results they judge can decide a gate: "diagnostic"
+# pairs were run after the v1 Directional results (they explain them); "exploratory" ones were added later still.
+# Gate v2 itself (prior_gate) is declared for challengers evaluated from 2026-09-25 on and is not applied retroactively.
+PAIR_ROLE = {("alpha+prior@global", "prior:product"): "diagnostic", ("alpha+prior@class", "prior:product"): "diagnostic",
+             ("alpha+prior@sector", "prior:product"): "exploratory (added after the v1 results; not part of any gate)",
+             ("signal+prior@global", "prior:product"): "diagnostic", ("prior:product", "prior:zero"): "diagnostic",
+             ("prior:frequency", "prior:zero"): "diagnostic"}
 
 
 def _spec(name: str) -> dict:
@@ -709,14 +716,17 @@ def paired(recs: List[Rec], h: int, preds: Dict[str, Dict[int, float]], a: str, 
     c, d, lg = _clustered_mean(by_b, h), _clustered_mean(by_a, h), _clustered_mean(by_l, h)
     os_ = [_obs(recs[i]) for i in common]
     au_a, au_b = _auc([pa[i] for i in common], os_), _auc([pb[i] for i in common], os_)
-    return {"a": a, "b": b, "n": len(common), "brier_gain": c["mean"], "brier_t": (c["mean"] / c["se"]) if c["mean"] is not None and c["se"] else None,
+    return {"a": a, "b": b, "role": PAIR_ROLE.get((a, b), "exploratory"), "n": len(common), "brier_gain": c["mean"], "brier_t": (c["mean"] / c["se"]) if c["mean"] is not None and c["se"] else None,
             "delta_acc": d["mean"], "delta_acc_t": (d["mean"] / d["se"]) if d["mean"] is not None and d["se"] else None,
             "logloss_gain": lg["mean"], "logloss_t": (lg["mean"] / lg["se"]) if lg["mean"] is not None and lg["se"] else None,
             "auc_a": au_a, "auc_b": au_b, "adds": bool(c["mean"] is not None and c["se"] and c["mean"] / c["se"] >= 2)}
 
 
 def prior_gate(pr: Optional[dict]) -> bool:
-    """Gate v2's G_prior on one paired comparison (challenger vs the prior-only model)."""
+    """Gate v2's G_prior on one paired comparison `pr` = paired(recs, h, preds, challenger, prior-only): the challenger
+    must have a LOWER Brier score (brier_gain = Brier(prior) − Brier(challenger) > 0 with t ≥ 2), a LOWER log loss
+    (logloss_gain > 0) and a HIGHER accuracy (delta_acc > 0) on identical PIT records. Matching the prior is not skill.
+    Declared but not yet wired into any promotion or live-shadow decision."""
     return bool(pr and (pr.get("brier_t") or 0) >= 2 and (pr.get("logloss_gain") or 0) > 0 and (pr.get("delta_acc") or 0) > 0)
 
 
@@ -1314,7 +1324,7 @@ def markdown(res: dict) -> str:
     w("|---|---|---|---|---|---|")
     for lab in _HZ:
         for pr in (H.get(lab) or {}).get("paired") or []:
-            w(f"| {lab} | {pr['a']} vs {pr['b']} | {_n(pr.get('brier_gain'), 5, True)} ({_n(pr.get('brier_t'), 1)}) | {_p(pr.get('delta_acc'), 2, True)} ({_n(pr.get('delta_acc_t'), 1)}) | "
+            w(f"| {lab} | {pr['a']} vs {pr['b']}{' *(' + pr['role'].split(' (')[0] + ')*' if pr.get('role') and pr['role'] != 'diagnostic' else ''} | {_n(pr.get('brier_gain'), 5, True)} ({_n(pr.get('brier_t'), 1)}) | {_p(pr.get('delta_acc'), 2, True)} ({_n(pr.get('delta_acc_t'), 1)}) | "
               f"{_n(pr.get('auc_a'))} vs {_n(pr.get('auc_b'))} | {'yes' if pr.get('adds') else 'no'} |")
     w("")
     # 6–11

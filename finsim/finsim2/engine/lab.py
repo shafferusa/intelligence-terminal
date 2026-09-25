@@ -34,6 +34,7 @@ to a promoted formula is a new score VERSION (history and calibration are recomp
 from __future__ import annotations
 
 import datetime as _dt
+import json
 import math
 import time
 from typing import Dict, List, Optional, Tuple
@@ -776,41 +777,91 @@ def promote(store, vid: str, confirm: bool = False) -> dict:
 BENCHMARK_PREFIX = "benchmark:"
 
 
-def freeze_benchmark(store, bid: Optional[str] = None) -> dict:
-    """Freeze the current system as a benchmark: production score version, the Directional research definition, the
-    hedge version, the research outputs (content hashes and full copies), the research-record counts and the gate
-    versions. A benchmark id can be frozen once; later research never rewrites it."""
+def _hash(obj) -> str:
     import hashlib
+    return hashlib.sha256(json.dumps(obj, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+
+
+def _production(reg: dict, kind: str) -> str:
+    ids = [v["id"] for v in reg["versions"] if v.get("kind") == kind and v.get("status") == "production"]
+    if len(ids) != 1:
+        raise ValueError(f"expected exactly one production {kind} version, found {ids or 'none'}")
+    return ids[0]
+
+
+def benchmark_content(store) -> dict:
+    """What a benchmark freezes: only the approved production versions and their metrics, plus the Directional *research
+    definition* (labelled as research — it is not a production version) with its prior-only and current metrics. Research
+    outputs are referenced by content hash, never copied (their challenger results are not part of the benchmark)."""
     from . import directional as D, weights as Wm
+    reg = registry(store)
+    W_, R_ = store.kv_get(Wm.RESEARCH_KEY) or {}, store.kv_get(D.RESEARCH_KEY) or {}
+    fixed = "production (read as p = (1 + raw/100)/2)"
+    per = {}
+    for lab, _ in LAB_HORIZONS:
+        w, d = (W_.get("horizons") or {}).get(lab) or {}, (R_.get("horizons") or {}).get(lab) or {}
+        dd = d.get("directional") or {}
+        per[lab] = {
+            "production_score": w.get("production_all"), "naive_baselines": w.get("baselines_all"),
+            "production_alpha": d.get("production_alpha"), "base_rate": d.get("wf_base_rate"),
+            "production_read_literally": (dd.get(fixed) or {}).get("walkforward"),
+            "prior_only": (dd.get(f"prior:{D.MAIN_PRIOR}") or {}).get("walkforward"),
+            "current_directional": (dd.get("alpha+prior@global") or {}).get("walkforward")}
+    return {
+        "production": {"score": _production(reg, "shaffer"), "alpha": _production(reg, "shaffer-alpha"), "hedge": _production(reg, "hedge")},
+        "score_version": cfg.VERSION,
+        "directional_research_definition": {"status": "research (not a production version)", "main_prior": D.MAIN_PRIOR,
+                                            "prior_only": f"prior:{D.MAIN_PRIOR}", "current": "alpha+prior@global",
+                                            "formula": "p_up = σ(a + b·μ/σ + c·raw/100), fitted per era, global"},
+        "gates": {"directional": D.GATES_VERSION, "alpha": "v1", "hedge_sizing": "discovery / confirmation / live"},
+        "metrics": per,
+        "sources": {"weights_research": {"started": W_.get("started"), "hash": _hash(W_) if W_ else None},
+                    "directional_research": {"started": R_.get("started"), "hash": _hash(R_) if R_ else None}},
+        "records": store.lab_record_summary()}
+
+
+def freeze_benchmark(store, bid: Optional[str] = None) -> dict:
+    """Freeze the current system as a benchmark (once per id; refuses to overwrite). Returns the meta record: id, date,
+    content hash, production versions."""
+    content = benchmark_content(store)
     bid = bid or f"benchmark-{cfg.VERSION}-{time.strftime('%Y-%m-%d')}"
     key = BENCHMARK_PREFIX + bid
-    if store.kv_get(key) is not None:
+    if store.kv_get(key) is not None or store.kv_get(key + ":content") is not None:
         raise ValueError(f"benchmark {bid} is already frozen")
-    snaps = {"lab": store.kv_get(RESEARCH_KEY), "weights": store.kv_get(Wm.RESEARCH_KEY), "directional": store.kv_get(D.RESEARCH_KEY)}
-    digest = {k: hashlib.sha256(json.dumps(v, sort_keys=True, default=str).encode()).hexdigest() if v is not None else None for k, v in snaps.items()}
+    try:
+        data_version = store.data_version()
+    except Exception:  # noqa: BLE001
+        data_version = None
+    meta = {"id": bid, "frozen": time.strftime("%Y-%m-%d %H:%M:%S"), "hash": _hash(content), "production": content["production"],
+            "gates": content["gates"], "data_version": data_version}
+    store.kv_set(key + ":content", content)
+    store.kv_set(key, meta)                       # written last: a benchmark exists only once its content is stored
     reg = registry(store)
-    hedge = next((v["id"] for v in reg["versions"] if v["kind"] == "hedge" and v["status"] == "production"), None)
-    meta = {"id": bid, "frozen": time.strftime("%Y-%m-%d %H:%M:%S"), "score_version": f"shaffer-{cfg.VERSION}",
-            "alpha": f"shaffer-alpha-{cfg.VERSION}-production", "hedge": hedge,
-            "directional": {"definition": "p_up = σ(a + b·μ/σ + c·raw/100), global, point-in-time prior", "main_prior": D.MAIN_PRIOR,
-                            "prior_only": f"prior:{D.MAIN_PRIOR}", "current": "alpha+prior@global"},
-            "gates": {"directional": D.GATES_VERSION, "alpha": "v1"}, "hashes": digest, "records": store.lab_record_summary()}
-    for k, v in snaps.items():
-        if v is not None:
-            store.kv_set(f"{key}:{k}", v)
-    store.kv_set(key, meta)
-    reg["versions"].append({"id": bid, "kind": "benchmark", "status": "frozen", "introduced": meta["frozen"],
-                            "description": "Frozen benchmark for new-information research: production Shaffer / Alpha, the Directional "
-                                           "research definition and PIT prior, Shaffer Hedge, research records and gates",
-                            "benchmark": {k: meta[k] for k in ("score_version", "alpha", "hedge", "directional", "gates", "hashes")}})
+    reg["versions"].append({"id": bid, "kind": "benchmark", "status": "frozen", "introduced": meta["frozen"], "hash": meta["hash"],
+                            "description": "Frozen benchmark for new-information research: the production Shaffer Score, Shaffer "
+                                           "Alpha and Shaffer Hedge versions and metrics, and the Directional research definition "
+                                           "(prior-only and current) — new information is judged against it"})
     _save_registry(store, reg)
-    store.audit("lab.benchmark", bid, {"hashes": digest})
+    store.audit("lab.benchmark", bid, {"hash": meta["hash"]})
     return meta
 
 
+def verify_benchmark(store, bid: str) -> dict:
+    """Recompute the frozen content's hash: {ok, stored, recomputed}."""
+    meta = store.kv_get(BENCHMARK_PREFIX + bid)
+    content = store.kv_get(BENCHMARK_PREFIX + bid + ":content")
+    if not meta or content is None:
+        return {"ok": False, "reason": "not frozen"}
+    h = _hash(content)
+    return {"ok": h == meta["hash"], "stored": meta["hash"], "recomputed": h}
+
+
 def benchmark(store, bid: Optional[str] = None) -> Optional[dict]:
-    """The frozen benchmark (the latest when no id is given)."""
-    if bid:
-        return store.kv_get(BENCHMARK_PREFIX + bid)
-    ids = [v["id"] for v in registry(store)["versions"] if v.get("kind") == "benchmark"]
-    return store.kv_get(BENCHMARK_PREFIX + ids[-1]) if ids else None
+    """The frozen benchmark's meta and content (the latest when no id is given)."""
+    if not bid:
+        ids = [v["id"] for v in registry(store)["versions"] if v.get("kind") == "benchmark"]
+        if not ids:
+            return None
+        bid = ids[-1]
+    meta = store.kv_get(BENCHMARK_PREFIX + bid)
+    return {**meta, "content": store.kv_get(BENCHMARK_PREFIX + bid + ":content")} if meta else None

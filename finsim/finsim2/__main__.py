@@ -58,6 +58,8 @@ def main(argv=None) -> int:
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
     lb.add_argument("--workers", type=int, default=3)
     lb.add_argument("--weights", action="store_true", help="only the signal-level Shaffer weight research (engine/weights.py)")
+    lb.add_argument("--freeze-benchmark", metavar="ID", nargs="?", const="", default=None,
+                    help="freeze the current production system as the benchmark for new-information research (once per id)")
     lb.add_argument("--directional", action="store_true", help="only the Shaffer Alpha vs Shaffer Directional research (engine/directional.py)")
     lb.add_argument("--directional-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_DIRECTIONAL_RESEARCH.md"))
     lb.add_argument("--report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_WEIGHT_RESEARCH.md"))
@@ -100,6 +102,17 @@ def main(argv=None) -> int:
         rows = read_csv(args.file, args.source)
         n = Store(app.db_path()).upsert_option_quotes(rows)
         print(f"stored {n} option quotes for {', '.join(sorted({r['underlying'] for r in rows}))}; hedges now price these contracts from their quotes")
+        return 0
+    if args.cmd == "lab" and args.freeze_benchmark is not None:
+        from .data.store import Store
+        from .engine import lab
+        st = Store(app.db_path())
+        try:
+            meta = lab.freeze_benchmark(st, args.freeze_benchmark or None)
+            print(f"froze {meta['id']} at {meta['frozen']}: sha256 {meta['hash']}")
+            print("production:", ", ".join(f"{k} {v}" for k, v in meta["production"].items()), "· verify:", lab.verify_benchmark(st, meta["id"])["ok"])
+        finally:
+            st.close()
         return 0
     if args.cmd == "lab":
         from .engine import lab
