@@ -99,6 +99,98 @@ class Canonical(unittest.TestCase):
         self.assertIsNone(run._prior_at(tau, sh.PRIOR_MAX_H + 1))
 
 
+class ShadowFamilies(unittest.TestCase):
+    """Candidate families run in shadow: they must not move the production score, must be point in time, and enter
+    the score only when admitted."""
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.mkdtemp()
+        cls.store = build_store(os.path.join(cls.tmp, "r.db"), n=1800)
+        cls.r = Research(cls.store)
+        cls.srun = sh.ShafferRun(cls.r, "SPY", use_priors=False)
+        cls.res = cls.srun.run()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.store.close()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def _stripped(self):
+        saved = (cfg.ALL_FAMILIES, cfg.ALL_FAMILY_OF)
+        cfg.ALL_FAMILIES, cfg.ALL_FAMILY_OF = dict(cfg.FAMILIES), dict(cfg.FAMILY_OF)
+        try:
+            run = sh.ShafferRun(Research(self.store), "SPY", use_priors=False)
+            return run, run.run()
+        finally:
+            cfg.ALL_FAMILIES, cfg.ALL_FAMILY_OF = saved
+
+    def test_candidates_do_not_change_the_production_score(self):
+        self.assertTrue(any(sg not in cfg.FAMILY_OF for sg in self.srun.signals))            # candidates are in the run
+        self.assertTrue(any(self.res["shadow"][lab] for lab in self.res["shadow"]))          # shadow records exist
+        _, base = self._stripped()
+        for lab in base["history"]:
+            self.assertEqual([x[:3] for x in base["history"][lab]], [x[:3] for x in self.res["history"][lab]], lab)
+
+    def test_an_admitted_family_enters_the_score(self):
+        lab = "1M"
+        shadow = self.res["latest"][lab].get("shadow") or {}
+        fams = sorted(shadow.get("families") or [], key=lambda f: -f["n_active"])
+        self.assertTrue(fams, "no candidate family present in the synthetic store")
+        fams = [x["family"] for x in fams]
+        f = fams[0]
+        saved = dict(cfg.ADMITTED)
+        cfg.ADMITTED[f] = [lab]
+        try:
+            res = sh.ShafferRun(Research(self.store), "SPY", use_priors=False).run()
+        finally:
+            cfg.ADMITTED.clear(); cfg.ADMITTED.update(saved)
+        rec = res["latest"][lab]
+        self.assertIn(f, [x["family"] for x in rec["families"]])
+        self.assertAlmostEqual(rec["raw"], shadow["with"][f], places=9)          # exactly what the shadow said it would read
+
+    def test_candidate_signals_are_point_in_time(self):
+        from finsim2.engine.candidates import CANDIDATE_FEATURES
+        feats = self.r.features("SPY")
+        cal = self.r.panel().calendar()
+        t = len(cal) // 2
+        tmp = tempfile.mkdtemp()
+        try:
+            st = Store(os.path.join(tmp, "r.db"))
+            for a in [x["id"] for x in self.store.assets() if self.store.price_count(x["id"])]:
+                st.upsert_prices(a, [dict(r, close=r["close"] * (0.5 if r["date"] > cal[t] else 1.0),
+                                          adj_close=r["adj_close"] * (0.5 if r["date"] > cal[t] else 1.0)) for r in self.store.prices(a)])
+            for s_id in ("DGS10", "DGS2", "DGS3MO", "VIXCLS", "CPIAUCSL", "UNRATE"):
+                st.upsert_macro(s_id, [(d, v * (1.3 if d > cal[t] else 1.0)) for d, v in self.store.macro(s_id)])
+            f2 = Research(st).features("SPY")
+            checked = 0
+            for k in CANDIDATE_FEATURES:
+                a, b = feats[k][t], f2[k][t]
+                self.assertEqual(a is None, b is None, k)
+                if a is not None:
+                    self.assertAlmostEqual(a, b, places=12, msg=k)
+                    checked += 1
+            self.assertGreater(checked, 2)
+            st.close()
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_admission_rule(self):
+        from finsim2.engine.audit import candidate_verdicts
+        good = {"decide": {"n_eff": 500, "own": 0.05, "t_own": 1.1, "partial": 0.05, "t_partial": 1.1, "ic_without": 0.01, "ic_with": 0.03,
+                           "mono_without": 0.2, "mono_with": 0.4},
+                "confirm": {"n_eff": 250, "own": 0.04, "t_own": 0.6, "partial": 0.04, "t_partial": 0.6, "ic_without": 0.0, "ic_with": 0.02,
+                            "mono_without": 0.1, "mono_with": 0.3}}
+        v = candidate_verdicts([{"Carry": good} for _ in range(6)])
+        self.assertEqual(v["Carry"]["verdict"], "ADMIT")                     # Stouffer: 1.1·√6 ≈ 2.7 and 0.6·√6 ≈ 1.5
+        bad = {k: dict(x) for k, x in good.items()}
+        bad["confirm"].update(partial=-0.02, t_partial=-0.3)
+        v = candidate_verdicts([{"Carry": bad} for _ in range(6)])
+        self.assertEqual(v["Carry"]["verdict"], "REJECT")
+        self.assertTrue(any("last third" in r for r in v["Carry"]["reasons"]))
+        v = candidate_verdicts([{"Carry": good} for _ in range(3)])
+        self.assertEqual(v["Carry"]["verdict"], "REJECT")                    # too few assets
+
+
 class Rules(unittest.TestCase):
     def test_isotonic_is_monotone_and_pools_violations(self):
         fit = sh.isotonic([1, 2, 3, 4], [1.0, 3.0, 2.0, 4.0], [1, 1, 1, 1])

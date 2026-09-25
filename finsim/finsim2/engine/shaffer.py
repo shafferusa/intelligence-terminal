@@ -137,8 +137,10 @@ class ShafferRun:
         self.price = panel.series(asset_id)
         self.vol = self.raw.get("vol_60") or [None] * self.n
         self.regimes = research.regimes()
-        self.signals = [s for s in cfg.FAMILY_OF if s in self.z and any(v is not None for v in self.z[s])]
-        self.fam_signals = {f: [s for s, _ in sigs if s in self.signals] for f, sigs in cfg.FAMILIES.items()}
+        # production and candidate signals share the evidence machinery; candidates stay out of the production
+        # score (and out of its Benjamini-Hochberg set) unless admitted at that horizon (shaffer_score.ADMITTED)
+        self.signals = [s for s in cfg.ALL_FAMILY_OF if s in self.z and any(v is not None for v in self.z[s])]
+        self.fam_signals = {f: [s for s, _ in sigs if s in self.signals] for f, sigs in cfg.ALL_FAMILIES.items()}
         self.horizons = [(lab, h) for lab, h in cfg.HORIZONS if h < self.n]
         first = next((i for i, v in enumerate(self.price) if v is not None), 0)
         self.first = first
@@ -176,7 +178,7 @@ class ShafferRun:
         S = {h: {s: _Sig() for s in sigs} for _, h in self.horizons}
         pers = {s: [0, 0.0, 0.0, 0.0, 0.0, 0.0] for s in sigs}         # lag-21 autocorrelation sums
         pairs = {f: {(a, b): [0, 0.0, 0.0, 0.0, 0.0, 0.0] for i, a in enumerate(ss) for b in ss[i + 1:]} for f, ss in self.fam_signals.items()}
-        oos = {h: {"pairs": [], "fam": {f: [0, 0.0, 0.0, 0.0, 0.0, 0.0] for f in cfg.FAMILIES}} for _, h in self.horizons}
+        oos = {h: {"pairs": [], "shadow": [], "fam": {f: [0, 0.0, 0.0, 0.0, 0.0, 0.0] for f in cfg.ALL_FAMILIES}} for _, h in self.horizons}
         pending: Dict[int, List[tuple]] = {}                           # maturity index -> [(h, record)]
         ev: Dict[int, dict] = {}                                        # current evidence per horizon
         calib: Dict[int, dict] = {}
@@ -201,6 +203,8 @@ class ShafferRun:
                 for f, fs in rec["fam"].items():
                     a = o["fam"][f]
                     a[0] += 1; a[1] += fs; a[2] += y; a[3] += fs * fs; a[4] += y * y; a[5] += fs * y
+                if rec.get("sh"):
+                    o["shadow"].append((rec["t"], y, rec["raw"], rec["all"], rec["sh"]))
             # 2) observations whose outcome is now known join the evidence
             for _, h in self.horizons:
                 t = tau - h - 1
@@ -280,7 +284,11 @@ class ShafferRun:
                             latest[lab] = rec
                         continue
                     if tau + h + 1 < self.n:
-                        pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": {f["family"]: f["score"] for f in rec["families"]}}))
+                        shd = rec.get("shadow") or {}
+                        fam = {f["family"]: f["score"] for f in rec["families"]}
+                        fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
+                        pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"),
+                                                                        "sh": {f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []}}))
                     if keep_history:
                         history[lab].append((tau, rec["raw"], rec.get("calibrated"), rec.get("expected")))
                         self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"]) for f in rec["families"]}))
@@ -293,7 +301,7 @@ class ShafferRun:
         return {"asset_id": self.asset_id, "as_of": self.cal[n - 1], "latest": latest, "history": history,
                 "evidence": {lab: ev.get(h) for lab, h in self.horizons}, "calibration": {lab: calib.get(h) for lab, h in self.horizons},
                 "validation": {lab: vf.get(h) for lab, h in self.horizons}, "oos": {lab: oos[h]["pairs"] for lab, h in self.horizons},
-                "n": n}
+                "shadow": {lab: oos[h]["shadow"] for lab, h in self.horizons}, "n": n}
 
     # ------------------------------------------------------------------ evidence at a refit
     def _prior_at(self, tau: int, h: int) -> Optional[dict]:
@@ -398,11 +406,14 @@ class ShafferRun:
             if h <= REG_MAX_H:
                 rec["regimes"] = {st: (_corr(*acc), max(1.0, acc[0] * step / max(h, pers_now.get(s, 1.0)))) for st, acc in e.reg.items() if acc[0] >= 20}
             out[s] = rec
-        q = _bh(pv) if pv else {}
+        # q-values: production signals among production signals only (so adding candidates cannot move the production
+        # score); candidate signals among all signals (as if admitted)
+        q_prod = _bh({s: p for s, p in pv.items() if s in cfg.FAMILY_OF}) if pv else {}
+        q_all = _bh(pv) if pv else {}
         for s, rec in out.items():
             if "ps" not in rec:
                 continue
-            rec["q"] = q.get(s, 1.0)
+            rec["q"] = (q_prod if s in cfg.FAMILY_OF else q_all).get(s, 1.0)
             rec["c"] = min(1.0, math.sqrt(rec["n_eff"] / cfg.N_FULL)) * rec["ci_strength"] * (1.0 - 0.5 * rec["q"]) * rec["quality"]
             rec["w"] = abs(rec["ps"]) * (0.25 + 0.75 * rec["stability"]) if rec["delta"] else 0.0
         return out
@@ -463,7 +474,10 @@ class ShafferRun:
         z = self.z
         state = {d: self.regimes[d][tau] for d in self.regimes}
         families, num, ksum = [], 0.0, 0.0
+        shadow, shadow_ah = [], {}
         for f, members in self.fam_signals.items():
+            prod = cfg.in_production(f, lab)
+            target = families if prod else shadow
             A, H = cfg.applicability(f, self.cls), cfg.horizon_fit(f, lab)
             if A * H <= 0:
                 continue
@@ -493,10 +507,13 @@ class ShafferRun:
                              "ps": e["ps"], "ic": e["ic"], "q": e.get("q"), "n_eff": e["n_eff"], "decay": e["decay"], "status": e["status"], "active": True})
             if not present:
                 continue
-            ksum += A * H
+            if prod:
+                ksum += A * H
+            else:
+                shadow_ah[f] = A * H
             act = [x for x in rows if x["active"]]
             if not act:
-                families.append({"family": f, "score": 0.0, "W": 0.0, "A": A, "H": H, "E": 0.0, "V": (vf.get(f) or {}).get("V", 1.0),
+                target.append({"family": f, "score": 0.0, "W": 0.0, "A": A, "H": H, "E": 0.0, "V": (vf.get(f) or {}).get("V", 1.0),
                                  "contribution": 0.0, "signals": rows, "n_active": 0})
                 continue
             cm = corr_now.get(f) or {}
@@ -520,8 +537,9 @@ class ShafferRun:
             V = (vf.get(f) or {}).get("V", 1.0)
             W = E * V
             contrib = W * A * H * fs
-            num += contrib
-            families.append({"family": f, "score": fs, "W": W, "E": E, "V": V, "A": A, "H": H, "contribution": contrib, "signals": rows,
+            if prod:
+                num += contrib
+            target.append({"family": f, "score": fs, "W": W, "E": E, "V": V, "A": A, "H": H, "contribution": contrib, "signals": rows,
                              "n_active": len(act)})
         act_neff = [x["n_eff"] for fam in families for x in fam["signals"] if x.get("active")]
         rec = {"horizon": lab, "date": self.cal[tau], "raw": None, "families": families, "regime": state}
@@ -535,6 +553,12 @@ class ShafferRun:
         K = cfg.KAPPA * ksum
         raw = 100.0 * math.tanh(num / K)
         rec.update(raw=raw, numerator=num, K=K, n_eff=med)
+        if shadow:        # what the score would read with each candidate family added (and with all of them)
+            add = sum(x["contribution"] for x in shadow)
+            add_k = sum(shadow_ah.values())
+            rec["shadow"] = {"families": shadow,
+                             "with": {x["family"]: 100.0 * math.tanh((num + x["contribution"]) / (cfg.KAPPA * (ksum + shadow_ah[x["family"]]))) for x in shadow},
+                             "all": 100.0 * math.tanh((num + add) / (cfg.KAPPA * (ksum + add_k)))}
         # calibration (learned only from matured out-of-sample pairs before the refit)
         vol = self.vol[tau]
         if calib.get("usable"):
@@ -633,6 +657,12 @@ def summarize(res: dict, run: "ShafferRun") -> dict:
             live["contributors"] = sorted([x for x in act if x["points"] * sgn > 0], key=lambda x: -abs(x["points"]))[:8]
             live["contradicting"] = sorted([x for x in act if x["points"] * sgn < 0], key=lambda x: -abs(x["points"]))[:8]
             live["signals"] = at["signals"]
+        shd = rec.get("shadow")
+        if shd:           # candidate families: shown, never counted (until admitted)
+            live["shadow"] = {"with": shd["with"], "all": shd["all"],
+                              "families": [{"family": x["family"], "score": x["score"], "W": x["W"], "A": x["A"], "H": x["H"], "n_active": x["n_active"],
+                                            "signals": [{k: y.get(k) for k in ("signal", "z", "s", "status", "active", "ic", "n_eff")} | {"label": flabel(y["signal"])}
+                                                        for y in x["signals"]]} for x in shd["families"]]}
         out["horizons"][lab] = live
         # history with realised returns
         realized = {p[3]: p[2] for p in res["oos"][lab]}

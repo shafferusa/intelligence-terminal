@@ -115,6 +115,7 @@ def _shaffer_worker(db_path: str, asset_id: str) -> dict:
                 n_eff = len(xs) * 5.0 / max(5.0, float(h))
                 fstats[f] = {"ic": own, "partial": part, "n_eff": n_eff, "t": _tstat(own, n_eff), "t_partial": _tstat(part, n_eff)}
             out["fam"][lab] = fstats
+            out.setdefault("candidates", {})[lab] = candidate_stats(res.get("shadow", {}).get(lab) or [], h)
             ev = res["evidence"].get(lab) or {}
             out["decay"][lab] = {sg: e.get("decay") for sg, e in ev.items() if e.get("decay") in ("DECAYING", "WEAKENING", "HEALTHY")}
             cnt = {}
@@ -129,6 +130,48 @@ def _shaffer_worker(db_path: str, asset_id: str) -> dict:
         return {"asset_id": asset_id, "error": f"{type(e).__name__}: {e}"}
     finally:
         st.close()
+
+
+def _mono(xs: List[float], ys: List[float], k: int = 10) -> Optional[float]:
+    """Monotonicity of mean outcome across k score-ordered bins: Spearman of bin rank vs bin mean (1 = monotone)."""
+    if len(xs) < 5 * k:
+        return None
+    order = sorted(range(len(xs)), key=lambda i: xs[i])
+    size = len(order) // k
+    means = [sum(ys[i] for i in order[j * size:(j + 1) * size]) / size for j in range(k)]
+    return _spearman(list(range(k)), means)
+
+
+def candidate_stats(rows: List[tuple], h: int) -> dict:
+    """Out-of-sample evidence for each shadow family at one horizon for one asset. rows = (t, y, raw, raw_with_all,
+    {family: (family score, raw with that family)}), matured score records in time order. The record is split: the
+    first two thirds decide, the last third confirms (an admission decided on the whole record would itself be
+    in-sample selection). Per split: the family's own IC, its partial IC given the production score, the score's IC
+    with and without the family, and calibration monotonicity with and without."""
+    out = {}
+    if len(rows) < 60:
+        return out
+    cut = int(len(rows) * 2 / 3)
+    fams = sorted({f for r in rows for f in r[4]})
+    for f in fams + ["ALL"]:
+        res = {}
+        for part, sub in (("decide", rows[:cut]), ("confirm", rows[cut:])):
+            if f == "ALL":
+                use = [(r[1], r[2], r[3], r[3]) for r in sub if r[3] is not None]
+            else:
+                use = [(r[1], r[2], r[4][f][0], r[4][f][1]) for r in sub if f in r[4]]
+            if len(use) < 30:
+                continue
+            ys, raws, fs, withs = [u[0] for u in use], [u[1] for u in use], [u[2] for u in use], [u[3] for u in use]
+            n_eff = len(use) * 5.0 / max(5.0, float(h))
+            own = _pearson(fs, ys) if f != "ALL" else None
+            part_ic = _partial(fs, ys, raws) if f != "ALL" and len(set(fs)) > 2 else None
+            ic0, ic1 = _pearson(raws, ys), _pearson(withs, ys)
+            res[part] = {"n": len(use), "n_eff": n_eff, "own": own, "t_own": _tstat(own, n_eff), "partial": part_ic, "t_partial": _tstat(part_ic, n_eff),
+                         "ic_without": ic0, "ic_with": ic1, "mono_without": _mono(raws, ys), "mono_with": _mono(withs, ys)}
+        if res:
+            out[f] = res
+    return out
 
 
 def _ml_worker(db_path: str, asset_id: str) -> dict:
@@ -244,6 +287,48 @@ def _stouffer(ts: List[float]) -> Optional[float]:
     return sum(ts) / math.sqrt(len(ts)) if ts else None
 
 
+ADMIT_T_DECIDE = 2.0      # pooled (Stouffer) t of the incremental IC on the decision part
+ADMIT_T_CONFIRM = 1.0     # and a positive, at least weakly significant, incremental IC on the untouched last third
+ADMIT_MIN_ASSETS = 5
+ADMIT_MONO_SLACK = 0.05
+
+
+def candidate_verdicts(per_asset: List[dict]) -> dict:
+    """Pool each candidate family's per-asset statistics and apply the admission rule."""
+    out = {}
+    fams = sorted({f for d in per_asset for f in d})
+    for f in fams:
+        rec = {}
+        for part in ("decide", "confirm"):
+            xs = [d[f][part] for d in per_asset if f in d and part in d[f]]
+            if not xs:
+                continue
+            W = sum(x["n_eff"] for x in xs)
+            wmean = lambda k: (sum((x[k] or 0.0) * x["n_eff"] for x in xs if x[k] is not None) / max(1e-9, sum(x["n_eff"] for x in xs if x[k] is not None))) if any(x[k] is not None for x in xs) else None
+            rec[part] = {"assets": len(xs), "n_eff": W, "own": wmean("own"), "t_own": _stouffer([x["t_own"] for x in xs]),
+                         "partial": wmean("partial"), "t_partial": _stouffer([x["t_partial"] for x in xs]),
+                         "ic_without": wmean("ic_without"), "ic_with": wmean("ic_with"),
+                         "d_ic": (wmean("ic_with") - wmean("ic_without")) if wmean("ic_with") is not None and wmean("ic_without") is not None else None,
+                         "mono_without": wmean("mono_without"), "mono_with": wmean("mono_with")}
+        d, c = rec.get("decide") or {}, rec.get("confirm") or {}
+        why = []
+        if f != "ALL":
+            if (d.get("assets") or 0) < ADMIT_MIN_ASSETS:
+                why.append(f"only {d.get('assets') or 0} assets with enough history")
+            if (d.get("t_partial") or 0.0) < ADMIT_T_DECIDE:
+                why.append(f"incremental IC not significant on the decision period (t {_fmt(d.get('t_partial'), 1)})")
+            if (c.get("partial") or 0.0) <= 0 or (c.get("t_partial") or 0.0) < ADMIT_T_CONFIRM:
+                why.append(f"not confirmed on the last third (incremental IC {_fmt(c.get('partial'))}, t {_fmt(c.get('t_partial'), 1)})")
+            if c.get("d_ic") is not None and c["d_ic"] < 0:
+                why.append(f"the score's IC falls with it on the last third ({_fmt(c['d_ic'])})")
+            if c.get("mono_with") is not None and c.get("mono_without") is not None and c["mono_with"] < c["mono_without"] - ADMIT_MONO_SLACK:
+                why.append("calibration less monotone with it")
+        rec["verdict"] = "ADMIT" if f != "ALL" and not why else ("—" if f == "ALL" else "REJECT")
+        rec["reasons"] = why
+        out[f] = rec
+    return out
+
+
 def aggregates(u: dict) -> dict:
     S = {a: v for a, v in u["shaffer"].items() if not v.get("error")}
     labs = [lab for lab, _ in cfg.HORIZONS]
@@ -306,6 +391,7 @@ def aggregates(u: dict) -> dict:
         agg["families"][lab] = {f: {"assets": len(xs), "ic": sum((x["ic"] or 0) * x["n_eff"] for x in xs) / max(1e-9, sum(x["n_eff"] for x in xs)),
                                     "partial": sum((x["partial"] or 0) * x["n_eff"] for x in xs) / max(1e-9, sum(x["n_eff"] for x in xs)),
                                     "t": _stouffer([x["t"] for x in xs]), "t_partial": _stouffer([x["t_partial"] for x in xs])} for f, xs in fam.items()}
+        agg.setdefault("candidates", {})[lab] = candidate_verdicts([(v.get("candidates") or {}).get(lab) or {} for v in S.values()])
         dec = {}
         for v in S.values():
             for sg, dc in (v["decay"].get(lab) or {}).items():
@@ -565,5 +651,41 @@ def markdown(u: dict, agg: dict) -> str:
         if not c:
             continue
         w(f"| {lab} | {c['cases']} | {_fmt(c['alpha_mean'], 2)} | {_fmt(c['ic_combined'])} | {_fmt(c['ic_shaffer'])} | {_fmt(c['ic_ml'])} | {c['combined_beats_both']} |")
+    w("")
+    from .candidates import CANDIDATE_FEATURES
+    w("## 27. Candidate families (shadow): do they add information?")
+    w("")
+    w("Seven families of economically different information were added in shadow: they are computed point in time and run through the same "
+      "evidence machinery (weights, confidence, regime, decay, validation) but are NOT in the production score. For each family and horizon, "
+      "every asset's matured out-of-sample record is split in time: the first two thirds decide, the last third confirms. "
+      f"**Admission rule**: at least {ADMIT_MIN_ASSETS} assets; pooled incremental IC (partial correlation of the family score with the "
+      f"forward return given the production score) with Stouffer t ≥ {ADMIT_T_DECIDE:g} on the decision part; positive with t ≥ "
+      f"{ADMIT_T_CONFIRM:g} on the confirmation part; the score's IC with the family not lower, and its calibration monotonicity not more than "
+      f"{ADMIT_MONO_SLACK:g} lower, on the confirmation part. Production weights were not re-tuned.")
+    w("")
+    for f, sigs in cfg.CANDIDATE_FAMILIES.items():
+        w(f"**{f}** — " + "; ".join(f"`{sg}` ({'+' if p > 0 else '−' if p < 0 else '0'}) {CANDIDATE_FEATURES[sg][2]}" for sg, p in sigs))
+        w("")
+    admitted = []
+    for lab in labs:
+        c = (agg.get("candidates") or {}).get(lab) or {}
+        if not c:
+            continue
+        w(f"**{lab}**")
+        w("")
+        w("| Family | Assets | Own IC (decide) | Incremental IC decide (t) | Incremental IC confirm (t) | Score IC without → with (confirm) | Monotonicity without → with (confirm) | Verdict |")
+        w("|---|---|---|---|---|---|---|---|")
+        for f, r in sorted(c.items(), key=lambda kv: (kv[0] == "ALL", kv[0])):
+            d, k = r.get("decide") or {}, r.get("confirm") or {}
+            name = "All seven together" if f == "ALL" else f
+            verdict = r["verdict"] if f == "ALL" or r["verdict"] == "ADMIT" else "REJECT: " + "; ".join(r["reasons"])
+            if r["verdict"] == "ADMIT":
+                admitted.append((f, lab))
+            w(f"| {name} | {d.get('assets', 0)} | {_fmt(d.get('own'))} | {_fmt(d.get('partial'))} ({_fmt(d.get('t_partial'), 1)}) | "
+              f"{_fmt(k.get('partial'))} ({_fmt(k.get('t_partial'), 1)}) | {_fmt(k.get('ic_without'))} → {_fmt(k.get('ic_with'))} | "
+              f"{_fmt(k.get('mono_without'), 2)} → {_fmt(k.get('mono_with'), 2)} | {verdict} |")
+        w("")
+    w("**Admitted:** " + (", ".join(f"{f} at {lab}" for f, lab in admitted) if admitted else "none — every candidate family stays in shadow.")
+      + " Admission is applied only by recording it in `shaffer_score.ADMITTED` (and a new score version), never automatically.")
     w("")
     return "\n".join(L)

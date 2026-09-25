@@ -20,7 +20,7 @@ from .align import Panel
 from .features import FEATURES, compute_features, family, label, macro_features
 from .signals import percentile_of_last, standardize_all, strength_label, trend
 
-BUNDLE_VERSION = "6"          # bump whenever the engines change what a bundle contains
+BUNDLE_VERSION = "7"          # bump whenever the engines change what a bundle contains
 
 
 def clean(o):

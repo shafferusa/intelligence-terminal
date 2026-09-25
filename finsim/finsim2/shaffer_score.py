@@ -123,6 +123,53 @@ HORIZON_FIT: Dict[str, List[float]] = {
     "Cross-Asset":               [0.5, 0.7, 0.9, 1.0, 1.0, 0.9, 0.6, 0.4, 0.3],
     "Relative Value":            [0.3, 0.5, 0.8, 1.0, 1.0, 1.0, 0.8, 0.6, 0.5],
 }
+
+# ------------------------------------------------------------------ candidate families (shadow until admitted)
+# New, economically different information (engine/candidates.py). They run through the same point-in-time evidence
+# machinery, but a family enters the production score at a horizon ONLY after the audit's admission test: out of
+# sample, pooled across assets, its incremental IC over the production score is significant (Stouffer t >= 2) on the
+# first two thirds of each asset's record AND keeps its sign on the last third, and the score with the family is
+# not worse calibrated (IC and monotonicity) than without it. Governing rule: no re-tuning of production weights.
+CANDIDATE_FAMILIES: Dict[str, List[tuple]] = {
+    "Carry": [("carry", 1), ("div_yield", 1)],
+    "Yield Curve": [("curvature", 0), ("d_curvature_3m", 0), ("slope_5s30s", 0), ("d_slope_2s10s_1m", 0), ("roll_down", 1)],
+    "Term Structure": [("vix_term", 0), ("roll_yield", 1), ("d_roll_yield_3m", 0)],
+    "Inflation": [("infl_accel", 0), ("d_breakeven_3m", 0), ("d_real_y10_3m", 0)],
+    "FX": [("d_rate_diff_3m", 1), ("d_rate_diff_12m", 1)],
+    "Commodity": [("real_rate_transmit", 0), ("usd_transmit", 0), ("cmd_breadth_3m", 0)],
+    "Optionality": [("vrp", 0), ("iv_pctile", 0), ("d_iv_1m", 0)],
+}
+APPLICABILITY.update({
+    "Carry":          dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=1, CORP_BOND=1, COMMODITY=0, FX=1, CRYPTO=0),
+    "Yield Curve":    dict(EQUITY=_P, ETF=1, INDEX=_P, TREASURY=1, CORP_BOND=1, COMMODITY=_P, FX=_P, CRYPTO=_P),
+    "Term Structure": dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=_P, CORP_BOND=_P, COMMODITY=1, FX=_P, CRYPTO=_P),
+    "Inflation":      dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=1, CORP_BOND=1, COMMODITY=1, FX=1, CRYPTO=_P),
+    "FX":             dict(EQUITY=_P, ETF=_P, INDEX=_P, TREASURY=0, CORP_BOND=0, COMMODITY=_P, FX=1, CRYPTO=0),
+    "Commodity":      dict(EQUITY=_P, ETF=_P, INDEX=_P, TREASURY=0, CORP_BOND=0, COMMODITY=1, FX=_P, CRYPTO=_P),
+    "Optionality":    dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=0, CORP_BOND=0, COMMODITY=1, FX=0, CRYPTO=0),
+})
+HORIZON_FIT.update({
+    "Carry":          [0.2, 0.3, 0.6, 0.9, 1.0, 1.0, 1.0, 0.9, 0.8],
+    "Yield Curve":    [0.4, 0.5, 0.8, 1.0, 1.0, 1.0, 0.9, 0.8, 0.7],
+    "Term Structure": [0.5, 0.7, 1.0, 1.0, 0.9, 0.7, 0.4, 0.3, 0.2],
+    "Inflation":      [0.2, 0.3, 0.6, 0.9, 1.0, 1.0, 1.0, 0.9, 0.8],
+    "FX":             [0.4, 0.6, 0.9, 1.0, 1.0, 0.9, 0.6, 0.4, 0.3],
+    "Commodity":      [0.5, 0.7, 0.9, 1.0, 1.0, 0.9, 0.6, 0.4, 0.3],
+    "Optionality":    [0.8, 1.0, 1.0, 0.8, 0.6, 0.4, 0.2, 0.2, 0.2],
+})
+# family -> horizons at which it passed the admission test (filled only from an audit result; empty = shadow only)
+ADMITTED: Dict[str, List[str]] = {}
+
+ALL_FAMILIES: Dict[str, List[tuple]] = {**FAMILIES, **CANDIDATE_FAMILIES}
+ALL_FAMILY_OF = {sig: f for f, sigs in ALL_FAMILIES.items() for sig, _ in sigs}
+PRIOR.update({sig: p for f, sigs in CANDIDATE_FAMILIES.items() for sig, p in sigs})
+
+
+def in_production(family: str, horizon: str) -> bool:
+    """A production family, or a candidate admitted at this horizon."""
+    return family in FAMILIES or horizon in ADMITTED.get(family, ())
+
+
 HORIZON_LABELS = [lab for lab, _ in HORIZONS]
 
 

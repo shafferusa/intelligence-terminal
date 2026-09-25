@@ -519,8 +519,13 @@
       <div class="card" style="margin-top:16px"><h2>The record <small>the ${esc(h)} score as it read on each date (weekly), point in time</small></h2><div id="ssHist"></div></div>
       <div class="grid g2" style="margin-top:16px"><div class="card flush"><h2>By regime <small>out-of-sample IC of the score when each regime held</small></h2><div id="ssReg"></div></div>
         <div class="card flush"><h2>Family validation <small>each family score's own out-of-sample record → V</small></h2><div id="ssVal"></div></div></div>
+      ${r.shadow ? `<div class="card flush" style="margin-top:16px"><h2>Candidate families <small>in shadow — computed point in time but <b>not counted</b>: a family enters the score only after it adds information out of sample (SHAFFER_AUDIT.md §27) · with all seven the score would read ${scoreTxt(r.shadow.all)}</small></h2><div id="ssShadow"></div></div>` : ''}
       <div class="card" style="margin-top:16px"><h2>What the symbols mean</h2><div class="stack" style="gap:6px">${defs.map(([k, v]) => `<div class="row" style="flex-wrap:nowrap;align-items:flex-start"><b style="width:44px;font-family:'Cambria Math',serif;font-size:15px">${k}</b><span class="muted" style="flex:1">${esc(v)}</span></div>`).join('')}</div></div>
       ${sh.custom ? `<div class="card" style="margin-top:16px"><h2>Custom score (live only) <small>${esc(sh.custom.source || '')}</small></h2>${sh.custom.error ? `<p class="neg">${esc(sh.custom.error)}</p>` : `<p>${HZ.map(x => `${x} <b>${scoreTxt((sh.custom.horizons || {})[x])}</b>`).join(' · ')}</p>`}</div>` : ''}`;
+    if (r.shadow) table($('#ssShadow'), r.shadow.families || [], [{ k: 'family', label: 'Family', l: 1, f: x => `<b>${esc(x.family)}</b><span class="sub">${esc((x.signals || []).map(y => y.label || y.signal).join(' · '))}</span>` },
+      { k: 'score', label: 'Family score', cls: x => sign(x.score), f: x => fmt.num(x.score, 3) }, { k: 'W', label: 'W', f: x => fmt.num(x.W, 2) },
+      { k: 'n_active', label: 'Active signals', f: x => `${x.n_active}/${(x.signals || []).length}` },
+      { k: 'with', label: 'Score if added', v: x => (r.shadow.with || {})[x.family], f: x => `${scoreTxt((r.shadow.with || {})[x.family])} <span class="faint">(now ${scoreTxt(r.raw)})</span>` }], { sortKey: null });
     const fams = r.families || [];
     hbars($('#ssFam'), fams.filter(f => Math.abs(f.points) >= 0.05).map(f => ({ label: f.family, value: f.points, sub: `W ${fmt.num(f.W, 2)} · V ${fmt.num(f.V, 2)} · A ${fmt.num(f.A, 2)} · H ${fmt.num(f.H, 2)} · ${f.n_active}/${f.n_signals} signals` })), { fmt: v => (v > 0 ? '+' : '') + fmt.num(v, 1), empty: 'No family has usable evidence' });
     const sigRows = r.signals || [];

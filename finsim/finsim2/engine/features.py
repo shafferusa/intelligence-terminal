@@ -100,10 +100,16 @@ MACRO_FEATURES = [k for k, v in FEATURES.items() if v[0] in ("Rates", "Credit", 
 
 
 def family(name: str) -> str:
+    if name not in FEATURES:
+        from .candidates import CANDIDATE_FEATURES
+        return CANDIDATE_FEATURES.get(name, ("Other",))[0]
     return FEATURES.get(name, ("Other",))[0]
 
 
 def label(name: str) -> str:
+    if name not in FEATURES:
+        from .candidates import CANDIDATE_FEATURES
+        return CANDIDATE_FEATURES.get(name, (None, name))[1]
     return FEATURES.get(name, (None, name))[1]
 
 
@@ -505,6 +511,9 @@ def compute_features(panel: Panel, asset_id: str, include_macro: bool = True) ->
         f["rate_beta_252"] = roll_regress(r, mac["_dy10"], 252)["slope"]
         f["dollar_beta_252"] = roll_regress(r, mac["_dollar_ret"], 252)["slope"]
     f.update(composite_features(panel, asset_id, f, logp, mkt))
+    if include_macro:                   # shadow candidates for the Shaffer Score (not in FEATURES, so not in ML)
+        from .candidates import candidate_features
+        f.update(candidate_features(panel, asset_id, f, mac))
     return f
 
 
