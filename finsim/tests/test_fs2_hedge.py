@@ -234,6 +234,49 @@ class CrisisReplay(Base):
             self.assertGreater(h["hedge_pnl"], 0)            # a beta hedge offsets a market loss
 
 
+class OptionChains(Base):
+    def _chain(self, und, S, exp, skew=0.10, atm=0.20):
+        rows = []
+        for mny in (0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15):
+            K = round(S * mny, 0)
+            iv = atm + skew * (1.0 - mny) / 0.2           # downside skew: lower strikes, higher IV
+            for right in ("P", "C"):
+                T = px.year_frac(self.m.asof, exp)
+                pr = px.option_price(right, S, K, T, 0.04, 0.0, iv)
+                rows.append({"asof": self.m.asof, "underlying": und, "expiry": exp, "strike": K, "right": right, "bid": round(pr * 0.98, 4),
+                             "ask": round(pr * 1.02, 4), "iv": iv, "open_interest": 1000, "volume": 250})
+        return rows
+
+    def test_chain_surface_prices_skew_and_a_quote_prices_itself(self):
+        from finsim2.hedge.surface import validate_rows
+        exp = px.monthly_option_expiries(self.m.asof)[2]
+        S = self.m.price("QQQ")
+        oid = P.option_id("QQQ", "P", round(S * 0.87, 0), exp)          # not listed exactly: priced off the surface
+        self.assertFalse(self.priced(oid).eligibility()[0])                  # no VXN and no chain: not eligible
+        self.store.upsert_option_quotes(validate_rows(self._chain("QQQ", S, exp), "test"))
+        m = Market(self.r)
+        rk = RiskModel(m)
+        pr = P.Priced(P.parse(oid, self.store), m, rk)
+        self.assertEqual(pr.pricing_label, P.CHAIN_SURFACE_LABEL)
+        self.assertGreater(pr.inputs["implied_vol"]["value"], 0.20)           # an OTM put takes the skew, above ATM
+        self.assertEqual(P.pricing_confidence(pr.pricing_label), 0.9)
+        listed = P.option_id("QQQ", "P", round(S * 0.9, 0), exp)
+        q = P.Priced(P.parse(listed, self.store), m, rk)
+        self.assertTrue(q.pricing_label.startswith("MARKET QUOTE"))
+        row = next(r for r in self.store.option_chain("QQQ", m.asof) if r["right"] == "P" and r["strike"] == round(S * 0.9, 0) and r["expiry"] == exp)
+        self.assertAlmostEqual(q.price, 0.5 * (row["bid"] + row["ask"]), places=9)
+        self.assertAlmostEqual(q.costs(21, "BUY")["spread"], (row["ask"] - row["bid"]) * 100, places=6)
+        self.assertEqual(q.liquidity()["open_interest"], 1000)
+        self.assertEqual(P.pricing_confidence(q.pricing_label), 1.0)
+
+    def test_bad_chain_rows_are_refused(self):
+        from finsim2.hedge.surface import validate_rows
+        with self.assertRaises(ValueError):
+            validate_rows([{"asof": "2026-01-02", "underlying": "SPY", "expiry": "2026-02-20", "strike": 500, "right": "X", "bid": 1, "ask": 2}])
+        with self.assertRaises(ValueError):
+            validate_rows([{"asof": "2026-01-02", "underlying": "SPY", "expiry": "2026-02-20", "strike": 500, "right": "P", "bid": 3, "ask": 2}])
+
+
 class EffectivenessTerm(unittest.TestCase):
     def test_overshoot_is_penalised(self):
         from finsim2.hedge.engine import effectiveness_term as e

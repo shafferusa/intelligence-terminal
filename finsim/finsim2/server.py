@@ -444,6 +444,21 @@ class Router:
             from .hedge.history import VERSION
             m = store.kv_get(f"hedgeml:{VERSION}") or {}
             return {"trained": m.get("trained"), "asof": m.get("asof"), "groups": {g: {k: v for k, v in x.items() if k != "model"} for g, x in (m.get("groups") or {}).items()}}
+        if rest == ["chain"]:
+            from .hedge.surface import VolSurface, validate_rows
+            if method == "POST":
+                rows = validate_rows(b.get("rows") or [], b.get("source") or "api")
+                return {"stored": store.upsert_option_quotes(rows), "underlyings": sorted({r["underlying"] for r in rows})}
+            u = (q.get("underlying") or "").upper()
+            from .hedge.market import Market
+            m = Market(research)
+            chain = m.option_chain(u) if u else []
+            out = {"underlyings": store.option_underlyings(), "underlying": u, "contracts": len(chain)}
+            if chain:
+                S, _ = m.close(u)
+                r_, _, _ = m.short_rate("USD")
+                out["surface"] = VolSurface(chain, S, r_ or 0.0, m.div_yield(u)).summary() if S else None
+            return out
         if rest == ["crisis"]:
             from .hedge.crisis import replay
             led = app.ledger()

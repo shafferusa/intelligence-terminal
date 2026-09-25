@@ -1000,7 +1000,7 @@
     return `<div class="tbl-wrap"><table><thead><tr><th class="l">Risk</th>${keys.map(k => `<th>${esc(labels[k])}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
   const qPill = q => q ? `<span class="pill ${q === 'HIGH' ? 'pos' : q === 'NEGATIVE' ? 'neg' : q === 'MEDIUM' ? '' : 'warn'}" style="font-size:10px">${esc(q)}</span>` : '';
-  const priceTag = lab => lab ? `<span class="pill ${/FLAT VOLATILITY/.test(lab) ? 'warn' : ''}" style="font-size:10.5px;white-space:normal" title="${/FLAT VOLATILITY/.test(lab) ? 'No option-chain or skew data: every strike uses the at-the-money implied volatility, so out-of-the-money puts are probably priced too cheaply and crash hedges look more attractive than they are.' : 'Priced at fair value from the underlying, rates and dividends: not an exchange quote.'}">${esc(lab)}</span>` : '';
+  const priceTag = lab => lab ? `<span class="pill ${/FLAT VOLATILITY/.test(lab) ? 'warn' : ''}" style="font-size:10.5px;white-space:normal" title="${/FLAT VOLATILITY/.test(lab) ? 'No option-chain or skew data: every strike uses the at-the-money implied volatility, so out-of-the-money puts are probably priced too cheaply and crash hedges look more attractive than they are.' : /SURFACE/.test(lab) ? 'Priced off the implied-volatility surface of the underlying\'s option chain (skew and term structure), not this contract\'s own quote.' : /MARKET QUOTE/.test(lab) ? 'The contract\'s own quoted bid/ask mid.' : 'Priced at fair value from the underlying, rates and dividends: not an exchange quote.'}">${esc(lab)}</span>` : '';
   function legDetail(L) {
     if (L.option) {
       const o = L.option;

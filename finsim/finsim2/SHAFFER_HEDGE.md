@@ -166,6 +166,18 @@ collateral, futures margin, holdings, no option writing) and inserted in one SQL
 failing package reports "no leg was recorded". Every executed or declined proposal is appended to `hedge_recommendations`
 and graded once after its horizon: realised variance reduction, hedge P&L, upside given up, basis error, effectiveness.
 
+## 7b. Option chains — ready when a source is
+
+`store.option_quotes` holds chain snapshots (bid, ask, last, IV, delta, gamma, vega, theta, rho, open interest, volume,
+source); load them with `python -m finsim2 import-chain FILE.csv` or POST /fs2/hedge/chain. Pricing then follows
+`hedge/surface.py`: the contract's own quote (mid; the quoted spread is the cost; its volume and open interest are the
+liquidity) → "MARKET QUOTE"; otherwise the underlying's implied-volatility surface at (strike, expiry) — OTM options,
+linear in log-moneyness, total variance across expiries, so skew and term structure are used → "MODEL-PRICED —
+CHAIN-IMPLIED VOLATILITY SURFACE"; otherwise the flat Cboe index volatility → "MODEL-PRICED — FLAT VOLATILITY
+ASSUMPTION". The score's M is 1 / 0.9 / 0.8 for the three. Nothing else in Shaffer Hedge changes; single-stock
+options without a Cboe index (NVDA puts) become eligible as soon as their chain is loaded. Historical chains would also
+let the walk-forward price options at quoted IVs; until then the walk-forward uses the Cboe indices.
+
 ## 8. What it cannot do (data limits)
 
 No option chains (the Cboe chain host is not reachable here): no skew, no single-stock options without a Cboe volatility

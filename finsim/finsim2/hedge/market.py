@@ -111,6 +111,10 @@ class Market:
         v, d = self.macro(sid)
         return (v / 100.0 if v is not None else None), d, sid
 
+    def option_chain(self, underlying: str) -> list:
+        """The latest option-chain snapshot of `underlying` on or before this date (empty without a chain source)."""
+        return self._m(("chain", underlying), lambda: self.store.option_chain(underlying, self.asof) if hasattr(self.store, "option_chain") else [])
+
     def cash_rates(self, portfolio_id: str = "main") -> Tuple[float, float]:
         """(idle-cash rate, short-proceeds rate) under the portfolio's cash settings, at this snapshot's bill rate."""
         from ..engine import cash as cashmod

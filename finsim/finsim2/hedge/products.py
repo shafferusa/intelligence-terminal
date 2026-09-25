@@ -347,6 +347,16 @@ def parse(inst_id: str, store=None) -> Instrument:
 
 # ------------------------------------------------------------------ pricing an instrument at a market snapshot
 FLAT_VOL_LABEL = "MODEL-PRICED — FLAT VOLATILITY ASSUMPTION"
+CHAIN_SURFACE_LABEL = "MODEL-PRICED — CHAIN-IMPLIED VOLATILITY SURFACE"
+
+
+def pricing_confidence(label: Optional[str]) -> float:
+    """M in the Shaffer Hedge Score: a market quote 1, a price off the chain's surface 0.9, a flat-vol model price 0.8."""
+    if label == FLAT_VOL_LABEL:
+        return 0.8
+    if label == CHAIN_SURFACE_LABEL:
+        return 0.9
+    return 1.0
 FLAT_VOL_NOTE = ("No option-chain or skew data: every strike uses the at-the-money implied volatility, so out-of-the-money "
                  "puts are probably priced too cheaply and crash hedges look more attractive than they are.")
 
@@ -372,6 +382,7 @@ class Priced:
         self.greeks: Optional[dict] = None
         self.inputs: dict = {}
         self.price: Optional[float] = None
+        self.quote: Optional[dict] = None
         self.pricing_label = pricing_label(inst)
         self._price()
 
@@ -432,22 +443,46 @@ class Priced:
                 self.price = S                  # for analysis only
             return
         if i.type == "OPTION":
+            from . import surface as sf
             S, sd = m.close(i.underlying)
             q = m.div_yield(i.underlying)
-            vol, vsrc, vd = m.implied_vol(i.underlying, T)
             self.inputs.update({"spot": {"value": S, "date": sd, "source": f"{i.underlying} close"},
-                                "dividend_yield": {"value": q, "source": "trailing 12-month dividends"},
-                                "implied_vol": {"value": vol, "date": vd, "source": vsrc}})
+                                "dividend_yield": {"value": q, "source": "trailing 12-month dividends"}})
             if S is None:
                 self.reasons.append(f"no current {i.underlying} price")
                 return
+            model = "Black-Scholes-Merton" if i.style == "EUROPEAN" else "CRR binomial (American)"
+            chain = m.option_chain(i.underlying)
+            quote = next((row for row in chain if row["expiry"] == i.expiry and row["right"] == i.right and abs(row["strike"] - i.strike) < 1e-6
+                          and sf.mid(row)), None)
+            if quote:                          # 1) the contract's own market quote
+                mid = sf.mid(quote)
+                vol = quote.get("iv") or sf.implied_vol(i.right, S, i.strike, T, r, q, mid, i.style)
+                self.quote = quote
+                self.pricing_label = f"MARKET QUOTE — {quote.get('source') or 'chain'} {quote['asof']}"
+                self.inputs["implied_vol"] = {"value": vol, "date": quote["asof"], "source": "the contract's quote"}
+                g = px.option(i.right, S, i.strike, T, r, q, vol, i.style) if vol else {"price": mid}
+                for k in ("delta", "gamma", "vega", "theta", "rho"):
+                    if quote.get(k) is not None:
+                        g[k] = quote[k]          # the source's Greeks when it gives them
+                g["price"] = mid
+                self.greeks, self.price = g, mid
+                self.notes.append(f"market mid {mid:.2f} (bid {quote.get('bid')}, ask {quote.get('ask')}); Greeks {'from the quote' if quote.get('delta') is not None else 'from ' + model + ' at the quote IV'}")
+                return
+            surf = sf.VolSurface(chain, S, r, q) if chain else None
+            if surf:                           # 2) the underlying's chain: IV at this strike and expiry (skew and term structure)
+                vol, vsrc, vd = surf.iv(i.strike, T), f"{i.underlying} chain surface", surf.asof
+                self.pricing_label = CHAIN_SURFACE_LABEL
+            else:                              # 3) the flat Cboe index volatility
+                vol, vsrc, vd = m.implied_vol(i.underlying, T)
+            self.inputs["implied_vol"] = {"value": vol, "date": vd, "source": vsrc}
             if vol is None:
                 self.reasons.append(vsrc)
                 return
             g = px.option(i.right, S, i.strike, T, r, q, vol, i.style)
             self.greeks = g
             self.price = g["price"]
-            self.notes.append(f"{'Black-Scholes-Merton' if i.style == 'EUROPEAN' else 'CRR binomial (American)'}; implied vol {vol:.1%} from {vsrc}, flat across strikes (no skew data)")
+            self.notes.append(f"{model}; implied vol {vol:.1%} from {vsrc}" + ("" if surf else ", flat across strikes (no skew data)"))
             return
         if i.type == "FORWARD":
             base, quote = i.spec["base"], i.spec["quote"]
@@ -663,7 +698,13 @@ class Priced:
             prem = g.get("price", 0.0) * i.multiplier
             kind = "index" if i.underlying in INDEX_OPTION_UNDERLYINGS else "etf" if (m.store.asset(i.underlying) or {}).get("asset_class") == "ETF" else "stock"
             info["premium"] = prem if not short else -prem
-            out["spread"] = max(0.05 * i.multiplier, OPTION_SPREAD[kind] * prem)
+            q_ = self.quote
+            if q_ and q_.get("bid") is not None and q_.get("ask") is not None and q_["ask"] >= q_["bid"]:
+                out["spread"] = (q_["ask"] - q_["bid"]) * i.multiplier          # half the quoted spread in, half out
+                info["spread_source"] = f"quoted bid/ask {q_['asof']}"
+            else:
+                out["spread"] = max(0.05 * i.multiplier, OPTION_SPREAD[kind] * prem)
+                info["spread_source"] = "assumed (no option quote)"
             out["commission"] = COMMISSION["OPTION"] * 2
             info["theta_if_unchanged"] = -(g.get("theta", 0.0)) * i.multiplier * days * 365 / 252 * (1 if not short else -1)
             # the expected loss beyond fair value: premium at implied vol minus the value at the forecast (realised) vol
@@ -718,6 +759,12 @@ class Priced:
         proxy = i.id if i.type == "SPOT" else (i.spec.get("proxy") if i.type == "FUTURE" else i.underlying)
         if i.type == "FUTURE" and i.spec.get("kind") == "treasury":
             proxy = "IEF"
+        if i.type == "OPTION" and self.quote and self.quote.get("volume"):
+            q_ = self.quote
+            per = (self.price or 0.0) * i.multiplier
+            return {"adv_usd": q_["volume"] * per, "adv_source": f"contract volume {q_['asof']}", "volume": q_["volume"],
+                    "open_interest": q_.get("open_interest"), "spread": ((q_["ask"] - q_["bid"]) / self.price) if q_.get("ask") is not None and q_.get("bid") is not None and self.price else None,
+                    "spread_source": "quoted bid/ask"}
         adv = m.adv_usd(proxy) if proxy else None
         sp, src = m.spread(proxy) if proxy and m.store.asset(proxy) else (None, "")
         return {"adv_usd": adv, "adv_source": (f"{proxy} volume" + ("" if proxy == i.id else " (proxy: no futures/options volume or open-interest data)")) if adv else "no volume data",

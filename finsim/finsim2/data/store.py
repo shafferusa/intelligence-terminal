@@ -58,7 +58,13 @@ CREATE TABLE IF NOT EXISTS hedge_recommendations(id INTEGER PRIMARY KEY, created
     eval_date TEXT, candidates TEXT, selected TEXT, raw_ratio REAL, ml_adjustment REAL, final_ratio REAL, expected_cost REAL,
     expected_reduction REAL, expected_basis REAL, regime TEXT, score REAL, ml_confidence REAL, detail TEXT,
     realized_reduction REAL, hedge_pnl REAL, upside_sacrificed REAL, basis_error REAL, effectiveness REAL, graded_on TEXT);
+CREATE TABLE IF NOT EXISTS option_quotes(asof TEXT, underlying TEXT, expiry TEXT, strike REAL, right TEXT, bid REAL, ask REAL,
+    last REAL, iv REAL, delta REAL, gamma REAL, vega REAL, theta REAL, rho REAL, open_interest REAL, volume REAL, source TEXT,
+    PRIMARY KEY(asof, underlying, expiry, strike, right));
+CREATE INDEX IF NOT EXISTS option_quotes_u ON option_quotes(underlying, asof);
 """
+OPTION_COLS = ["asof", "underlying", "expiry", "strike", "right", "bid", "ask", "last", "iv", "delta", "gamma", "vega", "theta", "rho",
+               "open_interest", "volume", "source"]
 # columns added after the first release; `_migrate` adds them to older databases
 MIGRATIONS = {"macro": [("published", "TEXT")],
               "transactions": [("basis_date", "TEXT"), ("created_at", "TEXT"), ("voided_at", "TEXT"), ("package_id", "TEXT")],
@@ -615,6 +621,25 @@ class Store:
             return ids
         ids, _ = self._write(fn)
         return ids
+
+    # ------------------------------------------------------------------ option chains (when a source is available)
+    def upsert_option_quotes(self, rows: list) -> int:
+        vals = [[r.get(c) for c in OPTION_COLS] for r in rows]
+        self._write(lambda conn: conn.executemany(
+            "INSERT OR REPLACE INTO option_quotes(" + ",".join(OPTION_COLS) + ") VALUES(" + ",".join("?" * len(OPTION_COLS)) + ")", vals))
+        return len(vals)
+
+    def option_chain(self, underlying: str, asof: str, max_age_days: int = 7) -> list[dict]:
+        """The most recent chain snapshot of `underlying` on or before `asof` (none older than max_age_days)."""
+        import datetime as _d
+        row = self._q("SELECT MAX(asof) AS a FROM option_quotes WHERE underlying = ? AND asof <= ?", [underlying, asof])
+        a = row[0]["a"] if row else None
+        if not a or (_d.date.fromisoformat(asof[:10]) - _d.date.fromisoformat(a[:10])).days > max_age_days:
+            return []
+        return [dict(r) for r in self._q("SELECT * FROM option_quotes WHERE underlying = ? AND asof = ? ORDER BY expiry, strike", [underlying, a])]
+
+    def option_underlyings(self) -> list[str]:
+        return [r["underlying"] for r in self._q("SELECT DISTINCT underlying FROM option_quotes", [])]
 
     # ------------------------------------------------------------------ the hedge ledger (append-only)
     def add_hedge(self, rec: dict) -> int:

@@ -748,7 +748,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                 T = max(0.5, min(1.5, convexity))
         # model-pricing confidence: an option priced at a flat implied volatility (no chain, no skew) is ranked with a
         # penalty — out-of-the-money puts are probably priced too cheaply, which flatters exactly the products that win
-        M = FLAT_VOL_CONFIDENCE if pr.pricing_label == P.FLAT_VOL_LABEL else 1.0
+        M = P.pricing_confidence(pr.pricing_label)
         hist = None
         E = None
         Rg = 1.0
@@ -859,7 +859,8 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
     if risk_tab["raw"]["sigma_daily"] > risk_tab["before"]["sigma_daily"] * 1.001 and package:
         warnings.append(f"Hedging this risk RAISES total volatility ({risk_tab['before']['sigma_daily']:,.0f} → {risk_tab['raw']['sigma_daily']:,.0f} $/day): "
                         "the targeted exposure has been offsetting other risks in the book.")
-    if objective == "crash" or any(L["type"] == "OPTION" for L in package):
+    flat_legs = [L for L in package if L.get("pricing_label") == P.FLAT_VOL_LABEL]
+    if flat_legs or (objective == "crash" and not any(L["type"] == "OPTION" and L.get("pricing_label") != P.FLAT_VOL_LABEL for L in package)):
         warnings.append(f"Options are {P.FLAT_VOL_LABEL}. {P.FLAT_VOL_NOTE}")
     if not package and eligible:
         warnings.append("No package: the requested change is smaller than one tradeable lot of every eligible product, or costs exceed the benefit.")
@@ -1015,7 +1016,7 @@ def _cand_view(c: dict) -> dict:
     return out
 
 
-FLAT_VOL_CONFIDENCE = 0.8     # M for a model-priced option (flat implied volatility): a fixed, declared penalty
+FLAT_VOL_CONFIDENCE = 0.8     # M for a model-priced option (flat implied volatility); products.pricing_confidence
 
 
 def quality(x: Optional[float]) -> Optional[str]:
