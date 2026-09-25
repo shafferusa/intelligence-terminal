@@ -314,7 +314,7 @@
         ${kpi('Forecast record', preds.scored ? fmt.pct(preds.hit_rate, 0) + ' hit rate' : '—', `${preds.scored || 0} scored · ${preds.pending || 0} pending`)}</div>
       <div class="grid g-main"><div class="stack">
         <div class="card flush"><h2>Your holdings — evidence by horizon <a class="right" href="#/portfolio" style="font-size:12.5px;font-weight:500">Portfolio →</a></h2><div id="holdEv"></div></div>
-        <div class="card flush"><h2>Core markets <small>Shaffer Score by horizon · click for the full research</small></h2><div id="coreEv"></div></div>
+        <div class="card flush"><h2>Core markets <small>Shaffer Score (evidence, not a forecast) by horizon · click for the full research</small></h2><div id="coreEv"></div></div>
       </div><div class="stack">
         <div class="card"><h2>Regime <small>point-in-time labels</small></h2><div id="regBox"></div></div>
         <div class="card"><h2>What matters for the S&P 500 now</h2>${spyB ? matters(spyB.what_matters_now) : '<div class="empty">Research SPY first</div>'}</div>
@@ -340,7 +340,7 @@
     const classes = [...new Set(all.map(a => a.asset_class))];
     const asof = rows.map(r => r.date).filter(Boolean).sort().pop();
     const scored = rows.filter(r => r.researched).length;
-    main.innerHTML = `<div class="page-head"><div><h1>Markets</h1><p>${all.length} products. Shaffer Score at the chosen horizon, read from the long side (−100 strongly bearish · 0 no measurable edge · +100 strongly bullish), with ML, their agreement, confidence and the long/short scores net of what each side costs. Click a product for its scores at every horizon, then trade it with or without its Shaffer Hedge.</p>
+    main.innerHTML = `<div class="page-head"><div><h1>Markets</h1><p>${all.length} products. <b>Shaffer Score</b> = what the evidence currently says: a structured quantitative evidence score, not a forecast (out of sample it has shown little predictive power beyond one week). −100 evidence strongly negative · 0 none · +100 strongly positive. <b>ML</b> = whether machine learning has found a <i>verified</i> predictive edge (0 when it has not). Long/short scores are net of what each side costs; an expected return appears only where its calibration is statistically supported. Click a product for its scores at every horizon, then trade it with or without its Shaffer Hedge.</p>
       <p class="faint" style="font-size:12px;margin-top:4px">Prices to ${fmt.date(asof)} · ${scored} of ${rows.length} scored (research a class to score the rest) · scores recomputed after each data refresh</p></div>
       <div class="row"><button id="mkScan">Research ${cls === 'ALL' ? 'all' : esc(clsName(cls))}</button><button id="mkAdd">Add a symbol</button></div></div><div id="mkJob"></div>
       <div class="card"><div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:10px"><div class="chips">${['ALL', ...classes].map(c => `<button class="chip ${c === cls ? 'on' : ''}" data-c="${c}">${c === 'ALL' ? 'All' : esc(clsName(c))}</button>`).join('')}</div>
@@ -492,7 +492,7 @@
       ['A · H', 'applicability of the family to this asset class and to this horizon (economic priors)'],
       ['K', `${fmt.num(((st.constants || {}).KAPPA), 2)} × Σ A·H over the families present: a fixed scale set before looking at results`]];
     const fmtIC = (x, t) => x == null ? '—' : `${fmt.num(x, 3)}${t != null ? ` <span class="faint">t ${fmt.num(t, 1)}</span>` : ''}`;
-    body.innerHTML = `<div class="card"><h2>Shaffer Score <span class="pill pos">v${esc(sh.version || '')}</span> <small>point in time: every score, historical or today, is the same function using only data available on its date · ${fmt.num(sh.history_years, 0)} years of price history</small></h2>
+    body.innerHTML = `<div class="card"><h2>Shaffer Score <span class="pill pos">v${esc(sh.version || '')}</span> <small>a structured quantitative evidence score — what the evidence currently says, not a forecast · point in time: every score, historical or today, is the same function using only data available on its date · ${fmt.num(sh.history_years, 0)} years of price history</small></h2>
         <div class="tex" data-tex="${esc(sh.formula || '')}"></div>
         <div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th class="l">Horizon</th><th>Shaffer</th><th>Calibrated</th><th>Expected</th><th>Typical range</th><th>Confidence</th><th>Evidence</th><th>Indep. obs.</th><th>OOS IC</th><th>Hit rate</th><th>Record since</th></tr></thead><tbody>
           ${labs.map(x => { const r = hsv[x]; const pf = perf[x] || {}; return `<tr data-h="${x}" style="cursor:pointer;${x === h ? 'background:var(--surface-2)' : ''}"><td class="l"><b>${x}</b></td>
@@ -918,10 +918,20 @@
   }
 
   // ---------------------------------------------------------------- Shaffer Hedge: shared renderers
-  const OBJECTIVES = [['auto', 'Automatic'], ['systematic', 'Systematic risk (all but single-name)'], ['beta', 'Reduce market beta'], ['neutral', 'Neutralize market beta'], ['sector', 'Sector / industry exposure'],
-    ['name', 'A specific position'], ['duration', 'Duration (rates)'], ['curve', 'Yield curve, key rate by key rate'], ['credit', 'Credit spread (CS01)'], ['fx', 'Currency exposure'],
-    ['commodity', 'Commodity exposure'], ['crypto', 'Crypto exposure'], ['volatility', 'Volatility (vega)'], ['crash', 'Crash protection'], ['var', 'Value at Risk'],
-    ['es', 'Expected Shortfall'], ['drawdown', 'Drawdown'], ['min_variance', 'Minimum variance'], ['target_vol', 'Target volatility']];
+  // hedge objectives grouped by what the hedge is for: a product that is poor at cutting variance (an index put) can be
+  // excellent tail protection, so the objective decides how every candidate is judged
+  const OBJ_GROUPS = [
+    ['', [['auto', 'Automatic (the largest risk)']]],
+    ['Variance reduction', [['min_variance', 'Minimum variance'], ['target_vol', 'Target volatility']]],
+    ['Beta reduction', [['beta', 'Reduce market beta'], ['neutral', 'Neutralize market beta']]],
+    ['Tail protection', [['crash', 'Crash protection (−20% scenario)'], ['es', 'Expected Shortfall'], ['var', 'Value at Risk']]],
+    ['Drawdown protection', [['drawdown', 'Drawdown']]],
+    ['Factor neutralization', [['systematic', 'Systematic risk (all but single-name)'], ['sector', 'Sector / industry exposure'], ['name', 'A specific position'],
+      ['duration', 'Duration (rates)'], ['curve', 'Yield curve, key rate by key rate'], ['credit', 'Credit spread (CS01)'], ['fx', 'Currency exposure'],
+      ['commodity', 'Commodity exposure'], ['crypto', 'Crypto exposure'], ['volatility', 'Volatility (vega)']]]];
+  const OBJECTIVES = OBJ_GROUPS.flatMap(([, xs]) => xs);
+  const OBJ_GROUP_OF = Object.fromEntries(OBJ_GROUPS.flatMap(([g, xs]) => xs.map(([k]) => [k, g])));
+  const objOptions = sel => OBJ_GROUPS.map(([g, xs]) => { const o = xs.map(([k, l]) => `<option value="${k}" ${k === sel ? 'selected' : ''}>${esc(l)}</option>`).join(''); return g ? `<optgroup label="${esc(g)}">${o}</optgroup>` : o; }).join('');
   const HEDGE_H = ['1D', '1W', '1M', '3M', '6M', '12M'];
   function fxv(f, v) {
     if (N(v) == null) return '—';
@@ -988,11 +998,13 @@
       ${packageTable(ana.package.final && ana.package.final.length ? ana.package.final : ana.package.raw, ana.nav)}
       <div class="muted" style="font-size:12.5px;margin-top:6px"><b>ML adjustment</b> (FinalHedge = RawHedge × (1 + α·MLAdjustment), α ${ml.alpha}, |adjustment| ≤ ${ml.cap}): ${mlTxt}</div>
       <h3 style="margin:16px 0 6px">Candidate products for this risk <span class="faint" style="font-weight:400;font-size:12px">(click one to use it alone)</span></h3>
-      <div class="tbl-wrap"><table class="wraph"><thead><tr><th class="l">Product</th><th>Shaffer Hedge Score</th><th>Unit-rule size</th><th>Notional</th><th>Est. cost</th><th>Exp. variance cut</th><th>Basis ($/day)</th><th>ADV use</th><th>Walk-forward</th><th class="l">E·Q·L·R·B·T</th></tr></thead><tbody>
+      ${!['crash', 'es', 'var'].includes(ana.objective) && el_.some(c => /^tail hedge/.test(c.hedge_type || '')) ? `<div class="muted" style="font-size:12.5px;margin-bottom:6px">Some candidates are <b>tail hedges</b>: historically they cut the worst outcomes but not everyday variance, so they score low when judged on ${esc((el_[0] || {}).judged_on || 'variance')}. Choose <b>Tail protection</b> to judge products on the tail.</div>` : ''}
+      <div class="tbl-wrap"><table class="wraph"><thead><tr><th class="l">Product</th><th>Shaffer Hedge Score<span class="sub" style="text-transform:none;letter-spacing:0">judged on ${esc(((el_[0] || {}).judged_on) || 'variance')}</span></th><th>Unit-rule size</th><th>Notional</th><th>Est. cost</th><th>Exp. variance cut</th><th>Basis ($/day)</th><th>ADV use</th><th>Hist. variance cut</th><th>Hist. tail cut</th><th class="l">E·Q·L·R·B·T</th></tr></thead><tbody>
       ${el_.slice(0, 14).map(c => { const h = c.history || {}, k = c.components || {}; return `<tr class="click" data-cand="${esc(c.id)}"><td class="l wrap" style="max-width:250px"><b>${esc(c.id)}</b><span class="sub">${esc(c.name || '')} · ${esc(c.product || '')}</span>${badge(c.id)}${c.pricing_label && /FLAT/.test(c.pricing_label) ? ' ' + priceTag(c.pricing_label) : ''}</td>
-        <td><b class="${scoreCls(c.score)}">${scoreTxt(c.score)}</b></td><td class="wrap" style="max-width:190px">${c.side === 'BUY' ? '+' : '−'}${fmt.qty(Math.abs(c.unit_quantity))}<span class="sub">${esc(c.risk_unit || '')}</span></td><td>${fmt.money(c.notional, 0)}</td>
+        <td><b class="${scoreCls(c.score)}">${scoreTxt(c.score)}</b>${c.hedge_type ? `<span class="sub" style="white-space:normal">${esc(c.hedge_type)}</span>` : ''}</td><td class="wrap" style="max-width:190px">${c.side === 'BUY' ? '+' : '−'}${fmt.qty(Math.abs(c.unit_quantity))}<span class="sub">${esc(c.risk_unit || '')}</span></td><td>${fmt.money(c.notional, 0)}</td>
         <td>${fmt.money(c.cost_total, 0)}</td><td>${fmt.pct(c.expected_reduction, 0)}</td><td>${fmt.money(c.basis_risk_daily, 0)}</td><td>${fmt.pct(c.participation, 2)}</td>
-        <td class="wrap" style="max-width:170px">${h.n ? (ana.objective === 'crash' && h.tail_reduction != null ? `tail ${fmt.pct(h.tail_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))} · variance ${fmt.pct(h.realized_reduction, 0)}</span>` : `${fmt.pct(h.realized_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))}${h.tail_reduction != null ? ` · tail ${fmt.pct(h.tail_reduction, 0)}` : ''}</span>`) : '<span class="faint">—</span>'}</td>
+        <td class="wrap" style="max-width:150px">${h.n ? `${fmt.pct(h.realized_reduction, 0)}<span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))}</span>` : '<span class="faint">—</span>'}</td>
+        <td>${h.n && h.tail_reduction != null ? fmt.pct(h.tail_reduction, 0) : '<span class="faint">—</span>'}</td>
         <td class="l mono wrap" style="font-size:11px;max-width:150px;min-width:120px">${[k.E, k.Q, k.L, k.R, k.B, k.T].map(x => fmt.num(x, 2)).join(' · ')}</td></tr>`; }).join('')}</tbody></table></div>
       ${ne.length ? `<details style="margin-top:8px"><summary class="muted">${ne.length} product(s) not eligible or not relevant — why</summary><div class="tbl-wrap"><table><tbody>${ne.map(c => `<tr><td class="l"><b>${esc(c.id)}</b></td><td class="l"><span class="pill ${c.status === 'NOT RELEVANT' ? '' : 'warn'}">${esc(c.status || '')}</span></td><td class="l" style="font-size:12.5px">${esc((c.reasons || []).join('; '))}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
       <h3 style="margin:16px 0 6px">Before and after</h3>
@@ -1011,7 +1023,7 @@
       <div class="row">${only ? `<button class="ghost" id="hAll">Whole portfolio</button>` : ''}</div></div>
       <div id="hKpi"></div>
       <div class="card"><div class="row" style="gap:12px;flex-wrap:wrap;align-items:flex-end">
-        <label class="f">Objective<select id="hObj">${OBJECTIVES.map(([k, l]) => `<option value="${k}" ${k === st.objective ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></label>
+        <label class="f">Objective<select id="hObj">${objOptions(st.objective)}</select></label>
         <label class="f">Horizon<select id="hH">${HEDGE_H.map(h => `<option ${h === st.horizon ? 'selected' : ''}>${h}</option>`).join('')}</select></label>
         <div><div class="muted" style="font-size:12px;margin-bottom:4px">Hedge</div><div class="seg" id="hRed">${[0.25, 0.5, 0.75, 1].map(x => `<button data-r="${x}" class="${x === st.reduction ? 'on' : ''}">${x * 100}%</button>`).join('')}<input id="hCustom" type="number" min="1" max="100" placeholder="custom %" style="width:92px;min-height:30px"></div></div>
         <button class="primary" id="hGo">Analyze</button></div></div>
@@ -1077,7 +1089,7 @@
         <label class="f">Quantity<input id="tkQ" type="number" min="0" step="any" placeholder="units" style="width:120px"></label>
         <label class="f">or amount ($)<input id="tkA" type="number" min="0" step="any" value="10000" style="width:130px"></label>
         <label class="f">Horizon<select id="tkH">${HEDGE_H.map(h => `<option ${h === st.horizon ? 'selected' : ''}>${h}</option>`).join('')}</select></label>
-        <label class="f">Hedge objective<select id="tkO">${OBJECTIVES.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join('')}</select></label>
+        <label class="f">Hedge objective<select id="tkO">${objOptions('auto')}</select></label>
         <div><div class="muted" style="font-size:12px;margin-bottom:4px">Hedge size</div><div class="seg" id="tkR">${[0.25, 0.5, 0.75, 1].map(x => `<button data-r="${x}" class="${x === 1 ? 'on' : ''}">${x * 100}%</button>`).join('')}<input id="tkRc" type="number" min="1" max="100" placeholder="%" style="width:64px;min-height:30px"></div></div>
       </div>
       <div id="tkBody" style="margin-top:14px"><div class="loading">Pricing the trade, measuring the risk it adds and finding its hedge…</div></div>
@@ -1108,12 +1120,12 @@
           <div class="muted" style="text-align:right;font-size:12px">free cash ${fmt.money(p.free_cash, 0)}<br>NAV ${fmt.money(p.nav, 0)}</div></div>
           ${t.pricing_label ? `<div style="margin-top:8px">${priceTag(t.pricing_label)}</div>` : ''}
           ${t.blocked ? `<div class="pill neg" style="white-space:normal;margin-top:8px">Cannot be traded: ${esc(t.blocked)}</div>` : t.eligible ? '' : `<div class="pill warn" style="white-space:normal;margin-top:8px">${esc(t.reasons.join('; '))}</div>`}
-          <h3 style="margin:14px 0 6px">Shaffer Score</h3>
+          <h3 style="margin:14px 0 6px">Shaffer Score <small class="faint" style="font-weight:400">what the evidence says — not a forecast</small></h3>
           ${sh.horizons ? `<div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(hs).filter(([k]) => ['1D', '1W', '1M', '3M', '6M', '12M', '3Y', '5Y'].includes(k)).map(([k, v]) => `<span class="pill ${k === hz ? 'on' : ''}" title="calibrated ${scoreTxt(v.calibrated)}">${k} <b class="${scoreCls(v.score)}">${scoreTxt(v.score)}</b></span>`).join('')}</div>
           <div style="margin-top:8px">${hz}: Shaffer <b class="${scoreCls(cur.score)}">${scoreTxt(cur.score)}</b> · calibrated ${scoreTxt(cur.calibrated)} · ML <b class="${scoreCls(cur.ml)}">${scoreTxt(cur.ml)}</b> · <span class="pill">${esc(cur.agreement || '—')}</span> · confidence ${pct0(cur.confidence)}${cur.expected != null ? ` · expected ${fmt.spct(cur.expected, 1)}` : ''}</div>
           <div style="margin-top:8px;font-size:12.5px"><b>Driving it</b>: ${(sh.contributors || []).map(c => esc(c.label || c.signal || c.family || '')).join(', ') || '—'}<br><b>Against it</b>: ${(sh.contradicting || []).map(c => esc(c.label || c.signal || c.family || '')).join(', ') || '—'}</div>` : '<p class="muted">No Shaffer Score for this product yet (research the underlying first).</p>'}
           <div style="margin-top:8px">Net of costs at ${esc(st.horizon)}: long <b class="${scoreCls(ns.long)}">${scoreTxt(ns.long)}</b> · short <b class="${scoreCls(ns.short)}">${ns.short == null ? 'n/a' : scoreTxt(ns.short)}</b> <span class="faint" style="font-size:12px">(${esc(ns.expected_source || '')}${ns.short_note ? '; ' + esc(ns.short_note) : ''})</span></div>
-          <p class="faint" style="font-size:12px;margin-top:6px">Scores read from the long side: −100 strongly bearish, 0 no measurable edge, +100 strongly bullish. The short score is not simply the negative: it pays borrow and earns no interest on the proceeds.</p>
+          <p class="faint" style="font-size:12px;margin-top:6px">Evidence read from the long side: −100 strongly negative, 0 none, +100 strongly positive. It summarises the evidence; it is not a return forecast, and an expected return is shown only where the calibration supports one. The short score is not simply the negative: it pays borrow and earns no interest on the proceeds.</p>
         </div>
         <div class="card"><h3 style="margin:0 0 6px">What this trade adds</h3>${riskCompare(p.portfolio, { before_trade: 'Before', after_trade: 'After trade', after_hedge: 'After trade + hedge' })}</div></div>
         <div class="card" style="margin-top:14px"><h2 style="margin-top:0">Shaffer Hedge for this trade</h2><div id="tkHedge"></div></div>`;

@@ -203,6 +203,18 @@ class EffectivenessTerm(unittest.TestCase):
         self.assertEqual(e(-3.0), -1.0)          # a hedge that added risk
 
 
+class HedgeType(unittest.TestCase):
+    def test_variance_and_tail_hedges_are_told_apart(self):
+        h = lambda v, t: {"n": 100, "realized_reduction": v, "tail": {"reduction": t}}
+        self.assertEqual(E.hedge_type(h(0.9, 0.95)), "variance + tail hedge")
+        self.assertEqual(E.hedge_type(h(0.6, 0.1)), "variance hedge")
+        self.assertEqual(E.hedge_type(h(-0.04, 1.08)), "tail hedge (adds variance)")      # an index put
+        self.assertEqual(E.hedge_type(h(0.05, 0.1)), "weak hedge")
+        self.assertIsNone(E.hedge_type({"n": 0}))
+        self.assertEqual(E.JUDGED_ON["es"], "tail-loss")
+        self.assertIn("crash", E.TAIL_OBJECTIVES)
+
+
 class MLCap(unittest.TestCase):
     def test_unverified_model_changes_nothing_and_verified_is_capped(self):
         self.assertEqual(H.ml_adjustment(None, {})["adjustment"], 0.0)

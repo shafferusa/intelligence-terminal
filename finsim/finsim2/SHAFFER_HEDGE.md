@@ -70,6 +70,19 @@ contract itself, and the registry says so.
 
 ## 3. Objectives and targets
 
+Grouped by what the hedge is for, because that decides how a product is judged: **Variance reduction** (minimum
+variance, target volatility), **Beta reduction** (reduce / neutralize beta), **Tail protection** (crash, Expected
+Shortfall, VaR — judged on the worst 10% of walk-forward windows), **Drawdown protection** (judged on the average
+in-window drawdown), **Factor neutralization** (systematic, sector, name, duration, curve, credit, FX, commodity,
+crypto, volatility — judged on variance). Every candidate also carries its **hedge type** from the walk-forward:
+variance hedge, tail hedge, both, "tail hedge (adds variance)" — an out-of-the-money index put is typically the
+last — or weak. An option that is a poor variance hedge can be an excellent tail hedge; it scores low under a
+variance objective and high under Tail protection.
+
+Option prices are labelled **MODEL-PRICED — FLAT VOLATILITY ASSUMPTION**: without chains or skew, out-of-the-money
+puts are probably priced too cheaply, which flatters crash hedges. Futures and forwards are labelled fair-value
+model prices.
+
 beta · neutral · **systematic** (all factors except single-name residual and style tilts — the trade-ticket default) ·
 sector · name (a position: all its exposures) · duration (covariance-weighted) · curve (key rate by key rate) · credit ·
 fx · commodity · crypto · volatility · crash (sized on the −20% scenario, full option re-pricing) · var · es · drawdown ·
@@ -101,7 +114,8 @@ volatility drag L(L−1)σ²/2. Carry embedded in futures/forward prices and div
 
 ```
 SH_j = 100·tanh(E·Q·L·R·B·T / 1.0)
-E  x = walk-forward realised ÷ expected variance reduction (crash: tail-loss reduction ÷ requested share);
+E  x = walk-forward realised ÷ expected variance reduction (tail objectives: tail-loss reduction ÷ requested share;
+   drawdown: drawdown reduction ÷ requested share);
    E = min(x, 2.5 − x) in [−1, 1.25]: over-delivering beyond 1.25× the request is over-hedging and is penalised
 Q  value of the risk removed ÷ (value + expected cost), value = (γh/2)·ΔVar (target-weighted)
 L  1 / (1 + participation/10%), participation = notional ÷ average daily traded value (tracking ETF for futures/options)

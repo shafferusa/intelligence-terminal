@@ -724,10 +724,14 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
         Rg = 1.0
         if history:
             hist = walk_forward(research, priced, objective, S, prim, inst, pr, h, params, rk)
-            if hist and hist.get("n") and objective == "crash":
+            p_req = float(params.get("reduction") or 0.5)
+            if hist and hist.get("n") and objective in TAIL_OBJECTIVES:
                 tr = (hist.get("tail") or {}).get("reduction")
-                p_req = float(params.get("reduction") or 0.5)
                 E = (tr / p_req) if tr is not None and p_req > 0 else None
+            elif hist and hist.get("n") and objective == "drawdown":
+                dd = hist.get("drawdown") or {}
+                ddr = (1 - dd["hedged"] / dd["unhedged"]) if dd.get("unhedged") else None
+                E = (ddr / p_req) if ddr is not None and p_req > 0 else None
             elif hist and hist.get("n"):
                 E = hist.get("effectiveness")
                 if E is None and hist.get("realized_reduction") is not None and exp_red > 0.02:
@@ -750,7 +754,8 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                   "sigma_before": math.sqrt(var0), "sigma_after": math.sqrt(var1), "basis_risk_daily": basis, "cost": cost, "cost_total": ctot,
                   "cost_pct_nav": ctot / nav if nav else None, "efficiency": (value / ctot) if ctot > 0 else None, "liquidity": liq,
                   "participation": part, "score": sh, "components": {"E": E_used, "Q": Q, "L": L, "R": Rg, "B": B, "T": T,
-                  "E_source": "walk-forward realised ÷ expected" if E is not None else "expected (no history)"},
+                  "E_source": ("walk-forward " + JUDGED_ON.get(objective, "variance") + " reduction ÷ requested") if E is not None else "expected (no history)"},
+                  "judged_on": JUDGED_ON.get(objective, "variance"), "hedge_type": hedge_type(hist),
                   "history": _hist_view(hist), "_features": (hist or {}).get("features_today"), "greeks": pr.greeks_per_unit(),
                   "inputs": pr.inputs, "notes": pr.notes, "pricing_label": pr.pricing_label,
                   "hedge_pct": {f: (-(ql * H.get(f, 0.0)) / R[f]) if R.get(f) else None for f in S},
@@ -968,13 +973,34 @@ def _option_ratio_path(c: dict, q: float, R: Dict[str, float]) -> List[dict]:
 def _cand_view(c: dict) -> dict:
     keep = ("id", "name", "eligible", "status", "reasons", "sizing_rule", "risk_unit", "unit_quantity", "side", "notional", "expected_reduction",
             "sigma_before", "sigma_after", "basis_risk_daily", "cost", "cost_total", "cost_pct_nav", "efficiency", "liquidity", "participation", "score",
-            "components", "history", "greeks", "notes", "hedge_pct", "exposure_added", "inputs")
+            "components", "history", "greeks", "notes", "hedge_pct", "exposure_added", "inputs", "pricing_label", "judged_on", "hedge_type")
     out = {k: c.get(k) for k in keep if k in c}
     inst = c.get("inst")
     if inst is not None:
         out["type"], out["product_type"], out["expiry"] = inst.type, inst.product_type, inst.expiry
         out["product"] = P.PRODUCT_TYPE.get(inst.product_type, {}).get("name", inst.product_type)
     return out
+
+
+TAIL_OBJECTIVES = {"crash", "es", "var"}
+JUDGED_ON = {"crash": "tail-loss", "es": "tail-loss", "var": "tail-loss", "drawdown": "drawdown"}
+
+
+def hedge_type(hist: Optional[dict]) -> Optional[str]:
+    """What a product has historically been good for, from its walk-forward record: cutting everyday variance, cutting
+    the worst 10% of outcomes, both, or neither. An index put is typically a tail hedge that adds variance."""
+    if not hist or not hist.get("n"):
+        return None
+    v = hist.get("realized_reduction")
+    t = (hist.get("tail") or {}).get("reduction")
+    var_ok, tail_ok = v is not None and v >= 0.25, t is not None and t >= 0.25
+    if var_ok and tail_ok:
+        return "variance + tail hedge"
+    if var_ok:
+        return "variance hedge"
+    if tail_ok:
+        return "tail hedge (adds variance)" if (v is not None and v < 0) else "tail hedge"
+    return "weak hedge"
 
 
 def effectiveness_term(x: float) -> float:
