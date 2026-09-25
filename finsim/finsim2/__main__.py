@@ -62,6 +62,8 @@ def main(argv=None) -> int:
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
+    lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
+    lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
     lb.add_argument("--live-models", action="store_true", help="fit the daily-ledger models: the benchmark's prior-only and current Directional models, and the new-information families that passed every gate")
     lb.add_argument("--fetch-finra", action="store_true", help="download FINRA Reg SHO short-sale volume (2019 on) for US equities and ETFs")
     lb.add_argument("--directional", action="store_true", help="only the Shaffer Alpha vs Shaffer Directional research (engine/directional.py)")
@@ -117,6 +119,13 @@ def main(argv=None) -> int:
             print("production:", ", ".join(f"{k} {v}" for k, v in meta["production"].items()), "· verify:", lab.verify_benchmark(st, meta["id"])["ok"])
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and args.breadth_hedge:
+        from .hedge import volhedge
+        res = volhedge.run_all(app.db_path(), workers=args.workers, progress=print)
+        with open(args.breadth_hedge_report, "w", encoding="utf-8") as f:
+            f.write(volhedge.markdown(res))
+        print(f"breadth-volatility hedge research: {res['seconds']}s; wrote", args.breadth_hedge_report)
         return 0
     if args.cmd == "lab" and (args.newinfo or args.live_models or args.fetch_finra):
         from .data.store import Store

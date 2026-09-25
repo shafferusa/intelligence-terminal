@@ -634,15 +634,26 @@ def tail_stats(pnl: List[float], seed: int = 11) -> dict:
 
 # ------------------------------------------------------------------ the analysis
 def analyze(research, positions: List[dict], objective: Optional[str] = None, params: Optional[dict] = None,
-            nav: Optional[float] = None, history: bool = True, ml_models: Optional[dict] = None) -> dict:
+            nav: Optional[float] = None, history: bool = True, ml_models: Optional[dict] = None,
+            replay: Optional[dict] = None) -> dict:
     """Risk first: the risk vector of `positions` ([{"id", "quantity", "entry"?}]), the objective's target, every
     candidate product with its eligibility, sizing, cost, basis, liquidity, walk-forward record and score, the
-    optimised Raw Shaffer Hedge package, the capped ML adjustment, scenarios and before/after risk."""
+    optimised Raw Shaffer Hedge package, the capped ML adjustment, scenarios and before/after risk.
+
+    `replay` (research only; None in production): {"market": Market at a past session, "rk": its RiskModel,
+    "cov_adjust": optional fn(C) -> C'} — the same Raw Shaffer Hedge decided with data up to that session only (no
+    walk-forward history, no ML adjustment), optionally with a different volatility forecast in the covariance, and
+    returned compactly as soon as the package is decided (see hedge/volhedge.py)."""
     params = dict(params or {})
     if objective not in (None, "", "auto") and objective not in OBJECTIVES:
         raise ValueError(f"unknown hedge objective {objective!r}")
-    m = Market(research)
-    rk = RiskModel(m)
+    if replay is not None:
+        history = False
+        m, rk = replay["market"], replay["rk"]
+    else:
+        m = Market(research)
+        rk = RiskModel(m)
+    adj = (replay or {}).get("cov_adjust") or (lambda C: C)
     store = research.store
     priced = price_positions(positions, m, rk, store)
     R = risk_vector(priced)
@@ -654,7 +665,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
     gamma_h = A / nav * h
     auto = objective in (None, "", "auto")
     fac0 = sorted(set(R))
-    C0 = rk.covariance(fac0)
+    C0 = adj(rk.covariance(fac0))
     if auto:
         objective, extra = auto_objective(R, C0)
         params = {**extra, **params}
@@ -674,7 +685,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
         ok, why = pr.eligibility()
         cands.append({"id": cid, "inst": inst, "priced": pr, "eligible": ok, "reasons": why, "name": inst.name, "H": pr.exposures() if pr.price is not None else {}})
     facs = sorted(set(R) | set(Rstar) | {f for c in cands for f in c.get("H", {})})
-    C = rk.covariance(facs)
+    C = adj(rk.covariance(facs))
     var0 = _var(R, C)
     ideal = dict(R)
     ideal.update({f: Rstar[f] for f in S})
@@ -810,6 +821,16 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                                    curve=one_by_one, exact=exact, S=S,
                                    w_opt=1.0 if var_obj else None, w_sel=1.0 if var_obj else None, must_hedge=not var_obj)
     package = [_leg_view(c, ql, R, S, h, nav) for c, ql in zip(chosen, q) if ql]
+    if replay is not None:
+        by_id = {c["id"]: c for c in cands}
+        return {"asof": m.asof, "objective": objective, "params": params, "targeted": S, "R": R, "Rstar": Rstar, "nav": nav,
+                "gamma_h": gamma_h, "horizon_days": h, "primary_factor": prim, "var_mkt": C.get(("MKT", "MKT")),
+                "pool": [c["id"] for c in pool], "eligible": len(eligible),
+                "package": [{"id": L["id"], "type": L["type"], "product_type": L["product_type"], "quantity": L["quantity"],
+                             "side": L["side"], "notional": L["notional"], "cost": (L["cost"] or {}).get("total"),
+                             "pricing_label": L.get("pricing_label"), "H": dict(by_id[L["id"]]["H"]),
+                             "unit_notional": L.get("unit_notional"), "iv": (L.get("option") or {}).get("iv"),
+                             "right": (L.get("option") or {}).get("right"), "expiry": L.get("expiry")} for L in package]}
     raw_after = _apply(R, package, cands)
     # ---------- ML adjustment (separate, capped, only if verified)
     ml = _ml(research, hist_objective(objective, prim) if prim else None, package, cands, h, ml_models, objective)

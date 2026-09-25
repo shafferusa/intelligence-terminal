@@ -1043,10 +1043,11 @@ def register(store, res: dict, finals: Dict[str, dict]) -> List[str]:
 
 
 # ------------------------------------------------------------------ live: today's p_up (live shadow + hedge information)
-def live_inputs(research, meta: dict, h: int, groups: Dict[str, list]) -> Optional[dict]:
+def live_inputs(research, meta: dict, h: int, groups: Dict[str, list], i: Optional[int] = None) -> Optional[dict]:
+    """PIT inputs (σ_h, priors, beta) on calendar index `i` (default: the last session)."""
     panel = research.panel()
     cal = panel.calendar()
-    i = len(cal) - 1
+    i = len(cal) - 1 if i is None else i
     try:
         ra = _logret(panel.series(meta["id"]))
     except Exception:  # noqa: BLE001
