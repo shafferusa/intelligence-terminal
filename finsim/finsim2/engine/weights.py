@@ -322,8 +322,7 @@ def _clustered_mean(vals: Dict[int, List[float]], h: int) -> dict:
 
 
 def _std_prods(rows, key) -> Dict[str, List[Tuple[int, float]]]:
-    """Per asset (and per walk-forward era when pooled — each era is a different fitted model) standardised score ×
-    outcome products, keyed by week."""
+    """Per asset standardised score × outcome products, keyed by week (per asset × era when rows carry an era group)."""
     by: Dict[str, list] = {}
     for r in rows:
         g = getattr(r, "grp", None)
@@ -355,7 +354,7 @@ def _ic(prods, h) -> dict:
 def _rank_ic(rows, key, h) -> dict:
     by: Dict[int, list] = {}
     for r in rows:
-        by.setdefault(r.wk, []).append((key(r), r.yr))
+        by.setdefault(r.wk, []).append((key(r), r.y))           # vol-scaled outcome: ranks comparable across asset classes
     vals = {}
     for w, pairs in by.items():
         if len(pairs) < 8:
@@ -642,6 +641,11 @@ def run_challenger(recs: List[Rec], h: int, kind: str, depth: str, gam=(1, 1, 1)
         res["eras"].append({"from": a, "to": b, "train": ft.n, "test": len(rows), "gamma": list(g), **compare(rows, h),
                             "training": _lite(T.predict(ft, g, [i for i in range(len(recs)) if T.bucket[i] <= k]), h)})
         era_w.append((a, ft))
+    # pooled over eras: each asset standardised over its whole walk-forward period (the challenger's scale is matched to
+    # production's in every era, so eras are comparable). Standardising within each 4-year era instead biases a long
+    # horizon's IC down (few independent overlapping outcomes per era) — era-level ICs carry that bias, the pooled one not.
+    for r in wf_rows:
+        r.grp = None
     res["walkforward"] = compare(wf_rows, h, with_bands=True) if wf_rows else {"n": 0}
     res["by_class"] = _by_class(wf_rows, h)
     g = choose_gamma(SPLIT)
@@ -988,6 +992,8 @@ def summary_rows(res: dict) -> List[dict]:
                     "baseline_acc": bl.get("best_acc"), "excess": (ca - bl["best_acc"]) if ca is not None and bl.get("best_acc") is not None else None,
                     "production_excess": (pa - bl["best_acc"]) if pa is not None and bl.get("best_acc") is not None else None,
                     "production_ic": (wf.get("production") or {}).get("ic"), "challenger_ic": (wf.get("challenger") or {}).get("ic"),
+                    "production_rank_ic": (wf.get("production") or {}).get("rank_ic"), "production_rank_t": (wf.get("production") or {}).get("rank_t"),
+                    "challenger_rank_ic": (wf.get("challenger") or {}).get("rank_ic"), "challenger_rank_t": (wf.get("challenger") or {}).get("rank_t"),
                     "status": (b.get("gates") or {}).get("status", "INSUFFICIENT DATA")})
     return out
 
@@ -1025,12 +1031,13 @@ def markdown(res: dict, live: Optional[Dict[str, dict]] = None) -> str:
     w("")
     w("## The main table (walk-forward over the unseen eras)")
     w("")
-    w("| Horizon | Production accuracy | Best challenger accuracy | Naive baseline | Excess vs baseline (challenger / production) | Production IC | Challenger IC | Status |")
-    w("|---|---|---|---|---|---|---|---|")
+    w("| Horizon | Production accuracy | Best challenger accuracy | Naive baseline | Excess vs baseline (challenger / production) | Production IC | Challenger IC | Rank IC prod. → ch. | Status |")
+    w("|---|---|---|---|---|---|---|---|---|")
     rows = summary_rows(res)
     for r in rows:
         w(f"| {r['horizon']} | {_p(r['production_acc'])} | {_p(r['challenger_acc'])} ({r['best']}) | {_p(r['baseline_acc'])} ({(r['baseline'] or '').replace('_', ' ')}) | "
-          f"{_p(r['excess'], 1, True)} / {_p(r['production_excess'], 1, True)} | {_n(r['production_ic'])} | {_n(r['challenger_ic'])} | {r['status']} |")
+          f"{_p(r['excess'], 1, True)} / {_p(r['production_excess'], 1, True)} | {_n(r['production_ic'])} | {_n(r['challenger_ic'])} | "
+          f"{_n(r['production_rank_ic'])} (t {_n(r['production_rank_t'], 1)}) → {_n(r['challenger_rank_ic'])} (t {_n(r['challenger_rank_t'], 1)}) | {r['status']} |")
     w("")
     # ---- the 15 answers
     w("## Answers")
@@ -1091,25 +1098,22 @@ def markdown(res: dict, live: Optional[Dict[str, dict]] = None) -> str:
         w(f"* **{lab}** ({hz.get('best')}) — gained: {', '.join(gain) or 'none'}. Lost: {', '.join(lose) or 'none'}. "
           f"Stable sign in every era: {len(stable)} of {len(st)} signals used ({', '.join(stable[:12])}{' …' if len(stable) > 12 else ''}). ✓ = stable.")
     w("")
-    w("**9. Which improvements disappeared on unseen data?** Challengers whose in-sample (training) accuracy or IC beat production but whose "
-      "walk-forward did not:")
+    w("**9. Which improvements disappeared on unseen data?** Every challenger's in-sample (training) gain against its walk-forward "
+      "gain on the eras it never saw. *Disappeared* = the walk-forward gain in accuracy or IC is ≤ 0; *shrank* = still positive but "
+      "not significant (G1 not passed); *held* = G1 passed.")
     w("")
-    gone = []
+    w("| Horizon | Challenger | In-sample Δ accuracy / Δ IC | Walk-forward Δ accuracy / Δ IC (t) | Verdict |")
+    w("|---|---|---|---|---|")
     for lab in _HZ_ORDER:
         for k, c in ((H.get(lab) or {}).get("challengers") or {}).items():
             tr, wf = c.get("training") or {}, c.get("walkforward") or {}
             if tr.get("challenger_acc") is None or tr.get("production_acc") is None:
                 continue
             ins = (tr["challenger_acc"] - tr["production_acc"], (tr.get("challenger_ic") or 0) - (tr.get("production_ic") or 0))
-            oos = ((wf.get("delta_acc") or {}).get("delta"), (wf.get("delta_ic") or {}).get("ic"))
-            if (ins[0] > 0 or ins[1] > 0) and ((oos[0] or 0) <= 0 or (oos[1] or 0) <= 0 or not (c.get("gates") or {}).get("G1_walkforward")):
-                gone.append(f"| {lab} | {k} | {_p(ins[0], 1, True)} / {_n(ins[1], 3, True)} | {_p(oos[0], 1, True)} / {_n(oos[1], 3, True)} |")
-    if gone:
-        w("| Horizon | Challenger | In-sample Δ accuracy / Δ IC | Walk-forward Δ accuracy / Δ IC |")
-        w("|---|---|---|---|")
-        L.extend(gone)
-    else:
-        w("None.")
+            da, di = (wf.get("delta_acc") or {}).get("delta"), wf.get("delta_ic") or {}
+            verdict = "held (G1)" if (c.get("gates") or {}).get("G1_walkforward") else (
+                "disappeared" if (da or 0) <= 0 or (di.get("ic") or 0) <= 0 else "shrank, not significant")
+            w(f"| {lab} | {k} | {_p(ins[0], 1, True)} / {_n(ins[1], 3, True)} | {_p(da, 1, True)} / {_ic_t(di)} | {verdict} |")
     w("")
     w("**10. Does |Shaffer Score| correspond more strongly to the probability of being right?** Directional accuracy by |score| band, walk-forward "
       "records (production → best challenger):")
