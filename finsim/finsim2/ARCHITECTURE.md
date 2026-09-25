@@ -50,6 +50,7 @@ finsim2/
     tracking.py          prediction log, realised scoring (returns; ML volatility and drawdown forecasts), decay
     lab.py               ML Lab: research records, hierarchical weight research, formula registry, promotion gates, live shadow
     weights.py           ML Lab: signal-level Shaffer weight research (eras, gates, baselines, score bands), SHAFFER_WEIGHT_RESEARCH.md
+    directional.py       ML Lab: Shaffer Alpha (ranking) vs Shaffer Directional (p_up from PIT base priors), SHAFFER_DIRECTIONAL_RESEARCH.md
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,

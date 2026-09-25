@@ -140,6 +140,34 @@ horizon, confidence, maturity date). `python -m finsim2 lab --weights` runs it a
 weights* shows it. For the hedge, `weights.reliability` gives how often a production score of that size was right at that
 horizon against the best naive baseline — shown on the design panel, not used by the hedge math in this phase.
 
+### Shaffer Alpha vs Shaffer Directional (`engine/directional.py`, report `SHAFFER_DIRECTIONAL_RESEARCH.md`)
+
+The production Shaffer Score is a zero-centred *evidence* score — is this setup better or worse than normal? — and was
+being judged against the sign of the *absolute* return. The Lab now keeps the two questions apart (research only; the
+Marketplace score is unchanged):
+
+* **Shaffer Alpha** (`shaffer-alpha-2.1-production` = the production score read as what it is): judged as a ranking of
+  relative opportunity against the return in excess of a point-in-time base expectation — Pearson IC per asset,
+  cross-sectional rank IC, weekly quintile spread, decile spread, hit rate against the weekly median, rank stability.
+  Signal-level alpha challengers are fitted to that target. It does not have to beat "always bullish".
+* **Shaffer Directional** (research versions `shaffer-directional-2.1-…-exp`): p_up = P(R_h > 0 | PIT information),
+  score = 100·(2·p_up − 1), from a point-in-time base-return prior plus Shaffer evidence, logistic per hierarchy node shrunk
+  to the parent. Judged on absolute direction against the best naive baseline (excess accuracy), balanced accuracy,
+  bullish / bearish precision and recall, Brier score against the climatology forecaster, log loss, AUC, calibration
+  (ECE, ten bins, nine score bands with expected vs realized p_up) and P(loss | score < −20 / −40 / −60).
+* Base priors, all point-in-time (outcomes only once matured): zero; expanding class drift; class → sector → asset drift
+  shrunk to the parent (K = 20 independent outcomes, crypto 200); β × the market's expanding drift with volatility drag;
+  observable carry (Treasury / Baa yields for bond products, uncovered interest parity for spot FX where both policy rates
+  exist); the hedge design prior made PIT; a product-specific rule (equity-like β × market, bonds with a yield → carry,
+  spot FX and commodities → 0 because no forward / roll data exists, crypto → heavily shrunk group drift, VXX → own
+  trailing drift, leveraged / inverse → β × market with their own drag); and the hierarchical PIT positive-return
+  frequency. The main prior for challengers (`product`) was fixed in advance.
+* Same eras, split and freezing as the weight research; gates fixed in advance (Directional G1: walk-forward Brier better
+  than climatology with t ≥ 2 and accuracy above the best naive baseline; G2: ≥ 3 of 4 eras and the split). Leakage tests
+  cover the base prior, the climatology and the era fits.
+* The hedge design panel shows the research view (alpha, p_up, expected return = prior + alpha edge, horizon risk,
+  validated or not) — informational; the hedge math does not use it in this phase.
+
 ### Versions and promotion
 
 Every formula has an ID and a registry entry (kv `formula:registry`): formula, families and signals, applicability,
