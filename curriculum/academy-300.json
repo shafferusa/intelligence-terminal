@@ -556,7 +556,7 @@
     "trajectory / parabola",
     "terminal velocity"
    ],
-   "model_or_equation": "y = y0 + v0t + 1/2 g t^2",
+   "model_or_equation": "y = y0 + v0t - 1/2 g t^2",
    "source": "new",
    "connect_back": {
     "day": 13,
@@ -1736,7 +1736,7 @@
    "subject_key": "tech",
    "position": "14 of 20",
    "topic": "Attention is all you need — the Transformer and why it changed everything",
-   "headline_hint": "The eight-word paper title that rewrote artificial intelligence",
+   "headline_hint": "The five-word paper title that rewrote artificial intelligence",
    "focus": "How the 2017 Transformer architecture and its self-attention mechanism let a model weigh relationships between all words in a sequence at once, solving the bottleneck that limited earlier AI and enabling every modern large language model.",
    "key_concepts": [
     "Transformer",
@@ -1929,7 +1929,7 @@
    "subject_key": "psychology",
    "position": "2 of 20",
    "topic": "Research Methods and the Replication Crisis",
-   "headline_hint": "Why half of classic psychology couldn't be replicated",
+   "headline_hint": "Why two-thirds of classic psychology couldn't be replicated",
    "focus": "Covers how psychologists test claims (experiments, correlation, case studies) and the 2015 replication crisis, so every later 'classic study' in this block is read with an accurate confidence level.",
    "key_concepts": [
     "independent/dependent variable",
@@ -2133,7 +2133,7 @@
     "System 1 vs System 2",
     "confirmation bias"
    ],
-   "model_or_equation": "Kahneman's dual-process model: System 1 (fast, intuitive) vs System 2 (slow, deliberate)",
+   "model_or_equation": "Stanovich and West's System 1 (fast, intuitive) vs System 2 (slow, deliberate), popularized by Kahneman",
    "source": "new",
    "connect_back": {
     "day": 40,
@@ -2206,7 +2206,7 @@
     "internal working model",
     "critical/sensitive periods"
    ],
-   "model_or_equation": "Ainsworth's attachment styles: secure, avoidant, resistant, disorganized",
+   "model_or_equation": "Ainsworth's attachment styles: secure, avoidant, resistant (plus disorganized, added later by Main and Solomon)",
    "source": "new",
    "connect_back": {
     "day": 60,
@@ -3228,7 +3228,7 @@
    "subject_key": "chemistry",
    "position": "16 of 20",
    "topic": "Reaction rates, catalysts, and chemical equilibrium",
-   "headline_hint": "Why a catalytic converter never wears out, and why some reactions run both ways at once",
+   "headline_hint": "Why a catalyst is never used up by the reaction it speeds up, and why some reactions run both ways at once",
    "focus": "Introduces reaction kinetics -- what speeds a reaction up, including catalysts -- and dynamic equilibrium, with Le Chatelier's principle as the tool for predicting how a disturbed system shifts to compensate.",
    "key_concepts": [
     "reaction rate",
@@ -3445,7 +3445,7 @@
    "position": "5 of 20",
    "topic": "The Double Helix: DNA's Structure and the Discovery That Cracked It",
    "headline_hint": "A ladder twisted into a spiral turned out to be the instruction manual for every living thing",
-   "focus": "Introduces DNA's structure — the double helix, base pairing, and the 1953 discovery by Watson, Crick, and Franklin — as the physical basis of heredity and the central molecule the rest of the genetics arc depends on.",
+   "focus": "Introduces DNA's structure — the double helix, base pairing, and the 1953 discovery by Watson and Crick, built critically on Rosalind Franklin's X-ray diffraction data — as the physical basis of heredity and the central molecule the rest of the genetics arc depends on.",
    "key_concepts": [
     "double helix",
     "base pairing (A-T, G-C)",
@@ -3978,7 +3978,7 @@
    "subject_key": "engineering",
    "position": "7 of 20",
    "topic": "Arches and Domes: Building in Pure Compression",
-   "headline_hint": "Rome's Pantheon dome has stood unreinforced for nineteen centuries because every part of it is being squeezed, never pulled.",
+   "headline_hint": "Rome's Pantheon dome has stood unreinforced for nineteen centuries because most of it is being squeezed, not pulled — only its lower courses fight tension, visible today as hairline cracks.",
    "focus": "Teaches the arch principle -- shaping a structure so gravity loads become pure compression carried all the way to the ground -- from Roman aqueducts to masonry domes, and why it let ancient builders span huge distances without steel.",
    "key_concepts": [
     "arch",
@@ -4485,8 +4485,8 @@
    "subject_key": "history",
    "position": "8 of 20",
    "topic": "Judaism, Christianity, and the Transformation of Rome",
-   "headline_hint": "A small Judean sect becomes the official religion of the world's largest empire",
-   "focus": "Israelite monotheism produced Judaism's covenant tradition, out of which Christianity emerged and spread through the Roman Empire until Constantine's conversion and the Edict of Milan (313 CE) made it dominant, just as the Western Empire's collapse (476 CE) split the Mediterranean world in two.",
+   "headline_hint": "A small Judean sect goes from persecuted to protected in the world's largest empire -- and official six decades later",
+   "focus": "Israelite monotheism produced Judaism's covenant tradition, out of which Christianity emerged and spread through the Roman Empire until Constantine's conversion and the Edict of Milan (313 CE) ended its persecution — Christianity became the empire's official religion only later, under Theodosius I's Edict of Thessalonica (380 CE) — just as the Western Empire's collapse (476 CE) split the Mediterranean world in two.",
    "key_concepts": [
     "monotheism",
     "Judaism's covenant tradition",
@@ -5154,7 +5154,7 @@
    "subject_key": "geography",
    "position": "16 of 20",
    "topic": "The Greenhouse Effect: Earth's Energy Balance",
-   "headline_hint": "The Same Physics That Warms a Greenhouse Keeps Earth Livable — and Is Now Warming It Further",
+   "headline_hint": "The Greenhouse Effect Keeps Earth Livable, Despite the Misleading Name — and Is Now Warming It Further",
    "focus": "Lays out the physical mechanism of the greenhouse effect and Earth's radiative energy balance, the necessary physics foundation before examining climate change itself.",
    "key_concepts": [
     "solar radiation vs. infrared radiation",
@@ -5250,7 +5250,7 @@
    "subject_key": "geography",
    "position": "20 of 20",
    "topic": "Why People Live Where They Live: Physical Geography and Human Settlement",
-   "headline_hint": "Three-Quarters of Humanity Lives Within 100 Miles of a Coast or a Major River",
+   "headline_hint": "Nearly Half of Humanity Lives Within 100 Miles of a Coast",
    "focus": "Closes the block by showing how rivers, coastlines, climate, and terrain have shaped where cities, farms, and trade routes formed — and previews why 'geography is destiny' will matter when the curriculum reaches geopolitics.",
    "key_concepts": [
     "river valley civilization pattern",
@@ -5970,7 +5970,7 @@
    "position": "10 of 20",
    "topic": "Deterrence and Nuclear Strategy: Mutual Assured Destruction",
    "headline_hint": "The bomb that is never meant to be used: how nuclear weapons made great-power war arguably unthinkable.",
-   "focus": "Teaches deterrence theory and nuclear strategy — how the threat of unacceptable retaliation, not defense, has kept the peace between nuclear powers since 1945.",
+   "focus": "Teaches deterrence theory and nuclear strategy — how the threat of unacceptable retaliation, not defense, has kept the peace between nuclear powers since 1949, when the Soviet Union became the second.",
    "key_concepts": [
     "deterrence",
     "mutual assured destruction (MAD)",
@@ -6857,7 +6857,7 @@
    "subject_key": "communication",
    "position": "7 of 20",
    "topic": "Before Writing: Oral Tradition and the Technology of Memory",
-   "headline_hint": "How Illiterate Poets Memorized Works as Long as the Iliad",
+   "headline_hint": "How Illiterate Poets Recomposed Works as Long as the Iliad, Every Time They Sang Them",
    "focus": "Explains how preliterate cultures encoded and transmitted vast amounts of knowledge through formulaic oral composition, the first great communication system.",
    "key_concepts": [
     "oral tradition",
