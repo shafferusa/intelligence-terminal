@@ -32,11 +32,9 @@ anything later in this document, this wins.
   items per beat, quality-gated, never padded. The **morning** edition leads it with Pittsburgh-area
   weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18). Kept as a
   real section under the finance-first tilt (2026-09-25) — only tech/science coverage was demoted.
-- **Listen to text** on every report: an in-page Web Speech player injected by
-  `site/assets/report.js`. Chosen over generated audio files because it works on every report
-  including the existing archive, costs nothing, and adds nothing to the repository. Known limit,
-  accepted: iOS pauses speech when the screen locks. Pre-generated MP3s hosted on GitHub Releases
-  remain the documented upgrade path if that limit becomes annoying.
+- **No report audio (retired 2026-09-25).** The Web Speech listen-to-text player and the
+  generated-MP3 pipeline (edge-tts → GitHub Releases) were removed at Logan's request ("no audio is
+  needed"). Telegram pushes no longer wait for an MP3, and reports are text only.
 - **Telegram is sent by GitHub Actions only.** The routine never sends. This fixes a duplicate
   that hit every morning, Saturday and Sunday edition (shared-rules §14 explains the mechanism).
 - **Schedule corrected.** The weekday cron had drifted to 5:30 AM / 3:30 PM ET — the closing

@@ -387,7 +387,7 @@ SR §12 with these specifics:
 - `<title>`: `SIE Day 5 — <headline> · Logan’s Daily Newspaper`.
 - **Omit entirely:** The Brief, The Board, Top Stories, news sections, calendar, Local, weather,
   Market Appendix.
-- Keep the `assets/report.js` tag (listen-to-text and the quiz answer sheet both depend on it).
+- Keep the `assets/report.js` tag (the quiz answer sheet depends on it).
 - `reading_minutes` = body words / 220 per SR §12.7 (the track head carries the real study time).
 - The report-nav "Previous report" links to the prior entry in `site/reports/index.json`, whatever
   its slot, exactly as SR §12.3 says.

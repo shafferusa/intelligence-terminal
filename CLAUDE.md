@@ -41,7 +41,7 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   source material for the 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
 - `site/` — GitHub Pages root: `index.html`, `status.html`, `assets/` (css/js/icons, incl.
-  `report.js` = the listen-to-text player), `report-template.html`,
+  `report.js` = SIE quiz answer sheet + study-guide ticks; report audio retired 2026-09-25), `report-template.html`,
   `reports/YYYY/MM/*.html` + `reports/index.json` (archive index), `equations/eq_NNN.png`,
   `manifest.webmanifest`, `sw.js`. Pagefind assets and `status.jsonl` are build-generated.
 - `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),

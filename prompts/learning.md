@@ -148,8 +148,8 @@ SR §12, with these specifics:
   plus any correction to an earlier lesson. Corrections to lessons go in
   `ledgers/corrections.json` exactly like news corrections (SR §9) — if day 40 taught something
   wrong, day 41 says so plainly.
-- Keep the `assets/report.js` script tag. Listen-to-text matters more here than anywhere else in
-  the system: this is the report Logan is most likely to want read to him.
+- Keep the `assets/report.js` script tag (the template loads it; it no longer does anything on a
+  Learning Brief — report audio was retired 2026-09-25 — but every page loads the same asset).
 - `reading_minutes` = word count / 220. Expect 25–30. If you are under 20, the lesson is too thin
   — go back and add the worked examples and the history.
 

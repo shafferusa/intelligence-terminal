@@ -42,10 +42,9 @@ concurrency:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    # notify.py holds the push for up to 20 min waiting on the report MP3, so
-    # this job is mostly spent idling on purpose. The cap sits above that wait
-    # so the timeout can only ever fire on a genuine hang.
-    timeout-minutes: 30
+    # Report audio (and the 20-min MP3 wait) was retired 2026-09-25; the send is
+    # immediate, so any run this long is a genuine hang.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -53,8 +52,4 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-          # Read-only, and only for the releases API the audio wait polls.
-          # Runners share public IPs, so the anonymous 60/hour limit is not
-          # ours alone to spend.
-          GITHUB_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/notify.py

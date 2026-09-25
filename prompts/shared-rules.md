@@ -236,9 +236,10 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html`
    is what the Telegram push renders as bullets, so write them for someone reading a lock screen.
 7. Compute `reading_minutes` = total body word count / 220, rounded up.
 8. Pages are readable with JS off: use semantic HTML, `<details>` for collapsed sections, real text
-   (no content injected by script). The listen-to-text player is injected by
-   `site/assets/report.js` — the template already loads it; never hand-write an audio bar, and
-   never remove the `<script src="../../../assets/report.js" defer></script>` tag.
+   (no content injected by script). Never remove the
+   `<script src="../../../assets/report.js" defer></script>` tag — the SIE quiz sheet depends on it.
+   There is no audio: listen-to-text and generated MP3s were retired 2026-09-25; do not add an
+   audio bar or player.
 9. Follow the design tokens in the template — calm, newspaper character; no red/green flood
    (semantic up/down colours in data cells only).
 
