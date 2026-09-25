@@ -91,7 +91,9 @@ def shaffer_brief(research, asset_id: str) -> Optional[dict]:
     cur = hs.get(ph) or {}
     return {"primary_horizon": ph, "as_of": b.get("as_of"), "regime": (b.get("regime") or {}).get("description"),
             "horizons": {k: {"score": v.get("score"), "calibrated": v.get("calibrated"), "ml": v.get("ml_score"), "agreement": v.get("agreement"),
-                             "confidence": (v.get("confidence") or {}).get("value"), "expected": v.get("expected")} for k, v in hs.items()},
+                             "confidence": (v.get("confidence") or {}).get("value"), "expected": v.get("expected"),
+                             "expected_typical": v.get("expected_typical"), "expected_edge": v.get("expected_edge"),
+                             "n_eff": v.get("n_eff"), "oos": v.get("oos"), "evidence": v.get("evidence")} for k, v in hs.items()},
             "contributors": (cur.get("contributors") or [])[:3], "contradicting": (cur.get("contradicting") or [])[:2],
             "ml_verified": cur.get("ml_verified")}
 

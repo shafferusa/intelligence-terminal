@@ -29,8 +29,15 @@ it (|t| ≥ FLIP_T, n_eff ≥ FLIP_N, stability ≥ ⅔). An agnostic signal is 
 direction (|t| ≥ AGNOSTIC_T, n_eff ≥ AGNOSTIC_N, stability ≥ ⅔).
 
 Calibrated score: g(SS_raw) = the isotonic (monotone) map from raw score to the vol-scaled forward return, learned
-only from matured out-of-sample pairs before the refit date, shrunk by its sample; SS_cal = 100·tanh(edge / G).
-Expected return and the typical range are shown only when that calibration has enough evidence.
+only from matured out-of-sample pairs before the refit date. The calibrated score is the evidence RELATIVE to the
+asset's own average outcome ȳ over those pairs:
+    edge = (g(SS_raw) − ȳ) · n_eff_bin / (n_eff_bin + 20)          (shrunk toward 0 when the bin is small)
+    SS_cal = 100 · tanh(edge / G)
+The expected return is TOTAL — the asset's average plus the evidence:
+    E[R] = exp((ȳ + edge) · σ · √(h/252)) − 1 = typical + evidence part,  typical = exp(ȳ · σ · √(h/252)) − 1
+so sign(SS_cal) = sign(evidence part), while E[R] itself can have the other sign for an asset with a strong average
+(NVDA 1M on 2026-09-24: SS_cal −33, E[R] +1.5% = typical +2.5% + evidence −1.0%). Expected return and the typical range are
+shown only when that calibration has enough evidence.
 
 Override: a file at ~/.finsim2/shaffer_score.py (or FINSIM2_SHAFFER) defining VERSION and score_asset(inputs) is
 shown as a separate live-only "custom" score; the history, calibration and ledger always use the built-in engine.
@@ -43,7 +50,7 @@ import os
 from typing import Dict, List, Optional
 
 NAME = "Shaffer Score"
-VERSION: str = "2.0"
+VERSION: str = "2.1"      # 2.1: calibration bin merge fixed (a bin was double-counted, another dropped)
 FORMULA = (r"SS_{a,h,t}=100\tanh\left(\frac{\sum_f W_{f,a,h,t}\,A_{f,a}\,H_{f,h}\sum_{i\in f}\omega_{i,a,h,t}\,s_{i,a,t}\,c_{i,a,h,t}"
            r"\,r_{i,a,t}\,d_{i,a,h,t}}{K_{a,h}}\right)")
 

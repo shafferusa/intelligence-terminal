@@ -191,6 +191,7 @@ class ShafferRun:
         refit_k = -1
         score_days = set() if checkpoints_only else set(range(start_hist, n, 5)) | {n - 1}
         self.fam_records = {lab: [] for lab, _ in self.horizons}
+        self.sign_checks: Dict[str, list] = {}
         for tau in range(n):
             # 1) matured score records feed the out-of-sample record (validation, calibration)
             for h, rec in pending.pop(tau, ()):
@@ -289,6 +290,13 @@ class ShafferRun:
                         fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
                         pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"),
                                                                         "sh": {f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []}}))
+                    if rec.get("expected") is not None and rec.get("calibrated") is not None:
+                        chk = self.sign_checks.setdefault(lab, [0, 0, 0])   # shown, total differs from calibrated, evidence part differs
+                        chk[0] += 1
+                        if rec["expected"] * rec["calibrated"] < 0:
+                            chk[1] += 1
+                        if rec["expected_edge"] * rec["calibrated"] < 0 and abs(rec["calibrated"]) > 1e-9 and abs(rec["expected_edge"]) > 1e-12:
+                            chk[2] += 1
                     if keep_history:
                         history[lab].append((tau, rec["raw"], rec.get("calibrated"), rec.get("expected")))
                         self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"]) for f in rec["families"]}))
@@ -447,7 +455,10 @@ class ShafferRun:
         size = max(20, m // 10)
         bins = [order[i:i + size] for i in range(0, m, size)]
         if len(bins) > 1 and len(bins[-1]) < size // 2:
-            bins[-2] += bins.pop()
+            # merge a short last bin into the one before it. (Was `bins[-2] += bins.pop()`: the index was taken before
+            # the pop and the list extended in place, so one bin was counted twice and another dropped — fixed in 2.1.)
+            tail = bins.pop()
+            bins[-1] = bins[-1] + tail
         cx = [sum(xs[i] for i in b) / len(b) for b in bins]
         my = [sum(ys[i] for i in b) / len(b) for b in bins]
         fit = isotonic(cx, my, [len(b) for b in bins])
@@ -579,8 +590,13 @@ class ShafferRun:
             rec["calibrated"] = 100.0 * math.tanh(edge / cfg.G_SCALE)
             supported = (calib.get("t") or 0) >= 1.0 and calib["n_eff"] >= 30
             if supported and vol:
-                shrunk = calib["ybar"] + edge
-                rec["expected"] = math.exp(shrunk * vol * math.sqrt(h / 252.0)) - 1
+                # the calibrated score is the evidence RELATIVE to this asset's own average (edge = shrunk g − ȳ); the
+                # expected return is TOTAL: the average plus that edge. A strong-drift asset can therefore show a
+                # negative calibrated score and a positive expected return; the evidence part has the score's sign.
+                scale = vol * math.sqrt(h / 252.0)
+                rec["expected"] = math.exp((calib["ybar"] + edge) * scale) - 1
+                rec["expected_typical"] = math.exp(calib["ybar"] * scale) - 1
+                rec["expected_edge"] = rec["expected"] - rec["expected_typical"]
             bn = bins[b]
             if bn["n"] >= 30 and bn["q10"] is not None:
                 rec["range"] = (math.exp(bn["q10"]) - 1, math.exp(bn["q90"]) - 1)
@@ -644,7 +660,7 @@ def summarize(res: dict, run: "ShafferRun") -> dict:
            "evidence": {}, "validation": res["validation"], "performance": {}, "formula": cfg.FORMULA}
     for lab, h in run.horizons:
         rec = res["latest"].get(lab) or {"raw": None, "reason": "no score"}
-        live = {k: rec.get(k) for k in ("raw", "calibrated", "expected", "range", "confidence", "confidence_label", "evidence", "n_eff", "reason",
+        live = {k: rec.get(k) for k in ("raw", "calibrated", "expected", "expected_typical", "expected_edge", "range", "confidence", "confidence_label", "evidence", "n_eff", "reason",
                                         "oos", "numerator", "K", "calibration_bin", "date")}
         live["regime"] = rec.get("regime")
         if rec.get("raw") is not None:

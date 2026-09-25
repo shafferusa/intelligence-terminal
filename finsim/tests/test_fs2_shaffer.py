@@ -99,6 +99,34 @@ class Canonical(unittest.TestCase):
         self.assertIsNone(run._prior_at(tau, sh.PRIOR_MAX_H + 1))
 
 
+class CalibrationIntegrity(unittest.TestCase):
+    def test_bins_cover_every_pair_exactly_once(self):
+        # 10 bins of 23 and a short tail of 7: the tail is merged into the last bin; nothing duplicated or dropped
+        for m in (237, 230, 247, 61):
+            pairs = [((i * 37 % m) - m / 2, math.sin(i) * 0.3, 0.01 * math.sin(i), i) for i in range(m)]
+            cal = sh.ShafferRun._calibration(None, pairs, 21)
+            self.assertEqual(sum(b["n"] for b in cal["bins"]), m, m)
+            self.assertEqual(len({(b["lo"], b["hi"]) for b in cal["bins"]}), len(cal["bins"]), m)       # no bin twice
+
+    def test_expected_return_is_typical_plus_evidence_and_the_evidence_has_the_calibrated_sign(self):
+        store = build_store(os.path.join(tempfile.mkdtemp(), "r.db"), n=2200)
+        try:
+            run = sh.ShafferRun(Research(store), "SPY", use_priors=False)
+            res = run.run()
+            shown = 0
+            for lab, rec in res["latest"].items():
+                if rec.get("expected") is None:
+                    continue
+                shown += 1
+                self.assertAlmostEqual(rec["expected"], rec["expected_typical"] + rec["expected_edge"], places=12)
+                if abs(rec["calibrated"]) > 1e-9 and abs(rec["expected_edge"]) > 1e-12:
+                    self.assertEqual(rec["expected_edge"] > 0, rec["calibrated"] > 0, lab)
+            for lab, (n, total_differs, evidence_differs) in run.sign_checks.items():      # every scored date
+                self.assertEqual(evidence_differs, 0, lab)
+        finally:
+            store.close()
+
+
 class ShadowFamilies(unittest.TestCase):
     """Candidate families run in shadow: they must not move the production score, must be point in time, and enter
     the score only when admitted."""

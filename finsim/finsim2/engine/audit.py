@@ -125,6 +125,7 @@ def _shaffer_worker(db_path: str, asset_id: str) -> dict:
             for e in ev.values():
                 cnt[e.get("status", "?")] = cnt.get(e.get("status", "?"), 0) + 1
             out["status_counts"][lab] = cnt
+        out["sign_checks"] = run.sign_checks
         first = next((i for i, v in enumerate(run.price) if v is not None), 0)
         out["first_price"] = run.cal[first]
         out["first_score"] = {lab: (run.cal[res["history"][lab][0][0]] if res["history"][lab] else None) for lab, _ in run.horizons}
@@ -495,6 +496,7 @@ def markdown(u: dict, agg: dict) -> str:
     L = []
     w = L.append
     labs = [lab for lab, _ in cfg.HORIZONS]
+    S = {a: v for a, v in u["shaffer"].items() if not v.get("error")}
     w("# Shaffer Score v2 and ML v2: the audit")
     w("")
     w(f"Generated {u.get('started')} from the real research store (prices up to the latest close). "
@@ -511,7 +513,9 @@ def markdown(u: dict, agg: dict) -> str:
     w("SS_raw(a,h,t) = 100 · tanh( Σ_f W_f,a,h,t · A_f,a · H_f,h · FamilyScore_f,a,h,t / K_a,h )")
     w("FamilyScore_f = Σ_{i∈f} ω_i · s_i · c_i · r_i · d_i          ω = correlation-penalised weights, Σω = 1")
     w("K_a,h = %.2f · Σ_f A_f,a · H_f,h over the families with data" % cfg.KAPPA)
-    w("SS_cal = 100 · tanh( g(SS_raw) / %.2f ),  g = isotonic map from raw score to forward return (vol units), out of sample only" % cfg.G_SCALE)
+    w("edge = shrunk (g(SS_raw) − ȳ),  g = isotonic map from raw score to forward return (vol units), out of sample only; ȳ = the asset's average")
+    w("SS_cal = 100 · tanh( edge / %.2f )   — the evidence relative to the asset's own average" % cfg.G_SCALE)
+    w("E[R] = exp((ȳ + edge)·σ·√(h/252)) − 1 = typical + evidence part (the evidence part has the sign of SS_cal)")
     w("```")
     w("")
     w("## 2–3. Families and every signal (prior direction: + bullish when high, − bearish when high, 0 learned from evidence)")
@@ -607,6 +611,23 @@ def markdown(u: dict, agg: dict) -> str:
                 continue
             w(f"| {k} | {v['n']} | {v['n_eff']:.0f} | {_pct(v['mean'])} | {_pct(v['median'])} | {_pct(v['hit'], 0)} | {v['vol']:.3f} | {_pct(v['ci'][0])} … {_pct(v['ci'][1])} |")
         w("")
+    w("## 16b. Calibrated score and expected return: sign consistency")
+    w("")
+    w("Every scored date where an expected return was shown. The calibrated score is the evidence relative to the asset's own average; "
+      "the expected return is total (average + evidence), so the two may differ in sign for an asset with a strong average — the evidence "
+      "part must never differ from the calibrated score.")
+    w("")
+    w("| Horizon | Scores with an expected return | Total return and calibrated score differ in sign | Evidence part differs in sign (bug) |")
+    w("|---|---|---|---|")
+    for lab in labs:
+        tot = [0, 0, 0]
+        for v in S.values():
+            c = (v.get("sign_checks") or {}).get(lab)
+            if c:
+                tot = [a + b for a, b in zip(tot, c)]
+        if tot[0]:
+            w(f"| {lab} | {tot[0]} | {tot[1]} ({tot[1] / tot[0]:.0%}) | {tot[2]} |")
+    w("")
     w("## 17–18. Out-of-sample IC and hit rate by horizon")
     w("")
     w("The Stouffer t treats assets as independent; assets move together, so it overstates significance. The date-clustered t averages "

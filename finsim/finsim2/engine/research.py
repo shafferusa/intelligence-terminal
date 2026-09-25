@@ -170,7 +170,8 @@ class Research:
             r = ss["horizons"].get(lab) or {}
             conf = r.get("confidence")
             compact = lambda xs: [{k: x.get(k) for k in ("signal", "label", "family", "points", "z", "decay")} for x in (xs or [])[:5]]
-            hs[lab] = {"horizon": lab, "score": r.get("raw"), "calibrated": r.get("calibrated"), "expected": r.get("expected"), "range": r.get("range"),
+            hs[lab] = {"horizon": lab, "score": r.get("raw"), "calibrated": r.get("calibrated"), "expected": r.get("expected"),
+                       "expected_typical": r.get("expected_typical"), "expected_edge": r.get("expected_edge"), "range": r.get("range"),
                        "confidence": {"value": conf, "label": r.get("confidence_label")} if conf is not None else None,
                        "evidence": r.get("evidence"), "n_eff": r.get("n_eff"), "reason": r.get("reason"), "oos": r.get("oos"),
                        "families": [{k: f.get(k) for k in ("family", "points", "W", "V", "n_active")} for f in (r.get("families") or [])],

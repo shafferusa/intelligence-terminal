@@ -95,7 +95,8 @@ record). Portfolio/Watchlist: the same `light()` rows. There is no second formul
 SS_raw = 100·tanh( Σ_f A_f,a · H_f,h · FamilyScore_f / K_a,h )
 FamilyScore_f = Σ_{i∈f} ω_i · s_i · c_i · r_i · d_i          (ω = correlation-penalised weights, Σω = 1)
 K_a,h = 0.10 · Σ_f A_f,a · H_f,h over families with data
-SS_cal = 100·tanh( g(SS_raw) / 0.25 ),  g = isotonic map raw score → forward return (vol units), prior OOS only
+edge = shrunk (g(SS_raw) − ȳ),  g = isotonic map raw score → forward return (vol units), prior OOS only, ȳ = asset average
+SS_cal = 100·tanh( edge / 0.25 )   (evidence relative to the asset's own average; E[R] = typical + evidence part)
 SS_net(long/short) = 100·tanh( edge / σ_h / 0.25 ),  edge = calibrated expected return − costs of that side
 ```
 s = δ·clip(z/2, −1, 1), z expanding (≥252 obs, capped ±3); w = |PS|·(¼ + ¾·stability), PS = median of three IC
