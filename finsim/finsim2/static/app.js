@@ -942,6 +942,37 @@
       { k: 'fdr', label: 'Result', l: 1, f: x => x.fdr ? '<span class="pill pos" style="font-size:10px">survives FDR</span>' : x.nominal ? '<span class="pill warn" style="font-size:10px">nominal only</span>' : '<span class="faint">no</span>' }], { sortKey: 't', maxH: 420 });
     $$('#niH button').forEach(b => b.onclick = () => { pref.set('niH', b.dataset.h); route(); });
   };
+  // Breadth volatility → Shaffer Hedge impact: the complete hedge chain, production vs the breadth-vol challenger
+  const bhPill = s => `<span class="pill ${s === 'SHADOW' || s === 'LIVE SHADOW' || s === 'ELIGIBLE FOR PROMOTION' ? 'pos' : s === 'IMPROVES FORECAST ONLY' || s === 'INSUFFICIENT DATA' ? 'warn' : 'neg'}" style="font-size:10.5px">${esc(s || '—')}</span>`;
+  const labBreadthHedge = (el, BH) => {
+    if (!BH || !BH.horizons) { el.innerHTML = `<div class="card"><h2>Breadth volatility → hedge impact <small>research only</small></h2><p class="muted" style="margin:0">Not run yet: <code>python -m finsim2 lab --breadth-hedge</code> replays the complete Shaffer Hedge point in time with production's volatility and with the breadth-enhanced forecast, and grades the realised hedges.</p></div>`; return; }
+    const HZ = Object.keys(BH.horizons);
+    const hz = HZ.includes(pref.get('bhH', '1W')) ? pref.get('bhH', '1W') : HZ[0];
+    const LAMS = (BH.lambdas || [0.5, 1, 2, 5, 10]).map(String);
+    const lam = LAMS.includes(pref.get('bhL', '1')) ? pref.get('bhL', '1') : '1';
+    const lk = Number.isInteger(Number(lam)) ? Number(lam).toFixed(1) : lam;      // Python's str(λ) keys
+    const Hh = BH.horizons[hz] || {}, F = Hh.forecast || {};
+    const U = (o, l) => o && o.loss_reduction != null ? o.loss_reduction - Number(l) * o.profit_sacrificed - o.cost : null;
+    el.innerHTML = `<div class="card"><h2>Breadth volatility → hedge impact <small>research only · hedge-2 and its sizing unchanged · ${esc((BH.benchmark || {}).id || '')}</small></h2>
+        <p class="muted" style="margin:0 0 8px;font-size:12.5px">A better volatility forecast is not a better hedge. Every case replays the complete Shaffer Hedge point in time — forecast → covariance → candidates → sizing → optimiser → package → realised P&amp;L — twice: <b>production</b> (hedge-2, 252-day covariance) and the <b>breadth-vol challenger</b> (the market factor's variance from the breadth-enhanced forecast), identical otherwise. Judged on realised utility U = risk reduction − λ·profit sacrificed − cost, paired on the same book, date, objective, products, prices and costs; clustered by date. Options are MODEL-PRICED — FLAT VOLATILITY ASSUMPTION.</p>
+        <div class="row" style="gap:10px;margin:6px 0 10px"><span class="muted" style="font-size:12.5px">Horizon</span><div class="seg" id="bhH">${HZ.map(x => `<button data-h="${x}" class="${x === hz ? 'on' : ''}">${x}</button>`).join('')}</div>
+          <span class="muted" style="font-size:12.5px;margin-left:12px">λ (profit weight)</span><div class="seg" id="bhL">${LAMS.map(x => `<button data-l="${x}" class="${x === lam ? 'on' : ''}">${x}</button>`).join('')}</div></div>
+        <p style="margin:0 0 10px;font-size:12.5px">Forecast (market factor, ${esc(hz)}, ${F.n || 0} study dates): squared log error production ${fmt.num(F.mse_production, 4)} · regression without breadth ${fmt.num(F.mse_reference, 4)} · breadth ${fmt.num(F.mse_breadth, 4)} (${fmt.spct(F.gain_pct != null ? -F.gain_pct : null, 1)} vs the regression, t ${fmt.num(F.t, 1)}) · pooled newinfo t ${fmt.num(Hh.pooled_t, 1)} · G1 ${Hh.G1 ? '<span class="pill pos" style="font-size:10px">passes</span>' : '<span class="pill neg" style="font-size:10px">fails</span>'}</p>
+        <div id="bhT"></div></div>`;
+    const rows = Object.entries(Hh.cells || {}).filter(([, c]) => (c.test || {}).n).map(([obj, c]) => ({ obj, ...c }));
+    table($('#bhT'), rows, [{ k: 'obj', label: 'Objective', l: 1, f: x => `<b>${esc(x.obj)}</b><span class="sub">${x.dates} dates · ${x.cases} cases · ${(x.books || []).length} books</span>` },
+      { k: 'fv', label: 'Forecast vol (prod / chall.)', f: x => `${fmt.pct((x.forecast_vol || {}).production, 1)} / ${fmt.pct((x.forecast_vol || {}).challenger, 1)}` },
+      { k: 'size', label: 'Hedge size (notional)', f: x => `${fmt.money((x.size || {}).A)} / ${fmt.money((x.size || {}).B)}<span class="sub">median ratio ${fmt.num((x.size_ratio || {}).median, 3)}</span>` },
+      { k: 'prod', label: 'Hedge product', l: 1, f: x => { const top = Object.entries(x.by_product || {}).sort((a, b) => b[1].cases - a[1].cases)[0]; return `${esc(top ? top[0] : '—')}<span class="sub">decision changed ${fmt.pct(x.changed_share, 0)} (products ${fmt.pct((x.decisions || {}).product, 0)})</span>`; } },
+      { k: 'cost', label: 'Cost (prod / chall.)', f: x => `${fmt.money(x.test.a.cost)} / ${fmt.money(x.test.b.cost)}` },
+      { k: 'rr', label: 'Realised risk reduction', f: x => `${fmt.money(x.test.a.loss_reduction)} / ${fmt.money(x.test.b.loss_reduction)}<span class="sub">variance ${fmt.pct(x.test.a.variance_reduction, 1)} / ${fmt.pct(x.test.b.variance_reduction, 1)}</span>` },
+      { k: 'u', label: `Utility λ ${lam}`, f: x => `${fmt.money(U(x.test.a, lam))} / ${fmt.money(U(x.test.b, lam))}` },
+      { k: 'd', label: 'Paired Δ (95% CI)', v: x => (x.test.d || {})[lk], f: x => { const d = (x.test.d || {})[lk], ci = (x.test.ci || {})[lk]; return `<b class="${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${fmt.money(d)}</b>${ci ? `<span class="sub">[${fmt.money(ci[0])}, ${fmt.money(ci[1])}] · p ${fmt.num((x.test.p || {})[lk], 3)}</span>` : ''}`; } },
+      { k: 'eras', label: 'Eras +', f: x => `${(x.gates || {}).eras_won ?? '—'}/${(x.gates || {}).eras_complete ?? '—'}` },
+      { k: 'st', label: 'Status', l: 1, f: x => `${bhPill(x.status)}<span class="sub">${esc(x.why || '')}</span>` }], { sortKey: null });
+    $$('#bhH button').forEach(b => b.onclick = () => { pref.set('bhH', b.dataset.h); route(); });
+    $$('#bhL button').forEach(b => b.onclick = () => { pref.set('bhL', b.dataset.l); route(); });
+  };
   pages.ml = async (main, args, alive) => {
     const tab = args[0] || pref.get('labTab', 'production');
     if (tab === 'forecasts') return mlForecasts(main, args.slice(1), alive);
@@ -1043,12 +1074,14 @@
     }
     if (tab === 'hedge') {
       const sz = (L.hedge || {}).groups || {};
+      const BH = L.breadth_hedge;
       const rows = []; Object.entries(sz).forEach(([g, res]) => Object.entries(res).forEach(([mt, r]) => rows.push({ g, mt, ...r })));
       const mrows = []; Object.entries(L.hedge_ml || {}).forEach(([g, res]) => Object.entries(res).forEach(([mt, r]) => r.n && mrows.push({ g, mt, ...r })));
-      body.innerHTML = `<div class="card"><h2>Is the static hedge the right size? <small>the raw hedge comes from beta, DV01, CS01, FX notional and option Greeks; the Lab asks whether, historically, it was too big or too small</small></h2>
+      body.innerHTML = `<div id="bhC"></div><div class="card" style="margin-top:14px"><h2>Is the static hedge the right size? <small>the raw hedge comes from beta, DV01, CS01, FX notional and option Greeks; the Lab asks whether, historically, it was too big or too small</small></h2>
           <p class="muted" style="margin:0">For each hedge group and objective: the constant resizing H = m · H<sub>raw</sub> that worked best on windows before ${esc((L.hedge || {}).asof ? 'the confirmation date' : '2018')} (discovery), then — frozen — tested on the windows after it (confirmation), clustered by date. Confirmed multiples form the Shaffer Hedge sizing challenger; they are applied only after the live shadow and your promotion.</p></div>
         <div class="card flush" style="margin-top:14px"><h2>Sizing study ${rows.length ? '' : '<small>run the hedge audit (python -m finsim2 hedge-audit)</small>'}</h2><div id="hsT"></div></div>
         <div class="card flush" style="margin-top:14px"><h2>Objective-specific ML adjustments <small>verified only if they beat the static rule, a constant resizing and the minimum-variance multiple out of sample</small></h2><div id="hmT"></div></div>`;
+      labBreadthHedge($('#bhC'), BH);
       table($('#hsT'), rows, [{ k: 'g', label: 'Group (risk:product:horizon)', l: 1 }, { k: 'mt', label: 'Objective metric', l: 1 }, { k: 'multiple', label: 'Multiple', f: r => r.multiple != null ? `× ${fmt.num(r.multiple, 3)}` : '—' }, { k: 'discovery_gain', label: 'Gain (discovery)', f: r => fmt.pct(r.discovery_gain, 1) }, { k: 'confirmation_gain', label: 'Gain (confirmation)', v: r => r.confirmation_gain, f: r => `<span class="${(r.confirmation_gain || 0) > 0 ? 'pos' : 'neg'}">${fmt.pct(r.confirmation_gain, 1)}</span>` }, { k: 't', label: 't / p', f: r => r.t != null ? 't ' + fmt.num(r.t, 1) : r.p != null ? 'p ' + fmt.num(r.p, 3) : esc(r.reason || '—') }, { k: 'passed', label: 'Confirmed', v: r => r.passed ? 1 : 0, f: r => r.passed ? '<span class="pill pos">yes</span>' : 'no' }], { sortKey: 'passed', empty: 'No sizing study yet' });
       table($('#hmT'), mrows, [{ k: 'g', label: 'Group', l: 1 }, { k: 'mt', label: 'Metric', l: 1 }, { k: 'n_eff', label: 'n_eff (dates)', f: r => fmt.num(r.n_eff, 0) }, { k: 'gain_vs_static', label: 'Gain vs static', f: r => fmt.pct(r.gain_vs_static, 1) }, { k: 'mean_adjustment', label: 'Mean adj. (constant)', f: r => `${fmt.num(r.mean_adjustment, 2)} (${fmt.num(r.constant_adjustment, 2)})` }, { k: 'verified', label: 'Verified', v: r => r.verified ? 1 : 0, f: r => r.verified ? '<span class="pill pos">yes</span>' : `<span class="faint">${esc((r.reasons || [])[0] || 'no')}</span>` }], { sortKey: 'verified', empty: 'No hedge ML trained yet' });
       return;

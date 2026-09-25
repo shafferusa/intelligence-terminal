@@ -310,7 +310,8 @@ class Router:
             from .engine import directional as dmod
             from .engine import newinfo as nmod
             return {"research": store.kv_get(lab.RESEARCH_KEY), "weights": store.kv_get(wmod.RESEARCH_KEY), "directional": store.kv_get(dmod.RESEARCH_KEY),
-                    "newinfo": store.kv_get(nmod.RESEARCH_KEY), "newinfo_live": nmod.live_summary(store), "benchmark": lab.benchmark(store) and {k: v for k, v in lab.benchmark(store).items() if k != "content"},
+                    "newinfo": store.kv_get(nmod.RESEARCH_KEY), "newinfo_live": nmod.live_summary(store),
+                    "breadth_hedge": store.kv_get("lab:breadthhedge"), "benchmark": lab.benchmark(store) and {k: v for k, v in lab.benchmark(store).items() if k != "content"},
                     "records": store.lab_record_summary(),
                     "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
                     "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live}
