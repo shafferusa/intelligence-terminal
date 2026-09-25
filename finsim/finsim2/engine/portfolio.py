@@ -77,9 +77,12 @@ def continuous_series(a: Optional[dict]) -> bool:
     return bool(a) and (a.get("asset_class") in ("COMMODITY", "FUTURE") or bool((a.get("meta") or {}).get("continuous_front_month")))
 
 
+ANALYSIS_ONLY = "ANALYSIS ONLY — CONTINUOUS FUTURES SERIES"
+
+
 def continuous_refusal(a: dict) -> str:
     proxy = CONTINUOUS_PROXY.get(a["id"])
-    return (f"{a['id']} is a continuous front-month futures series: its price jumps to the next contract at every roll, so a "
+    return (f"{ANALYSIS_ONLY}. {a['id']} is a continuous front-month futures series: its price jumps to the next contract at every roll, so a "
             f"held position would book the roll as profit or loss. It cannot be bought or shorted"
             + (f"; {proxy} holds and rolls the contracts and is tradeable." if proxy else ".") + " An existing position can still be sold.")
 

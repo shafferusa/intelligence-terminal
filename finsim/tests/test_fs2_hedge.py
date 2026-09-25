@@ -182,6 +182,18 @@ class Engine(Base):
         # an option price is a model price at flat volatility and says so, on the leg and in the warnings
         self.assertEqual(leg["pricing_label"], P.FLAT_VOL_LABEL)
         self.assertTrue(any(P.FLAT_VOL_LABEL in w for w in res["warnings"]))
+        cand = next(c for c in res["candidates"] if c["id"] == iid)
+        self.assertEqual(cand["components"]["M"], E.FLAT_VOL_CONFIDENCE)            # flat-vol option ranked with a penalty
+        self.assertGreater(cand["convexity"], 1.0)                                    # a put gains more than a same-delta linear hedge
+        self.assertIn(cand["variance_quality"], ("HIGH", "MEDIUM", "LOW", "NONE", "NEGATIVE"))
+
+    def test_new_stress_scenarios_and_correlation_convergence(self):
+        res = E.analyze(self.r, [{"id": "SPY", "quantity": 1000}, {"id": "TLT", "quantity": 500}], "beta", {"reduction": 0.5}, nav=1e6, history=False)
+        keys = {s["key"] for s in res["scenarios"]}
+        for k in ("rates200", "flatten", "cmd", "eqvol", "crediteq", "usdrates"):
+            self.assertIn(k, keys)
+        b = res["risk"]["before"]
+        self.assertGreaterEqual(b["sigma_daily_corr1"], b["sigma_daily"] - 1e-6)     # no diversification when everything moves together
 
     def test_scenarios_and_before_after(self):
         res = E.analyze(self.r, [{"id": "SPY", "quantity": 1000}, {"id": "TLT", "quantity": 2000}], "beta", {"reduction": 0.5}, nav=1e6,

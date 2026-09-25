@@ -113,7 +113,7 @@ volatility drag L(L−1)σ²/2. Carry embedded in futures/forward prices and div
 ## 5. The Shaffer Hedge Score
 
 ```
-SH_j = 100·tanh(E·Q·L·R·B·T / 1.0)
+SH_j = 100·tanh(E·Q·L·R·B·T·M / 1.0)
 E  x = walk-forward realised ÷ expected variance reduction (tail objectives: tail-loss reduction ÷ requested share;
    drawdown: drawdown reduction ÷ requested share);
    E = min(x, 2.5 − x) in [−1, 1.25]: over-delivering beyond 1.25× the request is over-hedging and is penalised
@@ -122,7 +122,18 @@ L  1 / (1 + participation/10%), participation = notional ÷ average daily traded
 R  realised reduction in windows that began in today's market and volatility regime ÷ all windows, shrunk n/(n+20), [0.5, 1.5]
 B  ρ² of the product's P&L with the targeted P&L (how much of the risk it can remove at all)
 T  crash objective: hedge gain in the −20% scenario ÷ the gain of a linear hedge with the same delta, [0.5, 1.5]; else 1
+M  model-pricing confidence: 0.8 for an option priced at a flat implied volatility (no chain, no skew), else 1
 ```
+
+Every candidate also shows its **variance hedge quality** and **tail hedge quality** (walk-forward share of variance and
+of the worst-10% loss removed: HIGH ≥ 60%, MEDIUM ≥ 30%, LOW > 5%, NONE, NEGATIVE) and its **tail convexity** (an
+option's gain at −20% ÷ a same-delta linear hedge's; linear products: NONE), so "a put is a poor variance hedge but a
+strong tail hedge" and "a futures short is a strong variance hedge with no convexity" are visible side by side.
+There is no single best hedge: the objective decides how products are judged.
+
+Stress scenarios (every hedge view): market ±5/±10/−20%, VIX +10, rates +100bp and +200bp, steepener, flattener, credit
+widening, dollar +10%, oil −30%, crypto −50%, commodity basket −25%, equity −15% with VIX +25, equity −15% with HY
++300bp/IG +100bp, dollar +8% with rates +75bp; plus the 1-day VaR if all correlations went to 1.
 
 ## 6. Walk-forward validation and the ML adjustment
 

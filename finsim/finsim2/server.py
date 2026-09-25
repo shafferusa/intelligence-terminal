@@ -302,6 +302,7 @@ class Router:
         return out
 
     def markets(self, cls: Optional[str]) -> List[dict]:
+        from .engine.portfolio import ANALYSIS_ONLY, continuous_series
         research = self.s.research
         rows = []
         for a in self.s.store.assets(cls):
@@ -310,7 +311,7 @@ class Router:
             rows.append({"id": a["id"], "name": a["name"], "asset_class": a["asset_class"], "sector": a.get("sector"), "currency": a.get("currency"),
                          **qd, "scores": (lt or {}).get("scores"), "ml": (lt or {}).get("ml"), "confidence": (lt or {}).get("confidence"),
                          "primary_horizon": (lt or {}).get("primary_horizon"), "researched": lt is not None,
-                         "shaffer": (lt or {}).get("shaffer")})
+                         "shaffer": (lt or {}).get("shaffer"), "analysis_only": ANALYSIS_ONLY if continuous_series(a) else None})
         return rows
 
     def asset_routes(self, method, asset_id, rest, q, b):

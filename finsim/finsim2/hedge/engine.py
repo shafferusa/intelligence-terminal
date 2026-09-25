@@ -131,7 +131,16 @@ def summary_metrics(R: Dict[str, float], C, nav: float, priced: List[dict]) -> d
     contrib = contributions(R, C)
     top = max(contrib.items(), key=lambda kv: abs(kv[1])) if contrib else (None, None)
     g = greeks_total(priced)
-    return {"beta_usd": R.get("MKT", 0.0), "beta": (R.get("MKT", 0.0) / nav) if nav else None, "dv01": sum(dv.values()), "krd": dv,
+    # correlation convergence: every position's own risk adds up as if all assets were perfectly correlated (longs in
+    # the market's direction add, positions leaning the other way — shorts, inverse funds, puts — subtract)
+    corr1 = 0.0
+    for p in priced:
+        e = p.get("exposures") or {}
+        s_i = math.sqrt(max(0.0, _var(e, C))) if e else 0.0
+        lean = e.get("MKT") if abs(e.get("MKT", 0.0)) > 1e-9 else (p.get("market_value") or 0.0)
+        corr1 += s_i if lean >= 0 else -s_i
+    corr1 = abs(corr1)
+    return {"sigma_daily_corr1": corr1, "var95_corr1": 1.645 * corr1, "beta_usd": R.get("MKT", 0.0), "beta": (R.get("MKT", 0.0) / nav) if nav else None, "dv01": sum(dv.values()), "krd": dv,
             "real_dv01": -R.get("REAL:10Y", 0.0), "cs01": sum(cs.values()), "cs01_by": cs,
             "fx": {f[3:]: v for f, v in R.items() if f.startswith("FX:")}, "commodity": {f[4:]: v for f, v in R.items() if f.startswith("CMD:")},
             "crypto": R.get("CRYPTO", 0.0), "vol_usd_per_vix": R.get("VOL", 0.0), "sigma_daily": sig, "sigma_annual": sig * math.sqrt(252),
@@ -494,7 +503,14 @@ SCENARIOS = [
     {"key": "rates", "label": "Rates +100bp (parallel)", "rates": 100.0}, {"key": "steep", "label": "Curve steepens (2Y −25bp, 30Y +50bp)", "steep": True},
     {"key": "credit", "label": "Credit widens (HY +200bp, IG +75bp)", "credit": True}, {"key": "usd", "label": "US dollar +10%", "usd": 0.10},
     {"key": "oil", "label": "Oil −30%", "oil": -0.30}, {"key": "crypto", "label": "Crypto −50%", "crypto": -0.50},
+    {"key": "rates200", "label": "Rates +200bp (parallel)", "rates": 200.0},
+    {"key": "flatten", "label": "Curve flattens (2Y +50bp, 30Y −25bp)", "flatten": True},
+    {"key": "cmd", "label": "Commodity basket −25%", "cmd": -0.25},
+    {"key": "eqvol", "label": "Equity −15% with volatility +25 VIX points", "mkt": -0.15, "vix": 25.0},
+    {"key": "crediteq", "label": "Credit/equity: equity −15%, HY +300bp, IG +100bp", "mkt": -0.15, "credit_bp": (300.0, 100.0)},
+    {"key": "usdrates", "label": "USD/rates: dollar +8%, rates +75bp", "usd": 0.08, "rates": 75.0},
 ]
+CMD_FACTORS = ("CMD:OIL", "CMD:GAS", "CMD:GOLD", "CMD:SILVER", "CMD:COPPER", "CMD:AGRI", "CMD:BROAD")
 
 
 def _vix_response(m: Market) -> Tuple[float, float]:
@@ -525,8 +541,15 @@ def factor_shock(sc: dict, m: Market, kdn: float, kup: float) -> Dict[str, float
         s["REAL:10Y"] = sc["rates"] * 0.75
     if sc.get("steep"):
         s.update({"RATE:2Y": -25.0, "RATE:5Y": 0.0, "RATE:10Y": 25.0, "RATE:30Y": 50.0})
+    if sc.get("flatten"):
+        s.update({"RATE:2Y": 50.0, "RATE:5Y": 25.0, "RATE:10Y": 0.0, "RATE:30Y": -25.0})
     if sc.get("credit"):
         s.update({"CREDIT:HY": 200.0, "CREDIT:IG": 75.0})
+    if sc.get("credit_bp"):
+        s.update({"CREDIT:HY": sc["credit_bp"][0], "CREDIT:IG": sc["credit_bp"][1]})
+    if sc.get("cmd"):
+        for f in CMD_FACTORS:
+            s[f] = sc["cmd"]
     if sc.get("usd"):
         for c in ("EUR", "JPY", "GBP", "AUD", "CAD", "CHF", "CNY", "MXN", "INR", "NZD"):
             s[f"FX:{c}"] = -sc["usd"] / (1 + sc["usd"])
@@ -712,13 +735,20 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
         rho2 = (cov_th * cov_th / (tgt_pnl_var * var_h)) if tgt_pnl_var > 0 and var_h > 0 else 0.0
         basis = math.sqrt(max(0.0, var1 - var_ideal))
         exp_red = (var0 - var1) / var0 if var0 > 0 else 0.0
-        # tail suitability
+        # tail suitability: the option's gain in the −20% scenario ÷ what a linear hedge with the same delta gains
+        # (> 1 = convex); a linear product has no convexity. T enters the score only for the crash objective.
         T = 1.0
-        if objective == "crash":
+        convexity = None
+        if inst.type == "OPTION":
             hedge_only = [{"inst": inst, "priced": pr, "quantity": ql, "exposures": {f: ql * v for f, v in H.items()}}]
             g_opt = scenario_pnl(hedge_only, crash_shock, m, rk)
             lin = ql * H.get("MKT", 0.0) * crash_shock["MKT"]
-            T = max(0.5, min(1.5, g_opt / lin)) if lin > 0 else 1.0
+            convexity = (g_opt / lin) if lin > 0 else None
+            if objective == "crash" and convexity is not None:
+                T = max(0.5, min(1.5, convexity))
+        # model-pricing confidence: an option priced at a flat implied volatility (no chain, no skew) is ranked with a
+        # penalty — out-of-the-money puts are probably priced too cheaply, which flatters exactly the products that win
+        M = FLAT_VOL_CONFIDENCE if pr.pricing_label == P.FLAT_VOL_LABEL else 1.0
         hist = None
         E = None
         Rg = 1.0
@@ -749,13 +779,16 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
         E_used = effectiveness_term(E) if E is not None else (1.0 if exp_red > 0 else -1.0)
         Q = value / (value + max(0.0, ctot)) if value > 0 else 0.0
         B = max(0.0, min(1.0, rho2))
-        sh = 100.0 * math.tanh(E_used * Q * L * Rg * B * T / K_H)
+        sh = 100.0 * math.tanh(E_used * Q * L * Rg * B * T * M / K_H)
         c.update({"status": "ELIGIBLE", "unit_quantity": ql, "side": side, "notional": notional, "expected_reduction": exp_red,
                   "sigma_before": math.sqrt(var0), "sigma_after": math.sqrt(var1), "basis_risk_daily": basis, "cost": cost, "cost_total": ctot,
                   "cost_pct_nav": ctot / nav if nav else None, "efficiency": (value / ctot) if ctot > 0 else None, "liquidity": liq,
-                  "participation": part, "score": sh, "components": {"E": E_used, "Q": Q, "L": L, "R": Rg, "B": B, "T": T,
+                  "participation": part, "score": sh, "components": {"E": E_used, "Q": Q, "L": L, "R": Rg, "B": B, "T": T, "M": M,
                   "E_source": ("walk-forward " + JUDGED_ON.get(objective, "variance") + " reduction ÷ requested") if E is not None else "expected (no history)"},
                   "judged_on": JUDGED_ON.get(objective, "variance"), "hedge_type": hedge_type(hist),
+                  "variance_quality": quality((hist or {}).get("realized_reduction") if (hist or {}).get("n") else exp_red),
+                  "tail_quality": quality(((hist or {}).get("tail") or {}).get("reduction") if (hist or {}).get("n") else None),
+                  "convexity": convexity,
                   "history": _hist_view(hist), "_features": (hist or {}).get("features_today"), "greeks": pr.greeks_per_unit(),
                   "inputs": pr.inputs, "notes": pr.notes, "pricing_label": pr.pricing_label,
                   "hedge_pct": {f: (-(ql * H.get(f, 0.0)) / R[f]) if R.get(f) else None for f in S},
@@ -973,13 +1006,23 @@ def _option_ratio_path(c: dict, q: float, R: Dict[str, float]) -> List[dict]:
 def _cand_view(c: dict) -> dict:
     keep = ("id", "name", "eligible", "status", "reasons", "sizing_rule", "risk_unit", "unit_quantity", "side", "notional", "expected_reduction",
             "sigma_before", "sigma_after", "basis_risk_daily", "cost", "cost_total", "cost_pct_nav", "efficiency", "liquidity", "participation", "score",
-            "components", "history", "greeks", "notes", "hedge_pct", "exposure_added", "inputs", "pricing_label", "judged_on", "hedge_type")
+            "components", "history", "greeks", "notes", "hedge_pct", "exposure_added", "inputs", "pricing_label", "judged_on", "hedge_type", "variance_quality", "tail_quality", "convexity")
     out = {k: c.get(k) for k in keep if k in c}
     inst = c.get("inst")
     if inst is not None:
         out["type"], out["product_type"], out["expiry"] = inst.type, inst.product_type, inst.expiry
         out["product"] = P.PRODUCT_TYPE.get(inst.product_type, {}).get("name", inst.product_type)
     return out
+
+
+FLAT_VOL_CONFIDENCE = 0.8     # M for a model-priced option (flat implied volatility): a fixed, declared penalty
+
+
+def quality(x: Optional[float]) -> Optional[str]:
+    """HIGH / MEDIUM / LOW / NONE / NEGATIVE for a share of risk removed (walk-forward when there is history)."""
+    if x is None:
+        return None
+    return "HIGH" if x >= 0.6 else "MEDIUM" if x >= 0.3 else "LOW" if x > 0.05 else "NONE" if x >= -0.05 else "NEGATIVE"
 
 
 TAIL_OBJECTIVES = {"crash", "es", "var"}
