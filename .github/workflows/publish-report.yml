@@ -1,10 +1,17 @@
-name: Publish report (auto-merge claude/ PRs)
+name: Publish report (auto-merge claude/report-* PRs)
 
 # Routine runs that cannot push directly to main (branch-push restriction) push a
 # claude/report-* branch and open a PR. This workflow merges it; the "Build & deploy
 # site" workflow then runs via its workflow_run trigger (on the main ref, which the
 # github-pages environment protection allows), deploys, and sends the Telegram
 # notification after the page is live.
+#
+# SCOPE (2026-09-25): only claude/report-* branches auto-merge. It used to
+# auto-merge ANY claude/* PR, which had two bad effects: (1) non-report PRs
+# (prompt/spec/infra changes, the SIE program) merged with no human review, and
+# (2) each such merge fired build-site.yml's workflow_run notify job, which
+# re-announced the latest edition on Telegram -- a duplicate Closing Brief every
+# time a non-report claude/* PR merged. Non-report PRs are now merged by hand.
 
 on:
   pull_request:
@@ -21,10 +28,11 @@ concurrency:
 
 jobs:
   merge:
-    # Same-repo claude/ branches only — never fork PRs.
+    # Same-repo claude/report-* branches only — never fork PRs, and never other
+    # claude/* PRs (those are reviewed and merged by hand).
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
-      startsWith(github.event.pull_request.head.ref, 'claude/')
+      startsWith(github.event.pull_request.head.ref, 'claude/report-')
     runs-on: ubuntu-latest
     steps:
       - name: Merge the PR
