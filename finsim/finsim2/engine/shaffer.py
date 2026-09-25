@@ -192,6 +192,7 @@ class ShafferRun:
         score_days = set() if checkpoints_only else set(range(start_hist, n, 5)) | {n - 1}
         self.fam_records = {lab: [] for lab, _ in self.horizons}
         self.lab_records: Dict[str, list] = {}
+        self.sig_records: Dict[str, list] = {}
         self.sign_checks: Dict[str, list] = {}
         for tau in range(n):
             # 1) matured score records feed the out-of-sample record (validation, calibration)
@@ -209,6 +210,7 @@ class ShafferRun:
                     o["shadow"].append((rec["t"], y, rec["raw"], rec["all"], rec["sh"]))
                 # the research record the ML Lab learns from: everything known at t, and what happened after
                 self.lab_records.setdefault(rec["lab"], []).append((rec["t"], rec["raw"], y, yr, rec["fam"], rec["c"], rec.get("K")))
+                self.sig_records.setdefault(rec["lab"], []).append((rec["t"], rec["raw"], y, yr, rec.get("sig")))
             # 2) observations whose outcome is now known join the evidence
             for _, h in self.horizons:
                 t = tau - h - 1
@@ -293,6 +295,7 @@ class ShafferRun:
                         fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
                         pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"), "lab": lab,
                                                                         "c": {f["family"]: f["contribution"] for f in rec["families"]}, "K": rec.get("K"),
+                                                                        "sig": signal_record(rec),
                                                                         "sh": {**{f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []},
                                                                                **{"VARIANT:" + k: (v, v) for k, v in (rec.get("variants") or {}).items() if v is not None}}}))
                     if rec.get("expected") is not None and rec.get("calibrated") is not None:
@@ -541,7 +544,7 @@ class ShafferRun:
                 if parts:
                     r = _clip(1.0 + sum(parts) / len(parts), cfg.R_MIN, cfg.R_MAX)
                 term = s_val * e["c"] * r * e["d"]
-                rows.append({"signal": s, "z": zs, "s": s_val, "w": e["w"], "c": e["c"], "r": r, "d": e["d"], "term": term,
+                rows.append({"signal": s, "z": zs, "s": s_val, "delta": e["delta"], "w": e["w"], "c": e["c"], "r": r, "d": e["d"], "term": term,
                              "ps": e["ps"], "ic": e["ic"], "q": e.get("q"), "n_eff": e["n_eff"], "decay": e["decay"], "status": e["status"], "active": True})
             if not present:
                 continue
@@ -657,6 +660,27 @@ def compute_shaffer_score(research, asset_id: str, horizon: str, as_of: Optional
 
 
 # ------------------------------------------------------------------ presentation: what the pages and the audit read
+def signal_record(rec: dict) -> Optional[dict]:
+    """Everything production applied to each signal on this date, compact, so the ML Lab can re-weight the equation
+    inside its own structure: x = clip(z / S_SCALE, −1, 1) for every production signal present; for each active signal
+    its PIT direction δ, weight ω, confidence c, regime factor r and decay d; for each family g = W·A·H / K. Then
+        raw = 100·tanh( Σ_f g_f Σ_{i∈f active} ω_i · δ_i · x_i · c_i · r_i · d_i )
+    reproduces the production score (test: SignalRecords)."""
+    K = rec.get("K")
+    if not K or rec.get("raw") is None:
+        return None
+    x, a, g = {}, {}, {}
+    for f in rec.get("families") or []:
+        g[f["family"]] = round(f["W"] * f["A"] * f["H"] / K, 8)
+        for sg in f.get("signals") or []:
+            if sg.get("z") is None:
+                continue
+            x[sg["signal"]] = round(_clip(sg["z"] / cfg.S_SCALE, -1.0, 1.0), 4)
+            if sg.get("active"):
+                a[sg["signal"]] = [sg.get("delta", 1), round(sg.get("omega", 0.0), 6), round(sg["c"], 5), round(sg["r"], 5), round(sg["d"], 5)]
+    return {"x": x, "a": a, "g": g}
+
+
 def attribute(rec: dict) -> dict:
     """Split a raw score into points per family and per signal that add up to it (proportional to each piece's share
     of the numerator; tanh is monotone, so the split keeps signs and ranks)."""

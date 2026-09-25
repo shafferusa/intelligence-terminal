@@ -46,6 +46,7 @@ LIVE_MIN = 60             # graded live forecasts required for the live-shadow g
 LAB_HORIZONS = [("1D", 1), ("1W", 5), ("1M", 21), ("3M", 63), ("6M", 126), ("12M", 252)]
 VARIANTS = ["global", "class", "hier", "regime"]
 REGISTRY_KEY = "formula:registry"
+SIG_VERSION = f"{cfg.VERSION}s"          # lab_records version of the signal-level records
 RESEARCH_KEY = "lab:research"
 
 # industry for the stored equities (GICS-style); unmapped assets skip the level
@@ -70,6 +71,9 @@ def save_records(store, run, data_version: str) -> int:
                  {f: round(v, 5) for f, v in (c or {}).items() if v}, K] for (t, raw, y, yr, fam, c, K) in recs]
         store.put_lab_records(run.asset_id, lab, cfg.VERSION, data_version, rows)
         n += len(rows)
+    for lab, recs in (getattr(run, "sig_records", None) or {}).items():   # signal-level records (engine/weights.py)
+        rows = [[run.cal[t], round(raw, 4), round(y, 5), round(yr, 6), sig] for (t, raw, y, yr, sig) in recs if sig]
+        store.put_lab_records(run.asset_id, lab, SIG_VERSION, data_version, rows)
     return n
 
 

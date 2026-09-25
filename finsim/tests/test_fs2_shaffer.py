@@ -359,3 +359,30 @@ class MethodologyVariants(unittest.TestCase):
         self.assertEqual(v["strict_V"], 0.0)
         v = sh.ShafferRun._variants(fams, {"A": {"t": 1.0}})
         self.assertGreater(v["strict_V"], 0.0)                               # same sign as the family score
+
+
+class SignalRecords(unittest.TestCase):
+    """The ML Lab's signal-level records reproduce the production score exactly (so re-weighting them is re-weighting
+    the real equation, not an approximation of it)."""
+
+    def test_records_rebuild_the_raw_score(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            store = build_store(os.path.join(tmp, "r.db"), n=1800)
+            run = sh.ShafferRun(Research(store), "SPY", use_priors=False)
+            run.run()
+            checked = 0
+            fam_of = cfg.FAMILY_OF
+            for lab, recs in run.sig_records.items():
+                for t, raw, y, yr, sig in recs:
+                    if not sig:
+                        continue
+                    num = 0.0
+                    for s_, (dl, om, c, r, d) in sig["a"].items():
+                        num += sig["g"][fam_of[s_]] * om * dl * sig["x"][s_] * c * r * d
+                    self.assertAlmostEqual(100 * math.tanh(num), raw, delta=0.05, msg=(lab, t))
+                    checked += 1
+            self.assertGreater(checked, 50)
+        finally:
+            store.close()
+            shutil.rmtree(tmp, ignore_errors=True)
