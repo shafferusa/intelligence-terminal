@@ -740,7 +740,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                         vals.append(1 + lam * (b["realized_reduction"] / hist["realized_reduction"] - 1))
                 if vals:
                     Rg = max(0.5, min(1.5, sum(vals) / len(vals)))
-        E_used = max(-1.0, min(1.25, E)) if E is not None else (1.0 if exp_red > 0 else -1.0)
+        E_used = effectiveness_term(E) if E is not None else (1.0 if exp_red > 0 else -1.0)
         Q = value / (value + max(0.0, ctot)) if value > 0 else 0.0
         B = max(0.0, min(1.0, rho2))
         sh = 100.0 * math.tanh(E_used * Q * L * Rg * B * T / K_H)
@@ -810,6 +810,12 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                           "hedge_pct_final": ((R[f] - final_after.get(f, 0.0)) / R[f]) if R.get(f) else None,
                           "share_of_risk": contributions(R, C).get(f)})
     warnings = []
+    shares = contributions(R, C)
+    tshare = sum(max(0.0, shares.get(f) or 0.0) for f in S)
+    if S and objective not in VARIANCE_OBJECTIVES and tshare < 0.02:
+        top = max(shares, key=lambda f: shares.get(f) or 0.0) if shares else None
+        warnings.append(f"Almost none of this risk is what the objective targets ({tshare:.1%} of its variance)"
+                        + (f"; the largest risk is {flabel(top)} ({shares[top]:.0%}) — the Automatic objective hedges that." if top else "."))
     if risk_tab["raw"]["sigma_daily"] > risk_tab["before"]["sigma_daily"] * 1.001 and package:
         warnings.append(f"Hedging this risk RAISES total volatility ({risk_tab['before']['sigma_daily']:,.0f} → {risk_tab['raw']['sigma_daily']:,.0f} $/day): "
                         "the targeted exposure has been offsetting other risks in the book.")
@@ -824,7 +830,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
             "targeted": S, "primary_factor": prim, "primary_label": flabel(prim) if prim else None,
             "risk": {"before": risk_tab["before"], "raw": risk_tab["raw"], "final": risk_tab["final"]}, "factors": by_factor,
             "candidates": [_cand_view(c) for c in eligible] + [_cand_view(c) for c in cands if c.get("status") != "ELIGIBLE"],
-            "best": _bests(eligible), "package": {"raw": package, "final": final_pkg}, "ml": ml, "scenarios": scen,
+            "best": _bests(eligible, float(params.get("reduction") or 0.5)), "package": {"raw": package, "final": final_pkg}, "ml": ml, "scenarios": scen,
             "regime": m.regime(), "data": _freshness(m)}
 
 
@@ -967,7 +973,14 @@ def _cand_view(c: dict) -> dict:
     return out
 
 
-def _bests(el: List[dict]) -> dict:
+def effectiveness_term(x: float) -> float:
+    """E of the Shaffer Hedge Score from x = realised ÷ expected (crash: tail offset ÷ requested share). A hedge that
+    delivers far more than asked (a deep put sized on the −20% scenario that offsets 3× the requested tail) is a
+    directional bet, not a better hedge: E peaks at 1.25 and falls back beyond it, floored at −1."""
+    return max(-1.0, min(x, 2.5 - x))
+
+
+def _bests(el: List[dict], p_req: float = 0.5) -> dict:
     if not el:
         return {}
     pick = lambda key, rev=False: (sorted(el, key=key, reverse=rev)[0]["id"])
@@ -975,7 +988,8 @@ def _bests(el: List[dict]) -> dict:
            "lowest_basis": pick(lambda c: c["basis_risk_daily"])}
     tails = [c for c in el if (c.get("history") or {}).get("tail_reduction") is not None]
     if tails:
-        out["best_crash"] = sorted(tails, key=lambda c: -(c["history"]["tail_reduction"] or -9))[0]["id"]
+        # the tail offset closest to what was asked for (more is over-hedging, not protection)
+        out["best_crash"] = sorted(tails, key=lambda c: abs((c["history"]["tail_reduction"] or -9) - p_req))[0]["id"]
     return out
 
 

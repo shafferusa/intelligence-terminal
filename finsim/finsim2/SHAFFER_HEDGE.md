@@ -101,7 +101,8 @@ volatility drag L(L−1)σ²/2. Carry embedded in futures/forward prices and div
 
 ```
 SH_j = 100·tanh(E·Q·L·R·B·T / 1.0)
-E  walk-forward realised ÷ expected variance reduction (crash: tail-loss reduction ÷ requested share), in [−1, 1.25]
+E  x = walk-forward realised ÷ expected variance reduction (crash: tail-loss reduction ÷ requested share);
+   E = min(x, 2.5 − x) in [−1, 1.25]: over-delivering beyond 1.25× the request is over-hedging and is penalised
 Q  value of the risk removed ÷ (value + expected cost), value = (γh/2)·ΔVar (target-weighted)
 L  1 / (1 + participation/10%), participation = notional ÷ average daily traded value (tracking ETF for futures/options)
 R  realised reduction in windows that began in today's market and volatility regime ÷ all windows, shrunk n/(n+20), [0.5, 1.5]

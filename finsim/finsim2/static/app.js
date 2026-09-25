@@ -963,8 +963,8 @@
     return `<div class="tbl-wrap"><table><thead><tr><th class="l">Hedge leg</th><th>Side</th><th>Quantity</th><th class="l">Risk unit</th><th>Notional</th><th>Est. cost (horizon)</th><th>Cost % NAV</th><th class="l">Why this leg</th></tr></thead><tbody>
       ${pkg.map(L => `<tr><td class="l"><b>${esc(L.id)}</b><span class="sub">${esc(L.name)}</span></td><td><span class="pill ${L.side === 'BUY' ? 'pos' : 'neg'}">${L.side}</span></td>
         <td>${fmt.qty(Math.abs(L.quantity))} ${esc(L.units)}${L.raw_quantity != null && L.raw_quantity !== L.quantity ? `<span class="sub">raw ${fmt.qty(Math.abs(L.raw_quantity))}</span>` : ''}</td>
-        <td class="l" style="font-size:12px">${esc(L.risk_unit)}<span class="sub">${esc(L.sizing_rule)}</span></td><td>${fmt.money(L.notional, 0)}</td><td>${fmt.money((L.cost || {}).total, 0)}</td><td>${fmt.pct(L.cost_pct_nav, 2)}</td>
-        <td class="l" style="font-size:12.5px;max-width:360px">${esc(L.why)}</td></tr>${legDetail({ ...L, nav }) ? `<tr><td colspan="8" class="l" style="background:var(--surface-2)">${legDetail({ ...L, nav })}</td></tr>` : ''}`).join('')}</tbody></table></div>`;
+        <td class="l wrap" style="font-size:12px;max-width:240px">${esc(L.risk_unit)}<span class="sub">${esc(L.sizing_rule)}</span></td><td>${fmt.money(L.notional, 0)}</td><td>${fmt.money((L.cost || {}).total, 0)}</td><td>${fmt.pct(L.cost_pct_nav, 2)}</td>
+        <td class="l wrap" style="font-size:12.5px;max-width:320px;min-width:190px">${esc(L.why)}</td></tr>${legDetail({ ...L, nav }) ? `<tr><td colspan="8" class="l" style="background:var(--surface-2)">${legDetail({ ...L, nav })}</td></tr>` : ''}`).join('')}</tbody></table></div>`;
   }
   function hedgePanel(el, ana, o = {}) {
     const S0 = ana.targeted || [];
@@ -987,12 +987,12 @@
       ${packageTable(ana.package.final && ana.package.final.length ? ana.package.final : ana.package.raw, ana.nav)}
       <div class="muted" style="font-size:12.5px;margin-top:6px"><b>ML adjustment</b> (FinalHedge = RawHedge × (1 + α·MLAdjustment), α ${ml.alpha}, |adjustment| ≤ ${ml.cap}): ${mlTxt}</div>
       <h3 style="margin:16px 0 6px">Candidate products for this risk <span class="faint" style="font-weight:400;font-size:12px">(click one to use it alone)</span></h3>
-      <div class="tbl-wrap"><table><thead><tr><th class="l">Product</th><th>Shaffer Hedge Score</th><th>Unit-rule size</th><th>Notional</th><th>Est. cost</th><th>Exp. variance cut</th><th>Basis ($/day)</th><th>ADV use</th><th>Walk-forward</th><th class="l">E·Q·L·R·B·T</th></tr></thead><tbody>
-      ${el_.slice(0, 14).map(c => { const h = c.history || {}, k = c.components || {}; return `<tr class="click" data-cand="${esc(c.id)}"><td class="l"><b>${esc(c.id)}</b><span class="sub">${esc(c.name || '')} · ${esc(c.product || '')}</span>${badge(c.id)}</td>
-        <td><b class="${scoreCls(c.score)}">${scoreTxt(c.score)}</b></td><td>${c.side === 'BUY' ? '+' : '−'}${fmt.qty(Math.abs(c.unit_quantity))}<span class="sub">${esc(c.risk_unit || '')}</span></td><td>${fmt.money(c.notional, 0)}</td>
+      <div class="tbl-wrap"><table class="wraph"><thead><tr><th class="l">Product</th><th>Shaffer Hedge Score</th><th>Unit-rule size</th><th>Notional</th><th>Est. cost</th><th>Exp. variance cut</th><th>Basis ($/day)</th><th>ADV use</th><th>Walk-forward</th><th class="l">E·Q·L·R·B·T</th></tr></thead><tbody>
+      ${el_.slice(0, 14).map(c => { const h = c.history || {}, k = c.components || {}; return `<tr class="click" data-cand="${esc(c.id)}"><td class="l wrap" style="max-width:250px"><b>${esc(c.id)}</b><span class="sub">${esc(c.name || '')} · ${esc(c.product || '')}</span>${badge(c.id)}</td>
+        <td><b class="${scoreCls(c.score)}">${scoreTxt(c.score)}</b></td><td class="wrap" style="max-width:190px">${c.side === 'BUY' ? '+' : '−'}${fmt.qty(Math.abs(c.unit_quantity))}<span class="sub">${esc(c.risk_unit || '')}</span></td><td>${fmt.money(c.notional, 0)}</td>
         <td>${fmt.money(c.cost_total, 0)}</td><td>${fmt.pct(c.expected_reduction, 0)}</td><td>${fmt.money(c.basis_risk_daily, 0)}</td><td>${fmt.pct(c.participation, 2)}</td>
-        <td>${h.n ? `${fmt.pct(h.realized_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))}${h.tail_reduction != null ? ` · tail ${fmt.pct(h.tail_reduction, 0)}` : ''}</span>` : '<span class="faint">—</span>'}</td>
-        <td class="l mono" style="font-size:11.5px">${[k.E, k.Q, k.L, k.R, k.B, k.T].map(x => fmt.num(x, 2)).join(' · ')}</td></tr>`; }).join('')}</tbody></table></div>
+        <td class="wrap" style="max-width:170px">${h.n ? (ana.objective === 'crash' && h.tail_reduction != null ? `tail ${fmt.pct(h.tail_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))} · variance ${fmt.pct(h.realized_reduction, 0)}</span>` : `${fmt.pct(h.realized_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))}${h.tail_reduction != null ? ` · tail ${fmt.pct(h.tail_reduction, 0)}` : ''}</span>`) : '<span class="faint">—</span>'}</td>
+        <td class="l mono wrap" style="font-size:11px;max-width:150px;min-width:120px">${[k.E, k.Q, k.L, k.R, k.B, k.T].map(x => fmt.num(x, 2)).join(' · ')}</td></tr>`; }).join('')}</tbody></table></div>
       ${ne.length ? `<details style="margin-top:8px"><summary class="muted">${ne.length} product(s) not eligible or not relevant — why</summary><div class="tbl-wrap"><table><tbody>${ne.map(c => `<tr><td class="l"><b>${esc(c.id)}</b></td><td class="l"><span class="pill ${c.status === 'NOT RELEVANT' ? '' : 'warn'}">${esc(c.status || '')}</span></td><td class="l" style="font-size:12.5px">${esc((c.reasons || []).join('; '))}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
       <h3 style="margin:16px 0 6px">Before and after</h3>
       ${riskCompare(o.books || ana.risk, o.bookLabels || { before: 'Before', raw: 'After raw hedge', final: 'After final hedge' })}
@@ -1005,7 +1005,7 @@
   // ---------------------------------------------------------------- the Shaffer Hedge page
   pages.hedge = async (main, args, alive) => {
     const only = args[0];
-    const st = { objective: pref.get('hObj', 'auto'), horizon: pref.get('hH', '1M'), reduction: pref.get('hRed', 0.5), use: null };
+    const st = { objective: only ? 'auto' : pref.get('hObj', 'auto'), horizon: pref.get('hH', '1M'), reduction: pref.get('hRed', 0.5), use: null };
     main.innerHTML = `<div class="page-head"><div><h1>Shaffer Hedge</h1><p>Risk first: what the ${only ? esc(only) + ' position' : 'portfolio'} is exposed to, in each risk's own unit; then the products that carry that risk, each sized in its own unit (beta-dollars, DV01, CS01, currency, delta-adjusted notional), compared on effectiveness, cost, basis, liquidity and their walk-forward record.</p></div>
       <div class="row">${only ? `<button class="ghost" id="hAll">Whole portfolio</button>` : ''}</div></div>
       <div id="hKpi"></div>
@@ -1052,7 +1052,7 @@
         $('#hxGo', m).onclick = () => busy($('#hxGo', m), async () => { try { const r = await post('/fs2/hedge/execute', { primary: null, legs: legs.map(L => ({ id: L.id, quantity: L.side === 'BUY' ? Math.abs(L.quantity) : -Math.abs(L.quantity) })), proposal: ana, mode: 'trade_hedge' }); closeModal(); toast(`Hedge recorded (${r.legs.length} legs, ${r.package_id})`); route(); } catch (e) { $('#hxErr', m).textContent = e.message; } });
       };
     };
-    $('#hObj').onchange = e => { st.objective = e.target.value; st.use = null; pref.set('hObj', st.objective); run(); };
+    $('#hObj').onchange = e => { st.objective = e.target.value; st.use = null; if (!only) pref.set('hObj', st.objective); run(); };
     $('#hH').onchange = e => { st.horizon = e.target.value; pref.set('hH', st.horizon); run(); };
     $$('#hRed button').forEach(b => b.onclick = () => { st.reduction = +b.dataset.r; pref.set('hRed', st.reduction); $$('#hRed button').forEach(x => x.classList.toggle('on', x === b)); run(); });
     $('#hCustom').onchange = e => { const v = N(e.target.value); if (v) { st.reduction = Math.max(0.01, Math.min(1, v / 100)); $$('#hRed button').forEach(x => x.classList.remove('on')); run(); } };

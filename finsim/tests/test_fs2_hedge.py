@@ -177,6 +177,16 @@ class Engine(Base):
         self.assertIn("var95", res["risk"]["before"])
 
 
+class EffectivenessTerm(unittest.TestCase):
+    def test_overshoot_is_penalised(self):
+        from finsim2.hedge.engine import effectiveness_term as e
+        self.assertAlmostEqual(e(1.0), 1.0)
+        self.assertAlmostEqual(e(1.25), 1.25)
+        self.assertLess(e(2.0), e(1.0))          # 2x the requested tail offset scores below an exact hedge
+        self.assertEqual(e(6.2), -1.0)           # 3x over-hedged deep put: floored
+        self.assertEqual(e(-3.0), -1.0)          # a hedge that added risk
+
+
 class MLCap(unittest.TestCase):
     def test_unverified_model_changes_nothing_and_verified_is_capped(self):
         self.assertEqual(H.ml_adjustment(None, {})["adjustment"], 0.0)
