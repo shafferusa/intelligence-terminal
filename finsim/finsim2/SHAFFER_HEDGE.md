@@ -144,18 +144,41 @@ option's delta from that day's Cboe index), the hedge quantity by the product's 
 Baselines on the same windows: no hedge, fixed 25%, fixed 50%, the static rule (= the Raw Shaffer Hedge ratio) and the
 minimum-variance ratio for the same target share.
 
-ML: a ridge model per (risk, hedge kind, horizon) of log(ex-post minimum-variance multiple × target share) — the error in
-the hedge's beta — from the VIX, 1-year and 3-month correlation, the change in beta, the 3-month market return and the bill
-rate, trained walk-forward on windows that ended before each prediction.
+ML (research phase 2, `hedge/objml.py`): one capped model per hedge OBJECTIVE, judged on that objective. Every
+walk-forward window keeps its daily hedge path, so any multiple m of the sized hedge is re-scored exactly (option P&L is
+linear in the contract count):
+
+| Metric (lower is better) | Used for the objectives |
+|---|---|
+| variance Σ(u + m·h)² | min_variance, target_vol, systematic, name, volatility |
+| residual factor exposure (β of hedged P&L on the factor)² | beta, neutral, sector, duration (DV01), curve, credit (CS01), fx, commodity, crypto |
+| downside semivariance Σ min(0, u + m·h)² | reported (daily tail proxy) |
+| drawdown of the hedged cumulative P&L | drawdown |
+| VaR 95% / ES 95% of window P&L, pooled | var / es, crash |
+
+Target: the ex-post best capped adjustment a* ∈ [−0.3, 0.3]. Features known at the window start: the original six
+(VIX, 1Y and 3M correlation, beta change, 3M market return, bill rate) plus correlation instability, basis risk, factor
+and leg vol (3M ÷ 1Y), implied ÷ realised market vol, exposure per dollar (beta, DV01/$, CS01/$, currency/$), regime
+flags, option delta, premium per dollar hedged, implied vol, tenor ÷ horizon, and the hedge's own track record on
+finished windows. Historical bid/ask, volume and open interest are not available point in time, so liquidity and cost
+are not features (L and cost enter the live score separately).
 
 ```
 FinalHedge = RawHedge × (1 + 0.5 · MLAdjustment),  |MLAdjustment| ≤ 0.30  →  at most ±15% of the raw hedge
-used only if, out of sample, it beats the static rule AND the minimum-variance ratio (paired t ≥ 2, n_eff ≥ 30) and has
-not decayed in the most recent third; otherwise MLAdjustment = 0 and the reason is shown
+used only if, out of sample, the model for THIS objective's metric beats (1) the static rule, (2) a constant resizing
+learned from history and (3) for linear hedges the minimum-variance multiple — paired t ≥ 2 clustered by window start
+date (or a date-block bootstrap p ≤ 0.025 for VaR/ES), n_eff (dates) ≥ 30 — and is not worse in the latest third;
+otherwise MLAdjustment = 0 and the reason is shown
 ```
 
-Result (`HEDGE_AUDIT.md`, data to 2026-09-24, 110 cases × 1W/1M/3M, full-hedge target): verified in one group only
-(single-name hedges at 3M); everywhere else the adjustment is 0.
+Two corrections were made in this phase before any model was used: (a) significance is clustered by start date — a
+group pools many books and hedges that share dates, and counting every row as independent had overstated t (the
+original variance-only layer is fixed the same way); (b) the constant-resizing baseline — without it a model that only
+rediscovered a fixed sizing bias (e.g. "option hedges sized at full delta are ~20% too big for variance") looked like
+skill. Results (`HEDGE_AUDIT.md` §18b): 25 of 192 group × metric tests pass (about 4–5 expected by chance); where
+one passes, its mean adjustment equals the constant's, so the useful finding is the static rule's sizing bias (option
+hedges ≈ ×0.89, crypto ETF hedges ×0.85, FX forwards ×0.85–0.90, credit ×0.93–0.95 minimise variance out of sample),
+which is reported and not applied automatically. The original variance-only layer verifies 0 groups once clustered.
 
 ## 7. Trades, execution and the hedge ledger
 

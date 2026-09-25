@@ -19,7 +19,8 @@ a* ∈ [−cap, cap] (m = 1 + α·a*) for that metric; var95/es95 share a model 
 downside min(0, U + m·H)². A ridge model on conditions at the window start, trained only on windows that ended
 before the prediction (expanding, purged), predicts a; the prediction is clipped to the cap.
 
-Out of sample: the metric at the predicted multiple against the static rule (m = 1), a CONSTANT resizing (the mean of
+Significance is clustered by window start date (a group pools many books and hedges sharing dates: one market
+experience, not independent tests); n_eff counts dates. Out of sample: the metric at the predicted multiple against the static rule (m = 1), a CONSTANT resizing (the mean of
 the past ex-post best adjustments — so a model that only rediscovers a fixed sizing bias is not counted as skill) and,
 for linear hedges, the trailing minimum-variance multiple, all on the same windows. Per-window metrics: paired t ≥ 2 with n_eff ≥ 30; pooled VaR/ES: a block bootstrap over
 windows, one-sided p ≤ 0.025. Both baselines must be beaten, and the most recent third must not be worse than the
@@ -208,7 +209,18 @@ def predict(model: dict, x: List[float]) -> float:
 
 
 # ------------------------------------------------------------------ the walk-forward
-def _tstat(xs: List[float], h: int) -> Optional[float]:
+def cluster_by_date(xs: List[float], dates: List[str]) -> List[float]:
+    """Mean of the paired differences per window START DATE. A group pools many books and hedges that share dates;
+    they are one market experience, not independent tests (the same fix as the Shaffer admission test)."""
+    by: Dict[str, List[float]] = {}
+    for x, d in zip(xs, dates):
+        by.setdefault(d, []).append(x)
+    return [sum(v) / len(v) for _, v in sorted(by.items())]
+
+
+def _tstat(xs: List[float], h: int, dates: Optional[List[str]] = None) -> Optional[float]:
+    if dates is not None:
+        xs = cluster_by_date(xs, dates)
     if len(xs) < 3:
         return None
     m = sum(xs) / len(xs)
@@ -218,19 +230,26 @@ def _tstat(xs: List[float], h: int) -> Optional[float]:
 
 
 def _boot_p(rows: List[dict], m_adj: List[float], m_base: List[float], metric: str, h: int, reps: int = 400, seed: int = 11) -> Optional[float]:
-    """One-sided block-bootstrap p-value that the adjusted pooled VaR/ES is NOT lower than the baseline's."""
+    """One-sided bootstrap p-value that the adjusted pooled VaR/ES is NOT lower than the baseline's. Resamples whole
+    start DATES in blocks (every book and hedge of a date together; overlapping windows together)."""
     n = len(rows)
     if n < 20:
         return None
+    dates = sorted({r["date"] for r in rows})
+    at: Dict[str, List[int]] = {}
+    for i, r in enumerate(rows):
+        at.setdefault(r["date"], []).append(i)
+    D = len(dates)
     block = max(1, int(math.ceil(h / STEP)))
     rnd = random.Random(seed)
     worse = 0
     for _ in range(reps):
-        idx = []
-        while len(idx) < n:
-            s0 = rnd.randrange(n)
-            idx.extend(range(s0, min(n, s0 + block)))
-        idx = idx[:n]
+        idx: List[int] = []
+        k = 0
+        while k < D:
+            s0 = rnd.randrange(D)
+            for d in dates[s0:min(D, s0 + block)]:
+                idx.extend(at[d]); k += 1
         rs = [rows[i] for i in idx]
         a, b = pooled(rs, [m_adj[i] for i in idx], metric), pooled(rs, [m_base[i] for i in idx], metric)
         if a is None or b is None or a >= b:
@@ -282,13 +301,14 @@ def evaluate(rows: List[dict], metric: str, feats: List[str], alpha: float = ALP
     test = [j for j in range(len(rows)) if preds[j] is not None]
     if metric == "exposure":
         test = [j for j in test if window_metric(rows[j], metric, 1.0) is not None]
-    n_eff = len(test) * min(1.0, STEP / max(h, 1))
+    n_eff = len({rows[j]["date"] for j in test}) * min(1.0, STEP / max(h, 1))       # independent dates, not rows
     if len(test) < MIN_WINDOWS:
         return {"verified": False, "n": len(test), "n_eff": n_eff, "reasons": [f"only {len(test)} out-of-sample windows"]}
     tr = [rows[j] for j in test]
     m_adj = [_mult(preds[j], alpha) for j in test]
     m_mv = [rows[j].get("mv_mult") for j in test]
     m_c = [_mult(const[j], alpha) for j in test]
+    dts = [rows[j]["date"] for j in test]
     has_mv = all(v is not None for v in m_mv)
     out = {"n": len(test), "n_eff": n_eff, "metric": metric, "mean_adjustment": sum(preds[j] for j in test) / len(test),
            "share_capped": sum(1 for j in test if abs(preds[j]) >= cap - 1e-9) / len(test)}
@@ -315,14 +335,15 @@ def evaluate(rows: List[dict], metric: str, feats: List[str], alpha: float = ALP
         ad = [window_metric(r, metric, m) for r, m in zip(tr, m_adj)]
         d_s = [a - b for a, b in zip(st, ad)]                      # > 0: the ML multiple did better
         out.update({"static": sum(st) / len(st), "adjusted": sum(ad) / len(ad), "gain_vs_static": 1 - sum(ad) / sum(st) if sum(st) > 0 else None,
-                    "t_vs_static": _tstat(d_s, h)})
+                    "t_vs_static": _tstat(d_s, h, dts)})
         cm = [window_metric(r, metric, m) for r, m in zip(tr, m_c)]
-        out.update({"constant": sum(cm) / len(cm), "t_vs_constant": _tstat([a - b for a, b in zip(cm, ad)], h),
+        out.update({"constant": sum(cm) / len(cm), "t_vs_constant": _tstat([a - b for a, b in zip(cm, ad)], h, dts),
                     "constant_adjustment": sum(const[j] for j in test) / len(test)})
         if has_mv:
             mv = [window_metric(r, metric, m) for r, m in zip(tr, m_mv)]
-            out.update({"min_variance": sum(mv) / len(mv), "t_vs_min_variance": _tstat([a - b for a, b in zip(mv, ad)], h)})
-        recent = sum(d_s[-max(1, len(d_s) // 3):])
+            out.update({"min_variance": sum(mv) / len(mv), "t_vs_min_variance": _tstat([a - b for a, b in zip(mv, ad)], h, dts)})
+        cd = cluster_by_date(d_s, dts)
+        recent = sum(cd[-max(1, len(cd) // 3):])
         if out["t_vs_static"] is None or out["t_vs_static"] < 2:
             reasons.append("does not beat the static rule (t {})".format("—" if out["t_vs_static"] is None else f"{out['t_vs_static']:.1f}"))
         if out["t_vs_constant"] is None or out["t_vs_constant"] < 2:

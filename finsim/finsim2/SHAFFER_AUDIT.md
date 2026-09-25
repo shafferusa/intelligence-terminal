@@ -1,6 +1,6 @@
 # Shaffer Score v2 and ML v2: the audit
 
-Generated 2026-09-25 03:22:36 from the real research store (prices up to the latest close). Universe: 157 assets with at least six years of daily history; ML: 21 representative assets. Run time 20 minutes. Every number below is out of sample: each score was computed on its date with only the information available then, and compared with what happened afterwards.
+Generated 2026-09-25 11:22:19 from the real research store (prices up to the latest close). Universe: 157 assets with at least six years of daily history; ML: 21 representative assets. Run time 41 minutes. Every number below is out of sample: each score was computed on its date with only the information available then, and compared with what happened afterwards.
 
 ## 1. The exact formula
 
@@ -8,7 +8,9 @@ Generated 2026-09-25 03:22:36 from the real research store (prices up to the lat
 SS_raw(a,h,t) = 100 · tanh( Σ_f W_f,a,h,t · A_f,a · H_f,h · FamilyScore_f,a,h,t / K_a,h )
 FamilyScore_f = Σ_{i∈f} ω_i · s_i · c_i · r_i · d_i          ω = correlation-penalised weights, Σω = 1
 K_a,h = 0.10 · Σ_f A_f,a · H_f,h over the families with data
-SS_cal = 100 · tanh( g(SS_raw) / 0.25 ),  g = isotonic map from raw score to forward return (vol units), out of sample only
+edge = shrunk (g(SS_raw) − ȳ),  g = isotonic map from raw score to forward return (vol units), out of sample only; ȳ = the asset's average
+SS_cal = 100 · tanh( edge / 0.25 )   — the evidence relative to the asset's own average
+E[R] = exp((ȳ + edge)·σ·√(h/252)) − 1 = typical + evidence part (the evidence part has the sign of SS_cal)
 ```
 
 ## 2–3. Families and every signal (prior direction: + bullish when high, − bearish when high, 0 learned from evidence)
@@ -293,14 +295,14 @@ One forward sweep over the calendar per asset. An observation dated t (signal z-
 
 | Raw score | Scores | Indep. obs. | Mean return | Median | Up share | Volatility (log) | 95% CI of the mean |
 |---|---|---|---|---|---|---|---|
-| -100..-60 | 267 | 267 | -0.2% | -0.0% | 37% | 0.013 | -0.4% … -0.0% |
-| -60..-40 | 1062 | 1062 | -0.0% | 0.0% | 48% | 0.015 | -0.1% … 0.1% |
+| -100..-60 | 268 | 268 | -0.2% | -0.0% | 37% | 0.013 | -0.4% … -0.0% |
+| -60..-40 | 1061 | 1061 | -0.0% | 0.0% | 48% | 0.015 | -0.1% … 0.1% |
 | -40..-20 | 4248 | 4248 | -0.0% | 0.0% | 48% | 0.016 | -0.1% … 0.0% |
-| -20..-5 | 16682 | 16682 | -0.0% | 0.0% | 50% | 0.015 | -0.0% … 0.0% |
-| -5..5 | 107357 | 107357 | 0.0% | 0.0% | 52% | 0.017 | 0.0% … 0.0% |
+| -20..-5 | 16680 | 16680 | -0.0% | 0.0% | 50% | 0.015 | -0.0% … 0.0% |
+| -5..5 | 107359 | 107359 | 0.0% | 0.0% | 52% | 0.017 | 0.0% … 0.0% |
 | 5..20 | 15924 | 15924 | 0.1% | 0.0% | 53% | 0.018 | 0.0% … 0.1% |
-| 20..40 | 3946 | 3946 | 0.1% | 0.0% | 53% | 0.017 | 0.0% … 0.1% |
-| 40..60 | 1128 | 1128 | 0.1% | 0.0% | 53% | 0.020 | 0.0% … 0.2% |
+| 20..40 | 3945 | 3945 | 0.1% | 0.0% | 53% | 0.017 | 0.0% … 0.1% |
+| 40..60 | 1129 | 1129 | 0.1% | 0.0% | 53% | 0.020 | 0.0% … 0.2% |
 | 60..100 | 515 | 515 | 0.4% | 0.0% | 52% | 0.024 | 0.1% … 0.6% |
 
 **1W**
@@ -311,8 +313,8 @@ One forward sweep over the calendar per asset. An observation dated t (signal z-
 | -60..-40 | 387 | 387 | 0.3% | 0.0% | 54% | 0.054 | -0.2% … 0.9% |
 | -40..-20 | 2341 | 2341 | -0.2% | 0.0% | 51% | 0.037 | -0.3% … -0.0% |
 | -20..-5 | 19794 | 19794 | 0.0% | 0.1% | 53% | 0.034 | -0.0% … 0.1% |
-| -5..5 | 106478 | 106478 | 0.1% | 0.1% | 54% | 0.036 | 0.1% … 0.2% |
-| 5..20 | 17767 | 17767 | 0.2% | 0.2% | 55% | 0.039 | 0.1% … 0.3% |
+| -5..5 | 106477 | 106477 | 0.1% | 0.1% | 54% | 0.036 | 0.1% … 0.2% |
+| 5..20 | 17768 | 17768 | 0.2% | 0.2% | 55% | 0.039 | 0.1% … 0.3% |
 | 20..40 | 2778 | 2778 | 0.3% | 0.2% | 57% | 0.042 | 0.2% … 0.5% |
 | 40..60 | 585 | 585 | 0.3% | 0.1% | 57% | 0.033 | 0.1% … 0.6% |
 | 60..100 | 216 | 216 | 0.1% | 0.0% | 60% | 0.036 | -0.4% … 0.6% |
@@ -325,8 +327,8 @@ One forward sweep over the calendar per asset. An observation dated t (signal z-
 | -60..-40 | 240 | 57 | -0.0% | 0.0% | 50% | 0.073 | -1.9% … 1.9% |
 | -40..-20 | 1479 | 352 | 0.4% | 0.1% | 56% | 0.085 | -0.5% … 1.3% |
 | -20..-5 | 15498 | 3690 | 0.3% | 0.4% | 56% | 0.084 | 0.1% … 0.6% |
-| -5..5 | 115545 | 27511 | 0.6% | 0.7% | 58% | 0.069 | 0.5% … 0.7% |
-| 5..20 | 14658 | 3490 | 0.5% | 0.5% | 57% | 0.079 | 0.2% … 0.7% |
+| -5..5 | 115535 | 27508 | 0.6% | 0.7% | 58% | 0.069 | 0.5% … 0.7% |
+| 5..20 | 14668 | 3492 | 0.5% | 0.5% | 57% | 0.079 | 0.2% … 0.7% |
 | 20..40 | 1121 | 267 | 0.4% | 0.3% | 62% | 0.066 | -0.4% … 1.2% |
 | 40..60 | 272 | 65 | 0.4% | 0.3% | 68% | 0.044 | -0.6% … 1.5% |
 | 60..100 | 270 | 64 | 0.4% | 0.4% | 86% | 0.009 | 0.2% … 0.6% |
@@ -338,10 +340,10 @@ One forward sweep over the calendar per asset. An observation dated t (signal z-
 | -100..-60 | 19 | 2 | 0.3% | 0.4% | 63% | 0.012 | -1.5% … 2.2% |
 | -60..-40 | 99 | 8 | 1.1% | 0.1% | 52% | 0.052 | -2.5% … 4.8% |
 | -40..-20 | 1457 | 116 | 2.7% | 0.7% | 64% | 0.118 | 0.5% … 4.9% |
-| -20..-5 | 17174 | 1363 | 2.1% | 1.6% | 61% | 0.136 | 1.4% … 2.8% |
-| -5..5 | 107635 | 8542 | 1.7% | 1.8% | 61% | 0.121 | 1.5% … 2.0% |
-| 5..20 | 16577 | 1316 | 2.0% | 1.6% | 61% | 0.120 | 1.3% … 2.6% |
-| 20..40 | 693 | 55 | 0.4% | 0.9% | 64% | 0.095 | -2.1% … 2.9% |
+| -20..-5 | 17178 | 1363 | 2.1% | 1.6% | 61% | 0.136 | 1.4% … 2.8% |
+| -5..5 | 107630 | 8542 | 1.7% | 1.8% | 61% | 0.121 | 1.5% … 2.0% |
+| 5..20 | 16579 | 1316 | 2.0% | 1.6% | 61% | 0.120 | 1.3% … 2.6% |
+| 20..40 | 696 | 55 | 0.4% | 0.9% | 64% | 0.094 | -2.1% … 2.9% |
 | 40..60 | 115 | 9 | 0.5% | 1.1% | 78% | 0.040 | -2.1% … 3.2% |
 | 60..100 | 7 | 1 | 0.8% | 1.0% | 100% | 0.003 | 0.2% … 1.5% |
 
@@ -352,10 +354,10 @@ One forward sweep over the calendar per asset. An observation dated t (signal z-
 | -100..-60 | 0 | | | | | | |
 | -60..-40 | 151 | 6 | 8.4% | 6.4% | 79% | 0.201 | -7.7% … 27.4% |
 | -40..-20 | 2143 | 85 | 4.0% | 2.1% | 60% | 0.240 | -1.1% … 9.5% |
-| -20..-5 | 18007 | 715 | 3.4% | 3.8% | 64% | 0.197 | 2.0% … 5.0% |
-| -5..5 | 91481 | 3630 | 3.6% | 3.3% | 64% | 0.173 | 3.0% … 4.2% |
-| 5..20 | 18916 | 751 | 4.0% | 4.3% | 68% | 0.148 | 2.9% … 5.1% |
-| 20..40 | 1474 | 58 | 0.8% | 2.1% | 62% | 0.138 | -2.7% … 4.5% |
+| -20..-5 | 18006 | 715 | 3.5% | 3.8% | 64% | 0.197 | 2.0% … 5.0% |
+| -5..5 | 91478 | 3630 | 3.6% | 3.3% | 64% | 0.173 | 3.0% … 4.2% |
+| 5..20 | 18919 | 751 | 4.0% | 4.3% | 68% | 0.148 | 3.0% … 5.1% |
+| 20..40 | 1475 | 59 | 0.8% | 2.1% | 62% | 0.138 | -2.7% … 4.5% |
 | 40..60 | 78 | 3 | 3.3% | 2.7% | 65% | 0.073 | -4.7% … 12.1% |
 | 60..100 | 0 | | | | | | |
 
@@ -366,12 +368,24 @@ One forward sweep over the calendar per asset. An observation dated t (signal z-
 | -100..-60 | 0 | | | | | | |
 | -60..-40 | 48 | 1 | 18.5% | 16.6% | 100% | 0.085 | 0.2% … 40.1% |
 | -40..-20 | 844 | 17 | 13.4% | 15.2% | 76% | 0.278 | -0.8% … 29.5% |
-| -20..-5 | 11608 | 230 | 10.3% | 10.5% | 73% | 0.268 | 6.6% … 14.2% |
-| -5..5 | 65202 | 1294 | 8.0% | 7.1% | 68% | 0.237 | 6.6% … 9.4% |
+| -20..-5 | 11609 | 230 | 10.3% | 10.5% | 73% | 0.268 | 6.6% … 14.2% |
+| -5..5 | 65201 | 1294 | 8.0% | 7.1% | 68% | 0.237 | 6.6% … 9.4% |
 | 5..20 | 13974 | 277 | 9.5% | 8.9% | 73% | 0.216 | 6.7% … 12.3% |
 | 20..40 | 814 | 16 | 6.4% | 7.4% | 68% | 0.167 | -1.9% … 15.4% |
 | 40..60 | 66 | 1 | -1.8% | -3.6% | 36% | 0.104 | -17.9% … 17.4% |
 | 60..100 | 0 | | | | | | |
+
+## 16b. Calibrated score and expected return: sign consistency
+
+Every scored date where an expected return was shown. The calibrated score is the evidence relative to the asset's own average; the expected return is total (average + evidence), so the two may differ in sign for an asset with a strong average — the evidence part must never differ from the calibrated score.
+
+| Horizon | Scores with an expected return | Total return and calibrated score differ in sign | Evidence part differs in sign (bug) |
+|---|---|---|---|
+| 1D | 28876 | 7221 (25%) | 0 |
+| 1W | 33339 | 11803 (35%) | 0 |
+| 1M | 10617 | 4280 (40%) | 0 |
+| 3M | 4787 | 2056 (43%) | 0 |
+| 6M | 3032 | 1136 (37%) | 0 |
 
 ## 17–18. Out-of-sample IC and hit rate by horizon
 
@@ -393,9 +407,9 @@ The Stouffer t treats assets as independent; assets move together, so it oversta
 
 **1W**: COMMODITY IC -0.005 (11 assets, 45% positive, hit 52%); CORP_BOND IC +0.088 (1 assets, 100% positive, hit 52%); CRYPTO IC +0.014 (2 assets, 100% positive, hit 46%); EQUITY IC +0.011 (45 assets, 60% positive, hit 51%); ETF IC +0.017 (72 assets, 65% positive, hit 50%); FX IC -0.012 (11 assets, 18% positive, hit 50%); INDEX IC +0.005 (9 assets, 67% positive, hit 48%); TREASURY IC +0.041 (4 assets, 75% positive, hit 48%)
 
-**1M**: COMMODITY IC +0.002 (11 assets, 55% positive, hit 50%); CORP_BOND IC +0.052 (1 assets, 100% positive, hit 55%); CRYPTO IC +0.080 (2 assets, 100% positive, hit 30%); EQUITY IC +0.005 (45 assets, 53% positive, hit 48%); ETF IC +0.010 (72 assets, 54% positive, hit 50%); FX IC -0.027 (11 assets, 18% positive, hit 45%); INDEX IC +0.009 (9 assets, 56% positive, hit 49%); TREASURY IC +0.051 (4 assets, 75% positive, hit 48%)
+**1M**: COMMODITY IC +0.002 (11 assets, 55% positive, hit 50%); CORP_BOND IC +0.052 (1 assets, 100% positive, hit 55%); CRYPTO IC +0.080 (2 assets, 100% positive, hit 31%); EQUITY IC +0.005 (45 assets, 53% positive, hit 48%); ETF IC +0.010 (72 assets, 54% positive, hit 50%); FX IC -0.027 (11 assets, 18% positive, hit 45%); INDEX IC +0.009 (9 assets, 56% positive, hit 49%); TREASURY IC +0.051 (4 assets, 75% positive, hit 48%)
 
-**3M**: COMMODITY IC -0.021 (11 assets, 45% positive, hit 44%); CORP_BOND IC -0.070 (1 assets, 0% positive, hit 35%); CRYPTO IC +0.146 (1 assets, 100% positive, hit 64%); EQUITY IC -0.003 (45 assets, 47% positive, hit 47%); ETF IC +0.005 (71 assets, 51% positive, hit 45%); FX IC -0.056 (11 assets, 36% positive, hit 43%); INDEX IC -0.002 (9 assets, 56% positive, hit 49%); TREASURY IC +0.051 (4 assets, 25% positive, hit 44%)
+**3M**: COMMODITY IC -0.021 (11 assets, 45% positive, hit 44%); CORP_BOND IC -0.070 (1 assets, 0% positive, hit 35%); CRYPTO IC +0.146 (1 assets, 100% positive, hit 64%); EQUITY IC -0.003 (45 assets, 47% positive, hit 47%); ETF IC +0.006 (71 assets, 51% positive, hit 45%); FX IC -0.056 (11 assets, 36% positive, hit 43%); INDEX IC -0.002 (9 assets, 56% positive, hit 49%); TREASURY IC +0.051 (4 assets, 25% positive, hit 44%)
 
 **6M**: COMMODITY IC -0.010 (11 assets, 45% positive, hit 47%); CORP_BOND IC -0.080 (1 assets, 0% positive, hit 40%); CRYPTO IC +0.035 (1 assets, 100% positive, hit —); EQUITY IC -0.012 (45 assets, 47% positive, hit 43%); ETF IC +0.051 (71 assets, 72% positive, hit 50%); FX IC -0.046 (11 assets, 36% positive, hit 43%); INDEX IC +0.051 (9 assets, 56% positive, hit 50%); TREASURY IC -0.012 (4 assets, 25% positive, hit 30%)
 
@@ -411,7 +425,7 @@ The Stouffer t treats assets as independent; assets move together, so it oversta
 
 **6M**: bear -0.035; bull -0.016; expansion -0.009; falling rates +0.021; high inflation +0.029; high vol -0.006; liquidity expansion -0.012; low inflation -0.037; low vol -0.017; recession +0.024; rising rates +0.010; strong dollar -0.009; weak dollar +0.022
 
-**12M**: bear -0.041; bull -0.045; expansion -0.022; falling rates +0.002; high inflation -0.057; high vol -0.055; liquidity expansion -0.046; low inflation -0.023; low vol -0.040; recession +0.063; rising rates -0.023; strong dollar -0.047; weak dollar +0.029
+**12M**: bear -0.041; bull -0.045; expansion -0.022; falling rates +0.002; high inflation -0.056; high vol -0.055; liquidity expansion -0.046; low inflation -0.023; low vol -0.040; recession +0.063; rising rates -0.023; strong dollar -0.047; weak dollar +0.029
 
 ## 21–22. Which families add independent information, and which look useless
 
@@ -419,111 +433,209 @@ Own IC = the family score's out-of-sample IC; incremental IC = its partial corre
 
 **1W**
 
-| Family | Assets | Own IC | t | Incremental IC | t | Verdict |
-|---|---|---|---|---|---|---|
-| Credit | 1 | +0.730 | +23.3 | +0.714 | +22.3 | adds independent information |
-| Cross-Asset | 1 | +0.322 | +7.4 | +0.317 | +7.3 | adds independent information |
-| Risk-Adjusted Performance | 155 | +0.006 | +3.6 | +0.006 | +3.7 | adds independent information |
-| Mean Reversion | 153 | +0.009 | +3.5 | +0.010 | +3.4 | adds independent information |
-| Macro | 1 | +0.124 | +2.7 | +0.121 | +2.7 | adds independent information |
-| Liquidity | 28 | -0.003 | -0.6 | -0.004 | -0.9 | no measurable value |
-| Relative Value | 154 | -0.002 | -0.9 | -0.002 | -0.9 | no measurable value |
-| Trend | 154 | -0.005 | -1.1 | -0.005 | -1.1 | weak |
-| Fundamental Growth | 45 | -0.011 | -1.9 | -0.010 | -1.8 | weak |
-| Fundamental Quality | 45 | -0.011 | -2.1 | -0.010 | -1.9 | weak |
-| Momentum | 155 | -0.001 | -0.3 | -0.005 | -2.3 | negative record |
-| Volatility | 16 | -0.013 | -3.3 | -0.013 | -3.4 | negative record |
-| Valuation | 115 | -0.009 | -3.1 | -0.010 | -3.5 | negative record |
-| Statistical / Time Series | 154 | -0.010 | -3.3 | -0.011 | -3.5 | negative record |
-| Rates | 110 | -0.014 | -4.3 | -0.017 | -5.3 | negative record |
+| Family | Assets | Own IC | t | Incremental IC | t (Stouffer) | t (date-clustered) | Verdict (clustered) |
+|---|---|---|---|---|---|---|---|
+| Credit | 1 | +0.730 | +23.3 | +0.714 | +22.2 | +8.4 | not evidence: only 1 asset(s) |
+| Cross-Asset | 1 | +0.322 | +7.4 | +0.317 | +7.3 | +3.4 | not evidence: only 1 asset(s) |
+| Macro | 1 | +0.124 | +2.7 | +0.121 | +2.7 | +1.3 | not evidence: only 1 asset(s) |
+| Mean Reversion | 153 | +0.009 | +3.5 | +0.010 | +3.4 | +0.8 | no measurable value |
+| Risk-Adjusted Performance | 155 | +0.006 | +3.6 | +0.006 | +3.7 | +0.5 | no measurable value |
+| Relative Value | 154 | -0.002 | -0.9 | -0.002 | -0.9 | -0.1 | no measurable value |
+| Volatility | 16 | -0.013 | -3.3 | -0.013 | -3.4 | -0.2 | no measurable value |
+| Momentum | 155 | -0.001 | -0.3 | -0.005 | -2.3 | -0.4 | no measurable value |
+| Trend | 154 | -0.005 | -1.1 | -0.005 | -1.2 | -0.5 | no measurable value |
+| Liquidity | 28 | -0.003 | -0.6 | -0.004 | -0.9 | -1.0 | no measurable value |
+| Fundamental Growth | 45 | -0.011 | -1.9 | -0.010 | -1.8 | -1.2 | weak |
+| Statistical / Time Series | 154 | -0.010 | -3.3 | -0.011 | -3.5 | -1.5 | weak |
+| Fundamental Quality | 45 | -0.011 | -2.1 | -0.010 | -1.9 | -1.6 | weak |
+| Valuation | 115 | -0.009 | -3.1 | -0.010 | -3.5 | -2.2 | negative record |
+| Rates | 110 | -0.014 | -4.3 | -0.017 | -5.3 | -2.7 | negative record |
 
 **1M**
 
-| Family | Assets | Own IC | t | Incremental IC | t | Verdict |
-|---|---|---|---|---|---|---|
-| Credit | 1 | +0.692 | +11.2 | +0.681 | +10.8 | adds independent information |
-| Risk-Adjusted Performance | 155 | +0.006 | +2.4 | +0.007 | +2.2 | adds independent information |
-| Trend | 155 | -0.003 | +1.7 | -0.002 | +0.8 | weak |
-| Mean Reversion | 153 | +0.008 | +1.6 | +0.003 | +0.4 | weak |
-| Cross-Asset | 1 | -0.005 | -0.1 | -0.003 | -0.0 | no measurable value |
-| Momentum | 155 | +0.002 | +0.9 | -0.001 | -0.1 | no measurable value |
-| Liquidity | 14 | -0.003 | -0.1 | -0.004 | -0.2 | no measurable value |
-| Fundamental Quality | 44 | -0.015 | -1.4 | -0.015 | -1.4 | weak |
-| Relative Value | 154 | -0.007 | -1.5 | -0.008 | -1.6 | weak |
-| Macro | 4 | -0.100 | -2.4 | -0.088 | -1.9 | weak |
-| Volatility | 37 | -0.022 | -2.1 | -0.021 | -2.1 | negative record |
-| Statistical / Time Series | 154 | -0.014 | -2.2 | -0.016 | -2.8 | negative record |
-| Fundamental Growth | 45 | -0.040 | -3.3 | -0.039 | -3.3 | negative record |
-| Valuation | 108 | -0.030 | -4.8 | -0.030 | -4.9 | negative record |
-| Rates | 111 | -0.029 | -4.4 | -0.032 | -5.0 | negative record |
+| Family | Assets | Own IC | t | Incremental IC | t (Stouffer) | t (date-clustered) | Verdict (clustered) |
+|---|---|---|---|---|---|---|---|
+| Credit | 1 | +0.692 | +11.2 | +0.681 | +10.8 | +6.7 | not evidence: only 1 asset(s) |
+| Risk-Adjusted Performance | 155 | +0.006 | +2.5 | +0.007 | +2.2 | +0.3 | no measurable value |
+| Momentum | 155 | +0.002 | +0.9 | -0.001 | -0.1 | +0.1 | no measurable value |
+| Mean Reversion | 153 | +0.008 | +1.6 | +0.003 | +0.4 | +0.1 | no measurable value |
+| Cross-Asset | 1 | -0.005 | -0.1 | -0.003 | -0.0 | -0.1 | not evidence: only 1 asset(s) |
+| Trend | 155 | -0.003 | +1.7 | -0.002 | +0.8 | -0.1 | no measurable value |
+| Liquidity | 14 | -0.003 | -0.1 | -0.004 | -0.2 | -0.5 | no measurable value |
+| Relative Value | 154 | -0.007 | -1.5 | -0.008 | -1.6 | -0.7 | no measurable value |
+| Fundamental Quality | 44 | -0.015 | -1.4 | -0.015 | -1.4 | -0.9 | no measurable value |
+| Statistical / Time Series | 154 | -0.014 | -2.2 | -0.016 | -2.8 | -0.9 | no measurable value |
+| Macro | 4 | -0.100 | -2.4 | -0.088 | -1.9 | -1.1 | not evidence: only 4 asset(s) |
+| Volatility | 37 | -0.022 | -2.1 | -0.021 | -2.1 | -1.4 | weak |
+| Rates | 111 | -0.029 | -4.4 | -0.032 | -5.0 | -2.3 | negative record |
+| Fundamental Growth | 45 | -0.040 | -3.3 | -0.039 | -3.3 | -2.5 | negative record |
+| Valuation | 108 | -0.030 | -4.8 | -0.030 | -4.9 | -2.6 | negative record |
 
 **3M**
 
-| Family | Assets | Own IC | t | Incremental IC | t | Verdict |
-|---|---|---|---|---|---|---|
-| Credit | 3 | +0.066 | +2.9 | +0.055 | +2.0 | some evidence |
-| Mean Reversion | 147 | +0.019 | +2.1 | +0.018 | +1.9 | some evidence |
-| Trend | 153 | +0.001 | +1.2 | +0.010 | +1.7 | some evidence |
-| Liquidity | 2 | +0.014 | +0.2 | +0.037 | +0.5 | no measurable value |
-| Cross-Asset | 12 | -0.011 | -0.1 | -0.010 | -0.1 | no measurable value |
-| Macro | 15 | -0.008 | -0.3 | -0.006 | -0.2 | no measurable value |
-| Momentum | 153 | -0.013 | -0.4 | -0.010 | -0.7 | no measurable value |
-| Statistical / Time Series | 153 | -0.013 | -1.0 | -0.015 | -1.2 | weak |
-| Risk-Adjusted Performance | 152 | -0.016 | -1.1 | -0.015 | -1.4 | weak |
-| Fundamental Quality | 39 | -0.040 | -1.8 | -0.041 | -1.9 | weak |
-| Fundamental Growth | 44 | -0.047 | -2.2 | -0.043 | -2.1 | negative record |
-| Relative Value | 151 | -0.020 | -2.2 | -0.021 | -2.3 | negative record |
-| Volatility | 24 | -0.054 | -2.9 | -0.051 | -2.6 | negative record |
-| Valuation | 103 | -0.052 | -4.9 | -0.052 | -4.7 | negative record |
-| Rates | 116 | -0.053 | -4.8 | -0.059 | -5.3 | negative record |
+| Family | Assets | Own IC | t | Incremental IC | t (Stouffer) | t (date-clustered) | Verdict (clustered) |
+|---|---|---|---|---|---|---|---|
+| Liquidity | 2 | +0.014 | +0.2 | +0.037 | +0.5 | +0.6 | not evidence: only 2 asset(s) |
+| Credit | 3 | +0.067 | +2.9 | +0.055 | +1.9 | +0.5 | not evidence: only 3 asset(s) |
+| Mean Reversion | 147 | +0.019 | +2.1 | +0.018 | +1.9 | +0.4 | no measurable value |
+| Trend | 153 | +0.001 | +1.3 | +0.010 | +1.7 | +0.3 | no measurable value |
+| Momentum | 153 | -0.013 | -0.3 | -0.010 | -0.7 | -0.2 | no measurable value |
+| Macro | 15 | -0.008 | -0.3 | -0.004 | -0.1 | -0.2 | no measurable value |
+| Risk-Adjusted Performance | 152 | -0.016 | -1.1 | -0.015 | -1.4 | -0.5 | no measurable value |
+| Cross-Asset | 12 | -0.011 | -0.1 | -0.010 | -0.1 | -0.5 | no measurable value |
+| Relative Value | 151 | -0.020 | -2.2 | -0.021 | -2.3 | -1.0 | no measurable value |
+| Statistical / Time Series | 153 | -0.013 | -1.0 | -0.015 | -1.2 | -1.1 | weak |
+| Fundamental Growth | 44 | -0.047 | -2.2 | -0.043 | -2.1 | -1.3 | weak |
+| Fundamental Quality | 39 | -0.040 | -1.8 | -0.041 | -1.9 | -1.3 | weak |
+| Volatility | 24 | -0.055 | -3.0 | -0.052 | -2.7 | -1.4 | weak |
+| Valuation | 103 | -0.052 | -4.9 | -0.052 | -4.8 | -2.6 | negative record |
+| Rates | 116 | -0.053 | -4.8 | -0.059 | -5.3 | -2.6 | negative record |
 
 **6M**
 
-| Family | Assets | Own IC | t | Incremental IC | t | Verdict |
-|---|---|---|---|---|---|---|
-| Trend | 152 | +0.026 | +2.6 | +0.031 | +2.6 | adds independent information |
-| Momentum | 150 | +0.028 | +2.4 | +0.023 | +1.6 | some evidence |
-| Cross-Asset | 1 | +0.191 | +1.2 | +0.165 | +1.0 | weak |
-| Mean Reversion | 145 | +0.000 | -0.1 | +0.005 | +0.2 | no measurable value |
-| Risk-Adjusted Performance | 148 | +0.012 | +1.1 | +0.000 | -0.0 | weak |
-| Volatility | 8 | -0.016 | -0.2 | -0.022 | -0.4 | no measurable value |
-| Liquidity | 4 | -0.069 | -1.0 | -0.094 | -1.3 | weak |
-| Credit | 3 | -0.131 | -1.6 | -0.140 | -1.7 | weak |
-| Fundamental Quality | 35 | -0.061 | -1.8 | -0.059 | -1.8 | weak |
-| Statistical / Time Series | 153 | -0.021 | -1.5 | -0.025 | -1.8 | weak |
-| Relative Value | 150 | -0.028 | -1.9 | -0.032 | -2.1 | negative record |
-| Fundamental Growth | 38 | -0.078 | -2.4 | -0.074 | -2.3 | negative record |
-| Rates | 91 | -0.063 | -3.3 | -0.066 | -3.6 | negative record |
-| Valuation | 79 | -0.086 | -4.5 | -0.082 | -4.3 | negative record |
+| Family | Assets | Own IC | t | Incremental IC | t (Stouffer) | t (date-clustered) | Verdict (clustered) |
+|---|---|---|---|---|---|---|---|
+| Cross-Asset | 1 | +0.191 | +1.2 | +0.164 | +1.0 | +0.9 | not evidence: only 1 asset(s) |
+| Momentum | 150 | +0.028 | +2.4 | +0.023 | +1.5 | +0.9 | no measurable value |
+| Trend | 152 | +0.026 | +2.6 | +0.031 | +2.6 | +0.7 | no measurable value |
+| Risk-Adjusted Performance | 148 | +0.012 | +1.1 | +0.000 | -0.0 | +0.2 | no measurable value |
+| Mean Reversion | 145 | +0.000 | -0.1 | +0.005 | +0.2 | +0.0 | no measurable value |
+| Volatility | 8 | -0.016 | -0.2 | -0.022 | -0.4 | -0.5 | no measurable value |
+| Liquidity | 4 | -0.069 | -1.0 | -0.094 | -1.3 | -1.0 | not evidence: only 4 asset(s) |
+| Statistical / Time Series | 153 | -0.021 | -1.5 | -0.025 | -1.8 | -1.0 | weak |
+| Credit | 3 | -0.131 | -1.6 | -0.140 | -1.7 | -1.3 | not evidence: only 3 asset(s) |
+| Fundamental Quality | 35 | -0.061 | -1.8 | -0.059 | -1.8 | -1.4 | weak |
+| Relative Value | 150 | -0.028 | -1.9 | -0.032 | -2.1 | -1.5 | weak |
+| Fundamental Growth | 38 | -0.078 | -2.4 | -0.074 | -2.3 | -1.6 | weak |
+| Rates | 91 | -0.063 | -3.3 | -0.066 | -3.6 | -2.3 | negative record |
+| Valuation | 79 | -0.086 | -4.5 | -0.082 | -4.3 | -2.9 | negative record |
 
 **12M**
 
-| Family | Assets | Own IC | t | Incremental IC | t | Verdict |
-|---|---|---|---|---|---|---|
-| Trend | 144 | +0.022 | +0.8 | +0.065 | +2.5 | adds independent information |
-| Momentum | 142 | -0.002 | -0.0 | +0.014 | +0.6 | no measurable value |
-| Mean Reversion | 133 | +0.003 | -0.0 | +0.004 | +0.1 | no measurable value |
-| Valuation | 77 | -0.031 | -0.8 | -0.033 | -0.8 | no measurable value |
-| Statistical / Time Series | 144 | -0.021 | -0.9 | -0.021 | -0.9 | no measurable value |
-| Risk-Adjusted Performance | 136 | -0.022 | -1.2 | -0.024 | -1.3 | weak |
-| Rates | 63 | -0.060 | -1.5 | -0.064 | -1.6 | weak |
-| Fundamental Quality | 33 | -0.079 | -1.8 | -0.075 | -1.7 | weak |
-| Relative Value | 140 | -0.039 | -1.4 | -0.052 | -1.9 | weak |
-| Fundamental Growth | 39 | -0.148 | -3.2 | -0.152 | -3.3 | negative record |
+| Family | Assets | Own IC | t | Incremental IC | t (Stouffer) | t (date-clustered) | Verdict (clustered) |
+|---|---|---|---|---|---|---|---|
+| Trend | 144 | +0.022 | +0.8 | +0.065 | +2.5 | +0.9 | no measurable value |
+| Mean Reversion | 133 | +0.003 | -0.0 | +0.004 | +0.1 | +0.2 | no measurable value |
+| Momentum | 142 | -0.002 | -0.0 | +0.014 | +0.6 | +0.1 | no measurable value |
+| Risk-Adjusted Performance | 136 | -0.022 | -1.2 | -0.024 | -1.3 | -0.2 | no measurable value |
+| Statistical / Time Series | 144 | -0.021 | -0.9 | -0.021 | -0.9 | -0.5 | no measurable value |
+| Rates | 64 | -0.059 | -1.5 | -0.063 | -1.6 | -0.9 | no measurable value |
+| Fundamental Quality | 33 | -0.079 | -1.8 | -0.075 | -1.7 | -1.0 | weak |
+| Valuation | 77 | -0.031 | -0.8 | -0.033 | -0.8 | -1.1 | weak |
+| Relative Value | 140 | -0.039 | -1.4 | -0.052 | -1.9 | -1.7 | weak |
+| Fundamental Growth | 39 | -0.148 | -3.2 | -0.152 | -3.3 | -2.2 | negative record |
+
+## 21b. Does validation shrink the families with a negative record?
+
+Influence = a family's share of Σ|family contribution| in each scored record (its real say in the score); V = its validation multiplier (0.5 + t/4, clipped to [0, 1], from its own matured out-of-sample record). Both averaged over records before and from 2018. A family whose incremental record is negative should see V and influence fall toward zero; no sign is ever reversed and no weight is set by hand. 'Not shrinking enough' = incremental t (date-clustered) ≤ −1 and influence from 2018 still above half its earlier level, or V still ≥ 0.4.
+
+**1W**
+
+| Family | Incremental t (clustered) | V before → from 2018 | Influence before → from 2018 | Assessment |
+|---|---|---|---|---|
+| Rates | -2.7 | +0.51 → +0.45 | 5.0% → 7.8% | NOT shrinking enough |
+| Valuation | -2.2 | +0.54 → +0.43 | 1.4% → 1.0% | NOT shrinking enough |
+| Fundamental Quality | -1.6 | +0.49 → +0.43 | 1.5% → 0.7% | NOT shrinking enough |
+| Statistical / Time Series | -1.5 | +0.51 → +0.42 | 8.4% → 4.8% | NOT shrinking enough |
+| Fundamental Growth | -1.2 | +0.53 → +0.45 | 1.1% → 0.8% | NOT shrinking enough |
+| Liquidity | -1.0 | +0.68 → +0.50 | 11.3% → 11.7% | — |
+| Trend | -0.5 | +0.44 → +0.45 | 9.9% → 12.0% | — |
+| Momentum | -0.4 | +0.46 → +0.48 | 6.7% → 9.2% | — |
+| Volatility | -0.2 | +0.60 → +0.54 | 4.4% → 0.1% | — |
+| Relative Value | -0.1 | +0.54 → +0.50 | 7.9% → 9.8% | — |
+| Risk-Adjusted Performance | +0.5 | +0.45 → +0.50 | 3.9% → 5.3% | — |
+| Mean Reversion | +0.8 | +0.59 → +0.57 | 56.1% → 50.4% | — |
+| Macro | +1.3 | +1.00 → +1.00 | 0.0% → 12.5% | not evidence: only 1 asset(s) |
+| Cross-Asset | +3.4 | +1.00 → +1.00 | 0.0% → 0.4% | not evidence: only 1 asset(s) |
+| Credit | +8.4 | +1.00 → +1.00 | 0.0% → 6.8% | not evidence: only 1 asset(s) |
+
+**1M**
+
+| Family | Incremental t (clustered) | V before → from 2018 | Influence before → from 2018 | Assessment |
+|---|---|---|---|---|
+| Valuation | -2.6 | +0.59 → +0.42 | 3.3% → 3.2% | NOT shrinking enough |
+| Fundamental Growth | -2.5 | +0.58 → +0.40 | 2.0% → 2.0% | NOT shrinking enough |
+| Rates | -2.3 | +0.56 → +0.44 | 6.1% → 8.9% | NOT shrinking enough |
+| Volatility | -1.4 | +0.58 → +0.46 | 7.8% → 3.7% | NOT shrinking enough |
+| Macro | -1.1 | +0.57 → +0.39 | 0.6% → 1.7% | not evidence: only 4 asset(s) |
+| Statistical / Time Series | -0.9 | +0.58 → +0.45 | 8.9% → 5.3% | — |
+| Fundamental Quality | -0.9 | +0.61 → +0.48 | 2.9% → 1.5% | — |
+| Relative Value | -0.7 | +0.57 → +0.49 | 13.2% → 16.5% | — |
+| Liquidity | -0.5 | +0.68 → +0.53 | 8.0% → 8.4% | — |
+| Trend | -0.1 | +0.53 → +0.47 | 15.9% → 15.9% | — |
+| Cross-Asset | -0.1 | +0.73 → +0.47 | 1.0% → 0.0% | not evidence: only 1 asset(s) |
+| Mean Reversion | +0.1 | +0.60 → +0.50 | 31.4% → 28.8% | — |
+| Momentum | +0.1 | +0.55 → +0.49 | 12.5% → 13.6% | — |
+| Risk-Adjusted Performance | +0.3 | +0.53 → +0.49 | 8.5% → 9.1% | — |
+| Credit | +6.7 | +1.00 → +1.00 | 0.0% → 9.4% | not evidence: only 1 asset(s) |
+
+**3M**
+
+| Family | Incremental t (clustered) | V before → from 2018 | Influence before → from 2018 | Assessment |
+|---|---|---|---|---|
+| Rates | -2.6 | +0.72 → +0.49 | 7.2% → 9.1% | NOT shrinking enough |
+| Valuation | -2.6 | +0.77 → +0.48 | 4.9% → 6.3% | NOT shrinking enough |
+| Volatility | -1.4 | +0.77 → +0.49 | 9.5% → 4.6% | NOT shrinking enough |
+| Fundamental Quality | -1.3 | +0.88 → +0.49 | 4.3% → 1.9% | NOT shrinking enough |
+| Fundamental Growth | -1.3 | +0.96 → +0.47 | 2.4% → 3.0% | NOT shrinking enough |
+| Statistical / Time Series | -1.1 | +0.71 → +0.50 | 7.3% → 6.9% | NOT shrinking enough |
+| Relative Value | -1.0 | +0.72 → +0.51 | 16.5% → 19.1% | — |
+| Cross-Asset | -0.5 | +0.85 → +0.53 | 8.2% → 11.8% | — |
+| Risk-Adjusted Performance | -0.5 | +0.71 → +0.49 | 14.2% → 10.8% | — |
+| Macro | -0.2 | +0.91 → +0.68 | 6.6% → 10.6% | — |
+| Momentum | -0.2 | +0.72 → +0.50 | 16.7% → 15.3% | — |
+| Trend | +0.3 | +0.73 → +0.52 | 21.3% → 20.4% | — |
+| Mean Reversion | +0.4 | +0.73 → +0.55 | 12.2% → 13.3% | — |
+| Credit | +0.5 | +0.72 → +0.48 | 13.4% → 0.7% | not evidence: only 3 asset(s) |
+| Liquidity | +0.6 | +0.71 → +0.53 | 19.0% → 0.0% | not evidence: only 2 asset(s) |
+
+**6M**
+
+| Family | Incremental t (clustered) | V before → from 2018 | Influence before → from 2018 | Assessment |
+|---|---|---|---|---|
+| Valuation | -2.9 | +0.89 → +0.61 | 5.2% → 8.7% | NOT shrinking enough |
+| Rates | -2.3 | +0.89 → +0.59 | 6.4% → 6.1% | NOT shrinking enough |
+| Fundamental Growth | -1.6 | +1.00 → +0.78 | 1.9% → 6.0% | NOT shrinking enough |
+| Relative Value | -1.5 | +0.89 → +0.64 | 15.9% → 17.1% | NOT shrinking enough |
+| Fundamental Quality | -1.4 | +1.00 → +0.71 | 3.0% → 5.4% | NOT shrinking enough |
+| Credit | -1.3 | +0.87 → +0.47 | 0.9% → 0.9% | not evidence: only 3 asset(s) |
+| Statistical / Time Series | -1.0 | +0.89 → +0.66 | 6.0% → 5.3% | NOT shrinking enough |
+| Liquidity | -1.0 | +0.96 → +0.43 | 2.0% → 1.7% | not evidence: only 4 asset(s) |
+| Volatility | -0.5 | +0.88 → +0.76 | 3.9% → 12.0% | — |
+| Mean Reversion | +0.0 | +0.89 → +0.67 | 5.9% → 6.4% | — |
+| Risk-Adjusted Performance | +0.2 | +0.90 → +0.68 | 22.7% → 18.3% | — |
+| Trend | +0.7 | +0.89 → +0.69 | 24.4% → 23.6% | — |
+| Momentum | +0.9 | +0.89 → +0.69 | 18.9% → 19.3% | — |
+| Cross-Asset | +0.9 | +1.00 → +0.98 | 0.0% → 10.7% | not evidence: only 1 asset(s) |
+
+**12M**
+
+| Family | Incremental t (clustered) | V before → from 2018 | Influence before → from 2018 | Assessment |
+|---|---|---|---|---|
+| Fundamental Growth | -2.2 | +1.00 → +1.00 | 2.0% → 5.0% | NOT shrinking enough |
+| Relative Value | -1.7 | +1.00 → +1.00 | 15.6% → 18.2% | NOT shrinking enough |
+| Valuation | -1.1 | +1.00 → +1.00 | 6.1% → 12.7% | NOT shrinking enough |
+| Fundamental Quality | -1.0 | +1.00 → +1.00 | 2.4% → 6.5% | NOT shrinking enough |
+| Rates | -0.9 | +1.00 → +1.00 | 2.4% → 4.9% | — |
+| Statistical / Time Series | -0.5 | +1.00 → +1.00 | 4.4% → 3.8% | — |
+| Risk-Adjusted Performance | -0.2 | +1.00 → +1.00 | 31.7% → 25.4% | — |
+| Momentum | +0.1 | +1.00 → +1.00 | 19.5% → 19.5% | — |
+| Mean Reversion | +0.2 | +1.00 → +1.00 | 2.0% → 2.5% | — |
+| Trend | +0.9 | +1.00 → +1.00 | 21.8% → 20.8% | — |
 
 ## 23. Decaying signals (at the latest refit)
 
 **1W**: `ret_3m` decaying in 81 assets, weakening in 3, healthy in 1; `macd` decaying in 62 assets, weakening in 7, healthy in 3; `excess_3m` decaying in 54 assets, weakening in 14, healthy in 22; `rate_duration` decaying in 37 assets, weakening in 10, healthy in 16; `ret_1d` decaying in 29 assets, weakening in 16, healthy in 86; `skew_60` decaying in 28 assets, weakening in 14, healthy in 28; `mr_opportunity` decaying in 25 assets, weakening in 14, healthy in 60; `ret_1w` decaying in 18 assets, weakening in 11, healthy in 99; `rsi_14` decaying in 16 assets, weakening in 5, healthy in 79; `z_20` decaying in 14 assets, weakening in 8, healthy in 85
 
-Signal status across assets at 1W: muted: no reliable direction: 7574; active: 3150; muted: evidence against the prior: 1739; active: direction from evidence: 27; reversed by evidence: 9
+Signal status across assets at 1W: muted: no reliable direction: 7828; active: 3201; muted: evidence against the prior: 1775; active: direction from evidence: 27; reversed by evidence: 9
 
-**1M**: `ret_3m` decaying in 88 assets, weakening in 7, healthy in 4; `excess_3m` decaying in 75 assets, weakening in 6, healthy in 11; `macd` decaying in 63 assets, weakening in 11, healthy in 3; `ret_1d` decaying in 57 assets, weakening in 17, healthy in 39; `skew_60` decaying in 40 assets, weakening in 8, healthy in 36; `rate_duration` decaying in 36 assets, weakening in 6, healthy in 20; `mr_opportunity` decaying in 34 assets, weakening in 9, healthy in 44; `ret_1w` decaying in 31 assets, weakening in 17, healthy in 55; `z_20` decaying in 21 assets, weakening in 7, healthy in 69; `bb_pctb` decaying in 21 assets, weakening in 7, healthy in 69
+**1M**: `ret_3m` decaying in 86 assets, weakening in 7, healthy in 4; `excess_3m` decaying in 75 assets, weakening in 6, healthy in 11; `macd` decaying in 63 assets, weakening in 11, healthy in 3; `ret_1d` decaying in 57 assets, weakening in 17, healthy in 39; `skew_60` decaying in 40 assets, weakening in 8, healthy in 36; `rate_duration` decaying in 36 assets, weakening in 6, healthy in 20; `mr_opportunity` decaying in 34 assets, weakening in 9, healthy in 44; `ret_1w` decaying in 31 assets, weakening in 17, healthy in 55; `z_20` decaying in 21 assets, weakening in 7, healthy in 69; `bb_pctb` decaying in 21 assets, weakening in 7, healthy in 69
 
-Signal status across assets at 1M: muted: no reliable direction: 7573; active: 3080; muted: evidence against the prior: 1798; active: direction from evidence: 27; reversed by evidence: 12; insufficient: 9
+Signal status across assets at 1M: muted: no reliable direction: 7826; active: 3128; muted: evidence against the prior: 1837; active: direction from evidence: 28; reversed by evidence: 12; insufficient: 9
 
-**3M**: `ret_3m` decaying in 95 assets, weakening in 6, healthy in 12; `macd` decaying in 91 assets, weakening in 9, healthy in 2; `excess_3m` decaying in 58 assets, weakening in 23, healthy in 8; `rate_duration` decaying in 47 assets, weakening in 7, healthy in 15; `skew_60` decaying in 41 assets, weakening in 20, healthy in 41; `ret_1d` decaying in 34 assets, weakening in 6, healthy in 58; `mr_opportunity` decaying in 18 assets, weakening in 10, healthy in 68; `pctile_252` decaying in 16 assets, weakening in 1, healthy in 1; `ret_1w` decaying in 15 assets, weakening in 14, healthy in 74; `z_20` decaying in 12 assets, weakening in 6, healthy in 70
+**3M**: `ret_3m` decaying in 95 assets, weakening in 6, healthy in 12; `macd` decaying in 91 assets, weakening in 9, healthy in 2; `excess_3m` decaying in 58 assets, weakening in 23, healthy in 8; `rate_duration` decaying in 47 assets, weakening in 7, healthy in 15; `skew_60` decaying in 41 assets, weakening in 20, healthy in 41; `ret_1d` decaying in 34 assets, weakening in 6, healthy in 58; `mr_opportunity` decaying in 18 assets, weakening in 10, healthy in 68; `pctile_252` decaying in 16 assets, weakening in 1, healthy in 1; `ret_1w` decaying in 15 assets, weakening in 14, healthy in 75; `z_20` decaying in 12 assets, weakening in 6, healthy in 70
 
-Signal status across assets at 3M: muted: no reliable direction: 7549; active: 2978; muted: evidence against the prior: 1889; active: direction from evidence: 51; insufficient: 25; reversed by evidence: 7
+Signal status across assets at 3M: muted: no reliable direction: 7802; active: 3031; muted: evidence against the prior: 1923; active: direction from evidence: 52; insufficient: 25; reversed by evidence: 7
 
 ## 24. ML against each baseline
 
@@ -589,6 +701,44 @@ Cases = assets where both had out-of-sample forecasts on the same rows; wins = e
 | previous return | 21 | 16 | -0.106 | +0.048 |
 | shaffer | 20 | 13 | -0.074 | +0.013 |
 
+## 24b. Return models vs risk models
+
+Each model is walk-forward out of sample against its naive baselines on the same rows. Verified = beats every baseline over the whole OOS period (lower RMSE, or lower Brier for probabilities); stable = also beats them in BOTH halves of the OOS period (— = not measured for that model). Improvement = 1 − model error ÷ best baseline error (R² vs the historical mean for returns), median across assets.
+
+| Horizon | Model | Cases | Verified | Stable | Median improvement |
+|---|---|---|---|---|---|
+| 1D | Return (R² vs historical mean) | 21 | 3 | — | -0.029 |
+| 1D | Direction (Brier vs base rate) | 21 | 0 | — | -0.052 |
+| 1W | Return (R² vs historical mean) | 21 | 2 | — | -0.045 |
+| 1W | Direction (Brier vs base rate) | 21 | 0 | — | -0.061 |
+| 1W | Volatility (vs current vol, EWMA) | 21 | 9 | 3 | -0.004 |
+| 1W | Drawdown probability (Brier vs base rate) | 21 | 19 | 14 | +0.051 |
+| 1W | Tail loss (vs previous window, vol-scaled) | 21 | 8 | 1 | -0.017 |
+| 1M | Return (R² vs historical mean) | 21 | 0 | — | -0.196 |
+| 1M | Direction (Brier vs base rate) | 21 | 0 | — | -0.147 |
+| 1M | Volatility (vs current vol, EWMA) | 21 | 11 | 2 | +0.003 |
+| 1M | Drawdown probability (Brier vs base rate) | 21 | 10 | 7 | +0.002 |
+| 1M | Tail loss (vs previous window, vol-scaled) | 21 | 11 | 2 | +0.002 |
+| 1M | Beta change (vs no change, mean change, Blume) | 20 | 5 | 2 | -0.005 |
+| 3M | Return (R² vs historical mean) | 21 | 0 | — | -0.482 |
+| 3M | Direction (Brier vs base rate) | 21 | 0 | — | -0.210 |
+| 3M | Volatility (vs current vol, EWMA) | 21 | 13 | 3 | +0.052 |
+| 3M | Drawdown probability (Brier vs base rate) | 21 | 6 | 2 | -0.062 |
+| 3M | Tail loss (vs previous window, vol-scaled) | 21 | 9 | 4 | -0.010 |
+| 3M | Beta change (vs no change, mean change, Blume) | 20 | 5 | 2 | -0.022 |
+| 6M | Return (R² vs historical mean) | 21 | 0 | — | -0.651 |
+| 6M | Direction (Brier vs base rate) | 20 | 0 | — | -0.144 |
+| 6M | Volatility (vs current vol, EWMA) | 20 | 13 | 7 | +0.109 |
+| 6M | Drawdown probability (Brier vs base rate) | 20 | 4 | 2 | -0.079 |
+| 6M | Tail loss (vs previous window, vol-scaled) | 20 | 11 | 8 | +0.022 |
+| 6M | Beta change (vs no change, mean change, Blume) | 19 | 7 | 2 | -0.020 |
+| 12M | Return (R² vs historical mean) | 21 | 0 | — | -0.538 |
+| 12M | Direction (Brier vs base rate) | 20 | 1 | — | -0.192 |
+| 12M | Volatility (vs current vol, EWMA) | 20 | 14 | 9 | +0.181 |
+| 12M | Drawdown probability (Brier vs base rate) | 20 | 4 | 1 | -0.193 |
+| 12M | Tail loss (vs previous window, vol-scaled) | 20 | 13 | 9 | +0.071 |
+| 12M | Beta change (vs no change, mean change, Blume) | 19 | 6 | 3 | -0.054 |
+
 ## 25. Shaffer vs ML
 
 | Horizon | Cases | Mean Shaffer IC | Mean ML IC (same rows) | ML better in |
@@ -606,7 +756,7 @@ Cases = assets where both had out-of-sample forecasts on the same rows; wins = e
 
 | Horizon | Cases | Mean α (weight on Shaffer) | IC combined | IC Shaffer | IC ML | Combined beats both in |
 |---|---|---|---|---|---|---|
-| 1D | 21 | +0.40 | +0.018 | +0.003 | +0.024 | 4 |
+| 1D | 21 | +0.40 | +0.019 | +0.003 | +0.024 | 4 |
 | 1W | 21 | +0.32 | +0.006 | -0.019 | +0.026 | 1 |
 | 1M | 21 | +0.36 | +0.012 | +0.002 | +0.035 | 0 |
 | 3M | 21 | +0.45 | +0.043 | -0.004 | +0.113 | 0 |
@@ -615,7 +765,7 @@ Cases = assets where both had out-of-sample forecasts on the same rows; wins = e
 
 ## 27. Candidate families (shadow): do they add information?
 
-Seven families of economically different information were added in shadow: they are computed point in time and run through the same evidence machinery (weights, confidence, regime, decay, validation) but are NOT in the production score. Every asset's matured out-of-sample record is split at one common date, 2018-01-01: before it decides, from it confirms. The incremental IC (partial correlation of the family score with the forward return given the production score) is pooled **by date** — each week's average across assets, then a t on that weekly series with overlapping windows removed — because a hundred correlated equities are not a hundred independent tests. **Admission rule** (fixed before the results): at least 5 assets; date-clustered t ≥ 2 before 2018; positive with t ≥ 1 from 2018, positive in a majority of assets; the score's IC with the family not lower and its calibration monotonicity not more than 0.05 lower from 2018. Production weights were not re-tuned. (A first run pooled assets as independent — Stouffer — and split each asset's record into its own thirds; that overstated significance and was replaced by this test before anything was admitted.)
+9 families of economically different information were added in shadow (Earnings Surprise and Breadth in research phase 2): they are computed point in time and run through the same evidence machinery (weights, confidence, regime, decay, validation) but are NOT in the production score. Every asset's matured out-of-sample record is split at one common date, 2018-01-01: before it decides, from it confirms. The incremental IC (partial correlation of the family score with the forward return given the production score) is pooled **by date** — each week's average across assets, then a t on that weekly series with overlapping windows removed — because a hundred correlated equities are not a hundred independent tests. **Admission rule** (fixed before the results): at least 5 assets; date-clustered t ≥ 2 before 2018; positive with t ≥ 1 from 2018, positive in a majority of assets; the score's IC with the family not lower and its calibration monotonicity not more than 0.05 lower from 2018. Production weights were not re-tuned. (A first run pooled assets as independent — Stouffer — and split each asset's record into its own thirds; that overstated significance and was replaced by this test before anything was admitted.)
 
 **Carry** — `carry` (+) equities and funds: trailing 12-month distributions ÷ price − 3-month bill; constant-maturity bonds: yield at the duration − bill; currency pairs: base-currency short rate − quote-currency rate; `div_yield` (+) trailing 12-month dividends (by ex-date) ÷ price; indices use their tracking fund
 
@@ -631,82 +781,125 @@ Seven families of economically different information were added in shadow: they 
 
 **Optionality** — `vrp` (0) own 30-day implied volatility − 20-day realised volatility; `iv_pctile` (0) own implied volatility's percentile over 3 years; `d_iv_1m` (0) change in own implied volatility over 21 sessions
 
+**Earnings Surprise** — `sue_eps` (+) latest quarter's EPS − the same quarter a year earlier, less the average of that change over the previous 8 quarters, ÷ its standard deviation (seasonal random walk with drift); first-reported SEC figures, usable from the filing date for 63 sessions; `sue_rev` (+) the same construction on quarterly revenue
+
+**Breadth** — `breadth_200d` (0) share of the research store's equities trading above their 200-day average, minus ½ (dates with at least 20 names); `d_breadth_3m` (0) change in that share over 63 sessions
+
 **1D**
 
 | Family | Assets | Own IC (before 2018) | Incremental IC before (clustered t) | Incremental IC from 2018 (clustered t) | Assets > 0 (from 2018) | Score IC without → with | Monotonicity without → with | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| Carry | 114 | +0.004 | +0.004 (+0.6) | +0.012 (+1.3) | 62% | -0.013 → -0.013 | +0.02 → +0.01 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.6); the score's IC falls with it from 2018 (-0.000) |
+| Breadth | 123 | — | — (—) | — (—) | — | -0.016 → -0.016 | -0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Carry | 114 | +0.004 | +0.004 (+0.6) | +0.012 (+1.3) | 62% | -0.013 → -0.013 | +0.02 → +0.02 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.6); the score's IC falls with it from 2018 (-0.000) |
 | Commodity | 145 | -0.005 | -0.005 (-0.4) | — (—) | — | -0.017 → -0.017 | -0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.4); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| FX | 12 | -0.010 | +0.000 (+0.0) | +0.006 (+0.3) | 50% | -0.026 → -0.024 | -0.01 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.0); not confirmed from 2018 (incremental IC +0.006, t +0.3) |
+| Earnings Surprise | 43 | +0.002 | +0.001 (+0.1) | -0.010 (-0.9) | 45% | -0.006 → -0.006 | +0.00 → +0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.1); not confirmed from 2018 (incremental IC -0.010, t -0.9); positive in only 45% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| FX | 12 | -0.010 | +0.000 (+0.0) | +0.006 (+0.3) | 50% | -0.026 → -0.024 | -0.00 → +0.01 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.0); not confirmed from 2018 (incremental IC +0.006, t +0.3) |
 | Inflation | 150 | +0.088 | +0.081 (+1.0) | — (—) | — | -0.015 → -0.015 | +0.01 → +0.01 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.0); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| Optionality | 20 | -0.021 | -0.032 (-1.6) | -0.023 (-1.0) | 17% | -0.034 → -0.035 | -0.13 → -0.13 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.6); not confirmed from 2018 (incremental IC -0.023, t -1.0); positive in only 17% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
+| Optionality | 20 | -0.021 | -0.032 (-1.6) | -0.023 (-1.0) | 17% | -0.034 → -0.035 | -0.12 → -0.13 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.6); not confirmed from 2018 (incremental IC -0.023, t -1.0); positive in only 17% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
 | Term Structure | 150 | -0.007 | -0.017 (-0.7) | -0.068 (-1.7) | 0% | -0.015 → -0.015 | +0.01 → +0.01 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.7); not confirmed from 2018 (incremental IC -0.068, t -1.7); positive in only 0% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Yield Curve | 150 | +0.005 | +0.012 (+0.6) | +0.002 (+0.1) | 47% | -0.015 → -0.015 | +0.01 → +0.01 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.6); not confirmed from 2018 (incremental IC +0.002, t +0.1); positive in only 47% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| All seven together | 150 | — | — (—) | — (—) | — | -0.015 → -0.015 | +0.01 → +0.00 | — |
+| All candidates together | 150 | — | — (—) | — (—) | — | -0.015 → -0.015 | +0.01 → +0.01 | — |
 
 **1W**
 
 | Family | Assets | Own IC (before 2018) | Incremental IC before (clustered t) | Incremental IC from 2018 (clustered t) | Assets > 0 (from 2018) | Score IC without → with | Monotonicity without → with | Verdict |
 |---|---|---|---|---|---|---|---|---|
+| Breadth | 123 | — | — (—) | +0.007 (+0.1) | 100% | -0.008 → -0.008 | +0.04 → +0.04 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC +0.007, t +0.1); the score's IC falls with it from 2018 (-0.000) |
 | Carry | 114 | +0.006 | +0.001 (+0.2) | +0.036 (+3.8) | 75% | -0.005 → -0.004 | +0.04 → +0.05 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.2) |
 | Commodity | 145 | -0.008 | -0.009 (-0.4) | — (—) | — | -0.010 → -0.010 | +0.02 → +0.02 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.4); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| FX | 12 | -0.041 | -0.016 (-0.6) | -0.014 (-0.5) | 36% | -0.034 → -0.038 | -0.16 → -0.18 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.6); not confirmed from 2018 (incremental IC -0.014, t -0.5); positive in only 36% of assets from 2018; the score's IC falls with it from 2018 (-0.004) |
+| Earnings Surprise | 43 | -0.012 | -0.013 (-1.3) | -0.011 (-1.1) | 34% | +0.000 → +0.001 | +0.04 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.3); not confirmed from 2018 (incremental IC -0.011, t -1.1); positive in only 34% of assets from 2018 |
+| FX | 12 | -0.041 | -0.016 (-0.6) | -0.014 (-0.5) | 36% | -0.034 → -0.038 | -0.17 → -0.17 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.6); not confirmed from 2018 (incremental IC -0.014, t -0.5); positive in only 36% of assets from 2018; the score's IC falls with it from 2018 (-0.004) |
 | Inflation | 150 | -0.002 | -0.004 (-0.2) | — (—) | — | -0.007 → -0.007 | +0.03 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.2); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| Optionality | 20 | -0.012 | -0.008 (-0.6) | -0.071 (-1.4) | 0% | -0.029 → -0.031 | -0.09 → -0.10 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.6); not confirmed from 2018 (incremental IC -0.071, t -1.4); positive in only 0% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
+| Optionality | 20 | -0.013 | -0.009 (-0.6) | -0.071 (-1.4) | 0% | -0.029 → -0.031 | -0.09 → -0.10 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.6); not confirmed from 2018 (incremental IC -0.071, t -1.4); positive in only 0% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
 | Term Structure | 150 | -0.005 | -0.069 (-2.2) | -0.019 (-1.1) | 0% | -0.007 → -0.007 | +0.03 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -2.2); not confirmed from 2018 (incremental IC -0.019, t -1.1); positive in only 0% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| Yield Curve | 150 | -0.010 | -0.016 (-0.8) | -0.021 (-0.8) | 29% | -0.007 → -0.007 | +0.03 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.8); not confirmed from 2018 (incremental IC -0.021, t -0.8); positive in only 29% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| All seven together | 150 | — | — (—) | — (—) | — | -0.007 → -0.006 | +0.03 → +0.04 | — |
+| Yield Curve | 150 | -0.011 | -0.016 (-0.8) | -0.021 (-0.8) | 29% | -0.007 → -0.007 | +0.03 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.8); not confirmed from 2018 (incremental IC -0.021, t -0.8); positive in only 29% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| All candidates together | 150 | — | — (—) | — (—) | — | -0.007 → -0.007 | +0.03 → +0.05 | — |
 
 **1M**
 
 | Family | Assets | Own IC (before 2018) | Incremental IC before (clustered t) | Incremental IC from 2018 (clustered t) | Assets > 0 (from 2018) | Score IC without → with | Monotonicity without → with | Verdict |
 |---|---|---|---|---|---|---|---|---|
+| Breadth | 122 | +0.023 | +0.052 (+0.5) | +0.025 (+0.2) | 100% | -0.010 → -0.010 | +0.03 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.5); not confirmed from 2018 (incremental IC +0.025, t +0.2); the score's IC falls with it from 2018 (-0.000) |
 | Carry | 113 | +0.021 | +0.023 (+1.5) | +0.072 (+3.5) | 79% | -0.005 → +0.004 | +0.04 → +0.09 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.5) |
 | Commodity | 144 | -0.038 | -0.038 (-1.5) | -0.062 (-0.9) | 25% | -0.013 → -0.013 | +0.02 → +0.02 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.5); not confirmed from 2018 (incremental IC -0.062, t -0.9); positive in only 25% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Earnings Surprise | 43 | +0.002 | +0.004 (+0.2) | -0.038 (-1.9) | 36% | -0.011 → -0.011 | +0.11 → +0.07 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.2); not confirmed from 2018 (incremental IC -0.038, t -1.9); positive in only 36% of assets from 2018 |
 | FX | 12 | -0.088 | -0.094 (-1.8) | -0.007 (-0.1) | 22% | -0.049 → -0.051 | -0.11 → -0.14 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.8); not confirmed from 2018 (incremental IC -0.007, t -0.1); positive in only 22% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
-| Inflation | 149 | -0.010 | -0.007 (-0.1) | -0.077 (-2.0) | 20% | -0.008 → -0.009 | +0.04 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.1); not confirmed from 2018 (incremental IC -0.077, t -2.0); positive in only 20% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Inflation | 149 | -0.009 | -0.007 (-0.1) | -0.077 (-2.0) | 20% | -0.008 → -0.009 | +0.04 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.1); not confirmed from 2018 (incremental IC -0.077, t -2.0); positive in only 20% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Optionality | 20 | -0.003 | -0.009 (-0.1) | -0.068 (-0.8) | 0% | -0.021 → -0.025 | -0.04 → -0.04 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.1); not confirmed from 2018 (incremental IC -0.068, t -0.8); positive in only 0% of assets from 2018; the score's IC falls with it from 2018 (-0.003) |
 | Term Structure | 149 | -0.043 | -0.051 (-1.9) | -0.030 (-0.5) | 20% | -0.008 → -0.009 | +0.04 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.9); not confirmed from 2018 (incremental IC -0.030, t -0.5); positive in only 20% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Yield Curve | 149 | +0.015 | +0.005 (+0.1) | -0.052 (-1.0) | 32% | -0.008 → -0.009 | +0.04 → +0.04 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.1); not confirmed from 2018 (incremental IC -0.052, t -1.0); positive in only 32% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| All seven together | 149 | — | — (—) | — (—) | — | -0.008 → -0.003 | +0.04 → +0.06 | — |
+| All candidates together | 149 | — | — (—) | — (—) | — | -0.008 → -0.003 | +0.04 → +0.06 | — |
 
 **3M**
 
 | Family | Assets | Own IC (before 2018) | Incremental IC before (clustered t) | Incremental IC from 2018 (clustered t) | Assets > 0 (from 2018) | Score IC without → with | Monotonicity without → with | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| Carry | 109 | +0.014 | +0.020 (+0.7) | +0.078 (+1.9) | 60% | -0.044 → -0.022 | -0.12 → -0.04 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.7) |
-| Commodity | 140 | -0.012 | -0.051 (-0.8) | +0.010 (+0.2) | 71% | -0.048 → -0.048 | -0.12 → -0.12 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.8); not confirmed from 2018 (incremental IC +0.010, t +0.2); the score's IC falls with it from 2018 (-0.000) |
-| FX | 12 | -0.165 | -0.180 (-1.6) | -0.002 (-0.0) | 60% | -0.113 → -0.099 | -0.35 → -0.31 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.6); not confirmed from 2018 (incremental IC -0.002, t -0.0) |
-| Inflation | 145 | -0.023 | -0.033 (-0.5) | +0.020 (+0.3) | 50% | -0.045 → -0.045 | -0.12 → -0.11 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.5); not confirmed from 2018 (incremental IC +0.020, t +0.3) |
+| Breadth | 118 | +0.160 | +0.129 (+1.7) | -0.066 (-0.6) | 33% | -0.046 → -0.046 | -0.12 → -0.12 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.7); not confirmed from 2018 (incremental IC -0.066, t -0.6); positive in only 33% of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Carry | 109 | +0.014 | +0.020 (+0.7) | +0.078 (+1.9) | 60% | -0.044 → -0.022 | -0.12 → -0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.7) |
+| Commodity | 140 | -0.012 | -0.051 (-0.8) | +0.009 (+0.2) | 71% | -0.048 → -0.048 | -0.12 → -0.12 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.8); not confirmed from 2018 (incremental IC +0.009, t +0.2); the score's IC falls with it from 2018 (-0.000) |
+| Earnings Surprise | 43 | -0.038 | -0.020 (-0.5) | -0.049 (-1.8) | 36% | -0.045 → -0.047 | -0.07 → -0.10 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.5); not confirmed from 2018 (incremental IC -0.049, t -1.8); positive in only 36% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
+| FX | 12 | -0.165 | -0.180 (-1.6) | -0.002 (-0.0) | 60% | -0.113 → -0.099 | -0.35 → -0.30 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.6); not confirmed from 2018 (incremental IC -0.002, t -0.0) |
+| Inflation | 145 | -0.024 | -0.033 (-0.5) | +0.020 (+0.3) | 50% | -0.045 → -0.045 | -0.12 → -0.11 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.5); not confirmed from 2018 (incremental IC +0.020, t +0.3) |
 | Optionality | 20 | -0.106 | -0.071 (-0.7) | — (—) | — | -0.072 → -0.072 | -0.17 → -0.17 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.7); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Term Structure | 145 | — | — (—) | — (—) | — | -0.045 → -0.046 | -0.12 → -0.12 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Yield Curve | 145 | +0.087 | +0.074 (+1.1) | -0.145 (-1.4) | 12% | -0.045 → -0.047 | -0.12 → -0.12 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.1); not confirmed from 2018 (incremental IC -0.145, t -1.4); positive in only 12% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
-| All seven together | 145 | — | — (—) | — (—) | — | -0.045 → -0.028 | -0.12 → -0.04 | — |
+| All candidates together | 145 | — | — (—) | — (—) | — | -0.045 → -0.030 | -0.12 → -0.06 | — |
 
 **6M**
 
 | Family | Assets | Own IC (before 2018) | Incremental IC before (clustered t) | Incremental IC from 2018 (clustered t) | Assets > 0 (from 2018) | Score IC without → with | Monotonicity without → with | Verdict |
 |---|---|---|---|---|---|---|---|---|
+| Breadth | 111 | +0.004 | -0.045 (-0.6) | -0.049 (-0.4) | 40% | -0.025 → -0.025 | -0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t -0.6); not confirmed from 2018 (incremental IC -0.049, t -0.4); positive in only 40% of assets from 2018; the score's IC falls with it from 2018 (-0.001) |
 | Carry | 105 | -0.000 | +0.002 (+0.1) | +0.083 (+1.5) | 67% | -0.017 → +0.015 | +0.01 → +0.08 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.1) |
 | Commodity | 133 | — | — (—) | -0.012 (-0.1) | 50% | -0.023 → -0.024 | +0.00 → +0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC -0.012, t -0.1); the score's IC falls with it from 2018 (-0.001) |
+| Earnings Surprise | 40 | +0.026 | +0.053 (+0.8) | -0.038 (-0.9) | 40% | -0.096 → -0.100 | -0.07 → -0.13 | REJECT: incremental IC not significant before 2018 (date-clustered t +0.8); not confirmed from 2018 (incremental IC -0.038, t -0.9); positive in only 40% of assets from 2018; the score's IC falls with it from 2018 (-0.004); calibration less monotone with it |
 | FX | 12 | -0.249 | -0.365 (-1.5) | +0.080 (+0.8) | 90% | -0.012 → -0.006 | +0.03 → +0.07 | REJECT: incremental IC not significant before 2018 (date-clustered t -1.5); not confirmed from 2018 (incremental IC +0.080, t +0.8) |
-| Inflation | 138 | — | — (—) | — (—) | — | -0.023 → -0.023 | -0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Inflation | 138 | — | — (—) | — (—) | — | -0.023 → -0.023 | +0.00 → +0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Optionality | 20 | — | — (—) | — (—) | — | -0.044 → -0.044 | -0.12 → -0.12 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| Term Structure | 138 | — | — (—) | — (—) | — | -0.023 → -0.023 | -0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| Yield Curve | 138 | +0.106 | +0.069 (+1.3) | -0.126 (-1.1) | 41% | -0.023 → -0.024 | -0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.3); not confirmed from 2018 (incremental IC -0.126, t -1.1); positive in only 41% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
-| All seven together | 138 | — | — (—) | — (—) | — | -0.023 → -0.001 | -0.00 → +0.04 | — |
+| Term Structure | 138 | — | — (—) | — (—) | — | -0.023 → -0.023 | +0.00 → +0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Yield Curve | 138 | +0.106 | +0.069 (+1.3) | -0.126 (-1.1) | 41% | -0.023 → -0.024 | +0.00 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.3); not confirmed from 2018 (incremental IC -0.126, t -1.1); positive in only 41% of assets from 2018; the score's IC falls with it from 2018 (-0.002) |
+| All candidates together | 138 | — | — (—) | — (—) | — | -0.023 → -0.003 | +0.00 → +0.03 | — |
 
 **12M**
 
 | Family | Assets | Own IC (before 2018) | Incremental IC before (clustered t) | Incremental IC from 2018 (clustered t) | Assets > 0 (from 2018) | Score IC without → with | Monotonicity without → with | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| Carry | 77 | +0.097 | +0.104 (+1.3) | +0.129 (+1.9) | 62% | -0.050 → -0.000 | -0.06 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.3) |
+| Breadth | 77 | — | — (—) | — (—) | — | -0.065 → -0.065 | -0.11 → -0.11 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
+| Carry | 77 | +0.097 | +0.104 (+1.3) | +0.129 (+1.9) | 62% | -0.050 → -0.000 | -0.07 → -0.00 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.3) |
 | Commodity | 97 | — | — (—) | — (—) | — | -0.041 → -0.041 | -0.06 → -0.06 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
-| FX | 8 | — | — (—) | +0.002 (+0.0) | 67% | +0.051 → +0.011 | +0.13 → +0.03 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC +0.002, t +0.0); the score's IC falls with it from 2018 (-0.040); calibration less monotone with it |
+| Earnings Surprise | 38 | +0.273 | +0.266 (+1.0) | -0.067 (-0.8) | 42% | -0.138 → -0.148 | -0.23 → -0.25 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.0); not confirmed from 2018 (incremental IC -0.067, t -0.8); positive in only 42% of assets from 2018; the score's IC falls with it from 2018 (-0.010) |
+| FX | 8 | — | — (—) | +0.002 (+0.0) | 67% | +0.051 → +0.011 | +0.14 → +0.04 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC +0.002, t +0.0); the score's IC falls with it from 2018 (-0.040); calibration less monotone with it |
 | Inflation | 102 | — | — (—) | — (—) | — | -0.040 → -0.040 | -0.06 → -0.06 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Optionality | 18 | — | — (—) | — (—) | — | -0.010 → -0.010 | -0.01 → -0.01 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Term Structure | 102 | — | — (—) | — (—) | — | -0.040 → -0.040 | -0.06 → -0.06 | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC —, t —); positive in only — of assets from 2018; the score's IC falls with it from 2018 (-0.000) |
 | Yield Curve | 102 | +0.531 | +0.519 (+1.2) | -0.561 (-1.9) | 0% | -0.040 → -0.044 | -0.06 → -0.06 | REJECT: incremental IC not significant before 2018 (date-clustered t +1.2); not confirmed from 2018 (incremental IC -0.561, t -1.9); positive in only 0% of assets from 2018; the score's IC falls with it from 2018 (-0.005) |
-| All seven together | 102 | — | — (—) | — (—) | — | -0.040 → -0.010 | -0.06 → -0.02 | — |
+| All candidates together | 102 | — | — (—) | — (—) | — | -0.040 → -0.014 | -0.06 → -0.03 | — |
 
 **Admitted:** none — every candidate family stays in shadow. Admission is applied only by recording it in `shaffer_score.ADMITTED` (and a new score version), never automatically.
+
+## 27b. Methodology variants (shadow): should the economic prior H or a stricter V decide influence?
+
+Methodology variants, SHADOW ONLY (never shown or used): the same families and evidence, weighted as       no_prior_H    W·A·F / (κ·ΣA)      — the economic horizon prior H removed from weight and scale       strict_V     E·V'·A·H·F / (κ·ΣA·H)   — V' = clip(t/2, 0, 1): a family with a non-positive                             out-of-sample record gets zero weight (production: 0.5 + t/4)       no_H_strict_V  E·V'·A·F / (κ·ΣA)     Each is judged by the same discovery/confirmation test as a candidate family; none is adopted otherwise.
+
+The same test as a candidate family: the variant's score must carry information beyond the production score (clustered t ≥ 2 before 2018, ≥ 1 from it) and must not lower the score's IC or calibration monotonicity from 2018.
+
+| Horizon | Variant | Assets | Score IC production → variant (from 2018) | Monotonicity production → variant | Beyond production: before (t) | from 2018 (t) | Verdict |
+|---|---|---|---|---|---|---|---|
+| 1D | no H strict V | 150 | -0.015 → -0.022 | +0.01 → +0.02 | -0.037 (-4.3) | -0.040 (-5.4) | REJECT: incremental IC not significant before 2018 (date-clustered t -4.3); not confirmed from 2018 (incremental IC -0.040, t -5.4); positive in only 25% of assets from 2018; the score's IC falls with it from 2018 (-0.007) |
+| 1D | no prior H | 150 | -0.015 → -0.012 | +0.01 → +0.00 | -0.014 (-2.3) | -0.001 (-0.2) | REJECT: incremental IC not significant before 2018 (date-clustered t -2.3); not confirmed from 2018 (incremental IC -0.001, t -0.2); positive in only 48% of assets from 2018 |
+| 1D | strict V | 150 | -0.015 → -0.024 | +0.01 → +0.02 | -0.041 (-4.1) | -0.047 (-6.2) | REJECT: incremental IC not significant before 2018 (date-clustered t -4.1); not confirmed from 2018 (incremental IC -0.047, t -6.2); positive in only 21% of assets from 2018; the score's IC falls with it from 2018 (-0.009) |
+| 1W | no H strict V | 150 | -0.007 → -0.015 | +0.03 → +0.04 | -0.031 (-3.3) | -0.041 (-5.1) | REJECT: incremental IC not significant before 2018 (date-clustered t -3.3); not confirmed from 2018 (incremental IC -0.041, t -5.1); positive in only 24% of assets from 2018; the score's IC falls with it from 2018 (-0.008) |
+| 1W | no prior H | 150 | -0.007 → -0.006 | +0.03 → +0.05 | -0.008 (-1.1) | -0.006 (-0.7) | REJECT: incremental IC not significant before 2018 (date-clustered t -1.1); not confirmed from 2018 (incremental IC -0.006, t -0.7); positive in only 45% of assets from 2018 |
+| 1W | strict V | 150 | -0.007 → -0.015 | +0.03 → +0.03 | -0.033 (-3.3) | -0.039 (-5.1) | REJECT: incremental IC not significant before 2018 (date-clustered t -3.3); not confirmed from 2018 (incremental IC -0.039, t -5.1); positive in only 23% of assets from 2018; the score's IC falls with it from 2018 (-0.008) |
+| 1M | no H strict V | 149 | -0.008 → -0.024 | +0.04 → +0.02 | -0.014 (-1.0) | -0.063 (-4.6) | REJECT: incremental IC not significant before 2018 (date-clustered t -1.0); not confirmed from 2018 (incremental IC -0.063, t -4.6); positive in only 23% of assets from 2018; the score's IC falls with it from 2018 (-0.015) |
+| 1M | no prior H | 149 | -0.008 → -0.007 | +0.04 → +0.05 | -0.004 (-0.2) | +0.016 (+0.6) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.2); not confirmed from 2018 (incremental IC +0.016, t +0.6) |
+| 1M | strict V | 149 | -0.008 → -0.025 | +0.04 → +0.01 | -0.014 (-1.0) | -0.065 (-4.8) | REJECT: incremental IC not significant before 2018 (date-clustered t -1.0); not confirmed from 2018 (incremental IC -0.065, t -4.8); positive in only 23% of assets from 2018; the score's IC falls with it from 2018 (-0.017) |
+| 3M | no H strict V | 145 | -0.045 → -0.042 | -0.12 → -0.02 | -0.018 (-0.7) | -0.046 (-1.6) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.7); not confirmed from 2018 (incremental IC -0.046, t -1.6); positive in only 34% of assets from 2018 |
+| 3M | no prior H | 145 | -0.045 → -0.032 | -0.12 → -0.09 | -0.023 (-0.7) | +0.026 (+0.6) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.7); not confirmed from 2018 (incremental IC +0.026, t +0.6) |
+| 3M | strict V | 145 | -0.045 → -0.053 | -0.12 → -0.04 | -0.018 (-0.6) | -0.063 (-2.4) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.6); not confirmed from 2018 (incremental IC -0.063, t -2.4); positive in only 29% of assets from 2018; the score's IC falls with it from 2018 (-0.007) |
+| 6M | no H strict V | 138 | -0.023 → -0.048 | +0.00 → -0.04 | -0.010 (-0.2) | -0.083 (-2.2) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.2); not confirmed from 2018 (incremental IC -0.083, t -2.2); positive in only 31% of assets from 2018; the score's IC falls with it from 2018 (-0.025) |
+| 6M | no prior H | 138 | -0.023 → -0.017 | +0.00 → -0.01 | -0.016 (-0.3) | -0.014 (-0.3) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.3); not confirmed from 2018 (incremental IC -0.014, t -0.3); positive in only 48% of assets from 2018 |
+| 6M | strict V | 138 | -0.023 → -0.052 | +0.00 → -0.03 | -0.007 (-0.2) | -0.097 (-2.8) | REJECT: incremental IC not significant before 2018 (date-clustered t -0.2); not confirmed from 2018 (incremental IC -0.097, t -2.8); positive in only 26% of assets from 2018; the score's IC falls with it from 2018 (-0.030) |
+| 12M | no H strict V | 102 | -0.040 → -0.038 | -0.06 → -0.06 | +0.036 (+0.4) | +0.023 (+0.3) | REJECT: incremental IC not significant before 2018 (date-clustered t +0.4); not confirmed from 2018 (incremental IC +0.023, t +0.3) |
+| 12M | no prior H | 102 | -0.040 → -0.038 | -0.06 → -0.06 | +0.036 (+0.4) | +0.023 (+0.3) | REJECT: incremental IC not significant before 2018 (date-clustered t +0.4); not confirmed from 2018 (incremental IC +0.023, t +0.3) |
+| 12M | strict V | 102 | -0.040 → -0.040 | -0.06 → -0.06 | 0.000 (—) | 0.000 (—) | REJECT: incremental IC not significant before 2018 (date-clustered t —); not confirmed from 2018 (incremental IC 0.000, t —); positive in only 0% of assets from 2018 |

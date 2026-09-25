@@ -47,12 +47,14 @@ finsim2/
     optimize.py          frontier, min-variance, max-Sharpe, risk parity
     montecarlo.py        block bootstrap / GBM simulations
     scenario.py          factor-shock scenarios, historical analogues
-    tracking.py          prediction log, realised scoring, model decay, correlation decay
+    tracking.py          prediction log, realised scoring (returns; ML volatility and drawdown forecasts), decay
+    health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
-    candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality) — shadow
+    candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
+                         earnings surprise, breadth) — shadow
     audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
   hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
-                         history, scoring, service, audit
+                         history, objml (objective-specific hedge ML), crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI
 ```
@@ -154,6 +156,9 @@ Candidate families (engine/candidates.py, `shaffer_score.CANDIDATE_FAMILIES`):
   with the score it *would* give (`with`), and the matured records feed the audit's admission test (§27).
 - Governing rule: production weights are not re-tuned; a candidate enters only after the admission test, by editing
   `ADMITTED` and bumping `VERSION`.
+- Methodology variants (`ShafferRun._variants`: no economic prior H, strict validation V' = clip(t/2, 0, 1), both) are
+  computed for every scored record and ride the same shadow path as `VARIANT:<name>` entries, so a change of weighting
+  method faces the same admission test as a new family (audit §27b). None is used by the production score.
 
 The research bundle carries the result of `shaffer_full` (cached in kv by data version). `research.shaffer_series`
 gives the point-in-time score history used by backtests and as an ML baseline.

@@ -111,6 +111,16 @@ class Verification(unittest.TestCase):
         self.assertTrue(any("constant" in x for x in res["reasons"]))
         self.assertLess(res["constant_adjustment"], -0.1)
 
+    def test_many_books_on_the_same_dates_are_not_independent_evidence(self):
+        rows = _rows(signal=True, seed=7)
+        one = O.evaluate([dict(r, features=dict(r["features"])) for r in rows], "variance", ["vix", "corr_63"])
+        many = []
+        for k in range(10):                               # the same windows held by ten books
+            many += [dict(r, case=f"B{k}|leg", features=dict(r["features"])) for r in rows]
+        ten = O.evaluate(many, "variance", ["vix", "corr_63"])
+        self.assertAlmostEqual(ten["t_vs_static"], one["t_vs_static"], delta=0.2 * abs(one["t_vs_static"]))
+        self.assertAlmostEqual(ten["n_eff"], one["n_eff"], delta=2)
+
     def test_too_few_windows(self):
         res = O.evaluate(_rows(n=30), "variance", ["vix"])
         self.assertFalse(res["verified"])

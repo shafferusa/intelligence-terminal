@@ -290,8 +290,8 @@ def markdown(a: dict) -> str:
         w("Verified = beats the static rule AND the minimum-variance multiple out of sample (t ≥ 2, or bootstrap p ≤ 0.025 for the pooled "
           "VaR/ES), n_eff ≥ 30, not worse in the latest third. Gain = 1 − adjusted ÷ static on the same windows.")
         w("")
-        w("| Group | Metric | OOS windows | n_eff | Gain vs static | t / p vs static | t / p vs constant | t / p vs min-var | Mean adj. (constant) | Verified | Reasons |")
-        w("|---|---|---|---|---|---|---|---|---|---|---|")
+        w("| Group | Metric | OOS windows | n_eff (dates) | Gain vs static | Gain vs constant | t / p vs static | t / p vs constant | t / p vs min-var | Mean adj. (constant) | Verified | Reasons |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|---|")
         tally: Dict[str, List[int]] = {}
         for g, res in sorted(a["objml"].items()):
             for mt in objml.METRICS + ["variance_basic"]:
@@ -303,13 +303,28 @@ def markdown(a: dict) -> str:
                 ts = _f(r.get("t_vs_static"), 1) if mt not in objml.POOLED else ("p " + _f(r.get("p_vs_static"), 2))
                 tm = _f(r.get("t_vs_min_variance"), 1) if mt not in objml.POOLED else ("p " + _f(r.get("p_vs_min_variance"), 2))
                 tc = _f(r.get("t_vs_constant"), 1) if mt not in objml.POOLED else ("p " + _f(r.get("p_vs_constant"), 2))
-                w(f"| {g} | {mt.replace('_', ' ')} | {r.get('n', 0)} | {_f(r.get('n_eff'), 0)} | {_f(r.get('gain_vs_static'), 1, True)} | {ts} | {tc} | {tm} | "
+                gc = (1 - r["adjusted"] / r["constant"]) if r.get("adjusted") is not None and r.get("constant") else None
+                w(f"| {g} | {mt.replace('_', ' ')} | {r.get('n', 0)} | {_f(r.get('n_eff'), 0)} | {_f(r.get('gain_vs_static'), 1, True)} | {_f(gc, 1, True)} | {ts} | {tc} | {tm} | "
                   f"{_f(r.get('mean_adjustment'), 2)} ({_f(r.get('constant_adjustment'), 2)}) | {'yes' if r.get('verified') else 'no'} | {'; '.join(r.get('reasons') or []) or '—'} |")
         w("")
         w("| Metric | Groups tested | Verified |")
         w("|---|---|---|")
         for mt, (n, v) in tally.items():
             w(f"| {objml.METRIC_LABEL.get(mt, 'Variance, original six features')} | {n} | {v} |")
+        w("")
+        tests = sum(n for n, _ in tally.values())
+        w(f"**Reading it honestly.** {tests} group × metric tests were run; at a one-sided 2.3% level about {0.023 * tests:.0f} would pass by "
+          "chance alone. Where a model passes, compare its mean adjustment with the constant's: when they are nearly equal and the gain "
+          "vs the constant is a fraction of a percent, the useful information is the static rule's SIZING BIAS (what the constant "
+          "learned), not conditional skill. The sizing bias is reported below; it is not applied to the static rule automatically.")
+        w("")
+        w("| Group | Constant adjustment learned | Variance gain of the constant vs static | Model's gain vs static |")
+        w("|---|---|---|---|")
+        for g, res in sorted(a["objml"].items()):
+            r = res.get("variance") or {}
+            if r.get("n") and r.get("constant") and r.get("static") and abs(r.get("constant_adjustment") or 0) > 0.05:
+                w(f"| {g} | {_f(r.get('constant_adjustment'), 2)} (hedge × {1 + ALPHA * r['constant_adjustment']:.2f}) | "
+                  f"{_f(1 - r['constant'] / r['static'], 1, True)} | {_f(r.get('gain_vs_static'), 1, True)} |")
         w("")
     errs = [c for c in a["cases"] if c.get("error") or not c.get("result", {}).get("n")]
     if errs:

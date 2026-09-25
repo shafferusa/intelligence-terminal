@@ -14,8 +14,9 @@ Status (rules fixed in advance, first match wins):
   INSUFFICIENT DATA   fewer than 30 independent out-of-sample observations (or no trained model / audit)
   NO VERIFIED EDGE    the walk-forward record does not clear its own bar (Shaffer: date-clustered t < 2; ML: verified
                       against every baseline in fewer than 20% of the trained assets or fewer than 2 — one asset in
-                      twenty passing is what chance alone produces; hedge: median variance reduction < 5%; hedge ML:
-                      no group verified)
+                      twenty passing is what chance alone produces; hedge: median variance reduction < 5% and median
+                      tail-loss reduction < 5% — a hedge that only cuts the tail is labelled "tail only"; hedge ML:
+                      verified in fewer than 20% of groups or fewer than 2)
   DECAYING            it cleared the bar, but the last three years are at or below zero (or live IC ≤ 0 on ≥ 30
                       graded forecasts)
   WEAKENING           the last three years are below half of the full record (or verified but not stable across
@@ -212,13 +213,18 @@ def hedge_health(research) -> List[dict]:
                     "reason": "no hedge audit has been run (python -m finsim2 hedge-audit)"})
     else:
         for g in summ.get("groups") or []:
-            med, early, recent = g.get("median_reduction"), g.get("median_early"), g.get("median_recent")
-            verified = med is not None and med >= 0.05
-            status = classify(g.get("n_eff") or 0.0, verified, early, recent)
-            out.append({"engine": "Shaffer Hedge (static rule)", "horizon": g["group"], "status": status, "assets": g.get("cases"),
+            med, early, recent, tail = g.get("median_reduction"), g.get("median_early"), g.get("median_recent"), g.get("median_tail")
+            if med is not None and med >= 0.05:
+                status, judged = classify(g.get("n_eff") or 0.0, True, early, recent), "variance"
+            elif tail is not None and tail >= 0.05:
+                # a tail hedge: it adds variance but cuts the worst windows' losses — judged on the tail, no recent/early split
+                status, judged = classify(g.get("n_eff") or 0.0, True, None, None), "tail only (adds variance)"
+            else:
+                status, judged = classify(g.get("n_eff") or 0.0, False, None, None), "variance"
+            out.append({"engine": "Shaffer Hedge (static rule)", "horizon": g["group"], "status": status, "assets": g.get("cases"), "judged_on": judged,
                         "walk_forward": {"median_reduction": med, "early_third": early, "recent_third": recent, "n_eff": g.get("n_eff"),
-                                         "tail_reduction": g.get("median_tail")},
-                        "live": live, "bar": "median realised variance reduction ≥ 5%; recent third vs early third"})
+                                         "tail_reduction": tail},
+                        "live": live, "bar": f"judged on {judged}: median realised reduction ≥ 5%; recent third vs early third"})
     models = (st.kv_get(f"hedgeml:{VERSION}") or {}).get("groups") or {}
     per: Dict[str, List[int]] = {}
     for g, res in models.items():
@@ -230,8 +236,10 @@ def hedge_health(research) -> List[dict]:
         out.append({"engine": "Hedge ML adjustment", "horizon": "all", "status": "INSUFFICIENT DATA",
                     "reason": "no objective-specific hedge models trained yet (python -m finsim2 hedge-audit)"})
     for mt, (n, v, ne) in per.items():
-        out.append({"engine": "Hedge ML adjustment", "horizon": mt, "status": classify(ne, v > 0, None, None), "groups": n, "verified": v,
-                    "bar": "beats the static rule and the minimum-variance multiple out of sample"})
+        edge = v >= max(2, math.ceil(0.2 * n))          # the same multiple-testing bar as the ML models
+        out.append({"engine": "Hedge ML adjustment", "horizon": mt, "status": classify(ne, edge, None, None), "groups": n, "verified": v,
+                    "bar": "verified in ≥ 20% of groups (and ≥ 2): beats the static rule, a constant resizing and the minimum-variance "
+                           "multiple out of sample, clustered by date"})
     return out
 
 

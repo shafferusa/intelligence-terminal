@@ -554,7 +554,7 @@ def ml_layer(rows_by_group: Dict[str, List[dict]], alpha: float = ALPHA, cap: fl
         if len(test) < MIN_WINDOWS:
             out[g] = {"verified": False, "reason": f"only {len(test)} out-of-sample windows", "n": len(test)}
             continue
-        d_static, d_mv = [], []
+        d_static, d_mv, d_dates, mv_dates = [], [], [], []
         for j in test:
             r = rows[j]
             adj = alpha * max(-cap, min(cap, math.exp(preds[j]) - 1))
@@ -565,18 +565,26 @@ def ml_layer(rows_by_group: Dict[str, List[dict]], alpha: float = ALPHA, cap: fl
                 continue
             v_adj = su + 2 * (1 + adj) * suh + (1 + adj) ** 2 * sh
             d_static.append(h_var - v_adj)
+            d_dates.append(r["date"])
             mvb = r["baselines"].get("min_variance")
             if mvb is not None:
                 d_mv.append(mvb - v_adj)
-        def tstat(xs):
+                mv_dates.append(r["date"])
+        def tstat(xs, ds):
+            # clustered by start date: the group's books and hedges on one date are one market experience (fixed in
+            # research phase 2; the first version counted every row as independent and overstated t)
+            by: Dict[str, List[float]] = {}
+            for x, d in zip(xs, ds):
+                by.setdefault(d, []).append(x)
+            xs = [sum(v) / len(v) for _, v in sorted(by.items())]
             if len(xs) < 3:
                 return None
             m = sum(xs) / len(xs)
             sd = math.sqrt(sum((x - m) ** 2 for x in xs) / (len(xs) - 1))
             n_eff = len(xs) * min(1.0, STEP / max(h, 1))
             return m / (sd / math.sqrt(n_eff)) if sd > 0 else None
-        t1, t2 = tstat(d_static), tstat(d_mv)
-        n_eff = len(d_static) * min(1.0, STEP / max(h, 1))
+        t1, t2 = tstat(d_static, d_dates), tstat(d_mv, mv_dates)
+        n_eff = len(set(d_dates)) * min(1.0, STEP / max(h, 1))
         third = d_static[-max(1, len(d_static) // 3):]
         reasons = []
         if n_eff < ML_MIN_NEFF:

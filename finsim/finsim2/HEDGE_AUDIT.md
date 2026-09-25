@@ -1,6 +1,6 @@
 # Shaffer Hedge: the audit
 
-Generated 2026-09-24 23:19:41 from the real research store (data to 2026-09-24); 330 case-horizons with history, run time 4.0 minutes. Every result is walk-forward: the hedge is sized at each month-start with information available then (trailing-year betas, structural DV01/CS01/currency exposure, the option's delta from that day's Cboe volatility index) for 100% of the exposure, and judged on what happened over the following horizon. A $500,000 holding is the book.
+Generated 2026-09-25 11:34:43 from the real research store (data to 2026-09-24); 330 case-horizons with history, run time 7.7 minutes. Every result is walk-forward: the hedge is sized at each month-start with information available then (trailing-year betas, structural DV01/CS01/currency exposure, the option's delta from that day's Cboe volatility index) for 100% of the exposure, and judged on what happened over the following horizon. A $500,000 holding is the book.
 
 ## 1–3. Risk factors, instruments and their sizing units
 
@@ -98,7 +98,7 @@ unit, optimise the package, score it, then (only if verified) apply a capped ML 
     Factors the objective does not target keep R*_f = R_f, so a hedge that adds sector or currency exposure is penalised.
     Turnover: existing hedges enter R, so the optimiser only adds what is missing.
 
-    SH_j = 100·tanh(E_j·Q_j·L_j·R_j·B_j·T_j / 0.5)
+    SH_j = 100·tanh(E_j·Q_j·L_j·R_j·B_j·T_j / 1.0)
     E: realised ÷ expected variance reduction in the walk-forward history (−1…1.25); expected reduction if no history
     Q: value of the risk removed ÷ (value + expected cost); value = (γh/2)·ΔVar
     L: 1 / (1 + participation/10%) with participation = hedge notional ÷ average daily traded value
@@ -460,24 +460,297 @@ FinalHedge = RawHedge × (1 + 0.5 × MLAdjustment), |MLAdjustment| ≤ 0.3 → a
 
 | Group | OOS windows | n_eff | t vs static rule | t vs min-variance | Verified | Reasons |
 |---|---|---|---|---|---|---|
-| credit:spot:21 | 478 | 478 | 1.7 | -1.6 | no | does not beat the static rule (t 1.7); does not beat the minimum-variance ratio (t -1.6) |
-| credit:spot:5 | 480 | 480 | 1.1 | -1.2 | no | does not beat the static rule (t 1.1); does not beat the minimum-variance ratio (t -1.2) |
-| credit:spot:63 | 472 | 157 | 1.3 | -1.4 | no | does not beat the static rule (t 1.3); does not beat the minimum-variance ratio (t -1.4) |
-| crypto:spot:21 | 59 | 59 | 14.1 | -9.3 | no | does not beat the minimum-variance ratio (t -9.3) |
-| crypto:spot:5 | 60 | 60 | 8.0 | -5.4 | no | does not beat the minimum-variance ratio (t -5.4) |
-| crypto:spot:63 | 56 | 19 | 12.0 | -8.4 | no | n_eff 19 < 30; does not beat the minimum-variance ratio (t -8.4) |
-| equity:equity_future:21 | 2148 | 2,148 | 0.0 | 3.7 | no | does not beat the static rule (t 0.0) |
-| equity:equity_future:5 | 2158 | 2,158 | -2.4 | -0.0 | no | does not beat the static rule (t -2.4); does not beat the minimum-variance ratio (t -0.0); decayed: worse than the static rule in the most recent third |
-| equity:equity_future:63 | 2124 | 708 | -1.4 | 3.1 | no | does not beat the static rule (t -1.4); decayed: worse than the static rule in the most recent third |
-| equity:spot:21 | 3461 | 3,461 | 1.9 | 2.4 | no | does not beat the static rule (t 1.9) |
-| equity:spot:5 | 3478 | 3,478 | -1.5 | 2.4 | no | does not beat the static rule (t -1.5); decayed: worse than the static rule in the most recent third |
-| equity:spot:63 | 3422 | 1,141 | -1.7 | 1.2 | no | does not beat the static rule (t -1.7); does not beat the minimum-variance ratio (t 1.2); decayed: worse than the static rule in the most recent third |
-| fx:forward:21 | 358 | 358 | 17.6 | -11.9 | no | does not beat the minimum-variance ratio (t -11.9) |
-| fx:forward:5 | 358 | 358 | 10.4 | -7.2 | no | does not beat the minimum-variance ratio (t -7.2) |
-| fx:forward:63 | 354 | 118 | 14.4 | -11.0 | no | does not beat the minimum-variance ratio (t -11.0) |
-| name:spot:21 | 358 | 358 | 1.3 | 2.8 | no | does not beat the static rule (t 1.3) |
-| name:spot:5 | 360 | 360 | -1.9 | -0.9 | no | does not beat the static rule (t -1.9); does not beat the minimum-variance ratio (t -0.9) |
-| name:spot:63 | 354 | 118 | 2.2 | 2.7 | yes | — |
-| rates:spot:21 | 478 | 478 | 3.6 | -3.2 | no | does not beat the minimum-variance ratio (t -3.2) |
-| rates:spot:5 | 480 | 480 | 0.6 | -1.5 | no | does not beat the static rule (t 0.6); does not beat the minimum-variance ratio (t -1.5) |
-| rates:spot:63 | 472 | 157 | 2.7 | -2.1 | no | does not beat the minimum-variance ratio (t -2.1) |
+| credit:spot:21 | 478 | 120 | 1.9 | -1.6 | no | does not beat the static rule (t 1.9); does not beat the minimum-variance ratio (t -1.6) |
+| credit:spot:5 | 480 | 120 | 1.2 | -1.1 | no | does not beat the static rule (t 1.2); does not beat the minimum-variance ratio (t -1.1) |
+| credit:spot:63 | 472 | 39 | 1.5 | -1.3 | no | does not beat the static rule (t 1.5); does not beat the minimum-variance ratio (t -1.3) |
+| crypto:spot:21 | 59 | 30 | 10.1 | -7.3 | no | does not beat the minimum-variance ratio (t -7.3) |
+| crypto:spot:5 | 60 | 30 | 5.6 | -4.1 | no | does not beat the minimum-variance ratio (t -4.1) |
+| crypto:spot:63 | 56 | 9 | 8.5 | -6.6 | no | n_eff 9 < 30; does not beat the minimum-variance ratio (t -6.6) |
+| equity:equity_future:21 | 2148 | 120 | 0.0 | 2.1 | no | does not beat the static rule (t 0.0) |
+| equity:equity_future:5 | 2158 | 120 | -1.9 | -0.0 | no | does not beat the static rule (t -1.9); does not beat the minimum-variance ratio (t -0.0); decayed: worse than the static rule in the most recent third |
+| equity:equity_future:63 | 2124 | 39 | -0.8 | 2.0 | no | does not beat the static rule (t -0.8); does not beat the minimum-variance ratio (t 2.0); decayed: worse than the static rule in the most recent third |
+| equity:spot:21 | 3461 | 120 | 0.8 | 2.5 | no | does not beat the static rule (t 0.8) |
+| equity:spot:5 | 3478 | 120 | -1.1 | 2.4 | no | does not beat the static rule (t -1.1); decayed: worse than the static rule in the most recent third |
+| equity:spot:63 | 3422 | 39 | -1.0 | 1.3 | no | does not beat the static rule (t -1.0); does not beat the minimum-variance ratio (t 1.3); decayed: worse than the static rule in the most recent third |
+| fx:forward:21 | 358 | 120 | 13.2 | -9.1 | no | does not beat the minimum-variance ratio (t -9.1) |
+| fx:forward:5 | 358 | 120 | 8.5 | -6.0 | no | does not beat the minimum-variance ratio (t -6.0) |
+| fx:forward:63 | 354 | 39 | 10.5 | -8.3 | no | does not beat the minimum-variance ratio (t -8.3) |
+| name:spot:21 | 358 | 120 | 0.9 | 2.2 | no | does not beat the static rule (t 0.9) |
+| name:spot:5 | 360 | 120 | -1.2 | -0.8 | no | does not beat the static rule (t -1.2); does not beat the minimum-variance ratio (t -0.8) |
+| name:spot:63 | 354 | 39 | 1.5 | 2.3 | no | does not beat the static rule (t 1.5) |
+| rates:spot:21 | 478 | 120 | 3.9 | -3.1 | no | does not beat the minimum-variance ratio (t -3.1) |
+| rates:spot:5 | 480 | 120 | 0.6 | -1.7 | no | does not beat the static rule (t 0.6); does not beat the minimum-variance ratio (t -1.7) |
+| rates:spot:63 | 472 | 39 | 3.0 | -2.0 | no | does not beat the minimum-variance ratio (t -2.0) |
+
+## 18b. Objective-specific hedge ML (richer features)
+
+The variance-only ML layer (history.ml_layer) learns one multiple of the raw hedge and judges it on variance. A tail hedge, a drawdown hedge or a DV01 hedge is not trying to minimise variance, so here each objective gets its own target, its own model and its own out-of-sample test:
+
+Verified = beats the static rule AND the minimum-variance multiple out of sample (t ≥ 2, or bootstrap p ≤ 0.025 for the pooled VaR/ES), n_eff ≥ 30, not worse in the latest third. Gain = 1 − adjusted ÷ static on the same windows.
+
+| Group | Metric | OOS windows | n_eff (dates) | Gain vs static | Gain vs constant | t / p vs static | t / p vs constant | t / p vs min-var | Mean adj. (constant) | Verified | Reasons |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| commodity:option:21 | variance | 239 | 120 | +29.1% | +4.4% | 2.5 | 1.6 | — | -0.22 (-0.23) | no | does not beat a constant resizing (t 1.6) |
+| commodity:option:21 | exposure | 239 | 120 | +14.5% | +1.4% | 6.3 | 1.4 | — | -0.09 (-0.10) | no | does not beat a constant resizing (t 1.4) |
+| commodity:option:21 | downside | 239 | 120 | +29.9% | +1.8% | 3.6 | 2.1 | — | -0.27 (-0.27) | yes | — |
+| commodity:option:21 | drawdown | 239 | 120 | +15.3% | +0.5% | 10.0 | 2.2 | — | -0.25 (-0.25) | yes | — |
+| commodity:option:21 | var95 | 239 | 120 | +11.9% | +0.7% | p 0.00 | p 0.00 | p — | -0.11 (-0.11) | yes | — |
+| commodity:option:21 | es95 | 239 | 120 | +12.5% | +5.4% | p 0.00 | p 0.00 | p — | -0.11 (-0.11) | yes | — |
+| commodity:option:21 | variance basic | 239 | 120 | +26.0% | +0.2% | 2.7 | 0.7 | — | -0.22 (-0.23) | no | does not beat a constant resizing (t 0.7) |
+| commodity:option:5 | variance | 240 | 120 | +29.7% | +5.8% | 1.4 | 1.3 | — | -0.23 (-0.24) | no | does not beat the static rule (t 1.4); does not beat a constant resizing (t 1.3) |
+| commodity:option:5 | exposure | 240 | 120 | +15.9% | +2.5% | 4.2 | 1.6 | — | -0.11 (-0.11) | no | does not beat a constant resizing (t 1.6) |
+| commodity:option:5 | downside | 240 | 120 | +25.5% | +0.7% | 2.3 | 1.8 | — | -0.27 (-0.27) | no | does not beat a constant resizing (t 1.8) |
+| commodity:option:5 | drawdown | 240 | 120 | +16.2% | -0.1% | 8.9 | -0.9 | — | -0.26 (-0.26) | no | does not beat a constant resizing (t -0.9) |
+| commodity:option:5 | var95 | 240 | 120 | +7.9% | -0.0% | p 0.00 | p 0.46 | p — | -0.12 (-0.12) | no | does not beat a constant resizing (bootstrap p 0.46) |
+| commodity:option:5 | es95 | 240 | 120 | +8.3% | -1.0% | p 0.00 | p 0.88 | p — | -0.12 (-0.12) | no | does not beat a constant resizing (bootstrap p 0.88) |
+| commodity:option:5 | variance basic | 240 | 120 | +26.1% | +1.1% | 1.4 | 1.2 | — | -0.23 (-0.24) | no | does not beat the static rule (t 1.4); does not beat a constant resizing (t 1.2) |
+| commodity:option:63 | variance | 236 | 39 | +24.1% | +4.2% | 2.2 | 1.0 | — | -0.19 (-0.19) | no | does not beat a constant resizing (t 1.0) |
+| commodity:option:63 | exposure | 236 | 39 | +0.5% | -1.9% | 0.2 | -0.6 | — | -0.01 (-0.02) | no | does not beat the static rule (t 0.2); does not beat a constant resizing (t -0.6) |
+| commodity:option:63 | downside | 236 | 39 | +25.5% | +2.0% | 3.2 | 1.4 | — | -0.24 (-0.24) | no | does not beat a constant resizing (t 1.4) |
+| commodity:option:63 | drawdown | 236 | 39 | +13.9% | +0.3% | 6.6 | 1.2 | — | -0.27 (-0.27) | no | does not beat a constant resizing (t 1.2) |
+| commodity:option:63 | var95 | 236 | 39 | +12.9% | -0.2% | p 0.00 | p 0.26 | p — | -0.16 (-0.16) | no | does not beat a constant resizing (bootstrap p 0.26) |
+| commodity:option:63 | es95 | 236 | 39 | +10.1% | +1.9% | p 0.00 | p 0.00 | p — | -0.16 (-0.16) | yes | — |
+| commodity:option:63 | variance basic | 236 | 39 | +21.3% | +0.6% | 2.4 | 0.4 | — | -0.18 (-0.19) | no | does not beat a constant resizing (t 0.4) |
+| credit:spot:21 | variance | 478 | 120 | +6.7% | -1.7% | 2.3 | -0.9 | -1.5 | -0.11 (-0.12) | no | does not beat a constant resizing (t -0.9); does not beat the minimum-variance ratio (t -1.5) |
+| credit:spot:21 | exposure | 478 | 120 | +2.1% | -0.5% | 4.3 | -1.0 | -0.3 | -0.04 (-0.05) | no | does not beat a constant resizing (t -1.0); does not beat the minimum-variance ratio (t -0.3) |
+| credit:spot:21 | downside | 478 | 120 | +8.1% | -1.2% | 1.4 | -1.0 | -1.1 | -0.13 (-0.13) | no | does not beat the static rule (t 1.4); does not beat a constant resizing (t -1.0); does not beat the minimum-variance ratio (t -1.1) |
+| credit:spot:21 | drawdown | 478 | 120 | +2.0% | -0.3% | 2.0 | -0.8 | -2.7 | -0.10 (-0.10) | no | does not beat a constant resizing (t -0.8); does not beat the minimum-variance ratio (t -2.7) |
+| credit:spot:21 | var95 | 478 | 120 | +2.6% | -0.4% | p 0.26 | p 0.53 | p 0.92 | -0.06 (-0.06) | no | does not beat the static rule (bootstrap p 0.26); does not beat a constant resizing (bootstrap p 0.53); does not beat the minimum-variance ratio (bootstrap p 0.92) |
+| credit:spot:21 | es95 | 478 | 120 | +2.6% | -0.4% | p 0.00 | p 0.84 | p 0.91 | -0.06 (-0.06) | no | does not beat a constant resizing (bootstrap p 0.84); does not beat the minimum-variance ratio (bootstrap p 0.91) |
+| credit:spot:21 | variance basic | 478 | 120 | +6.8% | -1.6% | 2.1 | -1.1 | -1.5 | -0.12 (-0.12) | no | does not beat a constant resizing (t -1.1); does not beat the minimum-variance ratio (t -1.5) |
+| credit:spot:5 | variance | 480 | 120 | +8.0% | -0.3% | 1.2 | -0.6 | -1.1 | -0.08 (-0.09) | no | does not beat the static rule (t 1.2); does not beat a constant resizing (t -0.6); does not beat the minimum-variance ratio (t -1.1) |
+| credit:spot:5 | exposure | 480 | 120 | +2.9% | +0.2% | 2.7 | 1.1 | -2.2 | -0.04 (-0.04) | no | does not beat a constant resizing (t 1.1); does not beat the minimum-variance ratio (t -2.2) |
+| credit:spot:5 | downside | 480 | 120 | +5.9% | -4.8% | 1.2 | -1.0 | -1.0 | -0.10 (-0.11) | no | does not beat the static rule (t 1.2); does not beat a constant resizing (t -1.0); does not beat the minimum-variance ratio (t -1.0) |
+| credit:spot:5 | drawdown | 480 | 120 | +1.3% | -0.0% | 1.8 | -0.1 | -1.4 | -0.09 (-0.11) | no | does not beat the static rule (t 1.8); does not beat a constant resizing (t -0.1); does not beat the minimum-variance ratio (t -1.4) |
+| credit:spot:5 | var95 | 480 | 120 | +2.0% | -0.7% | p 0.18 | p 0.57 | p 0.36 | -0.05 (-0.05) | no | does not beat the static rule (bootstrap p 0.18); does not beat a constant resizing (bootstrap p 0.57); does not beat the minimum-variance ratio (bootstrap p 0.36) |
+| credit:spot:5 | es95 | 480 | 120 | +1.3% | -0.7% | p 0.00 | p 0.98 | p 0.49 | -0.05 (-0.05) | no | does not beat a constant resizing (bootstrap p 0.98); does not beat the minimum-variance ratio (bootstrap p 0.49) |
+| credit:spot:5 | variance basic | 480 | 120 | +7.6% | -0.8% | 1.2 | -1.1 | -1.1 | -0.09 (-0.09) | no | does not beat the static rule (t 1.2); does not beat a constant resizing (t -1.1); does not beat the minimum-variance ratio (t -1.1) |
+| credit:spot:63 | variance | 472 | 39 | +9.2% | +0.1% | 1.5 | 0.2 | -1.3 | -0.12 (-0.14) | no | does not beat the static rule (t 1.5); does not beat a constant resizing (t 0.2); does not beat the minimum-variance ratio (t -1.3) |
+| credit:spot:63 | exposure | 472 | 39 | +5.7% | -0.4% | 4.1 | -0.5 | -0.3 | -0.05 (-0.06) | no | does not beat a constant resizing (t -0.5); does not beat the minimum-variance ratio (t -0.3) |
+| credit:spot:63 | downside | 472 | 39 | +9.9% | +0.2% | 1.4 | 1.2 | -1.2 | -0.14 (-0.15) | no | does not beat the static rule (t 1.4); does not beat a constant resizing (t 1.2); does not beat the minimum-variance ratio (t -1.2) |
+| credit:spot:63 | drawdown | 472 | 39 | +4.4% | +0.3% | 2.4 | 1.2 | -2.3 | -0.12 (-0.13) | no | does not beat a constant resizing (t 1.2); does not beat the minimum-variance ratio (t -2.3) |
+| credit:spot:63 | var95 | 472 | 39 | +8.5% | +0.5% | p 0.11 | p 0.44 | p 0.84 | -0.09 (-0.09) | no | does not beat the static rule (bootstrap p 0.11); does not beat a constant resizing (bootstrap p 0.44); does not beat the minimum-variance ratio (bootstrap p 0.84) |
+| credit:spot:63 | es95 | 472 | 39 | +4.9% | +0.8% | p 0.01 | p 0.06 | p 0.98 | -0.09 (-0.09) | no | does not beat a constant resizing (bootstrap p 0.06); does not beat the minimum-variance ratio (bootstrap p 0.98) |
+| credit:spot:63 | variance basic | 472 | 39 | +8.5% | -0.7% | 1.5 | -1.4 | -1.3 | -0.13 (-0.14) | no | does not beat the static rule (t 1.5); does not beat a constant resizing (t -1.4); does not beat the minimum-variance ratio (t -1.3) |
+| crypto:spot:21 | variance | 59 | 30 | +40.9% | -0.0% | 10.1 | -2.2 | — | -0.30 (-0.30) | no | does not beat a constant resizing (t -2.2) |
+| crypto:spot:21 | exposure | 59 | 30 | +68.1% | -0.9% | 8.0 | -1.8 | — | -0.27 (-0.28) | no | does not beat a constant resizing (t -1.8) |
+| crypto:spot:21 | downside | 59 | 30 | +40.6% | +0.0% | 9.3 | 0.1 | — | -0.30 (-0.30) | no | does not beat a constant resizing (t 0.1) |
+| crypto:spot:21 | drawdown | 59 | 30 | +34.2% | +0.5% | 9.7 | 2.9 | — | -0.28 (-0.28) | yes | — |
+| crypto:spot:21 | var95 | 59 | 30 | +23.5% | -0.9% | p 0.00 | p 0.45 | p — | -0.17 (-0.16) | no | does not beat a constant resizing (bootstrap p 0.45) |
+| crypto:spot:21 | es95 | 59 | 30 | +26.5% | +2.6% | p 0.00 | p 0.10 | p — | -0.17 (-0.16) | no | does not beat a constant resizing (bootstrap p 0.10) |
+| crypto:spot:21 | variance basic | 59 | 30 | +40.9% | -0.0% | 10.1 | -1.0 | — | -0.30 (-0.30) | no | does not beat a constant resizing (t -1.0) |
+| crypto:spot:5 | variance | 60 | 30 | +41.6% | +0.8% | 5.7 | 2.0 | — | -0.29 (-0.29) | yes | — |
+| crypto:spot:5 | exposure | 60 | 30 | +33.3% | +2.2% | 4.9 | 2.0 | — | -0.17 (-0.17) | no | does not beat a constant resizing (t 2.0) |
+| crypto:spot:5 | downside | 60 | 30 | +35.0% | +2.4% | 3.7 | 2.4 | — | -0.24 (-0.23) | yes | — |
+| crypto:spot:5 | drawdown | 60 | 30 | +18.2% | +0.9% | 6.4 | 2.3 | — | -0.23 (-0.23) | yes | — |
+| crypto:spot:5 | var95 | 60 | 30 | +11.8% | +3.7% | p 0.00 | p 0.34 | p — | -0.09 (-0.09) | no | does not beat a constant resizing (bootstrap p 0.34) |
+| crypto:spot:5 | es95 | 60 | 30 | +7.5% | +1.8% | p 0.00 | p 0.11 | p — | -0.09 (-0.09) | no | does not beat a constant resizing (bootstrap p 0.11) |
+| crypto:spot:5 | variance basic | 60 | 30 | +41.4% | +0.4% | 5.7 | 1.3 | — | -0.29 (-0.29) | no | does not beat a constant resizing (t 1.3) |
+| crypto:spot:63 | variance | 56 | 9 | +41.0% | +0.0% | 8.5 | -1.3 | — | -0.30 (-0.30) | no | n_eff 9 < 30; does not beat a constant resizing (t -1.3) |
+| crypto:spot:63 | exposure | 56 | 9 | +80.3% | -0.3% | 8.9 | -1.7 | — | -0.30 (-0.30) | no | n_eff 9 < 30; does not beat a constant resizing (t -1.7) |
+| crypto:spot:63 | downside | 56 | 9 | +40.9% | -0.0% | 7.7 | -1.3 | — | -0.30 (-0.30) | no | n_eff 9 < 30; does not beat a constant resizing (t -1.3) |
+| crypto:spot:63 | drawdown | 56 | 9 | +38.4% | -0.0% | 4.9 | -1.3 | — | -0.30 (-0.30) | no | n_eff 9 < 30; does not beat a constant resizing (t -1.3) |
+| crypto:spot:63 | var95 | 56 | 9 | +25.5% | +5.7% | p 0.00 | p 0.12 | p — | -0.14 (-0.13) | no | n_eff 9 < 30; does not beat a constant resizing (bootstrap p 0.12) |
+| crypto:spot:63 | es95 | 56 | 9 | +25.0% | +5.9% | p 0.00 | p 0.08 | p — | -0.14 (-0.13) | no | n_eff 9 < 30; does not beat a constant resizing (bootstrap p 0.08) |
+| crypto:spot:63 | variance basic | 56 | 9 | +41.0% | +0.0% | 8.5 | -1.0 | — | -0.30 (-0.30) | no | n_eff 9 < 30; does not beat a constant resizing (t -1.0) |
+| equity:equity_future:21 | variance | 2148 | 120 | +0.0% | +0.1% | 0.1 | 1.6 | 2.2 | 0.01 (0.01) | no | does not beat the static rule (t 0.1); does not beat a constant resizing (t 1.6) |
+| equity:equity_future:21 | exposure | 2148 | 120 | +0.1% | +0.1% | 0.6 | 0.5 | 1.3 | 0.00 (0.00) | no | does not beat the static rule (t 0.6); does not beat a constant resizing (t 0.5); does not beat the minimum-variance ratio (t 1.3) |
+| equity:equity_future:21 | downside | 2148 | 120 | +0.4% | +0.1% | 1.8 | 1.1 | 3.0 | -0.05 (-0.05) | no | does not beat the static rule (t 1.8); does not beat a constant resizing (t 1.1) |
+| equity:equity_future:21 | drawdown | 2148 | 120 | +0.4% | +0.0% | 2.1 | 1.0 | 4.9 | -0.07 (-0.06) | no | does not beat a constant resizing (t 1.0) |
+| equity:equity_future:21 | var95 | 2148 | 120 | +1.3% | -0.7% | p 0.18 | p 0.47 | p 0.02 | -0.04 (-0.05) | no | does not beat the static rule (bootstrap p 0.18); does not beat a constant resizing (bootstrap p 0.47) |
+| equity:equity_future:21 | es95 | 2148 | 120 | +0.4% | +0.1% | p 0.16 | p 0.23 | p 0.03 | -0.04 (-0.05) | no | does not beat the static rule (bootstrap p 0.16); does not beat a constant resizing (bootstrap p 0.23); does not beat the minimum-variance ratio (bootstrap p 0.03) |
+| equity:equity_future:21 | variance basic | 2148 | 120 | -0.1% | +0.0% | -1.1 | 0.6 | 2.2 | 0.01 (0.01) | no | does not beat the static rule (t -1.1); does not beat a constant resizing (t 0.6); decayed: worse than the static rule in the most recent third |
+| equity:equity_future:5 | variance | 2160 | 120 | -0.0% | -0.0% | -0.9 | -0.8 | 0.4 | -0.00 (-0.00) | no | does not beat the static rule (t -0.9); does not beat a constant resizing (t -0.8); does not beat the minimum-variance ratio (t 0.4); decayed: worse than the static rule in the most recent third |
+| equity:equity_future:5 | exposure | 2160 | 120 | -0.0% | -0.0% | -0.6 | -0.5 | -0.4 | -0.00 (-0.00) | no | does not beat the static rule (t -0.6); does not beat a constant resizing (t -0.5); does not beat the minimum-variance ratio (t -0.4); decayed: worse than the static rule in the most recent third |
+| equity:equity_future:5 | downside | 2160 | 120 | -0.1% | +0.0% | -0.8 | 0.2 | 1.4 | -0.04 (-0.04) | no | does not beat the static rule (t -0.8); does not beat a constant resizing (t 0.2); does not beat the minimum-variance ratio (t 1.4) |
+| equity:equity_future:5 | drawdown | 2160 | 120 | -0.2% | +0.1% | -0.8 | 1.5 | 2.8 | -0.05 (-0.06) | no | does not beat the static rule (t -0.8); does not beat a constant resizing (t 1.5) |
+| equity:equity_future:5 | var95 | 2160 | 120 | +0.9% | -0.2% | p 0.50 | p 0.57 | p 0.73 | -0.03 (-0.04) | no | does not beat the static rule (bootstrap p 0.50); does not beat a constant resizing (bootstrap p 0.57); does not beat the minimum-variance ratio (bootstrap p 0.73) |
+| equity:equity_future:5 | es95 | 2160 | 120 | -0.2% | -0.0% | p 0.84 | p 0.67 | p 0.16 | -0.03 (-0.04) | no | does not beat the static rule (bootstrap p 0.84); does not beat a constant resizing (bootstrap p 0.67); does not beat the minimum-variance ratio (bootstrap p 0.16) |
+| equity:equity_future:5 | variance basic | 2160 | 120 | -0.0% | -0.0% | -0.9 | -0.7 | 0.4 | -0.00 (-0.00) | no | does not beat the static rule (t -0.9); does not beat a constant resizing (t -0.7); does not beat the minimum-variance ratio (t 0.4); decayed: worse than the static rule in the most recent third |
+| equity:equity_future:63 | variance | 2124 | 39 | +0.1% | +0.2% | 1.4 | 1.2 | 1.9 | 0.01 (0.02) | no | does not beat the static rule (t 1.4); does not beat a constant resizing (t 1.2); does not beat the minimum-variance ratio (t 1.9) |
+| equity:equity_future:63 | exposure | 2124 | 39 | +0.3% | +0.4% | 0.7 | 0.8 | 1.5 | 0.00 (0.01) | no | does not beat the static rule (t 0.7); does not beat a constant resizing (t 0.8); does not beat the minimum-variance ratio (t 1.5) |
+| equity:equity_future:63 | downside | 2124 | 39 | +0.5% | +0.2% | 1.3 | 1.2 | 2.3 | -0.04 (-0.04) | no | does not beat the static rule (t 1.3); does not beat a constant resizing (t 1.2) |
+| equity:equity_future:63 | drawdown | 2124 | 39 | +0.7% | +0.0% | 2.1 | 1.0 | 3.3 | -0.09 (-0.09) | no | does not beat a constant resizing (t 1.0) |
+| equity:equity_future:63 | var95 | 2124 | 39 | +1.5% | -0.1% | p 0.09 | p 0.58 | p 0.01 | -0.06 (-0.07) | no | does not beat the static rule (bootstrap p 0.09); does not beat a constant resizing (bootstrap p 0.58) |
+| equity:equity_future:63 | es95 | 2124 | 39 | +0.4% | +0.1% | p 0.24 | p 0.17 | p 0.02 | -0.06 (-0.07) | no | does not beat the static rule (bootstrap p 0.24); does not beat a constant resizing (bootstrap p 0.17) |
+| equity:equity_future:63 | variance basic | 2124 | 39 | -0.1% | +0.0% | -1.0 | 0.7 | 2.0 | 0.02 (0.02) | no | does not beat the static rule (t -1.0); does not beat a constant resizing (t 0.7); does not beat the minimum-variance ratio (t 2.0); decayed: worse than the static rule in the most recent third |
+| equity:option:21 | variance | 3575 | 120 | +22.9% | +0.1% | 2.6 | 0.8 | — | -0.24 (-0.24) | no | does not beat a constant resizing (t 0.8) |
+| equity:option:21 | exposure | 3575 | 120 | +26.5% | -0.3% | 8.9 | -1.2 | — | -0.20 (-0.20) | no | does not beat a constant resizing (t -1.2) |
+| equity:option:21 | downside | 3575 | 120 | +25.3% | +0.2% | 3.2 | 1.6 | — | -0.27 (-0.27) | no | does not beat a constant resizing (t 1.6) |
+| equity:option:21 | drawdown | 3575 | 120 | +11.7% | +0.3% | 11.6 | 3.3 | — | -0.25 (-0.24) | yes | — |
+| equity:option:21 | var95 | 3575 | 120 | +7.2% | +1.9% | p 0.00 | p 0.04 | p — | -0.12 (-0.11) | no | does not beat a constant resizing (bootstrap p 0.04) |
+| equity:option:21 | es95 | 3575 | 120 | +6.0% | +2.4% | p 0.00 | p 0.00 | p — | -0.12 (-0.11) | yes | — |
+| equity:option:21 | variance basic | 3575 | 120 | +22.7% | -0.1% | 2.6 | -0.8 | — | -0.24 (-0.24) | no | does not beat a constant resizing (t -0.8) |
+| equity:option:5 | variance | 3594 | 121 | +15.5% | +0.3% | 6.3 | 2.7 | — | -0.22 (-0.22) | yes | — |
+| equity:option:5 | exposure | 3594 | 121 | +12.7% | +0.1% | 9.5 | 1.3 | — | -0.18 (-0.18) | no | does not beat a constant resizing (t 1.3) |
+| equity:option:5 | downside | 3594 | 121 | +14.2% | +0.3% | 7.5 | 3.0 | — | -0.23 (-0.22) | yes | — |
+| equity:option:5 | drawdown | 3594 | 121 | +9.4% | +0.1% | 9.9 | 3.0 | — | -0.22 (-0.22) | yes | — |
+| equity:option:5 | var95 | 3594 | 121 | +4.6% | +0.8% | p 0.00 | p 0.27 | p — | -0.12 (-0.12) | no | does not beat a constant resizing (bootstrap p 0.27) |
+| equity:option:5 | es95 | 3594 | 121 | +5.1% | +1.1% | p 0.00 | p 0.10 | p — | -0.12 (-0.12) | no | does not beat a constant resizing (bootstrap p 0.10) |
+| equity:option:5 | variance basic | 3594 | 121 | +15.3% | +0.1% | 6.2 | 1.3 | — | -0.22 (-0.22) | no | does not beat a constant resizing (t 1.3) |
+| equity:option:63 | variance | 3538 | 40 | +20.8% | +0.5% | 1.8 | 1.1 | — | -0.22 (-0.22) | no | does not beat the static rule (t 1.8); does not beat a constant resizing (t 1.1) |
+| equity:option:63 | exposure | 3538 | 40 | +7.7% | +1.2% | 3.0 | 1.5 | — | -0.06 (-0.05) | no | does not beat a constant resizing (t 1.5) |
+| equity:option:63 | downside | 3538 | 40 | +24.1% | +0.2% | 2.0 | 1.6 | — | -0.26 (-0.26) | no | does not beat the static rule (t 2.0); does not beat a constant resizing (t 1.6) |
+| equity:option:63 | drawdown | 3538 | 40 | +9.9% | -0.0% | 5.0 | -0.0 | — | -0.24 (-0.24) | no | does not beat a constant resizing (t -0.0) |
+| equity:option:63 | var95 | 3538 | 40 | +3.9% | -0.2% | p 0.00 | p 0.48 | p — | -0.13 (-0.13) | no | does not beat a constant resizing (bootstrap p 0.48) |
+| equity:option:63 | es95 | 3538 | 40 | +2.7% | +0.2% | p 0.00 | p 0.14 | p — | -0.13 (-0.13) | no | does not beat a constant resizing (bootstrap p 0.14) |
+| equity:option:63 | variance basic | 3538 | 40 | +20.5% | +0.1% | 1.8 | 0.3 | — | -0.22 (-0.22) | no | does not beat the static rule (t 1.8); does not beat a constant resizing (t 0.3) |
+| equity:spot:21 | variance | 3461 | 120 | +0.0% | +0.1% | 0.5 | 1.4 | 2.5 | 0.01 (0.01) | no | does not beat the static rule (t 0.5); does not beat a constant resizing (t 1.4); decayed: worse than the static rule in the most recent third |
+| equity:spot:21 | exposure | 3461 | 120 | +0.0% | +0.1% | 0.5 | 0.5 | 1.8 | 0.00 (0.00) | no | does not beat the static rule (t 0.5); does not beat a constant resizing (t 0.5); does not beat the minimum-variance ratio (t 1.8) |
+| equity:spot:21 | downside | 3461 | 120 | +0.5% | +0.1% | 2.5 | 1.3 | 2.2 | -0.05 (-0.05) | no | does not beat a constant resizing (t 1.3) |
+| equity:spot:21 | drawdown | 3461 | 120 | +0.6% | +0.1% | 2.8 | 1.9 | 5.3 | -0.07 (-0.07) | no | does not beat a constant resizing (t 1.9) |
+| equity:spot:21 | var95 | 3461 | 120 | +1.6% | +0.6% | p 0.14 | p 0.34 | p 0.02 | -0.05 (-0.05) | no | does not beat the static rule (bootstrap p 0.14); does not beat a constant resizing (bootstrap p 0.34) |
+| equity:spot:21 | es95 | 3461 | 120 | +0.4% | +0.1% | p 0.11 | p 0.10 | p 0.00 | -0.05 (-0.05) | no | does not beat the static rule (bootstrap p 0.11); does not beat a constant resizing (bootstrap p 0.10) |
+| equity:spot:21 | variance basic | 3461 | 120 | -0.1% | -0.0% | -1.8 | -0.3 | 2.5 | 0.01 (0.01) | no | does not beat the static rule (t -1.8); does not beat a constant resizing (t -0.3); decayed: worse than the static rule in the most recent third |
+| equity:spot:5 | variance | 3480 | 120 | -0.0% | -0.0% | -0.5 | -0.5 | 2.5 | -0.00 (-0.00) | no | does not beat the static rule (t -0.5); does not beat a constant resizing (t -0.5); decayed: worse than the static rule in the most recent third |
+| equity:spot:5 | exposure | 3480 | 120 | -0.1% | -0.0% | -0.9 | -0.9 | 1.6 | -0.01 (-0.00) | no | does not beat the static rule (t -0.9); does not beat a constant resizing (t -0.9); does not beat the minimum-variance ratio (t 1.6); decayed: worse than the static rule in the most recent third |
+| equity:spot:5 | downside | 3480 | 120 | -0.1% | -0.0% | -0.3 | -0.2 | 2.0 | -0.04 (-0.05) | no | does not beat the static rule (t -0.3); does not beat a constant resizing (t -0.2) |
+| equity:spot:5 | drawdown | 3480 | 120 | -0.1% | +0.0% | -0.6 | 0.6 | 3.3 | -0.05 (-0.06) | no | does not beat the static rule (t -0.6); does not beat a constant resizing (t 0.6) |
+| equity:spot:5 | var95 | 3480 | 120 | +0.4% | -0.1% | p 0.42 | p 0.60 | p 0.07 | -0.04 (-0.04) | no | does not beat the static rule (bootstrap p 0.42); does not beat a constant resizing (bootstrap p 0.60); does not beat the minimum-variance ratio (bootstrap p 0.07) |
+| equity:spot:5 | es95 | 3480 | 120 | -0.1% | +0.0% | p 0.67 | p 0.56 | p 0.00 | -0.04 (-0.04) | no | does not beat the static rule (bootstrap p 0.67); does not beat a constant resizing (bootstrap p 0.56) |
+| equity:spot:5 | variance basic | 3480 | 120 | -0.0% | -0.0% | -0.9 | -0.9 | 2.5 | -0.00 (-0.00) | no | does not beat the static rule (t -0.9); does not beat a constant resizing (t -0.9); decayed: worse than the static rule in the most recent third |
+| equity:spot:63 | variance | 3422 | 39 | +0.1% | +0.2% | 1.2 | 1.3 | 1.3 | 0.01 (0.01) | no | does not beat the static rule (t 1.2); does not beat a constant resizing (t 1.3); does not beat the minimum-variance ratio (t 1.3) |
+| equity:spot:63 | exposure | 3422 | 39 | +0.4% | +0.5% | 0.9 | 1.0 | 1.8 | 0.00 (0.01) | no | does not beat the static rule (t 0.9); does not beat a constant resizing (t 1.0); does not beat the minimum-variance ratio (t 1.8) |
+| equity:spot:63 | downside | 3422 | 39 | +0.7% | +0.2% | 1.6 | 1.4 | 1.5 | -0.05 (-0.05) | no | does not beat the static rule (t 1.6); does not beat a constant resizing (t 1.4); does not beat the minimum-variance ratio (t 1.5) |
+| equity:spot:63 | drawdown | 3422 | 39 | +1.1% | +0.1% | 2.9 | 1.4 | 5.6 | -0.10 (-0.10) | no | does not beat a constant resizing (t 1.4) |
+| equity:spot:63 | var95 | 3422 | 39 | +0.5% | -0.0% | p 0.07 | p 0.41 | p 0.00 | -0.07 (-0.07) | no | does not beat the static rule (bootstrap p 0.07); does not beat a constant resizing (bootstrap p 0.41) |
+| equity:spot:63 | es95 | 3422 | 39 | +0.7% | +0.1% | p 0.11 | p 0.15 | p 0.00 | -0.07 (-0.07) | no | does not beat the static rule (bootstrap p 0.11); does not beat a constant resizing (bootstrap p 0.15) |
+| equity:spot:63 | variance basic | 3422 | 39 | -0.1% | -0.0% | -1.4 | -0.0 | 1.3 | 0.01 (0.01) | no | does not beat the static rule (t -1.4); does not beat a constant resizing (t -0.0); does not beat the minimum-variance ratio (t 1.3); decayed: worse than the static rule in the most recent third |
+| fx:forward:21 | variance | 358 | 120 | +4.2% | -0.0% | 13.7 | -0.4 | -9.2 | -0.28 (-0.28) | no | does not beat a constant resizing (t -0.4); does not beat the minimum-variance ratio (t -9.2) |
+| fx:forward:21 | exposure | 358 | 120 | +19.3% | +0.0% | 24.8 | 0.7 | -11.8 | -0.28 (-0.27) | no | does not beat a constant resizing (t 0.7); does not beat the minimum-variance ratio (t -11.8) |
+| fx:forward:21 | downside | 358 | 120 | +3.4% | -0.0% | 10.7 | -0.7 | -6.1 | -0.24 (-0.24) | no | does not beat a constant resizing (t -0.7); does not beat the minimum-variance ratio (t -6.1) |
+| fx:forward:21 | drawdown | 358 | 120 | +0.7% | +0.0% | 5.3 | 0.6 | 0.9 | -0.11 (-0.12) | no | does not beat a constant resizing (t 0.6); does not beat the minimum-variance ratio (t 0.9) |
+| fx:forward:21 | var95 | 358 | 120 | -0.1% | +0.0% | p 0.58 | p 0.42 | p 0.00 | -0.02 (-0.03) | no | does not beat the static rule (bootstrap p 0.58); does not beat a constant resizing (bootstrap p 0.42); decayed: worse than the static rule in the most recent third |
+| fx:forward:21 | es95 | 358 | 120 | +0.1% | +0.0% | p 0.23 | p 0.19 | p 0.00 | -0.02 (-0.03) | no | does not beat the static rule (bootstrap p 0.23); does not beat a constant resizing (bootstrap p 0.19) |
+| fx:forward:21 | variance basic | 358 | 120 | +4.2% | -0.0% | 13.8 | -1.0 | -9.1 | -0.28 (-0.28) | no | does not beat a constant resizing (t -1.0); does not beat the minimum-variance ratio (t -9.1) |
+| fx:forward:5 | variance | 360 | 120 | +3.7% | -0.2% | 10.0 | -1.0 | -6.2 | -0.21 (-0.21) | no | does not beat a constant resizing (t -1.0); does not beat the minimum-variance ratio (t -6.2) |
+| fx:forward:5 | exposure | 360 | 120 | +6.1% | +0.0% | 10.7 | 0.5 | -5.5 | -0.21 (-0.21) | no | does not beat a constant resizing (t 0.5); does not beat the minimum-variance ratio (t -5.5) |
+| fx:forward:5 | downside | 360 | 120 | +3.2% | -0.1% | 7.0 | -1.5 | -4.4 | -0.15 (-0.16) | no | does not beat a constant resizing (t -1.5); does not beat the minimum-variance ratio (t -4.4) |
+| fx:forward:5 | drawdown | 360 | 120 | +1.2% | +0.0% | 7.1 | 0.3 | -3.3 | -0.12 (-0.12) | no | does not beat a constant resizing (t 0.3); does not beat the minimum-variance ratio (t -3.3) |
+| fx:forward:5 | var95 | 360 | 120 | +0.8% | +0.3% | p 0.40 | p 0.58 | p 0.21 | -0.03 (-0.03) | no | does not beat the static rule (bootstrap p 0.40); does not beat a constant resizing (bootstrap p 0.58); does not beat the minimum-variance ratio (bootstrap p 0.21); decayed: worse than the static rule in the most recent third |
+| fx:forward:5 | es95 | 360 | 120 | -0.0% | -0.0% | p 0.69 | p 0.89 | p 0.06 | -0.03 (-0.03) | no | does not beat the static rule (bootstrap p 0.69); does not beat a constant resizing (bootstrap p 0.89); does not beat the minimum-variance ratio (bootstrap p 0.06); decayed: worse than the static rule in the most recent third |
+| fx:forward:5 | variance basic | 360 | 120 | +3.8% | -0.1% | 9.9 | -0.9 | -6.2 | -0.21 (-0.21) | no | does not beat a constant resizing (t -0.9); does not beat the minimum-variance ratio (t -6.2) |
+| fx:forward:63 | variance | 354 | 39 | +4.5% | -0.0% | 10.5 | -0.5 | -8.3 | -0.30 (-0.30) | no | does not beat a constant resizing (t -0.5); does not beat the minimum-variance ratio (t -8.3) |
+| fx:forward:63 | exposure | 354 | 39 | +25.1% | -0.0% | 25.0 | -2.5 | -11.3 | -0.30 (-0.30) | no | does not beat a constant resizing (t -2.5); does not beat the minimum-variance ratio (t -11.3) |
+| fx:forward:63 | downside | 354 | 39 | +4.1% | +0.0% | 8.7 | 0.9 | -6.0 | -0.29 (-0.29) | no | does not beat a constant resizing (t 0.9); does not beat the minimum-variance ratio (t -6.0) |
+| fx:forward:63 | drawdown | 354 | 39 | +0.5% | +0.1% | 2.0 | 0.9 | 1.9 | -0.12 (-0.12) | no | does not beat the static rule (t 2.0); does not beat a constant resizing (t 0.9); does not beat the minimum-variance ratio (t 1.9) |
+| fx:forward:63 | var95 | 354 | 39 | -0.1% | -0.1% | p 0.47 | p 0.62 | p 0.01 | -0.00 (-0.00) | no | does not beat the static rule (bootstrap p 0.47); does not beat a constant resizing (bootstrap p 0.62); decayed: worse than the static rule in the most recent third |
+| fx:forward:63 | es95 | 354 | 39 | -0.1% | -0.0% | p 0.81 | p 0.85 | p 0.00 | -0.00 (-0.00) | no | does not beat the static rule (bootstrap p 0.81); does not beat a constant resizing (bootstrap p 0.85) |
+| fx:forward:63 | variance basic | 354 | 39 | +4.5% | -0.0% | 10.5 | -1.8 | -8.3 | -0.30 (-0.30) | no | does not beat a constant resizing (t -1.8); does not beat the minimum-variance ratio (t -8.3) |
+| name:option:21 | variance | 358 | 120 | +31.2% | +0.8% | 3.9 | 1.7 | — | -0.24 (-0.23) | no | does not beat a constant resizing (t 1.7) |
+| name:option:21 | downside | 358 | 120 | +36.0% | +0.6% | 4.7 | 2.1 | — | -0.27 (-0.27) | yes | — |
+| name:option:21 | drawdown | 358 | 120 | +18.3% | +0.8% | 13.3 | 4.1 | — | -0.25 (-0.25) | yes | — |
+| name:option:21 | var95 | 358 | 120 | +5.2% | +1.2% | p 0.01 | p 0.20 | p — | -0.10 (-0.09) | no | does not beat a constant resizing (bootstrap p 0.20) |
+| name:option:21 | es95 | 358 | 120 | +8.2% | +2.4% | p 0.00 | p 0.00 | p — | -0.10 (-0.09) | yes | — |
+| name:option:21 | variance basic | 358 | 120 | +31.2% | +0.7% | 3.8 | 2.8 | — | -0.24 (-0.23) | yes | — |
+| name:option:5 | variance | 360 | 120 | +31.5% | +1.5% | 7.5 | 2.1 | — | -0.23 (-0.22) | yes | — |
+| name:option:5 | downside | 360 | 120 | +33.8% | +1.4% | 6.0 | 1.5 | — | -0.25 (-0.25) | no | does not beat a constant resizing (t 1.5) |
+| name:option:5 | drawdown | 360 | 120 | +18.4% | +0.6% | 10.2 | 1.8 | — | -0.24 (-0.24) | no | does not beat a constant resizing (t 1.8) |
+| name:option:5 | var95 | 360 | 120 | +7.4% | +0.3% | p 0.01 | p 0.22 | p — | -0.10 (-0.10) | no | does not beat a constant resizing (bootstrap p 0.22) |
+| name:option:5 | es95 | 360 | 120 | +8.4% | +2.1% | p 0.00 | p 0.07 | p — | -0.10 (-0.10) | no | does not beat a constant resizing (bootstrap p 0.07) |
+| name:option:5 | variance basic | 360 | 120 | +31.4% | +1.3% | 7.5 | 2.1 | — | -0.22 (-0.22) | yes | — |
+| name:option:63 | variance | 354 | 39 | +21.7% | +0.9% | 3.3 | 1.5 | — | -0.19 (-0.18) | no | does not beat a constant resizing (t 1.5) |
+| name:option:63 | downside | 354 | 39 | +28.8% | +0.5% | 3.4 | 1.3 | — | -0.25 (-0.25) | no | does not beat a constant resizing (t 1.3) |
+| name:option:63 | drawdown | 354 | 39 | +11.6% | +0.0% | 6.8 | 0.1 | — | -0.22 (-0.22) | no | does not beat a constant resizing (t 0.1) |
+| name:option:63 | var95 | 354 | 39 | +5.2% | +0.1% | p 0.00 | p 0.40 | p — | -0.12 (-0.12) | no | does not beat a constant resizing (bootstrap p 0.40) |
+| name:option:63 | es95 | 354 | 39 | +5.4% | +0.2% | p 0.00 | p 0.00 | p — | -0.12 (-0.12) | yes | — |
+| name:option:63 | variance basic | 354 | 39 | +21.7% | +0.8% | 3.2 | 2.8 | — | -0.19 (-0.18) | yes | — |
+| name:spot:21 | variance | 358 | 120 | +0.0% | +0.0% | — | — | 0.9 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 0.9) |
+| name:spot:21 | downside | 358 | 120 | +0.0% | +0.0% | — | — | 0.9 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 0.9) |
+| name:spot:21 | drawdown | 358 | 120 | +3.2% | +0.3% | 3.4 | 0.5 | 3.5 | -0.00 (-0.00) | no | does not beat a constant resizing (t 0.5) |
+| name:spot:21 | var95 | 358 | 120 | -228.9% | -6.4% | p 1.00 | p 0.99 | p 1.00 | -0.01 (-0.01) | no | does not beat the static rule (bootstrap p 1.00); does not beat a constant resizing (bootstrap p 0.99); does not beat the minimum-variance ratio (bootstrap p 1.00); decayed: worse than the static rule in the most recent third |
+| name:spot:21 | es95 | 358 | 120 | -396.0% | -20.5% | p 1.00 | p 1.00 | p 1.00 | -0.01 (-0.01) | no | does not beat the static rule (bootstrap p 1.00); does not beat a constant resizing (bootstrap p 1.00); does not beat the minimum-variance ratio (bootstrap p 1.00); decayed: worse than the static rule in the most recent third |
+| name:spot:21 | variance basic | 358 | 120 | +0.0% | +0.0% | — | — | 0.9 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 0.9) |
+| name:spot:5 | variance | 360 | 120 | +0.0% | +0.0% | — | — | 0.7 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 0.7) |
+| name:spot:5 | downside | 360 | 120 | -165.8% | +25.7% | -7.9 | 4.1 | -8.0 | -0.00 (-0.00) | no | does not beat the static rule (t -7.9); does not beat the minimum-variance ratio (t -8.0); decayed: worse than the static rule in the most recent third |
+| name:spot:5 | drawdown | 360 | 120 | -33.6% | +12.6% | -5.0 | 4.8 | -5.2 | -0.00 (-0.00) | no | does not beat the static rule (t -5.0); does not beat the minimum-variance ratio (t -5.2); decayed: worse than the static rule in the most recent third |
+| name:spot:5 | var95 | 360 | 120 | -414.8% | -19.2% | p 1.00 | p 0.90 | p 1.00 | -0.01 (-0.01) | no | does not beat the static rule (bootstrap p 1.00); does not beat a constant resizing (bootstrap p 0.90); does not beat the minimum-variance ratio (bootstrap p 1.00); decayed: worse than the static rule in the most recent third |
+| name:spot:5 | es95 | 360 | 120 | -931.2% | -53.5% | p 1.00 | p 1.00 | p 1.00 | -0.01 (-0.01) | no | does not beat the static rule (bootstrap p 1.00); does not beat a constant resizing (bootstrap p 1.00); does not beat the minimum-variance ratio (bootstrap p 1.00); decayed: worse than the static rule in the most recent third |
+| name:spot:5 | variance basic | 360 | 120 | +0.0% | +0.0% | — | — | 0.7 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 0.7) |
+| name:spot:63 | variance | 354 | 39 | +0.0% | +0.0% | — | — | 1.0 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 1.0) |
+| name:spot:63 | downside | 354 | 39 | +0.0% | +0.0% | — | — | 1.0 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 1.0) |
+| name:spot:63 | drawdown | 354 | 39 | +2.5% | -0.0% | 2.8 | -0.0 | 2.6 | -0.00 (-0.00) | no | does not beat a constant resizing (t -0.0) |
+| name:spot:63 | var95 | 354 | 39 | -221.7% | -4.0% | p 1.00 | p 0.81 | p 1.00 | -0.02 (-0.02) | no | does not beat the static rule (bootstrap p 1.00); does not beat a constant resizing (bootstrap p 0.81); does not beat the minimum-variance ratio (bootstrap p 1.00); decayed: worse than the static rule in the most recent third |
+| name:spot:63 | es95 | 354 | 39 | -362.1% | -5.8% | p 1.00 | p 0.93 | p 1.00 | -0.02 (-0.02) | no | does not beat the static rule (bootstrap p 1.00); does not beat a constant resizing (bootstrap p 0.93); does not beat the minimum-variance ratio (bootstrap p 1.00); decayed: worse than the static rule in the most recent third |
+| name:spot:63 | variance basic | 354 | 39 | +0.0% | +0.0% | — | — | 1.0 | 0.00 (0.00) | no | does not beat the static rule (t —); does not beat a constant resizing (t —); does not beat the minimum-variance ratio (t 1.0) |
+| rates:spot:21 | variance | 478 | 120 | +5.6% | +0.4% | 5.8 | 1.4 | -3.7 | -0.15 (-0.15) | no | does not beat a constant resizing (t 1.4); does not beat the minimum-variance ratio (t -3.7) |
+| rates:spot:21 | exposure | 478 | 120 | +20.5% | +5.0% | 6.9 | 3.6 | -4.1 | -0.14 (-0.14) | no | does not beat the minimum-variance ratio (t -4.1) |
+| rates:spot:21 | downside | 478 | 120 | +6.4% | +0.5% | 4.9 | 1.7 | -3.6 | -0.14 (-0.15) | no | does not beat a constant resizing (t 1.7); does not beat the minimum-variance ratio (t -3.6) |
+| rates:spot:21 | drawdown | 478 | 120 | +1.2% | +0.5% | 1.3 | 3.8 | -6.3 | -0.13 (-0.14) | no | does not beat the static rule (t 1.3); does not beat the minimum-variance ratio (t -6.3) |
+| rates:spot:21 | var95 | 478 | 120 | -2.3% | +0.1% | p 0.49 | p 0.50 | p 0.87 | -0.05 (-0.05) | no | does not beat the static rule (bootstrap p 0.49); does not beat a constant resizing (bootstrap p 0.50); does not beat the minimum-variance ratio (bootstrap p 0.87); decayed: worse than the static rule in the most recent third |
+| rates:spot:21 | es95 | 478 | 120 | +1.2% | +0.0% | p 0.02 | p 0.31 | p 0.81 | -0.05 (-0.05) | no | does not beat a constant resizing (bootstrap p 0.31); does not beat the minimum-variance ratio (bootstrap p 0.81) |
+| rates:spot:21 | variance basic | 478 | 120 | +5.5% | +0.3% | 4.9 | 3.1 | -3.7 | -0.16 (-0.15) | no | does not beat the minimum-variance ratio (t -3.7) |
+| rates:spot:5 | variance | 480 | 120 | +2.6% | +0.4% | 2.5 | 0.7 | -2.0 | -0.13 (-0.14) | no | does not beat a constant resizing (t 0.7); does not beat the minimum-variance ratio (t -2.0) |
+| rates:spot:5 | exposure | 480 | 120 | +3.9% | +1.7% | 2.2 | 2.0 | -2.2 | -0.11 (-0.12) | no | does not beat a constant resizing (t 2.0); does not beat the minimum-variance ratio (t -2.2) |
+| rates:spot:5 | downside | 480 | 120 | +5.1% | +0.4% | 2.7 | 0.8 | -1.8 | -0.11 (-0.11) | no | does not beat a constant resizing (t 0.8); does not beat the minimum-variance ratio (t -1.8) |
+| rates:spot:5 | drawdown | 480 | 120 | +1.9% | +0.4% | 1.9 | 2.0 | -3.9 | -0.11 (-0.11) | no | does not beat the static rule (t 1.9); does not beat the minimum-variance ratio (t -3.9) |
+| rates:spot:5 | var95 | 480 | 120 | +1.6% | +0.9% | p 0.22 | p 0.42 | p 0.98 | -0.05 (-0.05) | no | does not beat the static rule (bootstrap p 0.22); does not beat a constant resizing (bootstrap p 0.42); does not beat the minimum-variance ratio (bootstrap p 0.98) |
+| rates:spot:5 | es95 | 480 | 120 | +1.6% | +0.5% | p 0.06 | p 0.09 | p 0.91 | -0.05 (-0.05) | no | does not beat the static rule (bootstrap p 0.06); does not beat a constant resizing (bootstrap p 0.09); does not beat the minimum-variance ratio (bootstrap p 0.91) |
+| rates:spot:5 | variance basic | 480 | 120 | +2.4% | +0.2% | 1.8 | 0.9 | -2.0 | -0.13 (-0.14) | no | does not beat the static rule (t 1.8); does not beat a constant resizing (t 0.9); does not beat the minimum-variance ratio (t -2.0) |
+| rates:spot:63 | variance | 472 | 39 | +5.6% | +0.3% | 3.8 | 0.8 | -2.3 | -0.16 (-0.16) | no | does not beat a constant resizing (t 0.8); does not beat the minimum-variance ratio (t -2.3) |
+| rates:spot:63 | exposure | 472 | 39 | +26.1% | +5.6% | 4.2 | 2.2 | -2.2 | -0.15 (-0.15) | no | does not beat the minimum-variance ratio (t -2.2) |
+| rates:spot:63 | downside | 472 | 39 | +6.7% | +0.4% | 3.9 | 1.4 | -2.8 | -0.16 (-0.16) | no | does not beat a constant resizing (t 1.4); does not beat the minimum-variance ratio (t -2.8) |
+| rates:spot:63 | drawdown | 472 | 39 | +1.6% | +0.2% | 1.0 | 1.2 | -4.1 | -0.15 (-0.15) | no | does not beat the static rule (t 1.0); does not beat a constant resizing (t 1.2); does not beat the minimum-variance ratio (t -4.1) |
+| rates:spot:63 | var95 | 472 | 39 | +3.6% | +0.4% | p 0.15 | p 0.48 | p 0.97 | -0.06 (-0.06) | no | does not beat the static rule (bootstrap p 0.15); does not beat a constant resizing (bootstrap p 0.48); does not beat the minimum-variance ratio (bootstrap p 0.97) |
+| rates:spot:63 | es95 | 472 | 39 | +3.8% | -0.0% | p 0.00 | p 0.77 | p 0.98 | -0.06 (-0.06) | no | does not beat a constant resizing (bootstrap p 0.77); does not beat the minimum-variance ratio (bootstrap p 0.98) |
+| rates:spot:63 | variance basic | 472 | 39 | +5.6% | +0.3% | 3.3 | 2.5 | -2.3 | -0.17 (-0.16) | no | does not beat the minimum-variance ratio (t -2.3) |
+| rates:treasury_future:21 | variance | 1432 | 120 | +0.9% | +0.7% | 3.5 | 2.9 | — | -0.09 (-0.10) | yes | — |
+| rates:treasury_future:21 | exposure | 1432 | 120 | +6.2% | +6.9% | 4.2 | 5.1 | — | -0.06 (-0.07) | yes | — |
+| rates:treasury_future:21 | downside | 1432 | 120 | +1.2% | +0.7% | 2.3 | 3.1 | — | -0.09 (-0.09) | yes | — |
+| rates:treasury_future:21 | drawdown | 1432 | 120 | +0.4% | +0.6% | 0.9 | 5.2 | — | -0.07 (-0.07) | no | does not beat the static rule (t 0.9) |
+| rates:treasury_future:21 | var95 | 1432 | 120 | -0.6% | +0.4% | p 0.56 | p 0.44 | p — | -0.01 (-0.01) | no | does not beat the static rule (bootstrap p 0.56); does not beat a constant resizing (bootstrap p 0.44) |
+| rates:treasury_future:21 | es95 | 1432 | 120 | -0.2% | +0.1% | p 0.69 | p 0.27 | p — | -0.01 (-0.01) | no | does not beat the static rule (bootstrap p 0.69); does not beat a constant resizing (bootstrap p 0.27); decayed: worse than the static rule in the most recent third |
+| rates:treasury_future:21 | variance basic | 1432 | 120 | +0.4% | +0.1% | 0.9 | 1.8 | — | -0.10 (-0.10) | no | does not beat the static rule (t 0.9); does not beat a constant resizing (t 1.8) |
+| rates:treasury_future:5 | variance | 1440 | 120 | +0.2% | +0.8% | 0.3 | 1.6 | — | -0.07 (-0.08) | no | does not beat the static rule (t 0.3); does not beat a constant resizing (t 1.6) |
+| rates:treasury_future:5 | exposure | 1440 | 120 | +1.2% | +2.4% | 1.9 | 3.5 | — | -0.04 (-0.05) | no | does not beat the static rule (t 1.9) |
+| rates:treasury_future:5 | downside | 1440 | 120 | +1.2% | +0.6% | 1.9 | 2.1 | — | -0.07 (-0.08) | no | does not beat the static rule (t 1.9) |
+| rates:treasury_future:5 | drawdown | 1440 | 120 | +1.0% | +0.5% | 2.0 | 3.4 | — | -0.07 (-0.08) | yes | — |
+| rates:treasury_future:5 | var95 | 1440 | 120 | -1.0% | +0.5% | p 0.52 | p 0.48 | p — | -0.03 (-0.03) | no | does not beat the static rule (bootstrap p 0.52); does not beat a constant resizing (bootstrap p 0.48); decayed: worse than the static rule in the most recent third |
+| rates:treasury_future:5 | es95 | 1440 | 120 | +0.4% | +0.1% | p 0.23 | p 0.18 | p — | -0.03 (-0.03) | no | does not beat the static rule (bootstrap p 0.23); does not beat a constant resizing (bootstrap p 0.18) |
+| rates:treasury_future:5 | variance basic | 1440 | 120 | -0.5% | +0.1% | -0.6 | 1.9 | — | -0.08 (-0.08) | no | does not beat the static rule (t -0.6); does not beat a constant resizing (t 1.9) |
+| rates:treasury_future:63 | variance | 1416 | 39 | +0.6% | +0.7% | 2.0 | 2.3 | — | -0.09 (-0.09) | yes | — |
+| rates:treasury_future:63 | exposure | 1416 | 39 | +5.8% | +8.5% | 2.1 | 3.2 | — | -0.06 (-0.06) | yes | — |
+| rates:treasury_future:63 | downside | 1416 | 39 | +0.9% | +0.7% | 1.6 | 2.6 | — | -0.09 (-0.10) | no | does not beat the static rule (t 1.6) |
+| rates:treasury_future:63 | drawdown | 1416 | 39 | -0.3% | +0.5% | -0.5 | 2.4 | — | -0.06 (-0.06) | no | does not beat the static rule (t -0.5); decayed: worse than the static rule in the most recent third |
+| rates:treasury_future:63 | var95 | 1416 | 39 | -0.6% | -0.3% | p 0.78 | p 0.51 | p — | -0.01 (-0.02) | no | does not beat the static rule (bootstrap p 0.78); does not beat a constant resizing (bootstrap p 0.51); decayed: worse than the static rule in the most recent third |
+| rates:treasury_future:63 | es95 | 1416 | 39 | -0.3% | +0.0% | p 0.68 | p 0.60 | p — | -0.01 (-0.02) | no | does not beat the static rule (bootstrap p 0.68); does not beat a constant resizing (bootstrap p 0.60); decayed: worse than the static rule in the most recent third |
+| rates:treasury_future:63 | variance basic | 1416 | 39 | +0.1% | +0.2% | 0.3 | 2.0 | — | -0.10 (-0.09) | no | does not beat the static rule (t 0.3) |
+
+| Metric | Groups tested | Verified |
+|---|---|---|
+| Variance | 33 | 5 |
+| Residual factor exposure (beta / DV01 / CS01 / FX) | 27 | 2 |
+| Downside semivariance | 33 | 5 |
+| Drawdown | 33 | 7 |
+| VaR 95% (window) | 33 | 1 |
+| ES 95% (window) | 33 | 5 |
+| Variance, original six features | 33 | 3 |
+
+**Reading it honestly.** 225 group × metric tests were run; at a one-sided 2.3% level about 5 would pass by chance alone. Where a model passes, compare its mean adjustment with the constant's: when they are nearly equal and the gain vs the constant is a fraction of a percent, the useful information is the static rule's SIZING BIAS (what the constant learned), not conditional skill. The sizing bias is reported below; it is not applied to the static rule automatically.
+
+| Group | Constant adjustment learned | Variance gain of the constant vs static | Model's gain vs static |
+|---|---|---|---|
+| commodity:option:21 | -0.23 (hedge × 0.89) | +25.8% | +29.1% |
+| commodity:option:5 | -0.24 (hedge × 0.88) | +25.3% | +29.7% |
+| commodity:option:63 | -0.19 (hedge × 0.90) | +20.8% | +24.1% |
+| credit:spot:21 | -0.12 (hedge × 0.94) | +8.3% | +6.7% |
+| credit:spot:5 | -0.09 (hedge × 0.95) | +8.3% | +8.0% |
+| credit:spot:63 | -0.14 (hedge × 0.93) | +9.1% | +9.2% |
+| crypto:spot:21 | -0.30 (hedge × 0.85) | +40.9% | +40.9% |
+| crypto:spot:5 | -0.29 (hedge × 0.86) | +41.2% | +41.6% |
+| crypto:spot:63 | -0.30 (hedge × 0.85) | +41.0% | +41.0% |
+| equity:option:21 | -0.24 (hedge × 0.88) | +22.8% | +22.9% |
+| equity:option:5 | -0.22 (hedge × 0.89) | +15.2% | +15.5% |
+| equity:option:63 | -0.22 (hedge × 0.89) | +20.4% | +20.8% |
+| fx:forward:21 | -0.28 (hedge × 0.86) | +4.2% | +4.2% |
+| fx:forward:5 | -0.21 (hedge × 0.90) | +3.9% | +3.7% |
+| fx:forward:63 | -0.30 (hedge × 0.85) | +4.5% | +4.5% |
+| name:option:21 | -0.23 (hedge × 0.88) | +30.7% | +31.2% |
+| name:option:5 | -0.22 (hedge × 0.89) | +30.5% | +31.5% |
+| name:option:63 | -0.18 (hedge × 0.91) | +21.0% | +21.7% |
+| rates:spot:21 | -0.15 (hedge × 0.92) | +5.2% | +5.6% |
+| rates:spot:5 | -0.14 (hedge × 0.93) | +2.2% | +2.6% |
+| rates:spot:63 | -0.16 (hedge × 0.92) | +5.3% | +5.6% |
+| rates:treasury_future:21 | -0.10 (hedge × 0.95) | +0.2% | +0.9% |
+| rates:treasury_future:5 | -0.08 (hedge × 0.96) | -0.6% | +0.2% |
+| rates:treasury_future:63 | -0.09 (hedge × 0.95) | -0.1% | +0.6% |

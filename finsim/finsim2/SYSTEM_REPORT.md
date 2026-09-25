@@ -14,6 +14,138 @@ Commit key (details in §75): `be2af0f` ledger/corporate actions/FX · `2686ef2`
 ledger derivatives · `67bb0e6` hedge service/UI/net scores · `273b437` systematic objective · `1025ec7` docs ·
 `5325481` over-hedging fix · `82904a7` input validation.
 
+## Research phase 2 — 2026-09-25 (what improved, with the out-of-sample numbers)
+
+Rules kept: no weight retuned, no sign changed, no threshold loosened, the admission rule unchanged, nothing forced into
+production, Shaffer and ML never combined. Audits rerun on data to 2026-09-24: `SHAFFER_AUDIT.md` (157 assets, ML on 21,
+41 min) and `HEDGE_AUDIT.md` (110 cases × 1W/1M/3M). Every "t" below is date-clustered unless it says otherwise.
+
+**Corrections made during this phase (found by the checks, fixed before anything was used):**
+- The hedge-ML paired t counted every window as independent, but a group pools many books and hedges on the same dates.
+  It is now clustered by start date (the same fix the Shaffer admission test got earlier). The original variance-only
+  layer's one verified group (single-name hedges, 3M) does not survive: **0 groups verified**.
+- The hedge-ML test had no "constant resizing" baseline, so a model that only rediscovered a fixed sizing bias looked
+  like skill. The baseline is added and every model must now beat it.
+- VaR/ES verification read a bootstrap p of exactly 0.00 as a failure (`p or 1`). Fixed.
+- The ML beta-change model beat "no change" but not the textbook Blume adjustment, which is now a baseline.
+- The Credit, Cross-Asset and Macro families' "positive records" (Credit incremental t +8.4 at 1W) come from ONE
+  asset: BIL, a T-bill fund whose forward return is essentially the known bill yield. The audit now labels any family
+  with fewer than 5 assets "not evidence".
+- UI: the ML Lab crashed on a variable used before its definition (caught by the screenshot run); the risk forecasts
+  in the forecast record were shown as returns ("+77.5%" for a drawdown probability). Both fixed.
+
+### The ten questions
+
+**1. Did any new information family pass admission? — No.** Nine candidate families (the seven plus Earnings Surprise
+and Breadth). Incremental IC, date-clustered t before 2018 → from 2018:
+
+| Family | 1W | 1M | 3M |
+|---|---|---|---|
+| Carry | +0.2 → **+3.8** | +1.5 → **+3.5** | +0.7 → +1.9 |
+| Earnings Surprise (SUE, 43 stocks) | −1.3 → −1.1 | +0.2 → −1.9 | −0.5 → −1.8 |
+| Breadth | — → +0.1 | +0.5 → +0.2 | +1.7 → −0.6 |
+| Term Structure | −2.2 → −1.1 | −1.9 → −0.5 | — |
+| Yield Curve | −0.8 → −0.8 | +0.1 → −1.0 | +1.1 → −1.4 |
+
+Carry is again strong only after 2018 and fails the pre-2018 discovery test, so it stays in shadow as the rule requires.
+Not buildable point in time from allowed sources: CFTC positioning (the CFTC is not an allowed domain), short interest
+(FINRA's short-sale volume files start in 2019, too late for a pre-2018 test), consensus estimates, revisions and
+forward valuation (the Alpha Vantage free tier allows 25 requests a day, already used up), fund flows, option surfaces
+and futures curves.
+
+**2. Did Shaffer OOS IC improve? — No.** Pooled production IC with date-clustered t: 1W +0.012 (t 1.2), 1M +0.007
+(0.4), 3M −0.003 (0.1), 6M +0.013 (0.3), 12M −0.009 (0.1). This is identical to the previous audit; nothing entered
+production. Methodology variants tested in shadow (§27b):
+- dropping the economic prior H: neutral (1M incremental t −0.2 → +0.6);
+- a strict validation multiplier V' = clip(t/2, 0, 1): clearly worse (incremental t from 2018 −4.8 to −6.2 at 1D–1M; score IC from
+  2018 −0.008 → −0.025 at 1M).
+
+Neither is adopted. Health check: the last three years' clustered IC is negative at 3M (−0.21, t −2.6) and 6M
+(−0.28, t −2.3). Every Shaffer horizon reads **NO VERIFIED EDGE** (12M+: **INSUFFICIENT DATA**).
+
+**3. Did score monotonicity improve? — Yes, from a bug fix, not from new information.** Mean calibration monotonicity
+across assets, before → after fixing the calibration bin-merge bug: 1W 0.136 → 0.137, 1M 0.046 → 0.109, 3M −0.017 →
+0.037, 6M 0.060 → 0.114, 12M −0.004 → 0.011. It is still weak.
+
+**4. Did any improvement persist after 2018? — No.** The production score's IC from 2018: 1W −0.007, 1M −0.008,
+3M −0.045, 6M −0.023, 12M −0.040. The only family that looks better after 2018 (Carry) did not qualify before it.
+V_f audit (item 8): families with a negative record keep V ≈ 0.40–0.45 from 2018 (for example Rates at 1W: t −2.7,
+V 0.45, influence 5.0% → 7.8%). They are "not shrinking enough", but the stricter-V variant that would shrink them
+performed worse out of sample (Q2), so the per-asset validation record is too noisy to zero families on. Nothing was
+changed by hand.
+
+**5. Did ML risk prediction improve? — Yes, risk is where ML has something; returns: no.** Assets where the model
+beat every naive baseline out of sample (and in both halves of the OOS period), out of 20–21:
+
+| Horizon | Return | Direction | Volatility | Drawdown prob. | Tail loss | Beta change (incl. Blume) |
+|---|---|---|---|---|---|---|
+| 1W | 2 | 0 | 9 (3) | **19 (14)** | 8 (1) | — |
+| 1M | 0 | 0 | 11 (2) | 10 (7) | 11 (2) | 5 (2) |
+| 3M | 0 | 0 | 13 (3) | 6 (2) | 9 (4) | 5 (2) |
+| 6M | 0 | 0 | 13 (7) | 4 (2) | 11 (8) | 7 (2) |
+| 12M | 0 | 1 | **14 (9)** | 4 (1) | **13 (9)** | 6 (3) |
+
+Median error improvement over the best baseline: volatility +18% at 12M, tail loss +7% at 12M, drawdown Brier +5% at
+1W; return R² vs the historical mean is negative at every horizon. Health: ML volatility and tail-loss models are
+HEALTHY at 6M–12M, drawdown at 1W/1M/6M; the ML return model is NO VERIFIED EDGE everywhere.
+
+**6. Did hedge ML beat static hedge rules in more groups? — Barely, and mostly by learning a constant.** With
+objective-specific targets and the richer features, verified against the static rule, a constant resizing and
+min-variance, all date-clustered, the following group × metric tests passed out of 33 each: variance 5, factor exposure
+2 (of 27), downside 5, drawdown 7, VaR 1, ES 5. That is 25 of 192, where chance alone gives about 4–5. The richer
+features barely helped: 5 variance passes vs 3 with the original six features.
+
+Where a model passes, its mean adjustment equals the constant's (for example equity options at 1W: −0.22 vs −0.22),
+and its gain over the constant is a fraction of a percent. The real finding is a **sizing bias in the static rule**:
+option hedges sized at full delta are about 11% too large for variance (the constant learned ×0.88–0.91, worth
++15–31% variance reduction vs the static rule), crypto ETF hedges ×0.85 (+41%), FX forwards ×0.85–0.90 (+4%), credit
+×0.93–0.95 (+8%). The bias is reported, not applied to the static rule. Health: only the drawdown metric clears the
+20%-of-groups bar.
+
+**7. Did hedge costs become more realistic? — Partly.**
+- Short proceeds now earn the configured rate, and short financing enters the net score.
+- Option spreads and liquidity come from market quotes when a chain is imported.
+- No chain source is reachable (Cboe is blocked), so option costs are still modelled.
+- Historical bid/ask and liquidity are not features of the hedge ML: they are not available point in time.
+
+**8. Did option results change under improved volatility assumptions? — Not measurable yet.** The quote → surface →
+flat-vol pricing path and the confidence penalty (M = 1.0 / 0.9 / 0.8) are in place, and every option shown is labelled
+MODEL-PRICED — FLAT VOLATILITY ASSUMPTION. With no chain data there is no surface to test, so the walk-forward option
+results are unchanged.
+
+**9. Did crisis replay reveal hidden risk? — Yes.** On the demo book (NAV $1.62M):
+
+| Crisis | Factor replay | Own-history replay | Crisis 1-day VaR 95% |
+|---|---|---|---|
+| Dot-com bust | −$470k (−29%) | −$325k | $20.9k (normal $15.6k) |
+| 2008 | −$178k | −$369k | — |
+| March 2020 | −$208k | — | $75k (4.8× normal) |
+| 2022 inflation / rate shock | −$297k | — | — |
+
+The 2008 gap between the factor replay and the book's own history shows what the factor model misses.
+
+**10. Did attribution fully reconcile daily P&L? — Yes.** On the real ledger's last 60 sessions: 0 days unreconciled,
+maximum residual $0, and the "Trading & other" remainder under $1 on every day (none of those days had trades).
+
+### Model health (new page, `/fs2/health`)
+Statuses are pre-declared (HEALTHY / WEAKENING / DECAYING / NO VERIFIED EDGE / INSUFFICIENT DATA). As of today:
+16 / 11 / 0 / 15 / 4.
+- Shaffer: NO VERIFIED EDGE at 1W–6M.
+- ML return: NO VERIFIED EDGE.
+- ML volatility and tail loss: WEAKENING at short horizons, HEALTHY at 6M–12M.
+- ML drawdown: HEALTHY at 1W/1M.
+- Shaffer Hedge static rule: HEALTHY for equity beta (median variance reduction 44%, tail 72%), rates (70%), credit
+  (95%) and crypto (48%). Single-name 100% is trivial: it shorts the stock itself.
+- Currency and commodity hedges RAISE variance (−20%, −30%) but cut tail loss, so they are labelled "tail only".
+
+The live ledger now also records the ML volatility and drawdown forecasts and grades them against realised volatility
+and realised drawdowns. The first grades arrive when the 1W horizon passes.
+
+**Bottom line.** Where the evidence is:
+- Shaffer Hedge: the static hedge rule works.
+- ML: helps predict risk (volatility, tail loss, drawdown probability), not returns.
+- Shaffer Score: structured evidence with no verified edge, and it says so.
+
 ## Update — 2026-09-25 (after review)
 
 Governing rule adopted: **do not optimise Shaffer v2 further; add independent economic information in shadow, keep

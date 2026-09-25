@@ -745,6 +745,8 @@ def markdown(u: dict, agg: dict) -> str:
             tc = v.get("t_partial_clustered")
             tp = tc if tc is not None else (v["t_partial"] or 0)
             verdict = "adds independent information" if tp >= 2 else "some evidence" if tp >= 1 else "negative record" if tp <= -2 else "no measurable value" if abs(tp) < 1 else "weak"
+            if v["assets"] < ADMIT_MIN_ASSETS:
+                verdict = f"not evidence: only {v['assets']} asset(s)"
             w(f"| {f} | {v['assets']} | {_fmt(v['ic'])} | {_fmt(v['t'], 1)} | {_fmt(v['partial'])} | {_fmt(v['t_partial'], 1)} | {_fmt(tc, 1)} | {verdict} |")
         w("")
     w("## 21b. Does validation shrink the families with a negative record?")
@@ -767,7 +769,9 @@ def markdown(u: dict, agg: dict) -> str:
             inf = v.get("influence") or {}
             d, c = inf.get("decide") or {}, inf.get("confirm") or {}
             tc = v.get("t_partial_clustered")
-            if tc is None or tc > -1:
+            if v["assets"] < ADMIT_MIN_ASSETS:
+                verdict = f"not evidence: only {v['assets']} asset(s)"
+            elif tc is None or tc > -1:
                 verdict = "—" if tc is None or tc < 1 else "positive record"
             elif c and d and (c["share"] > 0.5 * d["share"] or c["V"] >= 0.4):
                 verdict = "NOT shrinking enough"
@@ -847,7 +851,7 @@ def markdown(u: dict, agg: dict) -> str:
     from .candidates import CANDIDATE_FEATURES
     w("## 27. Candidate families (shadow): do they add information?")
     w("")
-    w("Seven families of economically different information were added in shadow: they are computed point in time and run through the same "
+    w(f"{len(cfg.CANDIDATE_FAMILIES)} families of economically different information were added in shadow (Earnings Surprise and Breadth in research phase 2): they are computed point in time and run through the same "
       "evidence machinery (weights, confidence, regime, decay, validation) but are NOT in the production score. Every asset's matured "
       f"out-of-sample record is split at one common date, {CONFIRM_FROM}: before it decides, from it confirms. The incremental IC (partial "
       "correlation of the family score with the forward return given the production score) is pooled **by date** — each week's average "
