@@ -27,10 +27,11 @@ anything later in this document, this wins.
   appears only on a genuinely shaky claim. **Rigour is unchanged — only presentation changed.**
 - **The Board:** the closing edition carries a fixed 25-row watchlist chart near the top, from
   `config/watchlists.yml` → `board:`, in Logan's order and grouping (shared-rules §17).
-- **Local section**, low in every weekday edition, covering three beats in their own right:
-  Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County · Pennsylvania. Up to two
-  items per beat, quality-gated, never padded. The **morning** edition leads it with Pittsburgh-area
-  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18).
+- **Local section**, minimal and low in every weekday edition (finance-first, 2026-09-25), drawing
+  on three beats: Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County ·
+  Pennsylvania. At most ONE item total across the beats, quality-gated, never padded — most editions
+  carry none. The **morning** edition still leads Local with Pittsburgh-area weather from the National
+  Weather Service gridpoint for Bridgeville, PA (shared-rules §18).
 - **Listen to text** on every report: an in-page Web Speech player injected by
   `site/assets/report.js`. Chosen over generated audio files because it works on every report
   including the existing archive, costs nothing, and adds nothing to the repository. Known limit,
@@ -198,26 +199,31 @@ It never restarts.
 
 Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnings, votes, hearings, court decisions, summits, deadlines, launches, milestones — ET primary, importance-classified (Critical/High/Medium/Low, with reason). Closing: completed (with results), delayed, canceled, still upcoming, overnight, tomorrow's majors. Sunday: full day-by-day week plan with expected market sensitivity.
 
-## 18. Weekday MORNING report structure (6:30 AM ET) — revised 2026-08-16
+## 18. Weekday MORNING report structure (6:30 AM ET) — finance-first, revised 2026-09-25
 
-Masthead · The Brief · Top Stories · Overnight · Politics & Government · The World · The Economy ·
-Business · Technology & AI · Science & Space · Today's Calendar · Before the Open ·
-Risks & Scenarios · **Local** (weather strip, then the three beats) · Market Appendix (collapsed) ·
-Colophon.
+Masthead · The Brief (markets-led) · Top Stories (finance-weighted) · Overnight & Since the Close ·
+Before the Open (expanded centerpiece) · The Economy (expanded) · Business & Earnings (expanded) ·
+Today's Calendar · Risks & Scenarios · Beyond the Tape (one short non-market roundup) ·
+**Local** (weather strip + at most one item) · Market Appendix (collapsed) · Colophon.
 
-Domain sections with nothing material are omitted, not padded. Before the Open is prose, not a
-table: futures, yields, dollar, VIX, oil, gold, BTC, what the tape appears to price, the most
+Both weekday editions are markets-and-economy papers: finance / macro / Fed / rates / credit /
+corporate dominate and gain the depth, while everything non-financial (politics, the world, tech/AI,
+science & space) is compressed into the single **Beyond the Tape** roundup. Domain items with
+nothing material are omitted, not padded. Before the Open is prose, not a table: futures, the curve,
+dollar, VIX term structure, oil, gold, HY credit, BTC, what the tape appears to price, the most
 fragile assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
 
-## 19. Weekday CLOSING report structure (4:30 PM ET) — revised 2026-08-16
+## 19. Weekday CLOSING report structure (4:30 PM ET) — finance-first, revised 2026-09-25
 
-Masthead · The Brief · **The Board** (the 25-row watchlist chart, shared-rules §17) · Top Stories ·
-What Changed Today · Politics & Government · The World · The Economy · Business ·
-Technology & AI · Science & Space · What Moved Markets · Winners & Losers · Tomorrow ·
-**Local** (no weather strip) · Market Appendix (collapsed) · Colophon.
+Masthead · The Brief (markets-led) · **The Board** (the 25-row watchlist chart, shared-rules §17) ·
+Top Stories (finance-weighted) · What Moved Markets (expanded) · Winners & Losers ·
+What Changed Today · The Economy (expanded) · Business & Earnings (expanded) ·
+Beyond the Tape (one short non-market roundup) · Tomorrow · **Local** (no weather strip, at most one
+item) · Market Appendix (collapsed) · Colophon.
 
-What Moved Markets keeps its four attribution labels — `Confirmed catalyst` / `Likely contributor` /
-`Market narrative` / `Unexplained`. Those are honesty, not clutter, and they stay.
+What Moved Markets sits high in the edition and keeps its four attribution labels —
+`Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained`. Those are honesty,
+not clutter, and they stay.
 
 What Moved Markets: open/morning/midday/close phases; rates, data, earnings, policy, geopolitics, commodities, positioning, technicals, rebalancing/flows. Label: Confirmed catalyst / Likely contributor / Market narrative / Unexplained. Never force a narrative.
 
