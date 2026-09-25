@@ -179,6 +179,9 @@ class Engine(Base):
         self.assertLess(path[0.0], path[-0.1])
         self.assertLess(path[-0.1], path[-0.2])
         self.assertAlmostEqual(leg["option"]["delta_adjusted_notional"], leg["quantity"] * 100 * S * leg["option"]["delta"], places=4)
+        # an option price is a model price at flat volatility and says so, on the leg and in the warnings
+        self.assertEqual(leg["pricing_label"], P.FLAT_VOL_LABEL)
+        self.assertTrue(any(P.FLAT_VOL_LABEL in w for w in res["warnings"]))
 
     def test_scenarios_and_before_after(self):
         res = E.analyze(self.r, [{"id": "SPY", "quantity": 1000}, {"id": "TLT", "quantity": 2000}], "beta", {"reduction": 0.5}, nav=1e6,

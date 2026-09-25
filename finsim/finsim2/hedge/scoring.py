@@ -56,6 +56,7 @@ def net_scores(research, inst_id: str, horizons=HORIZONS, market: Optional[Marke
     fvol, vsrc = m.vol_forecast(und)
     fvol = fvol or m.realized_vol(und) or 0.2
     out = {"id": inst_id, "name": inst.name, "type": inst.type, "product_type": inst.product_type, "underlying": und, "horizons": {},
+           "pricing_label": pr.pricing_label,
            "vol_forecast": fvol, "vol_source": vsrc, "rate": r}
     a = research.store.asset(inst.id) if inst.type == "SPOT" else None
     can_short = inst.type in ("FUTURE", "FORWARD") or (inst.type == "SPOT" and a and a.get("asset_class") not in ("CRYPTO", "INDEX")

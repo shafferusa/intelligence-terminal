@@ -118,6 +118,24 @@ class Integrity(LedgerCase):
             self.led.withdraw(1500, self.days[5])
 
 
+class ContinuousSeries(LedgerCase):
+    def test_a_continuous_futures_series_cannot_be_opened_but_an_old_position_can_be_closed(self):
+        self.store.upsert_prices("WTI", [{"date": d, "close": 70.0, "adj_close": 70.0} for d in self.days])
+        self.led = Ledger(self.store, Panel(self.store))
+        self.led.deposit(1e6, self.days[0])
+        for side in ("BUY", "SHORT"):
+            with self.assertRaises(ValueError) as cm:
+                self.led.trade("WTI", 10, side, date=self.days[10])
+            self.assertIn("continuous front-month", str(cm.exception))
+            self.assertIn("USO", str(cm.exception))
+        # a position booked before the rule (inserted directly) still replays and can be sold
+        self.store.add_transactions([{"portfolio_id": "main", "date": self.days[10], "kind": "BUY", "asset_id": "WTI", "quantity": 10.0,
+                                      "price": 70.0, "fee": 0.0, "currency": "USD", "note": "", "basis_date": self.days[10]}])
+        self.assertAlmostEqual(self.led.holdings()["positions"]["WTI"]["quantity"], 10.0)
+        self.led.trade("WTI", 10, "SELL", date=self.days[20])
+        self.assertAlmostEqual(self.led.holdings()["positions"].get("WTI", {}).get("quantity", 0.0), 0.0)
+
+
 class CorporateActions(LedgerCase):
     def test_split_after_a_trade_at_the_brokers_price_keeps_its_value(self):
         # closes are split-adjusted (today's basis); a 4:1 split happened on day 100

@@ -752,7 +752,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
                   "participation": part, "score": sh, "components": {"E": E_used, "Q": Q, "L": L, "R": Rg, "B": B, "T": T,
                   "E_source": "walk-forward realised ÷ expected" if E is not None else "expected (no history)"},
                   "history": _hist_view(hist), "_features": (hist or {}).get("features_today"), "greeks": pr.greeks_per_unit(),
-                  "inputs": pr.inputs, "notes": pr.notes,
+                  "inputs": pr.inputs, "notes": pr.notes, "pricing_label": pr.pricing_label,
                   "hedge_pct": {f: (-(ql * H.get(f, 0.0)) / R[f]) if R.get(f) else None for f in S},
                   "exposure_added": {f: ql * v for f, v in H.items() if f not in S and abs(ql * v) > 1e-6}})
     eligible = [c for c in cands if c.get("status") == "ELIGIBLE"]
@@ -821,6 +821,8 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
     if risk_tab["raw"]["sigma_daily"] > risk_tab["before"]["sigma_daily"] * 1.001 and package:
         warnings.append(f"Hedging this risk RAISES total volatility ({risk_tab['before']['sigma_daily']:,.0f} → {risk_tab['raw']['sigma_daily']:,.0f} $/day): "
                         "the targeted exposure has been offsetting other risks in the book.")
+    if objective == "crash" or any(L["type"] == "OPTION" for L in package):
+        warnings.append(f"Options are {P.FLAT_VOL_LABEL}. {P.FLAT_VOL_NOTE}")
     if not package and eligible:
         warnings.append("No package: the requested change is smaller than one tradeable lot of every eligible product, or costs exceed the benefit.")
     if not eligible:
@@ -923,7 +925,7 @@ def _leg_view(c: dict, q: float, R: Dict[str, float], S: List[str], h: int, nav:
             "cost": {k: (v * abs(q) if isinstance(v, (int, float)) and k != "rolls" else v) for k, v in cost.items() if k != "info"}
                     | {"info": {k: (v * abs(q) if isinstance(v, (int, float)) and k != "forecast_vol" else v) for k, v in (cost.get("info") or {}).items()}},
             "cost_pct_nav": (abs(q) * (cost.get("total") or 0.0) / nav) if nav else None, "why": "; ".join(why) or "reduces the targeted risk",
-            "expiry": inst.expiry, "roll": inst.roll, "notes": pr.notes}
+            "expiry": inst.expiry, "roll": inst.roll, "notes": pr.notes, "pricing_label": pr.pricing_label}
     if inst.type == "FUTURE":
         proxy = inst.spec.get("proxy") or ("IEF" if inst.spec["kind"] == "treasury" else inst.spec.get("pair") or "SPY")
         sd = (pr.m.realized_vol(proxy) or 0.15) / math.sqrt(252)

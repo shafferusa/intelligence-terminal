@@ -66,6 +66,24 @@ def is_instrument(a: Optional[str]) -> bool:
     return bool(a) and str(a).startswith(DERIVATIVE_PREFIX)
 
 
+# stitched continuous futures series (Yahoo "=F"): the price jumps to the next contract at each roll, so a position
+# held through a roll would book the calendar spread as P&L. They can be analysed, and a position booked before this
+# rule can be closed, but none can be opened. Funds that hold and roll the contracts are the tradeable exposure.
+CONTINUOUS_PROXY = {"GOLD": "GLD", "SILVER": "SLV", "WTI": "USO", "BRENT": "USO", "NATGAS": "UNG", "COPPER": "CPER",
+                    "CORN": "DBA", "WHEAT": "DBA", "SOYBEANS": "DBA", "COFFEE": "DBA", "PLATINUM": "DBC"}
+
+
+def continuous_series(a: Optional[dict]) -> bool:
+    return bool(a) and (a.get("asset_class") in ("COMMODITY", "FUTURE") or bool((a.get("meta") or {}).get("continuous_front_month")))
+
+
+def continuous_refusal(a: dict) -> str:
+    proxy = CONTINUOUS_PROXY.get(a["id"])
+    return (f"{a['id']} is a continuous front-month futures series: its price jumps to the next contract at every roll, so a "
+            f"held position would book the roll as profit or loss. It cannot be bought or shorted"
+            + (f"; {proxy} holds and rolls the contracts and is tradeable." if proxy else ".") + " An existing position can still be sold.")
+
+
 class LedgerError(ValueError):
     """A transaction that would make the ledger inconsistent (overdraft, selling more than is held, …)."""
 
@@ -192,6 +210,8 @@ class Ledger:
             a = self.store.asset(asset_id)
             if a is None:
                 raise ValueError(f"unknown asset {asset_id}")
+            if side in ("BUY", "SHORT") and continuous_series(a):
+                raise ValueError(continuous_refusal(a))
             if side in ("SHORT", "COVER"):
                 meta = a.get("meta") or {}
                 if a.get("asset_class") in ("CRYPTO", "INDEX") or meta.get("synthetic") or usd_base_fx(a):
@@ -889,10 +909,15 @@ def analytics(store, panel: Panel, ledger: Ledger, scores: Optional[Dict[str, di
                "unrealized": (mv - p["cost"]) if p["quantity"] else 0.0, "realized": p["realized"], "income": p.get("income", 0.0),
                "side": "short" if p["quantity"] < 0 else "long", "exposure": sum(v for _, v in eq), "risk_proxy": eq}
         if is_instrument(a):
+            from ..hedge.products import pricing_label
             ins = ledger.inst(a)
             row.update({"instrument": ins.view(), "entry": p.get("avg") if ins.type in ("FUTURE", "FORWARD") else None,
                         "unrealized": mv if ins.type in ("FUTURE", "FORWARD") else (mv - p["cost"] if p["quantity"] else 0.0),
-                        "product_type": ins.product_type})
+                        "product_type": ins.product_type, "pricing_label": pricing_label(ins)})
+        elif abs(p["quantity"]) > 1e-12 and continuous_series(meta):
+            row["continuous_series"] = True
+            warnings.append(f"{a}: a continuous front-month futures series — its P&L includes roll jumps between contracts; "
+                            f"it can no longer be bought{(' (' + CONTINUOUS_PROXY[a] + ' is the tradeable exposure)') if a in CONTINUOUS_PROXY else ''}")
         rows.append(row)
     held = [r for r in rows if abs(r["quantity"]) > 1e-12]
     for r in rows:

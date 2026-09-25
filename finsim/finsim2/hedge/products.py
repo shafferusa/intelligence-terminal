@@ -346,6 +346,20 @@ def parse(inst_id: str, store=None) -> Instrument:
 
 
 # ------------------------------------------------------------------ pricing an instrument at a market snapshot
+FLAT_VOL_LABEL = "MODEL-PRICED — FLAT VOLATILITY ASSUMPTION"
+FLAT_VOL_NOTE = ("No option-chain or skew data: every strike uses the at-the-money implied volatility, so out-of-the-money "
+                 "puts are probably priced too cheaply and crash hedges look more attractive than they are.")
+
+
+def pricing_label(inst) -> Optional[str]:
+    """How the price of an instrument is obtained, when it is not a market quote."""
+    if inst.type == "OPTION":
+        return FLAT_VOL_LABEL
+    if inst.type in ("FUTURE", "FORWARD"):
+        return "MODEL-PRICED — FAIR VALUE, NOT A QUOTE"
+    return None
+
+
 class Priced:
     """An instrument evaluated at one Market snapshot: unit price, unit value, unit notional, exposures per unit,
     Greeks, costs, liquidity and eligibility. `exposures` are $ per unit factor move for ONE unit (share, contract,
@@ -358,6 +372,7 @@ class Priced:
         self.greeks: Optional[dict] = None
         self.inputs: dict = {}
         self.price: Optional[float] = None
+        self.pricing_label = pricing_label(inst)
         self._price()
 
     # -------------------------------------------------------------- price

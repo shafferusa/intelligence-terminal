@@ -882,7 +882,7 @@
   };
   function posTable(el, an, compact) {
     const held = an.positions.filter(p => Math.abs(p.quantity) > 1e-12 || p.realized);
-    const cols = [{ k: 'asset_id', label: 'Ticker', l: 1, f: p => `<b>${esc(p.asset_id)}</b><span class="sub">${esc(p.name || '')}</span>` }, ...(compact ? [] : [{ k: 'asset_class', label: 'Class', l: 1, f: p => `<span class="pill">${esc(clsName(p.asset_class))}</span>` }]),
+    const cols = [{ k: 'asset_id', label: 'Ticker', l: 1, f: p => `<b>${esc(p.asset_id)}</b><span class="sub">${esc(p.name || '')}</span>${p.pricing_label ? priceTag(p.pricing_label) : ''}${p.continuous_series ? '<span class="pill warn" style="font-size:10.5px" title="Continuous front-month series: P&L includes roll jumps; can be sold, not bought">continuous series</span>' : ''}` }, ...(compact ? [] : [{ k: 'asset_class', label: 'Class', l: 1, f: p => `<span class="pill">${esc(clsName(p.asset_class))}</span>` }]),
       { k: 'quantity', label: 'Quantity', f: p => `${fmt.qty(p.quantity)}${p.quantity < 0 ? ' <span class="pill neg" style="font-size:10px">short</span>' : ''}` }, { k: 'price', label: 'Price', f: p => fmt.px(p.price) }, { k: 'market_value', label: 'Value', f: p => fmt.money(p.market_value) },
       { k: 'exposure', label: 'Exposure', title: 'economic exposure: notional for futures, delta-dollars for options', f: p => fmt.money(p.exposure) },
       ...(compact ? [] : [{ k: 'cost_basis', label: 'Cost', f: p => fmt.money(p.cost_basis) }]), { k: 'unrealized', label: 'Unrealised', cls: p => sign(p.unrealized), f: p => fmt.signed(p.unrealized) },
@@ -943,11 +943,12 @@
       + `<tr><td class="l">Delta / gamma / vega / theta</td>${keys.map(b => { const g = books[b].greeks || {}; return `<td class="faint" style="font-size:12px">${fmt.big(g.delta_usd)} / ${fmt.num(g.gamma_usd_1pct, 0)} / ${fmt.num(g.vega_usd, 0)} / ${fmt.num(g.theta_usd, 0)}</td>`; }).join('')}</tr>`;
     return `<div class="tbl-wrap"><table><thead><tr><th class="l">Risk</th>${keys.map(k => `<th>${esc(labels[k])}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
   }
+  const priceTag = lab => lab ? `<span class="pill ${/FLAT VOLATILITY/.test(lab) ? 'warn' : ''}" style="font-size:10.5px;white-space:normal" title="${/FLAT VOLATILITY/.test(lab) ? 'No option-chain or skew data: every strike uses the at-the-money implied volatility, so out-of-the-money puts are probably priced too cheaply and crash hedges look more attractive than they are.' : 'Priced at fair value from the underlying, rates and dividends: not an exchange quote.'}">${esc(lab)}</span>` : '';
   function legDetail(L) {
     if (L.option) {
       const o = L.option;
       const path = (o.hedge_ratio_scenarios || []).map(p => `<td>${fmt.pct(p.hedge_ratio, 0)}</td>`).join('');
-      return `<div style="margin-top:6px;font-size:12.5px;line-height:1.6"><b>Option</b>: ${o.right === 'P' ? 'put' : 'call'} ${fmt.px(o.strike)} expiring ${fmt.date(o.expiry)} (${esc(o.style)}) · premium ${fmt.money(o.premium_per_contract, 0)} per contract, ${fmt.money(o.premium_total, 0)} total (${fmt.pct(o.premium_total / (L.nav || 1), 2)} of NAV) · Δ ${fmt.num(o.delta, 3)} · Γ ${fmt.num(o.gamma, 5)} · vega ${fmt.money(o.vega_usd, 0)}/vol pt · theta ${fmt.money(o.theta_usd, 0)}/day · implied vol ${fmt.pct(o.iv, 1)}<br>
+      return `<div style="margin-top:6px;font-size:12.5px;line-height:1.6">${priceTag(L.pricing_label)} <b>Option</b>: ${o.right === 'P' ? 'put' : 'call'} ${fmt.px(o.strike)} expiring ${fmt.date(o.expiry)} (${esc(o.style)}) · premium ${fmt.money(o.premium_per_contract, 0)} per contract, ${fmt.money(o.premium_total, 0)} total (${fmt.pct(o.premium_total / (L.nav || 1), 2)} of NAV) · Δ ${fmt.num(o.delta, 3)} · Γ ${fmt.num(o.gamma, 5)} · vega ${fmt.money(o.vega_usd, 0)}/vol pt · theta ${fmt.money(o.theta_usd, 0)}/day · implied vol ${fmt.pct(o.iv, 1)}<br>
         <b>Delta-adjusted notional ${fmt.money(o.delta_adjusted_notional, 0)}</b> (contracts × 100 × underlying × Δ): the hedge exposure. The premium is its cost.</div>
         <div class="tbl-wrap" style="margin-top:6px"><table><thead><tr><th class="l">Market move</th>${(o.hedge_ratio_scenarios || []).map(p => `<th>${fmt.spct(p.market_move, 0)}</th>`).join('')}</tr></thead><tbody><tr><td class="l">Hedge ratio (delta re-computed)</td>${path}</tr><tr><td class="l">Option value</td>${(o.hedge_ratio_scenarios || []).map(p => `<td>${fmt.money(p.option_value, 0)}</td>`).join('')}</tr></tbody></table></div>`;
     }
@@ -988,7 +989,7 @@
       <div class="muted" style="font-size:12.5px;margin-top:6px"><b>ML adjustment</b> (FinalHedge = RawHedge × (1 + α·MLAdjustment), α ${ml.alpha}, |adjustment| ≤ ${ml.cap}): ${mlTxt}</div>
       <h3 style="margin:16px 0 6px">Candidate products for this risk <span class="faint" style="font-weight:400;font-size:12px">(click one to use it alone)</span></h3>
       <div class="tbl-wrap"><table class="wraph"><thead><tr><th class="l">Product</th><th>Shaffer Hedge Score</th><th>Unit-rule size</th><th>Notional</th><th>Est. cost</th><th>Exp. variance cut</th><th>Basis ($/day)</th><th>ADV use</th><th>Walk-forward</th><th class="l">E·Q·L·R·B·T</th></tr></thead><tbody>
-      ${el_.slice(0, 14).map(c => { const h = c.history || {}, k = c.components || {}; return `<tr class="click" data-cand="${esc(c.id)}"><td class="l wrap" style="max-width:250px"><b>${esc(c.id)}</b><span class="sub">${esc(c.name || '')} · ${esc(c.product || '')}</span>${badge(c.id)}</td>
+      ${el_.slice(0, 14).map(c => { const h = c.history || {}, k = c.components || {}; return `<tr class="click" data-cand="${esc(c.id)}"><td class="l wrap" style="max-width:250px"><b>${esc(c.id)}</b><span class="sub">${esc(c.name || '')} · ${esc(c.product || '')}</span>${badge(c.id)}${c.pricing_label && /FLAT/.test(c.pricing_label) ? ' ' + priceTag(c.pricing_label) : ''}</td>
         <td><b class="${scoreCls(c.score)}">${scoreTxt(c.score)}</b></td><td class="wrap" style="max-width:190px">${c.side === 'BUY' ? '+' : '−'}${fmt.qty(Math.abs(c.unit_quantity))}<span class="sub">${esc(c.risk_unit || '')}</span></td><td>${fmt.money(c.notional, 0)}</td>
         <td>${fmt.money(c.cost_total, 0)}</td><td>${fmt.pct(c.expected_reduction, 0)}</td><td>${fmt.money(c.basis_risk_daily, 0)}</td><td>${fmt.pct(c.participation, 2)}</td>
         <td class="wrap" style="max-width:170px">${h.n ? (ana.objective === 'crash' && h.tail_reduction != null ? `tail ${fmt.pct(h.tail_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))} · variance ${fmt.pct(h.realized_reduction, 0)}</span>` : `${fmt.pct(h.realized_reduction, 0)} <span class="sub">${h.n} windows since ${esc((h.first || '').slice(0, 4))}${h.tail_reduction != null ? ` · tail ${fmt.pct(h.tail_reduction, 0)}` : ''}</span>`) : '<span class="faint">—</span>'}</td>
@@ -1105,7 +1106,8 @@
       $('#tkBody', m).innerHTML = `<div class="grid g-ticket">
         <div class="card"><div class="row" style="justify-content:space-between"><div><b style="font-size:16px">${esc(t.name || id)}</b><div class="muted">${esc(t.side)} ${fmt.qty(t.quantity)} at ${fmt.px(t.price)} · notional ${fmt.money(t.notional, 0)} · cash ${fmt.signed(-t.cash_cost, 0)}</div></div>
           <div class="muted" style="text-align:right;font-size:12px">free cash ${fmt.money(p.free_cash, 0)}<br>NAV ${fmt.money(p.nav, 0)}</div></div>
-          ${t.eligible ? '' : `<div class="pill warn" style="white-space:normal;margin-top:8px">${esc(t.reasons.join('; '))}</div>`}
+          ${t.pricing_label ? `<div style="margin-top:8px">${priceTag(t.pricing_label)}</div>` : ''}
+          ${t.blocked ? `<div class="pill neg" style="white-space:normal;margin-top:8px">Cannot be traded: ${esc(t.blocked)}</div>` : t.eligible ? '' : `<div class="pill warn" style="white-space:normal;margin-top:8px">${esc(t.reasons.join('; '))}</div>`}
           <h3 style="margin:14px 0 6px">Shaffer Score</h3>
           ${sh.horizons ? `<div class="row" style="gap:6px;flex-wrap:wrap">${Object.entries(hs).filter(([k]) => ['1D', '1W', '1M', '3M', '6M', '12M', '3Y', '5Y'].includes(k)).map(([k, v]) => `<span class="pill ${k === hz ? 'on' : ''}" title="calibrated ${scoreTxt(v.calibrated)}">${k} <b class="${scoreCls(v.score)}">${scoreTxt(v.score)}</b></span>`).join('')}</div>
           <div style="margin-top:8px">${hz}: Shaffer <b class="${scoreCls(cur.score)}">${scoreTxt(cur.score)}</b> · calibrated ${scoreTxt(cur.calibrated)} · ML <b class="${scoreCls(cur.ml)}">${scoreTxt(cur.ml)}</b> · <span class="pill">${esc(cur.agreement || '—')}</span> · confidence ${pct0(cur.confidence)}${cur.expected != null ? ` · expected ${fmt.spct(cur.expected, 1)}` : ''}</div>
@@ -1116,7 +1118,8 @@
         <div class="card"><h3 style="margin:0 0 6px">What this trade adds</h3>${riskCompare(p.portfolio, { before_trade: 'Before', after_trade: 'After trade', after_hedge: 'After trade + hedge' })}</div></div>
         <div class="card" style="margin-top:14px"><h2 style="margin-top:0">Shaffer Hedge for this trade</h2><div id="tkHedge"></div></div>`;
       hedgePanel($('#tkHedge', m), p.hedge, { onPick: cid => { st.use = cid; load(); }, scenBefore: 'Trade alone', bookLabels: { before: 'Trade alone', raw: 'Trade + raw hedge', final: 'Trade + final hedge' } });
-      $('#tkGo', m).disabled = false;
+      $('#tkGo', m).disabled = !!t.blocked;
+      $('#tkErr', m).textContent = t.blocked ? 'This trade cannot be booked (see above).' : '';
     }
     $$('#tkSide button', m).forEach(b => b.onclick = () => { st.side = b.dataset.s; $$('#tkSide button', m).forEach(x => x.classList.toggle('on', x === b)); refresh(); });
     $('#tkQ', m).oninput = e => { st.qty = N(e.target.value); if (st.qty) $('#tkA', m).value = ''; refresh(); };

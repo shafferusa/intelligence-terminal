@@ -117,12 +117,17 @@ def trade_preview(app, asset_id: str, side: str, quantity: float, objective: Opt
     fin = [{"id": L["id"], "quantity": L["quantity"]} for L in ana["package"]["final"]]
     books = {"before_trade": book0, "after_trade": book1, "after_hedge": _merge(book1, fin)}
     metrics = book_metrics(research, books, max(nav, 1.0))
+    try:                                    # the ledger's own per-trade rules (not cash, which the package checks)
+        led.prepare(asset_id, abs(q), side)
+        blocked = None
+    except ValueError as e:
+        blocked = str(e)
     from .scoring import net_scores
     ns = net_scores(research, asset_id, [(params["horizon"], E.HORIZON.get(params["horizon"], 21))], m)
     under = inst.underlying if inst.type != "SPOT" else asset_id
     return {"trade": {"asset_id": asset_id, "name": inst.name, "side": side.upper(), "quantity": quantity, "signed": q, "price": pr.price,
                       "notional": abs(q) * (pr.unit_notional() or 0.0), "cash_cost": q * (pr.unit_value() or 0.0), "type": inst.type,
-                      "eligible": ok, "reasons": why, "risk_unit": pr.risk_unit(), "costs": pr.costs(E.HORIZON.get(params["horizon"], 21), "BUY" if q > 0 else "SELL")},
+                      "eligible": ok, "reasons": why, "blocked": blocked, "pricing_label": pr.pricing_label, "risk_unit": pr.risk_unit(), "costs": pr.costs(E.HORIZON.get(params["horizon"], 21), "BUY" if q > 0 else "SELL")},
             "nav": nav, "free_cash": led.holdings()["cash"] - (led.holdings().get("requirement") or 0.0),
             "shaffer": shaffer_brief(research, under), "net_scores": ns, "hedge": ana, "portfolio": metrics,
             "raw_package": raw, "final_package": fin}
