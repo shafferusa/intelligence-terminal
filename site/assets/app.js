@@ -23,7 +23,8 @@
 
   var SLOT_NAMES = {
     am: "Morning Brief", pm: "Closing Brief", sat: "Weekly Review",
-    sun: "Week-Ahead Outlook", learn: "Learning Brief"
+    sun: "Week-Ahead Outlook", learn: "Learning Brief",
+    sie: "SIE Program"
   };
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

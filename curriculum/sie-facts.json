@@ -1,0 +1,1024 @@
+{
+ "version": 1,
+ "created": "2026-09-25",
+ "purpose": "The memorization reference for the SIE 30-Day Program. Every MEMORIZE box and every graded answer must agree with this file or with a fresher primary source.",
+ "status_legend": {
+  "stable": "long-standing rule; teach as written",
+  "annual": "indexed number; re-verify with WebSearch at the start of any run that teaches it",
+  "changed": "recently changed; teach the current rule AND name the old number as a known prep-book trap",
+  "verify": "do not state specifics until verified this run; if unverifiable, teach the concept and say the number is under review"
+ },
+ "facts": [
+  {
+   "category": "exam",
+   "term": "SIE format",
+   "answer": "75 scored + 5 unscored questions, 1 hour 45 minutes, passing score 70",
+   "status": "changed",
+   "source": "FINRA (unscored cut from 10 to 5 effective 2025-10-27)",
+   "note": "Many prep books still say 85 questions."
+  },
+  {
+   "category": "exam",
+   "term": "SIE validity",
+   "answer": "4 years from the exam date",
+   "status": "stable",
+   "source": "FINRA Rule 1210"
+  },
+  {
+   "category": "exam",
+   "term": "SIE eligibility",
+   "answer": "Age 18+; no firm sponsorship required",
+   "status": "stable",
+   "source": "FINRA"
+  },
+  {
+   "category": "exam",
+   "term": "Retest waiting periods",
+   "answer": "Historically 30 days after a 1st or 2nd failure, 180 days after 3 consecutive failures; FINRA shortened these by a rule change effective on filing 2026-06-29 with implementation date to be announced",
+   "status": "changed",
+   "source": "FINRA Rule 1210.05; FINRA weekly update 2026-07-01",
+   "note": "Verify current status before teaching; do not state new numbers from memory."
+  },
+  {
+   "category": "exam",
+   "term": "Qualification lapse after leaving the industry",
+   "answer": "2 years after termination; up to 5 years under the Maintaining Qualifications Program (annual CE + fee)",
+   "status": "stable",
+   "source": "FINRA Rule 1240 / MQP effective 2022-03-15"
+  },
+  {
+   "category": "exam",
+   "term": "Regulatory Element CE",
+   "answer": "Annually, due by December 31 (since 2023); missing it = CE inactive",
+   "status": "stable",
+   "source": "FINRA Rule 1240"
+  },
+  {
+   "category": "registration",
+   "term": "Form U4",
+   "answer": "Filed by the firm when a person associates; fingerprints; amend within 30 days of learning of a change (10 days for events that create a statutory disqualification)",
+   "status": "stable",
+   "source": "FINRA By-Laws Art. V §2"
+  },
+  {
+   "category": "registration",
+   "term": "Form U5",
+   "answer": "Filed by the firm within 30 days of termination; copy to the individual",
+   "status": "stable",
+   "source": "FINRA By-Laws Art. V §3"
+  },
+  {
+   "category": "registration",
+   "term": "Statutory disqualification",
+   "answer": "Includes any felony conviction within 10 years; certain misdemeanors (securities, fraud, theft) within 10 years; bars/expulsions; certain injunctions and willful violations",
+   "status": "stable",
+   "source": "Exchange Act §3(a)(39)"
+  },
+  {
+   "category": "conduct",
+   "term": "Gift limit (FINRA Rule 3220)",
+   "answer": "$300 per person per year",
+   "status": "changed",
+   "source": "FINRA Regulatory Notice 26-05, effective 2026-03-30",
+   "note": "Was $100 from 1992 to 2026. Question banks may still show $100 — teach $300 and flag the old number."
+  },
+  {
+   "category": "conduct",
+   "term": "MSRB gift limit (Rule G-20)",
+   "answer": "Raised to $300 to align with FINRA (2026)",
+   "status": "verify",
+   "source": "MSRB 2026 amendment",
+   "note": "Verify the effective date before teaching."
+  },
+  {
+   "category": "conduct",
+   "term": "MSRB G-37 political contributions",
+   "answer": "$250 de minimis per election, only to officials the MFP can vote for; violation -> 2-year ban on negotiated business with that issuer",
+   "status": "stable",
+   "source": "MSRB Rule G-37"
+  },
+  {
+   "category": "conduct",
+   "term": "OBA (Rule 3270)",
+   "answer": "Prior written notice to the firm",
+   "status": "stable",
+   "source": "FINRA Rule 3270",
+   "note": "FINRA has proposed consolidating 3270/3280 into a new Rule 3290 — verify status."
+  },
+  {
+   "category": "conduct",
+   "term": "PST (Rule 3280)",
+   "answer": "Prior written notice; if compensated, firm must approve and supervise as its own; if not, written acknowledgment",
+   "status": "stable",
+   "source": "FINRA Rule 3280"
+  },
+  {
+   "category": "conduct",
+   "term": "Customer complaints reporting",
+   "answer": "Rule 4530: specified events within 30 calendar days; quarterly statistical complaint data by the 15th of the month after the quarter",
+   "status": "stable",
+   "source": "FINRA Rule 4530"
+  },
+  {
+   "category": "conduct",
+   "term": "Borrowing/lending with customers",
+   "answer": "Only if the firm permits it in writing and the relationship qualifies (immediate family, lending institution, other registered person at same firm, personal or business relationship outside the brokerage)",
+   "status": "stable",
+   "source": "FINRA Rule 3240"
+  },
+  {
+   "category": "conduct",
+   "term": "Sharing in customer accounts",
+   "answer": "Needs written approval of the firm and the customer; sharing in proportion to contribution (immediate family accounts excepted)",
+   "status": "stable",
+   "source": "FINRA Rule 2150"
+  },
+  {
+   "category": "conduct",
+   "term": "Guarantees against loss",
+   "answer": "Prohibited",
+   "status": "stable",
+   "source": "FINRA Rule 2150"
+  },
+  {
+   "category": "conduct",
+   "term": "Insider trading penalties (ITSFEA 1988)",
+   "answer": "Civil penalty up to 3x the profit gained or loss avoided; criminal penalties include prison up to 20 years",
+   "status": "stable",
+   "source": "ITSFEA; Exchange Act §21A, §32"
+  },
+  {
+   "category": "conduct",
+   "term": "Do-not-call",
+   "answer": "Calls only 8 a.m.-9 p.m. local time of the called party; firm-specific DNC request honored for 5 years",
+   "status": "stable",
+   "source": "TCPA / FINRA Rule 3230"
+  },
+  {
+   "category": "records",
+   "term": "Record retention (SEA 17a-4)",
+   "answer": "Blotters, general ledgers, customer account ledgers: 6 years. Order tickets, confirmations, communications: 3 years (first 2 easily accessible). Account records: 6 years after closing. Corporate/partnership documents: life of the firm. U4/U5: 3 years after termination. Complaints: 4 years (FINRA 4513)",
+   "status": "stable",
+   "source": "SEA Rule 17a-3/17a-4; FINRA 4513"
+  },
+  {
+   "category": "communications",
+   "term": "Retail communication",
+   "answer": "Any written communication to more than 25 retail investors within 30 days; principal approval before use",
+   "status": "stable",
+   "source": "FINRA Rule 2210"
+  },
+  {
+   "category": "communications",
+   "term": "Correspondence",
+   "answer": "Written communication to 25 or fewer retail investors within 30 days; supervised by post-review under procedures",
+   "status": "stable",
+   "source": "FINRA Rule 2210"
+  },
+  {
+   "category": "communications",
+   "term": "Institutional communication",
+   "answer": "Distributed only to institutional investors; supervised under procedures, no pre-approval required",
+   "status": "stable",
+   "source": "FINRA Rule 2210"
+  },
+  {
+   "category": "communications",
+   "term": "New member filing",
+   "answer": "New members file retail communications with FINRA at least 10 business days before first use for their first year",
+   "status": "stable",
+   "source": "FINRA Rule 2210(c)"
+  },
+  {
+   "category": "regulators",
+   "term": "SIPC coverage",
+   "answer": "$500,000 per separate customer capacity, of which at most $250,000 cash; does not cover commodities/futures, currency, fixed annuities or market losses",
+   "status": "stable",
+   "source": "SIPA"
+  },
+  {
+   "category": "regulators",
+   "term": "FDIC coverage",
+   "answer": "$250,000 per depositor, per insured bank, per ownership category",
+   "status": "stable",
+   "source": "FDIC"
+  },
+  {
+   "category": "regulators",
+   "term": "MSRB",
+   "answer": "Created by the Securities Acts Amendments of 1975; writes muni rules; does NOT enforce (FINRA, SEC, bank regulators enforce)",
+   "status": "stable"
+  },
+  {
+   "category": "regulators",
+   "term": "FINRA",
+   "answer": "Formed 2007 from NASD and NYSE member regulation; SRO overseen by the SEC",
+   "status": "stable"
+  },
+  {
+   "category": "regulators",
+   "term": "NASAA",
+   "answer": "Association of state securities regulators; model rules; states enforce blue-sky laws (Uniform Securities Act)",
+   "status": "stable"
+  },
+  {
+   "category": "regulators",
+   "term": "Federal Reserve credit rules",
+   "answer": "Reg T (credit by broker-dealers); Reg U (banks lending on securities)",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Securities Act of 1933",
+   "answer": "Primary market: registration and disclosure of new issues, prospectus, antifraud",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Securities Exchange Act of 1934",
+   "answer": "Secondary market: created the SEC; registration of exchanges, BDs and reps; margin authority to the Fed; insider trading; proxies; short sales; net capital",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Trust Indenture Act of 1939",
+   "answer": "Corporate bonds offered publicly must be issued under an indenture with an independent trustee",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Investment Company Act of 1940",
+   "answer": "Regulates investment companies (mutual funds, closed-end funds, UITs, face-amount)",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Investment Advisers Act of 1940",
+   "answer": "Regulates investment advisers; fiduciary duty",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Securities Investor Protection Act of 1970",
+   "answer": "Created SIPC",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "Bank Secrecy Act (1970)",
+   "answer": "AML recordkeeping and reporting: CTRs, SARs",
+   "status": "stable"
+  },
+  {
+   "category": "laws",
+   "term": "USA PATRIOT Act (2001)",
+   "answer": "Title III: AML programs and Customer Identification Programs for BDs",
+   "status": "stable"
+  },
+  {
+   "category": "aml",
+   "term": "CIP minimum information",
+   "answer": "Name, date of birth, address (residential/business, not a P.O. box for individuals), identification number (SSN/TIN for US persons)",
+   "status": "stable",
+   "source": "31 CFR 1023.220"
+  },
+  {
+   "category": "aml",
+   "term": "CTR",
+   "answer": "Cash transactions over $10,000 in one business day (aggregated); filed within 15 days (FinCEN Form 112)",
+   "status": "stable",
+   "source": "BSA"
+  },
+  {
+   "category": "aml",
+   "term": "SAR (broker-dealer)",
+   "answer": "Suspicious transactions of $5,000 or more; filed within 30 calendar days of initial detection (up to 60 if no suspect identified); never tell the customer",
+   "status": "stable",
+   "source": "31 CFR 1023.320"
+  },
+  {
+   "category": "aml",
+   "term": "SAR/CTR record retention",
+   "answer": "5 years",
+   "status": "stable",
+   "source": "BSA"
+  },
+  {
+   "category": "aml",
+   "term": "Monetary instrument log",
+   "answer": "Cash purchases of monetary instruments of $3,000-$10,000",
+   "status": "stable",
+   "source": "BSA"
+  },
+  {
+   "category": "aml",
+   "term": "OFAC",
+   "answer": "Screen against the SDN list; block the property and report",
+   "status": "stable",
+   "source": "Treasury/OFAC"
+  },
+  {
+   "category": "aml",
+   "term": "AML independent test",
+   "answer": "Annually (every two years for firms that do not execute customer transactions)",
+   "status": "stable",
+   "source": "FINRA Rule 3310"
+  },
+  {
+   "category": "accounts",
+   "term": "Trusted contact person",
+   "answer": "Firm must make a reasonable effort to obtain; must be 18+; has no trading authority",
+   "status": "stable",
+   "source": "FINRA Rule 4512"
+  },
+  {
+   "category": "accounts",
+   "term": "Specified adult",
+   "answer": "Age 65+, or 18+ with a mental or physical impairment",
+   "status": "stable",
+   "source": "FINRA Rule 2165"
+  },
+  {
+   "category": "accounts",
+   "term": "Temporary hold (Rule 2165)",
+   "answer": "Initial hold up to 15 business days, extendable by 10 business days; further extension possible",
+   "status": "verify",
+   "source": "FINRA Rule 2165",
+   "note": "Rule was amended in 2022-2023; verify the current extension language before teaching."
+  },
+  {
+   "category": "accounts",
+   "term": "Time-and-price discretion",
+   "answer": "Valid only for the business day it is granted unless the customer specifies otherwise in writing",
+   "status": "stable",
+   "source": "FINRA Rule 3260"
+  },
+  {
+   "category": "accounts",
+   "term": "Discretionary authority",
+   "answer": "Written authorization before the first discretionary order; principal approval; orders reviewed",
+   "status": "stable",
+   "source": "FINRA Rule 3260"
+  },
+  {
+   "category": "accounts",
+   "term": "Options account",
+   "answer": "ODD delivered at or before account approval; ROP approval; signed options agreement within 15 days after approval",
+   "status": "stable",
+   "source": "FINRA Rule 2360"
+  },
+  {
+   "category": "accounts",
+   "term": "UGMA/UTMA",
+   "answer": "One custodian, one minor; irrevocable gifts; minor's SSN; no margin; custodian cannot delegate",
+   "status": "stable"
+  },
+  {
+   "category": "accounts",
+   "term": "Death of account holder",
+   "answer": "Freeze the account; JTWROS passes to survivor; TIC share to decedent's estate; POA (even durable) ends at death",
+   "status": "stable"
+  },
+  {
+   "category": "settlement",
+   "term": "Regular-way settlement",
+   "answer": "T+1 for stocks, corporate bonds, munis, options (and option exercise) and government securities (effective 2024-05-28 for equities/corps/munis)",
+   "status": "stable",
+   "source": "SEC Rule 15c6-1"
+  },
+  {
+   "category": "settlement",
+   "term": "Cash settlement",
+   "answer": "Same day as the trade",
+   "status": "stable"
+  },
+  {
+   "category": "settlement",
+   "term": "Ex-dividend date under T+1",
+   "answer": "Same day as the record date",
+   "status": "stable"
+  },
+  {
+   "category": "settlement",
+   "term": "Mutual fund ex-date",
+   "answer": "Set by the fund, typically the business day after the record date",
+   "status": "stable"
+  },
+  {
+   "category": "settlement",
+   "term": "Confirmation delivery",
+   "answer": "At or before completion of the transaction (settlement)",
+   "status": "stable",
+   "source": "SEA Rule 10b-10"
+  },
+  {
+   "category": "settlement",
+   "term": "Account statements",
+   "answer": "At least quarterly",
+   "status": "stable",
+   "source": "FINRA Rule 2231"
+  },
+  {
+   "category": "trading",
+   "term": "Order guarantees",
+   "answer": "Market order = execution guarantee (no price); limit order = price guarantee (no execution)",
+   "status": "stable"
+  },
+  {
+   "category": "trading",
+   "term": "Stop/limit placement",
+   "answer": "Buy limit below market; sell limit above; buy stop above; sell stop below",
+   "status": "stable"
+  },
+  {
+   "category": "trading",
+   "term": "Time in force",
+   "answer": "Day; GTC; FOK (all, immediately, or cancel); IOC (fill what you can immediately, cancel rest); AON (all or none, not immediate)",
+   "status": "stable"
+  },
+  {
+   "category": "trading",
+   "term": "Muni trade reporting",
+   "answer": "To MSRB RTRS within 15 minutes",
+   "status": "stable",
+   "source": "MSRB Rule G-14"
+  },
+  {
+   "category": "short",
+   "term": "Locate",
+   "answer": "Required before effecting a short sale",
+   "status": "stable",
+   "source": "Reg SHO Rule 203(b)"
+  },
+  {
+   "category": "short",
+   "term": "Short-sale fail close-out",
+   "answer": "By the start of regular trading on the business day after settlement date (S+1)",
+   "status": "stable",
+   "source": "Reg SHO Rule 204"
+  },
+  {
+   "category": "short",
+   "term": "Alternative uptick rule",
+   "answer": "Triggered by a 10% decline from prior close; short sales then only above the national best bid for the rest of that day and the next",
+   "status": "stable",
+   "source": "Reg SHO Rule 201"
+  },
+  {
+   "category": "short",
+   "term": "Order marking",
+   "answer": "Every sell order marked long, short or short exempt",
+   "status": "stable",
+   "source": "Reg SHO Rule 200(g)"
+  },
+  {
+   "category": "short",
+   "term": "Stock-loan collateral",
+   "answer": "Typically 102% of value for domestic securities (105% for foreign) — market convention, not an SIE rule",
+   "status": "stable",
+   "source": "industry convention"
+  },
+  {
+   "category": "short",
+   "term": "Manufactured dividend",
+   "answer": "Paid by the borrower to the lender; taxed as ordinary income, not a qualified dividend",
+   "status": "stable"
+  },
+  {
+   "category": "margin",
+   "term": "Reg T initial margin",
+   "answer": "50% for purchases and short sales (short: 150% of SMV held = proceeds + 50%)",
+   "status": "stable",
+   "source": "Regulation T"
+  },
+  {
+   "category": "margin",
+   "term": "FINRA minimum equity",
+   "answer": "$2,000 to open/extend credit (or 100% of purchase if less than $2,000); $2,000 min for short accounts",
+   "status": "stable",
+   "source": "FINRA Rule 4210"
+  },
+  {
+   "category": "margin",
+   "term": "Maintenance",
+   "answer": "25% of LMV long; 30% of SMV short (stocks >= $5)",
+   "status": "stable",
+   "source": "FINRA Rule 4210"
+  },
+  {
+   "category": "margin",
+   "term": "Pattern day trader",
+   "answer": "Minimum equity $25,000; day-trading buying power up to 4x maintenance excess",
+   "status": "stable",
+   "source": "FINRA Rule 4210",
+   "note": "FINRA has proposed changes to the PDT framework — verify status."
+  },
+  {
+   "category": "margin",
+   "term": "Reg T payment period",
+   "answer": "Settlement cycle + 2 business days (T+3 under T+1)",
+   "status": "stable",
+   "source": "Regulation T §220.2"
+  },
+  {
+   "category": "margin",
+   "term": "Freeriding",
+   "answer": "Selling a cash-account purchase before paying for it -> account frozen 90 days (must pay in full before trade date)",
+   "status": "stable",
+   "source": "Regulation T"
+  },
+  {
+   "category": "margin",
+   "term": "Not marginable",
+   "answer": "New issues for 30 days after the offering; options with 9 months or less to expiration must be paid in full",
+   "status": "stable",
+   "source": "Regulation T"
+  },
+  {
+   "category": "margin",
+   "term": "Rehypothecation",
+   "answer": "BD may rehypothecate customer margin securities up to 140% of the customer's debit balance",
+   "status": "stable",
+   "source": "SEA Rule 15c3-3"
+  },
+  {
+   "category": "margin",
+   "term": "Accounts that cannot use margin",
+   "answer": "IRAs and other retirement accounts; UGMA/UTMA custodial accounts; (also 529/Coverdell)",
+   "status": "stable"
+  },
+  {
+   "category": "margin",
+   "term": "Margin disclosure",
+   "answer": "Margin disclosure statement at opening and annually",
+   "status": "stable",
+   "source": "FINRA Rule 2264"
+  },
+  {
+   "category": "bonds",
+   "term": "Bond point",
+   "answer": "1 point = 1% of par = $10 per $1,000 bond; 1/8 point = $1.25",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Treasury note/bond quotes",
+   "answer": "In 32nds: 1/32 = $0.3125 per $1,000",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Basis point",
+   "answer": "0.01%; 100 bp = 1%",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Accrued interest day count",
+   "answer": "Corporate and muni 30/360; US government actual/actual; from last coupon date up to but not including settlement date",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Premium bond ordering",
+   "answer": "Coupon > Current yield > YTM > YTC",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Discount bond ordering",
+   "answer": "YTC > YTM > Current yield > Coupon",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Investment grade",
+   "answer": "BBB-/Baa3 and above",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "T-bill maturities",
+   "answer": "4, 6, 8, 13, 17, 26 and 52 weeks (plus occasional cash-management bills)",
+   "status": "stable",
+   "source": "TreasuryDirect"
+  },
+  {
+   "category": "bonds",
+   "term": "Notes vs bonds",
+   "answer": "Treasury notes 2-10 years; Treasury bonds 20 and 30 years",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Commercial paper",
+   "answer": "Exempt from registration if maturity <= 270 days",
+   "status": "stable",
+   "source": "Securities Act §3(a)(3)"
+  },
+  {
+   "category": "bonds",
+   "term": "GNMA",
+   "answer": "Only agency with explicit full-faith-and-credit backing; interest fully taxable",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Treasury interest tax",
+   "answer": "Federally taxable, exempt from state and local tax",
+   "status": "stable"
+  },
+  {
+   "category": "munis",
+   "term": "Tax-equivalent yield",
+   "answer": "Muni yield / (1 - marginal tax rate)",
+   "status": "stable"
+  },
+  {
+   "category": "munis",
+   "term": "Triple tax-exempt",
+   "answer": "Munis from US territories (Puerto Rico, Guam, USVI) are exempt federal, state and local everywhere",
+   "status": "stable"
+  },
+  {
+   "category": "munis",
+   "term": "Short-term notes",
+   "answer": "TAN (taxes), RAN (revenues), TRAN (both), BAN (future bond sale), GAN (grants), CLN (construction)",
+   "status": "stable"
+  },
+  {
+   "category": "munis",
+   "term": "Muni capital gains",
+   "answer": "Taxable; only interest is tax-exempt",
+   "status": "stable"
+  },
+  {
+   "category": "funds",
+   "term": "Max mutual fund sales charge",
+   "answer": "8.5% of POP",
+   "status": "stable",
+   "source": "FINRA Rule 2341"
+  },
+  {
+   "category": "funds",
+   "term": "12b-1 cap",
+   "answer": "1% annually (0.75% distribution + 0.25% service); may call itself no-load only if <= 0.25%",
+   "status": "stable",
+   "source": "FINRA Rule 2341"
+  },
+  {
+   "category": "funds",
+   "term": "Letter of intent",
+   "answer": "13 months; may be backdated up to 90 days; shares held in escrow",
+   "status": "stable"
+  },
+  {
+   "category": "funds",
+   "term": "Redemption payment",
+   "answer": "Within 7 calendar days",
+   "status": "stable",
+   "source": "ICA 1940 §22(e)"
+  },
+  {
+   "category": "funds",
+   "term": "Diversified fund",
+   "answer": "75-5-10: 75% of assets invested so that no more than 5% in any one issuer and no more than 10% of any issuer's voting stock",
+   "status": "stable",
+   "source": "ICA 1940 §5(b)"
+  },
+  {
+   "category": "funds",
+   "term": "Independent directors",
+   "answer": "At least 40% of the board",
+   "status": "stable",
+   "source": "ICA 1940 §10(a)"
+  },
+  {
+   "category": "funds",
+   "term": "Forward pricing",
+   "answer": "Orders execute at the next computed NAV",
+   "status": "stable",
+   "source": "ICA Rule 22c-1"
+  },
+  {
+   "category": "funds",
+   "term": "REIT",
+   "answer": "Distribute >= 90% of taxable income; 75% asset and income tests; dividends generally ordinary income",
+   "status": "stable",
+   "source": "IRC §856-857"
+  },
+  {
+   "category": "offerings",
+   "term": "Cooling-off period",
+   "answer": "At least 20 calendar days after filing (can be extended by SEC deficiency)",
+   "status": "stable",
+   "source": "Securities Act §8(a)"
+  },
+  {
+   "category": "offerings",
+   "term": "Aftermarket prospectus delivery",
+   "answer": "IPO: 25 days if listed, 90 if not; follow-on: 0 if listed, 40 if not",
+   "status": "stable",
+   "source": "SEA Rule 15c2-8 / Securities Act §4(a)(3)"
+  },
+  {
+   "category": "offerings",
+   "term": "Accredited investor (individual)",
+   "answer": "Income > $200,000 ($300,000 joint) in each of last 2 years with expectation; or net worth > $1 million excluding primary residence; or holder of Series 7, 65 or 82",
+   "status": "stable",
+   "source": "Reg D Rule 501"
+  },
+  {
+   "category": "offerings",
+   "term": "Reg D 506(b)",
+   "answer": "Unlimited accredited + up to 35 non-accredited sophisticated purchasers; no general solicitation",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Reg D 506(c)",
+   "answer": "General solicitation allowed; all purchasers accredited with verification",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Form D",
+   "answer": "Within 15 days after first sale",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Rule 144 holding period",
+   "answer": "6 months (reporting issuer), 1 year (non-reporting)",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Rule 144 volume limit",
+   "answer": "Per 90 days: greater of 1% of outstanding shares or average weekly volume over prior 4 weeks",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Form 144",
+   "answer": "Required if sale > 5,000 shares or > $50,000 in 90 days",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Rule 144A QIB",
+   "answer": "Owns/invests at least $100 million in securities",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Reg A",
+   "answer": "Tier 1 up to $20 million, Tier 2 up to $75 million in 12 months",
+   "status": "stable",
+   "source": "SEC 2021 amendments"
+  },
+  {
+   "category": "offerings",
+   "term": "Reg CF",
+   "answer": "Up to $5 million in 12 months through a funding portal or BD",
+   "status": "stable"
+  },
+  {
+   "category": "offerings",
+   "term": "Tender offer",
+   "answer": "Must stay open at least 20 business days; 10 business days after a change in price or percentage sought",
+   "status": "stable",
+   "source": "Rule 14e-1"
+  },
+  {
+   "category": "offerings",
+   "term": "Schedule 13D",
+   "answer": "Within 5 business days after crossing 5% beneficial ownership (was 10 days before 2024)",
+   "status": "changed",
+   "source": "SEC 2023 amendments, effective 2024",
+   "note": "Older prep material says 10 days."
+  },
+  {
+   "category": "offerings",
+   "term": "Section 16 insiders",
+   "answer": "Officers, directors, 10%+ holders; Form 4 within 2 business days; short-swing profits within 6 months disgorged; may not sell short",
+   "status": "stable"
+  },
+  {
+   "category": "retirement",
+   "term": "IRA contribution limit",
+   "answer": "2026: $7,500 + $1,100 catch-up at 50+ (2025: $7,000 + $1,000)",
+   "status": "annual",
+   "source": "IRS newsroom (2026 limits)"
+  },
+  {
+   "category": "retirement",
+   "term": "401(k)/403(b)/gov 457 deferral",
+   "answer": "2026: $24,500; catch-up at 50+ $8,000; ages 60-63 $11,250",
+   "status": "annual",
+   "source": "IRS newsroom (2026 limits)"
+  },
+  {
+   "category": "retirement",
+   "term": "IRA contribution deadline",
+   "answer": "Tax filing deadline (typically April 15) of the following year, no extensions",
+   "status": "stable"
+  },
+  {
+   "category": "retirement",
+   "term": "Early withdrawal penalty",
+   "answer": "10% before age 59 1/2 (exceptions: death, disability, SEPP/72(t), first home up to $10,000 from IRAs, higher education from IRAs, etc.)",
+   "status": "stable"
+  },
+  {
+   "category": "retirement",
+   "term": "RMD age",
+   "answer": "73 (75 for those born 1960 or later); first RMD by April 1 of the following year",
+   "status": "stable",
+   "source": "SECURE 2.0"
+  },
+  {
+   "category": "retirement",
+   "term": "Roth RMDs",
+   "answer": "None for the original owner (Roth IRAs; Roth 401(k)s since 2024)",
+   "status": "stable",
+   "source": "SECURE 2.0"
+  },
+  {
+   "category": "retirement",
+   "term": "Indirect rollover",
+   "answer": "Complete within 60 days; one IRA-to-IRA indirect rollover per 12 months; 20% mandatory withholding on plan distributions paid to the participant",
+   "status": "stable"
+  },
+  {
+   "category": "retirement",
+   "term": "457 plans",
+   "answer": "No 10% early-withdrawal penalty on distributions after separation from service",
+   "status": "stable"
+  },
+  {
+   "category": "retirement",
+   "term": "ERISA",
+   "answer": "Covers private-sector plans only (not government plans)",
+   "status": "stable"
+  },
+  {
+   "category": "education",
+   "term": "Coverdell ESA",
+   "answer": "$2,000 per beneficiary per year total; contributions until beneficiary is 18; used by 30",
+   "status": "stable"
+  },
+  {
+   "category": "education",
+   "term": "529 K-12 tuition",
+   "answer": "Up to $20,000 per year from 2026 (was $10,000)",
+   "status": "changed",
+   "source": "One Big Beautiful Bill Act (signed 2025-07-04)",
+   "note": "Older prep material says $10,000."
+  },
+  {
+   "category": "education",
+   "term": "529 to Roth rollover",
+   "answer": "Lifetime $35,000; 529 open 15+ years; subject to annual Roth contribution limit",
+   "status": "stable",
+   "source": "SECURE 2.0"
+  },
+  {
+   "category": "education",
+   "term": "529 gift-tax averaging",
+   "answer": "May front-load 5 years of annual exclusions (5 x $19,000 = $95,000 in 2026)",
+   "status": "annual"
+  },
+  {
+   "category": "tax",
+   "term": "Gift tax annual exclusion",
+   "answer": "2026: $19,000 per recipient",
+   "status": "annual",
+   "source": "IRS"
+  },
+  {
+   "category": "tax",
+   "term": "Long-term holding period",
+   "answer": "More than 1 year; holding period starts the day after trade date",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Capital loss limit",
+   "answer": "Net capital losses offset up to $3,000 of ordinary income per year; excess carried forward indefinitely",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Wash sale",
+   "answer": "Loss disallowed if substantially identical security bought within 30 days before or after the sale; disallowed loss added to new basis",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Qualified dividend holding",
+   "answer": "More than 60 days in the 121-day window beginning 60 days before the ex-date",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Inherited securities",
+   "answer": "Basis steps up to value at death; always long-term",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Gifted securities",
+   "answer": "Donor's basis carries over (for gains)",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Annuity withdrawals (nonqualified)",
+   "answer": "LIFO: earnings out first, taxed as ordinary income; 10% penalty before 59 1/2",
+   "status": "stable"
+  },
+  {
+   "category": "options",
+   "term": "Contract size",
+   "answer": "100 shares",
+   "status": "stable"
+  },
+  {
+   "category": "options",
+   "term": "Exercise style",
+   "answer": "American: any time before expiration; European: only at expiration",
+   "status": "stable"
+  },
+  {
+   "category": "options",
+   "term": "Settlement",
+   "answer": "Trades and exercises settle T+1; index options settle in cash",
+   "status": "stable"
+  },
+  {
+   "category": "options",
+   "term": "Breakevens",
+   "answer": "Calls: strike + premium. Puts: strike - premium. (Same for buyer and writer)",
+   "status": "stable"
+  },
+  {
+   "category": "options",
+   "term": "Max loss/gain",
+   "answer": "BUY CALL: loss premium, gain unlimited. SELL CALL (naked): gain premium, loss unlimited. BUY PUT: loss premium, gain strike - premium. SELL PUT: gain premium, loss strike - premium",
+   "status": "stable"
+  },
+  {
+   "category": "options",
+   "term": "OCC",
+   "answer": "Issues and guarantees listed options; assigns exercise notices to BDs at random; BDs assign to customers randomly, FIFO or other fair method",
+   "status": "stable"
+  },
+  {
+   "category": "economics",
+   "term": "Recession (exam convention)",
+   "answer": "Two consecutive quarters of declining real GDP; NBER makes the official determination",
+   "status": "stable",
+   "source": "exam convention vs NBER"
+  },
+  {
+   "category": "economics",
+   "term": "Leading indicators",
+   "answer": "Building permits, stock prices, new orders, average weekly initial jobless claims, average manufacturing workweek, consumer expectations, yield-curve spread",
+   "status": "stable",
+   "source": "Conference Board LEI"
+  },
+  {
+   "category": "economics",
+   "term": "Coincident indicators",
+   "answer": "Nonfarm payrolls, industrial production, personal income less transfers, manufacturing and trade sales",
+   "status": "stable",
+   "source": "Conference Board"
+  },
+  {
+   "category": "economics",
+   "term": "Lagging indicators",
+   "answer": "Average duration of unemployment, CPI for services, prime rate, commercial and industrial loans outstanding, labor cost per unit of output, consumer credit-to-income, inventories-to-sales",
+   "status": "stable",
+   "source": "Conference Board"
+  },
+  {
+   "category": "economics",
+   "term": "Fed tools",
+   "answer": "Open-market operations (most used; FOMC), discount rate, reserve requirements (0% since March 2020), interest on reserve balances",
+   "status": "stable"
+  },
+  {
+   "category": "economics",
+   "term": "FOMC",
+   "answer": "Meets 8 times a year",
+   "status": "stable"
+  },
+  {
+   "category": "economics",
+   "term": "Rates ladder",
+   "answer": "Fed funds (overnight interbank reserves) < discount rate (Fed lending to banks) ; prime rate (banks' best corporate customers); broker call rate (bank loans to BDs, basis for margin interest)",
+   "status": "stable"
+  }
+ ]
+}

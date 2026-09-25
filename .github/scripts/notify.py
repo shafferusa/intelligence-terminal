@@ -69,6 +69,7 @@ EDITION = {
     "sat": "Weekly Review",
     "sun": "Week-Ahead Outlook",
     "learn": "Learning Brief",
+    "sie": "SIE Program",
 }
 
 

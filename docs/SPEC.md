@@ -61,7 +61,37 @@ anything later in this document, this wins.
   material* for the Learning Brief's AI and Finance lessons.
 - **SpaceX is PUBLIC** — verified against SEC EDGAR 2026-07-26: IPO 2026-06-12, Nasdaq ticker SPCX, CIK 0001181412. CRITICAL: pre-2026-04-07 "SPCX" data = the unrelated Tuttle ETF (now SPCK). SpaceX price history begins 2026-06-12; never backfill earlier SPCX data.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
-- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
+- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook); **daily ~noon (SIE Program, §0b, added 2026-09-25)**. Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
+
+### 0b. Amendment of 2026-09-25 — the SIE Program (sixth edition, daily at noon)
+
+Logan's exam for the FINRA Securities Industry Essentials (SIE) is about a month out. At his request
+a sixth edition was added: a **30-day SIE program**, published **every day (weekends included) at
+noon ET**, strictly exam study — no news, no markets. Procedure: `prompts/sie.md`. Roadmap and
+topic taxonomy: `curriculum/sie-30.json`. Memorization reference: `curriculum/sie-facts.json`.
+State: `state/sie.json`, answer keys in `state/sie/quizzes/`, Telegram replies in
+`state/sie/inbox.jsonl`. Slot `sie`, edition colour `--edition-sie`.
+
+- **Authority:** the official FINRA SIE Content Outline (4 sections: 16% / 44% / 31% / 9%). Where a
+  third-party prep convention conflicts with a FINRA or SEC rule, the rule wins.
+- **Goal is understanding, not only a pass.** Every edition separates UNDERSTAND / MEMORIZE /
+  EXAM TRAP / TRADER CONNECTION, teaches from first principles with flows and worked numbers, and
+  connects each topic to Logan's intended specialization (trading, derivatives, hedging, risk,
+  securities lending, collateral, market structure).
+- **Quizzes, grading, a weakness tracker and spaced repetition are REQUIRED here.** This is an
+  explicit exception to the Learning Brief's standing no-quiz rule, which is unchanged for the
+  Learning Brief. The two must not bleed into each other or into the news editions.
+- **Answers never appear on the page.** Logan replies to the Telegram bot; the `sie-inbox` GitHub
+  Action (every ~15 min) saves SIE messages to the inbox and replies with an instant score from the
+  stored key; the next noon edition grades every question in full and updates the tracker. Telegram
+  keeps bot updates only 24 hours, which is why the Action exists.
+- **Shape:** days 1–23 teaching (weighted to the outline and to conceptual weight, 75–120 min),
+  24–25 weak-area review, 26 and 28 practice exams (75 questions, 12/33/23/7), 27 exam review,
+  29 memorization sprint, 30 final exam + cheat sheet, then a report card and, if an exam date is
+  set, short maintenance editions until the exam.
+- Still one sender per edition: the edition push comes from `notify.py` like every other edition.
+  The inbox Action's score reply is a reply to Logan's own message, also sent by Actions, never by a
+  routine (iron rule 8b unchanged).
 
 ## 1. Mission
 

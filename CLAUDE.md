@@ -15,9 +15,14 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
      per report, no news. Reads like a newspaper feature.
    - `prompts/weekday.md` — Morning (6:30 AM) and Closing (4:30 PM) briefs. Strictly news.
    - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
+   - `prompts/sie.md` — **SIE Program**, daily (weekends too) at noon ET. A 30-day FINRA SIE exam
+     course with quizzes, grading, a weakness tracker and spaced repetition (SPEC §0b). Strictly
+     exam study, no news.
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
+The SIE Program (2026-09-25) is its own edition: its quizzes and tracker never appear in the
+Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 
 ## File map
 
@@ -27,6 +32,8 @@ Never put a lesson in a news edition; never put headlines or markets in the Lear
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
 - `curriculum/academy-150.json` — **the live curriculum**: 150 weekday lessons across seven
   subjects for the Learning Brief.
+- `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
+  (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
   source material for the 150-day curriculum.
@@ -37,7 +44,9 @@ Never put a lesson in a news edition; never put headlines or markets in the Lear
   `manifest.webmanifest`, `sw.js`. Pagefind assets and `status.jsonl` are build-generated.
 - `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
-  `run-log.jsonl`. `curriculum.json` is retired — do not read or write it.
+  `run-log.jsonl`, `sie.json` (SIE program state: tracker, error log, review queue, scores),
+  `sie/quizzes/day-NN.json` (SIE answer keys), `sie/inbox.jsonl` (Logan's Telegram replies —
+  written ONLY by the `sie-inbox` Action; routines read it, never write it). `curriculum.json` is retired — do not read or write it.
 - `ledgers/` — `corrections.json`, `forecasts.json` (append-only accountability).
 - `registry/` — `entities.json` (public/private status; never hardcode — verify via EDGAR).
 - `.github/workflows/` — Pages build (runs `npx -y pagefind --site site`) and deploy.
