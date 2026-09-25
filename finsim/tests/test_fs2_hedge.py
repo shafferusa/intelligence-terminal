@@ -205,6 +205,35 @@ class Engine(Base):
         self.assertIn("var95", res["risk"]["before"])
 
 
+class CrisisReplay(Base):
+    def test_cumulative_shock_compounds_returns_and_sums_changes(self):
+        from finsim2.hedge.crisis import cumulative_shock
+        F = {"MKT": [None, 0.10, -0.10, 0.05], "RATE:10Y": [None, 5.0, -2.0, 1.0], "CRYPTO": [None, None, None, 0.2]}
+        shock, missing = cumulative_shock(F, 0, 3)
+        self.assertAlmostEqual(shock["MKT"], 1.1 * 0.9 * 1.05 - 1)
+        self.assertAlmostEqual(shock["RATE:10Y"], 4.0)
+        self.assertIn("CRYPTO", missing)                    # data on fewer than half the sessions
+
+    def test_replay_of_a_window_inside_the_data(self):
+        from finsim2.hedge import crisis
+        cal = self.cal
+        saved = crisis.CRISES
+        crisis.CRISES = [{"key": "t", "label": "test", "start": cal[len(cal) - 200], "end": cal[len(cal) - 150]}]
+        try:
+            res = crisis.replay(self.r, [{"id": "SPY", "quantity": 1000}], 1e6, hedge_objectives=("beta",))
+        finally:
+            crisis.CRISES = saved
+        c = res["crises"][0]
+        spy = self.r.panel().series("SPY", "adj_close")
+        i0, i1 = self.r.panel().index_of(c["start"]), self.r.panel().index_of(c["end"])
+        mv = next(p for p in c["positions"] if p["id"] == "SPY")
+        self.assertAlmostEqual(mv["direct_pnl"] / (1000 * spy[-1]), spy[i1] / spy[i0] - 1, places=6)   # own history = the asset's return
+        h = c["hedges"][0]
+        self.assertAlmostEqual(h["hedged_pnl"], c["pnl"] + h["hedge_pnl"], places=6)
+        if c["pnl"] < 0:
+            self.assertGreater(h["hedge_pnl"], 0)            # a beta hedge offsets a market loss
+
+
 class EffectivenessTerm(unittest.TestCase):
     def test_overshoot_is_penalised(self):
         from finsim2.hedge.engine import effectiveness_term as e

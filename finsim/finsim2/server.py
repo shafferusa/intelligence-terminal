@@ -444,6 +444,13 @@ class Router:
             from .hedge.history import VERSION
             m = store.kv_get(f"hedgeml:{VERSION}") or {}
             return {"trained": m.get("trained"), "asof": m.get("asof"), "groups": {g: {k: v for k, v in x.items() if k != "model"} for g, x in (m.get("groups") or {}).items()}}
+        if rest == ["crisis"]:
+            from .hedge.crisis import replay
+            led = app.ledger()
+            positions = led.positions_for_hedge()
+            if not positions:
+                raise ValueError("the portfolio holds nothing to replay")
+            return replay(research, positions, SV.nav_now(led))
         if rest == ["grade"] and method == "POST":
             return {"graded": SV.grade(app)}
         raise NotFound("no such hedge route")
@@ -486,6 +493,9 @@ class Router:
     def portfolio_routes(self, method, rest, q, b):
         from .engine import portfolio as pf
         app, store, research = self.s, self.s.store, self.s.research
+        if rest == ["attribution"]:
+            from .engine.attribution import attribute
+            return attribute(app.ledger(), research, q.get("date"))
         if rest == ["cash-settings"]:
             from .engine import cash as cashmod
             if method == "POST":

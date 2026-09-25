@@ -733,8 +733,25 @@
   pages.risk = async (main, args, alive) => {
     const tab = args[0] || 'risk';
     main.innerHTML = `<div class="page-head"><div><h1>Risk</h1><p>How much the portfolio can lose, what drives it, how its relationships are changing, and what would happen in a scenario. Simulations are ranges of outcomes, not predictions.</p></div></div>
-      <div class="tabs">${[['risk', 'Risk & drivers'], ['scenario', 'Scenario analysis'], ['montecarlo', 'Monte Carlo']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/risk/${k}">${l}</a>`).join('')}</div><div id="rkB" style="margin-top:14px"><div class="loading">Computing…</div></div>`;
+      <div class="tabs">${[['risk', 'Risk & drivers'], ['scenario', 'Scenario analysis'], ['crisis', 'Crisis replays'], ['montecarlo', 'Monte Carlo']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/risk/${k}">${l}</a>`).join('')}</div><div id="rkB" style="margin-top:14px"><div class="loading">Computing…</div></div>`;
     const body = $('#rkB');
+    if (tab === 'crisis') {
+      body.innerHTML = '<div class="loading">Replaying today\'s book through four historical crises (and scoring its Shaffer Hedge)…</div>';
+      let r; try { r = await api('/fs2/hedge/crisis'); } catch (e) { body.innerHTML = `<div class="card"><div class="empty">${esc(e.message)}</div></div>`; return; }
+      if (!alive()) return;
+      const pnlOf = p => p.direct_pnl != null ? p.direct_pnl : p.factor_pnl;
+      body.innerHTML = `<p class="muted" style="margin-top:0">Today's positions, held fixed, through each episode's actual cumulative factor moves (options fully re-priced with the VIX change). "Own history" uses each held asset's realised return where it traded through the episode (it includes single-name moves the factor model cannot). VaR/ES: today's exposures × each day's factor moves during the episode, against the last three years.</p>
+        <div class="card flush"><div class="tbl-wrap"><table><thead><tr><th class="l">Episode</th><th>Factor model</th><th>Own history</th><th>% of NAV</th><th>1-day VaR 95% crisis / normal</th><th>1-day ES 95% crisis / normal</th><th class="l">Largest losses</th><th class="l">Largest offsets</th>${(r.crises[0].hedges || []).map(h => `<th>With ${esc(h.label || h.objective)} hedge</th>`).join('')}</tr></thead><tbody>
+        ${r.crises.map(c => { const ps = c.positions.slice(); const loss = ps.slice(0, 3).filter(p => pnlOf(p) < 0), gain = ps.slice().reverse().slice(0, 2).filter(p => pnlOf(p) > 0);
+          return `<tr><td class="l"><b>${esc(c.label)}</b><span class="sub">${fmt.date(c.start)} → ${fmt.date(c.end)} · ${c.sessions} sessions${c.missing.length ? ' · unavailable: ' + esc(c.missing.join(', ')) : ''}</span></td>
+          <td class="${sign(c.pnl)}">${fmt.signed(c.pnl, 0)}</td><td class="${sign(c.pnl_direct)}">${fmt.signed(c.pnl_direct, 0)}</td><td>${fmt.spct(c.pnl_pct_nav, 1)}</td>
+          <td>${fmt.money(c.var95, 0)} / ${fmt.money(c.var95_normal, 0)}<span class="sub">×${fmt.num((c.var95 || 0) / (c.var95_normal || 1), 1)}</span></td><td>${fmt.money(c.es95, 0)} / ${fmt.money(c.es95_normal, 0)}</td>
+          <td class="l wrap" style="font-size:12px">${loss.map(p => `${esc(p.id)} ${fmt.signed(pnlOf(p), 0)}`).join('<br>') || '—'}</td><td class="l wrap" style="font-size:12px">${gain.map(p => `${esc(p.id)} ${fmt.signed(pnlOf(p), 0)}`).join('<br>') || '—'}</td>
+          ${(c.hedges || []).map(h => h.error ? `<td class="faint">${esc(h.error)}</td>` : `<td class="${sign(h.hedged_pnl)}">${fmt.signed(h.hedged_pnl, 0)}<span class="sub">hedge ${fmt.signed(h.hedge_pnl, 0)} · ${esc(h.legs.map(L => `${fmt.qty(L.quantity)} ${L.id}`).join(', '))}</span></td>`).join('')}</tr>`; }).join('')}
+        </tbody></table></div></div>
+        <p class="hint">Limits: exposures are today's and held fixed (no rebalancing, no path, instantaneous option re-pricing); a factor that did not exist yet contributes nothing and is listed as unavailable. Hedges are today's recommended packages (market beta 100%, crash protection 50%).</p>`;
+      return;
+    }
     if (tab === 'risk') {
       const [an, dr] = await Promise.all([api('/fs2/portfolio'), api('/fs2/portfolio/drivers').catch(() => null)]); if (!alive()) return;
       const rk = an.risk || {};
@@ -834,10 +851,33 @@
       <div class="tiles">${kpi('NAV', fmt.money(an.nav), `contributed ${fmt.money(an.contributed)} · P&L <span class="${sign(an.pnl)}">${fmt.signed(an.pnl)}</span>`)}${kpi('Cash', fmt.money(an.cash), fmt.pct(an.cash / (an.nav || 1), 0) + ' of NAV')}${kpi('Gross · net', `${fmt.big(an.gross)} · ${fmt.big(an.net)}`, `long ${fmt.big(an.long)} · short ${fmt.big(an.short)}`)}${kpi('Beta · duration', `${fmt.num(an.beta, 2)} · ${fmt.num(an.duration, 1)}y`)}${kpi('Volatility · Sharpe', `${fmt.pct(rk.vol, 1)} · ${fmt.num(rk.sharpe, 2)}`, `Sortino ${fmt.num(rk.sortino, 2)}`)}${kpi('Max drawdown', fmt.pct(rk.max_drawdown, 1))}${kpi('VaR · ES (95%, 1 day)', `${fmt.pct(rk.var95, 2)} · ${fmt.pct(rk.es95, 2)}`)}</div>
       ${(an.warnings || []).length ? `<div class="card" style="margin-bottom:14px;border-color:var(--warn)"><b>Check these</b><ul class="muted" style="margin:6px 0 0;padding-left:18px">${an.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
       ${perfBlock(an)}
-      <div class="tabs">${[['overview', 'Overview'], ['positions', 'Positions'], ['transactions', 'Transactions'], ['construct', 'Construct / optimise'], ['drivers', 'Drivers']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/portfolio/${k}">${l}</a>`).join('')}</div><div id="pfB" style="margin-top:14px"></div>`;
+      <div class="tabs">${[['overview', 'Overview'], ['positions', 'Positions'], ['attribution', 'Why did it move?'], ['transactions', 'Transactions'], ['construct', 'Construct / optimise'], ['drivers', 'Drivers']].map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/portfolio/${k}">${l}</a>`).join('')}</div><div id="pfB" style="margin-top:14px"></div>`;
     $('#pfAdd').onclick = () => txModal();
     $('#pfTrade').onclick = () => { const m = modal(`<h2 style="margin-top:0">Trade</h2><p class="muted">Choose a product. The ticket shows its Shaffer Score and the Shaffer Hedge for the risk the trade adds.</p>${assetPicker('tkPick', '')}`); bindPicker('tkPick', x => { closeModal(); openTicket(x, 'BUY'); }); setTimeout(() => $('#tkPick') && $('#tkPick').focus(), 50); };
     const body = $('#pfB');
+    if (tab === 'attribution') {
+      const draw = async d => {
+        body.innerHTML = '<div class="loading">Attributing the day\'s P&L…</div>';
+        let a; try { a = await api('/fs2/portfolio/attribution' + (d ? '?date=' + encodeURIComponent(d) : '')); } catch (e) { body.innerHTML = `<div class="card"><div class="empty">${esc(e.message)}</div></div>`; return; }
+        if (!alive()) return;
+        if (a.error) { body.innerHTML = `<div class="card"><div class="empty">${esc(a.error)}</div></div>`; return; }
+        const bars = (el, o) => hbars(el, Object.entries(o).map(([k, v]) => ({ label: clsName(k), value: v, sub: fmt.signed(v, 0) })), { fmt: v => fmt.signed(v, 0) });
+        body.innerHTML = `<div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:8px"><div><b style="font-size:18px" class="${sign(a.total)}">${fmt.signed(a.total, 0)}</b> <span class="muted">on ${fmt.date(a.date)} (from the ${fmt.date(a.previous)} close; deposits and withdrawals excluded)</span></div>
+            <label class="f">Day<select id="atD">${a.dates.slice().reverse().map(x => `<option ${x === a.date ? 'selected' : ''}>${x}</option>`).join('')}</select></label></div>
+          <div class="grid g2" style="margin-top:12px"><div class="card"><h2>It adds up <small>${a.reconciles ? 'reconciles to the NAV change' : 'DOES NOT reconcile'}</small></h2>
+              <div class="kv">${Object.entries(a.lines).map(([k, v]) => `<span>${esc(k)}</span><span class="${sign(v)}">${fmt.signed(v, 2)}</span>`).join('')}<span><b>Total</b></span><span><b>${fmt.signed(a.total, 2)}</b></span></div>
+              <p class="hint">"Trading & other" is what same-day trades earned against the close, and expiries; it is zero on a day without trades.</p></div>
+            <div class="card"><h2>By risk factor <small>exposures at the previous close × today's factor moves</small></h2><div id="atF"></div>${a.factor_error ? `<p class="hint neg">Factor view unavailable: ${esc(a.factor_error)}</p>` : ''}</div></div>
+          <div class="grid g2" style="margin-top:16px"><div class="card"><h2>By asset class</h2><div id="atC"></div></div><div class="card"><h2>By sector</h2><div id="atS"></div></div>
+            <div class="card"><h2>By country</h2><div id="atK"></div></div><div class="card"><h2>By currency</h2><div id="atU"></div></div></div>
+          <div class="card flush" style="margin-top:16px"><h2>By position <small>held at the previous close</small></h2><div id="atP"></div></div>`;
+        bars($('#atF'), a.by_factor); bars($('#atC'), a.by_asset_class); bars($('#atS'), a.by_sector); bars($('#atK'), a.by_country); bars($('#atU'), a.by_currency);
+        table($('#atP'), a.positions, [{ k: 'asset_id', label: 'Position', l: 1, f: x => `<b>${esc(x.asset_id)}</b><span class="sub">${esc(x.name || '')}</span>` }, { k: 'quantity', label: 'Quantity', f: x => fmt.qty(x.quantity) }, { k: 'pnl', label: 'P&L', cls: x => sign(x.pnl), f: x => fmt.signed(x.pnl, 0) }], { sortKey: 'pnl', sortDir: 1 });
+        $('#atD').onchange = e => draw(e.target.value);
+      };
+      draw(null);
+      return;
+    }
     if (tab === 'overview') {
       body.innerHTML = `<div class="grid g-main"><div class="stack"><div class="card"><h2>Net asset value</h2><div id="navC"></div></div><div class="card flush"><h2>Positions</h2><div id="posT"></div></div></div>
         <div class="stack"><div class="card"><h2>Asset allocation</h2><div id="alC"></div></div><div class="card"><h2>Sector</h2><div id="seC"></div></div><div class="card"><h2>Country</h2><div id="coC"></div></div><div class="card"><h2>Currency</h2><div id="cuC"></div></div></div></div>`;

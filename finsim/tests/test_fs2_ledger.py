@@ -175,6 +175,37 @@ class CashInterest(LedgerCase):
             cashmod.save(self.store, "main", {"short_mode": "partial", "short_share": 1.5})
 
 
+class Attribution(LedgerCase):
+    def test_daily_pnl_reconciles_and_trading_residual_is_zero_without_trades(self):
+        from finsim2.engine.attribution import attribute
+        from finsim2.engine.research import Research
+        self.led.deposit(1e6, self.days[0])
+        self.led.trade("SPY", 100, "BUY", date=self.days[10])
+        self.led.trade("QQQ", 200, "BUY", date=self.days[20])
+        r = Research(self.store)
+        a = attribute(self.led, r, self.days[50])
+        nh = self.led.nav_history()
+        k = nh["dates"].index(self.days[50])
+        self.assertAlmostEqual(a["total"], nh["nav"][k] - nh["nav"][k - 1] - nh["flows"][k], places=6)
+        self.assertAlmostEqual(sum(a["lines"].values()), a["total"], places=6)
+        self.assertAlmostEqual(a["lines"]["Trading & other"], 0.0, places=6)                 # no trade that day
+        self.assertAlmostEqual(sum(p["pnl"] for p in a["positions"]), a["lines"]["Positions held overnight"], places=9)
+        self.assertAlmostEqual(sum(a["by_asset_class"].values()), a["lines"]["Positions held overnight"], places=6)
+        self.assertAlmostEqual(sum(a["by_factor"].values()), a["lines"]["Positions held overnight"], places=6)
+        spy = next(p for p in a["positions"] if p["asset_id"] == "SPY")
+        self.assertAlmostEqual(spy["pnl"], 100 * (self.close("SPY", 50) - self.close("SPY", 49)), places=6)
+
+    def test_a_trade_day_shows_its_trading_residual(self):
+        from finsim2.engine.attribution import attribute
+        from finsim2.engine.research import Research
+        self.led.deposit(1e6, self.days[0])
+        self.led.trade("SPY", 100, "BUY", date=self.days[10])
+        self.led.trade("QQQ", 50, "BUY", date=self.days[40], price=self.close("QQQ", 40) * 0.99)     # bought below the close
+        a = attribute(self.led, Research(self.store), self.days[40])
+        self.assertAlmostEqual(sum(a["lines"].values()), a["total"], places=6)
+        self.assertGreater(a["lines"]["Trading & other"], 0.0)
+
+
 class CorporateActions(LedgerCase):
     def test_split_after_a_trade_at_the_brokers_price_keeps_its_value(self):
         # closes are split-adjusted (today's basis); a 4:1 split happened on day 100
