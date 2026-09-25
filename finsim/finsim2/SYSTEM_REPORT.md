@@ -28,6 +28,7 @@ laboratory that evaluates and refines the two Shaffer systems; it does not trade
 | Historical research dataset | DONE | `lab_records`: 819,392 point-in-time records, 157 assets, 6 horizons |
 | Live day-over-day learning | DONE | ledger: Shaffer, ML return / volatility / drawdown, hedge recommendations (daily P&L paths kept), challengers in live shadow |
 | Hierarchical weights (global → class → sector → industry → asset, shrinkage) | DONE | `engine/lab.py`; four variants; discovery / confirmation / walk-forward |
+| Signal-level re-weighting inside the Shaffer equation (ω, W·A·H, γ strengths, interactions) | DONE (research) | `engine/weights.py`; four unseen eras + 2018 split, naive baselines, 9 score bands, specialisation by depth; results in `SHAFFER_WEIGHT_RESEARCH.md`. Promotion marks the registry; applying promoted weights to the live score is not wired yet |
 | Formula versioning | DONE | `formula:registry`: shaffer-2.1, hedge-2, four Shaffer challengers, hedge-2-sizing-exp |
 | Promotion process (no automatic change) | DONE | gates G1–G3 + explicit user action; promoted hedge sizing is applied by the live engine; a promoted Shaffer weighting becomes a new score VERSION |
 | Hedge learning (H_ML = m·H_raw) | DONE | sizing study: 72 of 174 multiples confirmed; challenger in live shadow |
