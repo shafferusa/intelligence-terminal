@@ -15,7 +15,17 @@ name: Notify Telegram on direct publish
 #
 # PR-path publishes never reach this workflow -- their merge commits are made
 # with GITHUB_TOKEN, which does not trigger push events; build-site.yml
-# notifies for that path instead. The two are mutually exclusive.
+# notifies for that path instead.
+#
+# This (direct-push) path is correctly scoped: the paths filter means it only
+# fires when an edition actually changes site/reports/index.json. The bug was on
+# the OTHER path: build-site.yml's workflow_run notify job fired for EVERY
+# auto-merged claude/* PR and re-announced the latest edition, so any non-report
+# PR merge produced a duplicate brief. Fixed 2026-09-25 by (a) narrowing
+# publish-report.yml to auto-merge only claude/report-* branches and (b) gating
+# build-site.yml's notify job on an actual index.json change. So the two senders
+# stay effectively exclusive per real edition -- but by construction now, not by
+# the earlier assumption that a non-report claude/* merge could never notify.
 
 on:
   push:

@@ -112,6 +112,14 @@ jobs:
 
   # Telegram notification for PR-path publishes only — sent AFTER the deploy so the
   # link is live. Direct-push publishes are notified by notify-telegram.yml instead.
+  #
+  # GUARD (2026-09-25): only notify when this merge actually published a new
+  # edition — i.e. the merge commit changed site/reports/index.json. Without this,
+  # any workflow_run (every auto-merged claude/* PR) re-announced the latest
+  # edition, sending duplicate briefs. publish-report.yml now also only auto-merges
+  # claude/report-* branches, so in practice non-report merges no longer reach here
+  # at all; this guard is the second line of defence (and covers a report PR whose
+  # merge somehow carries no index.json change).
   notify:
     if: github.event_name == 'workflow_run'
     needs: deploy
@@ -124,8 +132,21 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 2
+
+      - name: Did this merge publish a new edition?
+        id: gate
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -qx 'site/reports/index.json'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "index.json changed in this merge -- a new edition, will notify."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "index.json unchanged -- no new edition in this merge, skipping Telegram."
+          fi
 
       - name: Send Telegram notification
+        if: steps.gate.outputs.changed == 'true'
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
