@@ -269,3 +269,20 @@ wins — the panel says so.
 * Gains shrink by half or more out of sample; free signed weights over-fit the most (12M: +22.6 points in sample, −2.3 out).
 * Class level is the best depth; deeper specialisation does not help.
 * Stable in every era at every horizon: a negative weight on idiosyncratic volatility (production gives it almost none).
+
+### Shaffer Alpha vs Shaffer Directional (same data; full report in `SHAFFER_DIRECTIONAL_RESEARCH.md`)
+
+| Horizon | Base rate | Alpha rank IC (t) | Best directional accuracy | Naive | Excess | Brier skill vs climatology | Shaffer adds to the prior? |
+|---|---|---|---|---|---|---|---|
+| 1D | 52.8% | 0.041 (7.7) | 52.9% | 52.8% | +0.2 | +0.39% | barely (t 2.6) |
+| 1W | 54.5% | 0.038 (6.1) | 55.1% | 54.8% | +0.3 | +0.18% | no (t 1.2) |
+| 1M | 58.0% | 0.019 (1.5) | 59.1% | 58.7% | +0.4 | −0.08% | no |
+| 3M | 62.3% | −0.008 | 63.1% | 62.7% | +0.4 | −0.76% | no |
+| 6M | 65.6% | −0.018 | 65.9% | 66.0% | −0.1 | −0.03% | no |
+| 12M | 70.9% | 0.003 | 71.8% | 72.1% | −0.3 | +2.39% | no |
+
+* Alpha: production ranks assets at 1D and 1W; no alpha challenger improves it; the global depth is best.
+* Directional: the product-specific prior is the best base prior at every horizon and beats zero drift at 1D–1M; Shaffer
+  evidence adds to it only at 1D, barely. Bearish precision at 1M–6M comes from inverse / volatility funds.
+* Four 1D directional challengers pass the pre-registered gates and are in the live shadow, but at 1D even a calibrated
+  constant beats climatology — the report proposes a stricter pre-registered gate (beat the prior-only model, paired).
