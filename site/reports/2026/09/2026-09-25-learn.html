@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--
+  Logan's Daily Newspaper - report page template & design reference (v2).
+
+  HOW THE CLOUD ROUTINE USES THIS FILE
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  2. Replace the <title> text.
+  3. Replace the JSON inside the report-meta script block in <head>
+     (keep its id and type attributes exactly as they are).
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+     That one attribute drives the edition colour throughout the page.
+  5. Replace everything between the REPORT:START and REPORT:END marker comments
+     with the new report body. Everything outside the markers is boilerplate
+     shared by every report page - do not edit it per run.
+  6. Prepend a matching entry to site/reports/index.json
+     ({date, slot, title, path, summary, headlines, reading_minutes}).
+
+  RELATIVE PATH DEPTH RULE (read before touching any href/src)
+  Published reports live exactly three directories below the site root:
+      site/reports/YYYY/MM/YYYY-MM-DD-slot.html
+  so every reference back to a site-root resource uses the ../../../ prefix.
+  All relative paths in this template are ALREADY written for that destination
+  depth. They intentionally do NOT resolve from this file's own location
+  (site/report-template.html) - this file is a template, never a served page.
+  Never use root-absolute paths (/assets/...): the site serves from a
+  subdirectory (https://shafferusa.github.io/intelligence-terminal/).
+
+  WHAT THIS TEMPLATE IS NOT
+  There is no freshness table, no meta grid, no per-run system-health footer,
+  no section numbering, and no verification chip on every claim. Those were
+  removed on 2026-08-16: the reader is a reader, not the operator. Run health
+  lives in state/run-log.jsonl and on the status page. A caution flag appears
+  ONLY where a specific claim is genuinely single-sourced, unconfirmed or
+  disputed - if every story carries one, they stop meaning anything.
+
+  The sample content between the markers is a design reference showing every
+  structural element. All figures in it are ILLUSTRATIVE ONLY.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>What the Warehouse Doesn&rsquo;t Remember — Learning Brief, Fri, Sep 25, 2026 · Logan&rsquo;s Daily Newspaper</title>
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F7F8F6">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131816">
+  <link rel="manifest" href="../../../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../../../assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script>
+    /* Stamp persisted theme/text-size before first paint (no flash). */
+    (function () {
+      try {
+        var t = localStorage.getItem("lt-theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        var s = localStorage.getItem("lt-textsize");
+        if (s === "1" || s === "3") document.documentElement.setAttribute("data-textsize", s);
+      } catch (e) { /* storage unavailable - defaults apply */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="../../../assets/style.css">
+
+  <!-- Machine-readable report metadata. The routine replaces this JSON every
+       run; it must stay consistent with the entry in reports/index.json.
+       `headlines` is what the Telegram push renders as bullets. -->
+  <script type="application/json" id="report-meta">
+  {
+    "date": "2026-09-25",
+    "slot": "learn",
+    "title": "What the Warehouse Doesn’t Remember",
+    "path": "reports/2026/09/2026-09-25-learn.html",
+    "summary": "Day 30 of the 150-day curriculum: why FIFO, LIFO and weighted-average inventory costing can turn the identical purchases and sales into three different profit numbers, built around the $3.4 billion gap in Caterpillar's own inventory footnote and the $323 million Valero booked in 2022 by draining decades-old cost layers during a cold snap.",
+    "headlines": [
+      "Day 30 of 150 · Accounting",
+      "The same steel, the same sales, three legal profit numbers",
+      "Why a weather-driven inventory drawdown added $323 million to Valero's 2022 earnings"
+    ],
+    "reading_minutes": 26,
+    "generated_at": "2026-09-25T06:13:44-04:00",
+    "timezone": "America/New_York"
+  }
+  </script>
+</head>
+<body>
+
+  <div class="top-bar">
+    <div class="wrap">
+      <a href="../../../index.html">&larr; Logan&rsquo;s Daily Newspaper</a>
+    </div>
+  </div>
+
+  <main class="wrap paper" data-slot="learn">
+<!--REPORT:START-->
+
+    <header class="paper-head">
+      <p class="paper-edition">Learning Brief</p>
+      <h1>What the Warehouse Doesn&rsquo;t Remember</h1>
+      <p class="paper-dateline">
+        Friday, September 25, 2026 <span class="sep">&middot;</span> 26 min read
+      </p>
+      <p class="paper-standfirst">
+        A bin of identical steel bolts keeps no record of which delivery each one came from, so three accepted but different accounting conventions decide the question instead &mdash; a choice that sits $3.4 billion of extra assets in Caterpillar&rsquo;s own footnotes, added $323 million to Valero&rsquo;s 2022 earnings the week a cold snap froze its supply chain, and runs on the same weighted-sum machinery a seesaw uses to find its balance point.</p>
+    </header>
+
+    <div class="track-head">
+      <p class="track-subject">Accounting</p>
+      <span class="track-progress">Day 30 of 150 &middot; Accounting 8 of 18 &middot; Foundations</span>
+    </div>
+
+    <article class="lesson-body">
+
+      <h3>A number in Caterpillar&rsquo;s own footnotes that seems wrong</h3>
+
+      <p>Buried in the inventory note of Caterpillar&rsquo;s 2023 annual report is a single disclosed sentence with a strange implication. Caterpillar tells its own shareholders that if the company had used a different inventory accounting method &mdash; a method just as legal, just as common among its peers, and used for a large share of its own foreign operations already &mdash; its reported inventories at the end of 2023 would have been $3,423 million higher than the number actually printed on its balance sheet. Not $3,423 million of parts nobody can find. Not a valuation dispute the company is trying to resolve with an appraiser. The engines, undercarriage parts, hydraulic cylinders and bulldozer treads sitting in Caterpillar&rsquo;s warehouses at the close of business on December 31, 2023 were exactly what they were: real, counted, sitting on real shelves. The $3,423 million gap is not a disagreement about how much inventory exists. It is a disagreement about how much it cost &mdash; a disagreement Caterpillar is having with itself, on paper, inside its own accounting policy, and has been having for a very long time. The same footnote shows the gap was $3,321 million a year earlier, at the end of 2022, and $2,422 million more than a decade before that, at the end of 2011. It has grown almost every year since, and it will almost certainly keep growing.</p>
+
+      <p>Here is the plain fact underneath the strange sentence: once units of an identical thing arrive in different shipments at different prices and get physically mixed together, there is no way to know, honestly, which specific unit left the building when a sale happens. A steel distributor buys a shipment of half-inch rebar in January at one price and another shipment of the same rebar in August at a different price, dumps both into the same rack, and by October the rebar has no label saying which truck it rode in on. A customer buys a bundle. Something has to be written down as the cost of what just left and the cost of what remains &mdash; and &ldquo;something&rdquo; is a choice, not an observation. Accountants have three broadly accepted ways to make that choice, they were formalized into U.S. tax law nearly ninety years ago for exactly this reason, and depending on which one a company picks, the identical pile of rebar, the identical customer purchases, and the identical cash changing hands can produce meaningfully different reported profit &mdash; enough, at a company the size of Caterpillar, to move a balance sheet by billions of dollars without a single bolt changing hands differently.</p>
+
+      <p>This lesson is about that choice: what it is, why it was ever allowed to be a choice at all, how to do the arithmetic by hand, and what happens &mdash; as it did to a major American oil refiner in a single week of December 2022 &mdash; when the choice collides with a real supply disruption and briefly hands a company profit that has nothing to do with how its business actually performed that quarter.</p>
+
+      <h3>The idea in plain English: inventory costing is a rule for splitting one pile of dollars into two piles</h3>
+
+      <p>Start from a fact that never changes, no matter which accounting method a company uses. Every dollar a company has ever spent buying or making inventory falls into exactly one of two buckets by the time the accounting period ends: dollars attached to goods that were sold this period, which become an expense called <b>cost of goods sold</b> (COGS) on the income statement, and dollars attached to goods still sitting unsold, which stay an asset called <b>ending inventory</b> on the balance sheet. Add those two buckets together and you always get the same total &mdash; everything the company had available to sell, which is simply what it started the period with plus what it bought or produced during the period. That total is not up for debate. What is up for debate, and what this entire lesson is about, is how much of that fixed total goes in each bucket.</p>
+
+      <p>Think about why that split is hard in the first place. If every unit of inventory cost exactly the same amount to acquire, there would be nothing to decide: multiply the number of units sold by the one true cost, and you have COGS; multiply the number remaining by that same cost, and you have ending inventory. The problem only exists because prices move. A company buys more of something in March at one price, more again in July at a higher or lower price, and by the time it makes a sale in November, the units in its warehouse are a physically indistinguishable blend of several different purchase prices. Something has to decide, for accounting purposes, which of those prices attaches to the units that just sold and which attaches to the units still on the shelf. A steel yard can, and often does, physically ship its oldest rebar first, for the very good operational reason that steel left sitting outdoors rusts; whether it then costs that shipment using an accounting method that happens to share the same name is a completely separate decision, made for completely different reasons.</p>
+
+      <p>There is, in fact, a fourth method that sidesteps the whole problem, and naming it clarifies why the other three exist at all. <b>Specific identification</b> tracks the actual, individual cost of each individual unit &mdash; the exact price paid for this one Range Rover, tagged to its vehicle identification number, or this one loose diamond, tagged to its own certificate. It is the honest answer to &ldquo;which cost attaches to which sale,&rdquo; and GAAP requires it wherever it is practical: for large, expensive, individually distinguishable goods, a dealership can and does know precisely which car, at precisely which invoice cost, just left the lot. What specific identification cannot do is scale to a bin of ten thousand identical half-inch bolts, or a storage tank holding crude oil from six different tanker deliveries blended into one continuous liquid. Once units are genuinely fungible &mdash; interchangeable, indistinguishable, physically mingled &mdash; tracking each one&rsquo;s individual history stops being merely inconvenient and becomes meaningless: the oil molecules from March&rsquo;s delivery and July&rsquo;s delivery are, by the time they sit in the same tank, not actually separable at all. FIFO, LIFO and weighted average exist precisely for that case &mdash; commodity-like inventory where specific identification is either impossible or not worth the bookkeeping cost, which describes the overwhelming majority of what most manufacturers, distributors and retailers hold.</p>
+
+      <p>The three conventions, in plain words, before any arithmetic:</p>
+
+      <p><b>First in, first out</b> (FIFO) assumes the oldest costs on the books leave first. When a sale happens, FIFO reaches for the earliest, longest-held purchase price to charge as cost of goods sold, and whatever remains in ending inventory carries the most recent purchase prices &mdash; prices closest to what it would actually cost to replace the inventory today.</p>
+
+      <p><b>Last in, first out</b> (LIFO) assumes the opposite: the newest costs leave first. A sale is costed at whatever was most recently paid, and ending inventory is left holding the oldest costs on the books &mdash; sometimes, as Caterpillar&rsquo;s footnote shows, costs from purchases made many years or even decades earlier, because a company that has never let its physical inventory quantity fall below some baseline level never has to touch that baseline&rsquo;s original cost.</p>
+
+      <p><b>Weighted average</b> refuses to assume any order at all. It blends every unit&rsquo;s cost &mdash; the old purchases and the new purchases together &mdash; into one single average cost per unit, and applies that same blended number to both the units sold and the units remaining.</p>
+
+      <p>Now the consequence that makes this more than bookkeeping trivia. When prices are rising &mdash; the normal case, given persistent inflation over most stretches of economic history &mdash; FIFO charges the oldest, cheapest costs to cost of goods sold, which understates COGS relative to what replacing that inventory would actually cost today, which overstates reported profit relative to the business&rsquo;s true replacement-cost economics. LIFO does the reverse: it charges the newest, most expensive costs to cost of goods sold, which better approximates the real economic cost of replacing what was sold, and reports a lower, more conservative profit figure &mdash; and, because U.S. tax law is built on reported income, a lower tax bill in the year prices rose. Weighted average lands in between the two, smoothing the swings rather than eliminating them. None of the three is fraudulent. All three are fully permitted under U.S. Generally Accepted Accounting Principles, a company is free to elect any one of them, and &mdash; this is the detail that turns a footnote curiosity into $3.4 billion &mdash; a company&rsquo;s election, once made, is not something it revisits every year for whichever answer looks best. It is closer to a one-way door, for reasons the history below will make concrete.</p>
+
+      <h3>The formalism: one identity that never bends, and two formulas for the choice that does</h3>
+
+      <p>Every inventory costing method, whichever one a company elects, has to satisfy the same accounting identity. This identity is not a policy choice; it is arithmetic, and every method&rsquo;s numbers must add up to it.</p>
+
+      <div class="formula">
+        <p class="expr">Goods Available for Sale = Beginning Inventory + Purchases<br>
+        Goods Available for Sale = Cost of Goods Sold + Ending Inventory</p>
+        <dl>
+          <dt>Beginning Inventory</dt><dd>the dollar cost of inventory already on hand at the start of the period, carried over from the prior period&rsquo;s ending inventory.</dd>
+          <dt>Purchases</dt><dd>the dollar cost of everything bought or produced and added to inventory during the period.</dd>
+          <dt>Goods Available for Sale</dt><dd>the total dollar cost the company had on hand to sell during the period &mdash; fixed, and identical under every costing method.</dd>
+          <dt>Cost of Goods Sold</dt><dd>the portion of Goods Available for Sale assigned to units that were sold during the period; an expense on the income statement.</dd>
+          <dt>Ending Inventory</dt><dd>the portion of Goods Available for Sale assigned to units still unsold at period&rsquo;s end; an asset on the balance sheet, carried forward as next period&rsquo;s beginning inventory.</dd>
+        </dl>
+      </div>
+
+      <p>FIFO and LIFO split that fixed total by working through the actual list of purchase &ldquo;lots&rdquo; in date order &mdash; oldest lot first for FIFO, newest lot first for LIFO &mdash; as the worked example below shows directly. Weighted average instead collapses every lot into a single blended cost per unit before doing any splitting at all:</p>
+
+      <div class="formula">
+        <p class="expr">Weighted Average Cost per Unit = (Beginning Inventory $ + Purchases $) &divide; (Beginning Inventory units + Purchased units)<br>
+        Cost of Goods Sold = Units Sold &times; Weighted Average Cost per Unit<br>
+        Ending Inventory = Units Remaining &times; Weighted Average Cost per Unit</p>
+        <dl>
+          <dt>Weighted Average Cost per Unit</dt><dd>a single blended dollar cost per unit, computed once for the period (in the simplest, &ldquo;periodic&rdquo; version of the method) from every dollar and every unit available for sale.</dd>
+          <dt>Units Sold</dt><dd>the number of physical units that left inventory during the period, regardless of which specific purchase lot they are assumed to have come from.</dd>
+          <dt>Units Remaining</dt><dd>the number of physical units still on hand at period&rsquo;s end.</dd>
+        </dl>
+      </div>
+
+      <p>One more formal quantity is worth naming precisely, because it is exactly the number sitting in Caterpillar&rsquo;s footnote and it is how analysts routinely make a LIFO company&rsquo;s numbers comparable to a FIFO peer&rsquo;s: the <b>LIFO reserve</b>.</p>
+
+      <div class="formula">
+        <p class="expr">LIFO Reserve = FIFO-basis Inventory Value &minus; LIFO-basis Inventory Value</p>
+        <dl>
+          <dt>FIFO-basis Inventory Value</dt><dd>what the company&rsquo;s ending inventory would be worth, right now, if it had used FIFO instead &mdash; a hypothetical, disclosed for exactly this comparison, since FIFO&rsquo;s ending balance uses the most recent, closest-to-replacement-cost prices.</dd>
+          <dt>LIFO-basis Inventory Value</dt><dd>what the company actually reports on its balance sheet, using LIFO&rsquo;s oldest, often stale, purchase prices.</dd>
+        </dl>
+      </div>
+
+      <p>Because the LIFO reserve accumulates the entire history of the gap between the two methods, its year-over-year change also approximates, roughly, the additional pre-tax cost of goods sold LIFO charged relative to FIFO in that one year &mdash; which is why Caterpillar&rsquo;s reserve growing from $2,422 million to $3,321 million to $3,423 million across 2011, 2022 and 2023 is not a random drift. It is a running scoreboard of how much lower Caterpillar&rsquo;s reported profit has been, cumulatively, because of a single accounting election, through more than a decade in which the underlying prices of steel, engines and hydraulic components mostly rose.</p>
+
+      <div class="worked">
+        <b>Worked example 1 &mdash; the same rebar, three profit numbers</b>
+        <p>This example is a hypothetical, built to show the mechanics cleanly with round numbers; the shape mirrors how a real steel distributor&rsquo;s books would actually work. Meridian Steel Supply buys half-inch rebar in four lots over the year and sells 350 tons, ending the year with 150 tons on hand.</p>
+        <ol>
+          <li><b>The purchase lots.</b> January: 100 tons at $10/ton = $1,000. April: 150 tons at $12/ton = $1,800. August: 200 tons at $15/ton = $3,000. November: 50 tons at $18/ton = $900. Total available: 500 tons, $6,700. (Check: $1,000 + $1,800 + $3,000 + $900 = $6,700.)</li>
+          <li><b>FIFO &mdash; charge the oldest costs to what sold.</b> The 350 tons sold are costed, in order, from the earliest lots: all 100 tons of January ($1,000), all 150 tons of April ($1,800), and 100 of the 200 tons of August ($1,500). Cost of goods sold = $1,000 + $1,800 + $1,500 = <b>$4,300</b>. What remains &mdash; the other 100 tons of August plus all 50 tons of November &mdash; is ending inventory: $1,500 + $900 = <b>$2,400</b>. Check: $4,300 + $2,400 = $6,700.</li>
+          <li><b>LIFO &mdash; charge the newest costs to what sold.</b> The 350 tons sold are costed, in order, from the most recent lots backward: all 50 tons of November ($900), all 200 tons of August ($3,000), and 100 of the 150 tons of April ($1,200). Cost of goods sold = $900 + $3,000 + $1,200 = <b>$5,100</b>. What remains &mdash; the other 50 tons of April plus all 100 tons of January &mdash; is ending inventory: $600 + $1,000 = <b>$1,600</b>. Check: $5,100 + $1,600 = $6,700.</li>
+          <li><b>Weighted average &mdash; blend, then split.</b> Weighted average cost per ton = $6,700 &divide; 500 tons = $13.40/ton. Cost of goods sold = 350 &times; $13.40 = <b>$4,690</b>. Ending inventory = 150 &times; $13.40 = <b>$2,010</b>. Check: $4,690 + $2,010 = $6,700.</li>
+          <li><b>Same 500 tons bought, same 350 tons sold, same $6,700 spent &mdash; three different profit numbers.</b> If Meridian sold that rebar for $22/ton ($7,700 in revenue), gross profit is $3,400 under FIFO, $2,600 under LIFO, and $3,010 under weighted average &mdash; a $800 swing, on one year, at one small distributor, from an accounting election alone. Notice, too, that $800 gap between FIFO ending inventory ($2,400) and LIFO ending inventory ($1,600): that is a LIFO reserve, built from a single year, at miniature scale next to Caterpillar&rsquo;s $3.4 billion, but arithmetically the identical thing.</li>
+        </ol>
+      </div>
+
+      <p>Rising prices were doing real work in that example &mdash; each successive lot cost more than the last. That is not a rigged assumption; it is the ordinary condition steel, oil, copper and most industrial inputs have been in for most of the last century, which is exactly why LIFO exists as a distinct election at all: in a world of stable prices, all three methods would produce identical answers, and nobody would have needed to argue about it in Congress in 1939.</p>
+
+      <h3>Where it shows up: a cold snap that was worth $323 million</h3>
+
+      <p>Worked example 1 shows the steady-state gap a rising-price environment opens between methods every year, and it is worth closing the loop on the number this lesson opened with. Analysts who need to compare a LIFO reporter like Caterpillar against a FIFO-reporting peer routinely undo the LIFO effect using the reserve itself, because the year-over-year <i>change</i> in the reserve is what actually happened to that single year&rsquo;s cost of goods sold:</p>
+
+      <div class="formula">
+        <p class="expr">FIFO-equivalent Cost of Goods Sold = Reported LIFO Cost of Goods Sold &minus; (This Year&rsquo;s LIFO Reserve &minus; Last Year&rsquo;s LIFO Reserve)</p>
+        <dl>
+          <dt>This Year&rsquo;s LIFO Reserve &minus; Last Year&rsquo;s LIFO Reserve</dt><dd>the change in the reserve over the year; a positive change means LIFO charged more to cost of goods sold this year than FIFO would have, so it is subtracted back out to reconstruct the FIFO-equivalent figure.</dd>
+        </dl>
+      </div>
+
+      <p>Run Caterpillar&rsquo;s own disclosed numbers through it: the reserve moved from $3,321 million at the end of 2022 to $3,423 million at the end of 2023, an increase of $102 million. That $102 million is, roughly, how much higher Caterpillar&rsquo;s 2023 LIFO cost of goods sold was than a FIFO-equivalent figure would have been &mdash; which means Caterpillar&rsquo;s FIFO-equivalent pre-tax income for 2023 runs about $102 million above what it actually reported. Nothing about Caterpillar&rsquo;s machines, its sales volume, or its factories changed to produce that gap. It is the accounting election, isolated, for one year, using nothing but the company&rsquo;s own footnote.</p>
+
+      <p>There is a second, sharper phenomenon that only shows up under LIFO, and it happened for real, at scale, at a major American company, during a single reporting period in 2022.</p>
+
+      <p>Under LIFO, a company&rsquo;s ending inventory is built up in <b>layers</b>: the oldest layer &mdash; sometimes called the base layer, sometimes decades old &mdash; sits at the bottom, carried at whatever it cost when it was first acquired, and newer layers stack on top of it in the years since, each carried at that year&rsquo;s own purchase price. As long as the physical quantity of inventory never falls below the level the base layer represents, that old layer&rsquo;s low, stale cost is never touched, which is exactly the mechanism that lets Caterpillar&rsquo;s LIFO reserve keep growing year after year. But if a company&rsquo;s inventory quantity does drop below a prior year&rsquo;s level &mdash; because it sold more than it replenished, or because something disrupted its ability to restock &mdash; LIFO has no choice but to dip into those old, cheap layers to cost the shortfall. Accountants call this a <b>LIFO liquidation</b>, and because the layer being tapped was bought at a much lower price than today&rsquo;s replacement cost, liquidating it charges an artificially low cost of goods sold against that period&rsquo;s revenue &mdash; inflating that period&rsquo;s reported profit for a reason that has nothing to do with how the business actually performed.</p>
+
+      <div class="worked">
+        <b>Worked example 2 &mdash; a shortage that flatters the books</b>
+        <p>This example is a hypothetical continuation of Meridian Steel, built to isolate the liquidation mechanism cleanly; the real event it mirrors follows immediately after. Several years after worked example 1, Meridian&rsquo;s LIFO ending inventory has settled into two old layers it has carried forward without disturbing: a base layer of 80 tons at $6/ton ($480) from its earliest years, and a layer of 40 tons at $9/ton ($360) added three years ago. Opening LIFO inventory: 120 tons, $840.</p>
+        <ol>
+          <li><b>The disruption.</b> A regional supply shock &mdash; a plant outage, a transportation freeze, take your pick &mdash; lets Meridian buy only 300 tons all year, at an elevated $20/ton ($6,000), while demand holds up and it sells 380 tons. Because purchases (300 tons) fell short of sales (380 tons), inventory has to shrink by 80 tons below where it started, and LIFO must reach into the old layers to cost that shortfall.</li>
+          <li><b>Costing the 380 tons sold.</b> First, all 300 tons bought this year, at $20/ton: $6,000. That covers 300 of the 380 tons sold; 80 tons still need a cost. LIFO reaches into the layers in reverse order of age: the newer $9/ton layer first, all 40 tons of it ($360), then 40 of the 80 tons in the $6/ton base layer ($240). Total cost of goods sold: $6,000 + $360 + $240 = <b>$6,600</b>, for 380 tons sold.</li>
+          <li><b>What&rsquo;s left.</b> Ending inventory is the untouched remainder of the base layer: 40 tons at $6/ton = <b>$240</b>. Check: opening $840 + purchases $6,000 = $6,840 available; COGS $6,600 + ending inventory $240 = $6,840.</li>
+          <li><b>The number that matters: what liquidation was worth.</b> If Meridian had somehow replaced every one of those 380 tons at the year&rsquo;s actual $20/ton replacement cost, cost of goods sold would have been 380 &times; $20 = $7,600. The actual LIFO figure, $6,600, is $1,000 lower &mdash; $1,000 of reported gross profit this year that exists only because old, cheap inventory layers happened to run out, not because Meridian&rsquo;s steel business got $1,000 more efficient. That $1,000 is a one-time event: the $6/ton layer is nearly exhausted, and next year, with no cheap layers left to draw on, the same volume of sales will cost close to full replacement price.</li>
+        </ol>
+      </div>
+
+      <p>That mechanism, at a scale about three hundred thousand times larger than Meridian&rsquo;s $1,000, is exactly what Valero Energy Corporation disclosed for 2022. In the inventories note of its 2022 Form 10-K, Valero reported a liquidation of certain LIFO inventory layers during the year, caused by weather-related production disruptions at the end of 2022, that decreased its cost of materials and other by $323 million. Valero&rsquo;s refineries, like Meridian&rsquo;s rebar rack, carry crude oil and refined-product inventory in LIFO layers built up over years at whatever oil cost when each layer was acquired; a severe winter freeze that shut down production and drew inventories down below prior years&rsquo; levels forced the company to liquidate old, low-cost layers instead of replacing them, and that $323 million was the direct, disclosed, dollar-for-dollar result &mdash; added straight to reported earnings for a reason with nothing to do with refining margins that quarter. Valero was far from alone that period: Sherwin-Williams disclosed a $25.8 million net-income benefit from LIFO liquidation in 2021, and Chemours disclosed an $8 million benefit from liquidation in its Titanium Technologies segment the same year. LIFO liquidation gains are a recurring, named line item across the disclosures of dozens of LIFO-reporting companies whenever a shortage, a strike, or a supply shock draws inventories down &mdash; not a curiosity, but a predictable consequence of the accounting method itself, and one experienced analysts specifically strip out before judging a quarter&rsquo;s underlying performance.</p>
+
+      <p>The history of why this choice exists at all runs back to 1939. Congress formally wrote LIFO into U.S. tax law in the Revenue Act of 1939, after a push from industries &mdash; petroleum refiners and metals producers prominent among them &mdash; whose inventory costs moved sharply with commodity prices and who argued that FIFO&rsquo;s older, cheaper costs, charged against current revenue during a period of rising prices, were taxing paper profits that didn&rsquo;t reflect what it would actually cost the company to keep operating. That same 1939 legislation attached a condition that still governs the choice today, called the <b>LIFO conformity rule</b>: a company that elects LIFO for its tax return must also use LIFO in the financial statements it shows shareholders. It cannot report cheerier FIFO profits to investors while claiming LIFO&rsquo;s lower, tax-advantaged profits to the IRS. Almost no other major accounting policy in the U.S. tax code carries that kind of book-tax handcuff, and it is a large part of why a LIFO election is effectively permanent: switching back to FIFO requires formal IRS approval and typically triggers a one-time tax bill on the accumulated LIFO reserve, since the deferred tax LIFO has been postponing since 1939, or since whenever the company adopted it, comes due the moment the company stops using the method that deferred it.</p>
+
+      <p>The rule diverges sharply once you leave U.S. tax law. The International Accounting Standards Board&rsquo;s original 1975 version of IAS 2, the governing international standard for inventories, permitted LIFO as an allowed alternative alongside FIFO and weighted average. A 2003 revision of IAS 2 removed that alternative entirely: LIFO is prohibited under IFRS today, on the Board&rsquo;s stated reasoning that it rarely reflects the actual physical flow of goods and, in periods of changing prices, leaves the balance sheet carrying old costs unrelated to current values &mdash; the very same stale-cost effect visible in Caterpillar&rsquo;s own footnote. The practical consequence is a real seam running through the books of any large American multinational: the U.S. parent can carry a significant share of its inventory at LIFO cost for tax and GAAP purposes &mdash; Caterpillar&rsquo;s own 2023 filing notes that LIFO-basis inventory represented about 65 percent of its total &mdash; while a foreign subsidiary reporting locally under IFRS is, by law, using FIFO or weighted average for the identical category of parts. Two fully compliant, fully legal, genuinely different costs for what is functionally the same global inventory pool, not because anyone is doing anything wrong, but because two standard-setters answered the same underlying question differently, eighty-some years apart.</p>
+
+      <p>One more wrinkle worth knowing, because it shows the method choice reaching even into how a company recognizes a loss. Inventory that becomes damaged, obsolete, or simply worth less than it cost has to be written down, and since 2017 the rule for making that write-down has itself split along the same FIFO/LIFO line. The Financial Accounting Standards Board&rsquo;s Accounting Standards Update 2015-11 simplified the test for companies using FIFO or weighted average: write inventory down to its <b>net realizable value</b> &mdash; estimated selling price, less costs still to be incurred to complete and sell it &mdash; whenever that value falls below cost, full stop. The update deliberately excluded companies using LIFO (and the related retail inventory method), which still apply the older, more elaborate <b>lower of cost or market</b> test, comparing cost against a &ldquo;market&rdquo; figure bounded above by net realizable value and below by net realizable value minus a normal profit margin. Two companies holding the identical damaged inventory, writing it down in the identical quarter, can be required to run two different tests to get there &mdash; not because either company is doing anything wrong, but because the standard-setters chose not to simplify the LIFO side of the rule when they simplified everyone else&rsquo;s.</p>
+
+      <h3>The misconception: FIFO and LIFO are not about which box actually left the warehouse</h3>
+
+      <p>The single most common misreading of this material, and the one worth correcting explicitly, is treating &ldquo;first in, first out&rdquo; and &ldquo;last in, first out&rdquo; as descriptions of physical warehouse practice &mdash; as though a company using LIFO is somehow instructed to grab the newest box off the truck and ship that one first, leaving old stock to rot in the back. That is backwards from how real warehouses actually work, and it is backwards from what the accounting terms mean. Operationally, almost every business that can manage it tries to move its oldest physical stock first, for entirely non-accounting reasons: steel rusts, produce spoils, electronics become obsolete, and a first-out shipping discipline minimizes waste and damage regardless of which accounting method sits behind it. A steel distributor can run a rigorously first-physically-out warehouse while using LIFO to cost its books, and that is not a contradiction &mdash; it is the normal case. FIFO and LIFO, as this lesson has used them throughout, are <b>cost-flow assumptions</b>: rules for which purchase price gets attached to a sale for bookkeeping purposes, chosen for their effect on reported profit and tax timing, entirely independent of which physical carton a warehouse worker actually pulled off the shelf. Confusing the two leads people to think a company&rsquo;s inventory method choice says something about its operations. It says something about its accounting policy and, as Caterpillar&rsquo;s footnote and Valero&rsquo;s 2022 disclosure both show, its reported profit &mdash; nothing about which pallet moved when.</p>
+
+      <p>A second, quieter misconception sits right next to the first: the idea that because weighted average sits between FIFO and LIFO&rsquo;s answers, it is somehow the &ldquo;neutral&rdquo; or &ldquo;most honest&rdquo; choice, and the other two are distortions of some single correct number. There is no single correct number. All three methods are equally permitted under U.S. GAAP, and each represents a different, defensible answer to a question &mdash; which cost attaches to which sale &mdash; that genuinely has no unique answer once physically identical units get mixed together. What differs between them is not truth versus distortion; it is which real-world consequence each one produces: FIFO&rsquo;s balance sheet stays closer to current replacement cost but its income statement can overstate profit during inflation; LIFO&rsquo;s income statement better matches current costs to current revenue but its balance sheet can drift arbitrarily far from replacement cost, as Caterpillar&rsquo;s growing multi-billion-dollar reserve demonstrates; weighted average smooths both effects without eliminating either. Choosing among them is a genuine policy decision with real cash-tax consequences, made once and, thanks to the LIFO conformity rule&rsquo;s pull toward permanence, rarely revisited &mdash; not a search for the one true number hiding somewhere among the three.</p>
+
+      <h3>The callback</h3>
+
+      <p>Day 27 of this curriculum built the formula for a system&rsquo;s center of mass: the balance point of several objects of different mass at different positions is not the plain average of their positions, but a <i>mass-weighted</i> average &mdash; each object&rsquo;s position pulled into the total in proportion to how much mass it carries, so a small object far from center barely moves the balance point while a large one dominates it. That lesson wrote the formula as a sum of each mass times its position, divided by the total mass. Look again at this lesson&rsquo;s weighted-average-cost formula: each purchase lot&rsquo;s cost, weighted by how many units that lot contains, divided by the total number of units. Swap &ldquo;mass&rdquo; for &ldquo;quantity&rdquo; and &ldquo;position&rdquo; for &ldquo;cost,&rdquo; and it is the identical piece of machinery. A big, cheap August shipment of 200 tons pulls Meridian&rsquo;s weighted average cost down hard, the same way a large mass near one end of a seesaw pulls the balance point sharply toward it; a small, expensive November shipment of 50 tons nudges the average only slightly, the same way a light object far out on the seesaw&rsquo;s arm still only contributes a small share of the total balance. Both formulas exist to answer the same underlying question &mdash; where does a collection of unequal contributors settle, on average, once you weight each one by how much of it there actually is &mdash; dressed in the notation of two completely different fields.</p>
+
+      <div class="recap">
+        <b>Where this leaves you</b>
+        <ul>
+          <li>You can state the identity every inventory method must satisfy &mdash; Goods Available for Sale = Cost of Goods Sold + Ending Inventory &mdash; and explain why FIFO, LIFO and weighted average all split that same fixed total differently.</li>
+          <li>You can compute FIFO, LIFO and weighted-average cost of goods sold and ending inventory by hand from a list of purchase lots, and you have done it once on Meridian Steel&rsquo;s rebar.</li>
+          <li>You can explain what a LIFO liquidation is, why it temporarily inflates reported profit for reasons unrelated to operating performance, and you have seen the real $323 million Valero disclosed for 2022 alongside the mechanics that produce it.</li>
+          <li>You know why a LIFO election is close to a one-way door under U.S. tax law, why IFRS bans the method entirely, and why a single multinational company can be legally required to use two different costing methods for the same global inventory pool.</li>
+        </ul>
+      </div>
+
+    </article>
+
+    <footer class="colophon">
+      <h2>Colophon</h2>
+      <p><strong>Sources.</strong> Caterpillar Inc.&rsquo;s disclosed LIFO-versus-FIFO inventory gap ($2,422 million at year-end 2011; $3,321 million and $3,423 million at year-end 2022 and 2023, respectively, with LIFO-basis inventory at roughly 65 percent of the total in both of the latter years) is drawn from Caterpillar&rsquo;s own Form 10-K inventory footnotes, filed with the SEC. Valero Energy Corporation&rsquo;s 2022 LIFO liquidation, and the $323 million decrease in cost of materials and other it produced, is drawn from Note 3, Inventories, of Valero&rsquo;s 2022 Form 10-K. The Sherwin-Williams and Chemours 2021 LIFO-liquidation figures are drawn from those companies&rsquo; own 2021 Form 10-K disclosures. The Revenue Act of 1939&rsquo;s adoption of LIFO and its conformity requirement, and the IASB&rsquo;s 2003 revision of IAS 2 prohibiting LIFO under IFRS, were checked against standard-setter and tax-history summaries rather than taken from memory. The Meridian Steel Supply worked examples are hypotheticals built for this lesson, clearly labeled as such, structured to mirror how real inventory-heavy distributors and refiners are actually costed.</p>
+      <p><strong>Corrections.</strong> None in this edition.</p>
+      <p><strong>Method.</strong> Written for this report, building on day 27&rsquo;s lesson on center of mass and rotation. Missing data is declared missing, never estimated; a hypothetical figure is labeled as such rather than presented as measured. Written and published automatically; nobody reviews it before you do. <a href="../../../status.html">System status</a>.</p>
+    </footer>
+
+    <nav class="report-nav" aria-label="Report navigation">
+      <a href="./2026-09-24-pm.html">&larr; Previous report</a>
+      <a href="../../../index.html">Archive &amp; search</a>
+      <a class="is-disabled" aria-disabled="true">Next report &rarr;</a>
+    </nav>
+
+<!--REPORT:END-->
+  </main>
+
+  <script src="../../../assets/report.js" defer></script>
+  <script>
+    /* Print support: expand every collapsed <details> before printing
+       (PDF export via Safari share sheet), restore afterwards. The page is
+       fully readable with JS off - details/summary work natively. */
+    (function () {
+      var touched = [];
+      function openAll() {
+        touched = [];
+        document.querySelectorAll("details:not([open])").forEach(function (d) {
+          d.setAttribute("open", "");
+          touched.push(d);
+        });
+      }
+      function restore() {
+        touched.forEach(function (d) { d.removeAttribute("open"); });
+        touched = [];
+      }
+      window.addEventListener("beforeprint", openAll);
+      window.addEventListener("afterprint", restore);
+    })();
+  </script>
+</body>
+</html>
