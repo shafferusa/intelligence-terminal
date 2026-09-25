@@ -89,6 +89,13 @@ State: `state/sie.json`, answer keys in `state/sie/quizzes/`, Telegram replies i
   24–25 weak-area review, 26 and 28 practice exams (75 questions, 12/33/23/7), 27 exam review,
   29 memorization sprint, 30 final exam + cheat sheet, then a report card and, if an exam date is
   set, short maintenance editions until the exam.
+- **The SIE Study Guide** (`site/reports/sie/study-guide.html`, added 2026-09-25 at Logan's
+  request): one page covering everything the 30 days teach in slightly less detail, a chapter per
+  day with the same four labelled blocks and hidden-answer check questions, plus the exam-week
+  formula gauntlet, master memorization list and cheat sheet. Published with Day 1; every edition
+  links its chapter. Routines may only correct errors in it (logged as corrections).
+- **Question style** follows a practice exam Logan supplied, summarised as patterns in
+  `curriculum/sie-question-style.md` together with the third-party errors never to repeat.
 - Still one sender per edition: the edition push comes from `notify.py` like every other edition.
   The inbox Action's score reply is a reply to Logan's own message, also sent by Actions, never by a
   routine (iron rule 8b unchanged).

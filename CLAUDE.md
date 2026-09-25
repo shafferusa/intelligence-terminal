@@ -34,6 +34,8 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
   subjects for the Learning Brief.
 - `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
   (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
+  `curriculum/sie-question-style.md` — the house question style for SIE quizzes and exams.
+- `site/reports/sie/study-guide.html` — the SIE Study Guide (one chapter per program day).
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
   source material for the 150-day curriculum.

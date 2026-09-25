@@ -634,3 +634,39 @@
     }
   });
 })();
+
+/* ---------- SIE Study Guide progress ----------
+   One checkbox per chapter ("I've worked through Day N"), remembered on this
+   device, with a tick against the chapter in the contents. Pure convenience:
+   with JS off or storage blocked the guide reads exactly the same. */
+(function () {
+  "use strict";
+  var chapters = document.querySelectorAll(".guide-chapter[id]");
+  if (!chapters.length) return;
+  var KEY = "sie-guide-done";
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+  function mark(id) {
+    var link = document.querySelector('.guide-toc a[href="#' + id + '"]');
+    if (link && link.parentNode) link.parentNode.classList.toggle("done", !!done[id]);
+  }
+  Array.prototype.forEach.call(chapters, function (ch) {
+    var id = ch.id;
+    var h = ch.querySelector("h2");
+    var label = document.createElement("label");
+    label.className = "guide-done";
+    var box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = !!done[id];
+    label.appendChild(box);
+    label.appendChild(document.createTextNode("I've worked through " + (h ? h.textContent.split(" · ")[0] : "this chapter")));
+    ch.appendChild(label);
+    box.addEventListener("change", function () {
+      if (box.checked) done[id] = true; else delete done[id];
+      save();
+      mark(id);
+    });
+    mark(id);
+  });
+})();

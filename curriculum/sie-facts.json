@@ -157,7 +157,7 @@
   {
    "category": "records",
    "term": "Record retention (SEA 17a-4)",
-   "answer": "Blotters, general ledgers, customer account ledgers: 6 years. Order tickets, confirmations, communications: 3 years (first 2 easily accessible). Account records: 6 years after closing. Corporate/partnership documents: life of the firm. U4/U5: 3 years after termination. Complaints: 4 years (FINRA 4513)",
+   "answer": "3 years: U4/U5/fingerprint records (after termination), order tickets, confirmations, statements, communications, trial balances. 4 years: customer complaints (FINRA 4513). 5 years: CTRs, SARs, CIP records (after account closing). 6 years: blotters, general and customer ledgers, customer account records (after closing), MSRB complaints. Life of the firm: articles of incorporation, partnership agreements, minute books, stock certificate books.",
    "status": "stable",
    "source": "SEA Rule 17a-3/17a-4; FINRA 4513"
   },
@@ -1005,7 +1005,7 @@
   {
    "category": "economics",
    "term": "Fed tools",
-   "answer": "Open-market operations (most used; FOMC), discount rate, reserve requirements (0% since March 2020), interest on reserve balances",
+   "answer": "Open-market operations (most used; FOMC), discount rate, reserve requirements (0% since March 2020), interest on reserve balances. Exam convention also lists changing Regulation T margin (unchanged at 50% since 1974)",
    "status": "stable"
   },
   {
@@ -1018,6 +1018,115 @@
    "category": "economics",
    "term": "Rates ladder",
    "answer": "Fed funds (overnight interbank reserves) < discount rate (Fed lending to banks) ; prime rate (banks' best corporate customers); broker call rate (bank loans to BDs, basis for margin interest)",
+   "status": "stable"
+  },
+  {
+   "category": "settlement",
+   "term": "Cash-settlement ex-date",
+   "answer": "The business day after the record date (cash trades settle same day)",
+   "status": "stable"
+  },
+  {
+   "category": "tax",
+   "term": "Cash dividend tax event",
+   "answer": "The payable date (when received); exception: fund/REIT dividends declared Oct-Dec to holders of record then and paid by end of January are treated as received Dec 31",
+   "status": "stable",
+   "source": "IRC §852(b)(7), §857(b)(9)"
+  },
+  {
+   "category": "munis",
+   "term": "Muni quote conventions",
+   "answer": "Serial bonds (often GO) quoted on a yield (basis) basis; term bonds ('dollar bonds', often revenue) quoted as % of par",
+   "status": "stable"
+  },
+  {
+   "category": "munis",
+   "term": "Municipal Finance Professional",
+   "answer": "Associated person primarily engaged in municipal underwriting, trading, sales to issuers, financial advisory, research, or who solicits municipal issuer business; an RR selling munis only to retail investors is not an MFP",
+   "status": "stable",
+   "source": "MSRB Rule G-37"
+  },
+  {
+   "category": "options",
+   "term": "Expiration timing",
+   "answer": "Standard equity options: expiration date is the third Friday of the month; last trading 4:00 p.m. ET; expire 11:59 p.m. ET",
+   "status": "stable",
+   "source": "OCC"
+  },
+  {
+   "category": "offerings",
+   "term": "IPO restricted persons (Rule 5130)",
+   "answer": "Broker-dealers and their personnel, and immediate family (spouse, parents, in-laws, siblings, children, anyone materially supported); grandparents, aunts/uncles and cousins are not restricted",
+   "status": "stable",
+   "source": "FINRA Rule 5130"
+  },
+  {
+   "category": "offerings",
+   "term": "Offering documents",
+   "answer": "Registered offering -> prospectus; Reg D private placement -> offering (private placement) memorandum; municipal -> official statement",
+   "status": "stable"
+  },
+  {
+   "category": "registration",
+   "term": "FINRA retained jurisdiction",
+   "answer": "2 years after termination of registration",
+   "status": "stable",
+   "source": "FINRA By-Laws Art. V §4"
+  },
+  {
+   "category": "bonds",
+   "term": "Call protection vs call premium",
+   "answer": "Call protection = time until the first call date; call premium = call price above par (callable at 105 -> $50 per bond)",
+   "status": "stable"
+  },
+  {
+   "category": "bonds",
+   "term": "Commercial paper buyers",
+   "answer": "Typically $100,000+ denominations; bought by institutions and money-market funds, not small retail investors",
+   "status": "stable"
+  },
+  {
+   "category": "funds",
+   "term": "Fund objectives",
+   "answer": "Growth; income; growth & income (stocks); balanced (stocks + bonds); asset allocation; sector; index; bond; money market",
+   "status": "stable"
+  },
+  {
+   "category": "annuities",
+   "term": "Life with period certain",
+   "answer": "Payments for life, with a guaranteed minimum period paid to a beneficiary if the annuitant dies early",
+   "status": "stable"
+  },
+  {
+   "category": "annuities",
+   "term": "Immediate vs deferred purchase",
+   "answer": "Immediate annuity requires a single lump-sum premium; periodic purchase payments -> deferred annuity",
+   "status": "stable"
+  },
+  {
+   "category": "alternatives",
+   "term": "DPP tax items",
+   "answer": "Real estate: depreciation, deductible interest, pass-through losses. Oil & gas: depletion (and intangible drilling costs)",
+   "status": "stable"
+  },
+  {
+   "category": "economics",
+   "term": "Market structures",
+   "answer": "Monopoly (one seller, regulated, e.g. utilities); oligopoly (few sellers, high barriers, e.g. airlines); monopolistic competition (many differentiated sellers, e.g. cereal); perfect competition (identical products, price takers)",
+   "status": "stable"
+  },
+  {
+   "category": "equity",
+   "term": "Stock split approval",
+   "answer": "Governed by state corporate law and the charter, not FINRA: forward splits are often board-approved (a vote is needed if authorized shares must increase); reverse splits usually need a shareholder vote",
+   "status": "verify",
+   "source": "state corporate law",
+   "note": "Some prep providers say every split needs shareholder approval; do not build a graded question on it."
+  },
+  {
+   "category": "trading",
+   "term": "Order ticket contents",
+   "answer": "Account, security, buy/sell (sells marked long/short), quantity, order type and price, time in force, solicited/unsolicited, discretion used; commission is on the confirmation",
    "status": "stable"
   }
  ]

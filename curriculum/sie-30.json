@@ -309,6 +309,10 @@
     "Operations/settlements",
     "Prime brokerage",
     "Compliance"
+   ],
+   "also_cover": [
+    "Order flow terms from the sample exam: broker earns a commission (agent); dealer earns a markup (principal); OTC = not on an exchange",
+    "Second market = unlisted stocks OTC (use this SIE definition)"
    ]
   },
   {
@@ -361,6 +365,11 @@
     "Rates trading",
     "Macro/portfolio management",
     "Risk management"
+   ],
+   "also_cover": [
+    "Market structures: monopoly, oligopoly, monopolistic competition, perfect competition (with examples)",
+    "Fed tools as the SIE lists them: open-market operations, discount rate, reserve requirements, and Regulation T (exam convention)",
+    "Rates and inflation: the Fed raises rates to fight inflation; know the causal lever the exam wants"
    ]
   },
   {
@@ -416,6 +425,11 @@
     "Equity trading",
     "Operations (corporate actions)",
     "Securities lending"
+   ],
+   "also_cover": [
+    "Cash-settlement ex-date = the business day AFTER the record date; regular-way ex-date = record date",
+    "Tax event for a cash dividend = the payable date",
+    "Split math with share counts and price; who approves splits (state law/charter, not a FINRA rule)"
    ]
   },
   {
@@ -465,6 +479,10 @@
     "Capital markets (hybrid capital)",
     "Convertible arbitrage",
     "International equity"
+   ],
+   "also_cover": [
+    "Preferred par is typically $100; preferred suits income investors, not capital appreciation",
+    "Rights: one right per share, short life, intrinsic value at issue; warrants: long life, no intrinsic value at issue"
    ]
   },
   {
@@ -522,6 +540,10 @@
     "Rates and credit trading",
     "Portfolio management",
     "Risk management (DV01 limits)"
+   ],
+   "also_cover": [
+    "Quote conversion drills: corporate 86 5/8 = $866.25; Treasury 106-16 = $1,065.00 (buy at the ask)",
+    "Yield ordering questions phrased 'lowest to highest' as well as 'highest to lowest'"
    ]
   },
   {
@@ -576,6 +598,10 @@
     "Credit trading",
     "Leveraged finance / DCM",
     "Distressed investing"
+   ],
+   "also_cover": [
+    "Call protection = years until the FIRST call date; call premium = call price minus par (e.g., 105 -> $50)",
+    "Mortgage bonds are backed by real property the corporation owns"
    ]
   },
   {
@@ -631,6 +657,10 @@
     "Repo/funding desk",
     "Treasury/cash management",
     "MBS analytics"
+   ],
+   "also_cover": [
+    "Commercial paper and banker's acceptances: max 270 days; CP typically sold in $100,000+ denominations to institutions",
+    "Treasury bills are money-market instruments; unsecured, backed by full faith and credit"
    ]
   },
   {
@@ -686,6 +716,11 @@
     "Public finance banking",
     "Muni trading",
     "Wealth management"
+   ],
+   "also_cover": [
+    "Muni quotes: serial bonds (often GO) quoted on a yield basis; term 'dollar bonds' (often revenue) quoted as % of par",
+    "Municipal Finance Professional: RR who solicits municipal ISSUER business; an RR who only sells munis to retail is not an MFP",
+    "Convention-center bonds = revenue bonds = exempt securities"
    ]
   },
   {
@@ -734,6 +769,9 @@
     "Risk management",
     "Portfolio construction",
     "Treasury/ALM"
+   ],
+   "also_cover": [
+    "Regulatory risk (agency rules) vs legislative risk (new laws) vs business risk vs market risk, with scenarios"
    ]
   },
   {
@@ -789,6 +827,10 @@
     "Equity derivatives",
     "Volatility trading",
     "Hedging overlays"
+   ],
+   "also_cover": [
+    "Standard equity options: expire on the third Friday of the month; last trade 4:00 p.m. ET; expiration 11:59 p.m. ET — watch time-zone conversions in answer choices",
+    "Calls gain intrinsic value as the market rises; puts as it falls"
    ]
   },
   {
@@ -843,6 +885,9 @@
     "Derivatives trading",
     "Structured products",
     "Portfolio hedging"
+   ],
+   "also_cover": [
+    "Short stock + long call combined max gain/loss (e.g., short 100 at 52, long 55 call at 3: max gain $4,900, max loss $600)"
    ]
   },
   {
@@ -897,6 +942,10 @@
     "Asset management",
     "Wealth management",
     "Fund operations"
+   ],
+   "also_cover": [
+    "Fund types by objective: growth, income, growth & income (stocks), balanced (stocks + bonds), sector, index, bond, money market",
+    "Class B shares: CDSC declines over time, suit smaller purchases held longer; custodian holds fund assets"
    ]
   },
   {
@@ -950,6 +999,10 @@
     "ETF market making",
     "Alternatives sales",
     "Real-estate finance"
+   ],
+   "also_cover": [
+    "Real estate programs: depreciation, deductible interest, pass-through losses; depletion belongs to oil & gas programs",
+    "Hybrid REITs hold properties and mortgages"
    ]
   },
   {
@@ -1000,6 +1053,10 @@
     "Insurance asset management",
     "Retail wealth",
     "Derivatives hedging for insurers"
+   ],
+   "also_cover": [
+    "Life with period certain: lifetime payments with a guaranteed minimum period to a beneficiary",
+    "Immediate annuities need a single (lump-sum) premium; periodic purchase payments mean a deferred annuity"
    ]
   },
   {
@@ -1051,6 +1108,9 @@
     "Equity capital markets",
     "Syndicate desk",
     "Investment banking"
+   ],
+   "also_cover": [
+    "IPO restricted persons (FINRA Rule 5130): member firms, their employees and immediate family (spouse, parents, in-laws, siblings, children, anyone materially supported); grandparents and cousins are NOT restricted"
    ]
   },
   {
@@ -1110,6 +1170,10 @@
     "ECM/DCM",
     "Merger arbitrage",
     "Compliance"
+   ],
+   "also_cover": [
+    "Offering memorandum (private placement memorandum) -> Reg D; official statement -> munis; prospectus -> registered offering",
+    "Tender offers as the takeover route; 5% disclosure (13D) makes a secret stake impossible"
    ]
   },
   {
@@ -1162,6 +1226,10 @@
     "Equity execution",
     "Market making",
     "Electronic trading"
+   ],
+   "also_cover": [
+    "Order ticket contents: account, security, buy/sell (sells marked long/short), quantity, order type and limit/stop price, time in force, solicited/unsolicited, discretion; the commission appears on the confirmation, not the ticket",
+    "Limit orders guarantee price or better; stop orders guarantee nothing once elected"
    ]
   },
   {
@@ -1443,6 +1511,10 @@
     "Wealth management",
     "Retirement plans",
     "Tax-aware trading"
+   ],
+   "also_cover": [
+    "IRA early-withdrawal exceptions (disability, death, SEPP, first home, education, medical): income tax still due, penalty waived",
+    "Dividend tax timing: taxable when paid; fund/REIT dividends declared Oct-Dec and paid in January count as received Dec 31"
    ]
   },
   {
@@ -1510,6 +1582,11 @@
     "Compliance",
     "Trading supervision",
     "Every registered role"
+   ],
+   "also_cover": [
+    "Records retention ladder: 3 years (U4/U5/fingerprints after termination, confirmations, statements, communications, trial balances), 4 (FINRA complaints), 5 (CTR, SAR, CIP after closing), 6 (blotters, account records after closing, MSRB complaints), lifetime (articles, partnership agreements, minute books, stock certificate books)",
+    "FINRA retains jurisdiction over a former registered person for 2 years after termination",
+    "Performance guarantees and personal buy-back promises are prohibited"
    ]
   },
   {
@@ -1701,5 +1778,12 @@
    "real_market": [],
    "notes": "Final 75-question exam plus a concise final cheat sheet. Grading follows in the next edition."
   }
- ]
+ ],
+ "style_reference": "curriculum/sie-question-style.md",
+ "study_guide": {
+  "path": "site/reports/sie/study-guide.html",
+  "url": "https://shafferusa.github.io/intelligence-terminal/reports/sie/study-guide.html",
+  "link_from_edition": "../../sie/study-guide.html#day-NN",
+  "anchor_pattern": "day-NN (two digits); exam week anchors: day-24 (review + formulas), day-26 (exam technique), day-27 (reviewing an exam), day-29 (master memorization list), day-30 (cheat sheet)"
+ }
 }

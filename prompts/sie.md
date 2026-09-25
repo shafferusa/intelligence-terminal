@@ -19,6 +19,8 @@ into the Learning Brief or the news editions.
 | `curriculum/sie-facts.json` | The memorization reference. Every number you print must agree with it or with a fresher primary source. | No |
 | `state/sie.json` | Program state: day, dates, topic tracker, error log, review queue, scores, processed Telegram updates. | Yes |
 | `state/sie/quizzes/day-NN.json` | The answer key for the quiz or exam published on day NN. Written by you; read by you tomorrow and by the Telegram inbox bot for instant scoring. | Yes (new file each day) |
+| `curriculum/sie-question-style.md` | The house question style, modelled on a practice exam Logan supplied, plus the third-party errors never to repeat. | No |
+| `site/reports/sie/study-guide.html` | **The SIE Study Guide**: one page covering everything in the 30 days in slightly less detail, one chapter per day (`#day-01` … `#day-30`). Published once, with Day 1. | Only to correct an error (see Accuracy doctrine) |
 | `state/sie/inbox.jsonl` | Logan's Telegram replies (answers and commands), captured by the `sie-inbox` GitHub Action. | **No — read only.** The Action owns it. |
 
 ---
@@ -62,6 +64,9 @@ Teach him **like an intelligent junior trader, not a high-school student**:
 - Egress: `www.sec.gov` is reachable directly; `finra.org`, `irs.gov` and `msrb.org` are currently
   NOT on the environment allowlist (see `docs/RUNBOOK.md` §A3). Use WebSearch, which reaches them,
   and cite the primary page by name. Note blocked hosts in the run log, not in the edition.
+- The Study Guide is held to the same standard. If you find an error in it, fix the sentence in
+  `site/reports/sie/study-guide.html` in the same commit, log it in `ledgers/corrections.json`, and
+  say so in the edition's corrections line.
 - A wrong rule taught confidently is worse than no lesson. If you discover an earlier edition taught
   something wrong, log it in `ledgers/corrections.json` (SR §9), correct it at the top of today's
   edition, and fix any affected answer key and tracker entries.
@@ -149,7 +154,16 @@ question a week outside the exams.
 
 `D = state.day`. Default: today's entry in `curriculum/sie-30.json` → `days[D-1]`.
 
-- **Day 1** also publishes the **complete 30-day roadmap** (a table: day, title, FINRA sections,
+- **Every edition links its Study Guide chapter** in the track head:
+  `<a href="../../sie/study-guide.html#day-05">Study guide · Day 5</a>` (exam-week days link the
+  anchors listed in `curriculum/sie-30.json` → `study_guide`).
+- **Day 1** opens by presenting the **SIE Study Guide** (it is already published at
+  `site/reports/sie/study-guide.html`; do not regenerate it): a boxed link near the top saying what
+  it is — every topic of the 30 days in one place, a chapter per day, with MEMORIZE boxes, traps,
+  formulas and check-yourself questions — and how to use it (read the day's chapter before or after
+  the edition; the edition goes deeper and carries the graded quiz). Day 1's index `headlines`
+  include "Full SIE study guide published — one chapter per day". Day 1 also publishes the
+  **complete 30-day roadmap** (a table: day, title, FINRA sections,
   study minutes, weight) and a short "How this works" box: how to answer on Telegram, how grading,
   the weakness tracker and spaced repetition work, and `SIE exam YYYY-MM-DD` to set the exam date.
   Set `status:"active"`, `started:$TODAY`.
@@ -205,8 +219,8 @@ The edition, top to bottom:
 3. **Corrections**, only if there is one.
 4. **Yesterday graded** (`<section class="paper-section sie-graded">`, heading `Your Day 4 quiz,
    graded`): score line; a `.table-wrap > .data-table` with Q · your answer · correct · result;
-   then **every incorrect answer explained** — the rule, why his choice is wrong, why each other
-   distractor is wrong. Correct answers get one line each, collapsed in `<details>`. Then
+   then **every incorrect answer explained** in the style of `curriculum/sie-question-style.md`
+   (rule → arithmetic step by step → why his choice and each other distractor is wrong). Correct answers get one line each, collapsed in `<details>`. Then
    "Tracker changes" (topics that moved rating) and the new error-log rows. If no answers arrived
    for an open quiz: one sentence — "The Day 4 quiz is still open; reply any time and it will be
    graded in the next edition." Nothing more.
@@ -302,7 +316,9 @@ any Weak/Very Weak topic. Label review questions "(review)" after the stem.
 **Never reveal answers on the page.** No answer key, no hidden answer in markup, no data attribute.
 The key goes only in `state/sie/quizzes/day-NN.json`.
 
-**Question standards — make them resemble the real SIE:**
+**Question standards — make them resemble the real SIE** and follow
+`curriculum/sie-question-style.md` (Logan's model exam: its nine stem patterns, its explanation
+style, and its list of third-party errors that must never be reproduced):
 - Four options A–D; one best answer. FINRA-style stems: "Which of the following…", "A customer…",
   "All of the following EXCEPT", occasional Roman-numeral items ("I and III").
 - **Frequently make two answers look plausible.** Distractors are the real mistakes: the reversed
