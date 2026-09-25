@@ -58,6 +58,8 @@ def main(argv=None) -> int:
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
     lb.add_argument("--workers", type=int, default=3)
     lb.add_argument("--weights", action="store_true", help="only the signal-level Shaffer weight research (engine/weights.py)")
+    lb.add_argument("--directional", action="store_true", help="only the Shaffer Alpha vs Shaffer Directional research (engine/directional.py)")
+    lb.add_argument("--directional-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_DIRECTIONAL_RESEARCH.md"))
     lb.add_argument("--report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_WEIGHT_RESEARCH.md"))
     ha = sub.add_parser("hedge-audit", help="walk-forward Shaffer Hedge evaluation and ML-adjustment training → HEDGE_AUDIT.md")
     ha.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "HEDGE_AUDIT.md"))
@@ -104,6 +106,13 @@ def main(argv=None) -> int:
         if args.build:
             from .engine.audit import run_universe
             run_universe(app.db_path(), workers=args.workers, progress=print, skip_ml=True)
+        if args.directional:
+            from .engine import directional
+            dr = directional.run_all(app.db_path(), workers=args.workers, progress=print)
+            with open(args.directional_report, "w", encoding="utf-8") as f:
+                f.write(directional.markdown(dr))
+            print(f"directional research: {dr['seconds']}s; wrote", args.directional_report)
+            return 0
         if not args.weights:
             res = lab.run_parallel(app.db_path(), workers=args.workers, progress=print)
             print("family-weight challengers:", ", ".join(res.get("challengers") or []) or "none", f"({res['seconds']}s)")

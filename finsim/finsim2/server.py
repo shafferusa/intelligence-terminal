@@ -134,7 +134,10 @@ class App:
                 run_universe(path, workers=3, progress=say, skip_ml=True)
             res = lab.run_parallel(path, workers=3, progress=say)
             wr = weights.run_all(path, workers=3, progress=say)
-            return {"challengers": res.get("challengers"), "signal_challengers": wr.get("registered"), "seconds": res.get("seconds", 0) + wr.get("seconds", 0)}
+            from .engine import directional
+            dr = directional.run_all(path, workers=3, progress=say)
+            return {"challengers": res.get("challengers"), "signal_challengers": wr.get("registered"), "directional_challengers": dr.get("registered"),
+                    "seconds": res.get("seconds", 0) + wr.get("seconds", 0) + dr.get("seconds", 0)}
         return self.jobs.start("lab", "build" if build else "research", run)
 
     def start_learning(self):
@@ -300,7 +303,9 @@ class Router:
             graded_h = [x for x in store.hedges(limit=2000) if x.get("graded_on")]
             live["shaffer_hedge"] = {"all": {"pending": len(store.hedges(limit=2000)) - len(graded_h), "graded": len(graded_h), "next_due": None}}
             from .engine import weights as wmod
-            return {"research": store.kv_get(lab.RESEARCH_KEY), "weights": store.kv_get(wmod.RESEARCH_KEY), "records": store.lab_record_summary(),
+            from .engine import directional as dmod
+            return {"research": store.kv_get(lab.RESEARCH_KEY), "weights": store.kv_get(wmod.RESEARCH_KEY), "directional": store.kv_get(dmod.RESEARCH_KEY),
+                    "records": store.lab_record_summary(),
                     "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
                     "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live}
         if r == ["lab", "run"] and method == "POST":

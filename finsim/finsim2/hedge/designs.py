@@ -104,6 +104,11 @@ def expected_return(research, asset_id: str, lab: str, h: int, m, use_shaffer: b
         out["reliability"] = reliability(research.store, lab, full.get("raw"))
     except Exception:  # noqa: BLE001
         out["reliability"] = None
+    try:        # Shaffer Alpha / Directional research outputs — shown, not used by the hedge math in this phase
+        from ..engine.directional import hedge_view
+        out["research"] = hedge_view(research.store, research, asset_id, lab, full.get("raw"))
+    except Exception:  # noqa: BLE001
+        out["research"] = None
     ev = full.get("expected_edge") if use_shaffer else None
     if prior is None:
         out.update(value=None, source="no expected return available")

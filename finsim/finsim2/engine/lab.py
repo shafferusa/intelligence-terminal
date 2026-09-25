@@ -660,7 +660,7 @@ def record_shadow(research, asset_id: str) -> int:
     from .tracking import record
     st = research.store
     reg = registry(st)
-    chal = [v for v in reg["versions"] if v["kind"] == "shaffer" and v["status"] == "challenger"]
+    chal = [v for v in reg["versions"] if str(v["kind"]).startswith("shaffer") and v["status"] == "challenger"]
     if not chal:
         return 0
     full = research.shaffer_full(asset_id)
@@ -679,6 +679,17 @@ def record_shadow(research, asset_id: str) -> int:
             if not (g.get("G1_discovery") and g.get("G2_confirmation")):
                 continue                     # only challengers that passed discovery and confirmation enter live shadow
             info: dict = {}
+            if v.get("family") == "directional":
+                from . import directional as dmod
+                s, info = dmod.live_score(st, research, v["id"], meta, lab, r.get("raw"), r.get("sig"))
+                if s is None:
+                    continue
+                pid = record(st, panel, asset_id, last, f"shaffer:{v['id']}", v["id"], lab, hmap[lab], None, None, None, s,
+                             {"production_raw": r.get("raw"), "production_version": f"shaffer-{cfg.VERSION}", "challenger_version": v["id"],
+                              "node": info.get("node"), "confidence": r.get("confidence"), "p_up": info.get("p_up"), "clim": info.get("clim"),
+                              "prior_mu": info.get("prior_mu")}, source="shadow", raw=s)
+                n += pid is not None
+                continue
             if v.get("family") == "signal-weights":
                 from . import weights as wmod
                 regs = research.regimes()
@@ -731,7 +742,11 @@ def stage(store, v: dict) -> dict:
     for lab, val in (v.get("validation") or {}).items():
         g = val.get("gates") or {}
         per[lab] = "discovery failed" if not g.get("G1_discovery") else "confirmation failed" if not g.get("G2_confirmation") else "live shadow"
-    live = live_gate(store, v["id"])
+    if v.get("family") == "directional":
+        from .directional import live_gate as dir_live_gate
+        live = dir_live_gate(store, v["id"])
+    else:
+        live = live_gate(store, v["id"])
     ready = [lab for lab, s in per.items() if s == "live shadow"] if live.get("passed") else []
     return {"stage": "eligible for promotion" if ready else ("live shadow" if any(s == "live shadow" for s in per.values()) else "rejected"),
             "by_horizon": per, "live": live, "eligible_horizons": ready}

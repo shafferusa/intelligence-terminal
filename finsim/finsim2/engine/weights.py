@@ -83,7 +83,7 @@ def families() -> List[str]:
 
 
 class Rec:
-    __slots__ = ("asset", "meta", "date", "end", "wk", "raw", "y", "yr", "x", "act", "g", "reg", "base", "score", "grp")
+    __slots__ = ("asset", "meta", "date", "end", "wk", "raw", "y", "yr", "x", "act", "g", "reg", "base", "score", "grp", "ext")
 
 
 def _week(d: str) -> int:
@@ -117,7 +117,7 @@ def load(store, research, lab: str) -> List[Rec]:
                 continue
             r = Rec()
             r.asset, r.meta, r.date, r.end, r.wk = a, meta, d, cal[min(len(cal) - 1, i + h)], _week(d)
-            r.raw, r.y, r.yr = raw, y, yr
+            r.raw, r.y, r.yr, r.ext = raw, y, yr, None
             _fill(r, sig, si, fi)
             r.reg = tuple((regs.get(dm) or [None] * len(cal))[i] for dm in dims)
             # naive baselines (all known at t)
@@ -506,9 +506,10 @@ class _Trainer:
     A record belongs to the training set of cutoff c only if its outcome had matured before c (r.end < c) — the
     purge that keeps overlapping forward returns out of a test period's training data."""
 
-    def __init__(self, recs: List[Rec], paths: List[List[str]], kind: str, h: int, cuts: List[str]):
+    def __init__(self, recs: List[Rec], paths: List[List[str]], kind: str, h: int, cuts: List[str], target=None):
         import bisect
         self.recs, self.paths, self.kind, self.h = recs, paths, kind, h
+        self.target = target or (lambda r: r.y)          # what the ridge is fitted to (default: the vol-scaled return)
         self.cuts = sorted(set(cuts))
         self.bucket = [bisect.bisect_right(self.cuts, r.end) for r in recs]     # r trains cutoff k ⇔ bucket ≤ k
         self.P = n_features(kind)
@@ -539,7 +540,7 @@ class _Trainer:
                 st = row[bk]
                 if st is None:
                     st = row[bk] = PStats(self.P)
-                st.add(f, r.y)
+                st.add(f, self.target(r))
             cum = {}
             for a, row in per.items():
                 acc = PStats(self.P)
@@ -591,7 +592,7 @@ class _Trainer:
             r, r2 = self.recs[i], Rec()
             for s_ in Rec.__slots__:
                 if s_ not in ("score", "grp"):
-                    setattr(r2, s_, getattr(r, s_))
+                    setattr(r2, s_, getattr(r, s_, None))
             r2.score = 100 * math.tanh(_index(w, ft.rms, fs[i]) / ft.scale)
             r2.grp = grp
             out.append(r2)
