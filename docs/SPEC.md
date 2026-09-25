@@ -27,11 +27,11 @@ anything later in this document, this wins.
   appears only on a genuinely shaky claim. **Rigour is unchanged — only presentation changed.**
 - **The Board:** the closing edition carries a fixed 25-row watchlist chart near the top, from
   `config/watchlists.yml` → `board:`, in Logan's order and grouping (shared-rules §17).
-- **Local section**, minimal and low in every weekday edition (finance-first, 2026-09-25), drawing
-  on three beats: Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County ·
-  Pennsylvania. At most ONE item total across the beats, quality-gated, never padded — most editions
-  carry none. The **morning** edition still leads Local with Pittsburgh-area weather from the National
-  Weather Service gridpoint for Bridgeville, PA (shared-rules §18).
+- **Local section**, low in every weekday edition, covering three beats in their own right:
+  Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County · Pennsylvania. Up to two
+  items per beat, quality-gated, never padded. The **morning** edition leads it with Pittsburgh-area
+  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18). Kept as a
+  real section under the finance-first tilt (2026-09-25) — only tech/science coverage was demoted.
 - **Listen to text** on every report: an in-page Web Speech player injected by
   `site/assets/report.js`. Chosen over generated audio files because it works on every report
   including the existing archive, costs nothing, and adds nothing to the repository. Known limit,
@@ -202,24 +202,27 @@ Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnin
 ## 18. Weekday MORNING report structure (6:30 AM ET) — finance-first, revised 2026-09-25
 
 Masthead · The Brief (markets-led) · Top Stories (finance-weighted) · Overnight & Since the Close ·
-Before the Open (expanded centerpiece) · The Economy (expanded) · Business & Earnings (expanded) ·
-Today's Calendar · Risks & Scenarios · Beyond the Tape (one short non-market roundup) ·
-**Local** (weather strip + at most one item) · Market Appendix (collapsed) · Colophon.
+Before the Open (expanded centerpiece) · The Economy (Fed/Treasury/rates, expanded) ·
+Business & Earnings (expanded) · Today's Calendar · Risks & Scenarios · The United States · The World ·
+Also in the News (compact tech/science roundup) · **Local** (weather strip + the three beats incl.
+Pennsylvania) · Market Appendix (collapsed) · Colophon.
 
-Both weekday editions are markets-and-economy papers: finance / macro / Fed / rates / credit /
-corporate dominate and gain the depth, while everything non-financial (politics, the world, tech/AI,
-science & space) is compressed into the single **Beyond the Tape** roundup. Domain items with
-nothing material are omitted, not padded. Before the Open is prose, not a table: futures, the curve,
-dollar, VIX term structure, oil, gold, HY credit, BTC, what the tape appears to price, the most
-fragile assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
+Both weekday editions LEAD with and go deepest on finance / business / economics / Fed / Treasury —
+that block is the main event and gets the depth. General news is kept real: **The United States**,
+**The World** and **Local** (including Pennsylvania) stay dedicated sections; only tech/AI and science
+& space are demoted, folded into the compact **Also in the News** roundup. Domain items with nothing
+material are omitted, not padded. Before the Open is prose, not a table: futures, the curve, dollar,
+VIX term structure, oil, gold, HY credit, BTC, what the tape appears to price, the most fragile
+assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
 
 ## 19. Weekday CLOSING report structure (4:30 PM ET) — finance-first, revised 2026-09-25
 
 Masthead · The Brief (markets-led) · **The Board** (the 25-row watchlist chart, shared-rules §17) ·
 Top Stories (finance-weighted) · What Moved Markets (expanded) · Winners & Losers ·
-What Changed Today · The Economy (expanded) · Business & Earnings (expanded) ·
-Beyond the Tape (one short non-market roundup) · Tomorrow · **Local** (no weather strip, at most one
-item) · Market Appendix (collapsed) · Colophon.
+What Changed Today · The Economy (Fed/Treasury/rates, expanded) · Business & Earnings (expanded) ·
+Tomorrow · The United States · The World · Also in the News (compact tech/science roundup) ·
+**Local** (no weather strip, the three beats incl. Pennsylvania) · Market Appendix (collapsed) ·
+Colophon.
 
 What Moved Markets sits high in the edition and keeps its four attribution labels —
 `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained`. Those are honesty,
@@ -237,12 +240,22 @@ consolidated per `prompts/weekend.md` — best/worst assets and sector rotation 
 Markets; overhyped and undercovered become one section; the registry sweep becomes one sentence in
 the colophon.
 
+**Finance-first (2026-09-25):** the weekly Markets / Economy & Central Banks / Business & Earnings block
+leads and gets the depth. US politics, the world and Local (incl. Pennsylvania) stay dedicated weekly
+reviews; tech/AI and science & space fold into a compact **Also in the News** roundup. Authoritative
+order in `prompts/weekend.md` S4.
+
 ## 21. SUNDAY Week-Ahead Outlook (9:00 AM ET default)
 
 1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri: releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical events, launches, science; expected market sensitivity per day) · 5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury & Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (description, probability range, impact, horizon, trigger, early indicators, affected markets, mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected behavior, indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 23 Sources & Methodology.
 
 **Revised 2026-08-16:** no learning previews, plus a **Local Week Ahead** section; consolidated
 per `prompts/weekend.md`.
+
+**Finance-first (2026-09-25):** the forward Economy Ahead / Earnings & Business / Market Setup block
+leads and gets the depth. The United States and The World Ahead stay dedicated outlooks; tech/AI,
+science & space and the launch calendar fold into **Also in the News Ahead**. Local Week Ahead stays.
+Authoritative order in `prompts/weekend.md` U3.
 
 ## 22. Market Intelligence Appendix (bottom of every report, collapsed subsections)
 

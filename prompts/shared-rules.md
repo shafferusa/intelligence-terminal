@@ -409,11 +409,11 @@ each in its own right, in this order:
 3. **Pennsylvania** — the legislature, governor, statewide courts and agencies, the PUC, the state
    economy, statewide elections.
 
-**Finance-first editions keep Local minimal (2026-09-25):** at most ONE item total across the three
-beats, and most weekday editions carry none. **Quality-gated, never padded**: an item appears only
-when something genuinely changes for someone; otherwise the section is just the morning weather strip
-(am) or absent entirely (pm). Not a crime blotter, not an events calendar, not weather chatter. The
-item carries `.local-place` naming its beat, and the same sourcing standards as the rest of the paper.
+Up to two items per beat. **Quality-gated, never padded**: a beat with nothing that matters is
+simply absent that day, and plenty of days will show only one of the three. Not a crime blotter, not
+an events calendar, not weather chatter. Each item carries `.local-place` naming its beat, and the
+same sourcing standards as the rest of the paper. (Local stays a real section in the finance-first
+editions — the finance tilt demoted tech/science, not Pennsylvania and the local beats.)
 
 **Weather — MORNING EDITION ONLY.** Leads the Local section, from the National Weather Service
 (free, no key, `.gov` UA header required per §2):
