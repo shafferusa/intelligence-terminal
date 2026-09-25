@@ -263,5 +263,33 @@ class ForecastCheck(unittest.TestCase):
         self.assertLess(f["mse_breadth"], f["mse_production"])
 
 
+class Extensions(unittest.TestCase):
+    def _cases(self, obj):
+        rnd = random.Random(8)
+        out = []
+        for d in _dates(200):
+            u = [rnd.gauss(0, 1000) for _ in range(5)]
+            out.append(_case(d, u, [-0.4 * x for x in u], [-0.7 * x + rnd.gauss(0, 50) for x in u], (4.0, 5.0), obj=obj))
+        return out
+
+    def test_case_shares_sum_to_the_utility_difference(self):
+        for obj in ("beta", "es"):
+            cases = self._cases(obj)
+            for lam in (0.5, 1.0, 5.0):
+                d = V.paired(cases, obj, reps=0)["d"][str(lam)]
+                self.assertAlmostEqual(sum(V.case_contributions(cases, "A", "B", obj, lam)), d, places=6)
+
+    def test_interaction_classes(self):
+        self.assertEqual(V.interaction(10.0, 5.0, 15.5), "additive")
+        self.assertEqual(V.interaction(10.0, 5.0, 10.5), "redundant")
+        self.assertEqual(V.interaction(10.0, -8.0, 3.0), "conflicting")
+        self.assertEqual(V.interaction(10.0, 5.0, 40.0), "interacting")
+
+    def test_extended_cell_runs_and_reports_the_three_arms(self):
+        ext = V.extended_cell(self._cases("beta"), "beta")
+        self.assertIn("breadth_vs_nobreadth", ext["d"])
+        self.assertAlmostEqual(ext["per_case"]["breadth_vs_production"]["mean"] * ext["cases"], ext["d"]["breadth_vs_production"]["1.0"], places=6)
+
+
 if __name__ == "__main__":
     unittest.main()

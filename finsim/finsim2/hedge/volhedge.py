@@ -1254,3 +1254,151 @@ def _answers(res: dict) -> str:
           + " / ".join(_m(utility(bl.get(k) or {}, 1.0)) for k in ("none", "half", "A", "B")) + " |")
     w("")
     return "\n".join(L)
+
+
+# ------------------------------------------------------------------ descriptive extensions (reporting only; the
+# pre-registered test, gates and statuses above are unchanged — these read the same saved cases)
+CRISES = {"2009 aftermath (2009)": ("2009-01-01", "2010-01-01"), "COVID (2020-02 to 2020-06)": ("2020-02-01", "2020-07-01"),
+          "2022 rate shock (2022)": ("2022-01-01", "2023-01-01")}
+VARIANCE_SENSITIVE = ["min_variance", "target_vol", "var", "es", "drawdown"]
+HARD_TARGET = ["beta", "systematic", "sector", "name", "duration", "curve", "credit", "fx", "commodity", "crypto", "volatility"]
+
+
+def case_contributions(cases: List[dict], a: str, b: str, objective: str, lam: float) -> List[float]:
+    """Each case's additive share of ΔU(λ) = U(b) − U(a): the hedged-risk shares (ES: −x/k inside the worst k windows;
+    standard deviation: (x − mean)² / ((n − 1)·sd)) plus −λ·profit and −cost per case. They sum to ΔU exactly."""
+    Ua, Ha, Ca = _window_scalars(cases, a)
+    _, Hb, Cb = _window_scalars(cases, b)
+    n = len(Ua)
+    if n < 20:
+        return []
+
+    def shares(x):
+        if objective in TAIL_OBJ:
+            k = max(1, int(math.ceil(0.05 * n)))
+            worst = set(sorted(range(n), key=lambda j: x[j])[:k])
+            return [(-x[j] / k) if j in worst else 0.0 for j in range(n)]
+        m = sum(x) / n
+        sd = _sd(x)
+        return [((v - m) ** 2 / ((n - 1) * sd)) if sd else 0.0 for v in x]
+    ra = shares([u + h - c for u, h, c in zip(Ua, Ha, Ca)])
+    rb = shares([u + h - c for u, h, c in zip(Ua, Hb, Cb)])
+    return [-(rb[j] - ra[j]) - lam * (-Hb[j] + Ha[j]) / n - (Cb[j] - Ca[j]) / n for j in range(n)]
+
+
+def _se(cases, objective, a, b, reps=BOOT_REPS):
+    """Bootstrap standard error of ΔU(λ = 1) with the same date blocks and seed as the pre-registered test."""
+    p = paired(cases, objective, a, b, reps=reps)
+    ci = (p.get("ci") or {}).get("1.0")
+    d = (p.get("d") or {}).get("1.0")
+    if not ci or d is None:
+        return p, None
+    se = (ci[1] - ci[0]) / (2 * 1.96)
+    return p, (d / se if se > 0 else None)
+
+
+def _risk_unit_ratio(c: dict, x: str = "A", y: str = "B") -> Optional[float]:
+    """Challenger ÷ production size in the same risk unit: the lead product's quantity when the products are the same;
+    market beta-dollars when they differ and the objective's primary risk is the market; otherwise not comparable."""
+    la, lb = c["arms"][x]["legs"], c["arms"][y]["legs"]
+    if not la or not lb:
+        return None
+    if sorted(L["id"] for L in la) == sorted(L["id"] for L in lb):
+        qa = {L["id"]: L["q"] for L in la}
+        lead = max(lb, key=lambda L: abs(L["notional"] or 0.0))
+        return (lead["q"] / qa[lead["id"]]) if qa.get(lead["id"]) else None
+    if c.get("primary") == "MKT":
+        ba, bb = sum(L["beta_usd"] for L in la), sum(L["beta_usd"] for L in lb)
+        return (bb / ba) if ba else None
+    return None
+
+
+def extended_cell(cases: List[dict], objective: str) -> dict:
+    """The attribution and breakdowns asked for after the protocol was frozen (descriptive; same cases)."""
+    out: dict = {"cases": len(cases)}
+    if len(cases) < 20:
+        return out
+    p_ba, t_ba = _se(cases, objective, "A", "B")
+    p_ra, t_ra = _se(cases, objective, "A", "R")
+    p_br, t_br = _se(cases, objective, "R", "B")
+    out["t"] = {"breadth_vs_production": t_ba, "nobreadth_vs_production": t_ra, "breadth_vs_nobreadth": t_br}
+    out["d"] = {"breadth_vs_production": p_ba.get("d"), "nobreadth_vs_production": p_ra.get("d"), "breadth_vs_nobreadth": p_br.get("d")}
+    out["ci"] = {"breadth_vs_production": p_ba.get("ci"), "nobreadth_vs_production": p_ra.get("ci"), "breadth_vs_nobreadth": p_br.get("ci")}
+    out["p"] = {"breadth_vs_production": p_ba.get("p"), "nobreadth_vs_production": p_ra.get("p"), "breadth_vs_nobreadth": p_br.get("p")}
+    out["U"] = {k: {str(l): utility(o, l) for l in LAMBDAS} for k, o in (("production", p_ba["a"]), ("breadth", p_ba["b"]), ("nobreadth", p_ra["b"]))}
+    # per-case shares of ΔU (λ = 1)
+    kinds = [_changed(c) for c in cases]
+    for key, (x, y) in (("breadth_vs_production", ("A", "B")), ("breadth_vs_nobreadth", ("R", "B"))):
+        cc = case_contributions(cases, x, y, objective, 1.0)
+        ch = [v for v, c in zip(cc, cases) if _changed(c, x, y) != "identical"]
+        out.setdefault("per_case", {})[key] = {
+            "mean": sum(cc) / len(cc), "median": sorted(cc)[len(cc) // 2], "positive": sum(1 for v in cc if v > 1e-12) / len(cc),
+            "negative": sum(1 for v in cc if v < -1e-12) / len(cc), "changed_cases": len(ch),
+            "median_changed": sorted(ch)[len(ch) // 2] if ch else None, "positive_changed": (sum(1 for v in ch if v > 1e-12) / len(ch)) if ch else None}
+    # ΔU components (λ = 1) and the sizing / product split
+    oa, ob = p_ba["a"], p_ba["b"]
+    out["components"] = {"risk": (ob["loss_reduction"] - oa["loss_reduction"]) if ob.get("loss_reduction") is not None and oa.get("loss_reduction") is not None else None,
+                         "profit": -((ob["profit_sacrificed"] or 0) - (oa["profit_sacrificed"] or 0)), "cost": -((ob["cost"] or 0) - (oa["cost"] or 0)),
+                         "basis": (ob.get("basis_error") or 0) - (oa.get("basis_error") or 0),
+                         "tail": _dd(ob, oa, "tail_h"), "hedge_error": (ob.get("hedge_error") or 0) - (oa.get("hedge_error") or 0)}
+    cc = case_contributions(cases, "A", "B", objective, 1.0)
+    out["by_decision"] = {k: sum(v for v, kk in zip(cc, kinds) if kk == k) for k in ("sizing", "product")}
+    out["legs_changed"] = sum(1 for c in cases if len(c["arms"]["A"]["legs"]) != len(c["arms"]["B"]["legs"])) / len(cases)
+    # transitions with their share of ΔU
+    tr: Dict[str, dict] = {}
+    for c, v, k in zip(cases, cc, kinds):
+        if k != "product":
+            continue
+        t = f"{_lead_product(c['arms']['A'])} → {_lead_product(c['arms']['B'])}"
+        x = tr.setdefault(t, {"n": 0, "dU": 0.0, "dcost": 0.0, "dprofit": 0.0, "drisk_sq": 0.0})
+        a, b = c["arms"]["A"], c["arms"]["B"]
+        x["n"] += 1
+        x["dU"] += v
+        x["dcost"] += b["cost"] - a["cost"]
+        x["dprofit"] += -(sum(b["hp"]) - sum(a["hp"]))
+        x["drisk_sq"] += (sum(c["u"]) + sum(b["hp"]) - b["cost"]) ** 2 - (sum(c["u"]) + sum(a["hp"]) - a["cost"]) ** 2
+    out["transitions"] = {t: {"n": x["n"], "dU": x["dU"], "dcost": x["dcost"] / x["n"], "dprofit": x["dprofit"] / x["n"],
+                              "drisk_rms": math.copysign(math.sqrt(abs(x["drisk_sq"]) / x["n"]), x["drisk_sq"])}
+                          for t, x in sorted(tr.items(), key=lambda kv: -kv[1]["n"])[:8]}
+    # size in risk units
+    rr = [(c, _risk_unit_ratio(c)) for c in cases]
+    rr = [(c, r) for c, r in rr if r is not None and r > 0]
+    out["size_ratio"] = _quantiles([r for _, r in rr])
+    out["size_ratio_by_product"] = {k: _quantiles([r for c, r in rr if _lead_product(c["arms"]["A"]) == k]) for k in sorted({_lead_product(c["arms"]["A"]) for c, _ in rr})}
+    out["size_ratio_by_regime"] = {k: _quantiles([r for c, r in rr if (c.get("regime") or {}).get("volatility") == k])
+                                   for k in sorted({(c.get("regime") or {}).get("volatility") for c, _ in rr} - {None})}
+    # normal vs high volatility; crises excluded
+    for key, sub in (("high_vol", [c for c in cases if (c.get("regime") or {}).get("volatility") == "high_vol"]),
+                     ("normal_vol", [c for c in cases if (c.get("regime") or {}).get("volatility") not in (None, "high_vol")])):
+        p, t = _se(sub, objective, "A", "B")
+        out.setdefault("vol_regime", {})[key] = {"cases": len(sub), "dates": p.get("dates"), "d": (p.get("d") or {}).get("1.0"), "t": t}
+    out["without_crises"] = {}
+    for name, win in list(CRISES.items()) + [("all three", None)]:
+        sub = [c for c in cases if not (any(x <= c["date"] < y for x, y in CRISES.values()) if win is None else win[0] <= c["date"] < win[1])]
+        p, t = _se(sub, objective, "A", "B")
+        out["without_crises"][name] = {"cases": len(sub), "d": (p.get("d") or {}).get("1.0"), "t": t}
+    # resizing, 2018 on: additive / redundant / interacting / conflicting
+    late = [c for c in cases if c["date"] >= RESIZE_FROM]
+    if len(late) >= 20:
+        dB = (paired(late, objective, "A", "B", reps=0).get("d") or {}).get("1.0")
+        dC = (paired(late, objective, "A", "C", reps=0).get("d") or {}).get("1.0")
+        dD = (paired(late, objective, "A", "D", reps=0).get("d") or {}).get("1.0")
+        out["resizing"] = {"cases": len(late), "breadth": dB, "resizing": dC, "both": dD, "class": interaction(dB, dC, dD)}
+    return out
+
+
+def interaction(dB: Optional[float], dC: Optional[float], dD: Optional[float], tol: float = 0.25) -> Optional[str]:
+    """How the breadth and resizing effects combine (2018 on): conflicting (opposite signs), additive (both ≈ the sum),
+    redundant (both ≈ the larger alone), interacting (the combination departs from both)."""
+    if None in (dB, dC, dD):
+        return None
+    if dB * dC < 0 and min(abs(dB), abs(dC)) > 0.1 * max(abs(dB), abs(dC)):
+        return "conflicting"
+    s = dB + dC
+    big = dB if abs(dB) >= abs(dC) else dC
+    scale = max(abs(s), abs(big), 1e-9)
+    if abs(dD - s) <= tol * scale:
+        return "additive"
+    if abs(dD - big) <= tol * scale:
+        return "redundant"
+    return "interacting"
