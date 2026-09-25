@@ -1369,7 +1369,7 @@ def markdown(res: dict) -> str:
     # 13
     w("**13. Which signal weights differ between the Alpha and the Directional target?** Signal-level challengers at class level: "
       "each signal's share of the global node's |effective weight| (production → alpha challenger → directional challenger); "
-      "sign-stable = same sign in every era fit; CV = era-to-era variation of the weight (lower is steadier).")
+      "sign-stable = kept (non-zero, same direction) in every era fit; CV = era-to-era variation of the weight (lower is steadier).")
     for lab in _HZ:
         sg = (H.get(lab) or {}).get("signals") or {}
         if not sg:
