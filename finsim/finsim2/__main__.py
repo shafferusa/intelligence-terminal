@@ -60,6 +60,10 @@ def main(argv=None) -> int:
     lb.add_argument("--weights", action="store_true", help="only the signal-level Shaffer weight research (engine/weights.py)")
     lb.add_argument("--freeze-benchmark", metavar="ID", nargs="?", const="", default=None,
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
+    lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
+    lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
+    lb.add_argument("--live-models", action="store_true", help="fit the benchmark's prior-only and current Directional models for the daily ledger")
+    lb.add_argument("--fetch-finra", action="store_true", help="download FINRA Reg SHO short-sale volume (2019 on) for US equities and ETFs")
     lb.add_argument("--directional", action="store_true", help="only the Shaffer Alpha vs Shaffer Directional research (engine/directional.py)")
     lb.add_argument("--directional-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_DIRECTIONAL_RESEARCH.md"))
     lb.add_argument("--report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_WEIGHT_RESEARCH.md"))
@@ -113,6 +117,33 @@ def main(argv=None) -> int:
             print("production:", ", ".join(f"{k} {v}" for k, v in meta["production"].items()), "· verify:", lab.verify_benchmark(st, meta["id"])["ok"])
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and (args.newinfo or args.live_models or args.fetch_finra):
+        from .data.store import Store
+        if args.fetch_finra:
+            from .data import finra
+            from .engine.research import Research
+            st = Store(app.db_path())
+            try:
+                ids = [a["id"] for a in st.assets() if a.get("asset_class") in ("EQUITY", "ETF")]
+                cal = Research(st).panel().calendar()
+                print(finra.refresh(st, ids, [d for d in cal if d >= finra.FIRST_AVAILABLE], progress=print))
+            finally:
+                st.close()
+        if args.live_models:
+            from .engine import directional
+            from .engine.research import Research
+            st = Store(app.db_path())
+            try:
+                directional.fit_live(st, Research(st), progress=print)
+            finally:
+                st.close()
+        if args.newinfo:
+            from .engine import newinfo
+            res = newinfo.run_all(app.db_path(), workers=args.workers, progress=print)
+            with open(args.newinfo_report, "w", encoding="utf-8") as f:
+                f.write(newinfo.markdown(res))
+            print(f"new-information research: {res['seconds']}s; wrote", args.newinfo_report)
         return 0
     if args.cmd == "lab":
         from .engine import lab

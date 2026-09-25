@@ -1477,3 +1477,49 @@ def markdown(res: dict) -> str:
       "forecasts); nothing in this phase has live history, and production is not changed in this phase.")
     w("")
     return "\n".join(L) + "\n"
+
+
+# ------------------------------------------------------------------ live ledger of the benchmark's Directional models
+LIVE_KEY = "lab:directional:live"
+
+
+def fit_live(store, research, progress=None, max_rows: int = 60000) -> dict:
+    """Final fits (every matured record) of the two benchmark Directional models — prior-only [1, μ/σ] and the current
+    formulation [1, μ/σ, raw/100] — so the daily ledger can record their p_up next to production. Research only."""
+    import random as _random
+    from .lab import benchmark
+    say = progress or (lambda m: None)
+    bm = benchmark(store)
+    out = {"fitted": time.strftime("%Y-%m-%d %H:%M:%S"), "benchmark": bm["id"] if bm else None, "main_prior": MAIN_PRIOR, "horizons": {}}
+    W._init_famidx()
+    for lab, h in LAB_HORIZONS:
+        recs = W.load(store, research, lab)
+        info = attach(recs, research, h)
+        recs = [r for r in recs if r.ext and r.ext.get("s") and r.yr != 0]
+        if len(recs) < 2000:
+            continue
+        sub = recs if len(recs) <= max_rows else _random.Random(7).sample(recs, max_rows)
+        o = [_obs(r) for r in sub]
+        w0 = logistic([[1.0, z_of(r, MAIN_PRIOR) or 0.0] for r in sub], o, [0.0, 0.0], 1.0, 1.0, iters=15)
+        w1 = logistic([[1.0, z_of(r, MAIN_PRIOR) or 0.0, r.raw / 100.0] for r in sub], o, [0.0] * 3, 1.0, 1.0, iters=15)
+        out["horizons"][lab] = {"prior_only": w0, "current": w1, "groups": info["groups"], "records": len(recs)}
+        say(f"{lab}: live Directional models fitted on {len(recs)} records")
+    store.kv_set(LIVE_KEY, out)
+    return out
+
+
+def live_benchmark(store, research, meta: dict, lab: str, raw: Optional[float]) -> Optional[dict]:
+    """Today's prior-only and current-formulation p_up for one asset (None when not fitted or inputs are missing)."""
+    spec = ((store.kv_get(LIVE_KEY) or {}).get("horizons") or {}).get(lab)
+    if not spec:
+        return None
+    h = dict(LAB_HORIZONS)[lab]
+    ext = live_inputs(research, meta, h, spec.get("groups") or {})
+    if not ext or not ext.get("s"):
+        return None
+    r = Rec()
+    r.ext = ext
+    z = z_of(r, MAIN_PRIOR) or 0.0
+    p0 = _sig(spec["prior_only"][0] + spec["prior_only"][1] * z)
+    p1 = _sig(spec["current"][0] + spec["current"][1] * z + spec["current"][2] * raw / 100.0) if raw is not None else None
+    return {"prior_only": p0, "current": p1, "clim": ext.get("clim"), "prior_mu": (ext.get("mu") or {}).get(MAIN_PRIOR), "sigma_h": ext.get("s")}

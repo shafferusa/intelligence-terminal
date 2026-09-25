@@ -109,6 +109,7 @@ class App:
                 from .engine import lab
                 out.setdefault("shadow", 0)
                 out["shadow"] += lab.record_shadow(self.research, a)
+                out["shadow"] += lab.record_directional_daily(self.research, a)
             except Exception as e:  # noqa: BLE001
                 out["errors"].append(f"{a} shadow: {e}")
             try:
@@ -304,7 +305,9 @@ class Router:
             live["shaffer_hedge"] = {"all": {"pending": len(store.hedges(limit=2000)) - len(graded_h), "graded": len(graded_h), "next_due": None}}
             from .engine import weights as wmod
             from .engine import directional as dmod
+            from .engine import newinfo as nmod
             return {"research": store.kv_get(lab.RESEARCH_KEY), "weights": store.kv_get(wmod.RESEARCH_KEY), "directional": store.kv_get(dmod.RESEARCH_KEY),
+                    "newinfo": store.kv_get(nmod.RESEARCH_KEY), "benchmark": lab.benchmark(store) and {k: v for k, v in lab.benchmark(store).items() if k != "content"},
                     "records": store.lab_record_summary(),
                     "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
                     "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live}

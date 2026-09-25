@@ -706,6 +706,38 @@ def record_shadow(research, asset_id: str) -> int:
     return n
 
 
+def record_directional_daily(research, asset_id: str) -> int:
+    """The daily ledger of the benchmark's Directional models: for every horizon, the prior-only p_up and the current
+    formulation's p_up (research, graded like every forecast at maturity, never rewritten)."""
+    from .tracking import record
+    from . import directional as dmod
+    st = research.store
+    live = st.kv_get(dmod.LIVE_KEY)
+    if not live:
+        return 0
+    full = research.shaffer_full(asset_id)
+    panel = research.panel()
+    last = panel.calendar()[-1]
+    meta = st.asset(asset_id) or {"id": asset_id}
+    hmap = dict(cfg.HORIZONS)
+    version = live.get("benchmark") or "unfrozen"
+    n = 0
+    for lab, r in (full.get("horizons") or {}).items():
+        if lab not in (live.get("horizons") or {}) or r.get("date") != last:
+            continue
+        out = dmod.live_benchmark(st, research, meta, lab, r.get("raw"))
+        if not out:
+            continue
+        for model, p in (("directional:prior-only", out["prior_only"]), ("directional:current", out["current"])):
+            if p is None:
+                continue
+            pid = record(st, panel, asset_id, last, model, version, lab, hmap[lab], None, None, None, 100 * (2 * p - 1),
+                         {"p_up": p, "clim": out.get("clim"), "prior_mu": out.get("prior_mu"), "sigma_h": out.get("sigma_h"),
+                          "production_raw": r.get("raw"), "benchmark": version}, source="shadow", raw=100 * (2 * p - 1))
+            n += pid is not None
+    return n
+
+
 def live_gate(store, vid: str) -> dict:
     """G3: challenger vs production on the SAME graded live forecasts (asset, horizon, date)."""
     ch = {(p["asset_id"], p["horizon"], p["made_on"]): p for p in store.predictions() if p["model"] == f"shaffer:{vid}" and p.get("realized") is not None}

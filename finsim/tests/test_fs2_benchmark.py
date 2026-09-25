@@ -89,6 +89,50 @@ class Benchmark(unittest.TestCase):
         self.assertIsNone(self.st.kv_get("benchmark:bm-x"))
 
 
+class DailyDirectionalLedger(unittest.TestCase):
+    def test_records_prior_only_and_current_p_up(self):
+        import math
+        import finsim2.engine.tracking as T
+
+        class St:
+            def __init__(s):
+                s.kv, s.rows = {}, []
+            def kv_get(s, k): return s.kv.get(k)
+            def asset(s, a): return {"id": a, "asset_class": "EQUITY"}
+        st = St()
+        st.kv[D.LIVE_KEY] = {"benchmark": "bm-x", "horizons": {"1W": {"prior_only": [0.1, 2.0], "current": [0.1, 2.0, 0.5], "groups": {}}}}
+
+        class Panel:
+            def calendar(s): return ["2026-01-02"]
+
+        class R:
+            store = st
+            def shaffer_full(s, a): return {"horizons": {"1W": {"raw": 40.0, "date": "2026-01-02"}, "1M": {"raw": 10.0, "date": "2026-01-02"}}}
+            def panel(s): return Panel()
+        saved_rec, saved_in = T.record, D.live_inputs
+        T.record = lambda store, panel, a, d, model, version, lab, h, e, eb, c, score, detail, **kw: st.rows.append((model, version, lab, detail["p_up"])) or 1
+        D.live_inputs = lambda research, meta, h, groups: {"s": 0.03, "mu": {D.MAIN_PRIOR: 0.003}, "clim": 0.55}
+        try:
+            n = L.record_directional_daily(R(), "Z")
+        finally:
+            T.record, D.live_inputs = saved_rec, saved_in
+        self.assertEqual(n, 2)                                        # 1W only: 1M has no live fit
+        z = 0.1
+        want0 = 1 / (1 + math.exp(-(0.1 + 2.0 * z)))
+        want1 = 1 / (1 + math.exp(-(0.1 + 2.0 * z + 0.5 * 0.4)))
+        rows = {m: (v, lab, p) for m, v, lab, p in st.rows}
+        self.assertAlmostEqual(rows["directional:prior-only"][2], want0)
+        self.assertAlmostEqual(rows["directional:current"][2], want1)
+        self.assertEqual(rows["directional:prior-only"][0], "bm-x")
+
+    def test_nothing_recorded_without_live_fits(self):
+        class St:
+            def kv_get(s, k): return None
+        class R:
+            store = St()
+        self.assertEqual(L.record_directional_daily(R(), "Z"), 0)
+
+
 def _recs(n_weeks=300, assets=6, seed=1):
     rnd = random.Random(seed)
     out = []

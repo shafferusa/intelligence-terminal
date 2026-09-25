@@ -757,7 +757,7 @@
 
   // ---------------------------------------------------------------- risk: VaR, contributions, correlations, scenarios, Monte Carlo
   // ---------------------------------------------------------------- ML Lab: the laboratory for Shaffer Score and Shaffer Hedge
-  const LAB_TABS = [['production', 'Production models'], ['performance', 'Historical performance'], ['signals', 'Signal research'], ['alpha', 'Shaffer Alpha'], ['directional', 'Shaffer Directional'], ['sigweights', 'Signal weights'], ['weights', 'Family weights'],
+  const LAB_TABS = [['production', 'Production models'], ['performance', 'Historical performance'], ['signals', 'Signal research'], ['alpha', 'Shaffer Alpha'], ['directional', 'Shaffer Directional'], ['newinfo', 'New Information'], ['sigweights', 'Signal weights'], ['weights', 'Family weights'],
     ['challengers', 'Challengers & promotion'], ['hedge', 'Hedge research'], ['live', 'Live learning'], ['versions', 'Version comparison'], ['forecasts', 'Independent ML forecasts']];
   const icT = (m) => m && m.ic != null ? `${fmt.num(m.ic, 3)} <span class="faint">(t ${fmt.num(m.t, 1)})</span>` : '—';
   const stagePill = s => `<span class="pill ${s === 'production' ? 'pos' : s === 'eligible for promotion' ? 'pos' : s === 'live shadow' ? 'warn' : s === 'retired' ? '' : 'neg'}" style="font-size:10.5px">${esc(s)}</span>`;
@@ -896,6 +896,41 @@
     $$('#drH button').forEach(b => b.onclick = () => { pref.set('drH', b.dataset.h); route(); });
     $('#drM').onchange = e => { pref.set('drM', e.target.value); route(); };
   };
+  // New information: genuinely new PIT data, judged by what it adds to the frozen benchmark
+  const niPill = s => `<span class="pill ${s === 'SHADOW' || s === 'LIVE SHADOW' || s === 'ELIGIBLE FOR PROMOTION' ? 'pos' : s === 'LIMITED HISTORY' || s === 'INSUFFICIENT DATA' ? 'warn' : s === 'BLOCKED' ? '' : 'neg'}" style="font-size:10.5px">${esc(s || '—')}</span>`;
+  const labNewInfo = (body, NI, BM) => {
+    if (!NI || !NI.horizons) { body.innerHTML = `<div class="card"><h2>No new-information research yet</h2><p class="muted">Freeze the benchmark and run it: <code>python -m finsim2 lab --freeze-benchmark</code>, then <code>python -m finsim2 lab --newinfo</code>. Sources and their status are in NEW_DATA_SOURCES.md.</p></div>`; return; }
+    const HZ = ['1D', '1W', '1M', '3M', '6M', '12M'].filter(k => NI.horizons[k]);
+    const hz = HZ.includes(pref.get('niH', '1W')) ? pref.get('niH', '1W') : HZ[0];
+    const S = NI.summary || {}, SP = NI.families_spec || {}, bm = NI.benchmark || {};
+    const best = (fam, path) => { let b = null; HZ.forEach(k => { const fr = ((NI.horizons[k] || {}).families || {})[fam] || {}; let st = fr.walkforward || {}; path.forEach(p => st = (st || {})[p]); if (st && st.t != null && (!b || st.t > b.t)) b = { ...st, h: k }; }); return b; };
+    const tt2 = st => st ? `${fmt.num(st.mean, 4)} <span class="faint">(${st.h ? st.h + ', ' : ''}t ${fmt.num(st.t, 1)})</span>` : '—';
+    body.innerHTML = `<div class="card"><h2>New information — does it add anything to the frozen benchmark? <small>research only · production unchanged</small></h2>
+        <p class="muted" style="margin:0 0 8px;font-size:12.5px">Benchmark <b>${esc(bm.id || '')}</b> (frozen ${esc(bm.frozen || '')}, sha256 <span class="mono">${esc((bm.hash || '').slice(0, 12))}…</span>): Shaffer Score ${esc((bm.production || {}).score || '')}, Alpha ${esc((bm.production || {}).alpha || '')}, Hedge ${esc((bm.production || {}).hedge || '')}. Every family is tested as <b>incremental</b> information on identical records — Alpha: rank IC over production; Directional (gate v2): beat the prior-only model <i>and</i> the current formulation; Hedge: volatility forecast beyond 63d / 21d realised volatility and VIX — with weights frozen before each era and Benjamini-Hochberg control (q ${fmt.num(NI.fdr_q, 2)}; ${(NI.fdr || {}).family_rejections ?? '—'} of ${(NI.fdr || {}).family_tests ?? '—'} tests survive). Datasets starting after 2018 are on a separate LIMITED HISTORY track.</p><div id="niMain"></div></div>
+      <div class="row" style="gap:10px;margin:14px 0 10px"><span class="muted" style="font-size:12.5px">Horizon</span><div class="seg" id="niH">${HZ.map(x => `<button data-h="${x}" class="${x === hz ? 'on' : ''}">${x}</button>`).join('')}</div></div>
+      <div class="card flush"><h2>Families at ${esc(hz)} <small>walk-forward, paired on identical records</small></h2><div id="niH_T"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Individual features at ${esc(hz)} <small>Alpha Δ rank IC t on top of production · nominal p &lt; 0.05 vs surviving the FDR control — features are never admitted one by one</small></h2><div id="niF"></div></div>`;
+    const fams = Object.keys(S);
+    table($('#niMain'), fams.map(f => ({ f, s: S[f], sp: SP[f] || {} })), [{ k: 'f', label: 'Family', l: 1, f: x => `<b>${esc(x.s.label || x.f)}</b><span class="sub">${esc(x.sp.source || x.s.why || '')}</span>` },
+      { k: 'tier', label: 'Tier', f: x => x.s.tier ?? '—' }, { k: 'track', label: 'Track / PIT', l: 1, f: x => `${esc(x.s.track || '—')}<span class="sub">${esc(x.sp.quality || '')}</span>` },
+      { k: 'a', label: 'Alpha Δ rank IC', f: x => tt2(best(x.f, ['alpha', 'd_rank_ic'])) }, { k: 'd', label: 'Dir. Δ Brier vs prior', f: x => tt2(best(x.f, ['directional', 'brier_vs_prior'])) },
+      { k: 'h', label: 'Hedge vol gain', f: x => tt2(best(x.f, ['hedge', 'vol_mse_gain'])) }, { k: 's', label: 'Status', l: 1, f: x => `${niPill(x.s.status)}<span class="sub">${esc(x.s.why || '')}</span>` }], { sortKey: null });
+    const H = (NI.horizons[hz] || {}).families || {};
+    table($('#niH_T'), Object.entries(H).map(([f, v]) => ({ f, ...v })), [{ k: 'f', label: 'Family', l: 1, f: x => `<b>${esc((SP[x.f] || {}).label || x.f)}</b><span class="sub">${fmt.num(x.records, 0)} records · ${x.assets || 0} assets · from ${esc(x.first || '—')}</span>` },
+      { k: 'a', label: 'Alpha Δ rank IC (t)', f: x => { const st = ((x.walkforward || {}).alpha || {}).d_rank_ic; return st ? `${fmt.num(st.mean, 4)} <span class="faint">(${fmt.num(st.t, 1)})</span>` : '—'; } },
+      { k: 'dp', label: 'Brier vs prior (t)', f: x => { const st = ((x.walkforward || {}).directional || {}).brier_vs_prior; return st ? `${fmt.num(st.mean, 5)} <span class="faint">(${fmt.num(st.t, 1)})</span>` : '—'; } },
+      { k: 'dc', label: 'vs current (t)', f: x => fmt.num((((x.walkforward || {}).directional || {}).brier_vs_current || {}).t, 1) },
+      { k: 'ex', label: 'Δ accuracy vs prior', f: x => fmt.spct(((x.walkforward || {}).directional || {}).excess_vs_prior, 2) },
+      { k: 'bal', label: 'Balanced', f: x => fmt.pct((((x.walkforward || {}).directional || {}).new || {}).balanced_accuracy, 1) },
+      { k: 'h', label: 'Hedge vol gain (t)', f: x => { const st = (((x.walkforward || {}).hedge) || {}).vol_mse_gain; return st ? `${fmt.num(st.mean, 4)} <span class="faint">(${fmt.num(st.t, 1)})</span>` : '—'; } },
+      { k: 'eras', label: 'Eras won A / D / H', f: x => { const g = x.gates || {}; return `${(g.alpha || {}).eras_won ?? '—'} / ${(g.directional || {}).eras_won ?? '—'} / ${(g.hedge || {}).eras_won ?? '—'} of ${g.eras_complete ?? '—'}`; } },
+      { k: 'g', label: 'Passed', l: 1, f: x => ['alpha', 'directional', 'hedge'].map(t => { const g = (x.gates || {})[t]; return g ? `<span class="pill ${g.passed ? 'pos' : g.G1 ? 'warn' : ''}" style="font-size:10px">${t.slice(0, 3)} ${g.passed ? '✓' : g.G1 ? 'G1 only' : '✗'}</span>` : ''; }).join(' ') }], { sortKey: null });
+    const F = []; Object.entries(H).forEach(([f, v]) => Object.entries(v.features || {}).forEach(([n, st]) => F.push({ f, n, ...st })));
+    table($('#niF'), F, [{ k: 'n', label: 'Feature', l: 1, f: x => `<b>${esc(x.n)}</b><span class="sub">${esc((SP[x.f] || {}).label || x.f)}</span>` }, { k: 'coverage', label: 'Coverage', f: x => fmt.pct(x.coverage, 0) },
+      { k: 't', label: 'Δ rank IC t', v: x => x.t, f: x => fmt.num(x.t, 1) }, { k: 'p', label: 'p (one-sided)', f: x => fmt.num(x.p, 3) },
+      { k: 'fdr', label: 'Result', l: 1, f: x => x.fdr ? '<span class="pill pos" style="font-size:10px">survives FDR</span>' : x.nominal ? '<span class="pill warn" style="font-size:10px">nominal only</span>' : '<span class="faint">no</span>' }], { sortKey: 't', maxH: 420 });
+    $$('#niH button').forEach(b => b.onclick = () => { pref.set('niH', b.dataset.h); route(); });
+  };
   pages.ml = async (main, args, alive) => {
     const tab = args[0] || pref.get('labTab', 'production');
     if (tab === 'forecasts') return mlForecasts(main, args.slice(1), alive);
@@ -937,6 +972,7 @@
       return;
     }
     if (tab === 'sigweights') return labSignalWeights(body, L.weights, vers);
+    if (tab === 'newinfo') return labNewInfo(body, L.newinfo, L.benchmark);
     if (tab === 'alpha') return labAlpha(body, L.directional, vers);
     if (tab === 'directional') return labDirectional(body, L.directional, vers);
     if (!HZL.length && ['performance', 'signals', 'weights', 'versions'].includes(tab)) return need();
