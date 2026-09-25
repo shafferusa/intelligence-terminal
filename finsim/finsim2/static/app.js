@@ -906,7 +906,7 @@
     const best = (fam, path) => { let b = null; HZ.forEach(k => { const fr = ((NI.horizons[k] || {}).families || {})[fam] || {}; let st = fr.walkforward || {}; path.forEach(p => st = (st || {})[p]); if (st && st.t != null && (!b || st.t > b.t)) b = { ...st, h: k }; }); return b; };
     const tt2 = st => st ? `${fmt.num(st.mean, 4)} <span class="faint">(${st.h ? st.h + ', ' : ''}t ${fmt.num(st.t, 1)})</span>` : '—';
     const hpc = h => h && h.vol_mse_gain && h.vol_mse_gain.mean != null && h.mse_base ? h.vol_mse_gain.mean / h.mse_base : null;   // share of the baseline's squared error
-    const hbest = fam => { const b = best(fam, ['hedge', 'vol_mse_gain']); if (!b) return '—'; const pc = hpc((((NI.horizons[b.h] || {}).families || {})[fam] || {}).walkforward?.hedge); return pc != null ? `${fmt.spct(-pc, 1)} error <span class="faint">(${b.h}, t ${fmt.num(b.t, 1)})</span>` : tt2(b); };
+    const hbest = fam => { const b = best(fam, ['hedge', 'vol_mse_gain']); if (!b) return '—'; const pc = hpc((((NI.horizons[b.h] || {}).families || {})[fam] || {}).walkforward?.hedge); return pc != null ? `${fmt.spct(-pc, 1)} <span class="faint">(${b.h}, t ${fmt.num(b.t, 1)})</span>` : tt2(b); };
     const LM = (LV || {}).models || {};
     const liveOf = fam => { const m = Object.values(LM).filter(x => x.family === fam); return !m.length ? null : m.some(x => x.status === 'ELIGIBLE FOR PROMOTION') ? 'ELIGIBLE FOR PROMOTION' : 'LIVE SHADOW'; };
     body.innerHTML = `<div class="card"><h2>New information — does it add anything to the frozen benchmark? <small>research only · production unchanged</small></h2>
@@ -917,9 +917,9 @@
       <div class="card flush" style="margin-top:14px"><h2>Individual features at ${esc(hz)} <small>Alpha Δ rank IC t on top of production · nominal p &lt; 0.05 vs surviving the FDR control — features are never admitted one by one</small></h2><div id="niF"></div></div>`;
     const fams = Object.keys(S);
     table($('#niMain'), fams.map(f => ({ f, s: S[f], sp: SP[f] || {} })), [{ k: 'f', label: 'Family', l: 1, f: x => `<b>${esc(x.s.label || x.f)}</b><span class="sub">${esc(x.sp.source || x.s.why || '')}</span>` },
-      { k: 'tier', label: 'Tier', f: x => x.s.tier ?? '—' }, { k: 'track', label: 'Track / PIT', l: 1, f: x => `${esc(x.s.track || '—')}<span class="sub">${esc(x.sp.quality || '')}</span>` },
-      { k: 'a', label: 'Alpha Δ rank IC', f: x => tt2(best(x.f, ['alpha', 'd_rank_ic'])) }, { k: 'd', label: 'Dir. Δ Brier vs prior', f: x => tt2(best(x.f, ['directional', 'brier_vs_prior'])) },
-      { k: 'h', label: 'Hedge: vol-forecast error', f: x => hbest(x.f) }, { k: 's', label: 'Status', l: 1, f: x => `${niPill(liveOf(x.f) || x.s.status)}<span class="sub">${esc(x.s.why || '')}</span>` }], { sortKey: null });
+      { k: 'track', label: 'Tier · track', l: 1, f: x => `${x.s.tier ?? '—'} · ${esc(x.s.track || '—')}` },
+      { k: 'a', label: 'Alpha Δ rank IC', f: x => tt2(best(x.f, ['alpha', 'd_rank_ic'])) }, { k: 'd', label: 'Dir. Δ Brier', f: x => tt2(best(x.f, ['directional', 'brier_vs_prior'])) },
+      { k: 'h', label: 'Vol-forecast error', f: x => hbest(x.f) }, { k: 's', label: 'Status', l: 1, f: x => `${niPill(liveOf(x.f) || x.s.status)}<span class="sub">${esc(x.s.why || '')}</span>` }], { sortKey: null });
     const LR = Object.entries(LM).map(([id, m]) => ({ id, ...m }));
     if (!LR.length) $('#niLive').innerHTML = `<p class="muted" style="padding:12px 16px;margin:0">${Object.values(S).some(x => x.status === 'SHADOW') ? 'Passing tests exist but are not fitted yet: run <code>python -m finsim2 lab --live-models</code>.' : 'No test passed every gate, so nothing is in live shadow.'}</p>`;
     else table($('#niLive'), LR, [{ k: 'id', label: 'Version', l: 1, f: x => `<b class="mono">${esc(x.id)}</b><span class="sub">${esc((SP[x.family] || {}).label || x.family)} · ${esc(x.target)} · ${esc(x.horizon)} · fitted on ${fmt.num(x.records, 0)} records</span>` },
