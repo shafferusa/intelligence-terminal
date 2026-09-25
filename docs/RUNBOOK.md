@@ -86,7 +86,7 @@ environment allowlist before the first morning run**, or the strip will silently
 | `COINGECKO_KEY` | https://www.coingecko.com (free "demo" API key) |
 | `MASSIVE_KEY` | https://massive.com (free "Stocks Basic" key; ex-Polygon.io — enables EOD whole-market breadth; optional, reports degrade gracefully without it) |
 
-### A4. Create the three routines
+### A4. Create the routines
 
 At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**, environment **intelligence-terminal**, repository **shafferusa/intelligence-terminal** attached, and **"Allow unrestricted branch pushes" ENABLED** (the routine must push directly to `main`).
 
@@ -103,6 +103,13 @@ Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a c
 ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
 rather than delaying the news.
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
+| SIE Program (added 2026-09-25) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
+
+**The SIE Program starts at 11:28 ET so the Telegram push arrives around noon**: the run takes
+~15–25 minutes (grading, an 8,000-word lesson, a quiz and its answer key) and `notify.py` then waits
+for the MP3. Its cron carries `CRON_TZ`, so unlike the three UTC routines it does **not** need the
+section B DST bump. It needs the **`sie-inbox` workflow** on `main` (it is scheduled there
+automatically) so Logan's Telegram answers are captured — see section E4.
 
 **Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
 outcome branch, which forced the §15.2b PR fallback on most runs. Leave it unset so runs push
@@ -128,6 +135,7 @@ Run all three before trusting the schedule:
 
 Routine crons are UTC; ET shifts. Two edits per year:
 
+- The SIE Program routine is pinned to `America/New_York` with `CRON_TZ` and is never bumped.
 - **Nov 1, 2026** (fall back, EDT→EST): learning `0 10 * * 1-5` → `0 11 * * 1-5`; weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
 - **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 10 * * 1-5`, weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
 
@@ -231,9 +239,36 @@ real audio a few minutes later, or on any reload.
 **Voice:** `TTS_VOICE` / `TTS_RATE` env vars in the workflow (default
 `en-US-AndrewMultilingualNeural` at `+8%`). `edge-tts --list-voices` shows the alternatives.
 
+## E4. SIE Program replies (built 2026-09-25)
+
+`.github/workflows/sie-inbox.yml` runs `.github/scripts/sie_inbox.py` every ~15 minutes:
+
+1. `collect` — `getUpdates` (no offset), keeps only messages from `TELEGRAM_CHAT_ID` that are SIE
+   answers or commands, appends them to `state/sie/inbox.jsonl`.
+2. The workflow commits and pushes the inbox (only when something new arrived).
+3. `confirm` — replies to each message (instant score from `state/sie/quizzes/day-NN.json`, or a
+   command acknowledgement), then confirms the updates with `offset=max+1`.
+
+Reply formats Logan can use: `SIE 5: BDACA CBDAB`, `SIE 5: 1B 2D 3A`, `SIE exam 2026-10-24`,
+`SIE pause`, `SIE resume`, `SIE stop`, `SIE note …`, `SIE help`.
+
+| Symptom | Check |
+|---|---|
+| No score reply after answering | Actions → "SIE inbox" run log. Scheduled runs can lag 15–30 min. `workflow_dispatch` it by hand. |
+| Reply says "no answer key on file" | The routine did not write `state/sie/quizzes/day-NN.json` that day — check the SIE run transcript. The noon run still grades from the inbox once a key exists. |
+| Answers older than a day never arrived | Telegram drops unconfirmed updates after 24 h. The Action must be enabled (Actions → SIE inbox → Enable) — GitHub disables scheduled workflows after 60 days without repo activity. |
+| `getUpdates` 409 Conflict | Someone set a webhook on the bot. `deleteWebhook` restores polling. |
+
+Privacy: the repo is public, so the inbox file is public. Only SIE-formatted messages are stored;
+anything else Logan sends the bot is ignored and never written.
+
+**Egress for SIE fact-checking (recommended):** add `www.finra.org`, `www.irs.gov`, `www.msrb.org`
+and `www.investor.gov` to the environment allowlist (section A3). They were blocked when the program
+was built, so runs verify through WebSearch and `www.sec.gov`, which is slower and less direct.
+
 ## F. Usage notes (Max plan)
 
-- Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 3/day weekdays (learning + morning + closing) and 1/day weekends — well under the cap.
+- Routine runs draw from Max-plan usage, capped at **15 routine runs/day**. The standard schedule uses 4/day weekdays (learning + morning + closing + SIE) and 2/day weekends (weekend edition + SIE) — well under the cap.
 - Heavy interactive Claude usage on the same plan can starve scheduled runs near limits; if a run is skipped for usage, it will show in the routines run list — regenerate with "run now" once headroom returns.
 
 ---

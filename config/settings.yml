@@ -14,6 +14,7 @@ schedule:
   weekday_pm: "16:30"     # Mon-Fri Closing Brief
   saturday: "09:00"       # Weekly Review
   sunday: "09:00"         # Week Ahead
+  daily_sie: "11:28"      # SIE Program, every day; push lands ~noon (prompts/sie.md)
   timezone: America/New_York
 
 # ------------------------------------------------------------

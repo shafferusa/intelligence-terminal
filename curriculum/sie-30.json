@@ -1,0 +1,1789 @@
+{
+ "version": 1,
+ "created": "2026-09-25",
+ "program": "SIE 30-Day Program",
+ "authority": "FINRA SIE Content Outline (current edition; 2025-10 revision). Where a third-party prep convention conflicts with a FINRA or SEC rule, the rule wins. Exam format: 75 scored + 5 unscored questions (unscored cut from 10 to 5 effective 2025-10-27), 1 hour 45 minutes, passing score 70.",
+ "cadence": "daily, 7 days a week, noon America/New_York",
+ "sections": {
+  "1": {
+   "name": "Knowledge of Capital Markets",
+   "weight_pct": 16,
+   "exam_questions": 12,
+   "functions": [
+    "1.1 Regulatory entities, agencies and market participants",
+    "1.2 Market structure",
+    "1.3 Economic factors",
+    "1.4 Offerings"
+   ]
+  },
+  "2": {
+   "name": "Understanding Products and Their Risks",
+   "weight_pct": 44,
+   "exam_questions": 33,
+   "functions": [
+    "2.1 Products",
+    "2.2 Investment risks"
+   ]
+  },
+  "3": {
+   "name": "Understanding Trading, Customer Accounts and Prohibited Activities",
+   "weight_pct": 31,
+   "exam_questions": 23,
+   "functions": [
+    "3.1 Trading, settlement and corporate actions",
+    "3.2 Customer accounts and compliance considerations",
+    "3.3 Prohibited activities"
+   ]
+  },
+  "4": {
+   "name": "Overview of the Regulatory Framework",
+   "weight_pct": 9,
+   "exam_questions": 7,
+   "functions": [
+    "4.1 SRO regulatory requirements for associated persons",
+    "4.2 Employee conduct and reportable events"
+   ]
+  }
+ },
+ "topics": [
+  {
+   "id": "participants",
+   "section": "1",
+   "name": "Market participants: issuers, investors, BDs, IBs, market makers, custodians, TAs, clearing"
+  },
+  {
+   "id": "regulators_laws",
+   "section": "1",
+   "name": "Regulators, SROs and the major securities laws"
+  },
+  {
+   "id": "market_structure",
+   "section": "1",
+   "name": "Primary/secondary markets; first-fourth markets; exchanges vs OTC; ATS"
+  },
+  {
+   "id": "economics",
+   "section": "1",
+   "name": "Business cycle, GDP, CPI, employment, indicators, currency effects"
+  },
+  {
+   "id": "fed_policy",
+   "section": "1",
+   "name": "Monetary vs fiscal policy, Fed tools, rates, yield curve"
+  },
+  {
+   "id": "offerings_registration",
+   "section": "1",
+   "name": "Underwriting process, registration, prospectus, syndicate"
+  },
+  {
+   "id": "offerings_exemptions",
+   "section": "1",
+   "name": "Exempt securities/transactions: Reg D, Reg A, 147/147A, 144, 144A, Reg S, CF"
+  },
+  {
+   "id": "common_stock",
+   "section": "2",
+   "name": "Common stock: rights, voting, proxies, preemptive rights, treasury stock"
+  },
+  {
+   "id": "corp_actions",
+   "section": "2",
+   "name": "Dividends, dates, splits, reverse splits, stock dividends"
+  },
+  {
+   "id": "preferred",
+   "section": "2",
+   "name": "Preferred stock types and features"
+  },
+  {
+   "id": "rights_warrants_adrs",
+   "section": "2",
+   "name": "Rights, warrants, ADRs"
+  },
+  {
+   "id": "bond_basics",
+   "section": "2",
+   "name": "Par, coupon, quotes, accrued interest, maturity structures"
+  },
+  {
+   "id": "bond_yields",
+   "section": "2",
+   "name": "Current yield, YTM, YTC, premium/discount relationships, duration intuition"
+  },
+  {
+   "id": "corporate_debt",
+   "section": "2",
+   "name": "Secured/unsecured debt, seniority, call/put, convertibles, zeros, ratings, TIA"
+  },
+  {
+   "id": "treasuries_agencies",
+   "section": "2",
+   "name": "Treasuries, TIPS, STRIPS, agencies, MBS/CMOs"
+  },
+  {
+   "id": "money_market",
+   "section": "2",
+   "name": "Money-market instruments: CP, BAs, CDs, repo, T-bills, fed funds"
+  },
+  {
+   "id": "munis",
+   "section": "2",
+   "name": "Municipal securities: GO, revenue, notes, tax treatment, MSRB"
+  },
+  {
+   "id": "investment_risks",
+   "section": "2",
+   "name": "The investment-risk taxonomy"
+  },
+  {
+   "id": "options_basics",
+   "section": "2",
+   "name": "Option mechanics: calls/puts, premium, intrinsic/time value, exercise/assignment, OCC"
+  },
+  {
+   "id": "options_strategies",
+   "section": "2",
+   "name": "Four basic positions, covered/protected positions, spreads, straddles, hedging"
+  },
+  {
+   "id": "mutual_funds",
+   "section": "2",
+   "name": "Open-end funds: NAV/POP, loads, share classes, 12b-1, breakpoints, ROA, LOI, fund roles"
+  },
+  {
+   "id": "etf_cef_uit",
+   "section": "2",
+   "name": "ETFs, ETNs, closed-end funds, UITs, leveraged/inverse products"
+  },
+  {
+   "id": "alternatives",
+   "section": "2",
+   "name": "REITs, DPPs/LPs, hedge funds, private funds, private placements"
+  },
+  {
+   "id": "annuities",
+   "section": "2",
+   "name": "Fixed, variable and indexed annuities; variable life; 1035 exchanges"
+  },
+  {
+   "id": "education_accounts",
+   "section": "2",
+   "name": "529 plans, Coverdell ESAs, ABLE accounts (municipal fund securities)"
+  },
+  {
+   "id": "orders_trading",
+   "section": "3",
+   "name": "Quotes, bid/ask, order types, time-in-force, market makers, best execution"
+  },
+  {
+   "id": "settlement_clearing",
+   "section": "3",
+   "name": "Settlement cycles, clearing, custody, DVP, confirmations, statements, corporate-action processing"
+  },
+  {
+   "id": "short_selling",
+   "section": "3",
+   "name": "Short sales, Reg SHO, securities lending, recalls, buy-ins, manufactured dividends"
+  },
+  {
+   "id": "margin",
+   "section": "3",
+   "name": "Reg T, long and short margin, maintenance, SMA, margin calls, restricted accounts"
+  },
+  {
+   "id": "account_types",
+   "section": "3",
+   "name": "Account registrations, ownership, discretion, POA, death/incapacity"
+  },
+  {
+   "id": "kyc_aml",
+   "section": "3",
+   "name": "Account opening, CIP, KYC, AML, SAR/CTR, OFAC, senior investors"
+  },
+  {
+   "id": "suitability_regbi",
+   "section": "3",
+   "name": "Suitability (2111), Reg BI, Form CRS"
+  },
+  {
+   "id": "retirement_accounts",
+   "section": "3",
+   "name": "IRAs, Roth IRAs, qualified plans, 401(k)/403(b)/457, ERISA, rollovers, RMDs"
+  },
+  {
+   "id": "taxation",
+   "section": "3",
+   "name": "Capital gains, dividends, basis, wash sales, muni/Treasury tax, gifts/estates"
+  },
+  {
+   "id": "communications",
+   "section": "3",
+   "name": "Retail communications, correspondence, institutional communications, approvals, records"
+  },
+  {
+   "id": "prohibited_insider",
+   "section": "3",
+   "name": "Insider trading, MNPI, tipper/tippee, information barriers"
+  },
+  {
+   "id": "prohibited_manipulation",
+   "section": "3",
+   "name": "Manipulation, front running, marking the close, painting the tape, spoofing"
+  },
+  {
+   "id": "prohibited_customer",
+   "section": "3",
+   "name": "Churning, unauthorized trading, sharing, guarantees, borrowing/lending, interpositioning, freeriding"
+  },
+  {
+   "id": "registration",
+   "section": "4",
+   "name": "U4/U5, fingerprinting, exam validity, qualification expiry, MQP"
+  },
+  {
+   "id": "sd_ce_conduct",
+   "section": "4",
+   "name": "Statutory disqualification, continuing education, reportable events"
+  },
+  {
+   "id": "obas_psts_gifts",
+   "section": "4",
+   "name": "Outside business activities, private securities transactions, gifts, political contributions"
+  }
+ ],
+ "days": [
+  {
+   "day": 1,
+   "phase": "Foundations",
+   "title": "Who's who: the machinery of the securities industry",
+   "finra_sections": [
+    "1.1",
+    "1.2",
+    "4"
+   ],
+   "study_minutes": 95,
+   "weight": "standard",
+   "lesson_words": 6000,
+   "quiz_questions": 15,
+   "topics": [
+    "participants",
+    "market_structure",
+    "regulators_laws"
+   ],
+   "understand": [
+    "Issuer -> underwriter -> investor (primary) vs investor -> BD -> investor (secondary): where the cash goes in each",
+    "Broker (agent, earns commission, no inventory risk) vs dealer (principal, earns markup/markdown, carries inventory)",
+    "Life of a trade end to end: order -> execution venue -> trade report -> clearing (NSCC) -> settlement (DTC) -> custody -> transfer agent/registrar records",
+    "Why market makers exist: immediacy for a price (the spread) and the inventory risk they carry",
+    "First/second/third/fourth markets as a map of venue x intermediary",
+    "The regulator cast list: SEC above SROs (FINRA, MSRB, exchanges); Fed for credit; Treasury/FinCEN/OFAC; SIPC vs FDIC; states and NASAA",
+    "The eight laws in one sentence each, and which market (primary vs secondary) each governs"
+   ],
+   "memorize": [
+    "broker vs dealer",
+    "first/second/third/fourth markets",
+    "law -> year -> what it does",
+    "SIPC vs FDIC limits",
+    "MSRB writes rules but does not enforce",
+    "FINRA formed 2007 (NASD + NYSE member regulation)"
+   ],
+   "traps": [
+    "A firm cannot act as broker and dealer in the same trade",
+    "Third market = listed security traded OTC; fourth = institution-to-institution with no BD (ATS/ECN)",
+    "SIPC is not insurance against market loss and does not cover commodities/futures",
+    "The '33 Act did not create the SEC; the '34 Act did",
+    "Custodian vs transfer agent vs registrar vs clearing firm — four different jobs"
+   ],
+   "calculations": [
+    "Markup % = (price to customer - prevailing market price) / prevailing market price",
+    "Commission vs markup: which appears on the confirmation and why"
+   ],
+   "trader_connection": [
+    "Market makers -> liquidity, spreads and inventory risk; your P&L as a dealer is spread capture minus adverse selection minus inventory drift",
+    "Clearing -> counterparty risk reduction: novation to NSCC/OCC turns thousands of bilateral exposures into one netted exposure to a CCP",
+    "Custody chain -> where your securities actually sit when you lend or pledge them (DTC -> custodian -> BD -> you in street name)"
+   ],
+   "real_market": [
+    "Trading desk",
+    "Operations/settlements",
+    "Prime brokerage",
+    "Compliance"
+   ],
+   "also_cover": [
+    "Order flow terms from the sample exam: broker earns a commission (agent); dealer earns a markup (principal); OTC = not on an exchange",
+    "Second market = unlisted stocks OTC (use this SIE definition)"
+   ]
+  },
+  {
+   "day": 2,
+   "phase": "Foundations",
+   "title": "Economics, the Fed and how macro moves prices",
+   "finra_sections": [
+    "1.3"
+   ],
+   "study_minutes": 100,
+   "weight": "standard",
+   "lesson_words": 6500,
+   "quiz_questions": 15,
+   "topics": [
+    "economics",
+    "fed_policy"
+   ],
+   "understand": [
+    "Business cycle phases (expansion, peak, contraction, trough) and what each does to earnings, credit spreads and rates",
+    "GDP (nominal vs real), CPI and inflation vs disinflation vs deflation — level vs rate of change",
+    "Leading, coincident and lagging indicators — why each is classified where it is",
+    "Monetary policy (Fed: money supply and rates) vs fiscal policy (Congress/President: taxes and spending)",
+    "Fed tools: open-market operations, discount rate, reserve requirements (0% since 2020), interest on reserve balances",
+    "Yield curve shapes (normal, inverted, flat) and why inversion is read as a recession signal",
+    "Currency effects: stronger dollar -> cheaper imports, weaker US exporters, lower dollar value of foreign earnings"
+   ],
+   "memorize": [
+    "leading/coincident/lagging indicator lists",
+    "Fed tools and which is used most",
+    "FOMC meets 8 times a year",
+    "recession exam convention (two consecutive quarters of declining real GDP; NBER makes the official call)",
+    "fed funds rate vs discount rate vs prime rate vs broker call rate"
+   ],
+   "traps": [
+    "Fiscal policy is NOT the Fed",
+    "Buying securities in OMO is easing (adds reserves); selling is tightening",
+    "Stock prices are a leading indicator; CPI and duration of unemployment lag",
+    "An inverted curve means short rates above long rates",
+    "Deflation (falling prices) vs disinflation (slowing inflation)"
+   ],
+   "calculations": [
+    "Real rate ~= nominal rate - inflation",
+    "Chain: Fed hikes -> short yields up -> existing bond prices down -> borrowing costs up -> equity multiples compress -> dollar tends to firm"
+   ],
+   "trader_connection": [
+    "Fed policy -> rates/FX/equity/commodity transmission; the 2s10s spread as a positioning signal",
+    "Rates desks hedge with Treasury futures and SOFR futures because the curve moves on Fed expectations, not just the level"
+   ],
+   "real_market": [
+    "Rates trading",
+    "Macro/portfolio management",
+    "Risk management"
+   ],
+   "also_cover": [
+    "Market structures: monopoly, oligopoly, monopolistic competition, perfect competition (with examples)",
+    "Fed tools as the SIE lists them: open-market operations, discount rate, reserve requirements, and Regulation T (exam convention)",
+    "Rates and inflation: the Fed raises rates to fight inflation; know the causal lever the exam wants"
+   ]
+  },
+  {
+   "day": 3,
+   "phase": "Products",
+   "title": "Common stock: ownership, votes and corporate actions",
+   "finra_sections": [
+    "2.1",
+    "3.1"
+   ],
+   "study_minutes": 90,
+   "weight": "standard",
+   "lesson_words": 6000,
+   "quiz_questions": 15,
+   "topics": [
+    "common_stock",
+    "corp_actions"
+   ],
+   "understand": [
+    "What a share is: residual claim, limited liability, last in liquidation",
+    "Authorized, issued, outstanding and treasury stock — and why buybacks change EPS",
+    "Statutory vs cumulative voting and why cumulative favors minority holders",
+    "Proxies and why they exist",
+    "Preemptive rights and anti-dilution",
+    "Dividend mechanics: declaration, ex-date, record date, payable date — and why under T+1 the ex-date equals the record date",
+    "Cash dividends vs stock dividends vs forward/reverse splits: what changes and what does not (total value)",
+    "How exchange price adjusts on the ex-date"
+   ],
+   "memorize": [
+    "declaration -> ex -> record -> payable sequence",
+    "ex-date = record date under T+1 (since May 28, 2024)",
+    "mutual fund ex-date set by the fund (usually the business day after record date)",
+    "cumulative voting formula"
+   ],
+   "traps": [
+    "Buy on the ex-date and you do NOT get the dividend",
+    "Treasury stock has no vote and no dividend",
+    "Stock dividends and splits do not change the holder's total value or cost basis in total",
+    "Voting rights belong to common, generally not preferred",
+    "Record date vs ex-date vs payable date"
+   ],
+   "calculations": [
+    "Cumulative voting: votes = shares x seats up for election",
+    "Split math: new shares = old x (new/old); new price = old x (old/new)",
+    "Stock dividend: 10% stock dividend -> 1.1x shares, price / 1.1",
+    "Dividend yield = annual dividend / price"
+   ],
+   "trader_connection": [
+    "Corporate actions -> index rebalancing and options contract adjustments (OCC adjusts strikes and deliverables for splits)",
+    "Dividend dates drive early-exercise decisions on calls and dividend-arbitrage/dividend-capture in stock loan"
+   ],
+   "real_market": [
+    "Equity trading",
+    "Operations (corporate actions)",
+    "Securities lending"
+   ],
+   "also_cover": [
+    "Cash-settlement ex-date = the business day AFTER the record date; regular-way ex-date = record date",
+    "Tax event for a cash dividend = the payable date",
+    "Split math with share counts and price; who approves splits (state law/charter, not a FINRA rule)"
+   ]
+  },
+  {
+   "day": 4,
+   "phase": "Products",
+   "title": "Preferred stock, rights, warrants and ADRs",
+   "finra_sections": [
+    "2.1"
+   ],
+   "study_minutes": 85,
+   "weight": "standard",
+   "lesson_words": 5500,
+   "quiz_questions": 15,
+   "topics": [
+    "preferred",
+    "rights_warrants_adrs"
+   ],
+   "understand": [
+    "Preferred as a hybrid: fixed dividend, priority over common, usually no vote — why its price behaves like a bond",
+    "Cumulative, participating, convertible, callable, adjustable-rate preferred — what each feature is worth and to whom",
+    "Rights: short-term, issued to existing holders at a discount (preemptive), trade separately",
+    "Warrants: long-term, issued with bonds/preferred as a sweetener, strike above market at issue",
+    "ADRs: foreign shares held by a US depositary bank; dollar-denominated; currency risk remains; sponsored vs unsponsored"
+   ],
+   "memorize": [
+    "rights vs warrants (term, price vs market, who gets them)",
+    "cumulative preferred arrears must be paid before common dividends",
+    "ADR holders face currency risk and foreign withholding",
+    "preferred dividends are not a legal obligation (vs bond interest)"
+   ],
+   "traps": [
+    "Rights = discount + short term; warrants = premium + long term",
+    "Callable preferred pays a higher dividend to compensate for call risk",
+    "Convertible preferred pays a LOWER dividend (the conversion option is worth something)",
+    "ADRs trade in dollars but the underlying currency still moves the price"
+   ],
+   "calculations": [
+    "Preferred price ~ annual dividend / required yield (interest-rate sensitivity)",
+    "Cumulative arrears = missed dividends x shares",
+    "Conversion ratio = par / conversion price; parity price = common price x conversion ratio"
+   ],
+   "trader_connection": [
+    "Preferred = rate + credit exposure in equity clothing; hedgers treat it as long-duration credit",
+    "Warrants and convertibles = embedded long call options -> delta, vega and dilution"
+   ],
+   "real_market": [
+    "Capital markets (hybrid capital)",
+    "Convertible arbitrage",
+    "International equity"
+   ],
+   "also_cover": [
+    "Preferred par is typically $100; preferred suits income investors, not capital appreciation",
+    "Rights: one right per share, short life, intrinsic value at issue; warrants: long life, no intrinsic value at issue"
+   ]
+  },
+  {
+   "day": 5,
+   "phase": "Products",
+   "title": "Bond math: price, yield and why they move opposite",
+   "finra_sections": [
+    "2.1",
+    "2.2"
+   ],
+   "study_minutes": 120,
+   "weight": "heavy",
+   "lesson_words": 8500,
+   "quiz_questions": 20,
+   "topics": [
+    "bond_basics",
+    "bond_yields"
+   ],
+   "understand": [
+    "Par, coupon (nominal yield), maturity, price as % of par",
+    "Why price and yield move inversely — the fixed coupon is repriced to the market yield",
+    "Current yield, YTM, YTC — what each measures and what each ignores",
+    "Premium bond: Coupon > Current Yield > YTM > YTC — because the premium is lost faster if called early",
+    "Discount bond: YTC > YTM > Current Yield > Coupon — because the discount is gained faster if called early",
+    "Duration intuition: longer maturity and lower coupon -> more price sensitivity; zeros have duration = maturity",
+    "Quote conventions: points, 1/8s, 32nds, basis points",
+    "Accrued interest: who pays whom and why"
+   ],
+   "memorize": [
+    "1 bond point = $10; 1/8 point = $1.25; 1 bp = 0.01%",
+    "Treasury 32nds: 1/32 = $0.3125 per $1,000",
+    "corporate & muni accrue 30/360; government actual/actual",
+    "accrued interest runs from last coupon date up to but not including settlement date",
+    "premium and discount yield orderings"
+   ],
+   "traps": [
+    "'Nominal yield' is the coupon",
+    "Current yield uses PRICE, not par",
+    "A premium bond's YTM is BELOW its coupon",
+    "Buyer pays seller accrued interest",
+    "Rates up -> long-maturity, low-coupon bonds fall most"
+   ],
+   "calculations": [
+    "Current yield = annual coupon $ / market price",
+    "Price from points: 98-1/4 = 98.25% x $1,000 = $982.50",
+    "Accrued interest = principal x coupon x days/360 (30/360 month counting)",
+    "Yield relationship ordering proofs with numbers",
+    "Approximate YTM = (coupon + (par - price)/years) / ((par + price)/2)"
+   ],
+   "trader_connection": [
+    "Bonds -> duration/rate hedging: DV01, why a desk sells Treasury futures to hedge a long corporate book",
+    "Negative convexity of callable bonds — the same shape as being short a call"
+   ],
+   "real_market": [
+    "Rates and credit trading",
+    "Portfolio management",
+    "Risk management (DV01 limits)"
+   ],
+   "also_cover": [
+    "Quote conversion drills: corporate 86 5/8 = $866.25; Treasury 106-16 = $1,065.00 (buy at the ask)",
+    "Yield ordering questions phrased 'lowest to highest' as well as 'highest to lowest'"
+   ]
+  },
+  {
+   "day": 6,
+   "phase": "Products",
+   "title": "Corporate debt: seniority, collateral, calls and conversions",
+   "finra_sections": [
+    "2.1",
+    "2.2"
+   ],
+   "study_minutes": 95,
+   "weight": "standard",
+   "lesson_words": 6500,
+   "quiz_questions": 18,
+   "topics": [
+    "corporate_debt",
+    "bond_yields"
+   ],
+   "understand": [
+    "Secured (mortgage, equipment trust, collateral trust) vs unsecured (debentures, subordinated debentures)",
+    "Liquidation priority: secured -> unsecured/general creditors -> subordinated -> preferred -> common",
+    "Indenture, trustee and the Trust Indenture Act of 1939",
+    "Call and put features, call protection, refunding, sinking funds",
+    "Convertible bonds: conversion ratio, parity, why issuers pay a lower coupon",
+    "Zero-coupon bonds: OID, phantom income (annual accretion taxed for corporate zeros)",
+    "Credit ratings: investment grade (BBB-/Baa3 and above) vs high-yield; what spreads compensate for"
+   ],
+   "memorize": [
+    "liquidation priority order",
+    "investment grade = BBB-/Baa3 and above",
+    "equipment trust certificates -> transportation (airlines, railroads)",
+    "collateral trust -> backed by securities held in trust",
+    "Trust Indenture Act -> corporate bonds, trustee protects bondholders"
+   ],
+   "traps": [
+    "Debentures are unsecured — backed by full faith and credit of the issuer",
+    "Income (adjustment) bonds pay only if earned — used in reorganizations",
+    "Zeros have no reinvestment risk but maximum interest-rate risk",
+    "Munis and Treasuries are exempt from the Trust Indenture Act",
+    "Call risk rises when rates FALL"
+   ],
+   "calculations": [
+    "Conversion ratio = par / conversion price",
+    "Parity: bond price / ratio = parity stock price",
+    "Zero accretion: annual OID = (par - purchase price) / years (straight-line teaching convention)"
+   ],
+   "trader_connection": [
+    "Capital structure -> credit hedging with CDS and recovery assumptions; seniority sets recovery",
+    "Convertibles -> equity delta + credit + vol; convert arb is long bond, short stock"
+   ],
+   "real_market": [
+    "Credit trading",
+    "Leveraged finance / DCM",
+    "Distressed investing"
+   ],
+   "also_cover": [
+    "Call protection = years until the FIRST call date; call premium = call price minus par (e.g., 105 -> $50)",
+    "Mortgage bonds are backed by real property the corporation owns"
+   ]
+  },
+  {
+   "day": 7,
+   "phase": "Products",
+   "title": "Governments, agencies, mortgage-backed and money-market paper",
+   "finra_sections": [
+    "2.1",
+    "2.2"
+   ],
+   "study_minutes": 110,
+   "weight": "heavy",
+   "lesson_words": 7500,
+   "quiz_questions": 18,
+   "topics": [
+    "treasuries_agencies",
+    "money_market"
+   ],
+   "understand": [
+    "T-bills (discount), notes, bonds, TIPS (principal indexed to CPI), STRIPS (zeros)",
+    "Treasury auctions: competitive vs non-competitive bids; the single-price (Dutch) auction",
+    "Agencies: GNMA (explicit full faith and credit, fully taxable) vs FNMA/FHLMC (GSEs, implied backing)",
+    "Pass-throughs and CMOs: prepayment risk (rates fall) vs extension risk (rates rise); PAC, TAC, companion and Z tranches",
+    "Money market instruments: commercial paper (max 270 days to be exempt), bankers' acceptances, negotiable CDs, repos, fed funds, T-bills",
+    "Why money-market instruments are short, liquid and low-risk — and what 'breaking the buck' meant"
+   ],
+   "memorize": [
+    "T-bill maturities (4, 6, 8, 13, 17, 26, 52 weeks)",
+    "notes 2-10 years, bonds 20-30 years",
+    "Treasury interest: federal taxable, state exempt",
+    "GNMA = only agency with explicit US guarantee",
+    "commercial paper exempt from registration if <= 270 days",
+    "BAs finance international trade"
+   ],
+   "traps": [
+    "T-bills are quoted on a discount-yield basis — bid yield higher than ask yield",
+    "GNMA interest is taxable at all levels",
+    "CMOs have prepayment AND extension risk; PACs have the most protection, companions the least",
+    "Repo is a collateralized loan, not a sale for economic purposes",
+    "TIPS: inflation adjusts PRINCIPAL; the coupon rate is fixed"
+   ],
+   "calculations": [
+    "T-bill discount yield vs bond-equivalent yield intuition",
+    "TIPS: new principal = principal x (1 + CPI change); coupon $ = rate x adjusted principal"
+   ],
+   "trader_connection": [
+    "Repo -> the financing engine of every rates desk; haircuts = collateral margin",
+    "MBS -> negative convexity; mortgage servicers and MBS holders hedge by buying duration when rates fall",
+    "Treasury basis trade: cash Treasury vs futures, financed in repo"
+   ],
+   "real_market": [
+    "Rates trading",
+    "Repo/funding desk",
+    "Treasury/cash management",
+    "MBS analytics"
+   ],
+   "also_cover": [
+    "Commercial paper and banker's acceptances: max 270 days; CP typically sold in $100,000+ denominations to institutions",
+    "Treasury bills are money-market instruments; unsecured, backed by full faith and credit"
+   ]
+  },
+  {
+   "day": 8,
+   "phase": "Products",
+   "title": "Municipal securities: tax-exempt credit",
+   "finra_sections": [
+    "2.1",
+    "2.2",
+    "1.1"
+   ],
+   "study_minutes": 100,
+   "weight": "standard",
+   "lesson_words": 6800,
+   "quiz_questions": 18,
+   "topics": [
+    "munis",
+    "taxation"
+   ],
+   "understand": [
+    "GO bonds (taxing power, voter approval, debt limits) vs revenue bonds (project revenue, feasibility study, covenants)",
+    "Double-barreled, moral obligation, special tax, special assessment, IDRs (corporate credit!)",
+    "Short-term notes: TAN, RAN, TRAN, BAN, GAN, CLN — what cash flow backs each",
+    "Tax treatment: federal exemption, in-state exemption, territories triple-exempt, capital gains taxable",
+    "Tax-equivalent yield and who munis suit (high brackets, not IRAs)",
+    "MSRB: rules only; enforcement by FINRA (BDs), SEC, bank regulators (banks); EMMA; G-37 political contributions",
+    "Official statement vs prospectus; municipal advisors"
+   ],
+   "memorize": [
+    "TEY = muni yield / (1 - tax rate)",
+    "muni yield equivalent = taxable yield x (1 - tax rate)",
+    "MSRB created by Securities Acts Amendments of 1975",
+    "G-37 de minimis $250 per election (only where the MFP can vote); 2-year ban",
+    "muni trades reported to RTRS within 15 minutes",
+    "MIG ratings for short-term muni notes"
+   ],
+   "traps": [
+    "IDRs are backed by a CORPORATION's lease payments, not the municipality",
+    "Munis in an IRA waste the tax exemption",
+    "Munis are exempt from '33 Act registration but NOT from antifraud rules",
+    "MSRB does not enforce its own rules",
+    "Capital gains on munis are taxable"
+   ],
+   "calculations": [
+    "TEY and after-tax yield comparisons",
+    "Muni premium amortization (basis steps down; no deductible loss at maturity)"
+   ],
+   "trader_connection": [
+    "Munis -> credit and tax-adjusted yield; the muni/Treasury ratio as a relative-value signal",
+    "Muni desks hedge rate risk with Treasury futures but carry basis risk because munis do not move 1:1"
+   ],
+   "real_market": [
+    "Public finance banking",
+    "Muni trading",
+    "Wealth management"
+   ],
+   "also_cover": [
+    "Muni quotes: serial bonds (often GO) quoted on a yield basis; term 'dollar bonds' (often revenue) quoted as % of par",
+    "Municipal Finance Professional: RR who solicits municipal ISSUER business; an RR who only sells munis to retail is not an MFP",
+    "Convention-center bonds = revenue bonds = exempt securities"
+   ]
+  },
+  {
+   "day": 9,
+   "phase": "Products",
+   "title": "Risk: every way an investment can hurt you",
+   "finra_sections": [
+    "2.2"
+   ],
+   "study_minutes": 85,
+   "weight": "standard",
+   "lesson_words": 6000,
+   "quiz_questions": 18,
+   "topics": [
+    "investment_risks"
+   ],
+   "understand": [
+    "Systematic (market, interest-rate, inflation/purchasing-power, currency, political) vs unsystematic (business, credit, regulatory for one firm) — diversification only kills the second",
+    "Each of the 18 risks with one concrete market example: market, systematic, unsystematic, credit, default, liquidity, interest-rate, reinvestment, inflation, political, legislative, regulatory, currency, business, call, prepayment, counterparty, leverage",
+    "Beta as a measure of systematic risk; standard deviation as total volatility",
+    "Which products carry which risks — the product/risk matrix the SIE loves"
+   ],
+   "memorize": [
+    "systematic vs unsystematic list",
+    "reinvestment risk: highest for high-coupon callable bonds; none for zeros",
+    "purchasing-power risk: highest for fixed-income and cash",
+    "liquidity/marketability risk examples (DPPs, non-traded REITs)"
+   ],
+   "traps": [
+    "Diversification does NOT reduce systematic risk",
+    "Legislative risk = law changes (e.g., tax law); regulatory = regulator rule changes",
+    "Call risk and prepayment risk are the same shape: you get your money back when rates fall",
+    "Credit risk (downgrade) vs default risk (failure to pay)",
+    "Liquidity risk vs marketability"
+   ],
+   "calculations": [
+    "Beta interpretation: beta 1.5 -> ~1.5x market moves",
+    "Leverage: 2:1 leverage doubles percentage gains and losses"
+   ],
+   "trader_connection": [
+    "Risk taxonomy -> the risk manager's factor map: rates, credit, equity, FX, vol, liquidity, counterparty",
+    "Counterparty risk -> why OTC derivatives are collateralized under CSAs and why clearing exists",
+    "Leverage risk -> margin calls turn price risk into liquidity risk (the 2021 Archegos pattern)"
+   ],
+   "real_market": [
+    "Risk management",
+    "Portfolio construction",
+    "Treasury/ALM"
+   ],
+   "also_cover": [
+    "Regulatory risk (agency rules) vs legislative risk (new laws) vs business risk vs market risk, with scenarios"
+   ]
+  },
+  {
+   "day": 10,
+   "phase": "Products",
+   "title": "Options I: the contract, the premium and who owes what",
+   "finra_sections": [
+    "2.1",
+    "2.2",
+    "3.1"
+   ],
+   "study_minutes": 110,
+   "weight": "heavy",
+   "lesson_words": 7500,
+   "quiz_questions": 20,
+   "topics": [
+    "options_basics"
+   ],
+   "understand": [
+    "A call is the right to BUY; a put is the right to SELL; the buyer (holder) has rights, the writer (seller) has obligations",
+    "Premium = intrinsic value + time value; intrinsic can never be negative",
+    "ITM/ATM/OTM for calls vs puts",
+    "Exercise vs assignment; OCC as issuer/guarantor and random/FIFO assignment by BDs",
+    "Standardized terms: 100 shares, expiration, American vs European, strike intervals",
+    "Account opening for options: ODD delivery at or before approval, ROP approval, signed agreement within 15 days of approval",
+    "Settlement: equity options T+1; exercise settles T+1 in stock; index options cash-settled"
+   ],
+   "memorize": [
+    "contract = 100 shares",
+    "ODD delivered no later than account approval",
+    "options agreement returned within 15 days after approval",
+    "American = exercise any time; European = only at expiration",
+    "index options settle in cash",
+    "long options (<= 9 months) must be paid in full"
+   ],
+   "traps": [
+    "Bullish positions: BUY CALL, SELL PUT; bearish: BUY PUT, SELL CALL",
+    "Time value decays toward zero at expiration",
+    "An OTM option has NO intrinsic value — all premium is time value",
+    "The writer, not the buyer, can be assigned",
+    "Call ITM when market > strike; put ITM when market < strike"
+   ],
+   "calculations": [
+    "Intrinsic: call = max(0, S - K); put = max(0, K - S)",
+    "Time value = premium - intrinsic",
+    "Contract $ = premium x 100"
+   ],
+   "trader_connection": [
+    "Options -> nonlinear exposure; delta, gamma and theta as the sensitivities behind 'time value'",
+    "Assignment risk around dividends — short calls get assigned the day before ex-date"
+   ],
+   "real_market": [
+    "Equity derivatives",
+    "Volatility trading",
+    "Hedging overlays"
+   ],
+   "also_cover": [
+    "Standard equity options: expire on the third Friday of the month; last trade 4:00 p.m. ET; expiration 11:59 p.m. ET — watch time-zone conversions in answer choices",
+    "Calls gain intrinsic value as the market rises; puts as it falls"
+   ]
+  },
+  {
+   "day": 11,
+   "phase": "Products",
+   "title": "Options II: four positions, hedges and spreads",
+   "finra_sections": [
+    "2.1",
+    "2.2"
+   ],
+   "study_minutes": 120,
+   "weight": "heavy",
+   "lesson_words": 8500,
+   "quiz_questions": 20,
+   "topics": [
+    "options_strategies",
+    "options_basics"
+   ],
+   "understand": [
+    "BUY CALL: bullish, max loss premium, max gain unlimited, BE = strike + premium",
+    "SELL CALL (naked): bearish/neutral, max gain premium, max loss unlimited, BE = strike + premium",
+    "BUY PUT: bearish, max loss premium, max gain strike - premium, BE = strike - premium",
+    "SELL PUT: bullish/neutral, max gain premium, max loss strike - premium, BE = strike - premium",
+    "Covered call: income, caps upside; protective put: insurance on long stock; BUY CALL to protect a short stock position",
+    "Spreads: debit vs credit, bull vs bear, how to tell which from the strikes",
+    "Straddles (long = expect volatility, short = expect calm)",
+    "Hedging logic as exposure transformation"
+   ],
+   "memorize": [
+    "breakeven formulas for all four positions",
+    "calls up (BE = strike + premium), puts down (BE = strike - premium)",
+    "covered call BE = stock cost - premium",
+    "protective put BE = stock cost + premium"
+   ],
+   "traps": [
+    "Selling a naked call has UNLIMITED risk; selling a put's risk is limited to strike - premium",
+    "Covered call does not protect against a large decline",
+    "Debit spread: you want it to WIDEN; credit spread: you want it to EXPIRE",
+    "Buyers want volatility; sellers want time decay",
+    "Protecting a SHORT stock position = BUY CALL (not buy put)"
+   ],
+   "calculations": [
+    "Max gain/loss/BE for each position and for covered/protective combos",
+    "Spread max gain/loss and BE",
+    "Straddle BEs = strike +/- total premium"
+   ],
+   "trader_connection": [
+    "Options -> nonlinear hedging: a protective put is a floor, a covered call a sold cap; collars finance one with the other",
+    "Derivatives -> exposure transformation: the same payoff built from stock + options (put-call parity intuition)"
+   ],
+   "real_market": [
+    "Derivatives trading",
+    "Structured products",
+    "Portfolio hedging"
+   ],
+   "also_cover": [
+    "Short stock + long call combined max gain/loss (e.g., short 100 at 52, long 55 call at 3: max gain $4,900, max loss $600)"
+   ]
+  },
+  {
+   "day": 12,
+   "phase": "Products",
+   "title": "Mutual funds: NAV, loads and share classes",
+   "finra_sections": [
+    "2.1",
+    "3.2"
+   ],
+   "study_minutes": 110,
+   "weight": "heavy",
+   "lesson_words": 7500,
+   "quiz_questions": 20,
+   "topics": [
+    "mutual_funds"
+   ],
+   "understand": [
+    "Investment Company Act of 1940: face-amount, UIT, management companies (open-end vs closed-end); diversified 75-5-10",
+    "NAV vs POP; forward pricing; redemption within 7 days",
+    "Sales charges: max 8.5% of POP; Class A (front load, breakpoints), B (CDSC, converts to A), C (level load, 12b-1), no-load",
+    "12b-1 fees: max 1%; 'no-load' only if 12b-1 <= 0.25%",
+    "Breakpoints, rights of accumulation, letters of intent (13 months, backdate 90 days); breakpoint selling is prohibited",
+    "Fund roles: board of directors, investment adviser, custodian, transfer agent, principal underwriter/sponsor",
+    "Dividend and capital-gain distributions and their taxation even when reinvested"
+   ],
+   "memorize": [
+    "max sales charge 8.5% of POP",
+    "12b-1 max 1% (0.75% distribution + 0.25% service)",
+    "LOI 13 months, 90-day backdating",
+    "redemption within 7 calendar days",
+    "at least 40% independent directors",
+    "75-5-10 diversification"
+   ],
+   "traps": [
+    "Sales charge % is a percent of POP, not NAV",
+    "Class A is usually best for large, long-term investors; C for short horizons",
+    "Reinvested distributions are still taxable",
+    "The custodian holds assets; the transfer agent handles shareholder records and distributions",
+    "Breakpoints reduce Class A front-end loads; C shares have no front load, so breakpoints do not help a C-share buyer"
+   ],
+   "calculations": [
+    "Sales charge % = (POP - NAV) / POP",
+    "POP = NAV / (1 - sales charge %)",
+    "Shares purchased = dollars / POP"
+   ],
+   "trader_connection": [
+    "Fund plumbing -> daily NAV strike, creations/redemptions and liquidity mismatch risk",
+    "Fund cash flows as market flows: outflows force selling"
+   ],
+   "real_market": [
+    "Asset management",
+    "Wealth management",
+    "Fund operations"
+   ],
+   "also_cover": [
+    "Fund types by objective: growth, income, growth & income (stocks), balanced (stocks + bonds), sector, index, bond, money market",
+    "Class B shares: CDSC declines over time, suit smaller purchases held longer; custodian holds fund assets"
+   ]
+  },
+  {
+   "day": 13,
+   "phase": "Products",
+   "title": "Exchange-traded, closed-end, UITs and the alternatives",
+   "finra_sections": [
+    "2.1",
+    "2.2"
+   ],
+   "study_minutes": 100,
+   "weight": "standard",
+   "lesson_words": 7000,
+   "quiz_questions": 18,
+   "topics": [
+    "etf_cef_uit",
+    "alternatives"
+   ],
+   "understand": [
+    "Closed-end funds: fixed shares, exchange-traded, premium/discount to NAV",
+    "ETFs: creation/redemption by authorized participants and the arbitrage that keeps price near NAV; ETNs as unsecured debt",
+    "Leveraged and inverse ETFs: daily reset and path dependence (FINRA Regulatory Notice 09-31)",
+    "UITs: fixed portfolio, no board, no active management, redeemable units",
+    "REITs: 75% real-estate assets/income tests, 90% distribution, equity vs mortgage vs hybrid, traded vs non-traded",
+    "DPPs/limited partnerships: pass-through income and losses, GP vs LP roles, passive-loss rules, illiquidity",
+    "Hedge funds and private funds: accredited/qualified investors, lockups, leverage, limited liquidity"
+   ],
+   "memorize": [
+    "REIT must distribute >= 90% of taxable income",
+    "REIT dividends are generally ordinary income",
+    "LP liability limited to investment; GP unlimited",
+    "passive losses offset only passive income",
+    "ETN = issuer credit risk"
+   ],
+   "traps": [
+    "Closed-end funds are NOT redeemed by the fund — you sell on the exchange",
+    "REITs pass through income but NOT losses; DPPs pass through both",
+    "Leveraged ETFs are generally unsuitable for buy-and-hold",
+    "UITs do not have an investment adviser actively managing",
+    "Non-traded REITs carry high liquidity risk"
+   ],
+   "calculations": [
+    "Premium/discount = (price - NAV) / NAV",
+    "Leveraged ETF decay example over two volatile days"
+   ],
+   "trader_connection": [
+    "ETF creation/redemption -> AP arbitrage is a basis trade; ETF liquidity layers (screen vs underlying)",
+    "Leveraged ETFs rebalance at the close — their hedging flows move markets late in the day"
+   ],
+   "real_market": [
+    "ETF market making",
+    "Alternatives sales",
+    "Real-estate finance"
+   ],
+   "also_cover": [
+    "Real estate programs: depreciation, deductible interest, pass-through losses; depletion belongs to oil & gas programs",
+    "Hybrid REITs hold properties and mortgages"
+   ]
+  },
+  {
+   "day": 14,
+   "phase": "Products",
+   "title": "Annuities and insurance-linked products",
+   "finra_sections": [
+    "2.1",
+    "2.2",
+    "3.2"
+   ],
+   "study_minutes": 75,
+   "weight": "light",
+   "lesson_words": 5000,
+   "quiz_questions": 15,
+   "topics": [
+    "annuities",
+    "taxation"
+   ],
+   "understand": [
+    "Fixed annuities (insurer's general account, not a security) vs variable annuities (separate account, a security; registered)",
+    "Accumulation units vs annuity units; assumed interest rate (AIR)",
+    "Settlement options: life only, life with period certain, joint and last survivor, unit refund",
+    "Indexed annuities; variable life overview",
+    "Taxation: after-tax contributions, earnings taxed as ordinary income, LIFO on withdrawals, 10% penalty before 59 1/2",
+    "1035 exchanges; surrender charges; suitability concerns"
+   ],
+   "memorize": [
+    "VA sub-account returns > AIR -> payment rises; < AIR -> payment falls",
+    "life only pays the most per month and stops at death",
+    "nonqualified annuity withdrawals: earnings first (LIFO), ordinary income",
+    "1035 exchange = tax-free annuity-to-annuity / life-to-annuity"
+   ],
+   "traps": [
+    "Fixed annuities are NOT securities; variable annuities ARE",
+    "Annuity gains are never capital gains",
+    "Putting a VA inside an IRA adds cost with no extra tax deferral",
+    "AIR is not a guarantee",
+    "Life only has the highest payout and the most risk to heirs"
+   ],
+   "calculations": [
+    "Exclusion ratio intuition for annuitized payments"
+   ],
+   "trader_connection": [
+    "Annuity writers hedge embedded guarantees with equity options and rate swaps — the dynamic hedging behind variable annuity books"
+   ],
+   "real_market": [
+    "Insurance asset management",
+    "Retail wealth",
+    "Derivatives hedging for insurers"
+   ],
+   "also_cover": [
+    "Life with period certain: lifetime payments with a guaranteed minimum period to a beneficiary",
+    "Immediate annuities need a single (lump-sum) premium; periodic purchase payments mean a deferred annuity"
+   ]
+  },
+  {
+   "day": 15,
+   "phase": "Markets & Mechanics",
+   "title": "How securities are born: underwriting and registration",
+   "finra_sections": [
+    "1.4"
+   ],
+   "study_minutes": 110,
+   "weight": "heavy",
+   "lesson_words": 7500,
+   "quiz_questions": 20,
+   "topics": [
+    "offerings_registration"
+   ],
+   "understand": [
+    "Securities Act of 1933: registration and disclosure; S-1; SEC review does not approve",
+    "The IPO timeline: pre-filing -> filing -> cooling-off (min 20 days) -> effective date -> aftermarket",
+    "Red herring, IOIs (non-binding), due diligence meeting, blue-sky, final prospectus, prospectus delivery windows",
+    "Firm commitment (principal, risk on underwriter) vs best efforts, all-or-none, mini-max (agency)",
+    "Syndicate, selling group, spread components (manager's fee, underwriting fee, selling concession)",
+    "Tombstone ads, free-writing prospectus, stabilization (at or below POP), Reg M, quiet periods",
+    "Follow-ons, shelf registration, primary vs secondary shares"
+   ],
+   "memorize": [
+    "cooling-off at least 20 days",
+    "prospectus delivery: IPO 25 days (listed) / 90 days (unlisted); follow-on 0 (listed) / 40 (unlisted)",
+    "stabilizing bid at or below the POP",
+    "SEC 'neither approves nor disapproves' disclaimer",
+    "selling concession is the largest part of the spread"
+   ],
+   "traps": [
+    "No sales and no binding commitments during cooling-off — only IOIs",
+    "Firm commitment = principal; best efforts = agency",
+    "Tombstones are allowed during cooling-off",
+    "Selling group members are NOT at risk for unsold shares",
+    "Registration effectiveness is not SEC approval"
+   ],
+   "calculations": [
+    "Spread = POP - price paid to issuer; split into manager fee + underwriting fee + selling concession",
+    "Proceeds to issuer = shares x (POP - spread)"
+   ],
+   "trader_connection": [
+    "Firm commitment -> inventory risk on the underwriter's balance sheet; greenshoe as a stabilization hedge",
+    "IPO allocation and stabilization -> short-covering flows in the aftermarket"
+   ],
+   "real_market": [
+    "Equity capital markets",
+    "Syndicate desk",
+    "Investment banking"
+   ],
+   "also_cover": [
+    "IPO restricted persons (FINRA Rule 5130): member firms, their employees and immediate family (spouse, parents, in-laws, siblings, children, anyone materially supported); grandparents and cousins are NOT restricted"
+   ]
+  },
+  {
+   "day": 16,
+   "phase": "Markets & Mechanics",
+   "title": "The exemptions: private placements, Rule 144 and tender offers",
+   "finra_sections": [
+    "1.4",
+    "3.3"
+   ],
+   "study_minutes": 100,
+   "weight": "standard",
+   "lesson_words": 7000,
+   "quiz_questions": 18,
+   "topics": [
+    "offerings_exemptions",
+    "prohibited_insider"
+   ],
+   "understand": [
+    "Exempt SECURITIES (never register) vs exempt TRANSACTIONS (this deal need not register)",
+    "Reg D 506(b) vs 506(c); accredited investor definition; Form D within 15 days",
+    "Rule 144: restricted vs control stock, holding periods, affiliate volume limits, Form 144",
+    "Rule 144A (QIBs) and Reg S (offshore)",
+    "Reg A Tier 1 vs Tier 2; Rule 147/147A intrastate; Reg CF",
+    "Tender offers: minimum open period, net-long rule",
+    "Beneficial ownership (13D/13G) and Section 16 insiders, short-swing profits"
+   ],
+   "memorize": [
+    "accredited: $200k/$300k income or $1M net worth ex-residence; Series 7/65/82 holders",
+    "506(b): up to 35 non-accredited; no general solicitation",
+    "Rule 144 holding: 6 months (reporting issuer) / 1 year (non-reporting)",
+    "144 volume: greater of 1% of outstanding or 4-week average weekly volume per 90 days",
+    "Form 144 if > 5,000 shares or > $50,000 in 90 days",
+    "144A QIB: $100 million",
+    "Reg A: Tier 1 $20M, Tier 2 $75M per 12 months",
+    "Reg CF: $5M per 12 months",
+    "tender offer open >= 20 business days",
+    "13D within 5 business days of crossing 5% (amended 2024)",
+    "Form 4 within 2 business days; short-swing = 6 months"
+   ],
+   "traps": [
+    "Commercial paper is exempt only if <= 270 days",
+    "Reg D is a transaction exemption — resale is restricted",
+    "Control stock can be registered stock held by an affiliate",
+    "Rule 147 = intrastate (state registration, not SEC)",
+    "Bank STOCK is exempt; bank HOLDING COMPANY stock is not"
+   ],
+   "calculations": [
+    "Rule 144 volume calculation with numbers"
+   ],
+   "trader_connection": [
+    "Restricted stock -> hedging concentrated positions (collars, prepaid variable forwards) under 144 constraints",
+    "Tender offers and merger arb: why net-long rules exist"
+   ],
+   "real_market": [
+    "Private placement desk",
+    "ECM/DCM",
+    "Merger arbitrage",
+    "Compliance"
+   ],
+   "also_cover": [
+    "Offering memorandum (private placement memorandum) -> Reg D; official statement -> munis; prospectus -> registered offering",
+    "Tender offers as the takeover route; 5% disclosure (13D) makes a secret stake impossible"
+   ]
+  },
+  {
+   "day": 17,
+   "phase": "Markets & Mechanics",
+   "title": "Orders, quotes and the people who make markets",
+   "finra_sections": [
+    "3.1",
+    "1.2"
+   ],
+   "study_minutes": 110,
+   "weight": "heavy",
+   "lesson_words": 7500,
+   "quiz_questions": 20,
+   "topics": [
+    "orders_trading",
+    "market_structure"
+   ],
+   "understand": [
+    "Bid, ask, spread, size; firm vs subject vs nominal quotes; market makers vs specialists/DMMs",
+    "Market orders (execution guarantee) vs limit orders (price guarantee) vs stop (trigger to market) vs stop-limit (trigger to limit)",
+    "Where stops and limits sit relative to the market (buy limit below, buy stop above; sell limit above, sell stop below)",
+    "Time in force: day, GTC, FOK, IOC, AON; not-held orders",
+    "Best execution, Reg NMS order protection, ATSs/dark pools, trade reporting",
+    "Order tickets: required fields, marking long/short, solicited vs unsolicited, discretionary"
+   ],
+   "memorize": [
+    "market = execution guarantee; limit = price guarantee",
+    "buy stop above market; sell stop below",
+    "order ticket must be marked long or short",
+    "unsolicited orders marked 'unsolicited'",
+    "FOK: all immediately or cancel; IOC: fill what you can, cancel rest; AON: all or nothing but not immediate"
+   ],
+   "traps": [
+    "A stop order becomes a MARKET order once triggered — no price guarantee",
+    "A buy limit order is placed BELOW the market",
+    "Stop-limit can be triggered and never fill",
+    "A sell stop protects a LONG position (placed below the market); a buy stop protects a SHORT position (placed above)",
+    "Bid = where a dealer buys from you; ask = where a dealer sells to you"
+   ],
+   "calculations": [
+    "Spread = ask - bid",
+    "Which trades trigger a stop order (sequence problems)"
+   ],
+   "trader_connection": [
+    "Market makers -> liquidity, spreads and inventory risk; adverse selection vs spread capture",
+    "Stop orders cluster -> stop cascades in fast markets; this is why desks work orders algorithmically"
+   ],
+   "real_market": [
+    "Equity execution",
+    "Market making",
+    "Electronic trading"
+   ],
+   "also_cover": [
+    "Order ticket contents: account, security, buy/sell (sells marked long/short), quantity, order type and limit/stop price, time in force, solicited/unsolicited, discretion; the commission appears on the confirmation, not the ticket",
+    "Limit orders guarantee price or better; stop orders guarantee nothing once elected"
+   ]
+  },
+  {
+   "day": 18,
+   "phase": "Markets & Mechanics",
+   "title": "Clearing, settlement and custody: what happens after the trade",
+   "finra_sections": [
+    "3.1",
+    "3.2"
+   ],
+   "study_minutes": 90,
+   "weight": "standard",
+   "lesson_words": 6000,
+   "quiz_questions": 18,
+   "topics": [
+    "settlement_clearing",
+    "corp_actions"
+   ],
+   "understand": [
+    "Regular-way T+1 (since May 28, 2024) for stocks, corporate and muni bonds, government securities and options; cash settlement same day",
+    "NSCC netting (CNS), DTC custody/book-entry, DVP/RVP institutional settlement",
+    "Street name vs registered name; transfer agent and registrar",
+    "Confirmations: at or before completion of the transaction; what they disclose (capacity, markup/commission)",
+    "Account statements: at least quarterly",
+    "Fails to deliver, buy-ins, good delivery, when-issued trades",
+    "Corporate-action processing through DTC and why ex-dates move with settlement cycles"
+   ],
+   "memorize": [
+    "regular way T+1 for equities, corporates, munis, options and governments",
+    "cash settlement = same day",
+    "confirmation at or before completion",
+    "statements at least quarterly",
+    "Reg T payment period = settlement + 2 business days"
+   ],
+   "traps": [
+    "Settlement date is not trade date",
+    "Options exercise settles T+1 in stock",
+    "A confirmation is not a statement",
+    "DVP means the institution pays only against delivery",
+    "When-issued trades settle when the security is issued"
+   ],
+   "calculations": [
+    "Counting business days to settlement around a holiday",
+    "Ex-date given a record date under T+1"
+   ],
+   "trader_connection": [
+    "Settlement -> counterparty/operational risk; fails cost money (buy-ins, penalties) and funding",
+    "T+1 compressed the stock-loan recall window and FX funding for foreign buyers"
+   ],
+   "real_market": [
+    "Operations",
+    "Prime brokerage",
+    "Treasury/funding"
+   ]
+  },
+  {
+   "day": 19,
+   "phase": "Markets & Mechanics",
+   "title": "Short selling and securities lending",
+   "finra_sections": [
+    "3.1",
+    "3.3"
+   ],
+   "study_minutes": 110,
+   "weight": "heavy",
+   "lesson_words": 7500,
+   "quiz_questions": 20,
+   "topics": [
+    "short_selling"
+   ],
+   "understand": [
+    "The short as a loan: borrow -> sell -> post collateral -> buy to cover -> return shares",
+    "Reg SHO: locate before the short; marking tickets short; close-out of fails; threshold securities; Rule 201 alternative uptick rule",
+    "Stock loan: lender, agent lender, borrower; cash collateral and the rebate; borrow fees; hard-to-borrow; recalls; buy-ins",
+    "Manufactured dividends and why they are not qualified dividends",
+    "Unlimited theoretical loss; short squeezes; margin on shorts (Reg T 150%)",
+    "Customer protection (Rule 15c3-3) and rehypothecation (140% of debit)"
+   ],
+   "memorize": [
+    "locate required before short sale",
+    "Rule 201: triggered by a 10% drop from prior close; applies rest of day and next day",
+    "short-sale fails closed out by start of trading on S+1",
+    "margin short: Reg T 150% (50% deposit)",
+    "rehypothecation limit 140% of debit balance",
+    "manufactured dividends taxed as ordinary income"
+   ],
+   "traps": [
+    "Short sellers PAY the dividend (to the lender)",
+    "Naked shorting = selling without borrowing/locating",
+    "Short sale risk is unlimited; long stock risk is limited to the investment",
+    "Buy-in: the lender recalls and the borrower can't return -> forced purchase",
+    "Protect a short with BUY CALL"
+   ],
+   "calculations": [
+    "Short P&L = (sale price - cover price) x shares - borrow costs - manufactured dividends",
+    "Rebate = cash collateral x (rebate rate)"
+   ],
+   "trader_connection": [
+    "Short selling -> securities lending; borrow cost as a market signal; squeeze dynamics as a liquidity cascade",
+    "Collateral mechanics connect to repo: same economics, different asset"
+   ],
+   "real_market": [
+    "Securities lending desk",
+    "Prime brokerage",
+    "Long/short equity"
+   ]
+  },
+  {
+   "day": 20,
+   "phase": "Markets & Mechanics",
+   "title": "Margin: leverage, collateral and the margin call",
+   "finra_sections": [
+    "3.2",
+    "3.1"
+   ],
+   "study_minutes": 120,
+   "weight": "heavy",
+   "lesson_words": 8500,
+   "quiz_questions": 20,
+   "topics": [
+    "margin"
+   ],
+   "understand": [
+    "Cash account vs margin account; margin agreement (credit agreement, hypothecation agreement, optional loan consent)",
+    "Regulation T (Fed) initial 50%; FINRA $2,000 minimum; maintenance 25% long / 30% short",
+    "Long account: LMV - DR = EQ; short account: SMV + EQ = CR",
+    "SMA as a line of credit: created by excess equity, sticky, can be used to buy or withdraw",
+    "Restricted accounts (equity below Reg T but above maintenance) and the 50% retention rule for withdrawals",
+    "Margin calls: Reg T call vs maintenance call; what happens if unmet",
+    "Which accounts cannot use margin: IRAs/retirement, UGMA/UTMA; what cannot be bought on margin (new issues for 30 days, options <= 9 months)",
+    "Freeriding in a cash account and the 90-day freeze; pattern day traders ($25,000)"
+   ],
+   "memorize": [
+    "Reg T 50%",
+    "FINRA minimum equity $2,000",
+    "maintenance 25% long, 30% short",
+    "PDT minimum equity $25,000",
+    "Reg T payment within settlement + 2 business days",
+    "freeriding -> 90-day freeze",
+    "new issues cannot be bought on margin for 30 days",
+    "margin disclosure statement at opening and annually"
+   ],
+   "traps": [
+    "The DEBIT balance does not change when the market moves; equity does",
+    "Short credit balance does not change with price",
+    "IRAs can NOT have margin (but can have limited-risk options)",
+    "Reg T is a Federal Reserve rule, enforced by FINRA on BDs",
+    "Minimum maintenance long: LMV at which EQ = 25% -> LMV = DR / 0.75"
+   ],
+   "calculations": [
+    "LMV - DR = EQ; SMV + EQ = CR",
+    "Excess equity = EQ - Reg T requirement",
+    "Maintenance call price (long) = DR / 0.75; (short) = CR / 1.30",
+    "Buying power = SMA / 0.50 (i.e., 2 x SMA)"
+   ],
+   "trader_connection": [
+    "Margin -> collateral/leverage: prime brokerage margin, portfolio margin, haircuts and initial margin in futures are the same idea",
+    "Margin calls are how price risk becomes liquidity risk; understand the call before you ever size a position"
+   ],
+   "real_market": [
+    "Prime brokerage",
+    "Risk management (margin)",
+    "Futures clearing"
+   ]
+  },
+  {
+   "day": 21,
+   "phase": "Accounts & Conduct",
+   "title": "Opening accounts: registrations, KYC and AML",
+   "finra_sections": [
+    "3.2",
+    "3.3"
+   ],
+   "study_minutes": 115,
+   "weight": "heavy",
+   "lesson_words": 8000,
+   "quiz_questions": 20,
+   "topics": [
+    "account_types",
+    "kyc_aml",
+    "suitability_regbi"
+   ],
+   "understand": [
+    "Account registrations: individual, JTWROS, TIC, TOD, UGMA/UTMA, trusts, corporate, partnership, retirement",
+    "Discretion (written authorization, principal approval) vs time-and-price discretion; POA limited vs full; durable POA",
+    "Death and incapacity: what happens to each registration; POA ends at death",
+    "Account-opening information (Rule 4512), trusted contact person, Rule 2165 temporary holds for specified adults",
+    "Suitability (Rule 2111: reasonable-basis, customer-specific, quantitative) and Reg BI for retail recommendations; Form CRS",
+    "CIP (name, DOB, address, ID number), KYC (Rule 2090), AML program (Rule 3310), SARs, CTRs, OFAC, structuring"
+   ],
+   "memorize": [
+    "CIP 4 items: name, DOB, address, ID number",
+    "CTR: cash over $10,000 in a business day",
+    "SAR (BD): $5,000+ suspicious, within 30 days of detection; no tipping off",
+    "OFAC SDN list; block and report",
+    "trusted contact person must be 18+",
+    "time-and-price discretion valid only for the day granted",
+    "UGMA/UTMA: one custodian, one minor, no margin, irrevocable gifts",
+    "JTWROS -> to survivor; TIC -> to estate"
+   ],
+   "traps": [
+    "Structuring below $10,000 is itself a crime",
+    "Discretion requires WRITTEN authorization before the first discretionary trade",
+    "Time and price alone is not discretion",
+    "A POA (even durable) terminates at death",
+    "A trusted contact person has no authority to trade",
+    "Reg BI applies to recommendations to RETAIL customers"
+   ],
+   "calculations": [
+    "TIC ownership split at death"
+   ],
+   "trader_connection": [
+    "KYC/AML -> onboarding at every prime broker and ISDA counterparty; sanctions screening before any trade",
+    "Account structure determines who can pledge collateral and sign ISDAs"
+   ],
+   "real_market": [
+    "Compliance/AML",
+    "Client onboarding",
+    "Private wealth"
+   ]
+  },
+  {
+   "day": 22,
+   "phase": "Accounts & Conduct",
+   "title": "Retirement, education accounts and investment taxation",
+   "finra_sections": [
+    "3.2",
+    "2.1"
+   ],
+   "study_minutes": 120,
+   "weight": "heavy",
+   "lesson_words": 8500,
+   "quiz_questions": 20,
+   "topics": [
+    "retirement_accounts",
+    "education_accounts",
+    "taxation"
+   ],
+   "understand": [
+    "Traditional IRA (pre-tax if deductible, taxed on withdrawal) vs Roth IRA (after-tax in, tax-free qualified out); earned income requirement",
+    "Qualified plans: 401(k), 403(b), 457 (no 10% penalty after separation), SEP, ERISA coverage",
+    "Rollovers (60 days, one indirect IRA-to-IRA per 12 months, 20% withholding from plans) vs trustee-to-trustee transfers",
+    "RMDs, 10% early-withdrawal penalty and exceptions, Roth 5-year rule",
+    "529 plans vs Coverdell ESAs; ABLE accounts; 529 plans as municipal fund securities",
+    "Capital gains (holding > 1 year), losses ($3,000 ordinary offset, carryforward), wash sales (30 days before/after), cost basis, gifts and inheritances (step-up)",
+    "Qualified vs ordinary dividends; return of capital"
+   ],
+   "memorize": [
+    "2026 IRA limit $7,500 + $1,100 catch-up (50+)",
+    "2026 401(k) $24,500 + $8,000 catch-up; $11,250 ages 60-63",
+    "early withdrawal penalty 10% before 59 1/2",
+    "RMD age 73 (75 for those born 1960+)",
+    "60-day rollover; once per 12 months IRA-to-IRA",
+    "Coverdell $2,000/yr, contributions until 18, use by 30",
+    "529 K-12 tuition up to $20,000/yr (from 2026)",
+    "gift tax annual exclusion $19,000 (2026)",
+    "wash sale window 30 days before and after",
+    "net capital loss vs ordinary income $3,000/yr"
+   ],
+   "traps": [
+    "Roth contributions can be withdrawn anytime tax- and penalty-free; EARNINGS need 59 1/2 + 5 years",
+    "457 plans have no 10% early penalty on separation",
+    "Inherited securities get a step-up and are always long-term",
+    "Gifted securities carry the donor's basis",
+    "Wash sale DEFERS the loss (added to new basis) — it does not erase it",
+    "Contribution deadline is the tax filing deadline, not December 31"
+   ],
+   "calculations": [
+    "Holding-period start (day after trade date)",
+    "Wash sale basis adjustment",
+    "Capital gain/loss netting",
+    "After-tax return comparisons"
+   ],
+   "trader_connection": [
+    "Taxation -> after-tax P&L drives hedging choices (collars vs sales, harvesting losses without wash sales)",
+    "Tax lots and FIFO/specific ID matter in every trading P&L reconciliation"
+   ],
+   "real_market": [
+    "Wealth management",
+    "Retirement plans",
+    "Tax-aware trading"
+   ],
+   "also_cover": [
+    "IRA early-withdrawal exceptions (disability, death, SEPP, first home, education, medical): income tax still due, penalty waived",
+    "Dividend tax timing: taxable when paid; fund/REIT dividends declared Oct-Dec and paid in January count as received Dec 31"
+   ]
+  },
+  {
+   "day": 23,
+   "phase": "Accounts & Conduct",
+   "title": "The rules of conduct: registration, communications and what gets you barred",
+   "finra_sections": [
+    "4.1",
+    "4.2",
+    "3.2",
+    "3.3"
+   ],
+   "study_minutes": 120,
+   "weight": "heavy",
+   "lesson_words": 8500,
+   "quiz_questions": 20,
+   "topics": [
+    "registration",
+    "sd_ce_conduct",
+    "obas_psts_gifts",
+    "communications",
+    "prohibited_insider",
+    "prohibited_manipulation",
+    "prohibited_customer"
+   ],
+   "understand": [
+    "U4 (firm files at association; fingerprints; amend within 30 days) and U5 (within 30 days of termination)",
+    "SIE validity (4 years), qualification expiry (2 years after termination), Maintaining Qualifications Program (up to 5 years)",
+    "Continuing education: annual Regulatory Element, Firm Element",
+    "Statutory disqualification and reportable events",
+    "Communications: retail (principal pre-approval), correspondence (post-review), institutional; no promissory or misleading statements; retention",
+    "Insider trading (MNPI, tipper/tippee, ITSFEA penalties), manipulation, front running, marking the close, spoofing",
+    "Customer abuses: churning, unauthorized trading, sharing in accounts, guarantees, borrowing/lending, interpositioning, freeriding",
+    "OBAs (Rule 3270) and PSTs (Rule 3280); gifts (Rule 3220) and non-cash compensation"
+   ],
+   "memorize": [
+    "U4 amendments within 30 days",
+    "U5 within 30 days of termination",
+    "SIE valid 4 years",
+    "qualification lapses 2 years after termination (MQP up to 5)",
+    "Regulatory Element annually by Dec 31",
+    "gift limit $300 per person per year (effective 2026-03-30; was $100)",
+    "retail communication = more than 25 retail investors in 30 days",
+    "correspondence = 25 or fewer retail investors in 30 days",
+    "ITSFEA civil penalty up to 3x profit gained or loss avoided",
+    "records: blotters/ledgers 6 years; most other records 3 years",
+    "do-not-call: 8 a.m. to 9 p.m. local time of the called party"
+   ],
+   "traps": [
+    "Sharing in a customer account requires firm approval AND proportional sharing (except immediate family)",
+    "Guaranteeing a customer against loss is prohibited outright",
+    "PST for compensation must be approved AND supervised by the firm",
+    "OBA requires prior written NOTICE, not approval",
+    "The tipper can be liable even without trading",
+    "Correspondence does not need pre-approval; retail communications do"
+   ],
+   "calculations": [
+    "ITSFEA penalty computation"
+   ],
+   "trader_connection": [
+    "Front running and information barriers -> why trading desks are walled off from banking and research",
+    "Market manipulation rules shape how algos may post and cancel orders (spoofing)"
+   ],
+   "real_market": [
+    "Compliance",
+    "Trading supervision",
+    "Every registered role"
+   ],
+   "also_cover": [
+    "Records retention ladder: 3 years (U4/U5/fingerprints after termination, confirmations, statements, communications, trial balances), 4 (FINRA complaints), 5 (CTR, SAR, CIP after closing), 6 (blotters, account records after closing, MSRB complaints), lifetime (articles, partnership agreements, minute books, stock certificate books)",
+    "FINRA retains jurisdiction over a former registered person for 2 years after termination",
+    "Performance guarantees and personal buy-back promises are prohibited"
+   ]
+  },
+  {
+   "day": 24,
+   "phase": "Review",
+   "title": "Weak-area review I",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 100,
+   "weight": "adaptive",
+   "lesson_words": 5500,
+   "quiz_questions": 25,
+   "topics": [],
+   "understand": [
+    "Chosen from state/sie.json: the Very Weak and Weak topics with the most misses, Section 2 and 3 first (they are 75% of the exam)"
+   ],
+   "memorize": [
+    "Re-derive every MEMORIZE item on the weak topics"
+   ],
+   "traps": [
+    "Every trap that has caught Logan so far, from the error log"
+   ],
+   "calculations": [
+    "Every calculation type missed so far"
+   ],
+   "trader_connection": [
+    "As relevant to the weak topics"
+   ],
+   "real_market": [
+    "As relevant"
+   ],
+   "notes": "Adaptive. Content comes from the weakness tracker and error log, not from this file."
+  },
+  {
+   "day": 25,
+   "phase": "Review",
+   "title": "Weak-area review II and the calculation gauntlet",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 100,
+   "weight": "adaptive",
+   "lesson_words": 5000,
+   "quiz_questions": 25,
+   "topics": [],
+   "understand": [
+    "Next tier of weak topics; plus a timed gauntlet of every calculation type on the SIE"
+   ],
+   "memorize": [
+    "All formulas in one place"
+   ],
+   "traps": [
+    "Calculation traps: percent of POP vs NAV, CY vs YTM, stop triggers, margin equity"
+   ],
+   "calculations": [
+    "Current yield, TEY, accrued interest, sales charge, options BE/max gain/loss, margin equity/calls, splits, conversion parity"
+   ],
+   "trader_connection": [
+    "As relevant"
+   ],
+   "real_market": [
+    "As relevant"
+   ],
+   "notes": "Adaptive."
+  },
+  {
+   "day": 26,
+   "phase": "Exam Week",
+   "title": "Practice exam 1",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 120,
+   "weight": "exam",
+   "lesson_words": 800,
+   "quiz_questions": 75,
+   "topics": [],
+   "understand": [],
+   "memorize": [],
+   "traps": [],
+   "calculations": [],
+   "trader_connection": [],
+   "real_market": [],
+   "notes": "75 questions in outline proportion: 12 / 33 / 23 / 7. Timed 105 minutes. No lesson."
+  },
+  {
+   "day": 27,
+   "phase": "Exam Week",
+   "title": "Practice exam 1 review and targeted drills",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 100,
+   "weight": "adaptive",
+   "lesson_words": 6000,
+   "quiz_questions": 20,
+   "topics": [],
+   "understand": [
+    "Every missed question from exam 1 explained, with every distractor"
+   ],
+   "memorize": [],
+   "traps": [],
+   "calculations": [],
+   "trader_connection": [],
+   "real_market": [],
+   "notes": "Score by section, strongest/weakest, rule-based vs conceptual vs careless. Drills target the two weakest sections."
+  },
+  {
+   "day": 28,
+   "phase": "Exam Week",
+   "title": "Practice exam 2",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 120,
+   "weight": "exam",
+   "lesson_words": 800,
+   "quiz_questions": 75,
+   "topics": [],
+   "understand": [],
+   "memorize": [],
+   "traps": [],
+   "calculations": [],
+   "trader_connection": [],
+   "real_market": [],
+   "notes": "Fresh 75 questions, no repeats from exam 1; weighted slightly toward weak topics within outline proportions."
+  },
+  {
+   "day": 29,
+   "phase": "Exam Week",
+   "title": "High-speed memorization review",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 90,
+   "weight": "standard",
+   "lesson_words": 5500,
+   "quiz_questions": 25,
+   "topics": [],
+   "understand": [
+    "Every MEMORIZE item from days 1-23 grouped: numbers, rules, dates, forms, regulations, account rules, bond relationships, options relationships"
+   ],
+   "memorize": [],
+   "traps": [],
+   "calculations": [],
+   "trader_connection": [],
+   "real_market": [],
+   "notes": "Also grades exam 2 if answers are in. Speed drill of 25 rapid-fire questions."
+  },
+  {
+   "day": 30,
+   "phase": "Exam Week",
+   "title": "Final exam and the one-page cheat sheet",
+   "finra_sections": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "study_minutes": 120,
+   "weight": "exam",
+   "lesson_words": 2500,
+   "quiz_questions": 75,
+   "topics": [],
+   "understand": [],
+   "memorize": [],
+   "traps": [],
+   "calculations": [],
+   "trader_connection": [],
+   "real_market": [],
+   "notes": "Final 75-question exam plus a concise final cheat sheet. Grading follows in the next edition."
+  }
+ ],
+ "style_reference": "curriculum/sie-question-style.md",
+ "study_guide": {
+  "path": "site/reports/sie/study-guide.html",
+  "url": "https://shafferusa.github.io/intelligence-terminal/reports/sie/study-guide.html",
+  "link_from_edition": "../../sie/study-guide.html#day-NN",
+  "anchor_pattern": "day-NN (two digits); exam week anchors: day-24 (review + formulas), day-26 (exam technique), day-27 (reviewing an exam), day-29 (master memorization list), day-30 (cheat sheet)"
+ }
+}

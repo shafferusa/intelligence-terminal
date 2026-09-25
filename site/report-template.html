@@ -3,11 +3,11 @@
   Logan's Daily Newspaper - report page template & design reference (v2).
 
   HOW THE CLOUD ROUTINE USES THIS FILE
-  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn}.html
+  1. Copy site/report-template.html to site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html
   2. Replace the <title> text.
   3. Replace the JSON inside the report-meta script block in <head>
      (keep its id and type attributes exactly as they are).
-  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn.
+  4. Set data-slot on <main class="paper"> to am | pm | sat | sun | learn | sie.
      That one attribute drives the edition colour throughout the page.
   5. Replace everything between the REPORT:START and REPORT:END marker comments
      with the new report body. Everything outside the markers is boilerplate

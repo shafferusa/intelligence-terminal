@@ -212,7 +212,7 @@ English. Concretely:
 
 ## 12. Report-page creation procedure
 
-Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date). Steps:
+Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html` (ET date). Steps:
 
 1. `mkdir -p site/reports/YYYY/MM` and copy `site/report-template.html` to the target filename.
 2. **Asset depth — verify, don't rewrite.** Every relative reference in the template
@@ -231,7 +231,7 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
 5. Set `data-slot` on `<main class="paper" data-slot="…">` to this run's slot.
 6. Fill the JSON inside `<script type="application/json" id="report-meta">`. Preserve the template's
    exact key set and fill every key:
-   `{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N,"generated_at":"<ISO8601 with ET offset>","timezone":"America/New_York"}`
+   `{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn|sie","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N,"generated_at":"<ISO8601 with ET offset>","timezone":"America/New_York"}`
    Every key must match the `reports/index.json` entry (§13). `headlines` is 2–3 short clauses — it
    is what the Telegram push renders as bullets, so write them for someone reading a lock screen.
 7. Compute `reading_minutes` = total body word count / 220, rounded up.
@@ -244,7 +244,7 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
 
 ## 12b. Formatting rules (v2 — 2026-08-16)
 
-1. **`data-slot` on `<main class="paper">`** is set to `am|pm|sat|sun|learn`. It drives the edition
+1. **`data-slot` on `<main class="paper">`** is set to `am|pm|sat|sun|learn|sie`. It drives the edition
    colour for the whole page. Setting it wrong makes a Monday morning look like a Learning Brief.
 2. **Section headings** use `.paper-section > h2` with a plain label: `Top Stories`, `The Economy`,
    `Local`, `Market Appendix`. No numbers, no kickers, no spec references.
@@ -264,7 +264,7 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun}.html` (ET date)
 ## 13. Archive index update (`site/reports/index.json`)
 
 Read the file (JSON array, newest first), **prepend**:
-`{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N}`
+`{"date":"YYYY-MM-DD","slot":"am|pm|sat|sun|learn|sie","title":"...","path":"reports/YYYY/MM/YYYY-MM-DD-slot.html","summary":"<one sentence>","headlines":["…","…","…"],"reading_minutes":N}`
 
 `headlines` (2–3 short clauses, no trailing periods) is **required** — GitHub Actions builds the
 Telegram push from this entry and has no other way to know the top developments. Omitting it
@@ -295,6 +295,11 @@ run notified itself arrived on Logan's phone twice. The fix is one sender, not a
 
 Do not add a fallback send "in case Actions fails." A missing push is visible and recoverable; a
 duplicate push every morning is what this replaced.
+
+**SIE Program replies (2026-09-25).** The `sie-inbox` Action also sends one message per quiz answer
+Logan submits — an instant score, in reply to his own message. It is still Actions, never a run.
+The SIE routine may *read* the bot's updates (`getUpdates` with no `offset`, which consumes
+nothing) as a safety net, but never calls `sendMessage` and never confirms updates.
 
 ## 15. Publish, verify, and log
 
@@ -346,7 +351,7 @@ duplicate push every morning is what this replaced.
    `pages_ok` = whether 200 was reached within ~3 minutes. A false value is noted, not fatal.
 4. Append one line to `state/run-log.jsonl` — written BEFORE the commit in step 2, so it ships in
    the same commit as the report:
-   `{"ts":"<ISO8601 UTC>","slot":"am|pm|sat|sun|learn","ok":true,"telegram_ok":"delegated","pages_ok":null,"sources_failed":["..."],"note":"…"}`
+   `{"ts":"<ISO8601 UTC>","slot":"am|pm|sat|sun|learn|sie","ok":true,"telegram_ok":"delegated","pages_ok":null,"sources_failed":["..."],"note":"…"}`
    `pages_ok` is `null` at commit time (the page cannot be live before it is pushed). If the step-3
    poll later shows a problem worth recording, append a SECOND short line rather than rewriting the
    first — this file is append-only.

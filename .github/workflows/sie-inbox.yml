@@ -1,0 +1,67 @@
+name: SIE inbox (quiz answers from Telegram)
+
+# Logan answers the SIE Program's quizzes by messaging the bot. Telegram only
+# keeps undelivered bot updates for 24 hours, and the SIE routine runs once a
+# day at noon -- so a reply sent late morning would expire before it was read.
+# This polls every ~15 minutes, saves SIE messages to state/sie/inbox.jsonl
+# (read by the noon routine, never written by it), and replies with an
+# instant score from the answer key the routine stored.
+#
+# Scheduled workflows are best-effort; in practice this runs every 15-30 min.
+# Commits only when an SIE message actually arrived, and state/ changes never
+# trigger the site build or the edition notification.
+#
+# The acknowledgement is the only Telegram message outside notify.py, and it
+# is still sent by Actions, never by a routine (shared-rules section 14).
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sie-inbox
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+      SIE_PENDING: ${{ runner.temp }}/sie-pending.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Collect SIE replies
+        run: python3 .github/scripts/sie_inbox.py collect
+
+      - name: Persist the inbox
+        run: |
+          if git diff --quiet -- state/sie/inbox.jsonl; then
+            echo "no new SIE messages"
+            exit 0
+          fi
+          git config user.name  "Intelligence Terminal Bot"
+          git config user.email "loganshaffer87@gmail.com"
+          git add state/sie/inbox.jsonl
+          git commit -m "sie: inbox"
+          # A report run may be pushing at the same moment. The inbox is
+          # append-only and written only here, so a rebase never conflicts.
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "push race, retry $i"; sleep 10
+          done
+          echo "could not push the inbox; updates stay unconfirmed and are retried next poll" >&2
+          exit 1
+
+      # Runs only if the inbox is safely on main: replying before that could
+      # acknowledge an answer that was then lost.
+      - name: Reply and confirm
+        run: python3 .github/scripts/sie_inbox.py confirm
