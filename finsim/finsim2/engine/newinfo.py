@@ -32,8 +32,10 @@ Tests for every family × horizon, on identical records, with weights frozen bef
     Directional  logistic [1, μ/σ, raw/100, family] against the prior-only model [1, μ/σ] and the current Directional
                  formulation [1, μ/σ, raw/100]: paired Brier, log loss, accuracy; balanced accuracy, precision, recall,
                  AUC, calibration of the new model
-    Hedge        log realised volatility over the horizon on [1, log trailing volatility, family] against trailing
-                 volatility alone: paired squared error (1W and longer)
+    Hedge        log realised volatility over the horizon on [baseline, family] against the baseline alone — log
+                 trailing 63-day and 21-day volatility and log VIX, what the Shaffer Hedge already sees (strengthened
+                 2026-09-25 after a 1W trial showed trailing volatility alone was too easy to beat, before any full run):
+                 paired squared error (1W and longer)
 Gates, fixed 2026-09-25 before any result (the historical track):
     enough       ≥ 3 complete test eras (≥ 200 records each) and ≥ 2,000 walk-forward records
     Alpha        G1 walk-forward Δ rank IC t ≥ 2 and Δ IC ≥ 0; G2 Δ rank IC > 0 in ≥ 3 complete eras, 2018 split t ≥ 1
@@ -472,7 +474,23 @@ def _paired_stat(by: Dict[int, List[float]], h: int) -> dict:
 
 
 # ------------------------------------------------------------------ one family at one horizon
-def _eval_period(train, test, h, wide, rets, seed):
+def _vol_base(r: Rec, ctx: dict, h: int) -> Optional[List[float]]:
+    """The volatility forecast any family must beat: log trailing 63-day and 21-day realised volatility and log VIX,
+    all scaled to the horizon (what the Shaffer Hedge can already see)."""
+    i = (r.ext or {}).get("i")
+    s63 = (r.ext or {}).get("s")
+    rs = ctx["rets"].get(r.asset) or []
+    seg = [x for x in rs[max(0, i - 20):i + 1] if x is not None] if i is not None else []
+    vix = ctx["vix"][i] if i is not None and i < len(ctx["vix"]) else None
+    if not s63 or len(seg) < 15 or not vix:
+        return None
+    s21 = math.sqrt(sum(x * x for x in seg) / len(seg)) * math.sqrt(h)
+    if s21 <= 0:
+        return None
+    return [1.0, math.log(s63 / math.sqrt(h)), math.log(s21 / math.sqrt(h)), math.log(vix / 100.0 / math.sqrt(252))]
+
+
+def _eval_period(train, test, h, wide, ctx, seed):
     """Fit on `train`, score `test` (lists of (rec, raw feature vector)); returns per-record predictions."""
     st = _standardise([v for _, v in train])
     rnd = random.Random(seed)
@@ -492,22 +510,22 @@ def _eval_period(train, test, h, wide, rets, seed):
     w1 = D.logistic(X1, o, [0.0] * 3, 1.0, 1.0, iters=10)
     w2 = D.logistic(X2, o, [0.0] * len(X2[0]), 1.0, 1.0, iters=10)
     vol = None
+    rets = ctx["rets"]
     if h >= 5:
-        vt = [(r, v, _future_log_vol(r, rets[r.asset], h)) for r, v in train if (r.ext or {}).get("s")]
-        vt = [(r, v, t) for r, v, t in vt if t is not None]
+        vt = [(r, v, _vol_base(r, ctx, h), _future_log_vol(r, rets[r.asset], h)) for r, v in train]
+        vt = [(r, v, b, t) for r, v, b, t in vt if b is not None and t is not None]
         if len(vt) >= 500:
-            b0 = _ridge([[1.0, math.log((r.ext["s"]) / math.sqrt(h))] for r, _, _ in vt], [t for _, _, t in vt], 1e-6)
-            b1 = _ridge([[1.0, math.log((r.ext["s"]) / math.sqrt(h))] + _z(v, st) for r, v, _ in vt], [t for _, _, t in vt], 1.0)
+            b0 = _ridge([b for _, _, b, _ in vt], [t for *_, t in vt], 1e-6)
+            b1 = _ridge([b + _z(v, st) for _, v, b, _ in vt], [t for *_, t in vt], 1.0)
             vol = (b0, b1)
     out = []
     for r, v in test:
         z = _z(v, st)
         rec = {"r": r, "alpha": _dot(wa, xa(r, v)), "p0": D._sig(_dot(w0, [1.0, zp(r)])), "p1": D._sig(_dot(w1, [1.0, zp(r), r.raw / 100.0])),
                "p2": D._sig(_dot(w2, [1.0, zp(r), r.raw / 100.0] + z))}
-        if vol and (r.ext or {}).get("s"):
-            t = _future_log_vol(r, rets[r.asset], h)
-            if t is not None:
-                x0 = [1.0, math.log(r.ext["s"] / math.sqrt(h))]
+        if vol:
+            x0, t = _vol_base(r, ctx, h), _future_log_vol(r, rets[r.asset], h)
+            if x0 is not None and t is not None:
                 rec["v"] = (t, _dot(vol[0], x0), _dot(vol[1], x0 + z))
         out.append(rec)
     return out, {"alpha_w": wa, "dir_w": w2, "features_std": st}
@@ -578,7 +596,9 @@ def _regimes(preds: List[dict], h: int) -> Dict[str, dict]:
     return out
 
 
-def study_family(recs: List[Rec], builder: Builder, family: str, h: int, rets: Dict[str, Series]) -> dict:
+def study_family(recs: List[Rec], builder: Builder, family: str, h: int, rets) -> dict:
+    """`rets`: {asset: daily log returns} or a context {"rets": …, "vix": …}."""
+    ctx = rets if isinstance(rets, dict) and "rets" in rets else {"rets": rets, "vix": getattr(builder, "vix", None) or []}
     fam = FAMILIES[family]
     rows = attach(recs, builder, family)
     res = {"family": family, "records": len(rows), "assets": len({r.asset for r, _ in rows}),
@@ -595,7 +615,7 @@ def study_family(recs: List[Rec], builder: Builder, family: str, h: int, rets: D
         if len(train) < 1000 or len(test) < MIN_ERA_TEST:
             res["eras"].append({"from": a, "to": b, "status": "insufficient", "train": len(train), "test": len(test)})
             continue
-        preds, _ = _eval_period(train, test, h, fam["wide"], rets, seed=k)
+        preds, _ = _eval_period(train, test, h, fam["wide"], ctx, seed=k)
         res["eras"].append({"from": a, "to": b, "train": len(train), "test": len(test), **_metrics(preds, h)})
         wf += preds
     res["walkforward"] = _metrics(wf, h) if wf else {"n": 0}
@@ -603,7 +623,7 @@ def study_family(recs: List[Rec], builder: Builder, family: str, h: int, rets: D
     train = [(r, v) for r, v in rows if r.end < SPLIT]
     test = [(r, v) for r, v in rows if r.date >= SPLIT]
     if len(train) >= 1000 and len(test) >= MIN_ERA_TEST:
-        res["split"] = _metrics(_eval_period(train, test, h, fam["wide"], rets, seed=99)[0], h)
+        res["split"] = _metrics(_eval_period(train, test, h, fam["wide"], ctx, seed=99)[0], h)
     # individual features (alpha, univariate on top of production), for the multiple-testing report
     res["features"] = {}
     for j, name in enumerate(fam["features"]):
@@ -738,11 +758,12 @@ def study_horizon(store, research, lab: str, families=None, progress=None) -> di
     for r in recs:
         if r.asset not in rets:
             rets[r.asset] = _logret(builder.series(r.asset))
+    ctx = {"rets": rets, "vix": builder.macro("VIXCLS")}
     out = {"horizon": lab, "records": len(recs), "families": {}}
     say(f"{lab}: {len(recs)} records ({time.time() - t0:.0f}s)")
     for fam in (families or list(FAMILIES)):
         t1 = time.time()
-        out["families"][fam] = study_family(recs, builder, fam, h, rets)
+        out["families"][fam] = study_family(recs, builder, fam, h, ctx)
         say(f"{lab}: {fam} done ({time.time() - t1:.0f}s)")
     out["seconds"] = round(time.time() - t0, 1)
     return out

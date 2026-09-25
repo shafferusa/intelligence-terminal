@@ -107,6 +107,32 @@ class Incremental(unittest.TestCase):
         self.assertEqual(e1["alpha"]["d_rank_ic"]["mean"] is None, e2["alpha"]["d_rank_ic"]["mean"] is None)
 
 
+class HedgeVolatility(unittest.TestCase):
+    def _vol_world(self, planted, seed):
+        recs, fb, _ = _world(seed=seed, weeks=26 * 52, assets=10)
+        rnd = random.Random(seed + 100)
+        n = fb.n + 10
+        rets = {}
+        for a, f in fb.f.items():
+            r = [None] * n
+            for i in range(1, n):
+                x = f["x"][i - 1] if i - 1 < fb.n and f["x"][i - 1] is not None else 0.0
+                sd = 0.01 * math.exp(0.6 * x) if planted else 0.01
+                r[i] = rnd.gauss(0, sd)
+            rets[a] = r
+        return recs, fb, {"rets": rets, "vix": [20.0] * n}
+
+    def test_planted_volatility_information_beats_the_baseline(self):
+        res = _study(*self._vol_world(True, 21))
+        g = res["gates"]["hedge"]
+        self.assertTrue(g["G1"], g)
+        self.assertGreater(res["walkforward"]["hedge"]["vol_mse_gain"]["mean"], 0)
+
+    def test_noise_does_not(self):
+        res = _study(*self._vol_world(False, 22))
+        self.assertFalse(res["gates"]["hedge"]["G1"])
+
+
 class FDR(unittest.TestCase):
     def test_benjamini_hochberg(self):
         ps = [0.001, 0.008, 0.039, 0.041, 0.042, 0.06, 0.074, 0.205, 0.212, 0.216]
