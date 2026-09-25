@@ -63,7 +63,19 @@ anything later in this document, this wins.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
 - Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook); **daily ~noon (SIE Program, §0b, added 2026-09-25)**. Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
 
-### 0b. Amendment of 2026-09-25 — the SIE Program (sixth edition, daily at noon)
+### 0b. Amendment of 2026-09-25 — the SIE Program (published all at once)
+
+**Revised the same evening at Logan's request: "forget the daily reports, just put them all at once
+available to me somewhere."** All 30 SIE editions were written in one go and published together at
+`site/reports/sie/` (hub `index.html`, `day-01.html` … `day-30.html`, `progress.html`,
+`study-guide.html`). The noon routine ("Intelligence Terminal — SIE Program") is **disabled**, not
+deleted, and the `sie-inbox` Telegram poller is off. Quizzes now grade themselves in the browser
+(answer key in a never-rendered JSON block, nothing shown until "Grade my answers"); results live in
+the browser's localStorage and `progress.html` turns them into the weakness tracker, error log and
+spaced-repetition review deck. `prompts/sie.md`, `state/sie.json` and `state/sie/` are kept for
+reference in case the daily routine is ever revived; nothing reads or writes them now.
+
+The original design, kept for the record:
 
 Logan's exam for the FINRA Securities Industry Essentials (SIE) is about a month out. At his request
 a sixth edition was added: a **30-day SIE program**, published **every day (weekends included) at

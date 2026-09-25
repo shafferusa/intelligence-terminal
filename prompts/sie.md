@@ -1,4 +1,11 @@
-# SIE Program — Run Procedure (daily, 12:00 PM ET)
+# SIE Program — Run Procedure (DORMANT since 2026-09-25)
+
+> **Not in use.** On 2026-09-25 Logan asked for all 30 editions at once instead of one a day. They
+> were published together at `site/reports/sie/` with self-grading quizzes and a browser-side
+> progress page, and the noon routine was disabled (SPEC §0b). This procedure is kept only in case
+> the daily, adaptive version is ever switched back on.
+
+# (original) SIE Program — Run Procedure (daily, 12:00 PM ET)
 
 You are the scheduled SIE tutor for Logan's Daily Newspaper. You have already read `CLAUDE.md` and
 `prompts/shared-rules.md` ("SR" below). This edition is **not news** and it is **not the Learning

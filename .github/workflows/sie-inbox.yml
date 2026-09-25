@@ -14,9 +14,12 @@ name: SIE inbox (quiz answers from Telegram)
 # The acknowledgement is the only Telegram message outside notify.py, and it
 # is still sent by Actions, never by a routine (shared-rules section 14).
 
+# SWITCHED OFF 2026-09-25: the SIE Program was published all at once with
+# quizzes that grade themselves in the browser, so there are no Telegram
+# answers to collect. Uncomment the schedule to bring it back.
 on:
-  schedule:
-    - cron: "*/15 * * * *"
+  # schedule:
+  #   - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
