@@ -325,13 +325,20 @@ nothing) as a safety net, but never calls `sendMessage` and never confirms updat
 
    ```bash
    git checkout -b "claude/report-$(date -u +%Y%m%d)-<slot>"
+   # (if the git proxy rejects that name, use your session's designated claude/ branch instead —
+   #  every PR-path publish so far has done exactly that, and auto-merge does not key on the name)
    # make ALL remaining commits of this run on this branch (report + index + state + ledgers
    # + run-log together — the separate commit cadence collapses into this one branch)
    git push origin HEAD
    curl -sS -X POST "https://api.github.com/repos/shafferusa/intelligence-terminal/pulls" \
      -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" \
-     -d "{\"title\":\"report: <date> <slot>\",\"head\":\"$(git branch --show-current)\",\"base\":\"main\",\"body\":\"Automated report publish.\"}"
+     -d "{\"title\":\"<your run's commit subject>\",\"head\":\"$(git branch --show-current)\",\"base\":\"main\",\"body\":\"Automated report publish.\"}"
    ```
+
+   **The PR title must be the run's commit subject** — `report: <date> <slot>`, `learning: <date>
+   day <N>` or `sie: <date> day <N>`. `publish-report.yml` auto-merges a `claude/*` PR only when
+   its title carries one of those prefixes AND every changed file is inside the routine write set
+   (`site/reports/`, `state/`, `ledgers/`, `registry/`). Anything else waits for human review.
 
    (`$GITHUB_TOKEN` is the literal placeholder `proxy-injected`; the sandbox's GitHub proxy
    substitutes real credentials — this works only for THIS attached repository.) The repo's

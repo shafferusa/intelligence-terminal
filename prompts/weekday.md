@@ -303,7 +303,8 @@ sections all stay real. **Also in the News** is only a small catch-all for what 
 market sections (Before the Open / The Board / What Moved Markets), but do not starve the general-news
 sections.
 
-**Top Stories are finance-weighted.** Select ~6–12 (SPEC §4 scoring — rationale stays in story
+**Top Stories are finance-weighted.** Select per `report.top_stories_target` in
+`config/settings.yml` (currently 8–12; SPEC §4 scoring — rationale stays in story
 memory, not the report). The lead `.story--lead` is the most market-moving development of the cycle,
 UNLESS a genuinely dominant US or world story is the single biggest thing in the reader's world — then
 it leads and its market read-through is stated. The mix skews markets / macro / Fed / Treasury /
