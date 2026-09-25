@@ -1,6 +1,15 @@
 {
  "corrections": [
   {
+   "found": "2026-09-25",
+   "report": "reports/2026/09/2026-09-24-pm.html and 2026-09-25-am.html",
+   "original": "Neither Thursday's Closing Brief nor this morning's edition covered Akamai's $11.6 billion, seven-year cloud-computing agreement with Anthropic (expandable to roughly $20 billion), announced via Akamai's own press release and an SEC 8-K with a 5:30 PM ET investor call Thursday evening -- before Thursday's Closing Brief published.",
+   "corrected": "Added to today's Closing Brief (2026-09-25-pm) Top Stories, one edition late, with the coverage gap disclosed explicitly rather than the story folded in as if newly broken.",
+   "error_source": "Coverage omission, not a factual error -- this run's news-research passes for the 2026-09-24-pm and 2026-09-25-am editions did not surface the deal despite same-day primary-source disclosure (press release, 8-K, investor call).",
+   "conclusions_changed": false,
+   "note": "This is a completeness gap, not an inaccurate statement previously published, following the same disclosure practice as prior same-pattern entries in this ledger. No prior published sentence needed correcting."
+  },
+  {
    "found": "2026-09-18",
    "report": "reports/2026/09/2026-09-18-am.html",
    "original": "This morning's edition (and its underlying calendar-cache entry) reported the Progress MS-35 cargo craft's docking at the ISS Poisk module as confirmed for today, Sept 18, at 18:37 UTC (2:37 PM ET), sourced to NASASpaceFlight.com and a Wikipedia cross-check -- a day sooner than the Sept 17 cache's Roscosmos-sourced Sept 19 estimate.",

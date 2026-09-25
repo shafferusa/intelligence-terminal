@@ -1,30 +1,30 @@
 {
- "fetched_at": "2026-09-25T10:40:00Z",
+ "fetched_at": "2026-09-25T20:47:00Z",
  "treasury_par_curve": {
-  "as_of": "2026-09-24 EOD official",
+  "as_of": "2026-09-25 EOD official",
   "curve": {
-   "1M": 4.01,
-   "1.5M": 4.1,
-   "2M": 4.18,
+   "1M": 4.04,
+   "1.5M": 4.14,
+   "2M": 4.20,
    "3M": 4.24,
-   "4M": 4.33,
-   "6M": 4.34,
-   "1Y": 4.51,
-   "2Y": 4.87,
-   "3Y": 4.99,
-   "5Y": 5.03,
-   "7Y": 5.1,
-   "10Y": 5.18,
-   "20Y": 5.53,
-   "30Y": 5.47
+   "4M": 4.32,
+   "6M": 4.33,
+   "1Y": 4.50,
+   "2Y": 4.81,
+   "3Y": 4.94,
+   "5Y": 4.98,
+   "7Y": 5.06,
+   "10Y": 5.17,
+   "20Y": 5.54,
+   "30Y": 5.49
   },
-  "2s10s_bp": 31,
-  "3m10y_bp": 94,
-  "5s30s_bp": 44,
-  "note": "Re-confirmed fresh Sept 25 am pull: still Sept 24 EOD curve (par curve lags one business day at premarket gather time). No fresher print pre-open."
+  "2s10s_bp": 36,
+  "3m10y_bp": 93,
+  "5s30s_bp": 51,
+  "note": "Fresh Sept 25 EOD curve, fetched ~4:35pm ET after Treasury's afternoon post. Genuine twist vs Sept 24: 2Y-7Y eased (2Y -6bp, 5Y -5bp, 10Y -1bp) while 20Y/30Y rose (+1bp/+2bp) to fresh multi-decade highs. No auction today."
  },
  "fred": {
-  "as_of": "2026-09-25 am run: T10Y2Y/T10YIE rolled to fresh 2026-09-24 obs; DGS2/DGS10/DFII10/SOFR/BAMLH0A0HYM2 still 2026-09-23 (not yet rolled).",
+  "as_of": "2026-09-25 pm run: T10Y2Y/DGS2/DGS10/T10YIE/DFII10/SOFR/BAMLH0A0HYM2 rolled to fresh 2026-09-24 obs (FRED's daily series lag one business day).",
   "series": {
    "CPIAUCSL": {
     "value": 334.131,
@@ -51,28 +51,28 @@
     "date": "2026-09-24"
    },
    "DGS2": {
-    "value": 4.85,
-    "date": "2026-09-23"
+    "value": 4.87,
+    "date": "2026-09-24"
    },
    "DGS10": {
-    "value": 5.11,
-    "date": "2026-09-23"
+    "value": 5.18,
+    "date": "2026-09-24"
    },
    "T10YIE": {
     "value": 2.33,
     "date": "2026-09-24"
    },
    "DFII10": {
-    "value": 2.76,
-    "date": "2026-09-23"
+    "value": 2.85,
+    "date": "2026-09-24"
    },
    "SOFR": {
-    "value": 3.87,
-    "date": "2026-09-23"
+    "value": 3.88,
+    "date": "2026-09-24"
    },
    "BAMLH0A0HYM2": {
-    "value": 2.73,
-    "date": "2026-09-23"
+    "value": 2.80,
+    "date": "2026-09-24"
    }
   }
  },
@@ -80,385 +80,134 @@
   "vix": 14.21,
   "vix9d": 12.13,
   "vix3m": 17.61,
-  "as_of": "2026-09-22 EOD official (last trade 16:15:01 ET) -- Cboe's delayed-quote domain (cdn-api.cboe.com) again returned an explicit EGRESS_BLOCKED / connect_rejected (organization policy) response this run on both direct fetch and WebFetch fallback. The EOD history CSVs on cdn.cboe.com (a different path) are reachable but their last row is also still Sept 22 -- the underlying data hasn't posted past that date either.",
+  "as_of": "2026-09-22 EOD official (last trade 16:15:01 ET) -- Cboe's delayed-quote domain (cdn-api.cboe.com) returned an explicit EGRESS_BLOCKED / connect_rejected response again this run, confirmed via both direct curl and WebFetch (which itself returned error_type EGRESS_BLOCKED after following the 307 redirect). Fifth consecutive stale session.",
   "term_structure": "VIX9D < VIX < VIX3M -- normal contango (as of the last posted value)",
-  "note": "Stale for a FOURTH consecutive session as of the Sept 25 am run. Confirmed this run to be a policy-level block (connect_rejected), not a transient delay -- worth a RUNBOOK look."
+  "note": "Confirmed policy-level block, not a transient delay. Worth a RUNBOOK look -- five sessions running now."
  },
  "fx": {
-  "as_of": "2026-09-24 EOD official (ECB reference) -- re-confirmed fresh Sept 25 am pull, ECB has not yet published a fresher fix",
+  "as_of": "2026-09-25 EOD official (ECB reference)",
   "rates_vs_usd": {
-   "EUR": 0.87974,
-   "JPY": 158.85,
-   "GBP": 0.75645,
-   "CNY": 6.7126,
-   "CHF": 0.82775,
-   "CAD": 1.4117,
-   "AUD": 1.4232,
-   "MXN": 17.5841,
-   "BRL": 5.1808,
-   "INR": 95.96
+   "EUR": 0.87696,
+   "JPY": 157.59,
+   "GBP": 0.75458,
+   "CNY": 6.7132,
+   "CHF": 0.82829,
+   "CAD": 1.4143,
+   "AUD": 1.4224,
+   "MXN": 17.6989,
+   "BRL": 5.1821,
+   "INR": 95.82
   }
  },
  "crypto": {
-  "as_of": "2026-09-25 live (CoinGecko, both /simple/price and /global succeeded this run)",
-  "btc": 84680,
-  "eth": 2711.18,
-  "sol": 118.75,
-  "ada": 0.2526,
-  "total_mkt_cap": 2877000000000,
-  "btc_dominance_pct": 58.93,
-  "eth_dominance_pct": 11.46,
+  "as_of": "2026-09-25 live (CoinGecko; /simple/price and /global both succeeded on retry after an initial 429)",
+  "btc": 84055,
+  "eth": 2693.34,
+  "sol": 122.39,
+  "ada": 0.2566,
+  "total_mkt_cap": 2898067139205.91,
+  "btc_dominance_pct": 58.22,
+  "eth_dominance_pct": 11.34,
   "note": "All figures fresh this run, live."
  },
  "indices": {
-  "as_of": "2026-09-24 EOD official",
+  "as_of": "2026-09-25 EOD official",
   "sp500": {
-   "price": 7704.13,
-   "pct": -0.02
+   "price": 7743.41,
+   "pct": 0.51
   },
   "nasdaq_composite": {
-   "price": 26939.37,
-   "pct": 0.01
+   "price": 27068.72,
+   "pct": 0.48
   },
   "dow": {
-   "price": 51349.98,
-   "pct": -0.31
+   "price": 51828.62,
+   "pct": 0.93
   },
   "russell2000": {
-   "price": 2835.57,
-   "pct": -0.11
+   "price": 2837.55,
+   "pct": 0.07
   }
  },
  "futures_commodities_fx": {
-  "as_of": "2026-09-25 premarket (delayed +10min; ES/NQ/YM/RTY vs Thu Sept 24 settle; CL/GC/NG/HG are today's incomplete premarket bar vs Thu settle, a different period -- see report methodology note)",
+  "as_of": "2026-09-25 ~4:35pm ET (futures/commodities continue trading after the cash close; close-to-close vs Thursday's settle)",
   "es_f": {
-   "price": 7788.5,
-   "pct": 0.28
+   "price": 7803.0,
+   "pct": 0.46
   },
   "nq_f": {
-   "price": 30929.75,
-   "pct": 0.53
+   "price": 30887.75,
+   "pct": 0.39
   },
   "ym_f": {
-   "price": 51834.0,
-   "pct": 0.23
+   "price": 52167.0,
+   "pct": 0.87
   },
   "rty_f": {
-   "price": 2864.0,
-   "pct": 0.25
+   "price": 2860.1,
+   "pct": 0.12
   },
   "tnx": {
-   "price": 5.162,
-   "pct": 0.94,
-   "note": "Yahoo ^TNX now appears already yield-equivalent (5.162 ~= Treasury 10Y 5.18%); the old /10 rule in weekday.md SS2.5 may be stale -- flagged for a RUNBOOK correction, not applied this run."
+   "price": 5.184,
+   "pct": 0.43
   },
   "cl_f": {
-   "price": 92.86,
-   "pct": -1.85,
-   "note": "premarket pullback after USO +2.86% Thursday close; different, non-overlapping periods"
+   "price": 92.65,
+   "pct": -2.07
   },
   "gc_f": {
-   "price": 4343.4,
-   "pct": 1.06
+   "price": 4324.5,
+   "pct": 0.62
   },
   "ng_f": {
-   "price": 3.24,
-   "pct": -1.73
+   "price": 3.239,
+   "pct": -1.76
   },
   "hg_f": {
-   "price": 6.788,
-   "pct": 1.03
+   "price": 6.774,
+   "pct": 0.83
   },
   "eurusd": {
-   "price": 1.14,
-   "pct": 0.16
+   "price": 1.1397,
+   "pct": 0.20
   },
   "dxy": {
-   "price": 101.046,
-   "pct": -0.24
+   "price": 101.015,
+   "pct": -0.27
   }
  },
  "watchlist": {
-  "SPY": {
-   "price": 767.18,
-   "prev": 767.81,
-   "chg": -0.63,
-   "pct": -0.08,
-   "vol": 43900000,
-   "hi52": 779.37,
-   "lo52": 629.28,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "QQQM": {
-   "price": 305.14,
-   "prev": 305.14,
-   "chg": 0.0,
-   "pct": 0.0,
-   "vol": 2000000,
-   "hi52": 308.21,
-   "lo52": 228.75,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "DIA": {
-   "price": 512.68,
-   "prev": 514.3,
-   "chg": -1.62,
-   "pct": -0.32,
-   "vol": 2800000,
-   "hi52": 546.75,
-   "lo52": 450.44,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "IWM": {
-   "price": 281.66,
-   "prev": 281.92,
-   "chg": -0.26,
-   "pct": -0.09,
-   "vol": 27300000,
-   "hi52": 305.18,
-   "lo52": 228.9,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "MAGS": {
-   "price": 72.51,
-   "prev": 72.08,
-   "chg": 0.43,
-   "pct": 0.6,
-   "vol": 4800000,
-   "hi52": 73.46,
-   "lo52": 55.085,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "RSP": {
-   "price": 210.26,
-   "prev": 211.31,
-   "chg": -1.05,
-   "pct": -0.5,
-   "vol": 7700000,
-   "hi52": 223.44,
-   "lo52": 182.11,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "SMH": {
-   "price": 600.52,
-   "prev": 601.41,
-   "chg": -0.89,
-   "pct": -0.15,
-   "vol": 5600000,
-   "hi52": 671.83,
-   "lo52": 315.05,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "XLK": {
-   "price": 194.71,
-   "prev": 195.34,
-   "chg": -0.63,
-   "pct": -0.32,
-   "vol": 6400000,
-   "hi52": 198.73,
-   "lo52": 126.68,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "XLF": {
-   "price": 54.53,
-   "prev": 54.54,
-   "chg": -0.01,
-   "pct": -0.02,
-   "vol": 28800000,
-   "hi52": 58.6,
-   "lo52": 47.67,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "KRE": {
-   "price": 70.94,
-   "prev": 70.38,
-   "chg": 0.56,
-   "pct": 0.8,
-   "vol": 16300000,
-   "hi52": 78.35,
-   "lo52": 57.55,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "XLE": {
-   "price": 62.6,
-   "prev": 62.37,
-   "chg": 0.23,
-   "pct": 0.37,
-   "vol": 38200000,
-   "hi52": 66.17,
-   "lo52": 42.35,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "TLT": {
-   "price": 79.42,
-   "prev": 80.46,
-   "chg": -1.04,
-   "pct": -1.29,
-   "vol": 59000000,
-   "hi52": 92.19,
-   "lo52": 79.42,
-   "as_of": "2026-09-24 EOD official",
-   "note": "closed AT its 52-week low"
-  },
-  "IEF": {
-   "price": 89.69,
-   "prev": 90.19,
-   "chg": -0.5,
-   "pct": -0.55,
-   "vol": 11000000,
-   "hi52": 98.05,
-   "lo52": 89.69,
-   "as_of": "2026-09-24 EOD official",
-   "note": "closed AT its 52-week low"
-  },
-  "TIP": {
-   "price": 104.3,
-   "prev": 104.81,
-   "chg": -0.51,
-   "pct": -0.49,
-   "vol": 2500000,
-   "hi52": 112.24,
-   "lo52": 104.29,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "LQD": {
-   "price": 103.15,
-   "prev": 103.89,
-   "chg": -0.74,
-   "pct": -0.71,
-   "vol": 40200000,
-   "hi52": 112.93,
-   "lo52": 103.11,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "HYG": {
-   "price": 77.89,
-   "prev": 78.1,
-   "chg": -0.21,
-   "pct": -0.27,
-   "vol": 74900000,
-   "hi52": 81.33,
-   "lo52": 77.854,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "GLD": {
-   "price": 391.69,
-   "prev": 392.88,
-   "chg": -1.19,
-   "pct": -0.3,
-   "vol": 6700000,
-   "hi52": 509.7,
-   "lo52": 345.31,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "USO": {
-   "price": 153.09,
-   "prev": 148.83,
-   "chg": 4.26,
-   "pct": 2.86,
-   "vol": 9500000,
-   "hi52": 163.35,
-   "lo52": 65.99,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "EEM": {
-   "price": 67.25,
-   "prev": 67.71,
-   "chg": -0.46,
-   "pct": -0.68,
-   "vol": 18000000,
-   "hi52": 71.57,
-   "lo52": 51.82,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "VGK": {
-   "price": 88.07,
-   "prev": 88.01,
-   "chg": 0.06,
-   "pct": 0.07,
-   "vol": 5700000,
-   "hi52": 93.29,
-   "lo52": 77.82,
-   "as_of": "2026-09-24 EOD official"
-  },
-  "BTC": {
-   "price": 37.31,
-   "prev": 37.38,
-   "chg": -0.07,
-   "pct": -0.19,
-   "vol": 1700000,
-   "hi52": 55.96,
-   "lo52": 25.65,
-   "as_of": "2026-09-24 EOD official",
-   "note": "Grayscale Bitcoin Mini Trust ETF"
-  },
-  "DXY": {
-   "price": 101.046,
-   "prev": 101.297,
-   "chg": -0.251,
-   "pct": -0.24,
-   "vol": null,
-   "hi52": 101.8,
-   "lo52": 95.55,
-   "as_of": "2026-09-24 EOD official"
-  }
+  "SPY": {"price": 771.35, "prev": 767.18, "chg": 4.17, "pct": 0.54, "vol": 34116693, "hi52": 779.37, "lo52": 629.28, "as_of": "2026-09-25 EOD official"},
+  "QQQM": {"price": 306.54, "prev": 305.14, "chg": 1.40, "pct": 0.46, "vol": 2402866, "hi52": 308.21, "lo52": 228.75, "as_of": "2026-09-25 EOD official"},
+  "DIA": {"price": 517.49, "prev": 512.68, "chg": 4.81, "pct": 0.94, "vol": 2708382, "hi52": 546.75, "lo52": 450.44, "as_of": "2026-09-25 EOD official"},
+  "IWM": {"price": 281.97, "prev": 281.66, "chg": 0.31, "pct": 0.11, "vol": 22126129, "hi52": 305.18, "lo52": 228.9, "as_of": "2026-09-25 EOD official"},
+  "MAGS": {"price": 72.64, "prev": 72.51, "chg": 0.13, "pct": 0.18, "vol": 2693271, "hi52": 73.46, "lo52": 55.085, "as_of": "2026-09-25 EOD official"},
+  "RSP": {"price": 211.11, "prev": 210.26, "chg": 0.85, "pct": 0.40, "vol": 5459369, "hi52": 223.44, "lo52": 182.11, "as_of": "2026-09-25 EOD official"},
+  "SMH": {"price": 606.56, "prev": 600.52, "chg": 6.04, "pct": 1.01, "vol": 4489579, "hi52": 671.83, "lo52": 315.05, "as_of": "2026-09-25 EOD official"},
+  "XLK": {"price": 196.27, "prev": 194.71, "chg": 1.56, "pct": 0.80, "vol": 5965183, "hi52": 198.73, "lo52": 126.68, "as_of": "2026-09-25 EOD official"},
+  "XLF": {"price": 54.84, "prev": 54.53, "chg": 0.31, "pct": 0.57, "vol": 28767254, "hi52": 58.6, "lo52": 47.67, "as_of": "2026-09-25 EOD official"},
+  "KRE": {"price": 71.55, "prev": 70.94, "chg": 0.61, "pct": 0.86, "vol": 12258619, "hi52": 78.35, "lo52": 57.55, "as_of": "2026-09-25 EOD official"},
+  "XLE": {"price": 62.04, "prev": 62.60, "chg": -0.56, "pct": -0.89, "vol": 37398357, "hi52": 66.17, "lo52": 42.35, "as_of": "2026-09-25 EOD official"},
+  "TLT": {"price": 79.32, "prev": 79.42, "chg": -0.10, "pct": -0.13, "vol": 60249382, "hi52": 92.19, "lo52": 78.83, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "IEF": {"price": 90.00, "prev": 89.69, "chg": 0.31, "pct": 0.35, "vol": 17134151, "hi52": 98.05, "lo52": 89.54, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "TIP": {"price": 104.54, "prev": 104.30, "chg": 0.24, "pct": 0.23, "vol": 2127319, "hi52": 112.24, "lo52": 104.2, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "LQD": {"price": 103.21, "prev": 103.15, "chg": 0.06, "pct": 0.06, "vol": 43963497, "hi52": 112.93, "lo52": 102.74, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "HYG": {"price": 77.86, "prev": 77.89, "chg": -0.03, "pct": -0.04, "vol": 56552201, "hi52": 81.33, "lo52": 77.67, "as_of": "2026-09-25 EOD official", "note": "new 52-week low this week"},
+  "GLD": {"price": 393.41, "prev": 391.69, "chg": 1.72, "pct": 0.44, "vol": 7002878, "hi52": 509.7, "lo52": 345.31, "as_of": "2026-09-25 EOD official"},
+  "USO": {"price": 148.33, "prev": 153.09, "chg": -4.76, "pct": -3.11, "vol": 7128728, "hi52": 163.35, "lo52": 65.99, "as_of": "2026-09-25 EOD official"},
+  "EEM": {"price": 67.98, "prev": 67.25, "chg": 0.73, "pct": 1.09, "vol": 19055343, "hi52": 71.57, "lo52": 51.82, "as_of": "2026-09-25 EOD official"},
+  "VGK": {"price": 88.63, "prev": 88.07, "chg": 0.56, "pct": 0.64, "vol": 1136813, "hi52": 93.29, "lo52": 77.82, "as_of": "2026-09-25 EOD official"},
+  "BTC": {"price": 37.16, "prev": 37.31, "chg": -0.15, "pct": -0.40, "vol": 1260126, "hi52": 55.96, "lo52": 25.65, "as_of": "2026-09-25 EOD official", "note": "Grayscale Bitcoin Mini Trust ETF"},
+  "DXY": {"price": 101.015, "prev": 101.29, "chg": -0.275, "pct": -0.27, "vol": null, "hi52": 101.8, "lo52": 95.55, "as_of": "2026-09-25 EOD official"}
  },
  "global_indices": {},
  "dma": {
-  "SPY": {
-   "n_sessions": 251,
-   "last_price": 767.18,
-   "hi52": 779.37,
-   "lo52": 629.28,
-   "dist20_pct": 0.24,
-   "dist50_pct": 0.79,
-   "dist200_pct": 7.83
-  },
-  "QQQ": {
-   "n_sessions": 251,
-   "last_price": 741.05,
-   "hi52": null,
-   "lo52": null,
-   "dist20_pct": 2.97,
-   "dist50_pct": 4.1,
-   "dist200_pct": 12.6
-  },
-  "IWM": {
-   "n_sessions": 251,
-   "last_price": 281.66,
-   "hi52": 305.18,
-   "lo52": 228.9,
-   "dist20_pct": -2.71,
-   "dist50_pct": -4.29,
-   "dist200_pct": 4.36
-  },
-  "DIA": {
-   "n_sessions": 251,
-   "last_price": 512.68,
-   "hi52": 546.75,
-   "lo52": 450.44,
-   "dist20_pct": -2.4,
-   "dist50_pct": -2.88,
-   "dist200_pct": 3.29
-  },
-  "TLT": {
-   "n_sessions": 251,
-   "last_price": 79.42,
-   "hi52": 92.19,
-   "lo52": 79.42,
-   "dist20_pct": -2.62,
-   "dist50_pct": -3.55,
-   "dist200_pct": -4.72
-  },
-  "SPCX": {
-   "n_sessions": 70,
-   "last_price": 148.03,
-   "hi52": null,
-   "lo52": null,
-   "dist20_pct": 0.02,
-   "dist50_pct": 9.19,
-   "dist200_pct": null
-  }
+  "SPY": {"n_sessions": 64, "last_price": 771.35, "hi52": 779.37, "lo52": 629.28, "dist20_pct": 0.78, "dist50_pct": 1.28},
+  "QQQ": {"n_sessions": 64, "last_price": 744.50, "hi52": 748.65, "lo52": 555.6, "dist20_pct": 3.28, "dist50_pct": 4.47},
+  "IWM": {"n_sessions": 64, "last_price": 281.97, "hi52": 305.18, "lo52": 228.9, "dist20_pct": -2.30, "dist50_pct": -4.09},
+  "DIA": {"n_sessions": 64, "last_price": 517.49, "hi52": 546.75, "lo52": 450.44, "dist20_pct": -1.17, "dist50_pct": -1.91},
+  "TLT": {"n_sessions": 64, "last_price": 79.32, "hi52": 92.19, "lo52": 78.83, "dist20_pct": -2.52, "dist50_pct": -3.56},
+  "SPCX": {"n_sessions": 64, "last_price": 148.68, "hi52": 225.64, "lo52": 104.83, "dist20_pct": 0.19, "dist50_pct": 9.39}
  },
  "breadth_latest": {
   "date": "2026-09-24",
@@ -470,149 +219,61 @@
   "down_vol": 8960000000.0,
   "pct_above_e50": null,
   "pct_above_e200": null,
-  "note": "Computed fresh this run via Massive grouped-daily for Sept 24. NOT appended to the tracked breadth.json history/ma_state this run -- full 5,617-symbol EMA state could not be reconciled within this run's scope without risking a gap in that file's sequential history (breadth.json's history array still ends 2026-09-23; a future run should append 2026-09-24 properly with full ma_state). This field is a standalone snapshot only."
+  "note": "Carried forward from this morning's computation (Massive grouped-daily for Sept 24). Still NOT appended to breadth.json's tracked EMA history/ma_state -- history array still ends 2026-09-23. Standalone snapshot only; a future run should reconcile and append properly."
  },
  "finra_short_vol": {
   "session": "2026-09-24",
   "aggregate_short_vol_ratio_pct": 50.38,
-  "note": "Whole-market aggregate this run. Board/watchlist standouts (highest): VOYG 91.6%, XLV 80.6%, MDY 80.0%, LQD 77.9%, YSS 74.0%, XLRE 72.9%, VRTX 72.6%, XLF 71.8%, TLT 71.7%, MAGS 71.1%. Lowest: ABNB 23.1%, C 22.7%, DHR 20.8%, BKNG 15.5%, MRK 15.1%. Daily short volume != short interest; short interest is settlement-dated and 2-3 weeks stale."
+  "note": "Same previous-session file used by this morning's run (D=Sept24 is the previous NYSE session for both today's am and pm runs). Board standouts (highest): LQD 77.9%, XLF 71.8%, TLT 71.7%, MAGS 71.1%, IEF 70.5%, XLE 67.5%, IWM 67.4%, TIP 65.8%, KRE 63.2%. Lowest: VGK 34.7%, BTC 41.3%, DIA 43.6%, XLK 45.5%. Daily short volume != short interest."
  },
  "sector_etfs_wk": {
-  "as_of": "2026-09-24 EOD official",
+  "as_of": "2026-09-25 EOD official",
   "pct": {
-   "XLC": 1.27,
-   "XLV": 0.63,
-   "XLE": 0.37,
-   "XLF": -0.02,
-   "XLK": -0.32,
-   "XLY": -0.3,
-   "XLRE": -0.45,
-   "XLI": -0.75,
-   "XLP": -0.89,
-   "XLU": -0.98,
-   "XLB": -1.19
+   "XLI": 0.95,
+   "XLK": 0.80,
+   "XLF": 0.57,
+   "XLV": 0.49,
+   "XLP": 0.44,
+   "XLU": 0.38,
+   "XLB": 0.24,
+   "XLY": 0.22,
+   "XLRE": -0.22,
+   "XLE": -0.89,
+   "XLC": -0.90
   }
  },
  "commodities": {
-  "wti": {
-   "price": 95.28,
-   "pct": 3.39,
-   "note": "CL=F, close-to-close"
-  },
-  "gold": {
-   "price": 4301.5,
-   "pct": -0.39,
-   "note": "GC=F futures; GLD ETF -0.30%"
-  },
-  "natgas": {
-   "price": 3.315,
-   "pct": 9.66,
-   "note": "NG=F, Unexplained mover, no catalyst identified"
-  },
-  "copper": {
-   "price": 6.7605,
-   "pct": 1.24,
-   "note": "HG=F"
-  },
-  "label": "EOD official, Sep 24, 2026",
-  "fetched_at": "2026-09-24T20:47:23Z"
- },
- "fomc_20260916": {
-  "date": "2026-09-16",
-  "decision": "Raised federal funds rate target range 25bp to 3.75%-4.00% (from 3.50%-3.75%), effective 2026-09-17. First hike since July 2023.",
-  "vote": "12-0 unanimous (per Fed statement / multiple wire reports)",
-  "primary_confirm_1": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm (FOMC statement)",
-  "primary_confirm_2": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a1.htm (Implementation Note: target range 3.75-4.00%, reserve balance rate 3.90%, primary credit rate 4.00%)",
-  "sep_dot_plot": {
-   "source": "https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260916.htm",
-   "median_fed_funds_2026": 4.1,
-   "median_fed_funds_2027": 4.1,
-   "median_fed_funds_2028": 3.9,
-   "median_fed_funds_longer_run": 3.2,
-   "median_gdp_2026": 2.3,
-   "median_unemployment_2026": 4.1,
-   "median_pce_2026": 3.7,
-   "note": "12 of 18 participants see one more 25bp hike by year-end (to a 4.125% midpoint); 4 see 50bp more; 2 see no further hikes in 2026. Hawkish dot plot -- markets read it as more hikes than expected."
-  },
-  "statement_language": {
-   "activity": "Economic activity is expanding at a solid pace. Uncertainty remains elevated owing, in part, to geopolitical developments; domestic spending has been resilient. Productivity growth is strong and capital investment is robust.",
-   "labor": "Job gains have kept pace with the workforce, and the unemployment rate has changed little.",
-   "inflation": "Inflation remains elevated. Today's policy action will support a timelier return to the Committee's 2 percent goal."
-  },
-  "press_conference_quotes": [
-   {
-    "quote": "This summer's inflation readings do not tell me that underlying trends have meaningfully improved.",
-    "speaker": "Chair Kevin Warsh",
-    "context": "on why the Fed hiked despite growth resilience"
-   },
-   {
-    "quote": "We cannot affect any individual price, but what we can do and will do is ensure that any change in relative prices don't broaden out, don't have second and third order effects on the economy.",
-    "speaker": "Chair Kevin Warsh",
-    "context": "citing oil and groceries as examples of relative-price moves the Fed will not chase, but guarding against broadening"
-   },
-   {
-    "quote": "I would say these things tend to be overdetermined. This is a complicated set of things that are affecting the most important asset anywhere in the world, the 10-year Treasury.",
-    "speaker": "Chair Kevin Warsh",
-    "context": "on drivers of the 10-year Treasury yield"
-   },
-   {
-    "quote": "Those who are least well off have the most to gain from a durable expansion, a solid labor market, and stable prices.",
-    "speaker": "Chair Kevin Warsh",
-    "context": "on distributional case for the hike"
-   }
-  ],
-  "market_reaction": {
-   "note": "Equities were higher into the 2pm decision, then sold off through the 2:30pm press conference as investors read Warsh's tone as hawkish. Yahoo Finance EOD official closes for 2026-09-16: S&P 500 7,551.81 (-1.11% vs Tue close), Dow 51,461.90 (-1.75%), Nasdaq Composite 25,978.42 (-1.05%), Russell 2000 2,858.81 (-2.14%). One wire (Yahoo Finance summary) separately characterized the S&P move as '-0.45%' intraday-recap language; that figure conflicts with the EOD official close-to-close computed here and is NOT used -- flagging the discrepancy rather than resolving it by assumption.",
-   "rates": "2Y and 10Y Treasury yields rose on the day (par curve 2Y 4.74%, 10Y 5.01%, both up from Tuesday); VIX +2.97% to 17.71."
-  },
-  "confidence": "Confirmed-primary for the rate decision, target range, vote count, and dot-plot median figures (Federal Reserve primary source, two separate federalreserve.gov pages independently fetched). Confirmed-multiple for press-conference quotes and market reaction (CNBC, Fox Business, Yahoo Finance, CoinGape/CryptoTimes wire summaries) -- no verbatim Fed transcript was locatable at fetch time, so exact quote wording rests on secondary-source transcription, not a primary transcript PDF.",
-  "verification_level": "Confirmed-primary (decision/rate/vote/SEP) + Confirmed-multiple (quotes/market reaction)",
-  "sources": [
-   "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm",
-   "https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a1.htm",
-   "https://www.federalreserve.gov/monetarypolicy/fomcprojtabl20260916.htm",
-   "https://www.cnbc.com/2026/09/16/fed-meeting-today-live-updates.html",
-   "https://www.foxbusiness.com/economy/federal-reserve-interest-rate-decision-september-16-2026",
-   "https://finance.yahoo.com/economy/policy/live/federal-reserve-meeting-live-updates-chairman-kevin-warsh-143452661.html",
-   "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-sept-16-2026",
-   "https://www.cnn.com/2026/09/16/business/live-news/federal-reserve-interest-rate-september"
-  ],
-  "fetched_at": "2026-09-16T21:15:00Z"
+  "wti": {"price": 92.65, "pct": -2.07, "note": "CL=F, close-to-close"},
+  "gold": {"price": 4324.5, "pct": 0.62, "note": "GC=F futures; GLD ETF +0.44%"},
+  "natgas": {"price": 3.239, "pct": -1.76, "note": "NG=F"},
+  "copper": {"price": 6.774, "pct": 0.83, "note": "HG=F"},
+  "label": "EOD official, Sep 25, 2026",
+  "fetched_at": "2026-09-25T20:47:00Z"
  },
  "sec_edgar_sweep": {
   "date": "2026-09-25",
-  "cutoff": "2026-09-24T20:00:00-04:00 (this am run's window start)",
-  "per_company_feeds_checked": "all 86 deduplicated tickers across board + mega_cap_tech + ai_infra + defense_aero + space + financials watchlists, throttled ~4.5 req/s, .gov UA -- all 86 succeeded",
+  "cutoff": "2026-09-25T11:02:00-04:00 (this morning's am run window start)",
+  "method": "Market-wide latest-8-K atom feed reviewed for watchlist-name matches, plus a targeted check of CME Group's own filing feed after it appeared in the market-wide feed; not a full 86-ticker per-company sweep this run.",
   "new_filings_since_cutoff": [],
-  "note": "Zero new 8-K (or other) filings across the entire 86-ticker universe on or after the cutoff. Most recent watchlist filing anywhere: VST at 2026-09-24T17:13:57 ET (before this window)."
- },
- "_notes_this_run": "2026-09-25 am: fourth consecutive stale VIX session, now confirmed a policy-level egress block (connect_rejected) rather than a delay -- flagged for RUNBOOK. Breadth computed fresh (Sept 24 session, 1,963/3,476/178 across 5,617 names) but not folded into breadth.json's tracked EMA history this run (see breadth_latest.note). Dropped several superseded per-date premarket snapshot keys to keep this file lean; futures_commodities_fx is the single current premarket reading going forward.",
- "twelvedata_spotcheck_note": {
-  "batch1_ok": [
-   "SPY",
-   "QQQM",
-   "DIA",
-   "IWM",
-   "MAGS",
-   "RSP",
-   "SMH",
-   "XLK"
-  ],
-  "batch2": "429 rate-limited, not retried (SR 2.4, not a failure)",
-  "cross_check": "all 8 batch1 close/previous_close values matched Yahoo close-to-close exactly",
-  "fetched_at": "2026-09-25T10:35:00Z"
+  "note": "CME Group appeared in today's market-wide 8-K feed but its own per-company feed shows its most recent filing dated Sept 9 (director/officer changes) -- the market-wide feed entry appears to be an indexing artifact, not a new same-day filing. No other watchlist names appeared in the market-wide feed. Akamai (not a watchlist name) filed an 8-K covering its Anthropic deal, discussed in Top Stories."
  },
  "mega_cap_tech": {
-  "as_of": "2026-09-24 EOD official (Previous close)",
+  "as_of": "2026-09-25 EOD official",
   "pct": {
-   "AAPL": -0.33,
-   "MSFT": -0.53,
-   "NVDA": -0.41,
-   "AMZN": 0.04,
-   "GOOGL": 1.34,
-   "META": 4.5,
-   "TSLA": -0.57,
-   "SPCX": -0.22
+   "AAPL": 1.53,
+   "MSFT": 3.66,
+   "NVDA": 0.22,
+   "AMZN": 0.12,
+   "GOOGL": 0.46,
+   "META": -3.33,
+   "TSLA": -1.54,
+   "SPCX": 0.44
   }
- }
+ },
+ "cost": {
+  "as_of": "2026-09-25 EOD official",
+  "price": 922.77,
+  "pct": 2.93
+ },
+ "_notes_this_run": "2026-09-25 pm: fifth consecutive stale VIX session, reconfirmed policy-level egress block via both curl and WebFetch. Treasury curve shows a genuine twist (2Y-7Y eased, 20Y/30Y rose to fresh highs) with no auction today to explain the long end. Breadth still not reconciled into breadth.json EMA history (carried from am run's snapshot)."
 }
