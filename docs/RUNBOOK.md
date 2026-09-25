@@ -208,36 +208,15 @@ cadence is nearer 10–25 minutes. For "big news, details in the morning" that i
 matters, port the script to a **Cloudflare Worker** (free tier, 1-minute cron): it is stdlib-only
 and the only pieces to swap are `urllib` → `fetch` and the dedupe file → Workers KV.
 
-## E3. Report audio (built 2026-08-16)
+## E3. Report audio — retired 2026-09-25
 
-`.github/workflows/audio.yml` + `.github/scripts/make_audio.py`, on every push that changes
-`site/reports/index.json`. Uses **edge-tts** (Microsoft read-aloud; free, no key, good neural
-voices) to synthesise the newest report, and publishes the MP3 as a **GitHub Release asset**.
+Removed at Logan's request ("no audio is needed"): `.github/workflows/audio.yml`,
+`.github/scripts/make_audio.py`, the MP3 staging step in `build-site.yml`, the 20-minute MP3 wait
+in `notify.py`, and the listen-to-text / MP3 player in `site/assets/report.js`. Telegram pushes now
+go out as soon as the page is published.
 
-**Not committed to the repo, deliberately:** three reports a day at ~11 MB is ~12 GB a year, which
-has no business in git history. Release assets are free and outside history.
-
-**The URL is predictable**, which is what makes the whole thing work without a commit-back step or
-a race against the page build:
-
-```
-https://github.com/shafferusa/intelligence-terminal/releases/download/audio-<date>-<slot>/<date>-<slot>.mp3
-```
-
-`site/assets/report.js` points an `<audio>` element at that URL. If it loads, the reader gets a
-real player — lock screen, background, CarPlay, scrub bar, resume-where-you-left-off, and
-Media Session metadata. If it 404s, the page falls back to the Web Speech reader.
-
-**Synthesis takes ~9 minutes**, so the audio lands after the Telegram push. The page therefore
-re-probes every 90 seconds for ~12 minutes and upgrades silently — but only while speech is idle,
-never mid-sentence. A reader who opens the report immediately starts on speech and gets swapped to
-real audio a few minutes later, or on any reload.
-
-**Failure is non-fatal by design.** edge-tts is an unofficial client and can break; the job is
-`continue-on-error`, publishes nothing, and the page falls back on its own. Nothing else notices.
-
-**Voice:** `TTS_VOICE` / `TTS_RATE` env vars in the workflow (default
-`en-US-AndrewMultilingualNeural` at `+8%`). `edge-tts --list-voices` shows the alternatives.
+Existing `audio-<date>-<slot>` GitHub Releases were left in place (deleting them is irreversible);
+they are unused and can be deleted from the repo's Releases page at any time.
 
 ## E4. SIE Program replies (built 2026-09-25)
 

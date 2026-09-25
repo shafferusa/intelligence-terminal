@@ -47,10 +47,8 @@ jobs:
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping
       # that key by hand was the documented rule and it was missed the very
-      # next time assets changed: the MP3 player shipped in report.js while
-      # sw.js still said ldn-cache-v2, so every phone kept running the
-      # pre-MP3 player and silently ignored audio that was being published
-      # correctly every day.
+      # next time assets changed: a report.js update shipped while sw.js still
+      # said ldn-cache-v2, so every installed phone kept running the old file.
       #
       # So derive it instead. The key is now a hash of the asset bytes: change
       # any asset and the cache key changes with it, forget to do anything and
@@ -63,29 +61,6 @@ jobs:
           sed -i "s/^var VERSION = \".*\";/var VERSION = \"ldn-cache-$HASH\";/" site/sw.js
           echo "cache key: ldn-cache-$HASH"
           grep -n '^var VERSION' site/sw.js
-
-      # Release assets serve Content-Type: application/octet-stream with
-      # Content-Disposition: attachment. Chrome sniffs past that; iOS Safari
-      # does not, and refuses to play it in an <audio> element -- so the
-      # player fell back to browser speech on the one device this exists for,
-      # every time, while the MP3 sat there correct and unplayable.
-      #
-      # Pages serves .mp3 as audio/mpeg, inline, same-origin, with range
-      # requests. So copy the recent audio into the artifact at build time.
-      # Releases stay the storage -- nothing is committed, git stays clean,
-      # and only the last few days ride along in the deploy.
-      - name: Stage recent audio for same-origin playback
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p site/audio
-          gh release list --limit 8 --json tagName \
-            --jq '.[] | select(.tagName | startswith("audio-")) | .tagName' \
-          | while read -r tag; do
-              gh release download "$tag" --dir site/audio --clobber || \
-                echo "no asset on $tag"
-            done
-          echo "staged:"; ls -lh site/audio/ 2>/dev/null || echo "  (none yet)"
 
       - name: Build Pagefind search index
         run: npx -y pagefind --site site
@@ -125,9 +100,7 @@ jobs:
     if: github.event_name == 'workflow_run'
     needs: deploy
     runs-on: ubuntu-latest
-    # notify.py also waits here for the report MP3 (audio.yml runs off the same
-    # publish-report completion, in parallel with this deploy).
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -167,5 +140,4 @@ jobs:
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GITHUB_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/notify.py
