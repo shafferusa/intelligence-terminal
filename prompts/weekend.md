@@ -77,9 +77,9 @@ Sweep results go in report section 28.
 ### S4. Compose — this order
 
 **Finance-first (2026-09-25):** the weekly Markets / Economy / Business block leads and gets the
-depth; general news is kept real — **The United States**, **The World** and **Local** (incl.
-Pennsylvania) stay dedicated weekly reviews; tech/AI and science & space fold into a compact **Also in
-the News** weekly roundup.
+depth; general news is kept real — **The United States**, **The World**, **AI & Technology**,
+**Science**, **Space** and **Local** (incl. Pennsylvania) all stay dedicated weekly reviews. **Also in
+the News** is only a small weekly catch-all for what none of them cover.
 
 1. **Masthead** — edition "Weekly Review", title, date range, standfirst.
 2. **The Brief** — 5–7 bullets, markets-led, covering BOTH the week just gone and anything that broke
@@ -107,12 +107,19 @@ the News** weekly roundup.
 11. **Risks Entering the Week** — the market/macro risk set carried into next week.
 12. **The United States** — the week in US politics & government and policy.
 13. **The World** — the week in geopolitics and international affairs.
-14. **Also in the News** — compact weekly roundup for tech/AI and science & space; omit if quiet.
-15. **Overhyped & Undercovered** — one section, both halves.
-16. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18), plus
+14. **AI & Technology** — the week in AI and consequential tech: models and releases, research,
+    funding and deals, chips/compute, regulation, cyber. Dedicated weekly review.
+15. **Science** — the week in physics, astronomy, biology/medicine, energy and climate science and
+    other research (SPEC §13). Dedicated weekly review.
+16. **Space** — the week in spaceflight and the space industry: launches, missions, programs,
+    contracts and operators (SPEC §14). Dedicated weekly review.
+17. **Also in the News** — small weekly catch-all for what the sections above don't cover
+    (climate/disasters, public health, human interest); omit if quiet.
+18. **Overhyped & Undercovered** — one section, both halves.
+19. **Local** — the week in Bridgeville/South Fayette, Pittsburgh and Pennsylvania (SR §18), plus
     any weekend local news. No weather strip; a short look at the week's weather is fine in prose.
-17. **Market Appendix** — collapsed, SR §16.
-18. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
+20. **Market Appendix** — collapsed, SR §16.
+21. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
     sentence ("no status changes across the nine private-module companies"), not as its own section.
 
 **No lessons.** Learning moved to the weekday 6:00 AM Learning Brief on 2026-08-16. Do not summarise
@@ -146,9 +153,9 @@ the setup.
 ### U3. Compose — this order
 
 **Finance-first (2026-09-25):** the forward Economy / Earnings / Market Setup block leads and gets the
-depth; general news is kept real — **The United States**, **The World Ahead** and **Local Week Ahead**
-stay dedicated; tech/AI, science & space and the launch calendar fold into a compact **Also in the News
-Ahead** roundup.
+depth; general news is kept real — **The United States**, **The World Ahead**, **AI & Technology
+Ahead**, **Science Ahead**, **Space Ahead** (incl. the launch calendar) and **Local Week Ahead** all
+stay dedicated. **Also in the News Ahead** is only a small catch-all for what none of them cover.
 
 1. **Masthead** — edition "Week Ahead", title, week label, standfirst.
 2. **The Brief** — 5–7 bullets, markets-led, covering both what happened over the weekend and what the
@@ -173,12 +180,18 @@ Ahead** roundup.
     invalidators. Plus what would change the outlook.
 11. **The United States** — the week ahead in US politics & government and policy.
 12. **The World Ahead** — the week ahead in geopolitics and international affairs.
-13. **Also in the News Ahead** — compact roundup: tech/AI watch, science & space, and the launch &
-    mission calendar. Omit if quiet.
-14. **Local Week Ahead** — weekend local news, plus anything scheduled in Bridgeville/South
+13. **AI & Technology Ahead** — the week ahead in AI and consequential tech: expected model/product
+    releases, major AI events and earnings, chips/compute, regulation, cyber. Dedicated outlook.
+14. **Science Ahead** — the week ahead in research worth watching: major papers/results, conferences,
+    health/medicine, climate science (SPEC §13). Dedicated outlook.
+15. **Space Ahead** — the week ahead in spaceflight and the space industry, including the launch &
+    mission calendar (SPEC §14). Dedicated outlook.
+16. **Also in the News Ahead** — small catch-all for what none of the above cover
+    (climate/disasters, public health, human interest). Omit if quiet.
+17. **Local Week Ahead** — weekend local news, plus anything scheduled in Bridgeville/South
     Fayette, Pittsburgh or Pennsylvania worth knowing about (council and school-board meetings that
     matter, state votes, major local events). Omit if nothing.
-15. **Market Appendix** — collapsed. 16. **Colophon**.
+18. **Market Appendix** — collapsed. 19. **Colophon**.
 
 **No lesson previews.** Learning is entirely the weekday 6:00 AM Learning Brief's job now.
 

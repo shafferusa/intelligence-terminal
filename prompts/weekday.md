@@ -229,10 +229,13 @@ set `fetched` to now. Importance is classified by you, with the reason stated (S
 global central banks, markets, rates & credit, the **Treasury**, corporate and earnings, and
 energy/commodities/trade — that block leads the edition. But still report the general news properly:
 gather US politics & government, war/diplomacy and geopolitics thoroughly enough to fill the dedicated
-**The United States** and **The World** sections, and the local beats for **Local** (§2.13). Only
-tech/AI, cyber and science/space run lighter — enough to select the handful of items for **Also in the
-News**, plus anything with a clear market read-through. Work the full SPEC §4 category span so nothing
-dominant is missed: US politics & government, global politics, war/military, diplomacy, geopolitics,
+**The United States** and **The World** sections; cover AI and tech for **AI & Technology** (models and
+releases, research, funding & deals, chips/compute, regulation, cyber), research developments for
+**Science**, and spaceflight/space-industry news for **Space**; and work the local beats for **Local**
+(§2.13). Only the leftover categories (climate/disasters, public health, human interest) run light —
+enough to select the occasional item for the **Also in the News** catch-all, plus anything with a clear
+market read-through. Work the full SPEC §4 category span so nothing dominant is missed: US politics &
+government, global politics, war/military, diplomacy, geopolitics,
 economics, Fed, markets, corporate, tech, AI, cybersecurity, energy, climate/disasters, public health,
 science, physics, astronomy, spaceflight/space industry, legal, regulatory, infrastructure,
 trade/sanctions. For the pm run, focus on what changed since the morning edition.
@@ -294,10 +297,11 @@ the 6:00 AM Learning Brief (`prompts/learning.md`) on 2026-08-16 and must not re
 **Finance-first editions (revised 2026-09-25).** Both weekday briefs LEAD with and go deepest on
 **finance, business, economics, the Fed and the Treasury** — that block is the main event and gets the
 depth. But the paper still carries full general-news coverage: dedicated **The United States**,
-**The World** and **Local** (which includes Pennsylvania) sections stay real, not cut. Only tech/AI and
-science & space are demoted, folded into a compact **Also in the News** roundup. Spend the extra effort
-on the market sections (Before the Open / The Board / What Moved Markets), but do not starve US, World
-or Local coverage.
+**The World**, **AI & Technology**, **Science**, **Space** and **Local** (which includes Pennsylvania)
+sections all stay real. **Also in the News** is only a small catch-all for what none of those cover
+(climate/disasters, public health, human interest), omitted when empty. Spend the extra effort on the
+market sections (Before the Open / The Board / What Moved Markets), but do not starve the general-news
+sections.
 
 **Top Stories are finance-weighted.** Select ~6–12 (SPEC §4 scoring — rationale stays in story
 memory, not the report). The lead `.story--lead` is the most market-moving development of the cycle,
@@ -334,13 +338,20 @@ count may run leaner. Masthead per SR §11, voice per SR §11b, markup per SR §
     developments. Kept as a real section; omit only if genuinely nothing material.
 11. **The World** — geopolitics, conflict/diplomacy, and major international developments. Real
     section; note market read-through where one exists.
-12. **Also in the News** — a compact roundup for tech/AI, science & space, and other non-financial
-    odds and ends worth a mention. A handful of tight items; omit entirely on a quiet day.
-13. **Local** — weather strip first (SR §18), then the three beats (Bridgeville/South Fayette/South
+12. **AI & Technology** — a dedicated section: AI models and releases, research, funding and deals,
+    chips/compute, regulation and safety, adoption, plus the rest of consequential tech and cyber.
+    Note the market read-through (named beneficiaries/losers) where one exists.
+13. **Science** — a dedicated section: physics, astronomy, biology/medicine, energy science, materials,
+    climate science and other genuine research developments (the breakthrough checklist, SPEC §13).
+14. **Space** — a dedicated section: spaceflight and the space industry — launches, missions,
+    programs, contracts and operators (SPEC §14; SPCX and public names read for market impact too).
+15. **Also in the News** — a small catch-all for anything the sections above don't cover
+    (climate/disasters, public health, human interest). Omit entirely when there is nothing.
+16. **Local** — weather strip first (SR §18), then the three beats (Bridgeville/South Fayette/South
     Hills · Pittsburgh & Allegheny County · Pennsylvania), up to two items per beat, quality-gated,
     never padded.
-14. **Market Appendix** — collapsed, SR §16, unchanged.
-15. **Colophon** — sources, corrections, method (SR §11).
+17. **Market Appendix** — collapsed, SR §16, unchanged.
+18. **Colophon** — sources, corrections, method (SR §11).
 
 **Closing (pm) — this order:**
 
@@ -358,10 +369,13 @@ count may run leaner. Masthead per SR §11, voice per SR §11b, markup per SR §
 10. **Tomorrow** — overnight and tomorrow's majors, market lens.
 11. **The United States** — same as the am edition; what changed today.
 12. **The World** — same as the am edition; what changed today.
-13. **Also in the News** — compact roundup (tech/AI, science & space, other), same rule as am.
-14. **Local** — no weather strip in the pm edition; the three beats incl. Pennsylvania, up to two
+13. **AI & Technology** — dedicated section, same scope as the am edition; what changed today.
+14. **Science** — dedicated section, same scope as the am edition.
+15. **Space** — dedicated section, same scope as the am edition.
+16. **Also in the News** — small catch-all (climate/disasters, public health, other), same rule as am.
+17. **Local** — no weather strip in the pm edition; the three beats incl. Pennsylvania, up to two
     items per beat, omitted entirely if there is nothing material.
-15. **Market Appendix** — 16. **Colophon**.
+18. **Market Appendix** — 19. **Colophon**.
 
 **Ledgers while composing:** every explicit forecast/probability → SR §10 entry (logged to the
 ledger, ID not printed). Any discovered error in a prior report → SR §9, surfaced in the colophon.

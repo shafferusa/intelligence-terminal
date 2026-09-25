@@ -204,13 +204,14 @@ Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnin
 Masthead · The Brief (markets-led) · Top Stories (finance-weighted) · Overnight & Since the Close ·
 Before the Open (expanded centerpiece) · The Economy (Fed/Treasury/rates, expanded) ·
 Business & Earnings (expanded) · Today's Calendar · Risks & Scenarios · The United States · The World ·
-Also in the News (compact tech/science roundup) · **Local** (weather strip + the three beats incl.
-Pennsylvania) · Market Appendix (collapsed) · Colophon.
+AI & Technology · Science · Space · Also in the News (small catch-all) · **Local** (weather strip + the
+three beats incl. Pennsylvania) · Market Appendix (collapsed) · Colophon.
 
 Both weekday editions LEAD with and go deepest on finance / business / economics / Fed / Treasury —
 that block is the main event and gets the depth. General news is kept real: **The United States**,
-**The World** and **Local** (including Pennsylvania) stay dedicated sections; only tech/AI and science
-& space are demoted, folded into the compact **Also in the News** roundup. Domain items with nothing
+**The World**, **AI & Technology**, **Science**, **Space** and **Local** (including Pennsylvania) all
+stay dedicated sections. **Also in the News** is only a small catch-all for what none of them cover
+(climate/disasters, public health, human interest), omitted when empty. Domain items with nothing
 material are omitted, not padded. Before the Open is prose, not a table: futures, the curve, dollar,
 VIX term structure, oil, gold, HY credit, BTC, what the tape appears to price, the most fragile
 assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
@@ -220,9 +221,9 @@ assumption, and what would invalidate it. Futures ≠ guaranteed open, said once
 Masthead · The Brief (markets-led) · **The Board** (the 25-row watchlist chart, shared-rules §17) ·
 Top Stories (finance-weighted) · What Moved Markets (expanded) · Winners & Losers ·
 What Changed Today · The Economy (Fed/Treasury/rates, expanded) · Business & Earnings (expanded) ·
-Tomorrow · The United States · The World · Also in the News (compact tech/science roundup) ·
-**Local** (no weather strip, the three beats incl. Pennsylvania) · Market Appendix (collapsed) ·
-Colophon.
+Tomorrow · The United States · The World · AI & Technology · Science · Space · Also in the News (small
+catch-all) · **Local** (no weather strip, the three beats incl. Pennsylvania) · Market Appendix
+(collapsed) · Colophon.
 
 What Moved Markets sits high in the edition and keeps its four attribution labels —
 `Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained`. Those are honesty,
@@ -241,9 +242,9 @@ Markets; overhyped and undercovered become one section; the registry sweep becom
 the colophon.
 
 **Finance-first (2026-09-25):** the weekly Markets / Economy & Central Banks / Business & Earnings block
-leads and gets the depth. US politics, the world and Local (incl. Pennsylvania) stay dedicated weekly
-reviews; tech/AI and science & space fold into a compact **Also in the News** roundup. Authoritative
-order in `prompts/weekend.md` S4.
+leads and gets the depth. US politics, the world, AI & Technology, Science, Space and Local (incl.
+Pennsylvania) all stay dedicated weekly reviews; **Also in the News** is only a small catch-all for what
+none of them cover. Authoritative order in `prompts/weekend.md` S4.
 
 ## 21. SUNDAY Week-Ahead Outlook (9:00 AM ET default)
 
@@ -253,9 +254,9 @@ order in `prompts/weekend.md` S4.
 per `prompts/weekend.md`.
 
 **Finance-first (2026-09-25):** the forward Economy Ahead / Earnings & Business / Market Setup block
-leads and gets the depth. The United States and The World Ahead stay dedicated outlooks; tech/AI,
-science & space and the launch calendar fold into **Also in the News Ahead**. Local Week Ahead stays.
-Authoritative order in `prompts/weekend.md` U3.
+leads and gets the depth. The United States, The World Ahead, AI & Technology Ahead, Science Ahead,
+Space Ahead (incl. the launch calendar) and Local Week Ahead all stay dedicated; **Also in the News
+Ahead** is only a small catch-all. Authoritative order in `prompts/weekend.md` U3.
 
 ## 22. Market Intelligence Appendix (bottom of every report, collapsed subsections)
 
