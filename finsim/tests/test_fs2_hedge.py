@@ -132,6 +132,19 @@ class Eligibility(Base):
                 self.assertTrue(p["reason"], p["key"])
 
 
+class InvalidInput(Base):
+    def test_unknown_objective_is_refused(self):
+        with self.assertRaises(ValueError):
+            E.analyze(self.r, [{"id": "SPY", "quantity": 10}], "nonsense", {}, nav=1e5, history=False)
+
+    def test_execute_refuses_non_positive_or_invalid_quantities(self):
+        from finsim2.hedge import service as SV
+        app = type("App", (), {"store": self.store, "research": self.r, "ledger": lambda s: None})()
+        for q in (0, -5, float("nan")):
+            with self.assertRaises(ValueError):
+                SV.execute(app, {"asset_id": "SPY", "side": "BUY", "quantity": q}, [], None, "trade_only")
+
+
 class Engine(Base):
     def test_beta_target_is_met_within_a_lot_and_long_short_symmetric(self):
         long_ = E.analyze(self.r, [{"id": "QQQ", "quantity": 3000}], "beta", {"reduction": 0.5}, nav=1e6, history=False)

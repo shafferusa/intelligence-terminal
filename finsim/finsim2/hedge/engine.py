@@ -616,6 +616,8 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
     candidate product with its eligibility, sizing, cost, basis, liquidity, walk-forward record and score, the
     optimised Raw Shaffer Hedge package, the capped ML adjustment, scenarios and before/after risk."""
     params = dict(params or {})
+    if objective not in (None, "", "auto") and objective not in OBJECTIVES:
+        raise ValueError(f"unknown hedge objective {objective!r}")
     m = Market(research)
     rk = RiskModel(m)
     store = research.store

@@ -430,6 +430,10 @@ class Router:
                 qty = round(qty) if pr.inst.type in ("FUTURE", "OPTION") else qty
             if not qty:
                 raise ValueError("enter a quantity or an amount")
+            if qty < 0:
+                raise ValueError("the quantity must be positive: the side (Buy, Sell, Short, Cover) sets the direction")
+            if str(b.get("side", "BUY")).upper() not in ("BUY", "SELL", "SHORT", "COVER"):
+                raise ValueError(f"unknown side {b.get('side')!r}: use BUY, SELL, SHORT or COVER")
             return SV.trade_preview(app, b["asset_id"], b.get("side", "BUY"), qty, b.get("objective"), b.get("params") or {})
         if rest == ["execute"] and method == "POST":
             return SV.execute(app, b.get("primary"), b.get("legs") or [], b.get("proposal"), b.get("mode", "trade_hedge"))

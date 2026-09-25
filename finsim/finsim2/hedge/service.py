@@ -134,10 +134,15 @@ def execute(app, primary: Optional[dict], hedge_legs: List[dict], proposal: Opti
     led = app.ledger()
     legs = []
     if primary:
-        legs.append({"asset_id": primary["asset_id"], "quantity": abs(float(primary["quantity"])), "side": primary["side"], "note": "primary"})
+        pq = float(primary["quantity"])
+        if not math.isfinite(pq) or pq <= 0:
+            raise ValueError("the quantity must be positive: the side (Buy, Sell, Short, Cover) sets the direction")
+        legs.append({"asset_id": primary["asset_id"], "quantity": pq, "side": primary["side"], "note": "primary"})
     if mode == "trade_hedge":
         for L in hedge_legs:
             q = float(L["quantity"])
+            if not math.isfinite(q):
+                raise ValueError(f"invalid hedge quantity for {L.get('id')}")
             if not q:
                 continue
             side = L.get("side") or ("BUY" if q > 0 else "SELL")
