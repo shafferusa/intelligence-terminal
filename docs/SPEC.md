@@ -65,15 +65,15 @@ anything later in this document, this wins.
 
 ### 0b. Amendment of 2026-09-25 — the SIE Program (published all at once)
 
-**Revised the same evening at Logan's request: "forget the daily reports, just put them all at once
-available to me somewhere."** All 30 SIE editions were written in one go and published together at
-`site/reports/sie/` (hub `index.html`, `day-01.html` … `day-30.html`, `progress.html`,
-`study-guide.html`). The noon routine ("Intelligence Terminal — SIE Program") is **disabled**, not
-deleted, and the `sie-inbox` Telegram poller is off. Quizzes now grade themselves in the browser
-(answer key in a never-rendered JSON block, nothing shown until "Grade my answers"); results live in
-the browser's localStorage and `progress.html` turns them into the weakness tracker, error log and
-spaced-repetition review deck. `prompts/sie.md`, `state/sie.json` and `state/sie/` are kept for
-reference in case the daily routine is ever revived; nothing reads or writes them now.
+**Revised the same evening at Logan's request**: first "forget the daily reports, just put them all
+at once available to me somewhere", then "I don't need the 30 pages, just one large study guide with
+closeable sections once I finish them." The SIE Program is therefore **one page**:
+`site/reports/sie/study-guide.html`, a chapter per program day (28 chapters, ~90,000 words), each a
+collapsible section that folds away when ticked as finished (remembered in the browser), linked from
+the home page. The noon routine ("Intelligence Terminal — SIE Program") is **disabled**, not
+deleted, and the `sie-inbox` Telegram poller is off. `prompts/sie.md`, `state/sie.json` and
+`state/sie/` are kept for reference in case the daily routine is ever revived; nothing reads or
+writes them now.
 
 The original design, kept for the record:
 

@@ -15,9 +15,9 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
      per report, no news. Reads like a newspaper feature.
    - `prompts/weekday.md` — Morning (6:30 AM) and Closing (4:30 PM) briefs. Strictly news.
    - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
-   - `prompts/sie.md` — **SIE Program** — DORMANT. The 30 editions were published all at once on
-     2026-09-25 (`site/reports/sie/`) and the noon routine is disabled (SPEC §0b). No scheduled run
-     uses this file now.
+   - `prompts/sie.md` — **SIE Program** — DORMANT. The program became a single study guide on
+     2026-09-25 (`site/reports/sie/study-guide.html`) and the noon routine is disabled (SPEC §0b).
+     No scheduled run uses this file now.
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
@@ -35,9 +35,8 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 - `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
   (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
   `curriculum/sie-question-style.md` — the house question style for SIE quizzes and exams.
-- `site/reports/sie/` — the SIE Program, published all at once: `index.html` (hub), `day-01.html`
-  … `day-30.html` (self-grading quizzes), `progress.html` (tracker/error log/review deck, reads
-  localStorage via `assets/sie-progress.js`), `study-guide.html` (one chapter per day).
+- `site/reports/sie/study-guide.html` — the SIE Program, as one study guide: a collapsible chapter
+  per program day that folds away once ticked finished; linked from the home page.
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
   `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
   source material for the 150-day curriculum.

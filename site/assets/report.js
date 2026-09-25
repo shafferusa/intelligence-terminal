@@ -530,319 +530,73 @@
   } /* end startSpeechPlayer */
 })();
 
-/* ---------- SIE Program: self-grading quizzes ----------
-   All 30 SIE editions were published at once (2026-09-25), so no routine is
-   waiting to grade replies. Each quiz page carries its answer key in a JSON
-   block (#quiz-key) that is never rendered; nothing is shown until Logan taps
-   "Grade my answers". Grading reveals every explanation, lets him tag each miss
-   (rule / concept / careless), and records the result in this browser's
-   localStorage under "sie-progress", which progress.html turns into the
-   weakness tracker, the error log and the spaced-repetition review deck.
-   Without JS the questions still read normally; there is simply no grading. */
-var SIEStore = (function () {
-  "use strict";
-  var KEY = "sie-progress";
-  function load() {
-    var d = null;
-    try { d = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { d = null; }
-    if (!d || typeof d !== "object") d = {};
-    d.attempts = d.attempts || [];
-    d.q = d.q || {};
-    return d;
-  }
-  function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); return true; } catch (e) { return false; } }
-  return { load: load, save: save };
-})();
-
-var SIEGrade = (function () {
-  "use strict";
-  var SECTIONS = { "1": "Capital markets", "2": "Products & risks", "3": "Trading, accounts & prohibited acts", "4": "Regulatory framework" };
-  var TAGS = [["rule", "Didn't know the rule"], ["concept", "Misread the concept"], ["careless", "Careless"]];
-
-  function el(tag, cls, text) {
-    var n = document.createElement(tag);
-    if (cls) n.className = cls;
-    if (text != null) n.textContent = text;
-    return n;
-  }
-
-  /* Wire one quiz. opts: {items, key (array aligned with items), onGraded(results), record (bool)} */
-  function wire(quiz, items, key, opts) {
-    opts = opts || {};
-    var storeKey = opts.storeKey;
-    var saved = {};
-    if (storeKey) { try { saved = JSON.parse(localStorage.getItem(storeKey) || "{}") || {}; } catch (e) { saved = {}; } }
-    Array.prototype.forEach.call(items, function (li, i) {
-      var v = saved[i + 1];
-      if (!v) return;
-      var input = li.querySelector('input[type="radio"][value="' + v + '"]');
-      if (input) input.checked = true;
-    });
-
-    var bar = quiz.querySelector(".answer-bar");
-    if (!bar) { bar = el("div", "answer-bar"); quiz.appendChild(bar); }
-    bar.textContent = "";
-    var count = el("p", "answer-count");
-    var actions = el("div", "answer-actions");
-    var gradeBtn = el("button", null, "Grade my answers");
-    gradeBtn.type = "button";
-    actions.appendChild(gradeBtn);
-    var timerBtn = null, timerOut = null, timerId = null;
-    if (opts.timerMinutes) {
-      timerBtn = el("button", "btn-ghost", "Start " + Math.floor(opts.timerMinutes / 60) + ":" + ("0" + opts.timerMinutes % 60).slice(-2) + " timer");
-      timerBtn.type = "button";
-      timerOut = el("span", "quiz-timer");
-      actions.appendChild(timerBtn);
-      actions.appendChild(timerOut);
-    }
-    var retakeBtn = el("button", "btn-ghost", "Clear and retake");
-    retakeBtn.type = "button";
-    retakeBtn.hidden = true;
-    actions.appendChild(retakeBtn);
-    bar.appendChild(count);
-    bar.appendChild(actions);
-
-    var panel = el("div", "quiz-score");
-    panel.hidden = true;
-    quiz.insertBefore(panel, quiz.querySelector(".quiz-list"));
-
-    function answers() {
-      var out = {};
-      Array.prototype.forEach.call(items, function (li, i) {
-        var c = li.querySelector('input[type="radio"]:checked');
-        if (c) out[i + 1] = c.value;
-      });
-      return out;
-    }
-    function renderCount() {
-      var n = Object.keys(answers()).length;
-      count.textContent = n + " of " + items.length + " answered";
-      if (storeKey) { try { localStorage.setItem(storeKey, JSON.stringify(answers())); } catch (e) {} }
-    }
-    quiz.addEventListener("change", function (ev) { if (ev.target && ev.target.type === "radio") renderCount(); });
-    renderCount();
-
-    if (timerBtn) {
-      timerBtn.addEventListener("click", function () {
-        var end = Date.now() + opts.timerMinutes * 60000;
-        timerBtn.hidden = true;
-        function tick() {
-          var left = Math.max(0, end - Date.now());
-          var m = Math.floor(left / 60000), sec = Math.floor(left % 60000 / 1000);
-          timerOut.textContent = left ? ("Time left " + m + ":" + ("0" + sec).slice(-2)) : "Time is up — grade now";
-          if (!left) { clearInterval(timerId); timerOut.classList.add("is-up"); }
-        }
-        tick();
-        timerId = setInterval(tick, 1000);
-      });
-    }
-
-    function grade(record) {
-      var chosen = answers();
-      var unanswered = items.length - Object.keys(chosen).length;
-      if (record && unanswered && !window.confirm(unanswered + " question(s) unanswered. Grade anyway? Unanswered count as wrong.")) return;
-      if (timerId) clearInterval(timerId);
-      var res = { correct: 0, total: items.length, bySection: {}, misses: [] };
-      var d = record ? SIEStore.load() : null;
-      var ts = new Date().toISOString();
-      Array.prototype.forEach.call(items, function (li, i) {
-        var k = key[i];
-        var pick = chosen[i + 1] || null;
-        var ok = pick === k.answer;
-        if (ok) res.correct++;
-        var sec = String(k.section || "?");
-        var b = res.bySection[sec] || [0, 0];
-        b[0] += ok ? 1 : 0; b[1] += 1; res.bySection[sec] = b;
-
-        li.classList.remove("is-right", "is-wrong");
-        li.classList.add(ok ? "is-right" : "is-wrong");
-        Array.prototype.forEach.call(li.querySelectorAll('input[type="radio"]'), function (inp) {
-          inp.disabled = true;
-          var lab = inp.closest("label");
-          lab.classList.remove("opt-right", "opt-wrong");
-          if (inp.value === k.answer) lab.classList.add("opt-right");
-          else if (inp.value === pick) lab.classList.add("opt-wrong");
-        });
-        var old = li.querySelector(".quiz-explain");
-        if (old) old.parentNode.removeChild(old);
-        var box = el("div", "quiz-explain");
-        var head = el("p");
-        var verdict = el("b", null, ok ? "Correct. " : (pick ? "You chose " + pick + ". " : "Not answered. "));
-        head.appendChild(verdict);
-        head.appendChild(document.createTextNode("Answer: " + k.answer + "."));
-        box.appendChild(head);
-        if (k.rule) { var r = el("p", "quiz-rule"); r.appendChild(el("b", null, "Rule: ")); r.appendChild(document.createTextNode(k.rule)); box.appendChild(r); }
-        box.appendChild(el("p", null, k.explanation || ""));
-        li.appendChild(box);
-
-        if (d) {
-          var stemEl = li.querySelector(".quiz-stem");
-          var rec = d.q[k.id] || { day: k.day, topic: k.topic, section: sec, type: k.type, history: [] };
-          rec.history.push({ ts: ts, ok: ok, chosen: pick, review: !!opts.isReview });
-          if (!ok) {
-            var optsText = {};
-            Array.prototype.forEach.call(li.querySelectorAll(".quiz-opts label"), function (lab) {
-              var inp = lab.querySelector("input");
-              optsText[inp.value] = lab.textContent.replace(/^\s*[A-D]\s*/, "").trim();
-            });
-            rec.stem = stemEl ? stemEl.innerText : "";
-            rec.options = optsText;
-            rec.answer = k.answer; rec.rule = k.rule; rec.explanation = k.explanation;
-            rec.lastMiss = ts; rec.lastChosen = pick;
-            rec.streak = 0;
-          } else if (rec.lastMiss) {
-            rec.streak = (rec.streak || 0) + 1;
-          }
-          d.q[k.id] = rec;
-        }
-        if (!ok) {
-          res.misses.push(k.id);
-          var tagRow = el("div", "miss-tags");
-          tagRow.appendChild(el("span", null, "Why did you miss it? "));
-          TAGS.forEach(function (t) {
-            var btn = el("button", "tag-btn", t[1]);
-            btn.type = "button";
-            btn.setAttribute("data-tag", t[0]);
-            btn.addEventListener("click", function () {
-              var dd = SIEStore.load();
-              if (dd.q[k.id]) { dd.q[k.id].tag = t[0]; SIEStore.save(dd); }
-              Array.prototype.forEach.call(tagRow.querySelectorAll(".tag-btn"), function (x) { x.classList.toggle("is-on", x === btn); });
-              renderPanel();
-            });
-            tagRow.appendChild(btn);
-          });
-          box.appendChild(tagRow);
-        }
-      });
-      if (d) {
-        if (!opts.isReview) d.attempts.push({ day: opts.day, kind: opts.kind, ts: ts, correct: res.correct, total: res.total, bySection: res.bySection });
-        SIEStore.save(d);
-      }
-      lastRes = res;
-      renderPanel();
-      gradeBtn.hidden = true;
-      retakeBtn.hidden = false;
-      if (storeKey) { try { localStorage.setItem(storeKey + ":graded", "1"); } catch (e) {} }
-      panel.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (opts.onGraded) opts.onGraded(res);
-    }
-
-    var lastRes = null;
-    function renderPanel() {
-      if (!lastRes) return;
-      var res = lastRes;
-      panel.hidden = false;
-      panel.textContent = "";
-      var pct = res.total ? Math.round(100 * res.correct / res.total) : 0;
-      var h = el("p", "quiz-score-head", res.correct + " / " + res.total + " (" + pct + "%)");
-      panel.appendChild(h);
-      if (opts.kind === "exam") panel.appendChild(el("p", null, pct >= 70 ? "Above the 70 passing line." : "Below the 70 passing line."));
-      var secs = Object.keys(res.bySection).sort();
-      var ul = el("ul");
-      var best = null, worst = null;
-      secs.forEach(function (s) {
-        var b = res.bySection[s], p = b[1] ? b[0] / b[1] : 0;
-        ul.appendChild(el("li", null, (SECTIONS[s] || "Section " + s) + ": " + b[0] + "/" + b[1] + " (" + Math.round(100 * p) + "%)"));
-        if (!best || p > best[1]) best = [s, p];
-        if (!worst || p < worst[1]) worst = [s, p];
-      });
-      panel.appendChild(ul);
-      if (secs.length > 1 && best && worst && best[0] !== worst[0]) {
-        panel.appendChild(el("p", null, "Strongest: " + SECTIONS[best[0]] + ". Weakest: " + SECTIONS[worst[0]] + "."));
-      }
-      if (res.misses.length) {
-        var d = SIEStore.load(), c = { rule: 0, concept: 0, careless: 0 }, untagged = 0;
-        res.misses.forEach(function (id) { var t = d.q[id] && d.q[id].tag; if (t) c[t]++; else untagged++; });
-        panel.appendChild(el("p", null, "Your misses: " + c.rule + " rule-based · " + c.concept + " conceptual · " + c.careless + " careless" + (untagged ? " · " + untagged + " not yet tagged (tag them below each explanation)" : "") + "."));
-      }
-      var link = el("a", null, "Open your progress and review deck →");
-      link.href = opts.progressHref || "progress.html";
-      var lp = el("p"); lp.appendChild(link); panel.appendChild(lp);
-    }
-
-    gradeBtn.addEventListener("click", function () { grade(true); });
-    retakeBtn.addEventListener("click", function () {
-      Array.prototype.forEach.call(items, function (li) {
-        li.classList.remove("is-right", "is-wrong");
-        var x = li.querySelector(".quiz-explain"); if (x) x.parentNode.removeChild(x);
-        Array.prototype.forEach.call(li.querySelectorAll('input[type="radio"]'), function (inp) {
-          inp.disabled = false; inp.checked = false;
-          inp.closest("label").classList.remove("opt-right", "opt-wrong");
-        });
-      });
-      panel.hidden = true; lastRes = null;
-      gradeBtn.hidden = false; retakeBtn.hidden = true;
-      if (storeKey) { try { localStorage.removeItem(storeKey); localStorage.removeItem(storeKey + ":graded"); } catch (e) {} }
-      renderCount();
-      if (timerBtn) { timerBtn.hidden = false; timerOut.textContent = ""; timerOut.classList.remove("is-up"); }
-      quiz.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    /* Coming back to a quiz already graded on this device: show the graded
-       view again without recording a second attempt. */
-    if (storeKey) {
-      var was = null;
-      try { was = localStorage.getItem(storeKey + ":graded"); } catch (e) { was = null; }
-      if (was) grade(false);
-    }
-  }
-
-  return { wire: wire, el: el, SECTIONS: SECTIONS };
-})();
-
+/* ---------- SIE Study Guide: chapters that fold away when finished ----------
+   Each chapter is a <details open>. Ticking "I've finished Day N" at its end
+   closes it and remembers that on this device; finished chapters start
+   closed next time and show a tick in the contents. Tapping a heading opens
+   it again. Contents links open a closed chapter before jumping to it.
+   With JS off every chapter is simply open. */
 (function () {
   "use strict";
-  var quiz = document.querySelector(".quiz[data-quiz-day]");
-  var keyTag = document.getElementById("quiz-key");
-  if (!quiz || !keyTag) return;
-  var key;
-  try { key = JSON.parse(keyTag.textContent); } catch (e) { return; }
-  var items = quiz.querySelectorAll(".quiz-q");
-  if (!items.length || items.length !== key.questions.length) return;
-  var day = quiz.getAttribute("data-quiz-day");
-  SIEGrade.wire(quiz, items, key.questions.map(function (q) { q.day = +day; return q; }), {
-    storeKey: "sie-answers:" + day,
-    day: +day,
-    kind: key.kind,
-    timerMinutes: key.kind === "exam" ? 105 : 0,
-    progressHref: "progress.html"
-  });
-})();
-
-/* ---------- SIE Study Guide progress ----------
-   One checkbox per chapter ("I've worked through Day N"), remembered on this
-   device, with a tick against the chapter in the contents. Pure convenience:
-   with JS off or storage blocked the guide reads exactly the same. */
-(function () {
-  "use strict";
-  var chapters = document.querySelectorAll(".guide-chapter[id]");
+  var chapters = document.querySelectorAll("details.guide-chapter[id]");
   if (!chapters.length) return;
   var KEY = "sie-guide-done";
   var done = {};
   try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
-  function mark(id) {
-    var link = document.querySelector('.guide-toc a[href="#' + id + '"]');
-    if (link && link.parentNode) link.parentNode.classList.toggle("done", !!done[id]);
+  var count = document.getElementById("guide-count");
+  function tally() {
+    var n = 0;
+    Array.prototype.forEach.call(chapters, function (ch) { if (done[ch.id]) n++; });
+    if (count) count.textContent = n + " of " + chapters.length + " finished.";
+  }
+  function mark(ch) {
+    var on = !!done[ch.id];
+    ch.classList.toggle("is-done", on);
+    var link = document.querySelector('.guide-toc a[href="#' + ch.id + '"]');
+    if (link && link.parentNode) link.parentNode.classList.toggle("done", on);
+  }
+  function openTarget(hash) {
+    if (!hash || hash.charAt(0) !== "#") return;
+    var t = document.getElementById(hash.slice(1));
+    if (t && t.tagName === "DETAILS" && !t.open) t.open = true;
   }
   Array.prototype.forEach.call(chapters, function (ch) {
-    var id = ch.id;
-    var h = ch.querySelector("h2");
+    var h = ch.querySelector("summary h2");
     var label = document.createElement("label");
     label.className = "guide-done";
     var box = document.createElement("input");
     box.type = "checkbox";
-    box.checked = !!done[id];
+    box.checked = !!done[ch.id];
     label.appendChild(box);
-    label.appendChild(document.createTextNode("I've worked through " + (h ? h.textContent.split(" · ")[0] : "this chapter")));
+    var name = h ? h.textContent.split(" · ")[0] : "this chapter";
+    label.appendChild(document.createTextNode("I've finished " + name + " — fold it away"));
     ch.appendChild(label);
     box.addEventListener("change", function () {
-      if (box.checked) done[id] = true; else delete done[id];
-      save();
-      mark(id);
+      if (box.checked) done[ch.id] = true; else delete done[ch.id];
+      save(); mark(ch); tally();
+      if (box.checked) {
+        ch.open = false;
+        ch.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
-    mark(id);
+    if (done[ch.id]) ch.open = false;
+    mark(ch);
   });
+  tally();
+  document.addEventListener("click", function (ev) {
+    var a = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (a) openTarget(a.getAttribute("href"));
+    var btn = ev.target.closest && ev.target.closest("[data-guide]");
+    if (!btn) return;
+    var mode = btn.getAttribute("data-guide");
+    Array.prototype.forEach.call(chapters, function (ch) {
+      if (mode === "open") ch.open = true;
+      else if (mode === "fold" && done[ch.id]) ch.open = false;
+    });
+  });
+  window.addEventListener("hashchange", function () { openTarget(location.hash); });
+  openTarget(location.hash);
 })();
 
 /* ---------- SIE pages: mark tables that need a sideways swipe ----------

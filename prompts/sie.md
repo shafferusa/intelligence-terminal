@@ -1,9 +1,9 @@
 # SIE Program — Run Procedure (DORMANT since 2026-09-25)
 
-> **Not in use.** On 2026-09-25 Logan asked for all 30 editions at once instead of one a day. They
-> were published together at `site/reports/sie/` with self-grading quizzes and a browser-side
-> progress page, and the noon routine was disabled (SPEC §0b). This procedure is kept only in case
-> the daily, adaptive version is ever switched back on.
+> **Not in use.** On 2026-09-25 Logan replaced the daily editions with one study guide
+> (`site/reports/sie/study-guide.html`) and the noon routine was disabled (SPEC §0b). This procedure
+> is kept only in case the daily, adaptive version is ever switched back on; its quiz answer sheet
+> was removed from `site/assets/report.js` and would need restoring from git history.
 
 # (original) SIE Program — Run Procedure (daily, 12:00 PM ET)
 

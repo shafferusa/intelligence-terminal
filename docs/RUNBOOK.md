@@ -103,7 +103,7 @@ Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a c
 ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
 rather than delaying the news.
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
-| SIE Program (added and DISABLED 2026-09-25 — all 30 days published at once; see SPEC §0b) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
+| SIE Program (added and DISABLED 2026-09-25 — replaced by one study guide; see SPEC §0b) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
 
 **The SIE Program starts at 11:28 ET so the Telegram push arrives around noon**: the run takes
 ~15–25 minutes (grading, an 8,000-word lesson, a quiz and its answer key) and `notify.py` then waits
@@ -241,7 +241,7 @@ real audio a few minutes later, or on any reload.
 
 ## E4. SIE Program replies (built 2026-09-25, switched OFF the same day)
 
-**Off:** the SIE Program was published all at once with in-browser grading, so the Telegram poller's
+**Off:** the SIE Program became a single study guide with no graded quizzes, so the Telegram poller's
 schedule is commented out in `sie-inbox.yml` (manual dispatch still works). What follows describes it
 for the day it is ever re-enabled.
 

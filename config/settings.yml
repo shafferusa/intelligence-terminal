@@ -14,7 +14,7 @@ schedule:
   weekday_pm: "16:30"     # Mon-Fri Closing Brief
   saturday: "09:00"       # Weekly Review
   sunday: "09:00"         # Week Ahead
-  # daily_sie: "11:28"    # SIE Program routine — DISABLED 2026-09-25; all 30 days published at once
+  # daily_sie: "11:28"    # SIE Program routine — DISABLED 2026-09-25; replaced by one study guide
   timezone: America/New_York
 
 # ------------------------------------------------------------
