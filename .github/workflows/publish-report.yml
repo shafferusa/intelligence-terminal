@@ -1,21 +1,29 @@
-name: Publish report (auto-merge claude/report-* PRs)
+name: Publish report (auto-merge routine PRs)
 
 # Routine runs that cannot push directly to main (branch-push restriction) push a
-# claude/report-* branch and open a PR. This workflow merges it; the "Build & deploy
-# site" workflow then runs via its workflow_run trigger (on the main ref, which the
-# github-pages environment protection allows), deploys, and sends the Telegram
-# notification after the page is live.
+# branch and open a PR (shared-rules §15.2b). This workflow merges it; the "Build &
+# deploy site" workflow then runs via its workflow_run trigger (on the main ref,
+# which the github-pages environment protection allows), deploys, and sends the
+# Telegram notification after the page is live.
 #
-# SCOPE (2026-09-25): only claude/report-* branches auto-merge. It used to
-# auto-merge ANY claude/* PR, which had two bad effects: (1) non-report PRs
-# (prompt/spec/infra changes, the SIE program) merged with no human review, and
-# (2) each such merge fired build-site.yml's workflow_run notify job, which
-# re-announced the latest edition on Telegram -- a duplicate Closing Brief every
-# time a non-report claude/* PR merged. Non-report PRs are now merged by hand.
+# WHAT COUNTS AS A ROUTINE PR (2026-09-25). Not the branch name: every PR-path
+# publish on record (2026-07-30 .. 2026-08-13) came from the run session's own
+# designated branch -- claude/nice-bardeen-xxxxxx -- never the claude/report-*
+# name §15.2b asks for, so keying on claude/report-* silently disabled the whole
+# fallback. A routine PR is instead one that
+#   1. comes from a same-repo claude/* branch,
+#   2. is titled with a run-commit prefix -- "report: ", "learning: " or "sie: "
+#      (§15.2b: the PR title is the run's commit subject), and
+#   3. touches nothing outside the routine write set (CLAUDE.md iron rule 3):
+#      site/reports/, state/, ledgers/, registry/.
+# Anything else -- prompt, spec, workflow or site-asset changes -- waits for a
+# human to review and merge it. That also keeps those merges away from the
+# PR-path Telegram notifier, which is what sent a duplicate Closing Brief on
+# 2026-09-25 when a prompt-change PR was auto-merged.
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
     branches: [main]
 
 permissions:
@@ -28,13 +36,34 @@ concurrency:
 
 jobs:
   merge:
-    # Same-repo claude/report-* branches only — never fork PRs, and never other
-    # claude/* PRs (those are reviewed and merged by hand).
+    # Checks 1 and 2 here, so a non-routine PR skips the whole run: a skipped run
+    # does not satisfy build-site.yml's workflow_run condition, so nothing is
+    # rebuilt or announced.
     if: >
       github.event.pull_request.head.repo.full_name == github.repository &&
-      startsWith(github.event.pull_request.head.ref, 'claude/report-')
+      startsWith(github.event.pull_request.head.ref, 'claude/') &&
+      (startsWith(github.event.pull_request.title, 'report: ') ||
+       startsWith(github.event.pull_request.title, 'learning: ') ||
+       startsWith(github.event.pull_request.title, 'sie: '))
     runs-on: ubuntu-latest
     steps:
+      # Check 3. A routine-titled PR that reaches outside the write set is not a
+      # routine publish, whatever its title says: fail loudly rather than merge.
+      - name: Refuse anything outside the routine write set
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          files=$(gh api --paginate \
+            "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" \
+            --jq '.[].filename')
+          printf 'changed files:\n%s\n' "$files"
+          outside=$(printf '%s\n' "$files" \
+            | grep -vE '^(site/reports/|state/|ledgers/|registry/)' || true)
+          if [ -z "$files" ] || [ -n "$outside" ]; then
+            printf 'NOT merging: outside the routine write set:\n%s\n' "$outside" >&2
+            exit 1
+          fi
+
       - name: Merge the PR
         env:
           GH_TOKEN: ${{ github.token }}
