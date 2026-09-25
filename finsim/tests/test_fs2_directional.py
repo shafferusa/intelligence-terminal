@@ -115,6 +115,14 @@ class Directional(unittest.TestCase):
         zero = D.run_dir(recs, H, "prior", prior="zero")
         self.assertLess(prior["walkforward"]["brier"], zero["walkforward"]["brier"] + 1e-12)
 
+    def test_paired_adds_only_with_a_real_effect(self):
+        pairs = [("alpha+prior@global", "prior:product")]
+        real = D.paired_study(_recs(effect=0.8, years=(2000, 2020), assets=8), H, pairs)[0]
+        self.assertTrue(real["adds"])
+        self.assertGreater(real["brier_gain"], 0)
+        noise = D.paired_study(_recs(effect=0.0, seed=11, years=(2000, 2020), assets=8), H, pairs)[0]
+        self.assertFalse(noise["adds"])
+
     def test_noise_rejected(self):
         recs = _recs(effect=0.0, drift=False, seed=5)
         res = D.run_dir(recs, H, "alpha+prior", depth="global")

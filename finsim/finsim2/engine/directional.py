@@ -592,7 +592,7 @@ def _predict_tree(coef: Dict[str, List[float]], x: List[float], pth: List[str]) 
     return None
 
 
-def run_dir(recs: List[Rec], h: int, model: str, depth: str = "global", prior: str = MAIN_PRIOR) -> dict:
+def run_dir(recs: List[Rec], h: int, model: str, depth: str = "global", prior: str = MAIN_PRIOR, keep: bool = False) -> dict:
     """Fit on outcomes matured before each era / the split / everything; score the held-out records."""
     paths = [_cut(node_path(r.meta, "hier"), depth) for r in recs]
     outer = [a for a, _ in ERAS] + [SPLIT, FINAL_CUT]
@@ -644,6 +644,8 @@ def run_dir(recs: List[Rec], h: int, model: str, depth: str = "global", prior: s
         wf_idx += test; wf_p += ps
         if "signal" in det:
             era_sig[a] = det["signal"]
+    if keep:
+        res["_pred"] = dict(zip(wf_idx, wf_p))
     if wf_idx:
         rs = [recs[i] for i in wf_idx]
         res["walkforward"] = dir_metrics(rs, wf_p, h, with_bands=True)
@@ -669,6 +671,57 @@ def run_dir(recs: List[Rec], h: int, model: str, depth: str = "global", prior: s
         res["era_rms"] = {a: d["rms"] for a, d in era_sig.items()}
     res["gates"] = dir_gates(res)
     return res
+
+
+PAIRS = [("alpha+prior@global", "prior:product"), ("alpha+prior@class", "prior:product"), ("signal+prior@global", "prior:product"),
+         ("prior:product", "prior:zero"), ("prior:frequency", "prior:zero")]
+
+
+def _spec(name: str) -> dict:
+    if name.startswith("prior:"):
+        return {"model": "prior", "prior": name.split(":", 1)[1]}
+    m, d = name.split("@")
+    return {"model": m, "depth": d}
+
+
+def paired(recs: List[Rec], h: int, preds: Dict[str, Dict[int, float]], a: str, b: str) -> dict:
+    """Does model a add to model b? Same walk-forward records: weekly-clustered Brier gain (b − a), accuracy and AUC."""
+    pa, pb = preds[a], preds[b]
+    common = [i for i in pa if i in pb and pa[i] is not None and pb[i] is not None]
+    by_b: Dict[int, List[float]] = {}
+    by_a: Dict[int, List[float]] = {}
+    for i in common:
+        r = recs[i]
+        o = _obs(r)
+        by_b.setdefault(r.wk, []).append((pb[i] - o) ** 2 - (pa[i] - o) ** 2)
+        if pa[i] != 0.5 and pb[i] != 0.5:
+            by_a.setdefault(r.wk, []).append((1.0 if (pa[i] > 0.5) == bool(o) else 0.0) - (1.0 if (pb[i] > 0.5) == bool(o) else 0.0))
+    c, d = _clustered_mean(by_b, h), _clustered_mean(by_a, h)
+    os_ = [_obs(recs[i]) for i in common]
+    au_a, au_b = _auc([pa[i] for i in common], os_), _auc([pb[i] for i in common], os_)
+    return {"a": a, "b": b, "n": len(common), "brier_gain": c["mean"], "brier_t": (c["mean"] / c["se"]) if c["mean"] is not None and c["se"] else None,
+            "delta_acc": d["mean"], "delta_acc_t": (d["mean"] / d["se"]) if d["mean"] is not None and d["se"] else None,
+            "auc_a": au_a, "auc_b": au_b, "adds": bool(c["mean"] is not None and c["se"] and c["mean"] / c["se"] >= 2)}
+
+
+def bear_composition(recs: List[Rec], pred: Dict[int, float], threshold: float = -20.0) -> Dict[str, dict]:
+    """Bearish calls (score below the threshold) grouped by the product rule that set the base prior, with P(R < 0)."""
+    out: Dict[str, list] = {}
+    for i, p in pred.items():
+        if p is not None and 100 * (2 * p - 1) < threshold:
+            r = recs[i]
+            a = out.setdefault((r.ext or {}).get("rule") or "?", [0, 0])
+            a[0] += 1; a[1] += 1 if r.yr < 0 else 0
+    return {k: {"n": n, "p_down": d / n} for k, (n, d) in sorted(out.items())}
+
+
+def paired_study(recs: List[Rec], h: int, pairs=PAIRS, with_composition: bool = False):
+    names = sorted({x for p in pairs for x in p})
+    preds = {n: run_dir(recs, h, keep=True, **_spec(n))["_pred"] for n in names}
+    out = [paired(recs, h, preds, a, b) for a, b in pairs]
+    if with_composition:
+        return out, {n: bear_composition(recs, preds[n]) for n in ("prior:product", "alpha+prior@global") if n in preds}
+    return out
 
 
 def eval_fixed(recs: List[Rec], h: int, pfun) -> dict:
@@ -856,6 +909,7 @@ def study_horizon(store, research, lab: str, progress=None) -> Tuple[dict, dict]
                                  "balanced": (D[f"{k}@{dp}"].get("walkforward") or {}).get("balanced_accuracy")}
                              for k in ("alpha+prior", "signal+prior")} for dp in DEPTHS}}
     out["signals"] = signal_findings(recs, A["signal@class"], D["signal+prior@class"])
+    out["paired"], out["bear_composition"] = paired_study(recs, h, with_composition=True)
     out["seconds"] = round(time.time() - t0, 1)
     for k, v in D.items():
         if v.get("final"):
@@ -867,7 +921,7 @@ def study_horizon(store, research, lab: str, progress=None) -> Tuple[dict, dict]
 
 
 def slim(res: dict) -> dict:
-    drop = ("final", "era_rms")
+    drop = ("final", "era_rms", "_pred")
     out = dict(res)
     out["directional"] = {k: {kk: vv for kk, vv in v.items() if kk not in drop} for k, v in (res.get("directional") or {}).items()}
     out["alpha"] = {k: {kk: vv for kk, vv in v.items() if kk not in drop} for k, v in (res.get("alpha") or {}).items()}
@@ -1237,6 +1291,16 @@ def markdown(res: dict) -> str:
     w("")
     w("(Δ Brier gain: the change in the mean per-record Brier improvement over climatology; each model's own t is in the per-horizon tables.)")
     w("")
+    w("Paired on the same walk-forward records (weekly-clustered): does the first model *add* to the second? Brier gain > 0 means "
+      "the first is better; *adds* = t ≥ 2.")
+    w("")
+    w("| Horizon | Comparison | Brier gain (t) | Δ accuracy (t) | AUC | Adds? |")
+    w("|---|---|---|---|---|---|")
+    for lab in _HZ:
+        for pr in (H.get(lab) or {}).get("paired") or []:
+            w(f"| {lab} | {pr['a']} vs {pr['b']} | {_n(pr.get('brier_gain'), 5, True)} ({_n(pr.get('brier_t'), 1)}) | {_p(pr.get('delta_acc'), 2, True)} ({_n(pr.get('delta_acc_t'), 1)}) | "
+              f"{_n(pr.get('auc_a'))} vs {_n(pr.get('auc_b'))} | {'yes' if pr.get('adds') else 'no'} |")
+    w("")
     # 6–11
     w("**6–11. Directional accuracy, naive baseline, excess, balanced accuracy, bearish precision, Brier / calibration** — every "
       "directional model, walk-forward. ECE = expected calibration error over ten probability bins.")
@@ -1274,6 +1338,18 @@ def markdown(res: dict) -> str:
         w(f"| {lab} | {k} | {_pc(bear[0].get('unconditional'))} | " + " | ".join(cell(x) for x in bear) + " |")
     w("")
     # 12
+    comp = [(lab, m, c) for lab in _HZ for m, c in ((H.get(lab) or {}).get("bear_composition") or {}).items()]
+    if comp:
+        keys = sorted({k for _, _, c in comp for k in c})
+        w("")
+        w("Where the bearish calls (score < −20) come from — grouped by the rule that set the product's base prior (own = VXX's "
+          "own trailing drift; beta_market includes leveraged / inverse funds) — and P(R < 0) within each:")
+        w("")
+        w("| Horizon | Model | " + " | ".join(keys) + " |")
+        w("|---|---|" + "---|" * len(keys))
+        for lab, m, c in comp:
+            w(f"| {lab} | {m} | " + " | ".join((f"{c[k]['n']:,} ({_pc(c[k]['p_down'])} down)" if k in c else "—") for k in keys) + " |")
+    w("")
     w("**12. Does score strength map monotonically to realized p_up?** Best directional model per horizon: expected p_up → "
       "realized p_up by score band (walk-forward records; n in brackets).")
     w("")
