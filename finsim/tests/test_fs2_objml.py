@@ -127,6 +127,26 @@ class Verification(unittest.TestCase):
         self.assertIn("out-of-sample windows", res["reasons"][0])
 
 
+class SizingStudy(unittest.TestCase):
+    def _biased(self, factor_before, factor_after, seed=8):
+        rows = _rows(signal=False, seed=seed, n=240)
+        for r in rows:
+            k = factor_before if r["date"] < O.CONFIRM_FROM else factor_after
+            r["_hp"] = array("d", [k * v for v in r["_hp"]])
+            r["H"] = sum(r["_hp"])
+        return rows
+
+    def test_a_persistent_bias_is_confirmed(self):
+        res = O.sizing_study({"g": self._biased(1.25, 1.25)})["g"]["variance"]
+        self.assertTrue(res["passed"], res)
+        self.assertLess(res["multiple"], 0.95)
+        self.assertGreater(res["confirmation_gain"], 0)
+
+    def test_a_bias_that_disappears_after_discovery_is_not(self):
+        res = O.sizing_study({"g": self._biased(1.25, 0.85)})["g"]["variance"]
+        self.assertFalse(res["passed"], res)
+
+
 class LiveCap(unittest.TestCase):
     def test_unverified_or_missing_model_changes_nothing(self):
         self.assertEqual(O.adjustment(None, "equity:spot:21", "beta", {})["applied"], 0.0)

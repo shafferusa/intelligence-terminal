@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS option_quotes(asof TEXT, underlying TEXT, expiry TEXT
     last REAL, iv REAL, delta REAL, gamma REAL, vega REAL, theta REAL, rho REAL, open_interest REAL, volume REAL, source TEXT,
     PRIMARY KEY(asof, underlying, expiry, strike, right));
 CREATE INDEX IF NOT EXISTS option_quotes_u ON option_quotes(underlying, asof);
+CREATE TABLE IF NOT EXISTS lab_records(asset_id TEXT NOT NULL, horizon TEXT NOT NULL, version TEXT NOT NULL, data_version TEXT,
+    created TEXT, n INTEGER, data BLOB, PRIMARY KEY(asset_id, horizon, version));
 """
 OPTION_COLS = ["asof", "underlying", "expiry", "strike", "right", "bid", "ask", "last", "iv", "delta", "gamma", "vega", "theta", "rho",
                "open_interest", "volume", "source"]
@@ -450,6 +452,31 @@ class Store:
             return default
         v = _loads(rows[0]["value"], default)
         return v
+
+    # ------------------------------------------------------------------ ML Lab research records
+    def put_lab_records(self, asset_id: str, horizon: str, version: str, data_version: str, rows: list):
+        """Matured point-in-time Shaffer records for one asset and horizon (columnar, zlib-compressed JSON)."""
+        import zlib
+        blob = zlib.compress(json.dumps(rows, separators=(",", ":")).encode(), 6)
+        self._write(lambda conn: conn.execute(
+            "INSERT OR REPLACE INTO lab_records(asset_id, horizon, version, data_version, created, n, data) VALUES(?,?,?,?,?,?,?)",
+            (asset_id, horizon, version, data_version, _now(), len(rows), blob)))
+
+    def lab_records(self, version: str, horizon: str | None = None) -> list[dict]:
+        import zlib
+        sql, args = "SELECT asset_id, horizon, data_version, created, n, data FROM lab_records WHERE version = ?", [version]
+        if horizon:
+            sql += " AND horizon = ?"; args.append(horizon)
+        out = []
+        for r in self._q(sql + " ORDER BY asset_id", args):
+            d = dict(r)
+            d["rows"] = json.loads(zlib.decompress(d.pop("data")).decode())
+            out.append(d)
+        return out
+
+    def lab_record_summary(self) -> list[dict]:
+        return [dict(r) for r in self._q("SELECT version, horizon, count(*) AS assets, sum(n) AS records, max(created) AS created "
+                                         "FROM lab_records GROUP BY version, horizon ORDER BY version, horizon")]
 
     def kv_set(self, key: str, value):
         payload = _dumps(value)

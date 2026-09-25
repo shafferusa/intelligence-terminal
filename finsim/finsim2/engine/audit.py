@@ -144,6 +144,8 @@ def _shaffer_worker(db_path: str, asset_id: str) -> dict:
                 cnt[e.get("status", "?")] = cnt.get(e.get("status", "?"), 0) + 1
             out["status_counts"][lab] = cnt
         out["sign_checks"] = run.sign_checks
+        from .lab import save_records
+        out["lab_records"] = save_records(st, run, r.version())
         first = next((i for i, v in enumerate(run.price) if v is not None), 0)
         out["first_price"] = run.cal[first]
         out["first_score"] = {lab: (run.cal[res["history"][lab][0][0]] if res["history"][lab] else None) for lab, _ in run.horizons}
@@ -311,7 +313,7 @@ def _combined(oos: List[tuple], ss: List[Optional[float]]) -> Optional[dict]:
 
 # ------------------------------------------------------------------ orchestration
 def run_universe(db_path: str, assets: Optional[List[str]] = None, ml_assets: Optional[List[str]] = None, workers: int = 3,
-                 progress=None) -> dict:
+                 progress=None, skip_ml: bool = False) -> dict:
     from ..data.store import Store
     st = Store(db_path)
     ids = assets or [a["id"] for a in st.assets() if st.price_count(a["id"]) >= 252 * 6]
@@ -331,7 +333,7 @@ def run_universe(db_path: str, assets: Optional[List[str]] = None, ml_assets: Op
             r = f.result()
             out["shaffer"][r["asset_id"]] = r
             say(f"[2/3 Shaffer {k + 1}/{len(ids)}] {r['asset_id']}: {r.get('error') or str(r.get('seconds')) + 's'}")
-    mls = [a for a in (ml_assets or ML_SET) if a in ids]
+    mls = [] if skip_ml else [a for a in (ml_assets or ML_SET) if a in ids]
     with ProcessPoolExecutor(max_workers=workers) as ex:
         futs = [ex.submit(_ml_worker, db_path, a) for a in mls]
         for k, f in enumerate(as_completed(futs)):

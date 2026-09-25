@@ -413,3 +413,54 @@ class LedgerDerivatives(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class HedgeDesigns(Base):
+    """Profit-aware hedge designs: utility = risk removed − λ·profit given up − cost, on one common simulation."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        from finsim2.hedge import designs as D
+        cls.D = D
+        cls.res = D.compare(cls.r, {"id": "SPY", "quantity": 1000}, "1M", None, 1.0, nav=1e6)
+
+    def test_every_design_is_scored_the_same_way(self):
+        rows = {r["key"]: r for r in self.res["designs"]}
+        self.assertEqual(rows["none"]["risk_reduction"], 0.0)
+        self.assertEqual(rows["none"]["utility"], 0.0)
+        for r in rows.values():
+            if r.get("unavailable"):
+                continue
+            self.assertAlmostEqual(r["utility"], r["risk_reduction"] - 1.0 * r["profit_sacrificed"] - (r.get("cost") or 0.0), places=6)
+            self.assertNotIn("SPY", [L["id"] for L in r.get("legs") or []])     # never "hedge" by undoing the trade
+        self.assertIn(self.res["recommended"], rows)
+        self.assertGreaterEqual(max(r["utility"] for r in rows.values() if not r.get("unavailable")), 0.0)
+
+    def test_a_full_beta_hedge_removes_more_risk_and_more_expected_profit(self):
+        rows = {r["key"]: r for r in self.res["designs"] if not r.get("unavailable")}
+        if "beta100" in rows and "beta25" in rows:
+            self.assertGreater(rows["beta100"]["risk_reduction"], rows["beta25"]["risk_reduction"])
+            self.assertGreater(rows["beta100"]["profit_sacrificed"], rows["beta25"]["profit_sacrificed"])
+
+    def test_expected_return_is_the_market_prior_not_the_assets_own_past(self):
+        e = self.res["expected"]
+        self.assertIsNotNone(e["prior"])
+        m = self.m
+        mk = self.D._drift(m, "SPY", 21, years=40)
+        self.assertAlmostEqual(e["prior"], mk, places=9)                   # SPY: β = 1 × the market's long-run average
+
+    def test_a_larger_lambda_never_prefers_a_design_giving_up_more_profit(self):
+        rows = {r["key"]: r for r in self.res["designs"]}
+        sens = self.res["sensitivity"]
+        lo, hi = rows[sens["0.5"]], rows[sens["10.0"]]
+        self.assertLessEqual(hi["profit_sacrificed"], lo["profit_sacrificed"] + 1e-9)
+
+    def test_thesis_disagreement_is_flagged(self):
+        saved = self.D.expected_return
+        self.D.expected_return = lambda *a, **k: {"value": 0.0, "calibrated": -45.0, "evidence": -0.01, "prior": 0.01, "source": "t"}
+        try:
+            res = self.D.compare(self.r, {"id": "SPY", "quantity": 1000}, "1M", None, 1.0, nav=1e6)
+        finally:
+            self.D.expected_return = saved
+        self.assertIn("disagrees", res["thesis"])

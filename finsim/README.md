@@ -104,8 +104,17 @@ python3 -m finsim2 serve | status | stop | phone on
     agreement with the ML score;
   - a point-in-time history (weights refitted quarterly from outcomes known at the time) whose out-of-sample IC is
     reported and can be backtested.
-- *ML Lab (v2).* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient boosting, all in pure
-  Python.
+- *ML Lab.* The laboratory that tests and refines the Shaffer Score and the Shaffer Hedge (see
+  `finsim2/ML_LAB.md`). It never trades and never changes production by itself.
+  - Weight research: family weights by class → sector → industry → asset, each shrunk toward its parent, fitted on
+    pre-2018 outcomes, confirmed on untouched post-2018 data, and walk-forward over 25 years of point-in-time records.
+  - Every formula is a registered version. Challengers run in live shadow and are promoted only after three gates
+    (discovery, confirmation, live) and an explicit user action.
+  - Hedge research: whether the static hedge was historically too big or too small, per group and objective.
+  - Live learning: the forecasts waiting to mature and those already graded.
+  - `python3 -m finsim2 lab --build` rebuilds the research records and runs the research.
+- *Independent ML forecasts (benchmark).* Linear, ridge, LASSO, elastic net, logistic, random forest and gradient
+  boosting, all in pure Python. Kept as a benchmark for the Shaffer Score, not as a second recommendation.
   - Training is walk-forward with purged folds, and the last 15% of rows are held out untouched.
   - The return ensemble must beat every baseline on the same rows: zero, historical mean, previous return,
     momentum, mean reversion and the point-in-time Shaffer Score. It must also be significant, hold up on the
@@ -120,7 +129,9 @@ python3 -m finsim2 serve | status | stop | phone on
   - Analytics: the equation library evaluated on the asset, by family, each with value, percentile, direction and
     evidence.
   - Quant Lab: equation leaderboard, a clickable signal-horizon matrix, and score history.
-  - ML Lab.
+  - ML Lab: production models, historical performance, signal research, weight research, challengers and promotion,
+    hedge research, live learning, version comparison, and the independent ML forecasts.
+  - Model health: every engine's status from its walk-forward and live record.
   - Risk: VaR and ES, factor drivers, scenarios in which unset factors move with the ones you set, and Monte Carlo
     with a percentile cone.
   - Backtests: any signal, the quant score or the ML ensemble, with costs (net per trade), a one-session execution

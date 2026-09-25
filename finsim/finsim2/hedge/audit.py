@@ -118,6 +118,11 @@ def run(research, progress=print, ratio: float = 1.0) -> dict:
     linear = {g: rs for g, rs in groups.items() if g.split(":")[1] in ("spot", "equity_future", "forward")}
     v1 = ml_layer(linear)                                           # the original variance-only layer, for comparison
     out["ml"] = {g: {k: v for k, v in m.items() if k != "model"} for g, m in v1.items()}
+    sizing = objml.sizing_study(groups)
+    out["sizing"] = sizing
+    research.store.kv_set("hedgelab:sizing", {"asof": out["asof"], "trained": out["started"], "groups": sizing})
+    from ..engine.lab import register_hedge_challenger
+    out["hedge_challenger"] = register_hedge_challenger(research.store, sizing, out["started"])
     models = objml.research(groups)
     out["objml"] = {g: {mt: {k: v for k, v in r.items() if k not in ("model", "fill")} for mt, r in res.items()} for g, res in models.items()}
     research.store.kv_set(f"hedgeml:{VERSION}", {"groups": {g: {mt: r for mt, r in res.items() if mt in objml.METRICS} for g, res in models.items()},

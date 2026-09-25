@@ -992,7 +992,8 @@ def analytics(store, panel: Panel, ledger: Ledger, scores: Optional[Dict[str, di
             r["beta"] = None
         sc = (scores or {}).get(r["asset_id"]) or {}
         r.update({"quant_score": sc.get("quant"), "ml_score": sc.get("ml"), "shaffer_score": sc.get("shaffer"), "expected_return": sc.get("expected"),
-                  "signal_confidence": sc.get("confidence"), "primary_horizon": sc.get("horizon")})
+                  "signal_confidence": sc.get("confidence"), "primary_horizon": sc.get("horizon"), "calibrated": sc.get("calibrated"),
+                  "shaffer_by_h": sc.get("by_horizon")})
     long_ = sum(r["exposure"] for r in held if r["exposure"] > 0)          # economic exposure (notional / delta-adjusted)
     short_ = -sum(r["exposure"] for r in held if r["exposure"] < 0)
 

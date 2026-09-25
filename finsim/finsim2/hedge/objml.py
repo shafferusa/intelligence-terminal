@@ -399,6 +399,53 @@ def research(rows_by_group: Dict[str, List[dict]], alpha: float = ALPHA, cap: fl
     return out
 
 
+CONFIRM_FROM = "2018-01-01"
+
+
+def sizing_study(rows_by_group: Dict[str, List[dict]], alpha: float = ALPHA) -> dict:
+    """Is the static rule's size itself biased? For every group and metric: the constant adjustment a ∈ GRID that
+    minimised the metric on windows whose outcome was known before CONFIRM_FROM (discovery), then — frozen — scored on
+    windows starting from CONFIRM_FROM (confirmation, untouched) against the static rule, clustered by date. A pass is
+    a Shaffer Hedge CHALLENGER (H = m · H_raw), not a change: promotion needs the live shadow and an explicit action."""
+    out: Dict[str, dict] = {}
+    for g, rows in rows_by_group.items():
+        rows = sorted([r for r in rows if r.get("_u") is not None], key=lambda r: r["date"])
+        if not rows:
+            continue
+        h = rows[0]["h"]
+        disc = [r for r in rows if r["end"] < CONFIRM_FROM]
+        conf = [r for r in rows if r["date"] >= CONFIRM_FROM]
+        res = {}
+        for metric in METRICS:
+            use_d = [r for r in disc if window_metric(r, metric, 1.0) is not None]
+            use_c = [r for r in conf if window_metric(r, metric, 1.0) is not None]
+            nd, nc = len({r["date"] for r in use_d}), len({r["date"] for r in use_c})
+            if nd < 30 or nc < 20:
+                res[metric] = {"passed": False, "reason": f"too few windows (discovery {nd} dates, confirmation {nc})"}
+                continue
+            if metric in POOLED:
+                score = lambda rs, a: pooled(rs, [_mult(a, alpha)] * len(rs), metric)
+            else:
+                score = lambda rs, a: sum(window_metric(r, metric, _mult(a, alpha)) for r in rs)
+            a_d = min(GRID, key=lambda a: (score(use_d, a), abs(a)))
+            m = _mult(a_d, alpha)
+            s0, s1 = score(use_c, 0.0), score(use_c, a_d)
+            gain_d = 1 - score(use_d, a_d) / score(use_d, 0.0) if score(use_d, 0.0) else None
+            r = {"adjustment": a_d, "multiple": m, "discovery_gain": gain_d, "confirmation_gain": (1 - s1 / s0) if s0 else None,
+                 "discovery_dates": nd, "confirmation_dates": nc}
+            if metric in POOLED:
+                r["p"] = _boot_p(use_c, [m] * len(use_c), [1.0] * len(use_c), metric, h)
+                sig = r["p"] is not None and r["p"] <= 0.025
+            else:
+                d = [window_metric(x, metric, 1.0) - window_metric(x, metric, m) for x in use_c]
+                r["t"] = _tstat(d, h, [x["date"] for x in use_c])
+                sig = r["t"] is not None and r["t"] >= 2
+            r["passed"] = bool(a_d != 0 and sig and (r["confirmation_gain"] or 0) > 0)
+            res[metric] = r
+        out[g] = res
+    return out
+
+
 def adjustment(models: Optional[dict], group: str, objective: Optional[str], features: dict, alpha: float = ALPHA, cap: float = ADJ_CAP) -> dict:
     """Today's capped adjustment for this objective from a verified objective-specific model; 0 otherwise."""
     metric = metric_for(objective)

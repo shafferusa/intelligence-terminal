@@ -105,6 +105,12 @@ class App:
             except Exception as e:
                 out["errors"].append(f"{a} Shaffer: {e}")
                 continue
+            try:                                               # challengers in live shadow: recorded, never shown as the score
+                from .engine import lab
+                out.setdefault("shadow", 0)
+                out["shadow"] += lab.record_shadow(self.research, a)
+            except Exception as e:  # noqa: BLE001
+                out["errors"].append(f"{a} shadow: {e}")
             try:
                 saved = self.store.kv_get(f"mlmodels:{a}")
                 if saved is None or str(saved.get("trained_at", ""))[:7] != month or saved.get("version") != ml.VERSION:
@@ -117,6 +123,17 @@ class App:
                 out["errors"].append(f"{a} ML: {e}")
         self.store.audit("learning.daily", month, {k: v for k, v in out.items()})
         return out
+
+    def start_lab(self, build: bool = False):
+        def run(job):
+            from .engine import lab
+            from .engine.audit import run_universe
+            path = self.store.path
+            if build:
+                run_universe(path, workers=3, progress=lambda m: job.progress(0, 1, m), skip_ml=True)
+            res = lab.run_parallel(path, workers=3, progress=lambda m: job.progress(0, 1, m))
+            return {"challengers": res.get("challengers"), "seconds": res.get("seconds")}
+        return self.jobs.start("lab", "build" if build else "research", run)
 
     def start_learning(self):
         return self.jobs.start("learning", "daily", lambda job: self.daily_learning(job))
@@ -264,6 +281,30 @@ class Router:
             return {k: store.kv_get(k) for k in store.kv_keys("mlpool:")}
         if r == ["ml", "pooled"] and method == "POST":
             return app.start_pooled(b.get("level", "global"), b.get("key", "all")).view()
+        if r == ["lab"] and method == "GET":
+            from .engine import lab
+            reg = lab.registry(store)
+            from .hedge.history import VERSION as HV
+            hml = {g: {mt: {k: r.get(k) for k in ("verified", "n", "n_eff", "gain_vs_static", "mean_adjustment", "constant_adjustment", "reasons")}
+                       for mt, r in res.items()} for g, res in ((store.kv_get(f"hedgeml:{HV}") or {}).get("groups") or {}).items()}
+            live: dict = {}
+            for p in store.predictions():
+                b_ = live.setdefault(p["model"], {}).setdefault(p["horizon"], {"pending": 0, "graded": 0, "next_due": None, "first": p["made_on"]})
+                if p.get("realized") is None:
+                    b_["pending"] += 1
+                    b_["next_due"] = min(b_["next_due"] or p["target_date"], p["target_date"])
+                else:
+                    b_["graded"] += 1
+            graded_h = [x for x in store.hedges(limit=2000) if x.get("graded_on")]
+            live["shaffer_hedge"] = {"all": {"pending": len(store.hedges(limit=2000)) - len(graded_h), "graded": len(graded_h), "next_due": None}}
+            return {"research": store.kv_get(lab.RESEARCH_KEY), "records": store.lab_record_summary(),
+                    "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
+                    "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live}
+        if r == ["lab", "run"] and method == "POST":
+            return app.start_lab(bool(b.get("build"))).view()
+        if r == ["lab", "promote"] and method == "POST":
+            from .engine import lab
+            return lab.promote(store, str(b.get("id") or ""), confirm=b.get("confirm") is True)
         if r == ["health"]:
             from .engine import health
             return health.report(research)
@@ -312,7 +353,8 @@ class Router:
             qd = self.quote(a["id"])
             lt = research.light(a["id"]) if research.is_cached(a["id"]) else None
             rows.append({"id": a["id"], "name": a["name"], "asset_class": a["asset_class"], "sector": a.get("sector"), "currency": a.get("currency"),
-                         **qd, "scores": (lt or {}).get("scores"), "ml": (lt or {}).get("ml"), "confidence": (lt or {}).get("confidence"),
+                         **qd, "scores": (lt or {}).get("scores"), "calibrated": (lt or {}).get("calibrated"), "agreement": (lt or {}).get("agreement"),
+                         "ml": (lt or {}).get("ml"), "confidence": (lt or {}).get("confidence"),
                          "primary_horizon": (lt or {}).get("primary_horizon"), "researched": lt is not None,
                          "shaffer": (lt or {}).get("shaffer"), "analysis_only": ANALYSIS_ONLY if continuous_series(a) else None})
         return rows
@@ -420,6 +462,18 @@ class Router:
                 raise ValueError("the portfolio holds nothing to hedge")
             nav = _num(b.get("nav")) or SV.nav_now(led)
             return E.analyze(research, positions, b.get("objective") or "auto", b.get("params") or {}, nav=nav, history=b.get("history", True))
+        if rest == ["designs"] and method == "POST":
+            from .hedge import designs as D
+            qty = _num(b.get("quantity"))
+            if not qty:
+                raise ValueError("a signed quantity is needed")
+            led = app.ledger()
+            book = led.positions_for_hedge() if b.get("include_book") else None
+            lam = _num(b.get("lambda")) or 1.0
+            if not 0 < lam <= 100:
+                raise ValueError("lambda must be between 0 and 100")
+            return D.compare(research, {"id": str(b.get("asset_id")), "quantity": qty}, str(b.get("horizon") or "1M"),
+                             b.get("objective") or None, lam, nav=SV.nav_now(led), book=book, use_shaffer=b.get("use_shaffer", True) is not False)
         if rest == ["preview"] and method == "POST":
             qty = _num(b.get("quantity"))
             if qty is None and _num(b.get("amount")):
@@ -531,7 +585,9 @@ class Router:
                     ph = bd.get("primary_horizon")
                     hs = bd["horizons"].get(ph or "3M") or {}
                     scores[a] = {"quant": hs.get("score"), "ml": hs.get("ml_score"), "shaffer": hs.get("score"), "calibrated": hs.get("calibrated"), "expected": hs.get("expected"),
-                                 "confidence": (hs.get("confidence") or {}).get("value"), "horizon": ph}
+                                 "confidence": (hs.get("confidence") or {}).get("value"), "horizon": ph,
+                                 "by_horizon": {k: {"score": v.get("score"), "calibrated": v.get("calibrated"), "confidence": (v.get("confidence") or {}).get("value"),
+                                                    "expected": v.get("expected"), "ml": v.get("ml_score")} for k, v in (bd.get("horizons") or {}).items()}}
             return pf.analytics(store, research.panel(), led, scores)
         if rest == ["transactions"]:
             return sorted(store.transactions("main"), key=lambda t: (t["date"], t["id"]), reverse=True)

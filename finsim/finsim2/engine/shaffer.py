@@ -191,6 +191,7 @@ class ShafferRun:
         refit_k = -1
         score_days = set() if checkpoints_only else set(range(start_hist, n, 5)) | {n - 1}
         self.fam_records = {lab: [] for lab, _ in self.horizons}
+        self.lab_records: Dict[str, list] = {}
         self.sign_checks: Dict[str, list] = {}
         for tau in range(n):
             # 1) matured score records feed the out-of-sample record (validation, calibration)
@@ -206,6 +207,8 @@ class ShafferRun:
                     a[0] += 1; a[1] += fs; a[2] += y; a[3] += fs * fs; a[4] += y * y; a[5] += fs * y
                 if rec.get("sh"):
                     o["shadow"].append((rec["t"], y, rec["raw"], rec["all"], rec["sh"]))
+                # the research record the ML Lab learns from: everything known at t, and what happened after
+                self.lab_records.setdefault(rec["lab"], []).append((rec["t"], rec["raw"], y, yr, rec["fam"], rec["c"], rec.get("K")))
             # 2) observations whose outcome is now known join the evidence
             for _, h in self.horizons:
                 t = tau - h - 1
@@ -288,7 +291,8 @@ class ShafferRun:
                         shd = rec.get("shadow") or {}
                         fam = {f["family"]: f["score"] for f in rec["families"]}
                         fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
-                        pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"),
+                        pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"), "lab": lab,
+                                                                        "c": {f["family"]: f["contribution"] for f in rec["families"]}, "K": rec.get("K"),
                                                                         "sh": {**{f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []},
                                                                                **{"VARIANT:" + k: (v, v) for k, v in (rec.get("variants") or {}).items() if v is not None}}}))
                     if rec.get("expected") is not None and rec.get("calibrated") is not None:

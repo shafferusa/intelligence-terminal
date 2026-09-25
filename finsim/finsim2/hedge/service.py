@@ -93,7 +93,8 @@ def shaffer_brief(research, asset_id: str) -> Optional[dict]:
             "horizons": {k: {"score": v.get("score"), "calibrated": v.get("calibrated"), "ml": v.get("ml_score"), "agreement": v.get("agreement"),
                              "confidence": (v.get("confidence") or {}).get("value"), "expected": v.get("expected"),
                              "expected_typical": v.get("expected_typical"), "expected_edge": v.get("expected_edge"),
-                             "n_eff": v.get("n_eff"), "oos": v.get("oos"), "evidence": v.get("evidence")} for k, v in hs.items()},
+                             "n_eff": v.get("n_eff"), "oos": v.get("oos"), "evidence": v.get("evidence"),
+                             "contributors": (v.get("contributors") or [])[:3], "contradicting": (v.get("contradicting") or [])[:3]} for k, v in hs.items()},
             "contributors": (cur.get("contributors") or [])[:3], "contradicting": (cur.get("contradicting") or [])[:2],
             "ml_verified": cur.get("ml_verified")}
 
@@ -194,7 +195,9 @@ def record(store, ana: dict, status: str, package_id: Optional[str] = None, sour
         "final_ratio": f.get("hedge_pct_final"), "expected_cost": sum((L.get("cost") or {}).get("total") or 0.0 for L in raw),
         "expected_reduction": (1 - (ra.get("sigma_daily") or 0) ** 2 / (rb.get("sigma_daily") or 1) ** 2) if rb.get("sigma_daily") else None,
         "expected_basis": best.get("basis_risk_daily"), "regime": ", ".join(f"{k}:{v}" for k, v in (h.get("regime") or {}).items() if v),
-        "score": best.get("score"), "ml_confidence": None, "detail": {"book": book, "objective_label": h.get("objective_label")}})
+        "score": best.get("score"), "ml_confidence": None,
+        "detail": {"book": book, "objective_label": h.get("objective_label"),
+                   "groups": {lid: v.get("group") for lid, v in (ml.get("by_leg") or {}).items() if v.get("group")}}})
 
 
 def grade(app) -> int:
@@ -229,7 +232,11 @@ def grade(app) -> int:
                         prev = cur
                 return out
             u = pnl((rec.get("detail") or {}).get("book") or [])
-            hdg = pnl(rec.get("selected") or [])
+            legs = {L["id"]: pnl([L]) for L in rec.get("selected") or []}
+            hdg = [sum(v[j] for v in legs.values()) for j in range(len(u))] if legs else [0.0] * len(u)
+            # the daily paths, so a challenger's resizing of these legs can be re-scored on this real outcome (ML Lab)
+            store.kv_set(f"hedgegrade:{rec['id']}", {"u": [round(x, 2) for x in u], "legs": {k: [round(x, 2) for x in v] for k, v in legs.items()},
+                                                     "groups": (rec.get("detail") or {}).get("groups") or {}, "objective": rec.get("objective")})
             vu = sum(x * x for x in u)
             vh = sum((a + b) ** 2 for a, b in zip(u, hdg))
             red = (1 - vh / vu) if vu > 0 else None

@@ -48,13 +48,15 @@ finsim2/
     montecarlo.py        block bootstrap / GBM simulations
     scenario.py          factor-shock scenarios, historical analogues
     tracking.py          prediction log, realised scoring (returns; ML volatility and drawdown forecasts), decay
+    lab.py               ML Lab: research records, hierarchical weight research, formula registry, promotion gates, live shadow
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
                          earnings surprise, breadth) — shadow
     audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
   hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
-                         history, objml (objective-specific hedge ML), crisis, surface, scoring, service, audit
+                         history, objml (objective-specific hedge ML, sizing study), designs (profit-aware hedge designs),
+                         crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI
 ```

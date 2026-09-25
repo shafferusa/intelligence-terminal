@@ -1199,11 +1199,22 @@ def _ml(research, hobj, package, cands, h, models, objective: Optional[str] = No
            "metric_label": objml.METRIC_LABEL.get(objml.metric_for(objective))}
     if not models:
         out["note"] = "no hedge ML models trained yet (python -m finsim2 hedge-audit): adjustment 0"
+    promoted = None
+    try:
+        from ..engine.lab import registry
+        promoted = next((v for v in registry(research.store)["versions"] if v["kind"] == "hedge" and v["status"] == "production"
+                         and v.get("multiples")), None)
+    except Exception:  # noqa: BLE001
+        promoted = None
     for L in package:
         c = next(x for x in cands if x["id"] == L["id"])
         tmpl = leg_template(c["inst"], c["priced"], research.store) or {}
         group = ml_group(hobj, tmpl.get("kind"), h)
         adj = objml.adjustment(models, group, objective, c.get("_features") or {})
+        m = (promoted.get("multiples") or {}).get(group, {}).get(objml.metric_for(objective)) if promoted else None
+        if m:                  # a promoted sizing version (ML Lab, explicit promotion) replaces the ML adjustment for this group
+            adj = {"adjustment": (m - 1) / ALPHA, "applied": m - 1, "verified": True, "metric": objml.metric_for(objective),
+                   "reasons": [], "source": f"{promoted['id']} (promoted sizing × {m:.2f})"}
         adj["group"] = group
         out["by_leg"][L["id"]] = adj
     return out

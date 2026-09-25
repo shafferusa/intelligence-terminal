@@ -180,6 +180,25 @@ one passes, its mean adjustment equals the constant's, so the useful finding is 
 hedges ≈ ×0.89, crypto ETF hedges ×0.85, FX forwards ×0.85–0.90, credit ×0.93–0.95 minimise variance out of sample),
 which is reported and not applied automatically. The original variance-only layer verifies 0 groups once clustered.
 
+## 6b. Hedge designs: protection against profit given up (`hedge/designs.py`)
+
+The question is not "how much variance can be removed" but "what reduces the selected risk without unnecessarily
+destroying the expected profit". For a trade (optionally in its book) the ticket and Analytics → Shaffer Hedge compare
+no hedge, the main risk half / fully, partial beta 25% / 50%, full beta, sector hedge, index put, tail put on the asset
+and a volatility hedge — each sized by this engine — on one historical simulation (overlapping h-day windows of the last
+ten years, factor moves demeaned, options re-priced at the horizon):
+
+```
+U = [Risk(before) − Risk(after)] − λ·[E P&L(before) − E P&L(after)] − cost
+Risk = ES 95% of the h-day P&L (tail objectives, default) or its standard deviation (variance / beta objectives)
+E P&L: market prior β·E[R_market] for every product (not its own past average), the Shaffer evidence part of the traded
+asset's expected return only where the calibration supports it, structural drifts (VXX, inverse funds) kept
+```
+
+The best design is shown for λ = 0.5 … 10; the user may book any design instead of the engine's package. When the
+Shaffer Score disagrees with the trade's direction, the panel says so. Bond carry, term premium, FX carry and commodity
+roll are not in the prior: for those trades the profit side is understated, and the panel says so too.
+
 ## 7. Trades, execution and the hedge ledger
 
 The trade ticket prices the trade, computes the risk it adds (the trade's own risk vector) and the book before the trade,

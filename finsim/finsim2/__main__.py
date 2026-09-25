@@ -54,6 +54,9 @@ def main(argv=None) -> int:
     ic = sub.add_parser("import-chain", help="load an option chain (CSV: asof, underlying, expiry, strike, right, bid, ask, last, iv, delta, gamma, vega, theta, rho, open_interest, volume)")
     ic.add_argument("file")
     ic.add_argument("--source", default="import")
+    lb = sub.add_parser("lab", help="ML Lab: research Shaffer weights (hierarchical, walk-forward) and register challengers")
+    lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
+    lb.add_argument("--workers", type=int, default=3)
     ha = sub.add_parser("hedge-audit", help="walk-forward Shaffer Hedge evaluation and ML-adjustment training → HEDGE_AUDIT.md")
     ha.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "HEDGE_AUDIT.md"))
     args = ap.parse_args(argv)
@@ -93,6 +96,14 @@ def main(argv=None) -> int:
         rows = read_csv(args.file, args.source)
         n = Store(app.db_path()).upsert_option_quotes(rows)
         print(f"stored {n} option quotes for {', '.join(sorted({r['underlying'] for r in rows}))}; hedges now price these contracts from their quotes")
+        return 0
+    if args.cmd == "lab":
+        from .engine import lab
+        if args.build:
+            from .engine.audit import run_universe
+            run_universe(app.db_path(), workers=args.workers, progress=print, skip_ml=True)
+        res = lab.run_parallel(app.db_path(), workers=args.workers, progress=print)
+        print("challengers:", ", ".join(res.get("challengers") or []) or "none", f"({res['seconds']}s)")
         return 0
     if args.cmd == "hedge-audit":
         from .data.store import Store
