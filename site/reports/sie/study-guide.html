@@ -28,7 +28,7 @@
        run; it must stay consistent with the entry in reports/index.json.
        `headlines` is what the Telegram push renders as bullets. -->
   <script type="application/json" id="report-meta">
-  {"date": "2026-09-26", "slot": "sieguide", "title": "The SIE Study Guide", "path": "reports/sie/study-guide.html", "summary": "Everything the 30-day SIE program teaches, one chapter per day.", "headlines": ["SIE study guide"], "reading_minutes": 411, "generated_at": "2026-09-25T18:00:00-04:00", "timezone": "America/New_York"}
+  {"date": "2026-09-26", "slot": "sieguide", "title": "The SIE Study Guide", "path": "reports/sie/study-guide.html", "summary": "Everything the 30-day SIE program teaches, one chapter per day.", "headlines": ["SIE study guide"], "reading_minutes": 413, "generated_at": "2026-09-25T18:00:00-04:00", "timezone": "America/New_York"}
   </script>
 </head>
 <body>
@@ -44,7 +44,7 @@
 <header class="paper-head">
   <p class="paper-edition">SIE Program</p>
   <h1>The SIE Study Guide</h1>
-  <p class="paper-dateline">Published with Day 1 <span class="sep">&middot;</span> 411 min read</p>
+  <p class="paper-dateline">Published with Day 1 <span class="sep">&middot;</span> 413 min read</p>
   <p class="paper-standfirst">Everything the 30-day program teaches, in one place and a little less detail — a chapter for each day, built to be worked through alongside the daily editions and kept for the rest of your career.</p>
 </header>
 <section class="paper-section">
@@ -2075,17 +2075,6 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   <h4>Closing before expiration</h4>
   <p>Most positions are closed rather than held to expiration, and then the arithmetic is simpler: profit = sale price − purchase price, whatever the stock did. BUY 1 XYZ 50 call at 3, later SELL it at 5.50: gain = (5.50 − 3) × 100 = $250. SELL 1 XYZ 50 put at 2, later BUY it back at 0.40: gain = (2 − 0.40) × 100 = $160. The exam signals this with "closes the position" or "sells the option"; do not reach for the breakeven formula.</p>
 
-  <h3>The T-chart: one method for every combination</h3>
-  <p>For any mix of stock and options, track cash per share in two columns: <b>money out</b> (stock bought, premium paid) and <b>money in</b> (stock sold short, premium received). Then test the two extremes.</p>
-  <div class="worked"><b>Worked example</b><ol>
-  <li>Short 100 XYZ at 52 (money in 52); BUY 55 call at 3 (money out 3). Net: 49 in.</li>
-  <li>Breakeven: the short must be bought back at the net, 49.</li>
-  <li>Stock goes to zero: buy back at 0, keep 49 → max gain $4,900.</li>
-  <li>Stock soars: exercise the call, buy at 55 (money out 55). Net: 49 − 55 = −6 → max loss $600.</li>
-  <li>Same method, covered call (buy at 50, SELL 55 call at 2): net 48 out → BE 48; called away at 55 → 55 − 48 = 7 → max gain $700; stock to zero → lose 48 → max loss $4,800.</li>
-  </ol></div>
-  <p>The T-chart turns every combination into two questions: where does the net cash put the breakeven, and what happens at the extremes (stock at zero, stock at infinity, or an option exercised)? It works on any strategy the exam invents.</p>
-
   <h3>Stock plus one option: hedges and income</h3>
   <p>Combine a stock position with an option and you change its shape. There are four combinations, two for protection (you BUY an option) and two for income (you SELL one).</p>
   <div class="table-wrap"><table class="data-table"><thead><tr><th>Stock</th><th>Option</th><th>Name / purpose</th><th>Breakeven</th></tr></thead><tbody>
@@ -2153,6 +2142,17 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   <h4>The collar: floor and cap together</h4>
   <p>Own XYZ at 50, BUY a 45 put at 2 and SELL a 55 call at 2. The call premium pays for the put (a "zero-cost collar"). The result: loss capped at $500 (below 45), gain capped at $500 (above 55), breakeven 50. Executives with concentrated stock use collars to lock in a range without selling.</p>
 
+  <h3>The T-chart: one method for every combination</h3>
+  <p>For any mix of stock and options, track cash per share in two columns: <b>money out</b> (stock bought, premium paid) and <b>money in</b> (stock sold short, premium received). Then test the two extremes.</p>
+  <div class="worked"><b>Worked example</b><ol>
+  <li>Short 100 XYZ at 52 (money in 52); BUY 55 call at 3 (money out 3). Net: 49 in.</li>
+  <li>Breakeven: the short must be bought back at the net, 49.</li>
+  <li>Stock goes to zero: buy back at 0, keep 49 → max gain $4,900.</li>
+  <li>Stock soars: exercise the call, buy at 55 (money out 55). Net: 49 − 55 = −6 → max loss $600.</li>
+  <li>Same method, covered call (buy at 50, SELL 55 call at 2): net 48 out → BE 48; called away at 55 → 55 − 48 = 7 → max gain $700; stock to zero → lose 48 → max loss $4,800.</li>
+  </ol></div>
+  <p>The T-chart turns every combination into two questions: where does the net cash put the breakeven, and what happens at the extremes (stock at zero, stock at infinity, or an option exercised)? It works on any strategy the exam invents.</p>
+
   <h3>Spreads: one long option, one short</h3>
   <p>A <b>spread</b> is buying one option and selling another of the same type (two calls or two puts) on the same underlying. A <b>vertical</b> (price) spread uses different strikes and the same expiration; a <b>horizontal</b> (calendar, time) spread uses the same strike and different expirations; a <b>diagonal</b> spread differs in both. The SIE concentrates on verticals.</p>
   <p>Two classifications, each with a quick test:</p>
@@ -2183,6 +2183,7 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   <tr><td>50</td><td>0</td><td>0</td><td>0</td><td>+$150</td></tr>
   <tr><td>60</td><td>0</td><td>0</td><td>0</td><td>+$150</td></tr>
   </tbody></table></div>
+  <p>Compare the bull call spread with the plain BUY 50 call at 3. At 45 the spread loses $200 against the call's $300; at 55 the spread makes $300 against the call's $200; at 65 the call makes $1,200 while the spread stops at $300. The short 55 call sold off the upside beyond 55 to make the position cheaper: a trader who expects a moderate rise, not a boom, prefers the spread.</p>
   <p>What each side wants: the <b>debit</b> spread holder wants the premiums to <b>widen</b> (the spread's value rises toward the strike difference) and both options to finish in the money. The <b>credit</b> spread holder wants the premiums to <b>narrow</b> and both options to <b>expire</b> worthless, keeping the credit. Spreads trade away some upside for a cheaper or safer position: the short leg finances the long one, and the long leg caps the short one's risk.</p>
 
   <h3>Straddles: betting on size, not direction</h3>
@@ -2196,7 +2197,7 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   <tr><td>55</td><td>5</td><td>0</td><td>5</td><td>$0</td><td>$0</td></tr>
   <tr><td>65</td><td>15</td><td>0</td><td>15</td><td>+$1,000</td><td>−$1,000</td></tr>
   </tbody></table></div>
-  <p>Long straddles are bought before binary events such as earnings or a court ruling, when you expect a large move but not its direction. The catch: the market knows too, and prices that expectation into the premium. A <b>strangle</b> (or combination) uses different strikes, typically an OTM call and an OTM put: cheaper, with wider breakevens.</p>
+  <p>Long straddles are bought before binary events such as earnings or a court ruling, when you expect a large move but not its direction. The catch: the market knows too, and prices that expectation into the premium. The short straddle is the mirror: it collects the most premium of any simple strategy but loses without limit on a large move. If XYZ gaps to 70 on earnings, the short straddle above loses (20 − 5) × 100 = $1,500 and keeps losing as the gap widens. A <b>strangle</b> (or combination) uses different strikes, typically an OTM call and an OTM put: cheaper, with wider breakevens.</p>
 
   <h3>Hedging logic: transforming exposure</h3>
   <p>A hedge does not remove risk for free; it swaps the exposure you have for one you prefer, and the price is either premium paid or upside given away.</p>
@@ -2207,6 +2208,12 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   <tr><td>Diversified portfolio</td><td>A market fall (systematic risk)</td><td>BUY index puts</td><td>The premium</td></tr>
   <tr><td>Long stock</td><td>A fall, but no budget</td><td>Collar: BUY PUT + SELL CALL</td><td>Upside above the call strike</td></tr>
   </tbody></table></div>
+  <div class="worked"><b>Worked example</b><ol>
+  <li>A $1,000,000 stock portfolio has beta 1.5, so it behaves like $1,500,000 of the index.</li>
+  <li>The index is at 5,000; one index option covers 5,000 × $100 = $500,000.</li>
+  <li>Contracts needed = $1,500,000 ÷ $500,000 = 3. BUY 3 index puts.</li>
+  <li>If the index falls 10%, the portfolio should fall about 15% ($150,000); three puts struck at the money gain about 500 points × $100 × 3 = $150,000 at expiration, before premium.</li>
+  </ol></div>
   <pre class="flow">Long stock  --(+ BUY PUT)-->  floor + unlimited upside
             = same shape as BUY CALL + cash
 Long stock  --(+ SELL CALL)--> capped upside, full downside
@@ -2252,7 +2259,7 @@ BUY CALL + SELL PUT (same K, same expiry)
   <li>"Protective put BE = cost − premium" → premium paid raises it: cost + premium. Covered call subtracts.</li>
   </ul></div>
 
-  <div class="sie-block trader"><b>Trader connection</b><p>Portfolio managers think in <b>floors and caps</b>. A protective put is a floor you buy; a covered call is a cap you sell; a collar finances one with the other, and it is the standard hedge for a concentrated or restricted stock holding. The trade-off is always the same: premium spent, or upside surrendered.</p><p>Behind that sits <b>exposure transformation</b>. Structured products are built from these parts: a principal-protected note is roughly a zero-coupon bond plus a BUY CALL; a buffered note adds a SELL PUT to fund more upside. Derivatives traders use put-call parity to move exposure between stock and options, for instance creating synthetic long stock (BUY CALL + SELL PUT) when stock is hard to borrow or cheap to finance through options, and they hedge the residual with stock (delta hedging) so that what is left is volatility, not direction.</p><p>For portfolio hedging, index puts neutralize the systematic risk that Day 9 showed diversification cannot touch: size the notional as portfolio value × beta, then accept that the premium is a running cost, the same way an insurer's premium is.</p></div>
+  <div class="sie-block trader"><b>Trader connection</b><p>Portfolio managers think in <b>floors and caps</b>. A protective put is a floor you buy; a covered call is a cap you sell; a collar finances one with the other, and it is the standard hedge for a concentrated or restricted stock holding. The trade-off is always the same: premium spent, or upside surrendered.</p><p>Behind that sits <b>exposure transformation</b>. Structured products are built from these parts: a principal-protected note is roughly a zero-coupon bond plus a BUY CALL; a reverse convertible is roughly a bond plus a SELL PUT, with the put premium paid out as a high coupon. Derivatives traders use put-call parity to move exposure between stock and options, for instance creating synthetic long stock (BUY CALL + SELL PUT) when stock is hard to borrow or cheap to finance through options, and they hedge the residual with stock (delta hedging) so that what is left is volatility, not direction.</p><p>For portfolio hedging, index puts neutralize the systematic risk that Day 9 showed diversification cannot touch: size the notional as portfolio value × beta, then accept that the premium is a running cost, the same way an insurer's premium is.</p></div>
 
   <h3>Check yourself</h3>
   <details class="check"><summary><span class="check-label">Q1</span> A customer sells short 100 XYZ at 52 and buys 1 XYZ 55 call at 3. What is the maximum potential gain?<br>A. $4,900<br>B. $5,200<br>C. $600<br>D. $300</summary><p><b>Answer: A.</b> If XYZ goes to zero the short earns 52 × 100 = $5,200, less the $300 call premium = $4,900. B ignores the premium. C is the maximum loss: (55 − 52 + 3) × 100. D is only the premium.</p></details>
@@ -2261,7 +2268,7 @@ BUY CALL + SELL PUT (same K, same expiry)
   <details class="check"><summary><span class="check-label">Q4</span> Which of the following are credit spreads?<br>I. SELL 1 XYZ 40 call, BUY 1 XYZ 45 call<br>II. BUY 1 XYZ 40 call, SELL 1 XYZ 45 call<br>III. SELL 1 XYZ 40 put, BUY 1 XYZ 35 put<br>IV. BUY 1 XYZ 40 put, SELL 1 XYZ 35 put<br>A. II and IV<br>B. I and III<br>C. I and IV<br>D. II and III</summary><p><b>Answer: B.</b> A credit spread sells the more expensive leg. The lower-strike call (40) costs more than the 45 call, so I is a credit; the higher-strike put (40) costs more than the 35 put, so III is a credit. II and IV buy the expensive leg and are debit spreads. I is a bear call spread and III a bull put spread.</p></details>
   <details class="check"><summary><span class="check-label">Q5</span> A customer is short 200 shares of DEF at 30 and is worried about a sharp rally. Which option trade best protects the position?<br>A. BUY 2 DEF 30 puts<br>B. BUY 2 DEF 30 calls<br>C. SELL 2 DEF 30 calls<br>D. SELL 2 DEF 30 puts</summary><p><b>Answer: B.</b> A short seller loses as the price rises; the right to buy at 30 caps that loss. A pays off only if DEF falls, doubling the bet. C adds more upside risk. D brings in premium but protects only by that premium.</p></details>
   <details class="check"><summary><span class="check-label">Q6</span> A customer buys 1 XYZ 60 call at 4 and 1 XYZ 60 put at 3. What are the breakevens at expiration?<br>A. 56 and 64<br>B. 57 and 63<br>C. 53 and 67<br>D. 60 and 67</summary><p><b>Answer: C.</b> Straddle BEs = strike ± total premium = 60 ± 7. A applies only the call premium and B only the put premium. D uses the strike as one breakeven, but at 60 both options are worthless and the loss is the full $700.</p></details>
-  <details class="check"><summary><span class="check-label">Q7</span> A customer sells 1 XYZ 50 put at 4 and buys 1 XYZ 45 put at 1. What are the breakeven and maximum loss?<br>A. 47; $200<br>B. 53; $300<br>C. 48; $200<br>D. 47; $300</summary><p><b>Answer: A.</b> Net credit = 4 − 1 = 3. Put spread BE = higher strike − net premium = 50 − 3 = 47. Max loss = strike difference − credit = (5 − 3) × 100 = $200. B adds the premium as for calls. C subtracts the wrong figure. D takes the credit as the loss (that is the maximum gain).</p></details>
+  <details class="check"><summary><span class="check-label">Q7</span> A customer sells 1 XYZ 50 put at 4 and buys 1 XYZ 45 put at 1. What are the breakeven and maximum loss?<br>A. 47; $200<br>B. 53; $300<br>C. 48; $200<br>D. 47; $300</summary><p><b>Answer: A.</b> Net credit = 4 − 1 = 3. Put spread BE = higher strike − net premium = 50 − 3 = 47. Max loss = strike difference − credit = (5 − 3) × 100 = $200. B adds the premium as for calls. C subtracts 2 instead of the 3-point net credit. D takes the credit as the loss (that is the maximum gain).</p></details>
   <details class="check"><summary><span class="check-label">Q8</span> All of the following are true of writing a covered call EXCEPT:<br>A. It generates premium income<br>B. It limits the upside on the stock<br>C. It lowers the breakeven by the premium received<br>D. It protects fully against a large decline in the stock</summary><p><b>Answer: D.</b> The only downside protection is the premium; below breakeven the position loses almost dollar for dollar with the stock. A, B and C are the defining features: income, a sold cap at the strike, and a breakeven of cost − premium.</p></details>
 </section>
 </div>
@@ -3167,7 +3174,7 @@ Municipal issue    --> official statement</pre>
     <li>"Short-swing profits require proof of inside information" → strict liability; the profit goes to the company regardless.</li>
   </ul></div>
 
-  <div class="sie-block trader"><b>Trader connection</b><p>A founder or executive with a large, concentrated, restricted position cannot simply dump it. Rule 144 caps the pace, blackout windows block timing, and Section 16 makes every move public. The equity-derivatives desk's answer is to hedge instead of sell. A <b>collar</b> is BUY PUT (floor) + SELL CALL (cap), often struck so the call premium pays for the put. A <b>prepaid variable forward</b> advances the holder most of the stock's value today in exchange for delivering a variable number of shares at maturity. The dealer hedges by borrowing and shorting stock, so its hedge sales are usually run within the holder's 144 volume and manner-of-sale limits, and an insider reports the derivative on Form 4. In merger arbitrage, a cash tender offer is a bet on completion plus proration. The net-long rule is why an arb's tender is capped at the real long position, and a 13D filing is often the first hard signal that a bid is coming.</p></div>
+  <div class="sie-block trader"><b>Trader connection</b><p>A founder or executive with a large, concentrated, restricted position cannot simply dump it. Rule 144 caps the pace, blackout windows block timing, and Section 16 makes every move public. The equity-derivatives desk's answer is to hedge instead of sell. A <b>collar</b> is BUY PUT (floor) + SELL CALL (cap), often struck so the call premium pays for the put. A <b>prepaid variable forward</b> advances the holder most of the stock's value today in exchange for delivering a variable number of shares at maturity. The dealer hedges by borrowing and shorting stock, so its hedge sales are usually run within the holder's 144 volume and manner-of-sale limits, and an insider reports the derivative on Form 4. In merger arbitrage, a cash tender offer is a bet on completion plus proration. The net-long rule is why an arb's tender is capped at the real long position, and a 13D filing is often the first hard signal that a bid is coming. Around all of this sit the ECM and DCM desks, which choose between a registered deal, a 144A or a Reg D placement for each issuer. Compliance keeps restricted lists and checks every affiliate sale against 144 before the order leaves the desk.</p></div>
 
   <h3>Check yourself</h3>
   <details class="check"><summary><span class="check-label">Q1</span> An affiliate of a listed company wants to sell under Rule 144. The company has 26,000,000 shares outstanding. Weekly volume over the last four weeks was 250,000, 310,000, 280,000 and 360,000 shares. What is the most the affiliate may sell in the next 90 days, assuming no prior sales?<br>A. 260,000<br>B. 300,000<br>C. 360,000<br>D. 1,200,000</summary><p><b>Answer: B.</b> The limit is the greater of 1% of outstanding (26,000,000 × 1% = 260,000) and the 4-week average weekly volume ((250,000 + 310,000 + 280,000 + 360,000) ÷ 4 = 1,200,000 ÷ 4 = 300,000). The greater is 300,000. A is the 1% test alone, C is the single highest week, and D is the four-week total, not the average.</p></details>
@@ -3787,7 +3794,7 @@ Customer pays interest on DR = broker call rate + spread</pre>
   <tr><td>Hypothecation agreement</td><td>Customer pledges the securities as collateral and lets the BD rehypothecate them</td><td>Yes</td></tr>
   <tr><td>Loan consent</td><td>Lets the BD lend the customer's securities to short sellers</td><td>No — optional</td></tr>
   </tbody></table></div>
-  <p>The firm must also give the customer a <b>margin disclosure statement</b> (FINRA Rule 2264) before opening the account and <b>annually</b> after. It spells out the risks in plain words: you can lose more than you deposit; the firm can raise its house requirement at any time without advance notice; the firm can sell your securities without contacting you; you do not get to choose what is sold; you are not entitled to an extension on a call.</p>
+  <p>The firm must also give the customer a <b>margin disclosure statement</b> (FINRA Rule 2264) at or before the opening of the account and <b>annually</b> after. It spells out the risks in plain words: you can lose more than you deposit; the firm can raise its house requirement at any time without advance notice; the firm can sell your securities without contacting you; you do not get to choose what is sold; you are not entitled to an extension on a call.</p>
   <h4>The $2,000 minimum</h4>
   <p>FINRA requires <b>$2,000 of equity</b> before the firm extends credit. Combine it with Reg T's 50% and the required deposit for a first purchase is the larger of 50% or $2,000, but never more than the full price. For short sales the $2,000 floor applies even when the trade is smaller, because a short has unlimited risk.</p>
   <div class="table-wrap"><table class="data-table"><thead><tr><th>First trade in a new margin account</th><th>Reg T 50%</th><th>Required deposit</th><th>Why</th></tr></thead><tbody>
@@ -3997,7 +4004,7 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
   </tbody></table></div>
   <h4>Joint accounts</h4>
   <p>Two smaller registrations: a <b>numbered account</b> (identified by a number or symbol instead of a name) is allowed if the customer signs a written statement of ownership, so the firm always knows the true owner; a <b>sole proprietor</b> account is simply an individual account used for business, since the business has no separate legal existence.</p>
-  <p>Any joint owner can enter orders, but money leaving the account goes out in the <b>names of all owners</b> (checks payable to all). JTWROS is the default for spouses and assumes equal ownership. TIC lets owners hold unequal shares, and each share is a separate asset for estate purposes.</p>
+  <p>Any joint owner can enter orders, but money leaving the account goes out in the <b>names of all owners</b> (checks payable to all). JTWROS is the usual choice for spouses and assumes equal ownership. TIC lets owners hold unequal shares, and each share is a separate asset for estate purposes.</p>
   <div class="worked"><b>Worked example — TIC ownership split at death</b><ol>
   <li>Ana (60%) and Ben (40%) hold a TIC account worth $500,000. Ana dies.</li>
   <li>Ana's share: 60% × $500,000 = $300,000 → goes to Ana's estate (and then to her heirs under her will or state law).</li>
@@ -4410,6 +4417,11 @@ Indirect (60-day) rollover:
   <li>certain injunctions involving securities, and willful violations of securities laws;</li>
   <li>willfully false statements on a registration form.</li>
   </ul>
+  <pre class="flow">Rep convicted of a felony
+  --> firm amends U4 within 10 days (SD event)
+  --> rep is statutorily disqualified
+  --> firm terminates (U5 in 30 days) or sponsors an
+      eligibility application with heightened supervision</pre>
   <p><b>Reportable events</b> (Rule 4530): the firm reports specified events to FINRA within 30 calendar days of learning of them: written customer complaints alleging theft, misappropriation or forgery; being named in securities-related litigation or arbitration; charges or convictions for felonies and specified misdemeanors; disciplinary actions; internal discipline for significant violations. Separately, the firm reports statistical data on all customer complaints <b>quarterly</b>, by the 15th of the month after the quarter.</p>
 
   <h3>Outside activities: OBAs and PSTs</h3>
@@ -4428,13 +4440,14 @@ Indirect (60-day) rollover:
   <p>Municipal rules run in parallel: <b>MSRB Rule G-20</b> covers gifts in the muni business (it has been aligned upward with FINRA's change; confirm its current effective date), and <b>G-37</b> limits a municipal finance professional's political contributions to <b>$250 per election</b>, only to officials the professional can vote for; a violation triggers a 2-year ban on negotiated muni business with that issuer.</p>
 
   <h3>Communications with the public (Rule 2210)</h3>
-  <p>FINRA classifies written (including electronic) communications by audience, and the audience decides the supervision.</p>
+  <p>FINRA classifies written (including electronic) communications by audience, and the audience decides the supervision. A <b>retail investor</b> is anyone who is not an institutional investor, whether or not they have an account with the firm, so a prospect list counts toward the 25.</p>
   <div class="table-wrap"><table class="data-table"><thead><tr><th>Category</th><th>Definition</th><th>Supervision</th></tr></thead><tbody>
   <tr><td>Retail communication</td><td>Distributed or made available to <b>more than 25 retail investors within any 30-day period</b> (ads, websites, static social media posts, mass emails)</td><td><b>Principal approval before use</b>; some types filed with FINRA</td></tr>
   <tr><td>Correspondence</td><td>Sent to <b>25 or fewer retail investors within 30 days</b> (individual emails, letters, texts)</td><td>No pre-approval; <b>post-review</b> under written supervisory procedures</td></tr>
   <tr><td>Institutional communication</td><td>Distributed only to institutional investors (banks, insurers, investment companies, entities with at least $50 million in assets, other members)</td><td>Written supervisory procedures; no pre-approval</td></tr>
   </tbody></table></div>
   <p>A <b>new member</b> must file its retail communications with FINRA at least <b>10 business days before first use</b> during its first year. Content standards apply to every category: fair and balanced; risks shown with benefits; no false, exaggerated, unwarranted, promissory or misleading statements; no predictions or projections of performance (narrow exceptions such as hypothetical illustrations of mathematical principles); the firm's name must appear. Interactive social media (a live chat) is supervised like a public appearance, while a static profile or post is a retail communication. Communications are retained for 3 years.</p>
+  <p>Some items are not communications in the approval sense. A live seminar, radio interview or podcast is a <b>public appearance</b>: no pre-approval of what the rep says, but the firm's procedures govern it, and any slides or scripts handed out are retail communications. Research reports have their own rule (Rule 2241) with conflict disclosures and restrictions on analyst compensation.</p>
   <h4>Cold calling (Rule 3230 and the TCPA)</h4>
   <p>Calls to a residence only between <b>8 a.m. and 9 p.m. local time of the called party</b>. The caller gives their name, the firm's name, a phone number or address, and states that the call is to solicit an investment. A customer who asks to be put on the firm's do-not-call list must be honored for 5 years. Numbers on the national do-not-call registry cannot be called absent an exception such as an established business relationship or the person's prior express consent.</p>
 
@@ -4465,6 +4478,14 @@ Misappropriation: outsider (lawyer, printer, banker)
   <tr><td>Spreading rumours</td><td>Circulating false information to move a price</td></tr>
   </tbody></table></div>
 
+  <div class="worked"><b>Worked example — why front running pays, and why it is fraud</b><ol>
+  <li>A pension fund gives the desk an order to buy 500,000 shares of XYZ, now $50.00. A block that size will push the price up.</li>
+  <li>A trader who knows about it buys 20,000 XYZ for his own account at $50.00 first (or does BUY CALL on XYZ).</li>
+  <li>The block is worked and lifts XYZ to $50.40. The trader sells at $50.40: 20,000 × $0.40 = $8,000 of profit.</li>
+  <li>Every share he bought first was a share the customer then paid more for. The profit came out of the customer's execution: the firm used the customer's own information against him.</li>
+  </ol></div>
+  <p>A related customer-protection rule (Rule 5320) forbids a firm holding a customer's limit order from trading for its own account at a price that would satisfy that order without first filling the customer. The customer's order comes first.</p>
+
   <h3>Customer abuses</h3>
   <div class="table-wrap"><table class="data-table"><thead><tr><th>Abuse</th><th>The rule</th></tr></thead><tbody>
   <tr><td>Churning</td><td>Excessive trading, measured against the customer's profile, to generate commissions; a quantitative-suitability failure</td></tr>
@@ -4478,6 +4499,7 @@ Misappropriation: outsider (lawyer, printer, banker)
   <tr><td>Selling dividends</td><td>Urging a purchase just to "get the dividend", which the price drop on the ex-date offsets</td></tr>
   <tr><td>Breakpoint sales</td><td>Selling fund shares just below a sales-charge discount level</td></tr>
   </tbody></table></div>
+  <p>Churning has no numeric trigger in the rules. Regulators look at control (the rep effectively decides the trades), turnover relative to the customer's objectives, and how much of the account the costs eat, which is why it is framed as a quantitative-suitability failure rather than a bright-line count.</p>
   <p>The guarantee rule catches the friendly version: a rep who says "if it drops below $90, I'll buy the shares from you myself" has made a prohibited guarantee, whether or not he ever pays.</p>
 
   <h3>Records retention: the ladder</h3>
