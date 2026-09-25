@@ -468,6 +468,15 @@ def _weekly_rank_ic(rows: List[Rec], key, tkey) -> Dict[int, float]:
     return out
 
 
+def _rank_corr(xs: List[float], ys: List[float]) -> Optional[float]:
+    if len(xs) < 3 or any(x is None for x in xs) or any(y is None for y in ys):
+        return None
+    a, b = W._ranks(xs), W._ranks(ys)
+    m = (len(xs) - 1) / 2.0
+    sa = math.sqrt(sum((x - m) ** 2 for x in a)); sb = math.sqrt(sum((y - m) ** 2 for y in b))
+    return sum((x - m) * (y - m) for x, y in zip(a, b)) / (sa * sb) if sa > 0 and sb > 0 else None
+
+
 def _paired_stat(by: Dict[int, List[float]], h: int) -> dict:
     c = _clustered_mean(by, h)
     return {"mean": c["mean"], "t": (c["mean"] / c["se"]) if c["mean"] is not None and c["se"] else None, "weeks": c["weeks"]}
@@ -528,7 +537,7 @@ def _eval_period(train, test, h, wide, ctx, seed):
             if x0 is not None and t is not None:
                 rec["v"] = (t, _dot(vol[0], x0), _dot(vol[1], x0 + z))
         out.append(rec)
-    return out, {"alpha_w": wa, "dir_w": w2, "features_std": st}
+    return out, {"alpha_w": wa, "dir_w": w2, "vol_w": list(vol) if vol else None, "features_std": st}
 
 
 def _metrics(preds: List[dict], h: int) -> dict:
@@ -564,10 +573,13 @@ def _metrics(preds: List[dict], h: int) -> dict:
     pri = D.dir_metrics(rs, [pm[id(r)]["p0"] for r in rs], h)
     # hedge: squared-error gain of the volatility forecast
     vg: Dict[int, List[float]] = {}
+    se0 = []
     for p in preds:
         if "v" in p:
             t, f0, f1 = p["v"]
             vg.setdefault(p["r"].wk, []).append((t - f0) ** 2 - (t - f1) ** 2)
+            se0.append((t - f0) ** 2)
+    mse0 = sum(se0) / len(se0) if se0 else None
     return {"n": len(preds), "assets": len({r.asset for r in rs}),
             "alpha": {"rank_ic": ric_c_m, "rank_ic_production": ric_p_m, "d_rank_ic": _paired_stat(d_ric, h), "d_ic": _paired_stat(d_ic, h)},
             "directional": {"brier_vs_prior": _paired_stat(b20, h), "brier_vs_current": _paired_stat(b21, h),
@@ -575,7 +587,7 @@ def _metrics(preds: List[dict], h: int) -> dict:
                             "new": {k: new.get(k) for k in ("accuracy", "balanced_accuracy", "bull_precision", "bear_precision", "bull_recall",
                                                             "bear_recall", "brier", "log_loss", "auc", "ece", "base_rate")},
                             "prior_accuracy": pri.get("accuracy"), "excess_vs_prior": (new.get("accuracy") - pri["accuracy"]) if new.get("accuracy") is not None and pri.get("accuracy") is not None else None},
-            "hedge": {"vol_mse_gain": _paired_stat(vg, h), "n": sum(len(v) for v in vg.values())} if vg else None}
+            "hedge": {"vol_mse_gain": _paired_stat(vg, h), "mse_base": mse0, "n": sum(len(v) for v in vg.values())} if vg else None}
 
 
 def _regimes(preds: List[dict], h: int) -> Dict[str, dict]:
@@ -817,6 +829,219 @@ def run_all(db_path: str, workers: int = 2, progress=None, horizons=None, famili
     return out
 
 
+# ------------------------------------------------------------------ live shadow: families that passed every gate
+LIVE_KEY = "lab:newinfo:live"
+LIVE_TARGETS = ("alpha", "directional", "hedge")
+
+
+def live_targets(res: dict) -> List[Tuple[str, str, str]]:
+    """(family, target, horizon) of every historical-track test that passed G1, G2 and the FDR control — the only
+    ones fitted for live shadow (LIMITED HISTORY families are recorded only once they have a separate live track)."""
+    return [(fam, tgt, lab) for lab, fam, tgt, g, fr in _tests(res) if g.get("passed") and tgt in LIVE_TARGETS]
+
+
+def live_version(fam: str, tgt: str, lab: str) -> str:
+    return f"newinfo-{fam.replace('_', '-')}-{tgt}-{lab}"
+
+
+def fit_live(store, research, progress=None) -> dict:
+    """Final fits (every matured record, the same design as the research) of each passing family × target × horizon,
+    stored with the feature standardisation so the daily ledger can record them next to the benchmark. Registered as
+    status "live shadow": outside the promotion path, never production."""
+    from .lab import _save_registry, benchmark, registry
+    say = progress or (lambda m: None)
+    res = store.kv_get(RESEARCH_KEY)
+    if not res:
+        raise ValueError("no new-information research: run `python -m finsim2 lab --newinfo` first")
+    bm = benchmark(store)
+    targets = live_targets(res)
+    out = {"fitted": time.strftime("%Y-%m-%d %H:%M:%S"), "research": res.get("started"), "benchmark": bm["id"] if bm else None, "models": {}}
+    W._init_famidx()
+    for lab in sorted({t[2] for t in targets}, key=_HZ.index):
+        h = dict(LAB_HORIZONS)[lab]
+        recs = W.load(store, research, lab)
+        info = D.attach(recs, research, h)
+        recs = [r for r in recs if r.ext and r.ext.get("s") and r.yr != 0]
+        builder = Builder(research, store)
+        ctx = {"rets": {a: _logret(builder.series(a)) for a in {r.asset for r in recs}}, "vix": builder.macro("VIXCLS")}
+        for fam in sorted({t[0] for t in targets if t[2] == lab}):
+            rows = attach(recs, builder, fam)
+            _, fit = _eval_period(rows, [], h, FAMILIES[fam]["wide"], ctx, seed=7)
+            for f_, tgt, l_ in targets:
+                if f_ != fam or l_ != lab:
+                    continue
+                vid = live_version(fam, tgt, lab)
+                out["models"][vid] = {"family": fam, "target": tgt, "horizon": lab, "h": h, "wide": FAMILIES[fam]["wide"],
+                                      "features": FAMILIES[fam]["features"], "std": fit["features_std"], "records": len(rows),
+                                      "weights": {"alpha": fit["alpha_w"], "directional": fit["dir_w"], "hedge": fit["vol_w"]}[tgt],
+                                      "groups": info.get("groups") if tgt == "directional" else None}
+                say(f"{vid}: fitted on {len(rows)} records")
+    store.kv_set(LIVE_KEY, out)
+    reg = registry(store)
+    for vid, m in out["models"].items():
+        old = next((x for x in reg["versions"] if x["id"] == vid), None)
+        reg["versions"] = [x for x in reg["versions"] if x["id"] != vid]
+        reg["versions"].append({
+            "id": vid, "kind": "newinfo", "status": "live shadow", "family": m["family"], "target": m["target"], "horizon": m["horizon"],
+            "introduced": (old or {}).get("introduced") or time.strftime("%Y-%m-%d"),
+            "live_shadow_from": (old or {}).get("live_shadow_from") or time.strftime("%Y-%m-%d"), "benchmark": out["benchmark"],
+            "description": f"New information (research): {FAMILIES[m['family']]['label']} added to the benchmark's "
+                           f"{ {'alpha': 'Alpha score', 'directional': 'Directional model', 'hedge': 'volatility baseline'}[m['target']] } at {m['horizon']}",
+            "training_cutoff": out["fitted"], "validation": {"research": res.get("started"), "passed": "G1, G2, FDR"}})
+    _save_registry(store, reg)
+    return out
+
+
+def _feature_now(builder: Builder, fam: str, meta: dict) -> Optional[List[Optional[float]]]:
+    f = builder.features(fam, meta)
+    if not f:
+        return None
+    i = builder.n - 1
+    v = [(f.get(k) or [None] * builder.n)[i] for k in FAMILIES[fam]["features"]]
+    return v if any(x is not None for x in v) else None
+
+
+def record_live(research, asset_id: str, cache: Optional[dict] = None) -> int:
+    """Today's forecasts of every live-shadow new-information model for one asset, in the append-only ledger:
+    alpha scores (graded against production by cross-sectional rank IC on the same dates), Directional p_up, and
+    volatility forecasts next to the baseline's (graded against realised volatility). `cache` shares the (market-wide)
+    feature builder across the assets of one daily run."""
+    from .tracking import record
+    st = research.store
+    live = st.kv_get(LIVE_KEY)
+    if not live or not live.get("models"):
+        return 0
+    cache = cache if cache is not None else {}
+    panel = research.panel()
+    last = panel.calendar()[-1]
+    if cache.get("date") != last:
+        cache.clear()
+        cache.update({"date": last, "builder": Builder(research, st)})
+    builder = cache["builder"]
+    meta = st.asset(asset_id) or {"id": asset_id}
+    full = None
+    n = 0
+    for vid, m in live["models"].items():
+        lab, h, tgt = m["horizon"], m["h"], m["target"]
+        if not m.get("weights"):
+            continue
+        v = _feature_now(builder, m["family"], meta)
+        if v is None:
+            continue
+        ext = D.live_inputs(research, meta, h, m.get("groups") or {})
+        if not ext or not ext.get("s"):
+            continue
+        z = _z(v, m["std"])
+        base = {"family": m["family"], "target": tgt, "benchmark": live.get("benchmark"), "features": dict(zip(m["features"], v))}
+        model = f"newinfo:{m['family']}:{tgt}"
+        if tgt in ("alpha", "directional"):
+            if full is None:
+                full = research.shaffer_full(asset_id)
+            r = (full.get("horizons") or {}).get(lab) or {}
+            if r.get("raw") is None or r.get("date") != last:
+                continue
+            w = m["weights"]
+            if tgt == "alpha":
+                b = ext.get("beta") if ext.get("beta") is not None else 1.0
+                xs = [x * b for x in z] if m["wide"] else z
+                score = w[0] * r["raw"] / 100.0 + _dot(w[1:], xs)
+                detail = {**base, "alpha": score, "production_raw": r["raw"], "beta": ext.get("beta"),
+                          "contributions": {k: w[1 + j] * xs[j] for j, k in enumerate(m["features"])}}
+                pid = record(st, panel, asset_id, last, model, vid, lab, h, None, None, None, score, detail, source="shadow", raw=score)
+            else:
+                rr = Rec()
+                rr.ext = ext
+                zp = D.z_of(rr, D.MAIN_PRIOR) or 0.0
+                p = D._sig(_dot(w, [1.0, zp, r["raw"] / 100.0] + z))
+                detail = {**base, "p_up": p, "production_raw": r["raw"],
+                          "contributions": {k: w[3 + j] * z[j] for j, k in enumerate(m["features"])}}
+                pid = record(st, panel, asset_id, last, model, vid, lab, h, None, None, None, 100 * (2 * p - 1), detail,
+                             source="shadow", raw=100 * (2 * p - 1))
+            n += pid is not None
+        else:
+            if "rets" not in cache:
+                cache["rets"], cache["vix"] = {}, builder.macro("VIXCLS")
+            if asset_id not in cache["rets"]:
+                cache["rets"][asset_id] = _logret(builder.series(asset_id))
+            rr = Rec()
+            rr.asset, rr.ext = asset_id, ext
+            x0 = _vol_base(rr, {"rets": cache["rets"], "vix": cache["vix"]}, h)
+            b0, b1 = m["weights"]
+            if x0 is None:
+                continue
+            f0, f1 = _dot(b0, x0), _dot(b1, x0 + z)
+            ann = lambda f: math.exp(f) * math.sqrt(252.0)  # noqa: E731
+            for mdl, f, ver in ((model, f1, vid), ("newinfo:hedge-baseline", f0, f"baseline-{live.get('benchmark')}")):
+                d = {**base, "kind": "volatility", "log_daily_vol": f}
+                if mdl == model:
+                    d["contributions"] = {k: b1[len(x0) + j] * z[j] for j, k in enumerate(m["features"])}
+                else:
+                    d = {"kind": "volatility", "log_daily_vol": f, "benchmark": live.get("benchmark"), "baseline_for": "newinfo hedge models"}
+                pid = record(st, panel, asset_id, last, mdl, ver, lab, h, ann(f), None, None, None, d, source="shadow")
+                n += pid is not None
+    return n
+
+
+def live_status(store) -> Dict[str, dict]:
+    """Graded live record of each live-shadow model against its benchmark on identical (asset, horizon, date)."""
+    from .lab import LIVE_MIN
+    live = store.kv_get(LIVE_KEY) or {}
+    out: Dict[str, dict] = {}
+    if not live.get("models"):
+        return out
+    preds = [p for p in store.predictions() if p.get("realized") is not None]
+    for vid, m in live["models"].items():
+        model = f"newinfo:{m['family']}:{m['target']}"
+        mine = {(p["asset_id"], p["horizon"], p["made_on"]): p for p in preds if p["model"] == model and p.get("model_version") == vid}
+        ref = "newinfo:hedge-baseline" if m["target"] == "hedge" else ("shaffer" if m["target"] == "alpha" else "directional:current")
+        other = {(p["asset_id"], p["horizon"], p["made_on"]): p for p in preds if p["model"] == ref}
+        common = [k for k in mine if k in other]
+        o = {"graded": len(common), "required": LIVE_MIN, "against": ref}
+        if m["target"] == "hedge":
+            g = [(math.log(max(1e-9, other[k]["realized"])) - math.log(other[k]["predicted"])) ** 2 -
+                 (math.log(max(1e-9, mine[k]["realized"])) - math.log(mine[k]["predicted"])) ** 2 for k in common if mine[k]["realized"]]
+            o["mse_gain"] = sum(g) / len(g) if g else None
+            gain = o["mse_gain"]
+        elif m["target"] == "alpha":
+            by: Dict[str, list] = {}
+            for k in common:
+                by.setdefault(k[2], []).append(k)
+            d = []
+            for day, ks in by.items():
+                if len(ks) < 5:
+                    continue
+                y = [mine[k]["realized"] for k in ks]
+                a = _rank_corr([mine[k]["raw"] for k in ks], y)
+                b = _rank_corr([other[k].get("raw") if other[k].get("raw") is not None else other[k].get("score") for k in ks], y)
+                if a is not None and b is not None:
+                    d.append(a - b)
+            o["d_rank_ic"], o["dates"] = (sum(d) / len(d) if d else None), len(d)
+            gain = o["d_rank_ic"]
+        else:
+            g = []
+            for k in common:
+                yv = 1.0 if mine[k]["realized"] > 0 else 0.0
+                pa, pb = (mine[k]["detail"] or {}).get("p_up"), (other[k]["detail"] or {}).get("p_up")
+                if pa is not None and pb is not None:
+                    g.append((pb - yv) ** 2 - (pa - yv) ** 2)
+            o["brier_gain"] = sum(g) / len(g) if g else None
+            gain = o["brier_gain"]
+        o["status"] = "ELIGIBLE FOR PROMOTION" if len(common) >= LIVE_MIN and gain is not None and gain > 0 else "LIVE SHADOW"
+        out[vid] = o
+    return out
+
+
+def live_summary(store) -> Optional[dict]:
+    """The live-shadow fits (without weights) and their graded record, for the ML Lab."""
+    live = store.kv_get(LIVE_KEY)
+    if not live:
+        return None
+    status = live_status(store)
+    return {"fitted": live.get("fitted"), "benchmark": live.get("benchmark"), "research": live.get("research"),
+            "models": {vid: {"family": m["family"], "target": m["target"], "horizon": m["horizon"], "records": m["records"],
+                             **(status.get(vid) or {})} for vid, m in (live.get("models") or {}).items()}}
+
+
 # ------------------------------------------------------------------ the report (NEW_INFORMATION_RESEARCH.md)
 _HZ = [lab for lab, _ in LAB_HORIZONS]
 
@@ -840,6 +1065,25 @@ def _best(res: dict, fam: str, path: Tuple[str, ...]) -> Tuple[Optional[str], Op
     return best
 
 
+def _hedge_pct(st: Optional[dict]) -> Optional[float]:
+    """The volatility forecast's squared-error gain as a share of the baseline's squared error."""
+    mean = ((st or {}).get("vol_mse_gain") or {}).get("mean")
+    if mean is None or not (st or {}).get("mse_base"):
+        return None
+    return st["vol_mse_gain"]["mean"] / st["mse_base"]
+
+
+def _wf(res: dict, lab: str, fam: str) -> dict:
+    return ((((res.get("horizons") or {}).get(lab) or {}).get("families") or {}).get(fam) or {}).get("walkforward") or {}
+
+
+def _hz_cell(res: dict, fam: str, hg) -> str:
+    if hg[0] is None:
+        return "— (—, t —)"
+    pc = _hedge_pct(_wf(res, hg[0], fam).get("hedge"))
+    return f"{_pct(pc, 1) + ' of baseline error' if pc is not None else _f(hg[1], 4)} ({hg[0]}, t {_f(hg[2], 1)})"
+
+
 def _tests(res: dict):
     for lab in _HZ:
         for fam, fr in ((((res.get("horizons") or {}).get(lab) or {}).get("families")) or {}).items():
@@ -847,6 +1091,53 @@ def _tests(res: dict):
                 g = (fr.get("gates") or {}).get(tgt)
                 if g:
                     yield lab, fam, tgt, g, fr
+
+
+def _reading(res: dict, w) -> None:
+    """The interpretation, generated from the results with the method's fixed caveats."""
+    lt = live_targets(res)
+    w("## Reading these results")
+    w("")
+    dir_g1 = [(l, f) for l, f, t, g, fr in _tests(res) if t == "directional" and g.get("G1")]
+    w("- **Directional: nothing.** " + (f"{len(dir_g1)} family test(s) reached gate v2's G1 but none passed every gate. " if dir_g1 else
+      "No family × horizon reached gate v2's G1 (beating both the prior-only model and the current formulation). ") +
+      "The prior-only model remains the Directional benchmark; no new information in this study changes absolute direction.")
+    for f, t, l in [x for x in lt if x[1] == "alpha"]:
+        a = _wf(res, l, f).get("alpha") or {}
+        dr, base = (a.get("d_rank_ic") or {}).get("mean"), a.get("rank_ic_production")
+        ratio = f" — {dr / base * 100:.0f}% of the production score's own walk-forward rank IC ({_f(base, 3)})" if dr is not None and base else ""
+        feats = [(n, lab) for lab in _HZ for n, st in (((((res.get("horizons") or {}).get(lab) or {}).get("families") or {}).get(f) or {}).get("features") or {}).items()
+                 if st.get("fdr")]
+        w(f"- **{FAMILIES[f]['label']} — Alpha at {l}:** Δ rank IC {_f(dr, 4)}{ratio}. " + (
+            "Caveat: this family is market-wide, so it enters the ranking only as feature × the asset's PIT beta — the gain is a "
+            "market-condition-dependent beta tilt (in some breadth states, higher-beta assets rank better), not new information "
+            "about individual assets. " if FAMILIES[f]["wide"] else "") + (
+            "Features surviving their own FDR control: " + ", ".join(f"{n} ({lab})" for n, lab in feats) + ". " if feats else "") +
+            ("Other horizons did not pass; the effect is horizon-specific." if sum(1 for x in lt if x[0] == f and x[1] == "alpha") == 1 else ""))
+    for f, t, l in [x for x in lt if x[1] == "hedge"]:
+        hg = _wf(res, l, f).get("hedge") or {}
+        pc = _hedge_pct(hg)
+        w(f"- **{FAMILIES[f]['label']} — hedge at {l}:** the log-volatility forecast's squared error falls by "
+          f"{_pct(pc, 1).lstrip('+') if pc is not None else '—'} of the baseline's (t {_f((hg.get('vol_mse_gain') or {}).get('t'), 1)}, "
+          f"{hg.get('n', 0):,} forecasts). Statistically clear; small in size.")
+    if any(x[1] == "hedge" for x in lt):
+        w("- **What the hedge result is not.** Only volatility forecasts were tested. Hedge ratios, sizing, covariance and tail "
+          "outcomes were not, and the Shaffer Hedge math is unchanged: a better volatility forecast is a candidate input, recorded in "
+          "live shadow, not a better hedge.")
+    lim = [f for f, spec in FAMILIES.items() if spec["track"] == "limited"]
+    for f in lim:
+        s_ = (res.get("summary") or {}).get(f) or {}
+        w(f"- **{FAMILIES[f]['label']}: LIMITED HISTORY.** {s_.get('why', '')}. Its data start in 2019, so it is judged only on the "
+          "eras it covers and is never presented as historically verified; the pre-2018 gates were not relaxed for it. "
+          "FINRA short-sale volume is *not* short interest (see `NEW_DATA_SOURCES.md`).")
+    S = res.get("summary") or {}
+    niv = [FAMILIES[f]["label"] for f in FAMILIES if (S.get(f) or {}).get("status") == "NO INCREMENTAL VALUE"]
+    ins = [FAMILIES[f]["label"] for f in FAMILIES if (S.get(f) or {}).get("status") == "INSUFFICIENT DATA"]
+    nb = sum(1 for v in S.values() if v.get("status") == "BLOCKED")
+    w("- **Everything else.** " + (", ".join(niv) + ": no incremental value. " if niv else "") +
+      (", ".join(ins) + ": too few assets or eras to judge. " if ins else "") +
+      (f"{nb} families are blocked by data access, not by evidence." if nb else ""))
+    w("")
 
 
 def markdown(res: dict) -> str:
@@ -895,14 +1186,16 @@ def markdown(res: dict) -> str:
         won = [(g.get("eras_won"), (fr.get("gates") or {}).get("eras_complete")) for lab, f_, tgt, g, fr in _tests(res) if f_ == fam]
         stab = max(won, key=lambda x: (x[0] or 0), default=(None, None))
         w(f"| {spec['label']} | {assets} | from {first or '—'} ({spec['track']}) | {_f(a[1])} ({a[0] or '—'}, t {_f(a[2], 1)}) | "
-          f"{_f(d[1], 5)} ({d[0] or '—'}, t {_f(d[2], 1)}) | {_pct(dacc, 2)} | {_f(hg[1], 4)} ({hg[0] or '—'}, t {_f(hg[2], 1)}) | "
+          f"{_f(d[1], 5)} ({d[0] or '—'}, t {_f(d[2], 1)}) | {_pct(dacc, 2)} | {_hz_cell(res, fam, hg)} | "
           f"{stab[0] if stab[0] is not None else '—'}/{stab[1] if stab[1] is not None else '—'} eras | **{(S.get(fam) or {}).get('status', '—')}** |")
     for b in res.get("blocked") or BLOCKED:
         w(f"| {b['label']} | — | — | — | — | — | — | — | **BLOCKED** |")
     w("")
     w("\"Best horizon\" = the horizon with the largest t (a positive best is not a pass: passing needs G1, G2 and the FDR "
-      "control). Era stability = the most test eras with a gain, of the complete ones, over the family's tests.")
+      "control). Hedge improvement = the walk-forward reduction in squared error of the log-volatility forecast, as a share of "
+      "the baseline's own squared error. Era stability = the most test eras with a gain, of the complete ones, over the family's tests.")
     w("")
+    _reading(res, w)
     # answers
     w("## Answers")
     w("")
@@ -969,8 +1262,16 @@ def markdown(res: dict) -> str:
     w("**10. Which should remain shadow?** " + (", ".join(FAMILIES[f]["label"] for f in sh) + " (passed every historical gate); "
       if sh else "No family earned SHADOW status. ") + ("LIMITED HISTORY, kept on the live-shadow track only: " + ", ".join(FAMILIES[f]["label"] + f" — {S[f]['why']}" for f in lim) + "." if lim else ""))
     w("")
-    w("**11. Which qualify for live shadow?** " + (", ".join(FAMILIES[f]["label"] for f in sh) + " — to be recorded daily next to the benchmark and graded before any promotion."
-      if sh else "None by the historical gates. Separately, the benchmark's own prior-only and current Directional p_up are now recorded daily for every asset and horizon, so any future challenger has a live comparison."))
+    lt = live_targets(res)
+    w("**11. Which qualify for live shadow?** " + (
+        "Exactly the tests that passed every gate: " + "; ".join(f"{FAMILIES[f]['label']} — {t} at {l} (`{live_version(f, t, l)}`)" for f, t, l in lt) +
+        ". `python -m finsim2 lab --live-models` fits each on every matured record and registers it as *live shadow* (outside "
+        "the promotion path); the daily learning job then records its forecast for every tracked asset in the append-only ledger "
+        "— alpha scores with each feature's contribution, graded against production by cross-sectional rank IC on the same dates; "
+        "volatility forecasts next to the baseline's own forecast, graded against realised volatility. The rest of a SHADOW "
+        "family (other targets, other horizons) is not recorded." if lt else
+        "None by the historical gates.") + " Separately, the benchmark's own prior-only and current Directional p_up are recorded "
+      "daily for every tracked asset and horizon, so any future challenger has a live comparison.")
     w("")
     w("**12. Which are blocked by data availability?** " + "; ".join(f"{b['label']} — {b['reason']}" for b in res.get("blocked") or BLOCKED) + ".")
     w("")
@@ -978,7 +1279,17 @@ def markdown(res: dict) -> str:
       "history (the highest-priority missing family), then CFTC positioning (`www.cftc.gov` on the allowlist), EIA inventories "
       "(`api.eia.gov`), and historical option chains. Each is an owner's data decision, not something to approximate.")
     w("")
-    w("**14. Is the 74-signal set information-limited rather than weight-limited?** See *Reading these results* above.")
+    na = [x for x in lt if x[1] == "alpha"]
+    nd = [x for x in lt if x[1] == "directional"]
+    w("**14. Is the 74-signal set information-limited rather than weight-limited?** " + (
+        "For relative ranking, the evidence leans towards information-limited: every reweighting of the 74 signals was rejected "
+        "(`SHAFFER_WEIGHT_RESEARCH.md`), while " + f"{len(na)} new-information Alpha test{'s' if len(na) != 1 else ''} passed every gate here — "
+        "but through a market-condition × beta term, not new asset-specific information (see *Reading these results*), so the "
+        "74-signal set's own asset-specific content is not shown to be the bottleneck. " if na else
+        "For relative ranking, neither lever helped: every reweighting was rejected and no new family passed. ") + (
+        "For absolute direction, the limit is neither weights nor the families tested: no family beat the prior-only and "
+        "current models, so direction beyond the prior is not demonstrated from any information available here." if not nd else
+        "A new family improved direction beyond the prior — information, not weights, was the limit there."))
     w("")
     w("**15. Is anything eligible for promotion?** No. Promotion needs the historical gates, the FDR control and a live-shadow "
       "record (G3); no family has live history, and nothing is added to production in this phase.")
@@ -1005,7 +1316,7 @@ def markdown(res: dict) -> str:
             ts = lambda st: f"{_f(st.get('mean'), 4)} ({_f(st.get('t'), 1)})" if st else "—"  # noqa: E731
             w(f"| {lab} | {wf['n']:,} | {ts(a['d_rank_ic'])} | {ts(a['d_ic'])} | {_f(d['brier_vs_prior'].get('mean'), 5)} ({_f(d['brier_vs_prior'].get('t'), 1)}) | "
               f"{_f(d['brier_vs_current'].get('t'), 1)} | {_f(d['logloss_vs_prior'].get('t'), 1)} | {_pct(d.get('excess_vs_prior'), 2)} | "
-              f"{bal} | {ts(hg.get('vol_mse_gain'))} | "
+              f"{bal} | {ts(hg.get('vol_mse_gain'))}{' = ' + _pct(_hedge_pct(hg), 1).lstrip('+') + ' of baseline' if _hedge_pct(hg) is not None else ''} | "
               f"{(g.get('alpha') or {}).get('eras_won', '—')} / {(g.get('directional') or {}).get('eras_won', '—')} / {(g.get('hedge') or {}).get('eras_won', '—')} of {g.get('eras_complete', '—')} | "
               f"{_f((g.get('alpha') or {}).get('split_t'), 1)} / {_f((g.get('directional') or {}).get('split_t'), 1)} / {_f((g.get('hedge') or {}).get('split_t'), 1)} |")
         feats = {}

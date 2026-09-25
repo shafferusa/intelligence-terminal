@@ -66,7 +66,7 @@ def _realised_risk(p: dict, px: list, i0: int, i1: int) -> Optional[float]:
     seg = [v for v in px[i0:i1 + 1] if v]
     if len(seg) < 3:
         return None
-    if p["model"] == "ml_vol":
+    if p["model"] == "ml_vol" or (p.get("detail") or {}).get("kind") == "volatility":
         lr = [math.log(b / a) for a, b in zip(seg, seg[1:])]
         return math.sqrt(252.0 / len(lr) * sum(x * x for x in lr))
     thr = (p.get("detail") or {}).get("threshold")
@@ -111,7 +111,7 @@ def score_matured(store, panel: Panel) -> int:
         if p["target_date"] > last:
             continue
         px = panel.series(p["asset_id"])
-        if p["model"] in RISK_MODELS:
+        if p["model"] in RISK_MODELS or (p.get("detail") or {}).get("kind") == "volatility":
             realized = _realised_risk(p, px, panel.index_of(p["made_on"]), panel.index_of(p["target_date"]))
             if realized is not None:
                 store.score_prediction(p["id"], realized, realized - p["predicted"], last, None)

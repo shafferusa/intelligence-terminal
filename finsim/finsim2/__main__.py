@@ -62,7 +62,7 @@ def main(argv=None) -> int:
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
-    lb.add_argument("--live-models", action="store_true", help="fit the benchmark's prior-only and current Directional models for the daily ledger")
+    lb.add_argument("--live-models", action="store_true", help="fit the daily-ledger models: the benchmark's prior-only and current Directional models, and the new-information families that passed every gate")
     lb.add_argument("--fetch-finra", action="store_true", help="download FINRA Reg SHO short-sale volume (2019 on) for US equities and ETFs")
     lb.add_argument("--directional", action="store_true", help="only the Shaffer Alpha vs Shaffer Directional research (engine/directional.py)")
     lb.add_argument("--directional-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_DIRECTIONAL_RESEARCH.md"))
@@ -144,6 +144,17 @@ def main(argv=None) -> int:
             with open(args.newinfo_report, "w", encoding="utf-8") as f:
                 f.write(newinfo.markdown(res))
             print(f"new-information research: {res['seconds']}s; wrote", args.newinfo_report)
+        if args.live_models:
+            from .engine import newinfo
+            from .engine.research import Research
+            st = Store(app.db_path())
+            try:
+                if st.kv_get(newinfo.RESEARCH_KEY):
+                    newinfo.fit_live(st, Research(st), progress=print)
+                else:
+                    print("no new-information research yet: its live-shadow models are fitted after `lab --newinfo`")
+            finally:
+                st.close()
         return 0
     if args.cmd == "lab":
         from .engine import lab

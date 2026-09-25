@@ -220,5 +220,110 @@ class PointInTime(unittest.TestCase):
         self.assertAlmostEqual(b2.short_volume("Z")["short_ratio_5d"][i], want)
 
 
+class LiveShadow(unittest.TestCase):
+    """Only tests that passed every gate are fitted; the daily ledger records their forecasts with the benchmark's
+    baseline next to them; live-shadow versions sit outside the promotion path."""
+
+    def test_only_passing_historical_tests_go_live(self):
+        res = {"horizons": {"1W": {"families": {
+            "breadth_plus": {"gates": {"alpha": {"passed": True}, "directional": {"passed": False}, "hedge": {"passed": True}}},
+            "credit_quality": {"gates": {"alpha": {"G1": True, "G2": True, "passed": False}}},
+            "short_volume": {"gates": {"track": "limited", "alpha": {"G1": True, "G2": True}}}}}}}
+        self.assertEqual(sorted(N.live_targets(res)), [("breadth_plus", "alpha", "1W"), ("breadth_plus", "hedge", "1W")])
+
+    def _fake(self):
+        cal = [(dt.date(2026, 1, 1) + dt.timedelta(days=i)).isoformat() for i in range(80)]
+        rnd = random.Random(3)
+        px = [100.0]
+        for _ in range(79):
+            px.append(px[-1] * math.exp(rnd.gauss(0, 0.01)))
+        rows = []
+
+        class Panel:
+            def calendar(s): return cal
+            def series(s, a, field="adj_close"): return px
+            def macro(s, sid): return [20.0] * len(cal)
+            def index_of(s, d): return cal.index(d)
+
+        class St:
+            def __init__(s):
+                s.kv = {}
+            def kv_get(s, k): return s.kv.get(k)
+            def asset(s, a): return {"id": a, "asset_class": "EQUITY"}
+            def assets(s): return []
+            def predictions(s, asset_id=None, horizon=None): return rows
+            def add_prediction(s, p):
+                rows.append(p)
+                return len(rows)
+        st = St()
+
+        class R:
+            store = st
+            def panel(s): return Panel()
+            def shaffer_full(s, a): return {"horizons": {"1W": {"raw": 20.0, "date": cal[-1]}}}
+        return R(), st, rows, cal
+
+    def test_daily_record_alpha_and_volatility_with_baseline(self):
+        research, st, rows, cal = self._fake()
+        std = [(0.0, 1.0)] * 2
+        st.kv[N.LIVE_KEY] = {"benchmark": "bm-x", "models": {
+            "newinfo-breadth-plus-alpha-1W": {"family": "breadth_plus", "target": "alpha", "horizon": "1W", "h": 5, "wide": True,
+                                              "features": ["a", "b"], "std": std, "records": 1, "weights": [0.5, 0.2, -0.1]},
+            "newinfo-breadth-plus-hedge-1W": {"family": "breadth_plus", "target": "hedge", "horizon": "1W", "h": 5, "wide": True,
+                                              "features": ["a", "b"], "std": std, "records": 1,
+                                              "weights": [[0.0, 0.5, 0.5, 0.0], [0.0, 0.5, 0.5, 0.0, 0.1, 0.0]]}}}
+        saved_f, saved_in = N._feature_now, D.live_inputs
+        N._feature_now = lambda b, fam, meta: [1.0, 2.0]
+        D.live_inputs = lambda research, meta, h, groups: {"i": len(cal) - 1, "s": 0.02, "beta": 1.5, "mu": {}, "clim": 0.55}
+        try:
+            n = N.record_live(research, "Z", {})
+            again = N.record_live(research, "Z", {})
+        finally:
+            N._feature_now, D.live_inputs = saved_f, saved_in
+        self.assertEqual(n, 3)                                   # alpha, the vol forecast, and the baseline's vol forecast
+        self.assertEqual(again, 0)                               # append-only: once per model and date
+        by = {p["model"]: p for p in rows}
+        a = by["newinfo:breadth_plus:alpha"]
+        self.assertAlmostEqual(a["score"], 0.5 * 0.2 + 1.5 * (0.2 * 1.0 - 0.1 * 2.0))
+        self.assertEqual(a["model_version"], "newinfo-breadth-plus-alpha-1W")
+        self.assertAlmostEqual(sum(a["detail"]["contributions"].values()), 1.5 * (0.2 - 0.2))
+        v, b = by["newinfo:breadth_plus:hedge"], by["newinfo:hedge-baseline"]
+        self.assertEqual(v["detail"]["kind"], "volatility")
+        self.assertAlmostEqual(math.log(v["predicted"] / b["predicted"]), 0.1)   # the family's contribution, and nothing else
+        self.assertEqual(b["model_version"], "baseline-bm-x")
+
+    def test_nothing_without_fits(self):
+        research, st, rows, cal = self._fake()
+        self.assertEqual(N.record_live(research, "Z"), 0)
+        self.assertEqual(N.live_status(st), {})
+
+    def test_live_status_pairs_and_needs_enough_graded(self):
+        from finsim2.engine.lab import LIVE_MIN
+        research, st, rows, cal = self._fake()
+        st.kv[N.LIVE_KEY] = {"models": {"v": {"family": "breadth_plus", "target": "hedge", "horizon": "1W", "records": 1}}}
+        for k in range(LIVE_MIN):
+            key = {"asset_id": f"A{k}", "horizon": "1W", "made_on": "2026-01-02", "realized": 0.20}
+            rows.append({**key, "model": "newinfo:breadth_plus:hedge", "model_version": "v", "predicted": 0.21})
+            rows.append({**key, "model": "newinfo:hedge-baseline", "model_version": "b", "predicted": 0.30})
+        s = N.live_status(st)["v"]
+        self.assertEqual(s["graded"], LIVE_MIN)
+        self.assertGreater(s["mse_gain"], 0)
+        self.assertEqual(s["status"], "ELIGIBLE FOR PROMOTION")
+        del rows[2:]
+        self.assertEqual(N.live_status(st)["v"]["status"], "LIVE SHADOW")
+
+    def test_volatility_rows_are_graded_as_realised_volatility(self):
+        from finsim2.engine import tracking as T
+        p = {"model": "newinfo:breadth_plus:hedge", "detail": {"kind": "volatility"}}
+        px = [100.0, 101.0, 99.0, 100.0, 102.0]
+        lr = [math.log(b / a) for a, b in zip(px, px[1:])]
+        self.assertAlmostEqual(T._realised_risk(p, px, 0, 4), math.sqrt(252.0 / 4 * sum(x * x for x in lr)))
+
+    def test_live_shadow_versions_cannot_be_promoted(self):
+        from finsim2.engine import lab as L
+        v = {"id": "newinfo-x", "kind": "newinfo", "status": "live shadow"}
+        self.assertEqual(L.stage(None, v), {"stage": "live shadow"})
+
+
 if __name__ == "__main__":
     unittest.main()
