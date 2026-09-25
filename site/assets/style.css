@@ -1422,7 +1422,17 @@ table.board-table {
 .sie-block > b { color: var(--edition, var(--accent)); }
 .sie-block.memorize { background: var(--tone-warn-bg); border-left-color: var(--tone-warn-fg); color: var(--ink); }
 .sie-block.memorize > b { color: var(--tone-warn-fg); }
-.sie-block.memorize li { font-family: var(--mono); font-size: 0.875rem; list-style: none; margin-left: -1.15rem; }
+.sie-block.memorize ul { padding-left: 0; }
+.sie-block.memorize li {
+  list-style: none;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0.4rem 0;
+  border-top: 1px dotted var(--tone-warn-bd);
+}
+.sie-block.memorize li:first-child { border-top: 0; padding-top: 0; }
+.sie-block.memorize li > b:first-child { color: var(--ink); }
 .sie-block.traps { background: var(--tone-bad-bg); border-left-color: var(--tone-bad-fg); }
 .sie-block.traps > b { color: var(--tone-bad-fg); }
 .sie-block.trader { background: var(--tone-ok-bg); border-left-color: var(--tone-ok-fg); }
@@ -1559,3 +1569,39 @@ details.tracker > summary { cursor: pointer; font-family: var(--sans); font-weig
 .guide-done { display: flex; gap: 0.5rem; align-items: center; font-family: var(--sans); font-size: 0.875rem; margin: 1.4rem 0 0; padding: 0.6rem 0.8rem; border: 1px dashed var(--line); border-radius: 8px; }
 .guide-done input { width: 1.1rem; height: 1.1rem; }
 .guide-chapter details.check > summary { font-weight: 500; line-height: 1.55; }
+
+/* ---------- SIE pages on a phone (reviewed 2026-09-25) ----------
+   The shared .data-table is a market-data table: monospace, no wrapping,
+   30rem minimum width. SIE tables hold words, so on SIE pages they wrap
+   like prose and fit the screen instead of hiding columns off to the right. */
+.paper[data-slot="sie"] table.data-table { min-width: 0; }
+.paper[data-slot="sie"] .data-table th,
+.paper[data-slot="sie"] .data-table td {
+  white-space: normal;
+  text-align: left;
+  vertical-align: top;
+  padding: 0.45rem 0.55rem;
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+.paper[data-slot="sie"] .data-table thead th {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Flow diagrams are drawn at most 48 characters wide; this size fits 48
+   monospace characters on any phone down to 360px, and caps at the
+   normal size on wider screens. */
+pre.flow {
+  font-size: min(0.8125rem, calc((100vw - 3.625rem) / 29));
+  padding: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .formula .expr { font-size: 0.9375rem; }
+  .formula dl { grid-template-columns: minmax(5.5rem, max-content) 1fr; }
+}

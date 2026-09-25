@@ -6,7 +6,8 @@
   "stable": "long-standing rule; teach as written",
   "annual": "indexed number; re-verify with WebSearch at the start of any run that teaches it",
   "changed": "recently changed; teach the current rule AND name the old number as a known prep-book trap",
-  "verify": "do not state specifics until verified this run; if unverifiable, teach the concept and say the number is under review"
+  "verify": "do not state specifics until verified this run; if unverifiable, teach the concept and say the number is under review",
+  "reader_note": "Shown to Logan beside a changed fact (the study guide's master list). 'note' is for the routine and is never shown."
  },
  "facts": [
   {
@@ -15,7 +16,8 @@
    "answer": "75 scored + 5 unscored questions, 1 hour 45 minutes, passing score 70",
    "status": "changed",
    "source": "FINRA (unscored cut from 10 to 5 effective 2025-10-27)",
-   "note": "Many prep books still say 85 questions."
+   "note": "Many prep books still say 85 questions.",
+   "reader_note": "Many prep books still say 85 questions."
   },
   {
    "category": "exam",
@@ -37,7 +39,8 @@
    "answer": "Historically 30 days after a 1st or 2nd failure, 180 days after 3 consecutive failures; FINRA shortened these by a rule change effective on filing 2026-06-29 with implementation date to be announced",
    "status": "changed",
    "source": "FINRA Rule 1210.05; FINRA weekly update 2026-07-01",
-   "note": "Verify current status before teaching; do not state new numbers from memory."
+   "note": "Verify current status before teaching; do not state new numbers from memory.",
+   "reader_note": "FINRA has approved shorter waits; confirm the current rule before booking a retake."
   },
   {
    "category": "exam",
@@ -80,7 +83,8 @@
    "answer": "$300 per person per year",
    "status": "changed",
    "source": "FINRA Regulatory Notice 26-05, effective 2026-03-30",
-   "note": "Was $100 from 1992 to 2026. Question banks may still show $100 — teach $300 and flag the old number."
+   "note": "Was $100 from 1992 to 2026. Question banks may still show $100 — teach $300 and flag the old number.",
+   "reader_note": "Was $100 from 1992 until 2026; older question banks may still use $100."
   },
   {
    "category": "conduct",
@@ -796,7 +800,8 @@
    "answer": "Within 5 business days after crossing 5% beneficial ownership (was 10 days before 2024)",
    "status": "changed",
    "source": "SEC 2023 amendments, effective 2024",
-   "note": "Older prep material says 10 days."
+   "note": "Older prep material says 10 days.",
+   "reader_note": "Older prep material says 10 days."
   },
   {
    "category": "offerings",
@@ -874,7 +879,8 @@
    "answer": "Up to $20,000 per year from 2026 (was $10,000)",
    "status": "changed",
    "source": "One Big Beautiful Bill Act (signed 2025-07-04)",
-   "note": "Older prep material says $10,000."
+   "note": "Older prep material says $10,000.",
+   "reader_note": "Older prep material says $10,000."
   },
   {
    "category": "education",

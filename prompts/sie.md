@@ -263,14 +263,23 @@ The edition, top to bottom:
 14. **Colophon** (SR §11): sources (FINRA outline, the rules and releases cited), corrections, method
     line with the status link.
 
+**Written for a phone.** Logan reads these on an iPhone. Three rules keep the page readable there:
+flow diagrams are **at most 48 characters per line** (draw them vertically — one hop per line —
+rather than as one long chain); tables have at most 4–5 short columns of words, never paragraphs in
+cells; and every MEMORIZE line bolds its term. Nothing written for the routine (instructions,
+verification notes, file names) ever appears on the page.
+
 **Markup for the labelled blocks** (styled in `site/assets/style.css`, SIE section):
 
 ```html
 <div class="sie-plan"><b>Today's plan</b><ul><li>Lesson ~55 min</li>…</ul></div>
-<pre class="flow">Customer --(order)--> BD --(route)--> Exchange
-Customer <--(shares, T+1)-- DTC <--(settle)-- NSCC</pre>
+<pre class="flow">Customer
+  --(order)--> BD
+  --(route)--> Exchange
+Shares back, T+1:
+  NSCC --(settle)--> DTC --> Customer</pre>
 <div class="sie-block understand"><b>Understand</b><p>…</p></div>
-<div class="sie-block memorize"><b>MEMORIZE:</b><ul><li>Reg T initial margin → 50%</li></ul></div>
+<div class="sie-block memorize"><b>MEMORIZE:</b><ul><li><b>Reg T initial margin</b> → 50%</li></ul></div>
 <div class="sie-block traps"><b>Exam traps</b><ul><li>"…" → the truth</li></ul></div>
 <div class="sie-block trader"><b>Trader connection</b><p>…</p></div>
 <span class="tag-memo">Just memorize</span>   <!-- inline, next to an arbitrary exam number -->
