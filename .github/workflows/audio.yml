@@ -29,6 +29,7 @@ on:
 permissions:
   contents: write
   actions: write        # to dispatch build-site.yml once the MP3 is published
+  pull-requests: read   # to see whether a merged PR published an edition
 
 concurrency:
   group: report-audio
@@ -43,6 +44,32 @@ jobs:
         with:
           ref: main
 
+      # Every merged claude/* PR completes "Publish report", including
+      # maintenance PRs (code, docs, curriculum) that publish nothing. Without
+      # this check such a merge re-synthesised whatever the newest edition happened
+      # to be (caught 2026-09-25 when the SIE Program PR merged). Ask GitHub
+      # which files the merged PR changed; only an edition touches the index.
+      # Any doubt (no PR number, API error) falls back to the old behaviour.
+      - name: Did this merge publish an edition?
+        id: published
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          yes=true
+          if [ "$EVENT" = "workflow_run" ] && [ -n "$PR" ]; then
+            if files=$(gh api "repos/${{ github.repository }}/pulls/$PR/files" --paginate --jq '.[].filename'); then
+              if ! printf '%s\n' "$files" | grep -qx 'site/reports/index.json'; then
+                echo "PR #$PR changed no edition -- maintenance merge, skipping"
+                yes=false
+              fi
+            else
+              echo "could not list PR #$PR files -- proceeding as before"
+            fi
+          fi
+          echo "yes=$yes" >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -52,6 +79,7 @@ jobs:
 
       - name: Synthesise the newest report
         id: tts
+        if: steps.published.outputs.yes == 'true'
         continue-on-error: true
         env:
           # Logan's pick, 2026-08-16. The previous default was

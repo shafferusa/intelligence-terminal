@@ -33,7 +33,10 @@ jobs:
     env:
       TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TG_CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
-      SIE_PENDING: ${{ runner.temp }}/sie-pending.json
+      # Outside the checkout so it is never committed. (The runner context is
+      # not available in job-level env, so this is a fixed path, not
+      # runner.temp -- using runner.temp here made the whole file invalid.)
+      SIE_PENDING: /tmp/sie-pending.json
     steps:
       - uses: actions/checkout@v4
         with:
