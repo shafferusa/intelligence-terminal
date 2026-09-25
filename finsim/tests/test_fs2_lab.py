@@ -92,6 +92,45 @@ class Weights(unittest.TestCase):
         self.assertLess(W["asset:X"][0], W["global"][0])
 
 
+class LiveShadow(unittest.TestCase):
+    def test_only_challengers_past_both_gates_are_recorded(self):
+        class St:
+            def __init__(self):
+                self.rows = []
+                self.kv = {}
+            def kv_get(self, k): return self.kv.get(k)
+            def kv_set(self, k, v): self.kv[k] = v
+            def asset(self, a): return {"id": a, "asset_class": "EQUITY"}
+            def predictions(self, **k): return []
+            def add_prediction(self, p): self.rows.append(p); return len(self.rows)
+        st = St()
+        good = L.study(_recs(), 21, "class")
+        bad = L.study(_recs(signal=False, seed=9), 21, "class")
+        st.kv[L.REGISTRY_KEY] = {"versions": [
+            {"id": "shaffer-2.1-class-exp", "kind": "shaffer", "status": "challenger", "validation": {"1M": {"gates": good["gates"]}}},
+            {"id": "shaffer-2.1-global-exp", "kind": "shaffer", "status": "challenger", "validation": {"1M": {"gates": bad["gates"]}}}]}
+        for vid, s in (("shaffer-2.1-class-exp", good), ("shaffer-2.1-global-exp", bad)):
+            st.kv[f"formula:weights:{vid}"] = {"1M": {"weights": s["final"]["weights"], "rms": s["final"]["rms"], "scale": s["final"]["scale"]}}
+
+        class Panel:
+            def calendar(self): return ["2026-01-02"]
+        class R:
+            store = st
+            def shaffer_full(self, a): return {"horizons": {"1M": {"raw": 5.0, "date": "2026-01-02", "families": [{"family": L.families()[0], "score": 0.3}]}}}
+            def panel(self): return Panel()
+            def regimes(self): return {"volatility": ["low_vol"]}
+        import finsim2.engine.tracking as T
+        saved = T.record
+        T.record = lambda store, panel, a, d, model, *args, **kw: store.add_prediction({"model": model})
+        try:
+            n = L.record_shadow(R(), "NVDA")
+        finally:
+            T.record = saved
+        self.assertTrue(good["gates"]["G1_discovery"] and good["gates"]["G2_confirmation"])
+        self.assertEqual([r["model"] for r in st.rows], ["shaffer:shaffer-2.1-class-exp"])
+        self.assertEqual(n, 1)
+
+
 class Registry(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp()

@@ -1,6 +1,6 @@
 # Shaffer Hedge: the audit
 
-Generated 2026-09-25 11:34:43 from the real research store (data to 2026-09-24); 330 case-horizons with history, run time 7.7 minutes. Every result is walk-forward: the hedge is sized at each month-start with information available then (trailing-year betas, structural DV01/CS01/currency exposure, the option's delta from that day's Cboe volatility index) for 100% of the exposure, and judged on what happened over the following horizon. A $500,000 holding is the book.
+Generated 2026-09-25 14:31:39 from the real research store (data to 2026-09-24); 330 case-horizons with history, run time 8.6 minutes. Every result is walk-forward: the hedge is sized at each month-start with information available then (trailing-year betas, structural DV01/CS01/currency exposure, the option's delta from that day's Cboe volatility index) for 100% of the exposure, and judged on what happened over the following horizon. A $500,000 holding is the book.
 
 ## 1–3. Risk factors, instruments and their sizing units
 

@@ -671,6 +671,9 @@ def record_shadow(research, asset_id: str) -> int:
             continue
         fam = {f["family"]: f.get("score") or 0.0 for f in r.get("families") or []}
         for v in chal:
+            g = ((v.get("validation") or {}).get(lab) or {}).get("gates") or {}
+            if not (g.get("G1_discovery") and g.get("G2_confirmation")):
+                continue                     # only challengers that passed discovery and confirmation enter live shadow
             s = challenger_score(st, v["id"], meta, lab, fam, vol)
             if s is None:
                 continue

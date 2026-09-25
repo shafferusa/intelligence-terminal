@@ -14,6 +14,29 @@ Commit key (details in §75): `be2af0f` ledger/corporate actions/FX · `2686ef2`
 ledger derivatives · `67bb0e6` hedge service/UI/net scores · `273b437` systematic objective · `1025ec7` docs ·
 `5325481` over-hedging fix · `82904a7` input validation.
 
+## Product direction — 2026-09-25: FinSim2 is Portfolio Manager Career Mode
+
+FinSim2 = research the market → Shaffer Score → trade → optionally Shaffer Hedge → manage → review. The ML Lab is the
+laboratory that evaluates and refines the two Shaffer systems; it does not trade or recommend (`ML_LAB.md`).
+
+| Item | Status | Where / evidence |
+|---|---|---|
+| Shaffer Score everywhere, horizon-specific | DONE | Markets (calibrated and agreement were being dropped — fixed), Watchlist (calibrated, confidence, Trade button), Portfolio positions (horizon selector), ticket (supporting / opposing factors now follow the selected horizon), Asset Research, Analytics |
+| Trade only / Trade + Shaffer Hedge | DONE | ticket; any hedge design can be booked instead of the engine package |
+| Profit-aware hedging (risk removed − λ·profit given up − cost) | DONE | `hedge/designs.py`, ticket and Analytics → Shaffer Hedge; market-prior drifts, Shaffer evidence only where supported, thesis-disagreement flag; bond / FX / commodity carry not modelled (stated) |
+| Marketplace concise vs Analytics deep | DONE | Analytics gains the Shaffer Hedge tab (risks, candidates, cost, basis, tail, before/after, designs) |
+| Historical research dataset | DONE | `lab_records`: 819,392 point-in-time records, 157 assets, 6 horizons |
+| Live day-over-day learning | DONE | ledger: Shaffer, ML return / volatility / drawdown, hedge recommendations (daily P&L paths kept), challengers in live shadow |
+| Hierarchical weights (global → class → sector → industry → asset, shrinkage) | DONE | `engine/lab.py`; four variants; discovery / confirmation / walk-forward |
+| Formula versioning | DONE | `formula:registry`: shaffer-2.1, hedge-2, four Shaffer challengers, hedge-2-sizing-exp |
+| Promotion process (no automatic change) | DONE | gates G1–G3 + explicit user action; promoted hedge sizing is applied by the live engine; a promoted Shaffer weighting becomes a new score VERSION |
+| Hedge learning (H_ML = m·H_raw) | DONE | sizing study: 72 of 174 multiples confirmed; challenger in live shadow |
+| ML Lab page | DONE | production models, historical performance, signal research, weight research, challengers & promotion, hedge research, live learning, version comparison; per-asset ML forecasts kept as an independent benchmark |
+
+Result: no Shaffer weighting challenger passes discovery at any horizon, and more specialisation is worse out of sample
+(details in `ML_LAB.md`). The hedge sizing study finds real, confirmed biases (option hedges ≥15% oversized; linear
+equity hedges correctly sized).
+
 ## Research phase 2 — 2026-09-25 (what improved, with the out-of-sample numbers)
 
 Rules kept: no weight retuned, no sign changed, no threshold loosened, the admission rule unchanged, nothing forced into

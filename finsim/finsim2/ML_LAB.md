@@ -141,3 +141,46 @@ Evaluation is not one number: variance, drawdown, tail loss, VaR, ES, basis erro
 
 Choose weights on the full dataset and call them out of sample; tune every ticker on a tiny sample; keep optimising until
 history looks good; use future data; promote anything automatically.
+
+## Results on the real research store (data to 2026-09-24)
+
+Research records: **819,392** point-in-time scored dates over 157 assets (1D 151k, 1W 150k, 1M 149k, 3M 144k, 6M 132k,
+12M 93k). Weight research run: 3 minutes (one process per horizon).
+
+**No weighting challenger passes discovery (G1) at any horizon; none enters the live shadow.** Paired challenger −
+production IC, date-clustered t in brackets:
+
+| Horizon | Variant | Walk-forward before 2018 | Confirmation (frozen, from 2018) | Walk-forward from 2018 |
+|---|---|---|---|---|
+| 1D | by class | −0.007 (−0.6) | +0.011 (+2.7) | +0.012 (+3.2) |
+| 1W | by regime | −0.003 (−0.3) | +0.012 (+1.1) | +0.012 (+1.1) |
+| 1M | hierarchy | −0.021 (−1.2) | +0.008 (+0.3) | −0.018 (−0.8) |
+| 3M | global | −0.006 (−0.2) | +0.055 (+1.2) | +0.040 (+0.9) |
+| 3M | hierarchy | −0.011 (−0.3) | +0.034 (+0.9) | −0.001 (−0.0) |
+| 6M | by regime | +0.023 (+0.3) | +0.028 (+0.4) | +0.056 (+1.0) |
+| 12M | by regime | −0.001 (−0.0) | +0.039 (+0.5) | +0.062 (+0.8) |
+
+What this says:
+
+* **Specialisation does not help yet.** The full class → sector → industry → asset hierarchy is usually *worse* out of
+  sample than one global set (e.g. 1M walk-forward before 2018: −0.021; 3M from 2018: −0.001 vs +0.040 for global),
+  even with shrinkage toward the parent: asset-level weights (visible in the weight table — e.g. Fundamental Quality at
+  +59% for NVDA at 3M) are fitted noise.
+* The few challengers that look better after 2018 (1D by class, t 3.2) were worse before it — exactly the pattern the
+  discovery gate exists to stop.
+* Several pass the confirmation gate alone (3M global, class and regime), none passes discovery.
+* Production keeps higher calibration monotonicity on the pooled deciles than every challenger except at 3M.
+
+Hedge sizing study (hedge audit, same data): **72 of 174** group × objective multiples confirmed after 2018 — the
+`hedge-2-sizing-exp` challenger is in live shadow.
+
+* Option hedges (equity, single-name, commodity) are oversized: every confirmed multiple is at the ×0.85 limit (the ±15%
+  cap), worth +19% to +39% variance / downside reduction after 2018 — the real bias is at least that large.
+* FX forwards ×0.85 (variance +4–5%), credit ×0.85–0.95 on the exposure / ES objectives, Treasury ETF shorts ×0.875.
+* Linear equity hedges (SPY short, ES / MES futures) are correctly sized: the best multiple is ×1.02 and not confirmed.
+* Crypto: not enough history before 2018 to discover anything.
+
+Hedge designs, NVDA $150k at 6M (the ticket): expected return +5.1% = market prior only (no supported Shaffer evidence at
+6M), ES 95% of the 6M P&L over 479 windows. Best by λ: 0.5–2 full beta hedge (1 MNQ future; ES cut by $23k for $5k of
+expected profit), 5 an index put, 10 no hedge. With no supported evidence the Shaffer Score does not change which design
+wins — the panel says so.
