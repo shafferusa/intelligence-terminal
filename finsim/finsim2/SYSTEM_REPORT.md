@@ -36,7 +36,7 @@ laboratory that evaluates and refines the two Shaffer systems; it does not trade
 
 Result: no Shaffer weighting challenger passes discovery at any horizon, and more specialisation is worse out of sample
 (details in `ML_LAB.md`). The hedge sizing study finds real, confirmed biases (option hedges ≥15% oversized; linear
-equity hedges correctly sized).
+equity hedges correctly sized). The signal-level re-weighting (`SHAFFER_WEIGHT_RESEARCH.md`) finds no challenger that passes the historical gates at any horizon; production's direction is ~51% right against naive baselines of 53–72%, bullish scores are informative and bearish ones are not, and production's cross-sectional ranking is significant at 1D–1M.
 
 ## Research phase 2 — 2026-09-25 (what improved, with the out-of-sample numbers)
 

@@ -395,7 +395,7 @@ def _accuracy(rows, key, h) -> dict:
     c = _clustered_mean(by, h)
     if c["mean"] is None:
         return {"acc": None, "n": n}
-    return {"acc": c["mean"], "lo": c["mean"] - 1.96 * c["se"], "hi": c["mean"] + 1.96 * c["se"], "n": n, "weeks": c["weeks"],
+    return {"acc": c["mean"], "lo": max(0.0, c["mean"] - 1.96 * c["se"]), "hi": min(1.0, c["mean"] + 1.96 * c["se"]), "n": n, "weeks": c["weeks"],
             "coverage": n / max(1, len(rows))}
 
 
@@ -967,7 +967,8 @@ def _ic_t(x):
 
 def _acc_ci(a):
     a = a or {}
-    return f"{_p(a.get('acc'))} [{_p(a.get('lo'))}, {_p(a.get('hi'))}]" if a.get("acc") is not None else "—"
+    cl = lambda v: None if v is None else min(1.0, max(0.0, v))  # noqa: E731
+    return f"{_p(a.get('acc'))} [{_p(cl(a.get('lo')))}, {_p(cl(a.get('hi')))}]" if a.get("acc") is not None else "—"
 
 
 def _status(c: dict, live: Optional[dict]) -> str:
@@ -1082,8 +1083,8 @@ def markdown(res: dict, live: Optional[Dict[str, dict]] = None) -> str:
           " | ".join(f"{_p((sp.get(d) or {}).get('acc'))} / {_n((sp.get(d) or {}).get('ic'))}" for d in DEPTHS) + f" | {best} (by IC) |")
     w("")
     w("**6–8. Which signals gained and lost weight, and which changes were stable across eras?** From each horizon's best challenger, "
-      "global node: each signal's share of Σ|effective weight on x|, production vs challenger; *stable* = the challenger's era-by-era global "
-      "weight kept one sign in every era fit.")
+      "global node: each signal's signed share of Σ|effective weight on x| (negative = the score leans against the signal), production → "
+      "challenger, ranked by the change in |share|; *stable* (✓) = the challenger's era-by-era global weight kept one sign in every era fit.")
     w("")
     for lab in _HZ_ORDER:
         hz = H.get(lab) or {}
@@ -1091,12 +1092,12 @@ def markdown(res: dict, live: Optional[Dict[str, dict]] = None) -> str:
         if not g:
             continue
         st = hz.get("stability") or {}
-        d = sorted(((v.get("challenger", 0) - v.get("production", 0), s) for s, v in g.items()), reverse=True)
+        d = sorted(((abs(v.get("challenger", 0)) - abs(v.get("production", 0)), s) for s, v in g.items()), reverse=True)   # by |share|
         gain = [f"{s} {_p(g[s]['production'], 1)}→{_p(g[s]['challenger'], 1)}{' ✓' if (st.get(s) or {}).get('same_sign') else ''}" for x, s in d[:6] if x > 0.002]
         lose = [f"{s} {_p(g[s]['production'], 1)}→{_p(g[s]['challenger'], 1)}{' ✓' if (st.get(s) or {}).get('same_sign') else ''}" for x, s in d[::-1][:6] if x < -0.002]
         stable = [s for s, v in st.items() if v.get("same_sign")]
         w(f"* **{lab}** ({hz.get('best')}) — gained: {', '.join(gain) or 'none'}. Lost: {', '.join(lose) or 'none'}. "
-          f"Stable sign in every era: {len(stable)} of {len(st)} signals used ({', '.join(stable[:12])}{' …' if len(stable) > 12 else ''}). ✓ = stable.")
+          f"Stable sign in every era: {len(stable)} of {len(st)} signals used ({', '.join(stable[:12])}{' …' if len(stable) > 12 else ''}).")
     w("")
     w("**9. Which improvements disappeared on unseen data?** Every challenger's in-sample (training) gain against its walk-forward "
       "gain on the eras it never saw. *Disappeared* = the walk-forward gain in accuracy or IC is ≤ 0; *shrank* = still positive but "

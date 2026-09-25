@@ -219,3 +219,25 @@ Hedge designs, NVDA $150k at 6M (the ticket): expected return +5.1% = market pri
 6M), ES 95% of the 6M P&L over 479 windows. Best by λ: 0.5–2 full beta hedge (1 MNQ future; ES cut by $23k for $5k of
 expected profit), 5 an index put, 10 no hedge. With no supported evidence the Shaffer Score does not change which design
 wins — the panel says so.
+
+### Signal-level weight research (same data; full report in `SHAFFER_WEIGHT_RESEARCH.md`)
+
+9 challengers × 6 horizons, validated on four unseen eras, 2025–now and the 2018 split (13 minutes, 3 processes).
+**No challenger passes G1 at any horizon; production stays, nothing enters the live shadow.**
+
+| Horizon | Production accuracy | Best challenger | Naive baseline | Rank IC prod. → ch. (t) |
+|---|---|---|---|---|
+| 1D | 51.1% | 51.5% | 52.8% always bullish | 0.038 (7.2) → 0.034 (6.8) |
+| 1W | 50.3% | 51.2% | 54.8% positive frequency | 0.034 (5.5) → 0.036 (6.2) |
+| 1M | 50.5% | 52.6% | 58.7% positive frequency | 0.028 (2.3) → 0.037 (3.1) |
+| 3M | 50.2% | 52.7% | 62.7% positive frequency | 0.016 (0.7) → 0.039 (1.9) |
+| 6M | 50.5% | 54.8% | 66.0% always bullish | 0.031 (0.8) → 0.082 (2.3) |
+| 12M | 50.7% | 57.7% | 72.1% always bullish | 0.047 (1.0) → 0.063 (1.3) |
+
+* The score is centred on zero with no drift term, so its direction cannot beat "always bullish" at long horizons.
+* Bullish scores are informative and grow more reliable with size (1D: 55% → 71% right from +10 to +75; 1M: 59% → 88%);
+  bearish scores are right less than half the time at 1M–6M. 83–92% of records are in −10…+10.
+* Production ranks assets week to week at 1D–1M (rank IC t 7.2, 5.5, 2.3).
+* Gains shrink by half or more out of sample; free signed weights over-fit the most (12M: +22.6 points in sample, −2.3 out).
+* Class level is the best depth; deeper specialisation does not help.
+* Stable in every era at every horizon: a negative weight on idiosyncratic volatility (production gives it almost none).
