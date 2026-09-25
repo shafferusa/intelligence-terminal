@@ -47,7 +47,17 @@ def _progress(cb, d, n, m):
 
 
 # ------------------------------------------------------------------ datasets
-def asset_dataset(z: Dict[str, list], price: list, h: int, names: Optional[List[str]] = None):
+def _expected_max_normal(h: int) -> float:
+    """E[max of h iid standard normals] (Gumbel approximation; exact small-h values): the vol-scaled baseline for the
+    worst daily loss over h sessions."""
+    exact = {1: 0.0, 2: 0.5642, 3: 0.8463, 4: 1.0294, 5: 1.1630}
+    if h in exact:
+        return exact[h]
+    a = math.sqrt(2 * math.log(h))
+    return a - (math.log(math.log(h)) + math.log(4 * math.pi)) / (2 * a) + 0.5772 / a
+
+
+def asset_dataset(z: Dict[str, list], price: list, h: int, names: Optional[List[str]] = None, market: Optional[list] = None):
     step = STEP.get(h, 21)
     names = names or [k for k in FEATURES if k in z]
     tgt = targets(price, h)
@@ -89,9 +99,39 @@ def asset_dataset(z: Dict[str, list], price: list, h: int, names: Optional[List[
             dd_t.append(1.0 if worst <= -thr else 0.0)
         else:
             dd_t.append(None)
+    # tail loss: the worst daily log return inside (t, t+h] (as a positive loss); baselines known at t: the same
+    # statistic over the previous h sessions, and the EWMA daily vol × E[max of h normals]
+    tail_t, tail_prev, tail_vol = [], [], []
+    emax = _expected_max_normal(h)
+    for t in idx:
+        fut = [lr[k] for k in range(t + 1, min(n, t + h + 1)) if lr[k] is not None]
+        tail_t.append(-min(fut) if len(fut) >= max(3, h // 2) else None)
+        past = [lr[k] for k in range(max(1, t - h + 1), t + 1) if lr[k] is not None]
+        tail_prev.append(-min(past) if len(past) >= max(3, h // 2) else None)
+        tail_vol.append(math.sqrt(ew_at[t]) * emax if ew_at.get(t) is not None else None)
+    # beta change: realised beta to the market over (t, t+h] minus the trailing 252-session beta at t
+    beta_t = [None] * len(idx)
+    beta_now = [None] * len(idx)
+    if market is not None and h >= 21:
+        mr_ = [None] + [math.log(market[i] / market[i - 1]) if market[i] and market[i - 1] else None for i in range(1, n)]
+
+        def beta(lo, hi):
+            pr = [(lr[k], mr_[k]) for k in range(lo, hi) if lr[k] is not None and mr_[k] is not None]
+            if len(pr) < 15:
+                return None
+            mx = sum(b for _, b in pr) / len(pr)
+            my = sum(a for a, _ in pr) / len(pr)
+            vx = sum((b - mx) ** 2 for _, b in pr)
+            return sum((a - my) * (b - mx) for a, b in pr) / vx if vx > 0 else None
+        for j, t in enumerate(idx):
+            b0 = beta(max(1, t - 251), t + 1)
+            b1 = beta(t + 1, min(n, t + h + 1))
+            beta_now[j] = b0
+            beta_t[j] = (b1 - b0) if b0 is not None and b1 is not None else None
     return {"names": keep, "idx": idx, "X": X, "y": y, "x_today": x_today, "last": last, "step": step,
             "prev": prev, "mom": mom, "mr": mr, "vol_target": vol_t, "dd_target": dd_t, "dd_threshold": thr,
-            "vol_now": vol_now, "ewma_now": ewma_now}
+            "vol_now": vol_now, "ewma_now": ewma_now, "tail_target": tail_t, "tail_prev": tail_prev, "tail_vol": tail_vol,
+            "beta_target": beta_t, "beta_now": beta_now}
 
 
 # ------------------------------------------------------------------ walk-forward
@@ -268,6 +308,30 @@ def _reg_metrics(pred: List[Optional[float]], y: List[float], h: int, step: int)
             "hit": (sum(1 for a, b in lean if (a > 0) == (b > 0)) / len(lean)) if lean else None,
             "rmse": math.sqrt(sum((a - b) ** 2 for a, b in pairs) / len(pairs)), "mae": sum(abs(a - b) for a, b in pairs) / len(pairs),
             "sharpe": _sharpe_of(p, v, h, step)}
+
+
+def _risk_compare(pred: List[float], y: List[float], baselines: Dict[str, List[Optional[float]]], h: int, step: int) -> dict:
+    """A risk model against its baselines on exactly the same out-of-sample rows (every baseline available): RMSE
+    and IC of each; verified = lower RMSE than every baseline; stable = lower in BOTH halves of the rows (time order)."""
+    keep = [j for j in range(len(y)) if pred[j] is not None and y[j] is not None and all(b[j] is not None for b in baselines.values())]
+    if len(keep) < 20:
+        return {"n": len(keep), "verified": False, "stable": False}
+    sub = lambda xs, ks: [xs[j] for j in ks]
+    out = {"model": _reg_metrics(sub(pred, keep), sub(y, keep), h, step)}
+    for k, b in baselines.items():
+        out["baseline_" + k] = _reg_metrics(sub(b, keep), sub(y, keep), h, step)
+    rm = out["model"].get("rmse")
+    bs = [out["baseline_" + k].get("rmse") for k in baselines]
+    out["verified"] = bool(rm is not None and all(v is not None and rm < v for v in bs))
+    half = len(keep) // 2
+    stable = True
+    for part in (keep[:half], keep[half:]):
+        e = lambda xs: math.sqrt(sum((xs[j] - y[j]) ** 2 for j in part) / len(part))
+        stable &= all(e(pred) < e(b) for b in baselines.values())
+    out["stable"] = out["verified"] and stable
+    best = min(bs) if bs and all(v is not None for v in bs) else None
+    out["rmse_improvement"] = (1 - rm / best) if rm is not None and best else None
+    return out
 
 
 def _cls_metrics(prob: List[float], yb: List[float], base: Optional[List[float]] = None) -> dict:
@@ -520,13 +584,8 @@ def train_horizon(ds: dict, h: int, lab: str, progress=None, shaffer: Optional[L
         vt = ds["vol_target"]
         rows_v, pv, vol_final = _simple_wf(X, vt, ds["idx"], h, H0, ["ridge"] + (["gradient_boosting"] if use_trees else []))
         if rows_v:
-            yv = [vt[i] for i in rows_v]
-            vol_out = {"model": _reg_metrics(pv, yv, h, step),
-                       "baseline_current_vol": _reg_metrics([ds["vol_now"][i] for i in rows_v], yv, h, step),
-                       "baseline_ewma": _reg_metrics([ds["ewma_now"][i] for i in rows_v], yv, h, step)}
-            rm = vol_out["model"].get("rmse")
-            bs = [vol_out[k].get("rmse") for k in ("baseline_current_vol", "baseline_ewma") if vol_out[k].get("rmse") is not None]
-            vol_out["verified"] = bool(rm is not None and bs and rm < min(bs))
+            vol_out = _risk_compare(pv, [vt[i] for i in rows_v], {"current_vol": [ds["vol_now"][i] for i in rows_v],
+                                                                   "ewma": [ds["ewma_now"][i] for i in rows_v]}, h, step)
         dt = ds["dd_target"]
         rows_d, pd, dd_final = _simple_wf(X, dt, ds["idx"], h, H0, ["logistic"], classifier=True)
         if rows_d:
@@ -534,6 +593,28 @@ def train_horizon(ds: dict, h: int, lab: str, progress=None, shaffer: Optional[L
             dd_out = _cls_metrics(pd, [dt[i] for i in rows_d], freq)
             dd_out["threshold"] = ds["dd_threshold"]
             dd_out["verified"] = bool(dd_out.get("baseline_brier") is not None and dd_out.get("brier") is not None and dd_out["brier"] < dd_out["baseline_brier"])
+            ok = [j for j in range(len(rows_d)) if freq[j] is not None]
+            half = len(ok) // 2
+            yd = [dt[i] for i in rows_d]
+            br = lambda ps, part: sum((ps[j] - yd[j]) ** 2 for j in part) / max(1, len(part))
+            dd_out["stable"] = bool(dd_out["verified"] and half >= 10 and all(br(pd, part) < br(freq, part) for part in (ok[:half], ok[half:])))
+    # ---------- tail loss (worst day in the window) and beta change: separate risk problems, each against baselines
+    tail_out, beta_out, tail_final, beta_final = None, None, {}, {}
+    if 5 <= h <= 252 and ds.get("tail_target"):
+        tt = ds["tail_target"]
+        rows_t, pt, tail_final = _simple_wf(X, tt, ds["idx"], h, H0, ["ridge"] + (["gradient_boosting"] if use_trees else []))
+        if rows_t:
+            tail_out = _risk_compare(pt, [tt[i] for i in rows_t], {"previous_window": [ds["tail_prev"][i] for i in rows_t],
+                                                                    "vol_scaled": [ds["tail_vol"][i] for i in rows_t]}, h, step)
+        bt = ds.get("beta_target") or []
+        if any(v is not None for v in bt):
+            rows_b, pb, beta_final = _simple_wf(X, bt, ds["idx"], h, H0, ["ridge"])
+            if rows_b:
+                # Blume (1971): betas regress about a third of the way to 1 — the textbook forecast a model has to beat
+                bn = ds.get("beta_now") or [None] * len(bt)
+                beta_out = _risk_compare(pb, [bt[i] for i in rows_b], {"no_change": [0.0] * len(rows_b),
+                                                                        "mean_change": _expanding_mean(ds, rows_b, h, bt),
+                                                                        "blume": [(1 - bn[i]) / 3 if bn[i] is not None else None for i in rows_b]}, h, step)
     today_vol = today_dd = None
     if vol_final:
         try:
@@ -586,6 +667,7 @@ def train_horizon(ds: dict, h: int, lab: str, progress=None, shaffer: Optional[L
             "baselines": baselines, "always_long": always_long, "verified": verified, "edge_reasons": reasons,
             "prediction": ens_today, "expected": (math.exp(ens_today) - 1) if ens_today is not None else None, "error": ens_all.get("rmse"),
             "predictions": preds_today, "prob_up": prob_up, "direction": direction, "volatility": vol_out, "drawdown": dd_out,
+            "tail_loss": tail_out, "beta_change": beta_out,
             "vol_forecast": today_vol, "dd_probability": today_dd, "score": score, "quality": quality,
             "confidence": {"value": conf_v, "label": "High" if conf_v >= 0.65 else "Medium" if conf_v >= 0.4 else "Low",
                            "parts": {"out_of_sample_ic": quality, "stability": stab, "model_agreement": agree, "sample_size": sample}},
@@ -655,7 +737,7 @@ def train_asset(research, asset_id: str, progress: Optional[Callable] = None, ho
     states: Dict[str, dict] = {}
     for k, (lab, h) in enumerate(horizons):
         _progress(progress, k, len(horizons), f"{lab}: building the dataset")
-        ds = asset_dataset(z, price, h)
+        ds = asset_dataset(z, price, h, market=panel.series(panel.benchmark) if asset_id != panel.benchmark else None)
         if ds is None or len(ds["X"]) < 80:
             res["horizons"][lab] = {"horizon": lab, "h": h, "status": "insufficient", "reason": "not enough history for this horizon"}
             continue

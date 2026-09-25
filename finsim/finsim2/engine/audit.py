@@ -205,6 +205,15 @@ def candidate_stats(rows: List[tuple], h: int, cal: List[str]) -> dict:
     return out
 
 
+def _risk_brief(x: Optional[dict]) -> Optional[dict]:
+    """A risk-model comparison (ml._risk_compare) reduced to what the audit aggregates."""
+    if not x or not x.get("model"):
+        return None
+    base = {k[9:]: (v or {}).get("rmse") for k, v in x.items() if k.startswith("baseline_")}
+    return {"verified": x.get("verified"), "stable": x.get("stable"), "rmse": x["model"].get("rmse"), "ic": x["model"].get("ic"),
+            "baselines": base, "improvement": x.get("rmse_improvement")}
+
+
 def _ml_worker(db_path: str, asset_id: str) -> dict:
     from . import ml
     st, r = _open(db_path)
@@ -223,7 +232,8 @@ def _ml_worker(db_path: str, asset_id: str) -> dict:
                        "volatility": {"verified": (o.get("volatility") or {}).get("verified"), "rmse": ((o.get("volatility") or {}).get("model") or {}).get("rmse"),
                                       "rmse_current": ((o.get("volatility") or {}).get("baseline_current_vol") or {}).get("rmse"),
                                       "rmse_ewma": ((o.get("volatility") or {}).get("baseline_ewma") or {}).get("rmse")} if o.get("volatility") else None,
-                       "drawdown": {k: (o.get("drawdown") or {}).get(k) for k in ("brier", "baseline_brier", "verified", "auc", "threshold")} if o.get("drawdown") else None,
+                       "drawdown": {k: (o.get("drawdown") or {}).get(k) for k in ("brier", "baseline_brier", "verified", "stable", "auc", "threshold")} if o.get("drawdown") else None,
+                       "risk": {k: _risk_brief(o.get(k)) for k in ("volatility", "tail_loss", "beta_change")},
                        "oos": o.get("oos") or []}
         for lab, v in hz.items():
             try:
@@ -479,6 +489,8 @@ def aggregates(u: dict) -> dict:
                               "vol_cases": sum(1 for _, x in mls if x.get("volatility")),
                               "dd_verified": sum(1 for _, x in mls if (x.get("drawdown") or {}).get("verified")),
                               "dd_cases": sum(1 for _, x in mls if x.get("drawdown")),
+                              "dd_stable": sum(1 for _, x in mls if (x.get("drawdown") or {}).get("stable")),
+                              "risk_models": _risk_table(mls),
                               "reasons": {a: x.get("reasons") for a, x in mls}}
             cb = [x["combined"] for _, x in mls if x.get("combined")]
             if cb:
@@ -489,6 +501,33 @@ def aggregates(u: dict) -> dict:
                                         "alpha_mean": mean("alpha"),
                                         "combined_beats_both": sum(1 for c in cb if None not in (c["ic_combined"], c["ic_shaffer"], c["ic_ml"]) and c["ic_combined"] > max(c["ic_shaffer"], c["ic_ml"]))}
     return agg
+
+
+def _ratio_gain(d: Optional[dict], k: str, kb: str) -> Optional[float]:
+    return (1 - d[k] / d[kb]) if d and d.get(k) is not None and d.get(kb) else None
+
+
+def _risk_table(mls) -> dict:
+    """Per model: cases, verified (beats every baseline OOS), stable (beats them in both halves of the OOS period; — where
+    not measured), median error improvement over the best baseline."""
+    rows = [("Return (R² vs historical mean)", lambda x: {"verified": x.get("verified"), "stable": None, "improvement": x["ensemble"].get("r2_vs_mean")}),
+            ("Direction (Brier vs base rate)", lambda x: ({"verified": x["direction"].get("verified"), "stable": None,
+                                                            "improvement": _ratio_gain(x["direction"], "brier", "baseline_brier")}
+                                                           if (x.get("direction") or {}).get("brier") is not None else None)),
+            ("Volatility (vs current vol, EWMA)", lambda x: (x.get("risk") or {}).get("volatility")),
+            ("Drawdown probability (Brier vs base rate)", lambda x: ({"verified": x["drawdown"].get("verified"), "stable": x["drawdown"].get("stable"),
+                                                                     "improvement": _ratio_gain(x["drawdown"], "brier", "baseline_brier")}
+                                                                    if x.get("drawdown") else None)),
+            ("Tail loss (vs previous window, vol-scaled)", lambda x: (x.get("risk") or {}).get("tail_loss")),
+            ("Beta change (vs no change, mean change, Blume)", lambda x: (x.get("risk") or {}).get("beta_change"))]
+    out = {}
+    for name, get in rows:
+        xs = [v for v in (get(x) for _, x in mls) if v]
+        imp = sorted(v["improvement"] for v in xs if v.get("improvement") is not None)
+        out[name] = {"cases": len(xs), "verified": sum(1 for v in xs if v.get("verified")),
+                     "stable": None if all(v.get("stable") is None for v in xs) else sum(1 for v in xs if v.get("stable")),
+                     "median_improvement": imp[len(imp) // 2] if imp else None}
+    return out
 
 
 def markdown(u: dict, agg: dict) -> str:
@@ -707,6 +746,21 @@ def markdown(u: dict, agg: dict) -> str:
         for k, v in m["baselines"].items():
             w(f"| {k.replace('_', ' ')} | {v['cases']} | {v['ensemble_wins']} | {_fmt(v['mean_baseline_ic'])} | {_fmt(v['mean_ensemble_ic'])} |")
         w("")
+    w("## 24b. Return models vs risk models")
+    w("")
+    w("Each model is walk-forward out of sample against its naive baselines on the same rows. Verified = beats every baseline over "
+      "the whole OOS period (lower RMSE, or lower Brier for probabilities); stable = also beats them in BOTH halves of the OOS period "
+      "(— = not measured for that model). Improvement = 1 − model error ÷ best baseline error (R² vs the historical mean for "
+      "returns), median across assets.")
+    w("")
+    w("| Horizon | Model | Cases | Verified | Stable | Median improvement |")
+    w("|---|---|---|---|---|---|")
+    for lab in labs:
+        m = agg["ml"].get(lab)
+        for name, v in ((m or {}).get("risk_models") or {}).items():
+            if v["cases"]:
+                w(f"| {lab} | {name} | {v['cases']} | {v['verified']} | {'—' if v['stable'] is None else v['stable']} | {_fmt(v['median_improvement'])} |")
+    w("")
     w("## 25. Shaffer vs ML")
     w("")
     w("| Horizon | Cases | Mean Shaffer IC | Mean ML IC (same rows) | ML better in |")
