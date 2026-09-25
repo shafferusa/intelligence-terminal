@@ -1605,3 +1605,36 @@ pre.flow {
   .formula .expr { font-size: 0.9375rem; }
   .formula dl { grid-template-columns: minmax(5.5rem, max-content) 1fr; }
 }
+
+@media (max-width: 480px) {
+  .paper[data-slot="sie"] .data-table th,
+  .paper[data-slot="sie"] .data-table td {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.35rem;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+}
+/* A table that still needs a sideways swipe (report.js marks it) fades out
+   at the right edge and says so underneath, so hidden columns are never a
+   surprise. Both cues go once the reader has scrolled to the end. */
+.paper[data-slot="sie"] .table-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2.25rem;
+  pointer-events: none;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(to right, transparent, var(--card) 85%);
+}
+.paper[data-slot="sie"] .table-fade-host.at-end .table-fade,
+.paper[data-slot="sie"] .table-fade-host.at-end + .swipe-hint { display: none; }
+.paper[data-slot="sie"] .table-fade-host { position: relative; }
+.paper[data-slot="sie"] .swipe-hint {
+  font-family: var(--sans);
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+  margin: -0.5rem 0 0.9rem;
+}

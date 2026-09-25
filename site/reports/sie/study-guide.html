@@ -44,7 +44,7 @@
 <header class="paper-head">
   <p class="paper-edition">SIE Program</p>
   <h1>The SIE Study Guide</h1>
-  <p class="paper-dateline">Published with Day 1 <span class="sep">&middot;</span> 413 min read</p>
+  <p class="paper-dateline">28 chapters <span class="sep">&middot;</span> about 7 hours in all</p>
   <p class="paper-standfirst">Everything the 30-day program teaches, in one place and a little less detail — a chapter for each day, built to be worked through alongside the daily editions and kept for the rest of your career.</p>
 </header>
 <section class="paper-section">
@@ -133,12 +133,20 @@
   <p>The single most useful distinction on the exam is <b>primary market</b> versus <b>secondary market</b>, and the cleanest way to hold it is to follow the cash.</p>
   <p>In the <b>primary market</b> an <b>issuer</b> (a corporation, a municipality, the Treasury) sells <em>new</em> securities to raise capital. An <b>underwriter</b> (an investment bank acting as a broker-dealer) buys the securities or arranges their sale, and the investor's cash ends up with the issuer, minus the underwriter's compensation (the <b>spread</b>). This is the only time the issuer gets money from its own securities.</p>
   <pre class="flow">PRIMARY
-Issuer --(new shares)--> Underwriter --(shares)--> Investor
-Issuer &lt;--(cash - spread)-- Underwriter &lt;--(cash)-- Investor</pre>
+Issuer
+  --(new shares)--> Underwriter
+  --(shares)--> Investor
+Issuer
+  &lt;--(cash - spread)-- Underwriter
+  &lt;--(cash)-- Investor</pre>
   <p>In the <b>secondary market</b> investors trade already-issued securities. A <b>broker-dealer</b> (BD: a firm registered to act for customers and/or its own account) sits in the middle; cash goes from buyer to seller and the issuer receives nothing.</p>
   <pre class="flow">SECONDARY
-Seller --(shares)--> BD / venue --(shares)--> Buyer
-Seller &lt;--(cash)---- BD / venue &lt;--(cash)---- Buyer
+Seller
+  --(shares)--> BD / venue
+  --(shares)--> Buyer
+Seller
+  &lt;--(cash)---- BD / venue
+  &lt;--(cash)---- Buyer
 Issuer: not in the chain, receives $0</pre>
   <p>Issuers still care: investors pay more for new securities they can resell, so secondary liquidity lowers the primary cost of capital.</p>
 
@@ -195,14 +203,22 @@ Issuer: not in the chain, receives $0</pre>
   <h3>The life of a trade, end to end</h3>
   <p>A fill is the start of the process, not the end. The chain below is the one to be able to reproduce in order.</p>
   <pre class="flow">1 Customer --(order)--> BD
-2 BD --(route)--> venue: exchange, ATS or market maker
-3 Venue --(execution report)--> BD --(confirm)--> Customer
-4 Trade report --> consolidated tape / FINRA TRF
+2 BD --(route)--> venue:
+    exchange, ATS or market maker
+3 Venue
+    --(execution report)--> BD
+    --(confirm)--> Customer
+4 Trade report
+    --> consolidated tape / FINRA TRF
 5 Clearing firm --(trade data)--> NSCC
-    NSCC steps in as buyer to every seller and
-    seller to every buyer; nets each member's trades
-6 T+1: DTC moves shares by book entry, cash moves
-7 DTC (nominee Cede &amp; Co.) --> clearing firm --> you
+    NSCC steps in as buyer to every seller
+    and seller to every buyer; nets each
+    member's trades
+6 T+1: DTC moves shares by book entry,
+    cash moves
+7 DTC (nominee Cede &amp; Co.)
+    --> clearing firm
+    --> you
 8 Transfer agent: Cede &amp; Co. = registered holder</pre>
   <ul>
     <li><b>Trade reporting:</b> the print that makes the price public. Exchange trades hit the consolidated tape through the exchange; off-exchange stock trades are reported through a FINRA Trade Reporting Facility (TRF); corporate bonds go to TRACE; municipal trades go to the MSRB's RTRS within 15 minutes.</li>
@@ -226,12 +242,19 @@ Issuer: not in the chain, receives $0</pre>
 
   <h3>The regulator cast list</h3>
   <p>US securities regulation is layered. Congress passes laws; the <b>SEC</b> (Securities and Exchange Commission), a federal agency, writes rules under them and oversees everything below it. Below the SEC sit <b>SROs</b> (self-regulatory organizations): industry bodies that write and enforce rules for their members, subject to SEC approval.</p>
-  <pre class="flow">Congress --(laws)--> SEC
-SEC --(oversees)--> FINRA, MSRB, exchanges (SROs)
-FINRA --(rules, exams, discipline)--> member BDs, reps
-Fed --(credit rules: Reg T, Reg U)--> BDs, banks
-Treasury --> FinCEN (AML), OFAC (sanctions)
-States --(blue-sky laws)--> BDs, agents in the state</pre>
+  <pre class="flow">Congress
+  --(laws)--> SEC
+SEC
+  --(oversees)--> FINRA, MSRB, exchanges (SROs)
+FINRA
+  --(rules, exams, discipline)-->
+      member BDs, reps
+Fed
+  --(credit rules: Reg T, Reg U)--> BDs, banks
+Treasury
+  --> FinCEN (AML), OFAC (sanctions)
+States
+  --(blue-sky laws)--> BDs, agents in the state</pre>
   <div class="table-wrap"><table class="data-table">
     <thead><tr><th>Body</th><th>What it is</th><th>What to know</th></tr></thead>
     <tbody>
@@ -283,26 +306,26 @@ States --(blue-sky laws)--> BDs, agents in the state</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Broker → agent, commission, no inventory</li>
-    <li>Dealer → principal, markup/markdown, inventory risk</li>
-    <li>First market → listed securities on an exchange</li>
-    <li>Second market → unlisted stocks OTC</li>
-    <li>Third market → listed securities traded OTC</li>
-    <li>Fourth market → institution to institution, no BD (ATS/ECN)</li>
-    <li>Securities Act → 1933 → new issues, registration, prospectus</li>
-    <li>Securities Exchange Act → 1934 → created SEC; secondary market, BDs, margin, insiders</li>
-    <li>Trust Indenture Act → 1939 → corporate bond indenture + trustee</li>
-    <li>Investment Company Act → 1940 → funds</li>
-    <li>Investment Advisers Act → 1940 → advisers, fiduciary duty</li>
-    <li>SIPA → 1970 → created SIPC</li>
-    <li>Bank Secrecy Act → 1970 → CTRs, SARs</li>
-    <li>USA PATRIOT Act → 2001 → AML programs, CIP</li>
-    <li>SIPC → $500,000 per customer capacity, max $250,000 cash</li>
-    <li>FDIC → $250,000 per depositor, per bank, per ownership category</li>
-    <li>MSRB → writes muni rules, does not enforce</li>
-    <li>FINRA → formed 2007 (NASD + NYSE member regulation)</li>
-    <li>Markup % → (customer price − PMP) ÷ PMP</li>
-    <li>5% markup policy → guideline, not a rule</li>
+    <li><b>Broker</b> → agent, commission, no inventory</li>
+    <li><b>Dealer</b> → principal, markup/markdown, inventory risk</li>
+    <li><b>First market</b> → listed securities on an exchange</li>
+    <li><b>Second market</b> → unlisted stocks OTC</li>
+    <li><b>Third market</b> → listed securities traded OTC</li>
+    <li><b>Fourth market</b> → institution to institution, no BD (ATS/ECN)</li>
+    <li><b>Securities Act</b> → 1933 → new issues, registration, prospectus</li>
+    <li><b>Securities Exchange Act</b> → 1934 → created SEC; secondary market, BDs, margin, insiders</li>
+    <li><b>Trust Indenture Act</b> → 1939 → corporate bond indenture + trustee</li>
+    <li><b>Investment Company Act</b> → 1940 → funds</li>
+    <li><b>Investment Advisers Act</b> → 1940 → advisers, fiduciary duty</li>
+    <li><b>SIPA</b> → 1970 → created SIPC</li>
+    <li><b>Bank Secrecy Act</b> → 1970 → CTRs, SARs</li>
+    <li><b>USA PATRIOT Act</b> → 2001 → AML programs, CIP</li>
+    <li><b>SIPC</b> → $500,000 per customer capacity, max $250,000 cash</li>
+    <li><b>FDIC</b> → $250,000 per depositor, per bank, per ownership category</li>
+    <li><b>MSRB</b> → writes muni rules, does not enforce</li>
+    <li><b>FINRA</b> → formed 2007 (NASD + NYSE member regulation)</li>
+    <li><b>Markup %</b> → (customer price − PMP) ÷ PMP</li>
+    <li><b>5% markup policy</b> → guideline, not a rule</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -343,7 +366,11 @@ States --(blue-sky laws)--> BDs, agents in the state</pre>
 
   <h3>The business cycle</h3>
   <p>Economic activity rises and falls around a long-run trend in four phases. The SIE wants the names, the order and what each phase does to the things you trade.</p>
-  <pre class="flow">expansion --> peak --> contraction --> trough --> expansion</pre>
+  <pre class="flow">expansion
+  --> peak
+  --> contraction
+  --> trough
+  --> expansion</pre>
   <div class="table-wrap"><table class="data-table">
     <thead><tr><th>Phase</th><th>Activity</th><th>Earnings</th><th>Credit spreads</th><th>Rates / Fed</th></tr></thead>
     <tbody>
@@ -401,11 +428,15 @@ States --(blue-sky laws)--> BDs, agents in the state</pre>
   <pre class="flow">EASING: Fed BUYS securities
 Fed --(new reserves / cash)--> banks, dealers
 banks --(securities)--> Fed
-reserves up --> money supply up --> short rates down
+reserves up
+  --> money supply up
+  --> short rates down
 
 TIGHTENING: Fed SELLS securities
 banks --(reserves / cash)--> Fed
-reserves down --> money supply down --> short rates up</pre>
+reserves down
+  --> money supply down
+  --> short rates up</pre>
   <p>Direction check that the exam loves: <b>buying = easing</b> (the Fed pays with newly created reserves), <b>selling = tightening</b> (the Fed absorbs reserves). The same logic runs at scale in quantitative easing and its reverse, balance-sheet runoff.</p>
   <h4>The other tools</h4>
   <ul>
@@ -431,12 +462,17 @@ reserves down --> money supply down --> short rates up</pre>
   <h3>From a Fed decision to every price you watch</h3>
   <p>Prep material sometimes says "interest rates and inflation are negatively correlated." That is loose. The Fed raises rates <em>in response to</em> inflation, so in the data rates and inflation often rise together. The causal lever the exam wants is: <b>higher rates are used to bring inflation down</b>, by making borrowing more expensive and cooling demand.</p>
   <pre class="flow">Fed hikes
- --> short-term yields up
- --> existing bond prices down (fixed coupons now below market)
- --> borrowing costs up for firms and households
- --> demand cools --> inflation eases (with a lag)
- --> equity multiples compress (higher discount rate)
- --> dollar tends to firm (higher USD yields draw capital)</pre>
+  --> short-term yields up
+  --> existing bond prices down
+      (fixed coupons now below market)
+  --> borrowing costs up for firms
+      and households
+  --> demand cools
+  --> inflation eases (with a lag)
+  --> equity multiples compress
+      (higher discount rate)
+  --> dollar tends to firm
+      (higher USD yields draw capital)</pre>
   <p>The bond step is the see-saw: a bond paying a fixed 4% coupon is worth less when new bonds pay 5%, so its price must fall until its yield matches the market. Longer maturities fall more because the below-market coupon is locked in for longer.</p>
   <h4>Real versus nominal</h4>
   <p>The <b>nominal</b> rate is the stated rate. The <b>real</b> rate is what you earn after inflation erodes your purchasing power. Investors, and the Fed, care about the real rate because it is what actually changes behaviour.</p>
@@ -462,10 +498,12 @@ reserves down --> money supply down --> short rates up</pre>
   <h3>The dollar</h3>
   <p>Currency moves change the translated value of trade and earnings. For a <b>stronger dollar</b>:</p>
   <pre class="flow">USD strengthens
- --> imports cheaper for US buyers (helps importers)
- --> US exports dearer abroad (hurts exporters)
- --> foreign earnings translate into fewer dollars
- --> US tourists abroad gain buying power</pre>
+  --> imports cheaper for US buyers
+      (helps importers)
+  --> US exports dearer abroad (hurts exporters)
+  --> foreign earnings translate into
+      fewer dollars
+  --> US tourists abroad gain buying power</pre>
   <p>A weaker dollar reverses every arrow. The SIE framing: a US multinational earning in euros reports lower dollar earnings when the dollar rises, even if its euro sales are unchanged.</p>
 
   <h3>Market structures</h3>
@@ -491,18 +529,18 @@ reserves down --> money supply down --> short rates up</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Leading → building permits, stock prices, new orders, initial jobless claims, manufacturing workweek, consumer expectations, yield-curve spread</li>
-    <li>Coincident → nonfarm payrolls, industrial production, personal income less transfers, manufacturing and trade sales</li>
-    <li>Lagging → duration of unemployment, CPI for services, prime rate, C&amp;I loans outstanding, labor cost per unit, consumer credit-to-income, inventories-to-sales</li>
-    <li>Fed tools → OMO (most used), discount rate, reserve requirements (0% since March 2020), IORB; exam also lists Reg T</li>
-    <li>Reg T → 50%, unchanged since 1974</li>
-    <li>FOMC → meets 8 times a year</li>
-    <li>Recession (exam) → two consecutive quarters of declining real GDP; NBER makes the official call</li>
-    <li>Fed funds rate → overnight bank-to-bank reserves</li>
-    <li>Discount rate → Fed lending to banks; above fed funds</li>
-    <li>Prime rate → banks' best corporate customers</li>
-    <li>Broker call rate → bank loans to BDs; basis for margin interest</li>
-    <li>Real rate → nominal − inflation</li>
+    <li><b>Leading</b> → building permits, stock prices, new orders, initial jobless claims, manufacturing workweek, consumer expectations, yield-curve spread</li>
+    <li><b>Coincident</b> → nonfarm payrolls, industrial production, personal income less transfers, manufacturing and trade sales</li>
+    <li><b>Lagging</b> → duration of unemployment, CPI for services, prime rate, C&amp;I loans outstanding, labor cost per unit, consumer credit-to-income, inventories-to-sales</li>
+    <li><b>Fed tools</b> → OMO (most used), discount rate, reserve requirements (0% since March 2020), IORB; exam also lists Reg T</li>
+    <li><b>Reg T</b> → 50%, unchanged since 1974</li>
+    <li><b>FOMC</b> → meets 8 times a year</li>
+    <li><b>Recession (exam)</b> → two consecutive quarters of declining real GDP; NBER makes the official call</li>
+    <li><b>Fed funds rate</b> → overnight bank-to-bank reserves</li>
+    <li><b>Discount rate</b> → Fed lending to banks; above fed funds</li>
+    <li><b>Prime rate</b> → banks' best corporate customers</li>
+    <li><b>Broker call rate</b> → bank loans to BDs; basis for margin interest</li>
+    <li><b>Real rate</b> → nominal − inflation</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -548,10 +586,12 @@ reserves down --> money supply down --> short rates up</pre>
   </ul>
   <pre class="flow">Liquidation priority (first paid --> last paid)
 secured creditors
- --> unsecured creditors (general creditors, debentures)
- --> subordinated debt
- --> preferred stock
- --> common stock (whatever is left, often nothing)</pre>
+  --> unsecured creditors
+      (general creditors, debentures)
+  --> subordinated debt
+  --> preferred stock
+  --> common stock
+      (whatever is left, often nothing)</pre>
   <p>In exchange for being last, common holders get the upside: all growth in the firm's value beyond the fixed claims accrues to them. That is why common is the growth instrument and why its value swings most.</p>
   <p>Companies can issue more than one class of common. In a <b>dual-class</b> structure one class carries extra votes (often held by founders) and another carries fewer or none, so economic ownership and control are separated. Index providers and governance investors care; for the SIE, remember that the "one share, one vote" default can be changed by the charter.</p>
   <p>The rights that come with common, as the SIE lists them: vote (for directors and on major matters such as mergers), receive dividends <em>if and when declared</em> by the board, transfer the shares freely, receive annual reports and inspect certain books and records, <b>preemptive rights</b> where the charter grants them, and the residual claim in liquidation.</p>
@@ -609,12 +649,17 @@ secured creditors
   <h4>Why the ex-date equals the record date under T+1</h4>
   <p>You are on the books only when your trade <b>settles</b>. Since May 28, 2024, regular-way stock trades settle <b>T+1</b> (one business day after the trade date). So the last day to buy and still settle by the record date is one business day before the record date. The next day, the record date itself, is the first day a buyer would settle too late: that is the ex-date.</p>
   <pre class="flow">Record date Thu Oct 15 (regular way, T+1)
-Buy Wed Oct 14 --(settles Thu Oct 15)--> on record: GETS it
-Buy Thu Oct 15 --(settles Fri Oct 16)--> too late: NO dividend
+Buy Wed Oct 14
+  --(settles Thu Oct 15)-->
+      on record: GETS it
+Buy Thu Oct 15
+  --(settles Fri Oct 16)-->
+      too late: NO dividend
 => ex-date = Thu Oct 15 = record date
 
 Cash trade (settles same day)
-Buy Thu Oct 15 --(settles Thu Oct 15)--> GETS it
+Buy Thu Oct 15
+  --(settles Thu Oct 15)--> GETS it
 => cash ex-date = Fri Oct 16, day AFTER record</pre>
   <p>Under the old T+2 cycle the ex-date was one business day <em>before</em> the record date, and older prep books still say so. Today, regular way: ex-date = record date. Cash settlement: ex-date = the business day after the record date.</p>
   <p><b>Mutual funds are different:</b> the fund itself (its board) sets the ex-date, typically the business day after the record date. A fund does not trade on an exchange, so the settlement logic does not apply.</p>
@@ -625,10 +670,14 @@ Buy Thu Oct 15 --(settles Thu Oct 15)--> GETS it
   <div class="formula"><p class="expr">Dividend yield = Annual dividend ÷ Current market price</p><dl><dt>Annual dividend</dt><dd>the dividends per share paid over a year (quarterly × 4 for a regular payer)</dd><dt>Current market price</dt><dd>the share price today</dd></dl></div>
   <p>A stock at $50 paying $0.50 a quarter: annual dividend $2.00; yield = 2 ÷ 50 = 4%.</p>
   <h4>Where the cash goes</h4>
-  <pre class="flow">Issuer --(cash)--> paying agent / transfer agent
- --(one payment to the holder of record)--> DTC (Cede &amp; Co.)
- --(allocated by position)--> clearing firm / BD
- --(credited on payable date)--> customer account</pre>
+  <pre class="flow">Issuer
+  --(cash)--> paying agent / transfer agent
+  --(one payment to the holder of record)-->
+      DTC (Cede &amp; Co.)
+  --(allocated by position)-->
+      clearing firm / BD
+  --(credited on payable date)-->
+      customer account</pre>
   <p>Because Cede &amp; Co. is the registered holder, the issuer pays one cheque; every allocation below that is a book entry. When a trade straddles the record date and fails, the dividend lands with the wrong party and operations must file a <b>due bill</b> claim to move it to the rightful owner.</p>
   <h4>Why "buy before the ex-date" is not free money</h4>
   <p>A naive <b>dividend-capture</b> trade buys the day before the ex-date and sells on it. On the ex-date the price drops by roughly the dividend, so the gross gain is about zero, and the investor has converted price into taxable income. Holding briefly also fails the holding-period test for a <b>qualified dividend</b> (more than 60 days in the 121-day window that starts 60 days before the ex-date), so the dividend is taxed as ordinary income. Dividend strategies that work do so because of tax differences between holders, not because of the calendar.</p>
@@ -662,17 +711,17 @@ Buy Thu Oct 15 --(settles Thu Oct 15)--> GETS it
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Dividend sequence → declaration → ex-date → record → payable</li>
-    <li>Regular-way ex-date → same day as record date (T+1, since May 28, 2024)</li>
-    <li>Cash-settlement ex-date → business day after record date</li>
-    <li>Mutual fund ex-date → set by the fund, usually business day after record date</li>
-    <li>Ex-date set by → exchange (FINRA for OTC); fund's board for mutual funds</li>
-    <li>Cash dividend tax event → payable date</li>
-    <li>Cumulative voting → votes = shares × seats, any split</li>
-    <li>Statutory voting → at most one vote per share per seat</li>
-    <li>Outstanding → issued − treasury</li>
-    <li>Treasury stock → no vote, no dividend</li>
-    <li>Dividend yield → annual dividend ÷ price</li>
+    <li><b>Dividend sequence</b> → declaration → ex-date → record → payable</li>
+    <li><b>Regular-way ex-date</b> → same day as record date (T+1, since May 28, 2024)</li>
+    <li><b>Cash-settlement ex-date</b> → business day after record date</li>
+    <li><b>Mutual fund ex-date</b> → set by the fund, usually business day after record date</li>
+    <li><b>Ex-date set by</b> → exchange (FINRA for OTC); fund's board for mutual funds</li>
+    <li><b>Cash dividend tax event</b> → payable date</li>
+    <li><b>Cumulative voting</b> → votes = shares × seats, any split</li>
+    <li><b>Statutory voting</b> → at most one vote per share per seat</li>
+    <li><b>Outstanding</b> → issued − treasury</li>
+    <li><b>Treasury stock</b> → no vote, no dividend</li>
+    <li><b>Dividend yield</b> → annual dividend ÷ price</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -775,11 +824,16 @@ Buy Thu Oct 15 --(settles Thu Oct 15)--> GETS it
 
   <h3>Rights: short-term, at a discount, to existing holders</h3>
   <p>A <b>rights offering</b> is how a company honours shareholders' <b>preemptive rights</b> when it raises new equity. Each existing share receives <b>one right</b>. A fixed number of rights plus a cash <b>subscription price</b> buys one new share. The subscription price is set <b>below</b> the market price, so rights have <b>intrinsic value</b> at issue. They are short-lived (a matter of weeks) and trade separately, so a holder can exercise, sell the rights, or let them expire worthless. Shares that holders do not take up are often bought by a <b>standby underwriter</b> under a standby commitment.</p>
-  <pre class="flow">Company --(1 right per share)--> existing holders
-Holder --(N rights + subscription cash)--> company
-Company --(1 new share)--> holder
-Unexercised rights --(sold)--> other investors
-Unsubscribed shares --> standby underwriter</pre>
+  <pre class="flow">Company
+  --(1 right per share)--> existing holders
+Holder
+  --(N rights + subscription cash)--> company
+Company
+  --(1 new share)--> holder
+Unexercised rights
+  --(sold)--> other investors
+Unsubscribed shares
+  --> standby underwriter</pre>
   <p>A holder who neither exercises nor sells is diluted twice: his percentage stake falls and the share price falls as new shares come in below market. Selling the rights is how a holder who does not want to invest more recovers that value.</p>
   <div class="formula"><p class="expr">Right value (cum rights) = (Market price − Subscription price) ÷ (Rights per new share + 1)</p><dl><dt>Market price</dt><dd>price of the stock while it still trades with the right attached ("cum rights")</dd><dt>Subscription price</dt><dd>cash paid per new share when exercising</dd><dt>Rights per new share</dt><dd>number of rights needed to buy one new share (N)</dd><dt>Ex rights</dt><dd>once the stock trades without the right, the divisor is N, not N + 1</dd></dl></div>
   <div class="worked"><b>Worked example</b><ol>
@@ -812,10 +866,12 @@ Unsubscribed shares --> standby underwriter</pre>
   <h3>ADRs: foreign shares in dollar form</h3>
   <p>An <b>ADR</b> (American Depositary Receipt) is a certificate issued by a <b>US depositary bank</b> that represents shares of a foreign company held on deposit by a custodian bank in the company's home market. ADRs trade in dollars in the US, settle through DTC, and pay dividends in dollars. Each ADR represents a stated number of foreign ("ordinary") shares, the <b>ADR ratio</b>.</p>
   <pre class="flow">Foreign issuer's ordinary shares (in euros)
- --(deposited)--> custodian bank, home market
- --(held for)--> US depositary bank --(issues)--> ADRs
- --(trade in USD)--> US investors via BDs, DTC
-Dividends: EUR --(converted, net of foreign tax)--> USD</pre>
+  --(deposited)--> custodian bank, home market
+  --(held for)--> US depositary bank
+  --(issues)--> ADRs
+  --(trade in USD)--> US investors via BDs, DTC
+Dividends:
+  EUR --(converted, net of foreign tax)--> USD</pre>
   <p>The dollar price does <b>not</b> remove currency risk; it just hides it. The ADR is worth the foreign price converted at today's exchange rate.</p>
   <div class="worked"><b>Worked example</b><ol>
     <li>One ADR = 2 ordinary shares. Ordinary share: €20. EUR/USD = 1.10.</li>
@@ -843,18 +899,18 @@ Dividends: EUR --(converted, net of foreign tax)--> USD</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Preferred par → typically $100</li>
-    <li>Preferred suits → income investors, not capital appreciation</li>
-    <li>Preferred dividend → not a legal obligation (bond interest is)</li>
-    <li>Cumulative preferred → all arrears paid before any common dividend</li>
-    <li>Callable preferred → higher dividend</li>
-    <li>Convertible preferred → lower dividend</li>
-    <li>Rights → short term, below market, intrinsic value at issue, to existing holders</li>
-    <li>Warrants → long term, above market at issue, no intrinsic value, sweetener</li>
-    <li>Conversion ratio → par ÷ conversion price</li>
-    <li>Parity price → common price × conversion ratio</li>
-    <li>ADR holders → currency risk and foreign withholding tax</li>
-    <li>Unsponsored ADR → no issuer involvement, OTC only</li>
+    <li><b>Preferred par</b> → typically $100</li>
+    <li><b>Preferred suits</b> → income investors, not capital appreciation</li>
+    <li><b>Preferred dividend</b> → not a legal obligation (bond interest is)</li>
+    <li><b>Cumulative preferred</b> → all arrears paid before any common dividend</li>
+    <li><b>Callable preferred</b> → higher dividend</li>
+    <li><b>Convertible preferred</b> → lower dividend</li>
+    <li><b>Rights</b> → short term, below market, intrinsic value at issue, to existing holders</li>
+    <li><b>Warrants</b> → long term, above market at issue, no intrinsic value, sweetener</li>
+    <li><b>Conversion ratio</b> → par ÷ conversion price</li>
+    <li><b>Parity price</b> → common price × conversion ratio</li>
+    <li><b>ADR holders</b> → currency risk and foreign withholding tax</li>
+    <li><b>Unsponsored ADR</b> → no issuer involvement, OTC only</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -961,9 +1017,12 @@ Market yields fall --> old coupon looks rich
     <li>Ranking: 6.00% > 5.45% > 4.76% > 3.81%, so Coupon > CY > YTM > YTC.</li>
   </ol></div>
   <p>Each step down the ladder adds one more piece of bad news that the step before ignored:</p>
-  <pre class="flow">Coupon  --(divide by price > par)-->  CY lower
-CY      --(charge premium loss / 10 yr)-->  YTM lower
-YTM     --(same loss in only 5 yr)-->  YTC lowest</pre>
+  <pre class="flow">Coupon
+  --(divide by price > par)--> CY lower
+CY
+  --(charge premium loss / 10 yr)--> YTM lower
+YTM
+  --(same loss in only 5 yr)--> YTC lowest</pre>
   <p>The whole logic: <b>the premium is a loss you are certain to take, and a call makes you take it sooner</b>. A loss spread over fewer years costs more per year. That is why the issuer's early call is the worst case for a premium buyer, and why YTC sits at the bottom.</p>
 
   <h3>Deriving the discount ordering: YTC > YTM > CY > Coupon</h3>
@@ -1011,7 +1070,8 @@ YTM     --(same loss in only 5 yr)-->  YTC lowest</pre>
   <p>The practical form is <b>modified duration</b>: the approximate % price change for a 1% (100 bp) change in yield. A bond with modified duration 7.8 loses about 7.8% if yields rise 1%. Rank questions (an 80-day T-bill against a 25-year AAA corporate, say) are answered by maturity first and coupon second. Credit quality is a separate risk; the AAA does not save the 25-year bond from rates.</p>
   <pre class="flow">Rates up --> all bond prices fall
   --> most: long maturity + low coupon (zeros)
-  --> least: short maturity + high coupon (T-bills)</pre>
+  --> least: short maturity + high coupon
+      (T-bills)</pre>
 
   <h3>Quote conventions: points, eighths, 32nds and basis points</h3>
   <p>A <b>point</b> is 1% of par, which is $10 on a $1,000 bond. Everything else is a fraction of a point.</p>
@@ -1084,16 +1144,16 @@ Issuer --(full coupon on next date)--> Buyer</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>1 bond point → 1% of par = $10</li>
-    <li>1/8 point → $1.25</li>
-    <li>1/32 point (Treasuries) → $0.3125 per $1,000</li>
-    <li>1 basis point → 0.01%; 100 bp = 1%</li>
-    <li>Corporate and muni day count → 30/360</li>
-    <li>U.S. government day count → actual/actual</li>
-    <li>Accrual period → last coupon date up to but not including settlement date</li>
-    <li>Premium bond, high to low → Coupon, CY, YTM, YTC</li>
-    <li>Discount bond, high to low → YTC, YTM, CY, Coupon</li>
-    <li>Nominal yield → the coupon rate</li>
+    <li><b>1 bond point</b> → 1% of par = $10</li>
+    <li><b>1/8 point</b> → $1.25</li>
+    <li><b>1/32 point (Treasuries)</b> → $0.3125 per $1,000</li>
+    <li><b>1 basis point</b> → 0.01%; 100 bp = 1%</li>
+    <li><b>Corporate and muni day count</b> → 30/360</li>
+    <li><b>U.S. government day count</b> → actual/actual</li>
+    <li><b>Accrual period</b> → last coupon date up to but not including settlement date</li>
+    <li><b>Premium bond, high to low</b> → Coupon, CY, YTM, YTC</li>
+    <li><b>Discount bond, high to low</b> → YTC, YTM, CY, Coupon</li>
+    <li><b>Nominal yield</b> → the coupon rate</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -1128,12 +1188,13 @@ Issuer --(full coupon on next date)--> Buyer</pre>
 
   <h3>The capital structure is a queue</h3>
   <p>When a company is liquidated, its assets are sold and the cash is paid out in a strict order. Each class is paid in full before the next class gets anything. The SIE's version of that queue:</p>
-  <pre class="flow">Liquidation cash --> 1. Secured creditors (their collateral)
-                 --> 2. Unsecured: debentures + general
-                        creditors (suppliers, etc.)
-                 --> 3. Subordinated debentures
-                 --> 4. Preferred stock
-                 --> 5. Common stock (whatever is left)</pre>
+  <pre class="flow">Liquidation cash
+  --> 1. Secured creditors (their collateral)
+  --> 2. Unsecured: debentures + general
+         creditors (suppliers, etc.)
+  --> 3. Subordinated debentures
+  --> 4. Preferred stock
+  --> 5. Common stock (whatever is left)</pre>
   <p>Debt comes before equity because debt is a contract and equity is a residual claim. Within debt, collateral and contractual subordination set the order. Real bankruptcy law also places administrative costs, some employee wages and certain taxes ahead of general unsecured creditors; SIE questions stick to the five-rung ladder above. Recovery falls as you go down the queue, which is why yields rise as you go down it.</p>
 
   <h3>Secured bonds: what stands behind them</h3>
@@ -1157,9 +1218,12 @@ Issuer --(full coupon on next date)--> Buyer</pre>
   <p>The <b>indenture</b> (deed of trust) is the contract between the issuer and its bondholders. It states the coupon, the maturity, any call, put, sinking-fund or conversion terms, the collateral if any, and the <b>covenants</b>: the promises the issuer makes, such as limits on additional debt or requirements to maintain insurance on collateral.</p>
   <p>Thousands of scattered bondholders cannot each police an issuer, so the indenture names a <b>trustee</b>, normally a bank or trust company. The trustee monitors covenants and acts for the holders if the issuer defaults.</p>
   <p>The <b>Trust Indenture Act of 1939</b> made this mandatory. Corporate bonds offered to the public must be issued under an indenture that names an independent trustee.</p>
-  <pre class="flow">Issuer --(indenture: promises)--> Trustee
-Trustee --(monitors, enforces)--> on behalf of holders
-Issuer --(coupons, principal)--> Bondholders</pre>
+  <pre class="flow">Issuer
+  --(indenture: promises)--> Trustee
+Trustee
+  --(monitors, enforces)--> on behalf of holders
+Issuer
+  --(coupons, principal)--> Bondholders</pre>
   <p>The Act covers corporate bonds only. <b>U.S. Treasuries, agency securities and municipal bonds are exempt from it.</b> The exam likes a Roman-numeral question that lists munis or Treasuries alongside corporates.</p>
 
   <h3>Calls, puts, refunding and sinking funds</h3>
@@ -1257,15 +1321,15 @@ Issuer --(coupons, principal)--> Bondholders</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Liquidation priority → secured, unsecured/general creditors, subordinated, preferred, common</li>
-    <li>Investment grade → BBB−/Baa3 and above</li>
-    <li>Equipment trust certificates → transportation (airlines, railroads)</li>
-    <li>Collateral trust bond → backed by securities held in trust</li>
-    <li>Mortgage bond → backed by real property the corporation owns</li>
-    <li>Trust Indenture Act of 1939 → corporate bonds; an independent trustee protects bondholders</li>
-    <li>Call protection → years until the FIRST call date</li>
-    <li>Call premium → call price minus par (105 → $50)</li>
-    <li>Conversion ratio → par ÷ conversion price</li>
+    <li><b>Liquidation priority</b> → secured, unsecured/general creditors, subordinated, preferred, common</li>
+    <li><b>Investment grade</b> → BBB−/Baa3 and above</li>
+    <li><b>Equipment trust certificates</b> → transportation (airlines, railroads)</li>
+    <li><b>Collateral trust bond</b> → backed by securities held in trust</li>
+    <li><b>Mortgage bond</b> → backed by real property the corporation owns</li>
+    <li><b>Trust Indenture Act of 1939</b> → corporate bonds; an independent trustee protects bondholders</li>
+    <li><b>Call protection</b> → years until the FIRST call date</li>
+    <li><b>Call premium</b> → call price minus par (105 → $50)</li>
+    <li><b>Conversion ratio</b> → par ÷ conversion price</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -1365,10 +1429,16 @@ Issuer --(coupons, principal)--> Bondholders</pre>
     <li>Fill from the lowest yield: $15 + $20 = $35 billion. The last $10 billion comes from the 4.13% bids, prorated (10 of 15). The 4.15% bids get nothing.</li>
     <li>Stop-out yield = <b>4.13%</b>. Every winning bidder, including the non-competitive bidders and those who bid 4.10%, receives 4.13%. Everyone gets the same price.</li>
   </ol></div>
-  <pre class="flow">Treasury --(new securities)--> Fed Banks (fiscal agent)
-Bidders --(non-comp: filled first, at stop-out)--> auction
-Bidders --(comp: lowest yields filled first)--> auction
-All winners --(pay one price = stop-out yield)--> Treasury</pre>
+  <pre class="flow">Treasury
+  --(new securities)--> Fed Banks (fiscal agent)
+Bidders
+  --(non-comp: filled first, at stop-out)-->
+      auction
+Bidders
+  --(comp: lowest yields filled first)-->
+      auction
+All winners
+  --(pay one price = stop-out yield)--> Treasury</pre>
   <p>Why single-price: bidders need not shade their bids down for fear of overpaying relative to others, so they bid closer to true value, and the Treasury borrows more cheaply.</p>
 
   <h3>Agencies: explicit guarantee versus implied backing</h3>
@@ -1386,9 +1456,12 @@ All winners --(pay one price = stop-out yield)--> Treasury</pre>
 
   <h3>Mortgage pass-throughs: prepayment and extension risk</h3>
   <p>A <b>mortgage-backed security</b> (MBS) <b>pass-through</b> gives its holder a pro-rata share of a pool of home loans. Homeowners' monthly payments flow through to investors, less servicing and guarantee fees.</p>
-  <pre class="flow">Homeowners --(monthly principal + interest)--> Servicer
-Servicer --(less servicing fee)--> Guarantor/pool
-Pool --(monthly P&amp;I, pro rata)--> MBS investors</pre>
+  <pre class="flow">Homeowners
+  --(monthly principal + interest)--> Servicer
+Servicer
+  --(less servicing fee)--> Guarantor/pool
+Pool
+  --(monthly P&amp;I, pro rata)--> MBS investors</pre>
   <p>Three things differ from a Treasury. Payments are <b>monthly</b>. Each payment includes <b>principal</b>, so the balance shrinks over time. And homeowners can <b>prepay</b> at any time, by refinancing, moving or paying down early. Investors therefore do not know when their principal will come back. MBS are analysed by <b>average life</b> (the expected average time until principal is returned) under an assumed prepayment speed, not by stated maturity.</p>
   <div class="worked"><b>Worked example</b><ol>
     <li>An investor owns 1% of a $500 million pass-through pool.</li>
@@ -1398,12 +1471,18 @@ Pool --(monthly P&amp;I, pro rata)--> MBS investors</pre>
     <li>Reading "yield" on an MBS without separating interest from returned principal overstates income. That is a suitability point as well as a math point.</li>
   </ol></div>
   <p>The homeowner's right to prepay is a call option held against the investor. It creates two opposite risks:</p>
-  <pre class="flow">Rates FALL --> homeowners refinance --> prepayments speed up
-  --> principal back early, reinvested at lower rates
+  <pre class="flow">Rates FALL
+  --> homeowners refinance
+  --> prepayments speed up
+  --> principal back early,
+      reinvested at lower rates
   --> PREPAYMENT RISK; price gains capped
 
-Rates RISE --> refinancing stops --> prepayments slow
-  --> average life lengthens at a below-market coupon
+Rates RISE
+  --> refinancing stops
+  --> prepayments slow
+  --> average life lengthens
+      at a below-market coupon
   --> EXTENSION RISK; price falls further</pre>
   <p>Either way, the investor ends up with the wrong duration: short when rates fall (when long would pay), long when rates rise (when short would help). That is <b>negative convexity</b>, the same shape as the callable bond on Day 5.</p>
 
@@ -1437,10 +1516,16 @@ Rates RISE --> refinancing stops --> prepayments slow
 
   <h4>Repo: a sale on paper, a loan in substance</h4>
   <p>In a <b>repurchase agreement</b>, one party sells securities and agrees to buy them back at a slightly higher price on a set date. Legally it is two trades. Economically it is a <b>collateralized loan</b>: the cash borrower pledges securities, and the price difference is interest (the <b>repo rate</b>). The other side of the same trade, lending cash against collateral, is a <b>reverse repo</b>.</p>
-  <pre class="flow">Start: Dealer --(Treasuries)--> Cash lender
-       Cash lender --(cash: value minus haircut)--> Dealer
-End:   Dealer --(cash + repo interest)--> Cash lender
-       Cash lender --(same Treasuries)--> Dealer</pre>
+  <pre class="flow">Start:
+  Dealer
+    --(Treasuries)--> Cash lender
+  Cash lender
+    --(cash: value minus haircut)--> Dealer
+End:
+  Dealer
+    --(cash + repo interest)--> Cash lender
+  Cash lender
+    --(same Treasuries)--> Dealer</pre>
   <div class="worked"><b>Worked example</b><ol>
     <li>A dealer holds Treasuries worth $100 million and repos them overnight. With a 2% <b>haircut</b>, the lender advances $98 million.</li>
     <li>At an illustrative 4.30% repo rate (repo accrues on actual/360): interest = $98,000,000 × 0.043 ÷ 360 = <b>$11,705.56</b> for one night.</li>
@@ -1476,15 +1561,15 @@ End:   Dealer --(cash + repo interest)--> Cash lender
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>T-bill maturities → 4, 6, 8, 13, 17, 26 and 52 weeks</li>
-    <li>Treasury notes → 2–10 years</li>
-    <li>Treasury bonds → 20 and 30 years</li>
-    <li>Treasury interest → federally taxable; exempt from state and local tax</li>
-    <li>GNMA → the only agency with an explicit U.S. guarantee; interest taxable at all levels</li>
-    <li>Commercial paper → exempt from registration if maturity ≤ 270 days</li>
-    <li>Banker's acceptances → finance international trade</li>
-    <li>CMO protection → PAC most, companion least</li>
-    <li>Non-competitive bid → guaranteed fill at the auction's yield</li>
+    <li><b>T-bill maturities</b> → 4, 6, 8, 13, 17, 26 and 52 weeks</li>
+    <li><b>Treasury notes</b> → 2–10 years</li>
+    <li><b>Treasury bonds</b> → 20 and 30 years</li>
+    <li><b>Treasury interest</b> → federally taxable; exempt from state and local tax</li>
+    <li><b>GNMA</b> → the only agency with an explicit U.S. guarantee; interest taxable at all levels</li>
+    <li><b>Commercial paper</b> → exempt from registration if maturity ≤ 270 days</li>
+    <li><b>Banker's acceptances</b> → finance international trade</li>
+    <li><b>CMO protection</b> → PAC most, companion least</li>
+    <li><b>Non-competitive bid</b> → guaranteed fill at the auction's yield</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -1519,12 +1604,20 @@ End:   Dealer --(cash + repo interest)--> Cash lender
   <h3>Who borrows, and why investors accept a lower coupon</h3>
   <p>A <b>municipal security</b> ("muni") is debt issued by a state, a city, a county, a school district, a public authority (toll roads, airports, water systems) or a U.S. territory. Munis are <b>exempt securities</b>: they do not register with the SEC under the Securities Act of 1933, and the issuers do not file periodic reports under the 1934 Act. What they are <i>not</i> exempt from is the antifraud rules. Lying in a muni offering document is securities fraud exactly as it would be for a corporation.</p>
   <p>The investor gives up yield in exchange for the tax break. A AAA muni might yield less than a Treasury of the same maturity, even though the Treasury is the safer credit. The reason is that the muni buyer keeps all of the coupon and the Treasury buyer shares part of it with the IRS. So muni prices are set by the after-tax return that top-bracket buyers demand.</p>
-  <pre class="flow">Issuer (city) --(bonds)--> Underwriter --(bonds)--> Investors
-Investors --(cash)--> Underwriter --(cash - spread)--> Issuer
-Issuer --(taxes or project revenue)--> Paying agent
-Paying agent --(tax-free coupons)--> Investors
-Bond counsel: legal opinion (validity + tax exemption)
-Municipal advisor: advises the ISSUER, owes it a fiduciary duty</pre>
+  <pre class="flow">Issuer (city)
+  --(bonds)--> Underwriter
+  --(bonds)--> Investors
+Investors
+  --(cash)--> Underwriter
+  --(cash - spread)--> Issuer
+Issuer
+  --(taxes or project revenue)--> Paying agent
+Paying agent
+  --(tax-free coupons)--> Investors
+Bond counsel: legal opinion
+  (validity + tax exemption)
+Municipal advisor: advises the ISSUER,
+  owes it a fiduciary duty</pre>
   <p>Deals are sold either <b>negotiated</b> (the issuer picks an underwriter and negotiates terms) or <b>competitive</b> (underwriters bid and the lowest borrowing cost wins). The distinction matters for the political-contribution rule later in the chapter.</p>
 
   <h3>General obligation vs revenue: what pays you back</h3>
@@ -1615,7 +1708,8 @@ Municipal advisor: advises the ISSUER, owes it a fiduciary duty</pre>
   <p><b>Municipal advisors</b> advise the issuer on structure and timing. Since the Dodd-Frank Act they must register with the SEC and the MSRB, and they owe a <b>fiduciary duty</b> to the municipal entities they advise. The underwriter is on the other side of the table, buying the bonds.</p>
   <h4>G-37: pay-to-play</h4>
   <p>A <b>Municipal Finance Professional (MFP)</b> is a person at a dealer primarily engaged in municipal underwriting, trading, sales to issuers, financial advisory or research, or who solicits municipal <i>issuer</i> business. A registered rep who only sells munis to retail customers is <b>not</b> an MFP. Rule <b>G-37</b> stops dealers buying underwriting mandates with campaign cash: an MFP may give up to <b>$250 per election</b> to an official, but only one the MFP is entitled to vote for. A larger contribution (or any contribution to an official the MFP cannot vote for) triggers a <b>2-year ban</b> on negotiated municipal business with that issuer. <span class="tag-memo">Just memorize</span> $250, can-vote, 2 years, negotiated.</p>
-  <pre class="flow">MFP gives $1,000 to mayor --> firm banned 2 years
+  <pre class="flow">MFP gives $1,000 to mayor
+  --> firm banned 2 years
   --> no NEGOTIATED deals with that city
   --> competitive bids still allowed</pre>
 
@@ -1633,19 +1727,19 @@ Municipal advisor: advises the ISSUER, owes it a fiduciary duty</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>Tax-equivalent yield → Muni yield ÷ (1 − tax rate)</li>
-  <li>Muni-equivalent yield → Taxable yield × (1 − tax rate)</li>
-  <li>MSRB created by → Securities Acts Amendments of 1975</li>
-  <li>MSRB enforcement → none; FINRA/SEC (BDs), bank regulators (banks)</li>
-  <li>G-37 de minimis → $250 per election, only where the MFP can vote</li>
-  <li>G-37 violation → 2-year ban on negotiated business with that issuer</li>
-  <li>Muni trade reporting → RTRS within 15 minutes</li>
-  <li>Short-term muni note ratings → MIG (Moody's)</li>
-  <li>Triple tax-exempt anywhere → Puerto Rico, Guam, USVI</li>
-  <li>BAN → repaid from a future bond sale</li>
-  <li>Serial bonds → yield basis; term bonds → dollar price (% of par)</li>
-  <li>Muni offering document → official statement</li>
-  <li>Muni premium → amortized, basis steps down to par, no loss at maturity</li>
+  <li><b>Tax-equivalent yield</b> → Muni yield ÷ (1 − tax rate)</li>
+  <li><b>Muni-equivalent yield</b> → Taxable yield × (1 − tax rate)</li>
+  <li><b>MSRB created by</b> → Securities Acts Amendments of 1975</li>
+  <li><b>MSRB enforcement</b> → none; FINRA/SEC (BDs), bank regulators (banks)</li>
+  <li><b>G-37 de minimis</b> → $250 per election, only where the MFP can vote</li>
+  <li><b>G-37 violation</b> → 2-year ban on negotiated business with that issuer</li>
+  <li><b>Muni trade reporting</b> → RTRS within 15 minutes</li>
+  <li><b>Short-term muni note ratings</b> → MIG (Moody's)</li>
+  <li><b>Triple tax-exempt anywhere</b> → Puerto Rico, Guam, USVI</li>
+  <li><b>BAN</b> → repaid from a future bond sale</li>
+  <li><b>Serial bonds</b> → yield basis; term bonds → dollar price (% of par)</li>
+  <li><b>Muni offering document</b> → official statement</li>
+  <li><b>Muni premium</b> → amortized, basis steps down to par, no loss at maturity</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -1689,9 +1783,11 @@ Municipal advisor: advises the ISSUER, owes it a fiduciary duty</pre>
   <p>The other risks (liquidity, call, prepayment, reinvestment, counterparty, leverage) are usually tested on their own rather than sorted into a column. If you are forced to sort one, ask the test question directly: would a bigger portfolio of unrelated holdings make it disappear? Reinvestment risk, for example, rides on market-wide rates, so it behaves systematically.</p>
   <pre class="flow">Add stocks from different industries
   --> company-specific shocks offset
-  --> unsystematic risk -> near zero (20-30 names)
+  --> unsystematic risk -> near zero
+      (20-30 names)
   --> what remains = systematic risk
-  --> measured by beta, hedged with index products</pre>
+  --> measured by beta,
+      hedged with index products</pre>
   <p>Two numbers measure risk. <b>Standard deviation</b> measures <i>total</i> volatility of returns (systematic plus unsystematic). <b>Beta</b> measures only the systematic part: how much a security moves with the market.</p>
   <div class="formula"><p class="expr">Expected move ≈ β × Market move</p><dl><dt>β (beta)</dt><dd>sensitivity to the market; the market itself has β = 1</dd><dt>β &gt; 1</dt><dd>moves more than the market (aggressive)</dd><dt>β &lt; 1</dt><dd>moves less (defensive, e.g. utilities)</dd><dt>β &lt; 0</dt><dd>tends to move opposite the market (e.g. an inverse fund)</dd></dl></div>
   <div class="worked"><b>Worked example</b><ol>
@@ -1783,16 +1879,16 @@ Municipal advisor: advises the ISSUER, owes it a fiduciary duty</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>Systematic → market, interest-rate, inflation, currency, political</li>
-  <li>Unsystematic → business, credit/default of one issuer, regulatory for one firm</li>
-  <li>Diversification reduces → unsystematic risk only</li>
-  <li>Reinvestment risk highest → high-coupon callable bonds</li>
-  <li>Reinvestment risk none → zero-coupon bonds</li>
-  <li>Purchasing-power risk highest → fixed income and cash</li>
-  <li>Liquidity/marketability examples → DPPs, non-traded REITs</li>
-  <li>Beta 1.5 → about 1.5× the market's move</li>
-  <li>2:1 leverage → doubles percentage gains and losses</li>
-  <li>Legislative → new laws; regulatory → agency rules</li>
+  <li><b>Systematic</b> → market, interest-rate, inflation, currency, political</li>
+  <li><b>Unsystematic</b> → business, credit/default of one issuer, regulatory for one firm</li>
+  <li><b>Diversification reduces</b> → unsystematic risk only</li>
+  <li><b>Reinvestment risk highest</b> → high-coupon callable bonds</li>
+  <li><b>Reinvestment risk none</b> → zero-coupon bonds</li>
+  <li><b>Purchasing-power risk highest</b> → fixed income and cash</li>
+  <li><b>Liquidity/marketability examples</b> → DPPs, non-traded REITs</li>
+  <li><b>Beta 1.5</b> → about 1.5× the market's move</li>
+  <li><b>2:1 leverage</b> → doubles percentage gains and losses</li>
+  <li><b>Legislative</b> → new laws; regulatory → agency rules</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -1943,12 +2039,20 @@ seller to every buyer</pre>
   <li>Exercising early throws away the $80 of time value. Unless a dividend is coming (see the trader note), closing beats exercising.</li>
   </ol></div>
   <pre class="flow">Exercise of 1 XYZ 50 call:
-Holder --(exercise notice)--> Holder's BD --> OCC
-OCC --(assigns at random)--> a BD with short 50 calls
-That BD --(random, FIFO or other fair method)--> Writer
+Holder
+  --(exercise notice)--> Holder's BD
+  --> OCC
+OCC
+  --(assigns at random)-->
+      a BD with short 50 calls
+That BD
+  --(random, FIFO or other fair method)-->
+      Writer
 Settlement, T+1:
-Writer --(100 XYZ shares)--> Holder
-Holder --($5,000 = 50 x 100)--> Writer</pre>
+Writer
+  --(100 XYZ shares)--> Holder
+Holder
+  --($5,000 = 50 x 100)--> Writer</pre>
   <p>Assignment is two-stage: the OCC assigns exercise notices to broker-dealers <b>at random</b>; each broker-dealer then assigns them to its customers by a random, first-in-first-out or other fair method it discloses. Only a <b>writer</b> can be assigned; a buyer has nothing to be assigned. The OCC also automatically exercises options that finish in the money by a small threshold at expiration unless the holder instructs otherwise, so a writer of an ITM option should expect assignment.</p>
 
   <h3>Settlement, cash and index options</h3>
@@ -1968,8 +2072,10 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
 
   <h3>Opening an options account</h3>
   <p>Options can lose money faster than the customer's cash, so FINRA requires a specific sequence. Before approving the account the firm gathers the customer's investment objectives, employment, income, net worth, liquid assets and investing experience. Then:</p>
-  <pre class="flow">1. Deliver the ODD (no later than account approval)
-2. ROP approves the account (and the level of trading)
+  <pre class="flow">1. Deliver the ODD
+   (no later than account approval)
+2. ROP approves the account
+   (and the level of trading)
 3. Customer may trade
 4. Signed options agreement back within 15 days
    of approval (if late, closing trades only)</pre>
@@ -1993,19 +2099,19 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>Standard equity option contract → 100 shares</li>
-  <li>Contract dollars → premium × 100</li>
-  <li>ODD delivered → no later than account approval</li>
-  <li>Account approved by → Registered Options Principal (ROP)</li>
-  <li>Signed options agreement → within 15 days after approval</li>
-  <li>American style → exercise any time up to expiration</li>
-  <li>European style → exercise only at expiration</li>
-  <li>Index options → settle in cash</li>
-  <li>Option trades and exercises → settle T+1</li>
-  <li>Long options ≤ 9 months → paid in full, not marginable</li>
-  <li>Standard expiration → third Friday; last trade 4:00 p.m. ET; expires 11:59 p.m. ET</li>
-  <li>Issuer and guarantor of listed options → OCC</li>
-  <li>OCC assigns BDs → at random; BDs assign customers → random, FIFO or other fair method</li>
+  <li><b>Standard equity option contract</b> → 100 shares</li>
+  <li><b>Contract dollars</b> → premium × 100</li>
+  <li><b>ODD delivered</b> → no later than account approval</li>
+  <li><b>Account approved by</b> → Registered Options Principal (ROP)</li>
+  <li><b>Signed options agreement</b> → within 15 days after approval</li>
+  <li><b>American style</b> → exercise any time up to expiration</li>
+  <li><b>European style</b> → exercise only at expiration</li>
+  <li><b>Index options</b> → settle in cash</li>
+  <li><b>Option trades and exercises</b> → settle T+1</li>
+  <li><b>Long options ≤ 9 months</b> → paid in full, not marginable</li>
+  <li><b>Standard expiration</b> → third Friday; last trade 4:00 p.m. ET; expires 11:59 p.m. ET</li>
+  <li><b>Issuer and guarantor of listed options</b> → OCC</li>
+  <li><b>OCC assigns BDs</b> → at random; BDs assign customers → random, FIFO or other fair method</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -2214,12 +2320,15 @@ Holder --($5,000 = 50 x 100)--> Writer</pre>
   <li>Contracts needed = $1,500,000 ÷ $500,000 = 3. BUY 3 index puts.</li>
   <li>If the index falls 10%, the portfolio should fall about 15% ($150,000); three puts struck at the money gain about 500 points × $100 × 3 = $150,000 at expiration, before premium.</li>
   </ol></div>
-  <pre class="flow">Long stock  --(+ BUY PUT)-->  floor + unlimited upside
-            = same shape as BUY CALL + cash
-Long stock  --(+ SELL CALL)--> capped upside, full downside
-            = same shape as SELL PUT + cash
+  <pre class="flow">Long stock
+  --(+ BUY PUT)--> floor + unlimited upside
+  = same shape as BUY CALL + cash
+Long stock
+  --(+ SELL CALL)-->
+      capped upside, full downside
+  = same shape as SELL PUT + cash
 BUY CALL + SELL PUT (same K, same expiry)
-            = synthetic long stock</pre>
+  = synthetic long stock</pre>
   <p>Those identities are <b>put-call parity</b>: for European options on a non-dividend stock, Call − Put = Stock − present value of the strike. Rearranged, long stock plus a protective put has exactly the payoff of a call plus enough cash (or a Treasury bill) to pay the strike. If the prices ever disagree, arbitrageurs buy the cheap side and sell the rich one until they line up. Parity is why a covered call and a naked put at the same strike are near-identical trades, and why a desk can hedge an option with stock, or build stock exposure out of options, whichever is cheaper to finance or borrow.</p>
 
   <div class="sie-block understand"><b>Understand</b><ul>
@@ -2234,19 +2343,19 @@ BUY CALL + SELL PUT (same K, same expiry)
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>Call breakeven (buyer or writer) → strike + premium</li>
-  <li>Put breakeven (buyer or writer) → strike − premium</li>
-  <li>BUY CALL → max loss premium; max gain unlimited</li>
-  <li>SELL CALL naked → max gain premium; max loss unlimited</li>
-  <li>BUY PUT → max loss premium; max gain strike − premium</li>
-  <li>SELL PUT → max gain premium; max loss strike − premium</li>
-  <li>Covered call breakeven → stock cost − premium</li>
-  <li>Protective put breakeven → stock cost + premium</li>
-  <li>Short stock + BUY CALL breakeven → sale price − premium</li>
-  <li>Call spread BE → lower strike + net premium</li>
-  <li>Put spread BE → higher strike − net premium</li>
-  <li>Straddle breakevens → strike ± total premium</li>
-  <li>Protect short stock → BUY CALL</li>
+  <li><b>Call breakeven (buyer or writer)</b> → strike + premium</li>
+  <li><b>Put breakeven (buyer or writer)</b> → strike − premium</li>
+  <li><b>BUY CALL</b> → max loss premium; max gain unlimited</li>
+  <li><b>SELL CALL naked</b> → max gain premium; max loss unlimited</li>
+  <li><b>BUY PUT</b> → max loss premium; max gain strike − premium</li>
+  <li><b>SELL PUT</b> → max gain premium; max loss strike − premium</li>
+  <li><b>Covered call breakeven</b> → stock cost − premium</li>
+  <li><b>Protective put breakeven</b> → stock cost + premium</li>
+  <li><b>Short stock + BUY CALL breakeven</b> → sale price − premium</li>
+  <li><b>Call spread BE</b> → lower strike + net premium</li>
+  <li><b>Put spread BE</b> → higher strike − net premium</li>
+  <li><b>Straddle breakevens</b> → strike ± total premium</li>
+  <li><b>Protect short stock</b> → BUY CALL</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -2282,14 +2391,18 @@ BUY CALL + SELL PUT (same K, same expiry)
   <p>The <b>Investment Company Act of 1940</b> regulates companies whose business is investing other people's money in securities. It sorts them into three types, and the exam wants the tree cold:</p>
   <pre class="flow">Investment Company Act of 1940
  |-- Face-amount certificate company
- |     pay in now, get a fixed face amount later (rare)
+ |     pay in now, get a fixed face amount
+ |     later (rare)
  |-- Unit investment trust (UIT)
- |     fixed portfolio, no board, redeemable units
- `-- Management company (a manager picks the portfolio)
-       |-- Open-end   = mutual fund (new shares daily,
-       |                 redeemed by the fund)
-       `-- Closed-end = fixed share count, trades on
-                         an exchange</pre>
+ |     fixed portfolio, no board,
+ |     redeemable units
+ `-- Management company
+       (a manager picks the portfolio)
+       |-- Open-end = mutual fund
+       |     new shares daily,
+       |     redeemed by the fund
+       `-- Closed-end = fixed share count,
+             trades on an exchange</pre>
   <p>A <b>face-amount certificate company</b> sells a certificate: the investor pays a lump sum or installments and the company promises a fixed face amount at maturity. It is almost extinct; know that it exists. UITs and closed-end funds are Day 13. Today is the <b>open-end management company</b>, which is what everyone means by "mutual fund".</p>
   <p>The defining feature is that the fund is <b>continuously offering</b> new shares and stands ready to <b>redeem</b> (buy back) shares on demand. There is no secondary market: you never buy a mutual fund share from another investor, you buy it from the fund (through its distributor) and sell it back to the fund. Because new shares are always being issued, a mutual fund is permanently "in registration" under the 1933 Act and must deliver a <b>prospectus</b>. It also means shares cannot be bought on margin; they can serve as margin collateral only once held 30 days, the same rule that applies to any new issue.</p>
 
@@ -2304,13 +2417,18 @@ BUY CALL + SELL PUT (same K, same expiry)
 
   <h3>Who does what inside a fund</h3>
   <p>A mutual fund is a shell. It usually has no employees; everything is contracted out, and each contract is a separate company with a separate job. Follow the cash and the securities:</p>
-  <pre class="flow">Investor --($ at POP)--> Broker-dealer
-Broker-dealer --($)--> Principal underwriter
-Principal underwriter --($ at NAV)--> Fund
-Fund's cash &amp; securities held at --> Custodian (bank)
-Share ownership records kept by --> Transfer agent
-Portfolio decisions made by --> Investment adviser
-All of the above overseen by --> Board of directors</pre>
+  <pre class="flow">Investor
+  --($ at POP)--> Broker-dealer
+  --($)--> Principal underwriter
+  --($ at NAV)--> Fund
+Fund's cash &amp; securities held at
+  --> Custodian (bank)
+Share ownership records kept by
+  --> Transfer agent
+Portfolio decisions made by
+  --> Investment adviser
+All of the above overseen by
+  --> Board of directors</pre>
   <div class="table-wrap"><table class="data-table">
     <thead><tr><th>Party</th><th>Job</th><th>Paid by</th></tr></thead>
     <tbody>
@@ -2443,12 +2561,16 @@ All of the above overseen by --> Board of directors</pre>
 
   <h3>How fund distributions are taxed</h3>
   <p>A fund that distributes at least 90% of its net investment income qualifies as a <b>regulated investment company</b> and pays no tax on what it passes through. This is the <b>conduit</b> (pipeline) theory: the tax moves to the shareholder. The shareholder faces three taxable events:</p>
-  <pre class="flow">Portfolio earns dividends/interest --> income dividend
-   --> taxed to holder (ordinary or qualified)
-Manager sells winners at a net gain --> cap-gain distribution
-   --> taxed LONG-TERM, regardless of holder's period
-Holder redeems or exchanges shares --> own gain or loss
-   --> long/short by holder's own holding period</pre>
+  <pre class="flow">Portfolio earns dividends/interest
+  --> income dividend
+  --> taxed to holder (ordinary or qualified)
+Manager sells winners at a net gain
+  --> cap-gain distribution
+  --> taxed LONG-TERM, regardless of
+      holder's period
+Holder redeems or exchanges shares
+  --> own gain or loss
+  --> long/short by holder's own holding period</pre>
   <ul>
     <li><b>Reinvested distributions are still taxable</b>, in the year paid, exactly as if taken in cash. The reinvested amount is added to the holder's cost basis, so it is not taxed twice when the shares are sold.</li>
     <li>Capital-gain distributions are long-term because the <i>fund</i> held the securities; the shareholder's own holding period is irrelevant.</li>
@@ -2459,10 +2581,14 @@ Holder redeems or exchanges shares --> own gain or loss
 
   <h3>Fund flows as market flows</h3>
   <p>The daily redemption promise is a <b>liquidity mismatch</b>: shareholders can leave in 7 days, but the fund may hold assets (high-yield bonds, small caps, bank loans) that take much longer to sell at fair prices. The SEC's liquidity rule caps a fund's illiquid investments at 15% of net assets, but the mismatch never fully goes away:</p>
-  <pre class="flow">Bad news --> redemptions --> fund must raise cash
- --> sells the most liquid holdings first
- --> remaining portfolio is less liquid
- --> prices marked lower --> NAV falls --> more redemptions</pre>
+  <pre class="flow">Bad news
+  --> redemptions
+  --> fund must raise cash
+  --> sells the most liquid holdings first
+  --> remaining portfolio is less liquid
+  --> prices marked lower
+  --> NAV falls
+  --> more redemptions</pre>
   <p>Remaining holders bear the trading costs caused by those who left, which is why early redeemers have an advantage in a run. The money-market run of 2008 and the bond-fund outflows of March 2020 are the textbook cases.</p>
 
   <div class="sie-block understand"><b>Understand</b><ul>
@@ -2476,16 +2602,16 @@ Holder redeems or exchanges shares --> own gain or loss
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Maximum mutual fund sales charge → 8.5% of POP</li>
-    <li>12b-1 maximum → 1% a year (0.75% distribution + 0.25% service)</li>
-    <li>"No-load" label allowed → no sales charge and 12b-1 ≤ 0.25%</li>
-    <li>Letter of intent → 13 months; may be backdated 90 days; shares held in escrow</li>
-    <li>Redemption payment → within 7 calendar days</li>
-    <li>Independent directors → at least 40% of the board</li>
-    <li>Diversified fund → 75-5-10</li>
-    <li>Pricing → forward: next computed NAV</li>
-    <li>Fund ex-date → set by the board, typically the business day after the record date</li>
-    <li>Sales charge % → (POP − NAV) ÷ POP; POP → NAV ÷ (1 − sales charge %)</li>
+    <li><b>Maximum mutual fund sales charge</b> → 8.5% of POP</li>
+    <li><b>12b-1 maximum</b> → 1% a year (0.75% distribution + 0.25% service)</li>
+    <li><b>"No-load" label allowed</b> → no sales charge and 12b-1 ≤ 0.25%</li>
+    <li><b>Letter of intent</b> → 13 months; may be backdated 90 days; shares held in escrow</li>
+    <li><b>Redemption payment</b> → within 7 calendar days</li>
+    <li><b>Independent directors</b> → at least 40% of the board</li>
+    <li><b>Diversified fund</b> → 75-5-10</li>
+    <li><b>Pricing</b> → forward: next computed NAV</li>
+    <li><b>Fund ex-date</b> → set by the board, typically the business day after the record date</li>
+    <li><b>Sales charge %</b> → (POP − NAV) ÷ POP; POP → NAV ÷ (1 − sales charge %)</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -2519,9 +2645,15 @@ Holder redeems or exchanges shares --> own gain or loss
 
   <h3>Closed-end funds: a fixed pool that trades like a stock</h3>
   <p>A <b>closed-end fund</b> (CEF) is a management company that raises money once, in an IPO with a prospectus, and then stops issuing. After that the share count is <b>fixed</b> (it changes only through events like rights offerings or buybacks), and the shares trade on an exchange between investors. The fund does <b>not</b> redeem them. To get out, you sell to another investor at whatever the market pays.</p>
-  <pre class="flow">Mutual fund:  Investor --(redeem)--> Fund --(NAV)--> Investor
-Closed-end:   Seller --(shares)--> Exchange --> Buyer
-              price set by supply/demand, not by NAV</pre>
+  <pre class="flow">Mutual fund:
+  Investor
+    --(redeem)--> Fund
+    --(NAV)--> Investor
+Closed-end:
+  Seller
+    --(shares)--> Exchange
+    --> Buyer
+  price set by supply/demand, not by NAV</pre>
   <p>Because nothing forces price to NAV, CEFs trade at a <b>premium</b> (price above NAV) or <b>discount</b> (below NAV). Discounts are common; they reflect fees, leverage, illiquid holdings and sentiment. With a fixed pool the manager never faces redemptions, so a CEF can hold illiquid assets and borrow (issue debt or preferred shares) to add leverage. You buy it through a broker and pay a commission, not a sales charge; you can buy on margin and sell short once it trades in the secondary market.</p>
   <p>Why do discounts persist if the assets are worth NAV? Nobody can force the fund to hand over the assets at NAV, so the gap can only close through the market: the board buying back shares, a tender offer, converting the fund to open-end, or an activist campaign demanding one of those. Until then a buyer of a 10% discount collects income on $1.00 of assets for $0.90, and a seller of a premium fund is paid more than the assets are worth. The same missing redemption mechanism is what ETFs were designed to fix.</p>
   <div class="formula">
@@ -2541,14 +2673,20 @@ Closed-end:   Seller --(shares)--> Exchange --> Buyer
   <h3>ETFs: a fund that trades on screen and redeems in bulk</h3>
   <p>An <b>exchange-traded fund</b> (ETF) is legally usually an open-end fund (a few, including the oldest S&amp;P 500 ETF, are UITs). It issues and redeems shares, but <b>only</b> in large blocks called <b>creation units</b> and <b>only</b> with <b>authorized participants</b> (APs), big broker-dealers that have signed an agreement with the fund. Everyone else buys and sells on the exchange, intraday, at market prices, with commissions, limit orders, margin and short sales all available.</p>
   <pre class="flow">CREATION (ETF trading ABOVE NAV)
-AP buys basket in market --(basket)--> ETF
-ETF --(creation unit of new shares)--> AP
-AP sells ETF shares on exchange --> premium closes
+AP buys basket in market
+  --(basket)--> ETF
+ETF
+  --(creation unit of new shares)--> AP
+AP sells ETF shares on exchange
+  --> premium closes
 
 REDEMPTION (ETF trading BELOW NAV)
-AP buys cheap ETF shares --(creation unit)--> ETF
-ETF --(basket of securities, in kind)--> AP
-AP sells basket --> discount closes</pre>
+AP buys cheap ETF shares
+  --(creation unit)--> ETF
+ETF
+  --(basket of securities, in kind)--> AP
+AP sells basket
+  --> discount closes</pre>
   <p>That arbitrage is what keeps an ETF's price close to NAV, and it is the key difference from a closed-end fund, which has no such mechanism. Exchanges also publish an intraday indicative value during the day so traders can see the gap. Because redemptions are usually <b>in kind</b> (securities, not cash), the fund does not have to sell winners to pay out, so ETFs typically distribute fewer capital gains than comparable mutual funds.</p>
   <p><b>ETNs</b> (exchange-traded notes) look similar on screen but are completely different on the balance sheet. An ETN is <b>unsecured debt</b> of an issuing bank that promises to pay an index return minus fees. There is no portfolio behind it. If the issuer defaults, holders are unsecured creditors. <b>ETN = issuer credit risk</b>, on top of index risk.</p>
 
@@ -2595,9 +2733,12 @@ AP sells basket --> discount closes</pre>
 
   <h3>Direct participation programs (limited partnerships)</h3>
   <p>A <b>direct participation program</b> (DPP) is a business, usually a <b>limited partnership</b>, whose income and losses <b>flow through</b> to the investors' own tax returns. The partnership itself pays no entity-level tax. Unlike a REIT, a DPP passes through <b>both income and losses</b>, which is historically why people bought them: to use the losses.</p>
-  <pre class="flow">General partner --(manages; unlimited liability)--> LP
-Limited partners --(capital)--> LP
-LP income, losses, deductions --(K-1)--> each partner</pre>
+  <pre class="flow">General partner
+  --(manages; unlimited liability)--> LP
+Limited partners
+  --(capital)--> LP
+LP income, losses, deductions
+  --(K-1)--> each partner</pre>
   <div class="table-wrap"><table class="data-table">
     <thead><tr><th></th><th>General partner (GP)</th><th>Limited partner (LP)</th></tr></thead>
     <tbody>
@@ -2637,15 +2778,15 @@ LP income, losses, deductions --(K-1)--> each partner</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>REIT distribution → at least 90% of taxable income</li>
-    <li>REIT tests → 75% of assets and 75% of income from real estate</li>
-    <li>REIT dividends → generally ordinary income (not qualified)</li>
-    <li>LP liability → limited to the investment; GP liability → unlimited</li>
-    <li>Passive losses → offset only passive income</li>
-    <li>ETN → unsecured debt; issuer credit risk</li>
-    <li>Leveraged/inverse ETF guidance → FINRA Regulatory Notice 09-31</li>
-    <li>Depletion → oil and gas programs; depreciation and interest → real estate programs</li>
-    <li>Premium/discount → (price − NAV) ÷ NAV</li>
+    <li><b>REIT distribution</b> → at least 90% of taxable income</li>
+    <li><b>REIT tests</b> → 75% of assets and 75% of income from real estate</li>
+    <li><b>REIT dividends</b> → generally ordinary income (not qualified)</li>
+    <li><b>LP liability</b> → limited to the investment; GP liability → unlimited</li>
+    <li><b>Passive losses</b> → offset only passive income</li>
+    <li><b>ETN</b> → unsecured debt; issuer credit risk</li>
+    <li><b>Leveraged/inverse ETF guidance</b> → FINRA Regulatory Notice 09-31</li>
+    <li><b>Depletion</b> → oil and gas programs; depreciation and interest → real estate programs</li>
+    <li><b>Premium/discount</b> → (price − NAV) ÷ NAV</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -2678,13 +2819,17 @@ LP income, losses, deductions --(K-1)--> each partner</pre>
 
   <h3>Fixed vs variable: who carries the risk</h3>
   <p>The question that decides everything is <b>where the money sits and who eats a bad return</b>.</p>
-  <pre class="flow">FIXED:    Premium --> insurer's GENERAL account
-          insurer guarantees the rate --> insurer bears risk
-          --> insurance product, NOT a security
+  <pre class="flow">FIXED:
+  Premium --> insurer's GENERAL account
+  insurer guarantees the rate
+    --> insurer bears risk
+    --> insurance product, NOT a security
 
-VARIABLE: Premium --> SEPARATE account --> sub-accounts
-          value moves with the sub-accounts
-          --> contract owner bears risk --> a SECURITY</pre>
+VARIABLE:
+  Premium --> SEPARATE account --> sub-accounts
+  value moves with the sub-accounts
+    --> contract owner bears risk
+    --> a SECURITY</pre>
   <p>A <b>fixed annuity</b> pays a guaranteed rate from the insurer's <b>general account</b>, the insurer's own balance sheet. The customer's risk is the insurer's credit, backed by state guaranty associations, not SIPC. It is regulated by state insurance commissioners and needs only an insurance license to sell.</p>
   <p>A <b>variable annuity</b> (VA) puts premiums in a <b>separate account</b>, walled off from the insurer's creditors, divided into <b>sub-accounts</b> that work like mutual funds. Because the owner bears the investment risk, a VA is a <b>security</b>: the separate account is registered under the Investment Company Act of 1940, the contracts are registered under the Securities Act of 1933, a prospectus is required, and the rep needs both a securities registration and a state insurance license.</p>
   <p>The balance-sheet logic: if the insurer fails, fixed-annuity owners are creditors of the general account, while separate-account assets belong to the VA owners and are shielded from the insurer's creditors. SIPC does not cover fixed annuities; it protects customers of failed broker-dealers, not insurance contracts.</p>
@@ -2768,13 +2913,13 @@ VARIABLE: Premium --> SEPARATE account --> sub-accounts
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>VA sub-account return &gt; AIR → payment rises; = AIR → unchanged; &lt; AIR → payment falls</li>
-    <li>Life only → pays the most per month; stops at death</li>
-    <li>Joint and last survivor → typically the smallest payment</li>
-    <li>Nonqualified annuity withdrawals → earnings first (LIFO), ordinary income; 10% penalty before 59½</li>
-    <li>1035 exchange → tax-free annuity-to-annuity, life-to-annuity, life-to-life (not annuity-to-life)</li>
-    <li>Immediate annuity → single lump-sum premium; periodic payments → deferred annuity</li>
-    <li>Exclusion ratio → basis ÷ expected total payout</li>
+    <li><b>VA sub-account return &gt; AIR</b> → payment rises; = AIR → unchanged; &lt; AIR → payment falls</li>
+    <li><b>Life only</b> → pays the most per month; stops at death</li>
+    <li><b>Joint and last survivor</b> → typically the smallest payment</li>
+    <li><b>Nonqualified annuity withdrawals</b> → earnings first (LIFO), ordinary income; 10% penalty before 59½</li>
+    <li><b>1035 exchange</b> → tax-free annuity-to-annuity, life-to-annuity, life-to-life (not annuity-to-life)</li>
+    <li><b>Immediate annuity</b> → single lump-sum premium; periodic payments → deferred annuity</li>
+    <li><b>Exclusion ratio</b> → basis ÷ expected total payout</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -2810,12 +2955,18 @@ VARIABLE: Premium --> SEPARATE account --> sub-accounts
   <p>Responsibility for accuracy sits with the people who sign and sell: the issuer, its directors and signing officers, the underwriters, and experts such as the auditors. Investors who buy on a registration statement with a material misstatement can sue them. The underwriters' defense is <b>due diligence</b>: showing they made a reasonable investigation. That legal exposure is why the diligence process below exists.</p>
 
   <h3>The players</h3>
-  <pre class="flow">Issuer --(new shares)--> Managing underwriter
-Managing underwriter --(allocations)--> Syndicate members
-Syndicate --(shares, as agents)--> Selling group
-Syndicate + selling group --(shares at POP)--> Investors
-Investors --(cash at POP)--> Syndicate
-Syndicate --(POP minus spread)--> Issuer</pre>
+  <pre class="flow">Issuer
+  --(new shares)--> Managing underwriter
+Managing underwriter
+  --(allocations)--> Syndicate members
+Syndicate
+  --(shares, as agents)--> Selling group
+Syndicate + selling group
+  --(shares at POP)--> Investors
+Investors
+  --(cash at POP)--> Syndicate
+Syndicate
+  --(POP minus spread)--> Issuer</pre>
   <ul>
     <li><b>Issuer</b>: the company (or government) raising money.</li>
     <li><b>Managing underwriter</b> (lead manager, book-runner): negotiates with the issuer, forms and runs the syndicate, keeps the book of orders, allocates shares, and stabilizes.</li>
@@ -2825,15 +2976,20 @@ Syndicate --(POP minus spread)--> Issuer</pre>
   <p>Syndicate liability for unsold securities is split in one of two ways. In a <b>Western</b> (divided) account, each member is responsible only for its own allocation. In an <b>Eastern</b> (undivided) account, each member is also responsible for its percentage share of whatever remains unsold across the whole syndicate. Memory hook: Western = divided, like the West split into states.</p>
 
   <h3>The registration timeline</h3>
-  <pre class="flow">PRE-FILING   no offers, no sales; draft the S-1
-   |
-FILING       registration statement goes to the SEC
-   |
-COOLING-OFF  at least 20 days; red herring, IOIs only
-   |
-EFFECTIVE    SEC declares effective; price, sell, confirm
-   |
-AFTERMARKET  trading; prospectus-delivery window</pre>
+  <pre class="flow">PRE-FILING
+  no offers, no sales; draft the S-1
+  |
+FILING
+  registration statement goes to the SEC
+  |
+COOLING-OFF
+  at least 20 days; red herring, IOIs only
+  |
+EFFECTIVE
+  SEC declares effective; price, sell, confirm
+  |
+AFTERMARKET
+  trading; prospectus-delivery window</pre>
 
   <h4>1. Pre-filing period</h4>
   <p>The issuer picks its underwriters, negotiates the type of commitment, and drafts the registration statement with lawyers and auditors. The issuer and managing underwriter often sign a <b>letter of intent</b> setting out the deal terms (not to be confused with Day 12's mutual fund letter of intent). No offers and no sales are allowed, and publicity designed to condition the market for the offering (gun-jumping) is prohibited. The SEC has carved out limited "test-the-waters" talks with large institutional investors; the exam rarely goes further than "no offers to the public before filing".</p>
@@ -2885,14 +3041,23 @@ AFTERMARKET  trading; prospectus-delivery window</pre>
     </tbody>
   </table></div>
   <pre class="flow">FIRM COMMITMENT (principal)
-Issuer --(all shares)--> Underwriter, pays POP - spread
-Underwriter --(resells at POP)--> Investors
-Unsold? --> underwriter's inventory, underwriter's loss
+Issuer
+  --(all shares)--> Underwriter
+  (underwriter pays POP - spread)
+Underwriter
+  --(resells at POP)--> Investors
+Unsold?
+  --> underwriter's inventory
+  --> underwriter's loss
 
 BEST EFFORTS (agent)
-Issuer --(shares on consignment)--> Underwriter
-Underwriter --(sells what it can)--> Investors
-Unsold? --> back to issuer, issuer's shortfall</pre>
+Issuer
+  --(shares on consignment)--> Underwriter
+Underwriter
+  --(sells what it can)--> Investors
+Unsold?
+  --> back to issuer
+  --> issuer's shortfall</pre>
   <p>Note what a firm commitment does to the bank's balance sheet: at pricing it owes the issuer cash for every share, whether or not it has buyers, and it must hold capital against that position. That capital charge and the market risk are what the underwriting fee pays for. Large, established issuers get firm commitments; small or speculative issuers often get best efforts, AON or mini-max because no bank will put its own capital behind the deal.</p>
 
   <h3>The spread and who earns it</h3>
@@ -2931,11 +3096,14 @@ Unsold? --> back to issuer, issuer's shortfall</pre>
   <p>A new issue that breaks below its POP embarrasses the issuer and leaves the syndicate holding losses. The SEC allows one narrow exception to its anti-manipulation rules: the managing underwriter may enter a <b>stabilizing bid</b> to support the price, <b>at or below the POP</b>, never above it. Stabilization must be disclosed in the prospectus. The syndicate can also impose a <b>penalty bid</b>, taking back the selling concession from a member whose customers quickly flip their shares into the stabilizing bid.</p>
   <p>In practice most stabilization runs through the <b>greenshoe</b> (overallotment option): the issuer grants the underwriters an option to buy additional shares at the POP less the spread, typically up to 15% of the deal for about 30 days.</p>
   <pre class="flow">Underwriters sell 115% of the base deal
- --> syndicate is SHORT 15%
-Price falls below POP --> buy shares in the market
- --> covers the short AND supports the price
-Price rises above POP --> exercise the greenshoe
- --> buy from issuer at POP - spread, cover the short</pre>
+  --> syndicate is SHORT 15%
+Price falls below POP
+  --> buy shares in the market
+  --> covers the short AND supports the price
+Price rises above POP
+  --> exercise the greenshoe
+  --> buy from issuer at POP - spread
+  --> cover the short</pre>
   <p><b>Regulation M</b> is the SEC rule set behind this: it restricts underwriters, issuers and other distribution participants from bidding for or buying the offered security (or inducing others to) during a restricted period around the pricing, so they cannot pump the price they are about to sell at, and it sets the conditions for legitimate stabilization.</p>
   <p><b>Quiet periods</b>: informally, the period from pre-filing through the end of the aftermarket prospectus-delivery window, during which the issuer avoids promotional statements. FINRA's research rule adds a specific one: the managers and co-managers of an IPO may not publish research on the issuer for 10 days after the IPO (3 days after a follow-on offering).</p>
 
@@ -2946,10 +3114,15 @@ Price rises above POP --> exercise the greenshoe
     <li><b>Follow-on offering</b>: any registered offering by a company that is already public. Note that "secondary" is also used loosely for any follow-on; the exam uses the primary/secondary distinction above.</li>
     <li><b>Shelf registration</b> (SEC Rule 415): a seasoned issuer registers securities in advance and sells them off the shelf in pieces ("takedowns") over up to three years, when market conditions suit. This lets the company raise money within hours instead of waiting through a new cooling-off period.</li>
   </ul>
-  <pre class="flow">Primary:   Issuer --(new shares)--> Investors
-           Investors --($)--> Issuer (balance sheet grows)
-Secondary: Selling holder --(existing shares)--> Investors
-           Investors --($)--> Selling holder (company: $0)</pre>
+  <pre class="flow">Primary:
+  Issuer --(new shares)--> Investors
+  Investors --($)--> Issuer
+    (balance sheet grows)
+Secondary:
+  Selling holder
+    --(existing shares)--> Investors
+  Investors --($)--> Selling holder
+    (company: $0)</pre>
   <div class="worked"><b>Worked example: a split offering</b><ol>
     <li>A company has 100,000,000 shares outstanding. It sells 10,000,000 new shares (primary) and a private-equity owner sells 5,000,000 existing shares (secondary), all at $40.00 with a $1.20 spread.</li>
     <li>Shares outstanding after the deal: 100,000,000 + 10,000,000 = 110,000,000. The secondary shares add nothing.</li>
@@ -2978,15 +3151,15 @@ Secondary: Selling holder --(existing shares)--> Investors
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Cooling-off period → at least 20 calendar days</li>
-    <li>Aftermarket prospectus delivery → IPO 25 days (listed) / 90 days (unlisted); follow-on 0 (listed) / 40 (unlisted)</li>
-    <li>Stabilizing bid → at or below the POP</li>
-    <li>SEC disclaimer → "neither approved nor disapproved"</li>
-    <li>Largest part of the spread → selling concession</li>
-    <li>Selling group → agents; earn only the concession; not at risk for unsold shares</li>
-    <li>IOI → non-binding; the only "order" allowed during cooling-off</li>
-    <li>IPO restricted family → spouse, parents, in-laws, siblings, children, anyone materially supported (not grandparents, aunts/uncles, cousins)</li>
-    <li>Western account → divided liability; Eastern → undivided</li>
+    <li><b>Cooling-off period</b> → at least 20 calendar days</li>
+    <li><b>Aftermarket prospectus delivery</b> → IPO 25 days (listed) / 90 days (unlisted); follow-on 0 (listed) / 40 (unlisted)</li>
+    <li><b>Stabilizing bid</b> → at or below the POP</li>
+    <li><b>SEC disclaimer</b> → "neither approved nor disapproved"</li>
+    <li><b>Largest part of the spread</b> → selling concession</li>
+    <li><b>Selling group</b> → agents; earn only the concession; not at risk for unsold shares</li>
+    <li><b>IOI</b> → non-binding; the only "order" allowed during cooling-off</li>
+    <li><b>IPO restricted family</b> → spouse, parents, in-laws, siblings, children, anyone materially supported (not grandparents, aunts/uncles, cousins)</li>
+    <li><b>Western account</b> → divided liability; Eastern → undivided</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -3050,9 +3223,12 @@ Secondary: Selling holder --(existing shares)--> Investors
     </tbody>
   </table></div>
   <p>After the first sale the issuer files <b>Form D</b> with the SEC within 15 days. Form D is a notice, not a registration: the SEC neither reviews nor approves the deal. Rule 506 securities are also "covered securities," so states cannot demand registration, only a notice filing and a fee.</p>
-  <pre class="flow">Issuer --(PPM + shares)--> accredited buyers
-Issuer --(Form D, 15 days after 1st sale)--> SEC
-Buyer holds RESTRICTED stock --> resale needs Rule 144/144A</pre>
+  <pre class="flow">Issuer
+  --(PPM + shares)--> accredited buyers
+Issuer
+  --(Form D, 15 days after 1st sale)--> SEC
+Buyer holds RESTRICTED stock
+  --> resale needs Rule 144/144A</pre>
 
   <h3>Rule 144: selling restricted and control stock</h3>
   <p>Rule 144 is the safe harbor that lets two kinds of holders sell into the public market without registering.</p>
@@ -3082,9 +3258,14 @@ Buyer holds RESTRICTED stock --> resale needs Rule 144/144A</pre>
 
   <h3>Rule 144A and Regulation S: the institutional and offshore exits</h3>
   <p><b>Rule 144A</b> lets restricted securities be resold, with no holding period, to <b>qualified institutional buyers</b> (QIBs): institutions that own or invest at least $100 million in securities. It created a deep private institutional market. Much high-yield bond issuance runs this way, as do many foreign issuers' U.S. deals.</p>
-  <pre class="flow">Issuer --(private sale)--> banks ("initial purchasers")
-Banks --(144A resale)--> QIBs (funds, insurers, pensions)
-QIBs --(trade among themselves)--> other QIBs</pre>
+  <pre class="flow">Issuer
+  --(private sale)--> banks
+    ("initial purchasers")
+Banks
+  --(144A resale)--> QIBs
+    (funds, insurers, pensions)
+QIBs
+  --(trade among themselves)--> other QIBs</pre>
   <p><b>Regulation S</b> covers offers and sales made outside the United States. Because the sale is offshore, U.S. registration does not apply, provided there are no selling efforts directed into the U.S. and the securities do not flow back to U.S. buyers too early. A global bond is often "144A/Reg S": one tranche for U.S. QIBs, one for offshore investors.</p>
 
   <h3>Small and local offerings: Reg A, Rule 147/147A, Reg CF</h3>
@@ -3098,10 +3279,14 @@ QIBs --(trade among themselves)--> other QIBs</pre>
     </tbody>
   </table></div>
   <p>Reg A shares are not restricted securities; buyers can resell them. Match each offering to its document:</p>
-  <pre class="flow">Registered offering  --> prospectus
-Reg D private placement --> offering memorandum (PPM)
-Reg A              --> offering circular
-Municipal issue    --> official statement</pre>
+  <pre class="flow">Registered offering
+  --> prospectus
+Reg D private placement
+  --> offering memorandum (PPM)
+Reg A
+  --> offering circular
+Municipal issue
+  --> official statement</pre>
 
   <h3>Tender offers: the takeover route</h3>
   <p>A <b>tender offer</b> is a public offer to buy a company's shares directly from its holders, usually at a premium and often conditional on a minimum number being tendered. It goes around a target board that will not negotiate. The Williams Act amendments to the 1934 Act set the rules:</p>
@@ -3120,9 +3305,12 @@ Municipal issue    --> official statement</pre>
 
   <h3>Beneficial ownership: the 5% line</h3>
   <p>Anyone who acquires more than 5% of a class of voting equity must disclose it. The long form, <b>Schedule 13D</b>, is due within <b>5 business days</b> of crossing 5% (the deadline was 10 days before the 2024 amendments; older books still say 10). 13D discloses identity, the source of funds and the purpose, such as seeking control or board seats. <b>Schedule 13G</b> is a short form for passive holders and qualified institutions with no control intent. Beneficial ownership counts shares you vote or dispose of, including shares you can acquire within 60 days (for example, through options or convertibles). Holders acting together are aggregated as a group.</p>
-  <pre class="flow">Buy quietly --> cross 5% --> 13D within 5 business days
---> market sees stake + intent --> price reprices
---> cheap accumulation ends</pre>
+  <pre class="flow">Buy quietly
+  --> cross 5%
+  --> 13D within 5 business days
+  --> market sees stake + intent
+  --> price reprices
+  --> cheap accumulation ends</pre>
   <p>That chain is why a secret takeover stake is impossible: you can build a toehold, but past 5% the market finds out within days.</p>
 
   <h3>Section 16 insiders and short-swing profits</h3>
@@ -3146,21 +3334,21 @@ Municipal issue    --> official statement</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Accredited individual → income &gt; $200k ($300k joint) for 2 years, or net worth &gt; $1M ex-primary residence, or Series 7/65/82 holder</li>
-    <li>506(b) → up to 35 non-accredited; no general solicitation</li>
-    <li>506(c) → general solicitation OK; all buyers accredited and verified</li>
-    <li>Form D → within 15 days after first sale</li>
-    <li>Rule 144 holding period → 6 months (reporting issuer) / 1 year (non-reporting)</li>
-    <li>Rule 144 volume → greater of 1% of outstanding or 4-week average weekly volume, per 90 days</li>
-    <li>Form 144 → sales &gt; 5,000 shares or &gt; $50,000 in 90 days</li>
-    <li>144A QIB → $100 million in securities</li>
-    <li>Reg A → Tier 1 $20M, Tier 2 $75M per 12 months</li>
-    <li>Reg CF → $5M per 12 months, via funding portal or BD</li>
-    <li>Commercial paper exempt → maturity ≤ 270 days</li>
-    <li>Tender offer → open ≥ 20 business days; +10 business days after a price or percentage change</li>
-    <li>Schedule 13D → 5 business days after crossing 5% (was 10 days before 2024)</li>
-    <li>Section 16 insider → officer, director, 10%+ holder; Form 4 in 2 business days; short-swing = 6 months</li>
-    <li>PPM → Reg D; official statement → munis; prospectus → registered; offering circular → Reg A</li>
+    <li><b>Accredited individual</b> → income &gt; $200k ($300k joint) for 2 years, or net worth &gt; $1M ex-primary residence, or Series 7/65/82 holder</li>
+    <li><b>506(b)</b> → up to 35 non-accredited; no general solicitation</li>
+    <li><b>506(c)</b> → general solicitation OK; all buyers accredited and verified</li>
+    <li><b>Form D</b> → within 15 days after first sale</li>
+    <li><b>Rule 144 holding period</b> → 6 months (reporting issuer) / 1 year (non-reporting)</li>
+    <li><b>Rule 144 volume</b> → greater of 1% of outstanding or 4-week average weekly volume, per 90 days</li>
+    <li><b>Form 144</b> → sales &gt; 5,000 shares or &gt; $50,000 in 90 days</li>
+    <li><b>144A QIB</b> → $100 million in securities</li>
+    <li><b>Reg A</b> → Tier 1 $20M, Tier 2 $75M per 12 months</li>
+    <li><b>Reg CF</b> → $5M per 12 months, via funding portal or BD</li>
+    <li><b>Commercial paper exempt</b> → maturity ≤ 270 days</li>
+    <li><b>Tender offer</b> → open ≥ 20 business days; +10 business days after a price or percentage change</li>
+    <li><b>Schedule 13D</b> → 5 business days after crossing 5% (was 10 days before 2024)</li>
+    <li><b>Section 16 insider</b> → officer, director, 10%+ holder; Form 4 in 2 business days; short-swing = 6 months</li>
+    <li><b>PPM</b> → Reg D; official statement → munis; prospectus → registered; offering circular → Reg A</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -3236,11 +3424,14 @@ Municipal issue    --> official statement</pre>
     </tbody>
   </table></div>
   <p><b>Capacity</b> is what the firm was on your trade, and it decides how it gets paid:</p>
-  <pre class="flow">AGENT (broker):  customer --order--> firm --finds--> other side
-                 firm earns a COMMISSION
-PRINCIPAL (dealer): customer &lt;--trades with--> firm inventory
-                 firm earns a MARKUP (sell to you) or
-                 MARKDOWN (buy from you)</pre>
+  <pre class="flow">AGENT (broker):
+  customer --order--> firm
+    --finds--> other side
+  firm earns a COMMISSION
+PRINCIPAL (dealer):
+  customer &lt;--trades with--> firm inventory
+  firm earns a MARKUP (sell to you) or
+  MARKDOWN (buy from you)</pre>
   <p>A firm is never both broker and dealer on the same trade. Capacity is disclosed on the confirmation. A hybrid you will meet: <b>riskless principal</b>. The firm receives a customer order, buys the stock from the market as principal and immediately sells it to the customer at a markup. Legally it is a principal trade; economically the firm took almost no inventory risk.</p>
   <p><b>Interpositioning</b> is placing an unnecessary third party between the customer and the best available market, for example routing through a friendly dealer who adds its own spread. The customer ends up with a worse price, so it violates best execution. It is permitted only when it actually produces a better net price for the customer.</p>
 
@@ -3271,11 +3462,11 @@ PRINCIPAL (dealer): customer &lt;--trades with--> firm inventory
 
   <h3>Where each order sits relative to the market</h3>
   <p>Limits are placed where you would be <i>happier</i> to trade than at today's price. Stops are placed where you <i>need</i> to act if the market moves against you or breaks out. For stocks trading at 50:</p>
-  <pre class="flow">         SELL LIMIT (take profit, sell higher)
-         BUY STOP (cap a short's loss / buy a breakout)
-   ---------------- market 50 ----------------
-         BUY LIMIT (buy cheaper)
-         SELL STOP (cap a long's loss / protect profit)</pre>
+  <pre class="flow">  SELL LIMIT (take profit, sell higher)
+  BUY STOP (cap a short's loss / buy a breakout)
+-------------- market 50 --------------
+  BUY LIMIT (buy cheaper)
+  SELL STOP (cap a long's loss / protect profit)</pre>
   <p>Memory aid: <b>BLiSS</b> = Buy Limit and Sell Stop sit below the market; the other two sit above. A buy limit above the market or a sell limit below it would simply execute immediately as a marketable order. A buy stop below the market would trigger at once.</p>
   <ul>
     <li><b>Long 100 shares at 50, afraid of a drop:</b> SELL STOP at 45, below the market.</li>
@@ -3352,20 +3543,20 @@ PRINCIPAL (dealer): customer &lt;--trades with--> firm inventory
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Market order → execution guarantee, no price guarantee</li>
-    <li>Limit order → price guarantee (or better), no execution guarantee</li>
-    <li>Stop → becomes a market order when elected; stop-limit → becomes a limit order</li>
-    <li>Buy limit → below market; sell limit → above</li>
-    <li>Buy stop → above market; sell stop → below</li>
-    <li>Sell stop → protects a long; buy stop → protects a short</li>
-    <li>FOK → all, immediately, or cancel</li>
-    <li>IOC → fill what you can now, cancel the rest</li>
-    <li>AON → all or nothing, not necessarily immediately</li>
-    <li>Sell orders → marked long or short</li>
-    <li>Customer-initiated order → marked "unsolicited"</li>
-    <li>Commission → on the confirmation, not the ticket</li>
-    <li>Ex-dividend → buy limits and sell stops reduced unless DNR</li>
-    <li>Muni trades → reported to MSRB RTRS within 15 minutes</li>
+    <li><b>Market order</b> → execution guarantee, no price guarantee</li>
+    <li><b>Limit order</b> → price guarantee (or better), no execution guarantee</li>
+    <li><b>Stop</b> → becomes a market order when elected; stop-limit → becomes a limit order</li>
+    <li><b>Buy limit</b> → below market; sell limit → above</li>
+    <li><b>Buy stop</b> → above market; sell stop → below</li>
+    <li><b>Sell stop</b> → protects a long; buy stop → protects a short</li>
+    <li><b>FOK</b> → all, immediately, or cancel</li>
+    <li><b>IOC</b> → fill what you can now, cancel the rest</li>
+    <li><b>AON</b> → all or nothing, not necessarily immediately</li>
+    <li><b>Sell orders</b> → marked long or short</li>
+    <li><b>Customer-initiated order</b> → marked "unsolicited"</li>
+    <li><b>Commission</b> → on the confirmation, not the ticket</li>
+    <li><b>Ex-dividend</b> → buy limits and sell stops reduced unless DNR</li>
+    <li><b>Muni trades</b> → reported to MSRB RTRS within 15 minutes</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -3421,12 +3612,15 @@ PRINCIPAL (dealer): customer &lt;--trades with--> firm inventory
   <h3>The chain after execution: clearing and settlement</h3>
   <p><b>Clearing</b> is everything between the trade and settlement: matching the two sides' records, working out who owes what, and guaranteeing it. <b>Settlement</b> is the actual exchange of securities and cash. In U.S. equities, both run through subsidiaries of the Depository Trust &amp; Clearing Corporation (DTCC):</p>
   <pre class="flow">Execution (exchange / dealer / ATS)
-   --> trade reported and compared (both sides agree)
-   --> NSCC: becomes buyer to every seller and seller
-       to every buyer (central counterparty)
-   --> CNS netting: one net position per firm per stock
-   --> DTC: book-entry moves shares; cash settles
-   --> customer accounts credited (street name)</pre>
+  --> trade reported and compared
+      (both sides agree)
+  --> NSCC: becomes buyer to every seller
+      and seller to every buyer
+      (central counterparty)
+  --> CNS netting: one net position
+      per firm per stock
+  --> DTC: book-entry moves shares; cash settles
+  --> customer accounts credited (street name)</pre>
   <ul>
     <li><b>NSCC</b> (National Securities Clearing Corporation) clears equities, corporate and muni bonds. By stepping in as <b>central counterparty (CCP)</b>, it replaces thousands of bilateral exposures with one exposure to NSCC. Members post clearing-fund margin so a member's default is absorbed.</li>
     <li><b>CNS</b> (Continuous Net Settlement) nets each firm's buys and sells in each security into one net delivery or receipt per day.</li>
@@ -3439,10 +3633,15 @@ PRINCIPAL (dealer): customer &lt;--trades with--> firm inventory
     <li>Net: +10,000 − 7,000 + 2,000 = +5,000. Broker A receives 5,000 shares from NSCC and pays for 5,000 at the net value. One movement, one counterparty.</li>
   </ol></div>
   <p>Options add one more step, because an exercise creates a stock trade. The OCC is the counterparty to every listed contract, so an exercise runs through it:</p>
-  <pre class="flow">Holder (BUY CALL) exercises --> holder's firm --> OCC
-OCC assigns at random --> a clearing firm short that series
-Firm assigns its customer (random, FIFO or other fair method)
-Writer (SELL CALL) delivers stock; holder pays strike: T+1</pre>
+  <pre class="flow">Holder (BUY CALL) exercises
+  --> holder's firm
+  --> OCC
+OCC assigns at random
+  --> a clearing firm short that series
+Firm assigns its customer
+  (random, FIFO or other fair method)
+Writer (SELL CALL) delivers stock;
+  holder pays strike: T+1</pre>
   <p>Treasuries, by contrast, move on the Federal Reserve's book-entry system, and FICC nets and guarantees dealer trades much as NSCC does for stocks.</p>
   <p>Not every broker-dealer clears. An <b>introducing firm</b> holds the customer relationship and sends its trades to a <b>clearing firm</b>, which is a member of NSCC and DTC and carries the accounts and custody (a "fully disclosed" arrangement). A <b>self-clearing</b> firm does both. The customer's confirmations and statements often come from the clearing firm.</p>
 
@@ -3452,18 +3651,23 @@ Writer (SELL CALL) delivers stock; holder pays strike: T+1</pre>
     <li><b>Replacement-cost risk</b>: the counterparty defaults before settlement, and you must redo the trade at today's price. If you bought at 50 and the stock is now 54, replacing the purchase costs you $4 a share. The longer the window and the higher the volatility, the bigger this risk.</li>
     <li><b>Principal risk</b>: you hand over your leg (cash or shares) and never receive the other. That is the total amount, not just a price move. DVP and CCP settlement exist to remove it.</li>
   </ul>
-  <pre class="flow">Longer settlement window --> more unsettled trades open
---> bigger price moves possible before settlement
---> more margin NSCC must collect --> more capital tied up</pre>
+  <pre class="flow">Longer settlement window
+  --> more unsettled trades open
+  --> bigger price moves possible
+      before settlement
+  --> more margin NSCC must collect
+  --> more capital tied up</pre>
   <p>This is the regulatory logic of T+1: fewer days of open exposure means lower clearing-fund margin for the whole market. The cost is a tighter operational timeline for everyone.</p>
 
   <h3>Institutional settlement: DVP and RVP</h3>
   <p>Institutions (funds, pensions, insurers) usually do not keep assets at the executing broker. Their assets sit at a <b>custodian bank</b>, so settlement is a simultaneous swap between the broker and the custodian:</p>
   <pre class="flow">DVP (institution BUYS):
-  broker --shares--> custodian ; custodian --cash--> broker
+  broker --shares--> custodian
+  custodian --cash--> broker
   payment only against delivery
 RVP (institution SELLS):
-  custodian --shares--> broker ; broker --cash--> custodian
+  custodian --shares--> broker
+  broker --cash--> custodian
   delivery only against payment</pre>
   <p><b>DVP</b> (delivery versus payment, also called cash on delivery) means the institution pays only when the securities are delivered. <b>RVP</b> (receive versus payment) is the mirror image: the institution delivers only against payment. Neither side is ever out both the cash and the securities, which removes principal risk. Under T+1, SEC Rule 15c6-2 pushes the institutional allocation, confirmation and affirmation steps onto trade date itself. There is no longer a spare day to fix a mismatched instruction.</p>
 
@@ -3510,10 +3714,14 @@ RVP (institution SELLS):
 
   <h3>Corporate actions and why the ex-date moved</h3>
   <p>A dividend has four dates: <b>declaration</b> (the board announces), <b>ex-date</b> (first day a buyer does <i>not</i> get the dividend), <b>record date</b> (owners of record on this day are paid) and <b>payable date</b>. To be an owner of record, your purchase must have settled by the record date. So the ex-date is set by the settlement cycle:</p>
-  <pre class="flow">T+3 era: ex-date = 2 business days before record
-T+2 era: ex-date = 1 business day before record
-T+1 now: ex-date = SAME DAY as record date
-Cash trades: ex-date = business day AFTER record date</pre>
+  <pre class="flow">T+3 era:
+  ex-date = 2 business days before record
+T+2 era:
+  ex-date = 1 business day before record
+T+1 now:
+  ex-date = SAME DAY as record date
+Cash trades:
+  ex-date = business day AFTER record date</pre>
   <p>On the ex-date the stock opens lower by roughly the dividend, because the buyer no longer receives it. Mutual funds are the exception: the fund sets its own ex-date, typically the business day after the record date. For stock dividends or splits of 25% or more, the ex-date is the business day after the payable date. The shares have to exist before the stock can trade without them.</p>
   <div class="worked"><b>Worked example: record date after Labor Day 2026</b><ol>
     <li>Record date: Tuesday, September 8, 2026. Monday, September 7 is Labor Day.</li>
@@ -3535,17 +3743,17 @@ Cash trades: ex-date = business day AFTER record date</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Regular way → T+1: equities, corporates, munis, options, governments</li>
-    <li>Option exercise → settles T+1</li>
-    <li>Cash settlement → same day</li>
-    <li>Confirmation → at or before completion of the transaction</li>
-    <li>Account statements → at least quarterly</li>
-    <li>Reg T payment → settlement + 2 business days (T+3)</li>
-    <li>Ex-date (regular way, T+1) → same day as record date</li>
-    <li>Ex-date (cash trade) → business day after record date</li>
-    <li>Mutual fund ex-date → set by the fund</li>
-    <li>DVP → institution pays against delivery; RVP → delivers against payment</li>
-    <li>Registrar → shares issued ≤ shares authorized; transfer agent → ownership records</li>
+    <li><b>Regular way</b> → T+1: equities, corporates, munis, options, governments</li>
+    <li><b>Option exercise</b> → settles T+1</li>
+    <li><b>Cash settlement</b> → same day</li>
+    <li><b>Confirmation</b> → at or before completion of the transaction</li>
+    <li><b>Account statements</b> → at least quarterly</li>
+    <li><b>Reg T payment</b> → settlement + 2 business days (T+3)</li>
+    <li><b>Ex-date (regular way, T+1)</b> → same day as record date</li>
+    <li><b>Ex-date (cash trade)</b> → business day after record date</li>
+    <li><b>Mutual fund ex-date</b> → set by the fund</li>
+    <li><b>DVP</b> → institution pays against delivery; RVP → delivers against payment</li>
+    <li><b>Registrar</b> → shares issued ≤ shares authorized; transfer agent → ownership records</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -3579,16 +3787,24 @@ Cash trades: ex-date = business day AFTER record date</pre>
 
   <h3>The short sale is a secured loan</h3>
   <p>Follow the shares and the cash. A customer shorts 1,000 XYZ at $40 through a prime broker:</p>
-  <pre class="flow">1 LOCATE: broker confirms shares can be borrowed
-2 BORROW: lender --1,000 XYZ--> broker (for customer)
-3 SELL:   customer --1,000 XYZ--> market buyer
-          market buyer --$40,000--> customer's account
-4 COLLATERAL: broker --cash (~102% of value)--> lender
-          lender pays back a REBATE on that cash
-5 MARK DAILY: price up --> borrower posts more cash
-              price down --> lender returns cash
-6 BUY TO COVER: customer buys 1,000 XYZ in market
-7 RETURN: 1,000 XYZ --> lender ; collateral --> borrower</pre>
+  <pre class="flow">1 LOCATE:
+  broker confirms shares can be borrowed
+2 BORROW:
+  lender --1,000 XYZ--> broker (for customer)
+3 SELL:
+  customer --1,000 XYZ--> market buyer
+  market buyer --$40,000--> customer's account
+4 COLLATERAL:
+  broker --cash (~102% of value)--> lender
+  lender pays back a REBATE on that cash
+5 MARK DAILY:
+  price up --> borrower posts more cash
+  price down --> lender returns cash
+6 BUY TO COVER:
+  customer buys 1,000 XYZ in market
+7 RETURN:
+  1,000 XYZ --> lender
+  collateral --> borrower</pre>
   <p>Look at the balance sheet. The short seller holds cash (sale proceeds, locked up) and owes shares, a liability whose value floats with the stock price. Being short is being <b>short a liability that can grow without limit</b>. The lender swapped a stock for cash collateral and keeps the economic exposure to the stock (it still gains or loses on the price, since it gets the shares back). What the lender gives up is the vote and physical possession.</p>
 
   <h3>Regulation SHO: the rules around every short</h3>
@@ -3615,11 +3831,16 @@ Cash trades: ex-date = business day AFTER record date</pre>
 
   <h3>The stock-loan market</h3>
   <p>The shares come from long-only holders who would otherwise sit on them:</p>
-  <pre class="flow">Beneficial owners (pensions, mutual funds, ETFs, insurers)
-   --shares--> AGENT LENDER (usually the custodian bank)
-   --shares--> BORROWER (prime broker / broker-dealer)
-   --shares--> short-selling client, then sold in market
-Cash collateral flows the opposite way, back to the lender.</pre>
+  <pre class="flow">Beneficial owners
+  (pensions, mutual funds, ETFs, insurers)
+  --shares--> AGENT LENDER
+      (usually the custodian bank)
+  --shares--> BORROWER
+      (prime broker / broker-dealer)
+  --shares--> short-selling client,
+      then sold in market
+Cash collateral flows the opposite way,
+  back to the lender.</pre>
   <p>Brokers also lend from inside the firm: customers' <b>margin</b> securities (within the rehypothecation limit below) and, with a separate written agreement, customers' <b>fully paid</b> securities in a fully paid lending program.</p>
   <p><b>Collateral.</b> By market convention, U.S. loans are collateralized at about <b>102%</b> of the stock's value (105% for foreign securities). That is industry practice, not an SIE rule. The loan is <b>marked to market daily</b>: if the stock rises, the borrower sends more collateral; if it falls, the lender returns some. In the U.S. the collateral is mostly cash. Elsewhere, bonds and equities as collateral ("non-cash") are common, and then the borrower pays an explicit fee.</p>
   <p><b>The rebate.</b> With cash collateral, the lender does not charge a fee directly. It invests the cash (in money-market instruments or reverse repo), keeps the yield, and pays the borrower a <b>rebate</b>: interest on the cash, at a rate below what the lender earns. The gap is the lender's fee.</p>
@@ -3636,10 +3857,13 @@ Cash collateral flows the opposite way, back to the lender.</pre>
 
   <h3>Recalls, buy-ins and votes</h3>
   <p>Most stock loans are <b>open</b>: either side can end them at any time. The borrower returns shares whenever it covers. The lender can <b>recall</b> the shares, for example because it sold them, wants to vote, or has a tax reason. The borrower then has the standard settlement cycle (now one business day) to return them. The broker can borrow elsewhere to replace them, but if no replacement borrow exists:</p>
-  <pre class="flow">Lender recalls --> no replacement borrow available
---> borrower cannot return shares
---> BUY-IN: shares bought in the market, charged to the short
---> customer is covered out at whatever the price is</pre>
+  <pre class="flow">Lender recalls
+  --> no replacement borrow available
+  --> borrower cannot return shares
+  --> BUY-IN: shares bought in the market,
+      charged to the short
+  --> customer is covered out at whatever
+      the price is</pre>
   <p>The margin agreement lets the broker buy in the customer without consent. That is the SIE trap: a forced buy-in is not a choice the short seller makes. Recalls cluster before contested shareholder votes, because loaned shares carry no vote for the lender. The borrower's buyer gets the vote, which is why a lender wanting to vote must recall before the record date. Under T+1 the recall-to-return window shrank to one business day.</p>
 
   <h3>Manufactured dividends: short sellers pay the dividend</h3>
@@ -3692,11 +3916,17 @@ Cash collateral flows the opposite way, back to the lender.</pre>
 
   <h3>Short squeezes: a liquidity cascade</h3>
   <p>A <b>short squeeze</b> is a feedback loop in which shorts are forced to buy into a rising market:</p>
-  <pre class="flow">Price rises --> short equity falls --> margin calls
---> forced buy-to-cover --> price rises further
-Lenders recall / borrow fee spikes --> buy-ins
---> more forced buying --> price rises further
-Dealers who SELL CALL buy stock to hedge --> adds fuel</pre>
+  <pre class="flow">Price rises
+  --> short equity falls
+  --> margin calls
+  --> forced buy-to-cover
+  --> price rises further
+Lenders recall / borrow fee spikes
+  --> buy-ins
+  --> more forced buying
+  --> price rises further
+Dealers who SELL CALL buy stock to hedge
+  --> adds fuel</pre>
   <p>Signals desks watch: <b>short interest</b> as a percentage of the public float (FINRA collects short interest from firms twice a month); <b>days to cover</b> = short interest ÷ average daily volume; utilization; and the borrow fee. For example, 12 million shares short against average daily volume of 1.5 million = 12 ÷ 1.5 = 8 days to cover: even if every share traded went to shorts, covering would take eight sessions. A high fee plus high utilization plus a catalyst is the classic setup. In GameStop in January 2021, reported short interest exceeded 100% of the float. That is possible because shares lent and sold can be bought by someone who lends them again. When shorts ran for the same exit, the price moved by multiples in days.</p>
 
   <h3>Customer protection and rehypothecation</h3>
@@ -3725,16 +3955,16 @@ Dealers who SELL CALL buy stock to hedge --> adds fuel</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Locate → required before a short sale</li>
-    <li>Sell orders → marked long, short or short exempt</li>
-    <li>Rule 201 → 10% drop from prior close; shorts only above the national best bid, rest of day + next day</li>
-    <li>Short-sale fail close-out → by start of trading on S+1</li>
-    <li>Short margin → Reg T 150% of SMV (50% deposit); maintenance 30%; $2,000 minimum</li>
-    <li>Rehypothecation → up to 140% of debit balance</li>
-    <li>Manufactured dividend → paid by the short to the lender; ordinary income, not qualified</li>
-    <li>Stock-loan collateral → ~102% domestic, 105% foreign (market convention)</li>
-    <li>Protect a short → BUY CALL (or a buy stop)</li>
-    <li>Short risk → unlimited loss; gain capped at sale price</li>
+    <li><b>Locate</b> → required before a short sale</li>
+    <li><b>Sell orders</b> → marked long, short or short exempt</li>
+    <li><b>Rule 201</b> → 10% drop from prior close; shorts only above the national best bid, rest of day + next day</li>
+    <li><b>Short-sale fail close-out</b> → by start of trading on S+1</li>
+    <li><b>Short margin</b> → Reg T 150% of SMV (50% deposit); maintenance 30%; $2,000 minimum</li>
+    <li><b>Rehypothecation</b> → up to 140% of debit balance</li>
+    <li><b>Manufactured dividend</b> → paid by the short to the lender; ordinary income, not qualified</li>
+    <li><b>Stock-loan collateral</b> → ~102% domestic, 105% foreign (market convention)</li>
+    <li><b>Protect a short</b> → BUY CALL (or a buy stop)</li>
+    <li><b>Short risk</b> → unlimited loss; gain capped at sale price</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -3769,10 +3999,16 @@ Dealers who SELL CALL buy stock to hedge --> adds fuel</pre>
 
   <h3>What margin actually is</h3>
   <p>In a <b>cash account</b> the customer pays 100% of every purchase. In a <b>margin account</b> the customer pays part and the broker-dealer (BD) lends the rest. The loan is the <b>debit balance</b> (DR). The purchased securities are the collateral: the customer <b>hypothecates</b> them (pledges them to the BD), which is why margin securities must be held in <b>street name</b> (registered to the BD, with the customer as beneficial owner). The BD then usually finances that loan itself by <b>rehypothecating</b> the securities (re-pledging them to a bank). The rate the bank charges the BD is the <b>broker call rate</b>; the customer's margin interest is quoted as a spread over it.</p>
-  <pre class="flow">Customer --(cash 50%)--> BD --(cash 100%)--> Seller
-Seller --(shares)--> BD, held in street name
-BD --(pledges shares)--> Bank --(loan)--> BD
-Customer pays interest on DR = broker call rate + spread</pre>
+  <pre class="flow">Customer
+  --(cash 50%)--> BD
+  --(cash 100%)--> Seller
+Seller
+  --(shares)--> BD, held in street name
+BD
+  --(pledges shares)--> Bank
+  --(loan)--> BD
+Customer pays interest on DR
+  = broker call rate + spread</pre>
   <p>So there are two loans stacked on the same shares: bank → BD and BD → customer. The BD may rehypothecate customer margin securities worth up to <b>140% of the customer's debit balance</b> (SEA Rule 15c3-3); anything beyond that is excess collateral it must segregate. The customer's upside and downside are both magnified because the debt is fixed while the asset moves.</p>
   <div class="formula"><p class="expr">Leverage = Market value of position ÷ Customer equity</p><dl><dt>Market value</dt><dd>current value of the securities held (long) or owed (short)</dd><dt>Customer equity</dt><dd>what the customer would have left if everything were closed out today</dd></dl></div>
   <p>At 50% initial margin the leverage is 2:1, so a 10% move in the stock is a 20% move in equity. That is the whole point of margin, and the whole danger.</p>
@@ -3843,9 +4079,12 @@ Customer pays interest on DR = broker call rate + spread</pre>
   <li>Customer sells $10,000 of ABC. Proceeds pay DR down to $10,000; SMA is credited 50% × $10,000 = $5,000.</li>
   <li>Customer withdraws the $5,000. DR goes back up to $15,000; LMV $25,000; EQ $10,000 (40%). $5,000 of the sale — the retained half — permanently reduced the loan.</li>
   </ol></div>
-  <pre class="flow">EQ ≥ 50% of LMV .............. unrestricted (excess → SMA)
-25% ≤ EQ &lt; 50% .............. restricted: no call, 50% retention
-EQ &lt; 25% (or house level) ... maintenance call</pre>
+  <pre class="flow">EQ ≥ 50% of LMV
+  --> unrestricted (excess → SMA)
+25% ≤ EQ &lt; 50%
+  --> restricted: no call, 50% retention
+EQ &lt; 25% (or house level)
+  --> maintenance call</pre>
 
   <h3>Maintenance: the line that triggers the call</h3>
   <p>Reg T governs the day you borrow. After that, FINRA's <b>maintenance requirement</b> governs: equity must stay at or above <b>25% of LMV</b> for long positions and <b>30% of SMV</b> for short positions (stocks $5 and over). Firms usually set a higher house requirement. When equity drops below the requirement, the firm issues a <b>maintenance call</b> (on desks, "the margin call") for the deficiency.</p>
@@ -3884,9 +4123,14 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
   <li>The $5,000 SMA is applied first (and is used up); the remaining Reg T call is $8,000 − $5,000 = $3,000, due by settlement + 2 business days.</li>
   <li>After payment: DR rises by $16,000 − $3,000 = $13,000. The $5,000 of SMA became borrowed money, which is exactly why using SMA raises the debit.</li>
   </ol></div>
-  <pre class="flow">Price falls --> LMV falls --> EQ falls (DR fixed)
-  --> EQ &lt; 25% --> maintenance call --> cash due now
-  --> no cash --> forced sale into a falling market
+  <pre class="flow">Price falls
+  --> LMV falls
+  --> EQ falls (DR fixed)
+  --> EQ &lt; 25%
+  --> maintenance call
+  --> cash due now
+  --> no cash
+  --> forced sale into a falling market
   --> price risk has become liquidity risk</pre>
 
   <h3>What cannot use margin</h3>
@@ -3905,9 +4149,13 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
 
   <h3>The cash account: freeriding and the 90-day freeze</h3>
   <p>Reg T also governs cash accounts. A cash-account buyer must pay within the same Reg T period: settlement + 2 business days. <b>Freeriding</b> is buying in a cash account and selling before paying, using the sale proceeds to cover the purchase. The penalty is a <b>90-day freeze</b>: for 90 days the customer must have the full purchase price in the account before the trade date of any buy. If a cash-account customer simply fails to pay, the firm sells the position out and the same freeze applies. Extensions, if any, are requested by the firm from FINRA.</p>
-  <pre class="flow">Buy Mon (cash acct) --> sell Tue --> never paid for Mon
-  --> freeriding --> account frozen 90 days
-  --> each buy must be paid in full before trade date</pre>
+  <pre class="flow">Buy Mon (cash acct)
+  --> sell Tue
+  --> never paid for Mon
+  --> freeriding
+  --> account frozen 90 days
+  --> each buy must be paid in full
+      before trade date</pre>
 
   <h3>Pattern day traders</h3>
   <p>A <b>pattern day trader</b> (PDT) is a margin customer who executes four or more day trades (open and close the same position the same day) within five business days, or whom the firm reasonably believes will. A PDT must hold <b>$25,000 minimum equity</b> in the margin account before day trading; day-trading buying power is up to 4 times the maintenance margin excess. Below $25,000, day trading stops until the equity is restored. FINRA has proposed changes to the PDT framework; the exam tests $25,000.</p>
@@ -3924,18 +4172,18 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>Reg T initial margin → 50% (short: 150% of SMV held)</li>
-  <li>FINRA minimum equity → $2,000 (100% of the purchase if under $2,000; $2,000 for shorts regardless)</li>
-  <li>Maintenance → 25% of LMV long; 30% of SMV short</li>
-  <li>Long call price → DR ÷ 0.75; short call price → CR ÷ 1.30</li>
-  <li>Buying power → 2 × SMA</li>
-  <li>Pattern day trader minimum equity → $25,000</li>
-  <li>Reg T payment → settlement + 2 business days (T+3)</li>
-  <li>Freeriding → 90-day freeze</li>
-  <li>New issues → not marginable for 30 days</li>
-  <li>Options ≤ 9 months → paid in full</li>
-  <li>Margin disclosure statement → at opening and annually</li>
-  <li>Rehypothecation cap → 140% of the customer's debit balance</li>
+  <li><b>Reg T initial margin</b> → 50% (short: 150% of SMV held)</li>
+  <li><b>FINRA minimum equity</b> → $2,000 (100% of the purchase if under $2,000; $2,000 for shorts regardless)</li>
+  <li><b>Maintenance</b> → 25% of LMV long; 30% of SMV short</li>
+  <li><b>Long call price</b> → DR ÷ 0.75; short call price → CR ÷ 1.30</li>
+  <li><b>Buying power</b> → 2 × SMA</li>
+  <li><b>Pattern day trader minimum equity</b> → $25,000</li>
+  <li><b>Reg T payment</b> → settlement + 2 business days (T+3)</li>
+  <li><b>Freeriding</b> → 90-day freeze</li>
+  <li><b>New issues</b> → not marginable for 30 days</li>
+  <li><b>Options ≤ 9 months</b> → paid in full</li>
+  <li><b>Margin disclosure statement</b> → at opening and annually</li>
+  <li><b>Rehypothecation cap</b> → 140% of the customer's debit balance</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -3970,11 +4218,14 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
   <h3>The pipeline: from application to first trade</h3>
   <p>Opening an account is a series of gates. Each one exists because of a specific failure: fraud, money laundering, unsuitable sales, or disputes over who owned what.</p>
   <pre class="flow">Customer data (Rule 4512 new account form)
-  --> identity verified (CIP) + sanctions screen (OFAC)
-  --> profile built (KYC 2090, suitability/Reg BI)
+  --> identity verified (CIP)
+      + sanctions screen (OFAC)
+  --> profile built
+      (KYC 2090, suitability/Reg BI)
   --> Form CRS delivered (retail)
   --> principal approves account in writing
-  --> trading; AML monitoring runs for the life of it</pre>
+  --> trading; AML monitoring runs
+      for the life of it</pre>
   <p>Two people are involved on the firm side. The <b>registered representative</b> (RR) opens the account and makes recommendations. A <b>principal</b> (a supervisor with a principal registration) must approve the account in writing. The customer's signature is not required to open a plain cash account, but it is required on any agreement that adds risk or authority: margin agreement, options agreement, discretionary authorization.</p>
 
   <h3>What the firm must collect (Rule 4512)</h3>
@@ -4033,9 +4284,12 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
   <p><b>Time-and-price discretion</b> is not discretion. If the customer picks the asset, action and amount ("buy 1,000 XYZ today") and lets the rep choose only when and at what price, no written authorization is needed. It is valid only for the business day it is granted, unless the customer specifies otherwise in writing.</p>
   <pre class="flow">Customer picks asset + action + amount?
   yes --> rep picks only time/price
-          --> no written auth; good for the day only
-  no  --> rep picks any of the three --> discretion:
-          written auth first + principal approval</pre>
+          --> no written auth;
+              good for the day only
+  no  --> rep picks any of the three
+          --> discretion:
+              written auth first
+              + principal approval</pre>
   <p>A <b>power of attorney</b> (POA) gives a third party authority over the account.</p>
   <div class="table-wrap"><table class="data-table"><thead><tr><th>Type</th><th>Can trade?</th><th>Can withdraw?</th><th>Ends at</th></tr></thead><tbody>
   <tr><td>Limited POA (trading authorization)</td><td>Yes</td><td>No</td><td>Revocation, incapacity or death of the principal</td></tr>
@@ -4045,11 +4299,15 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
   <p>The durable POA exists precisely for incapacity (dementia, a coma). But after death nobody's POA works; authority passes to the executor under the will.</p>
 
   <h3>Death and incapacity: what the firm does</h3>
-  <pre class="flow">Firm learns of death --> cancel open orders, freeze account
-  --> collect: death certificate, letters testamentary,
-      affidavit of domicile (plus any state tax waiver)
-  --> retitle: estate, surviving joint tenant, or
-      TOD beneficiary --> executor gives instructions</pre>
+  <pre class="flow">Firm learns of death
+  --> cancel open orders, freeze account
+  --> collect: death certificate,
+      letters testamentary,
+      affidavit of domicile
+      (plus any state tax waiver)
+  --> retitle: estate, surviving joint tenant,
+      or TOD beneficiary
+  --> executor gives instructions</pre>
   <ul>
   <li>Individual account → estate; the executor acts once the documents are in.</li>
   <li>JTWROS → the survivor, after the paperwork re-registers the account.</li>
@@ -4080,11 +4338,15 @@ EQ &lt; 25% (or house level) ... maintenance call</pre>
 
   <h3>Anti-money laundering: the plumbing</h3>
   <p>Money laundering moves in three stages, and each rule targets a stage.</p>
-  <pre class="flow">Placement --> dirty cash enters the system
+  <pre class="flow">Placement
+  --> dirty cash enters the system
   (CTR, structuring rules, cash limits)
-Layering  --> moved through trades/wires to blur the trail
+Layering
+  --> moved through trades/wires
+      to blur the trail
   (SAR, monitoring, CDD)
-Integration --> comes back as "clean" investment gains
+Integration
+  --> comes back as "clean" investment gains
   (KYC, beneficial ownership)</pre>
   <p>The legal base is the <b>Bank Secrecy Act</b> (1970), which created CTRs and SARs, and Title III of the <b>USA PATRIOT Act</b> (2001), which required AML programs and Customer Identification Programs at broker-dealers.</p>
   <h4>The AML program (FINRA Rule 3310)</h4>
@@ -4123,18 +4385,18 @@ Integration --> comes back as "clean" investment gains
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>CIP items → name, date of birth, address, ID number</li>
-  <li>CTR → cash over $10,000 in a business day (aggregated); filed within 15 days</li>
-  <li>SAR (BD) → $5,000+ suspicious; within 30 days of detection; no tipping off</li>
-  <li>OFAC SDN list → block and report</li>
-  <li>AML records (CTR, SAR, CIP) → 5 years</li>
-  <li>Monetary instrument log → cash purchases of $3,000–$10,000</li>
-  <li>Trusted contact person → 18+, no trading authority</li>
-  <li>Specified adult → 65+, or 18+ with impairment</li>
-  <li>Time-and-price discretion → valid only for the day granted</li>
-  <li>UGMA/UTMA → one custodian, one minor, no margin, irrevocable gifts, minor's SSN</li>
-  <li>JTWROS → to survivor; TIC → to estate</li>
-  <li>Reg BI → four obligations: disclosure, care, conflict of interest, compliance</li>
+  <li><b>CIP items</b> → name, date of birth, address, ID number</li>
+  <li><b>CTR</b> → cash over $10,000 in a business day (aggregated); filed within 15 days</li>
+  <li><b>SAR (BD)</b> → $5,000+ suspicious; within 30 days of detection; no tipping off</li>
+  <li><b>OFAC SDN list</b> → block and report</li>
+  <li><b>AML records (CTR, SAR, CIP)</b> → 5 years</li>
+  <li><b>Monetary instrument log</b> → cash purchases of $3,000–$10,000</li>
+  <li><b>Trusted contact person</b> → 18+, no trading authority</li>
+  <li><b>Specified adult</b> → 65+, or 18+ with impairment</li>
+  <li><b>Time-and-price discretion</b> → valid only for the day granted</li>
+  <li><b>UGMA/UTMA</b> → one custodian, one minor, no margin, irrevocable gifts, minor's SSN</li>
+  <li><b>JTWROS</b> → to survivor; TIC → to estate</li>
+  <li><b>Reg BI</b> → four obligations: disclosure, care, conflict of interest, compliance</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -4176,9 +4438,18 @@ Integration --> comes back as "clean" investment gains
   <tr><td>529 plan</td><td>After-tax (no federal deduction)</td><td>Tax-free</td><td>Tax-free if spent on qualified education</td></tr>
   </tbody></table></div>
   <p>Two consequences worth reasoning out rather than memorizing. First, money coming out of a traditional account is <b>ordinary income</b>, even if it grew from long-term capital gains or qualified dividends; the account launders away the preferential rates. Second, the Roth-versus-traditional choice is a bet on tax rates: deduct now at today's rate, or pay today and never again.</p>
-  <pre class="flow">Traditional: deduct now --> defer --> pay ordinary rate later
-Roth:        pay now    --> grow  --> qualified exit tax-free
-Taxable:     pay now    --> pay yearly --> gains at sale</pre>
+  <pre class="flow">Traditional:
+  deduct now
+    --> defer
+    --> pay ordinary rate later
+Roth:
+  pay now
+    --> grow
+    --> qualified exit tax-free
+Taxable:
+  pay now
+    --> pay yearly
+    --> gains at sale</pre>
 
   <h3>IRAs: traditional and Roth</h3>
   <h4>Concepts</h4>
@@ -4222,8 +4493,11 @@ Direct rollover (plan to IRA):
   401(k) --(assets)--> IRA   no withholding
 
 Indirect (60-day) rollover:
-  Plan/IRA --(check)--> Owner --(within 60 days)--> IRA
-  plan payouts: 20% withheld; IRA-to-IRA: once / 12 months</pre>
+  Plan/IRA
+    --(check)--> Owner
+    --(within 60 days)--> IRA
+  plan payouts: 20% withheld
+  IRA-to-IRA: once / 12 months</pre>
   <div class="worked"><b>Worked example — the 20% withholding trap</b><ol>
   <li>Dana, 45, leaves her job and takes her $100,000 401(k) as a check payable to herself. The plan must withhold 20%: she receives $80,000.</li>
   <li>To roll over the full $100,000 she must deposit $100,000 into an IRA within 60 days, so she must find $20,000 from other savings. The $20,000 withheld comes back as a credit when she files her tax return.</li>
@@ -4334,20 +4608,20 @@ Indirect (60-day) rollover:
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>2026 IRA limit → $7,500 + $1,100 catch-up (50+)</li>
-  <li>2026 401(k)/403(b)/gov 457 → $24,500 + $8,000 catch-up; $11,250 ages 60–63</li>
-  <li>Early withdrawal penalty → 10% before 59½</li>
-  <li>RMD age → 73 (75 if born 1960+); first by April 1 of the following year</li>
-  <li>Indirect rollover → 60 days; once per 12 months IRA-to-IRA; 20% withheld from plan payouts</li>
-  <li>IRA contribution deadline → tax filing deadline (typically April 15)</li>
-  <li>Coverdell → $2,000/yr, contributions until 18, use by 30</li>
-  <li>529 K-12 tuition → up to $20,000/yr (from 2026; was $10,000)</li>
-  <li>529 front-loading → 5 × $19,000 = $95,000; 529-to-Roth → $35,000 lifetime, 15 years</li>
-  <li>Gift tax annual exclusion → $19,000 per recipient (2026)</li>
-  <li>Long-term → more than 1 year; starts day after trade date</li>
-  <li>Wash sale window → 30 days before and after</li>
-  <li>Net capital loss vs ordinary income → $3,000/yr, carry forward indefinitely</li>
-  <li>Qualified dividend holding → more than 60 days in the 121-day window around the ex-date</li>
+  <li><b>2026 IRA limit</b> → $7,500 + $1,100 catch-up (50+)</li>
+  <li><b>2026 401(k)/403(b)/gov 457</b> → $24,500 + $8,000 catch-up; $11,250 ages 60–63</li>
+  <li><b>Early withdrawal penalty</b> → 10% before 59½</li>
+  <li><b>RMD age</b> → 73 (75 if born 1960+); first by April 1 of the following year</li>
+  <li><b>Indirect rollover</b> → 60 days; once per 12 months IRA-to-IRA; 20% withheld from plan payouts</li>
+  <li><b>IRA contribution deadline</b> → tax filing deadline (typically April 15)</li>
+  <li><b>Coverdell</b> → $2,000/yr, contributions until 18, use by 30</li>
+  <li><b>529 K-12 tuition</b> → up to $20,000/yr (from 2026; was $10,000)</li>
+  <li><b>529 front-loading</b> → 5 × $19,000 = $95,000; 529-to-Roth → $35,000 lifetime, 15 years</li>
+  <li><b>Gift tax annual exclusion</b> → $19,000 per recipient (2026)</li>
+  <li><b>Long-term</b> → more than 1 year; starts day after trade date</li>
+  <li><b>Wash sale window</b> → 30 days before and after</li>
+  <li><b>Net capital loss vs ordinary income</b> → $3,000/yr, carry forward indefinitely</li>
+  <li><b>Qualified dividend holding</b> → more than 60 days in the 121-day window around the ex-date</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -4384,12 +4658,16 @@ Indirect (60-day) rollover:
   <p>An <b>associated person</b> is anyone working for a broker-dealer. A <b>registered person</b> is one who has qualified by exam and whose firm has registered them with FINRA to do securities business (sales, trading, supervision). A <b>principal</b> is a registered supervisor.</p>
   <pre class="flow">Pass SIE (age 18+, no sponsor; valid 4 years)
   --> hired: firm files Form U4 + fingerprints
-  --> pass top-off exam (e.g. Series 7) --> registered
-  --> annual Regulatory Element CE + Firm Element
+  --> pass top-off exam (e.g. Series 7)
+  --> registered
+  --> annual Regulatory Element CE
+      + Firm Element
   --> leaves: firm files U5 within 30 days
-  --> 2-year clock: re-register or qualification lapses
+  --> 2-year clock: re-register
+      or qualification lapses
       (MQP: up to 5 years with annual CE + fee)
-  --> FINRA keeps jurisdiction 2 years after termination</pre>
+  --> FINRA keeps jurisdiction
+      2 years after termination</pre>
   <h4>Form U4</h4>
   <p>The <b>Uniform Application for Securities Industry Registration or Transfer</b> is filed by the firm, not the individual, when the person associates. It carries personal and employment history and a long set of <b>disclosure questions</b>: criminal charges and convictions, regulatory actions, civil litigation, customer complaints, terminations, and financial events such as bankruptcies, liens and unsatisfied judgments. The firm must fingerprint the person. When anything changes, the U4 must be <b>amended within 30 days</b> of learning of it (10 days for an event that creates a statutory disqualification). Willfully lying on a U4 is itself grounds for disqualification.</p>
   <h4>Form U5</h4>
@@ -4420,8 +4698,9 @@ Indirect (60-day) rollover:
   <pre class="flow">Rep convicted of a felony
   --> firm amends U4 within 10 days (SD event)
   --> rep is statutorily disqualified
-  --> firm terminates (U5 in 30 days) or sponsors an
-      eligibility application with heightened supervision</pre>
+  --> firm terminates (U5 in 30 days)
+      or sponsors an eligibility application
+      with heightened supervision</pre>
   <p><b>Reportable events</b> (Rule 4530): the firm reports specified events to FINRA within 30 calendar days of learning of them: written customer complaints alleging theft, misappropriation or forgery; being named in securities-related litigation or arbitration; charges or convictions for felonies and specified misdemeanors; disciplinary actions; internal discipline for significant violations. Separately, the firm reports statistical data on all customer complaints <b>quarterly</b>, by the 15th of the month after the quarter.</p>
 
   <h3>Outside activities: OBAs and PSTs</h3>
@@ -4453,11 +4732,17 @@ Indirect (60-day) rollover:
 
   <h3>Insider trading</h3>
   <p><b>Material non-public information</b> (MNPI) is information a reasonable investor would consider important and that has not been disseminated to the public: an unannounced merger, earnings, a failed drug trial. Trading on it, or passing it on, violates the antifraud rules (Exchange Act Section 10(b) and Rule 10b-5).</p>
-  <pre class="flow">Insider (tipper) --(MNPI, for a benefit)--> Tippee --> trades
+  <pre class="flow">Insider (tipper)
+  --(MNPI, for a benefit)--> Tippee
+  --> trades
   tipper liable even without trading
-  tippee liable if they knew or should have known
-Misappropriation: outsider (lawyer, printer, banker)
-  steals MNPI from its source --> trades --> liable</pre>
+  tippee liable if they knew or should
+  have known
+Misappropriation:
+  outsider (lawyer, printer, banker)
+  steals MNPI from its source
+  --> trades
+  --> liable</pre>
   <p>Penalties under <b>ITSFEA</b> (Insider Trading and Securities Fraud Enforcement Act of 1988): a civil penalty of up to <b>3 times the profit gained or loss avoided</b>, on top of disgorging the profit itself; criminal penalties include prison of up to 20 years. Firms and supervisors who fail to prevent it face controlling-person liability, and investors who traded at the same time can sue. That is why broker-dealers must maintain written policies to prevent misuse of MNPI: <b>information barriers</b> between banking, research and trading, a <b>watch list</b> (quietly monitored names) and a <b>restricted list</b> (names in which solicited trading or research is blocked).</p>
   <div class="worked"><b>Worked example — ITSFEA penalty computation</b><ol>
   <li>An insider buys 10,000 shares at $20 before a takeover announcement and sells at $32. Profit gained = 10,000 × $12 = $120,000.</li>
@@ -4525,20 +4810,20 @@ Misappropriation: outsider (lawyer, printer, banker)
   </ul></div>
 
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-  <li>U4 amendments → within 30 days (10 days for SD events)</li>
-  <li>U5 → within 30 days of termination, copy to the individual</li>
-  <li>SIE → valid 4 years</li>
-  <li>Qualification lapse → 2 years after termination (MQP up to 5)</li>
-  <li>FINRA jurisdiction → 2 years after termination</li>
-  <li>Regulatory Element → annually by December 31</li>
-  <li>Gift limit → $300 per person per year (effective 2026-03-30; was $100)</li>
-  <li>Retail communication → more than 25 retail investors in 30 days</li>
-  <li>Correspondence → 25 or fewer retail investors in 30 days</li>
-  <li>New member filing → 10 business days before first use, first year</li>
-  <li>ITSFEA civil penalty → up to 3x profit gained or loss avoided; prison up to 20 years</li>
-  <li>Records → blotters/ledgers 6 years; complaints 4; AML 5; most other records 3; articles and minute books for life</li>
-  <li>Do-not-call → 8 a.m. to 9 p.m. local time of the called party; firm DNC list 5 years</li>
-  <li>G-37 → $250 per election; 2-year ban</li>
+  <li><b>U4 amendments</b> → within 30 days (10 days for SD events)</li>
+  <li><b>U5</b> → within 30 days of termination, copy to the individual</li>
+  <li><b>SIE</b> → valid 4 years</li>
+  <li><b>Qualification lapse</b> → 2 years after termination (MQP up to 5)</li>
+  <li><b>FINRA jurisdiction</b> → 2 years after termination</li>
+  <li><b>Regulatory Element</b> → annually by December 31</li>
+  <li><b>Gift limit</b> → $300 per person per year (effective 2026-03-30; was $100)</li>
+  <li><b>Retail communication</b> → more than 25 retail investors in 30 days</li>
+  <li><b>Correspondence</b> → 25 or fewer retail investors in 30 days</li>
+  <li><b>New member filing</b> → 10 business days before first use, first year</li>
+  <li><b>ITSFEA civil penalty</b> → up to 3x profit gained or loss avoided; prison up to 20 years</li>
+  <li><b>Records</b> → blotters/ledgers 6 years; complaints 4; AML 5; most other records 3; articles and minute books for life</li>
+  <li><b>Do-not-call</b> → 8 a.m. to 9 p.m. local time of the called party; firm DNC list 5 years</li>
+  <li><b>G-37</b> → $250 per election; 2-year ban</li>
   </ul></div>
 
   <div class="sie-block traps"><b>Exam traps</b><ul>
@@ -4690,211 +4975,212 @@ Misappropriation: outsider (lawyer, printer, banker)
 <section class="guide-chapter" id="day-29">
   <h2>Day 29 · The master memorization list</h2>
   <p class="guide-meta">All four FINRA sections · pairs with the Day 29 edition (~90 min)</p>
-  <p class="guide-lede">Every fact in the program that has to be memorized rather than reasoned out, in one place and grouped for speed. It is built from the same reference the daily editions and the answer keys use, so it agrees with them. Items marked <span class="tag-memo">Changed</span> are rules that moved recently; many prep books still carry the old number.</p>
+  <p class="guide-lede">Every fact in the program that has to be memorized rather than reasoned out, in one place and grouped for speed. It comes from the same reference the daily editions and answer keys use, so the three always agree. Rules marked <span class="tag-memo">Changed</span> moved recently, and many prep books still print the old number.</p>
   <h3>Exam, registration and continuing education</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>SIE format → 75 scored + 5 unscored questions, 1 hour 45 minutes, passing score 70 <span class="tag-memo">Changed</span> <em>(Many prep books still say 85 questions.)</em></li>
-    <li>SIE validity → 4 years from the exam date</li>
-    <li>SIE eligibility → Age 18+; no firm sponsorship required</li>
-    <li>Retest waiting periods → Historically 30 days after a 1st or 2nd failure, 180 days after 3 consecutive failures; FINRA shortened these by a rule change effective on filing 2026-06-29 with implementation date to be announced <span class="tag-memo">Changed</span> <em>(Verify current status before teaching; do not state new numbers from memory.)</em></li>
-    <li>Qualification lapse after leaving the industry → 2 years after termination; up to 5 years under the Maintaining Qualifications Program (annual CE + fee)</li>
-    <li>Regulatory Element CE → Annually, due by December 31 (since 2023); missing it = CE inactive</li>
-    <li>Form U4 → Filed by the firm when a person associates; fingerprints; amend within 30 days of learning of a change (10 days for events that create a statutory disqualification)</li>
-    <li>Form U5 → Filed by the firm within 30 days of termination; copy to the individual</li>
-    <li>Statutory disqualification → Includes any felony conviction within 10 years; certain misdemeanors (securities, fraud, theft) within 10 years; bars/expulsions; certain injunctions and willful violations</li>
-    <li>FINRA retained jurisdiction → 2 years after termination of registration</li>
+    <li><b>SIE format</b> → 75 scored + 5 unscored questions, 1 hour 45 minutes, passing score 70 <span class="tag-memo">Changed</span> <em>Many prep books still say 85 questions.</em></li>
+    <li><b>SIE validity</b> → 4 years from the exam date</li>
+    <li><b>SIE eligibility</b> → Age 18+; no firm sponsorship required</li>
+    <li><b>Retest waiting periods</b> → Historically 30 days after a 1st or 2nd failure, 180 days after 3 consecutive failures; FINRA shortened these by a rule change effective on filing 2026-06-29 with implementation date to be announced <span class="tag-memo">Changed</span> <em>FINRA has approved shorter waits; confirm the current rule before booking a retake.</em></li>
+    <li><b>Qualification lapse after leaving the industry</b> → 2 years after termination; up to 5 years under the Maintaining Qualifications Program (annual CE + fee)</li>
+    <li><b>Regulatory Element CE</b> → Annually, due by December 31 (since 2023); missing it = CE inactive</li>
+    <li><b>Form U4</b> → Filed by the firm when a person associates; fingerprints; amend within 30 days of learning of a change (10 days for events that create a statutory disqualification)</li>
+    <li><b>Form U5</b> → Filed by the firm within 30 days of termination; copy to the individual</li>
+    <li><b>Statutory disqualification</b> → Includes any felony conviction within 10 years; certain misdemeanors (securities, fraud, theft) within 10 years; bars/expulsions; certain injunctions and willful violations</li>
+    <li><b>FINRA retained jurisdiction</b> → 2 years after termination of registration</li>
   </ul></div>
   <h3>Conduct, communications and records</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Gift limit (FINRA Rule 3220) → $300 per person per year <span class="tag-memo">Changed</span> <em>(Was $100 from 1992 to 2026. Question banks may still show $100 — teach $300 and flag the old number.)</em></li>
-    <li>MSRB G-37 political contributions → $250 de minimis per election, only to officials the MFP can vote for; violation -&gt; 2-year ban on negotiated business with that issuer</li>
-    <li>OBA (Rule 3270) → Prior written notice to the firm</li>
-    <li>PST (Rule 3280) → Prior written notice; if compensated, firm must approve and supervise as its own; if not, written acknowledgment</li>
-    <li>Customer complaints reporting → Rule 4530: specified events within 30 calendar days; quarterly statistical complaint data by the 15th of the month after the quarter</li>
-    <li>Borrowing/lending with customers → Only if the firm permits it in writing and the relationship qualifies (immediate family, lending institution, other registered person at same firm, personal or business relationship outside the brokerage)</li>
-    <li>Sharing in customer accounts → Needs written approval of the firm and the customer; sharing in proportion to contribution (immediate family accounts excepted)</li>
-    <li>Guarantees against loss → Prohibited</li>
-    <li>Insider trading penalties (ITSFEA 1988) → Civil penalty up to 3x the profit gained or loss avoided; criminal penalties include prison up to 20 years</li>
-    <li>Do-not-call → Calls only 8 a.m.-9 p.m. local time of the called party; firm-specific DNC request honored for 5 years</li>
-    <li>Record retention (SEA 17a-4) → 3 years: U4/U5/fingerprint records (after termination), order tickets, confirmations, statements, communications, trial balances. 4 years: customer complaints (FINRA 4513). 5 years: CTRs, SARs, CIP records (after account closing). 6 years: blotters, general and customer ledgers, customer account records (after closing), MSRB complaints. Life of the firm: articles of incorporation, partnership agreements, minute books, stock certificate books.</li>
-    <li>Retail communication → Any written communication to more than 25 retail investors within 30 days; principal approval before use</li>
-    <li>Correspondence → Written communication to 25 or fewer retail investors within 30 days; supervised by post-review under procedures</li>
-    <li>Institutional communication → Distributed only to institutional investors; supervised under procedures, no pre-approval required</li>
-    <li>New member filing → New members file retail communications with FINRA at least 10 business days before first use for their first year</li>
+    <li><b>Gift limit (FINRA Rule 3220)</b> → $300 per person per year <span class="tag-memo">Changed</span> <em>Was $100 from 1992 until 2026; older question banks may still use $100.</em></li>
+    <li><b>MSRB G-37 political contributions</b> → $250 de minimis per election, only to officials the MFP can vote for; violation -&gt; 2-year ban on negotiated business with that issuer</li>
+    <li><b>OBA (Rule 3270)</b> → Prior written notice to the firm</li>
+    <li><b>PST (Rule 3280)</b> → Prior written notice; if compensated, firm must approve and supervise as its own; if not, written acknowledgment</li>
+    <li><b>Customer complaints reporting</b> → Rule 4530: specified events within 30 calendar days; quarterly statistical complaint data by the 15th of the month after the quarter</li>
+    <li><b>Borrowing/lending with customers</b> → Only if the firm permits it in writing and the relationship qualifies (immediate family, lending institution, other registered person at same firm, personal or business relationship outside the brokerage)</li>
+    <li><b>Sharing in customer accounts</b> → Needs written approval of the firm and the customer; sharing in proportion to contribution (immediate family accounts excepted)</li>
+    <li><b>Guarantees against loss</b> → Prohibited</li>
+    <li><b>Insider trading penalties (ITSFEA 1988)</b> → Civil penalty up to 3x the profit gained or loss avoided; criminal penalties include prison up to 20 years</li>
+    <li><b>Do-not-call</b> → Calls only 8 a.m.-9 p.m. local time of the called party; firm-specific DNC request honored for 5 years</li>
+    <li><b>Record retention (SEA 17a-4)</b> → 3 years: U4/U5/fingerprint records (after termination), order tickets, confirmations, statements, communications, trial balances. 4 years: customer complaints (FINRA 4513). 5 years: CTRs, SARs, CIP records (after account closing). 6 years: blotters, general and customer ledgers, customer account records (after closing), MSRB complaints. Life of the firm: articles of incorporation, partnership agreements, minute books, stock certificate books.</li>
+    <li><b>Retail communication</b> → Any written communication to more than 25 retail investors within 30 days; principal approval before use</li>
+    <li><b>Correspondence</b> → Written communication to 25 or fewer retail investors within 30 days; supervised by post-review under procedures</li>
+    <li><b>Institutional communication</b> → Distributed only to institutional investors; supervised under procedures, no pre-approval required</li>
+    <li><b>New member filing</b> → New members file retail communications with FINRA at least 10 business days before first use for their first year</li>
   </ul></div>
   <h3>Regulators and laws</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>SIPC coverage → $500,000 per separate customer capacity, of which at most $250,000 cash; does not cover commodities/futures, currency, fixed annuities or market losses</li>
-    <li>FDIC coverage → $250,000 per depositor, per insured bank, per ownership category</li>
-    <li>MSRB → Created by the Securities Acts Amendments of 1975; writes muni rules; does NOT enforce (FINRA, SEC, bank regulators enforce)</li>
-    <li>FINRA → Formed 2007 from NASD and NYSE member regulation; SRO overseen by the SEC</li>
-    <li>NASAA → Association of state securities regulators; model rules; states enforce blue-sky laws (Uniform Securities Act)</li>
-    <li>Federal Reserve credit rules → Reg T (credit by broker-dealers); Reg U (banks lending on securities)</li>
-    <li>Securities Act of 1933 → Primary market: registration and disclosure of new issues, prospectus, antifraud</li>
-    <li>Securities Exchange Act of 1934 → Secondary market: created the SEC; registration of exchanges, BDs and reps; margin authority to the Fed; insider trading; proxies; short sales; net capital</li>
-    <li>Trust Indenture Act of 1939 → Corporate bonds offered publicly must be issued under an indenture with an independent trustee</li>
-    <li>Investment Company Act of 1940 → Regulates investment companies (mutual funds, closed-end funds, UITs, face-amount)</li>
-    <li>Investment Advisers Act of 1940 → Regulates investment advisers; fiduciary duty</li>
-    <li>Securities Investor Protection Act of 1970 → Created SIPC</li>
-    <li>Bank Secrecy Act (1970) → AML recordkeeping and reporting: CTRs, SARs</li>
-    <li>USA PATRIOT Act (2001) → Title III: AML programs and Customer Identification Programs for BDs</li>
+    <li><b>SIPC coverage</b> → $500,000 per separate customer capacity, of which at most $250,000 cash; does not cover commodities/futures, currency, fixed annuities or market losses</li>
+    <li><b>FDIC coverage</b> → $250,000 per depositor, per insured bank, per ownership category</li>
+    <li><b>MSRB</b> → Created by the Securities Acts Amendments of 1975; writes muni rules; does NOT enforce (FINRA, SEC, bank regulators enforce)</li>
+    <li><b>FINRA</b> → Formed 2007 from NASD and NYSE member regulation; SRO overseen by the SEC</li>
+    <li><b>NASAA</b> → Association of state securities regulators; model rules; states enforce blue-sky laws (Uniform Securities Act)</li>
+    <li><b>Federal Reserve credit rules</b> → Reg T (credit by broker-dealers); Reg U (banks lending on securities)</li>
+    <li><b>Securities Act of 1933</b> → Primary market: registration and disclosure of new issues, prospectus, antifraud</li>
+    <li><b>Securities Exchange Act of 1934</b> → Secondary market: created the SEC; registration of exchanges, BDs and reps; margin authority to the Fed; insider trading; proxies; short sales; net capital</li>
+    <li><b>Trust Indenture Act of 1939</b> → Corporate bonds offered publicly must be issued under an indenture with an independent trustee</li>
+    <li><b>Investment Company Act of 1940</b> → Regulates investment companies (mutual funds, closed-end funds, UITs, face-amount)</li>
+    <li><b>Investment Advisers Act of 1940</b> → Regulates investment advisers; fiduciary duty</li>
+    <li><b>Securities Investor Protection Act of 1970</b> → Created SIPC</li>
+    <li><b>Bank Secrecy Act (1970)</b> → AML recordkeeping and reporting: CTRs, SARs</li>
+    <li><b>USA PATRIOT Act (2001)</b> → Title III: AML programs and Customer Identification Programs for BDs</li>
   </ul></div>
   <h3>Accounts, KYC and AML</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>CIP minimum information → Name, date of birth, address (residential/business, not a P.O. box for individuals), identification number (SSN/TIN for US persons)</li>
-    <li>CTR → Cash transactions over $10,000 in one business day (aggregated); filed within 15 days (FinCEN Form 112)</li>
-    <li>SAR (broker-dealer) → Suspicious transactions of $5,000 or more; filed within 30 calendar days of initial detection (up to 60 if no suspect identified); never tell the customer</li>
-    <li>SAR/CTR record retention → 5 years</li>
-    <li>Monetary instrument log → Cash purchases of monetary instruments of $3,000-$10,000</li>
-    <li>OFAC → Screen against the SDN list; block the property and report</li>
-    <li>AML independent test → Annually (every two years for firms that do not execute customer transactions)</li>
-    <li>Trusted contact person → Firm must make a reasonable effort to obtain; must be 18+; has no trading authority</li>
-    <li>Specified adult → Age 65+, or 18+ with a mental or physical impairment</li>
-    <li>Time-and-price discretion → Valid only for the business day it is granted unless the customer specifies otherwise in writing</li>
-    <li>Discretionary authority → Written authorization before the first discretionary order; principal approval; orders reviewed</li>
-    <li>Options account → ODD delivered at or before account approval; ROP approval; signed options agreement within 15 days after approval</li>
-    <li>UGMA/UTMA → One custodian, one minor; irrevocable gifts; minor&#x27;s SSN; no margin; custodian cannot delegate</li>
-    <li>Death of account holder → Freeze the account; JTWROS passes to survivor; TIC share to decedent&#x27;s estate; POA (even durable) ends at death</li>
+    <li><b>CIP minimum information</b> → Name, date of birth, address (residential/business, not a P.O. box for individuals), identification number (SSN/TIN for US persons)</li>
+    <li><b>CTR</b> → Cash transactions over $10,000 in one business day (aggregated); filed within 15 days (FinCEN Form 112)</li>
+    <li><b>SAR (broker-dealer)</b> → Suspicious transactions of $5,000 or more; filed within 30 calendar days of initial detection (up to 60 if no suspect identified); never tell the customer</li>
+    <li><b>SAR/CTR record retention</b> → 5 years</li>
+    <li><b>Monetary instrument log</b> → Cash purchases of monetary instruments of $3,000-$10,000</li>
+    <li><b>OFAC</b> → Screen against the SDN list; block the property and report</li>
+    <li><b>AML independent test</b> → Annually (every two years for firms that do not execute customer transactions)</li>
+    <li><b>Trusted contact person</b> → Firm must make a reasonable effort to obtain; must be 18+; has no trading authority</li>
+    <li><b>Specified adult</b> → Age 65+, or 18+ with a mental or physical impairment</li>
+    <li><b>Time-and-price discretion</b> → Valid only for the business day it is granted unless the customer specifies otherwise in writing</li>
+    <li><b>Discretionary authority</b> → Written authorization before the first discretionary order; principal approval; orders reviewed</li>
+    <li><b>Options account</b> → ODD delivered at or before account approval; ROP approval; signed options agreement within 15 days after approval</li>
+    <li><b>UGMA/UTMA</b> → One custodian, one minor; irrevocable gifts; minor&#x27;s SSN; no margin; custodian cannot delegate</li>
+    <li><b>Death of account holder</b> → Freeze the account; JTWROS passes to survivor; TIC share to decedent&#x27;s estate; POA (even durable) ends at death</li>
   </ul></div>
   <h3>Trading, settlement and short sales</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Regular-way settlement → T+1 for stocks, corporate bonds, munis, options (and option exercise) and government securities (effective 2024-05-28 for equities/corps/munis)</li>
-    <li>Cash settlement → Same day as the trade</li>
-    <li>Ex-dividend date under T+1 → Same day as the record date</li>
-    <li>Mutual fund ex-date → Set by the fund, typically the business day after the record date</li>
-    <li>Confirmation delivery → At or before completion of the transaction (settlement)</li>
-    <li>Account statements → At least quarterly</li>
-    <li>Order guarantees → Market order = execution guarantee (no price); limit order = price guarantee (no execution)</li>
-    <li>Stop/limit placement → Buy limit below market; sell limit above; buy stop above; sell stop below</li>
-    <li>Time in force → Day; GTC; FOK (all, immediately, or cancel); IOC (fill what you can immediately, cancel rest); AON (all or none, not immediate)</li>
-    <li>Muni trade reporting → To MSRB RTRS within 15 minutes</li>
-    <li>Locate → Required before effecting a short sale</li>
-    <li>Short-sale fail close-out → By the start of regular trading on the business day after settlement date (S+1)</li>
-    <li>Alternative uptick rule → Triggered by a 10% decline from prior close; short sales then only above the national best bid for the rest of that day and the next</li>
-    <li>Order marking → Every sell order marked long, short or short exempt</li>
-    <li>Stock-loan collateral → Typically 102% of value for domestic securities (105% for foreign) — market convention, not an SIE rule</li>
-    <li>Manufactured dividend → Paid by the borrower to the lender; taxed as ordinary income, not a qualified dividend</li>
-    <li>Cash-settlement ex-date → The business day after the record date (cash trades settle same day)</li>
-    <li>Order ticket contents → Account, security, buy/sell (sells marked long/short), quantity, order type and price, time in force, solicited/unsolicited, discretion used; commission is on the confirmation</li>
+    <li><b>Regular-way settlement</b> → T+1 for stocks, corporate bonds, munis, options (and option exercise) and government securities (effective 2024-05-28 for equities/corps/munis)</li>
+    <li><b>Cash settlement</b> → Same day as the trade</li>
+    <li><b>Ex-dividend date under T+1</b> → Same day as the record date</li>
+    <li><b>Mutual fund ex-date</b> → Set by the fund, typically the business day after the record date</li>
+    <li><b>Confirmation delivery</b> → At or before completion of the transaction (settlement)</li>
+    <li><b>Account statements</b> → At least quarterly</li>
+    <li><b>Order guarantees</b> → Market order = execution guarantee (no price); limit order = price guarantee (no execution)</li>
+    <li><b>Stop/limit placement</b> → Buy limit below market; sell limit above; buy stop above; sell stop below</li>
+    <li><b>Time in force</b> → Day; GTC; FOK (all, immediately, or cancel); IOC (fill what you can immediately, cancel rest); AON (all or none, not immediate)</li>
+    <li><b>Muni trade reporting</b> → To MSRB RTRS within 15 minutes</li>
+    <li><b>Locate</b> → Required before effecting a short sale</li>
+    <li><b>Short-sale fail close-out</b> → By the start of regular trading on the business day after settlement date (S+1)</li>
+    <li><b>Alternative uptick rule</b> → Triggered by a 10% decline from prior close; short sales then only above the national best bid for the rest of that day and the next</li>
+    <li><b>Order marking</b> → Every sell order marked long, short or short exempt</li>
+    <li><b>Stock-loan collateral</b> → Typically 102% of value for domestic securities (105% for foreign) — market convention, not an SIE rule</li>
+    <li><b>Manufactured dividend</b> → Paid by the borrower to the lender; taxed as ordinary income, not a qualified dividend</li>
+    <li><b>Cash-settlement ex-date</b> → The business day after the record date (cash trades settle same day)</li>
+    <li><b>Order ticket contents</b> → Account, security, buy/sell (sells marked long/short), quantity, order type and price, time in force, solicited/unsolicited, discretion used; commission is on the confirmation</li>
   </ul></div>
   <h3>Margin</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Reg T initial margin → 50% for purchases and short sales (short: 150% of SMV held = proceeds + 50%)</li>
-    <li>FINRA minimum equity → $2,000 to open/extend credit (or 100% of purchase if less than $2,000); $2,000 min for short accounts</li>
-    <li>Maintenance → 25% of LMV long; 30% of SMV short (stocks &gt;= $5)</li>
-    <li>Pattern day trader → Minimum equity $25,000; day-trading buying power up to 4x maintenance excess</li>
-    <li>Reg T payment period → Settlement cycle + 2 business days (T+3 under T+1)</li>
-    <li>Freeriding → Selling a cash-account purchase before paying for it -&gt; account frozen 90 days (must pay in full before trade date)</li>
-    <li>Not marginable → New issues for 30 days after the offering; options with 9 months or less to expiration must be paid in full</li>
-    <li>Rehypothecation → BD may rehypothecate customer margin securities up to 140% of the customer&#x27;s debit balance</li>
-    <li>Accounts that cannot use margin → IRAs and other retirement accounts; UGMA/UTMA custodial accounts; (also 529/Coverdell)</li>
-    <li>Margin disclosure → Margin disclosure statement at opening and annually</li>
+    <li><b>Reg T initial margin</b> → 50% for purchases and short sales (short: 150% of SMV held = proceeds + 50%)</li>
+    <li><b>FINRA minimum equity</b> → $2,000 to open/extend credit (or 100% of purchase if less than $2,000); $2,000 min for short accounts</li>
+    <li><b>Maintenance</b> → 25% of LMV long; 30% of SMV short (stocks &gt;= $5)</li>
+    <li><b>Pattern day trader</b> → Minimum equity $25,000; day-trading buying power up to 4x maintenance excess</li>
+    <li><b>Reg T payment period</b> → Settlement cycle + 2 business days (T+3 under T+1)</li>
+    <li><b>Freeriding</b> → Selling a cash-account purchase before paying for it -&gt; account frozen 90 days (must pay in full before trade date)</li>
+    <li><b>Not marginable</b> → New issues for 30 days after the offering; options with 9 months or less to expiration must be paid in full</li>
+    <li><b>Rehypothecation</b> → BD may rehypothecate customer margin securities up to 140% of the customer&#x27;s debit balance</li>
+    <li><b>Accounts that cannot use margin</b> → IRAs and other retirement accounts; UGMA/UTMA custodial accounts; (also 529/Coverdell)</li>
+    <li><b>Margin disclosure</b> → Margin disclosure statement at opening and annually</li>
   </ul></div>
   <h3>Equities, bonds and munis</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Bond point → 1 point = 1% of par = $10 per $1,000 bond; 1/8 point = $1.25</li>
-    <li>Treasury note/bond quotes → In 32nds: 1/32 = $0.3125 per $1,000</li>
-    <li>Basis point → 0.01%; 100 bp = 1%</li>
-    <li>Accrued interest day count → Corporate and muni 30/360; US government actual/actual; from last coupon date up to but not including settlement date</li>
-    <li>Premium bond ordering → Coupon &gt; Current yield &gt; YTM &gt; YTC</li>
-    <li>Discount bond ordering → YTC &gt; YTM &gt; Current yield &gt; Coupon</li>
-    <li>Investment grade → BBB-/Baa3 and above</li>
-    <li>T-bill maturities → 4, 6, 8, 13, 17, 26 and 52 weeks (plus occasional cash-management bills)</li>
-    <li>Notes vs bonds → Treasury notes 2-10 years; Treasury bonds 20 and 30 years</li>
-    <li>Commercial paper → Exempt from registration if maturity &lt;= 270 days</li>
-    <li>GNMA → Only agency with explicit full-faith-and-credit backing; interest fully taxable</li>
-    <li>Treasury interest tax → Federally taxable, exempt from state and local tax</li>
-    <li>Tax-equivalent yield → Muni yield / (1 - marginal tax rate)</li>
-    <li>Triple tax-exempt → Munis from US territories (Puerto Rico, Guam, USVI) are exempt federal, state and local everywhere</li>
-    <li>Short-term notes → TAN (taxes), RAN (revenues), TRAN (both), BAN (future bond sale), GAN (grants), CLN (construction)</li>
-    <li>Muni capital gains → Taxable; only interest is tax-exempt</li>
-    <li>Muni quote conventions → Serial bonds (often GO) quoted on a yield (basis) basis; term bonds (&#x27;dollar bonds&#x27;, often revenue) quoted as % of par</li>
-    <li>Municipal Finance Professional → Associated person primarily engaged in municipal underwriting, trading, sales to issuers, financial advisory, research, or who solicits municipal issuer business; an RR selling munis only to retail investors is not an MFP</li>
-    <li>Call protection vs call premium → Call protection = time until the first call date; call premium = call price above par (callable at 105 -&gt; $50 per bond)</li>
-    <li>Commercial paper buyers → Typically $100,000+ denominations; bought by institutions and money-market funds, not small retail investors</li>
+    <li><b>Bond point</b> → 1 point = 1% of par = $10 per $1,000 bond; 1/8 point = $1.25</li>
+    <li><b>Treasury note/bond quotes</b> → In 32nds: 1/32 = $0.3125 per $1,000</li>
+    <li><b>Basis point</b> → 0.01%; 100 bp = 1%</li>
+    <li><b>Accrued interest day count</b> → Corporate and muni 30/360; US government actual/actual; from last coupon date up to but not including settlement date</li>
+    <li><b>Premium bond ordering</b> → Coupon &gt; Current yield &gt; YTM &gt; YTC</li>
+    <li><b>Discount bond ordering</b> → YTC &gt; YTM &gt; Current yield &gt; Coupon</li>
+    <li><b>Investment grade</b> → BBB-/Baa3 and above</li>
+    <li><b>T-bill maturities</b> → 4, 6, 8, 13, 17, 26 and 52 weeks (plus occasional cash-management bills)</li>
+    <li><b>Notes vs bonds</b> → Treasury notes 2-10 years; Treasury bonds 20 and 30 years</li>
+    <li><b>Commercial paper</b> → Exempt from registration if maturity &lt;= 270 days</li>
+    <li><b>GNMA</b> → Only agency with explicit full-faith-and-credit backing; interest fully taxable</li>
+    <li><b>Treasury interest tax</b> → Federally taxable, exempt from state and local tax</li>
+    <li><b>Tax-equivalent yield</b> → Muni yield / (1 - marginal tax rate)</li>
+    <li><b>Triple tax-exempt</b> → Munis from US territories (Puerto Rico, Guam, USVI) are exempt federal, state and local everywhere</li>
+    <li><b>Short-term notes</b> → TAN (taxes), RAN (revenues), TRAN (both), BAN (future bond sale), GAN (grants), CLN (construction)</li>
+    <li><b>Muni capital gains</b> → Taxable; only interest is tax-exempt</li>
+    <li><b>Muni quote conventions</b> → Serial bonds (often GO) quoted on a yield (basis) basis; term bonds (&#x27;dollar bonds&#x27;, often revenue) quoted as % of par</li>
+    <li><b>Municipal Finance Professional</b> → Associated person primarily engaged in municipal underwriting, trading, sales to issuers, financial advisory, research, or who solicits municipal issuer business; an RR selling munis only to retail investors is not an MFP</li>
+    <li><b>Call protection vs call premium</b> → Call protection = time until the first call date; call premium = call price above par (callable at 105 -&gt; $50 per bond)</li>
+    <li><b>Commercial paper buyers</b> → Typically $100,000+ denominations; bought by institutions and money-market funds, not small retail investors</li>
   </ul></div>
   <h3>Funds, annuities and alternatives</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Max mutual fund sales charge → 8.5% of POP</li>
-    <li>12b-1 cap → 1% annually (0.75% distribution + 0.25% service); may call itself no-load only if &lt;= 0.25%</li>
-    <li>Letter of intent → 13 months; may be backdated up to 90 days; shares held in escrow</li>
-    <li>Redemption payment → Within 7 calendar days</li>
-    <li>Diversified fund → 75-5-10: 75% of assets invested so that no more than 5% in any one issuer and no more than 10% of any issuer&#x27;s voting stock</li>
-    <li>Independent directors → At least 40% of the board</li>
-    <li>Forward pricing → Orders execute at the next computed NAV</li>
-    <li>REIT → Distribute &gt;= 90% of taxable income; 75% asset and income tests; dividends generally ordinary income</li>
-    <li>Fund objectives → Growth; income; growth &amp; income (stocks); balanced (stocks + bonds); asset allocation; sector; index; bond; money market</li>
-    <li>Life with period certain → Payments for life, with a guaranteed minimum period paid to a beneficiary if the annuitant dies early</li>
-    <li>Immediate vs deferred purchase → Immediate annuity requires a single lump-sum premium; periodic purchase payments -&gt; deferred annuity</li>
-    <li>DPP tax items → Real estate: depreciation, deductible interest, pass-through losses. Oil &amp; gas: depletion (and intangible drilling costs)</li>
+    <li><b>Max mutual fund sales charge</b> → 8.5% of POP</li>
+    <li><b>12b-1 cap</b> → 1% annually (0.75% distribution + 0.25% service); may call itself no-load only if &lt;= 0.25%</li>
+    <li><b>Letter of intent</b> → 13 months; may be backdated up to 90 days; shares held in escrow</li>
+    <li><b>Redemption payment</b> → Within 7 calendar days</li>
+    <li><b>Diversified fund</b> → 75-5-10: 75% of assets invested so that no more than 5% in any one issuer and no more than 10% of any issuer&#x27;s voting stock</li>
+    <li><b>Independent directors</b> → At least 40% of the board</li>
+    <li><b>Forward pricing</b> → Orders execute at the next computed NAV</li>
+    <li><b>REIT</b> → Distribute &gt;= 90% of taxable income; 75% asset and income tests; dividends generally ordinary income</li>
+    <li><b>Fund objectives</b> → Growth; income; growth &amp; income (stocks); balanced (stocks + bonds); asset allocation; sector; index; bond; money market</li>
+    <li><b>Life with period certain</b> → Payments for life, with a guaranteed minimum period paid to a beneficiary if the annuitant dies early</li>
+    <li><b>Immediate vs deferred purchase</b> → Immediate annuity requires a single lump-sum premium; periodic purchase payments -&gt; deferred annuity</li>
+    <li><b>DPP tax items</b> → Real estate: depreciation, deductible interest, pass-through losses. Oil &amp; gas: depletion (and intangible drilling costs)</li>
   </ul></div>
   <h3>Offerings</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Cooling-off period → At least 20 calendar days after filing (can be extended by SEC deficiency)</li>
-    <li>Aftermarket prospectus delivery → IPO: 25 days if listed, 90 if not; follow-on: 0 if listed, 40 if not</li>
-    <li>Accredited investor (individual) → Income &gt; $200,000 ($300,000 joint) in each of last 2 years with expectation; or net worth &gt; $1 million excluding primary residence; or holder of Series 7, 65 or 82</li>
-    <li>Reg D 506(b) → Unlimited accredited + up to 35 non-accredited sophisticated purchasers; no general solicitation</li>
-    <li>Reg D 506(c) → General solicitation allowed; all purchasers accredited with verification</li>
-    <li>Form D → Within 15 days after first sale</li>
-    <li>Rule 144 holding period → 6 months (reporting issuer), 1 year (non-reporting)</li>
-    <li>Rule 144 volume limit → Per 90 days: greater of 1% of outstanding shares or average weekly volume over prior 4 weeks</li>
-    <li>Form 144 → Required if sale &gt; 5,000 shares or &gt; $50,000 in 90 days</li>
-    <li>Rule 144A QIB → Owns/invests at least $100 million in securities</li>
-    <li>Reg A → Tier 1 up to $20 million, Tier 2 up to $75 million in 12 months</li>
-    <li>Reg CF → Up to $5 million in 12 months through a funding portal or BD</li>
-    <li>Tender offer → Must stay open at least 20 business days; 10 business days after a change in price or percentage sought</li>
-    <li>Schedule 13D → Within 5 business days after crossing 5% beneficial ownership (was 10 days before 2024) <span class="tag-memo">Changed</span> <em>(Older prep material says 10 days.)</em></li>
-    <li>Section 16 insiders → Officers, directors, 10%+ holders; Form 4 within 2 business days; short-swing profits within 6 months disgorged; may not sell short</li>
-    <li>IPO restricted persons (Rule 5130) → Broker-dealers and their personnel, and immediate family (spouse, parents, in-laws, siblings, children, anyone materially supported); grandparents, aunts/uncles and cousins are not restricted</li>
-    <li>Offering documents → Registered offering -&gt; prospectus; Reg D private placement -&gt; offering (private placement) memorandum; municipal -&gt; official statement</li>
+    <li><b>Cooling-off period</b> → At least 20 calendar days after filing (can be extended by SEC deficiency)</li>
+    <li><b>Aftermarket prospectus delivery</b> → IPO: 25 days if listed, 90 if not; follow-on: 0 if listed, 40 if not</li>
+    <li><b>Accredited investor (individual)</b> → Income &gt; $200,000 ($300,000 joint) in each of last 2 years with expectation; or net worth &gt; $1 million excluding primary residence; or holder of Series 7, 65 or 82</li>
+    <li><b>Reg D 506(b)</b> → Unlimited accredited + up to 35 non-accredited sophisticated purchasers; no general solicitation</li>
+    <li><b>Reg D 506(c)</b> → General solicitation allowed; all purchasers accredited with verification</li>
+    <li><b>Form D</b> → Within 15 days after first sale</li>
+    <li><b>Rule 144 holding period</b> → 6 months (reporting issuer), 1 year (non-reporting)</li>
+    <li><b>Rule 144 volume limit</b> → Per 90 days: greater of 1% of outstanding shares or average weekly volume over prior 4 weeks</li>
+    <li><b>Form 144</b> → Required if sale &gt; 5,000 shares or &gt; $50,000 in 90 days</li>
+    <li><b>Rule 144A QIB</b> → Owns/invests at least $100 million in securities</li>
+    <li><b>Reg A</b> → Tier 1 up to $20 million, Tier 2 up to $75 million in 12 months</li>
+    <li><b>Reg CF</b> → Up to $5 million in 12 months through a funding portal or BD</li>
+    <li><b>Tender offer</b> → Must stay open at least 20 business days; 10 business days after a change in price or percentage sought</li>
+    <li><b>Schedule 13D</b> → Within 5 business days after crossing 5% beneficial ownership (was 10 days before 2024) <span class="tag-memo">Changed</span> <em>Older prep material says 10 days.</em></li>
+    <li><b>Section 16 insiders</b> → Officers, directors, 10%+ holders; Form 4 within 2 business days; short-swing profits within 6 months disgorged; may not sell short</li>
+    <li><b>IPO restricted persons (Rule 5130)</b> → Broker-dealers and their personnel, and immediate family (spouse, parents, in-laws, siblings, children, anyone materially supported); grandparents, aunts/uncles and cousins are not restricted</li>
+    <li><b>Offering documents</b> → Registered offering -&gt; prospectus; Reg D private placement -&gt; offering (private placement) memorandum; municipal -&gt; official statement</li>
   </ul></div>
   <h3>Options</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Contract size → 100 shares</li>
-    <li>Exercise style → American: any time before expiration; European: only at expiration</li>
-    <li>Settlement → Trades and exercises settle T+1; index options settle in cash</li>
-    <li>Breakevens → Calls: strike + premium. Puts: strike - premium. (Same for buyer and writer)</li>
-    <li>Max loss/gain → BUY CALL: loss premium, gain unlimited. SELL CALL (naked): gain premium, loss unlimited. BUY PUT: loss premium, gain strike - premium. SELL PUT: gain premium, loss strike - premium</li>
-    <li>OCC → Issues and guarantees listed options; assigns exercise notices to BDs at random; BDs assign to customers randomly, FIFO or other fair method</li>
-    <li>Expiration timing → Standard equity options: expiration date is the third Friday of the month; last trading 4:00 p.m. ET; expire 11:59 p.m. ET</li>
+    <li><b>Contract size</b> → 100 shares</li>
+    <li><b>Exercise style</b> → American: any time before expiration; European: only at expiration</li>
+    <li><b>Settlement</b> → Trades and exercises settle T+1; index options settle in cash</li>
+    <li><b>Breakevens</b> → Calls: strike + premium. Puts: strike - premium. (Same for buyer and writer)</li>
+    <li><b>Max loss/gain</b> → BUY CALL: loss premium, gain unlimited. SELL CALL (naked): gain premium, loss unlimited. BUY PUT: loss premium, gain strike - premium. SELL PUT: gain premium, loss strike - premium</li>
+    <li><b>OCC</b> → Issues and guarantees listed options; assigns exercise notices to BDs at random; BDs assign to customers randomly, FIFO or other fair method</li>
+    <li><b>Expiration timing</b> → Standard equity options: expiration date is the third Friday of the month; last trading 4:00 p.m. ET; expire 11:59 p.m. ET</li>
   </ul></div>
   <h3>Retirement, education and tax</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>IRA contribution limit → 2026: $7,500 + $1,100 catch-up at 50+ (2025: $7,000 + $1,000)</li>
-    <li>401(k)/403(b)/gov 457 deferral → 2026: $24,500; catch-up at 50+ $8,000; ages 60-63 $11,250</li>
-    <li>IRA contribution deadline → Tax filing deadline (typically April 15) of the following year, no extensions</li>
-    <li>Early withdrawal penalty → 10% before age 59 1/2 (exceptions: death, disability, SEPP/72(t), first home up to $10,000 from IRAs, higher education from IRAs, etc.)</li>
-    <li>RMD age → 73 (75 for those born 1960 or later); first RMD by April 1 of the following year</li>
-    <li>Roth RMDs → None for the original owner (Roth IRAs; Roth 401(k)s since 2024)</li>
-    <li>Indirect rollover → Complete within 60 days; one IRA-to-IRA indirect rollover per 12 months; 20% mandatory withholding on plan distributions paid to the participant</li>
-    <li>457 plans → No 10% early-withdrawal penalty on distributions after separation from service</li>
-    <li>ERISA → Covers private-sector plans only (not government plans)</li>
-    <li>Coverdell ESA → $2,000 per beneficiary per year total; contributions until beneficiary is 18; used by 30</li>
-    <li>529 K-12 tuition → Up to $20,000 per year from 2026 (was $10,000) <span class="tag-memo">Changed</span> <em>(Older prep material says $10,000.)</em></li>
-    <li>529 to Roth rollover → Lifetime $35,000; 529 open 15+ years; subject to annual Roth contribution limit</li>
-    <li>529 gift-tax averaging → May front-load 5 years of annual exclusions (5 x $19,000 = $95,000 in 2026)</li>
-    <li>Gift tax annual exclusion → 2026: $19,000 per recipient</li>
-    <li>Long-term holding period → More than 1 year; holding period starts the day after trade date</li>
-    <li>Capital loss limit → Net capital losses offset up to $3,000 of ordinary income per year; excess carried forward indefinitely</li>
-    <li>Wash sale → Loss disallowed if substantially identical security bought within 30 days before or after the sale; disallowed loss added to new basis</li>
-    <li>Qualified dividend holding → More than 60 days in the 121-day window beginning 60 days before the ex-date</li>
-    <li>Inherited securities → Basis steps up to value at death; always long-term</li>
-    <li>Gifted securities → Donor&#x27;s basis carries over (for gains)</li>
-    <li>Annuity withdrawals (nonqualified) → LIFO: earnings out first, taxed as ordinary income; 10% penalty before 59 1/2</li>
-    <li>Cash dividend tax event → The payable date (when received); exception: fund/REIT dividends declared Oct-Dec to holders of record then and paid by end of January are treated as received Dec 31</li>
+    <li><b>IRA contribution limit</b> → 2026: $7,500 + $1,100 catch-up at 50+ (2025: $7,000 + $1,000)</li>
+    <li><b>401(k)/403(b)/gov 457 deferral</b> → 2026: $24,500; catch-up at 50+ $8,000; ages 60-63 $11,250</li>
+    <li><b>IRA contribution deadline</b> → Tax filing deadline (typically April 15) of the following year, no extensions</li>
+    <li><b>Early withdrawal penalty</b> → 10% before age 59 1/2 (exceptions: death, disability, SEPP/72(t), first home up to $10,000 from IRAs, higher education from IRAs, etc.)</li>
+    <li><b>RMD age</b> → 73 (75 for those born 1960 or later); first RMD by April 1 of the following year</li>
+    <li><b>Roth RMDs</b> → None for the original owner (Roth IRAs; Roth 401(k)s since 2024)</li>
+    <li><b>Indirect rollover</b> → Complete within 60 days; one IRA-to-IRA indirect rollover per 12 months; 20% mandatory withholding on plan distributions paid to the participant</li>
+    <li><b>457 plans</b> → No 10% early-withdrawal penalty on distributions after separation from service</li>
+    <li><b>ERISA</b> → Covers private-sector plans only (not government plans)</li>
+    <li><b>Coverdell ESA</b> → $2,000 per beneficiary per year total; contributions until beneficiary is 18; used by 30</li>
+    <li><b>529 K-12 tuition</b> → Up to $20,000 per year from 2026 (was $10,000) <span class="tag-memo">Changed</span> <em>Older prep material says $10,000.</em></li>
+    <li><b>529 to Roth rollover</b> → Lifetime $35,000; 529 open 15+ years; subject to annual Roth contribution limit</li>
+    <li><b>529 gift-tax averaging</b> → May front-load 5 years of annual exclusions (5 x $19,000 = $95,000 in 2026)</li>
+    <li><b>Gift tax annual exclusion</b> → 2026: $19,000 per recipient</li>
+    <li><b>Long-term holding period</b> → More than 1 year; holding period starts the day after trade date</li>
+    <li><b>Capital loss limit</b> → Net capital losses offset up to $3,000 of ordinary income per year; excess carried forward indefinitely</li>
+    <li><b>Wash sale</b> → Loss disallowed if substantially identical security bought within 30 days before or after the sale; disallowed loss added to new basis</li>
+    <li><b>Qualified dividend holding</b> → More than 60 days in the 121-day window beginning 60 days before the ex-date</li>
+    <li><b>Inherited securities</b> → Basis steps up to value at death; always long-term</li>
+    <li><b>Gifted securities</b> → Donor&#x27;s basis carries over (for gains)</li>
+    <li><b>Annuity withdrawals (nonqualified)</b> → LIFO: earnings out first, taxed as ordinary income; 10% penalty before 59 1/2</li>
+    <li><b>Cash dividend tax event</b> → The payable date (when received); exception: fund/REIT dividends declared Oct-Dec to holders of record then and paid by end of January are treated as received Dec 31</li>
   </ul></div>
   <h3>Economics</h3>
   <div class="sie-block memorize"><b>MEMORIZE:</b><ul>
-    <li>Recession (exam convention) → Two consecutive quarters of declining real GDP; NBER makes the official determination</li>
-    <li>Leading indicators → Building permits, stock prices, new orders, average weekly initial jobless claims, average manufacturing workweek, consumer expectations, yield-curve spread</li>
-    <li>Coincident indicators → Nonfarm payrolls, industrial production, personal income less transfers, manufacturing and trade sales</li>
-    <li>Lagging indicators → Average duration of unemployment, CPI for services, prime rate, commercial and industrial loans outstanding, labor cost per unit of output, consumer credit-to-income, inventories-to-sales</li>
-    <li>Fed tools → Open-market operations (most used; FOMC), discount rate, reserve requirements (0% since March 2020), interest on reserve balances. Exam convention also lists changing Regulation T margin (unchanged at 50% since 1974)</li>
-    <li>FOMC → Meets 8 times a year</li>
-    <li>Rates ladder → Fed funds (overnight interbank reserves) &lt; discount rate (Fed lending to banks) ; prime rate (banks&#x27; best corporate customers); broker call rate (bank loans to BDs, basis for margin interest)</li>
-    <li>Market structures → Monopoly (one seller, regulated, e.g. utilities); oligopoly (few sellers, high barriers, e.g. airlines); monopolistic competition (many differentiated sellers, e.g. cereal); perfect competition (identical products, price takers)</li>
+    <li><b>Recession (exam convention)</b> → Two consecutive quarters of declining real GDP; NBER makes the official determination</li>
+    <li><b>Leading indicators</b> → Building permits, stock prices, new orders, average weekly initial jobless claims, average manufacturing workweek, consumer expectations, yield-curve spread</li>
+    <li><b>Coincident indicators</b> → Nonfarm payrolls, industrial production, personal income less transfers, manufacturing and trade sales</li>
+    <li><b>Lagging indicators</b> → Average duration of unemployment, CPI for services, prime rate, commercial and industrial loans outstanding, labor cost per unit of output, consumer credit-to-income, inventories-to-sales</li>
+    <li><b>Fed tools</b> → Open-market operations (most used; FOMC), discount rate, reserve requirements (0% since March 2020), interest on reserve balances. Exam convention also lists changing Regulation T margin (unchanged at 50% since 1974)</li>
+    <li><b>FOMC</b> → Meets 8 times a year</li>
+    <li><b>Rates ladder</b> → Fed funds (overnight interbank reserves) &lt; discount rate (Fed lending to banks) ; prime rate (banks&#x27; best corporate customers); broker call rate (bank loans to BDs, basis for margin interest)</li>
+    <li><b>Market structures</b> → Monopoly (one seller, regulated, e.g. utilities); oligopoly (few sellers, high barriers, e.g. airlines); monopolistic competition (many differentiated sellers, e.g. cereal); perfect competition (identical products, price takers)</li>
   </ul></div>
-  <h3>Still being verified</h3><p>These are taught as concepts; the specifics are confirmed in the daily edition before they are tested: MSRB gift limit (Rule G-20); Temporary hold (Rule 2165); Stock split approval.</p>
+  <h3>Being confirmed</h3>
+  <p>These are taught as concepts, and the daily edition confirms the specifics before testing them: MSRB gift limit (Rule G-20), Temporary hold (Rule 2165), Stock split approval.</p>
 </section>
 </div>
 <div class="lesson-body">

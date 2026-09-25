@@ -670,3 +670,38 @@
     mark(id);
   });
 })();
+
+/* ---------- SIE pages: mark tables that need a sideways swipe ----------
+   Most SIE tables wrap to the screen. The few that cannot (a seven-column
+   option chain) get wrapped in a positioned host with a right-edge fade and
+   a "Swipe for more" line, both removed once the reader reaches the end.
+   Without JS the table still scrolls; it just has no cue. */
+(function () {
+  "use strict";
+  var paper = document.querySelector('.paper[data-slot="sie"]');
+  if (!paper) return;
+  function setup() {
+    Array.prototype.forEach.call(paper.querySelectorAll(".table-wrap"), function (wrap) {
+      if (wrap.parentNode.classList.contains("table-fade-host")) return;
+      if (wrap.scrollWidth <= wrap.clientWidth + 2) return;
+      var host = document.createElement("div");
+      host.className = "table-fade-host";
+      wrap.parentNode.insertBefore(host, wrap);
+      host.appendChild(wrap);
+      var fade = document.createElement("div");
+      fade.className = "table-fade";
+      host.appendChild(fade);
+      var hint = document.createElement("p");
+      hint.className = "swipe-hint";
+      hint.textContent = "Swipe the table for more →";
+      host.parentNode.insertBefore(hint, host.nextSibling);
+      function check() {
+        host.classList.toggle("at-end", wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - 4);
+      }
+      wrap.addEventListener("scroll", check, { passive: true });
+      check();
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setup);
+  else setup();
+})();
