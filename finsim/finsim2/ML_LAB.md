@@ -310,3 +310,54 @@ records, both the prior-only model (paired Brier gain t ≥ 2, lower log loss, h
 formulation (paired Brier gain t ≥ 2). It applies to challengers evaluated from now on and is not applied retroactively.
 Datasets that start after 2018 (FINRA short-sale volume from 2019) cannot take part in the pre-2018 discovery test; they
 are labelled LIMITED HISTORY and evaluated on a separate recent-era / live-shadow track, never as historically verified.
+
+### New information (`engine/newinfo.py`, reports `NEW_INFORMATION_RESEARCH.md`, `NEW_DATA_SOURCES.md`)
+
+The earlier reweighting rounds rejected every challenger, so this phase adds *information* rather than weights. Each family
+uses only data absent from the 74 production signals and the earlier candidates. Each is point in time and is tested as
+an *increment* on identical records against the frozen benchmark above:
+
+* Alpha: ridge [production score, family] against the excess-return target; paired Δ rank IC against production.
+  Market-wide families enter as feature × PIT beta.
+* Directional: gate v2 — beat both the prior-only model and the current formulation.
+* Hedge: the log realised-volatility forecast against a baseline of 63-day and 21-day realised volatility and VIX.
+
+The protocol is the same as before: eras, the 2018 split, weights frozen before each era, Benjamini-Hochberg at q = 0.10
+across all 102 family × horizon × target tests, and features never admitted one by one. ML Lab → *New information* shows
+it.
+
+Results (research store, run 2026-09-25): 4 of 102 tests survive the FDR control, and three pass G1, G2 and FDR:
+
+| Test | Effect | t | Eras | Status |
+|---|---|---|---|---|
+| Richer breadth — Alpha, 1W | Δ rank IC +0.025 (55% of production's +0.045) | 3.5 | 4 / 4, split t 3.4 | live shadow |
+| Richer breadth — hedge volatility, 1W | −7.3% squared error vs the baseline | 8.6 | 4 / 4, split t 5.3 | live shadow |
+| Earnings events — hedge volatility, 1W | −0.5% squared error vs the baseline | 3.0 | 3 / 4, split t 1.3 | live shadow |
+
+* Directional: nothing passed gate v2 at any horizon, so the prior-only model remains the Directional benchmark.
+* The breadth alpha works through the beta interaction. It is a market-condition × beta tilt, not new asset-specific
+  information.
+* The hedge results are volatility forecasts only. Hedge ratios, sizing and tails were not tested, and the hedge math is
+  unchanged.
+* Credit quality, term structure / real yields and the earnings-surprise re-test show no incremental value. FX carry has
+  insufficient data: 10 assets and 2 eras.
+* FINRA short-sale volume (from 2019; *not* short interest) is LIMITED HISTORY. It shows no value in the eras it covers
+  and is not recorded live.
+* Nine families are BLOCKED by data access: analyst revisions, option surfaces, dated futures curves, CFTC, short
+  interest, OAS / CDS history, flows, EIA / crop data and FX forwards.
+
+**Live shadow.** `python -m finsim2 lab --live-models` does three things:
+
+* fits the three passing tests on every matured record;
+* registers them as `newinfo-…` versions with status *live shadow*, which is outside the promotion path;
+* fits the benchmark's prior-only and current Directional models.
+
+The daily learning job then records, for every tracked asset, into the append-only ledger:
+
+* the alpha score with each feature's contribution;
+* each volatility forecast next to the baseline's own forecast;
+* the benchmark's Directional p_up.
+
+Rows are graded at maturity. Alpha is graded by cross-sectional rank IC against production on the same dates. Volatility
+is graded by squared log error against the baseline on the same rows. A model shows ELIGIBLE FOR PROMOTION only after 60
+graded pairs with a live gain, and promotion itself remains a separate, explicit decision.

@@ -1119,7 +1119,7 @@ def _reading(res: dict, w) -> None:
         pc = _hedge_pct(hg)
         w(f"- **{FAMILIES[f]['label']} — hedge at {l}:** the log-volatility forecast's squared error falls by "
           f"{_pct(pc, 1).lstrip('+') if pc is not None else '—'} of the baseline's (t {_f((hg.get('vol_mse_gain') or {}).get('t'), 1)}, "
-          f"{hg.get('n', 0):,} forecasts). Statistically clear; small in size.")
+          f"{hg.get('n', 0):,} forecasts) — " + ("a small improvement." if pc is None or pc < 0.02 else "a modest improvement." if pc < 0.10 else "a material improvement."))
     if any(x[1] == "hedge" for x in lt):
         w("- **What the hedge result is not.** Only volatility forecasts were tested. Hedge ratios, sizing, covariance and tail "
           "outcomes were not, and the Shaffer Hedge math is unchanged: a better volatility forecast is a candidate input, recorded in "
@@ -1127,7 +1127,8 @@ def _reading(res: dict, w) -> None:
     lim = [f for f, spec in FAMILIES.items() if spec["track"] == "limited"]
     for f in lim:
         s_ = (res.get("summary") or {}).get(f) or {}
-        w(f"- **{FAMILIES[f]['label']}: LIMITED HISTORY.** {s_.get('why', '')}. Its data start in 2019, so it is judged only on the "
+        why = s_.get("why", "")
+        w(f"- **{FAMILIES[f]['label']}: LIMITED HISTORY.** {why[:1].upper() + why[1:]}. Its data start in 2019, so it is judged only on the "
           "eras it covers and is never presented as historically verified; the pre-2018 gates were not relaxed for it. "
           "FINRA short-sale volume is *not* short interest (see `NEW_DATA_SOURCES.md`).")
     S = res.get("summary") or {}
@@ -1260,7 +1261,8 @@ def markdown(res: dict) -> str:
     sh = [f for f, s in S.items() if s["status"] == "SHADOW"]
     lim = [f for f, s in S.items() if s["status"] == "LIMITED HISTORY"]
     w("**10. Which should remain shadow?** " + (", ".join(FAMILIES[f]["label"] for f in sh) + " (passed every historical gate); "
-      if sh else "No family earned SHADOW status. ") + ("LIMITED HISTORY, kept on the live-shadow track only: " + ", ".join(FAMILIES[f]["label"] + f" — {S[f]['why']}" for f in lim) + "." if lim else ""))
+      if sh else "No family earned SHADOW status. ") + ("LIMITED HISTORY (never historically verified; a live-shadow track is the only route open to it): " + "; ".join(
+        FAMILIES[f]["label"] + f" — {S[f]['why']}" + ("" if "live-shadow" in S[f]["why"] else ", so it is not recorded live either") for f in lim) + "." if lim else ""))
     w("")
     lt = live_targets(res)
     w("**11. Which qualify for live shadow?** " + (
