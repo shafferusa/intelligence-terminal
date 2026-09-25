@@ -49,6 +49,7 @@ finsim2/
     scenario.py          factor-shock scenarios, historical analogues
     tracking.py          prediction log, realised scoring, model decay, correlation decay
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
+    candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality) — shadow
     audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
   hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
                          history, scoring, service, audit
@@ -142,6 +143,17 @@ Hierarchy:
 - `load_priors` sums every *other* asset's checkpoints by class and globally.
 - At a refit in year Y the asset uses the latest checkpoint year ≤ Y. The class IC is shrunk toward the global
   (N0 = 50), and the asset PS toward the class (N0 = 20).
+
+Candidate families (engine/candidates.py, `shaffer_score.CANDIDATE_FAMILIES`):
+- Their signals are features computed point in time like any other, but they are not in `features.FEATURES`, so the
+  ML feature set is unchanged.
+- The sweep gathers their evidence with the same machinery. Production signals keep their own Benjamini–Hochberg
+  set, so adding candidates cannot move the production score (test `ShadowFamilies`).
+- `score_at` puts a candidate family in the score only if `shaffer_score.in_production(family, horizon)` — a
+  production family, or one listed in `ADMITTED` for that horizon. Otherwise it is recorded in `rec["shadow"]`
+  with the score it *would* give (`with`), and the matured records feed the audit's admission test (§27).
+- Governing rule: production weights are not re-tuned; a candidate enters only after the admission test, by editing
+  `ADMITTED` and bumping `VERSION`.
 
 The research bundle carries the result of `shaffer_full` (cached in kv by data version). `research.shaffer_series`
 gives the point-in-time score history used by backtests and as an ML baseline.

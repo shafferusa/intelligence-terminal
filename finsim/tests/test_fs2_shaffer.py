@@ -175,20 +175,29 @@ class ShadowFamilies(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
     def test_admission_rule(self):
+        import random
         from finsim2.engine.audit import candidate_verdicts
-        good = {"decide": {"n_eff": 500, "own": 0.05, "t_own": 1.1, "partial": 0.05, "t_partial": 1.1, "ic_without": 0.01, "ic_with": 0.03,
-                           "mono_without": 0.2, "mono_with": 0.4},
-                "confirm": {"n_eff": 250, "own": 0.04, "t_own": 0.6, "partial": 0.04, "t_partial": 0.6, "ic_without": 0.0, "ic_with": 0.02,
-                            "mono_without": 0.1, "mono_with": 0.3}}
-        v = candidate_verdicts([{"Carry": good} for _ in range(6)])
-        self.assertEqual(v["Carry"]["verdict"], "ADMIT")                     # Stouffer: 1.1·√6 ≈ 2.7 and 0.6·√6 ≈ 1.5
-        bad = {k: dict(x) for k, x in good.items()}
-        bad["confirm"].update(partial=-0.02, t_partial=-0.3)
-        v = candidate_verdicts([{"Carry": bad} for _ in range(6)])
-        self.assertEqual(v["Carry"]["verdict"], "REJECT")
-        self.assertTrue(any("last third" in r for r in v["Carry"]["reasons"]))
-        v = candidate_verdicts([{"Carry": good} for _ in range(3)])
-        self.assertEqual(v["Carry"]["verdict"], "REJECT")                    # too few assets
+        rnd = random.Random(3)
+
+        def part(mean, n=400, noise=1.0, seed=None):
+            g = random.Random(seed) if seed is not None else rnd
+            prods = [mean + g.gauss(0, noise) for _ in range(n)]
+            return {"n_eff": n, "own": mean, "t_own": None, "partial": sum(prods) / n, "t_partial": None, "ic_without": 0.0, "ic_with": 0.01,
+                    "mono_without": 0.1, "mono_with": 0.2, "weeks": list(range(n)), "prods": prods}
+
+        good = [{"Carry": {"decide": part(0.3), "confirm": part(0.3)}} for _ in range(6)]
+        self.assertEqual(candidate_verdicts(good, 5)["Carry"]["verdict"], "ADMIT")
+        bad = [{"Carry": {"decide": part(0.3), "confirm": part(-0.2)}} for _ in range(6)]
+        v = candidate_verdicts(bad, 5)["Carry"]
+        self.assertEqual(v["verdict"], "REJECT")
+        self.assertTrue(any("not confirmed" in r for r in v["reasons"]))
+        self.assertEqual(candidate_verdicts(good[:3], 5)["Carry"]["verdict"], "REJECT")             # too few assets
+        # six identical (perfectly correlated) copies of a weak asset are ONE piece of evidence: pooling by date gives the
+        # same t as a single copy, where treating them as independent would multiply it by √6
+        weak = {"decide": part(0.06, seed=11), "confirm": part(0.06, seed=12)}
+        one = candidate_verdicts([{"Carry": weak}], 5)["Carry"]["decide"]["t_partial"]
+        six = candidate_verdicts([{"Carry": weak} for _ in range(6)], 5)["Carry"]["decide"]["t_partial"]
+        self.assertAlmostEqual(one, six, places=9)
 
 
 class Rules(unittest.TestCase):

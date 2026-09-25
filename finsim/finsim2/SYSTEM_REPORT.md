@@ -14,6 +14,39 @@ Commit key (details in §75): `be2af0f` ledger/corporate actions/FX · `2686ef2`
 ledger derivatives · `67bb0e6` hedge service/UI/net scores · `273b437` systematic objective · `1025ec7` docs ·
 `5325481` over-hedging fix · `82904a7` input validation.
 
+## Update — 2026-09-25 (after review)
+
+Governing rule adopted: **do not optimise Shaffer v2 further; add independent economic information in shadow, keep
+the out-of-sample validation untouched, and admit a family only if it improves incremental out-of-sample IC and
+calibration.**
+
+- **P0: continuous futures series** (GOLD, WTI, NATGAS … and user-added `=F` symbols) can no longer be bought or
+  shorted — the price jumps to the next contract at each roll. The refusal names the fund that rolls the contracts
+  (USO, UNG, GLD, SLV, CPER, DBA, DBC). Old positions replay, are flagged, and can be sold.
+- **P0: option prices** carry "MODEL-PRICED — FLAT VOLATILITY ASSUMPTION" on every leg, candidate, ticket and holding;
+  crash analyses warn that OTM puts are probably too cheap. Futures/forwards: "MODEL-PRICED — FAIR VALUE, NOT A QUOTE".
+- **Hedge objectives by purpose**: Variance reduction · Beta reduction · Tail protection · Drawdown protection · Factor
+  neutralization. Tail objectives (crash, ES, VaR) now judge candidates on walk-forward tail-loss reduction, drawdown on
+  drawdown reduction. Every candidate shows its historical variance cut and tail cut and a type — variance hedge, tail
+  hedge, both, or "tail hedge (adds variance)".
+- **Shaffer Score = structured quantitative evidence score** — what the evidence says, not a forecast — on every screen.
+- **Seven candidate families in shadow** (Carry, Yield Curve, Term Structure, Inflation, FX, Commodity, Optionality;
+  21 point-in-time signals, `engine/candidates.py`). Production scores are unchanged — checked identical on 7 real
+  assets at every horizon and by test. Result of the 15–25-year walk-forward (`SHAFFER_AUDIT.md` §27): **none
+  admitted.** Carry is the only family with a consistently positive incremental IC (all horizons; strong from 2018,
+  t 3.5–3.8 at 1W/1M, positive in 75–79% of assets) but it was not significant before 2018 (t 0.2–1.5), so it stays
+  in shadow; its recent strength coincides with one macro episode (the 2022+ rate shock). Inflation and FX signals
+  hurt out of sample. Not buildable from reachable data: skew, futures curves beyond the front month, foreign
+  inflation/growth differentials, commodity inventories.
+- **Validation hardened**: a first admission run pooled correlated assets as independent (Stouffer) and admitted
+  Carry at 4 horizons; that statistic overstates significance, so the test now pools evidence by date (and splits all
+  assets at one date, 2018-01-01). The production score's IC table now reports the date-clustered t next to Stouffer.
+- **Correction to §72 and the acceptance answer on score strength**: with date clustering the production Shaffer
+  Score's out-of-sample IC is **not significant at any horizon** (157 assets): 1D +0.005 (t 0.2), 1W +0.012 (t 1.2 —
+  Stouffer had said 4.7), 1M +0.007 (0.4), 3M −0.003 (0.1), 6M +0.013 (0.3), 12M −0.009 (0.1). The earlier "only 1W
+  is significant" relied on treating correlated assets as independent. "Are stronger Shaffer Scores associated with
+  stronger outcomes?" is therefore **NO** (not demonstrated), not PARTIAL.
+
 ---
 
 ## 1. P0 correctness status — DONE (two items PARTIAL)
@@ -538,15 +571,15 @@ and applicability: 133 assets with ≥6 years scored (equities, ETFs, indices, T
 commodities, FX, crypto); applicability table `SHAFFER_AUDIT.md` §10. 6. Horizons: §4. 7. Confidence: §8.
 8. Regime: §10. 9. Decay: §9. 10. De-duplication: §7. 11. Calibration: §13–14. 12. 15–25Y: §12.
 13. OOS by horizon (IC weighted by n_eff; Stouffer t): 1D +0.005 (1.9), 1W +0.011 (3.8), 1M +0.003 (0.5), 3M −0.006
-(−0.6), 6M +0.005 (0.4), 12M −0.016 (−0.6). Only 1W is significant. 14. Buckets: §13. 15. By class (1W): Treasuries
+(−0.6), 6M +0.005 (0.4), 12M −0.016 (−0.6) — t pooled as if assets were independent; date-clustered, none is significant (see Update). 14. Buckets: §13. 15. By class (1W): Treasuries
 +0.041, corporate +0.088 (1 asset), ETFs +0.015, equities +0.011, FX −0.012, commodities −0.005. 16. By regime (1W):
 high vol +0.019, weak dollar +0.012, bull +0.012, low vol −0.000. 17. Works: Mean Reversion at 1W adds independent
 information (incremental IC +0.010, t 3.5). 18. Doesn't: Risk-Adjusted Performance and Volatility at 1W show no
 measurable value; long-horizon momentum/trend are negative OOS. 19. Decaying: `ret_3m`, `macd`, `excess_3m`,
 `rate_duration` decaying in 33–75 assets at the latest refit.
 
-**Verdict: the Shaffer Score is honest and point-in-time, but it has almost no out-of-sample predictive power beyond
-1W.** It is useful as a transparent summary of evidence, not as a return forecast.
+**Verdict: the Shaffer Score is honest and point-in-time, but it has no statistically reliable out-of-sample predictive
+power at any horizon once assets' co-movement is accounted for.** It is useful as a transparent summary of evidence, not as a return forecast.
 
 ## 73. Final Shaffer Hedge report
 
@@ -602,7 +635,11 @@ Also: `28` crash (option details), `29` beta (futures details), `30` TLT DV01 he
 | `1025ec7` | Shaffer Hedge design, product registry, README/ARCHITECTURE/AUDIT | docs | *.md | — |
 | `5325481` | penalise over-hedging in the Shaffer Hedge Score; ticket layout; position view objective | score bug, UI | hedge/engine.py, static/* | EffectivenessTerm |
 | `82904a7` | refuse invalid hedge inputs instead of guessing | validation bug | server.py, hedge/service.py, hedge/engine.py | InvalidInput |
-| (this) | full Shaffer system report | report | SYSTEM_REPORT.md | — |
+| `8920779` | full Shaffer system report | report | SYSTEM_REPORT.md | full suite |
+| `cb9c057` | continuous futures series cannot be opened; option prices labelled flat-volatility | P0 | engine/portfolio.py, hedge/*, static/app.js | ContinuousSeries, option label |
+| `eda90ab` | hedge objectives grouped by purpose; variance vs tail hedges; Shaffer Score as evidence | UI, scoring | hedge/engine.py, static/app.js | HedgeType |
+| `cd0a522` | seven candidate Shaffer families in shadow, with an out-of-sample admission test | new information, gated | engine/candidates.py, engine/shaffer.py, shaffer_score.py, engine/audit.py | ShadowFamilies |
+| (this) | date-clustered admission test and audit; docs | validation | engine/audit.py, SHAFFER_AUDIT.md, docs | test_admission_rule |
 
 ## 76. Test results
 
@@ -626,10 +663,11 @@ Screenshot run (CDP driver, desktop 1440 px and mobile 390 px): 25 screenshots, 
 ## 77. Open issues
 
 **P0** (money, risk, history or leakage)
-- Continuous commodity series can still be *bought* as spot in the ledger; a front-month roll would book a roll gap
-  as P&L. Hedging refuses them; the ticket does not.
+- ~~Continuous commodity series can be bought as spot~~ — **fixed** (`cb9c057`): they can no longer be opened; old
+  positions replay, are flagged and can be sold.
 - Option marks are model prices at flat vol; OTM put values are likely understated (no skew), which flatters put
-  hedges' cost in the score and ledger.
+  hedges' cost in the score and ledger. **Now labelled** "MODEL-PRICED — FLAT VOLATILITY ASSUMPTION" everywhere
+  (`cb9c057`); the pricing itself is unchanged until chain/skew data exist.
 
 **P1** (major missing capabilities)
 - Option chains/skew; single-stock options (NVDA puts); crisis replays; return attribution; 3Y/5Y evidence.
@@ -667,7 +705,7 @@ clipped at 1440px; reverse-split and short-FX dedicated tests.
 | Every dollar of NAV reconstructable? | YES | one replay; `test_holdings_and_nav_history_agree_on_every_date`; packages atomic |
 | Historical Shaffer Scores reproducible point-in-time? | YES | `Canonical` tests; first-release macro; filing-dated fundamentals |
 | Today's score uses the same function? | YES | `test_history_is_produced_and_the_live_score_is_its_last_record` |
-| Stronger scores → stronger outcomes? | PARTIAL | 1D/1W weakly monotone (1W IC +0.011, t 3.8); 1M–12M not |
+| Stronger scores → stronger outcomes? | NO (not demonstrated) | best horizon 1W: IC +0.012, date-clustered t 1.2 (see Update); 1M–12M not monotone |
 | Confidence falls when evidence is weak? | YES | c formula (§8); BH q-values; shrinkage |
 | Every supported product gets an economically appropriate score? | PARTIAL | net long/short with costs for spot, futures, forwards, long options; 7 families missing; no product-specific signals |
 | Every supported product exposes correct risk units? | YES | `SizingUnits` (7 tests), registry |

@@ -154,6 +154,18 @@ evidence is labelled weak.
 
 A signal is reversed only on strong, stable evidence (|t| ≥ 3, n_eff ≥ 60), never on a tiny sample.
 
+**What the Shaffer Score is.** A structured quantitative evidence score: what the evidence currently says. Out of
+sample it has not shown statistically reliable predictive power at any horizon (the best, 1W, has IC +0.012, date-
+clustered t 1.2), so it is not presented as a forecast; an expected
+return appears only where the calibration supports one. The ML Score says whether machine learning has found a
+*verified* edge (0 when it has not). The Shaffer Hedge says what risks a book has and how to hedge them.
+
+**Candidate families (shadow).** Seven families of economically different information — Carry, Yield Curve, Term
+Structure, Inflation, FX, Commodity, Optionality — are computed point in time and evaluated in shadow, never in the
+score, until an out-of-sample admission test passes: a date-clustered incremental IC over the production score that
+is significant before 2018 and confirmed after it, with calibration no worse (`SHAFFER_AUDIT.md` §27). None has
+passed yet; Carry is the closest (strong since 2018, not significant before).
+
 There is one scoring routine, `engine/shaffer.compute_shaffer_score(asset, horizon, as_of)`. The 25-year history
 and today's score both come from it. Evidence is refitted monthly from outcomes known at the time, and nothing is
 retrofitted. The tests check that:
