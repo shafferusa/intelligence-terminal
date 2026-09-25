@@ -309,6 +309,16 @@ FRED_SERIES: dict[str, dict] = {
     "IRSTCI01CAM156N": {"name": "Canada overnight rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
     "IRSTCI01CHM156N": {"name": "Switzerland call money rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
     "IRSTCI01AUM156N": {"name": "Australia interbank overnight rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
+    # new-information research (ML Lab → New Information; not used by production scoring)
+    "DAAA": {"name": "Moody's Aaa corporate bond yield (%)", "lag_days": 1, "freq": "daily"},
+    "AAA10Y": {"name": "Moody's Aaa corporate minus 10Y Treasury (pp)", "lag_days": 1, "freq": "daily"},
+    "THREEFYTP10": {"name": "Kim-Wright 10-year term premium (pp; model estimate, latest vintage)", "lag_days": 7, "freq": "daily"},
+    "DFII5": {"name": "5-Year TIPS real yield (%)", "lag_days": 1, "freq": "daily"},
+    "DFII30": {"name": "30-Year TIPS real yield (%)", "lag_days": 1, "freq": "daily"},
+    "T10YIE": {"name": "10-Year breakeven inflation (%)", "lag_days": 1, "freq": "daily"},
+    "IR3TIB01EZM156N": {"name": "Euro area 3-month interbank rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
+    "IR3TIB01GBM156N": {"name": "UK 3-month interbank rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
+    "IR3TIB01JPM156N": {"name": "Japan 3-month interbank rate, monthly (%)", "lag_days": 45, "freq": "monthly"},
 }
 
 _BY_ID = {a["id"]: a for a in UNIVERSE}

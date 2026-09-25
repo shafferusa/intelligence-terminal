@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS option_quotes(asof TEXT, underlying TEXT, expiry TEXT
 CREATE INDEX IF NOT EXISTS option_quotes_u ON option_quotes(underlying, asof);
 CREATE TABLE IF NOT EXISTS lab_records(asset_id TEXT NOT NULL, horizon TEXT NOT NULL, version TEXT NOT NULL, data_version TEXT,
     created TEXT, n INTEGER, data BLOB, PRIMARY KEY(asset_id, horizon, version));
+CREATE TABLE IF NOT EXISTS alt_data(dataset TEXT NOT NULL, asset_id TEXT NOT NULL, date TEXT NOT NULL, field TEXT NOT NULL,
+    value REAL, published TEXT, PRIMARY KEY(dataset, asset_id, date, field));
 """
 OPTION_COLS = ["asof", "underlying", "expiry", "strike", "right", "bid", "ask", "last", "iv", "delta", "gamma", "vega", "theta", "rho",
                "open_interest", "volume", "source"]
@@ -473,6 +475,23 @@ class Store:
             d["rows"] = json.loads(zlib.decompress(d.pop("data")).decode())
             out.append(d)
         return out
+
+    def put_alt(self, dataset: str, rows) -> int:
+        """Alternative-data observations: rows of (asset_id, date, field, value, published). `published` is the first
+        date the value may be used (point in time)."""
+        tuples = [(dataset, a, d, f, v, p) for a, d, f, v, p in rows]
+        return self._write(lambda conn: conn.executemany(
+            "INSERT OR REPLACE INTO alt_data(dataset, asset_id, date, field, value, published) VALUES (?,?,?,?,?,?)", tuples).rowcount)[0]
+
+    def alt(self, dataset: str, asset_id: str | None = None) -> list[tuple]:
+        """[(asset_id, date, field, value, published)] ordered by asset and date."""
+        sql, args = "SELECT asset_id, date, field, value, published FROM alt_data WHERE dataset = ?", [dataset]
+        if asset_id:
+            sql += " AND asset_id = ?"; args.append(asset_id)
+        return [tuple(r) for r in self._q(sql + " ORDER BY asset_id, date", args)]
+
+    def alt_dates(self, dataset: str) -> set:
+        return {r[0] for r in self._q("SELECT DISTINCT date FROM alt_data WHERE dataset = ?", [dataset])}
 
     def lab_record_summary(self) -> list[dict]:
         return [dict(r) for r in self._q("SELECT version, horizon, count(*) AS assets, sum(n) AS records, max(created) AS created "

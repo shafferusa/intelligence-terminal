@@ -70,6 +70,12 @@ CRYPTO_K = 200.0
 LOGIT_LAMBDA = 50.0            # ridge toward the parent node's logistic coefficients
 MARKET = "SPY"
 MAIN_DIR_DEPTH = "class"
+# Directional gates. v1 (the Alpha vs Directional research): G1 walk-forward Brier better than climatology (t ≥ 2) and
+# accuracy above the best naive baseline; G2 ≥ 3 of 4 eras and the 2018 split. v2 (fixed 2026-09-25, before any
+# new-information result): additionally G_prior — on identical PIT records the challenger must beat the prior-only model
+# (paired Brier gain t ≥ 2, lower log loss, higher accuracy) and, for anything newer than it, the current Directional
+# formulation (alpha+prior@global; paired Brier gain t ≥ 2). Live shadow requires v2.
+GATES_VERSION = "v2"
 RESEARCH_KEY = "lab:directional"
 VOL_WINDOW, BETA_WINDOW, OWN_WINDOW = 63, 252, 2520
 YIELD = {"UST2Y": "DGS2", "UST5Y": "DGS5", "UST10Y": "DGS10", "UST30Y": "DGS30", "CORP_BAA": "DBAA",
@@ -673,7 +679,8 @@ def run_dir(recs: List[Rec], h: int, model: str, depth: str = "global", prior: s
     return res
 
 
-PAIRS = [("alpha+prior@global", "prior:product"), ("alpha+prior@class", "prior:product"), ("signal+prior@global", "prior:product"),
+PAIRS = [("alpha+prior@global", "prior:product"), ("alpha+prior@class", "prior:product"), ("alpha+prior@sector", "prior:product"),
+         ("signal+prior@global", "prior:product"),
          ("prior:product", "prior:zero"), ("prior:frequency", "prior:zero")]
 
 
@@ -690,18 +697,27 @@ def paired(recs: List[Rec], h: int, preds: Dict[str, Dict[int, float]], a: str, 
     common = [i for i in pa if i in pb and pa[i] is not None and pb[i] is not None]
     by_b: Dict[int, List[float]] = {}
     by_a: Dict[int, List[float]] = {}
+    by_l: Dict[int, List[float]] = {}
+    ll = lambda p, o: -(o * math.log(min(1 - 1e-6, max(1e-6, p))) + (1 - o) * math.log(min(1 - 1e-6, max(1e-6, 1 - p))))  # noqa: E731
     for i in common:
         r = recs[i]
         o = _obs(r)
         by_b.setdefault(r.wk, []).append((pb[i] - o) ** 2 - (pa[i] - o) ** 2)
+        by_l.setdefault(r.wk, []).append(ll(pb[i], o) - ll(pa[i], o))
         if pa[i] != 0.5 and pb[i] != 0.5:
             by_a.setdefault(r.wk, []).append((1.0 if (pa[i] > 0.5) == bool(o) else 0.0) - (1.0 if (pb[i] > 0.5) == bool(o) else 0.0))
-    c, d = _clustered_mean(by_b, h), _clustered_mean(by_a, h)
+    c, d, lg = _clustered_mean(by_b, h), _clustered_mean(by_a, h), _clustered_mean(by_l, h)
     os_ = [_obs(recs[i]) for i in common]
     au_a, au_b = _auc([pa[i] for i in common], os_), _auc([pb[i] for i in common], os_)
     return {"a": a, "b": b, "n": len(common), "brier_gain": c["mean"], "brier_t": (c["mean"] / c["se"]) if c["mean"] is not None and c["se"] else None,
             "delta_acc": d["mean"], "delta_acc_t": (d["mean"] / d["se"]) if d["mean"] is not None and d["se"] else None,
+            "logloss_gain": lg["mean"], "logloss_t": (lg["mean"] / lg["se"]) if lg["mean"] is not None and lg["se"] else None,
             "auc_a": au_a, "auc_b": au_b, "adds": bool(c["mean"] is not None and c["se"] and c["mean"] / c["se"] >= 2)}
+
+
+def prior_gate(pr: Optional[dict]) -> bool:
+    """Gate v2's G_prior on one paired comparison (challenger vs the prior-only model)."""
+    return bool(pr and (pr.get("brier_t") or 0) >= 2 and (pr.get("logloss_gain") or 0) > 0 and (pr.get("delta_acc") or 0) > 0)
 
 
 def bear_composition(recs: List[Rec], pred: Dict[int, float], threshold: float = -20.0) -> Dict[str, dict]:

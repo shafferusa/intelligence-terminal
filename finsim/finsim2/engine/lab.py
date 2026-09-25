@@ -770,3 +770,47 @@ def promote(store, vid: str, confirm: bool = False) -> dict:
     _save_registry(store, reg)
     store.audit("lab.promote", vid, {"horizons": s["eligible_horizons"]})
     return v
+
+
+# ------------------------------------------------------------------ frozen benchmark (new-information research is judged against it)
+BENCHMARK_PREFIX = "benchmark:"
+
+
+def freeze_benchmark(store, bid: Optional[str] = None) -> dict:
+    """Freeze the current system as a benchmark: production score version, the Directional research definition, the
+    hedge version, the research outputs (content hashes and full copies), the research-record counts and the gate
+    versions. A benchmark id can be frozen once; later research never rewrites it."""
+    import hashlib
+    from . import directional as D, weights as Wm
+    bid = bid or f"benchmark-{cfg.VERSION}-{time.strftime('%Y-%m-%d')}"
+    key = BENCHMARK_PREFIX + bid
+    if store.kv_get(key) is not None:
+        raise ValueError(f"benchmark {bid} is already frozen")
+    snaps = {"lab": store.kv_get(RESEARCH_KEY), "weights": store.kv_get(Wm.RESEARCH_KEY), "directional": store.kv_get(D.RESEARCH_KEY)}
+    digest = {k: hashlib.sha256(json.dumps(v, sort_keys=True, default=str).encode()).hexdigest() if v is not None else None for k, v in snaps.items()}
+    reg = registry(store)
+    hedge = next((v["id"] for v in reg["versions"] if v["kind"] == "hedge" and v["status"] == "production"), None)
+    meta = {"id": bid, "frozen": time.strftime("%Y-%m-%d %H:%M:%S"), "score_version": f"shaffer-{cfg.VERSION}",
+            "alpha": f"shaffer-alpha-{cfg.VERSION}-production", "hedge": hedge,
+            "directional": {"definition": "p_up = σ(a + b·μ/σ + c·raw/100), global, point-in-time prior", "main_prior": D.MAIN_PRIOR,
+                            "prior_only": f"prior:{D.MAIN_PRIOR}", "current": "alpha+prior@global"},
+            "gates": {"directional": D.GATES_VERSION, "alpha": "v1"}, "hashes": digest, "records": store.lab_record_summary()}
+    for k, v in snaps.items():
+        if v is not None:
+            store.kv_set(f"{key}:{k}", v)
+    store.kv_set(key, meta)
+    reg["versions"].append({"id": bid, "kind": "benchmark", "status": "frozen", "introduced": meta["frozen"],
+                            "description": "Frozen benchmark for new-information research: production Shaffer / Alpha, the Directional "
+                                           "research definition and PIT prior, Shaffer Hedge, research records and gates",
+                            "benchmark": {k: meta[k] for k in ("score_version", "alpha", "hedge", "directional", "gates", "hashes")}})
+    _save_registry(store, reg)
+    store.audit("lab.benchmark", bid, {"hashes": digest})
+    return meta
+
+
+def benchmark(store, bid: Optional[str] = None) -> Optional[dict]:
+    """The frozen benchmark (the latest when no id is given)."""
+    if bid:
+        return store.kv_get(BENCHMARK_PREFIX + bid)
+    ids = [v["id"] for v in registry(store)["versions"] if v.get("kind") == "benchmark"]
+    return store.kv_get(BENCHMARK_PREFIX + ids[-1]) if ids else None
