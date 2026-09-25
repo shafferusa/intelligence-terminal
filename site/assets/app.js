@@ -73,7 +73,9 @@
      records it, and it is what makes the lessons navigable as a sequence. */
   function lessonDay(entry) {
     if (!entry || entry.slot !== "learn" || !Array.isArray(entry.headlines)) return null;
-    /* Year one: "Day 13 of 150 · Mathematics: …"; year two: "Year 2 · Day 37 of 260 · Finance & Markets: …". */
+    /* "Day 13 of 300 · Mathematics: …". Also matches the retired curricula's older
+       headline shapes ("Day 13 of 150 · …", "Year 2 · Day 37 of 260 · …") so old
+       archive entries still render correctly. */
     var m = /^(?:Year\s+(\d+)\s*·\s*)?Day\s+(\d+)\s+of\s+(\d+)(?:\s*·\s*([^:]+))?/i.exec(String(entry.headlines[0] || ""));
     if (!m) return null;
     return { year: m[1] ? +m[1] : 1, day: +m[2], total: +m[3], subject: (m[4] || "").trim() };

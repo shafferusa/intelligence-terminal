@@ -61,7 +61,7 @@ anything later in this document, this wins.
   material* for the Learning Brief's AI and Finance lessons.
 - **SpaceX is PUBLIC** — verified against SEC EDGAR 2026-07-26: IPO 2026-06-12, Nasdaq ticker SPCX, CIK 0001181412. CRITICAL: pre-2026-04-07 "SPCX" data = the unrelated Tuttle ETF (now SPCK). SpaceX price history begins 2026-06-12; never backfill earlier SPCX data.
 - **Model:** claude-sonnet-5 per routine. **Plan:** Max (15 routine runs/day cap). **Repo:** public.
-- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends.
+- Schedule (America/New_York): Mon–Fri 6:00 AM (Learning Brief) + 6:30 AM (Morning Brief) + 4:30 PM (Closing Brief); Sat 9:00 AM (Weekly Review); Sun 9:00 AM (Week-Ahead Outlook). Weekend times configurable in `config/settings.yml`. No weekend afternoon reports, and no Learning Brief at weekends. **The Learning Brief's 6:00 AM moved to 5:00 AM on 2026-09-25 — §0e.**
 
 ### 0b. Built since the amendment — a record, not new decisions (2026-09-02)
 
@@ -113,6 +113,11 @@ Directed:
 
 ### 0d. Amendment of 2026-09-11 — year two of the Academy (extends §16)
 
+**Superseded 2026-09-25 by §0e: this section is history, not the live curriculum.** `academy-260`
+never started running (year one was still on day 19 when Logan replaced both curricula outright)
+and the schedule/audio decisions below are superseded by §0e's own. Left here as a record of what
+was designed and why.
+
 Logan's instruction for what follows the 150-day curriculum: *thirteen topics, twenty lessons
 each — one topic for twenty weekdays straight — way more in depth and advanced than the 150-day,
 up to one to two hours per day, covering a full year.* Built as `curriculum/academy-260.json`:
@@ -144,6 +149,63 @@ up to one to two hours per day, covering a full year.* Built as `curriculum/acad
 - **Consequences**: the Learning Brief cron should move to 5:00 AM ET before year two starts so a
   two-hour lesson is finished before the Morning Brief publishes (`docs/RUNBOOK.md` A4); the Academy
   page lists both years. Procedure: `prompts/learning.md` → **Year Two**.
+
+### 0e. Amendment of 2026-09-25 — the Academy restarted (SUPERSEDES §0d and the Learning Brief
+description in §16; REPLACES §0a's `curriculum/academy-150.json` bullet)
+
+Logan: *"I want you to completely restart my Daily Learning Brief system… replace it with"* a new
+structure. Not an extension of either prior curriculum — a full replacement, effective
+immediately, discarding both. His own framing of the purpose: this is for subjects outside his
+main Finance/Economics/Accounting education, aimed at *"a very strong general baseline… not
+mastery or academic specialization"* — understanding how the world works, recognizing concepts,
+following conversations and news intelligently, knowing each field's vocabulary and major ideas,
+with enough foundation to go deeper later if he wants to.
+
+- **Both prior curricula are retired outright**, not paused and not continued from where they
+  stopped. `curriculum/academy-150.json` (day 19 of 150 when this landed, 18 lessons actually
+  taught, 2026-08-17 through 2026-09-09) and `curriculum/academy-260.json` (designed but never
+  started) stay in the repo as a record of what ran before; `prompts/learning.md` no longer
+  references either. The ~19 already-published `-learn.html` pages stay live in the site archive
+  and search — deleting published editions is not what "remove from the active learning sequence"
+  was read to mean — but `site/academy.html` (the *active* sequence) tracks only the new
+  curriculum from here on.
+- **The new curriculum**: `curriculum/academy-300.json` — **fifteen subjects, twenty weekday
+  lessons each, run strictly in sequence** (Mathematics finishes entirely before Physics starts,
+  and so on; never interleaved, unlike the old academy-150's day-by-day rotation). Order, exactly
+  as specified: Mathematics; Physics; Rockets, Spaceflight & Astronomy; AI, Computing & Modern
+  Technology; Psychology; Philosophy; Chemistry; Biology; Engineering; History & Civilizations;
+  Geography & Earth Science; Government & Law; Geopolitics & International Relations; Sociology &
+  Anthropology; Communication, Media & Linguistics. 300 lessons total, weekdays only, roughly
+  fourteen months end to end from whenever the first lesson actually runs.
+- **Depth**: baseline literacy, not a specialist course — "the 20% of ideas that give 80% of the
+  understanding," pitched at an intelligent, curious reader with no formal background in the
+  subject. Each subject's mission statement (in the curriculum file) names the working conceptual
+  grasp the twenty lessons build toward. Scope is fixed per subject to avoid overlap (e.g.
+  Mathematics teaches mathematical concepts, not statistics-for-finance; Physics teaches physical
+  law, not engineering design; Geography is the physical Earth, not geopolitics) — each subject's
+  `mission` and the day-by-day `key_concepts` hold that line.
+- **Format, replacing the old feature-journalism shape**: Today's Topic (the headline) → The Big
+  Idea (plain English) → How It Works (the mechanism) → Key Concepts (a short glossary) → Example /
+  Application → Equation / Model (only when one genuinely helps — never forced) → Why It Matters →
+  Remember These (3–5 takeaways) → Think About It (one reflective question, not an exercise). Still
+  no quizzes, no problem sets, no spaced repetition — that rule survives every version of this
+  system. Length: **about 15 minutes (2,600–4,000 words)** — the shortest report in the system,
+  down from year one's 25–30 minutes. Procedure: `prompts/learning.md` (fully rewritten; there is no
+  more "Year Two" section — see §0d above).
+- **No audio for the Learning Brief, any edition** (Logan, 2026-09-25 — a stricter rule than §0d's
+  year-two-only exception, which is moot now that year two never ran): `make_audio.py` skips every
+  `learn`-slot entry, `notify.py` sends the Telegram push without waiting on an MP3, and
+  `report.js` mounts no player at all — not even the Web Speech fallback. The news editions are
+  unchanged.
+- **Schedule moved to 5:00 AM ET** (from 6:00 AM), **delivered by 5:30 AM**: cron `0 9 * * 1-5`
+  during EDT / `0 10 * * 1-5` during EST (`docs/RUNBOOK.md` A4, B). Realistic because the new
+  lessons are short and carry no audio-wait step. This also removes the old overlap risk with the
+  6:30 AM Morning Brief by a full hour.
+- **Reset**: `state/learning.json` → `curriculum: "academy-300"`, `day: 1`, `completed: []`,
+  `started: "2026-09-25"`, with the retired curriculum's stopping point kept in a
+  `previous_curriculum` field for the record. The first lesson (Mathematics, day 1) is written by
+  the next scheduled run, not pre-generated by this restart — consistent with the standing rule
+  that the curriculum file is a plan the daily routine expands, not a cache of finished reports.
 
 ## 1. Mission
 
@@ -215,30 +277,33 @@ SpaceX is public (see §0) — track under public equities/aerospace/space/comms
 
 Never hardcode public/private status. Per entity: official + common name, status (public/private/acquired/merged/delisted/renamed), parent/subsidiaries, ticker, exchange, share class, IPO/delisting dates, HQ, industry, last-verified date, verification source. Verify via SEC EDGAR (`data.sec.gov/submissions/CIK##########.json` — authoritative tickers/exchanges signal; UA header required). Detect IPOs, listings, SPACs, acquisitions, spin-offs, ticker/exchange changes, delistings, bankruptcies, going-private. Private module (verified 2026-07-26, all private): OpenAI, Anthropic, Stripe, Databricks, Anduril, Canva, Discord, Epic Games, Neuralink — track last-verified valuation + date, rounds, investors, revenue estimates + source, secondaries, contracts, IPO preparations, public proxies. NEVER invent a price for a private company. OpenAI/Anthropic/Discord have reported confidential S-1s → weekly EDGAR re-check (Saturday run); flag flips in next report. Weekly registry sweep is part of the Saturday routine.
 
-## 16. The Learning Brief (weekday 6:00 AM ET) — replaces the in-report learning tracks
+## 16. The Learning Brief (weekday 5:00 AM ET) — replaces the in-report learning tracks
 
-**Superseded §16 in full on 2026-08-16.** There are no lessons in the news editions.
+**Superseded §16 in full on 2026-08-16, then again in full on 2026-09-25 (§0e).** There are no
+lessons in the news editions.
 
 A separate fifth edition, strictly learning, weekdays only. **One lesson per report**: one subject,
-one topic, 25–30 minutes (5,500–6,600 words), taught properly. It reads like a newspaper feature —
-same masthead, typography and voice as the news editions — not a textbook chapter.
+one topic, about fifteen minutes (2,600–4,000 words), taught properly. Same masthead and typography
+as the news editions, but the voice is closer to a sharp private tutor than a feature-magazine
+writer — get to the idea, teach it well, stop.
 
-Shape: hook → the idea in plain English → the formalism, with every symbol named → at least one
-worked example with real arithmetic → where it shows up in the world → the common misconception →
-a callback paragraph tying it to an earlier lesson in a different subject → what the reader can now
-do. No quizzes, no problem sets, no spaced repetition, no self-assessment.
+Shape: The Big Idea (plain English) → How It Works (the mechanism) → Key Concepts (a short
+glossary) → Example / Application → Equation / Model (only when one genuinely helps, never forced)
+→ Why It Matters → Remember These (3–5 takeaways) → Think About It (one reflective question). No
+quizzes, no problem sets, no spaced repetition, no self-assessment.
 
-Curriculum: `curriculum/academy-150.json` — 150 weekday lessons, five phases, seven subjects
-(Mathematics 24, Physics 26, Finance 24, Artificial Intelligence 22, Economics 20, Accounting 18,
-Rocketry 16), sequenced so prerequisites always land first (accounting before finance, covariance
-before portfolio theory, calculus before backpropagation, mechanics before orbits). Position in
-`state/learning.json`. Procedure in `prompts/learning.md`. Source material: Logan's 60-day academy,
-the retired physics and spaceflight sequences, and the quant-ml equation registry; Accounting and
-Economics were authored fresh because the academy did not cover them.
+Curriculum: `curriculum/academy-300.json` — 300 weekday lessons, **fifteen subjects, twenty
+lessons each, run strictly in sequence** (a subject finishes entirely before the next begins — no
+interleaving). Order: Mathematics; Physics; Rockets, Spaceflight & Astronomy; AI, Computing &
+Modern Technology; Psychology; Philosophy; Chemistry; Biology; Engineering; History &
+Civilizations; Geography & Earth Science; Government & Law; Geopolitics & International Relations;
+Sociology & Anthropology; Communication, Media & Linguistics. Position in `state/learning.json`.
+Procedure in `prompts/learning.md`. No audio (§0e).
 
-At day 150 the sequence hands over to year two — `curriculum/academy-260.json`, thirteen blocks of
-twenty lessons at 60–120 minutes each (§0d) — and after day 260 continues deeper at the same
-cadence. It never restarts.
+This replaced two earlier curricula outright on 2026-09-25 (§0e): `curriculum/academy-150.json`
+(150 lessons across seven subjects, interleaved by phase) and `curriculum/academy-260.json`
+(designed as an advanced 260-lesson "year two" but never started). Both are retired — kept in the
+repo as a record, never read by the current procedure. The sequence never restarts.
 
 ## 17. Calendars
 

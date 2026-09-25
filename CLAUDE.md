@@ -31,23 +31,26 @@ those subjects (`docs/SPEC.md` §0c, `prompts/shared-rules.md` §7 and §12b.7).
 - `prompts/` — routine procedures (shared-rules.md, weekday.md, weekend.md, learning.md).
 - `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
-- `curriculum/academy-150.json` — **the live curriculum**: 150 weekday lessons across seven
-  subjects for the Learning Brief. `curriculum/academy-260.json` — **year two** (from day 151,
-  projected 2027-03-12): thirteen blocks of twenty lessons, 60–120 minutes each
-  (`docs/SPEC.md` §0d, `prompts/learning.md` → Year Two). `state/learning.json` → `curriculum`
-  says which is running.
+- `curriculum/academy-300.json` — **the live curriculum**: fifteen subjects, 300 weekday lessons,
+  run strictly in sequence (one subject finishes before the next begins). Restarted 2026-09-25
+  (`docs/SPEC.md` §0e, `prompts/learning.md`), replacing the two curricula below outright.
+  `state/learning.json` → `curriculum` names the running file.
+- `curriculum/academy-150.json`, `curriculum/academy-260.json` — RETIRED (2026-09-25); the
+  150-lesson curriculum actually ran (18 lessons taught) and the 260-lesson "year two" was
+  designed but never started. Kept as a record, not read by the live procedure.
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
-  `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
-  source material for the 150-day curriculum.
+  `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); were
+  source material for the retired 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
 - `site/` — GitHub Pages root: `index.html` (latest day's editions, filterable archive, search),
-  `academy.html` (the 150-lesson curriculum, taught lessons linked), `status.html` (run health),
-  `assets/` (css/js/icons, incl. `report.js` = the audio player + read-time prev/next nav),
-  `report-template.html`, `reports/YYYY/MM/*.html` + `reports/index.json` (archive index),
-  `equations/eq_NNN.png`, `manifest.webmanifest`, `sw.js`. Build-generated, never committed:
-  Pagefind assets, `status.jsonl`, `academy.json`, `audio/*.mp3`.
-- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum and day;
-  `learning-refresh.json` holds the re-planned AI block when it runs),
+  `academy.html` (the 300-lesson curriculum, taught lessons linked), `status.html` (run health),
+  `assets/` (css/js/icons, incl. `report.js` = read-time prev/next nav; no audio player — the
+  Learning Brief carries no audio), `report-template.html`, `reports/YYYY/MM/*.html` +
+  `reports/index.json` (archive index), `equations/eq_NNN.png`, `manifest.webmanifest`, `sw.js`.
+  Build-generated, never committed: Pagefind assets, `status.jsonl`, `academy.json`, `audio/*.mp3`
+  (news editions only).
+- `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum, day and a
+  `previous_curriculum` record of what was retired),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
   `run-log.jsonl`. `curriculum.json` (the pre-2026-08-16 three-track position) was retired and
   deleted — never recreate it.

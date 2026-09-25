@@ -9,14 +9,15 @@ sends a short Telegram push with a link. No server, no app, no manual steps, no 
 
 | Edition | When (ET) | What it is |
 |---|---|---|
-| Learning Brief | Mon–Fri 6:00 AM | One lesson, taught properly, from a 150-day curriculum across seven subjects. Strictly learning — no news. |
+| Learning Brief | Mon–Fri 5:00 AM | One ~15-minute lesson from a 300-day curriculum: fifteen subjects, twenty lessons each, run strictly in sequence. Strictly learning — no news, no audio. |
 | Morning Brief | Mon–Fri 6:30 AM | The overnight world, top stories, the economy, today's calendar, before the open, local news and weather. |
 | Closing Brief | Mon–Fri 4:30 PM | What changed today, **The Board** (a fixed 25-row watchlist chart), what moved markets, tomorrow. |
 | Weekly Review | Sat 9:00 AM | The weekend's news plus a synthesis of the week, a forecast scorecard, and what was over- and under-covered. |
 | Week Ahead | Sun 9:00 AM | The weekend's news plus the week's calendar, risk register and scenarios that next Saturday grades. |
 
-Every edition has a listen-to-text player: a generated MP3 (real neural voice, lock-screen and
+Every news edition has a listen-to-text player: a generated MP3 (real neural voice, lock-screen and
 CarPlay playback) with an in-browser speech fallback for anything older than the staging window.
+The Learning Brief carries no audio at all.
 
 ## Architecture
 
@@ -58,8 +59,10 @@ CarPlay playback) with an in-browser speech fallback for anything older than the
 - `site/` — the published static site: report pages, the archive index (`reports/index.json`),
   the Academy page (the curriculum, lesson by lesson), the status page, equations, PWA assets.
 - `prompts/` + `CLAUDE.md` — the run procedures the cloud routines execute, literally.
-- `curriculum/` — `academy-150.json`, the live 150-lesson curriculum; the older physics, spaceflight
-  and quant-ml sequences are retained as source material for it.
+- `curriculum/` — `academy-300.json`, the live 300-lesson curriculum (fifteen subjects, twenty
+  lessons each, restarted 2026-09-25); `academy-150.json` and `academy-260.json` are retired
+  earlier curricula kept as a record; the physics, spaceflight and quant-ml sequences were source
+  material for the first of those.
 - `state/`, `ledgers/`, `registry/` — story memory and run state, the corrections and forecast
   ledgers (append-only accountability), the public/private entity registry.
 - `config/` — the schedule, local beats and weather point (`settings.yml`) and the watchlists,

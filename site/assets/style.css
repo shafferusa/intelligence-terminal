@@ -1351,9 +1351,46 @@ table.board-table {
 .worked ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
 .worked li { margin-bottom: 0.35em; }
 
-/* Year-two lessons: a contents list before Part 1, and each part is a
-   .paper-section so its h2 gets the section-label treatment and the audio
-   gets a chapter break. */
+/* Key Concepts — a short glossary for the lesson. */
+.key-terms {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  margin: 1.2em 0;
+}
+.key-terms dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+}
+.key-terms dt { font-weight: 700; color: var(--ink); }
+.key-terms dd { margin: 0; color: var(--ink); }
+
+/* Think About It — the closing question. */
+.think-about-it {
+  font-style: italic;
+  border-left: 3px solid var(--line);
+  padding-left: 0.9rem;
+  margin: 1.4em 0 0;
+  color: var(--ink);
+}
+.think-about-it > b {
+  display: block;
+  font-style: normal;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+/* Retired with year two of the Academy (2026-09-25): a contents list before
+   Part 1, and each part as its own .paper-section. Kept in case a future
+   multi-part format returns. */
 .lesson-contents {
   background: var(--card);
   border: 1px solid var(--line);

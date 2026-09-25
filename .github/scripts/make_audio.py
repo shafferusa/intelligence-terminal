@@ -119,18 +119,6 @@ class Extractor(html.parser.HTMLParser):
             self.buf.append(data)
 
 
-def is_year_two_lesson(entry):
-    """A year-two Learning Brief: slot learn, first headline 'Year 2 · Day N of 260 · …'.
-
-    notify.py and report.js make the same test; keep the three in step.
-    """
-    if entry.get("slot") != "learn":
-        return False
-    heads = entry.get("headlines") or []
-    first = str(heads[0]) if heads else ""
-    return re.match(r"\s*Year\s+([2-9]|\d{2,})\b", first) is not None
-
-
 def polish(text):
     """Prepare one block for speech.
 
@@ -214,9 +202,9 @@ def main():
     if not (date and slot and path):
         print("newest entry is missing date/slot/path")
         return 0
-    if is_year_two_lesson(entry):
-        # Logan, 2026-09-12: no audio for the 60-120-minute year-two lessons.
-        print("year-two Learning Brief -- no audio by instruction")
+    if slot == "learn":
+        # Logan, 2026-09-25: no audio for the restarted Learning Brief.
+        print("Learning Brief -- no audio by instruction")
         return 0
 
     page = os.path.join("site", path)

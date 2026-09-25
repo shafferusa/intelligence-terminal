@@ -63,12 +63,6 @@ MIN_MP3 = 20_000
 # clears that worst case with room, and still gives up long before a broken
 # edge-tts could sit on an edition indefinitely.
 AUDIO_WAIT = int(os.environ.get("AUDIO_WAIT_SECONDS", "1200"))
-# A year-two Learning Brief (60-120 minutes of reading, from 2027) takes
-# edge-tts two to three times longer than a news edition, and it can still be
-# queued behind another edition's job. The lesson's push can afford to wait
-# longer -- nobody is reading a two-hour lesson at 6:05 -- so the learn slot
-# gets its own, longer ceiling. The news editions keep the shorter one.
-AUDIO_WAIT_LEARN = int(os.environ.get("AUDIO_WAIT_LEARN_SECONDS", "2700"))
 AUDIO_POLL = 30
 
 EDITION = {
@@ -78,16 +72,6 @@ EDITION = {
     "sun": "Week-Ahead Outlook",
     "learn": "Learning Brief",
 }
-
-
-def is_year_two_lesson(entry):
-    """Same test as make_audio.py and report.js: a learn entry whose first
-    headline starts 'Year 2 · Day N of 260'. Those lessons have no audio."""
-    if entry.get("slot") != "learn":
-        return False
-    heads = entry.get("headlines") or []
-    first = str(heads[0]) if heads else ""
-    return re.match(r"\s*Year\s+([2-9]|\d{2,})\b", first) is not None
 
 
 def build_message(entry):
@@ -265,12 +249,12 @@ def audio_ready(tag, filename, floor):
 
 def wait_for_audio(entry):
     """Hold the push until this edition's MP3 is up. True if it turned up."""
-    wait_for = AUDIO_WAIT_LEARN if entry.get("slot") == "learn" else AUDIO_WAIT
-    if is_year_two_lesson(entry):
-        # No MP3 is ever produced for a year-two lesson (make_audio.py), so
-        # there is nothing to wait for.
-        print("year-two Learning Brief -- no audio, sending now")
+    if entry.get("slot") == "learn":
+        # No MP3 is ever produced for a Learning Brief (make_audio.py), so
+        # there is nothing to wait for. Logan, 2026-09-25: no audio.
+        print("Learning Brief -- no audio, sending now")
         return False
+    wait_for = AUDIO_WAIT
     if wait_for <= 0:
         print("audio wait disabled -- sending immediately")
         return False

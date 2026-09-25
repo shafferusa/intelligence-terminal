@@ -43,12 +43,12 @@ jobs:
       - name: Publish run log for the status page
         run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
 
-      # Same idea for the Academy page: the curricula live in curriculum/,
-      # outside the site root, and academy.html lists every lesson from them.
-      - name: Publish the curricula for the Academy page
-        run: |
-          cp curriculum/academy-150.json site/academy.json || echo "no year-one curriculum"
-          cp curriculum/academy-260.json site/academy-260.json || echo "no year-two curriculum yet"
+      # Same idea for the Academy page: the curriculum lives in curriculum/,
+      # outside the site root, and academy.html lists every lesson from it.
+      # academy-150.json and academy-260.json are retired (2026-09-25,
+      # SPEC Sec.0e) and no longer copied in.
+      - name: Publish the curriculum for the Academy page
+        run: cp curriculum/academy-300.json site/academy.json || echo "no curriculum yet"
 
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping

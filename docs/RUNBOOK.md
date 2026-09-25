@@ -92,17 +92,29 @@ At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**
 
 | Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
 |---|---|---|---|
-| Learning Brief | `0 10 * * 1-5` | Mon–Fri 6:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
+| Learning Brief | `0 9 * * 1-5` | Mon–Fri 5:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
 | Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
 
-**The 6:00 and 6:30 runs overlap by design and must not fight.** The Learning Brief writes a
-~6,000-word lesson and can still be running when the Morning Brief starts. They touch different
-report files, but both prepend to `site/reports/index.json` and append to `state/run-log.jsonl`.
-Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a conflict in
-`index.json` or `run-log.jsonl` take the remote version and re-apply your own addition. If the two
-ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
-rather than delaying the news.
+**Learning Brief moved to 5:00 AM ET on 2026-09-25** (Logan; was 6:00 AM), with a **5:30 AM
+delivery target** — the run has thirty minutes to research, write, build the page, commit, push
+and be live. Two things make that realistic: the restarted curriculum's lessons are the shortest
+report in the system (12–18 minutes of reading, `docs/SPEC.md` §0e) and the Learning Brief carries
+no audio at all now, so there is no edge-tts step to wait on. This also clears the old overlap risk
+with the 6:30 AM Morning Brief by a full hour, so nothing further is needed there. If a run ever
+does run long, shared-rules §15.2 still covers a push conflict: `git pull --rebase` before every
+push, and on a conflict in `index.json` or `run-log.jsonl` take the remote version and re-apply
+your own addition.
+
+**This trigger cannot be edited from inside a Claude Code session** — it was created via the API
+(`created_via: http_api`), not by an agent, so `update_trigger` is refused. Logan updates it
+himself at **https://claude.ai/code/routines/trig_012uy4GWGyq9VhQicy5KgJJC**: cron
+`0 9 * * 1-5`, and the prompt should be exactly
+`Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.`
+(the stored prompt as of 2026-09-25 hardcodes the old 25–30 minute length and
+`curriculum/academy-150.json` directly, which will fight with the restarted procedure — replace it
+with the line above so `prompts/learning.md` is the only source of truth, same as the other two
+routines already are).
 
 **Year two of the Academy (from about 2027-03-12).** Year-one lessons are 25–30 minutes; year-two
 lessons (`curriculum/academy-260.json`, SPEC §0d) are 60–120 minutes and carry no audio. Before the
@@ -137,8 +149,10 @@ Run all three before trusting the schedule:
 
 Routine crons are UTC; ET shifts. Two edits per year:
 
-- **Nov 1, 2026** (fall back, EDT→EST): learning `0 10 * * 1-5` → `0 11 * * 1-5`; weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
-- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 10 * * 1-5`, weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
+- **Nov 1, 2026** (fall back, EDT→EST): learning `0 9 * * 1-5` → `0 10 * * 1-5`; weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
+- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 9 * * 1-5`, weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
+
+(Learning moved from 6:00 AM ET to **5:00 AM ET** on 2026-09-25 — see A4 and SPEC §0e. The values above are already the post-move ones.)
 
 One-sentence instruction that works in any Claude session: *"Update my three intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
 
@@ -243,12 +257,13 @@ real audio a few minutes later, or on any reload.
 **Failure is non-fatal by design.** edge-tts is an unofficial client and can break; the job is
 `continue-on-error`, publishes nothing, and the page falls back on its own. Nothing else notices.
 
-**Year-two lessons have no audio** (Logan, 2026-09-12): `make_audio.py` exits without writing an
-MP3 when the newest index entry is a `learn` slot whose first headline starts `Year 2 · Day N of
-260`; `notify.py` sends the push at once for those; `report.js` mounts no player. Year-one lessons
-and the news editions are unchanged. `build-site.yml` stages recent audio newest-first until about
-650 MB is in the deploy (always the three newest), and `notify.py` still gives a year-one lesson's
-push a 45-minute audio ceiling (`AUDIO_WAIT_LEARN_SECONDS`) against 20 minutes for news.
+**The Learning Brief has no audio at all** (Logan, 2026-09-25): `make_audio.py` exits without
+writing an MP3 whenever the newest index entry's `slot` is `learn`; `notify.py` sends the Telegram
+push at once for those, with nothing to wait on; `report.js` mounts no player — not even the Web
+Speech fallback. The news editions are unchanged and still wait up to twenty minutes
+(`AUDIO_WAIT_SECONDS`) for their MP3. `build-site.yml` stages recent audio newest-first until about
+650 MB is in the deploy (always the three newest); with the Learning Brief never contributing an
+MP3, that budget now covers only the four news editions a day.
 
 **Voice:** `TTS_VOICE` / `TTS_RATE` env vars in `audio.yml`. Logan's pick (2026-08-16) is
 `en-GB-ThomasNeural` at `+0%` — a UK news-register voice at its natural pace, chosen after comparing
