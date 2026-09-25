@@ -179,7 +179,7 @@ Its constants and tables are at the top of `finsim2/shaffer_score.py`. A file at
 (or `FINSIM2_SHAFFER`) can add a custom live-only score. It is shown beside the canonical one, never instead of it
 and never in the history.
 
-**Shaffer Hedge.** Risk first, product second (design: `finsim2/SHAFFER_HEDGE.md`, products: `finsim2/PRODUCT_REGISTRY.md`).
+**Shaffer Hedge.** Risk first, product second (design: `finsim2/SHAFFER_HEDGE.md`, products: `finsim2/PRODUCT_REGISTRY.md`, status of every requirement: `finsim2/SYSTEM_REPORT.md`).
 - The portfolio (or a position, or a proposed trade) becomes a risk vector with each risk in its own unit:
   - beta-dollars for the market, sector, industry and style spreads;
   - DV01 by key rate (2/5/10/30Y) and real DV01;
