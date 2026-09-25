@@ -865,9 +865,29 @@ def study_dates(cal: List[str], h: int, step: int, start: str = START) -> List[i
     return list(range(max(first, 300), len(cal) - 1 - h, step))
 
 
-def _worker(db_path: str, lab: str, h: int, idx: List[int], models: dict, multiples: dict, books=None, objectives=None):
+def read_stream(path: str) -> List[dict]:
+    """The dates a worker has appended to its chunk's progress stream (complete records only)."""
+    import os
+    import pickle
+    out = []
+    if not os.path.exists(path):
+        return out
+    with open(path, "rb") as fh:
+        while True:
+            try:
+                out.append(pickle.load(fh))
+            except (EOFError, pickle.UnpicklingError, ValueError, AttributeError):
+                break
+    return out
+
+
+def _worker(db_path: str, lab: str, h: int, idx: List[int], models: dict, multiples: dict, books=None, objectives=None,
+            stream: Optional[str] = None):
+    """Replays `idx`; each finished date is appended to `stream`, and dates already in it are not replayed again."""
+    import pickle
     from ..data.store import Store
     from ..engine.research import Research
+    done = {d["i"]: d for d in read_stream(stream)} if stream else {}
     st = Store(db_path)
     try:
         r = Research(st)
@@ -875,18 +895,49 @@ def _worker(db_path: str, lab: str, h: int, idx: List[int], models: dict, multip
         cr = _credit_state(r)
         out = []
         for i in idx:
+            if i in done:
+                out.append(done[i])
+                continue
             d = replay_date(r, i, lab, h, fc, multiples, books, objectives)
             for c in d["cases"]:
                 c["date"] = d["date"]
                 c["credit"] = cr[i]
             out.append(d)
+            if stream:
+                with open(stream, "ab") as fh:
+                    pickle.dump(d, fh)
         return out
     finally:
         st.close()
 
 
+CHUNKS = 12                        # fixed, so a resumed run splits the dates exactly as the interrupted one did
+
+
+def _cache_dir(db_path: str) -> str:
+    import os
+    d = db_path + ".breadthhedge"
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def load_dates(db_path: str, lab: str) -> List[dict]:
+    """Every replayed date (with its cases) of a finished horizon, as saved by run_all."""
+    import os
+    import pickle
+    f = os.path.join(_cache_dir(db_path), f"{lab}_dates.pkl")
+    with open(f, "rb") as fh:
+        return pickle.load(fh)
+
+
 def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=None, objectives=None, max_dates: Optional[int] = None) -> dict:
-    """The complete study (A, B, R; C and D from A and B's packages) on every horizon; stored under RESEARCH_KEY."""
+    """The complete study (A, B, R; C and D from A and B's packages) on every horizon; stored under RESEARCH_KEY.
+    Each finished chunk of dates is saved next to the database and reused on a rerun with the same dates, books and
+    objectives (a deterministic resume); every horizon's cases are kept for the post-run attribution."""
+    import hashlib
+    import json
+    import os
+    import pickle
     from concurrent.futures import ProcessPoolExecutor, as_completed
     from ..data.store import Store
     from ..engine.lab import benchmark, registry, verify_benchmark
@@ -919,15 +970,35 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None, books=
         idx = study_dates(cal, h, step)
         if max_dates:
             idx = idx[:: max(1, len(idx) // max_dates)][:max_dates]
-        chunks = [idx[k::workers * 4] for k in range(workers * 4)]
+        chunks = [idx[k::CHUNKS] for k in range(CHUNKS)]
+        cdir = _cache_dir(db_path)
+        tag = hashlib.sha256(json.dumps([lab, idx, [b["key"] for b in (books or BOOKS)], objectives or OBJECTIVES,
+                                         out["models"][lab]], sort_keys=True, default=str).encode()).hexdigest()[:12]
         dates: List[dict] = []
+        todo = []
+        for k, ch in enumerate(chunks):
+            f = os.path.join(cdir, f"{lab}_{tag}_{k}.pkl")
+            if ch and os.path.exists(f):
+                with open(f, "rb") as fh:
+                    dates += pickle.load(fh)
+                say(f"{lab}: chunk {k} reused from {f}")
+            elif ch:
+                todo.append((k, ch, f))
         t1 = time.time()
         with ProcessPoolExecutor(max_workers=workers) as ex:
-            futs = [ex.submit(_worker, db_path, lab, h, ch, models[lab], multiples, books, objectives) for ch in chunks if ch]
-            for k, f in enumerate(as_completed(futs), 1):
-                dates += f.result()
-                say(f"{lab}: {k}/{len(futs)} chunks, {sum(len(d['cases']) for d in dates)} cases ({time.time() - t1:.0f}s)")
+            futs = {ex.submit(_worker, db_path, lab, h, ch, models[lab], multiples, books, objectives, f + ".stream"): (k, f) for k, ch, f in todo}
+            for n_done, fu in enumerate(as_completed(futs), 1):
+                k, f = futs[fu]
+                part = fu.result()
+                with open(f + ".tmp", "wb") as fh:
+                    pickle.dump(part, fh)
+                os.replace(f + ".tmp", f)
+                dates += part
+                say(f"{lab}: {n_done}/{len(todo)} chunks done (chunk {k} saved), {sum(len(d['cases']) for d in dates)} cases ({time.time() - t1:.0f}s)")
         dates.sort(key=lambda d: d["i"])
+        with open(os.path.join(cdir, f"{lab}_dates.pkl.tmp"), "wb") as fh:
+            pickle.dump(dates, fh)
+        os.replace(os.path.join(cdir, f"{lab}_dates.pkl.tmp"), os.path.join(cdir, f"{lab}_dates.pkl"))
         out["horizons"][lab] = study_horizon(dates, lab, ni, say)
     finalise(out)
     out["seconds"] = round(time.time() - t0, 1)
