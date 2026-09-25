@@ -129,6 +129,8 @@ class Ledger:
             store.create_portfolio(portfolio_id, "My Portfolio", "USD")
         self._fx_cache: Dict[str, list] = {}
         self._inst_cache: Dict[str, object] = {}
+        from . import cash as cashmod
+        self.cash_settings = cashmod.load(store, portfolio_id)
 
     # ------------------------------------------------------------------ instruments
     def inst(self, a: str):
@@ -335,7 +337,7 @@ class Ledger:
         cal = self.panel.calendar()
         txs = sorted(txs, key=lambda x: (x["date"], x["id"]))
         issues: List[str] = []
-        state = {"cash": 0.0, "contributed": 0.0, "realized": 0.0, "income": 0.0, "fees": 0.0, "financing": 0.0}
+        state = {"cash": 0.0, "contributed": 0.0, "realized": 0.0, "income": 0.0, "fees": 0.0, "financing": 0.0, "interest": 0.0}
         settled: List[dict] = []
         pos: Dict[str, dict] = {}
         if not txs:
@@ -371,8 +373,29 @@ class Ledger:
 
         dates, navs, flows = [], [], []
         from ..hedge.series import settlement, unit_size
+        from . import cash as cashmod
+        cs = self.cash_settings
+        accrue = cs.get("cash_mode") != "none" or cs.get("short_mode") != "none"
+        bills = self.panel.macro("DGS3MO") if accrue else None
         for i in range(i0, end + 1):
             flow = 0.0
+            if accrue and i > i0:
+                # interest on the previous close's balances: short proceeds (up to the cash held) at the short rate,
+                # the rest of positive cash at the idle-cash rate
+                bill = bills[i - 1] / 100.0 if bills[i - 1] is not None else None
+                rc, rs = cashmod.rates(cs, bill)
+                short_mv = 0.0
+                for a in shorted:
+                    p = pos.get(a)
+                    if p and p["quantity"] < -1e-12:
+                        px_ = self.mark(a, i - 1)
+                        if px_:
+                            short_mv += -p["quantity"] * px_ * (self._fx_at(meta[a].get("currency"), i - 1) or 0.0)
+                base = max(0.0, state["cash"])
+                proceeds = min(base, short_mv)
+                intr = (base - proceeds) * rc / 252.0 + proceeds * rs / 252.0
+                if intr:
+                    state["cash"] += intr; state["interest"] += intr
             # expiries: settle derivative positions whose expiry has arrived
             for a, ins in insts.items():
                 p = pos.get(a)
@@ -557,7 +580,7 @@ class Ledger:
     def holdings(self, as_of: Optional[str] = None) -> dict:
         r = self._replay(self.store.transactions(self.pid), until=as_of)
         return {k: r[k] for k in ("as_of", "cash", "positions", "realized", "contributed", "income", "fees", "issues", "financing",
-                                  "settled", "requirement")}
+                                  "settled", "requirement", "interest")}
 
     def nav_history(self) -> dict:
         """Daily NAV from the first transaction to today (positions at each day's close or model price and rate)."""
@@ -1011,7 +1034,8 @@ def analytics(store, panel: Panel, ledger: Ledger, scores: Optional[Dict[str, di
         perf["benchmark"].pop("index", None)
         perf["benchmark"]["id"] = bench
     return {"as_of": cal[-1], "nav": nav, "cash": h["cash"], "contributed": h["contributed"], "realized": h["realized"],
-            "financing": h.get("financing", 0.0), "collateral_required": h.get("requirement", 0.0),
+            "financing": h.get("financing", 0.0), "interest": h.get("interest", 0.0), "cash_settings": ledger.cash_settings,
+            "collateral_required": h.get("requirement", 0.0),
             "free_cash": h["cash"] - (h.get("requirement") or 0.0), "settled": h.get("settled") or [], "dv01": dv01,
             "income": h.get("income", 0.0), "fees": h.get("fees", 0.0), "performance": perf, "warnings": warnings, "benchmark": bench,
             "unrealized": sum(r["unrealized"] for r in held), "pnl": nav - h["contributed"],

@@ -111,6 +111,12 @@ class Market:
         v, d = self.macro(sid)
         return (v / 100.0 if v is not None else None), d, sid
 
+    def cash_rates(self, portfolio_id: str = "main") -> Tuple[float, float]:
+        """(idle-cash rate, short-proceeds rate) under the portfolio's cash settings, at this snapshot's bill rate."""
+        from ..engine import cash as cashmod
+        r, _, _ = self.short_rate("USD")
+        return cashmod.rates(cashmod.load(self.store, portfolio_id), r)
+
     # ------------------------------------------------------------------ dividends, volatility, liquidity
     def div_yield(self, asset_id: str) -> float:
         """Trailing 12-month cash dividends / price (0 when none are recorded) — the same series the ledger marks with."""

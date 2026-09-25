@@ -4,8 +4,8 @@ The Shaffer evidence score (engine/shaffer.py) is direction-symmetric: it says w
 asset's return. What a trader keeps is not: a short pays borrow and, at a retail broker, earns no interest on its
 proceeds; a leveraged fund decays; a future embeds financing; an option costs its volatility premium. So:
 
-    edge_long  = E[total return over h] − r·h − frictions_long             (excess over holding cash)
-    edge_short = −E[total return over h] − frictions_short                 (borrow, spread; no rebate on proceeds)
+    edge_long  = E[total return over h] − r_cash·h − frictions_long        (excess over holding cash at the idle-cash rate)
+    edge_short = −E[total return over h] + r_short·h − borrow − spread     (r_short: what the proceeds earn; retail default 0)
     futures:   ±(E[total return] − r·h) − frictions (financing is in the futures price, so long and short are nearly symmetric)
     options:   Δ·S·(E[total return] − r·h) + (value at the forecast volatility − premium) − spread     (long only)
     SS_net = 100·tanh( edge / σ_h / 0.25 ),   σ_h = forecast volatility × √(h/252) of the position's own P&L
@@ -48,6 +48,7 @@ def net_scores(research, inst_id: str, horizons=HORIZONS, market: Optional[Marke
         return {"id": inst_id, "error": "; ".join(pr.reasons) or "no price"}
     r, _, _ = m.short_rate("USD")
     r = r or 0.0
+    rc, rs = m.cash_rates()
     und = inst.underlying if inst.type != "SPOT" else inst.id
     if inst.type == "FUTURE" and inst.spec["kind"] == "treasury":
         und = {"ZT": "UST2Y", "ZF": "UST5Y", "ZN": "UST10Y", "TN": "UST10Y", "ZB": "UST30Y", "UB": "UST30Y"}.get(inst.root, "UST10Y")
@@ -57,7 +58,7 @@ def net_scores(research, inst_id: str, horizons=HORIZONS, market: Optional[Marke
     fvol = fvol or m.realized_vol(und) or 0.2
     out = {"id": inst_id, "name": inst.name, "type": inst.type, "product_type": inst.product_type, "underlying": und, "horizons": {},
            "pricing_label": pr.pricing_label,
-           "vol_forecast": fvol, "vol_source": vsrc, "rate": r}
+           "vol_forecast": fvol, "vol_source": vsrc, "rate": r, "cash_rate": rc, "short_proceeds_rate": rs}
     a = research.store.asset(inst.id) if inst.type == "SPOT" else None
     can_short = inst.type in ("FUTURE", "FORWARD") or (inst.type == "SPOT" and a and a.get("asset_class") not in ("CRYPTO", "INDEX")
                                                         and not (a.get("meta") or {}).get("synthetic"))
@@ -92,7 +93,7 @@ def net_scores(research, inst_id: str, horizons=HORIZONS, market: Optional[Marke
             fs = ((cs.get("total") or 0.0) / unit) if can_short else None
             if inst.type == "SPOT":
                 lev = ((a or {}).get("meta") or {}).get("leverage") or 1.0
-                excess = drift - r * yrs
+                excess = drift - rc * yrs          # buying spends cash that would earn the idle-cash rate
                 el = excess - fl
                 # the short keeps the full −E; its lost interest on the proceeds is in its frictions (short_financing)
                 es = (-drift + r * yrs - fs) if can_short else None

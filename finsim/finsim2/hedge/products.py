@@ -630,7 +630,8 @@ class Priced:
                     out["borrow"] = None
                 else:
                     out["borrow"] = GC_BORROW * yrs * uv
-                    out["short_financing"] = r * yrs * uv          # retail short proceeds earn no rebate
+                    _, rs = m.cash_rates()                          # interest the proceeds earn under the cash settings
+                    out["short_financing"] = (r - rs) * yrs * uv    # vs a fair-value short that earns the bill on its proceeds
                     info["dividends_owed"] = m.div_yield(i.id) * yrs * uv
             dr = self.structural_drift()
             if dr is not None:

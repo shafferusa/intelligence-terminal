@@ -486,6 +486,14 @@ class Router:
     def portfolio_routes(self, method, rest, q, b):
         from .engine import portfolio as pf
         app, store, research = self.s, self.s.store, self.s.research
+        if rest == ["cash-settings"]:
+            from .engine import cash as cashmod
+            if method == "POST":
+                cashmod.save(store, "main", b or {})
+                for k in store.kv_keys("netscores:"):              # net scores depend on the cash settings
+                    store.kv_delete(k)
+            s_ = cashmod.load(store, "main")
+            return {**s_, "description": cashmod.describe(s_), "modes": {"cash": cashmod.CASH_MODES, "short": cashmod.SHORT_MODES}}
         led = app.ledger()
         if not rest:
             scores = {}

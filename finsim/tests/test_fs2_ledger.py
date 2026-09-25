@@ -136,6 +136,45 @@ class ContinuousSeries(LedgerCase):
         self.assertAlmostEqual(self.led.holdings()["positions"].get("WTI", {}).get("quantity", 0.0), 0.0)
 
 
+class CashInterest(LedgerCase):
+    def _with(self, **settings):
+        from finsim2.engine import cash as cashmod
+        self.store.upsert_macro("DGS3MO", [(d, 4.0) for d in self.days])
+        cashmod.save(self.store, "main", settings)
+        self.panel = Panel(self.store)
+        self.led = Ledger(self.store, self.panel)
+
+    def test_default_idle_cash_earns_nothing(self):
+        self.led.deposit(1e6, self.days[0])
+        self.assertAlmostEqual(self.led.holdings()["cash"], 1e6, places=6)
+
+    def test_bill_rate_accrues_daily_into_cash_nav_and_returns(self):
+        self._with(cash_mode="bill")
+        self.led.deposit(1e6, self.days[0])
+        h = self.led.holdings()
+        n = len(self.days) - 2        # the bill is visible from the day after its date (FRED lag): one fewer accrual
+        self.assertAlmostEqual(h["cash"], 1e6 * (1 + 0.04 / 252) ** n, delta=1e-3 * n)       # daily accrual, compounding in cash
+        self.assertAlmostEqual(h["interest"], h["cash"] - 1e6, places=6)
+
+    def test_short_proceeds_earn_only_under_their_setting(self):
+        out = {}
+        for mode in ("none", "institutional"):
+            self._with(cash_mode="none", short_mode=mode)
+            self.led.deposit(1e6, self.days[0])
+            self.led.trade("SPY", 100, "SHORT", date=self.days[10])
+            out[mode] = self.led.holdings()["interest"]
+            self.tearDown(); self.setUp()
+        self.assertEqual(out["none"], 0.0)
+        self.assertGreater(out["institutional"], 0.0)
+
+    def test_settings_are_validated(self):
+        from finsim2.engine import cash as cashmod
+        with self.assertRaises(ValueError):
+            cashmod.save(self.store, "main", {"cash_mode": "moon"})
+        with self.assertRaises(ValueError):
+            cashmod.save(self.store, "main", {"short_mode": "partial", "short_share": 1.5})
+
+
 class CorporateActions(LedgerCase):
     def test_split_after_a_trade_at_the_brokers_price_keeps_its_value(self):
         # closes are split-adjusted (today's basis); a 4:1 split happened on day 100

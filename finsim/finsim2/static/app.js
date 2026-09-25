@@ -1197,9 +1197,22 @@
       <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Portfolio benchmark</h2><div class="row">${assetPicker('bmPick', '')}<span class="muted" id="bmNow"></span></div><p class="hint">Performance is compared with this asset's total return (default SPY).</p></div>
         <div class="card flush"><h2>Audit log</h2><div id="auT"></div></div></div>
       <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Display</h2><div class="seg" id="thSeg">${['system', 'dark', 'light'].map(t => `<button data-th="${t}" class="${pref.get('theme', 'system') === t ? 'on' : ''}">${t[0].toUpperCase() + t.slice(1)}</button>`).join('')}</div></div>
-        <div class="card flush"><h2>Fetch log</h2><div id="flT"></div></div></div>`;
+        <div class="card flush"><h2>Fetch log</h2><div id="flT"></div></div></div>
+      <div class="card" style="margin-top:16px"><h2>Cash and short proceeds</h2>
+        <div class="row" style="gap:14px;flex-wrap:wrap;align-items:flex-end">
+          <label class="f">Idle cash earns<select id="csMode"><option value="none">nothing</option><option value="bill">the 3-month bill</option><option value="broker">the bill − broker spread</option><option value="custom">a custom rate</option></select></label>
+          <label class="f">Broker spread<input id="csSpread" type="number" step="0.001" style="width:90px"></label>
+          <label class="f">Custom rate<input id="csCustom" type="number" step="0.001" style="width:90px"></label>
+          <label class="f">Short proceeds earn<select id="csShort"><option value="none">nothing (retail)</option><option value="partial">part of the bill</option><option value="institutional">the bill (institutional rebate)</option></select></label>
+          <label class="f">Share (partial)<input id="csShare" type="number" step="0.05" min="0" max="1" style="width:80px"></label>
+          <button class="primary" id="csSave">Save</button></div>
+        <p class="hint" id="csNow"></p>
+        <p class="hint">Interest accrues every session on the previous close's balances at the 3-month bill as known that day, is booked as cash, and so flows into NAV, P&L, the time- and money-weighted returns and the long/short net scores. The whole ledger is replayed with the new setting.</p></div>`;
     $$('#thSeg button').forEach(b => b.onclick = () => { pref.set('theme', b.dataset.th); applyTheme(); $$('#thSeg button').forEach(x => x.classList.toggle('on', x === b)); });
     const rf = full => busy(null, async () => { const j = await post('/fs2/refresh', { full }); pollJob(j.id, () => route(), $('#rfJ')); });
+    const csFill = c => { $('#csMode').value = c.cash_mode; $('#csSpread').value = c.broker_spread; $('#csCustom').value = c.custom_rate; $('#csShort').value = c.short_mode; $('#csShare').value = c.short_share; $('#csNow').textContent = 'Now: ' + c.description + '.'; };
+    api('/fs2/portfolio/cash-settings').then(csFill).catch(() => {});
+    $('#csSave').onclick = async () => { try { csFill(await api('/fs2/portfolio/cash-settings', { body: { cash_mode: $('#csMode').value, broker_spread: N($('#csSpread').value) || 0, custom_rate: N($('#csCustom').value) || 0, short_mode: $('#csShort').value, short_share: N($('#csShare').value) ?? 0.5 } })); toast('Cash settings saved; the ledger is replayed with them'); } catch (e) { toast(e.message, true); } };
     $('#rf1').onclick = () => rf(false); $('#rf2').onclick = () => { if (confirm('Re-download the full history of every asset? A few minutes.')) rf(true); };
     api('/fs2/settings').then(x => { $('#bmNow').textContent = 'now: ' + x.benchmark; }).catch(() => {});
     bindPicker('bmPick', id => busy(null, async () => { await post('/fs2/settings', { benchmark: id }); toast('Benchmark: ' + id); route(); }));
