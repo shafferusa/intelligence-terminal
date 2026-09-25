@@ -22,6 +22,7 @@ Base-return priors μ(a, h, t) — every one uses only information available at 
                   interest parity (r_quote − r_base) where both policy rates exist; zero elsewhere
     hedge_prior   the Shaffer Hedge design prior made point-in-time: β × market drift, own trailing drift for the
                   products the hedge treats as structural (VXX, leveraged / inverse funds)
+    frequency     the hierarchical PIT positive-return frequency (the climatology forecaster) read as a prior
     product       product-specific: equity-like → beta_market; bonds with a yield → carry; spot FX and commodities → 0
                   (no roll / forward data: no drift is invented); crypto → hier with heavy shrinkage; VXX → own
                   trailing drift (roll decay); leveraged / inverse → beta_market (β ≈ leverage, drag from own vol);
@@ -58,10 +59,11 @@ from . import weights as W
 from .lab import LAB_HORIZONS, node_path
 from .weights import DEPTHS, ERAS, SPLIT, Rec, _cut, _clustered_mean
 
-PRIORS = ["zero", "class", "hier", "beta_market", "carry", "hedge_prior", "product"]
+PRIORS = ["zero", "class", "hier", "beta_market", "carry", "hedge_prior", "product", "frequency"]
 PRIOR_LABEL = {"zero": "always-zero drift", "class": "expanding asset-class drift", "hier": "class → sector → asset drift (shrunk)",
                "beta_market": "β × PIT market drift", "carry": "observable carry (bond yield, FX interest parity)",
-               "hedge_prior": "Shaffer Hedge market prior (PIT)", "product": "product-specific prior"}
+               "hedge_prior": "Shaffer Hedge market prior (PIT)", "product": "product-specific prior",
+               "frequency": "hierarchical PIT positive-return frequency (the climatology forecaster itself)"}
 MAIN_PRIOR = "product"
 DRIFT_K = 20.0                 # independent matured outcomes: weight n/(n+K) on a group's own mean, the rest on its parent
 CRYPTO_K = 200.0
@@ -76,8 +78,11 @@ YIELD = {"UST2Y": "DGS2", "UST5Y": "DGS5", "UST10Y": "DGS10", "UST30Y": "DGS30",
 # spot FX: expected log change under uncovered interest parity = (rate of the quote currency − rate of the base currency)
 FX_UIP = {"EURUSD": ("DFF", "ECBDFR"), "GBPUSD": ("DFF", "IUDSOIA"), "AUDUSD": ("DFF", "IRSTCI01AUM156N"),
           "USDJPY": ("IRSTCI01JPM156N", "DFF"), "USDCAD": ("IRSTCI01CAM156N", "DFF"), "USDCHF": ("IRSTCI01CHM156N", "DFF")}
-COMMODITY_SECTORS = {"Precious Metals", "Energy", "Broad Commodities", "Industrial Metals", "Agriculture"}
+COMMODITY_ETFS = {"GLD", "SLV", "USO", "DBC", "UNG", "CPER", "DBA"}     # commodity futures / bullion funds (not equity sector funds)
 OWN_DRIFT = {"VXX"}            # structural roll decay the market prior cannot see
+
+
+_INV = __import__("statistics").NormalDist().inv_cdf
 
 
 def _phi(x: float) -> float:
@@ -100,7 +105,7 @@ def product_rule(meta: dict) -> str:
         return "own"
     if a in YIELD:
         return "carry"
-    if cls in ("FX", "COMMODITY") or sec in ("Currency",) or sec in COMMODITY_SECTORS:
+    if cls in ("FX", "COMMODITY") or sec == "Currency" or a in COMMODITY_ETFS:
         return "zero"
     if cls == "CRYPTO" or sec == "Crypto":
         return "hier"
@@ -258,6 +263,9 @@ def _hedge_structural():
 
 def z_of(r: Rec, prior: str) -> Optional[float]:
     e = r.ext or {}
+    if prior == "frequency":                         # the climatology probability, on the same z scale (p = Φ(z))
+        c = e.get("clim")
+        return None if c is None else _INV(min(0.99, max(0.01, c)))
     m, s = (e.get("mu") or {}).get(prior), e.get("s")
     if m is None or not s:
         return None
@@ -1098,7 +1106,8 @@ def summary_rows(res: dict) -> List[dict]:
                     "best_alpha": ba, "best_alpha_ic": (A.get("challenger") or {}).get("ic"),
                     "best": k, "accuracy": wf.get("accuracy"), "naive": wf.get("baseline_acc"), "naive_rule": wf.get("baseline"),
                     "excess": wf.get("excess"), "balanced": wf.get("balanced_accuracy"), "brier": wf.get("brier"), "brier_skill": wf.get("brier_skill"),
-                    "bear_precision": wf.get("bear_precision"), "bear20": bear.get("p_down"), "status": _status(b)})
+                    "bear_precision": wf.get("bear_precision"), "bear20": bear.get("p_down"), "status": _status(b),
+                    "bear_calls": ((wf.get("coverage") or 0) - (wf.get("bull_calls") or 0)) if wf.get("coverage") is not None else None})
     return out
 
 
@@ -1143,7 +1152,7 @@ def markdown(res: dict) -> str:
     for r in rows:
         w(f"| {r['horizon']} | {_pc(r['base_rate'])} | {_n(r['alpha_ic'])} ({_n(r['alpha_rank_ic'])}, t {_n(r['alpha_rank_t'], 1)}) | {_pc(r['accuracy'])} <sub>{r['best']}</sub> | "
           f"{_pc(r['naive'])} <sub>{(r['naive_rule'] or '').replace('_', ' ')}</sub> | {_p(r['excess'], 1, True)} | {_pc(r['balanced'])} | "
-          f"{_n(r['brier'], 4)} ({_p(r['brier_skill'], 2, True)}) | {_pc(r['bear_precision'])} | {r['status']} |")
+          f"{_n(r['brier'], 4)} ({_p(r['brier_skill'], 2, True)}) | {_pc(r['bear_precision'])} <sub>{_p(r['bear_calls'], 1)} of records</sub> | {r['status']} |")
     w("")
     w("Directional columns: the directional model with the best walk-forward Brier skill at that horizon. Alpha IC: the production "
       "score against the excess-return target (per-asset time-series IC; rank IC = weekly cross-sectional).")
@@ -1215,7 +1224,7 @@ def markdown(res: dict) -> str:
     w("**5. Does Alpha + base return improve absolute directional forecasts?** The main prior alone vs the prior plus the production "
       "score (hierarchy to class), walk-forward on the same records:")
     w("")
-    w("| Horizon | Prior alone: accuracy / Brier skill / AUC | Prior + Alpha: accuracy / Brier skill / AUC | Δ accuracy | Brier gain (t) | Status |")
+    w("| Horizon | Prior alone: accuracy / Brier skill / AUC | Prior + Alpha: accuracy / Brier skill / AUC | Δ accuracy | Δ Brier gain per record | Status |")
     w("|---|---|---|---|---|---|")
     for lab in _HZ:
         D_ = (H.get(lab) or {}).get("directional") or {}
@@ -1226,7 +1235,7 @@ def markdown(res: dict) -> str:
         w(f"| {lab} | {_pc(a.get('accuracy'))} / {_p(a.get('brier_skill'), 2, True)} / {_n(a.get('auc'))} | {_pc(bw.get('accuracy'))} / {_p(bw.get('brier_skill'), 2, True)} / {_n(bw.get('auc'))} | "
           f"{_p((bw.get('accuracy') or 0) - (a.get('accuracy') or 0), 2, True)} | {_n((bw.get('brier_gain') or 0) - (a.get('brier_gain') or 0), 5, True)} | {_status(b)} |")
     w("")
-    w("(Brier gain column: the difference in the per-record Brier improvement over climatology between the two; its own t is in the per-horizon tables.)")
+    w("(Δ Brier gain: the change in the mean per-record Brier improvement over climatology; each model's own t is in the per-horizon tables.)")
     w("")
     # 6–11
     w("**6–11. Directional accuracy, naive baseline, excess, balanced accuracy, bearish precision, Brier / calibration** — every "

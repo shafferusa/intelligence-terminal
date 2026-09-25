@@ -86,6 +86,22 @@ class Metrics(unittest.TestCase):
         self.assertAlmostEqual(w[1], 1.2, delta=0.08)
 
 
+class ProductRule(unittest.TestCase):
+    def test_rules(self):
+        R = D.product_rule
+        self.assertEqual(R({"id": "XOM", "asset_class": "EQUITY", "sector": "Energy"}), "beta_market")
+        self.assertEqual(R({"id": "XLE", "asset_class": "ETF", "sector": "Energy"}), "beta_market")
+        self.assertEqual(R({"id": "USO", "asset_class": "ETF", "sector": "Energy"}), "zero")
+        self.assertEqual(R({"id": "WTI", "asset_class": "COMMODITY"}), "zero")
+        self.assertEqual(R({"id": "EURUSD", "asset_class": "FX"}), "zero")
+        self.assertEqual(R({"id": "TLT", "asset_class": "ETF", "sector": "Fixed Income"}), "carry")
+        self.assertEqual(R({"id": "UST10Y", "asset_class": "TREASURY"}), "carry")
+        self.assertEqual(R({"id": "HYG", "asset_class": "ETF", "sector": "Fixed Income"}), "hier")
+        self.assertEqual(R({"id": "BTC", "asset_class": "CRYPTO"}), "hier")
+        self.assertEqual(R({"id": "VXX", "asset_class": "ETF", "sector": "Volatility"}), "own")
+        self.assertEqual(R({"id": "SQQQ", "asset_class": "ETF", "sector": "Leveraged / Inverse"}), "beta_market")
+
+
 class Directional(unittest.TestCase):
     def test_prior_plus_alpha_beats_prior_and_passes(self):
         recs = _recs(effect=0.8)
@@ -166,7 +182,7 @@ class NoLeakage(unittest.TestCase):
             if key[1] < cal[k]:
                 e2 = after[key]
                 self.assertAlmostEqual(e["clim"], e2["clim"], places=12)
-                for p in D.PRIORS:
+                for p in e["mu"]:
                     u, v = e["mu"][p], e2["mu"][p]
                     self.assertTrue((u is None and v is None) or abs(u - v) < 1e-12, (key, p, u, v))
                 checked += 1
