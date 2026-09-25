@@ -30,7 +30,8 @@ anything later in this document, this wins.
 - **Local section**, low in every weekday edition, covering three beats in their own right:
   Bridgeville/South Fayette/South Hills · Pittsburgh & Allegheny County · Pennsylvania. Up to two
   items per beat, quality-gated, never padded. The **morning** edition leads it with Pittsburgh-area
-  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18).
+  weather from the National Weather Service gridpoint for Bridgeville, PA (shared-rules §18). Kept as a
+  real section under the finance-first tilt (2026-09-25) — only tech/science coverage was demoted.
 - **Listen to text** on every report: an in-page Web Speech player injected by
   `site/assets/report.js`. Chosen over generated audio files because it works on every report
   including the existing archive, costs nothing, and adds nothing to the repository. Known limit,
@@ -198,26 +199,35 @@ It never restarts.
 
 Morning: today's economic releases, Fed speakers, CB decisions, auctions, earnings, votes, hearings, court decisions, summits, deadlines, launches, milestones — ET primary, importance-classified (Critical/High/Medium/Low, with reason). Closing: completed (with results), delayed, canceled, still upcoming, overnight, tomorrow's majors. Sunday: full day-by-day week plan with expected market sensitivity.
 
-## 18. Weekday MORNING report structure (6:30 AM ET) — revised 2026-08-16
+## 18. Weekday MORNING report structure (6:30 AM ET) — finance-first, revised 2026-09-25
 
-Masthead · The Brief · Top Stories · Overnight · Politics & Government · The World · The Economy ·
-Business · Technology & AI · Science & Space · Today's Calendar · Before the Open ·
-Risks & Scenarios · **Local** (weather strip, then the three beats) · Market Appendix (collapsed) ·
-Colophon.
+Masthead · The Brief (markets-led) · Top Stories (finance-weighted) · Overnight & Since the Close ·
+Before the Open (expanded centerpiece) · The Economy (Fed/Treasury/rates, expanded) ·
+Business & Earnings (expanded) · Today's Calendar · Risks & Scenarios · The United States · The World ·
+AI & Technology · Science · Space · Also in the News (small catch-all) · **Local** (weather strip + the
+three beats incl. Pennsylvania) · Market Appendix (collapsed) · Colophon.
 
-Domain sections with nothing material are omitted, not padded. Before the Open is prose, not a
-table: futures, yields, dollar, VIX, oil, gold, BTC, what the tape appears to price, the most
-fragile assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
+Both weekday editions LEAD with and go deepest on finance / business / economics / Fed / Treasury —
+that block is the main event and gets the depth. General news is kept real: **The United States**,
+**The World**, **AI & Technology**, **Science**, **Space** and **Local** (including Pennsylvania) all
+stay dedicated sections. **Also in the News** is only a small catch-all for what none of them cover
+(climate/disasters, public health, human interest), omitted when empty. Domain items with nothing
+material are omitted, not padded. Before the Open is prose, not a table: futures, the curve, dollar,
+VIX term structure, oil, gold, HY credit, BTC, what the tape appears to price, the most fragile
+assumption, and what would invalidate it. Futures ≠ guaranteed open, said once.
 
-## 19. Weekday CLOSING report structure (4:30 PM ET) — revised 2026-08-16
+## 19. Weekday CLOSING report structure (4:30 PM ET) — finance-first, revised 2026-09-25
 
-Masthead · The Brief · **The Board** (the 25-row watchlist chart, shared-rules §17) · Top Stories ·
-What Changed Today · Politics & Government · The World · The Economy · Business ·
-Technology & AI · Science & Space · What Moved Markets · Winners & Losers · Tomorrow ·
-**Local** (no weather strip) · Market Appendix (collapsed) · Colophon.
+Masthead · The Brief (markets-led) · **The Board** (the 25-row watchlist chart, shared-rules §17) ·
+Top Stories (finance-weighted) · What Moved Markets (expanded) · Winners & Losers ·
+What Changed Today · The Economy (Fed/Treasury/rates, expanded) · Business & Earnings (expanded) ·
+Tomorrow · The United States · The World · AI & Technology · Science · Space · Also in the News (small
+catch-all) · **Local** (no weather strip, the three beats incl. Pennsylvania) · Market Appendix
+(collapsed) · Colophon.
 
-What Moved Markets keeps its four attribution labels — `Confirmed catalyst` / `Likely contributor` /
-`Market narrative` / `Unexplained`. Those are honesty, not clutter, and they stay.
+What Moved Markets sits high in the edition and keeps its four attribution labels —
+`Confirmed catalyst` / `Likely contributor` / `Market narrative` / `Unexplained`. Those are honesty,
+not clutter, and they stay.
 
 What Moved Markets: open/morning/midday/close phases; rates, data, earnings, policy, geopolitics, commodities, positioning, technicals, rebalancing/flows. Label: Confirmed catalyst / Likely contributor / Market narrative / Unexplained. Never force a narrative.
 
@@ -231,12 +241,22 @@ consolidated per `prompts/weekend.md` — best/worst assets and sector rotation 
 Markets; overhyped and undercovered become one section; the registry sweep becomes one sentence in
 the colophon.
 
+**Finance-first (2026-09-25):** the weekly Markets / Economy & Central Banks / Business & Earnings block
+leads and gets the depth. US politics, the world, AI & Technology, Science, Space and Local (incl.
+Pennsylvania) all stay dedicated weekly reviews; **Also in the News** is only a small catch-all for what
+none of them cover. Authoritative order in `prompts/weekend.md` S4.
+
 ## 21. SUNDAY Week-Ahead Outlook (9:00 AM ET default)
 
 1 Cover · 2 Five-Minute Week-Ahead Brief · 3 Top Themes · 4 Day-by-Day Calendar (Mon–Fri: releases, earnings, political events, deadlines, courts, Fed speakers, auctions, geopolitical events, launches, science; expected market sensitivity per day) · 5 US Politics Outlook · 6 Geopolitical Outlook · 7 Economic Release Preview · 8 Central-Bank Preview · 9 Earnings Preview · 10 Treasury & Credit Calendar · 11 Tech & AI Watch · 12 Science Watch · 13 Launch & Mission Calendar · 14 Market Setup · 15 Sector Setup · 16 Company Catalysts · 17 Risk Register (description, probability range, impact, horizon, trigger, early indicators, affected markets, mitigants) · 18 Scenario Matrix (base/bull/bear/shock: conditions, expected behavior, indicators, confirmers, invalidators) · 19 What Would Change the Outlook · 23 Sources & Methodology.
 
 **Revised 2026-08-16:** no learning previews, plus a **Local Week Ahead** section; consolidated
 per `prompts/weekend.md`.
+
+**Finance-first (2026-09-25):** the forward Economy Ahead / Earnings & Business / Market Setup block
+leads and gets the depth. The United States, The World Ahead, AI & Technology Ahead, Science Ahead,
+Space Ahead (incl. the launch calendar) and Local Week Ahead all stay dedicated; **Also in the News
+Ahead** is only a small catch-all. Authoritative order in `prompts/weekend.md` U3.
 
 ## 22. Market Intelligence Appendix (bottom of every report, collapsed subsections)
 

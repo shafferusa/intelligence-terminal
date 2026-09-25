@@ -412,7 +412,8 @@ each in its own right, in this order:
 Up to two items per beat. **Quality-gated, never padded**: a beat with nothing that matters is
 simply absent that day, and plenty of days will show only one of the three. Not a crime blotter, not
 an events calendar, not weather chatter. Each item carries `.local-place` naming its beat, and the
-same sourcing standards as the rest of the paper.
+same sourcing standards as the rest of the paper. (Local stays a real section in the finance-first
+editions — the finance tilt demoted tech/science, not Pennsylvania and the local beats.)
 
 **Weather — MORNING EDITION ONLY.** Leads the Local section, from the National Weather Service
 (free, no key, `.gov` UA header required per §2):
