@@ -718,6 +718,7 @@ def summarize(res: dict, run: "ShafferRun") -> dict:
         if rec.get("raw") is not None:
             at = attribute(rec)
             live["families"] = at["families"]
+            live["sig"] = signal_record(rec)             # the same pieces the research records keep (signal challengers)
             for x in at["signals"]:
                 x["label"] = flabel(x["signal"])
             act = [x for x in at["signals"] if x.get("s") is not None]

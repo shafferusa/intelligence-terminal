@@ -678,11 +678,18 @@ def record_shadow(research, asset_id: str) -> int:
             g = ((v.get("validation") or {}).get(lab) or {}).get("gates") or {}
             if not (g.get("G1_discovery") and g.get("G2_confirmation")):
                 continue                     # only challengers that passed discovery and confirmation enter live shadow
-            s = challenger_score(st, v["id"], meta, lab, fam, vol)
+            info: dict = {}
+            if v.get("family") == "signal-weights":
+                from . import weights as wmod
+                regs = research.regimes()
+                s = wmod.live_score(st, v["id"], meta, lab, r.get("sig"), {d: (regs.get(d) or [None])[-1] for d in ("market", "volatility", "rates", "growth")}, info)
+            else:
+                s = challenger_score(st, v["id"], meta, lab, fam, vol)
             if s is None:
                 continue
             pid = record(st, panel, asset_id, last, f"shaffer:{v['id']}", v["id"], lab, hmap[lab], None, None, None, s,
-                         {"production_raw": r.get("raw")}, source="shadow", raw=s)
+                         {"production_raw": r.get("raw"), "production_version": f"shaffer-{cfg.VERSION}", "challenger_version": v["id"],
+                          "node": info.get("node"), "confidence": r.get("confidence")}, source="shadow", raw=s)
             n += pid is not None
     return n
 

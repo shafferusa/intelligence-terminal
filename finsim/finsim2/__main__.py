@@ -57,6 +57,8 @@ def main(argv=None) -> int:
     lb = sub.add_parser("lab", help="ML Lab: research Shaffer weights (hierarchical, walk-forward) and register challengers")
     lb.add_argument("--build", action="store_true", help="first rerun the point-in-time sweeps that produce the research records")
     lb.add_argument("--workers", type=int, default=3)
+    lb.add_argument("--weights", action="store_true", help="only the signal-level Shaffer weight research (engine/weights.py)")
+    lb.add_argument("--report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "SHAFFER_WEIGHT_RESEARCH.md"))
     ha = sub.add_parser("hedge-audit", help="walk-forward Shaffer Hedge evaluation and ML-adjustment training → HEDGE_AUDIT.md")
     ha.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "HEDGE_AUDIT.md"))
     args = ap.parse_args(argv)
@@ -102,8 +104,24 @@ def main(argv=None) -> int:
         if args.build:
             from .engine.audit import run_universe
             run_universe(app.db_path(), workers=args.workers, progress=print, skip_ml=True)
-        res = lab.run_parallel(app.db_path(), workers=args.workers, progress=print)
-        print("challengers:", ", ".join(res.get("challengers") or []) or "none", f"({res['seconds']}s)")
+        if not args.weights:
+            res = lab.run_parallel(app.db_path(), workers=args.workers, progress=print)
+            print("family-weight challengers:", ", ".join(res.get("challengers") or []) or "none", f"({res['seconds']}s)")
+        from .engine import weights
+        wr = weights.run_all(app.db_path(), workers=args.workers, progress=print)
+        for lab_, hz in sorted(wr["horizons"].items(), key=lambda kv: dict(lab.LAB_HORIZONS).get(kv[0], 0)):
+            b = (hz.get("challengers") or {}).get(hz.get("best") or "", {})
+            print(f"{lab_}: best {hz.get('best')} -> {(b.get('gates') or {}).get('status', hz.get('reason', '-'))}")
+        print(f"signal-weight research: {wr['seconds']}s")
+        from .data.store import Store
+        st = Store(app.db_path())
+        try:
+            live = {v["id"]: lab.live_gate(st, v["id"]) for v in lab.registry(st)["versions"] if v.get("family") == "signal-weights"}
+        finally:
+            st.close()
+        with open(args.report, "w", encoding="utf-8") as f:
+            f.write(weights.markdown(wr, live))
+        print("wrote", args.report)
         return 0
     if args.cmd == "hedge-audit":
         from .data.store import Store

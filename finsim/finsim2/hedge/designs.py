@@ -99,6 +99,11 @@ def expected_return(research, asset_id: str, lab: str, h: int, m, use_shaffer: b
     out = {"calibrated": full.get("calibrated"), "raw": full.get("raw"), "confidence": full.get("confidence"),
            "evidence": full.get("expected_edge"), "prior": prior, "own_long_run": _drift(m, asset_id, h),
            "oos_t": ((full.get("oos") or {}).get("t") if isinstance(full.get("oos"), dict) else None)}
+    try:        # historical reliability of a score this size (ML Lab weight research) — shown, not used by the hedge math
+        from ..engine.weights import reliability
+        out["reliability"] = reliability(research.store, lab, full.get("raw"))
+    except Exception:  # noqa: BLE001
+        out["reliability"] = None
     ev = full.get("expected_edge") if use_shaffer else None
     if prior is None:
         out.update(value=None, source="no expected return available")

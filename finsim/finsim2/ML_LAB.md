@@ -105,6 +105,41 @@ Metrics for every version: date-clustered IC (each week's evidence averaged acro
 independent tests), paired challenger − production IC on the same records, hit rate, calibration monotonicity,
 top-minus-bottom decile spread, by class, sector and regime.
 
+### Signal-level weight research (`engine/weights.py`, report `SHAFFER_WEIGHT_RESEARCH.md`)
+
+The family research above can only re-scale whole families. The signal-level research learns the parameters *inside* the
+Shaffer equation. The sweep now keeps, for every record, each signal's x = clip(z/2, −1, 1), its point-in-time direction δ,
+weight ω, confidence c, regime factor r and decay d, and each family's multiplier g = W·A·H/K (lab_records version
+`<score version>s`); these reproduce production's raw score exactly. Challengers, per horizon:
+
+| Kind | Index | What is learned |
+|---|---|---|
+| signal | Σ β_i δ_i x_i c_i r_i d_i, β ≥ 0 | signal weights ω and family weights W·A·H jointly; the PIT direction δ is kept |
+| scaling | Σ β_i δ_i x_i c_i^γc r_i^γr d_i^γd | also the confidence / regime / decay strengths, chosen by an inner holdout (last 4 years of each training window) |
+| free | Σ β_i x_i, signed | every signal, even inactive ones — the over-fitting check |
+| interact | signal + 5 regime interactions | Momentum × high vol, Valuation × rising rates, Growth × rising rates (real-yield proxy), Credit × recession, Trend × bear |
+| family | Σ β_f F_f | family weights only (reference) |
+
+Momentum × asset class is the class level of the hierarchy; trend × horizon is the per-horizon fit. Each is fitted at every
+node of Global → Class → Sector → Industry → Asset with ridge shrinkage toward the parent (λ = 200 effective
+observations), bounded weights (|β| ≤ 0.2 on standardised inputs), q = 5/max(5, h) for overlapping records; the `signal`
+kind is also fitted with the hierarchy cut at each depth to measure where specialisation stops helping. Challenger raw =
+100·tanh(index / s), s matched so its |score| distribution equals production's (bands comparable).
+
+Validation: weights frozen before each era, trained only on outcomes matured before it — → 2008 test 2009–12, → 2012 test
+2013–16, → 2016 test 2017–20, → 2020 test 2021–24, → 2024 test 2025– — plus the 2018 split. Metrics on the same records for
+production, challenger and five naive baselines (always bullish, PIT positive-return frequency, previous direction, 12-1
+momentum, 1-month mean reversion): directional accuracy with a date-clustered 95% interval, IC, rank IC, monotonicity,
+top − bottom decile, accuracy by |score| band, the nine signed score bands (independent observations, % positive, mean,
+median, direction right), by class. Training (in-sample) accuracy is shown next to it so a fit that only works in sample is
+visible. Gates: G1 pooled walk-forward Δ IC t ≥ 2 and Δ accuracy ≥ 0; G2 ≥ 3 of 4 complete eras won, 2018 split Δ IC t ≥ 1,
+accuracy above the best naive baseline; G3 live shadow. Status REJECT / SHADOW / ELIGIBLE FOR PROMOTION / INSUFFICIENT DATA;
+a multi-metric research score (evidence − complexity − sign flips − weight turnover − concentration) ranks challengers
+for display only. SHADOW challengers are recorded daily (production and challenger score, both versions, hierarchy node,
+horizon, confidence, maturity date). `python -m finsim2 lab --weights` runs it and writes the report; ML Lab → *Signal
+weights* shows it. For the hedge, `weights.reliability` gives how often a production score of that size was right at that
+horizon against the best naive baseline — shown on the design panel, not used by the hedge math in this phase.
+
 ### Versions and promotion
 
 Every formula has an ID and a registry entry (kv `formula:registry`): formula, families and signals, applicability,

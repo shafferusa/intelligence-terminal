@@ -83,7 +83,7 @@ def families() -> List[str]:
 
 
 class Rec:
-    __slots__ = ("asset", "meta", "date", "end", "wk", "raw", "y", "yr", "x", "act", "g", "reg", "base", "score")
+    __slots__ = ("asset", "meta", "date", "end", "wk", "raw", "y", "yr", "x", "act", "g", "reg", "base", "score", "grp")
 
 
 def _week(d: str) -> int:
@@ -118,18 +118,7 @@ def load(store, research, lab: str) -> List[Rec]:
             r = Rec()
             r.asset, r.meta, r.date, r.end, r.wk = a, meta, d, cal[min(len(cal) - 1, i + h)], _week(d)
             r.raw, r.y, r.yr = raw, y, yr
-            x = array("f", bytes(4 * len(sigs)))
-            for s_, v in (sig.get("x") or {}).items():
-                j = si.get(s_)
-                if j is not None:
-                    x[j] = v
-            r.x = x
-            r.act = tuple((si[s_], v[0], v[1], v[2], v[3], v[4]) for s_, v in (sig.get("a") or {}).items() if s_ in si)
-            g = array("f", bytes(4 * len(fams)))
-            for f, v in (sig.get("g") or {}).items():
-                if f in fi:
-                    g[fi[f]] = v
-            r.g = g
+            _fill(r, sig, si, fi)
             r.reg = tuple((regs.get(dm) or [None] * len(cal))[i] for dm in dims)
             # naive baselines (all known at t)
             def lr(a_, b_):
@@ -149,6 +138,22 @@ def load(store, research, lab: str) -> List[Rec]:
         out.extend(mine)
     out.sort(key=lambda r: (r.date, r.asset))
     return out
+
+
+def _fill(r: Rec, sig: dict, si: Dict[str, int], fi: Dict[str, int]):
+    """x, the active signals' (j, δ, ω, c, r, d) and the family multipliers g from a stored signal record."""
+    x = array("f", bytes(4 * len(si)))
+    for s_, v in (sig.get("x") or {}).items():
+        j = si.get(s_)
+        if j is not None:
+            x[j] = v
+    r.x = x
+    r.act = tuple((si[s_], v[0], v[1], v[2], v[3], v[4]) for s_, v in (sig.get("a") or {}).items() if s_ in si)
+    g = array("f", bytes(4 * len(fi)))
+    for f, v in (sig.get("g") or {}).items():
+        if f in fi:
+            g[fi[f]] = v
+    r.g = g
 
 
 # ------------------------------------------------------------------ features
@@ -317,9 +322,12 @@ def _clustered_mean(vals: Dict[int, List[float]], h: int) -> dict:
 
 
 def _std_prods(rows, key) -> Dict[str, List[Tuple[int, float]]]:
+    """Per asset (and per walk-forward era when pooled — each era is a different fitted model) standardised score ×
+    outcome products, keyed by week."""
     by: Dict[str, list] = {}
     for r in rows:
-        by.setdefault(r.asset, []).append(r)
+        g = getattr(r, "grp", None)
+        by.setdefault(r.asset if g is None else f"{r.asset}|{g}", []).append(r)
     out = {}
     for a, rs in by.items():
         xs = [key(r) for r in rs]
@@ -440,10 +448,9 @@ def metrics(rows: List[Rec], key, h: int, with_bands: bool = False) -> dict:
     if not rows:
         return {"n": 0}
     pr = _std_prods(rows, key)
-    out = {"n": len(rows), "assets": len(pr), **_accuracy(rows, key, h), **_ic(pr, h), **{k: v for k, v in _rank_ic(rows, key, h).items() if k != "weeks"},
-           "monotonicity": _mono(rows, key)}
-    out["rank_t"] = out.pop("t", None) if False else _rank_ic(rows, key, h)["t"]
-    out["ic_t"] = _ic(pr, h)["t"]
+    ic, rk = _ic(pr, h), _rank_ic(rows, key, h)
+    out = {"n": len(rows), "assets": len({k.split("|")[0] for k in pr}), **_accuracy(rows, key, h), "ic": ic["ic"], "ic_t": ic["t"],
+           "rank_ic": rk["rank_ic"], "rank_t": rk["t"], "monotonicity": _mono(rows, key)}
     order = sorted(rows, key=key)
     dec = max(1, len(order) // 10)
     out["top_minus_bottom"] = (math.expm1(sum(r.yr for r in order[-dec:]) / dec) - math.expm1(sum(r.yr for r in order[:dec]) / dec)) if len(order) >= 100 else None
@@ -475,7 +482,10 @@ def compare(rows: List[Rec], h: int, with_bands=False) -> dict:
     d_ic = _ic(diff, h)
     conc = None
     if diff:
-        per = sorted(((sum(v for _, v in rs), a) for a, rs in diff.items()), reverse=True)
+        tot_a: Dict[str, float] = {}
+        for a, rs in diff.items():
+            tot_a[a.split("|")[0]] = tot_a.get(a.split("|")[0], 0.0) + sum(v for _, v in rs)
+        per = sorted(((v, a) for a, v in tot_a.items()), reverse=True)
         tot = sum(x for x, _ in per if x > 0)
         conc = {"top_asset": per[0][1], "share": (per[0][0] / tot) if tot > 0 else None}
     return {"n": len(rows), "production": P, "challenger": C, "delta_ic": d_ic, "delta_acc": _paired_acc(rows, lambda r: r.score, lambda r: r.raw, h),
@@ -483,121 +493,195 @@ def compare(rows: List[Rec], h: int, with_bands=False) -> dict:
 
 
 # ------------------------------------------------------------------ one challenger over every era
-def _periods():
-    cuts = sorted({s for s, _ in ERAS} | {SPLIT})
-    return cuts
+INNER_YEARS = 4                      # the inner holdout that chooses the scaling strengths γ (inside each training window)
+FINAL_CUT = "9999-12-31"
 
 
-def _period_of(end: str, cuts) -> int:
-    k = 0
-    while k < len(cuts) and end >= cuts[k]:
-        k += 1
-    return k                      # 0 = before the first cut
+def _minus_years(d: str, y: int) -> str:
+    return f"{int(d[:4]) - y:04d}{d[4:]}"
+
+
+class _Trainer:
+    """Sufficient statistics per (asset, time bucket), built once per γ; any training cutoff is then a sum of buckets.
+
+    A record belongs to the training set of cutoff c only if its outcome had matured before c (r.end < c) — the
+    purge that keeps overlapping forward returns out of a test period's training data."""
+
+    def __init__(self, recs: List[Rec], paths: List[List[str]], kind: str, h: int, cuts: List[str]):
+        import bisect
+        self.recs, self.paths, self.kind, self.h = recs, paths, kind, h
+        self.cuts = sorted(set(cuts))
+        self.bucket = [bisect.bisect_right(self.cuts, r.end) for r in recs]     # r trains cutoff k ⇔ bucket ≤ k
+        self.P = n_features(kind)
+        self.parents: Dict[str, str] = {}
+        self.asset_nodes: Dict[str, List[str]] = {}
+        for r, pth in zip(recs, paths):
+            self.asset_nodes[r.asset] = pth
+            for x, y in zip(pth, pth[1:]):
+                self.parents[y] = x
+        self._feats: Dict[tuple, list] = {}
+        self._stats: Dict[tuple, Dict[str, List[PStats]]] = {}
+        self._fits: Dict[tuple, Optional[Fitted]] = {}
+
+    def feats(self, gam) -> list:
+        gam = tuple(gam)
+        if gam not in self._feats:
+            self._feats[gam] = [features(r, self.kind, gam) for r in self.recs]
+        return self._feats[gam]
+
+    def _cum(self, gam) -> Dict[str, List[PStats]]:
+        """Per asset: cumulative statistics through each bucket."""
+        gam = tuple(gam)
+        if gam not in self._stats:
+            nb = len(self.cuts) + 1
+            per: Dict[str, List[Optional[PStats]]] = {}
+            for r, f, bk in zip(self.recs, self.feats(gam), self.bucket):
+                row = per.setdefault(r.asset, [None] * nb)
+                st = row[bk]
+                if st is None:
+                    st = row[bk] = PStats(self.P)
+                st.add(f, r.y)
+            cum = {}
+            for a, row in per.items():
+                acc = PStats(self.P)
+                out = []
+                for st in row:
+                    if st is not None:
+                        acc = acc.copy(); acc.merge(st)
+                    out.append(acc)
+                cum[a] = out
+            self._stats[gam] = cum
+        return self._stats[gam]
+
+    def fit(self, cut: str, gam) -> Optional[Fitted]:
+        key = (cut, tuple(gam))
+        if key in self._fits:
+            return self._fits[key]
+        k = self.cuts.index(cut)
+        node: Dict[str, PStats] = {}
+        for a, row in self._cum(gam).items():
+            st = row[k]
+            if not st.n:
+                continue
+            for nd in self.asset_nodes[a]:
+                if nd not in node:
+                    node[nd] = PStats(self.P)
+                node[nd].merge(st)
+        ft = None
+        if node.get("global") and node["global"].n >= 500:
+            W, rms = fit_nodes(node, self.parents, self.kind, self.h)
+            ft = Fitted()
+            ft.W, ft.rms, ft.n = W, rms, node["global"].n
+            # scale: the challenger's median |index| matched to production's median |raw| on recent training records
+            fs = self.feats(gam)
+            tr = [i for i in range(len(self.recs)) if self.bucket[i] <= k][-20000:]
+            idxs = sorted(abs(_index(ft.weights(self.paths[i]) or [0.0] * self.P, rms, fs[i])) for i in tr)
+            raws = sorted(abs(self.recs[i].raw) for i in tr)
+            mi, mr = idxs[len(idxs) // 2], min(99.0, raws[len(raws) // 2])
+            ft.scale = (mi / math.atanh(mr / 100.0)) if mi > 0 and mr > 0 else 1.0
+        self._fits[key] = ft
+        return ft
+
+    def predict(self, ft: Fitted, gam, idx: List[int], grp: Optional[str] = None) -> List[Rec]:
+        fs = self.feats(gam)
+        out = []
+        for i in idx:
+            w = ft.weights(self.paths[i])
+            if w is None:
+                continue
+            r, r2 = self.recs[i], Rec()
+            for s_ in Rec.__slots__:
+                if s_ not in ("score", "grp"):
+                    setattr(r2, s_, getattr(r, s_))
+            r2.score = 100 * math.tanh(_index(w, ft.rms, fs[i]) / ft.scale)
+            r2.grp = grp
+            out.append(r2)
+        return out
 
 
 def run_challenger(recs: List[Rec], h: int, kind: str, depth: str, gam=(1, 1, 1), select_gamma: bool = False) -> dict:
     """Fit on outcomes matured before each era / the split / everything, predict the held-out records."""
-    cuts = _periods()
     paths = [_cut(node_path(r.meta, "hier"), depth) for r in recs]
-    parents = {}
-    for pth in paths:
-        for a, b in zip(pth, pth[1:]):
-            parents[b] = a
-
-    def fit_until(cut: str, gamma) -> Optional[Fitted]:
-        P = n_features(kind)
-        node: Dict[str, PStats] = {}
-        train = []
-        for r, pth in zip(recs, paths):
-            if r.end >= cut:
-                continue
-            f = features(r, kind, gamma)
-            train.append((r, pth, f))
-            for nd in pth:
-                st = node.get(nd)
-                if st is None:
-                    st = node[nd] = PStats(P)
-                st.add(f, r.y)
-        if not node.get("global") or node["global"].n < 500:
-            return None
-        W, rms = fit_nodes(node, parents, kind, h)
-        ft = Fitted()
-        ft.W, ft.rms, ft.n = W, rms, node["global"].n
-        # scale: match the challenger's median |index| to production's median |raw| on the training records
-        idxs = sorted(abs(_index(ft.weights(pth) or [0.0] * P, rms, f)) for _, pth, f in train[-20000:])
-        raws = sorted(abs(r.raw) for r, _, _ in train[-20000:])
-        mi, mr = idxs[len(idxs) // 2], min(99.0, raws[len(raws) // 2])
-        ft.scale = (mi / math.atanh(mr / 100.0)) if mi > 0 and mr > 0 else 1.0
-        return ft
+    last = max(r.date for r in recs)
+    outer = [a for a, _ in ERAS] + [SPLIT, FINAL_CUT]
+    inner = {c: _minus_years(min(c, last), INNER_YEARS) for c in outer}
+    T = _Trainer(recs, paths, kind, h, outer + list(inner.values()))
 
     def choose_gamma(cut: str):
-        """Inner holdout inside the training window: fit on outcomes before cut − 4 years, judge IC on the last 4."""
+        """Inner holdout inside the training window: fit on outcomes matured before (cut − 4 years), judge the IC on
+        records dated from then whose outcome was still known before the cut. The test period is never looked at."""
         if not select_gamma:
-            return gam
-        inner = f"{int(cut[:4]) - 4}{cut[4:]}"
+            return tuple(gam)
+        ic_ = inner[cut]
+        val = [i for i, r in enumerate(recs) if ic_ <= r.date and r.end < cut]
         best, bg = None, (1, 1, 1)
+        if len(val) < 500:
+            return bg
         for g in GAMMAS:
-            ft = fit_until(inner, g)
+            ft = T.fit(ic_, g)
             if ft is None:
                 continue
-            val = [r for r, pth in zip(recs, paths) if inner <= r.date and r.end < cut]
-            for r, pth in zip(recs, paths):
-                pass
-            if len(val) < 500:
-                continue
-            sub = []
-            for r in val:
-                w = ft.weights(_cut(node_path(r.meta, "hier"), depth))
-                r.score = 100 * math.tanh(_index(w, ft.rms, features(r, kind, g)) / ft.scale) if w else 0.0
-                sub.append(r)
-            ic = _ic(_std_prods(sub, lambda r: r.score), h)["ic"]
-            if ic is not None and (best is None or ic > best):
+            ic = _ic(_std_prods(T.predict(ft, g, val), lambda r: r.score), h)["ic"]
+            if ic is not None and (best is None or ic > best + 1e-9):
                 best, bg = ic, g
         return bg
-
-    def predict(ft: Fitted, gamma, rows_paths) -> List[Rec]:
-        out = []
-        for r, pth in rows_paths:
-            w = ft.weights(pth)
-            if w is None:
-                continue
-            r2 = Rec()
-            for s_ in Rec.__slots__:
-                if s_ != "score":
-                    setattr(r2, s_, getattr(r, s_))
-            r2.score = 100 * math.tanh(_index(w, ft.rms, features(r, kind, gamma)) / ft.scale)
-            out.append(r2)
-        return out
 
     res = {"kind": kind, "depth": depth, "eras": [], "n_params": n_features(kind)}
     wf_rows: List[Rec] = []
     era_w = []
     for (a, b) in ERAS:
         g = choose_gamma(a)
-        ft = fit_until(a, g)
-        test = [(r, pth) for r, pth in zip(recs, paths) if a <= r.date < b]
+        ft = T.fit(a, g)
+        test = [i for i, r in enumerate(recs) if a <= r.date < b]
         if ft is None or len(test) < 200:
             res["eras"].append({"from": a, "to": b, "status": "insufficient", "train": ft.n if ft else 0, "test": len(test)})
             continue
-        rows = predict(ft, g, test)
+        rows = T.predict(ft, g, test, grp=a)
         wf_rows.extend(rows)
-        cmp_ = compare(rows, h)
-        res["eras"].append({"from": a, "to": b, "train": ft.n, "test": len(rows), "gamma": list(g), **cmp_})
+        k = T.cuts.index(a)
+        res["eras"].append({"from": a, "to": b, "train": ft.n, "test": len(rows), "gamma": list(g), **compare(rows, h),
+                            "training": _lite(T.predict(ft, g, [i for i in range(len(recs)) if T.bucket[i] <= k]), h)})
         era_w.append((a, ft))
     res["walkforward"] = compare(wf_rows, h, with_bands=True) if wf_rows else {"n": 0}
+    res["by_class"] = _by_class(wf_rows, h)
     g = choose_gamma(SPLIT)
-    ft = fit_until(SPLIT, g)
+    ft = T.fit(SPLIT, g)
     if ft:
-        res["split"] = compare(predict(ft, g, [(r, pth) for r, pth in zip(recs, paths) if r.date >= SPLIT]), h)
-    gF = choose_gamma("2100-01-01")
-    final = fit_until("2100-01-01", gF)
+        res["split"] = compare(T.predict(ft, g, [i for i, r in enumerate(recs) if r.date >= SPLIT]), h)
+    gF = choose_gamma(FINAL_CUT)
+    final = T.fit(FINAL_CUT, gF)
     res["gamma"] = list(gF)
     res["final"] = {"n": final.n, "scale": final.scale, "rms": final.rms, "weights": final.W} if final else None
+    res["training"] = _lite(T.predict(final, gF, list(range(len(recs)))), h) if final else None     # in-sample: not evidence
     res["era_weights"] = {a: ft.W.get("global") for a, ft in era_w}
     res["era_rms"] = {a: ft.rms for a, ft in era_w}
     res["gates"] = gates(res)
     res["research_score"] = research_score(res)
     return res
+
+
+def _lite(rows: List[Rec], h: int) -> dict:
+    """Accuracy and IC only, production vs challenger (used for the in-sample training numbers)."""
+    if not rows:
+        return {"n": 0}
+    pa, ca = _accuracy(rows, lambda r: r.raw, h), _accuracy(rows, lambda r: r.score, h)
+    return {"n": len(rows), "production_acc": pa.get("acc"), "challenger_acc": ca.get("acc"),
+            "production_ic": _ic(_std_prods(rows, lambda r: r.raw), h)["ic"], "challenger_ic": _ic(_std_prods(rows, lambda r: r.score), h)["ic"]}
+
+
+def _by_class(rows: List[Rec], h: int) -> Dict[str, dict]:
+    """Walk-forward accuracy and IC per asset class, production vs challenger (same records)."""
+    by: Dict[str, List[Rec]] = {}
+    for r in rows:
+        by.setdefault(r.meta.get("asset_class") or "OTHER", []).append(r)
+    out = {}
+    for c, rs in sorted(by.items()):
+        pa, ca = _accuracy(rs, lambda r: r.raw, h), _accuracy(rs, lambda r: r.score, h)
+        pi, ci = _ic(_std_prods(rs, lambda r: r.raw), h), _ic(_std_prods(rs, lambda r: r.score), h)
+        out[c] = {"n": len(rs), "production_acc": pa.get("acc"), "challenger_acc": ca.get("acc"), "challenger_lo": ca.get("lo"), "challenger_hi": ca.get("hi"),
+                  "production_ic": pi["ic"], "challenger_ic": ci["ic"], "delta_acc": _paired_acc(rs, lambda r: r.score, lambda r: r.raw, h),
+                  "baseline": baselines(rs, h)}
+    return out
 
 
 def gates(res: dict) -> dict:
@@ -720,7 +804,7 @@ def study_horizon(store, research, lab: str, progress=None, kinds=None, depths=N
         out["specialisation"][dp] = {"acc": (wf.get("challenger") or {}).get("acc"), "ic": (wf.get("challenger") or {}).get("ic"),
                                      "production_acc": (wf.get("production") or {}).get("acc"), "production_ic": (wf.get("production") or {}).get("ic"),
                                      "delta_acc": (wf.get("delta_acc") or {}).get("delta"), "delta_ic": (wf.get("delta_ic") or {}).get("ic"),
-                                     "by_class": _by_class(out["challengers"][key], recs, h)}
+                                     "by_class": out["challengers"][key].get("by_class")}
     # the best challenger by the multi-metric research score (among those not INSUFFICIENT)
     ranked = sorted(((c["research_score"]["score"], k) for k, c in out["challengers"].items() if c["gates"]["status"] != "INSUFFICIENT DATA"), reverse=True)
     out["best"] = ranked[0][1] if ranked else None
@@ -734,14 +818,6 @@ def study_horizon(store, research, lab: str, progress=None, kinds=None, depths=N
     for c in out["challengers"].values():          # the per-node weights live with the registered version, not here
         if c.get("final"):
             c["final_n"] = c["final"]["n"]
-    return out
-
-
-def _by_class(ch: dict, recs, h) -> dict:
-    wf_eras = ch.get("eras") or []
-    out = {}
-    for e in wf_eras:
-        pass
     return out
 
 
@@ -824,42 +900,27 @@ def register(store, res: dict, finals: Dict[str, dict]) -> List[str]:
 
 
 # ------------------------------------------------------------------ live shadow + hedge reliability
-def live_score(store, vid: str, meta: dict, lab: str, live: dict, regime: Dict[str, Optional[str]]) -> Optional[float]:
-    """A signal-level challenger's score today, from the same pieces production used today."""
+def live_score(store, vid: str, meta: dict, lab: str, sig: Optional[dict], regime: Dict[str, Optional[str]], info: Optional[dict] = None) -> Optional[float]:
+    """A signal-level challenger's score today, from the same pieces production used today (shaffer.signal_record).
+    `info` (optional) receives the hierarchy node whose weights were used."""
     _init_famidx()
     wts = (store.kv_get(f"formula:weights:{vid}") or {}).get(lab)
-    if not wts or not wts.get("weights") or not live.get("K"):
+    if not wts or not wts.get("weights") or not sig:
         return None
-    sigs = signals()
-    si = {s: i for i, s in enumerate(sigs)}
     r = Rec()
-    r.x = array("f", bytes(4 * len(sigs)))
-    act = []
-    fams = families()
-    g = array("f", bytes(4 * len(fams)))
-    for f in live.get("families") or []:
-        if f["family"] in fams:
-            g[fams.index(f["family"])] = (f.get("W") or 0) * (f.get("A") or 0) * (f.get("H") or 0) / live["K"]
-    for sg in live.get("signals") or []:
-        j = si.get(sg["signal"])
-        if j is None or sg.get("z") is None:
-            continue
-        x = max(-1.0, min(1.0, sg["z"] / cfg.S_SCALE))
-        r.x[j] = x
-        if sg.get("s") is not None and x:
-            dl = 1 if (sg["s"] / x) > 0 else -1
-            act.append((j, dl, sg.get("omega") or 0.0, sg.get("c") or 0.0, sg.get("r") or 1.0, sg.get("d") or 1.0))
-    r.act, r.g = tuple(act), g
+    _fill(r, sig, {s: i for i, s in enumerate(signals())}, {f: i for i, f in enumerate(families())})
     r.reg = tuple(regime.get(d) for d in ("market", "volatility", "rates", "growth"))
-    kind = wts["kind"]
     gam = tuple(wts.get("gamma") or (1, 1, 1))
     w = None
     for n in reversed(_cut(node_path(meta, "hier"), wts["depth"])):
         if n in wts["weights"]:
-            w = wts["weights"][n]; break
+            w = wts["weights"][n]
+            if info is not None:
+                info["node"] = n
+            break
     if w is None:
         return None
-    return 100 * math.tanh(_index(w, wts["rms"], features(r, kind, gam)) / (wts.get("scale") or 1.0))
+    return 100 * math.tanh(_index(w, wts["rms"], features(r, wts["kind"], gam)) / (wts.get("scale") or 1.0))
 
 
 def reliability(store, lab: str, score: Optional[float]) -> Optional[dict]:
@@ -877,3 +938,270 @@ def reliability(store, lab: str, score: Optional[float]) -> Optional[dict]:
                     "best_baseline": base.get("best"), "baseline_acc": base.get("best_acc"),
                     "validated": bool(b.get("lo") is not None and base.get("best_acc") is not None and b["lo"] > base["best_acc"])}
     return None
+
+
+# ------------------------------------------------------------------ the report (SHAFFER_WEIGHT_RESEARCH.md)
+_HZ_ORDER = [lab for lab, _ in LAB_HORIZONS]
+
+
+def _p(v, d=1, signed=False):
+    if v is None:
+        return "—"
+    return f"{v * 100:+.{d}f}%" if signed else f"{v * 100:.{d}f}%"
+
+
+def _n(v, d=3, signed=False):
+    if v is None:
+        return "—"
+    return f"{v:+.{d}f}" if signed else f"{v:.{d}f}"
+
+
+def _ic_t(x):
+    x = x or {}
+    return f"{_n(x.get('ic'), 3, True)} (t {_n(x.get('t'), 1)})" if x.get("ic") is not None else "—"
+
+
+def _acc_ci(a):
+    a = a or {}
+    return f"{_p(a.get('acc'))} [{_p(a.get('lo'))}, {_p(a.get('hi'))}]" if a.get("acc") is not None else "—"
+
+
+def _status(c: dict, live: Optional[dict]) -> str:
+    st = (c.get("gates") or {}).get("status") or "INSUFFICIENT DATA"
+    if st == "SHADOW" and live and live.get("passed"):
+        return "ELIGIBLE FOR PROMOTION"
+    return st
+
+
+def summary_rows(res: dict) -> List[dict]:
+    """The main table: one row per horizon (walk-forward over the unseen eras)."""
+    out = []
+    for lab in _HZ_ORDER:
+        hz = (res.get("horizons") or {}).get(lab)
+        if not hz or not hz.get("challengers"):
+            continue
+        b = hz["challengers"].get(hz.get("best") or "") or {}
+        wf = b.get("walkforward") or {}
+        bl = wf.get("baselines") or {}
+        pa, ca = (wf.get("production") or {}).get("acc"), (wf.get("challenger") or {}).get("acc")
+        out.append({"horizon": lab, "best": hz.get("best"), "production_acc": pa, "challenger_acc": ca, "baseline": bl.get("best"),
+                    "baseline_acc": bl.get("best_acc"), "excess": (ca - bl["best_acc"]) if ca is not None and bl.get("best_acc") is not None else None,
+                    "production_excess": (pa - bl["best_acc"]) if pa is not None and bl.get("best_acc") is not None else None,
+                    "production_ic": (wf.get("production") or {}).get("ic"), "challenger_ic": (wf.get("challenger") or {}).get("ic"),
+                    "status": (b.get("gates") or {}).get("status", "INSUFFICIENT DATA")})
+    return out
+
+
+def markdown(res: dict, live: Optional[Dict[str, dict]] = None) -> str:
+    """The research report. `live`: {version id: live_gate result} (G3), when a store is available."""
+    live = live or {}
+    H = res.get("horizons") or {}
+    sigs = res.get("signals") or signals()
+    L: List[str] = []
+    w = L.append
+    w("# Shaffer Score — signal-level weight research")
+    w("")
+    w(f"Run {res.get('started')} · score version {res.get('score_version')} · {sum((h.get('records') or 0) for h in H.values()):,} point-in-time records "
+      f"over {max([h.get('assets') or 0 for h in H.values()] or [0])} assets · {res.get('seconds')} s · generated by `python -m finsim2 lab --weights`.")
+    w("")
+    w("Question: which weights *inside the Shaffer equation* would have made the point-in-time score more accurate at each horizon, "
+      "and do they hold on periods they never saw? Every challenger is the Shaffer equation "
+      "`raw = 100·tanh(Σ_f g_f Σ_i ω_i δ_i x_i c_i r_i d_i)` with some parameters learned per horizon — signal weights ω, family weights "
+      "W·A·H (learned jointly as one β per signal), the confidence / regime / decay strengths, five regime interactions — each hierarchy "
+      "node's ridge shrunk toward its parent (global → class → sector → industry → asset), weights bounded "
+      f"(|β| ≤ {res.get('w_max')} on standardised inputs), shrinkage λ = {res.get('shrink_k'):.0f} effective observations. The research "
+      "records reproduce production's raw score from the stored pieces (test `SignalRecords`).")
+    w("")
+    w("Validation: weights frozen before each test era, trained only on outcomes that had matured before it: → 2008 test 2009–12, → 2012 "
+      "test 2013–16, → 2016 test 2017–20, → 2020 test 2021–24, → 2024 test 2025–now; plus the earlier split (→ 2017, test 2018–). "
+      "Gates fixed before any result: **G1** pooled walk-forward paired Δ IC date-clustered t ≥ 2 and Δ accuracy ≥ 0; **G2** Δ IC > 0 and "
+      "Δ accuracy ≥ 0 in ≥ 3 of the 4 complete eras, the 2018 split's Δ IC t ≥ 1, and walk-forward accuracy above the best naive baseline; "
+      "**G3** ≥ 60 graded live-shadow forecasts, not worse than production on the same ones. Promotion is manual.")
+    w("")
+    w("Accuracy = sign(score) = sign(return) (a score of exactly 0 abstains), averaged per week then across weeks, 95% interval with "
+      "n_eff = weeks × 5 / max(5, h). IC = per-asset standardised score × outcome, pooled per week (date-clustered t). Rank IC = "
+      "cross-sectional Spearman per week. Naive baselines on the same records: always bullish, the asset's PIT positive-return frequency, "
+      "previous-period direction, 12-1 momentum, 1-month mean reversion.")
+    w("")
+    w("## The main table (walk-forward over the unseen eras)")
+    w("")
+    w("| Horizon | Production accuracy | Best challenger accuracy | Naive baseline | Excess vs baseline (challenger / production) | Production IC | Challenger IC | Status |")
+    w("|---|---|---|---|---|---|---|---|")
+    rows = summary_rows(res)
+    for r in rows:
+        w(f"| {r['horizon']} | {_p(r['production_acc'])} | {_p(r['challenger_acc'])} ({r['best']}) | {_p(r['baseline_acc'])} ({(r['baseline'] or '').replace('_', ' ')}) | "
+          f"{_p(r['excess'], 1, True)} / {_p(r['production_excess'], 1, True)} | {_n(r['production_ic'])} | {_n(r['challenger_ic'])} | {r['status']} |")
+    w("")
+    # ---- the 15 answers
+    w("## Answers")
+    w("")
+    passed = [(lab, k, c) for lab in _HZ_ORDER if lab in H for k, c in (H[lab].get("challengers") or {}).items() if (c.get("gates") or {}).get("status") == "SHADOW"]
+    g1 = [(lab, k, c) for lab in _HZ_ORDER if lab in H for k, c in (H[lab].get("challengers") or {}).items() if (c.get("gates") or {}).get("G1_walkforward")]
+    w("**1. Did any signal-level challenger beat production?** " + (
+        "Yes — passed G1 and G2: " + "; ".join(f"{lab} {k}" for lab, k, _ in passed) + "." if passed else
+        ("Some passed G1 (pooled walk-forward) but not G2 (eras / split / baseline): " + "; ".join(f"{lab} {k}" for lab, k, _ in g1) + ". None passed both."
+         if g1 else "No. No challenger passed G1 (pooled walk-forward improvement with t ≥ 2) at any horizon, so none passed both historical gates.")))
+    w("")
+    w("**2. At which horizons?** " + (", ".join(sorted({lab for lab, _, _ in passed}, key=_HZ_ORDER.index)) if passed else "None."))
+    w("")
+    w("**3–4. How much did directional accuracy and IC change?** Best challenger per horizon (by the multi-metric research score), "
+      "walk-forward, paired on the same records:")
+    w("")
+    w("| Horizon | Challenger | Δ accuracy [95%] | Δ IC (t) | Δ rank IC | Monotonicity prod → ch. | Eras won | 2018 split Δ IC (t) |")
+    w("|---|---|---|---|---|---|---|---|")
+    for lab in _HZ_ORDER:
+        hz = H.get(lab) or {}
+        c = (hz.get("challengers") or {}).get(hz.get("best") or "")
+        if not c:
+            continue
+        wf = c.get("walkforward") or {}
+        da = wf.get("delta_acc") or {}
+        P, C = wf.get("production") or {}, wf.get("challenger") or {}
+        drk = (C.get("rank_ic") - P.get("rank_ic")) if C.get("rank_ic") is not None and P.get("rank_ic") is not None else None
+        w(f"| {lab} | {hz['best']} | {_p(da.get('delta'), 2, True)} [{_p(da.get('lo'), 2, True)}, {_p(da.get('hi'), 2, True)}] | {_ic_t(wf.get('delta_ic'))} | {_n(drk, 3, True)} | "
+          f"{_n(P.get('monotonicity'), 2)} → {_n(C.get('monotonicity'), 2)} | {(c.get('gates') or {}).get('eras_won')}/{(c.get('gates') or {}).get('eras_complete')} | {_ic_t((c.get('split') or {}).get('delta_ic'))} |")
+    w("")
+    w("**5. Which hierarchy level worked best?** Signal-weight challenger fitted with the hierarchy cut at each depth (walk-forward accuracy / IC):")
+    w("")
+    w("| Horizon | Production | " + " | ".join(DEPTHS) + " | Best level |")
+    w("|---|---|" + "---|" * len(DEPTHS) + "---|")
+    for lab in _HZ_ORDER:
+        sp = (H.get(lab) or {}).get("specialisation") or {}
+        if not sp:
+            continue
+        prod = next((v for v in sp.values() if v.get("production_acc") is not None), {})
+        best = max(((v.get("ic") if v.get("ic") is not None else -9, d) for d, v in sp.items()), default=(None, "—"))[1]
+        w(f"| {lab} | {_p(prod.get('production_acc'))} / {_n(prod.get('production_ic'))} | " +
+          " | ".join(f"{_p((sp.get(d) or {}).get('acc'))} / {_n((sp.get(d) or {}).get('ic'))}" for d in DEPTHS) + f" | {best} (by IC) |")
+    w("")
+    w("**6–8. Which signals gained and lost weight, and which changes were stable across eras?** From each horizon's best challenger, "
+      "global node: each signal's share of Σ|effective weight on x|, production vs challenger; *stable* = the challenger's era-by-era global "
+      "weight kept one sign in every era fit.")
+    w("")
+    for lab in _HZ_ORDER:
+        hz = H.get(lab) or {}
+        g = ((hz.get("weights") or {}).get("global") or {}).get("signals") or {}
+        if not g:
+            continue
+        st = hz.get("stability") or {}
+        d = sorted(((v.get("challenger", 0) - v.get("production", 0), s) for s, v in g.items()), reverse=True)
+        gain = [f"{s} {_p(g[s]['production'], 1)}→{_p(g[s]['challenger'], 1)}{' ✓' if (st.get(s) or {}).get('same_sign') else ''}" for x, s in d[:6] if x > 0.002]
+        lose = [f"{s} {_p(g[s]['production'], 1)}→{_p(g[s]['challenger'], 1)}{' ✓' if (st.get(s) or {}).get('same_sign') else ''}" for x, s in d[::-1][:6] if x < -0.002]
+        stable = [s for s, v in st.items() if v.get("same_sign")]
+        w(f"* **{lab}** ({hz.get('best')}) — gained: {', '.join(gain) or 'none'}. Lost: {', '.join(lose) or 'none'}. "
+          f"Stable sign in every era: {len(stable)} of {len(st)} signals used ({', '.join(stable[:12])}{' …' if len(stable) > 12 else ''}). ✓ = stable.")
+    w("")
+    w("**9. Which improvements disappeared on unseen data?** Challengers whose in-sample (training) accuracy or IC beat production but whose "
+      "walk-forward did not:")
+    w("")
+    gone = []
+    for lab in _HZ_ORDER:
+        for k, c in ((H.get(lab) or {}).get("challengers") or {}).items():
+            tr, wf = c.get("training") or {}, c.get("walkforward") or {}
+            if tr.get("challenger_acc") is None or tr.get("production_acc") is None:
+                continue
+            ins = (tr["challenger_acc"] - tr["production_acc"], (tr.get("challenger_ic") or 0) - (tr.get("production_ic") or 0))
+            oos = ((wf.get("delta_acc") or {}).get("delta"), (wf.get("delta_ic") or {}).get("ic"))
+            if (ins[0] > 0 or ins[1] > 0) and ((oos[0] or 0) <= 0 or (oos[1] or 0) <= 0 or not (c.get("gates") or {}).get("G1_walkforward")):
+                gone.append(f"| {lab} | {k} | {_p(ins[0], 1, True)} / {_n(ins[1], 3, True)} | {_p(oos[0], 1, True)} / {_n(oos[1], 3, True)} |")
+    if gone:
+        w("| Horizon | Challenger | In-sample Δ accuracy / Δ IC | Walk-forward Δ accuracy / Δ IC |")
+        w("|---|---|---|---|")
+        L.extend(gone)
+    else:
+        w("None.")
+    w("")
+    w("**10. Does |Shaffer Score| correspond more strongly to the probability of being right?** Directional accuracy by |score| band, walk-forward "
+      "records (production → best challenger):")
+    w("")
+    w("| Horizon | " + " | ".join(f"|SS| {lo:g}–{min(hi, 100):g}" for lo, hi in ABS_BANDS) + " |")
+    w("|---|" + "---|" * len(ABS_BANDS))
+    for lab in _HZ_ORDER:
+        hz = H.get(lab) or {}
+        c = (hz.get("challengers") or {}).get(hz.get("best") or "")
+        if not c:
+            continue
+        pb = ((c.get("walkforward") or {}).get("production") or {}).get("abs_bands") or []
+        cb = ((c.get("walkforward") or {}).get("challenger") or {}).get("abs_bands") or []
+        w(f"| {lab} | " + " | ".join(f"{_p(a.get('correct'), 0)} → {_p(b.get('correct'), 0)} <sub>({a.get('n', 0):,} / {b.get('n', 0):,})</sub>" for a, b in zip(pb, cb)) + " |")
+    w("")
+    w("**11–13. Best validated accuracy, best naive baseline, excess.** *Validated* = production, or a challenger that passed G1 and G2.")
+    w("")
+    w("| Horizon | Best validated accuracy | Best naive baseline | Excess |")
+    w("|---|---|---|---|")
+    for r in rows:
+        hz = H[r["horizon"]]
+        cands = [(r["production_acc"], "production")] + [(((c.get("walkforward") or {}).get("challenger") or {}).get("acc"), k)
+                                                           for k, c in hz["challengers"].items() if (c.get("gates") or {}).get("status") == "SHADOW"]
+        acc, who = max((x for x in cands if x[0] is not None), default=(None, "—"))
+        w(f"| {r['horizon']} | {_p(acc)} ({who}) | {_p(r['baseline_acc'])} ({(r['baseline'] or '').replace('_', ' ')}) | "
+          f"{_p((acc - r['baseline_acc']) if acc is not None and r['baseline_acc'] is not None else None, 1, True)} |")
+    w("")
+    w("**14. Which challenger versions should enter live shadow?** " + (
+        "; ".join(f"`shaffer-{res.get('score_version')}-sig-{k.replace('@', '-')}-exp` at {lab}" for lab, k, _ in passed) +
+        " — recorded daily in the prediction ledger next to production (production score, challenger score, both versions, hierarchy node, "
+        "horizon, confidence, maturity date), never rewritten." if passed else
+        "None: only challengers that pass G1 and G2 at a horizon are recorded in the live shadow, and none did."))
+    w("")
+    elig = [vid for vid, g in live.items() if g.get("passed")]
+    w("**15. Is any challenger eligible for promotion?** " + ("Yes: " + ", ".join(elig) + " (promotion stays a manual action)." if elig else
+      "No. Promotion needs G1, G2 and G3 (≥ 60 graded live-shadow forecasts); no challenger has all three."))
+    w("")
+    # ---- per horizon detail
+    w("## Per horizon")
+    for lab in _HZ_ORDER:
+        hz = H.get(lab)
+        if not hz:
+            continue
+        w("")
+        w(f"### {lab} — {hz.get('records', 0):,} records, {hz.get('assets')} assets, {hz.get('first')} → {hz.get('last')}")
+        w("")
+        if not hz.get("challengers"):
+            w(hz.get("reason") or "No research.")
+            continue
+        w("| Challenger | Params / node | Training acc. (in-sample) | 2018 split acc. | Walk-forward acc. [95%] | Live shadow | Baseline | Δ IC (t) | Eras won | Research score | Status |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|")
+        for k, c in sorted(hz["challengers"].items(), key=lambda kv: -(kv[1].get("research_score") or {}).get("score", -99)):
+            wf, tr, sp = c.get("walkforward") or {}, c.get("training") or {}, c.get("split") or {}
+            vid = f"shaffer-{res.get('score_version')}-sig-{k.replace('@', '-')}-exp"
+            lv = live.get(vid) or {}
+            w(f"| {k} | {c.get('n_params')} | {_p(tr.get('challenger_acc'))} (prod. {_p(tr.get('production_acc'))}) | {_p((sp.get('challenger') or {}).get('acc'))} (prod. {_p((sp.get('production') or {}).get('acc'))}) | "
+              f"{_acc_ci(wf.get('challenger'))} (prod. {_p((wf.get('production') or {}).get('acc'))}) | {lv.get('graded', 0)} graded | {_p((wf.get('baselines') or {}).get('best_acc'))} | "
+              f"{_ic_t(wf.get('delta_ic'))} | {(c.get('gates') or {}).get('eras_won')}/{(c.get('gates') or {}).get('eras_complete')} | {_n((c.get('research_score') or {}).get('score'), 2)} | {_status(c, lv)} |")
+        b = hz["challengers"].get(hz.get("best") or "") or {}
+        w("")
+        w(f"Best by research score: **{hz.get('best')}**. By era (production → challenger):")
+        w("")
+        w("| Test era | Train / test records | Accuracy | IC | Δ IC (t) | Best naive |")
+        w("|---|---|---|---|---|---|")
+        for e in b.get("eras") or []:
+            era = f"{e['from'][:4]}–{'now' if e['to'] >= '2100' else int(e['to'][:4]) - 1}"
+            if not e.get("production"):
+                w(f"| {era} | {e.get('train', 0):,} / {e.get('test', 0):,} | {e.get('status')} | | | |")
+                continue
+            w(f"| {era} | {e['train']:,} / {e['test']:,} | {_p(e['production'].get('acc'))} → {_p(e['challenger'].get('acc'))} | {_n(e['production'].get('ic'))} → {_n(e['challenger'].get('ic'))} | "
+              f"{_ic_t(e.get('delta_ic'))} | {_p((e.get('baselines') or {}).get('best_acc'))} ({((e.get('baselines') or {}).get('best') or '').replace('_', ' ')}) |")
+        w("")
+        w("Score bands, walk-forward records — production | best challenger:")
+        w("")
+        w("| Score | Indep. obs. | % positive | Avg return | Median | Direction right [95%] | ‖ | Indep. obs. | % positive | Avg return | Median | Direction right [95%] |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|---|")
+        pb = ((b.get("walkforward") or {}).get("production") or {}).get("bands") or []
+        cb = ((b.get("walkforward") or {}).get("challenger") or {}).get("bands") or []
+        for x, y in zip(pb, cb):
+            def cells(z):
+                if not z.get("n"):
+                    return "0 | | | | "
+                return f"{z.get('independent', 0):,.0f} | {_p(z.get('positive'), 0)} | {_p(z.get('mean'), 2, True)} | {_p(z.get('median'), 2, True)} | {_acc_ci({'acc': z.get('correct'), 'lo': z.get('lo'), 'hi': z.get('hi')})}"
+            w(f"| {x['band']} | {cells(x)} | ‖ | {cells(y)} |")
+        bc = b.get("by_class") or {}
+        if bc:
+            w("")
+            w("By asset class (walk-forward): ")
+            w("")
+            w("| Class | Records | Production acc. | Challenger acc. [95%] | Δ accuracy | Production IC | Challenger IC | Best naive |")
+            w("|---|---|---|---|---|---|---|---|")
+            for cl, v in sorted(bc.items(), key=lambda kv: -kv[1].get("n", 0)):
+                w(f"| {cl} | {v.get('n', 0):,} | {_p(v.get('production_acc'))} | {_acc_ci({'acc': v.get('challenger_acc'), 'lo': v.get('challenger_lo'), 'hi': v.get('challenger_hi')})} | "
+                  f"{_p((v.get('delta_acc') or {}).get('delta'), 1, True)} | {_n(v.get('production_ic'))} | {_n(v.get('challenger_ic'))} | {_p((v.get('baseline') or {}).get('best_acc'))} ({((v.get('baseline') or {}).get('best') or '').replace('_', ' ')}) |")
+    return "\n".join(L) + "\n"
