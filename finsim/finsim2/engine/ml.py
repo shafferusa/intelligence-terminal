@@ -719,6 +719,8 @@ def forecast_today(research, asset_id: str) -> Optional[dict]:
         record(research.store, panel, asset_id, cal[last], "ml_ensemble", saved.get("version", VERSION), lab, h, math.exp(ens) - 1, None, None, score,
                {"verified": st.get("verified"), "prob_up": prob, "vol_forecast": vol, "dd_probability": dd, "from_saved_models": saved.get("trained_at")},
                source="live", raw=score)
+        from .tracking import record_risk
+        record_risk(research.store, panel, asset_id, cal[last], saved.get("version", VERSION), lab, h, vol, dd, DD_THRESHOLD.get(h))
     return out
 
 
@@ -772,6 +774,8 @@ def train_asset(research, asset_id: str, progress: Optional[Callable] = None, ho
                    out["confidence"]["value"], out.get("score"),
                    {"weights": out["ensemble"]["weights"], "verified": out.get("verified"), "prob_up": out.get("prob_up"),
                     "vol_forecast": out.get("vol_forecast"), "dd_probability": out.get("dd_probability")}, source="live", raw=out.get("score"))
+            from .tracking import record_risk
+            record_risk(research.store, panel, asset_id, res["as_of"], VERSION, lab, h, out.get("vol_forecast"), out.get("dd_probability"), DD_THRESHOLD.get(h))
     fam_s: Dict[str, float] = {}
     fam_l: Dict[str, float] = {}
     for lab, r in res["horizons"].items():

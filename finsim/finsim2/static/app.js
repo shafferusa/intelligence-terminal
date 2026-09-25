@@ -225,12 +225,13 @@
     ml: '<circle cx="6" cy="6" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="18" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="12" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 7l8 4M8 17l8-4" stroke="currentColor" stroke-width="1.6"/>',
     risk: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
     hedge: '<path d="M4 12h6M14 12h6M10 7l4 5-4 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>',
+    health: '<path d="M3 12h4l2-5 4 10 2-5h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
     backtests: '<path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
     watchlist: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
     settings: '<circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   };
-  const NAV = [['', 'Portfolio'], ['dashboard', 'Dashboard'], ['portfolio', 'Portfolio'], ['risk', 'Risk'], ['hedge', 'Shaffer Hedge'], ['watchlist', 'Watchlist'], ['', 'Research'], ['markets', 'Markets'], ['asset', 'Asset Research'], ['analytics', 'Analytics'], ['quant', 'Quant Lab'], ['ml', 'ML Lab'], ['backtests', 'Backtests'], ['', ''], ['settings', 'Settings']];
-  const TITLES = { dashboard: 'Dashboard', portfolio: 'Portfolio', risk: 'Risk', hedge: 'Shaffer Hedge', watchlist: 'Watchlist', markets: 'Markets', asset: 'Asset Research', analytics: 'Analytics', quant: 'Quant Lab', ml: 'ML Lab', backtests: 'Backtests', settings: 'Settings', setup: 'Getting started' };
+  const NAV = [['', 'Portfolio'], ['dashboard', 'Dashboard'], ['portfolio', 'Portfolio'], ['risk', 'Risk'], ['hedge', 'Shaffer Hedge'], ['watchlist', 'Watchlist'], ['', 'Research'], ['markets', 'Markets'], ['asset', 'Asset Research'], ['analytics', 'Analytics'], ['quant', 'Quant Lab'], ['ml', 'ML Lab'], ['health', 'Model health'], ['backtests', 'Backtests'], ['', ''], ['settings', 'Settings']];
+  const TITLES = { dashboard: 'Dashboard', portfolio: 'Portfolio', risk: 'Risk', hedge: 'Shaffer Hedge', watchlist: 'Watchlist', markets: 'Markets', asset: 'Asset Research', analytics: 'Analytics', quant: 'Quant Lab', ml: 'ML Lab', health: 'Model health', backtests: 'Backtests', settings: 'Settings', setup: 'Getting started' };
   function renderNav(active) {
     $('#nav').innerHTML = NAV.map(([k, label]) => !k ? (label ? `<div class="sec">${label}</div>` : '<div style="height:8px"></div>') : `<a href="#/${k}${['asset', 'analytics', 'quant', 'ml'].includes(k) ? '/' + encodeURIComponent(S.current) : ''}" class="${active === k ? 'on' : ''}"><svg viewBox="0 0 24 24" fill="currentColor">${ICON[k]}</svg>${label}</a>`).join('');
     $$('#nav a').forEach(a => a.onclick = () => $('#side').classList.remove('open'));
@@ -804,6 +805,31 @@
   };
 
   // ---------------------------------------------------------------- backtests
+  pages.health = async (main, _, alive) => {
+    const r = await api('/fs2/health'); if (!alive()) return;
+    const cls = { 'HEALTHY': 'pos', 'WEAKENING': 'warn', 'DECAYING': 'neg', 'NO VERIFIED EDGE': '', 'INSUFFICIENT DATA': 'warn' };
+    const sp = s => `<span class="pill ${cls[s] || ''}" style="font-size:10px">${esc(s)}</span>`;
+    const engines = [...new Set(r.rows.map(x => x.engine))];
+    const wf = x => {
+      const w = x.walk_forward || {};
+      if (w.ic !== undefined) return `IC ${fmt.num(w.ic, 3)} (t ${fmt.num(w.t, 1)}, n<sub>eff</sub> ${fmt.num(w.n_eff, 0)})<span class="sub">last ${esc((w.recent_from || '').slice(0, 4))}→: IC ${fmt.num(w.recent_ic, 3)} (t ${fmt.num(w.recent_t, 1)})</span>`;
+      if (w.median_reduction !== undefined) return `variance −${fmt.pct(w.median_reduction, 0)} (median)<span class="sub">early third ${fmt.pct(w.early_third, 0)} · recent third ${fmt.pct(w.recent_third, 0)} · tail ${fmt.pct(w.tail_reduction, 0)}</span>`;
+      if (x.verified !== undefined) return `verified in ${x.verified}/${x.assets ?? x.groups}${x.stable != null ? ` · stable in ${x.stable}` : ''}${x.decayed ? ` · decaying in ${x.decayed}` : ''}`;
+      return `<span class="faint">${esc(x.reason || '—')}</span>`;
+    };
+    const lv = x => {
+      const l = x.live || {};
+      if (!l.graded && !l.pending) return '<span class="faint">no live forecasts yet</span>';
+      if (l.mean_effectiveness !== undefined) return l.graded ? `${l.graded} graded · effectiveness ${fmt.num(l.mean_effectiveness, 2)}` : '<span class="faint">no graded hedges yet</span>';
+      return `${l.graded || 0} graded, ${l.pending || 0} pending${l.graded ? `<span class="sub">IC ${fmt.num(l.ic, 2)} · hit ${fmt.pct(l.hit, 0)} · expected ${fmt.pct(l.mean_expected, 2)} vs realised ${fmt.pct(l.mean_realized, 2)}${l.range_coverage != null ? ` · inside range ${fmt.pct(l.range_coverage, 0)}` : ''}${l.brier != null ? ` · Brier ${fmt.num(l.brier, 3)} vs base rate ${fmt.num(l.brier_base_rate, 3)}` : ''}</span>` : ''}`;
+    };
+    main.innerHTML = `<div class="page-head"><div><h1>Model health</h1><p>Each engine judged separately by its own out-of-sample record and by what happened live — forecasts are stored the day they are made and graded when their horizon passes. The engines are never combined. Data to ${esc(r.asof)}.</p></div></div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px">${Object.entries(r.counts).map(([k, v]) => `<div class="kpi"><div class="k">${sp(k)}</div><div class="v">${v}</div></div>`).join('')}</div>
+      ${engines.map(e => `<div class="card flush" style="margin-bottom:16px"><h2>${esc(e)}</h2><div class="tbl-wrap"><table><thead><tr><th class="l">Horizon / group</th><th class="l">Status</th><th class="l">Walk-forward (out of sample)</th><th class="l">Live: expected vs realised</th><th class="l">Bar</th></tr></thead><tbody>
+        ${r.rows.filter(x => x.engine === e).map(x => `<tr><td class="l"><b>${esc(x.horizon)}</b>${x.assets ? `<span class="sub">${x.assets} ${e.startsWith('Shaffer Hedge') ? 'cases' : 'assets'}</span>` : ''}</td><td class="l">${sp(x.status)}</td><td class="l wrap">${wf(x)}</td><td class="l wrap">${lv(x)}</td><td class="l wrap faint" style="max-width:260px">${esc(x.bar || x.reason || '')}</td></tr>`).join('')}</tbody></table></div></div>`).join('')}
+      <div class="card"><h2>Status rules (fixed in advance)</h2><pre class="muted" style="white-space:pre-wrap;font-size:12px">${esc(r.rules)}</pre></div>`;
+  };
+
   pages.backtests = async (main, args, alive) => {
     const fm = await featureMeta(); const hist = await api('/fs2/backtests').catch(() => []); if (!alive()) return;
     const id = S.current;

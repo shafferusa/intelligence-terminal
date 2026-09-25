@@ -264,6 +264,9 @@ class Router:
             return {k: store.kv_get(k) for k in store.kv_keys("mlpool:")}
         if r == ["ml", "pooled"] and method == "POST":
             return app.start_pooled(b.get("level", "global"), b.get("key", "all")).view()
+        if r == ["health"]:
+            from .engine import health
+            return health.report(research)
         if r == ["predictions"]:
             from .engine import tracking
             return tracking.report(store, q.get("asset"))

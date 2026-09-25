@@ -110,13 +110,31 @@ def _shaffer_worker(db_path: str, asset_id: str) -> dict:
             for f in fams:
                 xs = [fam[f][0] for _, _, fam, _ in recs if f in fam]
                 ys = [yv for _, _, fam, (yr, yv) in recs if f in fam]
-                others = [sum(c for g, (sc, c) in fam.items() if g != f) for _, _, fam, _ in recs if f in fam]
+                others = [sum(v[1] for g, v in fam.items() if g != f) for _, _, fam, _ in recs if f in fam]
                 if len(xs) < 30 or len(set(xs)) < 3:
                     continue
                 own = _pearson(xs, ys)
                 part = _partial(xs, ys, others)
                 n_eff = len(xs) * 5.0 / max(5.0, float(h))
                 fstats[f] = {"ic": own, "partial": part, "n_eff": n_eff, "t": _tstat(own, n_eff), "t_partial": _tstat(part, n_eff)}
+                pr = _std_products(xs, ys, others)
+                if pr:
+                    fstats[f]["weeks"] = [tau // 5 for tau, _, fam, _ in recs if f in fam]
+                    fstats[f]["prods"] = pr
+            # influence: each family's share of |contribution| in each record, and its validation multiplier V, split
+            # at CONFIRM_FROM (does V shrink a family whose out-of-sample record is negative?)
+            infl: Dict[str, dict] = {}
+            for tau, _, fam, _ in recs:
+                tot = sum(abs(v[1]) for v in fam.values())
+                if tot <= 0:
+                    continue
+                part = "decide" if run.cal[tau] < CONFIRM_FROM else "confirm"
+                for f, v in fam.items():
+                    b = infl.setdefault(f, {}).setdefault(part, [0, 0.0, 0.0])
+                    b[0] += 1; b[1] += abs(v[1]) / tot; b[2] += v[2] if len(v) > 2 else 1.0
+            for f, parts in infl.items():
+                if f in fstats:
+                    fstats[f]["influence"] = {p: {"n": b[0], "share": b[1] / b[0], "V": b[2] / b[0]} for p, b in parts.items()}
             out["fam"][lab] = fstats
             out.setdefault("candidates", {})[lab] = candidate_stats(res.get("shadow", {}).get(lab) or [], h, run.cal)
             ev = res["evidence"].get(lab) or {}
@@ -202,6 +220,17 @@ def candidate_stats(rows: List[tuple], h: int, cal: List[str]) -> dict:
                          "weeks": [t // 5 for t in ts] if prods else None, "prods": prods}
         if res:
             out[f] = res
+    return out
+
+
+def _influence(xs: List[dict]) -> dict:
+    """Record-weighted mean influence share and V across assets, per part (decide / confirm)."""
+    out = {}
+    for part in ("decide", "confirm"):
+        ps = [x["influence"][part] for x in xs if (x.get("influence") or {}).get(part)]
+        n = sum(p["n"] for p in ps)
+        if n:
+            out[part] = {"n": n, "share": sum(p["share"] * p["n"] for p in ps) / n, "V": sum(p["V"] * p["n"] for p in ps) / n}
     return out
 
 
@@ -455,7 +484,9 @@ def aggregates(u: dict) -> dict:
                 fam.setdefault(f, []).append(st)
         agg["families"][lab] = {f: {"assets": len(xs), "ic": sum((x["ic"] or 0) * x["n_eff"] for x in xs) / max(1e-9, sum(x["n_eff"] for x in xs)),
                                     "partial": sum((x["partial"] or 0) * x["n_eff"] for x in xs) / max(1e-9, sum(x["n_eff"] for x in xs)),
-                                    "t": _stouffer([x["t"] for x in xs]), "t_partial": _stouffer([x["t_partial"] for x in xs])} for f, xs in fam.items()}
+                                    "t": _stouffer([x["t"] for x in xs]), "t_partial": _stouffer([x["t_partial"] for x in xs]),
+                                    "t_partial_clustered": _clustered([x for x in xs if x.get("prods")], h)[1],
+                                    "influence": _influence(xs)} for f, xs in fam.items()}
         agg.setdefault("candidates", {})[lab] = candidate_verdicts([(v.get("candidates") or {}).get(lab) or {} for v in S.values()], h)
         dec = {}
         for v in S.values():
@@ -708,12 +739,41 @@ def markdown(u: dict, agg: dict) -> str:
             continue
         w(f"**{lab}**")
         w("")
-        w("| Family | Assets | Own IC | t | Incremental IC | t | Verdict |")
-        w("|---|---|---|---|---|---|---|")
-        for f, v in sorted(fm.items(), key=lambda kv: -(kv[1]["t_partial"] or -99)):
-            tp, to = v["t_partial"] or 0, v["t"] or 0
-            verdict = "adds independent information" if tp >= 2 else "some evidence" if tp >= 1 else "negative record" if tp <= -2 else "no measurable value" if abs(to) < 1 and abs(tp) < 1 else "weak"
-            w(f"| {f} | {v['assets']} | {_fmt(v['ic'])} | {_fmt(v['t'], 1)} | {_fmt(v['partial'])} | {_fmt(v['t_partial'], 1)} | {verdict} |")
+        w("| Family | Assets | Own IC | t | Incremental IC | t (Stouffer) | t (date-clustered) | Verdict (clustered) |")
+        w("|---|---|---|---|---|---|---|---|")
+        for f, v in sorted(fm.items(), key=lambda kv: -(kv[1].get("t_partial_clustered") if kv[1].get("t_partial_clustered") is not None else (kv[1]["t_partial"] or -99))):
+            tc = v.get("t_partial_clustered")
+            tp = tc if tc is not None else (v["t_partial"] or 0)
+            verdict = "adds independent information" if tp >= 2 else "some evidence" if tp >= 1 else "negative record" if tp <= -2 else "no measurable value" if abs(tp) < 1 else "weak"
+            w(f"| {f} | {v['assets']} | {_fmt(v['ic'])} | {_fmt(v['t'], 1)} | {_fmt(v['partial'])} | {_fmt(v['t_partial'], 1)} | {_fmt(tc, 1)} | {verdict} |")
+        w("")
+    w("## 21b. Does validation shrink the families with a negative record?")
+    w("")
+    w("Influence = a family's share of Σ|family contribution| in each scored record (its real say in the score); V = its validation "
+      "multiplier (0.5 + t/4, clipped to [0, 1], from its own matured out-of-sample record). Both averaged over records before and from "
+      f"{CONFIRM_FROM[:4]}. A family whose incremental record is negative should see V and influence fall toward zero; no sign is ever "
+      "reversed and no weight is set by hand. 'Not shrinking enough' = incremental t (date-clustered) ≤ −1 and influence from "
+      f"{CONFIRM_FROM[:4]} still above half its earlier level, or V still ≥ 0.4.")
+    w("")
+    for lab in ("1W", "1M", "3M", "6M", "12M"):
+        fm = agg["families"].get(lab)
+        if not fm:
+            continue
+        w(f"**{lab}**")
+        w("")
+        w(f"| Family | Incremental t (clustered) | V before → from {CONFIRM_FROM[:4]} | Influence before → from {CONFIRM_FROM[:4]} | Assessment |")
+        w("|---|---|---|---|---|")
+        for f, v in sorted(fm.items(), key=lambda kv: (kv[1].get("t_partial_clustered") if kv[1].get("t_partial_clustered") is not None else 0)):
+            inf = v.get("influence") or {}
+            d, c = inf.get("decide") or {}, inf.get("confirm") or {}
+            tc = v.get("t_partial_clustered")
+            if tc is None or tc > -1:
+                verdict = "—" if tc is None or tc < 1 else "positive record"
+            elif c and d and (c["share"] > 0.5 * d["share"] or c["V"] >= 0.4):
+                verdict = "NOT shrinking enough"
+            else:
+                verdict = "shrinking"
+            w(f"| {f} | {_fmt(tc, 1)} | {_fmt(d.get('V'), 2)} → {_fmt(c.get('V'), 2)} | {_pct(d.get('share'), 1)} → {_pct(c.get('share'), 1)} | {verdict} |")
         w("")
     w("## 23. Decaying signals (at the latest refit)")
     w("")
@@ -812,8 +872,10 @@ def markdown(u: dict, agg: dict) -> str:
         w(f"| Family | Assets | Own IC (before {CONFIRM_FROM[:4]}) | Incremental IC before (clustered t) | Incremental IC from {CONFIRM_FROM[:4]} (clustered t) | Assets > 0 (from {CONFIRM_FROM[:4]}) | Score IC without → with | Monotonicity without → with | Verdict |")
         w("|---|---|---|---|---|---|---|---|---|")
         for f, r in sorted(c.items(), key=lambda kv: (kv[0] == "ALL", kv[0])):
+            if f.startswith("VARIANT:"):
+                continue
             d, k = r.get("decide") or {}, r.get("confirm") or {}
-            name = "All seven together" if f == "ALL" else f
+            name = "All candidates together" if f == "ALL" else f
             verdict = r["verdict"] if f == "ALL" or r["verdict"] == "ADMIT" else "REJECT: " + "; ".join(r["reasons"])
             if r["verdict"] == "ADMIT":
                 admitted.append((f, lab))
@@ -823,5 +885,26 @@ def markdown(u: dict, agg: dict) -> str:
         w("")
     w("**Admitted:** " + (", ".join(f"{f} at {lab}" for f, lab in admitted) if admitted else "none — every candidate family stays in shadow.")
       + " Admission is applied only by recording it in `shaffer_score.ADMITTED` (and a new score version), never automatically.")
+    w("")
+    w("## 27b. Methodology variants (shadow): should the economic prior H or a stricter V decide influence?")
+    w("")
+    from .shaffer import ShafferRun
+    w((ShafferRun._variants.__doc__ or "").strip().replace("\n", " ").replace("  ", " "))
+    w("")
+    w("The same test as a candidate family: the variant's score must carry information beyond the production score (clustered t ≥ 2 before "
+      f"{CONFIRM_FROM[:4]}, ≥ 1 from it) and must not lower the score's IC or calibration monotonicity from {CONFIRM_FROM[:4]}.")
+    w("")
+    w(f"| Horizon | Variant | Assets | Score IC production → variant (from {CONFIRM_FROM[:4]}) | Monotonicity production → variant | Beyond production: before (t) | from {CONFIRM_FROM[:4]} (t) | Verdict |")
+    w("|---|---|---|---|---|---|---|---|")
+    for lab in labs:
+        c = (agg.get("candidates") or {}).get(lab) or {}
+        for f, r in sorted(c.items()):
+            if not f.startswith("VARIANT:"):
+                continue
+            d, k = r.get("decide") or {}, r.get("confirm") or {}
+            verdict = "ADOPT (pending a new score version)" if r["verdict"] == "ADMIT" else "REJECT: " + "; ".join(r["reasons"])
+            w(f"| {lab} | {f[8:].replace('_', ' ')} | {d.get('assets', 0)} | {_fmt(k.get('ic_without'))} → {_fmt(k.get('ic_with'))} | "
+              f"{_fmt(k.get('mono_without'), 2)} → {_fmt(k.get('mono_with'), 2)} | {_fmt(d.get('partial'))} ({_fmt(d.get('t_partial'), 1)}) | "
+              f"{_fmt(k.get('partial'))} ({_fmt(k.get('t_partial'), 1)}) | {verdict} |")
     w("")
     return "\n".join(L)

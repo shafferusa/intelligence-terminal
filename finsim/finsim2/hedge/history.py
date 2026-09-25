@@ -16,6 +16,7 @@ minimum-variance ratio out of sample (see `ml_layer`)."""
 from __future__ import annotations
 
 import math
+from array import array
 from typing import Dict, List, Optional, Tuple
 
 from . import pricing as px
@@ -28,7 +29,7 @@ MIN_WINDOWS = 24
 ALPHA = 0.5            # FinalHedge = RawHedge × (1 + ALPHA · MLAdjustment)
 ADJ_CAP = 0.30         # |MLAdjustment| ≤ 0.30 → the final ratio stays within ±15% of the raw ratio
 ML_MIN_NEFF = 30
-VERSION = "hedge-1"
+VERSION = "hedge-2"          # hedge-2: objective-specific models (objml)
 
 
 # ------------------------------------------------------------------ series
@@ -354,11 +355,19 @@ class Evaluator:
                     eq += x; peak = max(peak, eq); dd = min(dd, eq - peak)
                 return dd
             st = {dim: (s[k0] if s else None) for dim, s in regimes.items()}
+            fpath = self.factor()
+            feats = self._features(k0, pos)
+            feats.update(self.leg_features(k0, target, leg, expo))
+            feats.update({"bear": _flag(st.get("market"), "bear"), "high_vol": _flag(st.get("volatility"), "high_vol"),
+                          "rising_rates": _flag(st.get("rates"), "rising_rates")})
             rows.append({"k0": k0, "date": self.cal[k0], "end": self.cal[k1], "h": self.h, "ratio": self.ratio, "var_u": var_u, "var_h": var_h, "U": sum(u), "H": sum(hp),
                          "var_leg": sum(b * b for b in hp), "cov_uh": sum(a * b for a, b in zip(u, hp)),
                          "dd_u": mdd(u), "dd_h": mdd(hedged), "expected_reduction": exp_red, "baselines": base,
                          "regime": st, "exposure": expo, "sizing": {k: v for k, v in leg.items() if k != "pnl"},
-                         "realized_opt_ratio": self._ex_post_ratio(u, hp), "features": self._features(k0, pos)})
+                         "realized_opt_ratio": self._ex_post_ratio(u, hp), "features": feats, "mv_mult": mv_mult,
+                         # the daily paths, compact: the objective-specific ML (objml) re-scores any hedge multiple exactly
+                         "_u": array("d", u), "_hp": array("d", hp),
+                         "_f": array("d", [(fpath[d] if fpath and fpath[d] is not None else math.nan) for d in range(k0 + 1, k1 + 1)])})
         return summarize(rows, self.h)
 
     def _expected_reduction(self, k0, target, pos) -> Optional[float]:
@@ -396,6 +405,9 @@ class Evaluator:
         return (-sum(a * b for a, b in zip(u, hp)) / sxx) if sxx > 0 else None
 
     def _features(self, k0, pos) -> dict:
+        """Conditions at k0 (point in time) for the ML adjustment. The first six are the original hedge-ML inputs; the
+        rest are the richer set: correlation stability, basis risk, the factor's and the leg's recent vol against their
+        year, implied against realised market vol, and the book's exposure per dollar (beta, DV01/$, CS01/$...)."""
         f = self.factor()
         b252, c252 = _beta(pos, f, k0, 252) if f is not None else (None, None)
         b63, c63 = _beta(pos, f, k0, 63) if f is not None else (None, None)
@@ -403,8 +415,58 @@ class Evaluator:
         v = vix[k0] if vix else None
         mk = self.F["MKT"]
         m3 = sum(x for x in mk[k0 - 62:k0 + 1] if x is not None)
+        rv21 = _rv(mk, k0, 21)
+        mv = sum(abs(p["mv"]) for p in self.book) or None
         return {"vix": v, "corr_252": c252, "corr_63": c63, "beta_change": ((b63 / b252 - 1) if b252 and b63 is not None else None),
-                "mkt_3m": m3, "rate": self.rate[k0]}
+                "mkt_3m": m3, "rate": self.rate[k0],
+                "corr_instability": (abs(c63 - c252) if c63 is not None and c252 is not None else None),
+                "basis_risk": (math.sqrt(max(0.0, 1 - c63 * c63)) if c63 is not None else None),
+                "factor_vol_ratio": _ratio(_rv(f, k0, 63), _rv(f, k0, 252)) if f is not None else None,
+                "iv_rv": _ratio(v, rv21), "exposure_per_dollar": (b252 / mv) if (b252 is not None and mv) else None}
+
+    def leg_features(self, k0: int, target: float, leg: Optional[dict] = None, expo: Optional[float] = None) -> dict:
+        """The hedge leg's own conditions at k0: its recent vol against its year (linear legs); for options the delta,
+        the premium per dollar of exposure hedged (cost), the implied vol and the tenor against the horizon."""
+        L = self.leg
+        out = {"leg_vol_ratio": None, "delta0": None, "cost": None, "iv": None, "tenor_ratio": None}
+        if L["kind"] in ("spot", "equity_future", "forward"):
+            try:
+                ret = self.m.usd_returns(L["asset"]) if L["kind"] == "spot" and not L.get("fx_pair") else Leg(self.r, L).returns() if L["kind"] != "spot" else None
+            except Exception:  # noqa: BLE001
+                ret = None
+            if ret:
+                out["leg_vol_ratio"] = _ratio(_rv(ret, k0, 63), _rv(ret, k0, 252))
+        elif L["kind"] == "option":
+            vol = self.m.vol_index_series(L.get("vol_underlying", L["underlying"]))
+            out["iv"] = vol[k0] if vol else None
+            out["tenor_ratio"] = L["tenor_days"] * 252 / 365.0 / max(1, self.h)
+            if leg and leg.get("delta0") is not None:
+                out["delta0"] = leg["delta0"]
+                out["cost"] = leg["premium"] / abs(target) if target else None
+            elif out["iv"] is not None and self.rate[k0] is not None:
+                S = self.r.panel().series(L["underlying"], "close")
+                if S[k0]:
+                    g = px.option(L["right"], S[k0], S[k0] * L["moneyness"], L["tenor_days"] / 365.0, self.rate[k0],
+                                  _div_yield_series(self.r, L.get("proxy", L["underlying"]))[k0], out["iv"])
+                    out["delta0"] = g["delta"]
+                    out["cost"] = g["price"] / abs(g["delta"] * S[k0]) if g["delta"] else None
+        return out
+
+
+def _flag(state, value) -> Optional[float]:
+    return None if state is None else (1.0 if state == value else 0.0)
+
+
+def _ratio(a, b) -> Optional[float]:
+    return (a / b) if a is not None and b else None
+
+
+def _rv(xs, k: int, w: int) -> Optional[float]:
+    """Annualised realised volatility of a daily series over (k−w, k]."""
+    seg = [x for x in xs[max(1, k - w + 1):k + 1] if x is not None]
+    if len(seg) < max(10, w // 2):
+        return None
+    return math.sqrt(252.0 * sum(x * x for x in seg) / len(seg))
 
 
 def summarize(rows: List[dict], h: int) -> dict:

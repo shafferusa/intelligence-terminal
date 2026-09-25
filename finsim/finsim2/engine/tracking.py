@@ -46,6 +46,39 @@ def record(store, panel: Panel, asset_id: str, made_on: str, model: str, version
                                  "confidence": confidence, "score": score, "detail": detail or {}, **extra})
 
 
+RISK_MODELS = ("ml_vol", "ml_drawdown")
+
+
+def record_risk(store, panel: Panel, asset_id: str, made_on: str, version: str, horizon: str, h: int,
+                vol: Optional[float], dd: Optional[float], threshold: Optional[float]) -> int:
+    """The ML risk forecasts as their own ledger rows, graded against what they forecast: realised volatility over
+    the horizon (annualised) and whether the drawdown inside the window reached the threshold."""
+    n = 0
+    if vol is not None:
+        n += record(store, panel, asset_id, made_on, "ml_vol", version, horizon, h, vol, None, None, None, {"kind": "volatility"}, source="live") is not None
+    if dd is not None and threshold:
+        n += record(store, panel, asset_id, made_on, "ml_drawdown", version, horizon, h, dd, None, None, None,
+                    {"kind": "drawdown", "threshold": threshold}, source="live") is not None
+    return n
+
+
+def _realised_risk(p: dict, px: list, i0: int, i1: int) -> Optional[float]:
+    seg = [v for v in px[i0:i1 + 1] if v]
+    if len(seg) < 3:
+        return None
+    if p["model"] == "ml_vol":
+        lr = [math.log(b / a) for a, b in zip(seg, seg[1:])]
+        return math.sqrt(252.0 / len(lr) * sum(x * x for x in lr))
+    thr = (p.get("detail") or {}).get("threshold")
+    if not thr:
+        return None
+    peak, worst = seg[0], 0.0
+    for v in seg[1:]:
+        peak = max(peak, v)
+        worst = min(worst, v / peak - 1)
+    return 1.0 if worst <= -thr else 0.0
+
+
 def record_shaffer(store, panel: Panel, asset_id: str, full: dict) -> int:
     """Put today's Shaffer Score for every horizon into the ledger (raw, calibrated, expected return, range,
     confidence, regime and the family points), once per asset, horizon and date."""
@@ -78,6 +111,12 @@ def score_matured(store, panel: Panel) -> int:
         if p["target_date"] > last:
             continue
         px = panel.series(p["asset_id"])
+        if p["model"] in RISK_MODELS:
+            realized = _realised_risk(p, px, panel.index_of(p["made_on"]), panel.index_of(p["target_date"]))
+            if realized is not None:
+                store.score_prediction(p["id"], realized, realized - p["predicted"], last, None)
+                n += 1
+            continue
         a = px[panel.index_of(p["made_on"])]
         b = px[panel.index_of(p["target_date"])]
         if a and b:

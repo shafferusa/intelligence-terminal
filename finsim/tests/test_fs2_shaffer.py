@@ -300,3 +300,62 @@ class NonPositivePrices(unittest.TestCase):
             st.close()
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+
+
+class EarningsSurprise(unittest.TestCase):
+    """Research phase 2: SUE from first-reported SEC figures, usable only from the filing date."""
+
+    def _rows(self):
+        rows = []
+        import datetime as _d
+        v = 1.0
+        for y in range(2010, 2016):
+            for q, (m, fp) in enumerate(((3, "Q1"), (6, "Q2"), (9, "Q3"))):
+                end = _d.date(y, m, 28)
+                v += 0.05 + 0.02 * ((y * 7 + q * 3) % 5 - 2) + (0.5 if (y, fp) == (2014, "Q2") else 0.0)
+                rows.append({"concept": "eps", "period_end": end.isoformat(), "filed": (end + _d.timedelta(days=35)).isoformat(), "value": v, "fp": fp})
+            fy_q4 = v + 0.05
+            fy = sum(r["value"] for r in rows[-3:]) + fy_q4
+            end = _d.date(y, 12, 28)
+            rows.append({"concept": "eps", "period_end": end.isoformat(), "filed": (end + _d.timedelta(days=50)).isoformat(), "value": fy, "fp": "FY"})
+            v = fy_q4
+        # a later restatement of 2014 Q2 must NOT replace the first report
+        rows.append({"concept": "eps", "period_end": "2014-06-28", "filed": "2015-08-01", "value": 99.0, "fp": "Q2"})
+        return rows
+
+    def test_first_report_and_derived_q4(self):
+        from finsim2.engine.candidates import quarterly_values
+        q = quarterly_values(self._rows(), "eps")
+        d = {end: (avail, v) for end, avail, v in q}
+        self.assertNotEqual(d["2014-06-28"][1], 99.0)                    # first report kept
+        self.assertEqual(d["2012-12-28"][0], "2013-02-16")                 # Q4 known from the 10-K filing date
+        self.assertEqual(len(q), 6 * 4)
+
+    def test_sue_is_available_only_from_the_filing_date(self):
+        import datetime as _d
+        from finsim2.engine.candidates import quarterly_values, sue_series
+        cal = [(_d.date(2010, 1, 1) + _d.timedelta(days=i)).isoformat() for i in range(0, 6 * 365)]
+        s = sue_series(quarterly_values(self._rows(), "eps"), cal, hold=63)
+        i = cal.index("2014-08-02")                                           # Q2 2014 filed 35 days after 2014-06-28
+        self.assertIsNone(s[i - 1])
+        self.assertIsNotNone(s[i])
+        self.assertGreater(s[i], 2.0)                                         # the jump is a large positive surprise
+        self.assertIsNone(s[i + 63])
+
+
+class MethodologyVariants(unittest.TestCase):
+    def test_variants_equal_production_weighting_when_priors_and_validation_are_neutral(self):
+        fams = [{"family": "A", "A": 1.0, "H": 1.0, "E": 0.8, "V": 1.0, "score": 0.4, "n_active": 2},
+                {"family": "B", "A": 1.0, "H": 1.0, "E": 0.5, "V": 1.0, "score": -0.2, "n_active": 1}]
+        vf = {"A": {"t": 2.5}, "B": {"t": 3.0}}
+        v = sh.ShafferRun._variants(fams, vf)
+        base = 100.0 * math.tanh((0.8 * 0.4 - 0.5 * 0.2) / (cfg.KAPPA * 2.0))
+        for k in ("no_prior_H", "strict_V", "no_H_strict_V"):
+            self.assertAlmostEqual(v[k], base, places=12)
+
+    def test_strict_validation_zeroes_a_negative_record_and_never_flips_it(self):
+        fams = [{"family": "A", "A": 1.0, "H": 0.5, "E": 1.0, "V": 0.25, "score": 0.6, "n_active": 1}]
+        v = sh.ShafferRun._variants(fams, {"A": {"t": -1.0}})
+        self.assertEqual(v["strict_V"], 0.0)
+        v = sh.ShafferRun._variants(fams, {"A": {"t": 1.0}})
+        self.assertGreater(v["strict_V"], 0.0)                               # same sign as the family score

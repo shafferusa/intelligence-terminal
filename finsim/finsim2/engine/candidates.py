@@ -9,9 +9,15 @@ score's calibration. Admission is recorded in `shaffer_score.ADMITTED`.
 
 They are deliberately kept out of `features.FEATURES`, so the ML models' feature set is unchanged.
 
+Research phase 2 added Earnings Surprise (SUE from first-reported SEC filings) and Breadth (the cross-section of the
+store's equities).
+
 What could not be built from the data FinSim2 can reach (and is therefore not here): option skew (no chains),
 futures curves beyond the front month (term structure is proxied by fund-versus-front-month roll yield), foreign
-inflation and growth (FX differentials use policy rates only), commodity inventories.
+inflation and growth (FX differentials use policy rates only), commodity inventories, CFTC positioning (the CFTC is
+not an allowed source), short interest (FINRA's daily short-sale volume files start in 2019 — too late for the
+pre-2018 admission test), consensus estimates, revisions and forward valuation (no point-in-time estimate history;
+the Alpha Vantage free tier allows 25 requests a day), fund flows.
 """
 from __future__ import annotations
 
@@ -54,6 +60,15 @@ CANDIDATE_FEATURES: Dict[str, tuple] = {
     "vrp": ("Optionality", "Volatility risk premium", "own 30-day implied volatility − 20-day realised volatility"),
     "iv_pctile": ("Optionality", "Implied-volatility percentile", "own implied volatility's percentile over 3 years"),
     "d_iv_1m": ("Optionality", "Implied-volatility change, 1 month", "change in own implied volatility over 21 sessions"),
+    # Earnings surprise (research phase 2): company filings, not prices
+    "sue_eps": ("Earnings Surprise", "Standardised EPS surprise (SUE)", "latest quarter's EPS − the same quarter a year earlier, less the "
+                "average of that change over the previous 8 quarters, ÷ its standard deviation (seasonal random walk with drift); "
+                "first-reported SEC figures, usable from the filing date for 63 sessions"),
+    "sue_rev": ("Earnings Surprise", "Standardised revenue surprise", "the same construction on quarterly revenue"),
+    # Breadth (research phase 2): the cross-section of OTHER stocks' prices, not the asset's own history
+    "breadth_200d": ("Breadth", "Stock breadth (share above 200-day average)", "share of the research store's equities trading above "
+                     "their 200-day average, minus ½ (dates with at least 20 names)"),
+    "d_breadth_3m": ("Breadth", "Breadth change, 3 months", "change in that share over 63 sessions"),
 }
 
 CMT = [(1 / 12, "DGS1MO"), (0.25, "DGS3MO"), (0.5, "DGS6MO"), (1.0, "DGS1"), (2.0, "DGS2"), (5.0, "DGS5"), (7.0, "DGS7"),
@@ -130,7 +145,30 @@ def shared(panel) -> Dict[str, Series]:
             if a is not None and b is not None and a > 0 and b > 0:
                 cnt[i] += 1
                 ups[i] += b > a
+    # stock breadth: share of the store's equities above their 200-day average
+    above, have = [0] * n, [0] * n
+    try:
+        eqs = [a["id"] for a in panel.store.assets("EQUITY")]
+    except Exception:
+        eqs = []
+    for a in eqs:
+        try:
+            p = panel.series(a)
+        except Exception:
+            continue
+        run, cnt_ = 0.0, 0
+        for i in range(n):
+            v = p[i]
+            if v is not None:
+                run += v; cnt_ += 1
+            if i >= 200 and p[i - 200] is not None:
+                run -= p[i - 200]; cnt_ -= 1
+            if v is not None and cnt_ >= 150:
+                have[i] += 1
+                above[i] += v > run / cnt_
+    breadth = [(above[i] / have[i] - 0.5) if have[i] >= 20 else None for i in range(n)]
     out = {
+        "breadth_200d": breadth, "d_breadth_3m": _diff(breadth, 63),
         "_curve": curve, "curvature": curv, "d_curvature_3m": _diff(curv, 63), "slope_5s30s": _combine(y30, y5, lambda a, b: a - b),
         "d_slope_2s10s_1m": _diff(s2s10, 21),
         "vix_term": _combine(vix, vxv, lambda a, b: a / b - 1.0 if b else None),
@@ -187,6 +225,73 @@ def trailing_dividend_yield(panel, asset_id: str) -> Optional[Series]:
     return out
 
 
+def quarterly_values(rows: List[dict], concept: str) -> List[tuple]:
+    """(period_end, available_from, value) per fiscal quarter, as FIRST reported: Q1–Q3 from the 10-Qs, Q4 = FY − Q1 − Q2 − Q3
+    available from the annual filing. A later restatement never replaces the first report (that would be hindsight)."""
+    first: Dict[tuple, tuple] = {}
+    for r in rows:
+        if r.get("concept") != concept or r.get("value") is None or r.get("fp") not in ("Q1", "Q2", "Q3", "FY"):
+            continue
+        k = (str(r["period_end"])[:10], r["fp"])
+        filed = str(r["filed"])[:10]
+        if k not in first or filed < first[k][0]:
+            first[k] = (filed, float(r["value"]))
+    qs = [(end, filed, v) for (end, fp), (filed, v) in first.items() if fp != "FY"]
+    out = list(qs)
+    for (end, fp), (filed, v) in first.items():
+        if fp != "FY":
+            continue
+        e = _dt.date.fromisoformat(end)
+        lo = (e - _dt.timedelta(days=360)).isoformat()
+        inside = [q for q in qs if lo < q[0] < end and q[1] <= filed]
+        if len(inside) == 3:
+            out.append((end, filed, v - sum(q[2] for q in inside)))
+    return sorted(out)
+
+
+def sue_series(quarters: List[tuple], cal: List[str], hold: int = 63) -> Series:
+    """Standardised unexpected value per session: from each quarter's availability date for `hold` sessions."""
+    n = len(cal)
+    events = []
+    diffs: List[tuple] = []                          # (end, seasonal difference)
+    by_end = {q[0]: q for q in quarters}
+    for end, avail, v in quarters:
+        e = _dt.date.fromisoformat(end)
+        prev = [q for k, q in by_end.items() if 350 <= (e - _dt.date.fromisoformat(k)).days <= 380]
+        if not prev:
+            continue
+        d = v - prev[0][2]
+        hist = [x for k, x in diffs if k < end][-8:]
+        diffs.append((end, d))
+        if len(hist) < 4:
+            continue
+        m = sum(hist) / len(hist)
+        sd = math.sqrt(sum((x - m) ** 2 for x in hist) / (len(hist) - 1))
+        if sd <= 0:
+            continue
+        events.append((max(avail, prev[0][1]), max(-5.0, min(5.0, (d - m) / sd))))
+    out: Series = [None] * n
+    events.sort()
+    for avail, val in events:
+        i = bisect.bisect_left(cal, avail)
+        for j in range(i, min(n, i + hold)):
+            out[j] = val
+    return out
+
+
+def earnings_surprise(panel, asset_id: str) -> Dict[str, Series]:
+    from .features import split_adjust
+    cal = panel.calendar()
+    try:
+        rows = panel.store.fundamentals(asset_id)
+    except Exception:
+        rows = []
+    if not rows:
+        return {}
+    rows = split_adjust(rows, panel.store.actions(asset_id, "SPLIT"))
+    return {"sue_eps": sue_series(quarterly_values(rows, "eps"), cal), "sue_rev": sue_series(quarterly_values(rows, "revenue"), cal)}
+
+
 def candidate_features(panel, asset_id: str, f: Dict[str, Series], mac: Dict[str, Series]) -> Dict[str, Series]:
     """Every candidate signal for one asset (None where it does not apply or the data are missing)."""
     from .features import roll_pctile, roll_regress
@@ -199,6 +304,10 @@ def candidate_features(panel, asset_id: str, f: Dict[str, Series], mac: Dict[str
     out: Dict[str, Series] = {k: none for k in CANDIDATE_FEATURES}
     for k in ("curvature", "d_curvature_3m", "slope_5s30s", "d_slope_2s10s_1m", "vix_term", "infl_accel", "d_breakeven_3m", "d_real_y10_3m"):
         out[k] = sh[k]
+    if cls in ("EQUITY", "ETF", "INDEX"):
+        out["breadth_200d"], out["d_breadth_3m"] = sh["breadth_200d"], sh["d_breadth_3m"]
+    if cls == "EQUITY":
+        out.update(earnings_surprise(panel, asset_id))
     # ---- carry and dividend yield
     dy = trailing_dividend_yield(panel, asset_id) if cls in ("EQUITY", "ETF", "INDEX") else None
     if dy is not None:

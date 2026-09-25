@@ -289,7 +289,8 @@ class ShafferRun:
                         fam = {f["family"]: f["score"] for f in rec["families"]}
                         fam.update({f["family"]: f["score"] for f in shd.get("families") or []})
                         pending.setdefault(tau + h + 1, []).append((h, {"t": tau, "raw": rec["raw"], "fam": fam, "all": shd.get("all"),
-                                                                        "sh": {f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []}}))
+                                                                        "sh": {**{f["family"]: (f["score"], shd["with"][f["family"]]) for f in shd.get("families") or []},
+                                                                               **{"VARIANT:" + k: (v, v) for k, v in (rec.get("variants") or {}).items() if v is not None}}}))
                     if rec.get("expected") is not None and rec.get("calibrated") is not None:
                         chk = self.sign_checks.setdefault(lab, [0, 0, 0])   # shown, total differs from calibrated, evidence part differs
                         chk[0] += 1
@@ -299,7 +300,7 @@ class ShafferRun:
                             chk[2] += 1
                     if keep_history:
                         history[lab].append((tau, rec["raw"], rec.get("calibrated"), rec.get("expected")))
-                        self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"]) for f in rec["families"]}))
+                        self.fam_records[lab].append((tau, {f["family"]: (f["score"], f["contribution"], f["V"]) for f in rec["families"]}))
                     if tau == n - 1:
                         latest[lab] = rec
         if until is None:
@@ -424,6 +425,28 @@ class ShafferRun:
             rec["q"] = (q_prod if s in cfg.FAMILY_OF else q_all).get(s, 1.0)
             rec["c"] = min(1.0, math.sqrt(rec["n_eff"] / cfg.N_FULL)) * rec["ci_strength"] * (1.0 - 0.5 * rec["q"]) * rec["quality"]
             rec["w"] = abs(rec["ps"]) * (0.25 + 0.75 * rec["stability"]) if rec["delta"] else 0.0
+        return out
+
+    @staticmethod
+    def _variants(families: List[dict], vf: dict) -> dict:
+        """Methodology variants, SHADOW ONLY (never shown or used): the same families and evidence, weighted as
+            no_prior_H       W·A·F / (κ·ΣA)            — the economic horizon prior H removed from weight and scale
+            strict_V         E·V'·A·H·F / (κ·ΣA·H)     — V' = clip(t/2, 0, 1): a family with a non-positive
+                                                         out-of-sample record gets zero weight (production: 0.5 + t/4)
+            no_H_strict_V    E·V'·A·F / (κ·ΣA)
+        Each is judged by the same discovery/confirmation test as a candidate family; none is adopted otherwise."""
+        out = {}
+        for key, useH, strict in (("no_prior_H", False, False), ("strict_V", True, True), ("no_H_strict_V", False, True)):
+            num = den = 0.0
+            for f in families:
+                A, H = f["A"], (f["H"] if useH else 1.0)
+                den += A * H
+                if not f.get("n_active"):
+                    continue
+                t = (vf.get(f["family"]) or {}).get("t")
+                V = (_clip(t / 2.0, 0.0, 1.0) if t is not None else 1.0) if strict else f["V"]
+                num += f["E"] * V * A * H * f["score"]
+            out[key] = 100.0 * math.tanh(num / (cfg.KAPPA * den)) if den > 0 else None
         return out
 
     def _validation(self, fam_acc: Dict[str, list], h: int) -> dict:
@@ -564,6 +587,7 @@ class ShafferRun:
         K = cfg.KAPPA * ksum
         raw = 100.0 * math.tanh(num / K)
         rec.update(raw=raw, numerator=num, K=K, n_eff=med)
+        rec["variants"] = self._variants(families, vf)
         if shadow:        # what the score would read with each candidate family added (and with all of them)
             add = sum(x["contribution"] for x in shadow)
             add_k = sum(shadow_ah.values())

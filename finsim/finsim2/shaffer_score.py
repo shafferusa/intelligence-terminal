@@ -145,6 +145,8 @@ CANDIDATE_FAMILIES: Dict[str, List[tuple]] = {
     "FX": [("d_rate_diff_3m", 1), ("d_rate_diff_12m", 1)],
     "Commodity": [("real_rate_transmit", 0), ("usd_transmit", 0), ("cmd_breadth_3m", 0)],
     "Optionality": [("vrp", 0), ("iv_pctile", 0), ("d_iv_1m", 0)],
+    "Earnings Surprise": [("sue_eps", 1), ("sue_rev", 1)],
+    "Breadth": [("breadth_200d", 0), ("d_breadth_3m", 0)],
 }
 APPLICABILITY.update({
     "Carry":          dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=1, CORP_BOND=1, COMMODITY=0, FX=1, CRYPTO=0),
@@ -154,6 +156,8 @@ APPLICABILITY.update({
     "FX":             dict(EQUITY=_P, ETF=_P, INDEX=_P, TREASURY=0, CORP_BOND=0, COMMODITY=_P, FX=1, CRYPTO=0),
     "Commodity":      dict(EQUITY=_P, ETF=_P, INDEX=_P, TREASURY=0, CORP_BOND=0, COMMODITY=1, FX=_P, CRYPTO=_P),
     "Optionality":    dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=0, CORP_BOND=0, COMMODITY=1, FX=0, CRYPTO=0),
+    "Earnings Surprise": dict(EQUITY=1, ETF=0, INDEX=0, TREASURY=0, CORP_BOND=0, COMMODITY=0, FX=0, CRYPTO=0),
+    "Breadth":        dict(EQUITY=1, ETF=1, INDEX=1, TREASURY=0, CORP_BOND=0, COMMODITY=0, FX=0, CRYPTO=0),
 })
 HORIZON_FIT.update({
     "Carry":          [0.2, 0.3, 0.6, 0.9, 1.0, 1.0, 1.0, 0.9, 0.8],
@@ -163,6 +167,8 @@ HORIZON_FIT.update({
     "FX":             [0.4, 0.6, 0.9, 1.0, 1.0, 0.9, 0.6, 0.4, 0.3],
     "Commodity":      [0.5, 0.7, 0.9, 1.0, 1.0, 0.9, 0.6, 0.4, 0.3],
     "Optionality":    [0.8, 1.0, 1.0, 0.8, 0.6, 0.4, 0.2, 0.2, 0.2],
+    "Earnings Surprise": [0.3, 0.8, 1.0, 1.0, 0.8, 0.5, 0.2, 0.2, 0.2],
+    "Breadth":        [0.4, 0.6, 0.9, 1.0, 1.0, 0.8, 0.5, 0.4, 0.3],
 })
 # family -> horizons at which it passed the admission test (filled only from an audit result; empty = shadow only)
 ADMITTED: Dict[str, List[str]] = {}

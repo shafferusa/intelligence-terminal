@@ -812,7 +812,7 @@ def analyze(research, positions: List[dict], objective: Optional[str] = None, pa
     package = [_leg_view(c, ql, R, S, h, nav) for c, ql in zip(chosen, q) if ql]
     raw_after = _apply(R, package, cands)
     # ---------- ML adjustment (separate, capped, only if verified)
-    ml = _ml(research, hist_objective(objective, prim) if prim else None, package, cands, h, ml_models)
+    ml = _ml(research, hist_objective(objective, prim) if prim else None, package, cands, h, ml_models, objective)
     final_pkg = []
     for L in package:
         adj = ml["by_leg"].get(L["id"], {}).get("applied", 0.0)
@@ -1167,7 +1167,17 @@ def walk_forward(research, priced, objective, S, prim, inst, pr, h, params, rk=N
     try:
         ev = Evaluator(research, book, ho, tmpl, h, ratio=ratio)
         res = ev.run()
-        res["features_today"] = ev._features(ev.n - 1, ev.book_pnl())       # conditions now, for the ML adjustment
+        # conditions now, for the ML adjustment: the same features the walk-forward rows carry
+        k = ev.n - 1
+        ft = ev._features(k, ev.book_pnl())
+        ft.update(ev.leg_features(k, 1.0))
+        from .history import _flag
+        from .objml import track_features
+        reg = {d: (sr[k] if sr else None) for d, sr in research.regimes().items()}
+        ft.update({"bear": _flag(reg.get("market"), "bear"), "high_vol": _flag(reg.get("volatility"), "high_vol"),
+                   "rising_rates": _flag(reg.get("rates"), "rising_rates")})
+        ft.update(track_features(res.get("rows") or [], ev.cal[k]))
+        res["features_today"] = ft
     except Exception as e:  # noqa: BLE001 - one product's history must not break the analysis
         return {"n": 0, "reason": f"history failed: {type(e).__name__}: {e}"}
     research._mem[key] = res
@@ -1178,22 +1188,24 @@ def ml_group(hobj: Optional[str], leg_kind: Optional[str], h: int) -> str:
     return f"{(hobj or 'none').split(':')[0]}:{leg_kind}:{h}"
 
 
-def _ml(research, hobj, package, cands, h, models) -> dict:
-    """ML adjustment per leg from the verified walk-forward models (kv hedgeml:<VERSION>); 0 when unverified."""
+def _ml(research, hobj, package, cands, h, models, objective: Optional[str] = None) -> dict:
+    """ML adjustment per leg from the verified objective-specific walk-forward models (kv hedgeml:<VERSION>, see
+    objml): the model for this hedge objective's metric (variance, factor exposure, drawdown, VaR or ES); 0 when that
+    model is not verified."""
     from .history import VERSION
+    from . import objml
     models = models if models is not None else (research.store.kv_get(f"hedgeml:{VERSION}") or {})
-    out = {"alpha": ALPHA, "cap": ADJ_CAP, "by_leg": {}, "trained": bool(models), "note": None}
+    out = {"alpha": ALPHA, "cap": ADJ_CAP, "by_leg": {}, "trained": bool(models), "note": None, "metric": objml.metric_for(objective),
+           "metric_label": objml.METRIC_LABEL.get(objml.metric_for(objective))}
     if not models:
         out["note"] = "no hedge ML models trained yet (python -m finsim2 hedge-audit): adjustment 0"
     for L in package:
         c = next(x for x in cands if x["id"] == L["id"])
         tmpl = leg_template(c["inst"], c["priced"], research.store) or {}
         group = ml_group(hobj, tmpl.get("kind"), h)
-        mdl = (models.get("groups") or {}).get(group)
-        feats = c.get("_features") or {}
-        adj = ml_adjustment(mdl, feats)
+        adj = objml.adjustment(models, group, objective, c.get("_features") or {})
         adj["group"] = group
-        out["by_leg"][L["id"]] = adj | {"applied": adj.get("applied", 0.0) if adj.get("verified") else 0.0}
+        out["by_leg"][L["id"]] = adj
     return out
 
 

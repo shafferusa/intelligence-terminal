@@ -12,6 +12,7 @@ from typing import Dict, List, Optional
 
 from . import products as P
 from .engine import ml_group
+from . import objml
 from .history import ADJ_CAP, ALPHA, VERSION, Evaluator, ml_layer
 from .market import SHORT_RATE
 
@@ -105,16 +106,25 @@ def run(research, progress=print, ratio: float = 1.0) -> dict:
                 continue
             rows = res.pop("rows", [])
             g = ml_group(c["objective"], c["leg"]["kind"], h)
-            if c["leg"]["kind"] in ("spot", "equity_future", "forward"):
-                groups.setdefault(g, []).extend(rows)
+            for r in rows:
+                r["case"] = f"{c['book']}|{c['label']}"
+            groups.setdefault(g, []).extend(rows)
             out["cases"].append({**{k: v for k, v in c.items() if k != "leg"}, "leg_kind": c["leg"]["kind"], "horizon": lab, "h": h, "result": res,
                                  "regimes": _regime_rows(rows)})
         if progress:
             progress(f"[{n + 1}/{len(cs)}] {c['book']} ← {c['label']}")
-    models = ml_layer(groups)
-    out["ml"] = {g: {k: v for k, v in m.items() if k != "model"} for g, m in models.items()}
-    research.store.kv_set(f"hedgeml:{VERSION}", {"groups": models, "trained": out["started"], "asof": out["asof"], "alpha": ALPHA, "cap": ADJ_CAP})
+    if progress:
+        progress("objective-specific hedge ML: walk-forward per group and objective")
+    linear = {g: rs for g, rs in groups.items() if g.split(":")[1] in ("spot", "equity_future", "forward")}
+    v1 = ml_layer(linear)                                           # the original variance-only layer, for comparison
+    out["ml"] = {g: {k: v for k, v in m.items() if k != "model"} for g, m in v1.items()}
+    models = objml.research(groups)
+    out["objml"] = {g: {mt: {k: v for k, v in r.items() if k not in ("model", "fill")} for mt, r in res.items()} for g, res in models.items()}
+    research.store.kv_set(f"hedgeml:{VERSION}", {"groups": {g: {mt: r for mt, r in res.items() if mt in objml.METRICS} for g, res in models.items()},
+                                                 "trained": out["started"], "asof": out["asof"], "alpha": ALPHA, "cap": ADJ_CAP})
     out["seconds"] = round(time.time() - t0, 1)
+    from ..engine.health import hedge_audit_summary
+    research.store.kv_set("hedgeaudit:summary", hedge_audit_summary(out))
     return out
 
 
@@ -272,6 +282,35 @@ def markdown(a: dict) -> str:
         w(f"| {g} | {m.get('n', 0)} | {_f(m.get('n_eff'), 0)} | {_f(m.get('t_vs_static'), 1)} | {_f(m.get('t_vs_min_variance'), 1)} | "
           f"{'yes' if m.get('verified') else 'no'} | {'; '.join(m.get('reasons') or []) or '—'} |")
     w("")
+    if a.get("objml"):
+        w("## 18b. Objective-specific hedge ML (richer features)")
+        w("")
+        w(objml.__doc__.split("\n\n")[1].replace("\n", " "))
+        w("")
+        w("Verified = beats the static rule AND the minimum-variance multiple out of sample (t ≥ 2, or bootstrap p ≤ 0.025 for the pooled "
+          "VaR/ES), n_eff ≥ 30, not worse in the latest third. Gain = 1 − adjusted ÷ static on the same windows.")
+        w("")
+        w("| Group | Metric | OOS windows | n_eff | Gain vs static | t / p vs static | t / p vs constant | t / p vs min-var | Mean adj. (constant) | Verified | Reasons |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|")
+        tally: Dict[str, List[int]] = {}
+        for g, res in sorted(a["objml"].items()):
+            for mt in objml.METRICS + ["variance_basic"]:
+                r = res.get(mt) or {}
+                if not r.get("n"):
+                    continue
+                t = tally.setdefault(mt, [0, 0])
+                t[0] += 1; t[1] += 1 if r.get("verified") else 0
+                ts = _f(r.get("t_vs_static"), 1) if mt not in objml.POOLED else ("p " + _f(r.get("p_vs_static"), 2))
+                tm = _f(r.get("t_vs_min_variance"), 1) if mt not in objml.POOLED else ("p " + _f(r.get("p_vs_min_variance"), 2))
+                tc = _f(r.get("t_vs_constant"), 1) if mt not in objml.POOLED else ("p " + _f(r.get("p_vs_constant"), 2))
+                w(f"| {g} | {mt.replace('_', ' ')} | {r.get('n', 0)} | {_f(r.get('n_eff'), 0)} | {_f(r.get('gain_vs_static'), 1, True)} | {ts} | {tc} | {tm} | "
+                  f"{_f(r.get('mean_adjustment'), 2)} ({_f(r.get('constant_adjustment'), 2)}) | {'yes' if r.get('verified') else 'no'} | {'; '.join(r.get('reasons') or []) or '—'} |")
+        w("")
+        w("| Metric | Groups tested | Verified |")
+        w("|---|---|---|")
+        for mt, (n, v) in tally.items():
+            w(f"| {objml.METRIC_LABEL.get(mt, 'Variance, original six features')} | {n} | {v} |")
+        w("")
     errs = [c for c in a["cases"] if c.get("error") or not c.get("result", {}).get("n")]
     if errs:
         w("## Cases without history")
