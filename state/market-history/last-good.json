@@ -1,5 +1,5 @@
 {
- "fetched_at": "2026-09-24T20:47:23Z",
+ "fetched_at": "2026-09-25T10:40:00Z",
  "treasury_par_curve": {
   "as_of": "2026-09-24 EOD official",
   "curve": {
@@ -21,10 +21,10 @@
   "2s10s_bp": 31,
   "3m10y_bp": 94,
   "5s30s_bp": 44,
-  "note": "Fresh Sept 24 EOD curve. 10Y +7bp to 5.18%, 3M +5bp to 4.24%, continuing Wednesday's rise. Same-day 7-year note auction (5.085% high yield, highest since Apr 1993) reinforces the move."
+  "note": "Re-confirmed fresh Sept 25 am pull: still Sept 24 EOD curve (par curve lags one business day at premarket gather time). No fresher print pre-open."
  },
  "fred": {
-  "as_of": "2026-09-24 pm run: T10Y2Y/DGS2/DGS10/T10YIE/DFII10/SOFR/BAMLH0A0HYM2 rolled to fresh 2026-09-23 obs.",
+  "as_of": "2026-09-25 am run: T10Y2Y/T10YIE rolled to fresh 2026-09-24 obs; DGS2/DGS10/DFII10/SOFR/BAMLH0A0HYM2 still 2026-09-23 (not yet rolled).",
   "series": {
    "CPIAUCSL": {
     "value": 334.131,
@@ -47,8 +47,8 @@
     "date": "2026-08-01"
    },
    "T10Y2Y": {
-    "value": 0.26,
-    "date": "2026-09-23"
+    "value": 0.31,
+    "date": "2026-09-24"
    },
    "DGS2": {
     "value": 4.85,
@@ -59,8 +59,8 @@
     "date": "2026-09-23"
    },
    "T10YIE": {
-    "value": 2.35,
-    "date": "2026-09-23"
+    "value": 2.33,
+    "date": "2026-09-24"
    },
    "DFII10": {
     "value": 2.76,
@@ -80,12 +80,12 @@
   "vix": 14.21,
   "vix9d": 12.13,
   "vix3m": 17.61,
-  "as_of": "2026-09-22 EOD official (last trade 16:15:01 ET) -- Cboe's delayed-quote domain (cdn-api.cboe.com) returned an explicit EGRESS_BLOCKED response this run on both direct fetch and WebFetch proxy fallback, not a simple timeout.",
+  "as_of": "2026-09-22 EOD official (last trade 16:15:01 ET) -- Cboe's delayed-quote domain (cdn-api.cboe.com) again returned an explicit EGRESS_BLOCKED / connect_rejected (organization policy) response this run on both direct fetch and WebFetch fallback. The EOD history CSVs on cdn.cboe.com (a different path) are reachable but their last row is also still Sept 22 -- the underlying data hasn't posted past that date either.",
   "term_structure": "VIX9D < VIX < VIX3M -- normal contango (as of the last posted value)",
-  "note": "Stale for a THIRD consecutive session as of the Sept 24 pm run. Worth a RUNBOOK look if this persists -- it's now a policy block on the domain, not 'hasn't posted yet.'"
+  "note": "Stale for a FOURTH consecutive session as of the Sept 25 am run. Confirmed this run to be a policy-level block (connect_rejected), not a transient delay -- worth a RUNBOOK look."
  },
  "fx": {
-  "as_of": "2026-09-24 EOD official (ECB reference)",
+  "as_of": "2026-09-24 EOD official (ECB reference) -- re-confirmed fresh Sept 25 am pull, ECB has not yet published a fresher fix",
   "rates_vs_usd": {
    "EUR": 0.87974,
    "JPY": 158.85,
@@ -100,15 +100,15 @@
   }
  },
  "crypto": {
-  "as_of": "2026-09-24 live (CoinGecko per-coin spot; /global endpoint rate-limited on every attempt this run)",
-  "btc": 84198,
-  "eth": 2683.79,
-  "sol": 116.69,
-  "ada": 0.247029,
-  "total_mkt_cap": 2812600000000,
-  "btc_dominance_pct": 59.24,
-  "eth_dominance_pct": 11.4,
-  "note": "total_mkt_cap and dominance carried from this morning's successful /global fetch (Cached); per-coin spot prices above are fresh this run."
+  "as_of": "2026-09-25 live (CoinGecko, both /simple/price and /global succeeded this run)",
+  "btc": 84680,
+  "eth": 2711.18,
+  "sol": 118.75,
+  "ada": 0.2526,
+  "total_mkt_cap": 2877000000000,
+  "btc_dominance_pct": 58.93,
+  "eth_dominance_pct": 11.46,
+  "note": "All figures fresh this run, live."
  },
  "indices": {
   "as_of": "2026-09-24 EOD official",
@@ -130,394 +130,352 @@
   }
  },
  "futures_commodities_fx": {
-  "as_of": "2026-09-24 premarket (close-to-close vs Wed Sept 23 settle)",
+  "as_of": "2026-09-25 premarket (delayed +10min; ES/NQ/YM/RTY vs Thu Sept 24 settle; CL/GC/NG/HG are today's incomplete premarket bar vs Thu settle, a different period -- see report methodology note)",
   "es_f": {
-   "price": 7724.75,
-   "pct": -0.614
+   "price": 7788.5,
+   "pct": 0.28
   },
   "nq_f": {
-   "price": 30433.25,
-   "pct": -1.078
+   "price": 30929.75,
+   "pct": 0.53
   },
   "ym_f": {
-   "price": 51704.0,
-   "pct": -0.326
+   "price": 51834.0,
+   "pct": 0.23
   },
   "rty_f": {
-   "price": 2846.9,
-   "pct": -0.465
+   "price": 2864.0,
+   "pct": 0.25
   },
   "tnx": {
-   "price": 5.114,
-   "pct": null,
-   "note": "2026-09-23 dated print; ^TNX series had a 9/22 gap"
+   "price": 5.162,
+   "pct": 0.94,
+   "note": "Yahoo ^TNX now appears already yield-equivalent (5.162 ~= Treasury 10Y 5.18%); the old /10 rule in weekday.md SS2.5 may be stale -- flagged for a RUNBOOK correction, not applied this run."
   },
   "cl_f": {
-   "price": 93.17,
-   "pct": 1.096,
-   "note": "Smooth 4-day series this run, no roll-artifact jump; cross-checked vs USO +3.30% Sept 23 close, consistent direction"
+   "price": 92.86,
+   "pct": -1.85,
+   "note": "premarket pullback after USO +2.86% Thursday close; different, non-overlapping periods"
   },
   "gc_f": {
-   "price": 4282.3,
-   "pct": -0.836
+   "price": 4343.4,
+   "pct": 1.06
   },
   "ng_f": {
-   "price": 3.197,
-   "pct": 5.756,
-   "note": "standout mover again"
+   "price": 3.24,
+   "pct": -1.73
   },
   "hg_f": {
-   "price": 6.745,
-   "pct": 1.003
+   "price": 6.788,
+   "pct": 1.03
   },
   "eurusd": {
-   "price": 1.1369,
-   "pct": -0.691
+   "price": 1.14,
+   "pct": 0.16
   },
   "dxy": {
-   "price": 101.297,
-   "pct": 0.195
+   "price": 101.046,
+   "pct": -0.24
   }
  },
  "watchlist": {
   "SPY": {
-   "price": 767.1799926757812,
-   "prev": 767.8099975585938,
+   "price": 767.18,
+   "prev": 767.81,
    "chg": -0.63,
-   "pct": -0.0821,
-   "vol": 41127903,
+   "pct": -0.08,
+   "vol": 43900000,
    "hi52": 779.37,
    "lo52": 629.28,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 49131230
+   "as_of": "2026-09-24 EOD official"
   },
   "QQQM": {
-   "price": 305.1400146484375,
-   "prev": 305.1400146484375,
+   "price": 305.14,
+   "prev": 305.14,
    "chg": 0.0,
    "pct": 0.0,
-   "vol": 2040509,
+   "vol": 2000000,
    "hi52": 308.21,
    "lo52": 228.75,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 2874571
+   "as_of": "2026-09-24 EOD official"
   },
   "DIA": {
-   "price": 512.6799926757812,
-   "prev": 514.2999877929688,
+   "price": 512.68,
+   "prev": 514.3,
    "chg": -1.62,
-   "pct": -0.315,
-   "vol": 2623568,
+   "pct": -0.32,
+   "vol": 2800000,
    "hi52": 546.75,
    "lo52": 450.44,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 3655597
+   "as_of": "2026-09-24 EOD official"
   },
   "IWM": {
-   "price": 281.6600036621094,
-   "prev": 281.9200134277344,
+   "price": 281.66,
+   "prev": 281.92,
    "chg": -0.26,
-   "pct": -0.0922,
-   "vol": 26906508,
+   "pct": -0.09,
+   "vol": 27300000,
    "hi52": 305.18,
    "lo52": 228.9,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 25449041
+   "as_of": "2026-09-24 EOD official"
   },
   "MAGS": {
-   "price": 72.51000213623047,
-   "prev": 72.08000183105469,
+   "price": 72.51,
+   "prev": 72.08,
    "chg": 0.43,
-   "pct": 0.5966,
-   "vol": 4787304,
+   "pct": 0.6,
+   "vol": 4800000,
    "hi52": 73.46,
    "lo52": 55.085,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 4380090
+   "as_of": "2026-09-24 EOD official"
   },
   "RSP": {
-   "price": 210.25999450683594,
-   "prev": 211.30999755859375,
+   "price": 210.26,
+   "prev": 211.31,
    "chg": -1.05,
-   "pct": -0.4969,
-   "vol": 7660300,
+   "pct": -0.5,
+   "vol": 7700000,
    "hi52": 223.44,
    "lo52": 182.11,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 6576820
+   "as_of": "2026-09-24 EOD official"
   },
   "SMH": {
-   "price": 600.52001953125,
-   "prev": 601.4099731445312,
+   "price": 600.52,
+   "prev": 601.41,
    "chg": -0.89,
-   "pct": -0.148,
-   "vol": 5556076,
+   "pct": -0.15,
+   "vol": 5600000,
    "hi52": 671.83,
-   "lo52": 313.6,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 6858998
+   "lo52": 315.05,
+   "as_of": "2026-09-24 EOD official"
   },
   "XLK": {
-   "price": 194.7100067138672,
-   "prev": 195.33999633789062,
+   "price": 194.71,
+   "prev": 195.34,
    "chg": -0.63,
-   "pct": -0.3225,
-   "vol": 6248431,
+   "pct": -0.32,
+   "vol": 6400000,
    "hi52": 198.73,
    "lo52": 126.68,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 7037183
+   "as_of": "2026-09-24 EOD official"
   },
   "XLF": {
-   "price": 54.529998779296875,
-   "prev": 54.540000915527344,
+   "price": 54.53,
+   "prev": 54.54,
    "chg": -0.01,
-   "pct": -0.0183,
-   "vol": 28611370,
+   "pct": -0.02,
+   "vol": 28800000,
    "hi52": 58.6,
    "lo52": 47.67,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 39310047
+   "as_of": "2026-09-24 EOD official"
   },
   "KRE": {
-   "price": 70.94000244140625,
-   "prev": 70.37999725341797,
+   "price": 70.94,
+   "prev": 70.38,
    "chg": 0.56,
-   "pct": 0.7957,
-   "vol": 16198130,
+   "pct": 0.8,
+   "vol": 16300000,
    "hi52": 78.35,
    "lo52": 57.55,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 15350353
+   "as_of": "2026-09-24 EOD official"
   },
   "XLE": {
-   "price": 62.599998474121094,
-   "prev": 62.369998931884766,
+   "price": 62.6,
+   "prev": 62.37,
    "chg": 0.23,
-   "pct": 0.3688,
-   "vol": 35683279,
+   "pct": 0.37,
+   "vol": 38200000,
    "hi52": 66.17,
    "lo52": 42.35,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 37392248
+   "as_of": "2026-09-24 EOD official"
   },
   "TLT": {
-   "price": 79.41999816894531,
-   "prev": 80.45999908447266,
+   "price": 79.42,
+   "prev": 80.46,
    "chg": -1.04,
-   "pct": -1.2926,
-   "vol": 58044819,
+   "pct": -1.29,
+   "vol": 59000000,
    "hi52": 92.19,
    "lo52": 79.42,
    "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 40170242
+   "note": "closed AT its 52-week low"
   },
   "IEF": {
-   "price": 89.69000244140625,
-   "prev": 90.19000244140625,
+   "price": 89.69,
+   "prev": 90.19,
    "chg": -0.5,
-   "pct": -0.5544,
-   "vol": 10959601,
+   "pct": -0.55,
+   "vol": 11000000,
    "hi52": 98.05,
    "lo52": 89.69,
    "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 9915790
+   "note": "closed AT its 52-week low"
   },
   "TIP": {
-   "price": 104.30000305175781,
-   "prev": 104.80999755859375,
+   "price": 104.3,
+   "prev": 104.81,
    "chg": -0.51,
-   "pct": -0.4866,
-   "vol": 2546703,
+   "pct": -0.49,
+   "vol": 2500000,
    "hi52": 112.24,
    "lo52": 104.29,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 2172760
+   "as_of": "2026-09-24 EOD official"
   },
   "LQD": {
-   "price": 103.1500015258789,
-   "prev": 103.88999938964844,
+   "price": 103.15,
+   "prev": 103.89,
    "chg": -0.74,
-   "pct": -0.7123,
-   "vol": 39322384,
+   "pct": -0.71,
+   "vol": 40200000,
    "hi52": 112.93,
    "lo52": 103.11,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 32060778
+   "as_of": "2026-09-24 EOD official"
   },
   "HYG": {
-   "price": 77.88999938964844,
-   "prev": 78.0999984741211,
+   "price": 77.89,
+   "prev": 78.1,
    "chg": -0.21,
-   "pct": -0.2689,
-   "vol": 73511665,
+   "pct": -0.27,
+   "vol": 74900000,
    "hi52": 81.33,
    "lo52": 77.854,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 49451476
+   "as_of": "2026-09-24 EOD official"
   },
   "GLD": {
-   "price": 391.69000244140625,
-   "prev": 392.8800048828125,
+   "price": 391.69,
+   "prev": 392.88,
    "chg": -1.19,
-   "pct": -0.3029,
-   "vol": 6639799,
+   "pct": -0.3,
+   "vol": 6700000,
    "hi52": 509.7,
-   "lo52": 342.47,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 8526450
+   "lo52": 345.31,
+   "as_of": "2026-09-24 EOD official"
   },
   "USO": {
-   "price": 153.08999633789062,
-   "prev": 148.8300018310547,
+   "price": 153.09,
+   "prev": 148.83,
    "chg": 4.26,
-   "pct": 2.8623,
-   "vol": 9484130,
+   "pct": 2.86,
+   "vol": 9500000,
    "hi52": 163.35,
    "lo52": 65.99,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 6510523
+   "as_of": "2026-09-24 EOD official"
   },
   "EEM": {
    "price": 67.25,
-   "prev": 67.70999908447266,
+   "prev": 67.71,
    "chg": -0.46,
-   "pct": -0.6794,
-   "vol": 17925376,
+   "pct": -0.68,
+   "vol": 18000000,
    "hi52": 71.57,
    "lo52": 51.82,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 20177888
+   "as_of": "2026-09-24 EOD official"
   },
   "VGK": {
-   "price": 88.06999969482422,
-   "prev": 88.01000213623047,
+   "price": 88.07,
+   "prev": 88.01,
    "chg": 0.06,
-   "pct": 0.0682,
-   "vol": 5719528,
+   "pct": 0.07,
+   "vol": 5700000,
    "hi52": 93.29,
    "lo52": 77.82,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 2566593
+   "as_of": "2026-09-24 EOD official"
   },
   "BTC": {
-   "price": 37.310001373291016,
-   "prev": 37.380001068115234,
+   "price": 37.31,
+   "prev": 37.38,
    "chg": -0.07,
-   "pct": -0.1873,
-   "vol": 1705841,
+   "pct": -0.19,
+   "vol": 1700000,
    "hi52": 55.96,
    "lo52": 25.65,
    "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": 2148004
+   "note": "Grayscale Bitcoin Mini Trust ETF"
   },
   "DXY": {
-   "price": 101.30799865722656,
-   "prev": 101.0999984741211,
-   "chg": 0.208,
-   "pct": 0.2057,
+   "price": 101.046,
+   "prev": 101.297,
+   "chg": -0.251,
+   "pct": -0.24,
    "vol": null,
    "hi52": 101.8,
    "lo52": 95.55,
-   "as_of": "2026-09-24 EOD official",
-   "verified_close_to_close": true,
-   "avgvol10d": null
+   "as_of": "2026-09-24 EOD official"
   }
  },
  "global_indices": {},
  "dma": {
   "SPY": {
    "n_sessions": 251,
-   "last_price": 773.38,
+   "last_price": 767.18,
    "hi52": 779.37,
    "lo52": 629.28,
-   "dist20_pct": 1.07,
-   "dist50_pct": 1.68,
+   "dist20_pct": 0.24,
+   "dist50_pct": 0.79,
    "dist200_pct": 7.83
   },
   "QQQ": {
    "n_sessions": 251,
-   "last_price": 747.46,
+   "last_price": 741.05,
    "hi52": null,
    "lo52": null,
-   "dist20_pct": 4.29,
-   "dist50_pct": 5.13,
+   "dist20_pct": 2.97,
+   "dist50_pct": 4.1,
    "dist200_pct": 12.6
   },
   "IWM": {
    "n_sessions": 251,
-   "last_price": 287.21,
+   "last_price": 281.66,
    "hi52": 305.18,
    "lo52": 228.9,
-   "dist20_pct": -1.38,
-   "dist50_pct": -2.58,
+   "dist20_pct": -2.71,
+   "dist50_pct": -4.29,
    "dist200_pct": 4.36
   },
   "DIA": {
    "n_sessions": 251,
-   "last_price": 518.0,
+   "last_price": 512.68,
    "hi52": 546.75,
    "lo52": 450.44,
-   "dist20_pct": -1.64,
-   "dist50_pct": -1.93,
+   "dist20_pct": -2.4,
+   "dist50_pct": -2.88,
    "dist200_pct": 3.29
   },
   "TLT": {
    "n_sessions": 251,
-   "last_price": 81.75,
+   "last_price": 79.42,
    "hi52": 92.19,
-   "lo52": 80.46,
-   "dist20_pct": -0.19,
-   "dist50_pct": -0.93,
+   "lo52": 79.42,
+   "dist20_pct": -2.62,
+   "dist50_pct": -3.55,
    "dist200_pct": -4.72
   },
   "SPCX": {
    "n_sessions": 70,
-   "last_price": 154.72,
+   "last_price": 148.03,
    "hi52": null,
    "lo52": null,
-   "dist20_pct": 5.21,
-   "dist50_pct": 14.55,
+   "dist20_pct": 0.02,
+   "dist50_pct": 9.19,
    "dist200_pct": null
   }
  },
  "breadth_latest": {
-  "date": "2026-09-23",
-  "advancers": 1081,
-  "decliners": 4430,
-  "unchanged": 71,
-  "universe": 5622,
-  "up_vol": 3959083692.39,
-  "down_vol": 11097073852.85,
+  "date": "2026-09-24",
+  "advancers": 1963,
+  "decliners": 3476,
+  "unchanged": 178,
+  "universe": 5617,
+  "up_vol": 5950000000.0,
+  "down_vol": 8960000000.0,
   "pct_above_e50": null,
   "pct_above_e200": null,
-  "note": "Freshly computed this pm run via Massive grouped-daily for the previously-unprocessed Sept 23 session (D lags today by one session per SR SS2.8 design). Confirms retrospectively how broad Wednesday's selloff was beneath the index-level headline. EMA history now n=42 max; pct_above_e50/e200 still unavailable (need n>=50)."
+  "note": "Computed fresh this run via Massive grouped-daily for Sept 24. NOT appended to the tracked breadth.json history/ma_state this run -- full 5,617-symbol EMA state could not be reconciled within this run's scope without risking a gap in that file's sequential history (breadth.json's history array still ends 2026-09-23; a future run should append 2026-09-24 properly with full ma_state). This field is a standalone snapshot only."
  },
  "finra_short_vol": {
-  "session": "2026-09-23",
-  "aggregate_short_vol_ratio_pct": 51.6,
-  "note": "Whole-market aggregate this run (not board-subset). Board standouts: KRE 81.4%, TLT 71.6%, IEF 69.9%, IWM 69.8%, SPY 68.6%. Daily short volume != short interest; short interest is settlement-dated and 2-3 weeks stale."
+  "session": "2026-09-24",
+  "aggregate_short_vol_ratio_pct": 50.38,
+  "note": "Whole-market aggregate this run. Board/watchlist standouts (highest): VOYG 91.6%, XLV 80.6%, MDY 80.0%, LQD 77.9%, YSS 74.0%, XLRE 72.9%, VRTX 72.6%, XLF 71.8%, TLT 71.7%, MAGS 71.1%. Lowest: ABNB 23.1%, C 22.7%, DHR 20.8%, BKNG 15.5%, MRK 15.1%. Daily short volume != short interest; short interest is settlement-dated and 2-3 weeks stale."
  },
  "sector_etfs_wk": {
   "as_of": "2026-09-24 EOD official",
@@ -558,21 +516,6 @@
   },
   "label": "EOD official, Sep 24, 2026",
   "fetched_at": "2026-09-24T20:47:23Z"
- },
- "premarket_wednesday": {
-  "as_of": "2026-09-16T10:50:00Z",
-  "label": "Delayed (+10 min), premarket, Yahoo Finance futures, close-to-close vs Tue Sept 15 cash/futures close",
-  "ES_F_pct": 1.1,
-  "NQ_F_pct": 1.45,
-  "YM_F_pct": 0.95,
-  "RTY_F_pct": 0.88,
-  "CL_F_pct": -1.92,
-  "GC_F_pct": 1.3,
-  "NG_F_pct": 0.31,
-  "HG_F_pct": 2.11,
-  "EURUSD_pct": -0.07,
-  "DXY_pct": 0.04,
-  "note": "Percent changes computed close-to-close per the corrected methodology (ledgers/corrections.json 2026-08-03 entry), never against meta.chartPreviousClose. Futures modestly higher into FOMC day; oil retreating from Tuesday's spike; gold and copper both firm."
  },
  "fomc_20260916": {
   "date": "2026-09-16",
@@ -637,28 +580,13 @@
   "fetched_at": "2026-09-16T21:15:00Z"
  },
  "sec_edgar_sweep": {
-  "date": "2026-09-24",
-  "cutoff": "2026-09-24T16:37:00-04:00 (this pm run, market-wide getcurrent feed)",
-  "per_company_feeds_checked": "not repeated this run; Costco's own 8-K located and read in full via its per-company feed",
-  "new_filings_since_cutoff": [
-   {
-    "ticker": "COST",
-    "watchlist": "consumer",
-    "filed": "2026-09-24T16:17:37-04:00",
-    "items": "2.02, 9.01",
-    "reviewed": true,
-    "note": "Q4/FY2026 earnings release, read in full -- see Top Stories"
-   },
-   {
-    "ticker": "WFC",
-    "watchlist": "financials",
-    "filed": "2026-09-24",
-    "items": "unreviewed",
-    "reviewed": false
-   }
-  ]
+  "date": "2026-09-25",
+  "cutoff": "2026-09-24T20:00:00-04:00 (this am run's window start)",
+  "per_company_feeds_checked": "all 86 deduplicated tickers across board + mega_cap_tech + ai_infra + defense_aero + space + financials watchlists, throttled ~4.5 req/s, .gov UA -- all 86 succeeded",
+  "new_filings_since_cutoff": [],
+  "note": "Zero new 8-K (or other) filings across the entire 86-ticker universe on or after the cutoff. Most recent watchlist filing anywhere: VST at 2026-09-24T17:13:57 ET (before this window)."
  },
- "_notes_this_run": "2026-09-24 pm: corrected a research-pass error that reported Wednesday's closing index levels as today's; verified via Yahoo's own timestamped close-to-close series that today's session was in fact close to flat. Fresh 10-day avgvol pull for all 21 board quote rows via a dedicated 1mo-range fetch.",
+ "_notes_this_run": "2026-09-25 am: fourth consecutive stale VIX session, now confirmed a policy-level egress block (connect_rejected) rather than a delay -- flagged for RUNBOOK. Breadth computed fresh (Sept 24 session, 1,963/3,476/178 across 5,617 names) but not folded into breadth.json's tracked EMA history this run (see breadth_latest.note). Dropped several superseded per-date premarket snapshot keys to keep this file lean; futures_commodities_fx is the single current premarket reading going forward.",
  "twelvedata_spotcheck_note": {
   "batch1_ok": [
    "SPY",
@@ -672,51 +600,19 @@
   ],
   "batch2": "429 rate-limited, not retried (SR 2.4, not a failure)",
   "cross_check": "all 8 batch1 close/previous_close values matched Yahoo close-to-close exactly",
-  "fetched_at": "2026-09-22T10:35:00Z"
+  "fetched_at": "2026-09-25T10:35:00Z"
  },
- "premarket_20260923": {
-  "as_of": "2026-09-23T06:22:00-04:00 to 06:32:00-04:00",
-  "label": "Delayed (+10 min), premarket, Yahoo Finance futures, close-to-close vs Tue Sept 22 settle",
-  "ES_F_pct": 0.08,
-  "NQ_F_pct": 0.0,
-  "YM_F_pct": 0.06,
-  "RTY_F_pct": -0.31,
-  "CL_F_pct": null,
-  "GC_F_pct": -0.54,
-  "NG_F_pct": 7.52,
-  "HG_F_pct": 0.9,
-  "EURUSD_pct": -0.46,
-  "DXY_pct": 0.44,
-  "note": "Futures essentially flat. Natural gas +7.52% overnight extends Monday's +11.6% surge, still no single confirmed catalyst (heat demand, falling production, tightening storage surplus, rising LNG exports all cited). CL=F excluded a 7th consecutive session on an apparent contract-roll artifact; USO fell 2.75% Tuesday and outside price checks put WTI in the high $80s."
- },
- "premarket_tuesday": {
-  "as_of": "2026-09-22T10:24:00Z-10:34:00Z",
-  "label": "Delayed (+10 min), premarket, Yahoo Finance futures, close-to-close vs Monday Sept 21 futures/cash close",
-  "ES_F_pct": 0.03,
-  "NQ_F_pct": 0.06,
-  "YM_F_pct": 0.19,
-  "RTY_F_pct": 0.45,
-  "CL_F_pct": null,
-  "GC_F_pct": -0.36,
-  "NG_F_pct": 5.68,
-  "HG_F_pct": 2.35,
-  "EURUSD_pct": -0.1,
-  "DXY_pct": -0.05,
-  "note": "Futures essentially flat to fractionally higher overnight after Monday's big up day (S&P +1.49%, Nasdaq +2.26% record close, Dow +0.71%, Russell +0.52%); small-caps (RTY) lead the modest premarket tilt higher. Natural gas +5.68% premarket is the standout mover; copper extends Monday's gain. Gold and the dollar both flat-to-softer. CL=F excluded (see futures_commodities_fx)."
- },
- "premarket_20260924": {
-  "as_of": "2026-09-24 ~06:30-06:45 ET",
-  "label": "Delayed premarket, Yahoo Finance futures, close-to-close vs Wed Sept 23 settle",
-  "ES_F_pct": -0.614,
-  "NQ_F_pct": -1.078,
-  "YM_F_pct": -0.326,
-  "RTY_F_pct": -0.465,
-  "CL_F_pct": 1.096,
-  "GC_F_pct": -0.836,
-  "NG_F_pct": 5.756,
-  "HG_F_pct": 1.003,
-  "EURUSD_pct": -0.691,
-  "DXY_pct": 0.195,
-  "note": "Futures broadly softer, extending Wednesday's PMI/auction-driven selloff; NY Fed's Williams flagged another hike as 'reasonable' by year-end pre-open. Natural gas the standout mover again. CL=F finally showing a clean, non-roll-artifact reading after many sessions of exclusion."
+ "mega_cap_tech": {
+  "as_of": "2026-09-24 EOD official (Previous close)",
+  "pct": {
+   "AAPL": -0.33,
+   "MSFT": -0.53,
+   "NVDA": -0.41,
+   "AMZN": 0.04,
+   "GOOGL": 1.34,
+   "META": 4.5,
+   "TSLA": -0.57,
+   "SPCX": -0.22
+  }
  }
 }

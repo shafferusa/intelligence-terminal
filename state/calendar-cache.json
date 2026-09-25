@@ -1,5 +1,5 @@
 {
- "fetched": "2026-09-24T06:55:00-04:00",
+ "fetched": "2026-09-25T06:40:00-04:00",
  "earnings_fetched": "2026-09-20",
  "earnings_fetched_note": "Alpha Vantage 3-month calendar + Finnhub date-ranged calendar cross-checked 2026-09-20 for the week of Sept 21-25. Costco (COST) is the only watchlist-company earnings report all week (Thu Sept 24, after close; Alpha Vantage est. EPS $6.48, Finnhub est. EPS $6.67 -- vendors diverge, report as a range). No other board/mega_cap_tech/ai_infra/defense_aero/space/financials/health/consumer ticker reports Sept 21-25; next watchlist date is Micron (MU) Sept 30. Non-watchlist bellwethers: AutoZone (Tue), Cintas/Paychex (Wed), Darden (Thu).",
  "events": [
@@ -686,10 +686,10 @@
   {
    "ts_et": "2026-09-25T00:00:00-04:00",
    "type": "treasury_auction",
-   "name": "Treasury bill auctions (possible stale duplicate -- see note)",
+   "name": "CORRECTED 2026-09-25: no bill auction is actually dated Sept 25 -- prior entry was a stale duplicate",
    "importance": "Low",
-   "reason": "FLAGGED 2026-09-24: a fresh TreasuryDirect TA_WS pull this morning shows no 4-week/8-week bill auction dated Sept 25 -- those bills appear dated Sept 24 in current data (see the Sept 24 7-Year Note entry). This Sept 25 entry may be a stale duplicate carried forward in error; not deleted outright, flagged pending reconciliation.",
-   "source": "treasurydirect.gov TA_WS API -- discrepancy found, Unconfirmed"
+   "reason": "A fresh TreasuryDirect TA_WS pull this morning confirms no 4-week/8-week bill auction is dated Sept 25; those bills were dated Sept 24 (see the Sept 24 7-Year Note entry). This entry is kept, corrected in place, rather than deleted, per this outlet's practice of never silently removing a prior claim.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary, reconciled 2026-09-25"
   },
   {
    "ts_et": "2026-09-25T00:00:00-04:00",
@@ -786,6 +786,30 @@
    "importance": "Critical",
    "reason": "One of the weakest 5-year auctions on record by several metrics; reinforced the day's yield-spike narrative alongside the flash PMI and Governor Barr's remarks.",
    "source": "TreasuryDirect auction results (primary) -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-28T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions: 13-week ($95B) and 26-week ($82B)",
+   "importance": "Low",
+   "reason": "Routine weekly bill auctions.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-29T00:00:00-04:00",
+   "type": "treasury_auction",
+   "name": "Treasury bill auctions: 52-week ($54B) and 6-week ($85B)",
+   "importance": "Low",
+   "reason": "Routine bill auctions.",
+   "source": "treasurydirect.gov TA_WS API -- Confirmed-primary"
+  },
+  {
+   "ts_et": "2026-09-25T00:00:00-04:00",
+   "type": "business",
+   "name": "No watchlist-company earnings today (Finnhub day-of check: only FGPR, TBN report, neither on any watchlist)",
+   "importance": "Low",
+   "reason": "Finnhub day-of earnings calendar checked directly for 2026-09-25.",
+   "source": "finnhub.io calendar/earnings -- Confirmed-primary"
   }
  ],
  "weather_grid": "https://api.weather.gov/gridpoints/PBZ/74,62/forecast",
