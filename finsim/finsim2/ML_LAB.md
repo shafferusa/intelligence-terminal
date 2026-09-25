@@ -286,3 +286,27 @@ wins — the panel says so.
   evidence adds to it only at 1D, barely. Bearish precision at 1M–6M comes from inverse / volatility funds.
 * Four 1D directional challengers pass the pre-registered gates and are in the live shadow, but at 1D even a calibrated
   constant beats climatology — the report proposes a stricter pre-registered gate (beat the prior-only model, paired).
+
+### Frozen benchmark for new-information research
+
+New information is judged against a frozen copy of the current system, never against a moving target
+(`lab.freeze_benchmark`, `python -m finsim2 lab --freeze-benchmark`). The benchmark holds only the registry's production
+versions and their metrics, plus the Directional research definition (labelled as research); research outputs are
+referenced by content hash. An id can be frozen once; `lab.verify_benchmark` recomputes the hash.
+
+| | |
+|---|---|
+| Id | `benchmark-2.1-2026-09-25` |
+| Frozen | 2026-09-25 21:16:16 UTC (research store) |
+| Content hash (sha256) | `ce0f502bbaba5d5a34b7828df1fa286f4855baeb8767d4610a01a188818cdcdc` |
+| Production versions | Shaffer Score `shaffer-2.1` · Shaffer Alpha `shaffer-alpha-2.1-production` · Shaffer Hedge `hedge-2` |
+| Directional research definition | prior-only `prior:product`; current `alpha+prior@global` (σ(a + b·μ/σ + c·raw/100)) |
+| Gates | Directional v2 (prior-only requirement), Alpha v1, hedge sizing discovery / confirmation / live |
+| Source research | weight research 2026-09-25 16:10:37 (sha256 `5c970eeb…b7d065`), Alpha / Directional research 2026-09-25 17:03:52 (sha256 `984c781f…264145`) |
+| Data version | `d015500b867192f5` |
+
+Directional gate v2 (declared 2026-09-25, before any new-information result): a challenger must beat, on identical PIT
+records, both the prior-only model (paired Brier gain t ≥ 2, lower log loss, higher accuracy) and the current Directional
+formulation (paired Brier gain t ≥ 2). It applies to challengers evaluated from now on and is not applied retroactively.
+Datasets that start after 2018 (FINRA short-sale volume from 2019) cannot take part in the pre-2018 discovery test; they
+are labelled LIMITED HISTORY and evaluated on a separate recent-era / live-shadow track, never as historically verified.
