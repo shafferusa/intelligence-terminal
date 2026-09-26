@@ -212,6 +212,9 @@ tr.total td { font-weight: 650; background: var(--surface-2); }
 .tab.on { color: var(--accent); border-bottom-color: var(--accent); }
 .tabgrp { align-self: center; padding: 0 6px 0 14px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint, var(--muted)); white-space: nowrap; }
 .tabgrp:first-child { padding-left: 2px; }
+.tabs.grouped { flex-wrap: wrap; overflow: visible; column-gap: 18px; }
+.tgroup { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.tgroup .tabgrp { padding-left: 2px; }
 .hdrk { display: flex; flex-direction: column; line-height: 1.2; min-width: 70px; }
 .hdrk span { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 .hdrk b { font-size: 14.5px; }
@@ -237,3 +240,4 @@ pre.code { background: var(--surface-2); border: 1px solid var(--border); border
 h3 { font-size: 13.5px; margin: 18px 0 8px; }
 #drawer { width: min(640px, 100vw); }
 @media (max-width: 860px) { .eqgrid { grid-template-columns: 1fr; } .hdrk { min-width: 44%; } }
+@media (min-width: 700px) { .tgroup { flex-wrap: wrap; overflow: visible; } }
