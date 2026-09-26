@@ -1032,7 +1032,7 @@
       { k: 'rr', label: 'Risk reduction', f: x => `${fmt.money((x.a || {}).loss_reduction)} / ${fmt.money((x.b || {}).loss_reduction)}` },
       { k: 'ps', label: 'Profit sacrificed · cost', f: x => `${fmt.money((x.b || {}).profit_sacrificed)} · ${fmt.money((x.b || {}).cost)}<span class="sub">hedge-2 ${fmt.money((x.a || {}).profit_sacrificed)} · ${fmt.money((x.a || {}).cost)}</span>` },
       { k: 'ch', label: 'Size / product changed', f: x => `${fmt.pct(x.changed, 0)} / ${fmt.pct(x.product_changed, 0)}` },
-      { k: 'e', label: 'Eras +', f: x => `${(x.gates || {}).eras_won ?? '—'}/${(x.gates || {}).eras_complete ?? '—'}` }, { k: 's', label: 'Status', l: 1, f: x => vPill(x.status) }], { sortKey: null });
+      { k: 'e', label: 'Eras +', f: x => `${(x.gates || {}).eras_won ?? '—'}/${(x.gates || {}).eras_complete ?? '—'}` }, { k: 's', label: 'Status', l: 1, f: x => x.status === 'NO HEDGE IMPROVEMENT' ? ((x.gates || {}).fdr ? `<span class="pill warn" style="font-size:10.5px" title="survived FDR, failed ${['H2', 'H3', 'H4', 'H5'].filter(k => !(x.gates || {})[k]).join(', ')}">FDR ✓ · gate ✗</span>` : '<span class="pill neg" style="font-size:10.5px">no gain</span>') : vPill(x.status) }], { sortKey: null });
     $$('#hnT button').forEach(b => b.onclick = () => { pref.set('hnT', b.dataset.t); route(); });
     $$('#hnH button').forEach(b => b.onclick = () => { pref.set('hnH', b.dataset.h); route(); });
   };
