@@ -150,7 +150,8 @@ flex where another phrasing teaches the topic better, but the shape below should
    newspaper would title a short explainer (`Why sine and cosine are coordinates on a circle`, not
    `Trigonometry`). The curriculum topic and subject live in the track head, not the headline.
 2. **The Big Idea.** The central concept explained in plain English, no notation, no jargon left
-   undefined. Two or three paragraphs. If it cannot be said in plain words, it is not understood
+   undefined. Two or three paragraphs — a hard limit; history and background go in How It Works,
+   and only when they build the mental model. If it cannot be said in plain words, it is not understood
    well enough to teach yet — go back and simplify your own understanding first.
 3. **How It Works.** The mechanism, the logic, the system, the reasoning — walked through, not
    asserted. This is where most of the fifteen minutes lives. Use `key_concepts` from the
@@ -173,7 +174,10 @@ flex where another phrasing teaches the topic better, but the shape below should
    then `<p class="expr-spoken visually-hidden">` reading the equation aloud in words ("F equals m
    times a" — a screen reader speaks this line instead of the raw notation; the Learning Brief
    carries no audio player, but this costs nothing and keeps the page accessible), then a `<dl>`
-   naming **every symbol**, no exceptions. A diagram or named model without an
+   naming **every symbol**, no exceptions. The `.expr` line states the lesson's central equation
+   or claim, not an auxiliary step. When the model is a proof or derivation, write its decisive
+   algebraic step out as a displayed line (a second `.expr`, or a `.worked` block) — never compress
+   it to "the terms cancel". A diagram or named model without an
    equation (a Punnett square, the separation-of-powers diagram, Shannon's model of communication)
    also belongs here, described in prose or a simple `<dl>`-style breakdown of its parts — it does
    not need to be a literal formula to earn this section.
@@ -181,7 +185,9 @@ flex where another phrasing teaches the topic better, but the shape below should
    restatement of the Big Idea, the payoff: what understanding this now lets Logan do or see that
    was out of reach before. From day 21 on, close this section with two or three sentences tying
    today's idea to the `connect_back` lesson (or a better already-taught one, per Step 1), named by
-   subject and topic. No separate callback section; days 1–20 have none.
+   subject and topic. No separate callback section; days 1–20 have none. You may point ahead to a
+   later day only by its day number and curriculum topic, and only for what that day's `focus`
+   actually names — never promise that a future lesson will tell a particular story.
 8. **Remember These.** A `.recap` block, labeled "Remember These": three to five concise bullets,
    the ones actually worth retaining a month from now. Not a summary of every subsection — the
    distilled takeaways.
@@ -199,19 +205,34 @@ to answer and check.
 - Never condescend and never inflate. If something is genuinely hard, say so and slow down. If a
   step is routine, say so and move on.
 - Define jargon on first use, every time, even if a related term appeared in an earlier lesson.
+- Give the standard name of every method, theorem or technique you teach, in the body ("proof by
+  contradiction", "infinite descent", "Duverger's law") — your own metaphor can accompany the
+  standard term but never replace it, or Logan won't recognize it in the wild.
 - Prioritize WHY something works, HOW it works, and WHAT it is used for over trivia. A fact earns
   its place only if it feeds the mental model — a date or a name for its own sake does not.
 - Avoid needless jargon, bloated openings, motivational filler, and repetitive restatement. Say a
   thing once, well.
 - **Get facts right, not just fluent.** A confidently wrong claim taught in plain English is still
   wrong. Check names, dates, equations, and attributions you are not certain of (WebSearch/
-  WebFetch) rather than writing past the uncertainty.
+  WebFetch) rather than writing past the uncertainty. Asides that reach into another field
+  (computing, music, finance, history) get the same scrutiny as the core lesson. Where historians
+  dispute a date or a story, say so ("traditionally dated to…", "later legend holds…").
 - Avoid overlap with a subject already taught or one still to come (each subject's scope is fixed
   by the curriculum's design — Mathematics teaches mathematical concepts, not statistics-for-
   finance; Physics teaches physical law, not engineering design; Chemistry stays out of Biology's
   territory and vice versa; and so on). If a lesson finds itself explaining something that belongs
   to another subject's block, say it in one clause and point at that subject's day rather than
   teaching it twice.
+
+## Step 2b — Fact-check pass (mandatory, ~5 minutes)
+
+Before building the page, list every date, name, number, attribution and quotation in the draft,
+and every superlative or causal claim ("the first", "the oldest", "the only", "exactly why",
+"proved"). Verify each one you did not already confirm this run (WebSearch/WebFetch), or cut it,
+or hedge it. Any figure that appears more than once — an age, a date, a count — must be identical
+everywhere (body, index headlines, Think About It). A two-paragraph lesson that is right beats a
+four-paragraph one with a confident error in it. The practice reference page is not a source: its
+facts are not checked for you.
 
 ## Step 3 — Build the page
 
@@ -232,13 +253,19 @@ SR §12, with these specifics:
   section opens with a real `<h3>`, except Remember These and Think About It, whose `.recap` and
   `.think-about-it` blocks open with their own `<b>` label instead (no `<h3>` above them).
   **Reference layout:** `site/reports/2026/09/2026-09-25-practice-learn.html` — a practice Day 1
-  built to this procedure. Copy its structure and markup, never its content (the real Day 1 is
-  written fresh), and leave off its "Practice Edition" labels.
+  built to this procedure. Copy its structure and markup only, and leave off its "Practice
+  Edition" labels. Write every sentence yourself from this run's own research; do not reuse its
+  examples, asides or wording, even when today's topic is the same one (Day 1 is). Teaching the
+  topic's standard argument is fine — it's the prose and the choices that must be your own.
+- `<title>`: `<headline> — Learning Brief, <Dow, Mon D, YYYY> · Logan's Daily Newspaper`.
 - **Omit entirely:** The Brief, The Board, Top Stories, all domain sections, the calendar, Local,
   the weather strip, and the Market Appendix. This report has a masthead, a track head, a lesson,
   and a colophon. Nothing else.
 - Colophon: what the lesson drew on (named sources, and "written for this report" where nothing
-  external was needed), plus any correction to an earlier lesson. Corrections to lessons go in
+  external was needed), plus any correction to an earlier lesson. Name only sources you actually
+  read this run — don't credit a figure to an institution's own publication unless you fetched
+  it. Never show repo file paths or state keys (`curriculum/…`, `state/…`) anywhere a reader can
+  see; say "Day N of the 300-lesson Academy" in plain words. Corrections to lessons go in
   `ledgers/corrections.json` exactly like news corrections (SR §9) — if day 40 taught something
   wrong, day 41 says so plainly.
 - Keep the `assets/report.js` script tag (the template loads it; it does nothing on a Learning
@@ -246,7 +273,10 @@ SR §12, with these specifics:
   retired 2026-09-25) — don't add a player or audio bar.
 - End with the template's `report-nav` per SR §12.3: Previous = the entry directly below yours in
   `index.json`, whatever edition it is; Next stays disabled.
-- `reading_minutes` = body word count / 220, rounded up (SR §12.7). Expect 12-18; well under 12
+- `reading_minutes` = words inside `<article class="lesson-body">` (tags stripped; not the
+  standfirst, track head or colophon) / 220, rounded up (SR §12.7):
+  `python3 -c "import re,sys,math;h=open(sys.argv[1]).read();a=re.search(r'<article class=\"lesson-body\">(.*?)</article>',h,re.S).group(1);print(math.ceil(len(re.sub(r'<[^>]+>',' ',a).split())/220))" <page>`.
+  Expect 12-18; well under 12
   means the lesson is too thin for the topic, well over 18 means it has drifted past a
   baseline-literacy brief.
 
@@ -272,7 +302,8 @@ Get it exact or the progress page cannot find today's lesson.
    `completed`, and set `started` = `$TODAY` if it is still `null` (day 1). Leave
    `previous_curriculum` untouched. **Only after the lesson body is written** — a failed run must re-teach the same
    day, never skip it.
-2. Append the run-log line (SR §15.4) with `"slot":"learn"`.
+2. Append the run-log line (SR §15.4) with `"slot":"learn"`; keep its `note` to three sentences
+   or fewer.
 3. Mark `state/last-run.json` `runs["$TODAY-learn"]` success (SR §1.5).
 4. **Commit everything in ONE commit** (`learning: $TODAY day <N>`) and push (SR §15.2).
 5. Poll the live URL (SR §15.3). **Never send a Telegram message** (SR §14) — the push triggers it.
