@@ -88,13 +88,13 @@ environment allowlist before the first morning run**, or the strip will silently
 
 ### A4. Create the routines
 
-At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**, environment **intelligence-terminal**, repository **shafferusa/intelligence-terminal** attached, and **"Allow unrestricted branch pushes" ENABLED** (the routine must push directly to `main`).
+At **claude.ai/code/routines**, create them with: model **claude-opus-5-5** for the weekday and weekend newspaper routines (since 2026-09-25; the other routines as set), environment **intelligence-terminal**, repository **shafferusa/intelligence-terminal** attached, and **"Allow unrestricted branch pushes" ENABLED** (the routine must push directly to `main`).
 
-| Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
+| Routine | Cron | Runs at (ET) | Prompt |
 |---|---|---|---|
 | Learning Brief | `CRON_TZ=America/New_York 50 4 * * 1-5` | Mon–Fri 4:50 AM start → push lands ~5:00, by 5:30 at the latest | `You are the scheduled Learning Brief author for Logan's Daily Newspaper. In the attached repository (shafferusa/intelligence-terminal): read CLAUDE.md, then prompts/shared-rules.md, then prompts/learning.md, and execute the Learning Brief run procedure exactly. prompts/learning.md and state/learning.json decide the curriculum, today's lesson, the length and the format. Never send a Telegram message yourself; GitHub Actions sends it when you push.` |
-| Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
-| Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
+| Weekday briefs | `CRON_TZ=America/New_York 30 6,16 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `You are the scheduled news reporter for Logan's Daily Newspaper. In the attached repository (shafferusa/intelligence-terminal): read CLAUDE.md, then prompts/shared-rules.md, then prompts/weekday.md, and execute the weekday run procedure exactly. The current America/New_York time determines the edition: morning run = 6:30 AM Morning Brief, afternoon run = 4:30 PM Closing Brief. This report is STRICTLY NEWS — no lessons (those belong to the separate 6:00 AM Learning Brief). Never send a Telegram message yourself; GitHub Actions sends it when you push.` |
+| Weekend reports | `CRON_TZ=America/New_York 0 9 * * 0,6` | Sat & Sun 9:00 AM (a `:00` cron starts ~6–11 min late) | `You are the scheduled weekend news reporter for Logan's Daily Newspaper. In the attached repository (shafferusa/intelligence-terminal): read CLAUDE.md, then prompts/shared-rules.md, then prompts/weekend.md, and execute the weekend run procedure exactly. The current day in America/New_York determines the edition: Saturday = Weekly Review, Sunday = Week Ahead. This report is STRICTLY NEWS — no lessons and no learning recaps (learning is the separate weekday 6:00 AM Learning Brief). Never send a Telegram message yourself; GitHub Actions sends it when you push.` |
 | SIE Program (added 2026-09-25) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
 
 **The Learning Brief starts at 4:50 AM ET so it is in Telegram by 5:30** (Logan, 2026-09-25:
@@ -114,8 +114,7 @@ minutes"; `CLAUDE.md` and `prompts/learning.md` tell a run to ignore that, but f
 
 **The SIE Program starts at 11:28 ET so the Telegram push arrives around noon**: the run takes
 ~15–25 minutes (grading, an 8,000-word lesson, a quiz and its answer key) and `notify.py` then waits
-for the page to go live. Its cron carries `CRON_TZ`, so unlike the two UTC routines it does **not** need the
-section B DST bump. It needs the **`sie-inbox` workflow** on `main` (it is scheduled there
+for the page to go live. Its cron carries `CRON_TZ`, like every routine, so it does **not** need a DST bump. It needs the **`sie-inbox` workflow** on `main` (it is scheduled there
 automatically) so Logan's Telegram answers are captured — see section E4.
 
 **Do not pin a routine to a branch.** The weekday routine had `claude/nice-bardeen` set as its
@@ -126,7 +125,7 @@ straight to `main`.
 and 3:30 PM ET, meaning the closing brief was being written *thirty minutes before the market
 closed*. If report content ever looks early, check the actual cron first (`RemoteTrigger list`).
 
-Crons are UTC; the values above are correct **during US daylight saving time**. See section B for the twice-yearly bump.
+Every routine cron carries `CRON_TZ=America/New_York`, so the times above hold year-round — no DST bump (section B).
 
 ### A5. Phase-1 verification tests
 
@@ -138,17 +137,20 @@ Run all three before trusting the schedule:
 
 ---
 
-## B. DST bump procedure (twice a year)
+## B. Daylight saving time — no bump needed
 
-Routine crons are UTC; ET shifts. Two edits per year:
+Since 2026-09-26 every routine is pinned to `America/New_York` with `CRON_TZ` (verified with
+`get_trigger` the same day). The scheduler follows EDT/EST on its own, so Nov 1 and Mar 14 need no
+edits and the papers keep their ET times year-round.
 
-- The SIE Program and Learning Brief routines are pinned to `America/New_York` with `CRON_TZ`
-  and are never bumped. (If the Learning Brief was set with a UTC cron instead: `50 8 * * 1-5` →
-  `50 9 * * 1-5` on Nov 1, and back on Mar 14.)
-- **Nov 1, 2026** (fall back, EDT→EST): weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
-- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
+**If a routine is ever recreated or edited, keep the `CRON_TZ=America/New_York` prefix** (or set
+the editor's timezone to America/New_York). A plain UTC cron silently shifts the edition by an hour
+at every DST change — the drift that put the closing brief before the market close on 2026-08-16.
+Newspaper values: weekday `CRON_TZ=America/New_York 30 6,16 * * 1-5`; weekend
+`CRON_TZ=America/New_York 0 9 * * 0,6`.
 
-One-sentence instruction that works in any Claude session: *"Update my three intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
+These routines were created through the API, so agents cannot edit them — Logan changes them at
+**claude.ai/code/routines**. Agents can still read them (`get_trigger`) to check.
 
 ---
 
@@ -173,7 +175,7 @@ If the token leaks or as periodic hygiene:
 
 | Symptom | Check |
 |---|---|
-| Report missing at expected time | claude.ai/code/routines → run list. Did the run start? Open the transcript for the failing step. If no run started, check routine is enabled and cron/DST is right (section B). |
+| Report missing at expected time | claude.ai/code/routines → run list. Did the run start? Open the transcript for the failing step. If no run started, check the routine is enabled and its cron still carries `CRON_TZ=America/New_York` (section B). |
 | Telegram silent but site updated | **Actions sends it, not the run.** GitHub → Actions → "Notify Telegram on direct publish" (or the `notify` job of "Build & deploy site" on the PR path). Check the job log, then `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` **repository secrets** (not the environment variables). |
 | Telegram message arrived twice | Should be impossible since 2026-08-16. It means something is sending besides Actions — check the run transcript for a `sendMessage` curl, which `prompts/shared-rules.md` §14 forbids. Do not "fix" it by adding a guard to the workflow; that is exactly what failed before. |
 | Telegram push has no bullets | The report's `index.json` entry is missing `headlines` (shared-rules §13). Actions has no other source for them. |
