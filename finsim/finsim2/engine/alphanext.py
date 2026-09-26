@@ -448,7 +448,7 @@ def long_short(rows: List[Rec], key, h: int) -> dict:
 
 def conviction(rows: List[Rec], key, h: int) -> List[dict]:
     """|score| buckets: signed relative return (score sign × return minus the week's median), hit rate, pooled rank
-    IC, volatility and drawdown of the bucket's weekly mean, n_eff."""
+    IC, volatility of the bucket's weekly mean, drawdown (log) of its non-overlapping-period equity curve, n_eff."""
     weeks: Dict[int, list] = {}
     for r in rows:
         weeks.setdefault(r.wk, []).append(r)
@@ -465,8 +465,9 @@ def conviction(rows: List[Rec], key, h: int) -> List[dict]:
         for r, x in zip([r for r in sub if key(r) != 0], rel):
             by_w.setdefault(r.wk, []).append(x)
         series = [sum(v) / len(v) for _, v in sorted(by_w.items())]
+        # records are weekly while the horizon can span many weeks: the equity curve uses non-overlapping periods only
         eq = peak = dd = 0.0
-        for x in series:
+        for x in series[::max(1, h // 5)]:
             eq += x; peak = max(peak, eq); dd = min(dd, eq - peak)
         xs, ys = W._ranks([key(r) for r in sub]), W._ranks([D.y_alpha(r) for r in sub])
         m = (len(sub) - 1) / 2.0
@@ -751,6 +752,19 @@ def markdown(res: dict) -> str:
       (", ".join(f"{n} {lab}" for lab, n in useful_c) or "no horizon") + ".")
     w(f"- **Longer horizons (1M–12M):** " + ("newly useful: " + ", ".join(f"{n} {lab}" for lab, n in long_new) + "."
                                             if long_new else "no model — production or challenger — is verified useful beyond 1W. The ranking edge does not extend past 1W with the information available."))
+    weak = [f"{n} {lab} (net L/S t {_f(((hz['production'].get('ls') if n == 'production' else hz['challengers'][n]['walkforward'].get('ls_challenger')) or {}).get('t'), 1)})"
+            for lab, hz in H.items() for n in ["production"] + list(hz["challengers"])
+            if ((hz["production"] if n == "production" else hz["challengers"][n]).get("useful") or {}).get("useful")
+            and (((hz["production"].get("ls") if n == "production" else hz["challengers"][n]["walkforward"].get("ls_challenger")) or {}).get("t") or 0) < 2]
+    if weak:
+        w(f"- **Caveat on \"useful\":** the net-of-cost criterion is a point estimate > 0; for " + ", ".join(weak) +
+          " the net long-short is not statistically distinguishable from zero.")
+    if long_new:
+        w("- **Useful is not better:** " + "; ".join(
+            f"{n} {lab} Δ rank IC vs production {_f((H[lab]['challengers'][n]['walkforward'].get('paired') or {}).get('mean'), 4)} "
+            f"(t {_f((H[lab]['challengers'][n]['walkforward'].get('paired') or {}).get('t'), 1)})" for lab, n in long_new) +
+          ". Production alone is not useful at these horizons, but the challengers' improvement over it does not pass G1 or FDR, so "
+          "the extension past 1W is suggestive, not verified.")
     w(f"- **Blocked data (the bottleneck):** {', '.join(res.get('blocked') or BLOCKED)}.")
     w("")
     w("## Main table (walk-forward, identical records)")
@@ -805,8 +819,8 @@ def markdown(res: dict) -> str:
     w("")
     w("## Specialisation (global → class → sector)")
     w("")
-    w("| Horizon | Global Δ rank IC (t) | Class Δ (t) | Sector Δ (t) | Deeper beats its parent? |")
-    w("|---|---|---|---|---|")
+    w("| Horizon | Global Δ rank IC (t) | Class Δ (t) | Sector Δ (t) | Deeper point estimate above its parent? | Specialisation justified? |")
+    w("|---|---|---|---|---|---|")
     for lab, hz in H.items():
         ch = hz["challengers"]
         t = {n: ((ch.get(n) or {}).get("walkforward") or {}).get("paired") or {} for n in ("global", "class", "sector")}
@@ -816,7 +830,11 @@ def markdown(res: dict) -> str:
         if (t["sector"].get("mean") or -9) > (t["class"].get("mean") or -9):
             better.append("sector > class")
         w(f"| {lab} | {_f(t['global'].get('mean'), 4)} ({_f(t['global'].get('t'), 1)}) | {_f(t['class'].get('mean'), 4)} ({_f(t['class'].get('t'), 1)}) | "
-          f"{_f(t['sector'].get('mean'), 4)} ({_f(t['sector'].get('t'), 1)}) | {', '.join(better) or 'no'} |")
+          f"{_f(t['sector'].get('mean'), 4)} ({_f(t['sector'].get('t'), 1)}) | {', '.join(better) or 'no'} | "
+          f"{'yes' if better and any((ch.get(n) or {}).get('status') == 'LIVE SHADOW ELIGIBLE' for n in ('class', 'sector')) else 'no'} |")
+    w("")
+    w("A deeper model is justified only if it beats its parent out of sample AND passes the gates itself; a higher point estimate "
+      "with t well below 2 is not evidence.")
     w("")
     w("## What the models used, by horizon (global challenger, final fit)")
     w("")
@@ -840,7 +858,9 @@ def markdown(res: dict) -> str:
                   f"{_pc((x.get('hit') or 0.5) - 0.5) if x.get('hit') is not None else '—'} | {_f(x.get('rank_ic'), 3)} | {_pc(x.get('volatility'), 2)} | {_pc(x.get('drawdown'), 1)} | "
                   f"{('**yes**' if cv.get('monotonic') else 'no') if k == 0 else ''} |")
     w("")
-    w("If the bucket means do not rise monotonically, Alpha magnitude must not size positions (answer below).")
+    w("Hit is the excess over 50%. Volatility is that of the bucket's weekly mean; drawdown is the log drawdown of its equity curve "
+      "over non-overlapping periods of the horizon. If the bucket means do not rise monotonically, Alpha magnitude must not size "
+      "positions (answer below).")
     w("")
     w("## Answers")
     w("")
@@ -849,6 +869,19 @@ def markdown(res: dict) -> str:
     w("- **Production eligibility:** none (live shadow — 60 graded paired outcomes — and your approval come first).")
     w(f"- **Conviction sizing:** production |Alpha| is monotonic in relative return at {', '.join(l for l, _ in mono) or 'no horizon'}; "
       "elsewhere magnitude must not be used for sizing.")
+    part = []
+    for lab, hz in H.items():
+        for n, c in hz["challengers"].items():
+            ms = [b["relative_return"] for b in (c.get("conviction") or {}).get("buckets", []) if b.get("relative_return") is not None]
+            if len(ms) >= 3 and all(b > a for a, b in zip(ms, ms[1:])):
+                part.append(f"{n} {lab}")
+    if part:
+        tot = sum(len(hz["challengers"]) for hz in H.values())
+        w(f"- **Conviction, descriptive only:** among the buckets with enough records, signed relative return rises with |score| for "
+          f"{len(part)} of {tot} challenger × horizon fits ({', '.join(part)}). This is not evidence for conviction sizing: it holds "
+          "even for rejected models, the bucket volatility rises just as fast (higher-volatility names land in the high-|score| "
+          "buckets, so a larger signed move is partly a larger move), the top buckets are thin (see n_eff), and the fixed "
+          "monotonicity rule (every bucket populated and rising) is not met.")
     w("- **Next data bottleneck:** point-in-time analyst estimates and revisions (forward valuation, earnings revisions), then options-"
       "implied expectations, positioning / short interest history and fund flows. Every longer-horizon Alpha source that is plausibly "
       "informative is on that list; the fundamentals available from filings were tested here.")
