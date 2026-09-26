@@ -680,7 +680,7 @@ def record_shadow(research, asset_id: str) -> int:
             if not (g.get("G1_discovery") and g.get("G2_confirmation")):
                 continue                     # only challengers that passed discovery and confirmation enter live shadow
             info: dict = {}
-            if v.get("family") == "learned":
+            if v.get("family") in ("learned", "finetune"):
                 from . import learned as LW
                 s = LW.live_score(st, v, meta, lab, r.get("sig"), info)
                 if s is None:

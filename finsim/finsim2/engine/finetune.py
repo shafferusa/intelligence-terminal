@@ -1252,6 +1252,36 @@ def contribution(ctx: Ctx, base: Model, new: Model) -> Optional[List[Optional[fl
     return out
 
 
+def hierarchy_mean(tab: L.Table, fin: dict) -> List[float]:
+    """The hierarchy's deployable weights averaged over assets, weighted by each asset's number of records (its global
+    node equals the learned global model's; this shows where the children move it on average)."""
+    P = tab.P
+    acc, tot = [0.0] * P, 0
+    for a, (s0, s1) in tab.slices.items():
+        wv = L.weights_at(fin["tree"], tab.paths[a], fin["depth"])
+        n = s1 - s0
+        acc = [x + n * y for x, y in zip(acc, wv)]
+        tot += n
+    return [x / tot for x in acc] if tot else acc
+
+
+def hierarchy_mean_post(db_path: str, final: str, progress=None) -> dict:
+    """For a run that predates res['hierarchy_mean']: refit the hierarchy on all matured 1W data at its final choice."""
+    from ..data.store import Store
+    from .research import Research
+    st = Store(db_path)
+    try:
+        rows, _, names = L.build_rows(st, Research(st), "1W", progress or (lambda m: None))
+    finally:
+        st.close()
+    tab = L.Table(rows, names, 5)
+    del rows
+    lr = L.Learner(tab, "alpha")
+    lr.fit_all()
+    K, depth = final.split("|")
+    return {"weights": L._rl(hierarchy_mean(tab, {"tree": lr.fits[L.FINAL]["W"][int(float(K))], "depth": depth}), 6), "choice": final}
+
+
 def today_scores(ctx: Ctx, today: List[dict], fin: dict, reg: Optional[Regimes] = None) -> Dict[str, dict]:
     """Today's score of every asset under a model's final (all-matured-data) weights, on the latest research record,
     signals demeaned by the latest cross-section."""
@@ -1485,6 +1515,7 @@ def study_1w(store, research, progress=None, only: Optional[set] = None, with_lo
                 res["contributions"][k] = L._rl(c, 5)
     # weights today
     res["weights"] = {"D": L._rl(D.final_fn(D.final)["global"], 6)}
+    res["hierarchy_mean"] = {"weights": L._rl(hierarchy_mean(tab, E.final_fn(E.final)), 6), "choice": str(E.final)}
     for k, m in models.items():
         if m.final_fn is None:
             continue
@@ -1494,6 +1525,22 @@ def study_1w(store, research, progress=None, only: Optional[set] = None, with_lo
             continue
         if fin and fin.get("global") is not None:
             res["weights"][k] = L._rl(fin["global"], 6)
+    res["finals"] = {}
+    for k, m in models.items():
+        if m.final_fn is None or not m.pit:
+            continue
+        try:
+            fin = m.final_fn(m.final)
+        except Exception:  # noqa: BLE001
+            continue
+        if fin.get("regime") or fin.get("blend") is not None:
+            continue                                  # not a linear per-node score: no live scorer
+        if fin.get("global") is not None:
+            res["finals"][k] = {"depth": "global", "weights": {"global": L._rl(fin["global"], 7)}}
+        elif fin.get("tree") is not None:
+            dep = fin["depth"]
+            res["finals"][k] = {"depth": dep, "weights": {nd: L._rl(v, 7) for nd, v in fin["tree"].items()
+                                                          if L.LEVELS.index(L.level_of(nd)) <= L.LEVELS.index(dep)}}
     res["today"] = {}
     for k in ["learned global (D)", "learned hierarchy (E)", best, "nested model selection"]:
         m = base.get("D") if k == "learned global (D)" else (E if k == "learned hierarchy (E)" else models.get(k))
@@ -1916,6 +1963,64 @@ def save(store, res: dict):
     W.pop("_alpha_map", None)
     slim["1W"] = W
     store.kv_set(RESEARCH_KEY, slim)
+
+
+LIVE_KEY = "lab:finetune:live"
+
+
+def build_live(db_path: str, res: dict, progress=None) -> dict:
+    """For every 1W fine-tune that passed every gate (G1–G5 + FDR) and has a linear per-node score: its final weights as
+    coefficients, today's cross-section means and a score scale matched to production, stored under its OWN key — the
+    live-shadow models of the learned engine (lab:learned:live) are never rewritten."""
+    say = progress or (lambda m: None)
+    W = res.get("1W") or {}
+    todo = [k for k, v in (W.get("models") or {}).items() if v.get("status") == "LIVE SHADOW ELIGIBLE" and k in (W.get("finals") or {})]
+    skipped = [k for k, v in (W.get("models") or {}).items() if v.get("status") == "LIVE SHADOW ELIGIBLE" and k not in (W.get("finals") or {})]
+    for k in skipped:
+        say(f"live shadow: {k} passed every gate but has no linear per-node scorer (regime / blend) — recorded as research")
+    out = {}
+    if not todo:
+        from ..data.store import Store
+        st = Store(db_path)
+        try:
+            st.kv_set(LIVE_KEY, out)
+        finally:
+            st.close()
+        return out
+    from ..data.store import Store
+    from .research import Research
+    st = Store(db_path)
+    try:
+        rows, today, names = L.build_rows(st, Research(st), "1W", say)
+        tab = L.Table(rows, names, 5)
+        del rows
+        lr = L.Learner(tab, "alpha")
+        lr.fit_all()
+        rms = lr.fits[L.FINAL]["rms"]
+        latest = max(t["rec"].date for t in today)
+        pool = [t["rec"] for t in today if t["rec"].date == latest] or [t["rec"] for t in today]
+        means = [sum(float(r.x[i]) for r in pool) / len(pool) for i in range(tab.P)]
+        for k in todo:
+            fin = W["finals"][k]
+            depth = fin["depth"]
+            coefs = {nd: L._coef(w, rms) for nd, w in fin["weights"].items()}
+            idx, raws = [], []
+            for a, (s0, s1) in tab.slices.items():
+                c = coefs.get(L.cut_path(tab.paths[a], depth)) or coefs.get("global")
+                sc = L.score_slice(lr.cols, c, s0, s1)
+                idx.extend(abs(v) for kk, v in zip(range(s0, s1), sc) if lr.w[kk] > 0)
+                raws.extend(abs(tab.raw[kk]) for kk in range(s0, s1) if lr.w[kk] > 0 and tab.raw[kk] is not None)
+            idx.sort(); raws.sort()
+            scale = (idx[len(idx) // 2] / math.atanh(min(99.0, max(0.5, raws[len(raws) // 2])) / 100.0)) if idx and raws else 1.0
+            vid = vid_of("1W", k)
+            out[vid] = {"lab": "1W", "variant": k, "label": k, "names": names, "depth": depth, "coefs": {nd: L._rl(v, 8) for nd, v in coefs.items()},
+                        "weights": fin["weights"], "means": L._rl(means, 8), "means_date": latest, "scale": scale,
+                        "built": time.strftime("%Y-%m-%d %H:%M:%S")}
+            say(f"live model {vid}: depth {depth}, scale {scale:.4g}")
+        st.kv_set(LIVE_KEY, out)
+    finally:
+        st.close()
+    return out
 
 
 def register(store, res: dict) -> List[str]:

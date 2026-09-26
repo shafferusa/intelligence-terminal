@@ -335,6 +335,7 @@ def run(db_path: str, amap: Optional[dict] = None, progress=None) -> dict:
             continue
         res["products"][lab] = product_regime(cases)
     _finalise(res)
+    res["h4_proposal"] = H4_PROPOSAL
     res["h4"] = h4_anatomy({lab: {k: v for k, v in cs.items()} for lab, cs in res["cells"].items()})
     res["seconds"] = round(time.time() - t0, 1)
     return res

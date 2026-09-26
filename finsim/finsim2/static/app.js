@@ -759,9 +759,9 @@
   // ---------------------------------------------------------------- ML Lab: the laboratory for Shaffer Score and Shaffer Hedge
   const LAB_TABS = [['production', 'Production models'], ['performance', 'Historical performance'], ['signals', 'Signal research'], ['alpha', 'Shaffer Alpha'], ['directional', 'Shaffer Directional'], ['newinfo', 'New Information'], ['sigweights', 'Signal weights'], ['weights', 'Family weights'],
     ['challengers', 'Challengers & promotion'], ['hedge', 'Hedge research'], ['live', 'Live learning'], ['versions', 'Version comparison'], ['forecasts', 'Independent ML forecasts'],
-    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext'], ['learned', 'Learned weights'], ['learneddir', 'Learned weights'], ['learnedhedge', 'Learned hedge']];
-  const LAB_GROUPS = [['Shaffer Alpha', ['learned', 'alpha', 'alphanext', 'sigweights', 'weights']], ['Shaffer Directional', ['learneddir', 'directional', 'dirnext']],
-    ['Shaffer Hedge', ['learnedhedge', 'hedge', 'hedgenext']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
+    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext'], ['learned', 'Learned weights'], ['learneddir', 'Learned weights'], ['learnedhedge', 'Learned hedge'], ['finetune', 'Fine-tune'], ['hedgetune', 'Hedge fine-tune']];
+  const LAB_GROUPS = [['Shaffer Alpha', ['learned', 'finetune', 'alpha', 'alphanext', 'sigweights', 'weights']], ['Shaffer Directional', ['learneddir', 'directional', 'dirnext']],
+    ['Shaffer Hedge', ['learnedhedge', 'hedgetune', 'hedge', 'hedgenext']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
   const LAB_NAME = Object.fromEntries(LAB_TABS);
   const icT = (m) => m && m.ic != null ? `${fmt.num(m.ic, 3)} <span class="faint">(t ${fmt.num(m.t, 1)})</span>` : '—';
   const stagePill = s => `<span class="pill ${s === 'production' ? 'pos' : s === 'eligible for promotion' ? 'pos' : s === 'live shadow' ? 'warn' : s === 'retired' ? '' : 'neg'}" style="font-size:10.5px">${esc(s)}</span>`;
@@ -1074,6 +1074,116 @@
     $$('#lwH button').forEach(b => b.onclick = () => { pref.set('lwH', b.dataset.h); route(); });
     $$('#lwT button').forEach(b => b.onclick = () => { pref.set('lwT', b.dataset.t); route(); });
   };
+  // Fine-tune: the learned 1W Alpha made more robust (engine/finetune.py) — nested, gated against production AND the learned global model
+  const FT_ORDER = ['learned global (D)', 'learned hierarchy (E)', 'blend', 'ridge (relative return)', 'elastic net', 'pairwise (RankNet)', 'listwise (ListNet)',
+    'stability penalty (global)', 'stability penalty (hierarchy)', 'stability classes', 'time decay (global)', 'time decay (hierarchy)', 'rolling window (global)',
+    'rolling window (hierarchy)', 'regime-conditional (global)', 'regime-conditional (hierarchy)', 'signal clusters', 'signs', 'interactions (economic)',
+    'interactions (GBM-suggested)', 'learned global + turnover smoothing', 'learned hierarchy + turnover smoothing', 'nested model selection'];
+  const ftRows = ms => Object.entries(ms || {}).map(([k, v]) => ({ k, ...v })).sort((a, b) => (FT_ORDER.indexOf(a.k) + 99 * (FT_ORDER.indexOf(a.k) < 0)) - (FT_ORDER.indexOf(b.k) + 99 * (FT_ORDER.indexOf(b.k) < 0)));
+  const ftT = (m, t) => m == null ? '—' : `<span class="${m > 0 ? 'pos' : 'neg'}">${fmt.num(m, 4)}</span> <span class="faint">(${fmt.num(t, 1)})</span>`;
+  const labFinetune = async (body) => {
+    body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
+    const X = await api('/fs2/lab/finetune');
+    const R = X && X.research;
+    if (!R || !R['1W']) return vNone(body, 'Fine-tuned learned Shaffer Alpha', 'python -m finsim2 lab --finetune');
+    const HZ = ['1W', '1D', '1M', '3M', '6M', '12M'].filter(h => R[h]), hz = HZ.includes(pref.get('ftH', '1W')) ? pref.get('ftH', '1W') : HZ[0];
+    const cap = R.capability || {}, capOk = Object.values(cap).filter(v => v.pass).length, W = R['1W'], rep = W.reproduction || {};
+    body.innerHTML = `<div class="card"><h2>Fine-tuned learned Shaffer Alpha <small>the simplest learned equation with the strongest, most stable, economically usable out-of-sample ranking · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">The outer walk-forward is never touched; every hyperparameter (blend α, half-life, window, penalty, regime dimension, smoothing) is chosen per era from inner weeks matured before it. Gates: G1–G4 against production, FDR across every fine-tune, and <b>G5 against the learned global model already in live shadow</b> (Δ rank IC t ≥ 2, ≥ 3/4 eras not worse). The two live-shadow learned models are unchanged; every fine-tune has its own version. Capability (planted effects): <b>${capOk}/${Object.keys(cap).length}</b>. Reproduction: D ${fmt.num(rep.D_rank_ic, 4)} · E ${fmt.num(rep.E_rank_ic, 4)}. Run ${esc(R.started || '')}.</p>
+      ${segH('ftH', HZ, hz)}<div id="ftM"></div></div><div id="ftX"></div>`;
+    $$('#ftH button').forEach(b => b.onclick = () => { pref.set('ftH', b.dataset.h); route(); });
+    const H = R[hz], x = $('#ftX');
+    if (hz === '1D') {
+      const n = H.nested_cost_aware || {};
+      $('#ftM').innerHTML = `<p style="margin:0 0 8px">Nested cost-aware 1D (model × regime filter × tails, chosen by inner net P&L after round-trip costs; stand aside when nothing was positive): <b class="${n.profitable ? 'pos' : 'neg'}">${n.profitable ? 'PROFITABLE AFTER COSTS' : 'NOT PROFITABLE AFTER COSTS'}</b> — ${fmt.spct(n.net_per_trade, 3)} per trade (t ${fmt.num(n.t, 1)}), eras ${(n.eras || []).map(e => fmt.spct(e, 3)).join(' · ')}, active ${fmt.pct(n.active_share, 0)} of weeks.</p><p class="muted" style="font-size:12px;margin:0">${esc(H.note || '')}</p>`;
+      const th = []; Object.entries(H.thresholds || {}).forEach(([m, rs]) => rs.forEach(r => th.push({ m, ...r })));
+      x.innerHTML = '<div class="card flush" style="margin-top:14px"><h2>Tails and costs — 1D <small>net per trade after a full round trip</small></h2><div id="ft1"></div></div>';
+      table($('#ft1'), th, [{ k: 'm', label: 'Model', l: 1 }, { k: 'frac', label: 'Tails', f: r => fmt.pct(r.frac, 0) }, { k: 'gross', label: 'Gross', f: r => fmt.spct(r.gross, 3) },
+        { k: 'net', label: 'Net', f: r => `<span class="${sign(r.net)}">${fmt.spct(r.net, 3)}</span>` }, { k: 'net_flat10bp', label: 'Net (flat 10 bp)', f: r => fmt.spct(r.net_flat10bp, 3) }, { k: 't', label: 't', f: r => fmt.num(r.t, 1) },
+        { k: 'hit', label: 'Hit', f: r => fmt.pct(r.hit, 0) }, { k: 'drawdown', label: 'Max DD', f: r => fmt.spct(r.drawdown, 1) }], { sortKey: null, maxH: 420 });
+      return;
+    }
+    const rows = ftRows(H.models);
+    const pr = rows.map(r => ((r.walkforward || {}).production || {}).rank_ic).find(v => v != null);
+    table($('#ftM'), [{ k: 'production', family: '—', walkforward: { challenger: { rank_ic: pr } }, status: 'production' }].concat(rows), [
+      { k: 'k', label: 'Model', l: 1, f: r => `<b>${esc(r.k)}</b><span class="sub">${esc(r.family || '')}${r.final && r.final !== '-' ? ` · today ${esc(r.final)}` : ''}</span>` },
+      { k: 'ric', label: 'Rank IC', v: r => ((r.walkforward || {}).challenger || {}).rank_ic, f: r => fmt.num(((r.walkforward || {}).challenger || {}).rank_ic, 4) },
+      { k: 'dp', label: 'Δ vs production (t)', f: r => r.k === 'production' ? '—' : ftT(((r.walkforward || {}).paired || {}).mean, ((r.walkforward || {}).paired || {}).t) },
+      { k: 'dd', label: 'Δ vs learned global (t)', v: r => (r.gates || {}).vsD_t, f: r => r.k === 'production' || r.k === 'learned global (D)' ? '—' : ftT((r.gates || {}).vsD_mean, (r.gates || {}).vsD_t) },
+      { k: 'ls', label: 'Net weekly L/S (20%)', f: r => r.ls20 ? `${fmt.spct(r.ls20.net, 3)}<span class="sub">gross ${fmt.spct(r.ls20.gross, 3)}</span>` : '—' },
+      { k: 'to', label: 'Turnover', f: r => r.ls20 ? fmt.pct(r.ls20.turnover, 0) : '—' },
+      { k: 'e', label: 'Eras + (vs prod · ≥ global)', f: r => r.gates && r.gates.eras_complete != null ? `${r.gates.eras_won}/${r.gates.eras_complete} · ${r.gates.eras_vsD ?? '—'}/4` : '—' },
+      { k: 'fdr', label: 'FDR', f: r => r.gates && r.gates.fdr != null ? (r.gates.fdr ? '✓' : '✗') : '—' },
+      { k: 'ch', label: 'Stability (rank autocorr.)', f: r => fmt.num(r.churn, 2) },
+      { k: 's', label: 'Live-shadow eligible?', l: 1, f: r => r.status === 'baseline (live shadow)' ? '<span class="pill warn" style="font-size:10.5px">already in live shadow</span>' : lwStatus(r.status) }], { sortKey: null });
+    if (hz !== '1W') {
+      const s = H.sample || {};
+      x.innerHTML = `<div class="card" style="margin-top:14px"><h2>Sample limits — ${esc(hz)}</h2><p style="margin:0">${s.weeks} walk-forward weeks ≈ <b>${fmt.num(s.n_eff, 0)} independent periods</b> for ${s.signals} signals (${fmt.num(s.n_eff_per_signal, 2)} per signal); mean cross-section ${fmt.num(s.mean_cross_section, 0)} assets; signals with |era t| ≥ 2: ${s.coef_era_t_ge2}; stability: ${Object.entries(s.classes || {}).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')}.</p></div>`;
+      return;
+    }
+    const names = W.signals || [], wts = (X.today || {}).weights || {}, con = W.contributions || {}, cls = (W.stability_today || {}).classes || [];
+    const share = v => { if (!v) return null; const s = v.reduce((a, b) => a + Math.abs(b), 0); return v.map(z => s ? z / s : 0); };
+    const cands = Object.keys(con).length ? Object.keys(con) : Object.keys(wts).filter(k => k !== 'D');
+    const sel = cands.includes(pref.get('ftW', '')) ? pref.get('ftW', '') : cands[0];
+    const th = []; Object.entries(W.thresholds || {}).forEach(([m, rs]) => rs.forEach(r => th.push({ m, ...r })));
+    const cv = (W.conviction || {})['learned global (D)'] || {};
+    x.innerHTML = `<div class="card flush" style="margin-top:14px"><h2>Why a model differs — weights and contribution to ΔIC <small>signed share of |weight| · contribution = Δ mean weekly rank IC when only that signal's weight moves from D's to the challenger's</small></h2>
+        <div class="row" style="gap:10px;margin:0 12px 10px"><span class="muted" style="font-size:12.5px">Challenger</span><select id="ftWs">${cands.map(c => `<option ${c === sel ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div><div id="ftW"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Score thresholds and costs — 1W <small>long top / short bottom fraction · net after product costs</small></h2><div id="ftTh"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Conviction calibration — learned global <small>AlphaReliability ${fmt.num(cv.alpha_reliability, 2)} · ${cv.monotonic ? 'monotonic' : 'not monotonic'} · ConvictionMultiplier reported, not applied</small></h2><div id="ftCv"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Leave one group out <small>learned global refitted without the group vs production</small></h2><div id="ftLo"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Today's scores <small>each model's final weights on today's research record</small></h2><div id="ftTd"></div></div>`;
+    const D = share(wts.D), C = share(wts[sel]), c = con[sel] || [], hm = share((W.hierarchy_mean || {}).weights);
+    table($('#ftW'), names.map((n, i) => ({ n, d: D && D[i], h: hm && hm[i], c: C && C[i], k: cls[i], con: c[i] })), [{ k: 'n', label: 'Signal', l: 1, f: r => `<b>${esc(r.n)}</b>` },
+      { k: 'd', label: 'Learned global (D)', f: r => fmt.spct(r.d, 1) }, ...(hm ? [{ k: 'h', label: 'Learned hierarchy (avg over assets)', f: r => fmt.spct(r.h, 1) }] : []),
+      { k: 'c', label: 'Challenger', f: r => `<span class="${sign(r.c)}">${fmt.spct(r.c, 1)}</span>` }, { k: 'k', label: 'Era stability', l: 1, f: r => esc(r.k || '—') },
+      { k: 'con', label: 'Contribution to ΔIC', v: r => Math.abs(r.con || 0), f: r => r.con == null ? '—' : `<span class="${sign(r.con)}">${fmt.num(r.con, 5)}</span>` }], { sortKey: 'con', maxH: 520 });
+    $('#ftWs').onchange = e => { pref.set('ftW', e.target.value); route(); };
+    table($('#ftTh'), th, [{ k: 'm', label: 'Model', l: 1 }, { k: 'frac', label: 'Tails', f: r => fmt.pct(r.frac, 0) }, { k: 'gross', label: 'Gross / wk', f: r => fmt.spct(r.gross, 3) },
+      { k: 'net', label: 'Net / wk', f: r => `<span class="${sign(r.net)}">${fmt.spct(r.net, 3)}</span>` }, { k: 'net_flat10bp', label: 'Net (flat 10 bp)', f: r => fmt.spct(r.net_flat10bp, 3) },
+      { k: 't', label: 't', f: r => fmt.num(r.t, 1) }, { k: 'turnover', label: 'Turnover', f: r => fmt.pct(r.turnover, 0) }, { k: 'hit', label: 'Hit', f: r => fmt.pct(r.hit, 0) },
+      { k: 'drawdown', label: 'Max DD', f: r => fmt.spct(r.drawdown, 1) }, { k: 'persistence_weeks', label: 'Persistence (wk)', f: r => fmt.num(r.persistence_weeks, 1) }], { sortKey: null, maxH: 420 });
+    table($('#ftCv'), cv.buckets || [], [{ k: 'bucket', label: 'Percentile', l: 1 }, { k: 'n', label: 'n' }, { k: 'mean', label: 'Mean rel. return', f: r => `<span class="${sign(r.mean)}">${fmt.spct(r.mean, 2)}</span>` },
+      { k: 'hit', label: 'Hit', f: r => fmt.pct(r.hit, 0) }, { k: 'downside', label: 'Downside', f: r => fmt.spct(r.downside, 2) },
+      { k: 'ci', label: '95% CI', l: 1, f: r => r.ci ? `${fmt.spct(r.ci[0], 2)} … ${fmt.spct(r.ci[1], 2)}` : '—' }, { k: 'conviction_multiplier', label: 'Conviction multiplier', f: r => fmt.num(r.conviction_multiplier, 2) }], { sortKey: null });
+    table($('#ftLo'), Object.entries(W.logo || {}).map(([g, v]) => ({ g, ...v })), [{ k: 'g', label: 'Left out', l: 1 }, { k: 'assets', label: 'Assets' },
+      { k: 'rank_ic', label: 'Learned rank IC', f: r => fmt.num(r.rank_ic, 4) }, { k: 'production', label: 'Production', f: r => fmt.num(r.production, 4) }, { k: 'd', label: 'Δ (t)', f: r => ftT(r.d, r.t) }], { sortKey: null });
+    const td = (X.today || {}).today || {}, pt = (X.today || {}).production_today || {}, keys = Object.keys(td).filter(k => td[k] && !td[k].error);
+    const base = td['learned global (D)'] || {};
+    table($('#ftTd'), Object.keys(base).map(a => ({ a, p: pt[a], ...Object.fromEntries(keys.map(k => [k, (td[k][a] || {}).score])) })), [{ k: 'a', label: 'Asset', l: 1, f: r => `<b>${esc(r.a)}</b>` },
+      { k: 'p', label: 'Production', f: r => fmt.num(r.p, 1) }, ...keys.map(k => ({ k, label: k, f: r => `<span class="${sign(r[k])}">${fmt.num(r[k], 3)}</span>` }))], { sortKey: 'learned global (D)', maxH: 520 });
+  };
+  const labHedgeTune = async (body) => {
+    body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
+    const HD = await api('/fs2/lab/finetune?part=hedge');
+    if (!HD || !HD.cells) return vNone(body, 'Hedge fine-tune — λ-conditional size surface', 'python -m finsim2 lab --finetune');
+    const HZ = Object.keys(HD.cells), hz = HZ.includes(pref.get('htH', '1W')) ? pref.get('htH', '1W') : HZ[0];
+    const LS = ['0.5', '1.0', '2.0', '5.0', '10.0'], lam = LS.includes(pref.get('htL', '1.0')) ? pref.get('htL', '1.0') : '1.0';
+    const surf = (HD.surface || {})[hz] || {};
+    const cells = Object.entries(HD.cells[hz] || {}).filter(([k, c]) => String(c.lam) === String(parseFloat(lam))).map(([k, c]) => ({ o: k.split('@')[0], ...c, s: surf[c.node] || {} }));
+    body.innerHTML = `<div class="card"><h2>Hedge fine-tune — a λ-conditional size surface <small>hedge-2, its sizing and H1–H5 unchanged · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">No single hedge size is optimal: U = risk reduction − λ·profit sacrificed − cost. The surface m(objective, λ, risk class, horizon, volatility regime) × hedge-2's size (0.5–1.5×) is learned before each era, shrunk toward the parent and non-increasing in λ, and validated per λ against hedge-2 at the same λ. $ per $1M book.</p>
+      <div class="row" style="gap:14px;flex-wrap:wrap">${segH('htH', HZ, hz)}<div class="row" style="gap:10px;margin:0 0 10px"><span class="muted" style="font-size:12.5px">λ</span><div class="seg" id="htL">${LS.map(l => `<button data-l="${l}" class="${l === lam ? 'on' : ''}">${parseFloat(l)}</button>`).join('')}</div></div></div><div id="htC"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>H4 anatomy <small>cells that beat hedge-2 with FDR at λ = 1 but failed cost / basis · H4 is not loosened</small></h2><div id="htH4"></div><p class="muted" style="font-size:12px;margin:8px 12px">${esc(HD.h4_proposal || 'Redesign proposed for a new research version only — see SHAFFER_HEDGE_FINETUNE.md §4.')}</p></div>
+      <div class="card flush" style="margin-top:14px"><h2>Alpha-conditional hedging — ${esc(hz)} <small>best multiple by the book's validated 1W Alpha strength</small></h2><div id="htA"></div></div>`;
+    table($('#htC'), cells, [{ k: 'o', label: 'Objective', l: 1, f: r => `<b>${esc(r.o)}</b><span class="sub">${r.dates} dates</span>` },
+      { k: 'prod', label: 'Production size', f: () => '1.00×' }, { k: 'bf', label: 'Best fit', f: r => fmt.num((r.s.best_fit || {})[lam], 2) },
+      { k: 'sh', label: 'Shrunk', f: r => `<b>${fmt.num((r.s.shrunk || {})[lam], 2)}</b>` },
+      { k: 'rr', label: 'Risk reduction', f: r => `${fmt.num((r.b || {}).loss_reduction, 0)}<span class="sub">hedge-2 ${fmt.num((r.a || {}).loss_reduction, 0)}</span>` },
+      { k: 'ps', label: 'Profit sacrificed', f: r => `${fmt.num((r.b || {}).profit_sacrificed, 0)}<span class="sub">${fmt.num((r.a || {}).profit_sacrificed, 0)}</span>` },
+      { k: 'c', label: 'Cost', f: r => `${fmt.num((r.b || {}).cost, 0)}<span class="sub">${fmt.num((r.a || {}).cost, 0)}</span>` },
+      { k: 'ba', label: 'Basis', f: r => `${fmt.num((r.b || {}).basis_error, 0)}<span class="sub">${fmt.num((r.a || {}).basis_error, 0)}</span>` },
+      { k: 'd', label: 'ΔU (t)', v: r => r.d, f: r => `<span class="${sign(r.d)}">${fmt.signed(r.d)}</span> <span class="faint">(${fmt.num(r.t, 1)})</span>` },
+      { k: 's', label: 'Gate result', l: 1, f: r => r.status === 'NO HEDGE IMPROVEMENT' && (r.gates || {}).fdr ? `<span class="pill warn" style="font-size:10.5px">FDR ✓ · ${['H2', 'H3', 'H4', 'H5'].filter(k => !(r.gates || {})[k]).join(', ')} ✗</span>` : vPill(r.status) }], { sortKey: null, maxH: 520 });
+    table($('#htH4'), HD.h4 || [], [{ k: 'horizon', label: 'H', l: 1 }, { k: 'node', label: 'Objective', l: 1 }, { k: 'type', label: 'Type', l: 1 }, { k: 'failed_on', label: 'Failed on', l: 1 },
+      { k: 'cost_increase', label: 'Cost +', f: r => fmt.spct(r.cost_increase, 0) }, { k: 'basis_increase', label: 'Basis +', f: r => fmt.spct(r.basis_increase, 0) },
+      { k: 'risk_per_cost_dollar', label: 'Risk reduction per cost $', f: r => fmt.num(r.risk_per_cost_dollar, 2) }, { k: 'd', label: 'ΔU (t)', f: r => `${fmt.signed(r.d)} <span class="faint">(${fmt.num(r.t, 1)})</span>` }], { sortKey: null, maxH: 360, empty: 'No cell passed FDR and failed H4' });
+    const AL = (HD.alpha || {})[hz] || {};
+    table($('#htA'), Object.entries(AL.buckets || {}).map(([b, v]) => ({ b, ...v })), [{ k: 'b', label: 'Alpha bucket', l: 1 }, { k: 'cases', label: 'Cases' }, { k: 'dates', label: 'Dates' },
+      ...LS.map(l => ({ k: l, label: `Best m at λ = ${parseFloat(l)}`, f: r => fmt.num((r.best_by_lambda || {})[l], 2) }))], { sortKey: null, empty: 'No Alpha map' });
+    $$('#htH button').forEach(b => b.onclick = () => { pref.set('htH', b.dataset.h); route(); });
+    $$('#htL button').forEach(b => b.onclick = () => { pref.set('htL', b.dataset.l); route(); });
+  };
   const labLearnedHedge = async (body) => {
     body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
     const S = await api('/fs2/lab/learned');
@@ -1219,6 +1329,8 @@
     if (tab === 'learned') { pref.set('lwT', 'alpha'); return labLearned(body); }
     if (tab === 'learneddir') { pref.set('lwT', 'dir'); return labLearned(body); }
     if (tab === 'learnedhedge') return labLearnedHedge(body);
+    if (tab === 'finetune') return labFinetune(body);
+    if (tab === 'hedgetune') return labHedgeTune(body);
     if (tab === 'directional') return labDirectional(body, L.directional, vers);
     if (!HZL.length && ['performance', 'signals', 'weights', 'versions'].includes(tab)) return need();
     const hx = H[hz] || {};

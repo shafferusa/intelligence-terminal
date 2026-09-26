@@ -64,6 +64,7 @@ def main(argv=None) -> int:
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
     lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
+    lb.add_argument("--finetune", action="store_true", help="fine-tune the learned 1W Shaffer Alpha (nested, G1–G5), 1D after costs, 1M–12M, hedge λ surface: engine/finetune.py")
     lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
     lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
@@ -138,6 +139,24 @@ def main(argv=None) -> int:
         md = learned.markdown(res, {k: v.get("assets_today") for k, v in H.items()}, {k: v.get("nodes") for k, v in H.items()}, live)
         open(os.path.join(here, "SHAFFER_LEARNED_WEIGHTS.md"), "w", encoding="utf-8").write(md)
         print(f"learned weights: {res['seconds']}s; wrote SHAFFER_LEARNED_WEIGHTS.md")
+        return 0
+    if args.cmd == "lab" and args.finetune:
+        from .data.store import Store
+        from .engine import finetune, finetune_report, learned
+        here = os.path.dirname(os.path.abspath(__file__))
+        res = finetune.run_all(app.db_path(), workers=args.workers, progress=print)
+        st = Store(app.db_path())
+        try:
+            lw = learned.load(st)
+            finetune.save(st, res)
+            st.kv_set("lab:hedgetune", res.get("hedge"))
+            print("registered:", ", ".join(finetune.register(st, res)))
+        finally:
+            st.close()
+        print("live models:", finetune.build_live(app.db_path(), res, progress=print))
+        open(os.path.join(here, "SHAFFER_FINETUNE.md"), "w", encoding="utf-8").write(finetune_report.markdown(res, lw))
+        open(os.path.join(here, "SHAFFER_HEDGE_FINETUNE.md"), "w", encoding="utf-8").write(finetune_report.hedge_markdown(res.get("hedge") or {}))
+        print(f"fine-tune: {res['seconds']}s; wrote SHAFFER_FINETUNE.md and SHAFFER_HEDGE_FINETUNE.md")
         return 0
     if args.cmd == "lab" and (args.vnext or args.fetch_sec_extra):
         from .data.store import Store

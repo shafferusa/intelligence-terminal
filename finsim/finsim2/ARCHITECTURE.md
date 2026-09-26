@@ -64,6 +64,11 @@ finsim2/
     learned.py           ML Lab: the historically supported Shaffer weights — hierarchical partial pooling per signal, node and
                          horizon (Alpha ranking / Directional vs prior), nested validation, capability suite, live shadow of the
                          learned sets that pass; SHAFFER_LEARNED_WEIGHTS.md
+    finetune.py          ML Lab: fine-tuning the learned 1W Alpha — ranking objectives, global/hierarchy blend, stability
+                         penalties, regime-conditional weights, time decay / rolling windows, clusters, signs, interactions,
+                         turnover smoothing; every choice nested, gates G1–G4 + FDR + G5 (vs the learned global model);
+                         1D after costs, 1M–12M reduced dimension, extended capability suite, own live-shadow key
+    finetune_report.py   SHAFFER_FINETUNE.md and SHAFFER_HEDGE_FINETUNE.md, generated from the results
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
@@ -74,6 +79,7 @@ finsim2/
                          volhedge (research: does the breadth volatility forecast improve realised hedges? BREADTH_HEDGE_RESEARCH.md),
                          hedgenext (Shaffer vNext Hedge: risk estimation, sizing, product choice, Alpha link; SHAFFER_HEDGE_VNEXT.md),
                          hedgelearn (learned hedge parameters: sizing, product preference, cost / basis / tail),
+                         hedgetune (λ-conditional hedge-size surface, utility frontier, product prior, H4 anatomy, Alpha link),
                          crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI

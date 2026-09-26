@@ -319,6 +319,11 @@ class Router:
         if r == ["lab", "learned"] and method == "GET":
             from .engine import learned as LW
             return LW.api(store, q.get("h"), q.get("asset"), q.get("node"), q.get("target") or "alpha")
+        if r == ["lab", "finetune"] and method == "GET":
+            part = q.get("part")
+            if part == "hedge":
+                return store.kv_get("lab:hedgetune") or {}
+            return {"research": store.kv_get("lab:finetune"), "today": store.kv_get("lab:finetune:1W:today")}
         if r == ["lab", "run"] and method == "POST":
             return app.start_lab(bool(b.get("build"))).view()
         if r == ["lab", "promote"] and method == "POST":

@@ -3070,7 +3070,7 @@ def build_live(db_path: str, res: dict, progress=None) -> dict:
 def live_score(store, v: dict, meta: dict, lab: str, sig: Optional[dict], info: Optional[dict] = None) -> Optional[float]:
     """Today's learned Alpha score for one asset (live shadow): the stored weights at the asset's node, on today's
     signals demeaned by the latest research cross-section (a common shift that leaves the day's ranking unchanged)."""
-    live = (store.kv_get(LIVE_KEY) or {}).get(v["id"])
+    live = (store.kv_get(LIVE_KEY) or {}).get(v["id"]) or (store.kv_get("lab:finetune:live") or {}).get(v["id"])
     if not live or live.get("lab") != lab or not sig or not sig.get("x"):
         return None
     path = taxonomy(meta)
