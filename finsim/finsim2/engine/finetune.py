@@ -594,7 +594,10 @@ def fam_stability(ctx: Ctx, stab: Stability, E: Model) -> Dict[str, Model]:
             for d in TREE_DEPTH:
                 opts[f"{l2}|{K}|{d}"] = ctx.score_tree(Wfun, d)
                 fns[f"{l2}|{K}|{d}"] = (Wfun, d)
-    r = ctx.pick(opts)
+    # without enough inner history every hierarchy family falls back to the SAME default as the learned hierarchy E
+    # (pooling K_DEFAULT, global depth) — never to a depth picked with hindsight
+    base_key = _hier_default(ctx, opts, fns)
+    r = ctx.pick(opts, default=base_key)
     out["stability penalty (hierarchy)"] = Model("stability-penalised hierarchy", "stability", r,
                                                  lambda k: {"tree": fns[k][0](L.FINAL), "depth": fns[k][1]})
     # stability classes
@@ -605,7 +608,9 @@ def fam_stability(ctx: Ctx, stab: Stability, E: Model) -> Dict[str, Model]:
             return ridge_vec(ctx.gstat(cut), ctx.rms(cut), [0.0] * P, [L.G_LAMBDA + base * CLASS_MULT[c] for c in cl])
         opts[str(base)] = ctx.score_global(wfun)
         fns[str(base)] = wfun
-    r = ctx.pick(opts)
+    fns["0"] = lambda cut: ctx.lr.fits[cut]["W"][L.K_DEFAULT]["global"]
+    opts = {"0": ctx.score_global(fns["0"]), **opts}
+    r = ctx.pick(opts, default="0")
     out["stability classes"] = Model("stability-class penalties", "stability", r, lambda k, fns=dict(fns): {"global": fns[k](L.FINAL)}, fns=dict(fns))
     return out
 
@@ -766,6 +771,15 @@ def _state_dev(ctx: Ctx, reg: Regimes, d: str, ws, base) -> Tuple[array, array]:
 
 
 # ---- time decay and rolling windows
+def _hier_default(ctx: Ctx, opts: dict, fns: dict) -> str:
+    """Add the learned hierarchy's own no-history default (pooling K_DEFAULT, global depth) as an option and return its key."""
+    k = f"none|{L.K_DEFAULT}|global"
+    W0 = lambda cut: ctx.lr.fits[cut]["W"][L.K_DEFAULT]  # noqa: E731
+    opts[k] = ctx.score_tree(W0, "global")
+    fns[k] = (W0, "global")
+    return k
+
+
 def fam_time(ctx: Ctx) -> Dict[str, Model]:
     out = {}
     P = ctx.P
@@ -797,7 +811,7 @@ def fam_time(ctx: Ctx) -> Dict[str, Model]:
                     opts[f"{v}|{K}|{d}"] = ctx.score_tree(Wfun, d)
                     fns[f"{v}|{K}|{d}"] = (Wfun, d)
             ctx.say(f"time {kind} {v}: hierarchy fitted")
-        r = ctx.pick(opts, default=f"None|{TREE_K[1]}|ptype")
+        r = ctx.pick(opts, default=_hier_default(ctx, opts, fns))
         out[f"{'time decay' if kind == 'decay' else 'rolling window'} (hierarchy)"] = Model(
             f"hierarchy, {'half-life' if kind == 'decay' else 'window'} + K + depth chosen nested", "time", r,
             lambda k, fns=fns: {"tree": fns[k][0](L.FINAL), "depth": fns[k][1]})
@@ -1073,7 +1087,19 @@ def rank_churn(ctx: Ctx, s: array) -> Optional[float]:
     return sum(cors) / len(cors) if cors else None
 
 
-def evaluate(ctx: Ctx, name: str, wf: array, sp: array, D_weekly: Dict[int, float], costs: array, lab: str) -> dict:
+def _vs(ctx: Ctx, wk: Dict[int, float], base: Dict[int, float]) -> Tuple[dict, List[Optional[float]], int, bool]:
+    d = {w: wk[w] - base[w] for w in wk if w in base}
+    c = L.clustered(d, ctx.tab.h)
+    eras = []
+    for e in range(len(L.TEST_ERAS)):
+        de = [v for w, v in d.items() if ctx.lr.week_era.get(w) == e]
+        eras.append(sum(de) / len(de) if de else None)
+    ok = sum(1 for x in eras[:4] if x is not None and x >= 0)
+    return c, eras, ok, bool((c.get("mean") or 0) > 0 and (c.get("t") or 0) >= G5_T and ok >= 3)
+
+
+def evaluate(ctx: Ctx, name: str, wf: array, sp: array, D_weekly: Dict[int, float], costs: array, lab: str,
+             E_weekly: Optional[Dict[int, float]] = None) -> dict:
     """The Alpha program's metrics and gates G1–G4 against production, plus the comparison with the learned global model
     (G5 inputs), net long-short with product costs, turnover and rank churn."""
     from . import alphanext as AN
@@ -1103,19 +1129,21 @@ def evaluate(ctx: Ctx, name: str, wf: array, sp: array, D_weekly: Dict[int, floa
           "split": {"paired": spv.get("paired") or {}}, "eras": [{"paired": (e or {}).get("paired") or {}} for e in eras]}
     g = AN.gates(ch, lab)
     wk = ctx.weekly_ric(wf)
-    d = {w: wk[w] - D_weekly[w] for w in wk if w in D_weekly}
-    vsD = L.clustered(d, h)
-    eras_vsD = []
-    for e in range(len(L.TEST_ERAS)):
-        de = [v for w, v in d.items() if ctx.lr.week_era.get(w) == e]
-        eras_vsD.append(sum(de) / len(de) if de else None)
-    full = [x for x in eras_vsD[:4] if x is not None]
+    vsD, eras_vsD, g["eras_vsD"], okD = _vs(ctx, wk, D_weekly)
     g["vsD_t"], g["vsD_mean"] = vsD.get("t"), vsD.get("mean")
-    g["eras_vsD"] = sum(1 for x in full if x >= 0)
-    g["G5"] = bool((vsD.get("mean") or 0) > 0 and (vsD.get("t") or 0) >= G5_T and g["eras_vsD"] >= 3)
+    g["G5"] = okD
+    vsE = eras_vsE = None
+    if E_weekly is not None:
+        # G5 = beat BOTH learned models already in live shadow (global D and hierarchy E) — tightened on 2026-09-26 when
+        # the learned engine's E walk-forward was found to be under-reported (it was scored with the validated model's K)
+        vsE, eras_vsE, g["eras_vsE"], okE = _vs(ctx, wk, E_weekly)
+        g["vsE_t"], g["vsE_mean"] = vsE.get("t"), vsE.get("mean")
+        g["G5_D"], g["G5_E"] = okD, okE
+        g["G5"] = okD and okE
     ls20 = ls_stats(ctx, wf, 0.2, costs)
     return {"name": name, "walkforward": L._slim_alpha(ev), "eras": [L._slim_alpha(e) for e in eras], "split": L._slim_alpha(spv),
             "gates": g, "vsD": {k: L._r(v, 4) for k, v in vsD.items()}, "eras_vsD": L._rl(eras_vsD, 4),
+            "vsE": {k: L._r(v, 4) for k, v in (vsE or {}).items()}, "eras_vsE": L._rl(eras_vsE, 4) if eras_vsE else None,
             "ls20": {k: L._r(v, 5) for k, v in ls20.items() if k != "weekly"}, "churn": L._r(rank_churn(ctx, wf), 4)}
 
 
@@ -1481,10 +1509,11 @@ def study_1w(store, research, progress=None, only: Optional[set] = None, with_lo
                                              lambda k: (models[k].final_fn(models[k].final) if k in models and models[k].final_fn else
                                                         D.final_fn(D.final)))
     Dw = ctx.weekly_ric(D.wf)
+    Ew = ctx.weekly_ric(E.wf)
     prod = array("d", (v if v is not None else NAN for v in tab.raw))
     res = {"lab": "1W", "records": tab.n, "assets": len(tab.slices), "signals": names, "models": {}}
     for k, m in {"learned global (D)": D, "learned hierarchy (E)": E, **models}.items():
-        ev = evaluate(ctx, m.name, m.wf, m.sp, Dw, costs, "1W")
+        ev = evaluate(ctx, m.name, m.wf, m.sp, Dw, costs, "1W", Ew)
         ev.update({"family": m.family, "pit": m.pit, "note": m.note, "choices": {c: str(v) for c, v in m.choices.items()}, "final": str(m.final)})
         res["models"][k] = ev
     say(f"1W models evaluated ({time.time() - t0:.0f}s)")
@@ -1494,7 +1523,7 @@ def study_1w(store, research, progress=None, only: Optional[set] = None, with_lo
     # thresholds, costs, conviction, neutralisation, groups
     key_models = {"production": prod, "learned global (D)": D.wf, "learned hierarchy (E)": E.wf}
     best = max((k for k in models if models[k].pit and k != "nested model selection"),
-               key=lambda k: (res["models"][k]["gates"].get("vsD_t") or -99))
+               key=lambda k: min(res["models"][k]["gates"].get("vsD_t") or -99, res["models"][k]["gates"].get("vsE_t") or -99))
     key_models[best] = models[best].wf
     key_models["nested model selection"] = models["nested model selection"].wf
     res["best"] = best
@@ -2054,12 +2083,17 @@ def register(store, res: dict) -> List[str]:
                                     "validation": {lab: {"gates": g}}})
             made.append(vid)
     hd = res.get("hedge") or {}
-    ok = any(c.get("status") == "LIVE SHADOW ELIGIBLE" for cs in (hd.get("cells") or {}).values() for c in cs.values() if c.get("lam") == 1.0)
+    elig = {f"{lab} {k}": {"objective": c.get("objective"), "lam": c.get("lam"),
+                           "multiple": (((hd.get("surface") or {}).get(lab) or {}).get(c.get("node")) or {}).get("shrunk", {}).get(str(c.get("lam")))}
+            for lab, cs in (hd.get("cells") or {}).items() for k, c in cs.items() if c.get("status") == "LIVE SHADOW ELIGIBLE"}
     from ..hedge.hedgetune import VID
     reg["versions"] = [x for x in reg["versions"] if x["id"] != VID]
-    reg["versions"].append({"id": VID, "kind": "hedge", "family": "finetune", "introduced": today, "status": "challenger" if ok else "research",
+    # 'research' even when cells pass: the hedge live grader (lab.hedge_live_gate) grades variance per group, not utility at
+    # a chosen λ — a λ-aware grader must exist before a λ-conditional size can be shadowed honestly
+    reg["versions"].append({"id": VID, "kind": "hedge", "family": "finetune", "introduced": today, "status": "research",
                             "parent": "hedge-2", "formula": "λ-conditional hedge-size surface m(objective, λ, risk class, horizon, volatility regime)",
-                            "benchmark": "hedge-2 (realised utility at the same λ)", "training_cutoff": res.get("started")})
+                            "benchmark": "hedge-2 (realised utility at the same λ)", "training_cutoff": res.get("started"),
+                            "eligible_cells": elig, "note": "live shadow needs a λ-aware hedge grader (not built)" if elig else None})
     made.append(VID)
     _save_registry(store, reg)
     return made

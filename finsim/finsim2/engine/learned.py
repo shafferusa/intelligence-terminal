@@ -965,7 +965,7 @@ class Learner:
         V["B"][lo:hi] = score_slice(self.cols, _coef(weights_at(f["W"][K_BEST], path, "asset"), f["rms"]), lo, hi)
         V["C"][lo:hi] = score_slice(self.cols, _coef(self.deployable(cut, ch, path), f["rms"]), lo, hi)
         V["D"][lo:hi] = score_slice(self.cols, _coef(f["W"][ch["K_global"]]["global"], f["rms"]), lo, hi)
-        V["E"][lo:hi] = score_slice(self.cols, _coef(weights_at(f["W"][ch["K"]], path, ch["depth"]), f["rms"]), lo, hi)
+        V["E"][lo:hi] = score_slice(self.cols, _coef(weights_at(f["W"][ch.get("K_E") or ch["K"]], path, ch["depth"]), f["rms"]), lo, hi)
 
     # ---------------- pooled per-signal and per-level evidence (each era with its own nested K)
     def signal_evidence(self) -> dict:

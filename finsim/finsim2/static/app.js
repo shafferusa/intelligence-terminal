@@ -1089,7 +1089,7 @@
     const HZ = ['1W', '1D', '1M', '3M', '6M', '12M'].filter(h => R[h]), hz = HZ.includes(pref.get('ftH', '1W')) ? pref.get('ftH', '1W') : HZ[0];
     const cap = R.capability || {}, capOk = Object.values(cap).filter(v => v.pass).length, W = R['1W'], rep = W.reproduction || {};
     body.innerHTML = `<div class="card"><h2>Fine-tuned learned Shaffer Alpha <small>the simplest learned equation with the strongest, most stable, economically usable out-of-sample ranking · research only</small></h2>
-      <p class="muted" style="margin:0 0 10px;font-size:12.5px">The outer walk-forward is never touched; every hyperparameter (blend α, half-life, window, penalty, regime dimension, smoothing) is chosen per era from inner weeks matured before it. Gates: G1–G4 against production, FDR across every fine-tune, and <b>G5 against the learned global model already in live shadow</b> (Δ rank IC t ≥ 2, ≥ 3/4 eras not worse). The two live-shadow learned models are unchanged; every fine-tune has its own version. Capability (planted effects): <b>${capOk}/${Object.keys(cap).length}</b>. Reproduction: D ${fmt.num(rep.D_rank_ic, 4)} · E ${fmt.num(rep.E_rank_ic, 4)}. Run ${esc(R.started || '')}.</p>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">The outer walk-forward is never touched; every hyperparameter (blend α, half-life, window, penalty, regime dimension, smoothing) is chosen per era from inner weeks matured before it. Gates: G1–G4 against production, FDR across every fine-tune, and <b>G5 against both learned models already in live shadow</b> — global D and hierarchy E (Δ rank IC t ≥ 2, ≥ 3/4 eras not worse, against each). The two live-shadow learned models are unchanged; every fine-tune has its own version. Capability (planted effects): <b>${capOk}/${Object.keys(cap).length}</b>. Reproduction: D ${fmt.num(rep.D_rank_ic, 4)} · E ${fmt.num(rep.E_rank_ic, 4)}. Run ${esc(R.started || '')}.</p>
       ${segH('ftH', HZ, hz)}<div id="ftM"></div></div><div id="ftX"></div>`;
     $$('#ftH button').forEach(b => b.onclick = () => { pref.set('ftH', b.dataset.h); route(); });
     const H = R[hz], x = $('#ftX');
@@ -1110,9 +1110,10 @@
       { k: 'ric', label: 'Rank IC', v: r => ((r.walkforward || {}).challenger || {}).rank_ic, f: r => fmt.num(((r.walkforward || {}).challenger || {}).rank_ic, 4) },
       { k: 'dp', label: 'Δ vs production (t)', f: r => r.k === 'production' ? '—' : ftT(((r.walkforward || {}).paired || {}).mean, ((r.walkforward || {}).paired || {}).t) },
       { k: 'dd', label: 'Δ vs learned global (t)', v: r => (r.gates || {}).vsD_t, f: r => r.k === 'production' || r.k === 'learned global (D)' ? '—' : ftT((r.gates || {}).vsD_mean, (r.gates || {}).vsD_t) },
+      { k: 'de', label: 'Δ vs learned hierarchy (t)', v: r => (r.gates || {}).vsE_t, f: r => r.k === 'production' || r.k === 'learned hierarchy (E)' || (r.gates || {}).vsE_t === undefined ? '—' : ftT((r.gates || {}).vsE_mean, (r.gates || {}).vsE_t) },
       { k: 'ls', label: 'Net weekly L/S (20%)', f: r => r.ls20 ? `${fmt.spct(r.ls20.net, 3)}<span class="sub">gross ${fmt.spct(r.ls20.gross, 3)}</span>` : '—' },
       { k: 'to', label: 'Turnover', f: r => r.ls20 ? fmt.pct(r.ls20.turnover, 0) : '—' },
-      { k: 'e', label: 'Eras + (vs prod · ≥ global)', f: r => r.gates && r.gates.eras_complete != null ? `${r.gates.eras_won}/${r.gates.eras_complete} · ${r.gates.eras_vsD ?? '—'}/4` : '—' },
+      { k: 'e', label: 'Eras + (vs prod · ≥ D · ≥ E)', f: r => r.gates && r.gates.eras_complete != null ? `${r.gates.eras_won}/${r.gates.eras_complete} · ${r.gates.eras_vsD ?? '—'}/4 · ${r.gates.eras_vsE ?? '—'}/4` : '—' },
       { k: 'fdr', label: 'FDR', f: r => r.gates && r.gates.fdr != null ? (r.gates.fdr ? '✓' : '✗') : '—' },
       { k: 'ch', label: 'Stability (rank autocorr.)', f: r => fmt.num(r.churn, 2) },
       { k: 's', label: 'Live-shadow eligible?', l: 1, f: r => r.status === 'baseline (live shadow)' ? '<span class="pill warn" style="font-size:10.5px">already in live shadow</span>' : lwStatus(r.status) }], { sortKey: null });

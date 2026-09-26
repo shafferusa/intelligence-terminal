@@ -25,6 +25,11 @@ SEL_ORDER = ["learned global (D)", "learned hierarchy (E)", "blend", "ridge (rel
              "nested model selection"]
 
 
+def _c(v) -> str:
+    """A value safe inside a markdown table cell."""
+    return str(v).replace("|", " · ")
+
+
 def _t(v) -> str:
     return "—" if v is None else f"{v:+.1f}"
 
@@ -65,10 +70,16 @@ def _eligible(res: dict) -> List[Tuple[str, str, dict]]:
     return out
 
 
+def _bar_t(g: dict) -> float:
+    """t against the stronger of the two live-shadow learned models (the smaller of the two paired t's)."""
+    ts = [g.get("vsD_t"), g.get("vsE_t")] if "vsE_t" in g else [g.get("vsD_t")]
+    return min(t if t is not None else -99 for t in ts)
+
+
 def _best_pit(W: dict) -> Optional[str]:
     ms = W.get("models") or {}
     c = [k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta") and v["gates"].get("vsD_t") is not None]
-    return max(c, key=lambda k: ms[k]["gates"]["vsD_t"]) if c else None
+    return max(c, key=lambda k: _bar_t(ms[k]["gates"])) if c else None
 
 
 # ====================================================================== SHAFFER_FINETUNE.md
@@ -91,9 +102,9 @@ def markdown(res: dict, learned: Optional[dict] = None, hier: Optional[dict] = N
       "touched; every hyperparameter — the blend weight, the half-life, the window, the penalty, the regime dimension, the "
       "smoothing — is chosen per era from inner walk-forward weeks that matured before the era began. A fine-tuned model "
       "must pass the Alpha program's fixed gates against production (G1 t ≥ 2, G2 split, G3 ≥ 3/4 eras, G4 spread and net "
-      "long-short), Benjamini–Hochberg FDR across every fine-tune, **and** a new gate G5 against the learned global model "
-      f"already in live shadow (Δ rank IC > 0 with t ≥ {_g5_t()}, ≥ 3/4 complete eras not worse). Beating production is no "
-      "longer enough: the bar is the learned model we already have.")
+      "long-short), Benjamini–Hochberg FDR across every fine-tune, **and** a new gate G5 against BOTH learned models already "
+      f"in live shadow — the global model D and the hierarchy E (Δ rank IC > 0 with t ≥ {_g5_t()} and ≥ 3/4 complete eras not "
+      "worse, against each). Beating production is no longer enough: the bar is the learned models we already have.")
     w("")
     _key_findings(w, res, learned)
     _capability(w, res.get("capability"), learned)
@@ -128,25 +139,35 @@ def _key_findings(w, res, learned):
       "time-decaying, regime-switching, hierarchy-specific, transaction-cost-sensitive, and no false improvement on a plain world) "
       "before any market result was read.")
     rep = W.get("reproduction") or {}
-    w(f"- **Reproduction:** the fine-tune code reproduces the live-shadow models — learned global (D) rank IC {_f(rep.get('D_rank_ic'))}, "
-      f"learned hierarchy (E) {_f(rep.get('E_rank_ic'))} (production {_f(_prod_ric(W))}).")
+    w(f"- **Reproduction — and a correction:** the fine-tune code reproduces the learned global model (D, rank IC {_f(rep.get('D_rank_ic'))}) "
+      f"exactly. The live-shadow hierarchy (E) measures {_f(rep.get('E_rank_ic'))}, not the +0.0546 in SHAFFER_LEARNED_WEIGHTS.md: the "
+      "learned engine's walk-forward scored E with the validated model's pooling K instead of E's own K_E (e.g. K = 10 instead of "
+      "5000 in 2013–16). The live-shadow model itself was always built with K_E, so what is in live shadow is the stronger model; "
+      "only its reported backtest was wrong (fixed in `learned.py`, erratum added to that report). Consequence here: G5 must beat "
+      f"E as well as D (production {_f(_prod_ric(W))}).")
     el = [(k, v) for k, v in ms.items() if v.get("status") == ELIG]
     if el:
         w("- **Fine-tunes that beat both production and the learned global model under every gate (G1–G5 + FDR):** " + "; ".join(
-            f"{k} — rank IC {_f(_ric(v))}, Δ vs learned global {_f(v['gates'].get('vsD_mean'))} (t {_t(v['gates'].get('vsD_t'))}), net L/S "
+            f"{k} — rank IC {_f(_ric(v))}, Δ vs learned global {_f(v['gates'].get('vsD_mean'))} (t {_t(v['gates'].get('vsD_t'))}), "
+            f"vs learned hierarchy {_f(v['gates'].get('vsE_mean'))} (t {_t(v['gates'].get('vsE_t'))}), net L/S "
             f"{_pc((v.get('ls20') or {}).get('net'), 3)}/wk" for k, v in el) + ". Each gets a new immutable version in live shadow.")
     else:
         b = _best_pit(W)
         bv = ms.get(b) or {}
-        w("- **No fine-tune beats the learned global model under every gate.** "
-          + (f"The closest is {b}: Δ rank IC vs learned global {_f(bv['gates'].get('vsD_mean'))} (t {_t(bv['gates'].get('vsD_t'))}, "
-             f"{bv['gates'].get('eras_vsD')}/4 eras not worse). " if b else "")
-          + "The learned 1W Alpha already in live shadow stays the model to watch; fine-tuning did not find a robust improvement.")
+        w("- **No fine-tune beats both live-shadow learned models under every gate.** "
+          + (f"The closest is {b}: Δ rank IC vs learned global {_f(bv['gates'].get('vsD_mean'))} (t {_t(bv['gates'].get('vsD_t'))}), "
+             f"vs learned hierarchy {_f(bv['gates'].get('vsE_mean'))} (t {_t(bv['gates'].get('vsE_t'))}, "
+             f"{bv['gates'].get('eras_vsE')}/4 eras not worse). " if b else "")
+          + "The learned hierarchy already in live shadow (E) stays the model to watch; fine-tuning did not find a robust improvement on it.")
     near = [(k, v) for k, v in ms.items() if v.get("pit") and v.get("status") != ELIG and v["gates"].get("G1") and v["gates"].get("G3")
             and v.get("family") not in ("baseline",)]
     if near:
         w(f"- **Beat production but not the bar:** {len(near)} fine-tunes pass G1 and G3 against production (as D and E do) yet fail "
           "G5 or FDR — they are variations of the same edge, not improvements on it.")
+    dE = [(k, v) for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline",) and v["gates"].get("G5_D") and not v["gates"].get("G5_E")]
+    if dE:
+        w(f"- **Beat the global model but not the hierarchy:** {', '.join(k for k, _ in dE)} — every one is a hierarchy model; what they "
+          "gain over D is the hierarchy E already delivers.")
     D, E = ms.get("learned global (D)") or {}, ms.get("learned hierarchy (E)") or {}
     th = (W.get("thresholds") or {}).get("learned global (D)") or []
     if th:
@@ -163,7 +184,7 @@ def _key_findings(w, res, learned):
     if one:
         w(f"- **1D after costs:** the nested cost-aware 1D strategy earns {_pc(one.get('net_per_trade'), 3)} per trade net (t {_t(one.get('t'))}, "
           f"{one.get('eras_positive')}/4 eras positive, active {_pcu(one.get('active_share'))} of weeks) — "
-          + ("**profitable after costs under the fixed test.**" if one.get("profitable") else "**not profitable after costs.**"))
+          + ("**profitable after costs under the fixed test**" if one.get("profitable") else "**not profitable after costs**") + _oned_flat(res.get("1D")))
     lg = [(lab, k) for lab in ("1M", "3M", "6M", "12M") for k, v in ((res.get(lab) or {}).get("models") or {}).items() if v.get("status") == ELIG]
     w("- **1M–12M:** " + ("validated: " + ", ".join(f"{lab} {k}" for lab, k in lg) if lg else
                            "no model — lower-dimensional, family-level, stable-only or fundamental — is validated. The effective "
@@ -172,13 +193,27 @@ def _key_findings(w, res, learned):
     if da.get("gates"):
         w(f"- **Directional:** adding the out-of-sample 1W Alpha percentile to the point-in-time prior "
           + ("passes" if da.get("passed") else "does not pass") + " the prior-only gate (Brier gain vs prior "
-          f"{_f((da.get('vs_prior') or {}).get('brier_gain'), 5)}, t {_t((da.get('vs_prior') or {}).get('brier_t'))}). Directional stays conservative.")
+          f"{_f((da.get('vs_prior') or {}).get('brier_gain'), 5)}, t {_t((da.get('vs_prior') or {}).get('brier_t'))}). Directional stays conservative: "
+          + ("the gain is small in probability terms and earns only a research version, never a change to the Directional definition." if da.get("passed")
+             else "nothing changes."))
     hd = res.get("hedge") or {}
     if hd:
         el_h = sum(1 for cs in (hd.get("cells") or {}).values() for c in cs.values() if c.get("status") == ELIG)
         w(f"- **Hedge:** the λ-conditional size surface is learned per objective and volatility regime (§ SHAFFER_HEDGE_FINETUNE.md); "
           f"{el_h} (objective, horizon, λ) cells pass H1–H5. H4 is not loosened; a redesign is proposed for a new version only.")
     w("")
+
+
+def _oned_flat(one: Optional[dict]) -> str:
+    """How much of the 1D result survives a flat 10 bp per side instead of the product-specific cost estimates."""
+    th = ((one or {}).get("thresholds") or {})
+    rows = [(k, r) for k, rs in th.items() for r in rs if r.get("net_flat10bp") is not None]
+    if not rows:
+        return "."
+    k, r = max(rows, key=lambda kr: kr[1]["net_flat10bp"])
+    return (f"; but it rests on the product-specific cost estimates (single stock 5 bp, ETF 2–3 bp one way): at a flat 10 bp per side "
+            f"the best 1D tail ({k}, {int(r['frac'] * 100)}%) nets {_pc(r['net_flat10bp'], 3)} per trade. "
+            + ("It survives." if r["net_flat10bp"] > 0 else "It does not survive — treat 1D as cost-fragile."))
 
 
 def _capability(w, cap, learned):
@@ -220,16 +255,21 @@ def _answers(w, res, learned, hier):
     nest = ms.get("nested model selection") or {}
     w(f"**1. Can 1W Alpha improve beyond the current learned models?** "
       + (f"Yes, under every gate: {', '.join(el)}." if el else
-         f"Not robustly. The best single family is {b} (Δ rank IC vs learned global {_f(bv.get('gates', {}).get('vsD_mean'))}, "
-         f"t {_t(bv.get('gates', {}).get('vsD_t'))}); nested selection across all families, which is the honest version of 'pick the best', "
-         f"gives Δ {_f(nest.get('gates', {}).get('vsD_mean'))} (t {_t(nest.get('gates', {}).get('vsD_t'))}). "
-         f"Neither clears G5 (t ≥ {_g5_t()}, ≥ 3/4 eras)."))
+         f"Not robustly. The best single family against the stronger live model is {b} (Δ rank IC vs learned hierarchy "
+         f"{_f(bv.get('gates', {}).get('vsE_mean'))}, t {_t(bv.get('gates', {}).get('vsE_t'))}; vs learned global "
+         f"{_f(bv.get('gates', {}).get('vsD_mean'))}, t {_t(bv.get('gates', {}).get('vsD_t'))}); nested selection across all families — the "
+         f"honest version of 'pick the best' — gives Δ vs hierarchy {_f(nest.get('gates', {}).get('vsE_mean'))} "
+         f"(t {_t(nest.get('gates', {}).get('vsE_t'))}). None clears G5 against both (t ≥ {_g5_t()}, ≥ 3/4 eras)."))
     w("")
     rk = sorted([k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta")],
-                key=lambda k: -(ms[k]["gates"].get("vsD_t") or -99))
-    w("**2. Which optimisation method works best?** Ranked by Δ rank IC vs the learned global model (t): "
-      + "; ".join(f"{k} {_f(ms[k]['gates'].get('vsD_mean'))} ({_t(ms[k]['gates'].get('vsD_t'))})" for k in rk[:6])
-      + (f". Worst: {rk[-1]} {_f(ms[rk[-1]]['gates'].get('vsD_mean'))} ({_t(ms[rk[-1]]['gates'].get('vsD_t'))})." if rk else "."))
+                key=lambda k: -_bar_t(ms[k]["gates"]))
+    w("**2. Which optimisation method works best?** Ranked by the weaker of the two comparisons (vs learned global D / vs learned "
+      "hierarchy E, Δ rank IC and t): "
+      + "; ".join(f"{k} {_f(ms[k]['gates'].get('vsD_mean'))} ({_t(ms[k]['gates'].get('vsD_t'))}) / {_f(ms[k]['gates'].get('vsE_mean'))} "
+                  f"({_t(ms[k]['gates'].get('vsE_t'))})" for k in rk[:6])
+      + (f". Worst: {rk[-1]}." if rk else ".") + " Hierarchy-based fine-tunes lead against D because they contain E; against E the "
+      "differences are small. The ranking objectives (pairwise, listwise, relative-return ridge) are worse than the pairwise "
+      "least-squares target already in use.")
     w("")
     bl = ms.get("blend") or {}
     w(f"**3. Does blending global + hierarchy help?** α (weight on the global model's rank) chosen per era: {_choice_str(bl)}; "
@@ -277,7 +317,7 @@ def _answers(w, res, learned, hier):
     w(f"**9. Can 1D become profitable after costs?** " + (
         f"{'Yes' if one.get('profitable') else 'No'}: the nested cost-aware choice (model × regime filter × tail fraction, by inner "
         f"net round-trip P&L; standing aside when nothing was positive) earns {_pc(one.get('net_per_trade'), 3)} per trade "
-        f"(t {_t(one.get('t'))}), eras {', '.join(_pc(x, 3) for x in (one.get('eras') or []))}." if one else "not run."))
+        f"(t {_t(one.get('t'))}), eras {', '.join(_pc(x, 3) for x in (one.get('eras') or []))}" + _oned_flat(res.get("1D")) if one else "not run."))
     w("")
     lg = [(lab, k) for lab in ("1M", "3M", "6M") for k, v in ((res.get(lab) or {}).get("models") or {}).items() if v.get("status") == ELIG]
     w("**10. Can any 1M–6M model become validated?** " + ("Yes: " + ", ".join(f"{a} {b}" for a, b in lg) if lg else
@@ -288,12 +328,17 @@ def _answers(w, res, learned, hier):
       f"The hierarchy's rank IC {_f(_ric(E))} vs global {_f(_ric(ms.get('learned global (D)') or {}))}; Δ {_f(E.get('gates', {}).get('vsD_mean'))} "
       f"(t {_t(E.get('gates', {}).get('vsD_t'))}).")
     w("")
-    rec = el[0] if el else "learned global (D)"
-    ww = (W.get("weights") or {}).get("D" if rec == "learned global (D)" else rec) or []
+    rec = max(el, key=lambda k: _bar_t(ms[k]["gates"])) if el else "learned hierarchy (E)"
+    fin = (W.get("finals") or {}).get(rec) or {}
+    ww = (W.get("weights") or {}).get(rec) or ((fin.get("weights") or {}).get("global") if fin else None)
+    hm = (W.get("hierarchy_mean") or {}).get("weights") if rec == "learned hierarchy (E)" else None
+    ww = hm or ww or (W.get("weights") or {}).get("D") or []
     sh = _share(ww) or []
     top = sorted(range(len(sh)), key=lambda i: -abs(sh[i]))[:10]
-    w(f"**12. What should today's learned 1W weights be?** {'The validated fine-tune ' + rec if el else 'Unchanged: the learned global weights (D)'} "
-      "— largest signed shares of |weight|: " + ", ".join(f"{names[i]} {_pc(sh[i], 1)}" for i in top if names) + ". Full table in §5.")
+    what = ("the average over assets of the hierarchy's weights (each asset uses its own node's weights; depth "
+            f"{E.get('final')})" if hm else ("the global node of " + rec + (f" (assets use their own node's weights, depth {fin.get('depth')})" if fin.get("depth") not in (None, "global") else "")))
+    w(f"**12. What should today's learned 1W weights be?** {'The validated fine-tune ' + rec if el else 'Unchanged — the learned hierarchy already in live shadow (E)'}; "
+      f"largest signed shares of |weight| ({what}): " + ", ".join(f"{names[i]} {_pc(sh[i], 1)}" for i in top if names) + ". Full table in §5.")
     w("")
     td = (W.get("today") or {}).get(rec) or (W.get("today") or {}).get("learned global (D)") or {}
     srt = sorted([(a, v["score"]) for a, v in td.items() if isinstance(v, dict) and v.get("score") is not None], key=lambda x: -x[1])
@@ -319,7 +364,9 @@ def _answers(w, res, learned, hier):
     hel = [f"{lab} {k.replace('@', ' at λ = ')}" for lab, cs in (hd.get("cells") or {}).items() for k, c in cs.items() if c.get("status") == ELIG]
     lel = [f"{lab} {k}" for lab, k, _ in _eligible(res)]
     w("**18. Is anything newly eligible for live shadow?** " + ("Alpha: " + ", ".join(lel) if lel else "Alpha: nothing.")
-      + " " + ("Hedge sizing cells: " + ", ".join(hel) + " (version hedge-lambda-sizing-exp)." if hel else "Hedge: nothing."))
+      + " " + ("Hedge sizing cells that pass every gate: " + ", ".join(hel) + ". They are recorded in hedge-lambda-sizing-exp with their "
+               "multiples, but NOT put in live shadow: the hedge live grader measures variance per hedge group, not utility at a chosen "
+               "λ, so a λ-conditional size cannot be graded honestly until a λ-aware grader exists." if hel else "Hedge: nothing."))
     w("")
     w("**19. Is anything eligible for eventual production promotion?** Not yet — by rule. Promotion needs a model in live shadow "
       "with ≥ 60 graded live outcomes that confirm the backtest, and your approval. The two learned 1W models entered live shadow on "
@@ -330,7 +377,7 @@ def _answers(w, res, learned, hier):
 def _choice_str(m: dict) -> str:
     ch = m.get("choices") or {}
     eras = [a for a, _ in L.TEST_ERAS]
-    return ", ".join(f"{c[:4]}: {ch.get(c)}" for c in eras if c in ch) or "—"
+    return ", ".join(f"{c[:4]}: {_c(ch.get(c))}" for c in eras if c in ch) or "—"
 
 
 def _extreme_verdict(th: List[dict]) -> str:
@@ -353,11 +400,11 @@ def _selection(w, W):
     w("Walk-forward 2009 → today (outer eras never touched by any choice). Net long-short: top minus bottom 20% of each week's "
       "scored cross-section, equal weight, after one-way product costs on traded weight (single stock 5 bp, sector ETF 3 bp, index "
       "1 bp, …). Turnover: share of each leg replaced per week. Stability: rank autocorrelation of scores week to week (1 = no churn). "
-      "Eras: complete eras where the model beat production / was not worse than learned global.")
+      "Eras: complete eras where the model beat production / was not worse than the learned global (D) · hierarchy (E) model.")
     w("")
-    w("| Model | Family | Rank IC | Δ vs production (t) | Δ vs learned global (t) | Net weekly L/S | Turnover | Eras + vs prod | Eras ≥ global | FDR | Stability | Live-shadow eligible? |")
-    w("|---|---|---|---|---|---|---|---|---|---|---|---|")
-    w(f"| production (shaffer-alpha-2.1) | — | {_f(pr)} | — | — | — | — | — | — | — | — | (production) |")
+    w("| Model | Family | Rank IC | Δ vs production (t) | Δ vs learned global (t) | Δ vs learned hierarchy (t) | Net weekly L/S | Turnover | Eras + vs prod | Eras ≥ global · hierarchy | FDR | Stability | Live-shadow eligible? |")
+    w("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    w(f"| production (shaffer-alpha-2.1) | — | {_f(pr)} | — | — | — | — | — | — | — | — | — | (production) |")
     for k in _ordered(ms):
         v = ms[k]
         g = v.get("gates") or {}
@@ -365,12 +412,13 @@ def _selection(w, W):
         ls = v.get("ls20") or {}
         base = v.get("family") == "baseline"
         w(f"| {k} | {v.get('family')} | {_f(_ric(v))} | {_f(p.get('mean'))} ({_t(p.get('t'))}) | "
-          f"{'—' if k == 'learned global (D)' else _f(g.get('vsD_mean')) + ' (' + _t(g.get('vsD_t')) + ')'} | {_pc(ls.get('net'), 3)} | "
-          f"{_pcu(ls.get('turnover'))} | {g.get('eras_won')}/{g.get('eras_complete')} | {'—' if k == 'learned global (D)' else str(g.get('eras_vsD')) + '/4'} | "
+          f"{'—' if k == 'learned global (D)' else _f(g.get('vsD_mean')) + ' (' + _t(g.get('vsD_t')) + ')'} | "
+          f"{'—' if k == 'learned hierarchy (E)' else _f(g.get('vsE_mean')) + ' (' + _t(g.get('vsE_t')) + ')'} | {_pc(ls.get('net'), 3)} | "
+          f"{_pcu(ls.get('turnover'))} | {g.get('eras_won')}/{g.get('eras_complete')} | {g.get('eras_vsD')}/4 · {g.get('eras_vsE', '—')}/4 | "
           f"{'—' if base or g.get('fdr') is None else ('yes' if g.get('fdr') else 'no')} | {_f(v.get('churn'), 2, False)} | "
           f"{'already in live shadow' if base else ('**YES**' if v.get('status') == ELIG else v.get('status') or '—')} |")
     w("")
-    w("Gates per model (G1–G4 vs production, G5 vs learned global):")
+    w("Gates per model (G1–G4 vs production, G5 vs both learned live-shadow models):")
     w("")
     w("| Model | G1 | G2 (split t) | G3 | G4 | G5 | Quintile spread | Pearson IC | Monotonicity | Hit vs median |")
     w("|---|---|---|---|---|---|---|---|---|---|")
@@ -380,18 +428,18 @@ def _selection(w, W):
         c = (v.get("walkforward") or {}).get("challenger") or {}
         yn = lambda x: "✓" if x else "✗"  # noqa: E731
         w(f"| {k} | {yn(g.get('G1'))} | {yn(g.get('G2'))} ({_t(g.get('split_t'))}) | {yn(g.get('G3'))} | {yn(g.get('G4'))} | "
-          f"{'—' if k == 'learned global (D)' else yn(g.get('G5'))} | {_pc(c.get('quintile_spread'), 2)} | {_f(c.get('ic'))} | "
+          f"{'—' if v.get('family') == 'baseline' else yn(g.get('G5'))} | {_pc(c.get('quintile_spread'), 2)} | {_f(c.get('ic'))} | "
           f"{_f((v.get('walkforward') or {}).get('mono_challenger'), 2)} | {_pcu(c.get('hit_vs_median'))} |")
     w("")
     w("Rank IC by era (walk-forward):")
     w("")
     labs = ["2009–12", "2013–16", "2017–20", "2021–24", "2025–"]
-    w("| Model | " + " | ".join(labs) + " | Δ vs global by era |")
-    w("|---|" + "---|" * (len(labs) + 1))
+    w("| Model | " + " | ".join(labs) + " | Δ vs global by era | Δ vs hierarchy by era |")
+    w("|---|" + "---|" * (len(labs) + 2))
     for k in _ordered(ms):
         v = ms[k]
         er = [((e.get("challenger") or {}).get("rank_ic")) for e in (v.get("eras") or [])]
-        w(f"| {k} | " + " | ".join(_f(x) for x in (er + [None] * 5)[:5]) + " | " + " ".join(_f(x, 3) for x in (v.get("eras_vsD") or [])) + " |")
+        w(f"| {k} | " + " | ".join(_f(x) for x in (er + [None] * 5)[:5]) + " | " + " ".join(_f(x, 3) for x in (v.get("eras_vsD") or [])) + " | " + " ".join(_f(x, 3) for x in (v.get("eras_vsE") or [])) + " |")
     w("")
 
 
@@ -407,7 +455,7 @@ def _choices(w, W):
     for k in _ordered(ms):
         v = ms[k]
         ch = v.get("choices") or {}
-        w(f"| {k} | " + " | ".join(str(ch.get(c, "—")) for c in [a for a, _ in L.TEST_ERAS] + [L.SPLIT]) + f" | {v.get('final')} | {(v.get('note') or '').replace('|', '/')[:120]} |")
+        w(f"| {k} | " + " | ".join(_c(ch.get(c, "—")) for c in [a for a, _ in L.TEST_ERAS] + [L.SPLIT]) + f" | {_c(v.get('final'))} | {(v.get('note') or '').replace('|', '/')[:160]} |")
     w("")
 
 
@@ -704,8 +752,8 @@ def _versions(w, res):
             w(f"| {F.vid_of(lab, k)} | {lab} | {k} | {'challenger (live shadow)' if v.get('status') == ELIG else 'research'} |")
     from ..hedge.hedgetune import VID
     hd = res.get("hedge") or {}
-    ok = any(c.get("status") == ELIG and c.get("lam") == 1.0 for cs in (hd.get("cells") or {}).values() for c in cs.values())
-    w(f"| {VID} | 1W–3M | λ-conditional hedge size surface | {'challenger (live shadow)' if ok else 'research'} |")
+    ok = sum(1 for cs in (hd.get("cells") or {}).values() for c in cs.values() if c.get("status") == ELIG)
+    w(f"| {VID} | 1W–3M | λ-conditional hedge size surface | research{f' ({ok} cells pass every gate; live shadow needs a λ-aware hedge grader, not built)' if ok else ''} |")
     w("")
 
 
@@ -758,9 +806,13 @@ def _hedge_q17(hd: dict) -> str:
         sig = [o for o, v in tv.items() if (v.get("t") or 0) >= 2]
         parts.append(f"{lab}: {a['cases']} cases; per-Alpha-bucket multiples beat one multiple walk-forward in "
                      f"{len(sig)}/{len(tv)} objectives at t ≥ 2" + (f" ({', '.join(sig)})" if sig else ""))
-    ok = any((v.get("t") or 0) >= 2 for a in al.values() for v in (a.get("alpha_vs_one") or {}).values())
-    return "; ".join(parts) + (". Alpha strength changes the optimal hedge where listed — research only." if ok else
-                               ". No: conditioning the hedge size on the book's validated Alpha does not improve realised utility out of sample.")
+    keys = [(lab, o) for lab, a in al.items() for o, v in (a.get("alpha_vs_one") or {}).items() if v.get("p") is not None]
+    ps = [al[lab]["alpha_vs_one"][o]["p"] for lab, o in keys]
+    surv = [f"{lab} {o}" for (lab, o), r in zip(keys, L.benjamini_hochberg(ps)) if r] if ps else []
+    return "; ".join(parts) + f". Across all {len(keys)} tests, {len(surv)} survive Benjamini–Hochberg FDR" + (
+        f" ({', '.join(surv)}) — Alpha strength changes the optimal hedge there; research only." if surv else
+        ": **no** — conditioning the hedge size on the book's validated Alpha does not improve realised utility out of sample; "
+        "isolated t ≥ 2 cells are what chance produces in this many tests.")
 
 
 # ====================================================================== SHAFFER_HEDGE_FINETUNE.md
@@ -834,7 +886,7 @@ def _h_surface(w, hd):
     w("|---|---|---|---|---|")
     for lab, surf in (hd.get("surface") or {}).items():
         for nd, v in sorted(surf.items()):
-            w(f"| {lab} | {nd} | {v.get('dates')} | " + " / ".join(f"{x:.2f}" for x in (v.get("shrunk") or {}).values()) + " | "
+            w(f"| {lab} | {_c(nd)} | {v.get('dates')} | " + " / ".join(f"{x:.2f}" for x in (v.get("shrunk") or {}).values()) + " | "
               + " / ".join("—" if x is None else f"{x:.2f}" for x in (v.get("best_fit") or {}).values()) + " |")
     w("")
 
@@ -883,7 +935,7 @@ def _h_products(w, hd):
     for lab, nodes in pr.items():
         for nd, ps in sorted(nodes.items()):
             for t, v in sorted(ps.items(), key=lambda kv: -(kv[1].get("shrunk") or 0)):
-                w(f"| {lab} | {nd} | {t} | {v.get('dates')} | {_n(v.get('advantage'))} | {_n(v.get('shrunk'))} |")
+                w(f"| {lab} | {_c(nd)} | {t} | {v.get('dates')} | {_n(v.get('advantage'))} | {_n(v.get('shrunk'))} |")
     w("")
 
 

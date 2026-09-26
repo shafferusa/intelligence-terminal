@@ -547,7 +547,7 @@ flaws before any market result was read:
 
 * At 1W the simple global learned weights (D) and the uniform-depth hierarchy (E) beat production under every fixed
   gate, with FDR across 24 tests:
-  * rank IC 0.053 and 0.055 vs 0.038;
+  * rank IC 0.053 and 0.067 vs 0.038 (E corrected 2026-09-26: the first report showed 0.055 because E was scored with the wrong pooling K; the live-shadow model was always the correct one);
   * net long-short +0.15–0.19% a week vs ~0;
   * 3 of 4 eras.
 

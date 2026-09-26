@@ -2,6 +2,16 @@
 
 Run 2026-09-26 17:01:08 · 2532.2 s · `python -m finsim2 lab --learned`. Research only: production (shaffer-2.1, shaffer-alpha-2.1-production, the Directional definition, hedge-2) is unchanged. Method: `engine/learned.py` (module docstring); hedge parameters: `hedge/hedgelearn.py`.
 
+> **Erratum (2026-09-26, found by the fine-tune reproduction check — see SHAFFER_FINETUNE.md).** The walk-forward of
+> weight set **E (uniform-depth hierarchy)** in this report was scored with the validated model's pooling K instead of
+> E's own nested K_E (for example K = 10 instead of K = 5000 in 2013–16), at every horizon. Every "E" number below is
+> therefore understated. The live-shadow model `alpha-learned-1w-hierarchy-exp` was always built with K_E, so what is
+> in live shadow is the stronger model; only its reported backtest was wrong. Corrected 1W figures (same records, same
+> gates): rank IC **+0.0671** (not +0.0546) vs production +0.0376, Δ t +4.3, 3/4 eras, split t +4.7, net long-short
+> +0.233% per week (t 3.9) vs +0.008%; by era 2009–12 +0.041, 2013–16 +0.049, 2017–20 +0.076, 2021–24 +0.087,
+> 2025– +0.113. Against the global learned model D it is +0.0145 (t 4.0). The bug is fixed in `engine/learned.py`
+> (`Learner._fill`); the next `lab --learned` run regenerates this report with correct E figures.
+
 **Find the weights first, then decide how much to trust them.** For every horizon, every one of the 74 production signals gets a weight at every node of Global → Class → Product type → Sector → Industry → Asset, learned from the point-in-time research records. Two weight sets always exist: the *historical best fit* (what fits the past best, hardly pooled) and the *validated deployable* weights (pooled toward the parent, trusted in proportion to their out-of-sample evidence, specialised only where a node's own deviation survived out of sample). A failed promotion gate does not mean there are no learned weights — it means they are not trusted enough to replace production.
 
 ## Key findings
