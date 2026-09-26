@@ -38,7 +38,10 @@
    "horizon": "2026-09-21",
    "probability": "30-45%",
    "basis": "Both a fatal vessel strike (Qeshm, Sept 13) and a pipeline attack (Sept 10-11) occurred within the same week, and the only prospective diplomatic channel addressing the strait directly was just postponed indefinitely with no de-escalation mechanism now in place.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "A tanker entering Hormuz was struck by an unclaimed projectile on Sept. 21 (UKMTO; two crew injured), and further tanker strikes were reported Sept. 16-18 — inside the one-week window.",
+   "graded": "2026-09-26",
+   "lesson": "A 30-45% call on a further strike proved too low for a strait with no functioning de-escalation channel; the base rate of incidents that month was closer to weekly."
   },
   {
    "id": "2026-09-14-am-2",
@@ -1023,7 +1026,10 @@
    "horizon": "2026-09-30",
    "probability": "40-55%",
    "basis": "A single weak payrolls print is unlikely to flip an already-hawkish committee outright, but adds real pressure; needs corroborating signal from Aug 12 CPI and Aug 13 PPI to firm up either direction.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Sept. 15-16 FOMC hiked 25bp to 3.75-4.00% rather than cutting. Graded early: the meeting has happened, so the outcome is settled before the Sept. 30 horizon.",
+   "graded": "2026-09-26",
+   "lesson": "One weak payrolls print did not outweigh a run of hot inflation data. This forecast was never revisited after the August CPI and PPI prints, which pointed the other way."
   },
   {
    "id": "2026-08-07-pm-3",
@@ -1956,7 +1962,10 @@
    "horizon": "2026-09-23",
    "probability": "80-90%",
    "basis": "Iran's prior Hormuz-only threats have not been acted on despite months of standing tension, and a full blockade is explicitly conditioned on a Gulf state joining the US campaign, which has not happened; the threat reads as deterrent messaging ahead of the announcement rather than an operational plan already in motion.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Iran never declared or enforced a blockade of all Persian Gulf oil traffic within 30 days. Hormuz transits did collapse to a handful a day, but through attacks, insurance withdrawal and a transit-permit regime rather than a declared total blockade.",
+   "graded": "2026-09-26",
+   "lesson": "Correct on the literal question, but the literal question missed the story: traffic collapsed without the formal blockade the forecast was watching for. Forecast the flow, not only the declaration."
   },
   {
    "id": "2026-08-24-am-2",
@@ -2161,7 +2170,10 @@
    "horizon": "2026-09-25",
    "probability": "20-35%",
    "basis": "CMSA has stayed silent on a replacement date for more than two weeks despite sustained international press attention, and recalculating a lunar-south-pole launch window is a slower process than a typical weather scrub.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "CMSA did not publish a new Chang'e 7 date. Around Aug. 25 it said the mission could not launch in this year's window; press reports point to 2027, but no official date has been given.",
+   "graded": "2026-09-26",
+   "lesson": "The agency had in effect already answered the question before the forecast was written; the research missed that statement."
   },
   {
    "id": "2026-08-26-pm-1",
@@ -2223,7 +2235,10 @@
    "horizon": "2026-09-26",
    "probability": "30-45%",
    "basis": "Framework talks in this standoff have repeatedly stalled short of signature; US reportedly resistant to joint Iranian-Omani management of the route",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No signing or implementation of the Iran-Oman temporary Hormuz corridor was found by Sept. 26. Iran said on Sept. 7 that the maps would be 'signed in the coming days'; transits stayed near zero.",
+   "graded": "2026-09-26",
+   "lesson": "Framework announcements in this conflict keep stalling before signature. The low range (30-45%) was about right."
   },
   {
    "id": "2026-08-27-am-3",
@@ -2895,7 +2910,10 @@
    "horizon": "2026-09-22",
    "probability": "20-35%",
    "basis": "Rhetoric has escalated twice this week (Ghalibaf's 'era of proportionate responses is over,' now Rezaei's zone threat) without a matching action on the water; most threats in this standoff have stayed rhetorical.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Iran published no coordinates for its declared Hormuz exclusion zone and took no enforcement action explicitly under it by Sept. 22. The nearest related step was a Sept. 14 'non-compliant vessels' list issued under separate transit rules.",
+   "graded": "2026-09-26",
+   "lesson": "Rhetoric kept outrunning action on the water; the 20-35% range reflected that correctly."
   },
   {
    "id": "2026-09-08-am-2",
@@ -3009,7 +3027,10 @@
    "horizon": "2026-09-24",
    "probability": "65-75%",
    "basis": "Powell's own language today signals the court views the matter as resolved by compliance rather than ongoing; some probability of a separate sanction for Hoskins's pre-compliance conduct remains, per Republican legislators' impeachment threats against the court if he had been held in contempt.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No further sanction on Secretary of State Hoskins was reported through Sept. 24; the court's Sept. 10 order purged the contempt with no fine or commitment order, and the US Supreme Court separately blocked the 2025 map again on Sept. 25.",
+   "graded": "2026-09-26",
+   "lesson": "Taking a court at its own on-record word ('purged himself of contempt') was the right read."
   },
   {
    "id": "2026-09-10-pm-2",
@@ -3045,7 +3066,10 @@
    "horizon": "2026-09-25",
    "probability": "20-30%",
    "basis": "Iran's Supreme National Security Council has stated intent to declare an exclusion zone but has not yet named specifics, consistent with this conflict's pattern so far of rhetorical escalation outpacing concrete action.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No exclusion-zone boundary or enforcement timeline was published by Sept. 25.",
+   "graded": "2026-09-26",
+   "lesson": "Same pattern as the Sept. 8 forecast: threatened zones in this standoff stayed rhetorical."
   },
   {
    "id": "2026-09-11-am-3",
@@ -3273,7 +3297,10 @@
    "horizon": "2026-09-20",
    "probability": "20-35%",
    "basis": "Past Saudi requests for direct US strikes were declined; the coalitions own language (responsibly and firmly) has historically meant retaliatory strikes inside Yemen rather than chokepoint-clearing operations.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "Saudi air operations inside Yemen continued, including reported strikes on Mokha airport near the strait and on Sanaa early Sept. 20. However, the chokepoint-specific strikes are mostly Houthi-reported, and Riyadh did not itemize them.",
+   "graded": "2026-09-26",
+   "lesson": "Directionally right; the specific target set cannot be confirmed from the Saudi side."
   },
   {
    "id": "2026-09-15-am-2",
@@ -3296,7 +3323,10 @@
    "horizon": "2026-09-22",
    "probability": "35-50%",
    "basis": "This is the second deadline both companies have now missed without full compliance; Casar's prior public statements suggested narrowing patience.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No subpoena threat, hearing announcement or joint statement with Sen. Hawley was found between Sept. 15 and Sept. 22. Casar's next step was legislation: the Sanders-Casar superintelligence-ban bill, introduced Sept. 23-24, the day after the horizon.",
+   "graded": "2026-09-26",
+   "lesson": "Escalation did come, but through a bill rather than any of the three channels named. A forecast should name the outcome, not guess the specific instrument."
   },
   {
    "id": "2026-09-16-am-1",
@@ -3319,7 +3349,10 @@
    "horizon": "2026-09-23",
    "probability": "15-25%",
    "basis": "Saudi Arabia has previously declined US requests for more direct escalation even after earlier provocations, though this week's 'red line' language on Mecca is more pointed than prior statements.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "No Saudi strike was announced as retaliation for the claimed drone near Mecca. Houthi media reported continued Saudi air raids in general, not a response tied to Mecca.",
+   "graded": "2026-09-26",
+   "lesson": "A 'red line' statement was followed by the existing campaign continuing, not a distinct, attributable response."
   },
   {
    "id": "2026-09-16-am-3",
@@ -3402,7 +3435,10 @@
    "horizon": "2026-09-22",
    "probability": "30-45%",
    "basis": "High-risk military claims in this conflict have both held up and collapsed on further reporting; this one is single-sourced (Fox News, unnamed sources) with no government confirmation as of publication.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Fox News report of a drone-and-missile strike on a US-contracted vessel was not confirmed by any government source or independent outlet by Sept. 22; other outlets only relayed Fox's account.",
+   "graded": "2026-09-26",
+   "lesson": "A single-sourced military claim still unconfirmed after five days tends to stay that way."
   },
   {
    "id": "2026-09-18-am-1",
@@ -3442,7 +3478,10 @@
    "horizon": "2026-09-25",
    "probability": "70-80%",
    "basis": "Saudi Arabia's two prior requests for direct US strikes were both declined in favor of intelligence support only; midterm-adjacent political caution and ongoing Muscat contacts argue for continued restraint, weighed against the Riyadh strike raising the political cost of inaction and Trump's own description of facing a 'big decision.'",
-   "status": "open"
+   "status": "correct",
+   "outcome": "No US strike on Houthi or Iranian targets through Sept. 25. Trump called off prepared strikes on the Houthis the weekend of Sept. 20-21, with munitions reportedly already loaded, and opened indirect contacts with Iran instead.",
+   "graded": "2026-09-26",
+   "lesson": "Restraint held again, but only just — the strike was loaded and cancelled. A 70-80% call was about right for a week, not a sign the risk has gone."
   },
   {
    "id": "2026-09-20-sun-2",
@@ -3452,7 +3491,10 @@
    "horizon": "2026-09-24",
    "probability": "55-65%",
    "basis": "Costco's recent record of beating estimates, weighed against at least one analyst's flagged risk that core-business earnings look weaker once one-time tariff-refund benefits are stripped out, as happened last quarter.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Costco reported fiscal Q4 EPS of $6.75 against a consensus near $6.52 (8-K, Sept. 24). About $0.15 of that came from a one-time tariff refund; excluding it, EPS of roughly $6.60 still beat.",
+   "graded": "2026-09-26",
+   "lesson": "The beat survived stripping out the one-time item, which is the better test of the call."
   },
   {
    "id": "2026-09-20-sun-3",
@@ -3462,7 +3504,10 @@
    "horizon": "2026-09-25",
    "probability": "55-65%",
    "basis": "Both governments' teams are reportedly working to arrange a sidelines meeting, but nothing appears on Trump's released UNGA schedule as of Sunday, Sept. 20.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Trump and Zelensky met in New York on Sept. 22, on the sidelines of the UN General Assembly, agreed by phone on Sept. 21.",
+   "graded": "2026-09-26",
+   "lesson": "This report read too much into the meeting's absence from a released schedule; both teams were openly working to arrange it."
   },
   {
    "id": "2026-09-20-sun-4",
@@ -3472,7 +3517,10 @@
    "horizon": "2026-09-25",
    "probability": "40-50%",
    "basis": "The underlying dispute over the closure's motive (safety versus alleged demolition intent) remains actively contested by both sides, with no sign of settlement.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Kennedy Center filed its sworn declaration on Sept. 23, extending the closure through at least Sept. 30 on safety grounds. No further order, hearing or statement of dissatisfaction from Judge Cooper was reported through Sept. 25.",
+   "graded": "2026-09-26",
+   "lesson": "For the second week running, the court deferred rather than escalated. Institutional-conflict forecasts here keep overweighting confrontation."
   },
   {
    "id": "2026-09-20-sun-5",
@@ -3482,7 +3530,10 @@
    "horizon": "2026-09-25",
    "probability": "55-65%",
    "basis": "The 10-year has held above 5% since the Sept. 16 hawkish hike and dot-plot repricing, with 16 of 18 FOMC officials projecting a further 2026 move; a soft flash-PMI or durable-goods surprise is the clearest path back below.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The 10-year par yield closed Friday, Sept. 25 at 5.17% (Treasury), after touching 5.18% Thursday.",
+   "graded": "2026-09-26",
+   "lesson": "The rate call held, but mostly because the data ran hotter than the forecast's own base case assumed; the right answer arrived for a partly different reason."
   },
   {
    "id": "2026-09-21-am-1",
@@ -3492,7 +3543,10 @@
    "horizon": "2026-09-24",
    "probability": "15-25%",
    "basis": "Beijing has explicitly warned it could cancel or curtail the visit over the package, weighed against Trump's own 'not made a decision' framing and the strong incentive on both sides to hold the summit.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Trump did not sign the $14B Taiwan package before the summit, and the summit went ahead as planned.",
+   "graded": "2026-09-26",
+   "lesson": "A 15-25% probability on a combined 'sign and retaliate' outcome proved reasonably calibrated."
   },
   {
    "id": "2026-09-21-am-2",
@@ -3502,7 +3556,10 @@
    "horizon": "2026-09-22",
    "probability": "50-60%",
    "basis": "Trump already pulled back from planned strikes once this weekend and a diplomatic channel is reportedly open, weighed against Saudi Arabia's own campaign continuing independently and MbS's earlier direct pressure for US action.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The US stand-down held through Tuesday, Sept. 22. Houthi media reported a coalition strike in Taiz on Sept. 22, unconfirmed by Saudi Arabia, so the 'no allied strike' half cannot be cleanly scored.",
+   "graded": "2026-09-26",
+   "lesson": "Bundling US restraint with coalition restraint made this forecast hard to grade. Keep the actors separate."
   },
   {
    "id": "2026-09-21-am-3",
@@ -3532,7 +3589,10 @@
    "horizon": "2026-09-25",
    "probability": "15-25%",
    "basis": "China has repeatedly and explicitly warned the package could derail the visit; Trump has reportedly signaled a preference to delay signing as leverage rather than force the issue, weighed against both sides' evident interest in the meeting proceeding.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "Xi's Sept. 23-25 visit went ahead in full, but ended with no joint statement; the Taiwan arms package remained undecided.",
+   "graded": "2026-09-26",
+   "lesson": "The 'no joint statement' clause did the work here. Chinese state visits often end without one, so the clause set the bar low; future forecasts should separate 'no joint statement' from genuine disruption."
   },
   {
    "id": "2026-09-22-am-3",
@@ -3542,7 +3602,10 @@
    "horizon": "2026-09-22",
    "probability": "10-20%",
    "basis": "Both sides escalated with strikes hours before the meeting; comparable high-profile sit-downs this year have produced statements of intent rather than binding steps.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "The Trump-Zelensky meeting produced an agreement to pursue a reciprocal energy-strike truce with technical talks to follow, but no binding or dated step. Both sides kept striking energy targets all week.",
+   "graded": "2026-09-26",
+   "lesson": "At 10-20% this call was well calibrated: statements of intent again, not binding steps."
   },
   {
    "id": "2026-09-23-am-1",
@@ -3562,7 +3625,10 @@
    "horizon": "2026-09-25",
    "probability": "20-35%",
    "basis": "China's foreign ministry has used explicit 'resolutely opposes' language and press reports (disputed by a senior US official) raised a cancellation threat; weighed against both governments' evident interest in the visit proceeding and Trump's own record of approving Taiwan sales without derailing prior China engagement.",
-   "status": "open"
+   "status": "partial",
+   "outcome": "The summit ended with no joint statement, one of the listed triggers. But there was no public rupture or early departure, and a trade-truce extension and an AI-incident channel were agreed.",
+   "graded": "2026-09-26",
+   "lesson": "The forecast's own definition was met on a technicality while the substance ('materially disrupted') did not happen. Do not fold routine outcomes into a disruption forecast."
   },
   {
    "id": "2026-09-23-am-3",
@@ -3602,7 +3668,10 @@
    "horizon": "2026-09-24",
    "probability": "20-30%",
    "basis": "Wednesday's 5-year auction was the weakest by bid-to-cover since Dec 2018 with a 3.1bp tail and the lowest indirect share since March 2020; this week's full 2Y/5Y/7Y note slate is a genuine demand test one week after the 10-year pushed above 5% for the first time since 2007. Weighed against the 7-year tenor typically drawing steadier demand than the 5-year, and no confirmed evidence yet that Wednesday's weakness reflects a durable shift in buyer behavior rather than a one-off.",
-   "status": "open"
+   "status": "correct",
+   "outcome": "The 7-year auction ($44B, Sept. 24) priced at 5.085%, the highest since 1993, with a tail of about 0.7bp and an indirect share of about 57% against roughly 61% at the prior sale (TreasuryDirect; press).",
+   "graded": "2026-09-26",
+   "lesson": "At 20-30% this was underweighted: after a 3.1bp tail at the 5-year, soft demand at the 7-year was the more likely outcome, not the less."
   },
   {
    "id": "2026-09-24-am-2",
@@ -3612,7 +3681,10 @@
    "horizon": "2026-09-24",
    "probability": "25-35%",
    "basis": "At least one analyst (Oppenheimer's Rupesh Parikh) has already flagged downside risk to core-business earnings once the prior quarter's one-time tariff-refund benefit is stripped out; consensus EPS already diverges by vendor ($6.48-$6.67), suggesting genuine uncertainty about the clean comparison rather than a settled view.",
-   "status": "open"
+   "status": "wrong",
+   "outcome": "Excluding the one-time $0.15 tariff-refund benefit, Costco's EPS of roughly $6.60 still beat the ~$6.52 consensus. Gross margin fell 11bp year over year (32bp on a core-on-core basis, per call summaries), a softness but not a miss.",
+   "graded": "2026-09-26",
+   "lesson": "The skeptical analyst view was right about margins but wrong about the bottom line."
   },
   {
    "id": "2026-09-25-am-1",

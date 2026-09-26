@@ -1,11 +1,97 @@
 {
  "stories": [
   {
+   "id": "duquesne-light-ibew-contract-sep30",
+   "headline": "Duquesne Light-IBEW Local 29 contract expires Sept 30 with no deal reported",
+   "status": "Continuing",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-26-sat",
+   "verification": "Confirmed-multiple",
+   "one_line": "Members voted 592-14 to authorize a strike; no 2026 tentative agreement found as of Sept 26 (beware 2023 'deal' stories in search). Company has contingency crews.",
+   "score_note": "Local utility reliability; open forecast graded Sept 30.",
+   "sources": [
+    "CBS Pittsburgh",
+    "Hoodline",
+    "WPXI"
+   ],
+   "watch": true
+  },
+  {
+   "id": "taiwan-arms-package-decision",
+   "headline": "Trump to decide $14B Taiwan arms package 'in a fairly short time' after Xi visit",
+   "status": "Continuing",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-26-sat",
+   "verification": "Confirmed-multiple",
+   "one_line": "Post-summit, package still unsigned; bipartisan senators urge proceeding; Beijing calls it a red line. Open forecast: decision within two weeks (40-55%).",
+   "score_note": "Market-relevant for China-exposed and chip names; tests the truce.",
+   "sources": [
+    "White House officials via wire",
+    "Taipei Times",
+    "Xinhua"
+   ],
+   "watch": true
+  },
+  {
+   "id": "scotus-missouri-map-save-sep25",
+   "headline": "Supreme Court blocks Missouri's 2025 map a third time; stays ruling to let states use DHS SAVE on voter rolls",
+   "status": "Resolved",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-26-sat",
+   "verification": "Confirmed-primary (Court orders)",
+   "one_line": "Unsigned order Fri evening keeps Missouri on 2022 lines for Nov 3; separately 6-3 stay (Jackson, Sotomayor, Kagan dissenting) lets DHS's SSA-linked SAVE database be used for voter-roll citizenship checks.",
+   "score_note": "Ends Missouri map fight for this cycle.",
+   "sources": [
+    "Washington Post",
+    "Roll Call",
+    "Missouri Independent",
+    "NPR",
+    "CNN",
+    "Votebeat"
+   ],
+   "watch": false
+  },
+  {
+   "id": "houthi-khamis-mushait-riyadh-sep26",
+   "headline": "Houthi missiles and drones at Khamis Mushait and Riyadh intercepted after Saudi-Turkey-Pakistan military chiefs meet",
+   "status": "New",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-26-sat",
+   "verification": "Confirmed-multiple (coalition statement, AP)",
+   "one_line": "Coalition says it intercepted 2 ballistic missiles toward Khamis Mushait and 2 drones toward Riyadh early Sept 26; no damage reported. GCC: 'grave escalation.' Came hours after Saudi, Turkish and Pakistani military chiefs met in Riyadh under the Aug 7 Mecca Joint Defence Agreement.",
+   "score_note": "Watch for Pakistan/Turkey entry into the Yemen war.",
+   "sources": [
+    "AP",
+    "Euronews",
+    "Haaretz",
+    "Arab News",
+    "Al Jazeera"
+   ],
+   "watch": true
+  },
+  {
+   "id": "iran-7day-hormuz-offer-rejected-sep26",
+   "headline": "Iran offers to reopen Hormuz in 7 days; WSJ reports Trump rejected it and plans strikes after midterms",
+   "status": "New",
+   "first_seen": "2026-09-26-sat",
+   "last_updated": "2026-09-26-sat",
+   "verification": "Offer: Confirmed-primary (Araghchi public remarks). Rejection/post-midterm plan: Single-reliable-source (WSJ unnamed officials, relayed widely); no White House comment.",
+   "one_line": "Araghchi said Fri night Iran sent via mediators (reportedly to Witkoff) a plan: reopen Hormuz and resume nuclear talks within 7 days if the US lifts its port blockade, waives oil sanctions and observes a ceasefire incl. Lebanon. WSJ: Trump rejected it, expects to resume bombing after Nov 3 midterms, scale undecided.",
+   "score_note": "Answers the open 'big decision' question if accurate; ties oil/Hormuz to the political calendar.",
+   "sources": [
+    "WSJ via Bloomberg/CNBC/CBS",
+    "Al Jazeera",
+    "Euronews",
+    "AP"
+   ],
+   "watch": true
+  },
+  {
    "id": "pittsburgh-da-charges-sep25",
    "headline": "Pittsburgh DA Zappala: \"People will be charged\" in Gainey-era corruption probe",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-09-25-pm",
-   "last_updated": "2026-09-25-pm",
+   "last_updated": "2026-09-26-sat",
    "verification": "Confirmed-primary (on-record quote); no charges filed -- Confirmed-multiple",
    "one_line": "In a WESA report published today, DA Stephen Zappala said \"We have charges, yes\" and \"People will be charged\" -- his first public statement since the nine-page warrant affidavit was unsealed alleging Gainey-administration officials steered roughly $2M in \"Stop the Violence\" grants and other no-bid contracts to campaign-supporting organizations (SEIU, Working Families Party), and that the city's no-bid contract rate roughly doubled under his administration. Councilman Khari Mosley, named in the affidavit, continues to deny any connection, calling the probe \"a witch hunt.\" No charges have actually been filed. This is a real escalation in tone from Zappala's earlier \"I expect criminal charges to be filed\" -- the legal stage itself (allegation, under investigation) has not formally advanced.",
    "score_note": "First unambiguous on-record commitment from the DA that charges are coming, in a probe touching a recent former mayor's administration.",
@@ -63,11 +149,11 @@
   {
    "id": "prt-bus-order-vote-sep25",
    "headline": "Pittsburgh Regional Transit's board votes today on a $94.1 million, 102-bus order",
-   "status": "Continuing",
+   "status": "Unconfirmed",
    "first_seen": "2026-09-25-am",
-   "last_updated": "2026-09-25-pm",
+   "last_updated": "2026-09-26-sat",
    "verification": "Confirmed-primary (board agenda); outcome unconfirmed",
-   "one_line": "PRT's board is scheduled to vote today on a $94.1 million purchase of 102 New Flyer buses (56 sixty-foot diesel, 6 sixty-foot electric, 40 thirty-five-foot diesel) to replace vehicles at least 12 years old or with 500,000+ miles, funded mostly by federal ($77M) and state ($16.6M) dollars under PRT's existing 2022 master contract. If approved, buses enter service next summer. Vote outcome not available as of this edition. Update (Sept 25 pm): no outlet had reported the vote's outcome as of this edition's publication -- genuinely unresolved, not a coverage gap; worth a direct check next run.",
+   "one_line": "PRT board vote on $94.1M, 102-bus New Flyer order was scheduled Sept 25; no outcome reported as of Sat Sept 26 morning.",
    "score_note": "Concrete, dated local infrastructure decision with a specific dollar figure and timeline.",
    "sources": [
     "Pittsburgh Regional Transit board agenda (primary)",
@@ -95,16 +181,16 @@
   {
    "id": "costco-q4-earnings-sep24",
    "headline": "Costco's Q4 beats estimates but leans on the same tariff-refund boost flagged as a risk",
-   "status": "Materially changed",
+   "status": "Resolved",
    "first_seen": "2026-09-24-pm",
-   "last_updated": "2026-09-25-pm",
+   "last_updated": "2026-09-26-sat",
    "verification": "Confirmed-primary",
    "one_line": "Costco's own 8-K (filed 4:17pm ET) shows Q4 diluted EPS of $6.75 (vs $5.87 a year ago), beating both vendor consensus estimates ($6.48/$6.67) that had diverged; net sales $93.9B (+11.2% y/y) landed just under the ~$94.9B analyst consensus even as comparable sales rose 9.4% total company (6.7% ex-gas/FX) across every region. The company's own release attributes $0.15/share of the EPS beat to a non-recurring IEEPA tariff-refund benefit, 'less partial reinvestment of those refunds in increased member values' -- the same dynamic Oppenheimer's Rupesh Parikh flagged as a risk to reading the underlying business off the headline number ahead of this report. No after-hours share reaction was available by publication; earnings call 2pm PT. Update (Sept 25 am): Costco's own materials say the IEEPA tariff-refund dynamic will keep affecting quarterly comparisons into fiscal 2027, and the company has committed to disclosing the net impact every quarter going forward. Analyst reaction was incremental: Truist to $909 from $873 (Hold), BMO to $980 from $950 (Outperform), DA Davidson to $880 from $780 (Neutral). No reliable Friday premarket quote obtained this run. Update (Sept 25 pm): COST closed $922.77, +2.93%, recovering from an early Friday dip. New headwind surfaced in Friday coverage: a roughly $152M charge to the electronics business tied to memory-chip price inflation. Analyst targets were mixed despite the rally -- Bernstein trimmed to $1,143 from $1,144 (Outperform), Mizuho cut to $1,065 from $1,100 (Outperform); consensus average roughly $1,073-1,089.",
    "score_note": "Primary-source earnings landing same-session, with a genuine one-time-benefit caveat worth tracking into next quarter.",
    "sources": [
     "Costco Wholesale Corp. 8-K, Exhibit 99.1 (primary, SEC EDGAR)"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "anthropic-ipo-november-sep24",
@@ -143,11 +229,11 @@
   {
    "id": "yield-spike-pmi-auction-sep23",
    "headline": "10-year Treasury yield hits highest since 2007 as hot PMI, hawkish Barr and a weak 5-year auction combine",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-09-23-pm",
-   "last_updated": "2026-09-25-pm",
+   "last_updated": "2026-09-26-sat",
    "verification": "Confirmed-primary (PMI release, Fed speech text, Treasury auction results)",
-   "one_line": "S&P Global's flash September composite PMI jumped to 58.4 from 56.0 (manufacturing 57.0, services 58.7), the fastest growth in five-plus years with intensifying price pressure. Fed Governor Michael Barr said further hikes are 'likely to be needed.' The Treasury's $70B five-year note auction priced at 5.033% with a 2.212 bid-to-cover (weakest since Dec 2018) and a 3.1bp tail (one of the largest on record for the tenor), indirects at 54.3% (lowest since March 2020). The 10-year yield closed at 5.11% on the official par curve (intraday reports as high as 5.135%), highest since July 2007 and the biggest one-day move since April 2025. S&P 500 -0.75%, Nasdaq -1.13%, Dow -0.68%; small caps and rate-sensitive sectors led the decline. Oil (USO +3.30%) moved opposite the rest of the risk-off tape, unexplained. Update (Sept 24 am): NY Fed President John Williams said Wednesday it would be 'reasonable' to expect another rate hike by year-end, calling it 'likely' appropriate but stopping short of committing to an October move -- the second Fed official in 48 hours (after Governor Barr) to flag further tightening. Premarket futures pointed lower again Thursday (ES -0.61%, NQ -1.08%, YM -0.33%, RTY -0.47% vs Wednesday's settle), oil (CL=F) added another 1.1%, and gold fell for a second session (GC=F -0.84%) with the 10-year TIPS yield (DFII10) holding near 2.63%. Cboe's delayed-quote feed has not posted a fresh VIX settlement in two consecutive sessions (still showing Tuesday's 14.21) -- flagged as a data-feed lag, not a reported calm reading. Update (Sept 24 pm): the Treasury's $44B seven-year note auction priced at a 5.085% high yield, the highest for the tenor since April 1993, with a 2.42 bid-to-cover (down from ~2.50 prior) and indirect bidders taking 57.2% of the competitive award (down from ~61%) -- a second soft auction in three days. The 10-year par yield rose a further 7bp to 5.18%. Equities closed essentially flat (S&P -0.02%, Nasdaq +0.01%, Dow -0.31%) despite the continued rate pressure. Update (Sept 25 am): a fourth consecutive session of higher long yields -- 10-year closed 5.18% (+7bp), 30-year 5.47% (+7bp), 2s10s +31bp. TLT and IEF both closed Thursday at fresh 52-week lows; LQD and HYG closed within cents of theirs. NY Fed's Williams, speaking in London, called another hike \"reasonable\" by year-end, the second Fed voice after Barr. No Treasury auction scheduled Friday. Update (Sept 25 pm): a genuine curve twist, not a continued uniform rise -- the 2-year fell 6bp to 4.81%, 5-year -5bp to 4.98%, 10-year -1bp to 5.17%, while the 20-year (+1bp to 5.54%) and 30-year (+2bp to 5.49%) both hit fresh multi-decade highs. 2s10s widened to +36bp from Thursday's +31bp. No auction or Fed speaker today to explain the long end's continued rise -- stocks nonetheless closed higher across the board (S&P +0.51%, Dow +0.93%).",
+   "one_line": "Week: 10Y +16bp to 5.17% (5.18% Thu, highest since 2007), 30Y 5.49%, 20Y 5.54%; move entirely in real yields (DFII10 2.68->2.85, T10YIE ~flat). Weak 5Y auction (2.21 cover, 3.1bp tail), 7Y at highest yield since 1993. Oct 27-28 hike odds ~70-78% per secondary trackers.",
    "score_note": "First session since the Sept 16 hawkish hike where hard data, a Fed governor and an actual Treasury auction all confirmed the same hawkish direction at once.",
    "sources": [
     "S&P Global PMI release (primary)",
@@ -208,9 +294,9 @@
    "headline": "Xi arrives in Washington today, first visit in over a decade, as China presses Trump on Taiwan arms",
    "status": "Resolved",
    "first_seen": "2026-09-23-am",
-   "last_updated": "2026-09-25-pm",
+   "last_updated": "2026-09-26-sat",
    "verification": "Confirmed-multiple on the visit/itinerary; Disputed on a reported cancellation threat over the Taiwan arms package",
-   "one_line": "Xi's three-day state visit (his first to Washington since 2015) opens today with arrival at Joint Base Andrews ~4pm ET; Rose Garden ceremony and state dinner Thursday, National Archives Friday. Reuters: Xi expected to press Trump to freeze a pending $14B Taiwan arms package citing the 1982 US-China communique; China's MFA calls adherence to the three communiques a 'necessary precondition.' A White House official says Trump will decide on the package 'in a fairly short time' and has approved more Taiwan sales this term than the prior administration's full four years. A separate report of a Chinese threat to cancel the summit was disputed by a senior US official. Timed two days ahead, Alibaba unveiled the 'Zhenwu V900' chip (claimed 3x its predecessor's performance) plus plans for a 5-10 trillion-parameter model, framed by Bloomberg/SCMP as a self-sufficiency signal ahead of the summit. Update (Sept 23 pm): Xi's plane landed at Joint Base Andrews this afternoon; Trump greeted him personally on the tarmac, a gesture outlets describe as rare. The three-day visit has formally opened; Thursday brings the main bilateral meeting, Rose Garden ceremony and state dinner. Nothing new reported on the Taiwan arms package specifically. Taiwan itself said today it remains confident US arms sales will continue. Update (Sept 24 am): Treasury Secretary Bessent announced overnight that the US and China agreed to extend their trade truce (previously set to expire Nov 10) through January 10, 2027, following an unscheduled Bessent-He Lifeng meeting; the two sides also agreed to set up a communications channel for AI-safety incidents. Today's schedule brings the main event of the visit: a South Lawn arrival ceremony, the bilateral meeting itself, and an evening state dinner with tech executives reportedly invited (Bezos, Pichai, Altman, Cook, Musk, Huang). The $14B Taiwan arms package remains unresolved; Xi is expected to press Trump on it today, but no outcome exists yet as of this edition's publication -- any claimed resolution should be treated as unverified until a joint readout is issued. Alibaba's Sept 22 unveiling of its 'Zhenwu V900' AI chip is being read by analysts (CNBC, Tom's Hardware) as a timed message of Chinese self-sufficiency ahead of today's meeting; BABA shares rose roughly 4% in US trading and 5.1% in Hong Kong on the announcement. Update (Sept 24 pm): the Rose Garden ceremony and bilateral meeting took place this afternoon as scheduled, running a little over an hour; Xinhua's own readout says Xi urged the US to oppose 'Taiwan independence,' and no joint written statement was issued. Treasury Secretary Bessent confirmed on the record the trade-truce extension to Jan 10, 2027 reported overnight. The $14B Taiwan arms package remains undecided; a senior official said Trump would decide 'in a fairly short time.' Tonight's state dinner falls after this edition's publication. Update (Sept 25 am): the summit closed Thursday afternoon without a joint statement -- each government issued its own separate readout. China's MFA framed the visit as leaving \"greater scope for cooperation,\" emphasizing AI. A senior US official said Trump would decide the Taiwan package \"in a fairly short time\"; no decision made as of Friday morning. Taiwan's Defense Ministry said it still expects the package to \"proceed as planned.\" Congress split along predictable lines reacting to the summit (Meeks, McCaul, Fitzpatrick). Update (Sept 25 pm): the three-day visit closed today -- tea with the Trumps in the Red Room, a National Archives tour, then departure from Joint Base Andrews this afternoon. Still no Taiwan-arms decision; a senior official repeated Thursday's \"fairly short time\" language. A bipartisan Senate letter (McConnell, Cornyn, Murkowski, Tillis) urging the sale continued to draw coverage. Marking Resolved as the visit itself has concluded; the arms-package decision remains a live thread to watch separately.",
+   "one_line": "Summit ended Sept 25 with no joint statement; truce extended to Jan 10, 2027 (Bessent on record); AI-incident channel agreed; Beijing lists an eight-point consensus incl. ~$30B reciprocal tariff cut not confirmed by the White House. $14B Taiwan arms package still undecided -- keep watching for that decision.",
    "score_note": "First Xi visit to Washington in 11 years, opening under an explicit Chinese arms-sales objection and a timed AI-hardware show of strength.",
    "sources": [
     "China MFA statements (primary)",
@@ -225,9 +311,9 @@
   {
    "id": "f5-bigip-zeroday-sep23",
    "headline": "Critical F5 BIG-IP zero-day added to CISA's exploited-vulnerabilities catalog, Friday deadline",
-   "status": "Materially changed",
+   "status": "Continuing",
    "first_seen": "2026-09-23-am",
-   "last_updated": "2026-09-25-pm",
+   "last_updated": "2026-09-26-sat",
    "verification": "Confirmed-multiple",
    "one_line": "CVE-2026-94127 (CVSS 9.8), a heap-based buffer overflow in BIG-IP Access Policy Manager enabling unauthenticated RCE when APM is configured as an OAuth authorization server, was disclosed and hotfixed by F5 on Sept 22; CISA added it to its KEV catalog the same day with a Sept 25 federal remediation deadline, alongside three lower-profile additions (two Check Point flaws, one Arista VeloCloud Orchestrator bug). Affects BIG-IP APM 21.1.0 and 17.1.x-17.5.x. Update (Sept 25 am): today, Sept 25, is CISA's federal civilian remediation deadline. Shadowserver's internet-wide scan counts more than 14,700 internet-facing IP addresses carrying a BIG-IP APM fingerprint, a rough exposure measure, not a compromise count. No new confirmed exploitation or breach disclosure tied to this CVE since Tuesday. Update (Sept 25 pm): the federal remediation deadline passed today; no compliance-rate data found. The 14,700+ Shadowserver exposure count is the latest available figure, not a post-deadline recount -- an exposed instance past the deadline is still exposed, not necessarily still unpatched by the deadline.",
    "score_note": "Zero gap between disclosure and confirmed active exploitation on network-perimeter infrastructure.",
@@ -237,7 +323,7 @@
     "SecurityWeek",
     "The Hacker News"
    ],
-   "watch": true
+   "watch": false
   },
   {
    "id": "greenland-denmark-arctic-pact-sep22",

@@ -1,6 +1,24 @@
 {
  "corrections": [
   {
+   "found": "2026-09-26",
+   "report": "reports/2026/09/2026-09-25-pm.html",
+   "original": "Microsoft rose 3.66% to $516.17, 'extending a rally that has carried the stock roughly 32% higher over the past month on continued Azure and Copilot strength.'",
+   "corrected": "Microsoft's one-month gain was about 5%, from $496.37 (Aug. 26 close) to $516.17 (Sept. 25), per Yahoo Finance's daily close series; the week's gain was 4.5%. The ~32% one-month figure belongs to Meta and AMD, not Microsoft.",
+   "error_source": "An unverified figure from secondary market coverage was printed without checking it against the paper's own price series.",
+   "conclusions_changed": false,
+   "note": "Found in the Sept. 26 Weekly Review's price check. Friday's point that Microsoft led the board higher stands; only the size of the monthly rally was wrong. Stated in the Sept. 26 colophon."
+  },
+  {
+   "found": "2026-09-26",
+   "report": "reports/2026/09/2026-09-18-pm.html and 2026-09-20-sun.html",
+   "original": "SOFR 'jumped 23bp to 3.85% on Sept. 17 with no confirmed cause' — flagged as possibly quarter-end-adjacent funding pressure, and used as the basis of an open forecast that overnight funding rates would stay elevated through month-end on repo pressure.",
+   "corrected": "The jump had a confirmed cause: the Fed's 25bp hike to 3.75-4.00%, announced Sept. 16 and effective Sept. 17. The effective fed funds rate moved from 3.63% to 3.88% the same day (FRED DFF), and SOFR moved with it. SOFR has since drifted from 3.85% to 3.88% (Sept. 24), in line with policy rather than showing a funding squeeze.",
+   "error_source": "The move was compared with the prior SOFR prints without checking it against the policy-rate change that took effect that day.",
+   "conclusions_changed": true,
+   "note": "Found while pulling FRED DFF and SOFR for the Sept. 26 Weekly Review. The open forecast 2026-09-18-pm-3 (horizon Sept. 30) rests on this mistaken premise. It stays open and will be graded on its literal terms, with the flawed basis noted. Stated in the Sept. 26 Weekly Review's colophon and scorecard."
+  },
+  {
    "found": "2026-09-25",
    "report": "reports/2026/09/2026-09-24-pm.html and 2026-09-25-am.html",
    "original": "Neither Thursday's Closing Brief nor this morning's edition covered Akamai's $11.6 billion, seven-year cloud-computing agreement with Anthropic (expandable to roughly $20 billion), announced via Akamai's own press release and an SEC 8-K with a 5:30 PM ET investor call Thursday evening -- before Thursday's Closing Brief published.",

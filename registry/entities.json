@@ -133,8 +133,8 @@
    "valuation_date": null,
    "ipo_preparation": "Confidential S-1 filing reported 2026-06-08 (targeted Q3/Q4 2026 at a valuation near $1T) — now reportedly weighing a delay into 2027 following SpaceX's public debut, per press reports 2026-07-24/26. Press-reported only, NOT confirmed on public EDGAR.",
    "recheck_trigger": "EDGAR weekly sweep",
-   "last_verified": "2026-09-19",
-   "source": "Press reports (TechCrunch, Barchart, IndMoney; confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15 as the ongoing comparable metric (an exact-phrase full-legal-name query was tried once and rejected as non-comparable). Sweep 2026-08-15: 87 hits, no self-filing. Sweep 2026-08-22: 87 hits (unchanged), no self-filing -- top hits remain other issuers' S-1/A filings (Cerebras Systems, CoreWeave) referencing OpenAI, not OpenAI itself. 87 hits (unchanged), no self-filing. Sweep 2026-09-05: 89 hits (+2 vs last week), no self-filing -- two new hits, both other issuers' filings referencing OpenAI as a third party, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 89 hits (unchanged), no self-filing -- top hits Cerebras Systems, SB Energy and CoreWeave S-1/As, all third-party references."
+   "last_verified": "2026-09-26",
+   "source": "Press reports (TechCrunch, Barchart, IndMoney; confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15 as the ongoing comparable metric (an exact-phrase full-legal-name query was tried once and rejected as non-comparable). Sweep 2026-08-15: 87 hits, no self-filing. Sweep 2026-08-22: 87 hits (unchanged), no self-filing -- top hits remain other issuers' S-1/A filings (Cerebras Systems, CoreWeave) referencing OpenAI, not OpenAI itself. 87 hits (unchanged), no self-filing. Sweep 2026-09-05: 89 hits (+2 vs last week), no self-filing -- two new hits, both other issuers' filings referencing OpenAI as a third party, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 89 hits (unchanged), no self-filing -- top hits Cerebras Systems, SB Energy and CoreWeave S-1/As, all third-party references. Sweep 2026-09-26 (window Sept 18-26): 5 hits, all other issuers' S-1/A filings (SB Energy, Oura) referencing OpenAI; no self-filing."
   },
   {
    "official_name": "Anthropic, PBC",
@@ -145,8 +145,8 @@
    "valuation_date": "2026-05-28",
    "ipo_preparation": "Confidential S-1 filing reported ~2026-06-01. Press reports (Calcalist/Ctech, Forbes, the-decoder, BigGo Finance, 2026-09-24) now describe investor marketing slipping to mid-October with a listing targeted for November 2026 (a month later than the October target reported in July), reportedly to post Q3 results first; reported terms up to a $2T valuation and $100B raised. Press-reported only, NOT confirmed on public EDGAR; no Anthropic on-the-record confirmation or denial found.",
    "recheck_trigger": "EDGAR weekly sweep",
-   "last_verified": "2026-09-19",
-   "source": "Series H round and IPO-timing per company/press reports (CNBC 2026-07-15); filing per press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 30 hits, no self-filing. Sweep 2026-08-22: 30 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (SpaceX, Cerebras Systems, Tailwind 2.0 Acquisition) referencing Anthropic, not Anthropic itself. 30 hits (unchanged), no self-filing. Sweep 2026-09-05: 30 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 30 hits (unchanged), no self-filing -- press reports continue to cite a possible October 2026 Nasdaq listing target, not yet reflected on public EDGAR; watching closely given the reported timing."
+   "last_verified": "2026-09-26",
+   "source": "Series H round and IPO-timing per company/press reports (CNBC 2026-07-15); filing per press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 30 hits, no self-filing. Sweep 2026-08-22: 30 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (SpaceX, Cerebras Systems, Tailwind 2.0 Acquisition) referencing Anthropic, not Anthropic itself. 30 hits (unchanged), no self-filing. Sweep 2026-09-05: 30 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 30 hits (unchanged), no self-filing -- press reports continue to cite a possible October 2026 Nasdaq listing target, not yet reflected on public EDGAR; watching closely given the reported timing. Sweep 2026-09-26 (window Sept 18-26): 1 hit (Oura S-1/A referencing Anthropic); no self-filing. Press (The Information via TechCrunch, 2026-09-25) reports a proposal giving the seven co-founders 50.1% combined voting control ahead of a reported late-October/November listing; Akamai 8-K (2026-09-25) discloses an $11.6B seven-year cloud agreement with Anthropic. Neither changes public status."
   },
   {
    "official_name": "Stripe, Inc.",
@@ -155,8 +155,8 @@
    "industry": "Payments / fintech",
    "valuation": "$159B (employee tender offer)",
    "valuation_date": "2026-02",
-   "last_verified": "2026-09-19",
-   "source": "Press reports on February 2026 tender offer. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 510 hits, no self-filing. Sweep 2026-08-22: 510 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (FullPAC, Celebiddy) referencing Stripe's payment platform, not Stripe itself. 511 hits (+1 vs last week), no self-filing -- the new hit is FullPAC, Inc.'s S-1/A filed 2026-08-27, a third-party filer referencing Stripe's payments platform, not a Stripe filing. Sweep 2026-09-05: 511 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 512 hits (+1 vs last week), no self-filing -- the new hit is FullPAC, Inc.'s S-1/A filed 2026-09-18, the same recurring third-party filer as the 2026-08-27 bump, again referencing Stripe's payments platform. Stripe remains private; co-founder on record saying 'no rush' to IPO."
+   "last_verified": "2026-09-26",
+   "source": "Press reports on February 2026 tender offer. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 510 hits, no self-filing. Sweep 2026-08-22: 510 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (FullPAC, Celebiddy) referencing Stripe's payment platform, not Stripe itself. 511 hits (+1 vs last week), no self-filing -- the new hit is FullPAC, Inc.'s S-1/A filed 2026-08-27, a third-party filer referencing Stripe's payments platform, not a Stripe filing. Sweep 2026-09-05: 511 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 512 hits (+1 vs last week), no self-filing -- the new hit is FullPAC, Inc.'s S-1/A filed 2026-09-18, the same recurring third-party filer as the 2026-08-27 bump, again referencing Stripe's payments platform. Stripe remains private; co-founder on record saying 'no rush' to IPO. Sweep 2026-09-26 (window Sept 18-26): 1 hit (FullPAC S-1/A referencing Stripe); no self-filing."
   },
   {
    "official_name": "Databricks, Inc.",
@@ -166,8 +166,8 @@
    "valuation": null,
    "valuation_date": null,
    "ipo_preparation": "CEO publicly ruled out a 2026 listing",
-   "last_verified": "2026-09-19",
-   "source": "Press reports of CEO statements. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 21 hits, no self-filing. Sweep 2026-08-22: 21 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Plum Acquisition, Informatica, Aurora Acquisition, Mobiquity) referencing Databricks, not Databricks itself. 21 hits (unchanged), no self-filing. Sweep 2026-09-05: 22 hits (+1 vs last week), no self-filing -- one new third-party reference, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 22 hits (unchanged), no self-filing."
+   "last_verified": "2026-09-26",
+   "source": "Press reports of CEO statements. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 21 hits, no self-filing. Sweep 2026-08-22: 21 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Plum Acquisition, Informatica, Aurora Acquisition, Mobiquity) referencing Databricks, not Databricks itself. 21 hits (unchanged), no self-filing. Sweep 2026-09-05: 22 hits (+1 vs last week), no self-filing -- one new third-party reference, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 22 hits (unchanged), no self-filing. Sweep 2026-09-26 (window Sept 18-26): 0 hits; no self-filing."
   },
   {
    "official_name": "Anduril Industries, Inc.",
@@ -176,8 +176,8 @@
    "industry": "Defense technology",
    "valuation": "~$61B (Series H)",
    "valuation_date": "2026-05",
-   "last_verified": "2026-09-19",
-   "source": "Press reports on May 2026 Series H. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 33 hits, no self-filing. Sweep 2026-08-22: 33 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Health Assurance Acquisition, Revolution Healthcare Acquisition, RMG Acquisition II/V) referencing Anduril, not Anduril itself. 34 hits (+1 vs last week), no self-filing -- the new hit is Starfighters Space, Inc. (ticker FJET) S-1/A filed 2026-08-26, referencing Anduril as a third party, not an Anduril filing. Sweep 2026-09-05: 35 hits (+1 vs last week), no self-filing -- one new third-party reference, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 35 hits (unchanged), no self-filing."
+   "last_verified": "2026-09-26",
+   "source": "Press reports on May 2026 Series H. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 33 hits, no self-filing. Sweep 2026-08-22: 33 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Health Assurance Acquisition, Revolution Healthcare Acquisition, RMG Acquisition II/V) referencing Anduril, not Anduril itself. 34 hits (+1 vs last week), no self-filing -- the new hit is Starfighters Space, Inc. (ticker FJET) S-1/A filed 2026-08-26, referencing Anduril as a third party, not an Anduril filing. Sweep 2026-09-05: 35 hits (+1 vs last week), no self-filing -- one new third-party reference, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 35 hits (unchanged), no self-filing. Sweep 2026-09-26 (window Sept 18-26): 0 hits; no self-filing."
   },
   {
    "official_name": "Canva Pty Ltd",
@@ -187,8 +187,8 @@
    "valuation": "~$66B (secondary-market marks)",
    "valuation_date": "2026",
    "ipo_preparation": "2027 listing target per press reports",
-   "last_verified": "2026-09-19",
-   "source": "Press reports / secondary-market marks. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 14 hits, no self-filing. Sweep 2026-08-22: 17 hits (+3 vs last week), no self-filing -- increase traced to two new S-1/A filings by SharonAI Holdings Inc. (CIK 0002068385, filed 2026-08-18 and 2026-08-20) that reference Canva as a third-party product/competitor; Canva itself has not filed. Not a self-filing signal; flagged only as the source of the count movement. 17 hits (unchanged), no self-filing. Sweep 2026-09-05: 17 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 17 hits (unchanged), no self-filing."
+   "last_verified": "2026-09-26",
+   "source": "Press reports / secondary-market marks. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 14 hits, no self-filing. Sweep 2026-08-22: 17 hits (+3 vs last week), no self-filing -- increase traced to two new S-1/A filings by SharonAI Holdings Inc. (CIK 0002068385, filed 2026-08-18 and 2026-08-20) that reference Canva as a third-party product/competitor; Canva itself has not filed. Not a self-filing signal; flagged only as the source of the count movement. 17 hits (unchanged), no self-filing. Sweep 2026-09-05: 17 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 17 hits (unchanged), no self-filing. Sweep 2026-09-26 (window Sept 18-26): 0 hits; no self-filing."
   },
   {
    "official_name": "Discord Inc.",
@@ -199,8 +199,8 @@
    "valuation_date": null,
    "ipo_preparation": "Confidential filing reported; process delayed — press-reported only, NOT confirmed on public EDGAR",
    "recheck_trigger": "EDGAR weekly sweep",
-   "last_verified": "2026-09-19",
-   "source": "Press reports (confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 163 hits, no self-filing. Sweep 2026-08-22: 163 hits (unchanged), no self-filing -- top hits remain Asset Entities Inc. S-1/A filings referencing Discord, not Discord itself. 163 hits (unchanged), no self-filing. Sweep 2026-09-05: 163 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 163 hits (unchanged), no self-filing."
+   "last_verified": "2026-09-26",
+   "source": "Press reports (confidential filing; no public EDGAR record as of last_verified). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 163 hits, no self-filing. Sweep 2026-08-22: 163 hits (unchanged), no self-filing -- top hits remain Asset Entities Inc. S-1/A filings referencing Discord, not Discord itself. 163 hits (unchanged), no self-filing. Sweep 2026-09-05: 163 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 163 hits (unchanged), no self-filing. Sweep 2026-09-26 (window Sept 18-26): 0 hits; no self-filing."
   },
   {
    "official_name": "Epic Games, Inc.",
@@ -209,8 +209,8 @@
    "industry": "Gaming & interactive software",
    "valuation": "~$15.7B-$22.5B (range of reported marks)",
    "valuation_date": "2026",
-   "last_verified": "2026-09-19",
-   "source": "Press reports / investor marks (range; no single authoritative figure). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 81 hits, no self-filing. Sweep 2026-08-22: 81 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Snail Inc., Super League Gaming) referencing Epic Games, not Epic Games itself. 81 hits (unchanged), no self-filing. Sweep 2026-09-05: 81 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 81 hits (unchanged), no self-filing."
+   "last_verified": "2026-09-26",
+   "source": "Press reports / investor marks (range; no single authoritative figure). Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 81 hits, no self-filing. Sweep 2026-08-22: 81 hits (unchanged), no self-filing -- top hits are other issuers' S-1/A filings (Snail Inc., Super League Gaming) referencing Epic Games, not Epic Games itself. 81 hits (unchanged), no self-filing. Sweep 2026-09-05: 81 hits (unchanged vs last week), no self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 81 hits (unchanged), no self-filing. Sweep 2026-09-26 (window Sept 18-26): 0 hits; no self-filing."
   },
   {
    "official_name": "Neuralink Corp.",
@@ -220,8 +220,8 @@
    "valuation": null,
    "valuation_date": null,
    "ipo_preparation": "No IPO plans",
-   "last_verified": "2026-09-19",
-   "source": "Press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 23 hits, no self-filing. Sweep 2026-08-22: 23 hits (unchanged), no self-filing -- top hits remain Cortigent Inc. S-1/A filings referencing Neuralink, not Neuralink itself. 23 hits (unchanged), no self-filing. Sweep 2026-09-05: 24 hits (+1 vs last week), no self-filing -- one new hit, ClearOne Inc. S-1 filed 2026-09-04 referencing Neuralink as a third party, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 24 hits (unchanged), no self-filing."
+   "last_verified": "2026-09-26",
+   "source": "Press reports. Bare-name query convention (efts.sec.gov, forms S-1/S-1A/8-A12B/425) adopted 2026-08-15. Sweep 2026-08-15: 23 hits, no self-filing. Sweep 2026-08-22: 23 hits (unchanged), no self-filing -- top hits remain Cortigent Inc. S-1/A filings referencing Neuralink, not Neuralink itself. 23 hits (unchanged), no self-filing. Sweep 2026-09-05: 24 hits (+1 vs last week), no self-filing -- one new hit, ClearOne Inc. S-1 filed 2026-09-04 referencing Neuralink as a third party, not a self-filing. Sweep 2026-09-12: hit count unchanged vs last week, no self-filing. Sweep 2026-09-19: 24 hits (unchanged), no self-filing. Sweep 2026-09-26 (window Sept 18-26): 0 hits; no self-filing."
   }
  ]
 }
