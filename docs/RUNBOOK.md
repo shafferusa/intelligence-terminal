@@ -92,7 +92,7 @@ At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**
 
 | Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
 |---|---|---|---|
-| Learning Brief | `CRON_TZ=America/New_York 50 4 * * 1-5` | Mon–Fri 4:50 AM start → push lands ~5:00, by 5:30 at the latest | `Read CLAUDE.md, prompts/shared-rules.md and prompts/learning.md in this repository and execute the Learning Brief run procedure exactly.` |
+| Learning Brief | `CRON_TZ=America/New_York 50 4 * * 1-5` | Mon–Fri 4:50 AM start → push lands ~5:00, by 5:30 at the latest | `You are the scheduled Learning Brief author for Logan's Daily Newspaper. In the attached repository (shafferusa/intelligence-terminal): read CLAUDE.md, then prompts/shared-rules.md, then prompts/learning.md, and execute the Learning Brief run procedure exactly. prompts/learning.md and state/learning.json decide the curriculum, today's lesson, the length and the format. Never send a Telegram message yourself; GitHub Actions sends it when you push.` |
 | Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
 | SIE Program (added 2026-09-25) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
