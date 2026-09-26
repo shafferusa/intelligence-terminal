@@ -7,7 +7,7 @@ That window is part of production (the sweep's validation and calibration run on
 But the learned models do not need production's score — only each record's signals x (clip(z / S_SCALE, ±1), the
 point-in-time z-scores of the 74 production signals) and its outcome. Those exist before 2001 for every asset whose
 data do: the panel calendar starts 1993-01-29 and most signals from 1994. These records are written under their own
-version (EXT_VERSION) for the weeks BEFORE an asset's first standard record, with:
+version (EXT_VERSION) for the weeks BEFORE an asset's first standard record AND before the first test era (2009), with:
     raw = None                 (no production score: they can only ever be TRAINING records — every test era
                                 starts in 2009 — and never enter a comparison with production)
     x   = clip(z / S_SCALE, −1, 1) per production signal present on that date
@@ -53,6 +53,9 @@ def build(research, labs=("1M", "3M", "6M", "12M", "1W"), progress=None, start: 
     lo_cal = next((i for i, d in enumerate(cal) if d >= start), 0)
     out = {"version": ext_version(), "labs": {}, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
     dv = research.version()
+    from .learned import TEST_ERAS
+    test_start = TEST_ERAS[0][0]                          # training only: no extended record inside a test era
+    st._write(lambda conn: conn.execute("DELETE FROM lab_records WHERE version = ?", (ext_version(),)))
     std = {lab: {b["asset_id"]: b["rows"][0][0] for b in st.lab_records(SIG_VERSION, lab) if b["rows"]} for lab in labs}
     assets = sorted({a for d in std.values() for a in d})
     counts = {lab: [0, 0] for lab in labs}
@@ -73,7 +76,7 @@ def build(research, labs=("1M", "3M", "6M", "12M", "1W"), progress=None, start: 
             h = hmap[lab]
             rows = []
             for t in range(f - 5, lo - 1, -5):
-                if t + h >= f:                               # only outcomes that matured before the standard record starts
+                if t + h >= f or cal[t] >= test_start:       # matured before the standard records, and before 2009
                     continue
                 x = {s: round(_clip(z[s][t] / cfg.S_SCALE, -1.0, 1.0), 4) for s in sigs if (z.get(s) or [None] * len(cal))[t] is not None}
                 if len(x) < MIN_PRESENT * len(sigs):
