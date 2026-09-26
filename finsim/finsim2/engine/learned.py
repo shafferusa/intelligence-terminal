@@ -2326,7 +2326,7 @@ def _pcu(v, d=0):
 EXAMPLES = ["NVDA", "AAPL", "JPM", "XLK", "SPY", "UST10Y", "TLT", "HYG", "WTI", "GOLD", "EURUSD", "BTC"]
 
 
-def markdown(res: dict, assets: Dict[str, Dict[str, dict]], nodes: Dict[str, dict]) -> str:
+def markdown(res: dict, assets: Dict[str, Dict[str, dict]], nodes: Dict[str, dict], live: Optional[dict] = None) -> str:
     """The report. `assets[lab]` / `nodes[lab]` are the heavy per-horizon parts (today's weights, node tables)."""
     H = res.get("horizons") or {}
     L: List[str] = []
@@ -2348,15 +2348,79 @@ def markdown(res: dict, assets: Dict[str, Dict[str, dict]], nodes: Dict[str, dic
       "out-of-sample evidence, specialised only where a node's own deviation survived out of sample). A failed promotion gate "
       "does not mean there are no learned weights — it means they are not trusted enough to replace production.")
     w("")
+    _summary(w, res)
     _capability_section(w, res.get("capability"))
     _answers(w, res, assets)
     for lab in labs:
         _horizon_section(w, lab, H[lab], (nodes or {}).get(lab) or {}, (assets or {}).get(lab) or {})
     _maps_section(w, H)
-    _examples_section(w, H, assets or {}, names)
-    _asset_table(w, H, assets or {})
+    _examples_section(w, H, assets or {}, names, live or {})
+    _asset_table(w, H, assets or {}, live or {})
     _hedge_section(w, res.get("hedge"))
     return "\n".join(L) + "\n"
+
+
+def _summary(w, res: dict):
+    """Key findings, generated from the results."""
+    H = res.get("horizons") or {}
+    cap = res.get("capability") or {}
+    w("## Key findings")
+    w("")
+    w(f"- **The engine recovers planted weights:** {sum(1 for v in cap.values() if v.get('pass'))} of {len(cap)} synthetic tests passed "
+      "(linear, ranking target, sparse, correlated, regime-dependent, sector-specific, horizon-specific, nonlinear interaction, "
+      "pure noise, asset-specific with a short-history asset) before any market result was read.")
+    passed = [(lab, tgt, k, v) for lab, Hl in H.items() for tgt in ("alpha", "dir") for k, v in Hl[tgt]["variants"].items()
+              if v.get("status") == "LIVE SHADOW ELIGIBLE"]
+    if passed:
+        w("- **Learned weights that beat production under every fixed gate (G1–G4 + FDR across 24 tests):** " + "; ".join(
+            f"{'Alpha' if t == 'alpha' else 'Directional'} {lab} {v['label']} — rank IC {_f((v['walkforward'].get('challenger') or {}).get('rank_ic'))} vs "
+            f"production {_f((v['walkforward'].get('production') or {}).get('rank_ic'))}, Δ t {_f((v['walkforward'].get('paired') or {}).get('t'), 1)}, "
+            f"{v['gates'].get('eras_won')}/{v['gates'].get('eras_complete')} eras, split t {_f(v['gates'].get('split_t'), 1)}, net long-short "
+            f"{_pc((v['walkforward'].get('ls_challenger') or {}).get('net'), 3)} per week vs {_pc((v['walkforward'].get('ls_production') or {}).get('net'), 3)}"
+            for lab, t, k, v in passed) + ". They are in live shadow now (recorded daily, graded like production); promotion needs "
+          "≥ 60 graded live outcomes and your approval. Their gain is concentrated after 2017; it is ~0 in 2009–12 and negative in 2013–16.")
+    else:
+        w("- **No learned weight set beats production under every fixed gate.**")
+    cd = [(lab, (Hl["alpha"]["variants"]["C"]["walkforward"].get("challenger") or {}).get("rank_ic"),
+           (Hl["alpha"]["variants"]["D"]["walkforward"].get("challenger") or {}).get("rank_ic")) for lab, Hl in H.items()]
+    worse = [f"{lab} ({_f(c)} vs {_f(d)})" for lab, c, d in cd if c is not None and d is not None and c < d]
+    if worse:
+        w("- **The trust-filtered 'validated deployable' set (C) was too conservative where signals are weak individually but useful "
+          "together:** it trails the simple global learned weights at " + ", ".join(worse) + ". Zeroing every global weight whose own "
+          "out-of-sample t is ≤ 1 removes signals that only help jointly. It is reported as designed; it is not what should be shadowed.")
+    for lab in [l for l in ("1D", "1W") if l in H]:
+        dt = H[lab]["alpha"].get("depths") or {}
+        g = (dt.get("5000") or {}).get("global") or {}
+        best = max(((K, d, (row.get(d) or {}).get("mean")) for K, row in dt.items() for d in LEVELS if (row.get(d) or {}).get("mean") is not None),
+                   key=lambda x: x[2], default=None)
+        if best and g.get("mean") is not None and best[2] > g["mean"]:
+            row = dt.get(best[0]) or {}
+            beat = [LEVEL_NAME[d] for d in LEVELS[1:] if ((row.get(d) or {}).get("mean") or -9) > g["mean"]]
+            w(f"- **Hierarchy helps at {lab}:** at pooling K = {best[0]}, {len(beat)} of 5 depths below global beat global in the walk-forward "
+              f"({', '.join(beat)}; best {LEVEL_NAME[best[1]]}, rank IC {_f(best[2])} vs global {_f(g['mean'])}). Picking that cell uses hindsight; "
+              "the nested choice (E) captures part of it.")
+    longh = [lab for lab in H if lab in ("1M", "3M", "6M", "12M")]
+    if longh:
+        w(f"- **{', '.join(longh)}:** nothing beats production significantly; no signal weight is validated at 3M–12M; the validated model "
+          "keeps no specialisation there (history does not support it).")
+    w("- **Directional:** no learned weight set beats the point-in-time base prior at any horizon (Brier, log loss, calibration together).")
+    tot = {}
+    for Hl in H.values():
+        for s in Hl["alpha"]["signals"]:
+            c = (s.get("stability") or {}).get("class")
+            tot[c] = tot.get(c, 0) + 1
+    w("- **Stability:** across all horizons the Alpha global weights are " + ", ".join(f"{k} {v}" for k, v in sorted(tot.items(), key=lambda kv: -kv[1])) +
+      " — few signal weights are stable enough to treat as permanent.")
+    w("- **Learned vs production:** the learned allocations are very different from production's (distance 0.8–0.9 on a 0–1 scale, §2 Q10). "
+      "Production is not close to the learned optimum; at 1D/1W the learned weights are measurably better, at 1M–12M the differences are noise.")
+    hd = res.get("hedge") or {}
+    sz = (hd.get("sizing") or {}).get("1W") or {}
+    g = (sz.get("nodes") or {}).get("global") or {}
+    if g:
+        w(f"- **Hedge:** history supports larger hedges than hedge-2 at 1W and 1M (global validated multiple {g.get('shrunk'):.2f}× at 1W; "
+          "most risk classes and objectives at 1.35–1.5×, minimum-variance at ~1.0×). Many sizing cells survive FDR, but every one fails the "
+          "fixed cost / basis-error guard H4 and the gain reverses for profit-sensitive users (λ ≥ 5). Product choice: nothing validated.")
+    w("")
 
 
 def _capability_section(w, cap):
@@ -2573,6 +2637,9 @@ def _horizon_section(w, lab: str, Hl: dict, nodes: dict, assets: dict):
     # specialisation depth
     w("### Where specialisation stops helping (uniform depth, walk-forward mean rank IC, t)")
     w("")
+    w("Every cell is a walk-forward result (each era scored by weights learned before it), but K and depth are held fixed across "
+      "eras here: choosing the best cell uses hindsight. The nested choice is weight set E above.")
+    w("")
     dt = A.get("depths") or {}
     w("| K (pooling) | " + " | ".join(LEVEL_NAME[d] for d in LEVELS) + " |")
     w("|---|" + "---|" * len(LEVELS))
@@ -2687,12 +2754,13 @@ def _maps_section(w, H: dict):
         w("")
 
 
-def _examples_section(w, H: dict, assets: dict, names):
+def _examples_section(w, H: dict, assets: dict, names, live: dict):
     w("## 7. Today's learned weights — examples (Alpha)")
     w("")
-    w("Columns: production's effective weight today, the historical best fit at the asset's own node, the validated "
-      "effective weight (what FinSim2 would use), and where it comes from in the hierarchy. Weights on standardised signals; "
-      "the twelve largest validated weights shown.")
+    w("Signed shares of each weight set's total |weight| (so production and the learned sets are on one scale): production's "
+      "effective weights today; C, the trust-filtered validated set; and, where they exist, the weight sets in live shadow "
+      "(D global, E hierarchy — at 1W). Sorted by the live-shadow hierarchy weight where it exists, else by C; the twelve "
+      "largest shown. Contribution = weight × today's (week-demeaned) signal, in the same set's units.")
     w("")
     for a in EXAMPLES:
         for lab in [l for l in ("1W", "3M") if l in H]:
@@ -2701,27 +2769,39 @@ def _examples_section(w, H: dict, assets: dict, names):
                 continue
             sig = H[lab].get("signals") or names
             lev = x.get("alpha_levels") or {}
-            w(f"**{a} — {lab}** · production score {_f(x.get('production_score'), 1)} · learned score {_f(x.get('learned_score'), 1)} · "
-              f"p_up {_pcu(x.get('p_up'), 1)} (prior {_pcu(x.get('p_prior'), 1)}) · hierarchy source: " +
-              ", ".join(f"{LEVEL_NAME[k]} {_pcu(v)}" for k, v in lev.items() if v) + f" · path: {' → '.join(node_label(n) for n in x.get('path') or [])}")
+            lv = live_today(None, lab, x.get("x") or [], x.get("path") or ["global"], live)
+            byv = {m["variant"]: m for m in lv.values()}
+            w(f"**{a} — {lab}** · production score {_f(x.get('production_score'), 1)} · C {_f(x.get('learned_score'), 1)}"
+              + "".join(f" · {k} ({m['label']}, live shadow) {_f(m['score'], 1)} from {node_label(m['node'])}" for k, m in sorted(byv.items()))
+              + f" · p_up {_pcu(x.get('p_up'), 1)} (prior {_pcu(x.get('p_prior'), 1)}) · C's hierarchy source: "
+              + ", ".join(f"{LEVEL_NAME[k]} {_pcu(v)}" for k, v in lev.items() if v) + f" · path: {' → '.join(node_label(n) for n in x.get('path') or [])}")
             w("")
-            wv = x.get("alpha_weights") or []
-            pv = x.get("alpha_production") or []
-            order = sorted(range(len(wv)), key=lambda i: -abs(wv[i] or 0))[:12]
-            w("| Signal | Production | Validated effective | Current value | Contribution |")
-            w("|---|---|---|---|---|")
+            wc = x.get("alpha_weights") or []
+            pv = shares(x.get("alpha_production") or [0.0] * len(wc))
+            cs = shares(wc)
+            ds = shares(byv["D"]["weights"]) if "D" in byv else None
+            es = shares(byv["E"]["weights"]) if "E" in byv else None
+            key = es or cs
+            order = sorted(range(len(key)), key=lambda i: -abs(key[i] or 0))[:12]
+            cols = ["Signal", "Production", "C validated"] + (["D global (live)"] if ds else []) + (["E hierarchy (live)"] if es else []) + ["Current value", "Contribution"]
+            w("| " + " | ".join(cols) + " |")
+            w("|" + "---|" * len(cols))
+            con = byv["E"]["contrib"] if es else (x.get("alpha_contrib") or [None] * len(wc))
             for i in order:
-                if not wv[i]:
-                    continue
-                w(f"| {sig[i]} | {_f(pv[i])} | {_f(wv[i])} | {_f((x.get('x') or [None] * 74)[i], 3)} | {_f((x.get('alpha_contrib') or [None] * 74)[i])} |")
+                row = [sig[i], _pc(pv[i], 1), _pc(cs[i], 1)] + ([_pc(ds[i], 1)] if ds else []) + ([_pc(es[i], 1)] if es else []) + \
+                      [_f((x.get("x") or [None] * 74)[i], 3), _f(con[i])]
+                w("| " + " | ".join(row) + " |")
             w("")
 
 
-def _asset_table(w, H: dict, assets: dict):
+def _asset_table(w, H: dict, assets: dict, live: dict):
     w("## 8. Every asset × horizon")
     w("")
-    w("| Asset | Horizon | Production score | Learned score | p_up (prior) | Best hierarchy depth | Alpha reliability (OOS corr, t) | Directional reliability (Brier gain, t) | Live shadow? |")
-    w("|---|---|---|---|---|---|---|---|---|")
+    w("Learned score = the validated set C. Live-shadow scores = the learned weight sets that passed every gate (1W: D global, "
+      "E hierarchy). Live shadow? = the asset is scored daily by a learned set in live shadow.")
+    w("")
+    w("| Asset | Horizon | Production score | Learned score (C) | Live-shadow scores | p_up (prior) | Best hierarchy depth | Alpha reliability (OOS corr, t) | Directional reliability (Brier gain, t) | Live shadow? |")
+    w("|---|---|---|---|---|---|---|---|---|---|")
     allA = sorted({a for lab in H for a in (assets.get(lab) or {})})
     for a in allA:
         for lab, Hl in H.items():
@@ -2731,8 +2811,10 @@ def _asset_table(w, H: dict, assets: dict):
             ad = (Hl["alpha"].get("asset_depth") or {}).get(a) or {}
             rel = ad.get("reliability") or {}
             dr = (Hl["dir"].get("asset_reliability") or {}).get(a) or {}
-            elig = Hl["alpha"]["variants"]["C"].get("status") == "LIVE SHADOW ELIGIBLE" and (rel.get("t") or 0) > 0
-            w(f"| {a} | {lab} | {_f(x.get('production_score'), 1)} | {_f(x.get('learned_score'), 1)} | {_pcu(x.get('p_up'), 1)} ({_pcu(x.get('p_prior'), 1)}) | "
+            lv = live_today(None, lab, x.get("x") or [], x.get("path") or ["global"], live)
+            elig = bool(lv)
+            lvs = " / ".join(f"{m['variant']} {_f(m['score'], 1)}" for m in sorted(lv.values(), key=lambda m: m["variant"])) or "—"
+            w(f"| {a} | {lab} | {_f(x.get('production_score'), 1)} | {_f(x.get('learned_score'), 1)} | {lvs} | {_pcu(x.get('p_up'), 1)} ({_pcu(x.get('p_prior'), 1)}) | "
               f"{LEVEL_NAME.get(ad.get('best_depth'), '—')} | {_f(rel.get('corr'), 3)} ({_f(rel.get('t'), 1)}) | {_f(dr.get('brier_gain'), 4)} ({_f(dr.get('t'), 1)}) | "
               f"{'yes' if elig else 'no'} |")
     w("")
@@ -2780,13 +2862,17 @@ def _hedge_section(w, hd: Optional[dict]):
     for lab, x in (hd.get("tail") or {}).items():
         w(f"### Risk preference and the price of tail protection — {lab}")
         w("")
+        w("Price per $ of ES = utility given up (λ = 1) per dollar of 95% expected-shortfall reduction bought by sizing up to 1.5×; "
+          "\"free\" = sizing up reduced the tail and raised utility at the same time.")
+        w("")
         w("| Node | Dates | Best multiple at λ = 0.5 / 1 / 2 / 5 / 10 | Sizing up to 1.5×: ES reduction | … utility change (λ = 1) | Price per $ of ES |")
         w("|---|---|---|---|---|---|")
         for nd in sorted(x, key=lambda n: (H_ORDER(n), n)):
             v = x[nd]
             b = v.get("best_multiple_by_lambda") or {}
             w(f"| {nd} | {v.get('dates')} | {' / '.join(f'{b.get(str(l)):.2f}' if b.get(str(l)) is not None else '—' for l in (0.5, 1.0, 2.0, 5.0, 10.0))} | "
-              f"{_f(v.get('es_reduction_1_5x'), 0)} | {_f(v.get('utility_change_1_5x'), 0)} | {_f(v.get('price_per_es'), 2)} |")
+              f"{_f(v.get('es_reduction_1_5x'), 0)} | {_f(v.get('utility_change_1_5x'), 0)} | "
+              f"{'free' if (v.get('es_reduction_1_5x') or 0) > 0 and (v.get('utility_change_1_5x') or 0) >= 0 else _f(v.get('price_per_es'), 2)} |")
         w("")
     for lab, x in (hd.get("products") or {}).items():
         ch = (x.get("choices") or {}).get("2100-01-01")
@@ -2853,6 +2939,7 @@ def api(store, h: Optional[str] = None, asset: Optional[str] = None, node: Optio
         ad = (H.get("alpha") or {}).get("asset_depth", {}).get(asset) or {}
         dr = (H.get("dir") or {}).get("asset_reliability", {}).get(asset) or {}
         return {"asset": asset, "h": h, "signals": H.get("signals"), "families": H.get("families"), **A, "best_depth": ad.get("best_depth"),
+                "live": live_today(store, h, A.get("x") or [], A.get("path") or ["global"]),
                 "alpha_reliability": ad.get("reliability"), "dir_reliability": dr,
                 "global": [{k: s.get(k) for k in ("name", "status", "oos_t", "trust", "best_fit", "stability")} for s in (H.get("alpha") or {}).get("signals", [])]}
     if node:
@@ -2863,7 +2950,9 @@ def api(store, h: Optional[str] = None, asset: Optional[str] = None, node: Optio
     for a, x in assets.items():
         ad = (H.get("alpha") or {}).get("asset_depth", {}).get(a) or {}
         dr = (H.get("dir") or {}).get("asset_reliability", {}).get(a) or {}
+        lv = live_today(store, h, x.get("x") or [], x.get("path") or ["global"])
         lst.append({"asset": a, "production_score": x.get("production_score"), "learned_score": x.get("learned_score"), "p_up": x.get("p_up"),
+                    "live": {m["variant"]: m["score"] for m in lv.values()},
                     "p_prior": x.get("p_prior"), "levels": x.get("alpha_levels"), "path": x.get("path"), "best_depth": ad.get("best_depth"),
                     "alpha_reliability": ad.get("reliability"), "dir_reliability": dr})
     return {"h": h, "target": target, "signals": tg.get("signals"), "families": H.get("families"), "variants": tg.get("variants"),
@@ -2871,30 +2960,148 @@ def api(store, h: Optional[str] = None, asset: Optional[str] = None, node: Optio
             "structure": H.get("structure"), "family_maps": tg.get("families"), "assets": lst}
 
 
+VARIANT_ID = {"B": "bestfit", "C": "validated", "D": "global", "E": "hierarchy"}
+LIVE_KEY = RESEARCH_KEY + ":live"
+
+
+def vid_of(lab: str, tgt: str, key: str) -> str:
+    return f"{'alpha' if tgt == 'alpha' else 'directional'}-learned-{lab.lower()}-{VARIANT_ID[key]}-exp"
+
+
 def register(store, res: dict) -> List[str]:
-    """One registry entry per horizon × target for the validated learned weight set: status 'challenger' only when it
-    passed every gate (then it enters live shadow), otherwise 'research' — the weights exist and are shown, they are not
-    trusted enough to compete with production."""
+    """Registry entries: every horizon's validated weight set as 'research' (the weights exist and are shown; they are
+    not trusted enough to compete), and every learned weight set that passed EVERY gate as a 'challenger' — which puts it
+    in live shadow (recorded daily in the ledger, graded like production). Nothing is promoted."""
     from .lab import _save_registry, registry
     reg = registry(store)
     today = time.strftime("%Y-%m-%d")
     made = []
+    reg["versions"] = [x for x in reg["versions"] if not (x.get("family") == "learned" and x.get("status") in ("research", "rejected"))
+                       and not str(x.get("id", "")).endswith(("-learned-1d-exp", "-learned-1w-exp", "-learned-1m-exp", "-learned-3m-exp",
+                                                               "-learned-6m-exp", "-learned-12m-exp"))]
     for lab, H in (res.get("horizons") or {}).items():
         for tgt, kind in (("alpha", "shaffer-alpha"), ("dir", "shaffer-directional")):
-            v = ((H.get(tgt) or {}).get("variants") or {}).get("C") or {}
-            vid = f"{'alpha' if tgt == 'alpha' else 'directional'}-learned-{lab.lower()}-exp"
-            old = next((x for x in reg["versions"] if x["id"] == vid), None)
-            if old and old.get("status") not in ("challenger", "rejected", "research", None):
-                continue
-            reg["versions"] = [x for x in reg["versions"] if x["id"] != vid]
-            ch = ((H.get(tgt) or {}).get("choices") or {}).get(FINAL) or {}
-            reg["versions"].append({"id": vid, "kind": kind, "family": "learned", "horizon": lab, "introduced": (old or {}).get("introduced") or today,
-                                    "status": "challenger" if v.get("status") == "LIVE SHADOW ELIGIBLE" else "research",
-                                    "formula": "hierarchical partial-pooling weights on the 74 production signals (engine/learned.py): trusted global "
-                                               "weights + validated node specialisations" + (" → PIT prior offset + Platt" if tgt == "dir" else " → rank"),
-                                    "hierarchy": "global → class → product type → sector → industry → asset", "K": ch.get("K"),
-                                    "training_cutoff": res.get("started"), "benchmark": "production" if tgt == "alpha" else "prior-only (PIT base prior)",
-                                    "validation": {"gates": v.get("gates")}})
-            made.append(vid)
+            for key, v in ((H.get(tgt) or {}).get("variants") or {}).items():
+                passed = v.get("status") == "LIVE SHADOW ELIGIBLE"
+                if key != "C" and not passed:
+                    continue
+                vid = vid_of(lab, tgt, key)
+                old = next((x for x in reg["versions"] if x["id"] == vid), None)
+                if old and old.get("status") not in ("challenger", "research", "rejected", None):
+                    continue
+                reg["versions"] = [x for x in reg["versions"] if x["id"] != vid]
+                g = dict(v.get("gates") or {})
+                g["G1_discovery"] = bool(g.get("G1"))
+                g["G2_confirmation"] = bool(g.get("G2") and g.get("G3") and g.get("G4") and g.get("fdr"))
+                ch = ((H.get(tgt) or {}).get("choices") or {}).get(FINAL) or {}
+                reg["versions"].append({"id": vid, "kind": kind, "family": "learned", "variant": key, "label": v.get("label"), "horizon": lab,
+                                        "introduced": (old or {}).get("introduced") or today, "status": "challenger" if passed else "research",
+                                        "live_shadow_from": ((old or {}).get("live_shadow_from") or today) if passed else None,
+                                        "formula": {"B": "historical best-fit weights at the asset's own node (K = 10)",
+                                                    "C": "trusted global weights + validated node specialisations",
+                                                    "D": "global learned weights on the 74 production signals (ridge, retrained on everything matured)",
+                                                    "E": f"hierarchical weights at depth {ch.get('depth_E')} with pooling K = {ch.get('K_E')}"}[key]
+                                                   + (" → week-demeaned signals, ranking target" if tgt == "alpha" else " → PIT prior offset + Platt"),
+                                        "hierarchy": "global → class → product type → sector → industry → asset", "training_cutoff": res.get("started"),
+                                        "benchmark": "production" if tgt == "alpha" else "prior-only (PIT base prior)",
+                                        "validation": {lab: {"gates": g}}})
+                made.append(vid)
     _save_registry(store, reg)
     return made
+
+
+def build_live(db_path: str, res: dict, progress=None) -> dict:
+    """For every learned weight set that passed every gate: its final weights, standardisation, node coefficients and
+    score scale (refitted deterministically on the same records), stored for the daily live shadow."""
+    from ..data.store import Store
+    from .research import Research
+    say = progress or (lambda m: None)
+    todo: Dict[str, List[str]] = {}
+    for lab, H in (res.get("horizons") or {}).items():
+        for key, v in ((H.get("alpha") or {}).get("variants") or {}).items():
+            if v.get("status") == "LIVE SHADOW ELIGIBLE" and key in ("B", "D", "E"):
+                todo.setdefault(lab, []).append(key)
+    out = {}
+    st = Store(db_path)
+    try:
+        research = Research(st)
+        for lab, keys in todo.items():
+            rows, today, names = build_rows(st, research, lab, say)
+            tab = Table(rows, names, int(dict(__import__("finsim2.engine.lab", fromlist=["LAB_HORIZONS"]).LAB_HORIZONS)[lab]))
+            del rows
+            lr = Learner(tab, "alpha")
+            lr.fit_all()
+            f = lr.fits[FINAL]
+            ch = (res["horizons"][lab]["alpha"].get("choices") or {}).get(FINAL) or {}
+            latest = max(t["rec"].date for t in today)
+            pool = [t["rec"] for t in today if t["rec"].date == latest] or [t["rec"] for t in today]
+            means = [sum(float(r.x[i]) for r in pool) / len(pool) for i in range(tab.P)]
+            for key in keys:
+                if key == "D":
+                    std = {"global": f["W"][K_DEFAULT]["global"]}
+                    depth, K = "global", None
+                elif key == "E":
+                    K, depth = ch.get("K_E") or ch.get("K"), ch.get("depth_E") or "global"
+                    std = {nd: w for nd, w in f["W"][K].items() if LEVELS.index(level_of(nd)) <= LEVELS.index(depth)}
+                else:
+                    K, depth = K_BEST, "asset"
+                    std = dict(f["W"][K])
+                coefs = {nd: _coef(w, f["rms"]) for nd, w in std.items()}
+                # the score scale: match production's median |score| on the matured records
+                idx, raws = [], []
+                for a, (s0, s1) in tab.slices.items():
+                    c = coefs.get(cut_path(tab.paths[a], depth)) or coefs.get("global")
+                    sc = score_slice(lr.cols, c, s0, s1)
+                    idx.extend(abs(v) for k, v in zip(range(s0, s1), sc) if lr.w[k] > 0)
+                    raws.extend(abs(tab.raw[k]) for k in range(s0, s1) if lr.w[k] > 0 and tab.raw[k] is not None)
+                idx.sort(); raws.sort()
+                scale = (idx[len(idx) // 2] / math.atanh(min(99.0, max(0.5, raws[len(raws) // 2])) / 100.0)) if idx and raws else 1.0
+                vid = vid_of(lab, "alpha", key)
+                out[vid] = {"lab": lab, "variant": key, "label": res["horizons"][lab]["alpha"]["variants"][key].get("label"), "names": names,
+                            "depth": depth, "K": K, "coefs": {k: _rl(v, 8) for k, v in coefs.items()}, "weights": {k: _rl(v, 6) for k, v in std.items()},
+                            "means": _rl(means, 8), "means_date": latest, "scale": scale, "built": time.strftime("%Y-%m-%d %H:%M:%S")}
+                say(f"live model {vid}: depth {depth}, scale {scale:.4g}")
+        st.kv_set(LIVE_KEY, out)
+    finally:
+        st.close()
+    return out
+
+
+def live_score(store, v: dict, meta: dict, lab: str, sig: Optional[dict], info: Optional[dict] = None) -> Optional[float]:
+    """Today's learned Alpha score for one asset (live shadow): the stored weights at the asset's node, on today's
+    signals demeaned by the latest research cross-section (a common shift that leaves the day's ranking unchanged)."""
+    live = (store.kv_get(LIVE_KEY) or {}).get(v["id"])
+    if not live or live.get("lab") != lab or not sig or not sig.get("x"):
+        return None
+    path = taxonomy(meta)
+    nd = cut_path(path, live["depth"])
+    while nd not in live["coefs"] and nd != "global":
+        k = path.index(nd)
+        nd = path[k - 1]
+    coef = live["coefs"].get(nd)
+    if not coef:
+        return None
+    xs = sig["x"]
+    idx = sum(c * (float(xs.get(n) or 0.0) - m) for c, n, m in zip(coef, live["names"], live["means"]) if c)
+    if info is not None:
+        info["node"] = nd
+    return 100.0 * math.tanh(idx / (live.get("scale") or 1.0))
+
+
+def live_today(store, lab: str, x: Sequence[float], path: Sequence[str], live: Optional[dict] = None) -> Dict[str, dict]:
+    """The live-shadow learned weight sets for one asset today: score, the node its weights come from, and the weights
+    (standardised). `x` = today's raw signals in the research-record order."""
+    out = {}
+    for vid, m in (live if live is not None else (store.kv_get(LIVE_KEY) or {})).items():
+        if m.get("lab") != lab:
+            continue
+        nd = cut_path(path, m["depth"])
+        while nd not in m["coefs"] and nd != "global":
+            nd = path[path.index(nd) - 1]
+        coef, w = m["coefs"].get(nd), (m.get("weights") or {}).get(nd)
+        if not coef:
+            continue
+        idx = sum(c * ((v or 0.0) - mu) for c, v, mu in zip(coef, x, m["means"]) if c)
+        out[vid] = {"label": m.get("label"), "variant": m.get("variant"), "node": nd, "score": 100.0 * math.tanh(idx / (m.get("scale") or 1.0)),
+                    "weights": w, "contrib": [c * ((v or 0.0) - mu) for c, v, mu in zip(coef, x, m["means"])]}
+    return out

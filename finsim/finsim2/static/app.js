@@ -1030,6 +1030,7 @@
       { k: 'production_score', label: 'Production', f: x => `<span class="${sign(x.production_score)}">${fmt.num(x.production_score, 1)}</span>` },
       { k: 'learned_score', label: 'Learned', f: x => `<span class="${sign(x.learned_score)}">${fmt.num(x.learned_score, 1)}</span>` },
       { k: 'diff', label: 'Difference', v: x => (x.learned_score ?? 0) - (x.production_score ?? 0), f: x => fmt.num((x.learned_score ?? 0) - (x.production_score ?? 0), 1) },
+      { k: 'live', label: 'Live shadow (D global · E hierarchy)', v: x => (x.live || {}).E ?? (x.live || {}).D, f: x => Object.keys(x.live || {}).length ? Object.entries(x.live).sort().map(([k, v]) => `${k} <span class="${sign(v)}">${fmt.num(v, 1)}</span>`).join(' · ') : '<span class="faint">—</span>' },
       { k: 'p_up', label: 'P(up) learned · prior', f: x => `${fmt.pct(x.p_up, 1)}<span class="sub">${fmt.pct(x.p_prior, 1)}</span>` },
       { k: 'lv', label: 'Weights come from', l: 1, f: x => `<span style="font-size:12px">${esc(levelsTxt(x.levels))}</span>` },
       { k: 'best_depth', label: 'Best depth', l: 1, f: x => esc(LV[x.best_depth] || '—') },
@@ -1054,12 +1055,15 @@
       const names = X.signals || [], fam = X.families || [];
       const ws = tg === 'alpha' ? X.alpha_weights : (X.dir_weights || []).slice(1), con = tg === 'alpha' ? X.alpha_contrib : (X.dir_contrib || []).slice(1);
       const dec = X.alpha_decomposition || {}, gl = X.global || [];
-      const rows = names.map((n, i) => ({ n, fam: fam[i], prod: (X.alpha_production || [])[i], w: (ws || [])[i], x: (X.x || [])[i], c: (con || [])[i],
+      const LVv = Object.values(X.live || {}), lvD = LVv.find(m => m.variant === 'D'), lvE = LVv.find(m => m.variant === 'E');
+      const rows = names.map((n, i) => ({ n, fam: fam[i], prod: (X.alpha_production || [])[i], w: (ws || [])[i], x: (X.x || [])[i], c: (con || [])[i], d: lvD && tg === 'alpha' ? lvD.weights[i] : null, e: lvE && tg === 'alpha' ? lvE.weights[i] : null,
         src: tg === 'alpha' ? Object.keys(dec).filter(l => l !== 'global' && Math.abs((dec[l] || [])[i] || 0) > 1e-9).map(l => LV[l]).join(' + ') : '', g: gl[i] || {} })).filter(r => r.w || r.prod);
-      el.innerHTML = `<div class="card flush"><h2>${esc(a)} — ${esc(hz)} ${tg === 'alpha' ? 'Alpha' : 'Directional'} <small>production score ${fmt.num(X.production_score, 1)} · learned ${fmt.num(X.learned_score, 1)} · P(up) ${fmt.pct(X.p_up, 1)} (prior ${fmt.pct(X.p_prior, 1)}) · weights from ${esc(levelsTxt(X.alpha_levels))} · best depth ${esc(LV[X.best_depth] || '—')} · as of ${esc(X.date)}</small></h2><div id="lwDT"></div></div>`;
+      el.innerHTML = `<div class="card flush"><h2>${esc(a)} — ${esc(hz)} ${tg === 'alpha' ? 'Alpha' : 'Directional'} <small>production score ${fmt.num(X.production_score, 1)} · learned (C) ${fmt.num(X.learned_score, 1)}${LVv.map(m => ` · ${esc(m.variant)} live shadow ${fmt.num(m.score, 1)}`).join('')} · P(up) ${fmt.pct(X.p_up, 1)} (prior ${fmt.pct(X.p_prior, 1)}) · weights from ${esc(levelsTxt(X.alpha_levels))} · best depth ${esc(LV[X.best_depth] || '—')} · as of ${esc(X.date)}</small></h2><div id="lwDT"></div></div>`;
       table($('#lwDT'), rows, [{ k: 'n', label: 'Signal', l: 1, f: r => `<b>${esc(r.n)}</b><span class="sub">${esc(r.fam || '')}</span>` },
         { k: 'prod', label: 'Production weight', f: r => fmt.num(r.prod, 4) },
-        { k: 'w', label: 'Validated effective', v: r => Math.abs(r.w || 0), f: r => `<span class="${sign(r.w)}">${fmt.num(r.w, 4)}</span>` },
+        { k: 'w', label: 'Validated effective (C)', v: r => Math.abs(r.w || 0), f: r => `<span class="${sign(r.w)}">${fmt.num(r.w, 4)}</span>` },
+        ...(lvD && tg === 'alpha' ? [{ k: 'd', label: 'Global (D, live shadow)', v: r => Math.abs(r.d || 0), f: r => `<span class="${sign(r.d)}">${fmt.num(r.d, 4)}</span>` }] : []),
+        ...(lvE && tg === 'alpha' ? [{ k: 'e', label: `Hierarchy (E, live shadow) · ${esc(nodeName(lvE.node))}`, v: r => Math.abs(r.e || 0), f: r => `<span class="${sign(r.e)}">${fmt.num(r.e, 4)}</span>` }] : []),
         { k: 'src', label: 'Specialised at', l: 1, f: r => esc(r.src || (r.w ? 'Global' : '—')) },
         { k: 'x', label: 'Current value', f: r => fmt.num(r.x, 3) },
         { k: 'c', label: 'Contribution', v: r => Math.abs(r.c || 0), f: r => `<span class="${sign(r.c)}">${fmt.num(r.c, 4)}</span>` },
@@ -1078,12 +1082,13 @@
     const HZ = Object.keys(HD.sizing || {}), hz = HZ.includes(pref.get('lhH', '1W')) ? pref.get('lhH', '1W') : HZ[0];
     const SZ = (HD.sizing || {})[hz] || {}, TL = (HD.tail || {})[hz] || {}, PR = (HD.products || {})[hz];
     body.innerHTML = `<div class="card"><h2>Learned Shaffer Hedge parameters <small>what sizing and product choices history supports · hedge-2 unchanged · research only</small></h2>
-      <p class="muted" style="margin:0 0 10px;font-size:12.5px">Global → Risk class → Objective → Product class → Instrument. Sizing = the best multiple of hedge-2's package (0.5–1.5×) per node, shrunk toward the parent by dates / (dates + K). Validated walk-forward against hedge-2 with the Hedge program's fixed gates H1–H5 and FDR. U = risk reduction − λ·profit sacrificed − cost, $ per $1M.</p>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">Global → Risk class → Objective → Product class → Instrument (instrument nodes in SHAFFER_LEARNED_WEIGHTS.md). Sizing = the best multiple of hedge-2's package (0.5–1.5×) per node, shrunk toward the parent by dates / (dates + K). Validated walk-forward against hedge-2 with the Hedge program's fixed gates H1–H5 and FDR. U = risk reduction − λ·profit sacrificed − cost, $ per $1M.</p>
       ${segH('lhH', HZ, hz)}<div id="lhN"></div></div>
       <div class="card flush" style="margin-top:14px"><h2>Validation by objective — ${esc(hz)} <small>the learned sizing vs hedge-2, walk-forward</small></h2><div id="lhV"></div></div>
       <div class="card flush" style="margin-top:14px"><h2>Risk preference and the price of tail protection — ${esc(hz)} <small>the best multiple at every λ, and what sizing up to 1.5× bought in 95% ES</small></h2><div id="lhT"></div></div>
       ${PR ? `<div class="card flush" style="margin-top:14px"><h2>Product preference — ${esc(hz)} <small>κ (cost sensitivity) ${esc((PR.choices || {})['2100-01-01'] ? PR.choices['2100-01-01'][1] : '—')} · β (basis-risk penalty) ${esc((PR.choices || {})['2100-01-01'] ? PR.choices['2100-01-01'][2] : '—')}</small></h2><div id="lhP"></div></div>` : ''}`;
-    const nodes = Object.entries(SZ.nodes || {}).map(([n, v]) => ({ n, ...v, lvl: n === 'global' ? 0 : ['global', 'risk', 'objective', 'product', 'instrument'].indexOf(n.split(':')[0]) }));
+    const nodes = Object.entries(SZ.nodes || {}).map(([n, v]) => ({ n, ...v, lvl: n === 'global' ? 0 : ['global', 'risk', 'objective', 'product', 'instrument'].indexOf(n.split(':')[0]), key: n === 'global' ? '' : n.split(':').slice(1).join(':') }))
+      .filter(x => x.lvl <= 3).sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
     table($('#lhN'), nodes, [{ k: 'n', label: 'Node', l: 1, f: x => `<span style="padding-left:${x.lvl * 12}px">${esc(x.n === 'global' ? 'Global' : x.n.split(':')[1].split('/').pop())}</span><span class="sub">${esc(x.n.split(':')[0])}</span>` },
       { k: 'dates', label: 'Dates' }, { k: 'best_fit', label: 'Historical best fit', f: x => fmt.num(x.best_fit, 2) },
       { k: 'shrunk', label: 'Validated (shrunk)', f: x => `<b class="${(x.shrunk || 1) > 1.001 ? 'pos' : (x.shrunk || 1) < 0.999 ? 'neg' : ''}">${fmt.num(x.shrunk, 2)}</b>` }],
@@ -1096,12 +1101,12 @@
     table($('#lhT'), Object.entries(TL).map(([n, v]) => ({ n, ...v })), [{ k: 'n', label: 'Node', l: 1, f: x => esc(x.n === 'global' ? 'Global' : x.n.split(':')[1]) },
       { k: 'dates', label: 'Dates' }, { k: 'b', label: 'Best multiple at λ = 0.5 · 1 · 2 · 5 · 10', l: 1, f: x => ['0.5', '1.0', '2.0', '5.0', '10.0'].map(l => fmt.num((x.best_multiple_by_lambda || {})[l], 2)).join(' · ') },
       { k: 'es', label: '1.5×: ES reduction', f: x => fmt.signed(x.es_reduction_1_5x) }, { k: 'u', label: '… utility change', f: x => fmt.signed(x.utility_change_1_5x) },
-      { k: 'p', label: 'Price per $ of ES', f: x => fmt.num(x.price_per_es, 2) }], { sortKey: null, maxH: 420 });
+      { k: 'p', label: 'Price per $ of ES', f: x => (x.es_reduction_1_5x > 0 && x.utility_change_1_5x >= 0) ? '<span class="pos">free</span>' : fmt.num(x.price_per_es, 2) }], { sortKey: null, maxH: 420 });
     if (PR) {
       const rows = [];
-      Object.entries(PR.raw || {}).forEach(([n, ts]) => Object.entries(ts).forEach(([t, v]) => rows.push({ n, t: t.replace('type:', ''), ...v, pref: ((PR.preferences || {})[n] || {})[t] })));
-      table($('#lhP'), rows, [{ k: 'n', label: 'Node', l: 1, f: x => esc(x.n === 'global' ? 'Global' : x.n.split(':')[1]) }, { k: 't', label: 'Product type', l: 1 },
-        { k: 'n_', label: 'Dates', v: x => x.n, f: x => fmt.num(x.n, 0) }, { k: 'adv', label: 'Historical advantage', f: x => `<span class="${sign(x.adv)}">${fmt.signed(x.adv)}</span>` },
+      Object.entries(PR.raw || {}).forEach(([nd, ts]) => Object.entries(ts).forEach(([t, v]) => rows.push({ ...v, node: nd, t: t.replace('type:', ''), pref: ((PR.preferences || {})[nd] || {})[t] })));
+      table($('#lhP'), rows, [{ k: 'node', label: 'Node', l: 1, f: x => esc(x.node === 'global' ? 'Global' : x.node.split(':')[1]) }, { k: 't', label: 'Product type', l: 1 },
+        { k: 'n', label: 'Dates', f: x => fmt.num(x.n, 0) }, { k: 'adv', label: 'Historical advantage', f: x => `<span class="${sign(x.adv)}">${fmt.signed(x.adv)}</span>` },
         { k: 'pref', label: 'Validated preference', f: x => `<span class="${sign(x.pref)}">${fmt.signed(x.pref)}</span>` }, { k: 'sd', label: 'Dispersion', f: x => fmt.signed(x.sd) }], { sortKey: 'pref', maxH: 480 });
     }
     $$('#lhH button').forEach(b => b.onclick = () => { pref.set('lhH', b.dataset.h); route(); });

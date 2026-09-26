@@ -329,7 +329,7 @@ def tail_profile(cases: List[dict]) -> Dict[str, dict]:
         for o, cc in by.items():
             oa, ot = V.outcome(cc, "A", o), V.outcome(cc, "T", o)
             if oa.get("es_h") is not None and ot.get("es_h") is not None:
-                d_es += ot["es_h"] - oa["es_h"]                      # ES is a loss (negative); larger = less tail loss
+                d_es += oa["es_h"] - ot["es_h"]                      # ES is a positive loss: > 0 = sizing up reduced the tail loss
             ua, ut = V.utility(oa, 1.0), V.utility(ot, 1.0)
             if ua is not None and ut is not None:
                 d_u += ut - ua

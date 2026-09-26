@@ -61,6 +61,9 @@ finsim2/
     dirnext.py           Shaffer vNext Directional: logistic challengers vs the prior-only model (1D/1W; 1M only if one passes),
                          calibration, bearish precision by product class, SHAFFER_DIRECTIONAL_VNEXT.md
     vnext.py             Shaffer vNext master summary (SHAFFER_VNEXT_SUMMARY.md) and challenger registry entries
+    learned.py           ML Lab: the historically supported Shaffer weights — hierarchical partial pooling per signal, node and
+                         horizon (Alpha ranking / Directional vs prior), nested validation, capability suite, live shadow of the
+                         learned sets that pass; SHAFFER_LEARNED_WEIGHTS.md
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
@@ -70,6 +73,7 @@ finsim2/
                          history, objml (objective-specific hedge ML, sizing study), designs (profit-aware hedge designs),
                          volhedge (research: does the breadth volatility forecast improve realised hedges? BREADTH_HEDGE_RESEARCH.md),
                          hedgenext (Shaffer vNext Hedge: risk estimation, sizing, product choice, Alpha link; SHAFFER_HEDGE_VNEXT.md),
+                         hedgelearn (learned hedge parameters: sizing, product preference, cost / basis / tail),
                          crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI

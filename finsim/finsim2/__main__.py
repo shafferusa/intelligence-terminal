@@ -129,13 +129,14 @@ def main(argv=None) -> int:
         here = os.path.dirname(os.path.abspath(__file__))
         res = learned.run_all(app.db_path(), workers=args.workers, progress=print)
         H = res["horizons"]
-        md = learned.markdown(res, {k: v.get("assets_today") for k, v in H.items()}, {k: v.get("nodes") for k, v in H.items()})
-        open(os.path.join(here, "SHAFFER_LEARNED_WEIGHTS.md"), "w", encoding="utf-8").write(md)
         st = Store(app.db_path())
         try:
             learned.register(st, res)
         finally:
             st.close()
+        live = learned.build_live(app.db_path(), res, progress=print)
+        md = learned.markdown(res, {k: v.get("assets_today") for k, v in H.items()}, {k: v.get("nodes") for k, v in H.items()}, live)
+        open(os.path.join(here, "SHAFFER_LEARNED_WEIGHTS.md"), "w", encoding="utf-8").write(md)
         print(f"learned weights: {res['seconds']}s; wrote SHAFFER_LEARNED_WEIGHTS.md")
         return 0
     if args.cmd == "lab" and (args.vnext or args.fetch_sec_extra):

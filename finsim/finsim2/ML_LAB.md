@@ -487,3 +487,89 @@ Result: nothing passes every gate, so nothing enters live shadow.
 * The EWMA covariance helps the 3M crash objective (ΔU +$6k, FDR), but it also fails H4.
 * The product-choice and Alpha-link tests found nothing.
 * The existing resizing challenger is flat to negative from 2018 on.
+
+### Learned Shaffer weights (`engine/learned.py`, `hedge/hedgelearn.py`, report `SHAFFER_LEARNED_WEIGHTS.md`)
+
+The original purpose of the ML Lab: **find the weights history supports, then decide how much to trust them.** Every
+one of the 74 production signals gets a weight at every node of Global → Class → Product type → Sector → Industry →
+Asset, for every horizon, from the point-in-time research records. The hierarchy is economic, not the wrapper:
+
+* XLK is Equity → sector ETF → Information Technology;
+* UST10Y and IEF are both Rates → Treasury → intermediate;
+* WTI and USO are both Commodity → Energy → Oil.
+
+**Targets.** Alpha ranks assets. It uses the pairwise ranking least-squares target (RankRLS: the pairwise squared
+loss, solved in closed form) on week-demeaned signals. Directional estimates P(up) with the PIT base prior as the
+offset, fitted by one Newton (IRLS) step and calibrated only on out-of-sample scores.
+
+**Partial pooling.** Every node's weights are a ridge toward its parent, so a child with little evidence inherits
+its parent. The global level has its own weak ridge; K only governs pooling. Five weight sets are compared
+walk-forward on identical records:
+
+* A: production;
+* B: historical best fit (hardly pooled);
+* C: validated deployable. K is chosen nested, every global weight is trusted by its out-of-sample leave-one-out t
+  (positive-part James–Stein), and a node keeps its own deviation only if it improved that node's own records out of
+  sample (yearly clusters, BH across nodes × signals);
+* D: simple global learned weights;
+* E: uniform-depth hierarchy, with K and depth chosen nested.
+
+**Other diagnostics:**
+
+* optimisers compared: ridge, elastic net, sign-constrained, RankNet, and residual boosting (as a nonlinear
+  diagnostic);
+* era stability (six era fits → STABLE / REGIME DEPENDENT / UNSTABLE / NO EVIDENCE);
+* regime fits;
+* confidence, regime, decay and applicability structure tests;
+* conviction buckets.
+
+**Capability test first.** Ten synthetic PIT worlds with known equations were run through the same code:
+
+* linear;
+* ranking target;
+* sparse;
+* correlated;
+* regime-dependent;
+* sector-specific;
+* horizon-specific;
+* nonlinear interaction;
+* pure noise;
+* asset-specific with a short-history asset.
+
+All ten recovered what was planted, and noise was not validated. Building the suite found and fixed three engine
+flaws before any market result was read:
+
+* the global and pooling penalties were conflated;
+* depth was chosen by the largest gain rather than significance;
+* node deviations were measured inconsistently with how they were deployed.
+
+**Results.**
+
+* At 1W the simple global learned weights (D) and the uniform-depth hierarchy (E) beat production under every fixed
+  gate, with FDR across 24 tests:
+  * rank IC 0.053 and 0.055 vs 0.038;
+  * net long-short +0.15–0.19% a week vs ~0;
+  * 3 of 4 eras.
+
+  They are in live shadow: `alpha-learned-1w-global-exp` and `alpha-learned-1w-hierarchy-exp`, recorded daily and
+  graded like production. The gain is concentrated after 2017.
+* At 1D the learned sets beat production on average (hierarchy t 3.1) but win only 2 of 4 eras.
+* From 1M to 12M nothing is significant.
+* Directional never beats the prior.
+* The trust-filtered set C was too conservative: it drops signals that only help jointly. It is reported as
+  designed, not shadowed.
+* Learned allocations are very different from production's (share distance 0.8–0.9).
+* Few weights are stable across eras.
+
+**Hedge.** The same approach over Global → Risk class → Objective → Product class → Instrument:
+
+* History supports larger hedges than hedge-2 at 1W and 1M. The validated multiple is 1.35× globally, and 1.35–1.5×
+  for most risk classes and objectives; minimum-variance stays at ~1.0×.
+* At 1W, sizing up both reduced the 95% ES and raised utility.
+* All sizing cells fail the cost / basis guard H4, and the gain reverses at λ ≥ 5.
+* Product preference (κ, β) validated nothing.
+
+**ML Lab views.** Shaffer Alpha → Learned weights and Shaffer Directional → Learned weights hold *Current learned
+Shaffer*: every asset's production score next to the learned ones, where the weights come from in the hierarchy,
+reliability, and the per-signal weights. Shaffer Hedge → Learned hedge holds the hedge parameters. Run with
+`python -m finsim2 lab --learned`.

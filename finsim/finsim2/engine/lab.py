@@ -680,6 +680,16 @@ def record_shadow(research, asset_id: str) -> int:
             if not (g.get("G1_discovery") and g.get("G2_confirmation")):
                 continue                     # only challengers that passed discovery and confirmation enter live shadow
             info: dict = {}
+            if v.get("family") == "learned":
+                from . import learned as LW
+                s = LW.live_score(st, v, meta, lab, r.get("sig"), info)
+                if s is None:
+                    continue
+                pid = record(st, panel, asset_id, last, f"shaffer:{v['id']}", v["id"], lab, hmap[lab], None, None, None, s,
+                             {"production_raw": r.get("raw"), "production_version": f"shaffer-{cfg.VERSION}", "challenger_version": v["id"],
+                              "node": info.get("node"), "confidence": r.get("confidence")}, source="shadow", raw=s)
+                n += pid is not None
+                continue
             if v.get("family") == "directional":
                 from . import directional as dmod
                 s, info = dmod.live_score(st, research, v["id"], meta, lab, r.get("raw"), r.get("sig"))
