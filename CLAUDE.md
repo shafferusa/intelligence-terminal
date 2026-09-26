@@ -11,8 +11,9 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 2. `prompts/shared-rules.md` — operational rules every run must follow (labels, verification,
    Telegram, page creation, ledgers, idempotency).
 3. Your run procedure — one of:
-   - `prompts/learning.md` — **Learning Brief**, Mon–Fri 6:00 AM ET. Strictly learning, ONE lesson
-     per report, no news. Reads like a newspaper feature.
+   - `prompts/learning.md` — **Learning Brief**, Mon–Fri ~5:00 AM ET, delivered by 5:30. Strictly
+     learning, ONE ~15-minute lesson per report from `curriculum/academy-300.json`, no news, no
+     audio.
    - `prompts/weekday.md` — Morning (6:30 AM) and Closing (4:30 PM) briefs. Strictly news.
    - `prompts/weekend.md` — Saturday Weekly Review / Sunday Week Ahead. Strictly news.
    - `prompts/sie.md` — **SIE Program**, daily (weekends too) at noon ET. A 30-day FINRA SIE exam
@@ -21,6 +22,11 @@ No human is in the loop. Accuracy, evidence, and honesty over speed or drama.
 
 **The 2026-08-16 split:** the newspaper is news only and the Learning Brief is learning only.
 Never put a lesson in a news edition; never put headlines or markets in the Learning Brief.
+**The 2026-09-25 restart:** the Learning Brief now teaches `curriculum/academy-300.json` — fifteen
+subjects, twenty lessons each, strictly in sequence (SPEC §0c). If the routine prompt that started
+you names `academy-150.json`, "25-30 minutes" or 6:00 AM, it predates the restart: follow
+`prompts/learning.md` and `state/learning.json`, which win.
+
 The SIE Program (2026-09-25) is its own edition: its quizzes and tracker never appear in the
 Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 
@@ -30,20 +36,23 @@ Learning Brief, and the Learning Brief's no-quiz rule does not apply to it.
 - `prompts/` — routine procedures (shared-rules.md, weekday.md, weekend.md, learning.md).
 - `config/settings.yml` (schedule, local beats, weather point), `config/watchlists.yml`
   (`board:` = the closing edition's 25-row chart, plus the appendix watchlists).
-- `curriculum/academy-150.json` — **the live curriculum**: 150 weekday lessons across seven
-  subjects for the Learning Brief.
+- `curriculum/academy-300.json` — **the live curriculum** for the Learning Brief: fifteen subjects,
+  twenty weekday lessons each, run strictly in sequence (restarted 2026-09-25, SPEC §0c).
+  `curriculum/academy-150.json` — RETIRED 2026-09-25 (30 lessons taught); a record only, never read.
 - `curriculum/sie-30.json` (30-day SIE roadmap + topic taxonomy) and `curriculum/sie-facts.json`
   (the memorization reference, each fact tagged stable/annual/changed/verify) — SIE Program.
   `curriculum/sie-question-style.md` — the house question style for SIE quizzes and exams.
 - `site/reports/sie/study-guide.html` — the SIE Study Guide (one chapter per program day).
 - `curriculum/physics.json`, `curriculum/spaceflight.json`,
-  `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); kept as
-  source material for the 150-day curriculum.
+  `curriculum/quant-ml/equation_registry.csv` — RETIRED as live sequences (2026-08-16); were
+  source material for the retired 150-day curriculum.
 - `data/nyse-holidays.json` — NYSE holidays & early closes, 3 years ahead.
-- `site/` — GitHub Pages root: `index.html`, `status.html`, `assets/` (css/js/icons, incl.
-  `report.js` = SIE quiz answer sheet + study-guide ticks; report audio retired 2026-09-25), `report-template.html`,
+- `site/` — GitHub Pages root: `index.html`, `academy.html` (the 300-lesson plan, taught lessons
+  linked), `status.html`, `assets/` (css/js/icons, incl. `report.js` = SIE quiz answer sheet +
+  study-guide ticks; report audio retired 2026-09-25), `report-template.html`,
   `reports/YYYY/MM/*.html` + `reports/index.json` (archive index), `equations/eq_NNN.png`,
-  `manifest.webmanifest`, `sw.js`. Pagefind assets and `status.jsonl` are build-generated.
+  `manifest.webmanifest`, `sw.js`. Pagefind assets, `status.jsonl` and `academy.json` are
+  build-generated.
 - `state/` — run state: `last-run.json`, `stories.json`, `learning.json` (curriculum position),
   `calendar-cache.json`, `market-history/` (hy-oas.csv, breadth.json, last-good.json),
   `run-log.jsonl`, `sie.json` (SIE program state: tracker, error log, review queue, scores),

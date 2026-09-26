@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "site/**"
+      - "curriculum/academy-300.json"   # copied into the site as academy.json
   workflow_dispatch:
   # PR-path publishes: after publish-report merges a claude/* report PR, this
   # workflow_run trigger rebuilds and deploys from main (merges made with
@@ -46,6 +47,12 @@ jobs:
       # fetch the run log directly. Copy it in at build time.
       - name: Publish run log for the status page
         run: cp state/run-log.jsonl site/status.jsonl || echo "no run log yet"
+
+      # Same idea for the Academy page: the Learning Brief's curriculum lives
+      # in curriculum/, outside the site root, and academy.html lists every
+      # lesson from it (SPEC Sec.0c, 2026-09-25).
+      - name: Publish the curriculum for the Academy page
+        run: cp curriculum/academy-300.json site/academy.json || echo "no curriculum yet"
 
       # site/assets/* is served cache-first by the service worker, so an
       # installed PWA keeps the old file until the cache KEY changes. Bumping

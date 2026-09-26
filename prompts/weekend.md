@@ -123,7 +123,7 @@ the News** is only a small weekly catch-all for what none of them cover.
 21. **Colophon** — sources, corrections, method. The registry sweep result goes here in one
     sentence ("no status changes across the nine private-module companies"), not as its own section.
 
-**No lessons.** Learning moved to the weekday 6:00 AM Learning Brief on 2026-08-16. Do not summarise
+**No lessons.** Learning moved to the weekday 5:00 AM Learning Brief on 2026-08-16. Do not summarise
 it here, do not read `state/curriculum.json` (retired), and do not touch `state/learning.json` —
 the weekend routine has no learning role at all.
 
@@ -194,7 +194,7 @@ stay dedicated. **Also in the News Ahead** is only a small catch-all for what no
     matter, state votes, major local events). Omit if nothing.
 18. **Market Appendix** — collapsed. 19. **Colophon**.
 
-**No lesson previews.** Learning is entirely the weekday 6:00 AM Learning Brief's job now.
+**No lesson previews.** Learning is entirely the weekday 5:00 AM Learning Brief's job now.
 
 **Mandatory ledger write:** EVERY explicit scenario, probability, and forecast in the Market Setup,
 Risk Register and Scenarios sections (and anywhere else) is appended to `ledgers/forecasts.json`

@@ -292,7 +292,7 @@ each item as previous understanding → new information → why it matters → c
 ## Step 4 — Compose the report
 
 **This is a newspaper. It is strictly news.** No lessons, no curriculum, no teaching — that moved to
-the 6:00 AM Learning Brief (`prompts/learning.md`) on 2026-08-16 and must not reappear here.
+the 5:00 AM Learning Brief (`prompts/learning.md`) on 2026-08-16 and must not reappear here.
 
 **Finance-first editions (revised 2026-09-25).** Both weekday briefs LEAD with and go deepest on
 **finance, business, economics, the Fed and the Treasury** — that block is the main event and gets the

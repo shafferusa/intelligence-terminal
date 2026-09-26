@@ -1240,6 +1240,47 @@ table.board-table {
 .worked ol { margin: 0.4rem 0 0; padding-left: 1.2rem; }
 .worked li { margin-bottom: 0.35em; }
 
+/* Key Concepts — a short glossary for the lesson. */
+.key-terms {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.15rem;
+  margin: 1.2em 0;
+}
+.key-terms dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+}
+.key-terms dt { font-weight: 700; color: var(--ink); }
+.key-terms dd { margin: 0; color: var(--ink); }
+
+/* Think About It — the closing question. */
+.think-about-it {
+  font-style: italic;
+  border-left: 3px solid var(--line);
+  padding-left: 0.9rem;
+  margin: 1.4em 0 0;
+  color: var(--ink);
+}
+.think-about-it > b {
+  display: block;
+  font-style: normal;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+@media (max-width: 30rem) {
+  .key-terms dl { grid-template-columns: 1fr; gap: 0.1rem; }
+  .key-terms dd { margin-bottom: 0.45rem; }
+}
+
 /* Where the track stands. */
 .recap {
   background: var(--tone-info-bg);
@@ -1477,3 +1518,73 @@ details.tracker > summary { cursor: pointer; font-family: var(--sans); font-weig
 .guide-done { display: flex; gap: 0.5rem; align-items: center; font-family: var(--sans); font-size: 0.875rem; margin: 1.4rem 0 0; padding: 0.6rem 0.8rem; border: 1px dashed var(--line); border-radius: 8px; }
 .guide-done input { width: 1.1rem; height: 1.1rem; }
 .guide-chapter details.check > summary { font-weight: 500; line-height: 1.55; }
+
+/* ---------- academy page ---------- */
+
+.subjects {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 0.6rem 1.2rem;
+}
+.subjects li { font-size: 0.875rem; }
+.subjects .subject-name { display: flex; justify-content: space-between; gap: 0.5rem; }
+.subjects .subject-count { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.subject-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  margin-top: 0.3rem;
+  overflow: hidden;
+}
+.subject-bar > i {
+  display: block;
+  height: 100%;
+  width: calc(var(--pct, 0) * 1%);
+  background: var(--edition, var(--accent));
+}
+
+.phase-mission {
+  font-family: var(--serif);
+  color: var(--muted);
+  margin: -0.6rem 0 1rem;
+  text-align: center;
+  font-size: 0.9375rem;
+}
+.lessons { list-style: none; margin: 0; padding: 0; }
+.lesson-row {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr;
+  gap: 0.2rem 0.7rem;
+  align-items: baseline;
+  padding: 0.6rem 0.2rem;
+  border-top: 1px solid var(--line);
+}
+.lesson-row:first-child { border-top: 0; }
+.lesson-num {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+}
+.lesson-subject {
+  font-family: var(--sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.lesson-topic { margin: 0; font-family: var(--serif); font-weight: 700; }
+.lesson-row.is-taught .lesson-subject { color: var(--edition, var(--accent)); }
+.lesson-row.is-taught .lesson-topic a { color: inherit; text-decoration: none; }
+.lesson-row.is-taught .lesson-topic a:hover { text-decoration: underline; }
+.lesson-headline { margin: 0.1rem 0 0; font-size: 0.875rem; color: var(--ink); }
+.lesson-date { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); margin: 0.1rem 0 0; }
+.lesson-row.is-next { background: var(--tone-info-bg); border-radius: 6px; padding-left: 0.5rem; padding-right: 0.5rem; }
+.lesson-row.is-next .lesson-subject::after { content: " · next"; letter-spacing: 0; text-transform: none; font-weight: 600; }
+.lesson-row.is-future .lesson-topic { font-weight: 400; color: var(--muted); }

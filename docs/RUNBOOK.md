@@ -92,22 +92,29 @@ At **claude.ai/code/routines**, create all three with: model **claude-sonnet-5**
 
 | Routine | Cron (UTC, summer/EDT) | Runs at (ET) | Prompt |
 |---|---|---|---|
-| Learning Brief | `0 10 * * 1-5` | Mon–Fri 6:00 AM | `Read CLAUDE.md and prompts/learning.md in this repository and execute the run procedure exactly.` |
+| Learning Brief | `CRON_TZ=America/New_York 50 4 * * 1-5` | Mon–Fri 4:50 AM start → push lands ~5:00, by 5:30 at the latest | `You are the scheduled Learning Brief author for Logan's Daily Newspaper. In the attached repository (shafferusa/intelligence-terminal): read CLAUDE.md, then prompts/shared-rules.md, then prompts/learning.md, and execute the Learning Brief run procedure exactly. prompts/learning.md and state/learning.json decide the curriculum, today's lesson, the length and the format. Never send a Telegram message yourself; GitHub Actions sends it when you push.` |
 | Weekday briefs | `30 10,20 * * 1-5` | Mon–Fri 6:30 AM & 4:30 PM | `Read CLAUDE.md and prompts/weekday.md in this repository and execute the run procedure exactly.` |
-
-**The 6:00 and 6:30 runs overlap by design and must not fight.** The Learning Brief writes a
-~6,000-word lesson and can still be running when the Morning Brief starts. They touch different
-report files, but both prepend to `site/reports/index.json` and append to `state/run-log.jsonl`.
-Shared-rules §15.2 covers it: `git pull --rebase` before every push, and on a conflict in
-`index.json` or `run-log.jsonl` take the remote version and re-apply your own addition. If the two
-ever start colliding in practice, move the Learning Brief earlier (`0 9 * * 1-5` = 5:00 AM ET)
-rather than delaying the news.
 | Weekend reports | `0 13 * * 0,6` | Sat & Sun 9:00 AM | `Read CLAUDE.md and prompts/weekend.md in this repository and execute the run procedure exactly.` |
 | SIE Program (added 2026-09-25) | `CRON_TZ=America/New_York 28 11 * * *` | Daily 11:28 AM start → push lands ~noon | `Read CLAUDE.md, prompts/shared-rules.md and prompts/sie.md in this repository and execute the SIE run procedure exactly.` |
 
+**The Learning Brief starts at 4:50 AM ET so it is in Telegram by 5:30** (Logan, 2026-09-25:
+"5am … better be delivered by 5:30am"; SPEC §0c). The scheduler starts `:00` crons 9–12 minutes
+late (the old `0 10` fired 6:08–6:10 ET) but other minutes on time, so 4:50 really means 4:50. A
+lesson run pushes 8–12 minutes after it starts; `notify.py` then waits for the page to go live
+(1–2 minutes, no audio) and sends. Expect the push around 5:00–5:10. It no longer overlaps the
+6:30 Morning Brief; shared-rules §15.2's pull-rebase rule still covers any `index.json` or
+`run-log.jsonl` race.
+
+**Editing this routine is manual.** It was created through the API, and agents cannot edit
+API-created routines. At **claude.ai/code/routines** → "Intelligence Terminal — Learning Brief":
+set the schedule to weekdays at 4:50 AM Eastern (cron above; if the editor only accepts UTC, use
+`50 8 * * 1-5` during EDT and `50 9 * * 1-5` during EST and add it to the section B bump), and
+replace the prompt with the one in the table. The old prompt named `academy-150.json` and "25-30
+minutes"; `CLAUDE.md` and `prompts/learning.md` tell a run to ignore that, but fix it anyway.
+
 **The SIE Program starts at 11:28 ET so the Telegram push arrives around noon**: the run takes
 ~15–25 minutes (grading, an 8,000-word lesson, a quiz and its answer key) and `notify.py` then waits
-for the MP3. Its cron carries `CRON_TZ`, so unlike the three UTC routines it does **not** need the
+for the page to go live. Its cron carries `CRON_TZ`, so unlike the two UTC routines it does **not** need the
 section B DST bump. It needs the **`sie-inbox` workflow** on `main` (it is scheduled there
 automatically) so Logan's Telegram answers are captured — see section E4.
 
@@ -135,9 +142,11 @@ Run all three before trusting the schedule:
 
 Routine crons are UTC; ET shifts. Two edits per year:
 
-- The SIE Program routine is pinned to `America/New_York` with `CRON_TZ` and is never bumped.
-- **Nov 1, 2026** (fall back, EDT→EST): learning `0 10 * * 1-5` → `0 11 * * 1-5`; weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
-- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — learning back to `0 10 * * 1-5`, weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
+- The SIE Program and Learning Brief routines are pinned to `America/New_York` with `CRON_TZ`
+  and are never bumped. (If the Learning Brief was set with a UTC cron instead: `50 8 * * 1-5` →
+  `50 9 * * 1-5` on Nov 1, and back on Mar 14.)
+- **Nov 1, 2026** (fall back, EDT→EST): weekday `30 10,20 * * 1-5` → `30 11,21 * * 1-5`; weekend `0 13 * * 0,6` → `0 14 * * 0,6`.
+- **Mar 14, 2027** (spring forward, EST→EDT): reverse it — weekday back to `30 10,20 * * 1-5`, weekend back to `0 13 * * 0,6`.
 
 One-sentence instruction that works in any Claude session: *"Update my three intelligence-terminal routines' cron schedules for the DST change per docs/RUNBOOK.md section B (use the routine update / RemoteTrigger mechanism)."*
 
@@ -213,7 +222,8 @@ and the only pieces to swap are `urllib` → `fetch` and the dedupe file → Wor
 Removed at Logan's request ("no audio is needed"): `.github/workflows/audio.yml`,
 `.github/scripts/make_audio.py`, the MP3 staging step in `build-site.yml`, the 20-minute MP3 wait
 in `notify.py`, and the listen-to-text / MP3 player in `site/assets/report.js`. Telegram pushes now
-go out as soon as the page is published.
+go out as soon as the page is live: `notify.py` polls the page URL until Pages answers 200 (about
+1.5 minutes after the push; up to 5 minutes, then it sends anyway) so the link never opens on a 404.
 
 Existing `audio-<date>-<slot>` GitHub Releases were left in place (deleting them is irreversible);
 they are unused and can be deleted from the repo's Releases page at any time.

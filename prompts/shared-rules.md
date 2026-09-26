@@ -261,6 +261,8 @@ Reports live at `site/reports/YYYY/MM/YYYY-MM-DD-{am|pm|sat|sun|learn|sie}.html`
 7. **Reading time**: `reading_minutes` = body word count / 220, rounded up. Target for a weekday
    edition after the 2026-08-16 declutter is **18–25 minutes**, not 40+. If you are over 30, you are
    writing scaffolding, restating the same story in two sections, or padding a domain section.
+   The Learning Brief's own target is 12–18 minutes (`prompts/learning.md`); the SIE edition's is
+   set by `prompts/sie.md`.
 
 ## 13. Archive index update (`site/reports/index.json`)
 
