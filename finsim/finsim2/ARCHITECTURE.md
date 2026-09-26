@@ -62,6 +62,7 @@ finsim2/
     audit.py             universe replay of Shaffer and ML -> SHAFFER_AUDIT.md
   hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
                          history, objml (objective-specific hedge ML, sizing study), designs (profit-aware hedge designs),
+                         volhedge (research: does the breadth volatility forecast improve realised hedges? BREADTH_HEDGE_RESEARCH.md),
                          crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI

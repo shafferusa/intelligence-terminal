@@ -74,7 +74,11 @@ class TestUniverse(unittest.TestCase):
         self.assertEqual(universe.FRED_SERIES["CPIAUCSL"]["lag_days"], 45)
         self.assertEqual(universe.FRED_SERIES["NFCI"]["freq"], "weekly")
         self.assertEqual(universe.FRED_SERIES["DGS10"]["lag_days"], 1)
-        self.assertEqual(len(universe.FRED_SERIES), 47)
+        self.assertEqual(len(universe.FRED_SERIES), 56)          # 47 + the 9 new-information series (credit, term premium, real yields, foreign rates)
+        for sid in ("DAAA", "AAA10Y", "THREEFYTP10", "DFII5", "DFII30", "T10YIE", "IR3TIB01EZM156N", "IR3TIB01GBM156N", "IR3TIB01JPM156N"):
+            self.assertIn(sid, universe.FRED_SERIES)
+        self.assertEqual(universe.FRED_SERIES["THREEFYTP10"]["lag_days"], 7)
+        self.assertEqual(universe.FRED_SERIES["IR3TIB01EZM156N"]["lag_days"], 45)
         self.assertIn("TREASURY", universe.asset_classes())
 
 

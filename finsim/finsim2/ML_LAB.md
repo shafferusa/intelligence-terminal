@@ -361,3 +361,39 @@ The daily learning job then records, for every tracked asset, into the append-on
 Rows are graded at maturity. Alpha is graded by cross-sectional rank IC against production on the same dates. Volatility
 is graded by squared log error against the baseline on the same rows. A model shows ELIGIBLE FOR PROMOTION only after 60
 graded pairs with a live gain, and promotion itself remains a separate, explicit decision.
+
+### Breadth volatility → Shaffer Hedge outcomes (`hedge/volhedge.py`, report `BREADTH_HEDGE_RESEARCH.md`)
+
+A better volatility forecast is not a better hedge. This study replays the complete Shaffer Hedge point in time for
+every book × objective × date, from 2009, at 1W, 1M and 3M:
+
+```
+PIT data → volatility forecast → covariance → candidates → sizing → optimiser → package → realised P&L
+```
+
+It uses three otherwise identical volatility models:
+
+* **production**: hedge-2's 252-day covariance;
+* **no-breadth vol**: a log-volatility regression on 63d / 21d realised volatility and VIX;
+* **breadth vol**: the same regression plus breadth.
+
+Each hedge is judged on realised utility: U = risk reduction − λ·profit sacrificed − cost, for λ = 0.5–10. The protocol
+and gates G1–G5 were committed before any full result. The study adds a production-neutral replay path to
+`engine.analyze`, plus leakage tests: two stores identical up to a date give identical decisions on it.
+
+Results (14 books, 17 objectives; 446 / 212 / 70 dates at 1W / 1M / 3M):
+
+* The breadth forecast is better out of sample:
+  * 1W: −15% squared log error vs no-breadth, −50% vs production;
+  * 1M: −8% vs no-breadth;
+  * 3M: not significant (G1 fails).
+* Realised hedge utility is not better. 0 of 50 objective × horizon tests survive Benjamini-Hochberg, no cell passes
+  G1–G4, and nothing enters live shadow.
+* In the cells with positive point estimates, 91% of the summed gain comes from the new volatility architecture and
+  9% from breadth. Adding breadth lowered utility in 6 of 9 variance-sensitive cells.
+* Hedge sizes barely move (median ratio 1.00). What changes is mainly the product or contract choice, and those
+  changes net to about zero.
+* The largest point estimate is the 3M crash objective, +$8.4k per $1M. It misses FDR (p 0.0025), comes almost
+  entirely from the no-breadth model, and sits at a horizon where the forecast does not validate.
+
+Hedge-2 and its sizing are unchanged. The breadth forecast stays research information.
