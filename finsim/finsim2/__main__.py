@@ -65,6 +65,7 @@ def main(argv=None) -> int:
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
     lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
     lb.add_argument("--finetune", action="store_true", help="fine-tune the learned 1W Shaffer Alpha (nested, G1–G5), 1D after costs, 1M–12M, hedge λ surface: engine/finetune.py")
+    lb.add_argument("--extended", action="store_true", help="research-only extended-history records (pre-2001, training only) and the 1M–12M Alpha / Directional studies on them → SHAFFER_LONG_HORIZON_DATA.md")
     lb.add_argument("--hedge-panel", action="store_true", help="put the λ-conditional hedge sizing cells that passed every gate into live shadow and record / grade the λ-aware hedge panel now")
     lb.add_argument("--live-panel", action="store_true", help="score the whole research universe for production and every Shaffer challenger now (the weekly live panel)")
     lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
@@ -141,6 +142,34 @@ def main(argv=None) -> int:
         md = learned.markdown(res, {k: v.get("assets_today") for k, v in H.items()}, {k: v.get("nodes") for k, v in H.items()}, live)
         open(os.path.join(here, "SHAFFER_LEARNED_WEIGHTS.md"), "w", encoding="utf-8").write(md)
         print(f"learned weights: {res['seconds']}s; wrote SHAFFER_LEARNED_WEIGHTS.md")
+        return 0
+    if args.cmd == "lab" and args.extended:
+        from .data.store import Store
+        from .engine import extrecords, finetune, finetune_report, learned
+        from .engine.research import Research
+        here = os.path.dirname(os.path.abspath(__file__))
+        st = Store(app.db_path())
+        try:
+            r = Research(st)
+            info = extrecords.build(r, progress=print)
+            gaps = extrecords.data_gaps(r)
+            ext, dext = {}, {}
+            for lab_ in ("1M", "3M", "6M", "12M"):
+                ext[lab_] = finetune.study_long(st, r, lab_, progress=print, extended=True)
+            finetune.finalise(ext)
+            for lab_ in ("1M", "3M", "6M"):
+                s_ = learned.Study(st, r, lab_, progress=print)
+                s_.extended = True
+                dext[lab_] = {"dir": s_.run().get("dir")}
+            std = st.kv_get(finetune.RESEARCH_KEY) or {}
+            lw = learned.load(st) or {}
+            dstd = {k: {"dir": v.get("dir")} for k, v in (lw.get("horizons") or {}).items()}
+            st.kv_set("lab:extended", {"info": info, "gaps": gaps, "alpha": {k: {kk: vv for kk, vv in v.items()} for k, v in ext.items()}})
+            md = finetune_report.long_data_markdown(std, ext, gaps, info, dstd, dext)
+            open(os.path.join(here, "SHAFFER_LONG_HORIZON_DATA.md"), "w", encoding="utf-8").write(md)
+            print("wrote SHAFFER_LONG_HORIZON_DATA.md")
+        finally:
+            st.close()
         return 0
     if args.cmd == "lab" and args.hedge_panel:
         from .data.store import Store
