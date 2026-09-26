@@ -14,7 +14,8 @@ and horizon, point in time) and their realised outcomes. Two targets, learned se
     Directional  P(R_h > 0) beyond the PIT base prior p0 = Φ(z): a logistic model with the prior as offset,
                  logit p = logit p0 + wᵀ[1, x], weights from the Newton (IRLS) step at the prior (weighted least squares of
                  the working response (o − p0)/(p0(1 − p0)) with weight p0(1 − p0)), then Platt calibration
-                 p = σ(a + b·z + c·wᵀx) fitted on out-of-sample scores only.
+                 p = σ(a + b·z + c·wᵀx) fitted on out-of-sample scores only (until ≥ 5,000 matured out-of-sample scores
+                 exist, the learned model makes no adjustment and equals the prior).
 Every record carries weight q = 5 / max(5, h) (overlapping weekly outcomes).
 
 Hierarchy (economic, not the wrapper): Global → Class (Equity / Rates / Credit / Commodity / FX / Crypto / Volatility)
@@ -423,7 +424,7 @@ def cd_solve(st: Stat, rms: List[float], lam2: float, lam1: float = 0.0, lo=None
     P = st.P
     act = [i for i in range(P) if rms[i] > 0]
     M = st.matrix()
-    A = {i: [M[i][j] / (rms[i] * rms[j]) for j in range(P)] for i in act}
+    A = {i: [(M[i][j] / (rms[i] * rms[j])) if rms[j] > 0 else 0.0 for j in range(P)] for i in act}
     b = {i: st.xy[i] / rms[i] for i in act}
     w = list(start) if start else [0.0] * P
     for i in range(P):
@@ -1535,7 +1536,7 @@ def shares(v: Sequence[float]) -> List[float]:
     return [x / t if t else 0.0 for x in v]
 
 
-def build_rows(store, research, lab: str, progress=None) -> Tuple[List[dict], List[dict], List[str]]:
+def build_rows(store, research, lab: str, progress=None, only: Optional[set] = None) -> Tuple[List[dict], List[dict], List[str]]:
     """Matured research records (learning and evaluation) and every asset's latest record (today)."""
     from . import directional as D
     from . import weights as W
@@ -1549,7 +1550,7 @@ def build_rows(store, research, lab: str, progress=None) -> Tuple[List[dict], Li
     rows, latest = [], {}
     paths: Dict[str, List[str]] = {}
     for r in recs:
-        if not r.ext or not r.ext.get("s"):
+        if not r.ext or not r.ext.get("s") or (only and r.asset not in only):
             continue
         a = r.asset
         if a not in paths:
@@ -1599,15 +1600,15 @@ class Study:
     """One horizon on the real research records: the Alpha and Directional learners, their evaluation against production
     (and the prior), the evidence on every signal and node, the structure diagnostics and today's effective weights."""
 
-    def __init__(self, store, research, lab: str, progress=None):
-        self.store, self.research, self.lab = store, research, lab
+    def __init__(self, store, research, lab: str, progress=None, only: Optional[set] = None):
+        self.store, self.research, self.lab, self.only = store, research, lab, only
         self.say = progress or (lambda m: None)
         from .lab import LAB_HORIZONS
         self.h = dict(LAB_HORIZONS)[lab]
 
     def run(self) -> dict:
         t0 = time.time()
-        rows, today, names = build_rows(self.store, self.research, self.lab, self.say)
+        rows, today, names = build_rows(self.store, self.research, self.lab, self.say, self.only)
         self.today = today
         tab = Table(rows, names, self.h)
         del rows
@@ -1621,7 +1622,7 @@ class Study:
             lr = Learner(tab, tgt, progress=lambda m: self.say(f"{self.lab} {m}"))
             lr.fit_all(); lr.score_candidates(); lr.gains(); lr.run_variants()
             self.lrs[tgt] = lr
-        pw = Learner(tab, "alpha", k_grid=[K_DEFAULT])
+        pw = Learner(tab, "alpha", k_grid=[K_BEST, K_DEFAULT])
         pw.w = tab.wp
         pw.fit_all(); pw.score_candidates(); pw.gains(); pw.run_variants()
         out["alpha"] = self.alpha_report(self.lrs["alpha"], pw)
@@ -1929,9 +1930,8 @@ class Study:
                     s2 = inner if len(inner) <= 20000 else rnd.sample(inner, 20000)
                     platt[key] = _platt([[1.0, zs[k], lr.var_wf[key][k]] for k in s2], [float(tab.o[k]) for k in s2])
                 else:
-                    # in-sample: score the training sample with this cutoff's variant weights
-                    sc = self._in_sample(lr, cut, key, sub)
-                    platt[key] = _platt([[1.0, zs[k], s] for k, s in zip(sub, sc)], o)
+                    # no out-of-sample calibration evidence yet: the learned model makes no adjustment (= prior-only)
+                    platt[key] = [w0[0], w0[1], 0.0]
             if tag == "final":
                 self._platt_final = {"prior": w0, "current": w1, **platt}
                 continue
