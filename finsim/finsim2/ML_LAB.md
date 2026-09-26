@@ -619,3 +619,42 @@ transaction-cost-sensitive, and no false improvement on a plain world (which set
 **ML Lab views:** Shaffer Alpha → Fine-tune (model selection, why a model differs, thresholds, conviction, leave one
 group out, today's scores; horizon switch for 1D and 1M–12M) and Shaffer Hedge → Hedge fine-tune (surface by
 horizon and λ, H4 anatomy, Alpha-conditional). Run with `python -m finsim2 lab --finetune`.
+
+### Live evidence for the learned models (`engine/livexs.py`, `hedge/hedgelive.py`)
+
+**D and E accumulate live outcomes on the statistic they were validated on.** The daily loop scores only the tracked
+assets (core markets, holdings, watchlist) — a dozen names, useless for a cross-sectional ranking — and the generic
+live gate (≥ 60 pooled forecasts) would be met the first week. So:
+
+* **Weekly live panel.** The first daily run of each ISO week scores the whole research universe (~155 assets) for
+  production and every Shaffer challenger in live shadow (append-only ledger, graded like any forecast). One panel a
+  week keeps 1W observations independent. `python -m finsim2 lab --live-panel` runs it by hand. A fresh panel costs one
+  Shaffer sweep per asset (≈ 50 min in the research container; cached afterwards).
+* **Gate G3-XS (fixed 2026-09-26, before any live panel was graded)** for the learned ranking families: ≥ 52 weekly
+  cross-sections; live rank IC > 0 at t ≥ 1.65; live Δ vs production ≥ 0; live Δ within 2 standard errors of the
+  backtest (frozen into the registry as `live_expectation`); no CUSUM decay alarm. Beating production at t ≥ 2 is not
+  required live — at the backtest effect sizes that takes ≈ 200 weeks for E and ≈ 700 weeks for D (the Live learning
+  card shows "weeks needed").
+
+**A λ-aware hedge grader (H-LIVE).** On a fixed schedule (1W every 10 sessions, 1M every 21, 3M every 63) hedge-2's
+package for every standard book × objective is frozen the day it is made and graded at maturity into the research case
+format. Each λ-cell a version claims is scored on U(λ) = risk reduction − λ·profit sacrificed − cost against hedge-2 on
+the same cases. Gate: ≥ 26 graded dates, ΔU ≥ 0, within 2 standard errors of the backtest ΔU, H3 and H4 live. The two
+cells that passed every research gate (1M Commodity target-vol at λ = 5 and 10, ≈ 0.5× hedge-2) are in live shadow
+under `hedge-lambda-sizing-exp` with frozen multiples (`lab --hedge-panel`); only one standard book maps to that node,
+so reaching 26 dates takes ≈ 2 years.
+
+### Long-horizon data (`engine/extrecords.py`, report `SHAFFER_LONG_HORIZON_DATA.md`)
+
+The standard research records start where production's reconstructed record does (2001). Research-only extended
+records add the weeks from 1994 (the panel calendar starts 1993-01-29) up to each asset's first standard record and
+before 2009 — signals and outcomes only, no production score, so they can only be training data. With them the learned
+global model's walk-forward rank IC rises at every long horizon (1M 0.011 → 0.017, 3M −0.018 → −0.003, 6M 0.004 → 0.025,
+12M 0.064 → 0.080; 6M and 12M now 3/4 eras) but nothing clears G1 + FDR. Fundamentals start in 2009 (SEC XBRL) and cannot
+be extended. `python -m finsim2 lab --extended` rebuilds and reruns.
+
+### Position sizing from E — protocol only (`SHAFFER_SIZING_PROTOCOL.md`)
+
+Pre-registered, not run: seven construction rules (top/bottom q, class-neutral, rank-linear, conviction multiplier,
+inverse-vol, alpha-per-risk, long-only), nested choices only, product costs with flat-10 bp and 2× sensitivity, gates
+P1–P6 with FDR, four planted capability tests, and no live use before E passes G3-XS.

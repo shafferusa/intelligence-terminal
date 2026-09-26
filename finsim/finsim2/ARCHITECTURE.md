@@ -69,6 +69,8 @@ finsim2/
                          turnover smoothing; every choice nested, gates G1–G4 + FDR + G5 (vs the learned global model);
                          1D after costs, 1M–12M reduced dimension, extended capability suite, own live-shadow key
     finetune_report.py   SHAFFER_FINETUNE.md and SHAFFER_HEDGE_FINETUNE.md, generated from the results
+    livexs.py            live evidence for ranking challengers: weekly full-universe panel, cross-sectional live gate G3-XS
+    extrecords.py        research-only extended-history records (1994–2008, training only) and the data-gap audit
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
@@ -80,6 +82,7 @@ finsim2/
                          hedgenext (Shaffer vNext Hedge: risk estimation, sizing, product choice, Alpha link; SHAFFER_HEDGE_VNEXT.md),
                          hedgelearn (learned hedge parameters: sizing, product preference, cost / basis / tail),
                          hedgetune (λ-conditional hedge-size surface, utility frontier, product prior, H4 anatomy, Alpha link),
+                         hedgelive (λ-aware live grader: frozen hedge-2 packages on a fixed panel, λ-specific utility, H-LIVE),
                          crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI
