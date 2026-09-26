@@ -12,7 +12,10 @@ on:
   # GITHUB_TOKEN never fire push events, and the github-pages environment only
   # allows deploys from main — which workflow_run satisfies).
   workflow_run:
-    workflows: ["Publish report (auto-merge routine PRs)"]   # must match publish-report.yml's name: exactly
+    # Matched by the workflow's NAME, not its file. Renaming publish-report.yml's
+    # `name:` without updating this line silently disables the PR-path deploy
+    # and notification (it did, 2026-09-25, #32/#33).
+    workflows: ["Publish report (auto-merge routine PRs)"]
     types: [completed]
 
 permissions:

@@ -223,7 +223,7 @@ Removed at Logan's request ("no audio is needed"): `.github/workflows/audio.yml`
 `.github/scripts/make_audio.py`, the MP3 staging step in `build-site.yml`, the 20-minute MP3 wait
 in `notify.py`, and the listen-to-text / MP3 player in `site/assets/report.js`. Telegram pushes now
 go out as soon as the page is live: `notify.py` polls the page URL until Pages answers 200 (about
-1.5 minutes after the push; up to 7 minutes, then it sends anyway) so the link never opens on a 404.
+1.5 minutes after the push; up to 5 minutes, then it sends anyway) so the link never opens on a 404.
 
 Existing `audio-<date>-<slot>` GitHub Releases were left in place (deleting them is irreversible);
 they are unused and can be deleted from the repo's Releases page at any time.

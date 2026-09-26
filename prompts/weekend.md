@@ -28,9 +28,10 @@ Use Bash + `curl` for API fetches, WebSearch/WebFetch for news research. Never p
 
 ## Step 1 — Shared weekend gather (SR §2 fetch discipline throughout)
 
-Lighter than a weekday: Twelve Data quotes for the deduplicated watchlist universe (batches of 8,
-<300 credits, priority order as in `prompts/weekday.md` §2.4), Yahoo v8 for indices/futures/
-commodities/EURUSD (browser UA acceptable for Yahoo only), Treasury par curve XML (this week's
+Lighter than a weekday: Yahoo v8 is the PRIMARY quote sweep for the trimmed watchlist universe
+and for indices/futures/commodities/EURUSD/DXY (browser UA acceptable for Yahoo only), with Twelve
+Data as a spot-check only — exactly as `prompts/weekday.md` §2.4 (Twelve Data's free tier is
+8 credits/minute; sweeping the universe through it just hits 429), Treasury par curve XML (this week's
 dates), FRED weekly deltas for `DGS2 DGS10 T10Y2Y T10YIE DFII10 SOFR BAMLH0A0HYM2 ICSA` (+ append
 `hy-oas.csv` if a new observation exists), Cboe history CSVs (VIX/VIX9D/VIX3M week path),
 CoinGecko simple/price + global, `state/market-history/breadth.json` history for the week's

@@ -20,16 +20,10 @@ event, and build-site.yml only notifies when the merged PR changed
 site/reports/index.json (see the guard there).
 
 No audio wait any more: report audio was retired 2026-09-25 (Logan: "no audio
-is needed"), so the push goes out as soon as the page is published -- which
-means as soon as Pages is SERVING it, not the moment the report commit lands.
-notify-telegram.yml starts ~5 s after the push while the Pages deploy takes
-~1.5 min (2026-09-25 learn: push 10:18:45, live 10:20:13), so a push sent at
-once links to a 404. wait_for_page() holds it until the page answers 200, up
-to PAGE_WAIT_SECONDS, then sends regardless: late, never lost. On the PR path
-(build-site.yml) the deploy is already done and the first check passes.
+is needed"), so the push goes out as soon as the page is published.
 
 Reads: site/reports/index.json (newest entry first).
-Env:   TG_TOKEN, TG_CHAT, PAGE_WAIT_SECONDS (default 420 -- the notify jobs time out at 10 min; 0 disables).
+Env:   TG_TOKEN, TG_CHAT.
 """
 
 import html
@@ -43,7 +37,13 @@ import urllib.request
 REPO = "shafferusa/intelligence-terminal"
 BASE = "https://shafferusa.github.io/intelligence-terminal/"
 LIMIT = 4096  # Telegram's message length cap
-PAGE_WAIT = int(os.environ.get("PAGE_WAIT_SECONDS", "420"))  # under the 10-min job timeout
+
+# Direct-push editions: this job starts at the same moment as the Pages build,
+# which needs ~1 minute to deploy. Until 2026-09-25 the 20-minute MP3 wait hid
+# that race; with audio retired, the push could land before the page exists and
+# the link would 404. So hold the push until the page answers 200 -- capped, so
+# a Pages hiccup delays the edition but never cancels it.
+PAGE_WAIT = int(os.environ.get("PAGE_WAIT_SECONDS", "300"))
 PAGE_POLL = 15
 
 EDITION = {
@@ -88,30 +88,6 @@ def build_message(entry):
     return keep + "\n\n" + tail
 
 
-def wait_for_page(entry):
-    """Hold the push until Pages serves this edition's page. True if it did."""
-    path = entry.get("path")
-    if not path or PAGE_WAIT <= 0:
-        return False
-    url = BASE + str(path)
-    deadline = time.monotonic() + PAGE_WAIT
-    attempt = 0
-    while True:
-        attempt += 1
-        try:
-            req = urllib.request.Request(url, method="HEAD")
-            with urllib.request.urlopen(req, timeout=20) as resp:
-                if resp.status == 200:
-                    print("page live after %d check(s): %s" % (attempt, url))
-                    return True
-        except Exception:  # noqa: BLE001 - 404 until the deploy lands
-            pass
-        if time.monotonic() >= deadline:
-            print("page still not live after %ds -- sending anyway" % PAGE_WAIT)
-            return False
-        time.sleep(PAGE_POLL)
-
-
 def send(token, chat, text):
     body = json.dumps(
         {
@@ -128,6 +104,28 @@ def send(token, chat, text):
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.load(resp)
+
+
+def wait_for_page(url):
+    """Poll the report URL until it serves 200. True if it went live in time."""
+    deadline = time.monotonic() + PAGE_WAIT
+    attempt = 0
+    while True:
+        attempt += 1
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "LoganTerminal/1.0 (loganshaffer87@gmail.com)"}
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                if resp.status == 200:
+                    print("page live after %d check(s): %s" % (attempt, url))
+                    return True
+        except Exception:  # noqa: BLE001 - 404 before deploy is the expected case
+            pass
+        if time.monotonic() >= deadline:
+            print("page still not live after %ds -- sending anyway" % PAGE_WAIT)
+            return False
+        time.sleep(PAGE_POLL)
 
 
 def main():
@@ -152,9 +150,9 @@ def main():
     text = build_message(entry)
 
     # Waiting is an optimisation; sending is the job. Nothing in the wait may
-    # turn "the push is a minute late" into "there is no push".
+    # turn "the push is late" into "there is no push".
     try:
-        wait_for_page(entry)
+        wait_for_page(BASE + str(entry.get("path", "")))
     except Exception as exc:  # noqa: BLE001
         print("page wait failed (%s) -- sending now" % exc)
 
