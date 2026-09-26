@@ -31,6 +31,7 @@ finsim2/
     yahoo.py             daily history (period1=0 .. now), incremental updates
     fred.py              first-release vintages + publication dates (API, FRED_API_KEY); fredgraph.csv fallback
     sec.py               EDGAR companyfacts -> point-in-time fundamentals (by filing date)
+    sec_extra.py         research-only EDGAR concepts (cash flow, capex, buybacks, gross profit, assets, debt), first reported
     finra.py             FINRA Reg SHO daily short-sale volume files (2019 on; short-sale volume, NOT short interest) -> alt_data
     refresh.py           refresh(store, progress) -> downloads everything that is stale
   engine/
@@ -55,6 +56,11 @@ finsim2/
     newinfo.py           ML Lab: new-information families judged incrementally against the frozen benchmark (Alpha, Directional
                          gate v2, hedge volatility), BH FDR, LIMITED HISTORY track, live-shadow fits + daily ledger,
                          NEW_INFORMATION_RESEARCH.md
+    alphanext.py         Shaffer vNext Alpha: new PIT information on top of production, hierarchical ridge per horizon (1D–12M),
+                         cross-sectional gates + FDR, SHAFFER_ALPHA_VNEXT.md
+    dirnext.py           Shaffer vNext Directional: logistic challengers vs the prior-only model (1D/1W; 1M only if one passes),
+                         calibration, bearish precision by product class, SHAFFER_DIRECTIONAL_VNEXT.md
+    vnext.py             Shaffer vNext master summary (SHAFFER_VNEXT_SUMMARY.md) and challenger registry entries
     health.py            model health: walk-forward + live record per engine -> HEALTHY/WEAKENING/DECAYING/NO VERIFIED EDGE/INSUFFICIENT DATA
     shaffer.py           Shaffer v2: the one point-in-time sweep (compute_shaffer_score), attribution, priors
     candidates.py        candidate Shaffer families (carry, curve, term structure, inflation, FX, commodity, optionality,
@@ -63,6 +69,7 @@ finsim2/
   hedge/                 Shaffer Hedge (see SHAFFER_HEDGE.md): market, risk, products, pricing, series, engine,
                          history, objml (objective-specific hedge ML, sizing study), designs (profit-aware hedge designs),
                          volhedge (research: does the breadth volatility forecast improve realised hedges? BREADTH_HEDGE_RESEARCH.md),
+                         hedgenext (Shaffer vNext Hedge: risk estimation, sizing, product choice, Alpha link; SHAFFER_HEDGE_VNEXT.md),
                          crisis, surface, scoring, service, audit
     research.py          orchestration: per-asset research bundle, universe run, caching
   static/                the UI

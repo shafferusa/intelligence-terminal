@@ -397,3 +397,72 @@ Results (14 books, 17 objectives; 446 / 212 / 70 dates at 1W / 1M / 3M):
   entirely from the no-breadth model, and sits at a horizon where the forecast does not validate.
 
 Hedge-2 and its sizing are unchanged. The breadth forecast stays research information.
+
+### Shaffer vNext: three separate research programs (`engine/alphanext.py`, `engine/dirnext.py`, `hedge/hedgenext.py`)
+
+Reports: `SHAFFER_ALPHA_VNEXT.md`, `SHAFFER_DIRECTIONAL_VNEXT.md`, `SHAFFER_HEDGE_VNEXT.md`, and the master table
+`SHAFFER_VNEXT_SUMMARY.md`. Run: `python -m finsim2 lab --fetch-sec-extra`, then `python -m finsim2 lab --vnext all`.
+
+The ML Lab tabs are grouped into three areas plus the shared Lab: **Shaffer Alpha** (Shaffer Alpha, Alpha vNext,
+Signal weights, Family weights), **Shaffer Directional** (Shaffer Directional, Directional vNext), **Shaffer Hedge**
+(Hedge research, Hedge vNext) and **Lab** (production, performance, signals, new information, challengers, live
+learning, versions, forecasts).
+
+These rules are shared by all three programs:
+
+* Production is fixed: shaffer-2.1, shaffer-alpha-2.1-production, the Directional research definition, hedge-2, the
+  resizing live shadow and benchmark `benchmark-2.1-2026-09-25`.
+* Every challenger is versioned (`alpha-3-…`, `directional-3-…`, `hedge-3-…`) and registered in `formula:registry` with
+  status `challenger` or `rejected`.
+* Each program runs walk-forward over four unseen eras, with the 2018 split and BH FDR. Gates were fixed before the
+  full runs.
+* Live shadow comes only after the historical gates. Promotion needs the live shadow (at least 60 graded pairs) and
+  your approval.
+
+**Alpha.** The question is which assets will beat the others. The program adds new point-in-time information on top of
+the production score:
+
+* SEC fundamentals, first reported (`data/sec_extra.py`, research-only dataset `sec_x`): free-cash-flow yield,
+  accruals, asset growth, leverage change, gross profitability, operating-margin change, net issuance and buybacks;
+* earnings events and surprises;
+* sector-relative valuation, growth and momentum;
+* credit and term premium × beta;
+* breadth × beta.
+
+It fits a hierarchical ridge (global → class → sector) per horizon, from 1D to 12M, and a filings-only variant.
+Results are judged cross-sectionally: rank IC, quintile and decile spreads, net-of-cost long-short, hit rate vs the
+median, monotonicity, eras, class and sector stability, and conviction buckets.
+
+Result: no challenger passes G1–G4 plus FDR at any horizon.
+
+* Production is useful only at 1W (rank IC 0.038, t 6.1), and its net long-short there is about zero.
+* At 1M the global and class challengers are useful in absolute terms:
+  * rank IC 0.042 and 0.038, t 2.2;
+  * they pass FDR, 3 of 4 eras, positive spreads.
+
+  Their gain over production is not significant (Δ rank IC t 1.1 and 1.0), so the extension past 1W is suggestive, not
+  verified.
+* Specialisation below global never beats its parent with evidence.
+* The filings-only model is worse than production everywhere.
+* The bottleneck is point-in-time analyst estimates and revisions.
+
+**Directional.** This program estimates p_up beyond the point-in-time base prior. The base prior, the Shaffer
+adjustment and the final p are kept separate. Three logistic challengers (global, compact, class) add short-horizon
+information:
+
+* gap, close location and range;
+* 1-day and 5-day reversal;
+* volume surprise and illiquidity;
+* sector-relative returns;
+* earnings proximity;
+* breadth, dispersion and VIX.
+
+A challenger must beat the prior-only model on Brier, log loss, balanced accuracy and calibration together.
+
+Result: no challenger beats the prior at 1D or 1W.
+
+* The global and class models are overconfident: calibration slope 0.3–0.5, and their Brier gain is positive in 0 of
+  4 eras.
+* The compact model is roughly neutral (Brier gain t +0.4 at 1D, −1.2 at 1W).
+* 1M was not run, per the fixed rule.
+* Bearish precision on ordinary equities is 42–50% for every model, which is no better than a coin.
