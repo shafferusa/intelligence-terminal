@@ -635,6 +635,12 @@ live gate (≥ 60 pooled forecasts) would be met the first week. So:
   backtest (frozen into the registry as `live_expectation`); no CUSUM decay alarm. Beating production at t ≥ 2 is not
   required live — at the backtest effect sizes that takes ≈ 200 weeks for E and ≈ 700 weeks for D (the Live learning
   card shows "weeks needed").
+* **Validated is not superior.** A G3-XS pass means: positive live ranking skill, no material deterioration from the
+  backtest, not worse than production — it is not proof that the model beats production. That is reported separately
+  as the accumulated live Δ = IC_model − IC_production with its 95% interval and P(Δ > 0), labelled DEMONSTRABLY SUPERIOR
+  LIVE only when the whole interval is above zero; the hierarchy E is also compared live with the global model D (does the
+  hierarchy add value, or did it only fit history?). The Live learning card, the promotion table and the promotion
+  dialog show both, and a promotion stores both in its registry record (`promotion_evidence`).
 
 **A λ-aware hedge grader (H-LIVE).** On a fixed schedule (1W every 10 sessions, 1M every 21, 3M every 63) hedge-2's
 package for every standard book × objective is frozen the day it is made and graded at maturity into the research case

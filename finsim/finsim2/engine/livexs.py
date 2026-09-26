@@ -29,6 +29,14 @@ watchlist), a dozen names, not ~155.
 
 The backtest expectation of every model is frozen into its registry entry the first time the panel runs
 (`live_expectation`), so later research reruns cannot move the goalposts.
+
+4. Validated is not superior. A G3-XS pass says: the model keeps positive live ranking skill, has not materially
+   deteriorated from its backtest, and is not worse than production. It does NOT prove the model is better than
+   production. That is reported separately, every week, as the accumulated live difference
+       Δ = IC_model − IC_production   (mean over weekly cross-sections, 95% interval, P(Δ > 0))
+   with its own label — DEMONSTRABLY SUPERIOR LIVE only when the whole 95% interval is above zero — and the same for the
+   learned hierarchy against the learned global model (does the hierarchy add value live, or did it only fit history?).
+   A promotion records both.
 """
 from __future__ import annotations
 
@@ -47,6 +55,9 @@ RANKING_FAMILIES = ("learned", "finetune")
 GATE_FIXED = "2026-09-26"
 # the learned engine's live-shadow versions → the fine-tune research model that reproduces them
 FT_MODEL = {"alpha-learned-1w-global-exp": "learned global (D)", "alpha-learned-1w-hierarchy-exp": "learned hierarchy (E)"}
+# a hierarchy is also judged live against its own global sibling
+SIBLING = {"alpha-learned-1w-hierarchy-exp": "alpha-learned-1w-global-exp"}
+SUPERIOR, WORSE, UNRESOLVED, NONE = "DEMONSTRABLY SUPERIOR LIVE", "WORSE LIVE", "NOT RESOLVED", "NO LIVE WEEKS YET"
 
 
 def _week(d: str) -> str:
@@ -170,8 +181,9 @@ def freeze_expectations(store, reg: Optional[dict] = None) -> List[str]:
 
 
 # ------------------------------------------------------------------ 3. the statistic and the gate
-def weekly(store, vid: str, lab_: str) -> List[dict]:
-    """Per matured panel date: n, the challenger's and production's cross-sectional rank IC, and Δ."""
+def weekly(store, vid: str, lab_: str, ref: str = "shaffer") -> List[dict]:
+    """Per matured panel date: n, the challenger's and the reference model's (production unless `ref` names another
+    ledger model) cross-sectional rank IC on the same assets, and Δ."""
     dates = {p["date"] for p in (store.kv_get(PANEL_KEY) or [])}
     ch, pr = {}, {}
     for p in store.predictions(horizon=lab_):
@@ -182,7 +194,7 @@ def weekly(store, vid: str, lab_: str) -> List[dict]:
             continue
         if p["model"] == f"shaffer:{vid}":
             ch.setdefault(p["made_on"], {})[p["asset_id"]] = (val, p["realized"])
-        elif p["model"] == "shaffer":
+        elif p["model"] == ref:
             pr.setdefault(p["made_on"], {})[p["asset_id"]] = (val, p["realized"])
     out = []
     for d in sorted(ch):
@@ -218,6 +230,24 @@ def cusum(ds: List[float], ref: float, sd: float) -> dict:
     return {"S": s, "peak": peak, "threshold": CUSUM_H * sd, "fired_at_week": fired}
 
 
+def _phi(x: float) -> float:
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+
+def superiority(ds: List[float]) -> dict:
+    """The accumulated live difference Δ over weekly cross-sections: mean, standard error, 95% interval, one-sided p and
+    P(Δ > 0) (normal approximation, flat prior) — and a label kept separate from the validation gate."""
+    n = len(ds)
+    m, sd, t = _mt(ds)
+    if n < 2 or sd is None:
+        return {"weeks": n, "mean": m, "status": NONE if n == 0 else UNRESOLVED}
+    se = sd / math.sqrt(n)
+    lo, hi = m - 1.96 * se, m + 1.96 * se
+    return {"weeks": n, "mean": m, "se": se, "ci95": [lo, hi], "t": t, "p_one_sided": (1.0 - _phi(t)) if t is not None else None,
+            "prob_positive": _phi(t) if t is not None else None,
+            "status": SUPERIOR if lo > 0 else (WORSE if hi < 0 else UNRESOLVED)}
+
+
 def live_gate(store, v: dict) -> dict:
     """G3-XS for a ranking challenger (see the module docstring)."""
     lab_ = lab_of(v)
@@ -245,6 +275,13 @@ def live_gate(store, v: dict) -> dict:
               "no_decay_alarm": bool(out.get("cusum") is not None and out["cusum"]["fired_at_week"] is None)}
     out["checks"] = checks
     out["passed"] = all(checks.values())
+    out["label"] = "LIVE VALIDATED (G3-XS)" if out["passed"] else "ACCUMULATING"
+    # kept apart from the gate: is it better than production live, and (hierarchies) better than its global sibling?
+    out["superiority_vs_production"] = {**superiority(ds), "reference": "production",
+                                        "weeks_needed_95": out.get("weeks_needed_vs_production")}
+    sib = SIBLING.get(v["id"])
+    if sib:
+        out["vs_sibling"] = {**superiority([r["d"] for r in weekly(store, v["id"], lab_, ref=f"shaffer:{sib}")]), "reference": sib}
     return out
 
 

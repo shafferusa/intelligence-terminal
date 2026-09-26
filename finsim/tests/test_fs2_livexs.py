@@ -66,6 +66,33 @@ class LiveXS(unittest.TestCase):
         self.assertIsNotNone(g["cusum"]["fired_at_week"])
         self.assertFalse(g["passed"])
 
+    def test_validated_is_not_superior(self):
+        """A pass of G3-XS and live superiority are separate: a small positive live Δ passes the gate while the
+        superiority label stays NOT RESOLVED; a large one earns DEMONSTRABLY SUPERIOR LIVE."""
+        self.assertEqual(X.superiority([])["status"], X.NONE)
+        self.assertEqual(X.superiority([0.01, -0.02, 0.03, 0.0, 0.02, -0.01])["status"], X.UNRESOLVED)
+        self.assertEqual(X.superiority([0.2, 0.25, 0.18, 0.22, 0.3, 0.21])["status"], X.SUPERIOR)
+        self.assertEqual(X.superiority([-0.2, -0.25, -0.18, -0.22])["status"], X.WORSE)
+        s = X.superiority([0.1, 0.0, 0.2, -0.05, 0.12])
+        self.assertLess(s["ci95"][0], s["mean"])
+        self.assertGreater(s["prob_positive"], 0.5)
+        self._panels(60, 0.35, 0.25, seed=7)
+        g = X.live_gate(self.st, V)
+        self.assertIn("superiority_vs_production", g)
+        self.assertEqual(g["superiority_vs_production"]["reference"], "production")
+        self.assertIn(g["label"], ("LIVE VALIDATED (G3-XS)", "ACCUMULATING"))
+
+    def test_hierarchy_is_also_judged_against_its_global_sibling(self):
+        self._panels(10, 0.5, 0.0)
+        for p in self.st.predictions(horizon="1W"):          # the global sibling = production's scores here
+            if p["model"] == "shaffer":
+                self.st.add_prediction({**{k: p[k] for k in ("asset_id", "horizon", "made_on", "target_date", "raw", "realized")},
+                                        "model": "shaffer:alpha-learned-1w-global-exp", "model_version": "t", "source": "panel"})
+        g = X.live_gate(self.st, V)
+        self.assertEqual(g["vs_sibling"]["reference"], "alpha-learned-1w-global-exp")
+        self.assertEqual(g["vs_sibling"]["weeks"], 10)
+        self.assertAlmostEqual(g["vs_sibling"]["mean"], g["superiority_vs_production"]["mean"])
+
     def test_rank_ic_and_ranking_detection(self):
         self.assertAlmostEqual(X.rank_ic([1, 2, 3, 4], [10, 20, 30, 40]), 1.0)
         self.assertAlmostEqual(X.rank_ic([1, 2, 3, 4], [4, 3, 2, 1]), -1.0)

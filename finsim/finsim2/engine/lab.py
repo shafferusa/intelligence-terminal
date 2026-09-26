@@ -818,8 +818,12 @@ def promote(store, vid: str, confirm: bool = False) -> dict:
         if x["kind"] == v["kind"] and x["status"] == "production":
             x["status"] = "retired"; x["retired"] = time.strftime("%Y-%m-%d")
     v["status"] = "production"; v["promoted"] = time.strftime("%Y-%m-%d"); v["promoted_horizons"] = s["eligible_horizons"]
+    live = s.get("live") or {}
+    # the promotion record keeps validation and superiority apart: a G3-XS pass is not proof of being better than production
+    v["promotion_evidence"] = {"gate": live.get("gate"), "label": live.get("label"), "weeks": live.get("weeks"),
+                               "superiority_vs_production": live.get("superiority_vs_production"), "vs_sibling": live.get("vs_sibling")}
     _save_registry(store, reg)
-    store.audit("lab.promote", vid, {"horizons": s["eligible_horizons"]})
+    store.audit("lab.promote", vid, {"horizons": s["eligible_horizons"], "evidence": v["promotion_evidence"]})
     return v
 
 
