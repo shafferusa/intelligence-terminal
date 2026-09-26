@@ -758,7 +758,11 @@
   // ---------------------------------------------------------------- risk: VaR, contributions, correlations, scenarios, Monte Carlo
   // ---------------------------------------------------------------- ML Lab: the laboratory for Shaffer Score and Shaffer Hedge
   const LAB_TABS = [['production', 'Production models'], ['performance', 'Historical performance'], ['signals', 'Signal research'], ['alpha', 'Shaffer Alpha'], ['directional', 'Shaffer Directional'], ['newinfo', 'New Information'], ['sigweights', 'Signal weights'], ['weights', 'Family weights'],
-    ['challengers', 'Challengers & promotion'], ['hedge', 'Hedge research'], ['live', 'Live learning'], ['versions', 'Version comparison'], ['forecasts', 'Independent ML forecasts']];
+    ['challengers', 'Challengers & promotion'], ['hedge', 'Hedge research'], ['live', 'Live learning'], ['versions', 'Version comparison'], ['forecasts', 'Independent ML forecasts'],
+    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext']];
+  const LAB_GROUPS = [['Shaffer Alpha', ['alpha', 'alphanext', 'sigweights', 'weights']], ['Shaffer Directional', ['directional', 'dirnext']],
+    ['Shaffer Hedge', ['hedge', 'hedgenext']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
+  const LAB_NAME = Object.fromEntries(LAB_TABS);
   const icT = (m) => m && m.ic != null ? `${fmt.num(m.ic, 3)} <span class="faint">(t ${fmt.num(m.t, 1)})</span>` : '—';
   const stagePill = s => `<span class="pill ${s === 'production' ? 'pos' : s === 'eligible for promotion' ? 'pos' : s === 'live shadow' ? 'warn' : s === 'retired' ? '' : 'neg'}" style="font-size:10.5px">${esc(s)}</span>`;
   // Signal weights: the Shaffer equation with learned signal / family / scaling weights, validated on unseen eras
@@ -969,6 +973,69 @@
     $$('#bhH button').forEach(b => b.onclick = () => { pref.set('bhH', b.dataset.h); route(); });
     $$('#bhL button').forEach(b => b.onclick = () => { pref.set('bhL', b.dataset.l); route(); });
   };
+  // Shaffer vNext: the three research programs (Alpha / Directional / Hedge), each against fixed production
+  const vPill = s => `<span class="pill ${s === 'LIVE SHADOW ELIGIBLE' ? 'pos' : s === 'INSUFFICIENT DATA' ? 'warn' : s === 'production' || s === 'benchmark' ? '' : 'neg'}" style="font-size:10.5px">${esc(s || '—')}</span>`;
+  const vNone = (el, what, cmd) => { el.innerHTML = `<div class="card"><h2>${what} <small>research only</small></h2><p class="muted" style="margin:0">Not run yet: <code>${cmd}</code>.</p></div>`; };
+  const segH = (id, HZ, hz) => `<div class="row" style="gap:10px;margin:0 0 10px"><span class="muted" style="font-size:12.5px">Horizon</span><div class="seg" id="${id}">${HZ.map(x => `<button data-h="${x}" class="${x === hz ? 'on' : ''}">${x}</button>`).join('')}</div></div>`;
+  const labAlphaNext = (body, AN) => {
+    if (!AN || !AN.horizons) return vNone(body, 'Shaffer Alpha vNext', 'python -m finsim2 lab --vnext alpha');
+    const HZ = Object.keys(AN.horizons), hz = HZ.includes(pref.get('anH', '1M')) ? pref.get('anH', '1M') : HZ[0], H = AN.horizons[hz];
+    const rows = [{ n: 'production', m: (H.production || {}).walkforward || {}, ls: (H.production || {}).ls || {}, u: (H.production || {}).useful || {}, status: 'production' }]
+      .concat(Object.entries(H.challengers || {}).map(([n, c]) => ({ n, m: (c.walkforward || {}).challenger || {}, ls: (c.walkforward || {}).ls_challenger || {}, pr: (c.walkforward || {}).paired || {}, g: c.gates || {}, u: c.useful || {}, status: c.status, id: c.id })));
+    body.innerHTML = `<div class="card"><h2>Shaffer Alpha vNext <small>which assets will beat or trail the others over this horizon? · new information on top of production · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">Challengers add first-reported SEC fundamentals, earnings events, sector-relative structure, macro × beta and breadth × beta to the production score, fitted per horizon on records that matured before each unseen era. Judged cross-sectionally: rank IC, spreads, net-of-cost long-short, eras and FDR. Blocked (no PIT history): ${esc((AN.blocked || []).join(', '))}.</p>
+      ${segH('anH', HZ, hz)}<div id="anT"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Conviction <small>does a larger |Alpha| mean a larger relative return? production</small></h2><div id="anC"></div></div>`;
+    table($('#anT'), rows, [{ k: 'n', label: 'Model', l: 1, f: x => `<b>${esc(x.n)}</b>${x.id ? `<span class="sub mono">${esc(x.id)}</span>` : ''}` },
+      { k: 'ric', label: 'Rank IC (t)', f: x => `${fmt.num(x.m.rank_ic, 4)} <span class="faint">(${fmt.num(x.m.rank_t, 1)})</span>` },
+      { k: 'd', label: 'Δ vs production (t)', f: x => x.pr ? `<span class="${x.pr.mean > 0 ? 'pos' : 'neg'}">${fmt.num(x.pr.mean, 4)}</span> <span class="faint">(${fmt.num(x.pr.t, 1)})</span>` : '—' },
+      { k: 'dec', label: 'Decile spread', f: x => fmt.spct(x.m.decile_spread, 2) },
+      { k: 'ls', label: 'Long-short net / yr', f: x => `${fmt.spct(x.ls.net_annual, 1)}<span class="sub">t ${fmt.num(x.ls.t, 1)}</span>` },
+      { k: 'eras', label: 'Eras Δ > 0', f: x => x.g ? `${x.g.eras_won}/${x.g.eras_complete}` : '—' },
+      { k: 'use', label: 'Horizon useful?', f: x => x.u.useful ? '<span class="pill pos" style="font-size:10px">yes</span>' : '<span class="faint">no</span>' },
+      { k: 's', label: 'Status', l: 1, f: x => vPill(x.status) }], { sortKey: null });
+    const cv = ((H.production || {}).conviction || {});
+    table($('#anC'), cv.buckets || [], [{ k: 'bucket', label: '|Alpha|', l: 1 }, { k: 'n', label: 'Records', f: b => fmt.num(b.n, 0) }, { k: 'rr', label: 'Signed relative return', f: b => fmt.spct(b.relative_return, 3) },
+      { k: 'hit', label: 'Hit', f: b => fmt.pct(b.hit, 1) }, { k: 'ric', label: 'Rank IC', f: b => fmt.num(b.rank_ic, 3) }, { k: 'dd', label: 'Drawdown', f: b => fmt.spct(b.drawdown, 1) }], { sortKey: null, empty: 'no buckets' });
+    $$('#anH button').forEach(b => b.onclick = () => { pref.set('anH', b.dataset.h); route(); });
+  };
+  const labDirNext = (body, DX) => {
+    if (!DX || !DX.horizons) return vNone(body, 'Shaffer Directional vNext', 'python -m finsim2 lab --vnext directional');
+    const HZ = Object.keys(DX.horizons), hz = HZ.includes(pref.get('dnH', '1D')) ? pref.get('dnH', '1D') : HZ[0], wf = DX.horizons[hz].walkforward;
+    const rows = [{ n: 'prior-only (base prior)', m: wf.prior, cal: wf.prior_calibration || {}, status: 'benchmark' }, { n: 'current (prior + production)', m: wf.current, cal: {}, status: 'benchmark' }]
+      .concat(Object.entries(wf.challengers || {}).map(([n, c]) => ({ n, m: c.metrics, cal: c.calibration || {}, vp: c.vs_prior, bal: c.balanced_gain, adj: c.adjustment, g: c.gates || {}, status: c.status })));
+    body.innerHTML = `<div class="card"><h2>Shaffer Directional vNext <small>P(up) beyond the PIT base prior · short horizons · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">Base prior, Shaffer adjustment and final p are kept apart. A challenger must beat the prior-only model on Brier, log loss, balanced accuracy <i>and</i> calibration on unseen history — raw accuracy never qualifies it. 1M: ${esc(DX['1M'] || '')}.</p>
+      ${segH('dnH', HZ, hz)}<div id="dnT"></div></div>`;
+    table($('#dnT'), rows, [{ k: 'n', label: 'Model', l: 1, f: x => `<b>${esc(x.n)}</b>` }, { k: 'b', label: 'Brier', f: x => fmt.num(x.m.brier, 4) },
+      { k: 'g', label: 'Brier gain vs prior (t)', f: x => x.vp ? `<span class="${x.vp.brier_gain > 0 ? 'pos' : 'neg'}">${fmt.num(x.vp.brier_gain, 5)}</span> <span class="faint">(${fmt.num(x.vp.brier_t, 1)})</span>` : '—' },
+      { k: 'ba', label: 'Balanced accuracy', f: x => `${fmt.pct(x.m.balanced_accuracy, 1)}${x.bal != null ? `<span class="sub">${fmt.spct(x.bal, 2)} vs prior</span>` : ''}` },
+      { k: 'ece', label: 'ECE · slope', f: x => `${fmt.num(x.m.ece, 4)}<span class="sub">slope ${fmt.num(x.cal.slope, 2)}</span>` },
+      { k: 'adj', label: 'Mean |Shaffer adjustment|', f: x => x.adj ? `${fmt.pct(x.adj.mean_abs, 2)}<span class="sub">${fmt.pct(x.adj.share_over_2pp, 0)} of calls move &gt; 2pp</span>` : '—' },
+      { k: 'e', label: 'Eras +', f: x => x.g ? `${x.g.eras_won ?? '—'}/${x.g.eras_complete ?? '—'}` : '—' }, { k: 's', label: 'Status', l: 1, f: x => vPill(x.status) }], { sortKey: null });
+    $$('#dnH button').forEach(b => b.onclick = () => { pref.set('dnH', b.dataset.h); route(); });
+  };
+  const labHedgeNext = (body, HX) => {
+    if (!HX || !HX.tests) return vNone(body, 'Shaffer Hedge vNext', 'python -m finsim2 lab --vnext hedge');
+    const TL = { risk: 'Risk (EWMA Σ)', sizing_obj: 'Sizing per objective', sizing_regime: 'Sizing per regime', product: 'Product choice', alpha: 'Alpha → hedge' };
+    const TS = Object.keys(HX.tests).filter(t => Object.keys(HX.tests[t] || {}).length), t = TS.includes(pref.get('hnT', 'risk')) ? pref.get('hnT', 'risk') : TS[0];
+    const HZ = Object.keys(HX.tests[t] || {}), hz = HZ.includes(pref.get('hnH', '1W')) ? pref.get('hnH', '1W') : HZ[0];
+    const U = o => o && o.loss_reduction != null ? o.loss_reduction - o.profit_sacrificed - o.cost : null;
+    const rows = Object.entries((HX.tests[t] || {})[hz] || {}).filter(([, c]) => c.cases).map(([o, c]) => ({ o, ...c }));
+    body.innerHTML = `<div class="card"><h2>Shaffer Hedge vNext <small>economically better protection? realised utility against hedge-2 · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">U = risk reduction − λ·profit sacrificed − cost (λ = 1 here), $ per $1M book over the horizon, paired with hedge-2 on identical cases, clustered by date, FDR across every hedge test. Options are MODEL-PRICED — FLAT VOLATILITY ASSUMPTION.</p>
+      <div class="row" style="gap:10px;margin:0 0 10px"><span class="muted" style="font-size:12.5px">Experiment</span><div class="seg" id="hnT">${TS.map(x => `<button data-t="${x}" class="${x === t ? 'on' : ''}">${TL[x] || x}</button>`).join('')}</div></div>
+      ${segH('hnH', HZ, hz)}<div id="hnB"></div></div>`;
+    table($('#hnB'), rows, [{ k: 'o', label: 'Objective', l: 1, f: x => `<b>${esc(x.o)}</b><span class="sub">${x.dates} dates · ${x.cases} cases</span>` },
+      { k: 'u', label: 'U hedge-2 / challenger', f: x => `${fmt.money(U(x.a))} / ${fmt.money(U(x.b))}` },
+      { k: 'd', label: 'ΔU (95% CI)', v: x => (x.d || {})['1.0'], f: x => { const d = (x.d || {})['1.0'], ci = (x.ci || {})['1.0']; return `<b class="${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${fmt.money(d)}</b>${ci ? `<span class="sub">[${fmt.money(ci[0])}, ${fmt.money(ci[1])}]</span>` : ''}`; } },
+      { k: 'rr', label: 'Risk reduction', f: x => `${fmt.money((x.a || {}).loss_reduction)} / ${fmt.money((x.b || {}).loss_reduction)}` },
+      { k: 'ps', label: 'Profit sacrificed · cost', f: x => `${fmt.money((x.b || {}).profit_sacrificed)} · ${fmt.money((x.b || {}).cost)}<span class="sub">hedge-2 ${fmt.money((x.a || {}).profit_sacrificed)} · ${fmt.money((x.a || {}).cost)}</span>` },
+      { k: 'ch', label: 'Size / product changed', f: x => `${fmt.pct(x.changed, 0)} / ${fmt.pct(x.product_changed, 0)}` },
+      { k: 'e', label: 'Eras +', f: x => `${(x.gates || {}).eras_won ?? '—'}/${(x.gates || {}).eras_complete ?? '—'}` }, { k: 's', label: 'Status', l: 1, f: x => vPill(x.status) }], { sortKey: null });
+    $$('#hnT button').forEach(b => b.onclick = () => { pref.set('hnT', b.dataset.t); route(); });
+    $$('#hnH button').forEach(b => b.onclick = () => { pref.set('hnH', b.dataset.h); route(); });
+  };
   pages.ml = async (main, args, alive) => {
     const tab = args[0] || pref.get('labTab', 'production');
     if (tab === 'forecasts') return mlForecasts(main, args.slice(1), alive);
@@ -982,7 +1049,7 @@
       <div class="row"><button id="labRun" class="primary">Run weight research</button><button id="labBuild">Rebuild research records</button></div></div>
       <div id="labJob"></div>
       <div class="muted" style="font-size:12.5px;margin:-6px 0 10px">Research records: ${fmt.num(rec.n, 0)} point-in-time scored dates with their outcomes${rec.last ? ` (built ${esc(rec.last.slice(0, 16))})` : ''} · last research run ${esc(R.started || 'never')} · discovery before ${esc((R.confirm_from || '2018').slice(0, 4))}, confirmation from it · shrinkage toward the parent node: ${fmt.num(R.shrink_k, 0)} effective observations</div>
-      <div class="tabs">${LAB_TABS.map(([k, l]) => `<a class="tab ${k === tab ? 'on' : ''}" href="#/ml/${k}">${l}</a>`).join('')}</div>
+      <div class="tabs">${LAB_GROUPS.map(([g, ks]) => `<span class="tabgrp">${esc(g)}</span>` + ks.map(k => `<a class="tab ${k === tab ? 'on' : ''}" href="#/ml/${k}">${LAB_NAME[k]}</a>`).join('')).join('')}</div>
       ${['performance', 'signals', 'weights'].includes(tab) && HZL.length ? `<div class="row" style="gap:10px;margin:12px 0"><span class="muted" style="font-size:12.5px">Horizon</span><div class="seg" id="labH">${HZL.map(x => `<button data-h="${x}" class="${x === hz ? 'on' : ''}">${x}</button>`).join('')}</div>
         ${tab === 'weights' ? `<span class="muted" style="font-size:12.5px;margin-left:10px">Weighting</span><div class="seg" id="labV">${[['global', 'one set'], ['class', 'by class'], ['hier', 'class → sector → industry → asset'], ['regime', 'by volatility regime']].map(([k, l]) => `<button data-v="${k}" class="${k === V ? 'on' : ''}">${l}</button>`).join('')}</div>` : ''}</div>` : ''}
       <div id="labBody" style="margin-top:12px"></div>`;
@@ -1012,6 +1079,9 @@
     if (tab === 'sigweights') return labSignalWeights(body, L.weights, vers);
     if (tab === 'newinfo') return labNewInfo(body, L.newinfo, L.benchmark, L.newinfo_live);
     if (tab === 'alpha') return labAlpha(body, L.directional, vers);
+    if (tab === 'alphanext') return labAlphaNext(body, L.alphanext);
+    if (tab === 'dirnext') return labDirNext(body, L.dirnext);
+    if (tab === 'hedgenext') return labHedgeNext(body, L.hedgenext);
     if (tab === 'directional') return labDirectional(body, L.directional, vers);
     if (!HZL.length && ['performance', 'signals', 'weights', 'versions'].includes(tab)) return need();
     const hx = H[hz] || {};

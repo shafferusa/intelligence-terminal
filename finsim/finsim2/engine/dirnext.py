@@ -486,3 +486,119 @@ def run_all(db_path: str, workers: int = 2, progress=None) -> dict:
     finally:
         st.close()
     return res
+
+
+# ------------------------------------------------------------------ the report (SHAFFER_DIRECTIONAL_VNEXT.md)
+def _f(v, d=3):
+    return "—" if v is None else f"{v:+.{d}f}"
+
+
+def _pc(v, d=1):
+    return "—" if v is None else f"{v * 100:.{d}f}%"
+
+
+def _pp(v, d=2):
+    return "—" if v is None else f"{v * 100:+.{d}f} pp"
+
+
+def markdown(res: dict) -> str:
+    H = res.get("horizons") or {}
+    L: List[str] = []
+    w = L.append
+    passed = [(lab, n) for lab, hz in H.items() for n, c in hz["walkforward"]["challengers"].items() if c.get("status") == "LIVE SHADOW ELIGIBLE"]
+    w("# Shaffer Directional vNext — research")
+    w("")
+    w(f"Run {res.get('started')} · {res.get('seconds')} s · `python -m finsim2 lab --vnext directional`. Research only; production "
+      "and the Directional research definition are unchanged. Protocol, features, challengers and gates were committed before the full "
+      "run (`engine/dirnext.py`); the 1W smoke run was seen while testing the code and nothing was changed after it.")
+    w("")
+    w("## Summary")
+    w("")
+    w("- **What was tested:** three logistic challengers per horizon (global, compact, class) adding genuinely short-horizon "
+      "information — overnight gap, close location, intraday range, 1-day / 5-day reversal, volatility acceleration, volume surprise, "
+      "illiquidity, sector-relative returns, earnings-event proximity, breadth, dispersion, VIX level and change — to the PIT prior and "
+      "the production score, against the prior-only model on identical records (1D, 1W; 1M only if a short horizon succeeded).")
+    w(f"- **Improved (every gate incl. calibration and FDR):** " + (", ".join(f"{n} at {lab}" for lab, n in passed) if passed else "nothing") + ".")
+    w(f"- **1M:** {res.get('1M')}.")
+    w(f"- **Blocked:** {', '.join(res.get('blocked') or BLOCKED)}.")
+    w("")
+    w("## Main table (walk-forward, paired against the prior-only model on identical records)")
+    w("")
+    w("| Horizon | Model | Brier | Brier gain vs prior (t) | vs current (t) | Log-loss gain | Balanced accuracy (Δ vs prior) | Accuracy | ECE | Calibration slope | Mean |Shaffer adjustment| | Eras Brier gain > 0 | Split t | FDR | Status |")
+    w("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        wf = hz["walkforward"]
+        pr = wf["prior"]
+        w(f"| {lab} | prior-only | {_f(pr.get('brier'), 4)} | — | — | — | {_pc(pr.get('balanced_accuracy'))} | {_pc(pr.get('accuracy'))} | {_f(pr.get('ece'), 4)} | "
+          f"{_f((wf.get('prior_calibration') or {}).get('slope'), 2)} | — | — | — | — | benchmark |")
+        cu = wf["current"]
+        w(f"| {lab} | current (prior + production) | {_f(cu.get('brier'), 4)} | — | — | — | {_pc(cu.get('balanced_accuracy'))} | {_pc(cu.get('accuracy'))} | {_f(cu.get('ece'), 4)} | — | — | — | — | — | benchmark |")
+        for n, c in wf["challengers"].items():
+            g, m = c.get("gates") or {}, c["metrics"]
+            w(f"| {lab} | {n} | {_f(m.get('brier'), 4)} | {_f(c['vs_prior'].get('brier_gain'), 5)} ({_f(c['vs_prior'].get('brier_t'), 1)}) | "
+              f"{_f(c['vs_current'].get('brier_t'), 1)} | {_f(c['vs_prior'].get('logloss_gain'), 5)} | {_pc(m.get('balanced_accuracy'))} ({_pp(c.get('balanced_gain'))}) | "
+              f"{_pc(m.get('accuracy'))} | {_f(m.get('ece'), 4)} | {_f((c.get('calibration') or {}).get('slope'), 2)} | {_pp((c.get('adjustment') or {}).get('mean_abs'))} | "
+              f"{g.get('eras_won')}/{g.get('eras_complete')} | {_f(g.get('split_t'), 1)} | {'✓' if g.get('fdr') else '✗'} | {c.get('status')} |")
+    w("")
+    w("Brier / log-loss gain > 0 = the challenger is better than prior-only. The Shaffer adjustment is |p − p_prior|: how far the model "
+      "moves the base prior. Calibration slope 1 = calibrated; below 1 = overconfident (its probabilities are too extreme).")
+    w("")
+    w("## Calibration (predicted probability of the called direction vs realised)")
+    w("")
+    w("| Horizon | Model | 50–55% | 55–60% | 60–65% | 65–70% | 70–75% | 75%+ | Intercept | Slope |")
+    w("|---|---|---|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        wf = hz["walkforward"]
+        for n, cal in [("prior-only", wf.get("prior_calibration") or {})] + [(n, c.get("calibration") or {}) for n, c in wf["challengers"].items()]:
+            cells = []
+            for b in cal.get("bins") or []:
+                cells.append(f"{_pc(b.get('realised'))} of {_pc(b.get('predicted'))} (n {b['n']:,})" if b.get("n") else "—")
+            w(f"| {lab} | {n} | " + " | ".join(cells) + f" | {_f(cal.get('intercept'), 3)} | {_f(cal.get('slope'), 2)} |")
+    w("")
+    w("## Bearish calls by product class (precision = share of down calls that went down)")
+    w("")
+    w("| Horizon | Model | Class | Records | Bear calls | Bear precision | Bull calls | Bull precision |")
+    w("|---|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        wf = hz["walkforward"]
+        for n, bb in [("prior-only", wf.get("prior_bearish") or {})] + [(n, c.get("bearish") or {}) for n, c in wf["challengers"].items()]:
+            for cls, x in sorted(bb.items(), key=lambda kv: -kv[1]["records"]):
+                w(f"| {lab} | {n} | {cls} | {x['records']:,} | {x['bear_calls']:,} | {_pc(x.get('bear_precision'))} | {x['bull_calls']:,} | {_pc(x.get('bull_precision'))} |")
+    w("")
+    w("A bearish signal has to earn its precision on ordinary equities and ETFs; inverse, leveraged and volatility products decay by "
+      "construction, so their bear precision is not evidence of skill.")
+    w("")
+    w("## Regimes (Brier gain vs prior-only, t; ≥ 100 independent observations; descriptive, never promoted)")
+    w("")
+    w("| Horizon | State | n_eff | global | compact | class |")
+    w("|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        for st, x in sorted((hz.get("regimes") or {}).items()):
+            if x.get("insufficient"):
+                w(f"| {lab} | {st} | {x['n_eff']:.0f} | insufficient | | |")
+            else:
+                w(f"| {lab} | {st} | {x['n_eff']:.0f} | {_f(x.get('global'), 1)} | {_f(x.get('compact'), 1)} | {_f(x.get('class'), 1)} |")
+    w("")
+    w("## Era stability (Brier gain vs prior-only)")
+    w("")
+    w("| Horizon | Model | 2009–12 | 2013–16 | 2017–20 | 2021–24 | 2025– |")
+    w("|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        for n in CHALLENGERS:
+            w(f"| {lab} | {n} | " + " | ".join(_f(((e.get("challengers") or {}).get(n) or {}).get("vs_prior", {}).get("brier_gain"), 5) if e.get("challengers") else "—" for e in hz["eras"]) + " |")
+    w("")
+    w("## What the compact model uses (final fit)")
+    w("")
+    for lab, hz in H.items():
+        wc = (hz.get("weights") or {}).get("compact") or {}
+        w(f"- **{lab}:** " + ", ".join(f"{k} {v:+.3f}" for k, v in wc.items()))
+    w("")
+    w("## Answers")
+    w("")
+    w("- **Can Directional beat the base prior?** " + ("Yes: " + ", ".join(f"{n} at {lab}" for lab, n in passed) + "." if passed else
+      "No. No challenger beats the PIT prior-only model on Brier, log loss, balanced accuracy and calibration together on unseen "
+      "history; the prior remains the Directional answer and Shaffer's adjustment should stay near zero."))
+    w(f"- **Live-shadow eligibility:** " + (", ".join(vid(lab, n) for lab, n in passed) if passed else "none") + ". **Production eligibility:** none.")
+    w("- **Next data bottleneck:** option skew and implied-volatility history (the classic short-horizon directional information), "
+      "order-flow / positioning, and intraday data; the daily OHLCV transforms tested here are Tier 3 and did not carry it.")
+    return "\n".join(L) + "\n"

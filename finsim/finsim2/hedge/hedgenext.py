@@ -604,3 +604,110 @@ def run_all(db_path: str, workers: int = 3, progress=None, skip_replays: bool = 
     finally:
         st.close()
     return res
+
+
+# ------------------------------------------------------------------ the report (SHAFFER_HEDGE_VNEXT.md)
+TEST_LABEL = {"risk": "Risk estimation — EWMA covariance (full-chain replay)", "sizing_obj": "Sizing — capped multiple per objective",
+              "sizing_regime": "Sizing — capped multiple per objective × volatility regime", "product": "Product choice — learned product type per objective × regime",
+              "alpha": "Alpha → hedge — hedge size scaled by validated 1W Alpha"}
+
+
+def _m(v, d=0):
+    return "—" if v is None else f"{v:+,.{d}f}"
+
+
+def markdown(res: dict) -> str:
+    T = res.get("tests") or {}
+    L: List[str] = []
+    w = L.append
+    passed = [(t, lab, o) for t, hs in T.items() for lab, objs in hs.items() for o, c in objs.items() if c.get("status") == "LIVE SHADOW ELIGIBLE"]
+    ntests = sum(1 for hs in T.values() for objs in hs.values() for c in objs.values() if (c.get("gates") or {}).get("enough"))
+    w("# Shaffer Hedge vNext — research")
+    w("")
+    w(f"Run {res.get('started')} · {res.get('seconds')} s · `python -m finsim2 lab --vnext hedge`. Research only: hedge-2, its sizing and "
+      "the resizing live shadow are unchanged. Protocol and gates were committed before the runs (`hedge/hedgenext.py`). Utility "
+      "U = risk reduction − λ·profit sacrificed − cost ($ per $1M book over the horizon), ΔU against hedge-2 on identical cases, "
+      "date-clustered bootstrap, BH FDR across every hedge test. Options remain MODEL-PRICED — FLAT VOLATILITY ASSUMPTION.")
+    w("")
+    w("## Summary")
+    w("")
+    w(f"- **Tested:** {len(TEST_LABEL)} experiments, {ntests} objective × horizon cells with enough dates — " + "; ".join(TEST_LABEL.values()) + ".")
+    w("- **Improved (H1–H5 incl. FDR):** " + (", ".join(f"{vid(t)} {o} {lab}" for t, lab, o in passed) if passed else "nothing") + ".")
+    w("- **Production eligibility:** none (live shadow first).")
+    w("")
+    for t, label in TEST_LABEL.items():
+        hs = T.get(t) or {}
+        if not hs:
+            continue
+        w(f"## {label} (`{vid(t)}`)")
+        w("")
+        w("| Objective | Horizon | Dates | ΔU λ=0.5 | ΔU λ=1 (95% CI) | ΔU λ=2 | ΔU λ=5 | ΔU λ=10 | t | Eras + | Tail (ES95 Δ) | Cost Δ | Decisions changed | Without crises | Put skew +5 vol | No options | FDR | Status |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+        for lab, objs in hs.items():
+            for o, c in objs.items():
+                if not c.get("cases"):
+                    continue
+                g, d = c.get("gates") or {}, c.get("d") or {}
+                ci = (c.get("ci") or {}).get("1.0")
+                a, b = c.get("a") or {}, c.get("b") or {}
+                es = (a["es_h"] - b["es_h"]) if a.get("es_h") is not None and b.get("es_h") is not None else None
+                w(f"| {o} | {lab} | {c.get('dates')} | {_m(d.get('0.5'))} | {_m(d.get('1.0'))} ({('[' + _m(ci[0]) + ', ' + _m(ci[1]) + ']') if ci else '—'}) | "
+                  f"{_m(d.get('2.0'))} | {_m(d.get('5.0'))} | {_m(d.get('10.0'))} | {_m(c.get('t'), 2)} | {g.get('eras_won')}/{g.get('eras_complete')} | {_m(es)} | "
+                  f"{_m((b.get('cost') or 0) - (a.get('cost') or 0), 1)} | {(c.get('changed') or 0):.0%} | {_m(c.get('no_crisis'))} | {_m((c.get('skew') or {}).get('1.0'))} | "
+                  f"{_m((c.get('no_options') or {}).get('1.0'))} | {'✓' if g.get('fdr') else '✗'} | {c.get('status')} |")
+        w("")
+        if t in ("sizing_obj", "sizing_regime"):
+            w("Learned multiples (walk-forward, per era): " + "; ".join(f"{o} {lab}: " + ", ".join(f"{m}" + ("" if s == "all" else f" ({s})") for m, s in (c.get("multiples") or []))
+                                                                    for lab, objs in hs.items() for o, c in objs.items() if c.get("multiples")) + ".")
+            w("")
+        if t == "product":
+            w("Chosen product types in the test eras: " + "; ".join(f"{o} {lab}: " + ", ".join(f"{k.replace('type:', '')} ×{v}" for k, v in (c.get("choices") or {}).items())
+                                                             for lab, objs in hs.items() for o, c in objs.items() if c.get("choices")) + ".")
+            w("")
+        if t == "alpha":
+            w("Learned κ per era: " + "; ".join(f"{o}: {c.get('kappas')}" for lab, objs in hs.items() for o, c in objs.items() if c.get("kappas") is not None) + ".")
+            w("")
+    PL = res.get("product_layer") or {}
+    if PL:
+        w("## Which product worked best in which conditions (forced-product replay; descriptive)")
+        w("")
+        w("| Objective | Horizon | Product type | State | Dates | U hedge-2 | U this type | Risk reduction | Cost | Basis error | Profit sacrificed | hedge-2 uses it |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|---|")
+        for lab, objs in PL.items():
+            for o, layer in objs.items():
+                for t, sts in layer.items():
+                    for st, x in sts.items():
+                        w(f"| {o} | {lab} | {t} | {st} | {x['dates']} | {_m(x.get('U_prod'))} | {_m(x.get('U_type'))} | {_m(x.get('risk_reduction'))} | "
+                          f"{_m(x.get('cost'), 1)} | {_m(x.get('basis'), 1)} | {_m(x.get('profit_sacrificed'))} | {(x.get('production_uses_it') or 0):.0%} |")
+        w("")
+    ER = res.get("existing_resizing") or {}
+    if ER:
+        w("## The existing resizing challenger (hedge-2-sizing-exp), 2018 on")
+        w("")
+        w("| Objective | Horizon | Dates | ΔU λ=1 | t | Eras + (of those after 2018) |")
+        w("|---|---|---|---|---|---|")
+        for lab, objs in ER.items():
+            for o, c in objs.items():
+                if c.get("cases"):
+                    w(f"| {o} | {lab} | {c.get('dates')} | {_m((c.get('d') or {}).get('1.0'))} | {_m(c.get('t'), 2)} | {(c.get('gates') or {}).get('eras_won')} |")
+        w("")
+    w("## Answers")
+    w("")
+    w("- **Did better risk estimation make hedges better?** " + _verdict(T.get("risk")))
+    w("- **Did sizing improve (objective / regime resizing)?** " + _verdict(T.get("sizing_obj")) + " / " + _verdict(T.get("sizing_regime")))
+    w("- **Did product choice improve?** " + _verdict(T.get("product")))
+    w("- **Did validated Alpha improve the hedge?** " + _verdict(T.get("alpha")))
+    w("- **Live-shadow eligibility:** " + (", ".join(f"{vid(t)} ({o} {lab})" for t, lab, o in passed) if passed else "none") + ". **Production eligibility:** none.")
+    w("- **Next data bottleneck:** real option chains with skew (option hedge costs and tail protection are model-priced today), dated "
+      "futures curves (roll and basis), point-in-time credit spreads (OAS history) and liquidity data.")
+    return "\n".join(L) + "\n"
+
+
+def _verdict(hs: Optional[dict]) -> str:
+    if not hs:
+        return "not run."
+    cells = [(lab, o, c) for lab, objs in hs.items() for o, c in objs.items() if (c.get("gates") or {}).get("enough")]
+    ok = [(lab, o) for lab, o, c in cells if c.get("status") == "LIVE SHADOW ELIGIBLE"]
+    pos = [(lab, o) for lab, o, c in cells if ((c.get("d") or {}).get("1.0") or 0) > 0]
+    return (f"{len(ok)} of {len(cells)} cells pass every gate" + (f" ({', '.join(f'{o} {l}' for l, o in ok)})" if ok else "") +
+            f"; {len(pos)} have a positive point estimate at λ = 1.")

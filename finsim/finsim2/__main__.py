@@ -62,6 +62,8 @@ def main(argv=None) -> int:
                     help="freeze the current production system as the benchmark for new-information research (once per id)")
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
+    lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
+    lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
     lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
     lb.add_argument("--live-models", action="store_true", help="fit the daily-ledger models: the benchmark's prior-only and current Directional models, and the new-information families that passed every gate")
@@ -119,6 +121,40 @@ def main(argv=None) -> int:
             print("production:", ", ".join(f"{k} {v}" for k, v in meta["production"].items()), "· verify:", lab.verify_benchmark(st, meta["id"])["ok"])
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and (args.vnext or args.fetch_sec_extra):
+        from .data.store import Store
+        here = os.path.dirname(os.path.abspath(__file__))
+        if args.fetch_sec_extra:
+            from .data import sec_extra
+            st = Store(app.db_path())
+            try:
+                print(sec_extra.refresh(st, [a["id"] for a in st.assets() if a.get("asset_class") == "EQUITY"], progress=print))
+            finally:
+                st.close()
+        if args.vnext:
+            from .engine import alphanext, dirnext, vnext
+            from .hedge import hedgenext
+            which = ["alpha", "directional", "hedge"] if args.vnext == "all" else [args.vnext]
+            out = {}
+            if "alpha" in which:
+                out["alpha"] = alphanext.run_all(app.db_path(), workers=args.workers, progress=print)
+                open(os.path.join(here, "SHAFFER_ALPHA_VNEXT.md"), "w", encoding="utf-8").write(alphanext.markdown(out["alpha"]))
+            if "directional" in which:
+                out["directional"] = dirnext.run_all(app.db_path(), workers=min(2, args.workers), progress=print)
+                open(os.path.join(here, "SHAFFER_DIRECTIONAL_VNEXT.md"), "w", encoding="utf-8").write(dirnext.markdown(out["directional"]))
+            if "hedge" in which:
+                out["hedge"] = hedgenext.run_all(app.db_path(), workers=args.workers, progress=print)
+                open(os.path.join(here, "SHAFFER_HEDGE_VNEXT.md"), "w", encoding="utf-8").write(hedgenext.markdown(out["hedge"]))
+            st = Store(app.db_path())
+            try:
+                ra, rd, rh = (out.get("alpha") or st.kv_get(alphanext.RESEARCH_KEY), out.get("directional") or st.kv_get(dirnext.RESEARCH_KEY),
+                              out.get("hedge") or st.kv_get(hedgenext.RESEARCH_KEY))
+                vnext.register(st, ra, rd, rh)
+            finally:
+                st.close()
+            open(os.path.join(here, "SHAFFER_VNEXT_SUMMARY.md"), "w", encoding="utf-8").write(vnext.summary(ra, rd, rh))
+            print("vNext reports written")
         return 0
     if args.cmd == "lab" and args.breadth_hedge:
         from .hedge import volhedge

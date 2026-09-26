@@ -482,11 +482,30 @@ def conviction(rows: List[Rec], key, h: int) -> List[dict]:
     return {"buckets": out, "monotonic": mono}
 
 
-def evaluate(rows: List[Rec], h: int) -> dict:
+def by_group(rows: List[Rec], h: int, key_fn) -> Dict[str, dict]:
+    """Weekly rank IC of challenger and production inside each group (≥ 8 names a week), for stability."""
+    groups: Dict[str, List[Rec]] = {}
+    for r in rows:
+        g = key_fn(r)
+        if g:
+            groups.setdefault(g, []).append(r)
+    out = {}
+    for g, rs in groups.items():
+        c, p = D.alpha_metrics(rs, lambda r: r.score, h), D.alpha_metrics(rs, lambda r: r.raw, h)
+        if c.get("rank_ic") is not None:
+            out[g] = {"n": len(rs), "challenger": c["rank_ic"], "challenger_t": c.get("rank_t"), "production": p.get("rank_ic"), "production_t": p.get("rank_t")}
+    return out
+
+
+def evaluate(rows: List[Rec], h: int, groups: bool = False) -> dict:
     """Challenger (r.score) and production (r.raw) on the same records."""
     if not rows:
         return {"n": 0}
-    return {"n": len(rows), "challenger": D.alpha_metrics(rows, lambda r: r.score, h),
+    extra = {}
+    if groups:
+        extra = {"by_class": by_group(rows, h, lambda r: r.meta.get("asset_class")),
+                 "by_sector": by_group(rows, h, lambda r: r.meta.get("sector") if r.meta.get("asset_class") == "EQUITY" else None)}
+    return {"n": len(rows), **extra, "challenger": D.alpha_metrics(rows, lambda r: r.score, h),
             "production": D.alpha_metrics(rows, lambda r: r.raw, h), "paired": paired_rank_ic(rows, h),
             "ls_challenger": long_short(rows, lambda r: r.score, h), "ls_production": long_short(rows, lambda r: r.raw, h),
             "mono_challenger": W._mono(rows, lambda r: r.score), "mono_production": W._mono(rows, lambda r: r.raw)}
@@ -552,7 +571,7 @@ def study_horizon(store, research, lab: str, progress=None) -> dict:
             eras.append({"from": a, "to": b, **ev})
             wf += sc
         split = evaluate(scored(SPLIT, [(r, v) for r, v in rows if r.date >= SPLIT]), h)
-        wfe = evaluate(wf, h)
+        wfe = evaluate(wf, h, groups=True)
         wg = fits[FINAL_CUT].get("global")
         out["challengers"][name] = {"id": vid(lab, name), "features": feats, "depth": depth, "walkforward": wfe, "split": split,
                                     "eras": eras, "conviction": conviction(wf, lambda r: r.score, h),
@@ -687,3 +706,150 @@ def run_all(db_path: str, workers: int = 3, progress=None, horizons=None) -> dic
     finally:
         st.close()
     return res
+
+
+# ------------------------------------------------------------------ the report (SHAFFER_ALPHA_VNEXT.md)
+def _f(v, d=3, sign=True):
+    return "—" if v is None else (f"{v:+.{d}f}" if sign else f"{v:.{d}f}")
+
+
+def _pc(v, d=2):
+    return "—" if v is None else f"{v * 100:+.{d}f}%"
+
+
+def best_challenger(hz: dict) -> Optional[str]:
+    chs = hz.get("challengers") or {}
+    ok = [(n, c) for n, c in chs.items() if ((c.get("walkforward") or {}).get("paired") or {}).get("t") is not None]
+    return max(ok, key=lambda nc: nc[1]["walkforward"]["paired"]["t"])[0] if ok else None
+
+
+def markdown(res: dict) -> str:
+    H = res.get("horizons") or {}
+    L: List[str] = []
+    w = L.append
+    passed = [(lab, n) for lab, hz in H.items() for n, c in hz["challengers"].items() if c.get("status") == "LIVE SHADOW ELIGIBLE"]
+    useful_p = [lab for lab, hz in H.items() if (hz["production"].get("useful") or {}).get("useful")]
+    useful_c = [(lab, n) for lab, hz in H.items() for n, c in hz["challengers"].items() if (c.get("useful") or {}).get("useful")]
+    long_new = [(lab, n) for lab, n in useful_c if lab not in ("1D", "1W")]
+    w("# Shaffer Alpha vNext — research")
+    w("")
+    w(f"Run {res.get('started')} · {res.get('seconds')} s · `python -m finsim2 lab --vnext alpha`. Research only; production "
+      f"(`shaffer-alpha-2.1-production`, benchmark `{(res.get('benchmark') or {}).get('id')}`) is unchanged. Protocol, challengers and "
+      "gates were committed before the full run (module docstring of `engine/alphanext.py`); the 1W smoke run was seen while testing "
+      "the code and nothing was changed after it.")
+    w("")
+    w("## Summary")
+    w("")
+    w("- **What was tested:** four challengers per horizon (global, class, sector, fundamental) that ADD new point-in-time information "
+      "to the production score — SEC fundamentals first reported (FCF yield, accruals, asset growth, leverage change, gross "
+      "profitability, operating-margin change, net issuance, buybacks), earnings events and surprises, sector-relative valuation / "
+      "growth / momentum, macro sensitivity (credit and term premium × beta) and breadth × beta — against the production score on "
+      "identical records, walk-forward over four unseen eras, the 2018 split and 2025–.")
+    w(f"- **Improved (every gate incl. FDR):** " + (", ".join(f"{n} at {lab}" for lab, n in passed) if passed else "nothing") + ".")
+    w(f"- **Horizons verified useful** (rank IC > 0 surviving FDR, positive quintile spread, ≥ 3 of 4 eras, positive net-of-cost "
+      f"long-short): production at {', '.join(useful_p) or 'no horizon'}; challengers at " +
+      (", ".join(f"{n} {lab}" for lab, n in useful_c) or "no horizon") + ".")
+    w(f"- **Longer horizons (1M–12M):** " + ("newly useful: " + ", ".join(f"{n} {lab}" for lab, n in long_new) + "."
+                                            if long_new else "no model — production or challenger — is verified useful beyond 1W. The ranking edge does not extend past 1W with the information available."))
+    w(f"- **Blocked data (the bottleneck):** {', '.join(res.get('blocked') or BLOCKED)}.")
+    w("")
+    w("## Main table (walk-forward, identical records)")
+    w("")
+    w("| Horizon | Model | Rank IC (t) | Δ rank IC vs production (t) | Quintile spread | Decile spread | Net L/S per period (t) · annualised | Hit vs median | Monotonicity | Eras Δ > 0 | Split Δ t | FDR | Status |")
+    w("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        p = hz["production"]
+        pw, pls = p.get("walkforward") or {}, p.get("ls") or {}
+        w(f"| {lab} | production | {_f(pw.get('rank_ic'), 4)} ({_f(pw.get('rank_t'), 1)}) | — | {_pc(pw.get('quintile_spread'))} | {_pc(pw.get('decile_spread'))} | "
+          f"{_pc(pls.get('net'), 3)} ({_f(pls.get('t'), 1)}) · {_pc(pls.get('net_annual'), 1)} | {_pc((pw.get('hit_vs_median') or 0.5) - 0.5)} | {_f(p.get('mono'), 2)} | — | — | — | production |")
+        for n, c in hz["challengers"].items():
+            wf, g = c["walkforward"], c.get("gates") or {}
+            cm, ls = wf.get("challenger") or {}, wf.get("ls_challenger") or {}
+            w(f"| {lab} | {n} | {_f(cm.get('rank_ic'), 4)} ({_f(cm.get('rank_t'), 1)}) | {_f((wf.get('paired') or {}).get('mean'), 4)} ({_f((wf.get('paired') or {}).get('t'), 1)}) | "
+              f"{_pc(cm.get('quintile_spread'))} | {_pc(cm.get('decile_spread'))} | {_pc(ls.get('net'), 3)} ({_f(ls.get('t'), 1)}) · {_pc(ls.get('net_annual'), 1)} | "
+              f"{_pc((cm.get('hit_vs_median') or 0.5) - 0.5)} | {_f(wf.get('mono_challenger'), 2)} | {g.get('eras_won')}/{g.get('eras_complete')} | {_f(g.get('split_t'), 1)} | "
+              f"{'✓' if g.get('fdr') else '✗'} | {c.get('status')} |")
+    w("")
+    w("Hit vs median is shown as the excess over 50%. Net L/S: equal-weight top minus bottom quintile per non-overlapping formation "
+      "period of the horizon, net of 10 bp one-way × turnover. Monotonicity: Spearman of the ten score-decile mean outcomes.")
+    w("")
+    w("## Horizon usefulness (every criterion at once)")
+    w("")
+    w("| Horizon | Model | Rank IC | t | FDR | Quintile spread | Eras rank IC > 0 | Net L/S | Useful? |")
+    w("|---|---|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        for n, u in [("production", hz["production"].get("useful") or {})] + [(n, c.get("useful") or {}) for n, c in hz["challengers"].items()]:
+            w(f"| {lab} | {n} | {_f(u.get('rank_ic'), 4)} | {_f(u.get('t'), 1)} | {'✓' if u.get('fdr') else '✗'} | {_pc(u.get('quintile_spread'))} | "
+              f"{u.get('eras_positive')}/{u.get('eras_complete')} | {_pc(u.get('net_ls'), 3)} | {'**YES**' if u.get('useful') else 'no'} |")
+    w("")
+    w("## Era stability (Δ rank IC vs production, walk-forward eras)")
+    w("")
+    w("| Horizon | Model | 2009–12 | 2013–16 | 2017–20 | 2021–24 | 2025– |")
+    w("|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        for n, c in hz["challengers"].items():
+            w(f"| {lab} | {n} | " + " | ".join(_f((e.get("paired") or {}).get("mean"), 4) for e in c["eras"]) + " |")
+    w("")
+    w("## Stability by asset class and sector (best challenger vs production, rank IC)")
+    w("")
+    w("| Horizon | Best challenger | Group | Records | Challenger rank IC (t) | Production rank IC (t) |")
+    w("|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        b = best_challenger(hz)
+        if not b:
+            continue
+        wf = hz["challengers"][b]["walkforward"]
+        for kind in ("by_class", "by_sector"):
+            for g, x in sorted((wf.get(kind) or {}).items(), key=lambda kv: -kv[1]["n"]):
+                w(f"| {lab} | {b} | {g} | {x['n']:,} | {_f(x['challenger'], 4)} ({_f(x.get('challenger_t'), 1)}) | {_f(x.get('production'), 4)} ({_f(x.get('production_t'), 1)}) |")
+    w("")
+    w("## Specialisation (global → class → sector)")
+    w("")
+    w("| Horizon | Global Δ rank IC (t) | Class Δ (t) | Sector Δ (t) | Deeper beats its parent? |")
+    w("|---|---|---|---|---|")
+    for lab, hz in H.items():
+        ch = hz["challengers"]
+        t = {n: ((ch.get(n) or {}).get("walkforward") or {}).get("paired") or {} for n in ("global", "class", "sector")}
+        better = []
+        if (t["class"].get("mean") or -9) > (t["global"].get("mean") or -9):
+            better.append("class > global")
+        if (t["sector"].get("mean") or -9) > (t["class"].get("mean") or -9):
+            better.append("sector > class")
+        w(f"| {lab} | {_f(t['global'].get('mean'), 4)} ({_f(t['global'].get('t'), 1)}) | {_f(t['class'].get('mean'), 4)} ({_f(t['class'].get('t'), 1)}) | "
+          f"{_f(t['sector'].get('mean'), 4)} ({_f(t['sector'].get('t'), 1)}) | {', '.join(better) or 'no'} |")
+    w("")
+    w("## What the models used, by horizon (global challenger, final fit)")
+    w("")
+    w("Weights on standardised inputs (asset-level features are cross-sectional percentile ranks −0.5…0.5; market-wide ones are "
+      "PIT z × beta), largest magnitude first. A weight is not evidence by itself; the gates above are.")
+    w("")
+    for lab, hz in H.items():
+        wg = (hz["challengers"].get("global") or {}).get("weights") or {}
+        top = sorted(((k, v) for k, v in wg.items() if k not in ("intercept",)), key=lambda kv: -abs(kv[1]))[:8]
+        w(f"- **{lab}:** " + ", ".join(f"{k} {v:+.3f}" for k, v in top))
+    w("")
+    w("## Conviction: does a larger |Alpha| mean a larger relative return?")
+    w("")
+    w("| Horizon | Model | |score| bucket | Records | n_eff | Signed relative return | Hit | Rank IC | Volatility | Drawdown | Monotonic? |")
+    w("|---|---|---|---|---|---|---|---|---|---|---|")
+    for lab, hz in H.items():
+        b = best_challenger(hz)
+        for n, cv in [("production", hz["production"].get("conviction") or {})] + ([(b, hz["challengers"][b].get("conviction") or {})] if b else []):
+            for k, x in enumerate(cv.get("buckets") or []):
+                w(f"| {lab} | {n} | {x['bucket']} | {x['n']:,} | {_f(x.get('n_eff'), 0, False)} | {_pc(x.get('relative_return'), 3)} | "
+                  f"{_pc((x.get('hit') or 0.5) - 0.5) if x.get('hit') is not None else '—'} | {_f(x.get('rank_ic'), 3)} | {_pc(x.get('volatility'), 2)} | {_pc(x.get('drawdown'), 1)} | "
+                  f"{('**yes**' if cv.get('monotonic') else 'no') if k == 0 else ''} |")
+    w("")
+    w("If the bucket means do not rise monotonically, Alpha magnitude must not size positions (answer below).")
+    w("")
+    w("## Answers")
+    w("")
+    mono = [(lab, n) for lab, hz in H.items() for n, cv in [("production", hz["production"].get("conviction") or {})] if cv.get("monotonic")]
+    w(f"- **Live-shadow eligibility:** " + (", ".join(f"{vid(lab, n)}" for lab, n in passed) if passed else "none — no challenger passes G1–G4 and the FDR control") + ".")
+    w("- **Production eligibility:** none (live shadow — 60 graded paired outcomes — and your approval come first).")
+    w(f"- **Conviction sizing:** production |Alpha| is monotonic in relative return at {', '.join(l for l, _ in mono) or 'no horizon'}; "
+      "elsewhere magnitude must not be used for sizing.")
+    w("- **Next data bottleneck:** point-in-time analyst estimates and revisions (forward valuation, earnings revisions), then options-"
+      "implied expectations, positioning / short interest history and fund flows. Every longer-horizon Alpha source that is plausibly "
+      "informative is on that list; the fundamentals available from filings were tested here.")
+    return "\n".join(L) + "\n"
