@@ -282,7 +282,7 @@ def h4_anatomy(cells: Dict[str, Dict[str, dict]]) -> List[dict]:
             a, b = c.get("a") or {}, c.get("b") or {}
             d_risk = (b.get("loss_reduction") or 0) - (a.get("loss_reduction") or 0)
             d_cost = (b.get("cost") or 0) - (a.get("cost") or 0)
-            obj = key.split("/")[-1]
+            obj = key.split("@")[0].split("/")[-1]
             out.append({"horizon": lab, "node": key, "objective": obj,
                         "type": "variance-sensitive" if obj in V.VARIANCE_SENSITIVE else "hard-target",
                         "cost_increase": g.get("cost_increase"), "basis_increase": g.get("basis_increase"),

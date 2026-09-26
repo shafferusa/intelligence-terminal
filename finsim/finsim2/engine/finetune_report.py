@@ -72,13 +72,18 @@ def _eligible(res: dict) -> List[Tuple[str, str, dict]]:
 
 def _bar_t(g: dict) -> float:
     """t against the stronger of the two live-shadow learned models (the smaller of the two paired t's)."""
-    ts = [g.get("vsD_t"), g.get("vsE_t")] if "vsE_t" in g else [g.get("vsD_t")]
-    return min(t if t is not None else -99 for t in ts)
+    pairs = [(g.get("vsD_t"), g.get("vsD_mean")), (g.get("vsE_t"), g.get("vsE_mean"))] if "vsE_t" in g else [(g.get("vsD_t"), g.get("vsD_mean"))]
+    # identical scores (Δ = 0 every week) have no t: that is a tie, not a failure
+    return min((t if t is not None else (0.0 if m is not None and abs(m) < 1e-12 else -99)) for t, m in pairs)
+
+
+def _same_as_baseline(g: dict) -> bool:
+    return any(g.get(k) is not None and abs(g[k]) < 1e-9 for k in ("vsD_mean", "vsE_mean"))
 
 
 def _best_pit(W: dict) -> Optional[str]:
     ms = W.get("models") or {}
-    c = [k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta") and v["gates"].get("vsD_t") is not None]
+    c = [k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta") and not _same_as_baseline(v["gates"])]
     return max(c, key=lambda k: _bar_t(ms[k]["gates"])) if c else None
 
 
@@ -159,6 +164,8 @@ def _key_findings(w, res, learned):
              f"vs learned hierarchy {_f(bv['gates'].get('vsE_mean'))} (t {_t(bv['gates'].get('vsE_t'))}, "
              f"{bv['gates'].get('eras_vsE')}/4 eras not worse). " if b else "")
           + "The learned hierarchy already in live shadow (E) stays the model to watch; fine-tuning did not find a robust improvement on it.")
+    for note in res.get("notes") or []:
+        w(f"- {note}")
     near = [(k, v) for k, v in ms.items() if v.get("pit") and v.get("status") != ELIG and v["gates"].get("G1") and v["gates"].get("G3")
             and v.get("family") not in ("baseline",)]
     if near:
@@ -255,19 +262,21 @@ def _answers(w, res, learned, hier):
     nest = ms.get("nested model selection") or {}
     w(f"**1. Can 1W Alpha improve beyond the current learned models?** "
       + (f"Yes, under every gate: {', '.join(el)}." if el else
-         f"Not robustly. The best single family against the stronger live model is {b} (Δ rank IC vs learned hierarchy "
+         f"Not robustly. The best single family against the stronger live model is {b}"
+         + (" (its α is 0 from 2013 on — it IS the hierarchy)" if b == "blend" and str(bv.get("final")) in ("0.0", "0") else "") + " (Δ rank IC vs learned hierarchy "
          f"{_f(bv.get('gates', {}).get('vsE_mean'))}, t {_t(bv.get('gates', {}).get('vsE_t'))}; vs learned global "
          f"{_f(bv.get('gates', {}).get('vsD_mean'))}, t {_t(bv.get('gates', {}).get('vsD_t'))}); nested selection across all families — the "
          f"honest version of 'pick the best' — gives Δ vs hierarchy {_f(nest.get('gates', {}).get('vsE_mean'))} "
          f"(t {_t(nest.get('gates', {}).get('vsE_t'))}). None clears G5 against both (t ≥ {_g5_t()}, ≥ 3/4 eras)."))
     w("")
-    rk = sorted([k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta")],
+    same = [k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta") and _same_as_baseline(v["gates"])]
+    rk = sorted([k for k, v in ms.items() if v.get("pit") and v.get("family") not in ("baseline", "meta") and k not in same],
                 key=lambda k: -_bar_t(ms[k]["gates"]))
     w("**2. Which optimisation method works best?** Ranked by the weaker of the two comparisons (vs learned global D / vs learned "
       "hierarchy E, Δ rank IC and t): "
       + "; ".join(f"{k} {_f(ms[k]['gates'].get('vsD_mean'))} ({_t(ms[k]['gates'].get('vsD_t'))}) / {_f(ms[k]['gates'].get('vsE_mean'))} "
                   f"({_t(ms[k]['gates'].get('vsE_t'))})" for k in rk[:6])
-      + (f". Worst: {rk[-1]}." if rk else ".") + " Hierarchy-based fine-tunes lead against D because they contain E; against E the "
+      + (f". Worst: {rk[-1]}." if rk else ".") + (f" Identical to a live-shadow model (the inner choice picked the baseline itself): {', '.join(same)}." if same else "") + " Hierarchy-based fine-tunes lead against D because they contain E; against E the "
       "differences are small. The ranking objectives (pairwise, listwise, relative-return ridge) are worse than the pairwise "
       "least-squares target already in use.")
     w("")
@@ -282,12 +291,13 @@ def _answers(w, res, learned, hier):
         parts = []
         for k in keys:
             v = ms.get(k) or {}
-            parts.append(f"{k}: {what} per era {_choice_str(v)}, today {v.get('final')}; Δ vs global {_f(v.get('gates', {}).get('vsD_mean'))} "
-                         f"(t {_t(v.get('gates', {}).get('vsD_t'))})")
+            g = v.get("gates") or {}
+            parts.append(f"{k}: {what} per era {_choice_str(v)}, today {_c(v.get('final'))}; Δ vs global {_f(g.get('vsD_mean'))} "
+                         f"(t {_t(g.get('vsD_t'))})" + (f", vs hierarchy {_f(g.get('vsE_mean'))} (t {_t(g.get('vsE_t'))})" if "vsE_t" in g else ""))
         title = "Does time decay help?" if q == 4 else "Does rolling history help?"
         ok = any((ms.get(k) or {}).get("status") == ELIG for k in keys)
         w(f"**{q}. {title}** " + "; ".join(parts) + (". Validated." if ok else ". Not validated — 'None' (all history) is chosen whenever "
-                                                         "the inner weeks prefer it; forgetting old data costs more precision than it buys adaptivity."))
+                                                         "the inner weeks prefer it, and where a shorter memory is chosen it does not beat the full-history model out of sample."))
         w("")
     rg = [ms.get("regime-conditional (global)") or {}, ms.get("regime-conditional (hierarchy)") or {}]
     st = W.get("stability_today") or {}
@@ -849,9 +859,12 @@ def _h_summary(w, hd):
     w("")
     w(f"- {len(cells)} (objective, horizon, λ) cells tested; {len(fdr)} survive FDR on utility; **{len(el)} pass every gate**"
       + (": " + ", ".join(f"{lab} {k.replace('@', ' at λ = ')}" for lab, k in el) if el else "") + ".")
-    w("- Production size (hedge-2) = 1.00× in every row. " + _hedge_q15(hd))
-    w("- " + _hedge_q16(hd))
-    w("- " + _hedge_q17(hd))
+    w("- **Optimal size by λ:** production size (hedge-2) = 1.00× in every row. " + _hedge_q15(hd))
+    w("- **H4:** " + _hedge_q16(hd))
+    w("- **Alpha link:** " + _hedge_q17(hd))
+    if el:
+        w("- **Live shadow:** the passing cells are recorded in hedge-lambda-sizing-exp (research) with their multiples; they are not "
+          "shadowed because the hedge live grader measures variance per hedge group, not utility at a chosen λ.")
     w("")
 
 

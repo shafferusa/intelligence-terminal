@@ -573,3 +573,49 @@ flaws before any market result was read:
 Shaffer*: every asset's production score next to the learned ones, where the weights come from in the hierarchy,
 reliability, and the per-signal weights. Shaffer Hedge → Learned hedge holds the hedge parameters. Run with
 `python -m finsim2 lab --learned`.
+
+### Fine-tuning the learned Shaffer system (`engine/finetune.py`, `hedge/hedgetune.py`, reports `SHAFFER_FINETUNE.md`, `SHAFFER_HEDGE_FINETUNE.md`)
+
+**Goal:** the simplest learned Shaffer equation that gives the strongest, most stable, economically usable out-of-sample
+ranking — improve 1W Alpha slightly and robustly, never by overfitting. The live-shadow learned models and production
+are fixed starting points; every fine-tune is a new immutable version.
+
+**Protocol.** The outer walk-forward (eras 2009–12 … 2025–) is never touched. Every hyperparameter is chosen per era from
+inner walk-forward weeks matured before the era (≥ 52 inner weeks; otherwise the SAME default as the learned hierarchy:
+pooling K = 200, global depth). Gates: G1–G4 against production, Benjamini–Hochberg FDR across all fine-tunes, and G5
+against BOTH learned models in live shadow (Δ rank IC t ≥ 2 and ≥ 3/4 eras not worse vs D and vs E).
+
+**Families (1W):** ridge on relative returns, elastic net, RankNet, ListNet; global/hierarchy blend α; stability
+penalties (leave-one-era/class-out variance) and stability classes; regime-conditional weights (volatility, bull/bear,
+rates, breadth, risk-on/off; λ = f × the state's sample); time decay (half-life ∞/15/10/7/5/3 years) and rolling
+windows (all/15/10/7/5); signal clusters (fusion or representatives); sign rules; seven predeclared economic
+interactions (GBM-suggested ones descriptive only); turnover smoothing chosen by net long-short; nested selection
+across all of them. Plus: score thresholds with product costs and a flat 10 bp sensitivity, conviction buckets
+(AlphaReliability, ConvictionMultiplier — reported, not applied), neutralisation (beta, class, value, volatility),
+within-class IC, leave-one-group-out (14 groups), and the Alpha percentile as a Directional feature (prior-only gate).
+
+**Capability first:** six planted tests — ranking-only, time-decaying, regime-switching, hierarchy-specific,
+transaction-cost-sensitive, and no false improvement on a plain world (which set G5's t ≥ 2) — all recovered.
+
+**Results.**
+
+* The reproduction check found a bug in the learned engine's evaluation: E's walk-forward was scored with the
+  validated model's pooling K instead of K_E. The live-shadow E (built with K_E) is stronger than reported: rank IC
+  0.067, not 0.055. Fixed; erratum in SHAFFER_LEARNED_WEIGHTS.md.
+* No fine-tune beats the live hierarchy E. Hierarchy variants (stability penalty, time decay, rolling window, regime)
+  beat D but sit 0.001–0.004 below E; blend and smoothing choose E itself. A first pass that seemed to beat E owed it
+  entirely to a hindsight-chosen no-history default in 2009–12 — removed and reported.
+* Ranking objectives (pairwise, listwise, relative-return ridge) are worse than the pairwise least-squares target.
+* 1D: the nested cost-aware strategy (model × regime filter × tails) earns +0.14% per trade after product costs
+  (t 5.3) — but is negative at a flat 10 bp per side: cost-fragile.
+* 1M–12M: nothing validated; about 3 (1M) to 0.2 (12M) independent periods per signal.
+* The Alpha percentile adds to the Directional prior under its gate — research only; Directional unchanged.
+* Hedge: the λ-conditional size surface falls from ~1.4× hedge-2 (λ ≤ 1) to ~0.55× (λ = 10). Two cells (1M commodity
+  target-vol at λ = 5 and 10: a smaller hedge) pass H1–H5; they are recorded in `hedge-lambda-sizing-exp`, not shadowed,
+  because the live hedge grader measures variance, not utility at a chosen λ. H4 failures are cost scaling of bigger
+  hedges; H4 is unchanged and a redesign is only proposed. Alpha strength does not change the optimal hedge (0 of 50
+  tests survive FDR).
+
+**ML Lab views:** Shaffer Alpha → Fine-tune (model selection, why a model differs, thresholds, conviction, leave one
+group out, today's scores; horizon switch for 1D and 1M–12M) and Shaffer Hedge → Hedge fine-tune (surface by
+horizon and λ, H4 anatomy, Alpha-conditional). Run with `python -m finsim2 lab --finetune`.
