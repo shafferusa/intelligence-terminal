@@ -107,7 +107,7 @@
    "subject_key": "mathematics",
    "position": "1 of 20",
    "topic": "Numbers, infinity, and the birth of proof",
-   "headline_hint": "The number that broke a cult: how the square root of 2 shattered the Pythagoreans' worldview",
+   "headline_hint": "The number that, legend says, a cult tried to keep secret: how the square root of 2 challenged the Pythagoreans' worldview",
    "focus": "Traces how the number system grew from counting (naturals) to integers, fractions, and finally the irrational and real numbers, and introduces mathematical proof as the method that establishes something is true forever, not just probably true.",
    "key_concepts": [
     "natural numbers",
@@ -223,7 +223,7 @@
    "position": "7 of 20",
    "topic": "Complex numbers: extending the number line into a plane",
    "headline_hint": "The 'imaginary' number mathematicians once mocked, now essential to every circuit and signal",
-   "focus": "Introduces the imaginary unit i and the complex plane as a natural extension of the number system, born from trying to solve equations like x squared equals negative one, closing the loop opened on Day 1.",
+   "focus": "Introduces the imaginary unit i and the complex plane as a natural extension of the number system, born from Renaissance work on cubic equations (Cardano, Bombelli), where square roots of negatives appeared on the way to real answers, closing the loop opened on Day 1.",
    "key_concepts": [
     "imaginary unit i",
     "complex number",
@@ -259,7 +259,7 @@
    "subject_key": "mathematics",
    "position": "9 of 20",
    "topic": "The limit: approaching forever without arriving",
-   "headline_hint": "The idea that let mathematicians finally trust infinity, and unlocked calculus",
+   "headline_hint": "The idea that let mathematicians finally trust infinity, and put calculus on solid ground",
    "focus": "Formalizes the limit, what a function approaches as its input gets arbitrarily close to some value, as the rigorous foundation that resolved centuries of unease about infinity and makes calculus possible.",
    "key_concepts": [
     "limit",
@@ -858,7 +858,7 @@
    "subject_key": "physics",
    "position": "17 of 20",
    "topic": "Light as an Electromagnetic Wave and Maxwell's Unification",
-   "headline_hint": "Maxwell's Equations Proved Light Is Electricity and Magnetism in Motion",
+   "headline_hint": "Maxwell's Equations Revealed Light as Electricity and Magnetism in Motion",
    "focus": "Shows how James Clerk Maxwell unified electricity, magnetism, and optics into one theory of electromagnetic waves traveling at the speed of light, completing classical physics.",
    "key_concepts": [
     "Maxwell's equations (conceptual)",
@@ -1002,7 +1002,7 @@
    "subject_key": "space",
    "position": "3 of 20",
    "topic": "Staging and the Reusability Revolution",
-   "headline_hint": "Why SpaceX Stopped Throwing Rockets Away",
+   "headline_hint": "Why SpaceX Stopped Throwing Its Boosters Away",
    "focus": "Shows how multi-stage design solves the rocket equation's mass problem, and how SpaceX's booster recovery inverted decades of expendable-rocket economics.",
    "key_concepts": [
     "staging",
@@ -1236,7 +1236,7 @@
    "position": "13 of 20",
    "topic": "Reentry and Landing",
    "headline_hint": "The Hottest Minutes of Any Space Mission: Coming Home",
-   "focus": "Explains the physics of coming home — the violent heat of reentry — and the shift from parachutes to the propulsive landings pioneered by Falcon 9 and Starship.",
+   "focus": "Explains the physics of coming home — the violent heat of reentry — and why parachutes now share the job with propulsive landing, which Falcon 9 made routine for orbital-class boosters and Starship is pushing further.",
    "key_concepts": [
     "reentry heating",
     "ablative vs. reusable heat shields",
@@ -1281,7 +1281,7 @@
    "subject_key": "space",
    "position": "15 of 20",
    "topic": "Space Stations and the Modern Era",
-   "headline_hint": "From Mir to the ISS to Starship: Humans Learn to Live in Orbit",
+   "headline_hint": "From Salyut to Mir to the ISS: Humans Learn to Live in Orbit",
    "focus": "Traces how humans moved from short Apollo missions to permanent orbital habitation, from Mir and the ISS to today's Commercial Crew and Artemis programs.",
    "key_concepts": [
     "ISS assembly and partnership",
@@ -1350,8 +1350,8 @@
    "subject_key": "space",
    "position": "18 of 20",
    "topic": "Stellar Death: White Dwarfs, Neutron Stars, and Black Holes",
-   "headline_hint": "When a Star Dies, It Becomes a Dwarf, a Pulsar, or a Black Hole",
-   "focus": "Follows a star's life to its end, showing why mass alone determines whether it becomes a white dwarf, a neutron star, or a black hole.",
+   "headline_hint": "When a Star Dies, It Becomes a White Dwarf, a Neutron Star, or a Black Hole",
+   "focus": "Follows a star's life to its end, showing why its mass, above all, determines whether it becomes a white dwarf, a neutron star, or a black hole.",
    "key_concepts": [
     "supernova",
     "white dwarf",
@@ -1375,7 +1375,7 @@
    "position": "19 of 20",
    "topic": "Galaxies, Dark Matter, and the Structure of the Universe",
    "headline_hint": "The Galaxy Is Spinning Too Fast for the Matter We Can See",
-   "focus": "Zooms out from single stars to galaxies, and shows how a mismatch between visible matter and a galaxy's rotation speed became the evidence for dark matter.",
+   "focus": "Zooms out from single stars to galaxies, and shows how a mismatch between visible matter and a galaxy's rotation speed became key evidence for dark matter.",
    "key_concepts": [
     "Milky Way structure",
     "spiral vs. elliptical galaxies",
@@ -1576,7 +1576,7 @@
     "protocol",
     "packet switching"
    ],
-   "model_or_equation": "the TCP/IP (client-server) model",
+   "model_or_equation": "the TCP/IP four-layer model (link, internet, transport, application)",
    "source": "new",
    "connect_back": {
     "day": 28,
@@ -1639,8 +1639,8 @@
    "subject_key": "tech",
    "position": "10 of 20",
    "topic": "Can machines think? Turing, Dartmouth, and the birth of AI",
-   "headline_hint": "1956: the summer a handful of scientists named a new science",
-   "focus": "The origin of AI as a field — Turing's 1950 test for machine intelligence and the 1956 Dartmouth workshop that coined 'artificial intelligence' — and the rule-based symbolic AI it launched.",
+   "headline_hint": "1956: the summer a handful of scientists launched a new science",
+   "focus": "The origin of AI as a field — Turing's 1950 test for machine intelligence and the 1956 Dartmouth workshop, whose 1955 proposal coined 'artificial intelligence' — and the rule-based symbolic AI it launched.",
    "key_concepts": [
     "Turing test",
     "symbolic AI",
@@ -1737,7 +1737,7 @@
    "position": "14 of 20",
    "topic": "Attention is all you need — the Transformer and why it changed everything",
    "headline_hint": "The five-word paper title that rewrote artificial intelligence",
-   "focus": "How the 2017 Transformer architecture and its self-attention mechanism let a model weigh relationships between all words in a sequence at once, solving the bottleneck that limited earlier AI and enabling every modern large language model.",
+   "focus": "How the 2017 Transformer architecture and its self-attention mechanism let a model weigh relationships between all words in a sequence at once, solving the bottleneck that limited earlier AI and enabling nearly every modern large language model.",
    "key_concepts": [
     "Transformer",
     "self-attention mechanism",
@@ -1929,8 +1929,8 @@
    "subject_key": "psychology",
    "position": "2 of 20",
    "topic": "Research Methods and the Replication Crisis",
-   "headline_hint": "Why two-thirds of classic psychology couldn't be replicated",
-   "focus": "Covers how psychologists test claims (experiments, correlation, case studies) and the 2015 replication crisis, so every later 'classic study' in this block is read with an accurate confidence level.",
+   "headline_hint": "Why nearly two-thirds of 100 published psychology studies failed to replicate",
+   "focus": "Covers how psychologists test claims (experiments, correlation, case studies) and the replication crisis (including the 2015 Reproducibility Project), so every later 'classic study' in this block is read with an accurate confidence level.",
    "key_concepts": [
     "independent/dependent variable",
     "correlation vs causation",
@@ -2083,7 +2083,7 @@
     "long-term memory: explicit vs implicit",
     "chunking"
    ],
-   "model_or_equation": "the stages of memory: encoding → storage → retrieval (Atkinson-Shiffrin multi-store model)",
+   "model_or_equation": "the three memory processes (encoding → storage → retrieval) and the Atkinson-Shiffrin multi-store model (1968; sensory → short-term → long-term memory)",
    "source": "new",
    "connect_back": {
     "day": 28,
@@ -2124,7 +2124,7 @@
    "position": "10 of 20",
    "topic": "Judgment and Decision-Making: Heuristics and Biases",
    "headline_hint": "Why smart people make predictably irrational choices",
-   "focus": "Introduces Kahneman and Tversky's heuristics-and-biases program and the System 1/System 2 dual-process model, the single most widely-cited psychological framework outside psychology itself.",
+   "focus": "Introduces Kahneman and Tversky's heuristics-and-biases program and the System 1/System 2 dual-process model, one of the most widely cited psychological frameworks outside psychology itself.",
    "key_concepts": [
     "heuristic",
     "availability heuristic",
@@ -2789,7 +2789,7 @@
    "subject_key": "philosophy",
    "position": "18 of 20",
    "topic": "Does God Exist? The Classic Arguments and the Problem of Evil",
-   "headline_hint": "Four Centuries of the Same Argument, Restated",
+   "headline_hint": "Two Thousand Years of the Same Arguments, Restated",
    "focus": "Surveys philosophy of religion's core arguments for God's existence alongside the strongest argument against, presented neutrally as live, unresolved philosophical debates.",
    "key_concepts": [
     "cosmological argument",
@@ -2862,7 +2862,7 @@
    "position": "1 of 20",
    "topic": "Atoms, elements, and the law of conservation of mass",
    "headline_hint": "Nothing in a reaction is created or destroyed -- just rearranged",
-   "focus": "Introduces matter as built from atoms and elements, and shows how the empirical law of conservation of mass let Dalton infer that atoms exist long before anyone could see one.",
+   "focus": "Introduces matter as built from atoms and elements, and shows how the empirical mass laws -- conservation of mass, definite proportions and multiple proportions -- let Dalton argue that atoms exist long before anyone could see one.",
    "key_concepts": [
     "atom",
     "element",
@@ -2960,7 +2960,7 @@
    "subject_key": "chemistry",
    "position": "5 of 20",
    "topic": "Ionic bonding: trading electrons for stability",
-   "headline_hint": "Table salt is a trade -- sodium gives an electron, chlorine takes it, both come out ahead",
+   "headline_hint": "Table salt is a trade -- sodium gives an electron, chlorine takes it, and their attraction pays for the deal",
    "focus": "Explains ionic bonding as electron transfer driven by the octet rule, why it produces crystal lattices with high melting points, and uses sodium chloride as the running example.",
    "key_concepts": [
     "ion",
@@ -3519,7 +3519,7 @@
    "position": "8 of 20",
    "topic": "Cell Division: Mitosis, Meiosis, and Where Variation Comes From",
    "headline_hint": "One cell becomes two identical copies — except when it deliberately doesn't",
-   "focus": "Contrasts mitosis (growth and repair, identical copies) with meiosis (sex cells, genetic shuffling), explaining why meiosis is the biological source of the variation evolution acts on.",
+   "focus": "Contrasts mitosis (growth and repair, identical copies) with meiosis (sex cells, genetic shuffling), explaining how meiosis reshuffles variation (first created by mutation) into the new combinations evolution acts on.",
    "key_concepts": [
     "mitosis",
     "meiosis",
@@ -3734,7 +3734,7 @@
    "subject_key": "biology",
    "position": "17 of 20",
    "topic": "The Immune System: How the Body Fights Invaders",
-   "headline_hint": "Your body maintains a standing army that remembers every enemy it has ever fought",
+   "headline_hint": "Your body maintains a standing army that remembers many of the enemies it has fought",
    "focus": "Explains innate versus adaptive immunity, antibodies, and immunological memory, building the biological foundation the closing lesson on vaccines and biotechnology will depend on.",
    "key_concepts": [
     "innate vs adaptive immunity",
@@ -3807,7 +3807,7 @@
    "position": "20 of 20",
    "topic": "Genetic Engineering, CRISPR, and the Biotechnology Revolution",
    "headline_hint": "Scientists can now edit the code of life with a tool borrowed from bacteria's own immune system",
-   "focus": "Closes the block with modern biotechnology — recombinant DNA, CRISPR-Cas9 gene editing, and mRNA vaccines — showing how understanding DNA (day 5) and the immune system (day 17) translates into real-world tools and open ethical debates.",
+   "focus": "Closes the block with modern biotechnology — recombinant DNA, CRISPR-Cas9 gene editing, and mRNA vaccines — showing how understanding DNA (day 145) and the immune system (day 157) translates into real-world tools and open ethical debates.",
    "key_concepts": [
     "recombinant DNA",
     "CRISPR-Cas9",
@@ -3978,7 +3978,7 @@
    "subject_key": "engineering",
    "position": "7 of 20",
    "topic": "Arches and Domes: Building in Pure Compression",
-   "headline_hint": "Rome's Pantheon dome has stood unreinforced for nineteen centuries because most of it is being squeezed, not pulled — only its lower courses fight tension, visible today as hairline cracks.",
+   "headline_hint": "Rome's Pantheon dome has stood unreinforced for nineteen centuries because most of it is being squeezed, not pulled — its lower part, cracked by tension long ago, now stands as a ring of arches.",
    "focus": "Teaches the arch principle -- shaping a structure so gravity loads become pure compression carried all the way to the ground -- from Roman aqueducts to masonry domes, and why it let ancient builders span huge distances without steel.",
    "key_concepts": [
     "arch",
@@ -4028,7 +4028,7 @@
    "position": "9 of 20",
    "topic": "Failure Case Study: Tacoma Narrows and the Bridge That Shook Itself Apart",
    "headline_hint": "In 1940, a brand-new Washington State bridge twisted itself apart in a moderate wind, far below any load it was designed for.",
-   "focus": "Uses the Tacoma Narrows Bridge collapse to teach resonance and aeroelastic flutter -- how a structure can be strong enough for any static load and still fail dynamically -- and how it permanently changed bridge design and safety-factor practice.",
+   "focus": "Uses the Tacoma Narrows Bridge collapse to teach aeroelastic flutter (and why it is not simple resonance) -- how a structure can be strong enough for any static load and still fail dynamically -- and how it permanently changed bridge design, making wind-tunnel testing of long-span bridge decks standard practice.",
    "key_concepts": [
     "resonance",
     "aeroelastic flutter",
@@ -4123,7 +4123,7 @@
    "subject_key": "engineering",
    "position": "13 of 20",
    "topic": "Electrical Engineering Basics: Circuits and Ohm's Law",
-   "headline_hint": "Every circuit, from a flashlight to a data center, obeys the same one equation.",
+   "headline_hint": "From a flashlight to a data center, every circuit starts from the same three quantities: voltage, current, resistance.",
    "focus": "Introduces the core quantities of electrical engineering -- voltage, current, and resistance -- Ohm's law and electrical power, and the difference between wiring components in series versus parallel.",
    "key_concepts": [
     "voltage",
@@ -4247,7 +4247,7 @@
    "position": "18 of 20",
    "topic": "Failure Case Study: The Hyatt Regency Walkway and How Small Changes Kill",
    "headline_hint": "A single connection detail, changed during construction in 1979, doubled the load it had to carry -- and in 1981 the walkway it held came down, killing 114 people.",
-   "focus": "Uses the Hyatt Regency walkway collapse to teach a different failure mode than resonance -- an overloaded connection from an unreviewed design change and a broken communication chain -- and why engineering sign-off and accountability exist.",
+   "focus": "Uses the Hyatt Regency walkway collapse to teach a different failure mode than aeroelastic flutter -- an overloaded connection from an unreviewed design change and a broken communication chain -- and why engineering sign-off and accountability exist.",
    "key_concepts": [
     "connection/load path failure",
     "design change control",
@@ -4318,7 +4318,7 @@
    "position": "1 of 20",
    "topic": "The Agricultural Revolution: From Foragers to Farmers",
    "headline_hint": "The invention that ended 300,000 years of nomadic life and started civilization's clock",
-   "focus": "Around 10,000 BCE, independent shifts to farming in several world regions created food surpluses, permanent settlements, and social hierarchy — the precondition for every civilization this course covers.",
+   "focus": "Beginning around 10,000 BCE, independent shifts to farming in several world regions created food surpluses, permanent settlements, and social hierarchy — the precondition for every civilization this course covers.",
    "key_concepts": [
     "Neolithic Revolution",
     "domestication",
@@ -4342,7 +4342,7 @@
    "position": "2 of 20",
    "topic": "Mesopotamia: Cities, Writing, and the First Laws",
    "headline_hint": "Between two rivers, humans invent the city, the written word, and the law code",
-   "focus": "Sumerian city-states in Mesopotamia produced the first writing (cuneiform), organized irrigation-based states, and the first written law codes — the template for state power backed by written record.",
+   "focus": "Sumerian city-states in Mesopotamia produced one of the first writing systems (cuneiform), organized irrigation-based states, and the first written law codes — the template for state power backed by written record.",
    "key_concepts": [
     "Sumer",
     "cuneiform",
@@ -4413,7 +4413,7 @@
    "subject_key": "history",
    "position": "5 of 20",
    "topic": "Ancient India: The Indus Valley, the Vedas, and the Buddha",
-   "headline_hint": "A vanished Bronze Age civilization, a caste system, and the prince who rejected both",
+   "headline_hint": "A vanished Bronze Age civilization, a caste system, and the prince who challenged it",
    "focus": "The still-mysterious collapse of the Indus Valley Civilization gave way to the Vedic age, whose social order (the varna/caste system) and ritual religion produced both classical Hinduism and Buddhism as a direct reform movement against it.",
    "key_concepts": [
     "Indus Valley Civilization",
@@ -4485,7 +4485,7 @@
    "subject_key": "history",
    "position": "8 of 20",
    "topic": "Judaism, Christianity, and the Transformation of Rome",
-   "headline_hint": "A small Judean sect goes from persecuted to protected in the world's largest empire -- and official six decades later",
+   "headline_hint": "A small Judean sect goes from persecuted to protected in the world's largest empire -- and official nearly seven decades later",
    "focus": "Israelite monotheism produced Judaism's covenant tradition, out of which Christianity emerged and spread through the Roman Empire until Constantine's conversion and the Edict of Milan (313 CE) ended its persecution — Christianity became the empire's official religion only later, under Theodosius I's Edict of Thessalonica (380 CE) — just as the Western Empire's collapse (476 CE) split the Mediterranean world in two.",
    "key_concepts": [
     "monotheism",
@@ -4533,8 +4533,8 @@
    "subject_key": "history",
    "position": "10 of 20",
    "topic": "Medieval Europe: Feudalism, the Church, and the Crusades",
-   "headline_hint": "No king, no state, no money economy — how Europe organized itself after Rome fell",
-   "focus": "In Western Europe's fragmented post-Roman world, feudalism (land for loyalty and military service) and the Catholic Church filled the power vacuum, while the Crusades became medieval Europe's first sustained, often violent contact with the Islamic world.",
+   "headline_hint": "Weak kings, fractured states, scarce coin — how Europe organized itself after Rome fell",
+   "focus": "In Western Europe's fragmented post-Roman world, feudalism (land for loyalty and military service) and the Catholic Church filled the power vacuum, while the Crusades (1096-1291) brought Latin Europe into prolonged, often violent contact with the Islamic Near East.",
    "key_concepts": [
     "feudalism",
     "manorialism",
@@ -4580,7 +4580,7 @@
    "subject_key": "history",
    "position": "12 of 20",
    "topic": "The Mongol Empire and a Connected Eurasia",
-   "headline_hint": "The largest land empire in history — built by one man, and it rewired the world",
+   "headline_hint": "The largest contiguous land empire in history — founded by one man, and it rewired the world",
    "focus": "Genghis Khan and his successors conquered the largest contiguous land empire in history, and the resulting Pax Mongolica reopened Eurasian trade routes even as it toppled Baghdad's caliphate and unintentionally carried the pathogen behind the Black Death from Asia into Europe.",
    "key_concepts": [
     "Genghis Khan",
@@ -4651,7 +4651,7 @@
    "subject_key": "history",
    "position": "15 of 20",
    "topic": "1492: The Columbian Exchange and the Conquest of the Americas",
-   "headline_hint": "One voyage fuses two hemispheres — and unleashes history's deadliest epidemic",
+   "headline_hint": "One voyage fuses two hemispheres — and unleashes history's worst demographic collapse",
    "focus": "Columbus's 1492 voyage triggered the Columbian Exchange (crops, animals, and diseases crossing the Atlantic in both directions), a demographic catastrophe from smallpox that let a handful of Spanish conquistadors topple the Aztec and Inca empires, and the beginnings of the transatlantic slave trade.",
    "key_concepts": [
     "Columbian Exchange",
@@ -4723,7 +4723,7 @@
    "position": "18 of 20",
    "topic": "The Age of Empire: Colonialism and the Reordering of the World",
    "headline_hint": "How a handful of European states drew the borders of most of the modern world",
-   "focus": "Industrial and military advantages let European powers carve up Africa (the 1884-85 Berlin Conference) and dominate much of Asia, organizing a global economy around colonial extraction whose arbitrary borders and resource dependencies still shape politics and conflict today.",
+   "focus": "Industrial and military advantages let European powers carve up Africa (under rules set at the 1884-85 Berlin Conference) and dominate much of Asia, organizing a global economy around colonial extraction whose arbitrary borders and resource dependencies still shape politics and conflict today.",
    "key_concepts": [
     "imperialism",
     "the Scramble for Africa",
@@ -4755,7 +4755,7 @@
     "the atomic bomb",
     "the United Nations"
    ],
-   "model_or_equation": "a before/after map of Europe and the Middle East's empires and borders, 1914 to 1919",
+   "model_or_equation": "a before/after map of Europe and the Middle East's empires and borders, 1914 to 1923",
    "source": "new",
    "connect_back": {
     "day": 67,
@@ -4938,7 +4938,7 @@
    "subject_key": "geography",
    "position": "7 of 20",
    "topic": "Weathering and Erosion: How Rock Becomes Sediment",
-   "headline_hint": "Every Grain of Sand Used to Be a Mountain",
+   "headline_hint": "Most Grains of Sand Used to Be Part of a Mountain",
    "focus": "Distinguishes physical from chemical weathering and explains how weathered material is transported and deposited, the process that sculpts every landform to follow.",
    "key_concepts": [
     "physical weathering",
@@ -5323,7 +5323,7 @@
    "position": "3 of 20",
    "topic": "Constitutions and constitutionalism",
    "headline_hint": "The rulebook that rules the rulers",
-   "focus": "Explains what a constitution does — allocating and limiting power — and contrasts written, codified constitutions with unwritten ones like the UK's, plus how entrenchment and amendment work.",
+   "focus": "Explains what a constitution does — allocating and limiting power — and contrasts codified constitutions with uncodified ones like the UK's, plus how entrenchment and amendment work.",
    "key_concepts": [
     "constitution",
     "constitutionalism",
@@ -5659,7 +5659,7 @@
    "position": "17 of 20",
    "topic": "Electoral systems — how votes become seats",
    "headline_hint": "Why the same votes can produce completely different parliaments",
-   "focus": "Compares first-past-the-post, proportional representation, and mixed systems, and introduces Duverger's Law explaining why FPTP tends toward two parties and PR toward many.",
+   "focus": "Compares first-past-the-post, proportional representation, and mixed systems, and introduces Duverger's Law explaining why FPTP tends toward two parties, plus his companion hypothesis that PR tends toward many.",
    "key_concepts": [
     "first-past-the-post",
     "proportional representation",
@@ -5707,7 +5707,7 @@
    "position": "19 of 20",
    "topic": "The rule of law",
    "headline_hint": "The idea that the law rules even the people in charge",
-   "focus": "Defines the rule of law as distinct from mere 'rule by law' — equality before the law, predictability, no one above it — building on Day 2's legitimacy to explain what actually restrains a government's own power.",
+   "focus": "Defines the rule of law as distinct from mere 'rule by law' — equality before the law, predictability, no one above it — building on Day 222's lesson on legitimacy to explain what actually restrains a government's own power.",
    "key_concepts": [
     "rule of law",
     "rule by law",
@@ -5970,7 +5970,7 @@
    "position": "10 of 20",
    "topic": "Deterrence and Nuclear Strategy: Mutual Assured Destruction",
    "headline_hint": "The bomb that is never meant to be used: how nuclear weapons made great-power war arguably unthinkable.",
-   "focus": "Teaches deterrence theory and nuclear strategy — how the threat of unacceptable retaliation, not defense, has kept the peace between nuclear powers since 1949, when the Soviet Union became the second.",
+   "focus": "Teaches deterrence theory and nuclear strategy — how the threat of unacceptable retaliation, not defense, has arguably prevented all-out war between nuclear powers since 1949, when the Soviet Union became the second, though limited clashes such as Kargil in 1999 still occurred.",
    "key_concepts": [
     "deterrence",
     "mutual assured destruction (MAD)",
@@ -6066,7 +6066,7 @@
    "position": "14 of 20",
    "topic": "Economic and Regional Institutions: WTO, IMF, World Bank, and the EU",
    "headline_hint": "The rules-based order in practice: the institutions that manage trade and money — and, in Europe, sovereignty itself.",
-   "focus": "Surveys the postwar economic institutions (WTO, IMF, World Bank) that govern trade and finance between states, then uses the EU as the leading case of deep regional integration.",
+   "focus": "Surveys the postwar economic institutions (GATT, now the WTO; IMF; World Bank) that govern trade and finance between states, then uses the EU as the leading case of deep regional integration.",
    "key_concepts": [
     "the WTO",
     "the IMF",
@@ -6810,7 +6810,7 @@
    "subject_key": "communication",
    "position": "5 of 20",
    "topic": "Family Trees of Language: Historical Linguistics",
-   "headline_hint": "How Linguists Reconstructed a Language No One Has Spoken in 6,000 Years",
+   "headline_hint": "How Linguists Reconstructed a Language Spoken 6,000 Years Ago",
    "focus": "Shows how systematic sound change lets linguists trace language families back to common ancestors, using Indo-European as the flagship case.",
    "key_concepts": [
     "language family",
@@ -6857,7 +6857,7 @@
    "subject_key": "communication",
    "position": "7 of 20",
    "topic": "Before Writing: Oral Tradition and the Technology of Memory",
-   "headline_hint": "How Illiterate Poets Recomposed Works as Long as the Iliad, Every Time They Sang Them",
+   "headline_hint": "How Illiterate Poets Recomposed Works as Long as the Odyssey, Every Time They Sang Them",
    "focus": "Explains how preliterate cultures encoded and transmitted vast amounts of knowledge through formulaic oral composition, the first great communication system.",
    "key_concepts": [
     "oral tradition",
@@ -7020,7 +7020,7 @@
    "subject_key": "communication",
    "position": "14 of 20",
    "topic": "Propaganda: The History and Mechanics of Mass Persuasion",
-   "headline_hint": "The Adman Who Taught Governments to Sell War, Soap, and Cigarettes the Same Way",
+   "headline_hint": "The PR Man Who Sold War, Soap, and Cigarettes the Same Way",
    "focus": "Surveys classic historical propaganda techniques and the birth of modern public relations, teaching the mechanisms of mass persuasion without reference to any current political dispute.",
    "key_concepts": [
     "propaganda technique taxonomy (e.g. bandwagon, card-stacking, testimonial)",
@@ -7113,7 +7113,7 @@
    "subject_key": "communication",
    "position": "18 of 20",
    "topic": "Media Literacy: A Practical Toolkit for Evaluating Information",
-   "headline_hint": "The Three-Second Habit Professional Fact-Checkers Swear By",
+   "headline_hint": "The Thirty-Second Habit Professional Fact-Checkers Swear By",
    "focus": "Turns the previous lessons on journalism, propaganda, and misinformation into usable practical skills for evaluating any claim or source encountered.",
    "key_concepts": [
     "lateral reading",
@@ -7160,7 +7160,7 @@
    "subject_key": "communication",
    "position": "20 of 20",
    "topic": "From Campfire to Feed: A Closing Look at How Minds and Societies Actually Communicate",
-   "headline_hint": "Same Human Brain, Twelve Thousand Years of New Megaphones",
+   "headline_hint": "Same Human Brain, Five Thousand Years of New Megaphones",
    "focus": "Closes the Academy by tracing the throughline from oral storytelling to the algorithmic feed — what has and hasn't changed about how humans inform, persuade, and believe — as a fitting final vantage point on the whole year's habit of mind.",
    "key_concepts": [
     "continuity of persuasion across media technologies",
