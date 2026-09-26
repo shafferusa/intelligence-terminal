@@ -316,6 +316,9 @@ class Router:
                     "records": store.lab_record_summary(),
                     "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
                     "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live}
+        if r == ["lab", "learned"] and method == "GET":
+            from .engine import learned as LW
+            return LW.api(store, q.get("h"), q.get("asset"), q.get("node"), q.get("target") or "alpha")
         if r == ["lab", "run"] and method == "POST":
             return app.start_lab(bool(b.get("build"))).view()
         if r == ["lab", "promote"] and method == "POST":

@@ -63,6 +63,7 @@ def main(argv=None) -> int:
     lb.add_argument("--newinfo", action="store_true", help="new-information research against the frozen benchmark (engine/newinfo.py)")
     lb.add_argument("--newinfo-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "NEW_INFORMATION_RESEARCH.md"))
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
+    lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
     lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
     lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
@@ -121,6 +122,21 @@ def main(argv=None) -> int:
             print("production:", ", ".join(f"{k} {v}" for k, v in meta["production"].items()), "· verify:", lab.verify_benchmark(st, meta["id"])["ok"])
         finally:
             st.close()
+        return 0
+    if args.cmd == "lab" and args.learned:
+        from .data.store import Store
+        from .engine import learned
+        here = os.path.dirname(os.path.abspath(__file__))
+        res = learned.run_all(app.db_path(), workers=args.workers, progress=print)
+        H = res["horizons"]
+        md = learned.markdown(res, {k: v.get("assets_today") for k, v in H.items()}, {k: v.get("nodes") for k, v in H.items()})
+        open(os.path.join(here, "SHAFFER_LEARNED_WEIGHTS.md"), "w", encoding="utf-8").write(md)
+        st = Store(app.db_path())
+        try:
+            learned.register(st, res)
+        finally:
+            st.close()
+        print(f"learned weights: {res['seconds']}s; wrote SHAFFER_LEARNED_WEIGHTS.md")
         return 0
     if args.cmd == "lab" and (args.vnext or args.fetch_sec_extra):
         from .data.store import Store

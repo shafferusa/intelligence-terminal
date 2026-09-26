@@ -759,9 +759,9 @@
   // ---------------------------------------------------------------- ML Lab: the laboratory for Shaffer Score and Shaffer Hedge
   const LAB_TABS = [['production', 'Production models'], ['performance', 'Historical performance'], ['signals', 'Signal research'], ['alpha', 'Shaffer Alpha'], ['directional', 'Shaffer Directional'], ['newinfo', 'New Information'], ['sigweights', 'Signal weights'], ['weights', 'Family weights'],
     ['challengers', 'Challengers & promotion'], ['hedge', 'Hedge research'], ['live', 'Live learning'], ['versions', 'Version comparison'], ['forecasts', 'Independent ML forecasts'],
-    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext']];
-  const LAB_GROUPS = [['Shaffer Alpha', ['alpha', 'alphanext', 'sigweights', 'weights']], ['Shaffer Directional', ['directional', 'dirnext']],
-    ['Shaffer Hedge', ['hedge', 'hedgenext']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
+    ['alphanext', 'Alpha vNext'], ['dirnext', 'Directional vNext'], ['hedgenext', 'Hedge vNext'], ['learned', 'Learned weights'], ['learneddir', 'Learned weights'], ['learnedhedge', 'Learned hedge']];
+  const LAB_GROUPS = [['Shaffer Alpha', ['learned', 'alpha', 'alphanext', 'sigweights', 'weights']], ['Shaffer Directional', ['learneddir', 'directional', 'dirnext']],
+    ['Shaffer Hedge', ['learnedhedge', 'hedge', 'hedgenext']], ['Lab', ['production', 'performance', 'signals', 'newinfo', 'challengers', 'live', 'versions', 'forecasts']]];
   const LAB_NAME = Object.fromEntries(LAB_TABS);
   const icT = (m) => m && m.ic != null ? `${fmt.num(m.ic, 3)} <span class="faint">(t ${fmt.num(m.t, 1)})</span>` : '—';
   const stagePill = s => `<span class="pill ${s === 'production' ? 'pos' : s === 'eligible for promotion' ? 'pos' : s === 'live shadow' ? 'warn' : s === 'retired' ? '' : 'neg'}" style="font-size:10.5px">${esc(s)}</span>`;
@@ -977,6 +977,135 @@
   const vPill = s => `<span class="pill ${s === 'LIVE SHADOW ELIGIBLE' ? 'pos' : s === 'INSUFFICIENT DATA' ? 'warn' : s === 'production' || s === 'benchmark' ? '' : 'neg'}" style="font-size:10.5px">${esc(s || '—')}</span>`;
   const vNone = (el, what, cmd) => { el.innerHTML = `<div class="card"><h2>${what} <small>research only</small></h2><p class="muted" style="margin:0">Not run yet: <code>${cmd}</code>.</p></div>`; };
   const segH = (id, HZ, hz) => `<div class="row" style="gap:10px;margin:0 0 10px"><span class="muted" style="font-size:12.5px">Horizon</span><div class="seg" id="${id}">${HZ.map(x => `<button data-h="${x}" class="${x === hz ? 'on' : ''}">${x}</button>`).join('')}</div></div>`;
+
+  // ---------------------------------------------------------------- learned Shaffer weights (engine/learned.py)
+  const LV = { global: 'Global', class: 'Class', ptype: 'Product type', sector: 'Sector', industry: 'Industry', asset: 'Asset' };
+  const relPill = s => `<span class="pill ${s === 'VALIDATED' ? 'pos' : s === 'SUPPORTED' ? 'warn' : ''}" style="font-size:10.5px">${esc(s || '—')}</span>`;
+  const lwStatus = s => `<span class="pill ${s === 'LIVE SHADOW ELIGIBLE' ? 'pos' : s === 'production' || s === 'benchmark' ? '' : 'neg'}" style="font-size:10.5px">${esc(s === 'NOT VALIDATED' ? 'not validated' : s || '—')}</span>`;
+  const levelsTxt = lv => Object.entries(lv || {}).filter(([, v]) => v > 0.005).map(([k, v]) => `${LV[k]} ${fmt.pct(v, 0)}`).join(' · ') || '—';
+  const nodeName = n => n === 'global' ? 'Global' : String(n).split(':').slice(1).join(':').split('/').pop();
+  const labLearned = async (body) => {
+    body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
+    const S = await api('/fs2/lab/learned');
+    if (!S || !S.ran) return vNone(body, 'Learned Shaffer weights', 'python -m finsim2 lab --learned');
+    const HZ = Object.keys(S.horizons), hz = HZ.includes(pref.get('lwH', '3M')) ? pref.get('lwH', '3M') : HZ[0];
+    const tg = pref.get('lwT', 'alpha') === 'dir' ? 'dir' : 'alpha';
+    const D = await api(`/fs2/lab/learned?h=${encodeURIComponent(hz)}&target=${tg}`);
+    const cap = S.capability || {}, capOk = Object.values(cap).filter(v => v.pass).length;
+    const V = D.variants || {};
+    body.innerHTML = `<div class="card"><h2>Learned Shaffer weights <small>what weights does point-in-time history support? · find them first, then decide how much to trust them · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">Every one of the 74 production signals gets a weight at every node of Global → Class → Product type → Sector → Industry → Asset, per horizon. <b>Historical best fit</b> = what fits the past best (hardly pooled). <b>Validated</b> = pooled toward the parent, trusted in proportion to out-of-sample evidence, specialised only where a node's own deviation survived out of sample — what FinSim2 would use. Capability test on planted synthetic effects: <b>${capOk}/${Object.keys(cap).length} recovered</b>. Run ${esc(S.started || '')}.</p>
+      <div class="row" style="gap:14px;flex-wrap:wrap">${segH('lwH', HZ, hz)}<div class="row" style="gap:10px;margin:0 0 10px"><span class="muted" style="font-size:12.5px">Target</span><div class="seg" id="lwT"><button data-t="alpha" class="${tg === 'alpha' ? 'on' : ''}">Alpha (rank)</button><button data-t="dir" class="${tg === 'dir' ? 'on' : ''}">Directional (P up)</button></div></div></div>
+      <div id="lwV"></div><p class="muted" style="margin:8px 0 0;font-size:12px" id="lwC"></p></div>
+      <div class="card flush" style="margin-top:14px"><h2>Current learned Shaffer — ${esc(hz)} <small>today's production score next to the learned one, and where the learned weights come from · click an asset</small></h2><div id="lwA"></div></div>
+      <div id="lwD" style="margin-top:14px"></div>
+      <div class="card flush" style="margin-top:14px"><h2>Global weights — ${esc(hz)} ${tg === 'alpha' ? 'Alpha' : 'Directional'} <small>production vs historical best fit vs validated · reliability · era stability</small></h2><div id="lwG"></div></div>`;
+    const vrows = Object.entries(V).map(([k, v]) => ({ k, ...v }));
+    if (tg === 'alpha') {
+      const p = ((V.C || {}).walkforward || {}).production || {};
+      table($('#lwV'), [{ k: 'A', label: 'production', walkforward: { challenger: p }, gates: {}, status: 'production' }].concat(vrows), [
+        { k: 'label', label: 'Weight set', l: 1, f: x => `<b>${esc(x.k)}</b> ${esc(x.label)}` },
+        { k: 'ric', label: 'Rank IC (t)', f: x => { const c = (x.walkforward || {}).challenger || {}; return `${fmt.num(c.rank_ic, 4)} <span class="faint">(${fmt.num(c.rank_t, 1)})</span>`; } },
+        { k: 'd', label: 'Δ vs production (t)', f: x => { const q = (x.walkforward || {}).paired; return q ? `<span class="${q.mean > 0 ? 'pos' : 'neg'}">${fmt.num(q.mean, 4)}</span> <span class="faint">(${fmt.num(q.t, 1)})</span>` : '—'; } },
+        { k: 'qs', label: 'Quintile spread', f: x => fmt.spct(((x.walkforward || {}).challenger || {}).quintile_spread, 2) },
+        { k: 'ls', label: 'Net L/S', f: x => { const l = (x.walkforward || {}).ls_challenger; return l ? `${fmt.spct(l.net, 3)}<span class="sub">t ${fmt.num(l.t, 1)}</span>` : '—'; } },
+        { k: 'e', label: 'Eras won', f: x => x.gates && x.gates.eras_complete ? `${x.gates.eras_won}/${x.gates.eras_complete}` : '—' },
+        { k: 'sp', label: 'Split t', f: x => fmt.num((x.gates || {}).split_t, 1) },
+        { k: 's', label: 'Status', l: 1, f: x => lwStatus(x.status) }], { sortKey: null });
+    } else {
+      table($('#lwV'), [{ k: 'prior', label: 'prior-only (PIT base prior)', metrics: D.prior || {}, status: 'benchmark' }].concat(vrows), [
+        { k: 'label', label: 'Weight set', l: 1, f: x => `<b>${esc(x.k === 'prior' ? '' : x.k)}</b> ${esc(x.label)}` },
+        { k: 'b', label: 'Brier', f: x => fmt.num((x.metrics || {}).brier, 4) },
+        { k: 'g', label: 'Brier gain vs prior (t)', f: x => x.vs_prior ? `<span class="${x.vs_prior.brier_gain > 0 ? 'pos' : 'neg'}">${fmt.num(x.vs_prior.brier_gain, 5)}</span> <span class="faint">(${fmt.num(x.vs_prior.brier_t, 1)})</span>` : '—' },
+        { k: 'c', label: 'vs prior + production (t)', f: x => x.vs_current ? fmt.num(x.vs_current.brier_t, 1) : '—' },
+        { k: 'ba', label: 'Balanced acc.', f: x => fmt.pct((x.metrics || {}).balanced_accuracy, 1) },
+        { k: 'ece', label: 'ECE', f: x => fmt.num((x.metrics || {}).ece, 4) },
+        { k: 'e', label: 'Eras won', f: x => x.gates ? `${x.gates.eras_won}/${x.gates.eras_complete}` : '—' },
+        { k: 's', label: 'Status', l: 1, f: x => lwStatus(x.status) }], { sortKey: null });
+    }
+    const ch = D.choices || {};
+    $('#lwC').innerHTML = `Validated model today: pooling K = ${esc(ch.K)}, ${esc(ch.trusted)} of ${tg === 'alpha' ? 74 : 75} global weights trusted, ${esc(ch.kept_nodes)} node × signal specialisations kept (${Object.entries(ch.kept_by_level || {}).map(([k, v]) => `${LV[k]} ${v}`).join(', ')}).`;
+    const assets = D.assets || [];
+    table($('#lwA'), assets, [{ k: 'asset', label: 'Asset', l: 1, f: x => `<b>${esc(x.asset)}</b><span class="sub">${esc((x.path || []).slice(1, -1).map(nodeName).join(' → '))}</span>` },
+      { k: 'production_score', label: 'Production', f: x => `<span class="${sign(x.production_score)}">${fmt.num(x.production_score, 1)}</span>` },
+      { k: 'learned_score', label: 'Learned', f: x => `<span class="${sign(x.learned_score)}">${fmt.num(x.learned_score, 1)}</span>` },
+      { k: 'diff', label: 'Difference', v: x => (x.learned_score ?? 0) - (x.production_score ?? 0), f: x => fmt.num((x.learned_score ?? 0) - (x.production_score ?? 0), 1) },
+      { k: 'p_up', label: 'P(up) learned · prior', f: x => `${fmt.pct(x.p_up, 1)}<span class="sub">${fmt.pct(x.p_prior, 1)}</span>` },
+      { k: 'lv', label: 'Weights come from', l: 1, f: x => `<span style="font-size:12px">${esc(levelsTxt(x.levels))}</span>` },
+      { k: 'best_depth', label: 'Best depth', l: 1, f: x => esc(LV[x.best_depth] || '—') },
+      { k: 'ar', label: 'Alpha reliability (OOS corr, t)', v: x => (x.alpha_reliability || {}).t, f: x => x.alpha_reliability ? `${fmt.num(x.alpha_reliability.corr, 3)} <span class="faint">(${fmt.num(x.alpha_reliability.t, 1)})</span>` : '—' },
+      { k: 'dr', label: 'Directional reliability (Brier gain, t)', v: x => (x.dir_reliability || {}).t, f: x => x.dir_reliability && x.dir_reliability.n ? `${fmt.num(x.dir_reliability.brier_gain, 4)} <span class="faint">(${fmt.num(x.dir_reliability.t, 1)})</span>` : '—' }],
+      { sortKey: 'learned_score', maxH: 520, onRow: x => { pref.set('lwAsset', x.asset); showAsset(x.asset); } });
+    const sigs = D.signals || [];
+    table($('#lwG'), sigs.map((s, i) => ({ ...s, fam: (D.families || [])[tg === 'dir' ? i - 1 : i] || '' })), [
+      { k: 'name', label: 'Signal', l: 1, f: x => `<b>${esc(x.name)}</b><span class="sub">${esc(x.fam)}</span>` },
+      { k: 'production_share', label: 'Production', f: x => fmt.spct(x.production_share, 1) },
+      { k: 'best_fit', label: 'Best fit', f: x => fmt.num(x.best_fit, 4) },
+      { k: 'learned_share', label: 'Validated', v: x => Math.abs(x.learned_share || 0), f: x => `${fmt.num(x.shrunk, 4)}<span class="sub">${fmt.spct(x.learned_share, 1)} · ρ ${fmt.num(x.trust, 2)}</span>` },
+      { k: 'status', label: 'Reliability', l: 1, f: x => relPill(x.status) },
+      { k: 'oos_t', label: 'OOS t', f: x => fmt.num(x.oos_t, 1) },
+      { k: 'st', label: 'Era stability', l: 1, v: x => (x.stability || {}).same_sign, f: x => `${esc((x.stability || {}).class || '—')}<span class="sub">same sign ${(x.stability || {}).same_sign ?? '—'}/${(x.stability || {}).eras ?? '—'}</span>` },
+      { k: 'kn', label: 'Kept specialisations', l: 1, f: x => Object.entries(x.kept_nodes || {}).map(([k, v]) => `${LV[k]} ${v}`).join(' · ') || '—' }], { sortKey: 'learned_share', maxH: 560 });
+    async function showAsset(a) {
+      const el = $('#lwD');
+      el.innerHTML = '<div class="card"><div class="skeleton" style="height:80px"></div></div>';
+      const X = await api(`/fs2/lab/learned?h=${encodeURIComponent(hz)}&asset=${encodeURIComponent(a)}`);
+      if (!X || X.missing) { el.innerHTML = ''; return; }
+      const names = X.signals || [], fam = X.families || [];
+      const ws = tg === 'alpha' ? X.alpha_weights : (X.dir_weights || []).slice(1), con = tg === 'alpha' ? X.alpha_contrib : (X.dir_contrib || []).slice(1);
+      const dec = X.alpha_decomposition || {}, gl = X.global || [];
+      const rows = names.map((n, i) => ({ n, fam: fam[i], prod: (X.alpha_production || [])[i], w: (ws || [])[i], x: (X.x || [])[i], c: (con || [])[i],
+        src: tg === 'alpha' ? Object.keys(dec).filter(l => l !== 'global' && Math.abs((dec[l] || [])[i] || 0) > 1e-9).map(l => LV[l]).join(' + ') : '', g: gl[i] || {} })).filter(r => r.w || r.prod);
+      el.innerHTML = `<div class="card flush"><h2>${esc(a)} — ${esc(hz)} ${tg === 'alpha' ? 'Alpha' : 'Directional'} <small>production score ${fmt.num(X.production_score, 1)} · learned ${fmt.num(X.learned_score, 1)} · P(up) ${fmt.pct(X.p_up, 1)} (prior ${fmt.pct(X.p_prior, 1)}) · weights from ${esc(levelsTxt(X.alpha_levels))} · best depth ${esc(LV[X.best_depth] || '—')} · as of ${esc(X.date)}</small></h2><div id="lwDT"></div></div>`;
+      table($('#lwDT'), rows, [{ k: 'n', label: 'Signal', l: 1, f: r => `<b>${esc(r.n)}</b><span class="sub">${esc(r.fam || '')}</span>` },
+        { k: 'prod', label: 'Production weight', f: r => fmt.num(r.prod, 4) },
+        { k: 'w', label: 'Validated effective', v: r => Math.abs(r.w || 0), f: r => `<span class="${sign(r.w)}">${fmt.num(r.w, 4)}</span>` },
+        { k: 'src', label: 'Specialised at', l: 1, f: r => esc(r.src || (r.w ? 'Global' : '—')) },
+        { k: 'x', label: 'Current value', f: r => fmt.num(r.x, 3) },
+        { k: 'c', label: 'Contribution', v: r => Math.abs(r.c || 0), f: r => `<span class="${sign(r.c)}">${fmt.num(r.c, 4)}</span>` },
+        { k: 'g', label: 'Global reliability', l: 1, f: r => relPill((r.g || {}).status) }], { sortKey: 'w', maxH: 560 });
+    }
+    const keep = pref.get('lwAsset', null);
+    if (keep && assets.some(x => x.asset === keep)) showAsset(keep);
+    $$('#lwH button').forEach(b => b.onclick = () => { pref.set('lwH', b.dataset.h); route(); });
+    $$('#lwT button').forEach(b => b.onclick = () => { pref.set('lwT', b.dataset.t); route(); });
+  };
+  const labLearnedHedge = async (body) => {
+    body.innerHTML = '<div class="card"><div class="skeleton" style="height:120px"></div></div>';
+    const S = await api('/fs2/lab/learned');
+    const HD = S && S.hedge;
+    if (!HD) return vNone(body, 'Learned Shaffer Hedge parameters', 'python -m finsim2 lab --learned');
+    const HZ = Object.keys(HD.sizing || {}), hz = HZ.includes(pref.get('lhH', '1W')) ? pref.get('lhH', '1W') : HZ[0];
+    const SZ = (HD.sizing || {})[hz] || {}, TL = (HD.tail || {})[hz] || {}, PR = (HD.products || {})[hz];
+    body.innerHTML = `<div class="card"><h2>Learned Shaffer Hedge parameters <small>what sizing and product choices history supports · hedge-2 unchanged · research only</small></h2>
+      <p class="muted" style="margin:0 0 10px;font-size:12.5px">Global → Risk class → Objective → Product class → Instrument. Sizing = the best multiple of hedge-2's package (0.5–1.5×) per node, shrunk toward the parent by dates / (dates + K). Validated walk-forward against hedge-2 with the Hedge program's fixed gates H1–H5 and FDR. U = risk reduction − λ·profit sacrificed − cost, $ per $1M.</p>
+      ${segH('lhH', HZ, hz)}<div id="lhN"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Validation by objective — ${esc(hz)} <small>the learned sizing vs hedge-2, walk-forward</small></h2><div id="lhV"></div></div>
+      <div class="card flush" style="margin-top:14px"><h2>Risk preference and the price of tail protection — ${esc(hz)} <small>the best multiple at every λ, and what sizing up to 1.5× bought in 95% ES</small></h2><div id="lhT"></div></div>
+      ${PR ? `<div class="card flush" style="margin-top:14px"><h2>Product preference — ${esc(hz)} <small>κ (cost sensitivity) ${esc((PR.choices || {})['2100-01-01'] ? PR.choices['2100-01-01'][1] : '—')} · β (basis-risk penalty) ${esc((PR.choices || {})['2100-01-01'] ? PR.choices['2100-01-01'][2] : '—')}</small></h2><div id="lhP"></div></div>` : ''}`;
+    const nodes = Object.entries(SZ.nodes || {}).map(([n, v]) => ({ n, ...v, lvl: n === 'global' ? 0 : ['global', 'risk', 'objective', 'product', 'instrument'].indexOf(n.split(':')[0]) }));
+    table($('#lhN'), nodes, [{ k: 'n', label: 'Node', l: 1, f: x => `<span style="padding-left:${x.lvl * 12}px">${esc(x.n === 'global' ? 'Global' : x.n.split(':')[1].split('/').pop())}</span><span class="sub">${esc(x.n.split(':')[0])}</span>` },
+      { k: 'dates', label: 'Dates' }, { k: 'best_fit', label: 'Historical best fit', f: x => fmt.num(x.best_fit, 2) },
+      { k: 'shrunk', label: 'Validated (shrunk)', f: x => `<b class="${(x.shrunk || 1) > 1.001 ? 'pos' : (x.shrunk || 1) < 0.999 ? 'neg' : ''}">${fmt.num(x.shrunk, 2)}</b>` }],
+      { sortKey: null, maxH: 480, rowCls: x => '' });
+    table($('#lhV'), Object.entries(SZ.cells || {}).map(([o, c]) => ({ o, ...c })), [{ k: 'o', label: 'Objective', l: 1, f: x => `<b>${esc(x.o)}</b><span class="sub">${x.dates} dates</span>` },
+      { k: 'd1', label: 'ΔU λ=1', v: x => (x.d || {})['1.0'], f: x => `<span class="${sign((x.d || {})['1.0'])}">${fmt.signed((x.d || {})['1.0'])}</span>` },
+      { k: 'd5', label: 'ΔU λ=5', v: x => (x.d || {})['5.0'], f: x => fmt.signed((x.d || {})['5.0']) }, { k: 't', label: 't', f: x => fmt.num(x.t, 1) },
+      { k: 'e', label: 'Eras +', f: x => `${(x.gates || {}).eras_won ?? '—'}/${(x.gates || {}).eras_complete ?? '—'}` },
+      { k: 's', label: 'Status', l: 1, f: x => x.status === 'NO HEDGE IMPROVEMENT' ? ((x.gates || {}).fdr ? `<span class="pill warn" style="font-size:10.5px">FDR ✓ · ${['H2', 'H3', 'H4', 'H5'].filter(k => !(x.gates || {})[k]).join(', ')} ✗</span>` : '<span class="pill neg" style="font-size:10.5px">no gain</span>') : vPill(x.status) }], { sortKey: null });
+    table($('#lhT'), Object.entries(TL).map(([n, v]) => ({ n, ...v })), [{ k: 'n', label: 'Node', l: 1, f: x => esc(x.n === 'global' ? 'Global' : x.n.split(':')[1]) },
+      { k: 'dates', label: 'Dates' }, { k: 'b', label: 'Best multiple at λ = 0.5 · 1 · 2 · 5 · 10', l: 1, f: x => ['0.5', '1.0', '2.0', '5.0', '10.0'].map(l => fmt.num((x.best_multiple_by_lambda || {})[l], 2)).join(' · ') },
+      { k: 'es', label: '1.5×: ES reduction', f: x => fmt.signed(x.es_reduction_1_5x) }, { k: 'u', label: '… utility change', f: x => fmt.signed(x.utility_change_1_5x) },
+      { k: 'p', label: 'Price per $ of ES', f: x => fmt.num(x.price_per_es, 2) }], { sortKey: null, maxH: 420 });
+    if (PR) {
+      const rows = [];
+      Object.entries(PR.raw || {}).forEach(([n, ts]) => Object.entries(ts).forEach(([t, v]) => rows.push({ n, t: t.replace('type:', ''), ...v, pref: ((PR.preferences || {})[n] || {})[t] })));
+      table($('#lhP'), rows, [{ k: 'n', label: 'Node', l: 1, f: x => esc(x.n === 'global' ? 'Global' : x.n.split(':')[1]) }, { k: 't', label: 'Product type', l: 1 },
+        { k: 'n_', label: 'Dates', v: x => x.n, f: x => fmt.num(x.n, 0) }, { k: 'adv', label: 'Historical advantage', f: x => `<span class="${sign(x.adv)}">${fmt.signed(x.adv)}</span>` },
+        { k: 'pref', label: 'Validated preference', f: x => `<span class="${sign(x.pref)}">${fmt.signed(x.pref)}</span>` }, { k: 'sd', label: 'Dispersion', f: x => fmt.signed(x.sd) }], { sortKey: 'pref', maxH: 480 });
+    }
+    $$('#lhH button').forEach(b => b.onclick = () => { pref.set('lhH', b.dataset.h); route(); });
+  };
   const labAlphaNext = (body, AN) => {
     if (!AN || !AN.horizons) return vNone(body, 'Shaffer Alpha vNext', 'python -m finsim2 lab --vnext alpha');
     const HZ = Object.keys(AN.horizons), hz = HZ.includes(pref.get('anH', '1M')) ? pref.get('anH', '1M') : HZ[0], H = AN.horizons[hz];
@@ -1082,6 +1211,9 @@
     if (tab === 'alphanext') return labAlphaNext(body, L.alphanext);
     if (tab === 'dirnext') return labDirNext(body, L.dirnext);
     if (tab === 'hedgenext') return labHedgeNext(body, L.hedgenext);
+    if (tab === 'learned') { pref.set('lwT', 'alpha'); return labLearned(body); }
+    if (tab === 'learneddir') { pref.set('lwT', 'dir'); return labLearned(body); }
+    if (tab === 'learnedhedge') return labLearnedHedge(body);
     if (tab === 'directional') return labDirectional(body, L.directional, vers);
     if (!HZL.length && ['performance', 'signals', 'weights', 'versions'].includes(tab)) return need();
     const hx = H[hz] || {};
