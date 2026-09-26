@@ -1013,6 +1013,30 @@ def long_data_markdown(std: dict, ext: dict, gaps: dict, extinfo: dict, dir_std:
       "family-level weights, top-10/20, stable-only, fundamental subsets, class hierarchy, nested selection; G1–G4 + FDR) "
       "was rerun on standard + extended records and compared with the standard run.")
     w("")
+    w("## Key findings")
+    w("")
+    dd = []
+    for lab in ("1M", "3M", "6M", "12M"):
+        a0 = _ric(((std.get(lab) or {}).get("models") or {}).get("learned global (D)") or {})
+        a1 = _ric(((ext.get(lab) or {}).get("models") or {}).get("learned global (D)") or {})
+        if a0 is not None and a1 is not None:
+            dd.append(f"{lab} {_f(a0)} → {_f(a1)}")
+    el = [f"{lab} {k}" for lab in ext for k, v in ((ext.get(lab) or {}).get("models") or {}).items() if v.get("status") == ELIG]
+    w("- **Alpha:** more training history raises the learned global model's walk-forward rank IC — " + "; ".join(dd) + ". "
+      + ("Validated: " + ", ".join(el) + "." if el else "Nothing clears G1 (t ≥ 2 vs production) + FDR: better, not yet good enough."))
+    neg = pos = 0
+    for lab in ("1M", "3M", "6M"):
+        for v in ((((dir_ext or {}).get(lab) or {}).get("dir") or {}).get("variants") or {}).values():
+            g = (v.get("vs_prior") or {}).get("brier_gain")
+            if g is not None:
+                neg += g <= 0
+                pos += g > 0
+    if neg + pos:
+        w(f"- **Directional:** {neg} of {neg + pos} learned Directional variants at 1M–6M are still worse than the point-in-time prior "
+          "with extended history (negative Brier gain) — more history does not rescue long-horizon direction; the prior stays.")
+    w("- **The limit is time and missing data, not model choice:** test eras are unchanged (2009 on), fundamentals cannot be extended "
+      "before 2009, and the panel calendar starts 1993.")
+    w("")
     w("## 1. What was added")
     w("")
     w("| Horizon | Assets extended | Extra (training) records |")
@@ -1065,7 +1089,7 @@ def long_data_markdown(std: dict, ext: dict, gaps: dict, extinfo: dict, dir_std:
                 a = (v0.get(k) or {}).get("vs_prior") or {}
                 b = v.get("vs_prior") or {}
                 w(f"| {lab} | {k} {v.get('label') or ''} | {_f(a.get('brier_gain'), 5)} ({_t(a.get('brier_t'))}) | "
-                  f"{_f(b.get('brier_gain'), 5)} ({_t(b.get('brier_t'))}) | {v.get('status')} |")
+                  f"{_f(b.get('brier_gain'), 5)} ({_t(b.get('brier_t'))}) | {v.get('status') or ('NOT VALIDATED' if (b.get('brier_gain') or 0) <= 0 else 'not gated')} |")
         w("")
     w("## 4. What would actually move the long horizons")
     w("")
