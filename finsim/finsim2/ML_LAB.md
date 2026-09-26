@@ -466,3 +466,24 @@ Result: no challenger beats the prior at 1D or 1W.
 * The compact model is roughly neutral (Brier gain t +0.4 at 1D, −1.2 at 1W).
 * 1M was not run, per the fixed rule.
 * Bearish precision on ordinary equities is 42–50% for every model, which is no better than a coin.
+
+**Hedge.** Five experiments, each against hedge-2 on identical cases and judged on realised utility (λ 0.5–10), with
+gates H1–H5 and BH FDR:
+
+* risk estimation: an EWMA covariance, replayed through the full hedge chain;
+* sizing: a capped multiple per objective, and per objective × volatility regime;
+* product choice: a learned product type per objective × regime, from a forced-product replay;
+* Alpha → hedge: hedge size scaled by the validated 1W Alpha.
+
+Result: nothing passes every gate, so nothing enters live shadow.
+
+* 31 cells survive FDR, almost all in sizing. At 1W, and several at 1M, history prefers larger hedges than hedge-2 for
+  the single-name, beta, systematic, sector, target-vol and tail objectives: the learned multiple is often the 1.5×
+  cap.
+  * The gain is ΔU(λ = 1) up to +$4k per $1M, t up to 6.9, positive in 3 of 4 eras, and it holds without the crisis
+    years.
+  * Every such cell fails the fixed cost and basis-error guard (H4), and the sign reverses at λ ≥ 5–10.
+  * So this is a risk-versus-profit preference, not a free improvement.
+* The EWMA covariance helps the 3M crash objective (ΔU +$6k, FDR), but it also fails H4.
+* The product-choice and Alpha-link tests found nothing.
+* The existing resizing challenger is flat to negative from 2018 on.

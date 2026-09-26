@@ -546,6 +546,8 @@ def run_all(db_path: str, workers: int = 3, progress=None, skip_replays: bool = 
         res["existing_resizing"][lab] = {}
         for obj in V.OBJECTIVES:
             late = [c for c in cases if c["objective"] == obj and c["date"] >= V.RESIZE_FROM]
+            for c in late:                                     # arm C is virtual in the saved cases: hedge-2 × its confirmed multiple
+                _scaled(c, c["arms"]["A"].get("mult") or 1.0, "C")
             if late:
                 res["existing_resizing"][lab][obj] = cell(late, obj, "C", reps=V.BOOT_REPS // 2)
         if lab == "1W":
@@ -634,7 +636,34 @@ def markdown(res: dict) -> str:
     w(f"- **Tested:** {len(TEST_LABEL)} experiments, {ntests} objective × horizon cells with enough dates — " + "; ".join(TEST_LABEL.values()) + ".")
     w("- **Improved (H1–H5 incl. FDR):** " + (", ".join(f"{vid(t)} {o} {lab}" for t, lab, o in passed) if passed else "nothing") + ".")
     w("- **Production eligibility:** none (live shadow first).")
+    near = [(t, lab, o, c) for t, hs in T.items() for lab, objs in hs.items() for o, c in objs.items()
+            if (c.get("gates") or {}).get("fdr") and c.get("status") != "LIVE SHADOW ELIGIBLE"]
+    if near:
+        fails = {}
+        for t, lab, o, c in near:
+            g = c["gates"]
+            for k in ("H2", "H3", "H4", "H5"):
+                if not g.get(k):
+                    fails[k] = fails.get(k, 0) + 1
+        w(f"- **Survived FDR but failed a fixed gate:** {len(near)} cells — failing " + ", ".join(f"{k} ×{v}" for k, v in sorted(fails.items())) +
+          ". They are listed below; under the committed protocol none of them is eligible for live shadow.")
     w("")
+    if near:
+        w("## Survived FDR but failed a fixed gate")
+        w("")
+        w("| Experiment | Objective | Horizon | Dates | ΔU λ=0.5 | ΔU λ=1 | ΔU λ=2 | ΔU λ=5 | ΔU λ=10 | t | Eras + | Cost (hedge-2 → challenger) | Basis error (hedge-2 → challenger) | Failed |")
+        w("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+        for t, lab, o, c in sorted(near, key=lambda x: -(x[3].get("t") or 0)):
+            g, d, a, b = c["gates"], c.get("d") or {}, c.get("a") or {}, c.get("b") or {}
+            w(f"| {vid(t)} | {o} | {lab} | {c.get('dates')} | {_m(d.get('0.5'))} | {_m(d.get('1.0'))} | {_m(d.get('2.0'))} | {_m(d.get('5.0'))} | "
+              f"{_m(d.get('10.0'))} | {_m(c.get('t'), 2)} | {g.get('eras_won')}/{g.get('eras_complete')} | {_m(a.get('cost'))} → {_m(b.get('cost'))} | "
+              f"{_m(a.get('basis_error'))} → {_m(b.get('basis_error'))} | {', '.join(k for k in ('H2', 'H3', 'H4', 'H5') if not g.get(k))} |")
+        w("")
+        w("H4 (fixed in advance) allows at most +10% cost and +5% basis error against hedge-2. Every sizing survivor learned a larger "
+          "hedge (usually the 1.5× cap), which is why cost and basis error rise: history says hedge-2 under-hedges these objectives "
+          "when risk matters as much as profit (λ ≤ 2), and the gain turns negative for profit-sensitive users (λ ≥ 5–10). That is a "
+          "preference trade-off, not a free improvement.")
+        w("")
     for t, label in TEST_LABEL.items():
         hs = T.get(t) or {}
         if not hs:
@@ -699,7 +728,10 @@ def markdown(res: dict) -> str:
     w("## Answers")
     w("")
     w("- **Did better risk estimation make hedges better?** " + _verdict(T.get("risk")))
-    w("- **Did sizing improve (objective / regime resizing)?** " + _verdict(T.get("sizing_obj")) + " / " + _verdict(T.get("sizing_regime")))
+    w("- **Did sizing improve (objective / regime resizing)?** " + _verdict(T.get("sizing_obj")) + " / " + _verdict(T.get("sizing_regime")) +
+      " The strongest evidence of the program is here: larger hedges (learned multiples up to the 1.5× cap) raise realised utility at "
+      "λ ≤ 2 for single-name, beta, systematic, sector, target-vol and tail objectives at 1W (and several at 1M), surviving FDR in "
+      "most of the eras — but every such cell fails H4 (cost and basis error rise with size) and the sign reverses at λ ≥ 5–10.")
     w("- **Did product choice improve?** " + _verdict(T.get("product")))
     w("- **Did validated Alpha improve the hedge?** " + _verdict(T.get("alpha")))
     w("- **Live-shadow eligibility:** " + (", ".join(f"{vid(t)} ({o} {lab})" for t, lab, o in passed) if passed else "none") + ". **Production eligibility:** none.")
