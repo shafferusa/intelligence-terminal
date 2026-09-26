@@ -656,6 +656,11 @@ def markdown(res: dict) -> str:
                   f"{_m((b.get('cost') or 0) - (a.get('cost') or 0), 1)} | {(c.get('changed') or 0):.0%} | {_m(c.get('no_crisis'))} | {_m((c.get('skew') or {}).get('1.0'))} | "
                   f"{_m((c.get('no_options') or {}).get('1.0'))} | {'✓' if g.get('fdr') else '✗'} | {c.get('status')} |")
         w("")
+        w("ΔU > 0: the challenger's realised utility beats hedge-2's. Tail (ES95 Δ) > 0: the challenger's hedged 95% expected "
+          "shortfall is smaller (better). Cost Δ > 0: the challenger costs more. \"Without crises\" drops 2009, Feb–Jun 2020 and 2022; "
+          "\"Put skew +5 vol\" charges every bought put 5 implied-vol points more; \"No options\" keeps only cases where neither package holds "
+          "an option. Each objective is judged on its own; cells are never pooled across objectives.")
+        w("")
         if t in ("sizing_obj", "sizing_regime"):
             w("Learned multiples (walk-forward, per era): " + "; ".join(f"{o} {lab}: " + ", ".join(f"{m}" + ("" if s == "all" else f" ({s})") for m, s in (c.get("multiples") or []))
                                                                     for lab, objs in hs.items() for o, c in objs.items() if c.get("multiples")) + ".")
