@@ -1717,13 +1717,14 @@ SUBSETS = {"fundamental only": FUND_FAMS, "relative value + fundamental": FUND_F
            "macro + fundamental": FUND_FAMS + ["Rates", "Credit", "Macro"]}
 
 
-def study_long(store, research, lab: str, progress=None, only: Optional[set] = None) -> dict:
+def study_long(store, research, lab: str, progress=None, only: Optional[set] = None, extended: bool = False) -> dict:
     from .. import shaffer_score as cfg
     say = progress or (lambda m: None)
     t0 = time.time()
     from .lab import LAB_HORIZONS
     h = dict(LAB_HORIZONS)[lab]
-    rows, today, names = L.build_rows(store, research, lab, say, only)
+    rows, today, names = L.build_rows(store, research, lab, say, only, extended=extended)
+    first_date = min((r["date"] for r in rows), default=None)
     tab = L.Table(rows, names, h)
     del rows
     ctx = Ctx(tab, lambda m: say(f"{lab} {m}"), base=False)
@@ -1786,7 +1787,7 @@ def study_long(store, research, lab: str, progress=None, only: Optional[set] = N
     meta = ctx.pick({"learned global (D)": (D.wf, D.sp), **variants}, default="learned global (D)")
     variants["nested selection (reduced dimension)"] = (meta["wf"], meta["sp"])
     costs = record_costs(tab)
-    res = {"lab": lab, "records": tab.n, "assets": len(tab.slices), "models": {}}
+    res = {"lab": lab, "records": tab.n, "assets": len(tab.slices), "models": {}, "extended": extended, "first_date": first_date}
     for k, (wf, sp) in {"learned global (D)": (D.wf, D.sp), **variants}.items():
         res["models"][k] = evaluate(ctx, k, wf, sp, Dw, costs, lab)
     # sample limits

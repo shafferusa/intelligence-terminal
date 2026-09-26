@@ -997,3 +997,111 @@ def _h_alpha(w, hd):
         for o, v in (a.get("alpha_vs_one") or {}).items():
             w(f"| {o} | {v.get('dates')} | {_n(v.get('d'))} | {_t(v.get('t'))} | {_f(v.get('p'), 3, False)} |")
         w("")
+
+
+# ====================================================================== SHAFFER_LONG_HORIZON_DATA.md
+def long_data_markdown(std: dict, ext: dict, gaps: dict, extinfo: dict, dir_std: Optional[dict] = None, dir_ext: Optional[dict] = None) -> str:
+    """Standard vs extended-history records for the 1M–12M studies, and what data the store lacks."""
+    out: List[str] = []
+    w = out.append
+    w("# Long-horizon Alpha and Directional — does more history help?")
+    w("")
+    w("Research only. The standard research records start where production's reconstructed record starts (25 years back: "
+      "2001 for the oldest assets). `engine/extrecords.py` adds research-only records for the weeks before that — the "
+      "production signals' point-in-time z-scores and the realised outcome, no production score — so they can only be "
+      "training data (every test era starts in 2009). The 1M–12M study (`finetune.study_long`: stronger shrinkage, "
+      "family-level weights, top-10/20, stable-only, fundamental subsets, class hierarchy, nested selection; G1–G4 + FDR) "
+      "was rerun on standard + extended records and compared with the standard run.")
+    w("")
+    w("## 1. What was added")
+    w("")
+    w("| Horizon | Assets extended | Extra (training) records |")
+    w("|---|---|---|")
+    for lab, v in (extinfo.get("labs") or {}).items():
+        w(f"| {lab} | {v.get('assets')} | {v.get('records'):,} |")
+    w("")
+    w(_gap_text(gaps))
+    w("")
+    w("## 2. Alpha: standard vs extended records")
+    w("")
+    for lab in ("1M", "3M", "6M", "12M"):
+        S_, X_ = (std.get(lab) or {}), (ext.get(lab) or {})
+        if not X_:
+            continue
+        ss, sx = S_.get("sample") or {}, X_.get("sample") or {}
+        w(f"### {lab}")
+        w("")
+        w(f"Training starts {X_.get('first_date')} (standard: 2001). Test weeks unchanged ({sx.get('weeks')}); independent periods "
+          f"≈ {_f(sx.get('n_eff'), 0, False)}; signals with |era t| ≥ 2: {ss.get('coef_era_t_ge2')} → {sx.get('coef_era_t_ge2')}; "
+          f"STABLE signals {((ss.get('classes') or {}).get('STABLE'))} → {((sx.get('classes') or {}).get('STABLE'))}.")
+        w("")
+        w("| Model | Rank IC standard | Rank IC extended | Δ vs production extended (t) | Eras + | FDR | Status (extended) |")
+        w("|---|---|---|---|---|---|---|")
+        for k, v in (X_.get("models") or {}).items():
+            s0 = (S_.get("models") or {}).get(k) or {}
+            g = v.get("gates") or {}
+            p = (v.get("walkforward") or {}).get("paired") or {}
+            w(f"| {k} | {_f(_ric(s0))} | {_f(_ric(v))} | {_f(p.get('mean'))} ({_t(p.get('t'))}) | {g.get('eras_won')}/{g.get('eras_complete')} | "
+              f"{'—' if g.get('fdr') is None else ('yes' if g['fdr'] else 'no')} | {v.get('status') or 'baseline'} |")
+        w("")
+        imp = [k for k, v in (X_.get("models") or {}).items() if _ric(v) is not None and _ric((S_.get("models") or {}).get(k) or {}) is not None
+               and _ric(v) > _ric(S_["models"][k])]
+        el = [k for k, v in (X_.get("models") or {}).items() if v.get("status") == ELIG]
+        w(f"- Rank IC improved with more training history in {len(imp)} of {len(X_.get('models') or {})} models.")
+        w("- Validated with extended records: " + (", ".join(el) if el else "**none** — more history did not make this horizon learnable") + ".")
+        w("")
+    if dir_std or dir_ext:
+        w("## 3. Directional: standard vs extended records")
+        w("")
+        w("The learned Directional model (P(up) with the point-in-time base prior as offset) against the prior, with the "
+          "Directional program's fixed gates.")
+        w("")
+        w("| Horizon | Variant | Brier gain vs prior, standard (t) | extended (t) | Status extended |")
+        w("|---|---|---|---|---|")
+        for lab in ("1M", "3M", "6M"):
+            vs = (((dir_ext or {}).get(lab) or {}).get("dir") or {}).get("variants") or {}
+            v0 = (((dir_std or {}).get(lab) or {}).get("dir") or {}).get("variants") or {}
+            for k, v in vs.items():
+                a = (v0.get(k) or {}).get("vs_prior") or {}
+                b = v.get("vs_prior") or {}
+                w(f"| {lab} | {k} {v.get('label') or ''} | {_f(a.get('brier_gain'), 5)} ({_t(a.get('brier_t'))}) | "
+                  f"{_f(b.get('brier_gain'), 5)} ({_t(b.get('brier_t'))}) | {v.get('status')} |")
+        w("")
+    w("## 4. What would actually move the long horizons")
+    w("")
+    w("- **Independent periods, not records.** Overlapping 3M–12M windows give ~72 / 36 / 17 independent periods over the "
+      "test eras for 74 signals; extended history adds training periods but not test periods, and cannot add pre-2009 "
+      "fundamentals. The binding constraint is time.")
+    w("- **A longer calendar.** The panel calendar starts 1993-01-29; many indices, Treasuries and 32 stocks have prices "
+      "before that. Extending it changes production's reconstructed record (HISTORY_YEARS and the calendar are production "
+      "inputs), so it is a separate decision, not done here.")
+    w("- **Point-in-time fundamentals before 2009.** SEC XBRL starts in 2009; earlier first-reported fundamentals would need a "
+      "licensed point-in-time source (not in the allowed data sources).")
+    w("- **A wider cross-section.** More assets per date shrink the noise in each period's IC; the store holds 160 assets. "
+      "Adding long-history assets (more single stocks with 1990s data, international indices, commodity futures) needs a "
+      "data fetch on your machine.")
+    w("- **Fewer parameters.** Family-level and stable-only models are the right shape for ~1 independent period per signal; "
+      "they remain the candidates to watch.")
+    return "\n".join(out) + "\n"
+
+
+def _gap_text(g: dict) -> str:
+    if not g:
+        return ""
+    cov = g.get("signal_coverage_by_family") or {}
+    fam_low = [f for f, v in cov.items() if (v.get("1998") or 0) < 0.1]
+    pr = g.get("prices_first_by_class") or {}
+    lines = [f"**Data in the store.** Calendar from {g.get('calendar_start')} ({g.get('sessions')} sessions). Assets by first price: "
+             + "; ".join(f"{c} " + ", ".join(f"{k} {n}" for k, n in sorted(v.items())) for c, v in pr.items()) + ".",
+             "",
+             f"Standard research records begin (1M, by year): " + ", ".join(f"{y} {n}" for y, n in (g.get("standard_records_first") or {}).items()) + ".",
+             "",
+             "Signal coverage (share of assets with a value) by family:",
+             "",
+             "| Family | 1995 | 1998 | 2001 | 2005 | 2009 | 2015 | 2025 |",
+             "|---|---|---|---|---|---|---|---|"]
+    for f, v in cov.items():
+        lines.append(f"| {f} | " + " | ".join(_pcu(v.get(y)) for y in ("1995", "1998", "2001", "2005", "2009", "2015", "2025")) + " |")
+    lines += ["", f"Fundamentals: first SEC filing in the store {g.get('fundamentals_first_filed')} ({g.get('fundamentals_assets')} companies). "
+              f"Families with < 10% coverage in 1998 (absent in extended records): {', '.join(fam_low) or 'none'}."]
+    return "\n".join(lines)

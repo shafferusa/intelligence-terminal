@@ -90,8 +90,9 @@ def _week(d: str) -> int:
     return _dt.date.fromisoformat(d).toordinal() // 7
 
 
-def load(store, research, lab: str) -> List[Rec]:
-    """Signal-level records for one horizon, compact, with PIT regime states and the naive baselines' calls."""
+def load(store, research, lab: str, extended: bool = False) -> List[Rec]:
+    """Signal-level records for one horizon, compact, with PIT regime states and the naive baselines' calls.
+    `extended`: also the research-only pre-2001 records (engine/extrecords.py: no production score; training only)."""
     sigs, fams = signals(), families()
     si = {s: i for i, s in enumerate(sigs)}
     fi = {f: i for i, f in enumerate(fams)}
@@ -103,7 +104,14 @@ def load(store, research, lab: str) -> List[Rec]:
     regs = research.regimes()
     dims = ("market", "volatility", "rates", "growth")
     out: List[Rec] = []
-    for blob in store.lab_records(SIG_VERSION, lab):
+    blobs = store.lab_records(SIG_VERSION, lab)
+    if extended:
+        from .extrecords import ext_version
+        ext = {b_["asset_id"]: b_["rows"] for b_ in store.lab_records(ext_version(), lab)}
+        for b_ in blobs:
+            first = b_["rows"][0][0] if b_["rows"] else "9999"
+            b_["rows"] = [r_ for r_ in ext.get(b_["asset_id"], []) if r_[0] < first] + b_["rows"]
+    for blob in blobs:
         a = blob["asset_id"]
         meta = metas.get(a) or {"id": a}
         try:

@@ -1536,7 +1536,7 @@ def shares(v: Sequence[float]) -> List[float]:
     return [x / t if t else 0.0 for x in v]
 
 
-def build_rows(store, research, lab: str, progress=None, only: Optional[set] = None) -> Tuple[List[dict], List[dict], List[str]]:
+def build_rows(store, research, lab: str, progress=None, only: Optional[set] = None, extended: bool = False) -> Tuple[List[dict], List[dict], List[str]]:
     """Matured research records (learning and evaluation) and every asset's latest record (today)."""
     from . import directional as D
     from . import weights as W
@@ -1544,7 +1544,7 @@ def build_rows(store, research, lab: str, progress=None, only: Optional[set] = N
     W._init_famidx()
     h = dict(__import__("finsim2.engine.lab", fromlist=["LAB_HORIZONS"]).LAB_HORIZONS)[lab]
     t0 = time.time()
-    recs = W.load(store, research, lab)
+    recs = W.load(store, research, lab, extended=extended)
     D.attach(recs, research, h)
     say(f"{lab}: {len(recs)} records loaded ({time.time() - t0:.0f}s)")
     rows, latest = [], {}
@@ -1608,7 +1608,7 @@ class Study:
 
     def run(self) -> dict:
         t0 = time.time()
-        rows, today, names = build_rows(self.store, self.research, self.lab, self.say, self.only)
+        rows, today, names = build_rows(self.store, self.research, self.lab, self.say, self.only, extended=getattr(self, "extended", False))
         self.today = today
         tab = Table(rows, names, self.h)
         del rows
