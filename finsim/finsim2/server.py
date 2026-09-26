@@ -26,6 +26,22 @@ from finsim.api.service import NotFound as _BaseNotFound
 from finsim.world import CommandError
 
 
+
+def _hedgelive_summary(store):
+    try:
+        from .hedge import hedgelive
+        return hedgelive.summary(store)
+    except Exception as e:  # noqa: BLE001
+        return {"error": str(e)}
+
+
+def _livexs_summary(store):
+    try:
+        from .engine import livexs
+        return livexs.summary(store)
+    except Exception as e:  # noqa: BLE001
+        return {"error": str(e)}
+
 class NotFound(_BaseNotFound):
     """404 with a message."""
 
@@ -125,6 +141,17 @@ class App:
                     out["ml_forecasts"].append(a)
             except Exception as e:
                 out["errors"].append(f"{a} ML: {e}")
+        try:                                                   # once a week: the whole research universe (live panel)
+            from .engine import livexs
+            if livexs.due(self.store, self.research.panel().calendar()[-1]):
+                out["live_panel"] = livexs.record_panel(self.research, (lambda m: job.progress(0, 1, m)) if job else None)
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"live panel: {e}")
+        try:                                                   # the λ-aware hedge panel: freeze packages, grade matured ones
+            from .hedge import hedgelive
+            out["hedge_panel"] = {"graded": hedgelive.grade(self.research), "recorded": hedgelive.record(self.research)}
+        except Exception as e:  # noqa: BLE001
+            out["errors"].append(f"hedge panel: {e}")
         self.store.audit("learning.daily", month, {k: v for k, v in out.items()})
         return out
 
@@ -315,7 +342,7 @@ class Router:
                     "dirnext": store.kv_get("lab:dirnext"), "hedgenext": store.kv_get("lab:hedgenext"), "benchmark": lab.benchmark(store) and {k: v for k, v in lab.benchmark(store).items() if k != "content"},
                     "records": store.lab_record_summary(),
                     "versions": [v | {"stage": lab.stage(store, v)} for v in reg["versions"]],
-                    "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live}
+                    "hedge": store.kv_get("hedgelab:sizing"), "hedge_ml": hml, "live": live, "live_xs": _livexs_summary(store), "hedge_live": _hedgelive_summary(store)}
         if r == ["lab", "learned"] and method == "GET":
             from .engine import learned as LW
             return LW.api(store, q.get("h"), q.get("asset"), q.get("node"), q.get("target") or "alpha")

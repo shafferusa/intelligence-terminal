@@ -1405,7 +1405,31 @@
     if (tab === 'live') {
       const rows = []; Object.entries(L.live || {}).forEach(([m, hs]) => Object.entries(hs).forEach(([h, v]) => rows.push({ m, h, ...v })));
       body.innerHTML = `<div class="card"><h2>Live learning <small>every day FinSim2 makes genuine forecasts; they are stored the day they are made (never edited) and graded when their horizon passes</small></h2><p class="muted" style="margin:0">This is the dataset no backtest can fake: it did not exist when the forecast was made. Challengers in live shadow are recorded next to production (model <code>shaffer:&lt;version&gt;</code>) and compared on the same forecasts.</p></div>
+        <div class="card flush" style="margin-top:14px"><h2>Ranking challengers — weekly cross-sectional live evidence <small>gate G3-XS, fixed ${esc(((L.live_xs || {}).gate || {}).fixed || '')} before any live panel was graded · one independent cross-section a week over the whole research universe</small></h2><div id="lvX"></div>
+          <p class="muted" style="margin:8px 12px;font-size:12px">Passes when ≥ ${esc(((L.live_xs || {}).gate || {}).min_weeks ?? 52)} weekly cross-sections are graded, the live rank IC is positive at t ≥ 1.65, the live Δ vs production is ≥ 0, the live Δ is within 2 standard errors of the backtest, and the decay alarm (CUSUM) never fired. Beating production at t ≥ 2 is not required live — "weeks needed" shows why. Panels recorded: ${esc(((L.live_xs || {}).panels || []).map(p => `${p.date} (${p.assets})`).join(' · ') || 'none yet — the first daily run of each week records one')}.</p></div>
+        <div class="card flush" style="margin-top:14px"><h2>Hedge sizing — λ-specific live utility <small>gate H-LIVE, fixed ${esc(((L.hedge_live || {}).gate || {}).fixed || '')} · hedge-2's package frozen on each panel date, graded at maturity, the claimed multiple scored on U(λ) against hedge-2 on the same cases</small></h2><div id="lvH"></div>
+          <p class="muted" style="margin:8px 12px;font-size:12px">Panel: ${esc(Object.entries((L.hedge_live || {}).panel || {}).map(([k, p]) => `${k} ${p.dates} dates (${p.graded} graded, last ${p.last})`).join(' · ') || 'not started — the daily run records one per horizon step')}. Passes per cell when ≥ ${esc(((L.hedge_live || {}).gate || {}).min_dates ?? 26)} graded dates show ΔU ≥ 0, within 2 standard errors of the backtest, with H3 and H4 holding live.</p></div>
         <div class="card flush" style="margin-top:14px"><div id="lvT"></div></div>`;
+      const HLc = []; Object.entries((L.hedge_live || {}).versions || {}).forEach(([id, g]) => (g.cells || []).forEach(c => HLc.push({ id, ...c })));
+      table($('#lvH'), HLc, [{ k: 'cell', label: 'Version · cell', l: 1, f: c => `<b>${esc(c.cell)}</b><span class="sub">${esc(c.id)} · ×${fmt.num(c.multiple, 2)} hedge-2</span>` },
+        { k: 'dates', label: 'Dates graded', f: c => `${c.dates}/${c.required}<span class="sub">${c.cases} cases</span>` },
+        { k: 'd', label: 'ΔU(λ) live', f: c => c.d == null ? '—' : `<span class="${sign(c.d)}">${fmt.signed(c.d)}</span>` },
+        { k: 'z', label: 'Consistency z', f: c => fmt.num(c.z_consistency, 1) },
+        { k: 'chk', label: 'dates · ΔU · consistent · H3 · H4', l: 1, f: c => ['dates', 'utility', 'consistent', 'H3', 'H4'].map(k => (c.checks || {})[k] ? '<span class="pos">✓</span>' : '<span class="faint">·</span>').join(' ') },
+        { k: 's', label: 'Gate', l: 1, f: c => c.passed ? '<span class="pill pos" style="font-size:10.5px">passed</span>' : '<span class="pill warn" style="font-size:10.5px">accumulating</span>' }],
+        { sortKey: null, empty: 'No λ-conditional hedge sizing in live shadow (python -m finsim2 lab --hedge-panel)' });
+      const X = Object.entries((L.live_xs || {}).models || {}).map(([id, g]) => ({ id, ...g }));
+      const ck = (g, k) => (g.checks || {})[k] ? '<span class="pos">✓</span>' : '<span class="faint">·</span>';
+      table($('#lvX'), X, [{ k: 'id', label: 'Version', l: 1, f: g => `<b>${esc(g.id)}</b><span class="sub">${esc(g.lab)} · expectation ${esc((g.expectation || {}).source || '—')}</span>` },
+        { k: 'weeks', label: 'Weeks graded', f: g => `${g.weeks}/${g.required}${g.mean_n ? `<span class="sub">~${fmt.num(g.mean_n, 0)} assets</span>` : ''}` },
+        { k: 'ic', label: 'Live rank IC (t)', f: g => g.mean_ic == null ? '—' : `${fmt.num(g.mean_ic, 4)} <span class="faint">(${fmt.num(g.t_ic, 1)})</span><span class="sub">backtest ${fmt.num((g.expectation || {}).rank_ic, 4)}</span>` },
+        { k: 'd', label: 'Δ vs production (t)', f: g => g.mean_d == null ? '—' : `<span class="${sign(g.mean_d)}">${fmt.num(g.mean_d, 4)}</span> <span class="faint">(${fmt.num(g.t_d, 1)})</span><span class="sub">backtest ${fmt.num((g.expectation || {}).d, 4)}</span>` },
+        { k: 'z', label: 'Consistency z', f: g => fmt.num(g.z_consistency, 1) },
+        { k: 'c', label: 'Decay alarm', f: g => g.cusum ? (g.cusum.fired_at_week != null ? `<span class="neg">fired wk ${g.cusum.fired_at_week + 1}</span>` : `none<span class="sub">S ${fmt.num(g.cusum.S, 3)} / ${fmt.num(g.cusum.threshold, 3)}</span>`) : '—' },
+        { k: 'wn', label: 'Weeks needed (edge · beat prod.)', f: g => `${g.weeks_needed_edge ?? '—'} · ${g.weeks_needed_vs_production ?? '—'}` },
+        { k: 'chk', label: 'weeks · edge · ≥prod · consistent · no decay', l: 1, f: g => ['weeks', 'edge', 'vs_production', 'consistent', 'no_decay_alarm'].map(k => ck(g, k)).join(' ') },
+        { k: 's', label: 'Gate', l: 1, f: g => g.passed ? '<span class="pill pos" style="font-size:10.5px">passed</span>' : '<span class="pill warn" style="font-size:10.5px">accumulating</span>' }],
+        { sortKey: null, empty: 'No ranking challenger in live shadow' });
       table($('#lvT'), rows, [{ k: 'm', label: 'Model', l: 1, f: r => `<b>${esc(r.m)}</b>` }, { k: 'h', label: 'Horizon', l: 1 }, { k: 'pending', label: 'Waiting to mature' }, { k: 'graded', label: 'Graded' }, { k: 'next_due', label: 'Next due', l: 1, f: r => esc(r.next_due || '—') }, { k: 'first', label: 'First forecast', l: 1, f: r => esc(r.first || '—') }], { sortKey: 'pending', empty: 'No live forecasts yet: the daily learning run records them' });
       return;
     }

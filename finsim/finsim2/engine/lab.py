@@ -775,6 +775,11 @@ def stage(store, v: dict) -> dict:
     """Where a version stands in the promotion process, per horizon."""
     if v["status"] != "challenger":
         return {"stage": v["status"]}
+    if v["kind"] == "hedge" and v.get("live_cells"):            # λ-conditional sizing: the λ-aware live grader
+        from ..hedge import hedgelive
+        live = hedgelive.live_gate(store, v)
+        return {"stage": "eligible for promotion" if live["passed"] else "live shadow", "live": live,
+                "eligible_horizons": sorted({c.split(" ")[0] for c in live["passed_cells"]})}
     if v["kind"] == "hedge":
         sz = (v.get("validation") or {}).get("sizing") or {}
         confirmed = sum(1 for res in sz.values() for r in res.values() if r.get("passed"))
@@ -785,9 +790,12 @@ def stage(store, v: dict) -> dict:
     for lab, val in (v.get("validation") or {}).items():
         g = val.get("gates") or {}
         per[lab] = "discovery failed" if not g.get("G1_discovery") else "confirmation failed" if not g.get("G2_confirmation") else "live shadow"
+    from . import livexs
     if v.get("family") == "directional":
         from .directional import live_gate as dir_live_gate
         live = dir_live_gate(store, v["id"])
+    elif livexs.is_ranking(v):                 # ranking challengers: weekly cross-sectional evidence (G3-XS)
+        live = livexs.live_gate(store, v)
     else:
         live = live_gate(store, v["id"])
     ready = [lab for lab, s in per.items() if s == "live shadow"] if live.get("passed") else []

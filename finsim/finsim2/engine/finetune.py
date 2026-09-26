@@ -2087,13 +2087,18 @@ def register(store, res: dict) -> List[str]:
                            "multiple": (((hd.get("surface") or {}).get(lab) or {}).get(c.get("node")) or {}).get("shrunk", {}).get(str(c.get("lam")))}
             for lab, cs in (hd.get("cells") or {}).items() for k, c in cs.items() if c.get("status") == "LIVE SHADOW ELIGIBLE"}
     from ..hedge.hedgetune import VID
+    old_h = next((x for x in reg["versions"] if x["id"] == VID), None)
+    if old_h and old_h.get("live_cells"):
+        made.append(VID)                              # already in live shadow with frozen cells: never overwritten
+        _save_registry(store, reg)
+        return made
     reg["versions"] = [x for x in reg["versions"] if x["id"] != VID]
-    # 'research' even when cells pass: the hedge live grader (lab.hedge_live_gate) grades variance per group, not utility at
-    # a chosen λ — a λ-aware grader must exist before a λ-conditional size can be shadowed honestly
+    # registered as 'research'; hedge/hedgelive.activate puts the passing cells into live shadow with their frozen
+    # multiples (the λ-aware grader), so the old entry's live state is kept when it exists
     reg["versions"].append({"id": VID, "kind": "hedge", "family": "finetune", "introduced": today, "status": "research",
                             "parent": "hedge-2", "formula": "λ-conditional hedge-size surface m(objective, λ, risk class, horizon, volatility regime)",
                             "benchmark": "hedge-2 (realised utility at the same λ)", "training_cutoff": res.get("started"),
-                            "eligible_cells": elig, "note": "live shadow needs a λ-aware hedge grader (not built)" if elig else None})
+                            "eligible_cells": elig})
     made.append(VID)
     _save_registry(store, reg)
     return made

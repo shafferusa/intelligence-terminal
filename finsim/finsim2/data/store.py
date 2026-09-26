@@ -493,6 +493,11 @@ class Store:
     def alt_dates(self, dataset: str) -> set:
         return {r[0] for r in self._q("SELECT DISTINCT date FROM alt_data WHERE dataset = ?", [dataset])}
 
+    def lab_record_assets(self, version: str, horizon: str) -> list[str]:
+        """Assets that have research records for this version and horizon (the research universe)."""
+        return [r[0] for r in self._q("SELECT DISTINCT asset_id FROM lab_records WHERE version = ? AND horizon = ? ORDER BY asset_id",
+                                      [version, horizon])]
+
     def lab_record_summary(self) -> list[dict]:
         return [dict(r) for r in self._q("SELECT version, horizon, count(*) AS assets, sum(n) AS records, max(created) AS created "
                                          "FROM lab_records GROUP BY version, horizon ORDER BY version, horizon")]

@@ -65,6 +65,8 @@ def main(argv=None) -> int:
     lb.add_argument("--vnext", choices=["alpha", "directional", "hedge", "all"], help="Shaffer vNext research programs (Alpha / Directional / Hedge)")
     lb.add_argument("--learned", action="store_true", help="find the historically supported Shaffer weights (and hedge parameters): engine/learned.py")
     lb.add_argument("--finetune", action="store_true", help="fine-tune the learned 1W Shaffer Alpha (nested, G1–G5), 1D after costs, 1M–12M, hedge λ surface: engine/finetune.py")
+    lb.add_argument("--hedge-panel", action="store_true", help="put the λ-conditional hedge sizing cells that passed every gate into live shadow and record / grade the λ-aware hedge panel now")
+    lb.add_argument("--live-panel", action="store_true", help="score the whole research universe for production and every Shaffer challenger now (the weekly live panel)")
     lb.add_argument("--fetch-sec-extra", action="store_true", help="download the extra SEC concepts the Alpha vNext program uses (research only)")
     lb.add_argument("--breadth-hedge", action="store_true", help="does the breadth volatility forecast improve Shaffer Hedge outcomes? (hedge/volhedge.py)")
     lb.add_argument("--breadth-hedge-report", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "BREADTH_HEDGE_RESEARCH.md"))
@@ -140,6 +142,30 @@ def main(argv=None) -> int:
         open(os.path.join(here, "SHAFFER_LEARNED_WEIGHTS.md"), "w", encoding="utf-8").write(md)
         print(f"learned weights: {res['seconds']}s; wrote SHAFFER_LEARNED_WEIGHTS.md")
         return 0
+    if args.cmd == "lab" and args.hedge_panel:
+        from .data.store import Store
+        from .engine.research import Research
+        from .hedge import hedgelive
+        st = Store(app.db_path())
+        try:
+            r = Research(st)
+            v = hedgelive.activate(st)
+            print("live shadow:", (v or {}).get("id"), list(((v or {}).get("live_cells") or {}).keys()))
+            print("graded:", hedgelive.grade(r, progress=print))
+            print("recorded:", hedgelive.record(r, progress=print, force=True))
+        finally:
+            st.close()
+        return 0
+    if args.cmd == "lab" and args.live_panel:
+        from .data.store import Store
+        from .engine import livexs
+        from .engine.research import Research
+        st = Store(app.db_path())
+        try:
+            print(livexs.record_panel(Research(st), progress=print, force=True))
+        finally:
+            st.close()
+        return 0
     if args.cmd == "lab" and args.finetune:
         from .data.store import Store
         from .engine import finetune, finetune_report, learned
@@ -151,6 +177,10 @@ def main(argv=None) -> int:
             finetune.save(st, res)
             st.kv_set("lab:hedgetune", res.get("hedge"))
             print("registered:", ", ".join(finetune.register(st, res)))
+            from .hedge import hedgelive
+            hv = hedgelive.activate(st)                  # passing λ-cells go into live shadow (graded by hedgelive)
+            if hv:
+                print("hedge live shadow:", hv["id"], ", ".join(hv["live_cells"]))
         finally:
             st.close()
         print("live models:", finetune.build_live(app.db_path(), res, progress=print))
